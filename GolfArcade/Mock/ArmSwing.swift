@@ -59,6 +59,8 @@ struct ArmSwingDetector {
     var handedness: Handedness = .right
 
     private(set) var phase: Phase = .findingPlayer
+    /// Where the hands are on the arc right now, in degrees: positive back, negative through.
+    private(set) var swingAngle = 0.0
     private var reference = CGVector(dx: 0, dy: -1)
     private var previous: (time: Double, arc: Double)?
     private var lastTracked: Double?
@@ -85,6 +87,7 @@ struct ArmSwingDetector {
         if speed < stillSpeed { stillSince = stillSince ?? time } else { stillSince = nil }
         let isStill = stillSince.map { time - $0 >= stillDuration } ?? false
         let handsHangDown = vector.dy < 0
+        swingAngle = phase == .finish ? -arc : phase == .findingPlayer ? 0 : arc
 
         switch phase {
         case .findingPlayer, .finish:
@@ -146,6 +149,7 @@ struct ArmSwingDetector {
 
     private mutating func reset() {
         phase = .findingPlayer
+        swingAngle = 0
         previous = nil
         lastTracked = nil
         stillSince = nil

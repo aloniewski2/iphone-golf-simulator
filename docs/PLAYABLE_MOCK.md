@@ -28,7 +28,7 @@ Switch the input picker to **Camera** and prop the phone up facing you (front ca
 
 The model is Wii Sports golf read by camera: the power meter is the **arm arc**, the angle of your hands around your shoulders from where they hung at address. Hands level with the shoulders is about 90°; ~140° is a full backswing and 100 % on the meter. Downswing speed adds the final share of power (`speedWeight`), so a lazy full swing and a quick short one both make sense. Swing well past full (165°+) and the shot hooks, harder the further over you go. A slow return is a practice swing and does not spend a shot. Brief tracking loss at the top is skipped. `ArmSwingDetector` in `GolfArcade/Mock/ArmSwing.swift` holds every threshold and is unit-tested with synthetic swings.
 
-The golfer beside the tee is a simple figure whose **arms and club follow your tracked shoulders, elbows, and wrists**; in Touch and Phone modes the arms swing with the load meter instead.
+The golfer beside the tee is a Mii-style figure with its own fixed-length arms on one clean swing arc; your tracked arm arc only sets **how far along the swing it is**, so nothing stretches or jitters. When the ball launches it plays its own downswing and follow-through. In Touch and Phone modes the load meter drives the same arc.
 
 Settings provide sound, haptics, instructions, round restart, and the existing **Camera lab**. The lab is the separate experimental body-tracking prototype; live camera swings do not yet drive the new target challenge.
 
