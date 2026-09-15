@@ -17,7 +17,9 @@
 		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
 		B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1835B1CB285BF21CF93D755 /* RangeView.swift */; };
 		C3D6FE8301761453D4371FF3 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */; };
+		C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */; };
 		CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */; };
+		D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */; };
 		DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D55F28D1B7EEB093E07C923A /* ArcadeView.swift */; };
 		E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */; };
 		EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E90B0F05E735C3FCB7D843F /* FlightPath.swift */; };
@@ -43,6 +45,8 @@
 		188E8707AD95370AAB8E34B6 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
 		2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeTests.swift; sourceTree = "<group>"; };
 		38539761E1BFA7845BA2C9CB /* ShotEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotEngine.swift; sourceTree = "<group>"; };
+		45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackOverlay.swift; sourceTree = "<group>"; };
+		4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackController.swift; sourceTree = "<group>"; };
 		4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPoseTracker.swift; sourceTree = "<group>"; };
 		5E90B0F05E735C3FCB7D843F /* FlightPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPath.swift; sourceTree = "<group>"; };
 		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
@@ -83,12 +87,21 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		61F030750DA108AF5F44E27C /* Feedback */ = {
+			isa = PBXGroup;
+			children = (
+				4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */,
+			);
+			path = Feedback;
+			sourceTree = "<group>";
+		};
 		6BA0FD2E4366DA2B207AA631 /* GolfArcade */ = {
 			isa = PBXGroup;
 			children = (
 				5A7C28C68D15118EA76B2581 /* App */,
 				9F82A96857A958FF9F0D67E1 /* Domain */,
 				86B2780833D5C720EC9327A2 /* Features */,
+				61F030750DA108AF5F44E27C /* Feedback */,
 				0512E2F8B130319AEDC19E89 /* Game */,
 				BFA66F381F7F17DEFD62832C /* Shot */,
 				EEDFBB2EF6A041270AFB9F3C /* Swing */,
@@ -165,6 +178,7 @@
 				D55F28D1B7EEB093E07C923A /* ArcadeView.swift */,
 				B1835B1CB285BF21CF93D755 /* RangeView.swift */,
 				08572299F1239F439E5A477B /* ShotResultCard.swift */,
+				45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */,
 			);
 			path = Arcade;
 			sourceTree = "<group>";
@@ -256,6 +270,8 @@
 				B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */,
 				FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */,
 				F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */,
+				C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */,
+				D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */,
 				00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */,
 				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
 			);
