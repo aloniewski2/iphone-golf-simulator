@@ -6,6 +6,18 @@ An iPhone-first, motion-controlled golf game where the player's body is the cont
 
 The first playable milestone is **Arcade Mode**: generous swing recognition, a small club set, believable shot variety, and immediate visual feedback. The architecture keeps observed pose data separate from estimated golf metrics so Assisted and Simulation modes can become more realistic without replacing the core pipeline.
 
+The current arcade foundation includes:
+
+- live front-camera capture and Apple Vision body-pose tracking
+- an on-screen skeleton and tracking-confidence feedback
+- address, backswing, downswing, impact, follow-through, and finish detection
+- right- and left-handed interpretation
+- Driver, Iron, Wedge, and Putter selection, including swipe gestures
+- forgiving contact, shot-shape, distance, and ball-flight estimates
+- deterministic demo swings for simulator/UI testing
+
+The next validation step is tuning the state-machine thresholds with real swings on a physical iPhone. Those measurements should drive the model before adding a 3D range or deeper progression systems.
+
 ## Requirements
 
 - Xcode 26 or newer
@@ -21,8 +33,7 @@ The Xcode project is generated from `project.yml` using [XcodeGen](https://githu
 ## Branches
 
 - `main`: release-ready code
-- `develop`: integrated, tested work for the next release
-- `feature/*`: focused implementation branches merged into `develop`
+- `testing`: integrated, tested work for the next release and the only permitted source for pull requests to `main`
+- `feature/*`: focused implementation branches created from and merged into `testing`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the pull-request workflow.
-
