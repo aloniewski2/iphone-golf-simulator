@@ -32,10 +32,21 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Create iOS simulator
+        id: simulator
+        run: |
+          runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
+          if [[ -z "$runtime_id" ]]; then
+            xcodebuild -downloadPlatform iOS
+            runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
+          fi
+          device_type_id=$(xcrun simctl list devicetypes --json | jq -r '[.devicetypes[] | select(.name == "iPhone 16 Pro")][0].identifier // [.devicetypes[] | select(.name | startswith("iPhone"))][-1].identifier')
+          simulator_id=$(xcrun simctl create "GolfArcade CI" "$device_type_id" "$runtime_id")
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
       - name: Build and test
         run: |
           xcodebuild test \
             -project GolfArcade.xcodeproj \
             -scheme GolfArcade \
-            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16 Pro' \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
             CODE_SIGNING_ALLOWED=NO

@@ -7,9 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */; };
+		38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78EF7010941BF7671DEFE0B /* PoseFrame.swift */; };
+		52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F447C72E9C246913F2534E /* SwingStateMachine.swift */; };
 		62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */; };
 		88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */; };
 		92259CA63028678B96DA3713 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03497F0C3431B14DAD79FC85 /* ContentView.swift */; };
+		97737F2DFA25E2044809A161 /* CameraPoseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */; };
+		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
+		B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1835B1CB285BF21CF93D755 /* RangeView.swift */; };
+		C3D6FE8301761453D4371FF3 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */; };
+		CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */; };
+		DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D55F28D1B7EEB093E07C923A /* ArcadeView.swift */; };
+		E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */; };
+		EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E90B0F05E735C3FCB7D843F /* FlightPath.swift */; };
+		F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08572299F1239F439E5A477B /* ShotResultCard.swift */; };
+		FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38539761E1BFA7845BA2C9CB /* ShotEngine.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,13 +37,34 @@
 
 /* Begin PBXFileReference section */
 		03497F0C3431B14DAD79FC85 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		08572299F1239F439E5A477B /* ShotResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotResultCard.swift; sourceTree = "<group>"; };
 		0A580368EAB1EE7F71B7FE0B /* GolfArcadeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseSkeletonView.swift; sourceTree = "<group>"; };
+		188E8707AD95370AAB8E34B6 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
 		2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeTests.swift; sourceTree = "<group>"; };
+		38539761E1BFA7845BA2C9CB /* ShotEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotEngine.swift; sourceTree = "<group>"; };
+		4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPoseTracker.swift; sourceTree = "<group>"; };
+		5E90B0F05E735C3FCB7D843F /* FlightPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPath.swift; sourceTree = "<group>"; };
+		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
 		71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeApp.swift; sourceTree = "<group>"; };
+		B1835B1CB285BF21CF93D755 /* RangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeView.swift; sourceTree = "<group>"; };
+		B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
+		BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingMetrics.swift; sourceTree = "<group>"; };
+		D55F28D1B7EEB093E07C923A /* ArcadeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeView.swift; sourceTree = "<group>"; };
+		D78EF7010941BF7671DEFE0B /* PoseFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseFrame.swift; sourceTree = "<group>"; };
 		E555B2810530CEE299B31086 /* GolfArcade.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0512E2F8B130319AEDC19E89 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
 		3C216A08A8E77D9D1F5083A1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -53,8 +87,41 @@
 			isa = PBXGroup;
 			children = (
 				5A7C28C68D15118EA76B2581 /* App */,
+				9F82A96857A958FF9F0D67E1 /* Domain */,
+				86B2780833D5C720EC9327A2 /* Features */,
+				0512E2F8B130319AEDC19E89 /* Game */,
+				BFA66F381F7F17DEFD62832C /* Shot */,
+				EEDFBB2EF6A041270AFB9F3C /* Swing */,
+				D49424BEF925DC29647C19F8 /* Tracking */,
 			);
 			path = GolfArcade;
+			sourceTree = "<group>";
+		};
+		86B2780833D5C720EC9327A2 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				FD5256EB6CE894D29006C950 /* Arcade */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		9F82A96857A958FF9F0D67E1 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				188E8707AD95370AAB8E34B6 /* Club.swift */,
+				D78EF7010941BF7671DEFE0B /* PoseFrame.swift */,
+				BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		BFA66F381F7F17DEFD62832C /* Shot */ = {
+			isa = PBXGroup;
+			children = (
+				5E90B0F05E735C3FCB7D843F /* FlightPath.swift */,
+				38539761E1BFA7845BA2C9CB /* ShotEngine.swift */,
+			);
+			path = Shot;
 			sourceTree = "<group>";
 		};
 		CEF02172684C710B970E4157 = {
@@ -66,12 +133,40 @@
 			);
 			sourceTree = "<group>";
 		};
+		D49424BEF925DC29647C19F8 /* Tracking */ = {
+			isa = PBXGroup;
+			children = (
+				4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */,
+				FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */,
+				0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */,
+			);
+			path = Tracking;
+			sourceTree = "<group>";
+		};
 		E0DDE9A54BDA1821FA9AB12A /* GolfArcadeTests */ = {
 			isa = PBXGroup;
 			children = (
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 			);
 			path = GolfArcadeTests;
+			sourceTree = "<group>";
+		};
+		EEDFBB2EF6A041270AFB9F3C /* Swing */ = {
+			isa = PBXGroup;
+			children = (
+				60F447C72E9C246913F2534E /* SwingStateMachine.swift */,
+			);
+			path = Swing;
+			sourceTree = "<group>";
+		};
+		FD5256EB6CE894D29006C950 /* Arcade */ = {
+			isa = PBXGroup;
+			children = (
+				D55F28D1B7EEB093E07C923A /* ArcadeView.swift */,
+				B1835B1CB285BF21CF93D755 /* RangeView.swift */,
+				08572299F1239F439E5A477B /* ShotResultCard.swift */,
+			);
+			path = Arcade;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -148,8 +243,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */,
+				DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */,
+				97737F2DFA25E2044809A161 /* CameraPoseTracker.swift in Sources */,
+				C3D6FE8301761453D4371FF3 /* CameraPreview.swift in Sources */,
+				B33C4993D87324C50F5D3111 /* Club.swift in Sources */,
 				92259CA63028678B96DA3713 /* ContentView.swift in Sources */,
+				EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */,
 				62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */,
+				38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */,
+				CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */,
+				B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */,
+				FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */,
+				F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */,
+				00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */,
+				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
