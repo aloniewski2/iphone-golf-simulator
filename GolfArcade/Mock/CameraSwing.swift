@@ -9,6 +9,8 @@ final class CameraSwingController: ObservableObject {
     @Published private(set) var phase: SwingPhase = .findingPlayer
     @Published private(set) var status: CameraPoseTracker.Status = .idle
     @Published private(set) var frame: PoseFrame?
+    /// Degrees along the swing arc, for the golfer avatar: positive back, negative through.
+    @Published private(set) var swingAngle = 0.0
     var onEvent: ((SwingInputEvent) -> Void)?
     var handedness: Handedness = .right {
         didSet { detector.handedness = handedness }
@@ -35,6 +37,7 @@ final class CameraSwingController: ObservableObject {
         detector = ArmSwingDetector()
         detector.handedness = handedness
         frame = nil
+        swingAngle = 0
         phase = .findingPlayer
     }
 
@@ -48,6 +51,7 @@ final class CameraSwingController: ObservableObject {
         case .downswing: .downswing
         case .finish: .finish
         }
+        swingAngle = detector.swingAngle
         if let event { onEvent?(event) }
     }
 }

@@ -94,33 +94,25 @@ final class ArmSwingDetectorTests: XCTestCase {
     }
 }
 
-final class MeadowAvatarTests: XCTestCase {
+final class GolferAvatarTests: XCTestCase {
     @MainActor
-    func testArmsFollowThePoseAndSwingWithTheLoadOtherwise() {
-        let meadow = MeadowScene()
-        let high: Float = 0.9
-        func p(_ x: CGFloat, _ y: CGFloat) -> PosePoint { PosePoint(location: CGPoint(x: x, y: y), confidence: high) }
-        let hangingHands = PoseFrame(timestamp: 1, points: [
-            .leftShoulder: p(0.4, 0.78), .rightShoulder: p(0.6, 0.78),
-            .leftElbow: p(0.42, 0.65), .rightElbow: p(0.58, 0.65), .leftWrist: p(0.48, 0.5), .rightWrist: p(0.52, 0.5)
-        ])
-        meadow.update(shot: nil, elapsed: 0, power: 0, aim: 0, pose: hangingHands)
-        guard let avatar = meadow.scene.rootNode.childNodes.first(where: { node in node.childNodes.contains { $0.childNodes.count == 2 } }) else {
-            return XCTFail("avatar node not found")
-        }
-        let club = avatar.childNodes.first { $0.childNodes.count == 2 }!
-        let handsDown = club.position.y
-        let topOfBackswing = PoseFrame(timestamp: 2, points: [
-            .leftShoulder: p(0.4, 0.78), .rightShoulder: p(0.6, 0.78),
-            .leftElbow: p(0.62, 0.86), .rightElbow: p(0.7, 0.88), .leftWrist: p(0.72, 0.98), .rightWrist: p(0.74, 0.98)
-        ])
-        meadow.update(shot: nil, elapsed: 0, power: 0, aim: 0, pose: topOfBackswing)
-        XCTAssertGreaterThan(club.position.y, handsDown + 2, "hands rise with the tracked pose")
-        XCTAssertFalse(club.isHidden)
-
-        meadow.update(shot: nil, elapsed: 0, power: 0, aim: 0, pose: nil)
-        let atAddress = club.position
-        meadow.update(shot: nil, elapsed: 0, power: 1, aim: 0, pose: nil)
-        XCTAssertGreaterThan(club.position.y, atAddress.y + 1, "without a camera the arms swing with the load meter")
+    func testArmsKeepTheirLengthAndSwingCleanlyThroughTheArc() {
+        let golfer = Golfer()
+        let arms = golfer.node.childNodes.flatMap { $0.childNodes }.filter { ($0.geometry as? SCNCylinder)?.height == 1 && ($0.geometry as? SCNCylinder)?.radius == 0.16 }
+        XCTAssertEqual(arms.count, 4)
+        let club = golfer.node.childNodes.flatMap { $0.childNodes }.first { $0.childNodes.count == 2 }!
+        let addressClubY = club.position.y
+        for _ in 0..<40 { golfer.follow(150) } // eases toward the top of the backswing
+        XCTAssertGreaterThan(club.position.y, addressClubY + 2, "hands rise to the top")
+        XCTAssertTrue(arms.allSatisfy { $0.scale.y <= 1.36 }, "arm segments never stretch past their length")
+        XCTAssertTrue(arms.allSatisfy { $0.scale.y >= 0.6 }, "and never collapse")
+        let top = club.position
+        golfer.launch(replay: false)
+        golfer.animate(elapsed: 0.15)
+        golfer.animate(elapsed: 0.5)
+        XCTAssertLessThan(club.position.z, top.z - 1, "the finish is through on the other side")
+        golfer.animate(elapsed: 5)
+        XCTAssertEqual(club.position.y, addressClubY, accuracy: 0.05, "back to address for the next ball")
+        XCTAssertTrue(arms.allSatisfy { $0.scale.y <= 1.36 })
     }
 }

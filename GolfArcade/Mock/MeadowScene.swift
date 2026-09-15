@@ -7,19 +7,12 @@ final class MeadowScene {
     let camera = SCNNode()
     private let ball = SCNNode()
     private let shadow = SCNNode()
-    private let club = SCNNode()
     private let trail = SCNNode()
     private let aimLine = SCNNode()
     private let impact = SCNNode()
-    private let avatar = SCNNode()
-    private var avatarArms: [(bone: SCNNode, from: BodyJoint, to: BodyJoint)] = []
-    private var avatarHands: [BodyJoint: SCNNode] = [:]
-    private let avatarClub = SCNNode()
+    private let golfer = Golfer()
     private var lastShot: RangeShot?
-
-    /// Shoulder width of the avatar in scene yards; arms are scaled from the player's shoulders.
-    private let avatarShoulderWidth: Float = 1.6
-    private let avatarShoulderHeight: Float = 4.6
+    private var lastElapsed = 0.0
 
     init() {
         scene.background.contents = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
@@ -84,15 +77,7 @@ final class MeadowScene {
         shadow.geometry = SCNCylinder(radius: 0.9, height: 0.025)
         shadow.geometry?.firstMaterial?.diffuse.contents = UIColor.black.withAlphaComponent(0.25)
         scene.rootNode.addChildNode(shadow)
-        let shaft = SCNNode(geometry: SCNCylinder(radius: 0.07, height: 6))
-        shaft.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
-        shaft.position.y = 3
-        club.addChildNode(shaft)
-        let head = SCNNode(geometry: SCNBox(width: 1.4, height: 0.65, length: 0.85, chamferRadius: 0.3))
-        head.geometry?.firstMaterial?.diffuse.contents = UIColor.darkGray
-        club.addChildNode(head)
-        club.position = SCNVector3(1.5, 0.6, 0.4)
-        scene.rootNode.addChildNode(club)
+        scene.rootNode.addChildNode(golfer.node)
         scene.rootNode.addChildNode(trail)
         scene.rootNode.addChildNode(aimLine)
         impact.geometry = SCNSphere(radius: 1)
@@ -100,7 +85,6 @@ final class MeadowScene {
         impact.geometry?.firstMaterial?.emission.contents = UIColor.systemYellow
         impact.position = SCNVector3(0, 0.6, 0)
         scene.rootNode.addChildNode(impact)
-        buildAvatar()
         for i in 1...10 {
             let dot = SCNNode(geometry: SCNSphere(radius: 0.18))
             dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.75)
@@ -110,10 +94,20 @@ final class MeadowScene {
         update(shot: nil, elapsed: 0, power: 0, aim: 0)
     }
 
-    func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, pose: PoseFrame? = nil) {
+    /// `swingAngle` is where the player's swing is right now, in degrees of arc: 0 at address,
+    /// positive going back, negative through. Once a shot is launched the golfer plays its own
+    /// downswing and follow-through, and the live angle is ignored until the next ball.
+    func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, swingAngle: Double = 0, handedness: Handedness = .right) {
         SCNTransaction.begin()
         SCNTransaction.disableActions = true
-        updateAvatar(pose, load: shot == nil ? power : 0)
+        golfer.handedness = handedness
+        if let shot {
+            if lastShot != shot || elapsed < lastElapsed - 0.5 { golfer.launch(replay: lastShot == shot) }
+            golfer.animate(elapsed: elapsed)
+        } else {
+            golfer.follow(swingAngle)
+        }
+        lastElapsed = elapsed
         if lastShot != shot {
             trail.childNodes.forEach { $0.removeFromParentNode() }
             if let shot {
@@ -133,121 +127,16 @@ final class MeadowScene {
         let distance = Float(point.distanceYards)
         camera.position = SCNVector3(Float(point.lateralYards) * 0.65 + 12, 22 + Float(point.heightYards) * 0.55, 38 - distance * 0.86)
         camera.look(at: SCNVector3(Float(point.lateralYards), max(0, Float(point.heightYards) * 0.75), -max(40, distance + 14)))
-        club.isHidden = shot != nil
         let burst = min(max(elapsed / 0.23, 0), 1)
         impact.isHidden = shot == nil || elapsed > 0.23
         impact.opacity = CGFloat((1 - burst) * 0.7)
         impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
-        club.eulerAngles = SCNVector3(0, 0, Float(-power * 1.8))
-        club.position.y = 0.6 + Float(power * 5)
         aimLine.isHidden = shot != nil
         aimLine.eulerAngles.y = Float(-aim * .pi / 180)
         if let shot {
             for (i, dot) in trail.childNodes.enumerated() { dot.isHidden = Double(i) / 59 * shot.duration > elapsed }
         }
         SCNTransaction.commit()
-    }
-
-    /// A simple golfer beside the tee: a fixed body, and arms that follow the player.
-    private func buildAvatar() {
-        let cream = UIColor(red: 0.96, green: 0.96, blue: 0.86, alpha: 1)
-        let shirt = UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1)
-        let trousers = UIColor(red: 0.16, green: 0.2, blue: 0.3, alpha: 1)
-        let skin = UIColor(red: 0.93, green: 0.78, blue: 0.62, alpha: 1)
-
-        func part(_ geometry: SCNGeometry, _ color: UIColor, at position: SCNVector3, tilt: Float = 0) -> SCNNode {
-            geometry.firstMaterial?.diffuse.contents = color
-            let node = SCNNode(geometry: geometry)
-            node.position = position
-            node.eulerAngles.z = tilt
-            avatar.addChildNode(node)
-            return node
-        }
-        let legHeight: Float = 2.4
-        let torsoHeight: Float = 2.2
-        part(SCNCapsule(capRadius: 0.24, height: CGFloat(legHeight)), trousers, at: SCNVector3(-0.45, legHeight / 2, 0))
-        part(SCNCapsule(capRadius: 0.24, height: CGFloat(legHeight)), trousers, at: SCNVector3(0.45, legHeight / 2, 0))
-        part(SCNCapsule(capRadius: 0.5, height: CGFloat(torsoHeight) + 0.6), shirt, at: SCNVector3(0, legHeight + torsoHeight / 2, 0))
-        part(SCNSphere(radius: 0.48), skin, at: SCNVector3(0, avatarShoulderHeight + 0.85, 0))
-        part(SCNCylinder(radius: 0.55, height: 0.12), cream, at: SCNVector3(0, avatarShoulderHeight + 1.2, 0)) // cap brim
-
-        for (from, to) in [(BodyJoint.leftShoulder, BodyJoint.leftElbow), (.leftElbow, .leftWrist), (.rightShoulder, .rightElbow), (.rightElbow, .rightWrist)] {
-            let bone = SCNNode(geometry: SCNCylinder(radius: 0.14, height: 1))
-            bone.geometry?.firstMaterial?.diffuse.contents = to == .leftWrist || to == .rightWrist ? skin : shirt
-            bone.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0) // grows from its base
-            avatar.addChildNode(bone)
-            avatarArms.append((bone, from, to))
-        }
-        for joint in [BodyJoint.leftWrist, .rightWrist] {
-            let hand = SCNNode(geometry: SCNSphere(radius: 0.2))
-            hand.geometry?.firstMaterial?.diffuse.contents = skin
-            avatar.addChildNode(hand)
-            avatarHands[joint] = hand
-        }
-        let shaft = SCNNode(geometry: SCNCylinder(radius: 0.06, height: 1))
-        shaft.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
-        shaft.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
-        avatarClub.addChildNode(shaft)
-        let head = SCNNode(geometry: SCNBox(width: 0.5, height: 0.35, length: 0.9, chamferRadius: 0.1))
-        head.geometry?.firstMaterial?.diffuse.contents = UIColor.darkGray
-        head.position = SCNVector3(0, 1, 0.2)
-        avatarClub.addChildNode(head)
-        avatar.addChildNode(avatarClub)
-
-        avatar.position = SCNVector3(3.2, 0, 0)
-        scene.rootNode.addChildNode(avatar)
-    }
-
-    /// Arms come from the tracked pose when there is one (mirrored, scaled by shoulder width), and
-    /// otherwise swing procedurally with the load meter so every input mode animates the golfer.
-    private func updateAvatar(_ pose: PoseFrame?, load: Double) {
-        let base = SCNVector3(0, avatarShoulderHeight, 0.3)
-        var joints: [BodyJoint: SCNVector3] = [:]
-        if let pose, let left = pose.point(.leftShoulder), let right = pose.point(.rightShoulder) {
-            let center = CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
-            let width = max(0.02, hypot(right.x - left.x, right.y - left.y))
-            let scale = avatarShoulderWidth / Float(width)
-            for joint in [BodyJoint.leftShoulder, .rightShoulder, .leftElbow, .rightElbow, .leftWrist, .rightWrist] {
-                guard let point = pose.point(joint) else { continue }
-                joints[joint] = SCNVector3(base.x + Float(point.x - center.x) * scale, base.y + Float(point.y - center.y) * scale, base.z)
-            }
-        } else {
-            // Hands hang below the shoulders at address and arc up to the trail side with the load.
-            let angle = Float(load) * 2.3
-            let reach = avatarShoulderWidth * 1.4
-            let hands = SCNVector3(base.x + sin(angle) * reach, base.y - cos(angle) * reach, base.z)
-            let half = avatarShoulderWidth / 2
-            joints[.leftShoulder] = SCNVector3(base.x - half, base.y, base.z)
-            joints[.rightShoulder] = SCNVector3(base.x + half, base.y, base.z)
-            for (shoulder, elbow, wrist) in [(BodyJoint.leftShoulder, BodyJoint.leftElbow, BodyJoint.leftWrist), (.rightShoulder, .rightElbow, .rightWrist)] {
-                let s = joints[shoulder]!
-                joints[wrist] = SCNVector3(hands.x + (shoulder == .leftShoulder ? -0.12 : 0.12), hands.y, hands.z)
-                joints[elbow] = SCNVector3((s.x + hands.x) / 2 + (shoulder == .leftShoulder ? -0.3 : 0.3), (s.y + hands.y) / 2 - 0.15, base.z + 0.2)
-            }
-        }
-        for (bone, from, to) in avatarArms {
-            guard let start = joints[from], let end = joints[to] else { bone.isHidden = true; continue }
-            bone.isHidden = false
-            bone.position = start
-            bone.scale = SCNVector3(1, max(0.05, simd_length(simd_float3(end) - simd_float3(start))), 1)
-            bone.look(at: end, up: SCNVector3(0, 0, 1), localFront: SCNVector3(0, 1, 0))
-        }
-        for (joint, hand) in avatarHands {
-            if let position = joints[joint] { hand.isHidden = false; hand.position = position } else { hand.isHidden = true }
-        }
-        // The club continues the line from the shoulders through the hands.
-        let wrists = [joints[.leftWrist], joints[.rightWrist]].compactMap { $0 }
-        guard !wrists.isEmpty, let ls = joints[.leftShoulder], let rs = joints[.rightShoulder] else { avatarClub.isHidden = true; return }
-        avatarClub.isHidden = false
-        let hands = simd_float3(wrists.map(simd_float3.init).reduce(simd_float3(), +)) / Float(wrists.count)
-        let shoulders = (simd_float3(ls) + simd_float3(rs)) / 2
-        var direction = hands - shoulders
-        direction.z = 0
-        if simd_length(direction) < 0.05 { direction = simd_float3(0, -1, 0) }
-        let clubLength = avatarShoulderWidth * 1.7
-        avatarClub.position = SCNVector3(hands)
-        avatarClub.scale = SCNVector3(1, clubLength, 1)
-        avatarClub.look(at: SCNVector3(hands + simd_normalize(direction) * clubLength), up: SCNVector3(0, 0, 1), localFront: SCNVector3(0, 1, 0))
     }
 
     @discardableResult
@@ -270,13 +159,184 @@ final class MeadowScene {
     }
 }
 
+/// A Mii-style golfer beside the tee. The body is rigid; the arms have fixed lengths and travel
+/// along one clean swing arc around the chest, driven by a single angle. Elbows come from two-bone
+/// IK, so the arms bend but never stretch. The shoulders turn with the arc for a fuller motion.
+@MainActor
+final class Golfer {
+    let node = SCNNode()
+    var handedness: Handedness = .right {
+        didSet { if handedness != oldValue { applyHandedness() } }
+    }
+
+    private let upperBody = SCNNode()
+    private let bones: [SCNNode]          // left upper, left fore, right upper, right fore
+    private let hands: [SCNNode]
+    private let club = SCNNode()
+    private var angle = 0.0                // displayed arc, degrees
+    private var launchAngle = 0.0
+
+    // Upper-body frame (origin at the hips, 2.4 above the feet): +x toward the ball,
+    // +z the golfer's right (toward the range camera), +y up.
+    private let hipHeight: Float = 2.4
+    private let pivot = simd_float3(0.55, 1.8, 0)            // chest, where the arc is centred
+    private let shoulders = [simd_float3(0.7, 2.0, -0.75), simd_float3(0.7, 2.0, 0.75)] // left, right
+    private let addressHands = simd_float3(1.9, -0.3, 0.1)
+    private let upperArm: Float = 1.35
+    private let forearm: Float = 1.35
+    private let clubLength: Float = 2.7
+    private let fullBackswing = 150.0
+    private let finish = -150.0
+
+    init() {
+        let shirt = UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1)
+        let trousers = UIColor(red: 0.16, green: 0.2, blue: 0.3, alpha: 1)
+        let skin = UIColor(red: 0.93, green: 0.78, blue: 0.62, alpha: 1)
+        let cream = UIColor(red: 0.96, green: 0.96, blue: 0.86, alpha: 1)
+        func part(_ geometry: SCNGeometry, _ color: UIColor, at position: simd_float3, parent: SCNNode, tilt: Float = 0) {
+            geometry.firstMaterial?.diffuse.contents = color
+            geometry.firstMaterial?.isDoubleSided = true
+            let part = SCNNode(geometry: geometry)
+            part.simdPosition = position
+            part.eulerAngles.z = tilt
+            parent.addChildNode(part)
+        }
+        // Stance is along z; the golfer leans a little toward the ball (+x).
+        part(SCNCapsule(capRadius: 0.26, height: 2.5), trousers, at: simd_float3(0.05, 1.25, -0.6), parent: node, tilt: -0.05)
+        part(SCNCapsule(capRadius: 0.26, height: 2.5), trousers, at: simd_float3(0.05, 1.25, 0.6), parent: node, tilt: -0.05)
+        upperBody.simdPosition = simd_float3(0, hipHeight, 0)
+        node.addChildNode(upperBody)
+        part(SCNCapsule(capRadius: 0.55, height: 2.0), shirt, at: simd_float3(0.3, 0.95, 0), parent: upperBody, tilt: -0.32)
+        let shoulderBar = SCNCapsule(capRadius: 0.32, height: 2.1)
+        shoulderBar.firstMaterial?.diffuse.contents = shirt
+        let bar = SCNNode(geometry: shoulderBar)
+        bar.simdPosition = simd_float3(0.7, 2.0, 0)
+        bar.eulerAngles.x = .pi / 2 // lies along z, joining the two shoulders
+        upperBody.addChildNode(bar)
+        part(SCNSphere(radius: 0.5), skin, at: simd_float3(0.95, 2.75, 0), parent: upperBody)
+        part(SCNCylinder(radius: 0.58, height: 0.12), cream, at: simd_float3(0.95, 3.1, 0), parent: upperBody)
+
+        var bones: [SCNNode] = []
+        for index in 0..<4 {
+            let bone = SCNNode(geometry: SCNCylinder(radius: 0.16, height: 1))
+            bone.geometry?.firstMaterial?.diffuse.contents = index % 2 == 0 ? shirt : skin
+            bone.geometry?.firstMaterial?.isDoubleSided = true
+            bone.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
+            upperBody.addChildNode(bone)
+            bones.append(bone)
+        }
+        self.bones = bones
+        var hands: [SCNNode] = []
+        for _ in 0..<2 {
+            let hand = SCNNode(geometry: SCNSphere(radius: 0.21))
+            hand.geometry?.firstMaterial?.diffuse.contents = skin
+            upperBody.addChildNode(hand)
+            hands.append(hand)
+        }
+        self.hands = hands
+        let shaft = SCNNode(geometry: SCNCylinder(radius: 0.06, height: 1))
+        shaft.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
+        shaft.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
+        club.addChildNode(shaft)
+        let head = SCNNode(geometry: SCNBox(width: 0.55, height: 0.35, length: 0.95, chamferRadius: 0.1))
+        head.geometry?.firstMaterial?.diffuse.contents = UIColor.darkGray
+        head.position = SCNVector3(0.1, 1, 0.15)
+        club.addChildNode(head)
+        upperBody.addChildNode(club)
+        applyHandedness()
+        pose(0)
+    }
+
+    /// Live tracking: ease toward the player's arc so the motion stays clean.
+    func follow(_ target: Double) {
+        let clamped = min(max(target, finish), fullBackswing)
+        angle += (clamped - angle) * 0.35
+        pose(angle)
+    }
+
+    func launch(replay: Bool) {
+        launchAngle = replay ? fullBackswing : max(angle, 60)
+    }
+
+    /// Canned downswing (0.3 s) into a held finish, then back to address for the next ball.
+    func animate(elapsed: Double) {
+        let t: Double
+        if elapsed < 0.3 {
+            let u = elapsed / 0.3
+            t = launchAngle + (finish - launchAngle) * (u * u) // accelerates through the ball
+        } else if elapsed < 3 {
+            t = finish
+        } else {
+            let u = min(1, (elapsed - 3) / 1.2)
+            t = finish + (0 - finish) * (1 - cos(u * .pi)) / 2
+        }
+        angle = t
+        pose(t)
+    }
+
+    private func applyHandedness() {
+        let mirror: Float = handedness == .right ? 1 : -1
+        node.simdScale = simd_float3(mirror, 1, 1)
+        node.simdPosition = simd_float3(-3.2 * mirror, 0, 0)
+    }
+
+    /// Hands move on a circle around the chest: down-forward at address, out to the right at 90°,
+    /// up and behind the trail shoulder at the top; negative angles mirror through to the finish.
+    private func pose(_ degrees: Double) {
+        let radians = Float(degrees * .pi / 180)
+        let toAddress = addressHands - pivot
+        let radius = simd_length(toAddress)
+        let d0 = toAddress / radius
+        var d1 = simd_float3(-0.25, 0.2, 1)
+        d1 = simd_normalize(d1 - simd_dot(d1, d0) * d0)
+        let hands = pivot + (cos(radians) * d0 + sin(radians) * d1) * radius
+        // The shoulders turn with the arms, about a third of the arc.
+        upperBody.eulerAngles.y = -radians * 0.35
+
+        for side in 0..<2 {
+            let shoulder = shoulders[side]
+            let hand = hands + simd_float3(side == 0 ? 0.12 : -0.12, side == 0 ? -0.08 : 0.08, 0)
+            var reach = hand - shoulder
+            let distance = min(simd_length(reach), upperArm + forearm - 0.05)
+            reach = simd_normalize(reach) * distance
+            let wrist = shoulder + reach
+            // Two-bone IK: elbows bend out and back, never past straight.
+            let axis = reach / distance
+            let a = (upperArm * upperArm - forearm * forearm + distance * distance) / (2 * distance)
+            let height = sqrt(max(0, upperArm * upperArm - a * a))
+            var bend = simd_float3(-0.7, -0.3, side == 0 ? -1 : 1)
+            bend = simd_normalize(bend - simd_dot(bend, axis) * axis)
+            let elbow = shoulder + axis * a + bend * height
+            place(bones[side * 2], from: shoulder, to: elbow)
+            place(bones[side * 2 + 1], from: elbow, to: wrist)
+            self.hands[side].simdPosition = wrist
+        }
+        // Wrist hinge: the club hangs on the arm line at address and cocks up to 90° along the
+        // direction of travel, so it lies over the shoulder at the top and points skyward through.
+        let armLine = simd_normalize(hands - pivot)
+        let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
+        let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2)
+        let shaft = simd_normalize(cos(hinge) * armLine + sin(hinge) * tangent)
+        club.simdPosition = hands
+        club.simdScale = simd_float3(1, clubLength, 1)
+        club.simdLook(at: hands + shaft * clubLength, up: simd_float3(0, 0, 1), localFront: simd_float3(0, 1, 0))
+    }
+
+    private func place(_ bone: SCNNode, from start: simd_float3, to end: simd_float3) {
+        bone.simdPosition = start
+        bone.simdScale = simd_float3(1, max(0.05, simd_length(end - start)), 1)
+        bone.simdLook(at: end, up: simd_float3(0, 0, 1), localFront: simd_float3(0, 1, 0))
+    }
+}
+
 struct MeadowSceneView: UIViewRepresentable {
     let meadow: MeadowScene
     let shot: RangeShot?
     let elapsed: Double
     let power: Double
     let aim: Double
-    var pose: PoseFrame? = nil
+    var swingAngle: Double = 0
+    var handedness: Handedness = .right
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -289,6 +349,6 @@ struct MeadowSceneView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, pose: pose)
+        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness)
     }
 }
