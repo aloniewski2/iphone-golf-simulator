@@ -18,7 +18,7 @@ final class SwingFeedbackController {
     }
 
     /// Builds a soft load from takeaway toward the top without aggressively shaking a mounted phone.
-    func beginBackswing() {
+    func beginBackswing(interactive: Bool = false) {
         guard isEnabled else { return }
         endBackswing()
 
@@ -36,7 +36,7 @@ final class SwingFeedbackController {
                     CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
                 ],
                 relativeTime: 0,
-                duration: 1.25
+                duration: interactive ? 30 : 1.25
             )
             let intensity = CHHapticParameterCurve(
                 parameterID: .hapticIntensityControl,
@@ -56,8 +56,13 @@ final class SwingFeedbackController {
                 ],
                 relativeTime: 0
             )
-            let pattern = try CHHapticPattern(events: [event], parameterCurves: [intensity, sharpness])
+            let pattern = try CHHapticPattern(events: [event], parameterCurves: interactive ? [] : [intensity, sharpness])
             backswingPlayer = try engine?.makeAdvancedPlayer(with: pattern)
+            if interactive {
+                try backswingPlayer?.sendParameters([
+                    CHHapticDynamicParameter(parameterID: .hapticIntensityControl, value: 0.08, relativeTime: 0)
+                ], atTime: CHHapticTimeImmediate)
+            }
             try backswingPlayer?.start(atTime: CHHapticTimeImmediate)
         } catch {
             UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.35)
@@ -67,6 +72,14 @@ final class SwingFeedbackController {
     func endBackswing() {
         try? backswingPlayer?.stop(atTime: CHHapticTimeImmediate)
         backswingPlayer = nil
+    }
+
+    /// Touch-mode power directly controls the sensation instead of relying on a timed ramp.
+    func updateTension(_ power: Double) {
+        guard isEnabled else { return }
+        try? backswingPlayer?.sendParameters([
+            CHHapticDynamicParameter(parameterID: .hapticIntensityControl, value: Float(0.08 + power * 0.28), relativeTime: 0)
+        ], atTime: CHHapticTimeImmediate)
     }
 
     /// A dense first pulse represents contact and the crisp tail gives it a club-on-ball snap.
@@ -121,4 +134,3 @@ final class SwingFeedbackController {
         try engine?.start()
     }
 }
-

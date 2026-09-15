@@ -35,6 +35,20 @@
                ReferencedContainer = "container:GolfArcade.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "48D1BC63D55B8B16CF7ED2D7"
+               BuildableName = "GolfArcadeUITests.xctest"
+               BlueprintName = "GolfArcadeUITests"
+               ReferencedContainer = "container:GolfArcade.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -61,6 +75,17 @@
                BlueprintIdentifier = "59E74B228899E5DA2CF7F366"
                BuildableName = "GolfArcadeTests.xctest"
                BlueprintName = "GolfArcadeTests"
+               ReferencedContainer = "container:GolfArcade.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "48D1BC63D55B8B16CF7ED2D7"
+               BuildableName = "GolfArcadeUITests.xctest"
+               BlueprintName = "GolfArcadeUITests"
                ReferencedContainer = "container:GolfArcade.xcodeproj">
             </BuildableReference>
          </TestableReference>
