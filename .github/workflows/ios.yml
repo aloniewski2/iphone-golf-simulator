@@ -2,15 +2,30 @@ name: iOS CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [main, testing]
   push:
-    branches: [main, develop]
+    branches: [main, testing]
 
 concurrency:
   group: ios-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  main-source-policy:
+    name: main-source-policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require testing as the source for main
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" && "$BASE_BRANCH" == "main" && "$HEAD_BRANCH" != "testing" ]]; then
+            echo "Pull requests to main must come from the testing branch."
+            exit 1
+          fi
+
   build-and-test:
     name: build-and-test
     runs-on: macos-15
@@ -24,4 +39,3 @@ jobs:
             -scheme GolfArcade \
             -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16 Pro' \
             CODE_SIGNING_ALLOWED=NO
-

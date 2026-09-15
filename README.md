@@ -21,8 +21,7 @@ The Xcode project is generated from `project.yml` using [XcodeGen](https://githu
 ## Branches
 
 - `main`: release-ready code
-- `develop`: integrated, tested work for the next release
-- `feature/*`: focused implementation branches merged into `develop`
+- `testing`: integrated, tested work for the next release and the only permitted source for pull requests to `main`
+- `feature/*`: focused implementation branches created from and merged into `testing`
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the pull-request workflow.
-
