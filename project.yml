@@ -1,0 +1,47 @@
+name: GolfArcade
+options:
+  bundleIdPrefix: com.aloniewski
+  deploymentTarget:
+    iOS: "17.0"
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+targets:
+  GolfArcade:
+    type: application
+    platform: iOS
+    sources:
+      - path: GolfArcade
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSCameraUsageDescription: Your camera tracks your body movement to turn your swing into a golf shot.
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: NO
+  GolfArcadeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: GolfArcadeTests
+    dependencies:
+      - target: GolfArcade
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeTests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  GolfArcade:
+    build:
+      targets:
+        GolfArcade: all
+        GolfArcadeTests: [test]
+    test:
+      targets:
+        - GolfArcadeTests
+
