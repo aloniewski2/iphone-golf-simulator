@@ -10,18 +10,40 @@ final class ArcadeGameSession: ObservableObject {
     @Published private(set) var phase: SwingPhase = .findingPlayer
     @Published private(set) var lastShot: ShotResult?
     @Published private(set) var shotCount = 0
+    @Published private(set) var impactPulse = 0
+    @Published var hapticsEnabled = true {
+        didSet { feedback.isEnabled = hapticsEnabled }
+    }
 
     private var stateMachine = SwingStateMachine()
     private let shotEngine = ArcadeShotEngine()
+    private let feedback = SwingFeedbackController()
 
     func process(_ frame: PoseFrame) {
         guard let event = stateMachine.ingest(frame) else { return }
         switch event {
-        case .phaseChanged(let newPhase): phase = newPhase
+        case .phaseChanged(let newPhase):
+            phase = newPhase
+            handleFeedback(for: newPhase)
         case .shotReady(let metrics):
+            feedback.endBackswing()
             lastShot = shotEngine.calculate(metrics: metrics, club: selectedClub)
             shotCount += 1
             phase = .finish
+        }
+    }
+
+    private func handleFeedback(for phase: SwingPhase) {
+        switch phase {
+        case .backswing:
+            feedback.beginBackswing()
+        case .downswing:
+            feedback.endBackswing()
+        case .impact:
+            impactPulse += 1
+            feedback.playImpact()
+        case .findingPlayer, .address, .followThrough, .finish:
+            feedback.endBackswing()
         }
     }
 
@@ -45,4 +67,3 @@ final class ArcadeGameSession: ObservableObject {
         phase = .finish
     }
 }
-

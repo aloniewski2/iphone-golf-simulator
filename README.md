@@ -14,6 +14,7 @@ The current arcade foundation includes:
 - right- and left-handed interpretation
 - Driver, Iron, Wedge, and Putter selection, including swipe gestures
 - forgiving contact, shot-shape, distance, and ball-flight estimates
+- progressive backswing tension and a synchronized two-stage impact haptic, with visual feedback for tripod play
 - deterministic demo swings for simulator/UI testing
 
 The next validation step is tuning the state-machine thresholds with real swings on a physical iPhone. Those measurements should drive the model before adding a 3D range or deeper progression systems.

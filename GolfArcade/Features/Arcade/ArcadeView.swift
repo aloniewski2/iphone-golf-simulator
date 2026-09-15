@@ -4,6 +4,7 @@ import SwiftUI
 struct ArcadeView: View {
     @StateObject private var tracker = CameraPoseTracker()
     @StateObject private var game = ArcadeGameSession()
+    @AppStorage("arcade.hapticsEnabled") private var hapticsEnabled = true
 
     var body: some View {
         ZStack {
@@ -22,7 +23,10 @@ struct ArcadeView: View {
                 .padding()
             }
         }
-        .onAppear { tracker.start() }
+        .onAppear {
+            game.hapticsEnabled = hapticsEnabled
+            tracker.start()
+        }
         .onDisappear { tracker.stop() }
         .onReceive(tracker.$latestFrame.compactMap { $0 }) { game.process($0) }
     }
@@ -34,6 +38,16 @@ struct ArcadeView: View {
                 Text("Driving Range").font(.title.bold())
             }
             Spacer()
+            Button {
+                hapticsEnabled.toggle()
+                game.hapticsEnabled = hapticsEnabled
+            } label: {
+                Image(systemName: hapticsEnabled ? "waveform" : "waveform.slash")
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(hapticsEnabled ? .mint : .secondary)
+            .accessibilityLabel(hapticsEnabled ? "Disable swing haptics" : "Enable swing haptics")
             Picker("Handedness", selection: $game.handedness) {
                 ForEach(Handedness.allCases) { Text($0.displayName).tag($0) }
             }
@@ -45,6 +59,7 @@ struct ArcadeView: View {
         ZStack {
             CameraPreview(session: tracker.session)
             PoseSkeletonView(frame: tracker.latestFrame)
+            SwingFeedbackOverlay(phase: game.phase, impactPulse: game.impactPulse)
             LinearGradient(colors: [.clear, .black.opacity(0.72)], startPoint: .center, endPoint: .bottom)
             VStack {
                 HStack {
@@ -134,4 +149,3 @@ struct ArcadeView: View {
         }
     }
 }
-
