@@ -39,7 +39,7 @@ struct RangeMockView: View {
                     header
                     ZStack(alignment: .top) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
-                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, pose: swingInput == .camera ? camera.frame : nil)
+                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness)
                         }
                         .accessibilityLabel("Three dimensional Meadow Club driving range")
                         if swingInput == .camera {
