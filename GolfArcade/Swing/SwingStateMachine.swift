@@ -2,8 +2,18 @@ import CoreGraphics
 import Foundation
 
 struct SwingStateMachine: Sendable {
+    /// Torso length (shoulder centre to hip centre) that all thresholds below are tuned for.
+    /// Frames are rescaled to it, so a player filling the frame and one standing far back trigger alike.
+    static let referenceTorsoLength = 0.20
+
     private(set) var phase: SwingPhase = .findingPlayer
     var handedness: Handedness = .right
+    /// Multiply raw frame distances by this to express them in reference-body units.
+    private(set) var bodyScale = 1.0
+    /// Vision drops joints for a few frames at the top of a fast swing. Losing the body for less
+    /// than this many seconds is skipped rather than treated as the player leaving.
+    var trackingGracePeriod = 0.6
+    private var lastTrackedTime: TimeInterval?
 
     private var stableFrameCount = 0
     private var finishFrameCount = 0
@@ -12,22 +22,30 @@ struct SwingStateMachine: Sendable {
     private var swingStartTime: TimeInterval?
     private var downswingStartTime: TimeInterval?
     private var impactTime: TimeInterval?
-    private var maxWristSpeed = 0.0
+    /// Peak hand-centre speed so far, in normalised frame units per second. Readable at impact.
+    private(set) var maxWristSpeed = 0.0
     private var maxShoulderRotation = 0.0
     private var maxHipRotation = 0.0
-    private var impactDirection = 0.0
+    /// Horizontal hand velocity at impact, positive toward the player's target side for a right-hander.
+    private(set) var impactDirection = 0.0
     private var impactHeightDelta = 0.0
     private var confidenceSamples: [Double] = []
 
     mutating func ingest(_ frame: PoseFrame) -> SwingEvent? {
         guard frame.hasPlayableBody, let hands = frame.handCenter else {
+            let lostFor = frame.timestamp - (lastTrackedTime ?? frame.timestamp)
+            if phase != .findingPlayer, lostFor <= trackingGracePeriod { return nil }
             reset(to: .findingPlayer)
-            previousFrame = frame
             return .phaseChanged(.findingPlayer)
         }
+        lastTrackedTime = frame.timestamp
 
+        if phase == .findingPlayer || phase == .address, let torso = frame.torsoLength, torso > 0.02 {
+            bodyScale = Self.referenceTorsoLength / Double(torso)
+        }
         let velocity = handVelocity(current: frame, previous: previousFrame)
         let speed = hypot(velocity.dx, velocity.dy)
+        let rise = Double(hands.y - (addressFrame?.handCenter?.y ?? hands.y)) * bodyScale
         maxWristSpeed = max(maxWristSpeed, speed)
         confidenceSamples.append(frame.trackingConfidence)
 
@@ -41,8 +59,8 @@ struct SwingStateMachine: Sendable {
                 return .phaseChanged(.address)
             }
         case .address:
-            guard let addressHands = addressFrame?.handCenter else { break }
-            if hands.y - addressHands.y > 0.075 && speed > 0.16 {
+            guard addressFrame?.handCenter != nil else { break }
+            if rise > 0.075 && speed > 0.16 {
                 phase = .backswing
                 swingStartTime = frame.timestamp
                 captureRotation(frame)
@@ -59,12 +77,12 @@ struct SwingStateMachine: Sendable {
             }
         case .downswing:
             captureRotation(frame)
-            guard let addressHands = addressFrame?.handCenter else { break }
-            if hands.y <= addressHands.y + 0.045 && speed > 0.22 {
+            guard addressFrame?.handCenter != nil else { break }
+            if rise <= 0.045 && speed > 0.22 {
                 phase = .impact
                 impactTime = frame.timestamp
                 impactDirection = Double(velocity.dx)
-                impactHeightDelta = Double(hands.y - addressHands.y)
+                impactHeightDelta = rise
                 previousFrame = frame
                 return .phaseChanged(.impact)
             }
@@ -114,13 +132,14 @@ struct SwingStateMachine: Sendable {
         maxHipRotation = 0
         impactDirection = 0
         impactHeightDelta = 0
+        lastTrackedTime = nil
         confidenceSamples.removeAll(keepingCapacity: true)
     }
 
     private func handVelocity(current: PoseFrame, previous: PoseFrame?) -> CGVector {
         guard let currentHands = current.handCenter, let previous, let previousHands = previous.handCenter else { return .zero }
         let delta = max(current.timestamp - previous.timestamp, 1.0 / 120.0)
-        return CGVector(dx: (currentHands.x - previousHands.x) / delta, dy: (currentHands.y - previousHands.y) / delta)
+        return CGVector(dx: (currentHands.x - previousHands.x) / delta * bodyScale, dy: (currentHands.y - previousHands.y) / delta * bodyScale)
     }
 
     private mutating func captureRotation(_ frame: PoseFrame) {
