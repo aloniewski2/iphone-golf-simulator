@@ -27,6 +27,7 @@ struct RangeMockView: View {
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .touch
     @AppStorage("range.handedness") private var handedness: Handedness = .right
     @AppStorage("range.playHole") private var playHole = false
+    @AppStorage("range.benchmark3D") private var benchmark3D = false
     @Environment(\.scenePhase) private var appPhase
     private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
@@ -40,7 +41,7 @@ struct RangeMockView: View {
                     header
                     ZStack(alignment: .top) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
-                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness, ball: round.ballPosition, heading: round.baseHeading, focusYards: round.hole == nil ? 60 : round.yardsToPin)
+                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness, ball: round.ballPosition, heading: round.baseHeading, focusYards: round.hole == nil ? 60 : round.yardsToPin, preview: round.preview)
                         }
                         .accessibilityLabel("Three dimensional Meadow Club driving range")
                         if swingInput == .camera {
@@ -49,6 +50,24 @@ struct RangeMockView: View {
                                 .padding(.trailing, 12)
                                 .padding(.top, 84)
                         }
+                        TimelineView(.animation(minimumInterval: 1.0 / 20, paused: round.phase != .flying || appPhase != .active)) { timeline in
+                            CourseMinimap(mode: round.mode, ball: round.ballPosition, preview: round.preview, activeShot: round.activeShot, elapsed: round.elapsed(at: timeline.date))
+                        }
+                        .frame(width: 92, height: 136)
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.white.opacity(0.35), lineWidth: 1))
+                        .overlay(alignment: .bottom) {
+                            if let preview = round.preview, round.canSwing {
+                                Text("\(Int(preview.total)) YD")
+                                    .font(.system(size: 9, weight: .heavy, design: .rounded)).monospacedDigit()
+                                    .padding(.horizontal, 6).padding(.vertical, 3)
+                                    .background(ink.opacity(0.9), in: Capsule())
+                                    .offset(y: 10)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        .padding(.leading, 12)
+                        .padding(.top, 84)
+                        .accessibilityIdentifier("minimap")
                         VStack(spacing: 8) {
                             HStack {
                                 Label(round.hole.map { "HOLE \($0.number) · \($0.name.uppercased())" } ?? "MEADOW CLUB", systemImage: round.hole == nil ? "sun.max.fill" : "flag.fill")
@@ -126,6 +145,7 @@ struct RangeMockView: View {
                 motion.setClub(round.club)
                 motion.onEvent = { handleSwing($0) }
                 camera.handedness = handedness
+                camera.benchmark3D = benchmark3D
                 camera.onEvent = { handleSwing($0) }
                 updateInputs()
             }
@@ -134,6 +154,7 @@ struct RangeMockView: View {
             .onChange(of: round.club) { _, club in motion.setClub(club) }
             .onChange(of: swingInput) { _, _ in stopFeedback(); updateInputs() }
             .onChange(of: handedness) { _, value in camera.handedness = value }
+            .onChange(of: benchmark3D) { _, value in camera.benchmark3D = value }
             .onChange(of: playHole) { _, _ in stopFeedback(); applyMode() }
             .onChange(of: cameraPresented) { _, _ in updateInputs() }
             .onChange(of: appPhase) { _, phase in
@@ -172,6 +193,7 @@ struct RangeMockView: View {
                 Picker("Handedness", selection: $handedness) {
                     ForEach(Handedness.allCases) { Text("\($0.displayName)-handed").tag($0) }
                 }
+                Toggle("3D pose benchmark (dev)", isOn: $benchmark3D)
                 Button("How to play", systemImage: "questionmark.circle") { helpPresented = true }
                 Button("Camera lab", systemImage: "camera") {
                     stopFeedback(); round.pause(); cameraPresented = true
@@ -339,15 +361,6 @@ struct RangeMockView: View {
             if case .running = camera.status {
                 CameraPreview(session: camera.tracker.session)
                 PoseSkeletonView(frame: camera.frame)
-                // The box Vision is scanning: it locks onto you and follows.
-                if let region = camera.focusRegion {
-                    GeometryReader { geometry in
-                        Rectangle()
-                            .strokeBorder(trackingColor.opacity(0.7), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                            .frame(width: region.width * geometry.size.width, height: region.height * geometry.size.height)
-                            .position(x: region.midX * geometry.size.width, y: (1 - region.midY) * geometry.size.height)
-                    }
-                }
             } else {
                 Image(systemName: "person.crop.rectangle").font(.title2).opacity(0.5)
             }
@@ -374,7 +387,9 @@ struct RangeMockView: View {
                     .symbolEffect(.pulse, isActive: camera.phase == .address)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cameraTitle).font(.system(size: 21, weight: .bold, design: .rounded))
-                    if case .denied = camera.status {
+                    if case .running = camera.status, camera.phase == .findingPlayer || camera.phase == .address {
+                        readinessRow
+                    } else if case .denied = camera.status {
                         Button("Open Settings") {
                             if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                         }
@@ -395,6 +410,23 @@ struct RangeMockView: View {
         .accessibilityIdentifier("cameraPanel")
     }
 
+    /// The pre-swing checklist: a dot per check, green when it passes.
+    private var readinessRow: some View {
+        HStack(spacing: 6) {
+            ForEach(CaptureReadiness.Check.allCases, id: \.title) { check in
+                let ok = !camera.readiness.failing.contains(check)
+                Label(check.title, systemImage: ok ? "checkmark.circle.fill" : "circle")
+                    .labelStyle(.iconOnly)
+                    .font(.system(size: 11))
+                    .foregroundStyle(ok ? .mint : .white.opacity(0.35))
+                    .accessibilityLabel("\(check.title) \(ok ? "ready" : "not ready")")
+            }
+            Text(camera.readiness.isReady ? "READY" : (camera.readiness.firstProblem?.fix ?? ""))
+                .font(.system(size: 10, weight: .bold)).opacity(0.8)
+                .lineLimit(1)
+        }
+    }
+
     /// Border colour for the camera view: how well the swing joints are being read.
     private var trackingColor: Color {
         guard case .running = camera.status, camera.frame != nil else { return .white.opacity(0.4) }
@@ -404,8 +436,12 @@ struct RangeMockView: View {
 
     private var cameraDetail: String {
         let fov = camera.tracker.fieldOfView > 0 ? String(format: " · %.0f° lens", camera.tracker.fieldOfView) : ""
-        if case .running = camera.status, camera.frame != nil, camera.trackingQuality < 0.35, camera.phase == .findingPlayer || camera.phase == .address {
-            return "Weak read: more light, plain background, face the camera"
+        if benchmark3D, camera.tracker.pose3DMilliseconds > 0 {
+            return String(format: "3D pose: %.0f ms/frame · 2D feed %.0f fps", camera.tracker.pose3DMilliseconds, camera.tracker.measuredFrameRate)
+        }
+        if case .running = camera.status, camera.frame != nil, camera.phase == .findingPlayer || camera.phase == .address,
+           let problem = camera.readiness.firstProblem {
+            return problem.fix
         }
         switch camera.phase {
         case .findingPlayer: return "Get shoulders and hands in the small view" + fov
@@ -443,11 +479,11 @@ struct RangeMockView: View {
             charge(value)
         case .cancel:
             if round.phase == .charging { stopFeedback() }
-        case .impact(let power, let curve):
+        case .impact(let power, let curve, let latency):
             guard round.canSwing else { return }
             if round.phase == .ready { charge(power) }
             round.charge(power)
-            release(curve: curve)
+            release(curve: curve, at: Date.now.addingTimeInterval(-latency))
         }
     }
 
@@ -576,10 +612,10 @@ struct RangeMockView: View {
         audio.tension(round.power)
     }
 
-    private func release(curve: Double = 0) {
+    private func release(curve: Double = 0, at date: Date = .now) {
         feedback.endBackswing()
         audio.stop()
-        if round.release(curve: curve) {
+        if round.release(at: date, curve: curve) {
             feedback.playImpact()
             audio.impact(club: round.club)
         }

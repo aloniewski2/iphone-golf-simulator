@@ -28,7 +28,7 @@ final class ArmSwingDetectorTests: XCTestCase {
     }
 
     private func impacts(_ events: [SwingInputEvent]) -> [(power: Double, aim: Double)] {
-        events.compactMap { if case .impact(let power, let aim) = $0 { (power, aim) } else { nil } }
+        events.compactMap { if case .impact(let power, let aim, _) = $0 { (power, aim) } else { nil } }
     }
 
     private let fullSwing: [(seconds: Double, arc: Double)] = [(0.5, 0), (0.8, 140), (0.15, 140), (0.2, -30), (0.3, 120), (0.5, 120), (0.4, 0), (0.5, 0)]
@@ -70,6 +70,23 @@ final class ArmSwingDetectorTests: XCTestCase {
         let lazyPower = impacts(drive(&lazy, legs: [(0.5, 0), (0.8, 110), (0.15, 110), (0.6, -20), (0.3, 60), (0.5, 60), (0.4, 0), (0.5, 0)])).first?.power ?? 0
         let quickPower = impacts(drive(&quick, legs: [(0.5, 0), (0.8, 110), (0.15, 110), (0.15, -20), (0.3, 60), (0.5, 60), (0.4, 0), (0.5, 0)])).first?.power ?? 0
         XCTAssertGreaterThan(quickPower, lazyPower + 0.15)
+    }
+
+    func testImpactIsTimedBetweenFramesAndArmingGatesTheBackswing() {
+        var detector = ArmSwingDetector()
+        let events = drive(&detector, legs: fullSwing)
+        guard case .impact(_, _, let latency)? = events.first(where: { if case .impact = $0 { true } else { false } }) else {
+            return XCTFail("no impact")
+        }
+        XCTAssertGreaterThanOrEqual(latency, 0)
+        XCTAssertLessThan(latency, 1.0 / 30, "impact is back-dated by less than one frame")
+        XCTAssertGreaterThan(latency, 0.001, "the crossing falls between two frames, not on one")
+
+        var gated = ArmSwingDetector()
+        gated.armed = false
+        let quiet = drive(&gated, legs: fullSwing)
+        XCTAssertTrue(quiet.isEmpty, "unarmed, a swing settles at address but never loads")
+        XCTAssertEqual(gated.phase, .address)
     }
 
     func testSlowPracticeSwingDoesNotSpendAShot() {

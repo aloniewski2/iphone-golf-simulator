@@ -1,20 +1,25 @@
 @preconcurrency import AVFoundation
 import Combine
 import ImageIO
+import QuartzCore
 @preconcurrency import Vision
 
 /// Front-camera body tracking tuned for one golfer.
 ///
-/// Every frame goes through Vision's body-pose detector, but with three things layered on top so
-/// the read is about the player and nothing else:
+/// Every frame goes through Vision's body-pose detector on the whole image (no cropping, so the
+/// skeleton always lines up with the video), with two things layered on top so the read is about
+/// the player and nothing else:
 /// - **Person lock.** Of everything Vision finds, the largest, most confident body is the player;
 ///   others are ignored.
-/// - **Region of interest.** Once locked, Vision only looks inside a generous box around the
-///   player (extra headroom for the hands at the top of the swing), which is both faster and more
-///   precise than scanning the whole frame. The box follows the player and resets if they are lost.
 /// - **Temporal filtering.** Each joint runs through a One-Euro filter — steady when still,
 ///   responsive when moving — and a wrist that blinks out for a frame or two is held from its last
 ///   good position so a swing is never dropped over a single bad frame.
+/// - **Skeleton constraints.** Bone lengths learned at address reject joints that stretch or
+///   wrists that fly apart (see `BodyModel`).
+///
+/// It also reports what the readiness checklist needs: how many people are in view and how far
+/// the exposure is from target. `benchmark3D` times Apple's 3D pose request on the same frames so
+/// the switch to metric joints can be decided from a real device.
 final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
     enum Status: Equatable {
         case idle, requestingPermission, running, denied
@@ -28,31 +33,40 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     @Published private(set) var fieldOfView: Float = 0
     /// Width ÷ height of the delivered (portrait) frames, so previews can show the whole frame.
     @Published private(set) var frameAspect: CGFloat = 3.0 / 4.0
-    /// The box Vision is currently scanning, normalised to the frame (nil = whole frame).
-    @Published private(set) var focusRegion: CGRect?
+    /// Bodies Vision found in the last frame.
+    @Published private(set) var peopleInView = 0
+    /// Exposure offset from the camera's target, in EV.
+    @Published private(set) var exposureOffsetEV: Double = 0
+    /// Frames delivered per second, measured.
+    @Published private(set) var measuredFrameRate: Double = 0
+    /// Average milliseconds per frame for the 3D pose request while `benchmark3D` is on.
+    @Published private(set) var pose3DMilliseconds: Double = 0
+    /// Bone-length constraints on or off (on by default).
+    var enforceSkeleton = true
+    /// Also run `VNDetectHumanBodyPose3DRequest` on every frame and time it.
+    var benchmark3D = false {
+        didSet { if !benchmark3D { pose3DSamples = [] } }
+    }
 
     private let captureQueue = DispatchQueue(label: "golf.camera.capture", qos: .userInitiated)
     private let visionQueue = DispatchQueue(label: "golf.camera.vision", qos: .userInteractive)
     private let request = VNDetectHumanBodyPoseRequest()
+    private let request3D = VNDetectHumanBodyPose3DRequest()
+    private var camera: AVCaptureDevice?
     private var isConfigured = false
 
     // Vision-queue state.
     private var filters: [BodyJoint: (x: OneEuroFilter, y: OneEuroFilter)] = [:]
     private var held: [BodyJoint: (point: PosePoint, until: TimeInterval)] = [:]
-    private var region: CGRect?
-    private var lastSeen: TimeInterval?
-    /// Whether Vision reports points relative to the region of interest (Apple's documented
-    /// behaviour) or to the whole frame. Decided from evidence on the first cropped frame, so a
-    /// change in Vision's behaviour can never scatter the skeleton.
-    private var pointsAreRelativeToRegion: Bool?
-    private var lastShoulders: CGPoint?
+    private var body = BodyModel()
+    private var previousHands: (point: CGPoint, time: TimeInterval)?
+    private var frameTimes: [TimeInterval] = []
+    private var pose3DSamples: [Double] = []
 
     /// Joints below this confidence are treated as missing.
     static let minimumConfidence: Float = 0.2
     /// How long a briefly lost joint keeps its last good position.
     static let holdDuration: TimeInterval = 0.12
-    /// Without a body for this long the region of interest resets to the whole frame.
-    static let regionTimeout: TimeInterval = 0.5
 
     func start() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -75,10 +89,9 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         visionQueue.async { [weak self] in
             self?.filters.removeAll()
             self?.held.removeAll()
-            self?.region = nil
-            self?.lastSeen = nil
-            self?.request.regionOfInterest = CGRect(x: 0, y: 0, width: 1, height: 1)
-            DispatchQueue.main.async { self?.focusRegion = nil }
+            self?.body.reset()
+            self?.previousHands = nil
+            self?.frameTimes.removeAll()
         }
     }
 
@@ -101,6 +114,7 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             return false
         }
         selectWidestFormat(on: camera)
+        self.camera = camera
         let output = AVCaptureVideoDataOutput()
         output.alwaysDiscardsLateVideoFrames = true
         output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
@@ -120,7 +134,8 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     }
 
     /// The default preset crops the sensor. The widest format plus the minimum zoom factor keeps a
-    /// full swing in frame from much closer; at equal width the faster frame rate wins.
+    /// full swing in frame from much closer; at equal width, 60 fps beats 30 so a downswing is
+    /// ~14 frames instead of ~7. Late frames are dropped rather than queued if Vision falls behind.
     private func selectWidestFormat(on camera: AVCaptureDevice) {
         let candidates = camera.formats.filter { format in
             let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
@@ -160,43 +175,73 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
-        let roi = region ?? CGRect(x: 0, y: 0, width: 1, height: 1)
-        request.regionOfInterest = roi
+        // Frames arrive rotated to portrait and, when supported, already mirrored to match the
+        // selfie preview. Tell Vision exactly what it is looking at so the joints it returns land
+        // on the video: a mirrored buffer is `.up` as-is; an unmirrored one needs `.upMirrored`
+        // so the results match the preview layer, which mirrors the front camera on its own.
+        let orientation: CGImagePropertyOrientation = connection.isVideoMirrored ? .up : .upMirrored
+        recordFrameTime(timestamp)
         do {
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .upMirrored)
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: orientation)
             try handler.perform([request])
-            guard let observation = Self.player(among: request.results ?? [], in: roi) else {
-                releaseLock(at: timestamp)
-                return
+            let observations = request.results ?? []
+            let exposure = Double(camera?.exposureTargetOffset ?? 0)
+            let people = observations.count
+            DispatchQueue.main.async { [weak self] in
+                self?.peopleInView = people
+                self?.exposureOffsetEV = exposure
             }
-            let frame = try poseFrame(from: observation, roi: roi, timestamp: timestamp)
-            lastSeen = timestamp
-            if let left = frame.point(.leftShoulder), let right = frame.point(.rightShoulder) {
-                lastShoulders = CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
-            }
-            updateRegion(for: frame)
+            if benchmark3D { time3DRequest(handler) }
+            guard let observation = Self.player(among: observations) else { return }
+            var frame = try poseFrame(from: observation, timestamp: timestamp)
+            if enforceSkeleton { frame = body.apply(to: frame, isStill: handsAreStill(in: frame)) }
             DispatchQueue.main.async { [weak self] in self?.latestFrame = frame }
         } catch {
-            releaseLock(at: timestamp)
+            // Unrecognized frames are expected and safely ignored.
         }
     }
 
-    /// The largest, most confident body is the player; bystanders and reflections are ignored.
-    private static func player(among observations: [VNHumanBodyPoseObservation], in roi: CGRect) -> VNHumanBodyPoseObservation? {
-        observations.max { size(of: $0, in: roi) < size(of: $1, in: roi) }
+    private func recordFrameTime(_ timestamp: TimeInterval) {
+        frameTimes.append(timestamp)
+        frameTimes.removeAll { timestamp - $0 > 1 }
+        let rate = Double(frameTimes.count)
+        DispatchQueue.main.async { [weak self] in self?.measuredFrameRate = rate }
     }
 
-    private static func size(of observation: VNHumanBodyPoseObservation, in roi: CGRect) -> CGFloat {
+    private func time3DRequest(_ handler: VNImageRequestHandler) {
+        let start = CACurrentMediaTime()
+        try? handler.perform([request3D])
+        pose3DSamples.append((CACurrentMediaTime() - start) * 1000)
+        if pose3DSamples.count > 30 { pose3DSamples.removeFirst() }
+        let average = pose3DSamples.reduce(0, +) / Double(pose3DSamples.count)
+        DispatchQueue.main.async { [weak self] in self?.pose3DMilliseconds = average }
+    }
+
+    /// Hands moving slower than ~5 % of the frame per second count as still for calibration.
+    private func handsAreStill(in frame: PoseFrame) -> Bool {
+        guard let hands = frame.handCenter else { previousHands = nil; return false }
+        defer { previousHands = (hands, frame.timestamp) }
+        guard let previous = previousHands, frame.timestamp > previous.time else { return false }
+        let speed = hypot(hands.x - previous.point.x, hands.y - previous.point.y) / (frame.timestamp - previous.time)
+        return speed < 0.05
+    }
+
+    /// The largest, most confident body is the player; bystanders and reflections are ignored.
+    private static func player(among observations: [VNHumanBodyPoseObservation]) -> VNHumanBodyPoseObservation? {
+        observations.max { size(of: $0) < size(of: $1) }
+    }
+
+    private static func size(of observation: VNHumanBodyPoseObservation) -> CGFloat {
         guard let points = try? observation.recognizedPoints(.all) else { return 0 }
         let good = points.values.filter { $0.confidence >= minimumConfidence }
         guard good.count >= 4 else { return 0 }
         let xs = good.map(\.location.x), ys = good.map(\.location.y)
         let box = CGRect(x: xs.min()!, y: ys.min()!, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!)
         let confidence = CGFloat(good.map(\.confidence).reduce(0, +)) / CGFloat(good.count)
-        return box.width * roi.width * box.height * roi.height * (0.5 + confidence)
+        return box.width * box.height * (0.5 + confidence)
     }
 
-    private func poseFrame(from observation: VNHumanBodyPoseObservation, roi: CGRect, timestamp: TimeInterval) throws -> PoseFrame {
+    private func poseFrame(from observation: VNHumanBodyPoseObservation, timestamp: TimeInterval) throws -> PoseFrame {
         let mapping: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
             (.nose, .nose), (.neck, .neck), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
             (.leftElbow, .leftElbow), (.rightElbow, .rightElbow), (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
@@ -204,12 +249,10 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             (.rightKnee, .rightKnee), (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)
         ]
         var points: [BodyJoint: PosePoint] = [:]
-        let relative = resolveCoordinateSpace(of: observation, roi: roi)
         for (joint, visionName) in mapping {
             let point = try observation.recognizedPoint(visionName)
             if point.confidence >= Self.minimumConfidence {
-                let full = relative ? Self.framePoint(point.location, in: roi) : point.location
-                let smoothed = smooth(joint, full, at: timestamp)
+                let smoothed = smooth(joint, point.location, at: timestamp)
                 let smoothedPoint = PosePoint(location: smoothed, confidence: point.confidence)
                 points[joint] = smoothedPoint
                 held[joint] = (smoothedPoint, timestamp + Self.holdDuration)
@@ -223,63 +266,12 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         return PoseFrame(timestamp: timestamp, points: points)
     }
 
-    /// On the first frame scanned with a crop, the shoulders cannot have jumped: whichever reading
-    /// of Vision's coordinates lands them nearest their last full-frame position is the right one.
-    private func resolveCoordinateSpace(of observation: VNHumanBodyPoseObservation, roi: CGRect) -> Bool {
-        let isCropped = roi != CGRect(x: 0, y: 0, width: 1, height: 1)
-        guard isCropped else { return true }
-        if let decided = pointsAreRelativeToRegion { return decided }
-        guard let previous = lastShoulders,
-              let left = try? observation.recognizedPoint(.leftShoulder), left.confidence >= Self.minimumConfidence,
-              let right = try? observation.recognizedPoint(.rightShoulder), right.confidence >= Self.minimumConfidence else { return true }
-        let raw = CGPoint(x: (left.location.x + right.location.x) / 2, y: (left.location.y + right.location.y) / 2)
-        let mapped = Self.framePoint(raw, in: roi)
-        let relative = hypot(mapped.x - previous.x, mapped.y - previous.y) <= hypot(raw.x - previous.x, raw.y - previous.y)
-        pointsAreRelativeToRegion = relative
-        return relative
-    }
-
     private func smooth(_ joint: BodyJoint, _ point: CGPoint, at time: TimeInterval) -> CGPoint {
         var pair = filters[joint] ?? (OneEuroFilter(), OneEuroFilter())
         let x = pair.x.filter(Double(point.x), at: time)
         let y = pair.y.filter(Double(point.y), at: time)
         filters[joint] = pair
         return CGPoint(x: x, y: y)
-    }
-
-    private func updateRegion(for frame: PoseFrame) {
-        guard let box = Self.focusBox(around: frame) else { return }
-        region = box
-        DispatchQueue.main.async { [weak self] in self?.focusRegion = box }
-    }
-
-    /// Vision reports points relative to the region of interest; map back to the whole frame.
-    static func framePoint(_ point: CGPoint, in roi: CGRect) -> CGPoint {
-        CGPoint(x: roi.minX + point.x * roi.width, y: roi.minY + point.y * roi.height)
-    }
-
-    /// A generous box around the player: wide margins, and extra headroom because the hands rise
-    /// well above the head at the top of the backswing. Never tighter than 40 % × 50 % of the frame.
-    static func focusBox(around frame: PoseFrame) -> CGRect? {
-        let good = frame.points.values.filter { $0.confidence >= 0.3 }.map(\.location)
-        guard good.count >= 4 else { return nil }
-        let frameRect = CGRect(x: 0, y: 0, width: 1, height: 1)
-        let minX = good.map(\.x).min()!, maxX = good.map(\.x).max()!
-        let minY = good.map(\.y).min()!, maxY = good.map(\.y).max()!
-        let width = max(maxX - minX, 0.2), height = max(maxY - minY, 0.3)
-        var box = CGRect(x: minX - width * 0.45, y: minY - height * 0.2, width: width * 1.9, height: height * 1.85)
-        if box.width < 0.4 { box = box.insetBy(dx: -(0.4 - box.width) / 2, dy: 0) }
-        if box.height < 0.5 { box = box.insetBy(dx: 0, dy: -(0.5 - box.height) / 2) }
-        return box.intersection(frameRect)
-    }
-
-    private func releaseLock(at timestamp: TimeInterval) {
-        if let lastSeen, timestamp - lastSeen > Self.regionTimeout, region != nil {
-            region = nil
-            filters.removeAll()
-            held.removeAll()
-            DispatchQueue.main.async { [weak self] in self?.focusRegion = nil }
-        }
     }
 
     private func setStatus(_ newStatus: Status) {

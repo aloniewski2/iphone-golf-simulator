@@ -8,7 +8,9 @@ final class MeadowScene {
     private let ball = SCNNode()
     private let shadow = SCNNode()
     private let trail = SCNNode()
-    private let aimLine = SCNNode()
+    private let preview = SCNNode()
+    private let landingRing = SCNNode()
+    private var lastPreview: RangeShot?
     private let impact = SCNNode()
     private let golfer = Golfer()
     private let golferMount = SCNNode()
@@ -59,18 +61,22 @@ final class MeadowScene {
         golferMount.addChildNode(golfer.node)
         scene.rootNode.addChildNode(golferMount)
         scene.rootNode.addChildNode(trail)
-        scene.rootNode.addChildNode(aimLine)
+        for _ in 0..<36 {
+            let dot = SCNNode(geometry: SCNSphere(radius: 0.22))
+            dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.8)
+            dot.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.3, alpha: 1)
+            preview.addChildNode(dot)
+        }
+        scene.rootNode.addChildNode(preview)
+        landingRing.geometry = SCNTorus(ringRadius: 2.4, pipeRadius: 0.2)
+        landingRing.geometry?.firstMaterial?.diffuse.contents = UIColor.systemYellow
+        landingRing.geometry?.firstMaterial?.emission.contents = UIColor.systemYellow.withAlphaComponent(0.5)
+        scene.rootNode.addChildNode(landingRing)
         impact.geometry = SCNSphere(radius: 1)
         impact.geometry?.firstMaterial?.diffuse.contents = UIColor.systemYellow
         impact.geometry?.firstMaterial?.emission.contents = UIColor.systemYellow
         impact.position = SCNVector3(0, 0.6, 0)
         scene.rootNode.addChildNode(impact)
-        for i in 1...10 {
-            let dot = SCNNode(geometry: SCNSphere(radius: 0.18))
-            dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.75)
-            dot.position = SCNVector3(0, 0.35, -Float(i * 3))
-            aimLine.addChildNode(dot)
-        }
         update(shot: nil, elapsed: 0, power: 0, aim: 0)
     }
 
@@ -79,8 +85,10 @@ final class MeadowScene {
     /// downswing and follow-through, and the live angle is ignored until the next ball.
     /// `ball`/`heading` say where the ball rests and which way the next shot faces when no shot is in flight.
     /// `focusYards` is how far the next shot is expected to go; short putts pull the camera in close.
+    /// `preview` is the predicted shot for the current club, aim, and load, drawn as a dotted flight
+    /// and a landing ring whenever no ball is in the air.
     func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, swingAngle: Double = 0, handedness: Handedness = .right,
-                ball restingBall: CoursePoint = CoursePoint(x: 0, z: 0), heading: Double = 0, focusYards: Double = 60) {
+                ball restingBall: CoursePoint = CoursePoint(x: 0, z: 0), heading: Double = 0, focusYards: Double = 60, preview: RangeShot? = nil) {
         SCNTransaction.begin()
         SCNTransaction.disableActions = true
         golfer.handedness = handedness
@@ -133,15 +141,27 @@ final class MeadowScene {
         impact.simdPosition = base + simd_float3(0, 0.6, 0)
         impact.opacity = CGFloat((1 - burst) * 0.7)
         impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
-        aimLine.isHidden = shot != nil
-        aimLine.simdPosition = base
-        aimLine.eulerAngles.y = Float(-(facing + aim) * .pi / 180)
+        updatePreview(shot == nil ? preview : nil)
         golferMount.simdPosition = base
         golferMount.eulerAngles.y = Float(-facing * .pi / 180)
         if let shot {
             for (i, dot) in trail.childNodes.enumerated() { dot.isHidden = Double(i) / 59 * shot.duration > elapsed }
         }
         SCNTransaction.commit()
+    }
+
+    private func updatePreview(_ previewShot: RangeShot?) {
+        preview.isHidden = previewShot == nil
+        landingRing.isHidden = previewShot == nil
+        guard let previewShot, previewShot != lastPreview else { return }
+        lastPreview = previewShot
+        let dots = preview.childNodes
+        for (index, dot) in dots.enumerated() {
+            let point = previewShot.position(at: previewShot.flight.carryTime * Double(index) / Double(dots.count - 1))
+            dot.simdPosition = world(point, origin: previewShot.origin, heading: previewShot.heading) + simd_float3(0, 0.45, 0)
+        }
+        let rest = previewShot.restingPoint
+        landingRing.simdPosition = simd_float3(Float(rest.x), 0.12, Float(rest.z))
     }
 
     /// Unit vector for a compass heading (0 = downrange, −z).
@@ -464,6 +484,7 @@ struct MeadowSceneView: UIViewRepresentable {
     var ball = CoursePoint(x: 0, z: 0)
     var heading = 0.0
     var focusYards = 60.0
+    var preview: RangeShot? = nil
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -480,6 +501,6 @@ struct MeadowSceneView: UIViewRepresentable {
             view.scene = meadow.scene
             view.pointOfView = meadow.camera
         }
-        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness, ball: ball, heading: heading, focusYards: focusYards)
+        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness, ball: ball, heading: heading, focusYards: focusYards, preview: preview)
     }
 }

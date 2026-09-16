@@ -23,6 +23,10 @@ Open the settings menu (sliders icon) and choose **Hole 1 · Par 4**. Meadow Ben
 
 `Hole` in `GolfArcade/Mock/Hole.swift` describes the layout (centreline, widths, bunkers, cup) and lie rules; `RangeShot` gains an origin, heading, and lie for course shots. Tests play the hole tee-to-cup deterministically.
 
+## Lining up a shot
+
+Before you swing, the range shows where the ball will go: a dotted predicted flight and a yellow landing ring in the 3D view, and an overhead minimap (top left) with the hole or the targets, your ball, the predicted path, the landing spot, and the yardage. At address it shows the full-power shot for the club; while you load, the ring walks in to the current power; the aim slider moves it live. Everything comes from the same flight model that plays the shot, so what you see is what you get.
+
 ## Ball flight
 
 Shots are simulated, not scripted: club-head speed from your swing → ball speed via the club's smash factor, launch angle and backspin per club, then gravity, aerodynamic drag, and Magnus lift (spin decays in the air), followed by bounce and roll on a firm fairway. A draw or fade tilts the spin axis so the ball curves. At full power the model gives roughly driver 254 + 23 yd (apex 41 yd), iron 148 + 15, wedge 82 + 10, and a 25-yard putt that rolls from the first inch. Flights play in real time (about 7–10 s for a full shot). See `GolfArcade/Mock/BallFlight.swift`; every coefficient is named.
@@ -35,9 +39,18 @@ Hold on tight and clear the space around you. The recognizer is `MotionSwingDete
 
 ## Camera
 
-Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out at up to 60 fps, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
+Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out at 30 fps, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
 
-The tracker is built around one player. Of everything Vision finds, the largest and most confident body is you; once locked, Vision scans only a generous box around you (the dashed rectangle in the small view, with headroom for the hands at the top) so it spends its effort on your movement rather than the room. Every joint is smoothed by a One-Euro filter — steady at address, no lag in the downswing — and a wrist that blinks out for a frame or two is held from its last good position. The border of the small view shows tracking quality (mint / yellow / orange); if it is orange the status line says what to fix.
+The tracker is built around one player and borrows what the accurate swing-analysis apps insist on:
+
+- **Readiness checklist.** Five dots under the status line — framing (your body fills at least half the frame), phone level (CoreMotion), light (exposure within 1.2 EV of target), one player in view, and steady tracking of shoulders, elbows, and wrists for 0.8 s. You can settle at address any time, but the meter only starts filling when the list is green, and the line says the first thing to fix.
+- **Person lock.** Of everything Vision finds in the full frame, the largest and most confident body is you.
+- **Smoothing and hold.** Every joint runs through a One-Euro filter — steady at address, no lag in the downswing — and a wrist that blinks out for a frame or two is held from its last good position.
+- **Skeleton constraints.** While you stand at address the app learns your shoulder width and arm lengths (median of 15 frames). From then on a bone that projects longer than it can be, or wrists farther apart than a grip allows, is a bad joint and is dropped before it can reach the swing.
+- **60 fps and sub-frame impact.** The widest lens format runs at 60 fps where available, and impact is interpolated between the two frames it falls between, so the ball launches back-dated to within a few milliseconds of the real strike.
+- **3D pose benchmark (dev).** Settings → *3D pose benchmark* also runs Apple's 3D body-pose request on every frame and prints its cost per frame in the status line, to decide from a real device whether metric joints can replace the 2D read.
+
+The border of the small view shows tracking quality (mint / yellow / orange).
 
 The model is Wii Sports golf read by camera: the power meter is the **arm arc**, the angle of your hands around your shoulders from where they hung at address. Hands level with the shoulders is about 90°; ~140° is a full backswing and 100 % on the meter. Downswing speed adds the final share of power (`speedWeight`), so a lazy full swing and a quick short one both make sense. Swing well past full (165°+) and the shot hooks, harder the further over you go. A slow return is a practice swing and does not spend a shot. Brief tracking loss at the top is skipped. `ArmSwingDetector` in `GolfArcade/Mock/ArmSwing.swift` holds every threshold and is unit-tested with synthetic swings.
 

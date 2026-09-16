@@ -57,12 +57,16 @@ struct ArmSwingDetector {
     var trackingGracePeriod = 0.6
     /// Decides which way an over-swing hooks.
     var handedness: Handedness = .right
+    /// While false the player can settle at address but a backswing does not start; the readiness
+    /// checklist arms it once framing, light, and tracking are good.
+    var armed = true
 
     private(set) var phase: Phase = .findingPlayer
     /// Where the hands are on the arc right now, in degrees: positive back, negative through.
     private(set) var swingAngle = 0.0
     private var reference = CGVector(dx: 0, dy: -1)
     private var previous: (time: Double, arc: Double)?
+    private var previousBeforeThisFrame: (time: Double, arc: Double)?
     private var lastTracked: Double?
     private var stillSince: Double?
     private var peakArc = 0.0
@@ -83,6 +87,7 @@ struct ArmSwingDetector {
         let arc = Self.degrees(between: reference, and: vector)
         let speed = previous.map { abs(arc - $0.arc) / max(time - $0.time, 1.0 / 120) } ?? 0
         let closing = previous.map { arc < $0.arc } ?? false
+        previousBeforeThisFrame = previous
         previous = (time, arc)
         if speed < stillSpeed { stillSince = stillSince ?? time } else { stillSince = nil }
         let isStill = stillSince.map { time - $0 >= stillDuration } ?? false
@@ -97,7 +102,7 @@ struct ArmSwingDetector {
 
         case .address:
             if isStill, arc < backswingStart { settle(sample, vector: vector) }
-            guard arc > backswingStart else { return nil }
+            guard armed, arc > backswingStart else { return nil }
             phase = .backswing
             peakArc = arc
             peakDownswingSpeed = 0
@@ -122,7 +127,16 @@ struct ArmSwingDetector {
             phase = .finish
             stillSince = nil
             guard peakDownswingSpeed >= minimumSwingSpeed else { return .cancel }
-            return .impact(power: power(arc: peakArc, downswingSpeed: peakDownswingSpeed), curve: curve(peakArc: peakArc))
+            // Impact happened between this frame and the last: interpolate the crossing so the
+            // launch is timed to a few milliseconds instead of a whole frame.
+            let latency: Double
+            if let last = previousBeforeThisFrame, last.arc > impactAngle, last.arc > arc {
+                let fraction = (last.arc - impactAngle) / (last.arc - arc)
+                latency = max(0, (time - last.time) * (1 - fraction))
+            } else {
+                latency = 0
+            }
+            return .impact(power: power(arc: peakArc, downswingSpeed: peakDownswingSpeed), curve: curve(peakArc: peakArc), latency: latency)
         }
     }
 
