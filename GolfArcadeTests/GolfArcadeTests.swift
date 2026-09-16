@@ -191,6 +191,51 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertTrue(mirrored.hasCalibrationBody)
     }
 
+    func testClockwiseSidewaysPoseIsCorrectedAndCanCalibrate() {
+        let original = calibrationFrame(timestamp: 0)
+        let sideways = transform(original) { CGPoint(x: $0.y, y: 1 - $0.x) }
+        let correction = sideways.correctingSidewaysOrientation()
+
+        XCTAssertTrue(correction.quarterTurned)
+        assertLandmarks(correction.frame, match: original)
+
+        var accumulator = CalibrationAccumulator()
+        var result: PlayerCalibration?
+        for index in 0..<CalibrationAccumulator.requiredSampleCount {
+            let frame = calibrationFrame(timestamp: Double(index) / 30)
+            let rotated = transform(frame) { CGPoint(x: $0.y, y: 1 - $0.x) }
+            result = accumulator.ingest(rotated.correctingSidewaysOrientation().frame)
+        }
+        XCTAssertNotNil(result)
+        XCTAssertEqual(accumulator.progress, 1, accuracy: 0.001)
+        XCTAssertEqual(accumulator.assessment, .ready)
+    }
+
+    func testCounterClockwiseSidewaysPoseIsCorrectedAndCanCalibrate() {
+        let original = calibrationFrame(timestamp: 0)
+        let sideways = transform(original) { CGPoint(x: 1 - $0.y, y: $0.x) }
+        let correction = sideways.correctingSidewaysOrientation()
+
+        XCTAssertTrue(correction.quarterTurned)
+        assertLandmarks(correction.frame, match: original)
+
+        var accumulator = CalibrationAccumulator()
+        XCTAssertNil(accumulator.ingest(correction.frame))
+        XCTAssertEqual(accumulator.sampleCount, 1)
+        XCTAssertEqual(accumulator.assessment, .ready)
+    }
+
+    func testNormalGolfLeanIsNotRotated() {
+        let leaning = transform(calibrationFrame(timestamp: 0)) {
+            CGPoint(x: $0.x + (0.5 - $0.y) * 0.18, y: $0.y)
+        }
+
+        let correction = leaning.correctingSidewaysOrientation()
+
+        XCTAssertFalse(correction.quarterTurned)
+        XCTAssertEqual(correction.frame, leaning)
+    }
+
     func testProgressRestartsOnlyAfterPlayerIsGoneForTwoSeconds() {
         var accumulator = CalibrationAccumulator()
         for index in 0..<8 {
@@ -270,9 +315,42 @@ final class PlayerCalibrationTests: XCTestCase {
         ]
         return PoseFrame(timestamp: timestamp, points: points.filter { !dropping.contains($0.key) })
     }
+
+    private func transform(_ frame: PoseFrame, _ transform: (CGPoint) -> CGPoint) -> PoseFrame {
+        PoseFrame(
+            timestamp: frame.timestamp,
+            points: frame.points.mapValues {
+                PosePoint(location: transform($0.location), confidence: $0.confidence)
+            }
+        )
+    }
+
+    private func assertLandmarks(
+        _ actual: PoseFrame,
+        match expected: PoseFrame,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        for joint in BodyJoint.allCases {
+            guard let actualPoint = actual.points[joint], let expectedPoint = expected.points[joint] else {
+                XCTFail("Missing landmark \(joint)", file: file, line: line)
+                continue
+            }
+            XCTAssertEqual(actualPoint.location.x, expectedPoint.location.x, accuracy: 0.0001, file: file, line: line)
+            XCTAssertEqual(actualPoint.location.y, expectedPoint.location.y, accuracy: 0.0001, file: file, line: line)
+            XCTAssertEqual(actualPoint.confidence, expectedPoint.confidence, file: file, line: line)
+        }
+    }
 }
 
 final class PoseSkeletonMapperTests: XCTestCase {
+    func testCameraRotationFallsBackToSupportedRightAngles() {
+        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 89.7), 90)
+        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 271), 270)
+        XCTAssertEqual(CameraRotation.nearestRightAngle(to: -90), 270)
+        XCTAssertEqual(CameraRotation.nearestRightAngle(to: 359.9), 0)
+    }
+
     func testAspectFitMapsPortraitFrameIntoVisibleCameraRect() {
         let size = CGSize(width: 390, height: 844)
         let topLeft = PoseSkeletonMapper.screenPoint(

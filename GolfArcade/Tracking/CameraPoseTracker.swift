@@ -113,8 +113,11 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
 
     private func applyRotation(_ angle: CGFloat, to output: AVCaptureVideoDataOutput) {
         guard let connection = output.connection(with: .video) else { return }
-        if connection.isVideoRotationAngleSupported(angle) {
-            connection.videoRotationAngle = angle
+        let supportedAngle = connection.isVideoRotationAngleSupported(angle)
+            ? angle
+            : CameraRotation.nearestRightAngle(to: angle)
+        if connection.isVideoRotationAngleSupported(supportedAngle) {
+            connection.videoRotationAngle = supportedAngle
         }
         if connection.isVideoMirroringSupported {
             connection.automaticallyAdjustsVideoMirroring = false
@@ -166,17 +169,23 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up)
             try handler.perform([request])
             let observations = request.results ?? []
-            let frames = observations.compactMap { try? poseFrame(from: $0, timestamp: timestamp) }
+            let correctedPoses = observations.compactMap {
+                try? poseFrame(from: $0, timestamp: timestamp).correctingSidewaysOrientation()
+            }
+            let frames = correctedPoses.map(\.frame)
             let selection = selectPlayer(from: frames)
             let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
             let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
+            let selectedWasQuarterTurned = selection.flatMap { selection in
+                correctedPoses.first { $0.frame == selection.frame }?.quarterTurned
+            } ?? correctedPoses.first?.quarterTurned ?? false
             DispatchQueue.main.async { [weak self] in
                 self?.latestCaptureTimestamp = timestamp
                 self?.detectedBodyCount = frames.count
                 self?.latestFrame = selection?.frame
                 self?.playerMatchConfidence = selection?.confidence
                 if height > 0, let self {
-                    let aspect = width / height
+                    let aspect = selectedWasQuarterTurned ? height / width : width / height
                     if abs(self.frameAspect - aspect) > 0.001 { self.frameAspect = aspect }
                 }
             }
@@ -237,5 +246,14 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
 
     private func setStatus(_ newStatus: Status) {
         DispatchQueue.main.async { [weak self] in self?.status = newStatus }
+    }
+}
+
+enum CameraRotation {
+    static func nearestRightAngle(to angle: CGFloat) -> CGFloat {
+        var normalized = angle.truncatingRemainder(dividingBy: 360)
+        if normalized < 0 { normalized += 360 }
+        let snapped = (normalized / 90).rounded() * 90
+        return snapped == 360 ? 0 : snapped
     }
 }

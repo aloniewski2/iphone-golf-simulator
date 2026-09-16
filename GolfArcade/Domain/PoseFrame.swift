@@ -122,3 +122,55 @@ struct PoseFrame: Equatable, Sendable {
         return atan2(Double(b.y - a.y), Double(b.x - a.x)) * 180 / .pi
     }
 }
+
+/// Vision returns landmarks in the orientation supplied to its request handler. If a device's
+/// delivered buffer and the requested capture orientation disagree, an upright player can arrive
+/// 90 degrees off in Vision coordinates. Use the shoulder-to-hip axis as a device-independent
+/// sanity check and correct only an unambiguously sideways torso. This keeps normal golf lean
+/// untouched while preventing a sideways pose from failing every calibration framing check.
+struct UprightPoseResult: Equatable, Sendable {
+    let frame: PoseFrame
+    let quarterTurned: Bool
+}
+
+extension PoseFrame {
+    func correctingSidewaysOrientation() -> UprightPoseResult {
+        guard let leftShoulder = point(.leftShoulder, minimumConfidence: 0.35),
+              let rightShoulder = point(.rightShoulder, minimumConfidence: 0.35),
+              let leftHip = point(.leftHip, minimumConfidence: 0.35),
+              let rightHip = point(.rightHip, minimumConfidence: 0.35) else {
+            return UprightPoseResult(frame: self, quarterTurned: false)
+        }
+
+        let shoulders = CGPoint(
+            x: (leftShoulder.x + rightShoulder.x) / 2,
+            y: (leftShoulder.y + rightShoulder.y) / 2
+        )
+        let hips = CGPoint(
+            x: (leftHip.x + rightHip.x) / 2,
+            y: (leftHip.y + rightHip.y) / 2
+        )
+        let horizontal = shoulders.x - hips.x
+        let vertical = shoulders.y - hips.y
+        guard abs(horizontal) > max(abs(vertical) * 1.25, 0.06) else {
+            return UprightPoseResult(frame: self, quarterTurned: false)
+        }
+
+        let corrected = points.mapValues { posePoint in
+            let point = posePoint.location
+            let location: CGPoint
+            if horizontal > 0 {
+                // The head is to the right: rotate coordinates counter-clockwise.
+                location = CGPoint(x: 1 - point.y, y: point.x)
+            } else {
+                // The head is to the left: rotate coordinates clockwise.
+                location = CGPoint(x: point.y, y: 1 - point.x)
+            }
+            return PosePoint(location: location, confidence: posePoint.confidence)
+        }
+        return UprightPoseResult(
+            frame: PoseFrame(timestamp: timestamp, points: corrected),
+            quarterTurned: true
+        )
+    }
+}
