@@ -1,4 +1,5 @@
 import Foundation
+import simd
 
 /// Range targets, in yards.
 struct RangeTarget: Identifiable, Equatable, Sendable {
@@ -92,15 +93,18 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             // pull crosses the whole green.
             launch.ballSpeedMPH = club.maxClubSpeedMPH * self.power * 0.55
         }
+        // The hole's hills, seen from the shot: metres, right and downrange of the ball.
+        let ground = Self.ground(of: hole, origin: origin, heading: heading)
         // Roll out on the surface the ball lands on: simulate, see where it came down, resimulate.
-        let first = BallFlight.simulate(launch, rollingDeceleration: lie.rollingDeceleration)
+        let first = BallFlight.simulate(launch, rollingDeceleration: lie.rollingDeceleration, ground: ground)
         let landingLie = hole.lie(at: Self.coursePoint(first.position(at: first.carryTime), origin: origin, heading: heading))
-        let flight = landingLie.rollingDeceleration == lie.rollingDeceleration ? first : BallFlight.simulate(launch, rollingDeceleration: landingLie.rollingDeceleration)
+        let flight = landingLie.rollingDeceleration == lie.rollingDeceleration ? first : BallFlight.simulate(launch, rollingDeceleration: landingLie.rollingDeceleration, ground: ground)
         self.flight = flight
         // A rolling ball that passes over the cup drops in; one that stops beside it is given.
         let drop = flight.samples.first { sample in
-            sample.time >= flight.carryTime && sample.point.heightYards <= 0.01
-                && Self.coursePoint(sample.point, origin: origin, heading: heading).distance(to: hole.cup) <= hole.cupRadius
+            guard sample.time >= flight.carryTime else { return false }
+            let point = Self.coursePoint(sample.point, origin: origin, heading: heading)
+            return sample.point.heightYards <= hole.elevation(at: point) + 0.01 && point.distance(to: hole.cup) <= hole.cupRadius
         }
         holedAt = drop?.time
         let rest = Self.coursePoint(flight.landing, origin: origin, heading: heading)
@@ -113,6 +117,21 @@ struct RangeShot: Identifiable, Equatable, Sendable {
 
     /// Ball position on the course at `time`.
     func coursePoint(at time: Double) -> CoursePoint { Self.coursePoint(position(at: time), origin: origin, heading: heading) }
+
+    /// The hole's terrain in a shot's own frame, for the flight model: height and slope at a
+    /// (right, downrange) offset from the ball, in metres.
+    static func ground(of hole: Hole, origin: CoursePoint, heading: Double) -> BallFlight.Ground {
+        let metersPerYard = 0.9144
+        let radians = heading * .pi / 180
+        let sine = sin(radians), cosine = cos(radians)
+        return { local in
+            let point = coursePoint(FlightPoint(lateralYards: local.x / metersPerYard, heightYards: 0, distanceYards: local.y / metersPerYard), origin: origin, heading: heading)
+            let slope = hole.terrain.slope(at: point)
+            // Rotate the rise-per-yard from course axes onto the shot's right and downrange axes.
+            let gradient = simd_double2(slope.x * cosine + slope.z * sine, slope.x * sine - slope.z * cosine)
+            return (hole.elevation(at: point) * metersPerYard, gradient)
+        }
+    }
 
     /// Rotates a shot-local point (lateral, distance) onto the course.
     static func coursePoint(_ point: FlightPoint, origin: CoursePoint, heading: Double) -> CoursePoint {

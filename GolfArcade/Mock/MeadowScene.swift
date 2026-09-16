@@ -15,16 +15,29 @@ final class MeadowScene {
     private let golfer = Golfer()
     private let golferMount = SCNNode()
     private let cupMarker = SCNNode()
+    private let greenGrid = SCNNode()
+    private let beads = SCNNode()
+    private var beadAges: [Double] = []
+    private var lastBeadTime: Double?
+    private let flag = SCNNode()
+    private let hole: Hole?
     private var lastShot: RangeShot?
     private var lastElapsed = 0.0
 
+    /// How the green is framed while putting: low behind the ball, or straight down to read the line.
+    enum PuttView { case behind, overhead }
+
     init(mode: GameMode = .range) {
+        hole = mode.hole
         scene.background.contents = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogColor = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogStartDistance = 290
         scene.fogEndDistance = 600
         camera.camera = SCNCamera()
-        camera.camera?.fieldOfView = 58
+        // A phone is held upright: a tall field of view is what keeps the fairway and the far
+        // side of the green in the frame, where the games' landscape cameras use a wide one.
+        camera.camera?.fieldOfView = 68
+        camera.camera?.zNear = 0.5
         camera.camera?.zFar = 900
         scene.rootNode.addChildNode(camera)
         let sun = SCNNode()
@@ -40,18 +53,19 @@ final class MeadowScene {
         scene.rootNode.addChildNode(ambient)
 
         let ground = SCNBox(width: 900, height: 1, length: 1000, chamferRadius: 0)
-        add(ground, color: UIColor(red: 0.18, green: 0.40, blue: 0.29, alpha: 1), at: SCNVector3(0, -1, -220))
+        add(ground, color: UIColor(red: 0.18, green: 0.40, blue: 0.29, alpha: 1), at: SCNVector3(0, -0.8, -220))
         switch mode {
         case .range: buildRange()
         case .hole(let hole): buildCourse(hole)
         }
+        // Distant hills on the horizon, far enough past the green to sit in the haze from there.
         for i in 0..<6 {
             let hill = SCNSphere(radius: 55)
             hill.segmentCount = 12
-            let node = add(hill, color: UIColor(red: 0.24, green: 0.43, blue: 0.38, alpha: 1), at: SCNVector3(Float(i * 80 - 200), -10, mode.hole == nil ? -340 : -470))
+            let node = add(hill, color: UIColor(red: 0.27, green: 0.47, blue: 0.41, alpha: 1), at: SCNVector3(Float(i * 80 - 200), -14, mode.hole == nil ? -340 : -580))
             node.scale = SCNVector3(1.4, 0.9, 1)
         }
-        ball.geometry = SCNSphere(radius: 0.55)
+        ball.geometry = SCNSphere(radius: 0.42)
         ball.geometry?.firstMaterial?.diffuse.contents = UIColor.white
         ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.15, alpha: 1)
         scene.rootNode.addChildNode(ball)
@@ -87,8 +101,12 @@ final class MeadowScene {
     /// `focusYards` is how far the next shot is expected to go; short putts pull the camera in close.
     /// `preview` is the predicted shot for the current club, aim, and load, drawn as a dotted flight
     /// and a landing ring whenever no ball is in the air.
+    /// `putting` switches to the putting presentation: the flag comes out, the slope grid and its
+    /// beads appear, and the camera holds still low behind the ball (or straight above the line,
+    /// `puttView: .overhead`) while the ball rolls.
     func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, swingAngle: Double = 0, handedness: Handedness = .right,
-                ball restingBall: CoursePoint = CoursePoint(x: 0, z: 0), heading: Double = 0, focusYards: Double = 60, preview: RangeShot? = nil) {
+                ball restingBall: CoursePoint = CoursePoint(x: 0, z: 0), heading: Double = 0, focusYards: Double = 60, preview: RangeShot? = nil,
+                putting: Bool = false, puttView: PuttView = .behind) {
         SCNTransaction.begin()
         SCNTransaction.disableActions = true
         golfer.handedness = handedness
@@ -102,40 +120,92 @@ final class MeadowScene {
         if lastShot != shot {
             trail.childNodes.forEach { $0.removeFromParentNode() }
             if let shot {
+                let isPutt = shot.club == .putter && shot.lie == .green
                 for i in 0..<60 {
                     let point = shot.position(at: Double(i) / 59 * shot.duration)
                     let dot = SCNNode(geometry: SCNSphere(radius: 0.20))
                     dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
-                    dot.simdPosition = world(point, origin: shot.origin, heading: shot.heading) + simd_float3(0, 0.5, 0)
+                    dot.simdPosition = world(point, origin: shot.origin, heading: shot.heading) + simd_float3(0, isPutt ? 0.2 : 0.5, 0)
                     trail.addChildNode(dot)
                 }
             }
             lastShot = shot
         }
         // Everything below is relative to the shot's origin and heading: the tee facing downrange
-        // on the range, the ball facing the pin on a hole.
+        // on the range, the ball facing the pin on a hole. `base` sits on the grass at the origin.
         let origin = shot?.origin ?? restingBall
         let facing = shot?.heading ?? heading
-        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0)
+        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: 0, heightYards: Double(elevation(Float(origin.x), Float(origin.z))), distanceYards: 0)
         let ballWorld = world(point, origin: origin, heading: facing)
         let forward = Self.forward(facing)
         let right = simd_float3(-forward.z, 0, forward.x)
-        let base = simd_float3(Float(origin.x), 0, Float(origin.z))
+        let base = grounded(simd_float3(Float(origin.x), 0, Float(origin.z)))
         let along = Float(point.distanceYards)
         let lateral = Float(point.lateralYards)
-        let height = Float(point.heightYards)
-        ball.simdPosition = ballWorld + simd_float3(0, 0.6, 0)
+        let aboveGround = max(0, ballWorld.y - elevation(ballWorld.x, ballWorld.z))
         ball.isHidden = shot?.isHoled == true && elapsed >= (shot?.duration ?? 0)
-        shadow.simdPosition = simd_float3(ballWorld.x, 0.15, ballWorld.z)
-        // Full shots get the high, wide chase view; a putt is framed tight around the ball and cup.
-        let closeness = Float(min(1, max(0, (shot?.total ?? focusYards) / 60)))
-        let back = 12 + 26 * closeness
-        let up = 7 + 15 * closeness
-        let side = 4 + 8 * closeness
-        camera.simdPosition = base + forward * (along * 0.86 - back) + right * (lateral * 0.65 + side) + simd_float3(0, up + height * 0.55, 0)
-        let ahead = max(min(40, Float(shot?.total ?? focusYards) + 10), along + 12)
-        let target = base + forward * ahead + right * lateral + simd_float3(0, max(0, height * 0.75), 0)
-        camera.simdLook(at: target)
+        shadow.simdPosition = grounded(ballWorld, up: 0.15)
+        greenGrid.isHidden = !putting
+        beads.isHidden = !putting
+        flag.isHidden = putting
+        if putting { animateBeads() } else { lastBeadTime = nil }
+        if putting, let hole {
+            // Putting, the way the golf games frame it: the camera stays put so you watch the ball
+            // roll. Behind: low over the ball so the grid's perspective shows the slope, the cup
+            // in the upper part of the frame. Overhead: straight down the line, cup at the top.
+            let cup = grounded(simd_float3(Float(hole.cup.x), 0, Float(hole.cup.z)))
+            let flat = simd_float3(cup.x - base.x, 0, cup.z - base.z)
+            let distance = max(1, simd_length(flat))
+            let line = flat / distance
+            let lineRight = simd_float3(-line.z, 0, line.x)
+            switch puttView {
+            case .behind:
+                var position = base - line * (5 + distance * 0.45) + lineRight * 1.4
+                position.y = max(base.y, elevation(position.x, position.z)) + 2.4 + distance * 0.12
+                var target = base + line * (distance * 0.55)
+                target.y = elevation(target.x, target.z) + 0.2
+                clearView(from: &position, to: cup + simd_float3(0, 0.3, 0))
+                camera.simdPosition = position
+                camera.simdLook(at: target)
+            case .overhead:
+                var middle = base + line * (distance / 2)
+                middle.y = max(base.y, cup.y)
+                camera.simdPosition = middle + simd_float3(0, max(9, distance * 1.1), 0) - line * 0.01
+                camera.simdLook(at: middle, up: line, localFront: simd_float3(0, 0, -1))
+            }
+        } else {
+            // Full shots get the high, wide chase view; short shots are framed tighter. Once the
+            // ball is down the camera closes in behind it, so the lie and the way ahead are what
+            // you see. It rides on the ground under it and looks at the grass ahead, so an
+            // elevated tee looks down the hole and a raised green is seen climbing up to the flag.
+            let closeness = Float(min(1, max(0, (shot?.total ?? focusYards) / 60)))
+            let settled = shot.map { Float(min(1, max(0, (elapsed - $0.flight.carryTime - 0.6) / 1.4))) } ?? 0
+            let smooth = settled * settled * (3 - 2 * settled)
+            let back = simd_mix(12 + 26 * closeness, 11, smooth)
+            let up = simd_mix(7 + 15 * closeness, 5.5, smooth)
+            let side = simd_mix(4 + 8 * closeness, 4, smooth)
+            let chase = along * (0.86 + 0.14 * smooth)
+            var position = base + forward * (chase - back) + right * (lateral * 0.65 + side) + simd_float3(0, up + aboveGround * 0.55, 0)
+            position.y = max(position.y, elevation(position.x, position.z) + 3)
+            let ahead = simd_mix(max(min(40, Float(shot?.total ?? focusYards) + 10), along + 12), along + 9, smooth)
+            var target = base + forward * ahead + right * lateral
+            target.y = elevation(target.x, target.z) + aboveGround * 0.75
+            clearView(from: &position, to: ballWorld)
+            camera.simdPosition = position
+            camera.simdLook(at: target)
+        }
+        // The ball, flag and cup ring are arcade-sized so they can be seen from the tee; as the
+        // camera closes in they shrink toward true scale, so nothing towers over the green.
+        let ballScale = Self.adaptiveScale(distance: simd_distance(camera.simdPosition, ballWorld), full: 70, floor: 0.4)
+        ball.simdScale = simd_float3(repeating: ballScale)
+        ball.simdPosition = ballWorld + simd_float3(0, 0.6 * ballScale, 0)
+        shadow.simdScale = simd_float3(repeating: ballScale)
+        if let hole {
+            let cup = grounded(simd_float3(Float(hole.cup.x), 0, Float(hole.cup.z)))
+            flag.simdScale = simd_float3(repeating: Self.adaptiveScale(distance: simd_distance(camera.simdPosition, cup), full: 90, floor: 0.3))
+            cupMarker.simdScale = simd_float3(repeating: Self.adaptiveScale(distance: simd_distance(camera.simdPosition, cup), full: 40, floor: 0.45))
+        }
+        for dot in trail.childNodes + self.preview.childNodes { dot.simdScale = simd_float3(repeating: ballScale) }
         let burst = min(max(elapsed / 0.23, 0), 1)
         impact.isHidden = shot == nil || elapsed > 0.23
         impact.simdPosition = base + simd_float3(0, 0.6, 0)
@@ -155,13 +225,77 @@ final class MeadowScene {
         landingRing.isHidden = previewShot == nil
         guard let previewShot, previewShot != lastPreview else { return }
         lastPreview = previewShot
+        let isPutt = previewShot.club == .putter && previewShot.lie == .green
         let dots = preview.childNodes
         for (index, dot) in dots.enumerated() {
-            let point = previewShot.position(at: previewShot.flight.carryTime * Double(index) / Double(dots.count - 1))
-            dot.simdPosition = world(point, origin: previewShot.origin, heading: previewShot.heading) + simd_float3(0, 0.45, 0)
+            // A putt has no carry: its line-up is the roll itself.
+            let span = isPutt ? previewShot.duration : previewShot.flight.carryTime
+            let point = previewShot.position(at: span * Double(index) / Double(dots.count - 1))
+            dot.simdPosition = world(point, origin: previewShot.origin, heading: previewShot.heading) + simd_float3(0, isPutt ? 0.15 : 0.45, 0)
         }
         let rest = previewShot.restingPoint
-        landingRing.simdPosition = simd_float3(Float(rest.x), 0.12, Float(rest.z))
+        landingRing.simdPosition = grounded(simd_float3(Float(rest.x), 0, Float(rest.z)), up: 0.12)
+        // A putt's target is the cup itself; a small ring reads better on the green than the landing ring.
+        landingRing.simdScale = simd_float3(repeating: isPutt ? 0.25 : 1)
+    }
+
+    /// Full size beyond `full` yards from the camera, shrinking in proportion closer in, never below `floor`.
+    private static func adaptiveScale(distance: Float, full: Float, floor: Float) -> Float {
+        min(1, max(floor, distance / full))
+    }
+
+    // MARK: Ground
+
+    /// Height of the grass at a course position; the range is flat.
+    private func elevation(_ x: Float, _ z: Float) -> Float {
+        guard let hole else { return 0 }
+        return Float(hole.elevation(at: CoursePoint(x: Double(x), z: Double(z))))
+    }
+
+    /// The same x/z, resting on the grass (plus `up`).
+    private func grounded(_ point: simd_float3, up: Float = 0) -> simd_float3 {
+        simd_float3(point.x, elevation(point.x, point.z) + up, point.z)
+    }
+
+    /// Lifts the camera until no hill between it and `target` blocks the view, the way a game
+    /// camera pops up over a rise rather than looking through it.
+    private func clearView(from position: inout simd_float3, to target: simd_float3) {
+        var lift: Float = 0
+        for step in 1...12 {
+            let t = Float(step) / 13
+            let sample = position + (target - position) * t
+            // Clearance over the ground tapers to nothing at the target, which sits on the grass.
+            let shortfall = elevation(sample.x, sample.z) + 1.5 * (1 - t) - sample.y
+            // Raising the camera by L raises the sight line at fraction t by L·(1 − t).
+            if shortfall > 0 { lift = max(lift, shortfall / (1 - t)) }
+        }
+        position.y += lift
+    }
+
+    /// The grid's beads drift downhill, faster on steeper ground, so the break is visible at a
+    /// glance (PGA TOUR 2K and Mario Golf both do this). Beads that leave the green or have run
+    /// for a while start again somewhere else on it.
+    private func animateBeads() {
+        guard let hole else { return }
+        let now = CACurrentMediaTime()
+        let dt = min(0.05, now - (lastBeadTime ?? now))
+        lastBeadTime = now
+        for (index, bead) in beads.childNodes.enumerated() {
+            beadAges[index] += dt
+            let point = CoursePoint(x: Double(bead.simdPosition.x), z: Double(bead.simdPosition.z))
+            let slope = hole.terrain.slope(at: point)
+            let speed = 90.0 // yards per second per unit of slope: a 2 % slope drifts 1.8 yd/s
+            let next = CoursePoint(x: point.x - slope.x * speed * dt, z: point.z - slope.z * speed * dt)
+            if beadAges[index] > 5 || next.distance(to: hole.greenCenter) > hole.greenRadius - 0.5 {
+                beadAges[index] = Double.random(in: 0..<1.5)
+                let angle = Double.random(in: 0..<(2 * .pi))
+                let radius = (hole.greenRadius - 1) * Double.random(in: 0..<1).squareRoot()
+                let spawn = CoursePoint(x: hole.greenCenter.x + cos(angle) * radius, z: hole.greenCenter.z + sin(angle) * radius)
+                bead.simdPosition = grounded(simd_float3(Float(spawn.x), 0, Float(spawn.z)), up: 0.12)
+            } else {
+                bead.simdPosition = grounded(simd_float3(Float(next.x), 0, Float(next.z)), up: 0.12)
+            }
+        }
     }
 
     /// Unit vector for a compass heading (0 = downrange, −z).
@@ -196,61 +330,54 @@ final class MeadowScene {
             let side: Float = i.isMultiple(of: 2) ? -1 : 1
             let x = side * Float(47 + (i * 13 % 37))
             let z = -Float(i * 7 + 12)
-            let height = CGFloat(8 + i % 8)
-            add(SCNCylinder(radius: 0.65, height: 4), color: .brown, at: SCNVector3(x, 2, z))
-            let cone = SCNCone(topRadius: 0, bottomRadius: 4.5, height: height)
-            cone.radialSegmentCount = 7
-            add(cone, color: UIColor(red: 0.10, green: 0.31 + Double(i % 3) * 0.05, blue: 0.25, alpha: 1), at: SCNVector3(x, Float(height / 2) + 3, z))
+            tree(at: simd_float3(x, 0, z), height: Float(8 + i % 8), shade: i % 3)
         }
         add(SCNBox(width: 9, height: 0.25, length: 7, chamferRadius: 0.4), color: UIColor(red: 0.09, green: 0.29, blue: 0.22, alpha: 1), at: SCNVector3(0, -0.1, 1))
     }
 
-    /// Fairway as a corridor of overlapping discs along the centreline, a green with a cup and
-    /// flag, sand bunkers, tee markers, and trees kept clear of the fairway.
+    /// The hole as one sculpted mesh over its terrain, coloured by what grows where: fairway
+    /// stripes, fringe and green, sand, tee. Then the cup, flag, slope grid, tee markers and trees,
+    /// each standing on the grass at its own height.
     private func buildCourse(_ hole: Hole) {
-        let fairway = UIColor(red: 0.32, green: 0.62, blue: 0.38, alpha: 1)
-        let fairwayStripe = UIColor(red: 0.30, green: 0.58, blue: 0.36, alpha: 1)
-        let fringe = UIColor(red: 0.40, green: 0.70, blue: 0.42, alpha: 1)
-        let green = UIColor(red: 0.48, green: 0.78, blue: 0.46, alpha: 1)
-        let sand = UIColor(red: 0.90, green: 0.84, blue: 0.62, alpha: 1)
-        var stripe = 0
-        for index in 1..<hole.centerline.count {
-            let a = hole.centerline[index - 1], b = hole.centerline[index]
-            let length = a.distance(to: b)
-            var travelled = 0.0
-            while travelled <= length {
-                let t = travelled / length
-                let disc = SCNCylinder(radius: hole.fairwayHalfWidth, height: 0.12)
-                disc.radialSegmentCount = 40
-                add(disc, color: stripe.isMultiple(of: 2) ? fairway : fairwayStripe, at: SCNVector3(a.x + (b.x - a.x) * t, -0.35, a.z + (b.z - a.z) * t))
-                travelled += 9
-                stripe += 1
-            }
+        scene.rootNode.addChildNode(Self.terrainMesh(for: hole))
+        let cupHeight = Float(hole.elevation(at: hole.cup))
+        add(SCNCylinder(radius: 0.55, height: 0.3), color: UIColor(white: 0.08, alpha: 1), at: SCNVector3(Float(hole.cup.x), cupHeight + 0.04, Float(hole.cup.z)))
+        // The flag stands on the cup and scales about its foot.
+        flag.position = SCNVector3(Float(hole.cup.x), cupHeight, Float(hole.cup.z))
+        let stick = SCNCylinder(radius: 0.13, height: 9)
+        stick.firstMaterial?.diffuse.contents = UIColor.white
+        let stickNode = SCNNode(geometry: stick)
+        stickNode.position = SCNVector3(0, 4.5, 0)
+        flag.addChildNode(stickNode)
+        let cloth = SCNBox(width: 4, height: 2.2, length: 0.12, chamferRadius: 0.1)
+        cloth.firstMaterial?.diffuse.contents = UIColor.systemYellow
+        let clothNode = SCNNode(geometry: cloth)
+        clothNode.position = SCNVector3(2, 7.6, 0)
+        flag.addChildNode(clothNode)
+        scene.rootNode.addChildNode(flag)
+        // Slope grid, shown while putting: lines every two yards laid over the green's contours,
+        // tinted by height against the cup (blue above it, red below, as Wii Sports colours it).
+        greenGrid.geometry = Self.slopeGrid(for: hole)
+        greenGrid.isHidden = true
+        scene.rootNode.addChildNode(greenGrid)
+        for _ in 0..<56 {
+            let bead = SCNNode(geometry: SCNSphere(radius: 0.06))
+            bead.geometry?.firstMaterial?.diffuse.contents = UIColor.white
+            bead.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.9, alpha: 1)
+            bead.simdPosition = simd_float3(Float(hole.greenCenter.x), 0, Float(hole.greenCenter.z))
+            beads.addChildNode(bead)
         }
-        let apron = SCNCylinder(radius: hole.greenRadius + 4, height: 0.16)
-        apron.radialSegmentCount = 64
-        add(apron, color: fringe, at: SCNVector3(hole.greenCenter.x, -0.3, hole.greenCenter.z))
-        let putting = SCNCylinder(radius: hole.greenRadius, height: 0.2)
-        putting.radialSegmentCount = 64
-        add(putting, color: green, at: SCNVector3(hole.greenCenter.x, -0.26, hole.greenCenter.z))
-        for bunker in hole.bunkers {
-            let lip = SCNCylinder(radius: bunker.radius + 1, height: 0.14)
-            lip.radialSegmentCount = 40
-            add(lip, color: fringe, at: SCNVector3(bunker.center.x, -0.32, bunker.center.z))
-            let pit = SCNCylinder(radius: bunker.radius, height: 0.18)
-            pit.radialSegmentCount = 40
-            add(pit, color: sand, at: SCNVector3(bunker.center.x, -0.28, bunker.center.z))
-        }
-        add(SCNCylinder(radius: 0.55, height: 0.3), color: UIColor(white: 0.08, alpha: 1), at: SCNVector3(hole.cup.x, -0.16, hole.cup.z))
-        add(SCNCylinder(radius: 0.13, height: 9), color: .white, at: SCNVector3(hole.cup.x, 4.5, hole.cup.z))
-        add(SCNBox(width: 4, height: 2.2, length: 0.12, chamferRadius: 0.1), color: .systemYellow, at: SCNVector3(hole.cup.x + 2, 7.6, hole.cup.z))
+        beadAges = Array(repeating: 6, count: beads.childNodes.count) // all respawn on the first frame
+        beads.isHidden = true
+        scene.rootNode.addChildNode(beads)
         cupMarker.geometry = SCNTorus(ringRadius: 2.2, pipeRadius: 0.12)
         cupMarker.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.8)
-        cupMarker.position = SCNVector3(hole.cup.x, 0.05, hole.cup.z)
+        cupMarker.position = SCNVector3(Float(hole.cup.x), cupHeight + 0.08, Float(hole.cup.z))
         scene.rootNode.addChildNode(cupMarker)
-        add(SCNBox(width: 9, height: 0.25, length: 7, chamferRadius: 0.4), color: UIColor(red: 0.09, green: 0.29, blue: 0.22, alpha: 1), at: SCNVector3(hole.tee.x, -0.1, hole.tee.z + 1))
+        let teeHeight = Float(hole.elevation(at: hole.tee))
+        add(SCNBox(width: 9, height: 0.25, length: 7, chamferRadius: 0.4), color: UIColor(red: 0.09, green: 0.29, blue: 0.22, alpha: 1), at: SCNVector3(Float(hole.tee.x), teeHeight + 0.02, Float(hole.tee.z) + 1))
         for side in [-1.0, 1.0] {
-            add(SCNSphere(radius: 0.4), color: .white, at: SCNVector3(hole.tee.x + side * 3.5, 0.3, hole.tee.z))
+            add(SCNSphere(radius: 0.4), color: .white, at: SCNVector3(Float(hole.tee.x + side * 3.5), teeHeight + 0.4, Float(hole.tee.z)))
         }
         // Trees along both sides, pushed out past the fairway wherever the centreline bends.
         for i in 0..<70 {
@@ -260,12 +387,145 @@ final class MeadowScene {
             let offset = hole.fairwayHalfWidth + 18 + Double((i * 13) % 23)
             let x = point.x + direction.z * side * offset
             let z = point.z - direction.x * side * offset
-            let height = CGFloat(8 + i % 8)
-            add(SCNCylinder(radius: 0.65, height: 4), color: .brown, at: SCNVector3(x, 2, z))
-            let cone = SCNCone(topRadius: 0, bottomRadius: 4.5, height: height)
-            cone.radialSegmentCount = 7
-            add(cone, color: UIColor(red: 0.10, green: 0.31 + Double(i % 3) * 0.05, blue: 0.25, alpha: 1), at: SCNVector3(x, Double(height / 2) + 3, z))
+            tree(at: grounded(simd_float3(Float(x), 0, Float(z))), height: Float(8 + i % 8), shade: i % 3)
         }
+    }
+
+    private func tree(at foot: simd_float3, height: Float, shade: Int) {
+        add(SCNCylinder(radius: 0.65, height: 4), color: .brown, at: SCNVector3(foot.x, foot.y + 2, foot.z))
+        let cone = SCNCone(topRadius: 0, bottomRadius: 4.5, height: CGFloat(height))
+        cone.radialSegmentCount = 7
+        add(cone, color: UIColor(red: 0.10, green: 0.31 + Double(shade) * 0.05, blue: 0.25, alpha: 1), at: SCNVector3(foot.x, foot.y + height / 2 + 3, foot.z))
+    }
+
+    /// One vertex-coloured mesh of the hole's ground, 1.5 yd between vertices. Surfaces blend
+    /// over a yard at their edges so the fairway and green read as mown shapes, not steps.
+    nonisolated static func terrainMesh(for hole: Hole) -> SCNNode {
+        let spacing = 1.5
+        let minX = -100.0, maxX = 100.0, minZ = -450.0, maxZ = 40.0
+        let columns = Int((maxX - minX) / spacing) + 1
+        let rows = Int((maxZ - minZ) / spacing) + 1
+        var vertices: [SCNVector3] = []
+        var normals: [SCNVector3] = []
+        var colors: [Float] = []
+        vertices.reserveCapacity(columns * rows)
+        normals.reserveCapacity(columns * rows)
+        colors.reserveCapacity(columns * rows * 4)
+        for row in 0..<rows {
+            for column in 0..<columns {
+                let point = CoursePoint(x: minX + Double(column) * spacing, z: minZ + Double(row) * spacing)
+                let slope = hole.terrain.slope(at: point)
+                vertices.append(SCNVector3(Float(point.x), Float(hole.elevation(at: point)), Float(point.z)))
+                normals.append(SCNVector3(Float(-slope.x), 1, Float(-slope.z)))
+                let color = linear(surfaceColor(at: point, on: hole))
+                colors += [color.x, color.y, color.z, 1]
+            }
+        }
+        var indices: [Int32] = []
+        indices.reserveCapacity((columns - 1) * (rows - 1) * 6)
+        for row in 0..<(rows - 1) {
+            for column in 0..<(columns - 1) {
+                let a = Int32(row * columns + column), b = a + 1
+                let c = a + Int32(columns), d = c + 1
+                indices += [a, c, b, b, c, d]
+            }
+        }
+        let colorSource = colors.withUnsafeBufferPointer { buffer in
+            SCNGeometrySource(data: Data(buffer: buffer), semantic: .color, vectorCount: vertices.count, usesFloatComponents: true,
+                              componentsPerVector: 4, bytesPerComponent: MemoryLayout<Float>.size, dataOffset: 0, dataStride: MemoryLayout<Float>.size * 4)
+        }
+        let geometry = SCNGeometry(sources: [SCNGeometrySource(vertices: vertices), SCNGeometrySource(normals: normals), colorSource],
+                                   elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
+        geometry.firstMaterial?.diffuse.contents = UIColor.white
+        geometry.firstMaterial?.lightingModel = .lambert
+        return SCNNode(geometry: geometry)
+    }
+
+    /// Vertex colours are read as linear light where `UIColor`s are sRGB; this keeps the two palettes matching.
+    nonisolated private static func linear(_ srgb: simd_float3) -> simd_float3 {
+        simd_float3(pow(srgb.x, 2.2), pow(srgb.y, 2.2), pow(srgb.z, 2.2))
+    }
+
+    /// What grows at a point, as an RGB colour, feathered a yard either side of each edge.
+    nonisolated private static func surfaceColor(at point: CoursePoint, on hole: Hole) -> simd_float3 {
+        let rough = simd_float3(0.22, 0.46, 0.31)
+        let fairway = simd_float3(0.32, 0.62, 0.38)
+        let fairwayStripe = simd_float3(0.30, 0.58, 0.36)
+        let fringe = simd_float3(0.40, 0.70, 0.42)
+        let green = simd_float3(0.48, 0.78, 0.46)
+        let sand = simd_float3(0.90, 0.84, 0.62)
+        let teeBox = simd_float3(0.28, 0.56, 0.36)
+        func edge(_ distanceOutside: Double) -> Float { Float(min(1, max(0, 0.5 - distanceOutside / 2))) }
+        var fairwayDistance = Double.infinity
+        for index in 1..<hole.centerline.count {
+            fairwayDistance = min(fairwayDistance, point.distance(toSegment: hole.centerline[index - 1], hole.centerline[index]) - hole.fairwayHalfWidth)
+        }
+        let stripe = Int((point.z / 9).rounded(.down)).isMultiple(of: 2) ? fairway : fairwayStripe
+        var color = simd_mix(rough, stripe, simd_float3(repeating: edge(fairwayDistance)))
+        let greenDistance = point.distance(to: hole.greenCenter) - hole.greenRadius
+        color = simd_mix(color, fringe, simd_float3(repeating: edge(greenDistance - 4)))
+        color = simd_mix(color, green, simd_float3(repeating: edge(greenDistance)))
+        for bunker in hole.bunkers {
+            let distance = point.distance(to: bunker.center) - bunker.radius
+            color = simd_mix(color, fringe, simd_float3(repeating: edge(distance - 1)))
+            color = simd_mix(color, sand, simd_float3(repeating: edge(distance)))
+        }
+        color = simd_mix(color, teeBox, simd_float3(repeating: edge(point.distance(to: hole.tee) - 5)))
+        return color
+    }
+
+    /// The putting grid as thin ribbons draped over the green, one geometry. Colour says how each
+    /// spot sits against the cup: white level, blue above (a putt from there runs downhill), red
+    /// below (uphill), stronger the bigger the difference.
+    nonisolated static func slopeGrid(for hole: Hole) -> SCNGeometry {
+        let cupHeight = hole.elevation(at: hole.cup)
+        var vertices: [SCNVector3] = []
+        var normals: [SCNVector3] = []
+        var colors: [Float] = []
+        var indices: [Int32] = []
+        let half: Float = 0.05
+        func lay(_ points: [CoursePoint]) {
+            guard points.count >= 2 else { return }
+            for (index, point) in points.enumerated() {
+                let previous = points[max(0, index - 1)], next = points[min(points.count - 1, index + 1)]
+                let direction = simd_normalize(simd_float2(Float(next.x - previous.x), Float(next.z - previous.z)))
+                let side = simd_float2(-direction.y, direction.x) * half
+                let height = Float(hole.elevation(at: point)) + 0.06
+                let difference = hole.elevation(at: point) - cupHeight
+                let strength = Float(min(1, abs(difference) / 0.3))
+                let tint = difference > 0 ? simd_float3(0.35, 0.6, 1) : simd_float3(1, 0.42, 0.35)
+                let color = linear(simd_mix(simd_float3(1, 1, 1), tint, simd_float3(repeating: strength)))
+                for offset in [-side, side] {
+                    vertices.append(SCNVector3(Float(point.x) + offset.x, height, Float(point.z) + offset.y))
+                    normals.append(SCNVector3(0, 1, 0))
+                    colors += [color.x, color.y, color.z, 0.85]
+                }
+                if index > 0 {
+                    let a = Int32(vertices.count - 4)
+                    indices += [a, a + 1, a + 2, a + 1, a + 3, a + 2]
+                }
+            }
+        }
+        let radius = hole.greenRadius
+        var offset = -radius + 2
+        while offset < radius {
+            let chord = (radius * radius - offset * offset).squareRoot()
+            let steps = max(2, Int(chord * 2))
+            lay((0...steps).map { CoursePoint(x: hole.greenCenter.x - chord + chord * 2 * Double($0) / Double(steps), z: hole.greenCenter.z + offset) })
+            lay((0...steps).map { CoursePoint(x: hole.greenCenter.x + offset, z: hole.greenCenter.z - chord + chord * 2 * Double($0) / Double(steps)) })
+            offset += 2
+        }
+        let colorSource = colors.withUnsafeBufferPointer { buffer in
+            SCNGeometrySource(data: Data(buffer: buffer), semantic: .color, vectorCount: vertices.count, usesFloatComponents: true,
+                              componentsPerVector: 4, bytesPerComponent: MemoryLayout<Float>.size, dataOffset: 0, dataStride: MemoryLayout<Float>.size * 4)
+        }
+        let geometry = SCNGeometry(sources: [SCNGeometrySource(vertices: vertices), SCNGeometrySource(normals: normals), colorSource],
+                                   elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
+        geometry.firstMaterial?.diffuse.contents = UIColor.white
+        geometry.firstMaterial?.emission.contents = UIColor(white: 0.35, alpha: 1)
+        geometry.firstMaterial?.isDoubleSided = true
+        geometry.firstMaterial?.readsFromDepthBuffer = true
+        return geometry
     }
 
     /// Point and unit direction `distance` yards along a polyline.
@@ -418,10 +678,13 @@ final class Golfer {
         pose(t)
     }
 
+    /// The rig is built 3.6 yd tall; shown at human height so the ball and the green stay in proportion.
+    private let stature: Float = 0.62
+
     private func applyHandedness() {
         let mirror: Float = handedness == .right ? 1 : -1
-        node.simdScale = simd_float3(mirror, 1, 1)
-        node.simdPosition = simd_float3(-3.2 * mirror, 0, 0)
+        node.simdScale = simd_float3(mirror * stature, stature, stature)
+        node.simdPosition = simd_float3(-3.2 * mirror * stature, 0, 0)
     }
 
     /// Hands move on a circle around the chest: down-forward at address, out to the right at 90°,
@@ -485,6 +748,8 @@ struct MeadowSceneView: UIViewRepresentable {
     var heading = 0.0
     var focusYards = 60.0
     var preview: RangeShot? = nil
+    var putting = false
+    var puttView: MeadowScene.PuttView = .behind
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -501,6 +766,6 @@ struct MeadowSceneView: UIViewRepresentable {
             view.scene = meadow.scene
             view.pointOfView = meadow.camera
         }
-        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness, ball: ball, heading: heading, focusYards: focusYards, preview: preview)
+        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness, ball: ball, heading: heading, focusYards: focusYards, preview: preview, putting: putting, puttView: puttView)
     }
 }

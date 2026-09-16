@@ -1,4 +1,5 @@
 import XCTest
+import simd
 @testable import GolfArcade
 
 final class HoleTests: XCTestCase {
@@ -120,6 +121,30 @@ final class HoleTests: XCTestCase {
     }
 
     @MainActor
+    func testPuttingViewSwitchesOnTheGreenWithThePutterAndDuringThePutt() {
+        let round = RangeRound(mode: .hole(hole), defaults: UserDefaults(suiteName: "HoleTests-\(UUID().uuidString)")!)
+        XCTAssertFalse(round.isPutting, "not on the tee")
+        let start = Date()
+        round.charge(0.9); round.release(at: start); round.advance(at: start.addingTimeInterval(30)); round.nextShot()
+        round.club = .wedge
+        var onGreen = 0.9
+        for p in stride(from: 0.3, through: 1.0, by: 0.005) {
+            let probe = RangeShot(id: 0, club: .wedge, power: p, aim: 0, from: round.ballPosition, heading: round.baseHeading, lie: round.lie, on: hole)
+            if hole.lie(at: probe.restingPoint) == .green { onGreen = p; break }
+        }
+        round.charge(onGreen); round.release(at: start); round.advance(at: start.addingTimeInterval(30)); round.nextShot()
+        XCTAssertEqual(round.lie, .green)
+        XCTAssertEqual(round.club, .putter)
+        XCTAssertTrue(round.isPutting, "green + putter = putting view")
+        round.club = .wedge
+        XCTAssertFalse(round.isPutting, "chipping from the green is not the putting view")
+        round.club = .putter
+        round.charge(0.4); round.release(at: start)
+        XCTAssertTrue(round.isPutting, "the view holds while the putt rolls")
+        XCTAssertFalse(RangeRound(defaults: UserDefaults(suiteName: "HoleTests-range")!).isPutting, "never on the range")
+    }
+
+    @MainActor
     func testSwitchingModesResetsAndKeepsSeparateBests() {
         let defaults = UserDefaults(suiteName: "HoleTests-\(UUID().uuidString)")!
         let round = RangeRound(defaults: defaults)
@@ -140,7 +165,7 @@ final class ShotPreviewTests: XCTestCase {
         let full = try! XCTUnwrap(round.preview)
         XCTAssertEqual(full.power, 1)
         XCTAssertEqual(full.club, .driver)
-        XCTAssertEqual(full.total, GolfClub.driver.mockDistance, accuracy: 1)
+        XCTAssertEqual(full.total, GolfClub.driver.mockDistance, accuracy: 25, "the hole's hills change the roll-out from the flat range number")
         XCTAssertTrue(round.preview == full, "cached while nothing changes")
 
         round.charge(0.5)
@@ -170,5 +195,99 @@ final class ShotPreviewTests: XCTestCase {
         let next = try! XCTUnwrap(round.preview)
         XCTAssertEqual(next.origin, round.ballPosition)
         XCTAssertEqual(next.heading, round.ballPosition.heading(to: hole.cup), accuracy: 1e-9, "lined up on the pin from the new lie")
+    }
+}
+
+final class TerrainTests: XCTestCase {
+    let hole = Hole.first
+
+    func testSlopeIsTheGradientOfTheElevation() {
+        let step = 1e-4
+        for point in [hole.tee, hole.cup, CoursePoint(x: 10, z: -200), CoursePoint(x: 30, z: -250), CoursePoint(x: -30, z: -350)] {
+            let slope = hole.terrain.slope(at: point)
+            let dx = (hole.elevation(at: CoursePoint(x: point.x + step, z: point.z)) - hole.elevation(at: CoursePoint(x: point.x - step, z: point.z))) / (2 * step)
+            let dz = (hole.elevation(at: CoursePoint(x: point.x, z: point.z + step)) - hole.elevation(at: CoursePoint(x: point.x, z: point.z - step))) / (2 * step)
+            XCTAssertEqual(slope.x, dx, accuracy: 1e-6)
+            XCTAssertEqual(slope.z, dz, accuracy: 1e-6)
+        }
+        XCTAssertEqual(Terrain.flat.elevation(at: hole.cup), 0)
+    }
+
+    func testTheHoleIsSculpted() {
+        XCTAssertGreaterThan(hole.elevation(at: hole.tee), 2, "elevated tee")
+        XCTAssertLessThan(hole.elevation(at: CoursePoint(x: 4, z: -205)), -1, "swale in the landing area")
+        XCTAssertGreaterThan(hole.elevation(at: hole.greenCenter), 2.5, "raised green")
+        let cross = hole.terrain.slope(at: hole.cup)
+        XCTAssertGreaterThan(hypot(cross.x, cross.z), 0.01, "the green tilts, so putts break")
+        XCTAssertLessThan(hypot(cross.x, cross.z), 0.05, "but not so much a ball cannot stop on it")
+        XCTAssertGreaterThan(hole.rise(from: hole.tee), -1, "the green sits about level with the tee")
+        XCTAssertEqual(hole.playingDistance(from: CoursePoint(x: 0, z: -200)), CoursePoint(x: 0, z: -200).distance(to: hole.cup) + hole.rise(from: CoursePoint(x: 0, z: -200)), accuracy: 1e-9)
+        XCTAssertGreaterThan(hole.rise(from: CoursePoint(x: 0, z: -200)), 3, "the approach from the swale plays uphill")
+    }
+
+    func testTheBallStaysOnTheGrass() {
+        let shots = [
+            RangeShot(id: 1, club: .driver, power: 1, aim: 0, from: hole.tee, heading: hole.tee.heading(to: hole.cup), lie: .tee, on: hole),
+            RangeShot(id: 2, club: .iron, power: 0.9, aim: 6, from: CoursePoint(x: 0, z: -200), heading: CoursePoint(x: 0, z: -200).heading(to: hole.cup), lie: .fairway, on: hole),
+            RangeShot(id: 3, club: .putter, power: 0.7, aim: 0, from: CoursePoint(x: -30, z: -352), heading: CoursePoint(x: -30, z: -352).heading(to: hole.cup), lie: .green, on: hole)
+        ]
+        for shot in shots {
+            for sample in shot.flight.samples {
+                let ground = hole.elevation(at: RangeShot.coursePoint(sample.point, origin: shot.origin, heading: shot.heading))
+                XCTAssertGreaterThanOrEqual(sample.point.heightYards, ground - 0.02, "never under the ground")
+            }
+            let rest = shot.restingPoint
+            XCTAssertEqual(shot.landing.heightYards, hole.elevation(at: rest), accuracy: 0.02, "comes to rest on the grass")
+            XCTAssertEqual(shot.position(at: 0).heightYards, hole.elevation(at: shot.origin), accuracy: 1e-9, "starts on the grass")
+        }
+    }
+
+    func testPuttsBreakDownTheSlope() {
+        // Straight putts from a ring around the cup: each drifts toward the low side of the green.
+        var broke = 0
+        for angle in stride(from: 0.0, to: 360, by: 45) {
+            let from = CoursePoint(x: hole.cup.x + 7 * cos(angle * .pi / 180), z: hole.cup.z + 7 * sin(angle * .pi / 180))
+            guard hole.lie(at: from) == .green else { continue }
+            let heading = from.heading(to: hole.cup)
+            let putt = RangeShot(id: 1, club: .putter, power: 0.5, aim: 0, from: from, heading: heading, lie: .green, on: hole)
+            let rest = putt.restingPoint
+            let lateral = putt.landing.lateralYards
+            // The lateral slope across the line, in the shot's frame: the ball must drift down it.
+            let mid = CoursePoint(x: (from.x + rest.x) / 2, z: (from.z + rest.z) / 2)
+            let slope = hole.terrain.slope(at: mid)
+            let radians = heading * .pi / 180
+            let across = slope.x * cos(radians) + slope.z * sin(radians)
+            if abs(across) > 0.004 {
+                XCTAssertEqual(lateral.sign, (-across).sign, "breaks downhill from \(from)")
+                if abs(lateral) > 0.1 { broke += 1 }
+            }
+        }
+        XCTAssertGreaterThan(broke, 2, "the green has enough tilt to break several putts")
+    }
+
+    func testDownhillPuttsRunFartherThanUphill() {
+        // Same stroke, opposite directions across the cup: rise decides how far it runs.
+        let cross = hole.terrain.slope(at: hole.cup)
+        let direction = CoursePoint(x: cross.x / hypot(cross.x, cross.z), z: cross.z / hypot(cross.x, cross.z))
+        let low = CoursePoint(x: hole.cup.x - direction.x * 6, z: hole.cup.z - direction.z * 6)
+        let high = CoursePoint(x: hole.cup.x + direction.x * 6, z: hole.cup.z + direction.z * 6)
+        XCTAssertGreaterThan(hole.rise(from: low), 0, "putting up the slope")
+        XCTAssertLessThan(hole.rise(from: high), 0, "putting down the slope")
+        let uphill = RangeShot(id: 1, club: .putter, power: 0.45, aim: 0, from: low, heading: low.heading(to: hole.cup), lie: .green, on: hole)
+        let downhill = RangeShot(id: 2, club: .putter, power: 0.45, aim: 0, from: high, heading: high.heading(to: hole.cup), lie: .green, on: hole)
+        XCTAssertGreaterThan(downhill.flight.total, uphill.flight.total * 1.15)
+    }
+
+    func testFlatGroundBehavesAsBefore() {
+        let launch = GolfClub.iron.launch(power: 0.8, aimDegrees: 0, curveDegrees: 0)
+        let flat = BallFlight.simulate(launch)
+        let stated = BallFlight.simulate(launch, ground: BallFlight.flatGround)
+        XCTAssertEqual(flat, stated)
+        XCTAssertEqual(flat.landing.heightYards, 0)
+        // A shot into a rising slope lands sooner and runs less than the same shot on the flat.
+        let uphill = BallFlight.simulate(launch) { position in (position.y * 0.06, simd_double2(0, 0.06)) }
+        XCTAssertLessThan(uphill.carry, flat.carry)
+        XCTAssertLessThan(uphill.total, flat.total)
+        XCTAssertGreaterThan(uphill.landing.heightYards, 5, "it finished up the hill")
     }
 }

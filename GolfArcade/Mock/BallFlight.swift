@@ -2,11 +2,19 @@ import Foundation
 import simd
 
 /// Physical ball flight: gravity, aerodynamic drag, Magnus lift from backspin (tilted for a draw
-/// or fade), then bounce and roll on a fairway. Integrated once per shot and sampled for playback.
+/// or fade), then bounce and roll over the ground. Integrated once per shot and sampled for playback.
 ///
 /// Units are SI inside, yards outside. Coefficients follow the usual golf-ball fits: drag rises and
 /// lift grows with spin ratio, spin decays slowly in the air and is lost on the first bounce.
+/// The ground can be hilly: a bounce kicks off the slope it lands on, and a rolling ball is pulled
+/// downhill, which is what makes a putt break.
 struct BallFlight: Equatable, Sendable {
+    /// The ground under a shot, in the shot's own frame and metres: height above the datum at a
+    /// (right, downrange) position, and its rise per metre along those two axes.
+    typealias Ground = (simd_double2) -> (height: Double, gradient: simd_double2)
+
+    static func flatGround(_ position: simd_double2) -> (height: Double, gradient: simd_double2) { (0, .zero) }
+
     struct Launch: Equatable, Sendable {
         var ballSpeedMPH: Double
         var launchAngleDegrees: Double
@@ -54,7 +62,8 @@ struct BallFlight: Equatable, Sendable {
     }
 
     /// `rollingDeceleration` is the surface the ball rolls out on (green ≈ 0.9, fairway 3.2, rough 6).
-    static func simulate(_ launch: Launch, rollingDeceleration: Double = fairwayRolling) -> BallFlight {
+    /// Heights in the samples are above the datum, so on flat ground they are heights above the grass.
+    static func simulate(_ launch: Launch, rollingDeceleration: Double = fairwayRolling, ground: Ground = flatGround) -> BallFlight {
         let mass = 0.04593
         let radius = 0.02135
         let area = Double.pi * radius * radius
@@ -69,19 +78,20 @@ struct BallFlight: Equatable, Sendable {
         let elevation = launch.launchAngleDegrees * .pi / 180
         let azimuth = launch.directionDegrees * .pi / 180
         // x = right, y = up, z = downrange
-        var position = simd_double3(0, 0, 0)
+        let startHeight = ground(.zero).height
+        var position = simd_double3(0, startHeight, 0)
         var velocity = simd_double3(sin(azimuth) * cos(elevation), sin(elevation), cos(azimuth) * cos(elevation)) * speed
         var spin = max(0, launch.spinRPM) * 2 * .pi / 60
         let tilt = launch.curveDegrees * .pi / 180
 
-        var samples: [Sample] = [Sample(time: 0, point: FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0))]
+        var samples: [Sample] = [Sample(time: 0, point: FlightPoint(lateralYards: 0, heightYards: startHeight / metersPerYard, distanceYards: 0))]
         var time = 0.0
         var nextSample = sampleInterval
         var airborne = speed > 0.5 && elevation > 0.002 // a putt rolls from the first inch
         var rolling = !airborne
         var carryMeters: Double?
         var carryTime = 0.0
-        var apexMeters = 0.0
+        var apexMeters = startHeight
 
         while time < maxDuration {
             if airborne {
@@ -103,37 +113,42 @@ struct BallFlight: Equatable, Sendable {
                 velocity += acceleration * dt
                 position += velocity * dt
                 apexMeters = max(apexMeters, position.y)
-                if position.y <= 0, velocity.y < 0 {
-                    position.y = 0
+                let surface = ground(simd_double2(position.x, position.z))
+                let normal = simd_normalize(simd_double3(-surface.gradient.x, 1, -surface.gradient.y))
+                let into = simd_dot(velocity, normal)
+                if position.y <= surface.height, into < 0 {
+                    position.y = surface.height
                     if carryMeters == nil {
                         carryMeters = simd_length(simd_double2(position.x, position.z))
                         carryTime = time
                     }
-                    velocity.y = -velocity.y * restitution
-                    velocity.x *= bounceFriction
-                    velocity.z *= bounceFriction
+                    // Bounce off the slope: the part of the speed into the ground comes back
+                    // damped, the part along it is scrubbed by friction.
+                    let along = velocity - normal * into
+                    velocity = along * bounceFriction - normal * into * restitution
                     spin = 0
-                    if velocity.y < 1.2 {
-                        velocity.y = 0
+                    if -into * restitution < 1.2 {
+                        velocity = simd_double3(along.x, 0, along.z) * bounceFriction
                         airborne = false
                         rolling = true
                     }
                 }
             } else if rolling {
-                let horizontal = simd_double2(velocity.x, velocity.z)
-                let ground = simd_length(horizontal)
-                if ground < 0.05 { break }
-                let slowed = max(0, ground - rollingDeceleration * dt)
-                let direction = horizontal / ground
-                velocity = simd_double3(direction.x * slowed, 0, direction.y * slowed)
+                let surface = ground(simd_double2(position.x, position.z))
+                // Gravity pulls the ball down the slope, the grass slows it along its path.
+                var horizontal = simd_double2(velocity.x, velocity.z) - gravity * surface.gradient * dt
+                let speedAlong = simd_length(horizontal)
+                if speedAlong < 0.05 { break }
+                horizontal *= max(0, speedAlong - rollingDeceleration * dt) / speedAlong
+                velocity = simd_double3(horizontal.x, 0, horizontal.y)
                 position += velocity * dt
-                position.y = 0
+                position.y = ground(simd_double2(position.x, position.z)).height
             }
             time += dt
             if time + 1e-9 >= nextSample {
                 samples.append(Sample(time: nextSample, point: FlightPoint(
                     lateralYards: position.x / metersPerYard,
-                    heightYards: max(0, position.y) / metersPerYard,
+                    heightYards: position.y / metersPerYard,
                     distanceYards: position.z / metersPerYard
                 )))
                 nextSample += sampleInterval
@@ -141,10 +156,12 @@ struct BallFlight: Equatable, Sendable {
         }
         let finalDistance = simd_length(simd_double2(position.x, position.z))
         samples.append(Sample(time: nextSample, point: FlightPoint(
-            lateralYards: position.x / metersPerYard, heightYards: 0, distanceYards: position.z / metersPerYard
+            lateralYards: position.x / metersPerYard,
+            heightYards: ground(simd_double2(position.x, position.z)).height / metersPerYard,
+            distanceYards: position.z / metersPerYard
         )))
         let carry = (carryMeters ?? 0) / metersPerYard // a shot that never flew is all roll
-        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard, carryTime: carryTime)
+        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: (apexMeters - startHeight) / metersPerYard, carryTime: carryTime)
     }
 }
 

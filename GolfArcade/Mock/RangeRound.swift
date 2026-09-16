@@ -49,6 +49,16 @@ final class RangeRound: ObservableObject {
     var shotNumber: Int { min(shots.count + (canSwing ? 1 : 0), hole == nil ? shotLimit : strokeLimit) }
     var isHoled: Bool { activeShot?.isHoled == true && phase == .complete }
     var yardsToPin: Double { hole.map { ballPosition.distance(to: $0.cup) } ?? 0 }
+    /// Yards the cup sits above (positive) or below the ball. Uphill plays longer.
+    var riseToPin: Double { hole.map { $0.rise(from: ballPosition) } ?? 0 }
+    /// What the shot plays like once the rise is counted, yards.
+    var playingYardsToPin: Double { hole.map { $0.playingDistance(from: ballPosition) } ?? 0 }
+    /// On the green with the putter, or a putt in the air: the scene switches to the putting view.
+    var isPutting: Bool {
+        guard hole != nil else { return false }
+        if let shot = activeShot { return shot.club == .putter && shot.lie == .green }
+        return lie == .green && club == .putter
+    }
     /// Compass heading the aim slider is relative to: straight downrange on the range, at the pin on a hole.
     var baseHeading: Double { hole.map { ballPosition.heading(to: $0.cup) } ?? 0 }
     var shotHeading: Double { baseHeading }

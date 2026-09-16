@@ -56,6 +56,45 @@ enum Lie: String, Sendable {
     }
 }
 
+/// Rolling ground: smooth mounds and hollows over a flat base, the way an arcade course is
+/// sculpted. Elevation is yards above the course datum. The slope is what breaks a putt, kicks a
+/// bounce, shortens a shot into a rise, and tilts the camera to look up or down the hole.
+struct Terrain: Equatable, Sendable {
+    struct Mound: Equatable, Sendable {
+        let center: CoursePoint
+        /// Distance at which the mound has faded to about a third of its height.
+        let radius: Double
+        /// Yards; negative for a hollow.
+        let height: Double
+    }
+
+    let mounds: [Mound]
+
+    static let flat = Terrain(mounds: [])
+
+    func elevation(at point: CoursePoint) -> Double {
+        var height = 0.0
+        for mound in mounds {
+            let dx = point.x - mound.center.x, dz = point.z - mound.center.z
+            height += mound.height * exp(-(dx * dx + dz * dz) / (mound.radius * mound.radius))
+        }
+        return height
+    }
+
+    /// Rise per yard along x and along z (a 0.02 is a 2 % slope).
+    func slope(at point: CoursePoint) -> (x: Double, z: Double) {
+        var gx = 0.0, gz = 0.0
+        for mound in mounds {
+            let dx = point.x - mound.center.x, dz = point.z - mound.center.z
+            let r2 = mound.radius * mound.radius
+            let factor = mound.height * exp(-(dx * dx + dz * dz) / r2) * (-2 / r2)
+            gx += factor * dx
+            gz += factor * dz
+        }
+        return (gx, gz)
+    }
+}
+
 /// One hole: a fairway corridor along a centreline, a green with a cup, and a few bunkers.
 struct Hole: Equatable, Sendable {
     struct Bunker: Equatable, Sendable {
@@ -74,10 +113,19 @@ struct Hole: Equatable, Sendable {
     let greenRadius: Double
     let cup: CoursePoint
     let bunkers: [Bunker]
+    let terrain: Terrain
     /// Balls that stop this close to the cup are in, and a rolling ball this close drops.
     let cupRadius = 0.5
 
     var length: Double { tee.distance(to: cup) }
+
+    func elevation(at point: CoursePoint) -> Double { terrain.elevation(at: point) }
+
+    /// How far the cup sits above (positive) or below the ball, in yards.
+    func rise(from point: CoursePoint) -> Double { elevation(at: cup) - elevation(at: point) }
+
+    /// The distance the shot plays like: uphill adds about a yard per yard of rise, downhill takes it away.
+    func playingDistance(from point: CoursePoint) -> Double { point.distance(to: cup) + rise(from: point) }
 
     func lie(at point: CoursePoint) -> Lie {
         if point.distance(to: tee) < 4 { return .tee }
@@ -106,8 +154,10 @@ struct Hole: Equatable, Sendable {
         }
     }
 
-    /// A gentle dogleg-left par 4. Driver and a short iron reach the green; a long drive can
-    /// find the fairway bunker on the right.
+    /// A gentle dogleg-left par 4 over rolling ground: an elevated tee looks down into a swale
+    /// at driving distance, a ridge guards the right, and the green is a raised plateau that tilts
+    /// toward the front-right. Driver and a short iron reach the green; a long drive can find the
+    /// fairway bunker on the right.
     static let first = Hole(
         number: 1,
         name: "Meadow Bend",
@@ -122,6 +172,20 @@ struct Hole: Equatable, Sendable {
             Hole.Bunker(center: CoursePoint(x: 26, z: -255), radius: 8),
             Hole.Bunker(center: CoursePoint(x: -56, z: -348), radius: 6),
             Hole.Bunker(center: CoursePoint(x: -22, z: -376), radius: 5)
-        ]
+        ],
+        terrain: Terrain(mounds: [
+            Terrain.Mound(center: CoursePoint(x: 0, z: 8), radius: 32, height: 3),          // elevated tee
+            Terrain.Mound(center: CoursePoint(x: 4, z: -205), radius: 48, height: -2.2),    // swale in the landing area
+            Terrain.Mound(center: CoursePoint(x: 34, z: -262), radius: 28, height: 2.4),    // ridge on the right
+            Terrain.Mound(center: CoursePoint(x: -38, z: -360), radius: 55, height: 3.2),   // the green sits on a plateau
+            Terrain.Mound(center: CoursePoint(x: -66, z: -392), radius: 60, height: 1.4),   // back-left high: putts break front-right
+            Terrain.Mound(center: CoursePoint(x: 62, z: -120), radius: 26, height: 3.2),
+            Terrain.Mound(center: CoursePoint(x: -58, z: -140), radius: 30, height: 2.6),
+            Terrain.Mound(center: CoursePoint(x: -78, z: -300), radius: 24, height: 3.4),
+            Terrain.Mound(center: CoursePoint(x: 30, z: -395), radius: 30, height: 2.8),
+            Terrain.Mound(center: CoursePoint(x: 26, z: -255), radius: 7, height: -0.6),    // bunker hollows
+            Terrain.Mound(center: CoursePoint(x: -56, z: -348), radius: 5.5, height: -0.5),
+            Terrain.Mound(center: CoursePoint(x: -22, z: -376), radius: 4.5, height: -0.5)
+        ])
     )
 }

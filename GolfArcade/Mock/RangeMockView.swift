@@ -28,6 +28,7 @@ struct RangeMockView: View {
     @AppStorage("range.handedness") private var handedness: Handedness = .right
     @AppStorage("range.playHole") private var playHole = false
     @AppStorage("range.benchmark3D") private var benchmark3D = false
+    @State private var puttView: MeadowScene.PuttView = .behind
     @Environment(\.scenePhase) private var appPhase
     private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
@@ -41,7 +42,7 @@ struct RangeMockView: View {
                     header
                     ZStack(alignment: .top) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
-                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness, ball: round.ballPosition, heading: round.baseHeading, focusYards: round.hole == nil ? 60 : round.yardsToPin, preview: round.preview)
+                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness, ball: round.ballPosition, heading: round.baseHeading, focusYards: round.hole == nil ? 60 : round.yardsToPin, preview: round.preview, putting: round.isPutting, puttView: puttView)
                         }
                         .accessibilityLabel("Three dimensional Meadow Club driving range")
                         if swingInput == .camera {
@@ -91,6 +92,15 @@ struct RangeMockView: View {
                                         .background(cream, in: Capsule())
                                         .foregroundStyle(ink)
                                         .accessibilityIdentifier("toPin")
+                                    if let rise = riseText {
+                                        // Uphill or downhill to the cup, and what the shot plays like once that is counted.
+                                        Text(rise)
+                                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                            .padding(.horizontal, 9).padding(.vertical, 7)
+                                            .background(round.riseToPin > 0 ? Color(red: 0.55, green: 0.75, blue: 1) : Color(red: 1, green: 0.6, blue: 0.5), in: Capsule())
+                                            .foregroundStyle(ink)
+                                            .accessibilityIdentifier("rise")
+                                    }
                                 }
                             } else {
                                 HStack(spacing: 8) {
@@ -109,9 +119,22 @@ struct RangeMockView: View {
                                     .font(.caption.bold()).padding(10)
                                     .background(ink.opacity(0.9), in: Capsule())
                             } else if round.canSwing {
-                                Text(round.phase == .charging ? "LOAD  \(Int(round.power * 100))%" : sceneHint)
-                                    .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1)
-                                    .padding(12).background(ink.opacity(0.9), in: Capsule())
+                                HStack(spacing: 8) {
+                                    Text(round.phase == .charging ? "LOAD  \(Int(round.power * 100))%" : round.isPutting ? "PUTT · \(round.hole!.feetToCup(from: round.ballPosition)) FT" : sceneHint)
+                                        .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1)
+                                        .padding(12).background(ink.opacity(0.9), in: Capsule())
+                                    if round.isPutting {
+                                        Button {
+                                            puttView = puttView == .behind ? .overhead : .behind
+                                        } label: {
+                                            Label(puttView == .behind ? "Read green" : "Behind ball", systemImage: puttView == .behind ? "square.grid.3x3" : "figure.golf")
+                                                .font(.system(size: 11, weight: .black, design: .rounded))
+                                                .padding(.horizontal, 12).padding(.vertical, 10)
+                                                .background(cream, in: Capsule()).foregroundStyle(ink)
+                                        }
+                                        .accessibilityIdentifier("puttView")
+                                    }
+                                }
                             }
                         }
                         .padding(12)
@@ -344,6 +367,19 @@ struct RangeMockView: View {
         case .backswing: return ("Feel the load.", "Swing through to hit the ball")
         case .downswing: return ("Swing!", "Power comes from your speed")
         }
+    }
+
+    /// "↑ 4 YD · PLAYS 152" for a full shot into a rise, "↓ 6 IN" on the green; nothing when it is level.
+    private var riseText: String? {
+        guard round.hole != nil else { return nil }
+        let rise = round.riseToPin
+        let arrow = rise > 0 ? "↑" : "↓"
+        if round.lie == .green {
+            let inches = Int((abs(rise) * 36).rounded())
+            return inches < 2 ? nil : "\(arrow) \(inches) IN"
+        }
+        guard abs(rise) >= 1 else { return nil }
+        return "\(arrow) \(Int(abs(rise).rounded())) YD · PLAYS \(Int(round.playingYardsToPin.rounded()))"
     }
 
     private var sceneHint: String {

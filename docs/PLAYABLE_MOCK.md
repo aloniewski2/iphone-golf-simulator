@@ -18,10 +18,26 @@ Open the settings menu (sliders icon) and choose **Hole 1 · Par 4**. Meadow Ben
 
 - The ball lies where it stopped. Every shot aims at the pin by default; the aim slider is relative to that line. The golfer, aim line, and camera move to the ball.
 - Lies matter: **rough** keeps 82 % of ball speed and grabs the roll, **sand** keeps 62 %, the **green** is quick (rolling deceleration 0.9 m/s² against 3.2 on the fairway). Roll-out uses the surface the ball lands on.
-- On the green the putter is selected automatically and the read-out switches to feet. A putt scales from zero (soft pull = tap-in, full pull runs the whole green), the camera comes in close, and a ball that rolls over the cup at rolling speed drops in; one that stops within 18 inches is given.
+- On the green the putter is selected automatically and the read-out switches to feet. A putt scales from zero (soft pull = tap-in, full pull runs the whole green), and a ball that rolls over the cup at rolling speed drops in; one that stops within 18 inches is given.
 - Strokes count; holing out shows Birdie / Par / Bogey and saves the best score per hole. Ten strokes picks the ball up.
 
-`Hole` in `GolfArcade/Mock/Hole.swift` describes the layout (centreline, widths, bunkers, cup) and lie rules; `RangeShot` gains an origin, heading, and lie for course shots. Tests play the hole tee-to-cup deterministically.
+`Hole` in `GolfArcade/Mock/Hole.swift` describes the layout (centreline, widths, bunkers, cup, terrain) and lie rules; `RangeShot` gains an origin, heading, and lie for course shots. Tests play the hole tee-to-cup deterministically.
+
+### Hills
+
+The hole is sculpted ground, not a flat disc: `Terrain` is a sum of smooth mounds and hollows (`Hole.terrain`), and everything reads from it. Meadow Bend has an elevated tee that looks down into a swale at driving distance, a ridge on the right, three bunker hollows, and a green raised on a plateau that tilts toward the front-right.
+
+- **Physics.** The flight model takes the ground under the shot: a bounce kicks off the slope it lands on, and a rolling ball is pulled downhill and slowed by the grass, so a putt breaks across the tilt, runs out downhill, and pulls up uphill. Shots into a rise land sooner. Heights in the flight samples are above the course datum.
+- **Read-out.** Beside the yardage a pill shows the rise to the cup and what the shot plays like (`↑ 4 YD · PLAYS 98`, a yard per yard of rise, the way rangefinders do it); on the green it is inches (`↓ 6 IN`).
+- **Scene.** One vertex-coloured mesh (1.5 yd spacing) with fairway stripes, fringe, green, sand and tee feathered at their edges; the cup, flag, tee markers, trees, ball and golfer all stand on the grass at their own height.
+
+## Cameras
+
+The 3D view borrows the framing of the golf games (Wii Sports, PGA TOUR 2K, Mario Golf):
+
+- **Address and flight.** A high, wide chase view for full shots and a tighter one for short shots. The camera rides on the ground under it and looks at the grass ahead, so an elevated tee looks down the hole and a raised green is seen climbing to the flag; a sight-line check lifts it over any rise between it and the ball instead of looking through the hill. Once the ball is down it eases in to about ten yards behind the ball, so the lie and the way ahead fill the frame.
+- **Putting.** On the green with the putter the flag comes out and the view holds still low behind the ball, the cup up the frame, the way 2K frames a putt. A **slope grid** lies over the green's contours, tinted by height against the cup (blue above it — a putt from there runs downhill — red below, as Wii Sports colours it), and **beads** drift downhill across it, faster on steeper ground, so the break is visible at a glance (2K's moving beads, Mario Golf's sliding lights). **Read green** switches to a straight-down view of the line with the cup at the top. The line-up dots show the putt's whole roll, break included.
+- **Scale.** The ball, flag and cup ring are arcade-sized so they can be seen from the tee, and shrink toward true scale as the camera closes in, so nothing towers over the green. The golfer stands at human height.
 
 ## Lining up a shot
 
@@ -37,7 +53,7 @@ Switch the input picker to **Phone** (physical iPhone only; the simulator has no
 
 Hold on tight and clear the space around you. The recognizer is `MotionSwingDetector` in `GolfArcade/Mock/MotionSwing.swift`; every threshold is a named property and the unit tests drive it with synthetic swings.
 
-## Camera
+## Camera swing
 
 Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out at 30 fps, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
 
@@ -72,7 +88,7 @@ Settings provide sound, haptics, instructions, round restart, and the existing *
 
 ## Implementation limits
 
-Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge plus one hole, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
+Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge plus one hole, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
 
 ## Verification
 
