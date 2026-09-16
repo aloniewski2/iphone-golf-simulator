@@ -90,7 +90,7 @@ struct CalibrationView: View {
             Text("We’ll measure your body landmarks so the swing camera follows you instead of person-shaped objects in the background.")
                 .font(.subheadline).foregroundStyle(.white.opacity(0.82))
             instructionRow("Set the phone where it will stay while you play", symbol: "iphone.gen3")
-            instructionRow("Stand 7–12 feet away with your whole body visible", symbol: "arrow.left.and.right")
+            instructionRow("Stand 5–10 feet away with your whole body visible", symbol: "arrow.left.and.right")
             instructionRow("Face the camera and hold your arms slightly out", symbol: "figure.stand")
             Text("No spin needed. The swing tracker uses a front-facing 2D skeleton, so turning around would hide the landmarks it needs.")
                 .font(.caption).foregroundStyle(.secondary)

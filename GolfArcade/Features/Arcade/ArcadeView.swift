@@ -150,7 +150,7 @@ struct ArcadeView: View {
 
     private var instruction: String {
         switch game.phase {
-        case .findingPlayer: "Place the phone 7–12 feet away and fit your full body in frame."
+        case .findingPlayer: "Place the phone 5–10 feet away and fit your full body in frame."
         case .address: "Settle over the virtual ball, then swing when ready."
         case .backswing, .downswing, .impact: "Keep moving — we’re reading your swing."
         case .followThrough: "Hold your finish."
