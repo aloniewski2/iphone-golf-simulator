@@ -30,6 +30,7 @@ final class RangeRound: ObservableObject {
     let shotLimit = 5
     private let defaults: UserDefaults
     private var pausedAt: Date?
+    private var previewCache: (key: String, shot: RangeShot)?
 
     init(mode: GameMode = .range, defaults: UserDefaults = .standard) {
         self.mode = mode
@@ -51,6 +52,24 @@ final class RangeRound: ObservableObject {
     /// Compass heading the aim slider is relative to: straight downrange on the range, at the pin on a hole.
     var baseHeading: Double { hole.map { ballPosition.heading(to: $0.cup) } ?? 0 }
     var shotHeading: Double { baseHeading }
+
+    /// The shot the current club, aim, lie, and load would produce: full power at address, the
+    /// live load while charging (quantised so a drag does not resimulate every pixel). This is the
+    /// Wii-style line-up: where the ball will go before you commit.
+    var preview: RangeShot? {
+        guard canSwing else { return nil }
+        let power = phase == .charging ? max(0.06, (self.power * 50).rounded() / 50) : 1
+        let key = "\(club.rawValue)|\(power)|\(aim)|\(ballPosition.x),\(ballPosition.z)|\(lie.rawValue)"
+        if let cached = previewCache, cached.key == key { return cached.shot }
+        let shot: RangeShot
+        if let hole {
+            shot = RangeShot(id: 0, club: club, power: power, aim: aim, from: ballPosition, heading: baseHeading, lie: lie, on: hole)
+        } else {
+            shot = RangeShot(id: 0, club: club, power: power, aim: aim)
+        }
+        previewCache = (key, shot)
+        return shot
+    }
 
     // MARK: Swinging
 

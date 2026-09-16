@@ -23,7 +23,7 @@ final class MotionSwingDetectorTests: XCTestCase {
     }
 
     private func impacts(_ events: [MotionSwingDetector.Event]) -> [Double] {
-        events.compactMap { if case .impact(let power, _) = $0 { power } else { nil } }
+        events.compactMap { if case .impact(let power, _, _) = $0 { power } else { nil } }
     }
 
     func testFullSwingLoadsThenImpactsWithSpeedBasedPower() {

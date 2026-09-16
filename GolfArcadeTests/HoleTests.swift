@@ -132,3 +132,43 @@ final class HoleTests: XCTestCase {
         XCTAssertEqual(round.club, .iron)
     }
 }
+
+final class ShotPreviewTests: XCTestCase {
+    @MainActor
+    func testPreviewShowsFullPowerAtAddressAndTheLiveLoadWhileCharging() {
+        let round = RangeRound(mode: .hole(.first), defaults: UserDefaults(suiteName: "Preview-\(UUID().uuidString)")!)
+        let full = try! XCTUnwrap(round.preview)
+        XCTAssertEqual(full.power, 1)
+        XCTAssertEqual(full.club, .driver)
+        XCTAssertEqual(full.total, GolfClub.driver.mockDistance, accuracy: 1)
+        XCTAssertTrue(round.preview == full, "cached while nothing changes")
+
+        round.charge(0.5)
+        let half = try! XCTUnwrap(round.preview)
+        XCTAssertEqual(half.power, 0.5, accuracy: 0.011)
+        XCTAssertLessThan(half.total, full.total * 0.8, "the landing ring walks in as the load drops")
+        round.charge(0.503)
+        XCTAssertEqual(round.preview, half, "tiny drag changes reuse the cached preview")
+
+        round.aim = 10
+        let aimed = try! XCTUnwrap(round.preview)
+        XCTAssertGreaterThan(aimed.restingPoint.x, half.restingPoint.x, "aim right moves the line-up right")
+
+        round.release()
+        XCTAssertNil(round.preview, "no line-up while the ball is in the air")
+    }
+
+    @MainActor
+    func testPreviewFollowsTheBallAroundTheCourse() {
+        let hole = Hole.first
+        let round = RangeRound(mode: .hole(hole), defaults: UserDefaults(suiteName: "Preview-\(UUID().uuidString)")!)
+        let start = Date()
+        round.charge(0.9)
+        round.release(at: start)
+        round.advance(at: start.addingTimeInterval(30))
+        round.nextShot()
+        let next = try! XCTUnwrap(round.preview)
+        XCTAssertEqual(next.origin, round.ballPosition)
+        XCTAssertEqual(next.heading, round.ballPosition.heading(to: hole.cup), accuracy: 1e-9, "lined up on the pin from the new lie")
+    }
+}

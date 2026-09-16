@@ -14,7 +14,9 @@ enum SwingInputEvent: Equatable {
     case load(Double)
     case cancel
     /// `curve` tilts the ball's spin axis, in degrees: a draw (negative) or fade read from the swing.
-    case impact(power: Double, curve: Double = 0)
+    /// `latency` is how long ago, in seconds, impact actually happened when the event was raised —
+    /// a camera reports it on the next frame, so the ball is launched back-dated by this much.
+    case impact(power: Double, curve: Double = 0, latency: Double = 0)
 }
 
 struct MotionSwingDetector {
