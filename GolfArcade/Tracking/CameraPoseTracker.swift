@@ -12,8 +12,12 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     let session = AVCaptureSession()
     @Published private(set) var status: Status = .idle
     @Published private(set) var latestFrame: PoseFrame?
+    @Published private(set) var latestCaptureTimestamp: TimeInterval = 0
     @Published private(set) var detectedBodyCount = 0
     @Published private(set) var playerMatchConfidence: Double?
+    /// Rotation physically applied to both the delivered buffer and its preview.
+    @Published private(set) var videoRotationAngle: CGFloat = 0
+    @Published private(set) var isVideoMirrored = true
     /// Horizontal field of view of the active format, in degrees, for on-screen guidance.
     @Published private(set) var fieldOfView: Float = 0
     /// Width ÷ height of the delivered (portrait) frames, so previews can show the whole frame.
@@ -25,6 +29,8 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     private let calibrationLock = NSLock()
     private var calibration: PlayerCalibration?
     private var isConfigured = false
+    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var rotationObservation: NSKeyValueObservation?
 
     func setCalibration(_ calibration: PlayerCalibration?) {
         calibrationLock.lock()
@@ -82,12 +88,44 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         }
         session.addInput(input)
         session.addOutput(output)
-        if let connection = output.connection(with: .video) {
-            if connection.isVideoRotationAngleSupported(90) { connection.videoRotationAngle = 90 }
-            if connection.isVideoMirroringSupported { connection.isVideoMirrored = true }
-        }
+        configureRotation(for: camera, output: output)
         isConfigured = true
         return true
+    }
+
+    /// AVCaptureDevice cameras do not all share the same native sensor orientation. The rotation
+    /// coordinator is the camera-specific source of truth and also updates when the phone turns.
+    /// Rotation and mirroring are physically applied here, so Vision receives an upright `.up`
+    /// image and the preview can use the exact same transform.
+    private func configureRotation(for camera: AVCaptureDevice, output: AVCaptureVideoDataOutput) {
+        let coordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: nil)
+        rotationCoordinator = coordinator
+        applyRotation(coordinator.videoRotationAngleForHorizonLevelCapture, to: output)
+        rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self, weak output] coordinator, _ in
+            guard let self, let output else { return }
+            let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+            self.captureQueue.async { [weak self, weak output] in
+                guard let self, let output else { return }
+                self.applyRotation(angle, to: output)
+            }
+        }
+    }
+
+    private func applyRotation(_ angle: CGFloat, to output: AVCaptureVideoDataOutput) {
+        guard let connection = output.connection(with: .video) else { return }
+        if connection.isVideoRotationAngleSupported(angle) {
+            connection.videoRotationAngle = angle
+        }
+        if connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = true
+        }
+        let appliedAngle = connection.videoRotationAngle
+        let appliedMirror = connection.isVideoMirrored
+        DispatchQueue.main.async { [weak self] in
+            self?.videoRotationAngle = appliedAngle
+            self?.isVideoMirrored = appliedMirror
+        }
     }
 
     /// The default preset crops the sensor. The widest format plus the minimum zoom factor keeps a
@@ -114,31 +152,44 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         } catch {
             return
         }
-        let size = CMVideoFormatDescriptionGetDimensions(widest.formatDescription)
         let fov = widest.videoFieldOfView / Float(camera.videoZoomFactor)
-        let aspect = CGFloat(size.height) / CGFloat(size.width) // frames are rotated to portrait
         DispatchQueue.main.async { [weak self] in
             self?.fieldOfView = fov
-            self?.frameAspect = aspect
         }
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
         do {
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .upMirrored)
+            // The output connection has already made the pixels upright and mirrored.
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up)
             try handler.perform([request])
             let observations = request.results ?? []
-            let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
             let frames = observations.compactMap { try? poseFrame(from: $0, timestamp: timestamp) }
             let selection = selectPlayer(from: frames)
+            let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
+            let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
             DispatchQueue.main.async { [weak self] in
+                self?.latestCaptureTimestamp = timestamp
                 self?.detectedBodyCount = frames.count
                 self?.latestFrame = selection?.frame
                 self?.playerMatchConfidence = selection?.confidence
+                if height > 0, let self {
+                    let aspect = width / height
+                    if abs(self.frameAspect - aspect) > 0.001 { self.frameAspect = aspect }
+                }
             }
         } catch {
-            // Unrecognized frames are expected and safely ignored.
+            DispatchQueue.main.async { [weak self] in
+                self?.latestCaptureTimestamp = timestamp
+                self?.detectedBodyCount = 0
+                self?.latestFrame = nil
+                self?.playerMatchConfidence = nil
+            }
+            #if DEBUG
+            print("Vision body-pose request failed: \(error.localizedDescription)")
+            #endif
         }
     }
 

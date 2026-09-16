@@ -130,12 +130,75 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertEqual(accumulator.assessment, .ready)
     }
 
-    func testIncompleteBodyDoesNotAdvanceCalibration() {
+    func testOneWeakAnkleDoesNotBlockCalibration() {
         var accumulator = CalibrationAccumulator()
-        let incomplete = calibrationFrame(timestamp: 0, dropping: [.leftAnkle])
+        let partiallyOccluded = calibrationFrame(timestamp: 0, dropping: [.leftAnkle])
+
+        XCTAssertNil(accumulator.ingest(partiallyOccluded))
+        XCTAssertEqual(accumulator.sampleCount, 1)
+        XCTAssertGreaterThan(accumulator.progress, 0)
+        XCTAssertEqual(accumulator.assessment, .ready)
+    }
+
+    func testMissingBothFeetDoesNotAdvanceCalibration() {
+        var accumulator = CalibrationAccumulator()
+        let incomplete = calibrationFrame(timestamp: 0, dropping: [.leftAnkle, .rightAnkle])
 
         XCTAssertNil(accumulator.ingest(incomplete))
         XCTAssertEqual(accumulator.progress, 0)
+        XCTAssertEqual(accumulator.assessment, .incompleteBody)
+    }
+
+    func testBriefTrackingDropoutPreservesProgress() {
+        var accumulator = CalibrationAccumulator()
+        for index in 0..<10 {
+            XCTAssertNil(accumulator.ingest(calibrationFrame(timestamp: Double(index) / 30)))
+        }
+
+        XCTAssertNil(accumulator.ingest(calibrationFrame(timestamp: 10.0 / 30, dropping: [.leftAnkle, .rightAnkle])))
+        XCTAssertEqual(accumulator.sampleCount, 10)
+        XCTAssertEqual(accumulator.assessment, .incompleteBody)
+
+        var result: PlayerCalibration?
+        for index in 11...30 {
+            result = accumulator.ingest(calibrationFrame(timestamp: Double(index) / 30))
+        }
+        XCTAssertNotNil(result)
+        XCTAssertEqual(accumulator.progress, 1, accuracy: 0.001)
+    }
+
+    func testMultiplePeoplePauseWithoutErasingProgress() {
+        var accumulator = CalibrationAccumulator()
+        for index in 0..<8 {
+            _ = accumulator.ingest(calibrationFrame(timestamp: Double(index) / 30))
+        }
+
+        XCTAssertNil(accumulator.ingest(calibrationFrame(timestamp: 8.0 / 30), detectedBodyCount: 2))
+        XCTAssertEqual(accumulator.sampleCount, 8)
+        XCTAssertEqual(accumulator.assessment, .multiplePeople)
+    }
+
+    func testOpenPoseWorksWhenCoordinatesAreMirrored() {
+        let original = calibrationFrame(timestamp: 0)
+        let mirrored = PoseFrame(
+            timestamp: original.timestamp,
+            points: original.points.mapValues {
+                PosePoint(location: CGPoint(x: 1 - $0.location.x, y: $0.location.y), confidence: $0.confidence)
+            }
+        )
+
+        XCTAssertTrue(mirrored.hasOpenCalibrationPose)
+        XCTAssertTrue(mirrored.hasCalibrationBody)
+    }
+
+    func testProgressRestartsOnlyAfterPlayerIsGoneForTwoSeconds() {
+        var accumulator = CalibrationAccumulator()
+        for index in 0..<8 {
+            _ = accumulator.ingest(calibrationFrame(timestamp: Double(index) / 30))
+        }
+
+        accumulator.reportTracking(bodyCount: 0, timestamp: 2.5)
+        XCTAssertEqual(accumulator.sampleCount, 0)
         XCTAssertEqual(accumulator.assessment, .incompleteBody)
     }
 

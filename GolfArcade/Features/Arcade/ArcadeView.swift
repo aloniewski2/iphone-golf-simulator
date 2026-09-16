@@ -72,8 +72,12 @@ struct ArcadeView: View {
 
     private var trackingStage: some View {
         ZStack {
-            CameraPreview(session: tracker.session)
-            PoseSkeletonView(frame: tracker.latestFrame)
+            CameraPreview(
+                session: tracker.session,
+                videoRotationAngle: tracker.videoRotationAngle,
+                isVideoMirrored: tracker.isVideoMirrored
+            )
+            PoseSkeletonView(frame: tracker.latestFrame, frameAspect: tracker.frameAspect)
             SwingFeedbackOverlay(phase: game.phase, impactPulse: game.impactPulse)
             LinearGradient(colors: [.clear, .black.opacity(0.72)], startPoint: .center, endPoint: .bottom)
             VStack {

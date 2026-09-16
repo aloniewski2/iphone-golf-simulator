@@ -14,11 +14,19 @@ struct CalibrationView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            CameraPreview(session: tracker.session).ignoresSafeArea()
+            CameraPreview(
+                session: tracker.session,
+                videoRotationAngle: tracker.videoRotationAngle,
+                isVideoMirrored: tracker.isVideoMirrored,
+                videoGravity: .resizeAspect
+            )
+            .ignoresSafeArea()
             if step == .scanning {
-                PoseSkeletonView(frame: tracker.latestFrame).ignoresSafeArea()
+                PoseSkeletonView(frame: tracker.latestFrame, frameAspect: tracker.frameAspect, contentMode: .fit)
+                    .ignoresSafeArea()
                 CalibrationBodyGuide().stroke(guideColor, style: StrokeStyle(lineWidth: 3, dash: [9, 7]))
-                    .padding(.horizontal, 44).padding(.vertical, 104)
+                    .aspectRatio(tracker.frameAspect, contentMode: .fit)
+                    .padding(.horizontal, 44).padding(.vertical, 24)
                     .accessibilityHidden(true)
             }
             LinearGradient(colors: [.black.opacity(0.72), .clear, .black.opacity(0.88)], startPoint: .top, endPoint: .bottom)
@@ -27,7 +35,12 @@ struct CalibrationView: View {
             VStack(spacing: 22) {
                 header
                 Spacer()
-                if step == .intro { introCard } else { scanControls }
+                if step == .intro {
+                    ScrollView { introCard }
+                        .scrollIndicators(.hidden)
+                } else {
+                    scanControls
+                }
             }
             .padding(20)
 
@@ -35,9 +48,16 @@ struct CalibrationView: View {
         }
         .onAppear { tracker.start() }
         .onDisappear { tracker.stop() }
-        .onReceive(tracker.$latestFrame.compactMap { $0 }) { frame in
+        .onReceive(tracker.$latestFrame) { frame in
             guard step == .scanning, !isFinishing else { return }
-            if let calibration = accumulator.ingest(frame) {
+            guard let frame else {
+                accumulator.reportTracking(
+                    bodyCount: tracker.detectedBodyCount,
+                    timestamp: tracker.latestCaptureTimestamp
+                )
+                return
+            }
+            if let calibration = accumulator.ingest(frame, detectedBodyCount: tracker.detectedBodyCount) {
                 isFinishing = true
                 PlayerCalibrationStore.save(calibration)
                 tracker.setCalibration(calibration)
@@ -93,10 +113,7 @@ struct CalibrationView: View {
 
     private var scanControls: some View {
         VStack(spacing: 14) {
-            if tracker.detectedBodyCount > 1 {
-                Label("Only the player should be in frame", systemImage: "person.2.slash")
-                    .font(.caption.bold()).foregroundStyle(.yellow)
-            }
+            scanStatus
             ProgressView(value: accumulator.progress)
                 .tint(.mint).scaleEffect(x: 1, y: 2)
                 .accessibilityLabel("Body scan progress")
@@ -104,7 +121,8 @@ struct CalibrationView: View {
             HStack {
                 Text(isFinishing ? "Calibration complete" : "SCANNING")
                 Spacer()
-                Text("\(Int(accumulator.progress * 100))%").monospacedDigit()
+                Text("\(accumulator.sampleCount)/\(CalibrationAccumulator.requiredSampleCount)")
+                    .monospacedDigit()
             }
             .font(.caption.bold())
             Button("Review setup instructions") {
@@ -115,6 +133,16 @@ struct CalibrationView: View {
         }
         .padding(20)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private var scanStatus: some View {
+        Label {
+            Text(accumulator.assessment == .ready ? "Body locked — keep holding" : "Waiting for a valid pose")
+        } icon: {
+            Image(systemName: accumulator.assessment == .ready ? "checkmark.circle.fill" : "viewfinder.circle")
+        }
+        .font(.caption.bold())
+        .foregroundStyle(accumulator.assessment == .ready ? .mint : .yellow)
     }
 
     private func instructionRow(_ text: String, symbol: String) -> some View {

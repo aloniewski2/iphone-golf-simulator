@@ -2,7 +2,7 @@ import CoreGraphics
 import Foundation
 
 struct PlayerCalibration: Codable, Equatable, Sendable {
-    static let currentVersion = 1
+    static let currentVersion = 2
 
     let version: Int
     let capturedAt: Date
@@ -69,28 +69,34 @@ struct BodySignature: Codable, Equatable, Sendable {
     }
 
     init?(frame: PoseFrame) {
-        guard let bounds = frame.bodyBounds, bounds.height > 0,
-              let leftShoulder = frame.point(.leftShoulder, minimumConfidence: 0.45),
-              let rightShoulder = frame.point(.rightShoulder, minimumConfidence: 0.45),
-              let leftElbow = frame.point(.leftElbow, minimumConfidence: 0.45),
-              let rightElbow = frame.point(.rightElbow, minimumConfidence: 0.45),
-              let leftWrist = frame.point(.leftWrist, minimumConfidence: 0.45),
-              let rightWrist = frame.point(.rightWrist, minimumConfidence: 0.45),
-              let leftHip = frame.point(.leftHip, minimumConfidence: 0.45),
-              let rightHip = frame.point(.rightHip, minimumConfidence: 0.45),
-              let leftKnee = frame.point(.leftKnee, minimumConfidence: 0.45),
-              let rightKnee = frame.point(.rightKnee, minimumConfidence: 0.45),
-              let leftAnkle = frame.point(.leftAnkle, minimumConfidence: 0.45),
-              let rightAnkle = frame.point(.rightAnkle, minimumConfidence: 0.45) else { return nil }
+        guard let bounds = frame.calibrationBounds, bounds.height > 0,
+              let leftShoulder = frame.point(.leftShoulder, minimumConfidence: 0.35),
+              let rightShoulder = frame.point(.rightShoulder, minimumConfidence: 0.35),
+              let leftHip = frame.point(.leftHip, minimumConfidence: 0.35),
+              let rightHip = frame.point(.rightHip, minimumConfidence: 0.35),
+              let arms = Self.averageSegment(in: frame, pairs: [(.leftShoulder, .leftElbow), (.rightShoulder, .rightElbow)]),
+              let forearms = Self.averageSegment(in: frame, pairs: [(.leftElbow, .leftWrist), (.rightElbow, .rightWrist)]),
+              let thighs = Self.averageSegment(in: frame, pairs: [(.leftHip, .leftKnee), (.rightHip, .rightKnee)]),
+              let shins = Self.averageSegment(in: frame, pairs: [(.leftKnee, .leftAnkle), (.rightKnee, .rightAnkle)]) else { return nil }
 
         let scale = Double(bounds.height)
         shoulderWidth = pointDistance(leftShoulder, rightShoulder) / scale
         hipWidth = pointDistance(leftHip, rightHip) / scale
         torsoLength = pointDistance(midpoint(leftShoulder, rightShoulder), midpoint(leftHip, rightHip)) / scale
-        upperArmLength = average(pointDistance(leftShoulder, leftElbow), pointDistance(rightShoulder, rightElbow)) / scale
-        forearmLength = average(pointDistance(leftElbow, leftWrist), pointDistance(rightElbow, rightWrist)) / scale
-        thighLength = average(pointDistance(leftHip, leftKnee), pointDistance(rightHip, rightKnee)) / scale
-        shinLength = average(pointDistance(leftKnee, leftAnkle), pointDistance(rightKnee, rightAnkle)) / scale
+        upperArmLength = arms / scale
+        forearmLength = forearms / scale
+        thighLength = thighs / scale
+        shinLength = shins / scale
+    }
+
+    private static func averageSegment(in frame: PoseFrame, pairs: [(BodyJoint, BodyJoint)]) -> Double? {
+        let lengths = pairs.compactMap { start, end -> Double? in
+            guard let a = frame.point(start, minimumConfidence: 0.35),
+                  let b = frame.point(end, minimumConfidence: 0.35) else { return nil }
+            return pointDistance(a, b)
+        }
+        guard !lengths.isEmpty else { return nil }
+        return lengths.reduce(0, +) / Double(lengths.count)
     }
 
     init(averaging signatures: [BodySignature]) {
@@ -184,12 +190,14 @@ struct BodyAnchor: Codable, Equatable, Sendable {
 }
 
 enum CalibrationAssessment: Equatable, Sendable {
-    case ready, incompleteBody, moveCloser, moveTowardCenter, armsAwayFromBody, holdStill
+    case ready, noBody, multiplePeople, incompleteBody, moveCloser, moveTowardCenter, armsAwayFromBody, holdStill
 
     var instruction: String {
         switch self {
         case .ready: "Hold still — scanning your proportions"
-        case .incompleteBody: "Fit your head, hands, and feet inside the frame"
+        case .noBody: "Step into the guide so your full body is visible"
+        case .multiplePeople: "Only the player should be in the camera frame"
+        case .incompleteBody: "Keep your face and at least one hand and foot visible"
         case .moveCloser: "Move closer so your body fills the guide"
         case .moveTowardCenter: "Step into the center of the guide"
         case .armsAwayFromBody: "Face forward with your arms slightly away from your sides"
@@ -199,42 +207,48 @@ enum CalibrationAssessment: Equatable, Sendable {
 }
 
 struct CalibrationAccumulator: Sendable {
-    static let requiredSampleCount = 45
+    static let requiredSampleCount = 30
 
     private(set) var assessment: CalibrationAssessment = .incompleteBody
     private(set) var sampleCount = 0
     private var signatures: [BodySignature] = []
     private var anchors: [BodyAnchor] = []
     private var previousRoot: CGPoint?
+    private var lastAcceptedTimestamp: TimeInterval?
 
     var progress: Double { min(Double(sampleCount) / Double(Self.requiredSampleCount), 1) }
 
-    mutating func ingest(_ frame: PoseFrame) -> PlayerCalibration? {
-        guard let signature = BodySignature(frame: frame), let bounds = frame.bodyBounds,
+    mutating func ingest(_ frame: PoseFrame, detectedBodyCount: Int = 1) -> PlayerCalibration? {
+        guard detectedBodyCount == 1 else {
+            reject(detectedBodyCount > 1 ? .multiplePeople : .noBody, at: frame.timestamp)
+            return nil
+        }
+        guard let signature = BodySignature(frame: frame), let bounds = frame.calibrationBounds,
               frame.hasCalibrationBody else {
-            reject(.incompleteBody)
+            reject(.incompleteBody, at: frame.timestamp)
             return nil
         }
         guard bounds.height >= 0.42 else {
-            reject(.moveCloser)
+            reject(.moveCloser, at: frame.timestamp)
             return nil
         }
         guard (0.22...0.78).contains(bounds.midX), (0.28...0.72).contains(bounds.midY) else {
-            reject(.moveTowardCenter)
+            reject(.moveTowardCenter, at: frame.timestamp)
             return nil
         }
         guard frame.hasOpenCalibrationPose else {
-            reject(.armsAwayFromBody)
+            reject(.armsAwayFromBody, at: frame.timestamp)
             return nil
         }
-        if let root = frame.point(.root, minimumConfidence: 0.55),
-           let previousRoot, pointDistance(root, previousRoot) > 0.018 {
+        if let root = frame.stabilityCenter,
+           let previousRoot, pointDistance(root, previousRoot) > 0.045 {
             self.previousRoot = root
-            reject(.holdStill, keepRecentSamples: true)
+            reject(.holdStill, at: frame.timestamp)
             return nil
         }
 
-        previousRoot = frame.point(.root, minimumConfidence: 0.55)
+        previousRoot = frame.stabilityCenter
+        lastAcceptedTimestamp = frame.timestamp
         assessment = .ready
         signatures.append(signature)
         anchors.append(BodyAnchor(frame: frame, bounds: bounds))
@@ -253,23 +267,35 @@ struct CalibrationAccumulator: Sendable {
         signatures.removeAll(keepingCapacity: true)
         anchors.removeAll(keepingCapacity: true)
         previousRoot = nil
+        lastAcceptedTimestamp = nil
     }
 
-    private mutating func reject(_ reason: CalibrationAssessment, keepRecentSamples: Bool = false) {
+    mutating func reportTracking(bodyCount: Int, timestamp: TimeInterval? = nil) {
+        guard bodyCount != 1 else { return }
+        assessment = bodyCount > 1 ? .multiplePeople : .noBody
+        if let timestamp { expireSamplesIfNeeded(at: timestamp) }
+    }
+
+    private mutating func reject(_ reason: CalibrationAssessment, at timestamp: TimeInterval) {
         assessment = reason
-        if keepRecentSamples, signatures.count > 8 {
-            signatures.removeFirst(signatures.count - 8)
-            anchors.removeFirst(anchors.count - 8)
-        } else if !keepRecentSamples {
+        // A blink, occluded ankle, or one noisy Vision frame must not erase a nearly finished scan.
+        // If the player has truly left for two seconds, start a fresh reference instead of mixing people.
+        expireSamplesIfNeeded(at: timestamp)
+    }
+
+    private mutating func expireSamplesIfNeeded(at timestamp: TimeInterval) {
+        if let lastAcceptedTimestamp, timestamp - lastAcceptedTimestamp > 2.0 {
             signatures.removeAll(keepingCapacity: true)
             anchors.removeAll(keepingCapacity: true)
+            previousRoot = nil
+            self.lastAcceptedTimestamp = nil
         }
         sampleCount = signatures.count
     }
 }
 
 enum PlayerCalibrationStore {
-    private static let key = "playerBodyCalibration.v1"
+    private static let key = "playerBodyCalibration.v2"
 
     static func load(defaults: UserDefaults = .standard) -> PlayerCalibration? {
         guard let data = defaults.data(forKey: key),
@@ -295,5 +321,3 @@ private func pointDistance(_ first: CGPoint, _ second: CGPoint) -> Double {
 private func midpoint(_ first: CGPoint, _ second: CGPoint) -> CGPoint {
     CGPoint(x: (first.x + second.x) / 2, y: (first.y + second.y) / 2)
 }
-
-private func average(_ first: Double, _ second: Double) -> Double { (first + second) / 2 }

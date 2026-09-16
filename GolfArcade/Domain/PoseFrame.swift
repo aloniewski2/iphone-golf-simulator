@@ -35,16 +35,33 @@ struct PoseFrame: Equatable, Sendable {
     }
 
     var hasCalibrationBody: Bool {
-        let required: [BodyJoint] = [
-            .nose, .neck, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
-            .leftWrist, .rightWrist, .root, .leftHip, .rightHip,
-            .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
+        let stableCore: [BodyJoint] = [
+            .nose, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+            .leftHip, .rightHip, .leftKnee, .rightKnee
         ]
-        return required.allSatisfy { point($0, minimumConfidence: 0.55) != nil }
+        let hasCore = stableCore.allSatisfy { point($0, minimumConfidence: 0.40) != nil }
+        let hasHand = [.leftWrist, .rightWrist].contains { point($0, minimumConfidence: 0.35) != nil }
+        let hasFoot = [.leftAnkle, .rightAnkle].contains { point($0, minimumConfidence: 0.35) != nil }
+        return hasCore && hasHand && hasFoot
     }
 
     var bodyBounds: CGRect? {
         let visible = points.values.filter { $0.confidence >= 0.45 }.map(\.location)
+        guard let first = visible.first else { return nil }
+        return visible.dropFirst().reduce(CGRect(origin: first, size: .zero)) { bounds, point in
+            bounds.union(CGRect(origin: point, size: .zero))
+        }
+    }
+
+    /// Bounds for calibration use the joints that passed the calibration confidence gate. This
+    /// keeps a temporarily weak second ankle from shrinking the measured person.
+    var calibrationBounds: CGRect? {
+        let joints: [BodyJoint] = [
+            .nose, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+            .leftWrist, .rightWrist, .leftHip, .rightHip,
+            .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
+        ]
+        let visible = joints.compactMap { point($0, minimumConfidence: 0.35) }
         guard let first = visible.first else { return nil }
         return visible.dropFirst().reduce(CGRect(origin: first, size: .zero)) { bounds, point in
             bounds.union(CGRect(origin: point, size: .zero))
@@ -64,13 +81,21 @@ struct PoseFrame: Equatable, Sendable {
     }
 
     var hasOpenCalibrationPose: Bool {
-        guard let leftWrist = point(.leftWrist, minimumConfidence: 0.55),
-              let rightWrist = point(.rightWrist, minimumConfidence: 0.55),
-              let leftHip = point(.leftHip, minimumConfidence: 0.55),
-              let rightHip = point(.rightHip, minimumConfidence: 0.55),
-              let width = shoulderWidth else { return false }
-        return leftWrist.x < leftHip.x - width * 0.12
-            && rightWrist.x > rightHip.x + width * 0.12
+        guard let center = shoulderCenter, let width = shoulderWidth else { return false }
+        let wrists = [.leftWrist, .rightWrist].compactMap { point($0, minimumConfidence: 0.35) }
+        guard !wrists.isEmpty else { return false }
+        if wrists.count == 1 {
+            return abs(wrists[0].x - center.x) >= width * 0.62
+        }
+        let xs = wrists.map(\.x)
+        return (xs.max() ?? center.x) - (xs.min() ?? center.x) >= width * 1.55
+    }
+
+    var stabilityCenter: CGPoint? {
+        if let root = point(.root, minimumConfidence: 0.30) { return root }
+        guard let leftHip = point(.leftHip, minimumConfidence: 0.35),
+              let rightHip = point(.rightHip, minimumConfidence: 0.35) else { return nil }
+        return CGPoint(x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2)
     }
 
     var handCenter: CGPoint? {

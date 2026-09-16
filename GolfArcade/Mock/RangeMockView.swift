@@ -338,8 +338,12 @@ struct RangeMockView: View {
         ZStack {
             Color.black
             if case .running = camera.status {
-                CameraPreview(session: camera.tracker.session)
-                PoseSkeletonView(frame: camera.frame)
+                CameraPreview(
+                    session: camera.tracker.session,
+                    videoRotationAngle: camera.tracker.videoRotationAngle,
+                    isVideoMirrored: camera.tracker.isVideoMirrored
+                )
+                PoseSkeletonView(frame: camera.frame, frameAspect: camera.tracker.frameAspect)
             } else {
                 Image(systemName: "person.crop.rectangle").font(.title2).opacity(0.5)
             }
