@@ -176,7 +176,7 @@ struct Hole: Equatable, Sendable {
         terrain: Terrain(mounds: [
             Terrain.Mound(center: CoursePoint(x: 0, z: 8), radius: 32, height: 3),          // elevated tee
             Terrain.Mound(center: CoursePoint(x: 4, z: -205), radius: 48, height: -2.2),    // swale in the landing area
-            Terrain.Mound(center: CoursePoint(x: 34, z: -262), radius: 28, height: 2.4),    // ridge on the right
+            Terrain.Mound(center: CoursePoint(x: 44, z: -262), radius: 28, height: 2.4),    // ridge banking the right edge
             Terrain.Mound(center: CoursePoint(x: -38, z: -360), radius: 55, height: 3.2),   // the green sits on a plateau
             Terrain.Mound(center: CoursePoint(x: -66, z: -392), radius: 60, height: 1.4),   // back-left high: putts break front-right
             Terrain.Mound(center: CoursePoint(x: 62, z: -120), radius: 26, height: 3.2),

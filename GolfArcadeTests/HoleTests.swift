@@ -291,3 +291,18 @@ final class TerrainTests: XCTestCase {
         XCTAssertGreaterThan(uphill.landing.heightYards, 5, "it finished up the hill")
     }
 }
+
+final class SceneScaleTests: XCTestCase {
+    func testTheBallKeepsItsSizeOnScreenAndNeverVanishes() {
+        // Apparent size is scale ÷ distance: the same from 18 yd out to 135 yd, so a ball that
+        // has just landed 75 yd from the camera is as easy to see as one at address.
+        let near = MeadowScene.adaptiveScale(distance: 18, full: 45, floor: 0.4, ceiling: 3)
+        let landing = MeadowScene.adaptiveScale(distance: 75, full: 45, floor: 0.4, ceiling: 3)
+        let far = MeadowScene.adaptiveScale(distance: 135, full: 45, floor: 0.4, ceiling: 3)
+        XCTAssertEqual(near / 18, landing / 75, accuracy: 1e-6)
+        XCTAssertEqual(landing / 75, far / 135, accuracy: 1e-6)
+        XCTAssertEqual(MeadowScene.adaptiveScale(distance: 300, full: 45, floor: 0.4, ceiling: 3), 3, "capped, so it never becomes a boulder")
+        XCTAssertEqual(MeadowScene.adaptiveScale(distance: 7, full: 45, floor: 0.4, ceiling: 3), 0.4, "and shrinks toward true scale on the green")
+        XCTAssertEqual(MeadowScene.adaptiveScale(distance: 366, full: 90, floor: 0.3), 1, "the flag is full arcade size from the tee")
+    }
+}

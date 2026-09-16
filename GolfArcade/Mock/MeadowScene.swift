@@ -67,7 +67,7 @@ final class MeadowScene {
         }
         ball.geometry = SCNSphere(radius: 0.42)
         ball.geometry?.firstMaterial?.diffuse.contents = UIColor.white
-        ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.15, alpha: 1)
+        ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.3, alpha: 1)
         scene.rootNode.addChildNode(ball)
         shadow.geometry = SCNCylinder(radius: 0.9, height: 0.025)
         shadow.geometry?.firstMaterial?.diffuse.contents = UIColor.black.withAlphaComponent(0.25)
@@ -123,8 +123,9 @@ final class MeadowScene {
                 let isPutt = shot.club == .putter && shot.lie == .green
                 for i in 0..<60 {
                     let point = shot.position(at: Double(i) / 59 * shot.duration)
-                    let dot = SCNNode(geometry: SCNSphere(radius: 0.20))
-                    dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
+                    // Well under the ball's size and faint, so the ball at rest never reads as one more dot.
+                    let dot = SCNNode(geometry: SCNSphere(radius: 0.13))
+                    dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.45)
                     dot.simdPosition = world(point, origin: shot.origin, heading: shot.heading) + simd_float3(0, isPutt ? 0.2 : 0.5, 0)
                     trail.addChildNode(dot)
                 }
@@ -179,7 +180,7 @@ final class MeadowScene {
             // you see. It rides on the ground under it and looks at the grass ahead, so an
             // elevated tee looks down the hole and a raised green is seen climbing up to the flag.
             let closeness = Float(min(1, max(0, (shot?.total ?? focusYards) / 60)))
-            let settled = shot.map { Float(min(1, max(0, (elapsed - $0.flight.carryTime - 0.6) / 1.4))) } ?? 0
+            let settled = shot.map { Float(min(1, max(0, (elapsed - $0.flight.carryTime - 0.2) / 1.2))) } ?? 0
             let smooth = settled * settled * (3 - 2 * settled)
             let back = simd_mix(12 + 26 * closeness, 11, smooth)
             let up = simd_mix(7 + 15 * closeness, 5.5, smooth)
@@ -194,9 +195,11 @@ final class MeadowScene {
             camera.simdPosition = position
             camera.simdLook(at: target)
         }
-        // The ball, flag and cup ring are arcade-sized so they can be seen from the tee; as the
-        // camera closes in they shrink toward true scale, so nothing towers over the green.
-        let ballScale = Self.adaptiveScale(distance: simd_distance(camera.simdPosition, ballWorld), full: 70, floor: 0.4)
+        // The ball keeps the same size on screen wherever the camera is, like a marker: it grows
+        // with distance so it never shrinks to a speck in the air or on landing, and shrinks toward
+        // true scale as the camera closes in on the green. The flag and cup ring are arcade-sized
+        // so they can be seen from the tee and shrink up close, so nothing towers over the green.
+        let ballScale = Self.adaptiveScale(distance: simd_distance(camera.simdPosition, ballWorld), full: 45, floor: 0.4, ceiling: 3)
         ball.simdScale = simd_float3(repeating: ballScale)
         ball.simdPosition = ballWorld + simd_float3(0, 0.6 * ballScale, 0)
         shadow.simdScale = simd_float3(repeating: ballScale)
@@ -205,7 +208,7 @@ final class MeadowScene {
             flag.simdScale = simd_float3(repeating: Self.adaptiveScale(distance: simd_distance(camera.simdPosition, cup), full: 90, floor: 0.3))
             cupMarker.simdScale = simd_float3(repeating: Self.adaptiveScale(distance: simd_distance(camera.simdPosition, cup), full: 40, floor: 0.45))
         }
-        for dot in trail.childNodes + self.preview.childNodes { dot.simdScale = simd_float3(repeating: ballScale) }
+        for dot in trail.childNodes + self.preview.childNodes { dot.simdScale = simd_float3(repeating: min(1, ballScale)) }
         let burst = min(max(elapsed / 0.23, 0), 1)
         impact.isHidden = shot == nil || elapsed > 0.23
         impact.simdPosition = base + simd_float3(0, 0.6, 0)
@@ -239,9 +242,10 @@ final class MeadowScene {
         landingRing.simdScale = simd_float3(repeating: isPutt ? 0.25 : 1)
     }
 
-    /// Full size beyond `full` yards from the camera, shrinking in proportion closer in, never below `floor`.
-    private static func adaptiveScale(distance: Float, full: Float, floor: Float) -> Float {
-        min(1, max(floor, distance / full))
+    /// Scale that keeps a prop the same size on screen: 1 at `full` yards from the camera and in
+    /// proportion to distance either side of that, clamped between `floor` (close up) and `ceiling`.
+    nonisolated static func adaptiveScale(distance: Float, full: Float, floor: Float, ceiling: Float = 1) -> Float {
+        min(ceiling, max(floor, distance / full))
     }
 
     // MARK: Ground
