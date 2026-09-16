@@ -33,9 +33,25 @@ struct PoseSkeletonView: View {
     }
 
     private func screenPoint(_ point: CGPoint, size: CGSize) -> CGPoint {
+        PoseSkeletonMapper.screenPoint(
+            point,
+            in: size,
+            frameAspect: frameAspect,
+            fitsEntireFrame: contentMode == .fit
+        )
+    }
+}
+
+enum PoseSkeletonMapper {
+    static func screenPoint(
+        _ point: CGPoint,
+        in size: CGSize,
+        frameAspect: CGFloat,
+        fitsEntireFrame: Bool
+    ) -> CGPoint {
         guard size.width > 0, size.height > 0, frameAspect > 0 else { return .zero }
         let viewAspect = size.width / size.height
-        let scaleToWidth = contentMode == .fit ? frameAspect > viewAspect : frameAspect < viewAspect
+        let scaleToWidth = fitsEntireFrame ? frameAspect > viewAspect : frameAspect < viewAspect
         let imageSize: CGSize
         if scaleToWidth {
             imageSize = CGSize(width: size.width, height: size.width / frameAspect)

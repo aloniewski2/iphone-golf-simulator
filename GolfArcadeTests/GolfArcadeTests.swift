@@ -271,3 +271,45 @@ final class PlayerCalibrationTests: XCTestCase {
         return PoseFrame(timestamp: timestamp, points: points.filter { !dropping.contains($0.key) })
     }
 }
+
+final class PoseSkeletonMapperTests: XCTestCase {
+    func testAspectFitMapsPortraitFrameIntoVisibleCameraRect() {
+        let size = CGSize(width: 390, height: 844)
+        let topLeft = PoseSkeletonMapper.screenPoint(
+            CGPoint(x: 0, y: 1), in: size, frameAspect: 0.75, fitsEntireFrame: true
+        )
+        let bottomRight = PoseSkeletonMapper.screenPoint(
+            CGPoint(x: 1, y: 0), in: size, frameAspect: 0.75, fitsEntireFrame: true
+        )
+
+        XCTAssertEqual(topLeft.x, 0, accuracy: 0.001)
+        XCTAssertEqual(topLeft.y, 162, accuracy: 0.001)
+        XCTAssertEqual(bottomRight.x, 390, accuracy: 0.001)
+        XCTAssertEqual(bottomRight.y, 682, accuracy: 0.001)
+    }
+
+    func testAspectFillAccountsForHorizontalCameraCropping() {
+        let size = CGSize(width: 390, height: 844)
+        let topLeft = PoseSkeletonMapper.screenPoint(
+            CGPoint(x: 0, y: 1), in: size, frameAspect: 0.75, fitsEntireFrame: false
+        )
+        let center = PoseSkeletonMapper.screenPoint(
+            CGPoint(x: 0.5, y: 0.5), in: size, frameAspect: 0.75, fitsEntireFrame: false
+        )
+
+        XCTAssertEqual(topLeft.x, -121.5, accuracy: 0.001)
+        XCTAssertEqual(topLeft.y, 0, accuracy: 0.001)
+        XCTAssertEqual(center.x, size.width / 2, accuracy: 0.001)
+        XCTAssertEqual(center.y, size.height / 2, accuracy: 0.001)
+    }
+
+    func testLandscapeCenterRemainsAligned() {
+        let size = CGSize(width: 844, height: 390)
+        let center = PoseSkeletonMapper.screenPoint(
+            CGPoint(x: 0.5, y: 0.5), in: size, frameAspect: 4.0 / 3.0, fitsEntireFrame: true
+        )
+
+        XCTAssertEqual(center.x, size.width / 2, accuracy: 0.001)
+        XCTAssertEqual(center.y, size.height / 2, accuracy: 0.001)
+    }
+}
