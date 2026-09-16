@@ -3,7 +3,9 @@ import SwiftUI
 
 struct CalibrationView: View {
     @ObservedObject var tracker: CameraPoseTracker
+    var playerName: String?
     let onComplete: (PlayerCalibration) -> Void
+    var onCancel: (() -> Void)?
 
     @State private var step: Step = .intro
     @State private var accumulator = CalibrationAccumulator()
@@ -46,8 +48,8 @@ struct CalibrationView: View {
 
             if case .denied = tracker.status { permissionOverlay }
         }
+        // The screen that presents the scan decides whether the camera keeps running afterwards.
         .onAppear { tracker.start() }
-        .onDisappear { tracker.stop() }
         .onReceive(tracker.$latestFrame) { frame in
             guard step == .scanning, !isFinishing else { return }
             guard let frame else {
@@ -59,7 +61,6 @@ struct CalibrationView: View {
             }
             if let calibration = accumulator.ingest(frame, detectedBodyCount: tracker.detectedBodyCount) {
                 isFinishing = true
-                PlayerCalibrationStore.save(calibration)
                 tracker.setCalibration(calibration)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { onComplete(calibration) }
@@ -69,7 +70,15 @@ struct CalibrationView: View {
 
     private var header: some View {
         VStack(spacing: 6) {
-            Text(step == .intro ? "PLAYER CALIBRATION" : "FULL-BODY SCAN")
+            if let onCancel {
+                HStack {
+                    Button("Cancel", action: onCancel)
+                        .font(.subheadline.bold())
+                        .accessibilityIdentifier("cancelScan")
+                    Spacer()
+                }
+            }
+            Text(step == .intro ? (playerName.map { "SCAN \($0.uppercased())" } ?? "PLAYER CALIBRATION") : "FULL-BODY SCAN")
                 .font(.caption.bold()).tracking(1.5).foregroundStyle(.mint)
             Text(step == .intro ? "Make every swing yours" : "Stand in the guide")
                 .font(.title.bold()).multilineTextAlignment(.center)

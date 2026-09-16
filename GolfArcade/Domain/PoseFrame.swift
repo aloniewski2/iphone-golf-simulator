@@ -15,6 +15,8 @@ struct PosePoint: Equatable, Sendable {
 struct PoseFrame: Equatable, Sendable {
     let timestamp: TimeInterval
     let points: [BodyJoint: PosePoint]
+    /// Finger-level hand readings, when hand pose ran on this frame.
+    var hands: [HandReading] = []
 
     func point(_ joint: BodyJoint, minimumConfidence: Float = 0.25) -> CGPoint? {
         guard let point = points[joint], point.confidence >= minimumConfidence else { return nil }

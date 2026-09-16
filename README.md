@@ -4,7 +4,7 @@ An iPhone-first, motion-controlled golf game where the player's body is the cont
 
 ## Current focus
 
-**Playable mock:** launch the app to play a five-shot challenge on an original 3D driving range. The first launch requires a short, front-facing full-body calibration so Vision can keep tracking the player instead of background people or person-shaped objects. When the scan finishes, the course takes over the screen, camera swing input starts automatically, and the live camera becomes a small bottom-left picture-in-picture. Choose a club, aim, then swing for a power- and shape-dependent ball flight — or use the touch and phone-as-club inputs. Ball flight is physically simulated (drag, backspin lift, bounce, roll). Includes sound, power-linked haptics, three scoring targets, replay, round results, and saved personal best. See [the testing guide](docs/PLAYABLE_MOCK.md).
+**Playable mock:** pick Solo or Multiplayer (2–4 players, each with their own body scan), choose an Easy, Medium, or Hard three-hole course, and play each hole out stroke by stroke with bunkers, water, and out of bounds. In Camera mode you line your hands up with a virtual ball and where they cross it decides the contact. The course fills the screen with a floating club rail and a bottom-left camera view, and fist swipes plus a punch toward the camera navigate the menus. See [the testing guide](docs/PLAYABLE_MOCK.md).
 
 The first playable milestone is **Arcade Mode**: generous swing recognition, a small club set, believable shot variety, and immediate visual feedback. The architecture keeps observed pose data separate from estimated golf metrics so Assisted and Simulation modes can become more realistic without replacing the core pipeline.
 

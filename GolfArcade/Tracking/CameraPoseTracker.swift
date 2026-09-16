@@ -26,6 +26,16 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     private let captureQueue = DispatchQueue(label: "golf.camera.capture", qos: .userInitiated)
     private let visionQueue = DispatchQueue(label: "golf.camera.vision", qos: .userInitiated)
     private let request = VNDetectHumanBodyPoseRequest()
+    private let handRequest: VNDetectHumanHandPoseRequest = {
+        let request = VNDetectHumanHandPoseRequest()
+        request.maximumHandCount = 2
+        return request
+    }()
+    /// Hand pose only runs while gestures can be used, on every other frame; readings are reused
+    /// briefly in between. Guarded by `calibrationLock`.
+    private var handPoseEnabled = false
+    private var frameCounter = 0
+    private var lastHands: (time: TimeInterval, hands: [(wrist: CGPoint, shape: HandShape)]) = (0, [])
     private let calibrationLock = NSLock()
     private var calibration: PlayerCalibration?
     private var isConfigured = false
@@ -37,6 +47,12 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         self.calibration = calibration
         calibrationLock.unlock()
         DispatchQueue.main.async { [weak self] in self?.playerMatchConfidence = nil }
+    }
+
+    func setHandPoseEnabled(_ enabled: Bool) {
+        calibrationLock.lock()
+        handPoseEnabled = enabled
+        calibrationLock.unlock()
     }
 
     func start() {
@@ -167,18 +183,28 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         do {
             // The output connection has already made the pixels upright and mirrored.
             let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up)
-            try handler.perform([request])
-            let observations = request.results ?? []
-            let correctedPoses = observations.compactMap {
-                try? poseFrame(from: $0, timestamp: timestamp).correctingSidewaysOrientation()
+            calibrationLock.lock()
+            frameCounter += 1
+            let runHands = handPoseEnabled && frameCounter.isMultiple(of: 2)
+            let handsEnabled = handPoseEnabled
+            calibrationLock.unlock()
+            try handler.perform(runHands ? [request, handRequest] : [request])
+            if runHands {
+                lastHands = (timestamp, (handRequest.results ?? []).compactMap(Self.handShape))
             }
+            let observations = request.results ?? []
+            let rawPoses = observations.compactMap { try? poseFrame(from: $0, timestamp: timestamp) }
+            let correctedPoses = rawPoses.map { $0.correctingSidewaysOrientation() }
             let frames = correctedPoses.map(\.frame)
-            let selection = selectPlayer(from: frames)
+            var selection = selectPlayer(from: frames)
+            let selectedIndex = selection.flatMap { selection in frames.firstIndex(of: selection.frame) }
+            if handsEnabled, timestamp - lastHands.time < 0.2, let selectedIndex {
+                selection?.frame.hands = Self.readings(lastHands.hands, for: rawPoses[selectedIndex])
+            }
             let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
             let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
-            let selectedWasQuarterTurned = selection.flatMap { selection in
-                correctedPoses.first { $0.frame == selection.frame }?.quarterTurned
-            } ?? correctedPoses.first?.quarterTurned ?? false
+            let selectedWasQuarterTurned = selectedIndex.map { correctedPoses[$0].quarterTurned }
+                ?? correctedPoses.first?.quarterTurned ?? false
             DispatchQueue.main.async { [weak self] in
                 self?.latestCaptureTimestamp = timestamp
                 self?.detectedBodyCount = frames.count
@@ -242,6 +268,38 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             points[joint] = PosePoint(location: point.location, confidence: point.confidence)
         }
         return PoseFrame(timestamp: timestamp, points: points)
+    }
+
+    /// Fingertips folded in past their knuckles on most fingers is a fist; stretched out is open.
+    static func handShape(_ observation: VNHumanHandPoseObservation) -> (wrist: CGPoint, shape: HandShape)? {
+        guard let wrist = try? observation.recognizedPoint(.wrist), wrist.confidence >= 0.3 else { return nil }
+        let fingers: [(VNHumanHandPoseObservation.JointName, VNHumanHandPoseObservation.JointName)] = [
+            (.indexTip, .indexMCP), (.middleTip, .middleMCP), (.ringTip, .ringMCP), (.littleTip, .littleMCP)
+        ]
+        var curled = 0, extended = 0, measured = 0
+        for (tipName, knuckleName) in fingers {
+            guard let tip = try? observation.recognizedPoint(tipName), tip.confidence >= 0.3,
+                  let knuckle = try? observation.recognizedPoint(knuckleName), knuckle.confidence >= 0.3 else { continue }
+            let knuckleReach = hypot(knuckle.location.x - wrist.location.x, knuckle.location.y - wrist.location.y)
+            guard knuckleReach > 0.001 else { continue }
+            let ratio = hypot(tip.location.x - wrist.location.x, tip.location.y - wrist.location.y) / knuckleReach
+            measured += 1
+            if ratio < 1.15 { curled += 1 } else if ratio > 1.5 { extended += 1 }
+        }
+        let shape: HandShape = measured < 3 ? .unknown : curled >= 3 ? .fist : extended >= 3 ? .open : .unknown
+        return (wrist.location, shape)
+    }
+
+    /// Pins each hand reading to the nearer body wrist. Matching uses the uncorrected body pose,
+    /// which shares the hand request's image coordinates.
+    static func readings(_ hands: [(wrist: CGPoint, shape: HandShape)], for frame: PoseFrame) -> [HandReading] {
+        hands.compactMap { hand in
+            let candidates: [(BodyJoint, CGFloat)] = [BodyJoint.leftWrist, .rightWrist].compactMap { joint in
+                frame.point(joint).map { (joint, hypot($0.x - hand.wrist.x, $0.y - hand.wrist.y)) }
+            }
+            guard let nearest = candidates.min(by: { $0.1 < $1.1 }), nearest.1 < 0.12 else { return nil }
+            return HandReading(wrist: nearest.0, shape: hand.shape)
+        }
     }
 
     private func setStatus(_ newStatus: Status) {

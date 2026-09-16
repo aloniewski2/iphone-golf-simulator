@@ -98,13 +98,45 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertEqual(detector.phase, .findingPlayer)
     }
 
+    func testSwingOnlyArmsWithHandsOverTheVirtualBall() {
+        // `drive` settles the hands at (0.5, 0.38).
+        var offBall = ArmSwingDetector()
+        offBall.ballAddress = BallAddress(ball: CGPoint(x: 0.8, y: 0.1), handTarget: CGPoint(x: 0.8, y: 0.38), shoulderWidth: 0.2)
+        let missed = drive(&offBall, legs: fullSwing)
+        XCTAssertTrue(impacts(missed).isEmpty, "a swing away from the ball never launches")
+        XCTAssertEqual(offBall.phase, .lineUp)
+        XCTAssertEqual(offBall.handsOffset?.dx ?? 0, -1.5, accuracy: 0.05)
+
+        var onBall = ArmSwingDetector()
+        onBall.ballAddress = BallAddress(ball: CGPoint(x: 0.5, y: 0.1), handTarget: CGPoint(x: 0.52, y: 0.38), shoulderWidth: 0.2)
+        let hit = drive(&onBall, legs: fullSwing)
+        XCTAssertEqual(impacts(hit).count, 1)
+        let strike = hit.compactMap { event -> StrikeQuality? in
+            if case .impact(_, _, let strike) = event { return strike }
+            return nil
+        }.first
+        XCTAssertEqual(strike, .center)
+        XCTAssertNotNil(onBall.lastStrikeOffset)
+    }
+
+    func testBallAddressComesFromTheScan() {
+        let calibration = PlayerCalibration.uiTestingFixture
+        let right = BallAddress(calibration: calibration, handedness: .right)
+        let left = BallAddress(calibration: calibration, handedness: .left)
+        XCTAssertLessThan(right.ball.y, right.handTarget.y, "the ball is below the hands")
+        XCTAssertLessThan(right.handTarget.y, CGFloat(calibration.anchor.shoulderCenterY))
+        XCTAssertLessThan(right.ball.x, left.ball.x, "the ball moves toward the lead foot")
+        XCTAssertTrue(right.isLinedUp(right.handTarget, shoulderWidth: right.shoulderWidth))
+        XCTAssertFalse(right.isLinedUp(CGPoint(x: right.handTarget.x + right.shoulderWidth, y: right.handTarget.y), shoulderWidth: right.shoulderWidth))
+    }
+
     func testImpactPositionClassifiesBallContact() {
         let address = CGPoint(x: 0.5, y: 0.3)
-        XCTAssertEqual(ArmSwingDetector.strikeQuality(address: address, impact: CGPoint(x: 0.51, y: 0.31), shoulderWidth: 0.2, handedness: .right), .center)
-        XCTAssertEqual(ArmSwingDetector.strikeQuality(address: address, impact: CGPoint(x: 0.5, y: 0.36), shoulderWidth: 0.2, handedness: .right), .thin)
-        XCTAssertEqual(ArmSwingDetector.strikeQuality(address: address, impact: CGPoint(x: 0.5, y: 0.24), shoulderWidth: 0.2, handedness: .right), .fat)
-        XCTAssertEqual(ArmSwingDetector.strikeQuality(address: address, impact: CGPoint(x: 0.57, y: 0.3), shoulderWidth: 0.2, handedness: .right), .toe)
-        XCTAssertEqual(ArmSwingDetector.strikeQuality(address: address, impact: CGPoint(x: 0.32, y: 0.3), shoulderWidth: 0.2, handedness: .right), .miss)
+        XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.51, y: 0.31), shoulderWidth: 0.2, handedness: .right), .center)
+        XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.5, y: 0.36), shoulderWidth: 0.2, handedness: .right), .thin)
+        XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.5, y: 0.24), shoulderWidth: 0.2, handedness: .right), .fat)
+        XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.57, y: 0.3), shoulderWidth: 0.2, handedness: .right), .toe)
+        XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.32, y: 0.3), shoulderWidth: 0.2, handedness: .right), .miss)
     }
 
     func testMeasuredCameraSwingChangesBallFlight() throws {

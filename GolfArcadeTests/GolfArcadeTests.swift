@@ -283,6 +283,43 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertNil(PlayerCalibrationStore.load(defaults: defaults))
     }
 
+    func testRosterMigratesTheSinglePlayerScan() throws {
+        let suiteName = "PlayerRosterTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let calibration = try XCTUnwrap(makeCalibration())
+        PlayerCalibrationStore.save(calibration, defaults: defaults)
+        defaults.set("left", forKey: "range.handedness")
+
+        let migrated = PlayerRosterStore.load(defaults: defaults)
+        XCTAssertEqual(migrated.count, 1)
+        XCTAssertEqual(migrated[0].calibration, calibration)
+        XCTAssertEqual(migrated[0].handedness, .left)
+
+        var players = migrated
+        players.append(Player(name: "Sam", colorIndex: 1))
+        PlayerRosterStore.save(players, defaults: defaults)
+        XCTAssertEqual(PlayerRosterStore.load(defaults: defaults), players)
+    }
+
+    @MainActor
+    func testGameFlowNeedsEveryPlayerScanned() {
+        let flow = GameFlow(fixturePlayers: [Player(name: "Ana", colorIndex: 0, calibration: .uiTestingFixture)])
+        flow.choose(.solo)
+        XCTAssertTrue(flow.canContinue)
+        flow.choose(.multiplayer)
+        XCTAssertEqual(flow.players.count, 2)
+        XCTAssertFalse(flow.canContinue)
+        flow.finishScan(flow.players[1].id, calibration: .uiTestingFixture)
+        XCTAssertTrue(flow.canContinue)
+        flow.addPlayer(); flow.addPlayer(); flow.addPlayer()
+        XCTAssertEqual(flow.players.count, GameFlow.maxPlayers)
+        flow.removePlayer(flow.players[3].id)
+        XCTAssertEqual(flow.players.count, 3)
+        flow.choose(.solo)
+        XCTAssertEqual(flow.players.map(\.name), ["Ana"])
+    }
+
     private func makeCalibration() -> PlayerCalibration? {
         var accumulator = CalibrationAccumulator()
         var result: PlayerCalibration?

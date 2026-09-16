@@ -12,24 +12,6 @@ final class RangeSimulationTests: XCTestCase {
         XCTAssertGreaterThan(hard.landing.lateralYards, 0)
     }
 
-    func testGreenAndFairwayScoring() {
-        let power = try! XCTUnwrap(RangeShot.power(toReach: GolfCourse.easy.holeDistance, with: .driver))
-        let perfect = RangeShot(id: 1, club: .driver, power: power, aim: 0, course: .easy)
-        XCTAssertGreaterThanOrEqual(perfect.points, 70)
-        XCTAssertTrue(perfect.lie == .pin || perfect.lie == .green)
-        let miss = RangeShot(id: 2, club: .driver, power: 1, aim: 22)
-        XCTAssertLessThanOrEqual(miss.points, 15)
-    }
-
-    func testCoursesContainIncreasingDifficultyAndHazards() {
-        XCTAssertEqual(GolfCourse.all.map(\.difficulty), [.easy, .medium, .hard])
-        XCTAssertLessThan(GolfCourse.hard.fairwayWidth, GolfCourse.easy.fairwayWidth)
-        XCTAssertTrue(GolfCourse.hard.hazards.contains { $0.kind == .water })
-        let water = GolfCourse.hard.hazards.first { $0.kind == .water }!
-        let point = FlightPoint(lateralYards: water.x, heightYards: 0, distanceYards: water.distance)
-        XCTAssertEqual(GolfCourse.hard.lie(at: point), .water)
-    }
-
     func testMeasuredContactChangesBallFlight() {
         let center = RangeShot(id: 1, club: .driver, power: 0.9, aim: 0, strike: .center)
         let thin = RangeShot(id: 2, club: .driver, power: 0.9, aim: 0, strike: .thin)
@@ -93,53 +75,5 @@ final class RangeSimulationTests: XCTestCase {
             XCTAssertEqual(hypot(shot.landing.distanceYards, shot.landing.lateralYards), shot.total, accuracy: 0.0001)
             if club == .putter { XCTAssertEqual(shot.position(at: 1).heightYards, 0) }
         }
-    }
-
-    @MainActor
-    func testFiveShotRoundReplayAndRestart() {
-        let defaults = UserDefaults(suiteName: "RangeTests-\(UUID().uuidString)")!
-        let round = RangeRound(defaults: defaults)
-        let start = Date(timeIntervalSince1970: 100)
-        XCTAssertFalse(round.release(at: start))
-        for index in 1...5 {
-            round.charge(0.75)
-            XCTAssertTrue(round.release(at: start))
-            XCTAssertFalse(round.release(at: start))
-            round.advance(at: start.addingTimeInterval(30))
-            XCTAssertEqual(round.shots.count, index)
-            let score = round.score
-            round.replay(at: start)
-            round.advance(at: start.addingTimeInterval(30))
-            XCTAssertEqual(round.score, score)
-            XCTAssertEqual(round.shots.count, index)
-            if index < 5 { round.nextShot() }
-        }
-        XCTAssertEqual(round.phase, .complete)
-        XCTAssertGreaterThan(round.best, 0)
-        XCTAssertEqual(RangeRound(defaults: defaults).best, round.score)
-        round.charge(1)
-        XCTAssertFalse(round.release())
-        round.restart()
-        XCTAssertEqual(round.phase, .ready)
-        XCTAssertEqual(round.score, 0)
-        XCTAssertEqual(round.shotNumber, 1)
-    }
-
-    @MainActor
-    func testBackgroundPauseAndCancelledChargeDoNotConsumeShots() {
-        let round = RangeRound()
-        let start = Date(timeIntervalSince1970: 100)
-        round.charge(0.02)
-        XCTAssertFalse(round.release())
-        XCTAssertTrue(round.shots.isEmpty)
-        round.charge(0.8)
-        round.pause(at: start)
-        XCTAssertEqual(round.phase, .ready)
-        round.resume(at: start)
-        round.charge(0.8)
-        XCTAssertTrue(round.release(at: start))
-        round.pause(at: start.addingTimeInterval(1))
-        round.resume(at: start.addingTimeInterval(101))
-        XCTAssertEqual(round.elapsed(at: start.addingTimeInterval(101)), 1)
     }
 }

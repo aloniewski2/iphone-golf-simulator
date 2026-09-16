@@ -9,7 +9,8 @@ import Foundation
 /// model, where backswing length sets distance and the fore-swing only steers. Angles are
 /// scale-free, so the player can stand anywhere the camera can see their shoulders.
 struct ArmSwingDetector {
-    enum Phase { case findingPlayer, address, backswing, downswing, finish }
+    /// `lineUp`: the player is in view and still, but their hands are not over the virtual ball.
+    enum Phase { case findingPlayer, lineUp, address, backswing, downswing, finish }
 
     struct Sample: Equatable {
         let time: Double
@@ -57,6 +58,9 @@ struct ArmSwingDetector {
     var trackingGracePeriod = 0.6
     /// Decides which way an over-swing hooks.
     var handedness: Handedness = .right
+    /// The virtual ball. When set, a swing only arms with the hands over it, and contact is judged
+    /// against it. Without it, contact is judged against wherever the hands settled.
+    var ballAddress: BallAddress?
 
     private(set) var phase: Phase = .findingPlayer
     /// Where the hands are on the arc right now, in degrees: positive back, negative through.
@@ -67,6 +71,10 @@ struct ArmSwingDetector {
     private var stillSince: Double?
     private var peakArc = 0.0
     private var peakDownswingSpeed = 0.0
+    /// Live hands offset from the ball's hand target, in shoulder widths.
+    private(set) var handsOffset: CGVector?
+    /// Where the hands crossed the ball on the last impact, in shoulder widths.
+    private(set) var lastStrikeOffset: CGVector?
     private var addressHands: CGPoint?
     private var closestImpact: (arc: Double, sample: Sample)?
 
@@ -80,6 +88,7 @@ struct ArmSwingDetector {
             return wasSwinging ? .cancel : nil
         }
         lastTracked = time
+        handsOffset = ballAddress?.offset(of: sample.hands, shoulderWidth: sample.shoulderWidth)
 
         let vector = CGVector(dx: sample.hands.x - sample.shoulderCenter.x, dy: sample.hands.y - sample.shoulderCenter.y)
         let arc = Self.degrees(between: reference, and: vector)
@@ -89,16 +98,29 @@ struct ArmSwingDetector {
         if speed < stillSpeed { stillSince = stillSince ?? time } else { stillSince = nil }
         let isStill = stillSince.map { time - $0 >= stillDuration } ?? false
         let handsHangDown = vector.dy < 0
-        swingAngle = phase == .finish ? -arc : phase == .findingPlayer ? 0 : arc
+        swingAngle = phase == .finish ? -arc : phase == .findingPlayer || phase == .lineUp ? 0 : arc
 
         switch phase {
-        case .findingPlayer, .finish:
-            guard isStill, handsHangDown else { return nil }
+        case .findingPlayer, .lineUp, .finish:
+            guard isStill, handsHangDown else {
+                if phase == .findingPlayer, ballAddress != nil { phase = .lineUp }
+                return nil
+            }
+            if let ballAddress, !ballAddress.isLinedUp(sample.hands, shoulderWidth: sample.shoulderWidth) {
+                phase = .lineUp
+                return nil
+            }
             settle(sample, vector: vector)
             return nil
 
         case .address:
-            if isStill, arc < backswingStart { settle(sample, vector: vector) }
+            if isStill, arc < backswingStart {
+                if let ballAddress, !ballAddress.isLinedUp(sample.hands, shoulderWidth: sample.shoulderWidth) {
+                    phase = .lineUp
+                    return nil
+                }
+                settle(sample, vector: vector)
+            }
             guard arc > backswingStart else { return nil }
             phase = .backswing
             peakArc = arc
@@ -134,8 +156,16 @@ struct ArmSwingDetector {
             phase = .finish
             stillSince = nil
             guard peakDownswingSpeed >= minimumSwingSpeed else { return .cancel }
+            let target = ballAddress?.handTarget ?? addressHands
+            if let target {
+                let width = max(closestImpact.sample.shoulderWidth, 0.02)
+                lastStrikeOffset = CGVector(
+                    dx: (closestImpact.sample.hands.x - target.x) / width,
+                    dy: (closestImpact.sample.hands.y - target.y) / width
+                )
+            }
             let strike = Self.strikeQuality(
-                address: addressHands,
+                target: target,
                 impact: closestImpact.sample.hands,
                 shoulderWidth: closestImpact.sample.shoulderWidth,
                 handedness: handedness
@@ -180,19 +210,21 @@ struct ArmSwingDetector {
         peakArc = 0
         addressHands = nil
         closestImpact = nil
+        handsOffset = nil
     }
 
-    /// Compares the hands at impact with the player's own address position. Dividing by shoulder
-    /// width makes the contact window independent of camera distance and player size.
+    /// Compares the hands at impact with the ball's hand target (or the address position when there
+    /// is no ball). Dividing by shoulder width makes the contact window independent of camera
+    /// distance and player size.
     static func strikeQuality(
-        address: CGPoint?,
+        target: CGPoint?,
         impact: CGPoint,
         shoulderWidth: CGFloat,
         handedness: Handedness
     ) -> StrikeQuality {
-        guard let address, shoulderWidth > 0 else { return .miss }
-        let dx = Double((impact.x - address.x) / shoulderWidth)
-        let dy = Double((impact.y - address.y) / shoulderWidth)
+        guard let target, shoulderWidth > 0 else { return .miss }
+        let dx = Double((impact.x - target.x) / shoulderWidth)
+        let dy = Double((impact.y - target.y) / shoulderWidth)
         if hypot(dx, dy) > 0.72 { return .miss }
         if dy > 0.22 { return .thin }
         if dy < -0.22 { return .fat }
