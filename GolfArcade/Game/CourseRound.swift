@@ -28,7 +28,7 @@ final class CourseRound: ObservableObject {
     /// A player who reaches par plus this many strokes picks up so the round keeps moving.
     static let strokesOverParCap = 5
     private let defaults: UserDefaults
-    private var pausedAt: Date?
+    @Published private(set) var pausedAt: Date?
 
     init(course: Course = .easy, playerCount: Int = 1, defaults: UserDefaults = .standard) {
         self.defaults = defaults

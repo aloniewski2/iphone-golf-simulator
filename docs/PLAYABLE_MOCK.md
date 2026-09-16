@@ -38,21 +38,63 @@ Hole shapes and hazards are data in `GolfArcade/Game/Course.swift`; the 3D scene
 
 ## Layout
 
-The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots. The club rail floats on the right (menu, clubs, aim). In Camera mode the live camera sits in the bottom-left corner. Result, hole, and scorecard panels appear only between shots.
+The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
 
-## The virtual ball (Camera mode)
+## Lining up (Camera mode)
 
-The camera picture-in-picture draws a ball at your feet and a ring above it where your hands should hang at address.
+At the start of each turn, and whenever the active player has been out of view for two seconds, the camera opens as a **big window** over the course.
 
-- Your swing only arms once your still hands are inside the ring. The ring turns mint and the status says **Ready**. Until then it reads **Line your hands up with the ball**, with a small indicator showing which way to move.
-- Contact is judged by where your hands pass the ring during the downswing:
-  - **center** — full power
-  - **thin** (hands high) — less power, lower
-  - **fat** (hands low) — much less power
-  - **heel / toe** (hands to either side) — less power and a curve
-  - **miss** — the ball barely moves
-- A dot in the picture-in-picture shows where you crossed, and the shot result names the contact.
-- Power still comes from backswing length and downswing speed (Wii-style arm arc), as before. `ArmSwingDetector` and `BallAddress` hold every threshold.
+- A golf ball is drawn at your feet, a ring shows where your hands go, and a **club is drawn in your hands**. At address the club head points at the ball, so putting the club head on the ball is lining up.
+- The skeleton only shows faintly while the camera is finding you; it disappears during a swing.
+- Hold still with your hands in the ring. The ready ring fills over 1.5 s, then the window shrinks to the bottom-left corner and the course takes over.
+- Swings made while the big window is open are practice swings and never cost a stroke.
+
+## Your avatar
+
+The golfer in the middle of the screen **copies your body**. Your 2D camera pose is rebuilt into a 3D pose with fixed limb lengths: when a limb looks shorter to the camera than it really is, the difference becomes reach toward the ball. The body scan sets the scale, so the avatar is the same size wherever you stand. The avatar holds a 3D club that follows your arms (same rule as the drawn club) over a ball on a tee. In Touch and Phone modes it plays the canned swing instead. See `GolfArcade/Avatar/`.
+
+## Contact
+
+Contact is judged by where your hands pass the ring during the downswing:
+
+- **center**: full power
+- **thin** (hands high): less power, lower
+- **fat** (hands low): much less power
+- **heel / toe** (hands to either side): less power and a curve
+- **miss**: the ball barely moves
+
+A dot in the corner camera view shows where you crossed, and the shot result names the contact. Power still comes from backswing length and downswing speed (Wii-style arm arc).
+
+## Shot cameras
+
+| When | Camera |
+| --- | --- |
+| Before the shot | Behind the golfer and ball, looking down the hole |
+| On the green / putter | Eye level just behind the ball, looking at the cup |
+| Impact | Hero shot in front of the golfer (1–1.8 s, longer for better swings; skipped for putts) |
+| Ball in the air | Close behind the ball, following it |
+| Ball coming down | 3/4 view as it lands and rolls out |
+
+Replays run the same sequence with your recorded follow-through. Punch, swipe right, or tap the replay pill to skip. The director is `ShotCameraDirector`.
+
+## Reactions
+
+After the follow-through your avatar reacts to the result:
+
+| Reaction | Shot |
+| --- | --- |
+| Club twirl, held finish | Center strike on the fairway or green, full distance |
+| Held finish, nod | Solid result |
+| Hands drop, head shake | Rough, or a mishit that came up short |
+| Club dropped, hands on hips | Fat strike or bunker |
+| Stagger, hands on head | Whiff, water, or out of bounds |
+| Arms up, jump | Holed |
+
+## Friends on the tee (multiplayer)
+
+The other players' avatars stand around you in their colors while you play. One waits on your lead side, close enough to reach: swing into them and they get knocked over, lie there for a moment, and get back up. It's just for fun and never affects the score.
+
+**Planned:** throwing your club, or slamming it on the ground after a bad shot.
 
 ## Gesture controls (Camera mode)
 
@@ -84,10 +126,13 @@ Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, the
 
 - Scan two players; confirm turns alternate and the camera only follows the active player.
 - Stand with your hands off the ball: the swing must not arm. Line up, then make deliberately high, low, and wide swings; contact and flight should change.
+- The avatar copies arm raises, crouches, leans, and a full swing without stretching or jitter; the drawn club head sits on the ball when lined up.
+- Hold address 1.5 s: the camera window shrinks. Pure, fat, and whiffed swings trigger different reactions.
+- In multiplayer, swing into the friend on your lead side and knock them over.
 - Fist swipes and punch in every menu; the raised-hand fallback from about 8 feet; full swings never navigate.
 - Hit into water and out of bounds on Cliffwater; check the penalty and drop.
 - Background the app mid-flight: time pauses and resumes.
 
 ## Verification
 
-The `GolfArcade` scheme runs unit tests (courses, lies, penalties, holing out, turn rotation, stroke cap, contact vs. the virtual ball, gestures, roster migration) and UI tests that walk menu → course, play a hole out with the touch pad, and check the multiplayer turn banner.
+The `GolfArcade` scheme runs unit tests (courses, lies, penalties, holing out, turn rotation, stroke cap, contact vs. the virtual ball, the ready timer, pose copying, club geometry, reactions, shot cameras, club contact, gestures, roster migration) and UI tests that walk menu → course (big camera window, then minimized), play a hole out with screenshots of each camera, and show friends standing around the golfer.

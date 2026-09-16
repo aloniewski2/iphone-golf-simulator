@@ -4,7 +4,7 @@ An iPhone-first, motion-controlled golf game where the player's body is the cont
 
 ## Current focus
 
-**Playable mock:** pick Solo or Multiplayer (2–4 players, each with their own body scan), choose an Easy, Medium, or Hard three-hole course, and play each hole out stroke by stroke with bunkers, water, and out of bounds. In Camera mode you line your hands up with a virtual ball and where they cross it decides the contact. The course fills the screen with a floating club rail and a bottom-left camera view, and fist swipes plus a punch toward the camera navigate the menus. See [the testing guide](docs/PLAYABLE_MOCK.md).
+**Playable mock:** pick Solo or Multiplayer (2–4 players, each with their own body scan), choose an Easy, Medium, or Hard three-hole course, and play each hole out stroke by stroke with bunkers, water, and out of bounds. In Camera mode a big camera window shows a drawn club and ball to line up with; hold address and it shrinks away. The golfer on screen copies your body, the camera cuts to a hero shot of your reaction (which depends on how good the swing was) and then chases the ball. In multiplayer your friends' avatars stand nearby, and you can knock them over with your club. Fist swipes and a punch toward the camera navigate the menus. See [the testing guide](docs/PLAYABLE_MOCK.md).
 
 The first playable milestone is **Arcade Mode**: generous swing recognition, a small club set, believable shot variety, and immediate visual feedback. The architecture keeps observed pose data separate from estimated golf metrics so Assisted and Simulation modes can become more realistic without replacing the core pipeline.
 

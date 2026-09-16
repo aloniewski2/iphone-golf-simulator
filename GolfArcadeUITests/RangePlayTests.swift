@@ -15,7 +15,7 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testMenuToFullScreenCourseInCameraMode() {
         let app = XCUIApplication()
-        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode"]
+        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-autoReady"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         screenshot(app, "Main menu")
@@ -26,11 +26,16 @@ final class RangePlayTests: XCTestCase {
         screenshot(app, "Course select")
         app.buttons["course-hard"].tap()
         XCTAssertTrue(any(app, "golfCourse").waitForExistence(timeout: 15))
-        XCTAssertTrue(any(app, "cameraPanel").waitForExistence(timeout: 5))
-        XCTAssertTrue(any(app, "cameraPip").exists)
+        let stage = any(app, "cameraStage")
+        XCTAssertTrue(stage.waitForExistence(timeout: 5))
+        XCTAssertEqual(stage.value as? String, "expanded", "the camera starts big for lining up")
+        XCTAssertTrue(any(app, "readyPrompt").exists)
+        screenshot(app, "Big camera window while lining up")
+        XCTAssertTrue(any(app, "cameraPanel").waitForExistence(timeout: 12), "once ready the course takes over")
+        XCTAssertEqual(stage.value as? String, "minimized")
         XCTAssertTrue(app.buttons["club-driver"].exists)
-        sleep(2)
-        screenshot(app, "Full-screen course with camera and club rail")
+        sleep(1)
+        screenshot(app, "Behind the avatar with the camera minimized")
     }
 
     @MainActor
@@ -46,7 +51,18 @@ final class RangePlayTests: XCTestCase {
         XCTAssertTrue(pad.waitForExistence(timeout: 15))
         screenshot(app, "Easy hole 1 tee")
 
+        // The first swing: hero shot of the golfer, then the chase camera.
+        pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1))
+            .press(forDuration: 0.1, thenDragTo: pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75)))
+        usleep(500_000)
+        screenshot(app, "Hero shot after impact")
+        sleep(2)
+        screenshot(app, "Chasing the ball")
+        XCTAssertTrue(app.buttons["nextShot"].waitForExistence(timeout: 25) || app.buttons["continueHole"].exists)
+        screenshot(app, "Ball landing")
+
         var replayed = false
+        var puttShown = false
         for _ in 0..<14 {
             if app.buttons["continueHole"].exists { break }
             if app.buttons["nextShot"].exists {
@@ -59,6 +75,11 @@ final class RangePlayTests: XCTestCase {
                 app.buttons["nextShot"].tap()
             }
             guard pad.waitForExistence(timeout: 5) else { continue }
+            if !puttShown, app.buttons["club-putter"].isSelected {
+                puttShown = true
+                sleep(1)
+                screenshot(app, "Putting view on the green")
+            }
             pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1))
                 .press(forDuration: 0.1, thenDragTo: pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)))
             _ = app.buttons["nextShot"].waitForExistence(timeout: 25) || app.buttons["continueHole"].waitForExistence(timeout: 1)
@@ -78,7 +99,7 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testMultiplayerAnnouncesEachTurn() {
         let app = XCUIApplication()
-        app.launchArguments += ["-skipPlayerCalibration", "-fixturePlayers", "2"]
+        app.launchArguments += ["-skipPlayerCalibration", "-fixturePlayers", "3"]
         app.launch()
         XCTAssertTrue(app.buttons["menuMultiplayer"].waitForExistence(timeout: 15))
         app.buttons["menuMultiplayer"].tap()
@@ -91,5 +112,7 @@ final class RangePlayTests: XCTestCase {
         XCTAssertTrue(banner.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["PLAYER 1'S TURN"].exists)
         screenshot(app, "Player 1 turn banner")
+        sleep(2)
+        screenshot(app, "Friends standing around the golfer")
     }
 }

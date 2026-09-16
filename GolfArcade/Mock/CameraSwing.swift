@@ -18,6 +18,9 @@ final class CameraSwingController: ObservableObject {
     @Published private(set) var handsOffset: CGVector?
     /// True while the player is in view but must move their hands over the virtual ball.
     @Published private(set) var needsLineUp = false
+    /// 0–1 while the player holds a still address over the ball; 1 means they are ready to play.
+    @Published private(set) var readyProgress = 0.0
+    static let readyHoldDuration = 1.5
     var onEvent: ((SwingInputEvent) -> Void)?
     /// Fist swipes and punches for navigating menus and the club rail.
     let gestures = PassthroughSubject<NavGesture, Never>()
@@ -67,6 +70,7 @@ final class CameraSwingController: ObservableObject {
         lastStrikeOffset = nil
         handsOffset = nil
         needsLineUp = false
+        readyProgress = 0
         phase = .findingPlayer
     }
 
@@ -83,6 +87,8 @@ final class CameraSwingController: ObservableObject {
         }
         swingAngle = detector.swingAngle
         needsLineUp = detector.phase == .lineUp
+        let progress = detector.addressHeldSince.map { min(1, (time - $0) / Self.readyHoldDuration) } ?? 0
+        if progress != readyProgress { readyProgress = progress }
         handsOffset = detector.handsOffset
         if case .impact(_, _, let strike) = event {
             lastStrike = strike

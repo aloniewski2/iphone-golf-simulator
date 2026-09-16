@@ -1,24 +1,84 @@
+import QuartzCore
 import SceneKit
 import SwiftUI
 
+/// Everything the scene needs from the round, written by the SwiftUI view whenever it changes.
+struct SceneInputs {
+    var hole: Hole
+    var ball: CoursePoint
+    var heading: Double
+    var distanceToPin: Double
+    var lie: CourseLie
+    var club: GolfClub
+    var aim: Double
+    var handedness: Handedness
+    var shot: RangeShot?
+    var isReplay: Bool
+    var flightStart: Date?
+    var pausedAt: Date?
+    /// Live swing arc, for the canned golfer when there is no camera pose.
+    var swingAngle: Double
+    var bystanders: [Bystander]
+
+    struct Bystander: Equatable {
+        let id: UUID
+        let colorIndex: Int
+    }
+
+    var onGreen: Bool { lie == .green || club == .putter }
+
+    func elapsed(at date: Date) -> Double {
+        guard let flightStart else { return 0 }
+        return max(0, (pausedAt ?? date).timeIntervalSince(flightStart))
+    }
+}
+
 /// The 3D hole: built from `Hole` data so what you see is exactly what the lie checks use.
 /// Course yards map to scene units one-to-one with `x` right and distance along `-z`.
+///
+/// It animates itself on a display link: the avatar copies the player at camera rate, reactions
+/// and knockdowns play out, and `ShotCameraDirector` moves the camera, without SwiftUI re-rendering.
 @MainActor
-final class CourseScene {
+final class CourseScene: NSObject {
     let scene = SCNScene()
     let camera = SCNNode()
+    var inputs: SceneInputs?
+    /// Called when the club knocks a bystander over.
+    var onBystanderHit: (() -> Void)?
+
     private let courseNode = SCNNode()
-    /// Sits on the ball and faces the pin; carries the golfer, aim line and impact flash.
+    /// Sits on the ball and faces the pin; carries the golfer, tee, aim line, impact flash and bystanders.
     private let stance = SCNNode()
     private let ball = SCNNode()
+    private let tee = SCNNode()
     private let shadow = SCNNode()
     private let trail = SCNNode()
     private let aimLine = SCNNode()
     private let impact = SCNNode()
-    private let golfer = Golfer()
+    private let golfer = AvatarRig(shirt: UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1))
     private(set) var hole: Hole?
+
+    private var displayLink: CADisplayLink?
+    private var lastTick: CFTimeInterval?
     private var lastShot: RangeShot?
-    private var lastElapsed = 0.0
+    private var reaction: AvatarAnimations.Reaction?
+    private var landingTime: Double?
+    private var cameraStage: ShotCameraDirector.Stage?
+    private var cameraLook = simd_float3.zero
+
+    // Copying the player.
+    private var retargeter: PoseRetargeter?
+    private var livePose: BodyPose3D?
+    private var livePoseTime: CFTimeInterval = 0
+    private var recorder = SwingRecorder()
+    private var cannedAngle = 0.0
+    private var cannedLaunchAngle = 0.0
+
+    // Other players standing around.
+    private var bystanderRigs: [UUID: AvatarRig] = [:]
+    private var bystanderOrder: [SceneInputs.Bystander] = []
+    private var knockdowns: [UUID: (start: CFTimeInterval, push: simd_float3)] = [:]
+    private var contact = ClubContact()
 
     private static let sky = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
     private static let outOfBounds = UIColor(red: 0.15, green: 0.33, blue: 0.24, alpha: 1)
@@ -28,13 +88,15 @@ final class CourseScene {
     private static let sand = UIColor(red: 0.90, green: 0.81, blue: 0.59, alpha: 1)
     private static let water = UIColor(red: 0.16, green: 0.52, blue: 0.78, alpha: 1)
 
-    init() {
+    override init() {
+        super.init()
         scene.background.contents = Self.sky
         scene.fogColor = Self.sky
         scene.fogStartDistance = 320
         scene.fogEndDistance = 700
         camera.camera = SCNCamera()
-        camera.camera?.fieldOfView = 58
+        camera.camera?.fieldOfView = 55
+        camera.camera?.zNear = 0.3
         camera.camera?.zFar = 1000
         scene.rootNode.addChildNode(camera)
         let sun = SCNNode()
@@ -60,6 +122,10 @@ final class CourseScene {
         scene.rootNode.addChildNode(trail)
         scene.rootNode.addChildNode(stance)
         stance.addChildNode(golfer.node)
+        tee.geometry = SCNCylinder(radius: 0.09, height: 0.5)
+        tee.geometry?.firstMaterial?.diffuse.contents = UIColor.white
+        tee.position = SCNVector3(0, 0.1, 0)
+        stance.addChildNode(tee)
         stance.addChildNode(aimLine)
         impact.geometry = SCNSphere(radius: 1)
         impact.geometry?.firstMaterial?.diffuse.contents = UIColor.systemYellow
@@ -74,11 +140,51 @@ final class CourseScene {
         }
     }
 
+    // MARK: - Lifecycle
+
+    func start() {
+        guard displayLink == nil else { return }
+        let link = CADisplayLink(target: self, selector: #selector(step(_:)))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    func stop() {
+        displayLink?.invalidate()
+        displayLink = nil
+        lastTick = nil
+    }
+
+    // MARK: - Copying the player
+
+    /// Starts copying a new player. Pass nil when the swing input has no body to copy.
+    func configurePlayer(calibration: PlayerCalibration?, handedness: Handedness, frameAspect: CGFloat) {
+        retargeter = calibration.map { PoseRetargeter(calibration: $0, handedness: handedness, frameAspect: frameAspect) }
+        livePose = nil
+        recorder.reset()
+        contact.reset()
+    }
+
+    /// Feeds one camera frame. `swingAngle` sets the club's wrist hinge.
+    func ingest(_ frame: PoseFrame?, swingAngle: Double, frameAspect: CGFloat) {
+        guard var retargeter else { return }
+        let now = CACurrentMediaTime()
+        retargeter.frameAspect = frameAspect
+        let pose = retargeter.update(frame, swingAngle: swingAngle, at: now)
+        self.retargeter = retargeter
+        guard frame != nil else { return }
+        livePose = pose
+        livePoseTime = now
+        recorder.record(pose, at: now)
+    }
+
     /// Rebuilds the terrain for `hole`. Cheap enough to call once per hole.
     func load(_ hole: Hole) {
         guard self.hole != hole else { return }
         self.hole = hole
         lastShot = nil
+        cameraStage = nil
         trail.childNodes.forEach { $0.removeFromParentNode() }
         courseNode.childNodes.forEach { $0.removeFromParentNode() }
 
@@ -133,32 +239,24 @@ final class CourseScene {
         }
     }
 
-    /// `ball` and `heading` describe the ball at rest; while `shot` is set the flight drives the
-    /// ball and camera. `swingAngle` is the live swing arc in degrees (0 at address, positive back).
-    func update(
-        ball rest: CoursePoint,
-        heading: Double,
-        distanceToPin: Double,
-        shot: RangeShot?,
-        elapsed: Double,
-        aim: Double,
-        swingAngle: Double = 0,
-        handedness: Handedness = .right
-    ) {
-        SCNTransaction.begin()
-        SCNTransaction.disableActions = true
-        golfer.handedness = handedness
-        if let shot {
-            if lastShot != shot || elapsed < lastElapsed - 0.5 { golfer.launch(replay: lastShot == shot) }
-            golfer.animate(elapsed: elapsed)
-        } else {
-            golfer.follow(swingAngle)
-        }
-        lastElapsed = elapsed
+    // MARK: - Frame
 
-        if lastShot != shot {
+    @objc private func step(_ link: CADisplayLink) {
+        guard let inputs else { return }
+        let now = CACurrentMediaTime()
+        let dt = Float(min(lastTick.map { now - $0 } ?? 1.0 / 60, 0.1))
+        lastTick = now
+        load(inputs.hole)
+
+        let shot = inputs.shot
+        let elapsed = inputs.elapsed(at: Date())
+        if shot != lastShot {
             trail.childNodes.forEach { $0.removeFromParentNode() }
             if let shot {
+                reaction = .classify(shot)
+                landingTime = ShotCameraDirector.landingTime(of: shot)
+                if !inputs.isReplay || recorder.impactTime == nil { recorder.markImpact(at: now - elapsed) }
+                cannedLaunchAngle = inputs.isReplay ? 150 : max(cannedAngle, 60)
                 for i in 0..<60 {
                     let point = shot.position(at: Double(i) / 59 * shot.duration)
                     let dot = SCNNode(geometry: SCNSphere(radius: 0.20))
@@ -166,51 +264,166 @@ final class CourseScene {
                     dot.position = SCNVector3(point.lateralYards, point.heightYards + 0.5, -point.distanceYards)
                     trail.addChildNode(dot)
                 }
+            } else {
+                reaction = nil
+                landingTime = nil
+                recorder.reset()
             }
             lastShot = shot
+        } else if inputs.isReplay, lastFlightStart != inputs.flightStart {
+            // A replay restarts the same shot from a full backswing.
+            cannedLaunchAngle = 150
         }
+        lastFlightStart = inputs.flightStart
 
-        let origin = shot?.origin ?? rest
-        let frameHeading = shot?.heading ?? heading
-        let geometry = ShotGeometry(origin: origin, heading: frameHeading)
-        stance.position = world(origin, y: 0)
-        stance.eulerAngles.y = Float(-frameHeading * .pi / 180)
+        let mirror: Float = inputs.handedness == .right ? 1 : -1
+        let origin = shot?.origin ?? inputs.ball
+        let heading = shot?.heading ?? inputs.heading
+        stance.simdPosition = ShotCameraDirector.world(.zero, origin: origin, heading: heading)
+        stance.eulerAngles.y = Float(-heading * .pi / 180)
+        golfer.setMirrored(mirror < 0)
+        golfer.node.simdPosition = simd_float3(-3.2 * mirror, 0, 0)
 
-        // Short shots get a lower, closer camera so a putt still fills the screen.
-        // During a flight, frame from where the shot started so the camera doesn't lurch when it lands.
-        let framingDistance = shot.flatMap { shot in hole.map { shot.origin.distance(to: $0.pin) } } ?? distanceToPin
-        let scale = min(max(framingDistance / 120, 0.3), 1)
-        let local = shot.map { $0.flight.position(at: min(elapsed, $0.duration)) }
-            ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0)
-        let point = geometry.world(local)
-        ball.position = SCNVector3(point.lateralYards, point.heightYards + 0.6, -point.distanceYards)
+        let pose = golferPose(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        golfer.apply(pose)
+        updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)
+
+        // Ball.
+        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: inputs.ball.x, heightYards: 0, distanceYards: inputs.ball.d)
+        let teed = shot == nil && inputs.lie == .tee
+        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? 0.9 : 0.6), -point.distanceYards)
         shadow.position = SCNVector3(point.lateralYards, 0.15, -point.distanceYards)
         let sunk = shot.map { $0.isHoled && elapsed >= $0.duration } ?? false
         ball.isHidden = sunk
         shadow.isHidden = sunk
-
-        let cameraLocal = FlightPoint(
-            lateralYards: local.lateralYards * 0.65 + 12 * scale,
-            heightYards: 22 * scale + local.heightYards * 0.55,
-            distanceYards: local.distanceYards * 0.86 - 38 * scale
-        )
-        let lookAhead = shot == nil ? min(max(framingDistance, 12), 95) : max(40 * scale, local.distanceYards + 14 * scale)
-        let lookLocal = FlightPoint(lateralYards: local.lateralYards, heightYards: local.heightYards * 0.75, distanceYards: lookAhead)
-        let cameraWorld = geometry.world(cameraLocal)
-        let lookWorld = geometry.world(lookLocal)
-        camera.position = SCNVector3(cameraWorld.lateralYards, cameraWorld.heightYards, -cameraWorld.distanceYards)
-        camera.look(at: SCNVector3(lookWorld.lateralYards, max(0, lookWorld.heightYards), -lookWorld.distanceYards))
+        tee.isHidden = inputs.lie != .tee && shot?.origin != inputs.hole.tee
 
         let burst = min(max(elapsed / 0.23, 0), 1)
         impact.isHidden = shot == nil || elapsed > 0.23
         impact.opacity = CGFloat((1 - burst) * 0.7)
         impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
         aimLine.isHidden = shot != nil
-        aimLine.eulerAngles.y = Float(-aim * .pi / 180)
+        aimLine.eulerAngles.y = Float(-inputs.aim * .pi / 180)
+        moveCamera(inputs, shot: shot, elapsed: elapsed, dt: dt)
         if let shot {
-            for (i, dot) in trail.childNodes.enumerated() { dot.isHidden = Double(i) / 59 * shot.duration > elapsed }
+            // Dots appear behind the ball; ones right at the chase camera would wash out the view.
+            let eye = camera.simdPosition
+            let ballPosition = ball.simdPosition
+            for (i, dot) in trail.childNodes.enumerated() {
+                dot.isHidden = Double(i) / 59 * shot.duration > elapsed
+                    || simd_distance(dot.simdPosition, eye) < 4
+                    || simd_distance(dot.simdPosition, ballPosition) < 2.5
+            }
         }
-        SCNTransaction.commit()
+    }
+
+    private var lastFlightStart: Date?
+
+    private func golferPose(shot: RangeShot?, elapsed: Double, isReplay: Bool, swingAngle: Double, now: CFTimeInterval) -> BodyPose3D {
+        let live = now - livePoseTime < 0.5 ? livePose : nil
+        guard let shot else {
+            cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * 0.35
+            return live ?? AvatarAnimations.swingArc(degrees: cannedAngle)
+        }
+        let followThrough = 0.6
+        func follow(_ t: Double) -> BodyPose3D {
+            if isReplay, let recorded = recorder.pose(atImpactOffset: t) { return recorded }
+            if !isReplay, let live { return live }
+            // Canned downswing (0.3 s) into a held finish.
+            let u = min(t / 0.3, 1)
+            let angle = t < 0.3 ? cannedLaunchAngle + (-150 - cannedLaunchAngle) * (u * u) : -150
+            return AvatarAnimations.swingArc(degrees: angle)
+        }
+        if elapsed < followThrough { return follow(elapsed) }
+        let reactionTime = elapsed - followThrough
+        guard let reaction, reactionTime < AvatarAnimations.reactionLength else {
+            return live ?? AvatarAnimations.address
+        }
+        let target = AvatarAnimations.reaction(reaction, time: reactionTime)
+        var pose = BodyPose3D.lerp(follow(followThrough), target, smoothstep(0, 0.25, Float(reactionTime)))
+        let fadeOut = Float(AvatarAnimations.reactionLength - reactionTime)
+        if fadeOut < 0.4 {
+            pose = BodyPose3D.lerp(live ?? AvatarAnimations.address, pose, fadeOut / 0.4)
+        }
+        return pose
+    }
+
+    private func updateBystanders(_ inputs: SceneInputs, golferPose: BodyPose3D, mirror: Float, now: CFTimeInterval) {
+        if inputs.bystanders != bystanderOrder {
+            let ids = Set(inputs.bystanders.map(\.id))
+            for (id, rig) in bystanderRigs where !ids.contains(id) {
+                rig.node.removeFromParentNode()
+                bystanderRigs[id] = nil
+            }
+            for bystander in inputs.bystanders where bystanderRigs[bystander.id] == nil {
+                let rig = AvatarRig(shirt: Self.playerColor(bystander.colorIndex))
+                stance.addChildNode(rig.node)
+                bystanderRigs[bystander.id] = rig
+            }
+            bystanderOrder = inputs.bystanders
+        }
+
+        let golferPosition = simd_float3(-3.2 * mirror, 0, 0)
+        // First bystander stands on the lead side inside club reach; the rest wait behind the golfer.
+        let spots = [simd_float3(-0.6 * mirror, 0, -4.8), simd_float3(-4.5 * mirror, 0, -2.2), simd_float3(-4.5 * mirror, 0, 2.2)]
+        var targets: [ClubContact.Target] = []
+        for (index, bystander) in bystanderOrder.enumerated() {
+            guard let rig = bystanderRigs[bystander.id] else { continue }
+            let spot = golferPosition + spots[min(index, spots.count - 1)] + simd_float3(0, 0, Float(max(0, index - 2)) * 2.5)
+            let toGolfer = golferPosition - spot
+            let facing = atan2(-toGolfer.z, toGolfer.x)
+            rig.node.simdPosition = spot
+            rig.node.eulerAngles.y = facing
+            let seed = Double(index) * 1.3
+            if let knock = knockdowns[bystander.id] {
+                let t = now - knock.start
+                if t < AvatarAnimations.knockdownLength {
+                    // Push into the bystander's own frame.
+                    let c = cos(facing), s = sin(facing)
+                    let push = simd_float3(knock.push.x * c - knock.push.z * s, 0, knock.push.x * s + knock.push.z * c)
+                    rig.apply(AvatarAnimations.knockdown(time: t, push: push, seed: seed))
+                    continue
+                }
+                knockdowns[bystander.id] = nil
+            }
+            rig.apply(AvatarAnimations.idle(time: now, seed: seed))
+            targets.append(ClubContact.Target(id: bystander.id, base: spot + simd_float3(0, 0.8, 0), top: spot + simd_float3(0, 5.2, 0), radius: 1.0))
+        }
+
+        // The club in the stance frame: the golfer rig is only moved and mirrored.
+        func stancePoint(_ p: simd_float3) -> simd_float3 { simd_float3(p.x * mirror, p.y, p.z) + golferPosition }
+        guard !golferPose.clubDropped else { return }
+        let hits = contact.update(hands: stancePoint(golferPose.handCenter), head: stancePoint(golferPose.clubHead), at: now, targets: targets)
+        for hit in hits {
+            knockdowns[hit.id] = (now, hit.push)
+            onBystanderHit?()
+        }
+    }
+
+    private func moveCamera(_ inputs: SceneInputs, shot: RangeShot?, elapsed: Double, dt: Float) {
+        let framing = ShotCameraDirector.shot(ShotCameraDirector.Inputs(
+            ball: inputs.ball, heading: inputs.heading, aim: inputs.aim, distanceToPin: inputs.distanceToPin,
+            onGreen: inputs.onGreen && shot == nil, handedness: inputs.handedness, shot: shot, elapsed: elapsed,
+            reaction: reaction, landingTime: landingTime
+        ))
+        let cut = cameraStage == nil || (framing.stage != cameraStage && [.hero, .chase, .address, .green].contains(framing.stage))
+        cameraStage = framing.stage
+        if cut {
+            camera.simdPosition = framing.position
+            cameraLook = framing.lookAt
+            camera.camera?.fieldOfView = CGFloat(framing.fieldOfView)
+        } else {
+            let k = 1 - exp(-framing.damping * dt)
+            camera.simdPosition = simd_mix(camera.simdPosition, framing.position, simd_float3(repeating: k))
+            cameraLook = simd_mix(cameraLook, framing.lookAt, simd_float3(repeating: k))
+            let fov = Float(camera.camera?.fieldOfView ?? 55)
+            camera.camera?.fieldOfView = CGFloat(fov + (framing.fieldOfView - fov) * k)
+        }
+        camera.simdLook(at: cameraLook, up: simd_float3(0, 1, 0), localFront: simd_float3(0, 0, -1))
+    }
+
+    private static func playerColor(_ index: Int) -> UIColor {
+        [UIColor.systemMint, .systemOrange, .systemYellow, .systemPink][index % 4]
     }
 
     private func world(_ point: CoursePoint, y: Float) -> SCNVector3 {
@@ -283,187 +496,11 @@ final class CourseScene {
     }
 }
 
-/// A Mii-style golfer beside the tee. The body is rigid; the arms have fixed lengths and travel
-/// along one clean swing arc around the chest, driven by a single angle. Elbows come from two-bone
-/// IK, so the arms bend but never stretch. The shoulders turn with the arc for a fuller motion.
-@MainActor
-final class Golfer {
-    let node = SCNNode()
-    var handedness: Handedness = .right {
-        didSet { if handedness != oldValue { applyHandedness() } }
-    }
-
-    private let upperBody = SCNNode()
-    private let bones: [SCNNode]          // left upper, left fore, right upper, right fore
-    private let hands: [SCNNode]
-    private let club = SCNNode()
-    private var angle = 0.0                // displayed arc, degrees
-    private var launchAngle = 0.0
-
-    // Upper-body frame (origin at the hips, 2.4 above the feet): +x toward the ball,
-    // +z the golfer's right (toward the range camera), +y up.
-    private let hipHeight: Float = 2.4
-    private let pivot = simd_float3(0.55, 1.8, 0)            // chest, where the arc is centred
-    private let shoulders = [simd_float3(0.7, 2.0, -0.75), simd_float3(0.7, 2.0, 0.75)] // left, right
-    private let addressHands = simd_float3(1.9, -0.3, 0.1)
-    private let upperArm: Float = 1.35
-    private let forearm: Float = 1.35
-    private let clubLength: Float = 2.7
-    private let fullBackswing = 150.0
-    private let finish = -150.0
-
-    init() {
-        let shirt = UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1)
-        let trousers = UIColor(red: 0.16, green: 0.2, blue: 0.3, alpha: 1)
-        let skin = UIColor(red: 0.93, green: 0.78, blue: 0.62, alpha: 1)
-        let cream = UIColor(red: 0.96, green: 0.96, blue: 0.86, alpha: 1)
-        func part(_ geometry: SCNGeometry, _ color: UIColor, at position: simd_float3, parent: SCNNode, tilt: Float = 0) {
-            geometry.firstMaterial?.diffuse.contents = color
-            geometry.firstMaterial?.isDoubleSided = true
-            let part = SCNNode(geometry: geometry)
-            part.simdPosition = position
-            part.eulerAngles.z = tilt
-            parent.addChildNode(part)
-        }
-        // Stance is along z; the golfer leans a little toward the ball (+x).
-        part(SCNCapsule(capRadius: 0.26, height: 2.5), trousers, at: simd_float3(0.05, 1.25, -0.6), parent: node, tilt: -0.05)
-        part(SCNCapsule(capRadius: 0.26, height: 2.5), trousers, at: simd_float3(0.05, 1.25, 0.6), parent: node, tilt: -0.05)
-        upperBody.simdPosition = simd_float3(0, hipHeight, 0)
-        node.addChildNode(upperBody)
-        part(SCNCapsule(capRadius: 0.55, height: 2.0), shirt, at: simd_float3(0.3, 0.95, 0), parent: upperBody, tilt: -0.32)
-        let shoulderBar = SCNCapsule(capRadius: 0.32, height: 2.1)
-        shoulderBar.firstMaterial?.diffuse.contents = shirt
-        let bar = SCNNode(geometry: shoulderBar)
-        bar.simdPosition = simd_float3(0.7, 2.0, 0)
-        bar.eulerAngles.x = .pi / 2 // lies along z, joining the two shoulders
-        upperBody.addChildNode(bar)
-        part(SCNSphere(radius: 0.5), skin, at: simd_float3(0.95, 2.75, 0), parent: upperBody)
-        part(SCNCylinder(radius: 0.58, height: 0.12), cream, at: simd_float3(0.95, 3.1, 0), parent: upperBody)
-
-        var bones: [SCNNode] = []
-        for index in 0..<4 {
-            let bone = SCNNode(geometry: SCNCylinder(radius: 0.16, height: 1))
-            bone.geometry?.firstMaterial?.diffuse.contents = index % 2 == 0 ? shirt : skin
-            bone.geometry?.firstMaterial?.isDoubleSided = true
-            bone.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
-            upperBody.addChildNode(bone)
-            bones.append(bone)
-        }
-        self.bones = bones
-        var hands: [SCNNode] = []
-        for _ in 0..<2 {
-            let hand = SCNNode(geometry: SCNSphere(radius: 0.21))
-            hand.geometry?.firstMaterial?.diffuse.contents = skin
-            upperBody.addChildNode(hand)
-            hands.append(hand)
-        }
-        self.hands = hands
-        let shaft = SCNNode(geometry: SCNCylinder(radius: 0.06, height: 1))
-        shaft.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
-        shaft.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
-        club.addChildNode(shaft)
-        let head = SCNNode(geometry: SCNBox(width: 0.55, height: 0.35, length: 0.95, chamferRadius: 0.1))
-        head.geometry?.firstMaterial?.diffuse.contents = UIColor.darkGray
-        head.position = SCNVector3(0.1, 1, 0.15)
-        club.addChildNode(head)
-        upperBody.addChildNode(club)
-        applyHandedness()
-        pose(0)
-    }
-
-    /// Live tracking: ease toward the player's arc so the motion stays clean.
-    func follow(_ target: Double) {
-        let clamped = min(max(target, finish), fullBackswing)
-        angle += (clamped - angle) * 0.35
-        pose(angle)
-    }
-
-    func launch(replay: Bool) {
-        launchAngle = replay ? fullBackswing : max(angle, 60)
-    }
-
-    /// Canned downswing (0.3 s) into a held finish, then back to address for the next ball.
-    func animate(elapsed: Double) {
-        let t: Double
-        if elapsed < 0.3 {
-            let u = elapsed / 0.3
-            t = launchAngle + (finish - launchAngle) * (u * u) // accelerates through the ball
-        } else if elapsed < 3 {
-            t = finish
-        } else {
-            let u = min(1, (elapsed - 3) / 1.2)
-            t = finish + (0 - finish) * (1 - cos(u * .pi)) / 2
-        }
-        angle = t
-        pose(t)
-    }
-
-    private func applyHandedness() {
-        let mirror: Float = handedness == .right ? 1 : -1
-        node.simdScale = simd_float3(mirror, 1, 1)
-        node.simdPosition = simd_float3(-3.2 * mirror, 0, 0)
-    }
-
-    /// Hands move on a circle around the chest: down-forward at address, out to the right at 90°,
-    /// up and behind the trail shoulder at the top; negative angles mirror through to the finish.
-    private func pose(_ degrees: Double) {
-        let radians = Float(degrees * .pi / 180)
-        let toAddress = addressHands - pivot
-        let radius = simd_length(toAddress)
-        let d0 = toAddress / radius
-        var d1 = simd_float3(-0.25, 0.2, 1)
-        d1 = simd_normalize(d1 - simd_dot(d1, d0) * d0)
-        let hands = pivot + (cos(radians) * d0 + sin(radians) * d1) * radius
-        // The shoulders turn with the arms, about a third of the arc.
-        upperBody.eulerAngles.y = -radians * 0.35
-
-        for side in 0..<2 {
-            let shoulder = shoulders[side]
-            let hand = hands + simd_float3(side == 0 ? 0.12 : -0.12, side == 0 ? -0.08 : 0.08, 0)
-            var reach = hand - shoulder
-            let distance = min(simd_length(reach), upperArm + forearm - 0.05)
-            reach = simd_normalize(reach) * distance
-            let wrist = shoulder + reach
-            // Two-bone IK: elbows bend out and back, never past straight.
-            let axis = reach / distance
-            let a = (upperArm * upperArm - forearm * forearm + distance * distance) / (2 * distance)
-            let height = sqrt(max(0, upperArm * upperArm - a * a))
-            var bend = simd_float3(-0.7, -0.3, side == 0 ? -1 : 1)
-            bend = simd_normalize(bend - simd_dot(bend, axis) * axis)
-            let elbow = shoulder + axis * a + bend * height
-            place(bones[side * 2], from: shoulder, to: elbow)
-            place(bones[side * 2 + 1], from: elbow, to: wrist)
-            self.hands[side].simdPosition = wrist
-        }
-        // Wrist hinge: the club hangs on the arm line at address and cocks up to 90° along the
-        // direction of travel, so it lies over the shoulder at the top and points skyward through.
-        let armLine = simd_normalize(hands - pivot)
-        let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
-        let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2)
-        let shaft = simd_normalize(cos(hinge) * armLine + sin(hinge) * tangent)
-        club.simdPosition = hands
-        club.simdScale = simd_float3(1, clubLength, 1)
-        club.simdLook(at: hands + shaft * clubLength, up: simd_float3(0, 0, 1), localFront: simd_float3(0, 1, 0))
-    }
-
-    private func place(_ bone: SCNNode, from start: simd_float3, to end: simd_float3) {
-        bone.simdPosition = start
-        bone.simdScale = simd_float3(1, max(0.05, simd_length(end - start)), 1)
-        bone.simdLook(at: end, up: simd_float3(0, 0, 1), localFront: simd_float3(0, 1, 0))
-    }
-}
-
 struct CourseSceneView: UIViewRepresentable {
     let scene: CourseScene
-    let hole: Hole
-    let ball: CoursePoint
-    let heading: Double
-    let distanceToPin: Double
-    let shot: RangeShot?
-    let elapsed: Double
-    let aim: Double
-    var swingAngle: Double = 0
-    var handedness: Handedness = .right
+    let inputs: SceneInputs
+
+    func makeCoordinator() -> CourseScene { scene }
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -471,15 +508,18 @@ struct CourseSceneView: UIViewRepresentable {
         view.pointOfView = scene.camera
         view.antialiasingMode = .multisampling4X
         view.preferredFramesPerSecond = 60
+        view.rendersContinuously = true
         view.isUserInteractionEnabled = false
+        scene.inputs = inputs
+        scene.start()
         return view
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        scene.load(hole)
-        scene.update(
-            ball: ball, heading: heading, distanceToPin: distanceToPin, shot: shot,
-            elapsed: elapsed, aim: aim, swingAngle: swingAngle, handedness: handedness
-        )
+        scene.inputs = inputs
+    }
+
+    static func dismantleUIView(_ view: SCNView, coordinator: CourseScene) {
+        coordinator.stop()
     }
 }

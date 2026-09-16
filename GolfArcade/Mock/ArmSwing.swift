@@ -75,6 +75,8 @@ struct ArmSwingDetector {
     private(set) var handsOffset: CGVector?
     /// Where the hands crossed the ball on the last impact, in shoulder widths.
     private(set) var lastStrikeOffset: CGVector?
+    /// When the player last settled at address (still, over the ball). Nil while not at address.
+    private(set) var addressHeldSince: Double?
     private var addressHands: CGPoint?
     private var closestImpact: (arc: Double, sample: Sample)?
 
@@ -110,19 +112,21 @@ struct ArmSwingDetector {
                 phase = .lineUp
                 return nil
             }
-            settle(sample, vector: vector)
+            settle(sample, vector: vector, at: time)
             return nil
 
         case .address:
             if isStill, arc < backswingStart {
                 if let ballAddress, !ballAddress.isLinedUp(sample.hands, shoulderWidth: sample.shoulderWidth) {
                     phase = .lineUp
+                    addressHeldSince = nil
                     return nil
                 }
-                settle(sample, vector: vector)
+                settle(sample, vector: vector, at: time)
             }
             guard arc > backswingStart else { return nil }
             phase = .backswing
+            addressHeldSince = nil
             peakArc = arc
             peakDownswingSpeed = 0
             return .load(load(arc))
@@ -193,7 +197,8 @@ struct ArmSwingDetector {
 
     private func load(_ arc: Double) -> Double { min(1, max(0, arc / fullBackswing)) }
 
-    private mutating func settle(_ sample: Sample, vector: CGVector) {
+    private mutating func settle(_ sample: Sample, vector: CGVector, at time: Double) {
+        if phase != .address { addressHeldSince = time }
         reference = vector
         addressHands = sample.hands
         peakArc = 0
@@ -211,6 +216,7 @@ struct ArmSwingDetector {
         addressHands = nil
         closestImpact = nil
         handsOffset = nil
+        addressHeldSince = nil
     }
 
     /// Compares the hands at impact with the ball's hand target (or the address position when there

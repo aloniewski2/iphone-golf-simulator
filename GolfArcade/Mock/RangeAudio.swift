@@ -35,6 +35,18 @@ final class RangeAudio {
         queue.async { [engine] in engine.celebrate() }
     }
 
+    /// A club connecting with a friend.
+    func thump() {
+        guard enabled else { return }
+        queue.async { [engine] in engine.thump() }
+    }
+
+    /// A falling tone for a bad result.
+    func groan() {
+        guard enabled else { return }
+        queue.async { [engine] in engine.groan() }
+    }
+
     func stop() {
         queue.async { [engine] in engine.stop() }
     }
@@ -44,6 +56,8 @@ final class RangeAudio {
         private var load: AVAudioPlayer?
         private var hit: AVAudioPlayer?
         private var reward: AVAudioPlayer?
+        private var bump: AVAudioPlayer?
+        private var sigh: AVAudioPlayer?
         private let lock = NSLock()
         private var latestTension: Double?
 
@@ -53,6 +67,12 @@ final class RangeAudio {
             load?.numberOfLoops = -1
             load?.enableRate = true
             reward = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.35, frequency: 880, percussive: true))
+            bump = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.25, frequency: 85, percussive: true, noise: 0.6))
+            sigh = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.45, frequency: 140, percussive: false, noise: 0.1))
+            sigh?.enableRate = true
+            sigh?.rate = 0.7
+            bump?.prepareToPlay()
+            sigh?.prepareToPlay()
             load?.prepareToPlay()
             reward?.prepareToPlay()
         }
@@ -88,6 +108,18 @@ final class RangeAudio {
             reward?.currentTime = 0
             reward?.volume = 0.3
             reward?.play()
+        }
+
+        func thump() {
+            bump?.currentTime = 0
+            bump?.volume = 0.6
+            bump?.play()
+        }
+
+        func groan() {
+            sigh?.currentTime = 0
+            sigh?.volume = 0.25
+            sigh?.play()
         }
 
         func stop() {

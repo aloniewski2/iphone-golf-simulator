@@ -1,4 +1,3 @@
-import SceneKit
 import XCTest
 @testable import GolfArcade
 
@@ -130,6 +129,22 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertFalse(right.isLinedUp(CGPoint(x: right.handTarget.x + right.shoulderWidth, y: right.handTarget.y), shoulderWidth: right.shoulderWidth))
     }
 
+    func testReadyTimerRunsOnlyWhileHoldingAddressOverTheBall() {
+        var detector = ArmSwingDetector()
+        detector.ballAddress = BallAddress(ball: CGPoint(x: 0.5, y: 0.1), handTarget: CGPoint(x: 0.5, y: 0.38), shoulderWidth: 0.2)
+        _ = drive(&detector, legs: [(0.6, 0)])
+        XCTAssertEqual(detector.phase, .address)
+        XCTAssertNotNil(detector.addressHeldSince)
+        let settled = detector.addressHeldSince
+        _ = drive(&detector, legs: [(0.3, 0)])
+        XCTAssertEqual(detector.addressHeldSince, settled, "holding still keeps the original start time")
+
+        var offBall = ArmSwingDetector()
+        offBall.ballAddress = BallAddress(ball: CGPoint(x: 0.9, y: 0.1), handTarget: CGPoint(x: 0.9, y: 0.38), shoulderWidth: 0.2)
+        _ = drive(&offBall, legs: [(0.8, 0)])
+        XCTAssertNil(offBall.addressHeldSince)
+    }
+
     func testImpactPositionClassifiesBallContact() {
         let address = CGPoint(x: 0.5, y: 0.3)
         XCTAssertEqual(ArmSwingDetector.strikeQuality(target: address, impact: CGPoint(x: 0.51, y: 0.31), shoulderWidth: 0.2, handedness: .right), .center)
@@ -158,28 +173,5 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertGreaterThan(fullShot.total, shortShot.total)
         XCTAssertEqual(fullShot.landing.lateralYards, 0, accuracy: 0.1)
         XCTAssertLessThan(hookShot.landing.lateralYards, -1)
-    }
-}
-
-final class GolferAvatarTests: XCTestCase {
-    @MainActor
-    func testArmsKeepTheirLengthAndSwingCleanlyThroughTheArc() {
-        let golfer = Golfer()
-        let arms = golfer.node.childNodes.flatMap { $0.childNodes }.filter { ($0.geometry as? SCNCylinder)?.height == 1 && ($0.geometry as? SCNCylinder)?.radius == 0.16 }
-        XCTAssertEqual(arms.count, 4)
-        let club = golfer.node.childNodes.flatMap { $0.childNodes }.first { $0.childNodes.count == 2 }!
-        let addressClubY = club.position.y
-        for _ in 0..<40 { golfer.follow(150) } // eases toward the top of the backswing
-        XCTAssertGreaterThan(club.position.y, addressClubY + 2, "hands rise to the top")
-        XCTAssertTrue(arms.allSatisfy { $0.scale.y <= 1.36 }, "arm segments never stretch past their length")
-        XCTAssertTrue(arms.allSatisfy { $0.scale.y >= 0.6 }, "and never collapse")
-        let top = club.position
-        golfer.launch(replay: false)
-        golfer.animate(elapsed: 0.15)
-        golfer.animate(elapsed: 0.5)
-        XCTAssertLessThan(club.position.z, top.z - 1, "the finish is through on the other side")
-        golfer.animate(elapsed: 5)
-        XCTAssertEqual(club.position.y, addressClubY, accuracy: 0.05, "back to address for the next ball")
-        XCTAssertTrue(arms.allSatisfy { $0.scale.y <= 1.36 })
     }
 }
