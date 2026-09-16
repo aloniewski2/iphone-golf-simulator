@@ -34,6 +34,45 @@ struct PoseFrame: Equatable, Sendable {
         [.leftShoulder, .rightShoulder, .leftHip, .rightHip].allSatisfy { point($0) != nil } && handCenter != nil
     }
 
+    var hasCalibrationBody: Bool {
+        let required: [BodyJoint] = [
+            .nose, .neck, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+            .leftWrist, .rightWrist, .root, .leftHip, .rightHip,
+            .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
+        ]
+        return required.allSatisfy { point($0, minimumConfidence: 0.55) != nil }
+    }
+
+    var bodyBounds: CGRect? {
+        let visible = points.values.filter { $0.confidence >= 0.45 }.map(\.location)
+        guard let first = visible.first else { return nil }
+        return visible.dropFirst().reduce(CGRect(origin: first, size: .zero)) { bounds, point in
+            bounds.union(CGRect(origin: point, size: .zero))
+        }
+    }
+
+    var shoulderCenter: CGPoint? {
+        guard let left = point(.leftShoulder, minimumConfidence: 0.35),
+              let right = point(.rightShoulder, minimumConfidence: 0.35) else { return nil }
+        return CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
+    }
+
+    var shoulderWidth: CGFloat? {
+        guard let left = point(.leftShoulder, minimumConfidence: 0.35),
+              let right = point(.rightShoulder, minimumConfidence: 0.35) else { return nil }
+        return hypot(right.x - left.x, right.y - left.y)
+    }
+
+    var hasOpenCalibrationPose: Bool {
+        guard let leftWrist = point(.leftWrist, minimumConfidence: 0.55),
+              let rightWrist = point(.rightWrist, minimumConfidence: 0.55),
+              let leftHip = point(.leftHip, minimumConfidence: 0.55),
+              let rightHip = point(.rightHip, minimumConfidence: 0.55),
+              let width = shoulderWidth else { return false }
+        return leftWrist.x < leftHip.x - width * 0.12
+            && rightWrist.x > rightHip.x + width * 0.12
+    }
+
     var handCenter: CGPoint? {
         switch (point(.leftWrist), point(.rightWrist)) {
         case let (left?, right?): CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
@@ -58,4 +97,3 @@ struct PoseFrame: Equatable, Sendable {
         return atan2(Double(b.y - a.y), Double(b.x - a.x)) * 180 / .pi
     }
 }
-

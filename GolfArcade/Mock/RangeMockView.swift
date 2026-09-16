@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 enum SwingInput: String, CaseIterable, Identifiable {
@@ -15,7 +16,7 @@ enum SwingInput: String, CaseIterable, Identifiable {
 struct RangeMockView: View {
     @StateObject private var round = RangeRound()
     @StateObject private var motion = PhoneSwingController()
-    @StateObject private var camera = CameraSwingController()
+    @ObservedObject private var camera: CameraSwingController
     @State private var meadow = MeadowScene()
     @State private var audio = RangeAudio()
     @State private var feedback = SwingFeedbackController()
@@ -30,6 +31,14 @@ struct RangeMockView: View {
     private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
     private let ink = Color(red: 0.06, green: 0.18, blue: 0.16)
+    private let calibration: PlayerCalibration
+    private let onRecalibrate: () -> Void
+
+    init(camera: CameraSwingController, calibration: PlayerCalibration, onRecalibrate: @escaping () -> Void) {
+        self.camera = camera
+        self.calibration = calibration
+        self.onRecalibrate = onRecalibrate
+    }
 
     var body: some View {
         GeometryReader { size in
@@ -90,7 +99,10 @@ struct RangeMockView: View {
             .sheet(isPresented: $helpPresented) { instructions }
             .fullScreenCover(isPresented: $cameraPresented, onDismiss: { round.resume() }) {
                 NavigationStack {
-                    ArcadeView()
+                    ArcadeView(calibration: calibration, onRecalibrate: {
+                        cameraPresented = false
+                        onRecalibrate()
+                    })
                         .toolbar {
                             ToolbarItem(placement: .topBarTrailing) { Button("Back to range") { cameraPresented = false } }
                         }
@@ -151,6 +163,7 @@ struct RangeMockView: View {
                 Button("Camera lab", systemImage: "camera") {
                     stopFeedback(); round.pause(); cameraPresented = true
                 }
+                Button("Recalibrate player", systemImage: "viewfinder", action: onRecalibrate)
                 Button("Restart round", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restart() }
             } label: {
                 Image(systemName: "slider.horizontal.3").frame(width: 36, height: 44)

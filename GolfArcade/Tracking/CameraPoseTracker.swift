@@ -12,6 +12,8 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     let session = AVCaptureSession()
     @Published private(set) var status: Status = .idle
     @Published private(set) var latestFrame: PoseFrame?
+    @Published private(set) var detectedBodyCount = 0
+    @Published private(set) var playerMatchConfidence: Double?
     /// Horizontal field of view of the active format, in degrees, for on-screen guidance.
     @Published private(set) var fieldOfView: Float = 0
     /// Width ÷ height of the delivered (portrait) frames, so previews can show the whole frame.
@@ -20,7 +22,16 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     private let captureQueue = DispatchQueue(label: "golf.camera.capture", qos: .userInitiated)
     private let visionQueue = DispatchQueue(label: "golf.camera.vision", qos: .userInitiated)
     private let request = VNDetectHumanBodyPoseRequest()
+    private let calibrationLock = NSLock()
+    private var calibration: PlayerCalibration?
     private var isConfigured = false
+
+    func setCalibration(_ calibration: PlayerCalibration?) {
+        calibrationLock.lock()
+        self.calibration = calibration
+        calibrationLock.unlock()
+        DispatchQueue.main.async { [weak self] in self?.playerMatchConfidence = nil }
+    }
 
     func start() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -117,12 +128,45 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         do {
             let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .upMirrored)
             try handler.perform([request])
-            guard let observation = request.results?.first else { return }
-            let frame = try poseFrame(from: observation, timestamp: CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds)
-            DispatchQueue.main.async { [weak self] in self?.latestFrame = frame }
+            let observations = request.results ?? []
+            let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
+            let frames = observations.compactMap { try? poseFrame(from: $0, timestamp: timestamp) }
+            let selection = selectPlayer(from: frames)
+            DispatchQueue.main.async { [weak self] in
+                self?.detectedBodyCount = frames.count
+                self?.latestFrame = selection?.frame
+                self?.playerMatchConfidence = selection?.confidence
+            }
         } catch {
             // Unrecognized frames are expected and safely ignored.
         }
+    }
+
+    private func selectPlayer(from frames: [PoseFrame]) -> (frame: PoseFrame, confidence: Double?)? {
+        guard !frames.isEmpty else { return nil }
+        calibrationLock.lock()
+        let savedCalibration = calibration
+        calibrationLock.unlock()
+
+        if let savedCalibration {
+            let ranked = frames.compactMap { frame -> (PoseFrame, Double)? in
+                guard let score = savedCalibration.matchScore(for: frame) else { return nil }
+                return (frame, score)
+            }.min { $0.1 < $1.1 }
+            guard let ranked, ranked.1 <= 0.24 else { return nil }
+            return (ranked.0, max(0, 1 - ranked.1 / 0.24))
+        }
+
+        // Before calibration, favor the largest complete body nearest the middle of the frame.
+        guard let best = frames.max(by: { acquisitionScore($0) < acquisitionScore($1) }) else { return nil }
+        return (best, nil)
+    }
+
+    private func acquisitionScore(_ frame: PoseFrame) -> Double {
+        guard let bounds = frame.bodyBounds else { return 0 }
+        let completeness = Double(frame.points.values.filter { $0.confidence >= 0.45 }.count) / Double(BodyJoint.allCases.count)
+        let centerPenalty = hypot(Double(bounds.midX - 0.5), Double(bounds.midY - 0.5))
+        return completeness + Double(bounds.height) * 1.4 - centerPenalty * 0.45
     }
 
     private func poseFrame(from observation: VNHumanBodyPoseObservation, timestamp: TimeInterval) throws -> PoseFrame {
@@ -144,4 +188,3 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         DispatchQueue.main.async { [weak self] in self?.status = newStatus }
     }
 }
-

@@ -4,13 +4,15 @@ An iPhone-first, motion-controlled golf game where the player's body is the cont
 
 ## Current focus
 
-**Playable mock:** launch the app to play a five-shot challenge on an original 3D driving range. Choose a club, aim, then pull down and release on the swing pad — or swing the iPhone like a club (**Phone**), or prop it up and let the front camera read your arm swing Wii-style (**Camera**). Ball flight is physically simulated (drag, backspin lift, bounce, roll). Includes sound, power-linked haptics, ball flight/bounce/roll, three scoring targets, replay, round results, and saved personal best. Camera access is optional through Settings → Camera lab. See [the testing guide](docs/PLAYABLE_MOCK.md).
+**Playable mock:** launch the app to play a five-shot challenge on an original 3D driving range. The first launch requires a short, front-facing full-body calibration so Vision can keep tracking the player instead of background people or person-shaped objects. Choose a club, aim, then pull down and release on the swing pad — or swing the iPhone like a club (**Phone**), or prop it up and let the front camera read your arm swing Wii-style (**Camera**). Ball flight is physically simulated (drag, backspin lift, bounce, roll). Includes sound, power-linked haptics, ball flight/bounce/roll, three scoring targets, replay, round results, and saved personal best. See [the testing guide](docs/PLAYABLE_MOCK.md).
 
 The first playable milestone is **Arcade Mode**: generous swing recognition, a small club set, believable shot variety, and immediate visual feedback. The architecture keeps observed pose data separate from estimated golf metrics so Assisted and Simulation modes can become more realistic without replacing the core pipeline.
 
 The current arcade foundation includes:
 
 - live front-camera capture and Apple Vision body-pose tracking
+- required first-run player calibration using 15 body landmarks and 45 stable frames
+- calibrated candidate selection that rejects non-matching background poses
 - an on-screen skeleton and tracking-confidence feedback
 - address, backswing, downswing, impact, follow-through, and finish detection
 - right- and left-handed interpretation

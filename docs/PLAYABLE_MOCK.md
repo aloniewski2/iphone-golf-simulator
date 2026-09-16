@@ -1,6 +1,12 @@
 # Playable range mock
 
-Launch `GolfArcade` in Xcode on an iPhone simulator or physical iPhone. The default screen is now **Fairway / Meadow Club**, an original, fully local arcade range. No camera permission, account, downloaded assets, or server is needed for touch play.
+Launch `GolfArcade` in Xcode on a physical iPhone. Before the range opens for the first time, allow camera access and complete the required player scan. The scan stays on-device; no account, downloaded assets, or server is needed. Automated simulator tests use a launch-only calibration fixture because the simulator cannot supply a live camera body pose.
+
+## First-run player scan
+
+Set the phone where it will stay during camera play, stand 7–12 feet away, and keep your head, hands, and feet visible. Face forward with your arms slightly away from your sides and hold still while 45 stable frames are collected. A full spin is not needed: Vision tracks a front-facing 2D skeleton, and turning would hide the landmarks required to measure both sides of the body.
+
+The scan records relative measurements for the shoulders, torso, arms, hips, and legs, plus the player's expected position and apparent size. During play, every body pose Vision finds is compared with that profile; a non-matching background pose is withheld from the swing detector instead of replacing the player. Choose **Recalibrate player** in range settings if the phone position changes substantially or a different person plays.
 
 ## Play
 
@@ -24,13 +30,13 @@ Hold on tight and clear the space around you. The recognizer is `MotionSwingDete
 
 ## Camera
 
-Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
+Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. After the full-body setup scan, only your **shoulders and one hand** need to remain visible during the swing.
 
 The model is Wii Sports golf read by camera: the power meter is the **arm arc**, the angle of your hands around your shoulders from where they hung at address. Hands level with the shoulders is about 90°; ~140° is a full backswing and 100 % on the meter. Downswing speed adds the final share of power (`speedWeight`), so a lazy full swing and a quick short one both make sense. Swing well past full (165°+) and the shot hooks, harder the further over you go. A slow return is a practice swing and does not spend a shot. Brief tracking loss at the top is skipped. `ArmSwingDetector` in `GolfArcade/Mock/ArmSwing.swift` holds every threshold and is unit-tested with synthetic swings.
 
 The golfer beside the tee is a Mii-style figure with its own fixed-length arms on one clean swing arc; your tracked arm arc only sets **how far along the swing it is**, so nothing stretches or jitters. When the ball launches it plays its own downswing and follow-through. In Touch and Phone modes the load meter drives the same arc.
 
-Settings provide sound, haptics, instructions, round restart, and the existing **Camera lab**. The lab is the separate experimental body-tracking prototype; live camera swings do not yet drive the new target challenge.
+Settings provide sound, haptics, instructions, player recalibration, round restart, and the existing **Camera lab**. Camera swings and the lab use the same saved player profile and reject candidates that do not match it.
 
 ## What to test
 
@@ -46,7 +52,7 @@ Settings provide sound, haptics, instructions, round restart, and the existing *
 
 ## Implementation limits
 
-Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
+Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, spin, wind, and depth-aware player identification remain future work.
 
 ## Verification
 

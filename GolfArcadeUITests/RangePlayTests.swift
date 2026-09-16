@@ -4,6 +4,7 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testPlayableFiveShotRoundAndReplay() throws {
         let app = XCUIApplication()
+        app.launchArguments.append("-skipPlayerCalibration")
         app.launch()
         XCTAssertTrue(app.buttons["demoShot"].waitForExistence(timeout: 15))
         app.buttons["club-wedge"].tap()

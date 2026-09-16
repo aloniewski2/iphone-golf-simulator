@@ -27,7 +27,7 @@ final class CameraSwingController: ObservableObject {
         detector = ArmSwingDetector()
         detector.handedness = handedness
         tracker.$status.receive(on: DispatchQueue.main).sink { [weak self] in self?.status = $0 }.store(in: &subscriptions)
-        tracker.$latestFrame.compactMap { $0 }.receive(on: DispatchQueue.main).sink { [weak self] in self?.process($0) }.store(in: &subscriptions)
+        tracker.$latestFrame.dropFirst().receive(on: DispatchQueue.main).sink { [weak self] in self?.process($0) }.store(in: &subscriptions)
         tracker.start()
     }
 
@@ -41,9 +41,10 @@ final class CameraSwingController: ObservableObject {
         phase = .findingPlayer
     }
 
-    private func process(_ frame: PoseFrame) {
+    private func process(_ frame: PoseFrame?) {
         self.frame = frame
-        let event = detector.ingest(ArmSwingDetector.Sample(frame: frame), at: frame.timestamp)
+        let time = frame?.timestamp ?? ProcessInfo.processInfo.systemUptime
+        let event = detector.ingest(frame.flatMap(ArmSwingDetector.Sample.init), at: time)
         phase = switch detector.phase {
         case .findingPlayer: .findingPlayer
         case .address: .address
