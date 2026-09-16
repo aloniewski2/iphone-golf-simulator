@@ -8,7 +8,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: R45WRD83AP
+    DEVELOPMENT_TEAM: 9VP5B3Q5VQ
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 0.1.0
 targets:
@@ -19,7 +19,7 @@ targets:
       - path: GolfArcade
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.iphonegolfsim
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_NSCameraUsageDescription: Your camera tracks your body movement to turn your swing into a golf shot.
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
@@ -36,7 +36,7 @@ targets:
       - target: GolfArcade
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.iphonegolfsim.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeTests
         GENERATE_INFOPLIST_FILE: YES
   GolfArcadeUITests:
     type: bundle.ui-testing
@@ -47,7 +47,7 @@ targets:
       - target: GolfArcade
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.iphonegolfsim.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeUITests
         GENERATE_INFOPLIST_FILE: YES
 schemes:
   GolfArcade:

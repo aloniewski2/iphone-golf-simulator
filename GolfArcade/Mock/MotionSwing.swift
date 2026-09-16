@@ -14,7 +14,7 @@ enum SwingInputEvent: Equatable {
     case load(Double)
     case cancel
     /// `curve` tilts the ball's spin axis, in degrees: a draw (negative) or fade read from the swing.
-    case impact(power: Double, curve: Double = 0)
+    case impact(power: Double, curve: Double, strike: StrikeQuality)
 }
 
 struct MotionSwingDetector {
@@ -93,7 +93,7 @@ struct MotionSwingDetector {
             phase = .finish
             stillSince = nil
             guard peakSpeed >= minimumSpeed else { return .cancel }
-            return .impact(power: min(1, peakSpeed / fullSpeed))
+            return .impact(power: min(1, peakSpeed / fullSpeed), curve: 0, strike: .center)
         }
     }
 

@@ -1,18 +1,107 @@
 import Foundation
 
-/// Range targets, in yards.
-struct RangeTarget: Identifiable, Equatable, Sendable {
+enum CourseDifficulty: String, CaseIterable, Sendable {
+    case easy, medium, hard
+
+    var displayName: String { rawValue.capitalized }
+}
+
+enum CourseHazardKind: String, Sendable {
+    case bunker, water
+
+    var displayName: String { rawValue.capitalized }
+}
+
+struct CourseHazard: Identifiable, Equatable, Sendable {
     let id: Int
-    let name: String
+    let kind: CourseHazardKind
     let x: Double
     let distance: Double
-    let radius: Double
+    let width: Double
+    let length: Double
 
-    static let all = [
-        RangeTarget(id: 0, name: "Cove", x: -8, distance: 45, radius: 13),
-        RangeTarget(id: 1, name: "Grove", x: 9, distance: 100, radius: 19),
-        RangeTarget(id: 2, name: "Summit", x: 0, distance: 180, radius: 25)
-    ]
+    func contains(_ point: FlightPoint) -> Bool {
+        let dx = (point.lateralYards - x) / max(width / 2, 0.001)
+        let dz = (point.distanceYards - distance) / max(length / 2, 0.001)
+        return dx * dx + dz * dz <= 1
+    }
+}
+
+/// A playable one-hole course. All measurements use yards in the same coordinate space as the
+/// flight model, which lets rendering and landing detection share one source of truth.
+struct GolfCourse: Identifiable, Equatable, Sendable {
+    let id: String
+    let name: String
+    let difficulty: CourseDifficulty
+    let par: Int
+    let holeDistance: Double
+    let fairwayWidth: Double
+    let greenRadius: Double
+    let hazards: [CourseHazard]
+
+    static let easy = GolfCourse(
+        id: "meadow", name: "Meadow Run", difficulty: .easy, par: 3,
+        holeDistance: 135, fairwayWidth: 48, greenRadius: 19,
+        hazards: [
+            CourseHazard(id: 0, kind: .bunker, x: 16, distance: 116, width: 18, length: 25)
+        ]
+    )
+    static let medium = GolfCourse(
+        id: "pine", name: "Pine Bend", difficulty: .medium, par: 4,
+        holeDistance: 205, fairwayWidth: 35, greenRadius: 16,
+        hazards: [
+            CourseHazard(id: 0, kind: .bunker, x: -12, distance: 152, width: 21, length: 30),
+            CourseHazard(id: 1, kind: .bunker, x: 14, distance: 193, width: 17, length: 20)
+        ]
+    )
+    static let hard = GolfCourse(
+        id: "cliff", name: "Cliffwater", difficulty: .hard, par: 5,
+        holeDistance: 265, fairwayWidth: 27, greenRadius: 13,
+        hazards: [
+            CourseHazard(id: 0, kind: .water, x: 0, distance: 142, width: 52, length: 34),
+            CourseHazard(id: 1, kind: .bunker, x: -13, distance: 235, width: 17, length: 28),
+            CourseHazard(id: 2, kind: .bunker, x: 13, distance: 250, width: 14, length: 22)
+        ]
+    )
+
+    static let all = [easy, medium, hard]
+
+    func lie(at point: FlightPoint) -> CourseLie {
+        if let hazard = hazards.first(where: { $0.contains(point) }) {
+            return hazard.kind == .water ? .water : .bunker
+        }
+        let cupDistance = hypot(point.lateralYards, point.distanceYards - holeDistance)
+        if cupDistance <= greenRadius { return cupDistance <= 2.5 ? .pin : .green }
+        let fairwayHalfWidth = fairwayWidth / 2
+        let courseLength = holeDistance + greenRadius
+        if point.distanceYards >= 0, point.distanceYards <= courseLength,
+           abs(point.lateralYards) <= fairwayHalfWidth {
+            return .fairway
+        }
+        return .rough
+    }
+}
+
+enum CourseLie: String, Equatable, Sendable {
+    case pin, green, fairway, rough, bunker, water
+
+    var displayName: String {
+        switch self {
+        case .pin: "At the pin"
+        default: rawValue.capitalized
+        }
+    }
+
+    var points: Int {
+        switch self {
+        case .pin: 100
+        case .green: 70
+        case .fairway: 35
+        case .rough: 15
+        case .bunker: 5
+        case .water: 0
+        }
+    }
 }
 
 extension GolfClub {
@@ -31,9 +120,10 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     let power: Double
     let aim: Double
     let curve: Double
+    let strike: StrikeQuality
     let flight: BallFlight
     let points: Int
-    let targetName: String?
+    let lie: CourseLie
 
     var carry: Double { flight.carry }
     var roll: Double { flight.roll }
@@ -43,21 +133,30 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     var landing: FlightPoint { flight.landing }
 
     /// `curve` tilts the spin axis for a draw or fade, in degrees; positive bends right.
-    init(id: Int, club: GolfClub, power: Double, aim: Double, curve: Double = 0) {
+    init(
+        id: Int,
+        club: GolfClub,
+        power: Double,
+        aim: Double,
+        curve: Double = 0,
+        strike: StrikeQuality = .center,
+        course: GolfCourse = .easy
+    ) {
         self.id = id
         self.club = club
         self.power = min(max(power.isFinite ? power : 0, 0), 1)
         self.aim = min(max(aim.isFinite ? aim : 0, -22), 22)
-        self.curve = min(max(curve.isFinite ? curve : 0, -15), 15)
-        flight = BallFlight.simulate(club.launch(power: self.power, aimDegrees: self.aim, curveDegrees: self.curve))
-        let end = flight.landing
-        let nearest = RangeTarget.all.min {
-            hypot(end.lateralYards - $0.x, end.distanceYards - $0.distance) / $0.radius
-                < hypot(end.lateralYards - $1.x, end.distanceYards - $1.distance) / $1.radius
-        }!
-        let error = hypot(end.lateralYards - nearest.x, end.distanceYards - nearest.distance) / nearest.radius
-        points = error <= 0.25 ? 100 : error <= 0.6 ? 60 : error <= 1 ? 30 : 10
-        targetName = error <= 1 ? nearest.name : nil
+        self.strike = strike
+        let strikeCurve: Double = switch strike {
+        case .heel: 5.5
+        case .toe: -5.5
+        default: 0.0
+        }
+        self.curve = min(max((curve.isFinite ? curve : 0) + strikeCurve, -15), 15)
+        let effectivePower = self.power * strike.efficiency
+        flight = BallFlight.simulate(club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve))
+        lie = course.lie(at: flight.landing)
+        points = lie.points
     }
 
     func position(at time: Double) -> FlightPoint { flight.position(at: time) }
@@ -74,5 +173,17 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             if total(mid) < distance { low = mid } else { high = mid }
         }
         return (low + high) / 2
+    }
+}
+
+extension StrikeQuality {
+    var efficiency: Double {
+        switch self {
+        case .center: 1
+        case .thin: 0.76
+        case .fat: 0.55
+        case .heel, .toe: 0.80
+        case .miss: 0.08
+        }
     }
 }

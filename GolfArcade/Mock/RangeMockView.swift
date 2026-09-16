@@ -17,18 +17,20 @@ struct RangeMockView: View {
     @StateObject private var round = RangeRound()
     @StateObject private var motion = PhoneSwingController()
     @ObservedObject private var camera: CameraSwingController
-    @State private var meadow = MeadowScene()
+    @State private var meadow = MeadowScene(course: .easy)
+    @State private var selectedCourse: GolfCourse?
+    @State private var pendingCourse: GolfCourse?
     @State private var audio = RangeAudio()
     @State private var feedback = SwingFeedbackController()
     @State private var demoTask: Task<Void, Never>?
     @State private var cameraPresented = false
-    @State private var helpPresented = false
     @State private var didApplyInitialInput = false
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .touch
     @AppStorage("range.handedness") private var handedness: Handedness = .right
     @Environment(\.scenePhase) private var appPhase
+
     private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
     private let ink = Color(red: 0.06, green: 0.18, blue: 0.16)
@@ -49,229 +51,215 @@ struct RangeMockView: View {
     }
 
     var body: some View {
-        GeometryReader { size in
-            ZStack {
-                ink.ignoresSafeArea()
-                VStack(spacing: 0) {
-                    header
-                    ZStack(alignment: .bottomLeading) {
-                        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
-                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness)
-                        }
-                        .accessibilityLabel("Three dimensional Meadow Club driving range")
-                        .accessibilityIdentifier("golfCourse")
-                        if swingInput == .camera {
-                            cameraPip
-                                .padding(.leading, 12)
-                                .padding(.bottom, 12)
-                                .zIndex(2)
-                        }
-                        VStack(spacing: 8) {
-                            HStack {
-                                Label("MEADOW CLUB", systemImage: "sun.max.fill")
-                                Spacer()
-                                Text("NO WIND · ARCADE")
-                            }
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .tracking(1)
-                            .padding(12)
-                            .background(ink.opacity(0.9), in: Capsule())
-                            HStack(spacing: 8) {
-                                ForEach(RangeTarget.all) { target in
-                                    Text("\(target.name.uppercased())  \(Int(target.distance))")
-                                        .font(.system(size: 9, weight: .heavy, design: .rounded))
-                                        .padding(.horizontal, 9).padding(.vertical, 7)
-                                        .background(targetColor(target.id), in: Capsule())
-                                        .foregroundStyle(ink)
-                                }
-                            }
-                            Spacer()
-                            if round.phase == .flying {
-                                Label(round.isReplay ? "REPLAY" : "BALL IN FLIGHT", systemImage: "location.north.fill")
-                                    .font(.caption.bold()).padding(10)
-                                    .background(ink.opacity(0.9), in: Capsule())
-                            } else if round.canSwing {
-                                Text(round.phase == .charging ? "LOAD  \(Int(round.power * 100))%" : sceneHint)
-                                    .font(.system(size: 11, weight: .black, design: .rounded)).tracking(1)
-                                    .padding(12).background(ink.opacity(0.9), in: Capsule())
-                            }
-                        }
-                        .padding(12)
-                    }
-                    .frame(minHeight: 175, maxHeight: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .padding(.horizontal, 12)
-                    controls
-                }
+        ZStack {
+            ink.ignoresSafeArea()
+            if let course = selectedCourse {
+                courseView(course).transition(.opacity)
+            } else {
+                CourseSelectionView(selection: $pendingCourse) { begin($0) }
+                    .transition(.opacity)
             }
-            .foregroundStyle(cream)
-            .sheet(isPresented: $helpPresented) { instructions }
-            .fullScreenCover(isPresented: $cameraPresented, onDismiss: { round.resume() }) {
-                NavigationStack {
-                    ArcadeView(calibration: calibration, onRecalibrate: {
-                        cameraPresented = false
-                        onRecalibrate()
-                    })
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) { Button("Back to range") { cameraPresented = false } }
-                        }
-                }
-            }
-            .onReceive(tick) { date in
-                guard appPhase == .active, !cameraPresented else { return }
-                let wasFlying = round.phase == .flying
-                round.advance(at: date)
-                if wasFlying, round.phase != .flying, !round.isReplay { audio.celebrate() }
-            }
-            .onAppear {
-                if startsInCameraMode, !didApplyInitialInput {
-                    didApplyInitialInput = true
-                    swingInput = .camera
-                }
-                feedback.isEnabled = haptics
-                audio.enabled = sound
-                motion.setClub(round.club)
-                motion.onEvent = { handleSwing($0) }
-                camera.handedness = handedness
-                camera.onEvent = { handleSwing($0) }
-                updateInputs()
-            }
-            .onChange(of: haptics) { _, value in feedback.isEnabled = value }
-            .onChange(of: sound) { _, value in audio.enabled = value }
-            .onChange(of: round.club) { _, club in motion.setClub(club) }
-            .onChange(of: swingInput) { _, _ in stopFeedback(); updateInputs() }
-            .onChange(of: handedness) { _, value in camera.handedness = value }
-            .onChange(of: cameraPresented) { _, _ in updateInputs() }
-            .onChange(of: appPhase) { _, phase in
-                if phase != .active { stopFeedback(); round.pause() }
-                else { round.resume() }
-                updateInputs()
-            }
-            .onDisappear { stopFeedback(); motion.stop(); camera.stop() }
         }
+        .foregroundStyle(cream)
+        .fullScreenCover(isPresented: $cameraPresented, onDismiss: { round.resume() }) {
+            NavigationStack {
+                ArcadeView(calibration: calibration, onRecalibrate: {
+                    cameraPresented = false
+                    onRecalibrate()
+                })
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Back to course") { cameraPresented = false }
+                    }
+                }
+            }
+        }
+        .onReceive(tick) { date in
+            guard appPhase == .active, !cameraPresented, selectedCourse != nil else { return }
+            let wasFlying = round.phase == .flying
+            round.advance(at: date)
+            if wasFlying, round.phase != .flying, !round.isReplay { audio.celebrate() }
+        }
+        .onAppear {
+            if startsInCameraMode, !didApplyInitialInput {
+                didApplyInitialInput = true
+                swingInput = .camera
+            }
+            feedback.isEnabled = haptics
+            audio.enabled = sound
+            motion.setClub(round.club)
+            motion.onEvent = { handleSwing($0) }
+            camera.handedness = handedness
+            camera.onEvent = { handleSwing($0) }
+            updateInputs()
+        }
+        .onChange(of: haptics) { _, value in feedback.isEnabled = value }
+        .onChange(of: sound) { _, value in audio.enabled = value }
+        .onChange(of: round.club) { _, club in motion.setClub(club) }
+        .onChange(of: swingInput) { _, _ in stopFeedback(); updateInputs() }
+        .onChange(of: handedness) { _, value in camera.handedness = value }
+        .onChange(of: cameraPresented) { _, _ in updateInputs() }
+        .onChange(of: selectedCourse) { _, _ in updateInputs() }
+        .onChange(of: appPhase) { _, phase in
+            if phase != .active { stopFeedback(); round.pause() }
+            else { round.resume() }
+            updateInputs()
+        }
+        .onDisappear { stopFeedback(); motion.stop(); camera.stop() }
         .preferredColorScheme(.dark)
     }
 
-    private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("FAIRWAY").font(.system(size: 27, weight: .black, design: .rounded)).tracking(2)
-                Text("FIVE SHOTS. FIND YOUR SWEET SPOT.")
-                    .font(.system(size: 8, weight: .bold)).tracking(1)
-                    .foregroundStyle(cream.opacity(0.6))
+    private func courseView(_ course: GolfCourse) -> some View {
+        GeometryReader { proxy in
+            ZStack {
+                TimelineView(.animation(
+                    minimumInterval: 1.0 / 30,
+                    paused: round.phase != .flying || appPhase != .active || cameraPresented
+                )) { timeline in
+                    MeadowSceneView(
+                        meadow: meadow,
+                        shot: round.activeShot,
+                        elapsed: round.elapsed(at: timeline.date),
+                        power: round.power,
+                        aim: round.aim,
+                        swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150,
+                        handedness: handedness
+                    )
+                }
+                .ignoresSafeArea()
+                .accessibilityLabel("\(course.name) golf course")
+                .accessibilityIdentifier("golfCourse")
+
+                LinearGradient(colors: [.black.opacity(0.14), .clear, .black.opacity(0.24)], startPoint: .top, endPoint: .bottom)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+
+                floatingClubBar
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                    .padding(.trailing, 10)
+
+                if swingInput == .camera {
+                    cameraPip
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                        .padding(.leading, 12)
+                        .padding(.bottom, 12)
+                }
+
+                if round.phase == .landed || round.phase == .complete {
+                    resultPanel
+                        .frame(maxWidth: min(proxy.size.width - 32, 470))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                        .padding(.bottom, 16)
+                } else {
+                    inputPanel
+                        .frame(maxWidth: swingInput == .camera ? 178 : min(proxy.size.width * 0.58, 440))
+                        .frame(
+                            maxWidth: .infinity,
+                            maxHeight: .infinity,
+                            alignment: swingInput == .camera ? .bottomTrailing : .bottom
+                        )
+                        .padding(.trailing, swingInput == .camera ? 72 : 0)
+                        .padding(.bottom, 16)
+                }
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 3) {
-                Text("\(round.score) PTS").font(.system(size: 21, weight: .black, design: .rounded)).monospacedDigit()
-                    .accessibilityIdentifier("roundScore")
-                Text("SHOT \(round.shotNumber) / 5 · BEST \(round.best)").font(.system(size: 9, weight: .bold)).monospacedDigit()
-            }
+        }
+    }
+
+    private var floatingClubBar: some View {
+        VStack(spacing: 7) {
             Menu {
-                Toggle("Sound effects", isOn: $sound)
-                Toggle("Haptics", isOn: $haptics)
+                Picker("Swing input", selection: $swingInput) {
+                    ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
+                }
                 Picker("Handedness", selection: $handedness) {
                     ForEach(Handedness.allCases) { Text("\($0.displayName)-handed").tag($0) }
                 }
-                Button("How to play", systemImage: "questionmark.circle") { helpPresented = true }
+                Toggle("Sound effects", isOn: $sound)
+                Toggle("Haptics", isOn: $haptics)
+                Button("Choose another course", systemImage: "map") { leaveCourse() }
                 Button("Camera lab", systemImage: "camera") {
                     stopFeedback(); round.pause(); cameraPresented = true
                 }
                 Button("Recalibrate player", systemImage: "viewfinder", action: onRecalibrate)
                 Button("Restart round", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restart() }
             } label: {
-                Image(systemName: "slider.horizontal.3").frame(width: 36, height: 44)
+                Image(systemName: "ellipsis").frame(width: 45, height: 42)
             }
-            .accessibilityLabel("Range settings")
-        }
-        .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 16)
-    }
+            .accessibilityLabel("Course settings")
 
-    @ViewBuilder private var controls: some View {
-        if round.phase == .complete || round.phase == .landed {
-            resultPanel
-        } else {
-            VStack(spacing: 12) {
-                HStack(spacing: 7) {
-                    ForEach(GolfClub.allCases) { club in
-                        Button {
-                            round.club = club
-                        } label: {
-                            VStack(spacing: 3) {
-                                Text(club.displayName.uppercased()).font(.system(size: 10, weight: .heavy))
-                                Text("\(Int(club.mockDistance)) YD").font(.system(size: 9, weight: .medium)).opacity(0.65)
-                            }
-                            .frame(maxWidth: .infinity).padding(.vertical, 10)
-                            .background(round.club == club ? cream : Color.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                            .foregroundStyle(round.club == club ? ink : cream)
-                        }
-                        .accessibilityIdentifier("club-\(club.rawValue)")
+            Divider().overlay(.white.opacity(0.18))
+
+            ForEach(GolfClub.allCases) { club in
+                Button { round.club = club } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: club.symbol).font(.system(size: 17, weight: .bold))
+                        Text(shortName(club)).font(.system(size: 9, weight: .black, design: .rounded))
                     }
+                    .frame(width: 45, height: 48)
+                    .background(round.club == club ? cream : .white.opacity(0.08), in: RoundedRectangle(cornerRadius: 11))
+                    .foregroundStyle(round.club == club ? ink : cream)
                 }
                 .disabled(round.phase != .ready)
-                HStack(spacing: 12) {
-                    Text("AIM").font(.system(size: 10, weight: .heavy)).tracking(1)
-                    Slider(value: $round.aim, in: -22...22, step: 1).tint(cream)
-                        .accessibilityLabel("Aim in degrees")
-                        .disabled(round.phase != .ready)
-                    Text(String(format: "%+.0f°", round.aim)).font(.system(size: 12, weight: .bold, design: .monospaced)).frame(width: 38)
-                }
-                HStack {
-                    Picker("Swing input", selection: $swingInput) {
-                        ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: 230)
-                    .accessibilityIdentifier("swingInput")
-                    Spacer()
-                    Button("Demo shot") { demo() }
-                        .font(.system(size: 12, weight: .bold)).underline()
-                        .disabled(!round.canSwing || demoTask != nil)
-                        .accessibilityIdentifier("demoShot")
-                }
-                switch swingInput {
-                case .touch: swingPad
-                case .phone: motionPanel
-                case .camera: cameraPanel
-                }
+                .accessibilityLabel("\(club.displayName), \(Int(club.mockDistance)) yards")
+                .accessibilityIdentifier("club-\(club.rawValue)")
             }
-            .padding(16)
+
+            Divider().overlay(.white.opacity(0.18))
+
+            Button { round.aim = max(-22, round.aim - 2) } label: {
+                Image(systemName: "arrow.left").frame(width: 45, height: 34)
+            }
+            .disabled(round.phase != .ready)
+            Button { round.aim = min(22, round.aim + 2) } label: {
+                Image(systemName: "arrow.right").frame(width: 45, height: 34)
+            }
+            .disabled(round.phase != .ready)
+        }
+        .frame(width: 59)
+        .padding(7)
+        .background(.black.opacity(0.62), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.12)))
+        .padding(.vertical, 20)
+    }
+
+    @ViewBuilder private var inputPanel: some View {
+        switch swingInput {
+        case .touch:
+            swingPad
+        case .phone:
+            statusPill(icon: "iphone.gen3.radiowaves.left.and.right", title: motionCopy.0, detail: motionCopy.1)
+                .accessibilityIdentifier("motionPanel")
+        case .camera:
+            statusPill(icon: "figure.golf", title: cameraTitle, detail: cameraDetail)
+                .accessibilityIdentifier("cameraPanel")
         }
     }
 
     private var swingPad: some View {
         ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.07))
+            RoundedRectangle(cornerRadius: 18).fill(.black.opacity(0.66))
             GeometryReader { geometry in
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(LinearGradient(colors: [.mint.opacity(0.25), .yellow.opacity(0.55)], startPoint: .leading, endPoint: .trailing))
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(LinearGradient(colors: [.mint.opacity(0.32), .yellow.opacity(0.58)], startPoint: .leading, endPoint: .trailing))
                     .frame(width: geometry.size.width * round.power)
-                    .animation(.easeOut(duration: 0.08), value: round.power)
             }
-            HStack {
-                Image(systemName: round.phase == .flying ? "paperplane.fill" : "arrow.down")
-                    .font(.system(size: 25, weight: .light))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(round.phase == .flying ? "Nice swing." : round.phase == .charging ? "Feel the load." : "Take your shot.")
-                        .font(.system(size: 21, weight: .bold, design: .rounded))
-                    Text(round.phase == .charging ? "Release at your chosen power" : "Pull farther for more distance")
-                        .font(.system(size: 11)).opacity(0.65)
-                }
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.down").font(.title2)
+                Text(round.phase == .charging ? "Release to swing" : "Pull down to swing").font(.headline)
                 Spacer()
-                Text("\(Int(round.power * 100))%")
-                    .font(.system(size: 27, weight: .black, design: .rounded)).monospacedDigit()
-            }.padding(16)
+                Text("\(Int(round.power * 100))%").font(.title2.bold()).monospacedDigit()
+            }
+            .padding(16)
         }
-        .frame(height: 104)
+        .frame(height: 74)
         .contentShape(Rectangle())
         .gesture(DragGesture(minimumDistance: 3).onChanged { value in
             guard demoTask == nil, round.canSwing else { return }
-            charge(max(0, Double(value.translation.height)) / 100.0)
+            charge(max(0, Double(value.translation.height)) / 100)
         }.onEnded { _ in
             guard demoTask == nil else { return }
             release()
         })
-        // A drag interrupted by the system (notification banner, edge gesture, second finger) never
-        // reports `onEnded`, which would leave the round loaded forever. A plain tap resets it.
         .onTapGesture {
             guard demoTask == nil, round.phase == .charging else { return }
             stopFeedback()
@@ -283,138 +271,159 @@ struct RangeMockView: View {
         .accessibilityAction(named: "Swing at 75 percent") { demo() }
     }
 
-    private var motionPanel: some View {
-        let (title, detail) = motionCopy
-        return ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.07))
-            GeometryReader { geometry in
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(LinearGradient(colors: [.mint.opacity(0.25), .yellow.opacity(0.55)], startPoint: .leading, endPoint: .trailing))
-                    .frame(width: geometry.size.width * round.power)
-                    .animation(.easeOut(duration: 0.08), value: round.power)
+    private func statusPill(icon: String, title: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon).font(.title2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                Text(detail).font(.caption).foregroundStyle(.white.opacity(0.68)).lineLimit(1)
             }
-            HStack {
-                Image(systemName: round.phase == .flying ? "paperplane.fill" : "iphone.gen3.radiowaves.left.and.right")
-                    .font(.system(size: 25, weight: .light))
-                    .symbolEffect(.pulse, isActive: motion.status == .address)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.system(size: 21, weight: .bold, design: .rounded))
-                    Text(detail).font(.system(size: 11)).opacity(0.65)
-                }
-                Spacer()
-                Text("\(Int(round.power * 100))%")
-                    .font(.system(size: 27, weight: .black, design: .rounded)).monospacedDigit()
-            }.padding(16)
+            Spacer(minLength: 0)
         }
-        .frame(height: 104)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Phone swing. \(title) \(detail)")
-        .accessibilityValue("\(Int(round.power * 100)) percent power")
-        .accessibilityIdentifier("motionPanel")
+        .padding(.horizontal, 15)
+        .padding(.vertical, 11)
+        .background(.black.opacity(0.66), in: Capsule())
+        .overlay(Capsule().stroke(.white.opacity(0.12)))
+        .accessibilityElement(children: .combine)
     }
 
-    private var motionCopy: (String, String) {
-        if round.phase == .flying { return ("Nice swing.", "Watch it fly") }
-        if demoTask != nil { return ("Demo swing.", "Hands off") }
-        switch motion.status {
-        case .unavailable: return ("Needs a real iPhone.", "Motion sensors are not available here")
-        case .idle, .settling: return ("Hold still at address.", "Grip tight and hold the phone like a club")
-        case .address: return ("Ready. Take it back.", "Swing through to hit the ball")
-        case .backswing: return ("Feel the load.", "Swing through to hit the ball")
-        case .downswing: return ("Swing!", "Power comes from your speed")
-        }
-    }
-
-    private var sceneHint: String {
-        switch swingInput {
-        case .touch: "A LITTLE SWING. A BIG AFTERNOON."
-        case .phone: "SWING THE PHONE LIKE A CLUB."
-        case .camera: "PROP THE PHONE UP AND SWING."
-        }
-    }
-
-    /// A small bottom-left view of the whole camera frame while the course remains the primary UI.
     private var cameraPip: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Color.black
             if case .running = camera.status {
-                CameraPreview(
-                    session: camera.tracker.session,
-                    videoRotationAngle: camera.tracker.videoRotationAngle,
-                    isVideoMirrored: camera.tracker.isVideoMirrored
-                )
-                PoseSkeletonView(frame: camera.frame, frameAspect: camera.tracker.frameAspect)
+                CameraPreview(session: camera.tracker.session, videoRotationAngle: camera.tracker.videoRotationAngle, isVideoMirrored: camera.tracker.isVideoMirrored)
+                PoseSkeletonView(frame: camera.frame, frameAspect: camera.tracker.frameAspect, contentMode: .fit)
+                VirtualBallGuide(calibration: calibration, handedness: handedness, frameAspect: camera.tracker.frameAspect, strike: camera.lastStrike)
             } else {
                 Image(systemName: "person.crop.rectangle").font(.title2).opacity(0.5)
             }
+            if let strike = camera.lastStrike {
+                Text(strike.displayName.uppercased())
+                    .font(.system(size: 8, weight: .black, design: .rounded))
+                    .padding(.horizontal, 6).padding(.vertical, 4)
+                    .background(strike == .center ? Color.mint : Color.orange, in: Capsule())
+                    .foregroundStyle(ink)
+                    .padding(6)
+            }
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Text("\(Int(round.power * 100))%")
+                        .font(.caption.bold()).monospacedDigit()
+                        .padding(.horizontal, 7).padding(.vertical, 4)
+                        .background(.black.opacity(0.72), in: Capsule())
+                        .padding(6)
+                }
+            }
         }
         .aspectRatio(camera.tracker.frameAspect, contentMode: .fit)
-        .frame(width: 118)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(camera.phase == .findingPlayer ? Color.white.opacity(0.4) : .mint, lineWidth: 2))
-        .accessibilityHidden(true)
+        .frame(width: 132)
+        .clipShape(RoundedRectangle(cornerRadius: 13))
+        .overlay(RoundedRectangle(cornerRadius: 13).strokeBorder(camera.phase == .findingPlayer ? .white.opacity(0.5) : .mint, lineWidth: 2))
+        .shadow(color: .black.opacity(0.35), radius: 8, y: 4)
+        .accessibilityLabel("Player camera with virtual ball alignment guide")
+        .accessibilityIdentifier("cameraPip")
     }
 
-    private var cameraPanel: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.07))
-            GeometryReader { geometry in
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(LinearGradient(colors: [.mint.opacity(0.25), .yellow.opacity(0.55)], startPoint: .leading, endPoint: .trailing))
-                    .frame(width: geometry.size.width * round.power)
-                    .animation(.easeOut(duration: 0.08), value: round.power)
-            }
-            HStack {
-                Image(systemName: round.phase == .flying ? "paperplane.fill" : "figure.golf")
-                    .font(.system(size: 25, weight: .light))
-                    .symbolEffect(.pulse, isActive: camera.phase == .address)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(cameraTitle).font(.system(size: 21, weight: .bold, design: .rounded))
-                    if case .denied = camera.status {
-                        Button("Open Settings") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
-                        }
-                        .font(.system(size: 11, weight: .bold)).underline()
-                    } else {
-                        Text(cameraDetail).font(.system(size: 11)).opacity(0.65)
+    private var resultPanel: some View {
+        VStack(spacing: 11) {
+            if round.phase == .complete {
+                HStack {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("ROUND COMPLETE").font(.caption2.bold()).tracking(1.5)
+                            .accessibilityIdentifier("roundComplete")
+                        Text("\(round.score) points").font(.title.bold())
+                            .accessibilityIdentifier("roundScore")
+                    }
+                    Spacer()
+                    Text("BEST \(round.best)").font(.caption.bold()).foregroundStyle(.mint)
+                }
+            } else if let shot = round.activeShot {
+                HStack {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("\(shot.strike.displayName.uppercased()) CONTACT").font(.caption2.bold()).tracking(1)
+                        Text(shot.lie.displayName).font(.title2.bold())
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(Int(shot.total)) yd").font(.title2.bold()).monospacedDigit()
+                        Text("+\(shot.points) points").font(.caption.bold()).foregroundStyle(.mint)
                     }
                 }
-                Spacer()
-                Text("\(Int(round.power * 100))%")
-                    .font(.system(size: 27, weight: .black, design: .rounded)).monospacedDigit()
-            }.padding(16)
+            }
+            HStack(spacing: 9) {
+                Button { round.replay() } label: {
+                    Label("Replay", systemImage: "arrow.clockwise")
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                }
+                .accessibilityIdentifier("replayShot")
+                Button { round.phase == .complete ? round.restart() : round.nextShot() } label: {
+                    Text(round.phase == .complete ? "Play again" : "Next shot")
+                        .frame(maxWidth: .infinity).padding(.vertical, 12)
+                        .background(cream, in: RoundedRectangle(cornerRadius: 12)).foregroundStyle(ink)
+                }
+                .accessibilityIdentifier(round.phase == .complete ? "playAgain" : "nextShot")
+            }
+            .font(.subheadline.bold())
         }
-        .frame(height: 104)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Camera swing. \(cameraTitle) \(cameraDetail)")
-        .accessibilityValue("\(Int(round.power * 100)) percent power")
-        .accessibilityIdentifier("cameraPanel")
+        .padding(16)
+        .background(.black.opacity(0.74), in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.12)))
+    }
+
+    private var motionCopy: (String, String) {
+        if round.phase == .flying { return ("Nice swing", "Watch the ball") }
+        switch motion.status {
+        case .unavailable: return ("Needs a real iPhone", "Motion sensors unavailable")
+        case .idle, .settling: return ("Hold still at address", "Grip the phone like a club")
+        case .address: return ("Ready", "Take it back, then swing through")
+        case .backswing: return ("Backswing", "Keep loading")
+        case .downswing: return ("Swing", "Drive through the ball")
+        }
     }
 
     private var cameraDetail: String {
-        let fov = camera.tracker.fieldOfView > 0 ? String(format: " · %.0f° lens", camera.tracker.fieldOfView) : ""
         switch camera.phase {
-        case .findingPlayer: return "Get shoulders and hands in the small view" + fov
-        case .address: return "Take it back to fill the meter" + fov
-        case .backswing: return round.power >= 1 ? "Full power. Any more will hook" : "Further back for more"
-        case .downswing, .impact: return "Through the ball"
-        case .followThrough, .finish: return "Set up again for the next ball"
+        case .findingPlayer: "Line your club up with the virtual ball"
+        case .address: "Hold still, then take it back"
+        case .backswing: "Keep your eyes on the ball"
+        case .downswing, .impact: "Strike through the ball"
+        case .followThrough, .finish: "Finish the swing"
         }
     }
 
     private var cameraTitle: String {
-        if round.phase == .flying { return "Nice swing." }
-        if demoTask != nil { return "Demo swing." }
-        switch camera.status {
-        case .idle, .requestingPermission: return "Starting camera…"
-        case .denied: return "Camera access is off."
-        case .unavailable(let reason): return reason
-        case .running: return camera.phase.displayName + "."
+        if round.phase == .flying { return "Ball in flight" }
+        return switch camera.status {
+        case .idle, .requestingPermission: "Starting camera"
+        case .denied: "Camera access is off"
+        case .unavailable(let reason): reason
+        case .running: camera.phase.displayName
         }
     }
 
+    private func begin(_ course: GolfCourse) {
+        stopFeedback()
+        round.selectCourse(course)
+        meadow = MeadowScene(course: course)
+        withAnimation(.easeInOut(duration: 0.25)) { selectedCourse = course }
+    }
+
+    private func leaveCourse() {
+        stopFeedback()
+        motion.stop()
+        camera.stop()
+        pendingCourse = nil
+        withAnimation(.easeInOut(duration: 0.25)) { selectedCourse = nil }
+    }
+
     private func updateInputs() {
-        let live = appPhase == .active && !cameraPresented
+        let live = appPhase == .active && !cameraPresented && selectedCourse != nil
         if live, swingInput == .phone { motion.start() } else { motion.stop() }
         if live, swingInput == .camera { camera.start() } else { camera.stop() }
     }
@@ -423,93 +432,17 @@ struct RangeMockView: View {
         guard demoTask == nil else { return }
         switch event {
         case .load(let value):
-            // A new backswing after a landed shot tees up the next one without touching the screen.
             if round.phase == .landed { round.nextShot() }
             guard round.canSwing else { return }
             charge(value)
         case .cancel:
             if round.phase == .charging { stopFeedback() }
-        case .impact(let power, let curve):
+        case .impact(let power, let curve, let strike):
             guard round.canSwing else { return }
-            if round.phase == .ready { charge(power) }
             round.charge(power)
-            release(curve: curve)
+            release(curve: curve, strike: strike)
         }
     }
-
-    private var resultPanel: some View {
-        VStack(spacing: 13) {
-            if round.phase == .complete {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("ROUND COMPLETE").font(.system(size: 10, weight: .heavy)).tracking(2)
-                            .accessibilityIdentifier("roundComplete")
-                        Text(round.score >= 300 ? "What a round." : "One more round?")
-                            .font(.system(size: 26, weight: .black, design: .rounded))
-                    }
-                    Spacer()
-                    Text("\(round.score)").font(.system(size: 42, weight: .black, design: .rounded)).foregroundStyle(.mint)
-                }
-                HStack {
-                    ForEach(round.shots) { shot in
-                        VStack(spacing: 5) {
-                            Text("\(shot.id)").font(.caption2).opacity(0.6)
-                            Text("+\(shot.points)").font(.system(size: 16, weight: .black, design: .rounded))
-                        }.frame(maxWidth: .infinity)
-                    }
-                }
-            } else if let shot = round.activeShot {
-                HStack {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(shot.points == 100 ? "BULLSEYE!" : shot.targetName?.uppercased() ?? "ON THE FAIRWAY")
-                            .font(.system(size: 10, weight: .heavy)).tracking(1)
-                        Text("+\(shot.points) points").font(.system(size: 30, weight: .black, design: .rounded)).foregroundStyle(.mint)
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing) {
-                        Text("\(Int(shot.total)) yd").font(.system(size: 24, weight: .bold, design: .rounded))
-                        Text("\(Int(shot.carry)) carry · \(Int(shot.roll)) roll · \(Int(shot.flight.apex)) apex").font(.caption).opacity(0.6)
-                    }
-                }
-            }
-            HStack(spacing: 10) {
-                Button { round.replay() } label: {
-                    Label("Replay", systemImage: "arrow.clockwise").frame(maxWidth: .infinity).padding(15)
-                        .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
-                }.accessibilityIdentifier("replayShot")
-                Button {
-                    round.phase == .complete ? round.restart() : round.nextShot()
-                } label: {
-                    Text(round.phase == .complete ? "Play again" : "Next shot")
-                        .frame(maxWidth: .infinity).padding(15)
-                        .background(cream, in: RoundedRectangle(cornerRadius: 14)).foregroundStyle(ink)
-                }.accessibilityIdentifier(round.phase == .complete ? "playAgain" : "nextShot")
-            }.font(.system(size: 14, weight: .bold))
-            Text("TARGET RINGS: 100 / 60 / 30 PTS · FAIRWAY: 10 PTS")
-                .font(.system(size: 9, weight: .bold)).opacity(0.55)
-        }
-        .padding(20)
-    }
-
-    private var instructions: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            Text("Welcome to the meadow.").font(.largeTitle.bold())
-            Text("1. Pick a club and aim left or right.\n\n2. Pull down on the swing pad. More pull means more power. Release to hit.\n\n3. Land inside a target. The center is worth 100 points. You get five shots.")
-            Text("Swing phone: grip the iPhone like a club and hold it still at address. Take it back, then swing through. Faster swings hit farther, and a new backswing tees up the next ball.")
-            Text("Camera: prop the phone up facing you so your shoulders and hands are in the small view, then swing normally, with or without a club. Like Wii golf, how far back you take your hands sets the power; swing well past full and the shot drifts. The ball launches the moment the camera sees impact. Set your handedness in the settings menu.")
-            Text("Hold on tight and clear the space around you before swinging. A wrist strap is a good idea.")
-                .font(.callout).foregroundStyle(.orange)
-            Text("This is an arcade mock with game-tuned distances. Demo shot plays the same swing automatically. Camera lab opens the experimental body-tracking prototype.")
-                .font(.callout).foregroundStyle(.secondary)
-            Text("Sound follows Silent Mode. Vibration requires a physical iPhone; a mounted phone cannot provide resistance to your hands.")
-                .font(.callout).foregroundStyle(.secondary)
-            Button("Let's play") { helpPresented = false }.buttonStyle(.borderedProminent).tint(.mint)
-        }
-        .padding(28)
-        .presentationDetents([.large])
-    }
-
-    private func targetColor(_ id: Int) -> Color { id == 0 ? .orange : id == 1 ? .mint : .yellow }
 
     private func charge(_ power: Double) {
         if round.phase == .ready { feedback.beginBackswing(interactive: true) }
@@ -518,10 +451,10 @@ struct RangeMockView: View {
         audio.tension(round.power)
     }
 
-    private func release(curve: Double = 0) {
+    private func release(curve: Double = 0, strike: StrikeQuality = .center) {
         feedback.endBackswing()
         audio.stop()
-        if round.release(curve: curve) {
+        if round.release(curve: curve, strike: strike) {
             feedback.playImpact()
             audio.impact(club: round.club)
         }
@@ -546,5 +479,130 @@ struct RangeMockView: View {
         feedback.endBackswing()
         audio.stop()
         round.cancelCharge()
+    }
+
+    private func shortName(_ club: GolfClub) -> String {
+        switch club {
+        case .driver: "DR"
+        case .iron: "7I"
+        case .wedge: "SW"
+        case .putter: "PT"
+        }
+    }
+}
+
+private struct CourseSelectionView: View {
+    @Binding var selection: GolfCourse?
+    let onPlay: (GolfCourse) -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("CHOOSE A COURSE")
+                        .font(.system(size: 12, weight: .black, design: .rounded)).tracking(2)
+                        .foregroundStyle(.mint)
+                    Text("Where are you playing?").font(.system(size: 34, weight: .black, design: .rounded))
+                }
+
+                VStack(spacing: 12) {
+                    ForEach(GolfCourse.all) { course in
+                        Button { selection = course } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: courseIcon(course))
+                                    .font(.title2.bold())
+                                    .frame(width: 46, height: 46)
+                                    .background(courseColor(course).opacity(0.2), in: Circle())
+                                    .foregroundStyle(courseColor(course))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(course.name).font(.title3.bold())
+                                    Text("\(course.difficulty.displayName) · Par \(course.par) · \(Int(course.holeDistance)) yd")
+                                        .font(.caption).foregroundStyle(.white.opacity(0.62))
+                                    Text(hazardDescription(course)).font(.caption2).foregroundStyle(.white.opacity(0.48))
+                                }
+                                Spacer()
+                                Image(systemName: selection == course ? "checkmark.circle.fill" : "circle")
+                                    .font(.title2).foregroundStyle(selection == course ? .mint : .white.opacity(0.28))
+                            }
+                            .padding(16)
+                            .background(.white.opacity(selection == course ? 0.13 : 0.06), in: RoundedRectangle(cornerRadius: 18))
+                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(selection == course ? Color.mint : .white.opacity(0.09), lineWidth: 1.5))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("course-\(course.difficulty.rawValue)")
+                    }
+                }
+
+                Button {
+                    if let selection { onPlay(selection) }
+                } label: {
+                    Text(selection.map { "Play \($0.name)" } ?? "Select a course")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(selection == nil ? .white.opacity(0.12) : Color.mint, in: RoundedRectangle(cornerRadius: 15))
+                        .foregroundStyle(selection == nil ? .white.opacity(0.45) : Color(red: 0.06, green: 0.18, blue: 0.16))
+                }
+                .disabled(selection == nil)
+                .accessibilityIdentifier("playSelectedCourse")
+            }
+            .padding(24)
+            .frame(maxWidth: 620)
+            .frame(maxWidth: .infinity)
+        }
+        .background(
+            LinearGradient(colors: [Color(red: 0.05, green: 0.20, blue: 0.17), Color(red: 0.02, green: 0.08, blue: 0.08)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+        )
+        .accessibilityIdentifier("courseSelection")
+    }
+
+    private func courseColor(_ course: GolfCourse) -> Color {
+        switch course.difficulty {
+        case .easy: .mint
+        case .medium: .yellow
+        case .hard: .orange
+        }
+    }
+
+    private func courseIcon(_ course: GolfCourse) -> String {
+        switch course.difficulty {
+        case .easy: "leaf.fill"
+        case .medium: "tree.fill"
+        case .hard: "water.waves"
+        }
+    }
+
+    private func hazardDescription(_ course: GolfCourse) -> String {
+        let bunkers = course.hazards.filter { $0.kind == .bunker }.count
+        let water = course.hazards.contains { $0.kind == .water }
+        if water { return "Water crossing · \(bunkers) bunkers" }
+        return bunkers == 1 ? "1 greenside bunker" : "\(bunkers) bunkers"
+    }
+}
+
+private struct VirtualBallGuide: View {
+    let calibration: PlayerCalibration
+    let handedness: Handedness
+    let frameAspect: CGFloat
+    let strike: StrikeQuality?
+
+    var body: some View {
+        Canvas { context, size in
+            let side: CGFloat = handedness == .right ? 1 : -1
+            let normalized = CGPoint(
+                x: min(max(CGFloat(calibration.anchor.shoulderCenterX) + side * 0.16, 0.08), 0.92),
+                y: min(max(CGFloat(calibration.anchor.shoulderCenterY - calibration.anchor.height * 0.72), 0.06), 0.32)
+            )
+            let center = PoseSkeletonMapper.screenPoint(normalized, in: size, frameAspect: frameAspect, fitsEntireFrame: true)
+            let color: Color = strike == nil || strike == .center ? .mint : strike == .miss ? .red : .orange
+            context.stroke(Path(ellipseIn: CGRect(x: center.x - 12, y: center.y - 12, width: 24, height: 24)), with: .color(color.opacity(0.8)), lineWidth: 2)
+            context.fill(Path(ellipseIn: CGRect(x: center.x - 5, y: center.y - 5, width: 10, height: 10)), with: .color(.white))
+            var line = Path()
+            line.move(to: CGPoint(x: center.x - 18, y: center.y))
+            line.addLine(to: CGPoint(x: center.x + 18, y: center.y))
+            context.stroke(line, with: .color(color.opacity(0.65)), lineWidth: 1)
+        }
+        .allowsHitTesting(false)
     }
 }

@@ -11,10 +11,12 @@ final class MeadowScene {
     private let aimLine = SCNNode()
     private let impact = SCNNode()
     private let golfer = Golfer()
+    let course: GolfCourse
     private var lastShot: RangeShot?
     private var lastElapsed = 0.0
 
-    init() {
+    init(course: GolfCourse = .easy) {
+        self.course = course
         scene.background.contents = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogColor = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogStartDistance = 290
@@ -37,26 +39,36 @@ final class MeadowScene {
 
         let ground = SCNBox(width: 700, height: 1, length: 800, chamferRadius: 0)
         add(ground, color: UIColor(red: 0.18, green: 0.40, blue: 0.29, alpha: 1), at: SCNVector3(0, -1, -190))
-        for i in 0..<16 {
-            let strip = SCNBox(width: 75 + CGFloat(i) * 1.4, height: 0.15, length: 16, chamferRadius: 0)
+        let stripCount = max(10, Int(course.holeDistance / 16) + 2)
+        for i in 0..<stripCount {
+            let perspectiveWidth = course.fairwayWidth + Double(i) * 0.08
+            let strip = SCNBox(width: perspectiveWidth, height: 0.15, length: 16, chamferRadius: 0)
             let green = UIColor(red: 0.30, green: i.isMultiple(of: 2) ? 0.61 : 0.57, blue: 0.37, alpha: 1)
             add(strip, color: green, at: SCNVector3(0, -0.4, -Float(i * 16)))
         }
-        for target in RangeTarget.all {
-            let colors: [UIColor] = [.systemOrange, .systemTeal, .systemYellow]
-            for (scale, color) in [(1.0, colors[target.id]), (0.6, UIColor.white), (0.25, colors[target.id])] {
-                let disc = SCNCylinder(radius: target.radius * scale, height: 0.10)
-                disc.radialSegmentCount = 64
-                add(disc, color: color, at: SCNVector3(target.x, 0.04 + (1 - scale) * 0.3, -target.distance))
-            }
-            add(SCNCylinder(radius: 0.13, height: 8), color: .white, at: SCNVector3(target.x, 4, -target.distance))
-            add(SCNBox(width: 4, height: 2.2, length: 0.12, chamferRadius: 0.1), color: colors[target.id], at: SCNVector3(target.x + 2, 7.1, -target.distance))
-            label("\(Int(target.distance)) YD", at: SCNVector3(target.x - 5, 11, -target.distance))
+
+        let green = SCNCylinder(radius: course.greenRadius, height: 0.20)
+        green.radialSegmentCount = 64
+        add(green, color: UIColor(red: 0.43, green: 0.76, blue: 0.42, alpha: 1), at: SCNVector3(0, -0.25, -course.holeDistance))
+        for hazard in course.hazards {
+            let shape = SCNSphere(radius: 1)
+            shape.segmentCount = 32
+            let color = hazard.kind == .bunker
+                ? UIColor(red: 0.88, green: 0.79, blue: 0.57, alpha: 1)
+                : UIColor(red: 0.18, green: 0.55, blue: 0.78, alpha: 1)
+            let node = add(shape, color: color, at: SCNVector3(hazard.x, -0.18, -hazard.distance))
+            node.scale = SCNVector3(hazard.width / 2, 0.12, hazard.length / 2)
         }
-        for i in 0..<40 {
+        add(SCNCylinder(radius: 0.13, height: 8), color: .white, at: SCNVector3(0, 4, -course.holeDistance))
+        add(SCNBox(width: 4, height: 2.2, length: 0.12, chamferRadius: 0.1), color: .systemOrange, at: SCNVector3(2, 7.1, -course.holeDistance))
+        label("\(Int(course.holeDistance)) YD", at: SCNVector3(-5, 11, -course.holeDistance))
+
+        let treeCount = course.difficulty == .easy ? 28 : course.difficulty == .medium ? 38 : 48
+        for i in 0..<treeCount {
             let side: Float = i.isMultiple(of: 2) ? -1 : 1
-            let x = side * Float(47 + (i * 13 % 37))
-            let z = -Float(i * 7 + 12)
+            let edge = Float(course.fairwayWidth / 2 + 12)
+            let x = side * (edge + Float(i * 13 % 37))
+            let z = -Float(i * 7 % max(20, Int(course.holeDistance)) + 12)
             let height = CGFloat(8 + i % 8)
             add(SCNCylinder(radius: 0.65, height: 4), color: .brown, at: SCNVector3(x, 2, z))
             let cone = SCNCone(topRadius: 0, bottomRadius: 4.5, height: height)
@@ -126,7 +138,8 @@ final class MeadowScene {
         shadow.position = SCNVector3(point.lateralYards, 0.15, -point.distanceYards)
         let distance = Float(point.distanceYards)
         camera.position = SCNVector3(Float(point.lateralYards) * 0.65 + 12, 22 + Float(point.heightYards) * 0.55, 38 - distance * 0.86)
-        camera.look(at: SCNVector3(Float(point.lateralYards), max(0, Float(point.heightYards) * 0.75), -max(40, distance + 14)))
+        let lookDistance = shot == nil ? min(Float(course.holeDistance), 95) : max(40, distance + 14)
+        camera.look(at: SCNVector3(Float(point.lateralYards), max(0, Float(point.heightYards) * 0.75), -lookDistance))
         let burst = min(max(elapsed / 0.23, 0), 1)
         impact.isHidden = shot == nil || elapsed > 0.23
         impact.opacity = CGFloat((1 - burst) * 0.7)

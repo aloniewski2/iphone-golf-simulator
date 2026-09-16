@@ -12,13 +12,15 @@ final class RangeRound: ObservableObject {
     @Published private(set) var activeShot: RangeShot?
     @Published private(set) var flightStart: Date?
     @Published private(set) var isReplay = false
+    @Published private(set) var course: GolfCourse
     @Published private(set) var best: Int
     let shotLimit = 5
     private let defaults: UserDefaults
     private var pausedAt: Date?
 
-    init(defaults: UserDefaults = .standard) {
+    init(course: GolfCourse = .easy, defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        self.course = course
         best = defaults.integer(forKey: "range.bestScore")
     }
 
@@ -33,12 +35,20 @@ final class RangeRound: ObservableObject {
     }
 
     @discardableResult
-    func release(at date: Date = .now, curve: Double = 0) -> Bool {
+    func release(at date: Date = .now, curve: Double = 0, strike: StrikeQuality = .center) -> Bool {
         guard phase == .charging, power >= 0.06, shots.count < shotLimit else {
             cancelCharge()
             return false
         }
-        let shot = RangeShot(id: shots.count + 1, club: club, power: power, aim: aim, curve: curve)
+        let shot = RangeShot(
+            id: shots.count + 1,
+            club: club,
+            power: power,
+            aim: aim,
+            curve: curve,
+            strike: strike,
+            course: course
+        )
         activeShot = shot
         shots.append(shot)
         isReplay = false
@@ -92,6 +102,11 @@ final class RangeRound: ObservableObject {
         aim = 0
         isReplay = false
         phase = .ready
+    }
+
+    func selectCourse(_ course: GolfCourse) {
+        self.course = course
+        restart()
     }
 
     func pause(at date: Date = .now) { cancelCharge(); pausedAt = date }

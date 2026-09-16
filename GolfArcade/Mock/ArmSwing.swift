@@ -67,6 +67,8 @@ struct ArmSwingDetector {
     private var stillSince: Double?
     private var peakArc = 0.0
     private var peakDownswingSpeed = 0.0
+    private var addressHands: CGPoint?
+    private var closestImpact: (arc: Double, sample: Sample)?
 
     /// Pass `nil` when the frame has no usable shoulders or hand.
     mutating func ingest(_ sample: Sample?, at time: Double) -> SwingInputEvent? {
@@ -108,6 +110,7 @@ struct ArmSwingDetector {
             if closing, arc < peakArc - 12, speed >= downswingSpeed {
                 phase = .downswing
                 peakDownswingSpeed = speed
+                closestImpact = (arc, sample)
                 return .load(load(peakArc))
             }
             if arc < backswingStart, speed < downswingSpeed {
@@ -118,11 +121,30 @@ struct ArmSwingDetector {
 
         case .downswing:
             peakDownswingSpeed = max(peakDownswingSpeed, speed)
-            guard arc < impactAngle else { return nil }
+            if closestImpact == nil || arc < closestImpact!.arc {
+                closestImpact = (arc, sample)
+            }
+            guard let closestImpact else { return nil }
+            // A fast swing can jump across address between camera frames. Wait until either the
+            // hands are almost exactly back at address or their arc starts opening on the other
+            // side, then use the closest captured frame as the actual contact sample.
+            let reachedBall = closestImpact.arc <= 4
+            let passedBall = closestImpact.arc <= impactAngle && arc > closestImpact.arc + 4
+            guard reachedBall || passedBall else { return nil }
             phase = .finish
             stillSince = nil
             guard peakDownswingSpeed >= minimumSwingSpeed else { return .cancel }
-            return .impact(power: power(arc: peakArc, downswingSpeed: peakDownswingSpeed), curve: curve(peakArc: peakArc))
+            let strike = Self.strikeQuality(
+                address: addressHands,
+                impact: closestImpact.sample.hands,
+                shoulderWidth: closestImpact.sample.shoulderWidth,
+                handedness: handedness
+            )
+            return .impact(
+                power: power(arc: peakArc, downswingSpeed: peakDownswingSpeed),
+                curve: curve(peakArc: peakArc),
+                strike: strike
+            )
         }
     }
 
@@ -143,7 +165,9 @@ struct ArmSwingDetector {
 
     private mutating func settle(_ sample: Sample, vector: CGVector) {
         reference = vector
+        addressHands = sample.hands
         peakArc = 0
+        closestImpact = nil
         phase = .address
     }
 
@@ -154,6 +178,29 @@ struct ArmSwingDetector {
         lastTracked = nil
         stillSince = nil
         peakArc = 0
+        addressHands = nil
+        closestImpact = nil
+    }
+
+    /// Compares the hands at impact with the player's own address position. Dividing by shoulder
+    /// width makes the contact window independent of camera distance and player size.
+    static func strikeQuality(
+        address: CGPoint?,
+        impact: CGPoint,
+        shoulderWidth: CGFloat,
+        handedness: Handedness
+    ) -> StrikeQuality {
+        guard let address, shoulderWidth > 0 else { return .miss }
+        let dx = Double((impact.x - address.x) / shoulderWidth)
+        let dy = Double((impact.y - address.y) / shoulderWidth)
+        if hypot(dx, dy) > 0.72 { return .miss }
+        if dy > 0.22 { return .thin }
+        if dy < -0.22 { return .fat }
+        if abs(dx) > 0.24 {
+            let towardToe = handedness == .right ? dx > 0 : dx < 0
+            return towardToe ? .toe : .heel
+        }
+        return .center
     }
 
     static func degrees(between a: CGVector, and b: CGVector) -> Double {

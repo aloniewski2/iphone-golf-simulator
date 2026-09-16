@@ -12,14 +12,31 @@ final class RangeSimulationTests: XCTestCase {
         XCTAssertGreaterThan(hard.landing.lateralYards, 0)
     }
 
-    func testBullseyeAndFairwayScoring() {
-        let power = try! XCTUnwrap(RangeShot.power(toReach: 180, with: .driver))
-        let perfect = RangeShot(id: 1, club: .driver, power: power, aim: 0)
-        XCTAssertEqual(perfect.points, 100)
-        XCTAssertEqual(perfect.targetName, "Summit")
+    func testGreenAndFairwayScoring() {
+        let power = try! XCTUnwrap(RangeShot.power(toReach: GolfCourse.easy.holeDistance, with: .driver))
+        let perfect = RangeShot(id: 1, club: .driver, power: power, aim: 0, course: .easy)
+        XCTAssertGreaterThanOrEqual(perfect.points, 70)
+        XCTAssertTrue(perfect.lie == .pin || perfect.lie == .green)
         let miss = RangeShot(id: 2, club: .driver, power: 1, aim: 22)
-        XCTAssertEqual(miss.points, 10)
-        XCTAssertNil(miss.targetName)
+        XCTAssertLessThanOrEqual(miss.points, 15)
+    }
+
+    func testCoursesContainIncreasingDifficultyAndHazards() {
+        XCTAssertEqual(GolfCourse.all.map(\.difficulty), [.easy, .medium, .hard])
+        XCTAssertLessThan(GolfCourse.hard.fairwayWidth, GolfCourse.easy.fairwayWidth)
+        XCTAssertTrue(GolfCourse.hard.hazards.contains { $0.kind == .water })
+        let water = GolfCourse.hard.hazards.first { $0.kind == .water }!
+        let point = FlightPoint(lateralYards: water.x, heightYards: 0, distanceYards: water.distance)
+        XCTAssertEqual(GolfCourse.hard.lie(at: point), .water)
+    }
+
+    func testMeasuredContactChangesBallFlight() {
+        let center = RangeShot(id: 1, club: .driver, power: 0.9, aim: 0, strike: .center)
+        let thin = RangeShot(id: 2, club: .driver, power: 0.9, aim: 0, strike: .thin)
+        let miss = RangeShot(id: 3, club: .driver, power: 0.9, aim: 0, strike: .miss)
+        XCTAssertGreaterThan(center.total, thin.total)
+        XCTAssertGreaterThan(thin.total, miss.total)
+        XCTAssertEqual(miss.strike, .miss)
     }
 
     func testFlightModelIsPlausibleGolf() {
@@ -126,4 +143,3 @@ final class RangeSimulationTests: XCTestCase {
         XCTAssertEqual(round.elapsed(at: start.addingTimeInterval(101)), 1)
     }
 }
-
