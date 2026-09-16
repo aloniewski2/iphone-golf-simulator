@@ -11,10 +11,12 @@ final class MeadowScene {
     private let aimLine = SCNNode()
     private let impact = SCNNode()
     private let golfer = Golfer()
+    private let golferMount = SCNNode()
+    private let cupMarker = SCNNode()
     private var lastShot: RangeShot?
     private var lastElapsed = 0.0
 
-    init() {
+    init(mode: GameMode = .range) {
         scene.background.contents = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogColor = UIColor(red: 0.65, green: 0.84, blue: 0.88, alpha: 1)
         scene.fogStartDistance = 290
@@ -35,8 +37,125 @@ final class MeadowScene {
         ambient.light?.intensity = 650
         scene.rootNode.addChildNode(ambient)
 
-        let ground = SCNBox(width: 700, height: 1, length: 800, chamferRadius: 0)
-        add(ground, color: UIColor(red: 0.18, green: 0.40, blue: 0.29, alpha: 1), at: SCNVector3(0, -1, -190))
+        let ground = SCNBox(width: 900, height: 1, length: 1000, chamferRadius: 0)
+        add(ground, color: UIColor(red: 0.18, green: 0.40, blue: 0.29, alpha: 1), at: SCNVector3(0, -1, -220))
+        switch mode {
+        case .range: buildRange()
+        case .hole(let hole): buildCourse(hole)
+        }
+        for i in 0..<6 {
+            let hill = SCNSphere(radius: 55)
+            hill.segmentCount = 12
+            let node = add(hill, color: UIColor(red: 0.24, green: 0.43, blue: 0.38, alpha: 1), at: SCNVector3(Float(i * 80 - 200), -10, mode.hole == nil ? -340 : -470))
+            node.scale = SCNVector3(1.4, 0.9, 1)
+        }
+        ball.geometry = SCNSphere(radius: 0.55)
+        ball.geometry?.firstMaterial?.diffuse.contents = UIColor.white
+        ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.15, alpha: 1)
+        scene.rootNode.addChildNode(ball)
+        shadow.geometry = SCNCylinder(radius: 0.9, height: 0.025)
+        shadow.geometry?.firstMaterial?.diffuse.contents = UIColor.black.withAlphaComponent(0.25)
+        scene.rootNode.addChildNode(shadow)
+        golferMount.addChildNode(golfer.node)
+        scene.rootNode.addChildNode(golferMount)
+        scene.rootNode.addChildNode(trail)
+        scene.rootNode.addChildNode(aimLine)
+        impact.geometry = SCNSphere(radius: 1)
+        impact.geometry?.firstMaterial?.diffuse.contents = UIColor.systemYellow
+        impact.geometry?.firstMaterial?.emission.contents = UIColor.systemYellow
+        impact.position = SCNVector3(0, 0.6, 0)
+        scene.rootNode.addChildNode(impact)
+        for i in 1...10 {
+            let dot = SCNNode(geometry: SCNSphere(radius: 0.18))
+            dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.75)
+            dot.position = SCNVector3(0, 0.35, -Float(i * 3))
+            aimLine.addChildNode(dot)
+        }
+        update(shot: nil, elapsed: 0, power: 0, aim: 0)
+    }
+
+    /// `swingAngle` is where the player's swing is right now, in degrees of arc: 0 at address,
+    /// positive going back, negative through. Once a shot is launched the golfer plays its own
+    /// downswing and follow-through, and the live angle is ignored until the next ball.
+    /// `ball`/`heading` say where the ball rests and which way the next shot faces when no shot is in flight.
+    /// `focusYards` is how far the next shot is expected to go; short putts pull the camera in close.
+    func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, swingAngle: Double = 0, handedness: Handedness = .right,
+                ball restingBall: CoursePoint = CoursePoint(x: 0, z: 0), heading: Double = 0, focusYards: Double = 60) {
+        SCNTransaction.begin()
+        SCNTransaction.disableActions = true
+        golfer.handedness = handedness
+        if let shot {
+            if lastShot != shot || elapsed < lastElapsed - 0.5 { golfer.launch(replay: lastShot == shot) }
+            golfer.animate(elapsed: elapsed)
+        } else {
+            golfer.follow(swingAngle)
+        }
+        lastElapsed = elapsed
+        if lastShot != shot {
+            trail.childNodes.forEach { $0.removeFromParentNode() }
+            if let shot {
+                for i in 0..<60 {
+                    let point = shot.position(at: Double(i) / 59 * shot.duration)
+                    let dot = SCNNode(geometry: SCNSphere(radius: 0.20))
+                    dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
+                    dot.simdPosition = world(point, origin: shot.origin, heading: shot.heading) + simd_float3(0, 0.5, 0)
+                    trail.addChildNode(dot)
+                }
+            }
+            lastShot = shot
+        }
+        // Everything below is relative to the shot's origin and heading: the tee facing downrange
+        // on the range, the ball facing the pin on a hole.
+        let origin = shot?.origin ?? restingBall
+        let facing = shot?.heading ?? heading
+        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0)
+        let ballWorld = world(point, origin: origin, heading: facing)
+        let forward = Self.forward(facing)
+        let right = simd_float3(-forward.z, 0, forward.x)
+        let base = simd_float3(Float(origin.x), 0, Float(origin.z))
+        let along = Float(point.distanceYards)
+        let lateral = Float(point.lateralYards)
+        let height = Float(point.heightYards)
+        ball.simdPosition = ballWorld + simd_float3(0, 0.6, 0)
+        ball.isHidden = shot?.isHoled == true && elapsed >= (shot?.duration ?? 0)
+        shadow.simdPosition = simd_float3(ballWorld.x, 0.15, ballWorld.z)
+        // Full shots get the high, wide chase view; a putt is framed tight around the ball and cup.
+        let closeness = Float(min(1, max(0, (shot?.total ?? focusYards) / 60)))
+        let back = 12 + 26 * closeness
+        let up = 7 + 15 * closeness
+        let side = 4 + 8 * closeness
+        camera.simdPosition = base + forward * (along * 0.86 - back) + right * (lateral * 0.65 + side) + simd_float3(0, up + height * 0.55, 0)
+        let ahead = max(min(40, Float(shot?.total ?? focusYards) + 10), along + 12)
+        let target = base + forward * ahead + right * lateral + simd_float3(0, max(0, height * 0.75), 0)
+        camera.simdLook(at: target)
+        let burst = min(max(elapsed / 0.23, 0), 1)
+        impact.isHidden = shot == nil || elapsed > 0.23
+        impact.simdPosition = base + simd_float3(0, 0.6, 0)
+        impact.opacity = CGFloat((1 - burst) * 0.7)
+        impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
+        aimLine.isHidden = shot != nil
+        aimLine.simdPosition = base
+        aimLine.eulerAngles.y = Float(-(facing + aim) * .pi / 180)
+        golferMount.simdPosition = base
+        golferMount.eulerAngles.y = Float(-facing * .pi / 180)
+        if let shot {
+            for (i, dot) in trail.childNodes.enumerated() { dot.isHidden = Double(i) / 59 * shot.duration > elapsed }
+        }
+        SCNTransaction.commit()
+    }
+
+    /// Unit vector for a compass heading (0 = downrange, −z).
+    private static func forward(_ heading: Double) -> simd_float3 {
+        let radians = Float(heading * .pi / 180)
+        return simd_float3(sin(radians), 0, -cos(radians))
+    }
+
+    private func world(_ point: FlightPoint, origin: CoursePoint, heading: Double) -> simd_float3 {
+        let course = RangeShot.coursePoint(point, origin: origin, heading: heading)
+        return simd_float3(Float(course.x), Float(point.heightYards), Float(course.z))
+    }
+
+    private func buildRange() {
         for i in 0..<16 {
             let strip = SCNBox(width: 75 + CGFloat(i) * 1.4, height: 0.15, length: 16, chamferRadius: 0)
             let green = UIColor(red: 0.30, green: i.isMultiple(of: 2) ? 0.61 : 0.57, blue: 0.37, alpha: 1)
@@ -63,80 +182,85 @@ final class MeadowScene {
             cone.radialSegmentCount = 7
             add(cone, color: UIColor(red: 0.10, green: 0.31 + Double(i % 3) * 0.05, blue: 0.25, alpha: 1), at: SCNVector3(x, Float(height / 2) + 3, z))
         }
-        for i in 0..<6 {
-            let hill = SCNSphere(radius: 55)
-            hill.segmentCount = 12
-            let node = add(hill, color: UIColor(red: 0.24, green: 0.43, blue: 0.38, alpha: 1), at: SCNVector3(Float(i * 80 - 200), -10, -340))
-            node.scale = SCNVector3(1.4, 0.9, 1)
-        }
         add(SCNBox(width: 9, height: 0.25, length: 7, chamferRadius: 0.4), color: UIColor(red: 0.09, green: 0.29, blue: 0.22, alpha: 1), at: SCNVector3(0, -0.1, 1))
-        ball.geometry = SCNSphere(radius: 0.55)
-        ball.geometry?.firstMaterial?.diffuse.contents = UIColor.white
-        ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.15, alpha: 1)
-        scene.rootNode.addChildNode(ball)
-        shadow.geometry = SCNCylinder(radius: 0.9, height: 0.025)
-        shadow.geometry?.firstMaterial?.diffuse.contents = UIColor.black.withAlphaComponent(0.25)
-        scene.rootNode.addChildNode(shadow)
-        scene.rootNode.addChildNode(golfer.node)
-        scene.rootNode.addChildNode(trail)
-        scene.rootNode.addChildNode(aimLine)
-        impact.geometry = SCNSphere(radius: 1)
-        impact.geometry?.firstMaterial?.diffuse.contents = UIColor.systemYellow
-        impact.geometry?.firstMaterial?.emission.contents = UIColor.systemYellow
-        impact.position = SCNVector3(0, 0.6, 0)
-        scene.rootNode.addChildNode(impact)
-        for i in 1...10 {
-            let dot = SCNNode(geometry: SCNSphere(radius: 0.18))
-            dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.75)
-            dot.position = SCNVector3(0, 0.35, -Float(i * 3))
-            aimLine.addChildNode(dot)
-        }
-        update(shot: nil, elapsed: 0, power: 0, aim: 0)
     }
 
-    /// `swingAngle` is where the player's swing is right now, in degrees of arc: 0 at address,
-    /// positive going back, negative through. Once a shot is launched the golfer plays its own
-    /// downswing and follow-through, and the live angle is ignored until the next ball.
-    func update(shot: RangeShot?, elapsed: Double, power: Double, aim: Double, swingAngle: Double = 0, handedness: Handedness = .right) {
-        SCNTransaction.begin()
-        SCNTransaction.disableActions = true
-        golfer.handedness = handedness
-        if let shot {
-            if lastShot != shot || elapsed < lastElapsed - 0.5 { golfer.launch(replay: lastShot == shot) }
-            golfer.animate(elapsed: elapsed)
-        } else {
-            golfer.follow(swingAngle)
-        }
-        lastElapsed = elapsed
-        if lastShot != shot {
-            trail.childNodes.forEach { $0.removeFromParentNode() }
-            if let shot {
-                for i in 0..<60 {
-                    let point = shot.position(at: Double(i) / 59 * shot.duration)
-                    let dot = SCNNode(geometry: SCNSphere(radius: 0.20))
-                    dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
-                    dot.position = SCNVector3(point.lateralYards, point.heightYards + 0.5, -point.distanceYards)
-                    trail.addChildNode(dot)
-                }
+    /// Fairway as a corridor of overlapping discs along the centreline, a green with a cup and
+    /// flag, sand bunkers, tee markers, and trees kept clear of the fairway.
+    private func buildCourse(_ hole: Hole) {
+        let fairway = UIColor(red: 0.32, green: 0.62, blue: 0.38, alpha: 1)
+        let fairwayStripe = UIColor(red: 0.30, green: 0.58, blue: 0.36, alpha: 1)
+        let fringe = UIColor(red: 0.40, green: 0.70, blue: 0.42, alpha: 1)
+        let green = UIColor(red: 0.48, green: 0.78, blue: 0.46, alpha: 1)
+        let sand = UIColor(red: 0.90, green: 0.84, blue: 0.62, alpha: 1)
+        var stripe = 0
+        for index in 1..<hole.centerline.count {
+            let a = hole.centerline[index - 1], b = hole.centerline[index]
+            let length = a.distance(to: b)
+            var travelled = 0.0
+            while travelled <= length {
+                let t = travelled / length
+                let disc = SCNCylinder(radius: hole.fairwayHalfWidth, height: 0.12)
+                disc.radialSegmentCount = 40
+                add(disc, color: stripe.isMultiple(of: 2) ? fairway : fairwayStripe, at: SCNVector3(a.x + (b.x - a.x) * t, -0.35, a.z + (b.z - a.z) * t))
+                travelled += 9
+                stripe += 1
             }
-            lastShot = shot
         }
-        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0)
-        ball.position = SCNVector3(point.lateralYards, point.heightYards + 0.6, -point.distanceYards)
-        shadow.position = SCNVector3(point.lateralYards, 0.15, -point.distanceYards)
-        let distance = Float(point.distanceYards)
-        camera.position = SCNVector3(Float(point.lateralYards) * 0.65 + 12, 22 + Float(point.heightYards) * 0.55, 38 - distance * 0.86)
-        camera.look(at: SCNVector3(Float(point.lateralYards), max(0, Float(point.heightYards) * 0.75), -max(40, distance + 14)))
-        let burst = min(max(elapsed / 0.23, 0), 1)
-        impact.isHidden = shot == nil || elapsed > 0.23
-        impact.opacity = CGFloat((1 - burst) * 0.7)
-        impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
-        aimLine.isHidden = shot != nil
-        aimLine.eulerAngles.y = Float(-aim * .pi / 180)
-        if let shot {
-            for (i, dot) in trail.childNodes.enumerated() { dot.isHidden = Double(i) / 59 * shot.duration > elapsed }
+        let apron = SCNCylinder(radius: hole.greenRadius + 4, height: 0.16)
+        apron.radialSegmentCount = 64
+        add(apron, color: fringe, at: SCNVector3(hole.greenCenter.x, -0.3, hole.greenCenter.z))
+        let putting = SCNCylinder(radius: hole.greenRadius, height: 0.2)
+        putting.radialSegmentCount = 64
+        add(putting, color: green, at: SCNVector3(hole.greenCenter.x, -0.26, hole.greenCenter.z))
+        for bunker in hole.bunkers {
+            let lip = SCNCylinder(radius: bunker.radius + 1, height: 0.14)
+            lip.radialSegmentCount = 40
+            add(lip, color: fringe, at: SCNVector3(bunker.center.x, -0.32, bunker.center.z))
+            let pit = SCNCylinder(radius: bunker.radius, height: 0.18)
+            pit.radialSegmentCount = 40
+            add(pit, color: sand, at: SCNVector3(bunker.center.x, -0.28, bunker.center.z))
         }
-        SCNTransaction.commit()
+        add(SCNCylinder(radius: 0.55, height: 0.3), color: UIColor(white: 0.08, alpha: 1), at: SCNVector3(hole.cup.x, -0.16, hole.cup.z))
+        add(SCNCylinder(radius: 0.13, height: 9), color: .white, at: SCNVector3(hole.cup.x, 4.5, hole.cup.z))
+        add(SCNBox(width: 4, height: 2.2, length: 0.12, chamferRadius: 0.1), color: .systemYellow, at: SCNVector3(hole.cup.x + 2, 7.6, hole.cup.z))
+        cupMarker.geometry = SCNTorus(ringRadius: 2.2, pipeRadius: 0.12)
+        cupMarker.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.8)
+        cupMarker.position = SCNVector3(hole.cup.x, 0.05, hole.cup.z)
+        scene.rootNode.addChildNode(cupMarker)
+        add(SCNBox(width: 9, height: 0.25, length: 7, chamferRadius: 0.4), color: UIColor(red: 0.09, green: 0.29, blue: 0.22, alpha: 1), at: SCNVector3(hole.tee.x, -0.1, hole.tee.z + 1))
+        for side in [-1.0, 1.0] {
+            add(SCNSphere(radius: 0.4), color: .white, at: SCNVector3(hole.tee.x + side * 3.5, 0.3, hole.tee.z))
+        }
+        // Trees along both sides, pushed out past the fairway wherever the centreline bends.
+        for i in 0..<70 {
+            let side = i.isMultiple(of: 2) ? -1.0 : 1.0
+            let along = Double(i) * 6 + 10
+            guard let (point, direction) = Self.pointAlong(hole.centerline, distance: along) else { continue }
+            let offset = hole.fairwayHalfWidth + 18 + Double((i * 13) % 23)
+            let x = point.x + direction.z * side * offset
+            let z = point.z - direction.x * side * offset
+            let height = CGFloat(8 + i % 8)
+            add(SCNCylinder(radius: 0.65, height: 4), color: .brown, at: SCNVector3(x, 2, z))
+            let cone = SCNCone(topRadius: 0, bottomRadius: 4.5, height: height)
+            cone.radialSegmentCount = 7
+            add(cone, color: UIColor(red: 0.10, green: 0.31 + Double(i % 3) * 0.05, blue: 0.25, alpha: 1), at: SCNVector3(x, Double(height / 2) + 3, z))
+        }
+    }
+
+    /// Point and unit direction `distance` yards along a polyline.
+    private static func pointAlong(_ line: [CoursePoint], distance: Double) -> (CoursePoint, CoursePoint)? {
+        var remaining = distance
+        for index in 1..<line.count {
+            let a = line[index - 1], b = line[index]
+            let length = a.distance(to: b)
+            if remaining <= length {
+                let t = remaining / length
+                return (CoursePoint(x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t), CoursePoint(x: (b.x - a.x) / length, z: (b.z - a.z) / length))
+            }
+            remaining -= length
+        }
+        return nil
     }
 
     @discardableResult
@@ -337,6 +461,9 @@ struct MeadowSceneView: UIViewRepresentable {
     let aim: Double
     var swingAngle: Double = 0
     var handedness: Handedness = .right
+    var ball = CoursePoint(x: 0, z: 0)
+    var heading = 0.0
+    var focusYards = 60.0
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -349,6 +476,10 @@ struct MeadowSceneView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness)
+        if view.scene !== meadow.scene {
+            view.scene = meadow.scene
+            view.pointOfView = meadow.camera
+        }
+        meadow.update(shot: shot, elapsed: elapsed, power: power, aim: aim, swingAngle: swingAngle, handedness: handedness, ball: ball, heading: heading, focusYards: focusYards)
     }
 }

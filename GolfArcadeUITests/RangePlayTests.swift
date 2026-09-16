@@ -4,6 +4,8 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testPlayableFiveShotRoundAndReplay() throws {
         let app = XCUIApplication()
+        // Pin the range and the touch pad regardless of what the last player left selected.
+        app.launchArguments += ["-range.playHole", "NO", "-range.swingInput", "touch"]
         app.launch()
         XCTAssertTrue(app.buttons["demoShot"].waitForExistence(timeout: 15))
         app.buttons["club-wedge"].tap()
