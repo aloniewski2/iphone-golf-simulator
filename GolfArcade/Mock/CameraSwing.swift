@@ -11,6 +11,10 @@ final class CameraSwingController: ObservableObject {
     @Published private(set) var frame: PoseFrame?
     /// Degrees along the swing arc, for the golfer avatar: positive back, negative through.
     @Published private(set) var swingAngle = 0.0
+    /// The box Vision is scanning, normalised to the frame (origin bottom-left); nil = whole frame.
+    @Published private(set) var focusRegion: CGRect?
+    /// 0–1 confidence of the joints the swing depends on.
+    var trackingQuality: Double { frame?.trackingConfidence ?? 0 }
     var onEvent: ((SwingInputEvent) -> Void)?
     var handedness: Handedness = .right {
         didSet { detector.handedness = handedness }
@@ -28,6 +32,7 @@ final class CameraSwingController: ObservableObject {
         detector.handedness = handedness
         tracker.$status.receive(on: DispatchQueue.main).sink { [weak self] in self?.status = $0 }.store(in: &subscriptions)
         tracker.$latestFrame.compactMap { $0 }.receive(on: DispatchQueue.main).sink { [weak self] in self?.process($0) }.store(in: &subscriptions)
+        tracker.$focusRegion.receive(on: DispatchQueue.main).sink { [weak self] in self?.focusRegion = $0 }.store(in: &subscriptions)
         tracker.start()
     }
 
@@ -38,6 +43,7 @@ final class CameraSwingController: ObservableObject {
         detector.handedness = handedness
         frame = nil
         swingAngle = 0
+        focusRegion = nil
         phase = .findingPlayer
     }
 
