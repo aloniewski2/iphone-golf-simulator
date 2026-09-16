@@ -2,6 +2,16 @@ import XCTest
 
 final class RangePlayTests: XCTestCase {
     @MainActor
+    func testCompletedCalibrationShowsCourseInCameraMode() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode"]
+        app.launch()
+
+        XCTAssertTrue(app.otherElements["golfCourse"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.otherElements["cameraPanel"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
     func testPlayableFiveShotRoundAndReplay() throws {
         let app = XCUIApplication()
         app.launchArguments.append("-skipPlayerCalibration")

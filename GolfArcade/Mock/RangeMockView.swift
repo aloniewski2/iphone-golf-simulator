@@ -23,6 +23,7 @@ struct RangeMockView: View {
     @State private var demoTask: Task<Void, Never>?
     @State private var cameraPresented = false
     @State private var helpPresented = false
+    @State private var didApplyInitialInput = false
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .touch
@@ -32,11 +33,18 @@ struct RangeMockView: View {
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
     private let ink = Color(red: 0.06, green: 0.18, blue: 0.16)
     private let calibration: PlayerCalibration
+    private let startsInCameraMode: Bool
     private let onRecalibrate: () -> Void
 
-    init(camera: CameraSwingController, calibration: PlayerCalibration, onRecalibrate: @escaping () -> Void) {
+    init(
+        camera: CameraSwingController,
+        calibration: PlayerCalibration,
+        startsInCameraMode: Bool = false,
+        onRecalibrate: @escaping () -> Void
+    ) {
         self.camera = camera
         self.calibration = calibration
+        self.startsInCameraMode = startsInCameraMode
         self.onRecalibrate = onRecalibrate
     }
 
@@ -46,16 +54,17 @@ struct RangeMockView: View {
                 ink.ignoresSafeArea()
                 VStack(spacing: 0) {
                     header
-                    ZStack(alignment: .top) {
+                    ZStack(alignment: .bottomLeading) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
                             MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness)
                         }
                         .accessibilityLabel("Three dimensional Meadow Club driving range")
+                        .accessibilityIdentifier("golfCourse")
                         if swingInput == .camera {
                             cameraPip
-                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                                .padding(.trailing, 12)
-                                .padding(.top, 84)
+                                .padding(.leading, 12)
+                                .padding(.bottom, 12)
+                                .zIndex(2)
                         }
                         VStack(spacing: 8) {
                             HStack {
@@ -115,6 +124,10 @@ struct RangeMockView: View {
                 if wasFlying, round.phase != .flying, !round.isReplay { audio.celebrate() }
             }
             .onAppear {
+                if startsInCameraMode, !didApplyInitialInput {
+                    didApplyInitialInput = true
+                    swingInput = .camera
+                }
                 feedback.isEnabled = haptics
                 audio.enabled = sound
                 motion.setClub(round.club)
@@ -320,7 +333,7 @@ struct RangeMockView: View {
         }
     }
 
-    /// The whole camera frame at its true aspect, so the player can see they are fully in view.
+    /// A small bottom-left view of the whole camera frame while the course remains the primary UI.
     private var cameraPip: some View {
         ZStack {
             Color.black

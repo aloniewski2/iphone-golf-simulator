@@ -92,6 +92,27 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertEqual(events.last, .cancel)
         XCTAssertEqual(detector.phase, .findingPlayer)
     }
+
+    func testMeasuredCameraSwingChangesBallFlight() throws {
+        var shortDetector = ArmSwingDetector()
+        var fullDetector = ArmSwingDetector()
+        var hookDetector = ArmSwingDetector()
+        let short = try XCTUnwrap(impacts(drive(&shortDetector, legs: [
+            (0.5, 0), (0.6, 70), (0.15, 70), (0.225, -20)
+        ])).first)
+        let full = try XCTUnwrap(impacts(drive(&fullDetector, legs: fullSwing)).first)
+        let hook = try XCTUnwrap(impacts(drive(&hookDetector, legs: [
+            (0.5, 0), (0.9, 178), (0.15, 178), (0.3, -30)
+        ])).first)
+
+        let shortShot = RangeShot(id: 1, club: .driver, power: short.power, aim: 0, curve: short.aim)
+        let fullShot = RangeShot(id: 2, club: .driver, power: full.power, aim: 0, curve: full.aim)
+        let hookShot = RangeShot(id: 3, club: .driver, power: hook.power, aim: 0, curve: hook.aim)
+
+        XCTAssertGreaterThan(fullShot.total, shortShot.total)
+        XCTAssertEqual(fullShot.landing.lateralYards, 0, accuracy: 0.1)
+        XCTAssertLessThan(hookShot.landing.lateralYards, -1)
+    }
 }
 
 final class GolferAvatarTests: XCTestCase {
