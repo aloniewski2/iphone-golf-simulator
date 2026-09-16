@@ -26,6 +26,7 @@ struct RangeMockView: View {
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .touch
     @AppStorage("range.handedness") private var handedness: Handedness = .right
+    @AppStorage("range.playHole") private var playHole = false
     @Environment(\.scenePhase) private var appPhase
     private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
     private let cream = Color(red: 0.96, green: 0.96, blue: 0.86)
@@ -39,7 +40,7 @@ struct RangeMockView: View {
                     header
                     ZStack(alignment: .top) {
                         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: round.phase != .flying || appPhase != .active || cameraPresented)) { timeline in
-                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness)
+                            MeadowSceneView(meadow: meadow, shot: round.activeShot, elapsed: round.elapsed(at: timeline.date), power: round.power, aim: round.aim, swingAngle: swingInput == .camera ? camera.swingAngle : round.power * 150, handedness: handedness, ball: round.ballPosition, heading: round.baseHeading, focusYards: round.hole == nil ? 60 : round.yardsToPin)
                         }
                         .accessibilityLabel("Three dimensional Meadow Club driving range")
                         if swingInput == .camera {
@@ -50,21 +51,37 @@ struct RangeMockView: View {
                         }
                         VStack(spacing: 8) {
                             HStack {
-                                Label("MEADOW CLUB", systemImage: "sun.max.fill")
+                                Label(round.hole.map { "HOLE \($0.number) · \($0.name.uppercased())" } ?? "MEADOW CLUB", systemImage: round.hole == nil ? "sun.max.fill" : "flag.fill")
                                 Spacer()
-                                Text("NO WIND · ARCADE")
+                                Text(round.hole.map { "PAR \($0.par) · \(Int($0.length)) YD" } ?? "NO WIND · ARCADE")
                             }
                             .font(.system(size: 10, weight: .heavy, design: .rounded))
                             .tracking(1)
                             .padding(12)
                             .background(ink.opacity(0.9), in: Capsule())
-                            HStack(spacing: 8) {
-                                ForEach(RangeTarget.all) { target in
+                            if let hole = round.hole {
+                                HStack(spacing: 8) {
+                                    Text("\(round.lie.displayName.uppercased())")
+                                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                        .padding(.horizontal, 9).padding(.vertical, 7)
+                                        .background(lieColor(round.lie), in: Capsule())
+                                        .foregroundStyle(ink)
+                                    Text(round.lie == .green ? "\(hole.feetToCup(from: round.ballPosition)) FT TO CUP" : "\(Int(round.yardsToPin)) YD TO PIN")
+                                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                        .padding(.horizontal, 9).padding(.vertical, 7)
+                                        .background(cream, in: Capsule())
+                                        .foregroundStyle(ink)
+                                        .accessibilityIdentifier("toPin")
+                                }
+                            } else {
+                                HStack(spacing: 8) {
+                                    ForEach(RangeTarget.all) { target in
                                     Text("\(target.name.uppercased())  \(Int(target.distance))")
                                         .font(.system(size: 9, weight: .heavy, design: .rounded))
                                         .padding(.horizontal, 9).padding(.vertical, 7)
                                         .background(targetColor(target.id), in: Capsule())
                                         .foregroundStyle(ink)
+                                    }
                                 }
                             }
                             Spacer()
@@ -105,6 +122,7 @@ struct RangeMockView: View {
             .onAppear {
                 feedback.isEnabled = haptics
                 audio.enabled = sound
+                applyMode()
                 motion.setClub(round.club)
                 motion.onEvent = { handleSwing($0) }
                 camera.handedness = handedness
@@ -116,6 +134,7 @@ struct RangeMockView: View {
             .onChange(of: round.club) { _, club in motion.setClub(club) }
             .onChange(of: swingInput) { _, _ in stopFeedback(); updateInputs() }
             .onChange(of: handedness) { _, value in camera.handedness = value }
+            .onChange(of: playHole) { _, _ in stopFeedback(); applyMode() }
             .onChange(of: cameraPresented) { _, _ in updateInputs() }
             .onChange(of: appPhase) { _, phase in
                 if phase != .active { stopFeedback(); round.pause() }
@@ -130,18 +149,24 @@ struct RangeMockView: View {
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("FAIRWAY").font(.system(size: 27, weight: .black, design: .rounded)).tracking(2)
-                Text("FIVE SHOTS. FIND YOUR SWEET SPOT.")
+                Text(round.hole == nil ? "FAIRWAY" : "HOLE \(round.hole!.number)").font(.system(size: 27, weight: .black, design: .rounded)).tracking(2)
+                Text(round.hole == nil ? "FIVE SHOTS. FIND YOUR SWEET SPOT." : "PAR \(round.hole!.par). TEE TO CUP.")
                     .font(.system(size: 8, weight: .bold)).tracking(1)
                     .foregroundStyle(cream.opacity(0.6))
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
-                Text("\(round.score) PTS").font(.system(size: 21, weight: .black, design: .rounded)).monospacedDigit()
+                Text(round.hole == nil ? "\(round.score) PTS" : "\(round.strokes) \(round.strokes == 1 ? "STROKE" : "STROKES")")
+                    .font(.system(size: 21, weight: .black, design: .rounded)).monospacedDigit()
                     .accessibilityIdentifier("roundScore")
-                Text("SHOT \(round.shotNumber) / 5 · BEST \(round.best)").font(.system(size: 9, weight: .bold)).monospacedDigit()
+                Text(round.hole == nil ? "SHOT \(round.shotNumber) / 5 · BEST \(round.best)" : "SHOT \(round.shotNumber) · BEST \(round.best == 0 ? "—" : "\(round.best)")")
+                    .font(.system(size: 9, weight: .bold)).monospacedDigit()
             }
             Menu {
+                Picker("Play", selection: $playHole) {
+                    Label("Driving range", systemImage: "scope").tag(false)
+                    Label("Hole 1 · Par 4", systemImage: "flag.fill").tag(true)
+                }
                 Toggle("Sound effects", isOn: $sound)
                 Toggle("Haptics", isOn: $haptics)
                 Picker("Handedness", selection: $handedness) {
@@ -151,7 +176,7 @@ struct RangeMockView: View {
                 Button("Camera lab", systemImage: "camera") {
                     stopFeedback(); round.pause(); cameraPresented = true
                 }
-                Button("Restart round", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restart() }
+                Button(round.hole == nil ? "Restart round" : "Restart hole", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restart() }
             } label: {
                 Image(systemName: "slider.horizontal.3").frame(width: 36, height: 44)
             }
@@ -409,7 +434,21 @@ struct RangeMockView: View {
 
     private var resultPanel: some View {
         VStack(spacing: 13) {
-            if round.phase == .complete {
+            if round.phase == .complete, let hole = round.hole {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(round.isHoled ? "IN THE HOLE" : "PICKED UP").font(.system(size: 10, weight: .heavy)).tracking(2)
+                            .accessibilityIdentifier("roundComplete")
+                        Text(round.isHoled ? Hole.scoreName(strokes: round.strokes, par: hole.par) + "." : "Next time.")
+                            .font(.system(size: 26, weight: .black, design: .rounded))
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(round.strokes)").font(.system(size: 42, weight: .black, design: .rounded)).foregroundStyle(.mint)
+                        Text("PAR \(hole.par)").font(.system(size: 9, weight: .bold)).opacity(0.6)
+                    }
+                }
+            } else if round.phase == .complete {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("ROUND COMPLETE").font(.system(size: 10, weight: .heavy)).tracking(2)
@@ -426,6 +465,20 @@ struct RangeMockView: View {
                             Text("\(shot.id)").font(.caption2).opacity(0.6)
                             Text("+\(shot.points)").font(.system(size: 16, weight: .black, design: .rounded))
                         }.frame(maxWidth: .infinity)
+                    }
+                }
+            } else if let shot = round.activeShot, let hole = round.hole {
+                HStack {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text((round.lie == .bunker ? "IN THE SAND" : round.lie == .rough ? "IN THE ROUGH" : round.lie == .green ? "ON THE GREEN" : "ON THE FAIRWAY"))
+                            .font(.system(size: 10, weight: .heavy)).tracking(1)
+                        Text(round.lie == .green ? "\(hole.feetToCup(from: round.ballPosition)) ft to the cup" : "\(Int(round.yardsToPin)) yd to the pin")
+                            .font(.system(size: 26, weight: .black, design: .rounded)).foregroundStyle(.mint)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing) {
+                        Text("\(Int(shot.total)) yd").font(.system(size: 24, weight: .bold, design: .rounded))
+                        Text("\(Int(shot.carry)) carry · \(Int(shot.roll)) roll").font(.caption).opacity(0.6)
                     }
                 }
             } else if let shot = round.activeShot {
@@ -455,7 +508,7 @@ struct RangeMockView: View {
                         .background(cream, in: RoundedRectangle(cornerRadius: 14)).foregroundStyle(ink)
                 }.accessibilityIdentifier(round.phase == .complete ? "playAgain" : "nextShot")
             }.font(.system(size: 14, weight: .bold))
-            Text("TARGET RINGS: 100 / 60 / 30 PTS · FAIRWAY: 10 PTS")
+            Text(round.hole == nil ? "TARGET RINGS: 100 / 60 / 30 PTS · FAIRWAY: 10 PTS" : "ROUGH AND SAND COST DISTANCE · THE GREEN ROLLS FAST")
                 .font(.system(size: 9, weight: .bold)).opacity(0.55)
         }
         .padding(20)
@@ -464,7 +517,7 @@ struct RangeMockView: View {
     private var instructions: some View {
         VStack(alignment: .leading, spacing: 22) {
             Text("Welcome to the meadow.").font(.largeTitle.bold())
-            Text("1. Pick a club and aim left or right.\n\n2. Pull down on the swing pad. More pull means more power. Release to hit.\n\n3. Land inside a target. The center is worth 100 points. You get five shots.")
+            Text("1. Pick a club and aim left or right.\n\n2. Pull down on the swing pad. More pull means more power. Release to hit.\n\n3. Land inside a target. The center is worth 100 points. You get five shots.\n\n4. Or choose Hole 1 in the settings menu: a par 4 played from the tee to the cup. Aim is relative to the pin, rough and sand cost distance, and the green rolls fast.")
             Text("Swing phone: grip the iPhone like a club and hold it still at address. Take it back, then swing through. Faster swings hit farther, and a new backswing tees up the next ball.")
             Text("Camera: prop the phone up facing you so your shoulders and hands are in the small view, then swing normally, with or without a club. Like Wii golf, how far back you take your hands sets the power; swing well past full and the shot drifts. The ball launches the moment the camera sees impact. Set your handedness in the settings menu.")
             Text("Hold on tight and clear the space around you before swinging. A wrist strap is a good idea.")
@@ -480,6 +533,22 @@ struct RangeMockView: View {
     }
 
     private func targetColor(_ id: Int) -> Color { id == 0 ? .orange : id == 1 ? .mint : .yellow }
+
+    private func lieColor(_ lie: Lie) -> Color {
+        switch lie {
+        case .tee, .fairway: .mint
+        case .green: Color(red: 0.6, green: 0.9, blue: 0.5)
+        case .rough: .orange
+        case .bunker: Color(red: 0.93, green: 0.85, blue: 0.6)
+        }
+    }
+
+    private func applyMode() {
+        let mode: GameMode = playHole ? .hole(.first) : .range
+        guard round.mode != mode else { return }
+        round.switchMode(mode)
+        meadow = MeadowScene(mode: mode)
+    }
 
     private func charge(_ power: Double) {
         if round.phase == .ready { feedback.beginBackswing(interactive: true) }

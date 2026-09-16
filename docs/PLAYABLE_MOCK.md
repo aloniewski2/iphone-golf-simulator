@@ -12,6 +12,17 @@ Launch `GolfArcade` in Xcode on an iPhone simulator or physical iPhone. The defa
 
 **Demo shot** uses the same launch path at 75% power. **Replay** animates the last shot without spending another shot or awarding points twice.
 
+## Hole 1 · Meadow Bend (par 4)
+
+Open the settings menu (sliders icon) and choose **Hole 1 · Par 4**. Meadow Bend is a 366-yard dogleg left: fairway corridor, a fairway bunker on the right at driver distance, two greenside bunkers, and a green with a cup and flag. Play from the tee to the cup:
+
+- The ball lies where it stopped. Every shot aims at the pin by default; the aim slider is relative to that line. The golfer, aim line, and camera move to the ball.
+- Lies matter: **rough** keeps 82 % of ball speed and grabs the roll, **sand** keeps 62 %, the **green** is quick (rolling deceleration 0.9 m/s² against 3.2 on the fairway). Roll-out uses the surface the ball lands on.
+- On the green the putter is selected automatically and the read-out switches to feet. A putt scales from zero (soft pull = tap-in, full pull runs the whole green), the camera comes in close, and a ball that rolls over the cup at rolling speed drops in; one that stops within 18 inches is given.
+- Strokes count; holing out shows Birdie / Par / Bogey and saves the best score per hole. Ten strokes picks the ball up.
+
+`Hole` in `GolfArcade/Mock/Hole.swift` describes the layout (centreline, widths, bunkers, cup) and lie rules; `RangeShot` gains an origin, heading, and lie for course shots. Tests play the hole tee-to-cup deterministically.
+
 ## Ball flight
 
 Shots are simulated, not scripted: club-head speed from your swing → ball speed via the club's smash factor, launch angle and backspin per club, then gravity, aerodynamic drag, and Magnus lift (spin decays in the air), followed by bounce and roll on a firm fairway. A draw or fade tilts the spin axis so the ball curves. At full power the model gives roughly driver 254 + 23 yd (apex 41 yd), iron 148 + 15, wedge 82 + 10, and a 25-yard putt that rolls from the first inch. Flights play in real time (about 7–10 s for a full shot). See `GolfArcade/Mock/BallFlight.swift`; every coefficient is named.
@@ -46,7 +57,7 @@ Settings provide sound, haptics, instructions, round restart, and the existing *
 
 ## Implementation limits
 
-Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
+Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge plus one hole, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
 
 ## Verification
 

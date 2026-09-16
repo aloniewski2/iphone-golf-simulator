@@ -17,18 +17,22 @@ struct BallFlight: Equatable, Sendable {
         var curveDegrees: Double
     }
 
-    private struct Sample: Equatable, Sendable {
+    struct Sample: Equatable, Sendable {
         let time: Double
         let point: FlightPoint
     }
 
     static let sampleInterval = 1.0 / 60
     static let maxDuration = 16.0
+    /// Rolling deceleration on a firm fairway, m/s².
+    static let fairwayRolling = 3.2
 
-    private let samples: [Sample]
+    let samples: [Sample]
     let carry: Double
     let roll: Double
     let apex: Double
+    /// When the ball first touched the ground.
+    let carryTime: Double
     var duration: Double { samples.last?.time ?? 0 }
     var total: Double { carry + roll }
     var landing: FlightPoint { samples.last?.point ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0) }
@@ -49,7 +53,8 @@ struct BallFlight: Equatable, Sendable {
         )
     }
 
-    static func simulate(_ launch: Launch) -> BallFlight {
+    /// `rollingDeceleration` is the surface the ball rolls out on (green ≈ 0.9, fairway 3.2, rough 6).
+    static func simulate(_ launch: Launch, rollingDeceleration: Double = fairwayRolling) -> BallFlight {
         let mass = 0.04593
         let radius = 0.02135
         let area = Double.pi * radius * radius
@@ -59,7 +64,6 @@ struct BallFlight: Equatable, Sendable {
         let dt = 1.0 / 240
         let restitution = 0.35
         let bounceFriction = 0.6
-        let rollingDeceleration = 3.2
 
         let speed = max(0, launch.ballSpeedMPH) * 0.44704
         let elevation = launch.launchAngleDegrees * .pi / 180
@@ -76,6 +80,7 @@ struct BallFlight: Equatable, Sendable {
         var airborne = speed > 0.5 && elevation > 0.002 // a putt rolls from the first inch
         var rolling = !airborne
         var carryMeters: Double?
+        var carryTime = 0.0
         var apexMeters = 0.0
 
         while time < maxDuration {
@@ -100,7 +105,10 @@ struct BallFlight: Equatable, Sendable {
                 apexMeters = max(apexMeters, position.y)
                 if position.y <= 0, velocity.y < 0 {
                     position.y = 0
-                    if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
+                    if carryMeters == nil {
+                        carryMeters = simd_length(simd_double2(position.x, position.z))
+                        carryTime = time
+                    }
                     velocity.y = -velocity.y * restitution
                     velocity.x *= bounceFriction
                     velocity.z *= bounceFriction
@@ -136,7 +144,7 @@ struct BallFlight: Equatable, Sendable {
             lateralYards: position.x / metersPerYard, heightYards: 0, distanceYards: position.z / metersPerYard
         )))
         let carry = (carryMeters ?? 0) / metersPerYard // a shot that never flew is all roll
-        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard)
+        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard, carryTime: carryTime)
     }
 }
 
