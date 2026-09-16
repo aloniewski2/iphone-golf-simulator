@@ -199,7 +199,7 @@ final class PlayerCalibrationTests: XCTestCase {
 
         accumulator.reportTracking(bodyCount: 0, timestamp: 2.5)
         XCTAssertEqual(accumulator.sampleCount, 0)
-        XCTAssertEqual(accumulator.assessment, .incompleteBody)
+        XCTAssertEqual(accumulator.assessment, .noBody)
     }
 
     func testStoredBodySignaturePrefersTheCalibratedPlayer() throws {
