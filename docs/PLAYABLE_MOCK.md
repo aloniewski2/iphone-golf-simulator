@@ -35,7 +35,9 @@ Hold on tight and clear the space around you. The recognizer is `MotionSwingDete
 
 ## Camera
 
-Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
+Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out at up to 60 fps, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
+
+The tracker is built around one player. Of everything Vision finds, the largest and most confident body is you; once locked, Vision scans only a generous box around you (the dashed rectangle in the small view, with headroom for the hands at the top) so it spends its effort on your movement rather than the room. Every joint is smoothed by a One-Euro filter — steady at address, no lag in the downswing — and a wrist that blinks out for a frame or two is held from its last good position. The border of the small view shows tracking quality (mint / yellow / orange); if it is orange the status line says what to fix.
 
 The model is Wii Sports golf read by camera: the power meter is the **arm arc**, the angle of your hands around your shoulders from where they hung at address. Hands level with the shoulders is about 90°; ~140° is a full backswing and 100 % on the meter. Downswing speed adds the final share of power (`speedWeight`), so a lazy full swing and a quick short one both make sense. Swing well past full (165°+) and the shot hooks, harder the further over you go. A slow return is a practice swing and does not spend a shot. Brief tracking loss at the top is skipped. `ArmSwingDetector` in `GolfArcade/Mock/ArmSwing.swift` holds every threshold and is unit-tested with synthetic swings.
 

@@ -339,6 +339,15 @@ struct RangeMockView: View {
             if case .running = camera.status {
                 CameraPreview(session: camera.tracker.session)
                 PoseSkeletonView(frame: camera.frame)
+                // The box Vision is scanning: it locks onto you and follows.
+                if let region = camera.focusRegion {
+                    GeometryReader { geometry in
+                        Rectangle()
+                            .strokeBorder(trackingColor.opacity(0.7), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                            .frame(width: region.width * geometry.size.width, height: region.height * geometry.size.height)
+                            .position(x: region.midX * geometry.size.width, y: (1 - region.midY) * geometry.size.height)
+                    }
+                }
             } else {
                 Image(systemName: "person.crop.rectangle").font(.title2).opacity(0.5)
             }
@@ -346,7 +355,7 @@ struct RangeMockView: View {
         .aspectRatio(camera.tracker.frameAspect, contentMode: .fit)
         .frame(width: 118)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(camera.phase == .findingPlayer ? Color.white.opacity(0.4) : .mint, lineWidth: 2))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(trackingColor, lineWidth: 2))
         .accessibilityHidden(true)
     }
 
@@ -386,8 +395,18 @@ struct RangeMockView: View {
         .accessibilityIdentifier("cameraPanel")
     }
 
+    /// Border colour for the camera view: how well the swing joints are being read.
+    private var trackingColor: Color {
+        guard case .running = camera.status, camera.frame != nil else { return .white.opacity(0.4) }
+        let quality = camera.trackingQuality
+        return quality >= 0.6 ? .mint : quality >= 0.35 ? .yellow : .orange
+    }
+
     private var cameraDetail: String {
         let fov = camera.tracker.fieldOfView > 0 ? String(format: " · %.0f° lens", camera.tracker.fieldOfView) : ""
+        if case .running = camera.status, camera.frame != nil, camera.trackingQuality < 0.35, camera.phase == .findingPlayer || camera.phase == .address {
+            return "Weak read: more light, plain background, face the camera"
+        }
         switch camera.phase {
         case .findingPlayer: return "Get shoulders and hands in the small view" + fov
         case .address: return "Take it back to fill the meter" + fov

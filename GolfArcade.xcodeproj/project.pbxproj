@@ -40,6 +40,7 @@
 		B14E5EC0BC234B34A0D372E7 /* BallFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = C996B26E1C704295A6BCF831 /* BallFlight.swift */; };
 		6B408FBDB55944E7915FFAE4 /* Hole.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82CCAA5EFD1A4359A9B16087 /* Hole.swift */; };
 		9D017C389C7E4C9F9716630D /* HoleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F59A036C7B644E9BCFF23FA /* HoleTests.swift */; };
+		93013CEBA6E748F49AA774B1 /* TrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CE0F01B0114C2AAA9AF58C /* TrackingTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -96,6 +97,7 @@
 		C996B26E1C704295A6BCF831 /* BallFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallFlight.swift; sourceTree = "<group>"; };
 		82CCAA5EFD1A4359A9B16087 /* Hole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hole.swift; sourceTree = "<group>"; };
 		1F59A036C7B644E9BCFF23FA /* HoleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleTests.swift; sourceTree = "<group>"; };
+		67CE0F01B0114C2AAA9AF58C /* TrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -227,6 +229,7 @@
 			children = (
 				1000633422264A0FB39946F7 /* CameraSwingTests.swift */,
 				1F59A036C7B644E9BCFF23FA /* HoleTests.swift */,
+				67CE0F01B0114C2AAA9AF58C /* TrackingTests.swift */,
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 				B4CF786395664C9B94BE49AB /* MotionSwingDetectorTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
@@ -393,6 +396,7 @@
 			files = (
 				745CAE811EAD469EB05A70E1 /* CameraSwingTests.swift in Sources */,
 				9D017C389C7E4C9F9716630D /* HoleTests.swift in Sources */,
+				93013CEBA6E748F49AA774B1 /* TrackingTests.swift in Sources */,
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,
 				7C7D75225641495D95175A7B /* MotionSwingDetectorTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
