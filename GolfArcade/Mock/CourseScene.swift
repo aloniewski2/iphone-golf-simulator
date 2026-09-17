@@ -49,6 +49,10 @@ final class CourseScene: NSObject, ObservableObject {
     var inputs: SceneInputs?
     /// Called when the club knocks a bystander over.
     var onBystanderHit: (() -> Void)?
+    /// Called once when the ball comes down, and once more if it drops in the cup.
+    var onLanding: ((RangeAudio.Landing) -> Void)?
+    private var landingAnnounced = false
+    private var cupAnnounced = false
 
     private let courseNode = SCNNode()
     /// Sits on the ball and faces the intended landing line; rig-space children scale to yards.
@@ -84,9 +88,21 @@ final class CourseScene: NSObject, ObservableObject {
     private var cameraPoseFilter = CameraAvatarPoseFilter()
     private var livePose: BodyPose3D?
     private var livePoseTime: CFTimeInterval = 0
+    /// The pose before `livePose`, so frames can be drawn between camera deliveries.
+    private var previousLivePose: BodyPose3D?
+    private var previousLivePoseTime: CFTimeInterval = 0
     private var recorder = SwingRecorder()
     private var cannedAngle = 0.0
+    private var cannedAngleTime: CFTimeInterval?
     private var cannedLaunchAngle = 0.0
+
+    /// Where the golfer's pose comes from this frame. Switching sources crossfades so the
+    /// avatar never snaps from one body to another.
+    enum PoseSource: Equatable { case live, waiting, canned, recorded }
+    private(set) var poseSource: PoseSource = .canned
+    private var presentedPose: BodyPose3D?
+    private var crossfade: (from: BodyPose3D, start: CFTimeInterval)?
+    private static let crossfadeLength = 0.28
 
     // Other players standing around.
     private var bystanderRigs: [UUID: AvatarRig] = [:]
@@ -206,7 +222,7 @@ final class CourseScene: NSObject, ObservableObject {
     func start() {
         guard displayLink == nil else { return }
         let link = CADisplayLink(target: self, selector: #selector(step(_:)))
-        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -225,6 +241,7 @@ final class CourseScene: NSObject, ObservableObject {
         cameraPoseFilter = CameraAvatarPoseFilter()
         livePose = calibration == nil ? nil : .cameraWaiting
         livePoseTime = CACurrentMediaTime()
+        previousLivePose = nil
         recorder.reset()
         contact.reset()
     }
@@ -238,9 +255,38 @@ final class CourseScene: NSObject, ObservableObject {
                                           swingAngle: swingAngle, at: now)
         let pose = cameraPoseFilter.update(measuredPose, frame: frame, at: now)
         self.retargeter = retargeter
+        previousLivePose = livePose
+        previousLivePoseTime = livePoseTime
         livePose = pose
         livePoseTime = now
         recorder.record(pose, at: now)
+    }
+
+    /// The live pose drawn one camera interval behind, so the avatar glides between the 30 Hz
+    /// deliveries instead of stepping at them. A stalled camera simply holds the last pose.
+    private func interpolatedLivePose(at now: CFTimeInterval) -> BodyPose3D? {
+        guard let livePose else { return nil }
+        guard let previous = previousLivePose, livePoseTime > previousLivePoseTime, now >= livePoseTime else { return livePose }
+        let interval = livePoseTime - previousLivePoseTime
+        guard interval > 1.0 / 120, interval < 0.2 else { return livePose }
+        let delay = min(max(interval, 1.0 / 60), 0.05)
+        let t = (now - delay - previousLivePoseTime) / interval
+        return BodyPose3D.lerp(previous, livePose, Float(min(max(t, 0), 1)))
+    }
+
+    /// Crossfades between pose sources; within a source the pose is passed straight through.
+    private func present(_ pose: BodyPose3D, from source: PoseSource, now: CFTimeInterval) -> BodyPose3D {
+        if source != poseSource, let presentedPose {
+            crossfade = (presentedPose, now)
+            poseSource = source
+        }
+        var result = pose
+        if let crossfade {
+            let u = smoothstep(0, Float(Self.crossfadeLength), Float(now - crossfade.start))
+            if u >= 1 { self.crossfade = nil } else { result = BodyPose3D.lerp(crossfade.from, pose, u) }
+        }
+        presentedPose = result
+        return result
     }
 
     /// Rebuilds the terrain for `hole`. Cheap enough to call once per hole.
@@ -313,8 +359,17 @@ final class CourseScene: NSObject, ObservableObject {
     // MARK: - Frame
 
     @objc private func step(_ link: CADisplayLink) {
+        tick(now: CACurrentMediaTime())
+    }
+
+    #if DEBUG
+    /// One display-link frame, for tests that check what the scene does over a shot.
+    func stepForTesting(now: CFTimeInterval = CACurrentMediaTime()) { tick(now: now) }
+    var presentedPoseForTesting: BodyPose3D { presentedPose ?? AvatarAnimations.address }
+    #endif
+
+    private func tick(now: CFTimeInterval) {
         guard let inputs else { return }
-        let now = CACurrentMediaTime()
         let dt = Float(min(lastTick.map { now - $0 } ?? 1.0 / 60, 0.1))
         lastTick = now
         load(inputs.hole)
@@ -325,6 +380,8 @@ final class CourseScene: NSObject, ObservableObject {
         let elapsed = inputs.elapsed(at: Date())
         if shot != lastShot {
             trail.childNodes.forEach { $0.removeFromParentNode() }
+            landingAnnounced = false
+            cupAnnounced = false
             if let shot {
                 reaction = .classify(shot)
                 landingTime = ShotCameraDirector.landingTime(of: shot)
@@ -358,7 +415,8 @@ final class CourseScene: NSObject, ObservableObject {
         golfer.setMirrored(mirror < 0)
         golfer.node.simdPosition = playerStance.position
 
-        let pose = golferPose(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        let (raw, source) = golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        let pose = present(raw, from: source, now: now)
         golfer.apply(pose)
         updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)
 
@@ -371,6 +429,7 @@ final class CourseScene: NSObject, ObservableObject {
         shadow.position = SCNVector3(point.lateralYards, restingHeight + 0.003, -point.distanceYards)
         ballLocator.position = SCNVector3(point.lateralYards, restingHeight + 0.008, -point.distanceYards)
         let sunk = shot.map { $0.isHoled && elapsed >= $0.duration } ?? false
+        if let shot, !inputs.isReplay || elapsed > 0 { announceLanding(shot, elapsed: elapsed, hole: inputs.hole, sunk: sunk) }
         ball.isHidden = sunk
         shadow.isHidden = sunk
         ballLocator.isHidden = sunk || (shot != nil && elapsed < (shot?.duration ?? 0))
@@ -398,28 +457,62 @@ final class CourseScene: NSObject, ObservableObject {
 
     private var lastFlightStart: Date?
 
+    /// One landing sound as the ball first comes down (what it lands on decides which), and the
+    /// cup when it drops. Putts only roll, so they are silent until the cup.
+    private func announceLanding(_ shot: RangeShot, elapsed: Double, hole: Hole, sunk: Bool) {
+        if !landingAnnounced, let landingTime, elapsed >= landingTime {
+            landingAnnounced = true
+            let point = shot.position(at: landingTime)
+            let before = shot.position(at: max(0, landingTime - 1.0 / 30))
+            let speed = hypot(point.lateralYards - before.lateralYards, point.distanceYards - before.distanceYards) * 30
+            let spot = CoursePoint(x: point.lateralYards, d: point.distanceYards)
+            switch hole.lie(at: spot) {
+            case .water: onLanding?(.water)
+            case .bunker: onLanding?(.sand)
+            case let lie: onLanding?(.turf(lie, speed: speed))
+            }
+        }
+        if sunk, !cupAnnounced {
+            cupAnnounced = true
+            onLanding?(.cup)
+        }
+    }
+
     func golferPose(shot: RangeShot?, elapsed: Double, isReplay: Bool, swingAngle: Double, now: CFTimeInterval) -> BodyPose3D {
+        golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: isReplay, swingAngle: swingAngle, now: now).pose
+    }
+
+    func golferPoseAndSource(shot: RangeShot?, elapsed: Double, isReplay: Bool, swingAngle: Double, now: CFTimeInterval) -> (pose: BodyPose3D, source: PoseSource) {
         // Camera players remain the character throughout setup, backswing and follow-through.
         // A hit/miss reaction must never take over their body. Replays use the measured trace.
-        if retargeter != nil, !isReplay { return livePose ?? .cameraWaiting }
-        let live = now - livePoseTime < 0.5 ? livePose : (retargeter == nil ? nil : .cameraWaiting)
+        let interpolated = interpolatedLivePose(at: now)
+        if retargeter != nil, !isReplay {
+            return interpolated.map { ($0, $0 == .cameraWaiting ? .waiting : .live) } ?? (.cameraWaiting, .waiting)
+        }
+        let live = now - livePoseTime < 0.5 ? interpolated : (retargeter == nil ? nil : .cameraWaiting)
         guard shot != nil else {
-            cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * 0.35
-            return live ?? AvatarAnimations.swingArc(degrees: cannedAngle)
+            // Frame-rate independent easing toward the input's arc.
+            let dt = min(0.1, max(0, now - (cannedAngleTime ?? now)))
+            cannedAngleTime = now
+            cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * (1 - exp(-dt * 22))
+            if let live { return (live, live == .cameraWaiting ? .waiting : .live) }
+            return (AvatarAnimations.swingArc(degrees: cannedAngle), .canned)
         }
         let followThrough = 0.6
+        var source = PoseSource.canned
         func follow(_ t: Double) -> BodyPose3D {
-            if isReplay, let recorded = recorder.pose(atImpactOffset: t) { return recorded }
-            if !isReplay, let live { return live }
+            if isReplay, let recorded = recorder.pose(atImpactOffset: t) { source = .recorded; return recorded }
+            if !isReplay, let live { source = .live; return live }
             // Canned downswing (0.3 s) into a held finish.
             let u = min(t / 0.3, 1)
             let angle = t < 0.3 ? cannedLaunchAngle + (-150 - cannedLaunchAngle) * (u * u) : -150
+            source = .canned
             return AvatarAnimations.swingArc(degrees: angle)
         }
-        if elapsed < followThrough { return follow(elapsed) }
+        if elapsed < followThrough { return (follow(elapsed), source) }
         let reactionTime = elapsed - followThrough
         guard let reaction, reactionTime < AvatarAnimations.reactionLength else {
-            return live ?? AvatarAnimations.address
+            return live.map { ($0, $0 == .cameraWaiting ? .waiting : .live) } ?? (AvatarAnimations.address, .canned)
         }
         let target = AvatarAnimations.reaction(reaction, time: reactionTime)
         var pose = BodyPose3D.lerp(follow(followThrough), target, smoothstep(0, 0.25, Float(reactionTime)))
@@ -427,7 +520,7 @@ final class CourseScene: NSObject, ObservableObject {
         if fadeOut < 0.4 {
             pose = BodyPose3D.lerp(live ?? AvatarAnimations.address, pose, fadeOut / 0.4)
         }
-        return pose
+        return (pose, source)
     }
 
     private func updateTrajectory(_ preview: RangeShot?, visible: Bool) {
@@ -664,7 +757,7 @@ struct CourseSceneView: UIViewRepresentable {
         view.scene = scene.scene
         view.pointOfView = scene.camera
         view.antialiasingMode = .multisampling4X
-        view.preferredFramesPerSecond = 60
+        view.preferredFramesPerSecond = 120
         view.rendersContinuously = true
         view.isUserInteractionEnabled = false
         scene.inputs = inputs
