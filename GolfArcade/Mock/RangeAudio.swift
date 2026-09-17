@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 
 /// Original procedural sounds. No downloads, microphone, or third-party assets.
 ///
@@ -7,12 +8,18 @@ import AVFoundation
 /// freeze a swing gesture on the main thread. Tension updates are coalesced so a slow device
 /// only ever has one pending update, not a backlog of every drag sample.
 @MainActor
-final class RangeAudio {
+final class RangeAudio: ObservableObject {
+    #if DEBUG
+    private(set) static var initializationCount = 0
+    #endif
     var enabled = true { didSet { if !enabled { stop() } } }
     private let queue = DispatchQueue(label: "com.aloniewski.GolfArcade.rangeAudio", qos: .userInteractive)
     private let engine = Engine()
 
     init() {
+        #if DEBUG
+        Self.initializationCount += 1
+        #endif
         queue.async { [engine] in engine.prepare() }
     }
 
@@ -35,6 +42,23 @@ final class RangeAudio {
         queue.async { [engine] in engine.celebrate() }
     }
 
+    func ready() {
+        guard enabled else { return }
+        queue.async { [engine] in engine.ready() }
+    }
+
+    /// A club connecting with a friend.
+    func thump() {
+        guard enabled else { return }
+        queue.async { [engine] in engine.thump() }
+    }
+
+    /// A falling tone for a bad result.
+    func groan() {
+        guard enabled else { return }
+        queue.async { [engine] in engine.groan() }
+    }
+
     func stop() {
         queue.async { [engine] in engine.stop() }
     }
@@ -44,6 +68,9 @@ final class RangeAudio {
         private var load: AVAudioPlayer?
         private var hit: AVAudioPlayer?
         private var reward: AVAudioPlayer?
+        private var bump: AVAudioPlayer?
+        private var sigh: AVAudioPlayer?
+        private var readyTone: AVAudioPlayer?
         private let lock = NSLock()
         private var latestTension: Double?
 
@@ -53,6 +80,14 @@ final class RangeAudio {
             load?.numberOfLoops = -1
             load?.enableRate = true
             reward = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.35, frequency: 880, percussive: true))
+            bump = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.25, frequency: 85, percussive: true, noise: 0.6))
+            sigh = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.45, frequency: 140, percussive: false, noise: 0.1))
+            sigh?.enableRate = true
+            sigh?.rate = 0.7
+            readyTone = try? AVAudioPlayer(data: RangeAudio.wave(duration: 0.18, frequency: 660, percussive: true))
+            readyTone?.prepareToPlay()
+            bump?.prepareToPlay()
+            sigh?.prepareToPlay()
             load?.prepareToPlay()
             reward?.prepareToPlay()
         }
@@ -90,6 +125,24 @@ final class RangeAudio {
             reward?.play()
         }
 
+        func ready() {
+            readyTone?.currentTime = 0
+            readyTone?.volume = 0.4
+            readyTone?.play()
+        }
+
+        func thump() {
+            bump?.currentTime = 0
+            bump?.volume = 0.6
+            bump?.play()
+        }
+
+        func groan() {
+            sigh?.currentTime = 0
+            sigh?.volume = 0.25
+            sigh?.play()
+        }
+
         func stop() {
             lock.lock()
             latestTension = nil
@@ -97,6 +150,7 @@ final class RangeAudio {
             load?.stop()
             hit?.stop()
             reward?.stop()
+            readyTone?.stop()
         }
     }
 

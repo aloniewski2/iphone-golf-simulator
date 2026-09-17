@@ -17,22 +17,18 @@ struct BallFlight: Equatable, Sendable {
         var curveDegrees: Double
     }
 
-    struct Sample: Equatable, Sendable {
+    private struct Sample: Equatable, Sendable {
         let time: Double
         let point: FlightPoint
     }
 
     static let sampleInterval = 1.0 / 60
     static let maxDuration = 16.0
-    /// Rolling deceleration on a firm fairway, m/s².
-    static let fairwayRolling = 3.2
 
-    let samples: [Sample]
+    private let samples: [Sample]
     let carry: Double
     let roll: Double
     let apex: Double
-    /// When the ball first touched the ground.
-    let carryTime: Double
     var duration: Double { samples.last?.time ?? 0 }
     var total: Double { carry + roll }
     var landing: FlightPoint { samples.last?.point ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0) }
@@ -53,8 +49,7 @@ struct BallFlight: Equatable, Sendable {
         )
     }
 
-    /// `rollingDeceleration` is the surface the ball rolls out on (green ≈ 0.9, fairway 3.2, rough 6).
-    static func simulate(_ launch: Launch, rollingDeceleration: Double = fairwayRolling) -> BallFlight {
+    static func simulate(_ launch: Launch) -> BallFlight {
         let mass = 0.04593
         let radius = 0.02135
         let area = Double.pi * radius * radius
@@ -64,6 +59,7 @@ struct BallFlight: Equatable, Sendable {
         let dt = 1.0 / 240
         let restitution = 0.35
         let bounceFriction = 0.6
+        let rollingDeceleration = 3.2
 
         let speed = max(0, launch.ballSpeedMPH) * 0.44704
         let elevation = launch.launchAngleDegrees * .pi / 180
@@ -80,7 +76,6 @@ struct BallFlight: Equatable, Sendable {
         var airborne = speed > 0.5 && elevation > 0.002 // a putt rolls from the first inch
         var rolling = !airborne
         var carryMeters: Double?
-        var carryTime = 0.0
         var apexMeters = 0.0
 
         while time < maxDuration {
@@ -105,10 +100,7 @@ struct BallFlight: Equatable, Sendable {
                 apexMeters = max(apexMeters, position.y)
                 if position.y <= 0, velocity.y < 0 {
                     position.y = 0
-                    if carryMeters == nil {
-                        carryMeters = simd_length(simd_double2(position.x, position.z))
-                        carryTime = time
-                    }
+                    if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
                     velocity.y = -velocity.y * restitution
                     velocity.x *= bounceFriction
                     velocity.z *= bounceFriction
@@ -122,11 +114,13 @@ struct BallFlight: Equatable, Sendable {
             } else if rolling {
                 let horizontal = simd_double2(velocity.x, velocity.z)
                 let ground = simd_length(horizontal)
-                if ground < 0.05 { break }
+                if ground <= 0 { break }
                 let slowed = max(0, ground - rollingDeceleration * dt)
                 let direction = horizontal / ground
+                let movingTime = min(dt, ground / rollingDeceleration)
+                let travel = ground * movingTime - 0.5 * rollingDeceleration * movingTime * movingTime
                 velocity = simd_double3(direction.x * slowed, 0, direction.y * slowed)
-                position += velocity * dt
+                position += simd_double3(direction.x * travel, 0, direction.y * travel)
                 position.y = 0
             }
             time += dt
@@ -144,20 +138,40 @@ struct BallFlight: Equatable, Sendable {
             lateralYards: position.x / metersPerYard, heightYards: 0, distanceYards: position.z / metersPerYard
         )))
         let carry = (carryMeters ?? 0) / metersPerYard // a shot that never flew is all roll
-        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard, carryTime: carryTime)
+        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard)
     }
 }
 
 extension GolfClub {
-    /// Club-head speed at 100 % power, mph. Amateur-plus numbers; the arcade scales down from here.
-    var maxClubSpeedMPH: Double {
+    /// Standard virtual bag, not a measurement of the empty-handed player's club speed.
+    /// Woods/irons use carry; the putter uses total roll. Labels and flight share this calibration.
+    var referenceDistanceYards: Double {
         switch self {
-        case .driver: 108
-        case .iron: 88
-        case .wedge: 72
-        case .putter: 27
+        case .driver: 250
+        case .iron: 160
+        case .wedge: 90
+        case .putter: 25
         }
     }
+
+    /// Calibrated once through the same aerodynamic/rolling solver, not a distance
+    /// multiplier applied after landing. Every lower-power shot keeps real flight integration.
+    var maxClubSpeedMPH: Double {
+        Self.calibratedSpeeds[self]!
+    }
+
+    private static let calibratedSpeeds: [GolfClub: Double] = Dictionary(uniqueKeysWithValues: allCases.map { club in
+        var low = 1.0, high = 145.0
+        for _ in 0..<24 {
+            let speed = (low + high) / 2
+            let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
+                launchAngleDegrees: club.launchAngleDegrees, spinRPM: club.spinRPM,
+                directionDegrees: 0, curveDegrees: 0))
+            let distance = club == .putter ? flight.total : flight.carry
+            if distance < club.referenceDistanceYards { low = speed } else { high = speed }
+        }
+        return (club, (low + high) / 2)
+    })
 
     var launchAngleDegrees: Double {
         switch self {
@@ -180,8 +194,8 @@ extension GolfClub {
 
     /// Ball speed from club speed and a fair strike.
     func launch(power: Double, aimDegrees: Double, curveDegrees: Double) -> BallFlight.Launch {
-        let p = min(max(power, 0), 1)
-        let clubSpeed = maxClubSpeedMPH * (0.25 + 0.75 * p)
+        let p = min(max(power.isFinite ? power : 0, 0), 1)
+        let clubSpeed = maxClubSpeedMPH * p
         return BallFlight.Launch(
             ballSpeedMPH: clubSpeed * smashFactor,
             launchAngleDegrees: launchAngleDegrees,
