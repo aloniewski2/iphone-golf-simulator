@@ -61,7 +61,7 @@ struct CourseSelectView: View {
                 Text(hazards(course)).font(.caption2).foregroundStyle(.white.opacity(0.48))
             }
             Spacer()
-            if let best = UserDefaults.standard.object(forKey: "course.\(course.id).best") as? Int {
+            if let best = UserDefaults.standard.object(forKey: course.bestScoreKey) as? Int {
                 VStack(spacing: 2) {
                     Text("BEST").font(.system(size: 9, weight: .black))
                     Text(ScoreFormat.toPar(best)).font(.headline).monospacedDigit()

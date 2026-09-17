@@ -14,7 +14,7 @@ Scans are saved on the device. A single-player scan from earlier builds is migra
 
 ## Body scan
 
-Set the phone where it will stay, stand 7–12 feet away, and keep your head, hands, and feet visible. Face forward with your arms slightly away from your sides and hold still until the scan fills. The scan records body proportions plus where you stood. That position is also where the **virtual ball** sits, so scan from where you plan to swing. Rescan from the player screen, or from the in-game `…` menu, if the phone moves.
+Set the phone where it will stay and keep your head, hands, and feet visible. Face forward with your arms slightly away from your sides and hold still until the scan fills. The scan records body proportions for identifying the active player. Once on the course, hold a comfortable golf grip briefly to set the virtual club's address and reach. That address is stored relative to your shoulders and follows body translation and scale. Use **Reset comfortable grip** to change your setup, or **Rescan** if player matching is lost.
 
 ## Courses
 
@@ -26,11 +26,11 @@ Each course has three holes that you play out, counting strokes against par:
 | Pine Bend | Medium | 4 · 3 · 4 | Doglegs, narrower, 2–3 bunkers per hole |
 | Cliffwater | Hard | 4 · 5 · 3 | Narrow, water carries, greenside bunkers |
 
-- Aim starts at the pin every shot; the rail's ◀ ▶ adjust it by 2°.
+- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 0.25° with the putter. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
 - The next shot is played from where the ball stops. The suggested club is selected for you (putter on the green, wedge in a bunker).
 - **Rough** takes 15% off the next shot and a **bunker** 40%.
 - **Water**: +1 stroke, dropped short of the hazard on the line of play. **Out of bounds** (past the tree line): +1 stroke, replayed from the same spot.
-- On the green, putts scale to the distance: a full stroke rolls about 1.6× the distance to the cup. A slow ball crossing the cup drops.
+- Putting power has a fixed meaning independent of pin distance, continuous from zero. A slow ball passing within the 0.12-yard arcade cup tolerance drops; its rendered endpoint and next position both become the cup.
 - After par + 5 strokes the ball is picked up so the round keeps moving.
 - In multiplayer, each player plays the whole hole in turn, then everyone moves to the next hole. The scorecard shows strokes per hole, totals, and ± par. Solo best scores are saved per course.
 
@@ -42,28 +42,28 @@ The hole fills the screen. A small chip in the top-left shows hole, par, yards t
 
 ## Lining up (Camera mode)
 
-At the start of each turn, and whenever the active player has been out of view for two seconds, the camera opens as a **big window** over the course.
+The camera starts in the bottom-left corner. Tap it to enlarge or shrink it; enlargement never blocks play. **Use touch** is available if the camera cannot track you.
 
-- A golf ball is drawn at your feet, a ring shows where your hands go, and a **club is drawn in your hands**. At address the club head points at the ball, so putting the club head on the ball is lining up.
+- Hold your comfortable golf grip briefly. The virtual ball and club reach are established from that setup. Return to the same body-relative grip between strokes.
 - The skeleton only shows faintly while the camera is finding you; it disappears during a swing.
-- Hold still with your hands in the ring. The ready ring fills over 1.5 s, then the window shrinks to the bottom-left corner and the course takes over.
-- Swings made while the big window is open are practice swings and never cost a stroke.
+- The readiness indicator requires continuous stillness. It is feedback, not a mandatory pre-shot countdown.
+- Gentle putts use separate thresholds from full swings. Aborted swings time out; unreliable or missing impact frames cannot fabricate contact.
 
 ## Your avatar
 
-The golfer in the middle of the screen **copies your body**. Your 2D camera pose is rebuilt into a 3D pose with fixed limb lengths: when a limb looks shorter to the camera than it really is, the difference becomes reach toward the ball. The body scan sets the scale, so the avatar is the same size wherever you stand. The avatar holds a 3D club that follows your arms (same rule as the drawn club) over a ball on a tee. In Touch and Phone modes it plays the canned swing instead. See `GolfArcade/Avatar/`.
+The golfer **copies your body** using the existing body-pose reconstruction. During camera play, its grip and clubhead are projected from the exact virtual-club state used for contact and the camera overlay. Replays retain those endpoints. The inferred club is a gameplay model, not a measured physical club. Touch and Phone modes use a canned avatar swing.
 
 ## Contact
 
-Contact is judged by where your hands pass the ring during the downswing:
+Contact is judged by the swept virtual clubhead passing through the ball between camera frames:
 
 - **center**: full power
-- **thin** (hands high): less power, lower
-- **fat** (hands low): much less power
-- **heel / toe** (hands to either side): less power and a curve
-- **miss**: the ball barely moves
+- **thin** (head high): less power
+- **fat** (head low): much less power
+- **heel / toe** (head off center): less power
+- **miss**: a counted stroke with no ball movement and no impact flash/sound
 
-A dot in the corner camera view shows where you crossed, and the shot result names the contact. Power still comes from backswing length and downswing speed (Wii-style arm arc).
+A dot in the corner camera view shows the swept contact location. Power combines backswing length and downswing speed without a minimum-speed floor. Signed motion affects the start line; overswing and contact labels no longer inject preset hooks. Choose draw/fade explicitly because front-camera pose cannot observe a real club face.
 
 ## Shot cameras
 
@@ -116,7 +116,7 @@ Both hands together (a golf grip) never count, and gestures are ignored during a
 
 ## Other inputs
 
-**Touch**: pull down on the swing pad and release; a 100-point drag is full power. **Phone**: grip the phone like a club, hold still, take it back, and swing through (physical iPhone only). Both always count as center contact.
+**Touch**: pull down and release; 80 points is full swing power within the 100-point pad. Slide sideways to steer. Putting has a dedicated strength slider, an estimate in feet, and a **Putt** button; its 0.5% increments use the same fixed gain everywhere. Fine direction is available on the club rail and in shot controls. **Phone**: hold still, take it back, and swing through (physical iPhone only); putter thresholds accept smaller, slower strokes. Both use explicit center contact rather than pretending to measure it. All modes can choose aim and draw/fade in the shot controls.
 
 ## Ball flight
 
@@ -125,9 +125,9 @@ Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, the
 ## What to test on a device
 
 - Scan two players; confirm turns alternate and the camera only follows the active player.
-- Stand with your hands off the ball: the swing must not arm. Line up, then make deliberately high, low, and wide swings; contact and flight should change.
+- Set a comfortable grip, then make deliberately high, low, and wide swings; the virtual club, contact marker, and resulting shot should agree.
 - The avatar copies arm raises, crouches, leans, and a full swing without stretching or jitter; the drawn club head sits on the ball when lined up.
-- Hold address 1.5 s: the camera window shrinks. Pure, fat, and whiffed swings trigger different reactions.
+- Verify the camera stays compact through tracking loss, touch remains available, and pure, fat, and whiffed swings trigger different reactions.
 - In multiplayer, swing into the friend on your lead side and knock them over.
 - Fist swipes and punch in every menu; the raised-hand fallback from about 8 feet; full swings never navigate.
 - Hit into water and out of bounds on Cliffwater; check the penalty and drop.
@@ -135,4 +135,4 @@ Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, the
 
 ## Verification
 
-The `GolfArcade` scheme runs unit tests (courses, lies, penalties, holing out, turn rotation, stroke cap, contact vs. the virtual ball, the ready timer, pose copying, club geometry, reactions, shot cameras, club contact, gestures, roster migration) and UI tests that walk menu → course (big camera window, then minimized), play a hole out with screenshots of each camera, and show friends standing around the golfer.
+The `GolfArcade` scheme runs unit tests for detector input, contact, short-shot distances, scoring, turn rotation, persistence, replay, and pause behavior. UI tests exercise menu → course, compact camera with touch fallback, target controls, touch play, and multiplayer. See `AUDIT_EXECUTION.md` for the mapping to the September 16 audit and physical-device validation still required.

@@ -7,7 +7,7 @@ struct MainMenuView: View {
     @State private var focus = 0
     @State private var settingsPresented = false
 
-    private enum Item: Int, CaseIterable { case solo, multiplayer, settings }
+    private enum Item: Int, CaseIterable { case solo, multiplayer, practice, settings }
 
     var body: some View {
         ScrollView {
@@ -23,6 +23,8 @@ struct MainMenuView: View {
                         .accessibilityIdentifier("menuSolo")
                     row(.multiplayer, icon: "person.3.fill", title: "Multiplayer", detail: "2–4 players take turns on one phone")
                         .accessibilityIdentifier("menuMultiplayer")
+                    row(.practice, icon: "waveform.path.ecg", title: "Practice Lab", detail: "Measure swings, test control, replay pose traces")
+                        .accessibilityIdentifier("menuPractice")
                     row(.settings, icon: "gearshape.fill", title: "Settings", detail: "Swing input, sound, gestures")
                         .accessibilityIdentifier("menuSettings")
                 }
@@ -71,6 +73,7 @@ struct MainMenuView: View {
         switch item {
         case .solo: flow.choose(.solo)
         case .multiplayer: flow.choose(.multiplayer)
+        case .practice: flow.screen = .practice
         case .settings: settingsPresented = true
         }
     }

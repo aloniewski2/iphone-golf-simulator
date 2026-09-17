@@ -9,6 +9,9 @@ enum AvatarAnimations {
     private static let neck = simd_float3(0.75, 2.15, 0)
     private static let head = simd_float3(0.95, 2.8, 0)
     private static let addressHands = simd_float3(1.9, -0.3, 0.1)
+    private static let neutralGrip = UpperBody().pose(
+        left: addressHands + simd_float3(0.12, -0.08, 0),
+        right: addressHands + simd_float3(-0.12, 0.08, 0)).handCenter
 
     static let address = swingArc(degrees: 0)
     static let finish = swingArc(degrees: -150)
@@ -28,7 +31,12 @@ enum AvatarAnimations {
         let armLine = simd_normalize(hands - pivot)
         let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
         let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2)
-        pose.clubDirection = upper.rotate(simd_normalize(cos(hinge) * armLine + sin(hinge) * tangent))
+        // Address the same small ground ball as the camera rig instead of extending the
+        // shaft along the forearms and burying its head below the turf.
+        let addressShaft = simd_normalize(AvatarSize.ball - neutralGrip)
+        let shaftArc = simd_quatf(from: d0, to: armLine).act(addressShaft)
+        pose.clubDirection = upper.rotate(simd_normalize(cos(hinge) * shaftArc + sin(hinge) * tangent))
+        pose.virtualClubHead = pose.clubGrip + pose.clubDirection * simd_length(AvatarSize.ball - neutralGrip)
         return pose
     }
 
@@ -198,7 +206,10 @@ enum AvatarAnimations {
         let a = (upper * upper - lower * lower + distance * distance) / (2 * distance)
         let height = sqrt(max(0, upper * upper - a * a))
         var direction = bend - simd_dot(bend, axis) * axis
-        if simd_length(direction) < 0.0001 { direction = simd_float3(0, 0, 1) - simd_dot(simd_float3(0, 0, 1), axis) * axis }
+        if simd_length(direction) < 0.0001 {
+            let fallback = abs(axis.z) < 0.9 ? simd_float3(0, 0, 1) : simd_float3(1, 0, 0)
+            direction = fallback - simd_dot(fallback, axis) * axis
+        }
         let joint = start + axis * a + simd_normalize(direction) * height
         return (joint, end)
     }

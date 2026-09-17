@@ -114,11 +114,13 @@ struct BallFlight: Equatable, Sendable {
             } else if rolling {
                 let horizontal = simd_double2(velocity.x, velocity.z)
                 let ground = simd_length(horizontal)
-                if ground < 0.05 { break }
+                if ground <= 0 { break }
                 let slowed = max(0, ground - rollingDeceleration * dt)
                 let direction = horizontal / ground
+                let movingTime = min(dt, ground / rollingDeceleration)
+                let travel = ground * movingTime - 0.5 * rollingDeceleration * movingTime * movingTime
                 velocity = simd_double3(direction.x * slowed, 0, direction.y * slowed)
-                position += velocity * dt
+                position += simd_double3(direction.x * travel, 0, direction.y * travel)
                 position.y = 0
             }
             time += dt
@@ -141,15 +143,35 @@ struct BallFlight: Equatable, Sendable {
 }
 
 extension GolfClub {
-    /// Club-head speed at 100 % power, mph. Amateur-plus numbers; the arcade scales down from here.
-    var maxClubSpeedMPH: Double {
+    /// Standard virtual bag, not a measurement of the empty-handed player's club speed.
+    /// Woods/irons use carry; the putter uses total roll. Labels and flight share this calibration.
+    var referenceDistanceYards: Double {
         switch self {
-        case .driver: 108
-        case .iron: 88
-        case .wedge: 72
-        case .putter: 27
+        case .driver: 250
+        case .iron: 160
+        case .wedge: 90
+        case .putter: 25
         }
     }
+
+    /// Calibrated once through the same aerodynamic/rolling solver, not a distance
+    /// multiplier applied after landing. Every lower-power shot keeps real flight integration.
+    var maxClubSpeedMPH: Double {
+        Self.calibratedSpeeds[self]!
+    }
+
+    private static let calibratedSpeeds: [GolfClub: Double] = Dictionary(uniqueKeysWithValues: allCases.map { club in
+        var low = 1.0, high = 145.0
+        for _ in 0..<24 {
+            let speed = (low + high) / 2
+            let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
+                launchAngleDegrees: club.launchAngleDegrees, spinRPM: club.spinRPM,
+                directionDegrees: 0, curveDegrees: 0))
+            let distance = club == .putter ? flight.total : flight.carry
+            if distance < club.referenceDistanceYards { low = speed } else { high = speed }
+        }
+        return (club, (low + high) / 2)
+    })
 
     var launchAngleDegrees: Double {
         switch self {
@@ -172,8 +194,8 @@ extension GolfClub {
 
     /// Ball speed from club speed and a fair strike.
     func launch(power: Double, aimDegrees: Double, curveDegrees: Double) -> BallFlight.Launch {
-        let p = min(max(power, 0), 1)
-        let clubSpeed = maxClubSpeedMPH * (0.25 + 0.75 * p)
+        let p = min(max(power.isFinite ? power : 0, 0), 1)
+        let clubSpeed = maxClubSpeedMPH * p
         return BallFlight.Launch(
             ballSpeedMPH: clubSpeed * smashFactor,
             launchAngleDegrees: launchAngleDegrees,

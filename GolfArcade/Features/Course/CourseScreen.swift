@@ -20,23 +20,29 @@ struct CourseScreen: View {
     @ObservedObject var camera: CameraSwingController
     @StateObject private var round = CourseRound()
     @StateObject private var motion = PhoneSwingController()
-    @State private var scene = CourseScene()
-    @State private var audio = RangeAudio()
-    @State private var feedback = SwingFeedbackController()
+    // StateObject's lazy construction is essential: @State(initialValue:) eagerly constructs
+    // and discards new hardware engines every time the parent receives a camera frame.
+    @StateObject private var scene = CourseScene()
+    @StateObject private var audio = RangeAudio()
+    @StateObject private var feedback = SwingFeedbackController()
     @State private var demoTask: Task<Void, Never>?
     @State private var rescanPresented = false
     @State private var bannerVisible = false
     @State private var bannerTask: Task<Void, Never>?
-    /// The camera is a big window until the player has held address over the ball.
+    /// Certification shows the ground ball full-screen for five seconds, then returns to play.
     @State private var stageExpanded = true
-    @State private var lostSince: Date?
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
     @AppStorage("gestures.enabled") private var gesturesEnabled = true
+    @AppStorage("camera.depthExperiment") private var depthExperiment = false
+    @AppStorage("camera.capture60") private var capture60 = false
     @Environment(\.scenePhase) private var appPhase
 
-    private let tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
+    // ContentView observes the camera, so this View value is rebuilt for every pose. A plain
+    // stored Timer publisher would be replaced before it fires on a busy real camera.
+    @State private var tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
+
 
     private var players: [Player] { flow.players }
     private var player: Player {
@@ -52,15 +58,44 @@ struct CourseScreen: View {
                 .ignoresSafeArea()
                 .accessibilityElement()
                 .accessibilityLabel("\(flow.course.name), hole \(round.hole.number)")
+                .accessibilityValue(resourceDiagnostics)
                 .accessibilityIdentifier("golfCourse")
 
                 LinearGradient(colors: [.black.opacity(0.18), .clear, .clear, .black.opacity(0.28)], startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
-                holeChip
+                VStack(alignment: .leading, spacing: 5) {
+                    holeChip
+                    if round.canSwing {
+                        HoleDirectionCue(round: round)
+                            .frame(maxWidth: max(180, proxy.size.width - 150), alignment: .leading)
+                    }
+                    Text("\(round.targetLabel) · \(Int(round.distanceToTarget.rounded())) YD")
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(.black.opacity(0.45), in: Capsule())
+                        .accessibilityIdentifier("landingTarget")
+                    if round.canSwing {
+                        let preview = round.trajectoryPreview
+                        Text("\(round.club.shortName) · \(Int(preview.power * 100))% · \(Int(preview.carry.rounded())) CARRY / \(Int(preview.total.rounded())) TOTAL")
+                            .font(.system(size: 11, weight: .bold, design: .rounded)).monospacedDigit()
+                            .lineLimit(2)
+                            .frame(maxWidth: max(180, proxy.size.width - 150), alignment: .leading)
+                            .padding(8).background(.black.opacity(0.65), in: Capsule())
+                            .accessibilityIdentifier("trajectoryEstimate")
+                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))")
+                            .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
+                            .lineLimit(2)
+                            .frame(maxWidth: max(180, proxy.size.width - 150), alignment: .leading)
+                    }
+                }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(.leading, 14).padding(.top, 8)
+
+                HoleOverview(round: round)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .padding(.trailing, 10).padding(.top, 42)
 
                 ClubRail(round: round, focusedClub: round.canSwing ? round.club : nil) { menuItems }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
@@ -70,21 +105,25 @@ struct CourseScreen: View {
 
                 if usesCamera {
                     if stageExpanded {
-                        Color.black.opacity(0.55).ignoresSafeArea().transition(.opacity)
+                        Color.black.ignoresSafeArea().transition(.opacity)
                     }
                     CameraStage(
                         camera: camera,
-                        ballAddress: camera.ballAddress,
+                        ballAddress: camera.displayAddress,
                         handedness: player.handedness,
                         expanded: stageExpanded,
-                        gesturesEnabled: gesturesEnabled
+                        viewportSize: cameraStageSize(proxy.size),
+                        gesturesEnabled: gesturesEnabled,
+                        onResize: { guard camera.reviewSecondsRemaining == 0 else { return }; withAnimation { stageExpanded.toggle() } },
+                        onRecenter: { stopFeedback(); camera.resetAddress(); stageExpanded = true }
                     )
-                    .frame(width: stageExpanded ? expandedStageWidth(proxy.size) : (proxy.size.width > proxy.size.height ? 160 : 132))
+                    .frame(width: cameraStageSize(proxy.size).width, height: cameraStageSize(proxy.size).height)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: stageExpanded ? .center : .bottomLeading)
                     .padding(.leading, stageExpanded ? 0 : 12).padding(.bottom, stageExpanded ? 0 : 12)
+                    .accessibilityAction(named: "Resize camera") { if camera.reviewSecondsRemaining == 0 { stageExpanded.toggle() } }
                 }
 
-                if bannerVisible || (usesCamera && isMultiplayer && camera.phase == .findingPlayer && round.canSwing) {
+                if (bannerVisible || (usesCamera && isMultiplayer && camera.phase == .findingPlayer && round.canSwing)) && !(usesCamera && stageExpanded) {
                     TurnBanner(
                         name: player.name,
                         color: Palette.player(player.colorIndex),
@@ -109,6 +148,7 @@ struct CourseScreen: View {
         }
         .onReceive(tick) { date in
             guard appPhase == .active, !rescanPresented else { return }
+            camera.advancePositionReview()
             let wasFlying = round.phase == .flying
             let wasReplay = round.isReplay
             round.advance(at: date)
@@ -117,12 +157,25 @@ struct CourseScreen: View {
         .onNavGesture(camera) { handleGesture($0) }
         .onReceive(camera.$frame) { frame in
             guard usesCamera else { return }
-            scene.ingest(frame, swingAngle: camera.swingAngle, frameAspect: camera.tracker.frameAspect)
-            trackPresence(found: camera.phase != .findingPlayer)
+            scene.ingest(frame, swingAngle: camera.swingAngle, frameAspect: camera.tracker.frameAspect,
+                         virtualClub: camera.virtualClub, positionLocked: camera.isPositionLocked)
         }
-        .onReceive(camera.$readyProgress) { progress in
-            guard usesCamera, stageExpanded, progress >= 1 else { return }
-            withAnimation(.spring(duration: 0.55)) { stageExpanded = false }
+        .onChange(of: camera.reviewSecondsRemaining) { old, remaining in
+            guard usesCamera else { return }
+            if remaining > 0 {
+                if !stageExpanded { withAnimation { stageExpanded = true } }
+            }
+            else if old > 0 {
+                guard camera.isPositionLocked, !camera.isCheckingSwing else { return }
+                withAnimation(.spring(duration: 0.55)) { stageExpanded = false }
+                if camera.hasPlayableTracking { audio.ready() }
+            }
+        }
+        .onChange(of: camera.addressAimDegrees) { _, degrees in
+            if usesCamera { round.setStanceAim(degrees) }
+        }
+        .onChange(of: round.phase) { _, phase in
+            if phase == .ready { round.setStanceAim(usesCamera ? camera.addressAimDegrees : 0) }
         }
         .onAppear {
             scene.onBystanderHit = {
@@ -130,9 +183,15 @@ struct CourseScreen: View {
                 UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
             }
             round.start(course: flow.course, playerCount: players.count)
+            round.automaticProgression = true
             feedback.isEnabled = haptics
             audio.enabled = sound
             motion.setClub(round.club)
+            camera.setClub(round.club, type: round.shotType)
+            camera.requiresPositionReview = true
+            camera.requiresSwingCheck = false
+            camera.contactAssistance = true
+            camera.tracker.setTracking(mode: depthExperiment ? .depthPreview : .body2D, framesPerSecond: capture60 ? 60 : 30)
             motion.onEvent = { handleSwing($0) }
             camera.onEvent = { handleSwing($0) }
             beginTurn()
@@ -140,30 +199,49 @@ struct CourseScreen: View {
         }
         .onChange(of: haptics) { _, value in feedback.isEnabled = value }
         .onChange(of: sound) { _, value in audio.enabled = value }
-        .onChange(of: round.club) { _, club in motion.setClub(club) }
-        .onChange(of: swingInput) { _, _ in stopFeedback(); updateInputs() }
+        .onChange(of: round.club) { _, club in motion.setClub(club); camera.setClub(club, type: round.shotType) }
+        .onChange(of: round.shotType) { _, type in camera.setClub(round.club, type: type) }
+        .onChange(of: swingInput) { _, _ in stopFeedback(); stageExpanded = usesCamera; beginTurn(announce: false); updateInputs() }
         .onChange(of: gesturesEnabled) { _, _ in updateInputs() }
+        .onChange(of: depthExperiment) { _, _ in updateCameraExperiment() }
+        .onChange(of: capture60) { _, _ in updateCameraExperiment() }
         .onChange(of: rescanPresented) { _, presented in
             if presented { stopFeedback(); round.pause() } else { round.resume(); beginTurn(announce: false) }
             updateInputs()
         }
         .onChange(of: round.playerIndex) { _, _ in beginTurn() }
-        .onChange(of: round.holeIndex) { _, _ in beginTurn() }
+        .onChange(of: round.holeIndex) { _, _ in beginTurn(resetSetup: false) }
         .onChange(of: appPhase) { _, phase in
             if phase != .active { stopFeedback(); round.pause() } else { round.resume() }
             updateInputs()
         }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
             stopFeedback()
             bannerTask?.cancel()
             motion.stop()
             camera.onEvent = nil
+            camera.requiresPositionReview = false
             camera.ballAddress = nil
         }
         .preferredColorScheme(.dark)
     }
 
     // MARK: - Overlays
+
+    private func cameraStageSize(_ size: CGSize) -> CGSize {
+        if stageExpanded { return size }
+        let width: CGFloat = size.width > size.height ? 160 : 132
+        return CGSize(width: width, height: width / max(camera.tracker.frameAspect, 0.3))
+    }
+
+    private var resourceDiagnostics: String {
+        #if DEBUG
+        "scene=\(CourseScene.initializationCount);audio=\(RangeAudio.initializationCount);haptics=\(SwingFeedbackController.initializationCount)"
+        #else
+        ""
+        #endif
+    }
 
     private var holeChip: some View {
         HStack(spacing: 7) {
@@ -201,10 +279,8 @@ struct CourseScreen: View {
                         .frame(maxWidth: panelWidth)
                 }
             case .ready, .charging, .flying:
-                if !(usesCamera && stageExpanded) {
-                    inputPanel
-                        .frame(maxWidth: usesCamera ? 230 : min(width * 0.58, 440))
-                }
+                inputPanel
+                    .frame(maxWidth: usesCamera ? 230 : min(width * 0.68, 440))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -223,12 +299,12 @@ struct CourseScreen: View {
         } else {
             switch swingInput {
             case .touch:
-                SwingPad(power: round.power, charging: round.phase == .charging, onCharge: { value in
+                SwingPad(club: round.club, power: round.power, charging: round.phase == .charging, onCharge: { value in
                     guard demoTask == nil, round.canSwing else { return }
                     charge(value)
-                }, onRelease: {
+                }, onRelease: { direction in
                     guard demoTask == nil else { return }
-                    release()
+                    release(execution: SwingImpact(power: round.power, startLineDegrees: direction))
                 }, onCancel: {
                     guard demoTask == nil, round.phase == .charging else { return }
                     stopFeedback()
@@ -241,8 +317,16 @@ struct CourseScreen: View {
                     if camera.needsLineUp, let offset = camera.handsOffset {
                         LineUpIndicator(offset: offset)
                     }
-                    StatusPill(icon: camera.needsLineUp ? "scope" : "figure.golf", title: cameraCopy, detail: nil)
+                    StatusPill(icon: camera.needsLineUp ? "scope" : "figure.golf", title: cameraCopy, detail: nil, titleLineLimit: 3)
                         .accessibilityIdentifier("cameraPanel")
+                    if !camera.hasPlayableTracking {
+                        Button("Camera setup", systemImage: "viewfinder") { withAnimation { stageExpanded = true } }
+                            .font(.caption.bold())
+                            .accessibilityIdentifier("cameraSetup")
+                    }
+                    Button("Use touch", systemImage: "hand.draw") { swingInput = .touch }
+                        .font(.caption.bold())
+                        .accessibilityIdentifier("useTouch")
                 }
             }
         }
@@ -250,7 +334,14 @@ struct CourseScreen: View {
 
     @ViewBuilder
     private var menuItems: some View {
+        Picker("Swing input", selection: $swingInput) {
+            ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
+        }
         if usesCamera {
+            Button("Reset comfortable grip", systemImage: "figure.golf") { stopFeedback(); camera.resetAddress() }
+            Text("Contact assist on · strike location affects the shot")
+            Toggle("Experimental 3D avatar depth", isOn: $depthExperiment)
+            Toggle("Try 60 fps capture", isOn: $capture60)
             Button("Rescan \(player.name)", systemImage: "viewfinder") { rescanPresented = true }
         }
         Button("Restart hole", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restartHole() }
@@ -261,15 +352,17 @@ struct CourseScreen: View {
     }
 
     private var cameraCopy: String {
+        if camera.isCheckingSwing { return camera.swingCheck.title }
+        if camera.reviewSecondsRemaining > 0 { return "Ball locked · \(camera.reviewSecondsRemaining)" }
         switch camera.status {
         case .idle, .requestingPermission: return "Starting camera"
         case .denied: return "Camera access is off"
         case .unavailable(let reason): return reason
         case .running: break
         }
-        if camera.needsLineUp { return "Line your hands up with the ball" }
+        if !camera.hasPlayableTracking { return camera.readiness.title }
         return switch camera.phase {
-        case .findingPlayer: isMultiplayer ? "\(player.name), step into view" : "Step into view"
+        case .findingPlayer: camera.readiness.title
         case .address: "Ready. Take it back"
         case .backswing: round.power >= 1 ? "Full power" : "Backswing"
         case .downswing, .impact: "Through the ball"
@@ -289,18 +382,22 @@ struct CourseScreen: View {
 
     // MARK: - Turn flow
 
-    private func beginTurn(announce: Bool = true) {
+    private func beginTurn(announce: Bool = true, resetSetup: Bool = true) {
         let current = player
-        camera.handedness = current.handedness
-        camera.ballAddress = current.calibration.map { BallAddress(calibration: $0, handedness: current.handedness) }
-        camera.tracker.setCalibration(current.calibration)
-        scene.configurePlayer(
-            calibration: usesCamera ? current.calibration : nil,
-            handedness: current.handedness,
-            frameAspect: camera.tracker.frameAspect
-        )
+        // A new hole does not move the real phone or player. Keep the certified
+        // playing space; player/input changes and explicit recenter still reset it.
+        if resetSetup {
+            stageExpanded = usesCamera
+            camera.handedness = current.handedness
+            camera.resetAddress()
+            camera.tracker.setCalibration(current.calibration)
+            scene.configurePlayer(
+                calibration: usesCamera ? current.calibration : nil,
+                handedness: current.handedness,
+                frameAspect: camera.tracker.frameAspect
+            )
+        }
         guard announce else { return }
-        expandStage()
         bannerTask?.cancel()
         withAnimation(.easeOut(duration: 0.2)) { bannerVisible = true }
         bannerTask = Task { @MainActor in
@@ -330,49 +427,16 @@ struct CourseScreen: View {
             distanceToPin: round.distanceToPin,
             lie: round.lie,
             club: round.club,
-            aim: round.aim,
+            aim: round.combinedAim,
             handedness: player.handedness,
             shot: round.activeShot,
             isReplay: round.isReplay,
             flightStart: round.flightStart,
             pausedAt: round.pausedAt,
             swingAngle: usesCamera ? camera.swingAngle : round.power * 150,
-            bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex) }
+            bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex) },
+            preview: round.canSwing ? round.trajectoryPreview : nil
         )
-    }
-
-    private func expandedStageWidth(_ size: CGSize) -> CGFloat {
-        let aspect = max(camera.tracker.frameAspect, 0.3)
-        // Fit the camera frame (plus the prompt) inside about 80% of the screen.
-        return min(size.width * 0.86, (size.height * 0.72) * aspect)
-    }
-
-    private func expandStage() {
-        guard usesCamera else { return }
-        withAnimation(.spring(duration: 0.45)) { stageExpanded = true }
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-autoReady") {
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(5))
-                withAnimation(.spring(duration: 0.55)) { stageExpanded = false }
-            }
-        }
-        #endif
-    }
-
-    /// Reopens the big window when the active player has been out of view for two seconds.
-    private func trackPresence(found: Bool) {
-        guard round.canSwing, !stageExpanded else {
-            lostSince = nil
-            return
-        }
-        if found {
-            lostSince = nil
-        } else if let lostSince {
-            if Date().timeIntervalSince(lostSince) > 2 { expandStage() }
-        } else {
-            lostSince = Date()
-        }
     }
 
     private func continueAfterHole() {
@@ -396,14 +460,13 @@ struct CourseScreen: View {
         guard !rescanPresented else { return }
         switch round.phase {
         case .ready:
-            guard !(usesCamera && stageExpanded) else { return }
             let clubs = GolfClub.allCases
             let index = clubs.firstIndex(of: round.club) ?? 0
             switch gesture {
             case .up: round.club = clubs[(index + clubs.count - 1) % clubs.count]
             case .down: round.club = clubs[(index + 1) % clubs.count]
-            case .left: round.aim = max(-22, round.aim - 2)
-            case .right: round.aim = min(22, round.aim + 2)
+            case .left: round.adjustAim(-round.aimStep)
+            case .right: round.adjustAim(round.aimStep)
             case .select: break
             }
         case .charging: break
@@ -420,29 +483,33 @@ struct CourseScreen: View {
 
     private func updateInputs() {
         let live = appPhase == .active && !rescanPresented
+        UIApplication.shared.isIdleTimerDisabled = live && usesCamera
         if live, swingInput == .phone { motion.start() } else { motion.stop() }
         camera.gesturesEnabled = live && gesturesEnabled && usesCamera
         if live, usesCamera { camera.start() } else { camera.stop() }
+    }
+
+    private func updateCameraExperiment() {
+        stopFeedback()
+        camera.resetAddress()
+        camera.tracker.setTracking(mode: depthExperiment ? .depthPreview : .body2D, framesPerSecond: capture60 ? 60 : 30)
+        stageExpanded = true
     }
 
     // MARK: - Swinging
 
     private func handleSwing(_ event: SwingInputEvent) {
         guard demoTask == nil else { return }
-        // Practice swings while lining up in the big camera window never spend a stroke.
-        if usesCamera, stageExpanded, event != .cancel { return }
         switch event {
         case .load(let value):
-            // A new backswing after a landed shot tees up the next one without touching the screen.
-            if round.phase == .landed { round.nextShot() }
             guard round.canSwing else { return }
             charge(value)
         case .cancel:
             if round.phase == .charging { stopFeedback() }
-        case .impact(let power, let curve, let strike):
+        case .impact(let impact):
             guard round.canSwing else { return }
-            round.charge(power)
-            release(curve: curve, strike: strike)
+            round.charge(impact.power)
+            release(execution: impact)
         }
     }
 
@@ -453,10 +520,10 @@ struct CourseScreen: View {
         audio.tension(round.power)
     }
 
-    private func release(curve: Double = 0, strike: StrikeQuality = .center) {
+    private func release(execution: SwingImpact? = nil) {
         feedback.endBackswing()
         audio.stop()
-        if round.release(curve: curve, strike: strike) {
+        if round.release(execution: execution), execution?.strike != .miss {
             feedback.playImpact()
             audio.impact(club: round.club)
         }
@@ -471,7 +538,7 @@ struct CourseScreen: View {
                 charge(Double(i) * 0.075)
                 do { try await Task.sleep(for: .milliseconds(70)) } catch { return }
             }
-            release()
+            release(execution: SwingImpact(power: round.power, source: .demo))
         }
     }
 

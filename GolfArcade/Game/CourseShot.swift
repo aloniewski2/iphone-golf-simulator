@@ -1,5 +1,26 @@
 import Foundation
 
+enum ShotType: String, CaseIterable, Identifiable, Sendable {
+    case full, pitch, chip, putt
+    var id: Self { self }
+    var title: String { rawValue.capitalized }
+    var speedGain: Double {
+        switch self {
+        case .full, .putt: 1
+        case .pitch: 0.55
+        case .chip: 0.28
+        }
+    }
+}
+
+/// Complete, replayable intent + execution contract. Target selection never rewrites execution.
+struct ShotRequest: Equatable, Sendable {
+    let club: GolfClub
+    let targetHeading: Double
+    let type: ShotType
+    let execution: SwingImpact
+}
+
 extension GolfClub {
     /// Total distance of a straight full-power shot, from the flight model. Shown on the club buttons.
     var mockDistance: Double { Self.maxDistances[self] ?? 0 }
@@ -23,6 +44,7 @@ extension GolfClub {
 /// rotates and moves it onto the course so the physics stay untouched.
 struct RangeShot: Identifiable, Equatable, Sendable {
     let id: Int
+    let request: ShotRequest
     let club: GolfClub
     let power: Double
     let aim: Double
@@ -47,7 +69,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     var isHoled: Bool { holedAt != nil }
     var penaltyStrokes: Int { isHoled ? 0 : lie?.penaltyStrokes ?? 0 }
     /// Final resting spot on the course (before any drop).
-    var rest: CoursePoint { courseLocation(flight.landing) }
+    var rest: CoursePoint { isHoled ? nextPosition : courseLocation(flight.landing) }
     /// World position of the rest, as a flight point, for tests and older callers.
     var landing: FlightPoint { position(at: flight.duration) }
 
@@ -65,26 +87,37 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         lieFactor: Double = 1,
         hole: Hole? = nil
     ) {
+        self.init(id: id, request: ShotRequest(
+            club: club, targetHeading: heading, type: club == .putter ? .putt : .full,
+            execution: SwingImpact(power: power, startLineDegrees: aim, curveDegrees: curve, strike: strike)
+        ), origin: origin, lieFactor: lieFactor, hole: hole)
+    }
+
+    init(id: Int, request: ShotRequest, origin: CoursePoint, lieFactor: Double = 1, hole: Hole? = nil) {
+        self.request = request
         self.id = id
-        self.club = club
-        self.power = min(max(power.isFinite ? power : 0, 0), 1)
-        self.aim = min(max(aim.isFinite ? aim : 0, -22), 22)
-        self.strike = strike
+        club = request.club
+        let execution = request.execution
+        power = min(max(execution.power.isFinite ? execution.power : 0, 0), 1)
+        aim = execution.startLineDegrees.isFinite ? execution.startLineDegrees.truncatingRemainder(dividingBy: 360) : 0
+        strike = execution.strike
         self.origin = origin
-        self.heading = heading.isFinite ? heading : 0
-        let strikeCurve: Double = switch strike {
-        case .heel: 5.5
-        case .toe: -5.5
-        default: 0.0
-        }
-        self.curve = min(max((curve.isFinite ? curve : 0) + strikeCurve, -15), 15)
-        let effectivePower = self.power * strike.efficiency * min(max(lieFactor, 0), 1)
+        heading = request.targetHeading.isFinite ? request.targetHeading : 0
+        curve = club == .putter ? 0 : min(max(execution.curveDegrees.isFinite ? execution.curveDegrees : 0, -15), 15)
+        let effectivePower = power * request.type.speedGain * strike.efficiency * min(max(lieFactor.isFinite ? lieFactor : 0, 0), 1)
         flight = BallFlight.simulate(club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve))
 
         guard let hole else {
             lie = nil
             holedAt = nil
-            nextPosition = CoursePoint(x: origin.x, d: origin.d)
+            nextPosition = ShotGeometry(origin: origin, heading: self.heading).ground(flight.landing)
+            return
+        }
+        // A whiff is a stroke, but never a launch, penalty/drop, or automatic cup capture.
+        guard strike != .miss, effectivePower > 0 else {
+            lie = hole.lie(at: origin)
+            holedAt = nil
+            nextPosition = origin
             return
         }
         let geometry = ShotGeometry(origin: origin, heading: self.heading)
@@ -96,7 +129,10 @@ struct RangeShot: Identifiable, Equatable, Sendable {
 
     /// Position on the course (world yards) at `time` seconds into the flight.
     func position(at time: Double) -> FlightPoint {
-        ShotGeometry(origin: origin, heading: heading).world(flight.position(at: min(time, duration)))
+        if isHoled, time >= duration {
+            return FlightPoint(lateralYards: nextPosition.x, heightYards: 0, distanceYards: nextPosition.d)
+        }
+        return ShotGeometry(origin: origin, heading: heading).world(flight.position(at: min(time, duration)))
     }
 
     private func courseLocation(_ local: FlightPoint) -> CoursePoint {
@@ -111,13 +147,20 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         var time = 0.0
         var previous = geometry.ground(flight.position(at: 0))
         while time < flight.duration {
+            let previousTime = time
             time = min(time + step, flight.duration)
             let local = flight.position(at: time)
             let point = geometry.ground(local)
             let onGround = local.heightYards < 0.05
             if onGround {
-                let speed = point.distance(to: previous) / step
-                if point.distance(to: hole.pin) < 0.5, speed < 6 { return (.green, time, hole.pin) }
+                let dx = point.x - previous.x, dd = point.d - previous.d
+                let lengthSquared = dx * dx + dd * dd
+                let fraction = lengthSquared > 0 ? min(1, max(0, ((hole.pin.x - previous.x) * dx + (hole.pin.d - previous.d) * dd) / lengthSquared)) : 0
+                let closest = CoursePoint(x: previous.x + fraction * dx, d: previous.d + fraction * dd)
+                let speed = sqrt(lengthSquared) / max(time - previousTime, 0.0001)
+                if closest.distance(to: hole.pin) <= Hole.cupCaptureRadius, speed < 2 {
+                    return (.green, previousTime + fraction * (time - previousTime), hole.pin)
+                }
                 if hole.hazards.contains(where: { $0.kind == .water && $0.contains(point) }) {
                     return (.water, nil, drop(from: point, toward: geometry.origin, hole: hole))
                 }
@@ -153,9 +196,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     }
 
     /// Power that lands a straight shot at `distance`, found by bisection; nil if out of reach.
-    static func power(toReach distance: Double, with club: GolfClub) -> Double? {
+    static func power(toReach distance: Double, with club: GolfClub, type: ShotType = .full, lieFactor: Double = 1) -> Double? {
         func total(_ power: Double) -> Double {
-            BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0)).total
+            BallFlight.simulate(club.launch(power: power * (club == .putter ? 1 : type.speedGain * lieFactor), aimDegrees: 0, curveDegrees: 0)).total
         }
         guard distance >= total(0), distance <= total(1) else { return nil }
         var low = 0.0, high = 1.0
@@ -195,7 +238,7 @@ extension StrikeQuality {
         case .thin: 0.76
         case .fat: 0.55
         case .heel, .toe: 0.80
-        case .miss: 0.08
+        case .miss: 0
         }
     }
 }

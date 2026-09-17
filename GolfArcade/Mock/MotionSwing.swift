@@ -13,8 +13,20 @@ import simd
 enum SwingInputEvent: Equatable {
     case load(Double)
     case cancel
-    /// `curve` tilts the ball's spin axis, in degrees: a draw (negative) or fade read from the swing.
-    case impact(power: Double, curve: Double, strike: StrikeQuality)
+    case impact(SwingImpact)
+}
+
+enum ShotInputSource: String, Equatable, Sendable { case camera, phone, touch, demo }
+
+/// Observed execution is separate from the target chosen by the player. A camera start line is
+/// a signed 2D arcade estimate, not a measurement of a physical club face or ball launch.
+struct SwingImpact: Equatable, Sendable {
+    var power: Double
+    var startLineDegrees: Double = 0
+    var curveDegrees: Double = 0
+    var strike: StrikeQuality = .center
+    var confidence: Double = 1
+    var source: ShotInputSource = .touch
 }
 
 struct MotionSwingDetector {
@@ -45,6 +57,20 @@ struct MotionSwingDetector {
     private var peakAngle = 0.0
     private var peakSpeed = 0.0
     private var downswingStart = 0.0
+    private var swingStart = 0.0
+
+    mutating func configure(for club: GolfClub) {
+        self = MotionSwingDetector()
+        fullSpeed = club.motionFullSpeed
+        if club == .putter {
+            backswingStart = 0.035
+            fullBackswing = 0.6
+            downswingSpeed = 0.12
+            minimumSpeed = 0.10
+            impactAngle = 0.025
+            stillSpeed = 0.04
+        }
+    }
 
     mutating func ingest(time: Double, attitude: simd_quatd, rotationRate: simd_double3) -> Event? {
         let speed = simd_length(rotationRate)
@@ -55,6 +81,11 @@ struct MotionSwingDetector {
         }
         let isStill = stillSince.map { time - $0 >= stillDuration } ?? false
         let angle = Self.angle(from: reference, to: attitude)
+        if (phase == .backswing || phase == .downswing), time - swingStart > 3 {
+            phase = .settling
+            stillSince = nil
+            return .cancel
+        }
 
         switch phase {
         case .settling, .finish:
@@ -65,16 +96,17 @@ struct MotionSwingDetector {
 
         case .address:
             // Drift while resting re-centres address; a real backswing is far faster than `stillSpeed`.
-            if isStill { reference = attitude }
+            // Keep the settled reference fixed: recentering here absorbs intentional slow putts.
             guard angle > backswingStart else { return nil }
             phase = .backswing
+            swingStart = time
             peakAngle = angle
             peakSpeed = 0
             return .load(load(angle))
 
         case .backswing:
             peakAngle = max(peakAngle, angle)
-            if angle < peakAngle - 0.15, speed >= downswingSpeed {
+            if angle < peakAngle - min(0.15, backswingStart * 0.6), speed >= downswingSpeed {
                 phase = .downswing
                 peakSpeed = speed
                 downswingStart = time
@@ -93,7 +125,7 @@ struct MotionSwingDetector {
             phase = .finish
             stillSince = nil
             guard peakSpeed >= minimumSpeed else { return .cancel }
-            return .impact(power: min(1, peakSpeed / fullSpeed), curve: 0, strike: .center)
+            return .impact(SwingImpact(power: min(1, peakSpeed / fullSpeed), source: .phone))
         }
     }
 
@@ -128,6 +160,7 @@ final class PhoneSwingController: ObservableObject {
 
     private let manager = CMMotionManager()
     private var detector = MotionSwingDetector()
+    private var club: GolfClub = .driver
 
     var isAvailable: Bool { manager.isDeviceMotionAvailable }
     var isRunning: Bool { manager.isDeviceMotionActive }
@@ -152,13 +185,12 @@ final class PhoneSwingController: ObservableObject {
     }
 
     func setClub(_ club: GolfClub) {
-        detector.fullSpeed = club.motionFullSpeed
+        self.club = club
+        detector.configure(for: club)
     }
 
     private func resetDetector() {
-        let fullSpeed = detector.fullSpeed
-        detector = MotionSwingDetector()
-        detector.fullSpeed = fullSpeed
+        detector.configure(for: club)
     }
 
     private func ingest(_ motion: CMDeviceMotion) {

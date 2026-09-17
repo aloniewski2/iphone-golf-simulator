@@ -1,14 +1,54 @@
 import Combine
 import Foundation
 
+/// Navigation only: never changes the target, contact tolerance, cup or shot physics.
+struct HoleNavigation: Equatable {
+    let distance: Double
+    let relativeBearing: Double
+
+    init(ball: CoursePoint, pin: CoursePoint, aimHeading: Double) {
+        distance = ball.distance(to: pin)
+        var angle = (ball.heading(to: pin) - aimHeading).truncatingRemainder(dividingBy: 360)
+        if angle > 180 { angle -= 360 }
+        if angle < -180 { angle += 360 }
+        relativeBearing = distance < 0.01 ? 0 : angle
+    }
+
+    var prominence: Double { min(1, max(0, (distance - 15) / 185)) }
+    var directionLabel: String {
+        if abs(relativeBearing) < 2 { return "ON YOUR AIM LINE" }
+        return "\(Int(abs(relativeBearing).rounded()))° \(relativeBearing < 0 ? "LEFT" : "RIGHT") OF AIM"
+    }
+    static func beaconScale(cameraDistance: Double) -> Float {
+        Float(max(0.8, min(28, cameraDistance * 0.045)))
+    }
+}
+
 /// A round of stroke play: each player plays a hole out in turn, then everyone moves to the next.
 @MainActor
 final class CourseRound: ObservableObject {
     enum Phase { case ready, charging, flying, landed, holed, complete }
 
     @Published private(set) var phase: Phase = .ready
-    @Published var club: GolfClub = .driver
+    @Published var club: GolfClub = .driver {
+        didSet { if oldValue != club { shotType = club == .putter ? .putt : .full } }
+    }
     @Published var aim = 0.0
+    @Published var shotType: ShotType = .full
+    @Published var curve = 0.0
+    @Published var editingShot = false
+    @Published var automaticProgression = false
+    @Published private(set) var nextShotAt: Date?
+    @Published private(set) var stanceAim = 0.0
+    private var manualAimSelected = false
+    private var planningKey: String?
+    private var planningPower = 1.0
+    private var previewCache: RangeShot?
+    private var previewKey: ShotRequest?
+    private var previewOrigin: CoursePoint?
+    private var previewLie: CourseLie?
+    private var previewHole: Hole?
+    @Published private(set) var target: CoursePoint?
     @Published private(set) var power = 0.0
     @Published private(set) var activeShot: RangeShot?
     @Published private(set) var flightStart: Date?
@@ -41,10 +81,81 @@ final class CourseRound: ObservableObject {
     }
 
     var hole: Hole { course.holes[holeIndex] }
-    var canSwing: Bool { phase == .ready || phase == .charging }
+    var canSwing: Bool { !editingShot && pausedAt == nil && (phase == .ready || phase == .charging) }
     var distanceToPin: Double { ball.distance(to: hole.pin) }
-    /// Aim zero points at the pin.
-    var heading: Double { ball.heading(to: hole.pin) }
+    var intendedTarget: CoursePoint { target ?? hole.recommendedTarget(from: ball) }
+    var distanceToTarget: Double { ball.distance(to: intendedTarget) }
+    var targetLabel: String { intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }
+    var heading: Double { ball.heading(to: intendedTarget) }
+    var aimStep: Double { club == .putter ? 0.25 : 2 }
+    var combinedAim: Double { aim + stanceAim }
+    var holeNavigation: HoleNavigation {
+        HoleNavigation(ball: ball, pin: hole.pin, aimHeading: heading + combinedAim)
+    }
+
+    /// An explicit aim choice wins over the held-grip offset without resetting tracking.
+    func aimAtPin() {
+        selectTarget(hole.pin)
+    }
+
+    func setStanceAim(_ degrees: Double) {
+        guard phase == .ready, !editingShot, !manualAimSelected, degrees.isFinite else { return }
+        let value = (max(-12, min(12, degrees)) * 2).rounded() / 2
+        if stanceAim != value { stanceAim = value }
+    }
+
+    /// Cached ideal-center prediction using the same launch/lie/flight model as release.
+    /// It is an aim guide, not a promise about the player's future swing speed or strike.
+    var trajectoryPreview: RangeShot {
+        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
+        if key != planningKey {
+            planningKey = key
+            planningPower = RangeShot.power(toReach: distanceToTarget, with: club,
+                type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor) ?? 1
+        }
+        let predictedPower = phase == .charging ? max(0.05, (power * 20).rounded() / 20) : planningPower
+        let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
+            type: club == .putter ? .putt : shotType,
+            execution: SwingImpact(power: predictedPower, curveDegrees: curve))
+        if previewKey != request || previewOrigin != ball || previewLie != lie || previewHole != hole {
+            previewCache = RangeShot(id: 0, request: request, origin: ball,
+                lieFactor: club == .putter ? 1 : lie.powerFactor, hole: hole)
+            previewKey = request; previewOrigin = ball; previewLie = lie; previewHole = hole
+        }
+        return previewCache!
+    }
+
+    func selectTarget(_ point: CoursePoint) {
+        guard phase == .ready, point.x.isFinite, point.d.isFinite, ball.distance(to: point) > 0.01 else { return }
+        target = point
+        manualAimSelected = true
+        stanceAim = 0
+        aim = 0
+        club = suggestedClub()
+    }
+
+    func followFairway() {
+        guard phase == .ready else { return }
+        target = nil
+        manualAimSelected = false
+        stanceAim = 0
+        aim = 0
+        club = suggestedClub()
+    }
+
+    func adjustAim(_ degrees: Double) {
+        guard phase == .ready, degrees.isFinite else { return }
+        // Explicit buttons take over from motion aim for this shot, retaining its current line.
+        if !manualAimSelected { aim += stanceAim; stanceAim = 0; manualAimSelected = true }
+        aim = (aim + degrees).truncatingRemainder(dividingBy: 360)
+        if aim > 180 { aim -= 360 }
+        if aim < -180 { aim += 360 }
+    }
+
+    func setManualAim(_ degrees: Double) {
+        guard degrees.isFinite else { return }
+        adjustAim(degrees - combinedAim)
+    }
     var strokeNumber: Int { strokes + 1 }
     var isLastTurn: Bool { holeIndex == course.holes.count - 1 && playerIndex == playerCount - 1 }
 
@@ -66,26 +177,23 @@ final class CourseRound: ObservableObject {
 
     func charge(_ value: Double) {
         guard canSwing else { return }
-        power = min(max(value, 0), 1)
+        power = min(max(value.isFinite ? value : 0, 0), 1)
         phase = .charging
     }
 
     @discardableResult
-    func release(at date: Date = .now, curve: Double = 0, strike: StrikeQuality = .center) -> Bool {
-        guard phase == .charging, power >= 0.06 else {
+    func release(at date: Date = .now, curve: Double = 0, strike: StrikeQuality = .center, execution: SwingImpact? = nil) -> Bool {
+        guard canSwing, phase == .charging, power > 0 else {
             cancelCharge()
             return false
         }
-        let shotPower = club == .putter ? puttPower(for: power) : power
-        let shot = RangeShot(
-            id: strokes + 1,
-            club: club,
-            power: shotPower,
-            aim: aim,
-            curve: club == .putter ? 0 : curve,
-            strike: strike,
-            origin: ball,
-            heading: heading,
+        var impact = execution ?? SwingImpact(power: power, curveDegrees: curve, strike: strike)
+        guard impact.confidence.isFinite, impact.confidence >= 0.45 else { cancelCharge(); return false }
+        impact.power = power
+        impact.curveDegrees += self.curve
+        let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
+                                  type: club == .putter ? .putt : shotType, execution: impact)
+        let shot = RangeShot(id: strokes + 1, request: request, origin: ball,
             lieFactor: club == .putter ? 1 : lie.powerFactor,
             hole: hole
         )
@@ -108,7 +216,13 @@ final class CourseRound: ObservableObject {
     }
 
     func advance(at date: Date) {
-        guard phase == .flying, let shot = activeShot, elapsed(at: date) >= shot.duration else { return }
+        guard pausedAt == nil else { return }
+        if automaticProgression, let nextShotAt, date >= nextShotAt, !editingShot {
+            if phase == .landed { nextShot() }
+            else if phase == .holed { continueAfterHole() }
+            return
+        }
+        guard phase == .flying, let shot = activeShot, elapsed(at: date) + 0.000001 >= shot.duration else { return }
         if isReplay {
             phase = finishedHole ? .holed : .landed
             return
@@ -124,6 +238,7 @@ final class CourseRound: ObservableObject {
         } else {
             phase = .landed
         }
+        if automaticProgression { nextShotAt = date.addingTimeInterval(phase == .holed ? 5 : 3) }
     }
 
     /// Tee up from where the last ball finished.
@@ -132,15 +247,22 @@ final class CourseRound: ObservableObject {
         activeShot = nil
         flightStart = nil
         power = 0
-        aim = 0
         isReplay = false
+        nextShotAt = nil
+        aim = 0
+        stanceAim = 0
+        manualAimSelected = false
+        curve = 0
+        target = nil
         club = suggestedClub()
+        shotType = club == .putter ? .putt : .full
         phase = .ready
     }
 
     func replay(at date: Date = .now) {
         guard phase == .landed || phase == .holed, activeShot != nil else { return }
         isReplay = true
+        nextShotAt = nil // Replays never auto-progress or spend another stroke.
         flightStart = date
         phase = .flying
     }
@@ -155,6 +277,7 @@ final class CourseRound: ObservableObject {
     /// After a hole is finished: the next player tees off, or everyone moves on.
     func continueAfterHole() {
         guard phase == .holed else { return }
+        nextShotAt = nil
         if isLastTurn {
             activeShot = nil
             phase = .complete
@@ -184,10 +307,15 @@ final class CourseRound: ObservableObject {
         beginTurn()
     }
 
-    func pause(at date: Date = .now) { cancelCharge(); pausedAt = date }
+    func pause(at date: Date = .now) {
+        guard pausedAt == nil else { return }
+        cancelCharge()
+        pausedAt = date
+    }
 
     func resume(at date: Date = .now) {
         if let pausedAt, let flightStart { self.flightStart = flightStart.addingTimeInterval(date.timeIntervalSince(pausedAt)) }
+        if let pausedAt, let nextShotAt { self.nextShotAt = nextShotAt.addingTimeInterval(date.timeIntervalSince(pausedAt)) }
         pausedAt = nil
     }
 
@@ -195,9 +323,12 @@ final class CourseRound: ObservableObject {
     func suggestedClub() -> GolfClub {
         if lie == .green { return .putter }
         if lie == .bunker { return .wedge }
-        let distance = distanceToPin / max(lie.powerFactor, 0.1)
-        if distance <= GolfClub.wedge.mockDistance * 0.95 { return .wedge }
-        if distance <= GolfClub.iron.mockDistance * 0.95 { return .iron }
+        // Lie penalties scale launch SPEED, not yardage linearly. Compare actual
+        // simulated reach, otherwise rough/sand club recommendations overpromise.
+        for candidate in [GolfClub.wedge, .iron] {
+            let reach = BallFlight.simulate(candidate.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
+            if distanceToTarget <= reach * 0.98 { return candidate }
+        }
         return .driver
     }
 
@@ -214,22 +345,20 @@ final class CourseRound: ObservableObject {
         flightStart = nil
         power = 0
         aim = 0
+        stanceAim = 0
+        manualAimSelected = false
+        nextShotAt = nil
+        curve = 0
+        target = nil
         isReplay = false
         club = suggestedClub()
+        shotType = club == .putter ? .putt : .full
         phase = .ready
     }
 
     private func lieAfterDrop(_ shot: RangeShot) -> CourseLie {
         let dropLie = hole.lie(at: shot.nextPosition)
         return dropLie == .water || dropLie == .outOfBounds ? .rough : dropLie
-    }
-
-    /// Putting is about touch, not strength: a full stroke rolls about 1.6 times the distance to
-    /// the cup (at least 8 yards), so the meter has the same feel from any length.
-    private func puttPower(for value: Double) -> Double {
-        let target = value * max(8, distanceToPin * 1.6)
-        if let power = RangeShot.power(toReach: target, with: .putter) { return power }
-        return target < GolfClub.putter.mockDistance ? 0 : 1
     }
 
     private func saveBestIfNeeded() {
@@ -241,7 +370,8 @@ final class CourseRound: ObservableObject {
         }
     }
 
-    private static func bestKey(_ course: Course) -> String { "course.\(course.id).best" }
+    // New routings have different pars/distances; retain old records without comparing them.
+    private static func bestKey(_ course: Course) -> String { course.bestScoreKey }
 
     private static func loadBest(course: Course, defaults: UserDefaults) -> Int? {
         defaults.object(forKey: bestKey(course)) as? Int

@@ -1,8 +1,12 @@
 import CoreHaptics
+import Combine
 import UIKit
 
 @MainActor
-final class SwingFeedbackController {
+final class SwingFeedbackController: ObservableObject {
+    #if DEBUG
+    private(set) static var initializationCount = 0
+    #endif
     var isEnabled = true {
         didSet {
             if !isEnabled { endBackswing() }
@@ -14,7 +18,10 @@ final class SwingFeedbackController {
     private var backswingPlayer: CHHapticAdvancedPatternPlayer?
 
     init() {
-        prepareEngine()
+        #if DEBUG
+        Self.initializationCount += 1
+        #endif
+        // Defer hardware allocation until feedback is actually requested.
     }
 
     /// Builds a soft load from takeaway toward the top without aggressively shaking a mounted phone.

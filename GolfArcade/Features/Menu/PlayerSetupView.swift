@@ -26,7 +26,7 @@ struct PlayerSetupView: View {
                         .foregroundStyle(.mint)
                     Text(flow.mode == .solo ? "Who's playing?" : "Scan every player")
                         .font(.system(size: 30, weight: .black, design: .rounded))
-                    Text("The camera follows only the scanned player whose turn it is, so others can wait nearby.")
+                    Text("Scan and play with your chest facing the phone. Select your handedness so the golfer and swing direction match you.")
                         .font(.caption).foregroundStyle(.white.opacity(0.6))
                 }
 
@@ -35,6 +35,10 @@ struct PlayerSetupView: View {
                         playerRow(player, focused: isFocused(.player(index)))
                     }
                 }
+
+                Text("Same camera position for everyone. Right-handed: backswing to your right, through to your left. Left-handed: backswing to your left, through to your right. The in-game golfer mirrors for left-handed play.")
+                    .font(.callout).foregroundStyle(.white.opacity(0.8))
+                    .accessibilityIdentifier("cameraStanceInstructions")
 
                 if flow.canAddPlayer {
                     MenuRow(focused: isFocused(.add), action: flow.addPlayer) {

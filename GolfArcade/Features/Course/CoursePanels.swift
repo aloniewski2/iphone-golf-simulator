@@ -4,12 +4,14 @@ struct StatusPill: View {
     let icon: String
     let title: String
     let detail: String?
+    var titleLineLimit = 1
 
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: icon).font(.headline)
             VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.subheadline.bold()).lineLimit(1).minimumScaleFactor(0.7)
+                Text(title).font(.subheadline.bold()).lineLimit(titleLineLimit).minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
                 if let detail { Text(detail).font(.caption2).foregroundStyle(.white.opacity(0.68)).lineLimit(1) }
             }
             Spacer(minLength: 0)
@@ -22,14 +24,25 @@ struct StatusPill: View {
 }
 
 struct SwingPad: View {
+    let club: GolfClub
     let power: Double
     let charging: Bool
     let onCharge: (Double) -> Void
-    let onRelease: () -> Void
+    let onRelease: (Double) -> Void
     let onCancel: () -> Void
     let onDemo: () -> Void
+    @State private var direction = 0.0
+    @GestureState private var dragging = false
 
     var body: some View {
+        if club == .putter {
+            PuttingPad(onCharge: onCharge, onRelease: onRelease)
+        } else {
+            dragPad
+        }
+    }
+
+    private var dragPad: some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 18).fill(.black.opacity(0.62))
             GeometryReader { geometry in
@@ -39,24 +52,77 @@ struct SwingPad: View {
             }
             HStack(spacing: 12) {
                 Image(systemName: "arrow.down").font(.title2)
-                Text(charging ? "Release to swing" : "Pull down to swing").font(.headline)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(charging ? "Release to \(club == .putter ? "putt" : "swing")" : "Pull down gently").font(.headline)
+                    Text(club == .putter ? String(format: "%.1f ft · %+.1f°", club.mockDistance * power * power * 3, direction) : String(format: "Slide sideways to steer · %+.0f°", direction))
+                        .font(.caption2)
+                }
                 Spacer()
                 Text("\(Int(power * 100))%").font(.title2.bold()).monospacedDigit()
             }
             .padding(16)
         }
-        .frame(height: 70)
+        .frame(height: 100)
         .contentShape(Rectangle())
         .gesture(DragGesture(minimumDistance: 3)
-            .onChanged { onCharge(max(0, Double($0.translation.height)) / 100) }
-            .onEnded { _ in onRelease() })
+            .updating($dragging) { _, state, _ in state = true }
+            .onChanged {
+                direction = min(25, max(-25, Double($0.translation.width) / (club == .putter ? 12 : 4)))
+                onCharge(max(0, Double($0.translation.height)) / 80)
+            }
+            .onEnded { _ in onRelease(direction); direction = 0 })
+        .onChange(of: dragging) { _, active in
+            if !active {
+                Task { @MainActor in
+                    await Task.yield()
+                    if charging { onCancel() }
+                }
+            }
+        }
         // A drag interrupted by the system never reports `onEnded`; a tap resets it.
         .onTapGesture { onCancel() }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Swing pad. Pull down and release to swing.")
+        .accessibilityLabel(club == .putter ? "Putting pad. Pull down gently and release." : "Swing pad. Pull down and release to swing.")
         .accessibilityValue("\(Int(power * 100)) percent power")
         .accessibilityIdentifier("swingPad")
         .accessibilityAction(named: "Swing at 75 percent", onDemo)
+        .accessibilityAction(named: "Gentle stroke") { onCharge(0.1); onRelease(0) }
+    }
+}
+
+/// Fixed-gain precision putting: the selected strength is visible before committing a stroke.
+private struct PuttingPad: View {
+    let onCharge: (Double) -> Void
+    let onRelease: (Double) -> Void
+    @State private var power = 0.1
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("Putt strength").font(.subheadline.bold())
+                Spacer()
+                Text(String(format: "%.1f ft", GolfClub.putter.mockDistance * power * power * 3))
+                    .font(.subheadline.monospacedDigit())
+            }
+            Slider(value: $power, in: 0...1, step: 0.005) { Text("Putt strength") }
+                .tint(.mint)
+                .accessibilityIdentifier("puttPower")
+                .accessibilityValue(String(format: "%.1f feet", GolfClub.putter.mockDistance * power * power * 3))
+            Button {
+                onCharge(power)
+                onRelease(0)
+            } label: {
+                Text("Putt").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 8)
+            }
+            .buttonStyle(.borderedProminent).tint(.mint).foregroundStyle(Palette.ink)
+            .disabled(power == 0)
+            .accessibilityIdentifier("puttStroke")
+        }
+        .padding(14)
+        .background(.black.opacity(0.62), in: RoundedRectangle(cornerRadius: 18))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Putting pad")
+        .accessibilityIdentifier("swingPad")
     }
 }
 
@@ -158,6 +224,11 @@ struct ShotResultPanel: View {
                 }
             }
             PanelButtons(primary: "Next shot", primaryID: "nextShot", onReplay: onReplay, onPrimary: onNext)
+            if round.nextShotAt != nil {
+                Text("Next shot and club in 3 seconds · Replay pauses auto-advance")
+                    .font(.caption2).foregroundStyle(.mint)
+                    .accessibilityIdentifier("autoNextShot")
+            }
         }
     }
 

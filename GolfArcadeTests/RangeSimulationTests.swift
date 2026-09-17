@@ -2,6 +2,19 @@ import XCTest
 @testable import GolfArcade
 
 final class RangeSimulationTests: XCTestCase {
+    func testStandardBagReferenceDistancesAndMonotonicPower() {
+        for club in GolfClub.allCases {
+            let full = BallFlight.simulate(club.launch(power: 1, aimDegrees: 0, curveDegrees: 0))
+            XCTAssertEqual(club == .putter ? full.total : full.carry, club.referenceDistanceYards, accuracy: 0.1)
+            var previous = 0.0
+            for power in stride(from: 0.1, through: 1.0, by: 0.1) {
+                let flight = BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0))
+                XCTAssertGreaterThan(flight.total, previous)
+                previous = flight.total
+            }
+        }
+    }
+
     func testPowerAndClubChangeDistanceAndAimChangesLanding() {
         let soft = RangeShot(id: 1, club: .driver, power: 0.2, aim: -15)
         let hard = RangeShot(id: 2, club: .driver, power: 0.9, aim: 15)

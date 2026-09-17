@@ -17,6 +17,9 @@ struct PoseFrame: Equatable, Sendable {
     let points: [BodyJoint: PosePoint]
     /// Finger-level hand readings, when hand pose ran on this frame.
     var hands: [HandReading] = []
+    /// Experimental camera-axis depth relative to the hips, divided by estimated
+    /// body height. Visual evidence only; never used as room anchoring or contact.
+    var depth: BodyDepthEstimate?
 
     func point(_ joint: BodyJoint, minimumConfidence: Float = 0.25) -> CGPoint? {
         guard let point = points[joint], point.confidence >= minimumConfidence else { return nil }
@@ -125,6 +128,25 @@ struct PoseFrame: Equatable, Sendable {
     }
 }
 
+struct BodyDepthEstimate: Equatable, Sendable, Codable {
+    let timestamp: Double
+    let normalizedDepth: [String: Float]
+
+    func offset(for joint: BodyJoint, at time: Double) -> Float? {
+        guard time >= timestamp, time - timestamp <= 0.15,
+              let value = normalizedDepth[joint.rawValue], value.isFinite, abs(value) < 0.75 else { return nil }
+        return value
+    }
+}
+
+enum CameraPoseMode: String, CaseIterable, Identifiable, Codable {
+    case body2D, depthPreview
+    var id: Self { self }
+    var title: String { self == .body2D ? "Standard tracking" : "3D depth experiment" }
+}
+
+/// Legacy explicit conversion for old pose fixtures. Never apply this heuristic to live camera
+/// frames: the capture connection is the orientation authority, not the player's torso.
 /// Vision returns landmarks in the orientation supplied to its request handler. If a device's
 /// delivered buffer and the requested capture orientation disagree, an upright player can arrive
 /// 90 degrees off in Vision coordinates. Use the shoulder-to-hip axis as a device-independent

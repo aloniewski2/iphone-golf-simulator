@@ -5,7 +5,7 @@ import Foundation
 @MainActor
 final class GameFlow: ObservableObject {
     enum Mode: String, Sendable { case solo, multiplayer }
-    enum Screen: Equatable, Sendable { case menu, players, scan(UUID), courses, playing }
+    enum Screen: Equatable, Sendable { case menu, players, scan(UUID), courses, playing, practice }
 
     static let maxPlayers = 4
 

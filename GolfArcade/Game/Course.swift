@@ -75,13 +75,31 @@ struct Hole: Identifiable, Equatable, Sendable {
 
     /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
     static let roughWidth = 24.0
-    /// A ball resting this close to the pin drops. Arcade-generous: the real cup is 0.12 yd.
-    static let cupCaptureRadius = 0.9
+    /// Small, explicit arcade tolerance around the cup, in yards.
+    static let cupCaptureRadius = 0.12
 
     var id: Int { number }
     var tee: CoursePoint { centerline[0] }
     var pin: CoursePoint { centerline[centerline.count - 1] }
     var length: Double { zip(centerline, centerline.dropFirst()).reduce(0) { $0 + $1.0.distance(to: $1.1) } }
+
+    /// Follow the next landing station, not a straight shortcut through a dogleg.
+    /// Project onto the nearest route segment so a passed station never aims backwards.
+    func recommendedTarget(from ball: CoursePoint) -> CoursePoint {
+        guard centerline.count > 2, ball.distance(to: pin) > greenRadius + 20 else { return pin }
+        var closest = Double.infinity
+        var segment = 0
+        for i in 0..<(centerline.count - 1) {
+            let a = centerline[i], b = centerline[i + 1]
+            let dx = b.x - a.x, dd = b.d - a.d
+            let t = min(1, max(0, ((ball.x - a.x) * dx + (ball.d - a.d) * dd) / max(0.001, dx * dx + dd * dd)))
+            let distance = ball.distance(to: CoursePoint(x: a.x + t * dx, d: a.d + t * dd))
+            if distance <= closest { closest = distance; segment = i }
+        }
+        var station = segment + 1
+        while station < centerline.count - 1 && ball.distance(to: centerline[station]) < 35 { station += 1 }
+        return centerline[station]
+    }
 
     func distanceFromCenterline(_ point: CoursePoint) -> Double {
         zip(centerline, centerline.dropFirst()).map { a, b in
@@ -112,6 +130,7 @@ struct Course: Identifiable, Equatable, Sendable {
     let holes: [Hole]
 
     var par: Int { holes.reduce(0) { $0 + $1.par } }
+    var bestScoreKey: String { "course.\(id).routing2.best" }
     var length: Double { holes.reduce(0) { $0 + $1.length } }
     var bunkerCount: Int { holes.reduce(0) { $0 + $1.hazards.filter { $0.kind == .bunker }.count } }
     var hasWater: Bool { holes.contains { $0.hazards.contains { $0.kind == .water } } }
@@ -125,8 +144,8 @@ struct Course: Identifiable, Equatable, Sendable {
     }
 
     static let easy = Course(id: "meadow", name: "Meadow Run", difficulty: .easy, holes: [
-        Hole(number: 1, par: 3, centerline: [p(0, 0), p(0, 140)], fairwayWidth: 50, greenRadius: 20,
-             hazards: [bunker(0, 17, 132, 14, 18)]),
+        Hole(number: 1, par: 4, centerline: [p(0, 0), p(0, 185), p(38, 245), p(105, 330)], fairwayWidth: 50, greenRadius: 20,
+             hazards: [bunker(0, -22, 174, 16, 27), bunker(1, 60, 255, 18, 30), bunker(2, 86, 324, 14, 21)]),
         Hole(number: 2, par: 4, centerline: [p(0, 0), p(0, 170), p(-18, 280)], fairwayWidth: 46, greenRadius: 20,
              hazards: [bunker(0, 23, 172, 16, 22), bunker(1, -38, 272, 12, 16)]),
         Hole(number: 3, par: 3, centerline: [p(0, 0), p(8, 115)], fairwayWidth: 50, greenRadius: 20,
@@ -134,8 +153,8 @@ struct Course: Identifiable, Equatable, Sendable {
     ])
 
     static let medium = Course(id: "pine", name: "Pine Bend", difficulty: .medium, holes: [
-        Hole(number: 1, par: 4, centerline: [p(0, 0), p(0, 210), p(30, 320)], fairwayWidth: 36, greenRadius: 17,
-             hazards: [bunker(0, -17, 205, 16, 26), bunker(1, 21, 214, 14, 22), bunker(2, 46, 318, 12, 16)]),
+        Hole(number: 1, par: 4, centerline: [p(0, 0), p(0, 205), p(55, 285), p(110, 345)], fairwayWidth: 36, greenRadius: 17,
+             hazards: [bunker(0, -17, 194, 16, 26), bunker(1, 28, 234, 14, 22), bunker(2, 125, 339, 12, 19)]),
         Hole(number: 2, par: 3, centerline: [p(0, 0), p(-6, 160)], fairwayWidth: 32, greenRadius: 16,
              hazards: [bunker(0, -24, 154, 14, 20), bunker(1, 10, 172, 14, 14)]),
         Hole(number: 3, par: 4, centerline: [p(0, 0), p(0, 180), p(-35, 300)], fairwayWidth: 34, greenRadius: 17,
@@ -143,8 +162,8 @@ struct Course: Identifiable, Equatable, Sendable {
     ])
 
     static let hard = Course(id: "cliff", name: "Cliffwater", difficulty: .hard, holes: [
-        Hole(number: 1, par: 4, centerline: [p(0, 0), p(0, 225), p(25, 345)], fairwayWidth: 28, greenRadius: 14,
-             hazards: [water(0, 0, 115, 70, 30), bunker(1, -14, 236, 12, 26), bunker(2, 40, 338, 12, 16)]),
+        Hole(number: 1, par: 4, centerline: [p(0, 0), p(0, 225), p(-70, 300), p(-115, 380)], fairwayWidth: 28, greenRadius: 14,
+             hazards: [water(0, 35, 145, 45, 185), bunker(1, -15, 207, 12, 26), bunker(2, -100, 373, 12, 19)]),
         Hole(number: 2, par: 5, centerline: [p(0, 0), p(0, 240), p(-30, 390), p(-30, 470)], fairwayWidth: 26, greenRadius: 14,
              hazards: [bunker(0, 13, 245, 12, 24), water(1, -30, 415, 56, 22), bunker(2, -45, 468, 12, 16), bunker(3, -14, 480, 10, 12)]),
         Hole(number: 3, par: 3, centerline: [p(0, 0), p(0, 170)], fairwayWidth: 24, greenRadius: 13,

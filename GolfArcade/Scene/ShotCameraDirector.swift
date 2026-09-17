@@ -51,6 +51,7 @@ enum ShotCameraDirector {
     static func shot(_ inputs: Inputs) -> Shot {
         let stage = stage(inputs)
         let mirror: Float = inputs.handedness == .right ? 1 : -1
+        let scale = AvatarSize.courseScale
         switch stage {
         case .address:
             let origin = inputs.shot?.origin ?? inputs.ball
@@ -58,16 +59,16 @@ enum ShotCameraDirector {
             let aim = aimDirection(inputs.aim)
             return Shot(
                 stage: stage,
-                position: world(center + simd_float3(0, 6.5, 18), origin: origin, heading: inputs.heading),
-                lookAt: world(center + simd_float3(0, 1.0, 0) + aim * 30, origin: origin, heading: inputs.heading),
+                position: world((center + simd_float3(0, 10, 18)) * scale, origin: origin, heading: inputs.heading),
+                lookAt: world((center + simd_float3(0, 1.0, 0) + aim * 12) * scale, origin: origin, heading: inputs.heading),
                 fieldOfView: 50, damping: 4
             )
         case .green:
-            // The golfer's eye height (the avatar is arcade-sized), just behind the ball, reading the putt.
+            // Eye-height framing in the same yard scale as the golfer.
             let aim = aimDirection(inputs.aim)
             return Shot(
                 stage: stage,
-                position: world(simd_float3(-1.0 * mirror, 5.0, 8), origin: inputs.ball, heading: inputs.heading),
+                position: world(simd_float3(-1.0 * mirror, 5.0, 8) * scale, origin: inputs.ball, heading: inputs.heading),
                 lookAt: world(aim * Float(max(inputs.distanceToPin, 4)), origin: inputs.ball, heading: inputs.heading),
                 fieldOfView: 48, damping: 4
             )
@@ -82,8 +83,8 @@ enum ShotCameraDirector {
             let distance: Float = 16 - 3 * push
             return Shot(
                 stage: stage,
-                position: world(golfer + direction * distance + simd_float3(0, 4.5, 0), origin: shot.origin, heading: shot.heading),
-                lookAt: world(golfer + facing * 0.6 + simd_float3(0, 3.2, 0), origin: shot.origin, heading: shot.heading),
+                position: world((golfer + direction * distance + simd_float3(0, 4.5, 0)) * scale, origin: shot.origin, heading: shot.heading),
+                lookAt: world((golfer + facing * 0.6 + simd_float3(0, 3.2, 0)) * scale, origin: shot.origin, heading: shot.heading),
                 fieldOfView: 45, damping: 8
             )
         case .chase:
@@ -135,7 +136,7 @@ enum ShotCameraDirector {
     }
 
     static func scenePoint(_ point: FlightPoint) -> simd_float3 {
-        simd_float3(Float(point.lateralYards), Float(point.heightYards) + 0.6, -Float(point.distanceYards))
+        simd_float3(Float(point.lateralYards), Float(point.heightYards) + Float(AvatarSize.courseBallRadius), -Float(point.distanceYards))
     }
 
     private static func aimDirection(_ aim: Double) -> simd_float3 {

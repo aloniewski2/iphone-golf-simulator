@@ -5,6 +5,17 @@ import simd
 /// always agree. At address the club head rests on the ball; through the swing it follows the
 /// arms with a wrist hinge that cocks to 90° by 100° of arc.
 enum ClubGeometry {
+    /// The shaft determines lie, not aim. The head's striking face (-local z)
+    /// points down the course (-stance z), including a mirrored left-handed rig.
+    static func headOrientation(shaftUp: simd_float3) -> simd_quatf {
+        let up = safeNormalize(shaftUp, fallback: simd_float3(0, 1, 0))
+        var back = simd_float3(0, 0, 1) - up * simd_dot(simd_float3(0, 0, 1), up)
+        if simd_length(back) < 0.001 { back = simd_float3(1, 0, 0) }
+        back = simd_normalize(back)
+        let right = simd_normalize(simd_cross(up, back))
+        return simd_quatf(simd_float3x3(columns: (right, simd_cross(back, right), back)))
+    }
+
     /// Wrist hinge in radians for a swing arc in degrees (positive back, negative through).
     static func hinge(swingAngle: Double) -> Float {
         Float(min(1, abs(swingAngle) / 100) * .pi / 2)

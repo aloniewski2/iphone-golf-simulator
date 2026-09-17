@@ -2,7 +2,10 @@ import AVFoundation
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var camera = CameraSwingController()
+    // Own the controller without subscribing the entire navigation tree to every
+    // pose. Camera screens observe it locally; menus still share the same instance.
+    @StateObject private var cameraOwner = CameraControllerOwner()
+    private var camera: CameraSwingController { cameraOwner.controller }
     @StateObject private var flow: GameFlow
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
     @AppStorage("gestures.enabled") private var gesturesEnabled = true
@@ -48,6 +51,8 @@ struct ContentView: View {
                 CourseSelectView(flow: flow, camera: camera)
             case .playing:
                 CourseScreen(flow: flow, camera: camera)
+            case .practice:
+                PracticeRangeScreen(camera: camera, onExit: { flow.quitToMenu() })
             }
         }
         .foregroundStyle(Palette.cream)
@@ -64,7 +69,7 @@ struct ContentView: View {
     /// access has been granted, so the menu never triggers the permission prompt.
     private func updateMenuCamera() {
         switch flow.screen {
-        case .playing:
+        case .playing, .practice:
             return // the course screen manages the camera
         case .scan:
             // The scan drives the shared tracker itself.
@@ -81,6 +86,11 @@ struct ContentView: View {
             }
         }
     }
+}
+
+@MainActor
+private final class CameraControllerOwner: ObservableObject {
+    let controller = CameraSwingController()
 }
 
 #Preview {

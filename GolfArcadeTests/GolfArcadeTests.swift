@@ -270,6 +270,40 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertLessThan(score, 0.24)
     }
 
+    func testAcquiredPlayerSurvivesArmForeshorteningAndMissingLegs() throws {
+        let calibration = try XCTUnwrap(makeCalibration())
+        var selector = PlayerPoseSelector()
+        XCTAssertNotNil(selector.select(from: [calibrationFrame(timestamp: 0)], calibration: calibration, at: 0))
+        let swing = calibrationFrame(timestamp: 0.03, dropping: [.leftAnkle, .rightAnkle, .leftKnee, .rightKnee], armScale: 0.25)
+        XCTAssertEqual(selector.select(from: [swing], calibration: calibration, at: 0.03)?.frame, swing,
+                       "limb proportions must not re-certify an already acquired player every frame")
+    }
+
+    func testPlayerContinuityDoesNotJumpToADistantBystander() throws {
+        let calibration = try XCTUnwrap(makeCalibration())
+        var selector = PlayerPoseSelector()
+        let original = calibrationFrame(timestamp: 0)
+        XCTAssertNotNil(selector.select(from: [original], calibration: calibration, at: 0))
+        let bystander = transform(calibrationFrame(timestamp: 0.03)) { CGPoint(x: $0.x + 0.55, y: $0.y) }
+        XCTAssertNil(selector.select(from: [bystander], calibration: calibration, at: 0.03))
+        XCTAssertEqual(selector.select(from: [bystander, original], calibration: calibration, at: 0.06)?.frame, original)
+        XCTAssertNil(selector.select(from: [original, original], calibration: calibration, at: 0.09), "ambiguous overlap is not an identity match")
+    }
+
+    func testAcquiredPlayerRemainsSelectedWhenBackswingOccludesShoulders() throws {
+        let calibration = try XCTUnwrap(makeCalibration())
+        var selector = PlayerPoseSelector()
+        XCTAssertNotNil(selector.select(from: [calibrationFrame(timestamp: 0)], calibration: calibration, at: 0))
+        for i in 1...20 {
+            let time = Double(i) / 30
+            let turned = calibrationFrame(timestamp: time, dropping: [.leftShoulder, .rightShoulder], armScale: 0.5)
+            XCTAssertEqual(selector.select(from: [turned], calibration: calibration, at: time)?.frame, turned,
+                           "measured hips/root must preserve identity through shoulder occlusion")
+        }
+        let unseen = calibrationFrame(timestamp: 0.7, dropping: [.leftShoulder, .rightShoulder, .leftHip, .rightHip, .neck, .root])
+        XCTAssertNil(selector.select(from: [unseen], calibration: calibration, at: 0.7), "hands alone cannot identify the player")
+    }
+
     func testCalibrationStoreRoundTripsAndClears() throws {
         let suiteName = "PlayerCalibrationTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
