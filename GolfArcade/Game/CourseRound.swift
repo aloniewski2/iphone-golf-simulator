@@ -210,9 +210,22 @@ final class CourseRound: ObservableObject {
         phase = .ready
     }
 
+    /// Seconds of flight per real second. Play runs at 1; UI tests may pass `-flightTimeScale N`
+    /// (DEBUG only) so a hole is played out in a fraction of the time.
+    nonisolated static let flightTimeScale: Double = {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "-flightTimeScale"), arguments.indices.contains(index + 1),
+           let scale = Double(arguments[index + 1]), scale >= 1, scale <= 8 {
+            return scale
+        }
+        #endif
+        return 1
+    }()
+
     func elapsed(at date: Date) -> Double {
         guard let start = flightStart else { return 0 }
-        return max(0, (pausedAt ?? date).timeIntervalSince(start))
+        return max(0, (pausedAt ?? date).timeIntervalSince(start)) * Self.flightTimeScale
     }
 
     func advance(at date: Date) {
@@ -270,7 +283,7 @@ final class CourseRound: ObservableObject {
     /// Jumps a flight or replay to where the ball stops.
     func skipFlight(at date: Date = .now) {
         guard phase == .flying, let shot = activeShot else { return }
-        flightStart = (pausedAt ?? date).addingTimeInterval(-shot.duration)
+        flightStart = (pausedAt ?? date).addingTimeInterval(-shot.duration / Self.flightTimeScale)
         advance(at: date)
     }
 

@@ -30,7 +30,7 @@ struct SceneInputs {
 
     func elapsed(at date: Date) -> Double {
         guard let flightStart else { return 0 }
-        return max(0, (pausedAt ?? date).timeIntervalSince(flightStart))
+        return max(0, (pausedAt ?? date).timeIntervalSince(flightStart)) * CourseRound.flightTimeScale
     }
 }
 
