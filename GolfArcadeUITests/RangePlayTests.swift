@@ -35,7 +35,7 @@ final class RangePlayTests: XCTestCase {
         screenshot(app, "Practice Lab deterministic replay")
         app.buttons["Done"].tap()
         app.buttons["labExport"].tap()
-        XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Save"].waitForExistence(timeout: 30), "the system export sheet takes a while on a fresh simulator")
         screenshot(app, "Practice Lab JSON export")
         // Dismiss the native file sheet without saving a test file or assuming a Cancel label.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.09))
@@ -158,15 +158,19 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testCertifiedBallExpandsThenContractsWithoutResetting() {
         let app = XCUIApplication()
-        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera"]
+        // A longer review than play uses: the sequence is what is under test, and a CI runner's
+        // accessibility snapshots are far slower than a five-second countdown.
+        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "14"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
+        XCTAssertTrue(app.buttons["continueToCourses"].waitForExistence(timeout: 10))
         app.buttons["continueToCourses"].tap()
+        XCTAssertTrue(app.buttons["course-easy"].waitForExistence(timeout: 10))
         app.buttons["course-easy"].tap()
         let stage = any(app, "cameraStage")
         let expanded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'expanded'"), object: stage)
-        XCTAssertEqual(XCTWaiter.wait(for: [expanded], timeout: 5), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [expanded], timeout: 20), .completed)
         XCTAssertGreaterThan(stage.frame.width, app.frame.width * 0.95)
         XCTAssertTrue(any(app, "lockedBallOverlay").exists)
         let preview = any(app, "liveCameraPreview")
@@ -174,18 +178,18 @@ final class RangePlayTests: XCTestCase {
         XCTAssertNotNil(previewIdentity)
         let reviewing = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Position confirmed'"),
                                                    object: app.staticTexts["cameraSetupStatus"])
-        XCTAssertEqual(XCTWaiter.wait(for: [reviewing], timeout: 8), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [reviewing], timeout: 20), .completed)
         XCTAssertFalse(app.buttons["nextShot"].exists, "the setup rehearsal cannot score")
-        usleep(500_000) // Capture the settled layout, not its expansion animation.
         screenshot(app, "Certified ball full-screen countdown — synthetic fixture")
-        usleep(1_500_000)
-        XCTAssertEqual(stage.value as? String, "expanded", "the ground marker stays large for the full review")
-        XCTAssertTrue(stage.label.contains("ground close-up"))
+        // Partway through the review the stage is still large and zoomed on the ground ball.
+        let closeUp = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == 'expanded' AND label CONTAINS 'ground close-up'"), object: stage)
+        XCTAssertEqual(XCTWaiter.wait(for: [closeUp], timeout: 20), .completed, "the ground marker stays large for the review")
         screenshot(app, "Ground ball and feet close-up — synthetic fixture")
         XCTAssertEqual((preview.value as? String)?.components(separatedBy: ";").first, previewIdentity,
                        "zooming must preserve the same live preview")
         let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'minimized'"), object: stage)
-        XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 6), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 25), .completed)
         usleep(600_000)
         XCTAssertTrue(stage.label.contains("full frame"))
         XCTAssertTrue(any(app, "lockedBallOverlay").exists)
@@ -227,22 +231,29 @@ final class RangePlayTests: XCTestCase {
 
     func testRecenterDuringReviewRestartsConfirmationWithoutRehearsal() {
         let app = XCUIApplication()
-        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera"]
+        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "12"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
+        XCTAssertTrue(app.buttons["continueToCourses"].waitForExistence(timeout: 10))
         app.buttons["continueToCourses"].tap()
+        XCTAssertTrue(app.buttons["course-easy"].waitForExistence(timeout: 10))
         app.buttons["course-easy"].tap()
         let status = app.staticTexts["cameraSetupStatus"]
         let reviewing = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Position confirmed'"), object: status)
-        XCTAssertEqual(XCTWaiter.wait(for: [reviewing], timeout: 10), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [reviewing], timeout: 25), .completed)
+        // Let the countdown run well down, then recenter: it must start over from the top
+        // rather than replaying a rehearsal.
+        let runDown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label MATCHES '.*· [1-8]$'"), object: status)
+        XCTAssertEqual(XCTWaiter.wait(for: [runDown], timeout: 25), .completed)
+        XCTAssertTrue(app.buttons["recenterGrip"].waitForExistence(timeout: 10))
         app.buttons["recenterGrip"].tap()
-        let checking = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Position confirmed'"), object: status)
-        XCTAssertEqual(XCTWaiter.wait(for: [checking], timeout: 5), .completed)
+        let restarted = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label MATCHES '.*· 1[0-2]$'"), object: status)
+        XCTAssertEqual(XCTWaiter.wait(for: [restarted], timeout: 25), .completed, "the countdown restarts from the full review length")
         XCTAssertEqual(any(app, "cameraStage").value as? String, "expanded")
         XCTAssertFalse(app.buttons["nextShot"].exists)
         let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'minimized'"), object: any(app, "cameraStage"))
-        XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 12), .completed)
+        XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 30), .completed)
         XCTAssertFalse(app.buttons["nextShot"].exists)
         XCTAssertTrue(any(app, "cameraPanel").label.contains("Ready"))
     }

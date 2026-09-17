@@ -32,7 +32,18 @@ final class CameraSwingController: ObservableObject {
         didSet { detector.contactMode = contactAssistance ? .assisted : .geometric }
     }
     var isCheckingSwing: Bool { requiresSwingCheck && isPositionLocked && !swingCheck.isComplete }
-    static let positionReviewDuration = 5.0
+    /// Seconds the locked ball is reviewed before play. UI tests may stretch it with
+    /// `-positionReviewSeconds N`, since a slow test runner cannot keep up with a 5 s countdown.
+    static let positionReviewDuration: Double = {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "-positionReviewSeconds"), arguments.indices.contains(index + 1),
+           let seconds = Double(arguments[index + 1]), seconds >= 3, seconds <= 60 {
+            return seconds
+        }
+        #endif
+        return 5
+    }()
     var requiresPositionReview = false {
         didSet { detector.requiresVisibleFeetForSetup = requiresPositionReview }
     }
