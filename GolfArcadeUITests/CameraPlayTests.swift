@@ -53,7 +53,7 @@ final class CameraPlayTests: XCTestCase {
         let app = XCUIApplication()
         // A longer review than play uses: the sequence is what is under test, and a CI runner's
         // accessibility snapshots are far slower than a five-second countdown.
-        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "9", "-manualProgression"]
+        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "20", "-manualProgression"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -74,13 +74,13 @@ final class CameraPlayTests: XCTestCase {
         XCTAssertFalse(app.buttons["nextShot"].exists, "the setup rehearsal cannot score")
         screenshot(app, "Certified ball full-screen countdown — synthetic fixture")
         // Partway through the review the stage is still large and zoomed on the ground ball.
-        waitUntil(20, "the ground close-up during the review") {
+        waitUntil(30, "the ground close-up during the review") {
             stage.value as? String == "expanded" && stage.label.contains("ground close-up")
         }
         screenshot(app, "Ground ball and feet close-up — synthetic fixture")
         XCTAssertEqual((preview.value as? String)?.components(separatedBy: ";").first, previewIdentity,
                        "zooming must preserve the same live preview")
-        waitUntil(25, "the stage to minimize after the review") { stage.value as? String == "minimized" }
+        waitUntil(40, "the stage to minimize after the review") { stage.value as? String == "minimized" }
         usleep(600_000)
         XCTAssertTrue(stage.label.contains("full frame"))
         XCTAssertTrue(any(app, "lockedBallOverlay").exists)
@@ -122,7 +122,7 @@ final class CameraPlayTests: XCTestCase {
 
     func testRecenterDuringReviewRestartsConfirmationWithoutRehearsal() {
         let app = XCUIApplication()
-        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "9"]
+        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "20"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -138,14 +138,15 @@ final class CameraPlayTests: XCTestCase {
         waitUntil(25, "the review countdown") { countdown() != nil }
         // Let the countdown run well down, then recenter: it must start over from the top
         // rather than replaying a rehearsal.
-        waitUntil(25, "the countdown to run down") { (countdown() ?? 99) <= 5 }
+        // A 20 s review leaves room for a CI runner whose snapshots take several seconds each.
+        waitUntil(30, "the countdown to run down") { (countdown() ?? 99) <= 12 }
         XCTAssertTrue(app.buttons["recenterGrip"].waitForExistence(timeout: 10))
         app.buttons["recenterGrip"].tap()
-        waitUntil(25, "the countdown to restart from the top") { (countdown() ?? 0) >= 7 }
+        waitUntil(30, "the countdown to restart from the top") { (countdown() ?? 0) >= 15 }
         XCTAssertEqual(any(app, "cameraStage").value as? String, "expanded")
         XCTAssertFalse(app.buttons["nextShot"].exists)
         let stage = any(app, "cameraStage")
-        waitUntil(30, "the stage to minimize after the review") { stage.value as? String == "minimized" }
+        waitUntil(40, "the stage to minimize after the review") { stage.value as? String == "minimized" }
         XCTAssertFalse(app.buttons["nextShot"].exists)
         XCTAssertTrue(any(app, "cameraPanel").label.contains("Ready"))
     }
