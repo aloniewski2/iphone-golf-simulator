@@ -190,7 +190,8 @@ final class CourseTests: XCTestCase {
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "sculptedLandscape", recursively: true))
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "cartPath", recursively: true))
             for point in hole.centerline {
-                XCTAssertEqual(CourseArt.elevation(point, hole: hole), -0.72, accuracy: 0.001)
+                XCTAssertEqual(CourseArt.elevation(point, hole: hole), Float(hole.terrain.elevation(at: point)) - 0.72, accuracy: 0.001,
+                               "the landscape sits just under the playing surface, following its shape")
             }
             XCTAssertEqual(scene.hole, unchanged, "visual dressing cannot change lie or shot geometry")
             scene.load(hole)
@@ -262,13 +263,14 @@ final class CourseTests: XCTestCase {
     }
 
     func testPuttRollingSlowlyOverTheCupDrops() {
-        let hole = Course.easy.holes[0]
+        var hole = Course.easy.holes[0]
+        hole.terrain = .flat // capture mechanics, read on a level green
         let origin = CoursePoint(x: hole.pin.x, d: hole.pin.d - 6)
         let power = try! XCTUnwrap(RangeShot.power(toReach: 6.2, with: .putter))
         let putt = RangeShot(id: 1, club: .putter, power: power, aim: 0, origin: origin, heading: origin.heading(to: hole.pin), hole: hole)
         XCTAssertTrue(putt.isHoled)
-        XCTAssertLessThan(putt.duration, putt.flight.duration)
         let wide = RangeShot(id: 2, club: .putter, power: power, aim: 15, origin: origin, heading: origin.heading(to: hole.pin), hole: hole)
+        XCTAssertLessThan(putt.duration, wide.duration, "a holed putt ends when it drops, before it would have stopped")
         XCTAssertFalse(wide.isHoled)
         XCTAssertEqual(wide.lie, .green)
     }
@@ -408,7 +410,8 @@ final class CourseTests: XCTestCase {
     }
 
     func testHoledBallRenderedAndLogicalEndpointsAgree() throws {
-        let hole = Course.easy.holes[0]
+        var hole = Course.easy.holes[0]
+        hole.terrain = .flat
         let origin = CoursePoint(x: hole.pin.x, d: hole.pin.d - 8)
         let power = try XCTUnwrap(RangeShot.power(toReach: 8, with: .putter))
         let shot = RangeShot(id: 1, club: .putter, power: power, aim: 0, origin: origin, hole: hole)

@@ -60,18 +60,29 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     let holedAt: Double?
     /// Where the next stroke is played from, after any drop.
     let nextPosition: CoursePoint
+    /// The ball's path on the course, sampled at `BallFlight.sampleInterval`, once the ground's
+    /// shape has had its say on the roll. Nil when shot without a hole.
+    private let path: [FlightPoint]?
+    private let pathRoll: Double?
 
     var carry: Double { flight.carry }
-    var roll: Double { flight.roll }
+    /// Yards from where the ball first came down to where it stopped, as the crow flies.
+    var roll: Double { pathRoll ?? flight.roll }
     var apex: Double { flight.apex }
-    var total: Double { flight.total }
-    var duration: Double { holedAt ?? flight.duration }
+    /// Yards from the ball's start to where it stopped, as the crow flies.
+    var total: Double { path == nil ? flight.total : origin.distance(to: rest) }
+    var duration: Double { holedAt ?? pathDuration }
     var isHoled: Bool { holedAt != nil }
     var penaltyStrokes: Int { isHoled ? 0 : lie?.penaltyStrokes ?? 0 }
     /// Final resting spot on the course (before any drop).
-    var rest: CoursePoint { isHoled ? nextPosition : courseLocation(flight.landing) }
+    var rest: CoursePoint {
+        if isHoled { return nextPosition }
+        if let last = path?.last { return CoursePoint(x: last.lateralYards, d: last.distanceYards) }
+        return courseLocation(flight.landing)
+    }
     /// World position of the rest, as a flight point, for tests and older callers.
-    var landing: FlightPoint { position(at: flight.duration) }
+    var landing: FlightPoint { position(at: pathDuration) }
+    private var pathDuration: Double { path.map { Double($0.count - 1) * BallFlight.sampleInterval } ?? flight.duration }
 
     /// `curve` tilts the spin axis for a draw or fade, in degrees; positive bends right.
     /// `lieFactor` scales power for the lie the ball is played from.
@@ -111,6 +122,8 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             lie = nil
             holedAt = nil
             nextPosition = ShotGeometry(origin: origin, heading: self.heading).ground(flight.landing)
+            path = nil
+            pathRoll = nil
             return
         }
         // A whiff is a stroke, but never a launch, penalty/drop, or automatic cup capture.
@@ -118,13 +131,25 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             lie = hole.lie(at: origin)
             holedAt = nil
             nextPosition = origin
+            path = nil
+            pathRoll = nil
             return
         }
         let geometry = ShotGeometry(origin: origin, heading: self.heading)
-        let (lie, holedAt, next) = Self.resolve(flight: flight, geometry: geometry, hole: hole)
+        let grounded = Self.groundPath(flight: flight, geometry: geometry, hole: hole, putt: club == .putter)
+        path = grounded
+        let (lie, holedAt, next) = Self.resolve(path: grounded, origin: origin, hole: hole)
         self.lie = lie
         self.holedAt = holedAt
         nextPosition = next
+        // Roll runs from the first touchdown after flight (the start, for a putt) to the rest.
+        var touchdown = origin
+        for index in 1..<grounded.count where grounded[index - 1].heightYards > 0.03 && grounded[index].heightYards <= 0.03 {
+            touchdown = CoursePoint(x: grounded[index].lateralYards, d: grounded[index].distanceYards)
+            break
+        }
+        let stopped = holedAt != nil ? hole.pin : CoursePoint(x: grounded[grounded.count - 1].lateralYards, d: grounded[grounded.count - 1].distanceYards)
+        pathRoll = stopped.distance(to: touchdown)
     }
 
     /// Position on the course (world yards) at `time` seconds into the flight.
@@ -132,7 +157,88 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         if isHoled, time >= duration {
             return FlightPoint(lateralYards: nextPosition.x, heightYards: 0, distanceYards: nextPosition.d)
         }
-        return ShotGeometry(origin: origin, heading: heading).world(flight.position(at: min(time, duration)))
+        guard let path else {
+            return ShotGeometry(origin: origin, heading: heading).world(flight.position(at: min(time, duration)))
+        }
+        let clamped = min(max(time, 0), duration)
+        let index = clamped / BallFlight.sampleInterval
+        let lower = min(Int(index), path.count - 1)
+        guard lower + 1 < path.count else { return path[lower] }
+        let fraction = index - Double(lower)
+        let a = path[lower], b = path[lower + 1]
+        return FlightPoint(lateralYards: a.lateralYards + (b.lateralYards - a.lateralYards) * fraction,
+                           heightYards: a.heightYards + (b.heightYards - a.heightYards) * fraction,
+                           distanceYards: a.distanceYards + (b.distanceYards - a.distanceYards) * fraction)
+    }
+
+    /// Yards per second squared: gravity, and the flight model's rolling friction, in course units.
+    private static let gravityYards = 9.81 / 0.9144
+    /// The flight model's roll is a slow fairway. Real greens are far quicker, so a putt spends
+    /// long enough rolling for the ground to move it; rough and sand grab the ball.
+    static let fairwayDeceleration = 3.2 / 0.9144
+    static let greenDeceleration = 1.5
+    static func rollingDeceleration(on lie: CourseLie) -> Double {
+        switch lie {
+        case .green: greenDeceleration
+        case .rough, .outOfBounds: fairwayDeceleration * 1.6
+        case .bunker: fairwayDeceleration * 2.5
+        case .water: fairwayDeceleration * 4
+        case .tee, .fairway: fairwayDeceleration
+        }
+    }
+
+    /// Puts the flight on the course, then lets the ground steer the roll: the flight model's
+    /// bounces are kept as they are, but from the moment the ball is rolling it accelerates down
+    /// any slope it is on and is slowed by the grass it is on. Uphill comes up short, downhill
+    /// runs on, a side slope breaks the line; a ball on a steep enough face keeps going.
+    /// A putt's start speed is scaled for the green's pace so the club's calibrated distances
+    /// hold on level ground; the extra time on the way is where the break comes from.
+    static func groundPath(flight: BallFlight, geometry: ShotGeometry, hole: Hole, putt: Bool) -> [FlightPoint] {
+        let step = BallFlight.sampleInterval
+        let count = Int((flight.duration / step).rounded()) + 1
+        var path: [FlightPoint] = (0..<count).map { geometry.world(flight.position(at: Double($0) * step)) }
+        // Rolling starts after the last sample that was clearly off the ground.
+        var rollingFrom = 0
+        for (index, point) in path.enumerated() where point.heightYards > 0.03 { rollingFrom = index + 1 }
+        guard rollingFrom + 1 < path.count else { return path }
+        let start = path[rollingFrom]
+        let next = path[rollingFrom + 1]
+        var x = start.lateralYards, d = start.distanceYards
+        var vx = (next.lateralYards - x) / step, vd = (next.distanceYards - d) / step
+        if putt {
+            let pace = sqrt(rollingDeceleration(on: hole.lie(at: CoursePoint(x: x, d: d))) / fairwayDeceleration)
+            vx *= pace
+            vd *= pace
+        }
+        path.removeSubrange((rollingFrom + 1)...)
+        let terrain = hole.terrain
+        let substeps = 4
+        let dt = step / Double(substeps)
+        var elapsed = Double(rollingFrom) * step
+        while elapsed < BallFlight.maxDuration {
+            for _ in 0..<substeps {
+                let point = CoursePoint(x: x, d: d)
+                let slope = terrain.gradient(at: point)
+                let deceleration = rollingDeceleration(on: hole.lie(at: point))
+                let speed = hypot(vx, vd)
+                let downhill = hypot(slope.dx, slope.dd) * gravityYards
+                if speed < 0.02, downhill < deceleration * 0.9 { vx = 0; vd = 0; break }
+                var ax = -gravityYards * slope.dx, ad = -gravityYards * slope.dd
+                if speed > 0.0001 {
+                    let friction = min(deceleration, speed / dt)
+                    ax -= friction * vx / speed
+                    ad -= friction * vd / speed
+                }
+                vx += ax * dt
+                vd += ad * dt
+                x += vx * dt
+                d += vd * dt
+            }
+            elapsed += step
+            path.append(FlightPoint(lateralYards: x, heightYards: 0, distanceYards: d))
+            if vx == 0, vd == 0 { break }
+        }
+        return path
     }
 
     private func courseLocation(_ local: FlightPoint) -> CoursePoint {
@@ -140,17 +246,16 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         return CoursePoint(x: world.lateralYards, d: world.distanceYards)
     }
 
-    /// Walks the sampled flight: a slow ball crossing the cup drops; any ground contact in water is
+    /// Walks the sampled path: a slow ball crossing the cup drops; any ground contact in water is
     /// wet even if the ball would have skipped out; out of bounds replays from the same spot.
-    private static func resolve(flight: BallFlight, geometry: ShotGeometry, hole: Hole) -> (CourseLie, Double?, CoursePoint) {
+    private static func resolve(path: [FlightPoint], origin: CoursePoint, hole: Hole) -> (CourseLie, Double?, CoursePoint) {
         let step = BallFlight.sampleInterval
-        var time = 0.0
-        var previous = geometry.ground(flight.position(at: 0))
-        while time < flight.duration {
-            let previousTime = time
-            time = min(time + step, flight.duration)
-            let local = flight.position(at: time)
-            let point = geometry.ground(local)
+        var previous = CoursePoint(x: path[0].lateralYards, d: path[0].distanceYards)
+        for index in 1..<max(1, path.count) {
+            let previousTime = Double(index - 1) * step
+            let time = Double(index) * step
+            let local = path[index]
+            let point = CoursePoint(x: local.lateralYards, d: local.distanceYards)
             let onGround = local.heightYards < 0.05
             if onGround {
                 let dx = point.x - previous.x, dd = point.d - previous.d
@@ -162,17 +267,19 @@ struct RangeShot: Identifiable, Equatable, Sendable {
                     return (.green, previousTime + fraction * (time - previousTime), hole.pin)
                 }
                 if hole.hazards.contains(where: { $0.kind == .water && $0.contains(point) }) {
-                    return (.water, nil, drop(from: point, toward: geometry.origin, hole: hole))
+                    return (.water, nil, drop(from: point, toward: origin, hole: hole))
                 }
             }
             previous = point
         }
-        let rest = geometry.ground(flight.landing)
-        if rest.distance(to: hole.pin) <= Hole.cupCaptureRadius { return (.green, flight.duration, hole.pin) }
+        let last = path[path.count - 1]
+        let rest = CoursePoint(x: last.lateralYards, d: last.distanceYards)
+        let duration = Double(path.count - 1) * step
+        if rest.distance(to: hole.pin) <= Hole.cupCaptureRadius { return (.green, duration, hole.pin) }
         let lie = hole.lie(at: rest)
         switch lie {
-        case .water: return (.water, nil, drop(from: rest, toward: geometry.origin, hole: hole))
-        case .outOfBounds: return (.outOfBounds, nil, geometry.origin)
+        case .water: return (.water, nil, drop(from: rest, toward: origin, hole: hole))
+        case .outOfBounds: return (.outOfBounds, nil, origin)
         default: return (lie, nil, rest)
         }
     }

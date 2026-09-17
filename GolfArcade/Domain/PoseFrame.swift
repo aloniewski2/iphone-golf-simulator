@@ -20,6 +20,8 @@ struct PoseFrame: Equatable, Sendable {
     /// Experimental camera-axis depth relative to the hips, divided by estimated
     /// body height. Visual evidence only; never used as room anchoring or contact.
     var depth: BodyDepthEstimate?
+    /// Which way the body is turned, from the 3D body pose when it ran on this frame.
+    var orientation: BodyOrientation?
 
     func point(_ joint: BodyJoint, minimumConfidence: Float = 0.25) -> CGPoint? {
         guard let point = points[joint], point.confidence >= minimumConfidence else { return nil }
@@ -137,6 +139,23 @@ struct BodyDepthEstimate: Equatable, Sendable, Codable {
               let value = normalizedDepth[joint.rawValue], value.isFinite, abs(value) < 0.75 else { return nil }
         return value
     }
+}
+
+/// How far the player's body is turned about the vertical axis, measured by the 3D body pose.
+/// Camera-relative: a positive yaw means the player's right side is nearer the phone than
+/// their left. Aiming and the avatar's torso turn read this; contact never does.
+struct BodyOrientation: Equatable, Sendable, Codable {
+    let timestamp: Double
+    /// Degrees the shoulder line is turned from square to the camera.
+    let shoulderYaw: Double
+    /// Degrees the hip line is turned from square to the camera.
+    let hipYaw: Double
+
+    /// The stance line: shoulders and hips together, so one noisy pair cannot swing the aim.
+    var stanceYaw: Double { (shoulderYaw + hipYaw) / 2 }
+
+    /// The 3D pose runs on a subset of frames; a reading stays usable briefly after it.
+    func isFresh(at time: Double) -> Bool { time >= timestamp && time - timestamp <= 0.25 }
 }
 
 enum CameraPoseMode: String, CaseIterable, Identifiable, Codable {
