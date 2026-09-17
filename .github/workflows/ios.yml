@@ -29,7 +29,7 @@ jobs:
   build-and-test:
     name: build-and-test
     runs-on: macos-26
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26
@@ -52,6 +52,8 @@ jobs:
           device_type_id=$(xcrun simctl list devicetypes --json | jq -r '[.devicetypes[] | select(.name == "iPhone 16 Pro")][0].identifier // [.devicetypes[] | select(.name | startswith("iPhone"))][-1].identifier')
           simulator_id=$(xcrun simctl create "GolfArcade CI" "$device_type_id" "$runtime_id")
           echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+          # A fresh runtime takes minutes to boot; start now so it overlaps the build.
+          xcrun simctl boot "$simulator_id"
       - name: Build and test
         run: |
           xcodebuild test \
