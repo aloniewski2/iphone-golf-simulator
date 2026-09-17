@@ -230,10 +230,15 @@ struct SyntheticGolfer {
                                       confidence: confidence)
         }
         var frame = PoseFrame(timestamp: time, points: points)
-        if orientationEvery > 0, index % orientationEvery == 0,
-           let shoulders = Self.yaw(from: joints[.leftShoulder]!, to: joints[.rightShoulder]!),
-           let hips = Self.yaw(from: joints[.leftHip]!, to: joints[.rightHip]!) {
-            frame.orientation = BodyOrientation(timestamp: time, shoulderYaw: shoulders, hipYaw: hips)
+        // Like the tracker, the last 3D reading rides along on the frames between runs.
+        if orientationEvery > 0 {
+            let stamped = index - index % orientationEvery
+            let stampedTime = Double(stamped) / framesPerSecond
+            let body = world(at: stampedTime)
+            if let shoulders = Self.yaw(from: body[.leftShoulder]!, to: body[.rightShoulder]!),
+               let hips = Self.yaw(from: body[.leftHip]!, to: body[.rightHip]!) {
+                frame.orientation = BodyOrientation(timestamp: stampedTime, shoulderYaw: shoulders, hipYaw: hips)
+            }
         }
         return frame
     }
