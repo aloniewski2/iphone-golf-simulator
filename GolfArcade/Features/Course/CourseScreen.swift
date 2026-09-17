@@ -110,6 +110,10 @@ struct CourseScreen: View {
             }
             round.start(course: flow.course, playerCount: players.count)
             round.automaticProgression = true
+            #if DEBUG
+            // UI tests that press Next shot / Continue themselves must not be raced by the timer.
+            if ProcessInfo.processInfo.arguments.contains("-manualProgression") { round.automaticProgression = false }
+            #endif
             feedback.isEnabled = haptics
             audio.enabled = sound
             motion.setClub(round.club)
