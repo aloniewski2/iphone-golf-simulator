@@ -132,9 +132,10 @@ struct CameraStage: View {
     }
 
     private var showsGroundCloseUp: Bool {
-        // One second for orientation, three seconds on the ball/feet, then one second
-        // back at full framing before the existing transition to the swing view.
-        expanded && camera.isPositionLocked && (2...4).contains(camera.reviewSecondsRemaining)
+        // One second for orientation, the middle of the review on the ball/feet, then one
+        // second back at full framing before the existing transition to the swing view.
+        let last = max(2, Int(CameraSwingController.positionReviewDuration) - 1)
+        return expanded && camera.isPositionLocked && (2...last).contains(camera.reviewSecondsRemaining)
     }
 
     private var prompt: some View {
