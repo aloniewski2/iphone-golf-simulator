@@ -74,6 +74,8 @@
 		FC34FC26D4B7E98D9F1021FE /* CourseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */; };
 		FD91DE0FEBA483FFB03282C5 /* BallFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC1296D3AF134EB68A180B8 /* BallFlight.swift */; };
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
+		74A5043F4ED1C03B0CCC051A /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */; };
+		38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -164,6 +166,8 @@
 		FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
+		3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
+		DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -351,6 +355,7 @@
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
+				DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -382,6 +387,7 @@
 				C369CFADB269389A28A582CD /* BenchmarkRecords.swift */,
 				A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */,
 				9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */,
+				3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */,
 			);
 			path = Benchmark;
 			sourceTree = "<group>";
@@ -574,6 +580,7 @@
 				5B4C2F30022597E76E91247D /* SwingReaction.swift in Sources */,
 				52E4CA6A4CA91872BA574B5D /* SwingRecorder.swift in Sources */,
 				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
+				74A5043F4ED1C03B0CCC051A /* SyntheticGolfer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -598,6 +605,7 @@
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
+				38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

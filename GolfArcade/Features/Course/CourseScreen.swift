@@ -192,7 +192,7 @@ struct CourseScreen: View {
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
                             .padding(8).background(.black.opacity(0.65), in: Capsule())
                             .accessibilityIdentifier("trajectoryEstimate")
-                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))")
+                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))\(round.stanceAim != 0 ? " · STANCE" : "")")
                             .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
                             .lineLimit(2)
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)

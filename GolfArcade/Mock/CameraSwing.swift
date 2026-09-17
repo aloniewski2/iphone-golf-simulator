@@ -48,6 +48,7 @@ final class CameraSwingController: ObservableObject {
     }
     private var captureTime = 0.0
     private var lastImpactTime: Double?
+    private var orientationTracking = false
     var onEvent: ((SwingInputEvent) -> Void)?
     /// Optional lab observer. Normal play does not retain pose recordings.
     var onObservation: ((CameraSwingObservation) -> Void)?
@@ -159,8 +160,14 @@ final class CameraSwingController: ObservableObject {
         #if DEBUG && targetEnvironment(simulator)
         if isSyntheticPreview {
             // An explicitly labeled UI-test fixture, never available in a phone build.
-            let fixture = BenchmarkReplay.fixture().poses
-            let playsSwing = ProcessInfo.processInfo.arguments.contains("-fixtureSwingAfterLock")
+            // `-fixtureHumanSwing` swaps the hands-on-a-circle arc for a full-body golfer;
+            // `-fixtureStanceYaw <degrees>` turns that golfer's stance for aiming.
+            let arguments = ProcessInfo.processInfo.arguments
+            let humanSwing = arguments.contains("-fixtureHumanSwing")
+            let fixture = humanSwing
+                ? SyntheticGolfer(handedness: handedness, stanceYaw: UserDefaults.standard.double(forKey: "fixtureStanceYaw")).poses()
+                : BenchmarkReplay.fixture().poses
+            let playsSwing = arguments.contains("-fixtureSwingAfterLock")
             var swingStarted: Double?
             var checkStarted: Double?
             status = .running
@@ -187,12 +194,16 @@ final class CameraSwingController: ObservableObject {
                         x: point.location.x + (target.location.x - point.location.x) * fraction,
                         y: point.location.y + (target.location.y - point.location.y) * fraction), confidence: point.confidence)
                 }
-                if self.handedness == .left {
+                if self.handedness == .left, !humanSwing {
                     interpolated = interpolated.mapValues {
                         PosePoint(location: CGPoint(x: 1 - $0.location.x, y: $0.location.y), confidence: $0.confidence)
                     }
                 }
-                self.process(PoseDelivery(frame: PoseFrame(timestamp: now, points: interpolated), captureTime: now,
+                var frame = PoseFrame(timestamp: now, points: interpolated)
+                if let orientation = pose.frame?.orientation, offset - pose.time < 0.1 {
+                    frame.orientation = BodyOrientation(timestamp: now, shoulderYaw: orientation.shoulderYaw, hipYaw: orientation.hipYaw)
+                }
+                self.process(PoseDelivery(frame: frame, captureTime: now,
                     aspect: 0.75, bodyCount: 1, callbackStarted: now, inferenceFinished: now))
             }.store(in: &subscriptions)
             return
@@ -208,6 +219,8 @@ final class CameraSwingController: ObservableObject {
     func stop() {
         subscriptions.removeAll()
         tracker.stop()
+        orientationTracking = false
+        tracker.setBodyOrientationEnabled(false)
         detector.configure(for: club, type: shotType)
         detector.handedness = handedness
         detector.ballAddress = ballAddress
@@ -258,6 +271,13 @@ final class CameraSwingController: ObservableObject {
         case .backswing: .backswing
         case .downswing: .downswing
         case .finish: .finish
+        }
+        // Read the stance line only while the player sets up; the 3D pose is too costly to
+        // run through a swing, and the line is frozen by then anyway.
+        let wantsOrientation = isPositionLocked && (phase == .address || phase == .findingPlayer)
+        if wantsOrientation != orientationTracking {
+            orientationTracking = wantsOrientation
+            tracker.setBodyOrientationEnabled(wantsOrientation)
         }
         swingAngle = detector.swingAngle
         let aim = (detector.addressAimDegrees * 2).rounded() / 2

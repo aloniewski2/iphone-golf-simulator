@@ -100,7 +100,7 @@ final class CourseRound: ObservableObject {
 
     func setStanceAim(_ degrees: Double) {
         guard phase == .ready, !editingShot, !manualAimSelected, degrees.isFinite else { return }
-        let value = (max(-12, min(12, degrees)) * 2).rounded() / 2
+        let value = (max(-StanceAimSettler.range, min(StanceAimSettler.range, degrees)) * 2).rounded() / 2
         if stanceAim != value { stanceAim = value }
     }
 
