@@ -108,6 +108,10 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     private var configurationGeneration = 0 // calibrationLock
     private var droppedFrames = 0 // visionQueue only
     private var lastDepth: BodyDepthEstimate? // visionQueue only
+    private var lastOrientation: BodyOrientation? // visionQueue only
+    /// The 3D body pose is expensive; it runs on every third frame only while a caller
+    /// (stance aiming, the avatar's torso turn) wants it. Guarded by `calibrationLock`.
+    private var bodyOrientationEnabled = false
     private let handRequest: VNDetectHumanHandPoseRequest = {
         let request = VNDetectHumanHandPoseRequest()
         request.maximumHandCount = 2
@@ -138,6 +142,12 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     func setHandPoseEnabled(_ enabled: Bool) {
         calibrationLock.lock()
         handPoseEnabled = enabled
+        calibrationLock.unlock()
+    }
+
+    func setBodyOrientationEnabled(_ enabled: Bool) {
+        calibrationLock.lock()
+        bodyOrientationEnabled = enabled
         calibrationLock.unlock()
     }
 
@@ -388,6 +398,7 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             let handsEnabled = handPoseEnabled
             let mode = poseMode
             let runDepth = mode == .depthPreview && frameCounter.isMultiple(of: 3)
+            let runOrientation = bodyOrientationEnabled && frameCounter.isMultiple(of: 3)
             calibrationLock.unlock()
             try handler.perform(runHands ? [request, handRequest] : [request])
             if runHands {
@@ -400,18 +411,22 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             let frames = rawPoses
             var selection = selectPlayer(from: frames, at: timestamp)
             if mode == .body2D || frames.count != 1 || selection == nil { lastDepth = nil }
-            if runDepth, frames.count == 1, let selected = selection?.frame {
-                // Optional diagnostic work. A failed 3D request must not erase the 2D pose.
+            if frames.count != 1 || selection == nil { lastOrientation = nil }
+            if runDepth || runOrientation, frames.count == 1, let selected = selection?.frame {
+                // Optional work. A failed 3D request must not erase the 2D pose.
                 do {
                     try handler.perform([depthRequest])
-                    lastDepth = depthRequest.results?.first.flatMap { Self.depthEstimate($0, matching: selected, at: timestamp) }
-                } catch { lastDepth = nil }
+                    let observation = depthRequest.results?.first
+                    if runDepth { lastDepth = observation.flatMap { Self.depthEstimate($0, matching: selected, at: timestamp) } }
+                    if runOrientation { lastOrientation = observation.flatMap { Self.bodyOrientation($0, matching: selected, at: timestamp) } }
+                } catch { lastDepth = nil; lastOrientation = nil }
             }
             let selectedIndex = selection.flatMap { selection in frames.firstIndex(of: selection.frame) }
             if handsEnabled, timestamp - lastHands.time < 0.2, let selectedIndex {
                 selection?.frame.hands = Self.readings(lastHands.hands, for: rawPoses[selectedIndex])
             }
             if let depth = lastDepth, timestamp - depth.timestamp <= 0.15 { selection?.frame.depth = depth }
+            if let orientation = lastOrientation, orientation.isFresh(at: timestamp) { selection?.frame.orientation = orientation }
             let width = CGFloat(CVPixelBufferGetWidth(pixelBuffer))
             let height = CGFloat(CVPixelBufferGetHeight(pixelBuffer))
             let aspect = Self.deliveredAspect(width: width, height: height)
@@ -456,23 +471,60 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
         droppedFrames += 1
     }
 
-    private static func depthEstimate(_ observation: VNHumanBodyPose3DObservation, matching frame: PoseFrame,
-                                      at time: Double) -> BodyDepthEstimate? {
-        let keys: [(BodyJoint, VNHumanBodyPose3DObservation.JointName)] = [
-            (.root, .root), (.neck, .centerShoulder), (.nose, .centerHead),
-            (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
-            (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
-            (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
-            (.leftHip, .leftHip), (.rightHip, .rightHip), (.leftKnee, .leftKnee),
-            (.rightKnee, .rightKnee), (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)
-        ]
-        // Vision 3D selects the most prominent person. Require correspondence with
-        // the selected 2D torso rather than attaching another person's depth.
-        for (body, key) in keys where [.leftShoulder, .rightShoulder, .leftHip, .rightHip].contains(body) {
+    private static let joints3D: [(BodyJoint, VNHumanBodyPose3DObservation.JointName)] = [
+        (.root, .root), (.neck, .centerShoulder), (.nose, .centerHead),
+        (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
+        (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
+        (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
+        (.leftHip, .leftHip), (.rightHip, .rightHip), (.leftKnee, .leftKnee),
+        (.rightKnee, .rightKnee), (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)
+    ]
+
+    /// Vision 3D selects the most prominent person. Require correspondence with the selected
+    /// 2D torso rather than attaching another person's body to the player.
+    private static func matchesPlayer(_ observation: VNHumanBodyPose3DObservation, frame: PoseFrame) -> Bool {
+        for (body, key) in joints3D where [.leftShoulder, .rightShoulder, .leftHip, .rightHip].contains(body) {
             guard let observed = frame.point(body, minimumConfidence: 0.45),
                   let projected = try? observation.pointInImage(key),
-                  hypot(observed.x - projected.location.x, observed.y - projected.location.y) < 0.08 else { return nil }
+                  hypot(observed.x - projected.location.x, observed.y - projected.location.y) < 0.08 else { return false }
         }
+        return true
+    }
+
+    /// Shoulder and hip lines in camera space. Vision's camera looks down its -z axis, so the
+    /// joint nearer the phone has the larger z; x follows the (mirrored) image, so image right
+    /// is the player's right.
+    private static func bodyOrientation(_ observation: VNHumanBodyPose3DObservation, matching frame: PoseFrame,
+                                        at time: Double) -> BodyOrientation? {
+        guard matchesPlayer(observation, frame: frame) else { return nil }
+        let cameraFromModel = simd_inverse(observation.cameraOriginMatrix)
+        func camera(_ key: VNHumanBodyPose3DObservation.JointName) -> simd_float3? {
+            guard let point = try? observation.recognizedPoint(key) else { return nil }
+            let position = cameraFromModel * point.position.columns.3
+            return simd_float3(position.x, position.y, position.z)
+        }
+        guard let leftShoulder = camera(.leftShoulder), let rightShoulder = camera(.rightShoulder),
+              let leftHip = camera(.leftHip), let rightHip = camera(.rightHip) else { return nil }
+        let shoulders = Self.lineYaw(from: leftShoulder, to: rightShoulder)
+        let hips = Self.lineYaw(from: leftHip, to: rightHip)
+        guard let shoulders, let hips else { return nil }
+        return BodyOrientation(timestamp: time, shoulderYaw: shoulders, hipYaw: hips)
+    }
+
+    /// Degrees a left-to-right body line is turned from the image plane; nil for a line seen
+    /// end-on or folded over, which no upright golfer produces.
+    static func lineYaw(from left: simd_float3, to right: simd_float3) -> Double? {
+        let across = right.x - left.x
+        let nearer = right.z - left.z
+        guard across.isFinite, nearer.isFinite, across > 0.05 else { return nil }
+        let degrees = Double(atan2(nearer, across)) * 180 / .pi
+        return abs(degrees) < 75 ? degrees : nil
+    }
+
+    private static func depthEstimate(_ observation: VNHumanBodyPose3DObservation, matching frame: PoseFrame,
+                                      at time: Double) -> BodyDepthEstimate? {
+        let keys = joints3D
+        guard matchesPlayer(observation, frame: frame) else { return nil }
         let cameraFromModel = simd_inverse(observation.cameraOriginMatrix)
         let rootZ = (cameraFromModel * simd_float4(0, 0, 0, 1)).z
         let height = observation.bodyHeight

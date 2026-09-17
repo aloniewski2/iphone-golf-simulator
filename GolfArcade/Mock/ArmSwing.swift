@@ -67,6 +67,8 @@ struct ArmSwingDetector {
         var confidence: Double = 1
         var floorY: CGFloat?
         var hasComfortableGrip = true
+        /// Stance line from the 3D body pose, when it ran on this frame. See `BodyOrientation`.
+        var bodyYaw: Double?
 
         init?(frame: PoseFrame, frameAspect: CGFloat = 1, certifiedSpace: SwingSpace? = nil) {
             let left = frame.point(.leftShoulder), right = frame.point(.rightShoulder)
@@ -112,6 +114,9 @@ struct ArmSwingDetector {
             // This is a front-camera estimate; the user can adjust it explicitly.
             if ankles.count == 2, let ankleY = ankles.min() {
                 floorY = max(0.025, ankleY - (frame.bodyBounds?.height ?? 0.7) * 0.065)
+            }
+            if let orientation = frame.orientation, orientation.isFresh(at: frame.timestamp) {
+                bodyYaw = orientation.stanceYaw
             }
         }
 
@@ -181,6 +186,7 @@ struct ArmSwingDetector {
     private var outwardTravel = 0.0
     private var outwardSign = 0.0
     private var hadTrackingGap = false
+    private var stanceAim = StanceAimSettler()
 
     mutating func configure(for club: GolfClub, type: ShotType = .full) {
         let savedCalibration = calibration
@@ -353,9 +359,16 @@ struct ArmSwingDetector {
         case .address:
             readiness = .ready
             readyProgress = 1
-            if isStill, contactMode == .assisted, let handsOffset, abs(angle) < backswingStart {
-                // Deliberate held grip translation is an explicit arcade aiming control,
-                // not a measured club-face angle. Freeze it throughout the swing.
+            if abs(angle) < backswingStart, let yaw = sample.bodyYaw {
+                // Turning the whole body sets the line, as on a real course. The line locks
+                // once the turn is held steady, and stays put for the rest of the swing.
+                stanceAim.ingest(yaw, at: time)
+                if let settled = stanceAim.settled {
+                    addressAimDegrees = StanceAimSettler.aimDegrees(bodyYaw: settled, handedness: handedness)
+                }
+            } else if isStill, contactMode == .assisted, !stanceAim.hasReading, let handsOffset, abs(angle) < backswingStart {
+                // Without a body reading, deliberate held grip translation is an explicit
+                // arcade aiming control, not a measured club-face angle. Frozen through the swing.
                 let x = Double(handsOffset.dx)
                 addressAimDegrees = max(-12, min(12, (abs(x) < 0.08 ? 0 : x * 18)))
             }
@@ -520,6 +533,7 @@ struct ArmSwingDetector {
         outwardFrames = 0
         outwardTravel = 0
         acquisitionSpace = nil
+        stanceAim.reset()
     }
 
     static func signedDegrees(between a: CGVector, and b: CGVector) -> Double {
@@ -532,4 +546,49 @@ struct ArmSwingDetector {
     }
 
     static func degrees(between a: CGVector, and b: CGVector) -> Double { abs(signedDegrees(between: a, and: b)) }
+}
+
+/// Locks the stance line once the player holds a body turn steady for a moment, so the aim
+/// cannot drift while they settle or during the takeaway.
+struct StanceAimSettler {
+    /// How long the turn must hold still.
+    var window = 0.5
+    /// Spread of readings across the window that still counts as holding still.
+    var tolerance = 4.0
+    /// Body turns smaller than this are square: aim straight, no jitter from a slightly open stance.
+    static let deadZone = 2.5
+    /// Largest turn honoured; turning further just aims here.
+    static let range = 30.0
+
+    private var readings: [(time: Double, yaw: Double)] = []
+    private(set) var settled: Double?
+    private(set) var hasReading = false
+
+    mutating func ingest(_ yaw: Double, at time: Double) {
+        guard yaw.isFinite else { return }
+        hasReading = true
+        readings.append((time, yaw))
+        readings.removeAll { time - $0.time > window }
+        let yaws = readings.map { $0.yaw }
+        let mean = yaws.reduce(0, +) / Double(yaws.count)
+        // A window that has just started to move (the takeaway) must not nudge the line.
+        guard readings.count >= 3, let first = readings.first, time - first.time >= window * 0.8,
+              let low = yaws.min(), let high = yaws.max(), high - low <= tolerance,
+              abs(yaw - mean) <= tolerance / 2 else { return }
+        settled = mean
+    }
+
+    mutating func reset() {
+        readings.removeAll()
+        settled = nil
+        hasReading = false
+    }
+
+    /// A body turned toward the target (open) aims left for a right-hander; the mirror for a
+    /// left-hander. `bodyYaw` is camera-relative: positive when the right side is nearer the phone.
+    static func aimDegrees(bodyYaw: Double, handedness: Handedness) -> Double {
+        guard bodyYaw.isFinite, abs(bodyYaw) >= deadZone else { return 0 }
+        let aim = -bodyYaw * (handedness == .right ? 1 : -1)
+        return max(-range, min(range, aim))
+    }
 }
