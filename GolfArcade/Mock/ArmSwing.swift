@@ -449,7 +449,7 @@ struct ArmSwingDetector {
                 }
             }
             return .impact(SwingImpact(power: power(arc: peakArc, downswingSpeed: peakSpeed),
-                startLineDegrees: contact.startLine, strike: strike, confidence: contact.confidence, source: .camera))
+                startLineDegrees: isPutt ? 0 : contact.startLine, strike: strike, confidence: contact.confidence, source: .camera))
         }
     }
 
