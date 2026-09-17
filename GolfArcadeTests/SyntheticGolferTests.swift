@@ -125,6 +125,55 @@ final class SyntheticGolferTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(settler.settled), 11.67, accuracy: 0.1)
     }
 
+    func testAvatarTurnsItsShouldersAndHipsWithTheMockedHuman() throws {
+        for handedness in [Handedness.right, .left] {
+            let golfer = SyntheticGolfer(handedness: handedness)
+            var detector = ArmSwingDetector()
+            detector.handedness = handedness
+            detector.configure(for: .driver)
+            var retargeter = PoseRetargeter(calibration: .uiTestingFixture, handedness: handedness, frameAspect: golfer.aspect)
+            var filter = CameraAvatarPoseFilter()
+            var shoulders: [(time: Double, truth: Double, avatar: Double)] = []
+            var hips: [(time: Double, truth: Double, avatar: Double)] = []
+            let side = handedness == .right ? 1.0 : -1.0
+            for pose in golfer.poses() {
+                let frame = pose.frame!
+                let sample = ArmSwingDetector.Sample(frame: frame, frameAspect: golfer.aspect, certifiedSpace: detector.certifiedSpace)
+                _ = detector.ingest(sample, at: pose.time)
+                let club = detector.virtualClub ?? detector.setupClub
+                let measured = retargeter.updateCamera(frame, club: club, positionLocked: detector.isPositionLocked,
+                                                       swingAngle: detector.swingAngle, at: pose.time)
+                let avatar = filter.update(measured, frame: frame, at: pose.time)
+                let truth = golfer.world(at: pose.time)
+                func yaw(_ left: simd_float3, _ right: simd_float3) -> Double {
+                    Double(atan2(right.x - left.x, right.z - left.z)) * 180 / .pi
+                }
+                // The avatar's frame is mirrored for a left-hander: the golfer's right sits on -z,
+                // so the turn is the angle of the line from the -z end to the +z end.
+                func avatarYaw(_ left: BodyJoint, _ right: BodyJoint) -> Double {
+                    handedness == .right ? yaw(avatar[left], avatar[right]) : yaw(avatar[right], avatar[left])
+                }
+                shoulders.append((pose.time, yaw(truth[.leftShoulder]!, truth[.rightShoulder]!) * side,
+                                  avatarYaw(.leftShoulder, .rightShoulder)))
+                hips.append((pose.time, yaw(truth[.leftHip]!, truth[.rightHip]!) * side, avatarYaw(.leftHip, .rightHip)))
+            }
+            func at(_ samples: [(time: Double, truth: Double, avatar: Double)], _ time: Double) -> (truth: Double, avatar: Double) {
+                let sample = samples.min { abs($0.time - time) < abs($1.time - time) }!
+                return (sample.truth, sample.avatar)
+            }
+            let hold = golfer.addressHold
+            let address = at(shoulders, hold - 0.1), top = at(shoulders, hold + 0.9), finish = at(shoulders, hold + 2.2)
+            XCTAssertEqual(address.avatar, address.truth, accuracy: 6, "\(handedness) address")
+            XCTAssertGreaterThan(abs(top.truth), 70, "the mock turns fully at the top")
+            XCTAssertEqual(top.avatar, top.truth, accuracy: 18, "\(handedness) top of the backswing")
+            XCTAssertEqual(finish.avatar, finish.truth, accuracy: 22, "\(handedness) finish")
+            XCTAssertNotEqual((top.avatar > 0), (finish.avatar > 0), "back and through turn opposite ways")
+            let hipTop = at(hips, hold + 0.9), hipFinish = at(hips, hold + 2.2)
+            XCTAssertEqual(hipTop.avatar, hipTop.truth, accuracy: 18, "\(handedness) hips at the top")
+            XCTAssertEqual(hipFinish.avatar, hipFinish.truth, accuracy: 25, "\(handedness) hips at the finish")
+        }
+    }
+
     // MARK: - Helpers
 
     private func drive(_ golfer: SyntheticGolfer, club: GolfClub = .driver, handedness: Handedness = .right) throws -> [SwingImpact] {
