@@ -100,6 +100,10 @@ struct CourseScreen: View {
         .onChange(of: camera.addressAimDegrees) { _, degrees in
             if usesCamera { round.setStanceAim(degrees) }
         }
+        .onChange(of: camera.phase) { _, phase in
+            // The club head cuts the air as the downswing starts, before we know about contact.
+            if usesCamera, phase == .downswing, round.canSwing { audio.whoosh(power: max(0.4, round.power)) }
+        }
         .onChange(of: round.phase) { _, phase in
             if phase == .ready { round.setStanceAim(usesCamera ? camera.addressAimDegrees : 0) }
         }
@@ -108,6 +112,7 @@ struct CourseScreen: View {
                 audio.thump()
                 UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
             }
+            scene.onLanding = { audio.landing($0) }
             round.start(course: flow.course, playerCount: players.count)
             round.automaticProgression = true
             feedback.isEnabled = haptics
@@ -542,9 +547,13 @@ struct CourseScreen: View {
     private func release(execution: SwingImpact? = nil) {
         feedback.endBackswing()
         audio.stop()
+        let power = round.power
         if round.release(execution: execution), execution?.strike != .miss {
             feedback.playImpact()
-            audio.impact(club: round.club)
+            if !usesCamera { audio.whoosh(power: power) } // camera swings whoosh on the way down
+            audio.impact(club: round.club, strike: execution?.strike ?? .center, power: power)
+        } else if execution?.strike == .miss {
+            audio.whoosh(power: power)
         }
     }
 

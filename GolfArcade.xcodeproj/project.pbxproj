@@ -76,6 +76,7 @@
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
 		74A5043F4ED1C03B0CCC051A /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */; };
 		38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */; };
+		C4C671A789904504279E7E2F /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -168,6 +169,7 @@
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
 		3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
 		DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
+		1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -354,6 +356,7 @@
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
+				1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
 				DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */,
 			);
@@ -604,6 +607,7 @@
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
+				C4C671A789904504279E7E2F /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
 				38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */,
 			);

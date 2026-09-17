@@ -340,7 +340,7 @@ struct CameraAvatarPoseFilter {
             guard frame.point(joint, minimumConfidence: 0.45) != nil else { continue }
             let value = observed[joint]
             guard value.x.isFinite, value.y.isFinite, value.z.isFinite else { continue }
-            var filter = filters[joint] ?? OneEuroFilter(minCutoff: 1.8, beta: 0.15)
+            var filter = filters[joint] ?? OneEuroFilter(minCutoff: 1.1, beta: 0.4)
             target.joints[joint] = filter.filter(value, dt: dt)
             filters[joint] = filter
         }
