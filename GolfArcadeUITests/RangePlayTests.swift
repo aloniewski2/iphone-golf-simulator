@@ -160,7 +160,7 @@ final class RangePlayTests: XCTestCase {
         let app = XCUIApplication()
         // A longer review than play uses: the sequence is what is under test, and a CI runner's
         // accessibility snapshots are far slower than a five-second countdown.
-        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "14"]
+        app.launchArguments += ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "14", "-manualProgression"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -268,7 +268,7 @@ final class RangePlayTests: XCTestCase {
 
     private func assertCertifiedCameraSwing(hand: String) {
         let app = XCUIApplication()
-        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-fixtureSwingAfterLock"]
+        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-fixtureSwingAfterLock", "-manualProgression"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -407,7 +407,9 @@ final class RangePlayTests: XCTestCase {
     @MainActor
     func testPlayAHoleOutWithTheTouchPad() {
         let app = XCUIApplication()
-        app.launchArguments.append("-skipPlayerCalibration")
+        // This test presses Next shot and Continue itself; play's automatic progression
+        // would otherwise move on to the next hole before it looks.
+        app.launchArguments += ["-skipPlayerCalibration", "-manualProgression"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -478,9 +480,9 @@ final class RangePlayTests: XCTestCase {
         screenshot(app, "Multiplayer setup")
         app.buttons["continueToCourses"].tap()
         app.buttons["course-medium"].tap()
-        let banner = any(app, "turnBanner")
-        XCTAssertTrue(banner.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["PLAYER 1'S TURN"].exists)
+        // The banner shows for under two seconds; look for its text in one wait.
+        XCTAssertTrue(app.staticTexts["PLAYER 1'S TURN"].waitForExistence(timeout: 15))
+        XCTAssertTrue(any(app, "turnBanner").exists)
         screenshot(app, "Player 1 turn banner")
         sleep(2)
         screenshot(app, "Friends standing around the golfer")
