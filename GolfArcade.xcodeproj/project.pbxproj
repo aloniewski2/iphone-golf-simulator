@@ -77,6 +77,7 @@
 		74A5043F4ED1C03B0CCC051A /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */; };
 		38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */; };
 		C4C671A789904504279E7E2F /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */; };
+		3A4448B4D27F67AB098C3636 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006039A545B27C0D41C1C30 /* TerrainTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,6 +171,7 @@
 		3769B74A76E85C156D5191ED /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
 		DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
 		1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
+		8006039A545B27C0D41C1C30 /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -359,6 +361,7 @@
 				1C2B5A4455493EA19A2CB119 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
 				DF6EC9B28514C4D9E1AE1A1B /* SyntheticGolferTests.swift */,
+				8006039A545B27C0D41C1C30 /* TerrainTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -610,6 +613,7 @@
 				C4C671A789904504279E7E2F /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
 				38C2FF2304D5CA6AB291EACF /* SyntheticGolferTests.swift in Sources */,
+				3A4448B4D27F67AB098C3636 /* TerrainTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

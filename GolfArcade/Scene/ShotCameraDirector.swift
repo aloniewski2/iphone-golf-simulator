@@ -64,13 +64,15 @@ enum ShotCameraDirector {
                 fieldOfView: 50, damping: 4
             )
         case .green:
-            // Eye-height framing in the same yard scale as the golfer.
+            // Low and a little behind the ball on the side away from the golfer, so the golfer
+            // frames the left edge and the line to the hole is clear: ball, break, cup.
             let aim = aimDirection(inputs.aim)
+            let reach = Float(min(max(inputs.distanceToPin, 4), 30))
             return Shot(
                 stage: stage,
-                position: world(simd_float3(-1.0 * mirror, 5.0, 8) * scale, origin: inputs.ball, heading: inputs.heading),
-                lookAt: world(aim * Float(max(inputs.distanceToPin, 4)), origin: inputs.ball, heading: inputs.heading),
-                fieldOfView: 48, damping: 4
+                position: world(simd_float3(2.6 * mirror, 5.0, 12 + reach * 0.12) * scale, origin: inputs.ball, heading: inputs.heading),
+                lookAt: world(aim * Float(max(inputs.distanceToPin * 0.5, 3)) + simd_float3(0, 0.15, 0), origin: inputs.ball, heading: inputs.heading),
+                fieldOfView: 50, damping: 4
             )
         case .hero:
             let shot = inputs.shot!

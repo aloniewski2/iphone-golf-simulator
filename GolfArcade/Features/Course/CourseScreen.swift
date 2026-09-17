@@ -114,6 +114,10 @@ struct CourseScreen: View {
             }
             scene.onLanding = { audio.landing($0) }
             round.start(course: flow.course, playerCount: players.count)
+            #if DEBUG
+            // `-startOnGreen` tees the ball up eight yards from the cup for putting work.
+            if ProcessInfo.processInfo.arguments.contains("-startOnGreen") { round.dropOnGreenForTesting() }
+            #endif
             round.automaticProgression = true
             feedback.isEnabled = haptics
             audio.enabled = sound
@@ -189,6 +193,14 @@ struct CourseScreen: View {
                         .padding(.horizontal, 10).padding(.vertical, 6)
                         .background(.black.opacity(0.45), in: Capsule())
                         .accessibilityIdentifier("landingTarget")
+                    if round.canSwing, let read = round.greenRead {
+                        Text(read.label)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 0.85, green: 1, blue: 0.9))
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.black.opacity(0.45), in: Capsule())
+                            .accessibilityIdentifier("greenRead")
+                    }
                     if round.canSwing {
                         let preview = round.trajectoryPreview
                         Text("\(round.club.shortName) · \(Int(preview.power * 100))% · \(Int(preview.carry.rounded())) CARRY / \(Int(preview.total.rounded())) TOTAL")

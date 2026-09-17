@@ -339,7 +339,8 @@ final class AvatarTests: XCTestCase {
     }
 
     func testReactionsMatchTheShot() {
-        let hole = Course.easy.holes[0]
+        var hole = Course.easy.holes[0]
+        hole.terrain = .flat
         let pure = RangeShot(id: 1, club: .iron, power: 0.62, aim: 0, hole: hole)
         XCTAssertFalse(pure.isHoled)
         XCTAssertEqual(AvatarAnimations.Reaction.classify(pure), .pure)
