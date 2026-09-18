@@ -227,6 +227,19 @@ struct CourseScreen: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(.leading, 14).padding(.top, 8)
 
+                if round.canSwing || round.phase == .flying {
+                    PowerGauge(
+                        club: round.club, power: round.power, targetPower: round.targetPower,
+                        targetLabel: round.targetLabel, struck: round.phase == .flying,
+                        height: gaugeHeight(size)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.leading, 14)
+                    .offset(y: size.width > size.height ? 0 : 50)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+                }
+
                 HoleOverview(round: round)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(.trailing, 10).padding(.top, 42)
@@ -274,6 +287,11 @@ struct CourseScreen: View {
     }
 
     // MARK: - Overlays
+
+    /// Tall enough to read on a phone held upright, shorter when there is less room.
+    private func gaugeHeight(_ size: CGSize) -> CGFloat {
+        min(240, max(120, size.height * 0.28))
+    }
 
     private func cameraStageSize(_ size: CGSize) -> CGSize {
         if stageExpanded { return size }

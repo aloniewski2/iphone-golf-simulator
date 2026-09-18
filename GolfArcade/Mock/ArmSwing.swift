@@ -194,6 +194,15 @@ struct ArmSwingDetector {
     private var outwardSign = 0.0
     private var hadTrackingGap = false
     private var stanceAim = StanceAimSettler()
+    /// Where the club head was on the way back and on the way down, by arc from address.
+    /// Impact is judged between them (see `VirtualClubState.sweptContact`), so the start line
+    /// is about how this swing came down compared with how it went back, not a fixed template.
+    private var takeaway: [(arc: Double, head: CGPoint)] = []
+    private var delivery: [(arc: Double, head: CGPoint)] = []
+    private(set) var pathNeutral = PathNeutral()
+    /// Arc from address at which the two paths are compared: long enough that camera jitter on
+    /// the head barely moves the chord, short enough to exist in a chip.
+    static let pathReferenceArc = 35.0
 
     mutating func configure(for club: GolfClub, type: ShotType = .full) {
         let savedCalibration = calibration
@@ -203,6 +212,7 @@ struct ArmSwingDetector {
         let savedGuide = ballAddress
         let savedHandedness = handedness
         let savedContactMode = contactMode
+        let savedNeutral = pathNeutral
         self = ArmSwingDetector()
         calibration = savedCalibration
         lockedSpace = savedSpace
@@ -211,6 +221,7 @@ struct ArmSwingDetector {
         ballAddress = savedGuide
         handedness = savedHandedness
         contactMode = savedContactMode
+        pathNeutral = savedNeutral
         isPutt = club == .putter
         if isPutt {
             backswingStart = 2.5
@@ -366,6 +377,10 @@ struct ArmSwingDetector {
         case .address:
             readiness = .ready
             readyProgress = 1
+            if let virtualClub {
+                if abs(angle) < 1 || takeaway.count >= 150 { takeaway.removeAll(keepingCapacity: true) }
+                takeaway.append((abs(angle), virtualClub.head))
+            }
             if abs(angle) < backswingStart, let yaw = sample.bodyYaw {
                 // Turning the whole body sets the line, as on a real course. The line locks
                 // once the turn is held steady, and stays put for the rest of the swing.
@@ -405,6 +420,7 @@ struct ArmSwingDetector {
             peakSpeed = 0
             swingStart = time
             bestContact = nil
+            delivery.removeAll(keepingCapacity: true)
             return .load(load(peakArc))
 
         case .backswing, .downswing:
@@ -412,6 +428,10 @@ struct ArmSwingDetector {
             readyProgress = 0
             let arc = angle * backSign
             let closing = Self.angleDifference(angle, oldAngle) * backSign < 0
+            if let virtualClub {
+                if phase == .backswing, !closing, arc > peakArc, arc <= 100 { takeaway.append((arc, virtualClub.head)) }
+                if phase == .downswing, closing, arc >= 0 { delivery.append((arc, virtualClub.head)) }
+            }
             peakArc = max(peakArc, arc)
             if phase == .backswing {
                 if closing, arc < peakArc - (isPutt ? 1 : min(12, backswingStart * 0.6)), speed >= downswingSpeed {
@@ -428,7 +448,8 @@ struct ArmSwingDetector {
             // reverse it without changing the golfer's handedness. The deliberate backswing
             // establishes this stroke's forward direction; retain signed path deviation.
             let strokeDirection: Handedness = backSign >= 0 ? .right : .left
-            if let oldClub, let virtualClub, let contact = virtualClub.sweptContact(from: oldClub, handedness: strokeDirection) {
+            if let oldClub, let virtualClub,
+               let contact = virtualClub.sweptContact(from: oldClub, handedness: strokeDirection, path: pathReference()) {
                 if bestContact == nil || contact.distance < bestContact!.distance { bestContact = contact }
             }
             guard arc <= 0 else { return .load(load(peakArc)) }
@@ -455,8 +476,13 @@ struct ArmSwingDetector {
                     return .cancel
                 }
             }
+            var startLine = contact.startLine
+            if !isPutt, contact.isForward {
+                pathNeutral.record(contact.deviation)
+                startLine = VirtualClubState.startLine(deviation: contact.deviation, neutral: pathNeutral.value)
+            }
             return .impact(SwingImpact(power: power(arc: peakArc, downswingSpeed: peakSpeed),
-                startLineDegrees: isPutt ? 0 : contact.startLine, strike: strike, confidence: contact.confidence, source: .camera))
+                startLineDegrees: isPutt ? 0 : startLine, strike: strike, confidence: contact.confidence, source: .camera))
         }
     }
 
@@ -471,6 +497,33 @@ struct ArmSwingDetector {
     }
 
     private func load(_ arc: Double) -> Double { min(1, max(0, arc / fullBackswing)) }
+
+    /// The head on the way back and on the way down at the same arc (`pathReferenceArc`, or
+    /// half of a shorter swing), interpolated between recorded frames; nil until the downswing
+    /// has come that far, or when the backswing was not seen that far out.
+    private func pathReference() -> VirtualClubState.PathReference? {
+        let arc = min(Self.pathReferenceArc, max(8, peakArc * 0.5))
+        guard let back = Self.head(atArc: arc, along: takeaway), let down = Self.head(atArc: arc, along: delivery.reversed()) else { return nil }
+        return VirtualClubState.PathReference(takeawayHead: back, deliveryHead: down)
+    }
+
+    /// Interpolates a head position at `arc` from a trace whose arcs rise along it. The head
+    /// swings about the shoulders, so the gap between frames is bridged around that centre
+    /// rather than across it: a fast downswing sampled 25° apart then reads the same as a slow
+    /// takeaway sampled every 3°.
+    private static func head(atArc arc: Double, along trace: [(arc: Double, head: CGPoint)]) -> CGPoint? {
+        guard let last = trace.last, last.arc >= arc, let index = trace.firstIndex(where: { $0.arc >= arc }) else { return nil }
+        let after = trace[index]
+        guard index > 0 else { return after.head }
+        let before = trace[index - 1]
+        let fraction = after.arc > before.arc ? (arc - before.arc) / (after.arc - before.arc) : 1
+        let radiusBefore = Double(hypot(before.head.x, before.head.y)), radiusAfter = Double(hypot(after.head.x, after.head.y))
+        let radius = radiusBefore + (radiusAfter - radiusBefore) * fraction
+        let start = Double(atan2(before.head.y, before.head.x))
+        let turn = angleDifference(Double(atan2(after.head.y, after.head.x)) * 180 / .pi, start * 180 / .pi) * .pi / 180
+        let angle = start + turn * fraction
+        return CGPoint(x: radius * Foundation.cos(angle), y: radius * Foundation.sin(angle))
+    }
 
     private mutating func settle(_ sample: Sample, grip: CGPoint, space: SwingSpace, at time: Double) {
         if calibration == nil {
@@ -545,6 +598,8 @@ struct ArmSwingDetector {
         outwardTravel = 0
         acquisitionSpace = nil
         stanceAim.reset()
+        takeaway.removeAll(keepingCapacity: true)
+        delivery.removeAll(keepingCapacity: true)
     }
 
     static func signedDegrees(between a: CGVector, and b: CGVector) -> Double {
@@ -557,6 +612,32 @@ struct ArmSwingDetector {
     }
 
     static func degrees(between a: CGVector, and b: CGVector) -> Double { abs(signedDegrees(between: a, and: b)) }
+}
+
+/// A player's own square swing. The median of their recent path readings becomes the zero
+/// line, so a swing shaped like their usual one flies straight and only a change of shape —
+/// coming over the top of it, or dropping inside — turns the ball. Takes full charge after
+/// three swings; before that the first readings count in proportion.
+struct PathNeutral: Equatable, Sendable {
+    private var recent: [Double] = []
+    static let window = 8
+    static let settledAfter = 3
+
+    var count: Int { recent.count }
+
+    var value: Double {
+        guard !recent.isEmpty else { return 0 }
+        let sorted = recent.sorted()
+        let middle = sorted.count / 2
+        let median = sorted.count.isMultiple(of: 2) ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle]
+        return median * min(1, Double(recent.count) / Double(Self.settledAfter))
+    }
+
+    mutating func record(_ deviation: Double) {
+        guard deviation.isFinite else { return }
+        recent.append(deviation)
+        if recent.count > Self.window { recent.removeFirst(recent.count - Self.window) }
+    }
 }
 
 /// Locks the stance line once the player holds a body turn steady for a moment, so the aim

@@ -80,6 +80,7 @@
 		935651F8DCFF42315E0907AC /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */; };
 		3565BEAC0082404C82B3666F /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */; };
 		1CB74E9FCAB635FC4E282241 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB44D6702A79F20C853BC9 /* TerrainTests.swift */; };
+		D88FE18AEE8E76CC18269B81 /* PowerGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -176,6 +177,7 @@
 		4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
 		75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 		01FB44D6702A79F20C853BC9 /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
+		B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerGauge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -380,6 +382,7 @@
 				39FE18C940B6AE0041EEBF66 /* ClubRail.swift */,
 				505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */,
 				EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */,
+				B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */,
 			);
 			path = Course;
 			sourceTree = "<group>";
@@ -578,6 +581,7 @@
 				38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */,
 				A024A03F17F2DB843F0924BF /* PoseRetargeter.swift in Sources */,
 				CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */,
+				D88FE18AEE8E76CC18269B81 /* PowerGauge.swift in Sources */,
 				2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */,
 				0280DB830A423B77A9AC2A86 /* PracticeRangeScreen.swift in Sources */,
 				BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */,

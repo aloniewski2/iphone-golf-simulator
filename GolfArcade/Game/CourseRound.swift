@@ -75,6 +75,8 @@ final class CourseRound: ObservableObject {
     private var manualAimSelected = false
     private var planningKey: String?
     private var planningPower = 1.0
+    /// Meter reading that lands on the target with this club; nil when it is out of reach.
+    private var planningReach: Double?
     private var previewCache: RangeShot?
     private var previewKey: ShotRequest?
     private var previewOrigin: CoursePoint?
@@ -141,15 +143,26 @@ final class CourseRound: ObservableObject {
         if stanceAim != value { stanceAim = value }
     }
 
+    /// Where on the meter the target sits: the reading whose shot finishes at the target with
+    /// this club, from the same flight model as release. Nil when the club cannot reach it.
+    var targetPower: Double? {
+        updatePlanning()
+        return planningReach
+    }
+
+    private func updatePlanning() {
+        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
+        guard key != planningKey else { return }
+        planningKey = key
+        planningReach = RangeShot.power(toReach: distanceToTarget, with: club,
+            type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor)
+        planningPower = planningReach ?? 1
+    }
+
     /// Cached ideal-center prediction using the same launch/lie/flight model as release.
     /// It is an aim guide, not a promise about the player's future swing speed or strike.
     var trajectoryPreview: RangeShot {
-        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
-        if key != planningKey {
-            planningKey = key
-            planningPower = RangeShot.power(toReach: distanceToTarget, with: club,
-                type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor) ?? 1
-        }
+        updatePlanning()
         let predictedPower = phase == .charging ? max(0.05, (power * 20).rounded() / 20) : planningPower
         let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
             type: club == .putter ? .putt : shotType,

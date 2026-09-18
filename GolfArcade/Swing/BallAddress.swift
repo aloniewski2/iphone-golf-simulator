@@ -91,8 +91,10 @@ enum CameraContactPolicy {
 
     /// Arcade strike location, not a measured physical club face. Every supported
     /// deliberate crossing connects; deviation changes efficiency rather than whiffing.
+    /// The sweet spot is about six centimetres across on a typical player: the hands sit a
+    /// little lower and further forward at impact than at address, and that is a fair strike.
     static func assistedStrike(offset: CGVector) -> StrikeQuality {
-        if hypot(offset.dx, offset.dy) <= 0.12 { return .center }
+        if hypot(offset.dx, offset.dy) <= 0.16 { return .center }
         if abs(offset.dy) >= abs(offset.dx) { return offset.dy > 0 ? .thin : .fat }
         return offset.dx > 0 ? .toe : .heel
     }
@@ -135,13 +137,40 @@ struct VirtualClubState: Equatable, Sendable {
     struct Contact {
         let offset: CGVector
         let fraction: Double
+        /// `startLine(deviation:neutral:)` about a zero neutral; 180° off for a backward pass.
         let startLine: Double
+        /// Raw path reading, degrees: negative is steeper than square for the stroke's handedness.
+        let deviation: Double
+        let isForward: Bool
         let confidence: Double
         var distance: Double { hypot(offset.dx, offset.dy) }
     }
 
+    /// Degrees right of the target a forward strike starts on, from a path reading judged
+    /// against `neutral` (the player's own square swing, or 0).
+    static func startLine(deviation: Double, neutral: Double) -> Double {
+        min(startLineLimit, max(-startLineLimit, (deviation - neutral) * startLineGain))
+    }
+
+    /// How much of the measured path deviation reaches the ball, and the most it can turn a
+    /// shot. A 2D front-camera estimate is a cue, not a launch monitor; a full-strength reading
+    /// sent square swings 30 yards off line.
+    static let startLineGain = 0.6
+    static let startLineLimit = 12.0
+
+    /// The club head at the same arc from address on the way back and on the way down.
+    struct PathReference: Equatable {
+        let takeawayHead: CGPoint
+        let deliveryHead: CGPoint
+    }
+
     /// Closest point of the continuous clubhead segment, not the nearest captured hand frame.
-    func sweptContact(from previous: VirtualClubState, handedness: Handedness) -> Contact? {
+    ///
+    /// With a `path`, the start line judges the downswing against this swing's own takeaway:
+    /// coming down steeper than it went back is over the top (a pull), shallower is from the
+    /// inside (a push), retracing it is square — so no fixed idea of a "neutral" swing biases
+    /// every player. Without it, the head is compared to a circular arc about the shoulders.
+    func sweptContact(from previous: VirtualClubState, handedness: Handedness, path: PathReference? = nil) -> Contact? {
         guard time > previous.time, time - previous.time <= 0.15 else { return nil }
         var degrees = (angle - previous.angle).truncatingRemainder(dividingBy: 360)
         if degrees > 180 { degrees -= 360 }
@@ -185,11 +214,21 @@ struct VirtualClubState: Equatable, Sendable {
         let side: Double = handedness == .right ? 1 : -1
         // Signed 2D arcade estimate: depth and club-face angle cannot be recovered from this input.
         let forward = -dx * side
-        let slope = atan2(dy * side, abs(dx)) * 180 / .pi
-        let neutralSlope = atan2(-address.ball.x, -address.ball.y) * 180 / .pi
-        let deviation = slope - (forward >= 0 ? neutralSlope : -neutralSlope)
-        let line = (forward >= 0 ? 0 : 180) + min(25, max(-25, deviation))
+        let deviation: Double
+        if let path, forward >= 0 {
+            // Chords of equal arc either side of the ball: a swing that comes down the way it
+            // went back reads square, whatever shape that was.
+            let back = atan2((path.takeawayHead.y - address.ball.y) * side, abs(path.takeawayHead.x - address.ball.x)) * 180 / .pi
+            let down = atan2((closest.y - path.deliveryHead.y) * side, abs(closest.x - path.deliveryHead.x)) * 180 / .pi
+            deviation = down + back
+        } else {
+            let slope = atan2(dy * side, abs(dx)) * 180 / .pi
+            let neutralSlope = atan2(-address.ball.x, -address.ball.y) * 180 / .pi
+            deviation = slope - (forward >= 0 ? neutralSlope : -neutralSlope)
+        }
+        let line = (forward >= 0 ? 0 : 180) + Self.startLine(deviation: deviation, neutral: 0)
         return Contact(offset: CGVector(dx: closest.x - address.ball.x, dy: closest.y - address.ball.y),
-                       fraction: bestFraction, startLine: line, confidence: min(confidence, previous.confidence))
+                       fraction: bestFraction, startLine: line, deviation: deviation, isForward: forward >= 0,
+                       confidence: min(confidence, previous.confidence))
     }
 }
