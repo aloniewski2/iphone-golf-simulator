@@ -170,7 +170,7 @@ final class CoursePlayTests: XCTestCase {
     @MainActor
     func testMultiplayerAnnouncesEachTurn() {
         let app = XCUIApplication()
-        app.launchArguments += ["-skipPlayerCalibration", "-fixturePlayers", "3"]
+        app.launchArguments += ["-skipPlayerCalibration", "-fixturePlayers", "3", "-holdBanners"]
         app.launch()
         XCTAssertTrue(app.buttons["menuMultiplayer"].waitForExistence(timeout: 15))
         app.buttons["menuMultiplayer"].tap()
@@ -180,7 +180,7 @@ final class CoursePlayTests: XCTestCase {
         app.buttons["continueToCourses"].tap()
         app.buttons["course-medium"].tap()
         // The banner shows for under two seconds; look for its text in one wait.
-        XCTAssertTrue(app.staticTexts["PLAYER 1'S TURN"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["PLAYER 1'S TURN"].waitForExistence(timeout: 30))
         XCTAssertTrue(any(app, "turnBanner").exists)
         screenshot(app, "Player 1 turn banner")
         sleep(2)

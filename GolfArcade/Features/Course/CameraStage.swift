@@ -36,6 +36,9 @@ struct CameraStage: View {
     let gesturesEnabled: Bool
     var onResize: () -> Void = {}
     var onRecenter: () -> Void = {}
+    /// The stage's states so far this screen, oldest first, ending with the current one. UI tests
+    /// read it once instead of trying to watch a countdown live on a slow runner.
+    var journal: [String] = []
 
     var body: some View {
         // Keep ONE preview at the same structural identity while resizing. Branching between
@@ -68,7 +71,7 @@ struct CameraStage: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(showsGroundCloseUp ? "Player camera, ground close-up" : "Player camera, full frame")
-        .accessibilityValue(expanded ? "expanded" : "minimized")
+        .accessibilityValue((journal.isEmpty ? [expanded ? "expanded" : "minimized"] : journal).joined(separator: ">"))
         .accessibilityIdentifier("cameraStage")
     }
 
@@ -131,9 +134,11 @@ struct CameraStage: View {
         }
     }
 
-    private var showsGroundCloseUp: Bool {
-        // One second for orientation, the middle of the review on the ball/feet, then one
-        // second back at full framing before the existing transition to the swing view.
+    private var showsGroundCloseUp: Bool { Self.showsGroundCloseUp(camera: camera, expanded: expanded) }
+
+    /// One second for orientation, the middle of the review on the ball/feet, then one second
+    /// back at full framing before the existing transition to the swing view.
+    static func showsGroundCloseUp(camera: CameraSwingController, expanded: Bool) -> Bool {
         let last = max(2, Int(CameraSwingController.positionReviewDuration) - 1)
         return expanded && camera.isPositionLocked && (2...last).contains(camera.reviewSecondsRemaining)
     }

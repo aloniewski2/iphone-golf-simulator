@@ -31,6 +31,8 @@ struct CourseScreen: View {
     @State private var bannerTask: Task<Void, Never>?
     /// Certification shows the ground ball full-screen for five seconds, then returns to play.
     @State private var stageExpanded = true
+    /// Stage states in order: expanded, review (a countdown began), closeup, minimized.
+    @State private var stageJournal = ["expanded"]
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
@@ -90,13 +92,16 @@ struct CourseScreen: View {
             guard usesCamera else { return }
             if remaining > 0 {
                 if !stageExpanded { withAnimation { stageExpanded = true } }
+                if old == 0 { journal("review") }
             }
             else if old > 0 {
                 guard camera.isPositionLocked, !camera.isCheckingSwing else { return }
                 withAnimation(.spring(duration: 0.55)) { stageExpanded = false }
                 if camera.hasPlayableTracking { audio.ready() }
             }
+            journal(CameraStage.showsGroundCloseUp(camera: camera, expanded: stageExpanded) ? "closeup" : stageExpanded ? "expanded" : "minimized")
         }
+        .onChange(of: stageExpanded) { _, expanded in journal(expanded ? "expanded" : "minimized") }
         .onChange(of: camera.addressAimDegrees) { _, degrees in
             if usesCamera { round.setStanceAim(degrees) }
         }
@@ -227,7 +232,8 @@ struct CourseScreen: View {
                         viewportSize: cameraStageSize(size),
                         gesturesEnabled: gesturesEnabled,
                         onResize: { guard camera.reviewSecondsRemaining == 0 else { return }; withAnimation { stageExpanded.toggle() } },
-                        onRecenter: { stopFeedback(); camera.resetAddress(); stageExpanded = true }
+                        onRecenter: { stopFeedback(); camera.resetAddress(); stageExpanded = true },
+                        journal: stageJournal
                     )
                     .frame(width: cameraStageSize(size).width, height: cameraStageSize(size).height)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: stageExpanded ? .center : .bottomLeading)
@@ -424,10 +430,22 @@ struct CourseScreen: View {
         bannerTask?.cancel()
         withAnimation(.easeOut(duration: 0.2)) { bannerVisible = true }
         bannerTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.6))
+            try? await Task.sleep(for: .seconds(Self.bannerSeconds))
             guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.25)) { bannerVisible = false }
         }
+    }
+
+    /// How long a turn banner stays up. UI tests on a slow runner may hold it with `-holdBanners`.
+    private static let bannerSeconds: Double = {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-holdBanners") { return 30 }
+        #endif
+        return 1.6
+    }()
+
+    private func journal(_ state: String) {
+        if stageJournal.last != state { stageJournal.append(state) }
     }
 
     private func landed() {

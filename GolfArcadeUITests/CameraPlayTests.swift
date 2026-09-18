@@ -22,18 +22,18 @@ final class CameraPlayTests: XCTestCase {
         XCTAssertEqual(stage.value as? String, "expanded", "camera setup starts large before certification")
         XCTAssertTrue(any(app, "readyPrompt").exists)
         XCTAssertTrue(any(app, "cameraPanel").waitForExistence(timeout: 5))
-        XCTAssertEqual(stage.value as? String, "expanded")
+        XCTAssertTrue((stage.value as? String ?? "").hasSuffix("expanded"), "stage: \(stage.value ?? "")")
         XCTAssertTrue(app.buttons["club-driver"].exists)
         sleep(1)
         screenshot(app, "Camera starts expanded before certification")
         XCTAssertTrue(any(app, "readyPrompt").waitForExistence(timeout: 5))
-        XCTAssertEqual(stage.value as? String, "expanded")
+        XCTAssertTrue((stage.value as? String ?? "").hasSuffix("expanded"), "stage: \(stage.value ?? "")")
         XCTAssertTrue(app.buttons["recenterGrip"].isHittable)
         app.buttons["recenterGrip"].tap()
         XCTAssertEqual(stage.value as? String, "expanded", "recentering does not accidentally collapse setup")
         screenshot(app, "Camera setup with recenter and tracking guidance")
         app.buttons["minimizeCamera"].tap()
-        XCTAssertEqual(stage.value as? String, "minimized")
+        XCTAssertTrue((stage.value as? String ?? "").hasSuffix("minimized"), "stage: \(stage.value ?? "")")
         app.buttons["useTouch"].tap()
         XCTAssertTrue(any(app, "swingPad").waitForExistence(timeout: 5), "camera failure always has an in-play fallback")
         app.buttons["shotControls"].tap()
@@ -62,25 +62,23 @@ final class CameraPlayTests: XCTestCase {
         XCTAssertTrue(app.buttons["course-easy"].waitForExistence(timeout: 10))
         app.buttons["course-easy"].tap()
         let stage = any(app, "cameraStage")
-        let status = app.staticTexts["cameraSetupStatus"]
-        waitUntil(20, "the stage to expand") { stage.exists && stage.value as? String == "expanded" }
+        func journal() -> String { stage.exists ? (stage.value as? String ?? "") : "" }
+        waitUntil(20, "the stage to open") { journal().hasPrefix("expanded") }
         XCTAssertGreaterThan(stage.frame.width, app.frame.width * 0.95)
         // The stage opens large before the fixture has locked the ball; the lock follows shortly.
         XCTAssertTrue(any(app, "lockedBallOverlay").waitForExistence(timeout: 15))
         let preview = any(app, "liveCameraPreview")
         let previewIdentity = (preview.value as? String)?.components(separatedBy: ";").first
         XCTAssertNotNil(previewIdentity)
-        waitUntil(20, "the review countdown") { status.exists && status.label.contains("Position confirmed") }
-        XCTAssertFalse(app.buttons["nextShot"].exists, "the setup rehearsal cannot score")
         screenshot(app, "Certified ball full-screen countdown — synthetic fixture")
-        // Partway through the review the stage is still large and zoomed on the ground ball.
-        waitUntil(30, "the ground close-up during the review") {
-            stage.value as? String == "expanded" && stage.label.contains("ground close-up")
-        }
-        screenshot(app, "Ground ball and feet close-up — synthetic fixture")
+        XCTAssertFalse(app.buttons["nextShot"].exists, "the setup rehearsal cannot score")
+        // The stage journals its states, so a slow runner reads the whole review afterwards:
+        // it stayed large through the countdown (a second of full framing to orient, the middle
+        // zoomed on the ground ball, a second back at full framing) and only then shrank.
+        waitUntil(60, "the review to finish") { journal().hasSuffix("minimized") }
+        XCTAssertTrue(journal().hasSuffix("review>expanded>closeup>expanded>minimized"), "stage journal: \(journal())")
         XCTAssertEqual((preview.value as? String)?.components(separatedBy: ";").first, previewIdentity,
                        "zooming must preserve the same live preview")
-        waitUntil(40, "the stage to minimize after the review") { stage.value as? String == "minimized" }
         usleep(600_000)
         XCTAssertTrue(stage.label.contains("full frame"))
         XCTAssertTrue(any(app, "lockedBallOverlay").exists)
@@ -122,7 +120,7 @@ final class CameraPlayTests: XCTestCase {
 
     func testRecenterDuringReviewRestartsConfirmationWithoutRehearsal() {
         let app = XCUIApplication()
-        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "20"]
+        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-fixtureLockedCamera", "-positionReviewSeconds", "40"]
         app.launch()
         XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 15))
         app.buttons["menuSolo"].tap()
@@ -130,23 +128,19 @@ final class CameraPlayTests: XCTestCase {
         app.buttons["continueToCourses"].tap()
         XCTAssertTrue(app.buttons["course-easy"].waitForExistence(timeout: 10))
         app.buttons["course-easy"].tap()
-        let status = app.staticTexts["cameraSetupStatus"]
-        func countdown() -> Int? {
-            guard status.exists, let last = status.label.components(separatedBy: "· ").last else { return nil }
-            return status.label.contains("Position confirmed") ? Int(last) : nil
-        }
-        waitUntil(25, "the review countdown") { countdown() != nil }
-        // Let the countdown run well down, then recenter: it must start over from the top
-        // rather than replaying a rehearsal.
-        // A 20 s review leaves room for a CI runner whose snapshots take several seconds each.
-        waitUntil(30, "the countdown to run down") { (countdown() ?? 99) <= 12 }
-        XCTAssertTrue(app.buttons["recenterGrip"].waitForExistence(timeout: 10))
-        app.buttons["recenterGrip"].tap()
-        waitUntil(30, "the countdown to restart from the top") { (countdown() ?? 0) >= 15 }
-        XCTAssertEqual(any(app, "cameraStage").value as? String, "expanded")
-        XCTAssertFalse(app.buttons["nextShot"].exists)
         let stage = any(app, "cameraStage")
-        waitUntil(40, "the stage to minimize after the review") { stage.value as? String == "minimized" }
+        func journal() -> String { stage.exists ? (stage.value as? String ?? "") : "" }
+        waitUntil(25, "the review countdown to begin") { journal().contains("review") }
+        // Give the review a few seconds, then recenter in the middle of it: the review must
+        // start over from the top rather than replaying a rehearsal. The 40 s review leaves a
+        // slow runner time to find the button while the stage is still up.
+        sleep(6)
+        XCTAssertTrue(app.buttons["recenterGrip"].waitForExistence(timeout: 15))
+        app.buttons["recenterGrip"].tap()
+        waitUntil(90, "the second review to finish") { journal().hasSuffix("minimized") }
+        let log = journal()
+        XCTAssertEqual(log.components(separatedBy: "review").count - 1, 2, "two reviews, the second started by recentering: \(log)")
+        XCTAssertTrue(log.hasSuffix("review>expanded>closeup>expanded>minimized"), "the second review ran in full: \(log)")
         XCTAssertFalse(app.buttons["nextShot"].exists)
         XCTAssertTrue(any(app, "cameraPanel").label.contains("Ready"))
     }
@@ -171,7 +165,7 @@ final class CameraPlayTests: XCTestCase {
         app.buttons["course-easy"].tap()
         XCTAssertTrue(any(app, "lockedBallOverlay").waitForExistence(timeout: 5))
         let stage = any(app, "cameraStage")
-        waitUntil(20, "the stage to minimize after the review") { stage.exists && stage.value as? String == "minimized" }
+        waitUntil(30, "the stage to minimize after the review") { stage.exists && (stage.value as? String ?? "").hasSuffix("minimized") }
         screenshot(app, "\(hand)-handed mirrored golfer — synthetic fixture")
         XCTAssertTrue(app.buttons["nextShot"].waitForExistence(timeout: 25),
                       "camera detector → shot → flight → result must run under continuous 60 Hz updates")
@@ -206,7 +200,7 @@ final class CameraPlayTests: XCTestCase {
         XCTAssertTrue(any(app, "lockedBallOverlay").waitForExistence(timeout: 45))
         screenshot(app, "Physical iPhone five-second ground-ball confirmation")
         let stage = any(app, "cameraStage")
-        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'minimized'"), object: stage)
+        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value ENDSWITH 'minimized'"), object: stage)
         XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 8), .completed)
         usleep(700_000)
         for _ in 0..<2 {
@@ -239,7 +233,7 @@ final class CameraPlayTests: XCTestCase {
         XCTAssertTrue(any(app, "lockedBallOverlay").waitForExistence(timeout: 45))
         screenshot(app, "Physical swing check — certified ball")
         let stage = any(app, "cameraStage")
-        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'minimized'"), object: stage)
+        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value ENDSWITH 'minimized'"), object: stage)
         XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 8), .completed, "No rehearsal gate should block the five-second confirmation")
         screenshot(app, "Physical swing check — idle avatar after automatic contraction")
         XCTAssertTrue(any(app, "trajectoryEstimate").exists, "Ready state must show the trajectory estimate")
@@ -278,7 +272,7 @@ final class CameraPlayTests: XCTestCase {
         app.buttons["course-easy"].tap()
         let stage = any(app, "cameraStage")
         XCTAssertTrue(stage.waitForExistence(timeout: 10), "Camera preference must survive an ordinary relaunch")
-        XCTAssertEqual(stage.value as? String, "expanded")
+        XCTAssertTrue((stage.value as? String ?? "").hasSuffix("expanded"), "stage: \(stage.value ?? "")")
         let preview = any(app, "liveCameraPreview")
         let rendering = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value CONTAINS 'rendering=1'"), object: preview)
         XCTAssertEqual(XCTWaiter.wait(for: [rendering], timeout: 15), .completed)
@@ -287,7 +281,7 @@ final class CameraPlayTests: XCTestCase {
         let closeUp = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'ground close-up'"), object: stage)
         XCTAssertEqual(XCTWaiter.wait(for: [closeUp], timeout: 4), .completed)
         screenshot(app, "Normal launch — ground ball and feet close-up")
-        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'minimized'"), object: stage)
+        let minimized = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value ENDSWITH 'minimized'"), object: stage)
         XCTAssertEqual(XCTWaiter.wait(for: [minimized], timeout: 8), .completed)
         XCTAssertTrue((preview.value as? String)?.contains("rendering=1") == true)
         screenshot(app, "Normal launch — live camera after contraction")
