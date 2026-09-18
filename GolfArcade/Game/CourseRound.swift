@@ -376,7 +376,7 @@ final class CourseRound: ObservableObject {
         // Lie penalties scale launch SPEED, not yardage linearly. Compare actual
         // simulated reach, otherwise rough/sand club recommendations overpromise.
         for candidate in [GolfClub.wedge, .iron] {
-            let reach = BallFlight.simulate(candidate.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
+            let reach = BallFlight.simulate(candidate.launch(power: 1, aimDegrees: 0, curveDegrees: 0, speedFactor: lie.powerFactor)).total
             if distanceToTarget <= reach * 0.98 { return candidate }
         }
         return .driver

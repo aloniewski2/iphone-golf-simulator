@@ -153,11 +153,11 @@ final class ArmSwingDetectorTests: XCTestCase {
         var detector = ArmSwingDetector()
         detector.configure(for: .putter)
         let hit = try XCTUnwrap(impacts(drive(&detector, legs: [(0.5, 0), (0.8, 8), (0.15, 8), (0.7, -3)])).first)
-        XCTAssertLessThan(hit.power, 0.2)
+        XCTAssertLessThan(hit.power, 0.25)
         XCTAssertNotEqual(hit.strike, .miss)
         let shot = RangeShot(id: 1, club: .putter, power: hit.power, aim: hit.startLineDegrees, strike: hit.strike)
-        XCTAssertGreaterThan(shot.total, 0)
-        XCTAssertLessThan(shot.total, 1)
+        XCTAssertGreaterThan(shot.total, 1, "an eight-degree stroke is a short putt, not a tap")
+        XCTAssertLessThan(shot.total, 4, "and it is not a lag")
     }
 
     func testSlowThirtyDegreePuttIsNotAbsorbedByRecentering() {

@@ -54,7 +54,7 @@ struct SwingPad: View {
                 Image(systemName: "arrow.down").font(.title2)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(charging ? "Release to \(club == .putter ? "putt" : "swing")" : "Pull down gently").font(.headline)
-                    Text(club == .putter ? String(format: "%.1f ft · %+.1f°", club.mockDistance * power * power * 3, direction) : String(format: "Slide sideways to steer · %+.0f°", direction))
+                    Text(club == .putter ? String(format: "%.1f ft · %+.1f°", club.distanceYards(meter: power) * 3, direction) : String(format: "Slide sideways to steer · %+.0f°", direction))
                         .font(.caption2)
                 }
                 Spacer()
@@ -101,13 +101,13 @@ private struct PuttingPad: View {
             HStack {
                 Text("Putt strength").font(.subheadline.bold())
                 Spacer()
-                Text(String(format: "%.1f ft", GolfClub.putter.mockDistance * power * power * 3))
+                Text(String(format: "%.1f ft", GolfClub.putter.distanceYards(meter: power) * 3))
                     .font(.subheadline.monospacedDigit())
             }
             Slider(value: $power, in: 0...1, step: 0.005) { Text("Putt strength") }
                 .tint(.mint)
                 .accessibilityIdentifier("puttPower")
-                .accessibilityValue(String(format: "%.1f feet", GolfClub.putter.mockDistance * power * power * 3))
+                .accessibilityValue(String(format: "%.1f feet", GolfClub.putter.distanceYards(meter: power) * 3))
             Button {
                 onCharge(power)
                 onRelease(0)

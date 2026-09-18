@@ -132,11 +132,18 @@ struct ArmSwingDetector {
     }
 
     var backswingStart = 20.0
-    var fullBackswing = 140.0
+    /// Grip arc from address, in degrees, that fills the meter. A real full swing brings the
+    /// hands to shoulder height or above on the trail side, about 110–130° as the front camera
+    /// sees it; anything past this is simply full.
+    var fullBackswing = 120.0
     var downswingSpeed = 150.0
     var minimumSwingSpeed = 120.0
-    var fullDownswingSpeed = 800.0
-    var speedWeight = 0.4
+    /// Peak grip speed, degrees per second, of an ordinary committed downswing. Faster earns a
+    /// small bonus, slower trims the meter; see `power(arc:downswingSpeed:)`.
+    var fullDownswingSpeed = 550.0
+    /// How much tempo moves the meter around the arc: 0.25 means a very slow downswing keeps
+    /// 75% of what the backswing loaded.
+    var speedWeight = 0.25
     var stillDuration = 0.35
     var trackingGracePeriod = 0.6
     /// A player may pause at the top. Bound an abandoned attempt without imposing a
@@ -210,14 +217,14 @@ struct ArmSwingDetector {
             fullBackswing = 35
             downswingSpeed = 5
             minimumSwingSpeed = 5
-            fullDownswingSpeed = 150
-            speedWeight = 0.65
+            fullDownswingSpeed = 100
+            speedWeight = 0.35
         } else if type == .chip || type == .pitch {
             backswingStart = 5
             fullBackswing = type == .chip ? 45 : 85
             downswingSpeed = 20
             minimumSwingSpeed = 15
-            fullDownswingSpeed = 400
+            fullDownswingSpeed = 300
         }
     }
 
@@ -453,10 +460,14 @@ struct ArmSwingDetector {
         }
     }
 
+    /// Distance follows the backswing, as in every motion golf game: the meter the player
+    /// watched fill during the backswing is what an ordinary downswing delivers. Tempo only
+    /// adjusts around that, trimming a lazy downswing and topping up a brisk one, so a full
+    /// swing reads full without having to be swung at tour speed.
     func power(arc: Double, downswingSpeed: Double) -> Double {
         let length = min(1, max(0, arc / fullBackswing))
-        let velocity = min(1, max(0, downswingSpeed / fullDownswingSpeed))
-        return length * (1 - speedWeight) + velocity * speedWeight
+        let tempo = min(1.25, max(0, downswingSpeed / fullDownswingSpeed))
+        return min(1, max(0, length * (1 + speedWeight * (tempo - 1))))
     }
 
     private func load(_ arc: Double) -> Double { min(1, max(0, arc / fullBackswing)) }

@@ -405,7 +405,8 @@ final class CourseTests: XCTestCase {
         }
         for club in [GolfClub.wedge, .driver] {
             let soft = RangeShot(id: 1, club: club, power: 0.001, aim: 0)
-            XCTAssertLessThan(soft.total, 0.01)
+            XCTAssertLessThan(soft.total, 1, "a tenth of a percent is a tenth of a percent of the rated distance, plus its dribble")
+            XCTAssertGreaterThan(soft.total, 0)
         }
     }
 

@@ -115,8 +115,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         self.origin = origin
         heading = request.targetHeading.isFinite ? request.targetHeading : 0
         curve = club == .putter ? 0 : min(max(execution.curveDegrees.isFinite ? execution.curveDegrees : 0, -15), 15)
-        let effectivePower = power * request.type.speedGain * strike.efficiency * min(max(lieFactor.isFinite ? lieFactor : 0, 0), 1)
-        flight = BallFlight.simulate(club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve))
+        // The meter reads distance; a chip motion, a poor strike and a bad lie cost club speed.
+        let speedFactor = request.type.speedGain * strike.efficiency * min(max(lieFactor.isFinite ? lieFactor : 0, 0), 1)
+        flight = BallFlight.simulate(club.launch(power: power, aimDegrees: self.aim, curveDegrees: self.curve, speedFactor: speedFactor))
 
         guard let hole else {
             lie = nil
@@ -127,7 +128,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             return
         }
         // A whiff is a stroke, but never a launch, penalty/drop, or automatic cup capture.
-        guard strike != .miss, effectivePower > 0 else {
+        guard strike != .miss, power > 0, speedFactor > 0 else {
             lie = hole.lie(at: origin)
             holedAt = nil
             nextPosition = origin
@@ -305,7 +306,8 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     /// Power that lands a straight shot at `distance`, found by bisection; nil if out of reach.
     static func power(toReach distance: Double, with club: GolfClub, type: ShotType = .full, lieFactor: Double = 1) -> Double? {
         func total(_ power: Double) -> Double {
-            BallFlight.simulate(club.launch(power: power * (club == .putter ? 1 : type.speedGain * lieFactor), aimDegrees: 0, curveDegrees: 0)).total
+            BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0,
+                speedFactor: club == .putter ? 1 : type.speedGain * lieFactor)).total
         }
         guard distance >= total(0), distance <= total(1) else { return nil }
         var low = 0.0, high = 1.0

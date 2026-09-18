@@ -33,6 +33,13 @@ struct SyntheticGolfer {
     var jitter = 0.0025
     /// The 3D body pose runs on every third frame, like the tracker.
     var orientationEvery = 3
+    /// How far back the swing goes, as a fraction of the authored top: 1 puts the hands over the
+    /// trail shoulder like a tour player, 0.75 stops at shoulder height like most amateurs,
+    /// 0.5 is a half swing. Putts are unaffected.
+    var backswing = 1.0
+    /// Speed of the whole motion relative to the authored, tour-like timing: 0.7 is the
+    /// leisurely tempo of a weekend golfer, 1.2 a whip.
+    var tempo = 1.0
 
     // Proportions of a 1.78 m golfer.
     private static let hipHeight: Float = 0.93
@@ -46,7 +53,7 @@ struct SyntheticGolfer {
     private static let stanceHalfWidth: Float = 0.22
 
     /// Seconds from the first swing frame to the last; the golfer holds the finish after it.
-    var swingDuration: Double { stroke == .full ? Self.fullSwing.last!.time : Self.putt.last!.time }
+    var swingDuration: Double { keys.last!.time }
     var duration: Double { addressHold + swingDuration + 0.8 }
 
     /// One moment of the swing: where the body is and how it is turned.
@@ -82,6 +89,9 @@ struct SyntheticGolfer {
         Key(time: 1.75, shoulderTurn: -112, hipTurn: -92, hands: simd_float3(-0.08, 1.70, -0.24), spineTilt: 8, weightShift: -0.10, squat: 0, trailHeel: 0.12)
     ]
 
+    /// When the authored full swing reaches the ball; keys before it shrink with `backswing`.
+    private static let fullSwingImpactTime = 1.24
+
     /// A shoulder-rocked putt: no hip turn, no wrist hinge, the hands sweep a short arc.
     static let putt: [Key] = [
         Key(time: 0.00, shoulderTurn: 0, hipTurn: 0, hands: simd_float3(0.40, 0.76, -0.02), spineTilt: 34, weightShift: 0, squat: 0, trailHeel: 0),
@@ -93,9 +103,28 @@ struct SyntheticGolfer {
 
     // MARK: - Body
 
+    /// The authored timeline adjusted to this golfer: a shorter `backswing` blends the keys up to
+    /// mid-downswing toward address (the finish is the same), `tempo` scales every key's time.
+    private var keys: [Key] {
+        let base = stroke == .full ? Self.fullSwing : Self.putt
+        let address = base[0]
+        let fraction = min(max(backswing, 0.2), 1.2)
+        let rate = min(max(tempo, 0.3), 2)
+        return base.map { key in
+            var adjusted = key
+            adjusted.time = key.time / rate
+            if stroke == .full, key.time < Self.fullSwingImpactTime, fraction != 1 {
+                adjusted.hands = address.hands + (key.hands - address.hands) * Float(fraction)
+                adjusted.shoulderTurn = address.shoulderTurn + (key.shoulderTurn - address.shoulderTurn) * fraction
+                adjusted.hipTurn = address.hipTurn + (key.hipTurn - address.hipTurn) * fraction
+            }
+            return adjusted
+        }
+    }
+
     /// The body at `time` seconds, in the body frame, before the stance turn.
     func body(at time: Double) -> [BodyJoint: simd_float3] {
-        let key = Self.interpolate(stroke == .full ? Self.fullSwing : Self.putt, at: time - addressHold)
+        let key = Self.interpolate(keys, at: time - addressHold)
         let mirror: Float = handedness == .right ? 1 : -1
         let turn = { (degrees: Double) in simd_quatf(angle: Float(-degrees * .pi / 180) * mirror, axis: simd_float3(0, 1, 0)) }
         // Bending forward from the hips brings the chest toward the phone (+x).
