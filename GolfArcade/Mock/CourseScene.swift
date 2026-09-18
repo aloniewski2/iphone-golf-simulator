@@ -18,6 +18,9 @@ struct SceneInputs {
     var pausedAt: Date?
     /// Live swing arc, for the canned golfer when there is no camera pose.
     var swingAngle: Double
+    /// The player is holding an arm out to move the line: the golfer keeps his address rather
+    /// than copying a pose that has nothing to do with the shot.
+    var isSignallingAim = false
     var bystanders: [Bystander]
     var preview: RangeShot? = nil
 
@@ -432,7 +435,11 @@ final class CourseScene: NSObject, ObservableObject {
         golfer.setMirrored(mirror < 0)
         golfer.node.simdPosition = playerStance.position
 
-        let (raw, source) = golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        var (raw, source) = golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        if shot == nil, inputs.isSignallingAim, source == .live {
+            raw = AvatarAnimations.address
+            source = .canned
+        }
         let pose = present(raw, from: source, now: now)
         golfer.apply(pose)
         updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)

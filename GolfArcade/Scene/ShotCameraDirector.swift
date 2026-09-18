@@ -54,14 +54,17 @@ enum ShotCameraDirector {
         let scale = AvatarSize.courseScale
         switch stage {
         case .address:
+            // Behind the ball on the side away from the golfer, so he stands clear on the left
+            // (right for a left-hander) and can never come between the camera and the ball,
+            // whatever his pose; the pair turn together about the ball as the line moves.
             let origin = inputs.shot?.origin ?? inputs.ball
-            let center = simd_float3(-1.6 * mirror, 0, 0)
+            let center = simd_float3(-1.0 * mirror, 0, 0)
             let aim = aimDirection(inputs.aim)
             return Shot(
                 stage: stage,
-                position: world((center + simd_float3(0, 10, 18)) * scale, origin: origin, heading: inputs.heading),
+                position: world((simd_float3(1.2 * mirror, 10, 18)) * scale, origin: origin, heading: inputs.heading),
                 lookAt: world((center + simd_float3(0, 1.0, 0) + aim * 12) * scale, origin: origin, heading: inputs.heading),
-                fieldOfView: 50, damping: 4
+                fieldOfView: 50, damping: 5
             )
         case .green:
             // Low and a little behind the ball on the side away from the golfer, so the golfer

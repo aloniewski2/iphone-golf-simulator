@@ -510,6 +510,7 @@ struct CourseScreen: View {
             flightStart: round.flightStart,
             pausedAt: round.pausedAt,
             swingAngle: usesCamera ? camera.swingAngle : round.power * 150,
+            isSignallingAim: usesCamera && camera.aimSignal != nil,
             bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex) },
             preview: round.canSwing ? round.trajectoryPreview : nil
         )
