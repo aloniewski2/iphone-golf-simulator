@@ -239,6 +239,17 @@ struct ArmSwingDetector {
             downswingSpeed = 20
             minimumSwingSpeed = 15
             fullDownswingSpeed = 300
+        } else {
+            // A full swing gets shorter as the club gets shorter, on the course as here: the
+            // committed iron or wedge swing that a player naturally makes fills its meter,
+            // rather than reading as three quarters of a driver.
+            switch club {
+            case .driver: fullBackswing = 120
+            case .iron: fullBackswing = 110
+            case .wedge: fullBackswing = 100
+            case .putter: break
+            }
+            fullDownswingSpeed = club == .wedge ? 450 : club == .iron ? 500 : 550
         }
     }
 

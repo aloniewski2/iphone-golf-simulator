@@ -120,7 +120,7 @@ Both hands together (a golf grip) never count, and gestures are ignored during a
 
 ## Ball flight
 
-Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, then bounce and roll. At full power the model gives roughly driver 254 + 23 yd, iron 148 + 15, wedge 82 + 10. See `GolfArcade/Mock/BallFlight.swift`.
+Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, then bounce and roll. The drag and lift curves are fitted to launch-monitor flights, and backspin grips the turf on the first bounce, so each club behaves like its real one: at full power the driver (106 mph, 12.5°, 2600 rpm) carries 250 and rolls 20 with a 33-yard apex; the 7-iron (88 mph, 17°, 6800 rpm) carries 160, hops 8 and comes down at about 48°; the sand wedge (70 mph, 29°, 9800 rpm) carries 90 and checks up within 3. From the camera, a full swing gets shorter with the club — 120° of hands arc for the driver, 110° for the iron, 100° for the wedge — so the committed swing you naturally make with each club fills its meter. See `GolfArcade/Mock/BallFlight.swift`.
 
 ## What to test on a device
 

@@ -83,9 +83,11 @@ struct BallFlight: Equatable, Sendable {
                 let v = simd_length(velocity)
                 var acceleration = simd_double3(0, -gravity, 0)
                 if v > 0.01 {
+                    // Fits to launch-monitor flights (driver, 7-iron, wedge): drag grows with
+                    // spin ratio, lift rises quickly then saturates, and spin fades slowly.
                     let spinRatio = radius * spin / v
-                    let drag = 0.21 + 0.5 * spinRatio
-                    let lift = min(0.33, 2.05 * spinRatio)
+                    let drag = 0.20 + 0.35 * spinRatio
+                    let lift = min(0.32, 0.45 * pow(spinRatio, 0.4))
                     let dynamicPressure = 0.5 * airDensity * area * v * v
                     let direction = velocity / v
                     // Backspin axis lies flat and perpendicular to travel; tilting it adds sideways lift.
@@ -93,7 +95,7 @@ struct BallFlight: Equatable, Sendable {
                     let axis = simd_normalize(flat * cos(tilt) + simd_double3(0, 1, 0) * sin(tilt))
                     let liftDirection = simd_cross(axis, direction)
                     acceleration += (-direction * drag + liftDirection * lift) * dynamicPressure / mass
-                    spin *= exp(-dt / 25)
+                    spin *= exp(-dt / 45)
                 }
                 velocity += acceleration * dt
                 position += velocity * dt
@@ -102,8 +104,11 @@ struct BallFlight: Equatable, Sendable {
                     position.y = 0
                     if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
                     velocity.y = -velocity.y * restitution
-                    velocity.x *= bounceFriction
-                    velocity.z *= bounceFriction
+                    // Backspin grips the turf on the first bounce: a driver keeps rolling, a
+                    // spinning iron hops and stops, a wedge checks up almost where it lands.
+                    let grip = max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * .pi)) / 10_000)
+                    velocity.x *= grip
+                    velocity.z *= grip
                     spin = 0
                     if velocity.y < 1.2 {
                         velocity.y = 0
@@ -203,11 +208,12 @@ extension GolfClub {
         return (club, Calibration(maxSpeed: maxSpeed, distances: distances))
     })
 
+    /// Launch conditions of a well-struck shot with each club (driver, 7-iron, sand wedge).
     var launchAngleDegrees: Double {
         switch self {
         case .driver: 12.5
-        case .iron: 18
-        case .wedge: 30
+        case .iron: 17
+        case .wedge: 29
         case .putter: 0
         }
     }
@@ -216,8 +222,8 @@ extension GolfClub {
     var spinRPM: Double {
         switch self {
         case .driver: 2600
-        case .iron: 6200
-        case .wedge: 9500
+        case .iron: 6800
+        case .wedge: 9800
         case .putter: 0
         }
     }
