@@ -224,12 +224,15 @@ struct ArmSwingDetector {
         pathNeutral = savedNeutral
         isPutt = club == .putter
         if isPutt {
-            backswingStart = 2.5
-            fullBackswing = 35
+            // A putt is read from a small arc, so it gets a long meter: the full stroke is a
+            // real lag-putt sweep, a tap-in a few degrees, and camera jitter at address does
+            // not start one. Tempo matters less than length on the green.
+            backswingStart = 4
+            fullBackswing = 55
             downswingSpeed = 5
             minimumSwingSpeed = 5
-            fullDownswingSpeed = 100
-            speedWeight = 0.35
+            fullDownswingSpeed = 120
+            speedWeight = 0.2
         } else if type == .chip || type == .pitch {
             backswingStart = 5
             fullBackswing = type == .chip ? 45 : 85

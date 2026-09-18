@@ -26,11 +26,11 @@ Each course has three holes that you play out, counting strokes against par:
 | Pine Bend | Medium | 4 · 3 · 4 | Doglegs, narrower, 2–3 bunkers per hole |
 | Cliffwater | Hard | 4 · 5 · 3 | Narrow, water carries, greenside bunkers |
 
-- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 0.25° with the putter. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
+- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 1° with the putter. In Camera mode you can also aim from the ball: hold one arm straight out to the side at shoulder height, like signalling a turn, and the line steps that way — once after a moment, then every half second while the arm stays out (the side you see in the mirror is the side the line moves). The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
 - The next shot is played from where the ball stops. The suggested club is selected for you (putter on the green, wedge in a bunker).
 - **Rough** takes 15% off the next shot and a **bunker** 40%.
 - **Water**: +1 stroke, dropped short of the hazard on the line of play. **Out of bounds** (past the tree line): +1 stroke, replayed from the same spot.
-- Putting power has a fixed meaning independent of pin distance, continuous from zero. A slow ball passing within the 0.12-yard arcade cup tolerance drops; its rendered endpoint and next position both become the cup.
+- Putting power has a fixed meaning independent of pin distance, continuous from zero. From the camera a putt is read from the hands' arc with a long meter (a full lag-putt sweep of about 55° fills it; a 20° rock is a mid-length putt), so a small stroke stays a small putt. A slow ball passing within the 0.12-yard arcade cup drops: the cup is drawn that size, cut into the green with a pale rim, and the ball rolls to the middle and falls out of sight down it rather than blinking off.
 - After par + 5 strokes the ball is picked up so the round keeps moving.
 - In multiplayer, each player plays the whole hole in turn, then everyone moves to the next hole. The scorecard shows strokes per hole, totals, and ± par. Solo best scores are saved per course.
 
@@ -112,7 +112,7 @@ Move through menus without touching the phone:
 | Shot result / hole done | — | Replay | Next | Next |
 | Round complete | — | Menu | Play again | Play again |
 
-Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
+Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball the menu gestures rest, and the **arm signal** takes over for aiming: one arm out to the side, the other hand down, steps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
 
 ## Other inputs
 

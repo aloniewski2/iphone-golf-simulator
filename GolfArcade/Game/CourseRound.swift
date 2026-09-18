@@ -121,7 +121,8 @@ final class CourseRound: ObservableObject {
     var distanceToTarget: Double { ball.distance(to: intendedTarget) }
     var targetLabel: String { intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }
     var heading: Double { ball.heading(to: intendedTarget) }
-    var aimStep: Double { club == .putter ? 0.25 : 2 }
+    /// One nudge of the line: a degree on the green (three inches at ten feet, a foot at forty), two off it.
+    var aimStep: Double { club == .putter ? 1 : 2 }
     var combinedAim: Double { aim + stanceAim }
     var holeNavigation: HoleNavigation {
         HoleNavigation(ball: ball, pin: hole.pin, aimHeading: heading + combinedAim)

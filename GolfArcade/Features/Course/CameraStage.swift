@@ -248,7 +248,9 @@ struct GestureFlash: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.15)) { timeline in
             let recent = camera.lastGesture.flatMap { timeline.date.timeIntervalSince($0.at) < 0.7 ? $0.gesture : nil }
-            if let symbol = recent?.symbol ?? (camera.gestureArmed ? "hand.raised.fill" : nil) {
+            // An arm held out to aim shows its arrow the whole time it is out.
+            let signalling = camera.aimSignal.map { $0 == .left ? "arrow.left" : "arrow.right" }
+            if let symbol = recent?.symbol ?? signalling ?? (camera.gestureArmed ? "hand.raised.fill" : nil) {
                 Image(systemName: symbol)
                     .font(.system(size: 13, weight: .bold))
                     .frame(width: 26, height: 26)

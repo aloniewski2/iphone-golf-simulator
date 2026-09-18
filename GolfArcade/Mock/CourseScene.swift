@@ -358,7 +358,7 @@ final class CourseScene: NSObject, ObservableObject {
         flag.simdScale = simd_float3(repeating: 0.28)
         flag.name = "clothPinFlag"
         pinFlag = flag
-        disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: pinGround - 0.132)
+        buildCup(at: pin, ground: pinGround)
         buildGreenGrid(hole)
 
         plantTrees(along: hole)
@@ -437,19 +437,28 @@ final class CourseScene: NSObject, ObservableObject {
         golfer.apply(pose)
         updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)
 
-        // Ball.
-        let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: inputs.ball.x, heightYards: 0, distanceYards: inputs.ball.d)
+        // Ball. A holed ball is not switched off at the cup: it rolls the last inch to the
+        // middle and drops out of sight down the hole over a third of a second.
+        var point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: inputs.ball.x, heightYards: 0, distanceYards: inputs.ball.d)
+        let dropping = shot.map { $0.isHoled ? elapsed - $0.duration : -1 } ?? -1 // seconds since it reached the cup
+        let drop = Self.cupDrop(after: dropping)
+        if dropping >= 0 {
+            let pin = inputs.hole.pin
+            point = FlightPoint(lateralYards: point.lateralYards + (pin.x - point.lateralYards) * drop.centred,
+                                heightYards: point.heightYards,
+                                distanceYards: point.distanceYards + (pin.d - point.distanceYards) * drop.centred)
+        }
         let teed = shot == nil && inputs.lie == .tee
         let visibleLie = inputs.hole.lie(at: CoursePoint(x: point.lateralYards, d: point.distanceYards))
         let lift = Double(ground(CoursePoint(x: point.lateralYards, d: point.distanceYards)))
         let restingHeight = lift + (visibleLie == .green ? -0.035 : visibleLie == .bunker || visibleLie == .water ? -0.025 : -0.05)
-        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? lift + Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.visibleBallRadius)), -point.distanceYards)
+        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? lift + Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.visibleBallRadius)) - drop.depth, -point.distanceYards)
         shadow.position = SCNVector3(point.lateralYards, restingHeight + 0.003, -point.distanceYards)
         ballLocator.position = SCNVector3(point.lateralYards, restingHeight + 0.008, -point.distanceYards)
-        let sunk = shot.map { $0.isHoled && elapsed >= $0.duration } ?? false
-        if let shot, !inputs.isReplay || elapsed > 0 { announceLanding(shot, elapsed: elapsed, hole: inputs.hole, sunk: sunk) }
+        let sunk = drop.finished
+        if let shot, !inputs.isReplay || elapsed > 0 { announceLanding(shot, elapsed: elapsed, hole: inputs.hole, sunk: drop.rattled) }
         ball.isHidden = sunk
-        shadow.isHidden = sunk
+        shadow.isHidden = dropping >= 0
         ballLocator.isHidden = sunk || (shot != nil && elapsed < (shot?.duration ?? 0))
         tee.isHidden = inputs.lie != .tee && shot?.origin != inputs.hole.tee
 
@@ -475,6 +484,15 @@ final class CourseScene: NSObject, ObservableObject {
     }
 
     private var lastFlightStart: Date?
+
+    /// How far a holed ball has gone down the cup `seconds` after reaching it: it slides to
+    /// the middle over the first tenth, falls a ball's width and more by a third, and is gone.
+    nonisolated static func cupDrop(after seconds: Double) -> (centred: Double, depth: Double, rattled: Bool, finished: Bool) {
+        guard seconds >= 0 else { return (0, 0, false, false) }
+        let centred = min(1, seconds / 0.1)
+        let fall = min(1, seconds / 0.32)
+        return (centred, 0.16 * fall * fall, seconds >= 0.18, seconds >= 0.34)
+    }
 
     /// One landing sound as the ball first comes down (what it lands on decides which), and the
     /// cup when it drops. Putts only roll, so they are silent until the cup.
@@ -752,6 +770,22 @@ final class CourseScene: NSObject, ObservableObject {
             let point = CoursePoint(x: dot.base.x + Double(offset.x), d: dot.base.d - Double(offset.z))
             dot.node.simdPosition = simd_float3(Float(point.x), ground(point) + 0.02, -Float(point.d))
         }
+    }
+
+    /// The hole: as wide as the ball can drop into (`Hole.cupCaptureRadius`), cut into the green
+    /// with a pale rim, and dark all the way down so a ball sinking in disappears into it.
+    private func buildCup(at pin: CoursePoint, ground: Float) {
+        let radius = Hole.cupCaptureRadius
+        let surface = ground - 0.035 // the green's turf sits this far under the terrain height
+        let mouth = SCNCylinder(radius: radius, height: 0.24)
+        mouth.radialSegmentCount = 48
+        mouth.firstMaterial?.lightingModel = .constant
+        let hole = add(mouth, UIColor(white: 0.05, alpha: 1), at: world(pin, y: surface - 0.118))
+        hole.name = "cup"
+        let rim = SCNTorus(ringRadius: radius, pipeRadius: 0.012)
+        rim.ringSegmentCount = 48
+        rim.firstMaterial?.emission.contents = UIColor(white: 0.35, alpha: 1)
+        add(rim, UIColor(white: 0.96, alpha: 1), at: world(pin, y: surface + 0.006)).name = "cupRim"
     }
 
     private func disc(radius: Double, color: UIColor, at point: CoursePoint, y: Float) {

@@ -160,6 +160,22 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertLessThan(shot.total, 4, "and it is not a lag")
     }
 
+    func testPuttingStrokeNeedsARealSweepForDistance() throws {
+        // A twenty-degree rock is a mid-length putt; it takes most of a lag-putt sweep to
+        // fill the meter, so a nervous small stroke cannot race the ball past the hole.
+        var medium = ArmSwingDetector(), long = ArmSwingDetector()
+        medium.configure(for: .putter)
+        long.configure(for: .putter)
+        let rock = try XCTUnwrap(impacts(drive(&medium, legs: [(0.5, 0), (1.0, 20), (0.15, 20), (0.8, -3)])).first)
+        let sweep = try XCTUnwrap(impacts(drive(&long, legs: [(0.5, 0), (1.4, 50), (0.15, 50), (1.0, -4)])).first)
+        XCTAssertLessThan(rock.power, 0.45)
+        XCTAssertGreaterThan(rock.power, 0.25)
+        XCTAssertGreaterThan(sweep.power, 0.8)
+        let mid = RangeShot(id: 1, club: .putter, power: rock.power, aim: 0, strike: rock.strike)
+        XCTAssertGreaterThan(mid.total, 4, "twenty degrees is a real putt")
+        XCTAssertLessThan(mid.total, 9, "but nowhere near a lag")
+    }
+
     func testSlowThirtyDegreePuttIsNotAbsorbedByRecentering() {
         var detector = ArmSwingDetector()
         detector.configure(for: .putter)
