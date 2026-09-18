@@ -81,9 +81,12 @@ final class PresentationTests: XCTestCase {
         // A holed putt: silent until the cup.
         heard.removeAll()
         let cupSide = CoursePoint(x: hole.pin.x, d: hole.pin.d - 2)
-        let power = try XCTUnwrap(RangeShot.power(toReach: 2.6, with: .putter))
-        let putt = RangeShot(id: 2, club: .putter, power: power, aim: 0, origin: cupSide, heading: 0, hole: hole)
-        XCTAssertTrue(putt.isHoled, "a two-yard putt straight at the cup drops")
+        // The green tips a little, and a real cup only takes a putt on the right line at the
+        // right pace: try a few lines with dying pace, the way a player would.
+        let power = try XCTUnwrap(RangeShot.power(toReach: 2.3, with: .putter))
+        let putt = try XCTUnwrap(stride(from: -3.0, through: 3.0, by: 0.5).lazy
+            .map { RangeShot(id: 2, club: .putter, power: power, aim: $0, origin: cupSide, heading: 0, hole: hole) }
+            .first { $0.isHoled }, "some line holes a two-yard putt at dying pace")
         inputs.shot = putt
         // The ball reaches the cup and rolls in; the rattle comes as it hits the bottom.
         inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.05)

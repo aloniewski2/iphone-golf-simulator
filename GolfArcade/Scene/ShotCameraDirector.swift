@@ -4,7 +4,7 @@ import simd
 /// green, a hero shot of the golfer right after impact, a close chase of the ball, then a 3/4 view
 /// as it lands. Pure, so every cut can be unit-tested; `CourseScene` smooths between frames.
 enum ShotCameraDirector {
-    enum Stage: Equatable, Sendable { case address, green, hero, chase, landing }
+    enum Stage: Equatable, Sendable { case address, green, hero, chase, landing, roll, holeCam }
 
     struct Inputs {
         var ball: CoursePoint
@@ -17,7 +17,12 @@ enum ShotCameraDirector {
         var elapsed: Double
         var reaction: AvatarAnimations.Reaction?
         var landingTime: Double?
+        /// The cup, for the putting cameras.
+        var pin: CoursePoint? = nil
     }
+
+    /// A putt within this far of the cup, still rolling toward it, is watched from behind the hole.
+    static let holeCamReach = 3.5
 
     struct Shot: Equatable {
         var stage: Stage
@@ -42,6 +47,17 @@ enum ShotCameraDirector {
 
     static func stage(_ inputs: Inputs) -> Stage {
         guard let shot = inputs.shot else { return inputs.onGreen ? .green : .address }
+        if shot.club == .putter, shot.request.type == .putt, let pin = inputs.pin {
+            // A putt is watched, not chased: the camera holds behind the ball, then, as the ball
+            // closes on the cup, cuts to behind the hole to watch it arrive (the games' hole cam).
+            let time = min(inputs.elapsed, shot.duration)
+            let now = shot.position(at: time), soon = shot.position(at: min(shot.duration, time + 0.5))
+            let here = CoursePoint(x: now.lateralYards, d: now.distanceYards)
+            let next = CoursePoint(x: soon.lateralYards, d: soon.distanceYards)
+            let closing = next.distance(to: pin) <= here.distance(to: pin) + 0.01
+            if here.distance(to: pin) <= holeCamReach, closing || shot.isHoled || inputs.elapsed >= shot.duration { return .holeCam }
+            return inputs.elapsed >= shot.duration ? .landing : .roll
+        }
         if inputs.elapsed < heroDuration(reaction: inputs.reaction, club: shot.club, flightDuration: shot.duration) { return .hero }
         if let landing = inputs.landingTime, inputs.elapsed >= landing { return .landing }
         if inputs.elapsed >= shot.duration { return .landing }
@@ -102,6 +118,33 @@ enum ShotCameraDirector {
                 position: ball - direction * (7 + height * 0.12) + simd_float3(0, 2.2 + height * 0.1, 0),
                 lookAt: ball + direction * 12 + simd_float3(0, -height * 0.2, 0),
                 fieldOfView: 60, damping: 6
+            )
+        case .roll:
+            // Where the putt was read from: low behind the ball's start, the whole line in view.
+            let shot = inputs.shot!
+            let aim = aimDirection(0)
+            let reach = Float(min(max(inputs.distanceToPin, 4), 30))
+            return Shot(
+                stage: stage,
+                position: world(simd_float3(2.6 * mirror, 5.0, 12 + reach * 0.12) * scale, origin: shot.origin, heading: shot.heading),
+                lookAt: world(aim * Float(max(inputs.distanceToPin * 0.5, 3)) + simd_float3(0, 0.15, 0), origin: shot.origin, heading: shot.heading),
+                fieldOfView: 50, damping: 4
+            )
+        case .holeCam:
+            // Behind the hole, low, looking back along the line at the ball rolling in.
+            let shot = inputs.shot!
+            let pin = inputs.pin!
+            let ball = scenePoint(shot.position(at: min(inputs.elapsed, shot.duration)))
+            let cup = simd_float3(Float(pin.x), 0, -Float(pin.d))
+            var away = cup - simd_float3(ball.x, 0, ball.z)
+            if simd_length(away) < 0.05 { away = forwardDirection(heading: shot.heading + shot.aim) }
+            away = simd_normalize(away)
+            let side = simd_float3(-away.z, 0, away.x)
+            return Shot(
+                stage: stage,
+                position: cup + away * 2.6 + side * 0.9 + simd_float3(0, 1.15, 0),
+                lookAt: simd_mix(ball, cup, simd_float3(repeating: 0.35)) + simd_float3(0, 0.06, 0),
+                fieldOfView: 48, damping: 5
             )
         case .landing:
             let shot = inputs.shot!

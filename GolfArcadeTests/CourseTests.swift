@@ -545,3 +545,32 @@ final class CourseTests: XCTestCase {
         XCTAssertEqual(round.ball, hole.pin)
     }
 }
+
+final class CupPhysicsTests: XCTestCase {
+    func testTheCupTakesADyingPuttAnywhereButAFirmOneOnlyThroughTheMiddle() {
+        XCTAssertTrue(RangeShot.cupCaptures(speed: 0.3, offset: 0.11), "dead weight on the edge falls in")
+        XCTAssertTrue(RangeShot.cupCaptures(speed: 1.6, offset: 0.0), "firm through the middle drops")
+        XCTAssertFalse(RangeShot.cupCaptures(speed: 1.6, offset: 0.10), "the same pace on the edge horseshoes out")
+        XCTAssertFalse(RangeShot.cupCaptures(speed: 2.4, offset: 0.0), "a rammed putt jumps the hole")
+        XCTAssertFalse(RangeShot.cupCaptures(speed: 0.1, offset: 0.13), "past the rim is a miss however slow")
+    }
+
+    func testAFirmPuttOnTheEdgeLipsOutAndRunsPast() throws {
+        let hole = Course.easy.holes[0]
+        let from = CoursePoint(x: hole.pin.x, d: hole.pin.d - 3)
+        let heading = from.heading(to: hole.pin)
+        // Aimed to catch the edge of the cup at pace: it must not drop, and it must not simply
+        // roll straight through the hole either — the rim kicks it aside and it finishes past.
+        let edge = Double(atan2(0.1, 3) * 180 / .pi)
+        let firm = try XCTUnwrap(RangeShot.power(toReach: 7, with: .putter))
+        let putt = RangeShot(id: 1, club: .putter, power: firm, aim: edge, origin: from, heading: heading, hole: hole)
+        XCTAssertFalse(putt.isHoled)
+        let rest = putt.nextPosition
+        XCTAssertGreaterThan(rest.distance(to: hole.pin), 0.4, "kicked away from the hole")
+        XCTAssertLessThan(rest.distance(to: hole.pin), 3.5, "the rim took most of its pace")
+        // The same line at dying pace drops.
+        let soft = try XCTUnwrap(RangeShot.power(toReach: 3.3, with: .putter))
+        let dying = RangeShot(id: 2, club: .putter, power: soft, aim: edge, origin: from, heading: heading, hole: hole)
+        XCTAssertTrue(dying.isHoled, "a dying putt catching the edge falls in")
+    }
+}
