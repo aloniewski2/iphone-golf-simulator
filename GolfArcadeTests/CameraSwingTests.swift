@@ -160,6 +160,22 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertLessThan(shot.total, 4, "and it is not a lag")
     }
 
+    func testPuttingStrokeNeedsARealSweepForDistance() throws {
+        // A twenty-degree rock is a mid-length putt; it takes most of a lag-putt sweep to
+        // fill the meter, so a nervous small stroke cannot race the ball past the hole.
+        var medium = ArmSwingDetector(), long = ArmSwingDetector()
+        medium.configure(for: .putter)
+        long.configure(for: .putter)
+        let rock = try XCTUnwrap(impacts(drive(&medium, legs: [(0.5, 0), (1.0, 20), (0.15, 20), (0.8, -3)])).first)
+        let sweep = try XCTUnwrap(impacts(drive(&long, legs: [(0.5, 0), (1.4, 50), (0.15, 50), (1.0, -4)])).first)
+        XCTAssertLessThan(rock.power, 0.45)
+        XCTAssertGreaterThan(rock.power, 0.25)
+        XCTAssertGreaterThan(sweep.power, 0.8)
+        let mid = RangeShot(id: 1, club: .putter, power: rock.power, aim: 0, strike: rock.strike)
+        XCTAssertGreaterThan(mid.total, 4, "twenty degrees is a real putt")
+        XCTAssertLessThan(mid.total, 9, "but nowhere near a lag")
+    }
+
     func testSlowThirtyDegreePuttIsNotAbsorbedByRecentering() {
         var detector = ArmSwingDetector()
         detector.configure(for: .putter)
@@ -171,6 +187,22 @@ final class ArmSwingDetectorTests: XCTestCase {
         var detector = ArmSwingDetector()
         detector.configure(for: .putter)
         XCTAssertTrue(impacts(drive(&detector, legs: [(0.5, 0), (0.3, 2), (0.3, -2), (0.3, 1), (0.3, 0)])).isEmpty)
+    }
+
+    func testEasingBackDownFromTheTopLowersTheMeterAndTheShot() throws {
+        // Up to a full turn, then slowly settle back to a three-quarter position and swing from there.
+        var adjusted = ArmSwingDetector(), full = ArmSwingDetector()
+        let adjustedEvents = drive(&adjusted, legs: [(0.5, 0), (0.8, 118), (1.0, 80), (0.3, 80), (0.3, -20)])
+        let fullEvents = drive(&full, legs: [(0.5, 0), (0.8, 118), (0.3, 118), (0.3, -20)])
+        let loads = adjustedEvents.compactMap { if case .load(let value) = $0 { value } else { nil } }
+        XCTAssertGreaterThan(try XCTUnwrap(loads.max()), 0.9, "the meter filled on the way up")
+        // While the hands eased down the meter came down with them.
+        let settled = try XCTUnwrap(loads.last)
+        XCTAssertLessThan(settled, 0.75)
+        XCTAssertGreaterThan(settled, 0.55)
+        let hit = try XCTUnwrap(impacts(adjustedEvents).first)
+        let fullHit = try XCTUnwrap(impacts(fullEvents).first)
+        XCTAssertLessThan(hit.power, fullHit.power - 0.2, "the shot is played from where the downswing started")
     }
 
     func testSlowFullPracticeSwingCancels() {

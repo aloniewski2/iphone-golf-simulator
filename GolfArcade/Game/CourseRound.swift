@@ -75,6 +75,8 @@ final class CourseRound: ObservableObject {
     private var manualAimSelected = false
     private var planningKey: String?
     private var planningPower = 1.0
+    /// Meter reading that lands on the target with this club; nil when it is out of reach.
+    private var planningReach: Double?
     private var previewCache: RangeShot?
     private var previewKey: ShotRequest?
     private var previewOrigin: CoursePoint?
@@ -115,11 +117,14 @@ final class CourseRound: ObservableObject {
     var hole: Hole { course.holes[holeIndex] }
     var canSwing: Bool { !editingShot && pausedAt == nil && (phase == .ready || phase == .charging) }
     var distanceToPin: Double { ball.distance(to: hole.pin) }
+    /// Yards the hole sits above (positive) or below the ball.
+    var riseToPin: Double { hole.terrain.elevation(at: hole.pin) - hole.terrain.elevation(at: ball) }
     var intendedTarget: CoursePoint { target ?? hole.recommendedTarget(from: ball) }
     var distanceToTarget: Double { ball.distance(to: intendedTarget) }
     var targetLabel: String { intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }
     var heading: Double { ball.heading(to: intendedTarget) }
-    var aimStep: Double { club == .putter ? 0.25 : 2 }
+    /// One nudge of the line: a degree on the green (three inches at ten feet, a foot at forty), two off it.
+    var aimStep: Double { club == .putter ? 1 : 2 }
     var combinedAim: Double { aim + stanceAim }
     var holeNavigation: HoleNavigation {
         HoleNavigation(ball: ball, pin: hole.pin, aimHeading: heading + combinedAim)
@@ -141,15 +146,26 @@ final class CourseRound: ObservableObject {
         if stanceAim != value { stanceAim = value }
     }
 
+    /// Where on the meter the target sits: the reading whose shot finishes at the target with
+    /// this club, from the same flight model as release. Nil when the club cannot reach it.
+    var targetPower: Double? {
+        updatePlanning()
+        return planningReach
+    }
+
+    private func updatePlanning() {
+        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
+        guard key != planningKey else { return }
+        planningKey = key
+        planningReach = RangeShot.power(toReach: distanceToTarget, with: club,
+            type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor)
+        planningPower = planningReach ?? 1
+    }
+
     /// Cached ideal-center prediction using the same launch/lie/flight model as release.
     /// It is an aim guide, not a promise about the player's future swing speed or strike.
     var trajectoryPreview: RangeShot {
-        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
-        if key != planningKey {
-            planningKey = key
-            planningPower = RangeShot.power(toReach: distanceToTarget, with: club,
-                type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor) ?? 1
-        }
+        updatePlanning()
         let predictedPower = phase == .charging ? max(0.05, (power * 20).rounded() / 20) : planningPower
         let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
             type: club == .putter ? .putt : shotType,

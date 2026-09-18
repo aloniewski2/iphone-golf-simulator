@@ -212,16 +212,84 @@ final class SyntheticGolferTests: XCTestCase {
         XCTAssertGreaterThan(detector.power(arc: detector.fullBackswing * 0.9, downswingSpeed: detector.fullDownswingSpeed * 1.25), 0.9)
     }
 
+    /// Twelve takes of the same swing through a jittery tracker start within a degree of each
+    /// other: the path is read from long chords either side of the ball, not one noisy frame.
+    func testStartLineIsConsistentAcrossTakes() throws {
+        var lines: [Double] = []
+        for seed in 0..<12 {
+            var golfer = SyntheticGolfer()
+            golfer.backswing = 0.8
+            golfer.tempo = 0.8
+            golfer.jitter = 0.004
+            golfer.jitterSeed = UInt64(seed * 7919 + 1)
+            golfer.addressHold = 2
+            lines.append(try XCTUnwrap(drive(golfer).first).startLineDegrees)
+        }
+        let mean = lines.reduce(0, +) / Double(lines.count)
+        let spread = (lines.map { ($0 - mean) * ($0 - mean) }.reduce(0, +) / Double(lines.count - 1)).squareRoot()
+        XCTAssertLessThan(spread, 1.0, "takes: \(lines)")
+        XCTAssertLessThan(abs(mean), 5, "a square swing starts near the line even before the player's neutral settles")
+    }
+
+    /// The player's usual swing becomes the zero line after a few swings; only a change of
+    /// shape turns the ball — over the top pulls, and a left-hander's pull goes the other way.
+    func testUsualSwingFliesStraightAndOverTheTopPulls() throws {
+        func golfer(overTheTop: Double = 0, handedness: Handedness = .right, seed: UInt64) -> SyntheticGolfer {
+            var golfer = SyntheticGolfer(handedness: handedness)
+            golfer.backswing = 0.8
+            golfer.tempo = 0.8
+            golfer.overTheTop = overTheTop
+            golfer.jitterSeed = seed
+            return golfer
+        }
+        for handedness in [Handedness.right, .left] {
+            let usual = (1...4).map { golfer(handedness: handedness, seed: UInt64($0)) }
+            let impacts = try drive(usual + [golfer(overTheTop: 0.15, handedness: handedness, seed: 9), golfer(overTheTop: -0.15, handedness: handedness, seed: 10)], handedness: handedness)
+            XCTAssertEqual(impacts.count, 6, "\(handedness)")
+            let settled = impacts[3].startLineDegrees
+            XCTAssertLessThan(abs(settled), 1, "\(handedness): the usual swing is square by the fourth go")
+            let pull = impacts[4].startLineDegrees - settled
+            let push = impacts[5].startLineDegrees - settled
+            let sign: Double = handedness == .right ? -1 : 1
+            XCTAssertGreaterThan(pull * sign, 1, "\(handedness): over the top pulls, \(pull)°")
+            XCTAssertLessThan(push * sign, -0.5, "\(handedness): dropping inside pushes, \(push)°")
+        }
+    }
+
+    func testPathNeutralIsTheMedianAndRampsIn() {
+        var neutral = PathNeutral()
+        XCTAssertEqual(neutral.value, 0)
+        neutral.record(-6)
+        XCTAssertEqual(neutral.value, -2, accuracy: 1e-9, "one swing counts a third")
+        neutral.record(-6)
+        neutral.record(30) // one wild swing does not move a median much
+        XCTAssertEqual(neutral.value, -6, accuracy: 1e-9)
+        for _ in 0..<20 { neutral.record(4) }
+        XCTAssertEqual(neutral.value, 4, accuracy: 1e-9, "old swings age out of the window")
+        XCTAssertEqual(neutral.count, PathNeutral.window)
+        XCTAssertEqual(VirtualClubState.startLine(deviation: 4, neutral: 4), 0)
+        XCTAssertEqual(VirtualClubState.startLine(deviation: -40, neutral: 0), -VirtualClubState.startLineLimit)
+    }
+
     // MARK: - Helpers
 
     private func drive(_ golfer: SyntheticGolfer, club: GolfClub = .driver, handedness: Handedness = .right) throws -> [SwingImpact] {
+        try drive([golfer], club: club, handedness: handedness)
+    }
+
+    /// Several swings in a row through one detector, as a player would make them.
+    private func drive(_ golfers: [SyntheticGolfer], club: GolfClub = .driver, handedness: Handedness = .right) throws -> [SwingImpact] {
         var detector = ArmSwingDetector()
         detector.handedness = handedness
         detector.configure(for: club)
         var impacts: [SwingImpact] = []
-        for pose in golfer.poses() {
-            let sample = ArmSwingDetector.Sample(frame: pose.frame!, frameAspect: pose.aspect, certifiedSpace: detector.certifiedSpace)
-            if case .impact(let impact)? = detector.ingest(sample, at: pose.time) { impacts.append(impact) }
+        var offset = 0.0
+        for golfer in golfers {
+            for pose in golfer.poses() {
+                let sample = ArmSwingDetector.Sample(frame: pose.frame!, frameAspect: pose.aspect, certifiedSpace: detector.certifiedSpace)
+                if case .impact(let impact)? = detector.ingest(sample, at: pose.time + offset) { impacts.append(impact) }
+            }
+            offset += golfer.duration + 0.5
         }
         return impacts
     }

@@ -195,7 +195,7 @@ struct CourseScreen: View {
                     holeChip
                     if round.canSwing {
                         HoleDirectionCue(round: round)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
+                            .frame(maxWidth: max(200, size.width - 150), alignment: .leading)
                     }
                     Text("\(round.targetLabel) · \(Int(round.distanceToTarget.rounded())) YD")
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
@@ -218,14 +218,27 @@ struct CourseScreen: View {
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
                             .padding(8).background(.black.opacity(0.65), in: Capsule())
                             .accessibilityIdentifier("trajectoryEstimate")
-                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))\(round.stanceAim != 0 ? " · STANCE" : "")")
-                            .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
-                            .lineLimit(2)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
+                        if round.stanceAim != 0 {
+                            Text("STANCE AIM \(String(format: "%+.1f°", round.stanceAim))")
+                                .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
+                        }
                     }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(.leading, 14).padding(.top, 8)
+
+                if round.canSwing || round.phase == .flying {
+                    PowerGauge(
+                        club: round.club, power: round.power, targetPower: round.targetPower,
+                        targetLabel: round.targetLabel, struck: round.phase == .flying,
+                        height: gaugeHeight(size)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .padding(.leading, 14)
+                    .offset(y: size.width > size.height ? 0 : 50)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+                }
 
                 HoleOverview(round: round)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -274,6 +287,11 @@ struct CourseScreen: View {
     }
 
     // MARK: - Overlays
+
+    /// Tall enough to read on a phone held upright, shorter when there is less room.
+    private func gaugeHeight(_ size: CGSize) -> CGFloat {
+        min(240, max(120, size.height * 0.28))
+    }
 
     private func cameraStageSize(_ size: CGSize) -> CGSize {
         if stageExpanded { return size }
@@ -492,6 +510,7 @@ struct CourseScreen: View {
             flightStart: round.flightStart,
             pausedAt: round.pausedAt,
             swingAngle: usesCamera ? camera.swingAngle : round.power * 150,
+            isSignallingAim: usesCamera && camera.aimSignal != nil,
             bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex) },
             preview: round.canSwing ? round.trajectoryPreview : nil
         )

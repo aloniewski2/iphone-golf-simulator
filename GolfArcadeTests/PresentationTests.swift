@@ -84,7 +84,12 @@ final class PresentationTests: XCTestCase {
         let putt = RangeShot(id: 2, club: .putter, power: power, aim: 0, origin: cupSide, heading: 0, hole: hole)
         XCTAssertTrue(putt.isHoled, "a two-yard putt straight at the cup drops")
         inputs.shot = putt
-        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.1)
+        // The ball reaches the cup and rolls in; the rattle comes as it hits the bottom.
+        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.05)
+        scene.inputs = inputs
+        scene.stepForTesting()
+        XCTAssertEqual(heard, [], "still dropping")
+        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.3)
         scene.inputs = inputs
         scene.stepForTesting()
         scene.stepForTesting()
@@ -175,5 +180,27 @@ final class PresentationTests: XCTestCase {
         points[.leftElbow] = CGPoint(x: (0.4 + hands.x) / 2, y: (0.72 + hands.y) / 2)
         points[.rightElbow] = CGPoint(x: (0.6 + hands.x) / 2, y: (0.72 + hands.y) / 2)
         return PoseFrame(timestamp: CACurrentMediaTime(), points: points.mapValues { PosePoint(location: $0, confidence: 0.9) })
+    }
+}
+
+final class CupDropTests: XCTestCase {
+    func testAHoledBallSlidesToTheMiddleAndFallsOutOfSight() {
+        let before = CourseScene.cupDrop(after: -0.1)
+        XCTAssertEqual(before.depth, 0)
+        XCTAssertFalse(before.finished)
+        let start = CourseScene.cupDrop(after: 0)
+        XCTAssertEqual(start.depth, 0, "still on the lip the instant it arrives")
+        let sliding = CourseScene.cupDrop(after: 0.05)
+        XCTAssertEqual(sliding.centred, 0.5, accuracy: 1e-9)
+        XCTAssertGreaterThan(sliding.depth, 0)
+        XCTAssertFalse(sliding.rattled)
+        let falling = CourseScene.cupDrop(after: 0.2)
+        XCTAssertEqual(falling.centred, 1)
+        XCTAssertGreaterThan(falling.depth, Double(AvatarSize.visibleBallRadius), "more than a radius down: sinking")
+        XCTAssertTrue(falling.rattled)
+        XCTAssertFalse(falling.finished)
+        let gone = CourseScene.cupDrop(after: 0.4)
+        XCTAssertTrue(gone.finished)
+        XCTAssertGreaterThan(gone.depth, Double(AvatarSize.visibleBallRadius) * 3, "well below the green by the time it is hidden")
     }
 }

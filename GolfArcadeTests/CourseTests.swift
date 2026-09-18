@@ -500,7 +500,7 @@ final class CourseTests: XCTestCase {
         round.adjustAim(80)
         round.club = .putter
         round.adjustAim(round.aimStep)
-        XCTAssertEqual(round.aim, 80.25)
+        XCTAssertEqual(round.aim, 80 + round.aimStep)
         round.charge(0.1)
         let start = Date(timeIntervalSince1970: 100)
         XCTAssertTrue(round.release(at: start))

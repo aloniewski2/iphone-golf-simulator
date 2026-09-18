@@ -341,12 +341,14 @@ struct ShotGeometry: Equatable, Sendable {
 }
 
 extension StrikeQuality {
+    /// Club speed kept, against a centred strike. Distance falls faster than speed does, so a
+    /// fat shot at two thirds of the speed goes about half as far.
     var efficiency: Double {
         switch self {
         case .center: 1
-        case .thin: 0.76
-        case .fat: 0.55
-        case .heel, .toe: 0.80
+        case .thin: 0.80
+        case .fat: 0.66
+        case .heel, .toe: 0.85
         case .miss: 0
         }
     }

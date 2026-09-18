@@ -107,3 +107,42 @@ final class RangeSimulationTests: XCTestCase {
         }
     }
 }
+
+final class ClubRealismTests: XCTestCase {
+    /// Each club flies like its real one at full power: launch-monitor shape, not just distance.
+    func testClubsFlyLikeTheirRealCounterparts() {
+        func shape(_ club: GolfClub) -> (carry: Double, roll: Double, apex: Double, clubSpeed: Double) {
+            let flight = BallFlight.simulate(club.launch(power: 1, aimDegrees: 0, curveDegrees: 0))
+            return (flight.carry, flight.roll, flight.apex, club.maxClubSpeedMPH)
+        }
+        let driver = shape(.driver), iron = shape(.iron), wedge = shape(.wedge)
+        // Driver: a good amateur's 105 mph, 250 carry, a low-thirties apex and a running roll-out.
+        XCTAssertEqual(driver.clubSpeed, 106, accuracy: 3)
+        XCTAssertEqual(driver.carry, 250, accuracy: 1)
+        XCTAssertEqual(driver.apex, 33, accuracy: 4)
+        XCTAssertGreaterThan(driver.roll, 14)
+        // 7-iron: high-80s club speed for 160, apex under 30, and it hops rather than runs.
+        XCTAssertEqual(iron.clubSpeed, 88, accuracy: 4)
+        XCTAssertEqual(iron.carry, 160, accuracy: 1)
+        XCTAssertEqual(iron.apex, 28, accuracy: 4)
+        XCTAssertLessThan(iron.roll, 11)
+        XCTAssertGreaterThan(iron.roll, 3)
+        // Sand wedge: steep and spinning, it checks up within a few yards.
+        XCTAssertEqual(wedge.clubSpeed, 70, accuracy: 4)
+        XCTAssertEqual(wedge.carry, 90, accuracy: 1)
+        XCTAssertEqual(wedge.apex, 21, accuracy: 4)
+        XCTAssertLessThan(wedge.roll, 5)
+        XCTAssertLessThan(driver.roll * 0.5, driver.roll - iron.roll + 1, "the driver runs out far more than an iron")
+    }
+
+    func testFullSwingArcShortensWithTheClub() {
+        var driver = ArmSwingDetector(), iron = ArmSwingDetector(), wedge = ArmSwingDetector()
+        driver.configure(for: .driver)
+        iron.configure(for: .iron)
+        wedge.configure(for: .wedge)
+        XCTAssertGreaterThan(driver.fullBackswing, iron.fullBackswing)
+        XCTAssertGreaterThan(iron.fullBackswing, wedge.fullBackswing)
+        XCTAssertEqual(wedge.power(arc: 100, downswingSpeed: 450), 1, accuracy: 1e-9, "a natural full wedge swing fills its meter")
+        XCTAssertLessThan(driver.power(arc: 100, downswingSpeed: 550), 0.9, "the same arc is not a full driver swing")
+    }
+}

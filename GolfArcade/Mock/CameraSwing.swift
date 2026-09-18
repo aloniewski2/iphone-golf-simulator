@@ -147,6 +147,9 @@ final class CameraSwingController: ObservableObject {
     let tracker = CameraPoseTracker()
     private var detector = ArmSwingDetector()
     private var gestureRecognizer = HandGestureRecognizer()
+    private var aimSignalRecognizer = AimSignalRecognizer()
+    /// The side of an outstretched arm at address, for on-screen feedback.
+    @Published private(set) var aimSignal: AimSignalRecognizer.Side?
     private var subscriptions: Set<AnyCancellable> = []
     #if DEBUG
     private let motionTrace = CameraMotionTrace.requested()
@@ -321,6 +324,22 @@ final class CameraSwingController: ObservableObject {
         #endif
         if let event { onEvent?(event) }
         recognizeGesture(frame, at: time, afterImpact: { if case .impact = event { true } else { false } }())
+        recognizeAimSignal(frame, at: time)
+    }
+
+    /// An arm held out to the side at address steps the line that way (see `AimSignalRecognizer`).
+    /// Unlike the menu gestures this needs no hand pose and runs whenever the player is set up
+    /// at the ball, which is exactly when the line needs moving.
+    private func recognizeAimSignal(_ frame: PoseFrame?, at time: Double) {
+        let atAddress = isPositionLocked && !isCheckingSwing && detector.phase == .address
+        let side = atAddress ? aimSignalRecognizer.ingest(frame, at: time) : nil
+        if !atAddress { aimSignalRecognizer.clear() }
+        let signalling = aimSignalRecognizer.side
+        if aimSignal != signalling { aimSignal = signalling }
+        guard let side else { return }
+        let gesture: NavGesture = side == .left ? .left : .right
+        lastGesture = (gesture, Date())
+        gestures.send(gesture)
     }
 
     /// A view-owned timer drives the review; no delayed task can collapse a later player's setup.
@@ -336,7 +355,7 @@ final class CameraSwingController: ObservableObject {
     }
 
     private func recognizeGesture(_ frame: PoseFrame?, at time: Double, afterImpact: Bool) {
-        guard gesturesEnabled, !isCheckingSwing, !(requiresPositionReview && isPositionLocked) else { return }
+        guard gesturesEnabled, !isCheckingSwing else { return }
         // A golf swing is never a menu gesture.
         if afterImpact || detector.phase == .backswing || detector.phase == .downswing {
             gestureRecognizer.suppress(until: time + 1)
@@ -345,6 +364,9 @@ final class CameraSwingController: ObservableObject {
         let armed = !gestureRecognizer.armed.isEmpty
         if gestureArmed != armed { gestureArmed = armed }
         guard let gesture else { return }
+        // Set up at the ball, a swipe left or right moves the line like the arm signal does;
+        // club changes and selection wait until the shot is played.
+        if requiresPositionReview, isPositionLocked, gesture != .left, gesture != .right { return }
         lastGesture = (gesture, Date())
         gestures.send(gesture)
     }
