@@ -172,7 +172,7 @@ final class CourseScene: NSObject, ObservableObject {
         let ambient = SCNNode()
         ambient.light = SCNLight()
         ambient.light?.type = .ambient
-        ambient.light?.intensity = 430
+        ambient.light?.intensity = 290
         ambient.light?.color = UIColor(red: 0.79, green: 0.88, blue: 1, alpha: 1)
         scene.rootNode.addChildNode(ambient)
         scene.rootNode.addChildNode(courseNode)
@@ -380,27 +380,22 @@ final class CourseScene: NSObject, ObservableObject {
         disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: pinGround - (hole.fairwayBoundary == nil ? 0.132 : 0.098))
         buildGreenGrid(hole)
 
-        plantTrees(along: hole)
+        CourseArt.plantTrees(along: hole, parent: courseNode)
         for tree in hole.trees {
             let base=Double(ground(tree.center))
             let trunk=add(SCNCylinder(radius:tree.trunkRadius,height:tree.trunkHeight),
                 UIColor(red:0.35,green:0.24,blue:0.15,alpha:1),at:world(tree.center,y:Float(base+tree.trunkHeight/2)))
             trunk.name="collidableTrunk-\(tree.id)"
             for tier in 0..<3 {
-                let crown=SCNSphere(radius:tree.crownRadius*(1-Double(tier)*0.15)); crown.segmentCount=16
+                let crown=CourseArt.foliage(radius:tree.crownRadius*(1-Double(tier)*0.15),seed:tier)
                 let node=add(crown,UIColor(red:0.22+Double(tier)*0.025,green:0.41+Double(tier)*0.04,blue:0.19,alpha:1),
                     at:world(tree.center,y:Float(base+tree.trunkHeight+Double(tier)*1.5)))
                 node.scale.y=0.7
                 node.name="decorativeCrown-\(tree.id)-\(tier)"
             }
         }
-        for i in 0..<6 {
-            let hill = SCNSphere(radius: 60)
-            hill.segmentCount = 32
-            let node = add(hill, UIColor(red: 0.24, green: 0.43, blue: 0.38, alpha: 1),
-                           at: SCNVector3(Float(pin.x) + Float(i * 90 - 225), -12, -Float(pin.d + 200)))
-            node.scale = SCNVector3(1.4, 0.9, 1)
-        }
+        // The continuous landscape provides the skyline; detached spherical hills
+        // looked like props and could visibly intersect the back of the green.
         CourseArt.dress(hole, parent: courseNode)
     }
 
@@ -555,7 +550,8 @@ final class CourseScene: NSObject, ObservableObject {
             cannedAngleTime = now
             cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * (1 - exp(-dt * 22))
             if let live { return (live, live == .cameraWaiting ? .waiting : .live) }
-            return (AvatarAnimations.swingArc(degrees: cannedAngle, club: inputs?.club ?? .driver), .canned)
+            return (AvatarAnimations.swingArc(degrees: cannedAngle, club: inputs?.club ?? .driver,
+                type: inputs?.preview?.request.type ?? .full), .canned)
         }
         let followThrough = 0.6
         var source = PoseSource.canned
@@ -566,10 +562,10 @@ final class CourseScene: NSObject, ObservableObject {
             let u = min(t / 0.3, 1)
             let angle = t < 0.3 ? cannedLaunchAngle + (-150 - cannedLaunchAngle) * (u * u) : -150
             source = .canned
-            return AvatarAnimations.swingArc(degrees: angle, club: shot?.club ?? .driver)
+            return AvatarAnimations.swingArc(degrees: angle, club: shot?.club ?? .driver, type: shot?.request.type ?? .full)
         }
         if elapsed < followThrough { return (follow(elapsed), source) }
-        if shot?.club == .putter || inputs?.reduceMotion == true {
+        if shot?.club == .putter || shot?.request.type == .chip || shot?.request.type == .pitch || inputs?.reduceMotion == true {
             // Do not turn a quiet putt into a driver-sized finish or club twirl.
             return (BodyPose3D.lerp(follow(followThrough), AvatarAnimations.address,
                 smoothstep(0.8, 1.6, Float(elapsed))), source)
@@ -823,47 +819,6 @@ final class CourseScene: NSObject, ObservableObject {
         courseNode.addChildNode(node)
     }
 
-    /// Two staggered lines of trees just beyond the rough mark out of bounds, plus a stand behind the green.
-    private func plantTrees(along hole: Hole) {
-        let edge = hole.fairwayWidth / 2 + Hole.roughWidth + 5
-        var index = 0
-        for (a, b) in zip(hole.centerline, hole.centerline.dropFirst()) {
-            let length = a.distance(to: b)
-            let ux = (b.x - a.x) / length, ud = (b.d - a.d) / length
-            var along = 6.0
-            while along < length {
-                for side in [-1.0, 1.0] {
-                    let offset = edge + Double(index * 7 % 16)
-                    let point = CoursePoint(x: a.x + ux * along + ud * offset * side, d: a.d + ud * along - ux * offset * side)
-                    if hole.distanceFromCenterline(point) >= edge - 0.5, point.distance(to: hole.pin) > hole.greenRadius + 12 {
-                        tree(at: point, index: index)
-                    }
-                    index += 1
-                }
-                along += 13
-            }
-        }
-        let pin = hole.pin
-        let direction = hole.centerline[hole.centerline.count - 2].heading(to: pin) * .pi / 180
-        for i in -4...4 {
-            let back = hole.greenRadius + Hole.roughWidth + 10 + Double(abs(i) * 3)
-            let side = Double(i) * 11
-            let point = CoursePoint(
-                x: pin.x + sin(direction) * back + cos(direction) * side,
-                d: pin.d + cos(direction) * back - sin(direction) * side
-            )
-            tree(at: point, index: index + i + 4)
-        }
-    }
-
-    private func tree(at point: CoursePoint, index: Int) {
-        let tree = CourseArt.trees[index % CourseArt.trees.count].clone()
-        tree.position = world(point, y: hole.map { CourseArt.elevation(point, hole: $0) } ?? -0.4)
-        let scale = Float(0.85 + Double(index % 5) * 0.09)
-        tree.scale = SCNVector3(scale, scale, scale)
-        tree.eulerAngles.y = Float(index) * 1.7
-        courseNode.addChildNode(tree)
-    }
 }
 
 struct CourseSceneView: UIViewRepresentable {
@@ -901,17 +856,18 @@ struct CourseSceneView: UIViewRepresentable {
 /// allocated by the display-link loop; course dressing stays outside playable lies.
 @MainActor
 enum CourseArt {
-    static let fairwayMaterial = turfMaterial(base: UIColor(red: 0.32, green: 0.64, blue: 0.26, alpha: 1), stripes: true)
-    static let roughMaterial = turfMaterial(base: UIColor(red: 0.27, green: 0.49, blue: 0.22, alpha: 1), stripes: false)
-    static let fringeMaterial = turfMaterial(base: UIColor(red: 0.37, green: 0.59, blue: 0.23, alpha: 1), stripes: false)
-    static let greenMaterial = turfMaterial(base: UIColor(red: 0.52, green: 0.75, blue: 0.32, alpha: 1), stripes: true, crosscut: true)
-    static let sandMaterial = turfMaterial(base: UIColor(red: 0.91, green: 0.83, blue: 0.64, alpha: 1), stripes: false)
+    static let fairwayMaterial = turfMaterial(base: UIColor(red: 0.31, green: 0.52, blue: 0.20, alpha: 1), stripes: true)
+    static let roughMaterial = turfMaterial(base: UIColor(red: 0.25, green: 0.40, blue: 0.16, alpha: 1), stripes: false)
+    static let deepRoughMaterial = turfMaterial(base: UIColor(red: 0.32, green: 0.38, blue: 0.17, alpha: 1), stripes: false)
+    static let fringeMaterial = turfMaterial(base: UIColor(red: 0.38, green: 0.54, blue: 0.23, alpha: 1), stripes: false)
+    static let greenMaterial = turfMaterial(base: UIColor(red: 0.47, green: 0.64, blue: 0.29, alpha: 1), stripes: true, crosscut: true)
+    static let sandMaterial = turfMaterial(base: UIColor(red: 0.87, green: 0.79, blue: 0.62, alpha: 1), stripes: false, sand: true)
     static let waterMaterial: SCNMaterial = {
         let material = SCNMaterial()
         material.lightingModel = .physicallyBased
-        material.diffuse.contents = UIColor(red: 0.16, green: 0.60, blue: 0.71, alpha: 1)
-        material.roughness.contents = 0.23
-        material.metalness.contents = 0.18
+        material.diffuse.contents = UIColor(red: 0.12, green: 0.37, blue: 0.42, alpha: 1)
+        material.roughness.contents = 0.18
+        material.metalness.contents = 0.05
         return material
     }()
     static let sky: UIImage = {
@@ -926,21 +882,42 @@ enum CourseArt {
         }
     }()
 
-    private static func turfMaterial(base: UIColor, stripes: Bool, crosscut: Bool = false) -> SCNMaterial {
+    private static func turfMaterial(base: UIColor, stripes: Bool, crosscut: Bool = false, sand: Bool = false) -> SCNMaterial {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         let image = UIGraphicsImageRenderer(size: CGSize(width: 256, height: 256), format: format).image { context in
             base.setFill()
             context.fill(CGRect(x: 0, y: 0, width: 256, height: 256))
             if stripes {
-                UIColor.white.withAlphaComponent(0.085).setFill()
+                UIColor.white.withAlphaComponent(0.045).setFill()
                 context.cgContext.fill(CGRect(x: 0, y: 0, width: 256, height: 128))
                 UIColor.black.withAlphaComponent(0.025).setFill()
                 context.cgContext.fill(CGRect(x: 0, y: 128, width: 256, height: 128))
             }
             if crosscut {
-                UIColor.white.withAlphaComponent(0.06).setFill()
+                UIColor.white.withAlphaComponent(0.025).setFill()
                 context.cgContext.fill(CGRect(x: 0, y: 0, width: 128, height: 256))
+            }
+            // Periodic low-frequency color variation avoids a perfectly flat carpet.
+            // Sand gets fine grains and rake ripples, never grass-blade strokes.
+            for y in stride(from: 0, to: 256, by: 4) {
+                for x in stride(from: 0, to: 256, by: 4) {
+                    let variation = sin(Double(x) * .pi / 64) * cos(Double(y) * .pi / 128)
+                    (variation > 0 ? UIColor.white : UIColor.black).withAlphaComponent(abs(variation) * 0.035).setFill()
+                    context.fill(CGRect(x: x, y: y, width: 4, height: 4))
+                }
+            }
+            if sand {
+                for row in stride(from: 0, to: 256, by: 8) {
+                    let path = UIBezierPath()
+                    path.move(to: CGPoint(x: 0, y: row))
+                    for x in stride(from: 4, through: 256, by: 4) {
+                        path.addLine(to: CGPoint(x: Double(x), y: Double(row) + sin(Double(x) * .pi / 64) * 2))
+                    }
+                    UIColor.black.withAlphaComponent(0.035).setStroke()
+                    path.lineWidth = 0.6
+                    path.stroke()
+                }
             }
             var seed: UInt64 = 74523
             for _ in 0..<5_000 {
@@ -949,7 +926,7 @@ enum CourseArt {
                 seed = seed &* 6364136223846793005 &+ 1
                 let y = Int((seed >> 24) % 256)
                 (x % 2 == 0 ? UIColor.white : UIColor.black).withAlphaComponent(0.055).setFill()
-                context.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 2))
+                context.cgContext.fill(CGRect(x: x, y: y, width: 1, height: sand ? 1 : 3))
             }
         }
         let material = SCNMaterial()
@@ -958,8 +935,8 @@ enum CourseArt {
         material.diffuse.wrapS = .repeat
         material.diffuse.wrapT = .repeat
         material.diffuse.mipFilter = .linear
-        material.diffuse.maxAnisotropy = 4
-        material.roughness.contents = 0.95
+        material.diffuse.maxAnisotropy = 8
+        material.roughness.contents = sand ? 0.86 : 0.95
         return material
     }
 
@@ -967,7 +944,8 @@ enum CourseArt {
     /// A stadium shape draped over the terrain: rows across the width at every step along the
     /// length, the rows shrinking around the end caps, so the exact outline is kept and the
     /// interior follows every mound and tilt.
-    static func capsule(from a: CoursePoint, to b: CoursePoint, width: Double, y: Float, terrain: Terrain = .flat) -> SCNGeometry {
+    static func capsule(from a: CoursePoint, to b: CoursePoint, width: Double, y: Float, terrain: Terrain = .flat,
+                        height: ((CoursePoint) -> Float)? = nil) -> SCNGeometry {
         let r = width / 2
         let length = a.distance(to: b)
         let ux = length > 0.001 ? (b.x - a.x) / length : 1, ud = length > 0.001 ? (b.d - a.d) / length : 0
@@ -986,7 +964,7 @@ enum CourseArt {
             for row in 0...across {
                 let t = -half + Double(row) / Double(across) * 2 * half
                 let point = CoursePoint(x: a.x + ux * along - ud * t, d: a.d + ud * along + ux * t)
-                let h = Float(terrain.elevation(at: point)) + y
+                let h = (height?(point) ?? Float(terrain.elevation(at: point))) + y
                 let g = terrain.gradient(at: point)
                 vertices.append(SCNVector3(Float(point.x), h, -Float(point.d)))
                 normals.append(SCNVector3(simd_normalize(simd_float3(Float(-g.dx), 1, Float(g.dd)))))
@@ -1009,8 +987,43 @@ enum CourseArt {
     static func elevation(_ point: CoursePoint, hole: Hole) -> Float {
         let outside = max(0, hole.distanceFromCenterline(point) - hole.fairwayWidth / 2 - Hole.roughWidth - 8)
         let blend = min(1, outside / 65)
-        let wave = 9 + 6 * sin(point.x * 0.018 + point.d * 0.009) + 4 * cos(point.d * 0.025)
-        return Float(hole.surface(at: point).heightYards) + Float(-0.72 + blend * blend * wave)
+        let wave = 18 + 12 * sin(point.x * 0.018 + point.d * 0.009) + 8 * cos(point.d * 0.025)
+        // Coarse landscape triangles must stay below the 0.8-yard bunker bowls.
+        // A 0.72-yard underlay pierced their floors between coarse sample vertices.
+        return Float(hole.surface(at: point).heightYards) + Float(-2.0 + blend * blend * wave)
+    }
+
+    static func dressingHeight(_ point: CoursePoint, hole: Hole) -> Float {
+        if hole.fairwayBoundary != nil {
+            let bounds = hole.centerline + (hole.fairwayBoundary?.points ?? []) + (hole.greenBoundary?.points ?? [])
+            if point.x >= (bounds.map(\.x).min() ?? 0) - 35,
+               point.x <= (bounds.map(\.x).max() ?? 0) + 35,
+               point.d >= (bounds.map(\.d).min() ?? 0) - 35,
+               point.d <= (bounds.map(\.d).max() ?? 0) + 35 {
+                return surfaceHeight(point, hole: hole)
+            }
+        }
+        return elevation(point, hole: hole)
+    }
+
+    /// Only the non-playable outer border blends into the low-detail landscape.
+    /// Playable ground, including every bunker and green, remains the solver's surface.
+    static func surfaceHeight(_ point: CoursePoint, hole: Hole, extents: SIMD4<Double>? = nil,
+                              sampled: CourseSurface? = nil) -> Float {
+        let surface = sampled ?? hole.surface(at: point)
+        let height = Float(surface.heightYards)
+        guard surface.lie == .outOfBounds, hole.fairwayBoundary != nil else { return height }
+        let limits: SIMD4<Double>
+        if let extents { limits = extents }
+        else {
+            let bounds = hole.centerline + (hole.fairwayBoundary?.points ?? []) + (hole.greenBoundary?.points ?? [])
+            limits = SIMD4((bounds.map(\.x).min() ?? 0)-35, (bounds.map(\.x).max() ?? 0)+35,
+                (bounds.map(\.d).min() ?? 0)-35, (bounds.map(\.d).max() ?? 0)+35)
+        }
+        let edge = min(point.x-limits.x, limits.y-point.x, point.d-limits.z, limits.w-point.d)
+        let u = Float(max(0, min(1, edge / 8)))
+        let blend = u * u * (3 - 2 * u)
+        return elevation(point, hole: hole) * (1 - blend) + height * blend
     }
 
     private static var readMaterials: [Int: SCNMaterial] = [:]
@@ -1066,13 +1079,16 @@ enum CourseArt {
         let bounds = hole.centerline + (hole.fairwayBoundary?.points ?? []) + (hole.greenBoundary?.points ?? [])
         let minX = (bounds.map(\.x).min() ?? 0) - 35, maxX = (bounds.map(\.x).max() ?? 0) + 35
         let minD = (bounds.map(\.d).min() ?? 0) - 35, maxD = (bounds.map(\.d).max() ?? 0) + 35
-        let columns = max(2, Int(ceil((maxX-minX)/1.5))), rows = max(2, Int(ceil((maxD-minD)/1.5)))
+        // A shared regular grid avoids T-junction cracks while resolving bunker lips and
+        // authored fairway boundaries more finely. Geometry is generated only on hole load.
+        let columns = max(2, Int(ceil((maxX-minX)/0.8))), rows = max(2, Int(ceil((maxD-minD)/0.8)))
         var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], uv: [CGPoint] = []
-        var groups = Array(repeating: [Int32](), count: 6)
+        var groups = Array(repeating: [Int32](), count: 7)
         for row in 0...rows { for column in 0...columns {
             let point = CoursePoint(x:minX+Double(column)/Double(columns)*(maxX-minX), d:minD+Double(row)/Double(rows)*(maxD-minD))
             let surface = hole.surface(at:point)
-            vertices.append(SCNVector3(Float(point.x),Float(surface.heightYards),-Float(point.d)))
+            vertices.append(SCNVector3(Float(point.x),surfaceHeight(point,hole:hole,
+                extents: SIMD4(minX,maxX,minD,maxD), sampled:surface),-Float(point.d)))
             normals.append(SCNVector3(simd_normalize(simd_float3(Float(-surface.slopeX),1,Float(surface.slopeD)))))
             uv.append(CGPoint(x:point.x/24,y:point.d/24))
         } }
@@ -1088,6 +1104,7 @@ enum CourseArt {
                 case .fringe: index=2
                 case .bunker: index=3
                 case .water: index=4
+                case .deepRough: index=6
                 default: index=5
                 }
                 groups[index].append(contentsOf:triangle)
@@ -1095,7 +1112,7 @@ enum CourseArt {
         } }
         let geometry = SCNGeometry(sources:[.init(vertices:vertices),.init(normals:normals),.init(textureCoordinates:uv)],
             elements:groups.map { SCNGeometryElement(indices:$0,primitiveType:.triangles) })
-        geometry.materials=[fairwayMaterial,greenMaterial,fringeMaterial,sandMaterial,waterMaterial,roughMaterial]
+        geometry.materials=[fairwayMaterial,greenMaterial,fringeMaterial,sandMaterial,waterMaterial,roughMaterial,deepRoughMaterial]
         return geometry
     }
 
@@ -1109,6 +1126,64 @@ enum CourseArt {
         node.position = position
         parent.addChildNode(node)
         return node
+    }
+
+    /// Original lobed canopy mesh: overlapping leaf masses without perfect ball silhouettes.
+    /// Shared by decorative trees and the crowns above authoritative collision trunks.
+    static func foliage(radius: Double, seed: Int) -> SCNGeometry {
+        let rows = 12, columns = 20
+        var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], indices: [Int32] = []
+        for row in 0...rows { for column in 0...columns {
+            let latitude = Double(row) / Double(rows) * .pi
+            let longitude = Double(column) / Double(columns) * 2 * .pi
+            let bulge = 1 + sin(latitude) * (0.12 * sin(longitude * 5 + Double(seed))
+                + 0.08 * cos(latitude * 7 + longitude * 3))
+            let direction = SCNVector3(sin(latitude) * cos(longitude), cos(latitude), sin(latitude) * sin(longitude))
+            vertices.append(SCNVector3(Float(direction.x) * Float(radius * bulge), Float(direction.y) * Float(radius * bulge), Float(direction.z) * Float(radius * bulge)))
+            normals.append(direction)
+        } }
+        for row in 0..<rows { for column in 0..<columns {
+            let a = Int32(row * (columns + 1) + column), b = a + Int32(columns + 1)
+            indices += [a, a + 1, b, a + 1, b + 1, b]
+        } }
+        return SCNGeometry(sources: [.init(vertices: vertices), .init(normals: normals)],
+            elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
+    }
+
+    static func plantTrees(along hole: Hole, parent: SCNNode) {
+        func tree(at point: CoursePoint, index: Int) {
+            let tree = trees[index % trees.count].clone()
+            tree.position = SCNVector3(Float(point.x), dressingHeight(point, hole: hole), -Float(point.d))
+            let scale = Float(0.85 + Double(index % 5) * 0.09)
+            tree.scale = SCNVector3(scale, scale, scale)
+            tree.simdOrientation = simd_quatf(angle: Float(index) * 1.7, axis: simd_float3(0,1,0))
+            parent.addChildNode(tree)
+        }
+        let edge = hole.fairwayWidth / 2 + Hole.roughWidth + 5
+        var index = 0
+        for (a,b) in zip(hole.centerline, hole.centerline.dropFirst()) {
+            let length = max(0.001, a.distance(to: b))
+            let ux = (b.x-a.x)/length, ud = (b.d-a.d)/length
+            var along = 6.0
+            while along < length {
+                for side in [-1.0,1.0] {
+                    let offset = edge + Double(index * 7 % 16)
+                    let point = CoursePoint(x:a.x+ux*along+ud*offset*side,d:a.d+ud*along-ux*offset*side)
+                    if hole.distanceFromCenterline(point) >= edge-0.5, point.distance(to:hole.pin) > hole.greenRadius+12 {
+                        tree(at:point,index:index)
+                    }
+                    index += 1
+                }
+                along += 12 + Double(index * 11 % 13)
+            }
+        }
+        let pin = hole.pin
+        let direction = hole.centerline[hole.centerline.count-2].heading(to:pin) * .pi/180
+        for i in -4...4 {
+            let back = hole.greenRadius+Hole.roughWidth+10+Double(abs(i)*3), side = Double(i)*11
+            tree(at:CoursePoint(x:pin.x+sin(direction)*back+cos(direction)*side,
+                d:pin.d+cos(direction)*back-sin(direction)*side),index:index+i+4)
+        }
     }
 
     static let trees: [SCNNode] = (0..<6).map { index in
@@ -1129,9 +1204,7 @@ enum CourseArt {
                 leaf = cone
                 position = SCNVector3(0, 5.5 + Double(crown) * 2.6, 0)
             } else {
-                let sphere = SCNSphere(radius: 3.5)
-                sphere.segmentCount = 16
-                leaf = sphere
+                leaf = foliage(radius: 3.5, seed: crown + index)
                 position = crown == 4 ? SCNVector3(0, 10, 0) : SCNVector3(cos(theta) * 2.3, 7 + Double(crown % 2), sin(theta) * 2.3)
             }
             let color = UIColor(red: 0.20 + Double(crown % 2) * 0.045,
@@ -1192,11 +1265,14 @@ enum CourseArt {
         // Tee furniture gives the opening shot a recognizable sense of place.
         for side in [-1.0, 1.0] {
             let marker = part(SCNSphere(radius: 0.38), color: UIColor(red: 0.19, green: 0.39, blue: 0.67, alpha: 1),
-                position: SCNVector3(hole.tee.x + side * 4.3, 0.12, -hole.tee.d - 1), parent: parent)
+                position: SCNVector3(hole.tee.x + side * 4.3,
+                    hole.surface(at: CoursePoint(x: hole.tee.x + side * 4.3, d: hole.tee.d + 1)).heightYards + 0.12,
+                    -hole.tee.d - 1), parent: parent)
             marker.scale = SCNVector3(1, 0.65, 1)
         }
         let sign = SCNNode()
-        sign.position = SCNVector3(hole.tee.x + 9, 0, -hole.tee.d + 2)
+        sign.position = SCNVector3(hole.tee.x + 9,
+            hole.surface(at: CoursePoint(x: hole.tee.x + 9, d: hole.tee.d - 2)).heightYards, -hole.tee.d + 2)
         _ = part(SCNCylinder(radius: 0.12, height: 2.8), color: ivory, position: SCNVector3(0, 1, 0), parent: sign)
         _ = part(SCNBox(width: 2.5, height: 1.6, length: 0.18, chamferRadius: 0.12),
             color: UIColor(red: 0.10, green: 0.26, blue: 0.21, alpha: 1), position: SCNVector3(0, 2.2, 0), parent: sign)
@@ -1211,16 +1287,21 @@ enum CourseArt {
             let distance = max(1, a.distance(to: b))
             let offsetX = (b.d - a.d) / distance * edge, offsetD = -(b.x - a.x) / distance * edge
             let path = SCNNode(geometry: capsule(from: CoursePoint(x: a.x + offsetX, d: a.d + offsetD),
-                to: CoursePoint(x: b.x + offsetX, d: b.d + offsetD), width: 3.2, y: -0.48))
+                to: CoursePoint(x: b.x + offsetX, d: b.d + offsetD), width: 3.2, y: 0.025, terrain: hole.terrain,
+                height: { dressingHeight($0, hole: hole) }))
             path.geometry?.firstMaterial?.diffuse.contents = UIColor(red: 0.72, green: 0.70, blue: 0.59, alpha: 1)
             path.name = "cartPath"
             parent.addChildNode(path)
         }
         // A modest clubhouse beyond the green, outside all playable lies.
         let lodge = SCNNode()
-        lodge.position = SCNVector3(hole.pin.x + 65, 0, -hole.pin.d - 75)
+        lodge.position = SCNVector3(Float(hole.pin.x + 65),
+            elevation(CoursePoint(x: hole.pin.x + 65, d: hole.pin.d + 75), hole: hole), -Float(hole.pin.d + 75))
         _ = part(SCNBox(width: 22, height: 8, length: 12, chamferRadius: 0.5), color: ivory,
                  position: SCNVector3(0, 4, 0), parent: lodge)
+        _ = part(SCNBox(width: 22.2, height: 4, length: 12.2, chamferRadius: 0.1),
+            color: UIColor(red: 0.55, green: 0.55, blue: 0.48, alpha: 1),
+            position: SCNVector3(0, -2, 0), parent: lodge)
         let roof = part(SCNPyramid(width: 27, height: 6, length: 17),
                         color: UIColor(red: 0.26, green: 0.35, blue: 0.35, alpha: 1), position: SCNVector3(0, 8, 0), parent: lodge)
         roof.name = "clubhouseRoof"

@@ -52,32 +52,18 @@ final class GolferSkin {
 
     init(shirt: UIColor, trousers: UIColor, skin: UIColor) {
         let mesh = Self.mesh
-        func rgba(_ color: UIColor) -> simd_float4 {
-            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-            color.getRed(&r, green: &g, blue: &b, alpha: &a)
-            return simd_float4(Float(r), Float(g), Float(b), Float(a))
-        }
-        let shirtColor = rgba(shirt), trouserColor = rgba(trousers), skinColor = rgba(skin)
-        let colors = mesh.vertices.map { p -> simd_float4 in
-            let waist = smoothstep(AvatarSize.hipHeight + 0.02, AvatarSize.hipHeight + 0.14, p.y)
-            var color = simd_mix(trouserColor, shirtColor, simd_float4(repeating: waist))
-            let sleeve = smoothstep(1.48, 1.57, abs(p.z))
-            let neck = smoothstep(Self.rest[.neck].y + 0.04, Self.rest[.neck].y + 0.13, p.y)
-            color = simd_mix(color, skinColor, simd_float4(repeating: max(sleeve, neck)))
-            return color
-        }
-        let colorData = colors.withUnsafeBytes { Data($0) }
+        // Material regions are attached to the rest mesh, not global-height vertex colors.
+        // A height-only neck mask exposed the upper back when the golfer bent forward.
         let geometry = SCNGeometry(sources: [
             SCNGeometrySource(vertices: mesh.vertices.map(SCNVector3.init)),
-            SCNGeometrySource(normals: mesh.normals.map(SCNVector3.init)),
-            SCNGeometrySource(data: colorData, semantic: .color, vectorCount: colors.count,
-                usesFloatComponents: true, componentsPerVector: 4, bytesPerComponent: 4, dataOffset: 0, dataStride: 16)
-        ], elements: [SCNGeometryElement(indices: mesh.triangles.flatMap { $0 }, primitiveType: .triangles)])
-        geometry.materials = [UIColor.white].map { color in
+            SCNGeometrySource(normals: mesh.normals.map(SCNVector3.init))
+        ], elements: mesh.triangles.map { SCNGeometryElement(indices: $0, primitiveType: .triangles) })
+        geometry.materials = [shirt, trousers, skin].enumerated().map { index, color in
             let material = SCNMaterial()
+            material.name = ["Polo fabric", "Tailored trousers", "Skin"][index]
             material.lightingModel = .physicallyBased
             material.diffuse.contents = color
-            material.roughness.contents = 0.82
+            material.roughness.contents = index == 2 ? 0.66 : 0.9
             return material
         }
         node = SCNNode(geometry: geometry)
@@ -137,7 +123,10 @@ final class GolferSkin {
             let a = rest[link.from], b = rest[link.to], d = b - a
             let t = max(0, min(1, simd_dot(p - a, d) / max(0.001, simd_length_squared(d))))
             var v = p - (a + d * t)
-            if index == 0 { v.z *= 0.70 } // tailored torso, broader than its depth
+            if index == 0 {
+                v.z *= 0.70 // broader chest, with a slight taper at the waist
+                v.x *= 1.08
+            }
             return simd_length(v) - link.radius
         }
     }
@@ -151,9 +140,9 @@ final class GolferSkin {
     }
 
     private static func makeMesh() -> Mesh {
-        let step: Float = 0.11
+        let step: Float = 0.085
         let minimum = simd_float3(-0.9, -0.4, -3.9)
-        let nx = 28, ny = 56, nz = 72
+        let nx = 36, ny = 73, nz = 94
         func id(_ x: Int, _ y: Int, _ z: Int) -> Int { (x * ny + y) * nz + z }
         var points: [simd_float3] = [], values: [Float] = []
         for x in 0..<nx { for y in 0..<ny { for z in 0..<nz {
@@ -162,11 +151,7 @@ final class GolferSkin {
         } } }
         var mesh = Mesh()
         var edgeVertices: [UInt64: Int32] = [:]
-        func vertex(_ a: Int, _ b: Int) -> Int32 {
-            let key = UInt64(min(a, b)) << 32 | UInt64(max(a, b))
-            if let existing = edgeVertices[key] { return existing }
-            let t = values[a] / (values[a] - values[b])
-            let p = points[a] + (points[b] - points[a]) * t
+        func appendVertex(_ p: simd_float3) -> Int32 {
             let e: Float = 0.003
             let n = simd_float3(field(p + simd_float3(e, 0, 0)) - field(p - simd_float3(e, 0, 0)),
                                 field(p + simd_float3(0, e, 0)) - field(p - simd_float3(0, e, 0)),
@@ -181,22 +166,61 @@ final class GolferSkin {
             let total = weights.reduce(0, +)
             mesh.weights += weights.map { $0 / total }
             mesh.bones += nearest.map { UInt16($0) }
+            return index
+        }
+        func vertex(_ a: Int, _ b: Int) -> Int32 {
+            let key = UInt64(min(a, b)) << 32 | UInt64(max(a, b))
+            if let existing = edgeVertices[key] { return existing }
+            let t = values[a] / (values[a] - values[b])
+            let index = appendVertex(points[a] + (points[b] - points[a]) * t)
             edgeVertices[key] = index
             return index
+        }
+        // Cut shared triangles exactly at clothing seams. Merely classifying each
+        // triangle's midpoint produced a sawtooth sleeve and waistband silhouette.
+        let sleeveZ = AvatarSize.shoulderHalfWidth + AvatarSize.upperArm * 0.56
+        let seams: [(normal: simd_float3, offset: Float, material: Int)] = [
+            (simd_float3(0,-1,0), -(AvatarSize.hipHeight + 0.12), 1),
+            (simd_float3(0,0,1), sleeveZ, 2),
+            (simd_float3(0,0,-1), sleeveZ, 2),
+            (simd_float3(0,1,0), rest[.neck].y + 0.42, 2)
+        ]
+        var seamVertices = Array(repeating: [UInt64: Int32](), count: seams.count)
+        func emit(_ polygon: [Int32], material: Int) {
+            guard polygon.count >= 3 else { return }
+            for i in 1..<polygon.count-1 { mesh.triangles[material] += [polygon[0], polygon[i], polygon[i+1]] }
+        }
+        func dress(_ polygon: [Int32], seam: Int) {
+            guard polygon.count >= 3 else { return }
+            guard seam < seams.count else { emit(polygon, material: 0); return }
+            let plane = seams[seam]
+            var positive: [Int32] = [], negative: [Int32] = []
+            for i in polygon.indices {
+                let a = polygon[i], b = polygon[(i+1) % polygon.count]
+                let pa = mesh.vertices[Int(a)], pb = mesh.vertices[Int(b)]
+                let da = simd_dot(pa, plane.normal) - plane.offset
+                let db = simd_dot(pb, plane.normal) - plane.offset
+                if da >= 0 { positive.append(a) }
+                if da <= 0 { negative.append(a) }
+                if (da < 0 && db > 0) || (da > 0 && db < 0) {
+                    let key = UInt64(min(a,b)) << 32 | UInt64(max(a,b))
+                    let cut: Int32
+                    if let cached = seamVertices[seam][key] { cut = cached }
+                    else {
+                        cut = appendVertex(pa + (pb-pa) * (da / (da-db)))
+                        seamVertices[seam][key] = cut
+                    }
+                    positive.append(cut); negative.append(cut)
+                }
+            }
+            emit(positive, material: plane.material)
+            dress(negative, seam: seam + 1)
         }
         func triangle(_ a: Int32, _ b: Int32, _ c: Int32) {
             let p = mesh.vertices[Int(a)], q = mesh.vertices[Int(b)], r = mesh.vertices[Int(c)]
             let outward = mesh.normals[Int(a)] + mesh.normals[Int(b)] + mesh.normals[Int(c)]
             let winding: [Int32] = simd_dot(simd_cross(q - p, r - p), outward) >= 0 ? [a,b,c] : [a,c,b]
-            let middle = (p + q + r) / 3
-            let ds = distances(middle)
-            let nearest = ds.indices.min { ds[$0] < ds[$1] }!
-            var material = links[nearest].material
-            if nearest == 2 || nearest == 4 {
-                let link = links[nearest]
-                if simd_distance(middle, rest[link.from]) > AvatarSize.upperArm * 0.52 { material = 2 }
-            }
-            mesh.triangles[material] += winding
+            dress(winding, seam: 0)
         }
         // Consistent body-diagonal tetrahedra share all boundary edges between cells.
         let tetrahedra = [[0,5,1,6], [0,1,2,6], [0,2,3,6], [0,3,7,6], [0,7,4,6], [0,4,5,6]]

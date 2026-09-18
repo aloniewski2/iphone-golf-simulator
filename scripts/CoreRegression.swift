@@ -38,6 +38,23 @@ struct SunwardCoreCheck {
             checks += 6
         }
         precondition(AvatarAnimations.swingArc(degrees: .nan) == address)
+        for type in ShotType.allCases { for club in GolfClub.allCases where type.supports(club: club, lie: .bunker) {
+            let start = AvatarAnimations.swingArc(degrees: 0, club: club, type: type)
+            precondition(simd_distance(start.clubHead, AvatarSize.ball) < 0.001)
+            for angle in stride(from: -150.0, through: 150, by: 5) {
+                let pose = AvatarAnimations.swingArc(degrees: angle, club: club, type: type)
+                precondition(pose.clubHead.x.isFinite && pose.clubHead.y.isFinite && pose.clubHead.z.isFinite)
+                precondition(abs(simd_length(pose.clubDirection) - 1) < 0.001)
+                precondition(abs(simd_distance(pose[.leftShoulder], pose[.leftElbow]) - AvatarSize.upperArm) < 0.01)
+                if type == .chip { precondition(pose[.rightAnkle] == address[.rightAnkle]) }
+                if angle < 150 {
+                    let next = AvatarAnimations.swingArc(degrees: angle + 1, club: club, type: type)
+                    precondition(simd_distance(pose.handCenter, next.handCenter) < 0.15)
+                }
+                checks += 4
+            }
+        } }
+        precondition(AvatarAnimations.swingArc(degrees: .nan, club: .putter) == AvatarAnimations.puttingArc(degrees: 0))
         for angle in [-150.0, -60, 0, 60, 150] {
             let putt = AvatarAnimations.swingArc(degrees: angle, club: .putter)
             for joint in [BodyJoint.root, .nose, .leftAnkle, .rightAnkle] { precondition(putt[joint] == address[joint]) }

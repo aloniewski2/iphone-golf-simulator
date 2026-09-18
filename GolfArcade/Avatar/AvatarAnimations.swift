@@ -18,9 +18,18 @@ enum AvatarAnimations {
 
     /// Original phase-shaped fallback for touch/phone input. Camera poses retain their
     /// measured grip and authoritative club; this never substitutes for camera contact.
-    static func swingArc(degrees: Double, club: GolfClub = .driver) -> BodyPose3D {
-        if club == .putter { return puttingArc(degrees: degrees) }
-        let degrees = max(-150, min(150, degrees.isFinite ? degrees : 0))
+    static func swingArc(degrees: Double, club: GolfClub = .driver, type: ShotType = .full) -> BodyPose3D {
+        if club == .putter || type == .putt { return puttingArc(degrees: degrees) }
+        // Shot families share contact geometry, not the same driver-sized finish.
+        // These are fallback presentation poses; measured camera motion is never rescaled.
+        let amplitude: Double
+        switch type {
+        case .chip: amplitude = 0.25
+        case .pitch: amplitude = 0.58
+        case .bunker: amplitude = 0.78
+        default: amplitude = club == .wedge ? 0.84 : club == .iron9 ? 0.92 : 1
+        }
+        let degrees = max(-150, min(150, degrees.isFinite ? degrees : 0)) * amplitude
         let radians = Float(degrees * .pi / 180)
         let toAddress = addressHands - pivot
         let radius = simd_length(toAddress)
@@ -32,12 +41,16 @@ enum AvatarAnimations {
         let release = degrees < 0 ? smoothstep(0.12, 1, progress) : 0
         var upper = UpperBody(twist: -radians * (degrees < 0 ? 0.40 : 0.30))
         upper.hipTurn = -radians * (degrees < 0 ? 0.27 : 0.12)
-        upper.trailHeel = release * 0.22
-        upper.offset.z = -release * 0.16
+        let weightTransfer: Float = type == .chip ? 0 : type == .pitch ? 0.35 : 1
+        upper.trailHeel = release * 0.22 * weightTransfer
+        upper.offset.z = -release * 0.16 * weightTransfer
         var pose = upper.pose(left: hands + simd_float3(0.12, -0.08, 0), right: hands + simd_float3(-0.12, 0.08, 0))
+        let quietHead = head + simd_float3(0, AvatarSize.hipHeight, 0)
+        let headRelease = degrees < 0 ? smoothstep(0.25, 1, progress) : 0
+        pose.joints[.nose] = simd_mix(quietHead, pose[.nose], simd_float3(repeating: 0.18 + headRelease * 0.82))
         let armLine = simd_normalize(hands - pivot)
         let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
-        let hingeLimit: Double = club == .wedge ? 0.65 : club == .iron ? 0.85 : 1
+        let hingeLimit: Double = type == .chip ? 0.16 : type == .bunker ? 0.9 : club == .wedge ? 0.65 : [.iron5, .iron, .iron9].contains(club) ? 0.85 : 1
         let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2 * hingeLimit)
         // Address the same small ground ball as the camera rig instead of extending the
         // shaft along the forearms and burying its head below the turf.
@@ -65,7 +78,7 @@ enum AvatarAnimations {
     /// Presentation only: live camera contact still uses the measured authoritative club.
     static func puttingArc(degrees: Double) -> BodyPose3D {
         var pose = address
-        let angle = Float(max(-150, min(150, degrees)) / 150) * 0.19
+        let angle = Float(max(-150, min(150, degrees.isFinite ? degrees : 0)) / 150) * 0.19
         let axis = simd_float3(1, 0, 0)
         let rotation = simd_quatf(angle: -angle, axis: axis)
         let pivot = pose.shoulderCenter

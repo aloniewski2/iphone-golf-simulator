@@ -41,6 +41,7 @@
 		7653186180DEC611702F898B /* CourseSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */; };
 		76EB609F6FBDACDDE0ADB376 /* CameraClubOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69F615D25004B6A67EDF53 /* CameraClubOverlay.swift */; };
 		7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */; };
+		7C84B58C3940D4EA7F0D344C /* VisualAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CABE48747E091D3114CE75 /* VisualAssetTests.swift */; };
 		7DAA43A8FC1D8AC77973D069 /* AvatarAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */; };
 		7E73054BAFA78656D2034D6C /* GolferEyes.png in Resources */ = {isa = PBXBuildFile; fileRef = F9BF0F1A3BA4FD2C292D3C61 /* GolferEyes.png */; };
 		80F8C1776FC2ECC001C3FC2A /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121EF35B107A6679745CC5B /* BenchmarkTests.swift */; };
@@ -153,6 +154,7 @@
 		5E90B0F05E735C3FCB7D843F /* FlightPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPath.swift; sourceTree = "<group>"; };
 		60B1FAF9F257610A76213E8E /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
 		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
+		65CABE48747E091D3114CE75 /* VisualAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualAssetTests.swift; sourceTree = "<group>"; };
 		67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCalibration.swift; sourceTree = "<group>"; };
 		688BBD46E66F60CA14F978A3 /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
 		6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeAudio.swift; sourceTree = "<group>"; };
@@ -427,6 +429,7 @@
 				9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */,
 				60B1FAF9F257610A76213E8E /* TerrainTests.swift */,
 				E91B4885D85805ADA35A48A0 /* TVDisplayTests.swift */,
+				65CABE48747E091D3114CE75 /* VisualAssetTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -711,6 +714,7 @@
 				7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */,
 				962B128977D0C190DC669224 /* TVDisplayTests.swift in Sources */,
 				8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */,
+				7C84B58C3940D4EA7F0D344C /* VisualAssetTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -48,9 +48,16 @@ final class AvatarRig {
         torso.addChildNode(crest)
         pelvis.scale = SCNVector3(0.75, 0.65, 1.18)
         body.addChildNode(pelvis)
-        collar.geometry = SCNTorus(ringRadius: 0.26, pipeRadius: 0.09)
+        collar.geometry = SCNTorus(ringRadius: 0.23, pipeRadius: 0.055)
         collar.geometry?.materials = [Self.material(ivory)]
         body.addChildNode(collar)
+        // Two sewn collar points, rather than a thick floating neck ring.
+        for side: Float in [-1, 1] {
+            let tip = Self.part(SCNBox(width: 0.19, height: 0.035, length: 0.18, chamferRadius: 0.025), ivory)
+            tip.simdPosition = simd_float3(0.20, -0.04, side * 0.16)
+            tip.simdOrientation = simd_quatf(angle: side * 0.36, axis: simd_float3(1,0,0))
+            collar.addChildNode(tip)
+        }
         head.name = "golferFace"
         head.geometry = SCNSphere(radius: 0.62)
         (head.geometry as? SCNSphere)?.segmentCount = 32
@@ -61,11 +68,11 @@ final class AvatarRig {
             ear.simdPosition = simd_float3(-0.02, -0.02, side * 0.59)
             ear.scale = SCNVector3(0.7, 1.2, 0.65)
             head.addChildNode(ear)
-            let eye = Self.part(SCNSphere(radius: 0.12), ivory)
+            let eye = Self.part(SCNSphere(radius: 0.10), UIColor(white: 0.97, alpha: 1))
             eye.simdPosition = simd_float3(0.565, 0.07, side * 0.225)
             eye.scale = SCNVector3(0.38, 1.12, 0.82)
             head.addChildNode(eye)
-            let pupil = Self.part(SCNSphere(radius: 0.061), navy)
+            let pupil = Self.part(SCNSphere(radius: 0.052), UIColor(red: 0.12, green: 0.09, blue: 0.075, alpha: 1))
             pupil.simdPosition = simd_float3(0.608, 0.06, side * 0.218)
             pupil.scale = SCNVector3(0.32, 1.2, 0.88)
             head.addChildNode(pupil)
@@ -110,8 +117,20 @@ final class AvatarRig {
         badge.scale = SCNVector3(0.17, 1, 1)
         head.addChildNode(badge)
         for index in 0..<2 {
-            let hand = Self.part(SCNSphere(radius: 0.205), index == 0 ? ivory : skin)
-            hand.scale = SCNVector3(0.9, 1.13, 0.86)
+            let handColor = index == 0 ? UIColor(white: 0.95, alpha: 1) : skin
+            let hand = Self.part(SCNSphere(radius: 0.17), handColor)
+            hand.name = index == 0 ? "leadGlove" : "trailHand"
+            hand.scale = SCNVector3(0.83, 1.15, 0.87)
+            for finger in 0..<4 {
+                let curl = Self.part(SCNCapsule(capRadius: 0.043, height: 0.20), handColor)
+                curl.simdPosition = simd_float3(0.07, -0.02, Float(finger) * 0.07 - 0.105)
+                curl.simdOrientation = simd_quatf(angle: 0.55, axis: simd_float3(0,0,1))
+                hand.addChildNode(curl)
+            }
+            let thumb = Self.part(SCNCapsule(capRadius: 0.055, height: 0.22), handColor)
+            thumb.simdPosition = simd_float3(0.13, 0.065, index == 0 ? 0.12 : -0.12)
+            thumb.simdOrientation = simd_quatf(angle: 0.7, axis: simd_float3(1,0,0))
+            hand.addChildNode(thumb)
             body.addChildNode(hand)
             hands.append(hand)
             let foot = SCNNode()
@@ -184,6 +203,9 @@ final class AvatarRig {
         head.simdOrientation = authoredSkin == nil ? Self.headOrientation(for: pose) : torso.simdOrientation
         hands[0].simdPosition = pose[.leftWrist]
         hands[1].simdPosition = pose[.rightWrist]
+        for hand in hands {
+            hand.simdOrientation = Self.align(pose.clubVisible ? pose.clubDirection : simd_float3(0,-1,0))
+        }
         let facing: Float = authoredSkin != nil && mirrored ? -1 : 1
         feet[0].simdPosition = pose[.leftAnkle] + simd_float3(0.22*facing, -0.01, 0)
         feet[1].simdPosition = pose[.rightAnkle] + simd_float3(0.22*facing, -0.01, 0)
