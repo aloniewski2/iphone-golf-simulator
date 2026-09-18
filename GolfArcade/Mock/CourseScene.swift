@@ -86,10 +86,15 @@ final class CourseScene: NSObject, ObservableObject {
     private var lastPreview: RangeShot?
     private let impact = SCNNode()
     private var pinFlag: SCNNode?
+    private var pinStick: SCNNode?
     private let golfer = AvatarRig(shirt: UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1))
     private(set) var hole: Hole?
     /// Dots on the putting surface that drift downhill, faster where it is steeper: the read.
     private let greenGrid = SCNNode()
+    /// Contour lines over the green, tinted by how steeply the ground tips (the games' grid).
+    private let greenContours = SCNNode()
+    /// The putt's predicted roll as one smooth ribbon, break and all.
+    private let puttRibbon = SCNNode()
     private var greenDots: [(node: SCNNode, base: CoursePoint, flow: simd_float3, speed: Float)] = []
     private static let greenGridSpacing = 2.0
 
@@ -366,7 +371,7 @@ final class CourseScene: NSObject, ObservableObject {
         }
 
         let pinGround = ground(pin)
-        add(SCNCylinder(radius: 0.015, height: 2.4), .white, at: world(pin, y: pinGround + 1.17))
+        pinStick = add(SCNCylinder(radius: 0.015, height: 2.4), .white, at: world(pin, y: pinGround + 1.17))
         let flag = add(CourseArt.flag(), UIColor(red: 0.98, green: 0.43, blue: 0.17, alpha: 1),
                        at: world(pin, y: pinGround + 2.28))
         flag.simdScale = simd_float3(repeating: 0.28)
@@ -404,8 +409,11 @@ final class CourseScene: NSObject, ObservableObject {
         lastTick = now
         load(inputs.hole)
         pinFlag?.eulerAngles.y = Float(sin(now * 1.8) * 0.035)
-
         let shot = inputs.shot
+        // The flag comes out for a putt, as it does on the course, so the cup is what you see.
+        let putting = (shot == nil && inputs.onGreen) || (shot?.club == .putter && shot?.request.type == .putt)
+        pinFlag?.isHidden = putting
+        pinStick?.isHidden = putting
         updateTrajectory(inputs.preview, visible: shot == nil)
         let elapsed = inputs.elapsed(at: Date())
         if shot != lastShot {
@@ -417,7 +425,8 @@ final class CourseScene: NSObject, ObservableObject {
                 landingTime = ShotCameraDirector.landingTime(of: shot)
                 if !inputs.isReplay || recorder.impactTime == nil { recorder.markImpact(at: now - elapsed) }
                 cannedLaunchAngle = inputs.isReplay ? 150 : max(cannedAngle, 60)
-                for i in 0..<60 {
+                // A putt needs no trail: the ball on the green is the picture.
+                for i in 0..<(shot.club == .putter && shot.request.type == .putt ? 0 : 60) {
                     let point = shot.position(at: Double(i) / 59 * shot.duration)
                     let dot = SCNNode(geometry: SCNSphere(radius: 0.065))
                     dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
@@ -488,8 +497,9 @@ final class CourseScene: NSObject, ObservableObject {
         aimLine.eulerAngles.y = 0
         updateGreenGrid(visible: shot == nil && inputs.onGreen, now: now)
         moveCamera(inputs, shot: shot, elapsed: elapsed, dt: dt)
-        updatePinBeacon(pin: inputs.hole.pin, sunk: sunk)
-        updatePinMarker(pin: inputs.hole.pin, sunk: sunk)
+        // On the green the cup itself is the target: no beacon, no marker.
+        updatePinBeacon(pin: inputs.hole.pin, sunk: sunk || putting)
+        updatePinMarker(pin: inputs.hole.pin, sunk: sunk || putting)
         if let shot {
             // Dots appear behind the ball; ones right at the chase camera would wash out the view.
             let eye = camera.simdPosition
@@ -583,14 +593,16 @@ final class CourseScene: NSObject, ObservableObject {
         trajectoryGuide.isHidden = !visible || preview == nil
         guard visible, let preview, preview != lastPreview else { return }
         lastPreview = preview
-        let putting = preview.club == .putter
+        let putting = preview.club == .putter && preview.request.type == .putt
+        puttRibbon.isHidden = !putting
+        if putting, let hole { puttRibbon.geometry = Self.puttRibbonGeometry(preview, terrain: hole.terrain) }
         for (index, dot) in trajectoryDots.enumerated() {
+            dot.isHidden = putting
             let t = Double(index + 1) / Double(trajectoryDots.count)
             let point = preview.position(at: preview.duration * t)
             let lift = Double(ground(CoursePoint(x: point.lateralYards, d: point.distanceYards)))
             dot.position = SCNVector3(point.lateralYards, lift + max(0.06, point.heightYards), -point.distanceYards)
-            // A putt's line is read close up: even small dots all the way along.
-            dot.simdScale = simd_float3(repeating: putting ? 0.22 : Float(0.5 + t * 1.7))
+            dot.simdScale = simd_float3(repeating: Float(0.5 + t * 1.7))
         }
         let end = preview.position(at: preview.duration)
         projectedLanding.position = SCNVector3(end.lateralYards, Double(ground(CoursePoint(x: end.lateralYards, d: end.distanceYards))) + 0.06, -end.distanceYards)
@@ -739,9 +751,9 @@ final class CourseScene: NSObject, ObservableObject {
         let framing = ShotCameraDirector.shot(ShotCameraDirector.Inputs(
             ball: inputs.ball, heading: inputs.heading + inputs.aim, aim: 0, distanceToPin: inputs.distanceToPin,
             onGreen: inputs.onGreen && shot == nil, handedness: inputs.handedness, shot: shot, elapsed: elapsed,
-            reaction: reaction, landingTime: landingTime
+            reaction: reaction, landingTime: landingTime, pin: inputs.hole.pin
         ))
-        let cut = cameraStage == nil || (framing.stage != cameraStage && [.hero, .chase, .address, .green].contains(framing.stage))
+        let cut = cameraStage == nil || (framing.stage != cameraStage && [.hero, .chase, .address, .green, .holeCam].contains(framing.stage))
         cameraStage = framing.stage
         // The framing is worked out on flat ground; lift it by the terrain under its subject.
         let lift = simd_float3(0, ground(CoursePoint(x: Double(framing.lookAt.x), d: Double(-framing.lookAt.z))), 0)
@@ -784,6 +796,15 @@ final class CourseScene: NSObject, ObservableObject {
         greenGrid.childNodes.forEach { $0.removeFromParentNode() }
         if greenGrid.parent == nil { scene.rootNode.addChildNode(greenGrid) }
         greenGrid.name = "greenReadGrid"
+        greenContours.geometry = Self.contourGrid(for: hole)
+        greenContours.name = "greenContours"
+        greenContours.castsShadow = false
+        if greenContours.parent == nil { greenGrid.addChildNode(greenContours) }
+        if puttRibbon.parent == nil {
+            puttRibbon.name = "puttRibbon"
+            puttRibbon.castsShadow = false
+            trajectoryGuide.addChildNode(puttRibbon)
+        }
         let spacing = Self.greenGridSpacing
         let reach = hole.greenRadius + spacing
         let pin = hole.pin
@@ -795,9 +816,9 @@ final class CourseScene: NSObject, ObservableObject {
                 if point.distance(to: pin) <= hole.greenRadius + 0.5, point.distance(to: pin) > 0.6 {
                     let gradient = hole.terrain.gradient(at: point)
                     let steepness = hypot(gradient.dx, gradient.dd)
-                    let dot = SCNNode(geometry: SCNSphere(radius: 0.09))
+                    let dot = SCNNode(geometry: SCNSphere(radius: 0.065))
                     dot.geometry?.materials = [CourseArt.readMaterial(steepness: steepness)]
-                    dot.scale = SCNVector3(1, 0.35, 1)
+                    dot.scale = SCNVector3(1, 0.5, 1)
                     dot.castsShadow = false
                     greenGrid.addChildNode(dot)
                     let flow = steepness > 0.0005
@@ -822,6 +843,111 @@ final class CourseScene: NSObject, ObservableObject {
             let point = CoursePoint(x: dot.base.x + Double(offset.x), d: dot.base.d - Double(offset.z))
             dot.node.simdPosition = simd_float3(Float(point.x), ground(point) + 0.02, -Float(point.d))
         }
+    }
+
+    /// Lines every yard each way, draped over the green's contours as thin ribbons in one piece
+    /// of geometry, each vertex coloured by how steeply the ground tips there: white where it is
+    /// flat, through yellow and amber to red on the strongest slopes, as PGA TOUR 2K colours its
+    /// grid. The beads that drift down the fall line ride on top and give the direction.
+    nonisolated static func contourGrid(for hole: Hole) -> SCNGeometry {
+        var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], colors: [Float] = [], indices: [Int32] = []
+        let half: Float = 0.022
+        let terrain = hole.terrain
+        func colour(steepness: Double) -> simd_float4 {
+            let stops: [(Double, simd_float3)] = [(0, simd_float3(1, 1, 1)), (0.012, simd_float3(1, 0.96, 0.55)),
+                                                  (0.025, simd_float3(1, 0.72, 0.28)), (0.04, simd_float3(1, 0.3, 0.25))]
+            var rgb = stops[stops.count - 1].1
+            for i in 1..<stops.count where steepness <= stops[i].0 {
+                let t = Float((steepness - stops[i - 1].0) / (stops[i].0 - stops[i - 1].0))
+                rgb = simd_mix(stops[i - 1].1, stops[i].1, simd_float3(repeating: t))
+                break
+            }
+            // Vertex colours are linear; the palette is sRGB.
+            return simd_float4(pow(rgb.x, 2.2), pow(rgb.y, 2.2), pow(rgb.z, 2.2), 0.72)
+        }
+        func lay(_ points: [CoursePoint]) {
+            guard points.count >= 2 else { return }
+            for (index, point) in points.enumerated() {
+                let previous = points[max(0, index - 1)], next = points[min(points.count - 1, index + 1)]
+                var direction = simd_float2(Float(next.x - previous.x), Float(next.d - previous.d))
+                if simd_length(direction) < 1e-5 { direction = simd_float2(1, 0) }
+                direction = simd_normalize(direction)
+                let side = simd_float2(-direction.y, direction.x) * half
+                let height = Float(terrain.elevation(at: point)) - 0.035 + 0.012
+                let gradient = terrain.gradient(at: point)
+                let color = colour(steepness: hypot(gradient.dx, gradient.dd))
+                for offset in [-side, side] {
+                    vertices.append(SCNVector3(Float(point.x) + offset.x, height, -(Float(point.d) + offset.y)))
+                    normals.append(SCNVector3(0, 1, 0))
+                    colors += [color.x, color.y, color.z, color.w]
+                }
+                if index > 0 {
+                    let a = Int32(vertices.count - 4)
+                    indices += [a, a + 2, a + 1, a + 1, a + 2, a + 3]
+                }
+            }
+        }
+        let radius = hole.greenRadius, pin = hole.pin
+        var offset = -(radius - 0.5).rounded(.down)
+        while offset < radius {
+            let chord = (radius * radius - offset * offset).squareRoot()
+            let steps = max(2, Int(chord * 3))
+            lay((0...steps).map { CoursePoint(x: pin.x - chord + chord * 2 * Double($0) / Double(steps), d: pin.d + offset) })
+            lay((0...steps).map { CoursePoint(x: pin.x + offset, d: pin.d - chord + chord * 2 * Double($0) / Double(steps)) })
+            offset += 1
+        }
+        return colouredRibbonGeometry(vertices: vertices, normals: normals, colors: colors, indices: indices, emission: 0.25)
+    }
+
+    /// A smooth band along a putt's predicted roll: bright at the ball, fading toward where it
+    /// stops, following every bend the slope puts in it.
+    nonisolated static func puttRibbonGeometry(_ preview: RangeShot, terrain: Terrain) -> SCNGeometry {
+        var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], colors: [Float] = [], indices: [Int32] = []
+        let samples = 80
+        let points: [CoursePoint] = (0...samples).map { i in
+            let p = preview.position(at: preview.duration * Double(i) / Double(samples))
+            return CoursePoint(x: p.lateralYards, d: p.distanceYards)
+        }
+        let half: Float = 0.04
+        let mint = simd_float3(pow(0.2, 2.2), pow(0.95, 2.2), pow(0.7, 2.2))
+        for (index, point) in points.enumerated() {
+            let previous = points[max(0, index - 1)], next = points[min(points.count - 1, index + 1)]
+            var direction = simd_float2(Float(next.x - previous.x), Float(next.d - previous.d))
+            if simd_length(direction) < 1e-5 { direction = simd_float2(0, 1) }
+            direction = simd_normalize(direction)
+            let side = simd_float2(-direction.y, direction.x) * half
+            let height = Float(terrain.elevation(at: point)) - 0.035 + 0.02
+            let t = Float(index) / Float(samples)
+            let alpha = 0.95 - 0.55 * t
+            for offset in [-side, side] {
+                vertices.append(SCNVector3(Float(point.x) + offset.x, height, -(Float(point.d) + offset.y)))
+                normals.append(SCNVector3(0, 1, 0))
+                colors += [mint.x, mint.y, mint.z, alpha]
+            }
+            if index > 0 {
+                let a = Int32(vertices.count - 4)
+                indices += [a, a + 2, a + 1, a + 1, a + 2, a + 3]
+            }
+        }
+        return colouredRibbonGeometry(vertices: vertices, normals: normals, colors: colors, indices: indices, emission: 0.5)
+    }
+
+    nonisolated private static func colouredRibbonGeometry(vertices: [SCNVector3], normals: [SCNVector3], colors: [Float], indices: [Int32], emission: CGFloat) -> SCNGeometry {
+        let colorSource = colors.withUnsafeBufferPointer { buffer in
+            SCNGeometrySource(data: Data(buffer: buffer), semantic: .color, vectorCount: vertices.count, usesFloatComponents: true,
+                              componentsPerVector: 4, bytesPerComponent: MemoryLayout<Float>.size, dataOffset: 0, dataStride: MemoryLayout<Float>.size * 4)
+        }
+        let geometry = SCNGeometry(sources: [SCNGeometrySource(vertices: vertices), SCNGeometrySource(normals: normals), colorSource],
+                                   elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.white
+        material.emission.contents = UIColor(white: emission, alpha: 1)
+        material.lightingModel = .constant
+        material.isDoubleSided = true
+        material.blendMode = .alpha
+        material.writesToDepthBuffer = false
+        geometry.materials = [material]
+        return geometry
     }
 
     /// The hole: as wide as the ball can drop into (`Hole.cupCaptureRadius`), cut into the green
@@ -1016,13 +1142,14 @@ enum CourseArt {
         var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], uv: [CGPoint] = [], indices: [Int32] = []
         for column in 0...columns {
             let s = -r + Double(column) / Double(columns) * (length + 2 * r)
-            // Half-width at this station: full along the body, circular at the caps.
+            // Half-width at this station: full along the body, circular at the caps. The
+            // station itself runs on past the ends (that is what makes the caps round, and a
+            // zero-length capsule a full disc — the green).
             let over = s < 0 ? -s : max(0, s - length)
             let half = sqrt(max(0, r * r - over * over))
-            let along = min(max(s, 0), length)
             for row in 0...across {
                 let t = -half + Double(row) / Double(across) * 2 * half
-                let point = CoursePoint(x: a.x + ux * along - ud * t, d: a.d + ud * along + ux * t)
+                let point = CoursePoint(x: a.x + ux * s - ud * t, d: a.d + ud * s + ux * t)
                 let h = Float(terrain.elevation(at: point)) + y
                 let g = terrain.gradient(at: point)
                 vertices.append(SCNVector3(Float(point.x), h, -Float(point.d)))
