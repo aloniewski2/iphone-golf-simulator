@@ -15,6 +15,23 @@ final class RangeSimulationTests: XCTestCase {
         }
     }
 
+    /// As in arcade golf, the meter reads distance: 60% on a 250-yard driver carries 150. The
+    /// putter's meter is curved toward the short end, and the HUD's quoted distance is what flies.
+    func testMeterReadsDistance() {
+        for club in GolfClub.allCases {
+            XCTAssertEqual(club.meterExponent, club == .putter ? 1.5 : 1)
+            for power in stride(from: 0.1, through: 1.0, by: 0.1) {
+                let flight = BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0))
+                let distance = club == .putter ? flight.total : flight.carry
+                XCTAssertEqual(distance, club.distanceYards(meter: power), accuracy: club.referenceDistanceYards * 0.02, "\(club) at \(power)")
+                if club != .putter { XCTAssertEqual(distance, club.referenceDistanceYards * power, accuracy: club.referenceDistanceYards * 0.02) }
+            }
+        }
+        XCTAssertEqual(GolfClub.putter.distanceYards(meter: 0.25), 25 * 0.125, accuracy: 0.001, "a quarter stroke is a nine-foot putt")
+        let thin = BallFlight.simulate(GolfClub.driver.launch(power: 1, aimDegrees: 0, curveDegrees: 0, speedFactor: 0.76))
+        XCTAssertLessThan(thin.carry, 250 * 0.76, "a thin strike loses club speed, which costs more than its share of distance")
+    }
+
     func testPowerAndClubChangeDistanceAndAimChangesLanding() {
         let soft = RangeShot(id: 1, club: .driver, power: 0.2, aim: -15)
         let hard = RangeShot(id: 2, club: .driver, power: 0.9, aim: 15)
