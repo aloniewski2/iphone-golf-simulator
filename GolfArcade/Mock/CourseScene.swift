@@ -37,6 +37,13 @@ struct SceneInputs {
     }
 }
 
+/// Where the hole is on the screen, for a marker drawn over the 3D view: in points of the
+/// rendering view, and whether the hole is in front of the camera at all.
+struct PinScreenMarker: Equatable, Sendable {
+    var point: CGPoint
+    var isInFront: Bool
+}
+
 /// The 3D hole: built from `Hole` data so what you see is exactly what the lie checks use.
 /// Course yards map to scene units one-to-one with `x` right and distance along `-z`.
 ///
@@ -44,6 +51,10 @@ struct SceneInputs {
 /// and knockdowns play out, and `ShotCameraDirector` moves the camera, without SwiftUI re-rendering.
 @MainActor
 final class CourseScene: NSObject, ObservableObject {
+    /// The view rendering this scene, for projecting course points onto the screen.
+    weak var renderView: SCNView?
+    /// The hole's place on screen, refreshed every frame the camera or the view moves.
+    @Published private(set) var pinMarker: PinScreenMarker?
     #if DEBUG
     private(set) static var initializationCount = 0
     #endif
@@ -478,6 +489,7 @@ final class CourseScene: NSObject, ObservableObject {
         updateGreenGrid(visible: shot == nil && inputs.onGreen, now: now)
         moveCamera(inputs, shot: shot, elapsed: elapsed, dt: dt)
         updatePinBeacon(pin: inputs.hole.pin, sunk: sunk)
+        updatePinMarker(pin: inputs.hole.pin, sunk: sunk)
         if let shot {
             // Dots appear behind the ball; ones right at the chase camera would wash out the view.
             let eye = camera.simdPosition
@@ -622,7 +634,40 @@ final class CourseScene: NSObject, ObservableObject {
         pinBadge.constraints = [SCNBillboardConstraint()]
         pinBadge.renderingOrder = 101
         pinBadge.castsShadow = false
+        // The HUD draws the hole marker over the view (`pinMarker`), where it can also point
+        // off-screen; the in-scene badge stays for renders with no HUD.
+        pinBadge.isHidden = true
         pinBeacon.addChildNode(pinBadge)
+    }
+
+    /// Projects the top of the flag onto the rendering view so the HUD can mark the hole
+    /// wherever it is, including off the edge of the screen while the line is being moved.
+    private func updatePinMarker(pin: CoursePoint, sunk: Bool) {
+        guard !sunk, let size = renderView?.bounds.size, size.width > 0, size.height > 0 else {
+            if pinMarker != nil { pinMarker = nil }
+            return
+        }
+        let top = world(pin, y: ground(pin) + 2.4)
+        let marker = Self.project(simd_float3(top.x, top.y, top.z), camera: camera, viewSize: size)
+        if let current = pinMarker, current.isInFront == marker.isInFront,
+           abs(current.point.x - marker.point.x) < 0.5, abs(current.point.y - marker.point.y) < 0.5 { return }
+        pinMarker = marker
+    }
+
+    /// Where a world point lands on a view of `viewSize` seen through `camera`, in points from
+    /// the top-left. A point behind the camera is reported on the opposite side of the screen
+    /// so an edge marker can still point back toward it.
+    nonisolated static func project(_ world: simd_float3, camera: SCNNode, viewSize: CGSize) -> PinScreenMarker {
+        guard let lens = camera.camera else { return PinScreenMarker(point: .zero, isInFront: false) }
+        let projection = simd_float4x4(lens.projectionTransform(withViewportSize: viewSize))
+        let view = camera.simdWorldTransform.inverse
+        let clip = projection * (view * simd_float4(world, 1))
+        let inFront = clip.w > 0.001
+        let ndc = clip.w != 0 ? simd_float2(clip.x, clip.y) / clip.w : .zero
+        var x = CGFloat((ndc.x + 1) / 2) * viewSize.width
+        var y = CGFloat((1 - ndc.y) / 2) * viewSize.height
+        if !inFront { x = viewSize.width - x; y = viewSize.height - y }
+        return PinScreenMarker(point: CGPoint(x: x, y: y), isInFront: inFront)
     }
 
     /// Visibility assist only; the actual flag and regulation-sized cup stay unchanged.
@@ -877,6 +922,7 @@ struct CourseSceneView: UIViewRepresentable {
         #endif
         view.rendersContinuously = true
         view.isUserInteractionEnabled = false
+        scene.renderView = view
         scene.inputs = inputs
         scene.start()
         return view

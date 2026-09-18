@@ -148,8 +148,14 @@ final class CameraSwingController: ObservableObject {
     private var detector = ArmSwingDetector()
     private var gestureRecognizer = HandGestureRecognizer()
     private var aimSignalRecognizer = AimSignalRecognizer()
-    /// The side of an outstretched arm at address, for on-screen feedback.
+    /// The side of an outstretched arm at address: while it is set the line sweeps that way.
     @Published private(set) var aimSignal: AimSignalRecognizer.Side?
+    private var clubSignRecognizer = ClubSignRecognizer()
+    /// Clubs picked by holding up fingers (one to four), for the screen to apply.
+    let clubSigns = PassthroughSubject<GolfClub, Never>()
+    @Published private(set) var lastClubSign: (club: GolfClub, at: Date)?
+    /// The finger count being held up right now, for on-screen feedback.
+    @Published private(set) var clubSignShowing: Int?
     private var subscriptions: Set<AnyCancellable> = []
     #if DEBUG
     private let motionTrace = CameraMotionTrace.requested()
@@ -325,21 +331,39 @@ final class CameraSwingController: ObservableObject {
         if let event { onEvent?(event) }
         recognizeGesture(frame, at: time, afterImpact: { if case .impact = event { true } else { false } }())
         recognizeAimSignal(frame, at: time)
+        recognizeClubSign(frame, at: time)
     }
 
-    /// An arm held out to the side at address steps the line that way (see `AimSignalRecognizer`).
-    /// Unlike the menu gestures this needs no hand pose and runs whenever the player is set up
-    /// at the ball, which is exactly when the line needs moving.
+    /// An arm held out to the side at address sweeps the line that way for as long as it is out
+    /// (`aimSignal`; the screen moves the line smoothly against its clock). Unlike the menu
+    /// gestures this needs no hand pose and runs whenever the player is set up at the ball,
+    /// which is exactly when the line needs moving.
     private func recognizeAimSignal(_ frame: PoseFrame?, at time: Double) {
         let atAddress = isPositionLocked && !isCheckingSwing && detector.phase == .address
-        let side = atAddress ? aimSignalRecognizer.ingest(frame, at: time) : nil
+        let step = atAddress ? aimSignalRecognizer.ingest(frame, at: time) : nil
         if !atAddress { aimSignalRecognizer.clear() }
         let signalling = aimSignalRecognizer.side
         if aimSignal != signalling { aimSignal = signalling }
-        guard let side else { return }
-        let gesture: NavGesture = side == .left ? .left : .right
-        lastGesture = (gesture, Date())
-        gestures.send(gesture)
+        // The first step flashes the arrow; the sweep itself is continuous.
+        if let step, lastGesture.map({ Date().timeIntervalSince($0.at) > 0.6 }) ?? true {
+            lastGesture = (step == .left ? .left : .right, Date())
+        }
+    }
+
+    /// Fingers held up pick a club (see `ClubSignRecognizer`): needs the hand pose, so it runs
+    /// with the menu gestures, before the shot is played.
+    private func recognizeClubSign(_ frame: PoseFrame?, at time: Double) {
+        let swinging = detector.phase == .backswing || detector.phase == .downswing
+        guard gesturesEnabled, !isCheckingSwing, !swinging else {
+            clubSignRecognizer.clear()
+            if clubSignShowing != nil { clubSignShowing = nil }
+            return
+        }
+        let club = clubSignRecognizer.ingest(frame, at: time)
+        if clubSignShowing != clubSignRecognizer.showing { clubSignShowing = clubSignRecognizer.showing }
+        guard let club else { return }
+        lastClubSign = (club, Date())
+        clubSigns.send(club)
     }
 
     /// A view-owned timer drives the review; no delayed task can collapse a later player's setup.

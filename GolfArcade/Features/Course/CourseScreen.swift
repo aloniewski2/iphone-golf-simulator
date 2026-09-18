@@ -77,12 +77,17 @@ struct CourseScreen: View {
         .onReceive(tick) { date in
             guard appPhase == .active, !rescanPresented else { return }
             camera.advancePositionReview()
+            sweepAim(at: date)
             let wasFlying = round.phase == .flying
             let wasReplay = round.isReplay
             round.advance(at: date)
             if wasFlying, round.phase != .flying, !wasReplay { landed() }
         }
         .onNavGesture(camera) { handleGesture($0) }
+        .onReceive(camera.clubSigns.receive(on: RunLoop.main)) { club in
+            guard usesCamera, round.phase == .ready, round.club != club else { return }
+            round.club = club
+        }
         .onReceive(camera.$frame) { frame in
             guard usesCamera else { return }
             scene.ingest(frame, swingAngle: camera.swingAngle, frameAspect: camera.tracker.frameAspect,
@@ -191,6 +196,7 @@ struct CourseScreen: View {
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
+
                 VStack(alignment: .leading, spacing: 5) {
                     holeChip
                     if round.canSwing {
@@ -244,6 +250,13 @@ struct CourseScreen: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(.trailing, 10).padding(.top, 42)
 
+                // Over everything: the hole, wherever it is, kept out of the HUD band at the top.
+                if let marker = scene.pinMarker, round.canSwing || round.phase == .flying {
+                    PinMarkerOverlay(marker: marker, yards: Int(round.distanceToPin.rounded()), size: size,
+                                     topInset: size.width > size.height ? 120 : 250,
+                                     trailingInset: size.width > size.height ? 130 : 110)
+                }
+
                 ClubRail(round: round, focusedClub: round.canSwing ? round.club : nil) { menuItems }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                     .padding(.trailing, 10)
@@ -295,7 +308,8 @@ struct CourseScreen: View {
 
     private func cameraStageSize(_ size: CGSize) -> CGSize {
         if stageExpanded { return size }
-        let width: CGFloat = size.width > size.height ? 160 : 132
+        // Small: it is a check that you are in frame, not the view you play from.
+        let width: CGFloat = size.width > size.height ? 140 : 96
         return CGSize(width: width, height: width / max(camera.tracker.frameAspect, 0.3))
     }
 
@@ -531,6 +545,24 @@ struct CourseScreen: View {
         stopFeedback()
         camera.tracker.setCalibration(nil)
         flow.quitToMenu()
+    }
+
+    /// While an arm is held out at the ball the line sweeps that way, smoothly, against the
+    /// screen's clock: 6° a second on a full shot, 3° on the green. When the arm comes down the
+    /// line settles on the nearest half degree.
+    @State private var lastSweep: Date?
+    private func sweepAim(at date: Date) {
+        guard usesCamera else { return }
+        let side = camera.aimSignal
+        defer { lastSweep = side == nil ? nil : date }
+        guard round.phase == .ready else { return }
+        guard let side else {
+            if lastSweep != nil { round.setManualAim((round.combinedAim * 2).rounded() / 2) }
+            return
+        }
+        let dt = min(0.1, lastSweep.map { date.timeIntervalSince($0) } ?? 0)
+        let rate = round.club == .putter ? 3.0 : 6.0
+        round.adjustAim((side == .left ? -1 : 1) * rate * dt)
     }
 
     private func handleGesture(_ gesture: NavGesture) {
