@@ -1,0 +1,22 @@
+name: Create iOS simulator
+description: Creates and boots an iPhone simulator on the newest available iOS runtime.
+outputs:
+  id:
+    description: The simulator's UDID.
+    value: ${{ steps.create.outputs.id }}
+runs:
+  using: composite
+  steps:
+    - id: create
+      shell: bash
+      run: |
+        runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
+        if [[ -z "$runtime_id" ]]; then
+          xcodebuild -downloadPlatform iOS
+          runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
+        fi
+        device_type_id=$(xcrun simctl list devicetypes --json | jq -r '[.devicetypes[] | select(.name == "iPhone 16 Pro")][0].identifier // [.devicetypes[] | select(.name | startswith("iPhone"))][-1].identifier')
+        simulator_id=$(xcrun simctl create "GolfArcade CI" "$device_type_id" "$runtime_id")
+        echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+        # A fresh runtime takes minutes to boot; start now so it overlaps whatever comes next.
+        xcrun simctl boot "$simulator_id"

@@ -15,6 +15,11 @@ struct PosePoint: Equatable, Sendable {
 struct PoseFrame: Equatable, Sendable {
     let timestamp: TimeInterval
     let points: [BodyJoint: PosePoint]
+    /// Finger-level hand readings, when hand pose ran on this frame.
+    var hands: [HandReading] = []
+    /// Experimental camera-axis depth relative to the hips, divided by estimated
+    /// body height. Visual evidence only; never used as room anchoring or contact.
+    var depth: BodyDepthEstimate?
 
     func point(_ joint: BodyJoint, minimumConfidence: Float = 0.25) -> CGPoint? {
         guard let point = points[joint], point.confidence >= minimumConfidence else { return nil }
@@ -32,6 +37,70 @@ struct PoseFrame: Equatable, Sendable {
     /// routinely hidden behind the arms at the top of the backswing.
     var hasPlayableBody: Bool {
         [.leftShoulder, .rightShoulder, .leftHip, .rightHip].allSatisfy { point($0) != nil } && handCenter != nil
+    }
+
+    var hasCalibrationBody: Bool {
+        let stableCore: [BodyJoint] = [
+            .nose, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+            .leftHip, .rightHip, .leftKnee, .rightKnee
+        ]
+        let hasCore = stableCore.allSatisfy { point($0, minimumConfidence: 0.40) != nil }
+        let hasHand = [.leftWrist, .rightWrist].contains { point($0, minimumConfidence: 0.35) != nil }
+        let hasFoot = [.leftAnkle, .rightAnkle].contains { point($0, minimumConfidence: 0.35) != nil }
+        return hasCore && hasHand && hasFoot
+    }
+
+    var bodyBounds: CGRect? {
+        let visible = points.values.filter { $0.confidence >= 0.45 }.map(\.location)
+        guard let first = visible.first else { return nil }
+        return visible.dropFirst().reduce(CGRect(origin: first, size: .zero)) { bounds, point in
+            bounds.union(CGRect(origin: point, size: .zero))
+        }
+    }
+
+    /// Bounds for calibration use the joints that passed the calibration confidence gate. This
+    /// keeps a temporarily weak second ankle from shrinking the measured person.
+    var calibrationBounds: CGRect? {
+        let joints: [BodyJoint] = [
+            .nose, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+            .leftWrist, .rightWrist, .leftHip, .rightHip,
+            .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
+        ]
+        let visible = joints.compactMap { point($0, minimumConfidence: 0.35) }
+        guard let first = visible.first else { return nil }
+        return visible.dropFirst().reduce(CGRect(origin: first, size: .zero)) { bounds, point in
+            bounds.union(CGRect(origin: point, size: .zero))
+        }
+    }
+
+    var shoulderCenter: CGPoint? {
+        guard let left = point(.leftShoulder, minimumConfidence: 0.35),
+              let right = point(.rightShoulder, minimumConfidence: 0.35) else { return nil }
+        return CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
+    }
+
+    var shoulderWidth: CGFloat? {
+        guard let left = point(.leftShoulder, minimumConfidence: 0.35),
+              let right = point(.rightShoulder, minimumConfidence: 0.35) else { return nil }
+        return hypot(right.x - left.x, right.y - left.y)
+    }
+
+    var hasOpenCalibrationPose: Bool {
+        guard let center = shoulderCenter, let width = shoulderWidth else { return false }
+        let wrists = [.leftWrist, .rightWrist].compactMap { point($0, minimumConfidence: 0.35) }
+        guard !wrists.isEmpty else { return false }
+        if wrists.count == 1 {
+            return abs(wrists[0].x - center.x) >= width * 0.62
+        }
+        let xs = wrists.map(\.x)
+        return (xs.max() ?? center.x) - (xs.min() ?? center.x) >= width * 1.55
+    }
+
+    var stabilityCenter: CGPoint? {
+        if let root = point(.root, minimumConfidence: 0.30) { return root }
+        guard let leftHip = point(.leftHip, minimumConfidence: 0.35),
+              let rightHip = point(.rightHip, minimumConfidence: 0.35) else { return nil }
+        return CGPoint(x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2)
     }
 
     var handCenter: CGPoint? {
@@ -59,3 +128,73 @@ struct PoseFrame: Equatable, Sendable {
     }
 }
 
+struct BodyDepthEstimate: Equatable, Sendable, Codable {
+    let timestamp: Double
+    let normalizedDepth: [String: Float]
+
+    func offset(for joint: BodyJoint, at time: Double) -> Float? {
+        guard time >= timestamp, time - timestamp <= 0.15,
+              let value = normalizedDepth[joint.rawValue], value.isFinite, abs(value) < 0.75 else { return nil }
+        return value
+    }
+}
+
+enum CameraPoseMode: String, CaseIterable, Identifiable, Codable {
+    case body2D, depthPreview
+    var id: Self { self }
+    var title: String { self == .body2D ? "Standard tracking" : "3D depth experiment" }
+}
+
+/// Legacy explicit conversion for old pose fixtures. Never apply this heuristic to live camera
+/// frames: the capture connection is the orientation authority, not the player's torso.
+/// Vision returns landmarks in the orientation supplied to its request handler. If a device's
+/// delivered buffer and the requested capture orientation disagree, an upright player can arrive
+/// 90 degrees off in Vision coordinates. Use the shoulder-to-hip axis as a device-independent
+/// sanity check and correct only an unambiguously sideways torso. This keeps normal golf lean
+/// untouched while preventing a sideways pose from failing every calibration framing check.
+struct UprightPoseResult: Equatable, Sendable {
+    let frame: PoseFrame
+    let quarterTurned: Bool
+}
+
+extension PoseFrame {
+    func correctingSidewaysOrientation() -> UprightPoseResult {
+        guard let leftShoulder = point(.leftShoulder, minimumConfidence: 0.35),
+              let rightShoulder = point(.rightShoulder, minimumConfidence: 0.35),
+              let leftHip = point(.leftHip, minimumConfidence: 0.35),
+              let rightHip = point(.rightHip, minimumConfidence: 0.35) else {
+            return UprightPoseResult(frame: self, quarterTurned: false)
+        }
+
+        let shoulders = CGPoint(
+            x: (leftShoulder.x + rightShoulder.x) / 2,
+            y: (leftShoulder.y + rightShoulder.y) / 2
+        )
+        let hips = CGPoint(
+            x: (leftHip.x + rightHip.x) / 2,
+            y: (leftHip.y + rightHip.y) / 2
+        )
+        let horizontal = shoulders.x - hips.x
+        let vertical = shoulders.y - hips.y
+        guard abs(horizontal) > max(abs(vertical) * 1.25, 0.06) else {
+            return UprightPoseResult(frame: self, quarterTurned: false)
+        }
+
+        let corrected = points.mapValues { posePoint in
+            let point = posePoint.location
+            let location: CGPoint
+            if horizontal > 0 {
+                // The head is to the right: rotate coordinates counter-clockwise.
+                location = CGPoint(x: 1 - point.y, y: point.x)
+            } else {
+                // The head is to the left: rotate coordinates clockwise.
+                location = CGPoint(x: point.y, y: 1 - point.x)
+            }
+            return PosePoint(location: location, confidence: posePoint.confidence)
+        }
+        return UprightPoseResult(
+            frame: PoseFrame(timestamp: timestamp, points: corrected),
+            quarterTurned: true
+        )
+    }
+}

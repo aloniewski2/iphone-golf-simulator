@@ -1,79 +1,138 @@
-# Playable range mock
+# Playable course mock
 
-Launch `GolfArcade` in Xcode on an iPhone simulator or physical iPhone. The default screen is now **Fairway / Meadow Club**, an original, fully local arcade range. No camera permission, account, downloaded assets, or server is needed for touch play.
+Launch `GolfArcade` in Xcode on a physical iPhone. The simulator runs the menus, courses, and touch play, but it cannot supply a live camera body pose. Automated tests use launch-only fixture players for that reason.
 
-## Play
+## Menus
 
-1. Choose Driver, Iron, Wedge, or Putter. Labels show the full-power distance from the flight model.
-2. Move the aim slider. Negative angles aim left; positive aim right.
-3. Pull **down** on the swing pad. A 100-point downward drag equals full power. Release to launch. A tiny drag cancels without consuming a shot.
-4. Watch the ball fly, bounce, and roll. Targets score by final resting position: center 100, middle 60, outer ring 30; other fairway shots earn 10.
-5. Select Next shot. After five shots, the app shows the scorecard and saves a personal best. Play again starts a fresh round.
+The app opens on a main menu:
 
-**Demo shot** uses the same launch path at 75% power. **Replay** animates the last shot without spending another shot or awarding points twice.
+- **Solo** — shows your saved player. Scan (or **Rescan**) your body, pick left- or right-handed, then choose a course.
+- **Multiplayer** — 2–4 players. Each player gets a name, a color, a handedness, and their own body scan. Continue unlocks when every player is scanned.
+- **Settings** — swing input (Camera, Touch, Phone), gesture controls, sound, haptics.
 
-## Hole 1 · Meadow Bend (par 4)
+Scans are saved on the device. A single-player scan from earlier builds is migrated into the first player.
 
-Open the settings menu (sliders icon) and choose **Hole 1 · Par 4**. Meadow Bend is a 366-yard dogleg left: fairway corridor, a fairway bunker on the right at driver distance, two greenside bunkers, and a green with a cup and flag. Play from the tee to the cup:
+## Body scan
 
-- The ball lies where it stopped. Every shot aims at the pin by default; the aim slider is relative to that line. The golfer, aim line, and camera move to the ball.
-- Lies matter: **rough** keeps 82 % of ball speed and grabs the roll, **sand** keeps 62 %, the **green** is quick (rolling deceleration 0.9 m/s² against 3.2 on the fairway). Roll-out uses the surface the ball lands on.
-- On the green the putter is selected automatically and the read-out switches to feet. A putt scales from zero (soft pull = tap-in, full pull runs the whole green), the camera comes in close, and a ball that rolls over the cup at rolling speed drops in; one that stops within 18 inches is given.
-- Strokes count; holing out shows Birdie / Par / Bogey and saves the best score per hole. Ten strokes picks the ball up.
+Set the phone where it will stay and keep your head, hands, and feet visible. Face forward with your arms slightly away from your sides and hold still until the scan fills. The scan records body proportions for identifying the active player. Once on the course, hold a comfortable golf grip briefly to set the virtual club's address and reach. That address is stored relative to your shoulders and follows body translation and scale. Use **Reset comfortable grip** to change your setup, or **Rescan** if player matching is lost.
 
-`Hole` in `GolfArcade/Mock/Hole.swift` describes the layout (centreline, widths, bunkers, cup) and lie rules; `RangeShot` gains an origin, heading, and lie for course shots. Tests play the hole tee-to-cup deterministically.
+## Courses
 
-## Lining up a shot
+Each course has three holes that you play out, counting strokes against par:
 
-Before you swing, the range shows where the ball will go: a dotted predicted flight and a yellow landing ring in the 3D view, and an overhead minimap (top left) with the hole or the targets, your ball, the predicted path, the landing spot, and the yardage. At address it shows the full-power shot for the club; while you load, the ring walks in to the current power; the aim slider moves it live. Everything comes from the same flight model that plays the shot, so what you see is what you get.
+| Course | Difficulty | Holes (par) | Character |
+| --- | --- | --- | --- |
+| Meadow Run | Easy | 3 · 4 · 3 | Wide fairways, a few bunkers |
+| Pine Bend | Medium | 4 · 3 · 4 | Doglegs, narrower, 2–3 bunkers per hole |
+| Cliffwater | Hard | 4 · 5 · 3 | Narrow, water carries, greenside bunkers |
+
+- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 0.25° with the putter. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
+- The next shot is played from where the ball stops. The suggested club is selected for you (putter on the green, wedge in a bunker).
+- **Rough** takes 15% off the next shot and a **bunker** 40%.
+- **Water**: +1 stroke, dropped short of the hazard on the line of play. **Out of bounds** (past the tree line): +1 stroke, replayed from the same spot.
+- Putting power has a fixed meaning independent of pin distance, continuous from zero. A slow ball passing within the 0.12-yard arcade cup tolerance drops; its rendered endpoint and next position both become the cup.
+- After par + 5 strokes the ball is picked up so the round keeps moving.
+- In multiplayer, each player plays the whole hole in turn, then everyone moves to the next hole. The scorecard shows strokes per hole, totals, and ± par. Solo best scores are saved per course.
+
+Hole shapes and hazards are data in `GolfArcade/Game/Course.swift`; the 3D scene (`CourseScene`) and lie checks both read them.
+
+## Layout
+
+The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
+
+## Lining up (Camera mode)
+
+The camera starts in the bottom-left corner. Tap it to enlarge or shrink it; enlargement never blocks play. **Use touch** is available if the camera cannot track you.
+
+- Hold your comfortable golf grip briefly. The virtual ball and club reach are established from that setup. Return to the same body-relative grip between strokes.
+- The skeleton only shows faintly while the camera is finding you; it disappears during a swing.
+- The readiness indicator requires continuous stillness. It is feedback, not a mandatory pre-shot countdown.
+- Gentle putts use separate thresholds from full swings. Aborted swings time out; unreliable or missing impact frames cannot fabricate contact.
+
+## Your avatar
+
+The golfer **copies your body** using the existing body-pose reconstruction. During camera play, its grip and clubhead are projected from the exact virtual-club state used for contact and the camera overlay. Replays retain those endpoints. The inferred club is a gameplay model, not a measured physical club. Touch and Phone modes use a canned avatar swing.
+
+## Contact
+
+Contact is judged by the swept virtual clubhead passing through the ball between camera frames:
+
+- **center**: full power
+- **thin** (head high): less power
+- **fat** (head low): much less power
+- **heel / toe** (head off center): less power
+- **miss**: a counted stroke with no ball movement and no impact flash/sound
+
+A dot in the corner camera view shows the swept contact location. Power combines backswing length and downswing speed without a minimum-speed floor. Signed motion affects the start line; overswing and contact labels no longer inject preset hooks. Choose draw/fade explicitly because front-camera pose cannot observe a real club face.
+
+## Shot cameras
+
+| When | Camera |
+| --- | --- |
+| Before the shot | Behind the golfer and ball, looking down the hole |
+| On the green / putter | Eye level just behind the ball, looking at the cup |
+| Impact | Hero shot in front of the golfer (1–1.8 s, longer for better swings; skipped for putts) |
+| Ball in the air | Close behind the ball, following it |
+| Ball coming down | 3/4 view as it lands and rolls out |
+
+Replays run the same sequence with your recorded follow-through. Punch, swipe right, or tap the replay pill to skip. The director is `ShotCameraDirector`.
+
+## Reactions
+
+After the follow-through your avatar reacts to the result:
+
+| Reaction | Shot |
+| --- | --- |
+| Club twirl, held finish | Center strike on the fairway or green, full distance |
+| Held finish, nod | Solid result |
+| Hands drop, head shake | Rough, or a mishit that came up short |
+| Club dropped, hands on hips | Fat strike or bunker |
+| Stagger, hands on head | Whiff, water, or out of bounds |
+| Arms up, jump | Holed |
+
+## Friends on the tee (multiplayer)
+
+The other players' avatars stand around you in their colors while you play. One waits on your lead side, close enough to reach: swing into them and they get knocked over, lie there for a moment, and get back up. It's just for fun and never affects the score.
+
+**Planned:** throwing your club, or slamming it on the ground after a bad shot.
+
+## Gesture controls (Camera mode)
+
+Move through menus without touching the phone:
+
+- **Arm a hand:** make a fist, held apart from your other hand, for a moment. If you are too far away for the camera to read your fingers, raise your hand to shoulder height instead.
+- **Swipe** up, down, left, or right about a shoulder-width, quickly.
+- **Punch** toward the camera to select.
+
+| Where | Up / Down | Left | Right | Punch |
+| --- | --- | --- | --- | --- |
+| Menus | Move focus | Move focus / flip handedness | Move focus / flip handedness | Select |
+| Before a shot | Change club | Aim left | Aim right | — |
+| Ball in flight or replay | — | — | Skip | Skip |
+| Shot result / hole done | — | Replay | Next | Next |
+| Round complete | — | Menu | Play again | Play again |
+
+Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
+
+## Other inputs
+
+**Touch**: pull down and release; 80 points is full swing power within the 100-point pad. Slide sideways to steer. Putting has a dedicated strength slider, an estimate in feet, and a **Putt** button; its 0.5% increments use the same fixed gain everywhere. Fine direction is available on the club rail and in shot controls. **Phone**: hold still, take it back, and swing through (physical iPhone only); putter thresholds accept smaller, slower strokes. Both use explicit center contact rather than pretending to measure it. All modes can choose aim and draw/fade in the shot controls.
 
 ## Ball flight
 
-Shots are simulated, not scripted: club-head speed from your swing → ball speed via the club's smash factor, launch angle and backspin per club, then gravity, aerodynamic drag, and Magnus lift (spin decays in the air), followed by bounce and roll on a firm fairway. A draw or fade tilts the spin axis so the ball curves. At full power the model gives roughly driver 254 + 23 yd (apex 41 yd), iron 148 + 15, wedge 82 + 10, and a 25-yard putt that rolls from the first inch. Flights play in real time (about 7–10 s for a full shot). See `GolfArcade/Mock/BallFlight.swift`; every coefficient is named.
+Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, then bounce and roll. At full power the model gives roughly driver 254 + 23 yd, iron 148 + 15, wedge 82 + 10. See `GolfArcade/Mock/BallFlight.swift`.
 
-## Swing the phone
+## What to test on a device
 
-Switch the input picker to **Phone** (physical iPhone only; the simulator has no motion sensors). Grip the phone like a club and hold it still for a moment: the panel says **Ready. Take it back.** Rotate it away for the backswing — load, tension haptics, and the club in the scene follow how far you have turned — then swing through. The ball launches the instant the phone passes back through its address position. Power is the peak rotation speed of the swing, scaled per club (a full driver swing needs a fast phone; a putt is a gentle stroke). Aim still comes from the slider. A slow waggle back to address cancels without spending a shot, and after a shot lands the next backswing tees up the next ball automatically.
-
-Hold on tight and clear the space around you. The recognizer is `MotionSwingDetector` in `GolfArcade/Mock/MotionSwing.swift`; every threshold is a named property and the unit tests drive it with synthetic swings.
-
-## Camera
-
-Switch the input picker to **Camera** and prop the phone up facing you (front camera, portrait). It runs the widest front-camera format zoomed all the way out at 30 fps, and the small picture-in-picture shows the whole frame with the tracked skeleton, so you can see you are in view without stepping far back. Only your **shoulders and one hand** need to be visible.
-
-The tracker is built around one player and borrows what the accurate swing-analysis apps insist on:
-
-- **Readiness checklist.** Five dots under the status line — framing (your body fills at least half the frame), phone level (CoreMotion), light (exposure within 1.2 EV of target), one player in view, and steady tracking of shoulders, elbows, and wrists for 0.8 s. You can settle at address any time, but the meter only starts filling when the list is green, and the line says the first thing to fix.
-- **Person lock.** Of everything Vision finds in the full frame, the largest and most confident body is you.
-- **Smoothing and hold.** Every joint runs through a One-Euro filter — steady at address, no lag in the downswing — and a wrist that blinks out for a frame or two is held from its last good position.
-- **Skeleton constraints.** While you stand at address the app learns your shoulder width and arm lengths (median of 15 frames). From then on a bone that projects longer than it can be, or wrists farther apart than a grip allows, is a bad joint and is dropped before it can reach the swing.
-- **60 fps and sub-frame impact.** The widest lens format runs at 60 fps where available, and impact is interpolated between the two frames it falls between, so the ball launches back-dated to within a few milliseconds of the real strike.
-- **3D pose benchmark (dev).** Settings → *3D pose benchmark* also runs Apple's 3D body-pose request on every frame and prints its cost per frame in the status line, to decide from a real device whether metric joints can replace the 2D read.
-
-The border of the small view shows tracking quality (mint / yellow / orange).
-
-The model is Wii Sports golf read by camera: the power meter is the **arm arc**, the angle of your hands around your shoulders from where they hung at address. Hands level with the shoulders is about 90°; ~140° is a full backswing and 100 % on the meter. Downswing speed adds the final share of power (`speedWeight`), so a lazy full swing and a quick short one both make sense. Swing well past full (165°+) and the shot hooks, harder the further over you go. A slow return is a practice swing and does not spend a shot. Brief tracking loss at the top is skipped. `ArmSwingDetector` in `GolfArcade/Mock/ArmSwing.swift` holds every threshold and is unit-tested with synthetic swings.
-
-The golfer beside the tee is a Mii-style figure with its own fixed-length arms on one clean swing arc; your tracked arm arc only sets **how far along the swing it is**, so nothing stretches or jitters. When the ball launches it plays its own downswing and follow-through. In Touch and Phone modes the load meter drives the same arc.
-
-Settings provide sound, haptics, instructions, round restart, and the existing **Camera lab**. The lab is the separate experimental body-tracking prototype; live camera swings do not yet drive the new target challenge.
-
-## What to test
-
-- Try the same club at 30%, 60%, and 100% power; distance should increase.
-- Aim left/right; both the guide and landing should change.
-- Driver: about 89% power straight ahead reaches the Summit center at 180 yards.
-- Putter: the ball stays on the ground and decelerates.
-- Replay a shot: score and shot count should remain unchanged.
-- Finish five shots and restart; personal best should survive relaunch.
-- Background the app during charge: no accidental shot, no ongoing tone/vibration. During flight, time pauses and resumes.
-- Swing phone: a slow backswing and return should cancel; a real swing should launch; a faster swing should go farther; the putter should need only a short stroke.
-- Sound follows the phone's Silent Mode. Use a physical iPhone to assess tactile feedback. Simulator renders visuals and audio but cannot reproduce a Taptic Engine.
-
-## Implementation limits
-
-Contact and terrain are intentionally simplified for an arcade mock. The 3D scene uses original SceneKit geometry and procedurally generated sounds. This is a single range challenge plus one hole, not an 18-hole course or validated golf simulator. Phone-swing direction (face angle, path) is not yet read from the sensors, and the camera reads shape only from over-swing; aim comes from the slider. The flight model has no wind, slope, or lie, and strike quality is assumed centred. AirPlay-specific display layout, live-camera integration into this challenge, spin, wind, and calibrated body measurements remain future work.
+- Scan two players; confirm turns alternate and the camera only follows the active player.
+- Set a comfortable grip, then make deliberately high, low, and wide swings; the virtual club, contact marker, and resulting shot should agree.
+- The avatar copies arm raises, crouches, leans, and a full swing without stretching or jitter; the drawn club head sits on the ball when lined up.
+- Verify the camera stays compact through tracking loss, touch remains available, and pure, fat, and whiffed swings trigger different reactions.
+- In multiplayer, swing into the friend on your lead side and knock them over.
+- Fist swipes and punch in every menu; the raised-hand fallback from about 8 feet; full swings never navigate.
+- Hit into water and out of bounds on Cliffwater; check the penalty and drop.
+- Background the app mid-flight: time pauses and resumes.
 
 ## Verification
 
-The shared `GolfArcade` scheme runs domain tests and an automated UI test that drags a real swing, checks replay, completes five shots, and restarts the round. Run Product → Test in Xcode or `xcodebuild test` with a valid simulator destination. The CI check runs the same scheme before any protected branch merge.
+The `GolfArcade` scheme runs unit tests for detector input, contact, short-shot distances, scoring, turn rotation, persistence, replay, and pause behavior. UI tests exercise menu → course, compact camera with touch fallback, target controls, touch play, and multiplayer. See `AUDIT_EXECUTION.md` for the mapping to the September 16 audit and physical-device validation still required.

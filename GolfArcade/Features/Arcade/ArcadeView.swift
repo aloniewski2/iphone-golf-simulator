@@ -2,8 +2,16 @@ import AVFoundation
 import SwiftUI
 
 struct ArcadeView: View {
-    @StateObject private var tracker = CameraPoseTracker()
+    @StateObject private var tracker: CameraPoseTracker
+    let onRecalibrate: () -> Void
     @StateObject private var game = ArcadeGameSession()
+
+    init(calibration: PlayerCalibration, onRecalibrate: @escaping () -> Void) {
+        let tracker = CameraPoseTracker()
+        tracker.setCalibration(calibration)
+        _tracker = StateObject(wrappedValue: tracker)
+        self.onRecalibrate = onRecalibrate
+    }
     @AppStorage("arcade.hapticsEnabled") private var hapticsEnabled = true
 
     var body: some View {
@@ -52,13 +60,24 @@ struct ArcadeView: View {
                 ForEach(Handedness.allCases) { Text($0.displayName).tag($0) }
             }
             .pickerStyle(.menu).tint(.white)
+            Menu {
+                Button("Recalibrate player", systemImage: "viewfinder", action: onRecalibrate)
+            } label: {
+                Image(systemName: "ellipsis.circle.fill")
+                    .font(.title2).foregroundStyle(.white.opacity(0.8))
+            }
+            .accessibilityLabel("More options")
         }
     }
 
     private var trackingStage: some View {
         ZStack {
-            CameraPreview(session: tracker.session)
-            PoseSkeletonView(frame: tracker.latestFrame)
+            CameraPreview(
+                session: tracker.session,
+                videoRotationAngle: tracker.videoRotationAngle,
+                isVideoMirrored: tracker.isVideoMirrored
+            )
+            PoseSkeletonView(frame: tracker.latestFrame, frameAspect: tracker.frameAspect)
             SwingFeedbackOverlay(phase: game.phase, impactPulse: game.impactPulse)
             LinearGradient(colors: [.clear, .black.opacity(0.72)], startPoint: .center, endPoint: .bottom)
             VStack {
@@ -68,7 +87,7 @@ struct ArcadeView: View {
                         .background(.black.opacity(0.6), in: Capsule())
                     Spacer()
                     if let frame = tracker.latestFrame {
-                        Text("TRACK \(Int(frame.trackingConfidence * 100))%")
+                        Text("PLAYER \(Int((tracker.playerMatchConfidence ?? frame.trackingConfidence) * 100))%")
                             .font(.caption2.bold().monospacedDigit()).padding(.horizontal, 10).padding(.vertical, 7)
                             .background(.black.opacity(0.6), in: Capsule())
                     }
@@ -131,7 +150,7 @@ struct ArcadeView: View {
 
     private var instruction: String {
         switch game.phase {
-        case .findingPlayer: "Place the phone 7–12 feet away and fit your full body in frame."
+        case .findingPlayer: "Place the phone 5–10 feet away and fit your full body in frame."
         case .address: "Settle over the virtual ball, then swing when ready."
         case .backswing, .downswing, .impact: "Keep moving — we’re reading your swing."
         case .followThrough: "Hold your finish."

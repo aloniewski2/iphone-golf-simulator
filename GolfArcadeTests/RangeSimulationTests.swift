@@ -2,6 +2,19 @@ import XCTest
 @testable import GolfArcade
 
 final class RangeSimulationTests: XCTestCase {
+    func testStandardBagReferenceDistancesAndMonotonicPower() {
+        for club in GolfClub.allCases {
+            let full = BallFlight.simulate(club.launch(power: 1, aimDegrees: 0, curveDegrees: 0))
+            XCTAssertEqual(club == .putter ? full.total : full.carry, club.referenceDistanceYards, accuracy: 0.1)
+            var previous = 0.0
+            for power in stride(from: 0.1, through: 1.0, by: 0.1) {
+                let flight = BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0))
+                XCTAssertGreaterThan(flight.total, previous)
+                previous = flight.total
+            }
+        }
+    }
+
     func testPowerAndClubChangeDistanceAndAimChangesLanding() {
         let soft = RangeShot(id: 1, club: .driver, power: 0.2, aim: -15)
         let hard = RangeShot(id: 2, club: .driver, power: 0.9, aim: 15)
@@ -12,14 +25,13 @@ final class RangeSimulationTests: XCTestCase {
         XCTAssertGreaterThan(hard.landing.lateralYards, 0)
     }
 
-    func testBullseyeAndFairwayScoring() {
-        let power = try! XCTUnwrap(RangeShot.power(toReach: 180, with: .driver))
-        let perfect = RangeShot(id: 1, club: .driver, power: power, aim: 0)
-        XCTAssertEqual(perfect.points, 100)
-        XCTAssertEqual(perfect.targetName, "Summit")
-        let miss = RangeShot(id: 2, club: .driver, power: 1, aim: 22)
-        XCTAssertEqual(miss.points, 10)
-        XCTAssertNil(miss.targetName)
+    func testMeasuredContactChangesBallFlight() {
+        let center = RangeShot(id: 1, club: .driver, power: 0.9, aim: 0, strike: .center)
+        let thin = RangeShot(id: 2, club: .driver, power: 0.9, aim: 0, strike: .thin)
+        let miss = RangeShot(id: 3, club: .driver, power: 0.9, aim: 0, strike: .miss)
+        XCTAssertGreaterThan(center.total, thin.total)
+        XCTAssertGreaterThan(thin.total, miss.total)
+        XCTAssertEqual(miss.strike, .miss)
     }
 
     func testFlightModelIsPlausibleGolf() {
@@ -77,53 +89,4 @@ final class RangeSimulationTests: XCTestCase {
             if club == .putter { XCTAssertEqual(shot.position(at: 1).heightYards, 0) }
         }
     }
-
-    @MainActor
-    func testFiveShotRoundReplayAndRestart() {
-        let defaults = UserDefaults(suiteName: "RangeTests-\(UUID().uuidString)")!
-        let round = RangeRound(defaults: defaults)
-        let start = Date(timeIntervalSince1970: 100)
-        XCTAssertFalse(round.release(at: start))
-        for index in 1...5 {
-            round.charge(0.75)
-            XCTAssertTrue(round.release(at: start))
-            XCTAssertFalse(round.release(at: start))
-            round.advance(at: start.addingTimeInterval(30))
-            XCTAssertEqual(round.shots.count, index)
-            let score = round.score
-            round.replay(at: start)
-            round.advance(at: start.addingTimeInterval(30))
-            XCTAssertEqual(round.score, score)
-            XCTAssertEqual(round.shots.count, index)
-            if index < 5 { round.nextShot() }
-        }
-        XCTAssertEqual(round.phase, .complete)
-        XCTAssertGreaterThan(round.best, 0)
-        XCTAssertEqual(RangeRound(defaults: defaults).best, round.score)
-        round.charge(1)
-        XCTAssertFalse(round.release())
-        round.restart()
-        XCTAssertEqual(round.phase, .ready)
-        XCTAssertEqual(round.score, 0)
-        XCTAssertEqual(round.shotNumber, 1)
-    }
-
-    @MainActor
-    func testBackgroundPauseAndCancelledChargeDoNotConsumeShots() {
-        let round = RangeRound()
-        let start = Date(timeIntervalSince1970: 100)
-        round.charge(0.02)
-        XCTAssertFalse(round.release())
-        XCTAssertTrue(round.shots.isEmpty)
-        round.charge(0.8)
-        round.pause(at: start)
-        XCTAssertEqual(round.phase, .ready)
-        round.resume(at: start)
-        round.charge(0.8)
-        XCTAssertTrue(round.release(at: start))
-        round.pause(at: start.addingTimeInterval(1))
-        round.resume(at: start.addingTimeInterval(101))
-        XCTAssertEqual(round.elapsed(at: start.addingTimeInterval(101)), 1)
-    }
 }
-

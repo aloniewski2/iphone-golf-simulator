@@ -23,7 +23,7 @@ final class MotionSwingDetectorTests: XCTestCase {
     }
 
     private func impacts(_ events: [MotionSwingDetector.Event]) -> [Double] {
-        events.compactMap { if case .impact(let power, _, _) = $0 { power } else { nil } }
+        events.compactMap { if case .impact(let impact) = $0 { impact.power } else { nil } }
     }
 
     func testFullSwingLoadsThenImpactsWithSpeedBasedPower() {
@@ -74,5 +74,20 @@ final class MotionSwingDetectorTests: XCTestCase {
         let b = simd_quatd(angle: 1.1, axis: simd_double3(0, 1, 0))
         XCTAssertEqual(MotionSwingDetector.angle(from: a, to: b), 0.8, accuracy: 1e-9)
         XCTAssertEqual(MotionSwingDetector.angle(from: a, to: a), 0, accuracy: 1e-9)
+    }
+
+    func testGentlePhonePuttUsesClubSpecificThresholds() {
+        var detector = MotionSwingDetector()
+        detector.configure(for: .putter)
+        let events = drive(&detector, legs: [(0.6, 0), (0.8, 0.14), (0.15, 0.14), (0.8, -0.04)])
+        XCTAssertEqual(impacts(events).count, 1)
+        XCTAssertLessThan(impacts(events).first ?? 1, 0.15)
+    }
+
+    func testHeldBackswingTimesOut() {
+        var detector = MotionSwingDetector()
+        let events = drive(&detector, legs: [(0.6, 0), (0.8, 1.8), (3.5, 1.8)])
+        XCTAssertTrue(impacts(events).isEmpty)
+        XCTAssertTrue(events.contains(.cancel))
     }
 }
