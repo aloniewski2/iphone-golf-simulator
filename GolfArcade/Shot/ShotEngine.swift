@@ -29,34 +29,21 @@ struct ArcadeShotEngine: Sendable {
     let errorRetention = 0.35
 
     func calculate(metrics: SwingMetrics, club: GolfClub) -> ShotResult {
-        let inferredClubSpeed = min(max(28 + metrics.normalizedWristSpeed * 24, 20), 125)
-        let clubSpeed = inferredClubSpeed * club.speedMultiplier
+        let speed = metrics.normalizedWristSpeed
+        // Reference-body wrist units per second, a virtual full-swing calibration.
+        let power = speed.isFinite ? min(1, max(0, speed / 4)) : 0
         let strike = strikeQuality(from: metrics)
-        let ballSpeed = clubSpeed * club.smashFactor * efficiency(for: strike)
-        let rawDirection = min(max(metrics.swingDirection * 8, -24), 24)
+        let rawDirection = metrics.swingDirection.isFinite ? min(max(metrics.swingDirection * 8, -24), 24) : 0
         let direction = rawDirection * errorRetention
-        let curve = direction * 0.55
-        let launch = club == .putter ? 1.5 : max(4, club.loftDegrees * 0.72 + (strike == .thin ? -4 : strike == .fat ? 5 : 0))
-        let launchRadians = launch * .pi / 180
-        let carry: Double
-        let rollout: Double
-        let apex: Double
-
-        if club == .putter {
-            carry = 0
-            rollout = min(max(ballSpeed * 0.85, 3), 55)
-            apex = 0
-        } else {
-            let speedYardsFactor = ballSpeed * ballSpeed / 180
-            carry = min(max(speedYardsFactor * sin(2 * launchRadians) * 1.55, 12), club == .driver ? 330 : 220)
-            rollout = carry * (club == .driver ? 0.12 : club == .iron ? 0.07 : 0.03)
-            apex = max(carry * tan(launchRadians) * 0.24, 3)
-        }
+        let curve = club == .putter ? 0 : direction * 0.55
+        let launch = club.launch(power: power, aimDegrees: direction, curveDegrees: curve,
+                                 speedFactor: strike.efficiency)
+        let flight = BallFlight.simulate(launch)
 
         return ShotResult(
-            club: club, strike: strike, shape: shotShape(curve: curve), ballSpeedMPH: ballSpeed,
-            launchAngleDegrees: launch, directionDegrees: direction, curveDegrees: curve,
-            carryYards: carry, rolloutYards: rollout, apexYards: apex, confidence: metrics.confidence
+            club: club, strike: strike, shape: shotShape(curve: curve), ballSpeedMPH: launch.ballSpeedMPH,
+            launchAngleDegrees: launch.launchAngleDegrees, directionDegrees: direction, curveDegrees: curve,
+            carryYards: flight.carry, rolloutYards: flight.roll, apexYards: flight.apex, confidence: metrics.confidence
         )
     }
 
@@ -65,16 +52,6 @@ struct ArcadeShotEngine: Sendable {
         if metrics.impactHeightDelta > 0.032 { return .thin }
         if metrics.impactHeightDelta < -0.035 { return .fat }
         return .center
-    }
-
-    private func efficiency(for strike: StrikeQuality) -> Double {
-        switch strike {
-        case .center: 1
-        case .thin: 0.82
-        case .fat: 0.68
-        case .heel, .toe: 0.76
-        case .miss: 0.42
-        }
     }
 
     private func shotShape(curve: Double) -> ShotShape {

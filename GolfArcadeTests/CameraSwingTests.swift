@@ -35,6 +35,26 @@ final class CameraBallFocusTests: XCTestCase {
 }
 
 final class ArmSwingDetectorTests: XCTestCase {
+    func testSpeedFitUsesElapsedTimeAndCancelsAlternatingJitter() {
+        for fps in [15.0, 30, 60, 120] {
+            let samples: [(time: Double, angle: Double)] = (0...6).map { i in
+                let elapsed = Double(i) / fps
+                let jitter = i % 2 == 0 ? 2.0 : -2.0
+                return (time: 1000 + elapsed, angle: 90 - 550 * elapsed + jitter)
+            }
+            XCTAssertEqual(ArmSwingDetector.angularSpeed(samples), -550, accuracy: 0.001)
+        }
+        let irregular = [0.0, 0.016, 0.039, 0.072, 0.10].map { (time: $0, angle: 80 - 400 * $0) }
+        XCTAssertEqual(ArmSwingDetector.angularSpeed(irregular), -400, accuracy: 0.001)
+    }
+
+    func testSlowFullArcDoesNotBecomeFullPower() {
+        let detector = ArmSwingDetector()
+        XCTAssertLessThan(detector.power(arc: 120, downswingSpeed: 150), 0.4)
+        XCTAssertEqual(detector.power(arc: 120, downswingSpeed: 0), 0)
+        XCTAssertEqual(detector.power(arc: .nan, downswingSpeed: 550), 0)
+    }
+
     func testManualGroundCorrectionLowersFixedBallNotGrip() throws {
         var detector = ArmSwingDetector()
         _ = drive(&detector, legs: [(0.6, 0)])

@@ -174,10 +174,9 @@ final class SyntheticGolferTests: XCTestCase {
         }
     }
 
-    /// The meter follows the backswing: a tour-length swing fills it, the shoulder-high swing
-    /// most players make at an easier tempo still reads ~90%+ (a 230-yard drive), and easing
-    /// off costs distance in proportion, not by the square.
-    func testFullSwingsFillTheMeterAndSofterSwingsLoseDistanceInProportion() throws {
+    /// A long but slower swing must no longer inherit almost-full distance merely
+    /// from its arc. Verify ordering and frame-rate stability through actual poses.
+    func testFullSwingsAndSlowerSwingsDeliverDistinctDistances() throws {
         func power(backswing: Double, tempo: Double, fps: Double = 30) throws -> Double {
             var golfer = SyntheticGolfer()
             golfer.backswing = backswing
@@ -191,24 +190,25 @@ final class SyntheticGolferTests: XCTestCase {
         let easy = try power(backswing: 0.65, tempo: 0.7)
         let half = try power(backswing: 0.5, tempo: 0.6)
         XCTAssertGreaterThanOrEqual(tour, 0.98, "a full swing at tour tempo is full power")
-        XCTAssertGreaterThanOrEqual(amateur, 0.88, "an ordinary full swing drives it 230+")
-        XCTAssertGreaterThanOrEqual(amateurOnDevice, 0.88)
-        XCTAssertLessThan(easy, amateur - 0.12, "a three-quarter swing gives up distance")
-        XCTAssertGreaterThan(easy, 0.6)
+        XCTAssertLessThan(amateur, tour - 0.1, "slower motion must lose meaningful distance")
+        XCTAssertGreaterThan(amateur, 0.65)
+        XCTAssertEqual(amateurOnDevice, amateur, accuracy: 0.08, "same motion at 30 and 60 fps")
+        XCTAssertLessThan(easy, amateur - 0.12)
         XCTAssertLessThan(half, easy - 0.15)
-        XCTAssertGreaterThan(half, 0.3, "a half swing is still half a shot, not a chip")
+        XCTAssertGreaterThan(half, 0.1, "a deliberate half swing remains playable")
         let shot = RangeShot(id: 1, club: .driver, power: amateur, aim: 0)
-        XCTAssertGreaterThanOrEqual(shot.total, 230)
+        XCTAssertEqual(shot.carry, GolfClub.driver.distanceYards(meter: amateur), accuracy: 1)
+
     }
 
-    func testTempoOnlyAdjustsAroundTheBackswing() throws {
+    func testTempoControlsDeliveredPower() throws {
         let detector = ArmSwingDetector()
         let full = detector.power(arc: detector.fullBackswing, downswingSpeed: detector.fullDownswingSpeed)
         XCTAssertEqual(full, 1, accuracy: 1e-9, "an ordinary tempo delivers what the backswing loaded")
         XCTAssertEqual(detector.power(arc: detector.fullBackswing * 0.5, downswingSpeed: detector.fullDownswingSpeed), 0.5, accuracy: 1e-9)
         XCTAssertEqual(detector.power(arc: detector.fullBackswing * 2, downswingSpeed: detector.fullDownswingSpeed * 2), 1)
         let lazy = detector.power(arc: detector.fullBackswing, downswingSpeed: 0)
-        XCTAssertEqual(lazy, 1 - detector.speedWeight, accuracy: 1e-9, "a dead-slow downswing still keeps most of it")
+        XCTAssertEqual(lazy, 0, "a stationary grip cannot deliver power")
         XCTAssertGreaterThan(detector.power(arc: detector.fullBackswing * 0.9, downswingSpeed: detector.fullDownswingSpeed * 1.25), 0.9)
     }
 

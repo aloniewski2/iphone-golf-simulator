@@ -138,12 +138,10 @@ struct ArmSwingDetector {
     var fullBackswing = 120.0
     var downswingSpeed = 150.0
     var minimumSwingSpeed = 120.0
-    /// Peak grip speed, degrees per second, of an ordinary committed downswing. Faster earns a
-    /// small bonus, slower trims the meter; see `power(arc:downswingSpeed:)`.
+    /// Sustained grip speed in degrees per second for a committed virtual full swing.
     var fullDownswingSpeed = 550.0
-    /// How much tempo moves the meter around the arc: 0.25 means a very slow downswing keeps
-    /// 75% of what the backswing loaded.
-    var speedWeight = 0.25
+    /// Exponent mapping observed tempo to distance; no motion means no power.
+    var speedWeight = 0.8
     var stillDuration = 0.35
     var trackingGracePeriod = 0.6
     /// A player may pause at the top. Bound an abandoned attempt without imposing a
@@ -185,6 +183,7 @@ struct ArmSwingDetector {
     private var steadyGrips: [(time: Double, grip: CGPoint)] = []
     private var peakArc = 0.0
     private var peakSpeed = 0.0
+    private var speedSamples: [(time: Double, angle: Double)] = []
     private var backSign = 1.0
     private var swingStart = 0.0
     private var bestContact: VirtualClubState.Contact?
@@ -286,6 +285,13 @@ struct ArmSwingDetector {
         if isPositionLocked, speed > 1_800 {
             return rejectObservation(at: time, reason: .lowConfidence)
         }
+        // Fit angular velocity over a short time window, rather than using the largest
+        // single-frame derivative. Signed displacement cancels wrist jitter. Never
+        // bridge missing observations when estimating power.
+        if trackedGap > 0.12 { speedSamples.removeAll(keepingCapacity: true) }
+        speedSamples.append((time, angle))
+        speedSamples.removeAll { time - $0.time > 0.10 }
+        let measuredSpeed = Self.angularSpeed(speedSamples)
         lastTracked = time
         // Spatial stability over a short window tolerates camera jitter without filtering
         // impact motion or continually recentering a slow putt. An anchored window prevents
@@ -423,7 +429,7 @@ struct ArmSwingDetector {
                     return .cancel
                 } else { return .load(load(peakArc)) }
             }
-            peakSpeed = max(peakSpeed, speed)
+            if closing { peakSpeed = max(peakSpeed, max(0, -measuredSpeed * backSign)) }
             // Image-left/right is not course-forward/backward: a camera-side change can
             // reverse it without changing the golfer's handedness. The deliberate backswing
             // establishes this stroke's forward direction; retain signed path deviation.
@@ -460,14 +466,28 @@ struct ArmSwingDetector {
         }
     }
 
-    /// Distance follows the backswing, as in every motion golf game: the meter the player
-    /// watched fill during the backswing is what an ordinary downswing delivers. Tempo only
-    /// adjusts around that, trimming a lazy downswing and topping up a brisk one, so a full
-    /// swing reads full without having to be swung at tour speed.
+    /// Backswing sets the available distance; observed downswing tempo determines how
+    /// much is delivered. This is a calibrated game estimate, not measured clubhead speed.
     func power(arc: Double, downswingSpeed: Double) -> Double {
+        guard arc.isFinite, downswingSpeed.isFinite else { return 0 }
         let length = min(1, max(0, arc / fullBackswing))
         let tempo = min(1.25, max(0, downswingSpeed / fullDownswingSpeed))
-        return min(1, max(0, length * (1 + speedWeight * (tempo - 1))))
+        return min(1, length * pow(tempo, speedWeight))
+    }
+
+    /// Least-squares slope is independent of frame rate and tolerates uneven delivery.
+    static func angularSpeed(_ samples: [(time: Double, angle: Double)]) -> Double {
+        guard samples.count >= 2, let first = samples.first, let last = samples.last,
+              last.time - first.time >= 0.025 else { return 0 }
+        let meanTime = samples.reduce(0) { $0 + ($1.time - first.time) } / Double(samples.count)
+        let meanAngle = samples.reduce(0) { $0 + $1.angle } / Double(samples.count)
+        var covariance = 0.0, variance = 0.0
+        for sample in samples {
+            let t = sample.time - first.time - meanTime
+            covariance += t * (sample.angle - meanAngle)
+            variance += t * t
+        }
+        return variance > 0 ? covariance / variance : 0
     }
 
     private func load(_ arc: Double) -> Double { min(1, max(0, arc / fullBackswing)) }
@@ -506,6 +526,7 @@ struct ArmSwingDetector {
     /// outlier does not erase a backswing, and it can never become a contact endpoint.
     private mutating func rejectObservation(at time: Double, reason: Readiness) -> SwingInputEvent? {
         setupClub = nil
+        speedSamples.removeAll(keepingCapacity: true)
         clearHold()
         readiness = isPositionLocked ? .recovering : reason
         hadTrackingGap = true
@@ -532,6 +553,8 @@ struct ArmSwingDetector {
         phase = .findingPlayer
         swingAngle = 0
         previous = nil
+        speedSamples.removeAll(keepingCapacity: true)
+        peakSpeed = 0
         lastTracked = nil
         lastDelivery = nil
         clearHold()

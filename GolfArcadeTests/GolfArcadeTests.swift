@@ -4,6 +4,30 @@ import XCTest
 final class ShotEngineTests: XCTestCase {
     private let engine = ArcadeShotEngine()
 
+    func testEveryClubUsesSharedRatedDistanceAndNoMinimumLaunch() {
+        for club in GolfClub.allCases {
+            let full = engine.calculate(metrics: metrics(speed: 4), club: club)
+            let rated = club == .putter ? full.totalYards : full.carryYards
+            XCTAssertEqual(rated, club.referenceDistanceYards, accuracy: 0.1)
+            for speed in [0.0, 0.4, 1, 2, 3] {
+                let shot = engine.calculate(metrics: metrics(speed: speed), club: club)
+                let course = RangeShot(id: 1, club: club, power: speed / 4, aim: 0)
+                XCTAssertEqual(shot.totalYards, course.total, accuracy: 0.001)
+            }
+        }
+    }
+
+    func testMissNeverLaunchesBall() {
+        let good = metrics(speed: 4)
+        let missed = SwingMetrics(duration: good.duration, backswingDuration: good.backswingDuration,
+            downswingDuration: good.downswingDuration, tempo: good.tempo, normalizedWristSpeed: 4,
+            shoulderRotationDegrees: 30, hipRotationDegrees: 15, swingDirection: 0,
+            impactHeightDelta: 0, balance: 1, confidence: 0.1)
+        for club in GolfClub.allCases {
+            XCTAssertEqual(engine.calculate(metrics: missed, club: club).totalYards, 0)
+        }
+    }
+
     func testFasterSwingCarriesFarther() {
         let slow = engine.calculate(metrics: metrics(speed: 1.7), club: .driver)
         let fast = engine.calculate(metrics: metrics(speed: 3.8), club: .driver)

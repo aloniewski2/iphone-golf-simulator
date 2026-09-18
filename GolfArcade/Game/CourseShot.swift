@@ -307,7 +307,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     static func power(toReach distance: Double, with club: GolfClub, type: ShotType = .full, lieFactor: Double = 1) -> Double? {
         func total(_ power: Double) -> Double {
             BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0,
-                speedFactor: club == .putter ? 1 : type.speedGain * lieFactor)).total
+                speedFactor: type.speedGain * lieFactor)).total
         }
         guard distance >= total(0), distance <= total(1) else { return nil }
         var low = 0.0, high = 1.0

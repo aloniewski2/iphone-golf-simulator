@@ -101,7 +101,7 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     private let request = VNDetectHumanBodyPoseRequest()
     private let depthRequest = VNDetectHumanBodyPose3DRequest()
     private var poseMode: CameraPoseMode = .body2D
-    private var requestedFPS = 30
+    private var requestedFPS = 60
     private var captureProfile: CameraCaptureProfile = .baseline
     private var appliedProfile: CameraCaptureProfile = .baseline // captureQueue only
     private var evidenceConfiguration: CaptureConfiguration? // calibrationLock

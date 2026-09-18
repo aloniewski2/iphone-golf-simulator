@@ -3,6 +3,14 @@ import SceneKit
 @testable import GolfArcade
 
 final class CourseTests: XCTestCase {
+    func testPutterDistanceSolverHonorsLiePenalty() throws {
+        let power = try XCTUnwrap(RangeShot.power(toReach: 4, with: .putter, type: .putt, lieFactor: 0.6))
+        let request = ShotRequest(club: .putter, targetHeading: 0, type: .putt,
+                                  execution: SwingImpact(power: power, startLineDegrees: 0))
+        let shot = RangeShot(id: 1, request: request, origin: .zero, lieFactor: 0.6)
+        XCTAssertEqual(shot.total, 4, accuracy: 0.01)
+    }
+
     func testHoleNavigationWrapsBearingsAndEmphasizesDistance() {
         let right = HoleNavigation(ball: .zero, pin: CoursePoint(x: 100, d: 0), aimHeading: 0)
         XCTAssertEqual(right.relativeBearing, 90)

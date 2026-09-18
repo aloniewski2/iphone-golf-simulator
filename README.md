@@ -23,6 +23,21 @@ The current arcade foundation includes:
 
 The next validation step is testing the new input/contact model with real swings on physical iPhones. Camera direction is a signed 2D arcade estimate; it cannot measure physical club-face angle, depth, or ball launch. Device observations should drive threshold tuning before expanding course content.
 
+## Swing power and club yardage
+
+Camera shots use backswing length and sustained downswing angular speed. A slow return now
+loses distance instead of keeping most of a full backswing's power. Speed is fitted across
+100 ms of timestamped observations to reduce single-frame wrist jitter; tracking gaps clear
+that fit. Capture requests 60 fps with a 30 fps fallback where the selected format requires it;
+actual Vision pose throughput can be lower.
+
+Arcade and course shots share the same flight solver and virtual bag: Driver 250 yards carry,
+7-iron 160 yards carry, Wedge 90 yards carry, and Putter 25 yards roll at full power on the
+reference surface. Partial power, strike quality, shot type, lie, and course slope affect the
+result. These are game reference distances, not universal distances for every golfer. The
+camera estimates body motion, not physical clubhead or ball speed; physical-iPhone Practice
+Lab trials remain necessary to validate accuracy.
+
 ## Practice Lab
 
 Open **Practice Lab** directly from the main menu, without a player scan. It provides live pose confidence, phase and processing timing, fixed 12-second direction/power/putting/non-swing trials, explicit missed/duplicate detection counts, opt-in local pose traces, deterministic replay, and versioned JSON export. Synthetic fixtures never count toward camera benchmarks. See [the pilot protocol and metric definitions](docs/PRACTICE_LAB.md). Real-device accuracy remains unmeasured until pilot data is collected.
