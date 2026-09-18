@@ -195,7 +195,7 @@ struct CourseScreen: View {
                     holeChip
                     if round.canSwing {
                         HoleDirectionCue(round: round)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
+                            .frame(maxWidth: max(200, size.width - 150), alignment: .leading)
                     }
                     Text("\(round.targetLabel) · \(Int(round.distanceToTarget.rounded())) YD")
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
@@ -218,10 +218,10 @@ struct CourseScreen: View {
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
                             .padding(8).background(.black.opacity(0.65), in: Capsule())
                             .accessibilityIdentifier("trajectoryEstimate")
-                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))\(round.stanceAim != 0 ? " · STANCE" : "")")
-                            .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
-                            .lineLimit(2)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
+                        if round.stanceAim != 0 {
+                            Text("STANCE AIM \(String(format: "%+.1f°", round.stanceAim))")
+                                .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
+                        }
                     }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

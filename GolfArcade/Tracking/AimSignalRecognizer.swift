@@ -17,9 +17,10 @@ struct AimSignalRecognizer: Equatable {
     /// Seconds between steps while the arm stays out.
     var repeatInterval = 0.5
     /// Sideways reach from the shoulder centre that counts as an outstretched arm.
-    var reach: CGFloat = 1.1
-    /// The signalling hand may hang at most this far below the shoulder line.
-    var maximumDrop: CGFloat = 0.3
+    var reach: CGFloat = 0.95
+    /// The signalling hand may hang this far below the shoulder line: a relaxed arm out at
+    /// thirty degrees or so still counts.
+    var maximumDrop: CGFloat = 0.6
     /// The other hand must hang at least this far below the shoulders and stay close to the body.
     var restingDrop: CGFloat = 0.4
     var restingReach: CGFloat = 0.9
@@ -35,7 +36,8 @@ struct AimSignalRecognizer: Equatable {
     mutating func ingest(_ frame: PoseFrame?, at time: Double) -> Side? {
         guard let frame, let width = frame.shoulderWidth, width > 0.02,
               let leftShoulder = frame.point(.leftShoulder), let rightShoulder = frame.point(.rightShoulder),
-              let a = frame.point(.leftWrist), let b = frame.point(.rightWrist) else {
+              // An arm out at the edge of the frame is read with less confidence than a grip.
+              let a = frame.point(.leftWrist, minimumConfidence: 0.2), let b = frame.point(.rightWrist, minimumConfidence: 0.2) else {
             clear()
             return nil
         }

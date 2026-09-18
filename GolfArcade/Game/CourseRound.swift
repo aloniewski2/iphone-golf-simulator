@@ -117,6 +117,8 @@ final class CourseRound: ObservableObject {
     var hole: Hole { course.holes[holeIndex] }
     var canSwing: Bool { !editingShot && pausedAt == nil && (phase == .ready || phase == .charging) }
     var distanceToPin: Double { ball.distance(to: hole.pin) }
+    /// Yards the hole sits above (positive) or below the ball.
+    var riseToPin: Double { hole.terrain.elevation(at: hole.pin) - hole.terrain.elevation(at: ball) }
     var intendedTarget: CoursePoint { target ?? hole.recommendedTarget(from: ball) }
     var distanceToTarget: Double { ball.distance(to: intendedTarget) }
     var targetLabel: String { intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }

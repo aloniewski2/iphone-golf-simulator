@@ -141,30 +141,58 @@ struct ShotControls: View {
 struct HoleDirectionCue: View {
     @ObservedObject var round: CourseRound
 
+    /// The number a phone in the hand has to be able to read at arm's length: yards to the
+    /// hole, feet on the green, with the aim and the slope underneath.
     var body: some View {
         let navigation = round.holeNavigation
+        let onGreen = round.lie == .green || round.club == .putter
+        let number = onGreen ? Int((navigation.distance * 3).rounded()) : Int(navigation.distance.rounded())
         HStack(spacing: 10) {
             Image(systemName: "arrow.up")
-                .font(.system(size: 25 + navigation.prominence * 7, weight: .black))
+                .font(.system(size: 30 + navigation.prominence * 6, weight: .black))
                 .rotationEffect(.degrees(navigation.relativeBearing))
-                .frame(width: 38, height: 40)
+                .frame(width: 44, height: 46)
                 .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 3) {
-                Label("HOLE · \(Int(navigation.distance.rounded())) YD", systemImage: "flag.fill")
-                    .font(.system(size: 15 + navigation.prominence * 3, weight: .heavy, design: .rounded))
-                    .minimumScaleFactor(0.8).lineLimit(1)
-                Text(navigation.directionLabel)
-                    .font(.system(size: 10, weight: .bold)).lineLimit(2)
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text("\(number)")
+                        .font(.system(size: 44, weight: .black, design: .rounded)).monospacedDigit()
+                        .minimumScaleFactor(0.7).lineLimit(1)
+                    Text(onGreen ? "FT" : "YD")
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
+                }
+                Text("TO THE HOLE · \(detail)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded)).lineLimit(2)
+                Text(aimLabel)
+                    .font(.system(size: 14, weight: .black, design: .rounded))
+                    .foregroundStyle(.mint)
+                    .contentTransition(.numericText())
             }
         }
         .foregroundStyle(.yellow)
-        .padding(10)
-        .background(.black.opacity(0.78), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(.yellow.opacity(0.4 + navigation.prominence * 0.5), lineWidth: 2))
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(.black.opacity(0.78), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.yellow.opacity(0.4 + navigation.prominence * 0.5), lineWidth: 2))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Hole, \(Int(navigation.distance.rounded())) yards. \(navigation.directionLabel.lowercased()). Gold marks the hole; mint marks your shot.")
+        .accessibilityLabel("Hole, \(number) \(onGreen ? "feet" : "yards"). \(navigation.directionLabel.lowercased()). \(aimLabel.lowercased()). Gold marks the hole; mint marks your shot.")
         .accessibilityIdentifier("holeDirectionCue")
         .allowsHitTesting(false)
+    }
+
+    /// Uphill or downhill to the hole (and what it plays like), or on the green the read.
+    private var detail: String {
+        if let read = round.greenRead, round.lie == .green || round.club == .putter { return read.label }
+        let rise = round.riseToPin
+        guard abs(rise) >= 1 else { return round.holeNavigation.directionLabel }
+        return "\(rise > 0 ? "↑" : "↓") \(Int(abs(rise).rounded())) YD · PLAYS \(Int((round.distanceToPin + rise).rounded()))"
+    }
+
+    /// The line, as the arm signal and the ◀ ▶ buttons move it.
+    private var aimLabel: String {
+        let aim = round.combinedAim
+        if abs(aim) < 0.5 { return "AIM STRAIGHT" }
+        let degrees = abs(aim) == abs(aim).rounded() ? "\(Int(abs(aim)))°" : String(format: "%.1f°", abs(aim))
+        return aim < 0 ? "AIM ◀ \(degrees) LEFT" : "AIM ▶ \(degrees) RIGHT"
     }
 }
 

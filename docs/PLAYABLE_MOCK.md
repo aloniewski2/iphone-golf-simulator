@@ -38,7 +38,7 @@ Hole shapes and hazards are data in `GolfArcade/Game/Course.swift`; the 3D scene
 
 ## Layout
 
-The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
+The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots; under it, while you set up, a large readout gives the distance to the hole (feet on the green), the rise and what it plays like, and the aim line, big enough to read with the phone propped up across the room. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
 
 ## Lining up (Camera mode)
 
@@ -112,7 +112,7 @@ Move through menus without touching the phone:
 | Shot result / hole done | — | Replay | Next | Next |
 | Round complete | — | Menu | Play again | Play again |
 
-Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball the menu gestures rest, and the **arm signal** takes over for aiming: one arm out to the side, the other hand down, steps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
+Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball, club changes and selection wait for the shot, but a **swipe** left or right still moves the line, and the **arm signal** does the same without a fist: one arm out to the side, the other hand down, steps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
 
 ## Other inputs
 

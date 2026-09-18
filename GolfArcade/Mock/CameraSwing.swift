@@ -355,7 +355,7 @@ final class CameraSwingController: ObservableObject {
     }
 
     private func recognizeGesture(_ frame: PoseFrame?, at time: Double, afterImpact: Bool) {
-        guard gesturesEnabled, !isCheckingSwing, !(requiresPositionReview && isPositionLocked) else { return }
+        guard gesturesEnabled, !isCheckingSwing else { return }
         // A golf swing is never a menu gesture.
         if afterImpact || detector.phase == .backswing || detector.phase == .downswing {
             gestureRecognizer.suppress(until: time + 1)
@@ -364,6 +364,9 @@ final class CameraSwingController: ObservableObject {
         let armed = !gestureRecognizer.armed.isEmpty
         if gestureArmed != armed { gestureArmed = armed }
         guard let gesture else { return }
+        // Set up at the ball, a swipe left or right moves the line like the arm signal does;
+        // club changes and selection wait until the shot is played.
+        if requiresPositionReview, isPositionLocked, gesture != .left, gesture != .right { return }
         lastGesture = (gesture, Date())
         gestures.send(gesture)
     }
