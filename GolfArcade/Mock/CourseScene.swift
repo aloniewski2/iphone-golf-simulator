@@ -231,7 +231,12 @@ final class CourseScene: NSObject, ObservableObject {
     func start() {
         guard displayLink == nil else { return }
         let link = CADisplayLink(target: self, selector: #selector(step(_:)))
+        // ProMotion on a phone; the simulator's single main thread is better spent elsewhere.
+        #if targetEnvironment(simulator)
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+        #else
         link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        #endif
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -824,7 +829,11 @@ struct CourseSceneView: UIViewRepresentable {
         view.scene = scene.scene
         view.pointOfView = scene.camera
         view.antialiasingMode = .multisampling4X
+        #if targetEnvironment(simulator)
+        view.preferredFramesPerSecond = 60
+        #else
         view.preferredFramesPerSecond = 120
+        #endif
         view.rendersContinuously = true
         view.isUserInteractionEnabled = false
         scene.inputs = inputs
