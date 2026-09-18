@@ -38,7 +38,7 @@ Hole shapes and hazards are data in `GolfArcade/Game/Course.swift`; the 3D scene
 
 ## Layout
 
-The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots; under it, while you set up, a large readout gives the distance to the hole (feet on the green), the rise and what it plays like, and the aim line, big enough to read with the phone propped up across the room. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
+The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots; under it, while you set up, a large readout gives the distance to the hole (feet on the green), the rise and what it plays like, and the aim line, big enough to read with the phone propped up across the room. A yellow flag marker floats over the hole itself wherever it is on screen, and when the hole is off the edge (a dogleg from the tee, or while you swing the line away) it sits at the edge with an arrow pointing at it. The hole map in the corner draws the pin as a flag and your aim as a bold ray from the ball, so a change of direction reads at a glance. The camera picture-in-picture is small — a check that you are in frame, not the view you play from. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
 
 ## Lining up (Camera mode)
 

@@ -196,6 +196,7 @@ struct CourseScreen: View {
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
+
                 VStack(alignment: .leading, spacing: 5) {
                     holeChip
                     if round.canSwing {
@@ -249,6 +250,13 @@ struct CourseScreen: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .padding(.trailing, 10).padding(.top, 42)
 
+                // Over everything: the hole, wherever it is, kept out of the HUD band at the top.
+                if let marker = scene.pinMarker, round.canSwing || round.phase == .flying {
+                    PinMarkerOverlay(marker: marker, yards: Int(round.distanceToPin.rounded()), size: size,
+                                     topInset: size.width > size.height ? 120 : 250,
+                                     trailingInset: size.width > size.height ? 130 : 110)
+                }
+
                 ClubRail(round: round, focusedClub: round.canSwing ? round.club : nil) { menuItems }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
                     .padding(.trailing, 10)
@@ -300,7 +308,8 @@ struct CourseScreen: View {
 
     private func cameraStageSize(_ size: CGSize) -> CGSize {
         if stageExpanded { return size }
-        let width: CGFloat = size.width > size.height ? 160 : 132
+        // Small: it is a check that you are in frame, not the view you play from.
+        let width: CGFloat = size.width > size.height ? 140 : 96
         return CGSize(width: width, height: width / max(camera.tracker.frameAspect, 0.3))
     }
 

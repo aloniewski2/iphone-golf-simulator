@@ -241,10 +241,43 @@ struct TargetMap: View {
                 var line = Path()
                 line.move(to: screen(round.ball)); line.addLine(to: screen(target))
                 context.stroke(line, with: .color(.white), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                for (point, color) in [(round.hole.pin, Color.yellow), (target, Color.mint), (round.ball, Color.white)] {
-                    let p = screen(point)
-                    context.fill(Path(ellipseIn: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)), with: .color(color))
+                // The line you are aimed on, as a bold ray from the ball with an arrowhead, so a
+                // change of direction reads at a glance.
+                if round.phase == .ready || round.phase == .charging {
+                    let radians = (round.heading + round.combinedAim) * .pi / 180
+                    let ball = screen(round.ball)
+                    let reach = max(proxy.size.width, proxy.size.height)
+                    let tip = CGPoint(x: ball.x + sin(radians) * reach, y: ball.y - cos(radians) * reach)
+                    var ray = Path()
+                    ray.move(to: ball); ray.addLine(to: tip)
+                    context.stroke(ray, with: .color(.mint.opacity(0.9)), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    let head = CGPoint(x: ball.x + sin(radians) * min(reach, 34), y: ball.y - cos(radians) * min(reach, 34))
+                    var arrow = Path()
+                    for spread in [-0.5, 0.5] {
+                        let a = radians + .pi + spread
+                        arrow.move(to: head)
+                        arrow.addLine(to: CGPoint(x: head.x + sin(a) * 8, y: head.y - cos(a) * 8))
+                    }
+                    context.stroke(arrow, with: .color(.mint), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                 }
+                let targetPoint = screen(target)
+                context.fill(Path(ellipseIn: CGRect(x: targetPoint.x - 4, y: targetPoint.y - 4, width: 8, height: 8)), with: .color(.mint))
+                // The pin: a flag on a stick, ringed so it stands out from the green.
+                let pin = screen(round.hole.pin)
+                context.stroke(Path(ellipseIn: CGRect(x: pin.x - 8, y: pin.y - 8, width: 16, height: 16)), with: .color(.yellow.opacity(0.9)), lineWidth: 2)
+                context.fill(Path(ellipseIn: CGRect(x: pin.x - 3, y: pin.y - 3, width: 6, height: 6)), with: .color(.black))
+                var stick = Path()
+                stick.move(to: pin); stick.addLine(to: CGPoint(x: pin.x, y: pin.y - 16))
+                context.stroke(stick, with: .color(.white), lineWidth: 2)
+                var flag = Path()
+                flag.move(to: CGPoint(x: pin.x, y: pin.y - 16))
+                flag.addLine(to: CGPoint(x: pin.x + 11, y: pin.y - 12.5))
+                flag.addLine(to: CGPoint(x: pin.x, y: pin.y - 9))
+                flag.closeSubpath()
+                context.fill(flag, with: .color(.yellow))
+                let ball = screen(round.ball)
+                context.fill(Path(ellipseIn: CGRect(x: ball.x - 4.5, y: ball.y - 4.5, width: 9, height: 9)), with: .color(.white))
+                context.stroke(Path(ellipseIn: CGRect(x: ball.x - 4.5, y: ball.y - 4.5, width: 9, height: 9)), with: .color(.black.opacity(0.7)), lineWidth: 1)
             }
             .background(Color(red: 0.10, green: 0.24, blue: 0.17), in: RoundedRectangle(cornerRadius: 12))
             .contentShape(Rectangle())
@@ -283,5 +316,50 @@ struct HoleOverview: View {
         .accessibilityLabel("Plan hole. \(round.targetLabel.capitalized), \(Int(round.distanceToTarget.rounded())) yards. Pin, \(Int(round.distanceToPin.rounded())) yards.")
         .accessibilityIdentifier("holeOverview")
         .sheet(item: $panel, onDismiss: { round.editingShot = false }) { _ in ShotControls(round: round) }
+    }
+}
+
+/// The hole, marked on the 3D view wherever it is: a flag and the yardage floating over the pin
+/// when it is in front of the camera, and pinned to the edge of the view with an arrow when it
+/// is off-screen, so moving the line never loses it.
+struct PinMarkerOverlay: View {
+    let marker: PinScreenMarker
+    let yards: Int
+    let size: CGSize
+    /// Screen space the marker stays out of: the readout and hole map at the top, the club
+    /// rail down the right.
+    var topInset: CGFloat = 250
+    var trailingInset: CGFloat = 110
+
+    var body: some View {
+        let inset: CGFloat = 46
+        let clamped = CGPoint(x: min(max(marker.point.x, inset), size.width - trailingInset),
+                              y: min(max(marker.point.y, topInset), size.height - inset - 120))
+        let offScreen = !marker.isInFront || clamped != marker.point
+        let angle = atan2(marker.point.y - clamped.y, marker.point.x - clamped.x)
+        VStack(spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: "flag.fill")
+                Text("\(yards) YD").monospacedDigit()
+            }
+            .font(.system(size: 12, weight: .black, design: .rounded))
+            .foregroundStyle(Palette.ink)
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .background(.yellow, in: Capsule())
+            if offScreen {
+                Image(systemName: "arrowtriangle.right.fill")
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(.yellow)
+                    .rotationEffect(.radians(angle))
+            } else {
+                Image(systemName: "arrowtriangle.down.fill")
+                    .font(.system(size: 10, weight: .black))
+                    .foregroundStyle(.yellow)
+            }
+        }
+        .shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+        .position(x: clamped.x, y: offScreen ? clamped.y : clamped.y - 22)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
