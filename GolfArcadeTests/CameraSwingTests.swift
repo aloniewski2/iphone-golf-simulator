@@ -189,6 +189,22 @@ final class ArmSwingDetectorTests: XCTestCase {
         XCTAssertTrue(impacts(drive(&detector, legs: [(0.5, 0), (0.3, 2), (0.3, -2), (0.3, 1), (0.3, 0)])).isEmpty)
     }
 
+    func testEasingBackDownFromTheTopLowersTheMeterAndTheShot() throws {
+        // Up to a full turn, then slowly settle back to a three-quarter position and swing from there.
+        var adjusted = ArmSwingDetector(), full = ArmSwingDetector()
+        let adjustedEvents = drive(&adjusted, legs: [(0.5, 0), (0.8, 118), (1.0, 80), (0.3, 80), (0.3, -20)])
+        let fullEvents = drive(&full, legs: [(0.5, 0), (0.8, 118), (0.3, 118), (0.3, -20)])
+        let loads = adjustedEvents.compactMap { if case .load(let value) = $0 { value } else { nil } }
+        XCTAssertGreaterThan(try XCTUnwrap(loads.max()), 0.9, "the meter filled on the way up")
+        // While the hands eased down the meter came down with them.
+        let settled = try XCTUnwrap(loads.last)
+        XCTAssertLessThan(settled, 0.75)
+        XCTAssertGreaterThan(settled, 0.55)
+        let hit = try XCTUnwrap(impacts(adjustedEvents).first)
+        let fullHit = try XCTUnwrap(impacts(fullEvents).first)
+        XCTAssertLessThan(hit.power, fullHit.power - 0.2, "the shot is played from where the downswing started")
+    }
+
     func testSlowFullPracticeSwingCancels() {
         var detector = ArmSwingDetector()
         let events = drive(&detector, legs: [(0.5, 0), (0.8, 120), (0.2, 120), (2, 0), (0.5, 0)])

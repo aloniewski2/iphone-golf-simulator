@@ -144,6 +144,10 @@ struct ArmSwingDetector {
     /// How much tempo moves the meter around the arc: 0.25 means a very slow downswing keeps
     /// 75% of what the backswing loaded.
     var speedWeight = 0.25
+    /// Hands drifting back down from the top slower than this, for `adjustHold` seconds, are
+    /// being adjusted, and the meter follows them; see the backswing phase.
+    var adjustSpeed = 60.0
+    var adjustHold = 0.25
     var stillDuration = 0.35
     var trackingGracePeriod = 0.6
     /// A player may pause at the top. Bound an abandoned attempt without imposing a
@@ -193,6 +197,7 @@ struct ArmSwingDetector {
     private var outwardTravel = 0.0
     private var outwardSign = 0.0
     private var hadTrackingGap = false
+    private var adjustingSince: Double?
     private var stanceAim = StanceAimSettler()
     /// Where the club head was on the way back and on the way down, by arc from address.
     /// Impact is judged between them (see `VirtualClubState.sweptContact`), so the start line
@@ -432,6 +437,7 @@ struct ArmSwingDetector {
             backSign = angle >= 0 ? 1 : -1
             peakArc = abs(angle)
             peakSpeed = 0
+            adjustingSince = nil
             swingStart = time
             bestContact = nil
             delivery.removeAll(keepingCapacity: true)
@@ -455,7 +461,20 @@ struct ArmSwingDetector {
                     clearHold()
                     readiness = .holdStill
                     return .cancel
-                } else { return .load(load(peakArc)) }
+                } else {
+                    // Easing the hands back down at the top is an adjustment, not a downswing:
+                    // once they have been drifting slowly for a moment the meter follows them
+                    // down, and the shot is played from wherever the real downswing starts,
+                    // not from the furthest point the hands reached. The slow first frames of
+                    // a real transition are too brief to count.
+                    if closing, speed < adjustSpeed {
+                        adjustingSince = adjustingSince ?? time
+                        if time - adjustingSince! >= adjustHold { peakArc = arc }
+                    } else {
+                        adjustingSince = nil
+                    }
+                    return .load(load(peakArc))
+                }
             }
             peakSpeed = max(peakSpeed, speed)
             // Image-left/right is not course-forward/backward: a camera-side change can
