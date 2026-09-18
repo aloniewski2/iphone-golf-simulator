@@ -539,10 +539,10 @@ struct CourseScreen: View {
             flightStart: round.flightStart,
             pausedAt: round.pausedAt,
             swingAngle: usesCamera ? camera.swingAngle : round.power * 150,
-            bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex) },
+            bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex,appearance:$0.golferAppearance) },
             preview: round.canSwing ? round.trajectoryPreview : nil,
             cameraAim: usesCamera ? (round.automaticAim ? round.combinedAim : round.aim) : nil,
-            reduceMotion: reduceMotion
+            reduceMotion: reduceMotion, appearance: player.golferAppearance
         )
     }
 

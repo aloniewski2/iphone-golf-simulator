@@ -1,4 +1,5 @@
 import Foundation
+import simd
 
 enum ShotShapeChoice: String, CaseIterable, Codable, Identifiable, Sendable {
     case straight, draw, fade
@@ -31,7 +32,7 @@ struct CourseWind: Equatable, Codable, Sendable {
 }
 
 enum ShotType: String, CaseIterable, Identifiable, Sendable {
-    case full, pitch, chip, putt
+    case full, pitch, chip, bunker, putt
     var id: Self { self }
     var title: String { rawValue.capitalized }
     var speedGain: Double {
@@ -39,6 +40,24 @@ enum ShotType: String, CaseIterable, Identifiable, Sendable {
         case .full, .putt: 1
         case .pitch: 0.55
         case .chip: 0.28
+        case .bunker: 0.72
+        }
+    }
+    func supports(club: GolfClub,lie: CourseLie) -> Bool {
+        switch self {
+        case .putt: club == .putter
+        case .full: club != .putter
+        case .bunker: club == .wedge && lie == .bunker
+        case .pitch: club == .wedge || club == .iron9
+        case .chip: [.iron5,.iron,.iron9,.wedge].contains(club)
+        }
+    }
+    func configure(_ launch: inout BallFlight.Launch) {
+        switch self {
+        case .pitch: launch.launchAngleDegrees=44; launch.spinRPM *= 0.9
+        case .chip: launch.launchAngleDegrees=12; launch.spinRPM *= 0.35
+        case .bunker: launch.launchAngleDegrees=52; launch.spinRPM *= 0.7
+        case .full,.putt: break
         }
     }
 }
@@ -112,6 +131,19 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     var duration: Double { holedAt ?? pathDuration }
     var isHoled: Bool { holedAt != nil }
     var penaltyStrokes: Int { isHoled ? 0 : lie?.penaltyStrokes ?? 0 }
+    var explanation: String? {
+        if penaltyStrokes > 0 { return lie == .water ? "Water · one penalty stroke and safe drop" : "Out of bounds · one penalty stroke, replay from previous spot" }
+        if flight.events.contains(where:{$0.kind == .lipOut}) { return "Caught the cup lip" }
+        if flight.events.contains(where:{$0.kind == .tree}) { return "Tree-trunk contact" }
+        if flight.events.contains(where:{$0.kind == .bunkerLip}) { return "Caught the bunker lip" }
+        switch strike {
+        case .fat: return "Ground first"
+        case .thin: return "Thin contact"
+        case .heel,.toe: return "Off-center contact"
+        case .miss: return "No club contact"
+        case .center: return nil
+        }
+    }
     /// Final resting spot on the course (before any drop).
     var rest: CoursePoint {
         if isHoled { return nextPosition }
@@ -138,7 +170,8 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     ) {
         self.init(id: id, request: ShotRequest(
             club: club, targetHeading: heading, type: club == .putter ? .putt : .full,
-            execution: SwingImpact(power: power, startLineDegrees: aim, curveDegrees: curve, strike: strike)
+            execution: SwingImpact(power: power, startLineDegrees: aim, curveDegrees: curve, strike: strike),
+            simulationVersion:hole?.simulationVersion ?? 2
         ), origin: origin, lieFactor: lieFactor, hole: hole)
     }
 
@@ -156,16 +189,34 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         curve = club == .putter ? 0 : min(max((execution.curveDegrees.isFinite ? execution.curveDegrees : 0) + selectedCurve, -15), 15)
         let effectivePower = power * request.type.speedGain * strike.efficiency * min(max(lieFactor.isFinite ? lieFactor : 0, 0), 1)
         var launch = club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve)
+        request.type.configure(&launch)
         if club != .putter, request.type != .chip {
             launch.launchAngleDegrees = max(3, min(60, launch.launchAngleDegrees + request.trajectory.loftOffset))
         }
+        if request.simulationVersion >= 4, club != .putter {
+            if strike == .thin { launch.launchAngleDegrees=max(2,launch.launchAngleDegrees-7); launch.spinRPM *= 0.55 }
+            if strike == .fat { launch.launchAngleDegrees=max(3,launch.launchAngleDegrees-4); launch.spinRPM *= 0.7 }
+            if strike == .heel || strike == .toe {
+                let side: Double = (strike == .toe ? -1 : 1) * (request.handedness == .right ? 1 : -1)
+                launch.directionDegrees += side*1.5; launch.curveDegrees += side*2.5
+            }
+        }
         let wind = request.wind.local(to: heading)
-        if let hole, hole.fairwayBoundary != nil {
+        if let hole, hole.fairwayBoundary != nil || request.simulationVersion >= 4 {
             let geometry=ShotGeometry(origin:origin,heading:heading)
             let originHeight=hole.surface(at:origin).heightYards
             let angle=heading * .pi/180
             if club == .putter { launch.ballSpeedMPH *= sqrt(Self.greenDeceleration*0.9144/3.2) }
-            flight = BallFlight.simulate(launch,windX:wind.x,windZ:wind.z) { x,z in
+            func local(_ world: CoursePoint) -> simd_double2 {
+                let dx=world.x-origin.x, dd=world.d-origin.d
+                return simd_double2(dx*cos(angle)-dd*sin(angle),dx*sin(angle)+dd*cos(angle))*0.9144
+            }
+            let advanced=request.simulationVersion >= 4
+            let trunks=advanced ? hole.trees.map { tree in
+                BallFlight.Trunk(id:tree.id,center:local(tree.center),base:(hole.surface(at:tree.center).heightYards-originHeight)*0.9144,
+                    height:tree.trunkHeight*0.9144,radius:tree.trunkRadius*0.9144)
+            } : []
+            flight = BallFlight.simulate(launch,windX:wind.x,windZ:wind.z,trunks:trunks,cup:advanced ? local(hole.pin) : nil) { x,z in
                 let point=geometry.ground(FlightPoint(lateralYards:x/0.9144,heightYards:0,distanceYards:z/0.9144))
                 let sample=hole.surface(at:point)
                 let sand=sample.lie == .bunker
@@ -174,7 +225,8 @@ struct RangeShot: Identifiable, Equatable, Sendable {
                     slopeZ:sample.slopeX*sin(angle)+sample.slopeD*cos(angle),
                     deceleration:Self.rollingDeceleration(on:sample.lie)*0.9144,
                     restitution:sand ? 0.08 : sample.lie == .green ? 0.25 : 0.35,
-                    bounceFriction:sand ? 0.25 : sample.lie == .deepRough ? 0.35 : 0.6)
+                    bounceFriction:sand ? 0.25 : sample.lie == .deepRough ? 0.35 : 0.6,
+                    isWater:advanced && sample.lie == .water,isSand:advanced && sand)
             }
         } else {
             flight = BallFlight.simulate(launch, windX: wind.x, windZ: wind.z)
@@ -199,7 +251,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         }
         let geometry = ShotGeometry(origin: origin, heading: self.heading)
         let grounded: [FlightPoint]
-        if hole.fairwayBoundary != nil {
+        if hole.fairwayBoundary != nil || request.simulationVersion >= 4 {
             let recordedFlight = flight
             let count=Int(ceil(recordedFlight.duration/BallFlight.sampleInterval))
             grounded=(0...count).map { geometry.world(recordedFlight.position(at:Double($0)*BallFlight.sampleInterval)) }
@@ -207,7 +259,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             grounded=Self.groundPath(flight: flight, geometry: geometry, hole: hole, putt: club == .putter)
         }
         path = grounded
-        let (lie, holedAt, next) = Self.resolve(path: grounded, origin: origin, hole: hole)
+        let resolved=Self.resolve(path:grounded,origin:origin,hole:hole,legacyCup:request.simulationVersion < 4)
+        let captured=flight.events.first(where:{$0.kind == .cup})
+        let (lie,holedAt,next) = captured.map { (CourseLie.green,Optional($0.time),hole.pin) } ?? resolved
         self.lie = lie
         self.holedAt = holedAt
         nextPosition = next
@@ -319,7 +373,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
 
     /// Walks the sampled path: a slow ball crossing the cup drops; any ground contact in water is
     /// wet even if the ball would have skipped out; out of bounds replays from the same spot.
-    private static func resolve(path: [FlightPoint], origin: CoursePoint, hole: Hole) -> (CourseLie, Double?, CoursePoint) {
+    private static func resolve(path: [FlightPoint], origin: CoursePoint, hole: Hole, legacyCup: Bool = true) -> (CourseLie, Double?, CoursePoint) {
         let step = BallFlight.sampleInterval
         var previous = CoursePoint(x: path[0].lateralYards, d: path[0].distanceYards)
         for index in 1..<max(1, path.count) {
@@ -334,7 +388,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
                 let fraction = lengthSquared > 0 ? min(1, max(0, ((hole.pin.x - previous.x) * dx + (hole.pin.d - previous.d) * dd) / lengthSquared)) : 0
                 let closest = CoursePoint(x: previous.x + fraction * dx, d: previous.d + fraction * dd)
                 let speed = sqrt(lengthSquared) / max(time - previousTime, 0.0001)
-                if closest.distance(to: hole.pin) <= Hole.cupCaptureRadius, speed < 2 {
+                if legacyCup, closest.distance(to: hole.pin) <= Hole.cupCaptureRadius, speed < 2 {
                     return (.green, previousTime + fraction * (time - previousTime), hole.pin)
                 }
                 if hole.hazards.contains(where: { $0.kind == .water && $0.contains(point) }) {
@@ -346,7 +400,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         let last = path[path.count - 1]
         let rest = CoursePoint(x: last.lateralYards, d: last.distanceYards)
         let duration = Double(path.count - 1) * step
-        if rest.distance(to: hole.pin) <= Hole.cupCaptureRadius { return (.green, duration, hole.pin) }
+        if legacyCup, rest.distance(to: hole.pin) <= Hole.cupCaptureRadius { return (.green, duration, hole.pin) }
         let lie = hole.lie(at: rest)
         switch lie {
         case .water: return (.water, nil, drop(from: rest, toward: origin, hole: hole))
@@ -367,7 +421,8 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             spot = CoursePoint(x: point.x + ux * travelled, d: point.d + ud * travelled)
             if !hole.hazards.contains(where: { $0.kind == .water && $0.contains(spot) }) {
                 let back = min(travelled + 2, length)
-                return CoursePoint(x: point.x + ux * back, d: point.d + ud * back)
+                let candidate=CoursePoint(x: point.x + ux * back, d: point.d + ud * back)
+                if hole.lie(at:candidate).penaltyStrokes == 0 { return candidate }
             }
         }
         return origin
@@ -376,7 +431,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     /// Power that lands a straight shot at `distance`, found by bisection; nil if out of reach.
     static func power(toReach distance: Double, with club: GolfClub, type: ShotType = .full, lieFactor: Double = 1) -> Double? {
         func total(_ power: Double) -> Double {
-            BallFlight.simulate(club.launch(power: power * (club == .putter ? 1 : type.speedGain * lieFactor), aimDegrees: 0, curveDegrees: 0)).total
+            var launch=club.launch(power: power * (club == .putter ? 1 : type.speedGain * lieFactor), aimDegrees: 0, curveDegrees: 0)
+            type.configure(&launch)
+            return BallFlight.simulate(launch).total
         }
         guard distance >= total(0), distance <= total(1) else { return nil }
         var low = 0.0, high = 1.0

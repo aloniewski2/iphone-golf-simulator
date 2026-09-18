@@ -2,6 +2,23 @@ import XCTest
 
 @MainActor
 final class RangePlayTests: XCTestCase {
+    func testChooseSaveAndReopenGolferPreset() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-skipPlayerCalibration","-range.swingInput","touch","-gestures.enabled","NO"]
+        app.launch()
+        XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout:15)); app.buttons["menuSolo"].tap()
+        let edit=app.buttons["editGolfer-Player 1"]
+        XCTAssertTrue(edit.waitForExistence(timeout:5)); edit.tap()
+        XCTAssertTrue(app.segmentedControls["golferPreset"].waitForExistence(timeout:5))
+        app.segmentedControls["golferPreset"].buttons["Sunset"].tap()
+        screenshot(app,"Sunset golfer — saved preset editor")
+        app.buttons["saveGolfer"].tap()
+        XCTAssertTrue(edit.waitForExistence(timeout:5)); edit.tap()
+        XCTAssertTrue(app.segmentedControls["golferPreset"].buttons["Sunset"].isSelected)
+        app.buttons["Cancel"].tap()
+    }
+
     func testResortNineHoleAndImportedGolferComparison() {
         continueAfterFailure=false
         let app=XCUIApplication()

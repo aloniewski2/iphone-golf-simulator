@@ -135,7 +135,7 @@ struct ShotControls: View {
                 if round.club != .putter {
                     Section("Shot") {
                         Picker("Stroke range", selection: $round.shotType) {
-                            ForEach([ShotType.full, .pitch, .chip]) { Text($0.title).tag($0) }
+                            ForEach(ShotType.allCases.filter { $0.supports(club:round.club,lie:round.lie) }) { Text($0.title).tag($0) }
                         }.pickerStyle(.segmented)
                         Picker("Shape", selection: $round.shotShape) {
                             ForEach(ShotShapeChoice.allCases) { Text($0.title).tag($0) }
@@ -245,6 +245,11 @@ struct TargetMap: View {
                     let shape = Path(ellipseIn: CGRect(x: center.x - width / 2, y: center.y - height / 2, width: width, height: height))
                     context.stroke(shape, with: .color(hazard.kind == .water ? Color(red: 0.33, green: 0.75, blue: 0.76) : Color(red: 0.58, green: 0.48, blue: 0.30)), lineWidth: 2)
                     context.fill(shape, with: .color(hazard.kind == .water ? Color(red: 0.13, green: 0.48, blue: 0.61) : Color(red: 0.93, green: 0.85, blue: 0.64)))
+                }
+                for tree in round.hole.trees {
+                    let p=screen(tree.center)
+                    let radius=max(2,tree.crownRadius*scale)
+                    context.fill(Path(ellipseIn:CGRect(x:p.x-radius,y:p.y-radius,width:radius*2,height:radius*2)),with:.color(.green.opacity(0.85)))
                 }
                 let target = round.intendedTarget
                 if round.automaticAim {

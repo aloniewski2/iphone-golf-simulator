@@ -5,6 +5,7 @@ struct PlayerSetupView: View {
     @ObservedObject var camera: CameraSwingController
     @AppStorage("gestures.enabled") private var gesturesEnabled = true
     @State private var focus = 0
+    @State private var editingGolfer: Player?
 
     /// Gesture focus runs over each player row, then Add (multiplayer), Continue, Back.
     private enum Target: Equatable { case player(Int), add, proceed, back }
@@ -66,6 +67,7 @@ struct PlayerSetupView: View {
         }
         .background(Palette.background.ignoresSafeArea())
         .accessibilityIdentifier("playerSetup")
+        .sheet(item:$editingGolfer) { player in GolferAppearanceEditor(flow:flow,player:player) }
         .onNavGesture(camera) { gesture in
             let count = targets.count
             let current = min(focus, count - 1)
@@ -117,6 +119,10 @@ struct PlayerSetupView: View {
                     .frame(width: 120)
                 }
                 .font(.caption.bold())
+                Button { editingGolfer=player } label: {
+                    Label("Golfer · \(player.golferAppearance.preset.title)",systemImage:"person.crop.square")
+                        .font(.caption.bold())
+                }.accessibilityIdentifier("editGolfer-\(player.name)")
             }
             Spacer(minLength: 4)
             Button(player.isScanned ? "Rescan" : "Scan") { flow.scan(player.id) }

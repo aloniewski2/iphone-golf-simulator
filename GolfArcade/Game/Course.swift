@@ -180,6 +180,8 @@ struct Hole: Identifiable, Equatable, Sendable {
     var wind: CourseWind = .calm
     var fairwayBoundary: CourseRegion?
     var greenBoundary: CourseRegion?
+    var trees: [CourseTree] = []
+    var simulationVersion = 2
 
     /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
     static let roughWidth = 24.0
@@ -230,6 +232,7 @@ struct Hole: Identifiable, Equatable, Sendable {
             let margin = min(6, ball.distance(to: p) * 0.04)
             return [(0.0,0.0), (margin,0), (-margin,0), (0,margin), (0,-margin)].reduce(0) { sum, offset in
                 let point = CoursePoint(x: p.x + offset.0, d: p.d + offset.1)
+                if trees.contains(where: { $0.center.distance(to:point) < $0.trunkRadius+2 }) { return sum+65 }
                 switch lie(at: point) {
                 case .green, .fairway, .tee: return sum
                 case .fringe: return sum + 3
@@ -288,11 +291,20 @@ struct Hole: Identifiable, Equatable, Sendable {
                 for hazard in hazards where hazard.kind == .bunker {
                     let width=max(1,hazard.width/2),length=max(1,hazard.length/2)
                     let x=(point.x-hazard.x)/width, d=(point.d-hazard.distance)/length
-                    let radius=x*x+d*d
-                    if radius < 1 {
-                        height -= 0.8 * pow(1-radius,2)
-                        gradient.dx += 3.2*x*(1-radius)/width
-                        gradient.dd += 3.2*d*(1-radius)/length
+                    let radius=sqrt(x*x+d*d)
+                    if radius < 1.15 {
+                        let t=max(0,min(1,(radius-0.55)/0.45))
+                        height -= 0.8*(1-t*t*(3-2*t))
+                        var derivative = radius > 0.55 && radius < 1 ? 0.8*6*t*(1-t)/0.45 : 0
+                        if radius > 0.8 {
+                            let u=(radius-0.8)/0.35
+                            height += 0.28*pow(sin(.pi*u),2)
+                            derivative += 0.28 * .pi/0.35 * sin(2 * .pi*u)
+                        }
+                        if radius > 0.0001 {
+                            gradient.dx += derivative*x/(radius*width)
+                            gradient.dd += derivative*d/(radius*length)
+                        }
                     }
                 }
             }
@@ -307,7 +319,11 @@ struct Course: Identifiable, Equatable, Sendable {
     let holes: [Hole]
 
     var par: Int { holes.reduce(0) { $0 + $1.par } }
-    var bestScoreKey: String { "course.\(id).routing2.best" }
+    var bestScoreKey: String {
+        let physics=holes.map(\.simulationVersion).max() ?? 2
+        // Retain old scores on disk, but do not compare the new physical-cup rules with v3.
+        return physics >= 4 ? "course.\(id).routing2.physics\(physics).best" : "course.\(id).routing2.best"
+    }
     var length: Double { holes.reduce(0) { $0 + $1.length } }
     var bunkerCount: Int { holes.reduce(0) { $0 + $1.hazards.filter { $0.kind == .bunker }.count } }
     var hasWater: Bool { holes.contains { $0.hazards.contains { $0.kind == .water } } }
@@ -452,6 +468,11 @@ struct Course: Identifiable, Equatable, Sendable {
                 return p(hole.pin.x+cos(angle)*radius,hole.pin.d+sin(angle)*radius*0.93)
             })
             hole.wind=breezes[index]
+            hole.simulationVersion=4
+            // Playable trunks are explicit, separate from decorative distant vegetation.
+            let station=hole.centerline[min(1,hole.centerline.count-1)]
+            hole.trees=[CourseTree(id:0,center:p(station.x-hole.fairwayWidth*0.43,station.d+12),trunkRadius:0.42,trunkHeight:7),
+                        CourseTree(id:1,center:p(station.x+hole.fairwayWidth*0.47,station.d-18),trunkRadius:0.36,trunkHeight:6.5)]
             holes[index]=hole
         }
         return Course(id:"sunward-resort-v1",name:"Sunward Resort · Nine",difficulty:.medium,holes:holes)

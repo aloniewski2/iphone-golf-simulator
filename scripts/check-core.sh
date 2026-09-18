@@ -5,10 +5,10 @@ cd "$(dirname "$0")/.."
 golf_check_dir=$(mktemp -d /private/tmp/golf-core-check.XXXXXX)
 xcrun swiftc -D DEBUG -O -o "$golf_check_dir/check" \
  GolfArcade/Domain/Club.swift GolfArcade/Domain/SwingMetrics.swift \
- GolfArcade/Domain/SwingImpact.swift GolfArcade/Domain/PoseFrame.swift \
+ GolfArcade/Domain/SwingImpact.swift GolfArcade/Domain/PoseFrame.swift GolfArcade/Domain/GolferAppearance.swift GolfArcade/Domain/Player.swift \
  GolfArcade/Shot/FlightPath.swift GolfArcade/Shot/ShotEngine.swift \
  GolfArcade/Mock/BallFlight.swift GolfArcade/Mock/ArmSwing.swift \
- GolfArcade/Game/Course.swift GolfArcade/Game/CourseShot.swift \
+ GolfArcade/Game/Course.swift GolfArcade/Game/CourseShot.swift GolfArcade/Game/GolfInteractions.swift \
  GolfArcade/Game/ShotRecommendation.swift GolfArcade/Game/CourseRound.swift \
  GolfArcade/Tracking/HandGestureRecognizer.swift GolfArcade/Tracking/PlayerCalibration.swift \
  GolfArcade/Swing/BallAddress.swift GolfArcade/Avatar/BodyPose3D.swift \

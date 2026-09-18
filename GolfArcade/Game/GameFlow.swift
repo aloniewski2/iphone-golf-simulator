@@ -58,6 +58,10 @@ final class GameFlow: ObservableObject {
         update(id) { $0.handedness = handedness }
     }
 
+    func setAppearance(_ id: UUID, _ appearance: GolferAppearance) {
+        update(id) { $0.appearance = appearance }
+    }
+
     func scan(_ id: UUID) { screen = .scan(id) }
 
     func finishScan(_ id: UUID, calibration: PlayerCalibration) {

@@ -7,15 +7,19 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
     var colorIndex: Int
     var handedness: Handedness
     var calibration: PlayerCalibration?
+    /// Optional for backward-compatible decoding of the existing players.v1 roster.
+    var appearance: GolferAppearance?
+    var golferAppearance: GolferAppearance { appearance ?? .forPlayerColor(colorIndex) }
 
     var isScanned: Bool { calibration != nil }
 
-    init(id: UUID = UUID(), name: String, colorIndex: Int, handedness: Handedness = .right, calibration: PlayerCalibration? = nil) {
+    init(id: UUID = UUID(), name: String, colorIndex: Int, handedness: Handedness = .right, calibration: PlayerCalibration? = nil, appearance: GolferAppearance? = nil) {
         self.id = id
         self.name = name
         self.colorIndex = colorIndex
         self.handedness = handedness
         self.calibration = calibration
+        self.appearance = appearance
     }
 }
 

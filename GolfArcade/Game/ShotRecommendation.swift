@@ -21,7 +21,8 @@ struct ShotPlanningConditions: Equatable, Sendable {
             request.execution.power=Double(step)/20
             let candidate=RangeShot(id:0,request:request,origin:origin,
                 lieFactor:request.club == .putter ? 1 : lie.powerFactor,hole:hole)
-            let error=candidate.rest.distance(to:target)+(candidate.penaltyStrokes > 0 ? 100 : 0)
+            let obstructionCost=candidate.flight.events.contains(where:{$0.kind == .tree || $0.kind == .bunkerLip}) ? 12.0 : 0
+            let error=candidate.rest.distance(to:target)+(candidate.penaltyStrokes > 0 ? 100 : 0)+obstructionCost
             if error < bestError { bestError=error; bestPower=Double(step)/20 }
         }
         return bestPower

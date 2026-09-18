@@ -14,6 +14,21 @@ struct BallFlight: Equatable, Sendable {
         var deceleration: Double = 3.2
         var restitution: Double = 0.35
         var bounceFriction: Double = 0.6
+        var isWater = false
+        var isSand = false
+    }
+    struct Trunk: Equatable, Sendable {
+        let id: Int
+        let center: simd_double2
+        let base: Double
+        let height: Double
+        let radius: Double
+    }
+    struct Event: Equatable, Sendable {
+        enum Kind: String, Sendable { case tree, bunkerLip, lipOut, cup, water }
+        let kind: Kind
+        let time: Double
+        let obstacleID: Int?
     }
     struct Launch: Equatable, Sendable {
         var ballSpeedMPH: Double
@@ -37,6 +52,7 @@ struct BallFlight: Equatable, Sendable {
     let carry: Double
     let roll: Double
     let apex: Double
+    var events: [Event] = []
     var duration: Double { samples.last?.time ?? 0 }
     var total: Double { carry + roll }
     var landing: FlightPoint { samples.last?.point ?? FlightPoint(lateralYards: 0, heightYards: 0, distanceYards: 0) }
@@ -58,6 +74,7 @@ struct BallFlight: Equatable, Sendable {
     }
 
     static func simulate(_ launch: Launch, windX: Double = 0, windZ: Double = 0,
+                         trunks: [Trunk] = [], cup: simd_double2? = nil,
                          surface: ((Double,Double) -> Surface)? = nil) -> BallFlight {
         let mass = 0.04593
         let radius = 0.02135
@@ -88,8 +105,12 @@ struct BallFlight: Equatable, Sendable {
         var rolling = !airborne
         var carryMeters: Double?
         var apexMeters = 0.0
+        var events: [Event] = []
+        var cupCooldown = 0.0
+        var stopped = false
 
         while time < maxDuration {
+            let before=position
             if airborne {
                 let relativeVelocity = velocity - wind
                 let v = simd_length(relativeVelocity)
@@ -114,6 +135,10 @@ struct BallFlight: Equatable, Sendable {
                 let normal=simd_normalize(simd_double3(-ground.slopeX,1,-ground.slopeZ))
                 let incoming=simd_dot(velocity,normal)
                 if position.y <= ground.height, (surface == nil ? velocity.y : incoming) < 0 {
+                    if ground.isSand, ground.slopeX*velocity.x+ground.slopeZ*velocity.z > 0.5,
+                       events.last?.kind != .bunkerLip {
+                        events.append(Event(kind:.bunkerLip,time:time+dt,obstacleID:nil))
+                    }
                     position.y = ground.height
                     if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
                     if surface != nil {
@@ -155,6 +180,43 @@ struct BallFlight: Equatable, Sendable {
                 position.y = 0
                 }
             }
+            // Swept trunk checks: do not skip a narrow trunk between high-speed frames.
+            let a=simd_double2(before.x,before.z), b=simd_double2(position.x,position.z)
+            let contacts=trunks.compactMap { tree -> (Trunk,GolfInteractions.CircleContact)? in
+                guard let hit=GolfInteractions.sweptCircle(from:a,to:b,center:tree.center,radius:tree.radius+radius) else { return nil }
+                let y=before.y+(position.y-before.y)*hit.fraction
+                return y >= tree.base-radius && y <= tree.base+tree.height+radius ? (tree,hit) : nil
+            }
+            if let (tree,hit)=contacts.min(by:{$0.1.fraction < $1.1.fraction}) {
+                let n=simd_double3(hit.normal.x,0,hit.normal.y)
+                velocity=(velocity-n*(1.35*min(0,simd_dot(velocity,n))))*0.85
+                position=simd_double3(hit.point.x,before.y+(position.y-before.y)*hit.fraction,hit.point.y)
+                    + n*0.001 + velocity*dt*(1-hit.fraction)
+                if events.last?.obstacleID != tree.id || time-(events.last?.time ?? 0)>0.05 {
+                    events.append(Event(kind:.tree,time:time+dt,obstacleID:tree.id))
+                }
+            }
+            if let surface {
+                let ground=surface(position.x,position.z)
+                if position.y <= ground.height+0.001, ground.isWater {
+                    position.y=ground.height; stopped=true
+                    events.append(Event(kind:.water,time:time+dt,obstacleID:nil))
+                }
+            }
+            if !stopped, rolling, let cup, time >= cupCooldown {
+                switch GolfInteractions.cup(from:a,to:simd_double2(position.x,position.z),velocity:simd_double2(velocity.x,velocity.z),center:cup) {
+                case .none: break
+                case .captured:
+                    position.x=cup.x; position.z=cup.y
+                    position.y=surface?(cup.x,cup.y).height ?? 0
+                    velocity = .zero; stopped=true
+                    events.append(Event(kind:.cup,time:time+dt,obstacleID:nil))
+                case .lipOut(let p,let v):
+                    position.x=p.x; position.z=p.y; position.y=surface?(p.x,p.y).height ?? 0
+                    velocity.x=v.x; velocity.z=v.y; cupCooldown=time+0.12
+                    events.append(Event(kind:.lipOut,time:time+dt,obstacleID:nil))
+                }
+            }
             time += dt
             if time + 1e-9 >= nextSample {
                 samples.append(Sample(time: nextSample, point: FlightPoint(
@@ -164,13 +226,14 @@ struct BallFlight: Equatable, Sendable {
                 )))
                 nextSample += sampleInterval
             }
+            if stopped { break }
         }
         let finalDistance = simd_length(simd_double2(position.x, position.z))
         samples.append(Sample(time: nextSample, point: FlightPoint(
             lateralYards: position.x / metersPerYard, heightYards: 0, distanceYards: position.z / metersPerYard
         )))
         let carry = (carryMeters ?? 0) / metersPerYard // a shot that never flew is all roll
-        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard)
+        return BallFlight(samples: samples, carry: carry, roll: max(0, finalDistance / metersPerYard - carry), apex: apexMeters / metersPerYard,events:events)
     }
 }
 

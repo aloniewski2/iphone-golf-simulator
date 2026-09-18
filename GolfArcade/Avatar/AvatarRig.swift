@@ -20,14 +20,15 @@ final class AvatarRig {
     private let handle = SCNNode()
     private let clubHead = SCNNode()
 
-    init(shirt: UIColor, authored: Bool = UserDefaults.standard.bool(forKey: "presentation.authoredGolfer")) {
+    init(shirt: UIColor, authored: Bool = UserDefaults.standard.bool(forKey: "presentation.authoredGolfer"), appearance: GolferAppearance? = nil) {
         node.name = "premiumGolfer"
-        let navy = UIColor(red: 0.12, green: 0.18, blue: 0.27, alpha: 1)
-        let skin = UIColor(red: 0.91, green: 0.69, blue: 0.49, alpha: 1)
-        let ivory = UIColor(red: 0.98, green: 0.97, blue: 0.91, alpha: 1)
-        let hair = UIColor(red: 0.19, green: 0.12, blue: 0.09, alpha: 1)
+        let shirt = appearance?.shirtColor ?? shirt
+        let navy = appearance?.trousersColor ?? UIColor(red: 0.12, green: 0.18, blue: 0.27, alpha: 1)
+        let skin = appearance?.skinColor ?? UIColor(red: 0.91, green: 0.69, blue: 0.49, alpha: 1)
+        let ivory = appearance?.accentColor ?? UIColor(red: 0.98, green: 0.97, blue: 0.91, alpha: 1)
+        let hair = appearance?.hairColor ?? UIColor(red: 0.19, green: 0.12, blue: 0.09, alpha: 1)
         skinMesh = GolferSkin(shirt: shirt, trousers: navy, skin: skin)
-        authoredSkin = authored ? ResortGolferSkin(shirt: shirt, skin: skin) : nil
+        authoredSkin = authored ? ResortGolferSkin(shirt: shirt, skin: skin, trousers: navy, hair: hair) : nil
         node.addChildNode(body)
         body.addChildNode(authoredSkin?.node ?? skinMesh.node)
         torso.name = "tailoredPolo"
@@ -90,11 +91,13 @@ final class AvatarRig {
         let hairBack = Self.part(SCNSphere(radius: 0.635), hair)
         hairBack.position = SCNVector3(-0.12, 0.12, 0)
         hairBack.scale = SCNVector3(0.81, 0.86, 0.97)
+        hairBack.name = "golferHair"
         head.addChildNode(hairBack)
         let cap = Self.part(SCNSphere(radius: 0.66), ivory)
         cap.name = "golfCap"
         cap.position = SCNVector3(-0.025, 0.39, 0)
         cap.scale = SCNVector3(1.02, 0.56, 1.03)
+        if appearance?.headwear == .visor { cap.scale.y=0.13; cap.position.y=0.27 }
         head.addChildNode(cap)
         let brim = Self.part(SCNBox(width: 0.82, height: 0.075, length: 1.15, chamferRadius: 0.12), ivory)
         brim.position = SCNVector3(0.56, 0.32, 0)
@@ -149,7 +152,7 @@ final class AvatarRig {
             head.geometry = nil
             head.simdScale = simd_float3(repeating:0.62)
             collar.simdScale = simd_float3(repeating:0.65)
-            for child in head.childNodes where !["golfCap", "capBrim", "capBadge"].contains(child.name ?? "") { child.isHidden = true }
+            for child in head.childNodes where !["golfCap", "capBrim", "capBadge", "golferHair"].contains(child.name ?? "") { child.isHidden = true }
             hands.forEach { $0.isHidden = true }
         }
         apply(AvatarAnimations.address)

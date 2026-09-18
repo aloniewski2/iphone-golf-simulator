@@ -63,7 +63,11 @@ final class CourseRound: ObservableObject {
 
     @Published private(set) var phase: Phase = .ready
     @Published var club: GolfClub = .driver {
-        didSet { if oldValue != club { shotType = club == .putter ? .putt : .full } }
+        didSet {
+            if oldValue != club {
+                shotType = club == .putter ? .putt : (club == .wedge && lie == .bunker ? .bunker : .full)
+            }
+        }
     }
     @Published var aim = 0.0
     @Published var shotType: ShotType = .full
@@ -293,10 +297,10 @@ final class CourseRound: ObservableObject {
 
     private func shotRequest(_ impact: SwingImpact) -> ShotRequest {
         ShotRequest(club: club, targetHeading: heading + combinedAim,
-            type: club == .putter ? .putt : shotType, execution: impact,
+            type: club == .putter ? .putt : shotType.supports(club:club,lie:lie) ? shotType : .full, execution: impact,
             shape: club == .putter || shotType != .full ? .straight : shotShape,
             trajectory: club == .putter || shotType == .chip ? .normal : trajectory,
-            handedness: handedness, wind: wind, simulationVersion: hole.fairwayBoundary == nil ? 2 : 3)
+            handedness: handedness, wind: wind, simulationVersion: hole.simulationVersion)
     }
 
     @discardableResult
@@ -379,7 +383,7 @@ final class CourseRound: ObservableObject {
         trajectory = .normal
         target = nil
         club = suggestedClub()
-        shotType = club == .putter ? .putt : .full
+        shotType = club == .putter ? .putt : club == .wedge && lie == .bunker ? .bunker : .full
         phase = .ready
     }
 

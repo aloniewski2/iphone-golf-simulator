@@ -273,8 +273,8 @@ struct ShotResultPanel: View {
 
     private var subtitle: String {
         var parts = ["STROKE \(round.strokes)"]
-        if shot.penaltyStrokes > 0 { parts.append("+\(shot.penaltyStrokes) PENALTY · DROP") }
-        if showsStrike { parts.append("\(shot.strike.displayName.uppercased()) CONTACT") }
+        if let reason=shot.explanation { parts.append(reason) }
+        else if showsStrike { parts.append("\(shot.strike.displayName.uppercased()) CONTACT") }
         return parts.joined(separator: " · ")
     }
 }

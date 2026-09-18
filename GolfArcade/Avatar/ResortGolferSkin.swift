@@ -37,7 +37,7 @@ final class ResortGolferSkin {
     private let asset: Asset
     private let conversion: simd_float4x4
 
-    init?(shirt: UIColor, skin: UIColor) {
+    init?(shirt: UIColor, skin: UIColor, trousers: UIColor = UIColor(red:0.10,green:0.16,blue:0.23,alpha:1), hair: UIColor = UIColor(red:0.12,green:0.075,blue:0.04,alpha:1)) {
         guard let asset = Self.asset else { return nil }
         self.asset = asset
         var conversion = simd_float4x4(simd_quatf(angle: .pi / 2, axis: simd_float3(0, 1, 0)))
@@ -64,7 +64,7 @@ final class ResortGolferSkin {
                 return simd_float4(Float(r),Float(g),Float(b),Float(a))
             }
             let shirtColor = rgba(shirt), skinColor = rgba(skin)
-            let navy = simd_float4(0.10,0.16,0.23,1), ivory = simd_float4(0.94,0.94,0.87,1)
+            let navy = rgba(trousers), ivory = simd_float4(0.94,0.94,0.87,1)
             for i in 0..<(mesh.positions.count / 3) {
                 let raw = simd_float4(mesh.positions[i*3],mesh.positions[i*3+1],mesh.positions[i*3+2],1)
                 let p = conversion * raw
@@ -76,7 +76,7 @@ final class ResortGolferSkin {
                 let color: simd_float4
                 let dominant = (0..<4).max { mesh.weights[i*4+$0] < mesh.weights[i*4+$1] } ?? 0
                 let boneName = asset.bones[Int(mesh.joints[i*4+dominant])].name
-                if mesh.material == 0 { color = simd_float4(0.12,0.075,0.04,1) }
+                if mesh.material == 0 { color = rgba(hair) }
                 else if mesh.material == 1 { color = simd_float4(repeating: 1) }
                 else if boneName.hasPrefix("foot") || boneName.hasPrefix("ball") { color = ivory }
                 else if boneName.hasPrefix("thigh") || boneName.hasPrefix("calf") || boneName == "pelvis" { color = navy }

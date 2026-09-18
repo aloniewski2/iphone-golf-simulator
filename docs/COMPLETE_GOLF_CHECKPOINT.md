@@ -2,6 +2,8 @@
 
 2026-09-17. **Work in progress; not completion of the supplied release plan.**
 
+September 18 follow-up: see `PRESETS_AND_MECHANICS.md` for saved cosmetic presets and simulation-version-4 mechanics. The remaining-work list below records this earlier checkpoint, not the latest implementation status.
+
 ## Implemented in this checkpoint
 
 - Seven-club bag with solver-calibrated full-shot references. Legacy `iron` and `wedge` identifiers remain 7-iron and sand wedge.

@@ -23,11 +23,13 @@ struct SceneInputs {
     /// Body aiming rotates the golfer/trajectory, not the viewpoint. Manual aiming still pans.
     var cameraAim: Double? = nil
     var reduceMotion = false
+    var appearance: GolferAppearance? = nil
     var cameraHeading: Double { heading + (cameraAim ?? aim) }
 
     struct Bystander: Equatable {
         let id: UUID
         let colorIndex: Int
+        var appearance: GolferAppearance? = nil
     }
 
     var onGreen: Bool { lie == .green || club == .putter }
@@ -76,7 +78,8 @@ final class CourseScene: NSObject, ObservableObject {
     private var lastPreview: RangeShot?
     private let impact = SCNNode()
     private var pinFlag: SCNNode?
-    private let golfer = AvatarRig(shirt: UIColor(red: 0.12, green: 0.48, blue: 0.49, alpha: 1))
+    private var golfer = AvatarRig(shirt: UIColor(red: 0.12, green: 0.48, blue: 0.49, alpha: 1))
+    private var golferAppearance: GolferAppearance?
     private(set) var hole: Hole?
     /// Dots on the putting surface that drift downhill, faster where it is steeper: the read.
     private let greenGrid = SCNNode()
@@ -378,6 +381,19 @@ final class CourseScene: NSObject, ObservableObject {
         buildGreenGrid(hole)
 
         plantTrees(along: hole)
+        for tree in hole.trees {
+            let base=Double(ground(tree.center))
+            let trunk=add(SCNCylinder(radius:tree.trunkRadius,height:tree.trunkHeight),
+                UIColor(red:0.35,green:0.24,blue:0.15,alpha:1),at:world(tree.center,y:Float(base+tree.trunkHeight/2)))
+            trunk.name="collidableTrunk-\(tree.id)"
+            for tier in 0..<3 {
+                let crown=SCNSphere(radius:tree.crownRadius*(1-Double(tier)*0.15)); crown.segmentCount=16
+                let node=add(crown,UIColor(red:0.22+Double(tier)*0.025,green:0.41+Double(tier)*0.04,blue:0.19,alpha:1),
+                    at:world(tree.center,y:Float(base+tree.trunkHeight+Double(tier)*1.5)))
+                node.scale.y=0.7
+                node.name="decorativeCrown-\(tree.id)-\(tier)"
+            }
+        }
         for i in 0..<6 {
             let hill = SCNSphere(radius: 60)
             hill.segmentCount = 32
@@ -405,6 +421,12 @@ final class CourseScene: NSObject, ObservableObject {
         let dt = Float(min(lastTick.map { now - $0 } ?? 1.0 / 60, 0.1))
         lastTick = now
         load(inputs.hole)
+        if golferAppearance != inputs.appearance {
+            golfer.node.removeFromParentNode()
+            golfer=AvatarRig(shirt:inputs.appearance?.shirtColor ?? Self.playerColor(0),appearance:inputs.appearance)
+            stance.addChildNode(golfer.node)
+            golferAppearance=inputs.appearance
+        }
         pinFlag?.eulerAngles.y = Float(sin(now * 1.8) * 0.035)
 
         let shot = inputs.shot
@@ -644,8 +666,9 @@ final class CourseScene: NSObject, ObservableObject {
                 rig.node.removeFromParentNode()
                 bystanderRigs[id] = nil
             }
-            for bystander in inputs.bystanders where bystanderRigs[bystander.id] == nil {
-                let rig = AvatarRig(shirt: Self.playerColor(bystander.colorIndex))
+            for bystander in inputs.bystanders where bystanderRigs[bystander.id] == nil || !bystanderOrder.contains(bystander) {
+                bystanderRigs[bystander.id]?.node.removeFromParentNode()
+                let rig = AvatarRig(shirt: Self.playerColor(bystander.colorIndex),appearance:bystander.appearance)
                 stance.addChildNode(rig.node)
                 bystanderRigs[bystander.id] = rig
             }
