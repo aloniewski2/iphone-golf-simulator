@@ -248,9 +248,23 @@ struct GestureFlash: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.15)) { timeline in
             let recent = camera.lastGesture.flatMap { timeline.date.timeIntervalSince($0.at) < 0.7 ? $0.gesture : nil }
+            let picked = camera.lastClubSign.flatMap { timeline.date.timeIntervalSince($0.at) < 1.0 ? $0.club : nil }
             // An arm held out to aim shows its arrow the whole time it is out.
             let signalling = camera.aimSignal.map { $0 == .left ? "arrow.left" : "arrow.right" }
-            if let symbol = recent?.symbol ?? signalling ?? (camera.gestureArmed ? "hand.raised.fill" : nil) {
+            if let picked {
+                Text(picked.shortName)
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .frame(height: 26).padding(.horizontal, 8)
+                    .background(Color.mint, in: Capsule())
+                    .foregroundStyle(Palette.ink)
+            } else if let fingers = camera.clubSignShowing, let club = ClubSignRecognizer.clubs[fingers] {
+                // Fingers up: what they would pick, until the hold is long enough.
+                Text("\(fingers) · \(club.shortName)")
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .frame(height: 26).padding(.horizontal, 8)
+                    .background(.black.opacity(0.6), in: Capsule())
+                    .foregroundStyle(.mint)
+            } else if let symbol = recent?.symbol ?? signalling ?? (camera.gestureArmed ? "hand.raised.fill" : nil) {
                 Image(systemName: symbol)
                     .font(.system(size: 13, weight: .bold))
                     .frame(width: 26, height: 26)

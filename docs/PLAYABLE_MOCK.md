@@ -26,7 +26,7 @@ Each course has three holes that you play out, counting strokes against par:
 | Pine Bend | Medium | 4 · 3 · 4 | Doglegs, narrower, 2–3 bunkers per hole |
 | Cliffwater | Hard | 4 · 5 · 3 | Narrow, water carries, greenside bunkers |
 
-- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 1° with the putter. In Camera mode you can also aim from the ball: hold one arm straight out to the side at shoulder height, like signalling a turn, and the line steps that way — once after a moment, then every half second while the arm stays out (the side you see in the mirror is the side the line moves). The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
+- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 1° with the putter. In Camera mode you can also aim from the ball: hold one arm out to the side, like signalling a turn, and the line sweeps that way smoothly for as long as the arm is out (6° a second, 3° on the green; the side you see in the mirror is the side the line moves), settling on the nearest half degree when you drop it. Every shot starts aimed at the pin. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
 - The next shot is played from where the ball stops. The suggested club is selected for you (putter on the green, wedge in a bunker).
 - **Rough** takes 15% off the next shot and a **bunker** 40%.
 - **Water**: +1 stroke, dropped short of the hazard on the line of play. **Out of bounds** (past the tree line): +1 stroke, replayed from the same spot.
@@ -108,11 +108,12 @@ Move through menus without touching the phone:
 | --- | --- | --- | --- | --- |
 | Menus | Move focus | Move focus / flip handedness | Move focus / flip handedness | Select |
 | Before a shot | Change club | Aim left | Aim right | — |
+| Before a shot, fingers up | 1 = driver · 2 = iron · 3 = wedge · 4 = putter (hold half a second, hand raised) | | | |
 | Ball in flight or replay | — | — | Skip | Skip |
 | Shot result / hole done | — | Replay | Next | Next |
 | Round complete | — | Menu | Play again | Play again |
 
-Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball, club changes and selection wait for the shot, but a **swipe** left or right still moves the line, and the **arm signal** does the same without a fist: one arm out to the side, the other hand down, steps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
+Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball, club changes and selection wait for the shot, but a **swipe** left or right still moves the line, and the **arm signal** does the same without a fist: one arm out to the side, the other hand down, sweeps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). **Fingers up** pick the club (`ClubSignRecognizer`): raise a hand to chest height or higher, apart from the other, and hold up one finger for the driver, two for the iron, three for the wedge, four for the putter; the PIP shows the count and the club it would pick, then flashes the club once it is chosen. One pick per raise — change the count or lower the hand to pick again. The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
 
 ## Other inputs
 
