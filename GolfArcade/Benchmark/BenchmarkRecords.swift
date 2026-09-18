@@ -86,6 +86,8 @@ struct BenchmarkPose: Codable, Equatable {
     let aspect: Double
     let joints: [Joint]?
     let depth: BodyDepthEstimate?
+    /// Stance line on the frames the 3D pose ran; absent in recordings made before it existed.
+    var orientation: BodyOrientation?
 
     init(frame: PoseFrame?, time: Double, aspect: Double) {
         self.time = time
@@ -93,6 +95,10 @@ struct BenchmarkPose: Codable, Equatable {
         depth = frame.flatMap { frame in
             frame.depth.map { BodyDepthEstimate(timestamp: time - (frame.timestamp - $0.timestamp),
                 normalizedDepth: $0.normalizedDepth) }
+        }
+        orientation = frame.flatMap { frame in
+            frame.orientation.map { BodyOrientation(timestamp: time - (frame.timestamp - $0.timestamp),
+                shoulderYaw: $0.shoulderYaw, hipYaw: $0.hipYaw) }
         }
         joints = frame.map { frame in
             BodyJoint.allCases.compactMap { joint in
@@ -110,7 +116,9 @@ struct BenchmarkPose: Codable, Equatable {
                 points[key] = PosePoint(location: CGPoint(x: joint.x, y: joint.y), confidence: joint.confidence)
             }
         }
-        return PoseFrame(timestamp: time, points: points, depth: depth)
+        var frame = PoseFrame(timestamp: time, points: points, depth: depth)
+        frame.orientation = orientation
+        return frame
     }
 }
 

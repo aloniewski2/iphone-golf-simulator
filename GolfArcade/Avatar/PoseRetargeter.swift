@@ -21,6 +21,7 @@ struct PoseRetargeter {
     private var lastSeen: [BodyJoint: Double] = [:]
     private var lastTime: Double?
     private var cameraProjection: CameraPoseProjection?
+    private(set) var torsoTurn = TorsoTurnEstimator()
 
     init(calibration: PlayerCalibration, handedness: Handedness, frameAspect: CGFloat) {
         self.calibration = calibration
@@ -37,8 +38,10 @@ struct PoseRetargeter {
         if positionLocked, let club,
            cameraProjection == nil || cameraProjection?.space != club.space || cameraProjection?.address != club.address {
             cameraProjection = CameraPoseProjection(club: club, handedness: handedness)
+            if let frame { torsoTurn.lock(on: frame, aspect: frameAspect) }
         }
         guard let projection = cameraProjection else {
+            torsoTurn.reset()
             var next = update(frame, swingAngle: swingAngle, at: time)
             next.clubVisible = club != nil
             pose = next
@@ -60,6 +63,11 @@ struct PoseRetargeter {
                 }
                 lastSeen[joint] = time
             }
+            // The turn is the one thing the image plane cannot show: the shoulders and hips
+            // rotate about the spine, so their ends move toward and away from the phone.
+            let dt = max(1.0 / 120, min(0.1, lastTime.map { time - $0 } ?? 1.0 / 30))
+            torsoTurn.update(frame, aspect: frameAspect, swingAngle: swingAngle, handedness: handedness, dt: dt)
+            Self.applyTurn(torsoTurn, handedness: handedness, to: &next)
         }
         if let club {
             // A hidden wrist in a certified two-handed grip follows the measured grip,
@@ -198,6 +206,118 @@ struct PoseRetargeter {
     }
 }
 
+extension PoseRetargeter {
+    /// Places the ends of the shoulder and hip lines nearer or farther from the ball by the
+    /// estimated turn. Image-plane positions stay exactly as measured.
+    static func applyTurn(_ turn: TorsoTurnEstimator, handedness: Handedness, to pose: inout BodyPose3D) {
+        let address = AvatarAnimations.address
+        // The camera projection mirrors a left-hander, so their right side sits on -z.
+        let rightIsPositive: Float = handedness == .right ? 1 : -1
+        for (left, right, yaw, halfWidth) in [
+            (BodyJoint.leftShoulder, BodyJoint.rightShoulder, turn.shoulderYaw, AvatarSize.shoulderHalfWidth),
+            (.leftHip, .rightHip, turn.hipYaw, AvatarSize.hipHalfWidth)
+        ] {
+            let centerX = (address[left].x + address[right].x) / 2
+            let reach = halfWidth * sin(yaw * .pi / 180)
+            pose.joints[right]?.x = centerX + reach * rightIsPositive
+            pose.joints[left]?.x = centerX - reach * rightIsPositive
+        }
+    }
+}
+
+/// How far the shoulders and hips have turned about the spine, read from how much their lines
+/// foreshorten in the image against the widths locked at address. Magnitude comes from the
+/// image; the sign comes from the 3D body pose while it is fresh (setting up) and otherwise
+/// from the swing direction: back is one way, through is the other. Once a line's ends cross
+/// in the image the turn has passed 90°, as it does at a full finish.
+///
+/// Yaw is in the avatar's frame, in degrees: positive turns the `+z` end toward the ball.
+struct TorsoTurnEstimator {
+    private(set) var shoulderYaw: Float = 0
+    private(set) var hipYaw: Float = 0
+    private var squareShoulderWidth: CGFloat?
+    private var squareHipWidth: CGFloat?
+    private var shoulderSense: CGFloat = 1
+    private var hipSense: CGFloat = 1
+    private var lastSign: Float = 0
+    private var shoulderFilter = OneEuroFilter(minCutoff: 1.6, beta: 0.2)
+    private var hipFilter = OneEuroFilter(minCutoff: 1.4, beta: 0.15)
+
+    var isLocked: Bool { squareShoulderWidth != nil }
+
+    /// The widths seen at the moment the ball locks are the reference: turned by the stance
+    /// line if the 3D pose measured one, square otherwise.
+    mutating func lock(on frame: PoseFrame, aspect: CGFloat) {
+        reset()
+        let stance = frame.orientation.flatMap { $0.isFresh(at: frame.timestamp) ? $0 : nil }
+        if let width = Self.width(frame, .leftShoulder, .rightShoulder, aspect: aspect) {
+            squareShoulderWidth = width / CGFloat(max(0.3, cos((stance?.shoulderYaw ?? 0) * .pi / 180)))
+            shoulderSense = Self.sense(frame, .leftShoulder, .rightShoulder)
+        }
+        if let width = Self.width(frame, .leftHip, .rightHip, aspect: aspect) {
+            squareHipWidth = width / CGFloat(max(0.3, cos((stance?.hipYaw ?? 0) * .pi / 180)))
+            hipSense = Self.sense(frame, .leftHip, .rightHip)
+        }
+    }
+
+    mutating func reset() {
+        shoulderYaw = 0
+        hipYaw = 0
+        squareShoulderWidth = nil
+        squareHipWidth = nil
+        lastSign = 0
+        shoulderFilter = OneEuroFilter(minCutoff: 1.6, beta: 0.2)
+        hipFilter = OneEuroFilter(minCutoff: 1.4, beta: 0.15)
+    }
+
+    mutating func update(_ frame: PoseFrame, aspect: CGFloat, swingAngle: Double, handedness: Handedness, dt: Double) {
+        guard let squareShoulderWidth else { return }
+        let side: Float = handedness == .right ? 1 : -1
+        // Backswing turns the lead shoulder toward the ball, which is a negative yaw in the
+        // avatar's (already mirrored) frame for either handedness.
+        if swingAngle > 10 { lastSign = -1 } else if swingAngle < -10 { lastSign = 1 }
+        let fresh = frame.orientation.flatMap { $0.isFresh(at: frame.timestamp) ? $0 : nil }
+        func yaw(_ measured: CGFloat?, square: CGFloat, sense: CGFloat, threeD: Double?) -> Float? {
+            if let threeD, abs(swingAngle) < 10 { return Float(threeD) * side }
+            guard let measured, square > 0.001 else { return nil }
+            let ratio = min(1, measured / square)
+            // acos is steep near square, so a couple of percent of tracker jitter reads as ten
+            // degrees; take the noise floor off rather than let a square stance flutter.
+            var degrees = max(0, Float(acos(Double(ratio)) * 180 / .pi) - 3)
+            if sense < 0 { degrees = 180 - degrees } // the ends have crossed: past a right angle
+            let sign = lastSign != 0 ? lastSign : (fresh.map { Float($0.shoulderYaw) * side >= 0 ? 1 : -1 } ?? 1)
+            return degrees * sign
+        }
+        let shoulderWidth = Self.width(frame, .leftShoulder, .rightShoulder, aspect: aspect)
+        let shoulderCross = Self.sense(frame, .leftShoulder, .rightShoulder) * shoulderSense
+        if let raw = yaw(shoulderWidth, square: squareShoulderWidth, sense: shoulderCross, threeD: fresh?.shoulderYaw) {
+            shoulderYaw = shoulderFilter.filter(simd_float3(raw, 0, 0), dt: dt).x
+        }
+        let hipWidth = Self.width(frame, .leftHip, .rightHip, aspect: aspect)
+        let hipCross = Self.sense(frame, .leftHip, .rightHip) * hipSense
+        // Without a hip reference the hips follow the shoulders at the usual half turn.
+        guard let squareHipWidth, var raw = yaw(hipWidth, square: squareHipWidth, sense: hipCross, threeD: fresh?.hipYaw) else {
+            hipYaw = shoulderYaw * 0.5
+            return
+        }
+        // Hips never out-turn the shoulders going back, and lead them by a bounded amount through.
+        let limit = abs(shoulderYaw) + 25
+        raw = max(-limit, min(limit, raw))
+        hipYaw = hipFilter.filter(simd_float3(raw, 0, 0), dt: dt).x
+    }
+
+    private static func width(_ frame: PoseFrame, _ left: BodyJoint, _ right: BodyJoint, aspect: CGFloat) -> CGFloat? {
+        guard let a = frame.point(left, minimumConfidence: 0.45), let b = frame.point(right, minimumConfidence: 0.45) else { return nil }
+        return hypot((b.x - a.x) * aspect, b.y - a.y)
+    }
+
+    /// +1 when the right end is to the image right of the left end, -1 when they have crossed.
+    private static func sense(_ frame: PoseFrame, _ left: BodyJoint, _ right: BodyJoint) -> CGFloat {
+        guard let a = frame.point(left, minimumConfidence: 0.45), let b = frame.point(right, minimumConfidence: 0.45) else { return 1 }
+        return b.x >= a.x ? 1 : -1
+    }
+}
+
 /// Presentation-only anatomical reconstruction. Raw camera observations and club/contact
 /// coordinates remain untouched. Partial faces must not flip the golfer upside down.
 struct CameraAvatarPoseFilter {
@@ -220,7 +340,7 @@ struct CameraAvatarPoseFilter {
             guard frame.point(joint, minimumConfidence: 0.45) != nil else { continue }
             let value = observed[joint]
             guard value.x.isFinite, value.y.isFinite, value.z.isFinite else { continue }
-            var filter = filters[joint] ?? OneEuroFilter(minCutoff: 1.8, beta: 0.15)
+            var filter = filters[joint] ?? OneEuroFilter(minCutoff: 1.1, beta: 0.4)
             target.joints[joint] = filter.filter(value, dt: dt)
             filters[joint] = filter
         }
@@ -246,11 +366,13 @@ struct CameraAvatarPoseFilter {
         let headUp = direction(simd_float3(0.18, max(0.55, headDelta.y), min(0.25, max(-0.25, headDelta.z))),
                                fallback: simd_float3(0.2, 1, 0))
         next.joints[.nose] = next[.neck] + headUp * AvatarSize.neckToHead
+        let rawHips = target[.rightHip] - target[.leftHip]
+        let hipSide = direction(simd_float3(rawHips.x, 0, rawHips.z), fallback: simd_float3(side.x, 0, side.z))
         for (hip, knee, ankle, shoulder, elbow, wrist, sign) in [
             (BodyJoint.leftHip, BodyJoint.leftKnee, BodyJoint.leftAnkle, BodyJoint.leftShoulder, BodyJoint.leftElbow, BodyJoint.leftWrist, Float(-1)),
             (.rightHip, .rightKnee, .rightAnkle, .rightShoulder, .rightElbow, .rightWrist, Float(1))
         ] {
-            next.joints[hip] = root + side * AvatarSize.hipHalfWidth * sign
+            next.joints[hip] = root + hipSide * AvatarSize.hipHalfWidth * sign
             let foot = simd_float3(target[ankle].x, 0.12, target[ankle].z)
             let leg = AvatarAnimations.twoBone(from: next[hip], to: foot, upper: AvatarSize.thigh, lower: AvatarSize.shin,
                 bend: target[knee] - (target[hip] + target[ankle]) / 2 + simd_float3(0.1, 0, 0))

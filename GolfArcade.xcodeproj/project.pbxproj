@@ -76,6 +76,10 @@
 		EF28CFCA3C7E409D38F280D7 /* CameraPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AB48961CA238A40850368F7 /* CameraPlayTests.swift */; };
 		38232A74C4BAC4078A8EB4D4 /* CoursePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936D04F569E004CAF1C24854 /* CoursePlayTests.swift */; };
 		AF50D72E382D8EB3EBFFB6A9 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAD5C927AE253292296E27E /* UITestSupport.swift */; };
+		A882510EB1B769E38313D1D9 /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */; };
+		935651F8DCFF42315E0907AC /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */; };
+		3565BEAC0082404C82B3666F /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */; };
+		1CB74E9FCAB635FC4E282241 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB44D6702A79F20C853BC9 /* TerrainTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -168,6 +172,10 @@
 		8AB48961CA238A40850368F7 /* CameraPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlayTests.swift; sourceTree = "<group>"; };
 		936D04F569E004CAF1C24854 /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
 		ADAD5C927AE253292296E27E /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
+		4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
+		75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
+		01FB44D6702A79F20C853BC9 /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -356,7 +364,10 @@
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
+				75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
+				4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */,
+				01FB44D6702A79F20C853BC9 /* TerrainTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -388,6 +399,7 @@
 				C369CFADB269389A28A582CD /* BenchmarkRecords.swift */,
 				A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */,
 				9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */,
+				183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */,
 			);
 			path = Benchmark;
 			sourceTree = "<group>";
@@ -580,6 +592,7 @@
 				5B4C2F30022597E76E91247D /* SwingReaction.swift in Sources */,
 				52E4CA6A4CA91872BA574B5D /* SwingRecorder.swift in Sources */,
 				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
+				A882510EB1B769E38313D1D9 /* SyntheticGolfer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,7 +618,10 @@
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
+				3565BEAC0082404C82B3666F /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
+				935651F8DCFF42315E0907AC /* SyntheticGolferTests.swift in Sources */,
+				1CB74E9FCAB635FC4E282241 /* TerrainTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,6 +24,38 @@ struct HoleNavigation: Equatable {
     }
 }
 
+/// What a putt has to deal with between the ball and the target: how much it climbs or falls,
+/// and which way the ground tips it. Read from the same terrain the ball rolls on.
+struct GreenRead: Equatable {
+    /// Rise from ball to target as a fraction of the distance (0.02 = 2% uphill); negative is downhill.
+    let rise: Double
+    /// Average cross-slope along the line: positive tips the ball right of the line.
+    let crossSlope: Double
+
+    init(terrain: Terrain, from ball: CoursePoint, to target: CoursePoint) {
+        let distance = ball.distance(to: target)
+        guard distance > 0.05 else { rise = 0; crossSlope = 0; return }
+        rise = (terrain.elevation(at: target) - terrain.elevation(at: ball)) / distance
+        let ux = (target.x - ball.x) / distance, ud = (target.d - ball.d) / distance
+        var across = 0.0
+        let samples = 8
+        for i in 0..<samples {
+            let t = (Double(i) + 0.5) / Double(samples)
+            let g = terrain.gradient(at: CoursePoint(x: ball.x + ux * distance * t, d: ball.d + ud * distance * t))
+            // Right of the line is (ud, -ux); a slope that falls to the right tips the ball right.
+            across += -(g.dx * ud - g.dd * ux)
+        }
+        crossSlope = across / Double(samples)
+    }
+
+    var label: String {
+        var parts: [String] = []
+        if abs(rise) >= 0.004 { parts.append(String(format: "%@ %.1f%%", rise > 0 ? "UPHILL" : "DOWNHILL", abs(rise) * 100)) }
+        if abs(crossSlope) >= 0.004 { parts.append(String(format: "BREAKS %@ %.1f%%", crossSlope > 0 ? "RIGHT" : "LEFT", abs(crossSlope) * 100)) }
+        return parts.isEmpty ? "FLAT" : parts.joined(separator: " · ")
+    }
+}
+
 /// A round of stroke play: each player plays a hole out in turn, then everyone moves to the next.
 @MainActor
 final class CourseRound: ObservableObject {
@@ -92,6 +124,11 @@ final class CourseRound: ObservableObject {
     var holeNavigation: HoleNavigation {
         HoleNavigation(ball: ball, pin: hole.pin, aimHeading: heading + combinedAim)
     }
+    /// The putt in front of the player, when there is one to read.
+    var greenRead: GreenRead? {
+        guard club == .putter || lie == .green else { return nil }
+        return GreenRead(terrain: hole.terrain, from: ball, to: intendedTarget)
+    }
 
     /// An explicit aim choice wins over the held-grip offset without resetting tracking.
     func aimAtPin() {
@@ -100,7 +137,7 @@ final class CourseRound: ObservableObject {
 
     func setStanceAim(_ degrees: Double) {
         guard phase == .ready, !editingShot, !manualAimSelected, degrees.isFinite else { return }
-        let value = (max(-12, min(12, degrees)) * 2).rounded() / 2
+        let value = (max(-StanceAimSettler.range, min(StanceAimSettler.range, degrees)) * 2).rounded() / 2
         if stanceAim != value { stanceAim = value }
     }
 
@@ -344,6 +381,18 @@ final class CourseRound: ObservableObject {
         }
         return .driver
     }
+
+    #if DEBUG
+    /// Development only: start the current turn with the ball on the green, `yards` short of the pin.
+    func dropOnGreenForTesting(yards: Double = 8) {
+        guard phase == .ready else { return }
+        ball = CoursePoint(x: hole.pin.x, d: hole.pin.d - yards)
+        lie = .green
+        target = nil
+        club = suggestedClub()
+        shotType = .putt
+    }
+    #endif
 
     // MARK: - Private
 

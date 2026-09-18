@@ -26,7 +26,13 @@ struct ContentView: View {
                 (arguments.contains("-startInCameraMode") ? SwingInput.camera : .touch).rawValue,
                 forKey: "range.swingInput"
             )
-            _flow = StateObject(wrappedValue: GameFlow(fixturePlayers: players))
+            let flow = GameFlow(fixturePlayers: players)
+            // `-startCourse easy|medium|hard` skips the menus and tees off straight away.
+            if let index = arguments.firstIndex(of: "-startCourse"), arguments.indices.contains(index + 1),
+               let course = Course.all.first(where: { $0.difficulty.rawValue == arguments[index + 1] }) {
+                flow.play(course)
+            }
+            _flow = StateObject(wrappedValue: flow)
             return
         }
         #endif

@@ -49,6 +49,10 @@ final class CourseScene: NSObject, ObservableObject {
     var inputs: SceneInputs?
     /// Called when the club knocks a bystander over.
     var onBystanderHit: (() -> Void)?
+    /// Called once when the ball comes down, and once more if it drops in the cup.
+    var onLanding: ((RangeAudio.Landing) -> Void)?
+    private var landingAnnounced = false
+    private var cupAnnounced = false
 
     private let courseNode = SCNNode()
     /// Sits on the ball and faces the intended landing line; rig-space children scale to yards.
@@ -70,6 +74,15 @@ final class CourseScene: NSObject, ObservableObject {
     private var pinFlag: SCNNode?
     private let golfer = AvatarRig(shirt: UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1))
     private(set) var hole: Hole?
+    /// Dots on the putting surface that drift downhill, faster where it is steeper: the read.
+    private let greenGrid = SCNNode()
+    private var greenDots: [(node: SCNNode, base: CoursePoint, flow: simd_float3, speed: Float)] = []
+    private static let greenGridSpacing = 2.0
+
+    /// Height of the ground at `point`, in yards.
+    private func ground(_ point: CoursePoint) -> Float {
+        Float(hole?.terrain.elevation(at: point) ?? 0)
+    }
 
     private var displayLink: CADisplayLink?
     private var lastTick: CFTimeInterval?
@@ -84,9 +97,21 @@ final class CourseScene: NSObject, ObservableObject {
     private var cameraPoseFilter = CameraAvatarPoseFilter()
     private var livePose: BodyPose3D?
     private var livePoseTime: CFTimeInterval = 0
+    /// The pose before `livePose`, so frames can be drawn between camera deliveries.
+    private var previousLivePose: BodyPose3D?
+    private var previousLivePoseTime: CFTimeInterval = 0
     private var recorder = SwingRecorder()
     private var cannedAngle = 0.0
+    private var cannedAngleTime: CFTimeInterval?
     private var cannedLaunchAngle = 0.0
+
+    /// Where the golfer's pose comes from this frame. Switching sources crossfades so the
+    /// avatar never snaps from one body to another.
+    enum PoseSource: Equatable { case live, waiting, canned, recorded }
+    private(set) var poseSource: PoseSource = .canned
+    private var presentedPose: BodyPose3D?
+    private var crossfade: (from: BodyPose3D, start: CFTimeInterval)?
+    private static let crossfadeLength = 0.28
 
     // Other players standing around.
     private var bystanderRigs: [UUID: AvatarRig] = [:]
@@ -206,7 +231,12 @@ final class CourseScene: NSObject, ObservableObject {
     func start() {
         guard displayLink == nil else { return }
         let link = CADisplayLink(target: self, selector: #selector(step(_:)))
+        // ProMotion on a phone; the simulator's single main thread is better spent elsewhere.
+        #if targetEnvironment(simulator)
         link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+        #else
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        #endif
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -225,6 +255,7 @@ final class CourseScene: NSObject, ObservableObject {
         cameraPoseFilter = CameraAvatarPoseFilter()
         livePose = calibration == nil ? nil : .cameraWaiting
         livePoseTime = CACurrentMediaTime()
+        previousLivePose = nil
         recorder.reset()
         contact.reset()
     }
@@ -238,9 +269,38 @@ final class CourseScene: NSObject, ObservableObject {
                                           swingAngle: swingAngle, at: now)
         let pose = cameraPoseFilter.update(measuredPose, frame: frame, at: now)
         self.retargeter = retargeter
+        previousLivePose = livePose
+        previousLivePoseTime = livePoseTime
         livePose = pose
         livePoseTime = now
         recorder.record(pose, at: now)
+    }
+
+    /// The live pose drawn one camera interval behind, so the avatar glides between the 30 Hz
+    /// deliveries instead of stepping at them. A stalled camera simply holds the last pose.
+    private func interpolatedLivePose(at now: CFTimeInterval) -> BodyPose3D? {
+        guard let livePose else { return nil }
+        guard let previous = previousLivePose, livePoseTime > previousLivePoseTime, now >= livePoseTime else { return livePose }
+        let interval = livePoseTime - previousLivePoseTime
+        guard interval > 1.0 / 120, interval < 0.2 else { return livePose }
+        let delay = min(max(interval, 1.0 / 60), 0.05)
+        let t = (now - delay - previousLivePoseTime) / interval
+        return BodyPose3D.lerp(previous, livePose, Float(min(max(t, 0), 1)))
+    }
+
+    /// Crossfades between pose sources; within a source the pose is passed straight through.
+    private func present(_ pose: BodyPose3D, from source: PoseSource, now: CFTimeInterval) -> BodyPose3D {
+        if source != poseSource, let presentedPose {
+            crossfade = (presentedPose, now)
+            poseSource = source
+        }
+        var result = pose
+        if let crossfade {
+            let u = smoothstep(0, Float(Self.crossfadeLength), Float(now - crossfade.start))
+            if u >= 1 { self.crossfade = nil } else { result = BodyPose3D.lerp(crossfade.from, pose, u) }
+        }
+        presentedPose = result
+        return result
     }
 
     /// Rebuilds the terrain for `hole`. Cheap enough to call once per hole.
@@ -265,7 +325,7 @@ final class CourseScene: NSObject, ObservableObject {
             turf(from: a, to: b, width: hole.fairwayWidth, material: CourseArt.fairwayMaterial, y: -0.05)
         }
         add(SCNBox(width: 7, height: 0.04, length: 5, chamferRadius: 0.02), UIColor(red: 0.28, green: 0.58, blue: 0.34, alpha: 1),
-            at: world(hole.tee, y: -0.065))
+            at: world(hole.tee, y: ground(hole.tee) - 0.065))
         turf(from: pin, to: pin, width: hole.greenRadius * 2 + 3, material: CourseArt.fringeMaterial, y: -0.045)
         turf(from: pin, to: pin, width: hole.greenRadius * 2, material: CourseArt.greenMaterial, y: -0.035)
 
@@ -275,29 +335,31 @@ final class CourseScene: NSObject, ObservableObject {
             case .bunker:
                 let shape = SCNSphere(radius: 1)
                 shape.segmentCount = 32
-                let node = add(shape, Self.sand, at: world(point, y: -0.035))
+                let node = add(shape, Self.sand, at: world(point, y: ground(point) - 0.035))
                 node.scale = SCNVector3(hazard.width / 2, 0.01, hazard.length / 2)
                 node.geometry?.materials = [CourseArt.sandMaterial]
-                CourseArt.hazardEdge(hazard, parent: courseNode)
+                CourseArt.hazardEdge(hazard, parent: courseNode, y: ground(point))
             case .water:
                 let shape = SCNCylinder(radius: 1, height: 0.01)
                 shape.radialSegmentCount = 48
                 shape.firstMaterial?.specular.contents = UIColor.white
                 shape.firstMaterial?.shininess = 0.6
-                let node = add(shape, Self.water, at: world(point, y: -0.03))
+                let node = add(shape, Self.water, at: world(point, y: ground(point) - 0.03))
                 node.scale = SCNVector3(hazard.width / 2, 1, hazard.length / 2)
                 node.geometry?.materials = [CourseArt.waterMaterial]
-                CourseArt.hazardEdge(hazard, parent: courseNode)
+                CourseArt.hazardEdge(hazard, parent: courseNode, y: ground(point))
             }
         }
 
-        add(SCNCylinder(radius: 0.015, height: 2.4), .white, at: world(pin, y: 1.17))
+        let pinGround = ground(pin)
+        add(SCNCylinder(radius: 0.015, height: 2.4), .white, at: world(pin, y: pinGround + 1.17))
         let flag = add(CourseArt.flag(), UIColor(red: 0.98, green: 0.43, blue: 0.17, alpha: 1),
-                       at: world(pin, y: 2.28))
+                       at: world(pin, y: pinGround + 2.28))
         flag.simdScale = simd_float3(repeating: 0.28)
         flag.name = "clothPinFlag"
         pinFlag = flag
-        disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: -0.132)
+        disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: pinGround - 0.132)
+        buildGreenGrid(hole)
 
         plantTrees(along: hole)
         for i in 0..<6 {
@@ -313,8 +375,17 @@ final class CourseScene: NSObject, ObservableObject {
     // MARK: - Frame
 
     @objc private func step(_ link: CADisplayLink) {
+        tick(now: CACurrentMediaTime())
+    }
+
+    #if DEBUG
+    /// One display-link frame, for tests that check what the scene does over a shot.
+    func stepForTesting(now: CFTimeInterval = CACurrentMediaTime()) { tick(now: now) }
+    var presentedPoseForTesting: BodyPose3D { presentedPose ?? AvatarAnimations.address }
+    #endif
+
+    private func tick(now: CFTimeInterval) {
         guard let inputs else { return }
-        let now = CACurrentMediaTime()
         let dt = Float(min(lastTick.map { now - $0 } ?? 1.0 / 60, 0.1))
         lastTick = now
         load(inputs.hole)
@@ -325,6 +396,8 @@ final class CourseScene: NSObject, ObservableObject {
         let elapsed = inputs.elapsed(at: Date())
         if shot != lastShot {
             trail.childNodes.forEach { $0.removeFromParentNode() }
+            landingAnnounced = false
+            cupAnnounced = false
             if let shot {
                 reaction = .classify(shot)
                 landingTime = ShotCameraDirector.landingTime(of: shot)
@@ -334,7 +407,8 @@ final class CourseScene: NSObject, ObservableObject {
                     let point = shot.position(at: Double(i) / 59 * shot.duration)
                     let dot = SCNNode(geometry: SCNSphere(radius: 0.065))
                     dot.geometry?.firstMaterial?.diffuse.contents = UIColor.white.withAlphaComponent(0.65)
-                    dot.position = SCNVector3(point.lateralYards, point.heightYards, -point.distanceYards)
+                    let lift = ground(CoursePoint(x: point.lateralYards, d: point.distanceYards))
+                    dot.position = SCNVector3(Float(point.lateralYards), Float(point.heightYards) + lift, -Float(point.distanceYards))
                     trail.addChildNode(dot)
                 }
             } else {
@@ -353,12 +427,13 @@ final class CourseScene: NSObject, ObservableObject {
         let mirror = playerStance.mirror
         let origin = shot?.origin ?? inputs.ball
         let heading = shot?.heading ?? (inputs.heading + inputs.aim)
-        stance.simdPosition = ShotCameraDirector.world(.zero, origin: origin, heading: heading)
+        stance.simdPosition = ShotCameraDirector.world(.zero, origin: origin, heading: heading) + simd_float3(0, ground(origin), 0)
         stance.eulerAngles.y = Float(-heading * .pi / 180)
         golfer.setMirrored(mirror < 0)
         golfer.node.simdPosition = playerStance.position
 
-        let pose = golferPose(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        let (raw, source) = golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
+        let pose = present(raw, from: source, now: now)
         golfer.apply(pose)
         updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)
 
@@ -366,11 +441,13 @@ final class CourseScene: NSObject, ObservableObject {
         let point = shot?.position(at: elapsed) ?? FlightPoint(lateralYards: inputs.ball.x, heightYards: 0, distanceYards: inputs.ball.d)
         let teed = shot == nil && inputs.lie == .tee
         let visibleLie = inputs.hole.lie(at: CoursePoint(x: point.lateralYards, d: point.distanceYards))
-        let restingHeight = visibleLie == .green ? -0.035 : visibleLie == .bunker || visibleLie == .water ? -0.025 : -0.05
-        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.visibleBallRadius)), -point.distanceYards)
+        let lift = Double(ground(CoursePoint(x: point.lateralYards, d: point.distanceYards)))
+        let restingHeight = lift + (visibleLie == .green ? -0.035 : visibleLie == .bunker || visibleLie == .water ? -0.025 : -0.05)
+        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? lift + Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.visibleBallRadius)), -point.distanceYards)
         shadow.position = SCNVector3(point.lateralYards, restingHeight + 0.003, -point.distanceYards)
         ballLocator.position = SCNVector3(point.lateralYards, restingHeight + 0.008, -point.distanceYards)
         let sunk = shot.map { $0.isHoled && elapsed >= $0.duration } ?? false
+        if let shot, !inputs.isReplay || elapsed > 0 { announceLanding(shot, elapsed: elapsed, hole: inputs.hole, sunk: sunk) }
         ball.isHidden = sunk
         shadow.isHidden = sunk
         ballLocator.isHidden = sunk || (shot != nil && elapsed < (shot?.duration ?? 0))
@@ -382,6 +459,7 @@ final class CourseScene: NSObject, ObservableObject {
         impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
         aimLine.isHidden = shot != nil
         aimLine.eulerAngles.y = 0
+        updateGreenGrid(visible: shot == nil && inputs.onGreen, now: now)
         moveCamera(inputs, shot: shot, elapsed: elapsed, dt: dt)
         updatePinBeacon(pin: inputs.hole.pin, sunk: sunk)
         if let shot {
@@ -398,28 +476,62 @@ final class CourseScene: NSObject, ObservableObject {
 
     private var lastFlightStart: Date?
 
+    /// One landing sound as the ball first comes down (what it lands on decides which), and the
+    /// cup when it drops. Putts only roll, so they are silent until the cup.
+    private func announceLanding(_ shot: RangeShot, elapsed: Double, hole: Hole, sunk: Bool) {
+        if !landingAnnounced, let landingTime, elapsed >= landingTime {
+            landingAnnounced = true
+            let point = shot.position(at: landingTime)
+            let before = shot.position(at: max(0, landingTime - 1.0 / 30))
+            let speed = hypot(point.lateralYards - before.lateralYards, point.distanceYards - before.distanceYards) * 30
+            let spot = CoursePoint(x: point.lateralYards, d: point.distanceYards)
+            switch hole.lie(at: spot) {
+            case .water: onLanding?(.water)
+            case .bunker: onLanding?(.sand)
+            case let lie: onLanding?(.turf(lie, speed: speed))
+            }
+        }
+        if sunk, !cupAnnounced {
+            cupAnnounced = true
+            onLanding?(.cup)
+        }
+    }
+
     func golferPose(shot: RangeShot?, elapsed: Double, isReplay: Bool, swingAngle: Double, now: CFTimeInterval) -> BodyPose3D {
+        golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: isReplay, swingAngle: swingAngle, now: now).pose
+    }
+
+    func golferPoseAndSource(shot: RangeShot?, elapsed: Double, isReplay: Bool, swingAngle: Double, now: CFTimeInterval) -> (pose: BodyPose3D, source: PoseSource) {
         // Camera players remain the character throughout setup, backswing and follow-through.
         // A hit/miss reaction must never take over their body. Replays use the measured trace.
-        if retargeter != nil, !isReplay { return livePose ?? .cameraWaiting }
-        let live = now - livePoseTime < 0.5 ? livePose : (retargeter == nil ? nil : .cameraWaiting)
+        let interpolated = interpolatedLivePose(at: now)
+        if retargeter != nil, !isReplay {
+            return interpolated.map { ($0, $0 == .cameraWaiting ? .waiting : .live) } ?? (.cameraWaiting, .waiting)
+        }
+        let live = now - livePoseTime < 0.5 ? interpolated : (retargeter == nil ? nil : .cameraWaiting)
         guard shot != nil else {
-            cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * 0.35
-            return live ?? AvatarAnimations.swingArc(degrees: cannedAngle)
+            // Frame-rate independent easing toward the input's arc.
+            let dt = min(0.1, max(0, now - (cannedAngleTime ?? now)))
+            cannedAngleTime = now
+            cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * (1 - exp(-dt * 22))
+            if let live { return (live, live == .cameraWaiting ? .waiting : .live) }
+            return (AvatarAnimations.swingArc(degrees: cannedAngle), .canned)
         }
         let followThrough = 0.6
+        var source = PoseSource.canned
         func follow(_ t: Double) -> BodyPose3D {
-            if isReplay, let recorded = recorder.pose(atImpactOffset: t) { return recorded }
-            if !isReplay, let live { return live }
+            if isReplay, let recorded = recorder.pose(atImpactOffset: t) { source = .recorded; return recorded }
+            if !isReplay, let live { source = .live; return live }
             // Canned downswing (0.3 s) into a held finish.
             let u = min(t / 0.3, 1)
             let angle = t < 0.3 ? cannedLaunchAngle + (-150 - cannedLaunchAngle) * (u * u) : -150
+            source = .canned
             return AvatarAnimations.swingArc(degrees: angle)
         }
-        if elapsed < followThrough { return follow(elapsed) }
+        if elapsed < followThrough { return (follow(elapsed), source) }
         let reactionTime = elapsed - followThrough
         guard let reaction, reactionTime < AvatarAnimations.reactionLength else {
-            return live ?? AvatarAnimations.address
+            return live.map { ($0, $0 == .cameraWaiting ? .waiting : .live) } ?? (AvatarAnimations.address, .canned)
         }
         let target = AvatarAnimations.reaction(reaction, time: reactionTime)
         var pose = BodyPose3D.lerp(follow(followThrough), target, smoothstep(0, 0.25, Float(reactionTime)))
@@ -427,21 +539,24 @@ final class CourseScene: NSObject, ObservableObject {
         if fadeOut < 0.4 {
             pose = BodyPose3D.lerp(live ?? AvatarAnimations.address, pose, fadeOut / 0.4)
         }
-        return pose
+        return (pose, source)
     }
 
     private func updateTrajectory(_ preview: RangeShot?, visible: Bool) {
         trajectoryGuide.isHidden = !visible || preview == nil
         guard visible, let preview, preview != lastPreview else { return }
         lastPreview = preview
+        let putting = preview.club == .putter
         for (index, dot) in trajectoryDots.enumerated() {
             let t = Double(index + 1) / Double(trajectoryDots.count)
             let point = preview.position(at: preview.duration * t)
-            dot.position = SCNVector3(point.lateralYards, max(0.06, point.heightYards), -point.distanceYards)
-            dot.simdScale = simd_float3(repeating: Float(0.5 + t * 1.7))
+            let lift = Double(ground(CoursePoint(x: point.lateralYards, d: point.distanceYards)))
+            dot.position = SCNVector3(point.lateralYards, lift + max(0.06, point.heightYards), -point.distanceYards)
+            // A putt's line is read close up: even small dots all the way along.
+            dot.simdScale = simd_float3(repeating: putting ? 0.22 : Float(0.5 + t * 1.7))
         }
         let end = preview.position(at: preview.duration)
-        projectedLanding.position = SCNVector3(end.lateralYards, 0.06, -end.distanceYards)
+        projectedLanding.position = SCNVector3(end.lateralYards, Double(ground(CoursePoint(x: end.lateralYards, d: end.distanceYards))) + 0.06, -end.distanceYards)
         projectedLanding.simdScale = simd_float3(repeating: preview.club == .putter ? 0.18 : 1)
     }
 
@@ -488,7 +603,7 @@ final class CourseScene: NSObject, ObservableObject {
     /// Visibility assist only; the actual flag and regulation-sized cup stay unchanged.
     func updatePinBeacon(pin: CoursePoint, sunk: Bool) {
         pinBeacon.isHidden = sunk
-        pinBeacon.position = world(pin, y: 0)
+        pinBeacon.position = world(pin, y: ground(pin))
         let distance = Double(simd_distance(camera.simdPosition, pinBeacon.simdPosition))
         let scale = HoleNavigation.beaconScale(cameraDistance: distance)
         let height = max(2.8, scale * 1.15)
@@ -558,14 +673,17 @@ final class CourseScene: NSObject, ObservableObject {
         ))
         let cut = cameraStage == nil || (framing.stage != cameraStage && [.hero, .chase, .address, .green].contains(framing.stage))
         cameraStage = framing.stage
+        // The framing is worked out on flat ground; lift it by the terrain under its subject.
+        let lift = simd_float3(0, ground(CoursePoint(x: Double(framing.lookAt.x), d: Double(-framing.lookAt.z))), 0)
+        let position = framing.position + lift, lookAt = framing.lookAt + lift
         if cut {
-            camera.simdPosition = framing.position
-            cameraLook = framing.lookAt
+            camera.simdPosition = position
+            cameraLook = lookAt
             camera.camera?.fieldOfView = CGFloat(framing.fieldOfView)
         } else {
             let k = 1 - exp(-framing.damping * dt)
-            camera.simdPosition = simd_mix(camera.simdPosition, framing.position, simd_float3(repeating: k))
-            cameraLook = simd_mix(cameraLook, framing.lookAt, simd_float3(repeating: k))
+            camera.simdPosition = simd_mix(camera.simdPosition, position, simd_float3(repeating: k))
+            cameraLook = simd_mix(cameraLook, lookAt, simd_float3(repeating: k))
             let fov = Float(camera.camera?.fieldOfView ?? 55)
             camera.camera?.fieldOfView = CGFloat(fov + (framing.fieldOfView - fov) * k)
         }
@@ -589,6 +707,53 @@ final class CourseScene: NSObject, ObservableObject {
         return node
     }
 
+    /// The read: a lattice of dots over the green that slide downhill, faster on steeper ground,
+    /// coloured from calm mint on the flat through amber to red where it really tips.
+    private func buildGreenGrid(_ hole: Hole) {
+        greenDots.removeAll()
+        greenGrid.childNodes.forEach { $0.removeFromParentNode() }
+        if greenGrid.parent == nil { scene.rootNode.addChildNode(greenGrid) }
+        greenGrid.name = "greenReadGrid"
+        let spacing = Self.greenGridSpacing
+        let reach = hole.greenRadius + spacing
+        let pin = hole.pin
+        var x = pin.x - reach
+        while x <= pin.x + reach {
+            var d = pin.d - reach
+            while d <= pin.d + reach {
+                let point = CoursePoint(x: x, d: d)
+                if point.distance(to: pin) <= hole.greenRadius + 0.5, point.distance(to: pin) > 0.6 {
+                    let gradient = hole.terrain.gradient(at: point)
+                    let steepness = hypot(gradient.dx, gradient.dd)
+                    let dot = SCNNode(geometry: SCNSphere(radius: 0.09))
+                    dot.geometry?.materials = [CourseArt.readMaterial(steepness: steepness)]
+                    dot.scale = SCNVector3(1, 0.35, 1)
+                    dot.castsShadow = false
+                    greenGrid.addChildNode(dot)
+                    let flow = steepness > 0.0005
+                        ? simd_normalize(simd_float3(Float(-gradient.dx), 0, Float(gradient.dd)))
+                        : simd_float3(0, 0, 0)
+                    greenDots.append((dot, point, flow, Float(min(1.4, steepness * 40))))
+                }
+                d += spacing
+            }
+            x += spacing
+        }
+    }
+
+    private func updateGreenGrid(visible: Bool, now: CFTimeInterval) {
+        greenGrid.isHidden = !visible
+        guard visible else { return }
+        let spacing = Float(Self.greenGridSpacing)
+        for dot in greenDots {
+            // Slide along the fall line and wrap inside the cell, so the lattice streams downhill.
+            let travel = (Float(now) * dot.speed).truncatingRemainder(dividingBy: spacing) - spacing / 2
+            let offset = dot.flow * travel
+            let point = CoursePoint(x: dot.base.x + Double(offset.x), d: dot.base.d - Double(offset.z))
+            dot.node.simdPosition = simd_float3(Float(point.x), ground(point) + 0.02, -Float(point.d))
+        }
+    }
+
     private func disc(radius: Double, color: UIColor, at point: CoursePoint, y: Float) {
         let shape = SCNCylinder(radius: radius, height: 0.2)
         shape.radialSegmentCount = 48
@@ -604,7 +769,7 @@ final class CourseScene: NSObject, ObservableObject {
     }
 
     private func turf(from a: CoursePoint, to b: CoursePoint, width: Double, material: SCNMaterial, y: Float) {
-        let node = SCNNode(geometry: CourseArt.capsule(from: a, to: b, width: width, y: y))
+        let node = SCNNode(geometry: CourseArt.capsule(from: a, to: b, width: width, y: y, terrain: hole?.terrain ?? .flat))
         node.geometry?.materials = [material]
         node.name = "mownTurf"
         courseNode.addChildNode(node)
@@ -664,7 +829,11 @@ struct CourseSceneView: UIViewRepresentable {
         view.scene = scene.scene
         view.pointOfView = scene.camera
         view.antialiasingMode = .multisampling4X
+        #if targetEnvironment(simulator)
         view.preferredFramesPerSecond = 60
+        #else
+        view.preferredFramesPerSecond = 120
+        #endif
         view.rendersContinuously = true
         view.isUserInteractionEnabled = false
         scene.inputs = inputs
@@ -747,31 +916,70 @@ enum CourseArt {
     }
 
     /// A capsule exactly follows the segment-distance fairway rule, including caps.
-    static func capsule(from a: CoursePoint, to b: CoursePoint, width: Double, y: Float) -> SCNGeometry {
-        let heading = atan2(b.d - a.d, b.x - a.x), r = width / 2
-        var outline: [CoursePoint] = []
-        for (point, start) in [(b, heading - .pi / 2), (a, heading + .pi / 2)] {
-            for i in 0...32 {
-                let theta = start + Double(i) / 32 * .pi
-                outline.append(CoursePoint(x: point.x + cos(theta) * r, d: point.d + sin(theta) * r))
+    /// A stadium shape draped over the terrain: rows across the width at every step along the
+    /// length, the rows shrinking around the end caps, so the exact outline is kept and the
+    /// interior follows every mound and tilt.
+    static func capsule(from a: CoursePoint, to b: CoursePoint, width: Double, y: Float, terrain: Terrain = .flat) -> SCNGeometry {
+        let r = width / 2
+        let length = a.distance(to: b)
+        let ux = length > 0.001 ? (b.x - a.x) / length : 1, ud = length > 0.001 ? (b.d - a.d) / length : 0
+        let spacing = 1.6
+        let columns = max(6, Int(((length + 2 * r) / spacing).rounded(.up)))
+        let across = max(6, min(28, Int((width / spacing).rounded(.up))))
+        var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], uv: [CGPoint] = [], indices: [Int32] = []
+        for column in 0...columns {
+            let s = -r + Double(column) / Double(columns) * (length + 2 * r)
+            // Half-width at this station: full along the body, circular at the caps.
+            let over = s < 0 ? -s : max(0, s - length)
+            let half = sqrt(max(0, r * r - over * over))
+            let along = min(max(s, 0), length)
+            for row in 0...across {
+                let t = -half + Double(row) / Double(across) * 2 * half
+                let point = CoursePoint(x: a.x + ux * along - ud * t, d: a.d + ud * along + ux * t)
+                let h = Float(terrain.elevation(at: point)) + y
+                let g = terrain.gradient(at: point)
+                vertices.append(SCNVector3(Float(point.x), h, -Float(point.d)))
+                normals.append(SCNVector3(simd_normalize(simd_float3(Float(-g.dx), 1, Float(g.dd)))))
+                uv.append(CGPoint(x: point.x / 24, y: point.d / 24))
             }
         }
-        let center = CoursePoint(x: (a.x + b.x) / 2, d: (a.d + b.d) / 2)
-        let points = [center] + outline
-        let vertices = points.map { SCNVector3(Float($0.x), y, -Float($0.d)) }
-        let normals = points.map { _ in SCNVector3(0, 1, 0) }
-        let uv = points.map { CGPoint(x: $0.x / 24, y: $0.d / 24) }
-        var indices: [Int32] = []
-        for i in 1...outline.count { indices += [0, Int32(i), Int32(i % outline.count + 1)] }
+        let stride = Int32(across + 1)
+        for column in 0..<columns {
+            for row in 0..<across {
+                let i = Int32(column) * stride + Int32(row)
+                indices += [i, i + stride, i + 1, i + 1, i + stride, i + stride + 1]
+            }
+        }
         return SCNGeometry(sources: [.init(vertices: vertices), .init(normals: normals), .init(textureCoordinates: uv)],
                            elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
     }
 
+    /// The hole's own ground shape, sitting a little under the turf, running out into rolling
+    /// hills beyond the tree line.
     static func elevation(_ point: CoursePoint, hole: Hole) -> Float {
         let outside = max(0, hole.distanceFromCenterline(point) - hole.fairwayWidth / 2 - Hole.roughWidth - 8)
         let blend = min(1, outside / 65)
         let wave = 9 + 6 * sin(point.x * 0.018 + point.d * 0.009) + 4 * cos(point.d * 0.025)
-        return Float(-0.72 + blend * blend * wave)
+        return Float(hole.terrain.elevation(at: point)) + Float(-0.72 + blend * blend * wave)
+    }
+
+    private static var readMaterials: [Int: SCNMaterial] = [:]
+
+    /// Dot colour for the green read: mint on the flat, amber through orange to red as it steepens.
+    static func readMaterial(steepness: Double) -> SCNMaterial {
+        let bucket = min(4, Int(steepness / 0.01))
+        if let cached = readMaterials[bucket] { return cached }
+        let colors = [UIColor(red: 0.78, green: 1, blue: 0.9, alpha: 0.85), UIColor(red: 1, green: 0.95, blue: 0.55, alpha: 0.9),
+                      UIColor(red: 1, green: 0.78, blue: 0.3, alpha: 0.95), UIColor(red: 1, green: 0.55, blue: 0.2, alpha: 1),
+                      UIColor(red: 1, green: 0.3, blue: 0.25, alpha: 1)]
+        let material = SCNMaterial()
+        material.lightingModel = .constant
+        material.diffuse.contents = colors[bucket]
+        material.emission.contents = colors[bucket].withAlphaComponent(0.5)
+        material.blendMode = .alpha
+        material.writesToDepthBuffer = false
+        readMaterials[bucket] = material
+        return material
     }
 
     static func landscape(_ hole: Hole) -> SCNGeometry {
@@ -865,15 +1073,15 @@ enum CourseArt {
         return geometry
     }
 
-    static func hazardEdge(_ hazard: CourseHazard, parent: SCNNode) {
+    static func hazardEdge(_ hazard: CourseHazard, parent: SCNNode, y ground: Float = 0) {
         // One mesh per ellipse, not dozens of independently drawn rim segments.
         // Both edges stay inside the existing scoring boundary.
         var vertices: [SCNVector3] = [], indices: [Int32] = []
         for i in 0...64 {
             let angle = Double(i) / 64 * .pi * 2
             for radius in [0.482, 0.499] {
-                vertices.append(SCNVector3(hazard.x + cos(angle) * hazard.width * radius, -0.025,
-                                           -hazard.distance - sin(angle) * hazard.length * radius))
+                vertices.append(SCNVector3(Float(hazard.x + cos(angle) * hazard.width * radius), ground - 0.025,
+                                           Float(-hazard.distance - sin(angle) * hazard.length * radius)))
             }
         }
         for i in 0..<64 {

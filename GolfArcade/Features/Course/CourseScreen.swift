@@ -105,6 +105,10 @@ struct CourseScreen: View {
         .onChange(of: camera.addressAimDegrees) { _, degrees in
             if usesCamera { round.setStanceAim(degrees) }
         }
+        .onChange(of: camera.phase) { _, phase in
+            // The club head cuts the air as the downswing starts, before we know about contact.
+            if usesCamera, phase == .downswing, round.canSwing { audio.whoosh(power: max(0.4, round.power)) }
+        }
         .onChange(of: round.phase) { _, phase in
             if phase == .ready { round.setStanceAim(usesCamera ? camera.addressAimDegrees : 0) }
         }
@@ -113,7 +117,12 @@ struct CourseScreen: View {
                 audio.thump()
                 UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
             }
+            scene.onLanding = { audio.landing($0) }
             round.start(course: flow.course, playerCount: players.count)
+            #if DEBUG
+            // `-startOnGreen` tees the ball up eight yards from the cup for putting work.
+            if ProcessInfo.processInfo.arguments.contains("-startOnGreen") { round.dropOnGreenForTesting() }
+            #endif
             round.automaticProgression = true
             #if DEBUG
             // UI tests that press Next shot / Continue themselves must not be raced by the timer.
@@ -193,6 +202,14 @@ struct CourseScreen: View {
                         .padding(.horizontal, 10).padding(.vertical, 6)
                         .background(.black.opacity(0.45), in: Capsule())
                         .accessibilityIdentifier("landingTarget")
+                    if round.canSwing, let read = round.greenRead {
+                        Text(read.label)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 0.85, green: 1, blue: 0.9))
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.black.opacity(0.45), in: Capsule())
+                            .accessibilityIdentifier("greenRead")
+                    }
                     if round.canSwing {
                         let preview = round.trajectoryPreview
                         Text("\(round.club.shortName) · \(Int(preview.power * 100))% · \(Int(preview.carry.rounded())) CARRY / \(Int(preview.total.rounded())) TOTAL")
@@ -201,7 +218,7 @@ struct CourseScreen: View {
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
                             .padding(8).background(.black.opacity(0.65), in: Capsule())
                             .accessibilityIdentifier("trajectoryEstimate")
-                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))")
+                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))\(round.stanceAim != 0 ? " · STANCE" : "")")
                             .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
                             .lineLimit(2)
                             .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
@@ -564,9 +581,13 @@ struct CourseScreen: View {
     private func release(execution: SwingImpact? = nil) {
         feedback.endBackswing()
         audio.stop()
+        let power = round.power
         if round.release(execution: execution), execution?.strike != .miss {
             feedback.playImpact()
-            audio.impact(club: round.club)
+            if !usesCamera { audio.whoosh(power: power) } // camera swings whoosh on the way down
+            audio.impact(club: round.club, strike: execution?.strike ?? .center, power: power)
+        } else if execution?.strike == .miss {
+            audio.whoosh(power: power)
         }
     }
 
