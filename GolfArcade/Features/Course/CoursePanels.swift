@@ -1,5 +1,44 @@
 import SwiftUI
 
+/// One stable recommendation plus live execution; changing power never moves the goalpost.
+struct ShotStrengthGuide: View {
+    @ObservedObject var round: CourseRound
+
+    var body: some View {
+        let suggested = round.recommendedPower
+        let actual = round.phase == .charging ? round.power : 0
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text(round.practiceMode ? "PRACTICE · NO SCORE" : "SUGGESTED \(Int((suggested * 100).rounded()))%")
+                Spacer(minLength: 4)
+                Text(round.phase == .charging ? "YOU \(Int(actual * 100))%" : round.club.shortName)
+                    .foregroundStyle(.mint)
+            }.font(.system(size: 10, weight: .heavy, design: .rounded)).monospacedDigit()
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(.white.opacity(0.16))
+                    Capsule().fill(.mint).frame(width: proxy.size.width * actual)
+                    ForEach(1..<4) { tick in
+                        Rectangle().fill(.white.opacity(0.4)).frame(width: 1)
+                            .offset(x: proxy.size.width * Double(tick) / 4)
+                    }
+                    Capsule().fill(.yellow).frame(width: 3, height: 14)
+                        .offset(x: max(0, min(proxy.size.width - 3, proxy.size.width * suggested)))
+                }
+            }.frame(height: 8)
+            if round.practiceMode, let impact = round.practiceImpact {
+                Text("LAST SWING \(Int(impact.power * 100))% · BALL UNCHANGED")
+                    .font(.system(size: 9, weight: .bold)).foregroundStyle(.mint)
+            }
+        }
+        .padding(10).background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Suggested strength \(Int(suggested * 100)) percent. Your strength \(Int(actual * 100)) percent. Recommendation, not a guaranteed result.")
+        .accessibilityIdentifier("shotStrengthGuide")
+        .allowsHitTesting(false)
+    }
+}
+
 struct StatusPill: View {
     let icon: String
     let title: String

@@ -5,6 +5,20 @@ import XCTest
 
 /// The things between the model and the player's senses: smooth motion and the sounds of a shot.
 final class PresentationTests: XCTestCase {
+    func testBodyAimTurnsGolferLineWithoutOrbitingTheCamera() {
+        let hole = Course.easy.holes[0]
+        var inputs = SceneInputs(hole: hole, ball: hole.tee, heading: 20, distanceToPin: hole.length,
+            lie: .tee, club: .driver, aim: 0, handedness: .right, shot: nil, isReplay: false,
+            flightStart: nil, pausedAt: nil, swingAngle: 0, bystanders: [], cameraAim: 0)
+        let ball = inputs.ball
+        inputs.aim = 25
+        XCTAssertEqual(inputs.heading + inputs.aim, 45, "The golfer and trajectory use the turned line")
+        XCTAssertEqual(inputs.cameraHeading, 20, "The view must not orbit and visually cancel the turn")
+        XCTAssertEqual(inputs.ball, ball)
+        inputs.cameraAim = nil
+        XCTAssertEqual(inputs.cameraHeading, 45, "Touch/manual aiming retains its existing framing")
+    }
+
     // MARK: - Sounds
 
     func testEveryStrikeRendersACleanShortBuffer() {

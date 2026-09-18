@@ -678,6 +678,7 @@ final class CameraReadinessTests: XCTestCase {
         let camera = CameraSwingController()
         for i in 0..<20 { camera.process(delivery(Double(i) / 30)) }
         XCTAssertTrue(camera.hasPlayableTracking)
+        XCTAssertFalse(camera.needsPositionSetup)
         camera.process(delivery(0.7, missing: true))
         XCTAssertEqual(camera.readiness, .recovering)
         XCTAssertFalse(camera.hasPlayableTracking)
@@ -685,6 +686,15 @@ final class CameraReadinessTests: XCTestCase {
         XCTAssertNotNil(camera.virtualClub, "a short gap retains the last measured visual club")
         XCTAssertTrue(camera.isPositionLocked)
         XCTAssertNotNil(camera.displayAddress)
+        XCTAssertFalse(camera.needsPositionSetup, "TV must not expand setup for a temporarily hidden wrist")
+        let ball = camera.displayAddress
+        camera.process(delivery(1.8, missing: true))
+        XCTAssertFalse(camera.needsPositionSetup, "A retry retains the certified ball even after a longer absence")
+        camera.process(delivery(1.9))
+        XCTAssertEqual(camera.displayAddress, ball)
+        XCTAssertFalse(camera.needsPositionSetup)
+        camera.resetAddress()
+        XCTAssertTrue(camera.needsPositionSetup, "An explicit recenter still presents setup")
     }
 
     func testPositionReviewLastsFiveSecondsAndDoesNotRepeatAfterDropout() {
@@ -697,13 +707,16 @@ final class CameraReadinessTests: XCTestCase {
         XCTAssertTrue(camera.isPositionLocked)
         XCTAssertEqual(camera.reviewSecondsRemaining, 5)
         XCTAssertFalse(camera.hasPlayableTracking)
+        for i in 1...10 { camera.process(delivery(0.7 + Double(i) / 30), now: 100 + Double(i) / 10) }
         for pose in BenchmarkReplay.fixture().poses {
             camera.process(PoseDelivery(frame: pose.frame, captureTime: pose.time + 1, aspect: pose.aspect, bodyCount: 1,
                 callbackStarted: 100, inferenceFinished: 100), now: 101)
         }
         XCTAssertTrue(events.isEmpty, "setup movement cannot fire while reviewing the ball")
+        for i in 1...30 { camera.process(delivery(10 + Double(i) / 10), now: 101 + Double(i) / 10) }
         camera.advancePositionReview(at: 104)
         XCTAssertEqual(camera.reviewSecondsRemaining, 1)
+        for i in 31...40 { camera.process(delivery(10 + Double(i) / 10), now: 101 + Double(i) / 10) }
         camera.advancePositionReview(at: 105)
         XCTAssertEqual(camera.reviewSecondsRemaining, 0)
         camera.process(delivery(6, missing: true), now: 106)
@@ -712,6 +725,41 @@ final class CameraReadinessTests: XCTestCase {
         XCTAssertEqual(camera.displayAddress, locked)
         camera.resetAddress()
         XCTAssertFalse(camera.isPositionLocked)
+    }
+
+    func testStalledFramesCannotStayReadyOrFinishBallReview() {
+        let camera = CameraSwingController()
+        camera.requiresPositionReview = true
+        for i in 0..<20 { camera.process(delivery(Double(i) / 30), now: 100) }
+        let ball = camera.displayAddress
+        XCTAssertEqual(camera.reviewSecondsRemaining, 5)
+        camera.advancePositionReview(at: 106)
+        XCTAssertTrue(camera.trackingIsStale)
+        XCTAssertFalse(camera.hasPlayableTracking)
+        XCTAssertEqual(camera.reviewSecondsRemaining, 5, "A stalled camera cannot certify setup")
+        XCTAssertEqual(camera.displayAddress, ball)
+        for i in 0...160 { camera.process(delivery(7 + Double(i) / 30), now: 107 + Double(i) / 30) }
+        XCTAssertTrue(camera.hasPlayableTracking)
+        camera.advancePositionReview(at: 114)
+        XCTAssertFalse(camera.hasPlayableTracking, "Ready must disappear even if no new frame callback arrives")
+        XCTAssertEqual(camera.poseUpdatesPerSecond, 0)
+        XCTAssertEqual(camera.displayAddress, ball)
+    }
+
+    func testMissingPoseHoldsReviewAndResetNeedsFreshCertification() {
+        let camera = CameraSwingController()
+        camera.requiresPositionReview = true
+        for i in 0..<20 { camera.process(delivery(Double(i) / 30), now: 100) }
+        for i in 1...180 { camera.process(delivery(1 + Double(i) / 30, missing: true), now: 100 + Double(i) / 30) }
+        XCTAssertGreaterThan(camera.reviewSecondsRemaining, 0)
+        XCTAssertFalse(camera.hasPlayableTracking)
+        camera.resetAddress()
+        XCTAssertFalse(camera.isPositionLocked)
+        XCTAssertNil(camera.displayAddress)
+        for i in 0..<20 { camera.process(delivery(8 + Double(i) / 30), now: 108) }
+        XCTAssertTrue(camera.isPositionLocked)
+        XCTAssertEqual(camera.reviewSecondsRemaining, 5)
+        XCTAssertFalse(camera.hasPlayableTracking)
     }
 
     func testLongAbsenceKeepsBallButDoesNotStayInBriefGapStateForever() {

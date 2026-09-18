@@ -5,6 +5,111 @@ import XCTest
 @testable import GolfArcade
 
 final class AvatarTests: XCTestCase {
+    @MainActor
+    func testTorsoSkinFollowsAxialTurnNotOnlySpineDirection() {
+        var pose = AvatarAnimations.address
+        pose.joints[.root] = .zero
+        pose.joints[.neck] = simd_float3(0, 2, 0)
+        pose.joints[.leftShoulder] = simd_float3(0, 2, -1)
+        pose.joints[.rightShoulder] = simd_float3(0, 2, 1)
+        let before = GolferSkin.transform(GolferSkin.links[0], pose: pose)
+        pose.joints[.leftShoulder] = simd_float3(-1, 2, 0)
+        pose.joints[.rightShoulder] = simd_float3(1, 2, 0)
+        let after = GolferSkin.transform(GolferSkin.links[0], pose: pose)
+        XCTAssertEqual(before.columns.1, after.columns.1, "Same spine direction")
+        XCTAssertLessThan(abs(simd_dot(before.columns.0, after.columns.0)), 0.001, "Shirt must turn with chest")
+    }
+
+    func testPhaseShapedSwingKeepsLeadFootPlantedAndReleasesTrailHeel() {
+        let start = AvatarAnimations.address
+        for angle in stride(from: -150.0, through: 150, by: 1) {
+            let pose = AvatarAnimations.swingArc(degrees: angle)
+            XCTAssertEqual(pose[.leftAnkle], start[.leftAnkle])
+            XCTAssertEqual(simd_length(pose.clubDirection), 1, accuracy: 0.001)
+            if angle < 150 {
+                let next = AvatarAnimations.swingArc(degrees: angle + 1)
+                XCTAssertLessThan(simd_distance(pose.handCenter, next.handCenter), 0.15)
+            }
+        }
+        XCTAssertGreaterThan(AvatarAnimations.finish[.rightAnkle].y, start[.rightAnkle].y)
+        XCTAssertEqual(AvatarAnimations.swingArc(degrees: .nan), start)
+    }
+
+    @MainActor
+    func testFullBodySkinIsClosedConnectedAndWeightsAreNormalized() {
+        let mesh = GolferSkin.mesh
+        XCTAssertGreaterThan(mesh.vertices.count, 1000)
+        var neighbors: [Int32: Set<Int32>] = [:]
+        var edges: [UInt64: Int] = [:]
+        for triangles in mesh.triangles {
+            for i in stride(from: 0, to: triangles.count, by: 3) {
+                let t = Array(triangles[i..<i+3])
+                for (a,b) in [(t[0],t[1]),(t[1],t[2]),(t[2],t[0])] {
+                    neighbors[a, default: []].insert(b); neighbors[b, default: []].insert(a)
+                    let key = UInt64(min(a,b)) << 32 | UInt64(max(a,b))
+                    edges[key, default: 0] += 1
+                }
+            }
+        }
+        XCTAssertTrue(edges.values.allSatisfy { $0 == 2 }, "No open seams or disconnected limb caps")
+        var visited: Set<Int32> = [0], stack: [Int32] = [0]
+        while let current = stack.popLast() {
+            for next in neighbors[current] ?? [] where visited.insert(next).inserted { stack.append(next) }
+        }
+        XCTAssertEqual(visited.count, mesh.vertices.count, "One connected body surface")
+        for i in mesh.vertices.indices {
+            XCTAssertEqual(mesh.weights[(i*4)..<(i*4+4)].reduce(0,+), 1, accuracy: 0.0001)
+            XCTAssertTrue(mesh.vertices[i].x.isFinite && mesh.vertices[i].y.isFinite && mesh.vertices[i].z.isFinite)
+        }
+    }
+
+    @MainActor
+    func testHeadDoesNotReverseWhenTrackedShoulderLabelsCross() {
+        var pose = AvatarAnimations.address
+        let original = AvatarRig.headOrientation(for: pose).act(simd_float3(1,0,0))
+        let left = pose[.leftShoulder]
+        pose.joints[.leftShoulder] = pose[.rightShoulder]
+        pose.joints[.rightShoulder] = left
+        XCTAssertEqual(AvatarRig.headOrientation(for: pose).act(simd_float3(1,0,0)), original)
+        XCTAssertGreaterThan(original.x, 0.8, "Face stays toward the ball, never the back of the head")
+    }
+
+    func testPuttKeepsFeetAndHeadQuietAndUsesShortPendulum() {
+        for angle in [-150.0, -60, 0, 60, 150] {
+            let pose = AvatarAnimations.swingArc(degrees: angle, club: .putter)
+            for joint in [BodyJoint.root, .leftAnkle, .rightAnkle, .nose] {
+                XCTAssertEqual(pose[joint], AvatarAnimations.address[joint])
+            }
+            XCTAssertLessThan(simd_distance(pose.clubHead, AvatarSize.ball), 1.2)
+            XCTAssertEqual(simd_distance(pose.clubHead, pose.clubGrip),
+                           simd_distance(AvatarAnimations.address.clubHead, AvatarAnimations.address.clubGrip), accuracy: 0.001)
+        }
+    }
+
+    @MainActor
+    func testRenderContinuousGolferForVisualReview() {
+        let scene = SCNScene()
+        scene.background.contents = UIColor(red: 0.18, green: 0.28, blue: 0.30, alpha: 1)
+        let rig = AvatarRig(shirt: .systemOrange)
+        scene.rootNode.addChildNode(rig.node)
+        let light = SCNNode(); light.light = SCNLight(); light.light?.type = .omni
+        light.light?.intensity = 650; light.position = SCNVector3(6,9,7); scene.rootNode.addChildNode(light)
+        let fill = SCNNode(); fill.light = SCNLight(); fill.light?.type = .ambient
+        fill.light?.intensity = 200; scene.rootNode.addChildNode(fill)
+        let camera = SCNNode(); camera.camera = SCNCamera(); camera.camera?.fieldOfView = 42
+        scene.rootNode.addChildNode(camera)
+        let renderer = SCNRenderer(device: nil, options: nil); renderer.scene = scene; renderer.pointOfView = camera
+        for (name, angle, position) in [("address-front",0.0,SCNVector3(11,6,7)),
+            ("address-back",0,SCNVector3(-11,6,7)),("backswing",100,SCNVector3(11,6,7)),
+            ("follow-through",-110,SCNVector3(11,6,7))] {
+            rig.apply(AvatarAnimations.swingArc(degrees: angle))
+            camera.position = position; camera.look(at: SCNVector3(0.7,2.7,0))
+            let image = renderer.snapshot(atTime: 0, with: CGSize(width: 768,height: 768), antialiasingMode: .multisampling4X)
+            let attachment = XCTAttachment(image: image); attachment.name = "golfer-\(name)"
+            attachment.lifetime = .keepAlways; add(attachment)
+        }
+    }
+
     func testClubFaceAimsDownCourseNotAlongShaftForBothStances() {
         let orientation = ClubGeometry.headOrientation(shaftUp: simd_float3(-1.3, 2, 0))
         let forward = orientation.act(simd_float3(0, 0, -1))
@@ -42,7 +147,11 @@ final class AvatarTests: XCTestCase {
         let partial = PoseFrame(timestamp: 0.03, points: [.nose: PosePoint(location: .zero, confidence: 1)])
         let result = filter.update(corrupt, frame: partial, at: 0.03)
         XCTAssertEqual(result.joints, good.joints)
-        XCTAssertFalse(result.clubVisible)
+        XCTAssertTrue(result.clubVisible,"A brief presentation-only hold must not flash the club away")
+        XCTAssertEqual(result.provenance[.nose],.held)
+        let expired=filter.update(corrupt,frame:partial,at:0.25)
+        XCTAssertFalse(expired.clubVisible,"An unsupported prolonged gap cannot keep an active club visible")
+        XCTAssertEqual(expired.provenance[.nose],.unavailable)
     }
 
     func testTwoBoneParallelBendStaysFinite() {

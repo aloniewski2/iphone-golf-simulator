@@ -2,6 +2,78 @@ import XCTest
 
 @MainActor
 final class RangePlayTests: XCTestCase {
+    func testResortNineHoleAndImportedGolferComparison() {
+        continueAfterFailure=false
+        let app=XCUIApplication()
+        app.launchArguments=["-skipPlayerCalibration","-startCourse","sunward-resort-v1",
+            "-range.swingInput","touch","-gestures.enabled","NO","-presentation.authoredGolfer","YES"]
+        app.launch()
+        XCTAssertTrue(any(app,"golfCourse").waitForExistence(timeout:30))
+        XCTAssertEqual(app.state,.runningForeground)
+        XCTAssertTrue(any(app,"golfCourse").label.contains("Sunward Resort"))
+        XCTAssertTrue(any(app,"shotStrengthGuide").waitForExistence(timeout:5))
+        screenshot(app,"Resort nine — authored golfer comparison, not tracking certification")
+        app.buttons["holeOverview"].tap()
+        XCTAssertTrue(any(app,"plannedTarget").waitForExistence(timeout:5))
+        screenshot(app,"Resort nine — shared terrain and route map")
+        app.buttons["Done"].tap()
+    }
+
+    func testSunwardOriginalCourseAndShotGuide() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-skipPlayerCalibration", "-startCourse", "sunward", "-range.swingInput", "touch", "-gestures.enabled", "NO"]
+        app.launch()
+        XCTAssertTrue(any(app, "golfCourse").waitForExistence(timeout: 20))
+        XCTAssertEqual(app.state, .runningForeground, "Leave the phone in GolfArcade during this visual check.")
+        XCTAssertTrue(any(app, "golfCourse").label.contains("Sunward Links"))
+        XCTAssertTrue(any(app, "shotStrengthGuide").waitForExistence(timeout: 5))
+        screenshot(app, "Sunward Links — original course and strength guide")
+        app.buttons["holeOverview"].tap()
+        XCTAssertTrue(any(app, "plannedTarget").waitForExistence(timeout: 5))
+        screenshot(app, "Sunward Links — route overview")
+        XCTAssertEqual(app.state, .runningForeground, "The phone left GolfArcade during the visual check.")
+        XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+    }
+
+    func testTVRepositionReopensCameraWithoutResettingHole() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-skipPlayerCalibration", "-startInCameraMode", "-startCourse", "easy", "-gestures.enabled", "NO"]
+        app.launch()
+        let stage = any(app, "cameraStage")
+        XCTAssertTrue(stage.waitForExistence(timeout: 20))
+        XCTAssertEqual(stage.value as? String, "expanded")
+        app.buttons["minimizeCamera"].tap()
+        let hole = any(app, "holeChip").label
+        app.buttons["courseMenu"].tap()
+        app.buttons["TV / AirPlay"].tap()
+        XCTAssertTrue(app.switches["tvMode"].waitForExistence(timeout: 5))
+        if app.switches["tvMode"].value as? String == "0" { app.switches["tvMode"].tap() }
+        screenshot(app, "Physical iPhone — TV connection status")
+        print("TV_CONNECTION: \(app.staticTexts["tvConnectionStatus"].label)")
+        app.buttons["tvReposition"].tap()
+        let expanded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'expanded'"), object: stage)
+        XCTAssertEqual(XCTWaiter.wait(for: [expanded], timeout: 10), .completed)
+        app.buttons["minimizeCamera"].tap()
+        XCTAssertEqual(any(app, "holeChip").label, hole)
+        XCTAssertFalse(app.buttons["nextShot"].exists)
+        screenshot(app, "Physical iPhone — fresh setup requested without a stroke")
+    }
+
+    func testColdLaunchRendersPhoneMenuWithTVModeOffAndOn() {
+        for tvEnabled in ["NO", "YES"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["-display.landscapeTV", tvEnabled]
+            app.launch()
+            XCTAssertTrue(app.buttons["menuSolo"].waitForExistence(timeout: 20),
+                          "Phone must render its SwiftUI menu with TV mode \(tvEnabled)")
+            XCTAssertTrue(app.buttons["menuSettings"].isHittable)
+            screenshot(app, "Physical phone cold launch — TV mode \(tvEnabled)")
+            app.terminate()
+        }
+    }
+
     private func any(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
         app.descendants(matching: .any)[identifier]
     }

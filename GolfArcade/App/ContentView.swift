@@ -27,9 +27,10 @@ struct ContentView: View {
                 forKey: "range.swingInput"
             )
             let flow = GameFlow(fixturePlayers: players)
-            // `-startCourse easy|medium|hard` skips the menus and tees off straight away.
+            // Accept either a unique course ID or the legacy difficulty shortcut.
             if let index = arguments.firstIndex(of: "-startCourse"), arguments.indices.contains(index + 1),
-               let course = Course.all.first(where: { $0.difficulty.rawValue == arguments[index + 1] }) {
+               let course = Course.all.first(where: { $0.id == arguments[index + 1] }) ??
+                    Course.all.first(where: { $0.difficulty.rawValue == arguments[index + 1] }) {
                 flow.play(course)
             }
             _flow = StateObject(wrappedValue: flow)

@@ -24,7 +24,7 @@ struct CourseSelectView: View {
                 VStack(spacing: 12) {
                     ForEach(Array(Course.all.enumerated()), id: \.element.id) { index, course in
                         MenuRow(focused: focus == index, action: { flow.play(course) }) { card(course) }
-                            .accessibilityIdentifier("course-\(course.difficulty.rawValue)")
+                            .accessibilityIdentifier("course-\(course.id.hasPrefix("sunward") ? course.id : course.difficulty.rawValue)")
                     }
                 }
                 if gesturesEnabled { GestureStatusChip(camera: camera) }

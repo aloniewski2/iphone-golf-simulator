@@ -26,6 +26,11 @@ final class CameraSwingController: ObservableObject {
     @Published private(set) var isPositionLocked = false
     @Published private(set) var reviewSecondsRemaining = 0
     @Published private(set) var lockedAddress: BallAddress?
+    @Published private(set) var trackingIsStale = true
+    @Published private(set) var poseUpdatesPerSecond = 0
+    private var lastDeliveryAt: Double?
+    private var lastUsablePoseAt: Double?
+    private var deliveryTimes: [Double] = []
     @Published private(set) var swingCheck = CameraSwingCheck()
     var requiresSwingCheck = false
     var contactAssistance = false {
@@ -49,8 +54,13 @@ final class CameraSwingController: ObservableObject {
     }
     private var reviewEndsAt: Double?
     private var reviewCompleted = false
+    /// Recovery is not calibration. A hidden wrist must never reopen the full setup view.
+    var needsPositionSetup: Bool { !isPositionLocked || reviewSecondsRemaining > 0 }
+
     var hasPlayableTracking: Bool {
-        !isCheckingSwing && reviewSecondsRemaining == 0 && virtualClub != nil && (readiness == .ready || readiness == .swinging)
+        !trackingIsStale && !isCheckingSwing && reviewSecondsRemaining == 0 &&
+        (!requiresPositionReview || (isPositionLocked && reviewCompleted)) &&
+        virtualClub != nil && (readiness == .ready || readiness == .swinging)
     }
     /// Keep the measured club through follow-through and brief dropouts; never predict contact
     /// from this frozen presentation. The detector owns recovery and collision decisions.
@@ -124,6 +134,11 @@ final class CameraSwingController: ObservableObject {
     }
 
     private func resetPresentation() {
+        lastDeliveryAt = nil
+        lastUsablePoseAt = nil
+        deliveryTimes.removeAll(keepingCapacity: true)
+        trackingIsStale = true
+        poseUpdatesPerSecond = 0
         virtualClub = nil
         readyProgress = 0
         phase = .findingPlayer
@@ -248,12 +263,20 @@ final class CameraSwingController: ObservableObject {
             }
             lastCaptureGeometry = geometry
         }
-        // The monotonic deadline also advances from incoming frames, independent of SwiftUI.
-        advancePositionReview(at: now)
         let frame = delivery.frame
         let time = delivery.captureTime
         captureTime = time
         let sample = frame.flatMap { ArmSwingDetector.Sample(frame: $0, frameAspect: delivery.aspect, certifiedSpace: detector.certifiedSpace) }
+        // A timer must not finish certification while the camera/inference pipeline is stalled.
+        if lastDeliveryAt.map({ now - $0 > 0.45 }) == true { holdPositionReview(at: now) }
+        lastDeliveryAt = now
+        trackingIsStale = false
+        if let sample, sample.confidence >= 0.45 { lastUsablePoseAt = now }
+        if sample != nil { deliveryTimes.append(now) }
+        deliveryTimes.removeAll { now - $0 > 1 }
+        let rate = deliveryTimes.count
+        if poseUpdatesPerSecond != rate { poseUpdatesPerSecond = rate }
+        advancePositionReview(at: now)
         if requiresSwingCheck && !swingCheck.isComplete { detector.swingsEnabled = false }
         let event = detector.ingest(sample, at: time)
         isPositionLocked = detector.isPositionLocked
@@ -325,6 +348,13 @@ final class CameraSwingController: ObservableObject {
 
     /// A view-owned timer drives the review; no delayed task can collapse a later player's setup.
     func advancePositionReview(at time: Double = ProcessInfo.processInfo.systemUptime) {
+        let stale = lastDeliveryAt.map { time - $0 > 0.45 } ?? true
+        if trackingIsStale != stale { trackingIsStale = stale }
+        if stale && poseUpdatesPerSecond != 0 { poseUpdatesPerSecond = 0 }
+        guard lastUsablePoseAt.map({ time - $0 <= 0.45 }) == true else {
+            holdPositionReview(at: time)
+            return
+        }
         guard let end = reviewEndsAt else { return }
         let remaining = max(0, Int(ceil(end - time)))
         if reviewSecondsRemaining != remaining { reviewSecondsRemaining = remaining }
@@ -333,6 +363,12 @@ final class CameraSwingController: ObservableObject {
             reviewCompleted = true
             detector.swingsEnabled = true
         }
+    }
+
+    private func holdPositionReview(at time: Double) {
+        guard reviewEndsAt != nil else { return }
+        reviewEndsAt = time + Double(reviewSecondsRemaining)
+        detector.swingsEnabled = false
     }
 
     private func recognizeGesture(_ frame: PoseFrame?, at time: Double, afterImpact: Bool) {

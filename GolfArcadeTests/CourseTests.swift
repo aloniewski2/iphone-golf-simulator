@@ -3,6 +3,87 @@ import SceneKit
 @testable import GolfArcade
 
 final class CourseTests: XCTestCase {
+    func testPuttRecommendationUsesSlopeAndIsDeterministic() {
+        for slope in [-0.025, 0.0, 0.025] {
+            var hole = Hole(number: 1, par: 3, centerline: [.zero, CoursePoint(x: 0, d: 10)],
+                fairwayWidth: 40, greenRadius: 25, hazards: [])
+            hole.terrain = Terrain(tiltX: slope, tiltD: 0.01, features: [])
+            let plan = PuttRecommendation.solve(from: .zero, hole: hole)
+            XCTAssertEqual(plan, PuttRecommendation.solve(from: .zero, hole: hole))
+            XCTAssertLessThan(plan.missYards, 0.3)
+            XCTAssertTrue((0...1).contains(plan.power))
+            if slope != 0 { XCTAssertGreaterThan(plan.offsetDegrees * slope, 0, "Start uphill against the break") }
+            let baselinePower = RangeShot.power(toReach: 10, with: .putter) ?? 1
+            let baseline = RangeShot(id: 0, club: .putter, power: baselinePower, aim: 0, hole: hole)
+            XCTAssertLessThanOrEqual(plan.missYards, baseline.rest.distance(to: hole.pin) + 0.0001)
+        }
+    }
+
+    @MainActor
+    func testAutomaticPuttPreviewMatchesActualAndRecommendationStaysFixedWhileCharging() throws {
+        let round = CourseRound()
+        round.automaticAim = true
+        round.dropOnGreenForTesting(yards: 8)
+        let preview = round.trajectoryPreview
+        let suggested = round.recommendedPower
+        let heading = round.heading + round.combinedAim
+        round.charge(0.12)
+        XCTAssertEqual(round.recommendedPower, suggested)
+        XCTAssertEqual(round.heading + round.combinedAim, heading)
+        round.charge(preview.power)
+        XCTAssertTrue(round.release())
+        let actual = try XCTUnwrap(round.activeShot)
+        XCTAssertEqual(actual.request, preview.request)
+        XCTAssertEqual(actual.rest, preview.rest)
+    }
+
+    @MainActor
+    func testRenderedFairwayCapsExtendToPhysicalLieBoundary() {
+        let mesh = CourseArt.capsule(from: .zero, to: CoursePoint(x: 0, d: 100), width: 40, y: 0)
+        XCTAssertEqual(mesh.boundingBox.min.z, -120, accuracy: 0.01)
+        XCTAssertEqual(mesh.boundingBox.max.z, 20, accuracy: 0.01)
+    }
+
+    func testRecommendedRouteReachesPinAcrossAuthoredHolesWithoutHazardLandings() {
+        for course in Course.all { for hole in course.holes {
+            let route = hole.recommendedRoute(from: hole.tee)
+            XCTAssertEqual(route.first, hole.tee)
+            XCTAssertEqual(route.last, hole.pin, "\(course.name) hole \(hole.number)")
+            XCTAssertEqual(Set(route).count, route.count)
+            XCTAssertEqual(route, hole.recommendedRoute(from: hole.tee))
+            for landing in route.dropFirst() {
+                XCTAssertTrue([CourseLie.fairway, .green].contains(hole.lie(at: landing)), "Unsafe landing \(landing)")
+            }
+        } }
+    }
+
+    func testAutomaticLandingAvoidsBunkerOnNominalCenterline() {
+        let hole = Hole(number: 1, par: 4,
+            centerline: [.zero, CoursePoint(x: 0, d: 180), CoursePoint(x: 60, d: 350)],
+            fairwayWidth: 44, greenRadius: 16,
+            hazards: [CourseHazard(id: 1, kind: .bunker, x: 0, distance: 180, width: 14, length: 20)])
+        let target = hole.recommendedTarget(from: hole.tee)
+        XCTAssertNotEqual(target, hole.centerline[1])
+        XCTAssertEqual(hole.lie(at: target), .fairway)
+        for offset in [CoursePoint(x: 6,d: 0), CoursePoint(x: -6,d: 0), CoursePoint(x: 0,d: 6), CoursePoint(x: 0,d: -6)] {
+            XCTAssertEqual(hole.lie(at: CoursePoint(x: target.x + offset.x, d: target.d + offset.d)), .fairway)
+        }
+        XCTAssertEqual(hole.recommendedRoute(from: target).last, hole.pin)
+    }
+
+    @MainActor
+    func testAutomaticRouteCannotBeChangedByBodyTurnOrManualAim() {
+        let round = CourseRound()
+        round.automaticAim = true
+        let target = round.intendedTarget, ball = round.ball
+        round.setStanceAim(25); round.adjustAim(-45); round.aimAtPin(); round.resumeBodyAim(at: 10)
+        XCTAssertEqual(round.combinedAim, 0)
+        XCTAssertFalse(round.usesBodyAim)
+        XCTAssertEqual(round.intendedTarget, target)
+        XCTAssertEqual(round.ball, ball)
+        XCTAssertNotEqual(target, round.hole.pin, "Opening drive follows the dogleg, not a shortcut to the flag")
+    }
+
     func testHoleNavigationWrapsBearingsAndEmphasizesDistance() {
         let right = HoleNavigation(ball: .zero, pin: CoursePoint(x: 100, d: 0), aimHeading: 0)
         XCTAssertEqual(right.relativeBearing, 90)
@@ -19,6 +100,27 @@ final class CourseTests: XCTestCase {
         XCTAssertEqual(far.prominence, 1)
         XCTAssertGreaterThan(HoleNavigation.beaconScale(cameraDistance: 350), HoleNavigation.beaconScale(cameraDistance: 30))
         XCTAssertLessThanOrEqual(HoleNavigation.beaconScale(cameraDistance: 10000), 28)
+    }
+
+    @MainActor
+    func testResumeBodyAimRetainsTargetAndBallWithoutJumpingTheLine() {
+        let round = CourseRound()
+        round.aimAtPin()
+        round.adjustAim(8)
+        let target = round.intendedTarget, ball = round.ball, line = round.combinedAim
+        XCTAssertFalse(round.usesBodyAim)
+        round.resumeBodyAim(at: 12)
+        XCTAssertTrue(round.usesBodyAim)
+        XCTAssertEqual(round.combinedAim, line)
+        round.setStanceAim(18)
+        XCTAssertEqual(round.combinedAim, line + 6)
+        XCTAssertEqual(round.intendedTarget, target)
+        XCTAssertEqual(round.ball, ball)
+        round.charge(0.5)
+        let locked = round.combinedAim
+        round.setStanceAim(-20)
+        round.resumeBodyAim(at: -10)
+        XCTAssertEqual(round.combinedAim, locked, "The line cannot move during a swing")
     }
 
     @MainActor
@@ -190,7 +292,7 @@ final class CourseTests: XCTestCase {
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "sculptedLandscape", recursively: true))
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "cartPath", recursively: true))
             for point in hole.centerline {
-                XCTAssertEqual(CourseArt.elevation(point, hole: hole), Float(hole.terrain.elevation(at: point)) - 0.72, accuracy: 0.001,
+                XCTAssertEqual(CourseArt.elevation(point, hole: hole), Float(hole.surface(at: point).heightYards) - 0.72, accuracy: 0.001,
                                "the landscape sits just under the playing surface, following its shape")
             }
             XCTAssertEqual(scene.hole, unchanged, "visual dressing cannot change lie or shot geometry")
@@ -202,8 +304,12 @@ final class CourseTests: XCTestCase {
     }
 
     func testCoursesGetHarder() {
-        XCTAssertEqual(Course.all.map(\.difficulty), [.easy, .medium, .hard])
-        XCTAssertTrue(Course.all.allSatisfy { $0.holes.count == 3 })
+        XCTAssertEqual(Course.all.prefix(3).map(\.difficulty), [.easy, .medium, .hard])
+        XCTAssertEqual(Set(Course.all.map(\.id)).count, Course.all.count)
+        XCTAssertEqual(Course.sunward.holes.map(\.par), [4, 3, 5])
+        XCTAssertTrue(Course.all.filter { $0.id != Course.sunwardResort.id }.allSatisfy { $0.holes.count == 3 })
+        XCTAssertEqual(Course.sunwardResort.holes.count, 9)
+        XCTAssertEqual(Course.sunwardResort.par, 36)
         XCTAssertLessThan(Course.easy.par, Course.hard.par)
         let averageWidth = { (course: Course) in course.holes.map(\.fairwayWidth).reduce(0, +) / Double(course.holes.count) }
         XCTAssertGreaterThan(averageWidth(.easy), averageWidth(.medium))

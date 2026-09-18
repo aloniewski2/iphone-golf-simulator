@@ -17,6 +17,7 @@ enum ShotCameraDirector {
         var elapsed: Double
         var reaction: AvatarAnimations.Reaction?
         var landingTime: Double?
+        var reduceMotion = false
     }
 
     struct Shot: Equatable {
@@ -31,19 +32,19 @@ enum ShotCameraDirector {
     /// Hero shot length: longer for better swings; putts go straight to the ball.
     static func heroDuration(reaction: AvatarAnimations.Reaction?, club: GolfClub, flightDuration: Double) -> Double {
         if club == .putter { return 0 }
-        if flightDuration < 3 { return 0.6 }
+        if flightDuration < 3 { return min(0.4, flightDuration * 0.15) }
         switch reaction {
-        case .pure, .holed: return 1.8
-        case .solid: return 1.5
-        case .meh: return 1.2
-        case .bad, .disaster, nil: return 1.0
+        case .pure, .holed: return 0.65
+        case .solid: return 0.6
+        case .meh: return 0.5
+        case .bad, .disaster, nil: return 0.4
         }
     }
 
     static func stage(_ inputs: Inputs) -> Stage {
         guard let shot = inputs.shot else { return inputs.onGreen ? .green : .address }
-        if inputs.elapsed < heroDuration(reaction: inputs.reaction, club: shot.club, flightDuration: shot.duration) { return .hero }
         if let landing = inputs.landingTime, inputs.elapsed >= landing { return .landing }
+        if !inputs.reduceMotion, inputs.elapsed < heroDuration(reaction: inputs.reaction, club: shot.club, flightDuration: shot.duration) { return .hero }
         if inputs.elapsed >= shot.duration { return .landing }
         return .chase
     }
@@ -52,6 +53,13 @@ enum ShotCameraDirector {
         let stage = stage(inputs)
         let mirror: Float = inputs.handedness == .right ? 1 : -1
         let scale = AvatarSize.courseScale
+        if inputs.reduceMotion, let shot = inputs.shot {
+            let start = scenePoint(shot.position(at: 0)), end = scenePoint(shot.position(at: shot.duration))
+            let center = (start + end) / 2
+            let reach = max(12, simd_distance(start,end) * 0.75 + Float(shot.apex))
+            return Shot(stage: stage,position: center + simd_float3(reach*0.35,reach,reach*0.7),
+                lookAt: center,fieldOfView: 55,damping: 5)
+        }
         switch stage {
         case .address:
             let origin = inputs.shot?.origin ?? inputs.ball

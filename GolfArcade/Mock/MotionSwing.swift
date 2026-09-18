@@ -9,26 +9,6 @@ import simd
 /// Address is wherever the phone is held still. A backswing is rotation away from address; the
 /// downswing starts when the phone turns back toward address quickly; impact is the moment it
 /// passes back through address (or clearly decelerates). Power comes from peak rotation speed.
-/// What any hands-free swing input reports to the range.
-enum SwingInputEvent: Equatable {
-    case load(Double)
-    case cancel
-    case impact(SwingImpact)
-}
-
-enum ShotInputSource: String, Equatable, Sendable { case camera, phone, touch, demo }
-
-/// Observed execution is separate from the target chosen by the player. A camera start line is
-/// a signed 2D arcade estimate, not a measurement of a physical club face or ball launch.
-struct SwingImpact: Equatable, Sendable {
-    var power: Double
-    var startLineDegrees: Double = 0
-    var curveDegrees: Double = 0
-    var strike: StrikeQuality = .center
-    var confidence: Double = 1
-    var source: ShotInputSource = .touch
-}
-
 struct MotionSwingDetector {
     typealias Event = SwingInputEvent
 
@@ -143,7 +123,10 @@ extension GolfClub {
     var motionFullSpeed: Double {
         switch self {
         case .driver: 16
+        case .wood3: 15
+        case .iron5: 14
         case .iron: 13
+        case .iron9: 11
         case .wedge: 9
         case .putter: 3
         }

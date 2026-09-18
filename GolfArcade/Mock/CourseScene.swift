@@ -20,6 +20,10 @@ struct SceneInputs {
     var swingAngle: Double
     var bystanders: [Bystander]
     var preview: RangeShot? = nil
+    /// Body aiming rotates the golfer/trajectory, not the viewpoint. Manual aiming still pans.
+    var cameraAim: Double? = nil
+    var reduceMotion = false
+    var cameraHeading: Double { heading + (cameraAim ?? aim) }
 
     struct Bystander: Equatable {
         let id: UUID
@@ -72,7 +76,7 @@ final class CourseScene: NSObject, ObservableObject {
     private var lastPreview: RangeShot?
     private let impact = SCNNode()
     private var pinFlag: SCNNode?
-    private let golfer = AvatarRig(shirt: UIColor(red: 0.95, green: 0.45, blue: 0.3, alpha: 1))
+    private let golfer = AvatarRig(shirt: UIColor(red: 0.12, green: 0.48, blue: 0.49, alpha: 1))
     private(set) var hole: Hole?
     /// Dots on the putting surface that drift downhill, faster where it is steeper: the read.
     private let greenGrid = SCNNode()
@@ -81,7 +85,7 @@ final class CourseScene: NSObject, ObservableObject {
 
     /// Height of the ground at `point`, in yards.
     private func ground(_ point: CoursePoint) -> Float {
-        Float(hole?.terrain.elevation(at: point) ?? 0)
+        Float(hole?.surface(at: point).heightYards ?? 0)
     }
 
     private var displayLink: CADisplayLink?
@@ -107,7 +111,8 @@ final class CourseScene: NSObject, ObservableObject {
 
     /// Where the golfer's pose comes from this frame. Switching sources crossfades so the
     /// avatar never snaps from one body to another.
-    enum PoseSource: Equatable { case live, waiting, canned, recorded }
+    typealias PoseSource = GolferAnimationState.Source
+    private(set) var animationState: GolferAnimationState?
     private(set) var poseSource: PoseSource = .canned
     private var presentedPose: BodyPose3D?
     private var crossfade: (from: BodyPose3D, start: CFTimeInterval)?
@@ -171,7 +176,7 @@ final class CourseScene: NSObject, ObservableObject {
         buildPinBeacon()
 
         ball.name = "visibilityAssistedBall"
-        ball.geometry = SCNSphere(radius: AvatarSize.visibleBallRadius)
+        ball.geometry = SCNSphere(radius: AvatarSize.courseBallRadius)
         (ball.geometry as? SCNSphere)?.segmentCount = 32
         ball.geometry?.firstMaterial?.diffuse.contents = UIColor.white
         ball.geometry?.firstMaterial?.emission.contents = UIColor(white: 0.15, alpha: 1)
@@ -231,7 +236,7 @@ final class CourseScene: NSObject, ObservableObject {
     func start() {
         guard displayLink == nil else { return }
         let link = CADisplayLink(target: self, selector: #selector(step(_:)))
-        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
         link.add(to: .main, forMode: .common)
         displayLink = link
     }
@@ -313,18 +318,34 @@ final class CourseScene: NSObject, ObservableObject {
         landscape.geometry?.materials = [CourseArt.roughMaterial]
         courseNode.addChildNode(landscape)
 
+        if hole.fairwayBoundary != nil {
+            let surface = SCNNode(geometry: CourseArt.playableSurface(hole))
+            surface.name = "sharedPlayableSurface"
+            courseNode.addChildNode(surface)
+        }
+
         let roughWidth = hole.fairwayWidth + Hole.roughWidth * 2
+        if hole.fairwayBoundary == nil {
         for (a, b) in zip(hole.centerline, hole.centerline.dropFirst()) {
             turf(from: a, to: b, width: roughWidth, material: CourseArt.roughMaterial, y: -0.08)
             turf(from: a, to: b, width: hole.fairwayWidth + 2.2, material: CourseArt.fringeMaterial, y: -0.065)
             turf(from: a, to: b, width: hole.fairwayWidth, material: CourseArt.fairwayMaterial, y: -0.05)
         }
+        }
         add(SCNBox(width: 7, height: 0.04, length: 5, chamferRadius: 0.02), UIColor(red: 0.28, green: 0.58, blue: 0.34, alpha: 1),
             at: world(hole.tee, y: ground(hole.tee) - 0.065))
-        turf(from: pin, to: pin, width: hole.greenRadius * 2 + 3, material: CourseArt.fringeMaterial, y: -0.045)
-        turf(from: pin, to: pin, width: hole.greenRadius * 2, material: CourseArt.greenMaterial, y: -0.035)
+        for side in [-1.0, 1.0] {
+            let point = CoursePoint(x: hole.tee.x + side * 2.8, d: hole.tee.d + 1)
+            let marker = add(SCNBox(width: 0.35, height: 0.28, length: 0.35, chamferRadius: 0.08),
+                UIColor(red: 0.94, green: 0.66, blue: 0.32, alpha: 1), at: world(point, y: ground(point) + 0.10))
+            marker.name = "teeMarker"
+        }
+        if hole.greenBoundary == nil {
+            turf(from: pin, to: pin, width: hole.greenRadius * 2 + 3, material: CourseArt.fringeMaterial, y: -0.045)
+            turf(from: pin, to: pin, width: hole.greenRadius * 2, material: CourseArt.greenMaterial, y: -0.035)
+        }
 
-        for hazard in hole.hazards {
+        for hazard in hole.hazards where hole.fairwayBoundary == nil {
             let point = CoursePoint(x: hazard.x, d: hazard.distance)
             switch hazard.kind {
             case .bunker:
@@ -353,7 +374,7 @@ final class CourseScene: NSObject, ObservableObject {
         flag.simdScale = simd_float3(repeating: 0.28)
         flag.name = "clothPinFlag"
         pinFlag = flag
-        disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: pinGround - 0.132)
+        disc(radius: 0.059, color: UIColor(white: 0.08, alpha: 1), at: pin, y: pinGround - (hole.fairwayBoundary == nil ? 0.132 : 0.098))
         buildGreenGrid(hole)
 
         plantTrees(along: hole)
@@ -429,7 +450,9 @@ final class CourseScene: NSObject, ObservableObject {
 
         let (raw, source) = golferPoseAndSource(shot: shot, elapsed: elapsed, isReplay: inputs.isReplay, swingAngle: inputs.swingAngle, now: now)
         let pose = present(raw, from: source, now: now)
-        golfer.apply(pose)
+        let sample=GolferAnimationState(timestamp:now,pose:pose,source:source)
+        animationState=sample
+        golfer.apply(sample.pose)
         updateBystanders(inputs, golferPose: pose, mirror: mirror, now: now)
 
         // Ball.
@@ -437,8 +460,8 @@ final class CourseScene: NSObject, ObservableObject {
         let teed = shot == nil && inputs.lie == .tee
         let visibleLie = inputs.hole.lie(at: CoursePoint(x: point.lateralYards, d: point.distanceYards))
         let lift = Double(ground(CoursePoint(x: point.lateralYards, d: point.distanceYards)))
-        let restingHeight = lift + (visibleLie == .green ? -0.035 : visibleLie == .bunker || visibleLie == .water ? -0.025 : -0.05)
-        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? lift + Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.visibleBallRadius)), -point.distanceYards)
+        let restingHeight = lift + (inputs.hole.fairwayBoundary != nil ? 0 : visibleLie == .green ? -0.035 : visibleLie == .bunker || visibleLie == .water ? -0.025 : -0.05)
+        ball.position = SCNVector3(point.lateralYards, point.heightYards + (teed ? lift + Double(AvatarSize.ball.y * AvatarSize.courseScale) : restingHeight + Double(AvatarSize.courseBallRadius)), -point.distanceYards)
         shadow.position = SCNVector3(point.lateralYards, restingHeight + 0.003, -point.distanceYards)
         ballLocator.position = SCNVector3(point.lateralYards, restingHeight + 0.008, -point.distanceYards)
         let sunk = shot.map { $0.isHoled && elapsed >= $0.duration } ?? false
@@ -449,7 +472,7 @@ final class CourseScene: NSObject, ObservableObject {
         tee.isHidden = inputs.lie != .tee && shot?.origin != inputs.hole.tee
 
         let burst = min(max(elapsed / 0.23, 0), 1)
-        impact.isHidden = shot == nil || shot?.strike == .miss || elapsed > 0.23
+        impact.isHidden = inputs.reduceMotion || shot == nil || shot?.strike == .miss || elapsed > 0.23
         impact.opacity = CGFloat((1 - burst) * 0.7)
         impact.scale = SCNVector3(1 + burst * 3, 1 + burst * 3, 1 + burst * 3)
         aimLine.isHidden = shot != nil
@@ -510,7 +533,7 @@ final class CourseScene: NSObject, ObservableObject {
             cannedAngleTime = now
             cannedAngle += (min(max(swingAngle, -150), 150) - cannedAngle) * (1 - exp(-dt * 22))
             if let live { return (live, live == .cameraWaiting ? .waiting : .live) }
-            return (AvatarAnimations.swingArc(degrees: cannedAngle), .canned)
+            return (AvatarAnimations.swingArc(degrees: cannedAngle, club: inputs?.club ?? .driver), .canned)
         }
         let followThrough = 0.6
         var source = PoseSource.canned
@@ -521,9 +544,14 @@ final class CourseScene: NSObject, ObservableObject {
             let u = min(t / 0.3, 1)
             let angle = t < 0.3 ? cannedLaunchAngle + (-150 - cannedLaunchAngle) * (u * u) : -150
             source = .canned
-            return AvatarAnimations.swingArc(degrees: angle)
+            return AvatarAnimations.swingArc(degrees: angle, club: shot?.club ?? .driver)
         }
         if elapsed < followThrough { return (follow(elapsed), source) }
+        if shot?.club == .putter || inputs?.reduceMotion == true {
+            // Do not turn a quiet putt into a driver-sized finish or club twirl.
+            return (BodyPose3D.lerp(follow(followThrough), AvatarAnimations.address,
+                smoothstep(0.8, 1.6, Float(elapsed))), source)
+        }
         let reactionTime = elapsed - followThrough
         guard let reaction, reactionTime < AvatarAnimations.reactionLength else {
             return live.map { ($0, $0 == .cameraWaiting ? .waiting : .live) } ?? (AvatarAnimations.address, .canned)
@@ -549,6 +577,7 @@ final class CourseScene: NSObject, ObservableObject {
             dot.position = SCNVector3(point.lateralYards, lift + max(0.06, point.heightYards), -point.distanceYards)
             // A putt's line is read close up: even small dots all the way along.
             dot.simdScale = simd_float3(repeating: putting ? 0.22 : Float(0.5 + t * 1.7))
+            dot.geometry?.firstMaterial?.diffuse.contents = point.heightYards > 0.03 ? UIColor.systemMint : UIColor.systemOrange
         }
         let end = preview.position(at: preview.duration)
         projectedLanding.position = SCNVector3(end.lateralYards, Double(ground(CoursePoint(x: end.lateralYards, d: end.distanceYards))) + 0.06, -end.distanceYards)
@@ -635,6 +664,7 @@ final class CourseScene: NSObject, ObservableObject {
             rig.node.simdPosition = spot
             rig.node.eulerAngles.y = facing
             let seed = Double(index) * 1.3
+            if inputs.reduceMotion { rig.apply(AvatarAnimations.idle(time:0,seed:seed)); continue }
             if let knock = knockdowns[bystander.id] {
                 let t = now - knock.start
                 if t < AvatarAnimations.knockdownLength {
@@ -652,7 +682,7 @@ final class CourseScene: NSObject, ObservableObject {
 
         // The club in the stance frame: the golfer rig is only moved and mirrored.
         func stancePoint(_ p: simd_float3) -> simd_float3 { simd_float3(p.x * mirror, p.y, p.z) + golferPosition }
-        guard !golferPose.clubDropped else { return }
+        guard !golferPose.clubDropped, !inputs.reduceMotion else { return }
         let hits = contact.update(hands: stancePoint(golferPose.clubGrip), head: stancePoint(golferPose.clubHead), at: now, targets: targets)
         for hit in hits {
             knockdowns[hit.id] = (now, hit.push)
@@ -662,11 +692,11 @@ final class CourseScene: NSObject, ObservableObject {
 
     private func moveCamera(_ inputs: SceneInputs, shot: RangeShot?, elapsed: Double, dt: Float) {
         let framing = ShotCameraDirector.shot(ShotCameraDirector.Inputs(
-            ball: inputs.ball, heading: inputs.heading + inputs.aim, aim: 0, distanceToPin: inputs.distanceToPin,
+            ball: inputs.ball, heading: inputs.cameraHeading, aim: 0, distanceToPin: inputs.distanceToPin,
             onGreen: inputs.onGreen && shot == nil, handedness: inputs.handedness, shot: shot, elapsed: elapsed,
-            reaction: reaction, landingTime: landingTime
+            reaction: reaction, landingTime: landingTime, reduceMotion: inputs.reduceMotion
         ))
-        let cut = cameraStage == nil || (framing.stage != cameraStage && [.hero, .chase, .address, .green].contains(framing.stage))
+        let cut = cameraStage == nil
         cameraStage = framing.stage
         // The framing is worked out on flat ground; lift it by the terrain under its subject.
         let lift = simd_float3(0, ground(CoursePoint(x: Double(framing.lookAt.x), d: Double(-framing.lookAt.z))), 0)
@@ -742,7 +772,7 @@ final class CourseScene: NSObject, ObservableObject {
         let spacing = Float(Self.greenGridSpacing)
         for dot in greenDots {
             // Slide along the fall line and wrap inside the cell, so the lattice streams downhill.
-            let travel = (Float(now) * dot.speed).truncatingRemainder(dividingBy: spacing) - spacing / 2
+            let travel = inputs?.reduceMotion == true ? 0 : (Float(now) * dot.speed).truncatingRemainder(dividingBy: spacing) - spacing / 2
             let offset = dot.flow * travel
             let point = CoursePoint(x: dot.base.x + Double(offset.x), d: dot.base.d - Double(offset.z))
             dot.node.simdPosition = simd_float3(Float(point.x), ground(point) + 0.02, -Float(point.d))
@@ -824,7 +854,7 @@ struct CourseSceneView: UIViewRepresentable {
         view.scene = scene.scene
         view.pointOfView = scene.camera
         view.antialiasingMode = .multisampling4X
-        view.preferredFramesPerSecond = 120
+        view.preferredFramesPerSecond = 60
         view.rendersContinuously = true
         view.isUserInteractionEnabled = false
         scene.inputs = inputs
@@ -851,7 +881,7 @@ enum CourseArt {
     static let fairwayMaterial = turfMaterial(base: UIColor(red: 0.32, green: 0.64, blue: 0.26, alpha: 1), stripes: true)
     static let roughMaterial = turfMaterial(base: UIColor(red: 0.27, green: 0.49, blue: 0.22, alpha: 1), stripes: false)
     static let fringeMaterial = turfMaterial(base: UIColor(red: 0.37, green: 0.59, blue: 0.23, alpha: 1), stripes: false)
-    static let greenMaterial = turfMaterial(base: UIColor(red: 0.52, green: 0.75, blue: 0.32, alpha: 1), stripes: true)
+    static let greenMaterial = turfMaterial(base: UIColor(red: 0.52, green: 0.75, blue: 0.32, alpha: 1), stripes: true, crosscut: true)
     static let sandMaterial = turfMaterial(base: UIColor(red: 0.91, green: 0.83, blue: 0.64, alpha: 1), stripes: false)
     static let waterMaterial: SCNMaterial = {
         let material = SCNMaterial()
@@ -873,7 +903,7 @@ enum CourseArt {
         }
     }()
 
-    private static func turfMaterial(base: UIColor, stripes: Bool) -> SCNMaterial {
+    private static func turfMaterial(base: UIColor, stripes: Bool, crosscut: Bool = false) -> SCNMaterial {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         let image = UIGraphicsImageRenderer(size: CGSize(width: 256, height: 256), format: format).image { context in
@@ -884,6 +914,10 @@ enum CourseArt {
                 context.cgContext.fill(CGRect(x: 0, y: 0, width: 256, height: 128))
                 UIColor.black.withAlphaComponent(0.025).setFill()
                 context.cgContext.fill(CGRect(x: 0, y: 128, width: 256, height: 128))
+            }
+            if crosscut {
+                UIColor.white.withAlphaComponent(0.06).setFill()
+                context.cgContext.fill(CGRect(x: 0, y: 0, width: 128, height: 256))
             }
             var seed: UInt64 = 74523
             for _ in 0..<5_000 {
@@ -923,7 +957,9 @@ enum CourseArt {
             // Half-width at this station: full along the body, circular at the caps.
             let over = s < 0 ? -s : max(0, s - length)
             let half = sqrt(max(0, r * r - over * over))
-            let along = min(max(s, 0), length)
+            // The cap extends beyond the station. Clamping here flattened the ends,
+            // so visible turf disagreed with the capsule-distance lie classification.
+            let along = s
             for row in 0...across {
                 let t = -half + Double(row) / Double(across) * 2 * half
                 let point = CoursePoint(x: a.x + ux * along - ud * t, d: a.d + ud * along + ux * t)
@@ -951,7 +987,7 @@ enum CourseArt {
         let outside = max(0, hole.distanceFromCenterline(point) - hole.fairwayWidth / 2 - Hole.roughWidth - 8)
         let blend = min(1, outside / 65)
         let wave = 9 + 6 * sin(point.x * 0.018 + point.d * 0.009) + 4 * cos(point.d * 0.025)
-        return Float(hole.terrain.elevation(at: point)) + Float(-0.72 + blend * blend * wave)
+        return Float(hole.surface(at: point).heightYards) + Float(-0.72 + blend * blend * wave)
     }
 
     private static var readMaterials: [Int: SCNMaterial] = [:]
@@ -999,6 +1035,45 @@ enum CourseArt {
         }
         return SCNGeometry(sources: [.init(vertices: vertices), .init(normals: normals), .init(textureCoordinates: uv)],
                            elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
+    }
+
+    /// One sampled terrain mesh, with material assignment from the same surface query used
+    /// by flight and rolling. Bunkers are bowls in this mesh, not flat discs above the floor.
+    static func playableSurface(_ hole: Hole) -> SCNGeometry {
+        let bounds = hole.centerline + (hole.fairwayBoundary?.points ?? []) + (hole.greenBoundary?.points ?? [])
+        let minX = (bounds.map(\.x).min() ?? 0) - 35, maxX = (bounds.map(\.x).max() ?? 0) + 35
+        let minD = (bounds.map(\.d).min() ?? 0) - 35, maxD = (bounds.map(\.d).max() ?? 0) + 35
+        let columns = max(2, Int(ceil((maxX-minX)/1.5))), rows = max(2, Int(ceil((maxD-minD)/1.5)))
+        var vertices: [SCNVector3] = [], normals: [SCNVector3] = [], uv: [CGPoint] = []
+        var groups = Array(repeating: [Int32](), count: 6)
+        for row in 0...rows { for column in 0...columns {
+            let point = CoursePoint(x:minX+Double(column)/Double(columns)*(maxX-minX), d:minD+Double(row)/Double(rows)*(maxD-minD))
+            let surface = hole.surface(at:point)
+            vertices.append(SCNVector3(Float(point.x),Float(surface.heightYards),-Float(point.d)))
+            normals.append(SCNVector3(simd_normalize(simd_float3(Float(-surface.slopeX),1,Float(surface.slopeD)))))
+            uv.append(CGPoint(x:point.x/24,y:point.d/24))
+        } }
+        for row in 0..<rows { for column in 0..<columns {
+            let a=Int32(row*(columns+1)+column), b=a+Int32(columns+1)
+            for triangle in [[a,a+1,b],[a+1,b+1,b]] {
+                let center = triangle.map { vertices[Int($0)] }.reduce(SCNVector3Zero) { SCNVector3($0.x+$1.x,$0.y+$1.y,$0.z+$1.z) }
+                let lie = hole.lie(at:CoursePoint(x:Double(center.x)/3,d:-Double(center.z)/3))
+                let index: Int
+                switch lie {
+                case .tee,.fairway: index=0
+                case .green: index=1
+                case .fringe: index=2
+                case .bunker: index=3
+                case .water: index=4
+                default: index=5
+                }
+                groups[index].append(contentsOf:triangle)
+            }
+        } }
+        let geometry = SCNGeometry(sources:[.init(vertices:vertices),.init(normals:normals),.init(textureCoordinates:uv)],
+            elements:groups.map { SCNGeometryElement(indices:$0,primitiveType:.triangles) })
+        geometry.materials=[fairwayMaterial,greenMaterial,fringeMaterial,sandMaterial,waterMaterial,roughMaterial]
+        return geometry
     }
 
     private static func part(_ shape: SCNGeometry, color: UIColor, position: SCNVector3, parent: SCNNode) -> SCNNode {

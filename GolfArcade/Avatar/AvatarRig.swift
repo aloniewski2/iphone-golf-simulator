@@ -7,9 +7,9 @@ import UIKit
 final class AvatarRig {
     let node = SCNNode()
     private let body = SCNNode()
-    private var bones: [(BodyJoint, BodyJoint, SCNNode)] = []
-    private var sleeves: [(BodyJoint, BodyJoint, SCNNode)] = []
-    private var joints: [(BodyJoint, SCNNode)] = []
+    private let skinMesh: GolferSkin
+    private let authoredSkin: ResortGolferSkin?
+    private var mirrored = false
     private let torso = SCNNode()
     private let collar = SCNNode()
     private let head = SCNNode()
@@ -20,43 +20,17 @@ final class AvatarRig {
     private let handle = SCNNode()
     private let clubHead = SCNNode()
 
-    init(shirt: UIColor) {
+    init(shirt: UIColor, authored: Bool = UserDefaults.standard.bool(forKey: "presentation.authoredGolfer")) {
         node.name = "premiumGolfer"
         let navy = UIColor(red: 0.12, green: 0.18, blue: 0.27, alpha: 1)
         let skin = UIColor(red: 0.91, green: 0.69, blue: 0.49, alpha: 1)
         let ivory = UIColor(red: 0.98, green: 0.97, blue: 0.91, alpha: 1)
         let hair = UIColor(red: 0.19, green: 0.12, blue: 0.09, alpha: 1)
+        skinMesh = GolferSkin(shirt: shirt, trousers: navy, skin: skin)
+        authoredSkin = authored ? ResortGolferSkin(shirt: shirt, skin: skin) : nil
         node.addChildNode(body)
-        func bone(_ from: BodyJoint, _ to: BodyJoint, radius: CGFloat, color: UIColor) {
-            let shape = SCNCapsule(capRadius: radius, height: 1)
-            shape.radialSegmentCount = 16
-            let part = Self.part(shape, color)
-            part.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
-            body.addChildNode(part)
-            bones.append((from, to, part))
-        }
-        for (hip, knee, ankle, shoulder, elbow, wrist) in [
-            (BodyJoint.leftHip, BodyJoint.leftKnee, BodyJoint.leftAnkle, BodyJoint.leftShoulder, BodyJoint.leftElbow, BodyJoint.leftWrist),
-            (.rightHip, .rightKnee, .rightAnkle, .rightShoulder, .rightElbow, .rightWrist)
-        ] {
-            bone(hip, knee, radius: 0.29, color: navy)
-            bone(knee, ankle, radius: 0.235, color: navy)
-            bone(shoulder, elbow, radius: 0.18, color: skin)
-            bone(elbow, wrist, radius: 0.145, color: skin)
-            let sleeve = Self.part(SCNCapsule(capRadius: 0.245, height: 1), shirt)
-            sleeve.pivot = SCNMatrix4MakeTranslation(0, -0.5, 0)
-            body.addChildNode(sleeve)
-            sleeves.append((shoulder, elbow, sleeve))
-            for (joint, radius, color) in [(knee, 0.245, navy), (shoulder, 0.25, shirt), (elbow, 0.165, skin)] {
-                let part = Self.part(SCNSphere(radius: radius), color)
-                body.addChildNode(part)
-                joints.append((joint, part))
-            }
-        }
-        bone(.neck, .nose, radius: 0.21, color: skin)
+        body.addChildNode(authoredSkin?.node ?? skinMesh.node)
         torso.name = "tailoredPolo"
-        torso.geometry = Self.poloGeometry()
-        torso.geometry?.materials = [Self.material(shirt)]
         body.addChildNode(torso)
         let placket = Self.part(SCNBox(width: 0.03, height: 0.22, length: 0.12, chamferRadius: 0.015), ivory)
         placket.position = SCNVector3(0.43, 0.83, 0)
@@ -71,8 +45,6 @@ final class AvatarRig {
         crest.position = SCNVector3(0.42, 0.76, -0.33)
         crest.scale = SCNVector3(0.15, 0.5, 1)
         torso.addChildNode(crest)
-        pelvis.geometry = SCNSphere(radius: 0.56)
-        pelvis.geometry?.materials = [Self.material(navy)]
         pelvis.scale = SCNVector3(0.75, 0.65, 1.18)
         body.addChildNode(pelvis)
         collar.geometry = SCNTorus(ringRadius: 0.26, pipeRadius: 0.09)
@@ -126,10 +98,12 @@ final class AvatarRig {
         head.addChildNode(cap)
         let brim = Self.part(SCNBox(width: 0.82, height: 0.075, length: 1.15, chamferRadius: 0.12), ivory)
         brim.position = SCNVector3(0.56, 0.32, 0)
+        brim.name = "capBrim"
         brim.eulerAngles.z = -0.08
         head.addChildNode(brim)
         let badge = Self.part(SCNSphere(radius: 0.10), shirt)
         badge.position = SCNVector3(0.59, 0.48, 0)
+        badge.name = "capBadge"
         badge.scale = SCNVector3(0.17, 1, 1)
         head.addChildNode(badge)
         for index in 0..<2 {
@@ -171,19 +145,28 @@ final class AvatarRig {
         face.name = "strikingFace"
         face.position.z = -0.195
         clubHead.addChildNode(face)
+        if authoredSkin != nil {
+            head.geometry = nil
+            head.simdScale = simd_float3(repeating:0.62)
+            collar.simdScale = simd_float3(repeating:0.65)
+            for child in head.childNodes where !["golfCap", "capBrim", "capBadge"].contains(child.name ?? "") { child.isHidden = true }
+            hands.forEach { $0.isHidden = true }
+        }
         apply(AvatarAnimations.address)
     }
 
-    func setMirrored(_ mirrored: Bool) { node.simdScale = simd_float3(mirrored ? -1 : 1, 1, 1) }
+    func setMirrored(_ mirrored: Bool) {
+        self.mirrored = mirrored
+        node.simdScale = simd_float3(authoredSkin == nil && mirrored ? -1 : 1, 1, 1)
+    }
 
-    func apply(_ pose: BodyPose3D) {
+    func apply(_ input: BodyPose3D) {
+        let pose = authoredSkin != nil && mirrored ? input.anatomicallyMirrored : input
         shaft.isHidden = !pose.clubVisible
         handle.isHidden = !pose.clubVisible
         clubHead.isHidden = !pose.clubVisible
         body.simdOrientation = pose.lean
-        for (from, to, bone) in bones { place(bone, from: pose[from], to: pose[to]) }
-        for (from, to, sleeve) in sleeves { place(sleeve, from: pose[from], to: simd_mix(pose[from], pose[to], simd_float3(repeating: 0.57))) }
-        for (joint, node) in joints { node.simdPosition = pose[joint] }
+        if let authoredSkin { authoredSkin.apply(pose) } else { skinMesh.apply(pose) }
         let up = pose[.neck] - pose[.root]
         let shoulderAxis = pose[.rightShoulder] - pose[.leftShoulder]
         torso.simdPosition = pose[.root]
@@ -193,11 +176,20 @@ final class AvatarRig {
         collar.simdPosition = pose[.neck] - simd_normalize(up + simd_float3(0, 0.0001, 0)) * 0.06
         collar.simdOrientation = torso.simdOrientation
         head.simdPosition = pose[.nose]
-        head.simdOrientation = Self.orientation(up: pose[.nose] - pose[.neck], right: shoulderAxis)
+        // The old head frame inherited shoulder-label reversals from the mirrored camera,
+        // turning the face 180 degrees. Eyes/nose/cap brim all share this ball-facing frame.
+        head.simdOrientation = authoredSkin == nil ? Self.headOrientation(for: pose) : torso.simdOrientation
         hands[0].simdPosition = pose[.leftWrist]
         hands[1].simdPosition = pose[.rightWrist]
-        feet[0].simdPosition = pose[.leftAnkle] + simd_float3(0.22, -0.01, 0)
-        feet[1].simdPosition = pose[.rightAnkle] + simd_float3(0.22, -0.01, 0)
+        let facing: Float = authoredSkin != nil && mirrored ? -1 : 1
+        feet[0].simdPosition = pose[.leftAnkle] + simd_float3(0.22*facing, -0.01, 0)
+        feet[1].simdPosition = pose[.rightAnkle] + simd_float3(0.22*facing, -0.01, 0)
+        feet.forEach { $0.eulerAngles.y = facing < 0 ? .pi : 0 }
+        // A lifted trail heel should not leave a flat, floating shoe. Presentation only;
+        // the measured grip and virtual club endpoints remain unchanged.
+        for (index, ankle) in [BodyJoint.leftAnkle, .rightAnkle].enumerated() {
+            feet[index].eulerAngles.z = -min(0.65, max(0, pose[ankle].y - 0.12) * 2.2)
+        }
         let grip = pose.clubDropped ? simd_float3(1.1, 0.08, -1.1) : pose.clubGrip
         let direction = pose.clubDropped ? simd_normalize(simd_float3(0.35, 0, 1)) : pose.clubDirection
         let end = pose.clubDropped ? grip + direction * AvatarSize.clubLength : pose.clubHead
@@ -209,6 +201,13 @@ final class AvatarRig {
         place(handle, from: grip, to: simd_mix(grip, heel, simd_float3(repeating: 0.17)))
         clubHead.simdPosition = heel
         clubHead.simdOrientation = orientation
+    }
+
+    static func headOrientation(for pose: BodyPose3D) -> simd_quatf {
+        let toBall = AvatarSize.ball - pose[.nose]
+        let yaw = max(-Float.pi / 3, min(Float.pi / 3, atan2(toBall.z, max(0.2, toBall.x))))
+        return simd_quatf(angle: -yaw, axis: simd_float3(0, 1, 0)) *
+            simd_quatf(angle: -0.28, axis: simd_float3(0, 0, 1))
     }
 
     private static func material(_ color: UIColor, metal: CGFloat = 0) -> SCNMaterial {

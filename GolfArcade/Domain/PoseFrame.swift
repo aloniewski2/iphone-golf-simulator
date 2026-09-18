@@ -12,6 +12,10 @@ struct PosePoint: Equatable, Sendable {
     let confidence: Float
 }
 
+enum JointProvenance: String, Codable, Sendable {
+    case observed, inferred, held, unavailable
+}
+
 struct PoseFrame: Equatable, Sendable {
     let timestamp: TimeInterval
     let points: [BodyJoint: PosePoint]

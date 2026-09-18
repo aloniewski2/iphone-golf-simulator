@@ -80,6 +80,10 @@ struct MainMenuView: View {
 }
 
 struct SettingsView: View {
+    #if DEBUG
+    @AppStorage("presentation.authoredGolfer") private var authoredGolfer = false
+    #endif
+    @State private var tvSettingsPresented = false
     @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
@@ -89,6 +93,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Button("TV / AirPlay", systemImage: "airplayvideo") { tvSettingsPresented = true }
+                        .accessibilityIdentifier("tvSettings")
+                }
                 Section {
                     Picker("Swing input", selection: $swingInput) {
                         ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
@@ -105,8 +113,17 @@ struct SettingsView: View {
                     Toggle("Sound effects", isOn: $sound)
                     Toggle("Haptics", isOn: $haptics)
                 }
+                #if DEBUG
+                Section("Development comparison") {
+                    Toggle("Preview imported golfer", isOn:$authoredGolfer)
+                        .accessibilityIdentifier("authoredGolferPreview")
+                    Text("Character proof, not the finished golfer. Start a new course view after changing this; active rounds keep their current presentation.")
+                        .font(.caption)
+                }
+                #endif
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $tvSettingsPresented) { TVSettingsView() }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
         .preferredColorScheme(.dark)

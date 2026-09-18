@@ -67,14 +67,34 @@ final class CourseRound: ObservableObject {
     }
     @Published var aim = 0.0
     @Published var shotType: ShotType = .full
+    @Published var shotShape: ShotShapeChoice = .straight
+    @Published var trajectory: ShotTrajectory = .normal
+    @Published var handedness: Handedness = .right
+    @Published var practiceMode = false {
+        didSet { if oldValue != practiceMode { cancelCharge(); practiceImpact = nil } }
+    }
+    @Published private(set) var practiceImpact: SwingImpact?
+    var wind: CourseWind { hole.wind }
     @Published var curve = 0.0
     @Published var editingShot = false
     @Published var automaticProgression = false
     @Published private(set) var nextShotAt: Date?
     @Published private(set) var stanceAim = 0.0
-    private var manualAimSelected = false
+    @Published private var manualAimSelected = false
+    @Published var automaticAim = false {
+        didSet { if automaticAim { target = nil; aim = 0; stanceAim = 0; curve = 0; manualAimSelected = false } }
+    }
+    var usesBodyAim: Bool { !automaticAim && !manualAimSelected }
     private var planningKey: String?
+    private var planningHole: Hole?
     private var planningPower = 1.0
+    private var strengthCache: (key: String, value: Double)?
+    private var strengthHole: Hole?
+    private var workerConditions: ShotPlanningConditions?
+    private var workerPower: Double?
+    private var strengthTask: Task<Void,Never>?
+    private var frozenStrength: Double?
+    private var puttCache: (origin: CoursePoint, hole: Hole, plan: PuttRecommendation)?
     private var previewCache: RangeShot?
     private var previewKey: ShotRequest?
     private var previewOrigin: CoursePoint?
@@ -117,10 +137,55 @@ final class CourseRound: ObservableObject {
     var distanceToPin: Double { ball.distance(to: hole.pin) }
     var intendedTarget: CoursePoint { target ?? hole.recommendedTarget(from: ball) }
     var distanceToTarget: Double { ball.distance(to: intendedTarget) }
-    var targetLabel: String { intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }
+    var targetLabel: String { automaticAim ? (club == .putter && lie == .green ? "AUTO · GREEN LINE" : intendedTarget == hole.pin ? "AUTO · HOLE" : "AUTO · SAFE LANDING") : intendedTarget == hole.pin ? "PIN" : target == nil ? "LANDING" : "TARGET" }
     var heading: Double { ball.heading(to: intendedTarget) }
     var aimStep: Double { club == .putter ? 0.25 : 2 }
-    var combinedAim: Double { aim + stanceAim }
+    var combinedAim: Double { automaticAim ? (automaticPuttPlan?.offsetDegrees ?? 0) : aim + stanceAim }
+    var automaticPuttPlan: PuttRecommendation? {
+        guard automaticAim, club == .putter, lie == .green else { return nil }
+        if puttCache?.origin != ball || puttCache?.hole != hole {
+            puttCache = (ball, hole, PuttRecommendation.solve(from: ball, hole: hole))
+        }
+        return puttCache?.plan
+    }
+    /// Independent of the live charge; this marker never chases the user's swing.
+    var recommendedPower: Double {
+        if phase == .charging, let frozenStrength { return frozenStrength }
+        if let plan = automaticPuttPlan { return plan.power }
+        if hole.fairwayBoundary != nil {
+            let conditions=ShotPlanningConditions(request:shotRequest(SwingImpact(power:1,curveDegrees:curve)),
+                origin:ball,target:intendedTarget,lie:lie,hole:hole)
+            if workerConditions != conditions {
+                strengthTask?.cancel()
+                workerConditions=conditions; workerPower=nil
+                strengthTask=Task { @MainActor [weak self] in
+                    let worker=Task.detached(priority:.userInitiated) { conditions.solve() }
+                    let value=await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
+                    guard !Task.isCancelled, let self, self.workerConditions == conditions else { return }
+                    self.workerPower=value
+                    self.planningKey=nil
+                    self.objectWillChange.send()
+                }
+            }
+            return workerPower ?? conditions.initialPower
+        }
+        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(ball)-\(intendedTarget)-\(shotShape)-\(trajectory)-\(handedness)-\(wind)-\(heading)-\(combinedAim)-\(curve)"
+        if strengthCache?.key != key || strengthHole != hole {
+            // Select strength against the same course trajectory as release, including wind,
+            // shape and ground. Coarse bounded search also works for non-monotonic hazard outcomes.
+            var bestPower = 1.0, bestError = Double.infinity
+            for step in 1...20 {
+                let power = Double(step) / 20
+                let candidate = RangeShot(id: 0, request: shotRequest(SwingImpact(power: power)), origin: ball,
+                    lieFactor: club == .putter ? 1 : lie.powerFactor, hole: hole)
+                let error = candidate.rest.distance(to: intendedTarget) + (candidate.penaltyStrokes > 0 ? 100 : 0)
+                if error < bestError { bestError = error; bestPower = power }
+            }
+            strengthCache = (key, bestPower)
+            strengthHole = hole
+        }
+        return strengthCache?.value ?? 1
+    }
     var holeNavigation: HoleNavigation {
         HoleNavigation(ball: ball, pin: hole.pin, aimHeading: heading + combinedAim)
     }
@@ -136,24 +201,31 @@ final class CourseRound: ObservableObject {
     }
 
     func setStanceAim(_ degrees: Double) {
-        guard phase == .ready, !editingShot, !manualAimSelected, degrees.isFinite else { return }
+        guard !automaticAim, phase == .ready, !editingShot, !manualAimSelected, degrees.isFinite else { return }
         let value = (max(-StanceAimSettler.range, min(StanceAimSettler.range, degrees)) * 2).rounded() / 2
         if stanceAim != value { stanceAim = value }
+    }
+
+    /// Resume relative to the chosen line, without jumping the target or moving the ball.
+    func resumeBodyAim(at degrees: Double) {
+        guard !automaticAim, phase == .ready, !editingShot, degrees.isFinite else { return }
+        let line = combinedAim
+        manualAimSelected = false
+        setStanceAim(degrees)
+        aim = line - stanceAim
     }
 
     /// Cached ideal-center prediction using the same launch/lie/flight model as release.
     /// It is an aim guide, not a promise about the player's future swing speed or strike.
     var trajectoryPreview: RangeShot {
-        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)"
-        if key != planningKey {
+        let key = "\(club.rawValue)-\(shotType.rawValue)-\(lie.rawValue)-\(distanceToTarget)-\(ball)-\(automaticAim)-\(shotShape)-\(trajectory)-\(wind)-\(handedness)"
+        if key != planningKey || planningHole != hole {
             planningKey = key
-            planningPower = RangeShot.power(toReach: distanceToTarget, with: club,
-                type: shotType, lieFactor: club == .putter ? 1 : lie.powerFactor) ?? 1
+            planningHole = hole
+            planningPower = recommendedPower
         }
         let predictedPower = phase == .charging ? max(0.05, (power * 20).rounded() / 20) : planningPower
-        let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
-            type: club == .putter ? .putt : shotType,
-            execution: SwingImpact(power: predictedPower, curveDegrees: curve))
+        let request = shotRequest(SwingImpact(power: predictedPower, curveDegrees: curve))
         if previewKey != request || previewOrigin != ball || previewLie != lie || previewHole != hole {
             previewCache = RangeShot(id: 0, request: request, origin: ball,
                 lieFactor: club == .putter ? 1 : lie.powerFactor, hole: hole)
@@ -163,7 +235,7 @@ final class CourseRound: ObservableObject {
     }
 
     func selectTarget(_ point: CoursePoint) {
-        guard phase == .ready, point.x.isFinite, point.d.isFinite, ball.distance(to: point) > 0.01 else { return }
+        guard !automaticAim, phase == .ready, point.x.isFinite, point.d.isFinite, ball.distance(to: point) > 0.01 else { return }
         target = point
         manualAimSelected = true
         stanceAim = 0
@@ -181,7 +253,7 @@ final class CourseRound: ObservableObject {
     }
 
     func adjustAim(_ degrees: Double) {
-        guard phase == .ready, degrees.isFinite else { return }
+        guard !automaticAim, phase == .ready, degrees.isFinite else { return }
         // Explicit buttons take over from motion aim for this shot, retaining its current line.
         if !manualAimSelected { aim += stanceAim; stanceAim = 0; manualAimSelected = true }
         aim = (aim + degrees).truncatingRemainder(dividingBy: 360)
@@ -214,8 +286,17 @@ final class CourseRound: ObservableObject {
 
     func charge(_ value: Double) {
         guard canSwing else { return }
+        if phase != .charging { frozenStrength=recommendedPower }
         power = min(max(value.isFinite ? value : 0, 0), 1)
         phase = .charging
+    }
+
+    private func shotRequest(_ impact: SwingImpact) -> ShotRequest {
+        ShotRequest(club: club, targetHeading: heading + combinedAim,
+            type: club == .putter ? .putt : shotType, execution: impact,
+            shape: club == .putter || shotType != .full ? .straight : shotShape,
+            trajectory: club == .putter || shotType == .chip ? .normal : trajectory,
+            handedness: handedness, wind: wind, simulationVersion: hole.fairwayBoundary == nil ? 2 : 3)
     }
 
     @discardableResult
@@ -227,9 +308,13 @@ final class CourseRound: ObservableObject {
         var impact = execution ?? SwingImpact(power: power, curveDegrees: curve, strike: strike)
         guard impact.confidence.isFinite, impact.confidence >= 0.45 else { cancelCharge(); return false }
         impact.power = power
+        if practiceMode {
+            practiceImpact = impact
+            cancelCharge()
+            return false // A practice swing cannot create a scored event, sound or replay.
+        }
         impact.curveDegrees += self.curve
-        let request = ShotRequest(club: club, targetHeading: heading + combinedAim,
-                                  type: club == .putter ? .putt : shotType, execution: impact)
+        let request = shotRequest(impact)
         let shot = RangeShot(id: strokes + 1, request: request, origin: ball,
             lieFactor: club == .putter ? 1 : lie.powerFactor,
             hole: hole
@@ -290,6 +375,8 @@ final class CourseRound: ObservableObject {
         stanceAim = 0
         manualAimSelected = false
         curve = 0
+        shotShape = .straight
+        trajectory = .normal
         target = nil
         club = suggestedClub()
         shotType = club == .putter ? .putt : .full
@@ -362,7 +449,7 @@ final class CourseRound: ObservableObject {
         if lie == .bunker { return .wedge }
         // Lie penalties scale launch SPEED, not yardage linearly. Compare actual
         // simulated reach, otherwise rough/sand club recommendations overpromise.
-        for candidate in [GolfClub.wedge, .iron] {
+        for candidate in [GolfClub.wedge, .iron9, .iron, .iron5, .wood3] {
             let reach = BallFlight.simulate(candidate.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
             if distanceToTarget <= reach * 0.98 { return candidate }
         }
@@ -398,6 +485,8 @@ final class CourseRound: ObservableObject {
         manualAimSelected = false
         nextShotAt = nil
         curve = 0
+        shotShape = .straight
+        trajectory = .normal
         target = nil
         isReplay = false
         club = suggestedClub()

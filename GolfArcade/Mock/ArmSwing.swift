@@ -552,7 +552,7 @@ struct ArmSwingDetector {
 /// cannot drift while they settle or during the takeaway.
 struct StanceAimSettler {
     /// How long the turn must hold still.
-    var window = 0.5
+    var window = 0.2
     /// Spread of readings across the window that still counts as holding still.
     var tolerance = 4.0
     /// Body turns smaller than this are square: aim straight, no jitter from a slightly open stance.

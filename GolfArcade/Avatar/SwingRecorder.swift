@@ -16,10 +16,11 @@ struct SwingRecorder {
     }
 
     mutating func record(_ pose: BodyPose3D, at time: Double) {
-        guard !isFrozen else { return }
+        guard !isFrozen, time.isFinite, samples.last.map({ time > $0.time }) ?? true else { return }
         samples.append((time, pose))
         let cutoff = time - window
         if let first = samples.firstIndex(where: { $0.time >= cutoff }), first > 0 { samples.removeFirst(first) }
+        if samples.count > 300 { samples.removeFirst(samples.count-300) }
     }
 
     /// Marks impact; recording stops `afterImpact` seconds later.

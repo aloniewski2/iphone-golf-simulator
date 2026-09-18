@@ -5,6 +5,16 @@ import simd
 /// The mocked human is the stand-in for real players: these tests hold it to human motion and
 /// confirm the swing detector and stance aiming read it the way they must read a person.
 final class SyntheticGolferTests: XCTestCase {
+    func testStanceAimRespondsWithinAQuarterSecondAndRejectsJitter() throws {
+        var aim = StanceAimSettler()
+        for i in 0...6 { aim.ingest(0, at: Double(i) / 30) }
+        XCTAssertEqual(aim.settled, 0)
+        for i in 7...14 { aim.ingest(18, at: Double(i) / 30) }
+        XCTAssertEqual(try XCTUnwrap(aim.settled), 18, accuracy: 0.01)
+        aim.ingest(-30, at: 0.5)
+        XCTAssertEqual(try XCTUnwrap(aim.settled), 18, "One bad orientation sample cannot snap the line")
+    }
+
     func testBodyKeepsHumanProportionsThroughTheSwing() {
         let golfer = SyntheticGolfer()
         for time in stride(from: 0.0, through: golfer.duration, by: 0.05) {
@@ -116,6 +126,7 @@ final class SyntheticGolferTests: XCTestCase {
         XCTAssertEqual(StanceAimSettler.aimDegrees(bodyYaw: -70, handedness: .right), 30)
         XCTAssertEqual(StanceAimSettler.aimDegrees(bodyYaw: .nan, handedness: .right), 0)
         var settler = StanceAimSettler()
+        settler.window = 0.5 // Exercise the configurable stability window independently of the live default.
         settler.ingest(10, at: 0)
         settler.ingest(30, at: 0.2)
         settler.ingest(12, at: 0.45)

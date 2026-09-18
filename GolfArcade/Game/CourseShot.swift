@@ -1,5 +1,35 @@
 import Foundation
 
+enum ShotShapeChoice: String, CaseIterable, Codable, Identifiable, Sendable {
+    case straight, draw, fade
+    var id: Self { self }
+    var title: String { rawValue.capitalized }
+    func curve(handedness: Handedness) -> Double {
+        let rightHanded: Double = self == .draw ? -8 : self == .fade ? 8 : 0
+        return handedness == .right ? rightHanded : -rightHanded
+    }
+}
+
+enum ShotTrajectory: String, CaseIterable, Codable, Identifiable, Sendable {
+    case low, normal, high
+    var id: Self { self }
+    var title: String { rawValue.capitalized }
+    var loftOffset: Double { self == .low ? -6 : self == .high ? 7 : 0 }
+}
+
+/// World horizontal velocity in metres/second. Frozen in each shot request.
+struct CourseWind: Equatable, Codable, Sendable {
+    var x: Double = 0
+    var d: Double = 0
+    static let calm = CourseWind()
+    var speedMPH: Double { hypot(x, d) / 0.44704 }
+    var bearing: Double { atan2(x, d) * 180 / .pi }
+    func local(to heading: Double) -> (x: Double, z: Double) {
+        let angle = heading * .pi / 180
+        return (x * cos(angle) - d * sin(angle), x * sin(angle) + d * cos(angle))
+    }
+}
+
 enum ShotType: String, CaseIterable, Identifiable, Sendable {
     case full, pitch, chip, putt
     var id: Self { self }
@@ -18,7 +48,12 @@ struct ShotRequest: Equatable, Sendable {
     let club: GolfClub
     let targetHeading: Double
     let type: ShotType
-    let execution: SwingImpact
+    var execution: SwingImpact
+    var shape: ShotShapeChoice = .straight
+    var trajectory: ShotTrajectory = .normal
+    var handedness: Handedness = .right
+    var wind: CourseWind = .calm
+    var simulationVersion = 2
 }
 
 extension GolfClub {
@@ -32,7 +67,10 @@ extension GolfClub {
     var shortName: String {
         switch self {
         case .driver: "DR"
+        case .wood3: "3W"
+        case .iron5: "5I"
         case .iron: "7I"
+        case .iron9: "9I"
         case .wedge: "SW"
         case .putter: "PT"
         }
@@ -114,9 +152,33 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         strike = execution.strike
         self.origin = origin
         heading = request.targetHeading.isFinite ? request.targetHeading : 0
-        curve = club == .putter ? 0 : min(max(execution.curveDegrees.isFinite ? execution.curveDegrees : 0, -15), 15)
+        let selectedCurve = request.type == .full ? request.shape.curve(handedness: request.handedness) : 0
+        curve = club == .putter ? 0 : min(max((execution.curveDegrees.isFinite ? execution.curveDegrees : 0) + selectedCurve, -15), 15)
         let effectivePower = power * request.type.speedGain * strike.efficiency * min(max(lieFactor.isFinite ? lieFactor : 0, 0), 1)
-        flight = BallFlight.simulate(club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve))
+        var launch = club.launch(power: effectivePower, aimDegrees: self.aim, curveDegrees: self.curve)
+        if club != .putter, request.type != .chip {
+            launch.launchAngleDegrees = max(3, min(60, launch.launchAngleDegrees + request.trajectory.loftOffset))
+        }
+        let wind = request.wind.local(to: heading)
+        if let hole, hole.fairwayBoundary != nil {
+            let geometry=ShotGeometry(origin:origin,heading:heading)
+            let originHeight=hole.surface(at:origin).heightYards
+            let angle=heading * .pi/180
+            if club == .putter { launch.ballSpeedMPH *= sqrt(Self.greenDeceleration*0.9144/3.2) }
+            flight = BallFlight.simulate(launch,windX:wind.x,windZ:wind.z) { x,z in
+                let point=geometry.ground(FlightPoint(lateralYards:x/0.9144,heightYards:0,distanceYards:z/0.9144))
+                let sample=hole.surface(at:point)
+                let sand=sample.lie == .bunker
+                return BallFlight.Surface(height:(sample.heightYards-originHeight)*0.9144,
+                    slopeX:sample.slopeX*cos(angle)-sample.slopeD*sin(angle),
+                    slopeZ:sample.slopeX*sin(angle)+sample.slopeD*cos(angle),
+                    deceleration:Self.rollingDeceleration(on:sample.lie)*0.9144,
+                    restitution:sand ? 0.08 : sample.lie == .green ? 0.25 : 0.35,
+                    bounceFriction:sand ? 0.25 : sample.lie == .deepRough ? 0.35 : 0.6)
+            }
+        } else {
+            flight = BallFlight.simulate(launch, windX: wind.x, windZ: wind.z)
+        }
 
         guard let hole else {
             lie = nil
@@ -136,7 +198,14 @@ struct RangeShot: Identifiable, Equatable, Sendable {
             return
         }
         let geometry = ShotGeometry(origin: origin, heading: self.heading)
-        let grounded = Self.groundPath(flight: flight, geometry: geometry, hole: hole, putt: club == .putter)
+        let grounded: [FlightPoint]
+        if hole.fairwayBoundary != nil {
+            let recordedFlight = flight
+            let count=Int(ceil(recordedFlight.duration/BallFlight.sampleInterval))
+            grounded=(0...count).map { geometry.world(recordedFlight.position(at:Double($0)*BallFlight.sampleInterval)) }
+        } else {
+            grounded=Self.groundPath(flight: flight, geometry: geometry, hole: hole, putt: club == .putter)
+        }
         path = grounded
         let (lie, holedAt, next) = Self.resolve(path: grounded, origin: origin, hole: hole)
         self.lie = lie
@@ -180,7 +249,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
     static func rollingDeceleration(on lie: CourseLie) -> Double {
         switch lie {
         case .green: greenDeceleration
+        case .fringe: greenDeceleration * 1.5
         case .rough, .outOfBounds: fairwayDeceleration * 1.6
+        case .deepRough: fairwayDeceleration * 2.1
         case .bunker: fairwayDeceleration * 2.5
         case .water: fairwayDeceleration * 4
         case .tee, .fairway: fairwayDeceleration
@@ -347,5 +418,48 @@ extension StrikeQuality {
         case .heel, .toe: 0.80
         case .miss: 0
         }
+    }
+}
+
+/// A recommendation, never a correction applied after impact. Runs the SAME terrain
+/// solver used by the actual stroke, searching line and pace together. Bounded search
+/// may miss a solution on extreme greens; `missYards` makes that limitation explicit.
+struct PuttRecommendation: Equatable, Sendable {
+    let offsetDegrees: Double
+    let power: Double
+    let missYards: Double
+
+    static func solve(from origin: CoursePoint, hole: Hole) -> Self {
+        let base = origin.heading(to: hole.pin)
+        let seed = RangeShot.power(toReach: origin.distance(to: hole.pin), with: .putter) ?? 1
+        func evaluate(_ offset: Double, _ power: Double) -> Self {
+            let shot = RangeShot(id: 0, club: .putter, power: power, aim: 0,
+                origin: origin, heading: base + offset, hole: hole)
+            return Self(offsetDegrees: offset, power: power, missYards: shot.rest.distance(to: hole.pin))
+        }
+        var best = evaluate(0, seed)
+        // Prefer lower-power solutions among equally good candidates. Do not use a
+        // widened cup or a pin-directed force to make the recommendation succeed.
+        func better(_ a: Self, than b: Self) -> Bool {
+            a.missYards < b.missYards - 0.00001 ||
+                (abs(a.missYards - b.missYards) < 0.00001 && a.power < b.power)
+        }
+        for offset in [-36.0, -18, 0, 18, 36] {
+            for factor in [0.65, 0.85, 1.0, 1.2, 1.45] {
+                let candidate = evaluate(offset, min(1, max(0.001, seed * factor)))
+                if better(candidate, than: best) { best = candidate }
+            }
+        }
+        var angleStep = 9.0, powerStep = max(0.015, seed * 0.18)
+        for _ in 0..<8 {
+            let center = best
+            for a in [-1.0, 0, 1] { for p in [-1.0, 0, 1] {
+                let candidate = evaluate(max(-60, min(60, center.offsetDegrees + a * angleStep)),
+                    min(1, max(0.001, center.power + p * powerStep)))
+                if better(candidate, than: best) { best = candidate }
+            } }
+            angleStep *= 0.5; powerStep *= 0.5
+        }
+        return best
     }
 }

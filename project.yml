@@ -15,6 +15,18 @@ targets:
   GolfArcade:
     type: application
     platform: iOS
+    info:
+      path: GolfArcade/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleExternalDisplayNonInteractive:
+              - UISceneConfigurationName: Golf TV
+                UISceneClassName: UIWindowScene
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).GolfExternalSceneDelegate
     sources:
       - path: GolfArcade
     settings:

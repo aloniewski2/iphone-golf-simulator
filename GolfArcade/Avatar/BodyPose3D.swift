@@ -83,6 +83,7 @@ struct BodyPose3D: Equatable, Sendable {
     var virtualClubHead: simd_float3?
     /// Same confidence-weighted grip used by contact, without overwriting measured wrists.
     var virtualClubGrip: simd_float3?
+    var provenance: [BodyJoint: JointProvenance] = [:]
     /// Whole-body rotation about the feet, for knockdowns.
     var lean = simd_quatf(angle: 0, axis: simd_float3(0, 1, 0))
 
@@ -92,6 +93,27 @@ struct BodyPose3D: Equatable, Sendable {
     var clubGrip: simd_float3 { virtualClubGrip ?? handCenter }
     var shoulderCenter: simd_float3 { (self[.leftShoulder] + self[.rightShoulder]) / 2 }
     var clubHead: simd_float3 { virtualClubHead ?? (clubGrip + clubDirection * AvatarSize.clubLength) }
+
+    /// Reflect joint positions and swap anatomy, never use negative mesh scale/winding.
+    var anatomicallyMirrored: BodyPose3D {
+        var result = self
+        func reflect(_ p: simd_float3) -> simd_float3 { simd_float3(-p.x,p.y,p.z) }
+        for joint in BodyJoint.allCases { result.joints[joint] = reflect(self[joint]) }
+        let pairs: [(BodyJoint,BodyJoint)] = [(.leftShoulder,.rightShoulder),(.leftElbow,.rightElbow),
+                             (.leftWrist,.rightWrist),(.leftHip,.rightHip),(.leftKnee,.rightKnee),(.leftAnkle,.rightAnkle)]
+        for (left,right) in pairs {
+            result.joints[left] = reflect(self[right]); result.joints[right] = reflect(self[left])
+            result.provenance[left] = provenance[right]; result.provenance[right] = provenance[left]
+        }
+        // Conjugate the whole-body rotation by the reflection; keep a proper rotation.
+        var reflection=matrix_identity_float3x3
+        reflection.columns.0.x = -1
+        result.lean=simd_quatf(reflection * simd_float3x3(lean) * reflection)
+        result.virtualClubGrip = reflect(clubGrip)
+        result.virtualClubHead = reflect(clubHead)
+        result.clubDirection = reflect(clubDirection)
+        return result
+    }
 
     static var cameraWaiting: BodyPose3D {
         var pose = AvatarAnimations.address
@@ -141,6 +163,7 @@ struct BodyPose3D: Equatable, Sendable {
             clubVisible: t < 0.5 ? a.clubVisible : b.clubVisible,
             virtualClubHead: a.virtualClubHead != nil || b.virtualClubHead != nil ? simd_mix(a.clubHead, b.clubHead, simd_float3(repeating: t)) : nil,
             virtualClubGrip: a.virtualClubGrip != nil || b.virtualClubGrip != nil ? simd_mix(a.clubGrip, b.clubGrip, simd_float3(repeating: t)) : nil,
+            provenance: t < 0.5 ? a.provenance : b.provenance,
             lean: simd_slerp(a.lean, b.lean, t)
         )
     }

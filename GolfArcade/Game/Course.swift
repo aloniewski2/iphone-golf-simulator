@@ -42,11 +42,12 @@ struct CourseHazard: Identifiable, Equatable, Sendable {
 
 /// Where a ball comes to rest. Lies change the next shot; water and out of bounds cost a stroke.
 enum CourseLie: String, Equatable, Codable, Sendable {
-    case tee, fairway, rough, bunker, green, water, outOfBounds
+    case tee, fairway, fringe, rough, deepRough, bunker, green, water, outOfBounds
 
     var displayName: String {
         switch self {
         case .outOfBounds: "Out of bounds"
+        case .deepRough: "Deep rough"
         default: rawValue.capitalized
         }
     }
@@ -55,12 +56,47 @@ enum CourseLie: String, Equatable, Codable, Sendable {
     var powerFactor: Double {
         switch self {
         case .rough: 0.85
+        case .deepRough: 0.68
+        case .fringe: 0.97
         case .bunker: 0.6
         default: 1
         }
     }
 
     var penaltyStrokes: Int { self == .water || self == .outOfBounds ? 1 : 0 }
+}
+
+/// Shared authored boundary: map, mesh generation and lies all consume these vertices.
+struct CourseRegion: Equatable, Sendable {
+    var points: [CoursePoint]
+    func contains(_ p: CoursePoint) -> Bool {
+        guard points.count >= 3 else { return false }
+        var inside = false, previous = points.last!
+        for current in points {
+            if (current.d > p.d) != (previous.d > p.d),
+               p.x < (previous.x-current.x)*(p.d-current.d)/(previous.d-current.d)+current.x { inside.toggle() }
+            previous = current
+        }
+        return inside
+    }
+    func distance(to p: CoursePoint) -> Double {
+        guard let last = points.last else { return .infinity }
+        var previous=last, nearest=Double.infinity
+        for current in points {
+            let dx=current.x-previous.x, dd=current.d-previous.d
+            let t=max(0,min(1,((p.x-previous.x)*dx+(p.d-previous.d)*dd)/max(0.0001,dx*dx+dd*dd)))
+            nearest=min(nearest,p.distance(to:CoursePoint(x:previous.x+t*dx,d:previous.d+t*dd)))
+            previous=current
+        }
+        return nearest
+    }
+}
+
+struct CourseSurface: Equatable, Sendable {
+    let heightYards: Double
+    let slopeX: Double
+    let slopeD: Double
+    let lie: CourseLie
 }
 
 /// The shape of the ground, in yards: an overall tilt plus mounds, swales and ridges. The ball
@@ -141,6 +177,9 @@ struct Hole: Identifiable, Equatable, Sendable {
     let greenRadius: Double
     let hazards: [CourseHazard]
     var terrain: Terrain = .flat
+    var wind: CourseWind = .calm
+    var fairwayBoundary: CourseRegion?
+    var greenBoundary: CourseRegion?
 
     /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
     static let roughWidth = 24.0
@@ -155,7 +194,7 @@ struct Hole: Identifiable, Equatable, Sendable {
     /// Follow the next landing station, not a straight shortcut through a dogleg.
     /// Project onto the nearest route segment so a passed station never aims backwards.
     func recommendedTarget(from ball: CoursePoint) -> CoursePoint {
-        guard centerline.count > 2, ball.distance(to: pin) > greenRadius + 20 else { return pin }
+        guard centerline.count > 2, ball.distance(to: pin) > greenRadius + 20 else { return safeLanding(near: pin, from: ball) }
         var closest = Double.infinity
         var segment = 0
         for i in 0..<(centerline.count - 1) {
@@ -167,7 +206,50 @@ struct Hole: Identifiable, Equatable, Sendable {
         }
         var station = segment + 1
         while station < centerline.count - 1 && ball.distance(to: centerline[station]) < 35 { station += 1 }
-        return centerline[station]
+        return safeLanding(near: centerline[station], from: ball)
+    }
+
+    /// Landing stations for the overview. These are intended landing areas, not a
+    /// claim that the ball rolls along this line or clears every intervening obstacle.
+    func recommendedRoute(from ball: CoursePoint) -> [CoursePoint] {
+        var route = [ball]
+        for _ in 0..<(centerline.count + 2) {
+            guard let current = route.last, current.distance(to: pin) > 0.01 else { break }
+            let next = recommendedTarget(from: current)
+            guard !route.contains(where: { $0.distance(to: next) < 0.01 }) else { break }
+            route.append(next)
+        }
+        return route
+    }
+
+    /// A deterministic route recommendation, not a guarantee of the actual shot result.
+    /// Favor the center of playable turf and leave a dispersion margin around hazards.
+    private func safeLanding(near target: CoursePoint, from ball: CoursePoint) -> CoursePoint {
+        if lie(at: ball) == .green { return pin }
+        func risk(_ p: CoursePoint) -> Double {
+            let margin = min(6, ball.distance(to: p) * 0.04)
+            return [(0.0,0.0), (margin,0), (-margin,0), (0,margin), (0,-margin)].reduce(0) { sum, offset in
+                let point = CoursePoint(x: p.x + offset.0, d: p.d + offset.1)
+                switch lie(at: point) {
+                case .green, .fairway, .tee: return sum
+                case .fringe: return sum + 3
+                case .rough: return sum + 15
+                case .deepRough: return sum + 30
+                case .bunker: return sum + 50
+                case .water, .outOfBounds: return sum + 250
+                }
+            }
+        }
+        if risk(target) == 0 { return target }
+        var best = target, score = Double.infinity
+        let spacing = max(3, min(8, fairwayWidth / 5))
+        for x in -4...4 { for d in -4...4 {
+            let p = CoursePoint(x: target.x + Double(x) * spacing, d: target.d + Double(d) * spacing)
+            guard ball.distance(to: p) > 3 else { continue }
+            let cost = risk(p) + p.distance(to: target) * 0.8 + distanceFromCenterline(p) * 0.15
+            if cost < score { score = cost; best = p }
+        } }
+        return best
     }
 
     func distanceFromCenterline(_ point: CoursePoint) -> Double {
@@ -183,12 +265,38 @@ struct Hole: Identifiable, Equatable, Sendable {
         if let hazard = hazards.first(where: { $0.contains(point) }) {
             return hazard.kind == .water ? .water : .bunker
         }
-        if point.distance(to: pin) <= greenRadius { return .green }
+        if greenBoundary?.contains(point) ?? (point.distance(to: pin) <= greenRadius) { return .green }
+        if let greenBoundary, greenBoundary.distance(to:point) <= 2 { return .fringe }
         if point.distance(to: tee) <= 4 { return .tee }
         let offset = distanceFromCenterline(point)
+        if let fairwayBoundary {
+            if fairwayBoundary.contains(point) { return .fairway }
+            let edge = fairwayBoundary.distance(to:point)
+            if edge <= 12 { return .rough }
+            if edge <= Self.roughWidth { return .deepRough }
+            return .outOfBounds
+        }
         if offset <= fairwayWidth / 2 { return .fairway }
         if offset <= fairwayWidth / 2 + Self.roughWidth { return .rough }
         return .outOfBounds
+    }
+
+    func surface(at point: CoursePoint) -> CourseSurface {
+            var height=terrain.elevation(at:point)
+            var gradient=terrain.gradient(at:point)
+            if fairwayBoundary != nil {
+                for hazard in hazards where hazard.kind == .bunker {
+                    let width=max(1,hazard.width/2),length=max(1,hazard.length/2)
+                    let x=(point.x-hazard.x)/width, d=(point.d-hazard.distance)/length
+                    let radius=x*x+d*d
+                    if radius < 1 {
+                        height -= 0.8 * pow(1-radius,2)
+                        gradient.dx += 3.2*x*(1-radius)/width
+                        gradient.dd += 3.2*d*(1-radius)/length
+                    }
+                }
+            }
+        return CourseSurface(heightYards:height,slopeX:gradient.dx,slopeD:gradient.dd,lie:lie(at:point))
     }
 }
 
@@ -273,5 +381,81 @@ struct Course: Identifiable, Equatable, Sendable {
              Terrain(tiltX: -0.012, tiltD: 0.01, features: [mound(12, 181, r: 14, h: 0.3), mound(-12, 159, r: 12, h: -0.2), mound(0, 30, r: 40, h: 1.2)]))
     ])
 
-    static let all = [easy, medium, hard]
+    /// Original compact resort loop: a broad dogleg, a diagonal pond carry and a
+    /// two-stage par five. Authored here, not traced from another game's layout.
+    static let sunward = Course(id: "sunward", name: "Sunward Links · Legacy 3", difficulty: .medium, holes: [
+        shaped(Hole(number: 1, par: 4,
+            centerline: [p(0, 0), p(-12, 165), p(44, 242), p(112, 306)],
+            fairwayWidth: 43, greenRadius: 19,
+            hazards: [water(0, -49, 125, 40, 145), bunker(1, 9, 159, 16, 29),
+                      bunker(2, 89, 294, 15, 23), bunker(3, 134, 314, 14, 20)]),
+            Terrain(tiltX: 0.003, tiltD: 0.004, features: [
+                mound(-44, 90, r: 50, h: 1.4), mound(58, 220, r: 48, h: 1.8),
+                ridge(97, 314, 122, 321, r: 21, h: 0.23)])),
+        shaped(Hole(number: 2, par: 3, centerline: [p(0, 0), p(36, 136)],
+            fairwayWidth: 38, greenRadius: 19,
+            hazards: [water(0, 12, 72, 57, 45), bunker(1, 16, 133, 13, 23),
+                      bunker(2, 51, 151, 13, 17)]),
+            Terrain(tiltX: -0.005, tiltD: 0.002, features: [
+                mound(47, 127, r: 22, h: 0.26), mound(23, 149, r: 20, h: -0.16)])),
+        shaped(Hole(number: 3, par: 5,
+            centerline: [p(0, 0), p(8, 188), p(-55, 325), p(-109, 432)],
+            fairwayWidth: 40, greenRadius: 20,
+            hazards: [bunker(0, 28, 179, 17, 27), water(1, -91, 299, 42, 118),
+                      bunker(2, -38, 329, 15, 27), bunker(3, -131, 421, 15, 23)]),
+            Terrain(tiltX: 0.003, tiltD: -0.002, features: [
+                ridge(-5, 220, -35, 260, r: 48, h: 1.8), mound(-50, 355, r: 38, h: -0.9),
+                ridge(-122, 442, -96, 439, r: 22, h: 0.25)]))
+    ])
+
+    /// New layout identity deliberately does not reuse the legacy three-hole score key.
+    static let sunwardResort: Course = {
+        var holes = sunward.holes + [
+            shaped(Hole(number:4,par:4,centerline:[p(0,0),p(4,175),p(83,265),p(111,337)],fairwayWidth:38,greenRadius:18,
+                hazards:[bunker(0,-15,163,17,29),bunker(1,72,249,16,22),bunker(2,130,330,16,24)]),
+                Terrain(tiltX:0.004,tiltD:0.003,features:[mound(38,196,r:40,h:2),mound(118,345,r:24,h:0.3)])),
+            shaped(Hole(number:5,par:3,centerline:[p(0,0),p(-27,153)],fairwayWidth:35,greenRadius:18,
+                hazards:[bunker(0,-47,145,17,27),bunker(1,-8,164,16,22)]),
+                Terrain(tiltX:-0.003,tiltD:0.018,features:[mound(-34,161,r:25,h:0.3)])),
+            shaped(Hole(number:6,par:5,centerline:[p(0,0),p(0,207),p(60,340),p(32,476)],fairwayWidth:44,greenRadius:21,
+                hazards:[water(0,-41,316,48,180),bunker(1,23,199,17,27),bunker(2,44,347,15,25),bunker(3,51,472,16,25)]),
+                Terrain(tiltX:0.002,tiltD:-0.002,features:[ridge(-10,260,45,306,r:40,h:1.3),mound(25,489,r:27,h:0.28)])),
+            shaped(Hole(number:7,par:4,centerline:[p(0,0),p(-8,181),p(-72,294),p(-61,370)],fairwayWidth:42,greenRadius:19,
+                hazards:[bunker(0,14,172,19,27),bunker(1,-91,287,18,32),bunker(2,-79,367,15,20)]),
+                Terrain(tiltX:0.005,tiltD:0.003,features:[ridge(-20,90,18,148,r:45,h:2.1),mound(-55,251,r:45,h:-1.2),mound(-53,379,r:24,h:0.25)])),
+            shaped(Hole(number:8,par:4,centerline:[p(0,0),p(10,152),p(70,236)],fairwayWidth:39,greenRadius:17,
+                hazards:[bunker(0,-9,141,19,33),bunker(1,32,169,21,25),bunker(2,53,231,17,24),water(3,111,196,39,100)]),
+                Terrain(tiltX:-0.004,tiltD:0.002,features:[mound(76,245,r:21,h:0.26)])),
+            shaped(Hole(number:9,par:4,centerline:[p(0,0),p(-6,195),p(53,301),p(105,370)],fairwayWidth:46,greenRadius:22,
+                hazards:[water(0,-49,171,42,173),bunker(1,17,184,19,31),bunker(2,81,359,17,28),bunker(3,128,375,17,24)]),
+                Terrain(tiltX:0.003,tiltD:-0.003,features:[mound(46,246,r:42,h:1.6),ridge(91,382,119,381,r:25,h:0.25)]))
+        ]
+        let breezes=[CourseWind(x:1.3,d:0.6),CourseWind(x:-1.5,d:-0.5),CourseWind(x:1,d:1.2),
+            CourseWind(x:-0.8,d:0.5),CourseWind(x:1.2,d:-0.8),CourseWind(x:-1,d:1.4),
+            CourseWind(x:1.5,d:0),CourseWind(x:-1.2,d:-0.6),CourseWind(x:0.8,d:0.7)]
+        for index in holes.indices {
+            var hole=holes[index]
+            var left:[CoursePoint]=[],right:[CoursePoint]=[]
+            for segment in 0..<(hole.centerline.count-1) {
+                let a=hole.centerline[segment],b=hole.centerline[segment+1],length=a.distance(to:b)
+                for step in 0...5 {
+                    let t=Double(step)/5, x=a.x+(b.x-a.x)*t,d=a.d+(b.d-a.d)*t
+                    let width=hole.fairwayWidth/2*(0.88+0.16*sin((Double(segment)+t)*2.1+Double(index)))
+                    left.append(p(x-(b.d-a.d)/length*width,d+(b.x-a.x)/length*width))
+                    right.append(p(x+(b.d-a.d)/length*width,d-(b.x-a.x)/length*width))
+                }
+            }
+            hole.fairwayBoundary=CourseRegion(points:left+right.reversed())
+            hole.greenBoundary=CourseRegion(points:(0..<32).map { vertex in
+                let angle=Double(vertex)/32 * .pi*2
+                let radius=hole.greenRadius*(1+0.10*sin(angle*3+Double(index)))
+                return p(hole.pin.x+cos(angle)*radius,hole.pin.d+sin(angle)*radius*0.93)
+            })
+            hole.wind=breezes[index]
+            holes[index]=hole
+        }
+        return Course(id:"sunward-resort-v1",name:"Sunward Resort · Nine",difficulty:.medium,holes:holes)
+    }()
+
+    static let all = [easy, medium, hard, sunwardResort, sunward]
 }

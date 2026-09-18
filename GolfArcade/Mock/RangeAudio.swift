@@ -272,7 +272,7 @@ struct ImpactSound: Sendable {
     static func strike(club: GolfClub, strike: StrikeQuality) -> ImpactSound {
         var sound: ImpactSound
         switch club {
-        case .driver:
+        case .driver, .wood3:
             // A titanium face: a bright metallic ping over a deep, short thump.
             sound = ImpactSound(partials: [
                 Partial(frequency: 2350, amplitude: 0.42, decay: 0.055),
@@ -280,7 +280,7 @@ struct ImpactSound: Sendable {
                 Partial(frequency: 4260, amplitude: 0.18, decay: 0.030),
                 Partial(frequency: 165, amplitude: 0.55, decay: 0.032, drop: 70)
             ], noises: [Noise(amplitude: 0.7, attack: 0.0004, decay: 0.006, brightness: 0.95)], duration: 0.32)
-        case .iron:
+        case .iron5, .iron, .iron9:
             // Forged iron: a crisp compressed thwack with a little turf.
             sound = ImpactSound(partials: [
                 Partial(frequency: 1320, amplitude: 0.36, decay: 0.030),

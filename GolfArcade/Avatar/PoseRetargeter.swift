@@ -323,6 +323,7 @@ struct TorsoTurnEstimator {
 struct CameraAvatarPoseFilter {
     private var filters: [BodyJoint: OneEuroFilter] = [:]
     private var lastTime: Double?
+    private var lastGoodTime: Double?
     private(set) var pose = BodyPose3D.cameraWaiting
 
     mutating func update(_ observed: BodyPose3D, frame: PoseFrame?, at time: Double) -> BodyPose3D {
@@ -332,9 +333,13 @@ struct CameraAvatarPoseFilter {
         guard let frame, [.leftShoulder, .rightShoulder, .leftHip, .rightHip].allSatisfy({
             frame.point($0, minimumConfidence: 0.45) != nil
         }) else {
-            pose.clubVisible = false
+            // A brief pre/post-impact gap holds presentation only. No predicted sample
+            // is sent to the detector, and a longer loss hides the club.
+            pose.clubVisible = pose.clubVisible && lastGoodTime.map { time - $0 <= 0.18 } == true
+            for joint in BodyJoint.allCases { pose.provenance[joint] = pose.clubVisible ? .held : .unavailable }
             return pose
         }
+        lastGoodTime = time
         var target = pose
         for joint in BodyJoint.allCases {
             guard frame.point(joint, minimumConfidence: 0.45) != nil else { continue }
@@ -348,6 +353,9 @@ struct CameraAvatarPoseFilter {
             simd_length(delta) > 0.001 ? simd_normalize(delta) : simd_normalize(fallback)
         }
         var next = observed
+        for joint in BodyJoint.allCases {
+            next.provenance[joint] = frame.point(joint,minimumConfidence:0.45) == nil ? .inferred : .observed
+        }
         let root = simd_float3(0, AvatarSize.hipHeight, target[.root].z)
         next.joints[.root] = root
         let rawUp = direction(target[.neck] - target[.root], fallback: simd_float3(0.2, 1, 0))
@@ -373,12 +381,15 @@ struct CameraAvatarPoseFilter {
             (.rightHip, .rightKnee, .rightAnkle, .rightShoulder, .rightElbow, .rightWrist, Float(1))
         ] {
             next.joints[hip] = root + hipSide * AvatarSize.hipHalfWidth * sign
-            let foot = simd_float3(target[ankle].x, 0.12, target[ankle].z)
+            let foot = simd_float3(target[ankle].x, max(0.12,min(0.55,target[ankle].y)), target[ankle].z)
             let leg = AvatarAnimations.twoBone(from: next[hip], to: foot, upper: AvatarSize.thigh, lower: AvatarSize.shin,
                 bend: target[knee] - (target[hip] + target[ankle]) / 2 + simd_float3(0.1, 0, 0))
             next.joints[knee] = leg.joint
             next.joints[ankle] = leg.end
-            let arm = AvatarAnimations.twoBone(from: next[shoulder], to: target[wrist], upper: AvatarSize.upperArm, lower: AvatarSize.forearm,
+            // Hands are solved to the same grip as the rendered/collision club; only
+            // uncertain arm geometry is reconstructed. Club endpoints remain untouched.
+            let hand = observed.virtualClubGrip.map { $0 + observed.clubDirection * sign * 0.065 } ?? target[wrist]
+            let arm = AvatarAnimations.twoBone(from: next[shoulder], to: hand, upper: AvatarSize.upperArm, lower: AvatarSize.forearm,
                 bend: target[elbow] - (target[shoulder] + target[wrist]) / 2 + simd_float3(-0.1, 0, sign * 0.05))
             next.joints[elbow] = arm.joint
             next.joints[wrist] = arm.end

@@ -7,6 +7,14 @@ import simd
 /// Units are SI inside, yards outside. Coefficients follow the usual golf-ball fits: drag rises and
 /// lift grows with spin ratio, spin decays slowly in the air and is lost on the first bounce.
 struct BallFlight: Equatable, Sendable {
+    struct Surface {
+        var height: Double = 0 // metres relative to the shot origin
+        var slopeX: Double = 0
+        var slopeZ: Double = 0
+        var deceleration: Double = 3.2
+        var restitution: Double = 0.35
+        var bounceFriction: Double = 0.6
+    }
     struct Launch: Equatable, Sendable {
         var ballSpeedMPH: Double
         var launchAngleDegrees: Double
@@ -49,7 +57,8 @@ struct BallFlight: Equatable, Sendable {
         )
     }
 
-    static func simulate(_ launch: Launch) -> BallFlight {
+    static func simulate(_ launch: Launch, windX: Double = 0, windZ: Double = 0,
+                         surface: ((Double,Double) -> Surface)? = nil) -> BallFlight {
         let mass = 0.04593
         let radius = 0.02135
         let area = Double.pi * radius * radius
@@ -57,6 +66,8 @@ struct BallFlight: Equatable, Sendable {
         let gravity = 9.81
         let metersPerYard = 0.9144
         let dt = 1.0 / 240
+        let wind = simd_double3(windX.isFinite ? max(-20, min(20, windX)) : 0, 0,
+                               windZ.isFinite ? max(-20, min(20, windZ)) : 0)
         let restitution = 0.35
         let bounceFriction = 0.6
         let rollingDeceleration = 3.2
@@ -80,14 +91,15 @@ struct BallFlight: Equatable, Sendable {
 
         while time < maxDuration {
             if airborne {
-                let v = simd_length(velocity)
+                let relativeVelocity = velocity - wind
+                let v = simd_length(relativeVelocity)
                 var acceleration = simd_double3(0, -gravity, 0)
                 if v > 0.01 {
                     let spinRatio = radius * spin / v
                     let drag = 0.21 + 0.5 * spinRatio
                     let lift = min(0.33, 2.05 * spinRatio)
                     let dynamicPressure = 0.5 * airDensity * area * v * v
-                    let direction = velocity / v
+                    let direction = relativeVelocity / v
                     // Backspin axis lies flat and perpendicular to travel; tilting it adds sideways lift.
                     let flat = simd_normalize(simd_double3(-direction.z, 0, direction.x))
                     let axis = simd_normalize(flat * cos(tilt) + simd_double3(0, 1, 0) * sin(tilt))
@@ -98,12 +110,18 @@ struct BallFlight: Equatable, Sendable {
                 velocity += acceleration * dt
                 position += velocity * dt
                 apexMeters = max(apexMeters, position.y)
-                if position.y <= 0, velocity.y < 0 {
-                    position.y = 0
+                let ground = surface?(position.x,position.z) ?? Surface()
+                let normal=simd_normalize(simd_double3(-ground.slopeX,1,-ground.slopeZ))
+                let incoming=simd_dot(velocity,normal)
+                if position.y <= ground.height, (surface == nil ? velocity.y : incoming) < 0 {
+                    position.y = ground.height
                     if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
-                    velocity.y = -velocity.y * restitution
-                    velocity.x *= bounceFriction
-                    velocity.z *= bounceFriction
+                    if surface != nil {
+                        velocity=(velocity-normal*incoming)*ground.bounceFriction-normal*incoming*ground.restitution
+                    } else {
+                        velocity.y = -velocity.y * restitution
+                        velocity.x *= bounceFriction; velocity.z *= bounceFriction
+                    }
                     spin = 0
                     if velocity.y < 1.2 {
                         velocity.y = 0
@@ -112,6 +130,19 @@ struct BallFlight: Equatable, Sendable {
                     }
                 }
             } else if rolling {
+                if let surface {
+                    let ground = surface(position.x,position.z)
+                    let speed = hypot(velocity.x,velocity.z)
+                    if speed < 0.01, hypot(ground.slopeX,ground.slopeZ)*gravity < ground.deceleration*0.9 { break }
+                    var ax = -gravity*ground.slopeX, az = -gravity*ground.slopeZ
+                    if speed > 0.00001 {
+                        let friction=min(ground.deceleration,speed/dt)
+                        ax -= friction*velocity.x/speed; az -= friction*velocity.z/speed
+                    }
+                    velocity.x += ax*dt; velocity.z += az*dt
+                    position.x += velocity.x*dt; position.z += velocity.z*dt
+                    position.y = surface(position.x,position.z).height
+                } else {
                 let horizontal = simd_double2(velocity.x, velocity.z)
                 let ground = simd_length(horizontal)
                 if ground <= 0 { break }
@@ -122,12 +153,13 @@ struct BallFlight: Equatable, Sendable {
                 velocity = simd_double3(direction.x * slowed, 0, direction.y * slowed)
                 position += simd_double3(direction.x * travel, 0, direction.y * travel)
                 position.y = 0
+                }
             }
             time += dt
             if time + 1e-9 >= nextSample {
                 samples.append(Sample(time: nextSample, point: FlightPoint(
                     lateralYards: position.x / metersPerYard,
-                    heightYards: max(0, position.y) / metersPerYard,
+                    heightYards: max(0, position.y - (surface?(position.x,position.z).height ?? 0)) / metersPerYard,
                     distanceYards: position.z / metersPerYard
                 )))
                 nextSample += sampleInterval
@@ -148,7 +180,10 @@ extension GolfClub {
     var referenceDistanceYards: Double {
         switch self {
         case .driver: 250
+        case .wood3: 210
+        case .iron5: 180
         case .iron: 160
+        case .iron9: 135
         case .wedge: 90
         case .putter: 25
         }
@@ -176,7 +211,10 @@ extension GolfClub {
     var launchAngleDegrees: Double {
         switch self {
         case .driver: 12.5
+        case .wood3: 14
+        case .iron5: 16
         case .iron: 18
+        case .iron9: 24
         case .wedge: 30
         case .putter: 0
         }
@@ -186,7 +224,10 @@ extension GolfClub {
     var spinRPM: Double {
         switch self {
         case .driver: 2600
+        case .wood3: 3500
+        case .iron5: 4800
         case .iron: 6200
+        case .iron9: 8000
         case .wedge: 9500
         case .putter: 0
         }

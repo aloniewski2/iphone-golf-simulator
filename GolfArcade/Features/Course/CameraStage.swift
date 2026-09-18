@@ -34,6 +34,7 @@ struct CameraStage: View {
     let expanded: Bool
     let viewportSize: CGSize
     let gesturesEnabled: Bool
+    var previewOnTV = false
     var onResize: () -> Void = {}
     var onRecenter: () -> Void = {}
 
@@ -76,12 +77,17 @@ struct CameraStage: View {
         ZStack(alignment: .topTrailing) {
             Color.black
             // Keep the layer attached while the session starts or recovers, too.
+            if previewOnTV {
+                Text("Camera and ball shown on TV").font(.headline).padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            } else {
             CameraPreview(
                 session: camera.tracker.session,
                 videoRotationAngle: camera.tracker.videoRotationAngle,
                 isVideoMirrored: camera.tracker.isVideoMirrored,
                 videoGravity: .resizeAspect
             )
+            }
             if case .running = camera.status {
                 if expanded, camera.phase == .findingPlayer || camera.needsLineUp || camera.isSyntheticPreview {
                     PoseSkeletonView(frame: camera.frame, frameAspect: camera.tracker.frameAspect, contentMode: .fit)
@@ -146,7 +152,7 @@ struct CameraStage: View {
                       .font(.subheadline.bold()).foregroundStyle(.mint)
                   Text(CameraPlayerStance(handedness: handedness).instruction)
                       .font(.caption).fixedSize(horizontal: false, vertical: true)
-                  Text("Keep your whole swing and both feet in view. Keep the phone still after the ball locks.")
+                  Text("Step back until both feet and fully extended arms fit, with room above your hands. Lower your hands to lock the ball; then keep the phone still.")
                       .font(.caption2).foregroundStyle(.white.opacity(0.7))
               }
               .frame(maxWidth: .infinity, alignment: .leading)
@@ -206,6 +212,7 @@ struct CameraStage: View {
     }
 
     private var title: String {
+        if camera.trackingIsStale { return "Waiting for fresh camera tracking" }
         if camera.isCheckingSwing { return camera.swingCheck.title }
         if camera.reviewSecondsRemaining > 0 { return "Position confirmed · \(camera.reviewSecondsRemaining)" }
         if case .running = camera.status { return camera.readiness.title }
@@ -213,6 +220,7 @@ struct CameraStage: View {
     }
 
     private var detail: String {
+        if camera.trackingIsStale { return "Do not swing yet. Tracking has paused; your ball stays fixed." }
         if camera.isCheckingSwing { return camera.swingCheck.detail }
         if camera.reviewSecondsRemaining > 0 {
             return showsGroundCloseUp

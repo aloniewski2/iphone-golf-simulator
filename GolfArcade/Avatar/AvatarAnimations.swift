@@ -16,27 +16,65 @@ enum AvatarAnimations {
     static let address = swingArc(degrees: 0)
     static let finish = swingArc(degrees: -150)
 
-    /// The Wii-style swing: hands on a circle around the chest, shoulders turning a third as far.
-    /// Used for touch and phone input and whenever the camera has no body to copy.
-    static func swingArc(degrees: Double) -> BodyPose3D {
+    /// Original phase-shaped fallback for touch/phone input. Camera poses retain their
+    /// measured grip and authoritative club; this never substitutes for camera contact.
+    static func swingArc(degrees: Double, club: GolfClub = .driver) -> BodyPose3D {
+        if club == .putter { return puttingArc(degrees: degrees) }
+        let degrees = max(-150, min(150, degrees.isFinite ? degrees : 0))
         let radians = Float(degrees * .pi / 180)
         let toAddress = addressHands - pivot
         let radius = simd_length(toAddress)
         let d0 = toAddress / radius
         var d1 = simd_float3(-0.25, 0.2, 1)
         d1 = simd_normalize(d1 - simd_dot(d1, d0) * d0)
-        let hands = pivot + (cos(radians) * d0 + sin(radians) * d1) * radius
-        let upper = UpperBody(twist: -radians * 0.35)
+        let hands = swingHands(degrees: degrees)
+        let progress = Float(abs(degrees) / 150)
+        let release = degrees < 0 ? smoothstep(0.12, 1, progress) : 0
+        var upper = UpperBody(twist: -radians * (degrees < 0 ? 0.40 : 0.30))
+        upper.hipTurn = -radians * (degrees < 0 ? 0.27 : 0.12)
+        upper.trailHeel = release * 0.22
+        upper.offset.z = -release * 0.16
         var pose = upper.pose(left: hands + simd_float3(0.12, -0.08, 0), right: hands + simd_float3(-0.12, 0.08, 0))
         let armLine = simd_normalize(hands - pivot)
         let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
-        let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2)
+        let hingeLimit: Double = club == .wedge ? 0.65 : club == .iron ? 0.85 : 1
+        let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2 * hingeLimit)
         // Address the same small ground ball as the camera rig instead of extending the
         // shaft along the forearms and burying its head below the turf.
         let addressShaft = simd_normalize(AvatarSize.ball - neutralGrip)
         let shaftArc = simd_quatf(from: d0, to: armLine).act(addressShaft)
         pose.clubDirection = upper.rotate(simd_normalize(cos(hinge) * shaftArc + sin(hinge) * tangent))
         pose.virtualClubHead = pose.clubGrip + pose.clubDirection * simd_length(AvatarSize.ball - neutralGrip)
+        return pose
+    }
+
+    /// Catmull-Rom hand targets: width in the takeaway, folded top, extension then
+    /// high finish. Unlike a single chest circle, ascent and release have distinct shapes.
+    static func swingHands(degrees: Double) -> simd_float3 {
+        let keys: [simd_float3] = degrees >= 0
+            ? [addressHands, simd_float3(1.85, 0.3, 1.0), simd_float3(0.65, 1.8, 1.55), simd_float3(0.3, 2.55, 1.1)]
+            : [addressHands, simd_float3(1.85, 0.35, -1.05), simd_float3(0.65, 1.85, -1.55), simd_float3(0.15, 2.6, -1.05)]
+        let u = Float(min(150, abs(degrees.isFinite ? degrees : 0)) / 50)
+        let i = min(2, Int(u)), t = u - Float(i)
+        let a = keys[max(0, i - 1)], b = keys[i], c = keys[i + 1], d = keys[min(3, i + 2)]
+        return 0.5 * ((2 * b) + (c - a) * t + (2 * a - 5 * b + 4 * c - d) * t * t
+            + (-a + 3 * b - 3 * c + d) * t * t * t)
+    }
+
+    /// Quiet lower body, connected shoulder/arm pendulum and very little wrist release.
+    /// Presentation only: live camera contact still uses the measured authoritative club.
+    static func puttingArc(degrees: Double) -> BodyPose3D {
+        var pose = address
+        let angle = Float(max(-150, min(150, degrees)) / 150) * 0.19
+        let axis = simd_float3(1, 0, 0)
+        let rotation = simd_quatf(angle: -angle, axis: axis)
+        let pivot = pose.shoulderCenter
+        for joint in [BodyJoint.leftShoulder, .rightShoulder, .leftElbow, .rightElbow, .leftWrist, .rightWrist] {
+            pose.joints[joint] = pivot + rotation.act(pose[joint] - pivot)
+        }
+        pose.virtualClubGrip = pivot + rotation.act(address.clubGrip - pivot)
+        pose.virtualClubHead = pivot + rotation.act(AvatarSize.ball - pivot)
+        pose.clubDirection = simd_normalize(pose.clubHead - pose.clubGrip)
         return pose
     }
 
@@ -149,6 +187,8 @@ enum AvatarAnimations {
         var twist: Float = 0
         var lean: Float = 0
         var crouch: Float = 0
+        var hipTurn: Float = 0
+        var trailHeel: Float = 0
         var offset = simd_float3.zero
 
         private var rotation: simd_quatf {
@@ -166,10 +206,11 @@ enum AvatarAnimations {
             var joints: [BodyJoint: simd_float3] = [:]
             let root = simd_float3(0, AvatarSize.hipHeight - crouch, 0) + offset
             joints[.root] = root
-            joints[.leftHip] = root + simd_float3(0, 0, -AvatarSize.hipHalfWidth)
-            joints[.rightHip] = root + simd_float3(0, 0, AvatarSize.hipHalfWidth)
+            let hips = simd_quatf(angle: hipTurn, axis: simd_float3(0, 1, 0))
+            joints[.leftHip] = root + hips.act(simd_float3(0, 0, -AvatarSize.hipHalfWidth))
+            joints[.rightHip] = root + hips.act(simd_float3(0, 0, AvatarSize.hipHalfWidth))
             for (hip, knee, ankle, z) in [(BodyJoint.leftHip, BodyJoint.leftKnee, BodyJoint.leftAnkle, Float(-0.6)), (.rightHip, .rightKnee, .rightAnkle, 0.6)] {
-                let foot = simd_float3(0.05 + offset.x * 0.3, 0.12, z + offset.z * 0.3)
+                let foot = simd_float3(0.05, 0.12 + (ankle == .rightAnkle ? trailHeel : 0), z)
                 let (kneePoint, _) = AvatarAnimations.twoBone(from: joints[hip]!, to: foot, upper: AvatarSize.thigh, lower: AvatarSize.shin, bend: simd_float3(1, 0, 0))
                 joints[knee] = kneePoint
                 joints[ankle] = foot
