@@ -7,6 +7,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 9VP5B3Q5VQ
     CURRENT_PROJECT_VERSION: 1
     MARKETING_VERSION: 0.1.0
 targets:
@@ -22,6 +24,7 @@ targets:
         INFOPLIST_KEY_NSCameraUsageDescription: Your camera tracks your body movement to turn your swing into a golf shot.
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         TARGETED_DEVICE_FAMILY: "1"
         SUPPORTS_MACCATALYST: NO
   GolfArcadeTests:
@@ -35,13 +38,25 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeTests
         GENERATE_INFOPLIST_FILE: YES
+  GolfArcadeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: GolfArcadeUITests
+    dependencies:
+      - target: GolfArcade
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeUITests
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   GolfArcade:
     build:
       targets:
         GolfArcade: all
         GolfArcadeTests: [test]
+        GolfArcadeUITests: [test]
     test:
       targets:
         - GolfArcadeTests
-
+        - GolfArcadeUITests

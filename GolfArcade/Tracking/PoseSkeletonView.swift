@@ -2,6 +2,8 @@ import SwiftUI
 
 struct PoseSkeletonView: View {
     let frame: PoseFrame?
+    var frameAspect: CGFloat = 3.0 / 4.0
+    var contentMode: ContentMode = .fill
     private let bones: [(BodyJoint, BodyJoint)] = [
         (.nose, .neck), (.neck, .leftShoulder), (.neck, .rightShoulder),
         (.leftShoulder, .leftElbow), (.leftElbow, .leftWrist),
@@ -31,6 +33,35 @@ struct PoseSkeletonView: View {
     }
 
     private func screenPoint(_ point: CGPoint, size: CGSize) -> CGPoint {
-        CGPoint(x: point.x * size.width, y: (1 - point.y) * size.height)
+        PoseSkeletonMapper.screenPoint(
+            point,
+            in: size,
+            frameAspect: frameAspect,
+            fitsEntireFrame: contentMode == .fit
+        )
+    }
+}
+
+enum PoseSkeletonMapper {
+    static func screenPoint(
+        _ point: CGPoint,
+        in size: CGSize,
+        frameAspect: CGFloat,
+        fitsEntireFrame: Bool
+    ) -> CGPoint {
+        guard size.width > 0, size.height > 0, frameAspect > 0 else { return .zero }
+        let viewAspect = size.width / size.height
+        let scaleToWidth = fitsEntireFrame ? frameAspect > viewAspect : frameAspect < viewAspect
+        let imageSize: CGSize
+        if scaleToWidth {
+            imageSize = CGSize(width: size.width, height: size.width / frameAspect)
+        } else {
+            imageSize = CGSize(width: size.height * frameAspect, height: size.height)
+        }
+        let origin = CGPoint(x: (size.width - imageSize.width) / 2, y: (size.height - imageSize.height) / 2)
+        return CGPoint(
+            x: origin.x + point.x * imageSize.width,
+            y: origin.y + (1 - point.y) * imageSize.height
+        )
     }
 }

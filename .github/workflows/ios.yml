@@ -26,27 +26,75 @@ jobs:
             exit 1
           fi
 
+  # The merge gate: compile everything and run the unit suite. A few minutes.
   build-and-test:
     name: build-and-test
-    runs-on: macos-15
-    timeout-minutes: 20
+    runs-on: macos-26
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [[ -z "$xcode" ]]; then
+            echo "No Xcode 26 on this runner; CameraPoseTracker needs the iOS 26 SDK." >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
       - name: Create iOS simulator
         id: simulator
+        uses: ./.github/actions/simulator
+      - name: Build
         run: |
-          runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
-          if [[ -z "$runtime_id" ]]; then
-            xcodebuild -downloadPlatform iOS
-            runtime_id=$(xcrun simctl list runtimes --json | jq -r '[.runtimes[] | select(.isAvailable and (.name | startswith("iOS")))] | sort_by(.version) | last.identifier // empty')
-          fi
-          device_type_id=$(xcrun simctl list devicetypes --json | jq -r '[.devicetypes[] | select(.name == "iPhone 16 Pro")][0].identifier // [.devicetypes[] | select(.name | startswith("iPhone"))][-1].identifier')
-          simulator_id=$(xcrun simctl create "GolfArcade CI" "$device_type_id" "$runtime_id")
-          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
-      - name: Build and test
-        run: |
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -project GolfArcade.xcodeproj \
             -scheme GolfArcade \
             -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
-            CODE_SIGNING_ALLOWED=NO
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO
+      - name: Unit tests
+        run: |
+          xcodebuild test-without-building \
+            -project GolfArcade.xcodeproj \
+            -scheme GolfArcade \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -derivedDataPath DerivedData \
+            -only-testing:GolfArcadeTests
+      - name: Keep the built products for the UI workers
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-products
+          path: |
+            DerivedData/Build/Products/*.xctestrun
+            DerivedData/Build/Products/Debug-iphonesimulator
+          retention-days: 1
+
+  # The UI flows, on their own workers so they never hold a merge. Two classes, two runners.
+  ui-tests:
+    name: ui-tests (${{ matrix.suite }})
+    needs: build-and-test
+    runs-on: macos-26
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [CameraPlayTests, CoursePlayTests]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+      - name: Create iOS simulator
+        id: simulator
+        uses: ./.github/actions/simulator
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-products
+          path: DerivedData/Build/Products
+      - name: UI tests
+        run: |
+          xcodebuild test-without-building \
+            -xctestrun "$(ls DerivedData/Build/Products/*.xctestrun | head -1)" \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -only-testing:GolfArcadeUITests/${{ matrix.suite }}
