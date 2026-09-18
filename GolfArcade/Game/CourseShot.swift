@@ -188,6 +188,18 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         }
     }
 
+    /// Whether a ball crossing the cup `offset` yards from its centre at `speed` yards/s drops.
+    /// The physics of a real cup: dead centre it holds a little over 1.6 m/s, and the faster it
+    /// comes the closer to the middle it has to be (Holmes' capture model), so a firm putt on
+    /// the edge horseshoes out where a dying one falls in.
+    static func cupCaptures(speed: Double, offset: Double) -> Bool {
+        let radius = Hole.cupCaptureRadius
+        guard offset <= radius else { return false }
+        let centred = max(0, 1 - (offset / radius) * (offset / radius))
+        let limit = 0.35 + 1.55 * centred.squareRoot()
+        return speed <= limit
+    }
+
     /// Puts the flight on the course, then lets the ground steer the roll: the flight model's
     /// bounces are kept as they are, but from the moment the ball is rolling it accelerates down
     /// any slope it is on and is slowed by the grass it is on. Uphill comes up short, downhill
@@ -216,7 +228,9 @@ struct RangeShot: Identifiable, Equatable, Sendable {
         let substeps = 4
         let dt = step / Double(substeps)
         var elapsed = Double(rollingFrom) * step
-        while elapsed < BallFlight.maxDuration {
+        var lippedOut = false
+        var holed = false
+        while elapsed < BallFlight.maxDuration, !holed {
             for _ in 0..<substeps {
                 let point = CoursePoint(x: x, d: d)
                 let slope = terrain.gradient(at: point)
@@ -224,6 +238,35 @@ struct RangeShot: Identifiable, Equatable, Sendable {
                 let speed = hypot(vx, vd)
                 let downhill = hypot(slope.dx, slope.dd) * gravityYards
                 if speed < 0.02, downhill < deceleration * 0.9 { vx = 0; vd = 0; break }
+                // At the cup: judged by the miss distance (how far from the middle the ball's
+                // line passes) and its pace: drop in, or rattle off the rim and keep going.
+                let toCup = point.distance(to: hole.pin)
+                if toCup <= Hole.cupCaptureRadius, speed > 0.001 {
+                    let dirX = vx / speed, dirD = vd / speed
+                    let relX = hole.pin.x - x, relD = hole.pin.d - d
+                    let along = relX * dirX + relD * dirD
+                    let missX = -(relX - dirX * along), missD = -(relD - dirD * along)
+                    let miss = hypot(missX, missD)
+                    if cupCaptures(speed: speed, offset: min(miss, toCup)) {
+                        x = hole.pin.x; d = hole.pin.d; vx = 0; vd = 0; holed = true; break
+                    }
+                    if !lippedOut {
+                        // Lip-out: the rim throws the ball out to the side it is passing on and
+                        // takes much of its pace, the way a firm putt horseshoes round the hole.
+                        lippedOut = true
+                        let outX = miss > 0.005 ? missX / miss : -dirD, outD = miss > 0.005 ? missD / miss : dirX
+                        let kept = speed * 0.55
+                        var newX = dirX * 0.7 + outX * 0.7, newD = dirD * 0.7 + outD * 0.7
+                        let length = max(0.001, hypot(newX, newD))
+                        newX /= length; newD /= length
+                        vx = newX * kept; vd = newD * kept
+                    }
+                } else if toCup > Hole.cupCaptureRadius * 3 {
+                    lippedOut = false
+                } else if toCup <= Hole.cupCaptureRadius {
+                    // Dead still on the lip: it drops.
+                    x = hole.pin.x; d = hole.pin.d; vx = 0; vd = 0; holed = true; break
+                }
                 var ax = -gravityYards * slope.dx, ad = -gravityYards * slope.dd
                 if speed > 0.0001 {
                     let friction = min(deceleration, speed / dt)
@@ -264,7 +307,7 @@ struct RangeShot: Identifiable, Equatable, Sendable {
                 let fraction = lengthSquared > 0 ? min(1, max(0, ((hole.pin.x - previous.x) * dx + (hole.pin.d - previous.d) * dd) / lengthSquared)) : 0
                 let closest = CoursePoint(x: previous.x + fraction * dx, d: previous.d + fraction * dd)
                 let speed = sqrt(lengthSquared) / max(time - previousTime, 0.0001)
-                if closest.distance(to: hole.pin) <= Hole.cupCaptureRadius, speed < 2 {
+                if cupCaptures(speed: speed, offset: closest.distance(to: hole.pin)) {
                     return (.green, previousTime + fraction * (time - previousTime), hole.pin)
                 }
                 if hole.hazards.contains(where: { $0.kind == .water && $0.contains(point) }) {
