@@ -1,0 +1,14 @@
+{
+  "name": "GolfArcade.PlayTests",
+  "rootNamespace": "GolfArcade.PlayTests",
+  "references": ["GolfArcade", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

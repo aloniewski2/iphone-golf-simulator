@@ -1,0 +1,147 @@
+using System;
+using GolfArcade.Course;
+using GolfArcade.Shot;
+using GolfArcade.Swing;
+using NUnit.Framework;
+
+namespace GolfArcade.Tests
+{
+    public class ShotModelTests
+    {
+        [Test]
+        public void FullSwingsCarryTheRatedDistance()
+        {
+            foreach (var club in new[] { GolfClub.Driver, GolfClub.Iron, GolfClub.Wedge })
+            {
+                var flight = BallFlight.Simulate(club.Launch(1, 0, 0));
+                Assert.AreEqual(club.ReferenceDistanceYards(), flight.Carry, 2, club.ToString());
+                Assert.Greater(flight.Apex, 8, club.ToString());
+            }
+        }
+
+        [Test]
+        public void MeterReadsDistanceStraight()
+        {
+            var half = BallFlight.Simulate(GolfClub.Driver.Launch(0.5, 0, 0));
+            Assert.AreEqual(125, half.Carry, 3);
+            Assert.AreEqual(0, BallFlight.Simulate(GolfClub.Iron.Launch(0, 0, 0)).Total, 0.01);
+        }
+
+        [Test]
+        public void SpinShapesTheRoll()
+        {
+            var driver = BallFlight.Simulate(GolfClub.Driver.Launch(1, 0, 0));
+            var wedge = BallFlight.Simulate(GolfClub.Wedge.Launch(1, 0, 0));
+            Assert.Greater(driver.Roll, 10, "a driver runs out");
+            Assert.Less(wedge.Roll, 6, "a wedge checks up");
+        }
+
+        [Test]
+        public void CurveBendsRightForPositiveTilt()
+        {
+            var fade = BallFlight.Simulate(GolfClub.Driver.Launch(1, 0, 10));
+            var draw = BallFlight.Simulate(GolfClub.Driver.Launch(1, 0, -10));
+            Assert.Greater(fade.Landing.LateralYards, 8);
+            Assert.Less(draw.Landing.LateralYards, -8);
+            Assert.AreEqual(fade.Landing.LateralYards, -draw.Landing.LateralYards, 0.5);
+        }
+
+        [Test]
+        public void StartLineTurnsTheWholeShot()
+        {
+            var pushed = BallFlight.Simulate(GolfClub.Iron.Launch(1, 10, 0));
+            Assert.AreEqual(Math.Tan(10 * Math.PI / 180) * pushed.Landing.DistanceYards, pushed.Landing.LateralYards, 1.5);
+        }
+
+        static Hole Hole1 => Course.Course.Meadow().Holes[0];
+
+        static SwingImpact Impact(double power, double start = 0, double curve = 0) => new() { Power = power, StartLineDegrees = start, CurveDegrees = curve };
+
+        [Test]
+        public void TeeShotDownTheMiddleFindsTheFairway()
+        {
+            // Hole 1 doglegs right at 185, so the tee shot that finds the fairway is an iron.
+            var hole = Hole1;
+            var shot = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            Assert.AreEqual(CourseLie.Fairway, shot.Lie);
+            Assert.AreEqual(160, shot.Carry, 2);
+            Assert.Greater(shot.Total, 162);
+            Assert.AreEqual(shot.Rest.X, shot.NextPosition.X, 1e-9);
+            Assert.Greater(shot.Duration, 5);
+        }
+
+        [Test]
+        public void HeadingRotatesTheShotOntoTheCourse()
+        {
+            var hole = Hole1;
+            var shot = new CourseShot(GolfClub.Iron, Impact(1), 90, hole.Tee, hole);
+            Assert.AreEqual(160, shot.Rest.X, 20, "aimed hard right the ball goes right");
+            Assert.AreEqual(0, shot.Rest.D, 5);
+        }
+
+        [Test]
+        public void RoughAndBunkerCostPowerAndStopTheBall()
+        {
+            var hole = Hole1;
+            var fair = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole, 1);
+            var buried = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole, CourseLie.Bunker.PowerFactor());
+            Assert.Less(buried.Total, fair.Total * 0.75);
+        }
+
+        [Test]
+        public void WildHookIsOutOfBoundsAndReplayed()
+        {
+            // The dogleg forgives a slice; a hook goes through the trees on the left.
+            var hole = Hole1;
+            var shot = new CourseShot(GolfClub.Driver, Impact(1, -12, -15), 0, hole.Tee, hole);
+            Assert.AreEqual(CourseLie.OutOfBounds, shot.Lie);
+            Assert.AreEqual(1, shot.PenaltyStrokes);
+            Assert.AreEqual(hole.Tee.D, shot.NextPosition.D, 1e-9);
+        }
+
+        [Test]
+        public void PuttRollsItsRatedDistanceOnTheGreen()
+        {
+            var hole = Hole1;
+            var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 15);
+            var shot = new CourseShot(GolfClub.Putter, Impact(1), 25, from, hole); // aimed wide of the cup
+            Assert.AreEqual(25, shot.Total, 1.5, "the full stroke rolls its rating, hole aside");
+            Assert.AreEqual(CourseLie.Green, shot.Lie);
+        }
+
+        [Test]
+        public void DyingPuttDropsAndFirmOneLipsOut()
+        {
+            var hole = Hole1;
+            var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 3);
+            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / 1.5);
+            var dying = new CourseShot(GolfClub.Putter, Impact(meterFor(3.4)), 0, from, hole);
+            Assert.IsTrue(dying.IsHoled, "a putt with a little more than enough drops");
+            Assert.AreEqual(0, dying.PenaltyStrokes);
+            var firm = new CourseShot(GolfClub.Putter, Impact(meterFor(20)), 0, from, hole);
+            Assert.IsFalse(firm.IsHoled, "rammed at the cup it horseshoes out");
+            Assert.Greater(firm.Rest.DistanceTo(hole.Pin), 0.5);
+        }
+
+        [Test]
+        public void CupCaptureFollowsTheSpeedAndOffsetRule()
+        {
+            Assert.IsTrue(CourseShot.CupCaptures(1.0, 0));
+            Assert.IsFalse(CourseShot.CupCaptures(2.5, 0));
+            Assert.IsFalse(CourseShot.CupCaptures(1.0, Hole.CupCaptureRadius + 0.01));
+            Assert.IsTrue(CourseShot.CupCaptures(0.3, Hole.CupCaptureRadius * 0.95));
+        }
+
+        [Test]
+        public void LiesAreReadFromTheCourse()
+        {
+            var hole = Hole1;
+            Assert.AreEqual(CourseLie.Tee, hole.LieAt(hole.Tee));
+            Assert.AreEqual(CourseLie.Fairway, hole.LieAt(new CoursePoint(10, 100)));
+            Assert.AreEqual(CourseLie.Rough, hole.LieAt(new CoursePoint(35, 100)));
+            Assert.AreEqual(CourseLie.OutOfBounds, hole.LieAt(new CoursePoint(60, 100)));
+            Assert.AreEqual(CourseLie.Bunker, hole.LieAt(new CoursePoint(-22, 174)));
+            Assert.AreEqual(CourseLie.Green, hole.LieAt(hole.Pin));
+        }
+    }
+}
