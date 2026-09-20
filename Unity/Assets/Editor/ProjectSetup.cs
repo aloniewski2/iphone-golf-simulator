@@ -19,6 +19,7 @@ namespace GolfArcade.EditorTools
         {
             EnsureScene();
             ConfigurePlayer();
+            EnsureShadersShip();
             AssetDatabase.SaveAssets();
             Debug.Log("Golf Arcade project set up.");
         }
@@ -42,6 +43,29 @@ namespace GolfArcade.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             if (!EditorBuildSettings.scenes.Any(s => s.path == ScenePath))
                 EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        }
+
+        /// Every material in the game is made at runtime with Shader.Find, and a player build
+        /// strips any shader no asset references — so without this the course, ball and golfer
+        /// come out invisible on the phone while the UI (always-included shaders) still draws.
+        static readonly string[] RuntimeShaders = { "Standard", "Unlit/Color" };
+
+        static void EnsureShadersShip()
+        {
+            var graphics = new SerializedObject(UnityEngine.Rendering.GraphicsSettings.GetGraphicsSettings());
+            var list = graphics.FindProperty("m_AlwaysIncludedShaders");
+            foreach (var name in RuntimeShaders)
+            {
+                var shader = Shader.Find(name);
+                if (!shader) { Debug.LogError($"Shader {name} not found"); continue; }
+                bool present = false;
+                for (int i = 0; i < list.arraySize; i++)
+                    if (list.GetArrayElementAtIndex(i).objectReferenceValue == shader) present = true;
+                if (present) continue;
+                list.InsertArrayElementAtIndex(list.arraySize);
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = shader;
+            }
+            graphics.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void ConfigurePlayer()

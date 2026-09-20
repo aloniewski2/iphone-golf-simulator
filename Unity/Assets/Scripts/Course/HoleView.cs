@@ -191,7 +191,10 @@ namespace GolfArcade.Course
         public static Material Mat(Color color)
         {
             if (materials.TryGetValue(color, out var m) && m) return m;
+            // Both are listed in Always Included Shaders by ProjectSetup; a player build strips
+            // shaders nothing references, and no asset references these.
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            if (!shader) Debug.LogError("Lit shader missing from the build — run Golf Arcade → Set Up Project");
             m = new Material(shader) { color = color };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
             if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.1f);
