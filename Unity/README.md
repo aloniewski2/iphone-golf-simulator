@@ -77,8 +77,11 @@ project; check the status under *Window → MCP for Unity*.
 
 ## Building for the iPhone
 
-*File → Build Profiles → iOS → Build* produces an Xcode project; open it and run on the phone
-with your own team. Bundle id `com.aloniewski.golfarcade.unity`, portrait only, iOS 17+.
+*File → Build Profiles → iOS → Build* (or *Golf Arcade → Build iOS Xcode Project*, which writes to
+`Builds/iOS` and a verdict to `Library/BuildResults/ios.txt`) produces an Xcode project; open it
+and run on the phone with your own team. Bundle id `com.aloniewski.golfarcade.unity`, portrait
+only, iOS 17+. `Tools/install-phone.sh` signs that project from the command line (team, bundle id
+and device as env overrides, nothing committed), installs it with `devicectl` and launches it.
 
 ## Layout
 
