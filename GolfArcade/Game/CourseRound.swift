@@ -22,6 +22,10 @@ struct HoleNavigation: Equatable {
     static func beaconScale(cameraDistance: Double) -> Float {
         Float(max(0.8, min(28, cameraDistance * 0.045)))
     }
+    static func beaconOpacity(cameraDistance: Double) -> Double {
+        let t=max(0,min(1,(cameraDistance-45)/45))
+        return t*t*(3-2*t)
+    }
 }
 
 /// What a putt has to deal with between the ball and the target: how much it climbs or falls,
@@ -99,6 +103,8 @@ final class CourseRound: ObservableObject {
     private var strengthTask: Task<Void,Never>?
     private var frozenStrength: Double?
     private var puttCache: (origin: CoursePoint, hole: Hole, plan: PuttRecommendation)?
+    /// Native sessions supply worker results; comparison rounds retain their synchronous API.
+    var usesPreparedPuttRecommendations = false
     private var previewCache: RangeShot?
     private var previewKey: ShotRequest?
     private var previewOrigin: CoursePoint?
@@ -148,9 +154,23 @@ final class CourseRound: ObservableObject {
     var automaticPuttPlan: PuttRecommendation? {
         guard automaticAim, club == .putter, lie == .green else { return nil }
         if puttCache?.origin != ball || puttCache?.hole != hole {
+            guard !usesPreparedPuttRecommendations else { return nil }
             puttCache = (ball, hole, PuttRecommendation.solve(from: ball, hole: hole))
         }
         return puttCache?.plan
+    }
+
+    @discardableResult
+    func acceptPuttRecommendation(_ plan: PuttRecommendation, origin: CoursePoint, hole: Hole) -> Bool {
+        guard usesPreparedPuttRecommendations, phase == .ready, automaticAim, club == .putter,
+              lie == .green, ball == origin, self.hole == hole,
+              plan.offsetDegrees.isFinite, abs(plan.offsetDegrees) <= 60,
+              plan.power.isFinite, (0.001...1).contains(plan.power),
+              plan.missYards.isFinite, plan.missYards >= 0 else { return false }
+        objectWillChange.send()
+        puttCache = (origin, hole, plan)
+        planningKey = nil
+        return true
     }
     /// Independent of the live charge; this marker never chases the user's swing.
     var recommendedPower: Double {
@@ -295,7 +315,19 @@ final class CourseRound: ObservableObject {
         phase = .charging
     }
 
-    private func shotRequest(_ impact: SwingImpact) -> ShotRequest {
+    /// Practice records feedback only, without asking the solver for a recommended charge.
+    @discardableResult
+    func recordPracticeImpact(_ impact: SwingImpact) -> Bool {
+        guard practiceMode, canSwing, impact.power.isFinite, impact.power > 0,
+              impact.confidence.isFinite, impact.confidence >= 0.45 else { return false }
+        var bounded = impact
+        bounded.power = min(impact.power, 1)
+        practiceImpact = bounded
+        cancelCharge()
+        return true
+    }
+
+    func shotRequest(_ impact: SwingImpact) -> ShotRequest {
         ShotRequest(club: club, targetHeading: heading + combinedAim,
             type: club == .putter ? .putt : shotType.supports(club:club,lie:lie) ? shotType : .full, execution: impact,
             shape: club == .putter || shotType != .full ? .straight : shotShape,
@@ -313,8 +345,7 @@ final class CourseRound: ObservableObject {
         guard impact.confidence.isFinite, impact.confidence >= 0.45 else { cancelCharge(); return false }
         impact.power = power
         if practiceMode {
-            practiceImpact = impact
-            cancelCharge()
+            recordPracticeImpact(impact)
             return false // A practice swing cannot create a scored event, sound or replay.
         }
         impact.curveDegrees += self.curve
@@ -334,6 +365,20 @@ final class CourseRound: ObservableObject {
         guard phase == .charging else { return }
         power = 0
         phase = .ready
+    }
+
+    /// Accepts a worker-built trajectory through the existing round/scoring lifecycle.
+    /// The session additionally fences this by round generation and frozen preparation input.
+    @discardableResult
+    func acceptPreparedShot(_ shot: RangeShot, at date: Date) -> Bool {
+        guard (phase == .ready || phase == .charging), !practiceMode, shot.id == strokeNumber, shot.origin == ball,
+              shot.request.execution.confidence >= 0.45, shot.power > 0 else { return false }
+        activeShot = shot
+        power = shot.power
+        isReplay = false
+        flightStart = date
+        phase = .flying
+        return true
     }
 
     func elapsed(at date: Date) -> Double {
@@ -449,18 +494,31 @@ final class CourseRound: ObservableObject {
 
     /// The club most players would pull from here.
     func suggestedClub() -> GolfClub {
-        if lie == .green { return .putter }
-        if lie == .bunker { return .wedge }
-        // Lie penalties scale launch SPEED, not yardage linearly. Compare actual
-        // simulated reach, otherwise rough/sand club recommendations overpromise.
-        for candidate in [GolfClub.wedge, .iron9, .iron, .iron5, .wood3] {
-            let reach = BallFlight.simulate(candidate.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
-            if distanceToTarget <= reach * 0.98 { return candidate }
-        }
-        return .driver
+        // Reference reaches include the nonlinear effect of lie penalties on speed.
+        // All values are verified against the solver, with no integration on this UI path.
+        ClubSelectionReference.club(distance: distanceToTarget, lie: lie)
     }
 
     #if DEBUG
+    /// UI fixture only: seed completed prior turns, leaving a real final putt to play.
+    /// Callers must supply isolated defaults so fixture scores never become user records.
+    func prepareFinalTurnForTesting(tied: Bool, finishAtStrokeCap: Bool = false) {
+        restart()
+        scores = (0..<playerCount).map { player in
+            course.holes.enumerated().map { index, hole in
+                if player == playerCount - 1 && index == course.holes.count - 1 { return nil }
+                return hole.par + (finishAtStrokeCap && index == course.holes.count - 1 ? Self.strokesOverParCap : 0)
+                    + (!tied && player > 0 && index == 0 ? 1 : 0)
+            }
+        }
+        holeIndex = course.holes.count - 1
+        playerIndex = playerCount - 1
+        beginTurn()
+        strokes = hole.par - 1 + (finishAtStrokeCap ? Self.strokesOverParCap : 0)
+        dropOnGreenForTesting(yards: 0.5)
+        automaticAim = true
+    }
+
     /// Development only: start the current turn with the ball on the green, `yards` short of the pin.
     func dropOnGreenForTesting(yards: Double = 8) {
         guard phase == .ready else { return }

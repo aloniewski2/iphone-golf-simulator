@@ -1,0 +1,182 @@
+{
+  "sourcePolicy": "Owned existing assets; no new generation or purchases",
+  "courses": [
+    {
+      "file": "Course-cliff-1.usdz",
+      "sha256": "95d9c233b64a884041dc1b6bd7c393aebced5fc5effde3565ee05b9c002c36d0",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 25630483,
+      "bytes": 32994870,
+      "sharedMeshes": 363
+    },
+    {
+      "file": "Course-cliff-2.usdz",
+      "sha256": "5f5e46ca026c8994bf3876111a08fe06771455c8c53e17800d5b7fdb0891c8c9",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 24441295,
+      "bytes": 29922419,
+      "sharedMeshes": 421
+    },
+    {
+      "file": "Course-cliff-3.usdz",
+      "sha256": "58c9703eca5c019a9d2362b7eea06c1404a691e2ae927d79caeeddaab8f6c7aa",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 19711887,
+      "bytes": 22173696,
+      "sharedMeshes": 241
+    },
+    {
+      "file": "Course-meadow-1.usdz",
+      "sha256": "748f6252ae8de536f28a13ad86b09f25339db5718bb5f05376ab548ce0de4c9d",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 23337856,
+      "bytes": 28973142,
+      "sharedMeshes": 341
+    },
+    {
+      "file": "Course-meadow-2.usdz",
+      "sha256": "2d2bbd48efab881694d9df65287fdca33edbd065e3d11993d7e915401cf48fcc",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 21313479,
+      "bytes": 24619821,
+      "sharedMeshes": 321
+    },
+    {
+      "file": "Course-meadow-3.usdz",
+      "sha256": "6e288dff547fdabbd9543bb4a0ac112c24f4d64f2c4c9c53d81b7fab13aa0247",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 17807086,
+      "bytes": 18869538,
+      "sharedMeshes": 211
+    },
+    {
+      "file": "Course-pine-1.usdz",
+      "sha256": "a7398064342797c6bd232aeeaa6fcd5e5a7c954f61f321e959c7846185f3b751",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 24380204,
+      "bytes": 30789198,
+      "sharedMeshes": 357
+    },
+    {
+      "file": "Course-pine-2.usdz",
+      "sha256": "196ee2541451762632210b44ca57e5526c1fe6162edf1f6ddf0b9ee0b1c55a44",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 19209111,
+      "bytes": 20878858,
+      "sharedMeshes": 239
+    },
+    {
+      "file": "Course-pine-3.usdz",
+      "sha256": "39aafaaec42e24a33d21c77851d984d9ecf1b8df677ce44fbf3d8519c0d7fb82",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 22195577,
+      "bytes": 25957264,
+      "sharedMeshes": 329
+    },
+    {
+      "file": "Course-sunward-1.usdz",
+      "sha256": "890e769e4b5c371b216bb50d93c74150cbf82e594cc4a1de2c4567da1a665f69",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 25315456,
+      "bytes": 32914252,
+      "sharedMeshes": 321
+    },
+    {
+      "file": "Course-sunward-2.usdz",
+      "sha256": "3320045c5f46354ef795ddb6a48cc55887852b933ad10e645ad63369cc7e4002",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 19366763,
+      "bytes": 21339318,
+      "sharedMeshes": 221
+    },
+    {
+      "file": "Course-sunward-3.usdz",
+      "sha256": "22f2107d40650ebf0c1dee2f6975e5da2c8e5e9fb6537e9668c55d6c69584c14",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 27270307,
+      "bytes": 35713558,
+      "sharedMeshes": 395
+    },
+    {
+      "file": "Course-sunward-resort-v1-1.usdz",
+      "sha256": "e701a95fc963580bf5aa10fb3549139afdd32d5b0a7410298d76a56715875fe2",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 113393217,
+      "bytes": 112845817,
+      "sharedMeshes": 312
+    },
+    {
+      "file": "Course-sunward-resort-v1-2.usdz",
+      "sha256": "08100090f5ebd9ceb555835a489e760554eddf34fa83439b2d11cb0de2deeab2",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 98874360,
+      "bytes": 98385532,
+      "sharedMeshes": 210
+    },
+    {
+      "file": "Course-sunward-resort-v1-3.usdz",
+      "sha256": "6f8d7eaf1fc9dfacb7f0532b1ae06a93141f436f8126de36826afe744e4eaf55",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 120973436,
+      "bytes": 120308908,
+      "sharedMeshes": 380
+    },
+    {
+      "file": "Course-sunward-resort-v1-4.usdz",
+      "sha256": "aede1b7a543f973d42c5845e2972685cb8c434accaae58ee6c663c0d815305ff",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 115119354,
+      "bytes": 121850344,
+      "sharedMeshes": 342
+    },
+    {
+      "file": "Course-sunward-resort-v1-5.usdz",
+      "sha256": "3b1aff6e143f146d207557a4b8363bc20aba57e0534a44f05725a9066ce8caab",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 96656807,
+      "bytes": 98737529,
+      "sharedMeshes": 236
+    },
+    {
+      "file": "Course-sunward-resort-v1-6.usdz",
+      "sha256": "bff71c43f268cadbb19f56d468d30c776d292aa6beedb10755616606d28f267c",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 123203772,
+      "bytes": 122627745,
+      "sharedMeshes": 391
+    },
+    {
+      "file": "Course-sunward-resort-v1-7.usdz",
+      "sha256": "8135aaeeaa106c5d96ada0921732fd693402303cc10eb7aa85fbd3b922553e93",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 123132188,
+      "bytes": 129090906,
+      "sharedMeshes": 350
+    },
+    {
+      "file": "Course-sunward-resort-v1-8.usdz",
+      "sha256": "70afc09112349a65ce885e30dcd144f8c4f15f7db1fc1ce576b1001c79543c0e",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 107870613,
+      "bytes": 107137937,
+      "sharedMeshes": 236
+    },
+    {
+      "file": "Course-sunward-resort-v1-9.usdz",
+      "sha256": "bcdd88661ef84303c9130627f6c6d83b656bd6734ed4578f09b835fc9b2a28db",
+      "source": "Existing CourseScene and authoritative Hole metadata",
+      "sourceBytes": 115336354,
+      "bytes": 114802200,
+      "sharedMeshes": 323
+    }
+  ],
+  "golfer": {
+    "file": "NativeGolfer.usdz",
+    "sources": [
+      "SunwardGolfer.golfmesh",
+      "SunwardMotion.json",
+      "AvatarRig.swift"
+    ],
+    "converter": "scripts/build-native-golfer.py"
+  }
+}

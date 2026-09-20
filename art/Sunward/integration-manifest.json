@@ -1,0 +1,477 @@
+{
+  "version": 1,
+  "integrationRevision": 7,
+  "description": "Original 32 paid Sunward studies accounted for below; three additional playable terrain material jobs and settings are in rebuild-ledger.json. Conversion is authored game geometry and pose animation, not video-derived mocap. Film-quality goal remains in progress.",
+  "credits": {
+    "original": 3010,
+    "lastVerifiedBalance": 2150,
+    "spentOnGeneration": 860,
+    "spentThisIntegration": 9,
+    "ceiling": 3000
+  },
+  "workshop": {
+    "projectId": "d5134a00-d000-4e27-906f-95dc8dff1d42",
+    "revision": 3,
+    "source": "art/Sunward/source/SunwardWorkshop.blend",
+    "note": "Original editable body/prop workshop contains no animation actions. Later body refinements and motion are canonical in the local scripts, not this snapshot."
+  },
+  "canonicalAuthoring": [
+    "scripts/refine-sunward-golfer.mjs",
+    "scripts/sunward-rest-pose.json",
+    "scripts/SunwardMotionAuthor.swift",
+    "scripts/ExportSunwardMotion.swift",
+    "GolfArcade/Avatar/AvatarRig.swift",
+    "GolfArcade/Mock/CourseScene.swift"
+  ],
+  "generations": [
+    {
+      "jobId": "5a771803-2e02-4c42-bf56-a6ee97bd40c3",
+      "phase": "concept",
+      "index": 0,
+      "estimatedCredits": 1,
+      "source": "art/Sunward/references/direction-0.png",
+      "disposition": "approved-direction",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Avatar/AvatarRig.swift",
+        "GolfArcade/Resources/Sunward/SunwardGolfer.golfmesh",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Approved rounded cartoon silhouettes, teal/ivory golfer, readable rich-green resort palette."
+    },
+    {
+      "jobId": "78d185ca-5ff9-4f25-97a1-78d0b50465de",
+      "phase": "concept",
+      "index": 1,
+      "estimatedCredits": 1,
+      "source": "art/Sunward/references/direction-1.png",
+      "disposition": "archived-alternative",
+      "clip": null,
+      "consumers": [],
+      "note": "Alternative art direction retained for provenance; not mixed into the approved production style."
+    },
+    {
+      "jobId": "faa32847-2b62-446a-b530-66f5d3401c9d",
+      "phase": "concept",
+      "index": 2,
+      "estimatedCredits": 1,
+      "source": "art/Sunward/references/direction-2.png",
+      "disposition": "archived-alternative",
+      "clip": null,
+      "consumers": [],
+      "note": "Alternative art direction retained for provenance; not mixed into the approved production style."
+    },
+    {
+      "jobId": "7455842e-1009-4b29-bafd-8babe9c39b5f",
+      "phase": "refined-stills",
+      "index": 1,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-1.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Avatar/AvatarRig.swift",
+        "GolfArcade/Resources/Sunward/SunwardGolfer.golfmesh"
+      ],
+      "note": "Driver address and single connected grip guide the runtime rig."
+    },
+    {
+      "jobId": "85d442d4-6e07-42bd-8cd7-db404d24dbbd",
+      "phase": "refined-stills",
+      "index": 3,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-3.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift",
+        "GolfArcade/Resources/Sunward/SunwardTree.golfmesh",
+        "GolfArcade/Resources/Sunward/SunwardRocks.golfmesh"
+      ],
+      "note": "Imported broadleaf/rocks plus locally modeled tee furniture and veranda."
+    },
+    {
+      "jobId": "4b891a91-03ee-468b-9290-fe5f370e5e69",
+      "phase": "refined-stills",
+      "index": 5,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-5.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Terrain-aware turf, sand, water, trees and lighting. Generated routing is not authoritative."
+    },
+    {
+      "jobId": "31ad9b38-8a95-427f-9d35-090cbff723ad",
+      "phase": "refined-stills",
+      "index": 0,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-0.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Avatar/AvatarRig.swift",
+        "GolfArcade/Resources/Sunward/SunwardGolfer.golfmesh"
+      ],
+      "note": "Turnaround reconciled into editable local body, face, cap and shoes; not automatic image-to-3D."
+    },
+    {
+      "jobId": "2549a29e-74f8-463e-aec9-903fdceb59af",
+      "phase": "refined-stills",
+      "index": 2,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-2.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Avatar/AvatarRig.swift",
+        "GolfArcade/Resources/Sunward/SunwardGolfer.golfmesh"
+      ],
+      "note": "Quiet putt address and distinct putter head."
+    },
+    {
+      "jobId": "2cf5a547-6ef9-4b53-bbb1-e5578263b063",
+      "phase": "refined-stills",
+      "index": 4,
+      "estimatedCredits": 3,
+      "source": "art/Sunward/references/reference-4.png",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Avatar/AvatarRig.swift",
+        "GolfArcade/Resources/Sunward/SunwardGolfer.golfmesh"
+      ],
+      "note": "Four presets: Cove, Dune, Orchard, Sunset; existing saved appearance schema retained."
+    },
+    {
+      "jobId": "c9b57e3f-2ff3-4a44-9085-7fd63d3c23d4",
+      "phase": "model-pilot",
+      "index": 0,
+      "estimatedCredits": 22.5,
+      "source": "art/Sunward/references/pilot-0.mp4",
+      "disposition": "comparison-reference",
+      "clip": "driver",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs driver landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "385b33c4-4ccc-4906-81e3-f3722bcc6576",
+      "phase": "model-pilot",
+      "index": 1,
+      "estimatedCredits": 22.5,
+      "source": "art/Sunward/references/pilot-1.mp4",
+      "disposition": "comparison-reference",
+      "clip": "driver",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs driver landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "74d8d685-20d1-4cb6-8384-70e25a627d52",
+      "phase": "model-pilot",
+      "index": 2,
+      "estimatedCredits": 22.5,
+      "source": "art/Sunward/references/pilot-2.mp4",
+      "disposition": "comparison-reference",
+      "clip": "putt",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs putt landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "77f8ee42-7fd8-4891-9b31-f1dbb88ecaa2",
+      "phase": "model-pilot",
+      "index": 3,
+      "estimatedCredits": 22.5,
+      "source": "art/Sunward/references/pilot-3.mp4",
+      "disposition": "comparison-reference",
+      "clip": "putt",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs putt landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "05a2bd00-00f7-4ca0-9682-e57a510c0941",
+      "phase": "model-pilot",
+      "index": 4,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/pilot-4.mp4",
+      "disposition": "comparison-reference",
+      "clip": "driver",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs driver landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "f5c105fa-d8dd-4b01-b9cf-8a84a8838c58",
+      "phase": "model-pilot",
+      "index": 5,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/pilot-5.mp4",
+      "disposition": "comparison-reference",
+      "clip": "driver",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs driver landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "8f93d504-e586-4279-a044-aaf6bd90403f",
+      "phase": "model-pilot",
+      "index": 6,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/pilot-6.mp4",
+      "disposition": "comparison-reference",
+      "clip": "putt",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs putt landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "20e0a462-c9ef-43f0-a364-eb239a8111f8",
+      "phase": "model-pilot",
+      "index": 7,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/pilot-7.mp4",
+      "disposition": "comparison-reference",
+      "clip": "putt",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "Model/take comparison informs putt landmarks. Not shipped as video or certified motion capture; changing clubs/framing defects are not copied. Six families use locally authored poses."
+    },
+    {
+      "jobId": "ef78ea6b-e9fa-4bf5-9976-40429fd55364",
+      "phase": "motion-library",
+      "index": 0,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-0.mp4",
+      "disposition": "converted-reference",
+      "clip": "iron",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Controlled iron backswing and balanced heel-up finish."
+    },
+    {
+      "jobId": "e21a35b6-a231-4e56-9c4f-0ed7d6b1d8e0",
+      "phase": "motion-library",
+      "index": 1,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-1.mp4",
+      "disposition": "converted-reference",
+      "clip": "chip",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Compact shoulder-led chip, no full-swing finish."
+    },
+    {
+      "jobId": "4becf04e-bf68-4118-a02d-873391c53126",
+      "phase": "motion-library",
+      "index": 2,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-2.mp4",
+      "disposition": "converted-reference",
+      "clip": "pitch",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Medium pitch corrected to avoid the generated take's oversized follow-through."
+    },
+    {
+      "jobId": "f60d023d-3082-4d0e-b790-6940e0e87a28",
+      "phase": "motion-library",
+      "index": 3,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-3.mp4",
+      "disposition": "converted-reference",
+      "clip": "bunker",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Distinct bunker family; live sand burst uses actual bunker lie."
+    },
+    {
+      "jobId": "9f663e6a-f7c8-442d-b1a5-a9811ca87fdc",
+      "phase": "motion-library",
+      "index": 4,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-4.mp4",
+      "disposition": "converted-reference",
+      "clip": "reaction-holed",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "One-handed club plus fist pump, presented after cup drop including holed putts."
+    },
+    {
+      "jobId": "ffcc9980-3bd6-416d-ab78-da73a57a211d",
+      "phase": "motion-library",
+      "index": 5,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/motion-5.mp4",
+      "disposition": "converted-reference",
+      "clip": "knockdown",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift",
+        "scripts/ExportSunwardMotion.swift",
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Seated landing and rise re-authored; broken/disappearing generated club rejected. Runtime bystander recovery uses this clip."
+    },
+    {
+      "jobId": "5c161db6-440f-4063-82b7-cf897bc23e5b",
+      "phase": "course-reference",
+      "index": 0,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-0.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Tee-to-fairway framing recreated over the actual hole."
+    },
+    {
+      "jobId": "c901a6f9-5ca3-4c4a-9772-f7081c84ae9b",
+      "phase": "course-reference",
+      "index": 1,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-1.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Elevated approach and warm bunker-edge treatment."
+    },
+    {
+      "jobId": "2868bde1-2aef-49e9-bf9b-17d652d2f8d3",
+      "phase": "course-reference",
+      "index": 2,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-2.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Turquoise animated water, sandstone and shoreline grass."
+    },
+    {
+      "jobId": "253372cb-42e0-41b8-a0f9-cb1b049a7457",
+      "phase": "course-reference",
+      "index": 3,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-3.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Cream/terracotta veranda and coral resort furniture."
+    },
+    {
+      "jobId": "a77e212d-fab3-457a-8834-a1653515521f",
+      "phase": "course-reference",
+      "index": 4,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-4.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Smooth dogleg-aware real-hole flyover and nine real-game course cards."
+    },
+    {
+      "jobId": "e9e282ee-648b-4f46-8708-c46f3578a3dd",
+      "phase": "course-reference",
+      "index": 5,
+      "estimatedCredits": 35,
+      "source": "art/Sunward/references/course-reference-5.mp4",
+      "disposition": "converted-reference",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Mock/CourseScene.swift"
+      ],
+      "note": "Soft daylight, layered groves and restrained decorative vegetation movement."
+    },
+    {
+      "jobId": "11a86531-698d-4ba5-8e9a-4bbbd65bae64",
+      "phase": "selected-hd-reference",
+      "index": 0,
+      "estimatedCredits": 60,
+      "source": "art/Sunward/references/hd-reference-0.mp4",
+      "disposition": "converted-reference",
+      "clip": "iron",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "High-resolution iron study used for the authored iron family."
+    },
+    {
+      "jobId": "8dac2bd9-115e-49cc-a19d-5b0091da093a",
+      "phase": "selected-hd-reference",
+      "index": 1,
+      "estimatedCredits": 60,
+      "source": "art/Sunward/references/hd-reference-1.mp4",
+      "disposition": "converted-reference",
+      "clip": "putt",
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMotion.json",
+        "scripts/SunwardMotionAuthor.swift"
+      ],
+      "note": "High-resolution putting study used for quiet shoulder pendulum and planted feet."
+    },
+    {
+      "jobId": "975a3a07-aebb-4435-8ad2-52debc34f14e",
+      "phase": "selected-hd-reference",
+      "index": 2,
+      "estimatedCredits": 60,
+      "source": "art/Sunward/references/hd-reference-2.mp4",
+      "disposition": "runtime-video",
+      "clip": null,
+      "consumers": [
+        "GolfArcade/Resources/Sunward/SunwardMenu.mp4",
+        "GolfArcade/Features/Menu/MainMenuView.swift"
+      ],
+      "note": "Accepted water/green film bundled byte-for-byte as muted menu background only. Never replaces playable terrain or captures AirPlay."
+    }
+  ]
+}

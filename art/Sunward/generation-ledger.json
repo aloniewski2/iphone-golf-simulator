@@ -1,0 +1,758 @@
+{
+  "startingBalance": 3010,
+  "ceiling": 3000,
+  "reserve": 700,
+  "entries": [
+    {
+      "stage": "concept",
+      "estimatedCredits": 1,
+      "index": 0,
+      "params": {
+        "model": "seedream_v4_5",
+        "quality": "basic",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "3c7248db-da18-4729-8047-dc06336c70a2"
+          },
+          {
+            "role": "image",
+            "value": "1028622b-c514-49d6-aa49-6342d2aeb10c"
+          }
+        ],
+        "prompt": "Create an original production art direction board for a playful cartoon mobile golf game called Sunward. Use the supplied current game screenshots only to preserve the golfer identity, four color presets and course layout; dramatically elevate the craft. No UI text, logos or borrowed franchise characters. One cohesive widescreen board: large course vista at left, full-body golfer at right, small material/color swatches along bottom. Real playable golf landscape, rounded stylized trees, clearly separated fairway/fringe/rough, sculpted warm sand bunkers, turquoise pond, continuous rolling horizon, charming distant clubhouse. Friendly young adult golfer, compact athletic proportions, large expressive head, tailored polo with intact collar and sleeves, gloves, trousers, chunky golf shoes, full rigid club. Warm sunlight, soft contact shadows, quality game-ready 3D render, simple readable shapes. Direction A: premium sculpted cartoon, smooth clay-like volumes, rich emerald and lime turf, coral pin flags, ivory cap, teal polo, navy trousers. Strong clean silhouettes and elegant minimal surface detail. Closest to a polished animated sports game."
+      },
+      "job_id": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+    },
+    {
+      "stage": "concept",
+      "estimatedCredits": 1,
+      "index": 1,
+      "params": {
+        "model": "seedream_v4_5",
+        "quality": "basic",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "3c7248db-da18-4729-8047-dc06336c70a2"
+          },
+          {
+            "role": "image",
+            "value": "1028622b-c514-49d6-aa49-6342d2aeb10c"
+          }
+        ],
+        "prompt": "Create an original production art direction board for a playful cartoon mobile golf game called Sunward. Use the supplied current game screenshots only to preserve the golfer identity, four color presets and course layout; dramatically elevate the craft. No UI text, logos or borrowed franchise characters. One cohesive widescreen board: large course vista at left, full-body golfer at right, small material/color swatches along bottom. Real playable golf landscape, rounded stylized trees, clearly separated fairway/fringe/rough, sculpted warm sand bunkers, turquoise pond, continuous rolling horizon, charming distant clubhouse. Friendly young adult golfer, compact athletic proportions, large expressive head, tailored polo with intact collar and sleeves, gloves, trousers, chunky golf shoes, full rigid club. Warm sunlight, soft contact shadows, quality game-ready 3D render, simple readable shapes. Direction B: playful coastal storybook 3D. Aqua sea and pond, lavender-blue distance, windswept umbrella pines, peach stucco clubhouse, warm golden sand, rounded angular forms, slightly hand-painted gradients. Teal polo hero with visor."
+      },
+      "job_id": "78d185ca-5ff9-4f25-97a1-78d0b50465de"
+    },
+    {
+      "stage": "concept",
+      "estimatedCredits": 1,
+      "index": 2,
+      "params": {
+        "model": "seedream_v4_5",
+        "quality": "basic",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "3c7248db-da18-4729-8047-dc06336c70a2"
+          },
+          {
+            "role": "image",
+            "value": "1028622b-c514-49d6-aa49-6342d2aeb10c"
+          }
+        ],
+        "prompt": "Create an original production art direction board for a playful cartoon mobile golf game called Sunward. Use the supplied current game screenshots only to preserve the golfer identity, four color presets and course layout; dramatically elevate the craft. No UI text, logos or borrowed franchise characters. One cohesive widescreen board: large course vista at left, full-body golfer at right, small material/color swatches along bottom. Real playable golf landscape, rounded stylized trees, clearly separated fairway/fringe/rough, sculpted warm sand bunkers, turquoise pond, continuous rolling horizon, charming distant clubhouse. Friendly young adult golfer, compact athletic proportions, large expressive head, tailored polo with intact collar and sleeves, gloves, trousers, chunky golf shoes, full rigid club. Warm sunlight, soft contact shadows, quality game-ready 3D render, simple readable shapes. Direction C: cheerful tactile toy-like 3D sports world. Rounded compact adult golfers, chunky shoes and soft geometric shrubs, bright fairway bands, cream clubhouse with terracotta roof, restrained texture grain and pleasantly exaggerated proportions. Not miniature diorama, full-size walkable course."
+      },
+      "job_id": "faa32847-2b62-446a-b530-66f5d3401c9d"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 1,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "ONLY the teal-shirt golfer from the reference, same ivory cap, teal polo dark teal cuff, navy trousers and ivory navy shoes. Single full-body character and entire driver club, facing toward camera at three quarter front angle in a correct right-handed golf address pose with both hands clasped on ONE grip and clubhead behind ONE tiny white ball on a small flat grass patch. Plenty of room above and either side for a full swing. Orthographic-ish fixed studio camera, warm pale gray seamless background, even light with soft contact shadow. No collage, no scenery, no text. Consistent original friendly cartoon identity, compact adult, clean silhouette, stable club geometry."
+      },
+      "job_id": "7455842e-1009-4b29-bafd-8babe9c39b5f"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 3,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "Environment asset design sheet matching the reference's playful sculpted cartoon golf resort. Four separated assets at consistent lighting: rounded branching broadleaf tree with layered irregular leaf masses, sculpted pale sandstone cluster, elegant ivory and coral tee sign without text, open terracotta-roof clubhouse veranda. Teal green foliage, warm bark, cream stone, coral trim, smooth manufactured surfaces. Three quarter orthographic views on warm gray. No people, no backdrop, no words. Plausible low polygon mobile game meshes."
+      },
+      "job_id": "85d442d4-6e07-42bd-8cd7-db404d24dbbd"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 5,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "Art direction sheet of the reference course viewed from four cameras: tee looking down dogleg fairway, ground-height green approach, close bunker lip and water edge, overhead routing. Matching rounded stylized green trees, turquoise water, peach sand, cream terracotta clubhouse. Keep real golf course scale and believable rolling terrain, high surface readability, varied natural tree groups. No people, no UI, no text. This is a reference for a real-time mobile game; do not use microscopic grass detail."
+      },
+      "job_id": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 0,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "Character production turnaround sheet of ONLY the teal-shirt golfer from the reference, same face, proportions, ivory cap, teal polo with dark teal sleeve cuffs, navy trousers, ivory navy golf shoes. Neutral warm gray background, even studio lighting. Four evenly spaced full-body orthographic views front, left side, back, three-quarter, identical scale and relaxed A pose, hands empty, no golf clubs. Clean separated limbs, head approx one quarter of full height, compact athletic adult cartoon, smooth sculpted premium game model. No text, no scenery. Keep exact identity across all views."
+      },
+      "job_id": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 2,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "ONLY the teal-shirt golfer from the reference, same identity, cap, polo, trousers and shoes. Single full-body character in a correct right-handed PUTTING address, two hands on ONE putter grip, short putter, flat putter face behind ONE small ball, narrow stance, quiet shoulders, softly bent knees. Fixed full-body three-quarter camera, warm pale gray seamless background, even studio light, grounded feet, entire club visible with generous space. No collage, no scenery, no text. Clean premium cartoon game render."
+      },
+      "job_id": "2549a29e-74f8-463e-aec9-903fdceb59af"
+    },
+    {
+      "stage": "refined-stills",
+      "estimatedCredits": 3,
+      "index": 4,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "5a771803-2e02-4c42-bf56-a6ee97bd40c3"
+          }
+        ],
+        "prompt": "Expression and outfit sheet for the exact reference golfer. Four full-body characters in neutral relaxed standing stance, same underlying body proportions, with distinct preset identities: tan skin teal polo navy pants ivory cap; brown skin coral polo beige pants ivory visor; warm skin fern polo navy pants gold cap; deep skin lilac polo beige pants coral visor silver hair. Expressive friendly eyebrows and soft cheeks, clear eyes, premium smooth cartoon. Each full body entirely visible, warm neutral background, no clubs, no text."
+      },
+      "job_id": "2cf5a547-6ef9-4b53-bbb1-e5578263b063"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 22.5,
+      "index": 0,
+      "kind": "driver",
+      "take": 0,
+      "params": {
+        "model": "seedance_2_0",
+        "mode": "std",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "7455842e-1009-4b29-bafd-8babe9c39b5f"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE anatomically believable right-handed full golf driver swing: hold address 0.5s, smooth wide takeaway to top at 1.8s, hips lead downswing, club strikes the ball at 2.35s, arms extend then wrap into balanced high finish at 3.4s, hold finish until end. Ball leaves once at contact. Lead foot stays planted, trail heel rolls up. Both hands stay on the same grip, constant shaft length and solid clubhead. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "c9b57e3f-2ff3-4a44-9085-7fd63d3c23d4"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 22.5,
+      "index": 1,
+      "kind": "driver",
+      "take": 1,
+      "params": {
+        "model": "seedance_2_0",
+        "mode": "std",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "7455842e-1009-4b29-bafd-8babe9c39b5f"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE anatomically believable right-handed full golf driver swing: hold address 0.5s, smooth wide takeaway to top at 1.8s, hips lead downswing, club strikes the ball at 2.35s, arms extend then wrap into balanced high finish at 3.4s, hold finish until end. Ball leaves once at contact. Lead foot stays planted, trail heel rolls up. Both hands stay on the same grip, constant shaft length and solid clubhead. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "385b33c4-4ccc-4906-81e3-f3722bcc6576"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 22.5,
+      "index": 2,
+      "kind": "putt",
+      "take": 0,
+      "params": {
+        "model": "seedance_2_0",
+        "mode": "std",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "2549a29e-74f8-463e-aec9-903fdceb59af"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE short accurate putting stroke: hold address 0.8s, small shoulder pendulum backswing until 1.8s, forward stroke contacts the ball at 2.4s, putter travels only a short distance through contact, then hold balanced finish. Feet, hips and head stay nearly still. Ball rolls smoothly after ONE contact. Absolutely no full swing or lifted club. Both hands remain connected to one putter, shaft length constant. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "74d8d685-20d1-4cb6-8384-70e25a627d52"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 22.5,
+      "index": 3,
+      "kind": "putt",
+      "take": 1,
+      "params": {
+        "model": "seedance_2_0",
+        "mode": "std",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "2549a29e-74f8-463e-aec9-903fdceb59af"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE short accurate putting stroke: hold address 0.8s, small shoulder pendulum backswing until 1.8s, forward stroke contacts the ball at 2.4s, putter travels only a short distance through contact, then hold balanced finish. Feet, hips and head stay nearly still. Ball rolls smoothly after ONE contact. Absolutely no full swing or lifted club. Both hands remain connected to one putter, shaft length constant. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "77f8ee42-7fd8-4891-9b31-f1dbb88ecaa2"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 35,
+      "index": 4,
+      "kind": "driver",
+      "take": 0,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "7455842e-1009-4b29-bafd-8babe9c39b5f"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE anatomically believable right-handed full golf driver swing: hold address 0.5s, smooth wide takeaway to top at 1.8s, hips lead downswing, club strikes the ball at 2.35s, arms extend then wrap into balanced high finish at 3.4s, hold finish until end. Ball leaves once at contact. Lead foot stays planted, trail heel rolls up. Both hands stay on the same grip, constant shaft length and solid clubhead. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "05a2bd00-00f7-4ca0-9682-e57a510c0941"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 35,
+      "index": 5,
+      "kind": "driver",
+      "take": 1,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "7455842e-1009-4b29-bafd-8babe9c39b5f"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE anatomically believable right-handed full golf driver swing: hold address 0.5s, smooth wide takeaway to top at 1.8s, hips lead downswing, club strikes the ball at 2.35s, arms extend then wrap into balanced high finish at 3.4s, hold finish until end. Ball leaves once at contact. Lead foot stays planted, trail heel rolls up. Both hands stay on the same grip, constant shaft length and solid clubhead. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "f5c105fa-d8dd-4b01-b9cf-8a84a8838c58"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 35,
+      "index": 6,
+      "kind": "putt",
+      "take": 0,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "2549a29e-74f8-463e-aec9-903fdceb59af"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE short accurate putting stroke: hold address 0.8s, small shoulder pendulum backswing until 1.8s, forward stroke contacts the ball at 2.4s, putter travels only a short distance through contact, then hold balanced finish. Feet, hips and head stay nearly still. Ball rolls smoothly after ONE contact. Absolutely no full swing or lifted club. Both hands remain connected to one putter, shaft length constant. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "8f93d504-e586-4279-a044-aaf6bd90403f"
+    },
+    {
+      "stage": "model-pilot",
+      "estimatedCredits": 35,
+      "index": 7,
+      "kind": "putt",
+      "take": 1,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "2549a29e-74f8-463e-aec9-903fdceb59af"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE short accurate putting stroke: hold address 0.8s, small shoulder pendulum backswing until 1.8s, forward stroke contacts the ball at 2.4s, putter travels only a short distance through contact, then hold balanced finish. Feet, hips and head stay nearly still. Ball rolls smoothly after ONE contact. Absolutely no full swing or lifted club. Both hands remain connected to one putter, shaft length constant. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      },
+      "job_id": "20e0a462-c9ef-43f0-a364-eb239a8111f8"
+    },
+    {
+      "phase": "motion-library",
+      "kind": "iron",
+      "jobId": "ef78ea6b-e9fa-4bf5-9976-40429fd55364",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. ONE controlled 7-iron swing with a three-quarter backswing, crisp downward strike and balanced finish. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "motion-library",
+      "kind": "chip",
+      "jobId": "e21a35b6-a231-4e56-9c4f-0ed7d6b1d8e0",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. ONE compact greenside chip. Quiet wrists, very short backswing, weight on lead foot, low follow-through. Do not make a full swing. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "motion-library",
+      "kind": "pitch",
+      "jobId": "4becf04e-bf68-4118-a02d-873391c53126",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. ONE medium wedge pitch: half backswing, soft wrist set, strike then chest-high finish. No driver-sized swing. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "motion-library",
+      "kind": "bunker",
+      "jobId": "f60d023d-3082-4d0e-b790-6940e0e87a28",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. ONE open-face bunker swing: stable wide stance, three-quarter backswing, brush through imaginary sand and balanced finish. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "motion-library",
+      "kind": "celebration",
+      "jobId": "9f663e6a-f7c8-442d-b1a5-a9811ca87fdc",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. A delighted restrained golf celebration: tiny knee bend, joyful fist pump with free right hand, club held securely in left hand. Then settle into relaxed standing. No ball shot. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "motion-library",
+      "kind": "recovery",
+      "jobId": "ffcc9980-3bd6-416d-ab78-da73a57a211d",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. A gentle comic stumble away from an imaginary ball, seated landing, surprised face, then stand up safely using knees and regain balance. Club safely on floor. No injury. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "5c161db6-440f-4063-82b7-cf897bc23e5b",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A gentle tee-to-fairway dolly at golfer eye height; emphasize readable landing zone. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "c901a6f9-5ca3-4c4a-9772-f7081c84ae9b",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. An elevated three-quarter glide toward a green bordered by two warm sand bunkers. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "2868bde1-2aef-49e9-bf9b-17d652d2f8d3",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A low tranquil turquoise-water shoreline study, with soft ripples and rounded sandstone. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "253372cb-42e0-41b8-a0f9-cb1b049a7457",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A warm afternoon clubhouse approach with cream walls, terracotta roof and coral signage accents. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "a77e212d-fab3-457a-8834-a1653515521f",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A slow overhead-to-oblique establishing move showing a dogleg fairway and coherent terrain. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "course-reference",
+      "jobId": "e9e282ee-648b-4f46-8708-c46f3578a3dd",
+      "estimatedCredits": 35,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A gentle breeze lighting study: rounded tree crowns sway subtly, stable sunlight and crisp readable turf. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    },
+    {
+      "phase": "selected-hd-reference",
+      "jobId": "11a86531-698d-4ba5-8e9a-4bbbd65bae64",
+      "estimatedCredits": 60,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "1080p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "31ad9b38-8a95-427f-9d35-090cbff723ad"
+          }
+        ],
+        "prompt": "Single full-body cartoon golf animation study matching the supplied character turnaround: teal polo, navy trousers, ivory cap and friendly rounded face. Use only ONE golfer, not a turnaround grid. Neutral warm-gray seamless studio. Fixed camera, wide framing with at least one full club-length empty margin above the head and at both sides. ONE controlled 7-iron swing with a three-quarter backswing, crisp downward strike and balanced finish. Start movement immediately at 0.2s, complete main action by 3.5s, hold until 5s. Constant character proportions and club length; planted feet except purposeful heel lift or specified recovery. Two hands stay connected to the same grip during swings. Clean silhouettes, smooth believable biomechanics, no cuts, text, audio or extra props. Reference study, not cinematic camera motion."
+      }
+    },
+    {
+      "phase": "selected-hd-reference",
+      "jobId": "8dac2bd9-115e-49cc-a19d-5b0091da093a",
+      "estimatedCredits": 60,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "1080p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "start_image",
+            "value": "2549a29e-74f8-463e-aec9-903fdceb59af"
+          }
+        ],
+        "prompt": "Animate the exact cartoon golfer in the supplied first frame. Preserve face, ivory cap, teal polo, navy trousers, shoes, skin tone, camera, lighting and simple studio background. Entire body, feet, hands and club remain in frame throughout. Locked-off camera; no cuts or zoom. Execute ONE short accurate putting stroke: hold address 0.8s, small shoulder pendulum backswing until 1.8s, forward stroke contacts the ball at 2.4s, putter travels only a short distance through contact, then hold balanced finish. Feet, hips and head stay nearly still. Ball rolls smoothly after ONE contact. Absolutely no full swing or lifted club. Both hands remain connected to one putter, shaft length constant. Believable golf biomechanics, expressive smooth premium 3D animation. No extra arms, fingers, clubs, balls or text. Never morph the club or slide the feet."
+      }
+    },
+    {
+      "phase": "selected-hd-reference",
+      "jobId": "975a3a07-aebb-4435-8ad2-52debc34f14e",
+      "estimatedCredits": 60,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 5,
+        "resolution": "1080p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "count": 1,
+        "use_unlim": false,
+        "medias": [
+          {
+            "role": "image",
+            "value": "4b891a91-03ee-468b-9290-fe5f370e5e69"
+          }
+        ],
+        "prompt": "Single continuous shot, NOT a multi-panel grid. Premium playful cartoon golf resort matching the supplied art-direction sheet. Rich greens, warm cream sand, turquoise water, sculpted rounded trees, terracotta clubhouse accents. A low tranquil turquoise-water shoreline study, with soft ripples and rounded sandstone. Slow physically plausible camera, consistent terrain and hazards, no morphing or added moving objects. Clear golf surfaces, phone-friendly restraint, soft afternoon shadows, no text or logos. This is lighting and camera reference, not a map replacement."
+      }
+    }
+  ]
+}

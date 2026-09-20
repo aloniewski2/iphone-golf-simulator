@@ -113,6 +113,24 @@ final class GolferSkin {
                     simd_float4(simd_cross(x, direction), 0), simd_float4(0, 0, 0, 1)))
             }
         }
+        // Carry each arm's bend plane into its skinning frame. A shortest-arc
+        // quaternion only aligns the bone axis and rolls unpredictably when the
+        // arm passes overhead; the elbow then looks twisted despite valid joints.
+        let arm: (BodyJoint, BodyJoint, BodyJoint, Float)?
+        switch link.from {
+        case .leftShoulder, .leftElbow: arm = (.leftShoulder,.leftElbow,.leftWrist,1)
+        case .rightShoulder, .rightElbow: arm = (.rightShoulder,.rightElbow,.rightWrist,-1)
+        default: arm = nil
+        }
+        if let (shoulder,elbow,wrist,side) = arm {
+            let normal = simd_cross(pose[elbow]-pose[shoulder],pose[wrist]-pose[elbow]) * side
+            if simd_length_squared(normal) > 0.00001 {
+                let x = simd_normalize(normal)
+                let z = simd_normalize(simd_cross(x,direction))
+                matrix = simd_float4x4(columns:(simd_float4(simd_cross(direction,z),0),
+                    simd_float4(direction,0),simd_float4(z,0),simd_float4(0,0,0,1)))
+            }
+        }
         matrix.columns.1 *= length
         matrix.columns.3 = simd_float4(a, 1)
         return matrix

@@ -1,18 +1,20 @@
 import Combine
+#if !NATIVE_ONLY
 import SceneKit
+#endif
 import SwiftUI
 import UIKit
 
-/// The phone owns gameplay and tracking. External windows only observe these existing objects.
+#if !NATIVE_ONLY
+/// The phone owns gameplay and motion input. External windows only observe these existing objects.
 @MainActor
-final class TVGameSession {
+final class TVGameSession: ObservableObject {
+    @Published var playerName = ""
+    @Published var controllerStatus = "Choose club and aim on your iPhone"
     let round: CourseRound
     let scene: CourseScene
-    let camera: CameraSwingController
-    let usesCamera: Bool
-    init(round: CourseRound, scene: CourseScene, camera: CameraSwingController, usesCamera: Bool) {
-        self.round = round; self.scene = scene; self.camera = camera
-        self.usesCamera = usesCamera
+    init(round: CourseRound, scene: CourseScene) {
+        self.round = round; self.scene = scene
     }
 }
 
@@ -23,12 +25,10 @@ final class GolfTVDisplay: ObservableObject {
         didSet {
             defaults.set(enabled, forKey: "display.landscapeTV")
             refreshWindows()
-            if enabled && !oldValue { requestSetup() }
         }
     }
     @Published private(set) var connected = false
     @Published private(set) var session: TVGameSession?
-    @Published private(set) var setupRequestID = 0
     var active: Bool { enabled && connected }
     @Published var delayCheck = false
     @Published private(set) var flashNumber = 0
@@ -40,16 +40,13 @@ final class GolfTVDisplay: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        enabled = defaults.bool(forKey: "display.landscapeTV")
+        enabled = defaults.object(forKey: "display.landscapeTV") == nil ? true : defaults.bool(forKey: "display.landscapeTV")
     }
 
-    func present(round: CourseRound, scene: CourseScene, camera: CameraSwingController, usesCamera: Bool = true) {
-        guard session?.round !== round || session?.usesCamera != usesCamera else { return }
-        session = TVGameSession(round: round, scene: scene, camera: camera, usesCamera: usesCamera)
+    func present(round: CourseRound, scene: CourseScene) {
+        guard session?.round !== round || session?.scene !== scene else { return }
+        session = TVGameSession(round: round, scene: scene)
     }
-
-    /// The phone consumes this request between shots; never alter an in-flight result here.
-    func requestSetup() { setupRequestID += 1 }
 
     func end(round: CourseRound) {
         guard session?.round === round else { return }
@@ -57,11 +54,9 @@ final class GolfTVDisplay: ObservableObject {
     }
 
     func connect(_ scene: UIWindowScene) {
-        let isNew = scenes[scene.session.persistentIdentifier] == nil
         scenes[scene.session.persistentIdentifier] = scene
         connected = true
         refreshWindows()
-        if enabled && isNew { requestSetup() }
     }
 
     func disconnect(_ scene: UIScene) {
@@ -69,7 +64,7 @@ final class GolfTVDisplay: ObservableObject {
         windows.removeValue(forKey: id)?.isHidden = true
         scenes.removeValue(forKey: id)
         connected = !scenes.isEmpty
-        // Keep the round, shot and fixed camera calibration intact.
+        // Keep the current round and in-flight shot intact.
     }
 
     private func refreshWindows() {
@@ -98,12 +93,10 @@ final class GolfTVDisplay: ObservableObject {
     }
 
     static func sceneConfiguration() -> UISceneConfiguration {
-        let config = UISceneConfiguration(name: "Golf TV", sessionRole: .windowExternalDisplayNonInteractive)
-        config.sceneClass = UIWindowScene.self
-        config.delegateClass = GolfExternalSceneDelegate.self
-        return config
+        GolfExternalSceneDelegate.configuration()
     }
 }
+#endif
 
 @MainActor
 final class GolfAppDelegate: NSObject, UIApplicationDelegate {
@@ -122,35 +115,69 @@ final class GolfAppDelegate: NSObject, UIApplicationDelegate {
         #if compiler(>=6.4)
         if #available(iOS 27, *) { return UISceneConfiguration(name: nil, sessionRole: role) }
         #endif
-        if role == .windowExternalDisplayNonInteractive { return GolfTVDisplay.sceneConfiguration() }
+        if role == .windowExternalDisplayNonInteractive { return GolfExternalSceneDelegate.configuration() }
         return UISceneConfiguration(name: nil, sessionRole: role)
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         if window?.windowScene?.session.role == .windowExternalDisplayNonInteractive { return .landscape }
-        return GolfTVDisplay.shared.enabled ? .portrait : .allButUpsideDown
+        #if NATIVE_ONLY
+        let enabled = DisplayCoordinator.shared.enabled
+        #else
+        let enabled = DisplayCoordinator.usesNativeRenderer ? DisplayCoordinator.shared.enabled : GolfTVDisplay.shared.enabled
+        #endif
+        return enabled ? .portrait : .allButUpsideDown
     }
 }
 
 @MainActor
 final class GolfExternalSceneDelegate: NSObject, UIWindowSceneDelegate {
+    var window: UIWindow?
+    static func configuration() -> UISceneConfiguration {
+        let config = UISceneConfiguration(name: "Golf TV", sessionRole: .windowExternalDisplayNonInteractive)
+        config.sceneClass = UIWindowScene.self
+        config.delegateClass = GolfExternalSceneDelegate.self
+        return config
+    }
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
+        if DisplayCoordinator.usesNativeRenderer {
+            window = DisplayCoordinator.shared.connect(windowScene)
+            return
+        }
+        #if !NATIVE_ONLY
         GolfTVDisplay.shared.connect(windowScene)
+        #endif
     }
-    func sceneDidDisconnect(_ scene: UIScene) { GolfTVDisplay.shared.disconnect(scene) }
+    func sceneDidDisconnect(_ scene: UIScene) {
+        if DisplayCoordinator.usesNativeRenderer { DisplayCoordinator.shared.disconnect(scene); window = nil; return }
+        #if !NATIVE_ONLY
+        GolfTVDisplay.shared.disconnect(scene)
+        #endif
+    }
 }
 
+#if !NATIVE_ONLY
 private final class TVHostingController: UIHostingController<GolfTVRoot> {
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override var prefersStatusBarHidden: Bool { true }
 }
+#endif
 
 /// iOS 27 requires explicit scene-accessory registration; iOS 17–26 use the app delegate.
 struct TVAccessoryRegistration: UIViewControllerRepresentable {
+    @State private var nativeDisplay = DisplayCoordinator.shared
+    #if !NATIVE_ONLY
     @ObservedObject var display = GolfTVDisplay.shared
+    #endif
     func makeUIViewController(context: Context) -> RegistrationController { RegistrationController() }
-    func updateUIViewController(_ controller: RegistrationController, context: Context) { controller.setEnabled(display.enabled) }
+    func updateUIViewController(_ controller: RegistrationController, context: Context) {
+        #if NATIVE_ONLY
+        controller.setEnabled(nativeDisplay.enabled)
+        #else
+        controller.setEnabled(DisplayCoordinator.usesNativeRenderer ? nativeDisplay.enabled : display.enabled)
+        #endif
+    }
 
     final class RegistrationController: UIViewController {
         private var registration: AnyObject?
@@ -166,7 +193,7 @@ struct TVAccessoryRegistration: UIViewControllerRepresentable {
             #if compiler(>=6.4)
             if #available(iOS 27, *) {
                 if registration == nil {
-                    registration = registerSceneAccessory(.externalNonInteractive(sceneConfiguration: GolfTVDisplay.sceneConfiguration()))
+                    registration = registerSceneAccessory(.externalNonInteractive(sceneConfiguration: GolfExternalSceneDelegate.configuration()))
                 }
                 (registration as? UISceneAccessoryRegistration)?.isEnabled = value
             }
@@ -179,6 +206,7 @@ struct TVAccessoryRegistration: UIViewControllerRepresentable {
     }
 }
 
+#if !NATIVE_ONLY
 struct TVSettingsView: View {
     @ObservedObject var display = GolfTVDisplay.shared
     @Environment(\.dismiss) private var dismiss
@@ -189,12 +217,8 @@ struct TVSettingsView: View {
                     Toggle("Landscape TV mode", isOn: $display.enabled).accessibilityIdentifier("tvMode")
                     Text(display.enabled ? (display.connected ? "TV connected · landscape game view" : "Ready for an external display") : "Standard screen mirroring")
                         .accessibilityIdentifier("tvConnectionStatus")
-                    Text("Connect using iPhone Control Center → Screen Mirroring, then select your Apple TV or compatible TV. A USB-C display connection also works. Keep the phone upright with your body and feet visible.")
+                    Text("Connect using iPhone Control Center → Screen Mirroring, then select your Apple TV or compatible TV. A USB-C display connection also works. Keep Golf Arcade open. The phone becomes your controller; the TV shows the course.")
                     Text("TV mode gives the display its own wide game view. Turn it off to compare ordinary mirroring. You may need to reconnect Screen Mirroring when switching modes on your receiver.")
-                    if display.session?.usesCamera == true {
-                        Button("Reposition player and ball") { display.requestSetup(); dismiss() }
-                            .accessibilityIdentifier("tvReposition")
-                    }
                 }
                 Section("Compare display delay") {
                     Toggle("Show comparison flash", isOn: $display.delayCheck)
@@ -230,7 +254,7 @@ private struct GolfTVRoot: View {
         ZStack {
             Color.black.ignoresSafeArea()
             if let session = display.session {
-                TVCourseView(round: session.round, scene: session.scene, camera: session.camera, usesCamera: session.usesCamera)
+                TVCourseView(session: session, round: session.round, scene: session.scene)
             } else {
                 VStack(spacing: 24) {
                     Image(systemName: "figure.golf").font(.system(size: 90))
@@ -247,37 +271,35 @@ private struct GolfTVRoot: View {
     }
 }
 
-private struct TVCourseView: View {
+struct TVCourseView: View {
+    @ObservedObject var session: TVGameSession
     @ObservedObject var round: CourseRound
     let scene: CourseScene
-    @ObservedObject var camera: CameraSwingController
-    let usesCamera: Bool
-    private var showsSetup: Bool {
-        usesCamera && (round.phase == .ready || round.phase == .charging) &&
-            camera.needsPositionSetup
-    }
     var body: some View {
-        ZStack {
-            // Avoid rendering a second 3D course behind the full-screen setup.
-            if !showsSetup { TVSceneView(scene: scene).ignoresSafeArea() }
-            if usesCamera {
-                GeometryReader { proxy in
-                    TVCameraSetupView(camera: camera, expanded: showsSetup)
-                        .frame(width: showsSetup ? proxy.size.width : proxy.size.width * 0.34,
-                               height: showsSetup ? proxy.size.height : proxy.size.height * 0.56)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                }
+        GeometryReader { proxy in
+            ZStack {
+                TVSceneView(scene: scene).ignoresSafeArea()
+                hud.frame(width: 1280, height: 720)
+                    .scaleEffect(min(proxy.size.width / 1280, proxy.size.height / 720))
+                    .frame(width: proxy.size.width, height: proxy.size.height)
             }
-            if !showsSetup {
+        }
+    }
+
+    private var hud: some View {
             VStack {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 12) {
+                        Text(session.playerName.uppercased())
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .lineLimit(1).minimumScaleFactor(0.6)
                         Text("HOLE \(round.hole.number) · PAR \(round.hole.par) · \(round.strokes) SHOTS")
                             .font(.system(size: 26, weight: .heavy, design: .rounded))
                         Text("\(Int(round.distanceToPin.rounded())) YD TO HOLE")
                             .font(.system(size: 34, weight: .black, design: .rounded)).foregroundStyle(.yellow)
                         if round.canSwing { Text(round.holeNavigation.directionLabel).font(.title2.bold()) }
-                    }.padding(20).background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                    }.frame(maxWidth: 540, alignment: .leading)
+                        .padding(20).background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
                     Spacer()
                     VStack(alignment: .trailing, spacing: 10) {
                         Text(round.club.displayName.uppercased()).font(.title.bold())
@@ -288,11 +310,10 @@ private struct TVCourseView: View {
                 }
                 Spacer()
                 Text(status).font(.system(size: 28, weight: .bold, design: .rounded))
+                    .lineLimit(2).multilineTextAlignment(.center).frame(maxWidth: 900)
                     .padding(.horizontal, 30).padding(.vertical, 16)
                     .background(.black.opacity(0.75), in: Capsule())
             }.padding(36).foregroundStyle(.white)
-            }
-        }
     }
     private var status: String {
         if round.pausedAt != nil { return "Paused · return to Golf Arcade on your iPhone" }
@@ -303,85 +324,8 @@ private struct TVCourseView: View {
         case .flying: return round.isReplay ? "Replay" : "Ball in play"
         case .charging: return "\(Int(round.power * 100))% · swing through"
         case .ready:
-            if usesCamera {
-                if camera.hasPlayableTracking {
-                    if round.automaticAim { return "Aim set · follow the recommended route · take your swing" }
-                    return round.usesBodyAim
-                        ? "Turn your stance to aim · \(String(format: "%+.0f°", round.combinedAim)) · swing when ready"
-                        : "Manual aim · swing when ready (resume body aim on iPhone)"
-                }
-                return camera.isPositionLocked ? "Ball stays locked · bring your hands back into view" : camera.readiness.title
-            }
-            return "Ready · use your iPhone controls"
+            return session.controllerStatus
         }
-    }
-}
-
-/// One camera session and the exact same frozen image-space ball used by the phone/solver.
-/// The portrait image is letterboxed, never stretched to fit the landscape display.
-struct TVCameraSetupView: View {
-    @ObservedObject var camera: CameraSwingController
-    var expanded = true
-    var body: some View {
-        GeometryReader { proxy in
-            HStack(spacing: 28) {
-                let width = min(proxy.size.width * (expanded ? 0.58 : 1), proxy.size.height * camera.tracker.frameAspect)
-                let size = CGSize(width: width, height: width / max(0.3, camera.tracker.frameAspect))
-                let focus = CameraBallFocus(ball: camera.displayAddress?.ball, size: size,
-                    active: expanded && (2...4).contains(camera.reviewSecondsRemaining))
-                ZStack {
-                    CameraPreview(session: camera.tracker.session,
-                        videoRotationAngle: camera.tracker.videoRotationAngle,
-                        isVideoMirrored: camera.tracker.isVideoMirrored, videoGravity: .resizeAspect)
-                    PoseSkeletonView(frame: camera.frame, frameAspect: camera.tracker.frameAspect, contentMode: .fit)
-                        .opacity(camera.isPositionLocked ? 0.15 : 0.65)
-                    if let address = camera.displayAddress {
-                        CameraClubOverlay(frame: camera.frame, address: address,
-                            frameAspect: camera.tracker.frameAspect, swingAngle: camera.swingAngle,
-                            handedness: camera.handedness, linedUp: camera.hasPlayableTracking,
-                            strike: camera.lastStrike, strikeOffset: camera.lastStrikeOffset,
-                            virtualClub: camera.virtualClub, positionLocked: camera.isPositionLocked, scale: expanded ? 2.2 : 1)
-                    }
-                }
-                .frame(width: size.width, height: size.height)
-                .scaleEffect(focus.scale).offset(focus.offset)
-                .frame(width: size.width, height: size.height).clipped()
-                .animation(.easeInOut(duration: 0.4), value: focus)
-                if expanded {
-                    VStack(alignment: .leading, spacing: 22) {
-                        Text(camera.reviewSecondsRemaining > 0 ? "FIND YOUR BALL" : "GET IN POSITION")
-                            .font(.system(size: 32, weight: .black, design: .rounded)).foregroundStyle(.mint)
-                        Text(title).font(.system(size: 27, weight: .bold))
-                            .accessibilityIdentifier("tvSetupStatus")
-                        Text(detail).font(.system(size: 23))
-                        ProgressView(value: camera.readyProgress).tint(.mint)
-                        Text(CameraPlayerStance(handedness: camera.handedness).instruction).font(.title3)
-                        Text("\(camera.poseUpdatesPerSecond) pose updates/s · \(camera.tracker.detectedBodyCount) people visible")
-                            .font(.title3.monospacedDigit()).foregroundStyle(.yellow)
-                        Text("Need to move the phone or ball? On iPhone: Recenter grip.\nFloor height wrong? Use Lower ball / Raise ball.")
-                            .font(.callout).foregroundStyle(.white.opacity(0.8))
-                    }.frame(maxWidth: .infinity, alignment: .leading).padding(.trailing, 24)
-                }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .background(.black).foregroundStyle(.white)
-        .accessibilityIdentifier("tvCameraSetup")
-    }
-    private var title: String {
-        if case .denied = camera.status { return "Camera permission needed" }
-        if case .unavailable = camera.status { return "Camera unavailable" }
-        if camera.trackingIsStale { return "Waiting for fresh camera tracking" }
-        if camera.reviewSecondsRemaining > 0 { return "Ball locked · wait \(camera.reviewSecondsRemaining)" }
-        return camera.readiness.title
-    }
-    private var detail: String {
-        if case .denied = camera.status { return "Enable Camera for Golf Arcade in iPhone Settings." }
-        if case .unavailable(let reason) = camera.status { return reason }
-        if camera.trackingIsStale { return "Do not swing yet. Keep Golf Arcade open on the unlocked phone. Your ball stays fixed." }
-        if camera.reviewSecondsRemaining > 0 {
-            return "Find the ball and floor ring beside your feet in this camera view. Hold your grip while the countdown finishes; then swing through that spot."
-        }
-        return "Step back until both feet and your fully extended arms fit in view, with space above your hands. Then lower your hands and hold your grip."
     }
 }
 
@@ -390,13 +334,13 @@ struct TVCameraSetupView: View {
 private struct TVSceneView: UIViewRepresentable {
     let scene: CourseScene
     func makeUIView(context: Context) -> SCNView {
-        let view = SCNView()
+        let view = CourseRenderView()
+        view.renderPolicy = .television
         view.scene = scene.scene
         view.pointOfView = scene.camera
         view.isUserInteractionEnabled = false
-        view.preferredFramesPerSecond = 60
-        view.antialiasingMode = .multisampling2X
         view.rendersContinuously = true
+        view.delegate = scene.tvRenderAudit
         return view
     }
     func updateUIView(_ view: SCNView, context: Context) {
@@ -410,3 +354,4 @@ private struct TVSceneView: UIViewRepresentable {
         view.scene = nil
     }
 }
+#endif

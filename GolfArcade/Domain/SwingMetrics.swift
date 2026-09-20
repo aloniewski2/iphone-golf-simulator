@@ -1,5 +1,17 @@
 import Foundation
 
+/// Shared input preference; independent of either renderer's screen.
+enum SwingInput: String, CaseIterable, Identifiable {
+    case phone, touch
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .touch: "Touch"
+        case .phone: "Phone"
+        }
+    }
+}
+
 enum Handedness: String, CaseIterable, Identifiable, Codable, Sendable {
     case right, left
     var id: Self { self }
@@ -36,8 +48,7 @@ struct SwingMetrics: Equatable, Sendable {
     let confidence: Double
 }
 
-enum SwingEvent: Equatable, Sendable {
+enum CameraPoseSwingEvent: Equatable, Sendable {
     case phaseChanged(SwingPhase)
     case shotReady(SwingMetrics)
 }
-

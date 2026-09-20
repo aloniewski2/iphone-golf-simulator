@@ -3,6 +3,67 @@ import SceneKit
 @testable import GolfArcade
 
 final class CourseTests: XCTestCase {
+    func testClubCalibrationMatchesSolver() {
+        let started = ContinuousClock.now
+        for club in GolfClub.allCases {
+            var low = 1.0, high = 145.0
+            for _ in 0..<24 {
+                let speed = (low + high) / 2
+                let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
+                    launchAngleDegrees: club.launchAngleDegrees, spinRPM: club.spinRPM,
+                    directionDegrees: 0, curveDegrees: 0))
+                let distance = club == .putter ? flight.total : flight.carry
+                if distance < club.referenceDistanceYards { low = speed } else { high = speed }
+            }
+            let speed = (low + high) / 2
+            print("CLUB_SPEED \(club.rawValue) \(speed)")
+            XCTAssertEqual(club.maxClubSpeedMPH, speed, "Regenerate the offline calibration after physics changes")
+        }
+        print("CLUB_CALIBRATION_RECOMPUTE \(started.duration(to: .now)) (168 integrations removed from first use)")
+    }
+
+    func testClubSelectionReferenceMatchesSolver() {
+        for lie in [CourseLie.tee, .fairway, .fringe, .rough, .deepRough, .water, .outOfBounds] {
+            let reaches = [GolfClub.wedge, .iron9, .iron, .iron5, .wood3].map {
+                BallFlight.simulate($0.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
+            }
+            print("CLUB_REFERENCE \(lie.rawValue) \(reaches)")
+            XCTAssertEqual(ClubSelectionReference.reaches(for: lie), reaches,
+                           "Regenerate reference reaches after physics/lie changes")
+            for (index, reach) in reaches.enumerated() {
+                let threshold = reach * 0.98
+                let candidates = [GolfClub.wedge, .iron9, .iron, .iron5, .wood3, .driver]
+                XCTAssertEqual(ClubSelectionReference.club(distance: threshold.nextDown, lie: lie), candidates[index])
+                XCTAssertEqual(ClubSelectionReference.club(distance: threshold, lie: lie), candidates[index])
+                XCTAssertEqual(ClubSelectionReference.club(distance: threshold.nextUp, lie: lie), candidates[index + 1])
+            }
+        }
+        for distance in [0.0, 10, 100, 500] {
+            XCTAssertEqual(ClubSelectionReference.club(distance: distance, lie: .green), .putter)
+            XCTAssertEqual(ClubSelectionReference.club(distance: distance, lie: .bunker), .wedge)
+        }
+    }
+
+    func testClubSelectionLookupMatchesDirectSimulationAndReportsCost() {
+        let queries = [CourseLie.tee, .fringe, .rough, .deepRough].flatMap { lie in
+            stride(from: 0.0, through: 400.0, by: 8.0).map { (lie, $0) }
+        }
+        let directStart = ContinuousClock.now
+        let expected = queries.map { lie, distance -> GolfClub in
+            for candidate in [GolfClub.wedge, .iron9, .iron, .iron5, .wood3] {
+                let reach = BallFlight.simulate(candidate.launch(power: lie.powerFactor, aimDegrees: 0, curveDegrees: 0)).total
+                if distance <= reach * 0.98 { return candidate }
+            }
+            return .driver
+        }
+        let directTime = directStart.duration(to: .now)
+        let lookupStart = ContinuousClock.now
+        let actual = queries.map { ClubSelectionReference.club(distance: $0.1, lie: $0.0) }
+        let lookupTime = lookupStart.duration(to: .now)
+        XCTAssertEqual(actual, expected)
+        print("CLUB_SELECTION_COST queries=\(queries.count) direct=\(directTime) lookup=\(lookupTime)")
+    }
+
     func testPuttRecommendationUsesSlopeAndIsDeterministic() {
         for slope in [-0.025, 0.0, 0.025] {
             var hole = Hole(number: 1, par: 3, centerline: [.zero, CoursePoint(x: 0, d: 10)],
@@ -164,6 +225,26 @@ final class CourseTests: XCTestCase {
     }
 
     @MainActor
+    func testCloseFlagTakesOverFromDistantNavigationBeacon() throws {
+        let scene=CourseScene();scene.stop()
+        let hole=Course.sunwardResort.holes[0];scene.load(hole)
+        let ground=Float(hole.surface(at:hole.pin).heightYards)
+        let beacon=try XCTUnwrap(scene.scene.rootNode.childNode(withName:"holeNavigationBeacon",recursively:true))
+        for distance:Float in [10,44,45,60,75,90,180,400] {
+            scene.camera.position=SCNVector3(Float(hole.pin.x)+distance,ground,-Float(hole.pin.d))
+            scene.updatePinBeacon(pin:hole.pin,sunk:false)
+            XCTAssertEqual(Double(beacon.opacity),HoleNavigation.beaconOpacity(cameraDistance:Double(distance)),accuracy:0.0001)
+            XCTAssertFalse(beacon.isHidden)
+            XCTAssertEqual(scene.hole,hole)
+        }
+        XCTAssertEqual(HoleNavigation.beaconOpacity(cameraDistance:45),0)
+        XCTAssertEqual(HoleNavigation.beaconOpacity(cameraDistance:67.5),0.5)
+        XCTAssertEqual(HoleNavigation.beaconOpacity(cameraDistance:90),1)
+        scene.updatePinBeacon(pin:hole.pin,sunk:true)
+        XCTAssertTrue(beacon.isHidden)
+    }
+
+    @MainActor
     func testAutomaticNextShotResetsPlanAndSelectsClubWithoutRescoring() throws {
         let round = CourseRound()
         round.automaticProgression = true
@@ -273,7 +354,7 @@ final class CourseTests: XCTestCase {
         let headWidth = head.length * CGFloat(AvatarSize.courseScale)
         XCTAssertGreaterThan(headWidth, sphere.radius * 2)
         XCTAssertLessThan(headWidth / (sphere.radius * 2), 3)
-        XCTAssertEqual(sphere.radius, 0.0235 * 1.5, accuracy: 0.0001)
+        XCTAssertEqual(sphere.radius, 0.0235, accuracy: 0.0001, "The locator ring supplies visibility without inflating the ball")
         XCTAssertEqual(AvatarSize.courseBallRadius, 0.0235, accuracy: 0.0001, "visibility does not change physics")
         XCTAssertEqual(stance.scale.y, AvatarSize.courseScale)
         XCTAssertLessThan(abs(AvatarAnimations.address.clubHead.y - AvatarSize.ball.y), 0.03)
@@ -288,12 +369,20 @@ final class CourseTests: XCTestCase {
             scene.load(hole)
             var nodes = 0
             scene.scene.rootNode.enumerateChildNodes { _, _ in nodes += 1 }
-            XCTAssertLessThan(nodes, 900, "course dressing needs a bounded mobile render budget")
+            if nodes>=850 {
+                var owners:[String:Int]=[:]
+                scene.scene.rootNode.enumerateChildNodes { node,_ in
+                    let owner=node.name ?? node.parent?.name ?? node.parent?.parent?.name ?? "unnamed"
+                    owners[owner,default:0] += 1
+                }
+                print("COURSE_NODE_BUDGET hole=\(hole.number) length=\(hole.length) nodes=\(nodes) owners=\(owners.sorted {$0.value>$1.value}.prefix(12))")
+            }
+            XCTAssertLessThan(nodes, 900, "Hole \(hole.number), length \(hole.length): course dressing needs a bounded mobile render budget")
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "sculptedLandscape", recursively: true))
             XCTAssertNotNil(scene.scene.rootNode.childNode(withName: "cartPath", recursively: true))
             for point in hole.centerline {
-                XCTAssertEqual(CourseArt.elevation(point, hole: hole), Float(hole.surface(at: point).heightYards) - 0.72, accuracy: 0.001,
-                               "the landscape sits just under the playing surface, following its shape")
+                XCTAssertEqual(CourseArt.elevation(point, hole: hole), Float(hole.surface(at: point).heightYards) - 2.0, accuracy: 0.001,
+                               "The existing two-yard underlay clearance must not pierce bunker floors")
             }
             XCTAssertEqual(scene.hole, unchanged, "visual dressing cannot change lie or shot geometry")
             scene.load(hole)
@@ -451,7 +540,7 @@ final class CourseTests: XCTestCase {
     func testClubSuggestionAndPausedFlight() {
         let round = CourseRound(defaults: UserDefaults(suiteName: "CourseTests-\(UUID().uuidString)")!)
         round.start(course: .medium, playerCount: 1)
-        XCTAssertEqual(round.club, .driver)
+        XCTAssertEqual(round.club, .wood3, "Club selection targets the safe landing station, not the distant pin")
         let start = Date(timeIntervalSince1970: 100)
         round.charge(0)
         XCTAssertFalse(round.release(at: start))

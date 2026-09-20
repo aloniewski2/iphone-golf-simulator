@@ -1,0 +1,19 @@
+{
+  "courseID" : "sunward-resort-v1",
+  "hole" : 3,
+  "pin" : [
+    -109,
+    -1.0092323104650669,
+    -432
+  ],
+  "requiredEntities" : [
+    "canopyTree",
+    "sunwardClubhouse",
+    "SunwardRocks"
+  ],
+  "tee" : [
+    0,
+    0,
+    -0
+  ]
+}

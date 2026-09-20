@@ -25,11 +25,20 @@ final class TerrainTests: XCTestCase {
     func testEveryAuthoredGreenIsPuttableButNotFlat() {
         for course in Course.all {
             for hole in course.holes {
-                let steepest = stride(from: -hole.greenRadius, through: hole.greenRadius, by: 2).flatMap { x in
-                    stride(from: -hole.greenRadius, through: hole.greenRadius, by: 2).map { d in
-                        hole.terrain.slope(at: CoursePoint(x: hole.pin.x + x, d: hole.pin.d + d))
+                // Check the actual putting surface, not the surrounding square's
+                // rough/bunker corners. Organic greens extend past their nominal
+                // radius in places, so sample the full boundary's extents too.
+                let radius=hole.greenRadius*1.15
+                let slopes = stride(from: -radius, through: radius, by: 1).flatMap { x in
+                    stride(from: -radius, through: radius, by: 1).compactMap { d -> Double? in
+                        let point=CoursePoint(x:hole.pin.x+x,d:hole.pin.d+d)
+                        guard hole.lie(at:point) == .green else { return nil }
+                        let surface=hole.surface(at:point)
+                        return hypot(surface.slopeX,surface.slopeD)
                     }
-                }.max() ?? 0
+                }
+                XCTAssertGreaterThan(slopes.count,30)
+                let steepest=slopes.max() ?? 0
                 XCTAssertGreaterThan(steepest, 0.008, "\(course.name) \(hole.number): a green with nothing to read")
                 XCTAssertLessThan(steepest, 0.06, "\(course.name) \(hole.number): a putt could never stop on that")
                 XCTAssertLessThan(hole.terrain.slope(at: hole.pin), 0.035, "\(course.name) \(hole.number): the cup sits on a manageable slope")

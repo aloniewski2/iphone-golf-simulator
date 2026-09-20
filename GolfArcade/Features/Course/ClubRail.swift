@@ -87,6 +87,8 @@ struct ClubRail<MenuContent: View>: View {
 /// A freely chosen course target, full-circle recovery aim, and explicit short-game/shape controls.
 struct ShotControls: View {
     @ObservedObject var round: CourseRound
+    var preparedPreview: RangeShot?
+    var usesPreparedPreview = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -99,7 +101,8 @@ struct ShotControls: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section(round.automaticAim ? "Recommended route" : "Tap where you want to aim") {
-                    TargetMap(round: round, interactive: !round.automaticAim).frame(height: 260)
+                    TargetMap(round: round, interactive: !round.automaticAim,
+                              preparedPreview: preparedPreview, usesPreparedPreview: usesPreparedPreview).frame(height: 260)
                     Text("\(round.targetLabel.capitalized) · \(Int(round.distanceToTarget.rounded())) yd")
                         .font(.headline).accessibilityIdentifier("plannedTarget")
                     if !round.automaticAim {
@@ -128,7 +131,7 @@ struct ShotControls: View {
                         Spacer()
                         Button("Turn right 45°") { round.adjustAim(45) }
                     }
-                    Text("Fine slider: ±20°. Use turn buttons for recovery shots in any direction. Manual aim stays fixed for this shot; Follow fairway restores motion aim.")
+                    Text("Fine slider: ±20°. Use turn buttons for recovery shots in any direction. Manual aim stays fixed for this shot; Follow fairway restores the recommended target.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 }
@@ -145,7 +148,7 @@ struct ShotControls: View {
                             ForEach(ShotTrajectory.allCases) { Text($0.title).tag($0) }
                         }.pickerStyle(.segmented).disabled(round.shotType == .chip)
                             .accessibilityIdentifier("shotTrajectory")
-                        Text("Choose shape and trajectory here, including with automatic aim. Draw/fade follows your handedness; these are selected effects, not camera-measured club-face angles.")
+                        Text("Choose shape and trajectory here, including with automatic aim. Draw/fade follows your handedness; these are selected effects, not measured club-face angles.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 } else {
@@ -194,6 +197,8 @@ struct HoleDirectionCue: View {
 struct TargetMap: View {
     @ObservedObject var round: CourseRound
     var interactive = true
+    var preparedPreview: RangeShot?
+    var usesPreparedPreview = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -240,9 +245,15 @@ struct TargetMap: View {
                         with: .color(.white.opacity(0.12)))
                 }
                 for hazard in round.hole.hazards {
-                    let center = screen(CoursePoint(x: hazard.x, d: hazard.distance))
-                    let width = hazard.width * scale, height = hazard.length * scale
-                    let shape = Path(ellipseIn: CGRect(x: center.x - width / 2, y: center.y - height / 2, width: width, height: height))
+                    var shape = Path()
+                    for vertex in 0..<96 {
+                        let angle=Double(vertex)/96 * 2 * Double.pi
+                        let radius=hazard.boundaryScale(at:angle)
+                        let p=screen(CoursePoint(x:hazard.x+cos(angle)*hazard.width/2*radius,
+                            d:hazard.distance+sin(angle)*hazard.length/2*radius))
+                        if vertex == 0 { shape.move(to:p) } else { shape.addLine(to:p) }
+                    }
+                    shape.closeSubpath()
                     context.stroke(shape, with: .color(hazard.kind == .water ? Color(red: 0.33, green: 0.75, blue: 0.76) : Color(red: 0.58, green: 0.48, blue: 0.30)), lineWidth: 2)
                     context.fill(shape, with: .color(hazard.kind == .water ? Color(red: 0.13, green: 0.48, blue: 0.61) : Color(red: 0.93, green: 0.85, blue: 0.64)))
                 }
@@ -260,8 +271,8 @@ struct TargetMap: View {
                     }
                     context.stroke(route, with: .color(.yellow.opacity(0.8)), style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
                 }
-                if round.phase == .ready || round.phase == .charging {
-                    let preview = round.trajectoryPreview
+                if (round.phase == .ready || round.phase == .charging),
+                   let preview = usesPreparedPreview ? preparedPreview : round.trajectoryPreview {
                     for i in 1...48 {
                         let before=preview.position(at:preview.duration*Double(i-1)/48)
                         let point=preview.position(at:preview.duration*Double(i)/48)

@@ -4,7 +4,13 @@ import simd
 /// green, a hero shot of the golfer right after impact, a close chase of the ball, then a 3/4 view
 /// as it lands. Pure, so every cut can be unit-tested; `CourseScene` smooths between frames.
 enum ShotCameraDirector {
-    enum Stage: Equatable, Sendable { case address, green, hero, chase, landing }
+    enum Stage: Equatable, Sendable { case address, green, hero, chase, landing, celebration }
+
+    /// Let the cup drop read before showing the converted fist-pump performance.
+    static func celebrationTime(shot: RangeShot, elapsed: Double) -> Double? {
+        let time = elapsed - shot.duration - 0.45
+        return shot.isHoled && time >= 0 && time < AvatarAnimations.reactionLength ? time : nil
+    }
 
     struct Inputs {
         var ball: CoursePoint
@@ -18,6 +24,7 @@ enum ShotCameraDirector {
         var reaction: AvatarAnimations.Reaction?
         var landingTime: Double?
         var reduceMotion = false
+        var liveCamera = false
     }
 
     struct Shot: Equatable {
@@ -43,6 +50,8 @@ enum ShotCameraDirector {
 
     static func stage(_ inputs: Inputs) -> Stage {
         guard let shot = inputs.shot else { return inputs.onGreen ? .green : .address }
+        if !inputs.reduceMotion, !inputs.liveCamera,
+           celebrationTime(shot: shot, elapsed: inputs.elapsed) != nil { return .celebration }
         if let landing = inputs.landingTime, inputs.elapsed >= landing { return .landing }
         if !inputs.reduceMotion, inputs.elapsed < heroDuration(reaction: inputs.reaction, club: shot.club, flightDuration: shot.duration) { return .hero }
         if inputs.elapsed >= shot.duration { return .landing }
@@ -67,8 +76,8 @@ enum ShotCameraDirector {
             let aim = aimDirection(inputs.aim)
             return Shot(
                 stage: stage,
-                position: world((center + simd_float3(0, 10, 18)) * scale, origin: origin, heading: inputs.heading),
-                lookAt: world((center + simd_float3(0, 1.0, 0) + aim * 12) * scale, origin: origin, heading: inputs.heading),
+                position: world((center + simd_float3(10 * mirror, 10, 19)) * scale, origin: origin, heading: inputs.heading),
+                lookAt: world((center + simd_float3(-4 * mirror, 1.0, 0) + aim * 12) * scale, origin: origin, heading: inputs.heading),
                 fieldOfView: 50, damping: 4
             )
         case .green:
@@ -82,14 +91,23 @@ enum ShotCameraDirector {
                 lookAt: world(aim * Float(max(inputs.distanceToPin * 0.5, 3)) + simd_float3(0, 0.15, 0), origin: inputs.ball, heading: inputs.heading),
                 fieldOfView: 50, damping: 4
             )
-        case .hero:
+        case .hero, .celebration:
             let shot = inputs.shot!
+            if inputs.liveCamera {
+                // Keep the same side of the player through measured impact/follow-through.
+                // The previous orbit crossed the golfer in <0.5s, obscuring the live swing.
+                var address=inputs
+                address.ball=shot.origin;address.heading=shot.heading;address.shot=nil;address.onGreen=false
+                var framing=Self.shot(address)
+                framing.stage = .hero
+                return framing
+            }
             let golfer = simd_float3(-3.2 * mirror, 0, 0)
             let facing = simd_float3(mirror, 0, 0)
             let angle: Float = 50 * .pi / 180
             let direction = facing * cos(angle) + simd_float3(0, 0, -1) * sin(angle)
             let duration = max(heroDuration(reaction: inputs.reaction, club: shot.club, flightDuration: shot.duration), 0.01)
-            let push = Float(min(inputs.elapsed / duration, 1))
+            let push = stage == .celebration ? Float(1) : Float(min(inputs.elapsed / duration, 1))
             let distance: Float = 16 - 3 * push
             return Shot(
                 stage: stage,

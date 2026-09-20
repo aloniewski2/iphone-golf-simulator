@@ -503,6 +503,7 @@ struct PuttRecommendation: Equatable, Sendable {
         }
         for offset in [-36.0, -18, 0, 18, 36] {
             for factor in [0.65, 0.85, 1.0, 1.2, 1.45] {
+                if Task.isCancelled { return best }
                 let candidate = evaluate(offset, min(1, max(0.001, seed * factor)))
                 if better(candidate, than: best) { best = candidate }
             }
@@ -511,6 +512,7 @@ struct PuttRecommendation: Equatable, Sendable {
         for _ in 0..<8 {
             let center = best
             for a in [-1.0, 0, 1] { for p in [-1.0, 0, 1] {
+                if Task.isCancelled { return best }
                 let candidate = evaluate(max(-60, min(60, center.offsetDegrees + a * angleStep)),
                     min(1, max(0.001, center.power + p * powerStep)))
                 if better(candidate, than: best) { best = candidate }

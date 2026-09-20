@@ -31,7 +31,7 @@ struct SwingStateMachine: Sendable {
     private var impactHeightDelta = 0.0
     private var confidenceSamples: [Double] = []
 
-    mutating func ingest(_ frame: PoseFrame) -> SwingEvent? {
+    mutating func ingest(_ frame: PoseFrame) -> CameraPoseSwingEvent? {
         guard frame.hasPlayableBody, let hands = frame.handCenter else {
             let lostFor = frame.timestamp - (lastTrackedTime ?? frame.timestamp)
             if phase != .findingPlayer, lostFor <= trackingGracePeriod { return nil }
@@ -170,4 +170,3 @@ struct SwingStateMachine: Sendable {
         )
     }
 }
-

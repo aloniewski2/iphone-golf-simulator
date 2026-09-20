@@ -1,8 +1,8 @@
-import Combine
-import CoreMotion
 import simd
 
-/// Phone-as-club swing recognizer. Feed it attitude and rotation-rate samples and it reports
+/// Legacy comparison recognizer, retained for historical regression fixtures only.
+/// Production phone input uses SwingRecognizer in Motion/MotionPipeline.swift.
+/// Feed this attitude and rotation-rate samples and it reports
 /// load, cancellation, and impact. It uses no CoreMotion types so unit tests can drive it with
 /// synthetic swings.
 ///
@@ -61,7 +61,8 @@ struct MotionSwingDetector {
         }
         let isStill = stillSince.map { time - $0 >= stillDuration } ?? false
         let angle = Self.angle(from: reference, to: attitude)
-        if (phase == .backswing || phase == .downswing), time - swingStart > 3 {
+        // Allow a deliberate backswing and a pause at the top; do not rush the player.
+        if (phase == .backswing || phase == .downswing), time - swingStart > 8 {
             phase = .settling
             stillSince = nil
             return .cancel
@@ -101,7 +102,7 @@ struct MotionSwingDetector {
         case .downswing:
             peakSpeed = max(peakSpeed, speed)
             let decelerated = speed < peakSpeed * 0.4
-            guard angle < impactAngle || decelerated || time - downswingStart > 1.2 else { return nil }
+            guard angle < impactAngle || decelerated || time - downswingStart > 1.2 else { return .load(load(angle)) }
             phase = .finish
             stillSince = nil
             guard peakSpeed >= minimumSpeed else { return .cancel }
@@ -133,63 +134,18 @@ extension GolfClub {
     }
 }
 
-/// Streams device motion into `MotionSwingDetector` on the main actor.
-@MainActor
-final class PhoneSwingController: ObservableObject {
-    enum Status: Equatable { case unavailable, idle, settling, address, backswing, downswing }
 
-    @Published private(set) var status: Status = .idle
-    var onEvent: ((MotionSwingDetector.Event) -> Void)?
-
-    private let manager = CMMotionManager()
-    private var detector = MotionSwingDetector()
-    private var club: GolfClub = .driver
-
-    var isAvailable: Bool { manager.isDeviceMotionAvailable }
-    var isRunning: Bool { manager.isDeviceMotionActive }
-
-    func start() {
-        guard isAvailable else { status = .unavailable; return }
-        guard !isRunning else { return }
-        resetDetector()
-        status = .settling
-        manager.deviceMotionUpdateInterval = 1.0 / 100
-        manager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main) { [weak self] motion, _ in
-            guard let motion else { return }
-            // Updates are delivered on the main queue; `OperationQueue.main` is the main actor.
-            MainActor.assumeIsolated { self?.ingest(motion) }
+/// One Ready tap permits one impact, independent of screen contact. It stays ready until
+/// the swing, explicit cancellation, or a lifecycle interruption; follow-through cannot rearm it.
+struct PhoneSwingGate {
+    private(set) var isArmed = false
+    mutating func arm() { isArmed = true }
+    mutating func disarm() { isArmed = false }
+    mutating func accept(_ event: SwingInputEvent?, time: Double) -> SwingInputEvent? {
+        guard isArmed else { return nil }
+        switch event {
+        case .impact, .cancel: disarm(); return event
+        default: return event
         }
-    }
-
-    func stop() {
-        manager.stopDeviceMotionUpdates()
-        resetDetector()
-        status = isAvailable ? .idle : .unavailable
-    }
-
-    func setClub(_ club: GolfClub) {
-        self.club = club
-        detector.configure(for: club)
-    }
-
-    private func resetDetector() {
-        detector.configure(for: club)
-    }
-
-    private func ingest(_ motion: CMDeviceMotion) {
-        let q = motion.attitude.quaternion
-        let rate = motion.rotationRate
-        let event = detector.ingest(
-            time: motion.timestamp,
-            attitude: simd_quatd(ix: q.x, iy: q.y, iz: q.z, r: q.w),
-            rotationRate: simd_double3(rate.x, rate.y, rate.z)
-        )
-        status = switch detector.phase {
-        case .settling, .finish: .settling
-        case .address: .address
-        case .backswing: .backswing
-        case .downswing: .downswing
-        }
-        if let event { onEvent?(event) }
     }
 }

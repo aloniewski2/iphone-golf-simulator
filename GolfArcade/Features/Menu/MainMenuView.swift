@@ -1,11 +1,12 @@
 import SwiftUI
+import AVFoundation
 
 struct MainMenuView: View {
     @ObservedObject var flow: GameFlow
-    @ObservedObject var camera: CameraSwingController
-    @AppStorage("gestures.enabled") private var gesturesEnabled = true
     @State private var focus = 0
     @State private var settingsPresented = false
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Item: Int, CaseIterable { case solo, multiplayer, practice, settings }
 
@@ -16,39 +17,46 @@ struct MainMenuView: View {
                     Text("GOLF ARCADE")
                         .font(.system(size: 12, weight: .black, design: .rounded)).tracking(2)
                         .foregroundStyle(.mint)
-                    Text("Your body is the club.").font(.system(size: 34, weight: .black, design: .rounded))
+                    Text("Your phone. Your swing.").font(.system(size: 34, weight: .black, design: .rounded))
+                }
+                if !reduceMotion {
+                    Text("Background: concept film · not gameplay")
+                        .font(.caption).foregroundStyle(.white.opacity(0.8))
+                        .accessibilityIdentifier("conceptFilmNotice")
                 }
                 VStack(spacing: 12) {
                     row(.solo, icon: "person.fill", title: "Solo", detail: soloDetail)
                         .accessibilityIdentifier("menuSolo")
                     row(.multiplayer, icon: "person.3.fill", title: "Multiplayer", detail: "2–4 players take turns on one phone")
                         .accessibilityIdentifier("menuMultiplayer")
-                    row(.practice, icon: "waveform.path.ecg", title: "Practice Lab", detail: "Measure swings, test control, replay pose traces")
+                    row(.practice, icon: "waveform.path.ecg", title: "Practice", detail: "Try phone swings and touch shots without scoring")
                         .accessibilityIdentifier("menuPractice")
-                    row(.settings, icon: "gearshape.fill", title: "Settings", detail: "Swing input, sound, gestures")
+                    row(.settings, icon: "gearshape.fill", title: "Settings", detail: "Controller, sound, TV / AirPlay")
                         .accessibilityIdentifier("menuSettings")
                 }
-                if gesturesEnabled { GestureStatusChip(camera: camera) }
             }
             .padding(24)
             .frame(maxWidth: 620)
             .frame(maxWidth: .infinity)
         }
-        .background(Palette.background.ignoresSafeArea())
+        .background {
+            GeometryReader { geometry in
+                Image(uiImage:SunwardCourseArtwork.image(hole:1)).resizable().scaledToFill()
+                    .frame(width:geometry.size.width,height:geometry.size.height).clipped()
+                    .overlay {
+                        if !reduceMotion {
+                            SunwardMenuFilm(playing:scenePhase == .active && !settingsPresented)
+                        }
+                    }
+                    .overlay(LinearGradient(colors:[Color.black.opacity(0.25),Color.black.opacity(0.80)],startPoint:.top,endPoint:.bottom))
+            }.ignoresSafeArea().accessibilityHidden(true)
+        }
         .accessibilityIdentifier("mainMenu")
         .sheet(isPresented: $settingsPresented) { SettingsView() }
-        .onNavGesture(camera) { gesture in
-            guard !settingsPresented else { return }
-            switch gesture {
-            case .up, .left: focus = (focus + Item.allCases.count - 1) % Item.allCases.count
-            case .down, .right: focus = (focus + 1) % Item.allCases.count
-            case .select: activate(Item(rawValue: focus) ?? .solo)
-            }
-        }
     }
 
     private var soloDetail: String {
-        flow.roster.first?.isScanned == true ? "Play as \(flow.roster[0].name)" : "Scan your body, then pick a course"
+        "Choose your golfer and course"
     }
 
     private func row(_ item: Item, icon: String, title: String, detail: String) -> some View {
@@ -79,15 +87,51 @@ struct MainMenuView: View {
     }
 }
 
+/// The accepted 1080p Higgsfield course film, used only as decorative menu media.
+/// Never overlays gameplay, owns an AirPlay route, or keeps decoding after navigation.
+struct SunwardMenuFilm: UIViewRepresentable {
+    let playing: Bool
+    func makeUIView(context:Context)->FilmView { FilmView() }
+    func updateUIView(_ view:FilmView,context:Context) { playing ? view.player.play() : view.player.pause() }
+    static func dismantleUIView(_ view:FilmView,coordinator:()) {
+        view.player.pause();view.looper?.disableLooping();view.player.removeAllItems()
+    }
+    final class FilmView:UIView {
+        override class var layerClass:AnyClass { AVPlayerLayer.self }
+        let player=AVQueuePlayer()
+        var looper:AVPlayerLooper?
+        override init(frame:CGRect) {
+            super.init(frame:frame)
+            isUserInteractionEnabled=false;isAccessibilityElement=false
+            player.isMuted=true;player.allowsExternalPlayback=false
+            guard let url=Bundle.main.url(forResource:"SunwardMenu",withExtension:"mp4") else { return }
+            looper=AVPlayerLooper(player:player,templateItem:AVPlayerItem(url:url))
+            let videoLayer=layer as! AVPlayerLayer
+            videoLayer.player=player;videoLayer.videoGravity = .resizeAspectFill
+        }
+        required init?(coder:NSCoder) { nil }
+    }
+}
+
+/// Plain bundled renders, not asset-catalog symbols. Explicit decoding also supports
+/// generated course cards copied by Xcode's resources phase without an imageset.
+@MainActor enum SunwardCourseArtwork {
+    private static var cache:[Int:UIImage]=[:]
+    static func image(hole:Int)->UIImage {
+        if let image=cache[hole] { return image }
+        guard let url=Bundle.main.url(forResource:"SunwardHole-\(hole)",withExtension:"png"),
+              let image=UIImage(contentsOfFile:url.path) else { return UIImage() }
+        cache[hole]=image
+        return image
+    }
+}
+
 struct SettingsView: View {
-    #if DEBUG
-    @AppStorage("presentation.authoredGolfer") private var authoredGolfer = false
-    #endif
     @State private var tvSettingsPresented = false
-    @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
+    @AppStorage("range.swingInput") private var swingInput: SwingInput = .phone
     @AppStorage("range.soundEnabled") private var sound = true
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
-    @AppStorage("gestures.enabled") private var gesturesEnabled = true
+    @AppStorage("controller.sensitivity") private var sensitivity = 1.8
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -102,28 +146,27 @@ struct SettingsView: View {
                         ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
                     }
                 } footer: {
-                    Text("Camera tracks your body and uses the virtual ball. Touch and Phone are for trying the game without a camera setup.")
+                    Text("Use your phone as a motion controller, or choose Touch. Connect AirPlay for a separate TV game view.")
                 }
-                Section {
-                    Toggle("Gesture controls", isOn: $gesturesEnabled)
-                } footer: {
-                    Text("Hold a fist away from your other hand, then swipe to move and punch toward the camera to select. From far away, raise your hand to shoulder height instead of making a fist.")
+                Section("Motion controller") {
+                    Text("Choose club and aim, then tap Ready once. Steady the phone until the ready vibration, then make a short, gentle swing and follow through without touching the screen. Tap Cancel swing to cancel before impact. Never use a full-force golf swing; keep a secure grip and use a wrist strap.")
+                    Slider(value: $sensitivity, in: 1...3, step: 0.1) { Text("Motion sensitivity") }
+                    Text("Sensitivity: \(sensitivity, specifier: "%.1f")× · higher needs less movement")
                 }
                 Section {
                     Toggle("Sound effects", isOn: $sound)
                     Toggle("Haptics", isOn: $haptics)
                 }
-                #if DEBUG
-                Section("Development comparison") {
-                    Toggle("Preview imported golfer", isOn:$authoredGolfer)
-                        .accessibilityIdentifier("authoredGolferPreview")
-                    Text("Character proof, not the finished golfer. Start a new course view after changing this; active rounds keep their current presentation.")
-                        .font(.caption)
-                }
-                #endif
             }
             .navigationTitle("Settings")
-            .sheet(isPresented: $tvSettingsPresented) { TVSettingsView() }
+            .sheet(isPresented: $tvSettingsPresented) {
+                #if NATIVE_ONLY
+                NativeTVSettingsView()
+                #else
+                if DisplayCoordinator.usesNativeRenderer { NativeTVSettingsView() }
+                else { TVSettingsView() }
+                #endif
+            }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
         .preferredColorScheme(.dark)

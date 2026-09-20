@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-19",
+  "projectId": "d5134a00-d000-4e27-906f-95dc8dff1d42",
+  "workshopRevision": 5,
+  "catalogCandidate": {
+    "assetId": "d542d262-33e0-4643-9cd9-14c39e27244d",
+    "name": "Tree Oak 01",
+    "importOperation": "b425cf64-9526-4e32-bb08-12e8c58e5a40",
+    "reviewOperation": "4f525c93-2cd8-4b3e-a472-21a4ce836e25",
+    "groundingOperation": "f193c1bb-80de-4088-bb7e-cd1e9c8e351f",
+    "disposition": "Not shipped. Faceted 468-polygon catalog tree does not meet the rounded detailed film direction. Retained separately in workshop for provenance."
+  },
+  "imageTo3D": {
+    "model": "tripo_h3_1_image_to_3d",
+    "status": "Catalog-listed but required generate_3d operation is not exposed by installed MCP. Image cost endpoint rejected model type. No generation submitted."
+  },
+  "creditsBefore": 2150,
+  "creditsAfter": 2150,
+  "creditsSpent": 0,
+  "runtimeSource": "Original workshop revision 3 plus local authoring scripts; no catalog candidate is bundled."
+}

@@ -154,6 +154,26 @@ final class AvatarTests: XCTestCase {
         XCTAssertEqual(expired.provenance[.nose],.unavailable)
     }
 
+    func testOccludedFarShoulderDoesNotFreezeObservedSwing() {
+        var filter=CameraAvatarPoseFilter()
+        let start=AvatarAnimations.address
+        let before=filter.update(start,frame:frame(time:0,hands:CGPoint(x:0.5,y:0.4)),at:0)
+        var swing=AvatarAnimations.swingArc(degrees:100)
+        swing.virtualClubGrip=swing.handCenter
+        swing.virtualClubHead=swing.clubHead
+        let result=filter.update(swing,
+            frame:frame(time:0.033,hands:CGPoint(x:0.65,y:0.7),dropping:[.rightShoulder,.rightHip]),at:0.033)
+        XCTAssertGreaterThan(simd_distance(result.handCenter,before.handCenter),0.5)
+        XCTAssertEqual(result.virtualClubGrip,swing.virtualClubGrip)
+        XCTAssertEqual(result.virtualClubHead,swing.virtualClubHead)
+        XCTAssertEqual(result.provenance[.rightShoulder],.inferred)
+        XCTAssertEqual(result.provenance[.leftWrist],.observed)
+        var uninitialized=CameraAvatarPoseFilter()
+        let partial=uninitialized.update(swing,
+            frame:frame(time:0,hands:CGPoint(x:0.65,y:0.7),dropping:[.rightShoulder,.rightHip]),at:0)
+        XCTAssertFalse(partial.clubVisible,"A partial body cannot bootstrap the rig")
+    }
+
     func testTwoBoneParallelBendStaysFinite() {
         let arm = AvatarAnimations.twoBone(from: .zero, to: simd_float3(0, 0, 2), upper: 1.35, lower: 1.35, bend: simd_float3(0, 0, 1))
         XCTAssertTrue(arm.joint.x.isFinite && arm.joint.y.isFinite && arm.joint.z.isFinite)
@@ -481,6 +501,18 @@ final class AvatarTests: XCTestCase {
 }
 
 final class ShotCameraTests: XCTestCase {
+    func testLiveImpactKeepsAddressSideUntilBallChase() {
+        let drive=RangeShot(id:1,club:.driver,power:0.9,aim:0)
+        var live=inputs(shot:drive,elapsed:0.2)
+        live.liveCamera=true
+        let hero=ShotCameraDirector.shot(live)
+        let address=ShotCameraDirector.shot(inputs(shot:nil,elapsed:0))
+        XCTAssertEqual(hero.stage,.hero)
+        XCTAssertEqual(hero.position,address.position)
+        XCTAssertEqual(hero.lookAt,address.lookAt)
+        live.elapsed=2
+        XCTAssertEqual(ShotCameraDirector.shot(live).stage,.chase)
+    }
     private func inputs(shot: RangeShot?, elapsed: Double, onGreen: Bool = false, reaction: AvatarAnimations.Reaction? = .pure) -> ShotCameraDirector.Inputs {
         ShotCameraDirector.Inputs(
             ball: .zero, heading: 0, aim: 0, distanceToPin: 140, onGreen: onGreen, handedness: .right,

@@ -3,6 +3,12 @@
 import {readFileSync, writeFileSync, mkdirSync, copyFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 const pack = process.argv[2];
+// Version 2 preserves authored PBR materials and embedded texture references.
+// The existing Standard-pack directory interface and v1 mesh remain unchanged.
+if (pack?.toLowerCase().endsWith('.glb')) {
+  await import('./import-sunward.mjs');
+  process.exit(0);
+}
 if (!pack) throw new Error('Supply the extracted official Standard pack directory');
 const source = join(pack, 'Base Characters/Godot - UE');
 const g = JSON.parse(readFileSync(join(source, 'Superhero_Male_FullBody.gltf')));

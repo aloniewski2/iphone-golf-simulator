@@ -1,8 +1,13 @@
 name: GolfArcade
+configs:
+  Debug: debug
+  Release: release
+  NativeOnly: release
+  Comparison: release
 options:
   bundleIdPrefix: com.aloniewski
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "26.0"
   groupSortPosition: top
 settings:
   base:
@@ -29,6 +34,16 @@ targets:
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).GolfExternalSceneDelegate
     sources:
       - path: GolfArcade
+        excludes:
+          - Resources/Nature
+          - Resources/Reflections
+          - Resources/Sunward/Cards
+      - path: GolfArcade/Resources/Nature
+        type: folder
+        buildPhase: resources
+      - path: GolfArcade/Resources/Reflections
+        type: folder
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade
@@ -39,6 +54,13 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         TARGETED_DEVICE_FAMILY: "1"
         SUPPORTS_MACCATALYST: NO
+      configs:
+        Release:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) NATIVE_ONLY"
+          EXCLUDED_SOURCE_FILE_NAMES: "AvatarRig.swift GolferSkin.swift ResortGolferSkin.swift SunwardAsset.swift CourseScene.swift CourseSurfaceDetail.swift GolfImpactEffects.swift GolfRenderAudit.swift CourseScreen.swift"
+        NativeOnly:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) NATIVE_ONLY"
+          EXCLUDED_SOURCE_FILE_NAMES: "AvatarRig.swift GolferSkin.swift ResortGolferSkin.swift SunwardAsset.swift CourseScene.swift CourseSurfaceDetail.swift GolfImpactEffects.swift GolfRenderAudit.swift CourseScreen.swift"
   GolfArcadeTests:
     type: bundle.unit-test
     platform: iOS
@@ -61,14 +83,80 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcadeUITests
         GENERATE_INFOPLIST_FILE: YES
+      configs:
+        Debug:
+          EXCLUDED_SOURCE_FILE_NAMES: NativeReleaseTests.swift
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: RangePlayTests.swift
+        Comparison:
+          EXCLUDED_SOURCE_FILE_NAMES: NativeReleaseTests.swift
+        NativeOnly:
+          EXCLUDED_SOURCE_FILE_NAMES: RangePlayTests.swift
 schemes:
+  GolfArcadeRelease:
+    build:
+      targets:
+        GolfArcade: all
+        GolfArcadeUITests: [test]
+    run:
+      config: Release
+    test:
+      config: Release
+      targets:
+        - GolfArcadeUITests
+    profile:
+      config: Release
+    archive:
+      config: Release
+  GolfArcadeNativeOnly:
+    build:
+      targets:
+        GolfArcade: all
+        GolfArcadeUITests: [test]
+    run:
+      config: NativeOnly
+    test:
+      config: NativeOnly
+      targets:
+        - GolfArcadeUITests
+    profile:
+      config: NativeOnly
+    archive:
+      config: NativeOnly
+  GolfArcadeVisualAudit:
+    build:
+      targets:
+        GolfArcade: all
+        GolfArcadeUITests: [test]
+    run:
+      config: Comparison
+    test:
+      config: Comparison
+      targets:
+        - GolfArcadeUITests
+    profile:
+      config: Comparison
+  GolfArcadeRealityKit:
+    build:
+      targets:
+        GolfArcade: all
+    run:
+      commandLineArguments:
+        "-realityKit": true
   GolfArcade:
     build:
       targets:
         GolfArcade: all
         GolfArcadeTests: [test]
         GolfArcadeUITests: [test]
+    run:
+      config: Release
     test:
+      config: Debug
       targets:
         - GolfArcadeTests
         - GolfArcadeUITests
+    profile:
+      config: Release
+    archive:
+      config: Release

@@ -118,13 +118,14 @@ final class GolfMechanicsTests: XCTestCase {
         XCTAssertEqual(restored.roster[0].handedness,.left)
     }
 
-    @MainActor func testResortPreviewAndReplayUseTheSameVersionFourShot() {
+    @MainActor func testResortPreviewAndReplayUseTheSameSurfaceVersion() {
         let round=CourseRound(course:.sunwardResort)
         round.automaticAim=true; round.shotShape = .fade; round.trajectory = .high
         round.charge(0.75)
         let preview=round.trajectoryPreview
         XCTAssertTrue(round.release())
-        XCTAssertEqual(round.activeShot?.request.simulationVersion,4)
+        XCTAssertEqual(round.activeShot?.request.simulationVersion,Course.sunwardResort.holes[0].simulationVersion)
+        XCTAssertEqual(round.activeShot?.request.simulationVersion,7)
         XCTAssertEqual(round.activeShot?.rest,preview.rest)
         XCTAssertEqual(round.activeShot?.flight.events,preview.flight.events)
         round.skipFlight(); let scored=round.strokes

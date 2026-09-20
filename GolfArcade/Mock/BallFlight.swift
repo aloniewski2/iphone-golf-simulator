@@ -252,24 +252,21 @@ extension GolfClub {
         }
     }
 
-    /// Calibrated once through the same aerodynamic/rolling solver, not a distance
-    /// multiplier applied after landing. Every lower-power shot keeps real flight integration.
+    /// Offline calibration from this solver's 24-step speed search. Keeping the exact
+    /// results avoids 168 flight integrations on the first launch/UI read. Actual shots
+    /// still use full integration, not a post-landing distance multiplier.
+    /// CourseTests.testClubCalibrationMatchesSolver regenerates and verifies every value.
     var maxClubSpeedMPH: Double {
-        Self.calibratedSpeeds[self]!
-    }
-
-    private static let calibratedSpeeds: [GolfClub: Double] = Dictionary(uniqueKeysWithValues: allCases.map { club in
-        var low = 1.0, high = 145.0
-        for _ in 0..<24 {
-            let speed = (low + high) / 2
-            let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
-                launchAngleDegrees: club.launchAngleDegrees, spinRPM: club.spinRPM,
-                directionDegrees: 0, curveDegrees: 0))
-            let distance = club == .putter ? flight.total : flight.carry
-            if distance < club.referenceDistanceYards { low = speed } else { high = speed }
+        switch self {
+        case .driver: 106.22199964523315
+        case .wood3: 96.76732873916626
+        case .iron5: 94.44253587722778
+        case .iron: 94.69627714157104
+        case .iron9: 95.87741899490356
+        case .wedge: 77.31834363937378
+        case .putter: 27.057128429412842
         }
-        return (club, (low + high) / 2)
-    })
+    }
 
     var launchAngleDegrees: Double {
         switch self {

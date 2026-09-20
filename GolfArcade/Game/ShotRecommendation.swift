@@ -1,5 +1,37 @@
 import Foundation
 
+/// Exact offline results of BallFlight.simulate(club.launch(power: lie.powerFactor,
+/// aimDegrees: 0, curveDegrees: 0)).total. This is a tiny reference bag, not a shot
+/// approximation: terrain/wind/aim/actual trajectories still use the authoritative solver.
+/// Regenerate and verify with CourseTests.testClubSelectionReferenceMatchesSolver whenever
+/// launch calibration, lie factors or physics change; it prints replacement values on failure.
+enum ClubSelectionReference {
+    static let candidates: [GolfClub] = [.wedge, .iron9, .iron, .iron5, .wood3]
+    private static let full = [100.13764565541227, 148.33119573113237, 175.83630013581995, 198.10346058544235, 230.69376454873864]
+    private static let fringe = [97.9093562631485, 145.85709500460973, 172.20445633674228, 193.7413183383514, 225.45426727939645]
+    private static let rough = [87.60908070389404, 133.09152678197742, 154.19428005552905, 172.05860626209918, 198.91413900958435]
+    private static let deepRough = [68.31301289637958, 106.54773257663165, 117.99959718780775, 128.9558541278214, 145.4707721616511]
+
+    static func reaches(for lie: CourseLie) -> [Double] {
+        switch lie {
+        case .fringe: fringe
+        case .rough: rough
+        case .deepRough: deepRough
+        case .tee, .fairway, .water, .outOfBounds: full
+        case .green, .bunker: [] // These have fixed club choices, independent of reach.
+        }
+    }
+
+    static func club(distance: Double, lie: CourseLie) -> GolfClub {
+        if lie == .green { return .putter }
+        if lie == .bunker { return .wedge }
+        for (index, reach) in reaches(for: lie).enumerated() {
+            if distance <= reach * 0.98 { return candidates[index] }
+        }
+        return .driver
+    }
+}
+
 /// Immutable complete planning key. A worker never reads the live round while a user swings.
 struct ShotPlanningConditions: Equatable, Sendable {
     let request: ShotRequest

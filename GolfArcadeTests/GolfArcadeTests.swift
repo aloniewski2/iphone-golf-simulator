@@ -73,7 +73,7 @@ final class SwingStateMachineTests: XCTestCase {
     func testLosingAWristAtTheTopDoesNotResetTheSwing() {
         var machine = SwingStateMachine()
         var time = 0.0
-        var events: [SwingEvent] = []
+        var events: [CameraPoseSwingEvent] = []
         func feed(_ handY: CGFloat, drop: Set<BodyJoint> = []) {
             time += 0.05
             if let event = machine.ingest(frame(time: time, handY: handY, dropping: drop)) { events.append(event) }
@@ -91,7 +91,7 @@ final class SwingStateMachineTests: XCTestCase {
     func testLosingTheBodyForLongerResetsTheSwing() {
         var machine = SwingStateMachine()
         var time = 0.0
-        var events: [SwingEvent] = []
+        var events: [CameraPoseSwingEvent] = []
         func feed(_ handY: CGFloat, drop: Set<BodyJoint> = []) {
             time += 0.05
             if let event = machine.ingest(frame(time: time, handY: handY, dropping: drop)) { events.append(event) }
@@ -317,7 +317,24 @@ final class PlayerCalibrationTests: XCTestCase {
         XCTAssertNil(PlayerCalibrationStore.load(defaults: defaults))
     }
 
-    func testRosterMigratesTheSinglePlayerScan() throws {
+    func testRosterUpgradeKeepsIdentityAndAppearanceButRemovesScanData() throws {
+        let suite = "RosterUpgrade.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let old = Player(name: "Sam", colorIndex: 2, handedness: .left,
+                         calibration: .uiTestingFixture, appearance: .forPlayerColor(2))
+        defaults.set(try JSONEncoder().encode([old]), forKey: "players.v1")
+        let migrated = try XCTUnwrap(PlayerRosterStore.load(defaults: defaults).first)
+        XCTAssertEqual(migrated.id, old.id)
+        XCTAssertEqual(migrated.name, old.name)
+        XCTAssertEqual(migrated.handedness, old.handedness)
+        XCTAssertEqual(migrated.appearance, old.appearance)
+        XCTAssertNil(migrated.calibration)
+        let saved = try XCTUnwrap(defaults.data(forKey: "players.v1"))
+        XCTAssertFalse(String(decoding: saved, as: UTF8.self).contains("calibration"))
+    }
+
+    func testRosterPreservesHandednessButRemovesLegacyBodyScan() throws {
         let suiteName = "PlayerRosterTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
@@ -327,7 +344,8 @@ final class PlayerCalibrationTests: XCTestCase {
 
         let migrated = PlayerRosterStore.load(defaults: defaults)
         XCTAssertEqual(migrated.count, 1)
-        XCTAssertEqual(migrated[0].calibration, calibration)
+        XCTAssertNil(migrated[0].calibration)
+        XCTAssertNil(PlayerCalibrationStore.load(defaults: defaults))
         XCTAssertEqual(migrated[0].handedness, .left)
 
         var players = migrated
@@ -337,14 +355,12 @@ final class PlayerCalibrationTests: XCTestCase {
     }
 
     @MainActor
-    func testGameFlowNeedsEveryPlayerScanned() {
+    func testGameFlowNeedsNoBodyScans() {
         let flow = GameFlow(fixturePlayers: [Player(name: "Ana", colorIndex: 0, calibration: .uiTestingFixture)])
         flow.choose(.solo)
         XCTAssertTrue(flow.canContinue)
         flow.choose(.multiplayer)
         XCTAssertEqual(flow.players.count, 2)
-        XCTAssertFalse(flow.canContinue)
-        flow.finishScan(flow.players[1].id, calibration: .uiTestingFixture)
         XCTAssertTrue(flow.canContinue)
         flow.addPlayer(); flow.addPlayer(); flow.addPlayer()
         XCTAssertEqual(flow.players.count, GameFlow.maxPlayers)

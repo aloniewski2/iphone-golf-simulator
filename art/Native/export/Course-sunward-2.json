@@ -1,0 +1,20 @@
+{
+  "courseID" : "sunward",
+  "hole" : 2,
+  "pin" : [
+    36,
+    0.17641943828973433,
+    -136
+  ],
+  "requiredEntities" : [
+    "sharedPlayableSurface",
+    "canopyTree",
+    "sunwardClubhouse",
+    "SunwardRocks"
+  ],
+  "tee" : [
+    0,
+    0,
+    -0
+  ]
+}

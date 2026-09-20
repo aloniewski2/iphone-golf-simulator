@@ -1,6 +1,12 @@
 import Foundation
 import simd
 
+/// Arcade readability only. Never use these dimensions for contacts or scoring.
+enum GolfBallVisual {
+    static let radiusMetres: Float = 0.065
+    static let radiusYards = Double(radiusMetres) / 0.9144
+}
+
 /// Tunable deterministic game approximations, in SI units. Not sensor measurements.
 enum GolfInteractions {
     struct CircleContact: Equatable {

@@ -1,11 +1,11 @@
 import Combine
 import Foundation
 
-/// Where the app is: menus, player setup and scans, course choice, and play.
+/// Where the app is: menus, player setup, course choice, and play.
 @MainActor
 final class GameFlow: ObservableObject {
     enum Mode: String, Sendable { case solo, multiplayer }
-    enum Screen: Equatable, Sendable { case menu, players, scan(UUID), courses, playing, practice }
+    enum Screen: Equatable, Sendable { case menu, players, courses, playing, practice }
 
     static let maxPlayers = 4
 
@@ -27,7 +27,7 @@ final class GameFlow: ObservableObject {
     /// Who is playing this round, in turn order.
     var players: [Player] { mode == .solo ? Array(roster.prefix(1)) : roster }
     var minimumPlayers: Int { mode == .solo ? 1 : 2 }
-    var canContinue: Bool { players.count >= minimumPlayers && players.allSatisfy(\.isScanned) }
+    var canContinue: Bool { players.count >= minimumPlayers }
     var canAddPlayer: Bool { mode == .multiplayer && roster.count < Self.maxPlayers }
 
     func choose(_ mode: Mode) {
@@ -61,15 +61,6 @@ final class GameFlow: ObservableObject {
     func setAppearance(_ id: UUID, _ appearance: GolferAppearance) {
         update(id) { $0.appearance = appearance }
     }
-
-    func scan(_ id: UUID) { screen = .scan(id) }
-
-    func finishScan(_ id: UUID, calibration: PlayerCalibration) {
-        update(id) { $0.calibration = calibration }
-        screen = .players
-    }
-
-    func cancelScan() { screen = .players }
 
     func chooseCourse() {
         guard canContinue else { return }

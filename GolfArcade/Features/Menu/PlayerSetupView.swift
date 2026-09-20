@@ -2,8 +2,6 @@ import SwiftUI
 
 struct PlayerSetupView: View {
     @ObservedObject var flow: GameFlow
-    @ObservedObject var camera: CameraSwingController
-    @AppStorage("gestures.enabled") private var gesturesEnabled = true
     @State private var focus = 0
     @State private var editingGolfer: Player?
 
@@ -25,9 +23,9 @@ struct PlayerSetupView: View {
                     Text(flow.mode == .solo ? "SOLO" : "MULTIPLAYER")
                         .font(.system(size: 12, weight: .black, design: .rounded)).tracking(2)
                         .foregroundStyle(.mint)
-                    Text(flow.mode == .solo ? "Who's playing?" : "Scan every player")
+                    Text(flow.mode == .solo ? "Who's playing?" : "Who's joining?")
                         .font(.system(size: 30, weight: .black, design: .rounded))
-                    Text("Scan and play with your chest facing the phone. Select your handedness so the golfer and swing direction match you.")
+                    Text("Choose your golfer and handedness. No camera or body scan is needed.")
                         .font(.caption).foregroundStyle(.white.opacity(0.6))
                 }
 
@@ -37,9 +35,9 @@ struct PlayerSetupView: View {
                     }
                 }
 
-                Text("Same camera position for everyone. Right-handed: backswing to your right, through to your left. Left-handed: backswing to your left, through to your right. The in-game golfer mirrors for left-handed play.")
+                Text("Pass the phone between turns. Set your club and aim, tap Ready once, then make a short, gentle swing after the ready vibration. Follow through freely—no button to hold.")
                     .font(.callout).foregroundStyle(.white.opacity(0.8))
-                    .accessibilityIdentifier("cameraStanceInstructions")
+                    .accessibilityIdentifier("controllerInstructions")
 
                 if flow.canAddPlayer {
                     MenuRow(focused: isFocused(.add), action: flow.addPlayer) {
@@ -49,7 +47,7 @@ struct PlayerSetupView: View {
                 }
 
                 Button { flow.chooseCourse() } label: {
-                    Text(flow.canContinue ? "Choose a course" : "Scan \(flow.mode == .solo ? "your body" : "every player") to continue")
+                    Text("Choose a course")
                         .font(.headline)
                         .frame(maxWidth: .infinity).padding(.vertical, 15)
                         .background(flow.canContinue ? Color.mint : .white.opacity(0.12), in: RoundedRectangle(cornerRadius: 15))
@@ -59,7 +57,6 @@ struct PlayerSetupView: View {
                 .disabled(!flow.canContinue)
                 .accessibilityIdentifier("continueToCourses")
 
-                if gesturesEnabled { GestureStatusChip(camera: camera) }
             }
             .padding(24)
             .frame(maxWidth: 620)
@@ -68,20 +65,6 @@ struct PlayerSetupView: View {
         .background(Palette.background.ignoresSafeArea())
         .accessibilityIdentifier("playerSetup")
         .sheet(item:$editingGolfer) { player in GolferAppearanceEditor(flow:flow,player:player) }
-        .onNavGesture(camera) { gesture in
-            let count = targets.count
-            let current = min(focus, count - 1)
-            switch gesture {
-            case .up: focus = (current + count - 1) % count
-            case .down: focus = (current + 1) % count
-            case .left, .right:
-                if case .player(let index) = targets[current] {
-                    let player = flow.players[index]
-                    flow.setHandedness(player.id, player.handedness == .right ? .left : .right)
-                }
-            case .select: activate(targets[current])
-            }
-        }
     }
 
     private func isFocused(_ target: Target) -> Bool {
@@ -91,7 +74,7 @@ struct PlayerSetupView: View {
 
     private func activate(_ target: Target) {
         switch target {
-        case .player(let index): flow.scan(flow.players[index].id)
+        case .player(let index): editingGolfer = flow.players[index]
         case .add: flow.addPlayer()
         case .proceed: flow.chooseCourse()
         case .back: flow.quitToMenu()
@@ -106,10 +89,6 @@ struct PlayerSetupView: View {
                     .font(.headline)
                     .textInputAutocapitalization(.words)
                     .submitLabel(.done)
-                Label(player.isScanned ? "Scanned" : "Not scanned", systemImage: player.isScanned ? "checkmark.circle.fill" : "exclamationmark.circle")
-                    .font(.caption.bold())
-                    .foregroundStyle(player.isScanned ? .mint : .yellow)
-                    .fixedSize(horizontal: true, vertical: false)
                 HStack(spacing: 8) {
                     Picker("Handedness", selection: Binding(get: { player.handedness }, set: { flow.setHandedness(player.id, $0) })) {
                         Text("Right").tag(Handedness.right)
@@ -125,10 +104,6 @@ struct PlayerSetupView: View {
                 }.accessibilityIdentifier("editGolfer-\(player.name)")
             }
             Spacer(minLength: 4)
-            Button(player.isScanned ? "Rescan" : "Scan") { flow.scan(player.id) }
-                .buttonStyle(.borderedProminent)
-                .tint(player.isScanned ? .gray : .mint)
-                .accessibilityIdentifier("scan-\(player.name)")
             if flow.mode == .multiplayer, flow.roster.count > flow.minimumPlayers {
                 Button(role: .destructive) { flow.removePlayer(player.id) } label: { Image(systemName: "trash") }
                     .accessibilityLabel("Remove \(player.name)")

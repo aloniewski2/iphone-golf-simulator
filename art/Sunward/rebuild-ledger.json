@@ -1,0 +1,59 @@
+{
+  "startingBalance": 2159,
+  "remainingCeiling": 2149,
+  "estimatedNewCredits": 9,
+  "verifiedBalanceAfter": 2150,
+  "verifiedNewCredits": 9,
+  "remainingAuthorizedCeiling": 2140,
+  "runtimeAssets": ["SunwardFairway.png", "SunwardRough.png", "SunwardSand.png"],
+  "status": "All three generations completed and bundled as playable terrain materials; visual verification ongoing. No new video generation purchased.",
+  "requests": [
+    {
+      "index": 0,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "1:1",
+        "count": 1,
+        "use_unlim": false,
+        "prompt": "Use case: stylized-concept. Asset type: seamless tileable albedo texture for an actual mobile 3D golf course, not a scene or material ball. Subject: tightly clipped golf fairway grass, fine dense short turf blades, healthy medium olive and fresh yellow-green, subtle organic variation, no mowing stripes. Premium animated-feature sculpted-cartoon material detail with believable fine surface structure. Exact orthographic top-down flat plane filling every pixel. Texture represents a 2 metre square patch. Neutral even diffuse illumination; no directional shading, shadows, specular, gradients, vignette, perspective, horizon, objects, borders, text or watermarks. Opposite edges must tile seamlessly. Even density and average color across the whole square, no recognizable repeating focal feature. This bitmap will wrap on terrain lit dynamically in the game."
+      }
+    },
+    {
+      "index": 1,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "1:1",
+        "count": 1,
+        "use_unlim": false,
+        "prompt": "Use case: stylized-concept. Asset type: seamless tileable albedo texture for an actual mobile 3D golf course, not a scene or material ball. Subject: lush golf rough grass, dense soft short tufts and overlapping fine blades, richer olive emerald greens with sparse tiny straw tips, varied organic direction, not lawn weeds. Premium animated-feature sculpted-cartoon material detail with believable fine surface structure. Exact orthographic top-down flat plane filling every pixel. Texture represents a 2 metre square patch. Neutral even diffuse illumination; no directional shading, shadows, specular, gradients, vignette, perspective, horizon, objects, borders, text or watermarks. Opposite edges must tile seamlessly. Even density and average color across the whole square, no recognizable repeating focal feature. This bitmap will wrap on terrain lit dynamically in the game."
+      }
+    },
+    {
+      "index": 2,
+      "params": {
+        "model": "seedream_v5_pro",
+        "resolution": "2k",
+        "aspect_ratio": "1:1",
+        "count": 1,
+        "use_unlim": false,
+        "prompt": "Use case: stylized-concept. Asset type: seamless tileable albedo texture for an actual mobile 3D golf course, not a scene or material ball. Subject: fine warm pale cream golf bunker sand with subtle peach undertone, very delicate irregular grains, faint natural wind-combed microtexture, no footprints or large rake lines. Premium animated-feature sculpted-cartoon material detail with believable fine surface structure. Exact orthographic top-down flat plane filling every pixel. Texture represents a 2 metre square patch. Neutral even diffuse illumination; no directional shading, shadows, specular, gradients, vignette, perspective, horizon, objects, borders, text or watermarks. Opposite edges must tile seamlessly. Even density and average color across the whole square, no recognizable repeating focal feature. This bitmap will wrap on terrain lit dynamically in the game."
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "index": 0,
+      "job_id": "d3d201c4-cbab-4922-a4bf-cfb667355eaa"
+    },
+    {
+      "index": 1,
+      "job_id": "655d29b6-3fc7-45a6-984a-6cb9f87a58e4"
+    },
+    {
+      "index": 2,
+      "job_id": "238b6ec3-ff10-4f96-a6f9-a800eef5fbaa"
+    }
+  ]
+}

@@ -330,9 +330,18 @@ struct CameraAvatarPoseFilter {
         let dt = max(1.0 / 120, min(0.1, lastTime.map { time - $0 } ?? 1.0 / 30))
         lastTime = time
         // Hold a coherent body when the phone sees only a head/hand or loses the torso.
-        guard let frame, [.leftShoulder, .rightShoulder, .leftHip, .rightHip].allSatisfy({
-            frame.point($0, minimumConfidence: 0.45) != nil
-        }) else {
+        let torsoJoints:[BodyJoint]=[.leftShoulder,.rightShoulder,.leftHip,.rightHip]
+        let visible=Set(torsoJoints.filter { frame?.point($0,minimumConfidence:0.45) != nil })
+        let fullTorso=visible.count == 4
+        // A turning golfer commonly occludes the far shoulder/hip. Previously losing ONE
+        // torso landmark froze every wrist/club sample, even with a clearly observed grip.
+        // Bootstrap from a complete torso, then retain the missing side while following
+        // a supported partial body. A lone face/hand still cannot drive the rig.
+        let supportedPartial=lastGoodTime != nil && visible.count >= 2 &&
+            !visible.isDisjoint(with:[.leftShoulder,.rightShoulder]) &&
+            !visible.isDisjoint(with:[.leftHip,.rightHip]) &&
+            [BodyJoint.leftWrist,.rightWrist].contains { frame?.point($0,minimumConfidence:0.45) != nil }
+        guard let frame, fullTorso || supportedPartial else {
             // A brief pre/post-impact gap holds presentation only. No predicted sample
             // is sent to the detector, and a longer loss hides the club.
             pose.clubVisible = pose.clubVisible && lastGoodTime.map { time - $0 <= 0.18 } == true

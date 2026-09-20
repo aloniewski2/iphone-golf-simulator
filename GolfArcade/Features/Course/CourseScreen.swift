@@ -1,329 +1,423 @@
 import Combine
 import SwiftUI
 
-enum SwingInput: String, CaseIterable, Identifiable {
-    case touch, phone, camera
-    var id: Self { self }
-    var title: String {
-        switch self {
-        case .touch: "Touch"
-        case .phone: "Phone"
-        case .camera: "Camera"
-        }
-    }
-}
-
-/// Stroke play on a full-screen hole: the club rail floats on the right, the camera sits in the
-/// bottom-left corner, and panels appear only between shots.
+/// The phone owns one round and animation clock. The external display only renders them.
 struct CourseScreen: View {
     @ObservedObject var flow: GameFlow
-    @ObservedObject var camera: CameraSwingController
+    var practice = false
     @ObservedObject private var tv = GolfTVDisplay.shared
-    @State private var tvSetupPending = false
-    @State private var lastTVSetupRequestID = 0
     @StateObject private var round = CourseRound()
     @StateObject private var motion = PhoneSwingController()
-    // StateObject's lazy construction is essential: @State(initialValue:) eagerly constructs
-    // and discards new hardware engines every time the parent receives a camera frame.
     @StateObject private var scene = CourseScene()
     @StateObject private var audio = RangeAudio()
     @StateObject private var feedback = SwingFeedbackController()
     @State private var demoTask: Task<Void, Never>?
-    @State private var rescanPresented = false
-    @State private var bannerVisible = false
-    @State private var tvSettingsPresented = false
-    @State private var bannerTask: Task<Void, Never>?
-    /// Certification shows the ground ball full-screen for five seconds, then returns to play.
-    @State private var stageExpanded = true
+    @State private var releaseTask: Task<Void, Never>?
+    @State private var authoredDownswingAngle: Double?
+    @State private var paused = false
+    @State private var started = false
+    @State private var flyoverStarted:Date?
+    @State private var flyoverProgress:Double?
+    private enum Sheet: String, Identifiable { case tv, shot, controller; var id: String { rawValue } }
+    @State private var sheet: Sheet?
     @AppStorage("arcade.hapticsEnabled") private var haptics = true
     @AppStorage("range.soundEnabled") private var sound = true
-    @AppStorage("range.swingInput") private var swingInput: SwingInput = .camera
-    @AppStorage("gestures.enabled") private var gesturesEnabled = true
-    @AppStorage("camera.depthExperiment") private var depthExperiment = false
-    @AppStorage("camera.capture60") private var capture60 = false
+    @AppStorage("range.swingInput") private var swingInput: SwingInput = .phone
+    @AppStorage("controller.sensitivity") private var sensitivity = 1.8
     @Environment(\.scenePhase) private var appPhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    // ContentView observes the camera, so this View value is rebuilt for every pose. A plain
-    // stored Timer publisher would be replaced before it fires on a busy real camera.
     @State private var tick = Timer.publish(every: 1.0 / 30, on: .main, in: .common).autoconnect()
-
 
     private var players: [Player] { flow.players }
     private var player: Player {
         players.indices.contains(round.playerIndex) ? players[round.playerIndex] : players[0]
     }
-    private var isMultiplayer: Bool { players.count > 1 }
-    private var usesCamera: Bool { swingInput == .camera }
-
-    var body: some View {
-        cleanupView.preferredColorScheme(.dark)
+    private var controllerLayout: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-controllerLayout") { return true }
+        #endif
+        return tv.active || swingInput != .touch
+    }
+    private var controlsEnabled: Bool {
+        round.phase == .ready && round.canSwing && !motion.isArmed && motion.status != .followThrough && releaseTask == nil && demoTask == nil && flyoverProgress == nil
     }
 
-    private var layoutView: some View {
-        GeometryReader { proxy in
-            courseCanvas(size: proxy.size)
+    var body: some View {
+        ZStack {
+            if let session = tvPreviewSession {
+                TVCourseView(session: session, round: round, scene: scene)
+            } else if controllerLayout { controller }
+            else { touchCourse }
         }
         .foregroundStyle(Palette.cream)
         .background(Palette.ink.ignoresSafeArea())
-    }
-
-    private var interactionView: some View {
-        layoutView
-        .sheet(isPresented: $tvSettingsPresented) { TVSettingsView() }
-        .fullScreenCover(isPresented: $rescanPresented) {
-            CalibrationView(tracker: camera.tracker, playerName: player.name, onComplete: { calibration in
-                flow.finishScan(player.id, calibration: calibration)
-                flow.screen = .playing
-                rescanPresented = false
-            }, onCancel: { rescanPresented = false })
+        .preferredColorScheme(.dark)
+        .sheet(item: $sheet, onDismiss: resumeAfterSheet) { destination in
+            switch destination {
+            case .tv: TVSettingsView()
+            case .shot: ShotControls(round: round)
+            case .controller: SettingsView()
+            }
+        }
+        .onAppear(perform: start)
+        .onDisappear {
+            stopFeedback()
+            motion.stop()
+            motion.onEvent = nil
+            scene.stop()
+            tv.end(round: round)
+            UIApplication.shared.isIdleTimerDisabled = false
         }
         .onReceive(tick) { date in
-            guard appPhase == .active, !rescanPresented, !tvSettingsPresented else { return }
-            camera.advancePositionReview()
+            if let start=flyoverStarted {
+                let progress=date.timeIntervalSince(start)/8
+                if progress>=1 { flyoverStarted=nil;flyoverProgress=nil }
+                else { flyoverProgress=progress }
+            }
             let wasFlying = round.phase == .flying
             let wasReplay = round.isReplay
             round.advance(at: date)
             if wasFlying, round.phase != .flying, !wasReplay { landed() }
+            scene.inputs = sceneInputs
+            if tv.session?.playerName != player.name { tv.session?.playerName = player.name }
+            let status = flyoverProgress != nil ? "Hole tour · controls resume when the flyover ends" : swingInput == .phone ? motionCopy : "Ready · aim and swing using touch on your iPhone"
+            if tv.session?.controllerStatus != status { tv.session?.controllerStatus = status }
         }
-        .onChange(of: tv.setupRequestID) { _, requestID in
-            lastTVSetupRequestID = requestID
-            guard usesCamera else { return }
-            tvSetupPending = true
-            performTVSetupIfSafe()
-        }
-        .onNavGesture(camera) { handleGesture($0) }
-        .onReceive(camera.$frame) { frame in
-            guard usesCamera else { return }
-            scene.ingest(frame, swingAngle: camera.swingAngle, frameAspect: camera.tracker.frameAspect,
-                         virtualClub: camera.virtualClub, positionLocked: camera.isPositionLocked)
-        }
-        .onChange(of: camera.reviewSecondsRemaining) { old, remaining in
-            guard usesCamera else { return }
-            if remaining > 0 {
-                if !stageExpanded { withAnimation { stageExpanded = true } }
-            }
-            else if old > 0 {
-                guard camera.isPositionLocked, !camera.isCheckingSwing else { return }
-                withAnimation(.spring(duration: 0.55)) { stageExpanded = false }
-                if camera.hasPlayableTracking { audio.ready() }
-            }
-        }
-        .onChange(of: camera.addressAimDegrees) { _, degrees in
-            if usesCamera { round.setStanceAim(degrees) }
-        }
-        .onChange(of: camera.phase) { _, phase in
-            // The club head cuts the air as the downswing starts, before we know about contact.
-            if usesCamera, phase == .downswing, round.canSwing { audio.whoosh(power: max(0.4, round.power)) }
-        }
-        .onChange(of: round.phase) { _, phase in
-            if phase == .ready { round.setStanceAim(usesCamera ? camera.addressAimDegrees : 0) }
-            performTVSetupIfSafe()
-        }
-        .onAppear {
-            scene.onBystanderHit = {
-                audio.thump()
-                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-            }
-            scene.onLanding = { audio.landing($0) }
-            round.start(course: flow.course, playerCount: players.count)
-            #if DEBUG
-            // `-startOnGreen` tees the ball up eight yards from the cup for putting work.
-            if ProcessInfo.processInfo.arguments.contains("-startOnGreen") { round.dropOnGreenForTesting() }
-            #endif
-            round.automaticProgression = true
-            round.automaticAim = true
-            round.handedness = player.handedness
-            #if DEBUG
-            // UI tests that press Next shot / Continue themselves must not be raced by the timer.
-            if ProcessInfo.processInfo.arguments.contains("-manualProgression") { round.automaticProgression = false }
-            #endif
-            feedback.isEnabled = haptics
-            audio.enabled = sound
-            motion.setClub(round.club)
-            camera.setClub(round.club, type: round.shotType)
-            camera.requiresPositionReview = true
-            camera.requiresSwingCheck = false
-            camera.contactAssistance = true
-            camera.tracker.setTracking(mode: depthExperiment ? .depthPreview : .body2D, framesPerSecond: capture60 ? 60 : 30, profile: .wideFront)
-            motion.onEvent = { handleSwing($0) }
-            camera.onEvent = { handleSwing($0) }
-            beginTurn()
-            updateInputs()
-            tv.present(round: round, scene: scene, camera: camera, usesCamera: usesCamera)
-            lastTVSetupRequestID = tv.setupRequestID
-        }
-    }
-
-    private var settingsView: some View {
-        interactionView
+        .onChange(of: appPhase) { _, _ in synchronizeActivity() }
+        .onChange(of: paused) { _, _ in synchronizeActivity() }
+        .onChange(of: tv.active) { _, _ in stopFeedback(); scene.inputs = sceneInputs }
+        .onChange(of: swingInput) { _, _ in stopFeedback(); synchronizeActivity() }
+        .onChange(of: round.club) { _, club in stopFeedback(); motion.setClub(club) }
+        .onChange(of: round.shotType) { _, _ in stopFeedback() }
+        .onChange(of: round.aim) { _, _ in motion.disarm() }
+        .onChange(of: round.target) { _, _ in motion.disarm() }
+        .onChange(of: round.editingShot) { _, editing in if editing { stopFeedback() } }
+        .onChange(of: round.playerIndex) { _, _ in beginTurn() }
+        .onChange(of: round.holeIndex) { _, _ in beginTurn() }
         .onChange(of: haptics) { _, value in feedback.isEnabled = value }
         .onChange(of: sound) { _, value in audio.enabled = value }
-        .onChange(of: round.club) { _, club in motion.setClub(club); camera.setClub(club, type: round.shotType) }
-        .onChange(of: round.shotType) { _, type in camera.setClub(round.club, type: type) }
-        .onChange(of: swingInput) { _, _ in
-            stopFeedback(); stageExpanded = usesCamera; beginTurn(announce: false); updateInputs()
-            tvSetupPending = false
-            tv.present(round: round, scene: scene, camera: camera, usesCamera: usesCamera)
-        }
-        .onChange(of: gesturesEnabled) { _, _ in updateInputs() }
-        .onChange(of: depthExperiment) { _, _ in updateCameraExperiment() }
-        .onChange(of: capture60) { _, _ in updateCameraExperiment() }
-        .onChange(of: rescanPresented) { _, presented in
-            if presented { stopFeedback(); round.pause() } else { round.resume(); beginTurn(announce: false) }
-            updateInputs()
-        }
-        .onChange(of: tvSettingsPresented) { _, presented in
-            if presented { stopFeedback(); round.pause() }
-            else if appPhase == .active { round.resume() }
-            updateInputs()
-        }
-        .onChange(of: round.playerIndex) { _, _ in beginTurn() }
-        .onChange(of: round.holeIndex) { _, _ in beginTurn(resetSetup: false) }
-        .onChange(of: appPhase) { _, phase in
-            if phase != .active { stopFeedback(); round.pause() }
-            else if !tvSettingsPresented { round.resume() }
-            updateInputs()
+        .onChange(of: sensitivity) { _, value in stopFeedback(); motion.sensitivity = value }
+        .onChange(of: motion.status) { old, value in
+            if value == .address, old != .address {
+                if haptics { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+                audio.ready()
+            }
+            if value == .downswing { audio.whoosh(power: max(0.3, round.power)) }
         }
     }
 
-    private var cleanupView: some View {
-        settingsView
-        .onDisappear {
-            GolfTVDisplay.shared.end(round: round)
-            UIApplication.shared.isIdleTimerDisabled = false
-            stopFeedback()
-            bannerTask?.cancel()
-            motion.stop()
-            camera.onEvent = nil
-            camera.requiresPositionReview = false
-            camera.ballAddress = nil
-        }
-    }
-
-    private func courseCanvas(size: CGSize) -> some View {
-            ZStack {
-                CourseSceneView(scene: scene, inputs: sceneInputs)
-                .ignoresSafeArea()
-                .accessibilityElement()
-                .accessibilityLabel("\(flow.course.name), hole \(round.hole.number)")
-                .accessibilityValue(resourceDiagnostics)
-                .accessibilityIdentifier("golfCourse")
-
-                LinearGradient(colors: [.black.opacity(0.18), .clear, .clear, .black.opacity(0.28)], startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
-
-                VStack(alignment: .leading, spacing: 5) {
+    private var controller: some View {
+        VStack(spacing: 0) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(tv.active ? "TV CONNECTED" : "PHONE CONTROLLER")
+                        .font(.caption.bold()).foregroundStyle(.mint)
+                        .accessibilityIdentifier("controllerDisplayStatus")
+                    Text(player.name).font(.title2.bold())
+                }
+                Spacer()
+                Button { paused.toggle() } label: {
+                    Image(systemName: paused ? "play.fill" : "pause.fill").frame(width: 44, height: 44)
+                }.accessibilityLabel(paused ? "Resume round" : "Pause round").accessibilityIdentifier("pauseRound")
+                Menu { menuItems } label: {
+                    Image(systemName: "ellipsis").frame(width: 44, height: 44)
+                }.accessibilityLabel("Course menu").accessibilityIdentifier("courseMenu")
+            }.padding(.horizontal, 18).padding(.top, 8)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
                     holeChip
-                    Text(round.wind.speedMPH < 0.5 ? "WIND · CALM" : "WIND · \(Int(round.wind.speedMPH.rounded())) MPH · \(Int(round.wind.bearing.rounded()))°")
-                        .font(.system(size: 10, weight: .bold)).monospacedDigit()
-                        .padding(7).background(.black.opacity(0.6), in: Capsule())
-                    if round.canSwing {
-                        HoleDirectionCue(round: round)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
+                    landingTarget
+                    if !tv.active {
+                        courseView.frame(height: 200).clipShape(RoundedRectangle(cornerRadius: 18))
                     }
-                    Text("\(round.targetLabel) · \(Int(round.distanceToTarget.rounded())) YD")
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        .padding(.horizontal, 10).padding(.vertical, 6)
-                        .background(.black.opacity(0.45), in: Capsule())
-                        .accessibilityIdentifier("landingTarget")
-                    if round.canSwing, let read = round.greenRead {
-                        Text(read.label)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 0.85, green: 1, blue: 0.9))
-                            .padding(.horizontal, 10).padding(.vertical, 5)
-                            .background(.black.opacity(0.45), in: Capsule())
+                    if paused {
+                        Text("Paused · resume when ready").font(.headline)
+                    }
+                    if round.canSwing || motion.isArmed {
+                        Text("\(round.lie.rawValue.capitalized) · \(Int(round.wind.speedMPH.rounded())) MPH wind · \(Int(round.wind.bearing.rounded()))°")
+                            .font(.caption.bold())
+                        TargetMap(round: round, interactive: controlsEnabled)
+                            .frame(height: tv.active ? 210 : 140)
+                            .allowsHitTesting(controlsEnabled)
+                        controllerSetup.disabled(!controlsEnabled)
+                        ShotStrengthGuide(round: round)
+                        if let read = round.greenRead { Text(read.label).font(.caption.bold()).foregroundStyle(.mint) }
+                    }
+                    resultPanel
+                    if let impact = round.practiceImpact {
+                        Text("Practice swing · \(Int(impact.power * 100))% power · no stroke counted")
+                            .accessibilityIdentifier("practiceResult")
+                    }
+                    Text("Short, gentle swings only. Keep a secure grip; a wrist strap is recommended. No camera needed.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }.padding(18)
+            }
+            if round.canSwing, !paused {
+                inputPanel.padding(.horizontal, 18).padding(.bottom, 12)
+            } else if round.phase == .flying {
+                Text(round.isReplay ? "Replay on screen" : "Ball in play")
+                    .font(.headline).padding()
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("phoneController")
+    }
+
+    private var controllerSetup: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker("Club", selection: $round.club) {
+                ForEach(GolfClub.allCases) {
+                    Text("\($0.displayName) · \(Int($0.referenceDistanceYards)) yd").tag($0)
+                }
+            }.accessibilityIdentifier("controllerClub")
+            HStack {
+                Button { round.adjustAim(-round.aimStep) } label: {
+                    Label("Left", systemImage: "arrow.left").frame(minHeight: 44)
+                }.accessibilityIdentifier("aimLeft")
+                Spacer()
+                Text(String(format: "AIM %+.1f°", round.combinedAim))
+                    .font(.headline.monospacedDigit()).accessibilityIdentifier("controllerAim")
+                Spacer()
+                Button { round.adjustAim(round.aimStep) } label: {
+                    Label("Right", systemImage: "arrow.right").frame(minHeight: 44)
+                }.accessibilityIdentifier("aimRight")
+            }
+            HStack {
+                Button("Aim at pin") { round.aimAtPin() }
+                Spacer()
+                Button("Follow fairway") { round.followFairway() }
+            }.font(.caption.bold())
+            Text("Tap the map to choose any target; use arrows for fine aim.")
+                .font(.caption).foregroundStyle(.secondary)
+            if round.club != .putter {
+                Picker("Shot", selection: $round.shotType) {
+                    ForEach(ShotType.allCases.filter { $0.supports(club: round.club, lie: round.lie) }) {
+                        Text($0.title).tag($0)
+                    }
+                }.accessibilityIdentifier("controllerShotType")
+            }
+            Button("Shot shape, trajectory & target", systemImage: "scope") { present(.shot) }
+                .accessibilityIdentifier("shotControls")
+        }
+        .padding(14).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var touchCourse: some View {
+        GeometryReader { proxy in
+            ZStack {
+                courseView.ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 8) {
+                    holeChip
+                    landingTarget
+                    HoleDirectionCue(round: round).frame(width: 220)
+                    if round.canSwing { ShotStrengthGuide(round: round).frame(width: 220) }
+                    if let read = round.greenRead {
+                        Text(read.label).font(.caption.bold()).foregroundStyle(.mint)
                             .accessibilityIdentifier("greenRead")
                     }
-                    if round.canSwing {
-                        ShotStrengthGuide(round: round)
-                            .frame(width: min(240, max(180, size.width - 150)))
-                        let preview = round.trajectoryPreview
-                        Text("\(round.club.shortName) · \(Int(preview.power * 100))% · \(Int(preview.carry.rounded())) CARRY / \(Int(preview.total.rounded())) TOTAL")
-                            .font(.system(size: 11, weight: .bold, design: .rounded)).monospacedDigit()
-                            .lineLimit(2)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
-                            .padding(8).background(.black.opacity(0.65), in: Capsule())
-                            .accessibilityIdentifier("trajectoryEstimate")
-                        Text("CENTER-STRIKE GUIDE · AIM \(String(format: "%+.1f°", round.combinedAim))\(round.stanceAim != 0 ? " · STANCE" : "")")
-                            .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
-                            .lineLimit(2)
-                            .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
-                        if round.automaticAim {
-                            Text("RECOMMENDED ROUTE · AIM SET FOR YOU")
-                                .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
-                                .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
-                        } else if usesCamera {
-                            if round.usesBodyAim {
-                                Text("TURN YOUR STANCE TO AIM · LINE LOCKS ON BACKSWING")
-                                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.mint)
-                                    .frame(maxWidth: max(180, size.width - 150), alignment: .leading)
-                            } else {
-                                Button("Resume body aiming", systemImage: "figure.golf") {
-                                    round.resumeBodyAim(at: camera.addressAimDegrees)
-                                }
-                                .font(.caption.bold())
-                                .accessibilityIdentifier("resumeBodyAim")
-                            }
-                        }
-                    }
-                }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(.leading, 14).padding(.top, 8)
-
+                }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(12)
                 HoleOverview(round: round)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .padding(.trailing, 10).padding(.top, 42)
-
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(12)
                 ClubRail(round: round, focusedClub: round.canSwing ? round.club : nil) { menuItems }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                    .padding(.trailing, 10)
-
-                bottomPanel(width: size.width)
-
-                if usesCamera {
-                    if stageExpanded {
-                        Color.black.ignoresSafeArea().transition(.opacity)
-                    }
-                    CameraStage(
-                        camera: camera,
-                        ballAddress: camera.displayAddress,
-                        handedness: player.handedness,
-                        expanded: stageExpanded,
-                        viewportSize: cameraStageSize(size),
-                        gesturesEnabled: gesturesEnabled,
-                        previewOnTV: tv.active,
-                        onResize: { guard camera.reviewSecondsRemaining == 0 else { return }; withAnimation { stageExpanded.toggle() } },
-                        onRecenter: { stopFeedback(); camera.resetAddress(); stageExpanded = true }
-                    )
-                    .frame(width: cameraStageSize(size).width, height: cameraStageSize(size).height)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: stageExpanded ? .center : .bottomLeading)
-                    .padding(.leading, stageExpanded ? 0 : 12).padding(.bottom, stageExpanded ? 0 : 12)
-                    .accessibilityAction(named: "Resize camera") { if camera.reviewSecondsRemaining == 0 { stageExpanded.toggle() } }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing).padding(.trailing, 10)
+                VStack {
+                    Spacer()
+                    if round.canSwing { inputPanel }
+                    resultPanel
                 }
-
-                if (bannerVisible || (usesCamera && isMultiplayer && camera.phase == .findingPlayer && round.canSwing)) && !(usesCamera && stageExpanded) {
-                    TurnBanner(
-                        name: player.name,
-                        color: Palette.player(player.colorIndex),
-                        detail: bannerVisible ? "Hole \(round.hole.number) · Stroke \(round.strokeNumber)" : "Step into the camera view",
-                        showsName: isMultiplayer
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 54)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .allowsHitTesting(false)
-                }
+                .frame(width: min(proxy.size.width - 100, 470))
+                .padding(.bottom, 16).padding(.trailing, 80)
             }
+        }
     }
 
-    // MARK: - Overlays
+    private var courseView: some View {
+        CourseSceneView(scene: scene, inputs: sceneInputs, externalDisplayActive: tv.active, ownsLifecycle: false)
+            .accessibilityElement()
+            .accessibilityLabel("\(round.course.name), hole \(round.hole.number)")
+            .accessibilityValue(resourceDiagnostics)
+            .accessibilityIdentifier("golfCourse")
+    }
 
-    private func cameraStageSize(_ size: CGSize) -> CGSize {
-        if stageExpanded { return size }
-        let width: CGFloat = size.width > size.height ? 160 : 132
-        return CGSize(width: width, height: width / max(camera.tracker.frameAspect, 0.3))
+    private var holeChip: some View {
+        Text("\(player.name) · H\(round.hole.number) · PAR \(round.hole.par) · \(Int(round.distanceToPin.rounded())) YD · \(round.strokes) SHOTS")
+            .font(.caption.bold()).monospacedDigit()
+            .accessibilityIdentifier("holeChip")
+    }
+
+    private var landingTarget: some View {
+        Text("\(round.targetLabel) · \(Int(round.distanceToTarget.rounded())) YD")
+            .font(.caption.bold()).monospacedDigit()
+            .padding(8).background(.black.opacity(0.4), in: Capsule())
+            .accessibilityIdentifier("landingTarget")
+    }
+
+    @ViewBuilder private var resultPanel: some View {
+        switch round.phase {
+        case .complete:
+            RoundCompletePanel(round: round, players: players, onPlayAgain: playAgain, onMenu: quit)
+        case .holed:
+            if let shot = round.activeShot {
+                HoleCompletePanel(round: round, player: player, shot: shot, isMultiplayer: players.count > 1,
+                    onReplay: { round.replay() }, onContinue: { stopFeedback(); round.continueAfterHole() })
+            }
+        case .landed:
+            if let shot = round.activeShot {
+                ShotResultPanel(round: round, shot: shot, showsStrike: false,
+                    onReplay: { round.replay() }, onNext: { round.nextShot() })
+            }
+        case .ready, .charging, .flying: EmptyView()
+        }
+    }
+
+    @ViewBuilder private var inputPanel: some View {
+        if flyoverProgress != nil {
+            Button("Finish hole tour",systemImage:"flag.checkered") { stopFeedback() }
+                .buttonStyle(.borderedProminent).accessibilityIdentifier("finishFlyover")
+        } else if swingInput == .touch {
+            SwingPad(club: round.club, power: round.power, charging: round.phase == .charging,
+                onCharge: { guard demoTask == nil, releaseTask == nil, round.canSwing else { return }; charge($0) },
+                onRelease: { direction in
+                    guard demoTask == nil else { return }
+                    release(execution: SwingImpact(power: round.power, startLineDegrees: direction))
+                }, onCancel: {
+                    if releaseTask == nil { stopFeedback() }
+                }, onDemo: demo)
+        } else {
+            VStack(spacing: 8) {
+                Text(motionCopy).font(.headline).accessibilityIdentifier("motionPanel")
+                if motion.status == .unavailable {
+                    Button("Use touch controls") { swingInput = .touch }.accessibilityIdentifier("useTouch")
+                } else {
+                    Button {
+                        if motion.isArmed { stopFeedback() }
+                        else if controlsEnabled {
+                            motion.handedness = player.handedness
+                            motion.selectedAimDegrees = round.heading + round.combinedAim
+                            motion.arm()
+                        }
+                    } label: {
+                        Text(motion.isArmed ? "Cancel swing" : "Ready")
+                            .font(.headline).frame(maxWidth: .infinity).frame(height: 64)
+                            .background(motion.isArmed ? Color.orange : Color.mint, in: RoundedRectangle(cornerRadius: 18))
+                            .foregroundStyle(Palette.ink)
+                    }
+                        .buttonStyle(.plain)
+                        .disabled(!motion.isArmed && !controlsEnabled)
+                        .accessibilityIdentifier("armSwing")
+                        .accessibilityHint(motion.isArmed ? "Cancels tracking without taking a shot." : "Tap once, steady the phone until it vibrates, then swing and follow through. No holding required.")
+                    Text("Tap Ready once. Steady the phone until it vibrates, then swing gently and follow through. No need to hold the screen.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var menuItems: some View {
+        Picker("Swing input", selection: $swingInput) {
+            ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
+        }
+        Button("TV / AirPlay", systemImage: "airplayvideo") { present(.tv) }
+        Button("Controller settings", systemImage: "gearshape") { present(.controller) }
+        Button("View hole flyover",systemImage:"binoculars") {
+            stopFeedback();flyoverStarted=Date();flyoverProgress=0
+        }.disabled(round.phase != .ready || paused).accessibilityIdentifier("viewFlyover")
+        Button(paused ? "Resume round" : "Pause round", systemImage: paused ? "play" : "pause") { paused.toggle() }
+        Button("Restart hole", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restartHole() }
+        Button("Restart round", systemImage: "arrow.triangle.2.circlepath") { playAgain() }
+        Toggle("Sound effects", isOn: $sound)
+        Toggle("Haptics", isOn: $haptics)
+        Button("Quit to menu", systemImage: "house", role: .destructive) { quit() }
+    }
+
+    private var motionCopy: String {
+        switch motion.status {
+        case .unavailable: "Motion unavailable · use touch"
+        case .idle: "Choose club and aim, then tap Ready"
+        case .settling: "Tracking · steady the phone for a moment"
+        case .address: "Ready · swing freely, no buttons to hold"
+        case .backswing: "Backswing · \(Int(round.power * 100))%"
+        case .downswing: "Swing through"
+        case .followThrough: "Ball hit · finish your follow-through"
+        }
+    }
+
+    private func start() {
+        if started {
+            tv.present(round: round, scene: scene)
+            synchronizeActivity()
+            return
+        }
+        started = true
+        round.start(course: practice ? .easy : flow.course, playerCount: players.count)
+        round.practiceMode = practice
+        round.automaticProgression = true
+        round.automaticAim = false
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-startOnGreen") { round.dropOnGreenForTesting() }
+        if ProcessInfo.processInfo.arguments.contains("-manualProgression") { round.automaticProgression = false }
+        #endif
+        feedback.isEnabled = haptics
+        audio.enabled = sound
+        motion.sensitivity = sensitivity
+        motion.setClub(round.club)
+        motion.onEvent = handleSwing
+        scene.onBystanderHit = { audio.thump() }
+        scene.onLanding = { audio.landing($0) }
+        beginTurn()
+        scene.inputs = sceneInputs
+        scene.start()
+        tv.present(round: round, scene: scene)
+        synchronizeActivity()
+    }
+
+    private func beginTurn() {
+        stopFeedback()
+        round.handedness = player.handedness
+        round.setManualAim(0)
+        motion.setClub(round.club)
+        scene.configurePlayer(calibration: nil, handedness: player.handedness, frameAspect: 0.75)
+    }
+
+    private func present(_ destination: Sheet) {
+        stopFeedback()
+        round.pause()
+        motion.stop()
+        sheet = destination
+        if destination == .shot { round.editingShot = true }
+    }
+
+    private func resumeAfterSheet() {
+        round.editingShot = false
+        synchronizeActivity()
+    }
+
+    private func synchronizeActivity() {
+        stopFeedback()
+        let live = appPhase == .active && sheet == nil && !paused
+        UIApplication.shared.isIdleTimerDisabled = live
+        if live {
+            round.resume()
+            scene.start()
+            if swingInput == .phone { motion.start() } else { motion.stop() }
+        } else {
+            round.pause()
+            motion.stop()
+            scene.stop()
+        }
+    }
+
+    private var sceneInputs: SceneInputs {
+        SceneInputs(hole: round.hole, ball: round.ball, heading: round.heading,
+            distanceToPin: round.distanceToPin, lie: round.lie, club: round.club,
+            aim: round.combinedAim, handedness: player.handedness, shot: round.activeShot,
+            isReplay: round.isReplay, flightStart: round.flightStart, pausedAt: round.pausedAt,
+            swingAngle: authoredDownswingAngle ?? round.power * 150,
+            bystanders: players.filter { $0.id != player.id }.map {
+                SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex, appearance: $0.golferAppearance)
+            },
+            preview: round.canSwing ? round.trajectoryPreview : nil,
+            cameraAim: nil, reduceMotion: reduceMotion, appearance: player.golferAppearance,flyoverProgress:flyoverProgress)
     }
 
     private var resourceDiagnostics: String {
@@ -334,182 +428,12 @@ struct CourseScreen: View {
         #endif
     }
 
-    private var holeChip: some View {
-        HStack(spacing: 7) {
-            if isMultiplayer {
-                Circle().fill(Palette.player(player.colorIndex)).frame(width: 8, height: 8)
-                Text(player.name.uppercased())
-            }
-            Text("H\(round.hole.number) · PAR \(round.hole.par) · \(Int(round.distanceToPin.rounded())) YD")
-                .monospacedDigit()
-            if round.strokes > 0 { Text("· \(round.strokes) SHOT\(round.strokes == 1 ? "" : "S")").monospacedDigit() }
-        }
-        .font(.system(size: 10, weight: .heavy, design: .rounded))
-        .padding(.horizontal, 10).padding(.vertical, 6)
-        .background(.black.opacity(0.45), in: Capsule())
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("holeChip")
-    }
-
-    @ViewBuilder
-    private func bottomPanel(width: CGFloat) -> some View {
-        let panelWidth = min(width - 32, 470)
-        Group {
-            switch round.phase {
-            case .complete:
-                RoundCompletePanel(round: round, players: players, onPlayAgain: playAgain, onMenu: quit)
-                    .frame(maxWidth: panelWidth)
-            case .holed:
-                if let shot = round.activeShot, round.phase == .holed {
-                    HoleCompletePanel(round: round, player: player, shot: shot, isMultiplayer: isMultiplayer, onReplay: { round.replay() }, onContinue: continueAfterHole)
-                        .frame(maxWidth: panelWidth)
-                }
-            case .landed:
-                if let shot = round.activeShot {
-                    ShotResultPanel(round: round, shot: shot, showsStrike: usesCamera, onReplay: { round.replay() }, onNext: nextShot)
-                        .frame(maxWidth: panelWidth)
-                }
-            case .ready, .charging, .flying:
-                inputPanel
-                    .frame(maxWidth: usesCamera ? 230 : min(width * 0.68, 440))
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, 16)
-        .padding(.leading, usesCamera && round.canSwing ? 150 : 0)
-        .padding(.trailing, 80)
-    }
-
-    @ViewBuilder
-    private var inputPanel: some View {
-        if round.phase == .flying {
-            if round.isReplay {
-                StatusPill(icon: "play.fill", title: "Replay", detail: "Punch or swipe right to skip")
-                    .onTapGesture { round.skipFlight() }
-            }
-        } else {
-            switch swingInput {
-            case .touch:
-                SwingPad(club: round.club, power: round.power, charging: round.phase == .charging, onCharge: { value in
-                    guard demoTask == nil, round.canSwing else { return }
-                    charge(value)
-                }, onRelease: { direction in
-                    guard demoTask == nil else { return }
-                    release(execution: SwingImpact(power: round.power, startLineDegrees: direction))
-                }, onCancel: {
-                    guard demoTask == nil, round.phase == .charging else { return }
-                    stopFeedback()
-                }, onDemo: demo)
-            case .phone:
-                StatusPill(icon: "iphone.gen3.radiowaves.left.and.right", title: motionCopy, detail: nil)
-                    .accessibilityIdentifier("motionPanel")
-            case .camera:
-                VStack(spacing: 8) {
-                    if camera.needsLineUp, let offset = camera.handsOffset {
-                        LineUpIndicator(offset: offset)
-                    }
-                    StatusPill(icon: camera.needsLineUp ? "scope" : "figure.golf", title: cameraCopy, detail: nil, titleLineLimit: 3)
-                        .accessibilityIdentifier("cameraPanel")
-                    if !camera.hasPlayableTracking {
-                        Button("Camera setup", systemImage: "viewfinder") { withAnimation { stageExpanded = true } }
-                            .font(.caption.bold())
-                            .accessibilityIdentifier("cameraSetup")
-                    }
-                    Button("Use touch", systemImage: "hand.draw") { swingInput = .touch }
-                        .font(.caption.bold())
-                        .accessibilityIdentifier("useTouch")
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var menuItems: some View {
-        Picker("Swing input", selection: $swingInput) {
-            ForEach(SwingInput.allCases) { Text($0.title).tag($0) }
-        }
-        if usesCamera {
-            Button("Reset comfortable grip", systemImage: "figure.golf") { stopFeedback(); camera.resetAddress() }
-            Text("Contact assist on · strike location affects the shot")
-            Toggle("Experimental 3D avatar depth", isOn: $depthExperiment)
-            Toggle("Try 60 fps capture", isOn: $capture60)
-            Button("Rescan \(player.name)", systemImage: "viewfinder") { rescanPresented = true }
-        }
-        Button("Restart hole", systemImage: "arrow.counterclockwise") { stopFeedback(); round.restartHole() }
-        Button("Restart round", systemImage: "arrow.triangle.2.circlepath") { stopFeedback(); round.restart() }
-        Toggle("Sound effects", isOn: $sound)
-        Toggle("Haptics", isOn: $haptics)
-        Button("Quit to menu", systemImage: "house", role: .destructive) { quit() }
-        Button("TV / AirPlay", systemImage: "airplayvideo") { tvSettingsPresented = true }
-    }
-
-    private var cameraCopy: String {
-        if camera.isCheckingSwing { return camera.swingCheck.title }
-        if camera.reviewSecondsRemaining > 0 { return "Ball locked · \(camera.reviewSecondsRemaining)" }
-        switch camera.status {
-        case .idle, .requestingPermission: return "Starting camera"
-        case .denied: return "Camera access is off"
-        case .unavailable(let reason): return reason
-        case .running: break
-        }
-        if !camera.hasPlayableTracking { return camera.readiness.title }
-        return switch camera.phase {
-        case .findingPlayer: camera.readiness.title
-        case .address: "Ready. Take it back"
-        case .backswing: round.power >= 1 ? "Full power" : "Backswing"
-        case .downswing, .impact: "Through the ball"
-        case .followThrough, .finish: "Set up again"
-        }
-    }
-
-    private var motionCopy: String {
-        switch motion.status {
-        case .unavailable: "Motion needs a real iPhone"
-        case .idle, .settling: "Hold still at address"
-        case .address: "Ready. Take it back"
-        case .backswing: "Backswing"
-        case .downswing: "Swing"
-        }
-    }
-
-    // MARK: - Turn flow
-
-    private func performTVSetupIfSafe() {
-        guard tvSetupPending, usesCamera, Self.canReposition(for: round.phase) else { return }
-        tvSetupPending = false
-        stopFeedback()
-        camera.resetAddress()
-        stageExpanded = true
-    }
-
-    static func canReposition(for phase: CourseRound.Phase) -> Bool {
-        phase == .ready || phase == .charging
-    }
-
-    private func beginTurn(announce: Bool = true, resetSetup: Bool = true) {
-        let current = player
-        round.handedness = current.handedness
-        // A new hole does not move the real phone or player. Keep the certified
-        // playing space; player/input changes and explicit recenter still reset it.
-        if resetSetup {
-            stageExpanded = usesCamera
-            camera.handedness = current.handedness
-            camera.resetAddress()
-            camera.tracker.setCalibration(current.calibration)
-            scene.configurePlayer(
-                calibration: usesCamera ? current.calibration : nil,
-                handedness: current.handedness,
-                frameAspect: camera.tracker.frameAspect
-            )
-        }
-        guard announce else { return }
-        bannerTask?.cancel()
-        withAnimation(.easeOut(duration: 0.2)) { bannerVisible = true }
-        bannerTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.6))
-            guard !Task.isCancelled else { return }
-            withAnimation(.easeIn(duration: 0.25)) { bannerVisible = false }
-        }
+    /// Simulator-only presentation inspection; never pretends a receiver is connected.
+    private var tvPreviewSession: TVGameSession? {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-tvPresentationPreview") { return tv.session }
+        #endif
+        return nil
     }
 
     private func landed() {
@@ -522,127 +446,59 @@ struct CourseScreen: View {
         if round.phase == .holed { feedback.playImpact() }
     }
 
-    private func nextShot() { round.nextShot() }
-
-    private var sceneInputs: SceneInputs {
-        SceneInputs(
-            hole: round.hole,
-            ball: round.ball,
-            heading: round.heading,
-            distanceToPin: round.distanceToPin,
-            lie: round.lie,
-            club: round.club,
-            aim: round.combinedAim,
-            handedness: player.handedness,
-            shot: round.activeShot,
-            isReplay: round.isReplay,
-            flightStart: round.flightStart,
-            pausedAt: round.pausedAt,
-            swingAngle: usesCamera ? camera.swingAngle : round.power * 150,
-            bystanders: players.filter { $0.id != player.id }.map { SceneInputs.Bystander(id: $0.id, colorIndex: $0.colorIndex,appearance:$0.golferAppearance) },
-            preview: round.canSwing ? round.trajectoryPreview : nil,
-            cameraAim: usesCamera ? (round.automaticAim ? round.combinedAim : round.aim) : nil,
-            reduceMotion: reduceMotion, appearance: player.golferAppearance
-        )
-    }
-
-    private func continueAfterHole() {
-        stopFeedback()
-        round.continueAfterHole()
-    }
-
-    private func playAgain() {
-        stopFeedback()
-        round.restart()
-        beginTurn()
-    }
-
-    private func quit() {
-        stopFeedback()
-        camera.tracker.setCalibration(nil)
-        flow.quitToMenu()
-    }
-
-    private func handleGesture(_ gesture: NavGesture) {
-        guard !rescanPresented, !tvSettingsPresented else { return }
-        switch round.phase {
-        case .ready:
-            let clubs = GolfClub.allCases
-            let index = clubs.firstIndex(of: round.club) ?? 0
-            switch gesture {
-            case .up: round.club = clubs[(index + clubs.count - 1) % clubs.count]
-            case .down: round.club = clubs[(index + 1) % clubs.count]
-            case .left: round.adjustAim(-round.aimStep)
-            case .right: round.adjustAim(round.aimStep)
-            case .select: break
-            }
-        case .charging: break
-        case .flying:
-            if gesture == .select || gesture == .right { round.skipFlight() }
-        case .landed:
-            if gesture == .left { round.replay() } else if gesture == .right || gesture == .select { nextShot() }
-        case .holed:
-            if gesture == .left { round.replay() } else if gesture == .right || gesture == .select { continueAfterHole() }
-        case .complete:
-            if gesture == .select || gesture == .right { playAgain() } else if gesture == .left { quit() }
-        }
-    }
-
-    private func updateInputs() {
-        let live = appPhase == .active && !rescanPresented && !tvSettingsPresented
-        UIApplication.shared.isIdleTimerDisabled = live && usesCamera
-        if live, swingInput == .phone { motion.start() } else { motion.stop() }
-        camera.gesturesEnabled = live && gesturesEnabled && usesCamera
-        if live, usesCamera { camera.start() } else { camera.stop() }
-    }
-
-    private func updateCameraExperiment() {
-        stopFeedback()
-        camera.resetAddress()
-        camera.tracker.setTracking(mode: depthExperiment ? .depthPreview : .body2D, framesPerSecond: capture60 ? 60 : 30, profile: .wideFront)
-        stageExpanded = true
-    }
-
-    // MARK: - Swinging
+    private func playAgain() { stopFeedback(); round.restart(); beginTurn() }
+    private func quit() { stopFeedback(); flow.quitToMenu() }
 
     private func handleSwing(_ event: SwingInputEvent) {
-        guard demoTask == nil, !tvSetupPending,
-              !usesCamera || lastTVSetupRequestID == tv.setupRequestID else { return }
+        guard demoTask == nil, sheet == nil, !paused, appPhase == .active,flyoverProgress == nil else { return }
         switch event {
-        case .load(let value):
-            guard round.canSwing else { return }
-            charge(value)
-        case .cancel:
-            if round.phase == .charging { stopFeedback() }
+        case .load(let value): if round.canSwing { charge(value) }
+        case .cancel: if round.phase == .charging { stopFeedback() }
         case .impact(let impact):
             guard round.canSwing else { return }
             round.charge(impact.power)
-            release(execution: impact)
+            // Phone impact is authoritative now; do not add a delayed animation before flight.
+            commitRelease(execution: impact)
         }
     }
 
     private func charge(_ power: Double) {
+        guard releaseTask == nil else { return }
         if round.phase == .ready { feedback.beginBackswing(interactive: true) }
         round.charge(power)
         feedback.updateTension(round.power)
         audio.tension(round.power)
     }
 
-    private func release(execution: SwingImpact? = nil) {
+    private func release(execution: SwingImpact) {
+        guard releaseTask == nil else { return }
+        if round.phase == .charging, round.power > 0, !reduceMotion {
+            let top = round.power * 150
+            releaseTask = Task { @MainActor in
+                defer { releaseTask = nil; authoredDownswingAngle = nil }
+                for frame in 0...12 {
+                    guard !Task.isCancelled else { return }
+                    let t = Double(frame) / 12
+                    authoredDownswingAngle = top * (1 - t * t)
+                    do { try await Task.sleep(for: .milliseconds(15)) } catch { return }
+                }
+                commitRelease(execution: execution)
+            }
+        } else { commitRelease(execution: execution) }
+    }
+
+    private func commitRelease(execution: SwingImpact) {
         feedback.endBackswing()
         audio.stop()
-        let power = round.power
-        if round.release(execution: execution), execution?.strike != .miss {
+        if round.release(execution: execution) {
             feedback.playImpact()
-            if !usesCamera { audio.whoosh(power: power) } // camera swings whoosh on the way down
-            audio.impact(club: round.club, strike: execution?.strike ?? .center, power: power)
-        } else if execution?.strike == .miss {
-            audio.whoosh(power: power)
+            audio.impact(club: round.club, strike: execution.strike, power: execution.power)
         }
+        scene.inputs = sceneInputs
     }
 
     private func demo() {
-        guard round.canSwing, demoTask == nil else { return }
+        guard round.canSwing, demoTask == nil, releaseTask == nil else { return }
         demoTask = Task { @MainActor in
             defer { demoTask = nil }
             for i in 1...10 {
@@ -655,6 +511,11 @@ struct CourseScreen: View {
     }
 
     private func stopFeedback() {
+        flyoverStarted=nil;flyoverProgress=nil
+        motion.disarm()
+        releaseTask?.cancel()
+        releaseTask = nil
+        authoredDownswingAngle = nil
         demoTask?.cancel()
         demoTask = nil
         feedback.endBackswing()

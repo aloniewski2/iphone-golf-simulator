@@ -91,6 +91,37 @@ final class CompleteGolfTests: XCTestCase {
         XCTAssertTrue(round.release())
     }
 
+    @MainActor func testPracticeImpactValidationWithoutCharging() {
+        let round = CourseRound()
+        XCTAssertFalse(round.recordPracticeImpact(SwingImpact(power: 0.5)))
+        round.practiceMode = true
+        for power in [Double.nan, .infinity, -.infinity, -0.1, 0] {
+            XCTAssertFalse(round.recordPracticeImpact(SwingImpact(power: power)))
+        }
+        for confidence in [Double.nan, .infinity, -.infinity, 0.44] {
+            XCTAssertFalse(round.recordPracticeImpact(SwingImpact(power: 0.5, confidence: confidence)))
+        }
+        XCTAssertNil(round.practiceImpact)
+        round.editingShot = true
+        XCTAssertFalse(round.recordPracticeImpact(SwingImpact(power: 0.5)))
+        round.editingShot = false
+        round.pause()
+        XCTAssertFalse(round.recordPracticeImpact(SwingImpact(power: 0.5)))
+        round.resume()
+        let ball = round.ball, scores = round.scores
+        XCTAssertTrue(round.recordPracticeImpact(SwingImpact(power: 1.2)))
+        XCTAssertEqual(round.practiceImpact?.power, 1)
+        XCTAssertEqual(round.phase, .ready)
+        XCTAssertEqual(round.power, 0)
+        XCTAssertNil(round.activeShot)
+        round.advance(at: .distantFuture)
+        XCTAssertEqual(round.ball, ball)
+        XCTAssertEqual(round.scores, scores)
+        XCTAssertEqual(round.strokes, 0)
+        round.practiceMode = false
+        XCTAssertNil(round.practiceImpact)
+    }
+
     @MainActor func testAutomaticAimPreviewMatchesChosenShot() {
         let round = CourseRound()
         round.automaticAim = true; round.shotShape = .fade; round.trajectory = .high

@@ -1,33 +1,42 @@
 import XCTest
+import SceneKit
 @testable import GolfArcade
 
 @MainActor
 final class TVDisplayTests: XCTestCase {
-    func testSetupRequestsNeverResetOrRescoreAnInFlightShot() throws {
-        let suite = "TVSetup.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        defer { defaults.removePersistentDomain(forName: suite) }
-        let display = GolfTVDisplay(defaults: defaults)
-        let round = CourseRound(defaults: defaults)
-        display.present(round: round, scene: CourseScene(), camera: CameraSwingController())
-        round.charge(0.6)
-        XCTAssertTrue(round.release())
-        let shot = round.activeShot
-        display.enabled = true
-        let first = display.setupRequestID
-        XCTAssertGreaterThan(first, 0)
-        display.enabled = true
-        XCTAssertEqual(display.setupRequestID, first, "An unchanged toggle cannot repeatedly recenter")
-        display.requestSetup()
-        XCTAssertEqual(display.setupRequestID, first + 1)
-        XCTAssertEqual(round.phase, .flying)
-        XCTAssertEqual(round.activeShot, shot)
-        XCTAssertEqual(round.strokes, 0)
-        for phase in [CourseRound.Phase.flying, .landed, .holed, .complete] {
-            XCTAssertFalse(CourseScreen.canReposition(for: phase))
-        }
-        XCTAssertTrue(CourseScreen.canReposition(for: .ready))
-        XCTAssertTrue(CourseScreen.canReposition(for: .charging))
+    func testRemovingPhoneRendererCannotStopTVAnimationClock() {
+        let scene = CourseScene()
+        scene.start()
+        XCTAssertTrue(scene.isAnimating)
+        let view = SCNView()
+        view.scene = scene.scene
+        CourseSceneView.dismantleUIView(view, coordinator: nil)
+        XCTAssertTrue(scene.isAnimating, "The course screen, not either renderer, owns animation")
+        XCTAssertNil(view.scene)
+        scene.stop()
+        XCTAssertFalse(scene.isAnimating)
+    }
+
+    func testTVObservesPhoneClubAimAndOneAuthoritativeShot() {
+        let round = CourseRound()
+        let scene = CourseScene()
+        let session = TVGameSession(round: round, scene: scene)
+        round.club = .iron9
+        round.adjustAim(14)
+        XCTAssertEqual(session.round.club, .iron9)
+        XCTAssertEqual(session.round.combinedAim, 14)
+        round.charge(0.5)
+        XCTAssertTrue(round.release(execution: SwingImpact(power: 0.5, source: .phone)))
+        XCTAssertEqual(session.round.phase, .flying)
+        XCTAssertEqual(session.round.activeShot, round.activeShot)
+        XCTAssertFalse(round.release(), "TV cannot cause a duplicate scored release")
+        scene.stop()
+    }
+
+
+    func testTVModeDefaultsOn() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        XCTAssertTrue(GolfTVDisplay(defaults: defaults).enabled)
     }
 
     func testPhoneSceneLeavesHostingToSwiftUI() {
@@ -46,19 +55,17 @@ final class TVDisplayTests: XCTestCase {
         let display = GolfTVDisplay(defaults: defaults)
         let round = CourseRound(defaults: defaults)
         let scene = CourseScene()
-        let camera = CameraSwingController()
-        display.present(round: round, scene: scene, camera: camera)
+        display.present(round: round, scene: scene)
         let session = try XCTUnwrap(display.session)
         round.charge(0.7)
         XCTAssertTrue(round.release())
         let shot = round.activeShot
         for enabled in [true, false, true, false] {
             display.enabled = enabled
-            display.present(round: round, scene: scene, camera: camera)
+            display.present(round: round, scene: scene)
             XCTAssertTrue(display.session === session)
             XCTAssertTrue(display.session?.round === round)
             XCTAssertTrue(display.session?.scene === scene)
-            XCTAssertTrue(display.session?.camera === camera)
             XCTAssertEqual(round.phase, .flying)
             XCTAssertEqual(round.activeShot, shot)
             XCTAssertEqual(round.strokes, 0)

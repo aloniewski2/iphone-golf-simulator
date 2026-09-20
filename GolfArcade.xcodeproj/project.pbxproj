@@ -9,90 +9,183 @@
 /* Begin PBXBuildFile section */
 		00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */; };
 		0280DB830A423B77A9AC2A86 /* PracticeRangeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346ACF6CEC4890FBBB6F7236 /* PracticeRangeScreen.swift */; };
+		030D26E0C032C3DAD31FD673 /* GolfSystems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41BD78C2EF9BAD952794DFA5 /* GolfSystems.swift */; };
+		03913E41531CDE40DDE7576B /* GolfRenderAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE7941152F08F869541D00D /* GolfRenderAudit.swift */; };
 		04907A7BD353EED3E8B9E79F /* GolfInteractions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4173A4A85FD4F7751A615D88 /* GolfInteractions.swift */; };
+		0674B6B1B94CDA2C08BA37F5 /* SunwardFairway.png in Resources */ = {isa = PBXBuildFile; fileRef = 4AFB256E8FEBE0DFF2BF1CED /* SunwardFairway.png */; };
+		091BF00CBFC4C419843A40DC /* ControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19515C2C268CD5CB3860EFF1 /* ControllerView.swift */; };
 		0B95806EE445C0EF8DC4BB46 /* SwingImpact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD758822149C0C93CC918872 /* SwingImpact.swift */; };
 		0C16012F28C037DE0E7CEF82 /* BallAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3309108562267B2C1CD3AB84 /* BallAddress.swift */; };
 		0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */; };
 		0CF38C038B18CFC413B7C04A /* GolferAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA1C280DEA0B9F0FC4588F2 /* GolferAppearance.swift */; };
+		0F61C3B6863BCF2B7B9DDBA8 /* Course-sunward-resort-v1-4.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6E1AEF7316FDCD4D4E94388C /* Course-sunward-resort-v1-4.usdz */; };
 		0F722471EBB6D4E0D95CEEB0 /* CameraSwingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EBE2055D56F3C9ECE1C89BF /* CameraSwingTests.swift */; };
+		101FB12D4515B5987AD941FD /* MotionPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BFEFD3AB62C825871E5205A /* MotionPipeline.swift */; };
+		10597E69F60A3025501750B9 /* NativePreview-sunward-3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 42E03A0EF6BE88559A94CB62 /* NativePreview-sunward-3.jpg */; };
 		11184170841E67FF9436A395 /* SourceVideoRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA249C25F6518321CD1FA78 /* SourceVideoRecorder.swift */; };
 		11C883ED4C07C15D2043B1E3 /* MenuStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22ABCF5897678A79FA0824EF /* MenuStyle.swift */; };
 		12FD8B61307452190A3C0BF9 /* CoursePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */; };
 		13077E68219F1A4231D4905A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 9D8DA788DC9EC0EBBE62EF01 /* README.md */; };
+		1E24F79D44D4826ED94ED791 /* SunwardMenu.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 28E035215554945E26294DD6 /* SunwardMenu.mp4 */; };
 		1E967823B751DADF356E8044 /* CameraStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C74ABFD8253CC16044C728 /* CameraStage.swift */; };
 		209463B41ECED8DACBC417AD /* GolfMechanicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA74FE0815D814ECF50AA970 /* GolfMechanicsTests.swift */; };
+		225D8B47EEEA9E6A127D4F40 /* NativePerformanceAudit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82185B899CE3EE25DB30D93F /* NativePerformanceAudit.swift */; };
+		29388D376A5B63AE84CC669D /* NativeCourseFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20951F9F055005677B99852F /* NativeCourseFraming.swift */; };
+		294C18BB053D8C077B64856E /* NativeGrassSurface.metal in Sources */ = {isa = PBXBuildFile; fileRef = 55D7EB91123D253A48CA89E9 /* NativeGrassSurface.metal */; };
+		29C2FF754ECBE89F279CFEBF /* Course-meadow-2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 337F8D095E5A2A944656C5EF /* Course-meadow-2.usdz */; };
+		2AC62768835C237E0D88E233 /* Course-pine-1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 97B71DFF6F97EDD984E3649B /* Course-pine-1.usdz */; };
+		2B0218AC843ED66BB68A084B /* SunwardHole-7.png in Resources */ = {isa = PBXBuildFile; fileRef = 29460B5B16314086340369D7 /* SunwardHole-7.png */; };
+		2B395991E80BA905A40E22C2 /* SunwardAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF34570A67524083F5F5F26 /* SunwardAsset.swift */; };
 		2D4608D2C0C93A787AEF5F18 /* CaptureEvidenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D00BFB83A7DF38C62A002E2 /* CaptureEvidenceTests.swift */; };
 		2E674C41652E54B2B5E9B9EA /* GolferAppearance+Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129E3A3D9A8EB66B1E25239E /* GolferAppearance+Rendering.swift */; };
 		2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */; };
+		2F63006E465A7E3803D0F36E /* NativePreview-sunward-resort-v1-3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7357E583B1827E5635069537 /* NativePreview-sunward-resort-v1-3.jpg */; };
 		2F8278F73F32DBCD35721B9C /* BenchmarkRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C369CFADB269389A28A582CD /* BenchmarkRecords.swift */; };
 		2FD1F57497820E3DB4061D31 /* BodyPose3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E20C8882313192878F8991 /* BodyPose3D.swift */; };
+		339934CA5759F14F97BB16E7 /* AuthoredGolfMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654A3F6EFC51208D417902EA /* AuthoredGolfMotion.swift */; };
+		35EA55ED2EF57AE2C6A2D656 /* Nature in Resources */ = {isa = PBXBuildFile; fileRef = 60C3DA0E873440A9ECE34B20 /* Nature */; };
+		36137EC4BE2747499A040B92 /* Reflections in Resources */ = {isa = PBXBuildFile; fileRef = 1AF45C427EAA8617EB760839 /* Reflections */; };
+		36FDFC9B15D57B58AF842755 /* Course-sunward-resort-v1-9.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 322988A3F2FC8DF0B6B2C3F6 /* Course-sunward-resort-v1-9.usdz */; };
+		37CDB019B3A33499B5BC9609 /* DisplayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B52EED448B9FCC0EF4CA51 /* DisplayCoordinator.swift */; };
 		38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78EF7010941BF7671DEFE0B /* PoseFrame.swift */; };
 		3F767DF876B7488F454B29C4 /* AvatarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */; };
+		40AEE38C34135F81F5B0274D /* Course-cliff-3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6D0B52E3E8CB78BB73192E9D /* Course-cliff-3.usdz */; };
+		40B45E44ACB008D95810F932 /* Course-sunward-3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = BE0EF47E02107C05331AAB4B /* Course-sunward-3.usdz */; };
 		44B24119B38BAD370122ADCE /* CameraSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115C55F00C9002F0C96850B /* CameraSwing.swift */; };
+		45012BDC83B3A72272CAD9A6 /* NativeBystanderPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 596A7B602373A3CE1259BF13 /* NativeBystanderPresentation.swift */; };
+		4E869CAEC1F1E50DF50040B8 /* SunwardHole-8.png in Resources */ = {isa = PBXBuildFile; fileRef = EC0F7B4D7890FBB642F1E070 /* SunwardHole-8.png */; };
 		506EC296282EF36A294FA1D4 /* ShotRecommendation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73AFF5CA63629AFD8A2BFC4 /* ShotRecommendation.swift */; };
+		51FF5DCD422B35F5E3860D51 /* NativePreview-sunward-resort-v1-4.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 09FDE962CD4469A417BABF11 /* NativePreview-sunward-resort-v1-4.jpg */; };
 		52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F447C72E9C246913F2534E /* SwingStateMachine.swift */; };
 		52E4CA6A4CA91872BA574B5D /* SwingRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9692821E4474822BE46A669 /* SwingRecorder.swift */; };
 		5B4C2F30022597E76E91247D /* SwingReaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C849D74D9AA308C970BB9DD /* SwingReaction.swift */; };
 		5FB56FE29D65A7457E8028F6 /* ShotCameraDirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C235E90556EDC2E499C10EC /* ShotCameraDirector.swift */; };
+		62ADA960676CAE30A7EE4AC3 /* NativeGreenRead.metal in Sources */ = {isa = PBXBuildFile; fileRef = E70D6116012912EF0944BA7D /* NativeGreenRead.metal */; };
 		62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */; };
 		660C813F36FAB258E54F6369 /* GolferAnimationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9BF2217F2C8D463AE59E596 /* GolferAnimationState.swift */; };
+		673FF123C5D50EC0948A90FB /* NativePreview-meadow-3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 40BDBD8AEEB48486905FD9BA /* NativePreview-meadow-3.jpg */; };
+		6772BCA7DC147CC04CF6AC7D /* SunwardRough.png in Resources */ = {isa = PBXBuildFile; fileRef = 327BD8DE4A0A1FCBCA4005A0 /* SunwardRough.png */; };
 		684D8B4894FAB92E11F8B088 /* CourseShot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBE2548C3108DD3902B958C /* CourseShot.swift */; };
+		6BBC13E5B179DAF39F7004FC /* NativeReleaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C766ACEB312FDA0A023B3F55 /* NativeReleaseTests.swift */; };
+		6BC1BDAB053D21B04A28E362 /* NativePreview-cliff-3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 50BF194EBDD8146535E3B2D9 /* NativePreview-cliff-3.jpg */; };
+		6DBF31CDFDFF378E59C86B0A /* NativePreview-sunward-resort-v1-9.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 5AC0D396A88B7A5B0E71C641 /* NativePreview-sunward-resort-v1-9.jpg */; };
+		6FB5B5D6F61CCD62DB00B507 /* Course-meadow-3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 44B9675699436AA2CAE88096 /* Course-meadow-3.usdz */; };
+		72E56C831E2DF00D508DA457 /* Course-sunward-resort-v1-7.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 34DD8BA1A08099D96E190698 /* Course-sunward-resort-v1-7.usdz */; };
 		74495C947118F262F08C89B7 /* CaptureCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */; };
+		7630AB5D76AB3A91707B9731 /* NativePreview-meadow-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8223400284FCD4E20519AD49 /* NativePreview-meadow-1.jpg */; };
 		7653186180DEC611702F898B /* CourseSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */; };
 		76EB609F6FBDACDDE0ADB376 /* CameraClubOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69F615D25004B6A67EDF53 /* CameraClubOverlay.swift */; };
+		779E9C0AB54AF3C305CA4623 /* NativePreview-sunward-resort-v1-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F8340634B7CDA55EDCEDAFC7 /* NativePreview-sunward-resort-v1-1.jpg */; };
+		77DAADE79C060815A109A52E /* SunwardGolfer.golfmesh in Resources */ = {isa = PBXBuildFile; fileRef = 32FD8561633CDAB4E94FC736 /* SunwardGolfer.golfmesh */; };
+		798F9EFDA2CF206B06070CBB /* Course-sunward-resort-v1-8.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6316128901E41A36962EC6AC /* Course-sunward-resort-v1-8.usdz */; };
+		7A932A2299A209F22FFE4FC7 /* Course-meadow-1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 32B7E3BD662460B6B27DCF7D /* Course-meadow-1.usdz */; };
 		7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */; };
+		7BA94FC12E318049E7C3C460 /* SunwardHole-9.png in Resources */ = {isa = PBXBuildFile; fileRef = AC1C70F7C2356998EDFF9C03 /* SunwardHole-9.png */; };
 		7C84B58C3940D4EA7F0D344C /* VisualAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CABE48747E091D3114CE75 /* VisualAssetTests.swift */; };
 		7DAA43A8FC1D8AC77973D069 /* AvatarAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */; };
 		7E73054BAFA78656D2034D6C /* GolferEyes.png in Resources */ = {isa = PBXBuildFile; fileRef = F9BF0F1A3BA4FD2C292D3C61 /* GolferEyes.png */; };
 		80F8C1776FC2ECC001C3FC2A /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121EF35B107A6679745CC5B /* BenchmarkTests.swift */; };
 		8315CEB22EDCACCAE095B54A /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5107A8CC1C4F7BFE20F49411 /* Player.swift */; };
+		86B29C20AD4B9DEE4D220358 /* GreenReadPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = F799C4E293E91AA0F86D66EE /* GreenReadPattern.swift */; };
+		86CFE7A7001D1EEA02F8BF0B /* NativePreview-sunward-resort-v1-6.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 26659B29127BEF89E5C16BB6 /* NativePreview-sunward-resort-v1-6.jpg */; };
+		880961D84BFC9EAB6952B2DA /* Course-sunward-resort-v1-3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 4CDCB78912EC369A5B97C240 /* Course-sunward-resort-v1-3.usdz */; };
 		8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B1FAF9F257610A76213E8E /* TerrainTests.swift */; };
+		88A60E1A0CBF24905755FC76 /* GolfImpactEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2739A52D4175750F99250E1B /* GolfImpactEffects.swift */; };
 		88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */; };
+		8971CC468BD35BC6AA3680B6 /* NativePreview-sunward-2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8E7660D05F109D66541F7BC6 /* NativePreview-sunward-2.jpg */; };
+		8A2243ABEB7A3EABEC75A901 /* Course-cliff-2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 388DBD6DC01B44F35245F0C1 /* Course-cliff-2.usdz */; };
 		8AAA052287E1B92E7288CB10 /* CourseScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D4E03E0C94BE43DCA09EE7 /* CourseScene.swift */; };
 		8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688BBD46E66F60CA14F978A3 /* Course.swift */; };
+		8BCA31C62388D925AF60BD88 /* NativeGreenRead.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF7E8A73C337C63848EDBBF5 /* NativeGreenRead.swift */; };
+		900C0CB5A1E251D1955A56C8 /* Course-sunward-2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 77EF292DE6EDC08E6145F0EC /* Course-sunward-2.usdz */; };
 		914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */; };
 		917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */; };
 		92259CA63028678B96DA3713 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03497F0C3431B14DAD79FC85 /* ContentView.swift */; };
+		925BE87E7E82770D282C004D /* SunwardUpgradeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95470C60F7522C4CB3724263 /* SunwardUpgradeTests.swift */; };
 		931E672E49CC17F15DA93AFD /* ClubGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094E3D5A7422CE9AB30FC8D2 /* ClubGeometry.swift */; };
+		95E0595428091519EABA3907 /* NativePreview-sunward-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 25E02FAF4C90DC7A4E31BB6F /* NativePreview-sunward-1.jpg */; };
 		962B128977D0C190DC669224 /* TVDisplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91B4885D85805ADA35A48A0 /* TVDisplayTests.swift */; };
+		972427823536A9114D3CFD90 /* NativePreview-sunward-resort-v1-8.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D7514BFA489F3B14D2EAF3B4 /* NativePreview-sunward-resort-v1-8.jpg */; };
 		97737F2DFA25E2044809A161 /* CameraPoseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */; };
+		99F615AC9BE8E139BC4E6664 /* SunwardHole-5.png in Resources */ = {isa = PBXBuildFile; fileRef = 9E012F41EE81F13FF348DC5F /* SunwardHole-5.png */; };
+		9ABA76BE873B702B6DBCD98E /* NativeAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759E605500971367887C06E2 /* NativeAssets.swift */; };
+		9ADFD46227AC08665C1B51D0 /* SunwardHole-2.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A9C2F50A78905DC8B40CB78 /* SunwardHole-2.png */; };
 		9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */; };
 		9E744747811CCBFDBF183323 /* ArmSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01F0820788F6C3D3D9E7235 /* ArmSwing.swift */; };
+		9EAC0E0056E22B6FC2C8ACFE /* SunwardRocks.golfmesh in Resources */ = {isa = PBXBuildFile; fileRef = 6E1F74E169B5DB3E0A5A82D5 /* SunwardRocks.golfmesh */; };
 		A024A03F17F2DB843F0924BF /* PoseRetargeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A84309947D51CAD158497D0 /* PoseRetargeter.swift */; };
+		A032260259ED775A761A73C9 /* NativePreview-sunward-resort-v1-2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7DB4281C156608526A4CB987 /* NativePreview-sunward-resort-v1-2.jpg */; };
 		A0943626B57D8DD8130CC30E /* DisplayLatencyMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */; };
 		A14FC629C79C552165B1C52E /* AvatarRig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */; };
+		A5677C8A3697DFB528E43287 /* Course-pine-2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1305F10AFDCA7D1E82D9D9B5 /* Course-pine-2.usdz */; };
+		A667B08EB91E7010D00CCA25 /* NativeMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A8D97569BBE9635C4A271D /* NativeMotionTests.swift */; };
+		B1268C98290A823E6A14839C /* SunwardHole-6.png in Resources */ = {isa = PBXBuildFile; fileRef = 5052929771CBB6963ACFB8D4 /* SunwardHole-6.png */; };
 		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
+		B345D654E0EDF131FE054D93 /* NativePreview-pine-3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E34890BBBAA7289AD420C3FD /* NativePreview-pine-3.jpg */; };
+		B468663ED68DFD4C23F3BFE0 /* NativePreview-meadow-2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 78E59BEB7BAF95586BB61F94 /* NativePreview-meadow-2.jpg */; };
 		B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1835B1CB285BF21CF93D755 /* RangeView.swift */; };
+		BABEA0831497C62EDEF904E1 /* Course-sunward-resort-v1-6.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 0E1D88F2AE486480FB1015ED /* Course-sunward-resort-v1-6.usdz */; };
+		BB505835DC69EF4068840F86 /* NativeWaterSurface.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2B0975101C4715437F57F53C /* NativeWaterSurface.metal */; };
 		BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */; };
 		C01E71BDD6D5B002276FBE01 /* CourseRound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A27818779D46747D3552626 /* CourseRound.swift */; };
+		C1AA2AB9BE653C0A0F705F2A /* CourseSurfaceDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFBA2ADCB6CAAA84798CBB8 /* CourseSurfaceDetail.swift */; };
+		C21940250518290E5282F617 /* Course-sunward-1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = EA9A6DCEF9206DFDADBFE7C5 /* Course-sunward-1.usdz */; };
+		C26034535089B781ED4A967C /* NativeGolfer.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1EA02100E087D80D58D111E1 /* NativeGolfer.usdz */; };
 		C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */; };
+		C382B0DBA3A02CB4F11575CF /* NativeWaterSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BAB7AA4E3F5AE2A20FEE1A /* NativeWaterSurface.swift */; };
 		C3D6FE8301761453D4371FF3 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */; };
+		C3EFADB2FE5AAD6506423E29 /* NativePreview-cliff-2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9E61BFD355379E59B8DF16A7 /* NativePreview-cliff-2.jpg */; };
+		C4245540815DA61004A18648 /* Course-sunward-resort-v1-5.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 7F301E3F7263CFBBA84937A4 /* Course-sunward-resort-v1-5.usdz */; };
 		C67AA3E7D3C6785A86D423B2 /* GolferAppearanceEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B325017051A9C8E52CA62B /* GolferAppearanceEditor.swift */; };
+		C7DD55287F4F4294E5836218 /* NativePreview-pine-2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 213FC203DE70647C7AE86ED0 /* NativePreview-pine-2.jpg */; };
+		C7E062E7CC83A26972F89D49 /* GameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C7A2B2306FCC5E78D51BA1 /* GameSession.swift */; };
 		C8CFD4B78F4108D946ECCF28 /* ClubRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FE18C940B6AE0041EEBF66 /* ClubRail.swift */; };
 		C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */; };
 		CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */; };
 		CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */; };
 		D05D270E5451A04EFB9D23C4 /* Quaternius-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E844E6FB495FD27970BC5A46 /* Quaternius-LICENSE.txt */; };
 		D08ED6853665D67E2BA85147 /* ClubContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAD2AB7456C75039060C858 /* ClubContact.swift */; };
+		D180069A4C023E63D0878FEE /* NativeCourseEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E26A44C2C0891B3681944B7 /* NativeCourseEffects.swift */; };
 		D2D9E812C370D5F0DA350FC3 /* ResortGolferSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512C82632575067B96CFA07D /* ResortGolferSkin.swift */; };
+		D3ED3D10C7B72765161F20AE /* MotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C394C765156FC613D4B6424E /* MotionManager.swift */; };
+		D40F7B2BAE93106EBC08306E /* GolfNativeAssets.json in Resources */ = {isa = PBXBuildFile; fileRef = CCD355D7D47B65CD9429DB1B /* GolfNativeAssets.json */; };
 		D4CCB6A81B4FB839DC26A2FF /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */; };
 		D54114C7FDF8FACD56EB9709 /* CompleteGolfTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 096173B260AFF83F3AFBA372 /* CompleteGolfTests.swift */; };
+		D6E982028C5BB013938D81C4 /* Course-pine-3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8D120893E767215D8B0775D5 /* Course-pine-3.usdz */; };
 		D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */; };
 		D9CBA37EF87EF998A3EFB916 /* ResortGolfer.golfmesh in Resources */ = {isa = PBXBuildFile; fileRef = AB0EDE6A71B798CA3A57731B /* ResortGolfer.golfmesh */; };
+		DAD73F55847518FA41F9B0D4 /* NativePreview-sunward-resort-v1-5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 77DAD39556A78BF059DD5ED4 /* NativePreview-sunward-resort-v1-5.jpg */; };
 		DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D55F28D1B7EEB093E07C923A /* ArcadeView.swift */; };
+		DF7237CF314316934716915A /* SunwardMotion.json in Resources */ = {isa = PBXBuildFile; fileRef = 2DAC387980B771D176452872 /* SunwardMotion.json */; };
 		E24A502FB0E680DB00BAF738 /* GameFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956138E08C2FF6C5BB5A811 /* GameFlow.swift */; };
+		E3C55A6FA9EC2A11559AB546 /* Course-sunward-resort-v1-1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 12BA1F3453521ED2631951F2 /* Course-sunward-resort-v1-1.usdz */; };
 		E4668B09D9351FCE1CC9D6C0 /* GolferSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471206D5B871D78848EEFBB2 /* GolferSkin.swift */; };
+		E4AB7B3AE8A2FC54F1139364 /* SunwardHole-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 67F7288816EBEE6CF59D4D62 /* SunwardHole-3.png */; };
 		E838D05DC5448102B55FBBEF /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3A8102C636BC61EA80A0B7 /* CalibrationView.swift */; };
 		E877C0BB298E15987592F562 /* PlayerSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9346BDAD7014806EE0A16EB /* PlayerSetupView.swift */; };
 		E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */; };
+		EA88F85CA8B788A1DFC728F0 /* SunwardHole-4.png in Resources */ = {isa = PBXBuildFile; fileRef = C5C3E3DC0E5F649F5D8C2EF3 /* SunwardHole-4.png */; };
+		EB7A4ACE5836F04C610FBC66 /* PhoneMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80FFF2BFF9ED1806632B66FE /* PhoneMotionController.swift */; };
+		ED4836EF9E41636594CCE0E6 /* NativeArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85515D1F73A71789E5C8D873 /* NativeArchitectureTests.swift */; };
 		EF0F25F6D48F9AA018DBDE3F /* PoseDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */; };
 		EF839F728A10D18A2FF3884B /* PlayerCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */; };
 		EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E90B0F05E735C3FCB7D843F /* FlightPath.swift */; };
+		EF9A6C3D886E924A85910C36 /* SunwardHole-1.png in Resources */ = {isa = PBXBuildFile; fileRef = BE6558F7C81C9855B7FEB77E /* SunwardHole-1.png */; };
+		F095A83B111BEBA8673AE89E /* SunwardSand.png in Resources */ = {isa = PBXBuildFile; fileRef = D128C7D267CF2827C987E75A /* SunwardSand.png */; };
 		F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08572299F1239F439E5A477B /* ShotResultCard.swift */; };
+		F57ED5E35381111EFF2705A4 /* NativeGrassSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C41753C2D69CB05A047ACF /* NativeGrassSurface.swift */; };
+		F6312A657405E69AE7E28C26 /* NativePreview-sunward-resort-v1-7.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FF4F645826F0558B47F5927B /* NativePreview-sunward-resort-v1-7.jpg */; };
+		F795F5967842B39EF61D55D3 /* NativePreview-cliff-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 0C64C9A61754F98BC1826E8B /* NativePreview-cliff-1.jpg */; };
 		FB048E2BB4BC7DA06F1CED5C /* MotionSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D807DCA06067D7507F3487F /* MotionSwing.swift */; };
 		FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38539761E1BFA7845BA2C9CB /* ShotEngine.swift */; };
+		FBF1BCA2A3D34C9E556D10C6 /* GameViewportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A27B625B87C43ACD8A8C23AA /* GameViewportController.swift */; };
 		FC172C914CB91DE00136D536 /* RangePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A171AE30769CF263BBFEABE1 /* RangePlayTests.swift */; };
+		FC2B17AB9D924E5C9D75A34A /* NativePerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7872205EF75662FC98E4966F /* NativePerformanceTests.swift */; };
 		FC34FC26D4B7E98D9F1021FE /* CourseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */; };
+		FC800D4E5EBB62D1378842D2 /* Course-sunward-resort-v1-2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 4A70A7587FBD319980A47467 /* Course-sunward-resort-v1-2.usdz */; };
+		FCAFF536435AE3BADE1DD02E /* Course-cliff-1.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 67BCA0F59AB37423634F09CD /* Course-cliff-1.usdz */; };
+		FD1AF9A642523970F8296CC4 /* NativePreview-pine-1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6E21F02948325E4D1C9C8CA2 /* NativePreview-pine-1.jpg */; };
+		FD22270C433B4A1711790F99 /* SunwardTree.golfmesh in Resources */ = {isa = PBXBuildFile; fileRef = 7E71673FE0DEE1D2BFEC31D4 /* SunwardTree.golfmesh */; };
 		FD91DE0FEBA483FFB03282C5 /* BallFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC1296D3AF134EB68A180B8 /* BallFlight.swift */; };
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
 		FF55C871ADCD990F2258DCB3 /* ExternalDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF32F75918A4AC0E5D29EE1 /* ExternalDisplay.swift */; };
@@ -121,63 +214,135 @@
 		08572299F1239F439E5A477B /* ShotResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotResultCard.swift; sourceTree = "<group>"; };
 		094E3D5A7422CE9AB30FC8D2 /* ClubGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubGeometry.swift; sourceTree = "<group>"; };
 		096173B260AFF83F3AFBA372 /* CompleteGolfTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteGolfTests.swift; sourceTree = "<group>"; };
+		09FDE962CD4469A417BABF11 /* NativePreview-sunward-resort-v1-4.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-4.jpg"; sourceTree = "<group>"; };
 		0A580368EAB1EE7F71B7FE0B /* GolfArcadeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A69F615D25004B6A67EDF53 /* CameraClubOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraClubOverlay.swift; sourceTree = "<group>"; };
+		0C64C9A61754F98BC1826E8B /* NativePreview-cliff-1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-cliff-1.jpg"; sourceTree = "<group>"; };
 		0D00BFB83A7DF38C62A002E2 /* CaptureEvidenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureEvidenceTests.swift; sourceTree = "<group>"; };
+		0E1D88F2AE486480FB1015ED /* Course-sunward-resort-v1-6.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-6.usdz"; sourceTree = "<group>"; };
+		0E26A44C2C0891B3681944B7 /* NativeCourseEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCourseEffects.swift; sourceTree = "<group>"; };
 		0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseSkeletonView.swift; sourceTree = "<group>"; };
 		129E3A3D9A8EB66B1E25239E /* GolferAppearance+Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GolferAppearance+Rendering.swift"; sourceTree = "<group>"; };
+		12BA1F3453521ED2631951F2 /* Course-sunward-resort-v1-1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-1.usdz"; sourceTree = "<group>"; };
+		1305F10AFDCA7D1E82D9D9B5 /* Course-pine-2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-pine-2.usdz"; sourceTree = "<group>"; };
 		188E8707AD95370AAB8E34B6 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
+		19515C2C268CD5CB3860EFF1 /* ControllerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerView.swift; sourceTree = "<group>"; };
+		1A9C2F50A78905DC8B40CB78 /* SunwardHole-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-2.png"; sourceTree = "<group>"; };
+		1AF45C427EAA8617EB760839 /* Reflections */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Reflections; path = GolfArcade/Resources/Reflections; sourceTree = SOURCE_ROOT; };
+		1EA02100E087D80D58D111E1 /* NativeGolfer.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = NativeGolfer.usdz; sourceTree = "<group>"; };
+		20951F9F055005677B99852F /* NativeCourseFraming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeCourseFraming.swift; sourceTree = "<group>"; };
 		20C74ABFD8253CC16044C728 /* CameraStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStage.swift; sourceTree = "<group>"; };
+		213FC203DE70647C7AE86ED0 /* NativePreview-pine-2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-pine-2.jpg"; sourceTree = "<group>"; };
 		22ABCF5897678A79FA0824EF /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
+		25E02FAF4C90DC7A4E31BB6F /* NativePreview-sunward-1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-1.jpg"; sourceTree = "<group>"; };
+		26659B29127BEF89E5C16BB6 /* NativePreview-sunward-resort-v1-6.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-6.jpg"; sourceTree = "<group>"; };
 		26E42D26FB552EFD85AFADD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2739A52D4175750F99250E1B /* GolfImpactEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfImpactEffects.swift; sourceTree = "<group>"; };
+		28E035215554945E26294DD6 /* SunwardMenu.mp4 */ = {isa = PBXFileReference; path = SunwardMenu.mp4; sourceTree = "<group>"; };
+		29460B5B16314086340369D7 /* SunwardHole-7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-7.png"; sourceTree = "<group>"; };
+		2B0975101C4715437F57F53C /* NativeWaterSurface.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = NativeWaterSurface.metal; sourceTree = "<group>"; };
 		2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCapabilities.swift; sourceTree = "<group>"; };
+		2BFEFD3AB62C825871E5205A /* MotionPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionPipeline.swift; sourceTree = "<group>"; };
 		2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeTests.swift; sourceTree = "<group>"; };
+		2DAC387980B771D176452872 /* SunwardMotion.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SunwardMotion.json; sourceTree = "<group>"; };
+		322988A3F2FC8DF0B6B2C3F6 /* Course-sunward-resort-v1-9.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-9.usdz"; sourceTree = "<group>"; };
+		327BD8DE4A0A1FCBCA4005A0 /* SunwardRough.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SunwardRough.png; sourceTree = "<group>"; };
+		32B7E3BD662460B6B27DCF7D /* Course-meadow-1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-meadow-1.usdz"; sourceTree = "<group>"; };
+		32FD8561633CDAB4E94FC736 /* SunwardGolfer.golfmesh */ = {isa = PBXFileReference; path = SunwardGolfer.golfmesh; sourceTree = "<group>"; };
 		3309108562267B2C1CD3AB84 /* BallAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallAddress.swift; sourceTree = "<group>"; };
+		337F8D095E5A2A944656C5EF /* Course-meadow-2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-meadow-2.usdz"; sourceTree = "<group>"; };
 		346ACF6CEC4890FBBB6F7236 /* PracticeRangeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRangeScreen.swift; sourceTree = "<group>"; };
+		34DD8BA1A08099D96E190698 /* Course-sunward-resort-v1-7.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-7.usdz"; sourceTree = "<group>"; };
 		38539761E1BFA7845BA2C9CB /* ShotEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotEngine.swift; sourceTree = "<group>"; };
+		388DBD6DC01B44F35245F0C1 /* Course-cliff-2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-cliff-2.usdz"; sourceTree = "<group>"; };
 		39FE18C940B6AE0041EEBF66 /* ClubRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubRail.swift; sourceTree = "<group>"; };
 		3A27818779D46747D3552626 /* CourseRound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRound.swift; sourceTree = "<group>"; };
 		3BBE2548C3108DD3902B958C /* CourseShot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseShot.swift; sourceTree = "<group>"; };
+		3CF34570A67524083F5F5F26 /* SunwardAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunwardAsset.swift; sourceTree = "<group>"; };
+		40BDBD8AEEB48486905FD9BA /* NativePreview-meadow-3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-meadow-3.jpg"; sourceTree = "<group>"; };
 		4173A4A85FD4F7751A615D88 /* GolfInteractions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfInteractions.swift; sourceTree = "<group>"; };
+		41BD78C2EF9BAD952794DFA5 /* GolfSystems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfSystems.swift; sourceTree = "<group>"; };
+		42E03A0EF6BE88559A94CB62 /* NativePreview-sunward-3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-3.jpg"; sourceTree = "<group>"; };
+		44B9675699436AA2CAE88096 /* Course-meadow-3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-meadow-3.usdz"; sourceTree = "<group>"; };
 		45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackOverlay.swift; sourceTree = "<group>"; };
 		471206D5B871D78848EEFBB2 /* GolferSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolferSkin.swift; sourceTree = "<group>"; };
 		4956138E08C2FF6C5BB5A811 /* GameFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameFlow.swift; sourceTree = "<group>"; };
+		4A70A7587FBD319980A47467 /* Course-sunward-resort-v1-2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-2.usdz"; sourceTree = "<group>"; };
+		4AFB256E8FEBE0DFF2BF1CED /* SunwardFairway.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SunwardFairway.png; sourceTree = "<group>"; };
 		4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackController.swift; sourceTree = "<group>"; };
 		4C235E90556EDC2E499C10EC /* ShotCameraDirector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotCameraDirector.swift; sourceTree = "<group>"; };
+		4CDCB78912EC369A5B97C240 /* Course-sunward-resort-v1-3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-3.usdz"; sourceTree = "<group>"; };
 		4DAD2AB7456C75039060C858 /* ClubContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubContact.swift; sourceTree = "<group>"; };
 		4EA1C280DEA0B9F0FC4588F2 /* GolferAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolferAppearance.swift; sourceTree = "<group>"; };
 		4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPoseTracker.swift; sourceTree = "<group>"; };
+		5052929771CBB6963ACFB8D4 /* SunwardHole-6.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-6.png"; sourceTree = "<group>"; };
 		505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePanels.swift; sourceTree = "<group>"; };
+		50BF194EBDD8146535E3B2D9 /* NativePreview-cliff-3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-cliff-3.jpg"; sourceTree = "<group>"; };
 		5107A8CC1C4F7BFE20F49411 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		512C82632575067B96CFA07D /* ResortGolferSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResortGolferSkin.swift; sourceTree = "<group>"; };
+		55D7EB91123D253A48CA89E9 /* NativeGrassSurface.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = NativeGrassSurface.metal; sourceTree = "<group>"; };
+		596A7B602373A3CE1259BF13 /* NativeBystanderPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeBystanderPresentation.swift; sourceTree = "<group>"; };
 		5A84309947D51CAD158497D0 /* PoseRetargeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseRetargeter.swift; sourceTree = "<group>"; };
+		5AC0D396A88B7A5B0E71C641 /* NativePreview-sunward-resort-v1-9.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-9.jpg"; sourceTree = "<group>"; };
 		5E90B0F05E735C3FCB7D843F /* FlightPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPath.swift; sourceTree = "<group>"; };
 		60B1FAF9F257610A76213E8E /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
+		60C3DA0E873440A9ECE34B20 /* Nature */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Nature; path = GolfArcade/Resources/Nature; sourceTree = SOURCE_ROOT; };
 		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
+		6316128901E41A36962EC6AC /* Course-sunward-resort-v1-8.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-8.usdz"; sourceTree = "<group>"; };
+		654A3F6EFC51208D417902EA /* AuthoredGolfMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthoredGolfMotion.swift; sourceTree = "<group>"; };
 		65CABE48747E091D3114CE75 /* VisualAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualAssetTests.swift; sourceTree = "<group>"; };
 		67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCalibration.swift; sourceTree = "<group>"; };
+		67BCA0F59AB37423634F09CD /* Course-cliff-1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-cliff-1.usdz"; sourceTree = "<group>"; };
+		67F7288816EBEE6CF59D4D62 /* SunwardHole-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-3.png"; sourceTree = "<group>"; };
 		688BBD46E66F60CA14F978A3 /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
+		6D0B52E3E8CB78BB73192E9D /* Course-cliff-3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-cliff-3.usdz"; sourceTree = "<group>"; };
+		6E1AEF7316FDCD4D4E94388C /* Course-sunward-resort-v1-4.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-4.usdz"; sourceTree = "<group>"; };
+		6E1F74E169B5DB3E0A5A82D5 /* SunwardRocks.golfmesh */ = {isa = PBXFileReference; path = SunwardRocks.golfmesh; sourceTree = "<group>"; };
+		6E21F02948325E4D1C9C8CA2 /* NativePreview-pine-1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-pine-1.jpg"; sourceTree = "<group>"; };
 		6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeAudio.swift; sourceTree = "<group>"; };
 		71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeApp.swift; sourceTree = "<group>"; };
+		7357E583B1827E5635069537 /* NativePreview-sunward-resort-v1-3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-3.jpg"; sourceTree = "<group>"; };
+		759E605500971367887C06E2 /* NativeAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAssets.swift; sourceTree = "<group>"; };
+		77DAD39556A78BF059DD5ED4 /* NativePreview-sunward-resort-v1-5.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-5.jpg"; sourceTree = "<group>"; };
+		77EF292DE6EDC08E6145F0EC /* Course-sunward-2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-2.usdz"; sourceTree = "<group>"; };
+		7872205EF75662FC98E4966F /* NativePerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePerformanceTests.swift; sourceTree = "<group>"; };
+		78B52EED448B9FCC0EF4CA51 /* DisplayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayCoordinator.swift; sourceTree = "<group>"; };
+		78E59BEB7BAF95586BB61F94 /* NativePreview-meadow-2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-meadow-2.jpg"; sourceTree = "<group>"; };
 		7C849D74D9AA308C970BB9DD /* SwingReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingReaction.swift; sourceTree = "<group>"; };
+		7DB4281C156608526A4CB987 /* NativePreview-sunward-resort-v1-2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-2.jpg"; sourceTree = "<group>"; };
+		7E71673FE0DEE1D2BFEC31D4 /* SunwardTree.golfmesh */ = {isa = PBXFileReference; path = SunwardTree.golfmesh; sourceTree = "<group>"; };
 		7EBE2055D56F3C9ECE1C89BF /* CameraSwingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSwingTests.swift; sourceTree = "<group>"; };
+		7F301E3F7263CFBBA84937A4 /* Course-sunward-resort-v1-5.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-resort-v1-5.usdz"; sourceTree = "<group>"; };
+		80FFF2BFF9ED1806632B66FE /* PhoneMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneMotionController.swift; sourceTree = "<group>"; };
+		82185B899CE3EE25DB30D93F /* NativePerformanceAudit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePerformanceAudit.swift; sourceTree = "<group>"; };
+		8223400284FCD4E20519AD49 /* NativePreview-meadow-1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-meadow-1.jpg"; sourceTree = "<group>"; };
+		85515D1F73A71789E5C8D873 /* NativeArchitectureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeArchitectureTests.swift; sourceTree = "<group>"; };
 		8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarTests.swift; sourceTree = "<group>"; };
+		8D120893E767215D8B0775D5 /* Course-pine-3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-pine-3.usdz"; sourceTree = "<group>"; };
 		8D807DCA06067D7507F3487F /* MotionSwing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwing.swift; sourceTree = "<group>"; };
+		8E7660D05F109D66541F7BC6 /* NativePreview-sunward-2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-2.jpg"; sourceTree = "<group>"; };
 		90B325017051A9C8E52CA62B /* GolferAppearanceEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolferAppearanceEditor.swift; sourceTree = "<group>"; };
 		92F02AE9F698900B513CCC9C /* GolfArcadeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		95470C60F7522C4CB3724263 /* SunwardUpgradeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunwardUpgradeTests.swift; sourceTree = "<group>"; };
 		96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
+		97B71DFF6F97EDD984E3649B /* Course-pine-1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-pine-1.usdz"; sourceTree = "<group>"; };
 		9BC1296D3AF134EB68A180B8 /* BallFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallFlight.swift; sourceTree = "<group>"; };
 		9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizerTests.swift; sourceTree = "<group>"; };
 		9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
 		9D8DA788DC9EC0EBBE62EF01 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		9E012F41EE81F13FF348DC5F /* SunwardHole-5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-5.png"; sourceTree = "<group>"; };
 		9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeLab.swift; sourceTree = "<group>"; };
+		9E61BFD355379E59B8DF16A7 /* NativePreview-cliff-2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-cliff-2.jpg"; sourceTree = "<group>"; };
 		A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLatencyMeasurement.swift; sourceTree = "<group>"; };
 		A121EF35B107A6679745CC5B /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
 		A171AE30769CF263BBFEABE1 /* RangePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangePlayTests.swift; sourceTree = "<group>"; };
 		A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
+		A27B625B87C43ACD8A8C23AA /* GameViewportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewportController.swift; sourceTree = "<group>"; };
 		A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDelivery.swift; sourceTree = "<group>"; };
+		A6C41753C2D69CB05A047ACF /* NativeGrassSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGrassSurface.swift; sourceTree = "<group>"; };
 		A9BF2217F2C8D463AE59E596 /* GolferAnimationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolferAnimationState.swift; sourceTree = "<group>"; };
 		AB0EDE6A71B798CA3A57731B /* ResortGolfer.golfmesh */ = {isa = PBXFileReference; path = ResortGolfer.golfmesh; sourceTree = "<group>"; };
+		AC1C70F7C2356998EDFF9C03 /* SunwardHole-9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-9.png"; sourceTree = "<group>"; };
 		B1835B1CB285BF21CF93D755 /* RangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeView.swift; sourceTree = "<group>"; };
 		B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
 		B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarRig.swift; sourceTree = "<group>"; };
@@ -186,29 +351,50 @@
 		BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwingDetectorTests.swift; sourceTree = "<group>"; };
 		BD758822149C0C93CC918872 /* SwingImpact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingImpact.swift; sourceTree = "<group>"; };
 		BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingMetrics.swift; sourceTree = "<group>"; };
+		BE0EF47E02107C05331AAB4B /* Course-sunward-3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-3.usdz"; sourceTree = "<group>"; };
+		BE6558F7C81C9855B7FEB77E /* SunwardHole-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-1.png"; sourceTree = "<group>"; };
+		BFE7941152F08F869541D00D /* GolfRenderAudit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfRenderAudit.swift; sourceTree = "<group>"; };
 		C369CFADB269389A28A582CD /* BenchmarkRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkRecords.swift; sourceTree = "<group>"; };
 		C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAnimations.swift; sourceTree = "<group>"; };
+		C394C765156FC613D4B6424E /* MotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionManager.swift; sourceTree = "<group>"; };
 		C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSelectView.swift; sourceTree = "<group>"; };
+		C5C3E3DC0E5F649F5D8C2EF3 /* SunwardHole-4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-4.png"; sourceTree = "<group>"; };
+		C766ACEB312FDA0A023B3F55 /* NativeReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeReleaseTests.swift; sourceTree = "<group>"; };
 		CCA249C25F6518321CD1FA78 /* SourceVideoRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVideoRecorder.swift; sourceTree = "<group>"; };
+		CCD355D7D47B65CD9429DB1B /* GolfNativeAssets.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = GolfNativeAssets.json; sourceTree = "<group>"; };
 		D01F0820788F6C3D3D9E7235 /* ArmSwing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmSwing.swift; sourceTree = "<group>"; };
+		D128C7D267CF2827C987E75A /* SunwardSand.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SunwardSand.png; sourceTree = "<group>"; };
 		D55F28D1B7EEB093E07C923A /* ArcadeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeView.swift; sourceTree = "<group>"; };
+		D7514BFA489F3B14D2EAF3B4 /* NativePreview-sunward-resort-v1-8.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-8.jpg"; sourceTree = "<group>"; };
 		D78EF7010941BF7671DEFE0B /* PoseFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseFrame.swift; sourceTree = "<group>"; };
+		D7A8D97569BBE9635C4A271D /* NativeMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeMotionTests.swift; sourceTree = "<group>"; };
 		D8E20C8882313192878F8991 /* BodyPose3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPose3D.swift; sourceTree = "<group>"; };
 		DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizer.swift; sourceTree = "<group>"; };
+		E34890BBBAA7289AD420C3FD /* NativePreview-pine-3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-pine-3.jpg"; sourceTree = "<group>"; };
 		E4147C03A0122123852F5094 /* CourseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseTests.swift; sourceTree = "<group>"; };
+		E4C7A2B2306FCC5E78D51BA1 /* GameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSession.swift; sourceTree = "<group>"; };
 		E555B2810530CEE299B31086 /* GolfArcade.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E70D6116012912EF0944BA7D /* NativeGreenRead.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = NativeGreenRead.metal; sourceTree = "<group>"; };
 		E73AFF5CA63629AFD8A2BFC4 /* ShotRecommendation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotRecommendation.swift; sourceTree = "<group>"; };
 		E844E6FB495FD27970BC5A46 /* Quaternius-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Quaternius-LICENSE.txt"; sourceTree = "<group>"; };
 		E91B4885D85805ADA35A48A0 /* TVDisplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVDisplayTests.swift; sourceTree = "<group>"; };
 		E9346BDAD7014806EE0A16EB /* PlayerSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSetupView.swift; sourceTree = "<group>"; };
 		E9692821E4474822BE46A669 /* SwingRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingRecorder.swift; sourceTree = "<group>"; };
+		EA9A6DCEF9206DFDADBFE7C5 /* Course-sunward-1.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = "Course-sunward-1.usdz"; sourceTree = "<group>"; };
 		EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseScreen.swift; sourceTree = "<group>"; };
+		EC0F7B4D7890FBB642F1E070 /* SunwardHole-8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SunwardHole-8.png"; sourceTree = "<group>"; };
+		ECFBA2ADCB6CAAA84798CBB8 /* CourseSurfaceDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSurfaceDetail.swift; sourceTree = "<group>"; };
 		F1D4E03E0C94BE43DCA09EE7 /* CourseScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseScene.swift; sourceTree = "<group>"; };
+		F799C4E293E91AA0F86D66EE /* GreenReadPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreenReadPattern.swift; sourceTree = "<group>"; };
+		F7BAB7AA4E3F5AE2A20FEE1A /* NativeWaterSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeWaterSurface.swift; sourceTree = "<group>"; };
+		F8340634B7CDA55EDCEDAFC7 /* NativePreview-sunward-resort-v1-1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-1.jpg"; sourceTree = "<group>"; };
 		F9BF0F1A3BA4FD2C292D3C61 /* GolferEyes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GolferEyes.png; sourceTree = "<group>"; };
 		FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
 		FDF32F75918A4AC0E5D29EE1 /* ExternalDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDisplay.swift; sourceTree = "<group>"; };
+		FF4F645826F0558B47F5927B /* NativePreview-sunward-resort-v1-7.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NativePreview-sunward-resort-v1-7.jpg"; sourceTree = "<group>"; };
+		FF7E8A73C337C63848EDBBF5 /* NativeGreenRead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGreenRead.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -222,6 +408,7 @@
 				3BBE2548C3108DD3902B958C /* CourseShot.swift */,
 				4956138E08C2FF6C5BB5A811 /* GameFlow.swift */,
 				4173A4A85FD4F7751A615D88 /* GolfInteractions.swift */,
+				F799C4E293E91AA0F86D66EE /* GreenReadPattern.swift */,
 				E73AFF5CA63629AFD8A2BFC4 /* ShotRecommendation.swift */,
 			);
 			path = Game;
@@ -247,6 +434,30 @@
 			path = Practice;
 			sourceTree = "<group>";
 		};
+		2F82E7587B1ECFBD05793504 /* Sunward */ = {
+			isa = PBXGroup;
+			children = (
+				4AFB256E8FEBE0DFF2BF1CED /* SunwardFairway.png */,
+				32FD8561633CDAB4E94FC736 /* SunwardGolfer.golfmesh */,
+				BE6558F7C81C9855B7FEB77E /* SunwardHole-1.png */,
+				1A9C2F50A78905DC8B40CB78 /* SunwardHole-2.png */,
+				67F7288816EBEE6CF59D4D62 /* SunwardHole-3.png */,
+				C5C3E3DC0E5F649F5D8C2EF3 /* SunwardHole-4.png */,
+				9E012F41EE81F13FF348DC5F /* SunwardHole-5.png */,
+				5052929771CBB6963ACFB8D4 /* SunwardHole-6.png */,
+				29460B5B16314086340369D7 /* SunwardHole-7.png */,
+				EC0F7B4D7890FBB642F1E070 /* SunwardHole-8.png */,
+				AC1C70F7C2356998EDFF9C03 /* SunwardHole-9.png */,
+				28E035215554945E26294DD6 /* SunwardMenu.mp4 */,
+				2DAC387980B771D176452872 /* SunwardMotion.json */,
+				6E1F74E169B5DB3E0A5A82D5 /* SunwardRocks.golfmesh */,
+				327BD8DE4A0A1FCBCA4005A0 /* SunwardRough.png */,
+				D128C7D267CF2827C987E75A /* SunwardSand.png */,
+				7E71673FE0DEE1D2BFEC31D4 /* SunwardTree.golfmesh */,
+			);
+			path = Sunward;
+			sourceTree = "<group>";
+		};
 		3C216A08A8E77D9D1F5083A1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -268,6 +479,16 @@
 			path = Golfer;
 			sourceTree = "<group>";
 		};
+		4B59528A7674EC37A62A1897 /* Motion */ = {
+			isa = PBXGroup;
+			children = (
+				C394C765156FC613D4B6424E /* MotionManager.swift */,
+				2BFEFD3AB62C825871E5205A /* MotionPipeline.swift */,
+				80FFF2BFF9ED1806632B66FE /* PhoneMotionController.swift */,
+			);
+			path = Motion;
+			sourceTree = "<group>";
+		};
 		5A7C28C68D15118EA76B2581 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -282,8 +503,33 @@
 			isa = PBXGroup;
 			children = (
 				49C5907A166EC90D225DC1A5 /* Golfer */,
+				FBB05E76413759EBEC424E64 /* Native */,
+				2F82E7587B1ECFBD05793504 /* Sunward */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		5EE43BA84870CEACCB3D22D1 /* Native */ = {
+			isa = PBXGroup;
+			children = (
+				19515C2C268CD5CB3860EFF1 /* ControllerView.swift */,
+				78B52EED448B9FCC0EF4CA51 /* DisplayCoordinator.swift */,
+				E4C7A2B2306FCC5E78D51BA1 /* GameSession.swift */,
+				A27B625B87C43ACD8A8C23AA /* GameViewportController.swift */,
+				41BD78C2EF9BAD952794DFA5 /* GolfSystems.swift */,
+				759E605500971367887C06E2 /* NativeAssets.swift */,
+				596A7B602373A3CE1259BF13 /* NativeBystanderPresentation.swift */,
+				0E26A44C2C0891B3681944B7 /* NativeCourseEffects.swift */,
+				20951F9F055005677B99852F /* NativeCourseFraming.swift */,
+				55D7EB91123D253A48CA89E9 /* NativeGrassSurface.metal */,
+				A6C41753C2D69CB05A047ACF /* NativeGrassSurface.swift */,
+				E70D6116012912EF0944BA7D /* NativeGreenRead.metal */,
+				FF7E8A73C337C63848EDBBF5 /* NativeGreenRead.swift */,
+				82185B899CE3EE25DB30D93F /* NativePerformanceAudit.swift */,
+				2B0975101C4715437F57F53C /* NativeWaterSurface.metal */,
+				F7BAB7AA4E3F5AE2A20FEE1A /* NativeWaterSurface.swift */,
+			);
+			path = Native;
 			sourceTree = "<group>";
 		};
 		61F030750DA108AF5F44E27C /* Feedback */ = {
@@ -305,6 +551,8 @@
 				61F030750DA108AF5F44E27C /* Feedback */,
 				0512E2F8B130319AEDC19E89 /* Game */,
 				7A6195557FA8FC5FA772E56F /* Mock */,
+				4B59528A7674EC37A62A1897 /* Motion */,
+				5EE43BA84870CEACCB3D22D1 /* Native */,
 				5BEE39966FA95FCB5F6550B8 /* Resources */,
 				A55D69E4C17EDE34466C3DE1 /* Scene */,
 				BFA66F381F7F17DEFD62832C /* Shot */,
@@ -322,6 +570,9 @@
 				9BC1296D3AF134EB68A180B8 /* BallFlight.swift */,
 				0115C55F00C9002F0C96850B /* CameraSwing.swift */,
 				F1D4E03E0C94BE43DCA09EE7 /* CourseScene.swift */,
+				ECFBA2ADCB6CAAA84798CBB8 /* CourseSurfaceDetail.swift */,
+				2739A52D4175750F99250E1B /* GolfImpactEffects.swift */,
+				BFE7941152F08F869541D00D /* GolfRenderAudit.swift */,
 				8D807DCA06067D7507F3487F /* MotionSwing.swift */,
 				6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */,
 			);
@@ -364,6 +615,7 @@
 		A667A7E785E1C069712D819B /* GolfArcadeUITests */ = {
 			isa = PBXGroup;
 			children = (
+				C766ACEB312FDA0A023B3F55 /* NativeReleaseTests.swift */,
 				A171AE30769CF263BBFEABE1 /* RangePlayTests.swift */,
 			);
 			path = GolfArcadeUITests;
@@ -384,6 +636,8 @@
 				6BA0FD2E4366DA2B207AA631 /* GolfArcade */,
 				E0DDE9A54BDA1821FA9AB12A /* GolfArcadeTests */,
 				A667A7E785E1C069712D819B /* GolfArcadeUITests */,
+				60C3DA0E873440A9ECE34B20 /* Nature */,
+				1AF45C427EAA8617EB760839 /* Reflections */,
 				3C216A08A8E77D9D1F5083A1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -424,8 +678,12 @@
 				BA74FE0815D814ECF50AA970 /* GolfMechanicsTests.swift */,
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
+				85515D1F73A71789E5C8D873 /* NativeArchitectureTests.swift */,
+				D7A8D97569BBE9635C4A271D /* NativeMotionTests.swift */,
+				7872205EF75662FC98E4966F /* NativePerformanceTests.swift */,
 				96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
+				95470C60F7522C4CB3724263 /* SunwardUpgradeTests.swift */,
 				9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */,
 				60B1FAF9F257610A76213E8E /* TerrainTests.swift */,
 				E91B4885D85805ADA35A48A0 /* TVDisplayTests.swift */,
@@ -466,6 +724,57 @@
 			path = Benchmark;
 			sourceTree = "<group>";
 		};
+		FBB05E76413759EBEC424E64 /* Native */ = {
+			isa = PBXGroup;
+			children = (
+				67BCA0F59AB37423634F09CD /* Course-cliff-1.usdz */,
+				388DBD6DC01B44F35245F0C1 /* Course-cliff-2.usdz */,
+				6D0B52E3E8CB78BB73192E9D /* Course-cliff-3.usdz */,
+				32B7E3BD662460B6B27DCF7D /* Course-meadow-1.usdz */,
+				337F8D095E5A2A944656C5EF /* Course-meadow-2.usdz */,
+				44B9675699436AA2CAE88096 /* Course-meadow-3.usdz */,
+				97B71DFF6F97EDD984E3649B /* Course-pine-1.usdz */,
+				1305F10AFDCA7D1E82D9D9B5 /* Course-pine-2.usdz */,
+				8D120893E767215D8B0775D5 /* Course-pine-3.usdz */,
+				EA9A6DCEF9206DFDADBFE7C5 /* Course-sunward-1.usdz */,
+				77EF292DE6EDC08E6145F0EC /* Course-sunward-2.usdz */,
+				BE0EF47E02107C05331AAB4B /* Course-sunward-3.usdz */,
+				12BA1F3453521ED2631951F2 /* Course-sunward-resort-v1-1.usdz */,
+				4A70A7587FBD319980A47467 /* Course-sunward-resort-v1-2.usdz */,
+				4CDCB78912EC369A5B97C240 /* Course-sunward-resort-v1-3.usdz */,
+				6E1AEF7316FDCD4D4E94388C /* Course-sunward-resort-v1-4.usdz */,
+				7F301E3F7263CFBBA84937A4 /* Course-sunward-resort-v1-5.usdz */,
+				0E1D88F2AE486480FB1015ED /* Course-sunward-resort-v1-6.usdz */,
+				34DD8BA1A08099D96E190698 /* Course-sunward-resort-v1-7.usdz */,
+				6316128901E41A36962EC6AC /* Course-sunward-resort-v1-8.usdz */,
+				322988A3F2FC8DF0B6B2C3F6 /* Course-sunward-resort-v1-9.usdz */,
+				CCD355D7D47B65CD9429DB1B /* GolfNativeAssets.json */,
+				1EA02100E087D80D58D111E1 /* NativeGolfer.usdz */,
+				0C64C9A61754F98BC1826E8B /* NativePreview-cliff-1.jpg */,
+				9E61BFD355379E59B8DF16A7 /* NativePreview-cliff-2.jpg */,
+				50BF194EBDD8146535E3B2D9 /* NativePreview-cliff-3.jpg */,
+				8223400284FCD4E20519AD49 /* NativePreview-meadow-1.jpg */,
+				78E59BEB7BAF95586BB61F94 /* NativePreview-meadow-2.jpg */,
+				40BDBD8AEEB48486905FD9BA /* NativePreview-meadow-3.jpg */,
+				6E21F02948325E4D1C9C8CA2 /* NativePreview-pine-1.jpg */,
+				213FC203DE70647C7AE86ED0 /* NativePreview-pine-2.jpg */,
+				E34890BBBAA7289AD420C3FD /* NativePreview-pine-3.jpg */,
+				25E02FAF4C90DC7A4E31BB6F /* NativePreview-sunward-1.jpg */,
+				8E7660D05F109D66541F7BC6 /* NativePreview-sunward-2.jpg */,
+				42E03A0EF6BE88559A94CB62 /* NativePreview-sunward-3.jpg */,
+				F8340634B7CDA55EDCEDAFC7 /* NativePreview-sunward-resort-v1-1.jpg */,
+				7DB4281C156608526A4CB987 /* NativePreview-sunward-resort-v1-2.jpg */,
+				7357E583B1827E5635069537 /* NativePreview-sunward-resort-v1-3.jpg */,
+				09FDE962CD4469A417BABF11 /* NativePreview-sunward-resort-v1-4.jpg */,
+				77DAD39556A78BF059DD5ED4 /* NativePreview-sunward-resort-v1-5.jpg */,
+				26659B29127BEF89E5C16BB6 /* NativePreview-sunward-resort-v1-6.jpg */,
+				FF4F645826F0558B47F5927B /* NativePreview-sunward-resort-v1-7.jpg */,
+				D7514BFA489F3B14D2EAF3B4 /* NativePreview-sunward-resort-v1-8.jpg */,
+				5AC0D396A88B7A5B0E71C641 /* NativePreview-sunward-resort-v1-9.jpg */,
+			);
+			path = Native;
+			sourceTree = "<group>";
+		};
 		FD5256EB6CE894D29006C950 /* Arcade */ = {
 			isa = PBXGroup;
 			children = (
@@ -480,6 +789,7 @@
 		FED8429917DA26A678C59315 /* Avatar */ = {
 			isa = PBXGroup;
 			children = (
+				654A3F6EFC51208D417902EA /* AuthoredGolfMotion.swift */,
 				C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */,
 				B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */,
 				D8E20C8882313192878F8991 /* BodyPose3D.swift */,
@@ -489,6 +799,7 @@
 				471206D5B871D78848EEFBB2 /* GolferSkin.swift */,
 				5A84309947D51CAD158497D0 /* PoseRetargeter.swift */,
 				512C82632575067B96CFA07D /* ResortGolferSkin.swift */,
+				3CF34570A67524083F5F5F26 /* SunwardAsset.swift */,
 				7C849D74D9AA308C970BB9DD /* SwingReaction.swift */,
 				E9692821E4474822BE46A669 /* SwingRecorder.swift */,
 			);
@@ -602,10 +913,73 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCAFF536435AE3BADE1DD02E /* Course-cliff-1.usdz in Resources */,
+				8A2243ABEB7A3EABEC75A901 /* Course-cliff-2.usdz in Resources */,
+				40AEE38C34135F81F5B0274D /* Course-cliff-3.usdz in Resources */,
+				7A932A2299A209F22FFE4FC7 /* Course-meadow-1.usdz in Resources */,
+				29C2FF754ECBE89F279CFEBF /* Course-meadow-2.usdz in Resources */,
+				6FB5B5D6F61CCD62DB00B507 /* Course-meadow-3.usdz in Resources */,
+				2AC62768835C237E0D88E233 /* Course-pine-1.usdz in Resources */,
+				A5677C8A3697DFB528E43287 /* Course-pine-2.usdz in Resources */,
+				D6E982028C5BB013938D81C4 /* Course-pine-3.usdz in Resources */,
+				C21940250518290E5282F617 /* Course-sunward-1.usdz in Resources */,
+				900C0CB5A1E251D1955A56C8 /* Course-sunward-2.usdz in Resources */,
+				40B45E44ACB008D95810F932 /* Course-sunward-3.usdz in Resources */,
+				E3C55A6FA9EC2A11559AB546 /* Course-sunward-resort-v1-1.usdz in Resources */,
+				FC800D4E5EBB62D1378842D2 /* Course-sunward-resort-v1-2.usdz in Resources */,
+				880961D84BFC9EAB6952B2DA /* Course-sunward-resort-v1-3.usdz in Resources */,
+				0F61C3B6863BCF2B7B9DDBA8 /* Course-sunward-resort-v1-4.usdz in Resources */,
+				C4245540815DA61004A18648 /* Course-sunward-resort-v1-5.usdz in Resources */,
+				BABEA0831497C62EDEF904E1 /* Course-sunward-resort-v1-6.usdz in Resources */,
+				72E56C831E2DF00D508DA457 /* Course-sunward-resort-v1-7.usdz in Resources */,
+				798F9EFDA2CF206B06070CBB /* Course-sunward-resort-v1-8.usdz in Resources */,
+				36FDFC9B15D57B58AF842755 /* Course-sunward-resort-v1-9.usdz in Resources */,
+				D40F7B2BAE93106EBC08306E /* GolfNativeAssets.json in Resources */,
 				7E73054BAFA78656D2034D6C /* GolferEyes.png in Resources */,
+				C26034535089B781ED4A967C /* NativeGolfer.usdz in Resources */,
+				F795F5967842B39EF61D55D3 /* NativePreview-cliff-1.jpg in Resources */,
+				C3EFADB2FE5AAD6506423E29 /* NativePreview-cliff-2.jpg in Resources */,
+				6BC1BDAB053D21B04A28E362 /* NativePreview-cliff-3.jpg in Resources */,
+				7630AB5D76AB3A91707B9731 /* NativePreview-meadow-1.jpg in Resources */,
+				B468663ED68DFD4C23F3BFE0 /* NativePreview-meadow-2.jpg in Resources */,
+				673FF123C5D50EC0948A90FB /* NativePreview-meadow-3.jpg in Resources */,
+				FD1AF9A642523970F8296CC4 /* NativePreview-pine-1.jpg in Resources */,
+				C7DD55287F4F4294E5836218 /* NativePreview-pine-2.jpg in Resources */,
+				B345D654E0EDF131FE054D93 /* NativePreview-pine-3.jpg in Resources */,
+				95E0595428091519EABA3907 /* NativePreview-sunward-1.jpg in Resources */,
+				8971CC468BD35BC6AA3680B6 /* NativePreview-sunward-2.jpg in Resources */,
+				10597E69F60A3025501750B9 /* NativePreview-sunward-3.jpg in Resources */,
+				779E9C0AB54AF3C305CA4623 /* NativePreview-sunward-resort-v1-1.jpg in Resources */,
+				A032260259ED775A761A73C9 /* NativePreview-sunward-resort-v1-2.jpg in Resources */,
+				2F63006E465A7E3803D0F36E /* NativePreview-sunward-resort-v1-3.jpg in Resources */,
+				51FF5DCD422B35F5E3860D51 /* NativePreview-sunward-resort-v1-4.jpg in Resources */,
+				DAD73F55847518FA41F9B0D4 /* NativePreview-sunward-resort-v1-5.jpg in Resources */,
+				86CFE7A7001D1EEA02F8BF0B /* NativePreview-sunward-resort-v1-6.jpg in Resources */,
+				F6312A657405E69AE7E28C26 /* NativePreview-sunward-resort-v1-7.jpg in Resources */,
+				972427823536A9114D3CFD90 /* NativePreview-sunward-resort-v1-8.jpg in Resources */,
+				6DBF31CDFDFF378E59C86B0A /* NativePreview-sunward-resort-v1-9.jpg in Resources */,
+				35EA55ED2EF57AE2C6A2D656 /* Nature in Resources */,
 				D05D270E5451A04EFB9D23C4 /* Quaternius-LICENSE.txt in Resources */,
 				13077E68219F1A4231D4905A /* README.md in Resources */,
+				36137EC4BE2747499A040B92 /* Reflections in Resources */,
 				D9CBA37EF87EF998A3EFB916 /* ResortGolfer.golfmesh in Resources */,
+				0674B6B1B94CDA2C08BA37F5 /* SunwardFairway.png in Resources */,
+				77DAADE79C060815A109A52E /* SunwardGolfer.golfmesh in Resources */,
+				EF9A6C3D886E924A85910C36 /* SunwardHole-1.png in Resources */,
+				9ADFD46227AC08665C1B51D0 /* SunwardHole-2.png in Resources */,
+				E4AB7B3AE8A2FC54F1139364 /* SunwardHole-3.png in Resources */,
+				EA88F85CA8B788A1DFC728F0 /* SunwardHole-4.png in Resources */,
+				99F615AC9BE8E139BC4E6664 /* SunwardHole-5.png in Resources */,
+				B1268C98290A823E6A14839C /* SunwardHole-6.png in Resources */,
+				2B0218AC843ED66BB68A084B /* SunwardHole-7.png in Resources */,
+				4E869CAEC1F1E50DF50040B8 /* SunwardHole-8.png in Resources */,
+				7BA94FC12E318049E7C3C460 /* SunwardHole-9.png in Resources */,
+				1E24F79D44D4826ED94ED791 /* SunwardMenu.mp4 in Resources */,
+				DF7237CF314316934716915A /* SunwardMotion.json in Resources */,
+				9EAC0E0056E22B6FC2C8ACFE /* SunwardRocks.golfmesh in Resources */,
+				6772BCA7DC147CC04CF6AC7D /* SunwardRough.png in Resources */,
+				F095A83B111BEBA8673AE89E /* SunwardSand.png in Resources */,
+				FD22270C433B4A1711790F99 /* SunwardTree.golfmesh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -619,6 +993,7 @@
 				E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */,
 				DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */,
 				9E744747811CCBFDBF183323 /* ArmSwing.swift in Sources */,
+				339934CA5759F14F97BB16E7 /* AuthoredGolfMotion.swift in Sources */,
 				7DAA43A8FC1D8AC77973D069 /* AvatarAnimations.swift in Sources */,
 				A14FC629C79C552165B1C52E /* AvatarRig.swift in Sources */,
 				0C16012F28C037DE0E7CEF82 /* BallAddress.swift in Sources */,
@@ -637,6 +1012,7 @@
 				931E672E49CC17F15DA93AFD /* ClubGeometry.swift in Sources */,
 				C8CFD4B78F4108D946ECCF28 /* ClubRail.swift in Sources */,
 				92259CA63028678B96DA3713 /* ContentView.swift in Sources */,
+				091BF00CBFC4C419843A40DC /* ControllerView.swift in Sources */,
 				8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */,
 				12FD8B61307452190A3C0BF9 /* CoursePanels.swift in Sources */,
 				C01E71BDD6D5B002276FBE01 /* CourseRound.swift in Sources */,
@@ -644,21 +1020,43 @@
 				FC34FC26D4B7E98D9F1021FE /* CourseScreen.swift in Sources */,
 				7653186180DEC611702F898B /* CourseSelectView.swift in Sources */,
 				684D8B4894FAB92E11F8B088 /* CourseShot.swift in Sources */,
+				C1AA2AB9BE653C0A0F705F2A /* CourseSurfaceDetail.swift in Sources */,
+				37CDB019B3A33499B5BC9609 /* DisplayCoordinator.swift in Sources */,
 				A0943626B57D8DD8130CC30E /* DisplayLatencyMeasurement.swift in Sources */,
 				FF55C871ADCD990F2258DCB3 /* ExternalDisplay.swift in Sources */,
 				EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */,
 				E24A502FB0E680DB00BAF738 /* GameFlow.swift in Sources */,
+				C7E062E7CC83A26972F89D49 /* GameSession.swift in Sources */,
+				FBF1BCA2A3D34C9E556D10C6 /* GameViewportController.swift in Sources */,
 				62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */,
+				88A60E1A0CBF24905755FC76 /* GolfImpactEffects.swift in Sources */,
 				04907A7BD353EED3E8B9E79F /* GolfInteractions.swift in Sources */,
+				03913E41531CDE40DDE7576B /* GolfRenderAudit.swift in Sources */,
+				030D26E0C032C3DAD31FD673 /* GolfSystems.swift in Sources */,
 				660C813F36FAB258E54F6369 /* GolferAnimationState.swift in Sources */,
 				2E674C41652E54B2B5E9B9EA /* GolferAppearance+Rendering.swift in Sources */,
 				0CF38C038B18CFC413B7C04A /* GolferAppearance.swift in Sources */,
 				C67AA3E7D3C6785A86D423B2 /* GolferAppearanceEditor.swift in Sources */,
 				E4668B09D9351FCE1CC9D6C0 /* GolferSkin.swift in Sources */,
+				86B29C20AD4B9DEE4D220358 /* GreenReadPattern.swift in Sources */,
 				914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */,
 				9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */,
 				11C883ED4C07C15D2043B1E3 /* MenuStyle.swift in Sources */,
+				D3ED3D10C7B72765161F20AE /* MotionManager.swift in Sources */,
+				101FB12D4515B5987AD941FD /* MotionPipeline.swift in Sources */,
 				FB048E2BB4BC7DA06F1CED5C /* MotionSwing.swift in Sources */,
+				9ABA76BE873B702B6DBCD98E /* NativeAssets.swift in Sources */,
+				45012BDC83B3A72272CAD9A6 /* NativeBystanderPresentation.swift in Sources */,
+				D180069A4C023E63D0878FEE /* NativeCourseEffects.swift in Sources */,
+				29388D376A5B63AE84CC669D /* NativeCourseFraming.swift in Sources */,
+				294C18BB053D8C077B64856E /* NativeGrassSurface.metal in Sources */,
+				F57ED5E35381111EFF2705A4 /* NativeGrassSurface.swift in Sources */,
+				62ADA960676CAE30A7EE4AC3 /* NativeGreenRead.metal in Sources */,
+				8BCA31C62388D925AF60BD88 /* NativeGreenRead.swift in Sources */,
+				225D8B47EEEA9E6A127D4F40 /* NativePerformanceAudit.swift in Sources */,
+				BB505835DC69EF4068840F86 /* NativeWaterSurface.metal in Sources */,
+				C382B0DBA3A02CB4F11575CF /* NativeWaterSurface.swift in Sources */,
+				EB7A4ACE5836F04C610FBC66 /* PhoneMotionController.swift in Sources */,
 				8315CEB22EDCACCAE095B54A /* Player.swift in Sources */,
 				EF839F728A10D18A2FF3884B /* PlayerCalibration.swift in Sources */,
 				E877C0BB298E15987592F562 /* PlayerSetupView.swift in Sources */,
@@ -676,6 +1074,7 @@
 				506EC296282EF36A294FA1D4 /* ShotRecommendation.swift in Sources */,
 				F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */,
 				11184170841E67FF9436A395 /* SourceVideoRecorder.swift in Sources */,
+				2B395991E80BA905A40E22C2 /* SunwardAsset.swift in Sources */,
 				C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */,
 				D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */,
 				0B95806EE445C0EF8DC4BB46 /* SwingImpact.swift in Sources */,
@@ -691,6 +1090,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6BBC13E5B179DAF39F7004FC /* NativeReleaseTests.swift in Sources */,
 				FC172C914CB91DE00136D536 /* RangePlayTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -709,8 +1109,12 @@
 				209463B41ECED8DACBC417AD /* GolfMechanicsTests.swift in Sources */,
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
+				ED4836EF9E41636594CCE0E6 /* NativeArchitectureTests.swift in Sources */,
+				A667B08EB91E7010D00CCA25 /* NativeMotionTests.swift in Sources */,
+				FC2B17AB9D924E5C9D75A34A /* NativePerformanceTests.swift in Sources */,
 				C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
+				925BE87E7E82770D282C004D /* SunwardUpgradeTests.swift in Sources */,
 				7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */,
 				962B128977D0C190DC669224 /* TVDisplayTests.swift in Sources */,
 				8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */,
@@ -734,7 +1138,90 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		40CB4B104D600AFCA9E884CC /* NativeOnly */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcadeTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GolfArcade.app/GolfArcade";
+			};
+			name = NativeOnly;
+		};
+		6E701B7E65D4F9F71401C62E /* NativeOnly */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				EXCLUDED_SOURCE_FILE_NAMES = RangePlayTests.swift;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcadeUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = GolfArcade;
+			};
+			name = NativeOnly;
+		};
+		7D112F32848AF4B1430F2DC0 /* NativeOnly */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EXCLUDED_SOURCE_FILE_NAMES = "AvatarRig.swift GolferSkin.swift ResortGolferSkin.swift SunwardAsset.swift CourseScene.swift CourseSurfaceDetail.swift GolfImpactEffects.swift GolfRenderAudit.swift CourseScreen.swift";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfArcade/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera tracks your body movement to turn your swing into a golf shot.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) NATIVE_ONLY";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = NativeOnly;
+		};
 		8482C72C4B024192B687A5CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EXCLUDED_SOURCE_FILE_NAMES = "AvatarRig.swift GolferSkin.swift ResortGolferSkin.swift SunwardAsset.swift CourseScene.swift CourseSurfaceDetail.swift GolfImpactEffects.swift GolfRenderAudit.swift CourseScreen.swift";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfArcade/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera tracks your body movement to turn your swing into a golf shot.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) NATIVE_ONLY";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		8572C85C5508E72EB4968A2B /* Comparison */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -754,7 +1241,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
-			name = Release;
+			name = Comparison;
 		};
 		8D15325E986081390F1E9B4D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -773,10 +1260,46 @@
 			};
 			name = Debug;
 		};
+		94514B6211A7EB78B258EF0E /* Comparison */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				EXCLUDED_SOURCE_FILE_NAMES = NativeReleaseTests.swift;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcadeUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = GolfArcade;
+			};
+			name = Comparison;
+		};
+		9F87ACA13D789FC32B752212 /* Comparison */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcadeTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GolfArcade.app/GolfArcade";
+			};
+			name = Comparison;
+		};
 		A045D68FA1FFF551359F710D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				EXCLUDED_SOURCE_FILE_NAMES = RangePlayTests.swift;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -790,10 +1313,71 @@
 			};
 			name = Release;
 		};
+		A66A56E9AC4501B06F0F43FC /* Comparison */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Comparison;
+		};
 		ADB22444510A5CAE6DEBBCC1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				EXCLUDED_SOURCE_FILE_NAMES = NativeReleaseTests.swift;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -861,7 +1445,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -944,7 +1528,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -973,44 +1557,112 @@
 			};
 			name = Release;
 		};
+		FEC440289FCFF0473A347459 /* NativeOnly */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = NativeOnly;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
 		0D556AE2CF7B24755E9C86D7 /* Build configuration list for PBXNativeTarget "GolfArcadeUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				94514B6211A7EB78B258EF0E /* Comparison */,
 				ADB22444510A5CAE6DEBBCC1 /* Debug */,
+				6E701B7E65D4F9F71401C62E /* NativeOnly */,
 				A045D68FA1FFF551359F710D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Comparison;
 		};
 		264DDF658F913D9534A54AEA /* Build configuration list for PBXNativeTarget "GolfArcadeTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				9F87ACA13D789FC32B752212 /* Comparison */,
 				8D15325E986081390F1E9B4D /* Debug */,
+				40CB4B104D600AFCA9E884CC /* NativeOnly */,
 				DF4759AE9C4F013DF4804A50 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Comparison;
 		};
 		45AB55D4040117B8A708901C /* Build configuration list for PBXProject "GolfArcade" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				A66A56E9AC4501B06F0F43FC /* Comparison */,
 				B37D88748241EF2BD78CAEE1 /* Debug */,
+				FEC440289FCFF0473A347459 /* NativeOnly */,
 				DEDA5D276E0F77EFE3E2B7D9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Comparison;
 		};
 		97ADF6C322FA27DB96AEE74D /* Build configuration list for PBXNativeTarget "GolfArcade" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
+				8572C85C5508E72EB4968A2B /* Comparison */,
 				C60C375B9EF0E4CC0DB70A2A /* Debug */,
+				7D112F32848AF4B1430F2DC0 /* NativeOnly */,
 				8482C72C4B024192B687A5CF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Comparison;
 		};
 /* End XCConfigurationList section */
 	};

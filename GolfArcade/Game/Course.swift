@@ -32,11 +32,29 @@ struct CourseHazard: Identifiable, Equatable, Sendable {
     let distance: Double
     let width: Double
     let length: Double
+    var contour: Double = 0
+
+    func boundaryScale(at angle: Double) -> Double {
+        1 + contour * (sin(3*angle+Double(id)) + 0.4*cos(5*angle))
+    }
+
+    /// Radius and analytic gradient in the authored outline. Rendering and hazard
+    /// scoring share this shape, including the concave coves and bunker lobes.
+    func radialSurface(at point: CoursePoint) -> (radius: Double, dx: Double, dd: Double) {
+        let rx=max(width/2,0.001),rd=max(length/2,0.001)
+        let x=(point.x-self.x)/rx,d=(point.d-distance)/rd,q=hypot(x,d)
+        guard q>0.000001 else { return (0,0,0) }
+        let angle=atan2(d,x),f=boundaryScale(at:angle)
+        let derivative=contour*(3*cos(3*angle+Double(id))-2*sin(5*angle))
+        return (q/f,(x/(q*f)+derivative*d/(q*f*f))/rx,
+            (d/(q*f)-derivative*x/(q*f*f))/rd)
+    }
 
     func contains(_ point: CoursePoint) -> Bool {
-        let dx = (point.x - x) / max(width / 2, 0.001)
-        let dz = (point.d - distance) / max(length / 2, 0.001)
-        return dx * dx + dz * dz <= 1
+        let extent=1+abs(contour)*1.4
+        guard abs(point.x-x)<=max(width/2,0.001)*extent,
+              abs(point.d-distance)<=max(length/2,0.001)*extent else { return false }
+        return radialSurface(at:point).radius <= 1
     }
 }
 
@@ -68,27 +86,47 @@ enum CourseLie: String, Equatable, Codable, Sendable {
 
 /// Shared authored boundary: map, mesh generation and lies all consume these vertices.
 struct CourseRegion: Equatable, Sendable {
-    var points: [CoursePoint]
+    let points: [CoursePoint]
+    private struct Edge: Equatable, Sendable {
+        let a:CoursePoint,b:CoursePoint
+        let dx:Double,dd:Double,inverseLengthSquared:Double
+        let minX:Double,maxX:Double,minD:Double,maxD:Double
+        init(_ a:CoursePoint,_ b:CoursePoint) {
+            self.a=a;self.b=b;dx=b.x-a.x;dd=b.d-a.d
+            inverseLengthSquared=1/max(0.0001,dx*dx+dd*dd)
+            minX=min(a.x,b.x);maxX=max(a.x,b.x);minD=min(a.d,b.d);maxD=max(a.d,b.d)
+        }
+    }
+    private let edges:[Edge]
+    private let minX:Double,maxX:Double,minD:Double,maxD:Double
+    init(points:[CoursePoint]) {
+        self.points=points
+        edges=points.indices.map { Edge(points[$0],points[($0+points.count-1)%points.count]) }
+        minX=points.map(\.x).min() ?? .infinity;maxX=points.map(\.x).max() ?? -.infinity
+        minD=points.map(\.d).min() ?? .infinity;maxD=points.map(\.d).max() ?? -.infinity
+    }
     func contains(_ p: CoursePoint) -> Bool {
-        guard points.count >= 3 else { return false }
-        var inside = false, previous = points.last!
-        for current in points {
-            if (current.d > p.d) != (previous.d > p.d),
-               p.x < (previous.x-current.x)*(p.d-current.d)/(previous.d-current.d)+current.x { inside.toggle() }
-            previous = current
+        guard points.count >= 3,p.x>=minX,p.x<=maxX,p.d>=minD,p.d<=maxD else { return false }
+        var inside = false
+        for edge in edges {
+            if (edge.a.d > p.d) != (edge.b.d > p.d),
+               p.x < edge.dx*(p.d-edge.a.d)/edge.dd+edge.a.x { inside.toggle() }
         }
         return inside
     }
     func distance(to p: CoursePoint) -> Double {
-        guard let last = points.last else { return .infinity }
-        var previous=last, nearest=Double.infinity
-        for current in points {
-            let dx=current.x-previous.x, dd=current.d-previous.d
-            let t=max(0,min(1,((p.x-previous.x)*dx+(p.d-previous.d)*dd)/max(0.0001,dx*dx+dd*dd)))
-            nearest=min(nearest,p.distance(to:CoursePoint(x:previous.x+t*dx,d:previous.d+t*dd)))
-            previous=current
+        var nearest=Double.infinity
+        for edge in edges {
+            let boxX=max(0,max(edge.minX-p.x,p.x-edge.maxX))
+            let boxD=max(0,max(edge.minD-p.d,p.d-edge.maxD))
+            if boxX*boxX+boxD*boxD>=nearest { continue }
+            let t=max(0,min(1,((p.x-edge.a.x)*edge.dx+(p.d-edge.a.d)*edge.dd)*edge.inverseLengthSquared))
+            // Compare squared distances; only the winning edge needs a square
+            // root. This query runs for every terrain/grass sample on hole load.
+            let offsetX=p.x-edge.a.x-t*edge.dx,offsetD=p.d-edge.a.d-t*edge.dd
+            nearest=min(nearest,offsetX*offsetX+offsetD*offsetD)
         }
-        return nearest
+        return sqrt(nearest)
     }
 }
 
@@ -175,12 +213,17 @@ struct Hole: Identifiable, Equatable, Sendable {
     let centerline: [CoursePoint]
     let fairwayWidth: Double
     let greenRadius: Double
-    let hazards: [CourseHazard]
+    var hazards: [CourseHazard]
     var terrain: Terrain = .flat
     var wind: CourseWind = .calm
     var fairwayBoundary: CourseRegion?
     var greenBoundary: CourseRegion?
     var trees: [CourseTree] = []
+    /// Cached lake planes shared by rendering and the shot solver. Banks stay outside
+    /// the existing hazard boundary, so neither water penalties nor routing drift.
+    var waterElevations: [Int: Double] = [:]
+    /// Recessed sand floors, derived once from the completed terrain and rim.
+    var bunkerFloors: [Int: Double] = [:]
     var simulationVersion = 2
 
     /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
@@ -271,7 +314,6 @@ struct Hole: Identifiable, Equatable, Sendable {
         if greenBoundary?.contains(point) ?? (point.distance(to: pin) <= greenRadius) { return .green }
         if let greenBoundary, greenBoundary.distance(to:point) <= 2 { return .fringe }
         if point.distance(to: tee) <= 4 { return .tee }
-        let offset = distanceFromCenterline(point)
         if let fairwayBoundary {
             if fairwayBoundary.contains(point) { return .fairway }
             let edge = fairwayBoundary.distance(to:point)
@@ -279,6 +321,7 @@ struct Hole: Identifiable, Equatable, Sendable {
             if edge <= Self.roughWidth { return .deepRough }
             return .outOfBounds
         }
+        let offset = distanceFromCenterline(point)
         if offset <= fairwayWidth / 2 { return .fairway }
         if offset <= fairwayWidth / 2 + Self.roughWidth { return .rough }
         return .outOfBounds
@@ -289,22 +332,48 @@ struct Hole: Identifiable, Equatable, Sendable {
             var gradient=terrain.gradient(at:point)
             if fairwayBoundary != nil {
                 for hazard in hazards where hazard.kind == .bunker {
-                    let width=max(1,hazard.width/2),length=max(1,hazard.length/2)
-                    let x=(point.x-hazard.x)/width, d=(point.d-hazard.distance)/length
-                    let radius=sqrt(x*x+d*d)
-                    if radius < 1.15 {
-                        let t=max(0,min(1,(radius-0.55)/0.45))
-                        height -= 0.8*(1-t*t*(3-2*t))
-                        var derivative = radius > 0.55 && radius < 1 ? 0.8*6*t*(1-t)/0.45 : 0
-                        if radius > 0.8 {
-                            let u=(radius-0.8)/0.35
-                            height += 0.28*pow(sin(.pi*u),2)
-                            derivative += 0.28 * .pi/0.35 * sin(2 * .pi*u)
-                        }
-                        if radius > 0.0001 {
-                            gradient.dx += derivative*x/(radius*width)
-                            gradient.dd += derivative*d/(radius*length)
-                        }
+                    let extent=1+abs(hazard.contour)*1.4
+                    guard abs(point.x-hazard.x)<=hazard.width/2*extent,
+                          abs(point.d-hazard.distance)<=hazard.length/2*extent else { continue }
+                    let radial=hazard.radialSurface(at:point),radius=radial.radius
+                    // A graded floor must not inherit a neighboring mound's
+                    // hump. Join it to the unmodified terrain with a C2 blend,
+                    // entirely inside the scoring boundary.
+                    if radius < 1 {
+                        let center=CoursePoint(x:hazard.x,d:hazard.distance)
+                        let anchor=bunkerFloors[hazard.id] ?? (terrain.elevation(at:center)-1.25)
+                        let dx=max(-0.012,min(0.012,terrain.tiltX)),dd=max(-0.012,min(0.012,terrain.tiltD))
+                        let floor=anchor+dx*(point.x-hazard.x)+dd*(point.d-hazard.distance)
+                        // A broader sand floor and a more defined cut bank read
+                        // as an excavation, not sand draped across a mound.
+                        let t=max(0,min(1,(radius-0.52)/0.48))
+                        let blend=t*t*t*(t*(t*6-15)+10)
+                        let derivative=radius>0.52 ? 30*t*t*(t-1)*(t-1)/0.48 : 0
+                        let delta=height-floor
+                        height=floor+delta*blend
+                        gradient.dx=dx+(gradient.dx-dx)*blend+delta*derivative*radial.dx
+                        gradient.dd=dd+(gradient.dd-dd)*blend+delta*derivative*radial.dd
+                    }
+                }
+                for hazard in hazards where hazard.kind == .water {
+                    guard let level = waterElevations[hazard.id] else { continue }
+                    let rx = max(1, hazard.width / 2), rd = max(1, hazard.length / 2)
+                    let extent=(1+6/min(rx,rd))*(1+abs(hazard.contour)*1.4)
+                    guard abs(point.x-hazard.x)<=rx*extent,
+                          abs(point.d-hazard.distance)<=rd*extent else { continue }
+                    let radial=hazard.radialSurface(at:point)
+                    let r = radial.radius, width = 6 / min(rx, rd)
+                    guard r < 1 + width else { continue }
+                    if r <= 1 {
+                        height = level; gradient = (0, 0)
+                    } else {
+                        let t = (r - 1) / width
+                        let blend = t*t*t*(t*(t*6-15)+10)
+                        let derivative = 30*t*t*(t-1)*(t-1) / width
+                        let delta = height - level
+                        height = level + delta * blend
+                        gradient.dx = gradient.dx * blend + delta * derivative * radial.dx
+                        gradient.dd = gradient.dd * blend + delta * derivative * radial.dd
                     }
                 }
             }
@@ -453,22 +522,79 @@ struct Course: Identifiable, Equatable, Sendable {
             var hole=holes[index]
             var left:[CoursePoint]=[],right:[CoursePoint]=[]
             for segment in 0..<(hole.centerline.count-1) {
-                let a=hole.centerline[segment],b=hole.centerline[segment+1],length=a.distance(to:b)
-                for step in 0...5 {
-                    let t=Double(step)/5, x=a.x+(b.x-a.x)*t,d=a.d+(b.d-a.d)*t
+                let a=hole.centerline[segment],b=hole.centerline[segment+1]
+                let previous=hole.centerline[max(0,segment-1)]
+                let next=hole.centerline[min(hole.centerline.count-1,segment+2)]
+                // A continuous tangent at every dogleg prevents overlapping
+                // left/right offsets from making triangular fairway notches.
+                let m0=CoursePoint(x:(b.x-previous.x)*0.5,d:(b.d-previous.d)*0.5)
+                let m1=CoursePoint(x:(next.x-a.x)*0.5,d:(next.d-a.d)*0.5)
+                let samples=max(12,Int(ceil(a.distance(to:b)/5)))
+                let count=segment == hole.centerline.count-2 ? samples+1 : samples
+                for step in 0..<count {
+                    let t=Double(step)/Double(samples),t2=t*t,t3=t2*t
+                    let h0=2*t3-3*t2+1,h1=t3-2*t2+t,h2 = -2*t3+3*t2,h3=t3-t2
+                    let x=h0*a.x+h1*m0.x+h2*b.x+h3*m1.x
+                    let d=h0*a.d+h1*m0.d+h2*b.d+h3*m1.d
+                    let dx=(6*t2-6*t)*a.x+(3*t2-4*t+1)*m0.x+(-6*t2+6*t)*b.x+(3*t2-2*t)*m1.x
+                    let dd=(6*t2-6*t)*a.d+(3*t2-4*t+1)*m0.d+(-6*t2+6*t)*b.d+(3*t2-2*t)*m1.d
+                    let length=max(0.001,hypot(dx,dd))
                     let width=hole.fairwayWidth/2*(0.88+0.16*sin((Double(segment)+t)*2.1+Double(index)))
-                    left.append(p(x-(b.d-a.d)/length*width,d+(b.x-a.x)/length*width))
-                    right.append(p(x+(b.d-a.d)/length*width,d-(b.x-a.x)/length*width))
+                    left.append(p(x-dd/length*width,d+dx/length*width))
+                    right.append(p(x+dd/length*width,d-dx/length*width))
                 }
             }
             hole.fairwayBoundary=CourseRegion(points:left+right.reversed())
-            hole.greenBoundary=CourseRegion(points:(0..<32).map { vertex in
-                let angle=Double(vertex)/32 * .pi*2
+            hole.greenBoundary=CourseRegion(points:(0..<96).map { vertex in
+                let angle=Double(vertex)/96 * .pi*2
                 let radius=hole.greenRadius*(1+0.10*sin(angle*3+Double(index)))
                 return p(hole.pin.x+cos(angle)*radius,hole.pin.d+sin(angle)*radius*0.93)
             })
             hole.wind=breezes[index]
-            hole.simulationVersion=4
+            hole.simulationVersion=7
+            // Playable relief, with every new mound clear of the putting surface.
+            for side in [-1.0,1.0] {
+                for forward in [-22.0,34.0] {
+                    // Lower approach-side shoulders keep greenside bunkers
+                    // carved into a bank instead of perched on a tall cone.
+                    let height = forward < 0 ? 1.4 : (side < 0 ? 3.0 : 3.5)
+                    hole.terrain.features.append(mound(hole.pin.x+side*(hole.greenRadius+12),
+                        hole.pin.d+forward,r:forward < 0 ? 16 : 22,h:height))
+                }
+            }
+            hole.terrain.features.append(ridge(hole.pin.x-14,hole.pin.d+hole.greenRadius+19,
+                hole.pin.x+14,hole.pin.d+hole.greenRadius+19,r:14,h:3.2))
+            for (a,b) in zip(hole.centerline,hole.centerline.dropFirst()) {
+                let center=p((a.x+b.x)/2,(a.d+b.d)/2)
+                if center.distance(to:hole.pin)>60 && center.distance(to:hole.tee)>45 {
+                    let heading=a.heading(to:b) * .pi/180
+                    for side in [-1.0,1.0] {
+                        hole.terrain.features.append(mound(center.x+cos(heading)*side*hole.fairwayWidth*0.6,
+                            center.d-sin(heading)*side*hole.fairwayWidth*0.6,r:23,h:1.7))
+                    }
+                }
+            }
+            for hazard in hole.hazards.indices {
+                hole.hazards[hazard].contour = hole.hazards[hazard].kind == .water ? 0.085 : 0.12
+            }
+            for lake in hole.hazards where lake.kind == .water {
+                let edge = (0..<64).map { index in
+                    let a = Double(index) * 2 * .pi / 64
+                    let radius=lake.boundaryScale(at:a)
+                    return hole.terrain.elevation(at: p(lake.x + cos(a)*lake.width/2*radius,
+                        lake.distance + sin(a)*lake.length/2*radius))
+                }
+                hole.waterElevations[lake.id] = (edge.min() ?? 0) - 0.85
+            }
+            for bunker in hole.hazards where bunker.kind == .bunker {
+                let center=p(bunker.x,bunker.distance)
+                let rim=(0..<64).map { index in
+                    let a=Double(index)*2 * .pi/64,r=bunker.boundaryScale(at:a)
+                    return hole.terrain.elevation(at:p(bunker.x+cos(a)*bunker.width/2*r,
+                        bunker.distance+sin(a)*bunker.length/2*r))
+                }
+                hole.bunkerFloors[bunker.id]=min(hole.terrain.elevation(at:center)-1.6,(rim.min() ?? 0)-0.9)
+            }
             // Playable trunks are explicit, separate from decorative distant vegetation.
             let station=hole.centerline[min(1,hole.centerline.count-1)]
             hole.trees=[CourseTree(id:0,center:p(station.x-hole.fairwayWidth*0.43,station.d+12),trunkRadius:0.42,trunkHeight:7),
