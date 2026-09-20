@@ -20,7 +20,7 @@ namespace GolfArcade.Game
             var rig = go.AddComponent<CameraRig>();
             rig.Camera = go.AddComponent<Camera>();
             go.tag = "MainCamera";
-            rig.Camera.fieldOfView = 50;
+            rig.Camera.fieldOfView = 60; // portrait phone: tall and narrow, so open it up
             rig.Camera.nearClipPlane = 0.05f;
             rig.Camera.farClipPlane = 900;
             rig.Camera.clearFlags = CameraClearFlags.Skybox;
@@ -29,24 +29,28 @@ namespace GolfArcade.Game
             return rig;
         }
 
-        /// Behind the ball on the aim line, framing the landing area. Putts sit lower and closer.
+        /// Behind the ball on the aim line, pitched down about 20° so on a portrait screen the
+        /// horizon sits in the top fifth, the landing area just under it, and the ball and golfer
+        /// in the lower third above the buttons. Putts sit lower and closer.
         public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting)
         {
-            float back = putting ? 3.2f : 7f, up = putting ? 1.4f : 3f, ahead = putting ? 8f : 40f;
+            float back = putting ? 3.2f : 7.5f, up = putting ? 1.4f : 4f, ahead = putting ? 2.5f : 3.5f;
             targetPosition = ball - aimDirection * back + Vector3.up * up;
-            targetLookAt = ball + aimDirection * ahead + Vector3.up * (putting ? 0 : 1.5f);
+            targetLookAt = ball + aimDirection * ahead;
             positionLag = 0.35f; lookLag = 0.3f;
         }
 
-        /// Chase from behind and above, like the Wii's ball cam.
+        /// Chase from behind, like the Wii's ball cam: the camera rides a little above the ball
+        /// and well behind it, so the ball is seen against the sky and the hole ahead rather than
+        /// from overhead, and it looks a touch past the ball to keep the landing area in frame.
         public void Follow(Vector3 ball, Vector3 velocity, bool putting)
         {
             var dir = velocity; dir.y = 0;
             if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.Normalize();
-            float back = putting ? 3f : 9f, up = putting ? 1.6f : 4f;
-            targetPosition = ball - dir * back + Vector3.up * (up + Mathf.Min(ball.y * 0.4f, 12f));
-            targetLookAt = ball;
-            positionLag = 0.25f; lookLag = 0.06f;
+            float back = putting ? 3f : 14f, up = putting ? 1.6f : 3.5f;
+            targetPosition = ball - dir * back + Vector3.up * up; // `ball` already carries its height
+            targetLookAt = ball + dir * (putting ? 1f : 8f);
+            positionLag = 0.25f; lookLag = 0.08f;
         }
 
         /// A slow settle on the resting ball, with the pin in shot when it is near.

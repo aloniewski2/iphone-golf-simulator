@@ -85,12 +85,13 @@ namespace GolfArcade.Game
 
             aimLine = new GameObject("Aim line").AddComponent<LineRenderer>();
             aimLine.transform.SetParent(transform, false);
-            aimLine.material = HoleView.Mat(new Color(1f, 1f, 1f, 0.9f));
+            aimLine.material = HoleView.UnlitMat(Color.white);
             aimLine.startWidth = aimLine.endWidth = 0.18f;
             aimLine.positionCount = 2;
             aimLine.useWorldSpace = true;
 
             landingMarker = HoleView.Primitive(PrimitiveType.Cylinder, "Landing marker", new Color(1f, 0.9f, 0.2f), transform).transform;
+            landingMarker.GetComponent<Renderer>().sharedMaterial = HoleView.UnlitMat(new Color(1f, 0.9f, 0.2f));
             landingMarker.localScale = new Vector3(3, 0.02f, 3);
 
             BuildMinimap();
@@ -223,7 +224,10 @@ namespace GolfArcade.Game
             var from = HoleView.ToWorld(ballAt, 0.03);
             aimLine.SetPosition(0, from);
             aimLine.SetPosition(1, from + dir * (float)Math.Min(rated, putting ? toPin + 3 : rated));
-            landingMarker.position = putting ? from : HoleView.ToWorld(FullShotCarry(lie), 0);
+            landingMarker.position = putting ? from : HoleView.ToWorld(FullShotCarry(lie), 0.01);
+            // Grows with distance so the ring stays readable from behind the ball.
+            float ring = Mathf.Max(3f, (float)rated * 0.045f);
+            landingMarker.localScale = new Vector3(ring, 0.02f, ring);
             landingMarker.gameObject.SetActive(!putting);
             golfer.Stand(ball.position, dir);
             hud.SetDistance(putting ? $"{toPin * 3:F0} ft to the hole" : $"{toPin:F0} yd to the pin");
@@ -289,6 +293,7 @@ namespace GolfArcade.Game
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor(), Wind);
             holeStrokes++;
             strikePlayed = false;
+            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Speed {impact.PeakSpeed:F1} rad/s  ·  Face {impact.FaceDegrees:+0;-0}°  ·  Tempo {impact.TempoSeconds:F2}s" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
             golfer.Strike();

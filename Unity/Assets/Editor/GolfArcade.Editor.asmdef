@@ -1,8 +1,14 @@
 {
   "name": "GolfArcade.Editor",
   "rootNamespace": "GolfArcade.EditorTools",
-  "references": ["GolfArcade"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "GolfArcade",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,

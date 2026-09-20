@@ -46,6 +46,14 @@ Tests: *Window → General → Test Runner*, or headless:
 /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath Unity -runTests -testPlatform EditMode -testResults /tmp/editmode.xml -logFile /tmp/tests.log
 ```
 
+The **Golf Arcade** menu has the same runs (*Run EditMode Tests*, *Run PlayMode Tests*) writing a
+plain-text report to `Library/TestResults/<Mode>.txt`, plus *Play Golf Scene*, *Capture Game View*
+(a phone-resolution PNG of what the player sees, to `Library/Captures/`) and *Debug Swing*. The
+PlayMode suite includes `ReviewCaptureTests`, which plays a stroke at real speed and saves frames
+(flyover, address, backswing, flight, result, next shot) to `Library/Captures/review/` — the
+quickest way to look at camera or HUD work without a device. These menu items can be clicked from
+a script (`osascript` → System Events) so the editor can be driven with no mouse.
+
 Headless Unity refuses to start while the editor GUI has the project open. For that case
 `Tools/check.sh` compiles all three assemblies with the compiler the editor ships and runs the
 EditMode tests on its bundled .NET runtime — no Unity process needed (the PlayMode smoke test
@@ -79,7 +87,9 @@ with your own team. Bundle id `com.aloniewski.golfarcade.unity`, portrait only, 
 - `Assets/Scripts/Shot` — clubs, calibration, and the `BallFlight` solver.
 - `Assets/Scripts/Course` — hole geometry and lies, `Wind`, `CourseShot` (flight on the course,
   roll, cup), `Scorecard`, `HoleView` (runtime meshes).
-- `Assets/Scripts/Game` — `GolfGame` state machine, camera, golfer, swing wiring, `GolfSounds`.
+- `Assets/Scripts/Game` — `GolfGame` state machine, camera, golfer, swing wiring, `GolfSounds`,
+  `GameCapture` (render what the phone shows to a PNG).
+- `Assets/Editor` — project setup, the test and play menus.
 - `Assets/Scripts/UI` — the HUD.
 - `Assets/Tests` — EditMode tests for the detector, shot model, wind and scorecard; a PlayMode
   smoke test.

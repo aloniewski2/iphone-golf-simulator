@@ -175,6 +175,18 @@ namespace GolfArcade.Course
         }
 
         static readonly Dictionary<Color, Material> materials = new();
+        static readonly Dictionary<Color, Material> unlitMaterials = new();
+
+        /// A flat, unshaded colour — for markers and lines that should read the same from any angle.
+        public static Material UnlitMat(Color color)
+        {
+            if (unlitMaterials.TryGetValue(color, out var m) && m) return m;
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            m = new Material(shader) { color = color };
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
+            unlitMaterials[color] = m;
+            return m;
+        }
 
         public static Material Mat(Color color)
         {
