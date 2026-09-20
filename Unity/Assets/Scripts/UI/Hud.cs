@@ -30,6 +30,9 @@ namespace GolfArcade.UI
         Rect appliedSafeArea;
         Text holeText, scoreText, distanceText, clubText, statusText, bannerText, tempoText, windText;
         Image meterFill, meterMark, meterOverswing, windArrow;
+        RectTransform meterRect;
+        Vector2 meterHome;
+        float meterLoad;
         CanvasGroup bannerGroup;
         RectTransform scorecard;
         float bannerUntil;
@@ -87,6 +90,8 @@ namespace GolfArcade.UI
 
             // Power meter, left edge: a tall bar that fills from the bottom.
             var meterBg = Panel("Meter", new Color(0, 0, 0, 0.45f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(70, 0), new Vector2(60, 900));
+            meterRect = meterBg.rectTransform;
+            meterHome = meterRect.anchoredPosition;
             meterOverswing = Panel("Overswing", new Color(0.9f, 0.2f, 0.15f, 0.5f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(48, 110), meterBg.transform);
             meterFill = Panel("Fill", new Color(0.35f, 0.85f, 0.35f, 0.95f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(48, 0), meterBg.transform);
             meterFill.rectTransform.pivot = new Vector2(0.5f, 0);
@@ -203,10 +208,17 @@ namespace GolfArcade.UI
         public void SetStatus(string text) => statusText.text = text;
         public void SetTempo(string text) => tempoText.text = text;
 
+        /// The Wii meter fills with the backswing; as it climbs the fill warms from green through
+        /// yellow to orange and the whole bar starts to tremble, so the tension of a big swing is
+        /// in the picture as well as in the hand and the ear.
         public void SetMeter(float load, float? mark = null)
         {
-            meterFill.rectTransform.sizeDelta = new Vector2(48, Mathf.Clamp01(load) * 888);
-            meterFill.color = load > 0.98f ? new Color(1f, 0.55f, 0.2f) : new Color(0.35f, 0.85f, 0.35f, 0.95f);
+            meterLoad = Mathf.Clamp01(load);
+            meterFill.rectTransform.sizeDelta = new Vector2(48, meterLoad * 888);
+            var calm = new Color(0.35f, 0.85f, 0.35f, 0.95f);
+            var warm = new Color(1f, 0.9f, 0.25f, 0.95f);
+            var hot = new Color(1f, 0.55f, 0.2f);
+            meterFill.color = load > 0.98f ? hot : meterLoad < 0.6f ? Color.Lerp(calm, warm, meterLoad / 0.6f) : Color.Lerp(warm, hot, (meterLoad - 0.6f) / 0.4f);
             meterMark.enabled = mark.HasValue;
             if (mark.HasValue) meterMark.rectTransform.anchoredPosition = new Vector2(0, 6 + Mathf.Clamp01(mark.Value) * 888);
         }
@@ -230,6 +242,11 @@ namespace GolfArcade.UI
         void Update()
         {
             ApplySafeArea();
+            // Tremble: nothing below 40 % load, up to ±5 px at the top of the backswing.
+            float tremble = Mathf.InverseLerp(0.4f, 1f, meterLoad) * 5f;
+            meterRect.anchoredPosition = meterHome + (tremble > 0
+                ? new Vector2(Mathf.Sin(Time.unscaledTime * 63f), Mathf.Cos(Time.unscaledTime * 47f)) * tremble
+                : Vector2.zero);
             if (bannerGroup.alpha > 0 && Time.time > bannerUntil)
                 bannerGroup.alpha = Mathf.MoveTowards(bannerGroup.alpha, 0, Time.deltaTime * 3);
         }

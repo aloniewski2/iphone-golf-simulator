@@ -102,17 +102,19 @@ namespace GolfArcade.Game
             Swing.OnImpact = OnImpact;
             Swing.Start();
 
-            hud.AimLeft.Pressed = () => Nudge(-AimTapDegrees);
-            hud.AimRight.Pressed = () => Nudge(AimTapDegrees);
-            hud.ClubUp.Pressed = () => CycleClub(-1);
-            hud.ClubDown.Pressed = () => CycleClub(1);
+            hud.AimLeft.Pressed = () => { Tick(); Nudge(-AimTapDegrees); };
+            hud.AimRight.Pressed = () => { Tick(); Nudge(AimTapDegrees); };
+            hud.ClubUp.Pressed = () => { Tick(); CycleClub(-1); };
+            hud.ClubDown.Pressed = () => { Tick(); CycleClub(1); };
             hud.SwingHold.Pressed = () => Swing.Synthetic?.Backswing(true);
             hud.SwingHold.Released = () => Swing.Synthetic?.Backswing(false);
 
             StartRound();
         }
 
-        void OnDestroy() => Swing?.Stop();
+        void OnDestroy() { Haptics.Release(); Swing?.Stop(); }
+
+        void Tick() { if (Current == State.Aim) { sounds.PlayTick(); Haptics.Tick(); } }
 
         void BuildMinimap()
         {
@@ -274,6 +276,9 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             hud.SetMeter((float)load);
             golfer.ShowLoad((float)load);
+            // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
+            Haptics.Tension(load);
+            sounds.SetTension(load);
             hud.SetStatus("Backswing…");
         }
 
@@ -282,6 +287,8 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             hud.SetMeter(0);
             golfer.Settle();
+            Haptics.Release();
+            sounds.Release();
             hud.SetStatus("Hold still, then swing");
         }
 
@@ -289,6 +296,8 @@ namespace GolfArcade.Game
         {
             if (Current != State.Aim) return;
             Swing.Armed = false;
+            Haptics.Release();
+            sounds.Release();
             var lie = hole.LieAt(ballAt);
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor(), Wind);
             holeStrokes++;
@@ -327,6 +336,7 @@ namespace GolfArcade.Game
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
                     if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
+                    if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
                     else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
                     else hud.SetStatus("Hold the phone still…");
@@ -335,7 +345,7 @@ namespace GolfArcade.Game
                 case State.Flight:
                     flightTime += Time.deltaTime;
                     if (flightTime < 0) break;
-                    if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); }
+                    if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power); }
                     var p = LastShot.PositionAt(flightTime);
                     var pos = new Vector3((float)p.x, (float)p.h + 0.06f, (float)p.d);
                     if (!trail.emitting && club != GolfClub.Putter) { trail.Clear(); trail.emitting = true; }
@@ -377,10 +387,12 @@ namespace GolfArcade.Game
             {
                 ball.gameObject.SetActive(false);
                 sounds.PlayCup();
+                sounds.PlayFanfare();
+                Haptics.Success();
                 result = "In the hole!";
             }
-            else if (shot.Lie == CourseLie.Water) { sounds.PlaySplash(); result = "Water  ·  +1 stroke"; }
-            else if (shot.Lie == CourseLie.OutOfBounds) result = "Out of bounds  ·  +1 stroke";
+            else if (shot.Lie == CourseLie.Water) { sounds.PlaySplash(); Haptics.Failure(); result = "Water  ·  +1 stroke"; }
+            else if (shot.Lie == CourseLie.OutOfBounds) { Haptics.Failure(); result = "Out of bounds  ·  +1 stroke"; }
             else if (club == GolfClub.Putter) result = $"{shot.Total * 3:F0} ft  ·  {shot.Rest.DistanceTo(hole.Pin) * 3:F1} ft left";
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             holeStrokes += shot.PenaltyStrokes;

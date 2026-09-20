@@ -13,7 +13,9 @@ buttons, and measures the swing.
 2. **Address** — hold the phone still for a moment (like a golfer settling over the ball). The HUD
    says *Ready — swing!*
 3. **Backswing** — as you draw the phone back, the power meter on the left fills with the size of
-   the backswing, exactly like the Wii's meter.
+   the backswing, exactly like the Wii's meter. The tension builds with it: the phone's haptics
+   buzz harder and sharper in your hand (CoreHaptics, `Plugins/iOS/GolfHaptics.mm`), a creaking
+   wind-up climbs in pitch, and the meter warms from green to orange and starts to tremble.
 4. **Downswing** — the swing's **peak rotation speed** is the power (each club has its own full
    speed: driver 16 rad/s, 7-iron 13, wedge 9, putter 3). The **roll of your wrist** between address
    and impact is the club face: open slices, closed hooks, a few degrees are forgiven. Swing
@@ -26,7 +28,9 @@ buttons, and measures the swing.
    with *Play again*.
 
 Sounds are synthesised at start-up (a strike per club, the downswing whoosh, the cup rattle, a
-splash), so there are no audio assets to manage. The HUD lays out inside the phone's safe area.
+splash, a chime when the swing is armed, a fanfare for a holed ball, button ticks), so there are no
+audio assets to manage. Haptics: a tick when the swing arms and on every button, a thump at impact
+scaled by power, success for a holed ball, a buzz for water or out of bounds. The HUD lays out inside the phone's safe area.
 
 ## Working in the editor
 
