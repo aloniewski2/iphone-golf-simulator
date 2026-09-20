@@ -22,6 +22,7 @@ namespace GolfArcade.Course
         public readonly double Curve;
         /// Degrees right of straight down the hole that the shot was aimed at.
         public readonly double Heading;
+        public readonly Wind Wind;
         public readonly CoursePoint Origin;
         public readonly CourseLie Lie;
         public readonly double? HoledAt;
@@ -71,9 +72,10 @@ namespace GolfArcade.Course
             return speed <= limit;
         }
 
-        public CourseShot(GolfClub club, SwingImpact impact, double heading, CoursePoint origin, Hole hole, double lieFactor = 1)
+        public CourseShot(GolfClub club, SwingImpact impact, double heading, CoursePoint origin, Hole hole, double lieFactor = 1, Wind wind = default)
         {
             Club = club;
+            Wind = wind;
             Power = Clamp(impact.Power, 0, 1);
             StartLine = double.IsFinite(impact.StartLineDegrees) ? impact.StartLineDegrees : 0;
             Curve = club == GolfClub.Putter ? 0 : Clamp(impact.CurveDegrees, -15, 15);
@@ -102,7 +104,10 @@ namespace GolfArcade.Course
             }
             else
             {
-                var flight = BallFlight.Simulate(club.Launch(Power, StartLine, Curve, speedFactor));
+                var launch = club.Launch(Power, StartLine, Curve, speedFactor);
+                launch.WindMPH = wind.SpeedMPH;
+                launch.WindDegrees = wind.RelativeTo(Heading);
+                var flight = BallFlight.Simulate(launch);
                 Carry = flight.Carry; Apex = flight.Apex;
                 double cosH = Math.Cos(Heading * Math.PI / 180), sinH = Math.Sin(Heading * Math.PI / 180);
                 // Flight samples are in the aim frame; rotate them onto the course.

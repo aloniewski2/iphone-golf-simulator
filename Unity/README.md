@@ -7,7 +7,9 @@ buttons, and measures the swing.
 ## How it plays
 
 1. **Aim** — hold ◀ ▶ to sweep the aim line (a tap nudges it 1.5°). The club is picked for you by
-   lie and distance; ▲ ▼ changes it. A yellow ring marks the club's full-swing landing spot.
+   lie and distance; ▲ ▼ changes it. Each hole has a **wind** (up to 20 mph), shown as an arrow
+   relative to your aim with what it does in words (*12 mph left to right*). The yellow ring marks
+   where the club's full swing actually carries in that wind, so aim off it the way the Wii teaches.
 2. **Address** — hold the phone still for a moment (like a golfer settling over the ball). The HUD
    says *Ready — swing!*
 3. **Backswing** — as you draw the phone back, the power meter on the left fills with the size of
@@ -17,8 +19,14 @@ buttons, and measures the swing.
    and impact is the club face: open slices, closed hooks, a few degrees are forgiven. Swing
    much harder than the club's full speed and the shot goes wild.
 5. The ball flies through the same physical model as the iOS app (drag, Magnus lift, bounce,
-   lie-dependent roll, a cup that captures or lips out), the camera chases it, and the result
-   card reads carry, total and lie. Water and out of bounds cost a stroke.
+   lie-dependent roll, a cup that captures or lips out) — with the air itself moving, so a
+   headwind balloons and shortens a shot and a crosswind pushes it — the camera chases it, and the
+   result card reads carry, total and lie. Water and out of bounds cost a stroke.
+6. After the last hole the **scorecard** comes up (hole by hole against par, total, over/under)
+   with *Play again*.
+
+Sounds are synthesised at start-up (a strike per club, the downswing whoosh, the cup rattle, a
+splash), so there are no audio assets to manage. The HUD lays out inside the phone's safe area.
 
 ## Working in the editor
 
@@ -36,6 +44,15 @@ Tests: *Window → General → Test Runner*, or headless:
 
 ```bash
 /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath Unity -runTests -testPlatform EditMode -testResults /tmp/editmode.xml -logFile /tmp/tests.log
+```
+
+Headless Unity refuses to start while the editor GUI has the project open. For that case
+`Tools/check.sh` compiles all three assemblies with the compiler the editor ships and runs the
+EditMode tests on its bundled .NET runtime — no Unity process needed (the PlayMode smoke test
+still needs the editor):
+
+```bash
+Unity/Tools/check.sh
 ```
 
 ### MCP for Unity
@@ -60,8 +77,10 @@ with your own team. Bundle id `com.aloniewski.golfarcade.unity`, portrait only, 
 - `Assets/Scripts/Swing` — `MotionSwingDetector` (pure C#, the recognizer) and motion sources
   (phone gyro, synthetic).
 - `Assets/Scripts/Shot` — clubs, calibration, and the `BallFlight` solver.
-- `Assets/Scripts/Course` — hole geometry and lies, `CourseShot` (flight on the course, roll, cup),
-  `HoleView` (runtime meshes).
-- `Assets/Scripts/Game` — `GolfGame` state machine, camera, golfer, swing wiring.
+- `Assets/Scripts/Course` — hole geometry and lies, `Wind`, `CourseShot` (flight on the course,
+  roll, cup), `Scorecard`, `HoleView` (runtime meshes).
+- `Assets/Scripts/Game` — `GolfGame` state machine, camera, golfer, swing wiring, `GolfSounds`.
 - `Assets/Scripts/UI` — the HUD.
-- `Assets/Tests` — EditMode tests for the detector and shot model, a PlayMode smoke test.
+- `Assets/Tests` — EditMode tests for the detector, shot model, wind and scorecard; a PlayMode
+  smoke test.
+- `Tools` — `check.sh`, the editor-free compile + EditMode test run.

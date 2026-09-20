@@ -24,8 +24,12 @@ namespace GolfArcade.Game
         public State Current { get; private set; } = State.Intro;
         public CourseShot LastShot { get; private set; }
         public SwingController Swing { get; private set; }
+        public Scorecard Card { get; private set; }
+        public Wind Wind { get; private set; }
 
         Course.Course course;
+        GolfSounds sounds;
+        readonly System.Random rng = new();
         int holeIndex;
         Hole hole;
         HoleView holeView;
@@ -42,11 +46,13 @@ namespace GolfArcade.Game
         CoursePoint ballAt;
         double heading;
         GolfClub club;
-        int holeStrokes, roundStrokes, roundToPar;
+        int holeStrokes;
         float stateTime;
         double flightTime;
         Vector3 lastBallPos;
         bool aimedByPlayer;
+        bool strikePlayed;
+        SwingPhase lastPhase;
 
         void Awake()
         {
@@ -68,6 +74,7 @@ namespace GolfArcade.Game
             rig = CameraRig.Create();
             hud = Hud.Create();
             golfer = GolferView.Create(transform);
+            sounds = GolfSounds.Create(transform);
 
             ball = HoleView.Primitive(PrimitiveType.Sphere, "Ball", Color.white, transform).transform;
             ball.localScale = Vector3.one * 0.12f;
@@ -101,7 +108,7 @@ namespace GolfArcade.Game
             hud.SwingHold.Pressed = () => Swing.Synthetic?.Backswing(true);
             hud.SwingHold.Released = () => Swing.Synthetic?.Backswing(false);
 
-            StartHole(0);
+            StartRound();
         }
 
         void OnDestroy() => Swing?.Stop();
@@ -134,6 +141,13 @@ namespace GolfArcade.Game
 
         // ----- Hole flow -----
 
+        void StartRound()
+        {
+            Card = new Scorecard(course);
+            hud.HideScorecard();
+            StartHole(0);
+        }
+
         void StartHole(int index)
         {
             holeIndex = index;
@@ -142,8 +156,11 @@ namespace GolfArcade.Game
             holeView = HoleView.Build(hole, transform);
             ballAt = hole.Tee;
             holeStrokes = 0;
+            Wind = Wind.Random(rng);
             hud.SetHole(hole.Number, hole.Par, hole.Length);
-            hud.SetScore(roundStrokes, roundToPar, holeStrokes);
+            double downTheHole = hole.Tee.HeadingTo(hole.Pin);
+            hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm);
+            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             FrameMinimap();
             PlaceBall(ballAt, 0);
             ball.gameObject.SetActive(true);
@@ -206,12 +223,26 @@ namespace GolfArcade.Game
             var from = HoleView.ToWorld(ballAt, 0.03);
             aimLine.SetPosition(0, from);
             aimLine.SetPosition(1, from + dir * (float)Math.Min(rated, putting ? toPin + 3 : rated));
-            landingMarker.position = from + dir * (float)rated;
+            landingMarker.position = putting ? from : HoleView.ToWorld(FullShotCarry(lie), 0);
             landingMarker.gameObject.SetActive(!putting);
             golfer.Stand(ball.position, dir);
             hud.SetDistance(putting ? $"{toPin * 3:F0} ft to the hole" : $"{toPin:F0} yd to the pin");
             hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie.PowerFactor() < 1 ? $"  ({lie.Label()})" : "")}");
-            hud.SetScore(roundStrokes, roundToPar, holeStrokes);
+            hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm);
+            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+        }
+
+        /// Where a full, square swing with this club lands in today's wind: the yellow ring
+        /// moves with the wind, so the player aims off it the way the Wii teaches.
+        CoursePoint FullShotCarry(CourseLie lie)
+        {
+            var launch = club.Launch(1, 0, 0, lie.PowerFactor());
+            launch.WindMPH = Wind.SpeedMPH;
+            launch.WindDegrees = Wind.RelativeTo(heading);
+            var carry = BallFlight.Simulate(launch).CarryPoint;
+            double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+            return new CoursePoint(ballAt.X + carry.LateralYards * cosH + carry.DistanceYards * sinH,
+                                   ballAt.D - carry.LateralYards * sinH + carry.DistanceYards * cosH);
         }
 
         void Nudge(double degrees)
@@ -255,8 +286,9 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             Swing.Armed = false;
             var lie = hole.LieAt(ballAt);
-            LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor());
-            holeStrokes++; roundStrokes++;
+            LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor(), Wind);
+            holeStrokes++;
+            strikePlayed = false;
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Speed {impact.PeakSpeed:F1} rad/s  ·  Face {impact.FaceDegrees:+0;-0}°  ·  Tempo {impact.TempoSeconds:F2}s" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
             golfer.Strike();
@@ -289,6 +321,7 @@ namespace GolfArcade.Game
                     if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * Time.deltaTime);
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
+                    if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
                     else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
                     else hud.SetStatus("Hold the phone still…");
@@ -297,6 +330,7 @@ namespace GolfArcade.Game
                 case State.Flight:
                     flightTime += Time.deltaTime;
                     if (flightTime < 0) break;
+                    if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); }
                     var p = LastShot.PositionAt(flightTime);
                     var pos = new Vector3((float)p.x, (float)p.h + 0.06f, (float)p.d);
                     if (!trail.emitting && club != GolfClub.Putter) { trail.Clear(); trail.emitting = true; }
@@ -315,10 +349,17 @@ namespace GolfArcade.Game
                     if (stateTime > 3f)
                     {
                         if (holeIndex + 1 < course.Holes.Length) StartHole(holeIndex + 1);
-                        else { hud.ShowBanner($"Round over  ·  {roundStrokes} ({(roundToPar >= 0 ? "+" : "")}{roundToPar})", 30f); Enter(State.RoundDone); }
+                        else
+                        {
+                            hud.ShowSwingControls(false, false);
+                            hud.ShowScorecard(Card);
+                            hud.PlayAgain.Pressed = StartRound;
+                            Enter(State.RoundDone);
+                        }
                     }
                     break;
             }
+            lastPhase = Swing.Phase;
         }
 
         void FinishShot()
@@ -330,15 +371,16 @@ namespace GolfArcade.Game
             if (shot.IsHoled)
             {
                 ball.gameObject.SetActive(false);
+                sounds.PlayCup();
                 result = "In the hole!";
             }
-            else if (shot.Lie == CourseLie.Water) result = "Water  ·  +1 stroke";
+            else if (shot.Lie == CourseLie.Water) { sounds.PlaySplash(); result = "Water  ·  +1 stroke"; }
             else if (shot.Lie == CourseLie.OutOfBounds) result = "Out of bounds  ·  +1 stroke";
             else if (club == GolfClub.Putter) result = $"{shot.Total * 3:F0} ft  ·  {shot.Rest.DistanceTo(hole.Pin) * 3:F1} ft left";
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
-            holeStrokes += shot.PenaltyStrokes; roundStrokes += shot.PenaltyStrokes;
+            holeStrokes += shot.PenaltyStrokes;
             hud.ShowBanner(result, 2.2f);
-            hud.SetScore(roundStrokes, roundToPar, holeStrokes);
+            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
         }
@@ -348,10 +390,9 @@ namespace GolfArcade.Game
             var shot = LastShot;
             if (shot.IsHoled)
             {
-                int toPar = holeStrokes - hole.Par;
-                roundToPar += toPar;
-                hud.SetScore(roundStrokes, roundToPar, holeStrokes);
-                hud.ShowBanner(ScoreName(toPar, holeStrokes), 3f);
+                Card.Record(holeIndex, holeStrokes);
+                hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+                hud.ShowBanner(Scorecard.ScoreName(holeStrokes, hole.Par), 3f);
                 Enter(State.HoleDone);
                 return;
             }
@@ -360,16 +401,5 @@ namespace GolfArcade.Game
             rig.SnapNext();
             BeginAim(false);
         }
-
-        static string ScoreName(int toPar, int strokes) => strokes == 1 ? "Hole in one!" : toPar switch
-        {
-            <= -3 => "Albatross!",
-            -2 => "Eagle!",
-            -1 => "Birdie!",
-            0 => "Par",
-            1 => "Bogey",
-            2 => "Double bogey",
-            _ => $"+{toPar}",
-        };
     }
 }
