@@ -30,19 +30,21 @@ namespace GolfArcade.PlayTests
                     Assert.IsTrue(game.Player.GetComponentInChildren<StandardCharacterArms>().FloatingHandsPreview);
                     string directory = "Library/Captures/tennis-" + (female ? "female" : "male"); Directory.CreateDirectory(directory);
                     float before = game.Stamina;
-                    for (int frame=0;frame<360;frame++)
+                    for (int frame=0;frame<480;frame++)
                     {
                         game.SetLateralInput(frame<55 ? 1 : frame<100 ? -1 : 0, true);
-                        if (frame == 120)
+                        int swingStart = frame < 220 ? 100 : frame < 340 ? 220 : 340;
+                        if (frame == 100 || frame == 220 || frame == 340)
                         {
-                            game.InjectBall(game.Player.transform.position+new Vector3(1,1,2),Vector3.zero);
-                            game.RequestSwing(.8f);
+                            float side = frame == 220 ? -1 : 1;
+                            game.InjectBall(game.Player.transform.position+new Vector3(side,1,2),Vector3.zero);
+                            game.RequestSwing(frame == 100 ? .55f : .9f);
                         }
                         // Controlled contact fixture through the same live swept-string-bed path.
-                        if (frame == 138)
+                        if (frame == swingStart + Mathf.FloorToInt((TennisRules.SweetTime-.012f)*60))
                         {
                             Vector3 center=game.Player.SweetSpot.position, normal=game.Player.StringNormal;
-                            game.InjectBall(center+normal*.12f,-normal*18);
+                            game.InjectBall(center+normal*.12f,-normal*30+game.Player.SweetVelocity);
                         }
                         game.Step(1f/120);game.Step(1f/120);
                         Assert.IsFalse(float.IsNaN(game.BallPosition.x));
@@ -50,7 +52,7 @@ namespace GolfArcade.PlayTests
                         if (frame == 100) Assert.Less(game.Stamina,before);
                         Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png",720,480));
                     }
-                    Assert.Greater(game.Hits,hitsBefore,"Each character's timed racket-center contact must return a shot");
+                    Assert.GreaterOrEqual(game.Hits-hitsBefore,3,"Each character must return both forehands and the backhand");
                 }
             }
             finally { Time.captureFramerate=oldRate; }

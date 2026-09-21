@@ -1,5 +1,9 @@
 # Coastal tennis resort — Blender v1
 
+## Gameplay v2 revision
+
+Open `coastal-tennis-resort-gameplay-v2.blend` for the updated editable landscaping. Five grass garden areas support all 16 tree bases outside the blue court run-off; `gameplay-landscaping-validation.json` records each check. Original v1 remains available below. Unity uses the updated `Resources/Tennis/CoastalTennisResort.fbx`; its export now isolates shared mesh data before joining, fixing duplicated foliage/material assignments and reducing the FBX from roughly 64 MB to 5.3 MB. Runtime gameplay is documented in `../../TENNIS-GAMEPLAY.md`; mobile optimization remains pending.
+
 Reference-led 3D environment built around the supplied `tennis court 3d model.fbx`. The source FBX and character-animation studio are unchanged.
 
 Open `coastal-tennis-resort-v1.blend`. The approved concept image is packed into the file in the hidden reference collection. Cameras: behind-player gameplay, elevated resort overview, and clubhouse detail.

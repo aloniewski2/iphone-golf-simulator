@@ -6,12 +6,12 @@ namespace GolfArcade.Tests
 {
     public class TennisRulesTests
     {
-        TennisHit Hit(float age = .32f, float offset = 0, float balance = 1, float reach = 1, float power = .8f, float stamina = 1)
+        TennisHit Hit(float age = TennisRules.SweetTime, float offset = 0, float balance = 1, float reach = 1, float power = .8f, float stamina = 1)
             => TennisRules.Evaluate(age,new Vector2(offset,0),balance,reach,power,stamina);
         [Test] public void CenterAndTimingImproveTheHit()
         {
             Assert.Greater(Hit().Quality, Hit(offset:.10f).Quality);
-            Assert.Greater(Hit().Quality, Hit(age:.19f).Quality);
+            Assert.Greater(Hit().Quality, Hit(age:.10f).Quality);
             Assert.IsFalse(Hit(age:0).Contact);
             Assert.IsFalse(Hit(offset:.3f).Contact);
         }
@@ -34,6 +34,16 @@ namespace GolfArcade.Tests
             for(int i=0;i<60;i++) a=TennisRules.StaminaStep(a,5,1f/60);
             for(int i=0;i<120;i++) b=TennisRules.StaminaStep(b,5,1f/120);
             Assert.That(a,Is.EqualTo(b).Within(.0001f));
+        }
+        [Test] public void ArcadeStrokeIsFastAndContactPhaseStaysAligned()
+        {
+            Assert.Less(TennisRules.StrokeDuration,.5f);
+            Assert.That(TennisRules.StrokePhase(TennisRules.SweetTime),Is.EqualTo(.5f).Within(.0001f));
+            Assert.AreEqual(0,TennisRules.StrokePhase(0));
+            Assert.AreEqual(1,TennisRules.StrokePhase(TennisRules.StrokeDuration));
+            float previous=0;
+            for(int i=0;i<=100;i++) { float phase=TennisRules.StrokePhase(i*TennisRules.StrokeDuration/100); Assert.GreaterOrEqual(phase,previous); previous=phase; }
+            Assert.Greater(TennisRules.SprintSpeed,TennisRules.RunSpeed);
         }
         [Test] public void SweptContactFindsFastBallsButRejectsMisses()
         {

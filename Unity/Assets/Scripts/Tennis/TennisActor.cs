@@ -15,6 +15,10 @@ namespace GolfArcade.Tennis
         readonly Dictionary<string, int> indices = new();
         Transform model, root, racket;
         StandardCharacterArms arms;
+        Transform hand, offHand, chest;
+        TrailRenderer strokeTrail;
+        Material strokeMaterial;
+        public Vector3 SweetVelocity { get; private set; }
         public Transform SweetSpot { get; private set; }
         Transform stringRight, stringUp, stringNormal, basisOrigin;
         public Vector3 StringRight => (stringRight.position - basisOrigin.position).normalized;
@@ -36,6 +40,9 @@ namespace GolfArcade.Tennis
             PrepareMaterials(model.gameObject, skin);
             var bones = model.GetComponentsInChildren<Transform>(true);
             root = Array.Find(bones, t => t.name == "Root");
+            hand = Array.Find(bones, t => t.name == "Hand.R");
+            offHand = Array.Find(bones, t => t.name == "Hand.L");
+            chest = Array.Find(bones, t => t.name == "Chest");
             SweetSpot = Array.Find(bones, t => t.name == "TennisSweetSpot");
             basisOrigin = SweetSpot;
             // Use the equipment author's exact 0.427m string-center socket for contact.
@@ -45,6 +52,12 @@ namespace GolfArcade.Tennis
             stringNormal = Array.Find(bones, t => t.name == "TennisStringNormal");
             if (!SweetSpot) throw new InvalidOperationException("Tennis racket sweet-spot marker missing");
             racket = SweetSpot.parent;
+            strokeTrail = SweetSpot.gameObject.AddComponent<TrailRenderer>();
+            strokeTrail.time = .09f; strokeTrail.startWidth = .045f; strokeTrail.endWidth = .002f;
+            strokeTrail.minVertexDistance = .015f;
+            strokeTrail.sharedMaterial = strokeMaterial = new Material(Shader.Find("Sprites/Default"));
+            strokeTrail.startColor = new Color(.25f,.92f,1,.7f); strokeTrail.endColor = new Color(.25f,.92f,1,0);
+            strokeTrail.emitting = false;
             arms = model.GetComponent<StandardCharacterArms>() ?? model.gameObject.AddComponent<StandardCharacterArms>();
             arms.ManualEvaluation = true; arms.SetFloatingHandsPreview(true);
             var animator = model.GetComponent<Animator>() ?? model.gameObject.AddComponent<Animator>();
@@ -68,18 +81,21 @@ namespace GolfArcade.Tennis
         {
             if (Swinging) return;
             SwingAge = 0; Power = Mathf.Clamp01(power); backhand = useBackhand;
+            strokeTrail.Clear();
         }
 
         public void Tick(float dt, float speed)
         {
             if (!graph.IsValid()) return;
-            SwingAge += dt; locomotion += dt * Mathf.Max(.5f, Mathf.Abs(speed) / 2);
+            Vector3 previousSweetSpot = SweetSpot.position;
+            SwingAge += dt; locomotion += dt * Mathf.Clamp(Mathf.Abs(speed) / 2, .5f, 3.2f);
+            model.localRotation = Quaternion.Euler(0,0,-Mathf.Clamp(speed / TennisRules.SprintSpeed,-1,1)*8);
             string pose = Swinging ? (backhand ? "Backhand" : "Forehand") : Mathf.Abs(speed) > .15f ? (speed < 0 ? "RunLeft" : "RunRight") : "Ready";
             if (!indices.TryGetValue(pose, out int selected)) throw new InvalidOperationException("Missing tennis clip " + pose);
             for (int i = 0; i < clips.Length; i++)
             {
                 mixer.SetInputWeight(i, i == selected ? 1 : 0);
-                double fraction = Swinging ? Mathf.Clamp01(SwingAge / TennisRules.StrokeDuration) : Mathf.Repeat(locomotion, 1);
+                double fraction = Swinging ? TennisRules.StrokePhase(SwingAge) : Mathf.Repeat(locomotion, 1);
                 clips[i].SetTime(fraction * clips[i].GetAnimationClip().length);
             }
             graph.Evaluate(0);
@@ -89,7 +105,28 @@ namespace GolfArcade.Tennis
                 Vector3 shift = model.TransformVector(new Vector3(root.localPosition.x, 0, root.localPosition.z));
                 root.position -= shift; racket.position -= shift;
             }
+            if (Swinging) ExaggerateStroke(TennisRules.StrokePhase(SwingAge));
+            strokeTrail.emitting = Swinging && SwingAge > .07f && SwingAge < .30f;
             arms.ApplyAfterAnimation();
+            SweetVelocity = dt > 0 ? (SweetSpot.position - previousSweetSpot) / dt : Vector3.zero;
+        }
+
+        void ExaggerateStroke(float phase)
+        {
+            // Wider anticipation and follow-through, with a fast, time-warped contact sweep.
+            // Move the racket and gripping hand as one rigid group so the grip cannot separate.
+            Vector3 handPosition = hand.position, racketPosition = racket.position, offPosition = offHand.position;
+            Quaternion handRotation = hand.rotation, racketRotation = racket.rotation, offRotation = offHand.rotation;
+            float envelope = Mathf.Sin(Mathf.PI * phase), side = backhand ? -1 : 1;
+            float turn = side * Mathf.Sin(2*Mathf.PI*phase) * 35;
+            Vector3 pivot = transform.position + Vector3.up * 1.05f;
+            Quaternion sweep = Quaternion.AngleAxis(turn,Vector3.up);
+            Vector3 outward = (sweep * (racketPosition-pivot)).normalized * (.22f * envelope);
+            chest.rotation = Quaternion.AngleAxis(turn*.65f,Vector3.up) * chest.rotation;
+            hand.SetPositionAndRotation(pivot+sweep*(handPosition-pivot)+outward,sweep*handRotation);
+            racket.SetPositionAndRotation(pivot+sweep*(racketPosition-pivot)+outward,sweep*racketRotation);
+            Vector3 balance = transform.TransformPoint(new Vector3(-side*.58f,1.15f,.22f));
+            offHand.SetPositionAndRotation(Vector3.Lerp(offPosition,balance,envelope*.75f),offRotation);
         }
 
         public static void PrepareMaterials(GameObject obj, Color? skin = null)
@@ -114,6 +151,6 @@ namespace GolfArcade.Tennis
             }
         }
 
-        void OnDestroy() { if (graph.IsValid()) graph.Destroy(); }
+        void OnDestroy() { if (graph.IsValid()) graph.Destroy(); if (strokeMaterial) Destroy(strokeMaterial); }
     }
 }

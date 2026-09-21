@@ -26,7 +26,7 @@ Unity 6000.3.24f1: open `Assets/Scenes/Tennis.unity`, or menu **Golf Arcade → 
 
 ## Assets and scope
 
-Uses the existing `coastal-tennis-resort-v1.blend`, not a replacement court. The export groups its visible geometry into spatial tiles and converts the visual materials to the game's supported shader. Procedural material detail is not fully baked. Source Blender files remain unchanged. `blender/scripts/export_tennis_runtime.py` regenerates the resort and tennis character exports. Racket contact markers identify the sweet spot and string-bed basis independently of FBX axis conversion.
+Uses the existing resort, not a replacement court. The original v1 Blender file remains unchanged; `coastal-tennis-resort-gameplay-v2.blend` adds grass gardens beneath all 16 trees outside the court run-off. The export makes linked mesh data single-user before spatial joining to prevent duplicated foliage and incorrect material slots, then converts materials to the supported shader. Procedural material detail is not fully baked. `blender/scripts/export_tennis_runtime.py` regenerates the resort and tennis character exports (`--arena-only` skips characters). Racket contact markers identify the sweet spot and string-bed basis independently of FBX axis conversion.
 
 Both permanent identities use floating hands with no visible shoulders/arms. Existing rigs still animate torso, legs and hands. The player has ready, lateral-running, forehand and backhand clips. The racket does not automatically switch hands on a backhand. Character skin uses the existing style palette.
 
@@ -36,4 +36,10 @@ This is a **singles rally lab**, not a finished tennis game: the far character i
 
 EditMode checks the six required gameplay behaviors. PlayMode loads the actual arena and both standard characters, exercises movement/stamina and injects controlled contact fixtures through the real racket collision path. Review captures from those tests are deterministic keyboard/controller-boundary simulations, not recordings of a physical phone session.
 
-Verified in Unity 6000.3.24f1: **60 EditMode and 4 PlayMode tests passed**. Both tennis identities individually returned a controlled racket-center shot. Golf gameplay and the other-sport standard-rig checks still pass. [Review clips](Previews/UnityTennis/README.md) are 6-second, 360-frame, 60 fps offline captures, not device performance benchmarks.
+Verified in Unity 6000.3.24f1: **61 EditMode and 4 PlayMode tests passed**. Both tennis identities returned three controlled contact fixtures including forehand and backhand. Golf gameplay and the other-sport standard-rig checks still pass. [Updated review clips](Previews/UnityTennisArcade/README.md) are 8-second, 480-frame, 60 fps offline captures, not device performance benchmarks.
+
+## Arcade motion revision
+
+Frame-by-frame browser review of [Professional Wii Sports Tennis Players](https://www.youtube.com/watch?v=vl4kjeBLrrY) informed the elevated, steadier behind-baseline camera and faster, larger strokes. This is hand-authored interpretation, not motion capture or an exact reproduction; doubles and dives shown in the reference are not implemented.
+
+Strokes now last 0.46 seconds with contact at 0.18 seconds, nonlinear anticipation/follow-through, additional torso rotation and a wider hand/racket sweep that preserves their relative grip. A brief racket trail emphasizes speed. Running/sprinting target 6.2/9 m/s with faster acceleration and lateral lean. Feeds and shot speed are faster; timing, sweet-spot contact, positioning and stamina penalties remain active. The camera uses a 56-degree FOV at 6.4 m height, behind the near baseline. Both permanent floating-hands characters share this behavior.

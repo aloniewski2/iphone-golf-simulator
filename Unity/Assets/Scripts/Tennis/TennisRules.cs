@@ -13,8 +13,15 @@ namespace GolfArcade.Tennis
     public static class TennisRules
     {
         public const float CourtHalfWidth = 4.115f, CourtHalfLength = 11.885f;
-        public const float StrokeDuration = .70f, SweetTime = .32f, TimingWindow = .17f;
+        public const float StrokeDuration = .46f, SweetTime = .18f, TimingWindow = .09f;
+        public const float RunSpeed = 6.2f, SprintSpeed = 9f, Acceleration = 28f;
         public const float StringHalfWidth = .123f, StringHalfHeight = .165f, BallRadius = .0335f;
+        public static float StrokePhase(float age)
+        {
+            if (age <= SweetTime) return .5f * Mathf.Pow(Mathf.Clamp01(age / SweetTime), 1.7f);
+            float finish = Mathf.Clamp01((age - SweetTime) / (StrokeDuration - SweetTime));
+            return .5f + .5f * (1 - (1 - finish) * (1 - finish));
+        }
         public static TennisHit Evaluate(float swingAge, Vector2 faceOffset, float balance, float reachQuality, float power, float stamina)
         {
             float radial = new Vector2(faceOffset.x / StringHalfWidth, faceOffset.y / StringHalfHeight).magnitude;
@@ -25,7 +32,7 @@ namespace GolfArcade.Tennis
             float quality = contact ? timing * .35f + center * .40f + positioning * .25f : 0;
             return new TennisHit {
                 Contact = contact, Timing = timing, Center = center, Positioning = positioning, Quality = quality,
-                Speed = contact ? Mathf.Lerp(9, 29, Mathf.Clamp01(power)) * Mathf.Lerp(.55f, 1, quality) * Mathf.Lerp(.8f, 1, Mathf.Clamp01(stamina)) : 0,
+                Speed = contact ? Mathf.Lerp(11, 34, Mathf.Clamp01(power)) * Mathf.Lerp(.55f, 1, quality) * Mathf.Lerp(.8f, 1, Mathf.Clamp01(stamina)) : 0,
                 ErrorDegrees = contact ? Mathf.Lerp(1.0f, 19f, 1 - quality) + (1 - Mathf.Clamp01(stamina)) * 5 : 0,
                 Label = !contact ? "MISS" : quality > .86f ? "SWEET SPOT" : quality > .63f ? "CLEAN HIT" : radial > .72f ? "OFF CENTER" : timing < .45f ? "MISTIMED" : "OFF BALANCE"
             };
@@ -33,8 +40,8 @@ namespace GolfArcade.Tennis
 
         public static float StaminaStep(float value, float speed, float dt)
         {
-            float exertion = Mathf.Pow(Mathf.Clamp01(Mathf.Abs(speed) / 7.2f), 2);
-            return Mathf.Clamp01(value + (Mathf.Abs(speed) < .15f ? .13f : -.20f * exertion) * dt);
+            float exertion = Mathf.Pow(Mathf.Clamp01(Mathf.Abs(speed) / SprintSpeed), 2);
+            return Mathf.Clamp01(value + (Mathf.Abs(speed) < .15f ? .13f : -.23f * exertion) * dt);
         }
 
         // Relative sweep catches fast balls crossing the string bed between simulation steps.

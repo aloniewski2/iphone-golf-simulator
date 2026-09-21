@@ -51,7 +51,7 @@ namespace GolfArcade.Tennis
             trail.sharedMaterial = GolfArcade.Course.HoleView.Mat(new Color(.83f,1,.2f));
             var camera = Camera.main;
             if (!camera) { camera = new GameObject("Tennis gameplay camera").AddComponent<Camera>(); camera.tag = "MainCamera"; camera.gameObject.AddComponent<AudioListener>(); }
-            camera.fieldOfView = 64; camera.nearClipPlane = .08f; camera.farClipPlane = 600;
+            camera.fieldOfView = 56; camera.nearClipPlane = .08f; camera.farClipPlane = 600;
             camera.backgroundColor = new Color(.49f,.73f,.88f); camera.clearFlags = CameraClearFlags.SolidColor;
             var light = new GameObject("Resort sun").AddComponent<Light>(); light.type = LightType.Directional; light.intensity = 1.15f;
             light.transform.rotation = Quaternion.Euler(48,-35,0); light.shadows = LightShadows.Soft;
@@ -103,8 +103,8 @@ namespace GolfArcade.Tennis
         public void Step(float dt)
         {
             if (!Player || dt <= 0) return;
-            float maximum = Mathf.Lerp(2.5f, Sprint ? 7.2f : 4.3f, Mathf.Clamp01(Stamina / .3f));
-            LateralSpeed = Mathf.MoveTowards(LateralSpeed, Mathf.Clamp(MoveInput,-1,1) * maximum, dt * 15);
+            float maximum = Mathf.Lerp(3.2f, Sprint ? TennisRules.SprintSpeed : TennisRules.RunSpeed, Mathf.Clamp01(Stamina / .3f));
+            LateralSpeed = Mathf.MoveTowards(LateralSpeed, Mathf.Clamp(MoveInput,-1,1) * maximum, dt * TennisRules.Acceleration);
             Vector3 playerPosition = Player.transform.position;
             float nextX = Mathf.Clamp(playerPosition.x + LateralSpeed * dt, -6.5f, 6.5f);
             LateralSpeed = (nextX - playerPosition.x) / dt;
@@ -114,7 +114,7 @@ namespace GolfArcade.Tennis
             bool wasSwinging = Player.Swinging;
             Player.Tick(dt, LateralSpeed);
             if (wasSwinging && !Player.Swinging && !consumedStroke) Feedback = "WHIFF — swing earlier/later or reposition";
-            float opponentX = Mathf.MoveTowards(Opponent.transform.position.x, Mathf.Clamp(BallPosition.x, -4,4), dt * 3.5f);
+            float opponentX = Mathf.MoveTowards(Opponent.transform.position.x, Mathf.Clamp(BallPosition.x, -4,4), dt * 6.2f);
             float opponentSpeed = (opponentX - Opponent.transform.position.x) / dt;
             Opponent.transform.position = new Vector3(opponentX,.035f,11.2f); Opponent.Tick(dt, opponentSpeed);
             if (resetTimer > 0) { resetTimer -= dt; if (resetTimer <= 0) Feed(); return; }
@@ -125,7 +125,7 @@ namespace GolfArcade.Tennis
                 Player.SweetSpot.position, Player.StringNormal, Player.StringRight, Player.StringUp, out var faceOffset))
             {
                 float reach = Vector3.Distance(Player.transform.position + Vector3.up * 1.1f, BallPosition);
-                float reachQuality = Mathf.Clamp01(1 - Mathf.Abs(reach - .65f) / .8f);
+                float reachQuality = Mathf.Clamp01(1 - Mathf.Abs(reach - .85f) / .8f);
                 var hit = TennisRules.Evaluate(Player.SwingAge, faceOffset, 1 - Mathf.Abs(LateralSpeed) / 10, reachQuality, Player.Power, Stamina);
                 if (hit.Contact) ReturnBall(hit);
             }
@@ -169,18 +169,18 @@ namespace GolfArcade.Tennis
         void Feed()
         {
             float target = Mathf.Sin(feedIndex++ * 1.7f) * 2.7f;
-            InjectBall(new Vector3(Opponent.transform.position.x,1.5f,9), new Vector3((target-Opponent.transform.position.x)/1.4f,3,-16));
+            InjectBall(new Vector3(Opponent.transform.position.x,2.4f,9), new Vector3((target-Opponent.transform.position.x)/1.1f,.9f,-19.5f));
         }
 
         void EndFeed(string reason)
-        { if (resetTimer > 0) return; Feedback = reason; Misses++; resetTimer = 1.3f; }
+        { if (resetTimer > 0) return; Feedback = reason; Misses++; resetTimer = .8f; }
 
         void UpdateCamera(bool immediate)
         {
             var camera = Camera.main; if (!camera || !Player) return;
-            Vector3 target = new Vector3(Player.transform.position.x*.55f,3.0f,-16.4f);
+            Vector3 target = new Vector3(Player.transform.position.x*.20f,6.4f,-18.8f);
             camera.transform.position = immediate ? target : Vector3.Lerp(camera.transform.position,target,1-Mathf.Exp(-Time.deltaTime*7));
-            camera.transform.LookAt(new Vector3(Player.transform.position.x*.25f,1.2f,0));
+            camera.transform.LookAt(new Vector3(Player.transform.position.x*.10f,.55f,-.5f));
         }
 
         void BuildHud()

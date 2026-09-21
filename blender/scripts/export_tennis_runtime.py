@@ -1,11 +1,34 @@
 """Read-only source conversion of the approved resort and V4 tennis standards."""
-import bpy, json, math
+import bpy, json, math, sys
 from pathlib import Path
 from mathutils import Vector
 R=Path(__file__).resolve().parents[2]
 arena=R/'Unity/Assets/Resources/Tennis';arena.mkdir(parents=True,exist_ok=True)
 bpy.ops.wm.open_mainfile(filepath=str(R/'SportsLibrary/Arenas/Tennis/coastal-tennis-resort-v1.blend'))
 s=bpy.context.scene
+# Keep planted areas separate from the acrylic run-off (x +/-9.2, y +/-18.5).
+garden=bpy.data.collections.new('08 Grass gardens - gameplay v2');s.collection.children.link(garden)
+grass=bpy.data.materials.new('Resort lawn - living green');grass.diffuse_color=(.12,.34,.105,1)
+grass.use_nodes=True;grass.node_tree.nodes.get('Principled BSDF').inputs['Base Color'].default_value=grass.diffuse_color
+grass.node_tree.nodes.get('Principled BSDF').inputs['Roughness'].default_value=.95
+patches=[('West tree lawn',(-25,2,.005),(15,35,.06)),('East tree lawn',(25,2,.005),(15,35,.06)),('Back tree lawn',(0,27,.005),(66,17,.06)),('Left court garden border',(-10,-5,.005),(1.3,27,.06)),('Right court garden border',(10,-5,.005),(1.3,27,.06))]
+for name,location,size in patches:
+ bpy.ops.mesh.primitive_cube_add(size=1,location=location);o=bpy.context.object;o.name=name;o.scale=size
+ bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
+ for c in list(o.users_collection):c.objects.unlink(o)
+ garden.objects.link(o);o.data.materials.append(grass)
+trees=[]
+for o in s.objects:
+ if not o.name.startswith(('Stone pine trunk','Cypress trunk')):continue
+ vertices=[o.matrix_world@v.co for v in o.data.vertices]
+ bottom=min(v.z for v in vertices);roots=[v for v in vertices if v.z<bottom+.1]
+ x=sum(v.x for v in roots)/len(roots);y=sum(v.y for v in roots)/len(roots)
+ supported=any(abs(x-p[0])<=d[0]/2 and abs(y-p[1])<=d[1]/2 for _,p,d in patches)
+ outside=abs(x)>9.2 or abs(y)>18.5
+ assert supported and outside, f'Tree requires an outside-court lawn: {o.name} at {x},{y}'
+ trees.append({'tree':o.name,'root_xy':[x,y],'on_grass':supported,'outside_runoff':outside})
+(R/'SportsLibrary/Arenas/Tennis/gameplay-landscaping-validation.json').write_text(json.dumps(trees,indent=2))
+bpy.ops.wm.save_as_mainfile(filepath=str(R/'SportsLibrary/Arenas/Tennis/coastal-tennis-resort-gameplay-v2.blend'))
 selected=[]
 for o in list(s.objects):
  if o.type not in {'MESH','CURVE'} or o.hide_render or any(c.name.startswith('07') for c in o.users_collection):continue
@@ -14,6 +37,10 @@ bpy.ops.object.select_all(action='DESELECT')
 for o in selected:o.select_set(True)
 bpy.context.view_layer.objects.active=selected[0]
 bpy.ops.object.convert(target='MESH')
+# Foliage instances share mesh datablocks. Join mutates the active mesh: isolate them first
+# or merging one tile also changes other tree instances and corrupts their material slots.
+for o in bpy.context.selected_objects:
+ if o.type=='MESH':o.data=o.data.copy()
 # Join by spatial tile to reduce object overhead while retaining cullable pieces.
 groups={}
 for o in list(bpy.context.selected_objects):
@@ -23,12 +50,14 @@ joined=[]
 for k,objects in groups.items():
  bpy.ops.object.select_all(action='DESELECT')
  for o in objects:o.select_set(True)
- bpy.context.view_layer.objects.active=objects[0];bpy.ops.object.join()
+ bpy.context.view_layer.objects.active=objects[0]
+ if len(objects)>1:bpy.ops.object.join()
  o=bpy.context.object;o.name=f'Resort tile {k[0]} {k[1]}';joined.append(o)
 bpy.ops.object.select_all(action='DESELECT')
 for o in joined:o.select_set(True)
 bpy.ops.export_scene.fbx(filepath=str(arena/'CoastalTennisResort.fbx'),use_selection=True,object_types={'MESH'},axis_forward='-Z',axis_up='Y',apply_unit_scale=True,bake_anim=False,use_mesh_modifiers=True,path_mode='AUTO')
 print('ARENA',len(joined),flush=True)
+if '--arena-only' in sys.argv:sys.exit(0)
 for gender in ['Male','Female']:
  bpy.ops.wm.open_mainfile(filepath=str(R/'SportsLibrary/Blender/sports-animation-studio-v4.blend'))
  s=bpy.data.scenes['03 TENNIS'];bpy.context.window.scene=s
