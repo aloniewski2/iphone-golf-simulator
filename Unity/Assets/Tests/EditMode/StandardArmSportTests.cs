@@ -27,6 +27,11 @@ namespace GolfArcade.Tests
                 Assert.IsNotNull(arms, "Importer must install the shared correction on every standard rig.");
                 arms.Initialize();
                 Assert.IsTrue(arms.IsReady);
+                Assert.IsTrue(arms.FloatingHandsPreview, "All standards default to hands only");
+                foreach (var renderer in instance.GetComponentsInChildren<Renderer>().Where(r => r.name.StartsWith("Standard continuous arm") || r.name.StartsWith("Shoulder fabric ") || r.name.StartsWith("Short sleeve ") || r.name.StartsWith("Sleeve piping ")))
+                    Assert.IsFalse(renderer.enabled);
+                // Hidden arm rig remains valid and recoverable for technical inspection.
+                arms.SetFloatingHandsPreview(false);
                 var hands = instance.GetComponentsInChildren<Transform>().Where(t => t.name == "Hand.L" || t.name == "Hand.R").ToArray();
                 Assert.AreEqual(2, hands.Length);
                 for (int i = 0; i <= 60; i++)

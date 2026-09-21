@@ -9,6 +9,8 @@ namespace GolfArcade.Game
     public sealed class StandardGolfGrip : MonoBehaviour
     {
         Transform lead, trail, leadShoulder, trailShoulder, chest, handle, contact;
+        Vector3 authoredClubScale;
+        public const float ClubLengthScale = .88f;
         public bool IsReady => lead && trail && handle && contact && chest && leadShoulder && trailShoulder;
         public float MaximumHandleError { get; private set; }
 
@@ -20,6 +22,7 @@ namespace GolfArcade.Game
             leadShoulder = Find("UpperArm.L"); trailShoulder = Find("UpperArm.R");
             chest = Find("Chest"); contact = Find("StandardClubContact");
             handle = contact ? contact.parent : null;
+            if (handle) authoredClubScale = handle.localScale;
         }
 
         public void Apply(float phase)
@@ -27,6 +30,14 @@ namespace GolfArcade.Game
             if (!IsReady) Initialize();
             if (!IsReady) return;
             float scale = Mathf.Abs(transform.lossyScale.x);
+            // Shorter equipment, with the head anchored at its authored location. Moving the
+            // handle toward that head also moves both hands outward, without changing their size.
+            Vector3 authoredContact = contact.position;
+            handle.localScale = authoredClubScale * ClubLengthScale;
+            Vector3 shorteningOffset = authoredContact - contact.position;
+            handle.position += shorteningOffset;
+            lead.position += shorteningOffset;
+            trail.position += shorteningOffset;
             // The contact marker includes a small club-head offset. Use the actual shaft axis.
             Vector3 local = contact.localPosition;
             Vector3 shaft = Mathf.Abs(local.z) >= Mathf.Abs(local.y) && Mathf.Abs(local.z) >= Mathf.Abs(local.x)
@@ -44,6 +55,8 @@ namespace GolfArcade.Game
             float fold = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.84f, .95f, phase));
             float reach = Mathf.Lerp(.530f * scale, Vector3.Distance(lead.position, leadShoulder.position), fold);
             Vector3 offset = leadShoulder.position + (lead.position - leadShoulder.position).normalized * reach - lead.position;
+            Vector3 outward = Vector3.ProjectOnPlane(handle.position - chest.position, Vector3.up).normalized;
+            offset += outward * (.10f * scale) * (1 - fold);
             float maximum = (StandardCharacterArms.UpperLengthMetres + StandardCharacterArms.ForearmLengthMetres - .006f) * scale;
             // Project the shared grip, never the individual hands, into both reach spheres.
             for (int i = 0; i < 24; i++)

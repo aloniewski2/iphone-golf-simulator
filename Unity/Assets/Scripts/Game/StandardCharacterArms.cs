@@ -16,6 +16,28 @@ namespace GolfArcade.Game
         public float MaximumGripError { get; private set; }
         public float MaximumSegmentError { get; private set; }
         Arm[] arms;
+        Renderer[] floatingHandsHidden;
+        bool[] previousVisibility;
+        public bool FloatingHandsPreview { get; private set; }
+
+        /// Reversible visual experiment: leave all bones, hands and equipment active.
+        public void SetFloatingHandsPreview(bool enabled)
+        {
+            Initialize();
+            if (enabled == FloatingHandsPreview) return;
+            if (enabled)
+            {
+                floatingHandsHidden = Array.FindAll(GetComponentsInChildren<Renderer>(true), r =>
+                    r.name.StartsWith("Standard continuous arm ") || r.name.StartsWith("Shoulder fabric ") ||
+                    r.name.StartsWith("Short sleeve ") || r.name.StartsWith("Sleeve piping "));
+                previousVisibility = Array.ConvertAll(floatingHandsHidden, r => r.enabled);
+                foreach (var renderer in floatingHandsHidden) renderer.enabled = false;
+            }
+            else if (floatingHandsHidden != null)
+                for (int i = 0; i < floatingHandsHidden.Length; i++)
+                    if (floatingHandsHidden[i]) floatingHandsHidden[i].enabled = previousVisibility[i];
+            FloatingHandsPreview = enabled;
+        }
         const int Sides = 16, Rings = 17;
 
         sealed class Arm
@@ -85,6 +107,8 @@ namespace GolfArcade.Game
                 go.AddComponent<MeshFilter>().sharedMesh = arm.mesh;
                 go.AddComponent<MeshRenderer>().sharedMaterial = skin;
             }
+            // Permanent multi-sport visual standard. Retain the hidden rig for attachments.
+            SetFloatingHandsPreview(true);
         }
 
         void LateUpdate() { if (!ManualEvaluation) ApplyAfterAnimation(); }
@@ -110,7 +134,8 @@ namespace GolfArcade.Game
                 arm.hand.SetPositionAndRotation(wrist, wristRotation);
                 MaximumGripError = Mathf.Max(MaximumGripError, Vector3.Distance(wrist, arm.hand.position));
                 MaximumSegmentError = Mathf.Max(MaximumSegmentError, Mathf.Abs(Vector3.Distance(shoulder, elbow) - upper), Mathf.Abs(Vector3.Distance(elbow, wrist) - lower));
-                UpdateSurface(arm, transform.InverseTransformPoint(shoulder), transform.InverseTransformPoint(elbow), transform.InverseTransformPoint(wrist));
+                if (!FloatingHandsPreview)
+                    UpdateSurface(arm, transform.InverseTransformPoint(shoulder), transform.InverseTransformPoint(elbow), transform.InverseTransformPoint(wrist));
             }
         }
 

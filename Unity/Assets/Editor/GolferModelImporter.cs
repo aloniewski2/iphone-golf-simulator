@@ -41,6 +41,17 @@ namespace GolfArcade.EditorTools
                     loopTime = false, lockRootRotation = true,
                     lockRootHeightY = true, lockRootPositionXZ = true
                 }};
+            if (standard && assetPath.EndsWith("_tennis.fbx") && assetPath.Contains("Resources/"))
+            {
+                string[] names = { "Ready", "SplitStep", "RunLeft", "RunRight", "Forehand", "Backhand" };
+                int[] starts = { 0, 69, 138, 207, 552, 621 };
+                var clips = new ModelImporterClipAnimation[names.Length];
+                for (int i = 0; i < names.Length; i++) clips[i] = new ModelImporterClipAnimation {
+                    name = names[i], firstFrame = starts[i], lastFrame = starts[i] + 60,
+                    loopTime = i < 4, lockRootRotation = true, lockRootHeightY = true, lockRootPositionXZ = true
+                };
+                importer.clipAnimations = clips;
+            }
         }
     }
 }

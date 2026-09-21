@@ -35,6 +35,19 @@ namespace GolfArcade.PlayTests
                     var arms = golfer.GetComponentInChildren<StandardCharacterArms>();
                     Assert.IsNotNull(arms);
                     Assert.IsTrue(arms.IsReady);
+                    Assert.IsTrue(arms.FloatingHandsPreview);
+                    var armSurface = System.Array.Find(arms.GetComponentsInChildren<Renderer>(), r => r.name.StartsWith("Standard continuous arm "));
+                    Assert.IsNotNull(armSurface);
+                    Assert.IsFalse(armSurface.enabled);
+                    golfer.SetFloatingHandsPreview(false);
+                    Assert.IsTrue(armSurface.enabled, "Visual test must be reversible");
+                    golfer.SetFloatingHandsPreview(true);
+                    foreach (var renderer in arms.GetComponentsInChildren<Renderer>())
+                    {
+                        if (renderer.name.StartsWith("Standard continuous arm ") || renderer.name.StartsWith("Shoulder fabric ") || renderer.name.StartsWith("Short sleeve ") || renderer.name.StartsWith("Sleeve piping "))
+                            Assert.IsFalse(renderer.enabled);
+                        if (renderer.name.StartsWith("V4 grip hand ")) Assert.IsTrue(renderer.enabled);
+                    }
                     var grip = golfer.GetComponentInChildren<StandardGolfGrip>();
                     Assert.IsNotNull(grip);
                     Assert.IsTrue(grip.IsReady);

@@ -27,9 +27,11 @@ namespace GolfArcade.Tests
                     float phase = frame / 360f;
                     clip.SampleAnimation(instance, phase * clip.length);
                     Vector3 authoredContact = contact.position;
+                    float authoredLength = Vector3.Distance(contact.position, contact.parent.position);
                     grip.Apply(phase);
                     Assert.IsTrue(grip.IsReady);
                     Assert.Less(grip.MaximumHandleError, .0001f);
+                    Assert.That(Vector3.Distance(contact.position, contact.parent.position), Is.EqualTo(authoredLength * StandardGolfGrip.ClubLengthScale).Within(.0001f), "Club must be shorter without resizing the character");
                     if (frame == 0 || frame == 288) Assert.Less(Vector3.Distance(contact.position, authoredContact), .0001f, "Address/impact moved off the ball");
                     if (frame > 0) Assert.Less(Vector3.Distance(contact.position, previous), .3f, $"Club jumped at 120 Hz frame {frame}; authored delta {Vector3.Distance(authoredContact, previousAuthored)}");
                     previous = contact.position;

@@ -13,6 +13,10 @@ The source GLBs contain multi-view/turnaround geometry, not clean production-rea
 
 ## Preserve
 
+**Permanent silhouette: floating hands, no visible shoulders or arms.** Applies to both genders, every playable sport, future sports and standard-derived crowds. Hide upper arms, forearms, shoulder pieces and sleeve geometry; preserve torso, head, legs, hands and equipment. The hidden arm skeleton remains an attachment/animation tool, not visible anatomy. This supersedes earlier arm-restoration experiments.
+
+Unity's shared `StandardCharacterArms` component defaults to this hands-only style, including on newly imported standard rigs. Its legacy `SetFloatingHandsPreview` name is retained for compatibility; disabling it is now a technical inspection option, not the product default. Historical Blender masters/reference renders are preserved archives and can still contain visible arms—new runtime exports must apply the shared visibility standard.
+
 - Rounded oversized heads, familiar face treatment, compact stylized proportions, and the existing soft resort-game aesthetic.
 - The same identities across golf, tennis, bowling, boxing, and all future sports.
 - Shared standard-derived crowd characters, varied through skin tone and clothing colors.
@@ -32,4 +36,4 @@ Substituting another character design or changing the recognizable identity requ
 
 ## Runtime adoption status
 
-The Unity golf visual layer now uses the two permanent V4 standards with Golf Kit 1 and the right-handed drive clip. See [runtime integration](GOLF-RUNTIME-INTEGRATION.md). Other sports, LH selection, club-specific clips and additional kits remain pending. Input and shot logic are preserved; the original primitive model is an emergency missing-asset fallback, not the standard character.
+Unity golf uses both permanent V4 standards with Golf Kit 1 and the right-handed drive clip. Tennis now has a separate coastal-resort rally prototype using both standard characters, Tennis Kit 1, ready/running/forehand/backhand clips and the standard racket. See [tennis functionality and limitations](TENNIS-GAMEPLAY.md). Full matches, LH selection, additional kits and the other sport controllers remain pending. The original golf primitive model is an emergency missing-asset fallback, not the standard character.

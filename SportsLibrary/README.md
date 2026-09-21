@@ -1,8 +1,8 @@
 # Sports Library — start here
 
-**Shared character update:** [coherent, longer arms in Unity](CHARACTER-ARMS.md), used by both standards and validated on golf, tennis, bowling and boxing poses.
+**Shared character standard:** floating hands, no visible shoulders or arms, across all sports. The hidden rig stays intact. See [permanent standards](CHARACTER-STANDARD.md).
 
-**Runtime update:** the permanent male and female characters now play the golf drive in Unity. See [golf runtime integration](GOLF-RUNTIME-INTEGRATION.md) for implemented behavior and remaining limitations. The source-only notes below describe earlier commits.
+**Runtime update:** golf plus a playable [tennis rally lab](TENNIS-GAMEPLAY.md) in the approved coastal resort. Tennis includes timing, center contact, positioning, power, stamina and immediate hit feedback. It is not yet a complete match or physical phone-position-tracking implementation. The source-only notes below describe earlier commits.
 
 This working branch now includes the latest Hole 7 Unity game alongside the library. Read the [combined integration baseline](INTEGRATION-BASELINE.md) for current runtime status and the exact character/swing connection points. Original packaging notes below describe the design-library commit, not a completed runtime migration.
 

@@ -49,6 +49,13 @@ namespace GolfArcade.Game
         StandardCharacterArms standardArms;
         StandardGolfGrip standardGrip;
         public bool UsesStandardCharacter => hasModel;
+        public bool FloatingHandsPreview { get; private set; } = true;
+
+        public void SetFloatingHandsPreview(bool enabled)
+        {
+            FloatingHandsPreview = enabled;
+            standardArms?.SetFloatingHandsPreview(enabled);
+        }
 
         public static GolferView Create(Transform parent)
         {
@@ -110,6 +117,7 @@ namespace GolfArcade.Game
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             standardArms = model.GetComponent<StandardCharacterArms>() ?? model.AddComponent<StandardCharacterArms>();
             standardArms.ManualEvaluation = true;
+            standardArms.SetFloatingHandsPreview(FloatingHandsPreview);
             standardGrip = model.AddComponent<StandardGolfGrip>();
             standardGrip.Initialize();
             animator.applyRootMotion = false;
@@ -195,6 +203,7 @@ namespace GolfArcade.Game
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.T)) UnityEngine.SceneManagement.SceneManager.LoadScene("Tennis");
             if (hasModel) UpdateModel(); else UpdateFigure();
         }
 

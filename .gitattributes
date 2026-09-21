@@ -5,4 +5,5 @@ SportsLibrary/**/*.png filter=lfs diff=lfs merge=lfs -text
 SportsLibrary/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 SportsLibrary/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
 Unity/Assets/Resources/StandardCharacters/*.fbx filter=lfs diff=lfs merge=lfs -text
+Unity/Assets/Resources/Tennis/*.fbx filter=lfs diff=lfs merge=lfs -text
 Unity/Assets/Tests/Fixtures/StandardCharacters/*.fbx filter=lfs diff=lfs merge=lfs -text
