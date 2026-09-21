@@ -1,0 +1,6 @@
+SportsLibrary/**/*.blend filter=lfs diff=lfs merge=lfs -text
+SportsLibrary/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+SportsLibrary/**/*.glb filter=lfs diff=lfs merge=lfs -text
+SportsLibrary/**/*.png filter=lfs diff=lfs merge=lfs -text
+SportsLibrary/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+SportsLibrary/**/*.mp4 filter=lfs diff=lfs merge=lfs -text

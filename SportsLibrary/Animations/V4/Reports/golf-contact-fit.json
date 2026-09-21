@@ -1,0 +1,218 @@
+[
+  {
+    "action": "Male__Golf__Drive__RH__V4",
+    "club_length_scale_for_character": 0.989464780646211,
+    "contact": [
+      -2.3869693279266357,
+      -0.027989430353045464,
+      0.06800010055303574
+    ]
+  },
+  {
+    "action": "Male__Golf__IronSwing__RH__V4",
+    "club_length_scale_for_character": 1.129280456172306,
+    "contact": [
+      -2.3869693279266357,
+      -0.027989426627755165,
+      0.06800000369548798
+    ]
+  },
+  {
+    "action": "Male__Golf__HalfSwing__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -2.355952024459839,
+      0.79481440782547,
+      0.4437975287437439
+    ]
+  },
+  {
+    "action": "Male__Golf__Chip__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -2.3669865131378174,
+      0.24976250529289246,
+      0.13371041417121887
+    ]
+  },
+  {
+    "action": "Male__Golf__Putt__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -2.3485796451568604,
+      0.09769172966480255,
+      0.17581620812416077
+    ]
+  },
+  {
+    "action": "Male__Golf__SwingAbort__RH__V4",
+    "club_length_scale_for_character": 1,
+    "contact": [
+      -2.0001492500305176,
+      1.361647129058838,
+      1.1015002727508545
+    ]
+  },
+  {
+    "action": "Male__Golf__Drive__LH__V4",
+    "club_length_scale_for_character": 0.989464780646211,
+    "contact": [
+      -1.013030767440796,
+      -0.027989430353045464,
+      0.06800010055303574
+    ]
+  },
+  {
+    "action": "Male__Golf__IronSwing__LH__V4",
+    "club_length_scale_for_character": 1.129280456172306,
+    "contact": [
+      -1.013030767440796,
+      -0.027989426627755165,
+      0.06800000369548798
+    ]
+  },
+  {
+    "action": "Male__Golf__HalfSwing__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -1.0440481901168823,
+      0.79481440782547,
+      0.4437975287437439
+    ]
+  },
+  {
+    "action": "Male__Golf__Chip__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -1.0330134630203247,
+      0.24976250529289246,
+      0.13371041417121887
+    ]
+  },
+  {
+    "action": "Male__Golf__Putt__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      -1.0514204502105713,
+      0.09769172966480255,
+      0.17581620812416077
+    ]
+  },
+  {
+    "action": "Male__Golf__SwingAbort__LH__V4",
+    "club_length_scale_for_character": 1,
+    "contact": [
+      -1.399850845336914,
+      1.361647129058838,
+      1.1015002727508545
+    ]
+  },
+  {
+    "action": "Female__Golf__Drive__RH__V4",
+    "club_length_scale_for_character": 0.989464780646211,
+    "contact": [
+      1.013030767440796,
+      -0.027989430353045464,
+      0.06800010055303574
+    ]
+  },
+  {
+    "action": "Female__Golf__IronSwing__RH__V4",
+    "club_length_scale_for_character": 1.129280456172306,
+    "contact": [
+      1.013030767440796,
+      -0.027989426627755165,
+      0.06800000369548798
+    ]
+  },
+  {
+    "action": "Female__Golf__HalfSwing__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      1.0440481901168823,
+      0.79481440782547,
+      0.4437975287437439
+    ]
+  },
+  {
+    "action": "Female__Golf__Chip__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      1.0330134630203247,
+      0.24976250529289246,
+      0.13371041417121887
+    ]
+  },
+  {
+    "action": "Female__Golf__Putt__RH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      1.0514204502105713,
+      0.09769172966480255,
+      0.17581620812416077
+    ]
+  },
+  {
+    "action": "Female__Golf__SwingAbort__RH__V4",
+    "club_length_scale_for_character": 1,
+    "contact": [
+      1.399850845336914,
+      1.361647129058838,
+      1.1015002727508545
+    ]
+  },
+  {
+    "action": "Female__Golf__Drive__LH__V4",
+    "club_length_scale_for_character": 0.989464780646211,
+    "contact": [
+      2.3869693279266357,
+      -0.027989430353045464,
+      0.06800010055303574
+    ]
+  },
+  {
+    "action": "Female__Golf__IronSwing__LH__V4",
+    "club_length_scale_for_character": 1.129280456172306,
+    "contact": [
+      2.3869693279266357,
+      -0.027989426627755165,
+      0.06800000369548798
+    ]
+  },
+  {
+    "action": "Female__Golf__HalfSwing__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      2.355952024459839,
+      0.79481440782547,
+      0.4437975287437439
+    ]
+  },
+  {
+    "action": "Female__Golf__Chip__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      2.3669865131378174,
+      0.24976250529289246,
+      0.13371041417121887
+    ]
+  },
+  {
+    "action": "Female__Golf__Putt__LH__V4",
+    "club_length_scale_for_character": 1.15,
+    "contact": [
+      2.3485796451568604,
+      0.09769172966480255,
+      0.17581620812416077
+    ]
+  },
+  {
+    "action": "Female__Golf__SwingAbort__LH__V4",
+    "club_length_scale_for_character": 1,
+    "contact": [
+      2.0001492500305176,
+      1.361647129058838,
+      1.1015002727508545
+    ]
+  }
+]

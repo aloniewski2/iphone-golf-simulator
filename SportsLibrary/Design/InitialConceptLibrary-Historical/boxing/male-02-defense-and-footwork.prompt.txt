@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: MALE, preserve the straight torso and relaxed shirt of the reference. Title: "Boxing — defense and footwork — male". Panels in reading order:
+1. High guard: gloves cover temples, elbows in
+2. Body block: elbow protects ribs
+3. Parry: small lead glove deflection
+4. Slip left: torso shifts off center line
+5. Slip right: torso shifts opposite way
+6. Duck: knees bend, eyes/head remain forward
+7. Roll: low curved body movement under imagined hook
+8. Back step: rear foot retreats then front follows
+9. Advance: lead foot steps then rear follows
+10. Left pivot: rotate on lead foot, maintain guard
+11. Right lateral step: balanced stance preserved
+12. Southpaw guard: right foot forward, right glove leading
+Boxing: padded plain red boxing gloves fully enclose both hands, original black outfit unchanged. No opponent needed. Orthodox left-foot-forward guard except specified southpaw. Gloves protect head between punches. Show substantial differences between each action and realistic balance. Keep blank rounded-square head and stylized squat proportions. SHORT captions.

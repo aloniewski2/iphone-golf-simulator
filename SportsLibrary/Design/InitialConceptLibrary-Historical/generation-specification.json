@@ -1,0 +1,285 @@
+{
+  "version": 1,
+  "purpose": "Concept mockups only; not executable animations or validated biomechanical frames",
+  "characters": {
+    "male": {
+      "source": "/Users/adnanyonathan/Downloads/human figure 3d model.glb",
+      "reference": "01-model-references/male-front.png"
+    },
+    "female": {
+      "source": "/Users/adnanyonathan/Downloads/stylized humanoid character 3d model.glb",
+      "reference": "01-model-references/female-front.png"
+    }
+  },
+  "identity": "Faceless rounded-square head, tan skin, black T-shirt and trousers, white shoes; preserve each supplied body silhouette. No facial features or hair.",
+  "clothing": "Existing outfit used only for references; modular wardrobe is future work.",
+  "basePrompt": "Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. ",
+  "sheets": [
+    {
+      "group": "golf",
+      "slug": "01-full-swing",
+      "title": "Golf — full swing",
+      "poses": [
+        "Address: two hands on iron, clubface grounded behind ball",
+        "Takeaway: shoulders turn, club waist-high",
+        "Backswing: lead arm extended, wrists hinge",
+        "Top: club above trailing shoulder, balanced knees",
+        "Transition: hips begin rotation, club shallows",
+        "Downswing: hands approach trail thigh",
+        "Impact: hands ahead, clubface meets ground-level ball",
+        "Extension: arms and club extend toward target",
+        "Follow-through: torso rotates, trail heel rises",
+        "Finish: balanced lead leg, club over lead shoulder",
+        "Hold: head follows imaginary ball flight",
+        "Recovery: club lowers, return to relaxed stance"
+      ]
+    },
+    {
+      "group": "golf",
+      "slug": "02-short-game",
+      "title": "Golf — short game",
+      "poses": [
+        "Putt setup: narrow stance, eyes toward ball",
+        "Putt backswing: short pendulum, quiet lower body",
+        "Putt impact: square putter face meets ball",
+        "Putt follow-through: hold low finish",
+        "Chip setup: hands ahead, weight on lead foot",
+        "Chip backswing: compact low arc",
+        "Chip impact: descending iron strikes ball",
+        "Chip finish: low controlled follow-through",
+        "Bunker setup: wider stance, open wedge",
+        "Bunker backswing: wrist hinge, flexed knees",
+        "Bunker strike: wedge enters sand behind ball",
+        "Bunker finish: open chest, high soft finish"
+      ]
+    },
+    {
+      "group": "golf",
+      "slug": "03-variants-and-contact",
+      "title": "Golf — variants and contact",
+      "poses": [
+        "Driver tee address with broad stance",
+        "Driver top of backswing with long club",
+        "Driver impact with teed ball, upward arc",
+        "Driver balanced high finish",
+        "Pitch setup with wedge",
+        "Pitch half backswing",
+        "Pitch impact with wedge",
+        "Pitch chest-high finish",
+        "Front close-up: two mitten hands securely around one grip",
+        "Side close-up: iron face and ball at impact",
+        "Crouched reading green, putter held vertically",
+        "Bend and retrieve ball from cup"
+      ]
+    },
+    {
+      "group": "bowling",
+      "slug": "01-delivery",
+      "title": "Bowling — delivery sequence",
+      "poses": [
+        "Set stance: ball cradled near chest in both hands",
+        "Aim: eyes/head aligned down lane",
+        "Pushaway: right ball hand forward, left hand supporting",
+        "First step: right foot steps, ball lowers",
+        "Pendulum: ball swings beside right thigh",
+        "Backswing: ball behind body, left arm counterbalances",
+        "Forward swing: knee flexion, ball descends",
+        "Slide: planted left foot, right leg sweeps behind left",
+        "Release: right hand close to floor, ball just leaving fingers",
+        "Follow-through: right arm rises, left knee bent",
+        "Hold: balanced slide finish, watch ball roll",
+        "Recover: step upright and turn away"
+      ]
+    },
+    {
+      "group": "bowling",
+      "slug": "02-variants-and-contact",
+      "title": "Bowling — delivery variants",
+      "poses": [
+        "Straight delivery release: right palm facing target",
+        "Hook setup: supported ball, relaxed wrist",
+        "Hook backswing: wrist stays stable",
+        "Hook release: gentle hand rotation beside ankle",
+        "Hook finish: balanced arm extension",
+        "Two-hand setup: both hands cradle ball",
+        "Two-hand approach: ball swings close to right hip",
+        "Two-hand release: support hand clears, right delivers",
+        "Left-handed setup with ball at left hip",
+        "Left-handed slide and release over right planted leg",
+        "Close-up: rounded hand holds ball at three finger holes",
+        "Side detail: released ball clears foot and rolls on lane"
+      ]
+    },
+    {
+      "group": "bowling",
+      "slug": "03-gameplay-and-reactions",
+      "title": "Bowling — gameplay and reactions",
+      "poses": [
+        "Reach for ball at ball return",
+        "Lift bowling ball with both hands",
+        "Carry ball securely toward approach",
+        "Aim diagonally for a spare",
+        "Watch rolling ball, lean slightly right",
+        "Watch rolling ball, lean slightly left",
+        "Strike: compact right fist pump",
+        "Spare: pleased small two-arm lift",
+        "Gutter: shoulders drop, head tilts down",
+        "Miss: hands open in mild disbelief",
+        "Celebrate: short jump with both arms up",
+        "Turn and walk back toward seating"
+      ]
+    },
+    {
+      "group": "tennis",
+      "slug": "01-groundstrokes",
+      "title": "Tennis — groundstrokes",
+      "poses": [
+        "Forehand ready: racket in right hand, athletic stance",
+        "Forehand unit turn: shoulders coil",
+        "Forehand backswing: racket drops behind hip",
+        "Forehand contact: ball ahead of right hip",
+        "Forehand follow-through: racket across opposite shoulder",
+        "Forehand recovery: return to ready",
+        "Two-hand backhand ready: both hands on grip",
+        "Backhand unit turn: shoulders to opposite side",
+        "Backhand backswing: racket behind left hip",
+        "Backhand contact: ball forward, both hands attached",
+        "Backhand follow-through: racket over right shoulder",
+        "Backhand recovery: return to ready"
+      ]
+    },
+    {
+      "group": "tennis",
+      "slug": "02-serve-and-net",
+      "title": "Tennis — serve and net",
+      "poses": [
+        "Serve setup: ball in left hand, racket in right",
+        "Serve toss: left arm extended upward",
+        "Trophy position: knees bend, racket behind head",
+        "Serve contact: reach high overhead, ball meets strings",
+        "Serve follow-through: right arm crosses body",
+        "Serve landing: lead foot lands and knees absorb",
+        "Forehand volley: compact racket in front",
+        "Backhand volley: firm wrist, compact reach",
+        "Overhead smash preparation: point toward high ball",
+        "Overhead smash contact: racket extended overhead",
+        "Drop shot: open racket face, soft touch",
+        "Backhand slice: high-to-low racket contact"
+      ]
+    },
+    {
+      "group": "tennis",
+      "slug": "03-footwork-and-contact",
+      "title": "Tennis — footwork and contact",
+      "poses": [
+        "Split step: small hop and wide landing",
+        "Shuffle left: lateral step without crossing feet",
+        "Shuffle right: lateral step without crossing feet",
+        "Crossover sprint: chase wide ball",
+        "Wide forehand lunge with racket extended",
+        "Wide backhand lunge with both hands on racket",
+        "Recover toward center with racket ready",
+        "Low half-volley: bent knees, racket near floor",
+        "Close-up: right hand wraps racket handle cleanly",
+        "Close-up: two hands stacked on backhand handle",
+        "Close-up: ball meets center of racket strings",
+        "Point won: compact fist pump, racket in other hand"
+      ]
+    },
+    {
+      "group": "boxing",
+      "slug": "01-punches",
+      "title": "Boxing — punch mechanics",
+      "poses": [
+        "Orthodox guard: left foot forward, both gloves at cheeks",
+        "Jab extension: left glove forward, right protects head",
+        "Jab recovery: left glove returns to cheek",
+        "Cross extension: right hip rotates, rear heel lifts",
+        "Cross recovery: regain balanced guard",
+        "Lead hook: bent left elbow, torso turns",
+        "Lead hook recovery: guard restored",
+        "Rear hook: bent right elbow and hip rotation",
+        "Lead uppercut: slight dip then left glove rises",
+        "Rear uppercut: right hip drives upward punch",
+        "Body jab: level change through knees",
+        "Return to guard: hands high, balanced feet"
+      ]
+    },
+    {
+      "group": "boxing",
+      "slug": "02-defense-and-footwork",
+      "title": "Boxing — defense and footwork",
+      "poses": [
+        "High guard: gloves cover temples, elbows in",
+        "Body block: elbow protects ribs",
+        "Parry: small lead glove deflection",
+        "Slip left: torso shifts off center line",
+        "Slip right: torso shifts opposite way",
+        "Duck: knees bend, eyes/head remain forward",
+        "Roll: low curved body movement under imagined hook",
+        "Back step: rear foot retreats then front follows",
+        "Advance: lead foot steps then rear follows",
+        "Left pivot: rotate on lead foot, maintain guard",
+        "Right lateral step: balanced stance preserved",
+        "Southpaw guard: right foot forward, right glove leading"
+      ]
+    },
+    {
+      "group": "boxing",
+      "slug": "03-combos-and-reactions",
+      "title": "Boxing — combinations and reactions",
+      "poses": [
+        "Combination 1/4: orthodox guard",
+        "Combination 2/4: left jab",
+        "Combination 3/4: right cross",
+        "Combination 4/4: left hook and balanced hips",
+        "Body-head 1/3: dip with guard up",
+        "Body-head 2/3: right body uppercut",
+        "Body-head 3/3: recover into left head hook",
+        "Close-up: mitten hand fully enclosed by padded boxing glove",
+        "Light hit reaction: torso recoils, gloves remain up",
+        "Stumble recovery: small backward step, regain guard",
+        "Round rest: gloves lowered, shoulders relaxed",
+        "Win: both gloves raised overhead"
+      ]
+    },
+    {
+      "group": "shared",
+      "slug": "01-movement",
+      "title": "Shared — locomotion and transitions",
+      "poses": [
+        "Neutral relaxed standing, front view",
+        "Ready athletic stance, knees soft",
+        "Walk contact: left heel forward, right toe behind",
+        "Walk passing: weight over left leg",
+        "Walk contact: right heel forward, left toe behind",
+        "Run flight: opposite arm and knee drive",
+        "Run landing: flexed knee absorbs weight",
+        "Stop: lower center of gravity and brake",
+        "Turn left: head, shoulders, then hips rotate",
+        "Turn right: head, shoulders, then hips rotate",
+        "Jump anticipation: crouch with arms back",
+        "Jump landing: both feet grounded, knees absorb"
+      ]
+    },
+    {
+      "group": "shared",
+      "slug": "02-personality",
+      "title": "Shared — body language and reactions",
+      "poses": [
+        "Neutral confident idle",
+        "Attentive ready pose, slight forward lean",
+        "Focus: head inclined toward target",
+        "Surprise: head lifts, hands spread",
+        "Success: single fist pump",
+        "Big win: both arms overhead",
+        "Celebration jump: feet briefly off ground",
+        "Disappointment: shoulders slump, head lowers",
+        "Frustration: hands at hips",
+        "Recover confidence: straighten torso, lift head",
+        "Greeting: friendly one-hand wave",
+        "Sportsmanship: extend right hand for handshake"
+      ]
+    }
+  ]
+}

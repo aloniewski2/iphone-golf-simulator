@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "four_posts": true,
+    "four_adapted_source_pads": true,
+    "sixteen_ropes": true,
+    "four_ropes_each_side": true,
+    "square_canvas": true,
+    "camera_outside_near_ring": true,
+    "original_hidden": true,
+    "near_ropes_visible_in_main": true,
+    "five_source_components_retained": true,
+    "finite_geometry": true,
+    "near_ropes_excluded_in_clear": true,
+    "fbx_four_posts": true,
+    "fbx_sixteen_rope_meshes": true,
+    "source_archive_not_exported": true,
+    "fbx_material_slots_present": true
+  },
+  "all_checks_pass": true,
+  "fbx_mesh_count": 1745,
+  "note": "Structural and FBX roundtrip checks only; no Unity physics/gameplay tests."
+}

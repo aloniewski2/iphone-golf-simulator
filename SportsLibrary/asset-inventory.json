@@ -1,0 +1,1613 @@
+{
+  "scope": "Current editable masters and deliverables; historical concept references are explicitly separated.",
+  "files": [
+    {
+      "path": "Characters/Originals/StandardMale.glb",
+      "bytes": 61590248,
+      "sha256": "f9768137e6f1649c007968e69c0cab4bc36851ceda41dad1d8420c556bf8215f",
+      "source": "User-supplied: human figure 3d model.glb"
+    },
+    {
+      "path": "Characters/Originals/StandardFemale.glb",
+      "bytes": 59541760,
+      "sha256": "83fef83f6e384c38c5cc773a1343cdef184d2f5048ec442e79b8630307f4b8ab",
+      "source": "User-supplied: stylized humanoid character 3d model.glb"
+    },
+    {
+      "path": "Characters/IdentityReferences/female-back.png",
+      "bytes": 853350,
+      "sha256": "763b0894f815758d47a7ad601618cd81c832b2e17aadfbb393448b26a95f5ee2",
+      "source": "sports-character-library/01-model-references/female-back.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/female-front.png",
+      "bytes": 860622,
+      "sha256": "7861013adddd662937073c72d9ab0265a6f9be2aab826ba9f8c3122246439a31",
+      "source": "sports-character-library/01-model-references/female-front.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/female-side.png",
+      "bytes": 351314,
+      "sha256": "128cc5ab327ce4a93b6f9b6f3f443477836239cb5769a0e3c3ec7f40ae40699d",
+      "source": "sports-character-library/01-model-references/female-side.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/female-three-quarter.png",
+      "bytes": 844369,
+      "sha256": "752e178c8e45a7ea02b235c8ddf0fb090c9174a1d0fad1523e40bc09c5a4fca9",
+      "source": "sports-character-library/01-model-references/female-three-quarter.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/male-back.png",
+      "bytes": 965890,
+      "sha256": "62d99b125e8e55478e47f30bdd20af77cb2c7391d888f58d1f44f3e74ac5a0be",
+      "source": "sports-character-library/01-model-references/male-back.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/male-front.png",
+      "bytes": 939261,
+      "sha256": "41bc13ffbd915e00509fd4ac629ccf5da194554b522f58acac37b40f431b93bd",
+      "source": "sports-character-library/01-model-references/male-front.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/male-side.png",
+      "bytes": 422063,
+      "sha256": "cde396aa366516da95340852627a1a956e4e236ba184d23d2cca6732161f6d46",
+      "source": "sports-character-library/01-model-references/male-side.png"
+    },
+    {
+      "path": "Characters/IdentityReferences/male-three-quarter.png",
+      "bytes": 1012932,
+      "sha256": "7102225925b9372aea18d72c1fd3d51a73a37c903948d3923ddefe1de94ba57c",
+      "source": "sports-character-library/01-model-references/male-three-quarter.png"
+    },
+    {
+      "path": "Blender/all-arenas-and-animations-v4.blend",
+      "bytes": 104096293,
+      "sha256": "f67d5f0bea24e8a8d612eb2f7da21ccc134c2d2ae6c5c41b31a7b577ebb65654",
+      "source": "blender-sports-studio/wardrobe-animation-v4/all-arenas-and-animations-v4.blend"
+    },
+    {
+      "path": "Blender/sports-animation-studio-v4.blend",
+      "bytes": 309255768,
+      "sha256": "c178a9b0669603a64c71a6df4d76406d30c84a88fcb954a35bf3d759f94cd464",
+      "source": "blender-sports-studio/wardrobe-animation-v4/sports-animation-studio-v4.blend"
+    },
+    {
+      "path": "Animations/V4/Reports/action-manifest.json",
+      "bytes": 47296,
+      "sha256": "3cfe37cb772f55ff7c1d402eacbc0002e82545477487d16b500667bbacc35e8d",
+      "source": "blender-sports-studio/wardrobe-animation-v4/action-manifest.json"
+    },
+    {
+      "path": "Animations/V4/Reports/golf-contact-fit.json",
+      "bytes": 4930,
+      "sha256": "7957494b7b8de7dc9575e0abf98ea96333a4f5f86efcc2a83731a327c987b9fe",
+      "source": "blender-sports-studio/wardrobe-animation-v4/golf-contact-fit.json"
+    },
+    {
+      "path": "Animations/V4/Reports/ground-contact-corrections.json",
+      "bytes": 26718,
+      "sha256": "8a98f9d206e5a9d5b1bde7251279e37d2e04171626bd541ad0d832c960384a06",
+      "source": "blender-sports-studio/wardrobe-animation-v4/ground-contact-corrections.json"
+    },
+    {
+      "path": "Animations/V4/Reports/live-integration.json",
+      "bytes": 1037,
+      "sha256": "83907a599de7aa77669795d9bba1ab89a363b47b19461d8bca0dbc7bd8cef995",
+      "source": "blender-sports-studio/wardrobe-animation-v4/live-integration.json"
+    },
+    {
+      "path": "Animations/V4/Reports/timeline.json",
+      "bytes": 25844,
+      "sha256": "fc69857d8d642c19f597151957f550e2f40e621ca0b363644573001bdfd76705",
+      "source": "blender-sports-studio/wardrobe-animation-v4/timeline.json"
+    },
+    {
+      "path": "Animations/V4/Reports/validation.json",
+      "bytes": 3164,
+      "sha256": "10b07bc847966c3977437b461ce030c6afea688525441eebb1cea3dca70c9d50",
+      "source": "blender-sports-studio/wardrobe-animation-v4/validation.json"
+    },
+    {
+      "path": "Animations/V4/Reports/video-validation.json",
+      "bytes": 745,
+      "sha256": "a8164ceb06f304c069d60c53155cc2c984fa13d3c0d0b16bb56570136963be3e",
+      "source": "blender-sports-studio/wardrobe-animation-v4/video-validation.json"
+    },
+    {
+      "path": "Animations/V4/ORIGINAL-NOTES.md",
+      "bytes": 5122,
+      "sha256": "d4025e1736e8e0372a4a26753734a2195c00fb947a128abb457b8cd73fd23175",
+      "source": "blender-sports-studio/wardrobe-animation-v4/README.md"
+    },
+    {
+      "path": "Previews/10fps/tennis-v4.mp4",
+      "bytes": 3477265,
+      "sha256": "64231f8df795166992a6f5a7cd0f91a36683c3f4b92ccf003e8e742022262a37",
+      "source": "blender-sports-studio/wardrobe-animation-v4/videos/tennis-v4.mp4"
+    },
+    {
+      "path": "Previews/10fps/bowling-v4.mp4",
+      "bytes": 2073012,
+      "sha256": "93f4c993ebabdc7e33c44f6b2f12496518290a5af4b06755aba05063ba780072",
+      "source": "blender-sports-studio/wardrobe-animation-v4/videos/bowling-v4.mp4"
+    },
+    {
+      "path": "Previews/10fps/golf-v4.mp4",
+      "bytes": 677447,
+      "sha256": "01da5257c48a73e90a08a73cfc0bc048d67b72595ad173e19eb9b6e6d032d4f3",
+      "source": "blender-sports-studio/wardrobe-animation-v4/videos/golf-v4.mp4"
+    },
+    {
+      "path": "Previews/10fps/boxing-v4.mp4",
+      "bytes": 929126,
+      "sha256": "0cabe3557b5d33aa641fefa001c42b65efda9305eb219e28820cd0f27cd3e25f",
+      "source": "blender-sports-studio/wardrobe-animation-v4/videos/boxing-v4.mp4"
+    },
+    {
+      "path": "Previews/10fps/boxing-pov-v4.mp4",
+      "bytes": 812746,
+      "sha256": "f5583275144b3bcc88458a2f62c0c8d69b31bcec6beea774740b1dcf3eb27a41",
+      "source": "blender-sports-studio/wardrobe-animation-v4/videos/boxing-pov-v4.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/README.md",
+      "bytes": 2109,
+      "sha256": "8a676b7e59a1422396545fb4f227f5880cbdd8e7bad6fa093cd8531b7a8bd33d",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/README.md"
+    },
+    {
+      "path": "Previews/HighFPS/bowling-60fps.mp4",
+      "bytes": 1801389,
+      "sha256": "44dc1dbfc7febb982dfcd4a99e905340557a3480e73eb61af8b334c4258b29c8",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/bowling-60fps.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/boxing-60fps.mp4",
+      "bytes": 1021566,
+      "sha256": "2f9f81cde5e44a29d8ec69fdc6e220de0e26b089a4a18211892a1d3ce1376706",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/boxing-60fps.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/golf-60fps.mp4",
+      "bytes": 736690,
+      "sha256": "e2e71acbe3df919670ae4ace74cf5beee3c6d92b3fa745aabed5138a0c34f6e5",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/golf-60fps.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/tennis-120fps.mp4",
+      "bytes": 1275149,
+      "sha256": "5f79175784b23dc987b927fe6eb2164fa3cab283b47ffd5b6c1953ddce0c02db",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/tennis-120fps.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/tennis-60fps.mp4",
+      "bytes": 1245613,
+      "sha256": "698b25bc237ac0bccf6124dcac27235cd4bd6e69b3678fd2f2e05f8b1eaff00e",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/tennis-60fps.mp4"
+    },
+    {
+      "path": "Previews/HighFPS/validation.json",
+      "bytes": 833,
+      "sha256": "bfef5a3f51dc2d7faa4b5f0118eb49be97090e4a1a4c27b4a2d6f9daf95922be",
+      "source": "blender-sports-studio/wardrobe-animation-v4/high-fps/validation.json"
+    },
+    {
+      "path": "Clothing/wardrobe-catalog.png",
+      "bytes": 1615202,
+      "sha256": "30a61d95ba635241d506d795444f62e1ebd864ebc2b65c2b8d24875ffaeaf8d8",
+      "source": "blender-sports-studio/wardrobe-animation-v4/previews/wardrobe-catalog.png"
+    },
+    {
+      "path": "Clothing/Concepts/README.md",
+      "bytes": 2107,
+      "sha256": "7743ffb9942f422c6f290ab644361fc77879a9c63e8636e99f099256aff43837",
+      "source": "sports-clothing-concepts-v1/README.md"
+    },
+    {
+      "path": "Clothing/Concepts/bowling-kits.png",
+      "bytes": 1615330,
+      "sha256": "6347b362d9b774b7281291364e4ce8a81de120c7c7b4f1c6e49ddb3f3c8c915e",
+      "source": "sports-clothing-concepts-v1/bowling-kits.png"
+    },
+    {
+      "path": "Clothing/Concepts/bowling.prompt.md",
+      "bytes": 2323,
+      "sha256": "0121d6d7b45548c41208b36fe048b93535b0a5d862d5e0187d8d8a8c7c7aab94",
+      "source": "sports-clothing-concepts-v1/bowling.prompt.md"
+    },
+    {
+      "path": "Clothing/Concepts/boxing-kits.png",
+      "bytes": 1684243,
+      "sha256": "8ce66f2867de455581dd5254d57154db8628b5b28cc28637dfc36e612936a824",
+      "source": "sports-clothing-concepts-v1/boxing-kits.png"
+    },
+    {
+      "path": "Clothing/Concepts/boxing.prompt.md",
+      "bytes": 2505,
+      "sha256": "6a76a4e361153b252beb6c8b6d4b628a4343d56ca90b9f356f86e37faaf4bd12",
+      "source": "sports-clothing-concepts-v1/boxing.prompt.md"
+    },
+    {
+      "path": "Clothing/Concepts/golf-kits.png",
+      "bytes": 1599059,
+      "sha256": "36be771298e5477a3f8e8d06d5d7df5534e1ae505daa89908e249fa516493185",
+      "source": "sports-clothing-concepts-v1/golf-kits.png"
+    },
+    {
+      "path": "Clothing/Concepts/golf.prompt.md",
+      "bytes": 2120,
+      "sha256": "251919b1699e0bb145b6418cdcb386118ddba3279aa5f4b814932dac4ba521d8",
+      "source": "sports-clothing-concepts-v1/golf.prompt.md"
+    },
+    {
+      "path": "Clothing/Concepts/tennis-kits.png",
+      "bytes": 1592859,
+      "sha256": "a2c825588d4108eb19c28c23a7276268dbcdcb38a9e5cbba69a8ddb6abf782fa",
+      "source": "sports-clothing-concepts-v1/tennis-kits.png"
+    },
+    {
+      "path": "Clothing/Concepts/tennis.prompt.md",
+      "bytes": 2190,
+      "sha256": "12b240a90ee3aa0b083905c4f596888e1371a4acb8e8f26516924555666c95ac",
+      "source": "sports-clothing-concepts-v1/tennis.prompt.md"
+    },
+    {
+      "path": "Equipment/Bowling_Ball.fbx",
+      "bytes": 120332,
+      "sha256": "8209d7349e835db022066e736c94d257226ebd6715cdec24d020825204b1b14b",
+      "source": "sports-expansion-v1/equipment/Bowling_Ball.fbx"
+    },
+    {
+      "path": "Equipment/Bowling_Ball.glb",
+      "bytes": 135744,
+      "sha256": "79174fb4d4377b74372af482bc14c69eb32aa38c21a780d227a05435b13d2be2",
+      "source": "sports-expansion-v1/equipment/Bowling_Ball.glb"
+    },
+    {
+      "path": "Equipment/Bowling_Pin.fbx",
+      "bytes": 45772,
+      "sha256": "3589c0ff1659cbc538dcbc13e666d565da94e0a4b7d4253de03f63ae9ad33883",
+      "source": "sports-expansion-v1/equipment/Bowling_Pin.fbx"
+    },
+    {
+      "path": "Equipment/Bowling_Pin.glb",
+      "bytes": 48128,
+      "sha256": "be2c805564a155aed13d0517565867a067500481dc16e141c54213b299ea0dfa",
+      "source": "sports-expansion-v1/equipment/Bowling_Pin.glb"
+    },
+    {
+      "path": "Equipment/Boxing_Glove_L.fbx",
+      "bytes": 167900,
+      "sha256": "013f43479236fd72c4bac226b36bc2676459155f01189dfc3b6581275d37067e",
+      "source": "sports-expansion-v1/equipment/Boxing_Glove_L.fbx"
+    },
+    {
+      "path": "Equipment/Boxing_Glove_L.glb",
+      "bytes": 175824,
+      "sha256": "6590e903f0e0b30d5bb13931806d32138407da5f4a108b4d868343432dfb3471",
+      "source": "sports-expansion-v1/equipment/Boxing_Glove_L.glb"
+    },
+    {
+      "path": "Equipment/Boxing_Glove_R.fbx",
+      "bytes": 167948,
+      "sha256": "3d13fa5b18ee576a30031daaa21bb86f011946a50b9a44415750267183aa8098",
+      "source": "sports-expansion-v1/equipment/Boxing_Glove_R.fbx"
+    },
+    {
+      "path": "Equipment/Boxing_Glove_R.glb",
+      "bytes": 175876,
+      "sha256": "d6bda58d9f4b0a30e68bd6a657cf0ab81089280b97a6fb6e614be9b69bbc5883",
+      "source": "sports-expansion-v1/equipment/Boxing_Glove_R.glb"
+    },
+    {
+      "path": "Equipment/Golf_Ball.fbx",
+      "bytes": 290012,
+      "sha256": "a92dc608f265454ce3ff191eb0df3de123af2d04eff4b8e648f3697e8062cc0e",
+      "source": "sports-expansion-v1/equipment/Golf_Ball.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Ball.glb",
+      "bytes": 275848,
+      "sha256": "7b765677853753b5da674e69e815a1d46995fc3122cbe5b6df53a80cbf246f46",
+      "source": "sports-expansion-v1/equipment/Golf_Ball.glb"
+    },
+    {
+      "path": "Equipment/Golf_Driver.fbx",
+      "bytes": 195468,
+      "sha256": "7565bc022543748427374921bd1955ed637baf669cfe3674206c2cf6bc73a24a",
+      "source": "sports-expansion-v1/equipment/Golf_Driver.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Driver.glb",
+      "bytes": 174608,
+      "sha256": "e3e2997f45500484a6deeff9d6de514ee0c11f03f95c2c16a80554b62d9c2659",
+      "source": "sports-expansion-v1/equipment/Golf_Driver.glb"
+    },
+    {
+      "path": "Equipment/Golf_Driver_LH.fbx",
+      "bytes": 198252,
+      "sha256": "522421f075c8b1569059a3872edc5cc5ca90b8ad57531be42005062528ac4d33",
+      "source": "sports-expansion-v1/equipment/Golf_Driver_LH.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Driver_LH.glb",
+      "bytes": 174520,
+      "sha256": "26ad5f0a5d585b9e269fadb8763be2745dfd18cd0511e09c17877d4aac4d694c",
+      "source": "sports-expansion-v1/equipment/Golf_Driver_LH.glb"
+    },
+    {
+      "path": "Equipment/Golf_Iron.fbx",
+      "bytes": 164028,
+      "sha256": "2c3e9339da306be4ce21cafe16d157d148010b2691ec5e6a7ab75bf4f4bc0258",
+      "source": "sports-expansion-v1/equipment/Golf_Iron.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Iron.glb",
+      "bytes": 134440,
+      "sha256": "15470b51d2421e650f6a3dc5ba2d0e6c2238703e1e775ca73fa50a148adc94a8",
+      "source": "sports-expansion-v1/equipment/Golf_Iron.glb"
+    },
+    {
+      "path": "Equipment/Golf_Iron_LH.fbx",
+      "bytes": 165500,
+      "sha256": "f0eecd646701e7c092e88ddb1bad415e19499e7f0fd2c7458a0f576dc4eb70d0",
+      "source": "sports-expansion-v1/equipment/Golf_Iron_LH.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Iron_LH.glb",
+      "bytes": 134268,
+      "sha256": "4381edadd386d03debb2f1275e2184982f5454c35db9b586312255504a75b587",
+      "source": "sports-expansion-v1/equipment/Golf_Iron_LH.glb"
+    },
+    {
+      "path": "Equipment/Golf_Putter.fbx",
+      "bytes": 170860,
+      "sha256": "8a0ef442cc41f2af5a18c73748a41e9729300dbaf2c12bc042e8534bf9b770af",
+      "source": "sports-expansion-v1/equipment/Golf_Putter.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Putter.glb",
+      "bytes": 140440,
+      "sha256": "7196fabfc6b65c0859fd7820db17e5432752ad66fc64c53533fa56c22e6aaab6",
+      "source": "sports-expansion-v1/equipment/Golf_Putter.glb"
+    },
+    {
+      "path": "Equipment/Golf_Putter_LH.fbx",
+      "bytes": 172348,
+      "sha256": "f574651a3123b4bebaa64a80375bfa7e189423fbcb136362c276ae12afac19ca",
+      "source": "sports-expansion-v1/equipment/Golf_Putter_LH.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Putter_LH.glb",
+      "bytes": 140316,
+      "sha256": "655946dffd0e0edd15adc7c815ccdc8a1b5d68f3df2314b9283d91a3430f0237",
+      "source": "sports-expansion-v1/equipment/Golf_Putter_LH.glb"
+    },
+    {
+      "path": "Equipment/Golf_Tee.fbx",
+      "bytes": 38700,
+      "sha256": "23e602ec08c5767d4a789bf6b4567c6b0e9d355053cf4312fea3c53eea445f31",
+      "source": "sports-expansion-v1/equipment/Golf_Tee.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Tee.glb",
+      "bytes": 29092,
+      "sha256": "09088b8cd789a4b7c8788d5cd9e81c2cacd2601e004b8f17805fabc0056f886d",
+      "source": "sports-expansion-v1/equipment/Golf_Tee.glb"
+    },
+    {
+      "path": "Equipment/Golf_Wedge.fbx",
+      "bytes": 163932,
+      "sha256": "92a0d3d03945341d589f06d98677198ca8559e1a8d9ee3a310ecaf586c4e4dde",
+      "source": "sports-expansion-v1/equipment/Golf_Wedge.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Wedge.glb",
+      "bytes": 134448,
+      "sha256": "84de2c74321db765e3bd3a9f59b8caee4281099fa4098124fb921dcd457b93b2",
+      "source": "sports-expansion-v1/equipment/Golf_Wedge.glb"
+    },
+    {
+      "path": "Equipment/Golf_Wedge_LH.fbx",
+      "bytes": 165516,
+      "sha256": "9e02765d370046fbb64a0a011aed3ba7e599147e39a5c93d4685893e77558b1f",
+      "source": "sports-expansion-v1/equipment/Golf_Wedge_LH.fbx"
+    },
+    {
+      "path": "Equipment/Golf_Wedge_LH.glb",
+      "bytes": 134300,
+      "sha256": "20c1d09065bfa7e0c0e0f453a58bf307770f58be179f6ba7214cf9c76644d7c7",
+      "source": "sports-expansion-v1/equipment/Golf_Wedge_LH.glb"
+    },
+    {
+      "path": "Equipment/Tennis_Ball.fbx",
+      "bytes": 117340,
+      "sha256": "0548f9f8a5fd3d4e2c71c69ce91e313fd4ed861cf5832fcfb4a4f4167b9e4e26",
+      "source": "sports-expansion-v1/equipment/Tennis_Ball.fbx"
+    },
+    {
+      "path": "Equipment/Tennis_Ball.glb",
+      "bytes": 129120,
+      "sha256": "3b423cb11ee23a1516684846b0c919f4ab7d2a5f5e5bb067317f7df123cc2aeb",
+      "source": "sports-expansion-v1/equipment/Tennis_Ball.glb"
+    },
+    {
+      "path": "Equipment/Tennis_Racket.fbx",
+      "bytes": 312796,
+      "sha256": "a0bb954c611fbb4547508fb560c8f37ce787b376317b66c8b3a1b985f1ca2eb9",
+      "source": "sports-expansion-v1/equipment/Tennis_Racket.fbx"
+    },
+    {
+      "path": "Equipment/Tennis_Racket.glb",
+      "bytes": 258060,
+      "sha256": "4b047cb0d3507315e875034cda7b643b96fbf575bb00635c19f39c540d42de35",
+      "source": "sports-expansion-v1/equipment/Tennis_Racket.glb"
+    },
+    {
+      "path": "Equipment/asset-manifest.json",
+      "bytes": 8597,
+      "sha256": "69e05ffbebaaaa4f28deb7a74e46fe85b123169be99f2e2b9c2d008b3affcbdc",
+      "source": "sports-expansion-v1/equipment/asset-manifest.json"
+    },
+    {
+      "path": "Equipment/bowling-equipment.png",
+      "bytes": 1668852,
+      "sha256": "b4dc272672d2bcef9931731d3a5faf3065a14e7c3b2bfd61f98ce0b22b53a894",
+      "source": "sports-expansion-v1/equipment/bowling-equipment.png"
+    },
+    {
+      "path": "Equipment/boxing-equipment.png",
+      "bytes": 1662693,
+      "sha256": "8a1756e1e448a2425279ccaf8d31cd1170995d2db5518a46961484f017e556cb",
+      "source": "sports-expansion-v1/equipment/boxing-equipment.png"
+    },
+    {
+      "path": "Equipment/equipment-overview.png",
+      "bytes": 2065072,
+      "sha256": "63fe41b3d5cdec052eefa331a58dc69e803e045177a4a5673c65dd78221188cc",
+      "source": "sports-expansion-v1/equipment/equipment-overview.png"
+    },
+    {
+      "path": "Equipment/golf-equipment.png",
+      "bytes": 1955464,
+      "sha256": "d2a33ebc86f2163d64c975cd4230fecf9737e5d8479c8bfc033fcbb21a5b9878",
+      "source": "sports-expansion-v1/equipment/golf-equipment.png"
+    },
+    {
+      "path": "Equipment/standard-sports-equipment.blend",
+      "bytes": 841263,
+      "sha256": "f91d79649e3a1db66ae153eef1696b612cafb541ad31d777e1369a48d211a1c9",
+      "source": "sports-expansion-v1/equipment/standard-sports-equipment.blend"
+    },
+    {
+      "path": "Equipment/tennis-equipment.png",
+      "bytes": 1784134,
+      "sha256": "f15bf673ad41b14b1efb39487ea9fdbda0c9df82f012b4c6a4d13b41e9030926",
+      "source": "sports-expansion-v1/equipment/tennis-equipment.png"
+    },
+    {
+      "path": "Equipment/validation.json",
+      "bytes": 10194,
+      "sha256": "712711bb47d2d6948d8392a0d1535507eeb92234886565a9b26ad83a5b6c28b3",
+      "source": "sports-expansion-v1/equipment/validation.json"
+    },
+    {
+      "path": "Animations/Concepts/01-tennis-lateral-movement.png",
+      "bytes": 1804910,
+      "sha256": "1f208bec39dd9e92c1189bd2e1046b53faecb5daa071cea67bd0effe02a999a0",
+      "source": "sports-expansion-v1/animation-mockups/01-tennis-lateral-movement.png"
+    },
+    {
+      "path": "Animations/Concepts/01-tennis-lateral-movement.prompt.md",
+      "bytes": 1630,
+      "sha256": "2d7f91cf892a3ee1dac449ca06ec0b32db43e9fdec82b289db2017472e8011c4",
+      "source": "sports-expansion-v1/animation-mockups/01-tennis-lateral-movement.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/02-tennis-diving-saves.png",
+      "bytes": 1558464,
+      "sha256": "8af3b2f61fb4d9bec0c04d43dad5b35dd6544899f4201cc9c7a83377cbc59fa0",
+      "source": "sports-expansion-v1/animation-mockups/02-tennis-diving-saves.png"
+    },
+    {
+      "path": "Animations/Concepts/02-tennis-diving-saves.prompt.md",
+      "bytes": 1664,
+      "sha256": "aebf7b4dd24039aabc8f793c801f3aba73778ce62c4b1bc430836248f143e71f",
+      "source": "sports-expansion-v1/animation-mockups/02-tennis-diving-saves.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/03-tennis-running-strokes.png",
+      "bytes": 1703864,
+      "sha256": "7334048c7e8c1424be4a9bb29530b537286f1c78daf67496b3f944f7edb4a9d8",
+      "source": "sports-expansion-v1/animation-mockups/03-tennis-running-strokes.png"
+    },
+    {
+      "path": "Animations/Concepts/03-tennis-running-strokes.prompt.md",
+      "bytes": 1609,
+      "sha256": "c99e1b0bc68f937849e0b7db005d4298e58e090bc9ed4ed752faf0480be8fd00",
+      "source": "sports-expansion-v1/animation-mockups/03-tennis-running-strokes.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/04-boxing-punch-mechanics.png",
+      "bytes": 1889371,
+      "sha256": "c36ba395e19d814a06e505102fd644e95809e0d1b646edd33c0645fc46998d18",
+      "source": "sports-expansion-v1/animation-mockups/04-boxing-punch-mechanics.png"
+    },
+    {
+      "path": "Animations/Concepts/04-boxing-punch-mechanics.prompt.md",
+      "bytes": 1683,
+      "sha256": "9489bb0dc82baf4825b3e16b79de14f3d359b5d18d4930d802b7b2fd80914a82",
+      "source": "sports-expansion-v1/animation-mockups/04-boxing-punch-mechanics.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/05-boxing-first-person.png",
+      "bytes": 1974333,
+      "sha256": "718939fadd151adbcf404ce87845c906900eae6a3576e4b81685770984f27a28",
+      "source": "sports-expansion-v1/animation-mockups/05-boxing-first-person.png"
+    },
+    {
+      "path": "Animations/Concepts/05-boxing-first-person.prompt.md",
+      "bytes": 1948,
+      "sha256": "b22e2b194063f9ef17fc2ce6b1fcbb7319ae8b8750cc2bf0d1e801a5e9152da5",
+      "source": "sports-expansion-v1/animation-mockups/05-boxing-first-person.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/06-boxing-defense-footwork.png",
+      "bytes": 1921456,
+      "sha256": "f6d075f5a4449973d1ce10038d990b6ee073839f2a93f0e5d4625e4102ba50d4",
+      "source": "sports-expansion-v1/animation-mockups/06-boxing-defense-footwork.png"
+    },
+    {
+      "path": "Animations/Concepts/06-boxing-defense-footwork.prompt.md",
+      "bytes": 1603,
+      "sha256": "fde0f6ce25f2edb83c117dbed0a764193f7b6ac4e9aa86bcd41acb2a4fa4de60",
+      "source": "sports-expansion-v1/animation-mockups/06-boxing-defense-footwork.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/07-bowling-approach-release.png",
+      "bytes": 2127603,
+      "sha256": "89aaedb8fa5e060a408e77f4b3edcf50de516ed39f2f539dfccb0aef3c9509db",
+      "source": "sports-expansion-v1/animation-mockups/07-bowling-approach-release.png"
+    },
+    {
+      "path": "Animations/Concepts/07-bowling-approach-release.prompt.md",
+      "bytes": 1798,
+      "sha256": "4b8a026f39bd8f66fae885e22fe26b5e5556f269845a3c53e5dfa4ec7da27fb1",
+      "source": "sports-expansion-v1/animation-mockups/07-bowling-approach-release.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/07-bowling-approach-release.revision-prompt.md",
+      "bytes": 1535,
+      "sha256": "6f055f1c65d72b3d5790767453a21c641d8b95d1b97dbab4b455abd378fd1869",
+      "source": "sports-expansion-v1/animation-mockups/07-bowling-approach-release.revision-prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/08-bowling-skill-recovery.png",
+      "bytes": 1895745,
+      "sha256": "e2410a0dafad2ee63bf0d4c23e42353f9ac626823af0400fdb6a68b5f169545b",
+      "source": "sports-expansion-v1/animation-mockups/08-bowling-skill-recovery.png"
+    },
+    {
+      "path": "Animations/Concepts/08-bowling-skill-recovery.prompt.md",
+      "bytes": 1752,
+      "sha256": "911d7ce37ff2ff1ae9ce5768ec330c7e6f64f119767d9f415af4e2cc3d551c46",
+      "source": "sports-expansion-v1/animation-mockups/08-bowling-skill-recovery.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/09-golf-swing-control.png",
+      "bytes": 1729432,
+      "sha256": "09f7c18f8e7073f0725c70ec00b1c359c78054dfd51d8142c9f02f4e2652c0f4",
+      "source": "sports-expansion-v1/animation-mockups/09-golf-swing-control.png"
+    },
+    {
+      "path": "Animations/Concepts/09-golf-swing-control.prompt.md",
+      "bytes": 1791,
+      "sha256": "6744eb3b3b3239193921868639b19ff6ee3ab96cbffd43fd037e2ed4af87e6c4",
+      "source": "sports-expansion-v1/animation-mockups/09-golf-swing-control.prompt.md"
+    },
+    {
+      "path": "Animations/Concepts/10-tennis-recovery-and-failure.png",
+      "bytes": 1678500,
+      "sha256": "6dc2ed4b846492649408a177f775e347c39e9a3be3d6570b697991d2da21b251",
+      "source": "sports-expansion-v1/animation-mockups/10-tennis-recovery-and-failure.png"
+    },
+    {
+      "path": "Animations/Concepts/10-tennis-recovery-and-failure.prompt.md",
+      "bytes": 1757,
+      "sha256": "d924d81c210cf068012c09bf0394f2277c651957209a54f3f101dc134862943d",
+      "source": "sports-expansion-v1/animation-mockups/10-tennis-recovery-and-failure.prompt.md"
+    },
+    {
+      "path": "Design/CONTROL-AND-CAMERA-BRIEF.md",
+      "bytes": 2639,
+      "sha256": "0f48f56e198bfcd19d11bb1fe3f4a386c394547ef799db00debfeb3b7722fba5",
+      "source": "sports-expansion-v1/CONTROL-AND-CAMERA-BRIEF.md"
+    },
+    {
+      "path": "Design/ANIMATION-PRODUCTION.md",
+      "bytes": 5908,
+      "sha256": "975ba3340209ead5888f0814503aed2c80ff141da78f2fa75f7d9baa5c06d205",
+      "source": "sports-expansion-v1/ANIMATION-PRODUCTION.md"
+    },
+    {
+      "path": "Arenas/Tennis/README.md",
+      "bytes": 2052,
+      "sha256": "710f65c18148bf14ffc977db1d0ccce843e8f5a39f5afaaec11c2406cf3c1ddf",
+      "source": "tennis-resort-v1/README.md"
+    },
+    {
+      "path": "Arenas/Tennis/clubhouse-detail.png",
+      "bytes": 1730367,
+      "sha256": "c8afeba0436e241e050ef3c02c94f5cbf6d4959e0dcf9e42fdc98bdb25822eaa",
+      "source": "tennis-resort-v1/clubhouse-detail.png"
+    },
+    {
+      "path": "Arenas/Tennis/coastal-tennis-resort-v1.blend",
+      "bytes": 3471341,
+      "sha256": "65e709b89dd00dd8503fb252951103074f9e2d5dc4f8406a0c8fce44a3171340",
+      "source": "tennis-resort-v1/coastal-tennis-resort-v1.blend"
+    },
+    {
+      "path": "Arenas/Tennis/gameplay.png",
+      "bytes": 1561467,
+      "sha256": "1c8c6a53d43ab1f5b9a02ea6284e5198874e9505ed11927ba3d5c1b5ef4a2a8a",
+      "source": "tennis-resort-v1/gameplay.png"
+    },
+    {
+      "path": "Arenas/Tennis/resort-overview.png",
+      "bytes": 1815411,
+      "sha256": "758f9fc93a8406438f74e8bb5f4bd76b6760928b0fa5baa4952f280db37a2f3a",
+      "source": "tennis-resort-v1/resort-overview.png"
+    },
+    {
+      "path": "Arenas/Tennis/scene-report.json",
+      "bytes": 565,
+      "sha256": "4e4c905d53a544c4a1ba1a686f0ac1d3708d34e43c73868573423d918f532b66",
+      "source": "tennis-resort-v1/scene-report.json"
+    },
+    {
+      "path": "Arenas/Tennis/validation.json",
+      "bytes": 649,
+      "sha256": "aa86483941b95311e4fb9718a07cdc2f6cf69ff7ea34758284fe659af711a878",
+      "source": "tennis-resort-v1/validation.json"
+    },
+    {
+      "path": "Arenas/Bowling/README.md",
+      "bytes": 3072,
+      "sha256": "aa56c207fd79d8f45080a83a3e0fcd1e7c6e21a71a1adcfbbaafb68db03de318",
+      "source": "bowling-resort-v1/README.md"
+    },
+    {
+      "path": "Arenas/Bowling/coastal-bowling-resort-v1.blend",
+      "bytes": 2922636,
+      "sha256": "1060f7d3eb1816427a3b420e5b56bfe2f33e4c6fb12ffd6ac5565a80a673f58d",
+      "source": "bowling-resort-v1/coastal-bowling-resort-v1.blend"
+    },
+    {
+      "path": "Arenas/Bowling/coastal-bowling-resort-v1.fbx",
+      "bytes": 6922140,
+      "sha256": "dd4a0c4268fe93937afcd9bfd609bd849a326fff25cadeec9224db5cc52df476",
+      "source": "bowling-resort-v1/coastal-bowling-resort-v1.fbx"
+    },
+    {
+      "path": "Arenas/Bowling/gameplay.png",
+      "bytes": 1643768,
+      "sha256": "b17ec05282da64eaf5471aba331f00bbee1ac65e4097a3fa6e9f9f1347448fde",
+      "source": "bowling-resort-v1/gameplay.png"
+    },
+    {
+      "path": "Arenas/Bowling/overview.png",
+      "bytes": 1858307,
+      "sha256": "46ef34a8c3dd86d8c570ecf87057ce80bd6dfbe43f4ffd1d2b6b8bbac1f3978d",
+      "source": "bowling-resort-v1/overview.png"
+    },
+    {
+      "path": "Arenas/Bowling/pin-rack-detail.png",
+      "bytes": 1548488,
+      "sha256": "c3ba60f15950f284f5c87845297f846116ed83bd7d4ee77160034628ff866ea1",
+      "source": "bowling-resort-v1/pin-rack-detail.png"
+    },
+    {
+      "path": "Arenas/Bowling/scene-report.json",
+      "bytes": 500,
+      "sha256": "9f60eb70c1063e2aa1d80b9e5c3e9b282326612fcc2cb93a0df239e5b759be5f",
+      "source": "bowling-resort-v1/scene-report.json"
+    },
+    {
+      "path": "Arenas/Bowling/source-inspection.json",
+      "bytes": 848,
+      "sha256": "67b4fdee74419e2cfc1435831387875ab6195e324a4eee317a822e85c9342282",
+      "source": "bowling-resort-v1/source-inspection.json"
+    },
+    {
+      "path": "Arenas/Bowling/source-overview.png",
+      "bytes": 864433,
+      "sha256": "44fae0d941ef299790070c40244f025cf3fb22bc0e9da016e738232e79162b33",
+      "source": "bowling-resort-v1/source-overview.png"
+    },
+    {
+      "path": "Arenas/Bowling/source-top.png",
+      "bytes": 946284,
+      "sha256": "55c216424fe8fdd514a3a52bc84c741d6842c8b1cb701e651c53f629988ab1eb",
+      "source": "bowling-resort-v1/source-top.png"
+    },
+    {
+      "path": "Arenas/Bowling/validation.json",
+      "bytes": 555,
+      "sha256": "638e6927376a4bbdc7303e70f68a90e919cb824ad40b071adaf0726a6a52faea",
+      "source": "bowling-resort-v1/validation.json"
+    },
+    {
+      "path": "Arenas/Boxing/README.md",
+      "bytes": 2793,
+      "sha256": "38b847776dd46b76772c915ffa05de5b112b6f2b2835aeabcdab4e485ce9bf76",
+      "source": "boxing-arena-v1/README.md"
+    },
+    {
+      "path": "Arenas/Boxing/arena-overview.png",
+      "bytes": 1746045,
+      "sha256": "eab8d6be7f4dc3bdbe7f07c3beb685dbf9f869f6c32a1b116463c7338d50a3c9",
+      "source": "boxing-arena-v1/arena-overview.png"
+    },
+    {
+      "path": "Arenas/Boxing/boxing-arena-v1.blend",
+      "bytes": 2228211,
+      "sha256": "154dfcaab529a5e100ef39ee64445c009b408b79cc60ba6d5b2b9d4540d8ecbf",
+      "source": "boxing-arena-v1/boxing-arena-v1.blend"
+    },
+    {
+      "path": "Arenas/Boxing/boxing-arena-v1.fbx",
+      "bytes": 7876220,
+      "sha256": "43ec191a84d884f60c43f16bf384ddf8840575a3cbc55b0bb437f6be83e64170",
+      "source": "boxing-arena-v1/boxing-arena-v1.fbx"
+    },
+    {
+      "path": "Arenas/Boxing/corner-detail.png",
+      "bytes": 1553376,
+      "sha256": "742285a78d3a802a06c5799bb6923cdce10d0c3bd67d1d77dd6f92dd97be39c4",
+      "source": "boxing-arena-v1/corner-detail.png"
+    },
+    {
+      "path": "Arenas/Boxing/gameplay-clear-view.png",
+      "bytes": 1563873,
+      "sha256": "e5d88d27f3e55275aa34202fa7b9d0d1b8e4daf244130f9a359d95b5247a5e8b",
+      "source": "boxing-arena-v1/gameplay-clear-view.png"
+    },
+    {
+      "path": "Arenas/Boxing/gameplay.png",
+      "bytes": 1581064,
+      "sha256": "efcca28cffcedbc849be96c4539d1145fbcf41211c449f0065032f80cbcb2587",
+      "source": "boxing-arena-v1/gameplay.png"
+    },
+    {
+      "path": "Arenas/Boxing/scene-report.json",
+      "bytes": 463,
+      "sha256": "5cc0c62eac9f77c29ddff89ca758b86f8cd8c1173eaa0fb6c12458edc1964d5e",
+      "source": "boxing-arena-v1/scene-report.json"
+    },
+    {
+      "path": "Arenas/Boxing/source-inspection.json",
+      "bytes": 856,
+      "sha256": "752f6aa3220f857c22ec761648dfe0056364af1c866f6eb40f4d503f5c76b152",
+      "source": "boxing-arena-v1/source-inspection.json"
+    },
+    {
+      "path": "Arenas/Boxing/source-overview.png",
+      "bytes": 835473,
+      "sha256": "58e9c010dd2f91ab081f5abc09f87f2610f24bf7b3d4d36fa37761f4b172d976",
+      "source": "boxing-arena-v1/source-overview.png"
+    },
+    {
+      "path": "Arenas/Boxing/source-top.png",
+      "bytes": 927927,
+      "sha256": "e9ed5524181ca33e8a9468c8714507b6c9e34a67a42e97c7bfe8942db78f562e",
+      "source": "boxing-arena-v1/source-top.png"
+    },
+    {
+      "path": "Arenas/Boxing/validation.json",
+      "bytes": 680,
+      "sha256": "1dcd873e843ebf055fc630230ec8b3494f47bab8cb58f0a569407e96f9b603e6",
+      "source": "boxing-arena-v1/validation.json"
+    },
+    {
+      "path": "Arenas/Originals/tennis court 3d model.fbx",
+      "bytes": 131488,
+      "sha256": "982b3de366cf9835f6d10a8725dee5cdd50a101e3d9eea995943d1cff2c0db51",
+      "source": "User-supplied: tennis court 3d model.fbx"
+    },
+    {
+      "path": "Arenas/Originals/bowling lane 3d model.fbx",
+      "bytes": 210304,
+      "sha256": "4a6399a7a9ae451c51e931abf2315f51d20b8d799fb34e3c473c0519dc76c080",
+      "source": "User-supplied: bowling lane 3d model.fbx"
+    },
+    {
+      "path": "Arenas/Originals/boxing ring 3d model.fbx",
+      "bytes": 146496,
+      "sha256": "ee4861ff888e87466b31b66bc1d9011b17d7c286f0e9225b0ba7c04c3405acbf",
+      "source": "User-supplied: boxing ring 3d model.fbx"
+    },
+    {
+      "path": "Crowds/README.md",
+      "bytes": 2061,
+      "sha256": "81c3972e8df456f790d8a92d3150730d32d1b6ab28997805e7827f8c7eb8c63f",
+      "source": "familiar-crowds-v1/README.md"
+    },
+    {
+      "path": "Crowds/bowling-crowd-detail.png",
+      "bytes": 1474375,
+      "sha256": "6d99b451c2012341a3431388fe5e0f04f6e552937687b402a5df30e060f9e592",
+      "source": "familiar-crowds-v1/bowling-crowd-detail.png"
+    },
+    {
+      "path": "Crowds/bowling-crowd-report.json",
+      "bytes": 197,
+      "sha256": "66cf673977ce861c7a8b01817b49a8ecb10f5f4d863fdb4ae22bcfa4dfe4f2e4",
+      "source": "familiar-crowds-v1/bowling-crowd-report.json"
+    },
+    {
+      "path": "Crowds/bowling-familiar-crowd.blend",
+      "bytes": 4830557,
+      "sha256": "715d2aee34ddc39cdb0664f33e8bd6d27dfbc383e12dca1eaf2b68c65cc78598",
+      "source": "familiar-crowds-v1/bowling-familiar-crowd.blend"
+    },
+    {
+      "path": "Crowds/bowling-gameplay.png",
+      "bytes": 1670419,
+      "sha256": "69cd8a8b48630a584651b8be026f92d97a2c7a08a7e94f63538e9bf3a3136384",
+      "source": "familiar-crowds-v1/bowling-gameplay.png"
+    },
+    {
+      "path": "Crowds/boxing-crowd-detail.png",
+      "bytes": 1782267,
+      "sha256": "570e64a92a2be13e392a10030850542c6e4fd029dfe81c5b0877c8cd369748d6",
+      "source": "familiar-crowds-v1/boxing-crowd-detail.png"
+    },
+    {
+      "path": "Crowds/boxing-crowd-report.json",
+      "bytes": 199,
+      "sha256": "af15ba1569aae6f3fa838ffaf0d01dfb4849ca36e126ed722b74bca3edb58d48",
+      "source": "familiar-crowds-v1/boxing-crowd-report.json"
+    },
+    {
+      "path": "Crowds/boxing-familiar-crowd.blend",
+      "bytes": 3919021,
+      "sha256": "87fddc664395579a405a9fec63e9243e16fa9c7a2a83899c0518322c81104180",
+      "source": "familiar-crowds-v1/boxing-familiar-crowd.blend"
+    },
+    {
+      "path": "Crowds/boxing-gameplay.png",
+      "bytes": 1738550,
+      "sha256": "0153c589417314e04c456b3bc77a2c078a9ea3415bfe8b496d4d427a9145d076",
+      "source": "familiar-crowds-v1/boxing-gameplay.png"
+    },
+    {
+      "path": "Crowds/combined-arenas-report.json",
+      "bytes": 664,
+      "sha256": "7321bac0716edca7f3936704f7a546e360a134cae52ddedfcbaa63a092885e16",
+      "source": "familiar-crowds-v1/combined-arenas-report.json"
+    },
+    {
+      "path": "Crowds/crowd-character-library.blend",
+      "bytes": 13321247,
+      "sha256": "09bf9a8ec6d69dca62b5c64261791f7e15b612abc0e927395a70ce99983cc0b1",
+      "source": "familiar-crowds-v1/crowd-character-library.blend"
+    },
+    {
+      "path": "Crowds/crowd-pose-review.png",
+      "bytes": 1314229,
+      "sha256": "a61ce578a4759bc99eb323c977aeb22b7708387bcce081248460281ae8a81c64",
+      "source": "familiar-crowds-v1/crowd-pose-review.png"
+    },
+    {
+      "path": "Crowds/library-report.json",
+      "bytes": 1472,
+      "sha256": "894ed0967d11013462118f5794414e72aaab176145b963b4ac83cae0d4893900",
+      "source": "familiar-crowds-v1/library-report.json"
+    },
+    {
+      "path": "Crowds/tennis-crowd-detail.png",
+      "bytes": 1626485,
+      "sha256": "21023ce6e3a0b226c58529cd16e55d24bc75c4a17dd4de4b2763dbfcab9592ac",
+      "source": "familiar-crowds-v1/tennis-crowd-detail.png"
+    },
+    {
+      "path": "Crowds/tennis-crowd-report.json",
+      "bytes": 196,
+      "sha256": "4e93e5d8b4bd8884411fad91edd8feaec2a55522d22a6b249f2d44f1db60acce",
+      "source": "familiar-crowds-v1/tennis-crowd-report.json"
+    },
+    {
+      "path": "Crowds/tennis-familiar-crowd.blend",
+      "bytes": 5831311,
+      "sha256": "f55a0683bcd26fed1736d64454dc33e6238e5718e17dec91e19beae232d8af60",
+      "source": "familiar-crowds-v1/tennis-familiar-crowd.blend"
+    },
+    {
+      "path": "Crowds/tennis-gameplay.png",
+      "bytes": 1579121,
+      "sha256": "3fb3beced2b4d800fcb0137b541365bc8417a71e2e22570a6e90a2705b822dc8",
+      "source": "familiar-crowds-v1/tennis-gameplay.png"
+    },
+    {
+      "path": "Crowds/validation.json",
+      "bytes": 1314,
+      "sha256": "391ac4e865c4b90a818f9e2e7d91ad2110ad0ceb92f122207224c11f00016577",
+      "source": "familiar-crowds-v1/validation.json"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/bowling-alley-v1.png",
+      "bytes": 2147481,
+      "sha256": "21ab9af95d0b1c962e305a594cc0ce8247114c2fb9529083779b081b168d06d7",
+      "source": "sports-venue-concepts/bowling-alley-v1.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/bowling-boxing-gameplay-v2-prompts.md",
+      "bytes": 3897,
+      "sha256": "a9b7150bf2056d3c8b9cb2da1533f8440eaf9e0086884fe7e4605eff4d4029fa",
+      "source": "sports-venue-concepts/bowling-boxing-gameplay-v2-prompts.md"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/bowling-gameplay-v2.png",
+      "bytes": 2111653,
+      "sha256": "54bf60645d86f58167e149dc0fe025067d0070e1180798062b8276ba4b47e512",
+      "source": "sports-venue-concepts/bowling-gameplay-v2.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/bowling-wii-reference-v3.png",
+      "bytes": 1861729,
+      "sha256": "ce83acb220efe6f75fddc7cb5ce9b6718ca638945af77577b0fbc44f484f7fe4",
+      "source": "sports-venue-concepts/bowling-wii-reference-v3.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/boxing-exterior-gameplay-v4-prompt.md",
+      "bytes": 2265,
+      "sha256": "63cd1e243ee486ddb5c5353dff66b225f3d190704873447daba63e1e06d2192c",
+      "source": "sports-venue-concepts/boxing-exterior-gameplay-v4-prompt.md"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/boxing-exterior-gameplay-v4.png",
+      "bytes": 1706111,
+      "sha256": "87eaf2d7b4af187a6d5882998ae7f65828479a23481541b8bc164ce470a714ee",
+      "source": "sports-venue-concepts/boxing-exterior-gameplay-v4.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/boxing-gameplay-v2.png",
+      "bytes": 2296268,
+      "sha256": "8774a9922e74ce1e6264a12d887d7a40013a01dfe35f59e1ba5678fe266f7820",
+      "source": "sports-venue-concepts/boxing-gameplay-v2.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/boxing-ring-v1.png",
+      "bytes": 2298480,
+      "sha256": "eb3444494d668cbcdb4392fcff0aae1b273f44c216b068361db3f1b66ae8c6fc",
+      "source": "sports-venue-concepts/boxing-ring-v1.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/boxing-wii-reference-v3.png",
+      "bytes": 1484268,
+      "sha256": "c4b05ca596990ec8977e7a588bf832f425f90311d0c4454764c90f7e5bb313a7",
+      "source": "sports-venue-concepts/boxing-wii-reference-v3.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/generation-prompts.md",
+      "bytes": 5442,
+      "sha256": "7beede49593c5d6c9b861d7957616be5eac593f89c9e81aeafe22c8e4ed6ff22",
+      "source": "sports-venue-concepts/generation-prompts.md"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/tennis-court-gameplay-v2.png",
+      "bytes": 2592097,
+      "sha256": "93c6bd59bca5ff9aa6130c55e1c7858b3cba08e8fbc84411a102fd1d7404c987",
+      "source": "sports-venue-concepts/tennis-court-gameplay-v2.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/tennis-court-v1.png",
+      "bytes": 2327780,
+      "sha256": "0ced8d838e9779d0ec8a9cc47d7e0da6941c1f090156d9ad04785bd53d7afb00",
+      "source": "sports-venue-concepts/tennis-court-v1.png"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/tennis-gameplay-v2-prompt.md",
+      "bytes": 1847,
+      "sha256": "a4efc4baa88d77c96d26b0d9610eefcee4bf881fd5aac6985f4e0867df5fe2e2",
+      "source": "sports-venue-concepts/tennis-gameplay-v2-prompt.md"
+    },
+    {
+      "path": "Design/VenueConcepts-Historical/wii-reference-v3-prompts.md",
+      "bytes": 3577,
+      "sha256": "57c3070386ada762042ea351a1d4a6389f2eef263b3b3c09925102cebad28fd9",
+      "source": "sports-venue-concepts/wii-reference-v3-prompts.md"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/female-back.png",
+      "bytes": 853350,
+      "sha256": "763b0894f815758d47a7ad601618cd81c832b2e17aadfbb393448b26a95f5ee2",
+      "source": "sports-character-library/01-model-references/female-back.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/female-front.png",
+      "bytes": 860622,
+      "sha256": "7861013adddd662937073c72d9ab0265a6f9be2aab826ba9f8c3122246439a31",
+      "source": "sports-character-library/01-model-references/female-front.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/female-side.png",
+      "bytes": 351314,
+      "sha256": "128cc5ab327ce4a93b6f9b6f3f443477836239cb5769a0e3c3ec7f40ae40699d",
+      "source": "sports-character-library/01-model-references/female-side.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/female-three-quarter.png",
+      "bytes": 844369,
+      "sha256": "752e178c8e45a7ea02b235c8ddf0fb090c9174a1d0fad1523e40bc09c5a4fca9",
+      "source": "sports-character-library/01-model-references/female-three-quarter.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/male-back.png",
+      "bytes": 965890,
+      "sha256": "62d99b125e8e55478e47f30bdd20af77cb2c7391d888f58d1f44f3e74ac5a0be",
+      "source": "sports-character-library/01-model-references/male-back.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/male-front.png",
+      "bytes": 939261,
+      "sha256": "41bc13ffbd915e00509fd4ac629ccf5da194554b522f58acac37b40f431b93bd",
+      "source": "sports-character-library/01-model-references/male-front.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/male-side.png",
+      "bytes": 422063,
+      "sha256": "cde396aa366516da95340852627a1a956e4e236ba184d23d2cca6732161f6d46",
+      "source": "sports-character-library/01-model-references/male-side.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/01-model-references/male-three-quarter.png",
+      "bytes": 1012932,
+      "sha256": "7102225925b9372aea18d72c1fd3d51a73a37c903948d3923ddefe1de94ba57c",
+      "source": "sports-character-library/01-model-references/male-three-quarter.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/ANIMATION-HANDOFF.md",
+      "bytes": 3441,
+      "sha256": "9070386af71ed450443d0283146b7b5908e55f4461b11268afca06b2b001b23f",
+      "source": "sports-character-library/ANIMATION-HANDOFF.md"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/README.md",
+      "bytes": 3595,
+      "sha256": "4d15646515c4163d6366416a116c6121d55192e116caedb889104373ad184e88",
+      "source": "sports-character-library/README.md"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/asset-manifest.json",
+      "bytes": 12456,
+      "sha256": "c225ea1aba33d128b2613f61ece9e7bf7f57b6c2a2bb61530a7a9bf11cb26e37",
+      "source": "sports-character-library/asset-manifest.json"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-01-delivery.png",
+      "bytes": 1525020,
+      "sha256": "0d38e8fc686c7595da609af59cb32ff4f0f37f8c39b87c7cee218ad17fc2196d",
+      "source": "sports-character-library/bowling/female-01-delivery.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-01-delivery.prompt.txt",
+      "bytes": 2139,
+      "sha256": "97142c52385d2357e3ee085cb16154ca18e5dfa097ba70c00e166953ef631ea0",
+      "source": "sports-character-library/bowling/female-01-delivery.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-02-variants-and-contact.png",
+      "bytes": 1669710,
+      "sha256": "79d17f1ec3a95878605110372a2e6a11e13bfd51cfdea8a56fe0f8ebbee31948",
+      "source": "sports-character-library/bowling/female-02-variants-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-02-variants-and-contact.prompt.txt",
+      "bytes": 2242,
+      "sha256": "1f7c38410d41d3504344718de332f402f3037d2639b75522c3de7b1e31324693",
+      "source": "sports-character-library/bowling/female-02-variants-and-contact.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-03-gameplay-and-reactions.png",
+      "bytes": 1644055,
+      "sha256": "710d2e2286da8262c5844991d8f817383f591e3205a3c7bb4900c389543b09f4",
+      "source": "sports-character-library/bowling/female-03-gameplay-and-reactions.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/female-03-gameplay-and-reactions.prompt.txt",
+      "bytes": 2106,
+      "sha256": "be511866048656b89440384b0f9e5c8d70433d6cae1c087a38cebbf284a0fe6b",
+      "source": "sports-character-library/bowling/female-03-gameplay-and-reactions.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-01-delivery.png",
+      "bytes": 1571850,
+      "sha256": "48cd5bb3ccabeee32aec03afcb42927477f4cff95abda69dc2925c13b98b2657",
+      "source": "sports-character-library/bowling/male-01-delivery.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-01-delivery.prompt.txt",
+      "bytes": 2113,
+      "sha256": "696e3092372e27d0025bac84b5b1b3174e0abfb66ecbf6753de19c71cb6f14f2",
+      "source": "sports-character-library/bowling/male-01-delivery.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-02-variants-and-contact.png",
+      "bytes": 1662269,
+      "sha256": "82ae56575c66b3eff1d8a8e0edf4b194d729cc6680712925cefba239df10c8a6",
+      "source": "sports-character-library/bowling/male-02-variants-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-02-variants-and-contact.prompt.txt",
+      "bytes": 2110,
+      "sha256": "471863f7a5b7cffea1f0a10009ed1894d0f5ce2be41256854e2fab820f536bf5",
+      "source": "sports-character-library/bowling/male-02-variants-and-contact.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-03-gameplay-and-reactions.png",
+      "bytes": 1723053,
+      "sha256": "ecee44260db99326658260d7595bcc56667bf9212af5044384169edb20b1bf93",
+      "source": "sports-character-library/bowling/male-03-gameplay-and-reactions.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/bowling/male-03-gameplay-and-reactions.prompt.txt",
+      "bytes": 2080,
+      "sha256": "246f86cf6ad00d2c3d38eb7452da6d16933a968b06306800a7345564d02ad657",
+      "source": "sports-character-library/bowling/male-03-gameplay-and-reactions.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-01-punches.png",
+      "bytes": 1578573,
+      "sha256": "604b59ef653190760bbdf07052c6473ceb6a024877fe06c7098dd63486d3e8b9",
+      "source": "sports-character-library/boxing/female-01-punches.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-01-punches.prompt.txt",
+      "bytes": 2261,
+      "sha256": "0568139e78522e77ab7d52c6c7bd746d647cf8d6fc7d8d912af6ed7322f431bf",
+      "source": "sports-character-library/boxing/female-01-punches.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-02-defense-and-footwork.png",
+      "bytes": 1598293,
+      "sha256": "90a48edc176a3778197f088a4e0bf7047e52822d82dd91b06d6de7f8fc0d27ea",
+      "source": "sports-character-library/boxing/female-02-defense-and-footwork.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-02-defense-and-footwork.prompt.txt",
+      "bytes": 2254,
+      "sha256": "98476e73ec014a10f3042b1afc77dd9e9c7b497196baf63e637b106c429df6c7",
+      "source": "sports-character-library/boxing/female-02-defense-and-footwork.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-03-combos-and-reactions.png",
+      "bytes": 1679616,
+      "sha256": "ef00b2bdd1bf50039647e851f9e59abdecdec6bd4fa499f592db3cf4b4edd429",
+      "source": "sports-character-library/boxing/female-03-combos-and-reactions.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/female-03-combos-and-reactions.prompt.txt",
+      "bytes": 2150,
+      "sha256": "d1a924cc12c264bef82c53e1a7b464ad0272abba9312174634abfd0923695ca2",
+      "source": "sports-character-library/boxing/female-03-combos-and-reactions.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-01-punches.png",
+      "bytes": 1533981,
+      "sha256": "7957976fcc06cb8db2446f9ece3064481f6d9367ccea1a520244d4e244cf2e58",
+      "source": "sports-character-library/boxing/male-01-punches.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-01-punches.prompt.txt",
+      "bytes": 2235,
+      "sha256": "e34e1ebc9cc6301ce9ca0b194abadb6cbb428379dbca19531ceba4a7b43788a7",
+      "source": "sports-character-library/boxing/male-01-punches.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-02-defense-and-footwork.png",
+      "bytes": 1590204,
+      "sha256": "a5f7d01d278ff748a6831e7c75017f4bc9a554d798a4e0a69235238e64c3f426",
+      "source": "sports-character-library/boxing/male-02-defense-and-footwork.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-02-defense-and-footwork.prompt.txt",
+      "bytes": 2228,
+      "sha256": "dd80dd5d056ae3cd38d2470aeaecbc64fd13a2debc3a6d7db91b92490c1869b9",
+      "source": "sports-character-library/boxing/male-02-defense-and-footwork.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-03-combos-and-reactions.png",
+      "bytes": 1653950,
+      "sha256": "1c6272925e15716a97e6d8b628a876be375c120503f8fd77a29fa5a34c88c0da",
+      "source": "sports-character-library/boxing/male-03-combos-and-reactions.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/boxing/male-03-combos-and-reactions.prompt.txt",
+      "bytes": 2124,
+      "sha256": "9c53ee6a2f579bf1061ef855cd28121d84d95aca1c739d6c9bd2de0f72916c29",
+      "source": "sports-character-library/boxing/male-03-combos-and-reactions.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/coverage.csv",
+      "bytes": 58579,
+      "sha256": "449ee48a7379cdcd59fe938678c2d1219da5813ef27becce6039a4444dc01435",
+      "source": "sports-character-library/coverage.csv"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-bowling/female-01-rear-gameplay.png",
+      "bytes": 2045597,
+      "sha256": "1d835f70142ced2e0caeaedbb31b676926f7aae0ac31e9793f88ca099cc5fe44",
+      "source": "sports-character-library/gameplay-bowling/female-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-bowling/female-01-rear-gameplay.prompt.txt",
+      "bytes": 1997,
+      "sha256": "cd8e0c4e8db5b2b327ae261873fc4b1e6808a9b916eb46bfb7fbfa84444ef944",
+      "source": "sports-character-library/gameplay-bowling/female-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-bowling/male-01-rear-gameplay.png",
+      "bytes": 2055464,
+      "sha256": "d51f184471d223164b299cb9e1187364cf6efd23d9fde185f3dff7490554f746",
+      "source": "sports-character-library/gameplay-bowling/male-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-bowling/male-01-rear-gameplay.prompt.txt",
+      "bytes": 1972,
+      "sha256": "242815a0e5afa7feadacfcff91d27b23048513bc9ee6b747c74f81728a360cfb",
+      "source": "sports-character-library/gameplay-bowling/male-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/female-01-rear-gameplay-v2.png",
+      "bytes": 1859330,
+      "sha256": "a72cc580f3dc183ea4289e1fddb1ea7b667e34ae874d29dd5849180eecd953fb",
+      "source": "sports-character-library/gameplay-boxing/female-01-rear-gameplay-v2.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/female-01-rear-gameplay.png",
+      "bytes": 1864821,
+      "sha256": "383a732d68867dba05ff1f5892e89ddde5cffea8202242c8a6502e2483722ee5",
+      "source": "sports-character-library/gameplay-boxing/female-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/female-01-rear-gameplay.prompt.txt",
+      "bytes": 2118,
+      "sha256": "2a165ca9f2bf4ca9bd4f52c6180d3a28c27b314ac3b96bda5853e579e8ea72a1",
+      "source": "sports-character-library/gameplay-boxing/female-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/female-01-rear-gameplay.revision2.prompt.txt",
+      "bytes": 676,
+      "sha256": "03e9d749308e9109d4c15a0c957805ec7d7a5243477599e3f450362fa878cdc1",
+      "source": "sports-character-library/gameplay-boxing/female-01-rear-gameplay.revision2.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/male-01-rear-gameplay-v2.png",
+      "bytes": 1835971,
+      "sha256": "e10458d7c54b11e397b8d7d41135d71a2bb8c037698ddfa3af5a2ff134f9f4cd",
+      "source": "sports-character-library/gameplay-boxing/male-01-rear-gameplay-v2.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/male-01-rear-gameplay.png",
+      "bytes": 1882588,
+      "sha256": "0b55ead82890b577acedb56078b99b9554d5a2540d3cc6d139353731e133fbbc",
+      "source": "sports-character-library/gameplay-boxing/male-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/male-01-rear-gameplay.prompt.txt",
+      "bytes": 2093,
+      "sha256": "4397cf4ac644aff538957ea7e5d7e491ad0dbae80c8369bb7a1b0b561c0d922e",
+      "source": "sports-character-library/gameplay-boxing/male-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-boxing/male-01-rear-gameplay.revision2.prompt.txt",
+      "bytes": 676,
+      "sha256": "03e9d749308e9109d4c15a0c957805ec7d7a5243477599e3f450362fa878cdc1",
+      "source": "sports-character-library/gameplay-boxing/male-01-rear-gameplay.revision2.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-camera-specification.json",
+      "bytes": 4566,
+      "sha256": "96e221580b0eaa4bf0d570a4cf7b6aebe95e4df5293291930888291c3b561265",
+      "source": "sports-character-library/gameplay-camera-specification.json"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-golf/female-01-rear-gameplay.png",
+      "bytes": 2345370,
+      "sha256": "196a21d7c459b2f8bbb9289bd6d9d89e001823ce1d2fc23964457bb270531cdc",
+      "source": "sports-character-library/gameplay-golf/female-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-golf/female-01-rear-gameplay.prompt.txt",
+      "bytes": 1899,
+      "sha256": "5bdb24d55b47e96e3723d5f0cb198008474d13df1402ebf2ca6c708a9c9ec12c",
+      "source": "sports-character-library/gameplay-golf/female-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-golf/male-01-rear-gameplay.png",
+      "bytes": 2399226,
+      "sha256": "b7513259caf0f453bdcc166175d17f2218d45533a83e3330f142067193e0d8d0",
+      "source": "sports-character-library/gameplay-golf/male-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-golf/male-01-rear-gameplay.prompt.txt",
+      "bytes": 1874,
+      "sha256": "079bdb4a1d51865b8fb8138f08a69b0f8abe20cf0c6a3bcf0091f848d323e6a4",
+      "source": "sports-character-library/gameplay-golf/male-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-golf/male-01-rear-gameplay.retry.prompt.txt",
+      "bytes": 1768,
+      "sha256": "bb8d83cf03aeebb9e8126b1b2da1bec1eb43f800e780c0419597e380ed3ad9f6",
+      "source": "sports-character-library/gameplay-golf/male-01-rear-gameplay.retry.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/female-01-rear-gameplay-v2.png",
+      "bytes": 2076709,
+      "sha256": "29f9c4c9e67d0817c789396654d6d7fc0e5c5318b4f98d8279fa3f8f8da0064d",
+      "source": "sports-character-library/gameplay-tennis/female-01-rear-gameplay-v2.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/female-01-rear-gameplay.png",
+      "bytes": 2182716,
+      "sha256": "2de2f27e1bdd5b65ce86804b2c87238ba680c4ffafaa51b245408a891e1a21b7",
+      "source": "sports-character-library/gameplay-tennis/female-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/female-01-rear-gameplay.prompt.txt",
+      "bytes": 1997,
+      "sha256": "bb542d7e2ade08601c8cb9f88c55366b2207d0dbef1236c47957cc2ab253f1fb",
+      "source": "sports-character-library/gameplay-tennis/female-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/female-01-rear-gameplay.revision2.prompt.txt",
+      "bytes": 517,
+      "sha256": "fd7449964e5cb84c73ac387fcf53e1d2a3ee7f88909d8da4468dca608d8f878a",
+      "source": "sports-character-library/gameplay-tennis/female-01-rear-gameplay.revision2.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/male-01-rear-gameplay-v2.png",
+      "bytes": 2124683,
+      "sha256": "83332358203bb09c3471031882e99a94500eb8c3b624846328491d4e210397db",
+      "source": "sports-character-library/gameplay-tennis/male-01-rear-gameplay-v2.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/male-01-rear-gameplay.png",
+      "bytes": 2300911,
+      "sha256": "e838f3c0b0f745be79829133d4ba4d3f22e297449c8501a6c5fe0afaaa17310a",
+      "source": "sports-character-library/gameplay-tennis/male-01-rear-gameplay.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/male-01-rear-gameplay.prompt.txt",
+      "bytes": 1972,
+      "sha256": "52849413c41153eda6681c551621902a613da25a34050880c6eefb4fe32319af",
+      "source": "sports-character-library/gameplay-tennis/male-01-rear-gameplay.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/gameplay-tennis/male-01-rear-gameplay.revision2.prompt.txt",
+      "bytes": 641,
+      "sha256": "b3ebbfea3f7536325971c42dffd533a9dbe397bcca105349242f9bb99efdc653",
+      "source": "sports-character-library/gameplay-tennis/male-01-rear-gameplay.revision2.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/generation-specification.json",
+      "bytes": 12933,
+      "sha256": "b1fe3299a04675814d2774344ed5531683ec15b702fb037e0cdc29160b1bb9ff",
+      "source": "sports-character-library/generation-specification.json"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-01-full-swing.png",
+      "bytes": 1433602,
+      "sha256": "9dd90d674e33215c2fdb49b705e2ee2979869eb7c4a0906977c1b6e661908d0b",
+      "source": "sports-character-library/golf/female-01-full-swing.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-01-full-swing.prompt.txt",
+      "bytes": 2111,
+      "sha256": "e3241004b3bae04ff612b21ad0161cdde3e3f1431a8ab749fd54f304b211338e",
+      "source": "sports-character-library/golf/female-01-full-swing.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-02-short-game-v2.png",
+      "bytes": 1976679,
+      "sha256": "0c076f64553b75db25c3b65d64d15d82f8edc9f83362a64ed1cf9b38db497dc0",
+      "source": "sports-character-library/golf/female-02-short-game-v2.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-02-short-game.png",
+      "bytes": 2016334,
+      "sha256": "e35d586a9079921e5e7c4ba482a7ca3bc75a0f0d036b0fe6f868991eb383ab28",
+      "source": "sports-character-library/golf/female-02-short-game.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-02-short-game.prompt.txt",
+      "bytes": 2052,
+      "sha256": "ffc485e251a9ff01f39be1f891f47d0b0f4b8092f68a7a1d0d4e6f87b0a60db8",
+      "source": "sports-character-library/golf/female-02-short-game.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-02-short-game.revision2.prompt.txt",
+      "bytes": 578,
+      "sha256": "a10623b927ee09151db198c9e9866a0264d10f783519347a18f369e8c914c74e",
+      "source": "sports-character-library/golf/female-02-short-game.revision2.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-03-variants-and-contact.png",
+      "bytes": 1623914,
+      "sha256": "c102b51bcacb7a0d1046f3156bbcda2a46dc4db815dd169ecaee032841cbed47",
+      "source": "sports-character-library/golf/female-03-variants-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/female-03-variants-and-contact.prompt.txt",
+      "bytes": 1992,
+      "sha256": "6fec0c0e6f172596310e69d22a68ad78161d26fdabb9cdf76a3380eaffddb5d1",
+      "source": "sports-character-library/golf/female-03-variants-and-contact.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-01-full-swing.png",
+      "bytes": 1515995,
+      "sha256": "5a089b992af929a2efee2a3aca761dd9b17174e49e8b6783f4761f9c6955c32e",
+      "source": "sports-character-library/golf/male-01-full-swing.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-01-full-swing.prompt.txt",
+      "bytes": 1956,
+      "sha256": "3a5875c9ff32154c15b6f11d045a91b5577127333f623afe8ca797c6035a3a5d",
+      "source": "sports-character-library/golf/male-01-full-swing.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-02-short-game.png",
+      "bytes": 1737546,
+      "sha256": "d7121d61aa0afe859a558bae1dc5545069fc0856d69fdf3b46ffb3321907b348",
+      "source": "sports-character-library/golf/male-02-short-game.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-02-short-game.prompt.txt",
+      "bytes": 2026,
+      "sha256": "daa5da5477faf1a248ed7e45eaf89e13e023e975b7cba23f08852b0e19e1592a",
+      "source": "sports-character-library/golf/male-02-short-game.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-03-variants-and-contact.png",
+      "bytes": 1663493,
+      "sha256": "dafadb8a7a2001a5b8b41f4bba3218c23abd05764739738b075a1548065fe49a",
+      "source": "sports-character-library/golf/male-03-variants-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/golf/male-03-variants-and-contact.prompt.txt",
+      "bytes": 1947,
+      "sha256": "af112b52a6510db130470495421e164824b71cbd28a9f1fea724366fb3ff757d",
+      "source": "sports-character-library/golf/male-03-variants-and-contact.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/index.html",
+      "bytes": 41494,
+      "sha256": "cb684db28b4a00d91bbed9f0a15f34122e691c099864965766230c3b31f18a9e",
+      "source": "sports-character-library/index.html"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/female-01-movement.png",
+      "bytes": 1634906,
+      "sha256": "e7b6ff3d0bd3375bc9864176b24d90b8b8761e9de1d95bfe051627fd0ca74c48",
+      "source": "sports-character-library/shared/female-01-movement.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/female-01-movement.prompt.txt",
+      "bytes": 2125,
+      "sha256": "6673bdfda20cd9758e2ebbbdecc5b3585bda206b1877fe0e6d77903ccc3d4263",
+      "source": "sports-character-library/shared/female-01-movement.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/female-02-personality.png",
+      "bytes": 1447956,
+      "sha256": "d0301efc806a41ce5285b155068026ad19fce0d7eab3b710cef5832a7ffb8a17",
+      "source": "sports-character-library/shared/female-02-personality.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/female-02-personality.prompt.txt",
+      "bytes": 2052,
+      "sha256": "4687df5edc345dc7088c0847a17899417871f6d3c9fbe52761a78f9a51143ebd",
+      "source": "sports-character-library/shared/female-02-personality.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/male-01-movement.png",
+      "bytes": 1595907,
+      "sha256": "d7cd0714b35061caa1ad8a84b353ddc7b9a28733047d206efd2d7d661bea15cf",
+      "source": "sports-character-library/shared/male-01-movement.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/male-01-movement.prompt.txt",
+      "bytes": 2099,
+      "sha256": "ef7afbc47801f8f08e25d4cbbd70299e892d2c02e4bc4ed146b02dee46d6e7b3",
+      "source": "sports-character-library/shared/male-01-movement.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/male-02-personality.png",
+      "bytes": 1580487,
+      "sha256": "1085a1dc5aba8cdad4eec8a1fa889a4d80f14a335bff4c2a4e8b69c5a003be7e",
+      "source": "sports-character-library/shared/male-02-personality.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/shared/male-02-personality.prompt.txt",
+      "bytes": 2026,
+      "sha256": "f96a8bd706b826c5f8bd8611c3422d4c1c6811f6aca909240d7d25c26af2e550",
+      "source": "sports-character-library/shared/male-02-personality.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-01-groundstrokes.png",
+      "bytes": 1573043,
+      "sha256": "8a4772c1b22beead70963fc519449e5ce20ecc47655f5c78a98b4be07f233875",
+      "source": "sports-character-library/tennis/female-01-groundstrokes.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-01-groundstrokes.prompt.txt",
+      "bytes": 2250,
+      "sha256": "d096d2eac9b2d0f48d94eeb63ac34688f7b0913f34dbe7e7932aca954edc9432",
+      "source": "sports-character-library/tennis/female-01-groundstrokes.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-02-serve-and-net.png",
+      "bytes": 1595932,
+      "sha256": "3d64a27d551f916bf9740a106c6fe076f81cd462d9496a7335c6b3fc8a747dcd",
+      "source": "sports-character-library/tennis/female-02-serve-and-net.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-02-serve-and-net.prompt.txt",
+      "bytes": 2258,
+      "sha256": "17db8326ea652d1992aeaadc8b5189ed956586f81a6fdf0afcba8bcc98185489",
+      "source": "sports-character-library/tennis/female-02-serve-and-net.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-03-footwork-and-contact.png",
+      "bytes": 1784711,
+      "sha256": "e7f4ff2e28794f132bb6ff5317cbf536af0fa8e81b64be11d5d5e3b41929c135",
+      "source": "sports-character-library/tennis/female-03-footwork-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/female-03-footwork-and-contact.prompt.txt",
+      "bytes": 2221,
+      "sha256": "18e767e89a7297950aa6e715470f84981ab6e445add18e4a039b7da445e47c85",
+      "source": "sports-character-library/tennis/female-03-footwork-and-contact.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-01-groundstrokes.png",
+      "bytes": 1653201,
+      "sha256": "05ee66c9f2c9e887f63956bf4970a0a46ee2cecea4ff56d41fcb45efc7143ff5",
+      "source": "sports-character-library/tennis/male-01-groundstrokes.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-01-groundstrokes.prompt.txt",
+      "bytes": 2224,
+      "sha256": "327781ef43463c8b0ca0998c312b5f34551c11440e2aba27505bfb64f1fb7932",
+      "source": "sports-character-library/tennis/male-01-groundstrokes.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-02-serve-and-net.png",
+      "bytes": 1685074,
+      "sha256": "8139ab71a48eb84f75d5d7ca557b36b317af87bbed38d7289a19e6d1339de5d9",
+      "source": "sports-character-library/tennis/male-02-serve-and-net.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-02-serve-and-net.prompt.txt",
+      "bytes": 2232,
+      "sha256": "3453ac42160664eecf07e6bfd09601541b39ac044172c891cee46ab3a662432d",
+      "source": "sports-character-library/tennis/male-02-serve-and-net.prompt.txt"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-03-footwork-and-contact.png",
+      "bytes": 1750585,
+      "sha256": "9df2f8cbd12de161b236ca5e83c2ad4e057709ef294063c95102c8751a1be911",
+      "source": "sports-character-library/tennis/male-03-footwork-and-contact.png"
+    },
+    {
+      "path": "Design/InitialConceptLibrary-Historical/tennis/male-03-footwork-and-contact.prompt.txt",
+      "bytes": 2195,
+      "sha256": "d835cffff2db9e41426c8e2423b434a4f2fdb7ec840545bdcd0835c1ad940aa8",
+      "source": "sports-character-library/tennis/male-03-footwork-and-contact.prompt.txt"
+    }
+  ]
+}

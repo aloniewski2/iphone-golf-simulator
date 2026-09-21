@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: MALE, preserve the straight torso and relaxed shirt of the reference. Title: "Golf — short game — male". Panels in reading order:
+1. Putt setup: narrow stance, eyes toward ball
+2. Putt backswing: short pendulum, quiet lower body
+3. Putt impact: square putter face meets ball
+4. Putt follow-through: hold low finish
+5. Chip setup: hands ahead, weight on lead foot
+6. Chip backswing: compact low arc
+7. Chip impact: descending iron strikes ball
+8. Chip finish: low controlled follow-through
+9. Bunker setup: wider stance, open wedge
+10. Bunker backswing: wrist hinge, flexed knees
+11. Bunker strike: wedge enters sand behind ball
+12. Bunker finish: open chest, high soft finish
+Use coherent athletic mechanics. Golf and tennis right-handed unless explicitly stated. Bowling right-handed unless stated. Boxing padded red gloves, orthodox unless stated. No facial features.

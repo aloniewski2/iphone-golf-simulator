@@ -1,0 +1,16 @@
+Create a polished 3D sports GAMEPLAY animation storyboard: landscape 3:2, 4 columns by 3 rows, 12 panels with short numbered captions. STRICT identity: attached male character, oversized blank rounded-square tan head, relaxed black T-shirt, loose black trousers, white sneakers, mitten hands. No facial features or hair. Title "Golf — third-person gameplay — male".
+Original bright stylized golf fairway, green and flag ahead, blue sky. Fixed camera BEHIND golfer, slightly above shoulder height. Golfer in lower-left/center foreground with BACK to viewer; fairway target recedes up the frame. Golf ball and clubhead visible ahead of feet. The target direction is away from camera. First 9 panels driver swing, final 3 putter on green. Keep camera behind the player even as torso rotates. No front-facing camera.
+Important golf geometry: camera looks down the target line from behind the ball. Golfer stands LEFT of ball, SIDE-ON to target, feet aligned parallel to target line, LEFT SHOULDER toward distant flag, chest toward the ball to player's right in image. Camera sees back-three-quarter of golfer. BOTH hands remain on club grip during swing. This is a golf stance, not a bowler standing square to target. Stance footprint stays fixed until rear heel lifts in follow-through. Environment stays the same. Panels:
+1. Address behind teed ball
+2. Takeaway
+3. Half backswing
+4. Top of backswing
+5. Downswing
+6. Impact at ball
+7. Extension toward fairway
+8. High follow-through
+9. Balanced finish watching flight
+10. Putting setup on green
+11. Putting contact
+12. Watch ball roll toward cup
+Full player visible. One ball per panel. First 9 panels driver, last 3 flat-faced putter on green. Keep camera behind the line of play, never present a front studio view.

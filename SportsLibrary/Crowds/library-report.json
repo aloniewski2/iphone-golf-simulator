@@ -1,0 +1,72 @@
+[
+  {
+    "object": "Crowd_Male_SeatedRelaxed",
+    "vertices": 4726,
+    "polygons": 7200,
+    "pose": "SeatedRelaxed",
+    "source": "Male"
+  },
+  {
+    "object": "Crowd_Male_SeatedApplause",
+    "vertices": 4714,
+    "polygons": 7200,
+    "pose": "SeatedApplause",
+    "source": "Male"
+  },
+  {
+    "object": "Crowd_Male_SeatedCheer",
+    "vertices": 4703,
+    "polygons": 7199,
+    "pose": "SeatedCheer",
+    "source": "Male"
+  },
+  {
+    "object": "Crowd_Male_StandingRelaxed",
+    "vertices": 4804,
+    "polygons": 7200,
+    "pose": "StandingRelaxed",
+    "source": "Male"
+  },
+  {
+    "object": "Crowd_Male_StandingWave",
+    "vertices": 4800,
+    "polygons": 7199,
+    "pose": "StandingWave",
+    "source": "Male"
+  },
+  {
+    "object": "Crowd_Female_SeatedRelaxed",
+    "vertices": 4726,
+    "polygons": 7200,
+    "pose": "SeatedRelaxed",
+    "source": "Female"
+  },
+  {
+    "object": "Crowd_Female_SeatedApplause",
+    "vertices": 4721,
+    "polygons": 7199,
+    "pose": "SeatedApplause",
+    "source": "Female"
+  },
+  {
+    "object": "Crowd_Female_SeatedCheer",
+    "vertices": 4720,
+    "polygons": 7199,
+    "pose": "SeatedCheer",
+    "source": "Female"
+  },
+  {
+    "object": "Crowd_Female_StandingRelaxed",
+    "vertices": 4802,
+    "polygons": 7200,
+    "pose": "StandingRelaxed",
+    "source": "Female"
+  },
+  {
+    "object": "Crowd_Female_StandingWave",
+    "vertices": 4787,
+    "polygons": 7200,
+    "pose": "StandingWave",
+    "source": "Female"
+  }
+]

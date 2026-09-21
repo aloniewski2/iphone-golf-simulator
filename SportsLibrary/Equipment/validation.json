@@ -1,0 +1,461 @@
+{
+  "imports_checked": 32,
+  "all_passed": true,
+  "checks": [
+    {
+      "asset": "Tennis_Racket",
+      "format": "fbx",
+      "meshes": 54,
+      "dimensions_m": [
+        0.2900000214576721,
+        0.03800000250339508,
+        0.6900000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Tennis_Racket",
+      "format": "glb",
+      "meshes": 54,
+      "dimensions_m": [
+        0.2900000214576721,
+        0.03799999877810478,
+        0.6900000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Tennis_Ball",
+      "format": "fbx",
+      "meshes": 2,
+      "dimensions_m": [
+        0.06700005009770393,
+        0.06700007617473602,
+        0.06700000166893005
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Tennis_Ball",
+      "format": "glb",
+      "meshes": 2,
+      "dimensions_m": [
+        0.06700005009770393,
+        0.06700007617473602,
+        0.06700000166893005
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Boxing_Glove_L",
+      "format": "fbx",
+      "meshes": 9,
+      "dimensions_m": [
+        0.17012768983840942,
+        0.24900000914931297,
+        0.14400000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Boxing_Glove_L",
+      "format": "glb",
+      "meshes": 9,
+      "dimensions_m": [
+        0.17012768983840942,
+        0.24899998679757118,
+        0.14400000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Boxing_Glove_R",
+      "format": "fbx",
+      "meshes": 9,
+      "dimensions_m": [
+        0.17012764513492584,
+        0.24900000914931297,
+        0.14400000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Boxing_Glove_R",
+      "format": "glb",
+      "meshes": 9,
+      "dimensions_m": [
+        0.17012764513492584,
+        0.24899998679757118,
+        0.14400000125169754
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Bowling_Ball",
+      "format": "fbx",
+      "meshes": 1,
+      "dimensions_m": [
+        0.21599996089935303,
+        0.21599993854761124,
+        0.2160000056028366
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Bowling_Ball",
+      "format": "glb",
+      "meshes": 1,
+      "dimensions_m": [
+        0.21599996089935303,
+        0.21599993854761124,
+        0.2160000056028366
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Bowling_Pin",
+      "format": "fbx",
+      "meshes": 1,
+      "dimensions_m": [
+        0.12099999934434891,
+        0.12099999934434891,
+        0.38100001623236457
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Bowling_Pin",
+      "format": "glb",
+      "meshes": 1,
+      "dimensions_m": [
+        0.12099999934434891,
+        0.12099999934434891,
+        0.38100001215934753
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Driver",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.13800005614757538,
+        0.11200002208352089,
+        1.1539999917149544
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Driver",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.13800005614757538,
+        0.11200002208352089,
+        1.1539999917149544
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Iron",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145000368356705,
+        0.04065559804439545,
+        1.0161854103207588
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Iron",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145000368356705,
+        0.040655599907040596,
+        1.0161854103207588
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Wedge",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145000368356705,
+        0.04842322692275047,
+        0.9532124474644661
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Wedge",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145000368356705,
+        0.04842323064804077,
+        0.9532124474644661
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Putter",
+      "format": "fbx",
+      "meshes": 20,
+      "dimensions_m": [
+        0.11999999731779099,
+        0.05000000447034836,
+        0.9045000150799751
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Putter",
+      "format": "glb",
+      "meshes": 20,
+      "dimensions_m": [
+        0.11999999731779099,
+        0.05000000074505806,
+        0.9045000150799751
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Ball",
+      "format": "fbx",
+      "meshes": 1,
+      "dimensions_m": [
+        0.04267411679029465,
+        0.04265430197119713,
+        0.04270000010728836
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Ball",
+      "format": "glb",
+      "meshes": 1,
+      "dimensions_m": [
+        0.04267411679029465,
+        0.04265430197119713,
+        0.04270000010728836
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Tee",
+      "format": "fbx",
+      "meshes": 2,
+      "dimensions_m": [
+        0.0159999905154109,
+        0.015999995172023773,
+        0.05099999945362735
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Tee",
+      "format": "glb",
+      "meshes": 2,
+      "dimensions_m": [
+        0.0159999905154109,
+        0.015999995172023773,
+        0.050999999046325684
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Driver_LH",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.13800005614757538,
+        0.11200002208352089,
+        1.1540000289678574
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Driver_LH",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.13800005614757538,
+        0.11200002208352089,
+        1.1540000289678574
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Iron_LH",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145001858472824,
+        0.040655603632330894,
+        1.0161854475736618
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Iron_LH",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10145001858472824,
+        0.040655605494976044,
+        1.0161854475736618
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Wedge_LH",
+      "format": "fbx",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10144998878240585,
+        0.04842322692275047,
+        0.9532124847173691
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Wedge_LH",
+      "format": "glb",
+      "meshes": 19,
+      "dimensions_m": [
+        0.10144998878240585,
+        0.04842323064804077,
+        0.9532124847173691
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Putter_LH",
+      "format": "fbx",
+      "meshes": 20,
+      "dimensions_m": [
+        0.12000000104308128,
+        0.04999997839331627,
+        0.9045000523328781
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    },
+    {
+      "asset": "Golf_Putter_LH",
+      "format": "glb",
+      "meshes": 20,
+      "dimensions_m": [
+        0.12000000104308128,
+        0.04999997653067112,
+        0.9045000523328781
+      ],
+      "scale_ok": true,
+      "finite_vertices": true,
+      "has_materials": true,
+      "has_uvs": true
+    }
+  ],
+  "not_tested": [
+    "Unity import and rendering",
+    "In-game physics and colliders",
+    "Character hand fit",
+    "Phone control interpretation",
+    "Runtime performance/LODs"
+  ]
+}

@@ -1,0 +1,16 @@
+Use case: stylized-concept. Create a polished 3D sports GAMEPLAY animation storyboard: landscape 3:2, 4 columns by 3 rows, 12 clearly separated panels with short numbered captions. STRICT IDENTITY reference is attached: use the male character, oversized blank rounded-square tan head, relaxed black T-shirt and straight torso, loose black trousers, white sneakers, rounded mitten hands. Preserve compact proportions, head size, and clothing. No eyes, nose, mouth, hair, logos or new outfit. Title "Boxing — third-person gameplay — male".
+CAMERA AND ENVIRONMENT: Original bright stylized boxing ring, ropes and simple arena behind the opponent. Fixed third-person slightly elevated OVER-THE-SHOULDER camera BEHIND near player, slightly offset so opponent is visible ahead. Main player has BACK to viewer and RED gloves; opponent faces main player with BLUE gloves, same faceless toy character style, slightly farther away. Left jab uses screen-left glove from rear view; right cross uses screen-right glove. Non-graphic sporting action, no bruises or injuries. Keep main player face hidden, never turn camera to front.
+Every panel shows the SAME fixed third-person rear camera and scene framing, full main character including both feet, all equipment in bounds. The viewer is behind the player looking in the direction of play. No frontal character presentations. Clear foreground player silhouette and uncluttered target visibility. Original resort-sports visual style, no borrowed game UI or logos. Panels in reading order:
+1. Orthodox guard facing opponent
+2. Left jab toward opponent
+3. Return left glove to guard
+4. Right cross with rear hip rotation
+5. Recover high guard
+6. Left hook with torso turn
+7. Right uppercut
+8. Block opponent jab with high guard
+9. Slip left off opponent centerline
+10. Duck under opponent hook
+11. Small forward step, guard maintained
+12. Return to balanced neutral guard
+One clear pose per panel; no trails, ghost limbs or motion blur. One ball when relevant. Preserve simple mittens rather than anatomical fingers. These are gameplay keyframe concepts.

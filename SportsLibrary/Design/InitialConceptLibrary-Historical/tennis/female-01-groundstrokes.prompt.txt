@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Tennis — groundstrokes — female". Panels in reading order:
+1. Forehand ready: racket in right hand, athletic stance
+2. Forehand unit turn: shoulders coil
+3. Forehand backswing: racket drops behind hip
+4. Forehand contact: ball ahead of right hip
+5. Forehand follow-through: racket across opposite shoulder
+6. Forehand recovery: return to ready
+7. Two-hand backhand ready: both hands on grip
+8. Backhand unit turn: shoulders to opposite side
+9. Backhand backswing: racket behind left hip
+10. Backhand contact: ball forward, both hands attached
+11. Backhand follow-through: racket over right shoulder
+12. Backhand recovery: return to ready
+Tennis racket: one realistic proportional racket with taut strings, black handle, muted teal rim. Right-handed player. Correctly distinguish forehand and two-handed backhand. One yellow tennis ball when needed; clearly show ball at contact. Preserve big faceless head, chunky short body proportions; do not elongate into realistic adult. SHORT captions.

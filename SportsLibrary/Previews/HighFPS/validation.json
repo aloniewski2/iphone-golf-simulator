@@ -1,0 +1,15 @@
+{
+  "validation": "AVFoundation nominal frame rate and complete frame-by-frame decoding",
+  "resolution": [720, 480],
+  "source_timeline_fps": 30,
+  "normal_speed": true,
+  "render_method": "Blender animation curve evaluation at fractional frames",
+  "device_performance_test": false,
+  "files": [
+    {"file": "tennis-60fps.mp4", "fps": 60, "seconds": 4, "decoded_frames": 240, "decode_pass": true},
+    {"file": "bowling-60fps.mp4", "fps": 60.000004, "seconds": 6, "decoded_frames": 360, "decode_pass": true},
+    {"file": "golf-60fps.mp4", "fps": 60.000004, "seconds": 5, "decoded_frames": 300, "decode_pass": true},
+    {"file": "boxing-60fps.mp4", "fps": 60, "seconds": 4, "decoded_frames": 240, "decode_pass": true},
+    {"file": "tennis-120fps.mp4", "fps": 120, "seconds": 4, "decoded_frames": 480, "decode_pass": true}
+  ]
+}

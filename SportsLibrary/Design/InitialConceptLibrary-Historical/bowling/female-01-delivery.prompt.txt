@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Bowling — delivery sequence — female". Panels in reading order:
+1. Set stance: ball cradled near chest in both hands
+2. Aim: eyes/head aligned down lane
+3. Pushaway: right ball hand forward, left hand supporting
+4. First step: right foot steps, ball lowers
+5. Pendulum: ball swings beside right thigh
+6. Backswing: ball behind body, left arm counterbalances
+7. Forward swing: knee flexion, ball descends
+8. Slide: planted left foot, right leg sweeps behind left
+9. Release: right hand close to floor, ball just leaving fingers
+10. Follow-through: right arm rises, left knee bent
+11. Hold: balanced slide finish, watch ball roll
+12. Recover: step upright and turn away
+Show coherent body weight and equipment contact. Golf and bowling right-handed unless the panel specifies left-handed. One ball per panel. Keep head blank and hands simple. Use SHORT captions, not full sentences.
