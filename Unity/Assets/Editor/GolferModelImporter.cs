@@ -7,9 +7,16 @@ namespace GolfArcade.EditorTools
     /// phone's backswing and every frame of the IK-baked arms matters.
     public sealed class GolferModelImporter : AssetPostprocessor
     {
+        bool IsStandard => assetPath.StartsWith("Assets/Resources/StandardCharacters/") || assetPath.StartsWith("Assets/Tests/Fixtures/StandardCharacters/");
+        void OnPostprocessModel(UnityEngine.GameObject root)
+        {
+            if (IsStandard && !root.GetComponent<GolfArcade.Game.StandardCharacterArms>())
+                root.AddComponent<GolfArcade.Game.StandardCharacterArms>();
+        }
+
         void OnPreprocessModel()
         {
-            bool standard = assetPath.StartsWith("Assets/Resources/StandardCharacters/");
+            bool standard = IsStandard;
             if (!standard && !assetPath.StartsWith("Assets/Resources/Golfer/")) return;
             var importer = (ModelImporter)assetImporter;
             importer.animationType = ModelImporterAnimationType.Generic;
@@ -28,7 +35,7 @@ namespace GolfArcade.EditorTools
             importer.materialLocation = ModelImporterMaterialLocation.InPrefab;
             importer.useFileScale = true;
             importer.globalScale = 1f;
-            if (standard)
+            if (standard && assetPath.EndsWith("_golf.fbx"))
                 importer.clipAnimations = new[] { new ModelImporterClipAnimation {
                     name = "StandardGolfDrive", firstFrame = 0, lastFrame = 90,
                     loopTime = false, lockRootRotation = true,

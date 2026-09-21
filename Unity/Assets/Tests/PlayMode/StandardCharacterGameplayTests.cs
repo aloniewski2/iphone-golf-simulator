@@ -32,6 +32,9 @@ namespace GolfArcade.PlayTests
                     Assert.AreEqual(Swing.SwingPhase.Address, game.Swing.Phase);
                     var golfer = Object.FindFirstObjectByType<GolferView>();
                     Assert.IsTrue(golfer.UsesStandardCharacter, "Must use the actual V4 model, not a fallback.");
+                    var arms = golfer.GetComponentInChildren<StandardCharacterArms>();
+                    Assert.IsNotNull(arms);
+                    Assert.IsTrue(arms.IsReady);
                     var contact = System.Array.Find(golfer.GetComponentsInChildren<Transform>(true), t => t.name == "StandardClubContact");
                     Assert.IsNotNull(contact);
                     var meshes = golfer.GetComponentsInChildren<SkinnedMeshRenderer>();
@@ -46,6 +49,8 @@ namespace GolfArcade.PlayTests
                         if (frame == 108) game.Swing.Synthetic.Backswing(false);
                         yield return null;
                         sawFlight |= game.Current == GolfGame.State.Flight;
+                        Assert.Less(arms.MaximumGripError, .0001f, "Arm correction moved the authored hand target");
+                        Assert.Less(arms.MaximumSegmentError, .005f, "Corrected bone lengths changed");
                         if (frame % 60 == 0)
                             foreach (var mesh in meshes) Assert.Less(mesh.bounds.size.magnitude, 8f);
                         Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png", 720, 480));

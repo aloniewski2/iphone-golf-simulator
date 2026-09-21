@@ -1,5 +1,7 @@
 # Standard characters in golf gameplay
 
+The runtime now applies the [shared arm correction](CHARACTER-ARMS.md) after the swing animation: longer segments, continuous elbow surfaces, and preserved hand/grip targets.
+
 The golf game now loads `standard_male_golf.fbx` and `standard_female_golf.fbx` from `Unity/Assets/Resources/StandardCharacters`. These are exported from the actual permanent V4 Blender character rigs with Golf Kit 1 and the held driver; they are not the alternate golfers from the earlier testing branch.
 
 The existing male/female selector and skin-tone controls use these models. The existing phone/network/synthetic swing controller still drives the game. Backswing load scrubs the V4 drive, and the existing strike/ball-flight pipeline uses its updated impact time. Current integration is right-handed and driver-animation based, matching the initial game's single-swing workflow. The other V4 clips, sports, kits, and LH controls are not yet wired into gameplay.

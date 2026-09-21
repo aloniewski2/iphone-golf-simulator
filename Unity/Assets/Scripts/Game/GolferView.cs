@@ -46,6 +46,7 @@ namespace GolfArcade.Game
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
 
         GameObject modelGo;
+        StandardCharacterArms standardArms;
         public bool UsesStandardCharacter => hasModel;
 
         public static GolferView Create(Transform parent)
@@ -106,6 +107,8 @@ namespace GolfArcade.Game
                 if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
             }
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
+            standardArms = model.GetComponent<StandardCharacterArms>() ?? model.AddComponent<StandardCharacterArms>();
+            standardArms.ManualEvaluation = true;
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
@@ -135,6 +138,7 @@ namespace GolfArcade.Game
             time = Mathf.Clamp(t, 0, EndTime);
             clip.SetTime(time);
             graph.Evaluate();
+            standardArms?.ApplyAfterAnimation();
         }
 
         void OnDestroy() { if (graph.IsValid()) graph.Destroy(); }
