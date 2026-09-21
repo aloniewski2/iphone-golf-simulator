@@ -1,5 +1,7 @@
 # Sports Library — start here
 
+This working branch now includes the latest Hole 7 Unity game alongside the library. Read the [combined integration baseline](INTEGRATION-BASELINE.md) for current runtime status and the exact character/swing connection points. Original packaging notes below describe the design-library commit, not a completed runtime migration.
+
 The male and female characters in this library are the **permanent character standards for every sport**, including future sports and crowd variants. Their identity is approved; the current animation and mesh implementations still require technical polish. See [CHARACTER-STANDARD.md](CHARACTER-STANDARD.md) before changing or integrating characters.
 
 ## Quick navigation

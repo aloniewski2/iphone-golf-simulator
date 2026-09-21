@@ -2,6 +2,8 @@
 
 ## Permanent character asset library
 
+The latest game and source library are combined on `feature/standard-characters-integration`. See the [integration baseline](../SportsLibrary/INTEGRATION-BASELINE.md): the current rigged golfer and its single baked swing still need migration to the permanent V4 character assets.
+
 The [Sports Library](../SportsLibrary/README.md) contains the permanent male/female character standards and all current sports-art deliverables. Read the [character standard](../SportsLibrary/CHARACTER-STANDARD.md) and [integration handoff](../SportsLibrary/UNITY-HANDOFF.md) before importing or replacing golfer visuals. This source-library commit does not yet replace the current procedural golfer or modify runtime gameplay.
 
 A Unity 6.3 LTS port of the phone-swing golf game, played the way Wii Sports Golf is played:

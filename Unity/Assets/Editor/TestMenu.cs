@@ -40,6 +40,8 @@ namespace GolfArcade.EditorTools
             public void TestFinished(ITestResultAdaptor r)
             {
                 if (r.HasChildren) return;
+                // CLI test runs bypass the menu's Run() setup on a fresh checkout.
+                Directory.CreateDirectory("Library/TestResults");
                 string line = $"{r.TestStatus.ToString().ToUpperInvariant()} {r.FullName} ({r.Duration:F2}s)\n";
                 if (r.TestStatus == TestStatus.Failed) line += "    " + (r.Message ?? "").Trim().Replace("\n", "\n    ") + "\n";
                 File.AppendAllText(Path(r.Test.TestMode) + ".running", line);
@@ -47,6 +49,7 @@ namespace GolfArcade.EditorTools
 
             public void RunFinished(ITestResultAdaptor result)
             {
+                Directory.CreateDirectory("Library/TestResults");
                 var mode = result.Test.TestMode;
                 int passed = result.PassCount, failed = result.FailCount, skipped = result.SkipCount + result.InconclusiveCount;
                 string summary = $"DONE {mode}: {passed} passed, {failed} failed, {skipped} skipped";
