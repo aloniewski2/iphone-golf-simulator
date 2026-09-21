@@ -4,3 +4,9 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 
+
+# Blender backups and regenerable preview renders (keep the final overview)
+*.blend1
+blender/previews/*
+!blender/previews/hole_07_overview.png
+!blender/previews/golfer_closeups.png

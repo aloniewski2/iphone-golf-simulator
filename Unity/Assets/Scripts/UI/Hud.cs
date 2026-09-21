@@ -11,9 +11,13 @@ namespace GolfArcade.UI
     {
         public bool IsHeld { get; private set; }
         public Action Pressed, Released;
-        public void OnPointerDown(PointerEventData e) { IsHeld = true; Pressed?.Invoke(); }
-        public void OnPointerUp(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; }
-        public void OnPointerExit(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; }
+        /// The button's fill, lit while held.
+        public Image Fill;
+        public Color RestColor = UiKit.ButtonFill;
+        public void OnPointerDown(PointerEventData e) { IsHeld = true; Light(true); Pressed?.Invoke(); }
+        public void OnPointerUp(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
+        public void OnPointerExit(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
+        void Light(bool on) { if (Fill) Fill.color = on ? UiKit.ButtonPressed : RestColor; }
     }
 
     /// The whole on-screen layer, built in code so there is nothing to wire in a scene: hole and
@@ -23,20 +27,19 @@ namespace GolfArcade.UI
     /// safe area so the notch and the home indicator never cover it.
     public sealed class Hud : MonoBehaviour
     {
-        public HoldButton AimLeft, AimRight, ClubUp, ClubDown, SwingHold, PlayAgain;
+        public HoldButton AimLeft, AimRight, ClubUp, ClubDown, SwingHold, PlayAgain, GolferBody, GolferSkin;
         public RawImage Minimap;
 
         RectTransform safeArea;
         Rect appliedSafeArea;
-        Text holeText, scoreText, distanceText, clubText, statusText, bannerText, tempoText, windText;
-        Image meterFill, meterMark, meterOverswing, windArrow;
+        Text holeText, scoreText, distanceText, clubText, statusText, bannerText, tempoText, windText, controllerText;
+        Image meterFill, meterMark, meterOverswing, windArrow, golferSkinSwatch;
         RectTransform meterRect;
         Vector2 meterHome;
         float meterLoad;
         CanvasGroup bannerGroup;
         RectTransform scorecard;
         float bannerUntil;
-        Font font;
 
         public static Hud Create()
         {
@@ -48,21 +51,7 @@ namespace GolfArcade.UI
 
         void Build()
         {
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            var canvas = gameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = gameObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 2340);
-            scaler.matchWidthOrHeight = 0.5f;
-            gameObject.AddComponent<GraphicRaycaster>();
-
-            if (!FindFirstObjectByType<EventSystem>())
-            {
-                var es = new GameObject("EventSystem");
-                es.AddComponent<EventSystem>();
-                es.AddComponent<StandaloneInputModule>();
-            }
+            UiKit.Canvas(gameObject);
 
             // Every element hangs off this, and it shrinks to the phone's safe area.
             safeArea = new GameObject("Safe area").AddComponent<RectTransform>();
@@ -71,45 +60,61 @@ namespace GolfArcade.UI
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             ApplySafeArea();
 
-            // Top bar: hole, then score.
-            holeText = Label("Hole", 48, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(40, -60), new Vector2(700, 60));
-            scoreText = Label("Score", 40, TextAnchor.UpperRight, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-40, -60), new Vector2(500, 60));
-            distanceText = Label("Distance", 54, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -150), new Vector2(900, 70));
-            clubText = Label("Club", 44, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -225), new Vector2(900, 60));
+            // Top row: the hole card on the left, the score card on the right.
+            var holeCard = Card("Hole card", new Vector2(0, 1), new Vector2(0, 1), new Vector2(30, -40), new Vector2(640, 90));
+            holeCard.rectTransform.pivot = new Vector2(0, 1);
+            holeText = Label("Hole", 40, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(1, 1), new Vector2(28, 0), Vector2.zero, holeCard.transform);
+            var scoreCard = Card("Score card", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -40), new Vector2(360, 90));
+            scoreCard.rectTransform.pivot = new Vector2(1, 1);
+            scoreText = Label("Score", 38, TextAnchor.MiddleRight, new Vector2(0, 0), new Vector2(1, 1), new Vector2(-28, 0), Vector2.zero, scoreCard.transform);
 
-            // Wind: an arrow that points where the wind blows, as seen from behind the ball.
-            windArrow = Panel("Wind arrow", new Color(1f, 1f, 1f, 0.95f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-380, -345), new Vector2(80, 80));
+            // Shot card: distance to the pin, club and its yardage, wind.
+            var shotCard = Card("Shot card", new Vector2(0, 1), new Vector2(0, 1), new Vector2(30, -150), new Vector2(640, 210));
+            shotCard.rectTransform.pivot = new Vector2(0, 1);
+            distanceText = Label("Distance", 52, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(28, -18), new Vector2(600, 60), shotCard.transform);
+            clubText = Label("Club", 36, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(28, -84), new Vector2(600, 50), shotCard.transform);
+            clubText.color = UiKit.Muted;
+            windArrow = Panel("Wind arrow", new Color(1f, 1f, 1f, 0.95f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(60, 40), new Vector2(56, 56), shotCard.transform);
             windArrow.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            windArrow.sprite = ArrowSprite();
-            windText = Label("Wind", 38, TextAnchor.MiddleLeft, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-80, -315), new Vector2(500, 60));
-            windText.color = new Color(0.85f, 0.95f, 1f);
+            windArrow.sprite = ArrowSprite(); windArrow.type = Image.Type.Simple;
+            windText = Label("Wind", 32, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(0, 0), new Vector2(100, 14), new Vector2(500, 50), shotCard.transform);
+            windText.color = UiKit.Muted;
             statusText = Label("Status", 40, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 420), new Vector2(1000, 60));
             statusText.color = new Color(1, 1, 1, 0.9f);
             tempoText = Label("Tempo", 34, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 360), new Vector2(1000, 50));
             tempoText.color = new Color(1, 0.95f, 0.7f, 0.95f);
 
-            // Power meter, left edge: a tall bar that fills from the bottom.
-            var meterBg = Panel("Meter", new Color(0, 0, 0, 0.45f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(70, 0), new Vector2(60, 900));
+            // Power meter, left edge: a rounded track that fills from the bottom, quarter ticks,
+            // and a red band at the top where a swing goes wild.
+            var meterBg = Card("Meter", new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(40, 0), new Vector2(60, 900));
             meterRect = meterBg.rectTransform;
             meterHome = meterRect.anchoredPosition;
-            meterOverswing = Panel("Overswing", new Color(0.9f, 0.2f, 0.15f, 0.5f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(48, 110), meterBg.transform);
+            meterOverswing = Panel("Overswing", new Color(0.9f, 0.2f, 0.15f, 0.55f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(48, 110), meterBg.transform);
             meterFill = Panel("Fill", new Color(0.35f, 0.85f, 0.35f, 0.95f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(48, 0), meterBg.transform);
             meterFill.rectTransform.pivot = new Vector2(0.5f, 0);
-            meterMark = Panel("Mark", Color.white, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(56, 6), meterBg.transform);
+            for (int q = 1; q < 4; q++)
+            {
+                var tick = Panel($"Tick {q}", new Color(1, 1, 1, 0.35f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6 + 888 * q / 4f), new Vector2(48, 3), meterBg.transform, rounded: false);
+                tick.rectTransform.pivot = new Vector2(0.5f, 0.5f); tick.raycastTarget = false;
+            }
+            meterMark = Panel("Mark", Color.white, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(64, 6), meterBg.transform, rounded: false);
             meterMark.enabled = false;
-            var meterLabel = Label("Power", 30, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -30), new Vector2(200, 40), meterBg.transform);
-            meterLabel.text = "POWER";
+            var meterLabel = Label("Power", 26, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -32), new Vector2(200, 40), meterBg.transform);
+            meterLabel.text = "POWER"; meterLabel.color = UiKit.Muted;
 
-            // Minimap, top right under the score.
+            // Minimap, top right under the score, in a rounded frame.
+            var mapFrame = Card("Minimap frame", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -150), new Vector2(272, 432));
+            mapFrame.rectTransform.pivot = new Vector2(1, 1);
+            var mapMask = Panel("Mask", Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, mapFrame.transform);
+            mapMask.rectTransform.offsetMin = new Vector2(6, 6); mapMask.rectTransform.offsetMax = new Vector2(-6, -6);
+            mapMask.gameObject.AddComponent<Mask>().showMaskGraphic = false;
             var mapGo = new GameObject("Minimap");
-            mapGo.transform.SetParent(safeArea, false);
+            mapGo.transform.SetParent(mapMask.transform, false);
             Minimap = mapGo.AddComponent<RawImage>();
             var mapRt = Minimap.rectTransform;
-            mapRt.anchorMin = mapRt.anchorMax = new Vector2(1, 1);
-            mapRt.pivot = new Vector2(1, 1);
-            mapRt.anchoredPosition = new Vector2(-30, -130);
-            mapRt.sizeDelta = new Vector2(260, 420);
-            Minimap.color = new Color(1, 1, 1, 0.92f);
+            mapRt.anchorMin = Vector2.zero; mapRt.anchorMax = Vector2.one;
+            mapRt.offsetMin = mapRt.offsetMax = Vector2.zero;
+            Minimap.color = new Color(1, 1, 1, 0.96f);
 
             // Buttons along the bottom.
             AimLeft = Button("◀", new Vector2(0, 0), new Vector2(150, 170), new Vector2(240, 240));
@@ -118,14 +123,26 @@ namespace GolfArcade.UI
             ClubDown = Button("▼", new Vector2(0.5f, 0), new Vector2(95, 200), new Vector2(150, 110));
             SwingHold = Button("HOLD TO SWING", new Vector2(0.5f, 0), new Vector2(0, 90), new Vector2(360, 90), 30);
 
+            // Who you play as: body and skin tone, under the minimap. Cycles on a tap.
+            GolferBody = Button("GOLFER ♂", new Vector2(1, 1), new Vector2(-166, -630), new Vector2(272, 70), 28);
+            GolferSkin = Button("SKIN", new Vector2(1, 1), new Vector2(-166, -712), new Vector2(272, 70), 28);
+            golferSkinSwatch = Panel("Swatch", Color.white, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-12, 0), new Vector2(40, 40), GolferSkin.transform);
+            golferSkinSwatch.rectTransform.pivot = new Vector2(1, 0.5f);
+            golferSkinSwatch.raycastTarget = false;
+
+            // How to pair a phone as the club (desktop only), along the bottom edge.
+            controllerText = Label("Controller", 28, TextAnchor.LowerCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 18), new Vector2(1040, 40));
+            controllerText.color = new Color(1, 1, 1, 0.75f);
+            controllerText.text = "";
+
             // Banner in the middle.
-            var bannerGo = Panel("Banner", new Color(0, 0, 0, 0.55f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 250), new Vector2(900, 140));
+            var bannerGo = Card("Banner", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 250), new Vector2(900, 140));
             bannerGroup = bannerGo.gameObject.AddComponent<CanvasGroup>();
             bannerGroup.alpha = 0;
             bannerText = Label("BannerText", 56, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(880, 130), bannerGo.transform);
 
             // Scorecard, filled in when the round ends.
-            var card = Panel("Scorecard", new Color(0.05f, 0.12f, 0.06f, 0.9f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900, 600));
+            var card = Card("Scorecard", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900, 600), new Color(0.05f, 0.09f, 0.17f, 0.94f));
             card.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             scorecard = card.rectTransform;
             scorecard.gameObject.SetActive(false);
@@ -154,7 +171,7 @@ namespace GolfArcade.UI
         /// Lays out the round's card: a row per hole, the totals, and a button to go again.
         public void ShowScorecard(GolfArcade.Course.Scorecard card)
         {
-            foreach (Transform child in scorecard) Destroy(child.gameObject);
+            foreach (Transform child in scorecard) if (child.name != "Fill") Destroy(child.gameObject);
             var rows = new System.Collections.Generic.List<(string hole, string par, string score)>(card.Rows());
             float rowHeight = 62, top = 130, bottom = 260;
             scorecard.sizeDelta = new Vector2(900, top + rowHeight * (rows.Count + 2) + bottom);
@@ -201,12 +218,15 @@ namespace GolfArcade.UI
             return Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f));
         }
 
-        public void SetHole(int number, int par, double yards) => holeText.text = $"Hole {number}  ·  Par {par}  ·  {yards:F0} yd";
+        public void SetHole(int number, int par, double yards) => holeText.text = $"HOLE {number}   ·   PAR {par}   ·   {yards:F0} YD";
         public void SetScore(int strokes, int toPar, int holeStrokes) => scoreText.text = $"{holeStrokes} strokes   {(toPar > 0 ? "+" : "")}{(toPar == 0 ? "E" : toPar.ToString())}";
         public void SetDistance(string text) => distanceText.text = text;
         public void SetClub(string text) => clubText.text = text;
         public void SetStatus(string text) => statusText.text = text;
         public void SetTempo(string text) => tempoText.text = text;
+        public void SetControllerHint(string text) => controllerText.text = text;
+        /// What the player is being told right now — the banner while it shows, else the status.
+        public string CurrentMessage => bannerGroup.alpha > 0.5f ? bannerText.text : statusText.text;
 
         /// The Wii meter fills with the backswing; as it climbs the fill warms from green through
         /// yellow to orange and the whole bar starts to tremble, so the tension of a big swing is
@@ -230,13 +250,23 @@ namespace GolfArcade.UI
             bannerUntil = Time.time + seconds;
         }
 
-        public void ShowSwingControls(bool aiming, bool debugSwingButton)
+        /// `touchButtons` false hides the aim/club buttons — they live on the phone when it is
+        /// the club and this screen is only the display.
+        public void ShowSwingControls(bool aiming, bool debugSwingButton, bool touchButtons = true)
         {
-            AimLeft.gameObject.SetActive(aiming);
-            AimRight.gameObject.SetActive(aiming);
-            ClubUp.gameObject.SetActive(aiming);
-            ClubDown.gameObject.SetActive(aiming);
+            GolferBody.gameObject.SetActive(aiming);
+            GolferSkin.gameObject.SetActive(aiming);
+            AimLeft.gameObject.SetActive(aiming && touchButtons);
+            AimRight.gameObject.SetActive(aiming && touchButtons);
+            ClubUp.gameObject.SetActive(aiming && touchButtons);
+            ClubDown.gameObject.SetActive(aiming && touchButtons);
             SwingHold.gameObject.SetActive(aiming && debugSwingButton);
+        }
+
+        public void SetGolferStyle(string bodyLabel, Color skin)
+        {
+            GolferBody.GetComponentInChildren<Text>().text = $"GOLFER {bodyLabel}";
+            golferSkinSwatch.color = skin;
         }
 
         void Update()
@@ -252,42 +282,15 @@ namespace GolfArcade.UI
         }
 
         Text Label(string name, int size, TextAnchor anchor, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta, Transform parent = null)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent ? parent : safeArea, false);
-            var t = go.AddComponent<Text>();
-            t.font = font; t.fontSize = size; t.alignment = anchor; t.color = Color.white;
-            t.fontStyle = FontStyle.Bold;
-            t.horizontalOverflow = HorizontalWrapMode.Overflow; t.verticalOverflow = VerticalWrapMode.Overflow;
-            var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0, 0, 0, 0.7f); shadow.effectDistance = new Vector2(2, -2);
-            var rt = t.rectTransform;
-            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.pivot = anchorMin;
-            rt.anchoredPosition = pos; rt.sizeDelta = sizeDelta;
-            return t;
-        }
+            => UiKit.Label(parent ? parent : safeArea, name, size, anchor, anchorMin, anchorMax, pos, sizeDelta);
 
-        Image Panel(string name, Color color, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta, Transform parent = null)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent ? parent : safeArea, false);
-            var img = go.AddComponent<Image>();
-            img.color = color;
-            var rt = img.rectTransform;
-            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.pivot = anchorMin;
-            rt.anchoredPosition = pos; rt.sizeDelta = sizeDelta;
-            return img;
-        }
+        Image Panel(string name, Color color, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta, Transform parent = null, bool rounded = true)
+            => UiKit.Panel(parent ? parent : safeArea, name, color, anchorMin, anchorMax, pos, sizeDelta, rounded);
+
+        Image Card(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta, Color? fill = null, Transform parent = null)
+            => UiKit.Card(parent ? parent : safeArea, name, anchorMin, anchorMax, pos, sizeDelta, fill);
 
         HoldButton Button(string label, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize = 80, Transform parent = null)
-        {
-            var img = Panel(label, new Color(1, 1, 1, 0.22f), anchor, anchor, pos, size, parent);
-            img.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            var hold = img.gameObject.AddComponent<HoldButton>();
-            var t = Label("Label", fontSize, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size, img.transform);
-            t.text = label;
-            t.raycastTarget = false;
-            return hold;
-        }
+            => UiKit.Button(parent ? parent : safeArea, label, anchor, pos, size, fontSize);
     }
 }

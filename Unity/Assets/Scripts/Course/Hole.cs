@@ -71,9 +71,12 @@ namespace GolfArcade.Course
         public double FairwayWidth;
         public double GreenRadius;
         public CourseHazard[] Hazards = Array.Empty<CourseHazard>();
+        /// Dry land, as a polygon in course yards; anything outside it is water. Null means the
+        /// hole is inland and the tree line is the only edge.
+        public CoursePoint[] Shore;
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
-        public const double RoughWidth = 24.0;
+        public double RoughWidth = 24.0;
         /// Small, explicit arcade tolerance around the cup, in yards.
         public const double CupCaptureRadius = 0.12;
 
@@ -118,9 +121,24 @@ namespace GolfArcade.Course
             return best;
         }
 
+        public bool OnLand(CoursePoint p) => Shore == null || Inside(Shore, p);
+
+        /// Even-odd point-in-polygon.
+        static bool Inside(CoursePoint[] poly, CoursePoint p)
+        {
+            bool inside = false;
+            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+            {
+                var a = poly[i]; var b = poly[j];
+                if ((a.D > p.D) != (b.D > p.D) && p.X < (b.X - a.X) * (p.D - a.D) / (b.D - a.D) + a.X) inside = !inside;
+            }
+            return inside;
+        }
+
         public CourseLie LieAt(CoursePoint p)
         {
             foreach (var h in Hazards) if (h.Contains(p)) return h.Kind == HazardKind.Water ? CourseLie.Water : CourseLie.Bunker;
+            if (!OnLand(p)) return CourseLie.Water;
             if (p.DistanceTo(Pin) <= GreenRadius) return CourseLie.Green;
             if (p.DistanceTo(Tee) <= 4) return CourseLie.Tee;
             double offset = DistanceFromCenterline(p);
@@ -138,6 +156,36 @@ namespace GolfArcade.Course
 
         static CoursePoint P(double x, double d) => new(x, d);
         static CourseHazard Bunker(double x, double d, double w, double l) => new(HazardKind.Bunker, x, d, w, l);
+
+        /// Cliffside: the Blender-built island hole (blender/hole_07.blend), in the flight model's
+        /// yards. Tee at the origin, the hole running straight up +D, ocean off the east cliffs.
+        /// The numbers come from blender/scripts/hole07_design.py: metres from the tee marker
+        /// times 1.0936; the shore is the island's control polygon.
+        public static Course Cliffside() => new()
+        {
+            Name = "Cliffside",
+            Holes = new[]
+            {
+                new Hole
+                {
+                    Number = 7, Par = 4,
+                    Centerline = new[] { P(0, 0), P(-8.7, 206.7), P(8.7, 312.8), P(18.6, 415.6) },
+                    FairwayWidth = 48, GreenRadius = 26,
+                    RoughWidth = 100, // the whole island top plays as rough; the shore decides water
+                    Hazards = new[]
+                    {
+                        Bunker(-41.6, 319.3, 35.0, 21.9), Bunker(-30.6, 280.0, 26.2, 17.5), Bunker(50.3, 253.7, 32.8, 21.9),
+                        Bunker(-35.0, 382.8, 28.4, 19.7), Bunker(54.7, 374.0, 30.6, 21.9), Bunker(50.3, 430.9, 24.1, 17.5),
+                    },
+                    Shore = new[]
+                    {
+                        P(-17, -46), P(33, -42), P(77, -15), P(94, 28), P(79, 79), P(85, 120), P(68, 162), P(39, 201), P(57, 241), P(101, 273),
+                        P(92, 319), P(70, 359), P(98, 394), P(79, 435), P(57, 468), P(24, 499), P(-13, 490), P(-42, 464), P(-59, 427), P(-63, 383),
+                        P(-90, 339), P(-70, 295), P(-94, 249), P(-101, 206), P(-116, 160), P(-107, 101), P(-92, 52), P(-77, 7), P(-46, -28),
+                    },
+                },
+            },
+        };
 
         /// Meadow Run: the iOS app's easy course, hole for hole.
         public static Course Meadow() => new()

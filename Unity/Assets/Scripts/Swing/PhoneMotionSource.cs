@@ -11,10 +11,14 @@ namespace GolfArcade.Swing
         public double Time;
         public NQuaternion Attitude;
         public NVector3 RotationRate;
+        /// Gravity in the device frame (unit length; zero when the source cannot tell). Device Y
+        /// runs along the phone toward its top edge, so |Gravity.Y| near 1 means it hangs vertical.
+        public NVector3 Gravity;
     }
 
-    /// Where swing motion comes from: the phone's gyro on device, or something synthetic in
-    /// the editor. `TryRead` returns the newest sample, once per frame.
+    /// Where swing motion comes from: the phone's gyro on device, a phone on the network acting
+    /// as the club, or something synthetic in the editor. `TryRead` returns the next unread
+    /// sample (false when there is none yet this frame), so callers drain it in a loop.
     public interface IMotionSource
     {
         bool IsAvailable { get; }
@@ -28,6 +32,7 @@ namespace GolfArcade.Swing
     /// rate is in the device frame, rad/s — exactly what the detector wants.
     public sealed class PhoneMotionSource : IMotionSource
     {
+        int lastFrame = -1;
         public bool IsAvailable => SystemInfo.supportsGyroscope;
 
         public void Start()
@@ -45,14 +50,19 @@ namespace GolfArcade.Swing
         public bool TryRead(out MotionSample sample)
         {
             sample = default;
-            if (!IsAvailable || !Input.gyro.enabled) return false;
+            if (!IsAvailable || !Input.gyro.enabled || lastFrame == Time.frameCount) return false;
+            lastFrame = Time.frameCount;
             var q = Input.gyro.attitude;
             var r = Input.gyro.rotationRateUnbiased;
+            var g = Input.gyro.gravity;
+            var gravity = new NVector3(g.x, g.y, g.z);
+            if (gravity.LengthSquared() > 0.01f) gravity = NVector3.Normalize(gravity);
             sample = new MotionSample
             {
                 Time = Time.unscaledTimeAsDouble,
                 Attitude = new NQuaternion(q.x, q.y, q.z, q.w),
                 RotationRate = new NVector3(r.x, r.y, r.z),
+                Gravity = gravity,
             };
             return true;
         }
@@ -66,9 +76,9 @@ namespace GolfArcade.Swing
     {
         public KeyCode SwingKey = KeyCode.Space;
         public double BackswingRate = 2.0;     // rad/s of draw-back while held
-        public double MaxBackswing = 2.2;      // rad
+        public double MaxBackswing = 2.6;      // rad, a full turn
         public double DownswingBase = 6.0;     // rad/s peak at the shortest hold
-        public double DownswingPerRadian = 5.0; // extra peak rad/s per radian of backswing
+        public double DownswingPerRadian = 4.0; // extra peak rad/s per radian of backswing
         public double FaceRollDegrees = 0;     // set before release to shape the shot
         public double SpeedScale = 1;          // e.g. 1.4 for an over-swing
 
@@ -76,6 +86,7 @@ namespace GolfArcade.Swing
 
         enum Stage { Rest, Back, Down, Recover }
         Stage stage = Stage.Rest;
+        int lastFrame = -1;
         double angle;          // current rotation from address about the swing axis, rad
         double peak;           // rad/s the downswing is aiming for
         double downswingTime;
@@ -83,7 +94,9 @@ namespace GolfArcade.Swing
         double faceAtImpact;
         bool holding;
         readonly NVector3 swingAxis = NVector3.Normalize(new NVector3(1, 0.2f, 0.1f));
-        NQuaternion address = NQuaternion.Identity;
+        /// Held like a club: the phone's long axis (device Y) pointing straight down in the
+        /// detector's Z-up frame, which is what arms the detector.
+        static readonly NQuaternion address = NQuaternion.CreateFromAxisAngle(NVector3.UnitX, (float)(-Math.PI / 2));
 
         public void Start() { stage = Stage.Rest; angle = 0; face = 0; }
         public void Stop() { }
@@ -92,6 +105,9 @@ namespace GolfArcade.Swing
 
         public bool TryRead(out MotionSample sample)
         {
+            sample = default;
+            if (lastFrame == Time.frameCount) return false;
+            lastFrame = Time.frameCount;
             double dt = Time.unscaledDeltaTime;
             bool keyHeld = holding || (SwingKey != KeyCode.None && Input.GetKey(SwingKey));
             double rate = 0;
@@ -137,6 +153,7 @@ namespace GolfArcade.Swing
                 Time = Time.unscaledTimeAsDouble,
                 Attitude = NQuaternion.Normalize(roll * swing * address),
                 RotationRate = swingAxis * (float)rate,
+                Gravity = NVector3.UnitY, // hanging like a club: gravity runs along the phone toward its top edge
             };
             return true;
         }
