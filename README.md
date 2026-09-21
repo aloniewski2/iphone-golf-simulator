@@ -1,5 +1,9 @@
 # iPhone Golf Simulator
 
+## Standard characters and sports assets
+
+See the [Sports Library](SportsLibrary/README.md) for the permanent male/female character standards, Blender masters, sport animations, clothing, equipment, arenas, crowds, and previews. The [Unity handoff](SportsLibrary/UNITY-HANDOFF.md) distinguishes source assets from runtime-ready work. Retrieve binary assets with Git LFS.
+
 An iPhone-first, motion-controlled golf game where the player's body is the controller.
 
 ## Current focus

@@ -1,0 +1,51 @@
+{
+  "boxing": {
+    "checks": {
+      "expected_count": true,
+      "both_source_models": true,
+      "six_skin_palettes": true,
+      "ten_shirt_palettes": true,
+      "mesh_sharing": true,
+      "no_live_crowd_rigs": true,
+      "valid_material_overrides": true,
+      "no_exploded_meshes": true,
+      "no_placeholder_boxing_people": true,
+      "outside_ring": true,
+      "alternate_scene_has_crowd": true
+    },
+    "all_passed": true,
+    "count": 318
+  },
+  "tennis": {
+    "checks": {
+      "expected_count": true,
+      "both_source_models": true,
+      "six_skin_palettes": true,
+      "ten_shirt_palettes": true,
+      "mesh_sharing": true,
+      "no_live_crowd_rigs": true,
+      "valid_material_overrides": true,
+      "no_exploded_meshes": true,
+      "no_placeholder_boxing_people": true,
+      "outside_court_runoff": true
+    },
+    "all_passed": true,
+    "count": 68
+  },
+  "bowling": {
+    "checks": {
+      "expected_count": true,
+      "both_source_models": true,
+      "six_skin_palettes": true,
+      "ten_shirt_palettes": true,
+      "mesh_sharing": true,
+      "no_live_crowd_rigs": true,
+      "valid_material_overrides": true,
+      "no_exploded_meshes": true,
+      "no_placeholder_boxing_people": true,
+      "outside_lanes": true
+    },
+    "all_passed": true,
+    "count": 26
+  }
+}

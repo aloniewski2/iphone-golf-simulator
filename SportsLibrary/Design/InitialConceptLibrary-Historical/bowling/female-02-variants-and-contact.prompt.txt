@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Bowling — delivery variants — female". Panels in reading order:
+1. Straight delivery release: right palm facing target
+2. Hook setup: supported ball, relaxed wrist
+3. Hook backswing: wrist stays stable
+4. Hook release: gentle hand rotation beside ankle
+5. Hook finish: balanced arm extension
+6. Two-hand setup: both hands cradle ball
+7. Two-hand approach: ball swings close to right hip
+8. Two-hand release: support hand clears, right delivers
+9. Left-handed setup with ball at left hip
+10. Left-handed slide and release over right planted leg
+11. Close-up: rounded hand holds ball at three finger holes
+12. Side detail: released ball clears foot and rolls on lane
+Sport-specific equipment: bowling ball dark blue; tennis racket muted teal rim, dark handle, taut strings, yellow tennis ball. ONE ball per panel only when needed. Right-handed unless explicitly stated. SHORT captions. Keep large rounded-square faceless head and compact body proportions exactly; no realistic fingers.

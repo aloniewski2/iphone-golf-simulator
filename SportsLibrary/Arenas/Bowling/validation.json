@@ -1,0 +1,20 @@
+{
+  "checks": {
+    "90_separate_pins": true,
+    "ten_pins_each_lane": true,
+    "all_head_pins_at_18_288": true,
+    "original_hidden": true,
+    "gameplay_camera_active": true,
+    "finite_vertices": true,
+    "no_pin_overlap": true,
+    "18_concave_gutters": true,
+    "slabs_below_gutters": true,
+    "fbx_roundtrip_90_pins": true,
+    "fbx_pin_materials": true,
+    "source_not_in_export": true
+  },
+  "all_checks_pass": true,
+  "fbx_meshes": 1856,
+  "fbx_pin_count": 90,
+  "note": "Structural/FBX validation, not a Unity runtime or physics test."
+}

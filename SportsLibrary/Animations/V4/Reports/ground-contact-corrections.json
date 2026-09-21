@@ -1,0 +1,946 @@
+[
+  {
+    "action": "Male__Golf__Drive__RH__V4",
+    "maximum_ground_correction_m": 0.02563031584024429
+  },
+  {
+    "action": "Male__Golf__IronSwing__RH__V4",
+    "maximum_ground_correction_m": 0.02563031584024429
+  },
+  {
+    "action": "Male__Golf__HalfSwing__RH__V4",
+    "maximum_ground_correction_m": 0.023561900556087492
+  },
+  {
+    "action": "Male__Golf__Chip__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Golf__Putt__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Golf__SwingAbort__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Golf__Drive__LH__V4",
+    "maximum_ground_correction_m": 0.02563026741147041
+  },
+  {
+    "action": "Male__Golf__IronSwing__LH__V4",
+    "maximum_ground_correction_m": 0.02563026741147041
+  },
+  {
+    "action": "Male__Golf__HalfSwing__LH__V4",
+    "maximum_ground_correction_m": 0.023561915457248686
+  },
+  {
+    "action": "Male__Golf__Chip__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Golf__Putt__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Golf__SwingAbort__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__Drive__RH__V4",
+    "maximum_ground_correction_m": 0.02563031584024429
+  },
+  {
+    "action": "Female__Golf__IronSwing__RH__V4",
+    "maximum_ground_correction_m": 0.02563031584024429
+  },
+  {
+    "action": "Female__Golf__HalfSwing__RH__V4",
+    "maximum_ground_correction_m": 0.023561900556087492
+  },
+  {
+    "action": "Female__Golf__Chip__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__Putt__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__SwingAbort__RH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__Drive__LH__V4",
+    "maximum_ground_correction_m": 0.02563026741147041
+  },
+  {
+    "action": "Female__Golf__IronSwing__LH__V4",
+    "maximum_ground_correction_m": 0.02563026741147041
+  },
+  {
+    "action": "Female__Golf__HalfSwing__LH__V4",
+    "maximum_ground_correction_m": 0.023561915457248686
+  },
+  {
+    "action": "Female__Golf__Chip__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__Putt__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Female__Golf__SwingAbort__LH__V4",
+    "maximum_ground_correction_m": 0
+  },
+  {
+    "action": "Male__Bowling__Ready__RH__V4",
+    "maximum_ground_correction_m": 0.027999920621514324
+  },
+  {
+    "action": "Male__Bowling__Approach__RH__V4",
+    "maximum_ground_correction_m": 0.027999946232885126
+  },
+  {
+    "action": "Male__Bowling__DeliveryStraight__RH__V4",
+    "maximum_ground_correction_m": 0.0881282015144825
+  },
+  {
+    "action": "Male__Bowling__DeliveryHook__RH__V4",
+    "maximum_ground_correction_m": 0.0881282015144825
+  },
+  {
+    "action": "Male__Bowling__Release__RH__V4",
+    "maximum_ground_correction_m": 0.08803658917546273
+  },
+  {
+    "action": "Male__Bowling__FollowThrough__RH__V4",
+    "maximum_ground_correction_m": 0.08818001285195351
+  },
+  {
+    "action": "Male__Bowling__EarlyRelease__RH__V4",
+    "maximum_ground_correction_m": 0.08680995538830757
+  },
+  {
+    "action": "Male__Bowling__LateRelease__RH__V4",
+    "maximum_ground_correction_m": 0.08680995538830757
+  },
+  {
+    "action": "Male__Bowling__AbortApproach__RH__V4",
+    "maximum_ground_correction_m": 0.027999920621514324
+  },
+  {
+    "action": "Male__Bowling__AlignmentCorrection__RH__V4",
+    "maximum_ground_correction_m": 0.02799996439367533
+  },
+  {
+    "action": "Male__Bowling__WatchAndRecover__RH__V4",
+    "maximum_ground_correction_m": 0.08818001285195351
+  },
+  {
+    "action": "Male__Bowling__Ready__LH__V4",
+    "maximum_ground_correction_m": 0.027999925743788484
+  },
+  {
+    "action": "Male__Bowling__Approach__LH__V4",
+    "maximum_ground_correction_m": 0.027999968584626916
+  },
+  {
+    "action": "Male__Bowling__DeliveryStraight__LH__V4",
+    "maximum_ground_correction_m": 0.0881282164156437
+  },
+  {
+    "action": "Male__Bowling__DeliveryHook__LH__V4",
+    "maximum_ground_correction_m": 0.0881282164156437
+  },
+  {
+    "action": "Male__Bowling__Release__LH__V4",
+    "maximum_ground_correction_m": 0.08803661897778511
+  },
+  {
+    "action": "Male__Bowling__FollowThrough__LH__V4",
+    "maximum_ground_correction_m": 0.08817996814846993
+  },
+  {
+    "action": "Male__Bowling__EarlyRelease__LH__V4",
+    "maximum_ground_correction_m": 0.08681001499295235
+  },
+  {
+    "action": "Male__Bowling__LateRelease__LH__V4",
+    "maximum_ground_correction_m": 0.08681001499295235
+  },
+  {
+    "action": "Male__Bowling__AbortApproach__LH__V4",
+    "maximum_ground_correction_m": 0.027999925743788484
+  },
+  {
+    "action": "Male__Bowling__AlignmentCorrection__LH__V4",
+    "maximum_ground_correction_m": 0.028000022601336244
+  },
+  {
+    "action": "Male__Bowling__WatchAndRecover__LH__V4",
+    "maximum_ground_correction_m": 0.08817996814846993
+  },
+  {
+    "action": "Female__Bowling__Ready__RH__V4",
+    "maximum_ground_correction_m": 0.027999920621514324
+  },
+  {
+    "action": "Female__Bowling__Approach__RH__V4",
+    "maximum_ground_correction_m": 0.027999946232885126
+  },
+  {
+    "action": "Female__Bowling__DeliveryStraight__RH__V4",
+    "maximum_ground_correction_m": 0.0881282015144825
+  },
+  {
+    "action": "Female__Bowling__DeliveryHook__RH__V4",
+    "maximum_ground_correction_m": 0.0881282015144825
+  },
+  {
+    "action": "Female__Bowling__Release__RH__V4",
+    "maximum_ground_correction_m": 0.08803658917546273
+  },
+  {
+    "action": "Female__Bowling__FollowThrough__RH__V4",
+    "maximum_ground_correction_m": 0.08818001285195351
+  },
+  {
+    "action": "Female__Bowling__EarlyRelease__RH__V4",
+    "maximum_ground_correction_m": 0.08680995538830757
+  },
+  {
+    "action": "Female__Bowling__LateRelease__RH__V4",
+    "maximum_ground_correction_m": 0.08680995538830757
+  },
+  {
+    "action": "Female__Bowling__AbortApproach__RH__V4",
+    "maximum_ground_correction_m": 0.027999920621514324
+  },
+  {
+    "action": "Female__Bowling__AlignmentCorrection__RH__V4",
+    "maximum_ground_correction_m": 0.02799996439367533
+  },
+  {
+    "action": "Female__Bowling__WatchAndRecover__RH__V4",
+    "maximum_ground_correction_m": 0.08818001285195351
+  },
+  {
+    "action": "Female__Bowling__Ready__LH__V4",
+    "maximum_ground_correction_m": 0.027999925743788484
+  },
+  {
+    "action": "Female__Bowling__Approach__LH__V4",
+    "maximum_ground_correction_m": 0.027999968584626916
+  },
+  {
+    "action": "Female__Bowling__DeliveryStraight__LH__V4",
+    "maximum_ground_correction_m": 0.0881282164156437
+  },
+  {
+    "action": "Female__Bowling__DeliveryHook__LH__V4",
+    "maximum_ground_correction_m": 0.0881282164156437
+  },
+  {
+    "action": "Female__Bowling__Release__LH__V4",
+    "maximum_ground_correction_m": 0.08803661897778511
+  },
+  {
+    "action": "Female__Bowling__FollowThrough__LH__V4",
+    "maximum_ground_correction_m": 0.08817996814846993
+  },
+  {
+    "action": "Female__Bowling__EarlyRelease__LH__V4",
+    "maximum_ground_correction_m": 0.08681001499295235
+  },
+  {
+    "action": "Female__Bowling__LateRelease__LH__V4",
+    "maximum_ground_correction_m": 0.08681001499295235
+  },
+  {
+    "action": "Female__Bowling__AbortApproach__LH__V4",
+    "maximum_ground_correction_m": 0.027999925743788484
+  },
+  {
+    "action": "Female__Bowling__AlignmentCorrection__LH__V4",
+    "maximum_ground_correction_m": 0.028000022601336244
+  },
+  {
+    "action": "Female__Bowling__WatchAndRecover__LH__V4",
+    "maximum_ground_correction_m": 0.08817996814846993
+  },
+  {
+    "action": "Male__Tennis__Ready__RH__V4",
+    "maximum_ground_correction_m": 0.03799988802522421
+  },
+  {
+    "action": "Male__Tennis__SplitStep__RH__V4",
+    "maximum_ground_correction_m": 0.03799988802522421
+  },
+  {
+    "action": "Male__Tennis__RunLeft__RH__V4",
+    "maximum_ground_correction_m": 0.03800015019252896
+  },
+  {
+    "action": "Male__Tennis__RunRight__RH__V4",
+    "maximum_ground_correction_m": 0.03800001049414277
+  },
+  {
+    "action": "Male__Tennis__BrakeLeft__RH__V4",
+    "maximum_ground_correction_m": 0.037999998852610586
+  },
+  {
+    "action": "Male__Tennis__BrakeRight__RH__V4",
+    "maximum_ground_correction_m": 0.03799997556954622
+  },
+  {
+    "action": "Male__Tennis__DirectionChange__RH__V4",
+    "maximum_ground_correction_m": 0.03799995508044958
+  },
+  {
+    "action": "Male__Tennis__Retreat__RH__V4",
+    "maximum_ground_correction_m": 0.037999947164207695
+  },
+  {
+    "action": "Male__Tennis__Forehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506534233689308
+  },
+  {
+    "action": "Male__Tennis__Backhand__RH__V4",
+    "maximum_ground_correction_m": 0.09506546154618263
+  },
+  {
+    "action": "Male__Tennis__RunningForehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506535723805427
+  },
+  {
+    "action": "Male__Tennis__RunningBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.09506546154618263
+  },
+  {
+    "action": "Male__Tennis__LowPickup__RH__V4",
+    "maximum_ground_correction_m": 0.20967881202697752
+  },
+  {
+    "action": "Male__Tennis__DiveForehand__RH__V4",
+    "maximum_ground_correction_m": 0.30903522491455077
+  },
+  {
+    "action": "Male__Tennis__DiveBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.30903531432151793
+  },
+  {
+    "action": "Male__Tennis__GroundRecovery__RH__V4",
+    "maximum_ground_correction_m": 0.30905265927314757
+  },
+  {
+    "action": "Male__Tennis__MissedSwing__RH__V4",
+    "maximum_ground_correction_m": 0.09506535723805427
+  },
+  {
+    "action": "Male__Tennis__Serve__RH__V4",
+    "maximum_ground_correction_m": 0.03799996765330434
+  },
+  {
+    "action": "Male__Tennis__Smash__RH__V4",
+    "maximum_ground_correction_m": 0.03799996765330434
+  },
+  {
+    "action": "Male__Tennis__VolleyForehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506619170308113
+  },
+  {
+    "action": "Male__Tennis__VolleyBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.0950662662088871
+  },
+  {
+    "action": "Male__Tennis__Lob__RH__V4",
+    "maximum_ground_correction_m": 0.09506632581353187
+  },
+  {
+    "action": "Male__Tennis__Ready__LH__V4",
+    "maximum_ground_correction_m": 0.037999907582998274
+  },
+  {
+    "action": "Male__Tennis__SplitStep__LH__V4",
+    "maximum_ground_correction_m": 0.037999907582998274
+  },
+  {
+    "action": "Male__Tennis__RunLeft__LH__V4",
+    "maximum_ground_correction_m": 0.03800015345215797
+  },
+  {
+    "action": "Male__Tennis__RunRight__LH__V4",
+    "maximum_ground_correction_m": 0.03800003610551357
+  },
+  {
+    "action": "Male__Tennis__BrakeLeft__LH__V4",
+    "maximum_ground_correction_m": 0.038000019807368515
+  },
+  {
+    "action": "Male__Tennis__BrakeRight__LH__V4",
+    "maximum_ground_correction_m": 0.03799999512732029
+  },
+  {
+    "action": "Male__Tennis__DirectionChange__LH__V4",
+    "maximum_ground_correction_m": 0.03799995508044958
+  },
+  {
+    "action": "Male__Tennis__Retreat__LH__V4",
+    "maximum_ground_correction_m": 0.037999994661659
+  },
+  {
+    "action": "Male__Tennis__Forehand__LH__V4",
+    "maximum_ground_correction_m": 0.09506541684269905
+  },
+  {
+    "action": "Male__Tennis__Backhand__LH__V4",
+    "maximum_ground_correction_m": 0.09506543174386024
+  },
+  {
+    "action": "Male__Tennis__RunningForehand__LH__V4",
+    "maximum_ground_correction_m": 0.0950652976334095
+  },
+  {
+    "action": "Male__Tennis__RunningBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.0950655509531498
+  },
+  {
+    "action": "Male__Tennis__LowPickup__LH__V4",
+    "maximum_ground_correction_m": 0.20967879712581633
+  },
+  {
+    "action": "Male__Tennis__DiveForehand__LH__V4",
+    "maximum_ground_correction_m": 0.309035165309906
+  },
+  {
+    "action": "Male__Tennis__DiveBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.30903528451919554
+  },
+  {
+    "action": "Male__Tennis__GroundRecovery__LH__V4",
+    "maximum_ground_correction_m": 0.30905265927314757
+  },
+  {
+    "action": "Male__Tennis__MissedSwing__LH__V4",
+    "maximum_ground_correction_m": 0.0950652976334095
+  },
+  {
+    "action": "Male__Tennis__Serve__LH__V4",
+    "maximum_ground_correction_m": 0.03799997370690107
+  },
+  {
+    "action": "Male__Tennis__Smash__LH__V4",
+    "maximum_ground_correction_m": 0.03800000024959445
+  },
+  {
+    "action": "Male__Tennis__VolleyForehand__LH__V4",
+    "maximum_ground_correction_m": 0.09506622895598411
+  },
+  {
+    "action": "Male__Tennis__VolleyBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.09506623640656471
+  },
+  {
+    "action": "Male__Tennis__Lob__LH__V4",
+    "maximum_ground_correction_m": 0.09506632581353187
+  },
+  {
+    "action": "Female__Tennis__Ready__RH__V4",
+    "maximum_ground_correction_m": 0.03799988802522421
+  },
+  {
+    "action": "Female__Tennis__SplitStep__RH__V4",
+    "maximum_ground_correction_m": 0.03799988802522421
+  },
+  {
+    "action": "Female__Tennis__RunLeft__RH__V4",
+    "maximum_ground_correction_m": 0.03800015019252896
+  },
+  {
+    "action": "Female__Tennis__RunRight__RH__V4",
+    "maximum_ground_correction_m": 0.03800001049414277
+  },
+  {
+    "action": "Female__Tennis__BrakeLeft__RH__V4",
+    "maximum_ground_correction_m": 0.037999998852610586
+  },
+  {
+    "action": "Female__Tennis__BrakeRight__RH__V4",
+    "maximum_ground_correction_m": 0.03799997556954622
+  },
+  {
+    "action": "Female__Tennis__DirectionChange__RH__V4",
+    "maximum_ground_correction_m": 0.03799995508044958
+  },
+  {
+    "action": "Female__Tennis__Retreat__RH__V4",
+    "maximum_ground_correction_m": 0.037999947164207695
+  },
+  {
+    "action": "Female__Tennis__Forehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506534233689308
+  },
+  {
+    "action": "Female__Tennis__Backhand__RH__V4",
+    "maximum_ground_correction_m": 0.09506546154618263
+  },
+  {
+    "action": "Female__Tennis__RunningForehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506535723805427
+  },
+  {
+    "action": "Female__Tennis__RunningBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.09506546154618263
+  },
+  {
+    "action": "Female__Tennis__LowPickup__RH__V4",
+    "maximum_ground_correction_m": 0.20967881202697752
+  },
+  {
+    "action": "Female__Tennis__DiveForehand__RH__V4",
+    "maximum_ground_correction_m": 0.30903522491455077
+  },
+  {
+    "action": "Female__Tennis__DiveBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.30903531432151793
+  },
+  {
+    "action": "Female__Tennis__GroundRecovery__RH__V4",
+    "maximum_ground_correction_m": 0.30905265927314757
+  },
+  {
+    "action": "Female__Tennis__MissedSwing__RH__V4",
+    "maximum_ground_correction_m": 0.09506535723805427
+  },
+  {
+    "action": "Female__Tennis__Serve__RH__V4",
+    "maximum_ground_correction_m": 0.03799996765330434
+  },
+  {
+    "action": "Female__Tennis__Smash__RH__V4",
+    "maximum_ground_correction_m": 0.03799996765330434
+  },
+  {
+    "action": "Female__Tennis__VolleyForehand__RH__V4",
+    "maximum_ground_correction_m": 0.09506619170308113
+  },
+  {
+    "action": "Female__Tennis__VolleyBackhand__RH__V4",
+    "maximum_ground_correction_m": 0.0950662662088871
+  },
+  {
+    "action": "Female__Tennis__Lob__RH__V4",
+    "maximum_ground_correction_m": 0.09506632581353187
+  },
+  {
+    "action": "Female__Tennis__Ready__LH__V4",
+    "maximum_ground_correction_m": 0.037999907582998274
+  },
+  {
+    "action": "Female__Tennis__SplitStep__LH__V4",
+    "maximum_ground_correction_m": 0.037999907582998274
+  },
+  {
+    "action": "Female__Tennis__RunLeft__LH__V4",
+    "maximum_ground_correction_m": 0.03800015345215797
+  },
+  {
+    "action": "Female__Tennis__RunRight__LH__V4",
+    "maximum_ground_correction_m": 0.03800003610551357
+  },
+  {
+    "action": "Female__Tennis__BrakeLeft__LH__V4",
+    "maximum_ground_correction_m": 0.038000019807368515
+  },
+  {
+    "action": "Female__Tennis__BrakeRight__LH__V4",
+    "maximum_ground_correction_m": 0.03799999512732029
+  },
+  {
+    "action": "Female__Tennis__DirectionChange__LH__V4",
+    "maximum_ground_correction_m": 0.03799995508044958
+  },
+  {
+    "action": "Female__Tennis__Retreat__LH__V4",
+    "maximum_ground_correction_m": 0.037999994661659
+  },
+  {
+    "action": "Female__Tennis__Forehand__LH__V4",
+    "maximum_ground_correction_m": 0.09506541684269905
+  },
+  {
+    "action": "Female__Tennis__Backhand__LH__V4",
+    "maximum_ground_correction_m": 0.09506543174386024
+  },
+  {
+    "action": "Female__Tennis__RunningForehand__LH__V4",
+    "maximum_ground_correction_m": 0.0950652976334095
+  },
+  {
+    "action": "Female__Tennis__RunningBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.0950655509531498
+  },
+  {
+    "action": "Female__Tennis__LowPickup__LH__V4",
+    "maximum_ground_correction_m": 0.20967879712581633
+  },
+  {
+    "action": "Female__Tennis__DiveForehand__LH__V4",
+    "maximum_ground_correction_m": 0.309035165309906
+  },
+  {
+    "action": "Female__Tennis__DiveBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.30903528451919554
+  },
+  {
+    "action": "Female__Tennis__GroundRecovery__LH__V4",
+    "maximum_ground_correction_m": 0.30905265927314757
+  },
+  {
+    "action": "Female__Tennis__MissedSwing__LH__V4",
+    "maximum_ground_correction_m": 0.0950652976334095
+  },
+  {
+    "action": "Female__Tennis__Serve__LH__V4",
+    "maximum_ground_correction_m": 0.03799997370690107
+  },
+  {
+    "action": "Female__Tennis__Smash__LH__V4",
+    "maximum_ground_correction_m": 0.03800000024959445
+  },
+  {
+    "action": "Female__Tennis__VolleyForehand__LH__V4",
+    "maximum_ground_correction_m": 0.09506622895598411
+  },
+  {
+    "action": "Female__Tennis__VolleyBackhand__LH__V4",
+    "maximum_ground_correction_m": 0.09506623640656471
+  },
+  {
+    "action": "Female__Tennis__Lob__LH__V4",
+    "maximum_ground_correction_m": 0.09506632581353187
+  },
+  {
+    "action": "Male__Boxing__Guard__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__Jab__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Male__Boxing__Cross__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Male__Boxing__HookLead__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Male__Boxing__HookRear__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Male__Boxing__UppercutLead__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Male__Boxing__UppercutRear__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Male__Boxing__BodyJab__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Male__Boxing__BodyCross__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Male__Boxing__HighBlock__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__BodyBlock__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__SlipLeft__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__SlipRight__RH__V4",
+    "maximum_ground_correction_m": 0.042999950889498
+  },
+  {
+    "action": "Male__Boxing__Duck__RH__V4",
+    "maximum_ground_correction_m": 0.04299996253103018
+  },
+  {
+    "action": "Male__Boxing__RollUnder__RH__V4",
+    "maximum_ground_correction_m": 0.0430000095628202
+  },
+  {
+    "action": "Male__Boxing__ShuffleLeft__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__ShuffleRight__RH__V4",
+    "maximum_ground_correction_m": 0.04299994483590126
+  },
+  {
+    "action": "Male__Boxing__StepIn__RH__V4",
+    "maximum_ground_correction_m": 0.04299996253103018
+  },
+  {
+    "action": "Male__Boxing__Retreat__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__HitReaction__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Male__Boxing__Guard__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Male__Boxing__Jab__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Male__Boxing__Cross__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Male__Boxing__HookLead__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Male__Boxing__HookRear__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Male__Boxing__UppercutLead__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Male__Boxing__UppercutRear__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Male__Boxing__BodyJab__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Male__Boxing__BodyCross__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Male__Boxing__HighBlock__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Male__Boxing__BodyBlock__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Male__Boxing__SlipLeft__LH__V4",
+    "maximum_ground_correction_m": 0.04299998115748167
+  },
+  {
+    "action": "Male__Boxing__SlipRight__LH__V4",
+    "maximum_ground_correction_m": 0.04299996672198177
+  },
+  {
+    "action": "Male__Boxing__Duck__LH__V4",
+    "maximum_ground_correction_m": 0.042999975569546225
+  },
+  {
+    "action": "Male__Boxing__RollUnder__LH__V4",
+    "maximum_ground_correction_m": 0.0430000132881105
+  },
+  {
+    "action": "Male__Boxing__ShuffleLeft__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Male__Boxing__ShuffleRight__LH__V4",
+    "maximum_ground_correction_m": 0.042999967187643054
+  },
+  {
+    "action": "Male__Boxing__StepIn__LH__V4",
+    "maximum_ground_correction_m": 0.0429999690502882
+  },
+  {
+    "action": "Male__Boxing__Retreat__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Male__Boxing__HitReaction__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__Guard__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__Jab__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Female__Boxing__Cross__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Female__Boxing__HookLead__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Female__Boxing__HookRear__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Female__Boxing__UppercutLead__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Female__Boxing__UppercutRear__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Female__Boxing__BodyJab__RH__V4",
+    "maximum_ground_correction_m": 0.0691064327955246
+  },
+  {
+    "action": "Female__Boxing__BodyCross__RH__V4",
+    "maximum_ground_correction_m": 0.06910598948597908
+  },
+  {
+    "action": "Female__Boxing__HighBlock__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__BodyBlock__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__SlipLeft__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__SlipRight__RH__V4",
+    "maximum_ground_correction_m": 0.042999950889498
+  },
+  {
+    "action": "Female__Boxing__Duck__RH__V4",
+    "maximum_ground_correction_m": 0.04299996253103018
+  },
+  {
+    "action": "Female__Boxing__RollUnder__RH__V4",
+    "maximum_ground_correction_m": 0.0430000095628202
+  },
+  {
+    "action": "Female__Boxing__ShuffleLeft__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__ShuffleRight__RH__V4",
+    "maximum_ground_correction_m": 0.04299994483590126
+  },
+  {
+    "action": "Female__Boxing__StepIn__RH__V4",
+    "maximum_ground_correction_m": 0.04299996253103018
+  },
+  {
+    "action": "Female__Boxing__Retreat__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__HitReaction__RH__V4",
+    "maximum_ground_correction_m": 0.0429999434389174
+  },
+  {
+    "action": "Female__Boxing__Guard__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__Jab__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Female__Boxing__Cross__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Female__Boxing__HookLead__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Female__Boxing__HookRear__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Female__Boxing__UppercutLead__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Female__Boxing__UppercutRear__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Female__Boxing__BodyJab__LH__V4",
+    "maximum_ground_correction_m": 0.0691064216196537
+  },
+  {
+    "action": "Female__Boxing__BodyCross__LH__V4",
+    "maximum_ground_correction_m": 0.069105963408947
+  },
+  {
+    "action": "Female__Boxing__HighBlock__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__BodyBlock__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__SlipLeft__LH__V4",
+    "maximum_ground_correction_m": 0.04299998115748167
+  },
+  {
+    "action": "Female__Boxing__SlipRight__LH__V4",
+    "maximum_ground_correction_m": 0.04299996672198177
+  },
+  {
+    "action": "Female__Boxing__Duck__LH__V4",
+    "maximum_ground_correction_m": 0.042999975569546225
+  },
+  {
+    "action": "Female__Boxing__RollUnder__LH__V4",
+    "maximum_ground_correction_m": 0.0430000132881105
+  },
+  {
+    "action": "Female__Boxing__ShuffleLeft__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__ShuffleRight__LH__V4",
+    "maximum_ground_correction_m": 0.042999967187643054
+  },
+  {
+    "action": "Female__Boxing__StepIn__LH__V4",
+    "maximum_ground_correction_m": 0.0429999690502882
+  },
+  {
+    "action": "Female__Boxing__Retreat__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  },
+  {
+    "action": "Female__Boxing__HitReaction__LH__V4",
+    "maximum_ground_correction_m": 0.04299995880573988
+  }
+]

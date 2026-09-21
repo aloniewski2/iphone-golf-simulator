@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: MALE from the reference. Sheet title: Golf — full swing. Panels left-to-right, top-to-bottom:
+1. Address: two hands on iron, clubface grounded behind ball
+2. Takeaway: shoulders turn, club waist-high
+3. Backswing: lead arm extended, wrists hinge
+4. Top: club above trailing shoulder, balanced knees
+5. Transition: hips begin rotation, club shallows
+6. Downswing: hands approach trail thigh
+7. Impact: hands ahead, clubface meets ground-level ball
+8. Extension: arms and club extend toward target
+9. Follow-through: torso rotates, trail heel rises
+10. Finish: balanced lead leg, club over lead shoulder
+11. Hold: head follows imaginary ball flight
+12. Recovery: club lowers, return to relaxed stance
+Use consistent front three-quarter view revealing both hands and club. Right-handed golfer throughout.

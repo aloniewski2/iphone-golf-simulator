@@ -1,0 +1,115 @@
+{
+  "actions": 236,
+  "prior_tracks_retained": true,
+  "wardrobe_kits": 16,
+  "checks": [
+    {
+      "sport": "Golf",
+      "gender": "Male",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.81553116440773,
+      "lowest_sampled_vertex_z": 0.044999945908784866,
+      "tracks": [
+        "Golf - all clips",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Golf",
+      "gender": "Female",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.8149245083332062,
+      "lowest_sampled_vertex_z": 0.044999945908784866,
+      "tracks": [
+        "Golf - all clips",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Bowling",
+      "gender": "Male",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7698219865560532,
+      "lowest_sampled_vertex_z": 0.034999921917915344,
+      "tracks": [
+        "Bowling - all clips",
+        "V3 handedness library",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Bowling",
+      "gender": "Female",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7680231183767319,
+      "lowest_sampled_vertex_z": 0.034999921917915344,
+      "tracks": [
+        "Bowling - all clips",
+        "V3 handedness library",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Tennis",
+      "gender": "Male",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7933543473482132,
+      "lowest_sampled_vertex_z": 0.044999923557043076,
+      "tracks": [
+        "Tennis - all clips",
+        "V3 handedness library",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Tennis",
+      "gender": "Female",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7919129878282547,
+      "lowest_sampled_vertex_z": 0.044999923557043076,
+      "tracks": [
+        "Tennis - all clips",
+        "V3 handedness library",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Boxing",
+      "gender": "Male",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7484802976250648,
+      "lowest_sampled_vertex_z": 0.04999995231628418,
+      "tracks": [
+        "Boxing - all clips",
+        "V4 | wardrobe + expanded motions"
+      ]
+    },
+    {
+      "sport": "Boxing",
+      "gender": "Female",
+      "unweighted_vertices": 0,
+      "finite_geometry": true,
+      "max_character_extent_m": 1.7472219243645668,
+      "lowest_sampled_vertex_z": 0.04999995231628418,
+      "tracks": [
+        "Boxing - all clips",
+        "V4 | wardrobe + expanded motions"
+      ]
+    }
+  ],
+  "issues": [],
+  "structural_pass": true,
+  "limitations": [
+    "Hand-authored prototype, not mocap",
+    "No cloth simulation or dynamic collision",
+    "Still requires subjective animation polish and Unity testing",
+    "Structural checks do not certify contact or visual quality"
+  ]
+}

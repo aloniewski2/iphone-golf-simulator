@@ -1,5 +1,9 @@
 # Golf Arcade — Unity
 
+## Permanent character asset library
+
+The [Sports Library](../SportsLibrary/README.md) contains the permanent male/female character standards and all current sports-art deliverables. Read the [character standard](../SportsLibrary/CHARACTER-STANDARD.md) and [integration handoff](../SportsLibrary/UNITY-HANDOFF.md) before importing or replacing golfer visuals. This source-library commit does not yet replace the current procedural golfer or modify runtime gameplay.
+
 A Unity 6.3 LTS port of the phone-swing golf game, played the way Wii Sports Golf is played:
 the iPhone is the club. It runs on the phone, so the same device shows the hole, takes the aim
 buttons, and measures the swing.

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "permanent_visual_standard",
+  "applies_to": ["Golf", "Tennis", "Bowling", "Boxing", "future_sports", "crowds"],
+  "runtime_integrated": false,
+  "technical_implementation_status": "prototype_requires_export_and_unity_validation",
+  "characters": [
+    {"id": "standard_male", "source": "Originals/StandardMale.glb", "rig_pattern": "Male_<Sport>_Rig"},
+    {"id": "standard_female", "source": "Originals/StandardFemale.glb", "rig_pattern": "Female_<Sport>_Rig"}
+  ],
+  "handedness_independent_of_character": true,
+  "supported_handedness": ["RH", "LH"],
+  "clothing": "separate_skinned_kits",
+  "customization_now": ["skin_color", "clothing_color", "equipment_color"],
+  "identity_replacement_requires_owner_approval": true,
+  "source_geometry_caveat": "Original GLBs contain multi-view turnaround geometry; use derived V4 rigged avatars for export."
+}

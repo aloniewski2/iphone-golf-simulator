@@ -1,0 +1,242 @@
+[
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Drive__RH__V4",
+    "clip": "Drive",
+    "hand": "RH",
+    "start": 1,
+    "end": 91,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__IronSwing__RH__V4",
+    "clip": "IronSwing",
+    "hand": "RH",
+    "start": 100,
+    "end": 190,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__HalfSwing__RH__V4",
+    "clip": "HalfSwing",
+    "hand": "RH",
+    "start": 199,
+    "end": 289,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Chip__RH__V4",
+    "clip": "Chip",
+    "hand": "RH",
+    "start": 298,
+    "end": 358,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Putt__RH__V4",
+    "clip": "Putt",
+    "hand": "RH",
+    "start": 367,
+    "end": 427,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__SwingAbort__RH__V4",
+    "clip": "SwingAbort",
+    "hand": "RH",
+    "start": 436,
+    "end": 496,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Drive__LH__V4",
+    "clip": "Drive",
+    "hand": "LH",
+    "start": 505,
+    "end": 595,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__IronSwing__LH__V4",
+    "clip": "IronSwing",
+    "hand": "LH",
+    "start": 604,
+    "end": 694,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__HalfSwing__LH__V4",
+    "clip": "HalfSwing",
+    "hand": "LH",
+    "start": 703,
+    "end": 793,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Chip__LH__V4",
+    "clip": "Chip",
+    "hand": "LH",
+    "start": 802,
+    "end": 862,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__Putt__LH__V4",
+    "clip": "Putt",
+    "hand": "LH",
+    "start": 871,
+    "end": 931,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Golf",
+    "action": "Male__Golf__SwingAbort__LH__V4",
+    "clip": "SwingAbort",
+    "hand": "LH",
+    "start": 940,
+    "end": 1000,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Drive__RH__V4",
+    "clip": "Drive",
+    "hand": "RH",
+    "start": 1,
+    "end": 91,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__IronSwing__RH__V4",
+    "clip": "IronSwing",
+    "hand": "RH",
+    "start": 100,
+    "end": 190,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__HalfSwing__RH__V4",
+    "clip": "HalfSwing",
+    "hand": "RH",
+    "start": 199,
+    "end": 289,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Chip__RH__V4",
+    "clip": "Chip",
+    "hand": "RH",
+    "start": 298,
+    "end": 358,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Putt__RH__V4",
+    "clip": "Putt",
+    "hand": "RH",
+    "start": 367,
+    "end": 427,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__SwingAbort__RH__V4",
+    "clip": "SwingAbort",
+    "hand": "RH",
+    "start": 436,
+    "end": 496,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Drive__LH__V4",
+    "clip": "Drive",
+    "hand": "LH",
+    "start": 505,
+    "end": 595,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__IronSwing__LH__V4",
+    "clip": "IronSwing",
+    "hand": "LH",
+    "start": 604,
+    "end": 694,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__HalfSwing__LH__V4",
+    "clip": "HalfSwing",
+    "hand": "LH",
+    "start": 703,
+    "end": 793,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Chip__LH__V4",
+    "clip": "Chip",
+    "hand": "LH",
+    "start": 802,
+    "end": 862,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__Putt__LH__V4",
+    "clip": "Putt",
+    "hand": "LH",
+    "start": 871,
+    "end": 931,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Golf",
+    "action": "Female__Golf__SwingAbort__LH__V4",
+    "clip": "SwingAbort",
+    "hand": "LH",
+    "start": 940,
+    "end": 1000,
+    "frames": 61
+  }
+]
