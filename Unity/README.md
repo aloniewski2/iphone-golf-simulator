@@ -1,5 +1,9 @@
 # Golf Arcade — Unity
 
+## Current iPhone integration
+
+For the embedded native app, open **GolfArcadeUnity.xcworkspace** after exporting Unity. See [iOS integration and verification status](../SportsLibrary/IOS-UNITY-INTEGRATION.md) for the authoritative build procedure, controller behavior and outstanding physical-device gates. The native-only project is for UI/Simulator tests; the standalone Unity export is not the combined app. Historical descriptions below predate this integration.
+
 ## Permanent character asset library
 
 **Current runtime:** golf now uses our permanent V4 male/female characters, Golf Kit 1, held driver and V4 drive animation. See [runtime details](../SportsLibrary/GOLF-RUNTIME-INTEGRATION.md). Other sport clips and club-specific swing switching remain pending.

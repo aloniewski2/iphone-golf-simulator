@@ -43,7 +43,7 @@ namespace GolfArcade.EditorTools
                 // CLI test runs bypass the menu's Run() setup on a fresh checkout.
                 Directory.CreateDirectory("Library/TestResults");
                 string line = $"{r.TestStatus.ToString().ToUpperInvariant()} {r.FullName} ({r.Duration:F2}s)\n";
-                if (r.TestStatus == TestStatus.Failed) line += "    " + (r.Message ?? "").Trim().Replace("\n", "\n    ") + "\n";
+                if (r.TestStatus == TestStatus.Failed) line += "    " + (r.Message ?? "").Trim().Replace("\n", "\n    ") + "\n" + r.StackTrace + "\n";
                 File.AppendAllText(Path(r.Test.TestMode) + ".running", line);
             }
 

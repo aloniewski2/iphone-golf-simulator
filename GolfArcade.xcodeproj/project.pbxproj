@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */; };
+		00F36628FE9F87C92E3B6F8B /* CameraPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CB0F956CF51F39E1926726 /* CameraPlayTests.swift */; };
 		0280DB830A423B77A9AC2A86 /* PracticeRangeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346ACF6CEC4890FBBB6F7236 /* PracticeRangeScreen.swift */; };
 		0C16012F28C037DE0E7CEF82 /* BallAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3309108562267B2C1CD3AB84 /* BallAddress.swift */; };
 		0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */; };
@@ -15,54 +16,69 @@
 		11184170841E67FF9436A395 /* SourceVideoRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA249C25F6518321CD1FA78 /* SourceVideoRecorder.swift */; };
 		11C883ED4C07C15D2043B1E3 /* MenuStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22ABCF5897678A79FA0824EF /* MenuStyle.swift */; };
 		12FD8B61307452190A3C0BF9 /* CoursePanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */; };
+		17DF6DA0FE5557A3B2D27919 /* SportsSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BC8EB9B22748C90608C448A /* SportsSession.swift */; };
 		1E967823B751DADF356E8044 /* CameraStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C74ABFD8253CC16044C728 /* CameraStage.swift */; };
+		2053B808B33BC809788CDAFA /* SportsDisplays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615927A5FA382C6B66F2350B /* SportsDisplays.swift */; };
 		2D4608D2C0C93A787AEF5F18 /* CaptureEvidenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D00BFB83A7DF38C62A002E2 /* CaptureEvidenceTests.swift */; };
 		2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */; };
 		2F8278F73F32DBCD35721B9C /* BenchmarkRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C369CFADB269389A28A582CD /* BenchmarkRecords.swift */; };
 		2FD1F57497820E3DB4061D31 /* BodyPose3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E20C8882313192878F8991 /* BodyPose3D.swift */; };
+		303ED0D3BAA9A8E0F2A369AA /* AimSignalRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA2FC5FFA83961804142 /* AimSignalRecognizerTests.swift */; };
 		38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78EF7010941BF7671DEFE0B /* PoseFrame.swift */; };
 		3F767DF876B7488F454B29C4 /* AvatarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */; };
 		44B24119B38BAD370122ADCE /* CameraSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115C55F00C9002F0C96850B /* CameraSwing.swift */; };
+		458741145294E2106CF8BC6E /* SportsNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC7F9DA17CF4345B2C7C523 /* SportsNavigationTests.swift */; };
 		52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F447C72E9C246913F2534E /* SwingStateMachine.swift */; };
 		52E4CA6A4CA91872BA574B5D /* SwingRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9692821E4474822BE46A669 /* SwingRecorder.swift */; };
 		5B4C2F30022597E76E91247D /* SwingReaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C849D74D9AA308C970BB9DD /* SwingReaction.swift */; };
 		5FB56FE29D65A7457E8028F6 /* ShotCameraDirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C235E90556EDC2E499C10EC /* ShotCameraDirector.swift */; };
 		62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */; };
+		6607CE93E4C1BC6309A0A3CC /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5594829428F89E9598E2F8D7 /* UITestSupport.swift */; };
 		684D8B4894FAB92E11F8B088 /* CourseShot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBE2548C3108DD3902B958C /* CourseShot.swift */; };
 		74495C947118F262F08C89B7 /* CaptureCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */; };
 		7653186180DEC611702F898B /* CourseSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */; };
 		76EB609F6FBDACDDE0ADB376 /* CameraClubOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A69F615D25004B6A67EDF53 /* CameraClubOverlay.swift */; };
+		7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */; };
 		7DAA43A8FC1D8AC77973D069 /* AvatarAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */; };
 		80F8C1776FC2ECC001C3FC2A /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121EF35B107A6679745CC5B /* BenchmarkTests.swift */; };
 		8315CEB22EDCACCAE095B54A /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5107A8CC1C4F7BFE20F49411 /* Player.swift */; };
+		8716CB414FE9113417D30AB8 /* SportsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */; };
+		875C300E2750156FA9B01BA4 /* CoursePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B01D1178E26A9C6725329ED /* CoursePlayTests.swift */; };
+		87A7A233FFF108B8A88FAB33 /* AimSignalRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D2A6CEBBBC73A2BAFBE873 /* AimSignalRecognizer.swift */; };
+		8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B1FAF9F257610A76213E8E /* TerrainTests.swift */; };
 		88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */; };
+		89601DBBA7E62CA5167E2034 /* SportsRuntime.mm in Sources */ = {isa = PBXBuildFile; fileRef = A5CEBC515F2C3F0ECC6078B1 /* SportsRuntime.mm */; };
 		8AAA052287E1B92E7288CB10 /* CourseScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D4E03E0C94BE43DCA09EE7 /* CourseScene.swift */; };
 		8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688BBD46E66F60CA14F978A3 /* Course.swift */; };
+		8D2DBB2E63788D5475D000B4 /* ClubSignRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418E8233D7A559F2AEDD0FBD /* ClubSignRecognizer.swift */; };
 		914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */; };
-		C823213267D74AC8AC90D25A /* AimSignalRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F643CF14D26E460D9C6E43AA /* AimSignalRecognizer.swift */; };
-		8FDE1FC494C34C5DB13A630F /* ClubSignRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC52C47485546C2B86C39F4 /* ClubSignRecognizer.swift */; };
 		917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */; };
-		B2F0B5C3F2E9475DBFA65083 /* AimSignalRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F70602E4A14B72AD85C7C2 /* AimSignalRecognizerTests.swift */; };
-		444D89C31B3F4279ACA7D68E /* ClubSignRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8680A6965BE0445FBEEEC3FF /* ClubSignRecognizerTests.swift */; };
 		92259CA63028678B96DA3713 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03497F0C3431B14DAD79FC85 /* ContentView.swift */; };
 		931E672E49CC17F15DA93AFD /* ClubGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094E3D5A7422CE9AB30FC8D2 /* ClubGeometry.swift */; };
+		96AEB85B79D7387FEE898AA2 /* SteeringFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */; };
 		97737F2DFA25E2044809A161 /* CameraPoseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */; };
+		99A34D2DE97E8734B4EDCDBC /* SportsHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD76B426E94F9A3309525CBA /* SportsHome.swift */; };
 		9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */; };
 		9E744747811CCBFDBF183323 /* ArmSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01F0820788F6C3D3D9E7235 /* ArmSwing.swift */; };
+		9EF7F584B06F2F9253DB9D70 /* PowerGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16ECDB5D1891C8C6F25A59A /* PowerGauge.swift */; };
 		A024A03F17F2DB843F0924BF /* PoseRetargeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A84309947D51CAD158497D0 /* PoseRetargeter.swift */; };
 		A0943626B57D8DD8130CC30E /* DisplayLatencyMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */; };
 		A14FC629C79C552165B1C52E /* AvatarRig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */; };
+		AA447082083F9E7E649DDADB /* ClubSignRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29652EEA3D780D55BE18A39E /* ClubSignRecognizerTests.swift */; };
 		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
 		B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1835B1CB285BF21CF93D755 /* RangeView.swift */; };
 		BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */; };
 		C01E71BDD6D5B002276FBE01 /* CourseRound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A27818779D46747D3552626 /* CourseRound.swift */; };
+		C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */; };
 		C3D6FE8301761453D4371FF3 /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */; };
 		C8CFD4B78F4108D946ECCF28 /* ClubRail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FE18C940B6AE0041EEBF66 /* ClubRail.swift */; };
 		C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */; };
 		CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */; };
 		CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */; };
 		D08ED6853665D67E2BA85147 /* ClubContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAD2AB7456C75039060C858 /* ClubContact.swift */; };
+		D4CCB6A81B4FB839DC26A2FF /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */; };
 		D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */; };
+		DA711E8D4C4776E0134D5BEB /* SportsMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5920675C224DAA5E51E17F10 /* SportsMotion.swift */; };
 		DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D55F28D1B7EEB093E07C923A /* ArcadeView.swift */; };
 		E24A502FB0E680DB00BAF738 /* GameFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956138E08C2FF6C5BB5A811 /* GameFlow.swift */; };
 		E838D05DC5448102B55FBBEF /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3A8102C636BC61EA80A0B7 /* CalibrationView.swift */; };
@@ -77,14 +93,6 @@
 		FC34FC26D4B7E98D9F1021FE /* CourseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */; };
 		FD91DE0FEBA483FFB03282C5 /* BallFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC1296D3AF134EB68A180B8 /* BallFlight.swift */; };
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
-		EF28CFCA3C7E409D38F280D7 /* CameraPlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AB48961CA238A40850368F7 /* CameraPlayTests.swift */; };
-		38232A74C4BAC4078A8EB4D4 /* CoursePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936D04F569E004CAF1C24854 /* CoursePlayTests.swift */; };
-		AF50D72E382D8EB3EBFFB6A9 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAD5C927AE253292296E27E /* UITestSupport.swift */; };
-		A882510EB1B769E38313D1D9 /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */; };
-		935651F8DCFF42315E0907AC /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */; };
-		3565BEAC0082404C82B3666F /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */; };
-		1CB74E9FCAB635FC4E282241 /* TerrainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB44D6702A79F20C853BC9 /* TerrainTests.swift */; };
-		D88FE18AEE8E76CC18269B81 /* PowerGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +124,7 @@
 		188E8707AD95370AAB8E34B6 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
 		20C74ABFD8253CC16044C728 /* CameraStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStage.swift; sourceTree = "<group>"; };
 		22ABCF5897678A79FA0824EF /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
+		29652EEA3D780D55BE18A39E /* ClubSignRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubSignRecognizerTests.swift; sourceTree = "<group>"; };
 		2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCapabilities.swift; sourceTree = "<group>"; };
 		2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeTests.swift; sourceTree = "<group>"; };
 		3309108562267B2C1CD3AB84 /* BallAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallAddress.swift; sourceTree = "<group>"; };
@@ -124,51 +133,67 @@
 		39FE18C940B6AE0041EEBF66 /* ClubRail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubRail.swift; sourceTree = "<group>"; };
 		3A27818779D46747D3552626 /* CourseRound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRound.swift; sourceTree = "<group>"; };
 		3BBE2548C3108DD3902B958C /* CourseShot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseShot.swift; sourceTree = "<group>"; };
+		418E8233D7A559F2AEDD0FBD /* ClubSignRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubSignRecognizer.swift; sourceTree = "<group>"; };
 		45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackOverlay.swift; sourceTree = "<group>"; };
 		4956138E08C2FF6C5BB5A811 /* GameFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameFlow.swift; sourceTree = "<group>"; };
 		4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackController.swift; sourceTree = "<group>"; };
+		4BC8EB9B22748C90608C448A /* SportsSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsSession.swift; sourceTree = "<group>"; };
 		4C235E90556EDC2E499C10EC /* ShotCameraDirector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotCameraDirector.swift; sourceTree = "<group>"; };
 		4DAD2AB7456C75039060C858 /* ClubContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubContact.swift; sourceTree = "<group>"; };
 		4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPoseTracker.swift; sourceTree = "<group>"; };
 		505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePanels.swift; sourceTree = "<group>"; };
 		5107A8CC1C4F7BFE20F49411 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		5594829428F89E9598E2F8D7 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		5920675C224DAA5E51E17F10 /* SportsMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsMotion.swift; sourceTree = "<group>"; };
 		5A84309947D51CAD158497D0 /* PoseRetargeter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseRetargeter.swift; sourceTree = "<group>"; };
+		5B01D1178E26A9C6725329ED /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
+		5BC7F9DA17CF4345B2C7C523 /* SportsNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsNavigationTests.swift; sourceTree = "<group>"; };
 		5E90B0F05E735C3FCB7D843F /* FlightPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightPath.swift; sourceTree = "<group>"; };
+		60B1FAF9F257610A76213E8E /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
 		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
+		615927A5FA382C6B66F2350B /* SportsDisplays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsDisplays.swift; sourceTree = "<group>"; };
 		67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCalibration.swift; sourceTree = "<group>"; };
 		688BBD46E66F60CA14F978A3 /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
 		6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeAudio.swift; sourceTree = "<group>"; };
 		71FBF5FDC598B752AB03DEDB /* GolfArcadeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeApp.swift; sourceTree = "<group>"; };
+		770FFA2FC5FFA83961804142 /* AimSignalRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimSignalRecognizerTests.swift; sourceTree = "<group>"; };
 		7C849D74D9AA308C970BB9DD /* SwingReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingReaction.swift; sourceTree = "<group>"; };
 		7EBE2055D56F3C9ECE1C89BF /* CameraSwingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSwingTests.swift; sourceTree = "<group>"; };
+		8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIntegrationTests.swift; sourceTree = "<group>"; };
 		8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarTests.swift; sourceTree = "<group>"; };
 		8D807DCA06067D7507F3487F /* MotionSwing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwing.swift; sourceTree = "<group>"; };
 		92F02AE9F698900B513CCC9C /* GolfArcadeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 		9BC1296D3AF134EB68A180B8 /* BallFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallFlight.swift; sourceTree = "<group>"; };
 		9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizerTests.swift; sourceTree = "<group>"; };
-		F6F70602E4A14B72AD85C7C2 /* AimSignalRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimSignalRecognizerTests.swift; sourceTree = "<group>"; };
-		8680A6965BE0445FBEEEC3FF /* ClubSignRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubSignRecognizerTests.swift; sourceTree = "<group>"; };
+		9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
 		9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeLab.swift; sourceTree = "<group>"; };
 		A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLatencyMeasurement.swift; sourceTree = "<group>"; };
 		A121EF35B107A6679745CC5B /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
+		A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
 		A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDelivery.swift; sourceTree = "<group>"; };
+		A5CEBC515F2C3F0ECC6078B1 /* SportsRuntime.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SportsRuntime.mm; sourceTree = "<group>"; };
+		A7C3C079CFEDF668EE920517 /* SportsRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SportsRuntime.h; sourceTree = "<group>"; };
+		B0D2A6CEBBBC73A2BAFBE873 /* AimSignalRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimSignalRecognizer.swift; sourceTree = "<group>"; };
+		B16ECDB5D1891C8C6F25A59A /* PowerGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerGauge.swift; sourceTree = "<group>"; };
 		B1835B1CB285BF21CF93D755 /* RangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeView.swift; sourceTree = "<group>"; };
 		B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
 		B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarRig.swift; sourceTree = "<group>"; };
 		BB3A8102C636BC61EA80A0B7 /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
 		BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwingDetectorTests.swift; sourceTree = "<group>"; };
 		BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingMetrics.swift; sourceTree = "<group>"; };
+		C2CB0F956CF51F39E1926726 /* CameraPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlayTests.swift; sourceTree = "<group>"; };
 		C369CFADB269389A28A582CD /* BenchmarkRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkRecords.swift; sourceTree = "<group>"; };
 		C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAnimations.swift; sourceTree = "<group>"; };
 		C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSelectView.swift; sourceTree = "<group>"; };
 		CCA249C25F6518321CD1FA78 /* SourceVideoRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceVideoRecorder.swift; sourceTree = "<group>"; };
 		D01F0820788F6C3D3D9E7235 /* ArmSwing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmSwing.swift; sourceTree = "<group>"; };
+		D51453D2016C98EF53D1F99A /* GolfArcade-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GolfArcade-Bridging-Header.h"; sourceTree = "<group>"; };
 		D55F28D1B7EEB093E07C923A /* ArcadeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeView.swift; sourceTree = "<group>"; };
+		D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SteeringFilter.swift; sourceTree = "<group>"; };
 		D78EF7010941BF7671DEFE0B /* PoseFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseFrame.swift; sourceTree = "<group>"; };
 		D8E20C8882313192878F8991 /* BodyPose3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPose3D.swift; sourceTree = "<group>"; };
 		DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizer.swift; sourceTree = "<group>"; };
-		F643CF14D26E460D9C6E43AA /* AimSignalRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimSignalRecognizer.swift; sourceTree = "<group>"; };
-		CFC52C47485546C2B86C39F4 /* ClubSignRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubSignRecognizer.swift; sourceTree = "<group>"; };
 		E4147C03A0122123852F5094 /* CourseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseTests.swift; sourceTree = "<group>"; };
 		E555B2810530CEE299B31086 /* GolfArcade.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9346BDAD7014806EE0A16EB /* PlayerSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerSetupView.swift; sourceTree = "<group>"; };
@@ -178,14 +203,7 @@
 		FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
-		8AB48961CA238A40850368F7 /* CameraPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlayTests.swift; sourceTree = "<group>"; };
-		936D04F569E004CAF1C24854 /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
-		ADAD5C927AE253292296E27E /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
-		183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
-		4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolferTests.swift; sourceTree = "<group>"; };
-		75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
-		01FB44D6702A79F20C853BC9 /* TerrainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerrainTests.swift; sourceTree = "<group>"; };
-		B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerGauge.swift; sourceTree = "<group>"; };
+		FD76B426E94F9A3309525CBA /* SportsHome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsHome.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -231,6 +249,21 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		4009040AB0033A7EF2CE8619 /* Unity */ = {
+			isa = PBXGroup;
+			children = (
+				D51453D2016C98EF53D1F99A /* GolfArcade-Bridging-Header.h */,
+				615927A5FA382C6B66F2350B /* SportsDisplays.swift */,
+				FD76B426E94F9A3309525CBA /* SportsHome.swift */,
+				5920675C224DAA5E51E17F10 /* SportsMotion.swift */,
+				A7C3C079CFEDF668EE920517 /* SportsRuntime.h */,
+				A5CEBC515F2C3F0ECC6078B1 /* SportsRuntime.mm */,
+				4BC8EB9B22748C90608C448A /* SportsSession.swift */,
+				D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */,
+			);
+			path = Unity;
+			sourceTree = "<group>";
+		};
 		5A7C28C68D15118EA76B2581 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -263,6 +296,7 @@
 				BFA66F381F7F17DEFD62832C /* Shot */,
 				EEDFBB2EF6A041270AFB9F3C /* Swing */,
 				D49424BEF925DC29647C19F8 /* Tracking */,
+				4009040AB0033A7EF2CE8619 /* Unity */,
 			);
 			path = GolfArcade;
 			sourceTree = "<group>";
@@ -314,9 +348,10 @@
 		A667A7E785E1C069712D819B /* GolfArcadeUITests */ = {
 			isa = PBXGroup;
 			children = (
-				8AB48961CA238A40850368F7 /* CameraPlayTests.swift */,
-				936D04F569E004CAF1C24854 /* CoursePlayTests.swift */,
-				ADAD5C927AE253292296E27E /* UITestSupport.swift */,
+				C2CB0F956CF51F39E1926726 /* CameraPlayTests.swift */,
+				5B01D1178E26A9C6725329ED /* CoursePlayTests.swift */,
+				5BC7F9DA17CF4345B2C7C523 /* SportsNavigationTests.swift */,
+				5594829428F89E9598E2F8D7 /* UITestSupport.swift */,
 			);
 			path = GolfArcadeUITests;
 			sourceTree = "<group>";
@@ -343,12 +378,12 @@
 		D49424BEF925DC29647C19F8 /* Tracking */ = {
 			isa = PBXGroup;
 			children = (
+				B0D2A6CEBBBC73A2BAFBE873 /* AimSignalRecognizer.swift */,
 				4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */,
 				FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */,
 				2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */,
+				418E8233D7A559F2AEDD0FBD /* ClubSignRecognizer.swift */,
 				DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */,
-				F643CF14D26E460D9C6E43AA /* AimSignalRecognizer.swift */,
-				CFC52C47485546C2B86C39F4 /* ClubSignRecognizer.swift */,
 				67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */,
 				A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */,
 				0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */,
@@ -368,20 +403,21 @@
 		E0DDE9A54BDA1821FA9AB12A /* GolfArcadeTests */ = {
 			isa = PBXGroup;
 			children = (
+				770FFA2FC5FFA83961804142 /* AimSignalRecognizerTests.swift */,
 				8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */,
 				A121EF35B107A6679745CC5B /* BenchmarkTests.swift */,
 				7EBE2055D56F3C9ECE1C89BF /* CameraSwingTests.swift */,
 				0D00BFB83A7DF38C62A002E2 /* CaptureEvidenceTests.swift */,
+				29652EEA3D780D55BE18A39E /* ClubSignRecognizerTests.swift */,
 				E4147C03A0122123852F5094 /* CourseTests.swift */,
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
-				F6F70602E4A14B72AD85C7C2 /* AimSignalRecognizerTests.swift */,
-				8680A6965BE0445FBEEEC3FF /* ClubSignRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
-				75C2930CA769FDB8DDBD3705 /* PresentationTests.swift */,
+				96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
-				4A224C55E400C18CF7AB3896 /* SyntheticGolferTests.swift */,
-				01FB44D6702A79F20C853BC9 /* TerrainTests.swift */,
+				8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */,
+				9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */,
+				60B1FAF9F257610A76213E8E /* TerrainTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -394,7 +430,7 @@
 				39FE18C940B6AE0041EEBF66 /* ClubRail.swift */,
 				505B0F8C43AA8B33D829CFF1 /* CoursePanels.swift */,
 				EBC2F62791FBF03579E2FF11 /* CourseScreen.swift */,
-				B50E4B6E6A8A56DAD8734ECE /* PowerGauge.swift */,
+				B16ECDB5D1891C8C6F25A59A /* PowerGauge.swift */,
 			);
 			path = Course;
 			sourceTree = "<group>";
@@ -414,7 +450,7 @@
 				C369CFADB269389A28A582CD /* BenchmarkRecords.swift */,
 				A03AE20B4784643B613F3151 /* DisplayLatencyMeasurement.swift */,
 				9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */,
-				183BF0204660C902BB493AD9 /* SyntheticGolfer.swift */,
+				A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */,
 			);
 			path = Benchmark;
 			sourceTree = "<group>";
@@ -510,16 +546,13 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					48D1BC63D55B8B16CF7ED2D7 = {
-						DevelopmentTeam = 9VP5B3Q5VQ;
 						ProvisioningStyle = Automatic;
 						TestTargetID = E8AD38781286594CD590B5BD;
 					};
 					59E74B228899E5DA2CF7F366 = {
-						DevelopmentTeam = 9VP5B3Q5VQ;
 						ProvisioningStyle = Automatic;
 					};
 					E8AD38781286594CD590B5BD = {
-						DevelopmentTeam = 9VP5B3Q5VQ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -550,6 +583,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				87A7A233FFF108B8A88FAB33 /* AimSignalRecognizer.swift in Sources */,
 				E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */,
 				DD8682F04945B2BBA1CCF340 /* ArcadeView.swift in Sources */,
 				9E744747811CCBFDBF183323 /* ArmSwing.swift in Sources */,
@@ -570,6 +604,7 @@
 				D08ED6853665D67E2BA85147 /* ClubContact.swift in Sources */,
 				931E672E49CC17F15DA93AFD /* ClubGeometry.swift in Sources */,
 				C8CFD4B78F4108D946ECCF28 /* ClubRail.swift in Sources */,
+				8D2DBB2E63788D5475D000B4 /* ClubSignRecognizer.swift in Sources */,
 				92259CA63028678B96DA3713 /* ContentView.swift in Sources */,
 				8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */,
 				12FD8B61307452190A3C0BF9 /* CoursePanels.swift in Sources */,
@@ -583,8 +618,6 @@
 				E24A502FB0E680DB00BAF738 /* GameFlow.swift in Sources */,
 				62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */,
 				914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */,
-				C823213267D74AC8AC90D25A /* AimSignalRecognizer.swift in Sources */,
-				8FDE1FC494C34C5DB13A630F /* ClubSignRecognizer.swift in Sources */,
 				9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */,
 				11C883ED4C07C15D2043B1E3 /* MenuStyle.swift in Sources */,
 				FB048E2BB4BC7DA06F1CED5C /* MotionSwing.swift in Sources */,
@@ -595,7 +628,7 @@
 				38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */,
 				A024A03F17F2DB843F0924BF /* PoseRetargeter.swift in Sources */,
 				CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */,
-				D88FE18AEE8E76CC18269B81 /* PowerGauge.swift in Sources */,
+				9EF7F584B06F2F9253DB9D70 /* PowerGauge.swift in Sources */,
 				2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */,
 				0280DB830A423B77A9AC2A86 /* PracticeRangeScreen.swift in Sources */,
 				BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */,
@@ -604,13 +637,19 @@
 				FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */,
 				F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */,
 				11184170841E67FF9436A395 /* SourceVideoRecorder.swift in Sources */,
+				2053B808B33BC809788CDAFA /* SportsDisplays.swift in Sources */,
+				99A34D2DE97E8734B4EDCDBC /* SportsHome.swift in Sources */,
+				DA711E8D4C4776E0134D5BEB /* SportsMotion.swift in Sources */,
+				89601DBBA7E62CA5167E2034 /* SportsRuntime.mm in Sources */,
+				17DF6DA0FE5557A3B2D27919 /* SportsSession.swift in Sources */,
+				96AEB85B79D7387FEE898AA2 /* SteeringFilter.swift in Sources */,
 				C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */,
 				D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */,
 				00CB205F461B2BE44468F31F /* SwingMetrics.swift in Sources */,
 				5B4C2F30022597E76E91247D /* SwingReaction.swift in Sources */,
 				52E4CA6A4CA91872BA574B5D /* SwingRecorder.swift in Sources */,
 				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
-				A882510EB1B769E38313D1D9 /* SyntheticGolfer.swift in Sources */,
+				D4CCB6A81B4FB839DC26A2FF /* SyntheticGolfer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -618,9 +657,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EF28CFCA3C7E409D38F280D7 /* CameraPlayTests.swift in Sources */,
-				38232A74C4BAC4078A8EB4D4 /* CoursePlayTests.swift in Sources */,
-				AF50D72E382D8EB3EBFFB6A9 /* UITestSupport.swift in Sources */,
+				00F36628FE9F87C92E3B6F8B /* CameraPlayTests.swift in Sources */,
+				875C300E2750156FA9B01BA4 /* CoursePlayTests.swift in Sources */,
+				458741145294E2106CF8BC6E /* SportsNavigationTests.swift in Sources */,
+				6607CE93E4C1BC6309A0A3CC /* UITestSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -628,20 +668,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				303ED0D3BAA9A8E0F2A369AA /* AimSignalRecognizerTests.swift in Sources */,
 				3F767DF876B7488F454B29C4 /* AvatarTests.swift in Sources */,
 				80F8C1776FC2ECC001C3FC2A /* BenchmarkTests.swift in Sources */,
 				0F722471EBB6D4E0D95CEEB0 /* CameraSwingTests.swift in Sources */,
 				2D4608D2C0C93A787AEF5F18 /* CaptureEvidenceTests.swift in Sources */,
+				AA447082083F9E7E649DDADB /* ClubSignRecognizerTests.swift in Sources */,
 				FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */,
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
-				B2F0B5C3F2E9475DBFA65083 /* AimSignalRecognizerTests.swift in Sources */,
-				444D89C31B3F4279ACA7D68E /* ClubSignRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
-				3565BEAC0082404C82B3666F /* PresentationTests.swift in Sources */,
+				C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
-				935651F8DCFF42315E0907AC /* SyntheticGolferTests.swift in Sources */,
-				1CB74E9FCAB635FC4E282241 /* TerrainTests.swift in Sources */,
+				8716CB414FE9113417D30AB8 /* SportsIntegrationTests.swift in Sources */,
+				7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */,
+				8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -665,9 +706,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera tracks your body movement to turn your swing into a golf shot.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -678,6 +722,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "GolfArcade/Unity/GolfArcade-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -770,7 +815,6 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -804,9 +848,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera tracks your body movement to turn your swing into a golf shot.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -817,6 +864,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "GolfArcade/Unity/GolfArcade-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -858,7 +906,6 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

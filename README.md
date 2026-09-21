@@ -1,5 +1,9 @@
 # iPhone Golf Simulator
 
+## Current Unity iPhone app
+
+Open **GolfArcadeUnity.xcworkspace** for the integrated device app. Unity runs golf and Tennis Rally while native menus preserve player profiles and provide phone controls. Read [build instructions and device-verification gates](SportsLibrary/IOS-UNITY-INTEGRATION.md) before running. External-display and physical tracking acceptance are pending; the older SceneKit description below is retained as historical context, not the current app navigation.
+
 ## Standard characters and sports assets
 
 See the [Sports Library](SportsLibrary/README.md) for the permanent male/female character standards, Blender masters, sport animations, clothing, equipment, arenas, crowds, and previews. The [Unity handoff](SportsLibrary/UNITY-HANDOFF.md) distinguishes source assets from runtime-ready work. Retrieve binary assets with Git LFS.

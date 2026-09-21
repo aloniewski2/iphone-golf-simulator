@@ -9,6 +9,8 @@ namespace GolfArcade.Tennis
     {
         public bool FemalePlayer;
         public bool ManualSimulation;
+        public bool NativeControlled;
+        public void Refeed() { resetTimer=0; Feed(); }
         public TennisActor Player { get; private set; }
         public TennisActor Opponent { get; private set; }
         public Vector3 BallPosition { get; private set; }
@@ -62,7 +64,7 @@ namespace GolfArcade.Tennis
         public void RequestSwing(float power)
         {
             if (!Player || Player.Swinging || resetTimer > 0) return;
-            Player.Swing(power, BallPosition.x < Player.transform.position.x);
+            Player.Swing(power, (BallPosition.x < Player.transform.position.x) != NativeSportsSession.Left);
             consumedStroke = false;
         }
 
@@ -86,9 +88,9 @@ namespace GolfArcade.Tennis
             if (!Player) return;
             if (!ManualSimulation)
             {
-                if (!GetComponent<TennisPhoneInput>().HasMotionControl)
+                if (!NativeControlled && !GetComponent<TennisPhoneInput>().HasMotionControl)
                     SetLateralInput((Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0), Input.GetKey(KeyCode.LeftShift));
-                AimInput = (Input.GetKey(KeyCode.RightArrow) ? 1 : 0) - (Input.GetKey(KeyCode.LeftArrow) ? 1 : 0);
+                if (!NativeControlled) AimInput = (Input.GetKey(KeyCode.RightArrow) ? 1 : 0) - (Input.GetKey(KeyCode.LeftArrow) ? 1 : 0);
                 if (Input.GetKey(KeyCode.Space)) charge = Mathf.Min(1, charge + Time.deltaTime / .7f);
                 if (Input.GetKeyUp(KeyCode.Space)) { RequestSwing(Mathf.Max(.18f, charge)); charge = 0; }
                 if (Input.GetKeyDown(KeyCode.R)) { resetTimer = 0; Feed(); }

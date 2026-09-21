@@ -24,6 +24,7 @@ namespace GolfArcade.EditorTools
             if (command == "edit-tests") TestMenu.RunEditMode();
             else if (command == "play-tests") TestMenu.RunPlayMode();
             else if (command == "open-tennis") TennisSceneBuilder.Open();
+            else if (command == "build-ios") BuildMenu.BuildIOS();
             else File.AppendAllText(Response,"Unknown command; no action taken.\n");
         }
     }

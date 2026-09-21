@@ -162,8 +162,9 @@ namespace GolfArcade.Game
         public void Stand(Vector3 ball, Vector3 aimDirection)
         {
             var side = Vector3.Cross(Vector3.up, aimDirection).normalized; // right of the line
-            transform.position = ball - side * 0.75f;
+            transform.position = ball - side * (NativeSportsSession.Left ? -.75f : .75f);
             transform.rotation = Quaternion.LookRotation(side, Vector3.up);
+            transform.localScale = new Vector3(1,1,NativeSportsSession.Left ? -1 : 1);
         }
 
         public void SetVisible(bool on) => gameObject.SetActive(on);

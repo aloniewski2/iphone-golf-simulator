@@ -7,6 +7,11 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
     var colorIndex: Int
     var handedness: Handedness
     var calibration: PlayerCalibration?
+    // Optional storage preserves decoding of existing players.v1 profiles.
+    var standardFemaleValue: Bool?
+    var standardSkinValue: Int?
+    var standardFemale: Bool { get { standardFemaleValue ?? false } set { standardFemaleValue=newValue } }
+    var standardSkin: Int { get { max(0,min(5,standardSkinValue ?? 2)) } set { standardSkinValue=max(0,min(5,newValue)) } }
 
     var isScanned: Bool { calibration != nil }
 

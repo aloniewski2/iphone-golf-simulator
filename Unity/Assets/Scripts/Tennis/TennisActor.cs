@@ -36,6 +36,7 @@ namespace GolfArcade.Tennis
             var prefab = Resources.Load<GameObject>(path);
             if (!prefab) throw new InvalidOperationException("Missing permanent tennis character: " + path);
             model = Instantiate(prefab, transform).transform;
+            if(NativeSportsSession.Left) model.localScale = Vector3.Scale(model.localScale,new Vector3(-1,1,1));
             model.name = female ? "Permanent female tennis player" : "Permanent male tennis player";
             PrepareMaterials(model.gameObject, skin);
             var bones = model.GetComponentsInChildren<Transform>(true);
@@ -90,7 +91,8 @@ namespace GolfArcade.Tennis
             Vector3 previousSweetSpot = SweetSpot.position;
             SwingAge += dt; locomotion += dt * Mathf.Clamp(Mathf.Abs(speed) / 2, .5f, 3.2f);
             model.localRotation = Quaternion.Euler(0,0,-Mathf.Clamp(speed / TennisRules.SprintSpeed,-1,1)*8);
-            string pose = Swinging ? (backhand ? "Backhand" : "Forehand") : Mathf.Abs(speed) > .15f ? (speed < 0 ? "RunLeft" : "RunRight") : "Ready";
+            float clipSpeed=NativeSportsSession.Left ? -speed : speed;
+            string pose = Swinging ? (backhand ? "Backhand" : "Forehand") : Mathf.Abs(speed) > .15f ? (clipSpeed < 0 ? "RunLeft" : "RunRight") : "Ready";
             if (!indices.TryGetValue(pose, out int selected)) throw new InvalidOperationException("Missing tennis clip " + pose);
             for (int i = 0; i < clips.Length; i++)
             {
@@ -118,6 +120,7 @@ namespace GolfArcade.Tennis
             Vector3 handPosition = hand.position, racketPosition = racket.position, offPosition = offHand.position;
             Quaternion handRotation = hand.rotation, racketRotation = racket.rotation, offRotation = offHand.rotation;
             float envelope = Mathf.Sin(Mathf.PI * phase), side = backhand ? -1 : 1;
+            if(NativeSportsSession.Left) side *= -1;
             float turn = side * Mathf.Sin(2*Mathf.PI*phase) * 35;
             Vector3 pivot = transform.position + Vector3.up * 1.05f;
             Quaternion sweep = Quaternion.AngleAxis(turn,Vector3.up);

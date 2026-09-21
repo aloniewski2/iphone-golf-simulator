@@ -42,7 +42,8 @@ namespace GolfArcade.Game
 
         public void Start()
         {
-            Phone.Start(); Synthetic.Start(); Network?.Start();
+            if(!NativeSportsSession.Active) Phone.Start();
+            Synthetic.Start(); Network?.Start();
         }
 
         public void Stop()
@@ -56,6 +57,7 @@ namespace GolfArcade.Game
 
         public void Update()
         {
+            if(NativeSportsSession.Active) return; // Native bridge owns samples; no second sensor/detector loop.
             ChooseSource();
             while (Source.TryRead(out var sample))
             {

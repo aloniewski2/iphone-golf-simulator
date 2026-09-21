@@ -21,7 +21,9 @@ namespace GolfArcade.Tennis
 
         void Start()
         {
-            game = GetComponent<TennisGame>(); clock = Time.unscaledTimeAsDouble; local.Start();
+            game = GetComponent<TennisGame>();
+            if (GolfArcade.Game.NativeSportsSession.Active) { enabled=false; return; }
+            clock = Time.unscaledTimeAsDouble; local.Start();
             try { network = new NetworkMotionSource(() => clock); network.Start(); }
             catch (Exception e) { Debug.LogWarning("Tennis phone connection unavailable: " + e.Message); network?.Dispose(); network = null; }
         }
