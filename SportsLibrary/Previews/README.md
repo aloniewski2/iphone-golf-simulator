@@ -1,5 +1,7 @@
 # Animation review videos
 
+**Actual Unity gameplay is now available:** [standard male and female golfers](UnityGameplay/README.md). The table below contains earlier Blender-only motion studies.
+
 | Sport | High-frame-rate review | Longer V4 selection |
 |---|---|---|
 | Tennis | [60 fps](HighFPS/tennis-60fps.mp4) · [120 fps, same motion](HighFPS/tennis-120fps.mp4) | [10 fps](10fps/tennis-v4.mp4) |

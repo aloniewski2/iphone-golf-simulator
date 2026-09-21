@@ -6,15 +6,15 @@ using GolfArcade.Course;
 
 namespace GolfArcade.Game
 {
-    /// The golfer on screen. With the rigged model in Resources/Golfer (built in Blender with a
+    /// The golfer on screen. With the permanent V4 model in Resources/StandardCharacters (with a
     /// full driver swing baked as one clip) the phone drives the clip: the backswing is scrubbed
     /// by the detector's load, so the figure winds up exactly as far as the player does, and on
     /// impact the downswing runs through to the finish at real speed. Without the model a
     /// Mii-simple figure of primitives stands in.
     public sealed class GolferView : MonoBehaviour
     {
-        // Clip landmarks, seconds: keyed in blender/scripts/golfer_build.py at 60 fps
-        const float TopTime = 48f / 60f, ImpactTime = 64f / 60f, EndTime = 130f / 60f;
+        // Permanent V4 drive: source frames 1..91 at 30 fps, top 59%, contact 80%.
+        const float TopTime = 1.77f, ImpactTime = 2.4f, EndTime = 3f;
         /// A full downswing, top to ball (matches the clip); a partial backswing comes down proportionally faster.
         const float FullDownswing = ImpactTime - TopTime;
         const float MetresToYards = 1.0936f;
@@ -46,6 +46,7 @@ namespace GolfArcade.Game
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
 
         GameObject modelGo;
+        public bool UsesStandardCharacter => hasModel;
 
         public static GolferView Create(Transform parent)
         {
@@ -74,14 +75,16 @@ namespace GolfArcade.Game
         bool BuildModel(GameObject prefab, string path)
         {
             AnimationClip swing = null;
-            foreach (var c in Resources.LoadAll<AnimationClip>(path)) { swing = c; break; }
+            foreach (var c in Resources.LoadAll<AnimationClip>(path))
+                if (c.name == "StandardGolfDrive") { swing = c; break; }
             if (!swing) return false;
 
             var model = Instantiate(prefab, transform);
             modelGo = model;
-            model.name = "Golfer model";
+            model.name = "Permanent standard golfer";
             model.transform.localPosition = Vector3.zero;
-            model.transform.localRotation = Quaternion.identity;
+            // V4 golf authoring includes a 90-degree stance rotation inside the root pose.
+            model.transform.localRotation = Quaternion.Euler(0, -90, 0);
             model.transform.localScale = Vector3.one * MetresToYards; // the FBX is in metres, the course in yards
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
@@ -90,7 +93,13 @@ namespace GolfArcade.Game
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (name == "MAT_SKIN") mats[i] = HoleView.Mat(GolferStyle.SkinColor);
+                    if (name == "MAT_SKIN" || name.StartsWith("V4 skin")) mats[i] = HoleView.Mat(GolferStyle.SkinColor);
+                    else if (name.StartsWith("V4 "))
+                    {
+                        // Imported FBX carries the authored color; use the game's supported shader.
+                        var importedColor = mats[i].HasProperty("_Color") ? mats[i].color : Color.white;
+                        mats[i] = HoleView.Mat(importedColor);
+                    }
                     else if (Palette.TryGetValue(name, out var color)) mats[i] = HoleView.Mat(color);
                 }
                 r.sharedMaterials = mats;
@@ -109,6 +118,14 @@ namespace GolfArcade.Game
             output.SetSourcePlayable(clip);
             graph.Play();
             hasModel = true;
+            // Align the authored club-head contact to the ball while preserving the game's stance.
+            Show(ImpactTime);
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+                if (t.name == "StandardClubContact")
+                {
+                    model.transform.localPosition += new Vector3(0, 0, .75f) - transform.InverseTransformPoint(t.position);
+                    break;
+                }
             Show(0);
             return true;
         }

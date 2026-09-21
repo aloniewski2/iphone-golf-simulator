@@ -1,5 +1,7 @@
 # Unity integration handoff
 
+Update: the first golf slice is now integrated and tested. See [golf runtime integration](GOLF-RUNTIME-INTEGRATION.md); the checklist below records the original broader source-library handoff and still applies to unintegrated assets.
+
 Target: **Unity 6000.3.24f1**, Built-in render pipeline, iOS. Project: `../Unity`. Keep the pinned version; do not upgrade the project while importing this library.
 
 ## Readiness

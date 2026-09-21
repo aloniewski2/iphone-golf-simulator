@@ -81,6 +81,9 @@ namespace GolfArcade.Swing
         public double DownswingPerRadian = 4.0; // extra peak rad/s per radian of backswing
         public double FaceRollDegrees = 0;     // set before release to shape the shot
         public double SpeedScale = 1;          // e.g. 1.4 for an over-swing
+        /// Optional deterministic clock for offline gameplay captures; zero preserves live input timing.
+        public double FixedStepSeconds;
+        double sampleTime;
 
         public bool IsAvailable => true;
 
@@ -98,7 +101,7 @@ namespace GolfArcade.Swing
         /// detector's Z-up frame, which is what arms the detector.
         static readonly NQuaternion address = NQuaternion.CreateFromAxisAngle(NVector3.UnitX, (float)(-Math.PI / 2));
 
-        public void Start() { stage = Stage.Rest; angle = 0; face = 0; }
+        public void Start() { stage = Stage.Rest; angle = 0; face = 0; sampleTime = Time.unscaledTimeAsDouble; }
         public void Stop() { }
 
         public void Backswing(bool pressed) => holding = pressed;
@@ -108,7 +111,8 @@ namespace GolfArcade.Swing
             sample = default;
             if (lastFrame == Time.frameCount) return false;
             lastFrame = Time.frameCount;
-            double dt = Time.unscaledDeltaTime;
+            double dt = FixedStepSeconds > 0 ? FixedStepSeconds : Time.unscaledDeltaTime;
+            sampleTime = FixedStepSeconds > 0 ? sampleTime + dt : Time.unscaledTimeAsDouble;
             bool keyHeld = holding || (SwingKey != KeyCode.None && Input.GetKey(SwingKey));
             double rate = 0;
             switch (stage)
@@ -150,7 +154,7 @@ namespace GolfArcade.Swing
             var roll = NQuaternion.CreateFromAxisAngle(shaft, (float)(face * Math.PI / 180));
             sample = new MotionSample
             {
-                Time = Time.unscaledTimeAsDouble,
+                Time = sampleTime,
                 Attitude = NQuaternion.Normalize(roll * swing * address),
                 RotationRate = swingAxis * (float)rate,
                 Gravity = NVector3.UnitY, // hanging like a club: gravity runs along the phone toward its top edge

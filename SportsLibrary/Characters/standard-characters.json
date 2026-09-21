@@ -2,7 +2,8 @@
   "schema_version": 1,
   "status": "permanent_visual_standard",
   "applies_to": ["Golf", "Tennis", "Bowling", "Boxing", "future_sports", "crowds"],
-  "runtime_integrated": false,
+  "runtime_integrated": true,
+  "runtime_scope": "Golf: both standards, Kit 1, right-handed driver swing only",
   "technical_implementation_status": "prototype_requires_export_and_unity_validation",
   "characters": [
     {"id": "standard_male", "source": "Originals/StandardMale.glb", "rig_pattern": "Male_<Sport>_Rig"},

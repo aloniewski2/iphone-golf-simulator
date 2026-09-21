@@ -9,7 +9,8 @@ namespace GolfArcade.EditorTools
     {
         void OnPreprocessModel()
         {
-            if (!assetPath.StartsWith("Assets/Resources/Golfer/")) return;
+            bool standard = assetPath.StartsWith("Assets/Resources/StandardCharacters/");
+            if (!standard && !assetPath.StartsWith("Assets/Resources/Golfer/")) return;
             var importer = (ModelImporter)assetImporter;
             importer.animationType = ModelImporterAnimationType.Generic;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
@@ -27,6 +28,12 @@ namespace GolfArcade.EditorTools
             importer.materialLocation = ModelImporterMaterialLocation.InPrefab;
             importer.useFileScale = true;
             importer.globalScale = 1f;
+            if (standard)
+                importer.clipAnimations = new[] { new ModelImporterClipAnimation {
+                    name = "StandardGolfDrive", firstFrame = 0, lastFrame = 90,
+                    loopTime = false, lockRootRotation = true,
+                    lockRootHeightY = true, lockRootPositionXZ = true
+                }};
         }
     }
 }

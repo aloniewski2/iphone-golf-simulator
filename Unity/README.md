@@ -2,6 +2,8 @@
 
 ## Permanent character asset library
 
+**Current runtime:** golf now uses our permanent V4 male/female characters, Golf Kit 1, held driver and V4 drive animation. See [runtime details](../SportsLibrary/GOLF-RUNTIME-INTEGRATION.md). Other sport clips and club-specific swing switching remain pending.
+
 The latest game and source library are combined on `feature/standard-characters-integration`. See the [integration baseline](../SportsLibrary/INTEGRATION-BASELINE.md): the current rigged golfer and its single baked swing still need migration to the permanent V4 character assets.
 
 The [Sports Library](../SportsLibrary/README.md) contains the permanent male/female character standards and all current sports-art deliverables. Read the [character standard](../SportsLibrary/CHARACTER-STANDARD.md) and [integration handoff](../SportsLibrary/UNITY-HANDOFF.md) before importing or replacing golfer visuals. This source-library commit does not yet replace the current procedural golfer or modify runtime gameplay.

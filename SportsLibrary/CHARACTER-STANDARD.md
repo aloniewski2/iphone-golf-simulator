@@ -32,4 +32,4 @@ Substituting another character design or changing the recognizable identity requ
 
 ## Runtime adoption status
 
-The existing Unity golfer remains procedural in this commit. This document establishes which assets must replace it during integration; it does not claim that replacement has already happened. Keep the game functioning until the standard-character import is validated, then migrate the runtime visual layer without rewriting unrelated input or shot logic.
+The Unity golf visual layer now uses the two permanent V4 standards with Golf Kit 1 and the right-handed drive clip. See [runtime integration](GOLF-RUNTIME-INTEGRATION.md). Other sports, LH selection, club-specific clips and additional kits remain pending. Input and shot logic are preserved; the original primitive model is an emergency missing-asset fallback, not the standard character.

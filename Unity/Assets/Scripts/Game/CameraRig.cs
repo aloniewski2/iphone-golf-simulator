@@ -34,7 +34,7 @@ namespace GolfArcade.Game
         /// in the lower third above the buttons. Putts sit lower and closer.
         public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting)
         {
-            float back = putting ? 3.2f : 7.5f, up = putting ? 1.4f : 4f, ahead = putting ? 2.5f : 3.5f;
+            float back = putting ? 3.2f : 4.5f, up = putting ? 1.4f : 2.4f, ahead = putting ? 2.5f : 1.5f;
             targetPosition = ball - aimDirection * back + Vector3.up * up;
             targetLookAt = ball + aimDirection * ahead;
             positionLag = 0.35f; lookLag = 0.3f;

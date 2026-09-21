@@ -33,7 +33,7 @@ namespace GolfArcade.Game
         public static Color SkinColor => SkinTones[SkinTone];
         public static string SkinName => SkinToneNames[SkinTone];
         /// Resources path of the model for the chosen body.
-        public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
+        public static string ModelPath => Body == BodyKind.Female ? "StandardCharacters/standard_female_golf" : "StandardCharacters/standard_male_golf";
         public static string BodyLabel => Body == BodyKind.Female ? "♀" : "♂";
 
         public static void CycleBody() => Body = Body == BodyKind.Male ? BodyKind.Female : BodyKind.Male;
