@@ -46,18 +46,36 @@ namespace GolfArcade.Swing
     /// Phone-as-club swing recognizer. Feed it attitude and rotation-rate samples and it reports
     /// load, cancellation, and impact. No Unity types, so tests can drive it with synthetic swings.
     ///
-    /// Address is wherever the phone is held still. A backswing is rotation away from address —
-    /// the meter fills as you draw back, like Wii Sports. The downswing starts when the phone
-    /// turns back toward address quickly; impact is the moment it passes back through address
-    /// (or clearly decelerates). Power comes from peak rotation speed. The wrist's roll at
-    /// impact, relative to address, is the club face: open slices, closed hooks. Swinging much
-    /// harder than the club's full speed makes the shot wild, which is the Wii's rule too.
+    /// Address is the phone held still and hanging like a club — its long axis pointing at the
+    /// ground, the way a shaft does when the hands are at the grip. Until it is, nothing arms
+    /// and no power can be drawn. A backswing is rotation away from address — the meter fills
+    /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
+    /// address quickly; impact is the moment it passes back through address (or clearly
+    /// decelerates). Power is the peak rotation speed of that downswing, scaled by how far back
+    /// you took it: a short, low backswing is a chip however hard you flick it; a full turn
+    /// swung hard is the full club. The wrist's roll at impact, relative to address, is the club face:
+    /// open slices, closed hooks. Swinging much harder than the club's full speed makes the
+    /// shot wild, which is the Wii's rule too.
     public sealed class MotionSwingDetector
     {
+        /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
+        /// is in a Z-vertical frame.
+        public Vector3 WorldUp = Vector3.UnitZ;
+        /// How far, in degrees, the phone's long axis may lean from straight down and still count
+        /// as a club at address. A driver shaft leans about 30° at address.
+        public double PointedDownDegrees = 35;
         /// Radians from address that count as the start of a backswing.
         public double BackswingStart = 0.25;
-        /// Radians of backswing shown as 100 % load.
-        public double FullBackswing = 2.0;
+        /// Radians of backswing shown as 100 % load: a full shoulder turn, phone up behind you.
+        /// Hip-high (about 90°) reads around 60 %.
+        public double FullBackswing = 2.6;
+        /// Power at full downswing speed from a barely-there backswing; it climbs linearly to 1 at
+        /// a full backswing. So power = speed ratio × (BackswingFloor + (1 − BackswingFloor) × load).
+        public double BackswingFloor = 0.35;
+        /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
+        /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
+        /// hold needed.
+        public double ArmSpeed = 1.2;
         /// Rotation speed (rad/s) that starts the downswing once the phone turns back toward address.
         public double DownswingSpeed = 2.5;
         /// Peak rotation speed (rad/s) that produces full power. Set per club.
@@ -66,10 +84,11 @@ namespace GolfArcade.Swing
         public double MinimumSpeed = 1.5;
         /// Radians from address at which the downswing counts as impact.
         public double ImpactAngle = 0.5;
-        /// A phone rotating slower than this for `StillDuration` seconds is at rest. Loose on
-        /// purpose: address is wherever the player happens to be holding the phone.
+        /// A phone rotating slower than this is at rest (used to notice the club being lifted
+        /// out of position between swings).
         public double StillSpeed = 0.6;
-        public double StillDuration = 0.2;
+        /// How long the phone has to hang like a club, not swinging, before it arms.
+        public double StillDuration = 0.1;
         /// Degrees of ball curve per degree of face roll, and of start line per degree.
         public double CurvePerFaceDegree = 0.5;
         public double StartLinePerFaceDegree = 0.25;
@@ -85,6 +104,13 @@ namespace GolfArcade.Swing
         public SwingPhase Phase { get; private set; } = SwingPhase.Settling;
         /// Latest backswing load (0–1) for HUD polling between events.
         public double Load { get; private set; }
+        /// Whether the last sample had the phone hanging like a club: long axis near vertical
+        /// with the top edge down (when gravity is known — the attitude fallback cannot tell ends).
+        public bool PointedDown { get; private set; }
+        /// True when the phone is vertical enough but upside down for a club (top edge up).
+        public bool WrongEndDown { get; private set; }
+        /// Degrees the phone's long axis leans from vertical, from the last sample.
+        public double LeanDegrees { get; private set; }
 
         Quaternion reference = Quaternion.Identity;
         double? stillSince;
@@ -115,6 +141,8 @@ namespace GolfArcade.Swing
                 fresh.MinimumSpeed = 0.10;
                 fresh.ImpactAngle = 0.025;
                 fresh.StillSpeed = 0.04;
+                fresh.ArmSpeed = 0.15;
+                fresh.BackswingFloor = 0.6;
                 fresh.CurvePerFaceDegree = 0;
                 fresh.StartLinePerFaceDegree = 0.35;
                 fresh.MaxStartLineDegrees = 6;
@@ -126,8 +154,8 @@ namespace GolfArcade.Swing
         void CopyTuning(MotionSwingDetector o)
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
-            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle;
-            StillSpeed = o.StillSpeed; StillDuration = o.StillDuration;
+            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; BackswingFloor = o.BackswingFloor;
+            StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
             MaxStartLineDegrees = o.MaxStartLineDegrees; OverswingGrace = o.OverswingGrace; OverswingCurve = o.OverswingCurve;
@@ -136,12 +164,25 @@ namespace GolfArcade.Swing
         /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
         /// is the same one every sample); `rotationRate` is angular velocity in the phone frame,
         /// rad/s. Returns an event when something happened.
-        public SwingEvent? Ingest(double time, Quaternion attitude, Vector3 rotationRate)
+        public SwingEvent? Ingest(double time, Quaternion attitude, Vector3 rotationRate) => Ingest(time, attitude, rotationRate, Vector3.Zero);
+
+        /// `gravity` is the gravity direction in the phone's own frame when the source knows it
+        /// (the device's accelerometer/gyro fusion); zero means "unknown", and the lean is then
+        /// read off the attitude against `WorldUp` instead.
+        public SwingEvent? Ingest(double time, Quaternion attitude, Vector3 rotationRate, Vector3 gravity)
         {
             double speed = rotationRate.Length();
-            if (speed < StillSpeed) stillSince ??= time; else stillSince = null;
-            bool isStill = stillSince is double since && time - since >= StillDuration;
             double angle = AngleBetween(reference, attitude);
+            bool haveGravity = gravity.LengthSquared() > 0.25f;
+            LeanDegrees = haveGravity ? LeanFromGravity(gravity) : LeanFromVertical(attitude, WorldUp);
+            // Gravity points at the ground; with the top edge down it runs along device +Y.
+            bool topDown = !haveGravity || gravity.Y > 0;
+            PointedDown = LeanDegrees <= PointedDownDegrees && topDown;
+            WrongEndDown = LeanDegrees <= PointedDownDegrees && !topDown;
+            // "Ready" = hanging like a club and not mid-swing, for a moment.
+            if (PointedDown && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
+            bool ready = stillSince is double since && time - since >= StillDuration;
+            bool isStill = speed < StillSpeed;
 
             if ((Phase == SwingPhase.Backswing || Phase == SwingPhase.Downswing) && time - swingStart > 3)
             {
@@ -155,14 +196,25 @@ namespace GolfArcade.Swing
             {
                 case SwingPhase.Settling:
                 case SwingPhase.Finish:
-                    if (!isStill) return null;
+                    // Arm as soon as the phone hangs like a club and is not swinging.
+                    if (!ready) return null;
                     reference = attitude;
                     Phase = SwingPhase.Address;
                     Load = 0;
                     return null;
 
                 case SwingPhase.Address:
-                    // Keep the settled reference fixed: recentering here absorbs intentional slow putts.
+                    // Lifted the phone out of the club position without swinging: back to settling.
+                    if (!PointedDown && isStill)
+                    {
+                        Phase = SwingPhase.Settling;
+                        stillSince = null;
+                        return null;
+                    }
+                    // Still hanging and at rest: follow the hands, so address is wherever the
+                    // club settles and a small waggle never becomes a backswing. (Not for the
+                    // putter's tiny strokes: its StillSpeed is far below any real stroke.)
+                    if (angle <= BackswingStart && isStill && ready) reference = attitude;
                     if (angle <= BackswingStart) return null;
                     Phase = SwingPhase.Backswing;
                     swingStart = time;
@@ -215,13 +267,15 @@ namespace GolfArcade.Swing
             double signedFace = Math.Abs(face) <= FaceDeadZoneDegrees ? 0 : face - Math.Sign(face) * FaceDeadZoneDegrees;
             double ratio = peakSpeed / FullSpeed;
             double overswing = Math.Max(0, ratio - 1 - OverswingGrace);
+            // How far back you went scales what the speed is worth: a low, short backswing chips.
+            double power = Math.Min(1, ratio) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
             // Over the top: the face error grows, and a square face still goes somewhere.
             double wildDirection = signedFace != 0 ? Math.Sign(signedFace) : (face >= 0 ? 1 : -1);
             double curve = signedFace * CurvePerFaceDegree + wildDirection * overswing * OverswingCurve;
             double startLine = signedFace * StartLinePerFaceDegree;
             return new SwingImpact
             {
-                Power = Math.Min(1, ratio),
+                Power = Math.Min(1, power),
                 CurveDegrees = Clamp(curve, -MaxCurveDegrees, MaxCurveDegrees),
                 StartLineDegrees = Clamp(startLine, -MaxStartLineDegrees, MaxStartLineDegrees),
                 FaceDegrees = face,
@@ -235,6 +289,21 @@ namespace GolfArcade.Swing
         double LoadFor(double angle) => Math.Min(1, Math.Max(0, angle / FullBackswing));
 
         static double Clamp(double v, double lo, double hi) => Math.Max(lo, Math.Min(hi, v));
+
+        /// Degrees between the phone's long axis (device Y) and gravity, either end down.
+        public static double LeanFromGravity(Vector3 gravity)
+        {
+            var g = Vector3.Normalize(gravity);
+            return Math.Acos(Math.Min(1, Math.Abs(g.Y))) * 180 / Math.PI;
+        }
+
+        /// Degrees between the phone's long axis (device Y) and vertical, either end down.
+        public static double LeanFromVertical(Quaternion attitude, Vector3 worldUp)
+        {
+            var axis = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, attitude));
+            double c = Math.Abs(Vector3.Dot(axis, Vector3.Normalize(worldUp)));
+            return Math.Acos(Math.Min(1, c)) * 180 / Math.PI;
+        }
 
         /// Total rotation, in radians, between two orientations.
         public static double AngleBetween(Quaternion a, Quaternion b)

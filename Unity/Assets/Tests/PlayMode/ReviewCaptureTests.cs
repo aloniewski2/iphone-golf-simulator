@@ -55,6 +55,26 @@ namespace GolfArcade.PlayTests
             yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the next stroke");
             yield return null;
             Assert.IsNotNull(GameCapture.Save($"{Dir}/7-second-shot.png"));
+
+            // The other golfer, a different skin, wound up to the top: the style swap keeps working mid-round.
+            var body = GolferStyle.Body; int skin = GolferStyle.SkinTone;
+            try
+            {
+                GolferStyle.Body = body == GolferStyle.BodyKind.Male ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                GolferStyle.SkinTone = (skin + 3) % GolferStyle.SkinTones.Length;
+                game.RestyleGolfer();
+                yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address again");
+                game.Swing.Synthetic.Backswing(true);
+                yield return new WaitForSecondsRealtime(0.8f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/8-other-golfer-top.png"));
+                game.Swing.Synthetic.Backswing(false);
+                yield return new WaitForSecondsRealtime(0.5f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/9-other-golfer-through.png"));
+            }
+            finally
+            {
+                GolferStyle.Body = body; GolferStyle.SkinTone = skin;
+            }
         }
     }
 }

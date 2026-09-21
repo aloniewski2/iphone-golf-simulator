@@ -1,32 +1,203 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 using GolfArcade.Course;
 
 namespace GolfArcade.Game
 {
-    /// A Mii-simple golfer: body, head, arms and a club that mirrors the phone. The club draws
-    /// back with the backswing load and whips through on impact, so what the player does with
-    /// their hands is what they see on the screen.
+    /// The golfer on screen. With the rigged model in Resources/Golfer (built in Blender with a
+    /// full driver swing baked as one clip) the phone drives the clip: the backswing is scrubbed
+    /// by the detector's load, so the figure winds up exactly as far as the player does, and on
+    /// impact the downswing runs through to the finish at real speed. Without the model a
+    /// Mii-simple figure of primitives stands in.
     public sealed class GolferView : MonoBehaviour
     {
-        Transform pivot;      // shoulders: the club rotates about here
-        Transform club;
-        Transform body;
+        // Clip landmarks, seconds: keyed in blender/scripts/golfer_build.py at 60 fps
+        const float TopTime = 48f / 60f, ImpactTime = 64f / 60f, EndTime = 130f / 60f;
+        /// A full downswing, top to ball (matches the clip); a partial backswing comes down proportionally faster.
+        const float FullDownswing = ImpactTime - TopTime;
+        const float MetresToYards = 1.0936f;
+
+        // rigged model
+        PlayableGraph graph;
+        AnimationClipPlayable clip;
+        bool hasModel;
+        float time;            // clip time being shown
+        float loadTarget;      // where the backswing should be, from the phone
+        int phase;             // 0 posing with the load, 1 unwinding a partial backswing, 2 swinging through, 3 holding the finish
+        float unwindSpeed;
+
+        // primitive fallback
+        Transform pivot, club, body;
         float shownLoad;
-        float swingThrough = -1; // seconds since impact; negative = not swinging through
-        float rest = 20f;        // degrees the club hangs forward at address
+        float swingThrough = -1;
+        const float rest = 20f;
+
+        /// Blender material name → flat game colour, matching the character sheet.
+        static readonly Dictionary<string, Color> Palette = new()
+        {
+            ["MAT_SKIN"] = Rgb(226, 160, 110), ["MAT_SHIRT"] = Rgb(38, 84, 176), ["MAT_TROUSERS"] = Rgb(214, 196, 160),
+            ["MAT_BELT"] = Rgb(34, 40, 62), ["MAT_EYE"] = Rgb(28, 24, 22), ["MAT_LOGO"] = Rgb(38, 84, 176),
+            ["MAT_CAP"] = Rgb(245, 245, 245), ["MAT_GLOVE"] = Rgb(240, 240, 240), ["MAT_SHOE"] = Rgb(240, 240, 240),
+            ["MAT_SHOE_SOLE"] = Rgb(40, 40, 44), ["MAT_SHAFT"] = Rgb(190, 192, 198), ["MAT_CLUBHEAD"] = Rgb(40, 42, 48),
+            ["MAT_GRIP"] = Rgb(30, 30, 34), ["MAT_HAIR"] = Rgb(70, 48, 30), ["MAT_LIPS"] = Rgb(196, 84, 90), ["MAT_SHIRT_DARK"] = Rgb(28, 62, 136),
+        };
+        static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
+
+        GameObject modelGo;
 
         public static GolferView Create(Transform parent)
         {
             var go = new GameObject("Golfer");
             go.transform.SetParent(parent, false);
             var v = go.AddComponent<GolferView>();
-            v.BuildFigure();
+            v.ApplyStyle();
             return v;
         }
 
+        /// (Re)build the figure from GolferStyle: body model and skin tone. Comes up at address.
+        public void ApplyStyle()
+        {
+            if (graph.IsValid()) graph.Destroy();
+            if (modelGo) Destroy(modelGo);
+            if (body) Destroy(body.gameObject);
+            hasModel = false; body = null; modelGo = null;
+            phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
+            var model = Resources.Load<GameObject>(GolferStyle.ModelPath);
+            if (model && !BuildModel(model, GolferStyle.ModelPath)) Debug.LogWarning($"{GolferStyle.ModelPath} has no Swing clip; using the primitive golfer");
+            if (!hasModel) BuildFigure();
+        }
+
+        // ----- Rigged model -----
+
+        bool BuildModel(GameObject prefab, string path)
+        {
+            AnimationClip swing = null;
+            foreach (var c in Resources.LoadAll<AnimationClip>(path)) { swing = c; break; }
+            if (!swing) return false;
+
+            var model = Instantiate(prefab, transform);
+            modelGo = model;
+            model.name = "Golfer model";
+            model.transform.localPosition = Vector3.zero;
+            model.transform.localRotation = Quaternion.identity;
+            model.transform.localScale = Vector3.one * MetresToYards; // the FBX is in metres, the course in yards
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (!mats[i]) continue;
+                    string name = mats[i].name.Replace(" (Instance)", "");
+                    if (name == "MAT_SKIN") mats[i] = HoleView.Mat(GolferStyle.SkinColor);
+                    else if (Palette.TryGetValue(name, out var color)) mats[i] = HoleView.Mat(color);
+                }
+                r.sharedMaterials = mats;
+                if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
+            }
+            var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+            graph = PlayableGraph.Create("Golfer swing");
+            graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+            var output = AnimationPlayableOutput.Create(graph, "Swing", animator);
+            clip = AnimationClipPlayable.Create(graph, swing);
+            clip.SetApplyFootIK(false);
+            clip.SetApplyPlayableIK(false);
+            output.SetSourcePlayable(clip);
+            graph.Play();
+            hasModel = true;
+            Show(0);
+            return true;
+        }
+
+        void Show(float t)
+        {
+            time = Mathf.Clamp(t, 0, EndTime);
+            clip.SetTime(time);
+            graph.Evaluate();
+        }
+
+        void OnDestroy() { if (graph.IsValid()) graph.Destroy(); }
+
+        // ----- Shared API -----
+
+        /// Stand beside the ball, facing across the aim line (a right-hander stands to the
+        /// ball's left as seen from behind).
+        public void Stand(Vector3 ball, Vector3 aimDirection)
+        {
+            var side = Vector3.Cross(Vector3.up, aimDirection).normalized; // right of the line
+            transform.position = ball - side * 0.75f;
+            transform.rotation = Quaternion.LookRotation(side, Vector3.up);
+        }
+
+        public void SetVisible(bool on) => gameObject.SetActive(on);
+
+        /// The backswing follows the phone: 0 is address, 1 the top.
+        public void ShowLoad(float load)
+        {
+            shownLoad = load;
+            if (phase == 0 || phase == 3) { phase = 0; loadTarget = Mathf.Clamp01(load); }
+        }
+
+        /// Swing through from wherever the backswing got to. Returns the seconds until the club
+        /// reaches the ball, so the ball can leave exactly then.
+        public float Strike()
+        {
+            swingThrough = 0;
+            if (!hasModel) return 0.12f;
+            if (time >= TopTime * 0.85f)
+            {
+                // a full swing: the clip's own downswing, hips first, club lagging
+                phase = 2;
+                return Mathf.Max(0.05f, ImpactTime - time);
+            }
+            // a shorter swing comes back down the way it went up, then releases through the ball
+            phase = 1;
+            float down = Mathf.Max(0.12f, FullDownswing * (time / TopTime));
+            unwindSpeed = time / down;
+            return down;
+        }
+
+        public void Settle()
+        {
+            swingThrough = -1; shownLoad = 0;
+            phase = 0; loadTarget = 0;
+            if (hasModel) Show(0);
+        }
+
+        void Update()
+        {
+            if (hasModel) UpdateModel(); else UpdateFigure();
+        }
+
+        void UpdateModel()
+        {
+            float dt = Time.deltaTime;
+            switch (phase)
+            {
+                case 0:
+                    // ease toward the phone's load; quick enough to feel live, smooth enough not to jitter
+                    Show(Mathf.MoveTowards(time, loadTarget * TopTime, dt * TopTime * 6f));
+                    break;
+                case 1:
+                    Show(time - unwindSpeed * dt);
+                    if (time <= 0.001f) { phase = 2; Show(ImpactTime); }
+                    break;
+                case 2:
+                    Show(time + dt);
+                    if (time >= EndTime) phase = 3;
+                    break;
+            }
+        }
+
+        // ----- Primitive fallback -----
+
         void BuildFigure()
         {
-            var skin = new Color(0.95f, 0.8f, 0.65f);
+            var skin = GolferStyle.SkinColor;
             var shirt = new Color(0.2f, 0.45f, 0.85f);
             var trousers = new Color(0.25f, 0.25f, 0.3f);
 
@@ -63,30 +234,12 @@ namespace GolfArcade.Game
             headGo.transform.localScale = new Vector3(0.16f, 0.07f, 0.09f);
         }
 
-        /// Stand beside the ball, facing across the aim line (a right-hander stands to the
-        /// ball's left as seen from behind).
-        public void Stand(Vector3 ball, Vector3 aimDirection)
-        {
-            var side = Vector3.Cross(Vector3.up, aimDirection).normalized; // right of the line
-            transform.position = ball - side * 0.75f;
-            transform.rotation = Quaternion.LookRotation(side, Vector3.up);
-        }
-
-        public void SetVisible(bool on) => gameObject.SetActive(on);
-
-        public void ShowLoad(float load) => shownLoad = load;
-
-        public void Strike() => swingThrough = 0;
-
-        public void Settle() { swingThrough = -1; shownLoad = 0; }
-
-        void Update()
+        void UpdateFigure()
         {
             float angle;
             if (swingThrough >= 0)
             {
                 swingThrough += Time.deltaTime;
-                // From the top, through the ball, up to a finish, in a third of a second.
                 float t = Mathf.Clamp01(swingThrough / 0.35f);
                 float eased = 1 - Mathf.Pow(1 - t, 3);
                 angle = Mathf.Lerp(-(rest + shownLoad * 150f), 170f, eased);
@@ -96,7 +249,6 @@ namespace GolfArcade.Game
             {
                 angle = -(rest + shownLoad * 150f);
             }
-            // The club swings in the plane facing the golfer, i.e. about the golfer's forward axis.
             pivot.localRotation = Quaternion.AngleAxis(-angle + rest, Vector3.forward) * Quaternion.AngleAxis(25f, Vector3.right);
             float turn = swingThrough >= 0 ? Mathf.Lerp(-shownLoad * 30f, 40f, Mathf.Clamp01(swingThrough / 0.35f)) : -shownLoad * 30f;
             body.localRotation = Quaternion.AngleAxis(turn, Vector3.up);

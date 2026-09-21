@@ -1,5 +1,6 @@
 using System;
 using GolfArcade.Course;
+using GolfArcade.Net;
 using GolfArcade.Shot;
 using GolfArcade.Swing;
 using GolfArcade.UI;
@@ -53,12 +54,16 @@ namespace GolfArcade.Game
         bool aimedByPlayer;
         bool strikePlayed;
         SwingPhase lastPhase;
+        ControllerButtons lastButtons;
+        float nextAck, nextHint;
+        string localAddresses = "";
 
         void Awake()
         {
             Application.targetFrameRate = 60;
+            Application.runInBackground = true; // the Mac keeps playing while the phone is the club
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
-            course = Course.Course.Meadow();
+            course = Course.Course.Cliffside();
 
             var light = new GameObject("Sun").AddComponent<Light>();
             light.type = LightType.Directional;
@@ -87,7 +92,7 @@ namespace GolfArcade.Game
             aimLine.transform.SetParent(transform, false);
             aimLine.material = HoleView.UnlitMat(Color.white);
             aimLine.startWidth = aimLine.endWidth = 0.18f;
-            aimLine.positionCount = 2;
+            aimLine.positionCount = AimLineSamples;
             aimLine.useWorldSpace = true;
 
             landingMarker = HoleView.Primitive(PrimitiveType.Cylinder, "Landing marker", new Color(1f, 0.9f, 0.2f), transform).transform;
@@ -100,6 +105,7 @@ namespace GolfArcade.Game
             Swing.OnLoad = OnLoad;
             Swing.OnCancel = OnCancel;
             Swing.OnImpact = OnImpact;
+            Swing.OnSourceChanged = _ => { RefreshControls(); Haptics.Release(); sounds.Release(); hud.SetMeter(0); golfer.Settle(); };
             Swing.Start();
 
             hud.AimLeft.Pressed = () => { Tick(); Nudge(-AimTapDegrees); };
@@ -108,6 +114,9 @@ namespace GolfArcade.Game
             hud.ClubDown.Pressed = () => { Tick(); CycleClub(1); };
             hud.SwingHold.Pressed = () => Swing.Synthetic?.Backswing(true);
             hud.SwingHold.Released = () => Swing.Synthetic?.Backswing(false);
+            hud.GolferBody.Pressed = () => { GolferStyle.CycleBody(); RestyleGolfer(); };
+            hud.GolferSkin.Pressed = () => { GolferStyle.CycleSkin(); RestyleGolfer(); };
+            hud.SetGolferStyle(GolferStyle.BodyLabel, GolferStyle.SkinColor);
 
             StartRound();
         }
@@ -115,6 +124,15 @@ namespace GolfArcade.Game
         void OnDestroy() { Haptics.Release(); Swing?.Stop(); }
 
         void Tick() { if (Current == State.Aim) { sounds.PlayTick(); Haptics.Tick(); } }
+
+        /// Swap the golfer for the chosen body/skin, back at address on the ball.
+        public void RestyleGolfer()
+        {
+            Tick();
+            golfer.ApplyStyle();
+            hud.SetGolferStyle(GolferStyle.BodyLabel, GolferStyle.SkinColor);
+            if (Current == State.Aim) { golfer.Stand(ball.position, AimDirection()); hud.SetMeter(0); }
+        }
 
         void BuildMinimap()
         {
@@ -168,12 +186,12 @@ namespace GolfArcade.Game
             PlaceBall(ballAt, 0);
             ball.gameObject.SetActive(true);
             golfer.SetVisible(false);
-            hud.ShowSwingControls(false, false);
             hud.SetStatus("");
             hud.SetTempo("");
             hud.ShowBanner($"Hole {hole.Number}  ·  Par {hole.Par}", 3f);
             rig.SnapNext();
             Enter(State.Intro);
+            RefreshControls();
         }
 
         void BeginAim(bool keepHeading)
@@ -191,9 +209,10 @@ namespace GolfArcade.Game
             golfer.SetVisible(true);
             golfer.Settle();
             trail.emitting = false; trail.Clear();
-            hud.ShowSwingControls(true, Swing.Synthetic != null);
+            RefreshControls();
             hud.SetMeter(0);
             UpdateAimVisuals();
+            if (Current == State.Intro) rig.SnapNext(); // cut from the flyover, don't glide the length of the hole
             rig.FrameAddress(ball.position, AimDirection(), putting);
             Enter(State.Aim);
         }
@@ -209,7 +228,77 @@ namespace GolfArcade.Game
 
         void Enter(State s) { Current = s; stateTime = 0; }
 
+        /// Which controls show: touch buttons and the debug swing button only while aiming,
+        /// and not the touch buttons when a phone on the network is the club.
+        void RefreshControls()
+        {
+            bool aiming = Current == State.Aim;
+            hud.ShowSwingControls(aiming, Swing.Source == Swing.Synthetic, !Swing.UsingNetwork);
+            UpdateControllerHint(true);
+        }
+
+        void UpdateControllerHint(bool force = false)
+        {
+            if (Swing.Network == null) return;
+            if (!force && Time.unscaledTime < nextHint) return;
+            nextHint = Time.unscaledTime + 3f;
+            if (Swing.UsingNetwork) hud.SetControllerHint($"Club: iPhone at {Swing.Network.RemoteAddress}");
+            else if (Application.isMobilePlatform) hud.SetControllerHint("");
+            else
+            {
+                if (localAddresses == "" || force) localAddresses = NetworkMotionSource.LocalAddresses();
+                hud.SetControllerHint($"Phone as club: open Golf Arcade on the iPhone → USE AS CLUB   ·   this Mac: {localAddresses}");
+            }
+        }
+
+        /// The phone's buttons over the network behave like the on-screen ones: a press nudges
+        /// (or changes club), a hold sweeps.
+        void PollControllerButtons()
+        {
+            var held = Swing.UsingNetwork ? Swing.Network.Buttons : ControllerButtons.None;
+            var pressed = held & ~lastButtons;
+            lastButtons = held;
+            if (Current != State.Aim) return;
+            if ((pressed & ControllerButtons.AimLeft) != 0) { Tick(); Nudge(-AimTapDegrees); }
+            if ((pressed & ControllerButtons.AimRight) != 0) { Tick(); Nudge(AimTapDegrees); }
+            if ((pressed & ControllerButtons.ClubUp) != 0) { Tick(); CycleClub(-1); }
+            if ((pressed & ControllerButtons.ClubDown) != 0) { Tick(); CycleClub(1); }
+            float sweep = ((held & ControllerButtons.AimLeft) != 0 ? -1 : 0) + ((held & ControllerButtons.AimRight) != 0 ? 1 : 0);
+            if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * Time.deltaTime);
+        }
+
+        /// Tell the phone what is happening so its screen and haptics can mirror the game.
+        void SendAck()
+        {
+            if (Swing.Network == null || !Swing.Network.IsConnected || Time.unscaledTime < nextAck) return;
+            nextAck = Time.unscaledTime + 1f / 30;
+            byte phase; float load;
+            switch (Current)
+            {
+                case State.Aim:
+                    bool loading = Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing;
+                    phase = loading ? (byte)2 : (byte)1; load = (float)Swing.Detector.Load; break;
+                case State.Flight: phase = 3; load = (float)LastShot.Power; break;
+                case State.Result: case State.HoleDone: phase = 4; load = 0; break;
+                default: phase = 0; load = 0; break;
+            }
+            Swing.Network.SendAck(phase, load, hud.CurrentMessage);
+        }
+
         Vector3 AimDirection() => new((float)Math.Sin(heading * Math.PI / 180), 0, (float)Math.Cos(heading * Math.PI / 180));
+
+        /// The aim line is drawn as short segments laid on the ground, so it follows the terrain.
+        const int AimLineSamples = 24;
+        void LayAimLine(double length)
+        {
+            aimLine.positionCount = AimLineSamples;
+            double sinH = Math.Sin(heading * Math.PI / 180), cosH = Math.Cos(heading * Math.PI / 180);
+            for (int i = 0; i < AimLineSamples; i++)
+            {
+                double s = length * i / (AimLineSamples - 1);
+                aimLine.SetPosition(i, HoleView.ToWorld(new CoursePoint(ballAt.X + sinH * s, ballAt.D + cosH * s), 0.05));
+            }
+        }
 
         void PlaceBall(CoursePoint p, double height)
         {
@@ -224,8 +313,7 @@ namespace GolfArcade.Game
             double rated = club.ReferenceDistanceYards() * lie.PowerFactor();
             var dir = AimDirection();
             var from = HoleView.ToWorld(ballAt, 0.03);
-            aimLine.SetPosition(0, from);
-            aimLine.SetPosition(1, from + dir * (float)Math.Min(rated, putting ? toPin + 3 : rated));
+            LayAimLine(Math.Min(rated, putting ? toPin + 3 : rated));
             landingMarker.position = putting ? from : HoleView.ToWorld(FullShotCarry(lie), 0.01);
             // Grows with distance so the ring stays readable from behind the ball.
             float ring = Mathf.Max(3f, (float)rated * 0.045f);
@@ -305,12 +393,12 @@ namespace GolfArcade.Game
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Speed {impact.PeakSpeed:F1} rad/s  ·  Face {impact.FaceDegrees:+0;-0}°  ·  Tempo {impact.TempoSeconds:F2}s" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
-            golfer.Strike();
+            float toBall = golfer.Strike();
             hud.SetStatus("");
-            hud.ShowSwingControls(false, false);
+            RefreshControls();
             landingMarker.gameObject.SetActive(false);
             aimLine.positionCount = 0;
-            flightTime = -0.12; // let the club reach the ball
+            flightTime = -toBall; // the ball leaves when the club gets to it
             lastBallPos = ball.position;
             Enter(State.Flight);
         }
@@ -321,6 +409,8 @@ namespace GolfArcade.Game
         {
             stateTime += Time.deltaTime;
             Swing.Update();
+            PollControllerButtons();
+            UpdateControllerHint();
 
             switch (Current)
             {
@@ -335,10 +425,14 @@ namespace GolfArcade.Game
                     if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * Time.deltaTime);
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
+                    if (Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }
+                    if (Input.GetKeyDown(KeyCode.T)) { GolferStyle.CycleSkin(); RestyleGolfer(); }
                     if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
                     else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
+                    else if (Swing.UsingPhone && Swing.Detector.WrongEndDown) hud.SetStatus("Flip the phone: top edge toward the ground, like a club");
+                    else if (Swing.UsingPhone && !Swing.Detector.PointedDown) hud.SetStatus($"Point the phone down at the ball, like a club  ({Swing.Detector.LeanDegrees:F0}° off)");
                     else hud.SetStatus("Hold the phone still…");
                     break;
 
@@ -347,7 +441,8 @@ namespace GolfArcade.Game
                     if (flightTime < 0) break;
                     if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power); }
                     var p = LastShot.PositionAt(flightTime);
-                    var pos = new Vector3((float)p.x, (float)p.h + 0.06f, (float)p.d);
+                    // Height is above the ground under the ball, so the arc rides the terrain.
+                    var pos = HoleView.ToWorld(new CoursePoint(p.x, p.d), p.h + 0.06);
                     if (!trail.emitting && club != GolfClub.Putter) { trail.Clear(); trail.emitting = true; }
                     ball.position = pos;
                     var velocity = (pos - lastBallPos) / Mathf.Max(Time.deltaTime, 1e-4f);
@@ -366,7 +461,7 @@ namespace GolfArcade.Game
                         if (holeIndex + 1 < course.Holes.Length) StartHole(holeIndex + 1);
                         else
                         {
-                            hud.ShowSwingControls(false, false);
+                            RefreshControls();
                             hud.ShowScorecard(Card);
                             hud.PlayAgain.Pressed = StartRound;
                             Enter(State.RoundDone);
@@ -375,13 +470,14 @@ namespace GolfArcade.Game
                     break;
             }
             lastPhase = Swing.Phase;
+            SendAck();
         }
 
         void FinishShot()
         {
             var shot = LastShot;
             trail.emitting = false;
-            aimLine.positionCount = 2;
+            aimLine.positionCount = AimLineSamples;
             string result;
             if (shot.IsHoled)
             {
