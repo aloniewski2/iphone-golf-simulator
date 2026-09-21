@@ -6,6 +6,20 @@ namespace GolfArcade.Tests
 {
     public class TennisRulesTests
     {
+        [Test] public void PhoneFacingSelectsStrokeWithoutDependingOnCourtSide() {
+            Assert.IsFalse(TennisRules.UseBackhand(1,true,false));
+            Assert.IsTrue(TennisRules.UseBackhand(-1,false,false));
+            Assert.IsTrue(TennisRules.UseBackhand(1,false,true));
+            Assert.IsFalse(TennisRules.UseBackhand(-1,true,true));
+        }
+        [Test] public void ReachAssistAcceptsNearbySwingsButNotFarOrUntimedBalls()
+        {
+            Assert.IsTrue(TennisRules.AssistedContact(new Vector3(.7f,1,1),new Vector3(.7f,1,.5f),Vector3.zero,.18f,false,out _));
+            Assert.IsFalse(TennisRules.AssistedContact(new Vector3(3,1,1),new Vector3(3,1,.5f),Vector3.zero,.18f,false,out _));
+            Assert.IsFalse(TennisRules.AssistedContact(new Vector3(1,1,1),new Vector3(1,1,.5f),Vector3.zero,0,false,out _));
+            Assert.IsTrue(TennisRules.AssistedContact(new Vector3(0,2.5f,1),new Vector3(0,2.5f,.5f),Vector3.zero,.18f,true,out _));
+            Assert.IsFalse(TennisRules.AssistedContact(new Vector3(0,2.5f,1),new Vector3(0,2.5f,.5f),Vector3.zero,.18f,false,out _));
+        }
         TennisHit Hit(float age = TennisRules.SweetTime, float offset = 0, float balance = 1, float reach = 1, float power = .8f, float stamina = 1)
             => TennisRules.Evaluate(age,new Vector2(offset,0),balance,reach,power,stamina);
         [Test] public void CenterAndTimingImproveTheHit()
@@ -22,6 +36,25 @@ namespace GolfArcade.Tests
         }
         [Test] public void SwingPowerDeterminesSpeed()
         { Assert.Greater(Hit(power:1).Speed, Hit(power:.2f).Speed); }
+        [Test] public void HardStrokesHaveSmallerContactWindowAndReach() {
+            Assert.IsTrue(Hit(age:.29f,power:0).Contact);
+            Assert.IsFalse(Hit(age:.29f,power:1).Contact);
+            Vector3 ball=new Vector3(1,1.1f,.65f);
+            Assert.IsTrue(TennisRules.AssistedContact(ball,ball,Vector3.zero,.18f,false,out _,0));
+            Assert.IsFalse(TennisRules.AssistedContact(ball,ball,Vector3.zero,.18f,false,out _,1));
+        }
+        [Test] public void ShotAimingLandsLeftAndRightWithoutWeakLobs() {
+            Vector3 start=new Vector3(0,1,-10.5f);
+            foreach(float power in new[]{0f,.5f,1f}) foreach(float aim in new[]{-1f,0f,1f}) {
+                Vector3 target=TennisRules.ShotTarget(aim,power);
+                Vector3 velocity=TennisRules.ShotVelocity(start,target,Hit(power:power).Speed);
+                float t=(target.z-start.z)/velocity.z;
+                Vector3 end=start+velocity*t+Vector3.down*(4.905f*t*t);
+                Assert.Less(Vector3.Distance(end,target),.001f);
+                Assert.Less(t,1.4f,"Returns must not float for several seconds");
+                Assert.Less(start.y+velocity.y*velocity.y/19.62f,3.5f);
+            }
+        }
         [Test] public void FastRunningCostsMoreAndRestRecovers()
         {
             Assert.Less(TennisRules.StaminaStep(1,7,1), TennisRules.StaminaStep(1,3,1));

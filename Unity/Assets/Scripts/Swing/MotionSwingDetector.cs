@@ -58,6 +58,12 @@ namespace GolfArcade.Swing
     /// shot wild, which is the Wii's rule too.
     public sealed class MotionSwingDetector
     {
+        // Native Ready explicitly chooses the user's grip; legacy sources retain club-down arming.
+        public bool UseReadyPose;
+        public void SetReadyPose(Quaternion attitude)
+        {
+            Reset(); reference=Quaternion.Normalize(attitude); Phase=SwingPhase.Address;
+        }
         /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
         /// is in a Z-vertical frame.
         public Vector3 WorldUp = Vector3.UnitZ;
@@ -120,6 +126,8 @@ namespace GolfArcade.Swing
         double swingStart;
         double backswingLoad;
         Vector3 swingAxis;
+        double? intentSince, crossedAt;
+        SwingImpact pendingImpact;
 
         public void Reset()
         {
@@ -127,6 +135,7 @@ namespace GolfArcade.Swing
             stillSince = null;
             peakAngle = peakSpeed = downswingStart = swingStart = backswingLoad = 0;
             Load = 0;
+            intentSince=crossedAt=null;
         }
 
         /// Resets and re-tunes for a club. The putter needs a far gentler scale.
@@ -180,7 +189,7 @@ namespace GolfArcade.Swing
             PointedDown = LeanDegrees <= PointedDownDegrees && topDown;
             WrongEndDown = LeanDegrees <= PointedDownDegrees && !topDown;
             // "Ready" = hanging like a club and not mid-swing, for a moment.
-            if (PointedDown && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
+            if ((UseReadyPose || PointedDown) && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
             bool ready = stillSince is double since && time - since >= StillDuration;
             bool isStill = speed < StillSpeed;
 
@@ -205,7 +214,7 @@ namespace GolfArcade.Swing
 
                 case SwingPhase.Address:
                     // Lifted the phone out of the club position without swinging: back to settling.
-                    if (!PointedDown && isStill)
+                    if (!UseReadyPose && !PointedDown && isStill)
                     {
                         Phase = SwingPhase.Settling;
                         stillSince = null;
@@ -215,11 +224,21 @@ namespace GolfArcade.Swing
                     // club settles and a small waggle never becomes a backswing. (Not for the
                     // putter's tiny strokes: its StillSpeed is far below any real stroke.)
                     if (angle <= BackswingStart && isStill && ready) reference = attitude;
-                    if (angle <= BackswingStart) return null;
+                    if (UseReadyPose)
+                    {
+                        // A sustained, deliberate arc, not a grip adjustment or sensor wobble.
+                        double start=BackswingStart<0.1 ? 0.05 : 0.35;
+                        double intentSpeed=BackswingStart<0.1 ? 0.08 : 0.35;
+                        if(angle<start || speed<intentSpeed) { intentSince=null; return null; }
+                        intentSince ??= time;
+                        if(time-intentSince.Value<0.08) return null;
+                    }
+                    else if (angle <= BackswingStart) return null;
                     Phase = SwingPhase.Backswing;
                     swingStart = time;
                     peakAngle = angle;
                     peakSpeed = 0;
+                    crossedAt=null;
                     swingAxis = RotationAxis(reference, attitude);
                     Load = LoadFor(angle);
                     return SwingEvent.Loaded(Load);
@@ -249,6 +268,31 @@ namespace GolfArcade.Swing
                     return SwingEvent.Loaded(Load);
 
                 case SwingPhase.Downswing:
+                    if(UseReadyPose)
+                    {
+                        // Signed motion must pass the Ready pose and continue beyond it.
+                        // Stopping short/decelerating is cancellation, never an impact.
+                        var relative=Quaternion.Normalize(attitude*Quaternion.Inverse(reference));
+                        if(relative.W<0) relative=Quaternion.Negate(relative);
+                        double signed=2*Math.Atan2(Vector3.Dot(new Vector3(relative.X,relative.Y,relative.Z),swingAxis),relative.W);
+                        if(crossedAt==null)
+                        {
+                            peakSpeed=Math.Max(peakSpeed,speed);
+                            if(signed<=0) { crossedAt=time; pendingImpact=BuildImpact(time,attitude); }
+                        }
+                        double followThrough=BackswingStart<0.1 ? 0.035 : 0.18;
+                        if(crossedAt!=null && signed<=-followThrough && peakSpeed>=MinimumSpeed)
+                        {
+                            Phase=SwingPhase.Finish; stillSince=null; Load=0;
+                            return SwingEvent.Struck(pendingImpact);
+                        }
+                        if(time-downswingStart>1.2 || (crossedAt!=null && time-crossedAt.Value>0.35) || speed<StillSpeed)
+                        {
+                            Phase=SwingPhase.Settling; stillSince=null; Load=0; intentSince=null;
+                            return SwingEvent.Cancelled();
+                        }
+                        return null;
+                    }
                     peakSpeed = Math.Max(peakSpeed, speed);
                     bool decelerated = speed < peakSpeed * 0.4;
                     if (!(angle < ImpactAngle || decelerated || time - downswingStart > 1.2)) return null;
@@ -268,7 +312,8 @@ namespace GolfArcade.Swing
             double ratio = peakSpeed / FullSpeed;
             double overswing = Math.Max(0, ratio - 1 - OverswingGrace);
             // How far back you went scales what the speed is worth: a low, short backswing chips.
-            double power = Math.Min(1, ratio) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
+            double floor = UseReadyPose ? 0.9 : BackswingFloor;
+            double power = Math.Min(1, ratio) * (floor + (1 - floor) * backswingLoad);
             // Over the top: the face error grows, and a square face still goes somewhere.
             double wildDirection = signedFace != 0 ? Math.Sign(signedFace) : (face >= 0 ? 1 : -1);
             double curve = signedFace * CurvePerFaceDegree + wildDirection * overswing * OverswingCurve;

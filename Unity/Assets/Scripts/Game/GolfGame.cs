@@ -33,9 +33,12 @@ namespace GolfArcade.Game
             golfer.ShowLoad(power);
             OnImpact(new SwingImpact { Power=power, Backswing=power, PeakSpeed=power*16, TempoSeconds=.7 });
         }
+        bool needsReadyPose;
+        public void NativeReady() { Swing.Detector.UseReadyPose=true; needsReadyPose=true; Swing.Detector.Reset(); }
         public void NativeMotion(NativeSportsSession.Sample sample) {
             var q=new System.Numerics.Quaternion(sample.qx,sample.qy,sample.qz,sample.qw);
             if(q.LengthSquared()<.5f) return;
+            if(needsReadyPose) { Swing.Detector.SetReadyPose(q); needsReadyPose=false; Debug.Log("[SportsMotion] Ready pose captured"); }
             var e=Swing.Detector.Ingest(sample.time,q,new System.Numerics.Vector3(sample.rx,sample.ry,sample.rz),new System.Numerics.Vector3(sample.gx,sample.gy,sample.gz));
             if(e==null || Current!=State.Aim) return;
             switch(e.Value.Kind) {
@@ -43,6 +46,7 @@ namespace GolfArcade.Game
                 case SwingEventKind.Cancel: OnCancel(); break;
                 case SwingEventKind.Impact:
                     var impact=e.Value.Impact;
+                    Debug.Log($"[SportsMotion] golf impact speed={impact.PeakSpeed:F2} power={impact.Power:F2}");
                     if(NativeSportsSession.Left) { impact.FaceDegrees*=-1; impact.CurveDegrees*=-1; impact.StartLineDegrees*=-1; }
                     OnImpact(impact); break;
             }
@@ -187,6 +191,9 @@ namespace GolfArcade.Game
         }
 
         // ----- Hole flow -----
+
+        public Camera GameplayCamera => rig ? rig.Camera : null;
+        public void PrepareNativeAddress() { BeginAim(false); rig.SnapNext(); rig.ApplyFrame(); }
 
         void StartRound()
         {
@@ -393,7 +400,7 @@ namespace GolfArcade.Game
             // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
             Haptics.Tension(load);
             sounds.SetTension(load);
-            hud.SetStatus("Backswing…");
+            hud.SetStatus(NativeSportsSession.Active ? "Swing forward and follow through" : "Backswing…");
         }
 
         void OnCancel()
@@ -456,7 +463,8 @@ namespace GolfArcade.Game
                     if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
-                    else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
+                    else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone || NativeSportsSession.Active ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
+                    else if (NativeSportsSession.Active) hud.SetStatus("Return to your starting pose, then swing");
                     else if (Swing.UsingPhone && Swing.Detector.WrongEndDown) hud.SetStatus("Flip the phone: top edge toward the ground, like a club");
                     else if (Swing.UsingPhone && !Swing.Detector.PointedDown) hud.SetStatus($"Point the phone down at the ball, like a club  ({Swing.Detector.LeanDegrees:F0}° off)");
                     else hud.SetStatus("Hold the phone still…");

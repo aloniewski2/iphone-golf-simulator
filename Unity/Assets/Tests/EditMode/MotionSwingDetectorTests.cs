@@ -10,6 +10,57 @@ namespace GolfArcade.Tests
 {
     public class MotionSwingDetectorTests
     {
+        [TestCase(0.25)]
+        [TestCase(0.0)]
+        [TestCase(-0.05)]
+        public void NativeAbortedStrokeDoesNotSpendShot(double stopAngle)
+        {
+            var d=new MotionSwingDetector { UseReadyPose=true }; d.SetReadyPose(Quaternion.Identity);
+            var events=Drive(d,new[]{(.2,0.0),(.8,1.8),(.2,1.8),(.25,stopAngle),(.6,stopAngle)},held:Quaternion.Identity);
+            Assert.IsEmpty(Impacts(events));
+            Assert.IsTrue(events.Any(e=>e.Kind==SwingEventKind.Cancel));
+            Assert.AreEqual(0,d.Load);
+        }
+        [Test]
+        public void NativeSmallAdjustmentsDoNotLoad()
+        {
+            var d=new MotionSwingDetector { UseReadyPose=true }; d.SetReadyPose(Quaternion.Identity);
+            var events=Drive(d,new[]{(.2,0.0),(.2,.2),(.2,-.2),(.2,.1),(.5,0.0)},held:Quaternion.Identity);
+            Assert.IsEmpty(events); Assert.AreEqual(0,d.Load);
+        }
+        [Test]
+        public void NativePutterAcceptsSmallDeliberateStroke()
+        {
+            var d=new MotionSwingDetector { UseReadyPose=true }; d.Configure(GolfClub.Putter); d.SetReadyPose(Quaternion.Identity);
+            Assert.AreEqual(1,Impacts(Drive(d,new[]{(.2,0.0),(.5,.2),(.1,.2),(.3,-.08),(.6,-.08)},held:Quaternion.Identity)).Count);
+        }
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void NativeFollowThroughWorksInBothDirections(int sign)
+        {
+            var d=new MotionSwingDetector { UseReadyPose=true }; d.SetReadyPose(Quaternion.Identity);
+            Assert.AreEqual(1,Impacts(Drive(d,new[]{(.2,0.0),(.8,sign*1.8),(.2,sign*1.8),(.25,sign*-.4),(.6,sign*-.4)},held:Quaternion.Identity)).Count);
+        }
+        [Test]
+        public void ReadyPoseAcceptsFlatGripAndPowerTracksForwardSpeed()
+        {
+            double Hit(double duration) {
+                var detector=new MotionSwingDetector { UseReadyPose=true };
+                detector.SetReadyPose(Quaternion.Identity);
+                var hits=Impacts(Drive(detector,new[]{(0.2,0.0),(0.8,1.8),(0.2,1.8),(duration,-0.4),(0.6,-0.4)},held:Quaternion.Identity));
+                Assert.AreEqual(1,hits.Count,"One forward stroke must produce exactly one shot");
+                return hits[0].Power;
+            }
+            Assert.Greater(Hit(.25),Hit(.5));
+        }
+        [Test]
+        public void ReadyPoseStillnessDoesNotFire()
+        {
+            var detector=new MotionSwingDetector { UseReadyPose=true };
+            detector.SetReadyPose(Quaternion.Identity);
+            Assert.IsEmpty(Impacts(Drive(detector,new[]{(2.0,0.0)},held:Quaternion.Identity)));
+            Assert.AreEqual(SwingPhase.Address,detector.Phase);
+        }
         /// Rotates a phone about one axis through (duration, target angle) legs at 100 Hz, with
         /// an optional wrist roll about the phone's long axis ramped in over the downswing.
         /// The phone hanging like a club at address: long axis (device Y) straight down in the Z-up frame.

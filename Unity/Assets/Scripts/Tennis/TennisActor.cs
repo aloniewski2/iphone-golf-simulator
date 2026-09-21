@@ -26,8 +26,12 @@ namespace GolfArcade.Tennis
         public Vector3 StringNormal => (stringNormal.position - basisOrigin.position).normalized;
         public float SwingAge { get; private set; } = 10;
         public float Power { get; private set; }
-        public bool Swinging => SwingAge < TennisRules.StrokeDuration;
-        bool backhand;
+        public float SwingDuration => serving ? TennisRules.StrokeDuration : Mathf.Lerp(.90f,.62f,Power);
+        public float ContactAge => SwingAge*TennisRules.StrokeDuration/SwingDuration;
+        public bool Swinging => SwingAge < SwingDuration;
+        public bool Overhead { get; private set; }
+        public string StrokeLabel => Overhead ? "Overhead smash" : (Power<.4f ? "Soft " : "")+(backhand ? "backhand" : "forehand");
+        bool backhand, serving;
         float locomotion;
 
         public void Build(bool female, Color skin)
@@ -78,12 +82,14 @@ namespace GolfArcade.Tennis
             graph.Play(); Tick(0, 0);
         }
 
-        public void Swing(float power, bool useBackhand)
+        public void Swing(float power, bool useBackhand, bool overhead=false)
         {
             if (Swinging) return;
-            SwingAge = 0; Power = Mathf.Clamp01(power); backhand = useBackhand;
+            SwingAge = 0; Power = Mathf.Clamp01(power); backhand = useBackhand; serving=false; Overhead=overhead;
             strokeTrail.Clear();
         }
+
+        public void Serve(float power) { Swing(power,false); serving=true; }
 
         public void Tick(float dt, float speed)
         {
@@ -97,7 +103,7 @@ namespace GolfArcade.Tennis
             for (int i = 0; i < clips.Length; i++)
             {
                 mixer.SetInputWeight(i, i == selected ? 1 : 0);
-                double fraction = Swinging ? TennisRules.StrokePhase(SwingAge) : Mathf.Repeat(locomotion, 1);
+                double fraction = Swinging ? TennisRules.StrokePhase(ContactAge) : Mathf.Repeat(locomotion, 1);
                 clips[i].SetTime(fraction * clips[i].GetAnimationClip().length);
             }
             graph.Evaluate(0);
@@ -107,8 +113,15 @@ namespace GolfArcade.Tennis
                 Vector3 shift = model.TransformVector(new Vector3(root.localPosition.x, 0, root.localPosition.z));
                 root.position -= shift; racket.position -= shift;
             }
-            if (Swinging) ExaggerateStroke(TennisRules.StrokePhase(SwingAge));
-            strokeTrail.emitting = Swinging && SwingAge > .07f && SwingAge < .30f;
+            if (Swinging) ExaggerateStroke(TennisRules.StrokePhase(ContactAge));
+            if(Swinging && (serving || Overhead)) {
+                float envelope=Mathf.Sin(Mathf.PI*TennisRules.StrokePhase(ContactAge));
+                Vector3 target=transform.TransformPoint(new Vector3(.35f,2.4f,.3f));
+                Vector3 shift=(target-SweetSpot.position)*envelope;
+                hand.position+=shift; racket.position+=shift;
+                offHand.position=Vector3.Lerp(offHand.position,transform.TransformPoint(new Vector3(-.3f,1.9f,.25f)),envelope);
+            }
+            strokeTrail.emitting = Swinging && ContactAge > .07f && ContactAge < .34f;
             arms.ApplyAfterAnimation();
             SweetVelocity = dt > 0 ? (SweetSpot.position - previousSweetSpot) / dt : Vector3.zero;
         }
@@ -121,10 +134,11 @@ namespace GolfArcade.Tennis
             Quaternion handRotation = hand.rotation, racketRotation = racket.rotation, offRotation = offHand.rotation;
             float envelope = Mathf.Sin(Mathf.PI * phase), side = backhand ? -1 : 1;
             if(NativeSportsSession.Left) side *= -1;
-            float turn = side * Mathf.Sin(2*Mathf.PI*phase) * 35;
+            float strength=Mathf.Lerp(.55f,1.2f,Power);
+            float turn = side * Mathf.Sin(2*Mathf.PI*phase) * 35*strength;
             Vector3 pivot = transform.position + Vector3.up * 1.05f;
             Quaternion sweep = Quaternion.AngleAxis(turn,Vector3.up);
-            Vector3 outward = (sweep * (racketPosition-pivot)).normalized * (.22f * envelope);
+            Vector3 outward = (sweep * (racketPosition-pivot)).normalized * (.22f * envelope*strength);
             chest.rotation = Quaternion.AngleAxis(turn*.65f,Vector3.up) * chest.rotation;
             hand.SetPositionAndRotation(pivot+sweep*(handPosition-pivot)+outward,sweep*handRotation);
             racket.SetPositionAndRotation(pivot+sweep*(racketPosition-pivot)+outward,sweep*racketRotation);

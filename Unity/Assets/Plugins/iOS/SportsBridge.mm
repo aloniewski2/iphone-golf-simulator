@@ -9,7 +9,9 @@ static std::mutex gate;
 static std::deque<std::string> inputs, events;
 static int pop(std::deque<std::string>& queue, char* output, int capacity) {
     std::lock_guard<std::mutex> lock(gate);
-    if (queue.empty() || capacity < 2) return 0;
+    if (!output || capacity < 2) return 0;
+    output[0]='\0';
+    if (queue.empty()) return 0;
     auto value = queue.front(); queue.pop_front();
     if (value.size() >= (size_t)capacity) return 0;
     memcpy(output, value.c_str(), value.size()+1); return (int)value.size();

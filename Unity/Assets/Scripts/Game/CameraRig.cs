@@ -73,7 +73,8 @@ namespace GolfArcade.Game
 
         public void SnapNext() => snap = true;
 
-        void LateUpdate()
+        void LateUpdate()=>ApplyFrame();
+        public void ApplyFrame()
         {
             if (snap)
             {

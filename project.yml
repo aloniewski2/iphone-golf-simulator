@@ -16,14 +16,16 @@ targets:
     platform: iOS
     sources:
       - path: GolfArcade
+        excludes: [Unity/SportsInfo.plist]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: GolfArcade/Unity/SportsInfo.plist
         SWIFT_OBJC_BRIDGING_HEADER: GolfArcade/Unity/GolfArcade-Bridging-Header.h
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         INFOPLIST_KEY_NSMotionUsageDescription: Phone motion controls your sports swings.
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: NO
         INFOPLIST_KEY_NSCameraUsageDescription: The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

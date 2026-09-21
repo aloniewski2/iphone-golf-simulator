@@ -81,6 +81,7 @@
 		CD73B9DD0F66F6CBF14D047E /* PoseFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8361855ED9844AFD7B109B /* PoseFrame.swift */; };
 		CF1E1851D245F19732BD7F32 /* PoseRetargeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6C00648B13562EED7CB1DF9 /* PoseRetargeter.swift */; };
 		D3351871A3257D309FDE50E4 /* SourceVideoRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9854216A16E6CBB4F68D2879 /* SourceVideoRecorder.swift */; };
+		D3B15BA8DAB1FB0347497628 /* SportsPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC7144ACC2B50895EE56BA5 /* SportsPreview.swift */; };
 		D5DC06C8CA00B82CFBED6430 /* MotionSwingDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1657C389514E49F591E1F3A5 /* MotionSwingDetectorTests.swift */; };
 		D838B48576D63DB4838BCDFA /* SwingFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC522C9921EB56D129F5CBF6 /* SwingFeedbackOverlay.swift */; };
 		DB223F77F87B2AE768411F2B /* PracticeRangeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F538B8B77B551852CD68C0 /* PracticeRangeScreen.swift */; };
@@ -222,6 +223,7 @@
 		D612DA7F7D69731CA035BF35 /* GolfArcadeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeApp.swift; sourceTree = "<group>"; };
 		D6CF9F08956FBFD2DD61A5AE /* AimSignalRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AimSignalRecognizer.swift; sourceTree = "<group>"; };
 		D6FE5B0BD42B7146FCC38A3D /* CourseRound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseRound.swift; sourceTree = "<group>"; };
+		DBC7144ACC2B50895EE56BA5 /* SportsPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsPreview.swift; sourceTree = "<group>"; };
 		DF9102CAE3FB50F44C1C475E /* GolfArcade-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GolfArcade-Bridging-Header.h"; sourceTree = "<group>"; };
 		E08454BC3638603EE9C72EB3 /* CameraClubOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraClubOverlay.swift; sourceTree = "<group>"; };
 		E1FC0B3370282F23484BBF28 /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 				8968FB31B46969109EC3FADC /* SportsDisplays.swift */,
 				83C50E1D85DCC9260E91F4FE /* SportsHome.swift */,
 				A0C03272F4EF46A3244558E6 /* SportsMotion.swift */,
+				DBC7144ACC2B50895EE56BA5 /* SportsPreview.swift */,
 				2E5B530CB2E70FB33FD26011 /* SportsRuntime.h */,
 				4534BEF9AD1CF74398B18ED2 /* SportsRuntime.mm */,
 				CC059A2B5E5B62A6EF902A7C /* SportsSession.swift */,
@@ -733,6 +736,7 @@
 				744DBEE1AC0D8CD69C694CAA /* SportsDisplays.swift in Sources */,
 				A1C4DDBD0FEC0A810F87684D /* SportsHome.swift in Sources */,
 				80632788338F7A38301BEAC3 /* SportsMotion.swift in Sources */,
+				D3B15BA8DAB1FB0347497628 /* SportsPreview.swift in Sources */,
 				353BBD926EF5A3E9105C4D7E /* SportsRuntime.mm in Sources */,
 				874A314CB54144716844510D /* SportsSession.swift in Sources */,
 				9021B4A8FAF3DCCED715EDFB /* SteeringFilter.swift in Sources */,
@@ -842,9 +846,10 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfArcade/Unity/SportsInfo.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -889,9 +894,10 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GolfArcade/Unity/SportsInfo.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

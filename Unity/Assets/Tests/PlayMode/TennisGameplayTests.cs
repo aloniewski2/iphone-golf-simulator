@@ -11,6 +11,39 @@ namespace GolfArcade.PlayTests
 {
     public class TennisGameplayTests
     {
+        [UnityTest] public IEnumerator StrengthAndPhonePositionChooseReadableStrokes()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single); yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true;
+            game.InjectBall(game.Player.transform.position+new Vector3(1,1,1),Vector3.zero);
+            game.RequestSwing(.2f,.2f); float soft=game.Player.SwingDuration;
+            Assert.That(game.Player.StrokeLabel,Does.Contain("Soft"));
+            game.Player.Tick(1,0); game.RequestSwing(.9f,-.2f);
+            Assert.Less(game.Player.SwingDuration,soft); Assert.Greater(game.Player.SwingDuration,.6f);
+            Assert.That(game.Player.StrokeLabel,Does.Contain("backhand"));
+            game.Player.Tick(1,0);
+            game.InjectBall(game.Player.transform.position+new Vector3(0,2.3f,1),Vector3.zero);
+            game.RequestSwing(.8f,0,.3f); Assert.IsTrue(game.Player.Overhead);
+            game.Player.Tick(game.Player.SwingDuration*.4f,0);
+            Assert.Greater(game.Player.SweetSpot.position.y,1.8f);
+        }
+        [UnityTest]
+        public IEnumerator RallyStartsWithVisibleServeThenPlayableBall()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single);
+            yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true; game.Refeed();
+            Assert.IsTrue(game.Serving); Assert.AreEqual(Vector3.zero,game.BallVelocity);
+            Assert.Greater(GameObject.Find("Tennis ball").transform.localScale.x,.15f);
+            for(int i=0;i<110;i++) game.Step(1f/120);
+            Assert.IsFalse(game.Serving); Assert.Less(game.BallVelocity.z,0); Assert.Less(Mathf.Abs(game.BallVelocity.z),15);
+            float start=game.Player.transform.position.x;
+            game.SetLateralInput(1,false); for(int i=0;i<30;i++) game.Step(1f/120);
+            Assert.Greater(game.Player.transform.position.x,start);
+            game.RequestSwing(.5f); Assert.IsTrue(game.Player.Swinging);
+            Assert.Less(game.Stamina,1);
+            game.Refeed(); Assert.IsTrue(game.Serving); Assert.AreEqual(1,game.Stamina);
+        }
         [UnityTest]
         public IEnumerator ApprovedArenaAndBothStandardsRunTennisPhysics()
         {
