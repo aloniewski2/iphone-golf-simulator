@@ -35,6 +35,9 @@ namespace GolfArcade.PlayTests
                     var arms = golfer.GetComponentInChildren<StandardCharacterArms>();
                     Assert.IsNotNull(arms);
                     Assert.IsTrue(arms.IsReady);
+                    var grip = golfer.GetComponentInChildren<StandardGolfGrip>();
+                    Assert.IsNotNull(grip);
+                    Assert.IsTrue(grip.IsReady);
                     var contact = System.Array.Find(golfer.GetComponentsInChildren<Transform>(true), t => t.name == "StandardClubContact");
                     Assert.IsNotNull(contact);
                     var meshes = golfer.GetComponentsInChildren<SkinnedMeshRenderer>();
@@ -51,9 +54,25 @@ namespace GolfArcade.PlayTests
                         sawFlight |= game.Current == GolfGame.State.Flight;
                         Assert.Less(arms.MaximumGripError, .0001f, "Arm correction moved the authored hand target");
                         Assert.Less(arms.MaximumSegmentError, .005f, "Corrected bone lengths changed");
+                        Assert.Less(grip.MaximumHandleError, .0001f, "Hands slipped relative to the shared handle");
                         if (frame % 60 == 0)
                             foreach (var mesh in meshes) Assert.Less(mesh.bounds.size.magnitude, 8f);
                         Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png", 720, 480));
+                        if (frame == 0 || frame == 100 || frame == 140 || frame == 170)
+                        {
+                            var camera = Camera.main;
+                            Vector3 position = camera.transform.position;
+                            Quaternion rotation = camera.transform.rotation;
+                            try
+                            {
+                                Vector3 target = arms.transform.TransformPoint(new Vector3(0, 1.1f, 0));
+                                Vector3 side = Quaternion.AngleAxis(110, Vector3.up) * Vector3.ProjectOnPlane(position - target, Vector3.up).normalized;
+                                camera.transform.position = target + side * 2.3f + Vector3.up * .35f;
+                                camera.transform.LookAt(target);
+                                GameCapture.Save($"Library/Captures/grip-details/{body}-{frame:D4}.png", 960, 640);
+                            }
+                            finally { camera.transform.SetPositionAndRotation(position, rotation); }
+                        }
                     }
                     Assert.IsTrue(sawFlight, "The real game's synthetic phone input must launch a shot.");
                 }

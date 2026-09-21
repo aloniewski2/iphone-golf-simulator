@@ -47,6 +47,7 @@ namespace GolfArcade.Game
 
         GameObject modelGo;
         StandardCharacterArms standardArms;
+        StandardGolfGrip standardGrip;
         public bool UsesStandardCharacter => hasModel;
 
         public static GolferView Create(Transform parent)
@@ -109,6 +110,8 @@ namespace GolfArcade.Game
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             standardArms = model.GetComponent<StandardCharacterArms>() ?? model.AddComponent<StandardCharacterArms>();
             standardArms.ManualEvaluation = true;
+            standardGrip = model.AddComponent<StandardGolfGrip>();
+            standardGrip.Initialize();
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
@@ -138,6 +141,7 @@ namespace GolfArcade.Game
             time = Mathf.Clamp(t, 0, EndTime);
             clip.SetTime(time);
             graph.Evaluate();
+            standardGrip?.Apply(time / EndTime);
             standardArms?.ApplyAfterAnimation();
         }
 

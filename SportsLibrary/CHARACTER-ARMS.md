@@ -1,5 +1,7 @@
 # Shared Unity arm correction
 
+Golf now adds a [reference-led shared grip correction](GOLF-GRIP-REFINEMENT.md) before this solver. For golf, preserved hand targets mean the corrected common-grip targets, not the old cramped authored positions. Other sports retain their existing targets.
+
 Applies to both permanent standard characters, independent of sport. Implemented in `Unity/Assets/Scripts/Game/StandardCharacterArms.cs` and automatically added by the standard-model importer. Golf explicitly evaluates it after its manually scrubbed animation graph; normal Animator-driven sports use `LateUpdate` after animation.
 
 ## Cause and correction
