@@ -1,0 +1,491 @@
+{
+ "timelineEnd": 3838,
+ "clips": [
+  {
+   "name": "Ready_RH",
+   "clip": "Ready",
+   "hand": "RH",
+   "firstFrame": 0,
+   "lastFrame": 60,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "SplitStep_RH",
+   "clip": "SplitStep",
+   "hand": "RH",
+   "firstFrame": 69,
+   "lastFrame": 129,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "RunLeft_RH",
+   "clip": "RunLeft",
+   "hand": "RH",
+   "firstFrame": 138,
+   "lastFrame": 198,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "RunRight_RH",
+   "clip": "RunRight",
+   "hand": "RH",
+   "firstFrame": 207,
+   "lastFrame": 267,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "BrakeLeft_RH",
+   "clip": "BrakeLeft",
+   "hand": "RH",
+   "firstFrame": 276,
+   "lastFrame": 336,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "BrakeRight_RH",
+   "clip": "BrakeRight",
+   "hand": "RH",
+   "firstFrame": 345,
+   "lastFrame": 405,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "DirectionChange_RH",
+   "clip": "DirectionChange",
+   "hand": "RH",
+   "firstFrame": 414,
+   "lastFrame": 474,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Retreat_RH",
+   "clip": "Retreat",
+   "hand": "RH",
+   "firstFrame": 483,
+   "lastFrame": 543,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "Forehand_RH",
+   "clip": "Forehand",
+   "hand": "RH",
+   "firstFrame": 552,
+   "lastFrame": 612,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Backhand_RH",
+   "clip": "Backhand",
+   "hand": "RH",
+   "firstFrame": 621,
+   "lastFrame": 681,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RunningForehand_RH",
+   "clip": "RunningForehand",
+   "hand": "RH",
+   "firstFrame": 690,
+   "lastFrame": 750,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "RunningBackhand_RH",
+   "clip": "RunningBackhand",
+   "hand": "RH",
+   "firstFrame": 759,
+   "lastFrame": 819,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "LowPickup_RH",
+   "clip": "LowPickup",
+   "hand": "RH",
+   "firstFrame": 828,
+   "lastFrame": 888,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "DiveForehand_RH",
+   "clip": "DiveForehand",
+   "hand": "RH",
+   "firstFrame": 897,
+   "lastFrame": 987,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "DiveBackhand_RH",
+   "clip": "DiveBackhand",
+   "hand": "RH",
+   "firstFrame": 996,
+   "lastFrame": 1086,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "GroundRecovery_RH",
+   "clip": "GroundRecovery",
+   "hand": "RH",
+   "firstFrame": 1095,
+   "lastFrame": 1155,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "MissedSwing_RH",
+   "clip": "MissedSwing",
+   "hand": "RH",
+   "firstFrame": 1164,
+   "lastFrame": 1224,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Serve_RH",
+   "clip": "Serve",
+   "hand": "RH",
+   "firstFrame": 1233,
+   "lastFrame": 1293,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "Smash_RH",
+   "clip": "Smash",
+   "hand": "RH",
+   "firstFrame": 1302,
+   "lastFrame": 1362,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "VolleyForehand_RH",
+   "clip": "VolleyForehand",
+   "hand": "RH",
+   "firstFrame": 1371,
+   "lastFrame": 1431,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "VolleyBackhand_RH",
+   "clip": "VolleyBackhand",
+   "hand": "RH",
+   "firstFrame": 1440,
+   "lastFrame": 1500,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "Lob_RH",
+   "clip": "Lob",
+   "hand": "RH",
+   "firstFrame": 1509,
+   "lastFrame": 1569,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Ready_LH",
+   "clip": "Ready",
+   "hand": "LH",
+   "firstFrame": 1578,
+   "lastFrame": 1638,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "SplitStep_LH",
+   "clip": "SplitStep",
+   "hand": "LH",
+   "firstFrame": 1647,
+   "lastFrame": 1707,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "RunLeft_LH",
+   "clip": "RunLeft",
+   "hand": "LH",
+   "firstFrame": 1716,
+   "lastFrame": 1776,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "RunRight_LH",
+   "clip": "RunRight",
+   "hand": "LH",
+   "firstFrame": 1785,
+   "lastFrame": 1845,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "BrakeLeft_LH",
+   "clip": "BrakeLeft",
+   "hand": "LH",
+   "firstFrame": 1854,
+   "lastFrame": 1914,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "BrakeRight_LH",
+   "clip": "BrakeRight",
+   "hand": "LH",
+   "firstFrame": 1923,
+   "lastFrame": 1983,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "DirectionChange_LH",
+   "clip": "DirectionChange",
+   "hand": "LH",
+   "firstFrame": 1992,
+   "lastFrame": 2052,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Retreat_LH",
+   "clip": "Retreat",
+   "hand": "LH",
+   "firstFrame": 2061,
+   "lastFrame": 2121,
+   "loop": true,
+   "lockHeight": true
+  },
+  {
+   "name": "Forehand_LH",
+   "clip": "Forehand",
+   "hand": "LH",
+   "firstFrame": 2130,
+   "lastFrame": 2190,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Backhand_LH",
+   "clip": "Backhand",
+   "hand": "LH",
+   "firstFrame": 2199,
+   "lastFrame": 2259,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RunningForehand_LH",
+   "clip": "RunningForehand",
+   "hand": "LH",
+   "firstFrame": 2268,
+   "lastFrame": 2328,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "RunningBackhand_LH",
+   "clip": "RunningBackhand",
+   "hand": "LH",
+   "firstFrame": 2337,
+   "lastFrame": 2397,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "LowPickup_LH",
+   "clip": "LowPickup",
+   "hand": "LH",
+   "firstFrame": 2406,
+   "lastFrame": 2466,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "DiveForehand_LH",
+   "clip": "DiveForehand",
+   "hand": "LH",
+   "firstFrame": 2475,
+   "lastFrame": 2565,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "DiveBackhand_LH",
+   "clip": "DiveBackhand",
+   "hand": "LH",
+   "firstFrame": 2574,
+   "lastFrame": 2664,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "GroundRecovery_LH",
+   "clip": "GroundRecovery",
+   "hand": "LH",
+   "firstFrame": 2673,
+   "lastFrame": 2733,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "MissedSwing_LH",
+   "clip": "MissedSwing",
+   "hand": "LH",
+   "firstFrame": 2742,
+   "lastFrame": 2802,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Serve_LH",
+   "clip": "Serve",
+   "hand": "LH",
+   "firstFrame": 2811,
+   "lastFrame": 2871,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "Smash_LH",
+   "clip": "Smash",
+   "hand": "LH",
+   "firstFrame": 2880,
+   "lastFrame": 2940,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "VolleyForehand_LH",
+   "clip": "VolleyForehand",
+   "hand": "LH",
+   "firstFrame": 2949,
+   "lastFrame": 3009,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "VolleyBackhand_LH",
+   "clip": "VolleyBackhand",
+   "hand": "LH",
+   "firstFrame": 3018,
+   "lastFrame": 3078,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "Lob_LH",
+   "clip": "Lob",
+   "hand": "LH",
+   "firstFrame": 3087,
+   "lastFrame": 3147,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Celebrate_RH",
+   "clip": "Celebrate",
+   "hand": "RH",
+   "firstFrame": 3156,
+   "lastFrame": 3216,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Celebrate_LH",
+   "clip": "Celebrate",
+   "hand": "LH",
+   "firstFrame": 3225,
+   "lastFrame": 3285,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "ForehandTopspin_RH",
+   "clip": "ForehandTopspin",
+   "hand": "RH",
+   "firstFrame": 3294,
+   "lastFrame": 3354,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "ForehandTopspin_LH",
+   "clip": "ForehandTopspin",
+   "hand": "LH",
+   "firstFrame": 3363,
+   "lastFrame": 3423,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RecoverLeft_RH",
+   "clip": "RecoverLeft",
+   "hand": "RH",
+   "firstFrame": 3432,
+   "lastFrame": 3492,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RecoverLeft_LH",
+   "clip": "RecoverLeft",
+   "hand": "LH",
+   "firstFrame": 3501,
+   "lastFrame": 3561,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RecoverRight_RH",
+   "clip": "RecoverRight",
+   "hand": "RH",
+   "firstFrame": 3570,
+   "lastFrame": 3630,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "RecoverRight_LH",
+   "clip": "RecoverRight",
+   "hand": "LH",
+   "firstFrame": 3639,
+   "lastFrame": 3699,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Slice_RH",
+   "clip": "Slice",
+   "hand": "RH",
+   "firstFrame": 3708,
+   "lastFrame": 3768,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Slice_LH",
+   "clip": "Slice",
+   "hand": "LH",
+   "firstFrame": 3777,
+   "lastFrame": 3837,
+   "loop": false,
+   "lockHeight": true
+  }
+ ]
+}

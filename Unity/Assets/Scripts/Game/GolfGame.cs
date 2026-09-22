@@ -35,7 +35,7 @@ namespace GolfArcade.Game
         }
         bool needsReadyPose;
         public void NativeReady() { Swing.Detector.UseReadyPose=true; needsReadyPose=true; Swing.Detector.Reset(); }
-        public void NativeMotion(NativeSportsSession.Sample sample) {
+        public void NativeMotion(in NativeSportsSession.Sample sample) {
             var q=new System.Numerics.Quaternion(sample.qx,sample.qy,sample.qz,sample.qw);
             if(q.LengthSquared()<.5f) return;
             if(needsReadyPose) { Swing.Detector.SetReadyPose(q); needsReadyPose=false; Debug.Log("[SportsMotion] Ready pose captured"); }

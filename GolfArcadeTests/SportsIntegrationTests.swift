@@ -30,6 +30,31 @@ final class SportsIntegrationTests:XCTestCase {
         XCTAssertLessThan(t,0.5)
     }
 
+    /// The game starts the stroke animation at onset, so onset must arrive well before the
+    /// confirmation that used to be the first thing Unity heard about.
+    func testOnsetIsReportedBeforeConfirmation() {
+        var f=SteeringFilter(); f.travel=0.85; f.tennisStroke=true; f.calibrate(position:0,time:0)
+        var t=0.0, onsetAt = -1.0, confirmedAt = -1.0
+        for _ in 0..<60 {
+            t+=0.01
+            if f.step(position:0,rate:9,time:t,valid:true,acceleration:0.8) != nil && confirmedAt<0 { confirmedAt=t }
+            if f.onsets==1 && onsetAt<0 { onsetAt=t }
+        }
+        XCTAssertGreaterThan(onsetAt,0); XCTAssertGreaterThan(confirmedAt,0)
+        XCTAssertLessThanOrEqual(onsetAt,0.05,"onset within a few samples of the arm starting")
+        XCTAssertGreaterThanOrEqual(confirmedAt-onsetAt,0.05,"confirmation still waits for a real stroke")
+        XCTAssertEqual(f.aborts,0)
+    }
+
+    /// A written-off candidate must be reported, so the game can cancel the animation.
+    func testWrittenOffCandidateCountsAsAbort() {
+        var f=SteeringFilter(); f.travel=0.85; f.tennisStroke=true; f.calibrate(position:0,time:0)
+        var t=0.0
+        for _ in 0..<5 { t+=0.01; _=f.step(position:0,rate:6,time:t,valid:true,acceleration:0.5) }
+        for _ in 0..<30 { t+=0.01; _=f.step(position:0,rate:0.2,time:t,valid:true,acceleration:0.02) }
+        XCTAssertEqual(f.onsets,1); XCTAssertEqual(f.aborts,1)
+    }
+
     /// Forehand is screen-to-TV, backhand is lens-to-TV, and tilting the phone must not
     /// change the answer.
     func testStrokeFacingFollowsWhichFaceIsTowardTheTV() {

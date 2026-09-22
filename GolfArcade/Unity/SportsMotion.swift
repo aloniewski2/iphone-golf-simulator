@@ -68,6 +68,11 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
     private var worldRunning=false
     private var capturingAxis=false, gateHeldSince = -Double.infinity, lastRotation=0.0, captureStartedAt=0.0
     private(set) var gate = SportsAxisGate()
+    /// Recent rate/force history, written out around each stroke candidate so the detection
+    /// thresholds can be tuned from real swings instead of reasoning. Fixed size, no growth.
+    private var trace = [(Double,Double,Double)](repeating:(0,0,0),count:80)
+    private var traceHead = 0, traceOnsets = 0, traceDue = Double.infinity
+    private var traceOutcome = ""
     /// Flips left/right without recapturing the axis, for when the mapping comes out mirrored.
     var courtSign: Double {
         get { UserDefaults.standard.object(forKey:Self.signKey) as? Double ?? 1 }
@@ -234,9 +239,27 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         }
         if previousPhase != .swinging && filter.phase == .swinging { activeStrokeFacing=strokeFacing }
         if let swing { NSLog("[SportsMotion] tennis stroke power=%.2f",swing) }
+        recordTrace(time:time,rate:speed,force:force,swing:swing)
         onSample?(filter.target,swing,filter.phase.rawValue,current != .lost && calibrated,current,
             ["qx":q.x,"qy":q.y,"qz":q.z,"qw":q.w,"rx":rate.x,"ry":rate.y,"rz":rate.z,"gx":g.x,"gy":g.y,"gz":g.z,
-             "handSide":tracked ? x-neutralX-filter.target*filter.travel : 0,"lift":tracked ? Double(position.y-neutralY) : 0,"strokeFacing":tennis ? activeStrokeFacing : 0])
+             "handSide":tracked ? x-neutralX-filter.target*filter.travel : 0,"lift":tracked ? Double(position.y-neutralY) : 0,"strokeFacing":tennis ? activeStrokeFacing : 0,
+             "swingStart":Double(filter.onsets),"swingAbort":Double(filter.aborts)])
+    }
+
+    /// Log the 0.8s of rate and force around each stroke candidate, with how it ended.
+    private func recordTrace(time:Double,rate:Double,force:Double,swing:Double?) {
+        guard tennis else { return }
+        trace[traceHead]=(time,rate,force); traceHead=(traceHead+1)%trace.count
+        if filter.onsets>traceOnsets { traceOnsets=filter.onsets; traceDue=time+0.4; traceOutcome="aborted" }
+        if let swing { traceOutcome=String(format:"confirmed power=%.2f",swing) }
+        guard time>=traceDue else { return }
+        traceDue = .infinity
+        var line="swingtrace outcome=\(traceOutcome) onsets=\(filter.onsets) aborts=\(filter.aborts) t,rate,force:"
+        for i in 0..<trace.count {
+            let (t,r,f)=trace[(traceHead+i)%trace.count]
+            if t>0 { line+=String(format:" %.3f,%.1f,%.2f",t,r,f) }
+        }
+        SportsDiagnostics.write(line)
     }
 
     private func currentQuality(at time: Double) -> SportsTrackingQuality {

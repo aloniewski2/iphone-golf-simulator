@@ -36,4 +36,6 @@ Substituting another character design or changing the recognizable identity requ
 
 ## Runtime adoption status
 
+Tennis v3 update: both playable standards now use the fitted Tripo v3 tennis outfits and generated racket in `Unity/Assets/Resources/Tennis/KitsV3`, with the existing animation clips. The racket uses a palm-aligned grip and string-bed contact socket; male/female and RH/LH pose checks passed. Three tennis Play-mode regression tests and the combined iOS Xcode build passed. Crowd outfits and golf equipment are unchanged. The paragraph below records the earlier V4 adoption baseline.
+
 Unity golf uses both permanent V4 standards with Golf Kit 1 and the right-handed drive clip. Tennis now has a separate coastal-resort rally prototype using both standard characters, Tennis Kit 1, ready/running/forehand/backhand clips and the standard racket. See [tennis functionality and limitations](TENNIS-GAMEPLAY.md). Full matches, LH selection, additional kits and the other sport controllers remain pending. The original golf primitive model is an emergency missing-asset fallback, not the standard character.

@@ -11,6 +11,17 @@ final class SportsSession {
     var sound = (UserDefaults.standard.object(forKey:"range.soundEnabled") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(sound,forKey:"range.soundEnabled") }
     }
+    /// Render at 120fps on ProMotion phones. Off by default: 60 is the guaranteed target,
+    /// 120 is smoother where the phone can hold it.
+    var highFrameRate = (UserDefaults.standard.object(forKey:"sports.highFrameRate") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(highFrameRate,forKey:"sports.highFrameRate") }
+    }
+    /// Opponent strength for tennis: 0 relaxed, 0.45 standard, 0.8 tough.
+    var tennisDifficulty = (UserDefaults.standard.object(forKey:"sports.tennisDifficulty") as? Double) ?? 0.45 {
+        didSet { UserDefaults.standard.set(tennisDifficulty,forKey:"sports.tennisDifficulty") }
+    }
+    /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
+    static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis")
     var haptics = (UserDefaults.standard.object(forKey:"arcade.hapticsEnabled") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(haptics,forKey:"arcade.hapticsEnabled") }
     }
@@ -27,6 +38,8 @@ final class SportsSession {
     var ready = false
     var displayConnected = false
     private var sessionID = ""
+    /// Numeric stand-in for the session id on the binary sample channel.
+    private var sessionToken: Int32 = 0
     private var pending: [String:Any]?
     private var timer: Timer?
     private var swingSequence = 0
@@ -80,11 +93,11 @@ final class SportsSession {
         guard let window=SportsDisplays.shared.gameWindow(preview:preview) else {
             status="No independent external display is available. Connect AirPlay/wired display or choose preview."; return
         }
-        savePlayers(); sessionID=UUID().uuidString; ready=false; paused=true; active=true; tennisControllerActive=false
+        savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         swingSequence=0; target=0; power=0; aim=0; rawMotion=[:]
         phase="calibrating"; feedback=""; stamina=1
         let p=players[min(playerIndex,players.count-1)]
-        pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview]
+        pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty]
         if preview { touch=true }
         pending?["external"] = !preview
         do { try SportsRuntime.shared().load(in:window) }
@@ -168,9 +181,15 @@ final class SportsSession {
     func setAim(_ value:Double) { aim=value; command("aim",value:value) }
     func swing(_ value:Double) { guard !paused else { return }; power=value; swingSequence+=1; NSLog("[SportsSession] touch swing=%d power=%.2f",swingSequence,value); sendInput(valid:true) }
     private func sendInput(valid:Bool) {
-        var object:[String:Any]=["version":1,"session":sessionID,"time":SportsRuntime.shared().clock(),"target":target,"power":power,"swing":swingSequence,"valid":valid,"aim":aim,"tracking":touch ? "good" : tracking.rawValue,"warning":touch ? "" : trackingWarning]
-        if !touch { for (key,value) in rawMotion { object[key]=value } }
-        if let data=try? JSONSerialization.data(withJSONObject:object), let json=String(data:data,encoding:.utf8) { SportsRuntime.shared().push(json) }
+        func raw(_ key:String) -> Float { touch ? 0 : Float(rawMotion[key] ?? 0) }
+        var flags:Int32 = valid ? Int32(SportsSampleValid) : 0
+        if !touch && tracking == .degraded { flags |= Int32(SportsSampleDegraded) }
+        let sample=SportsSample(version:Int32(SportsSampleVersion),session:sessionToken,time:SportsRuntime.shared().clock(),
+            target:Float(target),power:Float(power),aim:Float(aim),
+            swing:Int32(swingSequence),swingStart:Int32(raw("swingStart")),swingAbort:Int32(raw("swingAbort")),flags:flags,
+            handSide:raw("handSide"),lift:raw("lift"),strokeFacing:raw("strokeFacing"),
+            qx:raw("qx"),qy:raw("qy"),qz:raw("qz"),qw:raw("qw"),rx:raw("rx"),ry:raw("ry"),rz:raw("rz"),gx:raw("gx"),gy:raw("gy"),gz:raw("gz"))
+        SportsRuntime.shared().push(sample)
     }
     func end() {
         if active && ready {
@@ -194,8 +213,11 @@ final class SportsSession {
             switch event["type"] as? String {
             case "ready":
                 pending=nil; ready=true
+                if UserDefaults.standard.bool(forKey:"sports.resetCoaching") {
+                    UserDefaults.standard.set(false,forKey:"sports.resetCoaching"); command("coaching")
+                }
                 if displayConnected { SportsDisplays.shared.external?.isHidden=true }
-                if touch { status="Tap Ready to play." }
+                if touch { status="Tap Ready to play."; if SportsSession.benchmark { readyToPlay() } }
                 else if sport == "tennis" && !motion.axisLocked { beginAxisCapture() }
                 else { motion.start(tennis:sport == "tennis",travel:travel); status="Stand at your center, then tap Ready." }
             case "feedback":
@@ -207,6 +229,7 @@ final class SportsSession {
             case "displayReady":
                 if displayConnected { SportsDisplays.shared.external?.isHidden=true }
                 status="Display reconnected. Tap Ready to set your center and play."
+            case "perf": SportsDiagnostics.write("perf \(event["message"] as? String ?? "")")
             case "error": pending=nil; status=event["message"] as? String ?? "Unity error"; pause(reason:status)
             default: break
             }

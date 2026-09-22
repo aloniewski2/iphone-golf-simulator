@@ -31,7 +31,10 @@ namespace GolfArcade.Tests {
                         Assert.IsTrue(game.Initialized);
                         Assert.AreEqual(female,game.FemalePlayer);
                         var model=game.Player.transform.GetChild(0);
-                        Assert.AreEqual(left?-1:1,Mathf.Sign(model.localScale.x));
+                        // Left-handers play genuine left-handed clips; the model is no longer
+                        // mirrored (which also flipped kit text and the grip).
+                        Assert.AreEqual(1,Mathf.Sign(model.localScale.x));
+                        Assert.AreEqual(left,game.Player.LeftHanded);
                         Assert.IsNotNull(game.Player.SweetSpot);
                         game.RequestSwing(.8f); game.Player.Tick(.18f,0);
                         Assert.IsFalse(float.IsNaN(game.Player.SweetSpot.position.x));

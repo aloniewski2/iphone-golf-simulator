@@ -19,7 +19,10 @@ namespace GolfArcade.PlayTests
             game.RequestSwing(.2f,.2f); float soft=game.Player.SwingDuration;
             Assert.That(game.Player.StrokeLabel,Does.Contain("Soft"));
             game.Player.Tick(1,0); game.RequestSwing(.9f,-.2f);
-            Assert.Less(game.Player.SwingDuration,soft); Assert.Greater(game.Player.SwingDuration,.6f);
+            // Strokes were deliberately shortened from 0.62-0.90s to 0.40-0.58s: the old
+            // timing read as slow motion. Still ordered by power, just faster.
+            Assert.Less(game.Player.SwingDuration,soft); Assert.Greater(game.Player.SwingDuration,.35f);
+            Assert.Less(game.Player.SwingDuration,.5f);
             Assert.That(game.Player.StrokeLabel,Does.Contain("backhand"));
             game.Player.Tick(1,0);
             game.InjectBall(game.Player.transform.position+new Vector3(0,2.3f,1),Vector3.zero);
@@ -27,21 +30,79 @@ namespace GolfArcade.PlayTests
             game.Player.Tick(game.Player.SwingDuration*.4f,0);
             Assert.Greater(game.Player.SweetSpot.position.y,1.8f);
         }
+        /// Drives the character from one corner to the other and back, capturing frames.
+        /// This is the path the locomotion work actually changed -- the run clips, the
+        /// crossfade between RunLeft and RunRight, and the stride rate that now follows real
+        /// ground speed -- and none of it is exercised by the stroke-focused tests.
+        [UnityTest]
+        public IEnumerator RunCycleCoversTheCourtBothWays()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single);
+            yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true;
+            string directory="Library/Captures/run-cycle"; Directory.CreateDirectory(directory);
+            int oldRate=Time.captureFramerate; Time.captureFramerate=60;
+            float reachedRight=-99, reachedLeft=99;
+            try
+            {
+                int frame=0;
+                // Feed alternate corners often enough that a ball is always live, otherwise the
+                // point ends and the serve lock plants the character mid-run.
+                foreach (float target in new[]{4.2f,-4.2f,4.2f,-4.2f,3.8f,-3.8f})
+                {
+                    game.InjectBall(new Vector3(target,1.3f,-4.5f),new Vector3(0,1.5f,-6.5f));
+                    for(int i=0;i<70;i++)
+                    {
+                        game.Step(1f/120); game.Step(1f/120);
+                        float x=game.Player.transform.position.x;
+                        reachedRight=Mathf.Max(reachedRight,x); reachedLeft=Mathf.Min(reachedLeft,x);
+                        yield return null;
+                        GameCapture.Save($"{directory}/frame-{frame:D4}.png",720,480); frame++;
+                    }
+                }
+            }
+            finally { Time.captureFramerate=oldRate; }
+            // It has to actually cover ground both ways, or the capture proves nothing.
+            Assert.Greater(reachedRight,2.5f,"character must chase the ball out to the right");
+            Assert.Less(reachedLeft,-2.5f,"and back out to the left");
+        }
+
         [UnityTest]
         public IEnumerator RallyStartsWithVisibleServeThenPlayableBall()
         {
             yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single);
             yield return null;
             var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true; game.Refeed();
+            // Every point now starts from a serve. The player serves first, and the toss is
+            // automatic: the ball sits in the hand, goes up on its own, and must be struck.
             Assert.IsTrue(game.Serving); Assert.AreEqual(Vector3.zero,game.BallVelocity);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow);
             Assert.Greater(GameObject.Find("Tennis ball").transform.localScale.x,.15f);
-            for(int i=0;i<110;i++) game.Step(1f/120);
-            Assert.IsFalse(game.Serving); Assert.Less(game.BallVelocity.z,0); Assert.Less(Mathf.Abs(game.BallVelocity.z),15);
+            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow,"toss must launch on its own");
+            // Not swinging is not a fault: it drops back to the hand and is tossed again.
+            for(int i=0;i<(int)(TennisRules.ServeCatch*120)+2;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow);
+            Assert.IsFalse(game.SecondServe,"a caught toss must not cost a fault");
+            // Toss again, then strike it near the apex: the ball leaves toward the far court.
+            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2;i++) game.Step(1f/120);
+            for(int i=0;i<(int)(TennisRules.ServeIdealContact*120);i++) game.Step(1f/120);
+            game.RequestSwing(.8f,0,.3f);
+            // The ball leaves when the animated racket reaches it, not at the instant the
+            // swing is reported, so the serve never flies before it has been hit.
+            for(int i=0;i<60 && game.Flow!=TennisGame.Phase.Rally;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.Rally,game.Flow,"a well-timed serve starts the rally");
+            Assert.Greater(game.BallVelocity.z,0,"the player's serve travels to the far end");
+            // Wii Sports model: the character takes itself to the ball. Put one out wide and
+            // it must close on the bounce without any movement input at all.
+            game.InjectBall(new Vector3(4f,1.4f,-4f),new Vector3(0,1.2f,-6f));
             float start=game.Player.transform.position.x;
-            game.SetLateralInput(1,false); for(int i=0;i<30;i++) game.Step(1f/120);
-            Assert.Greater(game.Player.transform.position.x,start);
-            game.RequestSwing(.5f); Assert.IsTrue(game.Player.Swinging);
-            Assert.Less(game.Stamina,1);
+            for(int i=0;i<180;i++) game.Step(1f/120);
+            Assert.Greater(game.Player.transform.position.x,start+1f,
+                $"auto-positioning must chase a wide ball (flow={game.Flow} predicted={game.PredictedInterceptX:0.00} ball={game.BallPosition} x={game.Player.transform.position.x:0.00} start={start:0.00})");
+            game.SetLateralInput(-1,false); float held=game.Player.transform.position.x;
+            for(int i=0;i<30;i++) game.Step(1f/120);
+            Assert.Greater(game.Player.transform.position.x,held-1f,"steering input must no longer drive position");
             game.Refeed(); Assert.IsTrue(game.Serving); Assert.AreEqual(1,game.Stamina);
         }
         [UnityTest]
@@ -51,7 +112,7 @@ namespace GolfArcade.PlayTests
             yield return null;
             var game = Object.FindFirstObjectByType<TennisGame>();
             Assert.IsNotNull(game); game.ManualSimulation = true;
-            Assert.IsNotNull(GameObject.Find("Approved coastal tennis resort"));
+            Assert.IsNotNull(GameObject.Find("Tropical tennis resort v3 — live arena"));
             Assert.IsNotNull(game.Player.SweetSpot);
             int oldRate = Time.captureFramerate; Time.captureFramerate = 60;
             try
@@ -60,9 +121,22 @@ namespace GolfArcade.PlayTests
                 {
                     game.SelectCharacter(female); yield return null;
                     int hitsBefore = game.Hits;
-                    Assert.IsTrue(game.Player.GetComponentInChildren<StandardCharacterArms>().FloatingHandsPreview);
+                    // Tennis characters now show real arms. Floating hands -- the arm meshes
+                    // hidden entirely, leaving disembodied hands on a racket -- was the single
+                    // biggest reason they read as toy-like. The continuous-arm surface was
+                    // already built every frame; it just had a null material and so rendered
+                    // invisibly, which is why nobody noticed it worked.
+                    Assert.IsFalse(game.Player.GetComponentInChildren<StandardCharacterArms>().FloatingHandsPreview,
+                        "tennis characters should have visible arms");
+                    Assert.IsNotNull(game.Player.transform.Find("Permanent "+(female?"female":"male")+" tennis player/Fitted Tripo tennis kit v3"));
                     string directory = "Library/Captures/tennis-" + (female ? "female" : "male"); Directory.CreateDirectory(directory);
-                    float before = game.Stamina;
+                    // A serving player has their feet planted, so movement and stamina cannot
+                    // be exercised until a ball is live. This test is about physics, the
+                    // racket and the characters; the serve flow is covered separately.
+                    // Movement is automatic now, so stamina is exercised by giving the
+                    // character somewhere to run rather than by feeding it lateral input.
+                    game.InjectBall(new Vector3(4.2f,1.2f,-6f),new Vector3(0,1.5f,-5f));
+                    float before = game.Stamina, lowestStamina = game.Stamina;
                     for (int frame=0;frame<480;frame++)
                     {
                         game.SetLateralInput(frame<55 ? 1 : frame<100 ? -1 : 0, true);
@@ -80,9 +154,13 @@ namespace GolfArcade.PlayTests
                             game.InjectBall(center+normal*.12f,-normal*30+game.Player.SweetVelocity);
                         }
                         game.Step(1f/120);game.Step(1f/120);
+                        lowestStamina = Mathf.Min(lowestStamina, game.Stamina);
+                        Assert.Less(game.Player.RacketGripError,.005f,"New racket must stay on the gripping palm");
                         Assert.IsFalse(float.IsNaN(game.BallPosition.x));
                         yield return null;
-                        if (frame == 100) Assert.Less(game.Stamina,before);
+                        // Recovery outpaces the drain once the character stops, so the dip has
+                        // to be sampled during the run, not read afterwards.
+                        if (frame == 100) Assert.Less(lowestStamina,before,"auto-running must cost stamina");
                         Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png",720,480));
                     }
                     Assert.GreaterOrEqual(game.Hits-hitsBefore,3,"Each character must return both forehands and the backhand");

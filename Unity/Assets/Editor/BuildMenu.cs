@@ -16,6 +16,7 @@ namespace GolfArcade.EditorTools
         [MenuItem("Golf Arcade/Build iOS Xcode Project")]
         public static void BuildIOS()
         {
+            TropicalArenaImporter.Prepare();
             Directory.CreateDirectory("Library/BuildResults");
             File.Delete("Library/BuildResults/ios.txt");
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();

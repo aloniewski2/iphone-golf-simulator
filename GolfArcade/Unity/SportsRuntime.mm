@@ -18,6 +18,7 @@
     std::vector<char*> _arguments;
 #endif
     void (*_push)(const char*);
+    void (*_pushSample)(const SportsSample*);
     int (*_poll)(char*,int);
     double (*_clock)(void);
     __weak UIWindow *_destination;
@@ -56,10 +57,11 @@
         [_unity runEmbeddedWithArgc:(int)_argumentStorage.size() argv:_arguments.data() appLaunchOpts:nil];
         NSLog(@"[SportsRuntime] Unity warmup completed");
         _push=(void(*)(const char*))dlsym(RTLD_DEFAULT,"SportsPushInput");
+        _pushSample=(void(*)(const SportsSample*))dlsym(RTLD_DEFAULT,"SportsPushSample");
         _poll=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsPollEvent");
         _clock=(double(*)(void))dlsym(RTLD_DEFAULT,"SportsClock");
     }
-    if (!_push || !_poll || !_clock) {
+    if (!_push || !_pushSample || !_poll || !_clock) {
         if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:2 userInfo:@{NSLocalizedDescriptionKey:@"Unity bridge is missing. Re-export Unity before building the host app."}];
         return NO;
     }
@@ -101,6 +103,7 @@
 #endif
 }
 - (void)push:(NSString*)json { if(_push) _push(json.UTF8String); }
+- (void)pushSample:(SportsSample)sample { if(_pushSample) _pushSample(&sample); }
 - (NSString*)pollEvent { char buffer[8192]; if(!_poll || !_poll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (double)clock { return _clock ? _clock() : NSProcessInfo.processInfo.systemUptime; }
 - (void)pause:(BOOL)paused {

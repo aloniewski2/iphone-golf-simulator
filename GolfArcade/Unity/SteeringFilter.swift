@@ -59,7 +59,22 @@ struct SteeringFilter {
     static let reachFloor = 0.25, reachRelax = 0.05
     /// A sidestep rotates the phone too, so rate alone cannot tell stepping from swinging.
     /// A real stroke is fast AND forceful AND sustained; a step fails at least one.
-    static let strokeRate = 5.0, strokeForce = 0.45, strokeHold = 0.08
+    ///
+    /// Force is the discriminator that matters: a sidestep swings the arm through a similar
+    /// rotation rate but never sustains this much linear force. The rate bar is therefore
+    /// kept low enough for an overhead serve, which rotates about a horizontal axis and was
+    /// being missed, while the force bar still rejects walking.
+    ///
+    /// The hold used to be 70ms, and nothing reached the game until the stroke was also
+    /// *confirmed* 60-70ms later -- about 200ms in all before the character moved, against a
+    /// real forehand that lasts about 250ms. The game now starts the stroke animation at
+    /// onset (see `onsets`) and cancels it if the candidate is written off (`aborts`), so the
+    /// hold only has to reject single-sample spikes; confirmation still gates contact.
+    static let strokeRate = 4.2, strokeForce = 0.45, strokeHold = 0.03
+    /// Re-arming had to happen through a near-standstill, so raising the phone overhead for
+    /// a serve left the detector disarmed and the serve swing was never seen at all.
+    static let strokeArc = 0.75
+    static let rearmRate = 2.8, rearmForce = 0.24
     /// How long a candidate may hold steering hostage before it is written off as a step.
     static let strokeAbort = 0.18
     private(set) var phase: Phase = .calibrating
@@ -73,6 +88,10 @@ struct SteeringFilter {
     private var strokeArmed = true
     private var lostAt = -Double.infinity, lostPosition = 0.0
     private(set) var reachRight = 0.0, reachLeft = 0.0
+    /// Running counts of stroke onsets and of onsets that never became strokes. The game
+    /// starts the animation on a new onset and cancels it on a new abort, so the character
+    /// moves with the player's arm instead of a confirmation window later.
+    private(set) var onsets = 0, aborts = 0
     /// Peak excursion actually seen on each side, for diagnostics.
     private(set) var seenRight = 0.0, seenLeft = 0.0
     var adaptiveReach = true
@@ -116,6 +135,7 @@ struct SteeringFilter {
             // A stroke in flight is driven by the gyro, not the camera. Motion blur must
             // never abandon a swing the player has already started.
             if !valid && !allowSwingWhileUntracked {
+                if !emitted { aborts+=1 }
                 lostAt=time; lostPosition=position; phase = .trackingLost; return nil
             }
         } else if !valid {
@@ -138,13 +158,15 @@ struct SteeringFilter {
         case .steering, .trackingLost:
             // Norms are independent of portrait/landscape grip. Translation alone,
             // or slowly turning the phone, must not lock positional steering.
-            if rate<2.0 && acceleration<0.15 { strokeArmed=true }
+            if rate<Self.rearmRate && acceleration<Self.rearmForce { strokeArmed=true }
             let onset = tennisStroke
                 ? strokeArmed && rate > Self.strokeRate && acceleration > Self.strokeForce
                 : rate > 2.2
             candidateDuration = onset ? candidateDuration+dt : 0
             if detectSwings && onset && (!tennisStroke || candidateDuration >= Self.strokeHold) {
-                phase = .swinging; started=time; peak=rate; peakAcceleration=acceleration; arc=0; emitted=false; strokeArmed=false; return nil
+                phase = .swinging; started=time; peak=rate; peakAcceleration=acceleration; arc=0; emitted=false; strokeArmed=false
+                onsets+=1
+                return nil
             }
             guard valid, phase == .steering else { return nil }
             let delta=position-origin
@@ -166,7 +188,9 @@ struct SteeringFilter {
             peak=max(peak,rate)
             peakAcceleration=max(peakAcceleration,acceleration)
             arc += rate*dt
-            let confirmed = tennisStroke ? arc>=0.55 && peakAcceleration>=Self.strokeForce : arc>=0.25
+            // Arc now accumulates from the (shorter) onset hold, so the bar is raised by the
+            // rotation the old 70ms hold used to absorb: the same flick is still rejected.
+            let confirmed = tennisStroke ? arc>=Self.strokeArc && peakAcceleration>=Self.strokeForce : arc>=0.25
             if !emitted && time-started>=0.06 && confirmed && rate>=2.2 {
                 emitted=true
                 return tennisStroke ? max(0.15,min(1,(peak-Self.strokeRate)/10)) : min(1,peak/12)
@@ -175,9 +199,13 @@ struct SteeringFilter {
             // instead of freezing the player for three quarters of a second.
             if tennisStroke && !emitted && time-started>=Self.strokeAbort && !confirmed {
                 phase = .steering; peak=0; candidateDuration=0; strokeArmed=false
+                aborts+=1
                 return nil
             }
-            if time-started>=0.46 { phase = .recovering; settled=time }
+            if time-started>=0.46 {
+                if !emitted { aborts+=1 }
+                phase = .recovering; settled=time
+            }
         case .recovering:
             // Recovery no longer waits for stillness, because it no longer has to pick a
             // moment to rebase. Holding steering for up to 0.85s after every stroke is what

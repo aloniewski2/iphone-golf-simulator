@@ -10,3 +10,4 @@ xcuserdata/
 blender/previews/*
 !blender/previews/hole_07_overview.png
 !blender/previews/golfer_closeups.png
+__pycache__/

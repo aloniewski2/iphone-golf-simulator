@@ -1,8 +1,22 @@
-# Coastal tennis resort — Blender v1
+# Tennis resort — Blender authoring library
+
+## Current authoring version: Tropical v3
+
+Open [tropical-tennis-resort-v3.blend](tropical-tennis-resort-v3.blend) for the rebuilt tropical arena. It includes 31 image-derived asset interpretations plus a coconut palm, a precisely rebuilt court/net, detailed PBR resort props, and standard-derived floating-hands spectators. The file has separate Tennis, Equipment, Clothing, and Asset Review scenes. Environment GLBs are in `Tripo-v3/Assets`; tennis equipment and clothing have their own `SportsLibrary/Equipment/Tennis/Tripo-v3` and `SportsLibrary/Clothing/Tennis/Tripo-v3` folders.
+
+The generated court/net/sea interpretations remain in Asset Review; measured geometry and separate water/sky are used in the arena. Original 4K GLBs are preserved; secondary working textures are 2K in Blender. Clothing remains separate static geometry, not fitted or rigged. Repaired metric racket/ball exports are in the tennis equipment section.
+
+This version is now integrated into Unity: `TennisGame` loads `Resources/Tennis/TropicalV3/TropicalTennisResort.fbx`, with texture-preserving materials prepared by `TropicalArenaImporter`. Its orientation is corrected at runtime to put the clubhouse on the right and the coastal gardens behind the far baseline. Older v1/v2 assets are preserved but are no longer the active tennis arena.
+
+The live arena includes 36 seated permanent-identity spectators and 16 animated permanent-identity visitors on the baseline promenades. Walkers have varied skin/outfit colors, procedural hip/knee gait and floating hands; they remain outside the playing surface and pause with game time. They are ambient visitors, not gameplay opponents or navigation agents. Equipment/clothing catalog scenes are not included in the environment export.
+
+Unity Play-mode verification loaded the actual Tennis scene, found 234 textured environment renderers and all 16 walkers, and verified walker displacement over three seconds. Gameplay/overview captures and the report are in `outputs/tennis-tropical-rebuild-v3/Unity-Gameplay`. The iOS Unity export succeeded with zero errors. This does not establish real-phone FPS, thermal behavior, or TV performance; installation and device checks are separate.
+
+The exporter is retained at `outputs/tennis-tropical-rebuild-v3/Tools/export_tropical_unity.py`. It extracts the active arena only, realizes collection instances, reduces high-poly image-generated props for mobile, preserves measured court geometry, and exports textures up to 2K. Run `GolfArcade.EditorTools.TropicalArenaReview.Run` for a batch-mode visual check and `GolfArcade.EditorTools.BuildMenu.BuildIOS` to regenerate embedded iOS content.
 
 ## Gameplay v2 revision
 
-Open `coastal-tennis-resort-gameplay-v2.blend` for the updated editable landscaping. Five grass garden areas support all 16 tree bases outside the blue court run-off; `gameplay-landscaping-validation.json` records each check. Original v1 remains available below. Unity uses the updated `Resources/Tennis/CoastalTennisResort.fbx`; its export now isolates shared mesh data before joining, fixing duplicated foliage/material assignments and reducing the FBX from roughly 64 MB to 5.3 MB. Runtime gameplay is documented in `../../TENNIS-GAMEPLAY.md`; mobile optimization remains pending.
+Archived predecessor: `coastal-tennis-resort-gameplay-v2.blend` and `Resources/Tennis/CoastalTennisResort.fbx`. Five grass garden areas support all 16 tree bases outside the blue court run-off; `gameplay-landscaping-validation.json` records those older checks. Runtime gameplay is documented in `../../TENNIS-GAMEPLAY.md`.
 
 Reference-led 3D environment built around the supplied `tennis court 3d model.fbx`. The source FBX and character-animation studio are unchanged.
 

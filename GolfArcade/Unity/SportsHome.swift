@@ -32,6 +32,15 @@ struct SportsHome: View {
                         Text("Movement range: step \(Int(session.travel*100)) cm for full court width")
                         Toggle("Sound",isOn:$session.sound)
                         Toggle("Haptics",isOn:$session.haptics)
+                        Toggle("120 fps on ProMotion displays",isOn:$session.highFrameRate)
+                    }
+                    if session.sport == "tennis" {
+                        Section("Tennis") {
+                            Picker("Opponent",selection:$session.tennisDifficulty) {
+                                Text("Relaxed").tag(0.15); Text("Standard").tag(0.45); Text("Tough").tag(0.8)
+                            }.pickerStyle(.segmented).accessibilityIdentifier("tennisDifficulty")
+                            Button("Show the coaching tips again") { UserDefaults.standard.set(true,forKey:"sports.resetCoaching") }
+                        }
                     }
                     Section {
                         Button("Play on external display") { session.start() }.accessibilityIdentifier("startExternalGame")
@@ -44,6 +53,10 @@ struct SportsHome: View {
             }
             }
             .navigationTitle("Sports Arcade")
+            .task {
+                // `-benchTennis`: play a self-driving rally on the phone and log frame times.
+                if SportsSession.benchmark && !session.active { session.sport="tennis"; session.start(preview:true) }
+            }
             .buttonStyle(.borderless)
             .background(DisplayRegistration().frame(width:0,height:0))
             .onChange(of:scenePhase) { _,phase in

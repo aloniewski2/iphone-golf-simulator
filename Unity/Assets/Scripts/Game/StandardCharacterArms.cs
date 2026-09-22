@@ -83,6 +83,22 @@ namespace GolfArcade.Game
                         renderer.enabled = false;
                     }
                 }
+                // The name scan above only matches the golf-era meshes. The V4 tennis
+                // character names everything "V4 ...", so the scan finds nothing and the
+                // generated arm surface ends up with a null material -- built, lit, and
+                // completely invisible. Fall back to whatever skin the model does carry.
+                if (!skin)
+                {
+                    foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+                    {
+                        var candidate = renderer.sharedMaterial;
+                        if (!candidate) continue;
+                        bool isSkin = candidate.name.StartsWith("V4 skin")
+                            || renderer.name.IndexOf("hand", StringComparison.OrdinalIgnoreCase) >= 0;
+                        if (isSkin) { skin = candidate; break; }
+                    }
+                }
+                if (!skin) Debug.LogWarning($"[Arms] no skin material found for {name}; arms will not be visible");
                 var arm = arms[index];
                 var go = new GameObject("Standard continuous arm " + side);
                 go.transform.SetParent(transform, false);
@@ -126,7 +142,14 @@ namespace GolfArcade.Game
                 Vector3 oldUpper = arm.lower.position - shoulder, oldLower = wrist - arm.lower.position;
                 Quaternion upperRotation = arm.upper.rotation, lowerRotation = arm.lower.rotation;
                 float upper = UpperLengthMetres * scale, lower = ForearmLengthMetres * scale;
-                Vector3 pole = arm.chest.TransformDirection(arm.restPole);
+                // Bend the elbow the way the ANIMATION bends it, not toward a fixed pole taken
+                // from the bind pose. The clips animate the whole arm -- a forehand and a
+                // backhand carry visibly different elbow work -- and re-solving against a
+                // constant pole threw all of that away, giving every stroke the same generic
+                // arm. It never showed while the arms were hidden, because only the wrist was
+                // used. The rest pole stays as the fallback for a near-straight arm, where the
+                // animated elbow direction is degenerate and would jitter.
+                Vector3 pole = ElbowPole(arm, shoulder, wrist);
                 Vector3 elbow = SolveElbow(shoulder, wrist, pole, upper, lower);
                 arm.upper.rotation = Quaternion.FromToRotation(oldUpper, elbow - shoulder) * upperRotation;
                 arm.lower.position = elbow;
@@ -137,6 +160,19 @@ namespace GolfArcade.Game
                 if (!FloatingHandsPreview)
                     UpdateSurface(arm, transform.InverseTransformPoint(shoulder), transform.InverseTransformPoint(elbow), transform.InverseTransformPoint(wrist));
             }
+        }
+
+        /// Direction to bend the elbow, taken from where the animation has already put it.
+        /// `arm.lower.position` is still the animated elbow at this point in the frame.
+        static Vector3 ElbowPole(Arm arm, Vector3 shoulder, Vector3 wrist)
+        {
+            Vector3 axis = wrist - shoulder;
+            if (axis.sqrMagnitude < .000001f) return arm.chest.TransformDirection(arm.restPole);
+            Vector3 animated = Vector3.ProjectOnPlane(arm.lower.position - shoulder, axis.normalized);
+            // A nearly straight arm gives no usable bend direction; fall back rather than
+            // amplify noise into a flapping elbow.
+            return animated.sqrMagnitude > .0004f ? animated.normalized
+                : arm.chest.TransformDirection(arm.restPole);
         }
 
         public static Vector3 SolveElbow(Vector3 shoulder, Vector3 wrist, Vector3 pole, float upper, float lower)
@@ -156,6 +192,24 @@ namespace GolfArcade.Game
             Vector3 bend = Vector3.ProjectOnPlane(pole, axis);
             if (bend.sqrMagnitude < .000001f) bend = Vector3.Cross(axis, Mathf.Abs(axis.y) < .9f ? Vector3.up : Vector3.right);
             return shoulder + axis * along + bend.normalized * Mathf.Sqrt(Mathf.Max(0, upper * upper - along * along));
+        }
+
+        /// Radius along the arm, ring by ring, and how flat that section is. The old surface
+        /// was a straight taper -- a tube -- which is what made the arms read as pipes. This
+        /// follows the real silhouette: a rounded deltoid cap, the biceps, a narrow elbow, the
+        /// forearm's muscle swell just below it, and a slim, flattened wrist.
+        public static float ProfileRadius(int ring, out float flatten)
+        {
+            if (ring <= 6)
+            {
+                float u = ring / 6f;                                   // shoulder -> above elbow
+                flatten = 1;
+                return Mathf.Lerp(.064f, .043f, u) + .007f * Mathf.Sin(Mathf.PI * Mathf.Clamp01(u * 1.3f));
+            }
+            if (ring <= 10) { flatten = .95f; return Mathf.Lerp(.043f, .040f, (ring - 6) / 4f); }
+            float v = (ring - 10) / 6f;                                 // below elbow -> wrist
+            flatten = Mathf.Lerp(.95f, .86f, v);
+            return Mathf.Lerp(.042f, .027f, v) + .006f * Mathf.Sin(Mathf.PI * Mathf.Clamp01(v * 1.7f));
         }
 
         static void UpdateSurface(Arm arm, Vector3 shoulder, Vector3 elbow, Vector3 wrist)
@@ -179,11 +233,11 @@ namespace GolfArcade.Game
                 if (normal.sqrMagnitude < .5f) normal = Vector3.Cross(tangent, Vector3.right).normalized;
                 Vector3 binormal = Vector3.Cross(tangent, normal).normalized;
                 previousNormal = normal;
-                float radius = i <= 8 ? Mathf.Lerp(.058f, .041f, i / 8f) : Mathf.Lerp(.041f, .030f, (i - 8) / 8f);
+                float radius = ProfileRadius(i, out float flatten);
                 for (int j = 0; j < Sides; j++)
                 {
                     float angle = j * Mathf.PI * 2 / Sides;
-                    arm.vertices[i * Sides + j] = arm.centers[i] + radius * (normal * Mathf.Cos(angle) + binormal * Mathf.Sin(angle));
+                    arm.vertices[i * Sides + j] = arm.centers[i] + radius * (normal * Mathf.Cos(angle) + binormal * (Mathf.Sin(angle) * flatten));
                 }
             }
             arm.vertices[Rings * Sides] = shoulder;

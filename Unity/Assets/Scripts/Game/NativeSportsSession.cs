@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
-using System.Text;
 using GolfArcade.Tennis;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,16 +8,28 @@ using UnityEngine.Rendering;
 
 namespace GolfArcade.Game
 {
+    /// Runs before gameplay scripts so the newest phone sample is applied in the same frame
+    /// it arrives, rather than whenever Unity happened to order this after TennisGame.
+    [DefaultExecutionOrder(-1000)]
     public sealed class NativeSportsSession : MonoBehaviour
     {
         [Serializable] public class Message {
             public int version; public string session, action, sport, playerID, playerName,reason;
-            public bool female,left,sound=true,haptics=true,touch,external; public int skin=2; public float value;
+            public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,difficulty=-1;
         }
-        [Serializable] public class Sample {
-            public int version,swing; public string session; public double time; public float target,power,aim; public bool valid;
-            public string tracking,warning;
-            public float qx,qy,qz,qw,rx,ry,rz,gx,gy,gz,handSide,lift,strokeFacing;
+        /// One motion sample, read straight out of native memory. This used to be JSON text
+        /// decoded into a new string and a new object 100 times a second -- steady garbage
+        /// that shows up as periodic collection hitches. Layout mirrors `SportsSample` in
+        /// SportsRuntime.h and SportsBridge.mm exactly; change all three together.
+        [StructLayout(LayoutKind.Sequential)] public struct Sample {
+            public int version, session; public double time; public float target,power,aim;
+            public int swing, swingStart, swingAbort, flags;
+            public float handSide,lift,strokeFacing;
+            public float qx,qy,qz,qw,rx,ry,rz,gx,gy,gz;
+            public const int Version = 2;
+            public bool valid => (flags & 1) != 0;
+            /// World tracking is blurred or limited; the rally continues with a warning.
+            public bool degraded => (flags & 2) != 0;
         }
         [Serializable] class Event {
             public int version=1; public string session,type,message; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
@@ -26,27 +37,27 @@ namespace GolfArcade.Game
         public static bool Active { get; private set; }
         public static bool Left { get; private set; }
         public static string PauseReason { get; private set; }
+        /// True while input comes from on-screen controls rather than phone motion. Serving
+        /// cannot demand a raised-arm gesture from a player who is tapping a button.
+        public static bool Touch { get; private set; }
         /// Non-empty while world tracking is degraded. The rally keeps running; this is the
         /// on-screen explanation for why the player briefly stopped responding to steps.
         public static string TrackingWarning { get; private set; }
-        string session; bool loading,paused=true,touch; int lastSwing;
+        string session; int token; bool loading,paused=true,touch; int lastSwing,lastSwingStart,lastSwingAbort;
         double lastSample=-1,resumedAt; float target, nextFeedback;
         TennisGame tennis; GolfGame golf;
-        const int InputCapacity=8192;
-        readonly IntPtr inputBuffer=Marshal.AllocHGlobal(InputCapacity);
-        readonly byte[] inputBytes=new byte[InputCapacity];
         Camera gameplayCamera;
         bool frameRendered;
         int outputDisplay;
         public bool Ready { get; private set; }
         public Camera GameplayCamera => gameplayCamera;
 #if UNITY_IOS && !UNITY_EDITOR
-        [DllImport("__Internal")] static extern int SportsPollInput(IntPtr value,int capacity);
+        [DllImport("__Internal")] static extern int SportsPollSample(out Sample sample);
         [DllImport("__Internal")] static extern void SportsEmit(string value);
         [DllImport("__Internal")] static extern double SportsClock();
         [DllImport("__Internal")][return: MarshalAs(UnmanagedType.I1)] static extern bool SportsPresentExternalDisplay();
 #else
-        static int SportsPollInput(IntPtr value,int capacity)=>0;
+        static int SportsPollSample(out Sample sample) { sample=default; return 0; }
         static void SportsEmit(string value) {}
         static double SportsClock()=>Time.realtimeSinceStartupAsDouble;
         static bool SportsPresentExternalDisplay()=>true;
@@ -82,18 +93,24 @@ namespace GolfArcade.Game
                     case "sound": AudioListener.volume=m.value>0?1:0; break;
                     case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); break;
                     case "display": if(!loading) StartCoroutine(Present(true,"displayReady")); break;
-                    case "touch": touch=true; if(golf) golf.Swing.Detector.Reset(); break;
-                    case "motion": touch=false; if(golf) golf.NativeReady(); break;
+                    case "touch": Touch=true; touch=true; if(golf) golf.Swing.Detector.Reset(); break;
+                    case "motion": Touch=false; touch=false; if(golf) golf.NativeReady(); break;
                     case "recalibrate": if(golf) golf.NativeReady(); break;
+                    case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
+                    case "coaching": TennisCoach.ResetTips(); break;
                 }
             } catch(Exception e) { Emit("error",e.Message); }
         }
         IEnumerator Load(Message m) {
-            loading=true; Ready=false; Active=true; session=m.session; Left=m.left; lastSwing=0; lastSample=-1; target=0;
+            loading=true; Ready=false; Active=true; session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0;
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
             GolferStyle.SkinTone=m.skin; AudioListener.volume=m.sound?1:0; Haptics.Enabled=m.haptics;
-            Time.timeScale=1; Application.targetFrameRate=60;
+            Time.timeScale=1;
+            // 60 everywhere; 120 only when asked for and the panel can actually show it.
+            Application.targetFrameRate=FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
+            QualitySettings.vSyncCount=0;
+            TennisQuality.Apply();
             Screen.orientation=m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
             yield return SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
             tennis=FindFirstObjectByType<TennisGame>(); golf=FindFirstObjectByType<GolfGame>();
@@ -102,7 +119,8 @@ namespace GolfArcade.Game
             if((m.sport=="tennis" && (!tennis || !tennis.Initialized)) || (m.sport=="golf" && !golf)) {
                 loading=false; SetPaused(true); Emit("error","The sport did not initialize its gameplay scene."); yield break;
             }
-            if(tennis) { tennis.NativeControlled=true; tennis.SelectCharacter(m.female); }
+            if(tennis) { tennis.NativeControlled=true; tennis.AutoPlay=m.bench; if(m.difficulty>=0) tennis.OpponentDifficulty=Mathf.Clamp01(m.difficulty); tennis.SelectCharacter(m.female); }
+            if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress();
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
@@ -156,28 +174,31 @@ namespace GolfArcade.Game
             if(gameplayCamera && outputDisplay==0 && Screen.height>0)
                 gameplayCamera.aspect=(float)Screen.width/Screen.height;
             for(int i=0;i<64;i++) {
-                int count=SportsPollInput(inputBuffer,InputCapacity);
-                if(count<=0) break;
-                if(count>=InputCapacity) continue;
-                Marshal.Copy(inputBuffer,inputBytes,0,count);
-                Sample sample;
-                try { sample=JsonUtility.FromJson<Sample>(Encoding.UTF8.GetString(inputBytes,0,count)); }
-                catch(ArgumentException) { continue; }
-                if(!AcceptSample(sample,session,lastSample,SportsClock())) continue;
+                if(SportsPollSample(out var sample)==0) break;
+                if(!AcceptSample(sample,token,lastSample,SportsClock())) continue;
                 lastSample=sample.time;
                 // The phone decides tracking quality; Unity only decides how to show it.
-                TrackingWarning = sample.tracking == "degraded"
-                    ? (string.IsNullOrEmpty(sample.warning) ? "Tracking degraded" : sample.warning) : "";
+                TrackingWarning = sample.degraded ? DegradedWarning : "";
                 if(paused || !sample.valid) continue;
                 // A degraded sample still carries the last good court position, so the player
                 // holds station through the blip instead of the game pausing.
                 target=Mathf.Clamp(sample.target,-1,1);
                 if(golf && !touch) golf.NativeMotion(sample);
+                // Onset first: the character starts the stroke the moment the phone does, and
+                // confirmation (or a write-off) arrives a few samples later. All three can land
+                // in one sample when frames are slow, so the order here matters.
+                if(sample.swingStart>lastSwingStart) {
+                    lastSwingStart=sample.swingStart;
+                    if(tennis) tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing);
+                }
                 if(sample.swing>lastSwing) {
                     lastSwing=sample.swing;
-                    Debug.Log($"[SportsInput] accepted swing {lastSwing} power={sample.power}");
                     if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing);
                     if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
+                }
+                if(sample.swingAbort>lastSwingAbort) {
+                    lastSwingAbort=sample.swingAbort;
+                    if(tennis) tennis.AbortSwing();
                 }
             }
             if(!paused && SportsClock()-Math.Max(lastSample,resumedAt)>.5) {
@@ -189,15 +210,23 @@ namespace GolfArcade.Game
                 float delta=target*3.6f+tennis.AssistOffset-tennis.Player.transform.position.x;
                 tennis.SetLateralInput(Mathf.Clamp(delta*1.25f,-1,1),Mathf.Abs(delta)>1.1f);
             }
+            // The phone only shows this as status text; four updates a second is plenty and
+            // keeps the per-frame string building out of the hot path.
             if(Time.unscaledTime>=nextFeedback) {
-                nextFeedback=Time.unscaledTime+.1f;
-                Emit("feedback",tennis?$"Hits {tennis.Hits} · {tennis.Feedback}":golf?golf.NativeFeedback():"",tennis?tennis.Stamina:1);
+                nextFeedback=Time.unscaledTime+.25f;
+                string message=tennis?tennis.Feedback:golf?golf.NativeFeedback():"";
+                if(!ReferenceEquals(message,lastFeedback) || Time.unscaledTime>=nextHeartbeat) {
+                    lastFeedback=message; nextHeartbeat=Time.unscaledTime+1;
+                    Emit("feedback",tennis?$"Hits {tennis.Hits} · {message}":message,tennis?tennis.Stamina:1);
+                }
             }
         }
+        const string DegradedWarning="Tracking degraded — keep the lens clear";
+        string lastFeedback; float nextHeartbeat;
         void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
-        public static bool AcceptSample(Sample s,string expected,double previous,double now) =>
-            s!=null && s.version==1 && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
+        public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
+            s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power);
-        void OnDestroy() { Marshal.FreeHGlobal(inputBuffer); Active=false; Left=false; TrackingWarning=""; Time.timeScale=1; }
+        void OnDestroy() { Active=false; Left=false; TrackingWarning=""; Time.timeScale=1; }
     }
 }
