@@ -14,10 +14,11 @@ namespace GolfArcade.Game
         /// Everything drawn for the player rather than part of the course (aim dots, the landing
         /// ring, the tracer, this): the course view shows it, the minimap's camera leaves it out.
         public const int OverlayLayer = 31;
-        /// The ball's least height on the screen, as a share of the view's height (~1 %, about
-        /// 25 px on a phone); in the ball POV while it flies, a bigger ball, as a share of the
+        /// The ball's least height on the screen, as a share of the view's height (under 1 %,
+        /// about 20 px on a phone — small, the way Golf Dreams keeps it: the yardage riding beside
+        /// it and the tracer are what find it); in the ball POV while it flies, a bigger ball, as a share of the
         /// frame's width (Codex's own is ~8 %, which looked like a beach ball once it sat by the flag).
-        const float MinShare = 0.0105f, PovWidthShare = 0.045f;
+        const float MinShare = 0.0085f, PovWidthShare = 0.045f;
         float share = MinShare, wantShare = MinShare;
         /// The drawn ball's diameter this frame, yards (its true size, or swollen to be seen),
         /// and its centre.
@@ -83,12 +84,31 @@ namespace GolfArcade.Game
 
         void LateUpdate()
         {
-            if (!readable || !view || !ball.gameObject.activeInHierarchy)
+            if (!view || !ball.gameObject.activeInHierarchy)
             {
-                if (readable) { halo.gameObject.SetActive(false); shadow.gameObject.SetActive(false); }
+                halo.gameObject.SetActive(false); shadow.gameObject.SetActive(false);
                 return;
             }
-            halo.gameObject.SetActive(true);
+            if (!readable)
+            {
+                // at rest at its true size (address, the green): a soft contact shadow right under
+                // it, so it sits in the grass instead of floating on it
+                halo.gameObject.SetActive(false);
+                double under = HoleView.GroundHeight(HoleView.ToCourse(ball.position));
+                bool resting = ball.position.y - (float)under < size * 1.5f;
+                shadow.gameObject.SetActive(resting);
+                if (resting)
+                {
+                    shadow.position = new Vector3(ball.position.x, (float)under + 0.006f, ball.position.z);
+                    shadow.rotation = Quaternion.Euler(90, 0, 0);
+                    shadow.localScale = Vector3.one * size * 1.9f;
+                    var c = shadowMaterial.color; c.a = 0.55f; shadowMaterial.color = c;
+                }
+                return;
+            }
+            // no glow round it in the ordinary shot (Golf Dreams has none); a faint one on the
+            // POV's bigger ball, against the sky
+            halo.gameObject.SetActive(wantShare > MinShare);
             // swell to the least screen size, the bottom staying where the real ball's is
             share = Mathf.MoveTowards(share, wantShare, Time.deltaTime * 0.03f);
             float k = Mathf.Max(1f, share * ViewHeightAt(ball.position) / size);

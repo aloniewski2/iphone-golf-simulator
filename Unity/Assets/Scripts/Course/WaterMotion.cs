@@ -7,6 +7,7 @@ namespace GolfArcade.Course
     /// hole12_animate_finish.py and hole12_prepare.py). Cross-fading them one after another makes
     /// the swell travel, and the loop closes every Period seconds; WATER_GLINTS, the sheet of
     /// highlight cards, drifts with it and back. The shapes are already calm along every shore.
+    /// The flag's flutter (pin_build.py: four keys a quarter wave apart) runs on it too, faster.
     public sealed class WaterMotion : MonoBehaviour
     {
         public float Period = 8f;
@@ -17,7 +18,7 @@ namespace GolfArcade.Course
         int shapes;
 
         /// Attach to a course model that has the animated water; null when it has none.
-        public static WaterMotion Attach(Transform waves, Transform glints)
+        public static WaterMotion Attach(Transform waves, Transform glints, float period = 8f, bool castShadows = false)
         {
             if (!waves) return null;
             // The importer gives an unskinned mesh a MeshRenderer even when it has blendshapes;
@@ -32,13 +33,14 @@ namespace GolfArcade.Course
                 smr = waves.gameObject.AddComponent<SkinnedMeshRenderer>();
                 smr.sharedMesh = mesh;
                 smr.sharedMaterials = mats;
-                smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                smr.receiveShadows = false;
+                smr.shadowCastingMode = castShadows ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
+                smr.receiveShadows = castShadows;
             }
             if (!smr || !smr.sharedMesh || smr.sharedMesh.blendShapeCount == 0) return null;
             var motion = waves.gameObject.AddComponent<WaterMotion>();
             motion.waves = smr;
             motion.shapes = smr.sharedMesh.blendShapeCount;
+            motion.Period = period;
             smr.updateWhenOffscreen = true; // the grid's bounds are its flat basis; a crest must not be culled
             if (glints) { motion.glints = glints; motion.glintsHome = glints.localPosition; }
             return motion;

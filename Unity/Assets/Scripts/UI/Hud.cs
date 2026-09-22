@@ -529,7 +529,7 @@ namespace GolfArcade.UI
         public void ShowPlayHud(bool on)
         {
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro") child.gameObject.SetActive(on);
+                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Shot stats") child.gameObject.SetActive(on);
         }
 
         // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
@@ -833,6 +833,82 @@ namespace GolfArcade.UI
                 badge.anchoredPosition = top + top.normalized * 22f;
                 disc.color = i < checkpoints.Count && checkpoints[i].Disc.color == Game.LandingZone.Amber ? Game.LandingZone.Amber : BadgeRest;
             }
+        }
+
+        // ---- The shot as Golf Dreams shows it: while the ball is away the aiming HUD clears and
+        // a row of swing-stat tiles runs across the top (a coloured title strip over a white
+        // value), and a yardage label rides beside the ball, counting as it flies and runs.
+        RectTransform statsRow;
+        readonly System.Collections.Generic.List<(Text title, Text value)> statTiles = new();
+        Text ballTag;
+        bool flightMode;
+
+        /// The aiming HUD out of the way for the shot (cards, meter, map, prompts), or back.
+        public void FlightMode(bool on)
+        {
+            if (flightMode == on) return;
+            flightMode = on;
+            if (Controller == null) foreach (var rt in new[] { holeCard, scoreCard, shotCard, meterRect }) rt.gameObject.SetActive(!on);
+            minimapHolder.gameObject.SetActive(!on);
+            statusText.enabled = tempoText.enabled = !on;
+            if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
+        }
+
+        /// The tiles: one per title, with its value under it.
+        public void ShowShotStats(string[] titles, string[] values)
+        {
+            if (statsRow == null)
+            {
+                statsRow = new GameObject("Shot stats").AddComponent<RectTransform>();
+                statsRow.SetParent(safeArea, false);
+                statsRow.anchorMin = statsRow.anchorMax = new Vector2(0.5f, 1); statsRow.pivot = new Vector2(0.5f, 1);
+                statsRow.anchoredPosition = new Vector2(0, -Margin); statsRow.sizeDelta = new Vector2(1000, 110);
+            }
+            const float w = 188, gap = 10, h = 108, strip = 38;
+            float x0 = -(titles.Length * w + (titles.Length - 1) * gap) / 2f + w / 2f;
+            while (statTiles.Count < titles.Length)
+            {
+                var tile = Panel("Tile", new Color(1, 1, 1, 0.96f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), Vector2.zero, new Vector2(w, h), statsRow);
+                tile.rectTransform.pivot = new Vector2(0.5f, 1); tile.raycastTarget = false;
+                var head = Panel("Strip", UiKit.AccentStrong, new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, new Vector2(0, strip), tile.transform);
+                head.rectTransform.pivot = new Vector2(0.5f, 1); head.raycastTarget = false;
+                var t = UiKit.Label(head.transform, "Title", 22, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
+                t.color = Color.white; t.raycastTarget = false;
+                var v = UiKit.Label(tile.transform, "Value", 34, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(1, 0), new Vector2(0, 0), new Vector2(0, h - strip), UiKit.Display, false);
+                v.rectTransform.pivot = new Vector2(0.5f, 0); v.color = UiKit.Ground; v.raycastTarget = false;
+                statTiles.Add((t, v));
+            }
+            for (int i = 0; i < statTiles.Count; i++)
+            {
+                var tile = (RectTransform)statTiles[i].title.transform.parent.parent;
+                bool on = i < titles.Length;
+                tile.gameObject.SetActive(on);
+                if (!on) continue;
+                tile.anchoredPosition = new Vector2(x0 + i * (w + gap), 0);
+                statTiles[i].title.text = titles[i]; statTiles[i].value.text = values[i];
+            }
+            statsRow.gameObject.SetActive(true);
+        }
+
+        public void HideShotStats() { if (statsRow) statsRow.gameObject.SetActive(false); }
+
+        /// The yardage beside the ball, placed off `view`; null text hides it.
+        public void SetBallTag(Camera view, Vector3 ball, string text)
+        {
+            if (ballTag == null)
+            {
+                ballTag = UiKit.Label(transform, "Ball tag", 36, TextAnchor.LowerLeft, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(260, 48), UiKit.Display);
+                ballTag.rectTransform.pivot = new Vector2(0, 0); ballTag.color = Color.white; ballTag.raycastTarget = false;
+                ballTag.transform.SetSiblingIndex(1);   // over the picture, under the HUD
+            }
+            bool on = text != null && view;
+            if (on)
+            {
+                var vp = view.WorldToViewportPoint(ball);
+                on = vp.z > 0.3f && vp.x > -0.1f && vp.x < 1.1f && vp.y > -0.1f && vp.y < 1.1f;
+                if (on) { ballTag.rectTransform.anchorMin = ballTag.rectTransform.anchorMax = new Vector2(vp.x, vp.y); ballTag.rectTransform.anchoredPosition = new Vector2(18, 16); ballTag.text = text; }
+            }
+            ballTag.gameObject.SetActive(on);
         }
 
         /// The read, in the wind line's place while putting: no wind matters on the green.

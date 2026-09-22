@@ -89,9 +89,10 @@ namespace GolfArcade.Course
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;
-        /// The game's ball is drawn about 2.55× a real one (0.12 yd across); the cup is scaled
-        /// with it so the hole reads right beside the ball — a regulation 4¼" cup at that scale.
-        public const double CupScale = 2.55;
+        /// The game's ball is drawn about 2.55× a real one (0.12 yd across); the cup is scaled a
+        /// little past that — 3.2× a regulation 4¼" cup, about three balls across — so from the
+        /// putting view the hole reads clearly bigger than the ball, the way the arcade games draw it.
+        public const double CupScale = 3.2;
         /// The cup's mouth as drawn, yards: a ball whose centre crosses it slowly enough drops,
         /// so a putt that rolls over the dark of the hole goes in.
         public const double CupCaptureRadius = 0.054 * 1.0936 * CupScale;

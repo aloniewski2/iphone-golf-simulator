@@ -63,7 +63,7 @@ namespace GolfArcade.Game
         {
             float d = view ? Vector3.Distance(view.transform.position, at) : 30f;
             float viewHeight = view ? 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f) : 30f;
-            return Mathf.Max(0.004f, 0.003f * viewHeight);
+            return Mathf.Max(0.006f, 0.0042f * viewHeight);
         }
 
         void LateUpdate()

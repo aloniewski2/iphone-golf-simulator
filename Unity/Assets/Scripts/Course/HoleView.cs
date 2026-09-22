@@ -73,7 +73,7 @@ namespace GolfArcade.Course
             ["MAT_WOOD_LIGHT"] = Rgb(199, 151, 94), ["MAT_CHALK"] = Rgb(240, 239, 220), ["MAT_SLATE"] = Rgb(66, 97, 112),
             ["MAT_FLOWER_CORAL"] = Rgb(243, 132, 147), ["MAT_FLOWER_GOLD"] = Rgb(251, 205, 80), ["MAT_FLOWER_LAVENDER"] = Rgb(184, 135, 213),
             // The pin (blender/pin.blend): the cup's liner and the band on the stick.
-            ["MAT_CUP_RIM"] = Rgb(245, 245, 240), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
+            ["MAT_CUP_EDGE"] = Rgb(92, 150, 58), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
         };
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
 
@@ -240,11 +240,30 @@ namespace GolfArcade.Course
                     r.sharedMaterials = mats;
                 }
                 pinRoot = model.transform;
-                // the cup at the ball's scale (Hole.CupScale): the pole and the flag stay life-size
-                var cupMesh = FindDeep(pinRoot, "CUP");
-                if (cupMesh) cupMesh.localScale *= (float)Hole.CupScale;
+                // The cup (blender/scripts/pin_build.py): its mouth marks the stencil and its inside
+                // draws through the green there, so the hole has real depth in an uncut green. All
+                // of it at the ball's scale (Hole.CupScale) and lying with the green's slope; the
+                // pole and the flag stay life-size and upright.
+                var slope = Physics.Raycast(pin + Vector3.up * 5f, Vector3.down, out var at, 20f, ~0, QueryTriggerInteraction.Ignore)
+                    ? Quaternion.FromToRotation(Vector3.up, at.normal) : Quaternion.identity;
+                foreach (var name in new[] { "CUP", "CUP_MOUTH", "CUP_EDGE" })
+                {
+                    var part = FindDeep(pinRoot, name);
+                    if (!part) continue;
+                    part.SetParent(transform, true);   // the flag turns with the wind; the hole doesn't
+                    part.localScale *= (float)Hole.CupScale;
+                    part.rotation = slope * part.rotation;
+                    var r = part.GetComponent<Renderer>();
+                    if (!r) continue;
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    if (name == "CUP") r.sharedMaterial = CupMaterial("GolfArcade/HoleInside");
+                    else if (name == "CUP_MOUTH") r.sharedMaterial = CupMaterial("GolfArcade/HoleMask");
+                }
                 flagstick = FindDeep(pinRoot, "FLAG_POLE");
                 flag = FindDeep(pinRoot, "FLAG");
+                // the flag flutters: its four shape keys cross-faded round a loop, a ripple running
+                // out to the fly a little faster than once a second
+                if (flag) WaterMotion.Attach(flag, null, 1.1f, true);
                 Flag = flagstick ? flagstick : pinRoot;
                 return;
             }
@@ -261,6 +280,15 @@ namespace GolfArcade.Course
         }
 
         const float MetresToYards = 1.0936f;
+
+        static readonly Dictionary<string, Material> cupMaterials = new();
+        static Material CupMaterial(string shader)
+        {
+            if (cupMaterials.TryGetValue(shader, out var m) && m) return m;
+            var s = Shader.Find(shader);
+            if (!s) { Debug.LogError($"{shader} missing from the build — run Golf Arcade → Set Up Project"); s = Shader.Find("Unlit/Color"); }
+            return cupMaterials[shader] = new Material(s);
+        }
 
         /// Tend the flag: it comes out for a putt and goes back for the next player.
         public void ShowFlag(bool on)

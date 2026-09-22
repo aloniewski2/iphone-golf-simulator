@@ -96,6 +96,13 @@ namespace GolfArcade.Game
         /// just above the ball, the big ball low in the frame and the flag ahead.
         const double PovFromYards = 30, PovWithinYards = 10;
         bool povShot;
+        /// Golf Dreams' shot: the address view holds this long after the strike while the ball
+        /// and its tracer leave, then the camera cuts to its glide down the line (CameraRig.Drone)
+        /// and the HUD clears to the swing-stat tiles and the yardage riding the ball.
+        const float DroneHold = 0.8f;
+        bool flightHud;
+        SwingImpact lastImpact;
+        Vector3 originWorld;
         /// True while the shot in the air (or just finished) is being watched from the ball POV.
         public bool PovShot => povShot && (Current == State.Flight || Current == State.Result);
         Vector3 lastBallPos;
@@ -113,11 +120,25 @@ namespace GolfArcade.Game
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             course = Course.Course.Cliffside();
 
+            // Clean edges and clean shadows, whatever quality level the platform defaults to: 4×
+            // MSAA for the low-poly silhouettes (cliffs, trees, the green's rim) and soft,
+            // high-resolution sun shadows over the distance the camera actually works in, instead
+            // of one coarse map stretched over 150 yd that stair-steps across the fairway.
+            QualitySettings.antiAliasing = 4;
+            QualitySettings.shadows = ShadowQuality.All;
+            QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
+            QualitySettings.shadowProjection = ShadowProjection.StableFit;
+            QualitySettings.shadowCascades = 2;
+            QualitySettings.shadowCascade2Split = 0.25f;
+            QualitySettings.shadowDistance = 90f;
+
             var light = new GameObject("Sun").AddComponent<Light>();
             light.type = LightType.Directional;
             light.transform.rotation = Quaternion.Euler(50, -30, 0);
             light.intensity = 1.1f;
             light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.75f;
+            light.shadowBias = 0.04f; light.shadowNormalBias = 0.3f;
             RenderSettings.ambientLight = new Color(0.55f, 0.6f, 0.65f);
             RenderSettings.fog = true;
             RenderSettings.fogColor = new Color(0.75f, 0.85f, 0.95f);
@@ -409,6 +430,7 @@ namespace GolfArcade.Game
             golfer.Settle();
             effects.ClearTracer();
             rig.RestoreFov();
+            hud.FlightMode(false); hud.HideShotStats(); hud.SetBallTag(null, default, null); flightHud = false;
             hud.Map.Trace.Clear(); hud.Map.Changed();
             RefreshControls();
             hud.SetMeter(0);
@@ -417,8 +439,9 @@ namespace GolfArcade.Game
             rig.ResetZoom();
             if (putting) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin));
             else rig.FrameAddress(ball.position, AimDirection(), putting);
-            // On the green the flag comes out and the read goes down.
-            holeView.ShowFlag(!putting);
+            // On the green the read goes down; the flag stays in on a long putt, so the hole can be
+            // found from across the green, and comes out inside six yards.
+            holeView.ShowFlag(!putting || ballAt.DistanceTo(hole.Pin) > 6);
             if (putting) greenRead.Show(hole); else greenRead.Hide();
             Enter(State.Aim);
         }
@@ -908,6 +931,7 @@ namespace GolfArcade.Game
             if (shotLine.sqrMagnitude < 1f) shotLine = AimDirection();
             drawnY = launchGround; drawnVy = 0;
             touchedDown = false; splashedAt = -1;
+            lastImpact = impact; originWorld = HoleView.ToWorld(ballAt); flightHud = false;
             povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
                       && LastShot.LandingTime > 0 && LastShot.Landing.DistanceTo(hole.Pin) <= PovWithinYards;
             greenRead.Hide();
@@ -937,8 +961,8 @@ namespace GolfArcade.Game
             plan.Trace.Add(ball.position);
             plan.ShowLoad = false;
             plan.Changed();
-            rig.BeginChase();
             Enter(State.Flight);
+            RefreshControls();   // now it is in the air: the aim and club buttons go
             ballLook.Pov(povShot);
         }
 
@@ -961,6 +985,13 @@ namespace GolfArcade.Game
             if (!aimingShot) plan.ShowLoad = false;
             hud.DrawMinimap(minimapCamera);
             hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hud.Controller == null);
+            // the yardage riding the ball, counting through the flight and the run
+            if (flightHud && (Current == State.Flight || Current == State.Result) && ball.gameObject.activeSelf && hud.Controller == null)
+            {
+                var gone = ball.position - originWorld; gone.y = 0;
+                hud.SetBallTag(rig.Camera, ballLook.Centre, $"{gone.magnitude:F0} yds");
+            }
+            else hud.SetBallTag(null, default, null);
 
             switch (Current)
             {
@@ -1103,15 +1134,22 @@ namespace GolfArcade.Game
                 rig.BallPov(pos, shotLine, (float)(land - flightTime), (float)flightTime);
                 rig.EaseHorizontalFov(CameraRig.PovLensHorizontal, 72f, 0.6f);
             }
-            else
+            else if (flightTime >= DroneHold)
             {
-                // how steeply it is coming down, off the shot's own path (smooth, unlike frame steps)
-                double t0 = Math.Max(0, Math.Min(flightTime, land) - 0.1), t1 = Math.Min(flightTime, land);
-                var a = LastShot.PositionAt(t0); var b = LastShot.PositionAt(t1);
-                double across = Math.Sqrt((b.x - a.x) * (b.x - a.x) + (b.d - a.d) * (b.d - a.d));
-                double fall = (a.h - b.h) + (launchGround - landingGround) * (t1 - t0) / Math.Max(land, 1e-3);
-                float descent = across > 1e-3 ? (float)(fall / across) : 0f;
-                rig.Chase(pos, shotLine, descent, (float)(land - flightTime));
+                var flat = pos - originWorld; flat.y = 0;
+                float along = Vector3.Dot(flat, shotLine.normalized);
+                float carryYards = new Vector2(landingSpot.x - originWorld.x, landingSpot.z - originWorld.z).magnitude;
+                rig.Drone(pos, originWorld, new Vector3(landingSpot.x, (float)landingGround, landingSpot.z), shotLine, along, carryYards, touchedDown);
+            }
+            // the cut: the address view has watched it go; now the glide, and the shot's HUD
+            if (club != GolfClub.Putter && !flightHud && flightTime >= DroneHold)
+            {
+                flightHud = true;
+                if (!povShot) rig.SnapNext();
+                hud.FlightMode(true);
+                string Deg(double d) => Math.Abs(d) < 0.05 ? "0.0°" : $"{Math.Abs(d):0.0}°{(d > 0 ? "R" : "L")}";
+                hud.ShowShotStats(new[] { "Swing Speed", "Swing Load", "Face", "Start Line", "Curve" },
+                                  new[] { $"{club.ClubSpeedMPH(lastImpact.Power):F0} mph", $"{lastImpact.Backswing:P0}", Deg(lastImpact.FaceDegrees), Deg(LastShot.StartLine), Deg(LastShot.Curve) });
             }
 
             // Done when the shot has run its course and the drawn ball has caught up with it
@@ -1152,7 +1190,7 @@ namespace GolfArcade.Game
             hud.ShowBanner(result, 2.2f);
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             // the POV stays where it is, on the ball by the flag, as Codex's does
-            if (!holeCam && splashedAt < 0 && !povShot) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
+            if (!holeCam && club == GolfClub.Putter) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
         }
 
