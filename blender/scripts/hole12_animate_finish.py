@@ -28,10 +28,11 @@ of the flight. This script is the repeatable last mile, run on the saved Hole_12
     frame so the GLB carries the move;
   * saves the .blend, re-exports Exports/Hole_12_Animated.glb as one combined clip (ball, camera,
     wave weights, glints), renders the preview MP4 and the two Cycles stills, and rewrites
-    ANIMATION_README.md and Ball_Animation.json to match;
-  * writes the shot for the game — Unity/Assets/Resources/Course/hole_12_shot.json: the ball and
-    the camera every frame in scene metres, plus the reference empties the game solves the
-    scene→course mapping from (Game/SignatureShot.cs plays it as the hole's intro).
+    ANIMATION_README.md and Ball_Animation.json to match.
+
+The game's copy of the shot (Resources/Course/hole_12_shot.json) is written by
+hole12_cinematic_export.py from Codex's later Hole_12_Cinematic.blend, whose cameras superseded
+CAM_Ball_Action; this script no longer touches it.
 """
 import bpy, json, math, os, struct, sys
 from mathutils import Vector
@@ -47,8 +48,6 @@ def option(flag, default=None):
 
 
 OUT = option("--out", os.path.dirname(bpy.data.filepath) or os.getcwd())
-REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-SHOT_JSON = os.path.join(REPO, "Unity", "Assets", "Resources", "Course", "hole_12_shot.json")
 SHEET = option("--sheet")
 FPS, FRAMES = 30, 240
 BALL_R = 0.45        # Codex's presentation scale — a real ball would be a pixel at course scale
@@ -302,32 +301,6 @@ with open(os.path.join(OUT, "Ball_Animation.json"), "w") as fh:
                "style": "Exaggerated ball scale for animation visibility; a designed shot, not a simulation",
                "camera": "CAM_Ball_Action, baked every frame", "key_events": events}, fh, indent=2)
 
-# The same shot for the game, flat arrays (Unity's JsonUtility reads nothing nested): ball
-# centres and, for the camera, its position and a point 20 m down its view, per frame. The
-# game maps scene metres onto its course through the reference empties listed here, whose
-# world positions it knows once the model is placed.
-REFS = ("TEE_WHITE", "CUP", "MARKER_UP", "LANDING_SAFE")
-ref_points = {}
-for name in REFS:
-    o = O.get(name)
-    if o is None and name == "MARKER_UP":       # the prep script adds it 50 m over the tee
-        ref_points[name] = tuple(O["TEE_WHITE"].location + Vector((0, 0, 50)))
-    else:
-        ref_points[name] = tuple(o.matrix_world.translation)
-ball_flat, cam_flat = [], []
-for f in range(1, FRAMES + 1):
-    sc.frame_set(f)
-    ball_flat.extend(round(c, 4) for c in ball_at(f))
-    m = cam.matrix_world
-    look = m.translation + (m.to_3x3() @ Vector((0, 0, -1))).normalized() * 20
-    cam_flat.extend(round(c, 4) for c in (*m.translation, *look))
-sc.frame_set(1)
-with open(SHOT_JSON, "w") as fh:
-    json.dump({"fps": FPS, "frames": FRAMES, "start": 24, "ballRadius": BALL_R, "sensorWidth": cam.data.sensor_width, "lens": LENS,
-               "landings": [94, 112, 126, 136], "rest": 204,
-               "refNames": list(REFS), "refPoints": [round(c, 4) for n in REFS for c in ref_points[n]],
-               "ball": ball_flat, "cam": cam_flat}, fh, separators=(",", ":"))
-print("SHOT", SHOT_JSON, os.path.getsize(SHOT_JSON) // 1024, "KB")
 
 
 def eevee(samples=12):

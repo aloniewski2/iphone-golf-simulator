@@ -341,7 +341,7 @@ namespace GolfArcade.Game
             hud.ShowHoleIntro(hole.Number, hole.Name, hole.Par, hole.Length, hole.Picture, hole.Blurb,
                 Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}");
             signature = SignatureShot.Load(hole.Number, holeView);
-            signatureLanding = 0; signaturePlaying = false;
+            signatureLanding = 0; signaturePlaying = overviewPlaying = false;
             rig.SnapNext();
             Enter(State.Intro);
             RefreshControls();
@@ -352,7 +352,7 @@ namespace GolfArcade.Game
             if (Current == State.Intro)
             {
                 hud.HideHoleIntro(); hud.ShowPlayHud(true);
-                if (signaturePlaying) { rig.RestoreFov(); PlaceBall(ballAt, 0); signaturePlaying = false; }
+                if (signaturePlaying || overviewPlaying) { rig.RestoreFov(); PlaceBall(ballAt, 0); signaturePlaying = overviewPlaying = false; }
             }
             var lie = hole.LieAt(ballAt);
             bool putting = lie == CourseLie.Green;
@@ -372,6 +372,7 @@ namespace GolfArcade.Game
             hud.SetMeter(0);
             UpdateAimVisuals();
             if (Current == State.Intro) rig.SnapNext(); // cut from the flyover, don't glide the length of the hole
+            rig.ResetZoom();
             if (putting) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin));
             else rig.FrameAddress(ball.position, AimDirection(), putting);
             // On the green the flag comes out and the read goes down.
@@ -470,7 +471,21 @@ namespace GolfArcade.Game
         /// on a hole with a signature shot, the aerial and then that shot.
         const float ShowcaseSeconds = 10f;
         const float AerialSeconds = ShowcaseSeconds * CameraRig.AerialShare;
-        float IntroSeconds => signature != null ? AerialSeconds + signature.Duration : ShowcaseSeconds;
+        /// Codex's establishing drift is eight seconds; the intro gives it five and runs it faster.
+        const float OverviewSeconds = 5f;
+        /// What runs before the signature shot: the establishing drift where the file has one, else the aerial.
+        float LeadSeconds => signature != null && signature.HasOverview ? OverviewSeconds : AerialSeconds;
+        float IntroSeconds => signature != null ? LeadSeconds + signature.Duration : ShowcaseSeconds;
+        bool overviewPlaying;
+
+        /// The establishing camera over the course, `s` seconds in.
+        void PlayOverview(float s)
+        {
+            if (!overviewPlaying) { overviewPlaying = true; rig.SnapNext(); }
+            signature.OverviewAt(s / OverviewSeconds * signature.OverviewDuration, out var at, out var look, out var up, out var hfov);
+            rig.Cue(at, look, up);
+            rig.SetHorizontalFov(hfov);
+        }
 
         /// The designed shot, `s` seconds in: the ball on its path, the camera on its, the trail
         /// and the turf puffs of a pure strike along the way.
@@ -479,15 +494,15 @@ namespace GolfArcade.Game
             if (!signaturePlaying)
             {
                 signaturePlaying = true;
-                rig.SnapNext();                                   // a cut from the aerial
-                rig.SetHorizontalFov(signature.HorizontalFov);    // framed as it was in Blender
+                rig.SnapNext();                                   // a cut from the establishing shot
                 effects.SetQuality(ShotEffects.Quality.Pure);
                 effects.BeginFlight();
                 sounds.PlayStrike(GolfClub.Iron, 0.9);
             }
             ball.position = signature.BallAt(s, 0.06f);
-            signature.CameraAt(s, out var at, out var look);
-            rig.Cue(at, look);
+            signature.CameraAt(s, out var at, out var look, out var up, out var hfov);
+            rig.Cue(at, look, up);
+            rig.SetHorizontalFov(hfov);                           // the lens breathes as Codex keyed it
             while (signatureLanding < signature.Landings.Length && s >= signature.Landings[signatureLanding])
             {
                 float strength = signatureLanding == 0 ? 1.2f : 0.6f;
@@ -603,14 +618,18 @@ namespace GolfArcade.Game
         /// The strike, in one colour: pure when it starts on line, flies straight and finds the
         /// short grass; off line when it is pushed or pulled hard, curves away, or ends in the
         /// water or out of bounds; fair in between.
-        static ShotEffects.Quality Judge(CourseShot shot)
+        /// The swing rated 0–100 the way Codex's trail config expects it — the line it started
+        /// on and the curve it took, and where it ended up — then banded: 80 and up green, 50–79
+        /// yellow, under 50 red.
+        static ShotEffects.Quality Judge(CourseShot shot) => ShotEffects.QualityOf(Rate(shot));
+        static float Rate(CourseShot shot)
         {
             double off = Math.Abs(shot.StartLine) / 6.0 + Math.Abs(shot.Curve) / 10.0;
             bool lost = shot.Lie == CourseLie.Water || shot.Lie == CourseLie.OutOfBounds;
             bool found = shot.Lie == CourseLie.Fairway || shot.Lie == CourseLie.Green || shot.Lie == CourseLie.Tee || shot.IsHoled;
-            if (lost || off > 1.0) return ShotEffects.Quality.OffLine;
-            if (found && off <= 0.45 && shot.Power >= 0.35) return ShotEffects.Quality.Pure;
-            return ShotEffects.Quality.Fair;
+            double line = 1 - 0.55 * Math.Min(off, 1.4);
+            double lie = lost ? 0.3 : found ? 1.0 : 0.75;
+            return (float)(100 * Math.Max(0, line) * lie);
         }
 
         /// Where a full, square swing with this club lands in today's wind: the yellow ring
@@ -707,7 +726,32 @@ namespace GolfArcade.Game
             lastBallPos = ball.position;
             Bounces = 0; lastHeight = 0; dropped = false; trailing = false;
             effects.SetQuality(Judge(LastShot));
+            flightCamHome = rig.transform.position;
             Enter(State.Flight);
+        }
+
+        /// 1 in flight, easing to 0.45 over the last quarter second before the ball lands and
+        /// back to 1 half a second after: the first bounce in slow motion.
+        static float BallClock(double t, double carry)
+        {
+            double into = t - carry;
+            if (into < -0.35 || into > 0.75) return 1f;
+            float edge = into < 0 ? Mathf.SmoothStep(1f, 0.45f, (float)((into + 0.35) / 0.35))
+                                  : Mathf.SmoothStep(0.45f, 1f, (float)((into - 0.45) / 0.3));
+            return into < 0 ? edge : (into < 0.45 ? 0.45f : edge);
+        }
+
+        /// The flight camera for a full shot is Codex's cinematic chase, driven by where the ball
+        /// is in its own story: 0→1 through the air, 1→2 along the ground. Putts keep their read.
+        Vector3 flightCamHome;
+        void FlightCamera(Vector3 pos, double shotTime, double carry)
+        {
+            double duration = Math.Max(LastShot.Duration, carry + 0.01);
+            float p = shotTime <= carry ? (float)(shotTime / Math.Max(carry, 0.01)) : 1f + (float)((shotTime - carry) / (duration - carry));
+            var rest = HoleView.ToWorld(LastShot.Rest);
+            var dir = rest - flightCamHome; dir.y = 0;
+            if (dir.sqrMagnitude < 1f) dir = new Vector3(Mathf.Sin((float)LastShot.Heading * Mathf.Deg2Rad), 0, Mathf.Cos((float)LastShot.Heading * Mathf.Deg2Rad));
+            rig.CinematicChase(pos, dir, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
         }
 
         // ----- Frame loop -----
@@ -739,8 +783,9 @@ namespace GolfArcade.Game
                 case State.Intro:
                     // The showcase: the whole hole from the air, then the walk up to the green —
                     // or the hole's signature shot, where it has one. A tap skips it.
-                    if (signature == null || stateTime < AerialSeconds) rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds));
-                    else PlaySignature(stateTime - AerialSeconds);
+                    if (signature == null) rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds));
+                    else if (stateTime < LeadSeconds) { if (signature.HasOverview) PlayOverview(stateTime); else rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds)); }
+                    else PlaySignature(stateTime - LeadSeconds);
                     // The card rises with the aerial and is gone before the walk reaches the green.
                     hud.SetHoleIntroAlpha(Mathf.Min(Mathf.SmoothStep(0, 1, (stateTime - 0.4f) / 0.8f), Mathf.SmoothStep(0, 1, (IntroSeconds - 1.2f - stateTime) / 0.9f)));
                     // A tap skips — but not the one that pressed Play, which is still down this frame.
@@ -768,7 +813,10 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Flight:
-                    flightTime += Time.deltaTime;
+                    // The ball's own clock: it runs slow for a beat around the first touchdown
+                    // of a full shot — the landing seen the way a replay shows it — and the
+                    // cameras keep real time, so the move stays smooth through it.
+                    flightTime += Time.deltaTime * (club == GolfClub.Putter || LastShot.CarryTime < 1.6 ? 1f : BallClock(flightTime, LastShot.CarryTime));
                     if (flightTime < 0) break;
                     if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power); }
                     // The flight model's arc is level with the ground it left. Drawn: in the air it
@@ -814,7 +862,7 @@ namespace GolfArcade.Game
                         if (!holeCam && (cup - pos).magnitude <= HoleCamReach && (closing || LastShot.IsHoled)) { holeCam = true; rig.SnapNext(); }
                         if (holeCam) rig.HoleCam(pos, cup);
                     }
-                    else rig.Follow(pos, velocity, false);
+                    else FlightCamera(pos, shotTime, carry);
                     if (flightTime >= LastShot.Duration + dropSeconds) FinishShot();
                     break;
 

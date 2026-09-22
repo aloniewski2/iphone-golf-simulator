@@ -13,6 +13,14 @@ namespace GolfArcade.Game
         Vector3 positionVelocity, lookVelocity;
         Vector3 lookAt;
         bool snap = true;
+        // The lens: a zoom on top of whatever field of view the camera was given (the phone's
+        // 60°, the big screen's 42°), in tan space so 2× halves the window either way. The
+        // base is re-read whenever the zoom is at rest, so a change of screen is picked up.
+        float zoom = 1f, targetZoom = 1f, zoomVelocity, baseFov = 60f;
+        bool zooming;
+        // the bank: a few degrees of roll the cinematic chase leans into its turns with
+        float roll, targetRoll, rollVelocity;
+        const float ZoomLag = 0.35f;
 
         public static CameraRig Create()
         {
@@ -62,20 +70,52 @@ namespace GolfArcade.Game
             positionLag = 0.3f; lookLag = 0.15f;
         }
 
-        /// Chase from behind, like the Wii's ball cam: the camera rides a little above the ball
-        /// and well behind it, so the ball is seen against the sky and the hole ahead rather than
-        /// from overhead, and it looks a touch past the ball to keep the landing area in frame.
-        public void Follow(Vector3 ball, Vector3 velocity, bool putting)
+        /// Zoom so a window `window` yards tall around something `distance` away fills the
+        /// frame — the long lens a broadcast follows a ball with — never tighter than `minFov`.
+        void FrameWindow(float distance, float window, float minFov)
         {
-            var dir = velocity; dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.Normalize();
-            // Higher and further back as the ball climbs, so a big drive is seen soaring against
-            // the sky and the hole ahead, and the camera drops in with it as it comes down.
-            float climb = putting ? 0 : Mathf.Clamp(velocity.y, -20f, 20f);
-            float back = putting ? 3f : 13f + Mathf.Max(0, climb) * 0.12f, up = putting ? 1.6f : 3.2f + Mathf.Max(0, climb) * 0.14f;
-            targetPosition = ball - dir * back + Vector3.up * up; // `ball` already carries its height
-            targetLookAt = ball + dir * (putting ? 1f : 9f);
-            positionLag = 0.25f; lookLag = 0.08f;
+            float wanted = Mathf.Clamp(2f * Mathf.Atan(window / (2f * Mathf.Max(distance, 1f))) * Mathf.Rad2Deg, minFov, baseFov);
+            targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
+        }
+
+        /// Codex's cinematic chase (Hole_12_Cinematic.blend, CAM_Cinematic_Flight), as the camera
+        /// for every full shot: close to the ball throughout — 12 to 25 yards — starting behind
+        /// and to the right at launch, crossing to the left and banking through the middle of the
+        /// flight, back to the right as it comes down, then an orbit that rides high over the
+        /// bounces and settles for the roll. The lens breathes from 50 mm at launch out to 38 in
+        /// the climb and in to 52 at rest. `p` runs 0→1 over the carry and 1→2 over the ground;
+        /// `dir` is the shot's line; `groundAt` keeps the camera off the turf.
+        static readonly (float p, Vector3 offset, float lens, float bankDeg)[] Cinematic =
+        {
+            (0.00f, new Vector3(5f, -11f, 3.6f), 50f, 0f),          // launch: tight, behind and right
+            (0.20f, new Vector3(9f, -17f, 6f), 38f, -3.4f),          // opening out as it climbs
+            (0.47f, new Vector3(12f, -22f, 8f), 40f, -6.3f),         // widest, right of the arc
+            (0.69f, new Vector3(-8f, -22f, 8f), 42f, 4.6f),          // crossed to the left, banked
+            (0.91f, new Vector3(-8f, -18f, 6f), 44f, 3.4f),          // holding left into the descent
+            (1.00f, new Vector3(3f, -19f, 7f), 45f, 0f),             // touchdown: swinging back right
+            (1.15f, new Vector3(11f, -20f, 8f), 46f, -1.1f),         // the bounces, from the right
+            (1.40f, new Vector3(14f, -20f, 10f), 48f, 0f),           // riding high over the hops
+            (1.80f, new Vector3(10f, -16f, 7f), 52f, 0f),            // settling for the roll
+            (2.00f, new Vector3(10f, -16f, 7f), 52f, 0f),
+        };
+        const float CinematicBaseLens = 45f;   // the lens the framing was designed around
+        public void CinematicChase(Vector3 ball, Vector3 dir, float p, System.Func<Vector3, float> groundAt)
+        {
+            dir.y = 0;
+            if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.y = 0; dir.Normalize();
+            var right = Vector3.Cross(Vector3.up, dir);
+            int i = 0;
+            while (i < Cinematic.Length - 2 && Cinematic[i + 1].p <= p) i++;
+            var a = Cinematic[i]; var b = Cinematic[i + 1];
+            float t = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(a.p, b.p, Mathf.Clamp(p, a.p, b.p)));
+            var o = Vector3.Lerp(a.offset, b.offset, t) * 1.0936f;   // metres → yards
+            var at = ball + right * o.x + dir * o.y + Vector3.up * o.z;
+            at.y = Mathf.Max(at.y, groundAt(at) + 2.4f);
+            targetPosition = at;
+            targetLookAt = ball + dir * 0.6f + Vector3.up * 0.15f;
+            targetZoom = Mathf.Lerp(a.lens, b.lens, t) / CinematicBaseLens;
+            targetRoll = Mathf.Lerp(a.bankDeg, b.bankDeg, t);
+            positionLag = 0.3f; lookLag = 0.1f;
         }
 
         /// A slow settle on the resting ball, with the pin in shot when it is near.
@@ -85,6 +125,7 @@ namespace GolfArcade.Game
             targetPosition = ball - dir * (putting ? 2.5f : 6f) + Vector3.up * (putting ? 1.2f : 2.5f);
             targetLookAt = ball + dir * (putting ? 3f : 12f);
             positionLag = 0.6f; lookLag = 0.5f;
+            targetZoom = 1f; targetRoll = 0f;
         }
 
         /// Flyover: from above the green looking back down the hole toward the tee.
@@ -156,10 +197,14 @@ namespace GolfArcade.Game
         }
 
         public void SnapNext() => snap = true;
+        /// Any framing that is not a flight shot wants the plain lens back.
+        public void ResetZoom() { targetZoom = 1f; targetRoll = 0f; }
 
         /// Put the camera exactly here this frame, no damping — for a shot keyed elsewhere
         /// (the signature shot's Blender camera), called every frame it runs.
-        public void Cue(Vector3 position, Vector3 lookAt) { targetPosition = position; targetLookAt = lookAt; snap = true; }
+        public void Cue(Vector3 position, Vector3 lookAt) { targetPosition = position; targetLookAt = lookAt; snap = true; cueUp = Vector3.up; }
+        public void Cue(Vector3 position, Vector3 lookAt, Vector3 up) { targetPosition = position; targetLookAt = lookAt; snap = true; cueUp = up; }
+        Vector3 cueUp = Vector3.up;
 
         float restFov; bool fovOverridden;
         /// Frame like a camera of this horizontal field of view: what a landscape render was
@@ -175,6 +220,7 @@ namespace GolfArcade.Game
 
         void LateUpdate()
         {
+            bool cut = snap;
             if (snap)
             {
                 transform.position = targetPosition; lookAt = targetLookAt; snap = false;
@@ -186,7 +232,25 @@ namespace GolfArcade.Game
                 lookAt = Vector3.SmoothDamp(lookAt, targetLookAt, ref lookVelocity, lookLag);
             }
             var forward = lookAt - transform.position;
-            if (forward.sqrMagnitude > 1e-4f) transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
+            roll = cut ? targetRoll : Mathf.SmoothDamp(roll, targetRoll, ref rollVelocity, 0.4f);
+            if (forward.sqrMagnitude > 1e-4f)
+                transform.rotation = Quaternion.LookRotation(forward, cueUp) * Quaternion.Euler(0, 0, roll);
+            if (cut) cueUp = Vector3.up;
+            // the lens
+            if (cut) { zoom = targetZoom; zoomVelocity = 0; }
+            else zoom = Mathf.SmoothDamp(zoom, targetZoom, ref zoomVelocity, ZoomLag);
+            if (Mathf.Abs(zoom - 1f) < 1e-3f && Mathf.Abs(targetZoom - 1f) < 1e-3f) zoom = 1f;
+            if (fovOverridden) return;
+            if (zoom == 1f)
+            {
+                if (zooming) { Camera.fieldOfView = baseFov; zooming = false; }   // hand the lens back exactly
+                baseFov = Camera.fieldOfView;                                    // and follow whoever sets it
+            }
+            else
+            {
+                zooming = true;
+                Camera.fieldOfView = 2f * Mathf.Atan(Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / zoom) * Mathf.Rad2Deg;
+            }
         }
     }
 }

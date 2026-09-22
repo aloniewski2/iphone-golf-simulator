@@ -1,6 +1,6 @@
 """Turn the Codex-built "Hole 12 Island Carry" scene into the game's second course model.
 
-    Blender -b <Hole_12_Animated.blend | Hole_12_Island_Carry.blend> --python blender/scripts/hole12_prepare.py -- [--render]
+    Blender -b <Hole_12_Cinematic.blend | Hole_12_Animated.blend | Hole_12_Island_Carry.blend> --python blender/scripts/hole12_prepare.py -- [--render]
 
 Unlike Hole 7 the scene is not generated here; it was modelled in Blender and handed over as a
 .blend (Documents/Codex/2026-09-20/i-j/outputs). This script is the repeatable bridge from that
@@ -8,7 +8,9 @@ file to what HoleView expects, and it leaves the source untouched. It takes eith
 original Island Carry file (open cliff shells with a turf fan on each island) or the later
 Animated one (each island a closed solid with the turf as its cap, real bunker bowls cut into the
 green island, a wave grid with four morph targets — see hole12_animate_finish.py), which is what
-the game uses now. From the animated file it also carries the water over: WATER_WAVES keeps its
+the game uses now. Codex's later Hole_12_Cinematic.blend also goes through (its trail tubes and
+control empty are dropped), but it was cut from a copy made before the water was finished, so the
+course model keeps coming from the Animated file; the cinematic file feeds hole12_cinematic_export.py. From the animated file it also carries the water over: WATER_WAVES keeps its
 shape keys (Unity blendshapes HoleView cross-fades) and WATER_GLINTS is the card sheet it slides.
 
   * drops the golfer rig, preview props, reference image, collision copies, presentation ball
@@ -62,7 +64,8 @@ if SOLID:
     for old, new in FOOTPRINTS.items():
         o = obj(old); o.name = new
         sc.collection.objects.link(o)   # outlives its collection, until step 6 is done with it
-for col_name in ("REF", "Collisions", "Ball_Animation"):
+remove(o for o in O if o.name.startswith("Trail_") or o.name == "SWING_CONTROL")   # the cinematic file's trail tubes
+for col_name in ("REF", "Collisions", "Ball_Animation", "Cinematic_Swing"):
     col = bpy.data.collections.get(col_name)
     if col:
         remove(o for o in col.objects if o.name not in FOOTPRINTS.values())
