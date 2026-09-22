@@ -78,20 +78,19 @@ namespace GolfArcade.Game
             targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
         }
 
-        /// The flight the way Golf Dreams shows it: the camera stays where it watched the address —
-        /// low behind the ball — and the tracer draws the whole arc out over the hole while the
-        /// ball shrinks to a dot at its head. It tilts up just enough to keep the top of the arc in
-        /// frame and eases in a touch on a long one so the far end still reads; the ground stays.
-        public void TeeHold(Vector3 home, Vector3 launch, Vector3 ball, Vector3 landing, float progress)
+        /// The ball cam: a little behind and above the ball all the way through the air, looking
+        /// a touch ahead and down so the ground it is crossing — fairway, water, trees, the green
+        /// coming up — fills the frame as it soars, and dropping in with it as it lands.
+        public void Follow(Vector3 ball, Vector3 velocity)
         {
-            targetPosition = home;
-            var far = Vector3.Lerp(launch, landing, 0.65f);
-            float lift = Mathf.Max(0, ball.y - launch.y) * 0.45f;
-            targetLookAt = Vector3.Lerp(far, ball, 0.35f) + Vector3.up * lift;
-            positionLag = 0.6f; lookLag = 0.35f;
-            float reach = Vector3.Distance(home, landing);
-            FrameWindow(reach, reach * 0.9f + 30f, 38f);
-            targetRoll = 0f;
+            var dir = velocity; dir.y = 0;
+            if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.y = 0; dir.Normalize();
+            float climb = Mathf.Clamp(velocity.y, -20f, 25f);
+            float back = 11f + Mathf.Max(0, climb) * 0.1f, up = 4.5f + Mathf.Max(0, climb) * 0.12f;
+            targetPosition = ball - dir * back + Vector3.up * up;
+            targetLookAt = ball + dir * 9f - Vector3.up * 0.6f;
+            positionLag = 0.28f; lookLag = 0.1f;
+            targetZoom = 1f; targetRoll = 0f;
         }
 
         /// A slow settle on the resting ball, with the pin in shot when it is near.

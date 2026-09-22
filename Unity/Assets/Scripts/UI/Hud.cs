@@ -33,6 +33,7 @@ namespace GolfArcade.UI
         RectTransform safeArea;
         Rect appliedSafeArea;
         Text holeText, scoreText, distanceText, clubText, statusText, bannerText, tempoText, windText, controllerText;
+        Text meterYards;
         Image meterFill, meterMark, meterOverswing, windArrow;
         RectTransform meterRect;
         Vector2 meterHome;
@@ -111,6 +112,9 @@ namespace GolfArcade.UI
             meterMark.enabled = false;
             var meterLabel = Label("Power", 26, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -32), new Vector2(200, 40), meterBg.transform);
             meterLabel.text = "POWER"; meterLabel.color = UiKit.Muted;
+            // the gauge: how far this much backswing carries, riding the top of the fill
+            meterYards = UiKit.Label(meterBg.transform, "Yards", 28, TextAnchor.MiddleLeft, new Vector2(1, 0), new Vector2(1, 0), new Vector2(94, 6), new Vector2(160, 40), UiKit.Strong);
+            meterYards.color = new Color(1f, 0.72f, 0.25f); meterYards.enabled = false;
 
             // Minimap, top right under the score, in a rounded frame.
             var mapFrame = Card("Minimap frame", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -150), new Vector2(272, 432));
@@ -598,9 +602,11 @@ namespace GolfArcade.UI
         /// The Wii meter fills with the backswing; as it climbs the fill warms from green through
         /// yellow to orange and the whole bar starts to tremble, so the tension of a big swing is
         /// in the picture as well as in the hand and the ear.
-        public void SetMeter(float load, float? mark = null)
+        public void SetMeter(float load, float? mark = null, string yards = null)
         {
             meterLoad = Mathf.Clamp01(load);
+            meterYards.enabled = yards != null && meterLoad > 0.02f;
+            if (meterYards.enabled) { meterYards.text = yards; meterYards.rectTransform.anchoredPosition = new Vector2(94, 6 + meterLoad * 888); }
             meterFill.rectTransform.sizeDelta = new Vector2(48, meterLoad * 888);
             var calm = new Color(0.35f, 0.85f, 0.35f, 0.95f);
             var warm = new Color(1f, 0.9f, 0.25f, 0.95f);

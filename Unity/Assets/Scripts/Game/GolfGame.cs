@@ -68,6 +68,7 @@ namespace GolfArcade.Game
         Transform landingMarker;
         LandingZone landingZone;
         readonly System.Collections.Generic.List<Vector3> aimPath = new();
+        AimDots aimDots;
         Camera minimapCamera;
         RenderTexture minimapTexture;
 
@@ -131,6 +132,7 @@ namespace GolfArcade.Game
             aimLine.startWidth = aimLine.endWidth = 0.18f;
             aimLine.positionCount = AimLineSamples;
             aimLine.useWorldSpace = true;
+            aimDots = AimDots.Create(transform, rig.Camera);
 
             landingZone = LandingZone.Create(transform);
             landingMarker = landingZone.transform;
@@ -550,8 +552,7 @@ namespace GolfArcade.Game
             double ground = HoleView.GroundHeight(ballAt);
             const double step = 0.12;
             int samples = Math.Max(2, (int)(flight.RollStartTime / step) + 2);
-            aimLine.material = HoleView.UnlitMat(Color.white);
-            aimLine.positionCount = samples;
+            aimLine.positionCount = 0;   // full shots are the Wii's dots, not a line
             aimPath.Clear();
             for (int i = 0; i < samples; i++)
             {
@@ -559,9 +560,21 @@ namespace GolfArcade.Game
                 var at = new CoursePoint(ballAt.X + p.LateralYards * cosH + p.DistanceYards * sinH, ballAt.D - p.LateralYards * sinH + p.DistanceYards * cosH);
                 double under = HoleView.GroundHeight(at);
                 var world = new Vector3((float)at.X, (float)(Math.Max(ground, under) + p.HeightYards + 0.1), (float)at.D);
-                aimLine.SetPosition(i, world);
                 aimPath.Add(world);
             }
+            aimDots.Lay(aimPath);
+        }
+
+        /// Where a swing loaded this far would come down, as a fraction of the full arc, if the
+        /// downswing is a full one — the detector's power for that load, and the club's carry
+        /// at that power against its full carry.
+        float CarryFractionFor(double load)
+        {
+            double power = Swing.Detector.BackswingFloor + (1 - Swing.Detector.BackswingFloor) * Math.Clamp(load, 0, 1);
+            var lie = hole.LieAt(ballAt);
+            double full = BallFlight.Simulate(club.Launch(1, 0, 0, lie.PowerFactor())).Carry;
+            double part = BallFlight.Simulate(club.Launch(power, 0, 0, lie.PowerFactor())).Carry;
+            return full > 0 ? (float)(part / full) : 1f;
         }
 
         /// The putt's predicted roll as one smooth ribbon, break and all: the line a putt hit
@@ -574,6 +587,7 @@ namespace GolfArcade.Game
             double meter = Math.Pow(Math.Min(1, toPin / GolfClub.Putter.ReferenceDistanceYards()), 1 / GolfClub.Putter.MeterExponent());
             var preview = new CourseShot(GolfClub.Putter, new SwingImpact { Power = meter }, heading, ballAt, hole, 1, Wind);
             int samples = Math.Max(2, (int)(preview.Duration / CourseShot.SampleInterval) + 1);
+            aimDots.Hide();
             aimLine.material = HoleView.UnlitMat(RibbonColor);
             aimLine.positionCount = samples;
             aimPath.Clear();
@@ -738,7 +752,14 @@ namespace GolfArcade.Game
         void OnLoad(double load)
         {
             if (Current != State.Aim) return;
-            hud.SetMeter((float)load);
+            if (club != GolfClub.Putter)
+            {
+                // the amber dot slides out along the arc, the meter says how far
+                float fraction = CarryFractionFor(load);
+                aimDots.Mark(fraction);
+                hud.SetMeter((float)load, null, $"{fraction * ballAt.DistanceTo(FullShotCarry(hole.LieAt(ballAt))):F0} yd");
+            }
+            else hud.SetMeter((float)load);
             golfer.ShowLoad((float)load);
             // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
             Haptics.Tension(load);
@@ -750,6 +771,7 @@ namespace GolfArcade.Game
         {
             if (Current != State.Aim) return;
             hud.SetMeter(0);
+            aimDots.Mark(-1);
             golfer.Settle();
             Haptics.Release();
             sounds.Release();
@@ -781,6 +803,7 @@ namespace GolfArcade.Game
             RefreshControls();
             landingMarker.gameObject.SetActive(false);
             aimLine.positionCount = 0;
+            aimDots.Hide();
             flightTime = -toBall; // the ball leaves when the club gets to it
             lastBallPos = ball.position;
             Bounces = 0; lastHeight = 0; dropped = false; trailing = false;
@@ -789,16 +812,9 @@ namespace GolfArcade.Game
             Enter(State.Flight);
         }
 
-        /// The flight camera for a full shot: Golf Dreams' tee view — hold behind the ball and
-        /// let the tracer draw the shot. Putts keep their read.
+        /// The flight camera for a full shot: the ball cam, behind and above. Putts keep their read.
         Vector3 flightCamHome;
-        void FlightCamera(Vector3 pos, double shotTime, double carry)
-        {
-            float p = carry > 0 ? (float)(shotTime / carry) : 1f;
-            var launch = HoleView.ToWorld(LastShot.Origin);
-            var landing = HoleView.ToWorld(LastShot.Touchdown);
-            rig.TeeHold(flightCamHome, launch, pos, landing, Mathf.Clamp01(p));
-        }
+        void FlightCamera(Vector3 pos, Vector3 velocity) => rig.Follow(pos, velocity);
 
         // ----- Frame loop -----
 
@@ -906,7 +922,7 @@ namespace GolfArcade.Game
                         if (!holeCam && (cup - pos).magnitude <= HoleCamReach && (closing || LastShot.IsHoled)) { holeCam = true; rig.SnapNext(); }
                         if (holeCam) rig.HoleCam(pos, cup);
                     }
-                    else FlightCamera(pos, shotTime, carry);
+                    else FlightCamera(pos, velocity);
                     if (flightTime >= LastShot.Duration + dropSeconds) FinishShot();
                     break;
 
