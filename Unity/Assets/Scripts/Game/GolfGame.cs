@@ -370,6 +370,7 @@ namespace GolfArcade.Game
                 {
                     rig.RestoreFov(); signaturePlaying = overviewPlaying = false;
                     cinematic?.Show(false);
+                    effects.Follow(ball);
                     ball.gameObject.SetActive(true); PlaceBall(ballAt, 0);
                 }
             }
@@ -517,19 +518,31 @@ namespace GolfArcade.Game
                 sounds.PlayStrike(GolfClub.Iron, 0.9);
                 if (cinematic != null)
                 {
-                    // Codex's ball and trail tube take over from the game's ball for the shot
+                    // Codex's ball takes over from the game's for the shot; from the air his
+                    // baked tube would be a hair, so the live tube follows his ball instead
                     cinematic.SetQuality(ShotEffects.Quality.Pure);
+                    cinematic.ShowTrails(false);
                     cinematic.Show(true);
                     ball.gameObject.SetActive(false);
+                    effects.Follow(cinematic.Ball);
                 }
-                else { effects.SetQuality(ShotEffects.Quality.Pure); effects.BeginFlight(); }
+                effects.SetQuality(ShotEffects.Quality.Pure); effects.BeginFlight();
             }
-            if (cinematic != null) cinematic.Sample(signature.ClipTime(s));
+            if (cinematic != null)
+            {
+                cinematic.Sample(signature.ClipTime(s));
+                // grown for the lens like the game's ball: a fortieth of the view's height
+                float d = Vector3.Distance(rig.transform.position, cinematic.Ball.position);
+                float viewHeight = 2f * d * Mathf.Tan(rig.Camera.fieldOfView * Mathf.Deg2Rad / 2f);
+                cinematic.Ball.localScale = Vector3.one * Mathf.Max(1f, 0.025f * viewHeight / (2f * CinematicRig.BallRadius));
+            }
             else ball.position = signature.BallAt(s, 0.06f);
-            signature.CameraAt(s, out var at, out var look, out var up, out var hfov);
-            rig.Cue(at, look, up);
-            rig.SetHorizontalFov(hfov);                           // the lens breathes as Codex keyed it
             var ballNow = cinematic != null ? cinematic.Ball.position : ball.position;
+            // the same bird's-eye as a live shot, over the whole hole, Codex's ball flying through it
+            float carryTime = signature.Landings.Length > 0 ? signature.Landings[0] : signature.Duration * 0.5f;
+            float p = s <= carryTime ? s / carryTime : 1f + (s - carryTime) / Mathf.Max(0.1f, signature.Duration - carryTime);
+            rig.RestoreFov();
+            rig.BirdsEye(HoleView.ToWorld(hole.Tee), HoleView.ToWorld(hole.Pin), 55f, ballNow, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
             while (signatureLanding < signature.Landings.Length && s >= signature.Landings[signatureLanding])
             {
                 float strength = signatureLanding == 0 ? 1.2f : 0.6f;
@@ -622,7 +635,7 @@ namespace GolfArcade.Game
             // easing back to life size along the ground
             float d = Vector3.Distance(rig.transform.position, pos);
             float viewHeight = 2f * d * Mathf.Tan(rig.Camera.fieldOfView * Mathf.Deg2Rad / 2f);
-            float wanted = airborne ? Mathf.Max(1f, 0.05f * viewHeight / BallSize) : 1f;
+            float wanted = airborne ? Mathf.Max(1f, 0.025f * viewHeight / BallSize) : 1f;
             ballScale = Mathf.SmoothDamp(ballScale, wanted, ref ballScaleVelocity, airborne ? 0.25f : 0.6f);
             ball.localScale = Vector3.one * (BallSize * ballScale);
             var flat = velocity; flat.y = 0;
@@ -811,17 +824,16 @@ namespace GolfArcade.Game
             return into < 0 ? edge : (into < 0.45 ? 0.45f : edge);
         }
 
-        /// The flight camera for a full shot is Codex's cinematic chase, driven by where the ball
-        /// is in its own story: 0→1 through the air, 1→2 along the ground. Putts keep their read.
+        /// The flight camera for a full shot: the bird's-eye view of the whole shot, framed from
+        /// where it left to where it will land. Putts keep their read.
         Vector3 flightCamHome;
         void FlightCamera(Vector3 pos, double shotTime, double carry)
         {
             double duration = Math.Max(LastShot.Duration, carry + 0.01);
             float p = shotTime <= carry ? (float)(shotTime / Math.Max(carry, 0.01)) : 1f + (float)((shotTime - carry) / (duration - carry));
+            var origin = HoleView.ToWorld(LastShot.Origin);
             var rest = HoleView.ToWorld(LastShot.Rest);
-            var dir = rest - flightCamHome; dir.y = 0;
-            if (dir.sqrMagnitude < 1f) dir = new Vector3(Mathf.Sin((float)LastShot.Heading * Mathf.Deg2Rad), 0, Mathf.Cos((float)LastShot.Heading * Mathf.Deg2Rad));
-            rig.CinematicChase(pos, dir, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
+            rig.BirdsEye(origin, rest, (float)LastShot.Apex, pos, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
         }
 
         // ----- Frame loop -----

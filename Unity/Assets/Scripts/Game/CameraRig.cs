@@ -78,44 +78,31 @@ namespace GolfArcade.Game
             targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
         }
 
-        /// Codex's cinematic chase (Hole_12_Cinematic.blend, CAM_Cinematic_Flight), as the camera
-        /// for every full shot: close to the ball throughout — 12 to 25 yards — starting behind
-        /// and to the right at launch, crossing to the left and banking through the middle of the
-        /// flight, back to the right as it comes down, then an orbit that rides high over the
-        /// bounces and settles for the roll. The lens breathes from 50 mm at launch out to 38 in
-        /// the climb and in to 52 at rest. `p` runs 0→1 over the carry and 1→2 over the ground;
-        /// `dir` is the shot's line; `groundAt` keeps the camera off the turf.
-        static readonly (float p, Vector3 offset, float lens, float bankDeg)[] Cinematic =
+        /// The flight from the air: a high, wide view that takes in the whole shot — where it
+        /// left from, where it will come down, the arc between — the way a blimp shot or a
+        /// tracer frames a hole. The camera hangs behind and far above the ball's start, looking
+        /// down the line at the middle of the shot, drifts slowly round it through the flight, and
+        /// eases in toward the landing as the ball comes down. `p` runs 0→1 over the carry and
+        /// 1→2 along the ground; `apex` is the flight's top in yards above the launch.
+        public void BirdsEye(Vector3 origin, Vector3 rest, float apex, Vector3 ball, float p, System.Func<Vector3, float> groundAt)
         {
-            (0.00f, new Vector3(5f, -11f, 3.6f), 50f, 0f),          // launch: tight, behind and right
-            (0.20f, new Vector3(9f, -17f, 6f), 38f, -3.4f),          // opening out as it climbs
-            (0.47f, new Vector3(12f, -22f, 8f), 40f, -6.3f),         // widest, right of the arc
-            (0.69f, new Vector3(-8f, -22f, 8f), 42f, 4.6f),          // crossed to the left, banked
-            (0.91f, new Vector3(-8f, -18f, 6f), 44f, 3.4f),          // holding left into the descent
-            (1.00f, new Vector3(3f, -19f, 7f), 45f, 0f),             // touchdown: swinging back right
-            (1.15f, new Vector3(11f, -20f, 8f), 46f, -1.1f),         // the bounces, from the right
-            (1.40f, new Vector3(14f, -20f, 10f), 48f, 0f),           // riding high over the hops
-            (1.80f, new Vector3(10f, -16f, 7f), 52f, 0f),            // settling for the roll
-            (2.00f, new Vector3(10f, -16f, 7f), 52f, 0f),
-        };
-        const float CinematicBaseLens = 45f;   // the lens the framing was designed around
-        public void CinematicChase(Vector3 ball, Vector3 dir, float p, System.Func<Vector3, float> groundAt)
-        {
-            dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.y = 0; dir.Normalize();
-            var right = Vector3.Cross(Vector3.up, dir);
-            int i = 0;
-            while (i < Cinematic.Length - 2 && Cinematic[i + 1].p <= p) i++;
-            var a = Cinematic[i]; var b = Cinematic[i + 1];
-            float t = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(a.p, b.p, Mathf.Clamp(p, a.p, b.p)));
-            var o = Vector3.Lerp(a.offset, b.offset, t) * 1.0936f;   // metres → yards
-            var at = ball + right * o.x + dir * o.y + Vector3.up * o.z;
-            at.y = Mathf.Max(at.y, groundAt(at) + 2.4f);
+            var along = rest - origin; along.y = 0;
+            float length = Mathf.Max(along.magnitude, 60f);
+            along = along.sqrMagnitude > 0.01f ? along.normalized : transform.forward;
+            var right = Vector3.Cross(Vector3.up, along);
+            var mid = Vector3.Lerp(origin, rest, 0.5f);
+            // a slow swing round the hole, and a push in once the ball is coming down
+            float swing = Mathf.Lerp(-14f, 14f, Mathf.SmoothStep(0, 1, p / 2f)) * Mathf.Deg2Rad;
+            float closer = Mathf.Lerp(1f, 0.62f, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0.75f, 1.6f, p)));
+            float back = (length * 0.55f + 25f) * closer, up = (length * 0.8f + apex * 0.35f + 30f) * closer;
+            var behind = -along * Mathf.Cos(swing) + right * Mathf.Sin(swing);
+            var at = mid + behind * back + Vector3.up * up;
+            at.y = Mathf.Max(at.y, groundAt(at) + 12f);
             targetPosition = at;
-            targetLookAt = ball + dir * 0.6f + Vector3.up * 0.15f;
-            targetZoom = Mathf.Lerp(a.lens, b.lens, t) / CinematicBaseLens;
-            targetRoll = Mathf.Lerp(a.bankDeg, b.bankDeg, t);
-            positionLag = 0.3f; lookLag = 0.1f;
+            // the frame holds the whole shot; the ball sits toward its top as it climbs
+            targetLookAt = Vector3.Lerp(mid, ball, 0.3f) + Vector3.up * apex * 0.15f;
+            targetZoom = 1f; targetRoll = 0f;
+            positionLag = 0.8f; lookLag = 0.35f;
         }
 
         /// A slow settle on the resting ball, with the pin in shot when it is near.

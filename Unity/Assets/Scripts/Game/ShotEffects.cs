@@ -139,6 +139,9 @@ namespace GolfArcade.Game
         Quality quality = Quality.Fair;
         public void SetQuality(Quality q) => quality = q;
 
+        /// Which ball the tube follows: the game's, or Codex's during his shot.
+        public void Follow(Transform t) => ball = t;
+
         public void BeginFlight() => tube.Begin(ColorOf(quality));
         public void EndFlight() => tube.End();
 
@@ -149,7 +152,7 @@ namespace GolfArcade.Game
             if (!view || !ball) return;
             float d = Vector3.Distance(view.transform.position, ball.position);
             float viewHeight = 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f);   // yards top to bottom at the ball
-            tube.HeadRadius = Mathf.Max(0.08f, 0.018f * viewHeight);
+            tube.HeadRadius = Mathf.Max(0.08f, 0.011f * viewHeight);
             tube.Push(ball.position);
         }
 

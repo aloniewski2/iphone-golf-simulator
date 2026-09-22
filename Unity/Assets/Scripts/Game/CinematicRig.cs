@@ -124,6 +124,13 @@ namespace GolfArcade.Game
             for (int i = 0; i < 3; i++) if (trails[i]) trails[i].gameObject.SetActive(i == keep);
         }
 
+        /// The baked tubes are at scene scale — right up close, a hair from the air — so a wide
+        /// view draws the live tube round this ball instead and puts these away.
+        public void ShowTrails(bool on)
+        {
+            for (int i = 0; i < 3; i++) if (trails[i]) trails[i].gameObject.SetActive(on && trails[i].gameObject.activeSelf);
+        }
+
         /// Put the clip at `seconds` from its first frame.
         public void Sample(float seconds)
         {
