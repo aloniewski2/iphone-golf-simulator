@@ -88,6 +88,9 @@ namespace GolfArcade.Course
         /// A named node of the course model (empties included), placed in the world — null on
         /// a primitive hole or when the model has no such node.
         public Transform ModelNode(string name) => model ? FindDeep(model.transform, name) : null;
+        /// The placed course model's root: anything exported from the same Blender scene sits
+        /// on the course when parented here with no transform of its own.
+        public Transform ModelRoot => model ? model.transform : null;
 
         void BuildFromModel(GameObject prefab)
         {

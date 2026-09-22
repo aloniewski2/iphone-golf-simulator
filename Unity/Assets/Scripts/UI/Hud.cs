@@ -203,7 +203,7 @@ namespace GolfArcade.UI
         public sealed class MenuView
         {
             public HoldButton Golfer, HoleSeven, HoleTwelve, BothHoles, AirPlay, Play;
-            public Text BigScreenStatus;
+            public Text BigScreenStatus, Build;
             internal RectTransform Root;
             internal Image SevenEdge, TwelveEdge, SevenBadge, TwelveBadge, BothCheck;
             internal Text GolferText, PlayText;
@@ -314,6 +314,9 @@ namespace GolfArcade.UI
 
             // Play: the one accent on the sheet.
             menu.Play = UiKit.Button(root, "Play", new Vector2(0.5f, 0), new Vector2(0, 60 + 65), new Vector2(width, 130), 46, UiKit.AccentStrong, UiKit.Display, false);
+            // Which build this is, for checking what a phone is running: under the Play button.
+            menu.Build = UiKit.Label(root, "Build", 20, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 34), new Vector2(width, 28), UiKit.Body, false);
+            menu.Build.color = UiKit.InkMuted;
             menu.PlayText = menu.Play.GetComponentInChildren<Text>();
             return menu;
         }

@@ -17,6 +17,9 @@ to the tube's recipe (ShotEffects), so this writes both out of the scene itself:
 
   Unity/Assets/Resources/Course/hole_12_shot.json   ball + both cameras, every frame, scene metres
   Unity/Assets/Resources/Course/swing_trail.json    the trail's colours, taper and fade; the rating bands
+  Unity/Assets/Resources/Course/hole_12_cinematic.fbx  the animation itself: Codex's ball with its
+      stripe, the three trail tubes with their morph animation, and the reference empties, baked
+      per frame — the game plays this clip for the intro (CinematicRig) and borrows the ball mesh
 """
 import bpy, json, os, sys
 from mathutils import Vector
@@ -25,6 +28,7 @@ REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 COURSE = os.path.join(REPO, "Unity", "Assets", "Resources", "Course")
 SHOT_JSON = os.path.join(COURSE, "hole_12_shot.json")
 TRAIL_JSON = os.path.join(COURSE, "swing_trail.json")
+FBX = os.path.join(COURSE, "hole_12_cinematic.fbx")
 CONFIG = os.path.join(os.path.dirname(bpy.data.filepath), "Swing_Trail_Config.json")
 
 sc = bpy.data.scenes.get("Hole 12 • Island Carry") or bpy.context.scene
@@ -108,3 +112,34 @@ with open(TRAIL_JSON, "w") as fh:
                "ratingBands": bands or [{"quality": "red", "min": 0, "max": 50}, {"quality": "yellow", "min": 50, "max": 80}, {"quality": "green", "min": 80, "max": 101}],
                "defaultRating": config.get("default_rating", 90)}, fh, indent=1)
 print("TRAIL", TRAIL_JSON, json.load(open(TRAIL_JSON))["colors"], "alpha", round(head, 3), "→", round(tail, 3))
+
+# ---------------------------------------------------------------- the animation itself, as an FBX
+# Codex's ball (with the alignment stripe that shows its spin), the three trail tubes with their
+# per-frame morph targets, and the reference empties, under one root at the origin. Everything
+# else in the scene stays out. Baked per frame so Unity gets one clip with the lot; the trails'
+# drivers (rating → scale) are Blender-only, so the game switches the tubes itself.
+root = O.get("CINEMATIC_ROOT") or O.new("CINEMATIC_ROOT", None)
+if root.name not in sc.collection.objects: sc.collection.objects.link(root)
+root.location = (0, 0, 0)
+stripe = O["Ball • alignment stripe"]
+keep = [ball, stripe] + [O[n] for n in ("Trail_Green", "Trail_Yellow", "Trail_Red")] + [O[n] for n in REFS if n in O]
+for o in keep:
+    if o.parent is None: o.parent = root
+    if o.animation_data and o.animation_data.drivers:
+        for d in list(o.animation_data.drivers): o.animation_data.drivers.remove(d)   # scale drivers → plain identity
+    if o.name.startswith("Trail_"): o.scale = (1, 1, 1)
+names = {ball.name: "BALL", stripe.name: "BALL_STRIPE"}
+for o in keep: o.name = names.get(o.name, o.name)
+for o in O: o.select_set(o is root or o in keep)
+bpy.context.view_layer.objects.active = root
+sc.frame_set(1)
+with bpy.context.temp_override(selected_objects=[root] + keep, active_object=root, object=root):
+    bpy.ops.export_scene.fbx(filepath=FBX, use_selection=True, object_types={'EMPTY', 'MESH'},
+                             apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL', global_scale=1.0,
+                             axis_forward='-Z', axis_up='Y', bake_space_transform=False,
+                             use_mesh_modifiers=False, mesh_smooth_type='FACE', add_leaf_bones=False,
+                             bake_anim=True, bake_anim_use_all_bones=False, bake_anim_use_nla_strips=False,
+                             bake_anim_use_all_actions=False, bake_anim_force_startend_keying=True,
+                             bake_anim_step=1.0, bake_anim_simplify_factor=0.0,
+                             path_mode='STRIP', embed_textures=False)
+print("FBX", FBX, os.path.getsize(FBX) // 1024, "KB")

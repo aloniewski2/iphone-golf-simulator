@@ -50,12 +50,21 @@ namespace GolfArcade.Game
         /// The hole's designed shot (Blender, Resources/Course/hole_NN_shot.json), played after the
         /// intro's aerial; null when the hole has none.
         SignatureShot signature;
+        /// Codex's animated ball and trail tubes for that shot, played as one clip.
+        CinematicRig cinematic;
         int signatureLanding;
         bool signaturePlaying;
         /// True while the intro is on the designed shot rather than the aerial.
         public bool SignaturePlaying => Current == State.Intro && signaturePlaying;
-        /// The ball, for the tests' eyes.
-        public Vector3 BallPosition => ball.position;
+        /// The ball, for the tests' eyes — Codex's during his shot, the game's otherwise.
+        public Vector3 BallPosition => signaturePlaying && cinematic != null ? cinematic.Ball.position : ball.position;
+        /// The ball's spin, shown by Codex's stripe: backspin in the air, a roll on the ground.
+        Quaternion ballSpin = Quaternion.identity;
+        Vector3 lastSpinPos;
+        /// The ball grows for the camera while it flies — Codex's presentation ball is a twentieth
+        /// of the frame — and is back to its true 0.12 yd by the time it stops.
+        const float BallSize = 0.12f;
+        float ballScale = 1f, ballScaleVelocity;
         double lastHeight;
         bool dropped, trailing;
         LineRenderer aimLine;
@@ -116,6 +125,7 @@ namespace GolfArcade.Game
 
             ball = HoleView.Primitive(PrimitiveType.Sphere, "Ball", Color.white, transform).transform;
             ball.localScale = Vector3.one * 0.12f;
+            DressBall();
             effects = ShotEffects.Create(transform, ball, rig.Camera);
 
             aimLine = new GameObject("Aim line").AddComponent<LineRenderer>();
@@ -182,6 +192,8 @@ namespace GolfArcade.Game
             hud.HideScorecard();
             hud.ShowPlayHud(false);
             menu = hud.ShowMenu();
+            var stamp = Resources.Load<TextAsset>("build_id");
+            menu.Build.text = stamp ? $"build {stamp.text.Trim()}" : "";
             menu.Golfer.Pressed = OpenGolferPicker;
             menu.HoleSeven.Pressed = () => ChooseHoles(7);
             menu.HoleTwelve.Pressed = () => ChooseHoles(12);
@@ -341,6 +353,8 @@ namespace GolfArcade.Game
             hud.ShowHoleIntro(hole.Number, hole.Name, hole.Par, hole.Length, hole.Picture, hole.Blurb,
                 Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}");
             signature = SignatureShot.Load(hole.Number, holeView);
+            cinematic?.Destroy();
+            cinematic = signature != null ? CinematicRig.Load(hole.Number, holeView) : null;
             signatureLanding = 0; signaturePlaying = overviewPlaying = false;
             rig.SnapNext();
             Enter(State.Intro);
@@ -352,7 +366,12 @@ namespace GolfArcade.Game
             if (Current == State.Intro)
             {
                 hud.HideHoleIntro(); hud.ShowPlayHud(true);
-                if (signaturePlaying || overviewPlaying) { rig.RestoreFov(); PlaceBall(ballAt, 0); signaturePlaying = overviewPlaying = false; }
+                if (signaturePlaying || overviewPlaying)
+                {
+                    rig.RestoreFov(); signaturePlaying = overviewPlaying = false;
+                    cinematic?.Show(false);
+                    ball.gameObject.SetActive(true); PlaceBall(ballAt, 0);
+                }
             }
             var lie = hole.LieAt(ballAt);
             bool putting = lie == CourseLie.Green;
@@ -495,18 +514,26 @@ namespace GolfArcade.Game
             {
                 signaturePlaying = true;
                 rig.SnapNext();                                   // a cut from the establishing shot
-                effects.SetQuality(ShotEffects.Quality.Pure);
-                effects.BeginFlight();
                 sounds.PlayStrike(GolfClub.Iron, 0.9);
+                if (cinematic != null)
+                {
+                    // Codex's ball and trail tube take over from the game's ball for the shot
+                    cinematic.SetQuality(ShotEffects.Quality.Pure);
+                    cinematic.Show(true);
+                    ball.gameObject.SetActive(false);
+                }
+                else { effects.SetQuality(ShotEffects.Quality.Pure); effects.BeginFlight(); }
             }
-            ball.position = signature.BallAt(s, 0.06f);
+            if (cinematic != null) cinematic.Sample(signature.ClipTime(s));
+            else ball.position = signature.BallAt(s, 0.06f);
             signature.CameraAt(s, out var at, out var look, out var up, out var hfov);
             rig.Cue(at, look, up);
             rig.SetHorizontalFov(hfov);                           // the lens breathes as Codex keyed it
+            var ballNow = cinematic != null ? cinematic.Ball.position : ball.position;
             while (signatureLanding < signature.Landings.Length && s >= signature.Landings[signatureLanding])
             {
                 float strength = signatureLanding == 0 ? 1.2f : 0.6f;
-                effects.Touchdown(ball.position - Vector3.up * 0.04f, CourseLie.Green, strength);
+                effects.Touchdown(ballNow - Vector3.up * (cinematic != null ? 0.5f : 0.04f), CourseLie.Green, strength);
                 sounds.PlayThud(strength);
                 signatureLanding++;
             }
@@ -565,6 +592,49 @@ namespace GolfArcade.Game
         void PlaceBall(CoursePoint p, double height)
         {
             ball.position = HoleView.ToWorld(p, height + 0.06);
+            ballScale = 1f; ballScaleVelocity = 0f; ball.localScale = Vector3.one * BallSize;
+        }
+
+        /// The game's ball wears Codex's: his dimpled white sphere and the dark alignment stripe
+        /// that makes the spin readable, out of the cinematic file, scaled from his 0.45 m
+        /// presentation ball to the game's 0.12 yd one. Without the file it stays a plain sphere.
+        void DressBall()
+        {
+            var prefab = Resources.Load<GameObject>("Course/hole_12_cinematic");
+            Transform source = null;
+            if (prefab) foreach (var t in prefab.GetComponentsInChildren<Transform>(true)) if (t.name == "BALL") { source = t; break; }
+            if (!source) return;
+            var model = Instantiate(source.gameObject, ball, false);
+            model.name = "Codex ball";
+            model.transform.localPosition = Vector3.zero; model.transform.localRotation = Quaternion.identity;
+            model.transform.localScale = Vector3.one / (2f * CinematicRig.BallRadius);   // his diameter → the unit sphere's
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true)) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            foreach (var c in model.GetComponentsInChildren<Collider>(true)) Destroy(c);
+            if (ball.TryGetComponent(out MeshRenderer plain)) plain.enabled = false;
+        }
+
+        /// Spin the ball the way Codex's stripe shows it: a slow, readable backspin about the
+        /// flight's axis in the air; on the ground a roll of distance over radius, capped so the
+        /// stripe does not strobe.
+        void SpinBall(Vector3 pos, Vector3 velocity, bool airborne)
+        {
+            // size for the lens: a twentieth of the view's height at the ball while airborne,
+            // easing back to life size along the ground
+            float d = Vector3.Distance(rig.transform.position, pos);
+            float viewHeight = 2f * d * Mathf.Tan(rig.Camera.fieldOfView * Mathf.Deg2Rad / 2f);
+            float wanted = airborne ? Mathf.Max(1f, 0.05f * viewHeight / BallSize) : 1f;
+            ballScale = Mathf.SmoothDamp(ballScale, wanted, ref ballScaleVelocity, airborne ? 0.25f : 0.6f);
+            ball.localScale = Vector3.one * (BallSize * ballScale);
+            var flat = velocity; flat.y = 0;
+            if (flat.sqrMagnitude > 1e-4f)
+            {
+                var right = Vector3.Cross(Vector3.up, flat.normalized);
+                float angle = airborne ? -3f * Mathf.Rad2Deg * Time.deltaTime
+                                       : Mathf.Min((pos - lastSpinPos).magnitude / 0.06f, 12f * Time.deltaTime) * Mathf.Rad2Deg;
+                ballSpin = Quaternion.AngleAxis(angle, right) * ballSpin;
+            }
+            lastSpinPos = pos;
+            ball.rotation = ballSpin;
         }
 
         void UpdateAimVisuals()
@@ -853,6 +923,7 @@ namespace GolfArcade.Game
                     ball.position = pos;
                     var velocity = (pos - lastBallPos) / Mathf.Max(Time.deltaTime, 1e-4f);
                     lastBallPos = pos;
+                    SpinBall(pos, velocity, p.h > 0.08);
                     if (club == GolfClub.Putter)
                     {
                         // Watch the putt from where it was read; as it closes on the cup, cut to
@@ -892,6 +963,7 @@ namespace GolfArcade.Game
         {
             var shot = LastShot;
             effects.EndFlight();
+            ballScale = 1f; ballScaleVelocity = 0f; ball.localScale = Vector3.one * BallSize;
             aimLine.positionCount = AimLineSamples;
             string result;
             if (shot.IsHoled)

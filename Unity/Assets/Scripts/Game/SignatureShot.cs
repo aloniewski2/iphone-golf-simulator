@@ -85,6 +85,9 @@ namespace GolfArcade.Game
 
         public Vector3 ToWorld(Vector3 sceneMetres) => toWorld.MultiplyPoint3x4(sceneMetres);
 
+        /// Seconds from the clip's first frame for `seconds` into the shot (which starts at the launch frame).
+        public float ClipTime(float seconds) => (data.start - 1) / (float)data.fps + seconds;
+
         float Frame(float seconds) => Mathf.Clamp(data.start - 1 + seconds * data.fps, 0, data.frames - 1);
 
         Vector3 Sample(float[] flat, int stride, int offset, float frame)
