@@ -205,6 +205,19 @@ namespace GolfArcade.PlayTests
             yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the ball to stop");
             yield return new WaitForSecondsRealtime(0.4f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-15-pov-rest.png"));
+
+            // a pitch from the landing area short of the green that finishes by the flag: the
+            // ball is its usual size at rest, not the POV's big one
+            game.DropBall(new GolfArcade.Course.CoursePoint(8, 160));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the pitch to set up");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address for the pitch");
+            game.StrikeToward(pin);
+            Assert.IsTrue(game.PovShot, "a 39 yd pitch landing by the flag should be the ball POV");
+            yield return new WaitForSecondsRealtime(0.9f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-16-pov-pitch-air.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the pitch to stop");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-17-pov-pitch-rest.png"));
         }
 
         /// A tee shot that comes up short into the water on Hole 12: the ball must fly a level

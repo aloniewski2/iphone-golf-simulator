@@ -1098,6 +1098,8 @@ namespace GolfArcade.Game
             }
             else if (povShot)
             {
+                // big in the air; back to its usual size as it comes down by the flag
+                ballLook.Pov(flightTime < land - 0.5);
                 rig.BallPov(pos, shotLine, (float)(land - flightTime), (float)flightTime);
                 rig.EaseHorizontalFov(CameraRig.PovLensHorizontal, 72f, 0.6f);
             }

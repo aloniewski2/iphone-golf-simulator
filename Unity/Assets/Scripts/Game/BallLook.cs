@@ -15,8 +15,9 @@ namespace GolfArcade.Game
         /// ring, the tracer, this): the course view shows it, the minimap's camera leaves it out.
         public const int OverlayLayer = 31;
         /// The ball's least height on the screen, as a share of the view's height (~1 %, about
-        /// 25 px on a phone); in the ball POV, Codex's presentation ball, as a share of the width.
-        const float MinShare = 0.0105f, PovWidthShare = 0.08f;
+        /// 25 px on a phone); in the ball POV while it flies, a bigger ball, as a share of the
+        /// frame's width (Codex's own is ~8 %, which looked like a beach ball once it sat by the flag).
+        const float MinShare = 0.0105f, PovWidthShare = 0.045f;
         float share = MinShare, wantShare = MinShare;
         /// The drawn ball's diameter this frame, yards (its true size, or swollen to be seen),
         /// and its centre.
@@ -57,8 +58,8 @@ namespace GolfArcade.Game
             return q.transform;
         }
 
-        /// Codex's big POV ball — about 8 % of the frame's width, whatever the screen's shape —
-        /// eased in and out over half a second; or the plain readable one.
+        /// The POV's bigger ball in the air — 4.5 % of the frame's width, whatever the screen's
+        /// shape — eased in and out; or the plain readable one.
         public void Pov(bool on) => wantShare = on ? Mathf.Clamp(PovWidthShare * (view ? view.aspect : 0.46f), MinShare, 0.15f) : MinShare;
 
         /// On for the shot (in the air, bouncing, rolling out, at rest after it); off for
@@ -89,7 +90,7 @@ namespace GolfArcade.Game
             }
             halo.gameObject.SetActive(true);
             // swell to the least screen size, the bottom staying where the real ball's is
-            share = Mathf.MoveTowards(share, wantShare, Time.deltaTime * 0.06f);
+            share = Mathf.MoveTowards(share, wantShare, Time.deltaTime * 0.03f);
             float k = Mathf.Max(1f, share * ViewHeightAt(ball.position) / size);
             body.localScale = Vector3.one * k;
             body.localPosition = Vector3.up * (k - 1f) * 0.5f;
