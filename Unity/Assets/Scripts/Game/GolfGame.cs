@@ -61,10 +61,7 @@ namespace GolfArcade.Game
         /// The ball's spin, shown by Codex's stripe: backspin in the air, a roll on the ground.
         Quaternion ballSpin = Quaternion.identity;
         Vector3 lastSpinPos;
-        /// The ball grows for the camera while it flies — Codex's presentation ball is a twentieth
-        /// of the frame — and is back to its true 0.12 yd by the time it stops.
         const float BallSize = 0.12f;
-        float ballScale = 1f, ballScaleVelocity;
         double lastHeight;
         bool dropped, trailing;
         LineRenderer aimLine;
@@ -370,7 +367,6 @@ namespace GolfArcade.Game
                 {
                     rig.RestoreFov(); signaturePlaying = overviewPlaying = false;
                     cinematic?.Show(false);
-                    effects.Follow(ball);
                     ball.gameObject.SetActive(true); PlaceBall(ballAt, 0);
                 }
             }
@@ -387,7 +383,7 @@ namespace GolfArcade.Game
             Swing.Armed = true;
             golfer.SetVisible(true);
             golfer.Settle();
-            effects.EndFlight();
+            effects.ClearTracer();
             RefreshControls();
             hud.SetMeter(0);
             UpdateAimVisuals();
@@ -518,31 +514,19 @@ namespace GolfArcade.Game
                 sounds.PlayStrike(GolfClub.Iron, 0.9);
                 if (cinematic != null)
                 {
-                    // Codex's ball takes over from the game's for the shot; from the air his
-                    // baked tube would be a hair, so the live tube follows his ball instead
+                    // Codex's ball and trail tube take over from the game's ball for the shot
                     cinematic.SetQuality(ShotEffects.Quality.Pure);
-                    cinematic.ShowTrails(false);
                     cinematic.Show(true);
                     ball.gameObject.SetActive(false);
-                    effects.Follow(cinematic.Ball);
                 }
-                effects.SetQuality(ShotEffects.Quality.Pure); effects.BeginFlight();
+                else { effects.SetQuality(ShotEffects.Quality.Pure); effects.BeginFlight(); }
             }
-            if (cinematic != null)
-            {
-                cinematic.Sample(signature.ClipTime(s));
-                // grown for the lens like the game's ball: a fortieth of the view's height
-                float d = Vector3.Distance(rig.transform.position, cinematic.Ball.position);
-                float viewHeight = 2f * d * Mathf.Tan(rig.Camera.fieldOfView * Mathf.Deg2Rad / 2f);
-                cinematic.Ball.localScale = Vector3.one * Mathf.Max(1f, 0.025f * viewHeight / (2f * CinematicRig.BallRadius));
-            }
+            if (cinematic != null) cinematic.Sample(signature.ClipTime(s));
             else ball.position = signature.BallAt(s, 0.06f);
+            signature.CameraAt(s, out var at, out var look, out var up, out var hfov);
+            rig.Cue(at, look, up);
+            rig.SetHorizontalFov(hfov);                           // the lens breathes as Codex keyed it
             var ballNow = cinematic != null ? cinematic.Ball.position : ball.position;
-            // the same bird's-eye as a live shot, over the whole hole, Codex's ball flying through it
-            float carryTime = signature.Landings.Length > 0 ? signature.Landings[0] : signature.Duration * 0.5f;
-            float p = s <= carryTime ? s / carryTime : 1f + (s - carryTime) / Mathf.Max(0.1f, signature.Duration - carryTime);
-            rig.RestoreFov();
-            rig.BirdsEye(HoleView.ToWorld(hole.Tee), HoleView.ToWorld(hole.Pin), 55f, ballNow, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
             while (signatureLanding < signature.Landings.Length && s >= signature.Landings[signatureLanding])
             {
                 float strength = signatureLanding == 0 ? 1.2f : 0.6f;
@@ -605,7 +589,6 @@ namespace GolfArcade.Game
         void PlaceBall(CoursePoint p, double height)
         {
             ball.position = HoleView.ToWorld(p, height + 0.06);
-            ballScale = 1f; ballScaleVelocity = 0f; ball.localScale = Vector3.one * BallSize;
         }
 
         /// The game's ball wears Codex's: his dimpled white sphere and the dark alignment stripe
@@ -631,13 +614,6 @@ namespace GolfArcade.Game
         /// stripe does not strobe.
         void SpinBall(Vector3 pos, Vector3 velocity, bool airborne)
         {
-            // size for the lens: a twentieth of the view's height at the ball while airborne,
-            // easing back to life size along the ground
-            float d = Vector3.Distance(rig.transform.position, pos);
-            float viewHeight = 2f * d * Mathf.Tan(rig.Camera.fieldOfView * Mathf.Deg2Rad / 2f);
-            float wanted = airborne ? Mathf.Max(1f, 0.025f * viewHeight / BallSize) : 1f;
-            ballScale = Mathf.SmoothDamp(ballScale, wanted, ref ballScaleVelocity, airborne ? 0.25f : 0.6f);
-            ball.localScale = Vector3.one * (BallSize * ballScale);
             var flat = velocity; flat.y = 0;
             if (flat.sqrMagnitude > 1e-4f)
             {
@@ -799,7 +775,7 @@ namespace GolfArcade.Game
             strikePlayed = false;
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
-            hud.SetTempo($"Speed {impact.PeakSpeed:F1} rad/s  ·  Face {impact.FaceDegrees:+0;-0}°  ·  Tempo {impact.TempoSeconds:F2}s" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
+            hud.SetTempo($"Swing {club.ClubSpeedMPH(impact.Power):F0} mph  ·  Load {impact.Backswing:P0}  ·  Face {impact.FaceDegrees:+0;-0}°" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
             float toBall = golfer.Strike();
             hud.SetStatus("");
             RefreshControls();
@@ -813,27 +789,15 @@ namespace GolfArcade.Game
             Enter(State.Flight);
         }
 
-        /// 1 in flight, easing to 0.45 over the last quarter second before the ball lands and
-        /// back to 1 half a second after: the first bounce in slow motion.
-        static float BallClock(double t, double carry)
-        {
-            double into = t - carry;
-            if (into < -0.35 || into > 0.75) return 1f;
-            float edge = into < 0 ? Mathf.SmoothStep(1f, 0.45f, (float)((into + 0.35) / 0.35))
-                                  : Mathf.SmoothStep(0.45f, 1f, (float)((into - 0.45) / 0.3));
-            return into < 0 ? edge : (into < 0.45 ? 0.45f : edge);
-        }
-
-        /// The flight camera for a full shot: the bird's-eye view of the whole shot, framed from
-        /// where it left to where it will land. Putts keep their read.
+        /// The flight camera for a full shot: Golf Dreams' tee view — hold behind the ball and
+        /// let the tracer draw the shot. Putts keep their read.
         Vector3 flightCamHome;
         void FlightCamera(Vector3 pos, double shotTime, double carry)
         {
-            double duration = Math.Max(LastShot.Duration, carry + 0.01);
-            float p = shotTime <= carry ? (float)(shotTime / Math.Max(carry, 0.01)) : 1f + (float)((shotTime - carry) / (duration - carry));
-            var origin = HoleView.ToWorld(LastShot.Origin);
-            var rest = HoleView.ToWorld(LastShot.Rest);
-            rig.BirdsEye(origin, rest, (float)LastShot.Apex, pos, Mathf.Clamp(p, 0, 2), at => (float)HoleView.GroundHeight(HoleView.ToCourse(at)));
+            float p = carry > 0 ? (float)(shotTime / carry) : 1f;
+            var launch = HoleView.ToWorld(LastShot.Origin);
+            var landing = HoleView.ToWorld(LastShot.Touchdown);
+            rig.TeeHold(flightCamHome, launch, pos, landing, Mathf.Clamp01(p));
         }
 
         // ----- Frame loop -----
@@ -895,10 +859,7 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Flight:
-                    // The ball's own clock: it runs slow for a beat around the first touchdown
-                    // of a full shot — the landing seen the way a replay shows it — and the
-                    // cameras keep real time, so the move stays smooth through it.
-                    flightTime += Time.deltaTime * (club == GolfClub.Putter || LastShot.CarryTime < 1.6 ? 1f : BallClock(flightTime, LastShot.CarryTime));
+                    flightTime += Time.deltaTime;
                     if (flightTime < 0) break;
                     if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power); }
                     // The flight model's arc is level with the ground it left. Drawn: in the air it
@@ -975,7 +936,6 @@ namespace GolfArcade.Game
         {
             var shot = LastShot;
             effects.EndFlight();
-            ballScale = 1f; ballScaleVelocity = 0f; ball.localScale = Vector3.one * BallSize;
             aimLine.positionCount = AimLineSamples;
             string result;
             if (shot.IsHoled)

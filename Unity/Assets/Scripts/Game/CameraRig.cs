@@ -78,31 +78,20 @@ namespace GolfArcade.Game
             targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
         }
 
-        /// The flight from the air: a high, wide view that takes in the whole shot — where it
-        /// left from, where it will come down, the arc between — the way a blimp shot or a
-        /// tracer frames a hole. The camera hangs behind and far above the ball's start, looking
-        /// down the line at the middle of the shot, drifts slowly round it through the flight, and
-        /// eases in toward the landing as the ball comes down. `p` runs 0→1 over the carry and
-        /// 1→2 along the ground; `apex` is the flight's top in yards above the launch.
-        public void BirdsEye(Vector3 origin, Vector3 rest, float apex, Vector3 ball, float p, System.Func<Vector3, float> groundAt)
+        /// The flight the way Golf Dreams shows it: the camera stays where it watched the address —
+        /// low behind the ball — and the tracer draws the whole arc out over the hole while the
+        /// ball shrinks to a dot at its head. It tilts up just enough to keep the top of the arc in
+        /// frame and eases in a touch on a long one so the far end still reads; the ground stays.
+        public void TeeHold(Vector3 home, Vector3 launch, Vector3 ball, Vector3 landing, float progress)
         {
-            var along = rest - origin; along.y = 0;
-            float length = Mathf.Max(along.magnitude, 60f);
-            along = along.sqrMagnitude > 0.01f ? along.normalized : transform.forward;
-            var right = Vector3.Cross(Vector3.up, along);
-            var mid = Vector3.Lerp(origin, rest, 0.5f);
-            // a slow swing round the hole, and a push in once the ball is coming down
-            float swing = Mathf.Lerp(-14f, 14f, Mathf.SmoothStep(0, 1, p / 2f)) * Mathf.Deg2Rad;
-            float closer = Mathf.Lerp(1f, 0.62f, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0.75f, 1.6f, p)));
-            float back = (length * 0.55f + 25f) * closer, up = (length * 0.8f + apex * 0.35f + 30f) * closer;
-            var behind = -along * Mathf.Cos(swing) + right * Mathf.Sin(swing);
-            var at = mid + behind * back + Vector3.up * up;
-            at.y = Mathf.Max(at.y, groundAt(at) + 12f);
-            targetPosition = at;
-            // the frame holds the whole shot; the ball sits toward its top as it climbs
-            targetLookAt = Vector3.Lerp(mid, ball, 0.3f) + Vector3.up * apex * 0.15f;
-            targetZoom = 1f; targetRoll = 0f;
-            positionLag = 0.8f; lookLag = 0.35f;
+            targetPosition = home;
+            var far = Vector3.Lerp(launch, landing, 0.65f);
+            float lift = Mathf.Max(0, ball.y - launch.y) * 0.45f;
+            targetLookAt = Vector3.Lerp(far, ball, 0.35f) + Vector3.up * lift;
+            positionLag = 0.6f; lookLag = 0.35f;
+            float reach = Vector3.Distance(home, landing);
+            FrameWindow(reach, reach * 0.9f + 30f, 38f);
+            targetRoll = 0f;
         }
 
         /// A slow settle on the resting ball, with the pin in shot when it is near.
@@ -111,7 +100,8 @@ namespace GolfArcade.Game
             var dir = towardPin; dir.y = 0; dir.Normalize();
             targetPosition = ball - dir * (putting ? 2.5f : 6f) + Vector3.up * (putting ? 1.2f : 2.5f);
             targetLookAt = ball + dir * (putting ? 3f : 12f);
-            positionLag = 0.6f; lookLag = 0.5f;
+            // from the tee view this is the trip up the hole to the ball: longer the further it is
+            positionLag = Mathf.Clamp(Vector3.Distance(transform.position, targetPosition) / 150f, 0.6f, 1.6f); lookLag = 0.5f;
             targetZoom = 1f; targetRoll = 0f;
         }
 

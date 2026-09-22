@@ -3,13 +3,12 @@ using UnityEngine;
 
 namespace GolfArcade.Game
 {
-    /// How a shot looks in the air and when it comes down. The ball trails Codex's tube
-    /// (TubeTrail) — a translucent taper, fat and bright at the ball, a hair at the tail, in the
-    /// colour of the swing's rating: green for a clean one, yellow for an imperfect one, red for
-    /// a mishit — and the tube narrows away after the landing. Every bounce throws up a puff of
-    /// the ground it hit, and a ball in the sea splashes. The trail's recipe is
-    /// Resources/Course/swing_trail.json, read off Hole_12_Cinematic.blend by
-    /// blender/scripts/hole12_cinematic_export.py.
+    /// How a shot looks in the air and when it comes down. The ball draws a tracer (Tracer): a
+    /// thin luminous line along its whole flight that stays over the hole, in the colour of the
+    /// swing's rating — green for a clean one, yellow for an imperfect one, red for a mishit.
+    /// Every bounce throws up a puff of the ground it hit, and a ball in the sea splashes. The
+    /// rating bands and colours are Resources/Course/swing_trail.json, read off Codex's
+    /// Hole_12_Cinematic.blend by blender/scripts/hole12_cinematic_export.py.
     public sealed class ShotEffects : MonoBehaviour
     {
         public enum Quality { Pure, Fair, OffLine }
@@ -57,7 +56,7 @@ namespace GolfArcade.Game
         static Texture2D soft;
         static Material particleMaterial;
 
-        TubeTrail tube;
+        Tracer tracer;
         Transform ball;
         ParticleSystem puffs, splash;
         Camera view;
@@ -69,17 +68,33 @@ namespace GolfArcade.Game
             var fx = go.AddComponent<ShotEffects>();
             fx.view = view;
             fx.ball = ball;
-            var spec = Spec();
-            fx.tube = TubeTrail.Create(go.transform);
-            fx.tube.LengthSeconds = spec.lengthSeconds; fx.tube.FadeSeconds = spec.fadeSeconds;
-            fx.tube.HeadAlpha = spec.headAlpha; fx.tube.TailAlpha = spec.tailAlpha;
+            fx.tracer = Tracer.Create(go.transform, view);
             fx.SetQuality(Quality.Fair);
             fx.puffs = fx.BuildParticles("Puffs", 0.7f, 1.1f, 0.22f, 0.5f, -2.2f);
             fx.splash = fx.BuildParticles("Splash", 0.9f, 1.4f, 0.28f, 0.9f, -3.5f);
             return fx;
         }
 
-        /// A disc that fades to nothing at its edge, for particles and the halo.
+        static Texture2D band;
+        /// A strip solid down its middle, fading to nothing at both edges — across a line so it
+        /// reads as light rather than a painted stripe.
+        public static Texture2D Band()
+        {
+            if (band) return band;
+            const int n = 32;
+            band = new Texture2D(4, n, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[4 * n];
+            for (int y = 0; y < n; y++)
+            {
+                float d = Mathf.Abs((y + 0.5f) / n - 0.5f) * 2f;
+                float a = Mathf.Clamp01(1 - d); a = a * a * (3 - 2 * a);
+                for (int x = 0; x < 4; x++) px[y * 4 + x] = new Color32(255, 255, 255, (byte)(255 * a));
+            }
+            band.SetPixels32(px); band.Apply();
+            return band;
+        }
+
+        /// A disc that fades to nothing at its edge, for particles.
         public static Texture2D Soft()
         {
             if (soft) return soft;
@@ -139,21 +154,19 @@ namespace GolfArcade.Game
         Quality quality = Quality.Fair;
         public void SetQuality(Quality q) => quality = q;
 
-        /// Which ball the tube follows: the game's, or Codex's during his shot.
+        /// Which ball the tracer follows: the game's, or Codex's during his shot.
         public void Follow(Transform t) => ball = t;
 
-        public void BeginFlight() => tube.Begin(ColorOf(quality));
-        public void EndFlight() => tube.End();
+        bool flying;
+        public void BeginFlight() { tracer.Begin(ColorOf(quality)); flying = true; }
+        /// The shot is over: the line stays over the hole a while, then goes.
+        public void EndFlight() { flying = false; tracer.FadeOut(2.5f); }
+        /// Setting up the next shot: the line goes now.
+        public void ClearTracer() { flying = false; tracer.Clear(); }
 
-        /// The tube follows the ball, its head sized against the view where the ball is (distance
-        /// and field of view together) so it keeps its presence on screen whatever the lens does.
         void LateUpdate()
         {
-            if (!view || !ball) return;
-            float d = Vector3.Distance(view.transform.position, ball.position);
-            float viewHeight = 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f);   // yards top to bottom at the ball
-            tube.HeadRadius = Mathf.Max(0.08f, 0.011f * viewHeight);
-            tube.Push(ball.position);
+            if (flying && ball) tracer.Push(ball.position);
         }
 
         // ---- coming down
@@ -162,7 +175,6 @@ namespace GolfArcade.Game
         public void Touchdown(Vector3 at, CourseLie lie, float strength)
         {
             strength = Mathf.Clamp(strength, 0.3f, 1.5f);
-            tube.Land();   // the tube narrows away after the landing
             if (lie == CourseLie.Water) { Splash(at); return; }
             Color a, b;
             switch (lie)
