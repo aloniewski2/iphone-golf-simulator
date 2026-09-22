@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GolfArcade.Course
 {
-    /// Builds a hole at runtime. With a modelled course in Resources/Course/hole_NN (the Blender
+    /// Builds a hole at runtime. With a modelled course in Resources/Course/hole_NN (a Blender
     /// island, exported as FBX) it places that model so its tee and pin markers land on the
     /// hole's, and the ground under the ball is read off its meshes; otherwise it draws the hole
     /// out of primitives: rough everywhere, a fairway ribbon along the centerline, a round green,
@@ -67,6 +67,13 @@ namespace GolfArcade.Course
             ["MAT_PATH_EDGE"] = Rgb(152, 156, 158), ["MAT_WOOD"] = Rgb(112, 74, 46), ["MAT_ROOF"] = Rgb(104, 84, 74),
             ["MAT_WALL"] = Rgb(224, 208, 178), ["MAT_GLASS"] = Rgb(150, 205, 235), ["MAT_STONE"] = Rgb(196, 188, 176),
             ["MAT_FLAG"] = Rgb(232, 40, 40), ["MAT_POLE"] = Rgb(240, 240, 240), ["MAT_CUP"] = Rgb(28, 28, 28), ["MAT_BALL"] = Rgb(250, 250, 250),
+            // Hole 12's own: blue-grey basalt facets, cedar, the lighthouse and the flower beds.
+            ["MAT_BASALT_0"] = Rgb(137, 147, 158), ["MAT_BASALT_1"] = Rgb(158, 164, 170), ["MAT_BASALT_2"] = Rgb(170, 174, 176),
+            ["MAT_BASALT_3"] = Rgb(147, 158, 170), ["MAT_BASALT_4"] = Rgb(182, 180, 171), ["MAT_BARK"] = Rgb(130, 96, 64),
+            ["MAT_WOOD_LIGHT"] = Rgb(199, 151, 94), ["MAT_CHALK"] = Rgb(240, 239, 220), ["MAT_SLATE"] = Rgb(66, 97, 112),
+            ["MAT_FLOWER_CORAL"] = Rgb(243, 132, 147), ["MAT_FLOWER_GOLD"] = Rgb(251, 205, 80), ["MAT_FLOWER_LAVENDER"] = Rgb(184, 135, 213),
+            // The pin (blender/pin.blend): the cup's liner and the band on the stick.
+            ["MAT_CUP_RIM"] = Rgb(245, 245, 240), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
         };
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
 
@@ -76,9 +83,15 @@ namespace GolfArcade.Course
         /// The model's stand-ins for things the game draws itself at the exact pin and tee.
         static readonly string[] GameplayPlaceholders = { "FLAG", "FLAG_POLE", "HOLE_CUP", "BALL_START", "MARKER_TEE", "MARKER_PIN", "MARKER_UP" };
 
+        GameObject model;
+
+        /// A named node of the course model (empties included), placed in the world — null on
+        /// a primitive hole or when the model has no such node.
+        public Transform ModelNode(string name) => model ? FindDeep(model.transform, name) : null;
+
         void BuildFromModel(GameObject prefab)
         {
-            var model = Instantiate(prefab, transform);
+            model = Instantiate(prefab, transform);
             model.name = "Course model";
             var tee = FindDeep(model.transform, "MARKER_TEE");
             var pin = FindDeep(model.transform, "MARKER_PIN");
@@ -123,11 +136,13 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (Palette.TryGetValue(name, out var color)) mats[i] = Mat(color);
+                    if (Palette.TryGetValue(name, out var color)) mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color) : Mat(color);
                 }
                 r.sharedMaterials = mats;
                 r.shadowCastingMode = r.name.StartsWith("WATER") ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
+            // Hole 12's sea comes with its swell as blendshapes and a sheet of glints; drive them.
+            WaterMotion.Attach(FindDeep(model.transform, "WATER_WAVES"), FindDeep(model.transform, "WATER_GLINTS"));
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (!mf.sharedMesh || !StartsWithAny(mf.name, GroundPrefixes)) continue;
@@ -141,6 +156,16 @@ namespace GolfArcade.Course
                 if (t) t.gameObject.SetActive(false);
             }
             Physics.SyncTransforms(); // the ball is placed on this ground in the same frame
+            if (hasGround) Hole.Surface = SampleSurface();
+        }
+
+        /// The ground around the green as the ball will roll over it, read off the meshes the
+        /// player sees (half-yard samples, well past the fringe) so the read and the break come
+        /// from the same shape that was sculpted in Blender.
+        HeightGrid SampleSurface()
+        {
+            double reach = Hole.GreenRadius + 12;
+            return HeightGrid.Sample(Hole.Pin.X - reach, Hole.Pin.D - reach, 2 * reach, 2 * reach, 0.5, GroundHeight);
         }
 
         static Vector3 Flat(Vector3 v) => new(v.x, 0, v.z);
@@ -189,19 +214,65 @@ namespace GolfArcade.Course
             PlantTrees();
         }
 
-        /// Cup and flag at the pin, on whatever ground is there.
+        /// The flagstick and its flag, which come out while the player putts.
+        Transform pinRoot, flagstick, flag;
+
+        /// Cup and flag at the pin, on whatever ground is there: the modelled pin from
+        /// Resources/Course/pin (blender/pin.blend, metres) when it is there, primitives otherwise.
         void BuildPin()
         {
             var pin = ToWorld(Hole.Pin);
+            var prefab = Resources.Load<GameObject>("Course/pin");
+            if (prefab)
+            {
+                var model = Instantiate(prefab, transform);
+                model.name = "Pin";
+                model.transform.position = pin;
+                model.transform.localScale *= MetresToYards;
+                foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+                {
+                    var mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++)
+                        if (mats[i] && Palette.TryGetValue(mats[i].name.Replace(" (Instance)", ""), out var color)) mats[i] = Mat(color);
+                    r.sharedMaterials = mats;
+                }
+                pinRoot = model.transform;
+                flagstick = FindDeep(pinRoot, "FLAG_POLE");
+                flag = FindDeep(pinRoot, "FLAG");
+                Flag = flagstick ? flagstick : pinRoot;
+                return;
+            }
             var cup = Disc("Cup", 0.15f, 0.15f, CupColor, 0.02f);
             cup.transform.position = pin + Vector3.up * 0.02f;
             var stick = Primitive(PrimitiveType.Cylinder, "Flagstick", Color.white, transform);
             stick.transform.position = pin + Vector3.up * 1.2f;
             stick.transform.localScale = new Vector3(0.05f, 1.2f, 0.05f);
-            var flag = Primitive(PrimitiveType.Cube, "Flag", new Color(0.9f, 0.15f, 0.15f), transform);
-            flag.transform.position = pin + new Vector3(0.5f, 2.2f, 0);
-            flag.transform.localScale = new Vector3(1f, 0.3f, 0.03f);
+            var cloth = Primitive(PrimitiveType.Cube, "Flag", new Color(0.9f, 0.15f, 0.15f), transform);
+            cloth.transform.position = pin + new Vector3(0.5f, 2.2f, 0);
+            cloth.transform.localScale = new Vector3(1f, 0.3f, 0.03f);
+            flagstick = stick.transform; flag = cloth.transform;
             Flag = stick.transform;
+        }
+
+        const float MetresToYards = 1.0936f;
+
+        /// Tend the flag: it comes out for a putt and goes back for the next player.
+        public void ShowFlag(bool on)
+        {
+            if (flagstick) flagstick.gameObject.SetActive(on);
+            if (flag) flag.gameObject.SetActive(on);
+        }
+
+        /// Turn the flag to fly with the wind (`towardDegrees` is the heading it blows toward).
+        public void SetFlagWind(double towardDegrees)
+        {
+            if (!pinRoot || !flag || !flagstick) return;
+            var cloth = flag.GetComponentInChildren<Renderer>(true);
+            if (!cloth) return;
+            var flying = cloth.bounds.center - flagstick.position; flying.y = 0;
+            if (flying.sqrMagnitude < 1e-6f) return;
+            var wanted = new Vector3(Mathf.Sin((float)towardDegrees * Mathf.Deg2Rad), 0, Mathf.Cos((float)towardDegrees * Mathf.Deg2Rad));
+            pinRoot.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(flying, wanted, Vector3.up), Vector3.up) * pinRoot.rotation;
         }
 
         /// Tree line at the edge of the rough, so out of bounds reads at a glance.
@@ -306,6 +377,19 @@ namespace GolfArcade.Course
         }
 
         static readonly Dictionary<Color, Material> materials = new();
+        static readonly Dictionary<Color, Material> waterMaterials = new();
+
+        /// Water is the one flat colour that wants a sheen: the swell only reads where it catches
+        /// the sun.
+        public static Material WaterMat(Color color)
+        {
+            if (waterMaterials.TryGetValue(color, out var m) && m) return m;
+            m = new Material(Mat(color));
+            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.62f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.62f);
+            waterMaterials[color] = m;
+            return m;
+        }
         static readonly Dictionary<Color, Material> unlitMaterials = new();
 
         /// A flat, unshaded colour — for markers and lines that should read the same from any angle.

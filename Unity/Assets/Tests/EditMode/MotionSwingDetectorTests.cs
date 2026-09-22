@@ -86,6 +86,20 @@ namespace GolfArcade.Tests
             Assert.AreEqual(cap, fast, 0.02, "22 rad/s exceeds full speed, so only the backswing limits it");
         }
 
+        /// The feel: the downswing's speed makes the shot; the backswing only trims it.
+        [Test]
+        public void SpeedDecidesTheDistanceMoreThanTheBackswing()
+        {
+            var detector = new MotionSwingDetector { FullSpeed = 12 };
+            // hip-high backswing (1.55 rad, ~60 % load), then a hard downswing: 16 rad/s
+            var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.12, -0.4), (0.6, -0.4) }))[0];
+            Assert.GreaterOrEqual(impact.Power, 0.85, "a hip-high backswing swung hard is nearly the whole club");
+            Assert.AreEqual(0, impact.Overswing, 1e-9, "16 rad/s against a 12 rad/s club is still within grace");
+            // the same backswing at half speed is roughly half the shot
+            var soft = Impacts(Drive(new MotionSwingDetector { FullSpeed = 12 }, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.33, -0.4), (0.6, -0.4) }))[0];
+            Assert.AreEqual(impact.Power * (5.9 / 12), soft.Power, 0.08);
+        }
+
         [Test]
         public void SquareFaceFliesStraight()
         {
@@ -197,13 +211,15 @@ namespace GolfArcade.Tests
         [Test]
         public void LowerBackswingMeansLessPowerAtTheSameSpeed()
         {
-            // Same 8.8 rad/s downswing from a half backswing and a full one: the low one is a chip.
+            // Same 8.8 rad/s downswing from a third of a backswing and a full one: the short one
+            // gives up some of the club, but not most of it — the speed is what it is.
             var shortBack = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.4, 0.9), (0.2, 0.9), (0.125, -0.2), (0.6, -0.2) }))[0];
             var longBack = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.33, -0.4), (0.6, -0.4) }))[0];
             Assert.AreEqual(shortBack.PeakSpeed, longBack.PeakSpeed, 0.3);
             Assert.Less(shortBack.Backswing, 0.4);
             Assert.AreEqual(1, longBack.Backswing, 0.02);
-            Assert.Less(shortBack.Power, longBack.Power * 0.7);
+            Assert.Less(shortBack.Power, longBack.Power * 0.9);
+            Assert.Greater(shortBack.Power, longBack.Power * 0.65);
             // and a slow full swing is still weak: speed is what the backswing scales
             var lazy = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.7, -0.4), (0.6, -0.4) }))[0];
             Assert.Less(lazy.Power, longBack.Power * 0.6);

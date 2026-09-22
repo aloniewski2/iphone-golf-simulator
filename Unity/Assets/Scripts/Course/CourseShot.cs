@@ -15,6 +15,8 @@ namespace GolfArcade.Course
         /// spends long enough rolling for the ground to move it; rough and sand grab the ball.
         public const double FairwayDeceleration = 3.2 / BallFlight.MetersPerYard;
         public const double GreenDeceleration = 1.5;
+        /// g in yards/s², for the pull of a slope on a rolling ball.
+        public const double GravityYards = 9.81 / BallFlight.MetersPerYard;
 
         public readonly GolfClub Club;
         public readonly double Power;
@@ -29,6 +31,10 @@ namespace GolfArcade.Course
         public readonly CoursePoint NextPosition;
         public readonly CoursePoint Rest;
         public readonly double Carry;
+        /// Seconds in the air; the ball is on the ground from here to `Duration`.
+        public readonly double CarryTime;
+        /// Where the ball first meets the ground.
+        public readonly CoursePoint Touchdown;
         public readonly double Roll;
         public readonly double Apex;
         public readonly double Duration;
@@ -123,15 +129,20 @@ namespace GolfArcade.Course
                 var startWorld = World(start.LateralYards, 0, start.DistanceYards);
                 path.Add(startWorld);
                 time = flight.RollStartTime;
+                CarryTime = flight.RollStartTime;
                 vx = flight.RollStartVelocityX * cosH + flight.RollStartVelocityZ * sinH;
                 vd = -flight.RollStartVelocityX * sinH + flight.RollStartVelocityZ * cosH;
             }
 
-            // Roll on the course: the grass under the ball sets the deceleration, the cup has
-            // its say, and a lip-out keeps some pace.
+            // Roll on the course: the ground steers it. From the moment the ball is rolling it
+            // accelerates down any slope it is on and is slowed by the grass it is on, so uphill
+            // comes up short, downhill runs on and a side slope breaks the line; the cup has its
+            // say, and a lip-out keeps some pace.
+            var surface = hole.Surface ?? FlatSurface.Instance;
             var last = path[path.Count - 1];
             double x = last.x, d = last.d;
             var touchdown = new CoursePoint(x, d);
+            Touchdown = touchdown;
             const double dt = 1.0 / 240;
             double nextSample = time + SampleInterval;
             double? holed = null;
@@ -144,12 +155,23 @@ namespace GolfArcade.Course
                 var lieNow = hole.LieAt(here);
                 if (lieNow == CourseLie.Water) { wet = true; break; }
                 double decel = RollingDeceleration(lieNow);
-                if (speed < 0.02) break;
+                var slope = surface.Gradient(here);
+                double downhill = Math.Sqrt(slope.dx * slope.dx + slope.dd * slope.dd) * GravityYards;
+                // Stopped, unless the face it sits on is steep enough to start it rolling again.
+                if (speed < 0.02 && downhill < decel * 0.9) break;
 
                 // At the cup: judged by the miss distance (how far from the middle the ball's
                 // line passes) and its pace: drop in, or rattle off the rim and keep going.
                 double toCup = here.DistanceTo(hole.Pin);
-                double dx = vx / speed, dd = vd / speed;
+                double dx = speed > 0.001 ? vx / speed : 0, dd = speed > 0.001 ? vd / speed : 0;
+                if (toCup <= Hole.CupCaptureRadius && speed <= 0.001)
+                {
+                    // Dead still on the lip: it drops.
+                    x = hole.Pin.X; d = hole.Pin.D;
+                    holed = elapsed;
+                    path.Add((x, 0, d));
+                    break;
+                }
                 if (toCup <= Hole.CupCaptureRadius)
                 {
                     double relX = hole.Pin.X - x, relD = hole.Pin.D - d;
@@ -181,11 +203,14 @@ namespace GolfArcade.Course
                     lippedOut = false;
                 }
 
-                double slowed = Math.Max(0, speed - decel * dt);
-                double movingTime = Math.Min(dt, speed / decel);
-                double travel = speed * movingTime - 0.5 * decel * movingTime * movingTime;
-                x += dx * travel; d += dd * travel;
-                vx = dx * slowed; vd = dd * slowed;
+                double ax = -GravityYards * slope.dx, ad = -GravityYards * slope.dd;
+                if (speed > 0.0001)
+                {
+                    double friction = Math.Min(decel, speed / dt); // never reverses the ball
+                    ax -= friction * vx / speed; ad -= friction * vd / speed;
+                }
+                vx += ax * dt; vd += ad * dt;
+                x += vx * dt; d += vd * dt;
                 elapsed += dt;
                 if (elapsed + 1e-9 >= nextSample) { path.Add((x, 0, d)); nextSample += SampleInterval; }
             }

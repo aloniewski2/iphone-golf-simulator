@@ -3,25 +3,40 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using GolfArcade.Course;
+using GolfArcade.Shot;
 
 namespace GolfArcade.Game
 {
-    /// The golfer on screen. With the rigged model in Resources/Golfer (built in Blender with a
-    /// full driver swing baked as one clip) the phone drives the clip: the backswing is scrubbed
-    /// by the detector's load, so the figure winds up exactly as far as the player does, and on
-    /// impact the downswing runs through to the finish at real speed. Without the model a
-    /// Mii-simple figure of primitives stands in.
+    /// The golfer on screen: Adnan's standard character (Resources/Golfer/golfer_m|f, out of
+    /// his sports animation studio via blender/scripts/adnan_golfer_export.py) with a swing
+    /// clip per club — Drive, IronSwing, HalfSwing, Chip, Putt — and the club in hand. The phone
+    /// drives the clip: the backswing is scrubbed by the detector's load, so the figure winds
+    /// up exactly as far as the player does, and on impact the downswing runs through to the
+    /// finish at real speed. Without the model a Mii-simple figure of primitives stands in.
     public sealed class GolferView : MonoBehaviour
     {
-        // Clip landmarks, seconds: keyed in blender/scripts/golfer_build.py at 60 fps
-        const float TopTime = 48f / 60f, ImpactTime = 64f / 60f, EndTime = 130f / 60f;
-        /// A full downswing, top to ball (matches the clip); a partial backswing comes down proportionally faster.
-        const float FullDownswing = ImpactTime - TopTime;
         const float MetresToYards = 1.0936f;
+
+        /// One clip's landmarks, from golfer_<m|f>_clips.json (frames found in Blender from the
+        /// club head's path: farthest from address is the top, its closest return is impact).
+#pragma warning disable 649 // filled by JsonUtility
+        [System.Serializable]
+        public class ClipInfo { public string name, club; public int frames, fps, top, impact; }
+        [System.Serializable]
+        class ClipSet { public string gender; public ClipInfo[] clips; }
+#pragma warning restore 649
 
         // rigged model
         PlayableGraph graph;
+        AnimationPlayableOutput output;
         AnimationClipPlayable clip;
+        readonly Dictionary<string, AnimationClip> clips = new();
+        readonly Dictionary<string, ClipInfo> landmarks = new();
+        readonly Dictionary<string, GameObject> clubMeshes = new();
+        string clipName;
+        float TopTime, ImpactTime, EndTime;
+        /// A full downswing, top to ball (matches the clip); a partial backswing comes down proportionally faster.
+        float FullDownswing => ImpactTime - TopTime;
         bool hasModel;
         float time;            // clip time being shown
         float loadTarget;      // where the backswing should be, from the phone
@@ -65,17 +80,21 @@ namespace GolfArcade.Game
             hasModel = false; body = null; modelGo = null;
             phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
             var model = Resources.Load<GameObject>(GolferStyle.ModelPath);
-            if (model && !BuildModel(model, GolferStyle.ModelPath)) Debug.LogWarning($"{GolferStyle.ModelPath} has no Swing clip; using the primitive golfer");
+            if (model && !BuildModel(model, GolferStyle.ModelPath)) Debug.LogWarning($"{GolferStyle.ModelPath} has no swing clips; using the primitive golfer");
             if (!hasModel) BuildFigure();
+            SetClub(shownClub, shownShort);
         }
 
         // ----- Rigged model -----
 
         bool BuildModel(GameObject prefab, string path)
         {
-            AnimationClip swing = null;
-            foreach (var c in Resources.LoadAll<AnimationClip>(path)) { swing = c; break; }
-            if (!swing) return false;
+            clips.Clear(); landmarks.Clear(); clubMeshes.Clear();
+            foreach (var c in Resources.LoadAll<AnimationClip>(path)) clips[c.name] = c;
+            if (clips.Count == 0) return false;
+            var json = Resources.Load<TextAsset>(path + "_clips");
+            if (json)
+                foreach (var info in JsonUtility.FromJson<ClipSet>(json.text).clips) landmarks[info.name] = info;
 
             var model = Instantiate(prefab, transform);
             modelGo = model;
@@ -91,10 +110,16 @@ namespace GolfArcade.Game
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
                     if (name == "MAT_SKIN") mats[i] = HoleView.Mat(GolferStyle.SkinColor);
+                    else if (name == "MAT_HAIR") mats[i] = HoleView.Mat(GolferStyle.HairColor);
                     else if (Palette.TryGetValue(name, out var color)) mats[i] = HoleView.Mat(color);
                 }
                 r.sharedMaterials = mats;
                 if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
+            }
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.StartsWith("CLUB_")) clubMeshes[t.name.Substring(5)] = t.gameObject;
+                if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == GolferStyle.HairMesh);
             }
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             animator.applyRootMotion = false;
@@ -102,15 +127,46 @@ namespace GolfArcade.Game
 
             graph = PlayableGraph.Create("Golfer swing");
             graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-            var output = AnimationPlayableOutput.Create(graph, "Swing", animator);
-            clip = AnimationClipPlayable.Create(graph, swing);
+            output = AnimationPlayableOutput.Create(graph, "Swing", animator);
+            graph.Play();
+            hasModel = true;
+            clipName = null;
+            return true;
+        }
+
+        GolfClub shownClub = GolfClub.Driver;
+        bool shownShort;
+
+        /// The clip and the club in hand for `club`: the driver's swing, the iron's, a half
+        /// swing or a chip for the wedge depending on how far there is to go, the putt.
+        public void SetClub(GolfClub club, bool shortShot)
+        {
+            shownClub = club; shownShort = shortShot;
+            if (!hasModel) return;
+            string wanted = club switch
+            {
+                GolfClub.Driver => "Drive",
+                GolfClub.Iron => "IronSwing",
+                GolfClub.Wedge => shortShot ? "Chip" : "HalfSwing",
+                _ => "Putt",
+            };
+            if (!clips.ContainsKey(wanted)) wanted = clips.ContainsKey("Drive") ? "Drive" : new List<string>(clips.Keys)[0];
+            if (wanted == clipName) return;
+            clipName = wanted;
+            var c = clips[wanted];
+            if (landmarks.TryGetValue(wanted, out var info) && info.fps > 0)
+            {
+                TopTime = (float)info.top / info.fps; ImpactTime = (float)info.impact / info.fps; EndTime = (float)(info.frames - 1) / info.fps;
+            }
+            else { TopTime = c.length * 0.55f; ImpactTime = c.length * 0.75f; EndTime = c.length; }
+            string clubMesh = info != null ? info.club.ToUpperInvariant() : club.ToString().ToUpperInvariant();
+            foreach (var kv in clubMeshes) kv.Value.SetActive(kv.Key == clubMesh);
+            if (clip.IsValid()) clip.Destroy();
+            clip = AnimationClipPlayable.Create(graph, c);
             clip.SetApplyFootIK(false);
             clip.SetApplyPlayableIK(false);
             output.SetSourcePlayable(clip);
-            graph.Play();
-            hasModel = true;
-            Show(0);
-            return true;
+            Show(Mathf.Min(time, TopTime));
         }
 
         void Show(float t)

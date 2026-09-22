@@ -32,6 +32,35 @@ namespace GolfArcade.Game
 
         public static Color SkinColor => SkinTones[SkinTone];
         public static string SkinName => SkinToneNames[SkinTone];
+
+        // ---- Hair: three styles modelled on Adnan's head (HAIR_SHORT / HAIR_LONG / HAIR_CURLY in
+        // the golfer FBX) or none, in one of six colours.
+        public enum HairKind { Short, Long, Curly, None }
+        public static readonly string[] HairNames = { "Short", "Bob", "Curls", "None" };
+        public static readonly Color[] HairColors =
+        {
+            Rgb(28, 24, 22), Rgb(62, 40, 26), Rgb(118, 78, 48), Rgb(152, 62, 34), Rgb(222, 190, 122), Rgb(204, 206, 212),
+        };
+        public static readonly string[] HairColorNames = { "Black", "Dark brown", "Brown", "Auburn", "Blonde", "Silver" };
+        const string HairKey = "golfer.hair", HairColorKey = "golfer.haircolor";
+
+        public static HairKind Hair
+        {
+            get => (HairKind)Mathf.Clamp(PlayerPrefs.GetInt(HairKey, 0), 0, HairNames.Length - 1);
+            set { PlayerPrefs.SetInt(HairKey, (int)value); PlayerPrefs.Save(); }
+        }
+
+        public static int HairTone
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt(HairColorKey, 1), 0, HairColors.Length - 1);
+            set { PlayerPrefs.SetInt(HairColorKey, Mathf.Clamp(value, 0, HairColors.Length - 1)); PlayerPrefs.Save(); }
+        }
+
+        public static Color HairColor => HairColors[HairTone];
+        /// The mesh in the FBX for the chosen style, or null for none.
+        public static string HairMesh => Hair == HairKind.None ? null : "HAIR_" + Hair.ToString().ToUpperInvariant();
+        /// "Male · Tan · Bob, auburn": the golfer in a line, for the menu.
+        public static string Summary => $"{(Body == BodyKind.Female ? "Female" : "Male")}   ·   {SkinName}   ·   {(Hair == HairKind.None ? "No hair" : $"{HairNames[(int)Hair]}, {HairColorNames[HairTone].ToLowerInvariant()}")}";
         /// Resources path of the model for the chosen body.
         public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
         public static string BodyLabel => Body == BodyKind.Female ? "♀" : "♂";

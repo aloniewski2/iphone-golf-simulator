@@ -29,8 +29,10 @@ namespace GolfArcade.PlayTests
             var game = Object.FindFirstObjectByType<GolfGame>();
             Assert.IsNotNull(game, "the Golf scene bootstraps the game");
             Assert.IsNotNull(game.Swing.Synthetic, "no gyro in the editor, so the synthetic swing drives it");
+            yield return null;
+            game.Play();
 
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the flyover to end");
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 14, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "the phone to settle");
 
             game.Swing.Synthetic.Backswing(true);

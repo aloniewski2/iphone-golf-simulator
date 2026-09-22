@@ -51,9 +51,10 @@ namespace GolfArcade.Swing
     /// and no power can be drawn. A backswing is rotation away from address — the meter fills
     /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
     /// address quickly; impact is the moment it passes back through address (or clearly
-    /// decelerates). Power is the peak rotation speed of that downswing, scaled by how far back
-    /// you took it: a short, low backswing is a chip however hard you flick it; a full turn
-    /// swung hard is the full club. The wrist's roll at impact, relative to address, is the club face:
+    /// decelerates). Power is the peak rotation speed of that downswing — that is what the shot
+    /// is made of — trimmed a little by how far back you took it: a short, low backswing gives up
+    /// at most a third of the club, and a full turn swung hard is the full club. The wrist's
+    /// roll at impact, relative to address, is the club face:
     /// open slices, closed hooks. Swinging much harder than the club's full speed makes the
     /// shot wild, which is the Wii's rule too.
     public sealed class MotionSwingDetector
@@ -71,7 +72,9 @@ namespace GolfArcade.Swing
         public double FullBackswing = 2.6;
         /// Power at full downswing speed from a barely-there backswing; it climbs linearly to 1 at
         /// a full backswing. So power = speed ratio × (BackswingFloor + (1 − BackswingFloor) × load).
-        public double BackswingFloor = 0.35;
+        /// High, so the downswing's speed is what decides the distance: a hip-high backswing swung
+        /// at full speed is still nearly the whole club.
+        public double BackswingFloor = 0.7;
         /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
         /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
         /// hold needed.
@@ -97,7 +100,8 @@ namespace GolfArcade.Swing
         public double MaxCurveDegrees = 15;
         public double MaxStartLineDegrees = 12;
         /// Speed past full (as a fraction of FullSpeed) that is forgiven before the shot goes wild.
-        public double OverswingGrace = 0.15;
+        /// Full speed is a solid swing, not the hardest one; only half again past it is over the top.
+        public double OverswingGrace = 0.5;
         /// Extra curve, degrees, per unit of overswing beyond the grace.
         public double OverswingCurve = 40;
 

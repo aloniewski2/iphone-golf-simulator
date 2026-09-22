@@ -10,17 +10,63 @@ namespace GolfArcade.UI
     {
         public static readonly Vector2 PhoneReference = new(1080, 2340);
 
-        public static Font Font => font ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        static Font font;
+        // ---- Tokens. One navy world, hue-biased neutrals, a single sky accent; the meter's
+        // green/amber/red is semantic and stays out of this palette.
+        public static readonly Color Ground = Hex("0E1A2B");
+        public static readonly Color Surface = Hex("16263C", 0.92f);
+        public static readonly Color SurfaceRaised = Hex("1F3352", 0.96f);
+        public static readonly Color Hairline = new(1f, 1f, 1f, 0.12f);
+        public static readonly Color Ink = Hex("F4F7FB");
+        public static readonly Color InkMuted = Hex("9FB3CF");
+        public static readonly Color Accent = Hex("5AB0FF");
+        public static readonly Color AccentStrong = Hex("2F8DF0");
 
-        // The mockup's look: deep navy translucent cards with a faint light edge, white type,
-        // sky-blue accents.
-        public static readonly Color CardFill = new(0.05f, 0.09f, 0.17f, 0.66f);
-        public static readonly Color CardEdge = new(1f, 1f, 1f, 0.16f);
-        public static readonly Color ButtonFill = new(0.07f, 0.12f, 0.22f, 0.78f);
-        public static readonly Color ButtonPressed = new(0.30f, 0.64f, 1f, 0.85f);
-        public static readonly Color Accent = new(0.30f, 0.64f, 1f);
-        public static readonly Color Muted = new(0.75f, 0.84f, 1f);
+        // Names the HUD grew up with, mapped onto the tokens.
+        public static readonly Color CardFill = Surface;
+        public static readonly Color CardEdge = Hairline;
+        public static readonly Color ButtonFill = Hex("1A2C47", 0.9f);
+        public static readonly Color ButtonPressed = new(0.35f, 0.69f, 1f, 0.9f);
+        public static readonly Color Muted = InkMuted;
+
+        public static Color Hex(string hex, float alpha = 1f)
+        {
+            int v = System.Convert.ToInt32(hex, 16);
+            return new Color(((v >> 16) & 255) / 255f, ((v >> 8) & 255) / 255f, (v & 255) / 255f, alpha);
+        }
+
+        // ---- Type: Nunito (OFL, Assets/Resources/Fonts), a rounded face that suits the
+        // stylised resort world. Real weights, so nothing is faux-bold.
+        public static Font Display => display ??= Face("Nunito-ExtraBold");
+        public static Font Strong => strong ??= Face("Nunito-Bold");
+        public static Font Ui => ui ??= Face("Nunito-SemiBold");
+        public static Font Body => body ??= Face("Nunito-Regular");
+        /// The default face for labels.
+        public static Font Font => Ui;
+        static Font display, strong, ui, body, fallback;
+        static Font Face(string name) => Resources.Load<Font>("Fonts/" + name) ?? (fallback ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"));
+
+        /// A filled circle, for swatches and dots.
+        public static Sprite Circle => circle ??= MakeRounded(64, 32);
+        static Sprite circle;
+        /// A ring, for the aim dial's power arc (drawn Filled/Radial360).
+        public static Sprite Ring => ringSprite ??= MakeRing(160, 14);
+        static Sprite ringSprite;
+
+        static Sprite MakeRing(int n, int band)
+        {
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[n * n];
+            float r = n / 2f;
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = Mathf.Sqrt((x + 0.5f - r) * (x + 0.5f - r) + (y + 0.5f - r) * (y + 0.5f - r));
+                    float a = Mathf.Clamp01(r - 1 - d) * Mathf.Clamp01(d - (r - band));
+                    px[y * n + x] = new Color32(255, 255, 255, (byte)(255 * a));
+                }
+            tex.SetPixels32(px); tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+        }
 
         /// A 9-sliced rounded rectangle, drawn once. Tint it for any pill, card or button.
         public static Sprite Rounded => rounded ??= MakeRounded(64, 22);
@@ -64,16 +110,20 @@ namespace GolfArcade.UI
             return canvas;
         }
 
-        public static Text Label(Transform parent, string name, int size, TextAnchor anchor, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta)
+        public static Text Label(Transform parent, string name, int size, TextAnchor anchor, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 sizeDelta, Font face = null, bool shadow = true)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             var t = go.AddComponent<Text>();
-            t.font = Font; t.fontSize = size; t.alignment = anchor; t.color = Color.white;
-            t.fontStyle = FontStyle.Bold;
+            t.font = face ? face : Font; t.fontSize = size; t.alignment = anchor; t.color = Ink;
+            t.fontStyle = FontStyle.Normal;
             t.horizontalOverflow = HorizontalWrapMode.Overflow; t.verticalOverflow = VerticalWrapMode.Overflow;
-            var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0, 0, 0, 0.7f); shadow.effectDistance = new Vector2(2, -2);
+            if (shadow)
+            {
+                // Over the 3-D scene type needs a lift; on the dark sheets it doesn't.
+                var sh = go.AddComponent<Shadow>();
+                sh.effectColor = new Color(0, 0, 0, 0.55f); sh.effectDistance = new Vector2(0, -2);
+            }
             var rt = t.rectTransform;
             rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.pivot = anchorMin;
             rt.anchoredPosition = pos; rt.sizeDelta = sizeDelta;
@@ -106,14 +156,14 @@ namespace GolfArcade.UI
             return edge;
         }
 
-        public static HoldButton Button(Transform parent, string label, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize = 80, Color? tint = null)
+        public static HoldButton Button(Transform parent, string label, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize = 80, Color? tint = null, Font face = null, bool shadow = true)
         {
             var img = Card(parent, label, anchor, anchor, pos, size, tint ?? ButtonFill);
             img.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             var hold = img.gameObject.AddComponent<HoldButton>();
             hold.Fill = img.transform.Find("Fill").GetComponent<Image>();
             hold.RestColor = tint ?? ButtonFill;
-            var t = Label(img.transform, "Label", fontSize, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size);
+            var t = Label(img.transform, "Label", fontSize, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size, face ?? Strong, shadow);
             t.text = label;
             t.raycastTarget = false;
             return hold;

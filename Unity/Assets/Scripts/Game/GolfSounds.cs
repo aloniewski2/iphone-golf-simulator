@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, tension, ready, fanfare, tick;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -43,6 +43,7 @@ namespace GolfArcade.Game
         public void PlayWhoosh(double load) => source.PlayOneShot(whoosh, Mathf.Lerp(0.2f, 0.8f, Mathf.Clamp01((float)load)));
         public void PlayCup() => source.PlayOneShot(cup, 0.9f);
         public void PlaySplash() => source.PlayOneShot(splash, 0.8f);
+        public void PlayThud(float strength) => source.PlayOneShot(thud, Mathf.Lerp(0.25f, 0.8f, Mathf.Clamp01(strength)));
         public void PlayReady() => source.PlayOneShot(ready, 0.5f);
         public void PlayFanfare() => source.PlayOneShot(fanfare, 0.7f);
         public void PlayTick() => source.PlayOneShot(tick, 0.5f);
@@ -99,6 +100,9 @@ namespace GolfArcade.Game
                 if (t > 0.3) v += Noise(rng) * Math.Exp(-(t - 0.3) / 0.08) * 0.15;
                 return v;
             });
+            // Thud: a ball meeting turf — a low knock with a breath of grass.
+            thud = Clip("Thud", 0.22f, (t, rng) =>
+                Math.Sin(2 * Math.PI * 95 * t) * Math.Exp(-t / 0.045) * 0.9 + Noise(rng) * Math.Exp(-t / 0.03) * 0.35, lowPass: 0.25);
             splash = Clip("Splash", 0.7f, (t, rng) =>
             {
                 double attack = Math.Min(1, t / 0.03);
