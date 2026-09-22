@@ -15,6 +15,15 @@ namespace GolfArcade.PlayTests
     {
         const string Dir = "Library/Captures/review";
 
+        /// The editor's hidden Game view is landscape; the frames are the phone's portrait. Give
+        /// the course camera the phone's shape so anything framed off it (the ball POV's lens and
+        /// composition, the POV ball's size) is worked out for the picture that gets saved.
+        static void PhoneShaped()
+        {
+            var cam = Camera.main;
+            if (cam) cam.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+        }
+
         static IEnumerator WaitFor(System.Func<bool> done, float seconds, string what)
         {
             float until = Time.realtimeSinceStartup + seconds;
@@ -30,6 +39,7 @@ namespace GolfArcade.PlayTests
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
             var game = Object.FindFirstObjectByType<GolfGame>();
             Assert.IsNotNull(game?.Swing?.Synthetic);
             yield return new WaitForSecondsRealtime(1.0f);
@@ -107,6 +117,7 @@ namespace GolfArcade.PlayTests
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
             var game = Object.FindFirstObjectByType<GolfGame>();
             Assert.IsNotNull(game?.Swing?.Synthetic);
             yield return null;
@@ -163,6 +174,39 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-5-second-shot.png"));
         }
 
+        /// A tee shot on Hole 12 that comes down by the pin: watched through Codex's ball POV —
+        /// the camera just above the ball, the big ball low in the frame, the flag ahead — through
+        /// the landing and the roll.
+        [UnityTest]
+        public IEnumerator CapturesABallPovApproach()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            var pin = GolfArcade.Course.Course.Cliffside().Holes[1].Pin;
+            game.StrikeToward(pin);
+            Assert.AreEqual(GolfGame.State.Flight, game.Current);
+            Assert.IsTrue(game.PovShot, $"a shot landing {game.LastShot.Landing.DistanceTo(pin):F1} yd from the pin from 198 out should be the ball POV");
+            yield return new WaitForSecondsRealtime(1.6f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-12-pov-flight.png"));
+            yield return new WaitForSecondsRealtime((float)game.LastShot.LandingTime - 1.6f - 0.1f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-13-pov-descent.png"));
+            yield return WaitFor(() => game.Bounces > 0 || game.Current != GolfGame.State.Flight, 10, "the ball to come down");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-14-pov-landed.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the ball to stop");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-15-pov-rest.png"));
+        }
+
         /// A tee shot that comes up short into the water on Hole 12: the ball must fly a level
         /// arc off the tee island and drop to the sea, never sink into the island.
         [UnityTest]
@@ -170,6 +214,7 @@ namespace GolfArcade.PlayTests
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
             var game = Object.FindFirstObjectByType<GolfGame>();
             Assert.IsNotNull(game?.Swing?.Synthetic);
             yield return null;
@@ -201,6 +246,7 @@ namespace GolfArcade.PlayTests
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
             var game = Object.FindFirstObjectByType<GolfGame>();
             Assert.IsNotNull(game?.Swing?.Synthetic);
             yield return null;

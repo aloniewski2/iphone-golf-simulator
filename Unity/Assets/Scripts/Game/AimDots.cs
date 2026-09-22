@@ -4,8 +4,8 @@ using UnityEngine;
 namespace GolfArcade.Game
 {
     /// Wii Sports Golf's aim: a row of white dots along the arc a full swing would fly from
-    /// here, out to the landing ring — and, as the backswing loads, one amber dot sliding along
-    /// that arc to where a swing with this much load would come down, so you gauge the shot
+    /// here, out to the landing ring — and, as the backswing loads, one amber dot on the ground
+    /// sliding out to where a swing with this much load would come down, so you gauge the shot
     /// before you commit. Soft discs facing the camera, sized against the view so they read
     /// from behind the ball and out at the landing alike.
     public sealed class AimDots : MonoBehaviour
@@ -61,28 +61,15 @@ namespace GolfArcade.Game
                 n++;
             }
             for (int i = n; i < Max; i++) dots[i].gameObject.SetActive(false);
-            Mark(markAt);
+            if (markAt < 0) mark.gameObject.SetActive(false);
         }
 
-        /// The amber dot at this fraction of the arc's length (below 0 hides it).
-        public void Mark(float fraction)
+        /// The amber dot on the ground where the loaded swing comes down; null hides it.
+        public void MarkAt(Vector3? spot)
         {
-            markAt = fraction;
-            if (fraction < 0 || path.Count < 2) { mark.gameObject.SetActive(false); return; }
-            float total = 0;
-            for (int i = 1; i < path.Count; i++) total += Vector3.Distance(path[i - 1], path[i]);
-            float want = Mathf.Clamp01(fraction) * total, run = 0;
-            for (int i = 1; i < path.Count; i++)
-            {
-                float seg = Vector3.Distance(path[i - 1], path[i]);
-                if (run + seg >= want || i == path.Count - 1)
-                {
-                    mark.position = Vector3.Lerp(path[i - 1], path[i], seg > 1e-4f ? (want - run) / seg : 1f) + Vector3.up * 0.05f;
-                    break;
-                }
-                run += seg;
-            }
-            mark.gameObject.SetActive(true);
+            markAt = spot.HasValue ? 1f : -1f;
+            mark.gameObject.SetActive(spot.HasValue);
+            if (spot.HasValue) mark.position = spot.Value + Vector3.up * 0.3f;
         }
 
         public void Hide() { gameObject.SetActive(false); markAt = -1f; }

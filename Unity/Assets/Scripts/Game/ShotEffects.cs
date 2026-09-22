@@ -57,11 +57,13 @@ namespace GolfArcade.Game
         static Material particleMaterial;
 
         Tracer tracer;
+        CometTail comet;
+        bool cometShot;
         Transform ball;
         ParticleSystem puffs, splash;
         Camera view;
 
-        public static ShotEffects Create(Transform parent, Transform ball, Camera view)
+        public static ShotEffects Create(Transform parent, Transform ball, Camera view, BallLook look)
         {
             var go = new GameObject("Shot effects");
             go.transform.SetParent(parent, false);
@@ -69,6 +71,7 @@ namespace GolfArcade.Game
             fx.view = view;
             fx.ball = ball;
             fx.tracer = Tracer.Create(go.transform, view);
+            fx.comet = CometTail.Create(go.transform, look);
             fx.SetQuality(Quality.Fair);
             fx.puffs = fx.BuildParticles("Puffs", 0.7f, 1.1f, 0.22f, 0.5f, -2.2f);
             fx.splash = fx.BuildParticles("Splash", 0.9f, 1.4f, 0.28f, 0.9f, -3.5f);
@@ -158,18 +161,29 @@ namespace GolfArcade.Game
         public void Follow(Transform t) => ball = t;
 
         bool flying;
-        public void BeginFlight() { tracer.Begin(ColorOf(quality)); flying = true; }
+        /// The ball is away: the tracer line — or, for the ball POV, Codex's short tube behind it.
+        public void BeginFlight(bool pov = false)
+        {
+            cometShot = pov;
+            if (pov) comet.Begin(ColorOf(quality)); else tracer.Begin(ColorOf(quality));
+            flying = true;
+        }
         /// The ball is down: the line ends where it landed, the way TopTracer draws it — the
-        /// bounces and the roll are the ball's own, not the line's.
-        public void Land() { if (flying && ball) tracer.Push(ball.position); flying = false; }
+        /// bounces and the roll are the ball's own, not the line's; the POV's tube narrows away.
+        public void Land()
+        {
+            if (cometShot) comet.Land();
+            else if (flying && ball) tracer.Push(ball.position);
+            flying = false;
+        }
         /// The shot is over: the line stays over the hole a while, then goes.
-        public void EndFlight() { flying = false; tracer.FadeOut(2.5f); }
+        public void EndFlight() { flying = false; if (!cometShot) tracer.FadeOut(2.5f); }
         /// Setting up the next shot: the line goes now.
-        public void ClearTracer() { flying = false; tracer.Clear(); }
+        public void ClearTracer() { flying = false; tracer.Clear(); comet.Clear(); }
 
         void LateUpdate()
         {
-            if (flying && ball) tracer.Push(ball.position);
+            if (flying && ball && !cometShot) tracer.Push(ball.position);
         }
 
         // ---- coming down

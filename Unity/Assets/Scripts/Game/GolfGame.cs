@@ -91,6 +91,13 @@ namespace GolfArcade.Game
         bool touchedDown;
         /// Flight time at which the ball went into the water, or below 0.
         double splashedAt;
+        /// An approach from further out than `PovFromYards` that comes down within
+        /// `PovWithinYards` of the pin is watched through Codex's ball POV (CameraRig.BallPov):
+        /// just above the ball, the big ball low in the frame and the flag ahead.
+        const double PovFromYards = 30, PovWithinYards = 10;
+        bool povShot;
+        /// True while the shot in the air (or just finished) is being watched from the ball POV.
+        public bool PovShot => povShot && (Current == State.Flight || Current == State.Result);
         Vector3 lastBallPos;
         bool aimedByPlayer;
         bool strikePlayed;
@@ -138,7 +145,7 @@ namespace GolfArcade.Game
             HoleView.Primitive(PrimitiveType.Sphere, "Plain ball", Color.white, ballBody);
             DressBall();
             ballLook = BallLook.Create(transform, ball, ballBody, rig.Camera, BallSize);
-            effects = ShotEffects.Create(transform, ball, rig.Camera);
+            effects = ShotEffects.Create(transform, ball, rig.Camera, ballLook);
 
             aimLine = new GameObject("Aim line").AddComponent<LineRenderer>();
             aimLine.transform.SetParent(transform, false);
@@ -369,6 +376,7 @@ namespace GolfArcade.Game
             cinematic?.Destroy();
             cinematic = signature != null ? CinematicRig.Load(hole.Number, holeView) : null;
             signatureLanding = 0; signaturePlaying = overviewPlaying = false;
+            rig.RestoreFov();
             rig.SnapNext();
             Enter(State.Intro);
             RefreshControls();
@@ -400,6 +408,7 @@ namespace GolfArcade.Game
             golfer.SetVisible(true);
             golfer.Settle();
             effects.ClearTracer();
+            rig.RestoreFov();
             hud.Map.Trace.Clear(); hud.Map.Changed();
             RefreshControls();
             hud.SetMeter(0);
@@ -424,6 +433,31 @@ namespace GolfArcade.Game
             ball.gameObject.SetActive(true);
             rig.SnapNext();
             BeginAim(false);
+        }
+
+        /// For tests and reviews: aim at `target` and strike a square swing with just the power
+        /// that brings the ball down nearest it, as if the player had swung it.
+        public void StrikeToward(CoursePoint target)
+        {
+            if (Current != State.Aim) return;
+            heading = ballAt.HeadingTo(target); aimedByPlayer = true;
+            var lie = hole.LieAt(ballAt);
+            double best = 1;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                double miss = double.MaxValue;
+                CoursePoint landed = target;
+                for (double p = 0.2; p <= 1.0001; p += 0.01)
+                {
+                    var trial = new CourseShot(club, new SwingImpact { Power = p }, heading, ballAt, hole, lie.PowerFactor(), Wind);
+                    double m = trial.Landing.DistanceTo(target);
+                    if (m < miss) { miss = m; best = p; landed = trial.Landing; }
+                }
+                // aim off the wind's drift and go again
+                heading += ballAt.HeadingTo(target) - ballAt.HeadingTo(landed);
+            }
+            UpdateAimVisuals();
+            OnImpact(new SwingImpact { Power = best, Backswing = 0.8 });
         }
 
         static GolfClub AutoClub(CourseLie lie, double toPin)
@@ -605,6 +639,17 @@ namespace GolfArcade.Game
                 double a = (heading + (i / 16.0 - 0.5) * 70) * Math.PI / 180;
                 plan.Reach.Add(new Vector3((float)(ballAt.X + Math.Sin(a) * reach), 0, (float)(ballAt.D + Math.Cos(a) * reach)));
             }
+            // the meter's checkpoints and their targets on the course and the map
+            checkpointSpots.Clear(); plan.Targets.Clear();
+            var labels = new string[Checkpoints.Length];
+            for (int i = 0; i < Checkpoints.Length; i++)
+            {
+                var spot = LandingFor(Checkpoints[i], lie);
+                checkpointSpots.Add(HoleView.ToWorld(spot, 0.05));
+                plan.Targets.Add(new Vector3((float)spot.X, 0, (float)spot.D));
+                labels[i] = $"{ballAt.DistanceTo(spot):F0} yd";
+            }
+            hud.SetCheckpoints(Checkpoints, labels);
             plan.Changed();
             landingZone.SetZone(across, along, (float)heading);
         }
@@ -629,16 +674,23 @@ namespace GolfArcade.Game
             centre = FullShotCarry(lie);
         }
 
-        /// Where a swing loaded this far would come down, as a fraction of the full arc, if the
-        /// downswing is a full one — the detector's power for that load, and the club's carry
-        /// at that power against its full carry.
-        float CarryFractionFor(double load)
+        /// The power meter's three checkpoints, as backswing loads: a third, two thirds and a full
+        /// turn. Each has a numbered target where a full-speed swing loaded that far comes down.
+        static readonly float[] Checkpoints = { 1f / 3f, 2f / 3f, 1f };
+        readonly System.Collections.Generic.List<Vector3> checkpointSpots = new();
+
+        /// Where a swing loaded this far comes down in today's wind, if the downswing is a full
+        /// one — the detector's power for that load (BackswingFloor up to 1), square on the aim.
+        CoursePoint LandingFor(double load, CourseLie lie)
         {
             double power = Swing.Detector.BackswingFloor + (1 - Swing.Detector.BackswingFloor) * Math.Clamp(load, 0, 1);
-            var lie = hole.LieAt(ballAt);
-            double full = BallFlight.Simulate(club.Launch(1, 0, 0, lie.PowerFactor())).Carry;
-            double part = BallFlight.Simulate(club.Launch(power, 0, 0, lie.PowerFactor())).Carry;
-            return full > 0 ? (float)(part / full) : 1f;
+            var launch = club.Launch(power, 0, 0, lie.PowerFactor());
+            launch.WindMPH = Wind.SpeedMPH;
+            launch.WindDegrees = Wind.RelativeTo(heading);
+            var carry = BallFlight.Simulate(launch).CarryPoint;
+            double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+            return new CoursePoint(ballAt.X + carry.LateralYards * cosH + carry.DistanceYards * sinH,
+                                   ballAt.D - carry.LateralYards * sinH + carry.DistanceYards * cosH);
         }
 
         /// The putt's predicted roll as one smooth ribbon, break and all: the line a putt hit
@@ -664,7 +716,9 @@ namespace GolfArcade.Game
             }
             var plan = hud.Map;
             plan.Path.Clear(); plan.Path.AddRange(aimPath);
-            plan.Reach.Clear(); plan.ShowZone = false;
+            plan.Reach.Clear(); plan.ShowZone = false; plan.Targets.Clear();
+            checkpointSpots.Clear();
+            hud.SetCheckpoints(null, null);
             plan.Changed();
         }
 
@@ -774,16 +828,7 @@ namespace GolfArcade.Game
 
         /// Where a full, square swing with this club lands in today's wind: the yellow ring
         /// moves with the wind, so the player aims off it the way the Wii teaches.
-        CoursePoint FullShotCarry(CourseLie lie)
-        {
-            var launch = club.Launch(1, 0, 0, lie.PowerFactor());
-            launch.WindMPH = Wind.SpeedMPH;
-            launch.WindDegrees = Wind.RelativeTo(heading);
-            var carry = BallFlight.Simulate(launch).CarryPoint;
-            double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
-            return new CoursePoint(ballAt.X + carry.LateralYards * cosH + carry.DistanceYards * sinH,
-                                   ballAt.D - carry.LateralYards * sinH + carry.DistanceYards * cosH);
-        }
+        CoursePoint FullShotCarry(CourseLie lie) => LandingFor(1, lie);
 
         void Nudge(double degrees)
         {
@@ -821,11 +866,12 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             if (club != GolfClub.Putter)
             {
-                // the amber dot slides out along the arc, the meter says how far
-                float fraction = CarryFractionFor(load);
-                aimDots.Mark(fraction);
+                // the amber dot slides out over the ground to where this load comes down, the
+                // meter says how far, and the checkpoints it has passed light up
+                var spot = LandingFor(load, hole.LieAt(ballAt));
+                aimDots.MarkAt(HoleView.ToWorld(spot, 0.05));
                 hud.Map.ShowLoad = aimDots.MarkShown; hud.Map.Load = aimDots.MarkPosition;
-                hud.SetMeter((float)load, null, $"{fraction * ballAt.DistanceTo(FullShotCarry(hole.LieAt(ballAt))):F0} yd");
+                hud.SetMeter((float)load, null, $"{ballAt.DistanceTo(spot):F0} yd");
             }
             else hud.SetMeter((float)load);
             golfer.ShowLoad((float)load);
@@ -839,7 +885,7 @@ namespace GolfArcade.Game
         {
             if (Current != State.Aim) return;
             hud.SetMeter(0);
-            aimDots.Mark(-1);
+            aimDots.MarkAt(null);
             hud.Map.ShowLoad = false;
             golfer.Settle();
             Haptics.Release();
@@ -862,6 +908,8 @@ namespace GolfArcade.Game
             if (shotLine.sqrMagnitude < 1f) shotLine = AimDirection();
             drawnY = launchGround; drawnVy = 0;
             touchedDown = false; splashedAt = -1;
+            povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
+                      && LastShot.LandingTime > 0 && LastShot.Landing.DistanceTo(hole.Pin) <= PovWithinYards;
             greenRead.Hide();
             hud.Controller?.SetTarget(null, Vector3.zero, "", false);
             holeCam = false;
@@ -883,13 +931,15 @@ namespace GolfArcade.Game
             effects.SetQuality(quality);
             // the map: the plan goes, the shot's own path is drawn as it flies
             var plan = hud.Map;
-            plan.Path.Clear(); plan.Reach.Clear(); plan.Trace.Clear(); plan.ShowZone = false;
+            plan.Path.Clear(); plan.Reach.Clear(); plan.Trace.Clear(); plan.ShowZone = false; plan.Targets.Clear();
+            hud.SetCheckpoints(null, null);
             plan.TraceColor = club == GolfClub.Putter ? Color.white : ShotEffects.ColorOf(quality);
             plan.Trace.Add(ball.position);
             plan.ShowLoad = false;
             plan.Changed();
             rig.BeginChase();
             Enter(State.Flight);
+            ballLook.Pov(povShot);
         }
 
         // ----- Frame loop -----
@@ -910,6 +960,7 @@ namespace GolfArcade.Game
             plan.ShowLanding = aimingShot && landingMarker.gameObject.activeSelf;
             if (!aimingShot) plan.ShowLoad = false;
             hud.DrawMinimap(minimapCamera);
+            hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hud.Controller == null);
 
             switch (Current)
             {
@@ -1009,7 +1060,7 @@ namespace GolfArcade.Game
             if (y < lowest) y = lowest;
             drawnVy = (y - drawnY) / dt; drawnY = y;
             var pos = new Vector3((float)p.x, (float)(y + 0.06), (float)p.d);
-            if (club != GolfClub.Putter && !trailing) { effects.BeginFlight(); trailing = true; }
+            if (club != GolfClub.Putter && !trailing) { effects.BeginFlight(povShot); trailing = true; }
 
             // The landing and every bounce after it: the turf it hit puffs up and thuds.
             bool firstDown = !touchedDown && land > 0 && flightTime >= land;
@@ -1044,6 +1095,11 @@ namespace GolfArcade.Game
                 bool closing = Vector3.Dot(cup - pos, velocity) > 0;
                 if (!holeCam && (cup - pos).magnitude <= HoleCamReach && (closing || LastShot.IsHoled)) { holeCam = true; rig.SnapNext(); }
                 if (holeCam) rig.HoleCam(pos, cup);
+            }
+            else if (povShot)
+            {
+                rig.BallPov(pos, shotLine, (float)(land - flightTime), (float)flightTime);
+                rig.EaseHorizontalFov(CameraRig.PovLensHorizontal, 72f, 0.6f);
             }
             else
             {
@@ -1093,7 +1149,8 @@ namespace GolfArcade.Game
             holeStrokes += shot.PenaltyStrokes;
             hud.ShowBanner(result, 2.2f);
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
-            if (!holeCam && splashedAt < 0) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
+            // the POV stays where it is, on the ball by the flag, as Codex's does
+            if (!holeCam && splashedAt < 0 && !povShot) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
         }
 

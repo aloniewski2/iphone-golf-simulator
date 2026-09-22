@@ -34,6 +34,7 @@ namespace GolfArcade.UI
         Rect appliedSafeArea;
         Text holeText, scoreText, distanceText, clubText, statusText, bannerText, tempoText, windText, controllerText;
         Text meterYards;
+        Transform meterTrack;
         Image meterFill, meterMark, meterOverswing, windArrow;
         RectTransform meterRect;
         Vector2 meterHome;
@@ -103,18 +104,15 @@ namespace GolfArcade.UI
             meterOverswing = Panel("Overswing", new Color(0.9f, 0.2f, 0.15f, 0.55f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(48, 110), meterBg.transform);
             meterFill = Panel("Fill", new Color(0.35f, 0.85f, 0.35f, 0.95f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(48, 0), meterBg.transform);
             meterFill.rectTransform.pivot = new Vector2(0.5f, 0);
-            for (int q = 1; q < 4; q++)
-            {
-                var tick = Panel($"Tick {q}", new Color(1, 1, 1, 0.35f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6 + 888 * q / 4f), new Vector2(48, 3), meterBg.transform, rounded: false);
-                tick.rectTransform.pivot = new Vector2(0.5f, 0.5f); tick.raycastTarget = false;
-            }
+            meterTrack = meterBg.transform;
             meterMark = Panel("Mark", Color.white, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 6), new Vector2(64, 6), meterBg.transform, rounded: false);
             meterMark.enabled = false;
             var meterLabel = Label("Power", 26, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -32), new Vector2(200, 40), meterBg.transform);
             meterLabel.text = "POWER"; meterLabel.color = UiKit.Muted;
             // the gauge: how far this much backswing carries, riding the top of the fill
-            meterYards = UiKit.Label(meterBg.transform, "Yards", 28, TextAnchor.MiddleLeft, new Vector2(1, 0), new Vector2(1, 0), new Vector2(94, 6), new Vector2(160, 40), UiKit.Strong);
+            meterYards = UiKit.Label(meterBg.transform, "Yards", 28, TextAnchor.MiddleLeft, new Vector2(1, 0), new Vector2(1, 0), new Vector2(CheckpointText, 6), new Vector2(160, 40), UiKit.Strong);
             meterYards.color = new Color(1f, 0.72f, 0.25f); meterYards.enabled = false;
+            meterYards.rectTransform.pivot = new Vector2(0f, 0.5f);   // starts right of the badges, centred on the fill's top
 
             // Minimap, top right under the score, in a rounded frame.
             var mapFrame = Card("Minimap frame", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -150), new Vector2(272, 432));
@@ -511,6 +509,8 @@ namespace GolfArcade.UI
             public Vector3 ZoneCentre; public float ZoneAcross, ZoneAlong, ZoneHeading; public bool ShowZone;
             public Vector3 Ball, Landing, Load;
             public bool ShowBall, ShowLanding, ShowLoad;
+            /// The meter's checkpoint targets, where each comes down (empty hides them).
+            public readonly System.Collections.Generic.List<Vector3> Targets = new();
             internal int Version;
             public void Changed() => Version++;
         }
@@ -518,7 +518,7 @@ namespace GolfArcade.UI
 
         RectTransform mapBall, mapLanding, mapLoad, mapShapes;
         Image mapZoneFill, mapZoneEdge;
-        readonly System.Collections.Generic.List<RectTransform> mapDots = new(), mapReach = new();
+        readonly System.Collections.Generic.List<RectTransform> mapDots = new(), mapReach = new(), mapTargets = new();
         readonly System.Collections.Generic.List<Image> mapTraceUnder = new(), mapTraceLine = new();
         int mapDrawn = -1;
         Camera mapDrawnWith;
@@ -552,6 +552,7 @@ namespace GolfArcade.UI
             for (int i = 0; i < ReachDots; i++) mapReach.Add(MapMark(mapShapes, $"Reach {i}", new Color(1, 1, 1, 0.8f), 7, UiKit.Circle, false));
             for (int i = 0; i < MapDots; i++) mapDots.Add(MapMark(map, $"Path {i}", new Color(1, 1, 1, 0.95f), 10, UiKit.Circle, false));
             mapLanding = MapMark(map, "Landing", amber, 24, UiKit.Ring, false);
+            for (int i = 0; i < 3; i++) mapTargets.Add(MapMark(map, $"Target {i + 1}", Color.white, 13, UiKit.Circle, true));
             mapLoad = MapMark(map, "Load", amber, 18, UiKit.Circle, true);
             mapBall = MapMark(map, "Ball", Color.white, 22, UiKit.Circle, true);
         }
@@ -624,6 +625,8 @@ namespace GolfArcade.UI
                     rt.anchoredPosition = c; rt.sizeDelta = size; rt.localRotation = turn;
                 }
             }
+            // the checkpoints' targets
+            for (int i = 0; i < mapTargets.Count; i++) Place(mapTargets[i], i < plan.Targets.Count ? plan.Targets[i] : Vector3.zero, i < plan.Targets.Count);
             // the reach: a dotted arc as far as a full swing with this club carries
             for (int i = 0; i < ReachDots; i++) Place(mapReach[i], i < plan.Reach.Count ? plan.Reach[i] : Vector3.zero, i < plan.Reach.Count);
             // the trace: the ball's own flight, a dark edge under the shot's colour
@@ -655,6 +658,129 @@ namespace GolfArcade.UI
                     run += seg;
                 }
                 Place(mapDots[k], at, true);
+            }
+        }
+
+        // ---- The meter's checkpoints: three targets up the power meter — a third, two thirds and a
+        // full backswing — each a numbered badge with the yards a full-speed swing loaded that far
+        // carries, and the same numbered badges out on the course where those shots come down
+        // (and dots on the minimap), so you know which mark to stop the backswing at. The badges
+        // the fill has reached turn amber, the colour of the load dot.
+        const float CheckpointBadge = 30f, CheckpointText = 58f;
+        sealed class Checkpoint { public float Load; public RectTransform Root; public Image Disc, Notch; public Text Number, Yards; }
+        readonly System.Collections.Generic.List<Checkpoint> checkpoints = new();
+        readonly System.Collections.Generic.List<(RectTransform root, Image disc, Text number, RectTransform stem, RectTransform badge)> courseTargets = new();
+        static readonly Color BadgeRest = new(1f, 1f, 1f, 0.95f);
+
+        (RectTransform, Image, Text) Badge(Transform parent, string name, int number, float size)
+        {
+            var disc = UiKit.Panel(parent, name, BadgeRest, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size, size));
+            disc.sprite = UiKit.Circle; disc.type = Image.Type.Simple; disc.raycastTarget = false;
+            disc.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            var edge = UiKit.Panel(disc.transform, "Edge", new Color(0.06f, 0.1f, 0.18f, 0.9f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            edge.sprite = UiKit.Ring; edge.type = Image.Type.Simple; edge.raycastTarget = false;
+            edge.rectTransform.offsetMin = new Vector2(-3, -3); edge.rectTransform.offsetMax = new Vector2(3, 3);
+            var t = UiKit.Label(disc.transform, "Number", Mathf.RoundToInt(size * 0.62f), TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            t.text = number.ToString(); t.color = UiKit.Ground; t.raycastTarget = false;
+            return (disc.rectTransform, disc, t);
+        }
+
+        /// The checkpoints at these loads, labelled with these yardages; null hides them (putts).
+        public void SetCheckpoints(float[] loads, string[] yards)
+        {
+            if (loads == null) { foreach (var c in checkpoints) c.Root.gameObject.SetActive(false); foreach (var c in checkpoints) c.Notch.gameObject.SetActive(false); return; }
+            while (checkpoints.Count < loads.Length)
+            {
+                int n = checkpoints.Count + 1;
+                var holder = new GameObject($"Checkpoint {n}").AddComponent<RectTransform>();
+                holder.SetParent(meterTrack, false);
+                holder.anchorMin = holder.anchorMax = new Vector2(1, 0); holder.pivot = new Vector2(0.5f, 0.5f); holder.sizeDelta = new Vector2(1, 1);
+                var (_, disc, number) = Badge(holder, "Badge", n, 40);
+                var y = UiKit.Label(holder, "Yards", 30, TextAnchor.MiddleLeft, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(CheckpointText - CheckpointBadge + 80, 0), new Vector2(160, 36), UiKit.Strong, false);
+                y.rectTransform.pivot = new Vector2(0.5f, 0.5f); y.raycastTarget = false; y.color = new Color(1, 1, 1, 0.92f);
+                var notch = UiKit.Panel(meterTrack, $"Notch {n}", new Color(1, 1, 1, 0.8f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), Vector2.zero, new Vector2(58, 4), false);
+                notch.rectTransform.pivot = new Vector2(0.5f, 0.5f); notch.raycastTarget = false;
+                checkpoints.Add(new Checkpoint { Root = holder, Disc = disc, Number = number, Yards = y, Notch = notch });
+            }
+            for (int i = 0; i < checkpoints.Count; i++)
+            {
+                var c = checkpoints[i];
+                bool on = i < loads.Length;
+                c.Root.gameObject.SetActive(on); c.Notch.gameObject.SetActive(on);
+                if (!on) continue;
+                c.Load = loads[i];
+                float h = 6 + Mathf.Clamp01(loads[i]) * 888 - (loads[i] >= 0.999f ? 4 : 0);
+                c.Root.anchoredPosition = new Vector2(CheckpointBadge, h);
+                c.Notch.rectTransform.anchoredPosition = new Vector2(0, h);
+                c.Yards.text = yards[i];
+            }
+            LightCheckpoints();
+        }
+
+        void LightCheckpoints()
+        {
+            float liveY = 6 + meterLoad * 888;
+            foreach (var c in checkpoints)
+            {
+                if (!c.Root.gameObject.activeSelf) continue;
+                bool reached = meterLoad > 0.02f && meterLoad >= c.Load - 0.004f;
+                c.Disc.color = reached ? Game.LandingZone.Amber : BadgeRest;
+                // the live yardage rides the fill; the checkpoint's own label steps aside for it
+                c.Yards.enabled = !(meterYards.enabled && Mathf.Abs(liveY - c.Root.anchoredPosition.y) < 36f);
+            }
+        }
+
+        /// The same numbered targets out on the course, pinned to where each checkpoint's shot
+        /// comes down; empty or `show` false hides them.
+        public void SetCourseTargets(Camera view, System.Collections.Generic.IList<Vector3> spots, bool show)
+        {
+            while (courseTargets.Count < (spots?.Count ?? 0))
+            {
+                // on the whole canvas (the picture runs under the notch), placed by viewport so
+                // it lands true on any screen; under the cards and the meter
+                var holder = new GameObject($"Target {courseTargets.Count + 1}").AddComponent<RectTransform>();
+                holder.SetParent(transform, false); holder.SetAsFirstSibling();
+                holder.pivot = new Vector2(0.5f, 0.5f); holder.sizeDelta = Vector2.one;
+                var stem = UiKit.Panel(holder, "Stem", new Color(1, 1, 1, 0.85f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(3, 22), false);
+                stem.rectTransform.pivot = new Vector2(0.5f, 0f); stem.raycastTarget = false;
+                var foot = UiKit.Panel(holder, "Foot", new Color(1, 1, 1, 0.9f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(12, 12));
+                foot.sprite = UiKit.Circle; foot.type = Image.Type.Simple; foot.rectTransform.pivot = new Vector2(0.5f, 0.5f); foot.raycastTarget = false;
+                var (badge, disc, number) = Badge(holder, "Badge", courseTargets.Count + 1, 44);
+                courseTargets.Add((holder, disc, number, stem.rectTransform, badge));
+            }
+            // Where each spot is on the screen. A short club's three spots stand well apart up the
+            // screen and each badge sits on its own; a long club's are nearly one point near the
+            // horizon, so the badges fan out in a row above them, a thin stem down to each spot.
+            var canvas = ((RectTransform)transform).rect.size;
+            var at = new Vector2[courseTargets.Count];
+            var shown = new bool[courseTargets.Count];
+            for (int i = 0; i < courseTargets.Count; i++)
+            {
+                shown[i] = show && view && spots != null && i < spots.Count;
+                if (!shown[i]) continue;
+                var vp = view.WorldToViewportPoint(spots[i]);
+                shown[i] = vp.z > 0.5f && vp.x > -0.05f && vp.x < 1.05f && vp.y > -0.05f && vp.y < 1.05f
+                           // a spot behind a cliff or a bank is out of sight: the meter and the map still have it
+                           && !Physics.Linecast(view.transform.position, spots[i] + Vector3.up * 0.6f, ~(1 << Game.BallLook.OverlayLayer), QueryTriggerInteraction.Ignore);
+                at[i] = new Vector2(vp.x, vp.y);
+            }
+            bool crowded = false;
+            for (int i = 0; i < at.Length; i++)
+                for (int j = i + 1; j < at.Length; j++)
+                    if (shown[i] && shown[j] && Vector2.Scale(at[i] - at[j], canvas).magnitude < 52f) crowded = true;
+            int count = 0; foreach (var b in shown) if (b) count++;
+            for (int i = 0, k = 0; i < courseTargets.Count; i++)
+            {
+                var (root, disc, _, stem, badge) = courseTargets[i];
+                root.gameObject.SetActive(shown[i]);
+                if (!shown[i]) continue;
+                root.anchorMin = root.anchorMax = at[i]; root.anchoredPosition = Vector2.zero;
+                var top = crowded ? new Vector2((k - (count - 1) / 2f) * 54f, 58f) : new Vector2(0, 22f);
+                k++;
+                stem.sizeDelta = new Vector2(3, top.magnitude);
+                stem.localRotation = Quaternion.Euler(0, 0, -Mathf.Atan2(top.x, top.y) * Mathf.Rad2Deg);
+                badge.anchoredPosition = top + top.normalized * 22f;
+                disc.color = i < checkpoints.Count && checkpoints[i].Disc.color == Game.LandingZone.Amber ? Game.LandingZone.Amber : BadgeRest;
             }
         }
 
@@ -718,7 +844,8 @@ namespace GolfArcade.UI
         {
             meterLoad = Mathf.Clamp01(load);
             meterYards.enabled = yards != null && meterLoad > 0.02f;
-            if (meterYards.enabled) { meterYards.text = yards; meterYards.rectTransform.anchoredPosition = new Vector2(94, 6 + meterLoad * 888); }
+            if (meterYards.enabled) { meterYards.text = yards; meterYards.rectTransform.anchoredPosition = new Vector2(CheckpointText, 6 + meterLoad * 888); }
+            LightCheckpoints();
             meterFill.rectTransform.sizeDelta = new Vector2(48, meterLoad * 888);
             var calm = new Color(0.35f, 0.85f, 0.35f, 0.95f);
             var warm = new Color(1f, 0.9f, 0.25f, 0.95f);

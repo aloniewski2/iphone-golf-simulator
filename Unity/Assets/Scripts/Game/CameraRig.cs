@@ -127,6 +127,65 @@ namespace GolfArcade.Game
             targetZoom = 1f; targetRoll = 0f;
         }
 
+        // ---- Codex's ball POV (Hole_12_Cinematic.blend, CAM_Ball_POV), for an approach that comes
+        // down by the pin. His camera rides a fixed offset from the ball on the tee→cup line —
+        // 4 m back, 2.5 m to the right so the trail never crosses the lens, 7 m up — on a 24 mm
+        // lens, looking 44.7° down, with the ball big and low on the left (35 % across the frame)
+        // and the course, the green and the flag ahead of it. From half a second before touchdown
+        // it eases back to 8 m and lifts its eyes to 24° down, the ball a little nearer the middle
+        // (40 %), and rides the bounces and the roll to the cup like that. Numbers read off the
+        // .blend. His pitch is kept as it is; across, the ball keeps its place in the frame, since
+        // a portrait phone is far narrower than his 16:9.
+        const float PovMetres = 1.094f;          // his scene metres in course yards (181 m ↔ 198 yd)
+        const float PovPitchInFlight = 44.7f, PovPitchDown = 24.1f, PovAcrossInFlight = 0.35f, PovAcrossDown = 0.40f;
+        public const float PovLensHorizontal = 73.7f;   // 24 mm on a 36 mm sensor
+        Vector3 povBall;
+        float povAcross, povPitch;
+        bool povThisFrame;
+        float povTurnLag = 0.25f;
+
+        /// One frame of the POV: `toLanding` seconds until the ball first comes down (negative
+        /// after), `sinceLaunch` seconds since it left the club.
+        public void BallPov(Vector3 ball, Vector3 line, float toLanding, float sinceLaunch)
+        {
+            line.y = 0;
+            if (line.sqrMagnitude < 1e-4f) line = transform.forward; line.y = 0; line.Normalize();
+            var right = Vector3.Cross(Vector3.up, line);
+            float s = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0.53f, -0.2f, toLanding));
+            targetPosition = ball + (-line * Mathf.Lerp(4f, 8f, s) + right * 2.5f + Vector3.up * 7f) * PovMetres;
+            float floor = (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(targetPosition)) + 1.8f;
+            if (targetPosition.y < floor) targetPosition.y = floor;
+            povBall = ball;
+            povAcross = Mathf.Lerp(PovAcrossInFlight, PovAcrossDown, s);
+            povPitch = Mathf.Lerp(PovPitchInFlight, PovPitchDown, s);
+            povThisFrame = true;
+            // off the address view and onto the ball as it leaves, then locked to it like his rig
+            float onto = Mathf.Clamp01(sinceLaunch / 0.7f);
+            positionLag = Mathf.Lerp(0.3f, 0.03f, onto);
+            povTurnLag = Mathf.Lerp(0.22f, 0.04f, onto);
+            targetZoom = 1f; targetRoll = 0f;
+        }
+
+        /// Looking `pitch` degrees down, the heading that puts `ball` at `across` (0–1) of the
+        /// frame's width from `from`.
+        Quaternion PovRotation(Vector3 from, Vector3 ball, float across, float pitch)
+        {
+            float tanH = Mathf.Tan(Camera.fieldOfView * Mathf.Deg2Rad / 2f) * Camera.aspect;
+            float want = (across * 2f - 1f) * tanH;
+            var d = ball - from;
+            var flat = new Vector3(d.x, 0, d.z);
+            if (flat.sqrMagnitude < 1e-6f) return transform.rotation;
+            float yaw = Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
+            var tilt = Quaternion.AngleAxis(pitch, Vector3.right);
+            for (int i = 0; i < 6; i++)
+            {
+                var local = Quaternion.Inverse(Quaternion.AngleAxis(yaw, Vector3.up) * tilt) * d;
+                if (local.z < 1e-3f) break;
+                yaw += Mathf.Atan(local.x / local.z) * Mathf.Rad2Deg - Mathf.Atan(want) * Mathf.Rad2Deg;
+            }
+            return Quaternion.AngleAxis(yaw, Vector3.up) * tilt;
+        }
+
         /// A slow settle on the resting ball, with the pin in shot when it is near.
         public void HoldOn(Vector3 ball, Vector3 towardPin, bool putting)
         {
@@ -228,6 +287,17 @@ namespace GolfArcade.Game
         }
         public void RestoreFov() { if (fovOverridden) { Camera.fieldOfView = restFov; fovOverridden = false; } }
 
+        /// Ease toward a lens of this horizontal field of view (never taller than `maxVertical`
+        /// on a portrait screen), a few degrees a frame rather than a jump.
+        public void EaseHorizontalFov(float degrees, float maxVertical, float seconds)
+        {
+            if (!fovOverridden) { restFov = Camera.fieldOfView; fovOverridden = true; }
+            float vertical = 2f * Mathf.Atan(Mathf.Tan(degrees * Mathf.Deg2Rad / 2f) / Mathf.Max(0.2f, Camera.aspect)) * Mathf.Rad2Deg;
+            vertical = Mathf.Clamp(vertical, 30f, maxVertical);
+            float rate = Mathf.Abs(vertical - restFov) / Mathf.Max(0.05f, seconds);
+            Camera.fieldOfView = Mathf.MoveTowards(Camera.fieldOfView, vertical, Mathf.Max(rate, 1f) * Time.deltaTime);
+        }
+
         void LateUpdate()
         {
             bool cut = snap;
@@ -243,7 +313,17 @@ namespace GolfArcade.Game
             }
             var forward = lookAt - transform.position;
             roll = cut ? targetRoll : Mathf.SmoothDamp(roll, targetRoll, ref rollVelocity, 0.4f);
-            if (forward.sqrMagnitude > 1e-4f)
+            if (povThisFrame)
+            {
+                // the POV turns to hold the ball where Codex framed it; the look point follows so
+                // the view holds still when the POV lets go
+                var wanted = PovRotation(transform.position, povBall, povAcross, povPitch);
+                transform.rotation = cut ? wanted : Quaternion.Slerp(transform.rotation, wanted, 1f - Mathf.Exp(-Time.deltaTime / povTurnLag));
+                lookAt = targetLookAt = transform.position + transform.forward * 20f;
+                lookVelocity = Vector3.zero;
+                povThisFrame = false;
+            }
+            else if (forward.sqrMagnitude > 1e-4f)
                 transform.rotation = Quaternion.LookRotation(forward, cueUp) * Quaternion.Euler(0, 0, roll);
             if (cut) cueUp = Vector3.up;
             // the lens
