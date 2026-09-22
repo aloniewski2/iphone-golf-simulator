@@ -490,36 +490,108 @@ namespace GolfArcade.UI
                 if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro") child.gameObject.SetActive(on);
         }
 
-        // ---- Minimap marks: the ball, the predicted path as dots, the landing ring — drawn as
-        // UI over the map so they stay crisp at any zoom, anchored by the map camera's viewport.
-        RectTransform mapBall, mapLanding;
-        readonly System.Collections.Generic.List<RectTransform> mapDots = new();
-        const int MapDots = 14;
+        // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
+        // went after. While aiming: the club's reach as an arc (as far as a full swing with it
+        // flies, whichever way you turn), dots along the full swing's flight, and the zone it
+        // comes down in — shaded amber, the same zone as the ring on the course — with an amber
+        // dot sliding out along the dots as the backswing loads. Once it is struck: the ball's
+        // own path traced in the shot's colour as it flies, left there until the next shot.
+        // Drawn as UI over the map so it stays crisp, placed by the map camera's viewport.
+
+        /// What the minimap shows beyond the course, set by the game. Call `Changed` after
+        /// altering the plan so the shapes are redrawn.
+        public sealed class MapPlan
+        {
+            /// The full swing's flight while aiming (dots), the club's reach (an arc of dots),
+            /// and the ball's own flight once struck (a line).
+            public readonly System.Collections.Generic.List<Vector3> Path = new(), Reach = new(), Trace = new();
+            public Color TraceColor = Color.white;
+            /// Where a slightly-off full swing still comes down: an ellipse `ZoneAcross` yards
+            /// either side of the line and `ZoneAlong` short and long, on the aim `ZoneHeading`.
+            public Vector3 ZoneCentre; public float ZoneAcross, ZoneAlong, ZoneHeading; public bool ShowZone;
+            public Vector3 Ball, Landing, Load;
+            public bool ShowBall, ShowLanding, ShowLoad;
+            internal int Version;
+            public void Changed() => Version++;
+        }
+        public MapPlan Map { get; } = new();
+
+        RectTransform mapBall, mapLanding, mapLoad, mapShapes;
+        Image mapZoneFill, mapZoneEdge;
+        readonly System.Collections.Generic.List<RectTransform> mapDots = new(), mapReach = new();
+        readonly System.Collections.Generic.List<Image> mapTraceUnder = new(), mapTraceLine = new();
+        int mapDrawn = -1;
+        Camera mapDrawnWith;
+        const int MapDots = 16, ReachDots = 17;
+        static readonly Color MapInk = new(0.06f, 0.1f, 0.18f, 0.9f);
+
+        RectTransform MapMark(Transform parent, string name, Color color, float size, Sprite sprite, bool ringed)
+        {
+            var img = UiKit.Panel(parent, name, color, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size, size));
+            img.sprite = sprite; img.type = Image.Type.Simple; img.rectTransform.pivot = new Vector2(0.5f, 0.5f); img.raycastTarget = false;
+            if (ringed)
+            {
+                var edge = UiKit.Panel(img.transform, "Edge", MapInk, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                edge.sprite = UiKit.Ring; edge.type = Image.Type.Simple; edge.rectTransform.offsetMin = new Vector2(-4, -4); edge.rectTransform.offsetMax = new Vector2(4, 4); edge.raycastTarget = false;
+            }
+            img.gameObject.SetActive(false);
+            return img.rectTransform;
+        }
 
         void BuildMinimapMarks()
         {
             var map = Minimap.rectTransform;
-            RectTransform Mark(string name, Color color, float size, Sprite sprite, bool ringed)
-            {
-                var img = UiKit.Panel(map, name, color, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size, size));
-                img.sprite = sprite; img.type = Image.Type.Simple; img.rectTransform.pivot = new Vector2(0.5f, 0.5f); img.raycastTarget = false;
-                if (ringed)
-                {
-                    var edge = UiKit.Panel(img.transform, "Edge", new Color(0.06f, 0.1f, 0.18f, 0.9f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                    edge.sprite = UiKit.Ring; edge.type = Image.Type.Simple; edge.rectTransform.offsetMin = new Vector2(-4, -4); edge.rectTransform.offsetMax = new Vector2(4, 4); edge.raycastTarget = false;
-                }
-                img.gameObject.SetActive(false);
-                return img.rectTransform;
-            }
-            for (int i = 0; i < MapDots; i++) mapDots.Add(Mark($"Path {i}", new Color(1, 1, 1, 0.9f), 9, UiKit.Circle, false));
-            mapLanding = Mark("Landing", Game.LandingZone.Amber, 38, UiKit.Ring, false);
-            mapBall = Mark("Ball", Color.white, 22, UiKit.Circle, true);
+            // bottom to top: the zone, the reach, the trace, the flight's dots, the marks
+            var holder = UiKit.Panel(map, "Shot shapes", Color.clear, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+            holder.raycastTarget = false;
+            mapShapes = holder.rectTransform;
+            mapShapes.offsetMin = mapShapes.offsetMax = Vector2.zero; mapShapes.pivot = new Vector2(0.5f, 0.5f);
+            var amber = Game.LandingZone.Amber;
+            mapZoneFill = MapMark(mapShapes, "Zone", new Color(amber.r, amber.g, amber.b, 0.34f), 10, UiKit.Circle, false).GetComponent<Image>();
+            mapZoneEdge = MapMark(mapShapes, "Zone edge", new Color(amber.r, amber.g, amber.b, 0.95f), 10, UiKit.Ring, false).GetComponent<Image>();
+            for (int i = 0; i < ReachDots; i++) mapReach.Add(MapMark(mapShapes, $"Reach {i}", new Color(1, 1, 1, 0.8f), 7, UiKit.Circle, false));
+            for (int i = 0; i < MapDots; i++) mapDots.Add(MapMark(map, $"Path {i}", new Color(1, 1, 1, 0.95f), 10, UiKit.Circle, false));
+            mapLanding = MapMark(map, "Landing", amber, 24, UiKit.Ring, false);
+            mapLoad = MapMark(map, "Load", amber, 18, UiKit.Circle, true);
+            mapBall = MapMark(map, "Ball", Color.white, 22, UiKit.Circle, true);
         }
 
-        public void SetMinimapMarks(Camera map, Vector3 ball, Vector3 landing, System.Collections.Generic.IList<Vector3> path, bool showLanding, bool showBall)
+        /// A world point in the map's own rect coordinates (its centre is 0,0).
+        Vector2 MapPoint(Camera map, Vector3 world)
+        {
+            var r = Minimap.rectTransform.rect;
+            var vp = map.WorldToViewportPoint(world);
+            return new Vector2(r.xMin + vp.x * r.width, r.yMin + vp.y * r.height);
+        }
+
+        /// One stretch of the trace: a thin bar from `a` to `b`.
+        Image TraceBar(System.Collections.Generic.List<Image> pool, int i, Color c, string name)
+        {
+            while (pool.Count <= i)
+            {
+                var bar = UiKit.Panel(mapShapes, name, c, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.one, false);
+                bar.rectTransform.pivot = new Vector2(0.5f, 0.5f); bar.raycastTarget = false;
+                pool.Add(bar);
+            }
+            pool[i].color = c;
+            return pool[i];
+        }
+
+        static void Stretch(Image bar, Vector2 a, Vector2 b, float width)
+        {
+            var d = b - a;
+            var rt = bar.rectTransform;
+            rt.anchoredPosition = (a + b) / 2f;
+            rt.sizeDelta = new Vector2(d.magnitude + width * 0.6f, width);
+            rt.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+            bar.gameObject.SetActive(true);
+        }
+
+        public void DrawMinimap(Camera map)
         {
             if (!map) return;
             if (mapBall == null) BuildMinimapMarks();
+            var plan = Map;
             bool Place(RectTransform mark, Vector3 world, bool show)
             {
                 var vp = map.WorldToViewportPoint(world);
@@ -528,10 +600,50 @@ namespace GolfArcade.UI
                 if (inside) { mark.anchorMin = mark.anchorMax = new Vector2(vp.x, vp.y); mark.anchoredPosition = Vector2.zero; }
                 return inside;
             }
-            Place(mapBall, ball, showBall);
-            Place(mapLanding, landing, showLanding);
-            // dots spaced evenly along the path's length, none right at the ball or the ring
-            if (path == null || path.Count < 2) { foreach (var d in mapDots) d.gameObject.SetActive(false); return; }
+            Place(mapBall, plan.Ball, plan.ShowBall);
+            Place(mapLanding, plan.Landing, plan.ShowLanding);
+            Place(mapLoad, plan.Load, plan.ShowLoad);
+            if (plan.Version == mapDrawn && map == mapDrawnWith) return;
+            mapDrawn = plan.Version; mapDrawnWith = map;
+
+            // the zone: an ellipse on the aim, sized off the map's own scale
+            mapZoneFill.gameObject.SetActive(plan.ShowZone); mapZoneEdge.gameObject.SetActive(plan.ShowZone);
+            if (plan.ShowZone)
+            {
+                float h = plan.ZoneHeading * Mathf.Deg2Rad;
+                var ahead = new Vector3(Mathf.Sin(h), 0, Mathf.Cos(h)); var right = new Vector3(ahead.z, 0, -ahead.x);
+                var c = MapPoint(map, plan.ZoneCentre);
+                var along = MapPoint(map, plan.ZoneCentre + ahead * plan.ZoneAlong) - c;
+                var across = MapPoint(map, plan.ZoneCentre + right * plan.ZoneAcross) - c;
+                var size = new Vector2(Mathf.Max(8f, 2f * across.magnitude), Mathf.Max(8f, 2f * along.magnitude));
+                var turn = Quaternion.Euler(0, 0, Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg - 90f);
+                foreach (var img in new[] { mapZoneFill, mapZoneEdge })
+                {
+                    var rt = img.rectTransform;
+                    rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = c; rt.sizeDelta = size; rt.localRotation = turn;
+                }
+            }
+            // the reach: a dotted arc as far as a full swing with this club carries
+            for (int i = 0; i < ReachDots; i++) Place(mapReach[i], i < plan.Reach.Count ? plan.Reach[i] : Vector3.zero, i < plan.Reach.Count);
+            // the trace: the ball's own flight, a dark edge under the shot's colour
+            int n = 0;
+            var line = plan.TraceColor; line.a = 1f;
+            for (int i = 1; i < plan.Trace.Count; i++, n++)
+            {
+                var a = MapPoint(map, plan.Trace[i - 1]); var b = MapPoint(map, plan.Trace[i]);
+                Stretch(TraceBar(mapTraceUnder, n, new Color(MapInk.r, MapInk.g, MapInk.b, 0.5f), "Trace edge"), a, b, 8f);
+                Stretch(TraceBar(mapTraceLine, n, line, "Trace"), a, b, 4.5f);
+            }
+            for (int i = n; i < mapTraceUnder.Count; i++) mapTraceUnder[i].gameObject.SetActive(false);
+            for (int i = n; i < mapTraceLine.Count; i++) mapTraceLine[i].gameObject.SetActive(false);
+            // the lines draw after the edges: keep every coloured stretch above every dark one
+            if (n > 0 && mapTraceLine[0].transform.GetSiblingIndex() < mapTraceUnder[n - 1].transform.GetSiblingIndex())
+                foreach (var bar in mapTraceLine) bar.transform.SetAsLastSibling();
+
+            // dots spaced evenly along the flight, none right at the ball or the zone's middle
+            var path = plan.Path;
+            if (path.Count < 2) { foreach (var d in mapDots) d.gameObject.SetActive(false); return; }
             float total = 0; for (int i = 1; i < path.Count; i++) total += Vector3.Distance(path[i - 1], path[i]);
             for (int k = 0; k < MapDots; k++)
             {

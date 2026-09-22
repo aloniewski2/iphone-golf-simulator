@@ -78,18 +78,52 @@ namespace GolfArcade.Game
             targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
         }
 
+        /// Seconds before touchdown the ball cam stops chasing and lets the ball drop in ahead.
+        const float BrakeSeconds = 0.7f;
+        Vector3 brakeAt;
+        bool braked;
+
+        /// A new shot: the ball cam starts from wherever the camera is.
+        public void BeginChase() => braked = false;
+
         /// The ball cam: a little behind and above the ball all the way through the air, looking
         /// a touch ahead and down so the ground it is crossing — fairway, water, trees, the green
-        /// coming up — fills the frame as it soars, and dropping in with it as it lands.
-        public void Follow(Vector3 ball, Vector3 velocity)
+        /// coming up — fills the frame as it soars. It rides the shot's line over the ground
+        /// (`line`, launch to landing), not the ball's velocity from frame to frame, so it never
+        /// lurches with a draw, a bounce or an uneven frame; and it climbs as the ball comes down
+        /// (`descent`, the fall per yard across the ground) so it stays above the ball's path and
+        /// never flies down the tracer. Just before touchdown it brakes and holds where it is,
+        /// looking down at the ball as it drops in ahead, bounces and runs out; then it drifts
+        /// down after the rolling ball.
+        public void Chase(Vector3 ball, Vector3 line, float descent, float toLanding)
         {
-            var dir = velocity; dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = transform.forward; dir.y = 0; dir.Normalize();
-            float climb = Mathf.Clamp(velocity.y, -20f, 25f);
-            float back = 11f + Mathf.Max(0, climb) * 0.1f, up = 4.5f + Mathf.Max(0, climb) * 0.12f;
-            targetPosition = ball - dir * back + Vector3.up * up;
-            targetLookAt = ball + dir * 9f - Vector3.up * 0.6f;
-            positionLag = 0.28f; lookLag = 0.1f;
+            line.y = 0;
+            if (line.sqrMagnitude < 1e-4f) line = transform.forward; line.y = 0; line.Normalize();
+            const float back = 9f;
+            float up = 3.2f + back * 1.1f * Mathf.Clamp(descent, 0f, 1.4f);
+            var chase = ball - line * back + Vector3.up * up;
+            if (!braked && toLanding > BrakeSeconds) brakeAt = chase;
+            else if (!braked) { braked = true; brakeAt = chase; }
+            float w = Mathf.SmoothStep(0, 1, 1f - toLanding / BrakeSeconds);
+            var chaseLook = ball + line * 6f - Vector3.up * 1f;
+            var watch = ball + line * 1.5f;
+            if (toLanding > 0)
+            {
+                targetPosition = braked ? brakeAt : chase;
+                targetLookAt = Vector3.Lerp(chaseLook, watch, w);
+                positionLag = braked ? 0.35f : 0.16f; lookLag = braked ? 0.12f : 0.08f;
+            }
+            else
+            {
+                // down: drift after it, lower, as it bounces and rolls out
+                float since = Mathf.SmoothStep(0, 1, -toLanding / 2.5f);
+                targetPosition = Vector3.Lerp(brakeAt, ball - line * 11f + Vector3.up * 4f, since);
+                targetLookAt = watch;
+                positionLag = 0.55f; lookLag = 0.15f;
+            }
+            // never into the ground: a cliff, a bank, the far island's rim
+            float floor = (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(targetPosition)) + 1.8f;
+            if (targetPosition.y < floor) targetPosition.y = floor;
             targetZoom = 1f; targetRoll = 0f;
         }
 

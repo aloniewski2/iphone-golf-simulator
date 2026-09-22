@@ -19,7 +19,7 @@ namespace GolfArcade.Game
 
         public static AimDots Create(Transform parent, Camera view)
         {
-            var go = new GameObject("Aim dots");
+            var go = new GameObject("Aim dots") { layer = BallLook.OverlayLayer };
             go.transform.SetParent(parent, false);
             var a = go.AddComponent<AimDots>();
             a.view = view;
@@ -34,7 +34,7 @@ namespace GolfArcade.Game
         static Transform Disc(Transform parent, string name, Material m)
         {
             var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            q.name = name;
+            q.name = name; q.layer = BallLook.OverlayLayer;
             Destroy(q.GetComponent<Collider>());
             q.transform.SetParent(parent, false);
             var r = q.GetComponent<Renderer>();
@@ -86,6 +86,10 @@ namespace GolfArcade.Game
         }
 
         public void Hide() { gameObject.SetActive(false); markAt = -1f; }
+
+        /// Where the amber dot is, when it shows — for the minimap's copy of it.
+        public bool MarkShown => gameObject.activeSelf && mark.gameObject.activeSelf;
+        public Vector3 MarkPosition => mark.position;
 
         void LateUpdate()
         {

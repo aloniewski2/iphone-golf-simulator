@@ -159,6 +159,9 @@ namespace GolfArcade.Game
 
         bool flying;
         public void BeginFlight() { tracer.Begin(ColorOf(quality)); flying = true; }
+        /// The ball is down: the line ends where it landed, the way TopTracer draws it — the
+        /// bounces and the roll are the ball's own, not the line's.
+        public void Land() { if (flying && ball) tracer.Push(ball.position); flying = false; }
         /// The shot is over: the line stays over the hole a while, then goes.
         public void EndFlight() { flying = false; tracer.FadeOut(2.5f); }
         /// Setting up the next shot: the line goes now.

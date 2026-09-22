@@ -20,6 +20,26 @@ namespace GolfArcade.Tests
         }
 
         [Test]
+        public void AShotThatComesDownInTheWaterStaysThere()
+        {
+            var h = Twelve;
+            // a half iron off the tee comes down in the carry, well short of the green island
+            var shot = new CourseShot(GolfArcade.Shot.GolfClub.Iron, new GolfArcade.Swing.SwingImpact { Power = 0.55 }, 0, h.Tee, h);
+            Assert.AreEqual(CourseLie.Water, h.LieAt(shot.Landing), $"it should land in the sea, at {shot.Landing}");
+            Assert.AreEqual(CourseLie.Water, shot.Lie);
+            Assert.AreEqual(shot.Landing, shot.Rest, "no skipping out of the sea on a bounce");
+            Assert.AreEqual(shot.LandingTime, shot.Duration, 1e-9);
+            Assert.Greater(shot.LandingTime, 1.0, "it flew first");
+            Assert.That(shot.Landing.DistanceTo(h.Tee), Is.EqualTo(shot.Carry).Within(0.5), "the landing is the end of the carry");
+            Assert.AreNotEqual(CourseLie.Water, h.LieAt(shot.NextPosition), "the drop is on dry land");
+            // and one that carries the water lands first, then bounces and rolls on from there
+            var full = new CourseShot(GolfArcade.Shot.GolfClub.Iron, new GolfArcade.Swing.SwingImpact { Power = 1 }, 0, h.Tee, h);
+            Assert.AreNotEqual(CourseLie.Water, full.Lie);
+            Assert.Less(full.LandingTime, full.CarryTime, "the bounces come after the first touchdown");
+            Assert.Greater(full.Landing.DistanceTo(h.Tee), 140);
+        }
+
+        [Test]
         public void LiesFollowBothIslands()
         {
             var h = Twelve;

@@ -42,7 +42,11 @@ namespace GolfArcade.EditorTools
                 if (r.HasChildren) return;
                 string line = $"{r.TestStatus.ToString().ToUpperInvariant()} {r.FullName} ({r.Duration:F2}s)\n";
                 if (r.TestStatus == TestStatus.Failed) line += "    " + (r.Message ?? "").Trim().Replace("\n", "\n    ") + "\n";
-                File.AppendAllText(Path(r.Test.TestMode) + ".running", line);
+                // a leaf test's own TestMode is often unset: file it with the run in progress
+                var mode = r.Test.TestMode;
+                if (mode != TestMode.EditMode && mode != TestMode.PlayMode)
+                    mode = File.Exists(Path(TestMode.PlayMode) + ".running") ? TestMode.PlayMode : TestMode.EditMode;
+                File.AppendAllText(Path(mode) + ".running", line);
             }
 
             public void RunFinished(ITestResultAdaptor result)

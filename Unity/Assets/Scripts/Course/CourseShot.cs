@@ -31,10 +31,14 @@ namespace GolfArcade.Course
         public readonly CoursePoint NextPosition;
         public readonly CoursePoint Rest;
         public readonly double Carry;
-        /// Seconds in the air; the ball is on the ground from here to `Duration`.
+        /// Seconds in the air, bounces included; the ball is rolling from here to `Duration`.
         public readonly double CarryTime;
-        /// Where the ball first meets the ground.
+        /// Where the ball starts to roll, after its bounces.
         public readonly CoursePoint Touchdown;
+        /// Where the ball first comes down, and how many seconds after the strike: the end of
+        /// the carry proper, before any bounce. A putt's is where it starts.
+        public readonly CoursePoint Landing;
+        public readonly double LandingTime;
         public readonly double Roll;
         public readonly double Apex;
         public readonly double Duration;
@@ -88,6 +92,7 @@ namespace GolfArcade.Course
             Heading = double.IsFinite(heading) ? heading : 0;
             Origin = origin;
             path = new List<(double, double, double)> { (origin.X, 0, origin.D) };
+            Landing = origin;
 
             double speedFactor = Clamp(lieFactor, 0, 1);
             if (Power <= 0 || speedFactor <= 0)
@@ -119,6 +124,25 @@ namespace GolfArcade.Course
                 // Flight samples are in the aim frame; rotate them onto the course.
                 (double x, double h, double d) World(double lateral, double height, double distance) =>
                     (origin.X + lateral * cosH + distance * sinH, height, origin.D - lateral * sinH + distance * cosH);
+                var first = World(flight.CarryPoint.LateralYards, 0, flight.CarryPoint.DistanceYards);
+                Landing = new CoursePoint(first.x, first.d);
+                LandingTime = flight.CarryTime;
+                if (flight.CarryTime > 0 && hole.LieAt(Landing) == CourseLie.Water)
+                {
+                    // Down in the water: it stays where it went in, bounce or no bounce.
+                    for (double s = SampleInterval; s < flight.CarryTime; s += SampleInterval)
+                    {
+                        var p = flight.PositionAt(s);
+                        path.Add(World(p.LateralYards, p.HeightYards, p.DistanceYards));
+                    }
+                    path.Add(first);
+                    Touchdown = Rest = Landing;
+                    CarryTime = Duration = flight.CarryTime;
+                    Roll = 0; HoledAt = null;
+                    Lie = CourseLie.Water;
+                    NextPosition = Drop(Landing, origin, hole);
+                    return;
+                }
                 double t = SampleInterval;
                 for (; t <= flight.RollStartTime; t += SampleInterval)
                 {

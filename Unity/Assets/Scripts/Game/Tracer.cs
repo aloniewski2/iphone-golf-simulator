@@ -12,6 +12,7 @@ namespace GolfArcade.Game
     {
         const float Step = 0.6f;            // yards between points along the line
         readonly List<Vector3> points = new();
+        readonly List<Keyframe> widths = new();
         LineRenderer line;
         Camera view;
         Color color = Color.green;
@@ -33,6 +34,7 @@ namespace GolfArcade.Game
             t.line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             t.line.receiveShadows = false;
             t.line.positionCount = 0;
+            go.layer = BallLook.OverlayLayer;
             go.SetActive(false);
             return t;
         }
@@ -57,6 +59,13 @@ namespace GolfArcade.Game
         float fadeSeconds = 1.5f;
         public void Clear() { points.Clear(); line.positionCount = 0; gameObject.SetActive(false); }
 
+        float PixelWidth(Vector3 at)
+        {
+            float d = view ? Vector3.Distance(view.transform.position, at) : 30f;
+            float viewHeight = view ? 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f) : 30f;
+            return Mathf.Max(0.004f, 0.003f * viewHeight);
+        }
+
         void LateUpdate()
         {
             if (points.Count < 2) return;
@@ -67,11 +76,14 @@ namespace GolfArcade.Game
             }
             line.positionCount = points.Count;
             line.SetPositions(points.ToArray());
-            // a few pixels wide: sized against the view at the line's middle
-            var mid = points[points.Count / 2];
-            float d = view ? Vector3.Distance(view.transform.position, mid) : 30f;
-            float viewHeight = view ? 2f * d * Mathf.Tan(view.fieldOfView * Mathf.Deg2Rad / 2f) : 30f;
-            line.widthMultiplier = Mathf.Max(0.05f, 0.0035f * viewHeight);
+            // A few pixels wide all along: each stretch sized against its own distance from the
+            // view, so the end nearest the camera is not a fat smear and the far end not lost.
+            int n = points.Count, stride = Mathf.Max(1, n / 40);
+            widths.Clear();
+            for (int i = 0; i < n - 1; i += stride) widths.Add(new Keyframe((float)i / (n - 1), PixelWidth(points[i])));
+            widths.Add(new Keyframe(1f, PixelWidth(points[n - 1])));
+            line.widthMultiplier = 1f;
+            line.widthCurve = new AnimationCurve(widths.ToArray());
             var g = new Gradient();
             var tail = Color.Lerp(color, Color.white, 0.1f); tail.a = 0.55f * fade;
             var head = Color.Lerp(color, Color.white, 0.45f); head.a = 0.95f * fade;

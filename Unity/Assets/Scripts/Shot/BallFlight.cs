@@ -50,6 +50,8 @@ namespace GolfArcade.Shot
         public double Carry { get; }
         /// Where the ball first touched down (the end of the carry), aim frame.
         public FlightPoint CarryPoint { get; }
+        /// Seconds from the strike to that first touchdown.
+        public double CarryTime { get; }
         public double Roll { get; }
         public double Apex { get; }
         /// Seconds into the flight at which the ball stopped bouncing and began to roll (0 for a
@@ -63,9 +65,9 @@ namespace GolfArcade.Shot
         public FlightPoint Landing => samples[samples.Count - 1];
         public IReadOnlyList<FlightPoint> Samples => samples;
 
-        BallFlight(List<FlightPoint> samples, double carry, FlightPoint carryPoint, double roll, double apex, double rollStartTime, double rollVx, double rollVz)
+        BallFlight(List<FlightPoint> samples, double carry, FlightPoint carryPoint, double carryTime, double roll, double apex, double rollStartTime, double rollVx, double rollVz)
         {
-            this.samples = samples; Carry = carry; CarryPoint = carryPoint; Roll = roll; Apex = apex;
+            this.samples = samples; Carry = carry; CarryPoint = carryPoint; CarryTime = carryTime; Roll = roll; Apex = apex;
             RollStartTime = rollStartTime; RollStartVelocityX = rollVx; RollStartVelocityZ = rollVz;
         }
 
@@ -114,7 +116,7 @@ namespace GolfArcade.Shot
             bool rolling = !airborne;
             double rollStartTime = 0, rollVx = vx, rollVz = vz;
             double? carryMeters = null;
-            double carryX = 0, carryZ = 0;
+            double carryX = 0, carryZ = 0, carryTime = 0;
             double apexMeters = 0;
 
             while (time < MaxDuration)
@@ -157,7 +159,7 @@ namespace GolfArcade.Shot
                     if (py <= 0 && vy < 0)
                     {
                         py = 0;
-                        if (carryMeters is null) { carryMeters = Math.Sqrt(px * px + pz * pz); carryX = px; carryZ = pz; }
+                        if (carryMeters is null) { carryMeters = Math.Sqrt(px * px + pz * pz); carryX = px; carryZ = pz; carryTime = time + dt; }
                         vy = -vy * restitution;
                         // Backspin grips the turf on the first bounce: a driver keeps rolling, a
                         // spinning iron hops and stops, a wedge checks up almost where it lands.
@@ -189,7 +191,7 @@ namespace GolfArcade.Shot
             samples.Add(new FlightPoint(px / MetersPerYard, 0, pz / MetersPerYard));
             double carry = (carryMeters ?? 0) / MetersPerYard; // a shot that never flew is all roll
             var carryPoint = new FlightPoint(carryX / MetersPerYard, 0, carryZ / MetersPerYard);
-            return new BallFlight(samples, carry, carryPoint, Math.Max(0, finalDistance / MetersPerYard - carry), apexMeters / MetersPerYard,
+            return new BallFlight(samples, carry, carryPoint, carryTime, Math.Max(0, finalDistance / MetersPerYard - carry), apexMeters / MetersPerYard,
                 rollStartTime, rollVx / MetersPerYard, rollVz / MetersPerYard);
         }
     }
