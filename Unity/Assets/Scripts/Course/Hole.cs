@@ -89,8 +89,12 @@ namespace GolfArcade.Course
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;
-        /// Small, explicit arcade tolerance around the cup, in yards.
-        public const double CupCaptureRadius = 0.12;
+        /// The game's ball is drawn about 2.55× a real one (0.12 yd across); the cup is scaled
+        /// with it so the hole reads right beside the ball — a regulation 4¼" cup at that scale.
+        public const double CupScale = 2.55;
+        /// The cup's mouth as drawn, yards: a ball whose centre crosses it slowly enough drops,
+        /// so a putt that rolls over the dark of the hole goes in.
+        public const double CupCaptureRadius = 0.054 * 1.0936 * CupScale;
 
         public CoursePoint Tee => Centerline[0];
         public CoursePoint Pin => Centerline[Centerline.Length - 1];

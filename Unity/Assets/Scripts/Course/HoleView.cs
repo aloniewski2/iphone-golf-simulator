@@ -240,6 +240,9 @@ namespace GolfArcade.Course
                     r.sharedMaterials = mats;
                 }
                 pinRoot = model.transform;
+                // the cup at the ball's scale (Hole.CupScale): the pole and the flag stay life-size
+                var cupMesh = FindDeep(pinRoot, "CUP");
+                if (cupMesh) cupMesh.localScale *= (float)Hole.CupScale;
                 flagstick = FindDeep(pinRoot, "FLAG_POLE");
                 flag = FindDeep(pinRoot, "FLAG");
                 Flag = flagstick ? flagstick : pinRoot;

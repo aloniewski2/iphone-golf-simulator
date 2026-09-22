@@ -776,7 +776,7 @@ namespace GolfArcade.Game
             landingMarker.position += Vector3.up * 0.04f;
             landingMarker.gameObject.SetActive(!putting);
             golfer.Stand(ball.position, dir);
-            hud.SetDistance(putting ? $"{toPin * 3:F0} ft to the hole" : $"{toPin:F0} yd to the pin");
+            if (putting) hud.SetDistance(toPin * 3, "FT", "to the hole"); else hud.SetDistance(toPin, "YD", "to the pin");
             if (putting)
             {
                 // The read in words: rise along the line and which way the ground tips across it.
@@ -784,12 +784,12 @@ namespace GolfArcade.Game
                 double along = g.dx * dir.x + g.dd * dir.z, across = g.dx * dir.z - g.dd * dir.x;
                 string read = Math.Abs(along) < 0.004 && Math.Abs(across) < 0.004 ? "Flat"
                     : $"{(along >= 0 ? "Uphill" : "Downhill")} {Math.Abs(along) * 100:F1}%  ·  {(Math.Abs(across) < 0.004 ? "straight" : across > 0 ? "breaks left" : "breaks right")}";
-                hud.SetClub($"Putter  ·  full stroke {rated * 3:F0} ft");
+                hud.SetClub($"Putter  ·  {rated * 3:F0} ft stroke");
                 hud.SetRead(read);
             }
             else
             {
-                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie.PowerFactor() < 1 ? $"  ({lie.Label()})" : "")}");
+                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie.PowerFactor() < 1 ? $"  ·  {lie.Label()}" : "")}");
                 hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm, Wind.SpeedMPH);
             }
             if (hud.Controller != null)
