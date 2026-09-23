@@ -85,6 +85,14 @@ namespace GolfArcade.UI
         /// The same with a big radius, for the light controller's cards.
         public static Sprite RoundedLarge => roundedLarge ??= MakeRounded(128, 40);
         static Sprite roundedLarge;
+        /// A ring `band` pixels thick on a `size`-pixel circle (its outer edge on the circle), for
+        /// the HUD's power arc; cached by size and band.
+        public static Sprite RingOf(int size, int band)
+        {
+            if (!rings.TryGetValue((size, band), out var r) || !r) rings[(size, band)] = r = MakeRing(size, band);
+            return r;
+        }
+        static readonly System.Collections.Generic.Dictionary<(int, int), Sprite> rings = new();
         /// A hairline ring, for the controller's power arc.
         public static Sprite ThinRing => thinRing ??= MakeRing(256, 9);
         static Sprite thinRing;

@@ -36,9 +36,27 @@ namespace GolfArcade.UI
         Image clubPill, meterGauge;
         RectTransform minimapHolder;
         const float Margin = 36f;
-        // the meter's capsule: its size and the inset the fill runs inside
-        const float MeterWidth = 40f, MeterHeight = 820f, MeterPad = 6f;
-        static float MeterY(float load) => MeterPad + Mathf.Clamp01(load) * (MeterHeight - 2 * MeterPad);
+        // The power arc: a stretch of a circle whose centre is out in the picture, so the arc bows
+        // along the left edge from low (empty) to high (full). Positions are relative to the
+        // meter's anchor, the left edge half-way up.
+        const float ArcRadius = 520f, ArcStart = 235f, ArcSweep = 110f, ArcBand = 34f;
+        static readonly Vector2 ArcCentre = new(532f, -90f);
+        const int ArcSegments = 48;
+        /// The middle of the arc's band at `load` (0 empty → 1 full), pushed `inward` toward the centre.
+        static Vector2 ArcPoint(float load, float inward = 0)
+        {
+            float a = (ArcStart - Mathf.Clamp01(load) * ArcSweep) * Mathf.Deg2Rad;
+            float r = ArcRadius - ArcBand / 2 - inward;
+            return ArcCentre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+        }
+        static Color ArcColor(float t)
+        {
+            var calm = new Color(0.3f, 0.85f, 0.35f); var warm = new Color(1f, 0.86f, 0.2f); var hot = new Color(1f, 0.42f, 0.15f);
+            return t < 0.55f ? Color.Lerp(calm, warm, t / 0.55f) : Color.Lerp(warm, hot, (t - 0.55f) / 0.45f);
+        }
+        readonly System.Collections.Generic.List<Image> arcSegments = new();
+        Image arcTip, arcStartCap;
+        RectTransform gaugeRoot;
         static readonly Color LandingZoneAmber = new(1f, 0.72f, 0.25f, 0.97f);
 
         /// A pill: the circle sprite sliced, so the ends stay round at any length.
@@ -122,34 +140,64 @@ namespace GolfArcade.UI
             tempoText = Label("Tempo", 30, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 362), new Vector2(1000, 50));
             tempoText.color = new Color(1, 0.95f, 0.7f, 0.95f);
 
-            // The power meter: a slim capsule down the left edge that fills from the bottom,
-            // warming green → amber → orange; the checkpoints sit on the track (SetCheckpoints)
-            // and a live amber pill rides the top of the fill with the yards this load carries.
+            // The power meter: a chunky arc bowing down the left edge (the Everybody's Golf gauge):
+            // white-rimmed navy, filling from its low end green → yellow → orange as the
+            // backswing grows. The numbered checkpoints sit on the arc (SetCheckpoints), and a
+            // bouncy yellow tag rides the tip of the fill with the yards this load carries.
             var meter = new GameObject("Meter").AddComponent<RectTransform>();
             meter.SetParent(safeArea, false);
             meter.anchorMin = meter.anchorMax = new Vector2(0, 0.5f); meter.pivot = new Vector2(0, 0.5f);
-            meter.anchoredPosition = new Vector2(Margin + 8, 20); meter.sizeDelta = new Vector2(MeterWidth, MeterHeight);
+            meter.anchoredPosition = new Vector2(Margin - 6, -40); meter.sizeDelta = Vector2.zero;
             meterRect = meter;
             meterHome = meterRect.anchoredPosition;
-            var halo = Capsule(meter, "Edge", new Color(1, 1, 1, 0.22f), Vector2.zero, new Vector2(MeterWidth + 6, MeterHeight + 6));
-            halo.rectTransform.anchorMin = halo.rectTransform.anchorMax = new Vector2(0.5f, 0.5f); halo.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            var track = Capsule(meter, "Track", new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.78f), Vector2.zero, Vector2.zero);
-            track.rectTransform.anchorMin = Vector2.zero; track.rectTransform.anchorMax = Vector2.one;
-            meterFill = Capsule(meter, "Fill", new Color(0.35f, 0.85f, 0.35f, 0.95f), new Vector2(0, MeterPad), new Vector2(MeterWidth - 2 * MeterPad, 0));
-            meterFill.rectTransform.anchorMin = meterFill.rectTransform.anchorMax = new Vector2(0.5f, 0); meterFill.rectTransform.pivot = new Vector2(0.5f, 0);
             meterTrack = meter;
-            meterMark = Panel("Mark", Color.white, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, MeterPad), new Vector2(MeterWidth + 14, 5), meter, rounded: false);
-            meterMark.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            Image Ring(string name, Color c, float radius, float band)
+            {
+                int px = 1024, b = Mathf.Max(2, Mathf.RoundToInt(band / (2 * radius) * px));
+                var img = UiKit.Panel(meter, name, c, new Vector2(0, 0.5f), new Vector2(0, 0.5f), ArcCentre, new Vector2(2 * radius, 2 * radius), false);
+                img.sprite = UiKit.RingOf(px, b); img.type = Image.Type.Filled; img.fillMethod = Image.FillMethod.Radial360;
+                img.fillOrigin = (int)Image.Origin360.Top; img.fillClockwise = true; img.fillAmount = ArcSweep / 360f;
+                img.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                img.rectTransform.localRotation = Quaternion.Euler(0, 0, ArcStart - 90f);
+                img.raycastTarget = false;
+                return img;
+            }
+            Image Cap(string name, Color c, Vector2 at, float size)
+            {
+                var d = UiKit.Panel(meter, name, c, new Vector2(0, 0.5f), new Vector2(0, 0.5f), at, new Vector2(size, size));
+                d.sprite = UiKit.Circle; d.type = Image.Type.Simple; d.rectTransform.pivot = new Vector2(0.5f, 0.5f); d.raycastTarget = false;
+                return d;
+            }
+            var shadow = Ring("Shadow", new Color(0.03f, 0.08f, 0.25f, 0.28f), ArcRadius + 16, ArcBand + 30);
+            shadow.rectTransform.anchoredPosition += new Vector2(4, -8);
+            Ring("Rim", UiKit.ArcadeRim, ArcRadius + 16, ArcBand + 32);
+            foreach (float end in new[] { 0f, 1f }) Cap("Rim cap", UiKit.ArcadeRim, ArcPoint(end), ArcBand + 32);
+            Ring("Track", UiKit.ArcadeInk, ArcRadius + 6, ArcBand + 12);
+            foreach (float end in new[] { 0f, 1f }) Cap("Track cap", UiKit.ArcadeInk, ArcPoint(end), ArcBand + 12);
+            for (int i = 0; i < ArcSegments; i++)
+            {
+                var seg = Ring($"Fill {i}", ArcColor((i + 0.5f) / ArcSegments), ArcRadius, ArcBand);
+                seg.rectTransform.localRotation = Quaternion.Euler(0, 0, ArcStart - i * ArcSweep / ArcSegments - 90f);
+                seg.fillAmount = ArcSweep / ArcSegments / 360f + 0.0015f;
+                seg.enabled = false;
+                arcSegments.Add(seg);
+            }
+            arcStartCap = Cap("Fill start", ArcColor(0), ArcPoint(0), ArcBand);
+            arcStartCap.enabled = false;
+            arcTip = Cap("Fill tip", ArcColor(0), ArcPoint(0), ArcBand);
+            arcTip.enabled = false;
+            meterFill = arcTip;
+            meterMark = Cap("Mark", Color.white, ArcPoint(0), 16);
             meterMark.enabled = false;
-            var meterLabel = Label("Power", 22, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -34), new Vector2(160, 32), meter);
+            var meterLabel = Label("Power", 22, TextAnchor.MiddleCenter, new Vector2(0, 0.5f), new Vector2(0, 0.5f), ArcPoint(0) + new Vector2(18, -58), new Vector2(160, 32), meter);
             meterLabel.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            meterLabel.text = "POWER"; meterLabel.font = UiKit.Strong; meterLabel.color = UiKit.InkMuted;
-            // the live gauge: how far this much backswing carries, riding the top of the fill
-            meterGauge = Capsule(meter, "Gauge", LandingZoneAmber, Vector2.zero, new Vector2(128, 42));
-            meterGauge.rectTransform.anchorMin = meterGauge.rectTransform.anchorMax = new Vector2(1, 0); meterGauge.rectTransform.pivot = new Vector2(0, 0.5f);
-            meterYards = UiKit.Label(meterGauge.transform, "Yards", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
-            meterYards.color = UiKit.Ground; meterYards.raycastTarget = false;
-            meterGauge.gameObject.SetActive(false);
+            meterLabel.text = "POWER"; meterLabel.font = UiKit.Display; meterLabel.color = Color.white;
+            // the live gauge: how far this much backswing carries, a tilted yellow tag at the tip
+            gaugeRoot = UiKit.Pill(meter, "Gauge", UiKit.ArcadeYellow, new Vector2(0, 0.5f), Vector2.zero, new Vector2(150, 58), out meterGauge, 5f);
+            gaugeRoot.localRotation = Quaternion.Euler(0, 0, 12f);
+            meterYards = UiKit.Label(meterGauge.transform, "Yards", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            meterYards.color = UiKit.ArcadeInk; meterYards.raycastTarget = false;
+            gaugeRoot.gameObject.SetActive(false);
 
             // Minimap, top right under the score: the course from above with rounded corners, a
             // crisp light edge and a soft shadow, no frame of its own.
@@ -797,11 +845,25 @@ namespace GolfArcade.UI
         // carries, and the same numbered badges out on the course where those shots come down
         // (and dots on the minimap), so you know which mark to stop the backswing at. The badges
         // the fill has reached turn amber, the colour of the load dot.
-        /// The gap between the meter's right edge and the pills beside it (checkpoints, live gauge).
-        const float GaugeGap = 16f;
         sealed class Checkpoint { public float Load; public RectTransform Root; public Image Disc, Pill; public Text Number, Yards; }
         readonly System.Collections.Generic.List<Checkpoint> checkpoints = new();
         readonly System.Collections.Generic.List<(RectTransform root, Image disc, Text number, RectTransform stem, RectTransform badge)> courseTargets = new();
+        readonly System.Collections.Generic.List<Text> flagYards = new();
+
+        /// A course marker's flag: a rounded white-rimmed badge on a pole, its number big and its
+        /// yards under it (the pin's in yellow).
+        (RectTransform, Image, Text, Text) Flag(Transform parent, int number)
+        {
+            var rim = UiKit.Panel(parent, "Flag", UiKit.ArcadeRim, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(84, 112));
+            rim.rectTransform.pivot = new Vector2(0.5f, 0f); rim.raycastTarget = false;
+            var fill = UiKit.Panel(rim.transform, "Fill", UiKit.ArcadeBlue, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            fill.rectTransform.offsetMin = new Vector2(5, 5); fill.rectTransform.offsetMax = new Vector2(-5, -5); fill.raycastTarget = false;
+            var n = UiKit.Label(fill.transform, "Number", 44, TextAnchor.UpperCenter, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -2), new Vector2(0, 52), UiKit.Display, false);
+            n.rectTransform.pivot = new Vector2(0.5f, 1); n.text = number.ToString(); n.color = Color.white; n.raycastTarget = false;
+            var y = UiKit.Label(fill.transform, "Yards", 21, TextAnchor.LowerCenter, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 6), new Vector2(0, 50), UiKit.Display, false);
+            y.rectTransform.pivot = new Vector2(0.5f, 0); y.color = Color.white; y.raycastTarget = false; y.lineSpacing = 0.85f;
+            return (rim.rectTransform, fill, n, y);
+        }
         static readonly Color BadgeRest = new(1f, 1f, 1f, 0.95f);
 
         (RectTransform, Image, Text) Badge(Transform parent, string name, int number, float size)
@@ -830,11 +892,10 @@ namespace GolfArcade.UI
                 int n = checkpoints.Count + 1;
                 var holder = new GameObject($"Checkpoint {n}").AddComponent<RectTransform>();
                 holder.SetParent(meterTrack, false);
-                holder.anchorMin = holder.anchorMax = new Vector2(0.5f, 0); holder.pivot = new Vector2(0.5f, 0.5f); holder.sizeDelta = Vector2.one;
-                var line = UiKit.Panel(holder, "Line", new Color(1, 1, 1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(MeterWidth + 14, 3), false);
-                line.rectTransform.pivot = new Vector2(0.5f, 0.5f); line.raycastTarget = false;
-                var (_, disc, number) = Badge(holder, "Stop", n, 30);
-                var pill = Capsule(holder, "Pill", new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.78f), new Vector2(MeterWidth / 2 + GaugeGap, 0), new Vector2(104, 38));
+                holder.anchorMin = holder.anchorMax = new Vector2(0, 0.5f); holder.pivot = new Vector2(0.5f, 0.5f); holder.sizeDelta = Vector2.one;
+                var (_, disc, number) = Badge(holder, "Stop", n, 46);
+                // (the yardage rides the flag on the course now; the pill stays hidden)
+                var pill = Capsule(holder, "Pill", new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.78f), new Vector2(40, 0), new Vector2(104, 38));
                 pill.rectTransform.pivot = new Vector2(0, 0.5f);
                 var y = UiKit.Label(pill.transform, "Yards", 24, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
                 y.color = UiKit.Ink; y.raycastTarget = false;
@@ -847,27 +908,27 @@ namespace GolfArcade.UI
                 c.Root.gameObject.SetActive(on);
                 if (!on) continue;
                 c.Load = loads[i];
-                c.Root.anchoredPosition = new Vector2(0, MeterY(loads[i]) - (loads[i] >= 0.999f ? 10 : 0));
+                // on the arc; the outer one set back a little from the rounded end
+                c.Root.anchoredPosition = ArcPoint(Mathf.Min(loads[i], 0.97f));
                 c.Yards.text = yards[i];
+                c.Pill.gameObject.SetActive(false);
                 c.Pill.rectTransform.sizeDelta = new Vector2(Mathf.Max(92, c.Yards.preferredWidth + 30), 38);
                 c.Pill.color = i == pin ? UiKit.ArcadeYellow : new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.78f);
                 c.Yards.color = i == pin ? UiKit.ArcadeInk : UiKit.Ink;
                 c.Yards.font = i == pin ? UiKit.Display : UiKit.Strong;
             }
+            pinCheckpoint = pin;
             LightCheckpoints();
         }
+        int pinCheckpoint = -1;
 
         void LightCheckpoints()
         {
-            bool gauge = meterGauge.gameObject.activeSelf;
-            float liveY = MeterY(meterLoad);
             foreach (var c in checkpoints)
             {
                 if (!c.Root.gameObject.activeSelf) continue;
                 bool reached = meterLoad > 0.02f && meterLoad >= c.Load - 0.004f;
-                c.Disc.color = reached ? Game.LandingZone.Amber : BadgeRest;
-                // the live gauge rides the fill; a checkpoint's own pill steps aside for it
-                c.Pill.gameObject.SetActive(!(gauge && Mathf.Abs(liveY - c.Root.anchoredPosition.y) < 42f));
+                c.Disc.color = reached ? UiKit.ArcadeYellow : BadgeRest;
             }
         }
 
@@ -882,12 +943,14 @@ namespace GolfArcade.UI
                 var holder = new GameObject($"Target {courseTargets.Count + 1}").AddComponent<RectTransform>();
                 holder.SetParent(transform, false); holder.SetAsFirstSibling();
                 holder.pivot = new Vector2(0.5f, 0.5f); holder.sizeDelta = Vector2.one;
-                var stem = UiKit.Panel(holder, "Stem", new Color(1, 1, 1, 0.85f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(3, 22), false);
-                stem.rectTransform.pivot = new Vector2(0.5f, 0f); stem.raycastTarget = false;
-                var foot = UiKit.Panel(holder, "Foot", new Color(1, 1, 1, 0.9f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(12, 12));
+                // a white pole standing on the spot, a shadow at its foot, the flag at the top
+                var foot = UiKit.Panel(holder, "Foot", new Color(0.03f, 0.1f, 0.03f, 0.35f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(34, 12));
                 foot.sprite = UiKit.Circle; foot.type = Image.Type.Simple; foot.rectTransform.pivot = new Vector2(0.5f, 0.5f); foot.raycastTarget = false;
-                var (badge, disc, number) = Badge(holder, "Badge", courseTargets.Count + 1, 44);
+                var stem = UiKit.Panel(holder, "Pole", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(7, 110), false);
+                stem.rectTransform.pivot = new Vector2(0.5f, 0f); stem.raycastTarget = false;
+                var (badge, disc, number, yards) = Flag(holder, courseTargets.Count + 1);
                 courseTargets.Add((holder, disc, number, stem.rectTransform, badge));
+                flagYards.Add(yards);
             }
             // Where each spot is on the screen. A short club's three spots stand well apart up the
             // screen and each badge sits on its own; a long club's are nearly one point near the
@@ -908,7 +971,7 @@ namespace GolfArcade.UI
             bool crowded = false;
             for (int i = 0; i < at.Length; i++)
                 for (int j = i + 1; j < at.Length; j++)
-                    if (shown[i] && shown[j] && Vector2.Scale(at[i] - at[j], canvas).magnitude < 52f) crowded = true;
+                    if (shown[i] && shown[j] && Vector2.Scale(at[i] - at[j], canvas).magnitude < 96f) crowded = true;
             int count = 0; foreach (var b in shown) if (b) count++;
             for (int i = 0, k = 0; i < courseTargets.Count; i++)
             {
@@ -916,14 +979,29 @@ namespace GolfArcade.UI
                 root.gameObject.SetActive(shown[i]);
                 if (!shown[i]) continue;
                 root.anchorMin = root.anchorMax = at[i]; root.anchoredPosition = Vector2.zero;
-                // crowded, they hang in a row below the spots, in the open fairway rather than up
-                // among the cards at the horizon
-                var top = crowded ? new Vector2((k - (count - 1) / 2f) * 54f, -62f) : new Vector2(0, 22f);
+                // the pole stands up from its spot; crowded (a long club's spots nearly one point at
+                // the horizon) the poles lean apart so the flags stand side by side
+                bool pin = i == pinCheckpoint;
+                float flagHeight = pin ? 136 : 112;
+                // as tall a pole as the screen has room for above the spot (the green is often
+                // up at the horizon, under the cards); no room at all and the flag hangs below it
+                float room = canvas.y - 40f - at[i].y * canvas.y - flagHeight;
+                bool below = room < 26f;
+                float pole = below ? 34f : Mathf.Min(104f, room);
+                var top = new Vector2(crowded ? (k - (count - 1) / 2f) * 96f : 0, below ? -pole : pole);
                 k++;
-                stem.sizeDelta = new Vector2(3, top.magnitude);
+                stem.sizeDelta = new Vector2(7, top.magnitude);
                 stem.localRotation = Quaternion.Euler(0, 0, -Mathf.Atan2(top.x, top.y) * Mathf.Rad2Deg);
-                badge.anchoredPosition = top + top.normalized * 22f;
-                disc.color = i < checkpoints.Count && checkpoints[i].Disc.color == Game.LandingZone.Amber ? Game.LandingZone.Amber : BadgeRest;
+                badge.anchoredPosition = below ? top - new Vector2(0, flagHeight) : top - new Vector2(0, 6f);
+                string label = i < checkpoints.Count ? checkpoints[i].Yards.text : "";
+                // "PIN 198" → PIN / 198 / yd;  "178 yd" → 178 / yd
+                flagYards[i].text = pin ? label.Replace("PIN ", "PIN\n") + "\nyd" : label.Replace(" yd", "\nyd");
+                badge.sizeDelta = new Vector2(84, flagHeight);
+                disc.color = pin ? UiKit.ArcadeYellow : UiKit.ArcadeBlue;
+                courseTargets[i].number.color = flagYards[i].color = pin ? UiKit.ArcadeInk : Color.white;
+                // a checkpoint the backswing has passed: its flag lights up
+                bool reached = i < checkpoints.Count && checkpoints[i].Disc.color == UiKit.ArcadeYellow;
+                badge.localScale = Vector3.one * (reached ? 1.12f : 1f);
             }
         }
 
@@ -1134,24 +1212,29 @@ namespace GolfArcade.UI
         {
             meterLoad = Mathf.Clamp01(load);
             bool gauge = yards != null && meterLoad > 0.02f;
-            meterGauge.gameObject.SetActive(gauge);
+            gaugeRoot.gameObject.SetActive(gauge);
             if (gauge)
             {
                 meterYards.text = yards;
-                meterGauge.rectTransform.sizeDelta = new Vector2(Mathf.Max(104, meterYards.preferredWidth + 34), 42);
-                meterGauge.rectTransform.anchoredPosition = new Vector2(GaugeGap, MeterY(meterLoad));
+                gaugeRoot.sizeDelta = new Vector2(Mathf.Max(124, meterYards.preferredWidth + 44), 58);
+                // just inside the tip, toward the picture, so the arc stays visible
+                gaugeRoot.anchoredPosition = ArcPoint(meterLoad, 105f) + new Vector2(0, 26f);
             }
             LightCheckpoints();
-            float fill = MeterY(meterLoad) - MeterPad;
-            meterFill.enabled = fill > 1f;
-            meterFill.rectTransform.sizeDelta = new Vector2(MeterWidth - 2 * MeterPad, Mathf.Max(fill, MeterWidth - 2 * MeterPad));
-            var calm = new Color(0.35f, 0.85f, 0.35f, 0.95f);
-            var warm = new Color(1f, 0.9f, 0.25f, 0.95f);
-            var hot = new Color(1f, 0.55f, 0.2f);
-            meterFill.color = load > 0.98f ? hot : meterLoad < 0.6f ? Color.Lerp(calm, warm, meterLoad / 0.6f) : Color.Lerp(warm, hot, (meterLoad - 0.6f) / 0.4f);
-            Controller?.SetMeter(meterLoad, meterFill.color);
+            // the fill: whole segments up to the load, the last one cut at it, and round ends
+            float span = meterLoad * ArcSegments;
+            for (int i = 0; i < arcSegments.Count; i++)
+            {
+                float part = Mathf.Clamp01(span - i);
+                arcSegments[i].enabled = part > 0.001f;
+                arcSegments[i].fillAmount = part * ArcSweep / ArcSegments / 360f + (part >= 1 ? 0.0015f : 0);
+            }
+            arcStartCap.enabled = arcTip.enabled = meterLoad > 0.004f;
+            arcTip.rectTransform.anchoredPosition = ArcPoint(meterLoad);
+            arcTip.color = ArcColor(meterLoad);
+            Controller?.SetMeter(meterLoad, ArcColor(meterLoad));
             meterMark.enabled = mark.HasValue;
-            if (mark.HasValue) meterMark.rectTransform.anchoredPosition = new Vector2(0, MeterY(mark.Value));
+            if (mark.HasValue) meterMark.rectTransform.anchoredPosition = ArcPoint(mark.Value);
         }
 
         public void ShowBanner(string text, float seconds = 2f)
