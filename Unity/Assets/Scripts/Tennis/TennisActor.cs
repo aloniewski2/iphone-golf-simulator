@@ -37,6 +37,20 @@ namespace GolfArcade.Tennis
         public float RacketGripError => racketVisual ? Vector3.Distance(GripPosition, racketVisual.TransformPoint(new Vector3(0, TennisKitV3.GripInset, 0))) : float.PositiveInfinity;
         StandardCharacterArms arms;
         Transform hand, offHand, chest, hips, neck, head;
+        // The tossing arm (the hand without the racket) for the serve routine, and where on
+        // it the palm is.
+        Transform tossUpper, tossLower, tossHand;
+        Vector3 tossPalmLocal;
+        Vector3 reachTarget; float reachWanted, reachWeight;
+        /// Straightens the spine toward upright (used while being introduced to camera).
+        public float Upright;
+        // Contact guidance (see GuideContact): the racket arm, where each stroke clip holds
+        // the strings at its authored contact frame, and the current steer.
+        Transform armUpper, armLower;
+        readonly Dictionary<int, Vector3> contactPose = new();
+        Vector3 guideBall, guideOffset, guideBody;
+        float guideClock, guideLead, guideWeight, swingPace = 1;
+        bool guiding, guideAuthored, guideFrozen;
         float bodyYaw;
         TrailRenderer strokeTrail;
         Material strokeMaterial;
@@ -60,6 +74,10 @@ namespace GolfArcade.Tennis
         /// It animates but cannot strike the ball until confirmed.
         public bool Provisional { get; private set; }
         public bool LeftHanded { get; private set; }
+        /// True for the Higgsfield bodies: one skinned mesh, no procedural arms or runtime kit.
+        public bool SkinnedBody { get; private set; }
+        /// Ground speed toward the net (see Advance).
+        public float ForwardSpeed { get; private set; }
         /// Getting up off the court after a dive; the game slows movement meanwhile.
         public bool GroundRecovering => oneShotIndex >= 0 && oneShotClip == "GroundRecovery" && oneShotAge < oneShotDuration;
         /// Which authored animation a stroke should play. The library carries a distinct clip
@@ -90,6 +108,37 @@ namespace GolfArcade.Tennis
             public static Style Rival => new Style { Trunk = 1.35f, Arms = 1.3f, Yaw = 1.12f, IdleBounce = 1f, Look = .9f, Lean = 1.4f };
         }
         public Style Motion = Style.Player;
+        /// A foot has just been planted by the gait, at this spot and body speed (for dust).
+        public Action<Vector3, float> FootPlanted;
+        /// A dive has just hit the ground.
+        public Action<Vector3> DiveLanded;
+
+        /// Cells of the face atlas (blender/scripts/build_face_atlas.py).
+        public enum Expression { Neutral, Blink, Happy, Focus, Effort, Sad, Surprised, Cheer }
+        public Expression Face { get; private set; }
+        Material faceMaterial;
+        Expression heldExpression; float heldFor, faceClock, nextBlink = 2f, blinkFor;
+        static readonly int CellId = Shader.PropertyToID("_Cell");
+
+        /// Show an expression for a while, over whatever the body is doing.
+        public void SetExpression(Expression expression, float seconds) { heldExpression = expression; heldFor = seconds; }
+
+        void UpdateFace(float dt)
+        {
+            if (!faceMaterial) return;
+            faceClock += dt; heldFor -= dt; blinkFor -= dt;
+            Expression wanted;
+            if (heldFor > 0) wanted = heldExpression;
+            else if (Swinging && Kind != Stroke.Celebrate) wanted = Power > .7f ? Expression.Effort : Expression.Focus;
+            else if (prepare > .45f) wanted = Expression.Focus;
+            else wanted = Expression.Neutral;
+            // Blink every few seconds, irregularly, whenever the eyes are open and relaxed.
+            if (faceClock >= nextBlink) { blinkFor = .11f; nextBlink = faceClock + 2.2f + Mathf.Repeat(faceClock * 7.3f, 3.1f); }
+            if (blinkFor > 0 && (wanted == Expression.Neutral || wanted == Expression.Focus)) wanted = Expression.Blink;
+            if (wanted == Face) return;
+            Face = wanted;
+            faceMaterial.SetFloat(CellId, (int)wanted);
+        }
 
         // --- Layer state -----------------------------------------------------------------
         const float StrokeFadeIn = .05f, StrokeFadeOut = .16f, CancelFade = .10f, SwitchFade = .06f;
@@ -135,12 +184,19 @@ namespace GolfArcade.Tennis
             // also flipped text, kit detail and the grip) is no longer needed.
             model.name = female ? "Permanent female tennis player" : "Permanent male tennis player";
             modelRest = model.localPosition;
+            // Higgsfield bodies are one skinned mesh with their clothes, arms and skin baked in;
+            // the procedural arm tubes and the runtime kit are for the older piecewise bodies.
+            SkinnedBody = Array.Exists(model.GetComponentsInChildren<SkinnedMeshRenderer>(true), r => r.name.StartsWith("V4 Higgs body"));
+            // The separate grip hands take the body's own skin tone (sampled from its texture).
+            if (SkinnedBody) skin = female ? new Color(.88f, .58f, .30f) : new Color(.95f, .62f, .26f);
             PrepareMaterials(model.gameObject, skin);
             var bones = model.GetComponentsInChildren<Transform>(true);
             Transform Bone(string n) => Array.Find(bones, t => t.name == n);
             root = Bone("Root");
             hand = Bone("Hand.R");
             offHand = Bone("Hand.L");
+            string toss = leftHanded ? "R" : "L";
+            tossUpper = Bone("UpperArm." + toss); tossLower = Bone("LowerArm." + toss); tossHand = Bone("Hand." + toss);
             chest = Bone("Chest");
             hips = Bone("Hips");
             neck = Bone("Neck");
@@ -155,17 +211,23 @@ namespace GolfArcade.Tennis
             if (!SweetSpot) throw new InvalidOperationException("Tennis racket sweet-spot marker missing");
             racket = SweetSpot.parent;
             strokeTrail = SweetSpot.gameObject.AddComponent<TrailRenderer>();
-            strokeTrail.time = .11f; strokeTrail.startWidth = .06f; strokeTrail.endWidth = .002f;
+            strokeTrail.time = .13f; strokeTrail.startWidth = .22f; strokeTrail.endWidth = .01f;
             strokeTrail.minVertexDistance = .012f;
-            strokeTrail.sharedMaterial = strokeMaterial = new Material(Shader.Find("Sprites/Default"));
-            strokeTrail.startColor = new Color(.25f, .92f, 1, .75f); strokeTrail.endColor = new Color(.25f, .92f, 1, 0);
+            // A swoosh the width of the racket head, glowing, fading from the strings back.
+            var glow = Resources.Load<Shader>("Tennis/Shaders/TennisFxAdditive");
+            strokeTrail.sharedMaterial = strokeMaterial = new Material(glow ? glow : Shader.Find("Sprites/Default")) { mainTexture = TennisLook.Falloff };
+            strokeTrail.textureMode = LineTextureMode.Stretch;
+            strokeTrail.startColor = new Color(.55f, .95f, 1, .55f); strokeTrail.endColor = new Color(.25f, .75f, 1, 0);
             strokeTrail.emitting = false;
             strokeTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            arms = model.GetComponent<StandardCharacterArms>() ?? model.gameObject.AddComponent<StandardCharacterArms>();
-            arms.ManualEvaluation = true;
-            // Floating hands hide the arm meshes entirely, which is the single biggest reason
-            // the characters read as toy-like.
-            arms.SetFloatingHandsPreview(false);
+            if (!SkinnedBody)
+            {
+                arms = model.GetComponent<StandardCharacterArms>() ?? model.gameObject.AddComponent<StandardCharacterArms>();
+                arms.ManualEvaluation = true;
+                // Floating hands hide the arm meshes entirely, which is the single biggest reason
+                // the characters read as toy-like.
+                arms.SetFloatingHandsPreview(false);
+            }
             var animator = model.GetComponent<Animator>() ?? model.gameObject.AddComponent<Animator>();
             animator.applyRootMotion = false; animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             var loaded = Resources.LoadAll<AnimationClip>(path);
@@ -189,6 +251,8 @@ namespace GolfArcade.Tennis
             if (head) headLocalForward = head.InverseTransformDirection(model.forward);
             if (chest) chestLocalForward = chest.InverseTransformDirection(model.forward);
             legs = BuildLegs(bones);
+            var faceRenderer = Array.Find(model.GetComponentsInChildren<Renderer>(true), r => r.name.StartsWith("V4 face decal"));
+            if (faceRenderer) { faceMaterial = faceRenderer.sharedMaterial; faceMaterial.SetFloat(CellId, 0); }
             Tick(0, 0);
             // The authored floating-hand mesh is offset from the wrist bone's origin.
             // Capture its actual palm centre once; it is rigidly weighted to this bone.
@@ -197,12 +261,184 @@ namespace GolfArcade.Tennis
             var gripMesh = new Mesh(); gripRenderer.BakeMesh(gripMesh);
             gripLocalOffset = hand.InverseTransformPoint(gripRenderer.transform.TransformPoint(gripMesh.bounds.center));
             Destroy(gripMesh);
-            TennisKitV3.Dress(model, female);
+            if (!SkinnedBody) TennisKitV3.Dress(model, female);
+            var tossRenderer = Array.Find(model.GetComponentsInChildren<SkinnedMeshRenderer>(), r => r.name.StartsWith("V4 grip hand " + toss));
+            if (tossRenderer && tossHand)
+            {
+                var tossMesh = new Mesh(); tossRenderer.BakeMesh(tossMesh);
+                tossPalmLocal = tossHand.InverseTransformPoint(tossRenderer.transform.TransformPoint(tossMesh.bounds.center));
+                Destroy(tossMesh);
+            }
             racketVisual = TennisKitV3.Equip(model, racket, SweetSpot.position, StringUp, StringNormal, out racketScale);
             SweetSpot = new GameObject("Tripo string-bed contact").transform;
             SweetSpot.SetParent(racketVisual, false); SweetSpot.localPosition = new Vector3(0, TennisKitV3.HeadCentre, 0);
             AlignRacket();
+            armLower = hand ? hand.parent : null; armUpper = armLower ? armLower.parent : null;
+            SampleContactPoses();
             lastSweetSpot = SweetSpot.position;
+        }
+
+        /// Where the strings sit, in the body's own space, at each stroke clip's authored
+        /// contact frame. Contact guidance aims the whole swing from this, so the arc keeps its
+        /// shape and arrives on the ball, instead of the racket being dragged toward it.
+        void SampleContactPoses()
+        {
+            string suffix = LeftHanded ? "_LH" : "_RH";
+            foreach (var kind in (Stroke[])Enum.GetValues(typeof(Stroke)))
+                foreach (bool useBackhand in new[] { false, true })
+                {
+                    string clip = StrokeClip(kind, useBackhand);
+                    if (!indices.ContainsKey(clip + suffix) && !indices.ContainsKey(clip + "_RH") && !indices.ContainsKey(clip)) continue;
+                    int index = Resolve(clip);
+                    if (index < 0 || contactPose.ContainsKey(index)) continue;
+                    foreach (int i in weighted) mixer.SetInputWeight(i, 0);
+                    weighted.Clear();
+                    SetWeight(index, 1, ContactOf(index));
+                    graph.Evaluate(0);
+                    StripRootTravel();
+                    model.localRotation = Quaternion.identity; model.localPosition = modelRest;
+                    AlignRacket();
+                    contactPose[index] = model.InverseTransformPoint(SweetSpot.position);
+                    if (TennisGame.LogContactGaps) Debug.Log($"[ContactPose] {name} {clip} bh={useBackhand} {contactPose[index]}");
+                }
+            foreach (int i in weighted) mixer.SetInputWeight(i, 0);
+            weighted.Clear();
+            Tick(0, 0);
+        }
+
+        /// Time until the swing reaches its authored contact frame (0 once past it).
+        public float TimeToContact => Swinging ? Mathf.Max(0, TennisRules.SweetTime - ContactAge) * swingDuration / TennisRules.StrokeDuration : 0;
+
+        /// Where the strings would be at the authored contact frame if the body stayed where
+        /// it is now.
+        public Vector3 AuthoredContact
+        {
+            get
+            {
+                int index = Swinging ? Resolve(StrokeClip(Kind, backhand)) : -1;
+                return index >= 0 && contactPose.TryGetValue(index, out var local) ? model.TransformPoint(local) : SweetSpot.position;
+            }
+        }
+
+        /// Play the rest of the swing's approach at whatever pace lands its contact frame
+        /// `seconds` from now (quicker or a touch slower); the follow-through then runs at its
+        /// own speed. The racket arrives as the ball does, instead of still being in the
+        /// backswing or already past.
+        public void PaceToContact(float seconds)
+        {
+            float left = TimeToContact;
+            swingPace = left > 0 && seconds > 0 ? Mathf.Clamp(left / seconds, .6f, 6f) : 1;
+        }
+
+        /// Where the strings meet the ball in this stroke, for the body as it stands now.
+        public Vector3 ContactPoint(Stroke kind, bool useBackhand)
+        {
+            int index = Resolve(StrokeClip(kind, useBackhand));
+            return index >= 0 && contactPose.TryGetValue(index, out var local) ? model.TransformPoint(local) : SweetSpot.position;
+        }
+
+        /// Steer the racket so the strings meet `ball` in `inSeconds`. The swing keeps its own
+        /// arc; the arm (and, for a reach, the body) carries it the difference, easing in to the
+        /// contact and back out through the follow-through.
+        public void GuideContact(Vector3 ball, float inSeconds)
+        {
+            guideBall = ball; guideLead = Mathf.Max(inSeconds, .04f); guideClock = guideLead;
+            // Early enough to aim the whole swing from its authored contact; otherwise the
+            // racket is eased straight to the ball.
+            guideAuthored = TimeToContact >= .05f;
+            guiding = true; guideFrozen = false;
+        }
+
+        public void ReleaseContact() { guiding = false; }
+        /// Diagnostics: how far the arm fell short of the steer, and the steer's state.
+        public float GuideShortfall { get; private set; }
+        public string GuideState => $"w={guideWeight:0.00} clock={guideClock:0.000} authored={guideAuthored} offset(side,up,fwd)={transform.InverseTransformVector(guideOffset)} authoredLocal={transform.InverseTransformPoint(AuthoredContact)} ballLocal={transform.InverseTransformPoint(guideBall)} body={guideBody.magnitude:0.00} short={GuideShortfall:0.00} toBall={Vector3.Distance(SweetSpot.position, guideBall):0.00} ballY={guideBall.y:0.00}";
+
+        const float GuideRelease = .24f;
+
+        /// This frame's steer, in world space, and how much of it the body takes.
+        void UpdateGuide()
+        {
+            if (!guiding && guideWeight <= 0) { guideBody = Vector3.zero; return; }
+            if (guiding)
+            {
+                if (guideClock > 0)
+                {
+                    float k = 1 - guideClock / guideLead;
+                    guideWeight = k * k * (3 - 2 * k);
+                    if (guideAuthored) guideOffset = guideBall - AuthoredContact;
+                }
+                else
+                {
+                    float k = Mathf.Clamp01(-guideClock / GuideRelease);
+                    guideWeight = 1 - k * k * (3 - 2 * k);
+                    if (k >= 1) guiding = false;
+                }
+                if (!Swinging && guideClock > 0) guiding = false;
+            }
+            else guideWeight = Mathf.MoveTowards(guideWeight, 0, pendingDtUsed / .12f);
+            // The body lunges for the part of a reach the arm cannot comfortably make.
+            Vector3 want = guideOffset * guideWeight;
+            Vector3 flat = new Vector3(want.x, 0, want.z);
+            // A low ball is met by sinking at the knees: the stroke's hop gives way first, then
+            // the body drops and the planted legs bend under it (PlantFeet).
+            guideBody = Vector3.ClampMagnitude(flat * .55f, .45f) + Vector3.up * Mathf.Clamp(want.y * .5f, -(hop + .3f), .1f);
+            if (guideBody.y < 0) hop = Mathf.Max(0, hop + guideBody.y);
+        }
+        float pendingDtUsed;
+
+        /// Carry the racket the rest of the way with the racket arm, the hand keeping its
+        /// angle so the string face stays as the stroke set it.
+        void ApplyContactGuide()
+        {
+            if (guideWeight <= 0 || !armUpper || !armLower || !hand) return;
+            Vector3 actual = SweetSpot.position - guideBody;       // where the swing alone has it
+            if (guiding && !guideAuthored && guideClock > 0) guideOffset = guideBall - actual;
+            if (guiding && guideClock <= 0 && !guideFrozen)
+            {
+                // Contact: from here the follow-through keeps its shape, shifted by the offset
+                // the strings needed at the ball.
+                guideFrozen = true;
+                guideOffset = guideBall - actual;
+            }
+            Vector3 delta = guideOffset * guideWeight - guideBody;
+            if (delta.sqrMagnitude < 1e-6f) return;
+            Quaternion held = hand.rotation;
+            Vector3 wristGoal = hand.position + delta;
+            float armLength = Vector3.Distance(armUpper.position, armLower.position) + Vector3.Distance(armLower.position, hand.position);
+            float beyond = Vector3.Distance(armUpper.position, wristGoal) - armLength * .92f;
+            if (beyond > 0 && chest && hips)
+            {
+                // Out of the arm's reach: bend the trunk toward the ball, as a player stretches
+                // for a wide or low one, before the arm takes the rest.
+                var spine = chest.parent ? chest.parent : chest;
+                Vector3 pivot = spine.position;
+                Quaternion toward = Quaternion.FromToRotation(armUpper.position - pivot, wristGoal - pivot);
+                toward = Quaternion.RotateTowards(Quaternion.identity, toward, 38f);
+                spine.rotation = Quaternion.Slerp(Quaternion.identity, toward, Mathf.Clamp01(beyond / .35f)) * spine.rotation;
+            }
+            Vector3 shoulder = armUpper.position, elbow0 = armLower.position, wrist0 = hand.position;
+            float upper = (elbow0 - shoulder).magnitude, lower = (wrist0 - elbow0).magnitude;
+            Vector3 goal = wristGoal, toGoal = goal - shoulder;
+            float most = (upper + lower) * .995f;
+            GuideShortfall = Mathf.Max(0, toGoal.magnitude - most);
+            if (toGoal.magnitude > most) goal = shoulder + toGoal.normalized * most;
+            // Keep the elbow bending the way the clip bends it.
+            Vector3 pole = elbow0 - (shoulder + wrist0) * .5f;
+            if (pole.sqrMagnitude < 1e-4f) pole = -model.up;
+            Vector3 elbow = StandardCharacterArms.SolveElbow(shoulder, goal, pole, upper, lower);
+            armUpper.rotation = Quaternion.FromToRotation(elbow0 - shoulder, elbow - shoulder) * armUpper.rotation;
+            Vector3 lowerPos = armLower.position;
+            armLower.rotation = Quaternion.FromToRotation(hand.position - lowerPos, goal - lowerPos) * armLower.rotation;
+            hand.rotation = held;
+        }
+
+        /// The authored strokes carry sideways root travel; gameplay locomotion owns that.
+        void StripRootTravel()
+        {
+            if (!root) return;
+            Vector3 shift = model.TransformVector(new Vector3(root.localPosition.x, 0, root.localPosition.z));
+            root.position -= shift; racket.position -= shift;
         }
 
         Leg[] BuildLegs(Transform[] bones)
@@ -261,6 +497,7 @@ namespace GolfArcade.Tennis
             Provisional = provisional;
             swingDuration = serving ? TennisRules.StrokeDuration : Mathf.Lerp(.58f, .40f, Power);
             prepare = prepareTarget = 0;
+            swingPace = 1; guiding = false;
             if (oneShotIndex >= 0 && oneShotClip != "GroundRecovery") oneShotIndex = -1;
             strokeTrail.Clear();
         }
@@ -275,7 +512,7 @@ namespace GolfArcade.Tennis
         public void CancelSwing()
         {
             if (!Swinging) return;
-            SwingAge = swingDuration; Provisional = false; cancelled = true;
+            SwingAge = swingDuration; Provisional = false; cancelled = true; guiding = false; swingPace = 1;
         }
 
         /// Take the racket back as the ball approaches, before any swing is detected.
@@ -290,8 +527,58 @@ namespace GolfArcade.Tennis
         /// Point finished: celebrate a win, slump at a loss.
         public void React(bool won)
         {
-            if (won) { if (!Swinging) Swing(.5f, false, Stroke.Celebrate); }
-            else dejected = 1;
+            // No celebration swing for now: it read as a random racket wave. A smile is enough.
+            if (won) SetExpression(Expression.Happy, 1.8f);
+            else { dejected = 1; SetExpression(Expression.Sad, 1.8f); }
+        }
+
+        /// The character's signature intro emote (a Higgsfield/Meshy mocap clip retargeted onto
+        /// the rig as "Intro"), with the face to match.
+        public void PlayIntro()
+        {
+            SetExpression(Expression.Cheer, 2.4f);
+            int index = Resolve("Intro");
+            if (index >= 0) PlayOneShot("Intro", clipLength[index]);
+        }
+
+        /// World position of the tossing hand's palm, where a held ball sits.
+        public Vector3 TossPalm => tossHand ? tossHand.TransformPoint(tossPalmLocal) : transform.position + Vector3.up;
+
+        /// Put the tossing hand's palm at `palm` (weight 0 releases it back to the animation):
+        /// the serve routine bounces the ball and tosses it with this.
+        public void ReachTossHand(Vector3 palm, float weight) { reachTarget = palm; reachWanted = Mathf.Clamp01(weight); }
+
+        /// Two-bone reach for the tossing arm, on top of whatever the clips posed.
+        void ApplyTossReach(float dt)
+        {
+            reachWeight = Mathf.MoveTowards(reachWeight, reachWanted, dt / .12f);
+            if (reachWeight <= .001f || !tossUpper || !tossLower || !tossHand) return;
+            Vector3 shoulder = tossUpper.position, elbow0 = tossLower.position, wrist0 = tossHand.position;
+            float upper = (elbow0 - shoulder).magnitude, lower = (wrist0 - elbow0).magnitude;
+            Vector3 wristGoal = reachTarget - (TossPalm - wrist0);
+            Vector3 toGoal = wristGoal - shoulder;
+            float most = (upper + lower) * .995f;
+            if (toGoal.magnitude > most) wristGoal = shoulder + toGoal.normalized * most;   // reach, never stretch
+            wristGoal = Vector3.Lerp(wrist0, wristGoal, reachWeight);
+            // Elbow out to the tossing side and slightly back, as a tossing arm bends.
+            Vector3 side = tossHand == offHand ? -model.right : model.right;
+            Vector3 pole = side * .7f - model.forward * .3f + Vector3.down * .2f;
+            Vector3 elbow = StandardCharacterArms.SolveElbow(shoulder, wristGoal, pole, upper, lower);
+            tossUpper.rotation = Quaternion.FromToRotation(elbow0 - shoulder, elbow - shoulder) * tossUpper.rotation;
+            Vector3 lowerPos = tossLower.position;
+            tossLower.rotation = Quaternion.FromToRotation(tossHand.position - lowerPos, wristGoal - lowerPos) * tossLower.rotation;
+        }
+
+        /// Pull the trunk back toward upright over the hips. The ready crouch pitches it
+        /// forward, and seen from the front for an introduction that foreshortens the torso
+        /// until the shirt all but disappears.
+        void ApplyUpright()
+        {
+            if (Upright <= .001f || !hips || !chest || !neck) return;
+            var spineBone = chest.parent ? chest.parent : chest;
+            Vector3 axis = neck.position - hips.position;
+            Quaternion straighten = Quaternion.FromToRotation(axis, Vector3.up);
+            spineBone.rotation = Quaternion.Slerp(Quaternion.identity, straighten, Upright) * spineBone.rotation;
         }
 
         public void PlayOneShot(string clip, float duration)
@@ -350,14 +637,26 @@ namespace GolfArcade.Tennis
 
         /// Move the animation state forward. Cheap; the pose itself is only built by `Pose`,
         /// so the game can simulate at 120Hz but evaluate the skeleton once per rendered frame.
-        public void Advance(float dt, float speed)
+        /// `speed` is sideways (+ = the character's right); `forward` is toward the net. The
+        /// procedural gait steps along the real ground velocity, so moving up to the net or
+        /// back to the baseline walks rather than glides.
+        public void Advance(float dt, float speed, float forward = 0)
         {
             if (!graph.IsValid()) return;
             pendingDt += dt;
-            Speed = speed;
+            Speed = speed; ForwardSpeed = forward;
+            float travel = new Vector2(speed, forward).magnitude;
             postureSpeed = Mathf.Lerp(postureSpeed, speed, 1 - Mathf.Exp(-dt / .1f));
             bool wasSwinging = Swinging;
-            SwingAge += dt;
+            float toContact = TennisRules.SweetTime * swingDuration / TennisRules.StrokeDuration;
+            if (swingPace != 1 && SwingAge < toContact)
+            {
+                float paced = SwingAge + dt * swingPace;
+                SwingAge = paced < toContact ? paced : toContact + (paced - toContact) / swingPace;
+                if (SwingAge >= toContact) swingPace = 1;
+            }
+            else { SwingAge += dt; swingPace = 1; }
+            guideClock -= dt;
             locomotion += dt * TennisRules.CycleRate(speed);
             float readyIndexLength = clipLength[Mathf.Max(0, Resolve("Ready"))];
             idlePhase = Mathf.Repeat(idlePhase + dt / readyIndexLength, 1);
@@ -369,7 +668,7 @@ namespace GolfArcade.Tennis
             if (wasSwinging && !Swinging && !cancelled)
             {
                 // A dive ends on the floor; everything else pushes off back toward the middle.
-                if (Kind == Stroke.Dive) PlayOneShot("GroundRecovery", .85f);
+                if (Kind == Stroke.Dive) { PlayOneShot("GroundRecovery", TennisRules.DiveRecovery); DiveLanded?.Invoke(transform.position); }
                 else if (Mathf.Abs(speed) > 1.2f && Kind != Stroke.Celebrate)
                     PlayOneShot(speed < 0 ? "RecoverLeft" : "RecoverRight", .5f);
             }
@@ -378,7 +677,7 @@ namespace GolfArcade.Tennis
 
             // Locomotion weights: continuous in speed, so starting and stopping ease rather
             // than switch at a threshold. The run direction crossfades when it reverses.
-            float run = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.12f, 1.7f, Mathf.Abs(speed)));
+            float run = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.12f, 1.7f, travel));
             float rate = dt / LocomotionFade;
             readyWeight = Mathf.MoveTowards(readyWeight, 1 - run, rate);
 
@@ -457,11 +756,7 @@ namespace GolfArcade.Tennis
             ApplyWeights();
             graph.Evaluate(0);
             // Locomotion is authoritative in gameplay, not the preview clip's lateral root path.
-            if (root)
-            {
-                Vector3 shift = model.TransformVector(new Vector3(root.localPosition.x, 0, root.localPosition.z));
-                root.position -= shift; racket.position -= shift;
-            }
+            StripRootTravel();
             float lean = Mathf.Clamp(postureSpeed / TennisRules.SprintSpeed, -1, 1) * 8 * Motion.Lean;
             model.localRotation = Quaternion.Euler(0, bodyYaw, -lean);
             // Players come off the ground on a committed stroke. Strokes that animate their
@@ -482,15 +777,29 @@ namespace GolfArcade.Tennis
             float pace = Mathf.Clamp01(Mathf.Abs(postureSpeed) / TennisRules.SprintSpeed);
             float bob = gaitWeight * pace * (.05f + .02f * (.5f + .5f * Mathf.Cos(gaitPhase * Mathf.PI * 4)));
             model.localPosition = modelRest + Vector3.up * (hop + bounce - bob);
+            pendingDtUsed = dt;
+            UpdateGuide();
+            if (guideBody != Vector3.zero) model.position += guideBody;
 
             ApplyRunStyling(postureSpeed, locomotionShare);
             if (backhand && TwoHanded(Kind) && actionIndex >= 0 && (Swinging || actionWeight > .01f)) ApplyBackhandShape(actionWeight);
             if (dejected > 0) ApplyDejection(dejected);
             ApplyLook(dt);
+            UpdateFace(dt);
             PlantFeet(dt, bounce, locomotionShare);
-            strokeTrail.emitting = Swinging && !Provisional && ContactAge > .07f && ContactAge < .34f;
-            arms.ApplyAfterAnimation();
+            strokeTrail.emitting = Swinging && Kind != Stroke.Celebrate && ContactAge > .06f && ContactAge < .36f;
+            float trailPower = Mathf.Lerp(.35f, .8f, Power);
+            strokeTrail.startColor = new Color(.55f, .95f, 1, trailPower);
+            if (arms) arms.ApplyAfterAnimation();
+            ApplyUpright();
+            ApplyTossReach(dt);
             AlignRacket();
+            if (guideWeight > 0)
+            {
+                ApplyContactGuide();
+                if (backhand && TwoHanded(Kind) && actionIndex >= 0 && (Swinging || actionWeight > .01f)) ApplyBackhandShape(actionWeight);
+                AlignRacket();
+            }
             SweetVelocity = dt > 0 ? (SweetSpot.position - lastSweetSpot) / dt : Vector3.zero;
             lastSweetSpot = SweetSpot.position;
         }
@@ -624,7 +933,7 @@ namespace GolfArcade.Tennis
             if (legs == null) return;
             float ground = transform.position.y;
             bool airborne = hop > .012f || bounce > .012f || (Swinging && ClipLeavesGround(Kind)) || GroundRecovering;
-            float speed = Mathf.Abs(Speed);
+            float speed = new Vector2(Speed, ForwardSpeed).magnitude;
             float pace = Mathf.Clamp01(speed / TennisRules.SprintSpeed);
             float gaitTarget = airborne ? 0 : locomotionShare * Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.15f, .9f, speed));
             gaitWeight = Mathf.MoveTowards(gaitWeight, gaitTarget, dt / .12f);
@@ -636,7 +945,7 @@ namespace GolfArcade.Tennis
             float cadence = Mathf.Max(Mathf.Lerp(2.6f, 4.4f, pace), speed * (1 - swingShare) / (.42f * legLength));
             float cycle = 2 / cadence;
             gaitPhase = Mathf.Repeat(gaitPhase + dt / cycle, 1);
-            Vector3 velocity = transform.right * Speed;
+            Vector3 velocity = transform.right * Speed + transform.forward * ForwardSpeed;
             float lift = Mathf.Lerp(.07f, .2f, pace);
             foreach (var leg in legs)
             {
@@ -697,7 +1006,7 @@ namespace GolfArcade.Tennis
                         }
                         float e = leg.swingT * leg.swingT * (3 - 2 * leg.swingT);
                         gait = Vector3.Lerp(leg.liftFrom, leg.landAt, e) + Vector3.up * (Mathf.Sin(Mathf.PI * leg.swingT) * lift);
-                        if (leg.swingT >= 1) { leg.swinging = false; leg.plant = leg.landAt; leg.stanceTime = 0; }
+                        if (leg.swingT >= 1) { leg.swinging = false; leg.plant = leg.landAt; leg.stanceTime = 0; FootPlanted?.Invoke(leg.plant, speed); }
                     }
                     else { gait = leg.plant; leg.stanceTime += dt; }
                     goal = Vector3.Lerp(goal, gait, gaitWeight);

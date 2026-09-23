@@ -70,6 +70,10 @@ final class SportsSession {
             switch quality {
             case .good: self.trackingWarning=""
             case .degraded: self.trackingWarning="Tracking degraded — keep the lens clear"
+            case .lost where self.sport == "tennis":
+                // Tennis needs the camera only for the lean hint: swings and aim run on the
+                // motion sensors, so play goes on and steering simply holds.
+                self.trackingWarning="Camera can't see the room — swings still count"
             case .lost:
                 self.trackingWarning="Tracking lost"
                 if self.ready && !self.paused {
@@ -79,7 +83,7 @@ final class SportsSession {
             }
             // Keep feeding Unity through a degraded patch, otherwise its 0.5s input
             // watchdog pauses the game for exactly the blip we are trying to ride out.
-            if !self.paused { self.sendInput(valid:quality != .lost && valid) }
+            if !self.paused { self.sendInput(valid:(self.sport == "tennis" || quality != .lost) && valid) }
         }
     }
     func savePlayers() { PlayerRosterStore.save(players) }
@@ -163,7 +167,7 @@ final class SportsSession {
     /// be held at any angle — which is the whole point, since forehands and backhands flip it.
     func beginAxisCapture() {
         axisGate=SportsAxisGate()
-        status="Point the back of your phone at the TV and hold still."
+        status="Stand about 2.5 m back, point the back of your phone at the TV and hold still."
         motion.beginAxisCapture(travel:travel)
     }
     /// Escape hatch when the gate will not settle, so motion tennis is never unreachable.
@@ -183,9 +187,9 @@ final class SportsSession {
     private func sendInput(valid:Bool) {
         func raw(_ key:String) -> Float { touch ? 0 : Float(rawMotion[key] ?? 0) }
         var flags:Int32 = valid ? Int32(SportsSampleValid) : 0
-        if !touch && tracking == .degraded { flags |= Int32(SportsSampleDegraded) }
+        if !touch && tracking != .good { flags |= Int32(SportsSampleDegraded) }
         let sample=SportsSample(version:Int32(SportsSampleVersion),session:sessionToken,time:SportsRuntime.shared().clock(),
-            target:Float(target),power:Float(power),aim:Float(aim),
+            target:Float(target),power:Float(power),aim:touch ? Float(aim) : raw("faceAim"),
             swing:Int32(swingSequence),swingStart:Int32(raw("swingStart")),swingAbort:Int32(raw("swingAbort")),flags:flags,
             handSide:raw("handSide"),lift:raw("lift"),strokeFacing:raw("strokeFacing"),
             qx:raw("qx"),qy:raw("qy"),qz:raw("qz"),qw:raw("qw"),rx:raw("rx"),ry:raw("ry"),rz:raw("rz"),gx:raw("gx"),gy:raw("gy"),gz:raw("gz"))

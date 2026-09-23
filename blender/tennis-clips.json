@@ -1,5 +1,5 @@
 {
- "timelineEnd": 3838,
+ "timelineEnd": 4128,
  "clips": [
   {
    "name": "Ready_RH",
@@ -486,6 +486,24 @@
    "lastFrame": 3837,
    "loop": false,
    "lockHeight": true
+  },
+  {
+   "name": "Intro_RH",
+   "clip": "Intro",
+   "hand": "RH",
+   "firstFrame": 3847,
+   "lastFrame": 3959,
+   "loop": false,
+   "lockHeight": false
+  },
+  {
+   "name": "Intro_LH",
+   "clip": "Intro",
+   "hand": "LH",
+   "firstFrame": 3969,
+   "lastFrame": 4081,
+   "loop": false,
+   "lockHeight": false
   }
  ]
 }

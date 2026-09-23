@@ -78,7 +78,7 @@ private struct AxisGatePanel:View {
                 .frame(height:180).clipShape(RoundedRectangle(cornerRadius:12))
                 .overlay(RoundedRectangle(cornerRadius:12).stroke(session.axisGate.progress>0 ? .green : .secondary,lineWidth:2))
                 .accessibilityIdentifier("axisGatePreview")
-            Text("Point the back of your phone at the TV, hold it level, and keep still.")
+            Text("Stand about 2.5 m (8 ft) back from the TV, point the back of your phone at it, hold it level, and keep still. After that, hold and swing the phone any way that feels natural.")
                 .font(.subheadline).multilineTextAlignment(.center)
             ProgressView(value:session.axisGate.progress)
             Text(session.axisGate.message).font(.footnote).multilineTextAlignment(.center)

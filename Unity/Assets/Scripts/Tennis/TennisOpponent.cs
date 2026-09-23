@@ -28,7 +28,7 @@ namespace GolfArcade.Tennis
     public static class TennisOpponent
     {
         /// How wide it can cover from where it is standing, and how fast it repositions.
-        public const float Reach = 2.55f, Speed = 5.2f;
+        public const float Reach = 2.25f, Speed = 5.2f;
         /// It commits to the ball a beat late, like a person reading a shot.
         public const float Reaction = .16f;
         /// Error floor when comfortable, plus the part that grows with stretch.
@@ -125,13 +125,13 @@ namespace GolfArcade.Tennis
                     result.Landing = new Vector3(ballX * .4f, TennisRules.BallRadius, 1.0f);
                     result.Label = "Opponent nets it";
                 }
-                result.Speed = 17;
+                result.Speed = 18.5f;
                 return result;
             }
             result.Landing = OpenCourtTarget(playerX, widthRoll, depthRoll);
             // A stretched opponent cannot hit as hard, which is what gives the player the
             // initiative after moving them.
-            result.Speed = Mathf.Lerp(24, 15, stretch);
+            result.Speed = Mathf.Lerp(27, 16.5f, stretch);
             result.Label = stretch > .65f ? "Opponent scrambles it back" : "Opponent returns";
             return result;
         }

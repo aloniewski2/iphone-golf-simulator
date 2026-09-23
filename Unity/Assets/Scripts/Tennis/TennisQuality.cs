@@ -1,4 +1,8 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using ShadowQuality = UnityEngine.ShadowQuality;
+using ShadowResolution = UnityEngine.ShadowResolution;
 
 namespace GolfArcade.Tennis
 {
@@ -48,6 +52,28 @@ namespace GolfArcade.Tennis
 
         public static void Apply() => Apply(ForModel(SystemInfo.deviceModel));
 
+        static UniversalRenderPipelineAsset live;
+
+        /// Under URP the pipeline asset owns MSAA, shadows and render scale. Each session
+        /// works on its own copy so tier changes and governor step-downs never edit the asset
+        /// on disk.
+        public static UniversalRenderPipelineAsset Pipeline
+        {
+            get
+            {
+                if (live) return live;
+                // In the editor, reassigning the pipeline writes into the project's settings;
+                // the editor always runs the asset as authored (the High tier) instead.
+                if (Application.isEditor) return null;
+                var shared = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
+                if (!shared) return null;
+                live = Object.Instantiate(shared); live.name = shared.name + " (session)";
+                GraphicsSettings.defaultRenderPipeline = live;
+                QualitySettings.renderPipeline = live;
+                return live;
+            }
+        }
+
         public static void Apply(Tier tier)
         {
             Current = tier; Reductions = 0;
@@ -58,23 +84,44 @@ namespace GolfArcade.Tennis
             QualitySettings.shadowResolution = s.ShadowResolution;
             QualitySettings.shadowDistance = s.ShadowDistance;
             QualitySettings.shadowCascades = s.ShadowCascades;
-            // Shadows only need to cover the court; spending the map on the far scenery is
-            // what made the old ones blocky.
-            QualitySettings.shadowProjection = ShadowProjection.StableFit;
             QualitySettings.anisotropicFiltering = AnisotropicFiltering.Enable;
             QualitySettings.lodBias = tier == Tier.Low ? .8f : 1.2f;
             QualitySettings.skinWeights = SkinWeights.FourBones;
             QualitySettings.globalTextureMipmapLimit = 0;
+            var urp = Pipeline;
+            if (urp)
+            {
+                urp.msaaSampleCount = s.Msaa;
+                urp.shadowDistance = s.ShadowDistance;
+                urp.shadowCascadeCount = s.ShadowCascades;
+                urp.mainLightShadowmapResolution = s.ShadowResolution switch
+                { ShadowResolution.VeryHigh => 2048, ShadowResolution.High => 2048, ShadowResolution.Medium => 1024, _ => 512 };
+                urp.supportsHDR = tier != Tier.Low;
+                urp.renderScale = 1f;
+            }
+            SetAmbientOcclusion(tier == Tier.High);
+        }
+
+        /// Screen-space AO is the most expensive effect; only the High tier keeps it.
+        static void SetAmbientOcclusion(bool on)
+        {
+            var data = Resources.Load<UniversalRendererData>("Tennis/Rendering/TennisURP_Renderer");
+            if (!data) return;
+            foreach (var feature in data.rendererFeatures)
+                if (feature is ScreenSpaceAmbientOcclusion && feature.isActive != on && !Application.isEditor) feature.SetActive(on);
         }
 
         /// Called by the frame governor when frames are consistently late. Each step trades
         /// a little image quality for time; smoothness wins over sharpness.
         public static bool StepDown()
         {
-            if (QualitySettings.antiAliasing > 2) QualitySettings.antiAliasing = 2;
-            else if (QualitySettings.shadows == ShadowQuality.All) QualitySettings.shadows = ShadowQuality.HardOnly;
-            else if (QualitySettings.shadowCascades > 1) QualitySettings.shadowCascades = 1;
-            else if (QualitySettings.antiAliasing > 0) QualitySettings.antiAliasing = 0;
+            var urp = Pipeline;
+            if (!urp) return false;
+            if (urp.msaaSampleCount > 2) urp.msaaSampleCount = 2;
+            else if (Current == Tier.High && !Application.isEditor) { SetAmbientOcclusion(false); Current = Tier.Standard; }
+            else if (urp.shadowCascadeCount > 1) urp.shadowCascadeCount = 1;
+            else if (urp.renderScale > .86f) urp.renderScale = .85f;
+            else if (urp.msaaSampleCount > 1) urp.msaaSampleCount = 1;
             else return false;
             Reductions++;
             return true;

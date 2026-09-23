@@ -31,7 +31,8 @@ LOOPING = {"Ready", "SplitStep", "RunLeft", "RunRight", "Retreat"}
 # Lateral root travel stays locked for everything: gameplay owns court position, and letting
 # a run clip drive X would fight the simulation.
 AIRBORNE = {"Serve", "Smash", "VolleyForehand", "VolleyBackhand",
-            "DiveForehand", "DiveBackhand", "RunningForehand", "RunningBackhand", "LowPickup"}
+            "DiveForehand", "DiveBackhand", "RunningForehand", "RunningBackhand", "LowPickup",
+            "Intro"}   # the intro emotes hop and jump
 
 MARKER_PATTERN = re.compile(r"^V4 (?P<clip>[A-Za-z]+) (?P<hand>RH|LH)$")
 STRIP_PATTERN = re.compile(r"^(?P<clip>[A-Za-z]+) (?P<hand>RH|LH)$")

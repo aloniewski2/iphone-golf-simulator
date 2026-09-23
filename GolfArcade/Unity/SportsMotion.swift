@@ -33,7 +33,7 @@ enum SportsTrackingQuality: String { case good, degraded, lost }
 struct SportsAxisGate {
     var locked = false
     var progress = 0.0          // 0...1 once every condition holds
-    var message = "Point the back of your phone at the TV."
+    var message = "Stand about 2.5 m back and point the back of your phone at the TV."
     /// Live sensor readout, so a gate that refuses to settle can be diagnosed on the spot.
     var detail = ""
     /// Seconds the gate has been failing, used to offer a manual override.
@@ -64,6 +64,15 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
     private var screenNormal = SIMD3<Float>(0,0,1)
     private var strokeFacing = -1.0
     private var activeStrokeFacing = -1.0
+    /// Latest motion-sensor attitude, and the heading of the TV in that frame (captured when
+    /// the axis locks). Grip and racket-face aim are read from these, never the camera.
+    private var attitude: simd_quatd?
+    private var tvHeading: Double?
+    /// Each player's habitual face angle per wing (forehand, backhand), learnt as they play.
+    private var faceNeutral = [0.0, 0.0]
+    private var faceAim = 0.0
+    /// Distance to the TV from the depth sensor while the axis is being captured.
+    private var tvDistance: Double?
     private var nextDiagnostic=0.0, nextPreview=0.0, trackingReason="not started"
     private var worldRunning=false
     private var capturingAxis=false, gateHeldSince = -Double.infinity, lastRotation=0.0, captureStartedAt=0.0
@@ -110,10 +119,12 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
 
     /// Reset only when there is no locked axis to protect. Relocalizing into the existing
     /// map is what keeps "right" pointing the same way for the whole session.
-    private func runWorldTracking(reset: Bool) {
+    private func runWorldTracking(reset: Bool, depth: Bool = false) {
         let configuration=ARWorldTrackingConfiguration()
         configuration.worldAlignment = .gravity
         configuration.planeDetection = [.horizontal]
+        // LiDAR depth only while aiming at the TV, to measure how far away the player is.
+        if depth && ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) { configuration.frameSemantics.insert(.sceneDepth) }
         ar.delegate=self; ar.delegateQueue = .main
         ar.run(configuration,options: reset ? [.resetTracking,.removeExistingAnchors] : [])
         worldRunning=true
@@ -124,7 +135,11 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
     private func startDeviceMotion() {
         guard !motion.isDeviceMotionActive else { return }
         motion.deviceMotionUpdateInterval=0.01
-        motion.startDeviceMotionUpdates(to:.main) { [weak self] sample,error in
+        // Z vertical with long-term yaw correction: the racket-face heading has to stay
+        // anchored to the TV direction for a whole match.
+        let frame: CMAttitudeReferenceFrame = CMMotionManager.availableAttitudeReferenceFrames().contains(.xArbitraryCorrectedZVertical)
+            ? .xArbitraryCorrectedZVertical : .xArbitraryZVertical
+        motion.startDeviceMotionUpdates(using:frame,to:.main) { [weak self] sample,error in
             MainActor.assumeIsolated {
                 guard let self else { return }
                 if let error { self.onProblem?("Motion sensor error: \(error.localizedDescription)"); return }
@@ -151,7 +166,7 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         }
         capturingAxis=true; gateHeldSince = -Double.infinity; captureStartedAt=SportsRuntime.shared().clock()
         gate=SportsAxisGate(); onGate?(gate)
-        runWorldTracking(reset: true)
+        runWorldTracking(reset: true, depth: true)
         startDeviceMotion()
         SportsDiagnostics.write("axis capture begin")
     }
@@ -170,6 +185,7 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         right=axis
         if let forward=SportsMotionGeometry.horizontal(SIMD3<Float>(back.x,back.y,back.z)) { courtForward = -forward }
         strokeFacing = -1
+        captureTVHeading()
         gate.locked=true; gate.progress=1; gate.message="Court direction set manually."
         capturingAxis=false
         SportsDiagnostics.write("axis forced right=\(right) sign=\(courtSign)")
@@ -187,11 +203,15 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         }
         if failure == nil && pitch > Self.maxLensPitch { failure="Tilt the phone level — aim the back of it straight at the TV (currently \(Int(pitch*180/Double.pi))° off level)." }
         if failure == nil && lastRotation > Self.maxGateRotation { failure="Hold still for a moment." }
+        tvDistance = Self.centreDepth(frame)
+        if failure == nil, let distance = tvDistance, distance < SportsMotionGeometry.minTVDistance {
+            failure = String(format:"Step back — you're about %.1f m from the TV. Stand about %.1f m away so you have room to swing.", distance, SportsMotionGeometry.idealTVDistance)
+        }
         if failure == nil && SportsMotionGeometry.horizontalRight(cameraBack:cameraBack) == nil { failure="Aim the back of the phone at the TV, not at the floor or ceiling." }
         guard failure == nil, let axis=SportsMotionGeometry.horizontalRight(cameraBack:cameraBack) else {
             gateHeldSince = -Double.infinity
             gate.progress=0; gate.message=failure ?? gate.message
-            gate.detail="Tracking \(trackingReason) · \(Int(pitch*180/Double.pi))° off level"
+            gate.detail="Tracking \(trackingReason) · \(Int(pitch*180/Double.pi))° off level" + (tvDistance.map { String(format:" · %.1f m from TV",$0) } ?? "")
             gate.stalledFor = capturingAxis ? time-captureStartedAt : 0
             onGate?(gate); return
         }
@@ -199,14 +219,17 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         let held=time-gateHeldSince
         gate.progress=min(1,held/Self.holdRequired)
         gate.message = gate.progress<1 ? "Hold it there…" : "Court direction locked."
-        gate.detail="Tracking \(trackingReason) · \(Int(pitch*180/Double.pi))° off level"
+        gate.detail="Tracking \(trackingReason) · \(Int(pitch*180/Double.pi))° off level" + (tvDistance.map { String(format:" · %.1f m from TV",$0) } ?? "")
         if held >= Self.holdRequired {
             right=axis
             // The lens points at the TV right now, and the screen points away from it.
             if let forward=SportsMotionGeometry.horizontal(cameraBack) { courtForward = -forward }
             strokeFacing = -1
+            captureTVHeading()
             gate.locked=true; capturingAxis=false
-            SportsDiagnostics.write("axis locked right=\(right) forward=\(courtForward) sign=\(courtSign) pitch=\(pitch)")
+            // Depth was only for the distance check; drop it for the rest of the session.
+            runWorldTracking(reset: false)
+            SportsDiagnostics.write("axis locked right=\(right) forward=\(courtForward) sign=\(courtSign) pitch=\(pitch) tvHeading=\(tvHeading ?? .nan) distance=\(tvDistance ?? -1)")
         }
         onGate?(gate)
     }
@@ -218,13 +241,17 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
         let rate=sample.rotationRate
         let speed=sqrt(rate.x*rate.x+rate.y*rate.y+rate.z*rate.z)
         lastRotation=speed
+        let aq=sample.attitude.quaternion
+        attitude=simd_quatd(ix:aq.x,iy:aq.y,iz:aq.z,r:aq.w)
         guard !capturingAxis else { return }
         let current=currentQuality(at:time)
         // Only `good` advances the fixed real-world→court mapping. `degraded` holds the last
         // court position and keeps the rally alive; `lost` is what finally pauses play.
         let tracked = !tennis || current == .good
         let x=Double(simd_dot(position,right))*courtSign
-        let grace = tennis && current != .lost
+        // Swings never depend on the camera: a sideways or flat swing blurs or blinds it, but
+        // the gyro reads it perfectly. Camera loss only holds the lean/steering hint.
+        let grace = tennis
         let previousPhase=self.filter.phase
         let a=sample.userAcceleration
         let force=sqrt(a.x*a.x+a.y*a.y+a.z*a.z)
@@ -234,15 +261,27 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
             SportsDiagnostics.write("sensor quality=\(current.rawValue) ar=\(trackingReason) frameAge=\(time-frameAt) reliableAge=\(time-reliableAt) ready=\(calibrated) axisLocked=\(gate.locked) phase=\(filter.phase.rawValue) delta=\(x-neutralX) target=\(filter.target) reachL=\(filter.reachLeft) reachR=\(filter.reachRight) seenL=\(filter.seenLeft) seenR=\(filter.seenRight) rate=\(speed) force=\(force) sign=\(courtSign) facing=\(strokeFacing)")
         }
         let q=sample.attitude.quaternion, g=sample.gravity
+        let screenHeading = attitude.flatMap { SportsMotionGeometry.heading(SportsMotionGeometry.rotate(SIMD3<Double>(0,0,1),by:$0)) }
         if tennis, gate.locked {
-            strokeFacing=SportsMotionGeometry.strokeFacing(screenNormal:screenNormal,courtForward:courtForward,previous:strokeFacing)
+            if let tv=tvHeading { strokeFacing=SportsMotionGeometry.strokeFacing(screenHeading:screenHeading,tvHeading:tv,previous:strokeFacing) }
+            else { strokeFacing=SportsMotionGeometry.strokeFacing(screenNormal:screenNormal,courtForward:courtForward,previous:strokeFacing) }
         }
         if previousPhase != .swinging && filter.phase == .swinging { activeStrokeFacing=strokeFacing }
+        // Racket-face aim, read at the moment the stroke is confirmed (just before contact).
+        // A face pointing straight up or down (phone held flat) has no direction: aim straight.
+        if swing != nil, tennis, tvHeading != nil, screenHeading == nil { faceAim=0 }
+        if swing != nil, tennis, let tv=tvHeading, let screen=screenHeading {
+            let wing = activeStrokeFacing >= 0 ? 0 : 1
+            let angle=SportsMotionGeometry.faceAngle(screenHeading:screen,tvHeading:tv,facing:activeStrokeFacing)
+            faceAim=SportsMotionGeometry.aim(faceAngle:angle,neutral:faceNeutral[wing])
+            faceNeutral[wing]=SportsMotionGeometry.learnNeutral(faceNeutral[wing],faceAngle:angle)
+            SportsDiagnostics.write(String(format:"face aim=%.2f angle=%.1f neutral=%.1f wing=%d",faceAim,angle,faceNeutral[wing],wing))
+        }
         if let swing { NSLog("[SportsMotion] tennis stroke power=%.2f",swing) }
         recordTrace(time:time,rate:speed,force:force,swing:swing)
-        onSample?(filter.target,swing,filter.phase.rawValue,current != .lost && calibrated,current,
+        onSample?(filter.target,swing,filter.phase.rawValue,tennis ? calibrated : current != .lost && calibrated,current,
             ["qx":q.x,"qy":q.y,"qz":q.z,"qw":q.w,"rx":rate.x,"ry":rate.y,"rz":rate.z,"gx":g.x,"gy":g.y,"gz":g.z,
-             "handSide":tracked ? x-neutralX-filter.target*filter.travel : 0,"lift":tracked ? Double(position.y-neutralY) : 0,"strokeFacing":tennis ? activeStrokeFacing : 0,
+             "handSide":tracked ? x-neutralX-filter.target*filter.travel : 0,"lift":tracked ? Double(position.y-neutralY) : 0,"strokeFacing":tennis ? activeStrokeFacing : 0,"faceAim":tennis ? faceAim : 0,
              "swingStart":Double(filter.onsets),"swingAbort":Double(filter.aborts)])
     }
 
@@ -260,6 +299,30 @@ final class SportsMotion: NSObject, @preconcurrency ARSessionDelegate {
             if t>0 { line+=String(format:" %.3f,%.1f,%.2f",t,r,f) }
         }
         SportsDiagnostics.write(line)
+    }
+
+    /// Heading of the phone's back (the lens) right now: at axis lock it points at the TV.
+    private func captureTVHeading() {
+        guard let attitude else { tvHeading=nil; return }
+        tvHeading=SportsMotionGeometry.heading(SportsMotionGeometry.rotate(SIMD3<Double>(0,0,-1),by:attitude))
+        faceNeutral=[0,0]; faceAim=0
+    }
+
+    /// Median LiDAR depth over the middle of the frame: the distance to whatever the lens is
+    /// aimed at, i.e. the TV during axis capture. nil without a depth sensor or a reading.
+    private static func centreDepth(_ frame: ARFrame) -> Double? {
+        guard let map=frame.sceneDepth?.depthMap else { return nil }
+        CVPixelBufferLockBaseAddress(map,.readOnly); defer { CVPixelBufferUnlockBaseAddress(map,.readOnly) }
+        guard let base=CVPixelBufferGetBaseAddress(map) else { return nil }
+        let w=CVPixelBufferGetWidth(map), h=CVPixelBufferGetHeight(map), row=CVPixelBufferGetBytesPerRow(map)
+        var values=[Float]()
+        for y in (h/2-4)...(h/2+4) {
+            let line=base.advanced(by:y*row).assumingMemoryBound(to:Float32.self)
+            for x in (w/2-4)...(w/2+4) { let d=line[x]; if d.isFinite && d>0.2 { values.append(d) } }
+        }
+        guard values.count>10 else { return nil }
+        values.sort()
+        return Double(values[values.count/2])
     }
 
     private func currentQuality(at time: Double) -> SportsTrackingQuality {

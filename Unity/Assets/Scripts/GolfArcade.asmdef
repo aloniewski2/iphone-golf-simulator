@@ -1,7 +1,10 @@
 {
   "name": "GolfArcade",
   "rootNamespace": "GolfArcade",
-  "references": [],
+  "references": [
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

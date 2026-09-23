@@ -193,6 +193,9 @@ namespace GolfArcade.Game
                 }
                 if(sample.swing>lastSwing) {
                     lastSwing=sample.swing;
+                    // Racket-face aim, measured on the phone at the moment the stroke confirmed.
+                    // Touch play aims with its own control (the "aim" command) instead.
+                    if(tennis && !touch) tennis.AimInput=Mathf.Clamp(sample.aim,-1,1);
                     if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing);
                     if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
                 }

@@ -50,8 +50,11 @@ namespace GolfArcade.PlayTests
                 // point ends and the serve lock plants the character mid-run.
                 foreach (float target in new[]{4.2f,-4.2f,4.2f,-4.2f,3.8f,-3.8f})
                 {
+                    // Movement is human now: an 8m switch is only covered with a good jump,
+                    // i.e. leaning toward the ball while it is being read.
                     game.InjectBall(new Vector3(target,1.3f,-4.5f),new Vector3(0,1.5f,-6.5f));
-                    for(int i=0;i<70;i++)
+                    game.SetLateralInput(Mathf.Sign(target),true);
+                    for(int i=0;i<100;i++)
                     {
                         game.Step(1f/120); game.Step(1f/120);
                         float x=game.Player.transform.position.x;
@@ -85,7 +88,8 @@ namespace GolfArcade.PlayTests
             Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow);
             Assert.IsFalse(game.SecondServe,"a caught toss must not cost a fault");
             // Toss again, then strike it near the apex: the ball leaves toward the far court.
-            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2;i++) game.Step(1f/120);
+            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2 && game.Flow!=TennisGame.Phase.PlayerServeToss;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow,"the ball is tossed again");
             for(int i=0;i<(int)(TennisRules.ServeIdealContact*120);i++) game.Step(1f/120);
             game.RequestSwing(.8f,0,.3f);
             // The ball leaves when the animated racket reaches it, not at the instant the
@@ -121,14 +125,13 @@ namespace GolfArcade.PlayTests
                 {
                     game.SelectCharacter(female); yield return null;
                     int hitsBefore = game.Hits;
-                    // Tennis characters now show real arms. Floating hands -- the arm meshes
-                    // hidden entirely, leaving disembodied hands on a racket -- was the single
-                    // biggest reason they read as toy-like. The continuous-arm surface was
-                    // already built every frame; it just had a null material and so rendered
-                    // invisibly, which is why nobody noticed it worked.
-                    Assert.IsFalse(game.Player.GetComponentInChildren<StandardCharacterArms>().FloatingHandsPreview,
-                        "tennis characters should have visible arms");
-                    Assert.IsNotNull(game.Player.transform.Find("Permanent "+(female?"female":"male")+" tennis player/Fitted Tripo tennis kit v3"));
+                    // Tennis characters show real arms: the fitted Higgsfield body is one skinned
+                    // mesh with continuous arms, replacing the procedural arm tubes.
+                    Assert.IsTrue(game.Player.SkinnedBody, "tennis characters should use the fitted skinned body");
+                    Assert.IsTrue(System.Array.Exists(game.Player.GetComponentsInChildren<SkinnedMeshRenderer>(),
+                        r => r.name.StartsWith("V4 Higgs body") && r.enabled), "tennis characters should have visible arms");
+                    // The clothes are part of the fitted body; the old runtime kit must not be layered on.
+                    Assert.IsNull(game.Player.transform.Find("Permanent "+(female?"female":"male")+" tennis player/Fitted Tripo tennis kit v3"));
                     string directory = "Library/Captures/tennis-" + (female ? "female" : "male"); Directory.CreateDirectory(directory);
                     // A serving player has their feet planted, so movement and stamina cannot
                     // be exercised until a ball is live. This test is about physics, the

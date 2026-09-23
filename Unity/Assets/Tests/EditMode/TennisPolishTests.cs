@@ -200,6 +200,41 @@ public class TennisPolishTests
         Assert.IsTrue(TennisRules.AssistedContact(ball, ball, Vector3.zero, TennisRules.SweetTime, false, out _, .5f, true));
     }
 
+    [Test] public void ReachableHeightsAreABandNotAPoint()
+    {
+        Vector3 player = Vector3.zero;
+        bool Hits(float height, bool overhead = false) =>
+            TennisRules.AssistedContact(new Vector3(.3f, height, 1.2f), new Vector3(.3f, height, .2f), player, TennisRules.SweetTime, overhead, out _, .5f);
+        Assert.IsTrue(Hits(.35f), "a low ball off the court");
+        Assert.IsTrue(Hits(1.1f));
+        Assert.IsTrue(Hits(1.95f), "a high bouncing ball");
+        Assert.IsFalse(Hits(3.2f), "over the head without an overhead");
+        Assert.IsTrue(Hits(2.6f, true), "an overhead reaches higher");
+        TennisRules.AssistedContact(new Vector3(.3f, 1.1f, 1.2f), new Vector3(.3f, 1.1f, .2f), player, TennisRules.SweetTime, false, out float middle, .5f);
+        TennisRules.AssistedContact(new Vector3(.3f, .35f, 1.2f), new Vector3(.3f, .35f, .2f), player, TennisRules.SweetTime, false, out float low, .5f);
+        Assert.Greater(middle, low, "awkward heights are harder to hit cleanly");
+    }
+
+    [Test] public void CleanHitsAlwaysClearTheNet()
+    {
+        // From racket height near the baseline, every aim and spin a clean hit can produce.
+        foreach (float spin in new[] { -.8f, .35f, 1f })
+            foreach (float aim in new[] { -1f, 0f, 1f })
+            {
+                Vector3 start = new Vector3(0, .7f, -10.6f), target = TennisRules.ShotTarget(aim, .9f);
+                Vector3 v = TennisRules.RallyVelocity(start, target, 27, spin, .7f);
+                Assert.Greater(TennisRules.NetClearance(start, v, spin), TennisRules.NetHeight, $"spin {spin} aim {aim}");
+            }
+    }
+
+    [Test] public void HitStopRewardsCleanContactOnly()
+    {
+        Assert.AreEqual(0, TennisRules.HitStopFor(Timing.Good, false));
+        Assert.Greater(TennisRules.HitStopFor(Timing.Perfect, false), TennisRules.HitStopFor(Timing.Excellent, false));
+        Assert.Greater(TennisRules.HitStopFor(Timing.Great, true), TennisRules.HitStopFor(Timing.Perfect, false));
+        Assert.Less(TennisRules.HitStopFor(Timing.Perfect, true), .1f, "never long enough to feel like lag");
+    }
+
     [Test] public void ArmSurfaceFollowsAnAnatomicalProfile()
     {
         float shoulder = StandardCharacterArms.ProfileRadius(0, out _);

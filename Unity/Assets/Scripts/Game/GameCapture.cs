@@ -39,7 +39,8 @@ namespace GolfArcade.Game
             RenderTexture.active = active;
             RenderTexture.ReleaseTemporary(rt);
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
-            File.WriteAllBytes(path, tex.EncodeToPNG());
+            // JPEG for film frames: a minute at 60fps as PNG runs to gigabytes.
+            File.WriteAllBytes(path, path.EndsWith(".jpg") ? tex.EncodeToJPG(92) : tex.EncodeToPNG());
             Object.Destroy(tex);
             return path;
         }

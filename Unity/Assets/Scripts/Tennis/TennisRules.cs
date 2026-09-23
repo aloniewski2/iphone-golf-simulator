@@ -19,7 +19,8 @@ namespace GolfArcade.Tennis
         public const int SuperchargeStreak = 3;
         /// A hit must grade at least this well to extend the streak.
         public const Timing StreakFloor = Timing.Great;
-        public const float SuperchargeSpeed = 1.35f;
+        /// A supercharged ball has to look and feel like a different class of shot.
+        public const float SuperchargeSpeed = 1.7f;
 
         /// Grade a contact from its timing score (0 = mistimed, 1 = dead on).
         public static Timing Grade(float timing)
@@ -41,6 +42,11 @@ namespace GolfArcade.Tennis
             Timing.Ok => "OK",
             _ => "MISS",
         };
+
+        /// Seconds of hit-stop for a contact: nothing for an ordinary hit, a beat for a clean
+        /// one, longer for a supercharge. Short enough never to be felt as lag.
+        public static float HitStopFor(Timing grade, bool supercharged) =>
+            supercharged ? .085f : grade >= Timing.Perfect ? .055f : grade >= Timing.Excellent ? .035f : 0f;
 
         /// Does this grade keep a streak alive?
         public static bool Extends(Timing grade) => grade >= StreakFloor;
@@ -75,9 +81,115 @@ namespace GolfArcade.Tennis
         public const float ServiceLine = 6.40f, NetHeight = .97f;
         // Reference animation time; actors stretch this timeline by strength.
         public const float StrokeDuration = .46f, SweetTime = .18f, TimingWindow = .19f;
-        public const float RunSpeed = 6.2f, SprintSpeed = 9f, Acceleration = 28f;
+        /// Human movement, not a sprinter on rails: the old 28 m/s² and 9 m/s sprint got the
+        /// character to every ball, which took reaching the ball out of the game. A tour player
+        /// peaks around 6 m/s and takes most of a second to get there.
+        public const float RunSpeed = 5.6f, SprintSpeed = 6.6f, Acceleration = 10f;
         /// Braking the auto-positioning uses to arrive at the ball instead of stopping dead.
-        public const float Deceleration = 22f;
+        public const float Deceleration = 14f;
+
+        /// Reading the ball. The character commits `ReactionTime` after the opponent strikes;
+        /// a player who leans or steps toward the ball in that window gets a "good jump": an
+        /// almost immediate first step and a sprint.
+        public const float ReactionTime = .24f, JumpReaction = .05f, JumpLean = .45f;
+        /// Horizontal reach from where the player stands to the ball, and with a dive.
+        public const float StrokeReach = 1.35f, DiveReach = 2.55f;
+        /// Diving costs: on the floor for a beat, and legs.
+        public const float DiveRecovery = 1.1f, DiveStamina = .14f, DiveQualityCap = .42f;
+        /// Where a player stands between points and recovers to after a shot.
+        public const float BaselineZ = -11.2f, NetZ = -5.8f, NetRushLine = -7.6f;
+
+        /// Seconds to cover `distance` from a standstill with the acceleration above.
+        public static float TimeToCover(float distance, float topSpeed)
+        {
+            if (distance <= 0) return 0;
+            float rampDistance = topSpeed * topSpeed / (2 * Acceleration);
+            return distance <= rampDistance ? Mathf.Sqrt(2 * distance / Acceleration)
+                : topSpeed / Acceleration + (distance - rampDistance) / topSpeed;
+        }
+
+        /// Ground a player can cover in `seconds` from a standstill.
+        public static float Coverable(float seconds, float topSpeed)
+        {
+            if (seconds <= 0) return 0;
+            float ramp = topSpeed / Acceleration;
+            return seconds <= ramp ? .5f * Acceleration * seconds * seconds
+                : .5f * Acceleration * ramp * ramp + (seconds - ramp) * topSpeed;
+        }
+
+        public struct InterceptPlan
+        {
+            public Vector3 Point;      // where the ball will be struck
+            public float Time;         // seconds from now
+            public float Gap;          // how far short the player will be (<= StrokeReach: fine)
+            public bool Found, Reachable, Diveable;
+        }
+
+        /// Where to meet an incoming ball, if anywhere: the ball is flown forward (bounces,
+        /// spin and all) and every moment it is at a playable height on the player's side is a
+        /// candidate. A candidate is reachable if the player can cover the ground in the time
+        /// left after reacting. Among reachable ones, a comfortable height near where the
+        /// player already stands wins -- so a short ball pulls them forward, a deep one back,
+        /// and a player at the net volleys it early. Out of reach, the nearest miss is
+        /// returned so they can still chase it (and perhaps dive).
+        public static InterceptPlan PlanIntercept(Vector3 position, Vector3 velocity, float spin, float restitution,
+            Vector2 player, float reaction, float topSpeed, bool atNet)
+        {
+            var best = new InterceptPlan(); float bestScore = float.MaxValue;
+            var nearest = new InterceptPlan { Gap = float.MaxValue };
+            int bounces = 0; float time = 0, bounceZ = 0;
+            const float dt = TennisBall.Step * 2;
+            for (int i = 0; i < 360; i++)
+            {
+                Vector3 next = position, v = velocity;
+                TennisBall.Integrate(ref next, ref v, spin, dt);
+                if (next.y < BallRadius && v.y < 0)
+                {
+                    next.y = BallRadius; TennisBall.Bounce(ref v, ref spin, restitution);
+                    if (++bounces >= 2) break;          // a second bounce ends the point
+                    bounceZ = next.z;
+                }
+                position = next; velocity = v; time += dt;
+                if (position.z > -.6f || velocity.z > 0) continue;           // not on our side yet
+                if (position.z < -15.5f) break;                            // gone past any stand
+                float h = position.y;
+                bool volley = bounces == 0;
+                // Volleys only near the net (or a high ball anywhere); otherwise after the bounce.
+                if (volley && !(atNet && position.z > -8f && h > .45f) && h < 1.9f) continue;
+                if (h < .3f || h > 2.3f) continue;
+                Vector2 at = new Vector2(position.x, position.z - .65f);
+                float travel = Vector2.Distance(at, player);
+                float cover = Coverable(time - reaction, topSpeed);
+                float gap = travel - cover;
+                if (gap < nearest.Gap) nearest = new InterceptPlan { Point = position, Time = time, Gap = gap, Found = true };
+                if (gap > StrokeReach) continue;
+                // Take a bounced ball near the top of its bounce, about 2.8 m after it lands, but
+                // never from behind the baseline: a short ball draws the player in, a deep one
+                // keeps them back. Volleys are met where the player already stands.
+                float preferredZ = volley ? player.y : Mathf.Clamp(bounceZ - 2.8f - .65f, -12.6f, -3f);
+                float comfort = Mathf.Abs(h - 1.0f) * 1.2f + Mathf.Abs(at.y - preferredZ) * .18f + travel * .06f + (volley ? 0 : .25f * (atNet ? 1 : 0));
+                if (comfort < bestScore) { bestScore = comfort; best = new InterceptPlan { Point = position, Time = time, Gap = gap, Found = true, Reachable = true, Diveable = true }; }
+            }
+            if (best.Found) return best;
+            nearest.Diveable = nearest.Found && nearest.Gap <= DiveReach;
+            return nearest;
+        }
+
+        /// Shot pace comes from the quality of contact, not how hard the phone was swung:
+        /// a clean strike flies, a frame shot floats. Effort only nudges it.
+        public static float ShotSpeed(float quality, float power, float stamina) =>
+            Mathf.Lerp(15f, 32f, Mathf.Pow(Mathf.Clamp01(quality), 1.25f)) * Mathf.Lerp(.9f, 1.05f, Mathf.Clamp01(power)) * Mathf.Lerp(.9f, 1f, Mathf.Clamp01(stamina));
+
+        /// Where an aimed rally ball is sent. The racket face picks the side (-1...1); the
+        /// contact decides how much of the court the player can use: a clean hit can go
+        /// close to the lines and deep, a poor one is pulled toward the middle and lands short.
+        public static Vector3 AimedTarget(float aim, float quality, float lift)
+        {
+            float q = Mathf.Clamp01(quality);
+            float width = Mathf.Lerp(1.3f, 3.9f, Mathf.Pow(q, 1.2f));
+            float depth = Mathf.Lerp(6.4f, 10.4f, q) + Mathf.Clamp(lift, 0, .4f) * 2f;
+            return new Vector3(Mathf.Clamp(aim, -1, 1) * width, BallRadius, Mathf.Min(depth, 11.2f));
+        }
         /// Opponent difficulty. It covers the court at a human pace with a limited reach and
         /// a real miss rate, so wide, deep and well-struck balls actually win points.
         public const float OpponentSpeed = 4.6f, OpponentReach = 1.75f, OpponentErrorRate = .24f;
@@ -106,8 +218,10 @@ namespace GolfArcade.Tennis
             float quality = contact ? timing * .35f + center * .40f + positioning * .25f : 0;
             return new TennisHit {
                 Contact = contact, Timing = timing, Center = center, Positioning = positioning, Quality = quality,
-                Speed = contact ? Mathf.Lerp(15, 27, Mathf.Clamp01(power)) * Mathf.Lerp(.85f, 1, quality) * Mathf.Lerp(.92f, 1, Mathf.Clamp01(stamina)) : 0,
-                ErrorDegrees = contact ? Mathf.Lerp(1.0f, 19f, 1 - quality) + (1 - Mathf.Clamp01(stamina)) * 5 : 0,
+                Speed = contact ? ShotSpeed(quality, power, stamina) : 0,
+                // Timing and the sweet spot also decide accuracy: aim for a line off a poor
+                // contact and it can easily land out.
+                ErrorDegrees = contact ? Mathf.Lerp(.6f, 13f, 1 - quality) + (1 - Mathf.Clamp01(stamina)) * 4 : 0,
                 Label = !contact ? "MISS" : quality > .86f ? "SWEET SPOT" : quality > .63f ? "CLEAN HIT" : radial > .72f ? "OFF CENTER" : timing < .45f ? "MISTIMED" : "OFF BALANCE"
             };
         }
@@ -118,19 +232,32 @@ namespace GolfArcade.Tennis
             return Mathf.Clamp01(value + (Mathf.Abs(speed) < .15f ? .13f : -.23f * exertion) * dt);
         }
 
+        /// Heights a player can play the ball at without it being a miss: from a scoop off the
+        /// court to a high backhand; overheads reach higher.
+        public const float ReachLow = .28f, ReachHigh = 2.05f, ReachOverhead = 2.75f;
+
         public static bool AssistedContact(Vector3 oldBall, Vector3 ball, Vector3 player, float age, bool overhead, out float quality, float power=0.5f, bool dive=false)
         {
             quality=0;
             // A dive throws the racket much further sideways than a normal stroke can reach.
             float forgiveness=Mathf.Lerp(1.45f,.95f,Mathf.Clamp01(power))*(dive?1.8f:1f);
-            if(Mathf.Abs(age-SweetTime)>Mathf.Lerp(.18f,.105f,Mathf.Clamp01(power))) return false;
-            Vector3 center=player+new Vector3(0,overhead ? 2.1f : 1.1f,.65f);
-            Vector3 segment=ball-oldBall;
-            float t=segment.sqrMagnitude>.000001f ? Mathf.Clamp01(Vector3.Dot(center-oldBall,segment)/segment.sqrMagnitude) : 0;
-            Vector3 offset=Vector3.Lerp(oldBall,ball,t)-center;
-            float distance=new Vector3(offset.x/forgiveness,offset.y/(overhead ? 1.0f : .95f),offset.z/forgiveness).magnitude;
+            if(Mathf.Abs(age-SweetTime)>Mathf.Lerp(.2f,.12f,Mathf.Clamp01(power))) return false;
+            // Closest approach measured on the ground plane, then judged against a height BAND
+            // rather than a point: the old fixed 1.1m centre turned low and high balls the
+            // player had timed perfectly into misses.
+            Vector3 centre=player+new Vector3(0,0,.65f);
+            Vector3 segment=ball-oldBall; Vector2 flat=new Vector2(segment.x,segment.z);
+            Vector2 toCentre=new Vector2(centre.x-oldBall.x,centre.z-oldBall.z);
+            float t=flat.sqrMagnitude>.000001f ? Mathf.Clamp01(Vector2.Dot(toCentre,flat)/flat.sqrMagnitude) : 0;
+            Vector3 at=Vector3.Lerp(oldBall,ball,t);
+            float height=at.y-player.y;
+            float bandTop=overhead ? ReachOverhead : ReachHigh;
+            float outside=height<ReachLow ? ReachLow-height : height>bandTop ? height-bandTop : 0;
+            float distance=new Vector3((at.x-centre.x)/forgiveness,outside/.45f,(at.z-centre.z)/forgiveness).magnitude;
             if(distance>1 || ball.z<player.z-.25f) return false;
-            quality=Mathf.Lerp(.3f,.65f,1-distance);
+            // Balls at the edges of the band are harder to hit cleanly.
+            float awkward=Mathf.Clamp01(Mathf.Abs(height-1.1f)/1.3f);
+            quality=Mathf.Lerp(.3f,.65f,1-distance)*Mathf.Lerp(1f,.85f,awkward);
             return true;
         }
 
@@ -174,11 +301,13 @@ namespace GolfArcade.Tennis
 
         /// Serve timing. The ball is tossed, rises, and must be struck near the apex with a
         /// downward swing. Miss the window and it goes into the net — one fault is allowed.
-        public const float ServeTossDelay = 1.75f, ServeApex = .62f, ServeIdealContact = .58f;
+        /// The pre-serve routine (two bounces and the wind-up, see TennisServeRoutine) fills
+        /// the time before the toss.
+        public const float ServeTossDelay = 2.2f, ServeApex = .53f, ServeIdealContact = .58f;
         /// Generous by design: almost any committed swing during the toss should go in. Only
         /// a wildly early or late one nets. The old +/-0.20s window was unplayable once swing
         /// detection latency was accounted for.
-        public const float ServeCatch = 1.30f, ServePerfectWindow = .18f, ServeLegalWindow = .42f;
+        public const float ServeCatch = 1.12f, ServePerfectWindow = .18f, ServeLegalWindow = .42f;
         /// Motion detection needs a moment of swing before it can confirm one, so the moment
         /// it reports is always later than the moment the player actually started. Without
         /// this correction every serve reads as late.
@@ -193,7 +322,9 @@ namespace GolfArcade.Tennis
         /// Clearance the ball must have over the net for a serve to count as safe.
         public const float NetMargin = .22f;
         /// How far off the centre mark the server stands, and how wide the receiver waits.
-        public const float ServerStance = 1.35f, ReceiverStance = 1.95f;
+        /// The server stands behind the baseline, well out toward the sideline on the side
+        /// they serve from.
+        public const float ServerStance = 2.35f, ReceiverStance = 1.95f, ServeDepth = 12.35f;
 
         public struct ServeJudgement
         {
@@ -273,6 +404,31 @@ namespace GolfArcade.Tennis
                 if (NetClearance(start, best, spin) > NetHeight + NetMargin) return best;
             }
             return best;
+        }
+
+        /// A player's shot, lofted until it clears the net by a margin that grows with the
+        /// quality of the contact: clean hits always go over, and only a poor one can find the
+        /// tape. Hitting from racket height with a flat arc otherwise netted far too often.
+        public static Vector3 RallyVelocity(Vector3 start, Vector3 target, float speed, float spin, float quality)
+        {
+            float margin = Mathf.Lerp(-.12f, .32f, Mathf.Clamp01(quality / .7f));
+            Vector3 best = TennisBall.Solve(start, target, speed, spin);
+            for (float s = speed; s > 9; s *= .93f)
+            {
+                best = TennisBall.Solve(start, target, s, spin);
+                if (NetClearance(start, best, spin) > NetHeight + margin) return best;
+            }
+            return best;
+        }
+
+        /// Clamp a contact offset onto the string bed for display: an assisted hit is measured
+        /// from wherever the ball was, which can be well off the racket.
+        public static Vector2 OnStringBed(Vector2 offset)
+        {
+            var scaled = new Vector2(offset.x / StringHalfWidth, offset.y / StringHalfHeight);
+            if (scaled.magnitude <= 1.05f) return offset;
+            scaled = scaled.normalized * 1.05f;
+            return new Vector2(scaled.x * StringHalfWidth, scaled.y * StringHalfHeight);
         }
 
         /// Height of a (possibly spun) ball as it crosses the net plane, by simulation.
@@ -451,16 +607,16 @@ namespace GolfArcade.Tennis
             // A volley is about where the PLAYER is standing, not how near the ball has got:
             // testing ball-to-player distance made almost every rally ball a volley, because
             // the ball is always close to the player by the time they swing at it.
-            if (Mathf.Abs(playerZ) < 4.5f && ballHeight > .8f) return "Volley";
+            if (Mathf.Abs(playerZ) < 7f && ballHeight > .8f) return "Volley";
             if (ballHeight < .55f) return "LowPickup";
             // Out of normal reach: throw the body at it. The dive clips exist in both wings.
             if (lateralGap > DiveGap) return "Dive";
-            if (lateralGap > 1.5f) return "Running";
+            if (lateralGap > 1.1f) return "Running";
             return "Drive";
         }
 
         /// Lateral gap beyond which a stroke becomes a dive.
-        public const float DiveGap = 2.6f;
+        public const float DiveGap = 1.75f;
 
         /// Where the server must stand: behind their own baseline, on the side of the centre
         /// mark matching the court they are serving from.

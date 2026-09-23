@@ -55,6 +55,46 @@ final class SportsIntegrationTests:XCTestCase {
         XCTAssertEqual(f.onsets,1); XCTAssertEqual(f.aborts,1)
     }
 
+    // MARK: Motion-sensor racket face (works in any grip, camera or not)
+
+    func testRacketFaceAimFollowsTheFaceNotTheCamera() {
+        let tv = 0.3, deg = Double.pi / 180
+        // Headings grow counter-clockwise seen from above, i.e. toward the player's LEFT.
+        XCTAssertEqual(SportsMotionGeometry.faceAngle(screenHeading:tv,tvHeading:tv,facing:1),0,accuracy:1e-9)
+        XCTAssertEqual(SportsMotionGeometry.faceAngle(screenHeading:tv-20*deg,tvHeading:tv,facing:1),20,accuracy:1e-6,
+                       "forehand face turned to the player's right aims right")
+        XCTAssertEqual(SportsMotionGeometry.faceAngle(screenHeading:tv + Double.pi - 15*deg,tvHeading:tv,facing:-1),15,accuracy:1e-6,
+                       "on a backhand the back of the phone is the face")
+        XCTAssertEqual(SportsMotionGeometry.faceAngle(screenHeading:tv+30*deg,tvHeading:tv,facing:1),-30,accuracy:1e-6)
+        // Wrap-around: a heading just past pi is still a small turn.
+        XCTAssertEqual(SportsMotionGeometry.faceAngle(screenHeading:-Double.pi + 0.05,tvHeading:Double.pi - 0.05,facing:1),-5.73,accuracy:0.01)
+    }
+
+    func testAimIsRelativeToThePlayersHabitAndSaturates() {
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:0,neutral:0),0)
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:SportsMotionGeometry.aimSpanDegrees,neutral:0),1)
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:90,neutral:0),1)
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:-12,neutral:0),-0.5,accuracy:1e-9)
+        // A player who habitually swings with the face 10° open: that is their "straight".
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:10,neutral:10),0)
+        XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:10),1.2,accuracy:1e-9)
+        XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:30),0,"a deliberately aimed shot is not learnt as habit")
+    }
+
+    func testGripFromHeadingsWhicheverWayThePhoneIsHeld() {
+        let tv = 1.0
+        XCTAssertEqual(SportsMotionGeometry.strokeFacing(screenHeading:tv+0.2,tvHeading:tv,previous:-1),1)
+        XCTAssertEqual(SportsMotionGeometry.strokeFacing(screenHeading:tv + Double.pi,tvHeading:tv,previous:1),-1)
+        XCTAssertEqual(SportsMotionGeometry.strokeFacing(screenHeading:tv + Double.pi/2,tvHeading:tv,previous:-1),-1,"edge-on keeps the last grip")
+        XCTAssertEqual(SportsMotionGeometry.strokeFacing(screenHeading:nil,tvHeading:tv,previous:1),1,"screen pointing at the floor keeps the last grip")
+        XCTAssertNil(SportsMotionGeometry.heading(SIMD3<Double>(0,0,1)),"straight up has no heading")
+        XCTAssertEqual(SportsMotionGeometry.heading(SIMD3<Double>(0,1,0))!,Double.pi/2,accuracy:1e-9)
+        // A phone held flat (screen up) and rolled: the device's +Z is vertical, no heading,
+        // so a flat horizontal swing keeps the grip it started with rather than flipping.
+        let flat=simd_quatd(angle:0,axis:SIMD3<Double>(0,0,1))
+        XCTAssertNil(SportsMotionGeometry.heading(SportsMotionGeometry.rotate(SIMD3<Double>(0,0,1),by:flat)))
+    }
+
     /// Forehand is screen-to-TV, backhand is lens-to-TV, and tilting the phone must not
     /// change the answer.
     func testStrokeFacingFollowsWhichFaceIsTowardTheTV() {

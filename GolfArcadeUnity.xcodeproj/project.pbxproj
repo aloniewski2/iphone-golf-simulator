@@ -190,7 +190,7 @@
 		8968FB31B46969109EC3FADC /* SportsDisplays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsDisplays.swift; sourceTree = "<group>"; };
 		897E39AE7CCAB96614366808 /* BodyPose3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPose3D.swift; sourceTree = "<group>"; };
 		8AD0A2D744402BA43500309C /* ArcadeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeView.swift; sourceTree = "<group>"; };
-		8F67A44A5B5E60E0A2B05B34 /* GolfArcade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8F67A44A5B5E60E0A2B05B34 /* GolfArcade.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FA319FC4C93FAEB0E39B36F /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
 		90EE35CA51BC445480C59F68 /* CameraPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlayTests.swift; sourceTree = "<group>"; };
 		91978A03E4FDDC8D286CF9A7 /* BenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkTests.swift; sourceTree = "<group>"; };
@@ -844,12 +844,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GolfArcade/Unity/SportsInfo.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -892,12 +892,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 9VP5B3Q5VQ;
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GolfArcade/Unity/SportsInfo.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "The rear camera tracks your phone position for physical tennis steering. Images are processed on your phone, not recorded or uploaded.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Phone motion controls your sports swings.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

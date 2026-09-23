@@ -3,6 +3,22 @@
 Run the same checks on every device build so builds can be compared. About 15 minutes.
 Record results in a copy of the table at the bottom.
 
+## Gameplay depth checks (new)
+
+Setup: stand about 2.5 m from the TV for the court-direction scan (the phone now asks you
+to step back if you are closer). After that, hold and swing the phone however feels natural.
+
+| Check | Expected |
+|---|---|
+| Aim: turn the racket face (screen on forehands, back on backhands) left/right at contact | Ball goes that way; a few straight swings first teach it your "straight" |
+| Clean vs poor contact | Clean: fast, deep, can hit near the lines. Poor: slow, short, pulled to the middle |
+| Wide, clean opponent shot, standing still | Often unreachable (a winner) |
+| Same, but lean/step toward it as the opponent hits | Character sets off at once and sprints ("good jump") |
+| Ball just out of reach | Character dives; the return is weak; they stay down about a second |
+| Short ball | Character moves in to take it; stays at the net for the next volley |
+| Swing with the phone held sideways/landscape, or camera pointing at the floor | Swings still register; a small "camera can't see the room" note at most |
+| Pace | Next point starts about 1.5 s after the last; serve toss about 1.2 s after that |
+
 ## 0. Automatic frame-time run (no player needed)
 
 ```bash

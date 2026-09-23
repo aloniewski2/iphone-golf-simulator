@@ -241,6 +241,64 @@ public class TennisMatchTests
                 Assert.LessOrEqual(Mathf.Abs(TennisRules.AimFromTiming(offset, back)), 1f);
     }
 
+    // --- Gameplay depth: contact decides pace and placement; reaching the ball is a skill ---
+
+    [Test] public void ShotPaceComesFromContactNotEffort()
+    {
+        float clean = TennisRules.ShotSpeed(.95f, .5f, 1), poor = TennisRules.ShotSpeed(.35f, .5f, 1);
+        Assert.Greater(clean, poor + 8, "a clean strike must be much faster than a poor one");
+        float hard = TennisRules.ShotSpeed(.5f, 1, 1), soft = TennisRules.ShotSpeed(.5f, .1f, 1);
+        Assert.Less(hard - soft, 3.5f, "swinging harder only nudges the pace");
+    }
+
+    [Test] public void CleanContactOpensTheLinesAndDepth()
+    {
+        var clean = TennisRules.AimedTarget(1, .95f, 0);
+        var poor = TennisRules.AimedTarget(1, .3f, 0);
+        Assert.Greater(clean.x, 3.4f, "full aim off a clean hit goes near the sideline");
+        Assert.Less(clean.x, TennisRules.CourtHalfWidth, "but inside it before error");
+        Assert.Less(poor.x, 2.3f, "a poor contact is pulled toward the middle");
+        Assert.Greater(clean.z, poor.z + 2, "clean contact lands deep, poor contact sits up short");
+        Assert.AreEqual(0, TennisRules.AimedTarget(0, .9f, 0).x, 1e-4, "neutral face goes through the middle");
+        Assert.Less(TennisRules.AimedTarget(-1, .9f, 0).x, -3f, "face turned left goes left");
+    }
+
+    [Test] public void MovementIsHumanAndConsistent()
+    {
+        foreach (float d in new[] { .5f, 2f, 5f })
+            Assert.AreEqual(d, TennisRules.Coverable(TennisRules.TimeToCover(d, TennisRules.RunSpeed), TennisRules.RunSpeed), 1e-3f);
+        Assert.Greater(TennisRules.TimeToCover(4f, TennisRules.RunSpeed), .9f, "four metres takes most of a second");
+        Assert.Less(TennisRules.TimeToCover(4f, TennisRules.SprintSpeed), TennisRules.TimeToCover(4f, TennisRules.RunSpeed));
+    }
+
+    static Vector3 Fly(Vector3 from, Vector3 to, float speed) => TennisRules.RallyVelocity(from, to, speed, 0, .9f);
+
+    [Test] public void WideWinnersNeedAGoodJump()
+    {
+        // A fast, clean ball to the far corner from a player waiting in the middle.
+        Vector3 from = new Vector3(-2, 1, 10.5f), corner = new Vector3(3.9f, TennisRules.BallRadius, -10.2f);
+        Vector3 v = Fly(from, corner, 30);
+        var late = TennisRules.PlanIntercept(from, v, 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.ReactionTime, TennisRules.RunSpeed, false);
+        var early = TennisRules.PlanIntercept(from, v, 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.JumpReaction, TennisRules.SprintSpeed, false);
+        Assert.IsFalse(late.Reachable, $"reacting late, a clean corner winner stays a winner (gap {late.Gap:0.00})");
+        Assert.IsTrue(early.Reachable || early.Diveable, $"a good jump gets there, or close enough to dive (gap {early.Gap:0.00})");
+    }
+
+    [Test] public void AnOrdinaryBallIsReachable()
+    {
+        Vector3 from = new Vector3(0, 1, 10.5f), to = new Vector3(1.2f, TennisRules.BallRadius, -9.5f);
+        var plan = TennisRules.PlanIntercept(from, Fly(from, to, 22), 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.ReactionTime, TennisRules.RunSpeed, false);
+        Assert.IsTrue(plan.Reachable);
+    }
+
+    [Test] public void AShortBallPullsThePlayerForward()
+    {
+        Vector3 from = new Vector3(0, 1, 10.5f), to = new Vector3(.5f, TennisRules.BallRadius, -4.5f);
+        var plan = TennisRules.PlanIntercept(from, Fly(from, to, 17), 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.ReactionTime, TennisRules.RunSpeed, false);
+        Assert.IsTrue(plan.Found);
+        Assert.Greater(plan.Point.z, -8.5f, $"a short ball is met inside the court (z {plan.Point.z:0.0})");
+    }
+
     [Test] public void BallHeightAndDistanceChooseTheStroke()
     {
         // Overhead, low, at the net, stretched wide, and the ordinary case.
@@ -251,7 +309,9 @@ public class TennisMatchTests
         Assert.AreNotEqual("Volley", TennisRules.StrokeFor(1.2f, -9f, -11.2f, .2f, false),
             "a baseline rally ball is not a volley");
         Assert.AreEqual("LowPickup", TennisRules.StrokeFor(.3f, -9f, -11.2f, .2f, false));
-        Assert.AreEqual("Running", TennisRules.StrokeFor(1.0f, -9f, -11.2f, 2.4f, false));
+        Assert.AreEqual("Running", TennisRules.StrokeFor(1.0f, -9f, -11.2f, 1.4f, false));
+        // Beyond normal reach the only way to the ball is to throw yourself at it.
+        Assert.AreEqual("Dive", TennisRules.StrokeFor(1.0f, -9f, -11.2f, 2.2f, false));
         Assert.AreEqual("Drive", TennisRules.StrokeFor(1.0f, -9f, -11.2f, .2f, false));
         // A smash outranks everything else: height wins.
         Assert.AreEqual("Smash", TennisRules.StrokeFor(2.2f, -9f, -11.2f, 3f, true));

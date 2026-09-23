@@ -2,6 +2,68 @@ import Foundation
 import simd
 
 enum SportsMotionGeometry {
+    // MARK: Motion-sensor (IMU) geometry
+    //
+    // Swings, grip and racket-face direction come from the motion sensors, not the camera:
+    // the gyro reads a sideways swing, a phone held flat, or a covered lens exactly as well
+    // as an upright phone pointed at the TV, while camera tracking blurs and drops out.
+    // The only thing the camera contributes is where the TV is, captured once at setup.
+
+    /// Rotate a device-frame vector into the motion reference frame (Z vertical).
+    static func rotate(_ v: SIMD3<Double>, by q: simd_quatd) -> SIMD3<Double> { q.act(v) }
+
+    /// Heading of a direction in the horizontal plane of the motion reference frame (Z is
+    /// vertical), in radians; nil when the direction is too close to vertical to have one.
+    static func heading(_ v: SIMD3<Double>) -> Double? {
+        let flat=SIMD2<Double>(v.x,v.y)
+        return simd_length(flat)>0.15 ? atan2(flat.y,flat.x) : nil
+    }
+
+    /// Wrap an angle into -pi...pi.
+    static func wrap(_ a: Double) -> Double {
+        var x=a.truncatingRemainder(dividingBy:2 * .pi)
+        if x > .pi { x -= 2 * .pi }
+        if x < -.pi { x += 2 * .pi }
+        return x
+    }
+
+    /// Grip from which face points at the TV: screen toward it is a forehand (+1), back
+    /// toward it a backhand (-1); edge-on keeps the previous grip.
+    static func strokeFacing(screenHeading: Double?, tvHeading: Double, previous: Double) -> Double {
+        guard let screenHeading else { return previous }
+        let alignment=cos(wrap(screenHeading-tvHeading))
+        if alignment > 0.25 { return 1 }
+        if alignment < -0.25 { return -1 }
+        return previous
+    }
+
+    /// Racket-face angle at contact, degrees, positive to the player's right: how far the
+    /// hitting face (the screen on a forehand, the back on a backhand) is turned from
+    /// facing the TV. Headings grow counter-clockwise seen from above, which is to the
+    /// player's left, hence the sign flip.
+    static func faceAngle(screenHeading: Double, tvHeading: Double, facing: Double) -> Double {
+        let face = facing >= 0 ? screenHeading : screenHeading + .pi
+        return -wrap(face-tvHeading) * 180 / .pi
+    }
+
+    /// Aim in -1...1 from a face angle, measured against the player's own habitual face
+    /// angle for that wing: people hold and swing differently, so "straight" is whatever
+    /// this player usually does, and turning the face past it aims.
+    static let aimSpanDegrees = 24.0
+    static func aim(faceAngle: Double, neutral: Double) -> Double {
+        max(-1,min(1,(faceAngle-neutral)/aimSpanDegrees))
+    }
+    /// Learn the habitual angle only from ordinary swings, slowly, so deliberately aimed
+    /// shots do not drag "straight" after them.
+    static func learnNeutral(_ neutral: Double, faceAngle: Double) -> Double {
+        abs(faceAngle-neutral) < 14 ? neutral + (faceAngle-neutral)*0.12 : neutral
+    }
+
+    /// Distance band for play: close enough to see the TV, far enough to swing freely and
+    /// for the camera to see the room rather than one blank wall.
+    static let minTVDistance = 1.8, idealTVDistance = 2.5
+
+
     /// Flatten a direction onto the floor plane. Everything about court geometry is
     /// horizontal, so pitching or rolling the phone must not change the answer.
     static func horizontal(_ vector:SIMD3<Float>) -> SIMD3<Float>? {

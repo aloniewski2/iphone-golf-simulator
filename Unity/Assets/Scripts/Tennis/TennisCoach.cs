@@ -39,7 +39,10 @@ namespace GolfArcade.Tennis
             tip.gameObject.AddComponent<Outline>().effectColor = new Color(0, 0, 0, .75f);
             card = new GameObject("Match results").AddComponent<Image>();
             card.transform.SetParent(canvas.transform, false);
-            card.color = new Color(.04f, .07f, .12f, .82f); card.raycastTarget = false;
+            // Same family as the score plaque: deep blue gradient, navy frame.
+            card.color = Color.white; card.raycastTarget = false;
+            UiGradient.On(card, new Color(.22f, .50f, .98f, .96f), new Color(.05f, .17f, .60f, .96f));
+            var frame = card.gameObject.AddComponent<Outline>(); frame.effectColor = TennisHud.Navy; frame.effectDistance = new Vector2(5, -5);
             var r = card.rectTransform; r.anchorMin = r.anchorMax = new Vector2(.5f, .5f); r.sizeDelta = new Vector2(620, 330);
             resultTitle = MakeText(card.transform, "Result", new Vector2(.5f, .78f), new Vector2(600, 70), 44);
             resultTitle.alignment = TextAnchor.MiddleCenter;
@@ -52,7 +55,10 @@ namespace GolfArcade.Tennis
         {
             var text = new GameObject(name).AddComponent<Text>();
             text.transform.SetParent(parent, false);
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.fontSize = fontSize; text.color = Color.white;
+            text.font = Resources.Load<Font>("Tennis/UI/Fonts/Rubik-Bold") ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = fontSize; text.color = Color.white;
+            foreach (var d in new[] { new Vector2(2, -2), new Vector2(-2, 2) }) { var o = text.gameObject.AddComponent<Outline>(); o.effectColor = TennisHud.Navy; o.effectDistance = d; }
+            text.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(0, -3.5f);
             text.raycastTarget = false; text.text = "";
             var rect = text.rectTransform; rect.anchorMin = rect.anchorMax = anchor; rect.sizeDelta = size;
             return text;
@@ -64,9 +70,9 @@ namespace GolfArcade.Tennis
             string key = Key + t;
             bool seen;
             try { seen = PlayerPrefs.GetInt(key, 0) == 1; } catch { seen = true; }
-            if (seen || Time.unscaledTime < tipUntil - 2) return;
+            if (seen || HudClock.Now < tipUntil - 2) return;
             try { PlayerPrefs.SetInt(key, 1); PlayerPrefs.Save(); } catch { }
-            tip.text = TextFor(t); tipUntil = Time.unscaledTime + 5;
+            tip.text = TextFor(t); tipUntil = HudClock.Now + 5;
         }
 
         public static void ResetTips() { foreach (Tip t in System.Enum.GetValues(typeof(Tip))) PlayerPrefs.DeleteKey(Key + t); }
@@ -93,7 +99,7 @@ namespace GolfArcade.Tennis
         void Update()
         {
             if (tip.text.Length == 0) return;
-            float left = tipUntil - Time.unscaledTime;
+            float left = tipUntil - HudClock.Now;
             if (left <= 0) tip.text = "";
             else tip.canvasRenderer.SetAlpha(Mathf.Clamp01(left / .6f));
         }

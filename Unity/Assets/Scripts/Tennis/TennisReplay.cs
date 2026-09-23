@@ -6,7 +6,7 @@ namespace GolfArcade.Tennis
 {
     /// Records the last few seconds of every rendered frame -- both players' full skeletons,
     /// their rackets and the ball -- and plays a winner back in slow motion from a low
-    /// side-on camera. Storage is fixed at build time; recording never allocates.
+    /// camera from the umpire's chair. Storage is fixed at build time; recording never allocates.
     public sealed class TennisReplay : MonoBehaviour
     {
         public const int Frames = 200;          // ~3.3s at 60fps
@@ -112,11 +112,12 @@ namespace GolfArcade.Tennis
                                           Quaternion.Slerp(rotations[oa + i], rotations[oc + i], t));
             }
             onPose?.Invoke(true);
-            // Low, side-on broadcast angle that follows the ball along the court.
+            // The umpire's view: high in the chair at the net, looking down the court and
+            // turning to follow the ball, so the whole point reads from above.
             Vector3 focus = ball.position;
-            Vector3 eye = new Vector3(-13.5f, 1.6f, Mathf.Clamp(focus.z * .8f, -9, 9));
+            Vector3 eye = TennisUmpire.Seat + new Vector3(.7f, 2.1f, Mathf.Clamp(focus.z * .12f, -1.5f, 1.5f));
             cam.transform.position = Vector3.Lerp(cam.transform.position, eye, 1 - Mathf.Exp(-dt * 4));
-            var look = Quaternion.LookRotation(new Vector3(focus.x, Mathf.Max(.8f, focus.y * .6f), focus.z) - cam.transform.position);
+            var look = Quaternion.LookRotation(new Vector3(focus.x * .6f, Mathf.Max(.4f, focus.y * .5f), focus.z) - cam.transform.position);
             cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, look, 1 - Mathf.Exp(-dt * 6));
             return true;
         }
