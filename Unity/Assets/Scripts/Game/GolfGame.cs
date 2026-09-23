@@ -42,6 +42,8 @@ namespace GolfArcade.Game
         CameraRig rig;
         bool holeCam;
         GolferView golfer;
+        /// The spectators at the tee, behind the rope.
+        Gallery gallery;
         Hud hud;
         Transform ball;
         ShotEffects effects;
@@ -54,6 +56,10 @@ namespace GolfArcade.Game
         CinematicRig cinematic;
         int signatureLanding;
         bool signaturePlaying;
+        /// The introductions on the tee: you, then the gallery cheering (for tests and reviews).
+        public bool MeetingThePlayer => Current == State.Intro && meeting && !cheered;
+        public bool GalleryCheering => Current == State.Intro && cheered;
+        public int GallerySize => gallery ? gallery.Count : 0;
         /// True while the intro is on the designed shot rather than the aerial.
         public bool SignaturePlaying => Current == State.Intro && signaturePlaying;
         /// The ball, for the tests' eyes — Codex's during his shot, the game's otherwise.
@@ -170,6 +176,7 @@ namespace GolfArcade.Game
             hud = Hud.Create();
             greenRead = GreenRead.Create(transform);
             golfer = GolferView.Create(transform);
+            gallery = Gallery.Create(transform);
             sounds = GolfSounds.Create(transform);
 
             ball = new GameObject("Ball").transform;
@@ -396,17 +403,23 @@ namespace GolfArcade.Game
             hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture);
             double downTheHole = hole.Tee.HeadingTo(hole.Pin);
             hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm, Wind.SpeedMPH);
-            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+            ShowScore();
             FrameMinimap();
             PlaceBall(ballAt, 0);
             ball.gameObject.SetActive(true);
             golfer.SetVisible(false);
             hud.SetStatus("");
             hud.SetTempo("");
-            // The showcase: HUD away, letterbox and the hole's card over the flyover.
+            // The showcase: HUD away, the tournament's title over the flyover; then the
+            // introductions on the tee, you and the gallery behind the rope.
             hud.ShowPlayHud(false);
-            hud.ShowHoleIntro(hole.Number, hole.Name, hole.Par, hole.Length, hole.Picture, hole.Blurb,
+            hud.ShowHoleIntro(Tournament, hole.Number, hole.Name, hole.Par, hole.Length,
                 Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}");
+            var teeLine = TeeAim();
+            golfer.Stand(ball.position, teeLine);
+            gallery.gameObject.SetActive(true);
+            gallery.Place(hole, golfer.transform.position, teeLine, hole.Number * 31 + holeIndex);
+            meeting = cheered = false;
             signature = SignatureShot.Load(hole.Number, holeView);
             cinematic?.Destroy();
             cinematic = signature != null ? CinematicRig.Load(hole.Number, holeView) : null;
@@ -421,16 +434,14 @@ namespace GolfArcade.Game
         {
             if (Current == State.Intro)
             {
-                hud.HideHoleIntro(); hud.ShowPlayHud(true);
-                if (signaturePlaying || overviewPlaying)
-                {
-                    rig.RestoreFov(); signaturePlaying = overviewPlaying = false;
-                    cinematic?.Show(false);
-                    ball.gameObject.SetActive(true); PlaceBall(ballAt, 0);
-                }
+                EndShowcase();
+                hud.HideNameplate(); hud.ShowPlayHud(true);
+                holeView.ShowTeeMarkers(true);
             }
             var lie = hole.LieAt(ballAt);
             bool putting = lie == CourseLie.Green;
+            // the gallery is at the tee: once you've left it, they've nothing to draw
+            gallery.gameObject.SetActive(ballAt.DistanceTo(hole.Tee) < 20);
             if (!keepHeading || !aimedByPlayer)
             {
                 heading = ballAt.HeadingTo(putting ? hole.Pin : hole.RecommendedTarget(ballAt));
@@ -586,6 +597,91 @@ namespace GolfArcade.Game
         float LeadSeconds => signature != null && signature.HasOverview ? OverviewSeconds : AerialSeconds;
         float IntroSeconds => signature != null ? LeadSeconds + signature.Duration : ShowcaseSeconds;
         bool overviewPlaying;
+
+        /// The introductions on the tee after the flyover, the way the tennis broadcast opens:
+        /// first you, close up on the tee, waving to the camera with your nameplate up and the
+        /// gallery behind the rope; then the gallery, cheering you on as the camera turns to them.
+        const float YouSeconds = 2.8f, GallerySeconds = 1.9f;
+        float MeetSeconds => YouSeconds + (gallery.Count > 0 ? GallerySeconds : 0f);
+        bool meeting, cheered;
+
+        void MeetThePlayer(float t)
+        {
+            if (!meeting)
+            {
+                meeting = true;
+                EndShowcase();
+                hud.HideHoleIntro();
+                var teeLine = TeeAim();
+                golfer.SetClub(GolfClub.Driver, false);
+                golfer.Stand(ball.position, teeLine);
+                golfer.SetVisible(true);
+                golfer.Perform("Wave");
+                hud.ShowNameplate("YOU", $"On the tee   ·   Hole {hole.Number}");
+                rig.SnapNext();
+            }
+            var feet = golfer.transform.position;
+            var facing = golfer.transform.forward; facing.y = 0; facing.Normalize();
+            if (t < YouSeconds || gallery.Count == 0)
+            {
+                // full length, from in front and a little to the side, drifting slowly round;
+                // the gallery behind the rope over the golfer's shoulders
+                float turn = Mathf.Lerp(-16f, 6f, Mathf.SmoothStep(0, 1, t / YouSeconds));
+                var from = Quaternion.AngleAxis(turn, Vector3.up) * facing;
+                rig.Cue(feet + from * 4.6f + Vector3.up * 1.3f, feet + Vector3.up * 0.95f);
+                hud.SetNameplateAlpha(Mathf.Min(Mathf.Clamp01((t - 0.25f) / 0.4f), Mathf.Clamp01((YouSeconds - 0.15f - t) / 0.3f)));
+                return;
+            }
+            if (!cheered)
+            {
+                cheered = true;
+                hud.HideNameplate();
+                holeView.ShowTeeMarkers(false);                     // they'd stand in front of the lens
+                gallery.Cheer();
+                golfer.Perform("FistPump");
+                rig.SnapNext();
+            }
+            // the broadcast's crowd shot: from the tee in front of them, a little down the line,
+            // at head height, easing in as they cheer
+            float u = Mathf.SmoothStep(0, 1, (t - YouSeconds) / GallerySeconds);
+            var toFans = gallery.Centre - feet; toFans.y = 0; toFans.Normalize();
+            var along = Vector3.Cross(Vector3.up, toFans);
+            if (Vector3.Dot(along, TeeAim()) < 0) along = -along;          // down the hole's side
+            var eye = feet + toFans * Mathf.Lerp(1.2f, 2.0f, u) + along * Mathf.Lerp(2.2f, 1.6f, u) + Vector3.up * 1.75f;
+            rig.Cue(eye, gallery.Centre + Vector3.up * 1.05f);
+        }
+
+        /// The aim off the tee before the player has touched it: at the hole's own target.
+        Vector3 TeeAim()
+        {
+            double h = hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee)) * Math.PI / 180;
+            return new Vector3((float)Math.Sin(h), 0, (float)Math.Cos(h));
+        }
+
+        /// The flyover's things put away: the lens, Codex's cinematic ball, and the game's ball
+        /// back on the tee.
+        void EndShowcase()
+        {
+            if (!signaturePlaying && !overviewPlaying) return;
+            rig.RestoreFov(); signaturePlaying = overviewPlaying = false;
+            cinematic?.Show(false);
+            effects.ClearTracer();
+            ball.gameObject.SetActive(true); PlaceBall(ballAt, 0);
+        }
+
+        /// The tournament: the course's name, as an Open.
+        string Tournament => $"{course.Name} Open";
+
+        /// The scoreboard: every hole of the round against its par, the one being played live.
+        void ShowScore()
+        {
+            var pars = new int[course.Holes.Length];
+            var strokes = new int?[pars.Length];
+            for (int i = 0; i < pars.Length; i++) { pars[i] = course.Holes[i].Par; strokes[i] = Card.StrokesOn(i); }
+            strokes[holeIndex] ??= holeStrokes;
+            hud.SetScoreboard($"{Tournament}   ·   Hole {hole.Number}", pars, strokes, holeIndex);
+            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+        }
 
         /// The establishing camera over the course, `s` seconds in.
         void PlayOverview(float s)
@@ -841,7 +937,7 @@ namespace GolfArcade.Game
                 hud.Controller.SetHeading((float)(heading - hole.Tee.HeadingTo(hole.Pin)));
             }
             targetYards = putting ? 0 : ballAt.DistanceTo(FullShotCarry(lie));
-            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+            ShowScore();
         }
 
         double targetYards;
@@ -953,7 +1049,7 @@ namespace GolfArcade.Game
             holeCam = false;
             holeStrokes++;
             strikePlayed = false;
-            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+            ShowScore();
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Swing {club.ClubSpeedMPH(impact.Power):F0} mph  ·  Load {impact.Backswing:P0}  ·  Face {impact.FaceDegrees:+0;-0}°");
             float toBall = golfer.Strike();
@@ -1021,14 +1117,19 @@ namespace GolfArcade.Game
 
                 case State.Intro:
                     // The showcase: the whole hole from the air, then the walk up to the green —
-                    // or the hole's signature shot, where it has one. A tap skips it.
-                    if (signature == null) rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds));
-                    else if (stateTime < LeadSeconds) { if (signature.HasOverview) PlayOverview(stateTime); else rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds)); }
-                    else PlaySignature(stateTime - LeadSeconds);
-                    // The card rises with the aerial and is gone before the walk reaches the green.
-                    hud.SetHoleIntroAlpha(Mathf.Min(Mathf.SmoothStep(0, 1, (stateTime - 0.4f) / 0.8f), Mathf.SmoothStep(0, 1, (IntroSeconds - 1.2f - stateTime) / 0.9f)));
+                    // or the hole's signature shot, where it has one — and then the introductions
+                    // on the tee. A tap skips it all.
+                    if (stateTime < IntroSeconds)
+                    {
+                        if (signature == null) rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds));
+                        else if (stateTime < LeadSeconds) { if (signature.HasOverview) PlayOverview(stateTime); else rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds)); }
+                        else PlaySignature(stateTime - LeadSeconds);
+                        // The title pops in with the aerial and is gone before the walk reaches the green.
+                        hud.SetHoleIntroAlpha(Mathf.Min(Mathf.Clamp01((stateTime - 0.3f) / 0.45f), Mathf.SmoothStep(0, 1, (IntroSeconds - 1.2f - stateTime) / 0.9f)));
+                    }
+                    else MeetThePlayer(stateTime - IntroSeconds);
                     // A tap skips — but not the one that pressed Play, which is still down this frame.
-                    if (stateTime > IntroSeconds || (stateTime > 0.75f && Input.GetMouseButtonDown(0))) BeginAim(false);
+                    if (stateTime > IntroSeconds + MeetSeconds || (stateTime > 0.75f && Input.GetMouseButtonDown(0))) BeginAim(false);
                     break;
 
                 case State.Aim:
@@ -1202,7 +1303,7 @@ namespace GolfArcade.Game
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             holeStrokes += shot.PenaltyStrokes;
             hud.ShowBanner(result, 2.2f);
-            hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+            ShowScore();
             // the POV stays where it is, on the ball by the flag, as Codex's does
             if (!holeCam && club == GolfClub.Putter) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
@@ -1214,7 +1315,7 @@ namespace GolfArcade.Game
             if (shot.IsHoled)
             {
                 Card.Record(holeIndex, holeStrokes);
-                hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
+                ShowScore();
                 hud.ShowBanner(Scorecard.ScoreName(holeStrokes, hole.Par), 3f);
                 Enter(State.HoleDone);
                 return;

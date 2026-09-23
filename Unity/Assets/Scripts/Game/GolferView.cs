@@ -13,8 +13,29 @@ namespace GolfArcade.Game
     /// drives the clip: the backswing is scrubbed by the detector's load, so the figure winds
     /// up exactly as far as the player does, and on impact the downswing runs through to the
     /// finish at real speed. Without the model a Mii-simple figure of primitives stands in.
+    /// Off the course it can also Perform the studio's moves (the intro's wave, the gallery's
+    /// idle and cheering), and a spectator is the same figure in a look of its own.
     public sealed class GolferView : MonoBehaviour
     {
+        /// Who a figure looks like: the player's comes from GolferStyle; a spectator has its own.
+        public struct Look
+        {
+            public string ModelPath, HairMesh;
+            public Color Skin, Hair;
+            /// The polo and the trousers, where they differ from the studio's golf kit (teal and
+            /// sand); null keeps the kit, as the player always does.
+            public Color? Shirt, Trousers;
+            public static Look Player => new()
+            {
+                ModelPath = GolferStyle.ModelPath, HairMesh = GolferStyle.HairMesh,
+                Skin = GolferStyle.SkinColor, Hair = GolferStyle.HairColor,
+            };
+        }
+        Look? own;
+        Look CurrentLook => own ?? Look.Player;
+        /// A spectator: its own look, never holds a club, and isn't animated while off screen.
+        bool spectator;
+
         const float MetresToYards = 1.0936f;
 
         /// One clip's landmarks, from golfer_<m|f>_clips.json (frames found in Blender from the
@@ -71,6 +92,16 @@ namespace GolfArcade.Game
             return v;
         }
 
+        public static GolferView CreateSpectator(Transform parent, Look look)
+        {
+            var go = new GameObject("Spectator");
+            go.transform.SetParent(parent, false);
+            var v = go.AddComponent<GolferView>();
+            v.own = look; v.spectator = true;
+            v.ApplyStyle();
+            return v;
+        }
+
         /// (Re)build the figure from GolferStyle: body model and skin tone. Comes up at address.
         public void ApplyStyle()
         {
@@ -79,16 +110,18 @@ namespace GolfArcade.Game
             if (body) Destroy(body.gameObject);
             hasModel = false; body = null; modelGo = null;
             phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
-            var model = Resources.Load<GameObject>(GolferStyle.ModelPath);
-            if (model && !BuildModel(model, GolferStyle.ModelPath)) Debug.LogWarning($"{GolferStyle.ModelPath} has no swing clips; using the primitive golfer");
+            var look = CurrentLook;
+            var model = Resources.Load<GameObject>(look.ModelPath);
+            if (model && !BuildModel(model, look)) Debug.LogWarning($"{look.ModelPath} has no swing clips; using the primitive golfer");
             if (!hasModel) BuildFigure();
             SetClub(shownClub, shownShort);
         }
 
         // ----- Rigged model -----
 
-        bool BuildModel(GameObject prefab, string path)
+        bool BuildModel(GameObject prefab, Look look)
         {
+            string path = look.ModelPath;
             clips.Clear(); landmarks.Clear(); clubMeshes.Clear();
             foreach (var c in Resources.LoadAll<AnimationClip>(path)) clips[c.name] = c;
             if (clips.Count == 0) return false;
@@ -109,18 +142,22 @@ namespace GolfArcade.Game
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (name == "MAT_SKIN") mats[i] = HoleView.Mat(GolferStyle.SkinColor);
-                    else if (name == "MAT_HAIR") mats[i] = HoleView.Mat(GolferStyle.HairColor);
+                    if (name == "MAT_SKIN") mats[i] = HoleView.Mat(look.Skin);
+                    else if (name == "MAT_HAIR") mats[i] = HoleView.Mat(look.Hair);
+                    else if (name == "V4 teal" && look.Shirt is Color shirt) mats[i] = HoleView.Mat(shirt);
+                    else if (name == "V4 sand" && look.Trousers is Color legs) mats[i] = HoleView.Mat(legs);
                     else if (Palette.TryGetValue(name, out var color)) mats[i] = HoleView.Mat(color);
                 }
                 r.sharedMaterials = mats;
-                if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
+                if (r is SkinnedMeshRenderer smr) { smr.updateWhenOffscreen = !spectator; if (!body0) body0 = smr; }
+                if (spectator) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
             foreach (var t in model.GetComponentsInChildren<Transform>(true))
             {
                 if (t.name.StartsWith("CLUB_")) clubMeshes[t.name.Substring(5)] = t.gameObject;
-                if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == GolferStyle.HairMesh);
+                if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == look.HairMesh);
             }
+            if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -136,6 +173,39 @@ namespace GolfArcade.Game
 
         GolfClub shownClub = GolfClub.Driver;
         bool shownShort;
+        SkinnedMeshRenderer body0;
+
+        // ----- Moves off the course -----
+
+        /// The studio's shared moves were made facing a quarter turn from its golf clips; this
+        /// turns them back so every clip faces where the golfer stands.
+        static float ClipYaw(string move) => move is "Idle" or "Wave" or "Cheer" ? 90f : 0f;
+        float performTime, performLength;
+
+        /// Plays a move off the course — "Wave", "Cheer", "FistPump", "Idle" — at real speed,
+        /// looping, empty-handed, from `startAt` seconds in. Settle() (or SetClub) brings the
+        /// swing back. False when the model has no such clip.
+        public bool Perform(string move, float startAt = 0f)
+        {
+            if (!hasModel || !clips.TryGetValue(move, out var c)) return false;
+            if (clip.IsValid()) clip.Destroy();
+            clip = AnimationClipPlayable.Create(graph, c);
+            clip.SetApplyFootIK(false);
+            clip.SetApplyPlayableIK(false);
+            output.SetSourcePlayable(clip);
+            clipName = move;
+            foreach (var kv in clubMeshes) kv.Value.SetActive(false);
+            modelGo.transform.localRotation = Quaternion.Euler(0, ClipYaw(move), 0);
+            performLength = Mathf.Max(0.1f, c.length);
+            performTime = Mathf.Repeat(startAt, performLength);
+            phase = 4;
+            clip.SetTime(performTime);
+            graph.Evaluate();
+            return true;
+        }
+
+        /// The move playing now, or null while it's the swing.
+        public string Performing => phase == 4 ? clipName : null;
 
         /// The clip and the club in hand for `club`: the driver's swing, the iron's, a half
         /// swing or a chip for the wedge depending on how far there is to go, the putt.
@@ -160,12 +230,14 @@ namespace GolfArcade.Game
             }
             else { TopTime = c.length * 0.55f; ImpactTime = c.length * 0.75f; EndTime = c.length; }
             string clubMesh = info != null ? info.club.ToUpperInvariant() : club.ToString().ToUpperInvariant();
-            foreach (var kv in clubMeshes) kv.Value.SetActive(kv.Key == clubMesh);
+            foreach (var kv in clubMeshes) kv.Value.SetActive(!spectator && kv.Key == clubMesh);
             if (clip.IsValid()) clip.Destroy();
             clip = AnimationClipPlayable.Create(graph, c);
             clip.SetApplyFootIK(false);
             clip.SetApplyPlayableIK(false);
             output.SetSourcePlayable(clip);
+            modelGo.transform.localRotation = Quaternion.identity;
+            if (phase == 4) { phase = 0; time = 0; }
             Show(Mathf.Min(time, TopTime));
         }
 
@@ -219,6 +291,7 @@ namespace GolfArcade.Game
 
         public void Settle()
         {
+            if (phase == 4) { clipName = null; SetClub(shownClub, shownShort); }
             swingThrough = -1; shownLoad = 0;
             phase = 0; loadTarget = 0;
             if (hasModel) Show(0);
@@ -245,6 +318,13 @@ namespace GolfArcade.Game
                 case 2:
                     Show(time + dt);
                     if (time >= EndTime) phase = 3;
+                    break;
+                case 4:
+                    performTime = Mathf.Repeat(performTime + dt, performLength);
+                    // a spectator nobody can see isn't worth posing
+                    if (spectator && body0 && !body0.isVisible) break;
+                    clip.SetTime(performTime);
+                    graph.Evaluate();
                     break;
             }
         }

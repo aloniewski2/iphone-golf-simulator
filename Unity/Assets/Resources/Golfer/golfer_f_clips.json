@@ -40,6 +40,38 @@
       "fps": 30,
       "top": 30,
       "impact": 58
+    },
+    {
+      "name": "Idle",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "Wave",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "Cheer",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "FistPump",
+      "club": "",
+      "frames": 91,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
     }
   ]
 }

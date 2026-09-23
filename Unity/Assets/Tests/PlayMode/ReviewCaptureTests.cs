@@ -65,7 +65,15 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/1b-aerial.png"));
             yield return new WaitForSecondsRealtime(3.5f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/1c-walkthrough.png"));
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
+            // The introductions on the tee: you, waving, with your nameplate; then the gallery cheering.
+            yield return WaitFor(() => game.MeetingThePlayer, 12, "the player introduction");
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1d-you.png"));
+            Assert.Greater(game.GallerySize, 3, "the tee should have its gallery");
+            yield return WaitFor(() => game.GalleryCheering, 6, "the gallery to cheer");
+            yield return new WaitForSecondsRealtime(0.9f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1e-gallery.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
             yield return null;
             Assert.IsNotNull(GameCapture.Save($"{Dir}/2-address.png"));
@@ -141,7 +149,10 @@ namespace GolfArcade.PlayTests
             Assert.Greater(above, 5f, "the ball should be well in the air mid-carry");
             Assert.IsTrue(ballAt.z > 40 && ballAt.z < 200, $"the ball should be out over the water, at {ballAt}");
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-1b-signature-shot.png"));
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
+            yield return WaitFor(() => game.MeetingThePlayer, 20, "the player introduction");
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-1c-you.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
             yield return null;
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2-address.png"));
@@ -189,7 +200,7 @@ namespace GolfArcade.PlayTests
             game.Play();
             yield return null;
             game.JumpToHole(12);
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
             var pin = GolfArcade.Course.Course.Cliffside().Holes[1].Pin;
             game.StrikeToward(pin);
@@ -234,11 +245,13 @@ namespace GolfArcade.PlayTests
             game.Play();
             yield return null;
             game.JumpToHole(12);
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
-            game.Swing.Synthetic.SpeedScale = 0.4;   // a lazy swing: speed decides the distance (and the curve forgives a lot)
+            // a lazy swing — speed decides the distance — though not so lazy that a slow frame
+            // can step over the whole downswing
+            game.Swing.Synthetic.SpeedScale = 0.45;
             game.Swing.Synthetic.Backswing(true);
-            yield return new WaitForSecondsRealtime(0.22f);
+            yield return new WaitForSecondsRealtime(0.35f);
             game.Swing.Synthetic.Backswing(false);
             yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
             Assert.Less(game.LastShot.Carry, 135, "a short one, into the water");

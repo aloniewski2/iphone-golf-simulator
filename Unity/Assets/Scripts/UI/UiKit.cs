@@ -28,6 +28,17 @@ namespace GolfArcade.UI
         public static readonly Color ButtonPressed = new(0.35f, 0.69f, 1f, 0.9f);
         public static readonly Color Muted = InkMuted;
 
+        // ---- The tournament look, for what is broadcast over the course (the title over the
+        // flyover, the nameplates, the scoreboard, the shot card): Wii-bright cobalt panels with a
+        // white rim, sunshine-yellow for you, navy ink on the yellow.
+        public static readonly Color ArcadeBlue = Hex("2F5FE0", 0.92f);
+        public static readonly Color ArcadeBlueDeep = Hex("1C3FA8");
+        public static readonly Color ArcadeSky = Hex("9CC2FF", 0.55f);
+        public static readonly Color ArcadeRim = Hex("FFFFFF", 0.95f);
+        public static readonly Color ArcadeYellow = Hex("FFD23A");
+        public static readonly Color ArcadeYellowDeep = Hex("F2A81D");
+        public static readonly Color ArcadeInk = Hex("132A6B");
+
         public static Color Hex(string hex, float alpha = 1f)
         {
             int v = System.Convert.ToInt32(hex, 16);
@@ -154,6 +165,42 @@ namespace GolfArcade.UI
             inner.rectTransform.offsetMin = new Vector2(3, 3); inner.rectTransform.offsetMax = new Vector2(-3, -3);
             inner.raycastTarget = false;
             return edge;
+        }
+
+        /// A chunky arcade pill: a white rim around a fill, with a soft drop shadow under it — the
+        /// shape the tournament graphics are made of. Size and place the returned root; content
+        /// goes on `fill`. `round` false gives a rounded box instead of a capsule.
+        public static RectTransform Pill(Transform parent, string name, Color fillColor, Vector2 anchor, Vector2 pos, Vector2 size, out Image fill, float rim = 5f, bool round = true)
+        {
+            var root = new GameObject(name).AddComponent<RectTransform>();
+            root.SetParent(parent, false);
+            root.anchorMin = root.anchorMax = anchor; root.pivot = new Vector2(0.5f, 0.5f);
+            root.anchoredPosition = pos; root.sizeDelta = size;
+            Image Layer(Transform to, string n, Color c, float inset, float drop)
+            {
+                var img = Panel(to, n, c, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                img.rectTransform.offsetMin = new Vector2(inset, inset - drop); img.rectTransform.offsetMax = new Vector2(-inset, -inset - drop);
+                img.raycastTarget = false;
+                if (round) img.sprite = Circle;
+                return img;
+            }
+            Layer(root, "Shadow", new Color(0.03f, 0.08f, 0.25f, 0.3f), 0, 7);
+            var edge = Layer(root, "Rim", ArcadeRim, 0, 0);
+            fill = Layer(edge.transform, "Fill", fillColor, rim, 0);
+            return root;
+        }
+
+        /// Big outlined type for the arcade graphics: the face's fill with a heavy navy outline and
+        /// a drop under it, like a sports title.
+        public static Text Chunky(Transform parent, string name, int size, Color fill, Color outline, float weight = 4f)
+        {
+            var t = Label(parent, name, size, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Display, false);
+            t.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            t.color = fill; t.raycastTarget = false;
+            var o = t.gameObject.AddComponent<Outline>(); o.effectColor = outline; o.effectDistance = new Vector2(weight, -weight);
+            var o2 = t.gameObject.AddComponent<Outline>(); o2.effectColor = outline; o2.effectDistance = new Vector2(-weight, weight);
+            var drop = t.gameObject.AddComponent<Shadow>(); drop.effectColor = new Color(outline.r, outline.g, outline.b, 0.7f); drop.effectDistance = new Vector2(0, -weight * 2.2f);
+            return t;
         }
 
         public static HoldButton Button(Transform parent, string label, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize = 80, Color? tint = null, Font face = null, bool shadow = true)

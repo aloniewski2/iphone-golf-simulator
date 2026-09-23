@@ -97,7 +97,8 @@ for c in CLUBS: club_objects[c], club_tips[c] = club_mesh(c)
 # Adnan's heads are bald. Three styles are built as shells that hug the head mesh itself (its
 # surface is found by ray-casting from the head's centre), weighted to the Head bone like the head,
 # in one material the game colours: HAIR_SHORT, a crop; HAIR_LONG, a bob to the jaw; HAIR_CURLY,
-# a puff of curls. The face is toward the rig's -X here.
+# a puff of curls. They are fitted with the rig at rest, where the face is toward the rig's -Y (the
+# golf clips turn the whole figure a quarter turn to face its ball on -X; the rest pose doesn't).
 MAT_HAIR = bpy.data.materials.get("MAT_HAIR") or bpy.data.materials.new("MAT_HAIR")
 if not MAT_HAIR.use_nodes: MAT_HAIR.use_nodes = True
 MAT_HAIR.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.06, 0.03, 0.015, 1)
@@ -130,14 +131,14 @@ def hair(style):
         column = []
         for j in range(rings + 1):
             theta = stop * j / rings
-            # direction from the crown: front is -X
-            d = Vector((-math.sin(theta) * math.cos(azimuth), math.sin(theta) * math.sin(azimuth), math.cos(theta)))
+            # direction from the crown: front (azimuth 0) is -Y, the face at rest
+            d = Vector((math.sin(theta) * math.sin(azimuth), -math.sin(theta) * math.cos(azimuth), math.cos(theta)))
             loc, normal = surface(d)
             lift = 0.014
             if style == "CURLY": lift = 0.03 + 0.012 * (0.5 + 0.5 * math.sin(azimuth * 7) * math.sin(theta * 9 + azimuth))
             if style == "LONG" and theta > math.radians(95):
                 # below the ears the bob falls straight rather than tucking under the head
-                rim, rim_n = surface(Vector((-math.sin(math.radians(95)) * math.cos(azimuth), math.sin(math.radians(95)) * math.sin(azimuth), math.cos(math.radians(95)))))
+                rim, rim_n = surface(Vector((math.sin(math.radians(95)) * math.sin(azimuth), -math.sin(math.radians(95)) * math.cos(azimuth), math.cos(math.radians(95)))))
                 drop = (theta - math.radians(95)) / (stop - math.radians(95))
                 loc = Vector((rim.x, rim.y, rim.z - drop * 0.16)) + Vector((rim_n.x, rim_n.y, 0)).normalized() * (0.004 * drop)
                 normal = Vector((rim_n.x, rim_n.y, 0)).normalized()
@@ -212,6 +213,33 @@ for strip in track.strips:
     for fcs in curves.values():
         for fc in fcs: fc.update()
     rig.animation_data.action = None
+
+# ------------------------------------------------------------------ 3b. the moves off the course
+# The intro and the gallery: the studio's shared Idle, Wave and Celebrate (made on the base rig,
+# the same 22 bones; they face a quarter turn from the golf clips, which the game allows for — see
+# GolferView.ClipYaw) and golf's own fist-pump Celebrate, all empty-handed. The Club bone is keyed
+# at rest in them, so it doesn't hold the last swing's pose; the game hides the club for these.
+EXTRA = {"Idle": "Shared__Idle", "Wave": "Shared__Wave", "Cheer": "Shared__Celebrate", "FistPump": "Golf__Celebrate"}
+at = max(int(s.frame_end) for s in track.strips) + 10
+for clip, source in EXTRA.items():
+    act = bpy.data.actions[f"{GENDER}__{source}"].copy()
+    act.name = f"{GENDER}__{clip}__game"
+    slot = act.slots[0] if len(act.slots) else None
+    rig.animation_data.action = act
+    if slot: rig.animation_data.action_slot = slot
+    club_bone.matrix_basis = Matrix.Identity(4)
+    first, last = (int(v) for v in act.frame_range)
+    for f in (first, last):
+        for path, values in (('location', club_bone.location), ('rotation_quaternion', club_bone.rotation_quaternion), ('scale', club_bone.scale)):
+            for k, v in enumerate(values):
+                act.fcurve_ensure_for_datablock(rig, f'pose.bones["Club"].{path}', index=k).keyframe_points.insert(f, v, options={'FAST'})
+    rig.animation_data.action = None
+    strip = track.strips.new(clip, at, act)
+    if slot: strip.action_slot = slot
+    strip.mute = False
+    landmarks.append({"name": clip, "club": "", "frames": last - first + 1, "fps": sc.render.fps, "top": 0, "impact": 0})
+    print(f"{GENDER} {clip}: {source}, {last - first + 1} frames at {at}")
+    at = int(strip.frame_end) + 10
 
 # ------------------------------------------------------------------ 4. face the ball, name the skin, export
 skin = bpy.data.materials.get("V4 skin" if GENDER == "Male" else "V4 skin female")

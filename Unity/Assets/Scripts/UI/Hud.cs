@@ -32,7 +32,7 @@ namespace GolfArcade.UI
 
         RectTransform safeArea;
         Rect appliedSafeArea;
-        Text holeText, scoreText, distanceText, distanceCaption, clubText, statusText, bannerText, tempoText, windText, controllerText;
+        Text distanceText, distanceCaption, clubText, statusText, bannerText, tempoText, windText, controllerText;
         Image clubPill, meterGauge;
         RectTransform minimapHolder;
         const float Margin = 36f;
@@ -55,7 +55,7 @@ namespace GolfArcade.UI
         Vector2 meterHome;
         float meterLoad;
         CanvasGroup bannerGroup;
-        RectTransform scorecard, holeCard, scoreCard, shotCard;
+        RectTransform scorecard, board, shotCard;
         float bannerUntil;
 
         /// The phone-as-controller layout while the course is on the big screen; null otherwise.
@@ -84,39 +84,36 @@ namespace GolfArcade.UI
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             ApplySafeArea();
 
-            // The play HUD: soft navy pills over the course, no hard frames. Top left the hole,
-            // top right the score; under the hole the distance card (a big yardage, the club in a
-            // pill, the wind); under the score the minimap; down the left edge the power meter.
-            var pill = new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.74f);
-            var holePill = Panel("Hole card", pill, new Vector2(0, 1), new Vector2(0, 1), new Vector2(Margin, -Margin), new Vector2(560, 80));
-            holePill.rectTransform.pivot = new Vector2(0, 1);
-            holeCard = holePill.rectTransform;
-            holeText = Label("Hole", 30, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(1, 1), new Vector2(30, 0), Vector2.zero, holeCard);
-            holeText.font = UiKit.Strong; holeText.color = UiKit.InkMuted; holeText.supportRichText = true;
-            var scorePill = Panel("Score card", pill, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin, -Margin), new Vector2(300, 80));
-            scorePill.rectTransform.pivot = new Vector2(1, 1);
-            scoreCard = scorePill.rectTransform;
-            scoreText = Label("Score", 30, TextAnchor.MiddleRight, new Vector2(0, 0), new Vector2(1, 1), new Vector2(-30, 0), Vector2.zero, scoreCard);
-            scoreText.font = UiKit.Strong; scoreText.color = UiKit.InkMuted; scoreText.supportRichText = true;
+            // The play HUD, dressed like a tournament broadcast: top left the scoreboard (you and
+            // par, hole by hole), under it the distance card (a big yardage, the club in a yellow
+            // pill, the wind) in the same cobalt with a white rim; top right the minimap; down the
+            // left edge the power meter.
+            board = new GameObject("Scoreboard").AddComponent<RectTransform>();
+            board.SetParent(safeArea, false);
+            board.anchorMin = board.anchorMax = board.pivot = new Vector2(0, 1);
+            board.anchoredPosition = new Vector2(Margin, -Margin); board.sizeDelta = new Vector2(420, BoardHeight);
 
             // The distance card.
-            var shot = Panel("Shot card", new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.84f), new Vector2(0, 1), new Vector2(0, 1), new Vector2(Margin, -Margin - 80 - 16), new Vector2(460, 276));
-            shot.rectTransform.pivot = new Vector2(0, 1);
-            shotCard = shot.rectTransform;
-            distanceCaption = Label("Caption", 24, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(30, -22), new Vector2(460, 30), shotCard);
-            distanceCaption.font = UiKit.Strong; distanceCaption.color = UiKit.InkMuted;
-            distanceText = Label("Distance", 104, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -44), new Vector2(480, 118), shotCard);
+            var shotRoot = UiKit.Pill(safeArea, "Shot card", UiKit.ArcadeBlue, new Vector2(0, 1), Vector2.zero, new Vector2(460, 262), out var shotFill, 5f, round: false);
+            shotRoot.pivot = new Vector2(0, 1);
+            shotRoot.anchoredPosition = new Vector2(Margin, -Margin - BoardHeight - 22);
+            shotCard = shotRoot;
+            var shot = shotFill.rectTransform;
+            distanceCaption = Label("Caption", 24, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -18), new Vector2(460, 30), shot);
+            distanceCaption.font = UiKit.Strong; distanceCaption.color = UiKit.Hex("D5E3FF");
+            distanceText = Label("Distance", 104, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(22, -38), new Vector2(480, 118), shot);
             distanceText.font = UiKit.Display; distanceText.supportRichText = true;
-            clubPill = Panel("Club pill", UiKit.SurfaceRaised, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -164), new Vector2(300, 46), shotCard);
-            clubPill.rectTransform.pivot = new Vector2(0, 1);
-            clubText = UiKit.Label(clubPill.transform, "Club", 26, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(18, 0), Vector2.zero, UiKit.Strong, false);
-            clubText.rectTransform.offsetMax = new Vector2(-18, 0);
-            windArrow = Panel("Wind arrow", new Color(1f, 1f, 1f, 0.95f), new Vector2(0, 1), new Vector2(0, 1), new Vector2(46, -238), new Vector2(34, 34), shotCard);
+            var clubRoot = UiKit.Pill(shot, "Club pill", UiKit.ArcadeYellow, new Vector2(0, 1), Vector2.zero, new Vector2(300, 50), out clubPill, 3f);
+            clubRoot.pivot = new Vector2(0, 1); clubRoot.anchoredPosition = new Vector2(20, -158);
+            clubPillRoot = clubRoot;
+            clubText = UiKit.Label(clubPill.transform, "Club", 25, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(16, 0), Vector2.zero, UiKit.Display, false);
+            clubText.rectTransform.offsetMax = new Vector2(-16, 0); clubText.color = UiKit.ArcadeInk;
+            windArrow = Panel("Wind arrow", new Color(1f, 1f, 1f, 0.95f), new Vector2(0, 1), new Vector2(0, 1), new Vector2(40, -228), new Vector2(34, 34), shot);
             windArrow.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             windArrow.sprite = ArrowSprite(); windArrow.type = Image.Type.Simple;
-            windText = Label("Wind", 26, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(76, -238), new Vector2(420, 36), shotCard);
+            windText = Label("Wind", 26, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(70, -228), new Vector2(420, 36), shot);
             windText.rectTransform.pivot = new Vector2(0, 0.5f);
-            windText.font = UiKit.Ui; windText.color = UiKit.InkMuted;
+            windText.font = UiKit.Strong; windText.color = Color.white;
 
             statusText = Label("Status", 38, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 420), new Vector2(1000, 60));
             statusText.color = new Color(1, 1, 1, 0.9f);
@@ -154,9 +151,9 @@ namespace GolfArcade.UI
 
             // Minimap, top right under the score: the course from above with rounded corners, a
             // crisp light edge and a soft shadow, no frame of its own.
-            var mapShadow = Panel("Minimap shadow", new Color(0, 0, 0, 0.22f), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin + 4, -Margin - 80 - 16 - 8), new Vector2(272, 432));
+            var mapShadow = Panel("Minimap shadow", new Color(0.03f, 0.08f, 0.25f, 0.3f), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin + 4, -Margin - 8), new Vector2(272, 432));
             mapShadow.rectTransform.pivot = new Vector2(1, 1); mapShadow.raycastTarget = false;
-            var mapFrame = Panel("Minimap frame", new Color(1, 1, 1, 0.92f), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin, -Margin - 80 - 16), new Vector2(272, 432));
+            var mapFrame = Panel("Minimap frame", UiKit.ArcadeRim, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin, -Margin), new Vector2(272, 432));
             mapFrame.rectTransform.pivot = new Vector2(1, 1);
             mapFrame.transform.SetParent(mapShadow.transform, true);   // they move together (the controller layout moves the frame's parent)
             var mapMask = Panel("Mask", Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, mapFrame.transform);
@@ -472,11 +469,14 @@ namespace GolfArcade.UI
             picker = null;
         }
 
-        /// The card over the hole's showcase: its render, name, par and yardage, a line about it
-        /// and today's wind — the picker's card, presented. Letterbox bars make the cinematic.
+        /// The title over the hole's flyover, the way the tennis broadcast opens on its island:
+        /// the tournament's name in chunky yellow on a cobalt badge with a white rim, and under it
+        /// a yellow tab with the hole — number, name, par, yards — and a small one with today's
+        /// wind. No letterbox: the whole picture is the course. It pops in with the flyover.
         CanvasGroup introGroup;
+        RectTransform introBadge;
 
-        public void ShowHoleIntro(int number, string name, int par, double yards, string picture, string blurb, string wind)
+        public void ShowHoleIntro(string tournament, int number, string name, int par, double yards, string wind)
         {
             HideHoleIntro();
             var go = new GameObject("Hole intro");
@@ -485,38 +485,103 @@ namespace GolfArcade.UI
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
             introGroup = go.AddComponent<CanvasGroup>();
             introGroup.alpha = 0; introGroup.blocksRaycasts = false; introGroup.interactable = false;
-            var bars = UiKit.Ground;
-            UiKit.Panel(go.transform, "Bar top", bars, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -120), new Vector2(0, 120), rounded: false).raycastTarget = false;
-            UiKit.Panel(go.transform, "Bar bottom", bars, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, 120), rounded: false).raycastTarget = false;
 
-            const float width = 940, height = 340, pic = 252;
-            var card = Card("Card", new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 160), new Vector2(width, height), new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.9f), go.transform);
-            card.rectTransform.pivot = new Vector2(0.5f, 0);
-            var frame = UiKit.Panel(card.transform, "Picture", Color.white, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(24, 0), new Vector2(pic * 1.5f, pic));
-            frame.rectTransform.pivot = new Vector2(0, 0.5f); frame.raycastTarget = false;
-            frame.gameObject.AddComponent<Mask>().showMaskGraphic = false;
-            var img = new GameObject("Render").AddComponent<RawImage>();
-            img.transform.SetParent(frame.transform, false);
-            img.rectTransform.anchorMin = Vector2.zero; img.rectTransform.anchorMax = Vector2.one; img.rectTransform.offsetMin = img.rectTransform.offsetMax = Vector2.zero;
-            img.texture = Resources.Load<Texture2D>(picture); img.raycastTarget = false;
-            if (!img.texture) img.color = UiKit.SurfaceRaised;
-            float x = 24 + pic * 1.5f + 28, w = width - x - 24;
-            var eyebrow = UiKit.Label(card.transform, "Eyebrow", 26, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, -30), new Vector2(w, 34), UiKit.Strong, false);
-            eyebrow.text = $"HOLE {number}   ·   PAR {par}   ·   {yards:F0} YD"; eyebrow.color = UiKit.Accent;
-            var title = UiKit.Label(card.transform, "Title", 56, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x - 2, -64), new Vector2(w, 70), UiKit.Display, false);
-            title.text = name;
-            var text = UiKit.Label(card.transform, "Blurb", 24, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, -134), new Vector2(w, 132), UiKit.Body, false);
-            text.text = blurb; text.color = UiKit.InkMuted; text.horizontalOverflow = HorizontalWrapMode.Wrap; text.lineSpacing = 1.08f;
-            var windLine = UiKit.Label(card.transform, "Wind", 25, TextAnchor.LowerLeft, new Vector2(0, 0), new Vector2(0, 0), new Vector2(x, 22), new Vector2(w, 34), UiKit.Strong, false);
-            windLine.text = wind; windLine.color = UiKit.Ink;
+            introBadge = new GameObject("Badge").AddComponent<RectTransform>();
+            introBadge.SetParent(go.transform, false);
+            introBadge.anchorMin = introBadge.anchorMax = new Vector2(0.5f, 0.66f);
+            introBadge.sizeDelta = new Vector2(900, 330);
+            var title = UiKit.Label(introBadge, "Measure", 100, TextAnchor.MiddleCenter, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            title.text = tournament.ToUpperInvariant();
+            float w = Mathf.Min(1000, title.preferredWidth + 110);
+            Destroy(title.gameObject);
+            UiKit.Pill(introBadge, "Title", UiKit.ArcadeBlue, new Vector2(0.5f, 0.5f), new Vector2(0, 60), new Vector2(w, 168), out var titleFill, 8f);
+            // a lighter band across the top half, the badge's shine
+            var shine = UiKit.Panel(titleFill.transform, "Shine", new Color(1, 1, 1, 0.14f), new Vector2(0, 0.5f), new Vector2(1, 1), Vector2.zero, Vector2.zero);
+            shine.sprite = UiKit.Circle; shine.rectTransform.offsetMin = new Vector2(22, 0); shine.rectTransform.offsetMax = new Vector2(-22, -10); shine.raycastTarget = false;
+            var big = UiKit.Chunky(titleFill.transform, "Tournament", 96, UiKit.ArcadeYellow, UiKit.ArcadeInk, 5f);
+            big.text = tournament.ToUpperInvariant();
+            big.rectTransform.offsetMin = new Vector2(0, 6); big.rectTransform.offsetMax = new Vector2(0, 6);
+
+            var hole = UiKit.Label(introBadge, "Measure", 30, TextAnchor.MiddleCenter, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            hole.text = $"HOLE {number}   ·   {name.ToUpperInvariant()}   ·   PAR {par}   ·   {yards:F0} YD";
+            float hw = hole.preferredWidth + 60;
+            Destroy(hole.gameObject);
+            UiKit.Pill(introBadge, "Hole", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(0, -52), new Vector2(hw, 62), out var holeFill, 4f);
+            var holeLine = UiKit.Label(holeFill.transform, "Text", 30, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            holeLine.text = $"HOLE {number}   ·   {name.ToUpperInvariant()}   ·   PAR {par}   ·   {yards:F0} YD"; holeLine.color = UiKit.ArcadeInk;
+
+            var windMeasure = UiKit.Label(introBadge, "Measure", 25, TextAnchor.MiddleCenter, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, UiKit.Strong, false);
+            windMeasure.text = wind.ToUpperInvariant();
+            float ww = windMeasure.preferredWidth + 48;
+            Destroy(windMeasure.gameObject);
+            UiKit.Pill(introBadge, "Wind", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0.5f), new Vector2(0, -120), new Vector2(ww, 46), out var windFill, 3f);
+            var windLine = UiKit.Label(windFill.transform, "Text", 25, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
+            windLine.text = wind.ToUpperInvariant(); windLine.color = Color.white;
         }
 
-        public void SetHoleIntroAlpha(float alpha) { if (introGroup) introGroup.alpha = alpha; }
+        /// Fades the title in or out; on the way in it pops, a little past full size and back.
+        public void SetHoleIntroAlpha(float alpha)
+        {
+            if (!introGroup) return;
+            introGroup.alpha = alpha;
+            if (introBadge) introBadge.localScale = Vector3.one * Pop(alpha);
+        }
+
+        /// An arcade pop: from 0.6 up past 1 and settling back, as `t` runs 0 → 1.
+        static float Pop(float t)
+        {
+            t = Mathf.Clamp01(t);
+            const float c = 1.9f;
+            float u = t - 1;
+            return 0.6f + 0.4f * (1 + (c + 1) * u * u * u + c * u * u);
+        }
 
         public void HideHoleIntro()
         {
             if (introGroup) Destroy(introGroup.gameObject);
-            introGroup = null;
+            introGroup = null; introBadge = null;
+        }
+
+        /// The player's nameplate for the introductions on the tee: a chunky yellow plate with the
+        /// name and a small blue tab over it, low on the screen like the broadcast's.
+        CanvasGroup nameplate;
+        RectTransform nameplateBody;
+
+        public void ShowNameplate(string name, string tab)
+        {
+            HideNameplate();
+            var go = new GameObject("Nameplate");
+            go.transform.SetParent(safeArea, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0); rt.sizeDelta = new Vector2(600, 220);
+            rt.anchoredPosition = new Vector2(0, 360);
+            nameplate = go.AddComponent<CanvasGroup>();
+            nameplate.alpha = 0; nameplate.blocksRaycasts = false; nameplate.interactable = false;
+            nameplateBody = rt;
+            UiKit.Pill(rt, "Plate", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(0, -12), new Vector2(360, 118), out var fill, 7f);
+            var t = UiKit.Chunky(fill.transform, "Name", 76, Color.white, UiKit.ArcadeYellowDeep, 4f);
+            t.text = name.ToUpperInvariant();
+            t.rectTransform.offsetMin = new Vector2(0, 4); t.rectTransform.offsetMax = new Vector2(0, 4);
+            var measure = UiKit.Label(rt, "Measure", 24, TextAnchor.MiddleCenter, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            measure.text = tab.ToUpperInvariant();
+            float tw = measure.preferredWidth + 40;
+            Destroy(measure.gameObject);
+            UiKit.Pill(rt, "Tab", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0.5f), new Vector2(0, 66), new Vector2(tw, 42), out var tabFill, 3f);
+            var tl = UiKit.Label(tabFill.transform, "Text", 24, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            tl.text = tab.ToUpperInvariant(); tl.color = UiKit.ArcadeYellow;
+        }
+
+        public void SetNameplateAlpha(float alpha)
+        {
+            if (!nameplate) return;
+            nameplate.alpha = alpha;
+            nameplateBody.localScale = Vector3.one * Pop(alpha);
+        }
+
+        public void HideNameplate()
+        {
+            if (nameplate) Destroy(nameplate.gameObject);
+            nameplate = null; nameplateBody = null;
         }
 
         public void HideMenu()
@@ -529,7 +594,7 @@ namespace GolfArcade.UI
         public void ShowPlayHud(bool on)
         {
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Shot stats") child.gameObject.SetActive(on);
+                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats") child.gameObject.SetActive(on);
         }
 
         // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
@@ -848,7 +913,7 @@ namespace GolfArcade.UI
         {
             if (flightMode == on) return;
             flightMode = on;
-            if (Controller == null) foreach (var rt in new[] { holeCard, scoreCard, shotCard, meterRect }) rt.gameObject.SetActive(!on);
+            if (Controller == null) foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(!on);
             minimapHolder.gameObject.SetActive(!on);
             statusText.enabled = tempoText.enabled = !on;
             if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
@@ -947,23 +1012,69 @@ namespace GolfArcade.UI
             return Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f));
         }
 
-        public void SetHole(int number, int par, double yards, string picture = null)
+        /// The hole, for the controller sheet (the scoreboard has it on the phone HUD).
+        public void SetHole(int number, int par, double yards, string picture = null) => Controller?.SetHole(number, par, picture);
+        /// The score, for the controller sheet (SetScoreboard draws it on the phone HUD).
+        public void SetScore(int strokes, int toPar, int holeStrokes) => Controller?.SetScore(toPar, holeStrokes);
+
+        // ---- The scoreboard, the tennis broadcast's in golf: a tab with the tournament and the
+        // hole, then a row for you (yellow) and a row for par (blue), a chip per hole of the round
+        // — yellow, the one being played lit — and the totals in white at the end.
+        const float BoardHeight = 196f;
+        RectTransform clubPillRoot;
+
+        /// `strokes` per hole, null where not played (the one being played shows its live count).
+        public void SetScoreboard(string title, int[] pars, int?[] strokes, int current)
         {
-            holeText.text = $"<color=#F4F7FB><size=38>HOLE {number}</size></color>     PAR {par}   ·   {yards:F0} YD";
-            holeCard.sizeDelta = new Vector2(holeText.preferredWidth + 60, holeCard.sizeDelta.y);
-            Controller?.SetHole(number, par, picture);
+            foreach (Transform child in board) Destroy(child.gameObject);
+            const float row = 58f, name = 150f, chip = 58f, gap = 10f, total = 78f, pad = 14f, top = 34f;
+            int holes = pars.Length;
+            bool totals = holes > 1;
+            float width = pad + name + gap + holes * (chip + gap) + (totals ? total + gap : 0) + pad - gap + 6;
+            board.sizeDelta = new Vector2(width, BoardHeight);
+            var backRoot = UiKit.Pill(board, "Board", UiKit.ArcadeSky, new Vector2(0, 1), Vector2.zero, new Vector2(width, BoardHeight - 18), out _, 4f, round: false);
+            backRoot.pivot = new Vector2(0, 1); backRoot.anchoredPosition = new Vector2(0, -18);
+            // the tab
+            var tabText = UiKit.Label(board, "Title", 21, TextAnchor.MiddleCenter, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            tabText.text = title.ToUpperInvariant();
+            float tabW = tabText.preferredWidth + 36;
+            var tab = UiKit.Pill(board, "Tab", UiKit.ArcadeBlueDeep, new Vector2(0, 1), new Vector2(18 + tabW / 2, -18), new Vector2(tabW, 38), out var tabFill, 3f);
+            tabText.transform.SetParent(tabFill.transform, false);
+            var tr = tabText.rectTransform; tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = tr.offsetMax = Vector2.zero;
+            tabText.color = UiKit.ArcadeYellow;
+            int you = 0, parSum = 0;
+            for (int i = 0; i < holes; i++) { if (strokes[i] is int n) { you += n; parSum += pars[i]; } }
+            if (strokes.Length > current && strokes[current] == null) parSum += pars[current];
+            for (int r = 0; r < 2; r++)
+            {
+                bool player = r == 0;
+                float y = -18 - top - r * (row + 12) - row / 2;
+                float x = pad + name / 2;
+                var plate = UiKit.Pill(board, player ? "You" : "Par", player ? UiKit.ArcadeYellow : UiKit.ArcadeBlue, new Vector2(0, 1), new Vector2(x, y), new Vector2(name, row), out var plateFill, 4f);
+                var label = UiKit.Chunky(plateFill.transform, "Name", 32, player ? Color.white : Color.white, player ? UiKit.ArcadeYellowDeep : UiKit.ArcadeBlueDeep, 2.5f);
+                label.text = player ? "YOU" : "PAR";
+                x = pad + name + gap + chip / 2;
+                for (int i = 0; i < holes; i++, x += chip + gap)
+                {
+                    bool live = i == current, played = strokes[i].HasValue;
+                    string value = player ? (played ? strokes[i].Value.ToString() : "–") : pars[i].ToString();
+                    var fill = live ? UiKit.ArcadeYellow : played || !player ? UiKit.Hex("FFE58F") : UiKit.Hex("E9EEF8");
+                    var c = UiKit.Pill(board, $"Hole {i}", fill, new Vector2(0, 1), new Vector2(x, y), new Vector2(chip, row), out var cf, live ? 4f : 3f);
+                    var t = UiKit.Label(cf.transform, "Value", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                    t.text = value; t.color = UiKit.ArcadeInk;
+                }
+                if (!totals) continue;
+                x += total / 2 - chip / 2;
+                var tot = UiKit.Pill(board, "Total", Color.white, new Vector2(0, 1), new Vector2(x, y), new Vector2(total, row), out var tf, 3f, round: false);
+                var tt = UiKit.Label(tf.transform, "Value", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                tt.text = (player ? you : parSum).ToString(); tt.color = UiKit.ArcadeInk;
+            }
         }
-        public void SetScore(int strokes, int toPar, int holeStrokes)
-        {
-            string par = toPar == 0 ? "E" : toPar > 0 ? $"+{toPar}" : toPar.ToString();
-            string tint = toPar < 0 ? "#7EE08A" : toPar > 0 ? "#FFB35A" : "#F4F7FB";
-            scoreText.text = $"STROKES <color=#F4F7FB><size=38>{holeStrokes}</size></color>      <color={tint}><size=38>{par}</size></color>";
-            Controller?.SetScore(toPar, holeStrokes);
-        }
+
         /// The distance card's big number: `amount` in `unit` ("YD", "FT"), `caption` over it.
         public void SetDistance(double amount, string unit, string caption)
         {
-            distanceText.text = $"{amount:F0}<size=40><color=#9FB3CF>  {unit}</color></size>";
+            distanceText.text = $"{amount:F0}<size=40><color=#D5E3FF>  {unit}</color></size>";
             distanceCaption.text = caption.ToUpperInvariant();
             FitShotCard();
         }
@@ -971,14 +1082,14 @@ namespace GolfArcade.UI
         public void SetClub(string text)
         {
             clubText.text = text;
-            clubPill.rectTransform.sizeDelta = new Vector2(Mathf.Min(520, clubText.preferredWidth + 36), 46);
+            clubPillRoot.sizeDelta = new Vector2(Mathf.Min(540, clubText.preferredWidth + 36), 50);
             FitShotCard();
         }
 
         /// The card as wide as what is on it, and no wider.
         void FitShotCard()
         {
-            float wide = Mathf.Max(distanceText.preferredWidth + 26, clubPill.rectTransform.sizeDelta.x + 26, windText.preferredWidth + 76, 300f);
+            float wide = Mathf.Max(distanceText.preferredWidth + 26, clubPillRoot.sizeDelta.x + 26, windText.preferredWidth + 76, 300f);
             shotCard.sizeDelta = new Vector2(Mathf.Min(620f, wide + 30f), shotCard.sizeDelta.y);
         }
         public void SetStatus(string text) => statusText.text = text;
@@ -1049,7 +1160,7 @@ namespace GolfArcade.UI
             Controller.AimLeft.Pressed = AimLeft.Pressed; Controller.AimRight.Pressed = AimRight.Pressed;
             Controller.ClubUp.Pressed = ClubUp.Pressed; Controller.ClubDown.Pressed = ClubDown.Pressed;
             Controller.Knob.Pressed = SwingHold.Pressed; Controller.Knob.Released = SwingHold.Released;
-            foreach (var rt in new[] { holeCard, scoreCard, shotCard, meterRect }) rt.gameObject.SetActive(false);
+            foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(false);
             minimapHolder.anchoredPosition = new Vector2(-Margin + 4, -Margin - 8);
             statusText.rectTransform.anchoredPosition = new Vector2(0, ControllerSheet.SheetHeight + 190);
             tempoText.rectTransform.anchoredPosition = new Vector2(0, ControllerSheet.SheetHeight + 140);
@@ -1059,8 +1170,8 @@ namespace GolfArcade.UI
         {
             if (Controller == null) return;
             Controller.Destroy(); Controller = null;
-            foreach (var rt in new[] { holeCard, scoreCard, shotCard, meterRect }) rt.gameObject.SetActive(true);
-            minimapHolder.anchoredPosition = new Vector2(-Margin + 4, -Margin - 80 - 16 - 8);
+            foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(true);
+            minimapHolder.anchoredPosition = new Vector2(-Margin + 4, -Margin - 8);
             statusText.rectTransform.anchoredPosition = new Vector2(0, 420);
             tempoText.rectTransform.anchoredPosition = new Vector2(0, 360);
         }

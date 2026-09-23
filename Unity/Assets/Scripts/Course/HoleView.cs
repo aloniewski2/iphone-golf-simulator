@@ -88,6 +88,15 @@ namespace GolfArcade.Course
         /// A named node of the course model (empties included), placed in the world — null on
         /// a primitive hole or when the model has no such node.
         public Transform ModelNode(string name) => model ? FindDeep(model.transform, name) : null;
+
+        /// The tee markers (Hole 7's pair, Hole 12's one mesh), off for a shot they would stand
+        /// in front of — the crowd shot in the introductions — and back on after.
+        public void ShowTeeMarkers(bool on)
+        {
+            foreach (var name in new[] { "TEE_MARKER_1", "TEE_MARKER_2", "TEE_MARKERS" })
+                if (ModelNode(name) is Transform node)
+                    foreach (var r in node.GetComponentsInChildren<Renderer>(true)) r.enabled = on;
+        }
         /// The placed course model's root: anything exported from the same Blender scene sits
         /// on the course when parented here with no transform of its own.
         public Transform ModelRoot => model ? model.transform : null;
