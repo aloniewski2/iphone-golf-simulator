@@ -54,6 +54,15 @@ namespace GolfArcade.Game
 
         public SwingPhase Phase => Detector.Phase;
 
+        /// Drive the detector from `source` instead (demos and tests: a scripted phone stroke).
+        public void UseSource(IMotionSource source)
+        {
+            Source = source;
+            source.Start();
+            Detector.Configure(club);
+            OnSourceChanged?.Invoke(Source);
+        }
+
         public void Update()
         {
             ChooseSource();

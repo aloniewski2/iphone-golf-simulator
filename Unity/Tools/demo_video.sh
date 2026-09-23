@@ -3,9 +3,9 @@
 # into an MP4 at phone resolution: H.264 30 fps, AAC. Under the game's own sound goes a quiet bed
 # of sea and breeze (brown noise, low-passed, swelling like waves), so the quiet stretches are the
 # island rather than silence; half a second's fade in and out.
-# Usage: Tools/demo_video.sh [out.mp4]
+# Usage: Tools/demo_video.sh [out.mp4] [frames dir]
 cd "$(dirname "$0")/.."
-in=Library/Captures/demo
+in=${2:-Library/Captures/demo}
 out=${1:-$in/golf-arcade-demo.mp4}
 [[ -f $in/f_00000.jpg ]] || { echo "no frames in $in: record them first (Golf Arcade → Record Demo Video)"; exit 1; }
 frames=$(ls $in/f_*.jpg | wc -l | tr -d ' ')

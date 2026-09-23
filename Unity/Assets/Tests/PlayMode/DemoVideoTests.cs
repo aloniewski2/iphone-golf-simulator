@@ -108,6 +108,145 @@ namespace GolfArcade.PlayTests
             }
         }
 
+        /// A phone held like a putter and moved by script, one sample a frame, through the real
+        /// swing detector: the angle from address along a plan of legs.
+        sealed class ScriptedStroke : GolfArcade.Swing.IMotionSource
+        {
+            static readonly System.Numerics.Vector3 Axis = System.Numerics.Vector3.Normalize(new System.Numerics.Vector3(1, 0.2f, 0.1f));
+            static readonly System.Numerics.Quaternion Address = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitX, (float)(-Math.PI / 2));
+            readonly Queue<double> plan = new();
+            double angle;
+            int lastFrame = -1;
+            public bool IsAvailable => true;
+            public void Start() { }
+            public void Stop() { }
+            public bool Idle => plan.Count == 0;
+
+            /// To `to` radians from address over `seconds` (eased, or straight at a steady speed);
+            /// a leg with the same `to` is a hold.
+            public ScriptedStroke Leg(double seconds, double to, bool ease = true)
+            {
+                double from = plan.Count > 0 ? plan.ToArray()[plan.Count - 1] : angle;
+                int n = Math.Max(1, Mathf.RoundToInt((float)seconds * Fps));
+                for (int i = 1; i <= n; i++)
+                {
+                    float t = (float)i / n;
+                    plan.Enqueue(from + (to - from) * (ease ? Mathf.SmoothStep(0, 1, t) : t));
+                }
+                return this;
+            }
+
+            public bool TryRead(out GolfArcade.Swing.MotionSample sample)
+            {
+                sample = default;
+                if (lastFrame == Time.frameCount) return false;
+                lastFrame = Time.frameCount;
+                double next = plan.Count > 0 ? plan.Dequeue() : angle;
+                double rate = (next - angle) * Fps;
+                angle = next;
+                sample = new GolfArcade.Swing.MotionSample
+                {
+                    Time = Time.timeAsDouble,
+                    Attitude = System.Numerics.Quaternion.Normalize(System.Numerics.Quaternion.CreateFromAxisAngle(Axis, (float)angle) * Address),
+                    RotationRate = Axis * (float)rate,
+                    Gravity = System.Numerics.Vector3.UnitY,
+                };
+                return true;
+            }
+        }
+
+        static UnityEngine.UI.Text Caption(Transform canvas, string name, float y, int size)
+        {
+            var box = GolfArcade.UI.UiKit.Panel(canvas, name, new Color(0.05f, 0.09f, 0.18f, 0.82f), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, y), new Vector2(1000, size * 1.9f));
+            box.rectTransform.pivot = new Vector2(0.5f, 0.5f); box.raycastTarget = false;
+            var t = GolfArcade.UI.UiKit.Label(box.transform, "Text", size, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, GolfArcade.UI.UiKit.Display, false);
+            t.rectTransform.pivot = new Vector2(0.5f, 0.5f); t.color = Color.white; t.raycastTarget = false;
+            return t;
+        }
+
+        /// The putting comparison: one green, three strokes made by a scripted phone through the
+        /// real detector — the line turned and a normal putt; a stroke that stops before the
+        /// ball; a quick short one that crosses the ball between two sensor readings. Captioned
+        /// with the branch it was recorded on. Frames in Library/Captures/putting-<branch>.
+        [UnityTest, Explicit, Timeout(3600000)]
+        public IEnumerator RecordsPutting()
+        {
+            string head = File.Exists("../.git/HEAD") ? File.ReadAllText("../.git/HEAD").Trim() : "";
+            string branch = head.StartsWith("ref: refs/heads/") ? head.Substring("ref: refs/heads/".Length) : "detached";
+            string label = branch.Contains("codex") ? "CODEX'S VERSION" : branch.Contains("claude") ? "CLAUDE'S VERSION" : branch.ToUpperInvariant();
+            string dir = Path.GetFullPath($"Library/Captures/putting-{branch.Replace('/', '-')}");
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+            Directory.CreateDirectory(dir);
+            Time.timeScale = 1f;
+            Time.captureFramerate = Fps;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            Camera.main.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+            Recorder rec = null;
+            try
+            {
+                game.Demo = true;
+                yield return null;
+                game.Play();
+                yield return null;
+                game.JumpToHole(12);
+                yield return null;
+                var spot = new CoursePoint(-7, 186);   // 13 yd from the cup, across the shelf
+                game.DropBall(spot);
+                var stroke = new ScriptedStroke();
+                game.Swing.UseSource(stroke);
+                yield return Until(() => game.Current == GolfGame.State.Aim && game.Swing.Phase == GolfArcade.Swing.SwingPhase.Address, 10, "the putt to set up");
+
+                var canvas = hud.GetComponentInParent<Canvas>() ? hud.GetComponentInParent<Canvas>().transform : Object.FindFirstObjectByType<Canvas>().transform;
+                var title = Caption(canvas, "Version", 700, 44); title.text = label;
+                var scene = Caption(canvas, "Scene", 590, 34);
+                rec = new GameObject("Recorder").AddComponent<Recorder>();
+                rec.Begin(dir);
+
+                // 1: the line turned right and back, then a normal putt
+                scene.text = "1 · Change the line, then a smooth putt";
+                yield return Seconds(1.2f);
+                var press = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current ?? Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>());
+                hud.AimRight.OnPointerDown(press); yield return Seconds(1.3f); hud.AimRight.OnPointerUp(press);
+                yield return Seconds(0.5f);
+                hud.AimLeft.OnPointerDown(press); yield return Seconds(1.3f); hud.AimLeft.OnPointerUp(press);
+                yield return Seconds(0.6f);
+                stroke.Leg(0.7, 0.3).Leg(0.15, 0.3).Leg(0.9, -0.18).Leg(0.5, -0.18).Leg(0.7, 0);
+                yield return Until(() => game.Current == GolfGame.State.Flight, 6, "the putt");
+                yield return Until(() => game.Current != GolfGame.State.Flight, 20, "the putt to stop");
+                yield return Seconds(1.5f);
+
+                // 2: a stroke that comes down and stops before the ball
+                game.DropBall(spot);
+                yield return Until(() => game.Swing.Phase == GolfArcade.Swing.SwingPhase.Address && stroke.Idle, 6, "address");
+                scene.text = "2 · The stroke stops before the ball";
+                yield return Seconds(1.0f);
+                stroke.Leg(0.6, 0.3).Leg(0.15, 0.3).Leg(0.25, 0.12).Leg(3.5, 0.12).Leg(0.8, 0);
+                yield return Seconds(5.6f);
+                if (game.Current == GolfGame.State.Flight) yield return Until(() => game.Current != GolfGame.State.Flight, 20, "that putt to stop");
+                yield return Seconds(1.0f);
+
+                // 3: a quick, short stroke whose pass through the ball falls between two readings
+                game.DropBall(spot);
+                yield return Until(() => game.Swing.Phase == GolfArcade.Swing.SwingPhase.Address && stroke.Idle, 6, "address");
+                scene.text = "3 · A quick stroke, between two sensor readings";
+                yield return Seconds(1.0f);
+                stroke.Leg(0.4, 0.14).Leg(0.1, 0.14).Leg(2.0 / Fps, -0.3, ease: false).Leg(3.0, -0.3).Leg(0.8, 0);
+                yield return Seconds(4.4f);
+                if (game.Current == GolfGame.State.Flight) yield return Until(() => game.Current != GolfGame.State.Flight, 20, "that putt to stop");
+                yield return Seconds(1.5f);
+
+                rec.End();
+                Debug.Log($"putting demo ({label}): {rec.Frames} frames in {dir}");
+            }
+            finally
+            {
+                if (rec && rec.On) rec.End();
+                Time.captureFramerate = 0;
+            }
+        }
+
         /// Saves each frame once everything has moved and the camera has followed, and the sound
         /// of that frame with it.
         [DefaultExecutionOrder(32000)]

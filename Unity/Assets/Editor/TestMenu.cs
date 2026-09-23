@@ -22,6 +22,7 @@ namespace GolfArcade.EditorTools
         [MenuItem("Golf Arcade/Run PlayMode Tests")] public static void RunPlayMode() => Run(TestMode.PlayMode);
         /// Hole 12 played by script and recorded to Library/Captures/demo (DemoVideoTests);
         /// Tools/demo_video.sh turns it into the MP4.
+        [MenuItem("Golf Arcade/Record Putting Demo")] public static void RecordPuttingDemo() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsPutting");
         [MenuItem("Golf Arcade/Record Demo Video")] public static void RecordDemo() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsHoleTwelve");
 
         static void Run(TestMode mode, string test = null)
