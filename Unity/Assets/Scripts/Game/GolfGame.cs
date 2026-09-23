@@ -955,7 +955,7 @@ namespace GolfArcade.Game
             strikePlayed = false;
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
-            hud.SetTempo($"Swing {club.ClubSpeedMPH(impact.Power):F0} mph  ·  Load {impact.Backswing:P0}  ·  Face {impact.FaceDegrees:+0;-0}°" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));
+            hud.SetTempo($"Swing {club.ClubSpeedMPH(impact.Power):F0} mph  ·  Load {impact.Backswing:P0}  ·  Face {impact.FaceDegrees:+0;-0}°");
             float toBall = golfer.Strike();
             hud.SetStatus("");
             RefreshControls();

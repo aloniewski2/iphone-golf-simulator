@@ -81,9 +81,7 @@ namespace GolfArcade.Tests
             double slow = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.5, -0.4), (0.6, -0.4) }))[0].Power;
             double fast = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.1, -0.4), (0.6, -0.4) }))[0].Power;
             Assert.Less(slow, fast);
-            var full = new MotionSwingDetector();
-            double cap = full.BackswingFloor + (1 - full.BackswingFloor) * 1.8 / full.FullBackswing;
-            Assert.AreEqual(cap, fast, 0.02, "22 rad/s exceeds full speed, so only the backswing limits it");
+            Assert.AreEqual(1, fast, 1e-9, "22 rad/s is well past full speed: the whole club, even from a ~70 % backswing");
         }
 
         /// The feel: the downswing's speed makes the shot; the backswing only trims it.
@@ -93,13 +91,15 @@ namespace GolfArcade.Tests
             var detector = new MotionSwingDetector { FullSpeed = 12 };
             // hip-high backswing (1.55 rad, ~60 % load), then a hard downswing: 16 rad/s
             var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.12, -0.4), (0.6, -0.4) }))[0];
-            Assert.GreaterOrEqual(impact.Power, 0.85, "a hip-high backswing swung hard is nearly the whole club");
-            Assert.AreEqual(0, impact.Overswing, 1e-9, "16 rad/s against a 12 rad/s club is still within grace");
+            Assert.AreEqual(1, impact.Power, 1e-9, "a hip-high backswing swung hard is the whole club");
+            Assert.AreEqual(0, impact.CurveDegrees, 1e-6, "and swinging hard never sends it wild");
             // the same backswing at half speed is roughly half the shot
             var soft = Impacts(Drive(new MotionSwingDetector { FullSpeed = 12 }, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.33, -0.4), (0.6, -0.4) }))[0];
             // a soft swing still carries a good share, on the forgiving curve: (5.9/12)^0.65 ≈ 0.63
-            Assert.AreEqual(impact.Power * Math.Pow(5.9 / 12, new MotionSwingDetector().SpeedCurve), soft.Power, 0.08);
-            Assert.Greater(soft.Power, impact.Power * 0.55, "half the speed is well over half the club");
+            var d = new MotionSwingDetector();
+            double trim = d.BackswingFloor + (1 - d.BackswingFloor) * soft.Backswing;
+            Assert.AreEqual(Math.Pow(5.9 / 12, d.SpeedCurve) * trim, soft.Power, 0.05);
+            Assert.Greater(soft.Power, 0.55, "half the speed is well over half the club");
         }
 
         [Test]
@@ -123,14 +123,37 @@ namespace GolfArcade.Tests
             Assert.LessOrEqual(Math.Abs(open.CurveDegrees), 15);
         }
 
+        /// A full, hard swing is the club's full distance: never more, never wild.
         [Test]
-        public void OverswingGoesWild()
+        public void HardestSwingIsTheFullClubAndStraight()
         {
-            var detector = new MotionSwingDetector { FullSpeed = 7 };
-            var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.1, -0.4), (0.6, -0.4) }))[0];
-            Assert.Greater(impact.Overswing, 0.5, "22 rad/s against a 7 rad/s club: three times full, well past the grace of twice");
-            Assert.AreEqual(detector.BackswingFloor + (1 - detector.BackswingFloor) * 1.8 / detector.FullBackswing, impact.Power, 0.02);
-            Assert.Greater(Math.Abs(impact.CurveDegrees), 5);
+            foreach (var club in new[] { GolfClub.Driver, GolfClub.Iron, GolfClub.Wedge })
+            {
+                var detector = new MotionSwingDetector();
+                detector.Configure(club);
+                // a full turn lashed down at 30 rad/s, several times any club's full speed
+                var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.1, -0.4), (0.6, -0.4) }))[0];
+                Assert.AreEqual(1, impact.Power, 1e-9, $"{club}: the hardest swing is the whole club");
+                Assert.AreEqual(0, impact.CurveDegrees, 1e-6, $"{club}: with a square face it flies straight");
+                Assert.AreEqual(club.ReferenceDistanceYards(), BallFlight.Simulate(club.Launch(impact.Power, impact.StartLineDegrees, impact.CurveDegrees)).Carry, 1.5,
+                                $"{club}: and carries the club's full distance");
+            }
+        }
+
+        /// Taken all the way back, the phone passes pointing straight up and comes round towards
+        /// address again while still going back; that is not the downswing.
+        [Test]
+        public void BackswingPastVerticalWaitsForTheRealDownswing()
+        {
+            var detector = new MotionSwingDetector();
+            // 230° back (past straight up), a pause, then down hard through address
+            var events = Drive(detector, new[] { (0.6, 0.0), (0.9, 4.0), (0.25, 4.0), (0.2, -0.4), (0.6, -0.4) });
+            var impacts = Impacts(events);
+            Assert.AreEqual(1, impacts.Count);
+            Assert.IsFalse(events.Any(e => e.Kind == SwingEventKind.Cancel));
+            Assert.AreEqual(1, impacts[0].Backswing, 1e-9, "past vertical is a full backswing");
+            Assert.Greater(impacts[0].PeakSpeed, 18, "the speed is the downswing's, not the backswing's");
+            Assert.AreEqual(1, impacts[0].Power, 1e-9);
         }
 
         [Test]

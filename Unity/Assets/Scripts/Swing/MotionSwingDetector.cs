@@ -33,8 +33,6 @@ namespace GolfArcade.Swing
         public double CurveDegrees;
         /// Wrist roll between address and impact, degrees; positive = face open.
         public double FaceDegrees;
-        /// How far past the club's full speed the downswing went (0 = at or under). Wild when large.
-        public double Overswing;
         /// Seconds from the start of the backswing to impact.
         public double TempoSeconds;
         /// Peak rotation speed of the downswing, rad/s.
@@ -53,11 +51,11 @@ namespace GolfArcade.Swing
     /// address quickly; impact is the moment it passes back through address (or clearly
     /// decelerates). Power is the peak rotation speed of that downswing — that is what the shot
     /// is made of, on a forgiving curve (SpeedCurve) — trimmed a little by how far back you took
-    /// it: a short, low backswing gives up at most a fifth of the club, and a full turn swung
-    /// firmly is the full club. The wrist's
-    /// roll at impact, relative to address, is the club face:
-    /// open slices, closed hooks. Swinging much harder than the club's full speed makes the
-    /// shot wild, which is the Wii's rule too.
+    /// it: a short, low backswing at the club's full speed gives up at most a fifth of the club,
+    /// and swinging harder makes that up, so a hard swing is always the whole club. Never more,
+    /// and never wild: however hard you lash it, the ball flies the club's full distance on the
+    /// face you struck it with. The wrist's roll at impact, relative to address, is the club
+    /// face: open slices, closed hooks.
     public sealed class MotionSwingDetector
     {
         /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
@@ -72,9 +70,11 @@ namespace GolfArcade.Swing
         /// Hip-high (about 90°) reads around 60 %.
         public double FullBackswing = 2.6;
         /// Power at full downswing speed from a barely-there backswing; it climbs linearly to 1 at
-        /// a full backswing. So power = speed ratio × (BackswingFloor + (1 − BackswingFloor) × load).
-        /// High, so the downswing's speed is what decides the distance: a hip-high backswing swung
-        /// at full speed is still nearly the whole club.
+        /// a full backswing. So power = speed ratio^SpeedCurve × (BackswingFloor + (1 − BackswingFloor) × load),
+        /// capped at 1 — and the ratio is not capped first, so speed past the club's full speed
+        /// makes up a short backswing. High, so the downswing's speed is what decides the
+        /// distance: a hip-high backswing swung at full speed is still nearly the whole club, and
+        /// swung hard it is all of it.
         public double BackswingFloor = 0.8;
         /// How the downswing's speed becomes power: its ratio to the club's full speed raised to
         /// this, so the curve rises fast and flattens — half the speed is ~64 % of the club, not
@@ -105,11 +105,6 @@ namespace GolfArcade.Swing
         public double FaceDeadZoneDegrees = 10;
         public double MaxCurveDegrees = 10;
         public double MaxStartLineDegrees = 8;
-        /// Speed past full (as a fraction of FullSpeed) that is forgiven before the shot goes wild.
-        /// Full speed is a solid swing, not the hardest one; only twice it is over the top.
-        public double OverswingGrace = 1.0;
-        /// Extra curve, degrees, per unit of overswing beyond the grace.
-        public double OverswingCurve = 20;
 
         public SwingPhase Phase { get; private set; } = SwingPhase.Settling;
         /// Latest backswing load (0–1) for HUD polling between events.
@@ -130,6 +125,7 @@ namespace GolfArcade.Swing
         double swingStart;
         double backswingLoad;
         Vector3 swingAxis;
+        Quaternion previous = Quaternion.Identity;
 
         public void Reset()
         {
@@ -157,7 +153,6 @@ namespace GolfArcade.Swing
                 fresh.StartLinePerFaceDegree = 0.3;
                 fresh.MaxStartLineDegrees = 5;
                 fresh.SpeedCurve = 1;              // a putt's pace is the stroke's speed, exactly
-                fresh.OverswingGrace = 1000;       // and a putt never goes wild
             }
             CopyTuning(fresh);
             Reset();
@@ -170,8 +165,7 @@ namespace GolfArcade.Swing
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
-            MaxStartLineDegrees = o.MaxStartLineDegrees; OverswingGrace = o.OverswingGrace; OverswingCurve = o.OverswingCurve;
-            SpeedCurve = o.SpeedCurve;
+            MaxStartLineDegrees = o.MaxStartLineDegrees; SpeedCurve = o.SpeedCurve;
         }
 
         /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
@@ -186,6 +180,10 @@ namespace GolfArcade.Swing
         {
             double speed = rotationRate.Length();
             double angle = AngleBetween(reference, attitude);
+            // Which way the phone turned since the last sample, against the backswing's turn:
+            // positive while it is still going back, negative once it comes down.
+            double turning = TurnAlong(previous, attitude, swingAxis);
+            previous = attitude;
             bool haveGravity = gravity.LengthSquared() > 0.25f;
             LeanDegrees = haveGravity ? LeanFromGravity(gravity) : LeanFromVertical(attitude, WorldUp);
             // Gravity points at the ground; with the top edge down it runs along device +Y.
@@ -241,9 +239,15 @@ namespace GolfArcade.Swing
                     if (angle >= peakAngle)
                     {
                         peakAngle = angle;
-                        swingAxis = RotationAxis(reference, attitude);
+                        // (half a turn back the axis flips sign; keep the backswing's sense)
+                        var axis = RotationAxis(reference, attitude);
+                        if (Vector3.Dot(axis, swingAxis) >= 0) swingAxis = axis;
                     }
-                    if (angle < peakAngle - Math.Min(0.15, BackswingStart * 0.6) && speed >= DownswingSpeed)
+                    // A big backswing carries the phone past pointing straight up, and from there
+                    // it is nearer address again while still going back; only turning back down
+                    // starts the downswing.
+                    bool goingBack = turning > 0;
+                    if (angle < peakAngle - Math.Min(0.15, BackswingStart * 0.6) && speed >= DownswingSpeed && !goingBack)
                     {
                         Phase = SwingPhase.Downswing;
                         peakSpeed = speed;
@@ -258,7 +262,7 @@ namespace GolfArcade.Swing
                         Load = 0;
                         return SwingEvent.Cancelled();
                     }
-                    Load = LoadFor(angle);
+                    Load = LoadFor(goingBack ? peakAngle : angle);
                     return SwingEvent.Loaded(Load);
 
                 case SwingPhase.Downswing:
@@ -279,12 +283,10 @@ namespace GolfArcade.Swing
             double face = FaceRollDegrees(reference, attitude, swingAxis);
             double signedFace = Math.Abs(face) <= FaceDeadZoneDegrees ? 0 : face - Math.Sign(face) * FaceDeadZoneDegrees;
             double ratio = peakSpeed / FullSpeed;
-            double overswing = Math.Max(0, ratio - 1 - OverswingGrace);
-            // How far back you went scales what the speed is worth: a low, short backswing chips.
-            double power = Math.Pow(Math.Min(1, ratio), SpeedCurve) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
-            // Over the top: the face error grows, and a square face still goes somewhere.
-            double wildDirection = signedFace != 0 ? Math.Sign(signedFace) : (face >= 0 ? 1 : -1);
-            double curve = signedFace * CurvePerFaceDegree + wildDirection * overswing * OverswingCurve;
+            // How far back you went scales what the speed is worth: a low, short backswing at the
+            // club's full speed chips; the same backswing swung harder is the whole club.
+            double power = Math.Pow(ratio, SpeedCurve) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
+            double curve = signedFace * CurvePerFaceDegree;
             double startLine = signedFace * StartLinePerFaceDegree;
             return new SwingImpact
             {
@@ -292,7 +294,6 @@ namespace GolfArcade.Swing
                 CurveDegrees = Clamp(curve, -MaxCurveDegrees, MaxCurveDegrees),
                 StartLineDegrees = Clamp(startLine, -MaxStartLineDegrees, MaxStartLineDegrees),
                 FaceDegrees = face,
-                Overswing = overswing,
                 TempoSeconds = time - swingStart,
                 PeakSpeed = peakSpeed,
                 Backswing = backswingLoad,
@@ -323,6 +324,15 @@ namespace GolfArcade.Swing
         {
             var relative = Quaternion.Normalize(b * Quaternion.Inverse(a));
             return 2 * Math.Acos(Math.Min(1, Math.Abs(relative.W)));
+        }
+
+        /// How far the turn from `from` to `to` runs along `axis` (a world-frame axis as
+        /// RotationAxis gives it): positive in the axis's sense, negative against it.
+        static double TurnAlong(Quaternion from, Quaternion to, Vector3 axis)
+        {
+            var step = Quaternion.Normalize(to * Quaternion.Inverse(from));
+            if (step.W < 0) step = Quaternion.Negate(step);
+            return Vector3.Dot(new Vector3(step.X, step.Y, step.Z), axis);
         }
 
         /// World-frame axis of the rotation from `a` to `b` (unit length; zero if no rotation).
