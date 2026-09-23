@@ -114,7 +114,7 @@ namespace GolfArcade.Tests
         {
             var hole = Hole1;
             var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 3);
-            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / 1.5);
+            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / GolfClub.Putter.MeterExponent());
             var dying = new CourseShot(GolfClub.Putter, Impact(meterFor(3.4)), 0, from, hole);
             Assert.IsTrue(dying.IsHoled, "a putt with a little more than enough drops");
             Assert.AreEqual(0, dying.PenaltyStrokes);

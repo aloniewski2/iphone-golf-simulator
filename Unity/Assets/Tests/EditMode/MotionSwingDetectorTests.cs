@@ -288,6 +288,18 @@ namespace GolfArcade.Tests
             Assert.AreEqual(0.14 / detector.FullBackswing, impacts[0].Power, 0.05);
         }
 
+        /// Holding the phone at address with a hand's tremble — a degree or two, back and forth —
+        /// never strokes a putt.
+        [Test]
+        public void ATrembleAtAddressIsNotAPutt()
+        {
+            var detector = new MotionSwingDetector();
+            detector.Configure(GolfClub.Putter);
+            var legs = new List<(double, double)> { (0.6, 0.0) };
+            for (int i = 0; i < 6; i++) { legs.Add((0.15, 0.035)); legs.Add((0.15, -0.03)); }
+            Assert.IsEmpty(Impacts(Drive(detector, legs.ToArray())));
+        }
+
         /// A putt is struck as the putter comes back through the ball, not where the stroke
         /// eases off: a stroke that slows before the ball still carries on through it.
         [Test]
@@ -324,8 +336,8 @@ namespace GolfArcade.Tests
         {
             var smooth = new MotionSwingDetector(); smooth.Configure(GolfClub.Putter);
             var pushed = new MotionSwingDetector(); pushed.Configure(GolfClub.Putter);
-            double full = Impacts(Drive(smooth, new[] { (0.6, 0.0), (0.6, 0.2), (0.1, 0.2), (0.3, -0.05), (0.5, -0.05) }))[0].Power;
-            double push = Impacts(Drive(pushed, new[] { (0.6, 0.0), (0.6, 0.2), (0.1, 0.2), (1.6, -0.05), (0.5, -0.05) }))[0].Power;
+            double full = Impacts(Drive(smooth, new[] { (0.6, 0.0), (0.6, 0.3), (0.1, 0.3), (0.3, -0.05), (0.5, -0.05) }))[0].Power;
+            double push = Impacts(Drive(pushed, new[] { (0.6, 0.0), (0.6, 0.3), (0.1, 0.3), (1.2, -0.05), (0.5, -0.05) }))[0].Power;
             Assert.Less(push, full * 0.8);
         }
 

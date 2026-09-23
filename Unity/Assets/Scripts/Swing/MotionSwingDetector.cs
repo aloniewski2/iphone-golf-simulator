@@ -160,15 +160,15 @@ namespace GolfArcade.Swing
             var fresh = new MotionSwingDetector { FullSpeed = club.MotionFullSpeed() };
             if (club == Shot.GolfClub.Putter)
             {
-                fresh.BackswingStart = 0.035;
-                fresh.FullBackswing = 0.45;        // a long putt's stroke: the arms swung well back
+                fresh.BackswingStart = 0.055;      // 3°: a tremble at address is not a stroke
+                fresh.FullBackswing = 0.6;         // a long putt's stroke: the arms swung well back
                 fresh.AlongTheArc = true;
                 fresh.CommitPerRadian = 1.5;       // a pendulum peaks near 4× its arc a second; a push is well under
-                fresh.DownswingSpeed = 0.12;
-                fresh.MinimumSpeed = 0.10;
+                fresh.DownswingSpeed = 0.2;
+                fresh.MinimumSpeed = 0.15;
                 fresh.ImpactAngle = 0.005;         // struck as it passes the ball
-                fresh.StillSpeed = 0.04;
-                fresh.ArmSpeed = 0.15;
+                fresh.StillSpeed = 0.06;
+                fresh.ArmSpeed = 0.2;
                 fresh.CurvePerFaceDegree = 0;
                 fresh.StartLinePerFaceDegree = 0.3;
                 fresh.StrikeOnSlowing = false;

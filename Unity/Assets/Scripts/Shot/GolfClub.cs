@@ -76,8 +76,9 @@ namespace GolfArcade.Shot
         };
 
         /// Full swings read distance straight (0.5 on a 250-yard driver carries 125). The putter
-        /// curves it (distance ∝ meter^1.5) so the short end has room for a tap-in.
-        public static double MeterExponent(this GolfClub club) => club == GolfClub.Putter ? 1.5 : 1;
+        /// curves it (distance ∝ meter²) so the short end has room: a 3-footer is a fifth of the
+        /// stroke, not a flick, and a degree of wobble in it is inches, not feet.
+        public static double MeterExponent(this GolfClub club) => club == GolfClub.Putter ? 2 : 1;
 
         public static double DistanceYards(this GolfClub club, double meter)
         {
