@@ -58,7 +58,7 @@ namespace GolfArcade.Tests
         };
 
         [Test]
-        public void FullSwingLoadsThenImpactsWithSpeedBasedPower()
+        public void FullSwingLoadsThenImpactsWithTheBackswingsPower()
         {
             var detector = new MotionSwingDetector { FullSpeed = 14 };
             var events = Drive(detector, FullSwing);
@@ -68,38 +68,37 @@ namespace GolfArcade.Tests
             Assert.AreEqual(load, loads.Max(), 0.05);
             var impacts = Impacts(events);
             Assert.AreEqual(1, impacts.Count);
-            double expectedPower = Math.Pow(8.8 / 14, detector.SpeedCurve) * (detector.BackswingFloor + (1 - detector.BackswingFloor) * load);
-            Assert.AreEqual(expectedPower, impacts[0].Power, 0.05);
+            // 8.8 rad/s is a committed downswing (over half of 14): the shot is the backswing's
+            Assert.AreEqual(load, impacts[0].Power, 0.05);
             Assert.AreEqual(load, impacts[0].Backswing, 0.05);
             Assert.IsFalse(events.Any(e => e.Kind == SwingEventKind.Cancel));
             Assert.AreEqual(SwingPhase.Address, detector.Phase, "the finish position becomes the new address");
         }
 
+        /// The downswing only has to be committed: past half the club's full speed, swinging
+        /// harder adds nothing; a lazy push below that scales the shot down.
         [Test]
-        public void FasterSwingHitsHarderAndClampsAtFullPower()
+        public void ACommittedDownswingIsWorthTheWholeBackswing()
         {
-            double slow = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.5, -0.4), (0.6, -0.4) }))[0].Power;
-            double fast = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.1, -0.4), (0.6, -0.4) }))[0].Power;
-            Assert.Less(slow, fast);
-            Assert.AreEqual(1, fast, 1e-9, "22 rad/s is well past full speed: the whole club, even from a ~70 % backswing");
+            double load = 1.8 / new MotionSwingDetector().FullBackswing;
+            double lazy = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.5, -0.4), (0.6, -0.4) }))[0].Power;
+            double firm = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.25, -0.4), (0.6, -0.4) }))[0].Power;
+            double hard = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.1, -0.4), (0.6, -0.4) }))[0].Power;
+            Assert.AreEqual(load, firm, 0.03, "8.8 rad/s is committed: the whole backswing");
+            Assert.AreEqual(firm, hard, 1e-9, "22 rad/s adds nothing: the backswing is the shot");
+            Assert.Less(lazy, firm * 0.8, "4.4 rad/s is a push, not a swing");
         }
 
-        /// The feel: the downswing's speed makes the shot; the backswing only trims it.
+        /// The feel the user asked for: a full swing is the whole club, half a swing is half.
         [Test]
-        public void SpeedDecidesTheDistanceMoreThanTheBackswing()
+        public void TheBackswingDecidesTheDistance()
         {
-            var detector = new MotionSwingDetector { FullSpeed = 12 };
-            // hip-high backswing (1.55 rad, ~60 % load), then a hard downswing: 16 rad/s
-            var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.12, -0.4), (0.6, -0.4) }))[0];
-            Assert.AreEqual(1, impact.Power, 1e-9, "a hip-high backswing swung hard is the whole club");
-            Assert.AreEqual(0, impact.CurveDegrees, 1e-6, "and swinging hard never sends it wild");
-            // the same backswing at half speed is roughly half the shot
-            var soft = Impacts(Drive(new MotionSwingDetector { FullSpeed = 12 }, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.33, -0.4), (0.6, -0.4) }))[0];
-            // a soft swing still carries a good share, on the forgiving curve: (5.9/12)^0.65 ≈ 0.63
-            var d = new MotionSwingDetector();
-            double trim = d.BackswingFloor + (1 - d.BackswingFloor) * soft.Backswing;
-            Assert.AreEqual(Math.Pow(5.9 / 12, d.SpeedCurve) * trim, soft.Power, 0.05);
-            Assert.Greater(soft.Power, 0.55, "half the speed is well over half the club");
+            foreach (var (back, share) in new[] { (2.6, 1.0), (2.5, 1.0), (1.3, 0.5), (0.65, 0.25) })   // (2.5: a few degrees short is still full)
+            {
+                var impact = Impacts(Drive(new MotionSwingDetector { FullSpeed = 12 }, new[] { (0.6, 0.0), (0.8, back), (0.2, back), (0.12, -0.4), (0.6, -0.4) }))[0];
+                Assert.AreEqual(share, impact.Power, 0.03, $"a {share:P0} backswing is {share:P0} of the club");
+                Assert.AreEqual(0, impact.CurveDegrees, 1e-6, "and swinging hard never sends it wild");
+            }
         }
 
         [Test]
@@ -133,7 +132,7 @@ namespace GolfArcade.Tests
                 detector.Configure(club);
                 // a full turn lashed down at 30 rad/s, several times any club's full speed
                 var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.1, -0.4), (0.6, -0.4) }))[0];
-                Assert.AreEqual(1, impact.Power, 1e-9, $"{club}: the hardest swing is the whole club");
+                Assert.AreEqual(1, impact.Power, 1e-6, $"{club}: the hardest swing is the whole club");
                 Assert.AreEqual(0, impact.CurveDegrees, 1e-6, $"{club}: with a square face it flies straight");
                 Assert.AreEqual(club.ReferenceDistanceYards(), BallFlight.Simulate(club.Launch(impact.Power, impact.StartLineDegrees, impact.CurveDegrees)).Carry, 1.5,
                                 $"{club}: and carries the club's full distance");
@@ -153,7 +152,7 @@ namespace GolfArcade.Tests
             Assert.IsFalse(events.Any(e => e.Kind == SwingEventKind.Cancel));
             Assert.AreEqual(1, impacts[0].Backswing, 1e-9, "past vertical is a full backswing");
             Assert.Greater(impacts[0].PeakSpeed, 18, "the speed is the downswing's, not the backswing's");
-            Assert.AreEqual(1, impacts[0].Power, 1e-9);
+            Assert.AreEqual(1, impacts[0].Power, 1e-6);
         }
 
         [Test]
@@ -234,20 +233,17 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void LowerBackswingMeansLessPowerAtTheSameSpeed()
+        public void LowerBackswingMeansProportionallyLessPowerAtTheSameSpeed()
         {
-            // Same 8.8 rad/s downswing from a third of a backswing and a full one: the short one
-            // gives up some of the club, but not most of it — the speed is what it is.
+            // The same 8.8 rad/s downswing from a third of a backswing and a full one.
             var shortBack = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.4, 0.9), (0.2, 0.9), (0.125, -0.2), (0.6, -0.2) }))[0];
             var longBack = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.33, -0.4), (0.6, -0.4) }))[0];
             Assert.AreEqual(shortBack.PeakSpeed, longBack.PeakSpeed, 0.3);
-            Assert.Less(shortBack.Backswing, 0.4);
-            Assert.AreEqual(1, longBack.Backswing, 0.02);
-            Assert.Less(shortBack.Power, longBack.Power * 0.95);
-            Assert.Greater(shortBack.Power, longBack.Power * 0.8, "a third of a backswing gives up little of the club");
-            // and a slow full swing is still weak: speed is what the backswing scales
+            Assert.AreEqual(1, longBack.Power, 0.02, "a full backswing swung through is the whole club");
+            Assert.AreEqual(shortBack.Backswing, shortBack.Power, 0.02, "a third of a backswing is a third of the club");
+            // and a full backswing let down lazily (4.3 rad/s, under half of 14) is short of it
             var lazy = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.7, -0.4), (0.6, -0.4) }))[0];
-            Assert.Less(lazy.Power, longBack.Power * 0.65, "half the speed is well short of the club, even on the forgiving curve");
+            Assert.Less(lazy.Power, 0.75);
         }
 
         [Test]

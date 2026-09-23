@@ -49,12 +49,11 @@ namespace GolfArcade.Swing
     /// and no power can be drawn. A backswing is rotation away from address — the meter fills
     /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
     /// address quickly; impact is the moment it passes back through address (or clearly
-    /// decelerates). Power is the peak rotation speed of that downswing — that is what the shot
-    /// is made of, on a forgiving curve (SpeedCurve) — trimmed a little by how far back you took
-    /// it: a short, low backswing at the club's full speed gives up at most a fifth of the club,
-    /// and swinging harder makes that up, so a hard swing is always the whole club. Never more,
-    /// and never wild: however hard you lash it, the ball flies the club's full distance on the
-    /// face you struck it with. The wrist's roll at impact, relative to address, is the club
+    /// decelerates). Power is how far back you took it: a full backswing swung through is the
+    /// club's whole distance, half a backswing is half of it — the meter reads what the shot
+    /// will be. The downswing only has to be committed (CommitRatio); a lazy push scales it
+    /// down. Never more than the club, and never wild: however hard you lash it, the ball flies
+    /// the club's full distance on the face you struck it with. The wrist's roll at impact, relative to address, is the club
     /// face: open slices, closed hooks.
     public sealed class MotionSwingDetector
     {
@@ -69,18 +68,13 @@ namespace GolfArcade.Swing
         /// Radians of backswing shown as 100 % load: a full shoulder turn, phone up behind you.
         /// Hip-high (about 90°) reads around 60 %.
         public double FullBackswing = 2.6;
-        /// Power at full downswing speed from a barely-there backswing; it climbs linearly to 1 at
-        /// a full backswing. So power = speed ratio^SpeedCurve × (BackswingFloor + (1 − BackswingFloor) × load),
-        /// capped at 1 — and the ratio is not capped first, so speed past the club's full speed
-        /// makes up a short backswing. High, so the downswing's speed is what decides the
-        /// distance: a hip-high backswing swung at full speed is still nearly the whole club, and
-        /// swung hard it is all of it.
-        public double BackswingFloor = 0.8;
-        /// How the downswing's speed becomes power: its ratio to the club's full speed raised to
-        /// this, so the curve rises fast and flattens — half the speed is ~64 % of the club, not
-        /// half, and a relaxed but committed swing is most of it. 1 is straight proportion (the
-        /// putter keeps that, so a putt's pace stays exact).
-        public double SpeedCurve = 0.65;
+        /// The share of the club's full speed that makes a committed downswing. At or above it the
+        /// shot is worth the whole backswing: power = load × min(1, speed ratio / CommitRatio).
+        /// Below it, a push rather than a swing, it scales down in proportion.
+        public double CommitRatio = 0.5;
+        /// A backswing this close to the full turn counts as full: a real swing stops a few degrees
+        /// short of the mark, and a full swing should always be the whole club.
+        public double FullSnap = 0.95;
         /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
         /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
         /// hold needed.
@@ -148,11 +142,9 @@ namespace GolfArcade.Swing
                 fresh.ImpactAngle = 0.025;
                 fresh.StillSpeed = 0.04;
                 fresh.ArmSpeed = 0.15;
-                fresh.BackswingFloor = 0.6;
                 fresh.CurvePerFaceDegree = 0;
                 fresh.StartLinePerFaceDegree = 0.3;
                 fresh.MaxStartLineDegrees = 5;
-                fresh.SpeedCurve = 1;              // a putt's pace is the stroke's speed, exactly
             }
             CopyTuning(fresh);
             Reset();
@@ -161,11 +153,11 @@ namespace GolfArcade.Swing
         void CopyTuning(MotionSwingDetector o)
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
-            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; BackswingFloor = o.BackswingFloor;
+            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio;
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
-            MaxStartLineDegrees = o.MaxStartLineDegrees; SpeedCurve = o.SpeedCurve;
+            MaxStartLineDegrees = o.MaxStartLineDegrees;
         }
 
         /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
@@ -283,9 +275,10 @@ namespace GolfArcade.Swing
             double face = FaceRollDegrees(reference, attitude, swingAxis);
             double signedFace = Math.Abs(face) <= FaceDeadZoneDegrees ? 0 : face - Math.Sign(face) * FaceDeadZoneDegrees;
             double ratio = peakSpeed / FullSpeed;
-            // How far back you went scales what the speed is worth: a low, short backswing at the
-            // club's full speed chips; the same backswing swung harder is the whole club.
-            double power = Math.Pow(ratio, SpeedCurve) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
+            // How far back you went is the shot: full is the whole club, half is half — as long as
+            // the downswing is a committed one.
+            double back = backswingLoad >= FullSnap ? 1 : backswingLoad;
+            double power = back * Math.Min(1, ratio / CommitRatio);
             double curve = signedFace * CurvePerFaceDegree;
             double startLine = signedFace * StartLinePerFaceDegree;
             return new SwingImpact
