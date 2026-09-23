@@ -284,7 +284,8 @@ namespace GolfArcade.Tests
             var events = Drive(detector, new[] { (0.6, 0.0), (0.8, 0.14), (0.15, 0.14), (0.8, -0.04) });
             var impacts = Impacts(events);
             Assert.AreEqual(1, impacts.Count);
-            Assert.Less(impacts[0].Power, 0.15);
+            // a short, unhurried pendulum is a whole stroke: its backstroke is the putt
+            Assert.AreEqual(0.14 / detector.FullBackswing, impacts[0].Power, 0.05);
         }
 
         /// A putt is struck as the putter comes back through the ball, not where the stroke
@@ -299,7 +300,33 @@ namespace GolfArcade.Tests
             var impacts = Impacts(events);
             Assert.AreEqual(1, impacts.Count);
             Assert.Greater(impacts[0].TempoSeconds, 0.85, "not struck where the stroke slowed (0.8 s in), but as it passed the ball");
-            Assert.AreEqual(0.5, impacts[0].Power, 0.06, "half the putter's stroke is half its roll");
+            Assert.AreEqual(0.3 / detector.FullBackswing, impacts[0].Power, 0.06, "the backstroke is the putt");
+        }
+
+        /// The putter face opening on the way back and closing through, the way a real stroke
+        /// arcs, still strikes the ball as the putter passes it, with the whole backstroke.
+        [Test]
+        public void APuttWithTheFaceRollingIsStillStruckAtTheBall()
+        {
+            var detector = new MotionSwingDetector();
+            detector.Configure(GolfClub.Putter);
+            var legs = new[] { (0.6, 0.0), (0.6, 0.2), (0.1, 0.2), (0.35, -0.08), (0.5, -0.08) };
+            var impacts = Impacts(Drive(detector, legs, faceRollDegrees: 6, rollFromLeg: 1));
+            Assert.AreEqual(1, impacts.Count);
+            Assert.Less(impacts[0].TempoSeconds, 1.05, "struck as it came through the ball, not on a timeout");
+            Assert.AreEqual(0.2 / detector.FullBackswing, impacts[0].Power, 0.06);
+        }
+
+        /// A stroke pushed at the ball rather than swung (far slower than its backstroke) is
+        /// scaled down; a smooth one of any size is not.
+        [Test]
+        public void APushedPuttComesUpShort()
+        {
+            var smooth = new MotionSwingDetector(); smooth.Configure(GolfClub.Putter);
+            var pushed = new MotionSwingDetector(); pushed.Configure(GolfClub.Putter);
+            double full = Impacts(Drive(smooth, new[] { (0.6, 0.0), (0.6, 0.2), (0.1, 0.2), (0.3, -0.05), (0.5, -0.05) }))[0].Power;
+            double push = Impacts(Drive(pushed, new[] { (0.6, 0.0), (0.6, 0.2), (0.1, 0.2), (1.6, -0.05), (0.5, -0.05) }))[0].Power;
+            Assert.Less(push, full * 0.8);
         }
 
         [Test]

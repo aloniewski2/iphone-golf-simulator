@@ -123,6 +123,28 @@ namespace GolfArcade.Tests
             Assert.Greater(firm.Rest.DistanceTo(hole.Pin), 0.5);
         }
 
+        /// Too quick for the hole: through the middle it hops the back lip and runs on along its
+        /// line; off the edge the rim swings it round (a horseshoe); a slow one off the edge drops.
+        [Test]
+        public void TheRimDecidesHowAMissComesOut()
+        {
+            var pin = new CoursePoint(0, 10);
+            double r = Hole.CupCaptureRadius, v = CourseShot.CentreCaptureSpeed * 1.25;
+            var middle = CourseShot.CrossTheCup(0, 10 - r, 0, v, pin);
+            Assert.IsFalse(middle.Holed);
+            Assert.AreEqual(0, middle.Vx, 1e-6, "hops out straight on");
+            Assert.Less(middle.Vd, v * 0.8, "and loses pace doing it");
+            var edge = CourseShot.CrossTheCup(r * 0.6, 10 - r * 0.8, 0, v, pin);
+            Assert.IsFalse(edge.Holed);
+            Assert.IsTrue(edge.Lipped);
+            double turned = Math.Atan2(edge.Vx, edge.Vd) * 180 / Math.PI;
+            Assert.Greater(Math.Abs(turned), 15, "the lip swings it round");
+            var dying = CourseShot.CrossTheCup(r * 0.8, 10 - r * 0.6, 0, CourseShot.CentreCaptureSpeed * 0.4, pin);
+            Assert.IsTrue(dying.Holed, "a dying ball drops in the side door");
+            var skim = CourseShot.CrossTheCup(r * 0.97, 10 - r * 0.3, 0, v * 2, pin);
+            Assert.IsFalse(skim.Holed); Assert.IsFalse(skim.Lipped, "a quick one on the very edge skims over");
+        }
+
         [Test]
         public void CupCaptureFollowsTheSpeedAndOffsetRule()
         {

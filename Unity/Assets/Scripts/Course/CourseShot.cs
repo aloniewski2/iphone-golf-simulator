@@ -72,21 +72,75 @@ namespace GolfArcade.Course
             _ => FairwayDeceleration,
         };
 
+        /// The fastest a ball rolling dead centre over a regulation cup can go and still drop:
+        /// it has to fall its own radius before it reaches the far wall (Holmes, 1991), yards/s.
+        public const double CentreCaptureSpeed = 1.63 / BallFlight.MetersPerYard;
+        /// How deep the drawn ball dips crossing the hole: into it when it drops, a lip's worth
+        /// when it catches the far edge and spins out.
+        const double DropDepth = 0.12, LipDip = 0.035;
+
         /// Whether a ball crossing the cup `offset` yards from its centre at `speed` yards/s
-        /// drops. Dead centre holds a little over 1.6 m/s, and the faster it comes the closer to
-        /// the middle it has to be (Holmes' capture model), so a firm putt on the edge
-        /// horseshoes out where a dying one falls in.
-        public static bool CupCaptures(double speed, double offset)
+        /// drops: the chord it crosses shrinks toward the edge, so the faster it comes the closer
+        /// to the middle it has to be — dead centre holds 1.63 m/s, a ball through the side door
+        /// has to be dying. Offsets are read against the drawn cup, so the hole is as wide as it
+        /// looks and as fussy about pace as a real one.
+        public static double CaptureSpeed(double offset)
         {
-            double radius = Hole.CupCaptureRadius;
-            if (offset > radius) return false;
-            double centred = Math.Max(0, 1 - (offset / radius) * (offset / radius));
-            double limit = 0.35 + 1.55 * Math.Sqrt(centred);
-            return speed <= limit;
+            double u = offset / Hole.CupCaptureRadius;
+            return u >= 1 ? 0 : CentreCaptureSpeed * Math.Sqrt(1 - u * u);
         }
 
-        /// The lie the ball is played from does its own work (speed, spin, launch: see
-        /// CourseLies); `lieFactor` is any further loss of club speed on top of it.
+        public static bool CupCaptures(double speed, double offset) => offset <= Hole.CupCaptureRadius && speed <= CaptureSpeed(offset);
+
+        /// A ball crossing the cup, and how it comes out: it drops; or, too quick for the chord
+        /// it is on, it falls part of its radius (`Depth`, as a share) before meeting the far rim
+        /// — shallow and it skims over with a little pace lost; deeper and the rim catches it,
+        /// takes most of the pace square to the rim and swings it round the lip, so a ball off
+        /// the edge horseshoes and one through the middle hops out straight.
+        public readonly struct CupCrossing
+        {
+            public readonly bool Holed, Lipped;
+            public readonly double Seconds, Depth, X, D, Vx, Vd;
+            public CupCrossing(bool holed, bool lipped, double seconds, double depth, double x, double d, double vx, double vd)
+            { Holed = holed; Lipped = lipped; Seconds = seconds; Depth = depth; X = x; D = d; Vx = vx; Vd = vd; }
+        }
+
+        public static CupCrossing CrossTheCup(double x, double d, double vx, double vd, CoursePoint pin)
+        {
+            double r = Hole.CupCaptureRadius;
+            double speed = Math.Sqrt(vx * vx + vd * vd);
+            if (speed < 1e-6) return new CupCrossing(true, false, 0, 1, pin.X, pin.D, 0, 0);
+            double dx = vx / speed, dd = vd / speed;
+            double relX = pin.X - x, relD = pin.D - d;
+            double along = relX * dx + relD * dd;                       // to the point nearest the middle
+            double offX = x + dx * along - pin.X, offD = d + dd * along - pin.D;
+            double offset = Math.Sqrt(offX * offX + offD * offD);
+            double half = Math.Sqrt(Math.Max(0, r * r - offset * offset));
+            double chord = Math.Max(0, along + half);                   // from here to the far rim
+            double seconds = chord / speed;
+            double capture = CaptureSpeed(offset);
+            if (speed <= capture)
+            {
+                // in: over to the middle and down
+                double toMiddle = Math.Max(0, along) / speed;
+                return new CupCrossing(true, false, Math.Max(toMiddle, 1.0 / 60), 1, pin.X, pin.D, 0, 0);
+            }
+            double depth = capture > 0 ? (capture / speed) * (capture / speed) : 0;   // share of its radius it fell
+            double ex = x + dx * chord, ed = d + dd * chord;           // where it meets the far rim
+            if (depth < 0.3)
+                return new CupCrossing(false, false, seconds, depth, ex, ed, vx * (1 - 0.3 * depth), vd * (1 - 0.3 * depth));
+            // the rim: split the pace square to it and along it
+            double nx = (ex - pin.X) / r, nd = (ed - pin.D) / r;
+            double nl = Math.Max(1e-9, Math.Sqrt(nx * nx + nd * nd)); nx /= nl; nd /= nl;
+            double vn = vx * nx + vd * nd;
+            double tx = vx - vn * nx, td = vd - vn * nd;
+            double outN = Math.Max(0, vn) * Math.Max(0.1, 1 - 1.2 * depth);   // climbing out takes most of it: the deeper, the more
+            double keepT = 1 - 0.25 * depth;                           // riding round the lip, a little
+            double nvx = tx * keepT + nx * outN, nvd = td * keepT + nd * outN;
+            // (just outside the rim, so it is off the hole)
+            return new CupCrossing(false, true, seconds, depth, pin.X + nx * r * 1.02, pin.D + nd * r * 1.02, nvx, nvd);
+        }
+
         public CourseShot(GolfClub club, SwingImpact impact, double heading, CoursePoint origin, Hole hole, double lieFactor = 1, Wind wind = default)
         {
             Club = club;
@@ -184,7 +238,7 @@ namespace GolfArcade.Course
             const double dt = 1.0 / 240;
             double nextSample = time + SampleInterval;
             double? holed = null;
-            bool wet = false, lippedOut = false, lippedEver = false;
+            bool wet = false, lippedEver = false, overCup = false;
             double elapsed = time;
             while (elapsed < 30)
             {
@@ -198,47 +252,42 @@ namespace GolfArcade.Course
                 // Stopped, unless the face it sits on is steep enough to start it rolling again.
                 if (speed < 0.02 && downhill < decel * 0.9) break;
 
-                // At the cup: judged by the miss distance (how far from the middle the ball's
-                // line passes) and its pace: drop in, or rattle off the rim and keep going.
+                // At the cup: decided once, as the ball's centre crosses onto the hole (see
+                // CrossTheCup) — it drops, catches the far lip and spins out, or skims over.
                 double toCup = here.DistanceTo(hole.Pin);
                 double dx = speed > 0.001 ? vx / speed : 0, dd = speed > 0.001 ? vd / speed : 0;
-                if (toCup <= Hole.CupCaptureRadius && speed <= 0.001)
+                if (toCup <= Hole.CupCaptureRadius && (speed <= 0.001 || elapsed <= time))
                 {
-                    // Dead still on the lip: it drops.
+                    // Resting on the hole (or struck from over it): it drops.
                     x = hole.Pin.X; d = hole.Pin.D;
                     holed = elapsed;
-                    path.Add((x, 0, d));
+                    path.Add((x, -DropDepth, d));
                     break;
                 }
-                if (toCup <= Hole.CupCaptureRadius)
+                if (toCup > Hole.CupCaptureRadius) overCup = false;
+                else if (!overCup)
                 {
-                    double relX = hole.Pin.X - x, relD = hole.Pin.D - d;
-                    double along = relX * dx + relD * dd;
-                    double missX = -(relX - dx * along), missD = -(relD - dd * along);
-                    double miss = Math.Sqrt(missX * missX + missD * missD);
-                    if (CupCaptures(speed, Math.Min(miss, toCup)))
+                    overCup = true;
+                    var cross = CrossTheCup(x, d, vx, vd, hole.Pin);
+                    // the transit, drawn: across the mouth and dipping into it
+                    for (double s = SampleInterval; s < cross.Seconds; s += SampleInterval)
+                    {
+                        double sink = Math.Min(0.5 * GravityYards * s * s, cross.Holed ? DropDepth : LipDip);
+                        path.Add((x + vx * s, -sink, d + vd * s));
+                    }
+                    elapsed += cross.Seconds;
+                    nextSample = elapsed + SampleInterval;
+                    if (cross.Holed)
                     {
                         x = hole.Pin.X; d = hole.Pin.D;
                         holed = elapsed;
-                        path.Add((x, 0, d));
+                        path.Add((x, -DropDepth, d));
                         break;
                     }
-                    if (!lippedOut)
-                    {
-                        // Lip-out: the rim throws the ball out to the side it is passing on and
-                        // takes much of its pace, the way a firm putt horseshoes round the hole.
-                        lippedOut = true; lippedEver = true;
-                        double outX = miss > 0.005 ? missX / miss : -dd, outD = miss > 0.005 ? missD / miss : dx;
-                        double kept = speed * 0.55;
-                        double newX = dx * 0.7 + outX * 0.7, newD = dd * 0.7 + outD * 0.7;
-                        double len = Math.Max(0.001, Math.Sqrt(newX * newX + newD * newD));
-                        vx = newX / len * kept; vd = newD / len * kept;
-                        speed = kept; dx = vx / speed; dd = vd / speed;
-                    }
-                }
-                else if (toCup > Hole.CupCaptureRadius * 3)
-                {
-                    lippedOut = false;
+                    if (cross.Lipped) lippedEver = true;
+                    x = cross.X; d = cross.D; vx = cross.Vx; vd = cross.Vd;
+                    path.Add((x, 0, d));
+                    continue;
                 }
 
                 double ax = -GravityYards * slope.dx, ad = -GravityYards * slope.dd;

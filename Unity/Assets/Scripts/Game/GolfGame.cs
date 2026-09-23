@@ -31,7 +31,6 @@ namespace GolfArcade.Game
 
         Course.Course course;
         GolfSounds sounds;
-        Commentary commentary;
         /// How the last full swing was struck, and whether its word has popped yet.
         StrikeReport lastReport;
         bool gradeShown;
@@ -183,7 +182,6 @@ namespace GolfArcade.Game
             golfer = GolferView.Create(transform);
             gallery = Gallery.Create(transform);
             sounds = GolfSounds.Create(transform);
-            commentary = Commentary.Create(transform);
 
             ball = new GameObject("Ball").transform;
             ball.SetParent(transform, false);
@@ -1514,7 +1512,6 @@ namespace GolfArcade.Game
                 effects.Splash(new Vector3(pos.x, (float)under, pos.z));
                 sounds.PlaySplash();
                 sounds.PlayGasp(0.55f);
-                commentary.Say("water", 0.9f, 0.4f);
                 if (trailing) effects.Land();
                 trace.Add(pos); hud.Map.Changed();
                 ball.gameObject.SetActive(false);
@@ -1526,8 +1523,8 @@ namespace GolfArcade.Game
 
         static readonly Color GreatGreen = new(0.45f, 0.95f, 0.45f), ThinOrange = new(1f, 0.55f, 0.25f);
 
-        /// The word at impact, felt and heard: PERFECT! and the booth goes "what a strike",
-        /// a slice gets called as it starts to drift.
+        /// The word at impact, seen and felt: PERFECT! in gold and a crack in the hand; the gallery
+        /// applauds a pure drive off the tee.
         void AnnounceStrike()
         {
             if (gradeShown) return;
@@ -1535,41 +1532,27 @@ namespace GolfArcade.Game
             var r = lastReport;
             var color = r.Grade switch { StrikeGrade.Perfect => UiKit.ArcadeYellow, StrikeGrade.Great => GreatGreen, StrikeGrade.Good => Color.white, _ => ThinOrange };
             hud.ShowStrike(r.GradeWord, color, r.Shape == ShotShape.Straight ? null : r.ShapeWord);
-            if (LastShot.Power < 0.35) return;   // a little pitch needs no words
             if (r.Grade == StrikeGrade.Perfect && LastShot.Power > 0.8 && gallery.gameObject.activeSelf) sounds.PlayApplause(0.3f);
-            string line = r.Grade == StrikeGrade.Thin ? "thin"
-                : r.Shape == ShotShape.Slice ? "slice"
-                : r.Shape == ShotShape.Hook ? "hook"
-                : r.Grade == StrikeGrade.Perfect ? "perfect"
-                : r.Shape is ShotShape.Draw or ShotShape.Fade ? "shape" : null;
-            if (line != null) commentary.Say(line, line == "perfect" ? 0.8f : line == "shape" ? 0.4f : 0.9f, 0.4f);
         }
 
-        /// Where it finished, and what the gallery and the booth make of it (the water and a
-        /// holed ball have their own moments).
+        /// Where it finished, and what the gallery makes of it (the water and a holed ball have
+        /// their own moments).
         void React(CourseShot shot)
         {
             double toPin = shot.Rest.DistanceTo(hole.Pin);
             if (club == GolfClub.Putter)
             {
-                if (shot.LippedOut) { sounds.PlayGroan(0.6f); commentary.Say("lipout", 1f, 0.15f); }
-                else if (toPin < 2.5)
-                {
-                    sounds.PlayGroan(0.3f);
-                    if (shot.Origin.DistanceTo(shot.Rest) < shot.Origin.DistanceTo(hole.Pin)) commentary.Say("short", 0.5f, 0.3f);
-                }
+                if (shot.LippedOut) sounds.PlayGroan(0.6f);
+                else if (toPin < 2.5) sounds.PlayGroan(0.3f);
                 return;
             }
             switch (shot.Lie)
             {
-                case CourseLie.Water: return;
                 case CourseLie.OutOfBounds: sounds.PlayGroan(0.4f); return;
-                case CourseLie.Bunker: sounds.PlayGroan(0.35f); commentary.Say("sand", 0.8f, 0.2f); return;
-                case CourseLie.Rough: commentary.Say("rough", 0.45f, 0.2f); return;
+                case CourseLie.Bunker: sounds.PlayGroan(0.35f); return;
             }
-            if (shot.Lie.IsPuttingSurface() && toPin <= 4) { sounds.PlayGasp(0.45f); sounds.PlayApplause(0.6f); commentary.Say("flag", 1f, 0.2f, interrupt: true); }
-            else if (shot.Lie == CourseLie.Green) { sounds.PlayApplause(0.3f); commentary.Say("green", 0.5f, 0.2f); }
-            else if (shot.Lie == CourseLie.Fairway && shot.Origin.DistanceTo(hole.Tee) < 5) commentary.Say("fairway", 0.5f, 0.2f);
+            if (shot.Lie.IsPuttingSurface() && toPin <= 4) { sounds.PlayGasp(0.45f); sounds.PlayApplause(0.6f); }
+            else if (shot.Lie == CourseLie.Green) sounds.PlayApplause(0.3f);
         }
 
         // ----- Instant replay -----
@@ -1714,7 +1697,6 @@ namespace GolfArcade.Game
                 sounds.PlayFanfare();
                 sounds.PlayRoar(club == GolfClub.Putter && shot.Total < 2 ? 0.45f : 0.85f);
                 Haptics.Roar();
-                commentary.Say(club == GolfClub.Putter && shot.Total > 4 ? "drained" : "holed", 1f, 0.25f, interrupt: true);
                 result = "In the hole!";
             }
             else if (shot.Lie == CourseLie.Water) { Haptics.Failure(); result = "Water  ·  +1 stroke"; }
@@ -1741,8 +1723,6 @@ namespace GolfArcade.Game
                 Card.Record(holeIndex, holeStrokes);
                 ShowScore();
                 hud.ShowBanner(Scorecard.ScoreName(holeStrokes, hole.Par), 3f);
-                int toPar = holeStrokes - hole.Par;
-                commentary.Say(toPar <= -2 ? "eagle" : toPar == -1 ? "birdie" : toPar == 0 ? "par" : "bogey", toPar == 0 ? 0.6f : toPar > 1 ? 0 : 1f, 0.3f, interrupt: toPar < 0);
                 Enter(State.HoleDone);
                 return;
             }
