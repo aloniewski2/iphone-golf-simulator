@@ -52,18 +52,31 @@ namespace GolfArcade.Game
         PlayableGraph graph;
         AnimationPlayableOutput output;
         AnimationClipPlayable clip;
+        AnimationClip clipAsset;
+        // crossfades: the pose being left stays behind, frozen, on the mixer's second input and
+        // fades out under the new one, so no change of clip or pose ever pops
+        AnimationMixerPlayable mixer;
+        AnimationClipPlayable ghost;
+        float fade, fadeSeconds;
         readonly Dictionary<string, AnimationClip> clips = new();
         readonly Dictionary<string, ClipInfo> landmarks = new();
         readonly Dictionary<string, GameObject> clubMeshes = new();
         string clipName;
         float TopTime, ImpactTime, EndTime;
-        /// A full downswing, top to ball (matches the clip); a partial backswing comes down proportionally faster.
-        float FullDownswing => ImpactTime - TopTime;
         bool hasModel;
         float time;            // clip time being shown
         float loadTarget;      // where the backswing should be, from the phone
-        int phase;             // 0 posing with the load, 1 unwinding a partial backswing, 2 swinging through, 3 holding the finish
-        float unwindSpeed;
+        float loadVelocity;    // SmoothDamp's, following it
+        /// 0 posing with the load, 2 the downswing, 5 the follow-through, 3 holding the finish, 4 performing a move
+        int phase;
+        // The swing's tempo, per clip (SetClub). The studio's clips come down from the top in
+        // 0.6 s at an even pace; a real downswing takes about a third of a second and speeds up all the way to
+        // the ball, and the follow-through leaves the ball at that speed and eases into the
+        // finish. So the downswing is played over Downswing seconds with clip time running as
+        // u^Accel, and the follow-through as 1-(1-v)^EaseOut over however long matches the club's
+        // speed at impact.
+        float Downswing = 0.38f, Accel = 1.4f, EaseOut = 2.6f;
+        float swingU, swingRate, throughV, throughSeconds, finishTime;
 
         // primitive fallback
         Transform pivot, club, body;
@@ -110,6 +123,35 @@ namespace GolfArcade.Game
             if (knit) m.SetTexture("_Knit", knit);
             m.SetFloat("_Fabric", cloth ? 0.6f : 0f);
             clayMaterials[(color, cloth)] = m;
+            return m;
+        }
+
+        /// The clubs' finishes (blender/scripts/golf_clubs.py FINISHES): colour, metallic, smoothness.
+        static readonly Dictionary<string, (Color color, float metal, float smooth)> ClubFinishes = new()
+        {
+            ["CLUB chrome"] = (new Color(0.86f, 0.87f, 0.89f), 1f, 0.88f),
+            ["CLUB satin"] = (new Color(0.72f, 0.73f, 0.75f), 1f, 0.62f),
+            ["CLUB gunmetal"] = (new Color(0.30f, 0.31f, 0.33f), 1f, 0.68f),
+            ["CLUB carbon"] = (new Color(0.05f, 0.052f, 0.058f), 0f, 0.70f),
+            ["CLUB black"] = (new Color(0.035f, 0.035f, 0.04f), 0f, 0.45f),
+            ["CLUB grip"] = (new Color(0.05f, 0.05f, 0.055f), 0f, 0.15f),
+            ["CLUB accent"] = (new Color(0.05f, 0.62f, 0.62f), 0f, 0.55f),
+            ["CLUB white"] = (new Color(0.92f, 0.92f, 0.90f), 0f, 0.5f),
+            ["CLUB groove"] = (new Color(0.10f, 0.10f, 0.11f), 1f, 0.5f),
+        };
+        static readonly Dictionary<string, Material> clubMaterials = new();
+
+        /// Real metal for the clubs: Standard, so chrome and satin catch the sky.
+        static Material ClubMaterial(string name)
+        {
+            if (clubMaterials.TryGetValue(name, out var m) && m) return m;
+            var f = ClubFinishes.TryGetValue(name, out var known) ? known : (color: Color.grey, metal: 0f, smooth: 0.3f);
+            var shader = Shader.Find("Standard");
+            if (!shader) return HoleView.Mat(f.color);
+            m = new Material(shader) { color = f.color };
+            m.SetFloat("_Metallic", f.metal);
+            m.SetFloat("_Glossiness", f.smooth);
+            clubMaterials[name] = m;
             return m;
         }
 
@@ -174,6 +216,7 @@ namespace GolfArcade.Game
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
+                    if (name.StartsWith("CLUB ")) { mats[i] = ClubMaterial(name); continue; }
                     Color color = mats[i].color;
                     if (name == "MAT_SKIN") color = look.Skin;
                     else if (name == "MAT_HAIR") color = look.Hair;
@@ -203,6 +246,9 @@ namespace GolfArcade.Game
             graph = PlayableGraph.Create("Golfer swing");
             graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             output = AnimationPlayableOutput.Create(graph, "Swing", animator);
+            mixer = AnimationMixerPlayable.Create(graph, 2);
+            output.SetSourcePlayable(mixer);
+            fade = 0;
             graph.Play();
             hasModel = true;
             clipName = null;
@@ -226,14 +272,12 @@ namespace GolfArcade.Game
         public bool Perform(string move, float startAt = 0f)
         {
             if (!hasModel || !clips.TryGetValue(move, out var c)) return false;
-            if (clip.IsValid()) clip.Destroy();
-            clip = AnimationClipPlayable.Create(graph, c);
-            clip.SetApplyFootIK(false);
-            clip.SetApplyPlayableIK(false);
-            output.SetSourcePlayable(clip);
+            var yaw = Quaternion.Euler(0, ClipYaw(move), 0);
+            // (the shared moves face a quarter turn round, so from a swing pose there's no fading)
+            Play(c, modelGo.transform.localRotation == yaw ? 0.25f : 0f);
             clipName = move;
             foreach (var kv in clubMeshes) kv.Value.SetActive(false);
-            modelGo.transform.localRotation = Quaternion.Euler(0, ClipYaw(move), 0);
+            modelGo.transform.localRotation = yaw;
             performLength = Mathf.Max(0.1f, c.length);
             performTime = Mathf.Repeat(startAt, performLength);
             phase = 4;
@@ -269,11 +313,14 @@ namespace GolfArcade.Game
             else { TopTime = c.length * 0.55f; ImpactTime = c.length * 0.75f; EndTime = c.length; }
             string clubMesh = info != null ? info.club.ToUpperInvariant() : club.ToString().ToUpperInvariant();
             foreach (var kv in clubMeshes) kv.Value.SetActive(!spectator && kv.Key == clubMesh);
-            if (clip.IsValid()) clip.Destroy();
-            clip = AnimationClipPlayable.Create(graph, c);
-            clip.SetApplyFootIK(false);
-            clip.SetApplyPlayableIK(false);
-            output.SetSourcePlayable(clip);
+            (Downswing, Accel, EaseOut) = wanted switch
+            {
+                "Putt" => (0.42f, 1.1f, 1.6f),     // a pendulum: hardly any acceleration
+                "Chip" => (0.42f, 1.25f, 2.0f),
+                "HalfSwing" => (0.34f, 1.35f, 2.4f),
+                _ => (0.38f, 1.4f, 2.6f),           // about twice the studio pace at the ball, and still readable at 60 fps
+            };
+            Play(c, modelGo.transform.localRotation == Quaternion.identity ? 0.2f : 0f);
             modelGo.transform.localRotation = Quaternion.identity;
             if (phase == 4) { phase = 0; time = 0; }
             Show(Mathf.Min(time, TopTime));
@@ -285,6 +332,51 @@ namespace GolfArcade.Game
             clip.SetTime(time);
             graph.Evaluate();
         }
+
+        /// Puts `c` on the mixer; with a crossfade, the pose on screen now stays behind, frozen,
+        /// and fades out over that many seconds.
+        void Play(AnimationClip c, float crossfade)
+        {
+            if (ghost.IsValid()) { graph.Disconnect(mixer, 1); ghost.Destroy(); }
+            if (clip.IsValid())
+            {
+                graph.Disconnect(mixer, 0);
+                if (crossfade > 0) { ghost = clip; graph.Connect(ghost, 0, mixer, 1); fade = 1; fadeSeconds = crossfade; }
+                else clip.Destroy();
+            }
+            if (!ghost.IsValid()) fade = 0;   // nothing on screen yet to fade from
+            clip = AnimationClipPlayable.Create(graph, c);
+            clip.SetApplyFootIK(false);
+            clip.SetApplyPlayableIK(false);
+            graph.Connect(clip, 0, mixer, 0);
+            clipAsset = c;
+            Weigh();
+        }
+
+        /// Leaves the pose on screen for another point in the same clip, smoothly.
+        void Crossfade(float seconds) { if (clipAsset) { float t = time; Play(clipAsset, seconds); clip.SetTime(t); } }
+
+        void Weigh()
+        {
+            mixer.SetInputWeight(0, 1 - fade);
+            mixer.SetInputWeight(1, ghost.IsValid() ? fade : 0);
+        }
+
+        void TickFade(float dt)
+        {
+            if (fade <= 0) return;
+            fade = Mathf.Max(0, fade - dt / fadeSeconds);
+            if (fade == 0 && ghost.IsValid()) { graph.Disconnect(mixer, 1); ghost.Destroy(); }
+            Weigh();
+        }
+
+        void ShowThrough()
+        {
+            if (throughV >= 1) { phase = 3; Show(finishTime); return; }
+            Show(ImpactTime + (finishTime - ImpactTime) * (1 - Mathf.Pow(1 - throughV, EaseOut)));
+        }
+
+        float DownswingTime(float u) => TopTime + (ImpactTime - TopTime) * Mathf.Pow(Mathf.Clamp01(u), Accel);
 
         void OnDestroy() { if (graph.IsValid()) graph.Destroy(); }
 
@@ -305,7 +397,9 @@ namespace GolfArcade.Game
         public void ShowLoad(float load)
         {
             shownLoad = load;
-            if (phase == 0 || phase == 3) { phase = 0; loadTarget = Mathf.Clamp01(load); }
+            if (phase == 3 && hasModel) { Crossfade(0.3f); phase = 0; loadVelocity = 0; Show(0); }
+            if (phase == 3) phase = 0;
+            if (phase == 0) loadTarget = Mathf.Clamp01(load);
         }
 
         /// Swing through from wherever the backswing got to. Returns the seconds until the club
@@ -314,24 +408,31 @@ namespace GolfArcade.Game
         {
             swingThrough = 0;
             if (!hasModel) return 0.12f;
-            if (time >= TopTime * 0.85f)
-            {
-                // a full swing: the clip's own downswing, hips first, club lagging
-                phase = 2;
-                return Mathf.Max(0.05f, ImpactTime - time);
-            }
-            // a shorter swing comes back down the way it went up, then releases through the ball
-            phase = 1;
-            float down = Mathf.Max(0.12f, FullDownswing * (time / TopTime));
-            unwindSpeed = time / down;
-            return down;
+            // How far back it got. A full swing comes down from the top; a shorter one joins the
+            // downswing where the club is about as far back, a little slower (a shorter swing
+            // is a gentler one), and its follow-through stops short of the full finish.
+            float f = Mathf.Clamp01(time / Mathf.Max(0.01f, TopTime));
+            bool full = f >= 0.9f;
+            swingU = full ? 0 : Mathf.Min(0.95f, Mathf.Pow(1 - f, 1 / Accel));   // (even a tap swings through a little)
+            float seconds = Downswing * (full ? 1 : Mathf.Lerp(0.7f, 1f, f));
+            swingRate = (1 - swingU) / seconds;
+            // the club's clip-speed at impact, which the follow-through picks up
+            float impactSpeed = (ImpactTime - TopTime) * Accel * swingRate;
+            finishTime = full ? EndTime : ImpactTime + (EndTime - ImpactTime) * Mathf.Max(0.55f, f);
+            throughSeconds = Mathf.Clamp((finishTime - ImpactTime) * EaseOut / Mathf.Max(0.01f, impactSpeed), 0.35f, 1.6f);
+            Crossfade(full ? 0.07f : 0.12f);   // from the backswing pose into the downswing's
+            phase = 2;
+            Show(DownswingTime(swingU));
+            return seconds;
         }
 
         public void Settle()
         {
             if (phase == 4) { clipName = null; SetClub(shownClub, shownShort); }
             swingThrough = -1; shownLoad = 0;
-            phase = 0; loadTarget = 0;
+            // back to address from wherever it is (the finish, a half-made backswing) without a pop
+            if (hasModel && phase != 4 && time > 0.001f) Crossfade(0.3f);
+            phase = 0; loadTarget = 0; loadVelocity = 0;
             if (hasModel) Show(0);
         }
 
@@ -343,19 +444,28 @@ namespace GolfArcade.Game
         void UpdateModel()
         {
             float dt = Time.deltaTime;
+            TickFade(dt);
             switch (phase)
             {
                 case 0:
-                    // ease toward the phone's load; quick enough to feel live, smooth enough not to jitter
-                    Show(Mathf.MoveTowards(time, loadTarget * TopTime, dt * TopTime * 6f));
-                    break;
-                case 1:
-                    Show(time - unwindSpeed * dt);
-                    if (time <= 0.001f) { phase = 2; Show(ImpactTime); }
+                    // follow the phone's load with a critically damped spring: live, but it eases
+                    // in and out of every move instead of travelling at a constant rate
+                    Show(Mathf.SmoothDamp(time, loadTarget * TopTime, ref loadVelocity, 0.07f, TopTime * 10f, dt));
                     break;
                 case 2:
-                    Show(time + dt);
-                    if (time >= EndTime) phase = 3;
+                    swingU += swingRate * dt;
+                    if (swingU < 1) { Show(DownswingTime(swingU)); break; }
+                    // through the ball: the time left over this frame goes into the follow-through
+                    throughV = swingRate > 0 ? (swingU - 1) / swingRate / throughSeconds : 0;
+                    phase = 5;
+                    ShowThrough();
+                    break;
+                case 5:
+                    throughV += dt / throughSeconds;
+                    ShowThrough();
+                    break;
+                case 3:
+                    if (fade > 0) graph.Evaluate();
                     break;
                 case 4:
                     performTime = Mathf.Repeat(performTime + dt, performLength);

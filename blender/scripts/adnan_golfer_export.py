@@ -11,7 +11,8 @@ own root empties along the same timeline (parked at z = -30 when not in use). Th
   * keeps the right-handed swing strips the game uses and names them for Unity's takes;
   * adds a `Club` bone and bakes the in-use club's motion into it for every clip, so the club
     travels in the rig's own animation (an FBX take carries one rig, not a second animated prop);
-  * builds one club mesh per club type, skinned to that bone, so the game shows the club in hand;
+  * builds one club mesh per club type (golf_clubs.py), skinned to that bone, so the game shows
+    the club in hand;
   * turns the rig so the ball is on Unity +Z (GolferView stands the figure facing the ball),
     renames the skin material MAT_SKIN so skin tones still apply;
   * exports Unity/Assets/Resources/Golfer/golfer_<m|f>.fbx and writes golfer_<m|f>_clips.json
@@ -60,34 +61,19 @@ club_bone = rig.pose.bones["Club"]
 club_bone.rotation_mode = 'QUATERNION'
 
 # ------------------------------------------------------------------ 2. club meshes, in their root's space
+# The clubs are our own (golf_clubs.py: a carbon driver, chrome irons, a satin wedge, a blade
+# putter), modelled in the studio clubs' root space so the studio's club motion carries them.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import golf_clubs
+
 def club_mesh(club):
-    root = roots[club]
-    dg = bpy.context.evaluated_depsgraph_get()
-    bm = bmesh.new(); slots = []
-    to_root = root.matrix_world.inverted()
-    for part in root.children_recursive:
-        if part.type != 'MESH': continue
-        me = part.evaluated_get(dg).to_mesh()
-        mats = [s.material for s in part.material_slots] or [None]
-        remap = []
-        for m in mats:
-            if m not in slots: slots.append(m)
-            remap.append(slots.index(m))
-        tmp = bpy.data.meshes.new("_tmp")
-        tb = bmesh.new(); tb.from_mesh(me); tb.transform(to_root @ part.matrix_world)
-        for f in tb.faces: f.material_index = remap[min(f.material_index, len(remap) - 1)]
-        tb.to_mesh(tmp); tb.free(); part.evaluated_get(dg).to_mesh_clear()
-        bm.from_mesh(tmp); bpy.data.meshes.remove(tmp)
-    me = bpy.data.meshes.new(f"CLUB_{club.upper()}")
-    bm.to_mesh(me); bm.free()
-    for m in slots: me.materials.append(m)
-    ob = O.new(me.name, me)
+    ob = golf_clubs.build(club)
     sc.collection.objects.link(ob)
     ob.parent = rig
-    ob.vertex_groups.new(name="Club").add(list(range(len(me.vertices))), 1.0, 'REPLACE')
+    ob.vertex_groups.new(name="Club").add(list(range(len(ob.data.vertices))), 1.0, 'REPLACE')
     ob.modifiers.new("Armature", 'ARMATURE').object = rig
     # the club head: the point farthest from the grip, tracked below to find top and impact
-    tip = max((v.co for v in me.vertices), key=lambda c: c.length)
+    tip = max((v.co for v in ob.data.vertices), key=lambda c: c.length)
     return ob, Vector(tip)
 
 club_objects, club_tips = {}, {}
