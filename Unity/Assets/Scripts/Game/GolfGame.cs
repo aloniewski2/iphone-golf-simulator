@@ -143,7 +143,7 @@ namespace GolfArcade.Game
             RenderSettings.fog = true;
             RenderSettings.fogColor = new Color(0.76f, 0.91f, 0.99f);   // the sky just under the horizon
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogStartDistance = 250; RenderSettings.fogEndDistance = 700;
+            RenderSettings.fogStartDistance = 320; RenderSettings.fogEndDistance = 1100;   // the islands on the horizon stay in view
             // A clear resort sky, the way Golf Dreams paints it (GolfArcade/SkyGradient): cyan
             // overhead, bright at the horizon, the haze colour below it so the sea's far edge
             // dissolves into the sky instead of banding.
@@ -152,6 +152,13 @@ namespace GolfArcade.Game
             {
                 RenderSettings.skybox = new Material(sky);
                 RenderSettings.skybox.SetColor("_Below", RenderSettings.fogColor);
+                var clouds = Resources.Load<Texture2D>("Sky/clouds");
+                if (clouds)
+                {
+                    clouds.wrapModeU = TextureWrapMode.Repeat; clouds.wrapModeV = TextureWrapMode.Clamp;
+                    clouds.filterMode = FilterMode.Bilinear;
+                    RenderSettings.skybox.SetTexture("_Clouds", clouds);
+                }
             }
             else if (RenderSettings.skybox && RenderSettings.skybox.HasProperty("_GroundColor"))
             {

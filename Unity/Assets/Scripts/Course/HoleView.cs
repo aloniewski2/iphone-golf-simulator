@@ -161,6 +161,14 @@ namespace GolfArcade.Course
             }
             Physics.SyncTransforms(); // the ball is placed on this ground in the same frame
             if (hasGround) Hole.Surface = SampleSurface();
+            // the islands and boats out on the sea round it, past the playable ground
+            var land = new Bounds(); bool any = false;
+            foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (!StartsWithAny(mf.name, GroundPrefixes) || !mf.TryGetComponent(out Renderer lr)) continue;
+                if (any) land.Encapsulate(lr.bounds); else { land = lr.bounds; any = true; }
+            }
+            if (any) Backdrop.Place(transform, land, pinC - teeC, WaterMat(Palette["MAT_WATER"]));
         }
 
         /// The ground around the green as the ball will roll over it, read off the meshes the
