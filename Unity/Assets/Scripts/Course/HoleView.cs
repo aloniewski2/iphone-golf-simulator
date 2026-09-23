@@ -139,7 +139,8 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (Palette.TryGetValue(name, out var color)) mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color) : Mat(color);
+                    if (Palette.TryGetValue(name, out var color))
+                        mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color) : Turf.TryGetValue(name, out var turf) ? TurfMat(color, turf) : Mat(color);
                 }
                 r.sharedMaterials = mats;
                 r.shadowCastingMode = r.name.StartsWith("WATER") ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
@@ -408,6 +409,33 @@ namespace GolfArcade.Course
             if (collider) Destroy(collider);
             go.GetComponent<Renderer>().sharedMaterial = Mat(color);
             return go;
+        }
+
+        /// Which of the Blender-baked turf tiles (Resources/Course/Turf, turf_textures.py) a
+        /// surface wears: the tile, how many yards one covers, how strongly it shows.
+        static readonly Dictionary<string, (string tile, float yards, float strength)> Turf = new()
+        {
+            ["MAT_FAIRWAY"] = ("fairway", 10f, 0.28f), ["MAT_FAIRWAY_STRIPE"] = ("fairway", 10f, 0.28f),
+            ["MAT_FIRSTCUT"] = ("fairway", 8f, 0.32f), ["MAT_GREEN"] = ("green", 4f, 0.9f),
+            ["MAT_ROUGH"] = ("rough", 6f, 0.4f), ["MAT_BUNKER_LIP"] = ("rough", 6f, 0.35f),
+            ["MAT_SAND"] = ("sand", 3f, 0.45f),
+        };
+        static readonly Dictionary<(Color, string), Material> turfMaterials = new();
+
+        /// Grass or sand: its palette colour with its detail tile over it (GolfArcade/Turf).
+        public static Material TurfMat(Color color, (string tile, float yards, float strength) turf)
+        {
+            if (turfMaterials.TryGetValue((color, turf.tile), out var m) && m) return m;
+            var shader = Shader.Find("GolfArcade/Turf");
+            var tex = Resources.Load<Texture2D>("Course/Turf/" + turf.tile);
+            if (!shader || !tex) return Mat(color);
+            tex.wrapMode = TextureWrapMode.Repeat; tex.filterMode = FilterMode.Trilinear; tex.anisoLevel = 8;
+            m = new Material(shader) { color = color, name = "Turf " + turf.tile };
+            m.SetTexture("_Detail", tex);
+            m.SetFloat("_Tile", turf.yards);
+            m.SetFloat("_Strength", turf.strength);
+            turfMaterials[(color, turf.tile)] = m;
+            return m;
         }
 
         static readonly Dictionary<Color, Material> materials = new();

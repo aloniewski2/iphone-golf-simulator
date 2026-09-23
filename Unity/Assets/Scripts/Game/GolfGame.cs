@@ -141,12 +141,19 @@ namespace GolfArcade.Game
             light.shadowBias = 0.04f; light.shadowNormalBias = 0.3f;
             RenderSettings.ambientLight = new Color(0.55f, 0.6f, 0.65f);
             RenderSettings.fog = true;
-            RenderSettings.fogColor = new Color(0.75f, 0.85f, 0.95f);
+            RenderSettings.fogColor = new Color(0.76f, 0.91f, 0.99f);   // the sky just under the horizon
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = 250; RenderSettings.fogEndDistance = 700;
-            // Past the sea's edge the default skybox shows its grey ground; make that the fog's
-            // colour so the far distance dissolves instead of banding (on a copy, not the asset).
-            if (RenderSettings.skybox && RenderSettings.skybox.HasProperty("_GroundColor"))
+            // A clear resort sky, the way Golf Dreams paints it (GolfArcade/SkyGradient): cyan
+            // overhead, bright at the horizon, the haze colour below it so the sea's far edge
+            // dissolves into the sky instead of banding.
+            var sky = Shader.Find("GolfArcade/SkyGradient");
+            if (sky)
+            {
+                RenderSettings.skybox = new Material(sky);
+                RenderSettings.skybox.SetColor("_Below", RenderSettings.fogColor);
+            }
+            else if (RenderSettings.skybox && RenderSettings.skybox.HasProperty("_GroundColor"))
             {
                 RenderSettings.skybox = new Material(RenderSettings.skybox);
                 RenderSettings.skybox.SetColor("_GroundColor", RenderSettings.fogColor);

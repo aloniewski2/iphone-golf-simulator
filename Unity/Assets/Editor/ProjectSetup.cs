@@ -48,7 +48,7 @@ namespace GolfArcade.EditorTools
         /// Every material in the game is made at runtime with Shader.Find, and a player build
         /// strips any shader no asset references — so without this the course, ball and golfer
         /// come out invisible on the phone while the UI (always-included shaders) still draws.
-        static readonly string[] RuntimeShaders = { "Standard", "Unlit/Color", "GolfArcade/VertexColorUnlit", "GolfArcade/ParticleSoft", "GolfArcade/HoleMask", "GolfArcade/HoleInside" };
+        static readonly string[] RuntimeShaders = { "Standard", "Unlit/Color", "GolfArcade/VertexColorUnlit", "GolfArcade/ParticleSoft", "GolfArcade/HoleMask", "GolfArcade/HoleInside", "GolfArcade/Turf", "GolfArcade/SkyGradient" };
 
         public static void EnsureShadersShip()
         {
