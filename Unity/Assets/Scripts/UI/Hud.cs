@@ -798,7 +798,9 @@ namespace GolfArcade.UI
         /// The checkpoints at these loads, labelled with these yardages; null hides them (putts).
         /// Each is a numbered stop on the meter's track with a thin line across it, and its
         /// yardage in a pill beside the meter.
-        public void SetCheckpoints(float[] loads, string[] yards)
+        /// `loads` where each sits on the meter (0–1), `yards` its label; `pin` the one on the
+        /// pin, drawn in yellow (-1 for none).
+        public void SetCheckpoints(float[] loads, string[] yards, int pin = -1)
         {
             if (loads == null) { foreach (var c in checkpoints) c.Root.gameObject.SetActive(false); return; }
             while (checkpoints.Count < loads.Length)
@@ -826,6 +828,9 @@ namespace GolfArcade.UI
                 c.Root.anchoredPosition = new Vector2(0, MeterY(loads[i]) - (loads[i] >= 0.999f ? 10 : 0));
                 c.Yards.text = yards[i];
                 c.Pill.rectTransform.sizeDelta = new Vector2(Mathf.Max(92, c.Yards.preferredWidth + 30), 38);
+                c.Pill.color = i == pin ? UiKit.ArcadeYellow : new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.78f);
+                c.Yards.color = i == pin ? UiKit.ArcadeInk : UiKit.Ink;
+                c.Yards.font = i == pin ? UiKit.Display : UiKit.Strong;
             }
             LightCheckpoints();
         }

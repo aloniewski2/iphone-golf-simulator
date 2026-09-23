@@ -772,17 +772,19 @@ namespace GolfArcade.Game
                 double a = (heading + (i / 16.0 - 0.5) * 70) * Math.PI / 180;
                 plan.Reach.Add(new Vector3((float)(ballAt.X + Math.Sin(a) * reach), 0, (float)(ballAt.D + Math.Cos(a) * reach)));
             }
-            // the meter's checkpoints and their targets on the course and the map
+            // the meter's checkpoints and their targets on the course and the map: short of the
+            // pin, on it, past it
             checkpointSpots.Clear(); plan.Targets.Clear();
-            var labels = new string[Checkpoints.Length];
-            for (int i = 0; i < Checkpoints.Length; i++)
+            int onPin = PinTargets(lie, checkpointPowers, out var yards);
+            var labels = new string[checkpointPowers.Length];
+            for (int i = 0; i < checkpointPowers.Length; i++)
             {
-                var spot = LandingFor(Checkpoints[i], lie);
+                var spot = LandingFor(checkpointPowers[i], lie);
                 checkpointSpots.Add(HoleView.ToWorld(spot, 0.05));
                 plan.Targets.Add(new Vector3((float)spot.X, 0, (float)spot.D));
-                labels[i] = $"{ballAt.DistanceTo(spot):F0} yd";
+                labels[i] = i == onPin ? $"PIN {yards[i]:F0}" : $"{yards[i]:F0} yd";
             }
-            hud.SetCheckpoints(Checkpoints, labels);
+            hud.SetCheckpoints(checkpointPowers, labels, onPin);
             plan.Changed();
             landingZone.SetZone(across, along, (float)heading);
         }
@@ -807,20 +809,64 @@ namespace GolfArcade.Game
             centre = FullShotCarry(lie);
         }
 
-        /// The power meter's three checkpoints, as backswing loads: a third, two thirds and a full
-        /// turn. Each has a numbered target where a full-speed swing loaded that far comes down.
-        static readonly float[] Checkpoints = { 1f / 3f, 2f / 3f, 1f };
+        /// The power meter's three checkpoints, as powers (the meter reads power: empty to the
+        /// club's full distance), each with a numbered target where that power comes down: one
+        /// short of the pin, one on it, one past it (PinTargets).
+        readonly float[] checkpointPowers = new float[3];
         readonly System.Collections.Generic.List<Vector3> checkpointSpots = new();
 
-        /// Where a swing loaded this far comes down in today's wind, if the downswing is a full
-        /// one — the detector's power for that load (BackswingFloor up to 1), square on the aim.
-        CoursePoint LandingFor(double load, CourseLie lie)
+        /// The three targets around the pin, in `powers` (and their carries in `yards`): the pin's
+        /// own distance with one a tenth of it (5 to 20 yd) short and one as far past, each at the
+        /// power that carries there on this aim in today's wind. Past the club's reach the long
+        /// one stops at a full swing; with the pin out of reach altogether all three stand short
+        /// of it, the last at a full swing. Returns which one is the pin's, or -1.
+        int PinTargets(CourseLie lie, float[] powers, out double[] yards)
         {
-            double power = Swing.Detector.BackswingFloor + (1 - Swing.Detector.BackswingFloor) * Math.Clamp(load, 0, 1);
-            var launch = club.Launch(power, 0, 0, lie.PowerFactor());
+            double pin = ballAt.DistanceTo(hole.Pin);
+            double gap = Math.Clamp(pin * 0.1, 5, 20);
+            double reach = CarryFor(1, lie);
+            int onPin = 1;
+            yards = new[] { pin - gap, pin, pin + gap };
+            if (pin > reach - 2) { yards = new[] { reach - 2 * gap, reach - gap, reach }; onPin = -1; }
+            else if (pin + gap > reach) yards[2] = reach;
+            for (int i = 0; i < powers.Length; i++)
+            {
+                yards[i] = Math.Max(yards[i], 3);
+                powers[i] = (float)PowerFor(yards[i], lie);
+            }
+            return onPin;
+        }
+
+        /// How far this power carries on the aim line in today's wind, yards.
+        double CarryFor(double power, CourseLie lie) => BallFlight.Simulate(TodaysLaunch(power, lie)).CarryPoint.DistanceYards;
+
+        /// The power that carries `yards` on the aim line in today's wind (carry only grows with
+        /// power, so a halving search finds it).
+        double PowerFor(double yards, CourseLie lie)
+        {
+            double lo = 0, hi = 1;
+            if (CarryFor(hi, lie) <= yards) return 1;
+            for (int i = 0; i < 16; i++)
+            {
+                double mid = (lo + hi) / 2;
+                if (CarryFor(mid, lie) < yards) lo = mid; else hi = mid;
+            }
+            return (lo + hi) / 2;
+        }
+
+        BallFlight.Launch TodaysLaunch(double power, CourseLie lie)
+        {
+            var launch = club.Launch(Math.Clamp(power, 0, 1), 0, 0, lie.PowerFactor());
             launch.WindMPH = Wind.SpeedMPH;
             launch.WindDegrees = Wind.RelativeTo(heading);
-            var carry = BallFlight.Simulate(launch).CarryPoint;
+            return launch;
+        }
+
+        /// Where a shot of this power (the meter's reading) comes down in today's wind, square on
+        /// the aim.
+        CoursePoint LandingFor(double power, CourseLie lie)
+        {
+            var carry = BallFlight.Simulate(TodaysLaunch(power, lie)).CarryPoint;
             double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
             return new CoursePoint(ballAt.X + carry.LateralYards * cosH + carry.DistanceYards * sinH,
                                    ballAt.D - carry.LateralYards * sinH + carry.DistanceYards * cosH);
@@ -999,8 +1045,8 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             if (club != GolfClub.Putter)
             {
-                // the amber dot slides out over the ground to where this load comes down, the
-                // meter says how far, and the checkpoints it has passed light up
+                // the amber dot slides out over the ground to where the meter's reading comes
+                // down, the meter says how far, and the checkpoints it has passed light up
                 var spot = LandingFor(load, hole.LieAt(ballAt));
                 aimDots.MarkAt(HoleView.ToWorld(spot, 0.05));
                 hud.Map.ShowLoad = aimDots.MarkShown; hud.Map.Load = aimDots.MarkPosition;
