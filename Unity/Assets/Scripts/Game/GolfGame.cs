@@ -267,7 +267,9 @@ namespace GolfArcade.Game
             Enter(State.Menu);
         }
 
-        void ChooseHoles(int holes)
+        /// The round: 0 for both holes, or one hole's number. Remembered on the device.
+        public int ChosenHoles => chosenHoles;
+        public void ChooseHoles(int holes)
         {
             chosenHoles = holes;
             PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
@@ -488,24 +490,97 @@ namespace GolfArcade.Game
         public void StrikeToward(CoursePoint target)
         {
             if (Current != State.Aim) return;
-            heading = ballAt.HeadingTo(target); aimedByPlayer = true;
+            PlanStrike(target, out heading, out double best);
+            aimedByPlayer = true;
+            UpdateAimVisuals();
+            OnImpact(new SwingImpact { Power = best, Backswing = 0.8 });
+        }
+
+        /// The aim and the power that bring a full shot down on `target` in today's wind; the
+        /// shot that makes.
+        CourseShot PlanStrike(CoursePoint target, out double aim, out double power)
+        {
+            aim = ballAt.HeadingTo(target);
             var lie = hole.LieAt(ballAt);
-            double best = 1;
+            power = 1;
+            CourseShot shot = null;
             for (int pass = 0; pass < 2; pass++)
             {
                 double miss = double.MaxValue;
                 CoursePoint landed = target;
                 for (double p = 0.2; p <= 1.0001; p += 0.01)
                 {
-                    var trial = new CourseShot(club, new SwingImpact { Power = p }, heading, ballAt, hole, lie.PowerFactor(), Wind);
+                    var trial = new CourseShot(club, new SwingImpact { Power = p }, aim, ballAt, hole, lie.PowerFactor(), Wind);
                     double m = trial.Landing.DistanceTo(target);
-                    if (m < miss) { miss = m; best = p; landed = trial.Landing; }
+                    if (m < miss) { miss = m; power = p; landed = trial.Landing; shot = trial; }
                 }
                 // aim off the wind's drift and go again
-                heading += ballAt.HeadingTo(target) - ballAt.HeadingTo(landed);
+                if (pass == 0) aim += ballAt.HeadingTo(target) - ballAt.HeadingTo(landed);
             }
+            return shot;
+        }
+
+        // ----- The demo reel (DemoVideoTests): a hole played by script, for a recording -----
+
+        /// Phone prompts ("Ready — swing!") and no desktop pairing line along the bottom.
+        public bool Demo { get; set; }
+
+        /// The backswing as the phone reports it: the meter, its yardage, the golfer winding up.
+        public void ShowBackswing(double load) => OnLoad(load);
+
+        /// Somewhere to put the tee shot so it finishes on the green between `nearest` and
+        /// `farthest` yards from the pin, coming down at least `landsFrom` yards from it (so the
+        /// shot is watched from the air rather than from the ball); null if nowhere will do.
+        public CoursePoint? GreenTarget(double nearest, double farthest, double landsFrom)
+        {
+            if (Current != State.Aim) return null;
+            double toPin = ballAt.DistanceTo(hole.Pin), line = ballAt.HeadingTo(hole.Pin) * Math.PI / 180;
+            CoursePoint? best = null; double bestScore = double.MaxValue;
+            for (double back = 4; back <= 26; back += 2)
+                for (double side = -6; side <= 6; side += 3)
+                {
+                    double d = toPin - back;
+                    var target = new CoursePoint(ballAt.X + Math.Sin(line) * d + Math.Cos(line) * side, ballAt.D + Math.Cos(line) * d - Math.Sin(line) * side);
+                    var shot = PlanStrike(target, out _, out _);
+                    if (shot == null || shot.Lie != CourseLie.Green || shot.IsHoled) continue;
+                    double rest = shot.Rest.DistanceTo(hole.Pin);
+                    if (rest < nearest || rest > farthest || shot.Landing.DistanceTo(hole.Pin) < landsFrom) continue;
+                    double score = Math.Abs(rest - (nearest + farthest) / 2);
+                    if (score < bestScore) { bestScore = score; best = target; }
+                }
+            return best;
+        }
+
+        /// On the green: the putt that drops — the line (read off the break) and the pace that dies
+        /// into the cup — struck. If none drops from here, the one that finishes nearest. True if
+        /// it goes in.
+        public bool StrikeHolingPutt()
+        {
+            if (Current != State.Aim || club != GolfClub.Putter) return false;
+            double straight = ballAt.HeadingTo(hole.Pin);
+            double bestAim = straight, bestPower = 0.5, nearest = double.MaxValue;
+            bool holed = false;
+            for (double off = -12; off <= 12.001 && !holed; off += 0.25)
+            {
+                // the powers that drop on this line, softest first; the middle of that run dies in
+                double first = -1, last = -1;
+                for (double p = 0.02; p <= 1.0001; p += 0.005)
+                {
+                    var trial = new CourseShot(GolfClub.Putter, new SwingImpact { Power = p }, straight + off, ballAt, hole, 1, Wind);
+                    if (trial.IsHoled) { if (first < 0) first = p; last = p; }
+                    else if (first >= 0) break;
+                    else
+                    {
+                        double miss = trial.Rest.DistanceTo(hole.Pin);
+                        if (miss < nearest) { nearest = miss; bestAim = straight + off; bestPower = p; }
+                    }
+                }
+                if (first >= 0) { holed = true; bestAim = straight + off; bestPower = first + (last - first) * 0.3; }
+            }
+            heading = bestAim; aimedByPlayer = true;
             UpdateAimVisuals();
-            OnImpact(new SwingImpact { Power = best, Backswing = 0.8 });
+            OnImpact(new SwingImpact { Power = bestPower, Backswing = Math.Min(1, bestPower * 1.4) });
+            return holed;
         }
 
         static GolfClub AutoClub(CourseLie lie, double toPin)
@@ -535,6 +610,7 @@ namespace GolfArcade.Game
 
         void UpdateControllerHint(bool force = false)
         {
+            if (Demo) { hud.SetControllerHint(""); return; }
             if (Swing.Network == null) return;
             if (!force && Time.unscaledTime < nextHint) return;
             nextHint = Time.unscaledTime + 3f;
@@ -596,6 +672,8 @@ namespace GolfArcade.Game
         /// What runs before the signature shot: the establishing drift where the file has one, else the aerial.
         float LeadSeconds => signature != null && signature.HasOverview ? OverviewSeconds : AerialSeconds;
         float IntroSeconds => signature != null ? LeadSeconds + signature.Duration : ShowcaseSeconds;
+        /// The tournament title is up over the opening aerial only.
+        float TitleSeconds => Mathf.Min(IntroSeconds - 1.2f, Mathf.Max(3.5f, LeadSeconds - 0.2f));
         bool overviewPlaying;
 
         /// The introductions on the tee after the flyover, the way the tennis broadcast opens:
@@ -638,6 +716,7 @@ namespace GolfArcade.Game
                 hud.HideNameplate();
                 holeView.ShowTeeMarkers(false);                     // they'd stand in front of the lens
                 gallery.Cheer();
+                sounds.PlayApplause();
                 golfer.Perform("FistPump");
                 rig.SnapNext();
             }
@@ -1170,8 +1249,8 @@ namespace GolfArcade.Game
                         if (signature == null) rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds));
                         else if (stateTime < LeadSeconds) { if (signature.HasOverview) PlayOverview(stateTime); else rig.Showcase(hole, Mathf.Clamp01(stateTime / ShowcaseSeconds)); }
                         else PlaySignature(stateTime - LeadSeconds);
-                        // The title pops in with the aerial and is gone before the walk reaches the green.
-                        hud.SetHoleIntroAlpha(Mathf.Min(Mathf.Clamp01((stateTime - 0.3f) / 0.45f), Mathf.SmoothStep(0, 1, (IntroSeconds - 1.2f - stateTime) / 0.9f)));
+                        // The title pops in with the aerial and goes with it, as the broadcast's does.
+                        hud.SetHoleIntroAlpha(Mathf.Min(Mathf.Clamp01((stateTime - 0.3f) / 0.45f), Mathf.SmoothStep(0, 1, (TitleSeconds - stateTime) / 0.9f)));
                     }
                     else MeetThePlayer(stateTime - IntroSeconds);
                     // A tap skips — but not the one that pressed Play, which is still down this frame.
@@ -1192,7 +1271,7 @@ namespace GolfArcade.Game
                     if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
-                    else if (Swing.Phase == SwingPhase.Address) hud.SetStatus(Swing.UsingPhone ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
+                    else if (Swing.Phase == SwingPhase.Address || Demo) hud.SetStatus(Swing.UsingPhone || Demo ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
                     else if (Swing.UsingPhone && Swing.Detector.WrongEndDown) hud.SetStatus("Flip the phone: top edge toward the ground, like a club");
                     else if (Swing.UsingPhone && !Swing.Detector.PointedDown) hud.SetStatus($"Point the phone down at the ball, like a club  ({Swing.Detector.LeanDegrees:F0}° off)");
                     else hud.SetStatus("Hold the phone still…");
@@ -1339,6 +1418,7 @@ namespace GolfArcade.Game
                 ball.gameObject.SetActive(false);
                 sounds.PlayCup();
                 sounds.PlayFanfare();
+                sounds.PlayApplause(0.6f);
                 Haptics.Success();
                 result = "In the hole!";
             }

@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -47,6 +47,8 @@ namespace GolfArcade.Game
         public void PlayReady() => source.PlayOneShot(ready, 0.5f);
         public void PlayFanfare() => source.PlayOneShot(fanfare, 0.7f);
         public void PlayTick() => source.PlayOneShot(tick, 0.5f);
+        /// The gallery's applause, for the introductions on the tee and a holed ball.
+        public void PlayApplause(float volume = 0.55f) => source.PlayOneShot(applause, volume);
 
         /// Backswing tension, 0–1 with the meter: the wind-up loop fades in and climbs a fifth
         /// in pitch by the top. Call with the load every frame it changes; Release() lets go.
@@ -70,6 +72,7 @@ namespace GolfArcade.Game
 
         void Synthesize()
         {
+            applause = Applause(3.2f);
             // Strikes: a burst of noise for the contact plus a ringing partial or two for the
             // clubhead's material; the decay times are what make a driver sound hollow and a
             // putter sound dead.
@@ -136,6 +139,38 @@ namespace GolfArcade.Game
                 return v;
             });
             tick = Clip("Tick", 0.03f, (t, rng) => Burst(t, 0.003, rng) * 0.6 + Ring(t, 2200, 0.006) * 0.6);
+        }
+
+        /// A gallery applauding: a few hundred claps — each a few milliseconds of noise, some
+        /// brighter, some duller, as hands are — scattered through a quick swell and a long thinning
+        /// tail, so it sounds like a crowd and not a loop.
+        static AudioClip Applause(float seconds)
+        {
+            int n = (int)(Rate * seconds);
+            var mix = new double[n];
+            var rng = new System.Random(Seed("Applause"));
+            double Density(double t) => Math.Min(1, t / 0.25) * (t < seconds * 0.4 ? 1 : Math.Exp(-(t - seconds * 0.4) / (seconds * 0.22)));
+            for (int placed = 0, tries = 0; placed < seconds * 240 && tries < 100000; tries++)
+            {
+                double t0 = rng.NextDouble() * seconds;
+                if (rng.NextDouble() > Density(t0)) continue;
+                placed++;
+                double amp = 0.25 + 0.75 * rng.NextDouble(), tau = 0.0035 + 0.004 * rng.NextDouble(), dull = 0.3 + 0.5 * rng.NextDouble();
+                int start = (int)(t0 * Rate), len = (int)(tau * 5 * Rate);
+                double f = 0;
+                for (int i = 0; i < len && start + i < n; i++)
+                {
+                    f += dull * (Noise(rng) - f);
+                    mix[start + i] += amp * f * Math.Exp(-(double)i / Rate / tau);
+                }
+            }
+            var data = new float[n];
+            double prev = 0, peak = 0;
+            for (int i = 0; i < n; i++) { double v = mix[i] - 0.5 * prev; prev = mix[i]; mix[i] = v; peak = Math.Max(peak, Math.Abs(v)); }
+            for (int i = 0; i < n; i++) data[i] = (float)(mix[i] / Math.Max(peak, 1e-6) * 0.95);
+            var clip = AudioClip.Create("Applause", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
         }
 
         /// A stable seed per clip so the same noise renders on every run and platform.

@@ -20,13 +20,18 @@ namespace GolfArcade.EditorTools
 
         [MenuItem("Golf Arcade/Run EditMode Tests")] public static void RunEditMode() => Run(TestMode.EditMode);
         [MenuItem("Golf Arcade/Run PlayMode Tests")] public static void RunPlayMode() => Run(TestMode.PlayMode);
+        /// Hole 12 played by script and recorded to Library/Captures/demo (DemoVideoTests);
+        /// Tools/demo_video.sh turns it into the MP4.
+        [MenuItem("Golf Arcade/Record Demo Video")] public static void RecordDemo() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsHoleTwelve");
 
-        static void Run(TestMode mode)
+        static void Run(TestMode mode, string test = null)
         {
             Directory.CreateDirectory("Library/TestResults");
             File.Delete(Path(mode));
             File.WriteAllText(Path(mode) + ".running", $"RUN {mode} {System.DateTime.Now:s}\n");
-            ScriptableObject.CreateInstance<TestRunnerApi>().Execute(new ExecutionSettings(new Filter { testMode = mode }));
+            var filter = new Filter { testMode = mode };
+            if (test != null) filter.testNames = new[] { test };
+            ScriptableObject.CreateInstance<TestRunnerApi>().Execute(new ExecutionSettings(filter));
         }
 
         static string Path(TestMode mode) => $"Library/TestResults/{mode}.txt";
