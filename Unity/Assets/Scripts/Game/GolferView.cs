@@ -23,12 +23,13 @@ namespace GolfArcade.Game
             public string ModelPath, HairMesh;
             public Color Skin, Hair;
             /// The polo and the trousers, where they differ from the studio's golf kit (teal and
-            /// sand); null keeps the kit, as the player always does.
+            /// sand); null keeps the kit.
             public Color? Shirt, Trousers;
             public static Look Player => new()
             {
                 ModelPath = GolferStyle.ModelPath, HairMesh = GolferStyle.HairMesh,
                 Skin = GolferStyle.SkinColor, Hair = GolferStyle.HairColor,
+                Shirt = GolferStyle.ShirtColor, Trousers = GolferStyle.TrousersColor,
             };
         }
         Look? own;
@@ -80,6 +81,37 @@ namespace GolfArcade.Game
             ["MAT_GRIP"] = Rgb(30, 30, 34), ["MAT_HAIR"] = Rgb(70, 48, 30), ["MAT_LIPS"] = Rgb(196, 84, 90), ["MAT_SHIRT_DARK"] = Rgb(28, 62, 136),
         };
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
+
+        /// The kit's cloth, which carries the knit of Adnan's tee and joggers.
+        static readonly HashSet<string> Cloth = new()
+        {
+            "V4 teal", "V4 sand", "V4 navy", "V4 joined hip panel", "V4 golf belt", "MAT_SHIRT", "MAT_TROUSERS", "MAT_SHIRT_DARK",
+        };
+
+        static bool IsShirtTrim(string part) =>
+            part.StartsWith("Collar") || part.StartsWith("Sleeve piping") || part.StartsWith("Armhole binding")
+            || part.StartsWith("V4 shirt button") || part.EndsWith("Golf 1 top");
+
+        static readonly Dictionary<(Color, bool), Material> clayMaterials = new();
+        static Texture2D matCap, knit;
+
+        /// A GolferClay material (Shaders/GolferClay.shader): the soft matte look of Adnan's
+        /// studio renders, from a Higgsfield MatCap of his lighting; cloth adds the knit. Falls
+        /// back to the course's flat lit material if the shader isn't in the build.
+        static Material Clay(Color color, bool cloth)
+        {
+            if (clayMaterials.TryGetValue((color, cloth), out var m) && m) return m;
+            var shader = Shader.Find("GolfArcade/GolferClay");
+            if (!shader) return HoleView.Mat(color);
+            if (!matCap) matCap = Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
+            if (!knit) knit = Resources.Load<Texture2D>("Golfer/Look/knit_detail");
+            m = new Material(shader) { color = color };
+            if (matCap) m.SetTexture("_MatCap", matCap);
+            if (knit) m.SetTexture("_Knit", knit);
+            m.SetFloat("_Fabric", cloth ? 0.6f : 0f);
+            clayMaterials[(color, cloth)] = m;
+            return m;
+        }
 
         GameObject modelGo;
 
@@ -142,11 +174,17 @@ namespace GolfArcade.Game
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (name == "MAT_SKIN") mats[i] = HoleView.Mat(look.Skin);
-                    else if (name == "MAT_HAIR") mats[i] = HoleView.Mat(look.Hair);
-                    else if (name == "V4 teal" && look.Shirt is Color shirt) mats[i] = HoleView.Mat(shirt);
-                    else if (name == "V4 sand" && look.Trousers is Color legs) mats[i] = HoleView.Mat(legs);
-                    else if (Palette.TryGetValue(name, out var color)) mats[i] = HoleView.Mat(color);
+                    Color color = mats[i].color;
+                    if (name == "MAT_SKIN") color = look.Skin;
+                    else if (name == "MAT_HAIR") color = look.Hair;
+                    else if (name == "V4 teal" && look.Shirt is Color shirt) color = shirt;
+                    else if (name == "V4 sand" && look.Trousers is Color legs) color = legs;
+                    // Adnan's plain tee and joggers have none of the kit's ivory trim (collar,
+                    // hem, piping, the stripe down the leg) or navy buttons; the shoes stay white.
+                    else if ((name == "V4 ivory" || name == "V4 navy") && look.Shirt is Color tee && IsShirtTrim(r.name)) color = tee;
+                    else if (name == "V4 ivory" && look.Trousers is Color joggers && r.name.Contains("bottom leg")) color = joggers;
+                    else if (Palette.TryGetValue(name, out var known)) color = known;
+                    mats[i] = Clay(color, Cloth.Contains(name));
                 }
                 r.sharedMaterials = mats;
                 if (r is SkinnedMeshRenderer smr) { smr.updateWhenOffscreen = !spectator; if (!body0) body0 = smr; }

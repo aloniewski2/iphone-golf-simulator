@@ -288,10 +288,11 @@ namespace GolfArcade.Game
         {
             if (Current != State.Menu) return;
             hud.HideMenu(); menu = null;
-            picker = hud.ShowGolferPicker(GolferStyle.SkinTones, GolferStyle.HairNames, GolferStyle.HairColors);
+            picker = hud.ShowGolferPicker(GolferStyle.SkinTones, GolferStyle.OutfitNames, GolferStyle.HairNames, GolferStyle.HairColors);
             picker.Male.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Male; RestyleForPicker(); };
             picker.Female.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Female; RestyleForPicker(); };
             for (int i = 0; i < picker.Skins.Length; i++) { int tone = i; picker.Skins[i].Pressed = () => { Tick(); GolferStyle.SkinTone = tone; RestyleForPicker(); }; }
+            for (int i = 0; i < picker.Outfits.Length; i++) { int outfit = i; picker.Outfits[i].Pressed = () => { Tick(); GolferStyle.Outfit = (GolferStyle.OutfitKind)outfit; RestyleForPicker(); }; }
             for (int i = 0; i < picker.Hairs.Length; i++) { int hair = i; picker.Hairs[i].Pressed = () => { Tick(); GolferStyle.Hair = (GolferStyle.HairKind)hair; RestyleForPicker(); }; }
             for (int i = 0; i < picker.HairColors.Length; i++) { int tone = i; picker.HairColors[i].Pressed = () => { Tick(); GolferStyle.HairTone = tone; RestyleForPicker(); }; }
             picker.Done.Pressed = CloseGolferPicker;
@@ -336,7 +337,7 @@ namespace GolfArcade.Game
                 golfer.SetClub(GolfClub.Driver, false);
                 golfer.Stand(ball.position, AimDirection());
                 golfer.SetVisible(true);
-                picker?.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.SkinTone, (int)GolferStyle.Hair, GolferStyle.HairTone);
+                picker?.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.SkinTone, (int)GolferStyle.Outfit, (int)GolferStyle.Hair, GolferStyle.HairTone);
             }
         }
 

@@ -365,19 +365,24 @@ namespace GolfArcade.UI
         }
 
         /// The golfer picker: the figure stands in the top half of the screen (the camera frames
-        /// it), and a sheet at the bottom holds body, skin, hair style and hair colour. Every
+        /// it), and a sheet at the bottom holds body, skin, outfit, hair style and hair colour. Every
         /// tap changes the figure at once.
         public sealed class GolferPicker
         {
             public HoldButton Male, Female, Done;
-            public HoldButton[] Skins, Hairs, HairColors;
+            public HoldButton[] Skins, Outfits, Hairs, HairColors;
             internal RectTransform Root, SkinRing, HairColorRing;
             internal Image MaleFill, FemaleFill;
             internal Text MaleText, FemaleText;
-            internal Image[] HairFills; internal Text[] HairTexts;
+            internal Image[] HairFills, OutfitFills; internal Text[] HairTexts, OutfitTexts;
 
-            public void Refresh(bool female, int skin, int hair, int hairColor)
+            public void Refresh(bool female, int skin, int outfit, int hair, int hairColor)
             {
+                for (int i = 0; i < Outfits.Length; i++)
+                {
+                    Outfits[i].RestColor = OutfitFills[i].color = i == outfit ? UiKit.AccentStrong : Color.clear;
+                    OutfitTexts[i].color = i == outfit ? UiKit.Ink : UiKit.InkMuted;
+                }
                 Male.RestColor = MaleFill.color = female ? Color.clear : UiKit.AccentStrong;
                 Female.RestColor = FemaleFill.color = female ? UiKit.AccentStrong : Color.clear;
                 MaleText.color = female ? UiKit.InkMuted : UiKit.Ink;
@@ -394,10 +399,10 @@ namespace GolfArcade.UI
 
         GolferPicker picker;
 
-        public GolferPicker ShowGolferPicker(Color[] skinTones, string[] hairNames, Color[] hairColors)
+        public GolferPicker ShowGolferPicker(Color[] skinTones, string[] outfitNames, string[] hairNames, Color[] hairColors)
         {
             HideGolferPicker();
-            const float left = 70, width = 940, height = 1040;
+            const float left = 70, width = 940, height = 1172;
             var sheet = Panel("Golfer picker", UiKit.Surface, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, height));
             sheet.color = new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.94f);
             var root = sheet.rectTransform;
@@ -454,6 +459,9 @@ namespace GolfArcade.UI
             T("Skin heading", "SKIN", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
             picker.Skins = Dots("Skin", skinTones, y, out picker.SkinRing);
             y -= 80 + 40;
+            T("Outfit heading", "OUTFIT", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
+            picker.Outfits = Segmented("Outfit", outfitNames, y, out picker.OutfitFills, out picker.OutfitTexts);
+            y -= 92 + 40;
             T("Hair heading", "HAIR", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
             picker.Hairs = Segmented("Hair", hairNames, y, out picker.HairFills, out picker.HairTexts);
             y -= 92 + 40;

@@ -2,21 +2,39 @@ using UnityEngine;
 
 namespace GolfArcade.Game
 {
-    /// Who the player looks like: the male or female golfer model and a skin tone. Remembered
-    /// on the device between rounds.
+    /// Who the player looks like: the male or female golfer model, a skin tone, hair and an
+    /// outfit. Remembered on the device between rounds. Out of the box it is Adnan's standard
+    /// identity as his reference sheet shows it: cream skin, no hair, black tee and joggers.
     public static class GolferStyle
     {
         public enum BodyKind { Male, Female }
 
-        /// From light to deep, the same scale as the character sheet's tan in the middle.
+        /// From light to deep; the second is the cream of Adnan's identity references (sampled
+        /// off SportsLibrary/Characters/IdentityReferences, warmed so it renders that way under the
+        /// course's blue sky light) and the default.
         public static readonly Color[] SkinTones =
         {
-            Rgb(255, 224, 196), Rgb(238, 196, 160), Rgb(226, 160, 110),
+            Rgb(255, 228, 204), Rgb(232, 190, 146), Rgb(226, 160, 110),
             Rgb(196, 124, 80), Rgb(150, 90, 56), Rgb(96, 60, 40),
         };
-        public static readonly string[] SkinToneNames = { "Fair", "Light", "Tan", "Olive", "Brown", "Deep" };
+        public static readonly string[] SkinToneNames = { "Fair", "Cream", "Tan", "Olive", "Brown", "Deep" };
+        public const int DefaultSkin = 1;
 
-        const string BodyKey = "golfer.body", SkinKey = "golfer.skin";
+        const string BodyKey = "golfer.body", SkinKey = "golfer.skin", LookKey = "golfer.look";
+        /// Bumped when the default look changes enough that saved looks should start over.
+        const int LookVersion = 2;
+
+        /// Once per LookVersion: back to Adnan's standard look (a device that saved the old
+        /// tan, brown-haired, teal-polo golfer comes up as his character).
+        static GolferStyle()
+        {
+            if (PlayerPrefs.GetInt(LookKey, 0) >= LookVersion) return;
+            PlayerPrefs.SetInt(SkinKey, DefaultSkin);
+            PlayerPrefs.SetInt(HairKey, (int)HairKind.None);
+            PlayerPrefs.SetInt(OutfitKey, (int)OutfitKind.Standard);
+            PlayerPrefs.SetInt(LookKey, LookVersion);
+            PlayerPrefs.Save();
+        }
 
         public static BodyKind Body
         {
@@ -26,7 +44,7 @@ namespace GolfArcade.Game
 
         public static int SkinTone
         {
-            get => Mathf.Clamp(PlayerPrefs.GetInt(SkinKey, 2), 0, SkinTones.Length - 1);
+            get => Mathf.Clamp(PlayerPrefs.GetInt(SkinKey, DefaultSkin), 0, SkinTones.Length - 1);
             set { PlayerPrefs.SetInt(SkinKey, Mathf.Clamp(value, 0, SkinTones.Length - 1)); PlayerPrefs.Save(); }
         }
 
@@ -46,7 +64,7 @@ namespace GolfArcade.Game
 
         public static HairKind Hair
         {
-            get => (HairKind)Mathf.Clamp(PlayerPrefs.GetInt(HairKey, 0), 0, HairNames.Length - 1);
+            get => (HairKind)Mathf.Clamp(PlayerPrefs.GetInt(HairKey, (int)HairKind.None), 0, HairNames.Length - 1);
             set { PlayerPrefs.SetInt(HairKey, (int)value); PlayerPrefs.Save(); }
         }
 
@@ -57,6 +75,22 @@ namespace GolfArcade.Game
         }
 
         public static Color HairColor => HairColors[HairTone];
+        // ---- Outfit: Adnan's standard tee and joggers (his identity sheet and golf gameplay
+        // concept), or the teal polo and sand trousers of his V4 golf kit as modelled.
+        public enum OutfitKind { Standard, GolfKit }
+        public static readonly string[] OutfitNames = { "Tee & joggers", "Golf polo" };
+        const string OutfitKey = "golfer.outfit";
+
+        public static OutfitKind Outfit
+        {
+            get => (OutfitKind)Mathf.Clamp(PlayerPrefs.GetInt(OutfitKey, 0), 0, OutfitNames.Length - 1);
+            set { PlayerPrefs.SetInt(OutfitKey, (int)value); PlayerPrefs.Save(); }
+        }
+
+        /// The shirt and trousers over the kit's teal and sand, or null to keep the kit.
+        public static Color? ShirtColor => Outfit == OutfitKind.Standard ? Rgb(62, 62, 66) : null;
+        public static Color? TrousersColor => Outfit == OutfitKind.Standard ? Rgb(56, 56, 60) : null;
+
         /// The mesh in the FBX for the chosen style, or null for none.
         public static string HairMesh => Hair == HairKind.None ? null : "HAIR_" + Hair.ToString().ToUpperInvariant();
         /// "Male · Tan · Bob, auburn": the golfer in a line, for the menu.
