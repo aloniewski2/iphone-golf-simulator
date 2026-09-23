@@ -58,6 +58,8 @@ namespace GolfArcade.UI
         RectTransform scorecard, board, shotCard;
         float bannerUntil;
 
+        /// The minimap's picture in the corner, and in the controller's map card.
+        public static readonly Vector2 MinimapSize = new(260, 420), ControllerMapSize = ControllerSheet.MapSize;
         /// The phone-as-controller layout while the course is on the big screen; null otherwise.
         public ControllerSheet Controller { get; private set; }
         public bool AimLeftHeld => AimLeft.IsHeld || (Controller != null && Controller.AimLeft.IsHeld);
@@ -214,6 +216,7 @@ namespace GolfArcade.UI
             FitShotCard();
             windArrow.enabled = !calm;
             windArrow.rectTransform.localRotation = Quaternion.Euler(0, 0, -relativeDegrees);
+            lastWind = (true, relativeDegrees, mph, calm);
             Controller?.SetWind(relativeDegrees, mph, calm);
         }
 
@@ -1090,6 +1093,8 @@ namespace GolfArcade.UI
             distanceText.text = $"{amount:F0}<size=40><color=#D5E3FF>  {unit}</color></size>";
             distanceCaption.text = caption.ToUpperInvariant();
             FitShotCard();
+            lastDistance = (amount, unit);
+            Controller?.SetDistance(amount, unit);
         }
         /// The club and what it carries, in the pill under the number.
         public void SetClub(string text)
@@ -1105,7 +1110,7 @@ namespace GolfArcade.UI
             float wide = Mathf.Max(distanceText.preferredWidth + 26, clubPillRoot.sizeDelta.x + 26, windText.preferredWidth + 76, 300f);
             shotCard.sizeDelta = new Vector2(Mathf.Min(620f, wide + 30f), shotCard.sizeDelta.y);
         }
-        public void SetStatus(string text) => statusText.text = text;
+        public void SetStatus(string text) { statusText.text = text; Controller?.SetStatus(text); }
         public void SetTempo(string text) => tempoText.text = text;
         public void SetControllerHint(string text) => controllerText.text = text;
         /// What the player is being told right now — the banner while it shows, else the status.
@@ -1174,19 +1179,25 @@ namespace GolfArcade.UI
             Controller.ClubUp.Pressed = ClubUp.Pressed; Controller.ClubDown.Pressed = ClubDown.Pressed;
             Controller.Knob.Pressed = SwingHold.Pressed; Controller.Knob.Released = SwingHold.Released;
             foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(false);
-            minimapHolder.anchoredPosition = new Vector2(-Margin + 4, -Margin - 8);
-            statusText.rectTransform.anchoredPosition = new Vector2(0, ControllerSheet.SheetHeight + 190);
-            tempoText.rectTransform.anchoredPosition = new Vector2(0, ControllerSheet.SheetHeight + 140);
+            // the live minimap moves into the sheet's map card, and back out when it goes
+            mapHome = Minimap.transform.parent;
+            Minimap.transform.SetParent(Controller.MapSlot, false);
+            Controller.SetStatus(statusText.text);
+            if (lastDistance.unit != null) Controller.SetDistance(lastDistance.amount, lastDistance.unit);
+            if (lastWind.set) Controller.SetWind(lastWind.degrees, lastWind.mph, lastWind.calm);
+            bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
         }
+
+        Transform mapHome;
+        (double amount, string unit) lastDistance;
+        (bool set, float degrees, double mph, bool calm) lastWind;
 
         public void LeaveControllerLayout()
         {
             if (Controller == null) return;
+            if (mapHome) Minimap.transform.SetParent(mapHome, false);
             Controller.Destroy(); Controller = null;
             foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(true);
-            minimapHolder.anchoredPosition = new Vector2(-Margin + 4, -Margin - 8);
-            statusText.rectTransform.anchoredPosition = new Vector2(0, 420);
-            tempoText.rectTransform.anchoredPosition = new Vector2(0, 360);
         }
 
         void Update()

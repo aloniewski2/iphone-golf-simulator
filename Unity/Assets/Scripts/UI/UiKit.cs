@@ -82,6 +82,12 @@ namespace GolfArcade.UI
         /// A 9-sliced rounded rectangle, drawn once. Tint it for any pill, card or button.
         public static Sprite Rounded => rounded ??= MakeRounded(64, 22);
         static Sprite rounded;
+        /// The same with a big radius, for the light controller's cards.
+        public static Sprite RoundedLarge => roundedLarge ??= MakeRounded(128, 40);
+        static Sprite roundedLarge;
+        /// A hairline ring, for the controller's power arc.
+        public static Sprite ThinRing => thinRing ??= MakeRing(256, 9);
+        static Sprite thinRing;
 
         static Sprite MakeRounded(int n, int r)
         {

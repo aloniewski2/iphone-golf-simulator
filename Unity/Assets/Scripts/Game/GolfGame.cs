@@ -218,8 +218,16 @@ namespace GolfArcade.Game
             bigScreen = BigScreen.Create(transform, rig.Camera);
             bigScreen.OnChanged = on =>
             {
-                if (on) { hud.EnterControllerLayout(); hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]); hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture); }
+                if (on)
+                {
+                    hud.EnterControllerLayout();
+                    hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
+                    hud.Controller.SetScreen(bigScreen.Live);
+                    hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture);
+                    ShowScore();
+                }
                 else hud.LeaveControllerLayout();
+                SizeMinimap(on ? Hud.ControllerMapSize : Hud.MinimapSize);
                 RefreshControls();
                 if (Current == State.Aim) UpdateAimVisuals();
             };
@@ -343,16 +351,27 @@ namespace GolfArcade.Game
 
         void BuildMinimap()
         {
-            minimapTexture = new RenderTexture(260, 420, 16);
             var go = new GameObject("Minimap camera");
             go.transform.SetParent(transform, false);
             minimapCamera = go.AddComponent<Camera>();
             minimapCamera.orthographic = true;
-            minimapCamera.targetTexture = minimapTexture;
             minimapCamera.clearFlags = CameraClearFlags.SolidColor;
             minimapCamera.backgroundColor = new Color(0.2f, 0.4f, 0.15f);
             minimapCamera.cullingMask = ~(1 << BallLook.OverlayLayer);   // the map draws its own marks
+            SizeMinimap(Hud.MinimapSize);
+        }
+
+        /// The map's picture at the size it's shown: the HUD's tall corner map, or the
+        /// controller's wide card (the same hole, with more of the sea either side).
+        void SizeMinimap(Vector2 size)
+        {
+            if (minimapTexture && minimapTexture.width == (int)size.x && minimapTexture.height == (int)size.y) return;
+            var old = minimapTexture;
+            minimapTexture = new RenderTexture((int)size.x, (int)size.y, 16);
+            minimapCamera.targetTexture = minimapTexture;
             hud.Minimap.texture = minimapTexture;
+            if (old) { old.Release(); Destroy(old); }
+            if (hole != null) FrameMinimap();
         }
 
         void FrameMinimap()
@@ -364,7 +383,7 @@ namespace GolfArcade.Game
             minimapCamera.transform.position = mid + Vector3.up * 200;
             minimapCamera.transform.rotation = Quaternion.LookRotation(Vector3.down, dir.normalized);
             minimapCamera.orthographicSize = length / 2;
-            minimapCamera.aspect = 260f / 420f;
+            minimapCamera.aspect = (float)minimapTexture.width / minimapTexture.height;
         }
 
         // ----- Hole flow -----
@@ -1171,7 +1190,6 @@ namespace GolfArcade.Game
             povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
                       && LastShot.LandingTime > 0 && LastShot.Landing.DistanceTo(hole.Pin) <= PovWithinYards;
             greenRead.Hide();
-            hud.Controller?.SetTarget(null, Vector3.zero, "", false);
             holeCam = false;
             holeStrokes++;
             strikePlayed = false;
@@ -1259,7 +1277,6 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Aim:
-                    hud.Controller?.SetTarget(bigScreen.PhoneView, landingMarker.position, $"{targetYards:F0} YDS", landingMarker.gameObject.activeSelf);
                     // Arrows and keys sweep at full rate; the joystick sweeps with how far it is pushed.
                     float sweep = (hud.AimLeftHeld ? -1 : 0) + (hud.AimRightHeld ? 1 : 0)
                                 + (Input.GetKey(KeyCode.LeftArrow) ? -1 : 0) + (Input.GetKey(KeyCode.RightArrow) ? 1 : 0)
