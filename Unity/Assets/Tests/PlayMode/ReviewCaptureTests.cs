@@ -247,13 +247,19 @@ namespace GolfArcade.PlayTests
             game.JumpToHole(12);
             yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
-            game.SetWind(GolfArcade.Course.Wind.Calm);   // (a crosswind can drift a short one onto the side island)
-            // a lazy swing — speed decides the distance — though not so lazy that a slow frame
-            // can step over the whole downswing
-            game.Swing.Synthetic.SpeedScale = 0.45;
-            game.Swing.Synthetic.Backswing(true);
-            yield return new WaitForSecondsRealtime(0.35f);
-            game.Swing.Synthetic.Backswing(false);
+            game.SetWind(GolfArcade.Course.Wind.Calm);
+            // A shot planned onto open water short of the green (a timed synthetic swing's power
+            // depends on the frame rate, and a short one could land on the tee island or the side
+            // island instead).
+            var hole = game.CurrentHole;
+            GolfArcade.Course.CoursePoint? sea = null;
+            for (double f = 0.35; f <= 0.7 && sea == null; f += 0.02)
+            {
+                var p = new GolfArcade.Course.CoursePoint(hole.Tee.X + (hole.Pin.X - hole.Tee.X) * f, hole.Tee.D + (hole.Pin.D - hole.Tee.D) * f);
+                if (hole.LieAt(p) == GolfArcade.Course.CourseLie.Water) sea = p;
+            }
+            Assert.IsNotNull(sea, "open water between the tee and the island green");
+            game.StrikeToward(sea.Value);
             yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
             Assert.Less(game.LastShot.Carry, 135, "a short one, into the water");
             yield return new WaitForSecondsRealtime(0.9f);

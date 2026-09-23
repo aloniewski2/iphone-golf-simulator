@@ -75,11 +75,13 @@ namespace GolfArcade.PlayTests
                 yield return WaitFor(() => game.Current == GolfGame.State.Intro, 5, "the opening");
                 yield return new WaitForSecondsRealtime(1.0f);
                 Assert.IsTrue(hud.Controller.Shown && hud.Controller.ShowingIntro, "the phone offers to skip the opening");
+                Assert.IsTrue(hud.HoleIntroShowing, "the tournament title is up over the flyover");
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/0e-intro-tv.png"));
 
                 Step("pressing Skip", () => hud.Controller.Skip.Pressed());
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 3, "the round to start at the tee");
                 Assert.IsTrue(hud.Controller.Shown && !hud.Controller.ShowingIntro, "the aim pad is back for the round");
+                Assert.IsFalse(hud.HoleIntroShowing, "skipped from the flyover, the tournament title goes with it");
 
                 // The joystick aims: a press on the knob, dragged right, turns the line right.
                 yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");

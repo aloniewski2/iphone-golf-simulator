@@ -493,6 +493,7 @@ namespace GolfArcade.Game
             if (putting) greenRead.Show(hole); else greenRead.Hide();
             Enter(State.Aim);
             RefreshControls();   // after Enter: the aim buttons and the joystick show only while aiming
+            hud.HideHoleIntro();  // a skip from the flyover leaves the title up otherwise
         }
 
         /// Straight to a spot on the hole, for tests and reviews: the ball is dropped there and
@@ -1123,6 +1124,8 @@ namespace GolfArcade.Game
 
         /// Where the line points, degrees (for tests).
         public double AimHeading => heading;
+        /// The hole being played (for tests).
+        public Hole CurrentHole => hole;
 
         void Nudge(double degrees)
         {

@@ -555,6 +555,9 @@ namespace GolfArcade.UI
             return 0.6f + 0.4f * (1 + (c + 1) * u * u * u + c * u * u);
         }
 
+        /// The tournament title is on screen.
+        public bool HoleIntroShowing => introGroup && introGroup.alpha > 0.01f;
+
         public void HideHoleIntro()
         {
             if (introGroup) Destroy(introGroup.gameObject);
