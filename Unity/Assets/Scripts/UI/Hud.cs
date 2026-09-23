@@ -1029,7 +1029,7 @@ namespace GolfArcade.UI
         }
 
         /// The hole, for the controller sheet (the scoreboard has it on the phone HUD).
-        public void SetHole(int number, int par, double yards, string picture = null) => Controller?.SetHole(number, par, picture);
+        public void SetHole(int number, int par, double yards, string picture = null) => Controller?.SetHole(number, par, yards);
         /// The score, for the controller sheet (SetScoreboard draws it on the phone HUD).
         public void SetScore(int strokes, int toPar, int holeStrokes) => Controller?.SetScore(toPar, holeStrokes);
 

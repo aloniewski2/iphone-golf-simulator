@@ -17,6 +17,9 @@ namespace GolfArcade.Game
         const float PhoneFov = 60f, BigFov = 42f;
 
         Camera course;
+        /// Clears the phone's screen while the course is on the TV (nothing else draws there
+        /// but the phone's own UI).
+        Camera backdrop;
         public bool Wanted { get; private set; }
         public bool Active { get; private set; }
         /// The phone-side layout without a second display (the editor, reviews): the controller
@@ -78,11 +81,20 @@ namespace GolfArcade.Game
                 if (!d.active) d.Activate();
                 course.targetDisplay = 1;
                 course.fieldOfView = BigFov;
+                if (!backdrop)
+                {
+                    backdrop = new GameObject("Phone backdrop").AddComponent<Camera>();
+                    backdrop.transform.SetParent(transform, false);
+                    backdrop.clearFlags = CameraClearFlags.SolidColor; backdrop.backgroundColor = UI.UiKit.Ground;
+                    backdrop.cullingMask = 0; backdrop.depth = -100; backdrop.targetDisplay = 0;
+                }
+                backdrop.gameObject.SetActive(true);
             }
             else
             {
                 // off, or a preview: the course stays on the phone (under the sheet, in a preview)
                 course.targetDisplay = 0;
+                if (backdrop) backdrop.gameObject.SetActive(false);
                 course.fieldOfView = PhoneFov;
             }
             if (was != on) OnChanged?.Invoke(on);

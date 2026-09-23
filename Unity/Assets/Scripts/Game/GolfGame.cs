@@ -223,10 +223,12 @@ namespace GolfArcade.Game
                     hud.EnterControllerLayout();
                     hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
                     hud.Controller.SetScreen(bigScreen.Live);
-                    hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture);
-                    ShowScore();
+                    hud.Controller.Skip.Pressed = () => { if (Current == State.Intro && stateTime > 0.3f) BeginAim(false); };
+                    // (from the menu there's no hole yet: StartHole fills it in)
+                    if (hole != null && Card != null) { hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture); ShowScore(); }
                 }
                 else hud.LeaveControllerLayout();
+                ShowControllerForState();
                 SizeMinimap(on ? Hud.ControllerMapSize : Hud.MinimapSize);
                 RefreshControls();
                 if (Current == State.Aim) UpdateAimVisuals();
@@ -615,8 +617,19 @@ namespace GolfArcade.Game
         void Enter(State s)
         {
             Current = s; stateTime = 0;
+            ShowControllerForState();
             // the ball is drawn to be seen for a full shot and the settle after it; true size otherwise
             ballLook.Readable((s == State.Flight || s == State.Result) && club != GolfClub.Putter);
+        }
+
+        /// The controller sheet is up only while a round is on — the menu, the golfer picker and
+        /// the round's scorecard stay on the phone — and while the opening plays on the TV it
+        /// offers to skip it; the round itself starts at the tee when the opening ends.
+        void ShowControllerForState()
+        {
+            if (hud.Controller == null) return;
+            hud.Controller.SetShown(Current is not (State.Menu or State.Golfer or State.RoundDone));
+            hud.Controller.SetIntro(Current == State.Intro);
         }
 
         /// Which controls show: touch buttons and the debug swing button only while aiming,
@@ -1132,6 +1145,16 @@ namespace GolfArcade.Game
             Swing.SetClub(club);
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             UpdateAimVisuals();
+        }
+
+        /// This hole's wind, set instead of drawn at random (for reviews and tests that need a
+        /// scripted shot to land where it's meant to).
+        public void SetWind(Wind wind)
+        {
+            Wind = wind;
+            if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
+            double downTheHole = hole.Tee.HeadingTo(hole.Pin);
+            hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm, Wind.SpeedMPH);
         }
 
         /// The phone-as-controller layout without a big screen, for reviews (and a look at it).

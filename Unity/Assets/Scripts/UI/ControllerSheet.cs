@@ -41,6 +41,8 @@ namespace GolfArcade.UI
     public sealed class ControllerSheet
     {
         public HoldButton AimLeft, AimRight, ClubUp, ClubDown, Knob;
+        /// In the aim pad's place while the course's opening plays on the TV: skips to the tee.
+        public HoldButton Skip;
         /// The knob's drag: x turns the aim.
         public Joystick Stick;
         public HoldButton[] Clubs;
@@ -59,6 +61,7 @@ namespace GolfArcade.UI
         readonly Transform parent;
         RectTransform root, sheet;
         Image ring;
+        GameObject[] aimParts; GameObject skipPart;
         Image tvFill;
         Text holeText, parText, yardsText, windText, aimText, tvText;
         RectTransform windArrow;
@@ -212,6 +215,7 @@ namespace GolfArcade.UI
                 hold.Pressed = () => OnClub?.Invoke(index);
                 Clubs[i] = hold; clubFills[i] = fill; clubGlows[i] = glow; clubStars[i] = star.gameObject;
             }
+            SetClubs(-1, new[] { "", "", "", "" });   // named, none in hand yet (the tee fills in the rest)
 
             // ---- aim: the joystick pad, its power ring, and where the line points
             float aimY = cardY + cardH / 2 + 70;
@@ -257,12 +261,41 @@ namespace GolfArcade.UI
             // where the line points, on a pill tucked under the pad
             var pill = Pill("Aim", BlueDeep, 0, padY + D / 2 + 6, new Vector2(300, 84), out var pillFill, 6);
             aimText = Chunky(pillFill.transform, "Label", "STRAIGHT", 38, 3f);
+            aimParts = new[] { aimHeading.gameObject, pad.gameObject, pill.gameObject };
+
+            // while the opening plays on the TV: watch, or skip to the tee
+            var skip = new GameObject("Intro").AddComponent<RectTransform>();
+            skip.SetParent(sheet, false);
+            skip.anchorMin = skip.anchorMax = new Vector2(0.5f, 1); skip.sizeDelta = Vector2.zero; skip.anchoredPosition = new Vector2(0, -aimY);
+            var watch = Chunky(skip, "Watch", "WATCH THE TV!", 56, 4f);
+            watch.rectTransform.anchorMin = watch.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            watch.rectTransform.sizeDelta = new Vector2(800, 80); watch.rectTransform.anchoredPosition = Vector2.zero;
+            var button = UiKit.Pill(skip, "Skip", Yellow, new Vector2(0.5f, 0.5f), new Vector2(0, -190), new Vector2(560, 150), out var skipFill, 9);
+            Chunky(skipFill.transform, "Label", "SKIP INTRO  ▶", 56, 4f, Color.white, UiKit.Hex("C77800"));
+            button.gameObject.AddComponent<Image>().color = Color.clear;
+            Skip = button.gameObject.AddComponent<HoldButton>();
+            Skip.Fill = skipFill; Skip.RestColor = Yellow;
+            skipPart = skip.gameObject;
+            skipPart.SetActive(false);
         }
 
-        public void SetHole(int number, int par, string picture)
+        /// Only while a round is on: the phone's menu, golfer picker and scorecard show instead.
+        public void SetShown(bool on) { if (root) root.gameObject.SetActive(on); }
+        public bool Shown => root && root.gameObject.activeSelf;
+        public bool ShowingIntro => skipPart && skipPart.activeSelf;
+
+        /// The course's opening is playing on the TV: the skip button stands in for the aim pad.
+        public void SetIntro(bool on)
+        {
+            foreach (var part in aimParts) part.SetActive(!on);
+            skipPart.SetActive(on);
+        }
+
+        public void SetHole(int number, int par, double yards)
         {
             holeText.text = $"HOLE {number}";
             parText.text = $"PAR {par}";
+            SetDistance(yards, "yd");
         }
 
         public void SetScore(int toPar, int holeStrokes) { }
@@ -295,7 +328,7 @@ namespace GolfArcade.UI
                 clubStars[i].SetActive(on);
                 var club = GolfArcade.Shot.GolfClubs.All[i];
                 string name = club == GolfArcade.Shot.GolfClub.Wedge ? "WEDGE" : GolfArcade.Shot.GolfClubs.DisplayName(club).ToUpperInvariant();
-                clubNames[i].text = $"{name}\n<size=26>{yards[i].ToUpperInvariant()}</size>";
+                clubNames[i].text = yards[i].Length > 0 ? $"{name}\n<size=26>{yards[i].ToUpperInvariant()}</size>" : name;
                 Clubs[i].transform.localScale = Vector3.one * (on ? 1.05f : 1f);
             }
         }

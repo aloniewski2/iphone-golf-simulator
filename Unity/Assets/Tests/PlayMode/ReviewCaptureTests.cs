@@ -247,6 +247,7 @@ namespace GolfArcade.PlayTests
             game.JumpToHole(12);
             yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            game.SetWind(GolfArcade.Course.Wind.Calm);   // (a crosswind can drift a short one onto the side island)
             // a lazy swing — speed decides the distance — though not so lazy that a slow frame
             // can step over the whole downswing
             game.Swing.Synthetic.SpeedScale = 0.45;
