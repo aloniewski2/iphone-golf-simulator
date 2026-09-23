@@ -298,7 +298,7 @@ namespace GolfArcade.Game
         {
             if (Current != State.Menu) return;
             hud.HideMenu(); menu = null;
-            picker = hud.ShowGolferPicker(GolferStyle.SkinTones, GolferStyle.OutfitNames, GolferStyle.HairNames, GolferStyle.HairColors);
+            picker = hud.ShowGolferPicker(GolferStyle.SkinTones, GolferStyle.OutfitNames, GolferStyle.HairNames, GolferStyle.HairColors, GolferStyle.Customizable);
             picker.Male.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Male; RestyleForPicker(); };
             picker.Female.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Female; RestyleForPicker(); };
             for (int i = 0; i < picker.Skins.Length; i++) { int tone = i; picker.Skins[i].Pressed = () => { Tick(); GolferStyle.SkinTone = tone; RestyleForPicker(); }; }

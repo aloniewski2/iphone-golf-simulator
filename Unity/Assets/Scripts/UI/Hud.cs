@@ -381,15 +381,16 @@ namespace GolfArcade.UI
 
             public void Refresh(bool female, int skin, int outfit, int hair, int hairColor)
             {
+                Male.RestColor = MaleFill.color = female ? Color.clear : UiKit.AccentStrong;
+                Female.RestColor = FemaleFill.color = female ? UiKit.AccentStrong : Color.clear;
+                MaleText.color = female ? UiKit.InkMuted : UiKit.Ink;
+                FemaleText.color = female ? UiKit.Ink : UiKit.InkMuted;
+                if (SkinRing == null) return;   // (the body alone: the Higgsfield golfers come dressed)
                 for (int i = 0; i < Outfits.Length; i++)
                 {
                     Outfits[i].RestColor = OutfitFills[i].color = i == outfit ? UiKit.AccentStrong : Color.clear;
                     OutfitTexts[i].color = i == outfit ? UiKit.Ink : UiKit.InkMuted;
                 }
-                Male.RestColor = MaleFill.color = female ? Color.clear : UiKit.AccentStrong;
-                Female.RestColor = FemaleFill.color = female ? UiKit.AccentStrong : Color.clear;
-                MaleText.color = female ? UiKit.InkMuted : UiKit.Ink;
-                FemaleText.color = female ? UiKit.Ink : UiKit.InkMuted;
                 SkinRing.anchoredPosition = ((RectTransform)Skins[skin].transform).anchoredPosition;
                 for (int i = 0; i < Hairs.Length; i++)
                 {
@@ -402,10 +403,11 @@ namespace GolfArcade.UI
 
         GolferPicker picker;
 
-        public GolferPicker ShowGolferPicker(Color[] skinTones, string[] outfitNames, string[] hairNames, Color[] hairColors)
+        public GolferPicker ShowGolferPicker(Color[] skinTones, string[] outfitNames, string[] hairNames, Color[] hairColors, bool looks = true)
         {
             HideGolferPicker();
-            const float left = 70, width = 940, height = 1172;
+            const float left = 70, width = 940;
+            float height = looks ? 1172 : 520;
             var sheet = Panel("Golfer picker", UiKit.Surface, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, height));
             sheet.color = new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.94f);
             var root = sheet.rectTransform;
@@ -459,6 +461,12 @@ namespace GolfArcade.UI
             var bodies = Segmented("Body", new[] { "Male", "Female" }, y, out var bodyFills, out var bodyTexts);
             picker.Male = bodies[0]; picker.Female = bodies[1]; picker.MaleFill = bodyFills[0]; picker.FemaleFill = bodyFills[1]; picker.MaleText = bodyTexts[0]; picker.FemaleText = bodyTexts[1];
             y -= 92 + 40;
+            if (!looks)
+            {
+                picker.Skins = picker.Outfits = picker.Hairs = picker.HairColors = new HoldButton[0];
+                picker.Done = UiKit.Button(root, "Done", new Vector2(0.5f, 0), new Vector2(0, 60 + 60), new Vector2(width, 120), 44, UiKit.AccentStrong, UiKit.Display, false);
+                return picker;
+            }
             T("Skin heading", "SKIN", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
             picker.Skins = Dots("Skin", skinTones, y, out picker.SkinRing);
             y -= 80 + 40;

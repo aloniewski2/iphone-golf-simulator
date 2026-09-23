@@ -93,8 +93,12 @@ namespace GolfArcade.Game
 
         /// The mesh in the FBX for the chosen style, or null for none.
         public static string HairMesh => Hair == HairKind.None ? null : "HAIR_" + Hair.ToString().ToUpperInvariant();
+        /// The player is a Higgsfield golfer (blender/characters/golf) who comes dressed, with their
+        /// own hair and face: only the body is a choice. Skin, outfit and hair still apply to the
+        /// crowd and to a V4-model player.
+        public const bool Customizable = false;
         /// "Male · Tan · Bob, auburn": the golfer in a line, for the menu.
-        public static string Summary => $"{(Body == BodyKind.Female ? "Female" : "Male")}   ·   {SkinName}   ·   {(Hair == HairKind.None ? "No hair" : $"{HairNames[(int)Hair]}, {HairColorNames[HairTone].ToLowerInvariant()}")}";
+        public static string Summary => !Customizable ? (Body == BodyKind.Female ? "Female golfer" : "Male golfer") : $"{(Body == BodyKind.Female ? "Female" : "Male")}   ·   {SkinName}   ·   {(Hair == HairKind.None ? "No hair" : $"{HairNames[(int)Hair]}, {HairColorNames[HairTone].ToLowerInvariant()}")}";
         /// Resources path of the model for the chosen body.
         public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
         public static string BodyLabel => Body == BodyKind.Female ? "♀" : "♂";

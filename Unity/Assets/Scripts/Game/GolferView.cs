@@ -105,15 +105,15 @@ namespace GolfArcade.Game
             part.StartsWith("Collar") || part.StartsWith("Sleeve piping") || part.StartsWith("Armhole binding")
             || part.StartsWith("V4 shirt button") || part.EndsWith("Golf 1 top");
 
-        static readonly Dictionary<(Color, bool), Material> clayMaterials = new();
+        static readonly Dictionary<(Color, bool, Texture), Material> clayMaterials = new();
         static Texture2D matCap, knit;
 
         /// A GolferClay material (Shaders/GolferClay.shader): the soft matte look of Adnan's
         /// studio renders, from a Higgsfield MatCap of his lighting; cloth adds the knit. Falls
         /// back to the course's flat lit material if the shader isn't in the build.
-        static Material Clay(Color color, bool cloth)
+        static Material Clay(Color color, bool cloth, Texture map = null)
         {
-            if (clayMaterials.TryGetValue((color, cloth), out var m) && m) return m;
+            if (clayMaterials.TryGetValue((color, cloth, map), out var m) && m) return m;
             var shader = Shader.Find("GolfArcade/GolferClay");
             if (!shader) return HoleView.Mat(color);
             if (!matCap) matCap = Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
@@ -122,7 +122,8 @@ namespace GolfArcade.Game
             if (matCap) m.SetTexture("_MatCap", matCap);
             if (knit) m.SetTexture("_Knit", knit);
             m.SetFloat("_Fabric", cloth ? 0.6f : 0f);
-            clayMaterials[(color, cloth)] = m;
+            if (map) { m.SetTexture("_MainTex", map); m.SetFloat("_MatCapStrength", 0.6f); }   // (the map carries its own shading)
+            clayMaterials[(color, cloth, map)] = m;
             return m;
         }
 
@@ -157,6 +158,51 @@ namespace GolfArcade.Game
 
         GameObject modelGo;
 
+        // ----- The face: Adnan's expression atlas (Resources/Golfer/Look/FaceAtlas, 4 × 2 cells in
+        // this order, as his TennisActor uses it) on the Higgsfield golfer's face decal.
+
+        public enum Expression { Neutral, Blink, Happy, Focus, Effort, Sad, Surprised, Cheer }
+        Material faceMaterial;
+        Expression face = (Expression)(-1);
+        float nextBlink = 2f, blinkFor;
+        static Texture2D faceAtlas;
+
+        Material FaceMaterial()
+        {
+            if (!faceAtlas) faceAtlas = Resources.Load<Texture2D>("Golfer/Look/FaceAtlas");
+            var shader = Shader.Find("Unlit/Transparent");
+            var m = new Material(shader ? shader : Shader.Find("Standard")) { mainTexture = faceAtlas, mainTextureScale = new Vector2(0.25f, 0.5f) };
+            face = (Expression)(-1);
+            return m;
+        }
+
+        void ShowFace(Expression e)
+        {
+            if (!faceMaterial || e == face) return;
+            face = e;
+            int cell = (int)e;
+            faceMaterial.mainTextureOffset = new Vector2((cell % 4) * 0.25f, cell < 4 ? 0.5f : 0f);
+        }
+
+        /// What the face says: effort through the downswing, focus as the backswing loads, a big
+        /// smile for a cheer or a fist pump, happy while waving; a blink every few seconds.
+        void UpdateFace(float dt)
+        {
+            if (!faceMaterial) return;
+            Expression want = phase switch
+            {
+                2 => Expression.Effort,
+                0 when loadTarget > 0.3f => Expression.Focus,
+                4 when clipName is "Cheer" or "FistPump" => Expression.Cheer,
+                4 when clipName == "Wave" => Expression.Happy,
+                _ => Expression.Neutral,
+            };
+            nextBlink -= dt;
+            if (nextBlink <= 0) { blinkFor = 0.13f; nextBlink = Random.Range(2.2f, 4.5f); }
+            if (blinkFor > 0) { blinkFor -= dt; if (want is Expression.Neutral or Expression.Focus) want = Expression.Blink; }
+            ShowFace(want);
+        }
+
         public static GolferView Create(Transform parent)
         {
             var go = new GameObject("Golfer");
@@ -181,6 +227,7 @@ namespace GolfArcade.Game
         {
             if (graph.IsValid()) graph.Destroy();
             if (modelGo) Destroy(modelGo);
+            faceMaterial = null;
             if (body) Destroy(body.gameObject);
             hasModel = false; body = null; modelGo = null;
             phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
@@ -217,6 +264,15 @@ namespace GolfArcade.Game
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
                     if (name.StartsWith("CLUB ")) { mats[i] = ClubMaterial(name); continue; }
+                    // The Higgsfield golfer (blender/scripts/fit_golf_characters.py): its colour map
+                    // beside the FBX, and a face painted from Adnan's expression atlas.
+                    if (name.StartsWith("V4 Higgs body")) { mats[i] = Clay(Color.white, false, Resources.Load<Texture2D>($"{System.IO.Path.GetDirectoryName(path)}/higgs_{(path.EndsWith("_f") ? "f" : "m")}_color")); continue; }
+                    if (name.StartsWith("V4 face decal"))
+                    {
+                        mats[i] = faceMaterial = FaceMaterial();
+                        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;   // a thin shell on the head
+                        continue;
+                    }
                     Color color = mats[i].color;
                     if (name == "MAT_SKIN") color = look.Skin;
                     else if (name == "MAT_HAIR") color = look.Hair;
@@ -445,6 +501,7 @@ namespace GolfArcade.Game
         {
             float dt = Time.deltaTime;
             TickFade(dt);
+            UpdateFace(dt);
             switch (phase)
             {
                 case 0:

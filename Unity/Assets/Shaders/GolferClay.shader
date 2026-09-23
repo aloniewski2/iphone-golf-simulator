@@ -10,6 +10,7 @@ Shader "GolfArcade/GolferClay"
     Properties
     {
         _Color ("Colour", Color) = (1, 1, 1, 1)
+        _MainTex ("Colour map (the Higgsfield bodies)", 2D) = "white" {}
         _MatCap ("MatCap (grey)", 2D) = "white" {}
         _MatCapGain ("MatCap gain", Float) = 1.0
         _MatCapStrength ("How much the MatCap shades", Range(0, 1)) = 0.85
@@ -23,13 +24,13 @@ Shader "GolfArcade/GolferClay"
         Tags { "RenderType" = "Opaque" }
         CGPROGRAM
         #pragma surface surf Clay fullforwardshadows vertex:vert
-        #pragma target 3.0
+        #pragma target 3.5   // (the colour map's UVs are the 11th interpolator; 3.0 allows 10)
         #include "UnityPBSLighting.cginc"
-        sampler2D _MatCap, _Knit;
+        sampler2D _MatCap, _Knit, _MainTex;
         fixed4 _Color;
         float _MatCapGain, _MatCapStrength, _Wrap, _KnitTile, _Fabric;
 
-        struct Input { float3 worldNormal; float3 objPos; float3 objNormal; };
+        struct Input { float2 uv_MainTex; float3 worldNormal; float3 objPos; float3 objNormal; };
 
         void vert(inout appdata_full v, out Input o)
         {
@@ -50,7 +51,7 @@ Shader "GolfArcade/GolferClay"
         {
             float3 vn = normalize(mul((float3x3)UNITY_MATRIX_V, IN.worldNormal));
             half cap = tex2D(_MatCap, vn.xy * 0.49 + 0.5).r * _MatCapGain;
-            half3 albedo = _Color.rgb * lerp(1, cap, _MatCapStrength);
+            half3 albedo = _Color.rgb * tex2D(_MainTex, IN.uv_MainTex).rgb * lerp(1, cap, _MatCapStrength);
             if (_Fabric > 0) albedo *= 1 + _Fabric * (Knit(IN.objPos, IN.objNormal) - 0.5) * 2;
             o.Albedo = albedo;
             o.Alpha = 1;

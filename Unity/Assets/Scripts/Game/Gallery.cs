@@ -68,7 +68,8 @@ namespace GolfArcade.Game
                 bool female = rng.Next(2) == 1;
                 var look = new GolferView.Look
                 {
-                    ModelPath = female ? "Golfer/golfer_f" : "Golfer/golfer_m",
+                    // the crowd: Adnan's V4 standard characters, recoloured (the player is the Higgsfield golfer)
+                    ModelPath = female ? "Golfer/crowd_f" : "Golfer/crowd_m",
                     Skin = GolferStyle.SkinTones[rng.Next(GolferStyle.SkinTones.Length)],
                     Hair = GolferStyle.HairColors[rng.Next(GolferStyle.HairColors.Length)],
                     HairMesh = new[] { "HAIR_SHORT", "HAIR_LONG", "HAIR_CURLY", female ? "HAIR_LONG" : "HAIR_SHORT" }[rng.Next(4)],

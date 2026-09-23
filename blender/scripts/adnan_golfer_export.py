@@ -152,8 +152,11 @@ def hair(style):
 
 # ray_cast hits the evaluated (posed) head, and the hair is skinned on top of that pose: fit it
 # with the rig at rest.
+# With the Higgsfield golf body (fit_golf_characters.py) the character has its own hair and cap
+# and the source head is gone: no shells.
+higgs = next((c for c in rig.children if c.type == 'MESH' and c.name.startswith("V4 Higgs body")), None)
 rig.data.pose_position = 'REST'; vl.update()
-hair_objects = [hair(style) for style in ("SHORT", "LONG", "CURLY")]
+hair_objects = [] if higgs else [hair(style) for style in ("SHORT", "LONG", "CURLY")]
 rig.data.pose_position = 'POSE'; vl.update()
 
 # ------------------------------------------------------------------ 3. bake the in-use club into the bone, per clip
@@ -229,7 +232,31 @@ for clip, source in EXTRA.items():
 
 # ------------------------------------------------------------------ 4. face the ball, name the skin, export
 skin = bpy.data.materials.get("V4 skin" if GENDER == "Male" else "V4 skin female")
-if skin: skin.name = "MAT_SKIN"
+if higgs:
+    # The body's colour map goes to Unity beside the FBX (GolferView puts it on "V4 Higgs body");
+    # the grip hands take the skin colour of the face in that map instead of the player's tone.
+    import numpy as np
+    img = next(n.image for n in higgs.data.materials[0].node_tree.nodes
+               if n.type == "TEX_IMAGE" and n.image and "normal" not in n.image.name.lower())
+    out = img.copy(); out.scale(1024, 1024)
+    out.filepath_raw = os.path.join(os.path.dirname(FBX), f"higgs_{TAG}_color.png"); out.file_format = "PNG"; out.save()
+    px = np.empty(img.size[0] * img.size[1] * 4, dtype=np.float32); img.pixels.foreach_get(px)
+    px = px.reshape(img.size[1], img.size[0], 4)
+    head = higgs.vertex_groups["Head"].index
+    me = higgs.data; uv = me.uv_layers.active.data
+    face = [v for v in me.vertices if any(g.group == head and g.weight > .9 for g in v.groups)]
+    zs = sorted(v.co.z for v in face); mid = zs[len(zs) // 3]
+    front = min((v for v in face if abs(v.co.z - mid) < .03), key=lambda v: v.co.y)   # the face looks down -Y at rest
+    loop = next(l for l in me.loops if l.vertex_index == front.index)
+    u, v = uv[loop.index].uv
+    tone = px[int(v * (img.size[1] - 1)), int(u * (img.size[0] - 1))][:3]
+    if skin:
+        skin.name = "V4 Higgs hands"
+        bsdf = skin.node_tree.nodes.get("Principled BSDF") if skin.use_nodes else None
+        if bsdf: bsdf.inputs["Base Color"].default_value = (*tone, 1)
+        skin.diffuse_color = (*tone, 1)
+    print(f"{GENDER}: Higgsfield body, colour map -> higgs_{TAG}_color.png, hands {tuple(round(float(c), 3) for c in tone)}")
+elif skin: skin.name = "MAT_SKIN"
 # The studio addresses a ball on the rig's -X; the game stands the golfer facing the ball on
 # Unity +Z, which is Blender -Y: a quarter turn.
 rig.matrix_world = Matrix.Rotation(math.radians(90), 4, 'Z')
