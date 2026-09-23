@@ -287,6 +287,21 @@ namespace GolfArcade.Tests
             Assert.Less(impacts[0].Power, 0.15);
         }
 
+        /// A putt is struck as the putter comes back through the ball, not where the stroke
+        /// eases off: a stroke that slows before the ball still carries on through it.
+        [Test]
+        public void APuttIsStruckAsThePutterPassesTheBall()
+        {
+            var detector = new MotionSwingDetector();
+            detector.Configure(GolfClub.Putter);
+            // back 0.3 rad, a beat, quickly most of the way down, then easing through the ball
+            var events = Drive(detector, new[] { (0.6, 0.0), (0.6, 0.3), (0.1, 0.3), (0.1, 0.06), (0.6, -0.06), (0.4, -0.06) });
+            var impacts = Impacts(events);
+            Assert.AreEqual(1, impacts.Count);
+            Assert.Greater(impacts[0].TempoSeconds, 0.85, "not struck where the stroke slowed (0.8 s in), but as it passed the ball");
+            Assert.AreEqual(0.5, impacts[0].Power, 0.06, "half the putter's stroke is half its roll");
+        }
+
         [Test]
         public void HeldBackswingTimesOut()
         {

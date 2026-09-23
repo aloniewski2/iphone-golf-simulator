@@ -75,6 +75,10 @@ namespace GolfArcade.Swing
         /// A backswing this close to the full turn counts as full: a real swing stops a few degrees
         /// short of the mark, and a full swing should always be the whole club.
         public double FullSnap = 0.95;
+        /// Whether a downswing that slows right down counts as struck (full swings: a checked
+        /// swing is still a swing). The putter's is off: a putt is struck only as the putter comes
+        /// back through the ball, and the stroke carries on into its follow-through.
+        public bool StrikeOnSlowing = true;
         /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
         /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
         /// hold needed.
@@ -144,6 +148,8 @@ namespace GolfArcade.Swing
                 fresh.ArmSpeed = 0.15;
                 fresh.CurvePerFaceDegree = 0;
                 fresh.StartLinePerFaceDegree = 0.3;
+                fresh.StrikeOnSlowing = false;
+                fresh.CommitRatio = 0.25;          // a smooth, unhurried stroke is a whole one
                 fresh.MaxStartLineDegrees = 5;
             }
             CopyTuning(fresh);
@@ -153,7 +159,7 @@ namespace GolfArcade.Swing
         void CopyTuning(MotionSwingDetector o)
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
-            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio;
+            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio; StrikeOnSlowing = o.StrikeOnSlowing;
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
@@ -259,8 +265,8 @@ namespace GolfArcade.Swing
 
                 case SwingPhase.Downswing:
                     peakSpeed = Math.Max(peakSpeed, speed);
-                    bool decelerated = speed < peakSpeed * 0.4;
-                    if (!(angle < ImpactAngle || decelerated || time - downswingStart > 1.2)) return null;
+                    bool decelerated = StrikeOnSlowing && speed < peakSpeed * 0.4;
+                    if (!(angle < ImpactAngle || decelerated || time - downswingStart > (StrikeOnSlowing ? 1.2 : 2.0))) return null;
                     Phase = SwingPhase.Finish;
                     stillSince = null;
                     Load = 0;

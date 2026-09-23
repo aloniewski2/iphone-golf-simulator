@@ -321,6 +321,19 @@ namespace GolfArcade.PlayTests
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
             yield return new WaitForSecondsRealtime(0.8f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6-read.png"));
+            // Changing the line: holding the right arrow turns the putt a few degrees a second —
+            // fine enough to read a putt with — and the ribbon follows.
+            var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+            var events = UnityEngine.EventSystems.EventSystem.current ?? Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
+            var press = new UnityEngine.EventSystems.PointerEventData(events);
+            double before = game.AimHeading;
+            hud.AimRight.OnPointerDown(press);
+            yield return new WaitForSecondsRealtime(1.0f);
+            hud.AimRight.OnPointerUp(press);
+            double turned = game.AimHeading - before;
+            Assert.That(turned, Is.InRange(2.0, 10.0), $"a second's hold on the green turns the line a few degrees ({turned:F1}°)");
+            yield return new WaitForSecondsRealtime(0.3f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6b-read-aimed-right.png"));
             game.Swing.Synthetic.Backswing(true);
             yield return new WaitForSecondsRealtime(0.45f);
             game.Swing.Synthetic.Backswing(false);

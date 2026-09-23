@@ -209,8 +209,8 @@ namespace GolfArcade.Game
             Swing.OnSourceChanged = _ => { RefreshControls(); Haptics.Release(); sounds.Release(); hud.SetMeter(0); golfer.Settle(); };
             Swing.Start();
 
-            hud.AimLeft.Pressed = () => { Tick(); Nudge(-AimTapDegrees); };
-            hud.AimRight.Pressed = () => { Tick(); Nudge(AimTapDegrees); };
+            hud.AimLeft.Pressed = () => { Tick(); Nudge(-AimTapDegrees * (club == GolfClub.Putter ? 0.33f : 1f)); };
+            hud.AimRight.Pressed = () => { Tick(); Nudge(AimTapDegrees * (club == GolfClub.Putter ? 0.33f : 1f)); };
             hud.ClubUp.Pressed = () => { Tick(); CycleClub(-1); };
             hud.ClubDown.Pressed = () => { Tick(); CycleClub(1); };
             hud.SwingHold.Pressed = () => Swing.Synthetic?.Backswing(true);
@@ -989,8 +989,15 @@ namespace GolfArcade.Game
         /// with just enough pace to reach the hole would take from here on the current aim, so
         /// the player turns the aim until the ribbon finds the cup and then judges the pace.
         static readonly Color RibbonColor = new(0.55f, 1f, 0.8f);
+        bool puttRibbonPending;
+        float nextPuttRibbon;
+        /// The ribbon is a whole putt simulated over the green's slopes: while the aim sweeps it is
+        /// redrawn at most 15 times a second, and once more where the sweep stops.
         void LayPuttRibbon()
         {
+            if (Time.unscaledTime < nextPuttRibbon) { puttRibbonPending = true; return; }
+            puttRibbonPending = false;
+            nextPuttRibbon = Time.unscaledTime + 1f / 15f;
             double toPin = ballAt.DistanceTo(hole.Pin) + 0.5;
             double meter = Math.Pow(Math.Min(1, toPin / GolfClub.Putter.ReferenceDistanceYards()), 1 / GolfClub.Putter.MeterExponent());
             var preview = new CourseShot(GolfClub.Putter, new SwingImpact { Power = meter }, heading, ballAt, hole, 1, Wind);
@@ -1156,7 +1163,9 @@ namespace GolfArcade.Game
             heading += degrees;
             aimedByPlayer = true;
             UpdateAimVisuals();
-            rig.FrameAddress(ball.position, AimDirection(), hole.LieAt(ballAt) == CourseLie.Green);
+            // on the green the camera keeps the putt's view (the green behind the ball, the cup ahead)
+            if (club == GolfClub.Putter) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin));
+            else rig.FrameAddress(ball.position, AimDirection(), false);
         }
 
         void CycleClub(int step)
@@ -1203,7 +1212,12 @@ namespace GolfArcade.Game
                 hud.Map.ShowLoad = aimDots.MarkShown; hud.Map.Load = aimDots.MarkPosition;
                 hud.SetMeter((float)load, null, $"{ballAt.DistanceTo(spot):F0} yd");
             }
-            else hud.SetMeter((float)load);
+            else
+            {
+                // the meter says how far this stroke rolls on the flat
+                double feet = GolfClub.Putter.DistanceYards(load) * 3;
+                hud.SetMeter((float)load, null, $"{feet:F0} ft");
+            }
             golfer.ShowLoad((float)load);
             // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
             Haptics.Tension(load);
@@ -1333,7 +1347,9 @@ namespace GolfArcade.Game
                     float sweep = (hud.AimLeftHeld ? -1 : 0) + (hud.AimRightHeld ? 1 : 0)
                                 + (Input.GetKey(KeyCode.LeftArrow) ? -1 : 0) + (Input.GetKey(KeyCode.RightArrow) ? 1 : 0)
                                 + Mathf.Clamp(hud.AimStick, -1f, 1f) * 1.5f;
-                    if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * Time.deltaTime);
+                    // a putt's line is a matter of a degree or two: the sweep is a fifth as fast
+                    if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * (club == GolfClub.Putter ? 0.2f : 1f) * Time.deltaTime);
+                    if (puttRibbonPending && Time.unscaledTime >= nextPuttRibbon) LayPuttRibbon();
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
                     if (Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }

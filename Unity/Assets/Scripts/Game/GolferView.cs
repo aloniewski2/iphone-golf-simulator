@@ -474,7 +474,8 @@ namespace GolfArcade.Game
             swingRate = (1 - swingU) / seconds;
             // the club's clip-speed at impact, which the follow-through picks up
             float impactSpeed = (ImpactTime - TopTime) * Accel * swingRate;
-            finishTime = full ? EndTime : ImpactTime + (EndTime - ImpactTime) * Mathf.Max(0.55f, f);
+            // (a putt's follow-through mirrors its stroke: a short one is short through the ball too)
+            finishTime = full ? EndTime : ImpactTime + (EndTime - ImpactTime) * Mathf.Max(clipName == "Putt" ? 0.3f : 0.55f, f);
             throughSeconds = Mathf.Clamp((finishTime - ImpactTime) * EaseOut / Mathf.Max(0.01f, impactSpeed), 0.35f, 1.6f);
             Crossfade(full ? 0.07f : 0.12f);   // from the backswing pose into the downswing's
             phase = 2;
