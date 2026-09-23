@@ -31,12 +31,13 @@ namespace GolfArcade.UI
     }
 
     /// The phone as the controller while the course plays on the big screen: the whole phone,
-    /// in a light sheet like a caddie's card. From the top: the hole and whether the TV is
-    /// there; par, the distance to the pin and the wind; the live minimap (the game's own map
-    /// camera and marks, re-framed wide for the card); the clubs as cards with their pictures
-    /// (Resources/Clubs, Higgsfield product shots of the game's clubs) and what each carries;
-    /// the aim pad — ticks to turn the line and change club, the knob to nudge, its ring filling
-    /// with the backswing; and a line saying what the game wants next.
+    /// bright and chunky like a Wii menu (the user's pick of the Higgsfield mock-ups). On a sky
+    /// with puffy clouds: a "HOLE 12" badge and whether the TV is on; pills for par, the distance
+    /// to the pin and the wind; the live minimap in a white frame (the game's map camera and
+    /// marks); the clubs as cards with cartoon club icons (Resources/Clubs/*_toon), the one in hand
+    /// yellow with a star; and the aim pad — a glossy joystick whose knob nudges the line, its
+    /// arrows turning it (◀ ▶) and changing club (▲ ▼), a ring round it filling yellow with the
+    /// backswing, and a pill under it saying where the line points.
     public sealed class ControllerSheet
     {
         public HoldButton AimLeft, AimRight, ClubUp, ClubDown, Knob;
@@ -46,24 +47,23 @@ namespace GolfArcade.UI
         public Action<int> OnClub;
         /// Where the minimap goes (Hud moves its RawImage in and back out).
         public RectTransform MapSlot { get; private set; }
-        /// The map card's size, for framing the map camera to it.
-        public static readonly Vector2 MapSize = new(992, 560);
+        /// The map's picture size, for framing the map camera to it.
+        public static readonly Vector2 MapSize = new(972, 700);
 
-        // the sheet's own light palette
-        static readonly Color Paper = UiKit.Hex("F6F6F1"), CardWhite = UiKit.Hex("FFFFFF"), CardEdge = UiKit.Hex("E3E4DE");
-        static readonly Color Ink = UiKit.Hex("141614"), Muted = UiKit.Hex("5E635C"), Rule = UiKit.Hex("E1E2DC");
-        static readonly Color Green = UiKit.Hex("2F6B3C"), GreenLight = UiKit.Hex("5E9E5A"), GreenSoft = UiKit.Hex("E7EFE3"), PadFill = UiKit.Hex("EEF0EA");
-        static readonly Color Amber = UiKit.Hex("E3A11B");
-        const float Margin = 44;
-        static readonly string[] Pictures = { "Clubs/driver", "Clubs/iron", "Clubs/wedge", "Clubs/putter" };
+        static readonly Color SkyTop = UiKit.Hex("2F9DEB"), SkyBottom = UiKit.Hex("93D5FA");
+        static readonly Color Blue = UiKit.Hex("2A84E6"), BlueDeep = UiKit.Hex("1557B8"), CardBlue = UiKit.Hex("DCEEFD");
+        static readonly Color Yellow = UiKit.Hex("FFD23A"), Green = UiKit.Hex("36B34A"), Amber = UiKit.Hex("F2A81D");
+        const float Width = 992;
+        static readonly string[] Pictures = { "Clubs/driver_toon", "Clubs/iron_toon", "Clubs/wedge_toon", "Clubs/putter_toon" };
 
         readonly Transform parent;
-        RectTransform root, needle;
-        Image ring, statusDot, tvDot;
-        Text holeText, infoText, windText, aimText, statusTitle, statusDetail, tvText;
+        RectTransform root, sheet;
+        Image ring;
+        Image tvFill;
+        Text holeText, parText, yardsText, windText, aimText, tvText;
         RectTransform windArrow;
-        Image[] clubEdges, clubFills, clubChecks; Text[] clubNames, clubYards;
-        int par, strokes; string distance = "";
+        Image[] clubFills, clubGlows; GameObject[] clubStars; Text[] clubNames;
+        static Sprite skySprite;
 
         public ControllerSheet(Transform safeArea)
         {
@@ -74,28 +74,45 @@ namespace GolfArcade.UI
         public void Destroy() { if (root) UnityEngine.Object.Destroy(root.gameObject); root = null; }
         public bool Alive => root;
 
-        Text T(Transform p, string name, string text, int size, Font face, Color color, TextAnchor anchor, Vector2 anchorAt, Vector2 pos, Vector2 box)
+        /// A pill (white rim, blue fill, drop shadow) centred at `y` down from the top.
+        RectTransform Pill(string name, Color fill, float x, float y, Vector2 size, out Image fillImg, float rim = 6f, bool round = true)
+            => UiKit.Pill(sheet, name, fill, new Vector2(0.5f, 1), new Vector2(x, -y), size, out fillImg, rim, round);
+
+        Text Chunky(Transform p, string name, string text, int size, float weight = 4f, Color? fill = null, Color? outline = null)
         {
-            var t = UiKit.Label(p, name, size, anchor, anchorAt, anchorAt, pos, box, face, false);
-            t.text = text; t.color = color; t.raycastTarget = false;
+            var t = UiKit.Chunky(p, name, size, fill ?? Color.white, outline ?? BlueDeep, weight);
+            t.text = text;
             return t;
         }
 
-        /// A rounded box across the sheet (margins each side), `top` down from the top.
-        Image Row(Transform p, string name, Color c, float top, float height)
+        static Image Blob(Transform p, string name, Color c, Vector2 pos, Vector2 size)
         {
-            var img = UiKit.Panel(p, name, c, new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, Vector2.zero);
-            var rt = img.rectTransform;
-            rt.pivot = new Vector2(0.5f, 1);
-            rt.offsetMin = new Vector2(Margin, -top - height); rt.offsetMax = new Vector2(-Margin, -top);
+            var img = UiKit.Panel(p, name, c, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), pos, size);
+            img.sprite = UiKit.Circle; img.type = Image.Type.Simple;   // a true circle or ellipse, not a capsule
+            img.rectTransform.pivot = new Vector2(0.5f, 0.5f); img.raycastTarget = false;
             return img;
         }
 
-        static Image Dot(Transform p, string name, Color c, Vector2 anchor, Vector2 pos, float size)
+        /// A puffy cartoon cloud of overlapping circles, anchored at a fraction of the screen.
+        void Cloud(Vector2 at, float scale)
         {
-            var d = UiKit.Panel(p, name, c, anchor, anchor, pos, new Vector2(size, size));
-            d.sprite = UiKit.Circle; d.type = Image.Type.Simple; d.rectTransform.pivot = new Vector2(0.5f, 0.5f); d.raycastTarget = false;
-            return d;
+            var c = new GameObject("Cloud").AddComponent<RectTransform>();
+            c.SetParent(root, false);
+            c.anchorMin = c.anchorMax = at; c.sizeDelta = Vector2.zero; c.localScale = Vector3.one * scale;
+            var white = new Color(1, 1, 1, 0.92f);
+            Blob(c, "Base", white, new Vector2(0, -20), new Vector2(300, 90));
+            Blob(c, "Puff", white, new Vector2(-70, 5), new Vector2(130, 120));
+            Blob(c, "Puff", white, new Vector2(20, 30), new Vector2(170, 160));
+            Blob(c, "Puff", white, new Vector2(100, 0), new Vector2(110, 100));
+        }
+
+        static Sprite Sky()
+        {
+            if (skySprite) return skySprite;
+            var tex = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            for (int y = 0; y < 64; y++) tex.SetPixel(0, y, Color.Lerp(SkyBottom, SkyTop, y / 63f));
+            tex.Apply();
+            return skySprite = Sprite.Create(tex, new Rect(0, 0, 1, 64), new Vector2(0.5f, 0.5f));
         }
 
         void Build()
@@ -104,172 +121,166 @@ namespace GolfArcade.UI
             go.transform.SetParent(parent, false);
             root = go.AddComponent<RectTransform>();
             root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one;
-            // past the safe area to the screen's edges, so the notch and home bar sit on paper
+            // past the safe area to the screen's edges, so the notch and home bar sit on sky
             root.offsetMin = new Vector2(0, -400); root.offsetMax = new Vector2(0, 400);
-            var paper = go.AddComponent<Image>(); paper.color = Paper;   // (and it takes the taps meant for nothing)
-            var sheet = new GameObject("Sheet").AddComponent<RectTransform>();
+            var sky = go.AddComponent<Image>(); sky.sprite = Sky();   // (and it takes the taps meant for nothing)
+            Cloud(new Vector2(0.02f, 0.86f), 1.0f); Cloud(new Vector2(0.98f, 0.70f), 0.9f); Cloud(new Vector2(0.0f, 0.42f), 0.8f);
+            Cloud(new Vector2(1.0f, 0.30f), 1.1f); Cloud(new Vector2(0.08f, 0.16f), 0.9f);
+            sheet = new GameObject("Sheet").AddComponent<RectTransform>();
             sheet.SetParent(root, false);
             sheet.anchorMin = Vector2.zero; sheet.anchorMax = Vector2.one; sheet.offsetMin = new Vector2(0, 400); sheet.offsetMax = new Vector2(0, -400);
 
-            // ---- the hole, and the TV
-            holeText = T(sheet, "Hole", "Hole", 84, UiKit.Display, Ink, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(Margin, -34), new Vector2(560, 100));
-            var pill = UiKit.Panel(sheet, "TV", GreenSoft, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin, -40), new Vector2(330, 84));
-            pill.rectTransform.pivot = new Vector2(1, 1); pill.raycastTarget = false;
-            tvDot = Dot(pill.transform, "Dot", GreenLight, new Vector2(0, 0.5f), new Vector2(40, 0), 24);
-            tvText = T(pill.transform, "Label", "TV connected", 34, UiKit.Strong, Ink, TextAnchor.MiddleLeft, new Vector2(0, 0.5f), new Vector2(66, 0), new Vector2(260, 48));
-            tvText.rectTransform.pivot = new Vector2(0, 0.5f);
-            // a little screen on a stand
-            var tv = UiKit.Panel(sheet, "TV icon", Ink, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-Margin - 330 - 34, -58), new Vector2(64, 44), false);
-            tv.rectTransform.pivot = new Vector2(1, 1); tv.raycastTarget = false;
-            var glass = UiKit.Panel(tv.transform, "Glass", Paper, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false); glass.rectTransform.offsetMin = new Vector2(5, 5); glass.rectTransform.offsetMax = new Vector2(-5, -5); glass.raycastTarget = false;
-            var stand = UiKit.Panel(tv.transform, "Stand", Ink, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, -10), new Vector2(28, 5), false);
-            stand.rectTransform.pivot = new Vector2(0.5f, 0.5f); stand.raycastTarget = false;
-            Row(sheet, "Rule", Rule, 156, 3).raycastTarget = false;
+            // ---- the hole badge, with its flag, and the TV
+            var badge = Pill("Hole", Blue, -20, 110, new Vector2(560, 150), out var badgeFill, 9);
+            var hole = Blob(badgeFill.transform, "Cup", Green, Vector2.zero, new Vector2(84, 40));
+            hole.rectTransform.anchorMin = hole.rectTransform.anchorMax = new Vector2(0, 0.5f); hole.rectTransform.anchoredPosition = new Vector2(78, -24);
+            var pole = UiKit.Panel(hole.transform, "Pole", Color.white, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-6, 0), new Vector2(7, 86), false);
+            pole.rectTransform.pivot = new Vector2(0.5f, 0); pole.raycastTarget = false;
+            var flag = UiKit.Panel(pole.transform, "Flag", UiKit.Hex("E8352F"), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(3, 0), new Vector2(46, 32), false);
+            flag.rectTransform.pivot = new Vector2(0, 1); flag.rectTransform.localRotation = Quaternion.Euler(0, 0, -6); flag.raycastTarget = false;
+            holeText = Chunky(badgeFill.transform, "Label", "HOLE", 92, 5f);
+            holeText.rectTransform.offsetMin = new Vector2(120, 0);
+            var tv = Pill("TV", Green, 420, 70, new Vector2(170, 76), out tvFill, 5);
+            tvText = Chunky(tvFill.transform, "Label", "TV ON", 30, 2f, Color.white, UiKit.Hex("1E7A30"));
 
-            // ---- par, the distance to the pin, the wind
-            infoText = T(sheet, "Info", "", 46, UiKit.Ui, Muted, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(Margin + 8, -222), new Vector2(700, 70));
-            infoText.rectTransform.pivot = new Vector2(0, 0.5f);
-            windText = T(sheet, "Wind", "", 46, UiKit.Strong, Ink, TextAnchor.MiddleRight, new Vector2(1, 1), new Vector2(-Margin - 8, -222), new Vector2(240, 70));
-            windText.rectTransform.pivot = new Vector2(1, 0.5f);
-            var arrow = T(sheet, "Arrow", "➤", 50, UiKit.Display, GreenLight, TextAnchor.MiddleCenter, new Vector2(1, 1), new Vector2(-Margin - 180, -222), new Vector2(64, 64));
-            arrow.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            // ---- par, the distance, the wind
+            float chipW = (Width - 40) / 3f, chipY = 272;
+            Pill("Par", Blue, -chipW - 20, chipY, new Vector2(chipW, 108), out var parFill);
+            parText = Chunky(parFill.transform, "Label", "PAR", 46, 3f);
+            Pill("Yards", Blue, 0, chipY, new Vector2(chipW, 108), out var yardsFill);
+            Blob(yardsFill.transform, "Ball", Color.white, new Vector2(-chipW / 2 + 58, 0), new Vector2(54, 54)).rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            yardsText = Chunky(yardsFill.transform, "Label", "", 46, 3f);
+            yardsText.rectTransform.offsetMin = new Vector2(60, 0);
+            Pill("Wind", Blue, chipW + 20, chipY, new Vector2(chipW, 108), out var windFill);
+            var arrow = Chunky(windFill.transform, "Arrow", "➤", 50, 3f, UiKit.Hex("6FE3FF"));
+            arrow.rectTransform.anchorMin = arrow.rectTransform.anchorMax = new Vector2(0, 0.5f); arrow.rectTransform.sizeDelta = new Vector2(70, 70);
+            arrow.rectTransform.anchoredPosition = new Vector2(62, 0);
             windArrow = arrow.rectTransform;
+            windText = Chunky(windFill.transform, "Label", "", 46, 3f);
+            windText.rectTransform.offsetMin = new Vector2(70, 0);
 
-            // ---- the map
-            var mapCard = Row(sheet, "Map", UiKit.Hex("7CC4E8"), 290, MapSize.y);
-            mapCard.raycastTarget = false;
-            var mask = UiKit.Panel(mapCard.transform, "Mask", Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            mask.sprite = UiKit.RoundedLarge; mask.gameObject.AddComponent<Mask>().showMaskGraphic = false; mask.raycastTarget = false;
-            mapCard.sprite = UiKit.RoundedLarge;
+            // ---- the map, in a thick white frame
+            var frame = Pill("Map", Color.white, 0, 362 + (MapSize.y + 20) / 2, new Vector2(Width, MapSize.y + 20), out var mapFill, 0, false);
+            mapFill.sprite = UiKit.RoundedLarge; mapFill.color = Color.white;
+            var mask = UiKit.Panel(mapFill.transform, "Mask", Color.white, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            mask.sprite = UiKit.RoundedLarge; mask.rectTransform.offsetMin = new Vector2(10, 10); mask.rectTransform.offsetMax = new Vector2(-10, -10);
+            mask.gameObject.AddComponent<Mask>().showMaskGraphic = false; mask.raycastTarget = false;
+            foreach (var img in frame.GetComponentsInChildren<Image>()) if (img.name == "Rim" || img.name == "Shadow") img.sprite = UiKit.RoundedLarge;
             MapSlot = mask.rectTransform;
 
             // ---- the clubs
-            T(sheet, "Clubs heading", "Clubs", 42, UiKit.Strong, Ink, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(Margin + 6, -880), new Vector2(400, 56));
+            float clubsY = 362 + MapSize.y + 20 + 70;
+            var heading = Chunky(sheet, "Clubs heading", "CLUBS", 54, 4f);
+            heading.rectTransform.anchorMin = heading.rectTransform.anchorMax = new Vector2(0.5f, 1);
+            heading.rectTransform.sizeDelta = new Vector2(400, 80); heading.rectTransform.anchoredPosition = new Vector2(0, -clubsY);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var rule = UiKit.Panel(sheet, "Rule", new Color(1, 1, 1, 0.85f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(side * 250, -clubsY), new Vector2(240, 7));
+                rule.rectTransform.pivot = new Vector2(0.5f, 0.5f); rule.raycastTarget = false;
+            }
             int n = Pictures.Length;
-            Clubs = new HoldButton[n]; clubEdges = new Image[n]; clubFills = new Image[n]; clubChecks = new Image[n]; clubNames = new Text[n]; clubYards = new Text[n];
-            var row = new GameObject("Club row").AddComponent<RectTransform>();
-            row.SetParent(sheet, false);
-            row.anchorMin = new Vector2(0, 1); row.anchorMax = new Vector2(1, 1); row.pivot = new Vector2(0.5f, 1);
-            row.offsetMin = new Vector2(Margin, -946 - 340); row.offsetMax = new Vector2(-Margin, -946);
-            const float gap = 18;
+            Clubs = new HoldButton[n]; clubFills = new Image[n]; clubGlows = new Image[n]; clubStars = new GameObject[n]; clubNames = new Text[n];
+            float cardW = (Width - 3 * 22) / 4f, cardH = 330, cardY = clubsY + 60 + cardH / 2;
             for (int i = 0; i < n; i++)
             {
-                var edge = UiKit.Panel(row, $"Club {i}", CardEdge, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
-                var ert = edge.rectTransform;
-                ert.anchorMin = new Vector2(i / (float)n, 0); ert.anchorMax = new Vector2((i + 1) / (float)n, 1);
-                ert.offsetMin = new Vector2(i == 0 ? 0 : gap / 2, 0); ert.offsetMax = new Vector2(i == n - 1 ? 0 : -gap / 2, 0);
-                var fill = UiKit.Panel(edge.transform, "Fill", CardWhite, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                fill.raycastTarget = false;
+                float x = -Width / 2 + cardW / 2 + i * (cardW + 22);
+                var glow = UiKit.Panel(sheet, "Glow", new Color(Yellow.r, Yellow.g, Yellow.b, 0.45f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(x, -cardY), new Vector2(cardW + 34, cardH + 34));
+                glow.rectTransform.pivot = new Vector2(0.5f, 0.5f); glow.sprite = UiKit.RoundedLarge; glow.raycastTarget = false;
+                var card = Pill($"Club {i}", CardBlue, x, cardY, new Vector2(cardW, cardH), out var fill, 7, false);
+                foreach (var img in card.GetComponentsInChildren<Image>()) img.sprite = UiKit.RoundedLarge;
                 var picture = new GameObject("Picture").AddComponent<RawImage>();
-                picture.transform.SetParent(edge.transform, false);
+                picture.transform.SetParent(fill.transform, false);
                 var tex = Resources.Load<Texture2D>(Pictures[i]);
-                if (tex) tex.wrapMode = TextureWrapMode.Clamp;   // (a shaft off one edge mustn't bleed round to the other)
-                picture.texture = tex;
-                picture.raycastTarget = false;
+                if (tex) tex.wrapMode = TextureWrapMode.Clamp;
+                picture.texture = tex; picture.enabled = tex; picture.raycastTarget = false;
                 var prt = picture.rectTransform;
                 prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 1); prt.pivot = new Vector2(0.5f, 1);
-                prt.anchoredPosition = new Vector2(0, -18); prt.sizeDelta = new Vector2(196, 196);
-                if (!picture.texture) picture.enabled = false;
-                clubNames[i] = T(edge.transform, "Name", "", 36, UiKit.Display, Ink, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0, 66), new Vector2(230, 50));
-                clubNames[i].rectTransform.pivot = new Vector2(0.5f, 0);
-                clubYards[i] = T(edge.transform, "Yards", "", 30, UiKit.Ui, Muted, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0, 22), new Vector2(230, 44));
-                clubYards[i].rectTransform.pivot = new Vector2(0.5f, 0);
-                var check = Dot(edge.transform, "Check", Green, new Vector2(1, 1), new Vector2(-34, -34), 50);
-                var tick = T(check.transform, "Tick", "✓", 30, UiKit.Display, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(50, 50));
-                tick.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                var hold = edge.gameObject.AddComponent<HoldButton>();
-                hold.Fill = fill; hold.RestColor = CardWhite;
+                prt.anchoredPosition = new Vector2(0, -12); prt.sizeDelta = new Vector2(190, 190);
+                clubNames[i] = Chunky(fill.transform, "Name", "", 32, 3f);
+                var nrt = clubNames[i].rectTransform;
+                nrt.anchorMin = new Vector2(0, 0); nrt.anchorMax = new Vector2(1, 0); nrt.pivot = new Vector2(0.5f, 0);
+                nrt.offsetMin = new Vector2(0, 22); nrt.offsetMax = new Vector2(0, 108);
+                clubNames[i].lineSpacing = 0.9f;
+                var star = Chunky(sheet, "Star", "★", 70, 3f, Yellow, Amber);
+                star.rectTransform.anchorMin = star.rectTransform.anchorMax = new Vector2(0.5f, 1);
+                star.rectTransform.sizeDelta = new Vector2(90, 90); star.rectTransform.anchoredPosition = new Vector2(x - cardW / 2 + 16, -(cardY - cardH / 2) + 6);
+                star.rectTransform.localRotation = Quaternion.Euler(0, 0, 12);
+                var hold = card.gameObject.AddComponent<HoldButton>();
+                var hit = card.gameObject.AddComponent<Image>(); hit.color = Color.clear;
+                hold.Fill = fill; hold.RestColor = CardBlue;
                 int index = i;
                 hold.Pressed = () => OnClub?.Invoke(index);
-                Clubs[i] = hold; clubEdges[i] = edge; clubFills[i] = fill; clubChecks[i] = check;
+                Clubs[i] = hold; clubFills[i] = fill; clubGlows[i] = glow; clubStars[i] = star.gameObject;
             }
 
-            // ---- the aim pad
-            var pad = Row(sheet, "Aim", PadFill, 1318, 520);
-            pad.sprite = UiKit.RoundedLarge; pad.raycastTarget = false;
-            T(pad.transform, "Title", "Aim", 46, UiKit.Display, Ink, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(40, -30), new Vector2(300, 60));
-            aimText = T(pad.transform, "Value", "", 46, UiKit.Display, Ink, TextAnchor.UpperRight, new Vector2(1, 1), new Vector2(-40, -30), new Vector2(360, 60));
-            aimText.rectTransform.pivot = new Vector2(1, 1);
-            const float D = 340;
-            var dial = Dot(pad.transform, "Dial", UiKit.Hex("9DB99A"), new Vector2(0.5f, 1), new Vector2(0, -262), D);
-            var face = Dot(dial.transform, "Face", UiKit.Hex("F4F6F1"), new Vector2(0.5f, 0.5f), Vector2.zero, D - 6);
-            ring = UiKit.Panel(dial.transform, "Power", GreenLight, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            ring.sprite = UiKit.ThinRing; ring.rectTransform.offsetMin = new Vector2(-14, -14); ring.rectTransform.offsetMax = new Vector2(14, 14);
+            // ---- aim: the joystick pad, its power ring, and where the line points
+            float aimY = cardY + cardH / 2 + 70;
+            var aimHeading = Chunky(sheet, "Aim heading", "AIM", 56, 4f);
+            aimHeading.rectTransform.anchorMin = aimHeading.rectTransform.anchorMax = new Vector2(0.5f, 1);
+            aimHeading.rectTransform.sizeDelta = new Vector2(300, 80); aimHeading.rectTransform.anchoredPosition = new Vector2(0, -aimY);
+            const float D = 360;
+            float padY = aimY + 52 + D / 2;
+            var pad = Pill("Aim pad", Blue, 0, padY, new Vector2(D, D), out var padFill, 12);
+            foreach (var layer in pad.GetComponentsInChildren<Image>()) layer.type = Image.Type.Simple;   // round, not a capsule
+            // a gloss across the top of the pad
+            Blob(padFill.transform, "Gloss", new Color(1, 1, 1, 0.16f), new Vector2(0, D * 0.18f), new Vector2(D * 0.78f, D * 0.42f));
+            ring = UiKit.Panel(pad, "Power", Yellow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            ring.sprite = UiKit.ThinRing; ring.rectTransform.offsetMin = new Vector2(-18, -18); ring.rectTransform.offsetMax = new Vector2(18, 18);
             ring.type = Image.Type.Filled; ring.fillMethod = Image.FillMethod.Radial360; ring.fillOrigin = (int)Image.Origin360.Top; ring.fillClockwise = true; ring.fillAmount = 0;
             ring.raycastTarget = false;
-            HoldButton Tick(Vector2 at, bool upright, string name)
+            HoldButton Arrow(string glyph, Vector2 at, string name)
             {
-                var hit = UiKit.Panel(dial.transform, name, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), at, new Vector2(110, 110));
-                hit.sprite = UiKit.Circle; hit.type = Image.Type.Simple; hit.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                var mark = UiKit.Panel(hit.transform, "Mark", UiKit.Hex("6F7A6C"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, upright ? new Vector2(5, 40) : new Vector2(40, 5), false);
-                mark.rectTransform.pivot = new Vector2(0.5f, 0.5f); mark.raycastTarget = false;
+                var hit = UiKit.Panel(padFill.transform, name, Color.clear, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), at, new Vector2(96, 96));
+                hit.sprite = UiKit.Circle; hit.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                var t = UiKit.Label(hit.transform, "Glyph", 40, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                t.text = glyph; t.color = new Color(1, 1, 1, 0.9f); t.raycastTarget = false;
+                t.rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 var hold = hit.gameObject.AddComponent<HoldButton>();
                 hold.Fill = hit; hold.RestColor = Color.clear;
                 return hold;
             }
-            float r = D / 2 - 42;
-            AimLeft = Tick(new Vector2(-r, 0), false, "Aim left");
-            AimRight = Tick(new Vector2(r, 0), false, "Aim right");
-            ClubUp = Tick(new Vector2(0, r), true, "Club up");
-            ClubDown = Tick(new Vector2(0, -r), true, "Club down");
-            var halo = Dot(dial.transform, "Halo", UiKit.Hex("DCE3D8"), new Vector2(0.5f, 0.5f), Vector2.zero, 128);
-            var knob = Dot(halo.transform, "Knob", Green, new Vector2(0.5f, 0.5f), Vector2.zero, 106);
+            float r = D / 2 - 58;
+            AimLeft = Arrow("◀", new Vector2(-r, 0), "Aim left");
+            AimRight = Arrow("▶", new Vector2(r, 0), "Aim right");
+            ClubUp = Arrow("▲", new Vector2(0, r), "Club up");
+            ClubDown = Arrow("▼", new Vector2(0, -r), "Club down");
+            // the knob: a glossy white ball in a soft well
+            var well = Blob(padFill.transform, "Well", new Color(0.05f, 0.25f, 0.6f, 0.35f), new Vector2(0, -4), new Vector2(160, 160));
+            var knob = Blob(well.transform, "Knob", Color.white, new Vector2(0, 4), new Vector2(146, 146));
             knob.raycastTarget = true;
-            Knob = halo.gameObject.AddComponent<HoldButton>();
-            halo.raycastTarget = true;
-            Knob.Fill = knob; Knob.RestColor = Green;
-            Stick = halo.gameObject.AddComponent<Joystick>();
+            Blob(knob.transform, "Shade", UiKit.Hex("D6E6F7"), new Vector2(0, -16), new Vector2(118, 96));
+            Blob(knob.transform, "Shine", Color.white, new Vector2(-8, 18), new Vector2(84, 64));
+            Knob = knob.gameObject.AddComponent<HoldButton>();
+            Knob.Fill = knob; Knob.RestColor = Color.white;
+            Stick = knob.gameObject.AddComponent<Joystick>();
             Stick.Radius = r;
-            needle = Dot(dial.transform, "Needle", GreenLight, new Vector2(0.5f, 0.5f), Vector2.zero, 20).rectTransform;
-            T(pad.transform, "Hint", "Nudge to aim. Release to keep.", 32, UiKit.Body, Muted, TextAnchor.LowerCenter, new Vector2(0.5f, 0), new Vector2(0, 26), new Vector2(800, 44)).rectTransform.pivot = new Vector2(0.5f, 0);
-
-            // ---- what the game wants next
-            var status = Row(sheet, "Status", GreenSoft, 1862, 168);
-            status.sprite = UiKit.RoundedLarge; status.raycastTarget = false;
-            var line = new GameObject("Line").AddComponent<RectTransform>();
-            line.SetParent(status.transform, false);
-            line.anchorMin = line.anchorMax = new Vector2(0.5f, 1); line.pivot = new Vector2(0.5f, 1);
-            line.anchoredPosition = new Vector2(0, -26); line.sizeDelta = new Vector2(900, 60);
-            statusDot = Dot(line, "Dot", GreenLight, new Vector2(0.5f, 0.5f), Vector2.zero, 34);
-            statusTitle = T(line, "Title", "", 44, UiKit.Display, Ink, TextAnchor.MiddleLeft, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(840, 60));
-            statusTitle.rectTransform.pivot = new Vector2(0, 0.5f);
-            statusDetail = T(status.transform, "Detail", "", 32, UiKit.Body, Muted, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0, -98), new Vector2(900, 44));
-            statusDetail.rectTransform.pivot = new Vector2(0.5f, 1);
+            // where the line points, on a pill tucked under the pad
+            var pill = Pill("Aim", BlueDeep, 0, padY + D / 2 + 6, new Vector2(300, 84), out var pillFill, 6);
+            aimText = Chunky(pillFill.transform, "Label", "STRAIGHT", 38, 3f);
         }
 
         public void SetHole(int number, int par, string picture)
         {
-            holeText.text = $"Hole {number}";
-            this.par = par;
-            Info();
+            holeText.text = $"HOLE {number}";
+            parText.text = $"PAR {par}";
         }
 
-        public void SetScore(int toPar, int holeStrokes) { strokes = holeStrokes; Info(); }
+        public void SetScore(int toPar, int holeStrokes) { }
 
         /// How far is left to the pin (the phone HUD's big number).
-        public void SetDistance(double amount, string unit)
-        {
-            distance = $"{amount:F0} {unit.ToLowerInvariant()}";
-            Info();
-        }
-
-        void Info()
-        {
-            infoText.text = $"Par {par}" + (distance.Length > 0 ? $"   ·   {distance}" : "") + (strokes > 0 ? $"   ·   Stroke {strokes + 1}" : "");
-        }
+        public void SetDistance(double amount, string unit) => yardsText.text = $"{amount:F0} {unit.ToUpperInvariant()}";
 
         /// The big screen: live when the course is on it, a preview in the editor and reviews.
         public void SetScreen(bool live)
         {
-            tvText.text = live ? "TV connected" : "Preview";
-            tvDot.color = live ? GreenLight : Amber;
+            tvText.text = live ? "TV ON" : "PREVIEW";
+            tvFill.color = live ? Green : Amber;
         }
 
         public void SetWind(float relativeDegrees, double mph, bool calm)
         {
-            windText.text = calm ? "Calm" : $"{mph:F0} mph";
+            windText.text = calm ? "CALM" : $"{mph:F0} MPH";
             windArrow.gameObject.SetActive(!calm);
-            windArrow.anchoredPosition = new Vector2(-Margin - 8 - windText.preferredWidth - 44, windArrow.anchoredPosition.y);
             windArrow.localRotation = Quaternion.Euler(0, 0, 90 - relativeDegrees); // the glyph points right at rest
         }
 
@@ -279,53 +290,27 @@ namespace GolfArcade.UI
             for (int i = 0; i < Clubs.Length; i++)
             {
                 bool on = i == selected;
-                clubEdges[i].color = on ? Green : CardEdge;
-                var inset = on ? 5f : 2f;
-                clubFills[i].rectTransform.offsetMin = new Vector2(inset, inset); clubFills[i].rectTransform.offsetMax = new Vector2(-inset, -inset);
-                Clubs[i].RestColor = clubFills[i].color = on ? GreenSoft : CardWhite;
-                clubChecks[i].gameObject.SetActive(on);
-                clubNames[i].text = GolfArcade.Shot.GolfClubs.DisplayName(GolfArcade.Shot.GolfClubs.All[i]);
-                clubYards[i].text = yards[i];
+                Clubs[i].RestColor = clubFills[i].color = on ? Yellow : CardBlue;
+                clubGlows[i].gameObject.SetActive(on);
+                clubStars[i].SetActive(on);
+                var club = GolfArcade.Shot.GolfClubs.All[i];
+                string name = club == GolfArcade.Shot.GolfClub.Wedge ? "WEDGE" : GolfArcade.Shot.GolfClubs.DisplayName(club).ToUpperInvariant();
+                clubNames[i].text = $"{name}\n<size=26>{yards[i].ToUpperInvariant()}</size>";
+                Clubs[i].transform.localScale = Vector3.one * (on ? 1.05f : 1f);
             }
         }
 
-        /// Where the line points, degrees right of straight down the hole: in words, and the dot on the dial's rim.
+        /// Where the line points, degrees right of straight down the hole.
         public void SetHeading(float relativeDegrees)
         {
             float d = Mathf.Repeat(relativeDegrees + 180f, 360f) - 180f;
-            aimText.text = Mathf.Abs(d) < 0.5f ? "Straight" : $"{Mathf.Abs(d):F0}° {(d > 0 ? "right" : "left")}";
-            float a = -d * Mathf.Deg2Rad * 3f;   // (opened up so a few degrees show)
-            float rim = 170f - 3f;
-            needle.anchoredPosition = new Vector2(-Mathf.Sin(a) * rim, Mathf.Cos(a) * rim);
+            aimText.text = Mathf.Abs(d) < 0.5f ? "STRAIGHT" : $"{Mathf.Abs(d):F0}° {(d > 0 ? "RIGHT" : "LEFT")}";
         }
 
-        public void SetMeter(float load, Color color)
-        {
-            ring.fillAmount = Mathf.Clamp01(load);
-            ring.color = load > 0.01f ? color : GreenLight;
-        }
+        /// The backswing: the ring round the pad fills.
+        public void SetMeter(float load, Color color) => ring.fillAmount = Mathf.Clamp01(load);
 
-        /// The game's status line, as a heading and a line under it. "Ready" is the swing's cue.
-        public void SetStatus(string text)
-        {
-            text ??= "";
-            bool ready = text.StartsWith("Ready");
-            string title, detail;
-            if (ready) { title = "Ready for your swing"; detail = "Swing your phone to hit the ball."; }
-            else
-            {
-                int cut = text.IndexOf(" — ", StringComparison.Ordinal);
-                title = cut > 0 ? text.Substring(0, cut) : text;
-                detail = cut > 0 ? char.ToUpperInvariant(text[cut + 3]) + text.Substring(cut + 4) : "";
-            }
-            statusTitle.text = title;
-            statusDetail.text = detail;
-            statusDot.color = ready ? GreenLight : Amber;
-            statusDot.gameObject.SetActive(title.Length > 0);
-            // the dot and the heading centred together
-            float w = Mathf.Min(statusTitle.preferredWidth, 800f), total = 34 + 22 + w;
-            statusDot.rectTransform.anchoredPosition = new Vector2(-total / 2 + 17, 0);
-            statusTitle.rectTransform.anchoredPosition = new Vector2(-total / 2 + 56, 0);
-        }
+        /// (The TV says what's next; the sheet keeps to the controls.)
+        public void SetStatus(string text) { }
     }
 }
