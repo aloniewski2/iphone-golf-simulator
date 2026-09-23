@@ -279,6 +279,7 @@ namespace GolfArcade.Course
                 }
                 flagstick = FindDeep(pinRoot, "FLAG_POLE");
                 flag = FindDeep(pinRoot, "FLAG");
+                if (flag) DressFlag(flag, Hole.Number);
                 // the flag flutters: its four shape keys cross-faded round a loop, a ripple running
                 // out to the fly a little faster than once a second
                 if (flag) WaterMotion.Attach(flag, null, 1.1f, true);
@@ -426,6 +427,33 @@ namespace GolfArcade.Course
             if (collider) Destroy(collider);
             go.GetComponent<Renderer>().sharedMaterial = Mat(color);
             return go;
+        }
+
+        /// The flag wears the hole's number (Resources/Course/flag_<n>, Higgsfield). The modelled flag
+        /// has no UVs, so they're laid on flat across its width and height.
+        static void DressFlag(Transform flag, int number)
+        {
+            var tex = Resources.Load<Texture2D>($"Course/flag_{number}");
+            var r = flag.GetComponent<Renderer>();
+            if (!tex || !r) return;
+            Mesh mesh = r is SkinnedMeshRenderer s ? s.sharedMesh : flag.GetComponent<MeshFilter>()?.sharedMesh;
+            if (!mesh) return;
+            mesh = Instantiate(mesh);
+            var b = mesh.bounds; var v = mesh.vertices; var uv = new Vector2[v.Length];
+            // across: the longest horizontal extent (pole to fly); up: y
+            bool alongX = b.size.x >= b.size.z;
+            for (int i = 0; i < v.Length; i++)
+            {
+                float across = alongX ? (v[i].x - b.min.x) / b.size.x : (v[i].z - b.min.z) / b.size.z;
+                uv[i] = new Vector2(across, (v[i].y - b.min.y) / b.size.y);
+            }
+            mesh.uv = uv;
+            if (r is SkinnedMeshRenderer sk) sk.sharedMesh = mesh; else flag.GetComponent<MeshFilter>().sharedMesh = mesh;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var shader = Shader.Find("Standard");
+            var m = new Material(shader) { mainTexture = tex, color = Color.white, name = $"Flag {number}" };
+            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.15f);
+            r.sharedMaterial = m;
         }
 
         /// Which of the Blender-baked turf tiles (Resources/Course/Turf, turf_textures.py) a

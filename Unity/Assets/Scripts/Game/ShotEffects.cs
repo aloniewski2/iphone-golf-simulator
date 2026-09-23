@@ -7,6 +7,9 @@ namespace GolfArcade.Game
     /// thin luminous line along its whole flight that stays over the hole, in the colour of the
     /// swing's rating — green for a clean one, yellow for an imperfect one, red for a mishit.
     /// Every bounce throws up a puff of the ground it hit, and a ball in the sea splashes. The
+    /// strike itself flashes: a starburst at the ball, a shockwave ring across the ground and the
+    /// turf it cut flying forward (Resources/Effects: Higgsfield sprites — flash, ring, grass,
+    /// dust, splash). The
     /// rating bands and colours are Resources/Course/swing_trail.json, read off Codex's
     /// Hole_12_Cinematic.blend by blender/scripts/hole12_cinematic_export.py.
     public sealed class ShotEffects : MonoBehaviour
@@ -75,6 +78,28 @@ namespace GolfArcade.Game
             fx.SetQuality(Quality.Fair);
             fx.puffs = fx.BuildParticles("Puffs", 0.7f, 1.1f, 0.22f, 0.5f, -2.2f);
             fx.splash = fx.BuildParticles("Splash", 0.9f, 1.4f, 0.28f, 0.9f, -3.5f);
+            // cartoon dust for the puffs; the splash keeps its soft droplets
+            var dust = SpriteMaterial("dust");
+            if (dust) fx.puffs.GetComponent<ParticleSystemRenderer>().sharedMaterial = dust;
+            fx.clippings = fx.BuildParticles("Clippings", 0.28f, 0.5f, 0.55f, 0.95f, -9f);
+            var grass = SpriteMaterial("grass");
+            if (grass)
+            {
+                fx.clippings.GetComponent<ParticleSystemRenderer>().sharedMaterial = grass;
+                var sheet = fx.clippings.textureSheetAnimation;
+                sheet.enabled = true; sheet.numTilesX = 2; sheet.numTilesY = 2;
+                sheet.animation = ParticleSystemAnimationType.WholeSheet;
+                sheet.frameOverTime = new ParticleSystem.MinMaxCurve(0f);
+                sheet.startFrame = new ParticleSystem.MinMaxCurve(0f, 3.999f / 4f);   // one clump each, at random
+                var main = fx.clippings.main;
+                main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+                var spin = fx.clippings.rotationOverLifetime; spin.enabled = true;
+                spin.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+                var size = fx.clippings.sizeOverLifetime; size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0, 1, 1, 0.8f));
+            }
+            fx.flash = fx.Burst("Strike flash", "flash", false);
+            fx.ring = fx.Burst("Strike ring", "ring", true);
+            fx.crown = fx.Burst("Splash crown", "splash", false);
             return fx;
         }
 
@@ -113,6 +138,99 @@ namespace GolfArcade.Game
                 }
             soft.SetPixels32(px); soft.Apply();
             return soft;
+        }
+
+        /// A particle material wearing one of the Higgsfield sprites in Resources/Effects.
+        static Material SpriteMaterial(string name)
+        {
+            var tex = Resources.Load<Texture2D>("Effects/" + name);
+            if (!tex) return null;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            return new Material(ParticleMaterial()) { mainTexture = tex, name = "Effect " + name };
+        }
+
+        /// A one-shot sprite that grows and fades: a quad facing the camera, or lying flat on the ground.
+        sealed class Flare
+        {
+            public Transform quad; public Material mat; public bool flat;
+            public float age = -1, seconds, from, to; public Color tint;
+        }
+        Flare flash, ring, crown;
+        ParticleSystem clippings;
+
+        Flare Burst(string name, string sprite, bool flat)
+        {
+            var mat = SpriteMaterial(sprite);
+            if (!mat) return null;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = name;
+            Destroy(go.GetComponent<Collider>());
+            go.transform.SetParent(transform, false);
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = mat; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+            go.layer = BallLook.OverlayLayer;   // the minimap leaves it out
+            go.SetActive(false);
+            return new Flare { quad = go.transform, mat = mat, flat = flat };
+        }
+
+        void Fire(Flare f, Vector3 at, float seconds, float from, float to, Color tint)
+        {
+            if (f == null) return;
+            f.quad.position = at; f.age = 0; f.seconds = seconds; f.from = from; f.to = to; f.tint = tint;
+            f.quad.localRotation = f.flat ? Quaternion.Euler(90, 0, 0) : Quaternion.identity;
+            f.quad.gameObject.SetActive(true);
+            Step(f, 0);
+        }
+
+        void Step(Flare f, float dt)
+        {
+            if (f == null || f.age < 0) return;
+            f.age += dt;
+            float t = f.age / f.seconds;
+            if (t >= 1) { f.age = -1; f.quad.gameObject.SetActive(false); return; }
+            float grow = 1 - (1 - t) * (1 - t) * (1 - t);   // out fast, then settle
+            f.quad.localScale = Vector3.one * Mathf.Lerp(f.from, f.to, grow);
+            var c = f.tint; c.a *= t < 0.25f ? 1 : 1 - (t - 0.25f) / 0.75f; f.mat.color = c;
+            if (!f.flat && view)
+            {
+                // face the camera, with a quick spin on the starburst
+                f.quad.rotation = Quaternion.LookRotation(f.quad.position - view.transform.position, view.transform.up) * Quaternion.Euler(0, 0, f.age * 90f);
+            }
+        }
+
+        void Update()
+        {
+            float dt = Time.deltaTime;
+            Step(flash, dt); Step(ring, dt); Step(crown, dt);
+        }
+
+        /// The club meets the ball at `at`, sending it along `forward`, off `lie`, at `power`
+        /// (0–1): a starburst, a ring across the ground, and what the club cut — turf clippings
+        /// off grass, a spray of sand from a bunker. A putt only rings, softly.
+        public void Strike(Vector3 at, Vector3 forward, CourseLie lie, float power, bool putt)
+        {
+            power = Mathf.Clamp01(power);
+            var ground = at; ground.y += 0.03f;
+            if (putt) { Fire(ring, ground, 0.4f, 0.2f, 0.9f, new Color(1, 1, 1, 0.55f)); return; }
+            Fire(flash, at + Vector3.up * 0.12f, 0.22f, 0.25f, 0.9f + 1.1f * power, Color.white);
+            Fire(ring, ground, 0.45f, 0.3f, 2.2f + 2.5f * power, new Color(1, 1, 1, 0.75f));
+            forward.y = 0; forward.Normalize();
+            var side = Vector3.Cross(Vector3.up, forward);
+            if (lie == CourseLie.Bunker) { Touchdown(at, CourseLie.Bunker, 1.2f + power); return; }
+            if (lie == CourseLie.Water || !clippings) return;
+            int count = Mathf.RoundToInt(8 + 22 * power) * (lie == CourseLie.Rough ? 2 : 1);
+            for (int i = 0; i < count; i++)
+            {
+                var v = forward * Random.Range(1.5f, 6f) * (0.5f + power) + side * Random.Range(-1.6f, 1.6f) + Vector3.up * Random.Range(1.8f, 4.5f) * (0.6f + 0.6f * power);
+                clippings.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + side * Random.Range(-0.08f, 0.08f) + Vector3.up * 0.04f,
+                    velocity = v,
+                    startColor = Color.Lerp(Color.white, new Color(0.8f, 0.95f, 0.7f), Random.value),
+                    startSize = Random.Range(0.28f, 0.5f),
+                    startLifetime = Random.Range(0.55f, 0.95f),
+                }, 1);
+            }
         }
 
         public static Material ParticleMaterial()
@@ -220,6 +338,7 @@ namespace GolfArcade.Game
         public void Splash(Vector3 at)
         {
             at.y = 0.02f;
+            Fire(crown, at + Vector3.up * 0.6f, 0.7f, 0.6f, 2.6f, Color.white);
             for (int i = 0; i < 46; i++)
             {
                 var dir = Random.insideUnitCircle;

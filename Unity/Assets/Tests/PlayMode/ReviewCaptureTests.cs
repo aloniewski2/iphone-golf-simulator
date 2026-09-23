@@ -233,6 +233,35 @@ namespace GolfArcade.PlayTests
 
         /// A tee shot that comes up short into the water on Hole 12: the ball must fly a level
         /// arc off the tee island and drop to the sea, never sink into the island.
+        /// The strike: the starburst at the ball, the ring across the ground, the turf flying.
+        [UnityTest]
+        public IEnumerator CapturesTheStrike()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            // game time in fixed 30 fps steps, so the fifth of a second the flash is up is frames, not
+            // however long the editor takes to draw one
+            Time.captureFramerate = 30;
+            try
+            {
+                game.StrikeToward(game.CurrentHole.Pin);
+                yield return WaitFor(() => GameObject.Find("Strike flash") != null, 5, "the strike flash");
+                yield return null; yield return null;
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2d-strike.png"));
+                for (int i = 0; i < 6; i++) yield return null;
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2e-strike-after.png"));
+            }
+            finally { Time.captureFramerate = 0; }
+        }
+
         [UnityTest]
         public IEnumerator CapturesASplash()
         {

@@ -1032,10 +1032,33 @@ namespace GolfArcade.Game
             model.name = "Codex ball";
             model.transform.localPosition = Vector3.zero; model.transform.localRotation = Quaternion.identity;
             model.transform.localScale = Vector3.one / (2f * CinematicRig.BallRadius);   // his diameter → the unit sphere's
-            foreach (var r in model.GetComponentsInChildren<Renderer>(true)) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                // the white cover gets its dimples (GolfArcade/GolfBall); the stripe stays as it is
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                    if (mats[i] && mats[i].name.Contains("dimpled")) mats[i] = DimpledBall() ?? mats[i];
+                r.sharedMaterials = mats;
+            }
             foreach (var c in model.GetComponentsInChildren<Collider>(true)) Destroy(c);
             var plain = ballBody.Find("Plain ball");
             if (plain) plain.GetComponent<MeshRenderer>().enabled = false;
+        }
+
+        static Material dimpled;
+        /// The ball's cover: white, glossy, dimpled.
+        static Material DimpledBall()
+        {
+            if (dimpled) return dimpled;
+            var shader = Shader.Find("GolfArcade/GolfBall");
+            var map = Resources.Load<Texture2D>("Effects/ball_dimples_normal");
+            if (!shader || !map) return null;
+            map.wrapMode = TextureWrapMode.Repeat;
+            dimpled = new Material(shader) { color = new Color(0.97f, 0.97f, 0.96f), name = "Ball (dimpled)" };
+            dimpled.SetTexture("_Dimples", map);
+            dimpled.SetTextureScale("_Dimples", new Vector2(8, 4));   // round the sphere's UVs: squarish dimples
+            return dimpled;
         }
 
         /// Spin the ball the way Codex's stripe shows it: a slow, readable backspin about the
@@ -1327,7 +1350,11 @@ namespace GolfArcade.Game
                 case State.Flight:
                     flightTime += Time.deltaTime;
                     if (flightTime < 0) break;
-                    if (!strikePlayed) { strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power); }
+                    if (!strikePlayed)
+                    {
+                        strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power);
+                        effects.Strike(originWorld, AimDirection(), hole.LieAt(HoleView.ToCourse(originWorld)), (float)LastShot.Power, club == GolfClub.Putter);
+                    }
                     FlyBall();
                     break;
 
