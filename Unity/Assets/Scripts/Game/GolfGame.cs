@@ -102,10 +102,10 @@ namespace GolfArcade.Game
         /// just above the ball, the big ball low in the frame and the flag ahead.
         const double PovFromYards = 30, PovWithinYards = 10;
         bool povShot;
-        /// Golf Dreams' shot: the address view holds this long after the strike while the ball
-        /// and its tracer leave, then the camera cuts to its glide down the line (CameraRig.Drone)
-        /// and the HUD clears to the swing-stat tiles and the yardage riding the ball.
-        const float DroneHold = 0.8f;
+        /// The shot from the air: this long after the strike (the ball just off the face) the
+        /// camera starts its crane up and back into the aerial (CameraRig.Drone); at DroneHold
+        /// the HUD clears to the swing-stat tiles and the yardage riding the ball.
+        const float CraneStart = 0.12f, DroneHold = 0.8f;
         bool flightHud;
         SwingImpact lastImpact;
         Vector3 originWorld;
@@ -1249,18 +1249,17 @@ namespace GolfArcade.Game
                 rig.BallPov(pos, shotLine, (float)(land - flightTime), (float)flightTime);
                 rig.EaseHorizontalFov(CameraRig.PovLensHorizontal, 72f, 0.6f);
             }
-            else if (flightTime >= DroneHold)
+            else if (flightTime >= CraneStart)
             {
                 var flat = pos - originWorld; flat.y = 0;
                 float along = Vector3.Dot(flat, shotLine.normalized);
                 float carryYards = new Vector2(landingSpot.x - originWorld.x, landingSpot.z - originWorld.z).magnitude;
-                rig.Drone(pos, originWorld, new Vector3(landingSpot.x, (float)landingGround, landingSpot.z), shotLine, along, carryYards, touchedDown);
+                rig.Drone(pos, originWorld, new Vector3(landingSpot.x, (float)landingGround, landingSpot.z), shotLine, along, carryYards, touchedDown, (float)(flightTime - CraneStart));
             }
-            // the cut: the address view has watched it go; now the glide, and the shot's HUD
+            // the shot's HUD, once the ball is away and the camera is climbing
             if (club != GolfClub.Putter && !flightHud && flightTime >= DroneHold)
             {
                 flightHud = true;
-                if (!povShot) rig.SnapNext();
                 hud.FlightMode(true);
                 string Deg(double d) => Math.Abs(d) < 0.05 ? "0.0°" : $"{Math.Abs(d):0.0}°{(d > 0 ? "R" : "L")}";
                 hud.ShowShotStats(new[] { "Swing Speed", "Swing Load", "Face", "Start Line", "Curve" },

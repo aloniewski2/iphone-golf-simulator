@@ -37,12 +37,13 @@ namespace GolfArcade.Game
             return rig;
         }
 
-        /// Behind the ball on the aim line, pitched down about 20° so on a portrait screen the
-        /// horizon sits in the top fifth, the landing area just under it, and the ball and golfer
-        /// in the lower third above the buttons. Putts sit lower and closer.
+        /// Behind the ball on the aim line and up high, pitched down about 27°, so on a portrait
+        /// screen the hole ahead opens out down the middle — fairway, hazards, the landing area —
+        /// with the horizon near the top and the ball and golfer seen from above in the lower
+        /// third, over the buttons. Putts sit lower and closer.
         public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting)
         {
-            float back = putting ? 3.2f : 7.5f, up = putting ? 1.4f : 4f, ahead = putting ? 2.5f : 3.5f;
+            float back = putting ? 3.2f : 8.5f, up = putting ? 1.4f : 6.8f, ahead = putting ? 2.5f : 5f;
             targetPosition = ball - aimDirection * back + Vector3.up * up;
             targetLookAt = ball + aimDirection * ahead;
             positionLag = 0.35f; lookLag = 0.3f;
@@ -78,32 +79,40 @@ namespace GolfArcade.Game
             targetZoom = Mathf.Tan(baseFov * Mathf.Deg2Rad / 2f) / Mathf.Tan(wanted * Mathf.Deg2Rad / 2f);
         }
 
-        // ---- The Golf Dreams shot camera (from the user's screen recording of it): after the
-        // strike the address view holds a moment as the ball and its tracer leave (GolfGame does
-        // that), then a cut to high behind the tee looking down the line, and a long glide down
-        // the fairway that stays well behind the ball — never on it — closing in and coming down
-        // as the ball does, so the landing area is always in the picture; once the ball is down
-        // it rides low behind it as it runs out. Nothing is keyed to the ball's frame-to-frame
-        // motion: position comes off how far along the line the ball is, smoothed long.
+        // ---- The shot camera, from the air: at the strike the camera cranes up and back from
+        // the address view into the sky behind the tee, a little off the line so the ball's arc
+        // reads across the hole rather than straight away, looking down the fairway to where it
+        // will come down; then it follows down the line, staying well behind and above the ball,
+        // closing in and coming lower (but never low) as the ball does, so the landing is seen
+        // from above; once the ball is down it looks down on it as it runs out. Nothing is keyed
+        // to the ball's frame-to-frame motion: position comes off how far along the line the ball
+        // is, smoothed long.
 
         /// One frame of it: `ball` where it is, `origin` where it was struck, `landing` where it
         /// first comes down, `line` the shot's direction over the ground; `along` how far down
-        /// the line the ball is and `carry` how far the landing is; `down` once it has landed.
-        public void Drone(Vector3 ball, Vector3 origin, Vector3 landing, Vector3 line, float along, float carry, bool down)
+        /// the line the ball is and `carry` how far the landing is; `down` once it has landed;
+        /// `since` seconds since this camera took over (the crane up is slower than the follow).
+        public void Drone(Vector3 ball, Vector3 origin, Vector3 landing, Vector3 line, float along, float carry, bool down, float since = 10f)
         {
             line.y = 0;
             if (line.sqrMagnitude < 1e-4f) line = transform.forward; line.y = 0; line.Normalize();
             carry = Mathf.Max(carry, 1f);
             float s = Mathf.SmoothStep(0, 1, Mathf.Clamp01(along / carry));
-            float farBack = Mathf.Clamp(carry * 0.33f, 18f, 64f), farUp = Mathf.Clamp(carry * 0.07f, 7f, 16f);
-            float back = Mathf.Lerp(farBack, 15f, s), up = Mathf.Lerp(farUp, 4.5f, s);
-            float camAlong = Mathf.Max(along - back, -farBack * 0.4f);
-            var flat = origin + line * camAlong;
+            float farBack = Mathf.Clamp(carry * 0.2f, 14f, 46f), farUp = Mathf.Clamp(carry * 0.2f, 16f, 46f);
+            float nearBack = Mathf.Clamp(carry * 0.08f, 11f, 22f), nearUp = Mathf.Clamp(carry * 0.075f, 11f, 20f);
+            float back = Mathf.Lerp(farBack, nearBack, s), up = Mathf.Lerp(farUp, nearUp, s);
+            var right = Vector3.Cross(Vector3.up, line);
+            float side = Mathf.Clamp(carry * 0.05f, 3f, 11f);
+            float camAlong = Mathf.Max(along - back, -farBack);
+            var flat = origin + line * camAlong + right * side;
             float ground = (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(flat));
             targetPosition = new Vector3(flat.x, Mathf.Max(ground, origin.y - 2f) + up, flat.z);
-            // in the air: the landing area, drawn toward the ball as it comes; down: the ball
-            targetLookAt = down ? ball + line * 5f : Vector3.Lerp(landing, ball, 0.35f + 0.3f * s);
-            positionLag = 0.45f; lookLag = 0.3f;
+            // in the air: down the fairway ahead of the ball toward the landing, drawn onto the
+            // ball as it comes down; down: just past the ball
+            var ahead = origin + line * Mathf.Lerp(along, carry, 0.6f); ahead.y = landing.y;
+            targetLookAt = down ? ball + line * 4f : Vector3.Lerp(ahead, ball, 0.3f + 0.35f * s);
+            // the crane up and back from the address view is long and soft; the follow is quicker
+            positionLag = Mathf.Lerp(0.9f, 0.5f, Mathf.Clamp01(since / 1.4f)); lookLag = 0.35f;
             float floor = (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(targetPosition)) + 1.8f;
             if (targetPosition.y < floor) targetPosition.y = floor;
             targetZoom = 1f; targetRoll = 0f;
