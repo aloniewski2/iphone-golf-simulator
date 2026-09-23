@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GolfArcade.Shot;
 
 namespace GolfArcade.Course
 {
@@ -15,7 +16,8 @@ namespace GolfArcade.Course
         public override string ToString() => $"({X:F1}, {D:F1})";
     }
 
-    public enum CourseLie { Tee, Fairway, Rough, Bunker, Green, Water, OutOfBounds }
+    /// (Fringe is last so the older values keep their numbers.)
+    public enum CourseLie { Tee, Fairway, Rough, Bunker, Green, Water, OutOfBounds, Fringe }
 
     public static class CourseLies
     {
@@ -26,17 +28,65 @@ namespace GolfArcade.Course
             CourseLie.Rough => "Rough",
             CourseLie.Bunker => "Bunker",
             CourseLie.Green => "Green",
+            CourseLie.Fringe => "Fringe",
             CourseLie.Water => "Water",
             _ => "Out of bounds",
         };
 
-        /// What the lie costs in club speed.
-        public static double PowerFactor(this CourseLie lie) => lie switch
+        /// What the lie costs in club speed. The sand wedge is made for the sand and cuts through
+        /// the rough; long clubs lose far more to both; a putt off the fringe barely notices.
+        public static double PowerFactor(this CourseLie lie, GolfClub club = GolfClub.Iron) => lie switch
         {
-            CourseLie.Rough => 0.85,
-            CourseLie.Bunker => 0.6,
+            CourseLie.Rough => club == GolfClub.Wedge ? 0.9 : club == GolfClub.Putter ? 0.7 : 0.85,
+            CourseLie.Bunker => club == GolfClub.Wedge ? 0.85 : club == GolfClub.Putter ? 0.4 : 0.6,
+            CourseLie.Fringe => club == GolfClub.Putter ? 1 : 0.97,
             _ => 1,
         };
+
+        /// Backspin kept from the lie. Grass trapped between the face and the ball in the rough
+        /// kills the spin (a flyer: it comes out hot, won't stop and runs on); sand takes some too.
+        public static double SpinFactor(this CourseLie lie) => lie switch
+        {
+            CourseLie.Rough => 0.55,
+            CourseLie.Bunker => 0.8,
+            CourseLie.Fringe => 0.9,
+            _ => 1,
+        };
+
+        /// Degrees added to the launch: the club is picked steeply out of the grass or the sand.
+        public static double LaunchChange(this CourseLie lie) => lie switch
+        {
+            CourseLie.Rough => 1.5,
+            CourseLie.Bunker => 3,
+            _ => 0,
+        };
+
+        /// How the ground takes a ball coming down on it: `soft` soaks up the bounce (0 fairway,
+        /// 1 dead) and `grab` takes the run out of it. Greens are receptive, rough smothers the
+        /// ball and sand plugs it.
+        public static (double soft, double grab) Landing(this CourseLie lie) => lie switch
+        {
+            CourseLie.Green => (0.15, 0.1),
+            CourseLie.Rough => (0.45, 0.5),
+            CourseLie.Bunker => (0.9, 0.85),
+            _ => (0, 0),
+        };
+
+        /// Where a putter is the club: the green, and its fringe.
+        public static bool IsPuttingSurface(this CourseLie lie) => lie is CourseLie.Green or CourseLie.Fringe;
+
+        /// The launch of a strike from this lie: the club's launch for the meter reading, then
+        /// what the lie does to it — speed, spin, launch — and a thin strike's low, hot flight.
+        public static BallFlight.Launch LaunchFrom(this CourseLie lie, GolfClub club, double power, double startLine, double curve, double thin = 0, double speed = 1)
+        {
+            var l = club.Launch(power, startLine, curve, lie.PowerFactor(club) * speed);
+            l.SpinRPM *= lie.SpinFactor();
+            l.LaunchAngleDegrees += lie.LaunchChange();
+            double t = double.IsFinite(thin) ? Math.Max(0, Math.Min(1, thin)) : 0;
+            l.LaunchAngleDegrees *= 1 - 0.45 * t;
+            l.SpinRPM *= 1 - 0.5 * t;
+            return l;
+        }
 
         public static int PenaltyStrokes(this CourseLie lie) => lie is CourseLie.Water or CourseLie.OutOfBounds ? 1 : 0;
     }
@@ -89,6 +139,8 @@ namespace GolfArcade.Course
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;
+        /// The collar of shorter grass round the green, yards.
+        public double FringeWidth = 2.5;
         /// The game's ball is drawn about 2.55× a real one (0.12 yd across); the cup is scaled a
         /// little past that — 3.2× a regulation 4¼" cup, about three balls across — so from the
         /// putting view the hole reads clearly bigger than the ball, the way the arcade games draw it.
@@ -162,6 +214,7 @@ namespace GolfArcade.Course
             foreach (var h in Hazards) if (h.Contains(p)) return h.Kind == HazardKind.Water ? CourseLie.Water : CourseLie.Bunker;
             if (!OnLand(p)) return CourseLie.Water;
             if (p.DistanceTo(Pin) <= GreenRadius) return CourseLie.Green;
+            if (p.DistanceTo(Pin) <= GreenRadius + FringeWidth) return CourseLie.Fringe;
             if (p.DistanceTo(Tee) <= 4) return CourseLie.Tee;
             double offset = DistanceFromCenterline(p);
             if (offset <= FairwayWidth / 2) return CourseLie.Fairway;

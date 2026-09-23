@@ -52,6 +52,7 @@ namespace GolfArcade.PlayTests
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
             var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
             var hud = Object.FindFirstObjectByType<Hud>();
             yield return new WaitForSecondsRealtime(0.5f);
             try

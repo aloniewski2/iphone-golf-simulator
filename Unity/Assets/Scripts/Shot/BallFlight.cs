@@ -40,6 +40,10 @@ namespace GolfArcade.Shot
             /// degrees right of the target line (0 helps, 180 is into the face).
             public double WindMPH;
             public double WindDegrees;
+            /// The ground the ball comes down on, against a fairway (0): how much of the bounce
+            /// it soaks up and how much of the run it takes out, each 0–1.
+            public double LandingSoftness;
+            public double LandingGrab;
         }
 
         public const double SampleInterval = 1.0 / 60;
@@ -160,10 +164,13 @@ namespace GolfArcade.Shot
                     {
                         py = 0;
                         if (carryMeters is null) { carryMeters = Math.Sqrt(px * px + pz * pz); carryX = px; carryZ = pz; carryTime = time + dt; }
-                        vy = -vy * restitution;
+                        double soft = double.IsFinite(launch.LandingSoftness) ? Math.Max(0, Math.Min(1, launch.LandingSoftness)) : 0;
+                        double grab = double.IsFinite(launch.LandingGrab) ? Math.Max(0, Math.Min(1, launch.LandingGrab)) : 0;
+                        vy = -vy * restitution * (1 - soft);
                         // Backspin grips the turf on the first bounce: a driver keeps rolling, a
                         // spinning iron hops and stops, a wedge checks up almost where it lands.
                         double grip = Math.Max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * Math.PI)) / 10_000);
+                        grip *= 1 - grab;
                         vx *= grip; vz *= grip;
                         spin = 0;
                         if (vy < 1.2) { vy = 0; airborne = false; rolling = true; rollStartTime = time; rollVx = vx; rollVz = vz; }

@@ -27,6 +27,7 @@ namespace GolfArcade.PlayTests
             Time.timeScale = 4f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
             var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
             Assert.IsNotNull(game, "the Golf scene bootstraps the game");
             Assert.IsNotNull(game.Swing.Synthetic, "no gyro in the editor, so the synthetic swing drives it");
             yield return null;

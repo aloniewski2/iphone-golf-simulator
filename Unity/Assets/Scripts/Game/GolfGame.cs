@@ -13,7 +13,8 @@ namespace GolfArcade.Game
     /// builds everything else at runtime.
     public sealed class GolfGame : MonoBehaviour
     {
-        public enum State { Menu, Golfer, Intro, Aim, Flight, Result, HoleDone, RoundDone }
+        /// (Replay is last so the older states keep their numbers.)
+        public enum State { Menu, Golfer, Intro, Aim, Flight, Result, HoleDone, RoundDone, Replay }
 
         [Tooltip("Degrees per second the aim sweeps while a button is held.")]
         public float AimSweepDegreesPerSecond = 28f;
@@ -30,6 +31,10 @@ namespace GolfArcade.Game
 
         Course.Course course;
         GolfSounds sounds;
+        Commentary commentary;
+        /// How the last full swing was struck, and whether its word has popped yet.
+        StrikeReport lastReport;
+        bool gradeShown;
         readonly System.Random rng = new();
         int holeIndex;
         Hole hole;
@@ -178,6 +183,7 @@ namespace GolfArcade.Game
             golfer = GolferView.Create(transform);
             gallery = Gallery.Create(transform);
             sounds = GolfSounds.Create(transform);
+            commentary = Commentary.Create(transform);
 
             ball = new GameObject("Ball").transform;
             ball.SetParent(transform, false);
@@ -332,7 +338,7 @@ namespace GolfArcade.Game
             StartRound();
         }
 
-        void OnDestroy() { Haptics.Release(); Swing?.Stop(); }
+        void OnDestroy() { Haptics.Release(); Swing?.Stop(); Time.timeScale = 1f; }
 
         void Tick() { if (Current == State.Aim) { sounds.PlayTick(); Haptics.Tick(); } }
 
@@ -463,7 +469,7 @@ namespace GolfArcade.Game
                 holeView.ShowTeeMarkers(true);
             }
             var lie = hole.LieAt(ballAt);
-            bool putting = lie == CourseLie.Green;
+            bool putting = lie.IsPuttingSurface();
             // the gallery is at the tee: once you've left it, they've nothing to draw
             gallery.gameObject.SetActive(ballAt.DistanceTo(hole.Tee) < 20);
             if (!keepHeading || !aimedByPlayer)
@@ -516,7 +522,7 @@ namespace GolfArcade.Game
             PlanStrike(target, out heading, out double best);
             aimedByPlayer = true;
             UpdateAimVisuals();
-            OnImpact(new SwingImpact { Power = best, Backswing = 0.8 });
+            OnImpact(new SwingImpact { Power = best, Backswing = 0.8, Commit = 1.2, TempoSeconds = 1.0, DownswingSeconds = 0.25 });
         }
 
         /// The aim and the power that bring a full shot down on `target` in today's wind; the
@@ -533,7 +539,7 @@ namespace GolfArcade.Game
                 CoursePoint landed = target;
                 for (double p = 0.2; p <= 1.0001; p += 0.01)
                 {
-                    var trial = new CourseShot(club, new SwingImpact { Power = p }, aim, ballAt, hole, lie.PowerFactor(), Wind);
+                    var trial = new CourseShot(club, new SwingImpact { Power = p }, aim, ballAt, hole, 1, Wind);
                     double m = trial.Landing.DistanceTo(target);
                     if (m < miss) { miss = m; power = p; landed = trial.Landing; shot = trial; }
                 }
@@ -602,13 +608,13 @@ namespace GolfArcade.Game
             }
             heading = bestAim; aimedByPlayer = true;
             UpdateAimVisuals();
-            OnImpact(new SwingImpact { Power = bestPower, Backswing = Math.Min(1, bestPower * 1.4) });
+            OnImpact(new SwingImpact { Power = bestPower, Backswing = Math.Min(1, bestPower * 1.4), Commit = 1.2, TempoSeconds = 1.0, DownswingSeconds = 0.25 });
             return holed;
         }
 
         static GolfClub AutoClub(CourseLie lie, double toPin)
         {
-            if (lie == CourseLie.Green) return GolfClub.Putter;
+            if (lie.IsPuttingSurface()) return GolfClub.Putter;
             if (lie == CourseLie.Bunker) return GolfClub.Wedge;
             if (toPin <= 100) return GolfClub.Wedge;
             if (toPin <= 185) return GolfClub.Iron;
@@ -620,7 +626,8 @@ namespace GolfArcade.Game
             Current = s; stateTime = 0;
             ShowControllerForState();
             // the ball is drawn to be seen for a full shot and the settle after it; true size otherwise
-            ballLook.Readable((s == State.Flight || s == State.Result) && club != GolfClub.Putter);
+            ballLook.Readable((s == State.Flight || s == State.Result || s == State.Replay) && club != GolfClub.Putter);
+            if (s != State.Aim) hud.SetFace(null);
         }
 
         /// The controller sheet is up only while a round is on — the menu, the golfer picker and
@@ -685,7 +692,7 @@ namespace GolfArcade.Game
                     bool loading = Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing;
                     phase = loading ? (byte)2 : (byte)1; load = (float)Swing.Detector.Load; break;
                 case State.Flight: phase = 3; load = (float)LastShot.Power; break;
-                case State.Result: case State.HoleDone: phase = 4; load = 0; break;
+                case State.Result: case State.HoleDone: case State.Replay: phase = 4; load = 0; break;
                 default: phase = 0; load = 0; break;
             }
             Swing.Network.SendAck(phase, load, hud.CurrentMessage);
@@ -844,7 +851,7 @@ namespace GolfArcade.Game
             // target ring, level with the ground it leaves, so it shows in the course view and on
             // the minimap alike.
             var lie = hole.LieAt(ballAt);
-            var launch = club.Launch(1, 0, 0, lie.PowerFactor());
+            var launch = lie.LaunchFrom(club, 1, 0, 0);
             launch.WindMPH = Wind.SpeedMPH;
             launch.WindDegrees = Wind.RelativeTo(heading);
             var flight = BallFlight.Simulate(launch);
@@ -909,7 +916,7 @@ namespace GolfArcade.Game
         {
             BallFlight.Launch L(double power, double start, double curve)
             {
-                var l = club.Launch(power, start, curve, lie.PowerFactor());
+                var l = lie.LaunchFrom(club, power, start, curve);
                 l.WindMPH = Wind.SpeedMPH; l.WindDegrees = Wind.RelativeTo(heading);
                 return l;
             }
@@ -969,7 +976,7 @@ namespace GolfArcade.Game
 
         BallFlight.Launch TodaysLaunch(double power, CourseLie lie)
         {
-            var launch = club.Launch(Math.Clamp(power, 0, 1), 0, 0, lie.PowerFactor());
+            var launch = lie.LaunchFrom(club, Math.Clamp(power, 0, 1), 0, 0);
             launch.WindMPH = Wind.SpeedMPH;
             launch.WindDegrees = Wind.RelativeTo(heading);
             return launch;
@@ -1088,9 +1095,9 @@ namespace GolfArcade.Game
         void UpdateAimVisuals()
         {
             var lie = hole.LieAt(ballAt);
-            bool putting = lie == CourseLie.Green;
+            bool putting = lie.IsPuttingSurface();
             double toPin = ballAt.DistanceTo(hole.Pin);
-            double rated = club.ReferenceDistanceYards() * lie.PowerFactor();
+            double rated = club.ReferenceDistanceYards() * lie.PowerFactor(club);
             var dir = AimDirection();
             var from = HoleView.ToWorld(ballAt, 0.03);
             LayAimLine(Math.Min(rated, putting ? toPin + 3 : rated));
@@ -1111,7 +1118,7 @@ namespace GolfArcade.Game
             }
             else
             {
-                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie.PowerFactor() < 1 ? $"  ·  {lie.Label()}" : "")}");
+                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie is CourseLie.Rough or CourseLie.Bunker or CourseLie.Fringe ? $"  ·  {lie.Label()}{(lie == CourseLie.Rough ? " (flyer)" : "")}" : "")}");
                 hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm, Wind.SpeedMPH);
             }
             if (hud.Controller != null)
@@ -1119,7 +1126,7 @@ namespace GolfArcade.Game
                 var yards = new string[GolfClubs.All.Length];
                 for (int i = 0; i < yards.Length; i++)
                 {
-                    double d = GolfClubs.All[i].ReferenceDistanceYards() * lie.PowerFactor();
+                    double d = GolfClubs.All[i].ReferenceDistanceYards() * lie.PowerFactor(GolfClubs.All[i]);
                     yards[i] = GolfClubs.All[i] == GolfClub.Putter ? $"{d * 3:F0} ft" : $"{d:F0} yd";
                 }
                 hud.Controller.SetClubs(Array.IndexOf(GolfClubs.All, club), yards);
@@ -1244,7 +1251,7 @@ namespace GolfArcade.Game
             Haptics.Release();
             sounds.Release();
             var lie = hole.LieAt(ballAt);
-            LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor(), Wind);
+            LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
             landingGround = HoleView.GroundHeight(LastShot.Landing);
             landingSpot = HoleView.ToWorld(LastShot.Landing);
@@ -1253,6 +1260,9 @@ namespace GolfArcade.Game
             drawnY = launchGround; drawnVy = 0;
             touchedDown = false; splashedAt = -1;
             lastImpact = impact; originWorld = HoleView.ToWorld(ballAt); flightHud = false;
+            lastReport = Strikes.Judge(impact); gradeShown = false;
+            replayPath.Clear();
+            hud.SetFace(null);
             povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
                       && LastShot.LandingTime > 0 && LastShot.Landing.DistanceTo(hole.Pin) <= PovWithinYards;
             greenRead.Hide();
@@ -1354,7 +1364,10 @@ namespace GolfArcade.Game
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
                     if (Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }
                     if (Input.GetKeyDown(KeyCode.T)) { GolferStyle.CycleSkin(); RestyleGolfer(); }
-                    if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) sounds.PlayWhoosh(Swing.Detector.Load);
+                    if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) { sounds.PlayWhoosh(Swing.Detector.Load); if (club != GolfClub.Putter) Haptics.Top(Swing.Detector.Load); }
+                    // the face dial, while the club is at address and on the way
+                    bool swinging = Swing.Phase is SwingPhase.Address or SwingPhase.Backswing or SwingPhase.Downswing;
+                    hud.SetFace(club != GolfClub.Putter && swinging && !Demo ? Swing.Detector.FaceNow : null);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
                     else if (Swing.Phase == SwingPhase.Address || Demo) hud.SetStatus(Swing.UsingPhone || Demo ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
@@ -1368,14 +1381,19 @@ namespace GolfArcade.Game
                     if (flightTime < 0) break;
                     if (!strikePlayed)
                     {
-                        strikePlayed = true; sounds.PlayStrike(club, LastShot.Power); Haptics.Impact(LastShot.Power);
+                        strikePlayed = true; sounds.PlayStrike(club, LastShot.Power);
+                        if (club == GolfClub.Putter) Haptics.Impact(LastShot.Power); else { Haptics.Strike(lastReport.Grade, LastShot.Power); AnnounceStrike(); }
                         effects.Strike(originWorld, AimDirection(), hole.LieAt(HoleView.ToCourse(originWorld)), (float)LastShot.Power, club == GolfClub.Putter);
                     }
                     FlyBall();
                     break;
 
                 case State.Result:
-                    if (stateTime > 2.4f) AfterResult();
+                    if (stateTime > 2.4f) { if (ReplayWorthy()) StartReplay(); else AfterResult(); }
+                    break;
+
+                case State.Replay:
+                    PlayReplay();
                     break;
 
                 case State.HoleDone:
@@ -1427,6 +1445,7 @@ namespace GolfArcade.Game
             bool firstDown = !touchedDown && land > 0 && flightTime >= land;
             bool bounce = touchedDown && lastHeight > 0.08 && p.h <= 0.08 && flightTime <= LastShot.CarryTime + 1e-6;
             ball.position = pos;
+            replayPath.Add(((float)flightTime, pos));
             if (firstDown || bounce)
             {
                 var lie = hole.LieAt(at);
@@ -1448,11 +1467,15 @@ namespace GolfArcade.Game
             var trace = hud.Map.Trace;
             if (splashedAt < 0 && (pos - trace[trace.Count - 1]).sqrMagnitude > 4f) { trace.Add(pos); hud.Map.Changed(); }
 
-            if (club == GolfClub.Putter)
+            var cupAt = HoleView.ToWorld(hole.Pin);
+            // a chip or a full shot that is going in gets the hole cam too, once it is rolling
+            bool holingOut = club != GolfClub.Putter && LastShot.IsHoled && flightTime >= LastShot.CarryTime && (cupAt - pos).magnitude <= HoleCamReach;
+            if (holingOut && !holeCam) { ballLook.Pov(false); rig.RestoreFov(); rig.ResetZoom(); }
+            if (club == GolfClub.Putter || holingOut || holeCam)
             {
                 // Watch the putt from where it was read; as it closes on the cup, cut to
                 // behind the hole to watch it arrive (the games' hole cam).
-                var cup = HoleView.ToWorld(hole.Pin);
+                var cup = cupAt;
                 bool closing = Vector3.Dot(cup - pos, velocity) > 0;
                 if (!holeCam && (cup - pos).magnitude <= HoleCamReach && (closing || LastShot.IsHoled)) { holeCam = true; rig.SnapNext(); }
                 if (holeCam) rig.HoleCam(pos, cup);
@@ -1490,11 +1513,192 @@ namespace GolfArcade.Game
                 splashedAt = flightTime;
                 effects.Splash(new Vector3(pos.x, (float)under, pos.z));
                 sounds.PlaySplash();
+                sounds.PlayGasp(0.55f);
+                commentary.Say("water", 0.9f, 0.4f);
                 if (trailing) effects.Land();
                 trace.Add(pos); hud.Map.Changed();
                 ball.gameObject.SetActive(false);
             }
             if (splashedAt < 0 || flightTime >= splashedAt + 1.1) FinishShot();
+        }
+
+        // ----- The strike's verdict and the gallery -----
+
+        static readonly Color GreatGreen = new(0.45f, 0.95f, 0.45f), ThinOrange = new(1f, 0.55f, 0.25f);
+
+        /// The word at impact, felt and heard: PERFECT! and the booth goes "what a strike",
+        /// a slice gets called as it starts to drift.
+        void AnnounceStrike()
+        {
+            if (gradeShown) return;
+            gradeShown = true;
+            var r = lastReport;
+            var color = r.Grade switch { StrikeGrade.Perfect => UiKit.ArcadeYellow, StrikeGrade.Great => GreatGreen, StrikeGrade.Good => Color.white, _ => ThinOrange };
+            hud.ShowStrike(r.GradeWord, color, r.Shape == ShotShape.Straight ? null : r.ShapeWord);
+            if (LastShot.Power < 0.35) return;   // a little pitch needs no words
+            if (r.Grade == StrikeGrade.Perfect && LastShot.Power > 0.8 && gallery.gameObject.activeSelf) sounds.PlayApplause(0.3f);
+            string line = r.Grade == StrikeGrade.Thin ? "thin"
+                : r.Shape == ShotShape.Slice ? "slice"
+                : r.Shape == ShotShape.Hook ? "hook"
+                : r.Grade == StrikeGrade.Perfect ? "perfect"
+                : r.Shape is ShotShape.Draw or ShotShape.Fade ? "shape" : null;
+            if (line != null) commentary.Say(line, line == "perfect" ? 0.8f : line == "shape" ? 0.4f : 0.9f, 0.4f);
+        }
+
+        /// Where it finished, and what the gallery and the booth make of it (the water and a
+        /// holed ball have their own moments).
+        void React(CourseShot shot)
+        {
+            double toPin = shot.Rest.DistanceTo(hole.Pin);
+            if (club == GolfClub.Putter)
+            {
+                if (shot.LippedOut) { sounds.PlayGroan(0.6f); commentary.Say("lipout", 1f, 0.15f); }
+                else if (toPin < 2.5)
+                {
+                    sounds.PlayGroan(0.3f);
+                    if (shot.Origin.DistanceTo(shot.Rest) < shot.Origin.DistanceTo(hole.Pin)) commentary.Say("short", 0.5f, 0.3f);
+                }
+                return;
+            }
+            switch (shot.Lie)
+            {
+                case CourseLie.Water: return;
+                case CourseLie.OutOfBounds: sounds.PlayGroan(0.4f); return;
+                case CourseLie.Bunker: sounds.PlayGroan(0.35f); commentary.Say("sand", 0.8f, 0.2f); return;
+                case CourseLie.Rough: commentary.Say("rough", 0.45f, 0.2f); return;
+            }
+            if (shot.Lie.IsPuttingSurface() && toPin <= 4) { sounds.PlayGasp(0.45f); sounds.PlayApplause(0.6f); commentary.Say("flag", 1f, 0.2f, interrupt: true); }
+            else if (shot.Lie == CourseLie.Green) { sounds.PlayApplause(0.3f); commentary.Say("green", 0.5f, 0.2f); }
+            else if (shot.Lie == CourseLie.Fairway && shot.Origin.DistanceTo(hole.Tee) < 5) commentary.Say("fairway", 0.5f, 0.2f);
+        }
+
+        // ----- Instant replay -----
+
+        [Tooltip("Replay the good ones: a holed ball, an approach to a few yards, a perfect drive.")]
+        public bool InstantReplays = true;
+        /// The drawn ball through the last shot, flight time → where it was.
+        readonly System.Collections.Generic.List<(float t, Vector3 pos)> replayPath = new();
+        float replayClock;
+        int replayCursor;
+        bool replayStruck, replayLaunched, replayLanded, replayCut, replayDone;
+        /// True while a replay is on (for tests and reviews).
+        public bool Replaying => Current == State.Replay;
+        /// True once the replay has cut to the camera out by the landing.
+        public bool ReplayCut => Replaying && replayCut;
+
+        bool ReplayWorthy()
+        {
+            var s = LastShot;
+            if (!InstantReplays || Demo || s == null || replayPath.Count < 10) return false;
+            if (s.IsHoled) return club != GolfClub.Putter || s.Origin.DistanceTo(hole.Pin) > 3;
+            if (club == GolfClub.Putter) return false;
+            if (s.Lie.IsPuttingSurface() && s.Rest.DistanceTo(hole.Pin) <= 4 && s.Origin.DistanceTo(hole.Pin) > 30) return true;
+            return lastReport.Grade == StrikeGrade.Perfect && s.Carry >= 200 && s.Lie is CourseLie.Fairway or CourseLie.Green;
+        }
+
+        /// The shot again: the golfer back at the top, the strike in slow motion, then the ball
+        /// followed from a low camera behind the golfer and caught coming down by one out by the
+        /// landing — or, for a putt, from just behind the ball, low along the green.
+        void StartReplay()
+        {
+            Enter(State.Replay);
+            hud.ShowReplay(true);
+            hud.HideShotStats();
+            effects.ClearTracer();
+            ball.gameObject.SetActive(true);
+            ball.position = replayPath[0].pos;
+            ballLook.Pov(false);
+            rig.RestoreFov(); rig.ResetZoom();
+            golfer.ShowLoad((float)Math.Max(0.3, lastImpact.Backswing));
+            replayClock = -0.8f; replayCursor = 0;
+            replayStruck = replayLaunched = replayLanded = replayCut = replayDone = false;
+            rig.SnapNext();
+            ReplayCamera(ball.position);
+        }
+
+        void PlayReplay()
+        {
+            if (stateTime > 0.4f && Input.GetMouseButtonDown(0)) { EndReplay(); return; }
+            // slow motion through the strike
+            Time.timeScale = replayClock > -0.3f && replayClock < 0.35f ? 0.4f : 1f;
+            replayClock += Time.deltaTime;
+            if (!replayStruck && replayClock >= -0.4f) { replayStruck = true; replayClock = -golfer.Strike(); }
+            if (replayStruck && !replayLaunched && replayClock >= 0)
+            {
+                replayLaunched = true;
+                sounds.PlayStrike(club, LastShot.Power);
+                effects.Strike(originWorld, shotLine.normalized, hole.LieAt(LastShot.Origin), (float)LastShot.Power, club == GolfClub.Putter);
+                if (club != GolfClub.Putter) effects.BeginFlight(false);
+            }
+            float last = replayPath[replayPath.Count - 1].t;
+            if (replayLaunched)
+            {
+                while (replayCursor < replayPath.Count - 2 && replayPath[replayCursor + 1].t <= replayClock) replayCursor++;
+                var a = replayPath[replayCursor]; var b = replayPath[Math.Min(replayCursor + 1, replayPath.Count - 1)];
+                float u = b.t > a.t ? Mathf.Clamp01((replayClock - a.t) / (b.t - a.t)) : 1f;
+                ball.position = Vector3.Lerp(a.pos, b.pos, u);
+            }
+            if (replayLaunched && !replayLanded && club != GolfClub.Putter && replayClock >= LastShot.LandingTime)
+            {
+                replayLanded = true;
+                sounds.PlayThud(1f);
+                effects.Land();
+            }
+            if (!replayDone && replayClock >= last)
+            {
+                replayDone = true;
+                if (LastShot.IsHoled) { sounds.PlayCup(); sounds.PlayApplause(0.5f); ball.gameObject.SetActive(false); }
+                else if (LastShot.Lie == CourseLie.Water) { effects.Splash(ball.position); sounds.PlaySplash(); ball.gameObject.SetActive(false); }
+                effects.EndFlight();
+            }
+            ReplayCamera(ball.position);
+            if (replayClock > last + 1.4f) EndReplay();
+        }
+
+        void ReplayCamera(Vector3 at)
+        {
+            var line = shotLine; line.y = 0;
+            if (line.sqrMagnitude < 1e-4f) line = AimDirection();
+            line.Normalize();
+            var side = Vector3.Cross(Vector3.up, line);
+            Vector3 Grounded(Vector3 p, float up) => new(p.x, (float)HoleView.GroundHeight(HoleView.ToCourse(p)) + up, p.z);
+            if (club == GolfClub.Putter)
+            {
+                // low behind the ball, trailing it along its line
+                rig.Follow(Grounded(at - line * 1.6f, 0.35f), at + line * 2.5f + Vector3.up * 0.05f, 0.1f, 0.06f);
+                return;
+            }
+            if (replayClock < LastShot.LandingTime * 0.6f)
+            {
+                // low behind the golfer, off the side away from them, the lens following the
+                // ball away up the line
+                var cam = Grounded(originWorld - line * 8f + side * 2.2f, 1.2f);
+                var before = originWorld + line * 3f + Vector3.up * 0.6f;
+                var look = replayLaunched ? Vector3.Lerp(before, at, Mathf.SmoothStep(0, 1, replayClock / 0.35f)) : before;
+                rig.Follow(cam, look, 0.05f, 0.04f);
+                rig.Zoom(Mathf.Clamp((at - cam).magnitude / 26f, 1f, 5f));
+                return;
+            }
+            // the green camera: past the landing and a little off the line, looking back at the
+            // ball as it drops in toward it and runs out
+            var land = new Vector3(landingSpot.x, (float)landingGround, landingSpot.z);
+            var spot = land + line * 20f + side * 5f;
+            // (never below the landing: beside an island green the ground there is the sea)
+            spot.y = Mathf.Max(Grounded(spot, 0f).y, land.y) + 5f;
+            if (!replayCut) { replayCut = true; rig.SnapNext(); }
+            rig.Follow(spot, Vector3.Lerp(land, at, 0.45f), 0.25f, 0.12f);
+            rig.Zoom(1.3f);
+        }
+
+        void EndReplay()
+        {
+            Time.timeScale = 1f;
+            hud.ShowReplay(false);
+            rig.ResetZoom(); rig.RestoreFov();
+            effects.EndFlight();
+            if (replayPath.Count > 0) ball.position = replayPath[replayPath.Count - 1].pos;
+            if (LastShot.IsHoled || LastShot.Lie == CourseLie.Water) ball.gameObject.SetActive(false);
+            AfterResult();
         }
 
         void FinishShot()
@@ -1508,14 +1712,19 @@ namespace GolfArcade.Game
                 ball.gameObject.SetActive(false);
                 sounds.PlayCup();
                 sounds.PlayFanfare();
-                sounds.PlayApplause(0.6f);
-                Haptics.Success();
+                sounds.PlayRoar(club == GolfClub.Putter && shot.Total < 2 ? 0.45f : 0.85f);
+                Haptics.Roar();
+                commentary.Say(club == GolfClub.Putter && shot.Total > 4 ? "drained" : "holed", 1f, 0.25f, interrupt: true);
                 result = "In the hole!";
             }
             else if (shot.Lie == CourseLie.Water) { Haptics.Failure(); result = "Water  ·  +1 stroke"; }
             else if (shot.Lie == CourseLie.OutOfBounds) { Haptics.Failure(); result = "Out of bounds  ·  +1 stroke"; }
             else if (club == GolfClub.Putter) result = $"{shot.Total * 3:F0} ft  ·  {shot.Rest.DistanceTo(hole.Pin) * 3:F1} ft left";
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
+            if (!shot.IsHoled) React(shot);
+            string shape = club != GolfClub.Putter && !shot.IsHoled && lastReport.Shape != ShotShape.Straight && shot.Lie != CourseLie.Water
+                ? $"  ·  {lastReport.ShapeWord[0]}{lastReport.ShapeWord.Substring(1).ToLowerInvariant()}" : "";
+            result += shape;
             holeStrokes += shot.PenaltyStrokes;
             hud.ShowBanner(result, 2.2f);
             ShowScore();
@@ -1532,6 +1741,8 @@ namespace GolfArcade.Game
                 Card.Record(holeIndex, holeStrokes);
                 ShowScore();
                 hud.ShowBanner(Scorecard.ScoreName(holeStrokes, hole.Par), 3f);
+                int toPar = holeStrokes - hole.Par;
+                commentary.Say(toPar <= -2 ? "eagle" : toPar == -1 ? "birdie" : toPar == 0 ? "par" : "bogey", toPar == 0 ? 0.6f : toPar > 1 ? 0 : 1f, 0.3f, interrupt: toPar < 0);
                 Enter(State.HoleDone);
                 return;
             }

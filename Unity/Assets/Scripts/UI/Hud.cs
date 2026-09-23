@@ -75,6 +75,9 @@ namespace GolfArcade.UI
         CanvasGroup bannerGroup;
         RectTransform scorecard, board, shotCard;
         float bannerUntil;
+        StrikePopup strikePopup;
+        FaceDial faceDial;
+        RectTransform replayBadge;
 
         /// The minimap's picture in the corner, and in the controller's map card.
         public static readonly Vector2 MinimapSize = new(260, 420), ControllerMapSize = ControllerSheet.MapSize;
@@ -237,6 +240,11 @@ namespace GolfArcade.UI
             bannerGroup = bannerGo.gameObject.AddComponent<CanvasGroup>();
             bannerGroup.alpha = 0;
             bannerText = Label("BannerText", 56, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(880, 130), bannerGo.transform);
+
+            // The strike's verdict, the face while you swing, the replay bug.
+            strikePopup = StrikePopup.Create(safeArea);
+            faceDial = FaceDial.Create(safeArea, 10f, 24f);
+            replayBadge = ReplayBadge.Create(safeArea);
 
             // Scorecard, filled in when the round ends.
             var card = Card("Scorecard", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900, 600), new Color(0.05f, 0.09f, 0.17f, 0.94f));
@@ -664,7 +672,8 @@ namespace GolfArcade.UI
         public void ShowPlayHud(bool on)
         {
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats") child.gameObject.SetActive(on);
+                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats"
+                    && child.name != "Replay badge" && child.name != "Face dial") child.gameObject.SetActive(on);
         }
 
         // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
@@ -1236,6 +1245,14 @@ namespace GolfArcade.UI
             meterMark.enabled = mark.HasValue;
             if (mark.HasValue) meterMark.rectTransform.anchoredPosition = ArcPoint(mark.Value);
         }
+
+        /// The word at impact (PERFECT!, GREAT!, GOOD, THIN) and the ball's shape under it.
+        public void ShowStrike(string word, Color color, string shape) => strikePopup.Show(word, color, shape);
+
+        /// The club face while setting up and swinging (degrees, positive open); null hides it.
+        public void SetFace(double? degrees) => faceDial.Set(Controller == null ? degrees : null);
+
+        public void ShowReplay(bool on) { replayBadge.gameObject.SetActive(on); if (on) replayBadge.SetAsLastSibling(); }
 
         public void ShowBanner(string text, float seconds = 2f)
         {

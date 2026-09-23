@@ -43,6 +43,8 @@ namespace GolfArcade.Course
         public readonly double Apex;
         public readonly double Duration;
         public bool IsHoled => HoledAt.HasValue;
+        /// It caught the cup and spun out (a groan from the gallery).
+        public readonly bool LippedOut;
         public int PenaltyStrokes => IsHoled ? 0 : Lie.PenaltyStrokes();
         public double Total => Origin.DistanceTo(Rest);
 
@@ -63,7 +65,8 @@ namespace GolfArcade.Course
         public static double RollingDeceleration(CourseLie lie) => lie switch
         {
             CourseLie.Green => GreenDeceleration,
-            CourseLie.Rough or CourseLie.OutOfBounds => FairwayDeceleration * 1.6,
+            CourseLie.Fringe => (GreenDeceleration + FairwayDeceleration) / 2,
+            CourseLie.Rough or CourseLie.OutOfBounds => FairwayDeceleration * 2,
             CourseLie.Bunker => FairwayDeceleration * 2.5,
             CourseLie.Water => FairwayDeceleration * 4,
             _ => FairwayDeceleration,
@@ -82,13 +85,15 @@ namespace GolfArcade.Course
             return speed <= limit;
         }
 
+        /// The lie the ball is played from does its own work (speed, spin, launch: see
+        /// CourseLies); `lieFactor` is any further loss of club speed on top of it.
         public CourseShot(GolfClub club, SwingImpact impact, double heading, CoursePoint origin, Hole hole, double lieFactor = 1, Wind wind = default)
         {
             Club = club;
             Wind = wind;
             Power = Clamp(impact.Power, 0, 1);
             StartLine = double.IsFinite(impact.StartLineDegrees) ? impact.StartLineDegrees : 0;
-            Curve = club == GolfClub.Putter ? 0 : Clamp(impact.CurveDegrees, -15, 15);
+            Curve = club == GolfClub.Putter ? 0 : Clamp(impact.CurveDegrees, -20, 20);
             Heading = double.IsFinite(heading) ? heading : 0;
             Origin = origin;
             path = new List<(double, double, double)> { (origin.X, 0, origin.D) };
@@ -108,23 +113,32 @@ namespace GolfArcade.Course
             {
                 // The putter is rated on the green: a full stroke rolls its reference distance
                 // on green pace, and the meter curves so tap-ins have room.
-                double distance = club.DistanceYards(Power) * speedFactor;
+                double distance = club.DistanceYards(Power) * speedFactor * hole.LieAt(origin).PowerFactor(club);
                 double speed = Math.Sqrt(2 * GreenDeceleration * distance);
                 vx = Math.Sin(launchHeading) * speed; vd = Math.Cos(launchHeading) * speed;
                 time = 0; Carry = 0; Apex = 0;
             }
             else
             {
-                var launch = club.Launch(Power, StartLine, Curve, speedFactor);
+                var launch = hole.LieAt(origin).LaunchFrom(club, Power, StartLine, Curve, impact.Thin, speedFactor);
                 launch.WindMPH = wind.SpeedMPH;
                 launch.WindDegrees = wind.RelativeTo(Heading);
                 var flight = BallFlight.Simulate(launch);
-                Carry = flight.Carry; Apex = flight.Apex;
                 double cosH = Math.Cos(Heading * Math.PI / 180), sinH = Math.Sin(Heading * Math.PI / 180);
                 // Flight samples are in the aim frame; rotate them onto the course.
                 (double x, double h, double d) World(double lateral, double height, double distance) =>
                     (origin.X + lateral * cosH + distance * sinH, height, origin.D - lateral * sinH + distance * cosH);
                 var first = World(flight.CarryPoint.LateralYards, 0, flight.CarryPoint.DistanceYards);
+                // The flight is the same whatever it comes down on; the bounces are not. Fly it
+                // again onto the ground it actually lands on: a receptive green, smothering rough,
+                // sand that plugs it.
+                var (soft, grab) = hole.LieAt(new CoursePoint(first.x, first.d)).Landing();
+                if (soft > 0 || grab > 0)
+                {
+                    launch.LandingSoftness = soft; launch.LandingGrab = grab;
+                    flight = BallFlight.Simulate(launch);
+                }
+                Carry = flight.Carry; Apex = flight.Apex;
                 Landing = new CoursePoint(first.x, first.d);
                 LandingTime = flight.CarryTime;
                 if (flight.CarryTime > 0 && hole.LieAt(Landing) == CourseLie.Water)
@@ -170,7 +184,7 @@ namespace GolfArcade.Course
             const double dt = 1.0 / 240;
             double nextSample = time + SampleInterval;
             double? holed = null;
-            bool wet = false, lippedOut = false;
+            bool wet = false, lippedOut = false, lippedEver = false;
             double elapsed = time;
             while (elapsed < 30)
             {
@@ -213,7 +227,7 @@ namespace GolfArcade.Course
                     {
                         // Lip-out: the rim throws the ball out to the side it is passing on and
                         // takes much of its pace, the way a firm putt horseshoes round the hole.
-                        lippedOut = true;
+                        lippedOut = true; lippedEver = true;
                         double outX = miss > 0.005 ? missX / miss : -dd, outD = miss > 0.005 ? missD / miss : dx;
                         double kept = speed * 0.55;
                         double newX = dx * 0.7 + outX * 0.7, newD = dd * 0.7 + outD * 0.7;
@@ -239,6 +253,7 @@ namespace GolfArcade.Course
                 if (elapsed + 1e-9 >= nextSample) { path.Add((x, 0, d)); nextSample += SampleInterval; }
             }
             if (path[path.Count - 1].d != d || path[path.Count - 1].x != x) path.Add((x, 0, d));
+            LippedOut = lippedEver && !holed.HasValue;
 
             var rest = new CoursePoint(x, d);
             Rest = rest;

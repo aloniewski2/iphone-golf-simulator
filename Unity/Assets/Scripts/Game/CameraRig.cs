@@ -257,6 +257,16 @@ namespace GolfArcade.Game
         }
 
         public void SnapNext() => snap = true;
+
+        /// Chase these with the given lags (seconds) — for a shot keyed elsewhere that should
+        /// still move like a camera operator, not jump (the instant replay).
+        public void Follow(Vector3 position, Vector3 look, float lag, float lookLagSeconds)
+        {
+            targetPosition = position; targetLookAt = look; positionLag = lag; lookLag = lookLagSeconds;
+        }
+
+        /// Push the lens in (2 = twice as tight), eased like the flight camera's.
+        public void Zoom(float z) => targetZoom = Mathf.Max(0.5f, z);
         /// Any framing that is not a flight shot wants the plain lens back.
         public void ResetZoom() { targetZoom = 1f; targetRoll = 0f; }
 

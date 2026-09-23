@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, roar;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -50,6 +50,12 @@ namespace GolfArcade.Game
         /// The gallery's applause, for the introductions on the tee and a holed ball.
         public void PlayApplause(float volume = 0.55f) => source.PlayOneShot(applause, volume);
 
+        /// The gallery's reactions, sized to the shot: an "ooh" as one flies at the flag or
+        /// finds the water, an "aww" for a lip-out or a ball in the sand, and a roar for a holed one.
+        public void PlayGasp(float volume = 0.6f) => source.PlayOneShot(gasp, volume);
+        public void PlayGroan(float volume = 0.55f) => source.PlayOneShot(groan, volume);
+        public void PlayRoar(float volume = 0.8f) { source.PlayOneShot(roar, volume); source.PlayOneShot(applause, volume * 0.8f); }
+
         /// Backswing tension, 0–1 with the meter: the wind-up loop fades in and climbs a fifth
         /// in pitch by the top. Call with the load every frame it changes; Release() lets go.
         public void SetTension(double load)
@@ -73,6 +79,11 @@ namespace GolfArcade.Game
         void Synthesize()
         {
             applause = Applause(3.2f);
+            // The gallery's voices: a couple of dozen people, men and women, each a buzz of
+            // harmonics shaped into a vowel, coming in a beat apart and sliding in pitch.
+            gasp = Crowd("Gasp", 1.6f, 18, (300, 870), (330, 900), u => 1 + 0.35 * Math.Sin(Math.PI * Math.Min(1, u * 1.3)), 0.25);
+            groan = Crowd("Groan", 1.7f, 18, (660, 1190), (560, 840), u => 1.3 - 0.45 * u, 0.3);
+            roar = Crowd("Roar", 2.6f, 24, (730, 1090), (660, 1700), u => 1.25 + 0.25 * Math.Sin(Math.PI * Math.Min(1, u * 1.6)), 0.55);
             // Strikes: a burst of noise for the contact plus a ringing partial or two for the
             // clubhead's material; the decay times are what make a driver sound hollow and a
             // putter sound dead.
@@ -169,6 +180,78 @@ namespace GolfArcade.Game
             for (int i = 0; i < n; i++) { double v = mix[i] - 0.5 * prev; prev = mix[i]; mix[i] = v; peak = Math.Max(peak, Math.Abs(v)); }
             for (int i = 0; i < n; i++) data[i] = (float)(mix[i] / Math.Max(peak, 1e-6) * 0.95);
             var clip = AudioClip.Create("Applause", n, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        /// A crowd voicing one vowel together: `voices` people, each a harmonic buzz at their own
+        /// pitch (bent over time by `pitch`, 0–1 through the clip) run through the vowel's two
+        /// formants, sliding from `from` to `to`; `breath` mixes in the same vowel whispered,
+        /// which is most of what a crowd sounds like from a distance. Rendered at 22 kHz.
+        static AudioClip Crowd(string name, float seconds, int voices, (double f1, double f2) from, (double f1, double f2) to, Func<double, double> pitch, double breath)
+        {
+            const int rate = 22050, block = 128;
+            int n = (int)(rate * seconds);
+            var mix = new double[n];
+            var rng = new System.Random(Seed(name));
+            double Formant(double f, double f1, double f2) => 1 / (1 + Math.Pow((f - f1) / 110, 2)) + 0.6 / (1 + Math.Pow((f - f2) / 150, 2));
+            for (int v = 0; v < voices; v++)
+            {
+                bool high = rng.NextDouble() < 0.4;
+                double f0 = high ? 190 + 70 * rng.NextDouble() : 95 + 50 * rng.NextDouble();
+                double onset = 0.02 + 0.2 * rng.NextDouble() * rng.NextDouble();
+                double length = seconds * (0.55 + 0.4 * rng.NextDouble());
+                double gain = 0.5 + 0.5 * rng.NextDouble();
+                double vibRate = 4 + 2 * rng.NextDouble(), vibPhase = rng.NextDouble() * 6.28;
+                int harmonics = (int)Math.Min(12, 2600 / f0);
+                var phase = new double[harmonics + 1];
+                var amp = new double[harmonics + 1];
+                for (int i0 = 0; i0 < n; i0 += block)
+                {
+                    double t = (double)i0 / rate, u = Math.Min(1, t / seconds);
+                    double f1 = from.f1 + (to.f1 - from.f1) * u, f2 = from.f2 + (to.f2 - from.f2) * u;
+                    double hz = f0 * pitch(u) * (1 + 0.015 * Math.Sin(vibRate * t + vibPhase));
+                    for (int k = 1; k <= harmonics; k++) amp[k] = Formant(k * hz, f1, f2) / k;
+                    for (int i = i0; i < Math.Min(n, i0 + block); i++)
+                    {
+                        double ti = (double)i / rate - onset;
+                        if (ti < 0) continue;
+                        double env = Math.Min(1, ti / 0.07) * (ti < length ? 1 : Math.Exp(-(ti - length) / 0.18));
+                        if (env < 1e-4) break;
+                        double sum = 0;
+                        for (int k = 1; k <= harmonics; k++)
+                        {
+                            phase[k] += 2 * Math.PI * k * hz / rate;
+                            sum += Math.Sin(phase[k]) * amp[k];
+                        }
+                        mix[i] += sum * env * gain;
+                    }
+                }
+            }
+            // the whisper: noise through two resonators at the formants
+            double y1a = 0, y2a = 0, y1b = 0, y2b = 0, peakVoices = 1e-9;
+            for (int i = 0; i < n; i++) peakVoices = Math.Max(peakVoices, Math.Abs(mix[i]));
+            var data = new float[n];
+            double peak = 1e-9;
+            for (int i = 0; i < n; i++)
+            {
+                double t = (double)i / rate, u = Math.Min(1, t / seconds);
+                double f1 = from.f1 + (to.f1 - from.f1) * u, f2 = from.f2 + (to.f2 - from.f2) * u;
+                double x = Noise(rng);
+                double Res(double f, double bw, ref double y1, ref double y2)
+                {
+                    double r = Math.Exp(-Math.PI * bw / rate), c = 2 * r * Math.Cos(2 * Math.PI * f / rate);
+                    double y = (1 - r) * x + c * y1 - r * r * y2; y2 = y1; y1 = y; return y;
+                }
+                double env = Math.Min(1, t / 0.12) * Math.Exp(-Math.Max(0, t - seconds * 0.6) / (seconds * 0.2));
+                double whisper = (Res(f1, 120, ref y1a, ref y2a) + 0.6 * Res(f2, 160, ref y1b, ref y2b)) * env * 6;
+                double v = mix[i] / peakVoices * (1 - breath) + whisper * breath;
+                data[i] = (float)v; peak = Math.Max(peak, Math.Abs(v));
+            }
+            for (int i = 0; i < n; i++) data[i] = (float)(data[i] / peak * 0.9);
+            int fade = Math.Min(n, rate / 50);
+            for (int i = 0; i < fade; i++) data[n - 1 - i] *= (float)i / fade;
+            var clip = AudioClip.Create(name, n, 1, rate, false);
             clip.SetData(data, 0);
             return clip;
         }
