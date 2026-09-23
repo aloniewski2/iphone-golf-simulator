@@ -481,7 +481,6 @@ namespace GolfArcade.Game
             rig.RestoreFov();
             hud.FlightMode(false); hud.HideShotStats(); hud.SetBallTag(null, default, null); flightHud = false;
             hud.Map.Trace.Clear(); hud.Map.Changed();
-            RefreshControls();
             hud.SetMeter(0);
             UpdateAimVisuals();
             if (Current == State.Intro) rig.SnapNext(); // cut from the flyover, don't glide the length of the hole
@@ -493,6 +492,7 @@ namespace GolfArcade.Game
             holeView.ShowFlag(!putting || ballAt.DistanceTo(hole.Pin) > 6);
             if (putting) greenRead.Show(hole); else greenRead.Hide();
             Enter(State.Aim);
+            RefreshControls();   // after Enter: the aim buttons and the joystick show only while aiming
         }
 
         /// Straight to a spot on the hole, for tests and reviews: the ball is dropped there and
@@ -1120,6 +1120,9 @@ namespace GolfArcade.Game
         /// Where a full, square swing with this club lands in today's wind: the yellow ring
         /// moves with the wind, so the player aims off it the way the Wii teaches.
         CoursePoint FullShotCarry(CourseLie lie) => LandingFor(1, lie);
+
+        /// Where the line points, degrees (for tests).
+        public double AimHeading => heading;
 
         void Nudge(double degrees)
         {

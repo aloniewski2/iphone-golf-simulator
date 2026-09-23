@@ -80,6 +80,27 @@ namespace GolfArcade.PlayTests
                 Step("pressing Skip", () => hud.Controller.Skip.Pressed());
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 3, "the round to start at the tee");
                 Assert.IsTrue(hud.Controller.Shown && !hud.Controller.ShowingIntro, "the aim pad is back for the round");
+
+                // The joystick aims: a press on the knob, dragged right, turns the line right.
+                yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+                var knob = (RectTransform)hud.Controller.Knob.transform;
+                Assert.IsTrue(knob.gameObject.activeInHierarchy, "the knob is up while aiming");
+                var events = EventSystem.current ?? Object.FindFirstObjectByType<EventSystem>();
+                var at = RectTransformUtility.WorldToScreenPoint(null, knob.TransformPoint(knob.rect.center));
+                var press = new PointerEventData(events) { position = at, pressPosition = at, button = PointerEventData.InputButton.Left };
+                double before = game.AimHeading;
+                Step("pressing the knob", () => ExecuteEvents.Execute(knob.gameObject, press, ExecuteEvents.pointerDownHandler));
+                for (int i = 0; i < 40; i++)
+                {
+                    press.position = at + new Vector2(Mathf.Min(i * 12f, 160f) * knob.lossyScale.x / Mathf.Max(0.0001f, hud.transform.lossyScale.x) , 0);
+                    Step("dragging the knob", () => ExecuteEvents.Execute(knob.gameObject, press, ExecuteEvents.dragHandler));
+                    yield return null;
+                }
+                float pushed = hud.AimStick;
+                Step("letting go", () => ExecuteEvents.Execute(knob.gameObject, press, ExecuteEvents.pointerUpHandler));
+                Assert.Greater(pushed, 0.5f, "the stick reads a push to the right");
+                Assert.Greater(game.AimHeading - before, 1.0, $"the line turned right (from {before:F1}° to {game.AimHeading:F1}°)");
+                Assert.AreEqual(0f, hud.AimStick, "let go, the knob springs back");
             }
             finally { game.PreviewBigScreen(false); }
         }
