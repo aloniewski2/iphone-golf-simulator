@@ -63,14 +63,15 @@ namespace GolfArcade.Shot
         };
 
         /// Peak phone rotation speed (rad/s) that counts as a full swing. Short clubs need less,
-        /// so a wedge swing feels like a wedge swing and not a flailing driver. A committed swing
-        /// with a phone in hand peaks around 12 rad/s; that is the driver's full, so swinging
-        /// properly goes the distance and only a real lash is over the top.
+        /// so a wedge swing feels like a wedge swing and not a flailing driver. A hard swing with a
+        /// phone in hand peaks around 12 rad/s; the driver's full is set well under that, at a
+        /// relaxed but committed swing, so a normal swing goes the distance and only a real lash
+        /// (twice this) is over the top.
         public static double MotionFullSpeed(this GolfClub club) => club switch
         {
-            GolfClub.Driver => 12,
-            GolfClub.Iron => 10,
-            GolfClub.Wedge => 7,
+            GolfClub.Driver => 9,
+            GolfClub.Iron => 7.5,
+            GolfClub.Wedge => 5.5,
             _ => 3,
         };
 

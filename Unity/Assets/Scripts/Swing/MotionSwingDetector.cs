@@ -52,8 +52,9 @@ namespace GolfArcade.Swing
     /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
     /// address quickly; impact is the moment it passes back through address (or clearly
     /// decelerates). Power is the peak rotation speed of that downswing — that is what the shot
-    /// is made of — trimmed a little by how far back you took it: a short, low backswing gives up
-    /// at most a third of the club, and a full turn swung hard is the full club. The wrist's
+    /// is made of, on a forgiving curve (SpeedCurve) — trimmed a little by how far back you took
+    /// it: a short, low backswing gives up at most a fifth of the club, and a full turn swung
+    /// firmly is the full club. The wrist's
     /// roll at impact, relative to address, is the club face:
     /// open slices, closed hooks. Swinging much harder than the club's full speed makes the
     /// shot wild, which is the Wii's rule too.
@@ -64,7 +65,7 @@ namespace GolfArcade.Swing
         public Vector3 WorldUp = Vector3.UnitZ;
         /// How far, in degrees, the phone's long axis may lean from straight down and still count
         /// as a club at address. A driver shaft leans about 30° at address.
-        public double PointedDownDegrees = 35;
+        public double PointedDownDegrees = 38;
         /// Radians from address that count as the start of a backswing.
         public double BackswingStart = 0.25;
         /// Radians of backswing shown as 100 % load: a full shoulder turn, phone up behind you.
@@ -74,7 +75,12 @@ namespace GolfArcade.Swing
         /// a full backswing. So power = speed ratio × (BackswingFloor + (1 − BackswingFloor) × load).
         /// High, so the downswing's speed is what decides the distance: a hip-high backswing swung
         /// at full speed is still nearly the whole club.
-        public double BackswingFloor = 0.7;
+        public double BackswingFloor = 0.8;
+        /// How the downswing's speed becomes power: its ratio to the club's full speed raised to
+        /// this, so the curve rises fast and flattens — half the speed is ~64 % of the club, not
+        /// half, and a relaxed but committed swing is most of it. 1 is straight proportion (the
+        /// putter keeps that, so a putt's pace stays exact).
+        public double SpeedCurve = 0.65;
         /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
         /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
         /// hold needed.
@@ -93,17 +99,17 @@ namespace GolfArcade.Swing
         /// How long the phone has to hang like a club, not swinging, before it arms.
         public double StillDuration = 0.1;
         /// Degrees of ball curve per degree of face roll, and of start line per degree.
-        public double CurvePerFaceDegree = 0.5;
-        public double StartLinePerFaceDegree = 0.25;
-        /// Face roll under this (degrees) is a square strike; keeps small wrist wobble straight.
-        public double FaceDeadZoneDegrees = 6;
-        public double MaxCurveDegrees = 15;
-        public double MaxStartLineDegrees = 12;
+        public double CurvePerFaceDegree = 0.35;
+        public double StartLinePerFaceDegree = 0.18;
+        /// Face roll under this (degrees) is a square strike; keeps ordinary wrist wobble straight.
+        public double FaceDeadZoneDegrees = 10;
+        public double MaxCurveDegrees = 10;
+        public double MaxStartLineDegrees = 8;
         /// Speed past full (as a fraction of FullSpeed) that is forgiven before the shot goes wild.
-        /// Full speed is a solid swing, not the hardest one; only half again past it is over the top.
-        public double OverswingGrace = 0.5;
+        /// Full speed is a solid swing, not the hardest one; only twice it is over the top.
+        public double OverswingGrace = 1.0;
         /// Extra curve, degrees, per unit of overswing beyond the grace.
-        public double OverswingCurve = 40;
+        public double OverswingCurve = 20;
 
         public SwingPhase Phase { get; private set; } = SwingPhase.Settling;
         /// Latest backswing load (0–1) for HUD polling between events.
@@ -148,8 +154,10 @@ namespace GolfArcade.Swing
                 fresh.ArmSpeed = 0.15;
                 fresh.BackswingFloor = 0.6;
                 fresh.CurvePerFaceDegree = 0;
-                fresh.StartLinePerFaceDegree = 0.35;
-                fresh.MaxStartLineDegrees = 6;
+                fresh.StartLinePerFaceDegree = 0.3;
+                fresh.MaxStartLineDegrees = 5;
+                fresh.SpeedCurve = 1;              // a putt's pace is the stroke's speed, exactly
+                fresh.OverswingGrace = 1000;       // and a putt never goes wild
             }
             CopyTuning(fresh);
             Reset();
@@ -163,6 +171,7 @@ namespace GolfArcade.Swing
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
             MaxStartLineDegrees = o.MaxStartLineDegrees; OverswingGrace = o.OverswingGrace; OverswingCurve = o.OverswingCurve;
+            SpeedCurve = o.SpeedCurve;
         }
 
         /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
@@ -272,7 +281,7 @@ namespace GolfArcade.Swing
             double ratio = peakSpeed / FullSpeed;
             double overswing = Math.Max(0, ratio - 1 - OverswingGrace);
             // How far back you went scales what the speed is worth: a low, short backswing chips.
-            double power = Math.Min(1, ratio) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
+            double power = Math.Pow(Math.Min(1, ratio), SpeedCurve) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
             // Over the top: the face error grows, and a square face still goes somewhere.
             double wildDirection = signedFace != 0 ? Math.Sign(signedFace) : (face >= 0 ? 1 : -1);
             double curve = signedFace * CurvePerFaceDegree + wildDirection * overswing * OverswingCurve;

@@ -68,7 +68,7 @@ namespace GolfArcade.Tests
             Assert.AreEqual(load, loads.Max(), 0.05);
             var impacts = Impacts(events);
             Assert.AreEqual(1, impacts.Count);
-            double expectedPower = 8.8 / 14 * (detector.BackswingFloor + (1 - detector.BackswingFloor) * load);
+            double expectedPower = Math.Pow(8.8 / 14, detector.SpeedCurve) * (detector.BackswingFloor + (1 - detector.BackswingFloor) * load);
             Assert.AreEqual(expectedPower, impacts[0].Power, 0.05);
             Assert.AreEqual(load, impacts[0].Backswing, 0.05);
             Assert.IsFalse(events.Any(e => e.Kind == SwingEventKind.Cancel));
@@ -97,7 +97,9 @@ namespace GolfArcade.Tests
             Assert.AreEqual(0, impact.Overswing, 1e-9, "16 rad/s against a 12 rad/s club is still within grace");
             // the same backswing at half speed is roughly half the shot
             var soft = Impacts(Drive(new MotionSwingDetector { FullSpeed = 12 }, new[] { (0.6, 0.0), (0.8, 1.55), (0.2, 1.55), (0.33, -0.4), (0.6, -0.4) }))[0];
-            Assert.AreEqual(impact.Power * (5.9 / 12), soft.Power, 0.08);
+            // a soft swing still carries a good share, on the forgiving curve: (5.9/12)^0.65 ≈ 0.63
+            Assert.AreEqual(impact.Power * Math.Pow(5.9 / 12, new MotionSwingDetector().SpeedCurve), soft.Power, 0.08);
+            Assert.Greater(soft.Power, impact.Power * 0.55, "half the speed is well over half the club");
         }
 
         [Test]
@@ -124,9 +126,9 @@ namespace GolfArcade.Tests
         [Test]
         public void OverswingGoesWild()
         {
-            var detector = new MotionSwingDetector { FullSpeed = 10 };
+            var detector = new MotionSwingDetector { FullSpeed = 7 };
             var impact = Impacts(Drive(detector, new[] { (0.6, 0.0), (0.8, 1.8), (0.2, 1.8), (0.1, -0.4), (0.6, -0.4) }))[0];
-            Assert.Greater(impact.Overswing, 0.5, "22 rad/s against a 10 rad/s club");
+            Assert.Greater(impact.Overswing, 0.5, "22 rad/s against a 7 rad/s club: three times full, well past the grace of twice");
             Assert.AreEqual(detector.BackswingFloor + (1 - detector.BackswingFloor) * 1.8 / detector.FullBackswing, impact.Power, 0.02);
             Assert.Greater(Math.Abs(impact.CurveDegrees), 5);
         }
@@ -218,11 +220,11 @@ namespace GolfArcade.Tests
             Assert.AreEqual(shortBack.PeakSpeed, longBack.PeakSpeed, 0.3);
             Assert.Less(shortBack.Backswing, 0.4);
             Assert.AreEqual(1, longBack.Backswing, 0.02);
-            Assert.Less(shortBack.Power, longBack.Power * 0.9);
-            Assert.Greater(shortBack.Power, longBack.Power * 0.65);
+            Assert.Less(shortBack.Power, longBack.Power * 0.95);
+            Assert.Greater(shortBack.Power, longBack.Power * 0.8, "a third of a backswing gives up little of the club");
             // and a slow full swing is still weak: speed is what the backswing scales
             var lazy = Impacts(Drive(new MotionSwingDetector(), new[] { (0.6, 0.0), (0.8, 2.6), (0.2, 2.6), (0.7, -0.4), (0.6, -0.4) }))[0];
-            Assert.Less(lazy.Power, longBack.Power * 0.6);
+            Assert.Less(lazy.Power, longBack.Power * 0.65, "half the speed is well short of the club, even on the forgiving curve");
         }
 
         [Test]

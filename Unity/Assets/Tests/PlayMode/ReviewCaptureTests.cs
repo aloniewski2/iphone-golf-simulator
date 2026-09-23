@@ -236,12 +236,12 @@ namespace GolfArcade.PlayTests
             game.JumpToHole(12);
             yield return WaitFor(() => game.Current == GolfGame.State.Aim, 24, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
-            game.Swing.Synthetic.SpeedScale = 0.7;   // a lazy swing: speed decides the distance now
+            game.Swing.Synthetic.SpeedScale = 0.4;   // a lazy swing: speed decides the distance (and the curve forgives a lot)
             game.Swing.Synthetic.Backswing(true);
             yield return new WaitForSecondsRealtime(0.22f);
             game.Swing.Synthetic.Backswing(false);
             yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
-            Assert.Less(game.LastShot.Carry, 110, "a short one, into the water");
+            Assert.Less(game.LastShot.Carry, 135, "a short one, into the water");
             yield return new WaitForSecondsRealtime(0.9f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/12-9-splash-air.png"));
             yield return new WaitForSecondsRealtime(1.4f);
