@@ -8,6 +8,8 @@ namespace GolfArcade.UI
     /// ball's shape (DRAW, SLICE…) in a blue pill under it. Then it floats up and fades.
     public sealed class StrikePopup : MonoBehaviour
     {
+        /// How big it pops, against its full size (smaller on the phone than on the big screen).
+        public float Size = 1f;
         RectTransform root, pill;
         Text word, shape;
         CanvasGroup group;
@@ -57,7 +59,7 @@ namespace GolfArcade.UI
             if (t > Pop + Hold + Fade) { group.alpha = 0; return; }
             // punch in: overshoot to 1.25 and settle, with a little twist that straightens
             float s = t < Pop ? EaseOutBack(t / Pop) : 1f;
-            root.localScale = Vector3.one * Mathf.Max(0.01f, s);
+            root.localScale = Vector3.one * Mathf.Max(0.01f, s) * Size;
             root.localRotation = Quaternion.Euler(0, 0, Mathf.Lerp(-9f, -3f, Mathf.Clamp01(t / Pop)));
             float fade = Mathf.Clamp01((t - Pop - Hold) / Fade);
             group.alpha = 1f - fade;

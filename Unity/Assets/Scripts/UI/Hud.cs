@@ -234,6 +234,32 @@ namespace GolfArcade.UI
             pinLocator = PinLocator.Create(transform);
             swingCard = SwingCard.Create(safeArea, Margin);
             tvMap = TvMap.Create(safeArea, Margin);
+            ScaleHud(PhoneHudScale);
+        }
+
+        /// On the phone the play HUD is drawn smaller than on the big screen: there the picture is
+        /// the course, and the cards keep to its corners. (The menus and the round's card are
+        /// whole screens and keep their size.)
+        const float PhoneHudScale = 0.7f;
+        float hudScale = 1f;
+
+        /// Sizes the play HUD: the scoreboard and the yardage card under it, the swing card, the
+        /// minimap and the targets at `s`; the meter, the face dial and the buttons, which want
+        /// to stay big enough to read and press, part of the way.
+        void ScaleHud(float s)
+        {
+            hudScale = s;
+            float held = Mathf.Lerp(1f, s, 0.6f);
+            board.localScale = Vector3.one * s;
+            shotCard.localScale = Vector3.one * s;
+            shotCard.anchoredPosition = new Vector2(Margin, -Margin - (BoardHeight + 22) * s);
+            swingCard.transform.localScale = Vector3.one * s;
+            minimapHolder.localScale = Vector3.one * s;
+            meterRect.localScale = Vector3.one * held;
+            faceDial.transform.localScale = Vector3.one * held;
+            strikePopup.Size = held;
+            bannerGroup.transform.localScale = Vector3.one * held;
+            foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.transform.localScale = Vector3.one * held;
         }
 
         /// Fits the HUD to the phone's safe area (notch at the top, home indicator at the bottom).
@@ -882,6 +908,7 @@ namespace GolfArcade.UI
                 root.gameObject.SetActive(shown[i]);
                 if (!shown[i]) continue;
                 root.anchorMin = root.anchorMax = at[i]; root.anchoredPosition = Vector2.zero;
+                root.localScale = Vector3.one * Mathf.Lerp(1f, hudScale, 0.6f);
                 // the pole stands up from its spot; crowded (a long club's spots nearly one point at
                 // the horizon) the poles lean apart so the flags stand side by side
                 bool pin = i == pinCheckpoint;
@@ -1233,6 +1260,7 @@ namespace GolfArcade.UI
                 safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
                 // the meter drops clear of the yardage card on the shorter screen
                 meterHome = meterPhoneHome + new Vector2(0, -170);
+                ScaleHud(1f);
             }
             else
             {
@@ -1242,6 +1270,7 @@ namespace GolfArcade.UI
                 scaler.referenceResolution = UiKit.PhoneReference;
                 if (tvHudCamera) tvHudCamera.gameObject.SetActive(false);
                 meterHome = meterPhoneHome;
+                ScaleHud(PhoneHudScale);
                 appliedSafeArea = default;
                 ApplySafeArea();
             }
