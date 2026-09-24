@@ -63,7 +63,9 @@ namespace GolfArcade.UI
         Image ring;
         GameObject[] aimParts; GameObject skipPart;
         Image tvFill;
-        Text holeText, parText, yardsText, windText, aimText, tvText;
+        Text holeText, parText, yardsText, windText, aimText, tvText, nameText;
+        Image flagImage;
+        RectTransform namePill;
         RectTransform windArrow;
         Image[] clubFills, clubGlows; GameObject[] clubStars; Text[] clubNames;
         static Sprite skySprite;
@@ -141,8 +143,14 @@ namespace GolfArcade.UI
             pole.rectTransform.pivot = new Vector2(0.5f, 0); pole.raycastTarget = false;
             var flag = UiKit.Panel(pole.transform, "Flag", UiKit.Hex("E8352F"), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(3, 0), new Vector2(46, 32), false);
             flag.rectTransform.pivot = new Vector2(0, 1); flag.rectTransform.localRotation = Quaternion.Euler(0, 0, -6); flag.raycastTarget = false;
+            flagImage = flag;
             holeText = Chunky(badgeFill.transform, "Label", "HOLE", 92, 5f);
             holeText.rectTransform.offsetMin = new Vector2(120, 0);
+            // the hole's name on a ribbon across the foot of the badge
+            namePill = Pill("Hole name", UiKit.ArcadeYellow, -20, 188, new Vector2(420, 50), out var nameFill, 4);
+            nameText = UiKit.Label(nameFill.transform, "Label", 28, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            nameText.color = UiKit.ArcadeInk; nameText.raycastTarget = false;
+            namePill.gameObject.SetActive(false);
             var tv = Pill("TV", Green, 420, 70, new Vector2(170, 76), out tvFill, 5);
             tvText = Chunky(tvFill.transform, "Label", "TV ON", 30, 2f, Color.white, UiKit.Hex("1E7A30"));
 
@@ -291,9 +299,23 @@ namespace GolfArcade.UI
             skipPart.SetActive(on);
         }
 
-        public void SetHole(int number, int par, double yards)
+        public void SetHole(int number, int par, double yards, string name = null)
         {
             holeText.text = $"HOLE {number}";
+            // this hole's own name and numbered flag
+            namePill.gameObject.SetActive(!string.IsNullOrEmpty(name));
+            if (!string.IsNullOrEmpty(name))
+            {
+                nameText.text = name.ToUpperInvariant();
+                namePill.sizeDelta = new Vector2(Mathf.Clamp(nameText.preferredWidth + 60, 220, 540), 50);
+            }
+            var tex = Resources.Load<Texture2D>($"Course/flag_{number}");
+            if (tex)
+            {
+                flagImage.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                flagImage.color = Color.white; flagImage.type = Image.Type.Simple;
+                flagImage.rectTransform.sizeDelta = new Vector2(52, 36);
+            }
             parText.text = $"PAR {par}";
             SetDistance(yards, "yd");
         }

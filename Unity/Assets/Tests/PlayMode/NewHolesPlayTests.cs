@@ -26,6 +26,43 @@ namespace GolfArcade.PlayTests
             }
         }
 
+        /// The controller is the same on every hole and made for each: its map frames the whole
+        /// hole (every fairway station, the tee and the pin inside the picture), its badge carries
+        /// the hole's number and name, and it reads the aim against that hole's line.
+        [UnityTest]
+        public IEnumerator TheControllerFitsEachHole()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;
+            yield return null;
+            game.ChooseHoles(0);
+            game.Play();
+            yield return null;
+            foreach (int number in new[] { 7, 12, 13, 14, 15 })
+            {
+                game.JumpToHole(number);
+                yield return new WaitForSecondsRealtime(0.5f);
+                var hole = game.CurrentHole;
+                game.DropBall(hole.Tee);
+                yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the tee shot to set up");
+                game.PreviewBigScreen(true);
+                yield return new WaitForSecondsRealtime(0.8f);
+                var map = GameObject.Find("Minimap camera").GetComponent<Camera>();
+                foreach (var p in hole.Centerline)
+                {
+                    var v = map.WorldToViewportPoint(HoleView.ToWorld(p));
+                    Assert.IsTrue(v.x > 0 && v.x < 1 && v.y > 0 && v.y < 1, $"hole {number}: {p} is on the controller's map ({v})");
+                }
+                var badge = GameObject.Find("Hole name");
+                Assert.IsTrue(badge && badge.activeInHierarchy, $"hole {number}: the badge names the hole");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/c-{number}-controller.png"));
+                game.PreviewBigScreen(false);
+                yield return new WaitForSecondsRealtime(0.3f);
+            }
+        }
+
         [UnityTest]
         public IEnumerator TheNewHolesPlay()
         {

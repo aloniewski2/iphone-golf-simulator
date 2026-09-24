@@ -225,11 +225,12 @@ namespace GolfArcade.Game
                 if (on)
                 {
                     hud.EnterControllerLayout();
+                    hud.CornerOnTv(bigScreen.Live);   // the scoreboard and the card go with the course
                     hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
                     hud.Controller.SetScreen(bigScreen.Live);
                     hud.Controller.Skip.Pressed = () => { if (Current == State.Intro && stateTime > 0.3f) BeginAim(false); };
                     // (from the menu there's no hole yet: StartHole fills it in)
-                    if (hole != null && Card != null) { hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture); ShowScore(); }
+                    if (hole != null && Card != null) { hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name); ShowScore(); }
                 }
                 else hud.LeaveControllerLayout();
                 ShowControllerForState();
@@ -380,16 +381,33 @@ namespace GolfArcade.Game
             if (hole != null) FrameMinimap();
         }
 
+        /// The map frames the whole hole, whatever its shape — the fairway's every turn, the
+        /// green, the islands it is played over — with the tee at the bottom and the hole running
+        /// up it, fitted to the picture's shape (the HUD's tall corner, the controller's wide card).
         void FrameMinimap()
         {
             var tee = HoleView.ToWorld(hole.Tee); var pin = HoleView.ToWorld(hole.Pin);
-            var mid = (tee + pin) / 2;
-            var dir = (pin - tee); dir.y = 0;
-            float length = dir.magnitude + 60;
-            minimapCamera.transform.position = mid + Vector3.up * 200;
-            minimapCamera.transform.rotation = Quaternion.LookRotation(Vector3.down, dir.normalized);
-            minimapCamera.orthographicSize = length / 2;
-            minimapCamera.aspect = (float)minimapTexture.width / minimapTexture.height;
+            var up = pin - tee; up.y = 0; up.Normalize();
+            var across = new Vector3(up.z, 0, -up.x);
+            var points = new System.Collections.Generic.List<CoursePoint>(hole.Centerline);
+            if (hole.Shore != null) points.AddRange(hole.Shore);
+            foreach (var islet in hole.Islets) points.AddRange(islet);
+            float minA = float.MaxValue, maxA = float.MinValue, minC = float.MaxValue, maxC = float.MinValue;
+            foreach (var p in points)
+            {
+                var v = new Vector3((float)p.X, 0, (float)p.D) - new Vector3(tee.x, 0, tee.z);
+                float a = Vector3.Dot(v, up), c = Vector3.Dot(v, across);
+                minA = Mathf.Min(minA, a); maxA = Mathf.Max(maxA, a); minC = Mathf.Min(minC, c); maxC = Mathf.Max(maxC, c);
+            }
+            float pad = (float)hole.GreenRadius;
+            minA -= pad; maxA += pad; minC -= pad; maxC += pad;
+            float aspect = (float)minimapTexture.width / minimapTexture.height;
+            var mid = new Vector3(tee.x, 0, tee.z) + up * ((minA + maxA) / 2) + across * ((minC + maxC) / 2);
+            minimapCamera.transform.position = mid + Vector3.up * 300;
+            minimapCamera.transform.rotation = Quaternion.LookRotation(Vector3.down, up);
+            minimapCamera.farClipPlane = 600;
+            minimapCamera.orthographicSize = Mathf.Max((maxA - minA) / 2, (maxC - minC) / 2 / aspect) * 1.04f;
+            minimapCamera.aspect = aspect;
         }
 
         // ----- Hole flow -----
@@ -428,7 +446,7 @@ namespace GolfArcade.Game
             Wind = Wind.Random(rng);
             holeView.ShowFlag(true);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
-            hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture);
+            hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
             double downTheHole = hole.Tee.HeadingTo(hole.Pin);
             hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm, Wind.SpeedMPH);
             ShowScore();
@@ -1128,7 +1146,8 @@ namespace GolfArcade.Game
                     yards[i] = GolfClubs.All[i] == GolfClub.Putter ? $"{d * 3:F0} ft" : $"{d:F0} yd";
                 }
                 hud.Controller.SetClubs(Array.IndexOf(GolfClubs.All, club), yards);
-                hud.Controller.SetHeading((float)(heading - hole.Tee.HeadingTo(hole.Pin)));
+                // straight is along this hole's line from here: round a bend, not across it
+                hud.Controller.SetHeading((float)(heading - ballAt.HeadingTo(putting ? hole.Pin : hole.RecommendedTarget(ballAt))));
             }
             targetYards = putting ? 0 : ballAt.DistanceTo(FullShotCarry(lie));
             ShowScore();

@@ -689,6 +689,8 @@ namespace GolfArcade.UI
         /// Show or hide everything but the menu (the cards, meter and map stay out of the way).
         public void ShowPlayHud(bool on)
         {
+            playHudShown = on;
+            if (tvCorner && board.parent == tvCorner) tvCorner.gameObject.SetActive(on);
             foreach (Transform child in safeArea)
                 if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats"
                     && child.name != "Replay badge" && child.name != "Face dial") child.gameObject.SetActive(on);
@@ -1045,7 +1047,8 @@ namespace GolfArcade.UI
         {
             if (flightMode == on) return;
             flightMode = on;
-            if (Controller == null) foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(!on);
+            // (the scoreboard and the distance card stay in their corner through the shot)
+            if (Controller == null) meterRect.gameObject.SetActive(!on);
             minimapHolder.gameObject.SetActive(!on);
             statusText.enabled = tempoText.enabled = !on;
             if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
@@ -1058,8 +1061,9 @@ namespace GolfArcade.UI
             {
                 statsRow = new GameObject("Shot stats").AddComponent<RectTransform>();
                 statsRow.SetParent(safeArea, false);
-                statsRow.anchorMin = statsRow.anchorMax = new Vector2(0.5f, 1); statsRow.pivot = new Vector2(0.5f, 1);
-                statsRow.anchoredPosition = new Vector2(0, -Margin); statsRow.sizeDelta = new Vector2(1000, 110);
+                // along the foot of the screen, so the corner's scoreboard and card stay up
+                statsRow.anchorMin = statsRow.anchorMax = new Vector2(0.5f, 0); statsRow.pivot = new Vector2(0.5f, 1);
+                statsRow.anchoredPosition = new Vector2(0, 80 + 110); statsRow.sizeDelta = new Vector2(1000, 110);
             }
             const float w = 188, gap = 10, h = 108, strip = 38;
             float x0 = -(titles.Length * w + (titles.Length - 1) * gap) / 2f + w / 2f;
@@ -1145,7 +1149,12 @@ namespace GolfArcade.UI
         }
 
         /// The hole, for the controller sheet (the scoreboard has it on the phone HUD).
-        public void SetHole(int number, int par, double yards, string picture = null) => Controller?.SetHole(number, par, yards);
+        public void SetHole(int number, int par, double yards, string picture = null, string name = null)
+        {
+            lastHole = (number, par, yards, name);
+            Controller?.SetHole(number, par, yards, name);
+        }
+        (int number, int par, double yards, string name) lastHole;
         /// The score, for the controller sheet (SetScoreboard draws it on the phone HUD).
         public void SetScore(int strokes, int toPar, int holeStrokes) => Controller?.SetScore(toPar, holeStrokes);
 
@@ -1312,6 +1321,7 @@ namespace GolfArcade.UI
             mapHome = Minimap.transform.parent;
             Minimap.transform.SetParent(Controller.MapSlot, false);
             Controller.SetStatus(statusText.text);
+            if (lastHole.number > 0) Controller.SetHole(lastHole.number, lastHole.par, lastHole.yards, lastHole.name);
             if (lastDistance.unit != null) Controller.SetDistance(lastDistance.amount, lastDistance.unit);
             if (lastWind.set) Controller.SetWind(lastWind.degrees, lastWind.mph, lastWind.calm);
             bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
@@ -1326,7 +1336,47 @@ namespace GolfArcade.UI
             if (Controller == null) return;
             if (mapHome) Minimap.transform.SetParent(mapHome, false);
             Controller.Destroy(); Controller = null;
+            CornerOnTv(false);
             foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(true);
+        }
+
+        // ---- The corner on the big screen: with the course on the TV, the scoreboard and the
+        // distance card go with it, top left of the TV, the same as they sit on the phone.
+        RectTransform tvCorner;
+        bool playHudShown = true;
+
+        /// `on`: the course is live on display 1, so the corner is drawn there; off, it comes home.
+        public void CornerOnTv(bool on)
+        {
+            if (on)
+            {
+                if (!tvCorner)
+                {
+                    var go = new GameObject("TV corner");
+                    go.transform.SetParent(transform, false);
+                    var canvas = go.AddComponent<Canvas>();
+                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    canvas.targetDisplay = 1;
+                    canvas.sortingOrder = 10;
+                    var scaler = go.AddComponent<CanvasScaler>();
+                    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                    scaler.referenceResolution = new Vector2(1920, 1080);
+                    scaler.matchWidthOrHeight = 1f;
+                    tvCorner = new GameObject("Corner").AddComponent<RectTransform>();
+                    tvCorner.SetParent(go.transform, false);
+                    tvCorner.anchorMin = Vector2.zero; tvCorner.anchorMax = Vector2.one;
+                    tvCorner.offsetMin = tvCorner.offsetMax = Vector2.zero;
+                    tvCorner.localScale = Vector3.one * 0.72f;
+                    tvCorner.pivot = new Vector2(0, 1);
+                }
+                foreach (var rt in new[] { board, shotCard }) { rt.SetParent(tvCorner, false); rt.gameObject.SetActive(true); }
+                tvCorner.gameObject.SetActive(playHudShown);
+            }
+            else if (tvCorner && board.parent == tvCorner)
+            {
+                foreach (var rt in new[] { board, shotCard }) { rt.SetParent(safeArea, false); rt.SetAsFirstSibling(); }
+                tvCorner.gameObject.SetActive(false);
+            }
         }
 
         void Update()
