@@ -32,8 +32,9 @@ namespace GolfArcade.UI
 
         RectTransform safeArea;
         Rect appliedSafeArea;
-        Text distanceText, distanceCaption, clubText, statusText, bannerText, tempoText, windText, controllerText;
-        Image clubPill, meterGauge;
+        Text statusText, bannerText, tempoText, controllerText;
+        YardageCard yardage;
+        Image meterGauge;
         RectTransform minimapHolder;
         const float Margin = 36f;
         // The power arc: a stretch of a circle whose centre is out in the picture, so the arc bows
@@ -68,12 +69,12 @@ namespace GolfArcade.UI
         }
         Text meterYards;
         Transform meterTrack;
-        Image meterFill, meterMark, windArrow;
+        Image meterFill, meterMark;
         RectTransform meterRect;
         Vector2 meterHome;
         float meterLoad;
         CanvasGroup bannerGroup;
-        RectTransform scorecard, board, shotCard;
+        RectTransform board, shotCard;
         float bannerUntil;
         StrikePopup strikePopup;
         PinLocator pinLocator;
@@ -118,27 +119,10 @@ namespace GolfArcade.UI
             board.anchorMin = board.anchorMax = board.pivot = new Vector2(0, 1);
             board.anchoredPosition = new Vector2(Margin, -Margin); board.sizeDelta = new Vector2(420, BoardHeight);
 
-            // The distance card.
-            var shotRoot = UiKit.Pill(safeArea, "Shot card", UiKit.ArcadeBlue, new Vector2(0, 1), Vector2.zero, new Vector2(460, 262), out var shotFill, 5f, round: false);
-            shotRoot.pivot = new Vector2(0, 1);
-            shotRoot.anchoredPosition = new Vector2(Margin, -Margin - BoardHeight - 22);
-            shotCard = shotRoot;
-            var shot = shotFill.rectTransform;
-            distanceCaption = Label("Caption", 24, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -18), new Vector2(460, 30), shot);
-            distanceCaption.font = UiKit.Strong; distanceCaption.color = UiKit.Hex("D5E3FF");
-            distanceText = Label("Distance", 104, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(22, -38), new Vector2(480, 118), shot);
-            distanceText.font = UiKit.Display; distanceText.supportRichText = true;
-            var clubRoot = UiKit.Pill(shot, "Club pill", UiKit.ArcadeYellow, new Vector2(0, 1), Vector2.zero, new Vector2(300, 50), out clubPill, 3f);
-            clubRoot.pivot = new Vector2(0, 1); clubRoot.anchoredPosition = new Vector2(20, -158);
-            clubPillRoot = clubRoot;
-            clubText = UiKit.Label(clubPill.transform, "Club", 25, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(16, 0), Vector2.zero, UiKit.Display, false);
-            clubText.rectTransform.offsetMax = new Vector2(-16, 0); clubText.color = UiKit.ArcadeInk;
-            windArrow = Panel("Wind arrow", new Color(1f, 1f, 1f, 0.95f), new Vector2(0, 1), new Vector2(0, 1), new Vector2(40, -228), new Vector2(34, 34), shot);
-            windArrow.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            windArrow.sprite = ArrowSprite(); windArrow.type = Image.Type.Simple;
-            windText = Label("Wind", 26, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(70, -228), new Vector2(420, 36), shot);
-            windText.rectTransform.pivot = new Vector2(0, 0.5f);
-            windText.font = UiKit.Strong; windText.color = Color.white;
+            // The yardage card (the user's pick, option A): the distance, the club, how it plays,
+            // the wind, the lie.
+            yardage = new YardageCard(safeArea, new Vector2(Margin, -Margin - BoardHeight - 22), ArrowSprite());
+            shotCard = yardage.Root;
 
             statusText = Label("Status", 38, TextAnchor.MiddleCenter, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 420), new Vector2(1000, 60));
             statusText.color = new Color(1, 1, 1, 0.9f);
@@ -154,7 +138,7 @@ namespace GolfArcade.UI
             meter.anchorMin = meter.anchorMax = new Vector2(0, 0.5f); meter.pivot = new Vector2(0, 0.5f);
             meter.anchoredPosition = new Vector2(Margin - 6, -40); meter.sizeDelta = Vector2.zero;
             meterRect = meter;
-            meterHome = meterRect.anchoredPosition;
+            meterHome = meterPhoneHome = meterRect.anchoredPosition;
             meterTrack = meter;
             Image Ring(string name, Color c, float radius, float band)
             {
@@ -248,13 +232,8 @@ namespace GolfArcade.UI
             faceDial = FaceDial.Create(safeArea, 10f, 24f);
             replayBadge = ReplayBadge.Create(safeArea);
             pinLocator = PinLocator.Create(transform);
+            swingCard = SwingCard.Create(safeArea, Margin);
             tvMap = TvMap.Create(safeArea, Margin);
-
-            // Scorecard, filled in when the round ends.
-            var card = Card("Scorecard", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900, 600), new Color(0.05f, 0.09f, 0.17f, 0.94f));
-            card.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            scorecard = card.rectTransform;
-            scorecard.gameObject.SetActive(false);
         }
 
         /// Fits the HUD to the phone's safe area (notch at the top, home indicator at the bottom).
@@ -273,35 +252,30 @@ namespace GolfArcade.UI
         /// the aim line, so straight up the screen is a helping wind.
         public void SetWind(float relativeDegrees, string label, bool calm, double mph = 0)
         {
-            windText.text = label;
-            FitShotCard();
-            windArrow.enabled = !calm;
-            windArrow.rectTransform.localRotation = Quaternion.Euler(0, 0, -relativeDegrees);
+            if (calm) yardage.SetRow(1, "wind", "Wind", "Calm");
+            else yardage.SetRow(1, "wind", "Wind", $"{mph:F0} mph", null, relativeDegrees);
             lastWind = (true, relativeDegrees, mph, calm);
             Controller?.SetWind(relativeDegrees, mph, calm);
         }
 
         /// Lays out the round's card: a row per hole, the totals, and a button to go again.
-        public void ShowScorecard(GolfArcade.Course.Scorecard card)
+        RoundCard roundCard;
+        /// Pressed on the round's card: the same holes again, or back to the menu.
+        public HoldButton RoundMenu;
+
+        /// The round's card (option A), with its highlights.
+        public void ShowScorecard(GolfArcade.Course.Scorecard card, RoundCard.Highlight[] highlights)
         {
-            foreach (Transform child in scorecard) if (child.name != "Fill") Destroy(child.gameObject);
-            var rows = new System.Collections.Generic.List<(string hole, string par, string score)>(card.Rows());
-            float rowHeight = 62, top = 130, bottom = 260;
-            scorecard.sizeDelta = new Vector2(900, top + rowHeight * (rows.Count + 2) + bottom);
-            float y = -30;
-            var title = Label("Title", 52, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(860, 60), scorecard);
-            title.text = card.Course.Name;
-            y -= 90;
-            Row(y, "HOLE", "PAR", "SCORE", 34, new Color(0.8f, 0.9f, 0.8f)); y -= rowHeight;
-            foreach (var r in rows) { Row(y, r.hole, r.par, r.score, 44, Color.white); y -= rowHeight; }
-            Row(y, "TOTAL", card.Course.Par.ToString(), card.Total.ToString(), 44, new Color(1f, 0.95f, 0.6f)); y -= rowHeight;
-            var toPar = Label("ToPar", 60, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y - 10), new Vector2(860, 80), scorecard);
-            toPar.text = GolfArcade.Course.Scorecard.FormatToPar(card.ToPar);
-            PlayAgain = Button("PLAY AGAIN", new Vector2(0.5f, 0), new Vector2(0, 90), new Vector2(420, 100), 40, scorecard);
-            scorecard.gameObject.SetActive(true);
+            HideScorecard();
+            var holes = card.Course.Holes;
+            var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
+            for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
+            roundCard = new RoundCard(safeArea, $"{card.Course.Name} Open", numbers, pars, strokes, card.Total, card.ToPar, highlights);
+            roundCard.Root.SetAsLastSibling();
+            PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu;
         }
 
-        public void HideScorecard() => scorecard.gameObject.SetActive(false);
+        public void HideScorecard() { roundCard?.Destroy(); roundCard = null; }
 
         /// The screen before a round: who you are, which hole, and whether the picture goes to
         /// the big screen. One dark sheet over a slow aerial of the chosen hole; the course
@@ -697,7 +671,7 @@ namespace GolfArcade.UI
         {
             playHud = on;
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats"
+                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
                     && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
             tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }
@@ -1046,8 +1020,6 @@ namespace GolfArcade.UI
         // ---- The shot as Golf Dreams shows it: while the ball is away the aiming HUD clears and
         // a row of swing-stat tiles runs across the top (a coloured title strip over a white
         // value), and a yardage label rides beside the ball, counting as it flies and runs.
-        RectTransform statsRow;
-        readonly System.Collections.Generic.List<(Text title, Text value)> statTiles = new();
         Text ballTag;
         bool flightMode;
 
@@ -1064,44 +1036,17 @@ namespace GolfArcade.UI
             if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
         }
 
-        /// The tiles: one per title, with its value under it.
-        public void ShowShotStats(string[] titles, string[] values)
+        SwingCard swingCard;
+
+        /// After the strike, the swing card (option A): the grade and the shape, six tiles, the line.
+        public SwingCard ShowSwingCard(string grade, Color gradeColor, string shape, (string icon, string title, string value)[] tiles)
         {
-            if (statsRow == null)
-            {
-                statsRow = new GameObject("Shot stats").AddComponent<RectTransform>();
-                statsRow.SetParent(safeArea, false);
-                // along the foot of the screen, so the corner's scoreboard and card stay up
-                statsRow.anchorMin = statsRow.anchorMax = new Vector2(0.5f, 0); statsRow.pivot = new Vector2(0.5f, 1);
-                statsRow.anchoredPosition = new Vector2(0, 80 + 110); statsRow.sizeDelta = new Vector2(1000, 110);
-            }
-            const float w = 188, gap = 10, h = 108, strip = 38;
-            float x0 = -(titles.Length * w + (titles.Length - 1) * gap) / 2f + w / 2f;
-            while (statTiles.Count < titles.Length)
-            {
-                var tile = Panel("Tile", new Color(1, 1, 1, 0.96f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), Vector2.zero, new Vector2(w, h), statsRow);
-                tile.rectTransform.pivot = new Vector2(0.5f, 1); tile.raycastTarget = false;
-                var head = Panel("Strip", UiKit.AccentStrong, new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, new Vector2(0, strip), tile.transform);
-                head.rectTransform.pivot = new Vector2(0.5f, 1); head.raycastTarget = false;
-                var t = UiKit.Label(head.transform, "Title", 22, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
-                t.color = Color.white; t.raycastTarget = false;
-                var v = UiKit.Label(tile.transform, "Value", 34, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(1, 0), new Vector2(0, 0), new Vector2(0, h - strip), UiKit.Display, false);
-                v.rectTransform.pivot = new Vector2(0.5f, 0); v.color = UiKit.Ground; v.raycastTarget = false;
-                statTiles.Add((t, v));
-            }
-            for (int i = 0; i < statTiles.Count; i++)
-            {
-                var tile = (RectTransform)statTiles[i].title.transform.parent.parent;
-                bool on = i < titles.Length;
-                tile.gameObject.SetActive(on);
-                if (!on) continue;
-                tile.anchoredPosition = new Vector2(x0 + i * (w + gap), 0);
-                statTiles[i].title.text = titles[i]; statTiles[i].value.text = values[i];
-            }
-            statsRow.gameObject.SetActive(true);
+            swingCard.Show(grade, gradeColor, shape, tiles);
+            swingCard.transform.SetAsLastSibling();
+            return swingCard;
         }
 
-        public void HideShotStats() { if (statsRow) statsRow.gameObject.SetActive(false); }
+        public void HideShotStats() => swingCard.Hide();
 
         /// The yardage beside the ball, placed off `view`; null text hides it.
         /// The pin on the course picture, or where to look for it (null `view` hides it).
@@ -1125,22 +1070,7 @@ namespace GolfArcade.UI
             ballTag.gameObject.SetActive(on);
         }
 
-        /// The read, in the wind line's place while putting: no wind matters on the green.
-        public void SetRead(string text)
-        {
-            windText.text = text;
-            FitShotCard();
-            windArrow.enabled = false;
-        }
 
-        void Row(float y, string hole, string par, string score, int size, Color color)
-        {
-            var a = Label("Hole", size, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(90, y), new Vector2(300, 60), scorecard);
-            var b = Label("Par", size, TextAnchor.UpperCenter, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(60, y), new Vector2(200, 60), scorecard);
-            var c = Label("Score", size, TextAnchor.UpperRight, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-90, y), new Vector2(200, 60), scorecard);
-            a.text = hole; b.text = par; c.text = score;
-            a.color = b.color = c.color = color;
-        }
 
         /// A white arrow pointing up, drawn once into a small texture.
         static Sprite ArrowSprite()
@@ -1175,7 +1105,6 @@ namespace GolfArcade.UI
         // hole, then a row for you (yellow) and a row for par (blue), a chip per hole of the round
         // — yellow, the one being played lit — and the totals in white at the end.
         const float BoardHeight = 196f;
-        RectTransform clubPillRoot;
 
         /// `strokes` per hole, null where not played (the one being played shows its live count).
         public void SetScoreboard(string title, int[] pars, int?[] strokes, int current)
@@ -1228,26 +1157,18 @@ namespace GolfArcade.UI
         /// The distance card's big number: `amount` in `unit` ("YD", "FT"), `caption` over it.
         public void SetDistance(double amount, string unit, string caption)
         {
-            distanceText.text = $"{amount:F0}<size=40><color=#D5E3FF>  {unit}</color></size>";
-            distanceCaption.text = caption.ToUpperInvariant();
-            FitShotCard();
+            yardage.SetDistance(amount, unit, caption);
             lastDistance = (amount, unit);
             Controller?.SetDistance(amount, unit);
         }
-        /// The club and what it carries, in the pill under the number.
-        public void SetClub(string text)
-        {
-            clubText.text = text;
-            clubPillRoot.sizeDelta = new Vector2(Mathf.Min(540, clubText.preferredWidth + 36), 50);
-            FitShotCard();
-        }
 
-        /// The card as wide as what is on it, and no wider.
-        void FitShotCard()
-        {
-            float wide = Mathf.Max(distanceText.preferredWidth + 26, clubPillRoot.sizeDelta.x + 26, windText.preferredWidth + 76, 300f);
-            shotCard.sizeDelta = new Vector2(Mathf.Min(620f, wide + 30f), shotCard.sizeDelta.y);
-        }
+        /// The club and what it carries, on the yellow pill.
+        public void SetClub(string text, bool putter = false) => yardage.SetClub(text, putter);
+
+        /// One of the yardage card's rows (0 plays / slope, 1 wind / break, 2 lie).
+        public void SetCardRow(int row, string icon, string label, string value, string note = null, float? arrowDegrees = null)
+            => yardage.SetRow(row, icon, label, value, note, arrowDegrees);
+
         public void SetStatus(string text) { statusText.text = text; Controller?.SetStatus(text); }
         public void SetTempo(string text) => tempoText.text = text;
         public void SetControllerHint(string text) => controllerText.text = text;
@@ -1374,6 +1295,7 @@ namespace GolfArcade.UI
         // HUD's own, far out of the course's way and drawing after it, carries this canvas there.
         // The controller gets a canvas of its own on the phone.
         bool onTv;
+        Vector2 meterPhoneHome;
         Camera liveTv, tvHudCamera;
         RectTransform phoneLayer;
         /// True while the HUD is on the TV (the course is live there and the phone is the club).
@@ -1418,6 +1340,8 @@ namespace GolfArcade.UI
                 scaler.referenceResolution = new Vector2(UiKit.PhoneReference.x, 1700);
                 safeArea.anchorMin = Vector2.zero; safeArea.anchorMax = Vector2.one;
                 safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
+                // the meter drops clear of the yardage card on the shorter screen
+                meterHome = meterPhoneHome + new Vector2(0, -170);
             }
             else
             {
@@ -1426,6 +1350,7 @@ namespace GolfArcade.UI
                 scaler.matchWidthOrHeight = 0.5f;
                 scaler.referenceResolution = UiKit.PhoneReference;
                 if (tvHudCamera) tvHudCamera.gameObject.SetActive(false);
+                meterHome = meterPhoneHome;
                 appliedSafeArea = default;
                 ApplySafeArea();
             }

@@ -416,6 +416,7 @@ namespace GolfArcade.Game
         {
             course = CourseFor(chosenHoles);
             Card = new Scorecard(course);
+            longestDrive = longestShot = 0; perfectStrikes = putts = 0;
             hud.HideScorecard();
             StartHole(0);
         }
@@ -494,7 +495,7 @@ namespace GolfArcade.Game
                 aimedByPlayer = false;
             }
             // the club for where this shot is going: the pin, or on a long hole the next landing
-            club = AutoClub(lie, ballAt.DistanceTo(putting ? hole.Pin : hole.RecommendedTarget(ballAt)));
+            club = AutoClub(lie, putting ? ballAt.DistanceTo(hole.Pin) : PlaysLike(ballAt, hole.RecommendedTarget(ballAt)));
             Swing.SetClub(club);
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             Swing.Armed = true;
@@ -631,6 +632,11 @@ namespace GolfArcade.Game
 
         /// The shortest club in the bag that gets there from this lie (a putter on the green);
         /// the player can still step up or down the bag.
+        /// The yards a shot plays: the distance, and a yard more for every yard the ground climbs
+        /// (the flight comes down on a rise early; falling ground gives nothing back).
+        static double PlaysLike(CoursePoint from, CoursePoint to)
+            => from.DistanceTo(to) + Math.Max(0, HoleView.GroundHeight(to) - HoleView.GroundHeight(from));
+
         static GolfClub AutoClub(CourseLie lie, double yards)
         {
             if (lie.IsPuttingSurface()) return GolfClub.Putter;
@@ -1128,19 +1134,23 @@ namespace GolfArcade.Game
             if (putting) hud.SetDistance(toPin * 3, "FT", "to the hole"); else hud.SetDistance(toPin, "YD", "to the pin");
             if (putting)
             {
-                // The read in words: rise along the line and which way the ground tips across it.
+                // The read: rise along the line and which way the ground tips across it.
                 var g = hole.Surface.Gradient(ballAt);
                 double along = g.dx * dir.x + g.dd * dir.z, across = g.dx * dir.z - g.dd * dir.x;
-                string read = Math.Abs(along) < 0.004 && Math.Abs(across) < 0.004 ? "Flat"
-                    : $"{(along >= 0 ? "Uphill" : "Downhill")} {Math.Abs(along) * 100:F1}%  ·  {(Math.Abs(across) < 0.004 ? "straight" : across > 0 ? "breaks left" : "breaks right")}";
-                hud.SetClub($"Putter  ·  {rated * 3:F0} ft stroke");
-                hud.SetRead(read);
+                hud.SetClub($"Putter  ·  {rated * 3:F0} ft", putter: true);
+                hud.SetCardRow(0, "elevation", "Slope", Math.Abs(along) < 0.004 ? "Flat" : $"{(along >= 0 ? "Up" : "Down")} {Math.Abs(along) * 100:F1}%");
+                hud.SetCardRow(1, "target", "Break", Math.Abs(across) < 0.004 ? "Straight" : across > 0 ? "Left" : "Right");
             }
             else
             {
-                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0} yd{(lie is CourseLie.Rough or CourseLie.Bunker or CourseLie.Fringe ? $"  ·  {lie.Label()}{(lie == CourseLie.Rough ? " (flyer)" : "")}" : "")}");
+                // what it plays: a green above the ball wants a yard more for every yard it climbs
+                double rise = HoleView.GroundHeight(hole.Pin) - HoleView.GroundHeight(ballAt);
+                string note = rise >= 1.5 ? $"+{rise:F0}" : null;
+                hud.SetClub($"{club.DisplayName()}  ·  {rated:F0}");
+                hud.SetCardRow(0, "elevation", "Plays", $"{toPin + Math.Max(0, rise):F0}", note);
                 hud.SetWind((float)Wind.RelativeTo(heading), Wind.Describe(heading), Wind.IsCalm, Wind.SpeedMPH);
             }
+            hud.SetCardRow(2, "grass", "Lie", lie == CourseLie.Rough ? "Rough (flyer)" : lie.Label());
             if (hud.Controller != null)
             {
                 var yards = new string[GolfClubs.All.Length];
@@ -1300,6 +1310,7 @@ namespace GolfArcade.Game
             touchedDown = false; splashedAt = -1;
             lastImpact = impact; originWorld = HoleView.ToWorld(ballAt); flightHud = false;
             lastReport = Strikes.Judge(impact); gradeShown = false;
+            CountForTheCard();
             replayPath.Clear();
             hud.SetFace(null);
             povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
@@ -1447,8 +1458,7 @@ namespace GolfArcade.Game
                         else
                         {
                             RefreshControls();
-                            hud.ShowScorecard(Card);
-                            hud.PlayAgain.Pressed = ShowMenu;
+                            ShowRoundCard();
                             Enter(State.RoundDone);
                         }
                     }
@@ -1543,10 +1553,9 @@ namespace GolfArcade.Game
             {
                 flightHud = true;
                 hud.FlightMode(true);
-                string Deg(double d) => Math.Abs(d) < 0.05 ? "0.0°" : $"{Math.Abs(d):0.0}°{(d > 0 ? "R" : "L")}";
-                hud.ShowShotStats(new[] { "Swing Speed", "Swing Load", "Face", "Start Line", "Curve" },
-                                  new[] { $"{club.ClubSpeedMPH(lastImpact.Power):F0} mph", $"{lastImpact.Backswing:P0}", Deg(lastImpact.FaceDegrees), Deg(LastShot.StartLine), Deg(LastShot.Curve) });
+                ShowSwingCard();
             }
+            if (swingCard && flightHud) UpdateSwingCard();
 
             // Done when the shot has run its course and the drawn ball has caught up with it
             // (not still dropping off an edge); the water takes a moment to swallow it first.
@@ -1565,6 +1574,99 @@ namespace GolfArcade.Game
             if (splashedAt < 0 || flightTime >= splashedAt + 1.1) FinishShot();
         }
 
+        // ----- The round's card -----
+
+        double longestDrive, longestShot;
+        int perfectStrikes, putts;
+
+        /// The round's highlights, counted as each ball is struck (a ball in the water or out of
+        /// bounds is no one's longest drive).
+        void CountForTheCard()
+        {
+            if (club == GolfClub.Putter) { putts++; return; }
+            if (lastReport.Grade == StrikeGrade.Perfect) perfectStrikes++;
+            if (LastShot.Lie is CourseLie.Water or CourseLie.OutOfBounds) return;
+            longestShot = Math.Max(longestShot, LastShot.Total);
+            if (club == GolfClub.Driver) longestDrive = Math.Max(longestDrive, LastShot.Total);
+        }
+
+        /// The round is done: the card, and the way on — the same holes again, or the menu.
+        void ShowRoundCard()
+        {
+            bool drove = longestDrive > 0;
+            hud.ShowPlayHud(false);
+            hud.ShowScorecard(Card, new[]
+            {
+                new RoundCard.Highlight { Icon = "ball", Title = drove ? "Longest drive" : "Longest shot", Value = $"{(drove ? longestDrive : longestShot):F0} yd" },
+                new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
+                new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
+            });
+            hud.PlayAgain.Pressed = PlayAgain;
+            hud.RoundMenu.Pressed = ShowMenu;
+        }
+
+        /// From the round's card straight into the same holes again.
+        public void PlayAgain()
+        {
+            if (Current != State.RoundDone) return;
+            hud.ShowPlayHud(true);
+            StartRound();
+        }
+
+        // ----- The swing card -----
+
+        SwingCard swingCard;
+        /// The flight from above in the aim's frame (along it, right of it; yards) and when.
+        readonly System.Collections.Generic.List<Vector2> curvePoints = new();
+        readonly System.Collections.Generic.List<double> curveTimes = new();
+        float curveReach, curveTarget;
+
+        /// Up while the ball flies: the grade and the shape, what the swing measured, and the
+        /// line drawing itself as the ball goes; carry and total fill in as they happen.
+        void ShowSwingCard()
+        {
+            var r = lastReport;
+            double deadZone = Swing?.Detector.FaceDeadZoneDegrees ?? 10, f = lastImpact.FaceDegrees;
+            double face = Math.Abs(f) <= deadZone ? 0 : Math.Abs(f) - deadZone;
+            swingCard = hud.ShowSwingCard(r.GradeWord, GradeColor(r.Grade), r.ShapeWord, new[]
+            {
+                ("speed", "Swing speed", $"{club.ClubSpeedMPH(lastImpact.Power):F0} mph"),
+                ("swing", "Backswing", $"{Math.Min(1, lastImpact.Backswing) * 100:F0}%"),
+                ("stopwatch", "Tempo", r.TempoRatio > 0 ? $"{r.TempoRatio:F1} : 1" : "—"),
+                ("face", "Face", face < 0.5 ? "Square" : $"{face:F0}° {(f > 0 ? "open" : "closed")}"),
+                ("ball", "Carry", "—"),
+                ("target", "Total", "—"),
+            });
+            // the whole line now, drawn as far as the ball has got each frame
+            curvePoints.Clear(); curveTimes.Clear();
+            double h = LastShot.Heading * Math.PI / 180, sin = Math.Sin(h), cos = Math.Cos(h);
+            var o = LastShot.PositionAt(0);
+            Vector2 Aim(double x, double d) => new((float)((x - o.x) * sin + (d - o.d) * cos), (float)((x - o.x) * cos - (d - o.d) * sin));
+            for (double t = 0; ; t += 0.1)
+            {
+                var p = LastShot.PositionAt(Math.Min(t, LastShot.Duration));
+                curvePoints.Add(Aim(p.x, p.d)); curveTimes.Add(t);
+                if (t >= LastShot.Duration) break;
+            }
+            float end = curvePoints[curvePoints.Count - 1].x;
+            // the flag where the pin is if the ball went near it, else at the end of the straight line
+            var pin = Aim(hole.Pin.X, hole.Pin.D);
+            curveTarget = pin.x > 0 && pin.x < end * 1.3f ? pin.x : Mathf.Max(end, 1);
+            curveReach = Mathf.Max(end, curveTarget) * 1.06f;
+        }
+
+        void UpdateSwingCard()
+        {
+            int count = curveTimes.FindLastIndex(t => t <= flightTime) + 1;
+            swingCard.SetCurve(curvePoints, count, curveReach, curveTarget);
+            if (flightTime >= LastShot.CarryTime) swingCard.SetTile(4, $"{LastShot.Carry:F0} yd");
+            var p = LastShot.PositionAt(flightTime);
+            double gone = Math.Sqrt((p.x - LastShot.Origin.X) * (p.x - LastShot.Origin.X) + (p.d - LastShot.Origin.D) * (p.d - LastShot.Origin.D));
+            swingCard.SetTile(5, $"{(flightTime >= LastShot.Duration ? LastShot.Total : gone):F0} yd");
+        }
+
+        static Color GradeColor(StrikeGrade g) => g switch { StrikeGrade.Perfect => UiKit.ArcadeYellow, StrikeGrade.Great => GreatGreen, StrikeGrade.Good => Color.white, _ => ThinOrange };
+
         // ----- The strike's verdict and the gallery -----
 
         static readonly Color GreatGreen = new(0.45f, 0.95f, 0.45f), ThinOrange = new(1f, 0.55f, 0.25f);
@@ -1576,8 +1678,7 @@ namespace GolfArcade.Game
             if (gradeShown) return;
             gradeShown = true;
             var r = lastReport;
-            var color = r.Grade switch { StrikeGrade.Perfect => UiKit.ArcadeYellow, StrikeGrade.Great => GreatGreen, StrikeGrade.Good => Color.white, _ => ThinOrange };
-            hud.ShowStrike(r.GradeWord, color, r.Shape == ShotShape.Straight ? null : r.ShapeWord);
+            hud.ShowStrike(r.GradeWord, GradeColor(r.Grade), r.Shape == ShotShape.Straight ? null : r.ShapeWord);
             if (r.Grade == StrikeGrade.Perfect && LastShot.Power > 0.8 && gallery.gameObject.activeSelf) sounds.PlayApplause(0.3f);
         }
 

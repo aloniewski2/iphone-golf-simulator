@@ -41,7 +41,8 @@ namespace GolfArcade.Game
                     foreach (var t in c.GetComponentsInChildren<Transform>(true)) { relayered.Add((t.gameObject, t.gameObject.layer)); t.gameObject.layer = 5; }
                 }
             var rect = camera.rect; var clear = camera.clearFlags; var mask = camera.cullingMask; var previous = camera.targetTexture;
-            camera.rect = new Rect(0, 0, 1, 1); camera.clearFlags = CameraClearFlags.Nothing; camera.cullingMask = 1 << 5; camera.targetTexture = rt;
+            // (depth cleared: the course's own would cut into the HUD where the ground is close)
+            camera.rect = new Rect(0, 0, 1, 1); camera.clearFlags = CameraClearFlags.Depth; camera.cullingMask = 1 << 5; camera.targetTexture = rt;
             Canvas.ForceUpdateCanvases();
             camera.Render();
             camera.rect = rect; camera.clearFlags = clear; camera.cullingMask = mask; camera.targetTexture = previous;
