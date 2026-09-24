@@ -56,7 +56,8 @@ namespace GolfArcade.Game
         {
             var right = Vector3.Cross(Vector3.up, aimDirection).normalized;
             float reach = Mathf.Clamp(distanceToPin, 4, 30);
-            targetPosition = ball + right * 2.4f - aimDirection * (5.5f + reach * 0.12f) + Vector3.up * 4.2f;
+            // back and up far enough that the golfer is a figure at the edge, not half the screen
+            targetPosition = ball + right * 3.2f - aimDirection * (8.5f + reach * 0.2f) + Vector3.up * (6.2f + reach * 0.08f);
             targetLookAt = ball + aimDirection * Mathf.Max(distanceToPin * 0.5f, 3f) + Vector3.up * 0.15f;
             positionLag = 0.35f; lookLag = 0.3f;
         }
@@ -66,8 +67,9 @@ namespace GolfArcade.Game
         {
             var away = cup - ball; away.y = 0;
             if (away.sqrMagnitude < 0.01f) away = transform.forward; away.Normalize();
-            targetPosition = cup + away * 2.6f + Vector3.up * 1.1f;
-            targetLookAt = Vector3.Lerp(cup, ball, 0.35f) + Vector3.up * 0.05f;
+            // far enough back and up that the cup and the flag are part of the picture, not all of it
+            targetPosition = cup + away * 7f + Vector3.up * 2.8f;
+            targetLookAt = Vector3.Lerp(cup, ball, 0.4f) + Vector3.up * 0.05f;
             positionLag = 0.3f; lookLag = 0.15f;
         }
 
@@ -181,7 +183,7 @@ namespace GolfArcade.Game
         public void HoldOn(Vector3 ball, Vector3 towardPin, bool putting)
         {
             var dir = towardPin; dir.y = 0; dir.Normalize();
-            targetPosition = ball - dir * (putting ? 2.5f : 6f) + Vector3.up * (putting ? 1.2f : 2.5f);
+            targetPosition = ball - dir * (putting ? 5.5f : 6f) + Vector3.up * (putting ? 2.8f : 2.5f);
             targetLookAt = ball + dir * (putting ? 3f : 12f);
             // from the tee view this is the trip up the hole to the ball: longer the further it is
             positionLag = Mathf.Clamp(Vector3.Distance(transform.position, targetPosition) / 150f, 0.6f, 1.6f); lookLag = 0.5f;
