@@ -44,7 +44,11 @@ namespace GolfArcade.Shot
             GolfClub.LobWedge => "Lob Wedge", GolfClub.Chipper => "Chipper", _ => "Putter",
         };
 
-        /// Carry (total roll for the putter) of a full, fair strike, in yards.
+        /// The putter and the chipper are rated by where the ball finishes — a putt rolls all the
+        /// way, a chip carries a third and runs the rest; every other club by its carry.
+        public static bool RatedByTotal(this GolfClub club) => club is GolfClub.Putter or GolfClub.Chipper;
+
+        /// Carry (where it finishes, for the putter and the chipper) of a full, fair strike, yards.
         public static double ReferenceDistanceYards(this GolfClub club) => club switch
         {
             GolfClub.Driver => 240, GolfClub.Hybrid => 190, GolfClub.Iron5 => 175, GolfClub.Iron => 150,
@@ -63,17 +67,17 @@ namespace GolfArcade.Shot
         /// spinnier down the bag.
         public static double LaunchAngleDegrees(this GolfClub club) => club switch
         {
-            GolfClub.Driver => 12.5, GolfClub.Hybrid => 14, GolfClub.Iron5 => 15, GolfClub.Iron => 17,
-            GolfClub.Iron9 => 21, GolfClub.PitchingWedge => 25, GolfClub.Wedge => 29, GolfClub.LobWedge => 34,
-            GolfClub.Chipper => 30, _ => 0,
+            GolfClub.Driver => 12.5, GolfClub.Hybrid => 16, GolfClub.Iron5 => 15.5, GolfClub.Iron => 18.5,
+            GolfClub.Iron9 => 23, GolfClub.PitchingWedge => 27, GolfClub.Wedge => 32, GolfClub.LobWedge => 42,
+            GolfClub.Chipper => 8, _ => 0,   // (the chipper runs it along the ground)
         };
 
         /// Backspin at full speed, rpm. Scales with club speed.
         public static double SpinRPM(this GolfClub club) => club switch
         {
-            GolfClub.Driver => 2600, GolfClub.Hybrid => 4200, GolfClub.Iron5 => 5300, GolfClub.Iron => 6800,
-            GolfClub.Iron9 => 8200, GolfClub.PitchingWedge => 9000, GolfClub.Wedge => 9800, GolfClub.LobWedge => 9400,
-            GolfClub.Chipper => 5500, _ => 0,
+            GolfClub.Driver => 2600, GolfClub.Hybrid => 4600, GolfClub.Iron5 => 5300, GolfClub.Iron => 6800,
+            GolfClub.Iron9 => 8200, GolfClub.PitchingWedge => 9000, GolfClub.Wedge => 9800, GolfClub.LobWedge => 10200,
+            GolfClub.Chipper => 1200, _ => 0,
         };
 
         /// Peak phone rotation speed (rad/s) that counts as a full swing. Short clubs need less,
@@ -172,7 +176,7 @@ namespace GolfArcade.Shot
                         DirectionDegrees = 0,
                         CurveDegrees = 0,
                     });
-                    return club == GolfClub.Putter ? flight.Total : flight.Carry;
+                    return club.RatedByTotal() ? flight.Total : flight.Carry;
                 }
 
                 double low = 1.0, high = 145.0;

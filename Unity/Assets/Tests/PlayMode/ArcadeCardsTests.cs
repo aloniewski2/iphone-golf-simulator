@@ -49,6 +49,50 @@ namespace GolfArcade.PlayTests
         static string TileValue(GameObject card, int i) => System.Array.Find(card.GetComponentsInChildren<Transform>(true), t => t.name == $"Tile {i}")
             .Find("Value").GetComponent<Text>().text;
 
+        /// Every landing badge, stamped over the island hole's tee, a frame each.
+        [UnityTest]
+        public IEnumerator TheLandingBadges()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var cam = Camera.main;
+            if (cam) cam.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;
+            int holes = game.ChosenHoles;
+            try
+            {
+                yield return null;
+                game.ChooseHoles(12);
+                game.Play();
+                yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the tee");
+                var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+                var badges = new (GolfArcade.UI.LandingBadge.Kind kind, string word, string detail, string stats)[]
+                {
+                    (GolfArcade.UI.LandingBadge.Kind.Green, "On the green!", "12 ft to the hole", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.Fairway, "Fairway", "142 yd to the pin", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.Rough, "Rough", "Lie: rough  ·  158 yd", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.Bunker, "Bunker!", "Sand  ·  64 yd", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.Water, "Splash!  +1", "Drop  ·  penalty stroke", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.OutOfBounds, "Out of bounds  +1", "Replay from the tee", "Carry 173  ·  Total 190"),
+                    (GolfArcade.UI.LandingBadge.Kind.Putt, "So close!", "24 ft putt", null),
+                    (GolfArcade.UI.LandingBadge.Kind.Holed, "Birdie!", "Hole 12  ·  par 3", "2 strokes"),
+                };
+                for (int i = 0; i < badges.Length; i++)
+                {
+                    var b = badges[i];
+                    hud.ShowLanding(b.kind, b.word, b.detail, b.stats, 5f);
+                    yield return new WaitForSecondsRealtime(0.5f);
+                    Assert.IsNotNull(GameCapture.Save($"{Dir}/landing-{i}-{b.kind}.png"));
+                }
+                hud.HideLanding();
+            }
+            finally
+            {
+                PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
+            }
+        }
+
         [UnityTest]
         public IEnumerator TheCardsThroughARound()
         {
@@ -90,6 +134,9 @@ namespace GolfArcade.PlayTests
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/arcade-b-swing-flight.png"));
                 yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the tee shot to finish");
                 yield return new WaitForSecondsRealtime(0.3f);
+                var landing = GameObject.Find("Landing badge");
+                Assert.IsTrue(landing && landing.activeInHierarchy, "the landing is stamped");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/arcade-c2-landing.png"));
                 Assert.AreEqual($"{game.LastShot.Carry:F0} YD", TileValue(swing, 4), "the carry, once it landed");
                 Assert.AreEqual($"{game.LastShot.Total:F0} YD", TileValue(swing, 5), "the total, once it stopped");
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/arcade-c-swing-done.png"));

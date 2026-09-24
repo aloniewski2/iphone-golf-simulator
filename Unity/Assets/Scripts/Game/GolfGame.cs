@@ -957,7 +957,7 @@ namespace GolfArcade.Game
             var labels = new string[checkpointPowers.Length];
             for (int i = 0; i < checkpointPowers.Length; i++)
             {
-                var spot = LandingFor(checkpointPowers[i], lie);
+                var spot = FinishFor(checkpointPowers[i], lie);
                 checkpointSpots.Add(HoleView.ToWorld(spot, 0.05));
                 plan.Targets.Add(new Vector3((float)spot.X, 0, (float)spot.D));
                 labels[i] = i == onPin ? $"PIN {yards[i]:F0}" : $"{yards[i]:F0} yd";
@@ -993,16 +993,18 @@ namespace GolfArcade.Game
         readonly float[] checkpointPowers = new float[3];
         readonly System.Collections.Generic.List<Vector3> checkpointSpots = new();
 
-        /// The three targets around the pin, in `powers` (and their carries in `yards`): the pin's
-        /// own distance with one a tenth of it (5 to 20 yd) short and one as far past, each at the
-        /// power that carries there on this aim in today's wind. Past the club's reach the long
-        /// one stops at a full swing; with the pin out of reach altogether all three stand short
-        /// of it, the last at a full swing. Returns which one is the pin's, or -1.
+        /// The three targets around the pin, in `powers` (and where they finish, in `yards`): the
+        /// pin's own distance with one a tenth of it (5 to 20 yd) short and one as far past, each
+        /// at the power whose ball comes to rest there — it lands short and runs up, as much as
+        /// that club runs on the grass it comes down on — on this aim in today's wind. Past the
+        /// club's reach the long one stops at a full swing; with the pin out of reach altogether
+        /// all three stand short of it, the last at a full swing. Returns which one is the pin's,
+        /// or -1.
         int PinTargets(CourseLie lie, float[] powers, out double[] yards)
         {
             double pin = ballAt.DistanceTo(hole.Pin);
             double gap = Math.Clamp(pin * 0.1, 5, 20);
-            double reach = CarryFor(1, lie);
+            double reach = FinishedFor(1, lie);
             int onPin = 1;
             yards = new[] { pin - gap, pin, pin + gap };
             if (pin > reach - 2) { yards = new[] { reach - 2 * gap, reach - gap, reach }; onPin = -1; }
@@ -1015,21 +1017,42 @@ namespace GolfArcade.Game
             return onPin;
         }
 
-        /// How far this power carries on the aim line in today's wind, yards.
-        double CarryFor(double power, CourseLie lie) => BallFlight.Simulate(TodaysLaunch(power, lie)).CarryPoint.DistanceYards;
+        /// How far down the aim this power's ball comes to rest in today's wind, yards: its
+        /// flight, then its bounce and run on the grass it comes down on.
+        double FinishedFor(double power, CourseLie lie) => Finished(power, lie).DistanceYards;
 
-        /// The power that carries `yards` on the aim line in today's wind (carry only grows with
-        /// power, so a halving search finds it).
+        FlightPoint Finished(double power, CourseLie lie)
+        {
+            var launch = TodaysLaunch(power, lie);
+            var land = BallFlight.Simulate(launch).CarryPoint;
+            double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+            var down = new CoursePoint(ballAt.X + land.LateralYards * cosH + land.DistanceYards * sinH, ballAt.D - land.LateralYards * sinH + land.DistanceYards * cosH);
+            (launch.LandingSoftness, launch.LandingGrab) = hole.LieAt(down).Landing();
+            var flight = BallFlight.Simulate(launch);
+            return flight.PositionAt(flight.Duration);
+        }
+
+        /// The power whose ball comes to rest `yards` down the aim in today's wind (it only goes
+        /// further with more power, so a halving search finds it).
         double PowerFor(double yards, CourseLie lie)
         {
             double lo = 0, hi = 1;
-            if (CarryFor(hi, lie) <= yards) return 1;
-            for (int i = 0; i < 16; i++)
+            if (FinishedFor(hi, lie) <= yards) return 1;
+            for (int i = 0; i < 13; i++)
             {
                 double mid = (lo + hi) / 2;
-                if (CarryFor(mid, lie) < yards) lo = mid; else hi = mid;
+                if (FinishedFor(mid, lie) < yards) lo = mid; else hi = mid;
             }
             return (lo + hi) / 2;
+        }
+
+        /// Where a shot of this power (the meter's reading) comes to rest, square on the aim.
+        CoursePoint FinishFor(double power, CourseLie lie)
+        {
+            var end = Finished(power, lie);
+            double cosH = Math.Cos(heading * Math.PI / 180), sinH = Math.Sin(heading * Math.PI / 180);
+            return new CoursePoint(ballAt.X + end.LateralYards * cosH + end.DistanceYards * sinH,
+                                   ballAt.D - end.LateralYards * sinH + end.DistanceYards * cosH);
         }
 
         BallFlight.Launch TodaysLaunch(double power, CourseLie lie)
@@ -1306,9 +1329,10 @@ namespace GolfArcade.Game
             if (Current != State.Aim) return;
             if (club != GolfClub.Putter)
             {
-                // the amber dot slides out over the ground to where the meter's reading comes
-                // down, the meter says how far, and the checkpoints it has passed light up
-                var spot = LandingFor(load, hole.LieAt(ballAt));
+                // the amber dot slides out over the ground to where the meter's reading comes to
+                // rest, the meter says how far (the same yards as the checkpoints), and the
+                // checkpoints it has passed light up
+                var spot = FinishFor(load, hole.LieAt(ballAt));
                 aimDots.MarkAt(HoleView.ToWorld(spot, 0.05));
                 hud.Map.ShowLoad = aimDots.MarkShown; hud.Map.Load = aimDots.MarkPosition;
                 hud.SetMeter((float)load, null, $"{ballAt.DistanceTo(spot):F0} yd");
@@ -1912,15 +1936,54 @@ namespace GolfArcade.Game
             else if (club == GolfClub.Putter) result = $"{shot.Total * 3:F0} ft  ·  {shot.Rest.DistanceTo(hole.Pin) * 3:F1} ft left";
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             if (!shot.IsHoled) React(shot);
-            string shape = club != GolfClub.Putter && !shot.IsHoled && lastReport.Shape != ShotShape.Straight && shot.Lie != CourseLie.Water
-                ? $"  ·  {lastReport.ShapeWord[0]}{lastReport.ShapeWord.Substring(1).ToLowerInvariant()}" : "";
-            result += shape;
             holeStrokes += shot.PenaltyStrokes;
-            hud.ShowBanner(result, 2.2f);
+            StampLanding(shot);
+            LastResult = result;
+            hud.SetStatus(result);   // (the phone controller's line, now the badge has the banner's place)
             ShowScore();
             // the POV stays where it is, on the ball by the flag, as Codex's does
             if (!holeCam && club == GolfClub.Putter) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
+        }
+
+        /// The last shot's result in words (the old banner's), for the tests.
+        public string LastResult { get; private set; }
+
+        /// Where the ball finished, stamped (option A): the ground it found, what is left, and
+        /// the carry and total; a putt's how close; in the hole, and the water and out of bounds
+        /// with their penalty.
+        void StampLanding(CourseShot shot)
+        {
+            double toPin = shot.Rest.DistanceTo(hole.Pin);
+            bool putt = club == GolfClub.Putter;
+            string stats = putt ? null : $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0}";
+            if (shot.IsHoled)
+            {
+                hud.ShowLanding(LandingBadge.Kind.Holed, "In the hole!", putt ? $"Holed from {shot.Total * 3:F0} ft" : $"Holed from {shot.Total:F0} yd", stats);
+                return;
+            }
+            switch (shot.Lie)
+            {
+                case CourseLie.Water:
+                    hud.ShowLanding(LandingBadge.Kind.Water, "Splash!  +1", "Drop  ·  penalty stroke", stats); return;
+                case CourseLie.OutOfBounds:
+                    hud.ShowLanding(LandingBadge.Kind.OutOfBounds, "Out of bounds  +1", shot.Origin.DistanceTo(hole.Tee) < 1 ? "Replay from the tee" : "Replay the shot", stats); return;
+            }
+            if (putt)
+            {
+                double feet = toPin * 3;
+                string word = shot.LippedOut ? "Lip out!" : feet < 1.5 ? "Tap-in" : feet < 4 ? "So close!" : $"{feet:F0} ft left";
+                hud.ShowLanding(LandingBadge.Kind.Putt, word, $"{shot.Total * 3:F0} ft putt", null, 2f);
+                return;
+            }
+            switch (shot.Lie)
+            {
+                case CourseLie.Green: hud.ShowLanding(LandingBadge.Kind.Green, "On the green!", $"{toPin * 3:F0} ft to the hole", stats); break;
+                case CourseLie.Fringe: hud.ShowLanding(LandingBadge.Kind.Green, "Fringe", $"{toPin * 3:F0} ft to the hole", stats); break;
+                case CourseLie.Rough: hud.ShowLanding(LandingBadge.Kind.Rough, "Rough", $"Lie: rough  ·  {toPin:F0} yd", stats); break;
+                case CourseLie.Bunker: hud.ShowLanding(LandingBadge.Kind.Bunker, "Bunker!", $"Sand  ·  {toPin:F0} yd", stats); break;
+                default: hud.ShowLanding(LandingBadge.Kind.Fairway, "Fairway", $"{toPin:F0} yd to the pin", stats); break;
+            }
         }
 
         void AfterResult()
@@ -1930,7 +1993,9 @@ namespace GolfArcade.Game
             {
                 Card.Record(holeIndex, holeStrokes);
                 ShowScore();
-                hud.ShowBanner(Scorecard.ScoreName(holeStrokes, hole.Par), 3f);
+                string score = Scorecard.ScoreName(holeStrokes, hole.Par);
+                hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,
+                                $"Hole {hole.Number}  ·  par {hole.Par}", $"{holeStrokes} stroke{(holeStrokes == 1 ? "" : "s")}", 3f);
                 Enter(State.HoleDone);
                 return;
             }

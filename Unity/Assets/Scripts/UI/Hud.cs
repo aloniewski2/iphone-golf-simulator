@@ -233,6 +233,7 @@ namespace GolfArcade.UI
 
             // The strike's verdict, the face while you swing, the replay bug.
             strikePopup = StrikePopup.Create(safeArea);
+            landingBadge = LandingBadge.Create(safeArea);
             faceDial = FaceDial.Create(safeArea, 10f, 24f);
             replayBadge = ReplayBadge.Create(safeArea);
             pinLocator = PinLocator.Create(transform);
@@ -262,6 +263,7 @@ namespace GolfArcade.UI
             meterRect.localScale = Vector3.one * held;
             faceDial.transform.localScale = Vector3.one * held;
             strikePopup.Size = held;
+            landingBadge.Size = Mathf.Lerp(1f, s, 0.5f);
             bannerGroup.transform.localScale = Vector3.one * held;
             foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.transform.localScale = Vector3.one * held;
         }
@@ -592,7 +594,7 @@ namespace GolfArcade.UI
         {
             playHud = on;
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
+                if (child.name != "Menu" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Landing badge" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
                     && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
             tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }
@@ -1131,6 +1133,15 @@ namespace GolfArcade.UI
 
         /// The word at impact (PERFECT!, GREAT!, GOOD, THIN) and the ball's shape under it.
         public void ShowStrike(string word, Color color, string shape) => strikePopup.Show(word, color, shape);
+
+        LandingBadge landingBadge;
+        /// Where the ball finished, stamped over the course (UI/LandingBadge.cs, option A).
+        public void ShowLanding(LandingBadge.Kind kind, string word, string detail, string stats, float seconds = 2.4f)
+        {
+            bannerGroup.alpha = 0;   // (it takes the banner's place)
+            landingBadge.Show(kind, word, detail, stats, seconds);
+        }
+        public void HideLanding() => landingBadge.Hide();
 
         /// The club face while setting up and swinging (degrees, positive open); null hides it.
         public void SetFace(double? degrees) => faceDial.Set(Controller == null ? degrees : null);

@@ -19,8 +19,9 @@ namespace GolfArcade.Tests
             }
         }
 
-        /// A club every 15–50 yards, longest to shortest, each flying its number on a full swing,
-        /// and the game hands you the shortest one that gets there.
+        /// A club every 15–50 yards, longest to shortest, each flying its number on a full swing
+        /// (the chipper's is where it finishes), and the game hands you the shortest one that
+        /// gets there.
         [Test]
         public void TheBagStepsDownAndTheRightClubIsPicked()
         {
@@ -29,7 +30,8 @@ namespace GolfArcade.Tests
             {
                 var club = GolfClubs.All[i];
                 Assert.AreEqual(full[i], club.ReferenceDistanceYards(), 1e-9, club.ToString());
-                Assert.AreEqual(full[i], BallFlight.Simulate(club.Launch(1, 0, 0)).Carry, 2.5, $"{club} carries its number");
+                var flight = BallFlight.Simulate(club.Launch(1, 0, 0));
+                Assert.AreEqual(full[i], club.RatedByTotal() ? flight.Total : flight.Carry, 2.5, $"{club} flies its number");
             }
             Assert.AreEqual(GolfClub.Putter, GolfClubs.All[GolfClubs.All.Length - 1]);
             Assert.AreEqual(GolfClub.Driver, GolfClubs.ForDistance(230, _ => 1));
@@ -66,6 +68,25 @@ namespace GolfArcade.Tests
             Assert.Greater(fade.Landing.LateralYards, 8);
             Assert.Less(draw.Landing.LateralYards, -8);
             Assert.AreEqual(fade.Landing.LateralYards, -draw.Landing.LateralYards, 0.5);
+        }
+
+        /// Each club flies the way it is meant to: the driver lowest-spinning and running out
+        /// most; down the bag higher, steeper and stopping sooner; the lob wedge the highest for
+        /// its distance and dropping nearly dead; the chipper a bump-and-run that carries a third
+        /// and runs the rest.
+        [Test]
+        public void EachClubFliesItsOwnWay()
+        {
+            BallFlight Full(GolfClub c) => BallFlight.Simulate(c.Launch(1, 0, 0));
+            var bag = new[] { GolfClub.Driver, GolfClub.Hybrid, GolfClub.Iron5, GolfClub.Iron, GolfClub.Iron9, GolfClub.PitchingWedge, GolfClub.Wedge, GolfClub.LobWedge };
+            for (int i = 1; i < bag.Length; i++)
+                Assert.Less(Full(bag[i]).Roll, Full(bag[i - 1]).Roll + 0.5, $"{bag[i]} stops no later than {bag[i - 1]}");
+            Assert.Greater(Full(GolfClub.Driver).Roll, 15, "the driver runs out");
+            Assert.Less(Full(GolfClub.LobWedge).Roll, 2.5, "the lob wedge drops nearly dead");
+            Assert.Greater(Full(GolfClub.LobWedge).Apex / Full(GolfClub.LobWedge).Carry, Full(GolfClub.Wedge).Apex / Full(GolfClub.Wedge).Carry, "the lob is the highest for its distance");
+            var chip = Full(GolfClub.Chipper);
+            Assert.Less(chip.Carry, chip.Total * 0.55, "a chip runs more than it carries");
+            Assert.Less(chip.Apex, 1.5, "and stays low");
         }
 
         [Test]
