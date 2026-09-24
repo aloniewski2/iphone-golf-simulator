@@ -167,6 +167,29 @@ namespace GolfArcade.Tests
             Assert.IsFalse(skim.Holed); Assert.IsFalse(skim.Lipped, "a quick one on the very edge skims over");
         }
 
+        /// A putt a little firm drops through the middle; one that would stop just short of the
+        /// rim, or trickle just past it, topples in; one well short stays out.
+        [Test]
+        public void ALittleFastOrALittleSlowStillDrops()
+        {
+            var hole = Hole1;
+            var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 3);
+            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / GolfClub.Putter.MeterExponent());
+            // arriving at 1.3x a real cup's limit: would have run a couple of yards past
+            double firmish = 3 + Math.Pow(1.3 * 1.63 / BallFlight.MetersPerYard, 2) / (2 * CourseShot.GreenDeceleration);
+            Assert.IsTrue(new CourseShot(GolfClub.Putter, Impact(meterFor(firmish)), 0, from, hole).IsHoled, "a little firm goes down");
+            double r = Hole.CupCaptureRadius;
+            // would stop 0.08 yd (3 in) short of the rim: topples in
+            var shortish = new CourseShot(GolfClub.Putter, Impact(meterFor(3 - r - 0.08)), 0, from, hole);
+            Assert.IsTrue(shortish.IsHoled, "a whisker short topples in");
+            // aimed to pass just outside the rim, dying: curls in
+            var trickle = new CourseShot(GolfClub.Putter, Impact(meterFor(3.2)), Math.Atan2(r + 0.06, 3) * 180 / Math.PI, from, hole);
+            Assert.IsTrue(trickle.IsHoled, "trickling just past the edge, it falls in");
+            // a foot and a half short: stays out
+            var wellShort = new CourseShot(GolfClub.Putter, Impact(meterFor(3 - r - 0.5)), 0, from, hole);
+            Assert.IsFalse(wellShort.IsHoled, "well short stays short");
+        }
+
         /// A cliff in the way is met, not flown through: the ball strikes the face and drops to
         /// its foot; a shelf above the landing catches the ball earlier than the flat would.
         [Test]
@@ -189,7 +212,8 @@ namespace GolfArcade.Tests
         public void CupCaptureFollowsTheSpeedAndOffsetRule()
         {
             Assert.IsTrue(CourseShot.CupCaptures(1.0, 0));
-            Assert.IsFalse(CourseShot.CupCaptures(2.5, 0));
+            Assert.IsTrue(CourseShot.CupCaptures(2.5, 0), "a little firm through the middle still drops");
+            Assert.IsFalse(CourseShot.CupCaptures(CourseShot.CentreCaptureSpeed * 1.1, 0));
             Assert.IsFalse(CourseShot.CupCaptures(1.0, Hole.CupCaptureRadius + 0.01));
             Assert.IsTrue(CourseShot.CupCaptures(0.3, Hole.CupCaptureRadius * 0.95));
         }

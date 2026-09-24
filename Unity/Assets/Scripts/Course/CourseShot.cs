@@ -308,22 +308,31 @@ namespace GolfArcade.Course
             return null;
         }
 
-        /// The fastest a ball rolling dead centre over a regulation cup can go and still drop:
-        /// it has to fall its own radius before it reaches the far wall (Holmes, 1991), yards/s.
-        public const double CentreCaptureSpeed = 1.63 / BallFlight.MetersPerYard;
+        /// The fastest a ball rolling dead centre over the cup can go and still drop, yards/s. A
+        /// regulation cup holds 1.63 m/s (it has to fall its own radius before it reaches the far
+        /// wall — Holmes, 1991); the game's cup is drawn over three times as wide and forgives
+        /// half as much pace again, so a putt a little firm still goes down.
+        public const double CentreCaptureSpeed = 1.5 * 1.63 / BallFlight.MetersPerYard;
+        /// A dying ball within this of the rim (yards; about half a foot) is drawn over the edge
+        /// and in: the lip is worn soft, and a putt that would have stopped just short or trickled
+        /// just past topples in.
+        public const double CupEdgeReach = 0.18;
+        /// Slower than this (yards/s) the edge draws it in.
+        public const double CupEdgeSpeed = 0.9;
         /// How deep the drawn ball dips crossing the hole: into it when it drops, a lip's worth
         /// when it catches the far edge and spins out.
         const double DropDepth = 0.12, LipDip = 0.035;
 
         /// Whether a ball crossing the cup `offset` yards from its centre at `speed` yards/s
         /// drops: the chord it crosses shrinks toward the edge, so the faster it comes the closer
-        /// to the middle it has to be — dead centre holds 1.63 m/s, a ball through the side door
-        /// has to be dying. Offsets are read against the drawn cup, so the hole is as wide as it
+        /// to the middle it has to be — dead centre holds the most, a ball through the side door
+        /// has to be slower. Offsets are read against the drawn cup, so the hole is as wide as it
         /// looks and as fussy about pace as a real one.
         public static double CaptureSpeed(double offset)
         {
             double u = offset / Hole.CupCaptureRadius;
-            return u >= 1 ? 0 : CentreCaptureSpeed * Math.Sqrt(1 - u * u);
+            // (softer toward the rim than the chord alone, so a ball in the side door is forgiven too)
+            return u >= 1 ? 0 : CentreCaptureSpeed * Math.Pow(1 - u * u, 0.35);
         }
 
         public static bool CupCaptures(double speed, double offset) => offset <= Hole.CupCaptureRadius && speed <= CaptureSpeed(offset);
@@ -600,12 +609,15 @@ namespace GolfArcade.Course
                 double decel = RollingDeceleration(lieNow);
                 var slope = surface.Gradient(here);
                 double downhill = Math.Sqrt(slope.dx * slope.dx + slope.dd * slope.dd) * GravityYards;
+                double toCup = here.DistanceTo(hole.Pin);
+                // on the soft edge of the cup, dying: it is drawn over the rim (see CupEdgeReach)
+                double edge = toCup > Hole.CupCaptureRadius && toCup < Hole.CupCaptureRadius + CupEdgeReach && speed < CupEdgeSpeed
+                    ? 1 - (toCup - Hole.CupCaptureRadius) / CupEdgeReach : 0;
                 // Stopped, unless the face it sits on is steep enough to start it rolling again.
-                if (speed < 0.02 && downhill < decel * 0.9) break;
+                if (speed < 0.02 && downhill < decel * 0.9 && edge <= 0) break;
 
                 // At the cup: decided once, as the ball's centre crosses onto the hole (see
                 // CrossTheCup) — it drops, catches the far lip and spins out, or skims over.
-                double toCup = here.DistanceTo(hole.Pin);
                 double dx = speed > 0.001 ? vx / speed : 0, dd = speed > 0.001 ? vd / speed : 0;
                 if (toCup <= Hole.CupCaptureRadius && (speed <= 0.001 || elapsed <= time))
                 {
@@ -642,6 +654,11 @@ namespace GolfArcade.Course
                 }
 
                 double ax = -GravityYards * slope.dx, ad = -GravityYards * slope.dd;
+                if (edge > 0)
+                {
+                    double pull = decel * 1.1 + 2.5 * edge;
+                    ax += pull * (hole.Pin.X - x) / toCup; ad += pull * (hole.Pin.D - d) / toCup;
+                }
                 if (speed > 0.0001)
                 {
                     double friction = Math.Min(decel, speed / dt); // never reverses the ball
