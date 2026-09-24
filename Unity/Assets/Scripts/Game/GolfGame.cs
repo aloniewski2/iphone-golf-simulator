@@ -1354,6 +1354,10 @@ namespace GolfArcade.Game
             if (!aimingShot) plan.ShowLoad = false;
             hud.DrawMinimap(minimapCamera);
             bool hudShowsCourse = hud.Controller == null || hud.OnTv;   // (not under the controller in a preview)
+            // the pin: on the maps, and on the picture — over it, or at the edge pointing the way
+            plan.Pin = HoleView.ToWorld(hole.Pin);
+            bool pinWanted = aimingShot && club != GolfClub.Putter && hudShowsCourse && Current != State.Menu;
+            hud.SetPinMarker(pinWanted ? rig.Camera : null, plan.Pin + Vector3.up * 3.2f, $"PIN  {ballAt.DistanceTo(hole.Pin):F0} YD");
             hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hudShowsCourse);
             // the yardage riding the ball, counting through the flight and the run
             if (flightHud && (Current == State.Flight || Current == State.Result) && ball.gameObject.activeSelf && hudShowsCourse)

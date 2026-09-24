@@ -76,6 +76,8 @@ namespace GolfArcade.UI
         RectTransform scorecard, board, shotCard;
         float bannerUntil;
         StrikePopup strikePopup;
+        PinLocator pinLocator;
+        TvMap tvMap;
         FaceDial faceDial;
         RectTransform replayBadge;
 
@@ -245,6 +247,8 @@ namespace GolfArcade.UI
             strikePopup = StrikePopup.Create(safeArea);
             faceDial = FaceDial.Create(safeArea, 10f, 24f);
             replayBadge = ReplayBadge.Create(safeArea);
+            pinLocator = PinLocator.Create(transform);
+            tvMap = TvMap.Create(safeArea, Margin);
 
             // Scorecard, filled in when the round ends.
             var card = Card("Scorecard", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900, 600), new Color(0.05f, 0.09f, 0.17f, 0.94f));
@@ -688,11 +692,14 @@ namespace GolfArcade.UI
         }
 
         /// Show or hide everything but the menu (the cards, meter and map stay out of the way).
+        bool playHud = true;
         public void ShowPlayHud(bool on)
         {
+            playHud = on;
             foreach (Transform child in safeArea)
                 if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats"
-                    && child.name != "Replay badge" && child.name != "Face dial" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
+                    && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
+            tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }
 
         // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
@@ -714,7 +721,7 @@ namespace GolfArcade.UI
             /// Where a slightly-off full swing still comes down: an ellipse `ZoneAcross` yards
             /// either side of the line and `ZoneAlong` short and long, on the aim `ZoneHeading`.
             public Vector3 ZoneCentre; public float ZoneAcross, ZoneAlong, ZoneHeading; public bool ShowZone;
-            public Vector3 Ball, Landing, Load;
+            public Vector3 Ball, Landing, Load, Pin;
             public bool ShowBall, ShowLanding, ShowLoad;
             /// The meter's checkpoint targets, where each comes down (empty hides them).
             public readonly System.Collections.Generic.List<Vector3> Targets = new();
@@ -723,7 +730,7 @@ namespace GolfArcade.UI
         }
         public MapPlan Map { get; } = new();
 
-        RectTransform mapBall, mapLanding, mapLoad, mapShapes;
+        RectTransform mapPin, mapBall, mapLanding, mapLoad, mapShapes;
         Image mapZoneFill, mapZoneEdge;
         readonly System.Collections.Generic.List<RectTransform> mapDots = new(), mapReach = new(), mapTargets = new();
         readonly System.Collections.Generic.List<Image> mapTraceUnder = new(), mapTraceLine = new();
@@ -761,6 +768,7 @@ namespace GolfArcade.UI
             mapLanding = MapMark(map, "Landing", amber, 24, UiKit.Ring, false);
             for (int i = 0; i < 3; i++) mapTargets.Add(MapMark(map, $"Target {i + 1}", Color.white, 13, UiKit.Circle, true));
             mapLoad = MapMark(map, "Load", amber, 18, UiKit.Circle, true);
+            mapPin = MapMark(map, "Pin", UiKit.Hex("E8352F"), 20, UiKit.Circle, true);
             mapBall = MapMark(map, "Ball", Color.white, 22, UiKit.Circle, true);
         }
 
@@ -808,8 +816,10 @@ namespace GolfArcade.UI
                 if (inside) { mark.anchorMin = mark.anchorMax = new Vector2(vp.x, vp.y); mark.anchoredPosition = Vector2.zero; }
                 return inside;
             }
+            Place(mapPin, plan.Pin, plan.Pin != Vector3.zero);
             Place(mapBall, plan.Ball, plan.ShowBall);
             Place(mapLanding, plan.Landing, plan.ShowLanding);
+            if (onTv && tvMap.gameObject.activeSelf) tvMap.Draw(map, Minimap.texture, plan.Pin, plan.Ball, plan.ShowBall, plan.Landing, plan.ShowLanding);
             Place(mapLoad, plan.Load, plan.ShowLoad);
             if (plan.Version == mapDrawn && map == mapDrawnWith) return;
             mapDrawn = plan.Version; mapDrawnWith = map;
@@ -1049,6 +1059,7 @@ namespace GolfArcade.UI
             // (the scoreboard and the distance card stay in their corner through the shot)
             if (Controller == null || onTv) meterRect.gameObject.SetActive(!on);
             minimapHolder.gameObject.SetActive(!on && !onTv);
+            tvMap.gameObject.SetActive(!on && onTv && playHud);
             statusText.enabled = tempoText.enabled = !on;
             if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
         }
@@ -1093,6 +1104,9 @@ namespace GolfArcade.UI
         public void HideShotStats() { if (statsRow) statsRow.gameObject.SetActive(false); }
 
         /// The yardage beside the ball, placed off `view`; null text hides it.
+        /// The pin on the course picture, or where to look for it (null `view` hides it).
+        public void SetPinMarker(Camera view, Vector3 pin, string text) => pinLocator.Set(view, pin, text);
+
         public void SetBallTag(Camera view, Vector3 ball, string text)
         {
             if (ballTag == null)
@@ -1374,7 +1388,9 @@ namespace GolfArcade.UI
             if (on == onTv) return;
             onTv = on;
             ShowOnTv(on ? liveTv : null);
-            minimapHolder.gameObject.SetActive(!on && !flightMode);   // (on the TV the map is in the player's hand)
+            minimapHolder.gameObject.SetActive(!on && !flightMode);
+            // the phone's map is in the controller; the big screen gets its own, with the pin on it
+            tvMap.gameObject.SetActive(on && !flightMode && playHud);
         }
 
         void ShowOnTv(Camera course)
