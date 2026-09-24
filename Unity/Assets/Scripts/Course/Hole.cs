@@ -140,6 +140,9 @@ namespace GolfArcade.Course
         /// when it is placed): a ball in flight meets it — lands on a rise, or strikes a cliff
         /// and drops. Null for a hole without a model, which is flat.
         public Func<CoursePoint, double> Ground;
+        /// Trees, bushes, rocks and walls standing on the hole (the modelled hole's, read off its
+        /// meshes when it is placed): a ball in flight or rolling meets them.
+        public Obstacle[] Obstacles = Array.Empty<Obstacle>();
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;

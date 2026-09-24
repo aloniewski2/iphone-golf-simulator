@@ -233,6 +233,41 @@ namespace GolfArcade.Game
             }
         }
 
+        /// The ball meeting something standing on the course: a shower of leaves out of a crown or
+        /// a bush, chips and dust off a trunk, a rock or a wall.
+        public void Knock(Vector3 at, bool leaves, bool stone)
+        {
+            if (leaves && clippings)
+            {
+                for (int i = 0; i < 44; i++)
+                {
+                    var v = Random.insideUnitSphere * 3.6f + Vector3.up * 1.6f;
+                    clippings.Emit(new ParticleSystem.EmitParams
+                    {
+                        position = at + Random.insideUnitSphere * 0.8f,
+                        velocity = v,
+                        startColor = Color.Lerp(new Color(0.35f, 0.62f, 0.3f), new Color(0.62f, 0.85f, 0.4f), Random.value),
+                        startSize = Random.Range(0.5f, 0.95f),
+                        startLifetime = Random.Range(1.0f, 1.7f),
+                    }, 1);
+                }
+                return;
+            }
+            Color a = stone ? new Color(0.78f, 0.8f, 0.84f) : new Color(0.55f, 0.4f, 0.28f), b = stone ? new Color(0.6f, 0.62f, 0.68f) : new Color(0.72f, 0.6f, 0.45f);
+            for (int i = 0; i < 12; i++)
+            {
+                var dir = Random.insideUnitSphere;
+                puffs.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + dir * 0.1f,
+                    velocity = dir * 2.2f + Vector3.up * 0.6f,
+                    startColor = Color.Lerp(a, b, Random.value),
+                    startSize = Random.Range(0.25f, 0.5f),
+                    startLifetime = Random.Range(0.3f, 0.55f),
+                }, 1);
+            }
+        }
+
         public static Material ParticleMaterial()
         {
             if (particleMaterial) return particleMaterial;

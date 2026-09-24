@@ -24,13 +24,14 @@ namespace GolfArcade.Course
             root.SetParent(parent, false);
             // The open sea to the horizon, a hand's breadth under the hole's own water so that
             // (with its swell and its shallows) shows where it reaches and this beyond it.
-            var ocean = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ocean.name = "Open sea";
-            Object.Destroy(ocean.GetComponent<Collider>());
+            // It is rings, close together by the island and wider apart out to the horizon, not one
+            // big quad: the fog is worked out at the corners, and a quad whose corners are all
+            // kilometres off comes out the colour of the sky however near its middle is.
+            var ocean = new GameObject("Open sea");
             ocean.transform.SetParent(root, false);
             ocean.transform.position = new Vector3(centre.x, -0.3f, centre.z);
-            ocean.transform.localScale = new Vector3(400, 1, 400);            // 4 km a side
-            var oceanRenderer = ocean.GetComponent<Renderer>();
+            ocean.AddComponent<MeshFilter>().sharedMesh = SeaMesh();
+            var oceanRenderer = ocean.AddComponent<MeshRenderer>();
             oceanRenderer.sharedMaterial = sea;
             oceanRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             if (!island && !boat) return;
@@ -47,6 +48,40 @@ namespace GolfArcade.Course
                 Bob(Put(boat, root, centre + right * (reach + 110) + along * 40, 12, 200, 0), 1.7f);
                 Bob(Put(boat, root, centre - right * (reach + 90) + along * (reach * 0.3f), 13, 310, 0), 3.1f);
             }
+        }
+
+        static Mesh seaMesh;
+
+        /// A disc of sea 5 km across, flat, in rings from a few yards out to its edge.
+        static Mesh SeaMesh()
+        {
+            if (seaMesh) return seaMesh;
+            const int segments = 72;
+            var radii = new System.Collections.Generic.List<float> { 0 };
+            for (float r = 12; r < 2500; r *= 1.22f) radii.Add(r);
+            radii.Add(2500);
+            var verts = new Vector3[1 + (radii.Count - 1) * segments];
+            for (int k = 1; k < radii.Count; k++)
+                for (int j = 0; j < segments; j++)
+                {
+                    float a = j * Mathf.PI * 2 / segments;
+                    verts[1 + (k - 1) * segments + j] = new Vector3(Mathf.Cos(a) * radii[k], 0, Mathf.Sin(a) * radii[k]);
+                }
+            var tris = new System.Collections.Generic.List<int>();
+            for (int j = 0; j < segments; j++) { tris.Add(0); tris.Add(1 + (j + 1) % segments); tris.Add(1 + j); }
+            for (int k = 1; k < radii.Count - 1; k++)
+                for (int j = 0; j < segments; j++)
+                {
+                    int a = 1 + (k - 1) * segments + j, b = 1 + (k - 1) * segments + (j + 1) % segments;
+                    int c = a + segments, d = b + segments;
+                    tris.Add(a); tris.Add(b); tris.Add(c);
+                    tris.Add(b); tris.Add(d); tris.Add(c);
+                }
+            var normals = new Vector3[verts.Length];
+            for (int i = 0; i < normals.Length; i++) normals[i] = Vector3.up;
+            seaMesh = new Mesh { name = "Open sea", vertices = verts, normals = normals, triangles = tris.ToArray() };
+            seaMesh.RecalculateBounds();
+            return seaMesh;
         }
 
         static Transform Put(GameObject prefab, Transform root, Vector3 at, float size, float yaw, float sink)

@@ -93,9 +93,34 @@ namespace GolfArcade.Course
         /// in front of — the crowd shot in the introductions — and back on after.
         public void ShowTeeMarkers(bool on)
         {
+            foreach (var marker in teeMarkers) if (marker) marker.SetActive(on);
+        }
+
+        readonly List<GameObject> teeMarkers = new();
+        static readonly Color TeeMarkerColor = new(1f, 0.8f, 0.16f), TeeMarkerBand = new(0.12f, 0.24f, 0.62f);
+
+        /// The tee's two markers, the same on every hole: a yellow ball either side of the teeing
+        /// line with a navy band round it, a little ahead of the ball and well wide of the golfer.
+        /// (The models' own were white blocks the size of a suitcase, and three holes had none.)
+        void PlaceTeeMarkers()
+        {
             foreach (var name in new[] { "TEE_MARKER_1", "TEE_MARKER_2", "TEE_MARKERS" })
-                if (ModelNode(name) is Transform node)
-                    foreach (var r in node.GetComponentsInChildren<Renderer>(true)) r.enabled = on;
+                if (ModelNode(name) is Transform node) node.gameObject.SetActive(false);
+            var tee = Hole.Tee;
+            var towards = Hole.RecommendedTarget(tee);
+            double heading = tee.HeadingTo(towards) * System.Math.PI / 180;
+            double ax = System.Math.Sin(heading), ad = System.Math.Cos(heading);
+            foreach (int side in new[] { -1, 1 })
+            {
+                var at = new CoursePoint(tee.X + ad * 3.4 * side + ax * 1.2, tee.D - ax * 3.4 * side + ad * 1.2);
+                var ball = Primitive(PrimitiveType.Sphere, $"Tee marker {(side < 0 ? "L" : "R")}", TeeMarkerColor, transform);
+                ball.transform.localScale = Vector3.one * 0.46f;
+                ball.transform.position = ToWorld(at, 0.2);
+                var band = Primitive(PrimitiveType.Cylinder, "Band", TeeMarkerBand, ball.transform);
+                band.transform.localScale = new Vector3(1.04f, 0.09f, 1.04f);
+                band.transform.localPosition = Vector3.zero;
+                teeMarkers.Add(ball);
+            }
         }
         /// The placed course model's root: anything exported from the same Blender scene sits
         /// on the course when parented here with no transform of its own.
@@ -154,6 +179,14 @@ namespace GolfArcade.Course
                 r.sharedMaterials = mats;
                 r.shadowCastingMode = r.name.StartsWith("WATER") ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
+            // The model's own open sea is one quad kilometres across, which the fog paints the
+            // colour of the sky; the backdrop's sea (Backdrop.Place) replaces it.
+            if (FindDeep(model.transform, "WATER_OCEAN") is Transform ocean)
+                foreach (var r in ocean.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
+            // The shallows and the surf round the shore came out of Blender facing down (it draws
+            // both sides; Unity only the front), so from above they were not there: turn them up.
+            foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
+                if (mf.name.StartsWith("WATER_") && mf.sharedMesh && mf.sharedMesh.isReadable && FacesDown(mf)) FlipUp(mf);
             // Hole 12's sea comes with its swell as blendshapes and a sheet of glints; drive them.
             WaterMotion.Attach(FindDeep(model.transform, "WATER_WAVES"), FindDeep(model.transform, "WATER_GLINTS"));
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
@@ -170,6 +203,9 @@ namespace GolfArcade.Course
             }
             Physics.SyncTransforms(); // the ball is placed on this ground in the same frame
             if (hasGround) { Hole.Surface = SampleSurface(); Hole.Ground = GroundHeight; }
+            // what stands on it, for the ball to run into
+            Hole.Obstacles = ObstacleScan.From(model.transform);
+            PlaceTeeMarkers();
             // the islands and boats out on the sea round it, past the playable ground
             var land = new Bounds(); bool any = false;
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
@@ -187,6 +223,31 @@ namespace GolfArcade.Course
         {
             double reach = Hole.GreenRadius + 12;
             return HeightGrid.Sample(Hole.Pin.X - reach, Hole.Pin.D - reach, 2 * reach, 2 * reach, 0.5, GroundHeight);
+        }
+
+        /// Most of the mesh's faces point at the ground.
+        static bool FacesDown(MeshFilter mf)
+        {
+            var mesh = mf.sharedMesh; var v = mesh.vertices; var t = mesh.triangles;
+            double up = 0;
+            for (int i = 0; i + 2 < t.Length; i += 3)
+            {
+                var n = Vector3.Cross(mf.transform.TransformPoint(v[t[i + 1]]) - mf.transform.TransformPoint(v[t[i]]), mf.transform.TransformPoint(v[t[i + 2]]) - mf.transform.TransformPoint(v[t[i]]));
+                up += n.y;
+            }
+            return up < 0;
+        }
+
+        static void FlipUp(MeshFilter mf)
+        {
+            var mesh = Instantiate(mf.sharedMesh);
+            var t = mesh.triangles;
+            for (int i = 0; i + 2 < t.Length; i += 3) (t[i + 1], t[i + 2]) = (t[i + 2], t[i + 1]);
+            mesh.triangles = t;
+            var n = mesh.normals;
+            for (int i = 0; i < n.Length; i++) n[i] = -n[i];
+            mesh.normals = n;
+            mf.sharedMesh = mesh;
         }
 
         static Vector3 Flat(Vector3 v) => new(v.x, 0, v.z);

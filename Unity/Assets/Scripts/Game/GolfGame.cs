@@ -34,6 +34,8 @@ namespace GolfArcade.Game
         /// How the last full swing was struck, and whether its word has popped yet.
         StrikeReport lastReport;
         bool gradeShown;
+        /// How many of the shot's knocks (trees, rocks) have been shown and heard.
+        int knocksShown;
         readonly System.Random rng = new();
         int holeIndex;
         Hole hole;
@@ -1340,6 +1342,7 @@ namespace GolfArcade.Game
             touchedDown = false; splashedAt = -1;
             lastImpact = impact; originWorld = HoleView.ToWorld(ballAt); flightHud = false;
             lastReport = Strikes.Judge(impact); gradeShown = false;
+            knocksShown = 0;
             CountForTheCard();
             replayPath.Clear();
             hud.SetFace(null);
@@ -1543,6 +1546,17 @@ namespace GolfArcade.Game
                 }
                 if (firstDown) { touchedDown = true; effects.Land(); }
                 Bounces++;
+            }
+            // what it hit on the way: leaves out of a crown, chips off a trunk or a rock, and the sound
+            var knocks = LastShot.Knocks;
+            while (knocksShown < knocks.Count && flightTime >= knocks[knocksShown].Time)
+            {
+                var k = knocks[knocksShown++];
+                var kAt = new Vector3((float)k.X, (float)(double.IsNaN(k.Y) ? HoleView.GroundHeight(new CoursePoint(k.X, k.D)) + 0.1 : k.Y), (float)k.D);
+                bool stone = k.Kind is ObstacleKind.Rock or ObstacleKind.Wall;
+                effects.Knock(kAt, !k.Hard, stone);
+                if (k.Hard) sounds.PlayKnock(stone); else sounds.PlayLeaves();
+                Haptics.Tick();
             }
             lastHeight = p.h;
             var velocity = (pos - lastBallPos) / dt;

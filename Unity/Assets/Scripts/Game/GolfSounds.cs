@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, roar;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, roar, leaves, knockWood, knockStone;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -44,6 +44,10 @@ namespace GolfArcade.Game
         public void PlayCup() => source.PlayOneShot(cup, 0.9f);
         public void PlaySplash() => source.PlayOneShot(splash, 0.8f);
         public void PlayThud(float strength) => source.PlayOneShot(thud, Mathf.Lerp(0.25f, 0.8f, Mathf.Clamp01(strength)));
+        /// The ball into a tree's branches or a bush: a rustle and a snap of twigs.
+        public void PlayLeaves() => source.PlayOneShot(leaves, 0.75f);
+        /// Off a trunk (a hollow knock) or a rock or a wall (a hard clack).
+        public void PlayKnock(bool stone) => source.PlayOneShot(stone ? knockStone : knockWood, 0.8f);
         public void PlayReady() => source.PlayOneShot(ready, 0.5f);
         public void PlayFanfare() => source.PlayOneShot(fanfare, 0.7f);
         public void PlayTick() => source.PlayOneShot(tick, 0.5f);
@@ -117,6 +121,19 @@ namespace GolfArcade.Game
             // Thud: a ball meeting turf — a low knock with a breath of grass.
             thud = Clip("Thud", 0.22f, (t, rng) =>
                 Math.Sin(2 * Math.PI * 95 * t) * Math.Exp(-t / 0.045) * 0.9 + Noise(rng) * Math.Exp(-t / 0.03) * 0.35, lowPass: 0.25);
+            leaves = Clip("Leaves", 0.55f, (t, rng) =>
+            {
+                // a rustle that swells and dies, with twigs snapping in it
+                double rustle = Noise(rng) * Math.Min(1, t / 0.02) * Math.Exp(-t / 0.16) * 0.7;
+                double snap = 0;
+                foreach (double at in new[] { 0.012, 0.05, 0.11, 0.2 })
+                    if (t >= at) snap += Noise(rng) * Math.Exp(-(t - at) / 0.006) * 0.8;
+                return rustle + snap;
+            }, lowPass: 0.35);
+            knockWood = Clip("Knock", 0.2f, (t, rng) =>
+                Math.Sin(2 * Math.PI * 420 * t) * Math.Exp(-t / 0.03) * 0.8 + Math.Sin(2 * Math.PI * 180 * t) * Math.Exp(-t / 0.05) * 0.5 + Noise(rng) * Math.Exp(-t / 0.004) * 0.6, lowPass: 0.4);
+            knockStone = Clip("Clack", 0.16f, (t, rng) =>
+                Math.Sin(2 * Math.PI * 1250 * t) * Math.Exp(-t / 0.018) * 0.6 + Math.Sin(2 * Math.PI * 2100 * t) * Math.Exp(-t / 0.01) * 0.35 + Noise(rng) * Math.Exp(-t / 0.003) * 0.8, lowPass: 0.7);
             splash = Clip("Splash", 0.7f, (t, rng) =>
             {
                 double attack = Math.Min(1, t / 0.03);
