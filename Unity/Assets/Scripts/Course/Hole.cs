@@ -37,8 +37,8 @@ namespace GolfArcade.Course
         /// the rough; long clubs lose far more to both; a putt off the fringe barely notices.
         public static double PowerFactor(this CourseLie lie, GolfClub club = GolfClub.Iron) => lie switch
         {
-            CourseLie.Rough => club == GolfClub.Wedge ? 0.9 : club == GolfClub.Putter ? 0.7 : 0.85,
-            CourseLie.Bunker => club == GolfClub.Wedge ? 0.85 : club == GolfClub.Putter ? 0.4 : 0.6,
+            CourseLie.Rough => club.Family() == ClubFamily.Wedge ? 0.9 : club == GolfClub.Putter ? 0.7 : 0.85,
+            CourseLie.Bunker => club.Family() == ClubFamily.Wedge ? 0.85 : club == GolfClub.Putter ? 0.4 : 0.6,
             CourseLie.Fringe => club == GolfClub.Putter ? 1 : 0.97,
             _ => 1,
         };

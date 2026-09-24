@@ -63,6 +63,46 @@ namespace GolfArcade.PlayTests
             }
         }
 
+        /// With the course on a big screen the broadcast HUD goes with it: the TV frame (the course
+        /// and the HUD's own camera, rendered 16:9) is saved with the phone's controller beside it.
+        [UnityTest]
+        public IEnumerator TheHudGoesToTheBigScreen()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;
+            yield return null;
+            game.ChooseHoles(0);
+            game.Play();
+            yield return null;
+            game.JumpToHole(13);
+            yield return new WaitForSecondsRealtime(0.5f);
+            game.DropBall(game.CurrentHole.Tee);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the tee shot to set up");
+            game.ReviewTvHud(true);
+            game.ShowBackswing(0.6);
+            yield return new WaitForSecondsRealtime(0.6f);
+            var tvHud = GameObject.Find("TV HUD camera")?.GetComponent<Camera>();
+            Assert.IsNotNull(tvHud, "the HUD has a camera of its own for the TV");
+            var course = Camera.main;
+            var rt = new RenderTexture(1920, 1080, 24);
+            var was = (course.targetTexture, course.aspect);
+            course.targetTexture = rt; course.aspect = 16f / 9f; tvHud.targetTexture = rt;
+            yield return null;
+            course.Render(); tvHud.Render();
+            RenderTexture.active = rt;
+            var png = new Texture2D(1920, 1080, TextureFormat.RGB24, false);
+            png.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0); png.Apply();
+            RenderTexture.active = null;
+            course.targetTexture = was.targetTexture; course.ResetAspect(); tvHud.targetTexture = null;
+            System.IO.Directory.CreateDirectory(Dir);
+            System.IO.File.WriteAllBytes($"{Dir}/tv-hud.png", png.EncodeToPNG());
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/tv-phone-controller.png"));
+            game.ReviewTvHud(false);
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator TheNewHolesPlay()
         {

@@ -19,11 +19,33 @@ namespace GolfArcade.Tests
             }
         }
 
+        /// A club every 15–50 yards, longest to shortest, each flying its number on a full swing,
+        /// and the game hands you the shortest one that gets there.
+        [Test]
+        public void TheBagStepsDownAndTheRightClubIsPicked()
+        {
+            var full = new[] { 240.0, 190, 175, 150, 125, 100, 80, 50, 25 };
+            for (int i = 0; i < full.Length; i++)
+            {
+                var club = GolfClubs.All[i];
+                Assert.AreEqual(full[i], club.ReferenceDistanceYards(), 1e-9, club.ToString());
+                Assert.AreEqual(full[i], BallFlight.Simulate(club.Launch(1, 0, 0)).Carry, 2.5, $"{club} carries its number");
+            }
+            Assert.AreEqual(GolfClub.Putter, GolfClubs.All[GolfClubs.All.Length - 1]);
+            Assert.AreEqual(GolfClub.Driver, GolfClubs.ForDistance(230, _ => 1));
+            Assert.AreEqual(GolfClub.Hybrid, GolfClubs.ForDistance(185, _ => 1));
+            Assert.AreEqual(GolfClub.Iron, GolfClubs.ForDistance(146, _ => 1));
+            Assert.AreEqual(GolfClub.PitchingWedge, GolfClubs.ForDistance(95, _ => 1));
+            Assert.AreEqual(GolfClub.Chipper, GolfClubs.ForDistance(18, _ => 1));
+            Assert.AreEqual(GolfClub.Driver, GolfClubs.ForDistance(320, _ => 1), "past everything: the driver");
+            Assert.AreEqual(GolfClub.Iron5, GolfClubs.ForDistance(146, c => CourseLie.Rough.PowerFactor(c)), "out of the rough, a club more");
+        }
+
         [Test]
         public void MeterReadsDistanceStraight()
         {
             var half = BallFlight.Simulate(GolfClub.Driver.Launch(0.5, 0, 0));
-            Assert.AreEqual(125, half.Carry, 3);
+            Assert.AreEqual(120, half.Carry, 3);
             Assert.AreEqual(0, BallFlight.Simulate(GolfClub.Iron.Launch(0, 0, 0)).Total, 0.01);
         }
 
@@ -64,8 +86,8 @@ namespace GolfArcade.Tests
             var hole = Hole1;
             var shot = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
             Assert.AreEqual(CourseLie.Fairway, shot.Lie);
-            Assert.AreEqual(160, shot.Carry, 2);
-            Assert.Greater(shot.Total, 162);
+            Assert.AreEqual(150, shot.Carry, 2);
+            Assert.Greater(shot.Total, 152);
             Assert.AreEqual(shot.Rest.X, shot.NextPosition.X, 1e-9);
             Assert.Greater(shot.Duration, 5);
         }

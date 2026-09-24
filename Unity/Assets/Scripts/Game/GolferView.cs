@@ -351,11 +351,11 @@ namespace GolfArcade.Game
         {
             shownClub = club; shownShort = shortShot;
             if (!hasModel) return;
-            string wanted = club switch
+            string wanted = club.Family() switch
             {
-                GolfClub.Driver => "Drive",
-                GolfClub.Iron => "IronSwing",
-                GolfClub.Wedge => shortShot ? "Chip" : "HalfSwing",
+                ClubFamily.Wood => "Drive",
+                ClubFamily.Iron => "IronSwing",
+                ClubFamily.Wedge => shortShot ? "Chip" : "HalfSwing",
                 _ => "Putt",
             };
             if (!clips.ContainsKey(wanted)) wanted = clips.ContainsKey("Drive") ? "Drive" : new List<string>(clips.Keys)[0];

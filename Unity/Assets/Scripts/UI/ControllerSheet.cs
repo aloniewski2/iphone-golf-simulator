@@ -34,8 +34,8 @@ namespace GolfArcade.UI
     /// bright and chunky like a Wii menu (the user's pick of the Higgsfield mock-ups). On a sky
     /// with puffy clouds: a "HOLE 12" badge and whether the TV is on; pills for par, the distance
     /// to the pin and the wind; the live minimap in a white frame (the game's map camera and
-    /// marks); the clubs as cards with cartoon club icons (Resources/Clubs/*_toon), the one in hand
-    /// yellow with a star; and the aim pad — a glossy joystick whose knob nudges the line, its
+    /// marks); the club in hand on one card with its cartoon icon (Resources/Clubs/*_toon), swiped or
+    /// stepped with its arrows through the bag; and the aim pad — a glossy joystick whose knob nudges the line, its
     /// arrows turning it (◀ ▶) and changing club (▲ ▼), a ring round it filling yellow with the
     /// backswing, and a pill under it saying where the line points.
     public sealed class ControllerSheet
@@ -45,7 +45,6 @@ namespace GolfArcade.UI
         public HoldButton Skip;
         /// The knob's drag: x turns the aim.
         public Joystick Stick;
-        public HoldButton[] Clubs;
         public Action<int> OnClub;
         /// Where the minimap goes (Hud moves its RawImage in and back out).
         public RectTransform MapSlot { get; private set; }
@@ -67,7 +66,10 @@ namespace GolfArcade.UI
         Image flagImage;
         RectTransform namePill;
         RectTransform windArrow;
-        Image[] clubFills, clubGlows; GameObject[] clubStars; Text[] clubNames;
+        // the club in hand: one card you swipe (or tap an arrow) to step through the bag
+        RectTransform clubCard; RawImage clubPicture; Text clubName, clubYards; Image[] clubDots;
+        SwipeArea clubSwipe; int clubSelected = -1;
+        static Texture2D[] familyPictures;
         static Sprite skySprite;
 
         public ControllerSheet(Transform safeArea)
@@ -181,7 +183,7 @@ namespace GolfArcade.UI
 
             // ---- the clubs
             float clubsY = 362 + MapSize.y + 20 + 70;
-            var heading = Chunky(sheet, "Clubs heading", "CLUBS", 54, 4f);
+            var heading = Chunky(sheet, "Clubs heading", "CLUB", 54, 4f);
             heading.rectTransform.anchorMin = heading.rectTransform.anchorMax = new Vector2(0.5f, 1);
             heading.rectTransform.sizeDelta = new Vector2(400, 80); heading.rectTransform.anchoredPosition = new Vector2(0, -clubsY);
             foreach (float side in new[] { -1f, 1f })
@@ -189,41 +191,58 @@ namespace GolfArcade.UI
                 var rule = UiKit.Panel(sheet, "Rule", new Color(1, 1, 1, 0.85f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(side * 250, -clubsY), new Vector2(240, 7));
                 rule.rectTransform.pivot = new Vector2(0.5f, 0.5f); rule.raycastTarget = false;
             }
-            int n = Pictures.Length;
-            Clubs = new HoldButton[n]; clubFills = new Image[n]; clubGlows = new Image[n]; clubStars = new GameObject[n]; clubNames = new Text[n];
-            float cardW = (Width - 3 * 22) / 4f, cardH = 330, cardY = clubsY + 60 + cardH / 2;
+            familyPictures ??= System.Array.ConvertAll(Pictures, path =>
+            {
+                var t = Resources.Load<Texture2D>(path);
+                if (t) t.wrapMode = TextureWrapMode.Clamp;
+                return t;
+            });
+            float cardW = 540, cardH = 330, cardY = clubsY + 60 + cardH / 2;
+            var glow = UiKit.Panel(sheet, "Glow", new Color(Yellow.r, Yellow.g, Yellow.b, 0.45f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -cardY), new Vector2(cardW + 34, cardH + 34));
+            glow.rectTransform.pivot = new Vector2(0.5f, 0.5f); glow.sprite = UiKit.RoundedLarge; glow.raycastTarget = false;
+            clubCard = Pill("Club", Yellow, 0, cardY, new Vector2(cardW, cardH), out var cardFill, 7, false);
+            foreach (var img in clubCard.GetComponentsInChildren<Image>()) img.sprite = UiKit.RoundedLarge;
+            clubPicture = new GameObject("Picture").AddComponent<RawImage>();
+            clubPicture.transform.SetParent(cardFill.transform, false);
+            clubPicture.raycastTarget = false;
+            var prt = clubPicture.rectTransform;
+            prt.anchorMin = prt.anchorMax = new Vector2(0, 0.5f); prt.pivot = new Vector2(0, 0.5f);
+            prt.anchoredPosition = new Vector2(18, 12); prt.sizeDelta = new Vector2(230, 230);
+            clubName = Chunky(cardFill.transform, "Name", "", 50, 4f);
+            var nrt = clubName.rectTransform;
+            nrt.anchorMin = new Vector2(0.44f, 0.5f); nrt.anchorMax = new Vector2(1, 1); nrt.offsetMin = new Vector2(0, -6); nrt.offsetMax = new Vector2(-16, -30);
+            clubName.lineSpacing = 0.85f;
+            clubYards = Chunky(cardFill.transform, "Yards", "", 58, 4f, Color.white, BlueDeep);
+            var yrt = clubYards.rectTransform;
+            yrt.anchorMin = new Vector2(0.44f, 0); yrt.anchorMax = new Vector2(1, 0.5f); yrt.offsetMin = new Vector2(0, 40); yrt.offsetMax = new Vector2(-16, 0);
+            // where in the bag: a dot a club
+            int n = GolfArcade.Shot.GolfClubs.All.Length;
+            clubDots = new Image[n];
             for (int i = 0; i < n; i++)
             {
-                float x = -Width / 2 + cardW / 2 + i * (cardW + 22);
-                var glow = UiKit.Panel(sheet, "Glow", new Color(Yellow.r, Yellow.g, Yellow.b, 0.45f), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(x, -cardY), new Vector2(cardW + 34, cardH + 34));
-                glow.rectTransform.pivot = new Vector2(0.5f, 0.5f); glow.sprite = UiKit.RoundedLarge; glow.raycastTarget = false;
-                var card = Pill($"Club {i}", CardBlue, x, cardY, new Vector2(cardW, cardH), out var fill, 7, false);
-                foreach (var img in card.GetComponentsInChildren<Image>()) img.sprite = UiKit.RoundedLarge;
-                var picture = new GameObject("Picture").AddComponent<RawImage>();
-                picture.transform.SetParent(fill.transform, false);
-                var tex = Resources.Load<Texture2D>(Pictures[i]);
-                if (tex) tex.wrapMode = TextureWrapMode.Clamp;
-                picture.texture = tex; picture.enabled = tex; picture.raycastTarget = false;
-                var prt = picture.rectTransform;
-                prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 1); prt.pivot = new Vector2(0.5f, 1);
-                prt.anchoredPosition = new Vector2(0, -12); prt.sizeDelta = new Vector2(190, 190);
-                clubNames[i] = Chunky(fill.transform, "Name", "", 32, 3f);
-                var nrt = clubNames[i].rectTransform;
-                nrt.anchorMin = new Vector2(0, 0); nrt.anchorMax = new Vector2(1, 0); nrt.pivot = new Vector2(0.5f, 0);
-                nrt.offsetMin = new Vector2(0, 22); nrt.offsetMax = new Vector2(0, 108);
-                clubNames[i].lineSpacing = 0.9f;
-                var star = Chunky(sheet, "Star", "★", 70, 3f, Yellow, Amber);
-                star.rectTransform.anchorMin = star.rectTransform.anchorMax = new Vector2(0.5f, 1);
-                star.rectTransform.sizeDelta = new Vector2(90, 90); star.rectTransform.anchoredPosition = new Vector2(x - cardW / 2 + 16, -(cardY - cardH / 2) + 6);
-                star.rectTransform.localRotation = Quaternion.Euler(0, 0, 12);
-                var hold = card.gameObject.AddComponent<HoldButton>();
-                var hit = card.gameObject.AddComponent<Image>(); hit.color = Color.clear;
-                hold.Fill = fill; hold.RestColor = CardBlue;
-                int index = i;
-                hold.Pressed = () => OnClub?.Invoke(index);
-                Clubs[i] = hold; clubFills[i] = fill; clubGlows[i] = glow; clubStars[i] = star.gameObject;
+                var dot = Blob(cardFill.transform, $"Dot {i}", Color.white, Vector2.zero, new Vector2(16, 16));
+                dot.rectTransform.anchorMin = dot.rectTransform.anchorMax = new Vector2(0.5f, 0);
+                dot.rectTransform.anchoredPosition = new Vector2((i - (n - 1) / 2f) * 26, 26);
+                clubDots[i] = dot;
             }
-            SetClubs(-1, new[] { "", "", "", "" });   // named, none in hand yet (the tee fills in the rest)
+            // tap an arrow or swipe the card
+            HoldButton ClubArrow(string label, float x, int step)
+            {
+                var arrow = Pill($"Club {(step < 0 ? "longer" : "shorter")}", Blue, x, cardY, new Vector2(150, 150), out var fill, 7);
+                foreach (var layer in arrow.GetComponentsInChildren<Image>()) layer.type = Image.Type.Simple;
+                Chunky(fill.transform, "Label", label, 64, 4f);
+                var hit = arrow.gameObject.AddComponent<Image>(); hit.color = Color.clear;
+                var hold = arrow.gameObject.AddComponent<HoldButton>();
+                hold.Fill = fill; hold.RestColor = Blue;
+                hold.Pressed = () => StepClub(step);
+                return hold;
+            }
+            ClubArrow("◀", -cardW / 2 - 110, -1);
+            ClubArrow("▶", cardW / 2 + 110, 1);
+            var cardHit = clubCard.gameObject.AddComponent<Image>(); cardHit.color = Color.clear;
+            clubSwipe = clubCard.gameObject.AddComponent<SwipeArea>();
+            clubSwipe.OnSwipe = StepClub;
+            SetClubs(-1, new string[n]);   // none in hand yet (the tee fills it in)
 
             // ---- aim: the joystick pad, its power ring, and where the line points
             float aimY = cardY + cardH / 2 + 70;
@@ -340,19 +359,30 @@ namespace GolfArcade.UI
         }
 
         /// The clubs' full-swing yardages, and which one is in hand.
+        /// The club in hand (an index into GolfClubs.All) and what each club carries from here.
         public void SetClubs(int selected, string[] yards)
         {
-            for (int i = 0; i < Clubs.Length; i++)
+            var all = GolfArcade.Shot.GolfClubs.All;
+            if (selected != clubSelected && clubSelected >= 0 && selected >= 0) clubSwipe.Punch(selected > clubSelected ? 1 : -1);
+            clubSelected = selected;
+            if (selected < 0 || selected >= all.Length) { clubName.text = "CLUB"; clubYards.text = ""; clubPicture.enabled = false; }
+            else
             {
-                bool on = i == selected;
-                Clubs[i].RestColor = clubFills[i].color = on ? Yellow : CardBlue;
-                clubGlows[i].gameObject.SetActive(on);
-                clubStars[i].SetActive(on);
-                var club = GolfArcade.Shot.GolfClubs.All[i];
-                string name = club == GolfArcade.Shot.GolfClub.Wedge ? "WEDGE" : GolfArcade.Shot.GolfClubs.DisplayName(club).ToUpperInvariant();
-                clubNames[i].text = yards[i].Length > 0 ? $"{name}\n<size=26>{yards[i].ToUpperInvariant()}</size>" : name;
-                Clubs[i].transform.localScale = Vector3.one * (on ? 1.05f : 1f);
+                var club = all[selected];
+                clubName.text = GolfArcade.Shot.GolfClubs.DisplayName(club).ToUpperInvariant().Replace(" WEDGE", "\nWEDGE");
+                clubYards.text = yards != null && selected < yards.Length && !string.IsNullOrEmpty(yards[selected]) ? yards[selected].ToUpperInvariant() : "";
+                var tex = familyPictures[(int)GolfArcade.Shot.GolfClubs.Family(club)];
+                clubPicture.texture = tex; clubPicture.enabled = tex;
             }
+            for (int i = 0; i < clubDots.Length; i++)
+                clubDots[i].color = i == selected ? BlueDeep : new Color(1, 1, 1, 0.8f);
+        }
+
+        void StepClub(int step)
+        {
+            int n = GolfArcade.Shot.GolfClubs.All.Length;
+            int next = Mathf.Clamp(clubSelected + step, 0, n - 1);
+            if (next != clubSelected && clubSelected >= 0) OnClub?.Invoke(next);
         }
 
         /// Where the line points, degrees right of straight down the hole.
@@ -367,5 +397,37 @@ namespace GolfArcade.UI
 
         /// (The TV says what's next; the sheet keeps to the controls.)
         public void SetStatus(string text) { }
+    }
+
+    /// A card you swipe: a sideways drag past a short threshold steps the choice (left for the
+    /// next, right for the one before), and the card punches over the way it went.
+    public sealed class SwipeArea : MonoBehaviour, UnityEngine.EventSystems.IBeginDragHandler, UnityEngine.EventSystems.IDragHandler, UnityEngine.EventSystems.IEndDragHandler
+    {
+        public Action<int> OnSwipe;
+        Vector2 start;
+        float punch;
+        Vector2 home;
+        bool homed;
+
+        public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData e) => start = e.position;
+        public void OnDrag(UnityEngine.EventSystems.PointerEventData e) { }
+        public void OnEndDrag(UnityEngine.EventSystems.PointerEventData e)
+        {
+            float dx = e.position.x - start.x;
+            float threshold = Screen.dpi > 0 ? Screen.dpi * 0.2f : 60f;   // a fifth of an inch
+            if (Mathf.Abs(dx) > threshold) OnSwipe?.Invoke(dx < 0 ? 1 : -1);
+        }
+
+        /// Slide in from the side it came from and settle.
+        public void Punch(int direction) => punch = direction * 60f;
+
+        void Update()
+        {
+            var rt = (RectTransform)transform;
+            if (!homed) { home = rt.anchoredPosition; homed = true; }
+            punch = Mathf.Lerp(punch, 0, 1f - Mathf.Exp(-Time.unscaledDeltaTime * 14f));
+            rt.anchoredPosition = home + new Vector2(punch, 0);
+            rt.localScale = Vector3.one * (1f + Mathf.Abs(punch) / 600f);
+        }
     }
 }

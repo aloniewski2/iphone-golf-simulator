@@ -224,8 +224,8 @@ namespace GolfArcade.Game
             {
                 if (on)
                 {
-                    hud.EnterControllerLayout();
-                    hud.CornerOnTv(bigScreen.Live);   // the scoreboard and the card go with the course
+                    // live on a screen: the HUD goes with the course; a preview keeps it on the phone
+                    hud.EnterControllerLayout(bigScreen.Live ? rig.Camera : null);
                     hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
                     hud.Controller.SetScreen(bigScreen.Live);
                     hud.Controller.Skip.Pressed = () => { if (Current == State.Intro && stateTime > 0.3f) BeginAim(false); };
@@ -493,7 +493,8 @@ namespace GolfArcade.Game
                 heading = ballAt.HeadingTo(putting ? hole.Pin : hole.RecommendedTarget(ballAt));
                 aimedByPlayer = false;
             }
-            club = AutoClub(lie, ballAt.DistanceTo(hole.Pin));
+            // the club for where this shot is going: the pin, or on a long hole the next landing
+            club = AutoClub(lie, ballAt.DistanceTo(putting ? hole.Pin : hole.RecommendedTarget(ballAt)));
             Swing.SetClub(club);
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             Swing.Armed = true;
@@ -628,13 +629,12 @@ namespace GolfArcade.Game
             return holed;
         }
 
-        static GolfClub AutoClub(CourseLie lie, double toPin)
+        /// The shortest club in the bag that gets there from this lie (a putter on the green);
+        /// the player can still step up or down the bag.
+        static GolfClub AutoClub(CourseLie lie, double yards)
         {
             if (lie.IsPuttingSurface()) return GolfClub.Putter;
-            if (lie == CourseLie.Bunker) return GolfClub.Wedge;
-            if (toPin <= 100) return GolfClub.Wedge;
-            if (toPin <= 185) return GolfClub.Iron;
-            return GolfClub.Driver;
+            return GolfClubs.ForDistance(yards, c => lie.PowerFactor(c));
         }
 
         void Enter(State s)
@@ -1222,6 +1222,23 @@ namespace GolfArcade.Game
         /// The phone-as-controller layout without a big screen, for reviews (and a look at it).
         public void PreviewBigScreen(bool on) => bigScreen.SetPreview(on);
 
+        /// For reviews: lay the HUD out as it is on a live big screen (the course camera standing in
+        /// for the TV's), with the controller on the phone's own canvas; false puts it back.
+        public void ReviewTvHud(bool on)
+        {
+            hud.LeaveControllerLayout();
+            if (on)
+            {
+                hud.EnterControllerLayout(rig.Camera);
+                hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
+                if (hole != null) hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
+                ShowScore();
+            }
+            SizeMinimap(on ? Hud.ControllerMapSize : Hud.MinimapSize);
+            RefreshControls();
+            if (Current == State.Aim) UpdateAimVisuals();
+        }
+
         // ----- Swing events -----
 
         void OnLoad(double load)
@@ -1331,9 +1348,10 @@ namespace GolfArcade.Game
             plan.ShowLanding = aimingShot && landingMarker.gameObject.activeSelf;
             if (!aimingShot) plan.ShowLoad = false;
             hud.DrawMinimap(minimapCamera);
-            hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hud.Controller == null);
+            bool hudShowsCourse = hud.Controller == null || hud.OnTv;   // (not under the controller in a preview)
+            hud.SetCourseTargets(rig.Camera, checkpointSpots, aimingShot && club != GolfClub.Putter && hudShowsCourse);
             // the yardage riding the ball, counting through the flight and the run
-            if (flightHud && (Current == State.Flight || Current == State.Result) && ball.gameObject.activeSelf && hud.Controller == null)
+            if (flightHud && (Current == State.Flight || Current == State.Result) && ball.gameObject.activeSelf && hudShowsCourse)
             {
                 var gone = ball.position - originWorld; gone.y = 0;
                 hud.SetBallTag(rig.Camera, ballLook.Centre, $"{gone.magnitude:F0} yds");

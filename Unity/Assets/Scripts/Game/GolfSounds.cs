@@ -36,7 +36,7 @@ namespace GolfArcade.Game
 
         public void PlayStrike(GolfClub club, double power)
         {
-            var clip = club switch { GolfClub.Driver => driver, GolfClub.Iron => iron, GolfClub.Wedge => wedge, _ => putter };
+            var clip = club.Family() switch { ClubFamily.Wood => driver, ClubFamily.Iron => iron, ClubFamily.Wedge => wedge, _ => putter };
             source.PlayOneShot(clip, Mathf.Lerp(0.35f, 1f, Mathf.Clamp01((float)power)));
         }
 

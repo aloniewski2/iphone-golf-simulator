@@ -256,6 +256,7 @@ namespace GolfArcade.UI
         /// Fits the HUD to the phone's safe area (notch at the top, home indicator at the bottom).
         void ApplySafeArea()
         {
+            if (onTv) return;   // (the TV has no notch)
             var area = Screen.safeArea;
             if (area == appliedSafeArea || Screen.width == 0 || Screen.height == 0) return;
             appliedSafeArea = area;
@@ -689,11 +690,9 @@ namespace GolfArcade.UI
         /// Show or hide everything but the menu (the cards, meter and map stay out of the way).
         public void ShowPlayHud(bool on)
         {
-            playHudShown = on;
-            if (tvCorner && board.parent == tvCorner) tvCorner.gameObject.SetActive(on);
             foreach (Transform child in safeArea)
                 if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Shot stats"
-                    && child.name != "Replay badge" && child.name != "Face dial") child.gameObject.SetActive(on);
+                    && child.name != "Replay badge" && child.name != "Face dial" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
         }
 
         // ---- The minimap, Wii Golf style: where the shot can go before you hit it, and where it
@@ -1048,8 +1047,8 @@ namespace GolfArcade.UI
             if (flightMode == on) return;
             flightMode = on;
             // (the scoreboard and the distance card stay in their corner through the shot)
-            if (Controller == null) meterRect.gameObject.SetActive(!on);
-            minimapHolder.gameObject.SetActive(!on);
+            if (Controller == null || onTv) meterRect.gameObject.SetActive(!on);
+            minimapHolder.gameObject.SetActive(!on && !onTv);
             statusText.enabled = tempoText.enabled = !on;
             if (on) foreach (var b in new[] { AimLeft, AimRight, ClubUp, ClubDown, SwingHold }) b.gameObject.SetActive(false);
         }
@@ -1309,22 +1308,37 @@ namespace GolfArcade.UI
 
         /// The big screen has the course: the phone becomes the controller. The phone HUD's cards
         /// and meter step aside for the sheet, which takes over the same buttons.
-        public void EnterControllerLayout()
+        /// The course has gone to the big screen: the phone becomes the controller. `tv` is the
+        /// camera drawing the course on the TV (null for a preview on the phone): with one, the
+        /// whole broadcast HUD — scoreboard, distance card, power meter, the strike's word,
+        /// banners, the flags on the course, the ball's yardage — goes to the TV with the course,
+        /// and the controller has the phone to itself. In a preview the sheet covers the phone HUD.
+        public void EnterControllerLayout(Camera tv = null)
         {
             if (Controller != null && Controller.Alive) return;
-            Controller = new ControllerSheet(safeArea);
+            onTv = tv != null;
+            if (onTv)
+            {
+                ShowOnTv(tv);
+                Controller = new ControllerSheet(PhoneLayer());
+            }
+            else
+            {
+                Controller = new ControllerSheet(safeArea);
+                foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(false);
+            }
             Controller.AimLeft.Pressed = AimLeft.Pressed; Controller.AimRight.Pressed = AimRight.Pressed;
             Controller.ClubUp.Pressed = ClubUp.Pressed; Controller.ClubDown.Pressed = ClubDown.Pressed;
             Controller.Knob.Pressed = SwingHold.Pressed; Controller.Knob.Released = SwingHold.Released;
-            foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(false);
             // the live minimap moves into the sheet's map card, and back out when it goes
             mapHome = Minimap.transform.parent;
             Minimap.transform.SetParent(Controller.MapSlot, false);
+            if (onTv) minimapHolder.gameObject.SetActive(false);   // (the map is in the player's hand)
             Controller.SetStatus(statusText.text);
             if (lastHole.number > 0) Controller.SetHole(lastHole.number, lastHole.par, lastHole.yards, lastHole.name);
             if (lastDistance.unit != null) Controller.SetDistance(lastDistance.amount, lastDistance.unit);
             if (lastWind.set) Controller.SetWind(lastWind.degrees, lastWind.mph, lastWind.calm);
-            bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
+            if (!onTv) bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
         }
 
         Transform mapHome;
@@ -1336,47 +1350,78 @@ namespace GolfArcade.UI
             if (Controller == null) return;
             if (mapHome) Minimap.transform.SetParent(mapHome, false);
             Controller.Destroy(); Controller = null;
-            CornerOnTv(false);
+            if (onTv) ShowOnTv(null);
+            onTv = false;
             foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(true);
+            minimapHolder.gameObject.SetActive(!flightMode);
         }
 
-        // ---- The corner on the big screen: with the course on the TV, the scoreboard and the
-        // distance card go with it, top left of the TV, the same as they sit on the phone.
-        RectTransform tvCorner;
-        bool playHudShown = true;
+        // ---- The HUD on the big screen. The course camera draws to display 1; a camera of the
+        // HUD's own, far out of the course's way and drawing after it, carries this canvas there.
+        // The controller gets a canvas of its own on the phone.
+        bool onTv;
+        Camera tvHudCamera;
+        RectTransform phoneLayer;
+        /// True while the HUD is on the TV (the course is live there and the phone is the club).
+        public bool OnTv => onTv;
 
-        /// `on`: the course is live on display 1, so the corner is drawn there; off, it comes home.
-        public void CornerOnTv(bool on)
+        void ShowOnTv(Camera course)
         {
-            if (on)
+            var canvas = GetComponent<Canvas>();
+            var scaler = GetComponent<CanvasScaler>();
+            if (course)
             {
-                if (!tvCorner)
+                if (!tvHudCamera)
                 {
-                    var go = new GameObject("TV corner");
-                    go.transform.SetParent(transform, false);
-                    var canvas = go.AddComponent<Canvas>();
-                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                    canvas.targetDisplay = 1;
-                    canvas.sortingOrder = 10;
-                    var scaler = go.AddComponent<CanvasScaler>();
-                    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                    scaler.referenceResolution = new Vector2(1920, 1080);
-                    scaler.matchWidthOrHeight = 1f;
-                    tvCorner = new GameObject("Corner").AddComponent<RectTransform>();
-                    tvCorner.SetParent(go.transform, false);
-                    tvCorner.anchorMin = Vector2.zero; tvCorner.anchorMax = Vector2.one;
-                    tvCorner.offsetMin = tvCorner.offsetMax = Vector2.zero;
-                    tvCorner.localScale = Vector3.one * 0.72f;
-                    tvCorner.pivot = new Vector2(0, 1);
+                    tvHudCamera = new GameObject("TV HUD camera").AddComponent<Camera>();
+                    tvHudCamera.transform.SetParent(transform.parent, false);
+                    tvHudCamera.transform.position = new Vector3(0, -5000, 0);
+                    tvHudCamera.clearFlags = CameraClearFlags.Depth;
+                    tvHudCamera.nearClipPlane = 0.01f; tvHudCamera.farClipPlane = 5f;
                 }
-                foreach (var rt in new[] { board, shotCard }) { rt.SetParent(tvCorner, false); rt.gameObject.SetActive(true); }
-                tvCorner.gameObject.SetActive(playHudShown);
+                tvHudCamera.targetDisplay = course.targetDisplay;
+                tvHudCamera.depth = course.depth + 10;
+                tvHudCamera.gameObject.SetActive(true);
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = tvHudCamera; canvas.planeDistance = 1f;
+                // a landscape screen: sized off its height, a size up from the phone so the corner
+                // and the meter read from the sofa
+                scaler.matchWidthOrHeight = 1f;
+                scaler.referenceResolution = new Vector2(UiKit.PhoneReference.x, 1700);
+                safeArea.anchorMin = Vector2.zero; safeArea.anchorMax = Vector2.one;
+                safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             }
-            else if (tvCorner && board.parent == tvCorner)
+            else
             {
-                foreach (var rt in new[] { board, shotCard }) { rt.SetParent(safeArea, false); rt.SetAsFirstSibling(); }
-                tvCorner.gameObject.SetActive(false);
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.worldCamera = null;
+                scaler.matchWidthOrHeight = 0.5f;
+                scaler.referenceResolution = UiKit.PhoneReference;
+                if (tvHudCamera) tvHudCamera.gameObject.SetActive(false);
+                if (phoneLayer) { Destroy(phoneLayer.parent.gameObject); phoneLayer = null; }
+                appliedSafeArea = default;
+                ApplySafeArea();
             }
+        }
+
+        /// The phone's own canvas for the controller, inside the phone's safe area.
+        Transform PhoneLayer()
+        {
+            if (phoneLayer) return phoneLayer;
+            var go = new GameObject("Phone controller");
+            go.transform.SetParent(transform.parent, false);
+            UiKit.Canvas(go).sortingOrder = 20;
+            phoneLayer = new GameObject("Safe area").AddComponent<RectTransform>();
+            phoneLayer.SetParent(go.transform, false);
+            var area = Screen.safeArea;
+            if (Screen.width > 0 && Screen.height > 0)
+            {
+                phoneLayer.anchorMin = new Vector2(area.xMin / Screen.width, area.yMin / Screen.height);
+                phoneLayer.anchorMax = new Vector2(area.xMax / Screen.width, area.yMax / Screen.height);
+            }
+            else { phoneLayer.anchorMin = Vector2.zero; phoneLayer.anchorMax = Vector2.one; }
+            phoneLayer.offsetMin = phoneLayer.offsetMax = Vector2.zero;
+            return phoneLayer;
         }
 
         void Update()
