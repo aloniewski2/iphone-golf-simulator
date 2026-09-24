@@ -157,6 +157,10 @@ namespace GolfArcade.Game
         }
 
         GameObject modelGo;
+        Material kitMaterial;
+
+        /// The chosen kit colours on the golfer as they stand, without rebuilding the model.
+        public void Redress() => GolferStyle.Dress(kitMaterial);
 
         // ----- The face: Adnan's expression atlas (Resources/Golfer/Look/FaceAtlas, 4 × 2 cells in
         // this order, as his TennisActor uses it) on the Higgsfield golfer's face decal.
@@ -166,6 +170,12 @@ namespace GolfArcade.Game
         Expression face = (Expression)(-1);
         float nextBlink = 2f, blinkFor;
         static Texture2D faceAtlas;
+
+        /// How far up the face the features are drawn, in cells: the decal fills the bare skin
+        /// between the brim and the chin, and the atlas has its eyes mid-cell, which put them in
+        /// the lower face with the mouth on the chin. (The cells' margins are empty, so the shift
+        /// samples nothing of the next row.)
+        const float FaceRaise = 0.1f;
 
         Material FaceMaterial()
         {
@@ -181,7 +191,7 @@ namespace GolfArcade.Game
             if (!faceMaterial || e == face) return;
             face = e;
             int cell = (int)e;
-            faceMaterial.mainTextureOffset = new Vector2((cell % 4) * 0.25f, cell < 4 ? 0.5f : 0f);
+            faceMaterial.mainTextureOffset = new Vector2((cell % 4) * 0.25f, (cell < 4 ? 0.5f : 0f) - FaceRaise * 0.5f);
         }
 
         /// What the face says: effort through the downswing, focus as the backswing loads, a big
@@ -266,7 +276,12 @@ namespace GolfArcade.Game
                     if (name.StartsWith("CLUB ")) { mats[i] = ClubMaterial(name); continue; }
                     // The Higgsfield golfer (blender/scripts/fit_golf_characters.py): its colour map
                     // beside the FBX, and a face painted from Adnan's expression atlas.
-                    if (name.StartsWith("V4 Higgs body")) { mats[i] = Clay(Color.white, false, Resources.Load<Texture2D>($"{System.IO.Path.GetDirectoryName(path)}/higgs_{(path.EndsWith("_f") ? "f" : "m")}_color")); continue; }
+                    if (name.StartsWith("V4 Higgs body"))
+                    {
+                        mats[i] = kitMaterial = Clay(Color.white, false, Resources.Load<Texture2D>($"{System.IO.Path.GetDirectoryName(path)}/higgs_{(path.EndsWith("_f") ? "f" : "m")}_color"));
+                        GolferStyle.Dress(kitMaterial);
+                        continue;
+                    }
                     if (name.StartsWith("V4 face decal"))
                     {
                         mats[i] = faceMaterial = FaceMaterial();

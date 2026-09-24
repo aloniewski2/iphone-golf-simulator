@@ -97,8 +97,38 @@ namespace GolfArcade.Game
         /// own hair and face: only the body is a choice. Skin, outfit and hair still apply to the
         /// crowd and to a V4-model player.
         public const bool Customizable = false;
+        // ---- The Higgsfield golfer's kit: GolferClay recolours the colour map's navy (shorts or
+        // skirt, collar, trims, cap brim) and its white (shirt, cap, socks). The first of each is
+        // the kit as it comes; the palette starts from the standard characters' (navy, teal,
+        // ivory, sand, coral).
+        public static readonly string[] KitNames = { "Navy", "Teal", "Coral", "Crimson", "Forest", "Charcoal" };
+        public static readonly Color[] KitColors = { Rgb(30, 43, 90), Rgb(18, 138, 140), Rgb(226, 92, 76), Rgb(190, 36, 46), Rgb(34, 120, 62), Rgb(52, 55, 62) };
+        public static readonly string[] ShirtNames = { "White", "Ivory", "Sand", "Sky", "Blush", "Mint" };
+        public static readonly Color[] ShirtColors = { Rgb(246, 247, 249), Rgb(244, 236, 214), Rgb(234, 210, 164), Rgb(186, 224, 250), Rgb(250, 198, 212), Rgb(196, 240, 214) };
+        const string KitKey = "golfer.kit", ShirtKey = "golfer.shirt";
+
+        public static int Kit
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt(KitKey, 0), 0, KitColors.Length - 1);
+            set { PlayerPrefs.SetInt(KitKey, Mathf.Clamp(value, 0, KitColors.Length - 1)); PlayerPrefs.Save(); }
+        }
+
+        public static int Shirt
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt(ShirtKey, 0), 0, ShirtColors.Length - 1);
+            set { PlayerPrefs.SetInt(ShirtKey, Mathf.Clamp(value, 0, ShirtColors.Length - 1)); PlayerPrefs.Save(); }
+        }
+
+        /// The kit on a GolferClay material with the Higgsfield colour map.
+        public static void Dress(Material m)
+        {
+            if (!m) return;
+            m.SetFloat("_KitOn", Kit > 0 ? 1 : 0); m.SetColor("_KitColor", KitColors[Kit]);
+            m.SetFloat("_ShirtOn", Shirt > 0 ? 1 : 0); m.SetColor("_ShirtColor", ShirtColors[Shirt]);
+        }
+
         /// "Male · Tan · Bob, auburn": the golfer in a line, for the menu.
-        public static string Summary => !Customizable ? (Body == BodyKind.Female ? "Female golfer" : "Male golfer") : $"{(Body == BodyKind.Female ? "Female" : "Male")}   ·   {SkinName}   ·   {(Hair == HairKind.None ? "No hair" : $"{HairNames[(int)Hair]}, {HairColorNames[HairTone].ToLowerInvariant()}")}";
+        public static string Summary => !Customizable ? $"{(Body == BodyKind.Female ? "Female" : "Male")} golfer   ·   {KitNames[Kit]}{(Shirt > 0 ? $" & {ShirtNames[Shirt].ToLowerInvariant()}" : "")} kit" : $"{(Body == BodyKind.Female ? "Female" : "Male")}   ·   {SkinName}   ·   {(Hair == HairKind.None ? "No hair" : $"{HairNames[(int)Hair]}, {HairColorNames[HairTone].ToLowerInvariant()}")}";
         /// Resources path of the model for the chosen body.
         public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
         public static string BodyLabel => Body == BodyKind.Female ? "♀" : "♂";

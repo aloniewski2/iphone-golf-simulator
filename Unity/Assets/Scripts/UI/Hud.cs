@@ -420,126 +420,17 @@ namespace GolfArcade.UI
             return menu;
         }
 
-        /// The golfer picker: the figure stands in the top half of the screen (the camera frames
-        /// it), and a sheet at the bottom holds body, skin, outfit, hair style and hair colour. Every
-        /// tap changes the figure at once.
-        public sealed class GolferPicker
-        {
-            public HoldButton Male, Female, Done;
-            public HoldButton[] Skins, Outfits, Hairs, HairColors;
-            internal RectTransform Root, SkinRing, HairColorRing;
-            internal Image MaleFill, FemaleFill;
-            internal Text MaleText, FemaleText;
-            internal Image[] HairFills, OutfitFills; internal Text[] HairTexts, OutfitTexts;
+        GolferSelect golferSelect;
 
-            public void Refresh(bool female, int skin, int outfit, int hair, int hairColor)
-            {
-                Male.RestColor = MaleFill.color = female ? Color.clear : UiKit.AccentStrong;
-                Female.RestColor = FemaleFill.color = female ? UiKit.AccentStrong : Color.clear;
-                MaleText.color = female ? UiKit.InkMuted : UiKit.Ink;
-                FemaleText.color = female ? UiKit.Ink : UiKit.InkMuted;
-                if (SkinRing == null) return;   // (the body alone: the Higgsfield golfers come dressed)
-                for (int i = 0; i < Outfits.Length; i++)
-                {
-                    Outfits[i].RestColor = OutfitFills[i].color = i == outfit ? UiKit.AccentStrong : Color.clear;
-                    OutfitTexts[i].color = i == outfit ? UiKit.Ink : UiKit.InkMuted;
-                }
-                SkinRing.anchoredPosition = ((RectTransform)Skins[skin].transform).anchoredPosition;
-                for (int i = 0; i < Hairs.Length; i++)
-                {
-                    Hairs[i].RestColor = HairFills[i].color = i == hair ? UiKit.AccentStrong : Color.clear;
-                    HairTexts[i].color = i == hair ? UiKit.Ink : UiKit.InkMuted;
-                }
-                HairColorRing.anchoredPosition = ((RectTransform)HairColors[hairColor].transform).anchoredPosition;
-            }
+        /// The golfer select screen (UI/GolferSelect.cs) over the golfer on the tee.
+        public GolferSelect ShowGolferSelect(string[] kitNames, Color[] kitColors, string[] shirtNames, Color[] shirtColors)
+        {
+            HideGolferSelect();
+            golferSelect = new GolferSelect(safeArea, kitNames, kitColors, shirtNames, shirtColors);
+            return golferSelect;
         }
 
-        GolferPicker picker;
-
-        public GolferPicker ShowGolferPicker(Color[] skinTones, string[] outfitNames, string[] hairNames, Color[] hairColors, bool looks = true)
-        {
-            HideGolferPicker();
-            const float left = 70, width = 940;
-            float height = looks ? 1172 : 520;
-            var sheet = Panel("Golfer picker", UiKit.Surface, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, height));
-            sheet.color = new Color(UiKit.Ground.r, UiKit.Ground.g, UiKit.Ground.b, 0.94f);
-            var root = sheet.rectTransform;
-            picker = new GolferPicker { Root = root };
-            Text T(string name, string text, int size, Font face, Color color, float x, float y, float w)
-            {
-                var t = UiKit.Label(root, name, size, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, y), new Vector2(w, size * 1.3f), face, false);
-                t.text = text; t.color = color; return t;
-            }
-            // A row of pills in one track: the selected one is filled.
-            HoldButton[] Segmented(string name, string[] labels, float y, out Image[] fills, out Text[] texts)
-            {
-                var track = UiKit.Panel(root, name, UiKit.Surface, new Vector2(0, 1), new Vector2(0, 1), new Vector2(left, y), new Vector2(width, 92));
-                var edge = UiKit.Panel(track.transform, "Edge", UiKit.Hairline, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero); edge.raycastTarget = false;
-                var inner = UiKit.Panel(track.transform, "Inner", UiKit.Surface, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-                inner.rectTransform.offsetMin = new Vector2(2, 2); inner.rectTransform.offsetMax = new Vector2(-2, -2); inner.raycastTarget = false;
-                var holds = new HoldButton[labels.Length]; fills = new Image[labels.Length]; texts = new Text[labels.Length];
-                float cell = (width - 12) / labels.Length;
-                for (int i = 0; i < labels.Length; i++)
-                {
-                    var b = UiKit.Panel(track.transform, labels[i], Color.clear, Vector2.zero, Vector2.zero, new Vector2(6 + cell * i + 2, 6), new Vector2(cell - 4, 80));
-                    fills[i] = b;
-                    var hold = b.gameObject.AddComponent<HoldButton>(); hold.Fill = b; hold.RestColor = Color.clear;
-                    texts[i] = UiKit.Label(b.transform, "Label", 30, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
-                    texts[i].text = labels[i]; texts[i].raycastTarget = false;
-                    holds[i] = hold;
-                }
-                return holds;
-            }
-            HoldButton[] Dots(string name, Color[] colors, float y, out RectTransform ringRect)
-            {
-                float step = Mathf.Min(112, (width - 80) / (colors.Length - 1)), span = step * (colors.Length - 1);
-                var ring = UiKit.Panel(root, name + " ring", UiKit.Ink, new Vector2(0.5f, 1), new Vector2(0.5f, 1), Vector2.zero, new Vector2(94, 94));
-                ring.sprite = UiKit.Circle; ring.type = Image.Type.Simple; ring.rectTransform.pivot = new Vector2(0.5f, 0.5f); ring.raycastTarget = false;
-                ringRect = ring.rectTransform;
-                var holds = new HoldButton[colors.Length];
-                for (int i = 0; i < colors.Length; i++)
-                {
-                    var dot = UiKit.Panel(root, $"{name} {i}", colors[i], new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-span / 2 + step * i, y - 40), new Vector2(76, 76));
-                    dot.sprite = UiKit.Circle; dot.type = Image.Type.Simple; dot.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                    var hold = dot.gameObject.AddComponent<HoldButton>(); hold.Fill = dot; hold.RestColor = colors[i];
-                    holds[i] = hold;
-                }
-                return holds;
-            }
-
-            float y = -44;
-            T("Title", "Your golfer", 52, UiKit.Display, UiKit.Ink, left, y, width);
-            y -= 90;
-            T("Body heading", "BODY", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
-            var bodies = Segmented("Body", new[] { "Male", "Female" }, y, out var bodyFills, out var bodyTexts);
-            picker.Male = bodies[0]; picker.Female = bodies[1]; picker.MaleFill = bodyFills[0]; picker.FemaleFill = bodyFills[1]; picker.MaleText = bodyTexts[0]; picker.FemaleText = bodyTexts[1];
-            y -= 92 + 40;
-            if (!looks)
-            {
-                picker.Skins = picker.Outfits = picker.Hairs = picker.HairColors = new HoldButton[0];
-                picker.Done = UiKit.Button(root, "Done", new Vector2(0.5f, 0), new Vector2(0, 60 + 60), new Vector2(width, 120), 44, UiKit.AccentStrong, UiKit.Display, false);
-                return picker;
-            }
-            T("Skin heading", "SKIN", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
-            picker.Skins = Dots("Skin", skinTones, y, out picker.SkinRing);
-            y -= 80 + 40;
-            T("Outfit heading", "OUTFIT", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
-            picker.Outfits = Segmented("Outfit", outfitNames, y, out picker.OutfitFills, out picker.OutfitTexts);
-            y -= 92 + 40;
-            T("Hair heading", "HAIR", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
-            picker.Hairs = Segmented("Hair", hairNames, y, out picker.HairFills, out picker.HairTexts);
-            y -= 92 + 40;
-            T("Hair colour heading", "HAIR COLOUR", 26, UiKit.Strong, UiKit.InkMuted, left, y, width); y -= 46;
-            picker.HairColors = Dots("Hair colour", hairColors, y, out picker.HairColorRing);
-            picker.Done = UiKit.Button(root, "Done", new Vector2(0.5f, 0), new Vector2(0, 60 + 60), new Vector2(width, 120), 44, UiKit.AccentStrong, UiKit.Display, false);
-            return picker;
-        }
-
-        public void HideGolferPicker()
-        {
-            if (picker != null && picker.Root) Destroy(picker.Root.gameObject);
-            picker = null;
-        }
+        public void HideGolferSelect() { golferSelect?.Destroy(); golferSelect = null; }
 
         /// The title over the hole's flyover, the way the tennis broadcast opens on its island:
         /// the tournament's name in chunky yellow on a cobalt badge with a white rim, and under it
@@ -671,7 +562,7 @@ namespace GolfArcade.UI
         {
             playHud = on;
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Golfer picker" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
+                if (child.name != "Menu" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
                     && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
             tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }

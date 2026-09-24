@@ -293,38 +293,66 @@ namespace GolfArcade.Game
 
         void RefreshMenu() => menu?.Refresh(GolferStyle.Summary, chosenHoles, bigScreen.Status);
 
-        // ----- The golfer picker -----
+        // ----- The golfer select screen -----
 
-        Hud.GolferPicker picker;
+        GolferSelect select;
+        /// The way the golfer faces on the select screen, and how far a drag has turned them.
+        Vector3 selectFacing = Vector3.forward;
+        float selectSpin;
+        bool spinning;
 
-        /// Its own screen: the golfer stands at the tee, club in hand, turning slowly, and
-        /// every choice on the sheet below changes them on the spot.
+        /// Its own screen (UI/GolferSelect.cs): the golfer stands easy at the tee, face to the
+        /// camera, and every choice changes them on the spot.
         public void OpenGolferPicker()
         {
             if (Current != State.Menu) return;
             hud.HideMenu(); menu = null;
-            picker = hud.ShowGolferPicker(GolferStyle.SkinTones, GolferStyle.OutfitNames, GolferStyle.HairNames, GolferStyle.HairColors, GolferStyle.Customizable);
-            picker.Male.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Male; RestyleForPicker(); };
-            picker.Female.Pressed = () => { Tick(); GolferStyle.Body = GolferStyle.BodyKind.Female; RestyleForPicker(); };
-            for (int i = 0; i < picker.Skins.Length; i++) { int tone = i; picker.Skins[i].Pressed = () => { Tick(); GolferStyle.SkinTone = tone; RestyleForPicker(); }; }
-            for (int i = 0; i < picker.Outfits.Length; i++) { int outfit = i; picker.Outfits[i].Pressed = () => { Tick(); GolferStyle.Outfit = (GolferStyle.OutfitKind)outfit; RestyleForPicker(); }; }
-            for (int i = 0; i < picker.Hairs.Length; i++) { int hair = i; picker.Hairs[i].Pressed = () => { Tick(); GolferStyle.Hair = (GolferStyle.HairKind)hair; RestyleForPicker(); }; }
-            for (int i = 0; i < picker.HairColors.Length; i++) { int tone = i; picker.HairColors[i].Pressed = () => { Tick(); GolferStyle.HairTone = tone; RestyleForPicker(); }; }
-            picker.Done.Pressed = CloseGolferPicker;
+            select = hud.ShowGolferSelect(GolferStyle.KitNames, GolferStyle.KitColors, GolferStyle.ShirtNames, GolferStyle.ShirtColors);
+            select.Previous.Pressed = () => SwitchGolfer();
+            select.Next.Pressed = () => SwitchGolfer();
+            for (int i = 0; i < select.Kits.Length; i++) { int kit = i; select.Kits[i].Pressed = () => { Click(); GolferStyle.Kit = kit; golfer.Redress(); RefreshSelect(); }; }
+            for (int i = 0; i < select.Shirts.Length; i++) { int shirt = i; select.Shirts[i].Pressed = () => { Click(); GolferStyle.Shirt = shirt; golfer.Redress(); RefreshSelect(); }; }
+            select.Spin = dx => { spinning = true; selectSpin -= dx * 0.35f; };
+            select.SpinDone = () => spinning = false;
+            select.Go.Pressed = CloseGolferPicker;
+            selectSpin = 0; spinning = false;
             ballAt = hole.Tee; heading = hole.Tee.HeadingTo(hole.Pin);
             PlaceBall(ballAt, 0);
-            ball.gameObject.SetActive(true);
+            ball.gameObject.SetActive(false);   // (no ball to address: the golfer stands easy)
             Enter(State.Golfer);
             RestyleForPicker();
-            rig.FramePortrait(golfer.transform.position, golfer.transform.forward, 0);
+            selectFacing = golfer.transform.forward;
+            rig.FramePortrait(golfer.transform.position, selectFacing, 0);
             rig.SnapNext();
         }
 
+        /// Two golfers: either arrow is the other one.
+        void SwitchGolfer()
+        {
+            Click();
+            GolferStyle.CycleBody();
+            selectSpin = 0;
+            RestyleForPicker();
+        }
+
+        void RefreshSelect() => select?.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.Kit, GolferStyle.Shirt);
+
+        void Click() { sounds.PlayTick(); Haptics.Tick(); }
+
         void RestyleForPicker() => RestyleGolfer();
+
+        /// One frame of the select screen: the camera square on, and the golfer turned by the
+        /// drag, easing back to face it once let go.
+        void UpdateSelect()
+        {
+            if (!spinning) selectSpin = Mathf.LerpAngle(selectSpin, 0, 1f - Mathf.Exp(-Time.deltaTime * 3f));
+            golfer.transform.rotation = Quaternion.LookRotation(selectFacing, Vector3.up) * Quaternion.Euler(0, selectSpin, 0);
+            rig.FramePortrait(golfer.transform.position, selectFacing, stateTime);
+        }
 
         public void CloseGolferPicker()
         {
-            hud.HideGolferPicker(); picker = null;
+            hud.HideGolferSelect(); select = null;
             ShowMenu();
         }
 
@@ -352,7 +380,9 @@ namespace GolfArcade.Game
                 golfer.SetClub(GolfClub.Driver, false);
                 golfer.Stand(ball.position, AimDirection());
                 golfer.SetVisible(true);
-                picker?.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.SkinTone, (int)GolferStyle.Outfit, (int)GolferStyle.Hair, GolferStyle.HairTone);
+                // standing easy, head up to the camera: at address the face looks down at the ball
+                golfer.Perform("Idle");
+                RefreshSelect();
             }
         }
 
@@ -1387,7 +1417,7 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Golfer:
-                    rig.FramePortrait(golfer.transform.position, golfer.transform.forward, stateTime);
+                    UpdateSelect();
                     break;
 
                 case State.Intro:

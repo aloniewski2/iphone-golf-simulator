@@ -26,10 +26,15 @@ namespace GolfArcade.PlayTests
 
         static IEnumerator WaitFor(System.Func<bool> done, float seconds, string what)
         {
-            float until = Time.realtimeSinceStartup + seconds;
+            float from = Time.realtimeSinceStartup, until = from + seconds;
+            int frame = Time.frameCount;
             while (!done())
             {
-                if (Time.realtimeSinceStartup > until) Assert.Fail($"timed out waiting for {what}");
+                if (Time.realtimeSinceStartup > until)
+                {
+                    var game = Object.FindFirstObjectByType<GolfGame>();
+                    Assert.Fail($"timed out waiting for {what} ({Time.realtimeSinceStartup - from:F1} s, {Time.frameCount - frame} frames; the game is in {game?.Current}, hole {game?.CurrentHole?.Number})");
+                }
                 yield return null;
             }
         }
