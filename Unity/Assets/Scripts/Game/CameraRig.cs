@@ -41,24 +41,48 @@ namespace GolfArcade.Game
         /// screen the hole ahead opens out down the middle — fairway, hazards, the landing area —
         /// with the horizon near the top and the ball and golfer seen from above in the lower
         /// third, over the buttons. Putts sit lower and closer.
-        public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting)
+        public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting, float look = 0, Vector3? pin = null)
         {
             float back = putting ? 3.2f : 8.5f, up = putting ? 1.4f : 6.8f, ahead = putting ? 2.5f : 5f;
             targetPosition = ball - aimDirection * back + Vector3.up * up;
             targetLookAt = ball + aimDirection * ahead;
+            Look(ball, aimDirection, look, pin, 14f, 5f);
             positionLag = 0.35f; lookLag = 0.3f;
+        }
+
+        /// The joystick pushed up or down while aiming (`look` -1..1): up, the camera climbs and
+        /// backs off and the view swings out to the pin, so it can be found over a rise or down
+        /// a long hole; down, it comes in low over the ball. `climb` and `backOff` are how far up
+        /// and back a full push goes (more climb for a pin higher than the ball).
+        void Look(Vector3 ball, Vector3 aimDirection, float look, Vector3? pin, float climb, float backOff)
+        {
+            if (look > 0)
+            {
+                // a pin up on a summit or a terrace needs the camera up level with it to be seen
+                float above = pin.HasValue ? Mathf.Max(0f, pin.Value.y - ball.y) : 0f;
+                targetPosition += Vector3.up * ((climb + above) * look) - aimDirection * (backOff * look);
+                var towards = pin ?? (ball + aimDirection * 150f);
+                targetLookAt = Vector3.Lerp(targetLookAt, towards + Vector3.up * 1.5f, 0.85f * look);
+            }
+            else if (look < 0)
+            {
+                float down = -look;
+                targetPosition = Vector3.Lerp(targetPosition, ball - aimDirection * 3.5f + Vector3.up * 2.2f, 0.6f * down);
+                targetLookAt = Vector3.Lerp(targetLookAt, ball + aimDirection * 1.5f, 0.6f * down);
+            }
         }
 
         /// Reading a putt: low and a little behind the ball on the side away from the golfer,
         /// so the golfer frames the left edge and the line to the hole is clear — ball, break,
         /// cup — with the whole read in view, and it stays put while the putt rolls.
-        public void FrameGreen(Vector3 ball, Vector3 aimDirection, float distanceToPin)
+        public void FrameGreen(Vector3 ball, Vector3 aimDirection, float distanceToPin, float look = 0, Vector3? pin = null)
         {
             var right = Vector3.Cross(Vector3.up, aimDirection).normalized;
             float reach = Mathf.Clamp(distanceToPin, 4, 30);
             // back and up far enough that the golfer is a figure at the edge, not half the screen
             targetPosition = ball + right * 3.2f - aimDirection * (8.5f + reach * 0.2f) + Vector3.up * (6.2f + reach * 0.08f);
             targetLookAt = ball + aimDirection * Mathf.Max(distanceToPin * 0.5f, 3f) + Vector3.up * 0.15f;
+            Look(ball, aimDirection, look, pin, 7f, 3f);
             positionLag = 0.35f; lookLag = 0.3f;
         }
 

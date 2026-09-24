@@ -541,8 +541,8 @@ namespace GolfArcade.Game
             UpdateAimVisuals();
             if (Current == State.Intro) rig.SnapNext(); // cut from the flyover, don't glide the length of the hole
             rig.ResetZoom();
-            if (putting) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin));
-            else rig.FrameAddress(ball.position, AimDirection(), putting);
+            aimLook = 0;
+            FrameAim();
             // On the green the read goes down; the flag stays in on a long putt, so the hole can be
             // found from across the green, and comes out inside six yards.
             holeView.ShowFlag(!putting || ballAt.DistanceTo(hole.Pin) > 6);
@@ -1233,9 +1233,22 @@ namespace GolfArcade.Game
             heading += degrees;
             aimedByPlayer = true;
             UpdateAimVisuals();
-            // on the green the camera keeps the putt's view (the green behind the ball, the cup ahead)
-            if (club == GolfClub.Putter) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin));
-            else rig.FrameAddress(ball.position, AimDirection(), false);
+            FrameAim();
+        }
+
+        /// How far the joystick (or W/S) has the aiming camera looking up the hole (to 1) or down
+        /// at the ball (to -1); it eases back when let go.
+        float aimLook;
+        /// A look held as if the joystick were pushed (the review tests).
+        public float LookHeld;
+
+        /// The aiming view: the putt's on the green (the green behind the ball, the cup ahead),
+        /// the address view elsewhere, either one looked up or down.
+        void FrameAim()
+        {
+            var pin = HoleView.ToWorld(hole.Pin);
+            if (club == GolfClub.Putter) rig.FrameGreen(ball.position, AimDirection(), (float)ballAt.DistanceTo(hole.Pin), aimLook, pin);
+            else rig.FrameAddress(ball.position, AimDirection(), false, aimLook, pin);
         }
 
         void CycleClub(int step)
@@ -1447,6 +1460,10 @@ namespace GolfArcade.Game
                                 + Mathf.Clamp(hud.AimStick, -1f, 1f) * 1.5f;
                     // a putt's line is a matter of a degree or two: the sweep is a fifth as fast
                     if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * (club == GolfClub.Putter ? 0.2f : 1f) * Time.deltaTime);
+                    // up and down on the joystick (or W/S): look up the hole to the pin, or down at the ball
+                    float lookWanted = Mathf.Clamp(hud.LookStick + LookHeld + (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0), -1f, 1f);
+                    float looked = Mathf.MoveTowards(aimLook, lookWanted, Time.deltaTime * 2.5f);
+                    if (looked != aimLook) { aimLook = looked; FrameAim(); }
                     if (puttRibbonPending && Time.unscaledTime >= nextPuttRibbon) LayPuttRibbon();
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);

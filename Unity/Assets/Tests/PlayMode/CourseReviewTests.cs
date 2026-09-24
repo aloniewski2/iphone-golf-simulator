@@ -98,6 +98,45 @@ namespace GolfArcade.PlayTests
             }
         }
 
+        /// Pushing the joystick up while aiming looks up the hole: on the Spiral's tee the summit
+        /// green is found, and down it comes in over the ball. Frames of each in Captures/course.
+        [UnityTest]
+        public IEnumerator LookingUpFindsThePin()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var cam = Camera.main;
+            cam.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;
+            yield return null;
+            game.ChooseHoles(0);
+            game.Play();
+            yield return null;
+            try
+            {
+                foreach (int number in new[] { 13, 7 })
+                {
+                    game.JumpToHole(number);
+                    yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the tee");
+                    var pin = HoleView.ToWorld(game.CurrentHole.Pin) + Vector3.up * 1.5f;
+                    foreach (var (name, look) in new[] { ("level", 0f), ("up", 1f), ("down", -1f) })
+                    {
+                        game.LookHeld = look;
+                        yield return new WaitForSecondsRealtime(1.6f);
+                        Assert.IsNotNull(GameCapture.Save($"{Dir}/look-{number}-{name}.jpg", 1080, 2340));
+                        if (look > 0)
+                        {
+                            var v = cam.WorldToViewportPoint(pin);
+                            Assert.IsTrue(v.z > 0 && v.x > 0.1f && v.x < 0.9f && v.y > 0.15f && v.y < 0.85f, $"hole {number}: looking up, the pin is well in the picture ({v})");
+                        }
+                    }
+                    game.LookHeld = 0;
+                }
+            }
+            finally { game.LookHeld = 0; }
+        }
+
         /// A shot into a real tree on the Witch's Lair: it comes down near the tree, well short
         /// of where the same shot goes with the tree out of the way.
         [UnityTest]

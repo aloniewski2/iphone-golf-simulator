@@ -88,8 +88,12 @@ namespace GolfArcade.UI
         public ControllerSheet Controller { get; private set; }
         public bool AimLeftHeld => AimLeft.IsHeld || (Controller != null && Controller.AimLeft.IsHeld);
         public bool AimRightHeld => AimRight.IsHeld || (Controller != null && Controller.AimRight.IsHeld);
-        /// The joystick's push, -1..1 right, when the controller layout is up.
-        public float AimStick => Controller != null && Controller.Stick ? Controller.Stick.Value.x : 0f;
+        /// The joystick's push, -1..1 right, when the controller layout is up (a little play in
+        /// the middle, so pushing it up to look doesn't also turn the aim).
+        public float AimStick => Controller != null && Controller.Stick ? DeadZone(Controller.Stick.Value.x) : 0f;
+        /// The joystick pushed up (1) or down (-1): looking up the hole, or down at the ball.
+        public float LookStick => Controller != null && Controller.Stick ? DeadZone(Controller.Stick.Value.y) : 0f;
+        static float DeadZone(float v) => Mathf.Sign(v) * Mathf.Max(0f, Mathf.Abs(v) - 0.2f) / 0.8f;
 
         public static Hud Create()
         {
