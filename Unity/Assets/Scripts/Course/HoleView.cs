@@ -169,7 +169,7 @@ namespace GolfArcade.Course
                 if (t) t.gameObject.SetActive(false);
             }
             Physics.SyncTransforms(); // the ball is placed on this ground in the same frame
-            if (hasGround) Hole.Surface = SampleSurface();
+            if (hasGround) { Hole.Surface = SampleSurface(); Hole.Ground = GroundHeight; }
             // the islands and boats out on the sea round it, past the playable ground
             var land = new Bounds(); bool any = false;
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))

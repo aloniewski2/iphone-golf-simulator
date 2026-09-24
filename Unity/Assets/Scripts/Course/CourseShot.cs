@@ -72,6 +72,48 @@ namespace GolfArcade.Course
             _ => FairwayDeceleration,
         };
 
+        /// Where a flight first meets ground that has risen above it, if it does before it would
+        /// have come down on a flat course. Its height is taken from where it was struck, so a
+        /// terrace or a pinnacle in the way is met, not flown through. A gentle rise is landed on
+        /// (with half its pace, as a first bounce would leave it); a face steeper than about 55°
+        /// is struck, and the ball drops to its foot with a little of its pace thrown back. The
+        /// velocity given for a landing is the flight's over the ground at that moment.
+        public readonly struct Contact
+        {
+            public readonly CoursePoint Landing;
+            /// True when it struck a face and dropped, rather than coming down on the slope.
+            public readonly bool Wall;
+            public readonly double HitTime, HitHeight, LandingTime, Vx, Vd;
+            public Contact(CoursePoint landing, bool wall, double hitTime, double hitHeight, double landingTime, double vx, double vd)
+            { Landing = landing; Wall = wall; HitTime = hitTime; HitHeight = hitHeight; LandingTime = landingTime; Vx = vx; Vd = vd; }
+        }
+
+        public static Contact? FirstContact(BallFlight flight, Func<double, double, double, (double x, double h, double d)> world, CoursePoint origin, Func<CoursePoint, double> ground)
+        {
+            double g0 = ground(origin);
+            const double step = 2 * SampleInterval;
+            var prev = origin;
+            for (double t = step; t < flight.CarryTime; t += step)
+            {
+                var p = flight.PositionAt(t);
+                var w = world(p.LateralYards, p.HeightYards, p.DistanceYards);
+                var at = new CoursePoint(w.x, w.d);
+                double y = g0 + p.HeightYards, g = ground(at);
+                if (t > 0.15 && g > y + 0.15)
+                {
+                    double hx = (at.X - prev.X) / step, hd = (at.D - prev.D) / step;
+                    double run = Math.Max(0.01, prev.DistanceTo(at)), rise = g - ground(prev);
+                    if (rise < Math.Max(1.0, run * 1.4))
+                        return new Contact(at, false, t, g, t, hx, hd);
+                    double foot = ground(prev);
+                    double fall = Math.Sqrt(2 * Math.Max(0, y - foot) / GravityYards);
+                    return new Contact(prev, true, t, y, t + fall, -hx * 0.12, -hd * 0.12);
+                }
+                prev = at;
+            }
+            return null;
+        }
+
         /// The fastest a ball rolling dead centre over a regulation cup can go and still drop:
         /// it has to fall its own radius before it reaches the far wall (Holmes, 1991), yards/s.
         public const double CentreCaptureSpeed = 1.63 / BallFlight.MetersPerYard;
@@ -193,6 +235,69 @@ namespace GolfArcade.Course
                     flight = BallFlight.Simulate(launch);
                 }
                 Carry = flight.Carry; Apex = flight.Apex;
+                var contact = hole.Ground == null ? null : FirstContact(flight, World, origin, hole.Ground);
+                if (contact is Contact c)
+                {
+                    // It met the ground before a flat course would have brought it down: up on a
+                    // rise, or into a cliff face and down to its foot. Drawn from here as it flew —
+                    // the height above the line the game draws between the two grounds.
+                    double g0 = hole.Ground(origin), gL = hole.Ground(c.Landing);
+                    Landing = c.Landing;
+                    LandingTime = c.LandingTime;
+                    for (double s = SampleInterval; s < c.LandingTime; s += SampleInterval)
+                    {
+                        double level = g0 + (gL - g0) * s / c.LandingTime;
+                        if (s <= c.HitTime)
+                        {
+                            var p = flight.PositionAt(s);
+                            var w = World(p.LateralYards, p.HeightYards, p.DistanceYards);
+                            path.Add((w.x, g0 + p.HeightYards - level, w.d));
+                        }
+                        else path.Add((Landing.X, c.HitHeight - 0.5 * GravityYards * (s - c.HitTime) * (s - c.HitTime) - level, Landing.D));
+                    }
+                    path.Add((Landing.X, 0, Landing.D));
+                    Carry = origin.DistanceTo(Landing);
+                    if (hole.LieAt(Landing) == CourseLie.Water)
+                    {
+                        Touchdown = Rest = Landing;
+                        CarryTime = Duration = LandingTime;
+                        Roll = 0; HoledAt = null;
+                        Lie = CourseLie.Water;
+                        NextPosition = Drop(Landing, origin, hole);
+                        return;
+                    }
+                    if (c.Wall)
+                    {
+                        time = CarryTime = LandingTime;
+                        vx = c.Vx; vd = c.Vd;
+                        goto Rolling;
+                    }
+                    // Down on the rise: from here it bounces and checks exactly as the flight
+                    // model's own landing does — the same spin, on the ground it came down on —
+                    // just sooner and higher up.
+                    var (soft2, grab2) = hole.LieAt(Landing).Landing();
+                    if (soft2 != launch.LandingSoftness || grab2 != launch.LandingGrab)
+                    {
+                        launch.LandingSoftness = soft2; launch.LandingGrab = grab2;
+                        flight = BallFlight.Simulate(launch);
+                    }
+                    var flat = flight.PositionAt(flight.CarryTime);
+                    var flatW = World(flat.LateralYards, 0, flat.DistanceYards);
+                    double sx = Landing.X - flatW.x, sd = Landing.D - flatW.d;
+                    for (double s = flight.CarryTime + SampleInterval; s <= flight.RollStartTime; s += SampleInterval)
+                    {
+                        var p = flight.PositionAt(s);
+                        var w = World(p.LateralYards, p.HeightYards, p.DistanceYards);
+                        path.Add((w.x + sx, p.HeightYards, w.d + sd));
+                    }
+                    var rs = flight.PositionAt(flight.RollStartTime);
+                    var rsW = World(rs.LateralYards, 0, rs.DistanceYards);
+                    path.Add((rsW.x + sx, 0, rsW.d + sd));
+                    time = CarryTime = LandingTime + Math.Max(0, flight.RollStartTime - flight.CarryTime);
+                    vx = flight.RollStartVelocityX * cosH + flight.RollStartVelocityZ * sinH;
+                    vd = -flight.RollStartVelocityX * sinH + flight.RollStartVelocityZ * cosH;
+                    goto Rolling;
+                }
                 Landing = new CoursePoint(first.x, first.d);
                 LandingTime = flight.CarryTime;
                 if (flight.CarryTime > 0 && hole.LieAt(Landing) == CourseLie.Water)
@@ -226,6 +331,7 @@ namespace GolfArcade.Course
                 vd = -flight.RollStartVelocityX * sinH + flight.RollStartVelocityZ * cosH;
             }
 
+            Rolling:
             // Roll on the course: the ground steers it. From the moment the ball is rolling it
             // accelerates down any slope it is on and is slowed by the grass it is on, so uphill
             // comes up short, downhill runs on and a side slope breaks the line; the cup has its

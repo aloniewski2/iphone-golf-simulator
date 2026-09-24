@@ -136,6 +136,10 @@ namespace GolfArcade.Course
         /// The lie of the land: the roll follows its slope and the green read draws it. A
         /// modelled hole samples it off its meshes when the model is placed.
         public ISurface Surface = FlatSurface.Instance;
+        /// The height of the ground anywhere on the hole, yards (the modelled hole's meshes, set
+        /// when it is placed): a ball in flight meets it — lands on a rise, or strikes a cliff
+        /// and drops. Null for a hole without a model, which is flat.
+        public Func<CoursePoint, double> Ground;
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;
@@ -173,7 +177,22 @@ namespace GolfArcade.Course
             }
             int station = segment + 1;
             while (station < Centerline.Length - 1 && ball.DistanceTo(Centerline[station]) < 35) station++;
+            // Round a bend (the Spiral winds a whole turn), look as far along as a straight
+            // shot could still go without leaving the fairway's corridor or the land.
+            while (station < Centerline.Length - 1 && ball.DistanceTo(Centerline[station + 1]) <= 250 && InTheCorridor(ball, Centerline[station + 1]))
+                station++;
             return Centerline[station];
+        }
+
+        bool InTheCorridor(CoursePoint from, CoursePoint to)
+        {
+            for (int k = 1; k <= 12; k++)
+            {
+                double t = k / 12.0;
+                var p = new CoursePoint(from.X + (to.X - from.X) * t, from.D + (to.D - from.D) * t);
+                if (!OnLand(p) || DistanceFromCenterline(p) > FairwayWidth / 2 + 10) return false;
+            }
+            return true;
         }
 
         public double DistanceFromCenterline(CoursePoint p)
@@ -294,6 +313,37 @@ namespace GolfArcade.Course
                             P(-5.1, 125.9), P(5.7, 120.0), P(11.7, 119.2), P(28.0, 129.0), P(32.6, 134.3), P(35.1, 141.9), P(36.1, 158.1), P(46.6, 178.3),
                         },
                     },
+                },
+                new Hole
+                {
+                    Number = 13, Par = 5, Name = "The Spiral",
+                    Blurb = "A par 5 that winds once round the pinnacle, climbing all the way: bend it left with the fairway, then pitch up to the summit green.",
+                    Centerline = new[] { P(0.0, 0.0), P(36.8, 17.9), P(69.7, 38.8), P(93.1, 68.4), P(105.1, 103.1), P(105.1, 138.6), P(93.8, 171.0), P(73.1, 197.1), P(46.0, 214.3), P(15.9, 221.3), P(-13.8, 218.2), P(-39.7, 205.9), P(-59.3, 186.5), P(-70.9, 162.8), P(-73.9, 137.7), P(-68.6, 114.1), P(-56.4, 94.6), P(-39.3, 81.0), P(-19.6, 74.2), P(-0.0, 74.4), P(4.4, 138.9) },
+                    FairwayWidth = 33, GreenRadius = 23,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(120.6, 170.4, 21.9, 13.1), Bunker(-29.6, 185.1, 19.7, 13.1), Bunker(-76.3, 82.8, 21.9, 13.1), Bunker(-25.2, 144.4, 15.3, 10.9), Bunker(23.0, 117.0, 13.1, 9.8) },
+                    Shore = new[] { P(155.9, 144.2), P(158.0, 160.7), P(149.7, 186.6), P(113.9, 228.1), P(103.9, 233.7), P(101.7, 239.2), P(84.6, 253.1), P(54.7, 267.0), P(44.2, 270.0), P(38.1, 268.5), P(33.3, 271.6), P(0.3, 269.0), P(-10.6, 270.3), P(-21.1, 266.1), P(-26.8, 267.5), P(-37.2, 264.1), P(-59.6, 263.1), P(-63.9, 259.9), P(-86.2, 256.2), P(-112.8, 237.5), P(-133.7, 212.2), P(-150.0, 177.6), P(-152.2, 161.4), P(-146.0, 124.1), P(-136.0, 104.0), P(-126.8, 61.2), P(-118.5, 40.9), P(-113.6, 37.8), P(-111.7, 32.2), P(-106.1, 30.0), P(-103.6, 24.8), P(-94.0, 19.3), P(-86.9, 10.6), P(-47.9, -9.4), P(-27.2, -16.8), P(-0.3, -20.9), P(26.8, -19.7), P(42.7, -16.0), P(51.5, -8.6), P(57.0, -8.0), P(73.2, 7.6), P(78.5, 9.2), P(84.7, 19.1), P(90.2, 21.0), P(100.4, 34.0), P(105.4, 36.7), P(131.1, 72.0), P(131.5, 77.8), P(149.8, 117.9), P(150.4, 128.4) },
+                },
+                new Hole
+                {
+                    Number = 14, Par = 4, Name = "The Witch's Lair",
+                    Blurb = "A par 4 to a green sunk in a crater: find the gap in the rim, or chip down over the pines into the lair.",
+                    Centerline = new[] { P(0.0, 0.0), P(0.0, 31.7), P(-6.6, 93.0), P(0.0, 158.6), P(10.9, 224.2), P(8.7, 278.9), P(4.4, 318.2), P(2.2, 340.1), P(2.2, 353.2), P(5.5, 382.8) },
+                    FairwayWidth = 42, GreenRadius = 22,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(-35.0, 169.5, 24.1, 15.3), Bunker(35.0, 237.3, 26.2, 17.5), Bunker(20.8, 320.4, 10.9, 10.9), Bunker(-14.2, 392.6, 13.1, 8.7) },
+                    Shore = new[] { P(-6.6, -40.5), P(-1.1, -38.1), P(20.6, -37.1), P(49.9, -23.0), P(64.2, -6.1), P(72.4, 14.8), P(76.1, 46.4), P(70.6, 102.9), P(76.9, 127.9), P(79.0, 155.1), P(73.7, 183.3), P(72.8, 210.6), P(87.1, 279.4), P(90.5, 286.3), P(89.4, 290.1), P(98.2, 334.4), P(101.3, 378.3), P(94.8, 422.2), P(80.4, 445.1), P(63.5, 459.1), P(38.4, 469.2), P(22.5, 473.7), P(0.6, 474.9), P(-15.7, 473.0), P(-31.6, 468.5), P(-36.4, 463.9), P(-41.8, 464.0), P(-61.0, 453.6), P(-77.0, 438.5), P(-94.9, 404.8), P(-98.7, 366.5), P(-91.4, 329.5), P(-76.3, 286.5), P(-71.7, 265.4), P(-70.9, 248.7), P(-72.2, 238.0), P(-77.4, 227.6), P(-76.7, 206.2), P(-79.3, 200.1), P(-73.7, 152.1), P(-81.3, 90.4), P(-74.2, 42.1), P(-59.6, 1.0), P(-37.5, -30.8), P(-28.0, -35.8) },
+                },
+                new Hole
+                {
+                    Number = 15, Par = 3, Name = "The Steps",
+                    Blurb = "A par 3 over the water to a green of three tiers: the pin is on the middle step, so land on it or putt up and down the stairs.",
+                    Centerline = new[] { P(0.0, 0.0), P(8.7, 148.7) },
+                    FairwayWidth = 39, GreenRadius = 50,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(-39.4, 85.3, 19.7, 10.9), Bunker(37.2, 86.4, 19.7, 10.9) },
+                    Shore = new[] { P(23.9, 9.9), P(23.0, 15.7), P(8.6, 25.0), P(-7.8, 28.7), P(-20.1, 17.4), P(-23.4, 6.3), P(-21.4, -4.9), P(-16.0, -7.8), P(-13.2, -13.0), P(-2.2, -16.6), P(3.5, -14.8), P(21.0, -1.2) },
+                    Islets = new[] { new[] { P(-33.6, 66.9), P(-22.9, 64.4), P(-11.6, 65.8), P(-6.3, 63.2), P(26.4, 68.0), P(45.2, 79.0), P(55.5, 97.6), P(59.7, 147.1), P(56.3, 163.7), P(60.1, 196.9), P(59.3, 219.3), P(49.8, 239.1), P(26.6, 253.1), P(5.2, 257.4), P(-5.8, 256.6), P(-11.0, 253.4), P(-21.8, 252.8), P(-36.6, 245.4), P(-51.4, 229.7), P(-55.8, 213.2), P(-58.9, 209.7), P(-59.8, 170.8), P(-57.0, 159.8), P(-58.8, 154.2), P(-57.0, 133.1), P(-60.6, 115.4), P(-57.5, 94.3), P(-48.0, 74.7) } },
                 },
             },
         };

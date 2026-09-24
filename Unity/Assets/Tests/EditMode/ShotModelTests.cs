@@ -145,6 +145,24 @@ namespace GolfArcade.Tests
             Assert.IsFalse(skim.Holed); Assert.IsFalse(skim.Lipped, "a quick one on the very edge skims over");
         }
 
+        /// A cliff in the way is met, not flown through: the ball strikes the face and drops to
+        /// its foot; a shelf above the landing catches the ball earlier than the flat would.
+        [Test]
+        public void TheGroundInTheWayIsMet()
+        {
+            var hole = Course.Course.Meadow().Holes[0];
+            var flat = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            hole.Ground = p => p.D > 90 && p.D < 100 ? 40 : 0;             // a wall 40 yards high
+            var walled = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            Assert.Less(walled.Rest.D, 92, "stopped by the wall");
+            Assert.Greater(walled.Rest.D, 60, "at its foot, not back at the tee");
+            Assert.Less(walled.Carry, flat.Carry * 0.7);
+            hole.Ground = p => p.D > 110 ? 12 : p.D > 100 ? (p.D - 100) * 1.2 : 0;   // a ramp up to a shelf
+            var shelf = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            Assert.Less(shelf.Landing.D, flat.Landing.D - 5, "it comes down on the shelf, earlier");
+            Assert.Greater(shelf.Landing.D, 110);
+        }
+
         [Test]
         public void CupCaptureFollowsTheSpeedAndOffsetRule()
         {

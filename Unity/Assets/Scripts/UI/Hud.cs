@@ -304,27 +304,34 @@ namespace GolfArcade.UI
         /// `Refresh` to light the current choices.
         public sealed class MenuView
         {
-            public HoldButton Golfer, HoleSeven, HoleTwelve, BothHoles, AirPlay, Play;
+            public HoldButton Golfer, AllHoles, AirPlay, Play;
+            /// One card per hole of the course, in the order of `HoleNumbers`.
+            public HoldButton[] Holes;
+            public int[] HoleNumbers;
             public Text BigScreenStatus, Build;
             internal RectTransform Root;
-            internal Image SevenEdge, TwelveEdge, SevenBadge, TwelveBadge, BothCheck;
+            internal Image[] Edges, Badges;
+            internal Image AllCheck;
             internal Text GolferText, PlayText;
 
             public void Refresh(string golfer, int holes, string bigScreen)
             {
                 GolferText.text = golfer;
-                bool seven = holes == 7 || holes == 0, twelve = holes == 12 || holes == 0;
-                SevenEdge.color = seven ? UiKit.Accent : UiKit.Hairline; SevenBadge.enabled = seven;
-                TwelveEdge.color = twelve ? UiKit.Accent : UiKit.Hairline; TwelveBadge.enabled = twelve;
-                BothCheck.color = holes == 0 ? UiKit.Accent : new Color(1, 1, 1, 0.08f);
+                for (int i = 0; i < Holes.Length; i++)
+                {
+                    bool on = holes == 0 || holes == HoleNumbers[i];
+                    Edges[i].color = on ? UiKit.Accent : UiKit.Hairline; Badges[i].enabled = on;
+                }
+                AllCheck.color = holes == 0 ? UiKit.Accent : new Color(1, 1, 1, 0.08f);
                 PlayText.text = holes == 0 ? "Play the round" : $"Play Hole {holes}";
                 BigScreenStatus.text = bigScreen;
             }
         }
 
         MenuView menu;
+        const float CardW = 298, CardH = 300;
 
-        public MenuView ShowMenu()
+        public MenuView ShowMenu(GolfArcade.Course.Hole[] holes)
         {
             HideMenu();
             // The sheet: the flyover shows through, dimmed to a ground the type can sit on.
@@ -339,7 +346,7 @@ namespace GolfArcade.UI
             }
 
             float y = -60;
-            T("Eyebrow", "CLIFFSIDE   ·   TWO HOLES", 26, UiKit.Strong, UiKit.Accent, left, y, width);
+            T("Eyebrow", $"CLIFFSIDE   ·   {holes.Length} HOLES", 26, UiKit.Strong, UiKit.Accent, left, y, width);
             y -= 44;
             T("Title", "Golf Arcade", 96, UiKit.Display, UiKit.Ink, left - 4, y, width, TextAnchor.UpperLeft, 120);
             y -= 122;
@@ -359,12 +366,12 @@ namespace GolfArcade.UI
             change.text = "Change  ›"; change.color = UiKit.Accent; change.raycastTarget = false;
             y -= 100 + 56;
 
-            // The hole: course cards with the Blender renders, and a round of both.
+            // The hole: a card for each, with its Blender render, and the whole round.
             T("Hole heading", "HOLE", 26, UiKit.Strong, UiKit.InkMuted, left, y, width);
             y -= 52;
             HoldButton CourseCard(string name, string picture, string title, string detail, float x, out Image edge, out Image badge)
             {
-                const float w = 456, h = 470, pic = 300;
+                const float w = CardW, h = CardH, pic = 176;
                 edge = UiKit.Panel(root, name, UiKit.Hairline, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, y), new Vector2(w, h));
                 var fill = UiKit.Panel(edge.transform, "Fill", UiKit.Surface, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 fill.rectTransform.offsetMin = new Vector2(3, 3); fill.rectTransform.offsetMax = new Vector2(-3, -3); fill.raycastTarget = false;
@@ -379,11 +386,11 @@ namespace GolfArcade.UI
                 img.rectTransform.anchorMin = Vector2.zero; img.rectTransform.anchorMax = Vector2.one; img.rectTransform.offsetMin = img.rectTransform.offsetMax = Vector2.zero;
                 img.texture = Resources.Load<Texture2D>(picture); img.raycastTarget = false;
                 if (!img.texture) img.color = UiKit.SurfaceRaised;
-                var t1 = UiKit.Label(edge.transform, "Title", 40, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -14 - pic - 18), new Vector2(w - 48, 50), UiKit.Strong, false);
+                var t1 = UiKit.Label(edge.transform, "Title", 32, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -14 - pic - 12), new Vector2(w - 36, 40), UiKit.Strong, false);
                 t1.text = title; t1.raycastTarget = false;
-                var t2 = UiKit.Label(edge.transform, "Detail", 28, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -14 - pic - 74), new Vector2(w - 48, 40), UiKit.Body, false);
-                t2.text = detail; t2.color = UiKit.InkMuted; t2.raycastTarget = false;
-                badge = UiKit.Panel(edge.transform, "Badge", UiKit.Accent, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-24 - 44, -24 - 44), new Vector2(44, 44));
+                var t2 = UiKit.Label(edge.transform, "Detail", 22, TextAnchor.UpperLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18, -14 - pic - 54), new Vector2(w - 36, 60), UiKit.Body, false);
+                t2.text = detail; t2.color = UiKit.InkMuted; t2.raycastTarget = false; t2.horizontalOverflow = HorizontalWrapMode.Wrap;
+                badge = UiKit.Panel(edge.transform, "Badge", UiKit.Accent, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20 - 40, -20 - 40), new Vector2(40, 40));
                 badge.sprite = UiKit.Circle; badge.type = Image.Type.Simple; badge.raycastTarget = false;
                 var check = UiKit.Label(badge.transform, "Check", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
                 check.text = "✓"; check.color = UiKit.Ground; check.raycastTarget = false;
@@ -391,19 +398,30 @@ namespace GolfArcade.UI
                 hold.Fill = fill; hold.RestColor = UiKit.Surface;
                 return hold;
             }
-            menu.HoleSeven = CourseCard("Hole 7", "Course/hole_07_card", "Hole 7", "Cliffside  ·  Par 4  ·  418 yd", left, out menu.SevenEdge, out menu.SevenBadge);
-            menu.HoleTwelve = CourseCard("Hole 12", "Course/hole_12_card", "Hole 12", "Island Carry  ·  Par 3  ·  198 yd", left + width - 456, out menu.TwelveEdge, out menu.TwelveBadge);
-            y -= 470 + 24;
+            // three to a row
+            const float gap = 22;
+            int n = holes.Length, par = 0;
+            menu.Holes = new HoldButton[n]; menu.HoleNumbers = new int[n]; menu.Edges = new Image[n]; menu.Badges = new Image[n];
+            float rowTop = y;
+            for (int i = 0; i < n; i++)
+            {
+                var h = holes[i];
+                par += h.Par;
+                y = rowTop - (i / 3) * (CardH + gap);
+                menu.Holes[i] = CourseCard($"Hole {h.Number}", h.Picture, $"Hole {h.Number}", $"{h.Name}\nPar {h.Par}  ·  {h.Length:F0} yd", left + (i % 3) * (CardW + gap), out menu.Edges[i], out menu.Badges[i]);
+                menu.HoleNumbers[i] = h.Number;
+            }
+            y = rowTop - ((n + 2) / 3) * (CardH + gap) + gap - 24;
             var both = UiKit.Panel(root, "Both", UiKit.Surface, new Vector2(0, 1), new Vector2(0, 1), new Vector2(left, y), new Vector2(width, 92));
             var bothHold = both.gameObject.AddComponent<HoldButton>();
             bothHold.Fill = both; bothHold.RestColor = UiKit.Surface;
-            menu.BothHoles = bothHold;
-            menu.BothCheck = UiKit.Panel(both.transform, "Check", UiKit.Accent, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(24, 0), new Vector2(44, 44));
-            menu.BothCheck.sprite = UiKit.Circle; menu.BothCheck.type = Image.Type.Simple; menu.BothCheck.raycastTarget = false;
-            var bothMark = UiKit.Label(menu.BothCheck.transform, "Mark", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            menu.AllHoles = bothHold;
+            menu.AllCheck = UiKit.Panel(both.transform, "Check", UiKit.Accent, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(24, 0), new Vector2(44, 44));
+            menu.AllCheck.sprite = UiKit.Circle; menu.AllCheck.type = Image.Type.Simple; menu.AllCheck.raycastTarget = false;
+            var bothMark = UiKit.Label(menu.AllCheck.transform, "Mark", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
             bothMark.text = "✓"; bothMark.color = UiKit.Ground; bothMark.raycastTarget = false;
             var bothText = UiKit.Label(both.transform, "Label", 32, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(1, 1), new Vector2(88, 0), Vector2.zero, UiKit.Ui, false);
-            bothText.text = "Play both as a round   ·   Par 7"; bothText.raycastTarget = false;
+            bothText.text = $"Play all {n} as a round   ·   Par {par}"; bothText.raycastTarget = false;
             y -= 92 + 56;
 
             // Big screen.

@@ -267,13 +267,13 @@ namespace GolfArcade.Game
             landingMarker.gameObject.SetActive(false);
             hud.HideScorecard();
             hud.ShowPlayHud(false);
-            menu = hud.ShowMenu();
+            var holes = Course.Course.Cliffside().Holes;
+            menu = hud.ShowMenu(holes);
             var stamp = Resources.Load<TextAsset>("build_id");
             menu.Build.text = stamp ? $"build {stamp.text.Trim()}" : "";
             menu.Golfer.Pressed = OpenGolferPicker;
-            menu.HoleSeven.Pressed = () => ChooseHoles(7);
-            menu.HoleTwelve.Pressed = () => ChooseHoles(12);
-            menu.BothHoles.Pressed = () => ChooseHoles(0);
+            for (int i = 0; i < menu.Holes.Length; i++) { int number = menu.HoleNumbers[i]; menu.Holes[i].Pressed = () => ChooseHoles(number); }
+            menu.AllHoles.Pressed = () => ChooseHoles(0);
             menu.AirPlay.Pressed = () => { bigScreen.SetWanted(true); bigScreen.OpenAirPlayPicker(); RefreshMenu(); };
             menu.Play.Pressed = Play;
             RefreshMenu();
