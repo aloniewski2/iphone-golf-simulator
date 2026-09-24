@@ -99,8 +99,24 @@ namespace GolfArcade.PlayTests
             System.IO.Directory.CreateDirectory(Dir);
             System.IO.File.WriteAllBytes($"{Dir}/tv-hud.png", png.EncodeToPNG());
             Assert.IsNotNull(GameCapture.Save($"{Dir}/tv-phone-controller.png"));
+            var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+            var hudCanvas = hud.GetComponent<Canvas>();
+            Assert.AreEqual(RenderMode.ScreenSpaceCamera, hudCanvas.renderMode, "mid-round the HUD is drawn with the course");
+            // Back at the menu the HUD comes home: the menu is on the phone, where it can be touched.
+            game.ShowMenu();
+            yield return null;
+            Assert.AreEqual(RenderMode.ScreenSpaceOverlay, hudCanvas.renderMode, "the menu is on the phone");
+            Assert.IsTrue(GameObject.Find("Menu") && GameObject.Find("Menu").activeInHierarchy, "the menu is up");
+            Assert.IsFalse(hud.Controller.Shown, "the controller waits for the round");
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/tv-phone-menu.png"));
+            // And a round takes it back to the big screen, the controller in hand.
+            game.Play();
+            yield return new WaitForSecondsRealtime(0.3f);
+            Assert.AreEqual(RenderMode.ScreenSpaceCamera, hudCanvas.renderMode, "the round's HUD is with the course");
+            Assert.IsTrue(hud.Controller.Shown, "the controller is up for the round");
             game.ReviewTvHud(false);
             yield return null;
+            Assert.AreEqual(RenderMode.ScreenSpaceOverlay, hudCanvas.renderMode);
         }
 
         [UnityTest]

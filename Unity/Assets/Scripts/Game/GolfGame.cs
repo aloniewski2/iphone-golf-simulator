@@ -652,8 +652,12 @@ namespace GolfArcade.Game
         void ShowControllerForState()
         {
             if (hud.Controller == null) return;
-            hud.Controller.SetShown(Current is not (State.Menu or State.Golfer or State.RoundDone));
+            bool round = Current is not (State.Menu or State.Golfer or State.RoundDone);
+            hud.Controller.SetShown(round);
             hud.Controller.SetIntro(Current == State.Intro);
+            // live on a big screen, the HUD goes there for the round; the menu, the picker and the
+            // round's card stay on the phone, where they can be touched
+            hud.HudOnTv(round);
         }
 
         /// Which controls show: touch buttons and the debug swing button only while aiming,
@@ -1233,6 +1237,7 @@ namespace GolfArcade.Game
                 hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
                 if (hole != null) hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
                 ShowScore();
+                ShowControllerForState();
             }
             SizeMinimap(on ? Hud.ControllerMapSize : Hud.MinimapSize);
             RefreshControls();

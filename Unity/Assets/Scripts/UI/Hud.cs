@@ -1316,11 +1316,11 @@ namespace GolfArcade.UI
         public void EnterControllerLayout(Camera tv = null)
         {
             if (Controller != null && Controller.Alive) return;
-            onTv = tv != null;
-            if (onTv)
+            liveTv = tv; onTv = false;
+            if (liveTv)
             {
-                ShowOnTv(tv);
                 Controller = new ControllerSheet(PhoneLayer());
+                HudOnTv(true);
             }
             else
             {
@@ -1333,7 +1333,6 @@ namespace GolfArcade.UI
             // the live minimap moves into the sheet's map card, and back out when it goes
             mapHome = Minimap.transform.parent;
             Minimap.transform.SetParent(Controller.MapSlot, false);
-            if (onTv) minimapHolder.gameObject.SetActive(false);   // (the map is in the player's hand)
             Controller.SetStatus(statusText.text);
             if (lastHole.number > 0) Controller.SetHole(lastHole.number, lastHole.par, lastHole.yards, lastHole.name);
             if (lastDistance.unit != null) Controller.SetDistance(lastDistance.amount, lastDistance.unit);
@@ -1350,8 +1349,9 @@ namespace GolfArcade.UI
             if (Controller == null) return;
             if (mapHome) Minimap.transform.SetParent(mapHome, false);
             Controller.Destroy(); Controller = null;
-            if (onTv) ShowOnTv(null);
-            onTv = false;
+            HudOnTv(false);
+            liveTv = null;
+            if (phoneLayer) { Destroy(phoneLayer.parent.gameObject); phoneLayer = null; }
             foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(true);
             minimapHolder.gameObject.SetActive(!flightMode);
         }
@@ -1360,10 +1360,22 @@ namespace GolfArcade.UI
         // HUD's own, far out of the course's way and drawing after it, carries this canvas there.
         // The controller gets a canvas of its own on the phone.
         bool onTv;
-        Camera tvHudCamera;
+        Camera liveTv, tvHudCamera;
         RectTransform phoneLayer;
         /// True while the HUD is on the TV (the course is live there and the phone is the club).
         public bool OnTv => onTv;
+
+        /// While the course is live on the big screen: `on` puts the HUD there (a round being
+        /// played, the controller in hand); off brings it back to the phone, which is where the
+        /// menu, the golfer picker and the round's card have to be — they are touched.
+        public void HudOnTv(bool on)
+        {
+            on &= liveTv != null;
+            if (on == onTv) return;
+            onTv = on;
+            ShowOnTv(on ? liveTv : null);
+            minimapHolder.gameObject.SetActive(!on && !flightMode);   // (on the TV the map is in the player's hand)
+        }
 
         void ShowOnTv(Camera course)
         {
@@ -1398,7 +1410,6 @@ namespace GolfArcade.UI
                 scaler.matchWidthOrHeight = 0.5f;
                 scaler.referenceResolution = UiKit.PhoneReference;
                 if (tvHudCamera) tvHudCamera.gameObject.SetActive(false);
-                if (phoneLayer) { Destroy(phoneLayer.parent.gameObject); phoneLayer = null; }
                 appliedSafeArea = default;
                 ApplySafeArea();
             }
