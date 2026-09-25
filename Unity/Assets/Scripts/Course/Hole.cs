@@ -123,8 +123,7 @@ namespace GolfArcade.Course
         public string Blurb = "";
         /// The render of the hole for its card, a Resources path.
         public string Picture => $"Course/hole_{Number:00}_card";
-        /// The course's look for the modelled hole's colours (HoleView.Themes): "" for Cliffside's,
-        /// "autumn" for Maple Bay's.
+        /// The course's look for the modelled hole's colours (HoleView.Themes); "" is Cliffside's.
         public string Theme = "";
         public CoursePoint[] Centerline;
         public double FairwayWidth;
@@ -251,12 +250,12 @@ namespace GolfArcade.Course
     public sealed class Course
     {
         public string Name;
-        /// How the server and the saved choice name it: "cliffside", "maplebay".
+        /// How the server and the saved choice name it ("cliffside").
         public string Key = "";
         public Hole[] Holes;
 
         /// Every course with modelled holes, in the order the course screen shows them.
-        public static Course[] All() => new[] { Cliffside(), MapleBay() };
+        public static Course[] All() => new[] { Cliffside() };
 
         /// The course a hole belongs to, by its number (hole numbers are unique across courses).
         public static Course Containing(int holeNumber)
@@ -368,50 +367,6 @@ namespace GolfArcade.Course
                     Hazards = new[] { Bunker(-39.4, 85.3, 19.7, 10.9), Bunker(37.2, 86.4, 19.7, 10.9) },
                     Shore = new[] { P(23.9, 9.9), P(23.0, 15.7), P(8.6, 25.0), P(-7.8, 28.7), P(-20.1, 17.4), P(-23.4, 6.3), P(-21.4, -4.9), P(-16.0, -7.8), P(-13.2, -13.0), P(-2.2, -16.6), P(3.5, -14.8), P(21.0, -1.2) },
                     Islets = new[] { new[] { P(-33.6, 66.9), P(-22.9, 64.4), P(-11.6, 65.8), P(-6.3, 63.2), P(26.4, 68.0), P(45.2, 79.0), P(55.5, 97.6), P(59.7, 147.1), P(56.3, 163.7), P(60.1, 196.9), P(59.3, 219.3), P(49.8, 239.1), P(26.6, 253.1), P(5.2, 257.4), P(-5.8, 256.6), P(-11.0, 253.4), P(-21.8, 252.8), P(-36.6, 245.4), P(-51.4, 229.7), P(-55.8, 213.2), P(-58.9, 209.7), P(-59.8, 170.8), P(-57.0, 159.8), P(-58.8, 154.2), P(-57.0, 133.1), P(-60.6, 115.4), P(-57.5, 94.3), P(-48.0, 74.7) } },
-                },
-            },
-        };
-
-        /// Maple Bay: three holes in autumn, built by course_builder.py from
-        /// blender/scripts/hole16_maple_design.py and friends (the maples, golden rough and red
-        /// sandstone of maple_bay_palette.py) — a crescent round a bay, a carry over the lagoon,
-        /// and a climb up a chain of three islands.
-        public static Course MapleBay() => new()
-        {
-            Name = "Maple Bay", Key = "maplebay",
-            Holes = new[]
-            {
-                new Hole
-                {
-                    Number = 16, Theme = "autumn", Par = 4, Name = "Maple Point",
-                    Blurb = "A dogleg round the bay, horn to horn along a crescent of dunes: follow the sand, or cut across the water as far as you dare.",
-                    Centerline = new[] { P(0.0, 0.0), P(23.9, 28.4), P(39.6, 64.6), P(43.6, 110.8), P(31.6, 155.5), P(5.1, 193.5), P(-32.9, 220.1), P(-70.7, 231.3), P(-98.6, 232.2), P(-110.1, 230.9), P(-137.1, 223.9) },
-                    FairwayWidth = 42, GreenRadius = 19,
-                    RoughWidth = 100,
-                    Hazards = new[] { Bunker(20.1, 99.1, 15.3, 10.9), Bunker(10.1, 139.3, 13.1, 10.9), Bunker(-15.4, 181.2, 15.3, 10.9), Bunker(-51.1, 204.0, 13.1, 8.7), Bunker(41.5, 190.7, 21.9, 13.1), Bunker(-126.8, 249.8, 15.3, 10.9), Bunker(-146.1, 197.6, 13.1, 8.7) },
-                    Shore = new[] { P(5.0, -56.7), P(23.7, -46.7), P(35.5, -35.5), P(54.8, -1.7), P(65.4, 22.6), P(68.5, 40.5), P(74.0, 48.8), P(73.9, 55.6), P(77.0, 59.7), P(91.1, 112.8), P(91.2, 129.5), P(87.5, 151.2), P(81.6, 166.6), P(73.8, 181.0), P(65.3, 188.8), P(64.3, 194.4), P(54.5, 200.7), P(52.1, 205.7), P(46.1, 207.6), P(34.7, 219.3), P(20.4, 227.2), P(17.1, 232.7), P(11.8, 233.8), P(-10.1, 249.6), P(-14.2, 255.7), P(-23.5, 259.0), P(-42.6, 272.8), P(-84.9, 284.4), P(-122.5, 278.2), P(-132.8, 274.2), P(-152.0, 263.5), P(-191.5, 234.5), P(-192.4, 229.4), P(-182.0, 210.8), P(-167.0, 193.9), P(-141.9, 172.7), P(-127.1, 187.6), P(-106.3, 192.8), P(-72.8, 183.9), P(-46.2, 183.5), P(-32.0, 176.9), P(-25.2, 168.9), P(-12.5, 138.3), P(-2.9, 129.0), P(7.5, 109.7), P(5.8, 93.7), P(-7.7, 71.7), P(-16.2, 38.3), P(-22.3, 28.7), P(-31.2, 23.7), P(-32.1, 18.2), P(-30.1, 6.4), P(-14.7, -34.2), P(-3.5, -53.0) },
-                },
-                new Hole
-                {
-                    Number = 17, Theme = "autumn", Par = 3, Name = "The Lagoon",
-                    Blurb = "A par 3 across the lagoon: carry the water to a green ringed by sand, and mind the wind off the bay.",
-                    Centerline = new[] { P(0.0, 0.0), P(15.3, 175.0) },
-                    FairwayWidth = 39, GreenRadius = 19,
-                    RoughWidth = 100,
-                    Hazards = new[] { Bunker(-15.3, 155.3, 17.5, 10.9), Bunker(37.2, 181.5, 17.5, 10.9), Bunker(8.7, 199.0, 21.9, 8.7) },
-                    Shore = new[] { P(22.7, 9.7), P(22.0, 15.4), P(17.5, 19.3), P(3.0, 26.8), P(-7.8, 26.7), P(-11.3, 21.8), P(-17.7, 20.5), P(-21.7, 10.4), P(-19.4, -0.3), P(-15.0, -4.0), P(-13.2, -9.9), P(2.3, -14.5), P(18.6, -0.9) },
-                    Islets = new[] { new[] { P(-36.0, 114.8), P(-3.1, 111.5), P(2.5, 114.1), P(8.0, 111.8), P(23.7, 117.0), P(29.8, 116.0), P(49.6, 125.7), P(70.5, 150.7), P(75.0, 166.7), P(74.8, 199.9), P(63.1, 230.4), P(50.5, 248.6), P(35.8, 256.0), P(9.5, 263.8), P(-1.5, 261.0), P(-7.1, 262.3), P(-37.2, 249.4), P(-54.5, 228.0), P(-57.2, 217.1), P(-60.9, 212.9), P(-65.0, 191.2), P(-64.3, 158.1), P(-58.4, 137.1), P(-50.7, 122.4) } },
-                },
-                new Hole
-                {
-                    Number = 18, Theme = "autumn", Par = 5, Name = "Harvest Run",
-                    Blurb = "Three islands, each higher than the last: drive across to the fairway island, then carry the channel up to the green on its cliff-top.",
-                    Centerline = new[] { P(0.0, 0.0), P(78.7, 145.4), P(100.6, 191.4), P(118.1, 246.1), P(124.7, 295.3), P(120.3, 331.4), P(21.9, 473.5) },
-                    FairwayWidth = 42, GreenRadius = 21,
-                    RoughWidth = 100,
-                    Hazards = new[] { Bunker(137.8, 180.4, 19.7, 13.1), Bunker(91.9, 267.9, 17.5, 13.1), Bunker(146.5, 311.7, 17.5, 10.9), Bunker(43.7, 460.4, 15.3, 10.9), Bunker(-6.6, 488.8, 15.3, 10.9) },
-                    Shore = new[] { P(33.3, 15.3), P(34.0, 20.9), P(31.0, 25.5), P(22.2, 32.0), P(2.5, 40.5), P(-26.2, 26.0), P(-29.7, 21.6), P(-29.3, 5.4), P(-16.1, -12.2), P(-6.1, -16.8), P(4.5, -17.8), P(18.9, -11.3), P(31.0, -0.2) },
-                    Islets = new[] { new[] { P(73.2, 111.3), P(89.5, 110.1), P(105.3, 113.6), P(114.8, 117.6), P(127.1, 130.3), P(131.2, 131.5), P(143.9, 149.4), P(153.9, 182.4), P(157.1, 185.7), P(159.7, 208.4), P(164.0, 218.2), P(162.4, 229.5), P(165.6, 235.0), P(163.5, 245.5), P(166.3, 257.3), P(163.2, 277.7), P(164.8, 285.0), P(155.1, 333.1), P(144.0, 350.8), P(131.2, 361.7), P(115.0, 362.0), P(104.9, 357.5), P(97.0, 349.6), P(88.3, 337.1), P(77.3, 300.3), P(71.9, 274.5), P(73.3, 266.8), P(70.5, 251.3), P(67.3, 246.8), P(69.1, 240.8), P(62.6, 219.2), P(64.4, 214.7), P(59.6, 202.7), P(50.0, 143.7), P(51.5, 133.2), P(56.2, 124.5), P(68.1, 113.2) }, new[] { P(-22.3, 430.7), P(-16.9, 420.5), P(-2.9, 411.6), P(19.2, 408.8), P(24.5, 412.3), P(35.6, 412.8), P(39.9, 417.1), P(45.6, 417.6), P(58.8, 427.8), P(69.5, 447.1), P(71.0, 474.7), P(69.3, 485.7), P(62.9, 501.2), P(52.6, 514.4), P(37.8, 521.9), P(21.6, 526.3), P(0.1, 521.5), P(-18.9, 510.6), P(-22.4, 506.1), P(-22.6, 499.4), P(-26.7, 495.7), P(-27.9, 478.8), P(-30.7, 473.8), P(-28.3, 445.9) } },
                 },
             },
         };

@@ -273,7 +273,7 @@ namespace GolfArcade.Game
         /// The holes to play: one of them, or the chosen course's round.
         Course.Course CourseFor(int holes) => GameSetup.CourseFor(GameSetup.CourseIdFor(chosenCourse, holes));
 
-        /// The home screen's choice as the server names it ("cliffside", "maplebay-17").
+        /// The home screen's choice as the server names it ("cliffside", "cliffside-12").
         public string ChosenCourseId => GameSetup.CourseIdFor(chosenCourse, chosenHoles);
 
         const float FogStart = 320, FogEnd = 1100;

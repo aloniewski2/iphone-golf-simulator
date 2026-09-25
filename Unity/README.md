@@ -65,19 +65,10 @@ with a clubhouse leaderboard after each round and on the OPEN screen. It is save
 so the event can be played a round at a time. The pros' rounds are played out hole by hole from
 the event's seed and their skill (`Championship.cs`).
 
-**Courses**: *Cliffside* (holes 7, 12–15) and *Maple Bay* (holes 16–18, autumn). Maple Bay has a
-crescent of dunes round a bay, a carry over a lagoon from a tee islet, and a par 5 up a chain of
-three islands. COURSE browses the holes of both; FULL ROUND picks the round of the course on show.
-Maple Bay is built like Cliffside's newer holes, from design modules
-(`blender/scripts/hole16_maple_design.py`, `hole17_lagoon_design.py`, `hole18_harvest_design.py`)
-run through `course_builder.py`:
-
-```bash
-blender -b --factory-startup --python blender/scripts/course_builder.py -- hole16_maple_design
-```
-
-Its look comes from `maple_bay_palette.py` in Blender and from the matching `"autumn"` theme in
-`HoleView.Themes` in the game.
+**Courses**: `Course.All()` lists them; COURSE browses every course's holes and FULL ROUND picks
+the round of the course on show. New holes are built from design modules with
+`blender/scripts/course_builder.py` (an optional `PALETTE` recolours them, matched in the game
+by a theme in `HoleView.Themes`).
 
 ## Working in the editor
 
