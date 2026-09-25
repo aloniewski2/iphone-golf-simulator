@@ -43,7 +43,8 @@ namespace GolfArcade.Game
         HoleView holeView;
         GreenRead greenRead;
         BigScreen bigScreen;
-        Hud.MenuView menu;
+        HomeScreen home;
+        CourseScreen courses;
         /// 7, 12, or 0 for the whole round; remembered on the device.
         int chosenHoles;
         CameraRig rig;
@@ -156,7 +157,7 @@ namespace GolfArcade.Game
             RenderSettings.fog = true;
             RenderSettings.fogColor = new Color(0.76f, 0.91f, 0.99f);   // the sky just under the horizon
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogStartDistance = 320; RenderSettings.fogEndDistance = 1100;   // the islands on the horizon stay in view
+            RenderSettings.fogStartDistance = FogStart; RenderSettings.fogEndDistance = FogEnd;   // the islands on the horizon stay in view
             // A clear resort sky, the way Golf Dreams paints it (GolfArcade/SkyGradient): cyan
             // overhead, bright at the horizon, the haze colour below it so the sea's far edge
             // dissolves into the sky instead of banding.
@@ -256,45 +257,210 @@ namespace GolfArcade.Game
             return new Course.Course { Name = all.Name, Holes = System.Array.FindAll(all.Holes, h => h.Number == holes) };
         }
 
-        /// Before a round: pick the golfer, the holes and the screen, over a slow flyover of the
-        /// first hole to be played.
+        const float FogStart = 320, FogEnd = 1100;
+
+        /// The first screen (option C, "On the Tee"): the golfer at address on the first tee to
+        /// be played, the hole stretching away under the logo, and PLAY between COURSE and GOLFER.
         public void ShowMenu()
         {
             course = CourseFor(chosenHoles);
-            hole = course.Holes[0];
-            if (holeView) DestroyImmediate(holeView.gameObject);
-            holeView = HoleView.Build(hole, transform);
-            ball.gameObject.SetActive(false);
-            golfer.SetVisible(false);
+            ShowHole(course.Holes[0]);
             greenRead.Hide();
             aimLine.positionCount = 0;
             landingMarker.gameObject.SetActive(false);
             hud.HideScorecard();
+            hud.HideCourses(); courses = null;
             hud.ShowPlayHud(false);
-            var holes = Course.Course.Cliffside().Holes;
-            menu = hud.ShowMenu(holes);
+            home = hud.ShowMenu();
             var stamp = Resources.Load<TextAsset>("build_id");
-            menu.Build.text = stamp ? $"build {stamp.text.Trim()}" : "";
-            menu.Golfer.Pressed = OpenGolferPicker;
-            for (int i = 0; i < menu.Holes.Length; i++) { int number = menu.HoleNumbers[i]; menu.Holes[i].Pressed = () => ChooseHoles(number); }
-            menu.AllHoles.Pressed = () => ChooseHoles(0);
-            menu.AirPlay.Pressed = () => { bigScreen.SetWanted(true); bigScreen.OpenAirPlayPicker(); RefreshMenu(); };
-            menu.Play.Pressed = Play;
+            home.Build.text = stamp ? $"build {stamp.text.Trim()}" : "";
+            home.Golfer.Pressed = OpenGolferPicker;
+            home.Course.Pressed = OpenCourses;
+            home.BigScreen.Pressed = () => { Click(); bigScreen.SetWanted(true); bigScreen.OpenAirPlayPicker(); RefreshMenu(); };
+            home.Play.Pressed = Play;
             RefreshMenu();
+            SetFog(0);
+            StandOnTheTee();
+            // (the new view now, so the cut lands on it and not on the last one)
+            rig.FrameHome(ball.position, homeLine, homeBack, homeUp, 0);
             rig.SnapNext();
             Enter(State.Menu);
         }
 
-        /// The round: 0 for both holes, or one hole's number. Remembered on the device.
+        /// The hole behind the menu, or on show on the course screen, built fresh.
+        void ShowHole(Hole h)
+        {
+            hole = h;
+            if (holeView) DestroyImmediate(holeView.gameObject);
+            holeView = HoleView.Build(hole, transform);
+            holeView.ShowFlag(true);
+        }
+
+        /// The home screen's picture: the golfer at address on the tee with the driver, the ball
+        /// teed up, lined up at the hole's target.
+        Vector3 homeLine = Vector3.forward;
+        void StandOnTheTee()
+        {
+            ballAt = hole.Tee; heading = hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
+            PlaceBall(ballAt, 0);
+            ball.gameObject.SetActive(true);
+            homeLine = TeeAim();
+            golfer.SetClub(GolfClub.Driver, false);
+            golfer.Settle();
+            golfer.Stand(ball.position, homeLine);
+            golfer.SetVisible(true);
+            holeView.ShowTeeMarkers(true);
+            PlaceHomeCamera();
+        }
+
+        /// Where the home camera sits: behind the golfer, as near and as low as it can with a
+        /// clear view of them and the ball — no bank or cliff behind the tee, no tree or rock,
+        /// in the way.
+        float homeBack = 5.6f, homeUp = 2.9f;
+        void PlaceHomeCamera()
+        {
+            var right = Vector3.Cross(Vector3.up, homeLine);
+            var head = golfer.transform.position + Vector3.up * 1.2f;
+            foreach (var (back, up) in new[] { (5.6f, 2.9f), (5.6f, 4.3f), (4.8f, 5.6f), (7f, 6f), (4f, 7.5f), (3.2f, 9.5f) })
+            {
+                var at = ball.position - homeLine * back - right * 0.3f + Vector3.up * up;
+                if (Clear(at, head) && Clear(at, ball.position + Vector3.up * 0.15f)) { homeBack = back; homeUp = up; return; }
+            }
+            homeBack = 3.2f; homeUp = 9.5f;
+        }
+
+        /// Nothing between: every step from `from` to `to` above the ground and clear of what
+        /// stands on the hole.
+        bool Clear(Vector3 from, Vector3 to)
+        {
+            for (int i = 0; i < 24; i++)
+            {
+                var p = Vector3.Lerp(from, to, i / 24f);
+                var at = HoleView.ToCourse(p);
+                if (p.y < HoleView.GroundHeight(at) + 0.3) return false;
+                foreach (var o in hole.Obstacles) if (o.Touches(at.X, p.y, at.D, 0.4, out _, out _)) return false;
+            }
+            return true;
+        }
+
+        /// The round: 0 for all the holes, or one hole's number. Remembered on the device.
         public int ChosenHoles => chosenHoles;
         public void ChooseHoles(int holes)
         {
             chosenHoles = holes;
             PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
-            ShowMenu(); // the flyover moves to the chosen hole
+            ShowMenu(); // the tee moves to the chosen hole
         }
 
-        void RefreshMenu() => menu?.Refresh(GolferStyle.Summary, chosenHoles, bigScreen.Status);
+        Hole[] allHoles;
+        Hole[] AllHoles => allHoles ??= Course.Course.Cliffside().Holes;
+
+        void RefreshMenu() => home?.Refresh(chosenHoles == 0 ? $"{AllHoles.Length} holes" : $"Hole {chosenHoles}",
+                                            $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
+
+        // ----- The course screen -----
+
+        /// The hole on show there, and whether FULL ROUND is picked.
+        int browse;
+        bool browseFull;
+        Vector3 orbitCentre;
+        float orbitRadius, orbitClock;
+
+        /// COURSE: the hole itself, the camera circling it high up; the arrows go between the
+        /// holes, THIS HOLE or FULL ROUND, SELECT keeps the choice and the back arrow doesn't.
+        public void OpenCourses()
+        {
+            if (Current != State.Menu || courses != null) return;
+            Click();
+            hud.HideMenu(); home = null;
+            browse = chosenHoles == 0 ? 0 : Math.Max(0, System.Array.FindIndex(AllHoles, h => h.Number == chosenHoles));
+            browseFull = chosenHoles == 0;
+            courses = hud.ShowCourses(AllHoles.Length);
+            courses.Previous.Pressed = () => BrowseHole(-1);
+            courses.Next.Pressed = () => BrowseHole(1);
+            courses.ThisHole.Pressed = () => { Click(); browseFull = false; ShowBrowsed(); };
+            courses.FullRound.Pressed = () => { Click(); browseFull = true; ShowBrowsed(); };
+            courses.Back.Pressed = () => { Click(); ShowMenu(); };
+            courses.Select.Pressed = () => { Click(); ChooseHoles(browseFull ? 0 : AllHoles[browse].Number); };
+            BrowseHole(0);
+        }
+
+        /// The previous (-1) or next (1) hole, round the course; 0 shows the one picked.
+        public void BrowseHole(int step)
+        {
+            if (courses == null) return;
+            if (step != 0) Click();
+            browse = (browse + step + AllHoles.Length) % AllHoles.Length;
+            if (hole.Number != AllHoles[browse].Number) ShowHole(AllHoles[browse]);
+            golfer.SetVisible(false); ball.gameObject.SetActive(false);
+            holeView.ShowTeeMarkers(false);
+            // the whole hole: the fairway's every turn, the shore, the islets
+            var points = new System.Collections.Generic.List<CoursePoint>(hole.Centerline);
+            if (hole.Shore != null) points.AddRange(hole.Shore);
+            foreach (var islet in hole.Islets) points.AddRange(islet);
+            double minX = double.MaxValue, maxX = double.MinValue, minD = double.MaxValue, maxD = double.MinValue;
+            foreach (var p in points) { minX = Math.Min(minX, p.X); maxX = Math.Max(maxX, p.X); minD = Math.Min(minD, p.D); maxD = Math.Max(maxD, p.D); }
+            var mid = new CoursePoint((minX + maxX) / 2, (minD + maxD) / 2);
+            float radius = 0;
+            foreach (var p in points) radius = Mathf.Max(radius, (float)p.DistanceTo(mid));
+            float ground = (float)((HoleView.GroundHeight(hole.Tee) + HoleView.GroundHeight(hole.Pin)) / 2);
+            orbitCentre = new Vector3((float)mid.X, ground, (float)mid.D);
+            orbitRadius = radius + (float)hole.GreenRadius;
+            orbitClock = 0;
+            ShowBrowsed();
+            UpdateCourses();
+            rig.SnapNext();
+        }
+
+        void ShowBrowsed()
+        {
+            var h = AllHoles[browse];
+            courses?.Show(h.Name, h.Number, h.Par, h.Length, browse, browseFull);
+        }
+
+        /// One frame of the course screen: round the hole, the haze pushed back beyond it.
+        void UpdateCourses()
+        {
+            orbitClock += Time.deltaTime;
+            SetFog(rig.Orbit(orbitCentre, orbitRadius, orbitClock) + orbitRadius);
+        }
+
+        /// The haze: where it starts and ends, pushed back past `beyond` yards (0 for the usual).
+        void SetFog(float beyond)
+        {
+            RenderSettings.fogStartDistance = Mathf.Max(FogStart, beyond);
+            RenderSettings.fogEndDistance = Mathf.Max(FogEnd, beyond + 1200);
+        }
+
+        /// The hole the course screen shows, for tests.
+        public Hole BrowsedHole => courses != null ? AllHoles[browse] : null;
+
+        // ----- The golfer's face on the home screen -----
+
+        Camera avatarCamera;
+        RenderTexture avatarTexture;
+
+        /// A small camera on the golfer's face for the GOLFER button, while the home screen is up.
+        void UpdateAvatar()
+        {
+            bool on = home != null && golfer.Head && golfer.isActiveAndEnabled;
+            if (on && !avatarCamera)
+            {
+                avatarTexture = new RenderTexture(256, 256, 16);
+                avatarCamera = new GameObject("Avatar camera").AddComponent<Camera>();
+                avatarCamera.transform.SetParent(transform, false);
+                avatarCamera.targetTexture = avatarTexture;
+                avatarCamera.clearFlags = CameraClearFlags.SolidColor; avatarCamera.backgroundColor = new Color(0.61f, 0.83f, 1f);
+                avatarCamera.fieldOfView = 26; avatarCamera.nearClipPlane = 0.05f; avatarCamera.farClipPlane = 80;
+            }
+            if (avatarCamera) avatarCamera.gameObject.SetActive(on);
+            if (home != null) { home.Avatar.texture = avatarTexture; home.Avatar.enabled = on; }
+            if (!on) return;
+            // at address the face looks down at the ball: the camera is down there, looking up at it
+            var face = golfer.Head.position + Vector3.up * 0.12f + golfer.transform.forward * 0.08f;
+            avatarCamera.transform.position = face + golfer.transform.forward * 1.25f + Vector3.down * 0.35f;
+            avatarCamera.transform.LookAt(face);
+        }
 
         // ----- The golfer select screen -----
 
@@ -309,7 +475,7 @@ namespace GolfArcade.Game
         public void OpenGolferPicker()
         {
             if (Current != State.Menu) return;
-            hud.HideMenu(); menu = null;
+            hud.HideMenu(); home = null;
             select = hud.ShowGolferSelect(GolferStyle.KitNames, GolferStyle.KitColors, GolferStyle.ShirtNames, GolferStyle.ShirtColors);
             select.Previous.Pressed = () => SwitchGolfer();
             select.Next.Pressed = () => SwitchGolfer();
@@ -363,7 +529,10 @@ namespace GolfArcade.Game
         public void Play()
         {
             if (Current != State.Menu) return;
-            hud.HideMenu();
+            hud.HideMenu(); home = null;
+            hud.HideCourses(); courses = null;
+            SetFog(0);
+            UpdateAvatar();
             hud.ShowPlayHud(true);
             StartRound();
         }
@@ -1452,9 +1621,11 @@ namespace GolfArcade.Game
             switch (Current)
             {
                 case State.Menu:
-                    // A slow aerial of the hole, round and back, behind the menu.
-                    rig.Showcase(hole, Mathf.PingPong(stateTime / 30f, CameraRig.AerialShare * 0.999f));
-                    if (menu != null && Time.frameCount % 30 == 0) menu.BigScreenStatus.text = bigScreen.Status;
+                    // home: behind the golfer on the tee; the course screen: round the hole, high up
+                    if (courses != null) UpdateCourses();
+                    else rig.FrameHome(ball.position, homeLine, homeBack, homeUp, stateTime);
+                    if (home != null && Time.frameCount % 30 == 0) RefreshMenu();
+                    UpdateAvatar();
                     break;
 
                 case State.Golfer:

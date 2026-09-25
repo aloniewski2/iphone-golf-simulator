@@ -287,6 +287,43 @@ namespace GolfArcade.Game
             positionLag = 0.35f; lookLag = 0.3f;
         }
 
+        /// The home screen: behind the golfer on the first tee, `back` yards back and `up` yards
+        /// up and a touch to their left, the hole opening out ahead over their shoulder,
+        /// drifting slowly from side to side.
+        public void FrameHome(Vector3 ball, Vector3 aimDirection, float back, float up, float t)
+        {
+            var right = Vector3.Cross(Vector3.up, aimDirection);
+            RestoreFov(); ResetZoom();
+            Camera.farClipPlane = FarClip;
+            float sway = 0.35f * Mathf.Sin(t * 0.21f);
+            targetPosition = ball - aimDirection * back + right * (sway - 0.3f) + Vector3.up * up;
+            // tipped down just enough that the golfer's feet stand a quarter of the way up the
+            // picture, clear of the dock, however high the camera had to go
+            float feet = Mathf.Atan2(up, back) * Mathf.Rad2Deg;
+            float pitch = feet - Mathf.Atan(0.5f * Mathf.Tan(Camera.fieldOfView * 0.5f * Mathf.Deg2Rad)) * Mathf.Rad2Deg;
+            targetLookAt = targetPosition + Quaternion.AngleAxis(pitch, right) * aimDirection * 20f;
+            positionLag = 0.8f; lookLag = 0.8f;
+        }
+
+        /// The course screen: high over the hole and circling it, a turn a minute, near enough
+        /// that the whole of it — a circle of `radius` round `centre` — fills the picture's width
+        /// whichever way round it is. Returns how far off it is.
+        public float Orbit(Vector3 centre, float radius, float t)
+        {
+            RestoreFov(); ResetZoom();
+            float half = Mathf.Atan(Mathf.Tan(Camera.fieldOfView * 0.5f * Mathf.Deg2Rad) * Camera.aspect);
+            float distance = radius / Mathf.Sin(half) * 0.96f;   // (the circle is the worst case)
+            float pitch = 42f * Mathf.Deg2Rad, angle = (200f + t * 6f) * Mathf.Deg2Rad;
+            var round = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+            targetPosition = centre + round * (distance * Mathf.Cos(pitch)) + Vector3.up * (distance * Mathf.Sin(pitch));
+            targetLookAt = centre;
+            positionLag = 0.25f; lookLag = 0.25f;
+            Camera.farClipPlane = Mathf.Max(FarClip, distance * 3f);
+            return distance;
+        }
+
+        const float FarClip = 900;
+
         public void SnapNext() => snap = true;
 
         /// Chase these with the given lags (seconds) — for a shot keyed elsewhere that should

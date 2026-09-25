@@ -239,7 +239,7 @@ namespace GolfArcade.Game
             if (modelGo) Destroy(modelGo);
             faceMaterial = null;
             if (body) Destroy(body.gameObject);
-            hasModel = false; body = null; modelGo = null;
+            hasModel = false; body = null; modelGo = null; Head = null;
             phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
             var look = CurrentLook;
             var model = Resources.Load<GameObject>(look.ModelPath);
@@ -311,6 +311,9 @@ namespace GolfArcade.Game
             }
             if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
             MeasureFeet(model);
+            // the Head bone (not a mesh that happens to share the name)
+            foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                if ((Head = System.Array.Find(smr.bones, b => b && b.name == "Head")) != null) break;
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -404,6 +407,9 @@ namespace GolfArcade.Game
 
         /// The move playing now, or null while it's the swing.
         public string Performing => phase == 4 ? clipName : null;
+
+        /// The head (the rig's Head bone, or the stand-in's sphere), for a camera on the face.
+        public Transform Head { get; private set; }
 
         /// The clip and the club in hand for `club`: the driver's swing, the iron's, a half
         /// swing or a chip for the wedge depending on how far there is to go, the putt.
@@ -612,6 +618,7 @@ namespace GolfArcade.Game
             torso.transform.localPosition = new Vector3(0, 1.05f, 0);
             torso.transform.localScale = new Vector3(0.45f, 0.35f, 0.32f);
             var head = HoleView.Primitive(PrimitiveType.Sphere, "Head", skin, body);
+            Head = head.transform;
             head.transform.localPosition = new Vector3(0, 1.62f, 0);
             head.transform.localScale = Vector3.one * 0.34f;
             var cap = HoleView.Primitive(PrimitiveType.Cylinder, "Cap", Color.white, body);
