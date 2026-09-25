@@ -55,6 +55,30 @@ top left. PLAY goes the chosen way, on the holes COURSE picked (one hole, or the
 
 The golfer the phone plays as is the active profile's. The GOLFER button edits it as before.
 
+**Formats for 2 players** (picked on the 2 PLAYERS screen): *stroke play*; *match play* (win
+holes, not strokes: "2 UP"); *closest to the pin* (one tee shot each on the par 3s, feet from the
+pin, a hole in one is 0 ft); and *longest drive* (one drive each on the par 4s and 5s, counted only
+if it finishes on the fairway). The round card shows each player's shot and the standings.
+
+**The Open** (OPEN on the home screen): four rounds of the chosen course against eleven tour pros,
+with a clubhouse leaderboard after each round and on the OPEN screen. It is saved on the phone,
+so the event can be played a round at a time. The pros' rounds are played out hole by hole from
+the event's seed and their skill (`Championship.cs`).
+
+**Courses**: *Cliffside* (holes 7, 12–15) and *Maple Bay* (holes 16–18, autumn). Maple Bay has a
+crescent of dunes round a bay, a carry over a lagoon from a tee islet, and a par 5 up a chain of
+three islands. COURSE browses the holes of both; FULL ROUND picks the round of the course on show.
+Maple Bay is built like Cliffside's newer holes, from design modules
+(`blender/scripts/hole16_maple_design.py`, `hole17_lagoon_design.py`, `hole18_harvest_design.py`)
+run through `course_builder.py`:
+
+```bash
+blender -b --factory-startup --python blender/scripts/course_builder.py -- hole16_maple_design
+```
+
+Its look comes from `maple_bay_palette.py` in Blender and from the matching `"autumn"` theme in
+`HoleView.Themes` in the game.
+
 ## Working in the editor
 
 Open `Unity/` with Unity `6000.3.24f1`. Everything is built at runtime from the one **Golf Game**

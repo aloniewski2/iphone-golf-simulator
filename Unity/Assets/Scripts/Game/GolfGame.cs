@@ -63,6 +63,8 @@ namespace GolfArcade.Game
         CourseScreen courses;
         /// 7, 12, or 0 for the whole round; remembered on the device.
         int chosenHoles;
+        /// The course whose round is picked (its Key), when chosenHoles is 0; remembered too.
+        string chosenCourse = "cliffside";
         CameraRig rig;
         bool holeCam;
         GolferView golfer;
@@ -259,19 +261,20 @@ namespace GolfArcade.Game
                 if (Current == State.Aim) UpdateAimVisuals();
             };
             chosenHoles = PlayerPrefs.GetInt("holes", 0);
+            chosenCourse = PlayerPrefs.GetString("course", "cliffside");
+            if (Course.Course.ByKey(chosenCourse) == null) chosenCourse = "cliffside";
+            if (chosenHoles != 0 && Course.Course.Containing(chosenHoles) == null) chosenHoles = 0;
 
             ShowMenu();
         }
 
         // ----- The menu -----
 
-        /// The holes to play: one of them, or the round.
-        Course.Course CourseFor(int holes)
-        {
-            var all = Course.Course.Cliffside();
-            if (holes == 0) return all;
-            return new Course.Course { Name = all.Name, Holes = System.Array.FindAll(all.Holes, h => h.Number == holes) };
-        }
+        /// The holes to play: one of them, or the chosen course's round.
+        Course.Course CourseFor(int holes) => GameSetup.CourseFor(GameSetup.CourseIdFor(chosenCourse, holes));
+
+        /// The home screen's choice as the server names it ("cliffside", "maplebay-17").
+        public string ChosenCourseId => GameSetup.CourseIdFor(chosenCourse, chosenHoles);
 
         const float FogStart = 320, FogEnd = 1100;
 
@@ -368,19 +371,33 @@ namespace GolfArcade.Game
 
         /// The round: 0 for all the holes, or one hole's number. Remembered on the device.
         public int ChosenHoles => chosenHoles;
-        public void ChooseHoles(int holes)
+        public void ChooseHoles(int holes, string courseKey = null)
         {
             chosenHoles = holes;
-            PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
+            if (holes != 0) courseKey = Course.Course.Containing(holes)?.Key;
+            if (courseKey != null && Course.Course.ByKey(courseKey) != null) chosenCourse = courseKey;
+            PlayerPrefs.SetInt("holes", holes); PlayerPrefs.SetString("course", chosenCourse); PlayerPrefs.Save();
             ShowMenu(); // the tee moves to the chosen hole
         }
 
         Hole[] allHoles;
-        Hole[] AllHoles => allHoles ??= Course.Course.Cliffside().Holes;
+        /// Every course's holes, one after another, for the course screen.
+        Hole[] AllHoles
+        {
+            get
+            {
+                if (allHoles != null) return allHoles;
+                var list = new System.Collections.Generic.List<Hole>();
+                foreach (var c in Course.Course.All()) list.AddRange(c.Holes);
+                return allHoles = list.ToArray();
+            }
+        }
+
+        string ChosenCourseName => Course.Course.ByKey(chosenCourse)?.Name ?? "Cliffside";
 
         void RefreshMenu()
         {
-            home?.Refresh(chosenHoles == 0 ? $"{AllHoles.Length} holes" : $"Hole {chosenHoles}",
+            home?.Refresh(chosenHoles == 0 ? ChosenCourseName : $"Hole {chosenHoles}",
                           $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
             home?.ShowMode((int)Mode, ProfileStore.Active.Name);
         }
@@ -400,7 +417,7 @@ namespace GolfArcade.Game
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
             if (lobby) Destroy(lobby.gameObject);
-            lobby = Lobby.Create(page, () => chosenHoles, Begin, EditGolferFor, CloseLobby);
+            lobby = Lobby.Create(page, () => ChosenCourseId, Begin, EditGolferFor, CloseLobby);
         }
 
         public void CloseLobby()
@@ -438,7 +455,8 @@ namespace GolfArcade.Game
             if (Current != State.Menu || courses != null) return;
             Click();
             hud.HideMenu(); home = null;
-            browse = chosenHoles == 0 ? 0 : Math.Max(0, System.Array.FindIndex(AllHoles, h => h.Number == chosenHoles));
+            browse = chosenHoles == 0 ? Math.Max(0, System.Array.FindIndex(AllHoles, h => Course.Course.Containing(h.Number)?.Key == chosenCourse))
+                                      : Math.Max(0, System.Array.FindIndex(AllHoles, h => h.Number == chosenHoles));
             browseFull = chosenHoles == 0;
             courses = hud.ShowCourses(AllHoles.Length);
             courses.Previous.Pressed = () => BrowseHole(-1);
@@ -446,7 +464,7 @@ namespace GolfArcade.Game
             courses.ThisHole.Pressed = () => { Click(); browseFull = false; ShowBrowsed(); };
             courses.FullRound.Pressed = () => { Click(); browseFull = true; ShowBrowsed(); };
             courses.Back.Pressed = () => { Click(); ShowMenu(); };
-            courses.Select.Pressed = () => { Click(); ChooseHoles(browseFull ? 0 : AllHoles[browse].Number); };
+            courses.Select.Pressed = () => { Click(); ChooseHoles(browseFull ? 0 : AllHoles[browse].Number, Course.Course.Containing(AllHoles[browse].Number)?.Key); };
             BrowseHole(0);
         }
 
@@ -480,7 +498,8 @@ namespace GolfArcade.Game
         void ShowBrowsed()
         {
             var h = AllHoles[browse];
-            courses?.Show(h.Name, h.Number, h.Par, h.Length, browse, browseFull);
+            // FULL ROUND is the round of the course this hole is on: its name over the hole
+            courses?.Show(browseFull ? Course.Course.Containing(h.Number)?.Name ?? h.Name : h.Name, h.Number, h.Par, h.Length, browse, browseFull);
         }
 
         /// One frame of the course screen: round the hole, the haze pushed back beyond it.
@@ -611,7 +630,7 @@ namespace GolfArcade.Game
             if (Mode == PlayMode.LocalVersus) { Click(); OpenLobby(Lobby.Page.Local); return; }
             if (Mode == PlayMode.Online) { Click(); OpenLobby(Lobby.Page.Online); return; }
             if (Mode == PlayMode.Tournament) { Click(); OpenLobby(Lobby.Page.Tournament); return; }
-            Begin(GameSetup.Solo(ProfileStore.Active, chosenHoles));
+            Begin(GameSetup.Solo(ProfileStore.Active, ChosenCourseId));
         }
 
         /// Tee off on what was chosen.
@@ -727,8 +746,8 @@ namespace GolfArcade.Game
 
         void StartRound()
         {
-            setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
-            course = Match.HolesFor(CourseFor(GameSetup.HolesFor(setup.CourseId)), setup.Format);
+            setup ??= GameSetup.Solo(ProfileStore.Active, ChosenCourseId);
+            course = Match.HolesFor(GameSetup.CourseFor(setup.CourseId), setup.Format);
             NewMatch();
             ResetRoundStats();
             hud.HideScorecard();
@@ -745,7 +764,7 @@ namespace GolfArcade.Game
         /// A card for everyone in the setup over `course`; online, the scores already in.
         void NewMatch()
         {
-            setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
+            setup ??= GameSetup.Solo(ProfileStore.Active, ChosenCourseId);
             Match = new Match(course, setup.Players(), setup.Seed, setup.Format);
             roundRecorded = false;
             if (setup.Mode != PlayMode.Online || onlineRoom == null) return;
@@ -773,7 +792,7 @@ namespace GolfArcade.Game
             int index = System.Array.FindIndex(course.Holes, h => h.Number == number);
             if (index < 0)
             {
-                course = CourseFor(0); NewMatch(); // not in the chosen holes: play the whole round
+                course = Course.Course.Containing(number) ?? CourseFor(0); NewMatch(); // not in the chosen holes: play its course's round
                 index = System.Array.FindIndex(course.Holes, h => h.Number == number);
                 if (index < 0) throw new System.ArgumentException($"no hole {number} on {course.Name}");
             }

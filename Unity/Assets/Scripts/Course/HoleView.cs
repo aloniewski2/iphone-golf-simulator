@@ -54,6 +54,28 @@ namespace GolfArcade.Course
 
         // ----- Modelled course -----
 
+        /// A course's own look over the palette, by the hole's Theme: Maple Bay's autumn, the
+        /// same colours as blender/scripts/maple_bay_palette.py.
+        static readonly Dictionary<string, Dictionary<string, Color>> Themes = new()
+        {
+            ["autumn"] = new()
+            {
+                ["MAT_ROUGH"] = Rgb(150, 142, 60), ["MAT_FAIRWAY"] = Rgb(140, 196, 70), ["MAT_FAIRWAY_STRIPE"] = Rgb(124, 182, 60),
+                ["MAT_FIRSTCUT"] = Rgb(118, 170, 56), ["MAT_GREEN"] = Rgb(150, 218, 86), ["MAT_BUNKER_LIP"] = Rgb(164, 192, 82),
+                ["MAT_SAND"] = Rgb(246, 232, 200), ["MAT_CLIFF"] = Rgb(178, 108, 72), ["MAT_CLIFF_DARK"] = Rgb(138, 80, 56),
+                ["MAT_TREE_DARK"] = Rgb(178, 58, 34), ["MAT_TREE_MID"] = Rgb(222, 110, 40), ["MAT_TREE_LIGHT"] = Rgb(242, 178, 60),
+                ["MAT_ROCK"] = Rgb(170, 140, 116), ["MAT_ROCK_DARK"] = Rgb(128, 100, 84),
+                ["MAT_WATER"] = Rgb(22, 96, 150), ["MAT_WATER_SHALLOW"] = Rgb(62, 160, 188),
+            },
+        };
+
+        /// A material's colour on this hole: its course's theme first, then the palette.
+        Color? Colour(string name)
+        {
+            if (Hole != null && Themes.TryGetValue(Hole.Theme ?? "", out var theme) && theme.TryGetValue(name, out var themed)) return themed;
+            return Palette.TryGetValue(name, out var c) ? c : null;
+        }
+
         /// Blender material name → the flat game colour. The FBX carries the same names, so the
         /// look is set here rather than by whatever the importer made of them.
         static readonly Dictionary<string, Color> Palette = new()
@@ -173,7 +195,7 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (Palette.TryGetValue(name, out var color))
+                    if (Colour(name) is Color color)
                         mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color) : Turf.TryGetValue(name, out var turf) ? TurfMat(color, turf) : Mat(color);
                 }
                 r.sharedMaterials = mats;
@@ -213,7 +235,7 @@ namespace GolfArcade.Course
                 if (!StartsWithAny(mf.name, GroundPrefixes) || !mf.TryGetComponent(out Renderer lr)) continue;
                 if (any) land.Encapsulate(lr.bounds); else { land = lr.bounds; any = true; }
             }
-            if (any) Backdrop.Place(transform, land, pinC - teeC, WaterMat(Palette["MAT_WATER"]));
+            if (any) Backdrop.Place(transform, land, pinC - teeC, WaterMat(Colour("MAT_WATER").Value));
         }
 
         /// The ground around the green as the ball will roll over it, read off the meshes the

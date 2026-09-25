@@ -31,7 +31,7 @@ namespace GolfArcade.UI
         Action<GameSetup> play;
         Action<PlayerProfile, Action> editGolfer;
         Action close;
-        Func<int> holes;
+        Func<string> courseId;
         RectTransform content;
         Page page;
         OnlineSession session;
@@ -43,12 +43,12 @@ namespace GolfArcade.UI
 
         public Page Showing => page;
 
-        /// `holes`: the home screen's choice (0 the round, else one hole's number).
-        public static Lobby Create(Page page, Func<int> holes, Action<GameSetup> play, Action<PlayerProfile, Action> editGolfer, Action close)
+        /// `courseId`: the home screen's choice of course and holes (GameSetup.CourseIdFor).
+        public static Lobby Create(Page page, Func<string> courseId, Action<GameSetup> play, Action<PlayerProfile, Action> editGolfer, Action close)
         {
             var go = new GameObject("Lobby");
             var lobby = go.AddComponent<Lobby>();
-            lobby.play = play; lobby.editGolfer = editGolfer; lobby.close = close; lobby.holes = holes;
+            lobby.play = play; lobby.editGolfer = editGolfer; lobby.close = close; lobby.courseId = courseId;
             lobby.Build();
             lobby.Open(page);
             return lobby;
@@ -183,7 +183,7 @@ namespace GolfArcade.UI
                 var players = new List<PlayerProfile>();
                 foreach (var id in localIds) players.Add(book.Find(id));
                 ProfileStore.Save();
-                play(GameSetup.LocalVersus(players, holes(), format));
+                play(GameSetup.LocalVersus(players, courseId(), format));
             }, 52);
         }
 
@@ -241,7 +241,7 @@ namespace GolfArcade.UI
 
             if (open == null)
             {
-                Caption(content, "FOUR ROUNDS OF CLIFFSIDE AGAINST ELEVEN TOUR PROS", 700, UiKit.ArcadeYellow);
+                Caption(content, $"FOUR ROUNDS OF {FullCourse().Name.ToUpperInvariant()} AGAINST ELEVEN TOUR PROS", 700, UiKit.ArcadeYellow);
                 Caption(content, "PLAY A ROUND WHENEVER YOU LIKE  ·  THE LEADERBOARD WAITS FOR YOU", 640);
                 Pill(content, "TEE OFF IN THE OPEN", "play", 0, -740, 900, 140, UiKit.ArcadeYellow, UiKit.ArcadeInk, () => NewOpen(me), 46);
                 return;
@@ -258,13 +258,16 @@ namespace GolfArcade.UI
 
         void NewOpen(PlayerProfile me)
         {
-            var cliffside = Course.Course.Cliffside();
-            var pars = new int[cliffside.Holes.Length];
-            for (int i = 0; i < pars.Length; i++) pars[i] = cliffside.Holes[i].Par;
-            var open = Championship.Start(new[] { (me.Name, me.Id) }, "cliffside", cliffside.Name, pars, Environment.TickCount);
+            var course = FullCourse();
+            var pars = new int[course.Holes.Length];
+            for (int i = 0; i < pars.Length; i++) pars[i] = course.Holes[i].Par;
+            var open = Championship.Start(new[] { (me.Name, me.Id) }, course.Key, course.Name, pars, Environment.TickCount);
             ChampionshipStore.Current = open;
             play(GameSetup.Tournament(open, Players(open)));
         }
+
+        /// The whole of the chosen course (the Open is always the full round).
+        Course.Course FullCourse() => Course.Course.ByKey(GameSetup.CourseFor(courseId()).Key) ?? Course.Course.Cliffside();
 
         /// The Open's players who are profiles on this phone.
         static List<PlayerProfile> Players(Championship open)
@@ -358,10 +361,11 @@ namespace GolfArcade.UI
                     ProfileStore.Save();
                     ShowOnline();
                 });
-                string holesName = holes() == 0 ? "THE FULL ROUND" : $"HOLE {holes()}";
+                int hole = GameSetup.HolesFor(courseId());
+                string holesName = hole == 0 ? $"ALL OF {FullCourse().Name.ToUpperInvariant()}" : $"HOLE {hole}";
                 if (online)
                 {
-                    string course = GameSetup.CourseIdFor(holes());
+                    string course = courseId();
                     Pill(content, "QUICK MATCH", "play", 0, 540, 900, 130, UiKit.ArcadeYellow, UiKit.ArcadeInk, () => session.Send(OnlineMessage.Quick(course)), 48);
                     Pill(content, "CREATE A ROOM", "flag", 0, 390, 900, 110, UiKit.ArcadeBlue, Color.white, () => session.Send(OnlineMessage.Create(course)), 40);
                     var code = TextField(content, "CODE", -225, 250, 430, 110, 52, 4);
@@ -419,10 +423,11 @@ namespace GolfArcade.UI
         async void LoadLeaderboard()
         {
             var target = leaderboardText;
-            string course = GameSetup.CourseIdFor(holes());
+            string course = courseId();
+            int hole = GameSetup.HolesFor(course);
             var board = await BackendClient.FetchLeaderboard(course, 8);
             if (!this || !target) return;
-            var b = new StringBuilder(holes() == 0 ? "TOP ROUNDS\n\n" : $"TOP SCORES  ·  HOLE {holes()}\n\n");
+            var b = new StringBuilder(hole == 0 ? $"TOP ROUNDS  ·  {FullCourse().Name.ToUpperInvariant()}\n\n" : $"TOP SCORES  ·  HOLE {hole}\n\n");
             if (board == null) b.Append("THE LEADERBOARD IS OFFLINE");
             else if (board.entries.Length == 0) b.Append("NO SCORES YET — BE THE FIRST");
             for (int i = 0; board != null && i < board.entries.Length; i++)
