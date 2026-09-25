@@ -74,12 +74,33 @@ namespace GolfArcade.Course
             ["MAT_FLOWER_CORAL"] = Rgb(243, 132, 147), ["MAT_FLOWER_GOLD"] = Rgb(251, 205, 80), ["MAT_FLOWER_LAVENDER"] = Rgb(184, 135, 213),
             // The pin (blender/pin.blend): the cup's liner and the band on the stick.
             ["MAT_CUP_EDGE"] = Rgb(92, 150, 58), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
+            // Holes 16-20 (blender/scripts/course_extras.py COLORS): volcano, snow, desert,
+            // jungle and the windmill's island, their plants and landmarks.
+            ["MAT_ROUGH_ASH"] = Rgb(56, 60, 54), ["MAT_BASALT"] = Rgb(50, 50, 56), ["MAT_BASALT_DARK"] = Rgb(32, 32, 38),
+            ["MAT_SAND_BLACK"] = Rgb(88, 86, 90), ["MAT_LAVA"] = Rgb(255, 116, 24), ["MAT_LAVA_CRUST"] = Rgb(150, 46, 22),
+            ["MAT_SMOKE"] = Rgb(222, 222, 228), ["MAT_CANVAS"] = Rgb(240, 230, 206), ["MAT_SNOW"] = Rgb(238, 244, 250), ["MAT_ICE"] = Rgb(170, 218, 242),
+            ["MAT_ICE_DEEP"] = Rgb(122, 186, 224), ["MAT_DESERT"] = Rgb(228, 152, 82), ["MAT_REDROCK"] = Rgb(198, 90, 60),
+            ["MAT_REDROCK_DARK"] = Rgb(160, 70, 48), ["MAT_REDROCK_ORANGE"] = Rgb(228, 130, 72), ["MAT_REDROCK_CREAM"] = Rgb(240, 208, 162),
+            ["MAT_ROUGH_JUNGLE"] = Rgb(44, 138, 42), ["MAT_MOSS"] = Rgb(74, 152, 52), ["MAT_PALM_FROND"] = Rgb(74, 170, 60),
+            ["MAT_PALM_TRUNK"] = Rgb(150, 112, 72), ["MAT_JUNGLE_LEAF"] = Rgb(40, 142, 62), ["MAT_COCONUT"] = Rgb(110, 72, 40),
+            ["MAT_CACTUS"] = Rgb(66, 152, 74), ["MAT_CACTUS_DARK"] = Rgb(44, 118, 56), ["MAT_BLOOM"] = Rgb(246, 110, 150),
+            ["MAT_TUFT"] = Rgb(178, 172, 82), ["MAT_DEAD_WOOD"] = Rgb(54, 48, 46), ["MAT_LOG"] = Rgb(146, 92, 52),
+            ["MAT_LOG_DARK"] = Rgb(106, 66, 40), ["MAT_WINDOW"] = Rgb(255, 214, 120), ["MAT_CARROT"] = Rgb(240, 128, 40),
+            ["MAT_COAL"] = Rgb(32, 32, 36), ["MAT_RED_PAINT"] = Rgb(208, 54, 46), ["MAT_WHITE_PAINT"] = Rgb(246, 246, 242),
+            ["MAT_ROOF_RED"] = Rgb(202, 66, 50), ["MAT_HEDGE"] = Rgb(42, 112, 50), ["MAT_TULIP_RED"] = Rgb(234, 52, 60),
+            ["MAT_TULIP_YELLOW"] = Rgb(250, 212, 52), ["MAT_TULIP_PINK"] = Rgb(246, 132, 182), ["MAT_TULIP_PURPLE"] = Rgb(152, 92, 204),
+            ["MAT_TULIP_LEAF"] = Rgb(72, 150, 60), ["MAT_TEMPLE"] = Rgb(172, 166, 148), ["MAT_TEMPLE_DARK"] = Rgb(128, 124, 110),
+            ["MAT_VINE"] = Rgb(62, 142, 58),
         };
         static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
 
         /// Surfaces the ball rests on: everything the raycast should see. Trees, rocks, water and
         /// buildings are scenery.
         static readonly string[] GroundPrefixes = { "TERRAIN", "FAIRWAY", "GREEN", "TEE_BOX", "BUNKER", "CART_PATH" };
+        /// Flat sheets over the ground or the sea that cast no shadow: water, lava, ice, smoke, spray.
+        static readonly string[] Unshadowed = { "WATER", "LAVA", "ICE_", "SMOKE", "SPRAY" };
+        /// Sheets Blender may hand over facing down (it draws both sides; Unity only the front).
+        static readonly string[] Sheets = { "WATER_", "LAVA_", "ICE_" };
         /// The model's stand-ins for things the game draws itself at the exact pin and tee.
         static readonly string[] GameplayPlaceholders = { "FLAG", "FLAG_POLE", "HOLE_CUP", "BALL_START", "MARKER_TEE", "MARKER_PIN", "MARKER_UP" };
 
@@ -174,10 +195,14 @@ namespace GolfArcade.Course
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
                     if (Palette.TryGetValue(name, out var color))
-                        mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color) : Turf.TryGetValue(name, out var turf) ? TurfMat(color, turf) : Mat(color);
+                        mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color)
+                                : name is "MAT_LAVA" or "MAT_WINDOW" ? UnlitMat(color)       // they glow
+                                // a waterfall stays bright from every side (lit, its far side went grey)
+                                : name == "MAT_FOAM" && r.name.StartsWith("WATER_FALL") ? UnlitMat(Color.Lerp(color, Palette["MAT_WATER_SHALLOW"], 0.3f))
+                                : Turf.TryGetValue(name, out var turf) ? TurfMat(color, turf) : Mat(color);
                 }
                 r.sharedMaterials = mats;
-                r.shadowCastingMode = r.name.StartsWith("WATER") ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
+                r.shadowCastingMode = StartsWithAny(r.name, Unshadowed) ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
             // The model's own open sea is one quad kilometres across, which the fog paints the
             // colour of the sky; the backdrop's sea (Backdrop.Place) replaces it.
@@ -185,8 +210,12 @@ namespace GolfArcade.Course
                 foreach (var r in ocean.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
             // The shallows and the surf round the shore came out of Blender facing down (it draws
             // both sides; Unity only the front), so from above they were not there: turn them up.
+            // (Not the falls: they stand up, one sheet facing out and one in, as they should.)
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
-                if (mf.name.StartsWith("WATER_") && mf.sharedMesh && mf.sharedMesh.isReadable && FacesDown(mf)) FlipUp(mf);
+                if (StartsWithAny(mf.name, Sheets) && !mf.name.Contains("_FALL") && mf.sharedMesh && mf.sharedMesh.isReadable && FacesDown(mf)) FlipUp(mf);
+            // Windmill Links' sails turn about the axis the model gives them.
+            if (FindDeep(model.transform, "SAILS_SPIN") is Transform sails && FindDeep(sails, "SAILS_AXIS") is Transform axis)
+                sails.gameObject.AddComponent<Spinner>().Axis = axis;
             // Hole 12's sea comes with its swell as blendshapes and a sheet of glints; drive them.
             WaterMotion.Attach(FindDeep(model.transform, "WATER_WAVES"), FindDeep(model.transform, "WATER_GLINTS"));
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
@@ -525,6 +554,8 @@ namespace GolfArcade.Course
             ["MAT_FIRSTCUT"] = ("fairway", 8f, 0.32f), ["MAT_GREEN"] = ("green", 4f, 0.9f),
             ["MAT_ROUGH"] = ("rough", 6f, 0.4f), ["MAT_BUNKER_LIP"] = ("rough", 6f, 0.35f),
             ["MAT_SAND"] = ("sand", 3f, 0.45f),
+            ["MAT_ROUGH_ASH"] = ("rough", 6f, 0.35f), ["MAT_SNOW"] = ("rough", 7f, 0.12f), ["MAT_DESERT"] = ("sand", 4f, 0.35f),
+            ["MAT_ROUGH_JUNGLE"] = ("rough", 6f, 0.4f), ["MAT_MOSS"] = ("rough", 6f, 0.35f), ["MAT_SAND_BLACK"] = ("sand", 3f, 0.4f),
         };
         static readonly Dictionary<(Color, string), Material> turfMaterials = new();
 
@@ -584,6 +615,21 @@ namespace GolfArcade.Course
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.1f);
             materials[color] = m;
             return m;
+        }
+    }
+
+    /// Turns a windmill's sails about `Axis` (a child out along the hub's axle), a lazy turn.
+    public sealed class Spinner : MonoBehaviour
+    {
+        public Transform Axis;
+        public float DegreesPerSecond = 36f;
+
+        void Update()
+        {
+            if (!Axis) return;
+            var axle = Axis.position - transform.position;
+            if (axle.sqrMagnitude < 1e-6f) return;
+            transform.Rotate(axle.normalized, DegreesPerSecond * Time.deltaTime, Space.World);
         }
     }
 }

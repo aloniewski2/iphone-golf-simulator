@@ -26,6 +26,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 import hole07_lib as H
 import hole07_design as H7          # offset_outline, band_object (pure helpers)
 D = importlib.import_module(ARGS[0])
+import course_extras as X                 # themes, pools, rivers, falls, the new landmarks and plants
 N = D.NUMBER
 H.BLEND_PATH = os.path.join(REPO, "blender", f"hole_{N:02d}.blend")
 FBX = os.path.join(REPO, "Unity", "Assets", "Resources", "Course", f"hole_{N:02d}.fbx")
@@ -51,6 +52,8 @@ M = {name: H.get_material(name, H.rgb(*c), **kw) for name, c, kw in [
     ("MAT_CHALK", (240, 239, 220), {}), ("MAT_FLAG", (230, 40, 40), {}), ("MAT_GLASS", (150, 205, 235), {"roughness": 0.2}),
     ("MAT_STONE", (150, 146, 140), {}), ("MAT_ROOF", (64, 58, 60), {}),
 ]}
+X.materials(H, M)
+TH = X.theme(D)
 
 
 # ---------------------------------------------------------------- islands: terrain and cliffs
@@ -112,16 +115,18 @@ def build_island(name, outline, seed):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     bm.normal_update()
     lip = set(rings[0]) | set(rings[1]); lower = set(v for rr in rings[4:] for v in rr)
+    steep_faces, lip_faces = [], []
     for f in top_faces:
         steep = f.normal.z < 0.62            # a terrace wall or a crater side: rock, not grass
         f.material_index = 1 if steep else 0
         f.smooth = not steep
+        if steep: steep_faces.append(f)
     for f in cliff:
         f.smooth = False
         f.material_index = 0 if all(v in lip for v in f.verts) else 2 if all(v in lower for v in f.verts) else 1
-        if f.material_index == 0: f.smooth = True
-    me.materials.clear()
-    for m in ("MAT_ROUGH", "MAT_CLIFF", "MAT_CLIFF_DARK"): me.materials.append(M[m])
+        if f.material_index == 0: f.smooth = True; lip_faces.append(f)
+    # the theme's ground and cliffs (Hole 7's grass and grey rock without one)
+    X.island_surfaces(D, me, M, {"lip": lip_faces, "cliff": cliff, "steep": steep_faces, "top": top_faces})
     bm.to_mesh(me); bm.free(); me.update()
     return ob
 
@@ -203,7 +208,7 @@ def bunker_lip(name, outline, sand_z, lip_z):
 bunker_outs = []
 for i, (cx, cy, rx, ry, rot, seed) in enumerate(D.BUNKERS, 1):
     out = H.blob(cx, cy, rx, ry, math.radians(rot), seed=seed, n=9, wobble=0.22, smooth=2)
-    H.surface_object(f"BUNKER_{i:02d}", "COURSE", out, 1.5, height, 0.30, M["MAT_SAND"])
+    H.surface_object(f"BUNKER_{i:02d}", "COURSE", out, 1.5, height, 0.30, M[TH["sand"]])
     bunker_lip(f"BUNKER_{i:02d}_LIP", out, 0.30, 0.22)
     bunker_outs.append(out)
 
@@ -222,6 +227,9 @@ for i, o in enumerate(outlines):
     bm.to_mesh(crest.data); bm.free()
 
 
+# ---------------------------------------------------------------- water, lava and ice inland; falls
+X.pools_and_rivers(globals())
+
 # ---------------------------------------------------------------- Hole 7's tree and rock models
 def run_part(script, stop):
     src = open(os.path.join(HERE, script)).read()
@@ -231,7 +239,9 @@ def run_part(script, stop):
     return ns
 
 
-trees = run_part("phase6_trees.py", "# ------------------------------------------------------------------ placement")["assets"]
+tree_part = run_part("phase6_trees.py", "# ------------------------------------------------------------------ placement")
+trees = tree_part["assets"]
+trees.update(X.plant_assets(H, M, tree_part["make_asset"]))   # palms, cacti, snowy pines…
 rocks = run_part("phase7_rocks.py", 'col = sub_collection("ROCKS")')["rocks"]
 root = H.get_root()
 H.BLEND_PATH = os.path.join(REPO, "blender", f"hole_{N:02d}.blend")   # (their reload of the library reset it to Hole 7's)
@@ -298,8 +308,9 @@ def cyl(bm, x, y, z0, h, r0, r1, segs=10):
 
 keep_out = []   # (point, radius) where no tree or rock goes
 
-for i, (a, b, width) in enumerate(D.STAIRS):
+for i, (a, b, width, *style) in enumerate(D.STAIRS):
     a, b = Vector(a), Vector(b)
+    tread_mat, rail_mat = ("MAT_STONE", "MAT_ROCK") if style and style[0] == "stone" else ("MAT_WOOD_LIGHT", "MAT_WOOD")
     za, zb = height(a.x, a.y), height(b.x, b.y)
     run = (b - a); steps = max(4, int(max(run.length, abs(zb - za) * 1.3) / 0.9))
     rz = math.atan2(run.y, run.x) - math.pi / 2
@@ -313,7 +324,7 @@ for i, (a, b, width) in enumerate(D.STAIRS):
         for k in range(0, steps + 1, 2):
             t = k / steps; p = a + run * t; z = za + (zb - za) * t
             for sgn in (1, -1): box(bm, (p.x + side.x * sgn, p.y + side.y * sgn, z + 0.6), (0.2, 0.2, 1.2))
-    solid(f"STAIRS_{i + 1}", "STRUCTURES", [("MAT_WOOD_LIGHT", treads), ("MAT_WOOD", rails)])
+    solid(f"STAIRS_{i + 1}", "STRUCTURES", [(tread_mat, treads), (rail_mat, rails)])
     for k in range(6): keep_out.append((a + run * (k / 5), width + 3))
 
 for i, pts in enumerate(D.BRIDGES):
@@ -336,8 +347,12 @@ for i, pts in enumerate(D.BRIDGES):
     solid(f"BRIDGE_{i + 1}", "STRUCTURES", [("MAT_WOOD_LIGHT", deck), ("MAT_WOOD", frame)])
     for (x, y, _z) in pts: keep_out.append((Vector((x, y)), 8))
 
-for i, (kind, x, y) in enumerate(D.LANDMARKS):
+for i, (kind, x, y, *more) in enumerate(D.LANDMARKS):
     z = height(x, y) - 0.5
+    if kind not in ("LIGHTHOUSE", "TOWER"):
+        r = X.landmark(globals(), kind, x, y, *more)
+        if r: keep_out.append((Vector((x, y)), r))
+        continue
     if kind == "LIGHTHOUSE":
         solid("LIGHTHOUSE", "STRUCTURES", [
             ("MAT_CHALK", lambda bm: (cyl(bm, x, y, z, 7, 3.4, 3.0), cyl(bm, x, y, z + 11, 4, 2.7, 2.5))),
@@ -372,6 +387,7 @@ def blocked(p, margin=4.0):
     if fair_keep and H.point_in_poly(p, fair_keep): return True
     if any(H.point_in_poly(p, g) for g in greens_keep) or H.point_in_poly(p, tee_keep): return True
     if any(H.point_in_poly(p, b) for b in bunker_keep): return True
+    if any(H.point_in_poly(p, w) for w in X.WET): return True
     return any((p - q).length < r for q, r in keep_out)
 
 
@@ -403,7 +419,11 @@ for _ in range(40):
     if blocked(p, 3.0): continue
     kind = rnd.choice(["ROCK_SMALL", "ROCK_MEDIUM", "ROCK_MEDIUM", "ROCK_LARGE"]); s = rnd.uniform(0.7, 1.2)
     rock_items.append((rocks[kind], (p.x, p.y, height(p.x, p.y) - 0.4 * s), rnd.uniform(0, math.tau), (s, s, s)))
-merged("ROCKS", "ENVIRONMENT", rock_items)
+rocks_ob = merged("ROCKS", "ENVIRONMENT", rock_items)
+if "rock" in TH:   # red rock in the desert, basalt on the volcano
+    for k in range(len(rocks_ob.data.materials)): rocks_ob.data.materials[k] = M[TH["rock"]]
+if getattr(D, "ICICLES", False):
+    X.icicles(globals(), outlines)
 
 # the asset library served its purpose: nothing of it is exported
 for o in list(bpy.data.collections["ASSET_LIBRARY"].objects):
@@ -450,7 +470,7 @@ lines = [
     f"                    Centerline = new[] {{ {P(centre)} }},",
     f"                    FairwayWidth = {round(2 * widths[len(widths) // 2] * YARDS)}, GreenRadius = {green_r},",
     f"                    RoughWidth = 100,",
-    f"                    Hazards = new[] {{ " + ", ".join(f"Bunker({yd((cx, cy))[0]}, {yd((cx, cy))[1]}, {round(2 * rx * YARDS, 1)}, {round(2 * ry * YARDS, 1)})" for cx, cy, rx, ry, _r, _s in D.BUNKERS) + " },",
+    f"                    Hazards = new[] {{ " + ", ".join([f"Bunker({yd((cx, cy))[0]}, {yd((cx, cy))[1]}, {round(2 * rx * YARDS, 1)}, {round(2 * ry * YARDS, 1)})" for cx, cy, rx, ry, _r, _s in D.BUNKERS] + X.hazards(D, yd, YARDS)) + " },",
     f"                    Shore = new[] {{ {P(shores[0])} }},",
 ]
 if len(shores) > 1:
