@@ -33,7 +33,7 @@ connection, and the server stays tiny.
 | `PATCH /v1/me` `{name?, body?, kit?, shirt?}` | Rename, or change golfer (0 male, 1 female), kit colour and shirt colour (0–5 each, `GolferStyle`'s order). |
 | `POST /v1/rounds` `{course, strokes[], result?}` | A finished solo or same-phone round. |
 | `GET /v1/players/:id` | Anyone's public profile. |
-| `GET /v1/leaderboard?course=cliffside&limit=20` | Best round per player. A course key is its full round (`cliffside`: holes 7, 12–15; `maplebay`: 16–18; `wildisles`: 19–23); `cliffside-12` or `maplebay-17` is one hole on its own. |
+| `GET /v1/leaderboard?course=cliffside&limit=20` | Best round per player. A course key is its full round (`cliffside`: holes 7, 12–15; `wildisles`: 19–23); `cliffside-12` or `wildisles-21` is one hole on its own. |
 | `GET /healthz` | For the host's health check. |
 | `WS /v1/play` | First message `{type:"hello", token}`, then `create`, `quick`, `join{code}`, `start`, `hole{hole,strokes}`, `leave`. |
 

@@ -15,7 +15,7 @@ namespace GolfArcade.Game
         public string CourseId = "cliffside";
 
         /// The holes, as the server names them: a course's key for its whole round
-        /// ("cliffside", "maplebay", "wildisles"), or key-number for one hole of it ("maplebay-17").
+        /// ("cliffside", "wildisles"), or key-number for one hole of it ("cliffside-12").
         public static string CourseIdFor(string courseKey, int hole) =>
             hole == 0 ? courseKey : $"{Course.Course.Containing(hole)?.Key ?? courseKey}-{hole}";
 

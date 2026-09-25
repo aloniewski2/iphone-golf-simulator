@@ -5,12 +5,11 @@
 /** Each course's holes (number, par), in the order they're played: Hole.cs Course.All(). */
 const COURSE_HOLES = {
   cliffside: { name: 'Cliffside', holes: [[7, 4], [12, 3], [13, 5], [14, 4], [15, 3]] },
-  maplebay: { name: 'Maple Bay', holes: [[16, 4], [17, 3], [18, 5]] },
   wildisles: { name: 'Wild Isles', holes: [[19, 4], [20, 5], [21, 3], [22, 4], [23, 4]] },
 };
 
 /** What a round can be: a course's key for its whole round ("cliffside"), or key-number for
- * one hole of it ("maplebay-17"): GameSetup.CourseIdFor in the app. */
+ * one hole of it ("cliffside-12"): GameSetup.CourseIdFor in the app. */
 export const COURSES = Object.fromEntries(Object.entries(COURSE_HOLES).flatMap(([key, { name, holes }]) => [
   [key, { name, pars: holes.map(([, par]) => par) }],
   ...holes.map(([number, par]) => [`${key}-${number}`, { name: `${name} · hole ${number}`, pars: [par] }]),

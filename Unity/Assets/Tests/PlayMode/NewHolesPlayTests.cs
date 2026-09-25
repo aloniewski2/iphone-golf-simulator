@@ -40,7 +40,7 @@ namespace GolfArcade.PlayTests
             game.ChooseHoles(0);
             game.Play();
             yield return null;
-            foreach (int number in new[] { 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 })
+            foreach (int number in new[] { 7, 12, 13, 14, 15, 19, 20, 21, 22, 23 })
             {
                 game.JumpToHole(number);
                 yield return new WaitForSecondsRealtime(0.5f);

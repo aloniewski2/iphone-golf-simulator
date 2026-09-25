@@ -22,6 +22,16 @@ namespace GolfArcade.Tests
         }
 
         [Test]
+        public void EveryCourseHasItsOwnHoleNumbers()
+        {
+            var numbers = Course.Course.All().SelectMany(c => c.Holes).Select(h => h.Number).ToList();
+            CollectionAssert.AllItemsAreUnique(numbers);
+            Assert.AreEqual("wildisles", Course.Course.Containing(21).Key);
+            Assert.AreEqual("cliffside", Course.Course.Containing(12).Key);
+            Assert.AreSame(null, Course.Course.Containing(99));
+        }
+
+        [Test]
         public void EveryHoleIsPlayable()
         {
             foreach (var h in Course.Course.WildIsles().Holes)

@@ -54,20 +54,9 @@ namespace GolfArcade.Course
 
         // ----- Modelled course -----
 
-        /// A course's own look over the palette, by the hole's Theme: Maple Bay's autumn, the
-        /// same colours as blender/scripts/maple_bay_palette.py.
-        static readonly Dictionary<string, Dictionary<string, Color>> Themes = new()
-        {
-            ["autumn"] = new()
-            {
-                ["MAT_ROUGH"] = Rgb(150, 142, 60), ["MAT_FAIRWAY"] = Rgb(140, 196, 70), ["MAT_FAIRWAY_STRIPE"] = Rgb(124, 182, 60),
-                ["MAT_FIRSTCUT"] = Rgb(118, 170, 56), ["MAT_GREEN"] = Rgb(150, 218, 86), ["MAT_BUNKER_LIP"] = Rgb(164, 192, 82),
-                ["MAT_SAND"] = Rgb(246, 232, 200), ["MAT_CLIFF"] = Rgb(178, 108, 72), ["MAT_CLIFF_DARK"] = Rgb(138, 80, 56),
-                ["MAT_TREE_DARK"] = Rgb(178, 58, 34), ["MAT_TREE_MID"] = Rgb(222, 110, 40), ["MAT_TREE_LIGHT"] = Rgb(242, 178, 60),
-                ["MAT_ROCK"] = Rgb(170, 140, 116), ["MAT_ROCK_DARK"] = Rgb(128, 100, 84),
-                ["MAT_WATER"] = Rgb(22, 96, 150), ["MAT_WATER_SHALLOW"] = Rgb(62, 160, 188),
-            },
-        };
+        /// A course's own look over the palette, by the hole's Theme: material name → colour.
+        /// Empty for now; a new course with its own colours adds its theme here.
+        static readonly Dictionary<string, Dictionary<string, Color>> Themes = new();
 
         /// A material's colour on this hole: its course's theme first, then the palette.
         Color? Colour(string name)
