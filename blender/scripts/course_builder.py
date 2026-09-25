@@ -243,6 +243,18 @@ tree_part = run_part("phase6_trees.py", "# -------------------------------------
 trees = tree_part["assets"]
 trees.update(X.plant_assets(H, M, tree_part["make_asset"]))   # palms, cacti, snowy pines…
 rocks = run_part("phase7_rocks.py", 'col = sub_collection("ROCKS")')["rocks"]
+
+# A course's own look: the design's PALETTE recolours any material by name (turf, cliffs,
+# trees, rocks, water) for the card render. The game colours by the same names from the
+# hole's Theme (HoleView.Themes), so keep the two in step.
+for _name, _rgb in getattr(D, "PALETTE", {}).items():
+    _m = bpy.data.materials.get(_name)
+    if _m is None: continue
+    _c = H.rgb(*_rgb)
+    _m.diffuse_color = _c
+    if _m.use_nodes:
+        for _n in _m.node_tree.nodes:
+            if _n.type == 'BSDF_PRINCIPLED': _n.inputs["Base Color"].default_value = _c
 root = H.get_root()
 H.BLEND_PATH = os.path.join(REPO, "blender", f"hole_{N:02d}.blend")   # (their reload of the library reset it to Hole 7's)
 
@@ -513,12 +525,19 @@ if "--no-render" not in ARGS:
     world = bpy.data.worlds.new("World"); sc.world = world; world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[0].default_value = H.rgb(150, 205, 245)
     sc.camera = cam
-    sc.render.engine = 'BLENDER_EEVEE'
+    # EEVEE where there's a GPU (the Mac); Cycles on the CPU for a headless Linux box
+    sc.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items} else 'BLENDER_EEVEE'
+    if sys.platform.startswith("linux"):
+        sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = 24; sc.cycles.use_denoising = False
     sc.view_settings.view_transform = 'Standard'
     sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = 900, 600, 100
-    png = CARD.replace(".jpg", ".png")
-    sc.render.filepath = png; sc.render.image_settings.file_format = 'PNG'
-    bpy.ops.render.render(write_still=True)
-    subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "88", png, "--out", CARD], capture_output=True)
-    os.remove(png)
+    if sys.platform == "darwin":
+        png = CARD.replace(".jpg", ".png")
+        sc.render.filepath = png; sc.render.image_settings.file_format = 'PNG'
+        bpy.ops.render.render(write_still=True)
+        subprocess.run(["sips", "-s", "format", "jpeg", "-s", "formatOptions", "88", png, "--out", CARD], capture_output=True)
+        os.remove(png)
+    else:   # no sips: Blender writes the JPEG itself
+        sc.render.filepath = CARD; sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 88
+        bpy.ops.render.render(write_still=True)
     print(f"rendered {CARD}")

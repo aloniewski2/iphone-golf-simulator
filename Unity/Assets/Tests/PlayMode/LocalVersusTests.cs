@@ -41,7 +41,7 @@ namespace GolfArcade.PlayTests
             yield return null;
             var alex = new PlayerProfile { Name = "Alex", Body = 0, Kit = 0 };
             var sam = new PlayerProfile { Name = "Sam", Body = 1, Kit = 1 };
-            game.Begin(GameSetup.LocalVersus(new[] { alex, sam }, 12));
+            game.Begin(GameSetup.LocalVersus(new[] { alex, sam }, "cliffside-12"));
             yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the first tee");
             var hole = game.CurrentHole;
             var tee = HoleView.ToWorld(hole.Tee);

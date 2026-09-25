@@ -78,6 +78,25 @@ namespace GolfArcade.Profile
         public void RecordRound(Scorecard card, IReadOnlyList<int> opponentsToPar = null)
         {
             if (card == null || !card.IsComplete) return;
+            RecordCard(card);
+            if (opponentsToPar == null || opponentsToPar.Count == 0) return;
+            int best = int.MaxValue;
+            foreach (var o in opponentsToPar) best = Math.Min(best, o);
+            RecordResult(card.ToPar < best ? 1 : card.ToPar == best ? 0 : -1);
+        }
+
+        /// A match against others: 1 won, 0 tied for first, -1 lost.
+        public void RecordResult(int result)
+        {
+            if (result > 0) MatchesWon++;
+            else if (result == 0) MatchesTied++;
+            else MatchesLost++;
+        }
+
+        /// A finished card's holes and best round, without a match result.
+        public void RecordCard(Scorecard card)
+        {
+            if (card == null || !card.IsComplete) return;
             RoundsPlayed++;
             for (int i = 0; i < card.Course.Holes.Length; i++)
             {
@@ -92,13 +111,6 @@ namespace GolfArcade.Profile
                 else if (strokes == par) Pars++;
             }
             if (!HasBest || card.ToPar < BestToPar) { BestToPar = card.ToPar; HasBest = true; }
-
-            if (opponentsToPar == null || opponentsToPar.Count == 0) return;
-            int best = int.MaxValue;
-            foreach (var o in opponentsToPar) best = Math.Min(best, o);
-            if (card.ToPar < best) MatchesWon++;
-            else if (card.ToPar == best) MatchesTied++;
-            else MatchesLost++;
         }
     }
 }

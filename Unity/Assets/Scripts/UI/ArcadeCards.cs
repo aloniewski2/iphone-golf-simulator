@@ -291,10 +291,19 @@ namespace GolfArcade.UI
 
         /// A row on the card for each golfer in a round with others: their name in their colour
         /// and their strokes per hole. Without them the card has the one YOU row and the total.
-        public struct Row { public string Name; public Color Color; public int?[] Strokes; }
-
-        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole, Row[] players = null)
+        public struct Row
         {
+            public string Name; public Color Color; public int?[] Strokes;
+            /// Text for each hole instead of strokes (a contest's "12 ft", "285 yd"), or null.
+            public string[] Cells;
+        }
+
+        /// What PLAY AGAIN says (NEXT ROUND in the Open).
+        readonly string againLabel;
+
+        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole, Row[] players = null, string againLabel = null)
+        {
+            this.againLabel = againLabel ?? "PLAY AGAIN";
             players ??= new[] { new Row { Name = "YOU", Color = UiKit.ArcadeYellow, Strokes = strokes } };
             bool solo = players.Length == 1;
             int tableRows = 2 + players.Length;
@@ -369,7 +378,12 @@ namespace GolfArcade.UI
                 for (int i = 0; i < n; i++)
                 {
                     float x = left + labelW + 12 + colW * (i + 0.5f);
-                    if (i < players[p].Strokes.Length && players[p].Strokes[i] is int s)
+                    if (players[p].Cells != null)
+                    {
+                        var cell = Cell(i < players[p].Cells.Length ? players[p].Cells[i] ?? "–" : "–", x, r2, colW, 30, UiKit.ArcadeInk);
+                        Icons.Fit(cell, 16, 30);
+                    }
+                    else if (i < players[p].Strokes.Length && players[p].Strokes[i] is int s)
                     {
                         int d = s - pars[i];
                         if (d < 0) Mark(x, r2, UiKit.ArcadeYellow, true, 66);
@@ -444,9 +458,9 @@ namespace GolfArcade.UI
             {
                 NextHole = Button("Next hole", "play", "NEXT HOLE", UiKit.ArcadeYellow, UiKit.ArcadeInk, 0, inner);
                 y -= 116 + 20;
-                PlayAgain = Button("Play again", "swing", "PLAY AGAIN", light, UiKit.ArcadeBlue, -bw / 2 - 10, bw);
+                PlayAgain = Button("Play again", "swing", againLabel, light, UiKit.ArcadeBlue, -bw / 2 - 10, bw);
             }
-            else PlayAgain = Button("Play again", "play", "PLAY AGAIN", UiKit.ArcadeYellow, UiKit.ArcadeInk, -bw / 2 - 10, bw);
+            else PlayAgain = Button("Play again", "play", againLabel, UiKit.ArcadeYellow, UiKit.ArcadeInk, -bw / 2 - 10, bw);
             Menu = Button("Main menu", "menu", "MAIN MENU", light, UiKit.ArcadeBlue, bw / 2 + 10, bw);
             y -= 116 + 30;
             card.sizeDelta = new Vector2(W, -y);

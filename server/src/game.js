@@ -2,15 +2,19 @@
 // the same as Unity/Assets/Scripts/Course/Hole.cs), profile limits, and the stats a finished
 // card adds up to (the same arithmetic as ProfileStats.RecordRound in the app).
 
-/** Cliffside's holes (number, par), in the order they're played: Hole.cs Course.Cliffside(). */
-const CLIFFSIDE = [[7, 4], [12, 3], [13, 5], [14, 4], [15, 3]];
-
-/** What a round can be: "cliffside" is the whole course, "cliffside-12" one hole of it
- * (GameSetup.CourseIdFor in the app). */
-export const COURSES = {
-  cliffside: { name: 'Cliffside', pars: CLIFFSIDE.map(([, par]) => par) },
-  ...Object.fromEntries(CLIFFSIDE.map(([number, par]) => [`cliffside-${number}`, { name: `Cliffside · hole ${number}`, pars: [par] }])),
+/** Each course's holes (number, par), in the order they're played: Hole.cs Course.All(). */
+const COURSE_HOLES = {
+  cliffside: { name: 'Cliffside', holes: [[7, 4], [12, 3], [13, 5], [14, 4], [15, 3]] },
+  maplebay: { name: 'Maple Bay', holes: [[16, 4], [17, 3], [18, 5]] },
+  wildisles: { name: 'Wild Isles', holes: [[19, 4], [20, 5], [21, 3], [22, 4], [23, 4]] },
 };
+
+/** What a round can be: a course's key for its whole round ("cliffside"), or key-number for
+ * one hole of it ("maplebay-17"): GameSetup.CourseIdFor in the app. */
+export const COURSES = Object.fromEntries(Object.entries(COURSE_HOLES).flatMap(([key, { name, holes }]) => [
+  [key, { name, pars: holes.map(([, par]) => par) }],
+  ...holes.map(([number, par]) => [`${key}-${number}`, { name: `${name} · hole ${number}`, pars: [par] }]),
+]));
 
 export const MAX_NAME_LENGTH = 16;
 export const BODY_KINDS = 2; // GolferStyle.BodyKind: male, female

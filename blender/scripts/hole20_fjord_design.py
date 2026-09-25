@@ -18,7 +18,7 @@ SEED = 17
 
 LAKE = (45.0, 20.0, 50.0, 84.0)          # centre x, y, half-width, half-length
 LAKE_BED, ICE_Z = 8.0, 9.4
-STREAM = [(92, 36), (112, 44), (126, 50)]
+STREAM = [(92, 36), (112, 44), (128, 50.5)]
 
 
 def smoothstep(t):
@@ -56,31 +56,38 @@ def height(x, y):
     return _height(round(x, 2), round(y, 2))
 
 
-ISLANDS = [[(math.cos(a) * (126 + 8 * math.sin(3 * a + 0.3) + 5 * math.sin(7 * a)), 10 + math.sin(a) * (262 + 9 * math.sin(2 * a + 0.8) + 6 * math.cos(5 * a)))
-            for a in [2 * math.pi * i / 32 for i in range(32)]]]
+def _headland(a):
+    """The island swells out north-east, under the green."""
+    d = (a - 0.98 + math.pi) % (2 * math.pi) - math.pi
+    return 1 + 0.22 * math.exp(-(d / 0.42) ** 2)
 
-TEE = dict(cx=-55, cy=-215, rx=11, ry=14, rot=math.radians(-6))
-TEE_MARKER = (-55.0, -220.0)
-FAIRWAY_CL = [(-55, -190, 16), (-68, -130, 20), (-74, -60, 22), (-70, 10, 22), (-58, 80, 22), (-36, 140, 21), (-4, 190, 19), (30, 222, 16), (52, 236, 13)]
-GREENS = [dict(cx=74, cy=246, rx=20, ry=17, rot=math.radians(-20))]
-PIN = (76.0, 249.0)
+
+ISLANDS = [[(math.cos(a) * (126 + 8 * math.sin(3 * a + 0.3) + 5 * math.sin(7 * a)) * _headland(a),
+             10 + math.sin(a) * (262 + 9 * math.sin(2 * a + 0.8) + 6 * math.cos(5 * a)) * _headland(a))
+            for a in [2 * math.pi * i / 48 for i in range(48)]]]
+
+TEE = dict(cx=-52, cy=-203, rx=11, ry=14, rot=math.radians(-6))
+TEE_MARKER = (-52.0, -208.0)
+FAIRWAY_CL = [(-54, -180, 16), (-68, -130, 20), (-74, -60, 22), (-70, 10, 22), (-58, 80, 22), (-36, 140, 21), (-4, 190, 19), (30, 220, 16), (48, 232, 13)]
+GREENS = [dict(cx=70, cy=240, rx=20, ry=17, rot=math.radians(-20))]
+PIN = (72.0, 243.0)
 BUNKERS = [
     (-42, -60, 9, 6, 10, 1),
     (-102, 40, 10, 6, -20, 2),
     (-14, 152, 9, 6, 15, 3),
-    (96, 232, 7, 5, 0, 4),
-    (58, 264, 6, 4, 30, 5),
+    (92, 226, 7, 5, 0, 4),
+    (54, 258, 6, 4, 30, 5),
 ]
 STAIRS = []
 BRIDGES = []
 
 POOLS = [dict(kind="ice", cx=LAKE[0], cy=LAKE[1], rx=LAKE[2] - 3, ry=LAKE[3] - 3, z=ICE_Z, wobble=0.04)]
 RIVERS = [dict(kind="ice", points=[(88, 34)] + STREAM, width=6.0, lift=0.3)]
-FALLS = [dict(kind="ice", x=130, y=51, top=height(126, 50) + 0.2, bottom=0.2, width=6.0, dir=(1, 0.15), lean=1.5)]
+FALLS = [dict(kind="ice", x=131.5, y=51, top=height(128, 50.5) + 0.2, bottom=0.2, width=6.0, dir=(1, 0.15), lean=1.5)]
 WATER_HAZARDS = [(LAKE[0], LAKE[1], LAKE[2] - 3, LAKE[3] - 3), (108, 43, 20, 5)]
 
 LANDMARKS = [
-    ("CABIN", -98, -206, 15),
+    ("CABIN", -82, -150, 15),
     ("SNOWMAN", -28, -206),
     ("WHITE_BRIDGE", 110, 44, 100, 11, "wood"),
     ("ICE_FLOES", 0, 10, 26, 150, 330),

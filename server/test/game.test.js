@@ -22,6 +22,10 @@ test('looks are one of the two golfers in one of six kits and six shirts', () =>
 test('the courses are the round and each of its holes', () => {
   assert.deepEqual(COURSES.cliffside.pars, [4, 3, 5, 4, 3]);
   assert.deepEqual(COURSES['cliffside-12'].pars, [3]);
+  assert.deepEqual(COURSES.maplebay.pars, [4, 3, 5]);
+  assert.deepEqual(COURSES['maplebay-17'].pars, [3]);
+  assert.deepEqual(COURSES.wildisles.pars, [4, 5, 3, 4, 4]);
+  assert.deepEqual(COURSES['wildisles-21'].pars, [3]);
   assert.equal(COURSES['cliffside-99'], undefined);
 });
 
