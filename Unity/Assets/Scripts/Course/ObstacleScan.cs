@@ -47,7 +47,7 @@ namespace GolfArcade.Course
             if (name.StartsWith("BUSH") || name.StartsWith("SHRUB")) return ObstacleKind.Bush;
             if (name.StartsWith("ROCK")) return ObstacleKind.Rock;   // (not CLIFF_ROCK: the cliffs' own boulders are down in the sea)
             if (name.StartsWith("LIGHTHOUSE") || name.StartsWith("TOWER") || name.StartsWith("CLUBHOUSE")) return ObstacleKind.Wall;
-            // holes 16-20: the windmill (not its sails), the cabin, the farmhouse, the temple, the ruins
+            // holes 19-23: the windmill (not its sails), the cabin, the farmhouse, the temple, the ruins
             if (name.StartsWith("WINDMILL") || name.StartsWith("CABIN") || name.StartsWith("FARMHOUSE") || name.StartsWith("TEMPLE") || name.StartsWith("RUIN")) return ObstacleKind.Wall;
             if (name.StartsWith("SNOWMAN")) return ObstacleKind.Rock;
             return null;

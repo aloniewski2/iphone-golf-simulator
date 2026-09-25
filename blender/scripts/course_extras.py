@@ -1,4 +1,4 @@
-"""The parts holes 16-20 add to course_builder.py: themes for the ground and cliffs (volcano,
+"""The parts holes 19-23 (Wild Isles) add to course_builder.py: themes for the ground and cliffs (volcano,
 snow, desert, jungle), pools and rivers of water, lava or ice, falls down the cliffs, and the new
 holes' landmarks and plants — palms, cacti, snowy pines, a windmill, a temple, a log cabin, a
 rope bridge, tulip fields… Every attribute is optional: a design module without them builds as

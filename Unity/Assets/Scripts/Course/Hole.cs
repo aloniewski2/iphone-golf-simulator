@@ -351,7 +351,7 @@ namespace GolfArcade.Course
                 },
                 new Hole
                 {
-                    Number = 16, Par = 4, Name = "Volcano Rim",
+                    Number = 19, Par = 4, Name = "Volcano Rim",
                     Blurb = "A par 4 under a smoking volcano: carry the river of lava off the tee, then follow the ridge right to a green on a ledge beneath the crater.",
                     Centerline = new[] { P(0.0, 0.0), P(0.0, 32.8), P(-4.4, 98.4), P(-6.6, 164.0), P(-4.4, 203.4), P(-2.2, 242.8), P(4.4, 295.3), P(15.3, 336.8), P(24.1, 369.6), P(28.4, 382.8), P(37.2, 411.2) },
                     FairwayWidth = 44, GreenRadius = 19,
@@ -361,7 +361,7 @@ namespace GolfArcade.Course
                 },
                 new Hole
                 {
-                    Number = 17, Par = 5, Name = "Frostbite Fjord",
+                    Number = 20, Par = 5, Name = "Frostbite Fjord",
                     Blurb = "A long par 5 round a frozen lake: play it safe along the pines, or cut the corner over the ice for a shot at the green in two.",
                     Centerline = new[] { P(0.0, 0.0), P(0.0, 32.8), P(-14.2, 98.4), P(-20.8, 175.0), P(-16.4, 251.5), P(-3.3, 328.1), P(20.8, 393.7), P(55.8, 448.4), P(93.0, 483.4), P(117.0, 498.7), P(143.3, 512.9) },
                     FairwayWidth = 44, GreenRadius = 21,
@@ -371,7 +371,7 @@ namespace GolfArcade.Course
                 },
                 new Hole
                 {
-                    Number = 18, Par = 3, Name = "Mesa Canyon",
+                    Number = 21, Par = 3, Name = "Mesa Canyon",
                     Blurb = "A par 3 from one mesa to the next over a canyon of water: carry the chasm to a green on the far mesa's top, cacti all round.",
                     Centerline = new[] { P(0.0, 0.0), P(16.4, 165.1) },
                     FairwayWidth = 39, GreenRadius = 21,
@@ -382,7 +382,7 @@ namespace GolfArcade.Course
                 },
                 new Hole
                 {
-                    Number = 19, Par = 4, Name = "Temple Falls",
+                    Number = 22, Par = 4, Name = "Temple Falls",
                     Blurb = "A par 4 over the lagoon: carry the waterfall's pool and the stone step with the drive, then pitch to the green under the temple.",
                     Centerline = new[] { P(0.0, 0.0), P(0.0, 27.3), P(2.2, 65.6), P(0.0, 109.4), P(0.0, 135.6), P(0.0, 164.0), P(0.0, 199.0), P(0.0, 220.9), P(-2.2, 253.7), P(-6.6, 297.5), P(-8.7, 341.2), P(-10.9, 367.4), P(-8.7, 397.0) },
                     FairwayWidth = 35, GreenRadius = 19,
@@ -392,7 +392,7 @@ namespace GolfArcade.Course
                 },
                 new Hole
                 {
-                    Number = 20, Par = 4, Name = "Windmill Links",
+                    Number = 23, Par = 4, Name = "Windmill Links",
                     Blurb = "A par 4 through the tulip fields: two canals cross the fairway and a pond guards the green, with the windmill turning all the while.",
                     Centerline = new[] { P(0.0, 0.0), P(0.0, 30.6), P(0.0, 85.3), P(0.0, 150.9), P(2.2, 216.5), P(4.4, 282.1), P(6.6, 336.8), P(10.9, 360.9), P(17.5, 391.5) },
                     FairwayWidth = 44, GreenRadius = 19,

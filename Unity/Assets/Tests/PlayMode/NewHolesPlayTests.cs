@@ -8,7 +8,7 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// Holes 13–20 in the game: each model loads and lines up with its numbers (the ball sits on
+    /// Holes 13–15 and 19–23 in the game: each model loads and lines up with its numbers (the ball sits on
     /// the tee's ground, the pin on the green's), a tee shot down the recommended line flies and
     /// finishes on the island, and the Spiral's pinnacle stops a ball struck straight at the
     /// summit. Frames of each go to Library/Captures/review, with the menu's five course cards.
@@ -40,7 +40,7 @@ namespace GolfArcade.PlayTests
             game.ChooseHoles(0);
             game.Play();
             yield return null;
-            foreach (int number in new[] { 7, 12, 13, 14, 15, 16, 17, 18, 19, 20 })
+            foreach (int number in new[] { 7, 12, 13, 14, 15, 19, 20, 21, 22, 23 })
             {
                 game.JumpToHole(number);
                 yield return new WaitForSecondsRealtime(0.5f);
@@ -134,7 +134,7 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/n-0-menu.png"));
             game.Play();
             yield return null;
-            foreach (int number in new[] { 13, 14, 15, 16, 17, 18, 19, 20 })
+            foreach (int number in new[] { 13, 14, 15, 19, 20, 21, 22, 23 })
             {
                 game.JumpToHole(number);
                 yield return new WaitForSecondsRealtime(2.0f);

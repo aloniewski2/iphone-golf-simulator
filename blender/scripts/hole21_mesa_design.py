@@ -1,4 +1,4 @@
-"""Hole 18 — Mesa Canyon (par 3): two flat-topped mesas of banded red rock stand out of the sea
+"""Hole 21 — Mesa Canyon (par 3): two flat-topped mesas of banded red rock stand out of the sea
 with a canyon of water between them. The tee is on one, the green on the other; a rope bridge
 hangs across the chasm. Carry it or it's in the river. Saguaros, barrel cacti, desert tufts, a
 waterfall off the green's mesa into the canyon.
@@ -9,7 +9,7 @@ Design data for course_builder.py. Metres; +Y north, +X east; water at z = 0.
 import math
 from functools import lru_cache
 
-NUMBER, PAR, NAME = 18, 3, "Mesa Canyon"
+NUMBER, PAR, NAME = 21, 3, "Mesa Canyon"
 BLURB = "A par 3 from one mesa to the next over a canyon of water: carry the chasm to a green on the far mesa's top, cacti all round."
 THEME = "desert"
 GRID = 3.0

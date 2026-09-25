@@ -15,10 +15,10 @@ lighthouse. Hole ideas come from the holes in *Rising Impact* (Nakaba Suzuki; Ne
 Next step when one is picked: model it in Blender from these parts (see `hole12_prepare.py` and
 `hole07_design.py`), export `hole_NN.fbx`, and add its numbers to `Course.Cliffside()`.
 
-# Five themed holes (16–20)
+# Five themed holes (19–23)
 
 Higgsfield `gpt_image_2_5` concepts, each a different world so no two play or look alike. Built
-by `course_builder.py` from `hole16_volcano_design.py` … `hole20_windmill_design.py`, with the
+by `course_builder.py` from `hole19_volcano_design.py` … `hole23_windmill_design.py`, with the
 themes, pools/rivers/falls of water, lava or ice, plants and landmarks in `course_extras.py`.
 
 | File | Hole | Par | Idea | What it asks of the player |

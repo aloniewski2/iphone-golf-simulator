@@ -74,7 +74,7 @@ namespace GolfArcade.Course
             ["MAT_FLOWER_CORAL"] = Rgb(243, 132, 147), ["MAT_FLOWER_GOLD"] = Rgb(251, 205, 80), ["MAT_FLOWER_LAVENDER"] = Rgb(184, 135, 213),
             // The pin (blender/pin.blend): the cup's liner and the band on the stick.
             ["MAT_CUP_EDGE"] = Rgb(92, 150, 58), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
-            // Holes 16-20 (blender/scripts/course_extras.py COLORS): volcano, snow, desert,
+            // Holes 19-23 (blender/scripts/course_extras.py COLORS): volcano, snow, desert,
             // jungle and the windmill's island, their plants and landmarks.
             ["MAT_ROUGH_ASH"] = Rgb(56, 60, 54), ["MAT_BASALT"] = Rgb(50, 50, 56), ["MAT_BASALT_DARK"] = Rgb(32, 32, 38),
             ["MAT_SAND_BLACK"] = Rgb(88, 86, 90), ["MAT_LAVA"] = Rgb(255, 116, 24), ["MAT_LAVA_CRUST"] = Rgb(150, 46, 22),

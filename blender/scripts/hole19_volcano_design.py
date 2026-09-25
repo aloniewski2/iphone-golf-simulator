@@ -1,4 +1,4 @@
-"""Hole 16 — Volcano Rim (par 4): a black basalt island under a smoking volcano. A river of lava
+"""Hole 19 — Volcano Rim (par 4): a black basalt island under a smoking volcano. A river of lava
 runs off the crater down the east flank and turns across the fairway, so the drive has to carry
 it (a stone arch takes the path over); then the fairway follows the ridge right to a green on a
 ledge under the crater. Black-sand bunkers, palms and burnt trees, steam vents.
@@ -9,7 +9,7 @@ Design data for course_builder.py. Metres; +Y north, +X east; water at z = 0.
 import math
 from functools import lru_cache
 
-NUMBER, PAR, NAME = 16, 4, "Volcano Rim"
+NUMBER, PAR, NAME = 19, 4, "Volcano Rim"
 BLURB = "A par 4 under a smoking volcano: carry the river of lava off the tee, then follow the ridge right to a green on a ledge beneath the crater."
 THEME = "volcano"
 GRID = 4.0

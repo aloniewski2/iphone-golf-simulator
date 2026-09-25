@@ -1,4 +1,4 @@
-"""Hole 19 — Temple Falls (par 4): a jungle island on two levels. A waterfall pours off a mossy
+"""Hole 22 — Temple Falls (par 4): a jungle island on two levels. A waterfall pours off a mossy
 cliff into a lagoon that cuts right across the fairway at the foot of the upper level, so the
 drive has to carry the water and the step; lay up short and it's a long second. An old stone
 stair climbs between the levels, and a stepped temple stands behind the green, ruined columns
@@ -10,7 +10,7 @@ Design data for course_builder.py. Metres; +Y north, +X east; water at z = 0.
 import math
 from functools import lru_cache
 
-NUMBER, PAR, NAME = 19, 4, "Temple Falls"
+NUMBER, PAR, NAME = 22, 4, "Temple Falls"
 BLURB = "A par 4 over the lagoon: carry the waterfall's pool and the stone step with the drive, then pitch to the green under the temple."
 THEME = "jungle"
 GRID = 3.5

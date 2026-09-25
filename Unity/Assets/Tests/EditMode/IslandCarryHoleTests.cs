@@ -70,7 +70,7 @@ namespace GolfArcade.Tests
         public void TheRoundPlaysAllTenHoles()
         {
             var course = Course.Course.Cliffside();
-            CollectionAssert.AreEqual(new[] { 7, 12, 13, 14, 15, 16, 17, 18, 19, 20 }, System.Array.ConvertAll(course.Holes, h => h.Number));
+            CollectionAssert.AreEqual(new[] { 7, 12, 13, 14, 15, 19, 20, 21, 22, 23 }, System.Array.ConvertAll(course.Holes, h => h.Number));
             Assert.AreEqual(4 + 3 + 5 + 4 + 3 + 4 + 5 + 3 + 4 + 4, course.Par);
         }
 
@@ -81,14 +81,14 @@ namespace GolfArcade.Tests
         {
             var holes = Course.Course.Cliffside().Holes;
             Hole H(int n) => System.Array.Find(holes, h => h.Number == n);
-            var volcano = H(16);
+            var volcano = H(19);
             Assert.AreEqual(CourseLie.Water, volcano.LieAt(new CoursePoint(0, 205.6)), "the lava river across the fairway");
             Assert.AreEqual(CourseLie.Fairway, volcano.LieAt(new CoursePoint(0, 250)), "past it, the fairway");
-            Assert.AreEqual(CourseLie.Water, H(17).LieAt(new CoursePoint(109, 263)), "the frozen lake");
-            Assert.AreEqual(CourseLie.Water, H(19).LieAt(new CoursePoint(-6.6, 166.2)), "the lagoon");
-            Assert.AreEqual(CourseLie.Water, H(20).LieAt(new CoursePoint(0, 156.4)), "the first canal");
-            Assert.AreNotEqual(CourseLie.Water, H(18).LieAt(H(18).Pin), "the green's mesa is land");
-            Assert.AreEqual(CourseLie.Water, H(18).LieAt(new CoursePoint(0, 80)), "the canyon between the mesas");
+            Assert.AreEqual(CourseLie.Water, H(20).LieAt(new CoursePoint(109, 263)), "the frozen lake");
+            Assert.AreEqual(CourseLie.Water, H(22).LieAt(new CoursePoint(-6.6, 166.2)), "the lagoon");
+            Assert.AreEqual(CourseLie.Water, H(23).LieAt(new CoursePoint(0, 156.4)), "the first canal");
+            Assert.AreNotEqual(CourseLie.Water, H(21).LieAt(H(21).Pin), "the green's mesa is land");
+            Assert.AreEqual(CourseLie.Water, H(21).LieAt(new CoursePoint(0, 80)), "the canyon between the mesas");
         }
     }
 }

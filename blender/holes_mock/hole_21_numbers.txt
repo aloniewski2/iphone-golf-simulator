@@ -1,6 +1,6 @@
                 new Hole
                 {
-                    Number = 18, Par = 3, Name = "Mesa Canyon",
+                    Number = 21, Par = 3, Name = "Mesa Canyon",
                     Blurb = "A par 3 from one mesa to the next over a canyon of water: carry the chasm to a green on the far mesa's top, cacti all round.",
                     Centerline = new[] { P(0.0, 0.0), P(16.4, 165.1) },
                     FairwayWidth = 39, GreenRadius = 21,

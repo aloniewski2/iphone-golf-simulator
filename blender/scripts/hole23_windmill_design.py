@@ -1,4 +1,4 @@
-"""Hole 20 — Windmill Links (par 4): a cheerful flat island of tulip fields. A red windmill turns
+"""Hole 23 — Windmill Links (par 4): a cheerful flat island of tulip fields. A red windmill turns
 beside the fairway; two canals cross it, each with a little white arched bridge — lay up short of
 the first or carry it, and the second waits for a long drive. A pond with a jetty and a rowing
 boat guards the green, a farmhouse with a red roof behind it; hedges and round trees.
@@ -9,7 +9,7 @@ Design data for course_builder.py. Metres; +Y north, +X east; water at z = 0.
 import math
 from functools import lru_cache
 
-NUMBER, PAR, NAME = 20, 4, "Windmill Links"
+NUMBER, PAR, NAME = 23, 4, "Windmill Links"
 BLURB = "A par 4 through the tulip fields: two canals cross the fairway and a pond guards the green, with the windmill turning all the while."
 GRID = 4.0
 SEED = 20

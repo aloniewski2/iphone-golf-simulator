@@ -1,4 +1,4 @@
-"""Hole 17 — Frostbite Fjord (par 5): a winter island under snow, the fairway cleared green and
+"""Hole 20 — Frostbite Fjord (par 5): a winter island under snow, the fairway cleared green and
 curving left then right round a frozen lake. Cut the corner over the ice for a shorter second,
 or play round it. Snow-laden pines, a log cabin with its chimney going and a snowman by the
 tee, a frozen stream to a frozen fall off the cliffs, ice floes in the sea, icicles on the lip.
@@ -9,7 +9,7 @@ Design data for course_builder.py. Metres; +Y north, +X east; water at z = 0.
 import math
 from functools import lru_cache
 
-NUMBER, PAR, NAME = 17, 5, "Frostbite Fjord"
+NUMBER, PAR, NAME = 20, 5, "Frostbite Fjord"
 BLURB = "A long par 5 round a frozen lake: play it safe along the pines, or cut the corner over the ice for a shot at the green in two."
 THEME = "snow"
 ICICLES = True
