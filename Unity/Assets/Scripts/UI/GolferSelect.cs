@@ -80,8 +80,7 @@ namespace GolfArcade.UI
             Go.Fill = goFill; Go.RestColor = UiKit.ArcadeYellow;
 
             // the style card: a row of swatches for the kit and one for the shirt
-            // (its top band runs under the name plate and holds the dots; the plate and the card
-            // hide the golfer's feet)
+            // (its top band runs under the name plate and holds the dots)
             const float TopBand = 96;
             float cardH = TopBand + RowH + 18 + RowH + 24;
             float cardY = 124 + 74 + 34 + cardH / 2;

@@ -310,6 +310,7 @@ namespace GolfArcade.Game
                 if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == look.HairMesh);
             }
             if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
+            MeasureFeet(model);
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -324,6 +325,50 @@ namespace GolfArcade.Game
             hasModel = true;
             clipName = null;
             return true;
+        }
+
+        /// The feet as the shoes were bound to them. In the golfer FBXs the foot and toe bones'
+        /// bind pose is turned 150-180 degrees about their own X from where every clip turns
+        /// them (the rest of the skeleton agrees to a few degrees), so each clip folded the
+        /// shoes flat. Measured once against the standing clip, which the studio keyed with the
+        /// feet at rest, the difference is put back after every pose: each bone's turn (and the
+        /// toes' place on the turned foot).
+        readonly List<(Transform bone, Quaternion fix, Vector3? at)> feetFix = new();
+
+        void MeasureFeet(GameObject model)
+        {
+            feetFix.Clear();
+            if (!clips.TryGetValue("Idle", out var idle)) return;
+            SkinnedMeshRenderer skin = null;
+            foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                if (!skin || smr.sharedMesh.vertexCount > skin.sharedMesh.vertexCount) skin = smr;
+            if (!skin) return;
+            idle.SampleAnimation(model, 0f);
+            var bones = skin.bones; var binds = skin.sharedMesh.bindposes;
+            float worst = 0;
+            foreach (var name in new[] { "Foot.L", "Toes.L", "Foot.R", "Toes.R" })
+            {
+                int i = System.Array.FindIndex(bones, b => b && b.name == name);
+                int p = i < 0 ? -1 : System.Array.IndexOf(bones, bones[i].parent);
+                if (p < 0) continue;
+                var bound = binds[p] * binds[i].inverse;   // in its parent's frame, as the skin was bound
+                var fix = Quaternion.Inverse(bones[i].localRotation) * bound.rotation;
+                worst = Mathf.Max(worst, Quaternion.Angle(Quaternion.identity, fix));
+                bool onFixed = feetFix.Exists(f => f.bone == bones[i].parent);
+                feetFix.Add((bones[i], fix, onFixed ? bound.GetColumn(3) : null));
+            }
+            if (worst < 20f) feetFix.Clear();   // bound as the clips pose them: nothing to put back
+        }
+
+        /// The clip's pose, with the feet put back as the shoes were bound.
+        void Evaluate()
+        {
+            graph.Evaluate();
+            foreach (var (bone, fix, at) in feetFix)
+            {
+                bone.localRotation *= fix;
+                if (at is Vector3 p) bone.localPosition = p;
+            }
         }
 
         GolfClub shownClub = GolfClub.Driver;
@@ -353,7 +398,7 @@ namespace GolfArcade.Game
             performTime = Mathf.Repeat(startAt, performLength);
             phase = 4;
             clip.SetTime(performTime);
-            graph.Evaluate();
+            Evaluate();
             return true;
         }
 
@@ -401,7 +446,7 @@ namespace GolfArcade.Game
         {
             time = Mathf.Clamp(t, 0, EndTime);
             clip.SetTime(time);
-            graph.Evaluate();
+            Evaluate();
         }
 
         /// Puts `c` on the mixer; with a crossfade, the pose on screen now stays behind, frozen,
@@ -538,14 +583,14 @@ namespace GolfArcade.Game
                     ShowThrough();
                     break;
                 case 3:
-                    if (fade > 0) graph.Evaluate();
+                    if (fade > 0) Evaluate();
                     break;
                 case 4:
                     performTime = Mathf.Repeat(performTime + dt, performLength);
                     // a spectator nobody can see isn't worth posing
                     if (spectator && body0 && !body0.isVisible) break;
                     clip.SetTime(performTime);
-                    graph.Evaluate();
+                    Evaluate();
                     break;
             }
         }

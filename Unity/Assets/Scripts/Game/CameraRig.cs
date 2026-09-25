@@ -270,18 +270,18 @@ namespace GolfArcade.Game
             return 0.5f * ((2 * p1) + (-p0 + p2) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f * f + (-p0 + 3 * p1 - 3 * p2 + p3) * f * f * f);
         }
 
-        /// The golfer select screen: level and square in front of the figure, framed from the
-        /// knees to just over the cap in the space between the title and the name plate (the
-        /// screen's fractions from the bottom).
+        /// The golfer select screen: level and square in front of the figure, framed head to toe
+        /// in the space between the title and the name plate, the shoes standing just above
+        /// the plate (the screen's fractions from the bottom).
         public void FramePortrait(Vector3 feet, Vector3 facing, float t)
         {
             var f = facing; f.y = 0; f.Normalize();
-            const float Top = 2.05f, Knee = 0.5f;          // yards above the feet
-            const float TopAt = 0.86f, KneeAt = 0.36f;
+            const float Top = 2.05f;                       // yards above the feet
+            const float TopAt = 0.875f, FeetAt = 0.365f;
             RestoreFov(); ResetZoom();
-            float span = (Top - Knee) / (TopAt - KneeAt);  // the screen's height, at the golfer
+            float span = Top / (TopAt - FeetAt);           // the screen's height, at the golfer
             float distance = span / (2f * Mathf.Tan(Camera.fieldOfView * 0.5f * Mathf.Deg2Rad));
-            float centre = Knee + (0.5f - KneeAt) * span;
+            float centre = (0.5f - FeetAt) * span;
             targetPosition = feet + f * distance + Vector3.up * centre;
             targetLookAt = feet + Vector3.up * centre;
             positionLag = 0.35f; lookLag = 0.3f;
