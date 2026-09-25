@@ -5,7 +5,7 @@ using GolfArcade.Profile;
 
 namespace GolfArcade.Game
 {
-    public enum PlayMode { Solo, LocalVersus, Online }
+    public enum PlayMode { Solo, LocalVersus, Online, Tournament }
 
     /// What the menu chose: the mode, who plays (in tee order), and the round's seed, which sets
     /// every hole's wind. GolfGame turns it into a Match.
@@ -14,6 +14,7 @@ namespace GolfArcade.Game
         public PlayMode Mode;
         public string CourseId = "cliffside";
         public int Seed;
+        public MatchFormat Format = MatchFormat.StrokePlay;
         readonly List<MatchPlayer> players = new();
 
         /// The holes, as the server names them: "cliffside" is the whole round, "cliffside-12"
@@ -34,7 +35,21 @@ namespace GolfArcade.Game
         public static GameSetup Solo(PlayerProfile profile, int holes = 0) => Local(PlayMode.Solo, new[] { profile }, holes);
 
         /// Two (or more) players taking turns on this phone.
-        public static GameSetup LocalVersus(IEnumerable<PlayerProfile> profiles, int holes = 0) => Local(PlayMode.LocalVersus, profiles, holes);
+        public static GameSetup LocalVersus(IEnumerable<PlayerProfile> profiles, int holes = 0, MatchFormat format = MatchFormat.StrokePlay)
+        {
+            var setup = Local(PlayMode.LocalVersus, profiles, holes);
+            setup.Format = format;
+            return setup;
+        }
+
+        /// The next round of the Open, for its players on this phone, with the round's winds.
+        public static GameSetup Tournament(Championship open, IEnumerable<PlayerProfile> profiles)
+        {
+            var setup = Local(PlayMode.Tournament, profiles, 0);
+            setup.CourseId = open.CourseId;
+            setup.Seed = open.RoundSeed;
+            return setup;
+        }
 
         static GameSetup Local(PlayMode mode, IEnumerable<PlayerProfile> profiles, int holes)
         {

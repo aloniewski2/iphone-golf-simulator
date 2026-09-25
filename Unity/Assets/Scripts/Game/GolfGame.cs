@@ -610,6 +610,7 @@ namespace GolfArcade.Game
             if (Current != State.Menu) return;
             if (Mode == PlayMode.LocalVersus) { Click(); OpenLobby(Lobby.Page.Local); return; }
             if (Mode == PlayMode.Online) { Click(); OpenLobby(Lobby.Page.Online); return; }
+            if (Mode == PlayMode.Tournament) { Click(); OpenLobby(Lobby.Page.Tournament); return; }
             Begin(GameSetup.Solo(ProfileStore.Active, chosenHoles));
         }
 
@@ -727,7 +728,7 @@ namespace GolfArcade.Game
         void StartRound()
         {
             setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
-            course = CourseFor(GameSetup.HolesFor(setup.CourseId));
+            course = Match.HolesFor(CourseFor(GameSetup.HolesFor(setup.CourseId)), setup.Format);
             NewMatch();
             ResetRoundStats();
             hud.HideScorecard();
@@ -745,7 +746,7 @@ namespace GolfArcade.Game
         void NewMatch()
         {
             setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
-            Match = new Match(course, setup.Players(), setup.Seed);
+            Match = new Match(course, setup.Players(), setup.Seed, setup.Format);
             roundRecorded = false;
             if (setup.Mode != PlayMode.Online || onlineRoom == null) return;
             foreach (var seat in onlineRoom.Players)
@@ -1163,7 +1164,9 @@ namespace GolfArcade.Game
         }
 
         /// The tournament: the course's name, as an Open.
-        string Tournament => $"{course.Name} Open";
+        string Tournament => setup?.Mode == PlayMode.Tournament && ChampionshipStore.Current is Championship open
+            ? $"{open.Title}   ·   Round {Math.Min(open.Round + 1, Championship.Rounds)}"
+            : Match != null && Match.Format != MatchFormat.StrokePlay ? Match.FormatName(Match.Format) : $"{course.Name} Open";
 
         /// The scoreboard: every hole of the round against its par, the one being played live.
         void ShowScore()
@@ -2037,8 +2040,9 @@ namespace GolfArcade.Game
             string holeScore = Scorecard.ScoreName(strokes, hole.Par).TrimEnd('!');
             string longest = drove ? longestDrive.ToString("F0") : longestShot > 0 ? longestShot.ToString("F0") : null;
             hud.ShowPlayHud(false);
-            if (!Match.IsSolo) { ShowMatchCard(more, round); return; }
+            if (!Match.IsSolo || Match.IsContest) { ShowMatchCard(more, round); return; }
             if (!more) RecordRound();
+            if (!more && setup?.Mode == PlayMode.Tournament) { ShowOpenCard(); return; }
             hud.ShowScorecard(Card,
                 round ? "Round complete" : $"Hole {hole.Number} complete",
                 round ? null : strokes <= hole.Par ? holeScore + "!" : holeScore,
@@ -2069,21 +2073,36 @@ namespace GolfArcade.Game
                 var p = Match.Players[i];
                 var strokes = new int?[course.Holes.Length];
                 for (int h = 0; h < strokes.Length; h++) strokes[h] = p.Card.StrokesOn(h);
-                rows[i] = new RoundCard.Row { Name = p.Name, Color = Lobby.PlayerColor(i), Strokes = strokes };
+                string[] cells = null;
+                if (Match.IsContest)
+                {
+                    cells = new string[course.Holes.Length];
+                    for (int h = 0; h < cells.Length; h++) cells[h] = p.Measures[h] is double m ? Match.Measure(m) : null;
+                }
+                rows[i] = new RoundCard.Row { Name = p.Name, Color = Lobby.PlayerColor(i), Strokes = strokes, Cells = cells };
             }
             var standings = Match.Standings();
             var tiles = new RoundCard.Highlight[standings.Count];
             for (int i = 0; i < tiles.Length; i++)
             {
                 var p = standings[i];
-                string played = p.Card.HolesPlayed < course.Holes.Length ? $"  ({p.Card.HolesPlayed})" : "";
-                tiles[i] = new RoundCard.Highlight { Icon = i == 0 ? "trophy" : "ball", Title = $"{i + 1}. {p.Name}", Value = Scorecard.FormatToPar(p.Card.ToPar) + played };
+                int n = Match.HolesPlayed(p);
+                string played = n < course.Holes.Length ? $"  ({n})" : "";
+                tiles[i] = new RoundCard.Highlight { Icon = i == 0 ? "trophy" : "ball", Title = $"{i + 1}. {p.Name}", Value = Match.Standing(p) + played };
             }
             string headline;
             if (waiting) headline = "Waiting for the others…";
             else if (!more) headline = Match.Headline();
-            else { var winner = Match.HoleWinner(holeIndex); headline = winner != null ? $"{winner.Name} wins the hole" : "Hole halved"; }
-            hud.ShowScorecard(Card, round || !more ? "Round complete" : $"Hole {hole.Number} complete", headline, tiles, more, rows);
+            else
+            {
+                var winner = Match.HoleWinner(holeIndex);
+                headline = winner == null ? "Hole halved"
+                    : Match.Format == MatchFormat.ClosestToPin ? $"{winner.Name} is nearest"
+                    : Match.Format == MatchFormat.LongestDrive ? $"{winner.Name} is longest"
+                    : $"{winner.Name} wins the hole";
+            }
+            string title = Match.IsContest ? Match.FormatName(Match.Format) : round || !more ? "Round complete" : $"Hole {hole.Number} complete";
+            hud.ShowScorecard(Card, title, headline, tiles, more, rows);
             hud.PlayAgain.Pressed = PlayAgain;
             hud.RoundMenu.Pressed = ShowMenu;
             if (hud.NextHole) hud.NextHole.Pressed = NextHole;
@@ -2099,12 +2118,15 @@ namespace GolfArcade.Game
             roundRecorded = true;
             foreach (var player in Match.Players)
             {
-                if (!player.IsLocal || !player.Card.IsComplete) continue;
+                if (!player.IsLocal || !Match.Finished(player)) continue;
                 var profile = ProfileStore.Book.Find(player.ProfileId);
                 if (profile == null) continue;
+                // a contest counts only as a match; stroke and match play also count the card
+                if (!Match.IsContest) profile.Stats.RecordCard(player.Card);
+                if (!Match.IsSolo) profile.Stats.RecordResult(Match.ResultFor(player));
+                if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Current?.RecordRound(profile.Id, player.Card.ToPar);
+                if (setup.Mode == PlayMode.Online || Match.IsContest) continue;
                 var opponents = Match.OpponentsToPar(player);
-                profile.Stats.RecordRound(player.Card, opponents);
-                if (setup.Mode == PlayMode.Online) continue;
                 var strokes = new int[course.Holes.Length];
                 for (int i = 0; i < strokes.Length; i++) strokes[i] = player.Card.StrokesOn(i) ?? 0;
                 int best = int.MaxValue; foreach (var o in opponents) best = Math.Min(best, o);
@@ -2112,6 +2134,7 @@ namespace GolfArcade.Game
                 _ = BackendClient.SubmitRound(profile, setup.CourseId, strokes, result);
             }
             ProfileStore.Save();
+            if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Save();
         }
 
         /// From the card straight into the same holes again (online: back to the lobby for a
@@ -2120,6 +2143,16 @@ namespace GolfArcade.Game
         {
             if (Current != State.RoundDone) return;
             if (setup?.Mode == PlayMode.Online) { ShowMenu(); ChooseMode(PlayMode.Online); OpenLobby(Lobby.Page.Online); return; }
+            if (setup?.Mode == PlayMode.Tournament)
+            {
+                // on to the next round with its own winds, or the final leaderboard
+                var open = ChampionshipStore.Current;
+                if (open == null || open.IsOver) { ShowMenu(); ChooseMode(PlayMode.Tournament); OpenLobby(Lobby.Page.Tournament); return; }
+                var players = new System.Collections.Generic.List<PlayerProfile>();
+                foreach (var e in open.Field) if (e.IsPlayer && ProfileStore.Book.Find(e.ProfileId) is PlayerProfile p) players.Add(p);
+                if (players.Count == 0) players.Add(ProfileStore.Active);
+                setup = GameSetup.Tournament(open, players);
+            }
             hud.ShowPlayHud(true);
             StartRound();
         }
@@ -2132,6 +2165,29 @@ namespace GolfArcade.Game
             // two or more on this phone: the first of them on the next hole, as their golfer
             if (Match.LocalCount > 1 && Match.Advance()) { WearTurn(); StartHole(Match.HoleIndex); return; }
             StartHole(holeIndex + 1);
+        }
+
+        /// The end of a round of the Open: this round's card, where the player stands in the
+        /// clubhouse, the leaders in the tiles, and NEXT ROUND (or the final leaderboard).
+        void ShowOpenCard()
+        {
+            var open = ChampionshipStore.Current;
+            if (open == null) return;
+            var me = open.EntryFor(Match.Current.ProfileId) ?? open.Field[0];
+            var board = open.Leaderboard();
+            var tiles = new System.Collections.Generic.List<RoundCard.Highlight>();
+            for (int i = 0; i < board.Count && tiles.Count < 5; i++)
+                tiles.Add(new RoundCard.Highlight { Icon = i == 0 ? "trophy" : board[i].IsPlayer ? "star" : "flag", Title = $"{open.Position(board[i])}. {board[i].Name}", Value = Scorecard.FormatToPar(board[i].Total) });
+            if (!tiles.Exists(t => t.Title.EndsWith(me.Name)))
+                tiles.Add(new RoundCard.Highlight { Icon = "star", Title = $"{open.Position(me)}. {me.Name}", Value = Scorecard.FormatToPar(me.Total) });
+            int played = open.IsOver ? Championship.Rounds : open.Round;
+            string headline = open.IsOver
+                ? (board[0] == me ? $"You win the {open.Title}!" : $"{open.Position(me)} at {Scorecard.FormatToPar(me.Total)}")
+                : $"{open.Position(me)} after round {played}  ·  {Scorecard.FormatToPar(me.Total)}";
+            hud.ShowScorecard(Card, $"Round {played} complete", headline, tiles.ToArray(), false, null, open.IsOver ? "LEADERBOARD" : "NEXT ROUND");
+            hud.PlayAgain.Pressed = PlayAgain;
+            hud.RoundMenu.Pressed = ShowMenu;
+            sounds.PlayReady();
         }
 
         // ----- The swing card -----
@@ -2427,6 +2483,22 @@ namespace GolfArcade.Game
         void AfterResult()
         {
             var shot = LastShot;
+            if (Match != null && Match.IsContest)
+            {
+                // one shot each: measured where it stopped, and on to the next golfer
+                double measure;
+                if (Match.Format == MatchFormat.ClosestToPin)
+                    measure = shot.IsHoled ? 0 : shot.Lie is CourseLie.Water or CourseLie.OutOfBounds ? Match.MissedGreen : shot.Rest.DistanceTo(hole.Pin) * 3;
+                else
+                    measure = shot.Lie == CourseLie.Fairway ? shot.Total : 0;
+                Match.RecordMeasure(measure);
+                string words = Match.Measure(measure);
+                hud.ShowLanding(shot.IsHoled ? LandingBadge.Kind.Holed : measure > 0 && measure < Match.MissedGreen ? LandingBadge.Kind.Fairway : LandingBadge.Kind.Rough,
+                                words, $"{Match.Current.Name}  ·  {Match.FormatName(Match.Format)}",
+                                Match.Format == MatchFormat.LongestDrive && measure == 0 ? "Off the fairway" : null, 3f);
+                Enter(State.HoleDone);
+                return;
+            }
             if (shot.IsHoled)
             {
                 Card.Record(holeIndex, holeStrokes);
