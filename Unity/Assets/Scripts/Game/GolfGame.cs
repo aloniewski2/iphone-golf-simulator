@@ -757,14 +757,57 @@ namespace GolfArcade.Game
                 }
         }
 
-        /// With more than one golfer on this phone, the one who is up wears their own golfer.
+        /// With more than one golfer on this phone, the one who is up wears their own golfer (the
+        /// model is only rebuilt when the look changes).
         void WearTurn()
         {
             if (Match.LocalCount < 2) { if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); } return; }
             var p = Match.Current;
+            if (GolferStyle.Worn && (int)GolferStyle.Body == p.Body && GolferStyle.Kit == p.Kit && GolferStyle.Shirt == p.Shirt) return;
             GolferStyle.Wear(p.Body, p.Kit, p.Shirt);
             golfer.ApplyStyle();
         }
+
+        // ----- Alternate shots: two or more golfers on this phone -----
+
+        /// Each golfer's ball on this hole: where it lies, their strokes, their swings, and when
+        /// they first reached the green.
+        (CoursePoint at, int strokes, int shots, int? onGreen)[] turns = System.Array.Empty<(CoursePoint, int, int, int?)>();
+        bool Alternating => Match != null && Match.LocalCount > 1;
+
+        /// A new hole: everyone's ball on the tee.
+        void ResetTurns()
+        {
+            turns = new (CoursePoint, int, int, int?)[Match.Players.Count];
+            for (int i = 0; i < turns.Length; i++) turns[i] = (hole.Tee, 0, 0, null);
+        }
+
+        /// The golfer who just played leaves their ball where it lies; the next one still on the
+        /// hole steps up to theirs, as themselves — P1, P2, P1, P2. False when nobody else is left
+        /// to play (the one who just played plays on, or the hole is over).
+        bool PassTheClub()
+        {
+            if (!Alternating) return false;
+            int was = Match.TurnIndex;
+            if (was < turns.Length) turns[was] = (ballAt, holeStrokes, holeShots, onGreenIn);
+            if (!Match.PassTurn() || Match.TurnIndex == was) return false;
+            (ballAt, holeStrokes, holeShots, onGreenIn) = turns[Match.TurnIndex];
+            WearTurn();
+            PlaceBall(ballAt, 0);
+            ball.gameObject.SetActive(true);
+            rig.SnapNext();
+            BeginAim(false);
+            ShowScore();
+            var p = Match.Current;
+            bool green = hole.LieAt(ballAt).IsPuttingSurface();
+            double toPin = ballAt.DistanceTo(hole.Pin);
+            string where = holeStrokes == 0 ? "Off the tee" : green ? $"{toPin * 3:F0} ft to the hole" : $"{toPin:F0} yd to the pin";
+            hud.ShowTurn($"{p.Name}'s shot", $"Stroke {holeStrokes + 1}  ·  {where}", Lobby.PlayerColor(Match.TurnIndex));
+            return true;
+        }
+
+        /// Whose shot it is, for tests.
+        public int TurnIndex => Match?.TurnIndex ?? 0;
 
         /// Straight to a hole of the round, for tests and reviews; the card keeps what was played.
         public void JumpToHole(int number)
@@ -789,6 +832,7 @@ namespace GolfArcade.Game
             holeView = HoleView.Build(hole, transform);
             ballAt = hole.Tee;
             holeStrokes = 0; holeShots = 0; onGreenIn = null;
+            if (Alternating) ResetTurns();
             // everyone on a hole gets its wind, from the round's seed (the same on every phone online)
             Wind = Match != null ? Match.WindFor(index) : Wind.Random(rng);
             holeView.ShowFlag(true);
@@ -1847,13 +1891,8 @@ namespace GolfArcade.Game
                     // the score stamped and cheered, then the card: the round so far and the way on
                     if (stateTime > 3f)
                     {
-                        // another golfer on this phone still to play the hole: pass it on
-                        if (Match.LocalCount > 1 && Match.LocalsLeftOn(holeIndex) && Match.Advance())
-                        {
-                            WearTurn();
-                            StartHole(Match.HoleIndex);
-                            break;
-                        }
+                        // another golfer on this phone still to hole out: their shot, from their ball
+                        if (PassTheClub()) break;
                         RefreshControls();
                         ShowRoundCard();
                         Enter(State.RoundDone);
@@ -2439,6 +2478,8 @@ namespace GolfArcade.Game
                 return;
             }
             ballAt = shot.NextPosition;
+            // two or more on this phone: the next golfer's shot, P1, P2, P1…
+            if (PassTheClub()) return;
             PlaceBall(ballAt, 0);
             ball.gameObject.SetActive(true);   // back from the water
             rig.SnapNext();

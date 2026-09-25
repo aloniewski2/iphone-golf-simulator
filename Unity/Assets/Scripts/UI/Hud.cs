@@ -1022,6 +1022,13 @@ namespace GolfArcade.UI
         }
         public void HideLanding() => landingBadge.Hide();
 
+        /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
+        public void ShowTurn(string word, string detail, Color color)
+        {
+            landingBadge.TurnColor = color;
+            ShowLanding(LandingBadge.Kind.Turn, word, detail, null, 1.8f);
+        }
+
         /// The club face while setting up and swinging (degrees, positive open); null hides it.
         public void SetFace(double? degrees) => faceDial.Set(Controller == null ? degrees : null);
 

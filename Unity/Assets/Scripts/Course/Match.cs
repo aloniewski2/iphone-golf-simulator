@@ -20,10 +20,12 @@ namespace GolfArcade.Course
         public Scorecard Card;
     }
 
-    /// A round of stroke play for one or more golfers. At home the players take turns: each plays
-    /// a hole out, then the next player tees off on it, then everyone moves on — the same order as
-    /// the iOS app. Everyone on a hole gets the same wind, from the round's seed, so the same seed
-    /// on two phones gives an online match the same conditions. Pure C#, tested without a scene.
+    /// A round of stroke play for one or more golfers. At home the players alternate shots: the
+    /// first tees off, then the second, then the first plays their second shot, and so on round
+    /// (PassTurn); whoever has holed out drops out of the order, and once everyone is down the
+    /// round moves to the next hole with the first player up (Advance). Everyone on a hole gets
+    /// the same wind, from the round's seed, so the same seed on two phones gives an online match
+    /// the same conditions. Pure C#, tested without a scene.
     public sealed class Match
     {
         public readonly Course Course;
@@ -71,8 +73,8 @@ namespace GolfArcade.Course
             return false;
         }
 
-        /// Hands the turn on: the next local player on this hole, else the first on the next
-        /// hole. False once every local player has finished the round.
+        /// The first local player with a hole still to play, on the first such hole: who tees off
+        /// when the round moves on. False once every local player has finished the round.
         public bool Advance()
         {
             if (LocalPlayIsOver) return false;
@@ -90,6 +92,19 @@ namespace GolfArcade.Course
                 }
             }
             LocalPlayIsOver = true;
+            return false;
+        }
+
+        /// Alternate shots on this phone: the turn passes to the next local player in tee order who
+        /// hasn't holed out on this hole — P1, P2, P1, P2… — skipping anyone who has, and staying
+        /// with the last one left. False once every local player has holed out.
+        public bool PassTurn()
+        {
+            for (int k = 1; k <= Players.Count; k++)
+            {
+                int i = (TurnIndex + k) % Players.Count;
+                if (Players[i].IsLocal && !Players[i].Card.StrokesOn(HoleIndex).HasValue) { TurnIndex = i; return true; }
+            }
             return false;
         }
 

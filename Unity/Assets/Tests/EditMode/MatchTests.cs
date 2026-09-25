@@ -29,6 +29,26 @@ namespace GolfArcade.Tests
         }
 
         [Test]
+        public void TwoPlayersAlternateShotsUntilBothAreDown()
+        {
+            var match = new Match(OneHole(), new[] { Local("Alex"), Local("Sam") }, 3);
+            Assert.IsTrue(match.Advance());
+            var order = new List<string> { match.Current.Name };
+            // Alex tees off, Sam tees off, Alex, Sam, … Sam holes out in 3, Alex plays on alone
+            Assert.IsTrue(match.PassTurn()); order.Add(match.Current.Name);
+            Assert.IsTrue(match.PassTurn()); order.Add(match.Current.Name);
+            Assert.IsTrue(match.PassTurn()); order.Add(match.Current.Name);
+            Assert.AreEqual("Sam", match.Current.Name);
+            match.RecordCurrent(3);
+            Assert.IsTrue(match.PassTurn()); order.Add(match.Current.Name);
+            Assert.IsTrue(match.PassTurn(), "the last one left stays up"); order.Add(match.Current.Name);
+            CollectionAssert.AreEqual(new[] { "Alex", "Sam", "Alex", "Sam", "Alex", "Alex" }, order);
+            match.RecordCurrent(5);
+            Assert.IsFalse(match.PassTurn(), "everyone is down");
+            Assert.IsFalse(match.Advance(), "and that was the round");
+        }
+
+        [Test]
         public void AdvanceBeforeAnyScoreKeepsTheFirstTurn()
         {
             var match = new Match(Course.Course.Meadow(), new[] { Local("Alex"), Local("Sam") }, 1);
