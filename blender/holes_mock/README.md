@@ -14,3 +14,17 @@ lighthouse. Hole ideas come from the holes in *Rising Impact* (Nakaba Suzuki; Ne
 
 Next step when one is picked: model it in Blender from these parts (see `hole12_prepare.py` and
 `hole07_design.py`), export `hole_NN.fbx`, and add its numbers to `Course.Cliffside()`.
+
+# Five themed holes (19–23)
+
+Higgsfield `gpt_image_2_5` concepts, each a different world so no two play or look alike. Built
+by `course_builder.py` from `hole19_volcano_design.py` … `hole23_windmill_design.py`, with the
+themes, pools/rivers/falls of water, lava or ice, plants and landmarks in `course_extras.py`.
+
+| File | Hole | Par | Idea | What it asks of the player |
+|---|---|---|---|---|
+| `volcano_rim.png` | Volcano Rim | 4 | Black basalt island under a smoking volcano; a lava river crosses the fairway under a stone arch; steam vents | Carry the lava off the tee, then follow the ridge to a green on a ledge under the crater |
+| `frostbite_fjord.png` | Frostbite Fjord | 5 | Snow island, frozen lake, log cabin and snowman, an ice fall off the cliffs, floes in the sea | Play round the frozen lake along the pines, or cut the corner over the ice to get home in two |
+| `mesa_canyon.png` | Mesa Canyon | 3 | Two banded red-rock mesas with a canyon of water between, a rope bridge, saguaros | One carry, mesa to mesa: short is in the river |
+| `temple_falls.png` | Temple Falls | 4 | Jungle island on two levels; a waterfall into a lagoon across the fairway; stepped temple, ruins, stone head | Carry the lagoon and the step with the drive, or lay up and face a long second |
+| `windmill_links.png` | Windmill Links | 4 | Flat tulip-field island; a turning red windmill, two canals with white bridges, a pond with a jetty and boat | Lay up short of a canal or carry it; the pond guards the green |

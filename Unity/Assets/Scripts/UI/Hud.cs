@@ -299,13 +299,13 @@ namespace GolfArcade.UI
         /// The card after a hole or the round (option A): `title` over it, `headline` on its
         /// ribbon (null: the round against par), the round's stats in tiles, and NEXT HOLE when
         /// `nextHole`.
-        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole)
+        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole, RoundCard.Row[] players = null, string againLabel = null)
         {
             HideScorecard();
             var holes = card.Course.Holes;
             var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
             for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
-            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole);
+            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole, players, againLabel);
             roundCard.Root.SetAsLastSibling();
             PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu; NextHole = roundCard.NextHole;
         }
@@ -1021,6 +1021,13 @@ namespace GolfArcade.UI
             landingBadge.Show(kind, word, detail, stats, seconds);
         }
         public void HideLanding() => landingBadge.Hide();
+
+        /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
+        public void ShowTurn(string word, string detail, Color color)
+        {
+            landingBadge.TurnColor = color;
+            ShowLanding(LandingBadge.Kind.Turn, word, detail, null, 1.8f);
+        }
 
         /// The club face while setting up and swinging (degrees, positive open); null hides it.
         public void SetFace(double? degrees) => faceDial.Set(Controller == null ? degrees : null);

@@ -23,6 +23,7 @@ namespace GolfArcade.UI
         readonly Image[] dots;
         readonly RectTransform kitRing, shirtRing;
         readonly Text kitName, shirtName;
+        readonly Text tabWord;
         readonly string[] kitNames, shirtNames;
         float punch;
         int shownBody = -1;
@@ -123,7 +124,7 @@ namespace GolfArcade.UI
             plate = UiKit.Pill(Root, "Name plate", UiKit.ArcadeYellow, new Vector2(0.5f, 0), new Vector2(0, plateY), new Vector2(640, 118), out var plateFill, 6f);
             plateName = UiKit.Chunky(plateFill.transform, "Name", 58, UiKit.ArcadeInk, new Color(1, 1, 1, 0), 0f);
             var tab = UiKit.Pill(Root, "Tab", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0), new Vector2(0, plateY + 59 + 26), new Vector2(300, 54), out var tabFill, 3f);
-            var tabWord = UiKit.Label(tabFill.transform, "Word", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            tabWord = UiKit.Label(tabFill.transform, "Word", 26, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
             tabWord.text = "YOUR GOLFER"; tabWord.color = Color.white;
             dots = new Image[2];
             for (int i = 0; i < dots.Length; i++)
@@ -154,6 +155,9 @@ namespace GolfArcade.UI
             Place(kitRing, Kits[kit]); kitName.text = kitNames[kit].ToUpperInvariant();
             Place(shirtRing, Shirts[shirt]); shirtName.text = shirtNames[shirt].ToUpperInvariant();
         }
+
+        /// Whose golfer is being picked, over the name plate ("YOUR GOLFER", or a player's name).
+        public void SetTab(string text) => tabWord.text = text.ToUpperInvariant();
 
         static void Place(RectTransform ring, HoldButton on) => ring.anchoredPosition = ((RectTransform)on.transform).anchoredPosition;
 

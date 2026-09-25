@@ -9,7 +9,10 @@ namespace GolfArcade.UI
     /// with the carry and the total. It pops in with a bounce, holds, and shrinks away.
     public sealed class LandingBadge : MonoBehaviour
     {
-        public enum Kind { Green, Fairway, Rough, Bunker, Water, OutOfBounds, Holed, Putt }
+        public enum Kind { Green, Fairway, Rough, Bunker, Water, OutOfBounds, Holed, Putt, Turn }
+
+        /// A Turn badge's colour: the player's who is up.
+        public Color TurnColor = Color.white;
 
         /// How big it stamps, against its full size (smaller on the phone than on the big screen).
         public float Size = 1f;
@@ -83,6 +86,7 @@ namespace GolfArcade.UI
                 Kind.Bunker => (SandFill, UiKit.Hex("FFF3D6"), "ball", UiKit.Hex("C9A152"), true),
                 Kind.Water => (WaterFill, Color.white, null, WaterFill, false),
                 Kind.OutOfBounds => (RedFill, UiKit.Hex("FF5A4E"), null, Color.white, false),
+                Kind.Turn => (TurnColor, Color.white, "swing", TurnColor, false),
                 _ => (UiKit.ArcadeYellow, UiKit.ArcadeBlue, "trophy", UiKit.ArcadeYellow, true),
             };
             fill.color = fillColor;

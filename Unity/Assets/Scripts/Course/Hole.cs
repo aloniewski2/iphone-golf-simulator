@@ -123,6 +123,8 @@ namespace GolfArcade.Course
         public string Blurb = "";
         /// The render of the hole for its card, a Resources path.
         public string Picture => $"Course/hole_{Number:00}_card";
+        /// The course's look for the modelled hole's colours (HoleView.Themes); "" is Cliffside's.
+        public string Theme = "";
         public CoursePoint[] Centerline;
         public double FairwayWidth;
         public double GreenRadius;
@@ -248,11 +250,30 @@ namespace GolfArcade.Course
     public sealed class Course
     {
         public string Name;
+        /// How the server and the saved choice name it: "cliffside", "wildisles".
+        public string Key = "";
         public Hole[] Holes;
+
+        /// Every course with modelled holes, in the order the course screen shows them.
+        public static Course[] All() => new[] { Cliffside(), WildIsles() };
+
+        /// The course a hole belongs to, by its number (hole numbers are unique across courses).
+        public static Course Containing(int holeNumber)
+        {
+            foreach (var c in All()) if (Array.Exists(c.Holes, h => h.Number == holeNumber)) return c;
+            return null;
+        }
+
+        public static Course ByKey(string key)
+        {
+            foreach (var c in All()) if (c.Key == key) return c;
+            return null;
+        }
         public int Par { get { int p = 0; foreach (var h in Holes) p += h.Par; return p; } }
 
         static CoursePoint P(double x, double d) => new(x, d);
         static CourseHazard Bunker(double x, double d, double w, double l) => new(HazardKind.Bunker, x, d, w, l);
+        static CourseHazard Water(double x, double d, double w, double l) => new(HazardKind.Water, x, d, w, l);
 
         /// Cliffside: the Blender-built island holes, in the flight model's yards, each with its
         /// tee at the origin and the hole running straight up +D. Hole 7 (blender/hole_07.blend)
@@ -264,7 +285,7 @@ namespace GolfArcade.Course
         /// turf meshes.
         public static Course Cliffside() => new()
         {
-            Name = "Cliffside",
+            Name = "Cliffside", Key = "cliffside",
             Holes = new[]
             {
                 new Hole
@@ -351,10 +372,74 @@ namespace GolfArcade.Course
             },
         };
 
+        /// Wild Isles: five islands, each its own world, built by course_builder.py from
+        /// blender/scripts/hole19_volcano_design.py … hole23_windmill_design.py with the themes, the
+        /// water, lava and ice, and the landmarks of course_extras.py — a lava river under a smoking
+        /// volcano, a frozen lake, two red mesas over a canyon, a jungle temple above a waterfall,
+        /// and tulip fields round a turning windmill.
+        public static Course WildIsles() => new()
+        {
+            Name = "Wild Isles", Key = "wildisles",
+            Holes = new[]
+            {
+                new Hole
+                {
+                    Number = 19, Par = 4, Name = "Volcano Rim",
+                    Blurb = "A par 4 under a smoking volcano: carry the river of lava off the tee, then follow the ridge right to a green on a ledge beneath the crater.",
+                    Centerline = new[] { P(0.0, 0.0), P(0.0, 32.8), P(-4.4, 98.4), P(-6.6, 164.0), P(-4.4, 203.4), P(-2.2, 242.8), P(4.4, 295.3), P(15.3, 336.8), P(24.1, 369.6), P(28.4, 382.8), P(37.2, 411.2) },
+                    FairwayWidth = 44, GreenRadius = 19,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(-32.8, 295.3, 21.9, 13.1), Bunker(37.2, 323.7, 19.7, 13.1), Bunker(8.7, 428.7, 15.3, 10.9), Bunker(61.2, 393.7, 13.1, 10.9), Bunker(-24.1, 131.2, 19.7, 13.1), Water(8.7, 205.6, 201.2, 13.1), Water(109.4, 284.3, 35.0, 65.6), Water(122.5, 371.8, 21.9, 87.5), Water(96.2, 492.1, 24.1, 24.1) },
+                    Shore = new[] { P(-18.9, -32.1), P(2.6, -32.0), P(23.8, -26.6), P(51.7, -8.8), P(68.9, 10.8), P(82.2, 47.3), P(99.3, 135.0), P(113.3, 169.4), P(115.3, 181.3), P(118.8, 184.4), P(119.8, 196.8), P(122.8, 200.7), P(122.1, 207.5), P(127.4, 222.4), P(128.9, 239.2), P(132.4, 243.8), P(131.2, 249.8), P(135.6, 265.6), P(135.8, 276.4), P(139.7, 281.9), P(139.0, 292.3), P(146.2, 314.5), P(144.9, 318.9), P(148.6, 325.2), P(174.6, 425.9), P(181.0, 480.3), P(180.9, 502.7), P(173.2, 534.1), P(155.1, 561.3), P(125.7, 575.3), P(103.9, 577.3), P(66.8, 567.7), P(44.5, 553.6), P(29.7, 537.5), P(5.5, 501.2), P(-21.1, 450.9), P(-24.9, 448.9), P(-30.2, 437.7), P(-56.3, 403.6), P(-76.8, 364.4), P(-81.4, 348.0), P(-89.4, 333.9), P(-88.5, 327.5), P(-92.3, 323.1), P(-91.7, 317.1), P(-99.0, 302.1), P(-99.4, 291.0), P(-102.5, 285.9), P(-101.1, 280.3), P(-104.5, 275.0), P(-104.1, 258.9), P(-106.8, 253.2), P(-109.1, 214.6), P(-100.1, 105.1), P(-89.6, 45.4), P(-76.8, 9.6), P(-64.7, -6.6), P(-62.2, -13.7), P(-40.6, -29.7), P(-29.7, -30.7), P(-24.8, -34.0) },
+                },
+                new Hole
+                {
+                    Number = 20, Par = 5, Name = "Frostbite Fjord",
+                    Blurb = "A long par 5 round a frozen lake: play it safe along the pines, or cut the corner over the ice for a shot at the green in two.",
+                    Centerline = new[] { P(0.0, 0.0), P(-2.2, 30.6), P(-17.5, 85.3), P(-24.1, 161.9), P(-19.7, 238.4), P(-6.6, 315.0), P(17.5, 380.6), P(52.5, 435.3), P(89.7, 468.1), P(109.4, 481.2), P(135.6, 493.2) },
+                    FairwayWidth = 44, GreenRadius = 21,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(10.9, 161.9, 19.7, 13.1), Bunker(-54.7, 271.2, 21.9, 13.1), Bunker(41.6, 393.7, 19.7, 13.1), Bunker(157.5, 474.6, 15.3, 10.9), Bunker(115.9, 509.6, 13.1, 8.7), Water(106.1, 249.3, 102.8, 177.2), Water(175.0, 274.5, 43.7, 10.9) },
+                    Shore = new[] { P(200.8, 253.1), P(202.5, 285.5), P(204.9, 291.5), P(202.5, 296.3), P(205.4, 302.6), P(200.8, 328.7), P(202.3, 335.4), P(168.8, 491.4), P(155.1, 527.2), P(141.8, 543.9), P(137.1, 545.6), P(133.2, 551.3), P(127.5, 550.7), P(117.2, 554.6), P(106.4, 554.4), P(90.7, 549.8), P(72.0, 539.5), P(67.5, 533.4), P(58.9, 529.1), P(54.7, 523.1), P(45.9, 519.2), P(28.4, 503.9), P(19.3, 497.8), P(14.2, 497.3), P(1.0, 485.8), P(-4.1, 484.9), P(-28.7, 463.3), P(-55.2, 415.3), P(-57.9, 403.1), P(-61.7, 400.1), P(-81.3, 337.0), P(-85.0, 321.2), P(-86.5, 293.6), P(-82.1, 271.2), P(-83.3, 260.6), P(-78.7, 249.8), P(-79.2, 238.9), P(-72.6, 217.9), P(-66.1, 168.3), P(-63.4, 164.2), P(-59.7, 102.7), P(-52.6, 59.7), P(-35.9, 18.9), P(-15.0, -6.5), P(-10.3, -7.9), P(11.3, -26.1), P(31.2, -35.7), P(63.3, -41.6), P(68.8, -39.6), P(74.3, -42.2), P(79.7, -40.9), P(94.8, -33.8), P(111.1, -20.2), P(144.8, 29.8), P(159.5, 59.8), P(171.1, 96.2), P(177.7, 134.0), P(178.1, 152.2), P(181.3, 155.6), P(182.1, 173.4), P(187.6, 188.1), P(185.9, 195.0), P(191.1, 204.4), P(192.1, 221.3), P(198.3, 242.3), P(197.5, 247.9) },
+                },
+                new Hole
+                {
+                    Number = 21, Par = 3, Name = "Mesa Canyon",
+                    Blurb = "A par 3 from one mesa to the next over a canyon of water: carry the chasm to a green on the far mesa's top, cacti all round.",
+                    Centerline = new[] { P(0.0, 0.0), P(16.4, 165.1) },
+                    FairwayWidth = 39, GreenRadius = 21,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(43.7, 164.0, 17.5, 13.1), Bunker(-13.1, 183.7, 13.1, 8.7) },
+                    Shore = new[] { P(50.0, 25.1), P(49.7, 30.5), P(39.7, 43.8), P(23.4, 58.5), P(12.5, 60.7), P(-14.8, 63.1), P(-31.2, 59.7), P(-44.7, 42.9), P(-42.5, 4.1), P(-37.4, -11.7), P(-24.3, -22.3), P(-18.0, -21.9), P(-13.6, -25.9), P(-2.9, -29.2), P(13.1, -24.4), P(46.2, 4.6), P(50.1, 9.1) },
+                    Islets = new[] { new[] { P(83.2, 174.3), P(72.1, 199.3), P(62.2, 212.4), P(21.2, 230.0), P(4.9, 232.4), P(-16.1, 226.6), P(-23.1, 217.9), P(-32.4, 197.9), P(-33.6, 186.4), P(-40.1, 176.7), P(-43.8, 154.7), P(-35.6, 140.2), P(-35.2, 134.1), P(-26.1, 127.1), P(-20.1, 117.6), P(4.2, 104.7), P(10.2, 107.5), P(15.3, 106.1), P(65.8, 127.9), P(74.5, 134.1), P(84.6, 147.1), P(85.6, 163.5) } },
+                },
+                new Hole
+                {
+                    Number = 22, Par = 4, Name = "Temple Falls",
+                    Blurb = "A par 4 over the lagoon: carry the waterfall's pool and the stone step with the drive, then pitch to the green under the temple.",
+                    Centerline = new[] { P(0.0, 0.0), P(0.0, 27.3), P(2.2, 65.6), P(0.0, 109.4), P(0.0, 135.6), P(0.0, 164.0), P(0.0, 199.0), P(0.0, 220.9), P(-2.2, 253.7), P(-6.6, 297.5), P(-8.7, 341.2), P(-10.9, 367.4), P(-8.7, 397.0) },
+                    FairwayWidth = 35, GreenRadius = 19,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(-32.8, 94.0, 19.7, 13.1), Bunker(32.8, 264.7, 19.7, 13.1), Bunker(-37.2, 400.3, 13.1, 8.7), Bunker(15.3, 380.6, 13.1, 8.7), Water(-6.6, 166.2, 126.9, 41.6) },
+                    Shore = new[] { P(-26.7, -41.3), P(-16.1, -45.6), P(-10.5, -43.9), P(0.3, -46.7), P(5.8, -43.6), P(11.3, -45.4), P(22.0, -43.6), P(27.0, -39.1), P(32.4, -39.9), P(58.9, -20.9), P(67.7, -6.7), P(74.5, 7.8), P(81.6, 34.8), P(91.3, 112.0), P(94.3, 115.0), P(93.4, 122.5), P(97.9, 137.1), P(103.3, 175.0), P(102.1, 186.8), P(105.1, 208.2), P(102.2, 219.3), P(104.1, 230.3), P(99.1, 289.5), P(103.4, 367.5), P(100.1, 399.9), P(93.8, 426.8), P(75.3, 460.2), P(58.9, 474.7), P(44.1, 481.9), P(33.5, 484.4), P(22.5, 483.3), P(17.2, 486.2), P(11.6, 484.0), P(-10.1, 485.0), P(-25.7, 477.8), P(-36.2, 476.7), P(-63.0, 457.8), P(-72.8, 444.3), P(-80.4, 429.9), P(-92.2, 387.5), P(-97.5, 355.3), P(-102.6, 288.7), P(-105.5, 278.9), P(-104.2, 272.5), P(-107.8, 245.9), P(-104.9, 239.9), P(-107.7, 229.3), P(-102.8, 180.6), P(-104.5, 174.3), P(-102.8, 152.1), P(-100.3, 148.1), P(-100.3, 130.5), P(-97.9, 126.7), P(-99.4, 119.3), P(-97.1, 115.8), P(-98.1, 108.6), P(-92.0, 60.0), P(-83.1, 16.7), P(-80.4, 14.1), P(-77.7, 1.5), P(-64.1, -22.2), P(-52.1, -33.4), P(-32.1, -41.9) },
+                },
+                new Hole
+                {
+                    Number = 23, Par = 4, Name = "Windmill Links",
+                    Blurb = "A par 4 through the tulip fields: two canals cross the fairway and a pond guards the green, with the windmill turning all the while.",
+                    Centerline = new[] { P(0.0, 0.0), P(0.0, 30.6), P(0.0, 85.3), P(0.0, 150.9), P(2.2, 216.5), P(4.4, 282.1), P(6.6, 336.8), P(10.9, 360.9), P(17.5, 391.5) },
+                    FairwayWidth = 44, GreenRadius = 19,
+                    RoughWidth = 100,
+                    Hazards = new[] { Bunker(28.4, 129.0, 19.7, 13.1), Bunker(-26.2, 238.4, 19.7, 13.1), Bunker(-6.6, 411.2, 15.3, 10.9), Bunker(39.4, 367.4, 13.1, 8.7), Water(0.0, 156.4, 192.5, 8.7), Water(0.0, 287.6, 192.5, 8.7), Water(63.4, 387.1, 33.9, 25.2) },
+                    Shore = new[] { P(-40.8, -25.0), P(-19.3, -29.6), P(-8.2, -27.2), P(30.1, -27.8), P(61.9, -19.6), P(71.7, -14.7), P(91.5, 3.3), P(103.2, 34.0), P(109.2, 82.5), P(106.9, 166.5), P(109.5, 182.0), P(108.7, 198.8), P(111.8, 209.4), P(108.9, 236.6), P(111.7, 248.2), P(108.9, 258.4), P(110.9, 264.8), P(107.5, 274.4), P(107.1, 290.7), P(109.2, 297.8), P(106.7, 312.4), P(109.0, 325.4), P(107.2, 339.6), P(109.0, 363.4), P(104.5, 407.0), P(92.0, 437.5), P(70.8, 454.4), P(65.2, 454.5), P(45.1, 463.7), P(6.8, 467.1), P(-20.4, 464.2), P(-26.1, 466.7), P(-47.8, 462.9), P(-73.3, 453.2), P(-90.7, 440.5), P(-92.7, 433.2), P(-96.8, 431.3), P(-107.7, 389.1), P(-107.7, 278.0), P(-111.7, 246.1), P(-109.1, 234.7), P(-111.9, 224.0), P(-111.2, 201.8), P(-108.5, 196.8), P(-110.1, 185.3), P(-108.1, 180.4), P(-109.2, 135.4), P(-107.2, 120.8), P(-109.6, 96.9), P(-105.8, 42.7), P(-102.9, 26.3), P(-92.1, 1.3), P(-67.5, -19.9), P(-56.7, -21.6), P(-52.0, -25.5) },
+                },
+            },
+        };
+
         /// Meadow Run: the iOS app's easy course, hole for hole.
         public static Course Meadow() => new()
         {
-            Name = "Meadow Run",
+            Name = "Meadow Run", Key = "meadow",
             Holes = new[]
             {
                 new Hole { Number = 1, Par = 4, Centerline = new[] { P(0, 0), P(0, 185), P(38, 245), P(105, 330) }, FairwayWidth = 50, GreenRadius = 20,

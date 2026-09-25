@@ -25,7 +25,7 @@ namespace GolfArcade.PlayTests
             }
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(420000)]   // ten holes, about 20 s each
         public IEnumerator EveryHoleFromThreeSides()
         {
             Time.timeScale = 1f;
@@ -38,7 +38,7 @@ namespace GolfArcade.PlayTests
             game.Play();
             yield return null;
             var hudCanvas = Object.FindFirstObjectByType<GolfArcade.UI.Hud>().GetComponent<Canvas>();
-            foreach (int number in new[] { 7, 12, 13, 14, 15 })
+            foreach (int number in new[] { 7, 12, 13, 14, 15, 19, 20, 21, 22, 23 })
             {
                 game.JumpToHole(number);
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, $"hole {number}'s tee");
