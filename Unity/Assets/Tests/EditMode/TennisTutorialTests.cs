@@ -4,11 +4,24 @@ using GolfArcade.Tennis;
 /// The first-time tennis lesson: every step, in order, and nobody gets stuck.
 public class TennisTutorialTests
 {
+    [Test] public void CalibrationCountsEverySwingOnADelayedDisplay()
+    {
+        var calibration = new TennisBeatCalibration(0);
+        for (int beat = 0; beat < TennisBeatCalibration.Beats; beat++)
+        {
+            float time = calibration.BeatTime(beat) + .48f;
+            Assert.AreEqual(beat, calibration.Swing(time));
+            Assert.AreEqual(-1, calibration.Swing(time + .02f), "one count per bounce");
+        }
+        Assert.AreEqual(TennisBeatCalibration.Beats - TennisBeatCalibration.WarmUp, calibration.Scored);
+        Assert.IsTrue(calibration.TryResult(out _));
+    }
+
     [Test] public void TheLessonTeachesEachSkillInOrder()
     {
         var kinds = System.Array.ConvertAll(TutorialLesson.Steps, s => s.Kind);
-        Assert.AreEqual(new[] { TutorialLesson.Kind.Move, TutorialLesson.Kind.Forehand, TutorialLesson.Kind.Backhand,
-            TutorialLesson.Kind.Aim, TutorialLesson.Kind.Timing, TutorialLesson.Kind.Serve, TutorialLesson.Kind.Point }, kinds);
+        Assert.AreEqual(new[] { TutorialLesson.Kind.Serve, TutorialLesson.Kind.Forehand, TutorialLesson.Kind.Backhand,
+            TutorialLesson.Kind.Aim, TutorialLesson.Kind.Point }, kinds);
         foreach (var s in TutorialLesson.Steps) { Assert.IsNotEmpty(s.Say); Assert.IsNotEmpty(s.Hint); Assert.Greater(s.Goal, 0); }
     }
 
@@ -21,24 +34,24 @@ public class TennisTutorialTests
         Assert.AreEqual(goal, successes);
     }
 
-    [Test] public void MissesHintThenMoveOn()
+    [Test] public void MissesCoachAndRetryInsteadOfSilentlyPassing()
     {
         var lesson = new TutorialLesson();
-        lesson.Success(); lesson.Success();   // through Move
+        for (int i = 0; i < 20; i++) Assert.IsFalse(lesson.Miss());
+        Assert.IsTrue(lesson.HintDue);
+        Assert.AreEqual(TutorialLesson.Kind.Serve, lesson.Current.Kind);
+        Assert.AreEqual(0, lesson.Progress);
+        lesson.Success();
         Assert.AreEqual(TutorialLesson.Kind.Forehand, lesson.Current.Kind);
-        for (int i = 0; i < TutorialLesson.HintAfter - 1; i++) lesson.Miss();
-        Assert.IsFalse(lesson.HintDue);
-        lesson.Miss(); Assert.IsTrue(lesson.HintDue, "a hint after a few misses");
-        for (int i = TutorialLesson.HintAfter; i < TutorialLesson.MoveOnAfter - 1; i++) Assert.IsFalse(lesson.Miss());
-        Assert.IsTrue(lesson.Miss(), "the lesson moves on rather than leaving the player stuck");
-        Assert.AreEqual(TutorialLesson.Kind.Backhand, lesson.Current.Kind);
+        Assert.AreEqual(0, lesson.Misses);
     }
 
     [Test] public void AimAsksForTheLeftRingThenTheRight()
     {
         var lesson = new TutorialLesson();
         while (lesson.Current.Kind != TutorialLesson.Kind.Aim) lesson.Success();
-        Assert.IsTrue(lesson.AimLeft); lesson.Success(); Assert.IsFalse(lesson.AimLeft);
+        Assert.IsTrue(lesson.AimLeft); Assert.That(lesson.Instruction, Does.Contain("LEFT"));
+        lesson.Success(); Assert.IsFalse(lesson.AimLeft); Assert.That(lesson.Instruction, Does.Contain("RIGHT"));
     }
 
     [Test] public void KitColoursParseFromTheLaunchMessage()

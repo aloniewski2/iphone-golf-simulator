@@ -100,8 +100,9 @@ struct AxisGatePanel:View {
             SportsCameraPreview(motion:session.motion)
                 .frame(height:180).clipShape(RoundedRectangle(cornerRadius:12))
                 .overlay(RoundedRectangle(cornerRadius:12).stroke(session.axisGate.progress>0 ? .green : .secondary,lineWidth:2))
+                .overlay { Image(systemName: "plus").font(.title2).foregroundStyle(.white).shadow(radius: 2) }
                 .accessibilityIdentifier("axisGatePreview")
-            Text("Stand about 2.5 m (8 ft) back from the TV, point the back of your phone at it, hold it level, and keep still. After that, hold and swing the phone any way that feels natural.")
+            Text("Point the rear camera at your TV or MacBook screen and hold still. Keep the screen under the crosshair, with some of the room visible. A laptop can sit below eye level. Leave enough room to swing; no scan or code is needed.")
                 .font(.subheadline).multilineTextAlignment(.center)
             ProgressView(value:session.axisGate.progress)
             Text(session.axisGate.message).font(.footnote).multilineTextAlignment(.center)
@@ -112,7 +113,7 @@ struct AxisGatePanel:View {
             }
             Text("You only do this once per session. After it locks, any grip or angle works.")
                 .font(.caption).multilineTextAlignment(.center)
-            if session.axisGate.stalledFor > 12 {
+            if !session.axisGate.locked {
                 Button("Use the direction I'm pointing now") { session.useCurrentDirection() }
                     .accessibilityIdentifier("forceAxis")
             }

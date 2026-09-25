@@ -553,7 +553,7 @@ namespace GolfArcade.Tennis
             // Squash on the line.
             float squash = height < .06f ? 1 - height / .06f : 0;
             checkBall.localScale = new Vector3(1 + .25f * squash, 1 - .25f * squash, 1);
-            checkHint.text = beat < 0 ? "Watch the ball…" : beat < TennisBeatCalibration.WarmUp ? "Get the rhythm…" : "Swing on every bounce!";
+            checkHint.text = beat < 0 ? "Watch the ball…" : beat < TennisBeatCalibration.WarmUp ? "Get the rhythm…" :  $"Swing on every bounce!  {scored}/{TennisBeatCalibration.Beats - TennisBeatCalibration.WarmUp} recorded";
             if (height < .02f && Age(HudClock.Now, checkRingAt) > .3f) checkRingAt = HudClock.Now;
         }
 

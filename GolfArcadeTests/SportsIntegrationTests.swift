@@ -3,6 +3,23 @@ import simd
 @testable import GolfArcade
 
 final class SportsIntegrationTests:XCTestCase {
+    func testEveryRhythmicSwingRearmsDuringRecoveryEvenWithoutCamera() {
+        for tracked in [true, false] {
+            var f = SteeringFilter(); f.tennisStroke = true; f.calibrate(position: 0, time: 0)
+            var count = 0
+            for sample in 1...960 {
+                let t = Double(sample) / 100
+                let phase = (sample - 1) % 120
+                // Full stroke, a short quiet reversal during recovery, then ready motion.
+                let rate = phase < 27 ? 9.0 : phase < 43 ? 0.5 : 3.0
+                let force = phase < 27 ? 0.8 : phase < 43 ? 0.05 : 0.3
+                if f.step(position: 0, rate: rate, time: t, valid: tracked,
+                          allowSwingWhileUntracked: true, acceleration: force) != nil { count += 1 }
+            }
+            XCTAssertEqual(count, 8, "Every full swing counts, including with a blurred camera")
+        }
+    }
+
     /// The reported "it swings when I only meant to step" failure. A sidestep rotates the
     /// phone hard but does not sustain stroke-level force.
     func testSidestepDoesNotTriggerAStroke() {

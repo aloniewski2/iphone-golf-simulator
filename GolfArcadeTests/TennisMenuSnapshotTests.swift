@@ -81,6 +81,13 @@ final class TennisMenuSnapshotTests: XCTestCase {
             session.tennisPhase = phase
             try save(TennisRacketController(session: session), "phone-\(phase)", phone)
         }
+        session.tutorialStep = (0, 5, "SERVE: press TOSS near the meter's middle. Swing overhead as the ball reaches its highest point. Land one in the box.")
+        session.tennisPhase = "serve"
+        try save(TennisRacketController(session: session), "phone-tutorial-serve", phone)
+        session.tutorialStep = (3, 5, "AIM RIGHT: now angle the face right and land a return toward the other gold ring.")
+        session.tennisPhase = "rally"
+        try save(TennisRacketController(session: session), "phone-tutorial-aim", phone)
+        session.tutorialStep = nil
         session.tennisPhase = "" 
         menu.debugShow(.title)
     }

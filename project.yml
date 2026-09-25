@@ -16,7 +16,7 @@ targets:
     platform: iOS
     sources:
       - path: GolfArcade
-        excludes: [Unity/SportsInfo.plist]
+        excludes: [Unity/SportsInfo.plist, Unity/MenuVideo]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade

@@ -14,14 +14,14 @@ namespace GolfArcade.Tennis
     /// hide the very delay being measured.
     public sealed class TennisBeatCalibration
     {
-        /// Beat spacing (a relaxed 75 bpm, the rhythm of a rally), how many beats, and how
+        /// Beat spacing (50 bpm, enough time to finish and reset a full swing), how many beats, and how
         /// many at the start only set the rhythm and are not scored.
-        public const float Interval = .8f;
+        public const float Interval = 1.2f;
         public const int Beats = 9, WarmUp = 2;
         /// The lead-in before the first bounce, so the ball can be seen falling onto it.
         public const float LeadIn = 1.2f;
         /// A swing further than this from its bounce is not aimed at it.
-        public const float Window = .38f;
+        public const float Window = .55f;
         /// Scored swings needed, and how tightly they must agree (spread between the
         /// quartiles), for the result to be trusted.
         public const int Needed = 4;

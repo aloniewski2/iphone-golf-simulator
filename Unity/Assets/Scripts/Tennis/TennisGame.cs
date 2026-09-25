@@ -254,7 +254,7 @@ namespace GolfArcade.Tennis
         /// (`AbortSwing`) follows within a few samples.
         public void BeginSwing(float handSide, float lift, float strokeFacing)
         {
-            if (calibration != null) { TimingCheckSwing(); return; }
+            if (calibration != null) return; // Only confirmed strokes count in the timing check.
             if (IntroPlaying) { presentation.Skip(); return; }
             if (!Player || Player.Swinging || resetTimer > 0 || ReplayPlaying) return;
             if (Flow == Phase.PlayerServeToss && !serveCommitted)
@@ -598,6 +598,8 @@ namespace GolfArcade.Tennis
         {
             sounds.Call(false);
             if (audio) audio.OnFault(SecondServe);
+            if (Drill && nearServer)
+                Landed?.Invoke(true, false, BallPosition, true);
             if (!nearServer)
             {
                 // The opponent's fault: their second serve, or the point on a double.
@@ -753,6 +755,8 @@ namespace GolfArcade.Tennis
                 hud.EventLabel = mode == Mode.Training ? "TRAINING  ·  FREE RALLY" : mode == Mode.Tutorial ? "PRACTICE COURT  ·  TUTORIAL"
                     : mode == Mode.Campaign ? label : "EXHIBITION  ·  ONE SET";
             }
+            matchReported = false;
+            BeginPoint();
             // The tutorial drives the court itself: coach feeds, targets, a lesson at a time.
             var tutorial = GetComponent<TennisTutorial>();
             if (mode == Mode.Tutorial) { if (!tutorial) tutorial = gameObject.AddComponent<TennisTutorial>(); tutorial.Begin(this, coach); }
@@ -762,8 +766,6 @@ namespace GolfArcade.Tennis
                 if (mode == Mode.Training || mode == Mode.Tutorial) presentation.Finish();
                 else if (mode == Mode.Campaign) presentation.Bill(label, rival != null && rival.Boss ? "THE CHAMPION" : label);
             }
-            matchReported = false;
-            BeginPoint();
         }
 
         // Public adapter boundary: tracked phone position can supply this without changing physics.
@@ -1650,6 +1652,19 @@ namespace GolfArcade.Tennis
         /// A ring on the court (the tutorial's targets), drawn like the aim and landing rings.
         public LineRenderer MakeMarker(string label, Color color) => MakeLine(label, color, .09f);
         public static void DrawRing(LineRenderer line, Vector3 centre, float radius) => Ring(line, centre, radius);
+
+        /// Hold a clean court between lesson attempts, independent of serving rules.
+        public void PrepareLesson()
+        {
+            Flow = Phase.PointOver; resetTimer = 1e6f; faultDelay = 0; replayDue = -1;
+            serveLaunchPending = serveInFlight = false; pending.Active = false;
+            BallVelocity = Vector3.zero; BallPosition = new Vector3(0, -10, 0);
+            moveVelocity = Vector2.zero; ServeNudge = 0; MoveInput = 0;
+            Player.CancelSwing(); Opponent.CancelSwing();
+            Player.transform.position = new Vector3(0, Player.transform.position.y, TennisRules.BaselineZ);
+            Player.Prepare(0, false);
+            if (ballTrail) ballTrail.Clear();
+        }
 
         /// The coach feeds a ball to the player's forehand or backhand side (drills).
         public void Feed(bool backhandSide, float speed = 14f)

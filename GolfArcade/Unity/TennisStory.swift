@@ -42,7 +42,7 @@ enum TennisStory {
     static let tutorialIntro: [StoryLine] = [
         StoryLine(speaker: "announcer", text: "Welcome to the Tropical Open! Before your first match, every new player spends a few minutes on the practice court."),
         StoryLine(speaker: "stranger", text: "(An old man in a faded champion's cap is already out there, a basket of balls at his feet.) New face, huh? Come on — I'll feed you a few."),
-        StoryLine(speaker: "stranger", text: "Your phone is your racket. Point it at the TV, step to move, swing to hit. I'll talk you through the rest, one shot at a time."),
+        StoryLine(speaker: "stranger", text: "Your phone is your racket. We'll serve, return a forehand and backhand, aim, then play a point. Your player runs to the ball — you time the swing."),
     ]
     static let tutorialDone: [StoryLine] = [
         StoryLine(speaker: "stranger", text: "Not bad. Not bad at all. You move like someone who's going to be trouble."),

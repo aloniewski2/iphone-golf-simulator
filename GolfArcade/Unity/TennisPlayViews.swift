@@ -168,10 +168,11 @@ struct TennisRacketController: View {
     @State private var showOptions = false
     @State private var power = 0.6
     @State private var steering = 0.0
+    @State private var shotAim = 0.0
     var body: some View {
         VStack(spacing: 14) {
             if session.ready && session.loading.finished { Scoreline(session: session) }
-            if let step = session.tutorialStep { TutorialPanel(step: step) }
+            if let step = session.tutorialStep { TutorialPanel(step: step, onSkip: { session.skipTutorialStep() }) }
             if !session.ready || !session.loading.finished {
                 // The same loading screen as the TV: tips, how-to cards, the flowing bar.
                 LoadingScreen(menu: .shared, compact: true).padding(-24)
@@ -199,6 +200,12 @@ struct TennisRacketController: View {
                 if session.touch {
                     Slider(value: $steering, in: -1...1) { Text("Court position") }
                         .onChange(of: steering) { _, v in session.steer(v) }
+                    HStack {
+                        Text("Aim left")
+                        Slider(value: $shotAim, in: -1...1) { Text("Shot aim") }
+                            .onChange(of: shotAim) { _, value in session.setAim(value) }
+                        Text("Aim right")
+                    }.foregroundStyle(.white).font(.caption)
                     HStack {
                         Slider(value: $power, in: 0.15...1) { Text("Swing power") }
                         Button("Swing") { session.swing(power) }.font(Arcade.font(20)).buttonStyle(.borderedProminent).tint(Arcade.sunDeep)
@@ -344,6 +351,7 @@ private struct MoveButtons: View {
             }
             Text(caption.uppercased()).font(Arcade.font(11, .heavy)).tracking(2).foregroundStyle(.white.opacity(0.6))
         }
+        .onDisappear { held = 0; session.nudge(0) }
     }
     private func hold(_ icon: String, _ direction: Double) -> some View {
         Image(systemName: icon).font(.system(size: 30, weight: .black)).foregroundStyle(.white)
@@ -401,7 +409,6 @@ private struct TimingCheckPrompt: View {
 /// While the TV runs the timing check: a get-ready countdown, then swing with the ball.
 private struct TimingCheckPanel: View {
     let countdownEnds: Date?
-    @State private var beat = false
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.2)) { context in
             let left = countdownEnds.map { max(0, $0.timeIntervalSince(context.date)) } ?? 0
@@ -414,15 +421,13 @@ private struct TimingCheckPanel: View {
                         .font(Arcade.font(16, .semibold)).foregroundStyle(.white.opacity(0.85)).multilineTextAlignment(.center)
                 } else {
                     Image(systemName: "metronome.fill").font(.system(size: 64, weight: .bold)).foregroundStyle(Arcade.gold)
-                        .scaleEffect(beat ? 1.1 : 0.92)
                     Text("Swing on every bounce!").font(Arcade.font(26)).foregroundStyle(.white)
-                    Text("Watch the TV and swing each time the ball hits the line — a steady rhythm.")
+                    Text("Follow the ball on the display. Two bounces warm you up; the next seven record your timing. Reset your arm between swings.")
                         .font(Arcade.font(15, .semibold)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
                 }
                 Spacer()
             }
         }
-        .onAppear { withAnimation(.easeInOut(duration: 0.4).repeatForever(autoreverses: true)) { beat = true } }
     }
 }
 
@@ -567,6 +572,7 @@ struct RacketRadar: View {
 /// The tutorial's current step on the phone: what to do now, and how far through the lesson.
 struct TutorialPanel: View {
     let step: (index: Int, count: Int, text: String)
+    var onSkip: () -> Void = {}
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -574,6 +580,7 @@ struct TutorialPanel: View {
                 Spacer()
                 Text("STEP \(min(step.index + 1, step.count)) OF \(step.count)").font(Arcade.font(13, .heavy)).foregroundStyle(Arcade.navyDeep)
             }
+            Button("Skip this exercise", action: onSkip).font(Arcade.font(12, .semibold)).foregroundStyle(Arcade.navyDeep)
             Text(step.text).font(Arcade.font(18, .bold)).foregroundStyle(Arcade.navyDeep).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 4) {
                 ForEach(0..<step.count, id: \.self) { i in

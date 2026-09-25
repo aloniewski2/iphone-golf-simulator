@@ -281,6 +281,7 @@ final class SportsSession {
         sendJSON(["version":1,"session":sessionID,"action":"serveAim","value":serveAim.across,"value2":serveAim.depth])
     }
     /// Walk along the baseline before a serve: -1 left, 0 stop, 1 right (held buttons).
+    func skipTutorialStep() { command("tutorialNext") }
     func nudge(_ direction: Double) { command("nudge",value:direction) }
 
     func pause(reason:String="Paused on phone — tap Ready to continue") {

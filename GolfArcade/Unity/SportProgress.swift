@@ -32,12 +32,10 @@ enum Sport: String, CaseIterable, Identifiable, Hashable {
         case .boxing: (Arcade.crimson, Arcade.crimsonDeep)
         }
     }
-    /// Looping clips in MenuVideo: "<sport>-1.mp4", "<sport>-2.mp4", and for tennis real game
-    /// footage, "tennis-game.mp4" (the golf scene's capture carries its debug HUD).
-    var clips: [String] {
-        let generated = ["\(rawValue)-1", "\(rawValue)-2"]
-        return self == .tennis ? ["tennis-game"] + generated : generated
-    }
+    /// Only reviewed, entirely character-free videos belong here. All previous clips
+    /// contain players; until suitable footage is added, show the empty venue artwork.
+    var clips: [String] { [] }
+
 }
 
 /// Per-sport progress outside the tennis campaign: whether the first-time tutorial is done

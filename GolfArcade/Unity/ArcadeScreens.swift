@@ -25,6 +25,19 @@ struct ArcadeLogo: View {
     }
 }
 
+/// Character-free venue art, contained within the offered space just like the video layer.
+private struct EmptyVenueBackdrop: View {
+    var body: some View {
+        Color.clear.overlay {
+            if let image = UIImage(named: "menu-backdrop.jpg") {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                LinearGradient(colors: [Arcade.skyDeep, Arcade.navyDeep], startPoint: .top, endPoint: .bottom)
+            }
+        }.clipped()
+    }
+}
+
 /// B-roll that cycles through clips with a crossfade.
 struct BrollReel: View {
     let clips: [String]
@@ -33,6 +46,7 @@ struct BrollReel: View {
     @State private var index = 0
     var body: some View {
         ZStack {
+            EmptyVenueBackdrop()
             if !clips.isEmpty {
                 LoopingVideo(clip: clips[index % clips.count]).id(index).transition(.opacity)
             }
@@ -229,8 +243,11 @@ struct GameSelectScreen: View {
         let progress = SportProgress.shared
         return ZStack(alignment: .bottomLeading) {
             Plaque(top: sport.playable ? sport.colors.0 : Color(white: 0.3), bottom: sport.playable ? sport.colors.1 : Color(white: 0.1), corner: 24)
-            LoopingVideo(clip: sport.clips[0], playing: focused)
-                .saturation(sport.playable ? 1 : 0.25).opacity(sport.playable ? 1 : 0.7)
+            Group {
+                if let clip = sport.clips.first { LoopingVideo(clip: clip, playing: focused) }
+                else { EmptyVenueBackdrop() }
+            }
+            .saturation(sport.playable ? 1 : 0.25).opacity(sport.playable ? 1 : 0.7)
             LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {

@@ -64,7 +64,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     /// is built so `resetTracking` happens exactly once, at axis capture.
     private static let signKey="sports.tennis.steerSign"
     private static let holdRequired=1.0
-    private static let maxLensPitch=35.0*Double.pi/180
+    private static let maxLensPitch=60.0*Double.pi/180
     private static let maxGateRotation=0.5
     private static let degradedGrace=2.0
 
@@ -289,9 +289,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         if failure == nil && pitch > Self.maxLensPitch { failure="Tilt the phone level — aim the back of it straight at the TV (currently \(Int(pitch*180/Double.pi))° off level)." }
         if failure == nil && lastRotation > Self.maxGateRotation { failure="Hold still for a moment." }
         tvDistance = Self.centreDepth(frame)
-        if failure == nil, let distance = tvDistance, distance < SportsMotionGeometry.minTVDistance {
-            failure = String(format:"Step back — you're about %.1f m from the TV. Stand about %.1f m away so you have room to swing.", distance, SportsMotionGeometry.idealTVDistance)
-        }
+        // LiDAR may see a laptop's desk or bezel. Distance is guidance, not a
+        // requirement for the horizontal court direction to be measured.
         if failure == nil && SportsMotionGeometry.horizontalRight(cameraBack:cameraBack) == nil { failure="Aim the back of the phone at the TV, not at the floor or ceiling." }
         guard failure == nil, let axis=SportsMotionGeometry.horizontalRight(cameraBack:cameraBack) else {
             gateHeldSince = -Double.infinity
@@ -337,8 +336,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         let w=CVPixelBufferGetWidthOfPlane(buffer,0), h=CVPixelBufferGetHeightOfPlane(buffer,0), row=CVPixelBufferGetBytesPerRowOfPlane(buffer,0)
         let pixels=base.assumingMemoryBound(to:UInt8.self)
         var total=0, count=0
-        for y in stride(from:h*35/100,to:h*65/100,by:6) {
-            for x in stride(from:w*35/100,to:w*65/100,by:6) { total+=Int(pixels[y*row+x]); count+=1 }
+        for y in stride(from:h*45/100,to:h*55/100,by:6) {
+            for x in stride(from:w*45/100,to:w*55/100,by:6) { total+=Int(pixels[y*row+x]); count+=1 }
         }
         return count>0 ? Double(total)/Double(count) : nil
     }
@@ -470,7 +469,11 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         let problem: String? = queue.sync {
             guard motion.isDeviceMotionActive else { return "Motion is starting. Tap Ready again in a moment, or choose touch controls." }
             guard !tennis || gate.locked else { return "Aim the back of the phone at the TV to set the court direction first." }
-            guard !tennis || currentQuality(at:SportsRuntime.shared().clock()) == .good else { return "Phone position is not available yet. Keep the rear camera uncovered in a well-lit room, then tap Ready." }
+            // A laptop screen can leave ARKit short of features. The locked heading and
+            // IMU still support swings; positional steering resumes when tracking recovers.
+            guard !tennis || SportsRuntime.shared().clock() - frameAt < 1 else {
+                return "No recent camera frame. Keep the rear camera uncovered, then tap Ready."
+            }
             let x=Double(simd_dot(position,right))*sign
             filter.calibrate(position:x,time:SportsRuntime.shared().clock())
             neutralX=x; neutralY=position.y

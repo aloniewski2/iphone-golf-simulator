@@ -121,6 +121,7 @@ namespace GolfArcade.Game
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
                     case "coaching": TennisCoach.ResetTips(); break;
                     case "latency": if(tennis) tennis.DisplayLatency=m.value; break;
+                    case "tutorialNext": if(tennis && tennis.PlayMode == TennisGame.Mode.Tutorial) tennis.GetComponent<TennisTutorial>()?.SkipStep(); break;
                     case "timingCheck": if(tennis) tennis.StartTimingCheck(); break;
                     // The controller serve: the toss meter's reading, the aim in the target box,
                     // and walking along the baseline before a serve (held buttons: -1, 0, 1).

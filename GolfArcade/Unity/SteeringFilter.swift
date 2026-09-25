@@ -198,7 +198,10 @@ struct SteeringFilter {
         let dt=min(time-lastTime,0.05); lastTime=time
         guard phase != .calibrating else { return nil }
 
-        if phase == .swinging {
+        if rate < Self.rearmRate && acceleration < Self.rearmForce {
+            strokeArmed = true
+        }
+        if phase == .swinging || phase == .recovering {
             // A stroke in flight is driven by the gyro, not the camera. Motion blur must
             // never abandon a swing the player has already started.
             if !valid && !allowSwingWhileUntracked {
@@ -278,8 +281,8 @@ struct SteeringFilter {
             // moment to rebase. Holding steering for up to 0.85s after every stroke is what
             // made a rally feel unresponsive; the fixed mapping resumes as soon as the
             // racket-swing window is over.
-            if valid && (rate<2.5 || time-settled>=0.25) {
-                phase = .steering; peak=0; candidateDuration=0
+            if (valid || allowSwingWhileUntracked) && (rate<2.5 || time-settled>=0.25) {
+                phase = valid ? .steering : .trackingLost; peak=0; candidateDuration=0
             }
         default: break
         }

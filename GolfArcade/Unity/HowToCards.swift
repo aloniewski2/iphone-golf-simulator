@@ -28,7 +28,7 @@ enum HowTo {
         "Point the back of the phone at the TV once to lock the court direction.",
     ], art: .stand)
     static let swing = HowToCard(id: "swing", title: "Forehand", steps: [
-        "Step sideways to run — your player follows you across the court.",
+        "Your player runs to the ball. Lean toward it early to get a quicker start.",
         "Swing as the ball rises to the top of its bounce.",
         "Point the racket face where you want the ball to go.",
     ], art: .swing)
