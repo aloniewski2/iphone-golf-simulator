@@ -7,12 +7,18 @@ namespace GolfArcade.UI
     /// the game itself behind it, the golfer at address on the first tee with the hole
     /// stretching away; the GOLF ARCADE logo over the sky with a ball bouncing off it; a small
     /// round TV button for the big screen; and a dock at the foot with a big round yellow PLAY
-    /// between COURSE (which hole, or the round) and GOLFER (their face, live). The game wires
+    /// between COURSE (which hole, or the round) and GOLFER (their face, live). Over the dock,
+    /// who plays: SOLO, 2 PLAYERS on this phone, or ONLINE; top left, the PROFILE. The game wires
     /// the buttons and calls Refresh.
     public sealed class HomeScreen
     {
         public readonly RectTransform Root;
-        public readonly HoldButton Play, Course, Golfer, BigScreen;
+        public readonly HoldButton Play, Course, Golfer, BigScreen, Profile;
+        /// SOLO, 2 PLAYERS, ONLINE (GameSetup.PlayMode order).
+        public readonly HoldButton[] Modes = new HoldButton[3];
+        readonly Image[] modeFills = new Image[3];
+        readonly Text[] modeWords = new Text[3];
+        readonly Text profileName;
         /// The golfer's face in the GOLFER button: the game points a camera at it.
         public readonly RawImage Avatar;
         public readonly Text Build;
@@ -40,6 +46,29 @@ namespace GolfArcade.UI
             tvDot = UiKit.Panel(tv, "On", UiKit.Hex("5CD65C"), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-14, -14), new Vector2(30, 30));
             tvDot.sprite = UiKit.Circle; tvDot.type = Image.Type.Simple; tvDot.raycastTarget = false; tvDot.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             BigScreen = Hold(tv, tvFill, UiKit.ArcadeBlue);
+
+            // the profile: the same round button, top left, and the player's name under it
+            var me = UiKit.Pill(Root, "Profile", UiKit.ArcadeBlue, new Vector2(0, 1), new Vector2(96, -86), new Vector2(116, 116), out var meFill, 5f);
+            foreach (var img in me.GetComponentsInChildren<Image>()) img.type = Image.Type.Simple;
+            Icons.Place(meFill.transform, "face", Color.white, new Vector2(0.5f, 0.5f), Vector2.zero, 64);
+            Profile = Hold(me, meFill, UiKit.ArcadeBlue);
+            profileName = UiKit.Label(Root, "Profile name", 26, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(0, 1), new Vector2(38, -168), new Vector2(360, 40), UiKit.Display, false);
+            profileName.color = Color.white; profileName.raycastTarget = false;
+            profileName.gameObject.AddComponent<Shadow>().effectColor = new Color(0.05f, 0.1f, 0.3f, 0.6f);
+
+            // who plays: three halves of one pill over the dock, the chosen one lit yellow
+            var modes = UiKit.Pill(Root, "Players", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0), new Vector2(0, 520), new Vector2(930, 100), out var modesFill, 5f);
+            string[] words = { "SOLO", "2 PLAYERS", "ONLINE" };
+            for (int i = 0; i < 3; i++)
+            {
+                var third = UiKit.Panel(modesFill.transform, words[i], UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2((i - 1) * 300, 0), new Vector2(292, 78));
+                third.sprite = UiKit.Circle; third.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                var w = UiKit.Label(third.transform, "Word", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                w.text = words[i]; w.raycastTarget = false;
+                var hold = third.gameObject.AddComponent<HoldButton>();
+                hold.Fill = third;
+                Modes[i] = hold; modeFills[i] = third; modeWords[i] = w;
+            }
 
             // the dock: COURSE, the big PLAY, GOLFER
             var dock = UiKit.Pill(Root, "Dock", UiKit.ArcadeBlue, new Vector2(0.5f, 0), new Vector2(0, 160), new Vector2(1010, 250), out _, 5f, false);
@@ -160,6 +189,19 @@ namespace GolfArcade.UI
             courseTag.text = course.ToUpperInvariant();
             golferTag.text = golfer.ToUpperInvariant();
             tvDot.color = tvOn ? UiKit.Hex("5CD65C") : new Color(0.75f, 0.8f, 0.9f, 0.9f);
+        }
+
+        /// Lights the chosen mode (0 solo, 1 two players on this phone, 2 online) and names the
+        /// profile playing.
+        public void ShowMode(int mode, string player)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                var c = i == mode ? UiKit.ArcadeYellow : new Color(1, 1, 1, 0);
+                modeFills[i].color = c; Modes[i].RestColor = c;
+                modeWords[i].color = i == mode ? UiKit.ArcadeInk : Color.white;
+            }
+            profileName.text = (player ?? "").ToUpperInvariant();
         }
 
         public void Destroy() { if (Root) Object.Destroy(Root.gameObject); }

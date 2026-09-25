@@ -1,6 +1,8 @@
 using System;
 using GolfArcade.Course;
 using GolfArcade.Net;
+using GolfArcade.Net.Online;
+using GolfArcade.Profile;
 using GolfArcade.Shot;
 using GolfArcade.Swing;
 using GolfArcade.UI;
@@ -27,8 +29,22 @@ namespace GolfArcade.Game
         public State Current { get; private set; } = State.Menu;
         public CourseShot LastShot { get; private set; }
         public SwingController Swing { get; private set; }
-        public Scorecard Card { get; private set; }
+        /// The round: solo, two to four players taking turns on this phone, or online (each
+        /// on their own phone at once, the same wind from the room's seed). One card each.
+        public Match Match { get; private set; }
+        /// The card of the golfer who is up.
+        public Scorecard Card => Match?.Current.Card;
         public Wind Wind { get; private set; }
+        /// Who the home screen's PLAY is for: solo, 2 players on this phone, or online.
+        public PlayMode Mode { get; private set; } = PlayMode.Solo;
+
+        GameSetup setup;
+        Lobby lobby;
+        OnlineRoom onlineRoom;
+        bool roundRecorded;
+        /// The golfer select screen is dressing this profile, then goes back to `pickedThen`.
+        PlayerProfile pickingFor;
+        Action pickedThen;
 
         Course.Course course;
         GolfSounds sounds;
@@ -263,6 +279,11 @@ namespace GolfArcade.Game
         /// be played, the hole stretching away under the logo, and PLAY between COURSE and GOLFER.
         public void ShowMenu()
         {
+            // back from a round: out of any online room, and the device's own golfer again
+            if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.Disconnect();
+            ListenToRoom(null);
+            setup = null;
+            if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); }
             course = CourseFor(chosenHoles);
             ShowHole(course.Holes[0]);
             greenRead.Hide();
@@ -278,6 +299,8 @@ namespace GolfArcade.Game
             home.Course.Pressed = OpenCourses;
             home.BigScreen.Pressed = () => { Click(); bigScreen.SetWanted(true); bigScreen.OpenAirPlayPicker(); RefreshMenu(); };
             home.Play.Pressed = Play;
+            home.Profile.Pressed = () => { Click(); OpenLobby(Lobby.Page.Profile); };
+            for (int i = 0; i < home.Modes.Length; i++) { var m = (PlayMode)i; home.Modes[i].Pressed = () => { Click(); ChooseMode(m); }; }
             RefreshMenu();
             SetFog(0);
             StandOnTheTee();
@@ -355,8 +378,50 @@ namespace GolfArcade.Game
         Hole[] allHoles;
         Hole[] AllHoles => allHoles ??= Course.Course.Cliffside().Holes;
 
-        void RefreshMenu() => home?.Refresh(chosenHoles == 0 ? $"{AllHoles.Length} holes" : $"Hole {chosenHoles}",
-                                            $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
+        void RefreshMenu()
+        {
+            home?.Refresh(chosenHoles == 0 ? $"{AllHoles.Length} holes" : $"Hole {chosenHoles}",
+                          $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
+            home?.ShowMode((int)Mode, ProfileStore.Active.Name);
+        }
+
+        /// SOLO, 2 PLAYERS or ONLINE on the home screen; PLAY then goes that way.
+        public void ChooseMode(PlayMode mode)
+        {
+            Mode = mode;
+            RefreshMenu();
+        }
+
+        // ----- Profiles, two players on one phone, online (UI/Lobby.cs) -----
+
+        public void OpenLobby(Lobby.Page page)
+        {
+            if (Current != State.Menu) return;
+            hud.HideMenu(); home = null;
+            hud.HideCourses(); courses = null;
+            if (lobby) Destroy(lobby.gameObject);
+            lobby = Lobby.Create(page, () => chosenHoles, Begin, EditGolferFor, CloseLobby);
+        }
+
+        public void CloseLobby()
+        {
+            if (lobby) Destroy(lobby.gameObject);
+            lobby = null;
+            ShowMenu();
+        }
+
+        /// GOLFER for a profile from the lobby: the golfer select screen dressed as them, and
+        /// back to the lobby after LET'S GO.
+        void EditGolferFor(PlayerProfile profile, Action then)
+        {
+            if (lobby) lobby.gameObject.SetActive(false);
+            pickingFor = profile;
+            pickedThen = then;
+            if (profile.Id != ProfileStore.Book.ActiveId) GolferStyle.Wear(profile.Body, profile.Kit, profile.Shirt);
+            else GolferStyle.Unwear();
+            OpenGolferPicker();
+            select?.SetTab(profile.Name + "'S GOLFER");
+        }
 
         // ----- The course screen -----
 
@@ -522,13 +587,39 @@ namespace GolfArcade.Game
         public void CloseGolferPicker()
         {
             hud.HideGolferSelect(); select = null;
+            // the golfer picked belongs to a profile: the one being edited, or the phone's own
+            var profile = pickingFor ?? ProfileStore.Active;
+            profile.Body = (int)GolferStyle.Body; profile.Kit = GolferStyle.Kit; profile.Shirt = GolferStyle.Shirt;
+            ProfileStore.Save();
+            _ = BackendClient.PushProfile(profile);
+            var then = pickedThen;
+            pickingFor = null; pickedThen = null;
             ShowMenu();
+            if (then != null && lobby)
+            {
+                hud.HideMenu(); home = null;
+                lobby.gameObject.SetActive(true);
+                then();
+            }
         }
 
-        /// From the menu into the round.
+        /// From the menu into the round: solo straight away; 2 PLAYERS and ONLINE by way of the
+        /// lobby, which comes back through Begin.
         public void Play()
         {
             if (Current != State.Menu) return;
+            if (Mode == PlayMode.LocalVersus) { Click(); OpenLobby(Lobby.Page.Local); return; }
+            if (Mode == PlayMode.Online) { Click(); OpenLobby(Lobby.Page.Online); return; }
+            Begin(GameSetup.Solo(ProfileStore.Active, chosenHoles));
+        }
+
+        /// Tee off on what was chosen.
+        public void Begin(GameSetup chosen)
+        {
+            if (Current != State.Menu) return;
+            setup = chosen;
+            if (lobby) { Destroy(lobby.gameObject); lobby = null; }
+            ListenToRoom(setup.Mode == PlayMode.Online ? OnlineSession.Instance?.Room : null);
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
             SetFog(0);
@@ -537,7 +628,26 @@ namespace GolfArcade.Game
             StartRound();
         }
 
-        void OnDestroy() { Haptics.Release(); Swing?.Stop(); Time.timeScale = 1f; }
+        void OnDestroy() { Haptics.Release(); Swing?.Stop(); Time.timeScale = 1f; ListenToRoom(null); GolferStyle.Unwear(); }
+
+        void ListenToRoom(OnlineRoom room)
+        {
+            if (onlineRoom != null) { onlineRoom.HoleScored -= OnRemoteHole; onlineRoom.Changed -= OnRoomChanged; }
+            onlineRoom = room;
+            if (onlineRoom != null) { onlineRoom.HoleScored += OnRemoteHole; onlineRoom.Changed += OnRoomChanged; }
+        }
+
+        /// Another phone holed out: onto their card, and the card on screen if it is up.
+        void OnRemoteHole(string playerId, int holeNumberIndex, int strokes)
+        {
+            if (Match == null || playerId == onlineRoom?.MyId) return;
+            if (Match.RecordRemote(playerId, holeNumberIndex, strokes) && Current == State.RoundDone) ShowRoundCard();
+        }
+
+        void OnRoomChanged()
+        {
+            if (Current == State.RoundDone && setup?.Mode == PlayMode.Online) ShowRoundCard();
+        }
 
         void Tick() { if (Current == State.Aim) { sounds.PlayTick(); Haptics.Tick(); } }
 
@@ -616,11 +726,44 @@ namespace GolfArcade.Game
 
         void StartRound()
         {
-            course = CourseFor(chosenHoles);
-            Card = new Scorecard(course);
+            setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
+            course = CourseFor(GameSetup.HolesFor(setup.CourseId));
+            NewMatch();
             ResetRoundStats();
             hud.HideScorecard();
-            StartHole(0);
+            // online, a phone back in a round under way starts at its first hole not played
+            if (!Match.Advance())
+            {
+                holeIndex = course.Holes.Length - 1; hole = course.Holes[holeIndex];
+                ShowRoundCard(); Enter(State.RoundDone); return;
+            }
+            WearTurn();
+            StartHole(Match.HoleIndex);
+        }
+
+        /// A card for everyone in the setup over `course`; online, the scores already in.
+        void NewMatch()
+        {
+            setup ??= GameSetup.Solo(ProfileStore.Active, chosenHoles);
+            Match = new Match(course, setup.Players(), setup.Seed);
+            roundRecorded = false;
+            if (setup.Mode != PlayMode.Online || onlineRoom == null) return;
+            foreach (var seat in onlineRoom.Players)
+                for (int h = 0; h < seat.strokes.Length && h < course.Holes.Length; h++)
+                {
+                    if (seat.strokes[h] <= 0) continue;
+                    if (seat.id != onlineRoom.MyId) Match.RecordRemote(seat.id, h, seat.strokes[h]);
+                    else if (!Match.Current.Card.StrokesOn(h).HasValue) Match.Current.Card.Record(h, seat.strokes[h]);
+                }
+        }
+
+        /// With more than one golfer on this phone, the one who is up wears their own golfer.
+        void WearTurn()
+        {
+            if (Match.LocalCount < 2) { if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); } return; }
+            var p = Match.Current;
+            GolferStyle.Wear(p.Body, p.Kit, p.Shirt);
+            golfer.ApplyStyle();
         }
 
         /// Straight to a hole of the round, for tests and reviews; the card keeps what was played.
@@ -629,7 +772,7 @@ namespace GolfArcade.Game
             int index = System.Array.FindIndex(course.Holes, h => h.Number == number);
             if (index < 0)
             {
-                course = CourseFor(0); Card = new Scorecard(course); // not in the chosen holes: play the whole round
+                course = CourseFor(0); NewMatch(); // not in the chosen holes: play the whole round
                 index = System.Array.FindIndex(course.Holes, h => h.Number == number);
                 if (index < 0) throw new System.ArgumentException($"no hole {number} on {course.Name}");
             }
@@ -646,7 +789,8 @@ namespace GolfArcade.Game
             holeView = HoleView.Build(hole, transform);
             ballAt = hole.Tee;
             holeStrokes = 0; holeShots = 0; onGreenIn = null;
-            Wind = Wind.Random(rng);
+            // everyone on a hole gets its wind, from the round's seed (the same on every phone online)
+            Wind = Match != null ? Match.WindFor(index) : Wind.Random(rng);
             holeView.ShowFlag(true);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
             hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
@@ -662,8 +806,9 @@ namespace GolfArcade.Game
             // The showcase: HUD away, the tournament's title over the flyover; then the
             // introductions on the tee, you and the gallery behind the rope.
             hud.ShowPlayHud(false);
-            hud.ShowHoleIntro(Tournament, hole.Number, hole.Name, hole.Par, hole.Length,
-                Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}");
+            string windWords = Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}";
+            if (Match != null && Match.LocalCount > 1) windWords = $"{Match.Current.Name}'s turn   ·   {windWords}";
+            hud.ShowHoleIntro(Tournament, hole.Number, hole.Name, hole.Par, hole.Length, windWords);
             var teeLine = TeeAim();
             golfer.Stand(ball.position, teeLine);
             gallery.gameObject.SetActive(true);
@@ -1027,7 +1172,8 @@ namespace GolfArcade.Game
             var strokes = new int?[pars.Length];
             for (int i = 0; i < pars.Length; i++) { pars[i] = course.Holes[i].Par; strokes[i] = Card.StrokesOn(i); }
             strokes[holeIndex] ??= holeStrokes;
-            hud.SetScoreboard($"{Tournament}   ·   Hole {hole.Number}", pars, strokes, holeIndex);
+            string who = Match != null && !Match.IsSolo ? $"{Match.Current.Name}   ·   " : "";
+            hud.SetScoreboard($"{Tournament}   ·   {who}Hole {hole.Number}", pars, strokes, holeIndex);
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
         }
 
@@ -1701,6 +1847,13 @@ namespace GolfArcade.Game
                     // the score stamped and cheered, then the card: the round so far and the way on
                     if (stateTime > 3f)
                     {
+                        // another golfer on this phone still to play the hole: pass it on
+                        if (Match.LocalCount > 1 && Match.LocalsLeftOn(holeIndex) && Match.Advance())
+                        {
+                            WearTurn();
+                            StartHole(Match.HoleIndex);
+                            break;
+                        }
                         RefreshControls();
                         ShowRoundCard();
                         Enter(State.RoundDone);
@@ -1884,6 +2037,8 @@ namespace GolfArcade.Game
             string holeScore = Scorecard.ScoreName(strokes, hole.Par).TrimEnd('!');
             string longest = drove ? longestDrive.ToString("F0") : longestShot > 0 ? longestShot.ToString("F0") : null;
             hud.ShowPlayHud(false);
+            if (!Match.IsSolo) { ShowMatchCard(more, round); return; }
+            if (!more) RecordRound();
             hud.ShowScorecard(Card,
                 round ? "Round complete" : $"Hole {hole.Number} complete",
                 round ? null : strokes <= hole.Par ? holeScore + "!" : holeScore,
@@ -1902,10 +2057,69 @@ namespace GolfArcade.Game
             sounds.PlayReady();
         }
 
-        /// From the card straight into the same holes again.
+        /// The card with others: a row each, and the standings in the tiles; online, the others'
+        /// scores fill in as they hole out, and the round ends once everyone's card is in.
+        void ShowMatchCard(bool more, bool round)
+        {
+            bool online = setup.Mode == PlayMode.Online;
+            bool waiting = online && !more && !Match.EveryoneFinished && !(onlineRoom?.Finished ?? false);
+            var rows = new RoundCard.Row[Match.Players.Count];
+            for (int i = 0; i < rows.Length; i++)
+            {
+                var p = Match.Players[i];
+                var strokes = new int?[course.Holes.Length];
+                for (int h = 0; h < strokes.Length; h++) strokes[h] = p.Card.StrokesOn(h);
+                rows[i] = new RoundCard.Row { Name = p.Name, Color = Lobby.PlayerColor(i), Strokes = strokes };
+            }
+            var standings = Match.Standings();
+            var tiles = new RoundCard.Highlight[standings.Count];
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                var p = standings[i];
+                string played = p.Card.HolesPlayed < course.Holes.Length ? $"  ({p.Card.HolesPlayed})" : "";
+                tiles[i] = new RoundCard.Highlight { Icon = i == 0 ? "trophy" : "ball", Title = $"{i + 1}. {p.Name}", Value = Scorecard.FormatToPar(p.Card.ToPar) + played };
+            }
+            string headline;
+            if (waiting) headline = "Waiting for the others…";
+            else if (!more) headline = Match.Headline();
+            else { var winner = Match.HoleWinner(holeIndex); headline = winner != null ? $"{winner.Name} wins the hole" : "Hole halved"; }
+            hud.ShowScorecard(Card, round || !more ? "Round complete" : $"Hole {hole.Number} complete", headline, tiles, more, rows);
+            hud.PlayAgain.Pressed = PlayAgain;
+            hud.RoundMenu.Pressed = ShowMenu;
+            if (hud.NextHole) hud.NextHole.Pressed = NextHole;
+            if (!more && !waiting) RecordRound();
+            sounds.PlayReady();
+        }
+
+        /// Every local golfer's finished round onto their profile, and to the server for those
+        /// signed in (online rounds the server records itself).
+        void RecordRound()
+        {
+            if (roundRecorded || Match == null) return;
+            roundRecorded = true;
+            foreach (var player in Match.Players)
+            {
+                if (!player.IsLocal || !player.Card.IsComplete) continue;
+                var profile = ProfileStore.Book.Find(player.ProfileId);
+                if (profile == null) continue;
+                var opponents = Match.OpponentsToPar(player);
+                profile.Stats.RecordRound(player.Card, opponents);
+                if (setup.Mode == PlayMode.Online) continue;
+                var strokes = new int[course.Holes.Length];
+                for (int i = 0; i < strokes.Length; i++) strokes[i] = player.Card.StrokesOn(i) ?? 0;
+                int best = int.MaxValue; foreach (var o in opponents) best = Math.Min(best, o);
+                string result = opponents.Count == 0 ? null : player.Card.ToPar < best ? "won" : player.Card.ToPar == best ? "tied" : "lost";
+                _ = BackendClient.SubmitRound(profile, setup.CourseId, strokes, result);
+            }
+            ProfileStore.Save();
+        }
+
+        /// From the card straight into the same holes again (online: back to the lobby for a
+        /// new room).
         public void PlayAgain()
         {
             if (Current != State.RoundDone) return;
+            if (setup?.Mode == PlayMode.Online) { ShowMenu(); ChooseMode(PlayMode.Online); OpenLobby(Lobby.Page.Online); return; }
             hud.ShowPlayHud(true);
             StartRound();
         }
@@ -1915,6 +2129,8 @@ namespace GolfArcade.Game
         {
             if (Current != State.RoundDone || holeIndex + 1 >= course.Holes.Length) return;
             hud.HideScorecard();
+            // two or more on this phone: the first of them on the next hole, as their golfer
+            if (Match.LocalCount > 1 && Match.Advance()) { WearTurn(); StartHole(Match.HoleIndex); return; }
             StartHole(holeIndex + 1);
         }
 
@@ -2214,6 +2430,7 @@ namespace GolfArcade.Game
             if (shot.IsHoled)
             {
                 Card.Record(holeIndex, holeStrokes);
+                if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.Send(OnlineMessage.Hole(holeIndex, holeStrokes));
                 ShowScore();
                 string score = Scorecard.ScoreName(holeStrokes, hole.Par);
                 hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,

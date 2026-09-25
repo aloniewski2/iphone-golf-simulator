@@ -36,10 +36,46 @@ namespace GolfArcade.Game
             PlayerPrefs.Save();
         }
 
+        // ---- Whose golfer is on screen. With more than one player on the phone the round
+        // `Wear`s the golfer, kit and shirt of whoever is up (their profile); the picker edits that
+        // look while it is worn. Nothing worn: the device's saved look, the active profile's.
+        static BodyKind? wornBody;
+        static int? wornKit, wornShirt;
+
+        public static bool Worn => wornBody.HasValue;
+
+        public static void Wear(int body, int kit, int shirt)
+        {
+            wornBody = (BodyKind)Mathf.Clamp(body, 0, 1);
+            wornKit = Mathf.Clamp(kit, 0, KitColors.Length - 1);
+            wornShirt = Mathf.Clamp(shirt, 0, ShirtColors.Length - 1);
+        }
+
+        /// Back to the device's own look.
+        public static void Unwear() { wornBody = null; wornKit = wornShirt = null; }
+
+        /// The device's saved look, whatever is worn.
+        public static BodyKind SavedBody => (BodyKind)Mathf.Clamp(PlayerPrefs.GetInt(BodyKey, 0), 0, 1);
+        public static int SavedKit => Mathf.Clamp(PlayerPrefs.GetInt(KitKey, 0), 0, KitColors.Length - 1);
+        public static int SavedShirt => Mathf.Clamp(PlayerPrefs.GetInt(ShirtKey, 0), 0, ShirtColors.Length - 1);
+
+        /// Saves a look as the device's own (the active profile's), without wearing it.
+        public static void Save(int body, int kit, int shirt)
+        {
+            PlayerPrefs.SetInt(BodyKey, Mathf.Clamp(body, 0, 1));
+            PlayerPrefs.SetInt(KitKey, Mathf.Clamp(kit, 0, KitColors.Length - 1));
+            PlayerPrefs.SetInt(ShirtKey, Mathf.Clamp(shirt, 0, ShirtColors.Length - 1));
+            PlayerPrefs.Save();
+        }
+
         public static BodyKind Body
         {
-            get => (BodyKind)PlayerPrefs.GetInt(BodyKey, 0);
-            set { PlayerPrefs.SetInt(BodyKey, (int)value); PlayerPrefs.Save(); }
+            get => wornBody ?? SavedBody;
+            set
+            {
+                if (wornBody.HasValue) { wornBody = value; return; }
+                PlayerPrefs.SetInt(BodyKey, (int)value); PlayerPrefs.Save();
+            }
         }
 
         public static int SkinTone
@@ -109,14 +145,24 @@ namespace GolfArcade.Game
 
         public static int Kit
         {
-            get => Mathf.Clamp(PlayerPrefs.GetInt(KitKey, 0), 0, KitColors.Length - 1);
-            set { PlayerPrefs.SetInt(KitKey, Mathf.Clamp(value, 0, KitColors.Length - 1)); PlayerPrefs.Save(); }
+            get => wornKit ?? SavedKit;
+            set
+            {
+                int v = Mathf.Clamp(value, 0, KitColors.Length - 1);
+                if (wornKit.HasValue) { wornKit = v; return; }
+                PlayerPrefs.SetInt(KitKey, v); PlayerPrefs.Save();
+            }
         }
 
         public static int Shirt
         {
-            get => Mathf.Clamp(PlayerPrefs.GetInt(ShirtKey, 0), 0, ShirtColors.Length - 1);
-            set { PlayerPrefs.SetInt(ShirtKey, Mathf.Clamp(value, 0, ShirtColors.Length - 1)); PlayerPrefs.Save(); }
+            get => wornShirt ?? SavedShirt;
+            set
+            {
+                int v = Mathf.Clamp(value, 0, ShirtColors.Length - 1);
+                if (wornShirt.HasValue) { wornShirt = v; return; }
+                PlayerPrefs.SetInt(ShirtKey, v); PlayerPrefs.Save();
+            }
         }
 
         /// The kit on a GolferClay material with the Higgsfield colour map.

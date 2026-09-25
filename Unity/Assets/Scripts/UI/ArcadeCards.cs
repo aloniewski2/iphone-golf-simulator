@@ -282,14 +282,22 @@ namespace GolfArcade.UI
     public sealed class RoundCard
     {
         public readonly RectTransform Root;
-        public readonly HoldButton PlayAgain, Menu;
+        public HoldButton PlayAgain { get; private set; }
+        public HoldButton Menu { get; private set; }
         /// Null on the round's last hole.
-        public readonly HoldButton NextHole;
+        public HoldButton NextHole { get; private set; }
 
         public struct Highlight { public string Icon, Title, Value; }
 
-        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole)
+        /// A row on the card for each golfer in a round with others: their name in their colour
+        /// and their strokes per hole. Without them the card has the one YOU row and the total.
+        public struct Row { public string Name; public Color Color; public int?[] Strokes; }
+
+        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole, Row[] players = null)
         {
+            players ??= new[] { new Row { Name = "YOU", Color = UiKit.ArcadeYellow, Strokes = strokes } };
+            bool solo = players.Length == 1;
+            int tableRows = 2 + players.Length;
             const float W = 980;
             float y = 0;
             // the course dimmed behind it; touches stop here
@@ -326,7 +334,7 @@ namespace GolfArcade.UI
             int n = holes.Length;
             const float rowH = 92, labelW = 170;
             float colW = Mathf.Min(140, (inner - 24 - labelW) / Mathf.Max(1, n));
-            var table = UiKit.Panel(f, "Card", Color.white, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y - (3 * rowH + 24) / 2), new Vector2(inner, 3 * rowH + 24));
+            var table = UiKit.Panel(f, "Card", Color.white, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y - (tableRows * rowH + 24) / 2), new Vector2(inner, tableRows * rowH + 24));
             table.sprite = UiKit.RoundedLarge; table.raycastTarget = false; table.rectTransform.pivot = new Vector2(0.5f, 0.5f);
             var tt = table.transform;
             float left = -inner / 2 + 12;
@@ -341,31 +349,46 @@ namespace GolfArcade.UI
                 if (round) { m.sprite = UiKit.Circle; m.type = Image.Type.Simple; }
                 m.raycastTarget = false; return m;
             }
-            float r0 = (3 * rowH) / 2 - rowH / 2, r1 = 0, r2 = -rowH;
-            var youBand = UiKit.Panel(tt, "You", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(left + labelW / 2, r2), new Vector2(labelW, rowH - 10));
-            youBand.raycastTarget = false;
+            float r0 = (tableRows * rowH) / 2 - rowH / 2, r1 = r0 - rowH;
             Cell("HOLE", left + labelW / 2, r0, labelW, 34, UiKit.ArcadeBlue);
             Cell("PAR", left + labelW / 2, r1, labelW, 34, UiKit.ArcadeBlue);
-            Cell("YOU", left + labelW / 2, r2, labelW, 34, UiKit.ArcadeInk);
             for (int i = 0; i < n; i++)
             {
                 float x = left + labelW + 12 + colW * (i + 0.5f);
                 Mark(x, r0, UiKit.ArcadeBlue, true, 62);
                 Cell($"{holes[i]}", x, r0, colW, 30, Color.white);
                 Cell($"{pars[i]}", x, r1, colW, 38, UiKit.ArcadeInk);
-                if (strokes[i] is int s)
-                {
-                    int d = s - pars[i];
-                    bool lit = d < 0 || d > 0;
-                    if (d < 0) Mark(x, r2, UiKit.ArcadeYellow, true, 66);
-                    else if (d > 0) Mark(x, r2, d == 1 ? UiKit.ArcadeBlue : UiKit.ArcadeBlueDeep, false, 64);
-                    Cell($"{s}", x, r2, colW, 40, d > 0 ? Color.white : UiKit.ArcadeInk);
-                }
-                else Cell("–", x, r2, colW, 40, UiKit.ArcadeInk);
             }
-            y -= 3 * rowH + 24 + 20;
+            for (int p = 0; p < players.Length; p++)
+            {
+                float r2 = r1 - rowH * (p + 1);
+                var band = UiKit.Panel(tt, players[p].Name, players[p].Color, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(left + labelW / 2, r2), new Vector2(labelW, rowH - 10));
+                band.raycastTarget = false;
+                var name = Cell(players[p].Name.ToUpperInvariant(), left + labelW / 2, r2, labelW - 12, 34, UiKit.ArcadeInk);
+                Icons.Fit(name, 18, 34);
+                for (int i = 0; i < n; i++)
+                {
+                    float x = left + labelW + 12 + colW * (i + 0.5f);
+                    if (i < players[p].Strokes.Length && players[p].Strokes[i] is int s)
+                    {
+                        int d = s - pars[i];
+                        if (d < 0) Mark(x, r2, UiKit.ArcadeYellow, true, 66);
+                        else if (d > 0) Mark(x, r2, d == 1 ? UiKit.ArcadeBlue : UiKit.ArcadeBlueDeep, false, 64);
+                        Cell($"{s}", x, r2, colW, 40, d > 0 ? Color.white : UiKit.ArcadeInk);
+                    }
+                    else Cell("–", x, r2, colW, 40, UiKit.ArcadeInk);
+                }
+            }
+            y -= tableRows * rowH + 24 + 20;
 
-            // the total, and against par
+            // the total, and against par (with others, the standings are the tiles below)
+            if (solo) AddTotal(f, ref y, inner, total, toPar);
+
+            AddRest(f, y, inner, highlights, nextHole, card, parent, W);
+        }
+
+        void AddTotal(RectTransform f, ref float y, float inner, int total, int toPar)
+        {
             var tot = UiKit.Pill(f, "Total", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 1), new Vector2(0, y - 50), new Vector2(inner, 100), out var totFill, 4f);
             var tl = UiKit.Label(totFill.transform, "Label", 44, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(40, 0), Vector2.zero, UiKit.Display, false);
             tl.text = "TOTAL"; tl.color = Color.white;
@@ -375,7 +398,10 @@ namespace GolfArcade.UI
             var cv = UiKit.Label(chipFill.transform, "Text", 38, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
             cv.text = GolfArcade.Course.Scorecard.FormatToPar(toPar); cv.color = toPar > 0 ? Color.white : UiKit.ArcadeInk;
             y -= 100 + 22;
+        }
 
+        void AddRest(RectTransform f, float y, float inner, Highlight[] highlights, bool nextHole, RectTransform card, Transform parent, float W)
+        {
             // the round's stats, three to a row
             float hw = (inner - 2 * 18) / 3f;
             const float tileH = 150, tileGap = 18;

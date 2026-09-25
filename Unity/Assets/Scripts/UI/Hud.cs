@@ -299,13 +299,13 @@ namespace GolfArcade.UI
         /// The card after a hole or the round (option A): `title` over it, `headline` on its
         /// ribbon (null: the round against par), the round's stats in tiles, and NEXT HOLE when
         /// `nextHole`.
-        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole)
+        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole, RoundCard.Row[] players = null)
         {
             HideScorecard();
             var holes = card.Course.Holes;
             var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
             for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
-            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole);
+            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole, players);
             roundCard.Root.SetAsLastSibling();
             PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu; NextHole = roundCard.NextHole;
         }
