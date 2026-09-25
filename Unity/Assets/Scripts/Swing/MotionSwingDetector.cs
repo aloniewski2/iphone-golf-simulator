@@ -33,14 +33,20 @@ namespace GolfArcade.Swing
         public double CurveDegrees;
         /// Wrist roll between address and impact, degrees; positive = face open.
         public double FaceDegrees;
-        /// How far past the club's full speed the downswing went (0 = at or under). Wild when large.
-        public double Overswing;
         /// Seconds from the start of the backswing to impact.
         public double TempoSeconds;
         /// Peak rotation speed of the downswing, rad/s.
         public double PeakSpeed;
         /// Backswing size, 0–1, the load the meter showed before the downswing.
         public double Backswing;
+        /// Seconds from the top of the backswing to impact.
+        public double DownswingSeconds;
+        /// How committed the downswing was: peak speed against the speed that counts as a full
+        /// swing (1 = committed; less was a push, and cost power). Zero when not measured.
+        public double Commit;
+        /// Ball-striking faults on top of the face: 0 clean, up to 1 fully thin (a push through
+        /// the ball — it comes off low and hot with little spin).
+        public double Thin;
     }
 
     /// Phone-as-club swing recognizer. Feed it attitude and rotation-rate samples and it reports
@@ -51,11 +57,12 @@ namespace GolfArcade.Swing
     /// and no power can be drawn. A backswing is rotation away from address — the meter fills
     /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
     /// address quickly; impact is the moment it passes back through address (or clearly
-    /// decelerates). Power is the peak rotation speed of that downswing, scaled by how far back
-    /// you took it: a short, low backswing is a chip however hard you flick it; a full turn
-    /// swung hard is the full club. The wrist's roll at impact, relative to address, is the club face:
-    /// open slices, closed hooks. Swinging much harder than the club's full speed makes the
-    /// shot wild, which is the Wii's rule too.
+    /// decelerates). Power is how far back you took it: a full backswing swung through is the
+    /// club's whole distance, half a backswing is half of it — the meter reads what the shot
+    /// will be. The downswing only has to be committed (CommitRatio); a lazy push scales it
+    /// down. Never more than the club, and never wild: however hard you lash it, the ball flies
+    /// the club's full distance on the face you struck it with. The wrist's roll at impact, relative to address, is the club
+    /// face: open slices, closed hooks.
     public sealed class MotionSwingDetector
     {
         /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
@@ -63,15 +70,33 @@ namespace GolfArcade.Swing
         public Vector3 WorldUp = Vector3.UnitZ;
         /// How far, in degrees, the phone's long axis may lean from straight down and still count
         /// as a club at address. A driver shaft leans about 30° at address.
-        public double PointedDownDegrees = 35;
+        public double PointedDownDegrees = 38;
         /// Radians from address that count as the start of a backswing.
         public double BackswingStart = 0.25;
         /// Radians of backswing shown as 100 % load: a full shoulder turn, phone up behind you.
         /// Hip-high (about 90°) reads around 60 %.
         public double FullBackswing = 2.6;
-        /// Power at full downswing speed from a barely-there backswing; it climbs linearly to 1 at
-        /// a full backswing. So power = speed ratio × (BackswingFloor + (1 − BackswingFloor) × load).
-        public double BackswingFloor = 0.35;
+        /// The share of the club's full speed that makes a committed downswing. At or above it the
+        /// shot is worth the whole backswing: power = load × min(1, speed ratio / CommitRatio).
+        /// Below it, a push rather than a swing, it scales down in proportion.
+        public double CommitRatio = 0.5;
+        /// A backswing this close to the full turn counts as full: a real swing stops a few degrees
+        /// short of the mark, and a full swing should always be the whole club.
+        public double FullSnap = 0.95;
+        /// Whether a downswing that slows right down counts as struck (full swings: a checked
+        /// swing is still a swing). The putter's is off: a putt is struck only as the putter comes
+        /// back through the ball, and the stroke carries on into its follow-through.
+        public bool StrikeOnSlowing = true;
+        /// Read the stroke along its own arc (the turn about the swing axis, signed) rather than
+        /// as any rotation from address, so a putter face that opens and closes on the way back
+        /// and through can't hide the moment it passes the ball. The putter's.
+        public bool AlongTheArc = false;
+        /// A committed downswing, in rad/s per radian of backswing (0: judged against the club's
+        /// FullSpeed instead). A putt is a pendulum — a short one is slow and still whole — so the
+        /// putter's is judged against its own backstroke.
+        public double CommitPerRadian = 0;
+        /// Whether a pushed downswing strikes the ball thin (full swings). A putt just rolls.
+        public bool CanStrikeThin = true;
         /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
         /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
         /// hold needed.
@@ -91,15 +116,11 @@ namespace GolfArcade.Swing
         public double StillDuration = 0.1;
         /// Degrees of ball curve per degree of face roll, and of start line per degree.
         public double CurvePerFaceDegree = 0.5;
-        public double StartLinePerFaceDegree = 0.25;
-        /// Face roll under this (degrees) is a square strike; keeps small wrist wobble straight.
-        public double FaceDeadZoneDegrees = 6;
-        public double MaxCurveDegrees = 15;
-        public double MaxStartLineDegrees = 12;
-        /// Speed past full (as a fraction of FullSpeed) that is forgiven before the shot goes wild.
-        public double OverswingGrace = 0.15;
-        /// Extra curve, degrees, per unit of overswing beyond the grace.
-        public double OverswingCurve = 40;
+        public double StartLinePerFaceDegree = 0.18;
+        /// Face roll under this (degrees) is a square strike; keeps ordinary wrist wobble straight.
+        public double FaceDeadZoneDegrees = 10;
+        public double MaxCurveDegrees = 18;
+        public double MaxStartLineDegrees = 8;
 
         public SwingPhase Phase { get; private set; } = SwingPhase.Settling;
         /// Latest backswing load (0–1) for HUD polling between events.
@@ -111,6 +132,9 @@ namespace GolfArcade.Swing
         public bool WrongEndDown { get; private set; }
         /// Degrees the phone's long axis leans from vertical, from the last sample.
         public double LeanDegrees { get; private set; }
+        /// The club face right now, degrees of wrist roll from address (positive open), for the
+        /// face dial while the player sets up and swings. Zero until the phone is at address.
+        public double FaceNow { get; private set; }
 
         Quaternion reference = Quaternion.Identity;
         double? stillSince;
@@ -120,6 +144,7 @@ namespace GolfArcade.Swing
         double swingStart;
         double backswingLoad;
         Vector3 swingAxis;
+        Quaternion previous = Quaternion.Identity;
 
         public void Reset()
         {
@@ -135,17 +160,21 @@ namespace GolfArcade.Swing
             var fresh = new MotionSwingDetector { FullSpeed = club.MotionFullSpeed() };
             if (club == Shot.GolfClub.Putter)
             {
-                fresh.BackswingStart = 0.035;
-                fresh.FullBackswing = 0.6;
-                fresh.DownswingSpeed = 0.12;
-                fresh.MinimumSpeed = 0.10;
-                fresh.ImpactAngle = 0.025;
-                fresh.StillSpeed = 0.04;
-                fresh.ArmSpeed = 0.15;
-                fresh.BackswingFloor = 0.6;
+                fresh.BackswingStart = 0.055;      // 3°: a tremble at address is not a stroke
+                fresh.FullBackswing = 0.6;         // a long putt's stroke: the arms swung well back
+                fresh.AlongTheArc = true;
+                fresh.CommitPerRadian = 1.5;       // a pendulum peaks near 4× its arc a second; a push is well under
+                fresh.DownswingSpeed = 0.2;
+                fresh.MinimumSpeed = 0.15;
+                fresh.ImpactAngle = 0.005;         // struck as it passes the ball
+                fresh.StillSpeed = 0.06;
+                fresh.ArmSpeed = 0.2;
                 fresh.CurvePerFaceDegree = 0;
-                fresh.StartLinePerFaceDegree = 0.35;
-                fresh.MaxStartLineDegrees = 6;
+                fresh.StartLinePerFaceDegree = 0.3;
+                fresh.StrikeOnSlowing = false;
+                fresh.CanStrikeThin = false;
+                fresh.CommitRatio = 0.25;          // a smooth, unhurried stroke is a whole one
+                fresh.MaxStartLineDegrees = 5;
             }
             CopyTuning(fresh);
             Reset();
@@ -154,11 +183,11 @@ namespace GolfArcade.Swing
         void CopyTuning(MotionSwingDetector o)
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
-            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; BackswingFloor = o.BackswingFloor;
+            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio; StrikeOnSlowing = o.StrikeOnSlowing; CanStrikeThin = o.CanStrikeThin; AlongTheArc = o.AlongTheArc; CommitPerRadian = o.CommitPerRadian;
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
-            MaxStartLineDegrees = o.MaxStartLineDegrees; OverswingGrace = o.OverswingGrace; OverswingCurve = o.OverswingCurve;
+            MaxStartLineDegrees = o.MaxStartLineDegrees;
         }
 
         /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
@@ -173,6 +202,14 @@ namespace GolfArcade.Swing
         {
             double speed = rotationRate.Length();
             double angle = AngleBetween(reference, attitude);
+            // mid-stroke, the putter's is the signed turn along the stroke's arc
+            if (AlongTheArc && (Phase == SwingPhase.Backswing || Phase == SwingPhase.Downswing) && swingAxis != Vector3.Zero)
+                angle = TurnAbout(reference, attitude, swingAxis);
+            // Which way the phone turned since the last sample, against the backswing's turn:
+            // positive while it is still going back, negative once it comes down.
+            double turning = TurnAlong(previous, attitude, swingAxis);
+            previous = attitude;
+            FaceNow = Phase == SwingPhase.Settling ? 0 : FaceRollDegrees(reference, attitude, swingAxis);
             bool haveGravity = gravity.LengthSquared() > 0.25f;
             LeanDegrees = haveGravity ? LeanFromGravity(gravity) : LeanFromVertical(attitude, WorldUp);
             // Gravity points at the ground; with the top edge down it runs along device +Y.
@@ -228,9 +265,15 @@ namespace GolfArcade.Swing
                     if (angle >= peakAngle)
                     {
                         peakAngle = angle;
-                        swingAxis = RotationAxis(reference, attitude);
+                        // (half a turn back the axis flips sign; keep the backswing's sense)
+                        var axis = RotationAxis(reference, attitude);
+                        if (Vector3.Dot(axis, swingAxis) >= 0) swingAxis = axis;
                     }
-                    if (angle < peakAngle - Math.Min(0.15, BackswingStart * 0.6) && speed >= DownswingSpeed)
+                    // A big backswing carries the phone past pointing straight up, and from there
+                    // it is nearer address again while still going back; only turning back down
+                    // starts the downswing.
+                    bool goingBack = turning > 0;
+                    if (angle < peakAngle - Math.Min(0.15, BackswingStart * 0.6) && speed >= DownswingSpeed && !goingBack)
                     {
                         Phase = SwingPhase.Downswing;
                         peakSpeed = speed;
@@ -245,13 +288,13 @@ namespace GolfArcade.Swing
                         Load = 0;
                         return SwingEvent.Cancelled();
                     }
-                    Load = LoadFor(angle);
+                    Load = LoadFor(goingBack ? peakAngle : angle);
                     return SwingEvent.Loaded(Load);
 
                 case SwingPhase.Downswing:
                     peakSpeed = Math.Max(peakSpeed, speed);
-                    bool decelerated = speed < peakSpeed * 0.4;
-                    if (!(angle < ImpactAngle || decelerated || time - downswingStart > 1.2)) return null;
+                    bool decelerated = StrikeOnSlowing && speed < peakSpeed * 0.4;
+                    if (!(angle < ImpactAngle || decelerated || time - downswingStart > (StrikeOnSlowing ? 1.2 : 2.0))) return null;
                     Phase = SwingPhase.Finish;
                     stillSince = null;
                     Load = 0;
@@ -266,12 +309,12 @@ namespace GolfArcade.Swing
             double face = FaceRollDegrees(reference, attitude, swingAxis);
             double signedFace = Math.Abs(face) <= FaceDeadZoneDegrees ? 0 : face - Math.Sign(face) * FaceDeadZoneDegrees;
             double ratio = peakSpeed / FullSpeed;
-            double overswing = Math.Max(0, ratio - 1 - OverswingGrace);
-            // How far back you went scales what the speed is worth: a low, short backswing chips.
-            double power = Math.Min(1, ratio) * (BackswingFloor + (1 - BackswingFloor) * backswingLoad);
-            // Over the top: the face error grows, and a square face still goes somewhere.
-            double wildDirection = signedFace != 0 ? Math.Sign(signedFace) : (face >= 0 ? 1 : -1);
-            double curve = signedFace * CurvePerFaceDegree + wildDirection * overswing * OverswingCurve;
+            // How far back you went is the shot: full is the whole club, half is half — as long as
+            // the downswing is a committed one.
+            double back = backswingLoad >= FullSnap ? 1 : backswingLoad;
+            double commit = CommitPerRadian > 0 ? peakSpeed / (Math.Max(peakAngle, BackswingStart) * CommitPerRadian) : ratio / CommitRatio;
+            double power = back * Math.Min(1, commit);
+            double curve = signedFace * CurvePerFaceDegree;
             double startLine = signedFace * StartLinePerFaceDegree;
             return new SwingImpact
             {
@@ -279,10 +322,13 @@ namespace GolfArcade.Swing
                 CurveDegrees = Clamp(curve, -MaxCurveDegrees, MaxCurveDegrees),
                 StartLineDegrees = Clamp(startLine, -MaxStartLineDegrees, MaxStartLineDegrees),
                 FaceDegrees = face,
-                Overswing = overswing,
                 TempoSeconds = time - swingStart,
                 PeakSpeed = peakSpeed,
                 Backswing = backswingLoad,
+                DownswingSeconds = time - downswingStart,
+                Commit = commit,
+                // (under three-quarters committed the club is pushed, not swung, through the ball)
+                Thin = !CanStrikeThin ? 0 : Clamp((0.75 - commit) / 0.35, 0, 1),
             };
         }
 
@@ -310,6 +356,25 @@ namespace GolfArcade.Swing
         {
             var relative = Quaternion.Normalize(b * Quaternion.Inverse(a));
             return 2 * Math.Acos(Math.Min(1, Math.Abs(relative.W)));
+        }
+
+        /// How far the turn from `from` to `to` runs along `axis` (a world-frame axis as
+        /// RotationAxis gives it): positive in the axis's sense, negative against it.
+        static double TurnAlong(Quaternion from, Quaternion to, Vector3 axis)
+        {
+            var step = Quaternion.Normalize(to * Quaternion.Inverse(from));
+            if (step.W < 0) step = Quaternion.Negate(step);
+            return Vector3.Dot(new Vector3(step.X, step.Y, step.Z), axis);
+        }
+
+        /// The signed angle, radians, of the turn from `from` to `to` about the world axis `axis`:
+        /// the part of the rotation along the arc, positive in the axis's sense.
+        public static double TurnAbout(Quaternion from, Quaternion to, Vector3 axis)
+        {
+            var relative = Quaternion.Normalize(to * Quaternion.Inverse(from));
+            if (relative.W < 0) relative = Quaternion.Negate(relative);
+            double proj = Vector3.Dot(new Vector3(relative.X, relative.Y, relative.Z), axis);
+            return 2 * Math.Atan2(proj, relative.W);
         }
 
         /// World-frame axis of the rotation from `a` to `b` (unit length; zero if no rotation).

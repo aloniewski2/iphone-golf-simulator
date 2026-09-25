@@ -18,6 +18,7 @@ namespace GolfArcade.EditorTools
         {
             Directory.CreateDirectory("Library/BuildResults");
             File.Delete("Library/BuildResults/ios.txt");
+            ProjectSetup.EnsureShadersShip();   // shaders made at runtime must be in the build
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {

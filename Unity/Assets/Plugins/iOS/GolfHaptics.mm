@@ -86,6 +86,58 @@ void GolfHaptics_TensionSet(float intensity, float sharpness)
     [tension sendParameters:@[i, s] atTime:0 error:nil];
 }
 
+static CHHapticEvent *Tap(float at, float intensity, float sharpness)
+{
+    return [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticTransient
+        parameters:@[[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:Clamp01(intensity)],
+                     [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticSharpness value:Clamp01(sharpness)]]
+        relativeTime:at];
+}
+
+static CHHapticEvent *Buzz(float at, float seconds, float intensity, float sharpness)
+{
+    return [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous
+        parameters:@[[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:Clamp01(intensity)],
+                     [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticSharpness value:Clamp01(sharpness)]]
+        relativeTime:at duration:seconds];
+}
+
+/// One-shot patterns the game names by number, scaled by `intensity`:
+/// 0 the top of the backswing — one crisp click;
+/// 1 a PERFECT strike — a hard, bright crack with a short ring after it;
+/// 2 a GREAT or GOOD strike — a solid knock;
+/// 3 a THIN strike — a dull, buzzy sting;
+/// 4 the crowd erupting (a holed ball) — a rolling run of thumps.
+void GolfHaptics_Pattern(int kind, float intensity)
+{
+    EnsureEngine();
+    if (!engine) { GolfHaptics_Impact(intensity); return; }
+    [engine startAndReturnError:nil];
+    float k = Clamp01(intensity);
+    NSArray<CHHapticEvent *> *events;
+    switch (kind)
+    {
+        case 0: events = @[Tap(0, 0.55f + 0.45f * k, 1.0f)]; break;
+        case 1: events = @[Tap(0, 1.0f, 0.95f), Buzz(0.01f, 0.07f, 0.45f * k + 0.2f, 1.0f), Tap(0.09f, 0.35f * k, 0.9f)]; break;
+        case 2: events = @[Tap(0, 0.4f + 0.6f * k, 0.6f)]; break;
+        case 3: events = @[Buzz(0, 0.16f, 0.35f + 0.5f * k, 0.08f), Tap(0, 0.3f + 0.3f * k, 0.15f)]; break;
+        default:
+        {
+            NSMutableArray<CHHapticEvent *> *run = [NSMutableArray array];
+            for (int i = 0; i < 9; i++) [run addObject:Tap(i * 0.085f, (0.9f - i * 0.07f) * (0.5f + 0.5f * k), 0.35f + 0.05f * (i % 3))];
+            [run addObject:Buzz(0, 0.8f, 0.25f * k, 0.2f)];
+            events = run;
+            break;
+        }
+    }
+    NSError *error = nil;
+    CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:events parameters:@[] error:&error];
+    if (error || !pattern) { GolfHaptics_Impact(intensity); return; }
+    id<CHHapticPatternPlayer> player = [engine createPlayerWithPattern:pattern error:&error];
+    if (error || !player) { GolfHaptics_Impact(intensity); return; }
+    [player startAtTime:CHHapticTimeImmediate error:nil];
+}
+
 void GolfHaptics_TensionStop(void)
 {
     if (!tension) return;

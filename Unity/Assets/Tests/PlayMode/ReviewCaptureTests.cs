@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using GolfArcade.Game;
 using NUnit.Framework;
 using UnityEngine;
@@ -14,12 +15,26 @@ namespace GolfArcade.PlayTests
     {
         const string Dir = "Library/Captures/review";
 
+        /// The editor's hidden Game view is landscape; the frames are the phone's portrait. Give
+        /// the course camera the phone's shape so anything framed off it (the ball POV's lens and
+        /// composition, the POV ball's size) is worked out for the picture that gets saved.
+        static void PhoneShaped()
+        {
+            var cam = Camera.main;
+            if (cam) cam.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+        }
+
         static IEnumerator WaitFor(System.Func<bool> done, float seconds, string what)
         {
-            float until = Time.realtimeSinceStartup + seconds;
+            float from = Time.realtimeSinceStartup, until = from + seconds;
+            int frame = Time.frameCount;
             while (!done())
             {
-                if (Time.realtimeSinceStartup > until) Assert.Fail($"timed out waiting for {what}");
+                if (Time.realtimeSinceStartup > until)
+                {
+                    var game = Object.FindFirstObjectByType<GolfGame>();
+                    Assert.Fail($"timed out waiting for {what} ({Time.realtimeSinceStartup - from:F1} s, {Time.frameCount - frame} frames; the game is in {game?.Current}, hole {game?.CurrentHole?.Number})");
+                }
                 yield return null;
             }
         }
@@ -29,12 +44,42 @@ namespace GolfArcade.PlayTests
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
             var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
             Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return new WaitForSecondsRealtime(1.0f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/0-menu.png"));
+            // The golfer picker: a bob in auburn on the female, then back the way it was.
+            var body0 = GolferStyle.Body; int skin0 = GolferStyle.SkinTone; var hair0 = GolferStyle.Hair; int hairTone0 = GolferStyle.HairTone;
+            game.OpenGolferPicker();
+            GolferStyle.Body = GolferStyle.BodyKind.Female; GolferStyle.SkinTone = 3; GolferStyle.Hair = GolferStyle.HairKind.Long; GolferStyle.HairTone = 3;
+            game.RestyleGolfer();
+            yield return new WaitForSecondsRealtime(1.2f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/0b-golfer-picker.png"));
+            GolferStyle.Hair = GolferStyle.HairKind.Curly; GolferStyle.HairTone = 4; game.RestyleGolfer();
+            yield return new WaitForSecondsRealtime(0.6f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/0c-golfer-curls.png"));
+            GolferStyle.Body = body0; GolferStyle.SkinTone = skin0; GolferStyle.Hair = hair0; GolferStyle.HairTone = hairTone0;
+            game.CloseGolferPicker();
+            yield return null;
+            game.Play();
 
-            yield return new WaitForSecondsRealtime(1.5f);
+            yield return new WaitForSecondsRealtime(1.8f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/1-flyover.png"));
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the flyover to end");
+            yield return new WaitForSecondsRealtime(2.0f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1b-aerial.png"));
+            yield return new WaitForSecondsRealtime(3.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1c-walkthrough.png"));
+            // The introductions on the tee: you, waving, with your nameplate; then the gallery cheering.
+            yield return WaitFor(() => game.MeetingThePlayer, 12, "the player introduction");
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1d-you.png"));
+            Assert.Greater(game.GallerySize, 3, "the tee should have its gallery");
+            yield return WaitFor(() => game.GalleryCheering, 6, "the gallery to cheer");
+            yield return new WaitForSecondsRealtime(0.9f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/1e-gallery.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
             yield return null;
             Assert.IsNotNull(GameCapture.Save($"{Dir}/2-address.png"));
@@ -49,6 +94,9 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/4-flight.png"));
             yield return new WaitForSecondsRealtime(1.5f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/5-flight-late.png"));
+            yield return WaitFor(() => game.Bounces > 0 || game.Current != GolfGame.State.Flight, 20, "the ball to come down");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/5b-landed.png"));
             yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the ball to stop");
             yield return new WaitForSecondsRealtime(0.5f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/6-result.png"));
@@ -75,6 +123,238 @@ namespace GolfArcade.PlayTests
             {
                 GolferStyle.Body = body; GolferStyle.SkinTone = skin;
             }
+        }
+
+        /// The island carry: flyover, the tee shot over the water, and where it comes down.
+        [UnityTest]
+        public IEnumerator CapturesHoleTwelve()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
+            Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return new WaitForSecondsRealtime(1.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-1-flyover.png"));
+            // The sea moves: the model's wave grid imported with its four morph targets and is being driven.
+            var water = Object.FindFirstObjectByType<GolfArcade.Course.WaterMotion>();
+            Assert.IsNotNull(water, "hole 12 should have its animated water (WATER_WAVES with blendshapes)");
+            var waveMesh = water.GetComponent<SkinnedMeshRenderer>();
+            Assert.AreEqual(4, waveMesh.sharedMesh.blendShapeCount);
+            Assert.Greater(Enumerable.Range(0, 4).Sum(k => waveMesh.GetBlendShapeWeight(k)), 50f, "wave weights should be crossfading");
+            // After the aerial, the hole's signature shot from Blender: ball in the air over the water.
+            yield return WaitFor(() => game.SignaturePlaying, 6, "the signature shot to start");
+            yield return new WaitForSecondsRealtime(1.6f);
+            Assert.IsTrue(game.SignaturePlaying);
+            var ballAt = game.BallPosition;
+            float above = ballAt.y - (float)GolfArcade.Course.HoleView.GroundHeight(GolfArcade.Course.HoleView.ToCourse(ballAt));
+            Assert.Greater(above, 5f, "the ball should be well in the air mid-carry");
+            Assert.IsTrue(ballAt.z > 40 && ballAt.z < 200, $"the ball should be out over the water, at {ballAt}");
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-1b-signature-shot.png"));
+            yield return WaitFor(() => game.MeetingThePlayer, 20, "the player introduction");
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-1c-you.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            yield return null;
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2-address.png"));
+            // The phone as the controller, as it looks with the course on the big screen.
+            game.PreviewBigScreen(true);
+            yield return new WaitForSecondsRealtime(0.6f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2b-controller.png"));
+            game.Swing.Synthetic.Backswing(true);
+            yield return new WaitForSecondsRealtime(0.35f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2c-controller-load.png"));
+            game.Swing.Synthetic.Backswing(false);
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 25, "that shot to finish");
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the next stroke");
+            game.PreviewBigScreen(false);
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address again");
+            game.Swing.Synthetic.Backswing(true);
+            yield return new WaitForSecondsRealtime(0.7f);
+            game.Swing.Synthetic.Backswing(false);
+            yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
+            yield return new WaitForSecondsRealtime(1.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-3-flight.png"));
+            yield return WaitFor(() => game.Bounces > 0 || game.Current != GolfGame.State.Flight, 20, "the ball to come down");
+            yield return null;
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-3b-landing.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the ball to stop");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-4-result.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the next stroke");
+            yield return null;
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-5-second-shot.png"));
+        }
+
+        /// A tee shot on Hole 12 that comes down by the pin: watched through Codex's ball POV —
+        /// the camera just above the ball, the big ball low in the frame, the flag ahead — through
+        /// the landing and the roll.
+        [UnityTest]
+        public IEnumerator CapturesABallPovApproach()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
+            Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            var pin = GolfArcade.Course.Course.Cliffside().Holes[1].Pin;
+            game.StrikeToward(pin);
+            Assert.AreEqual(GolfGame.State.Flight, game.Current);
+            Assert.IsTrue(game.PovShot, $"a shot landing {game.LastShot.Landing.DistanceTo(pin):F1} yd from the pin from 198 out should be the ball POV");
+            yield return new WaitForSecondsRealtime(1.6f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-12-pov-flight.png"));
+            yield return new WaitForSecondsRealtime((float)game.LastShot.LandingTime - 1.6f - 0.1f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-13-pov-descent.png"));
+            yield return WaitFor(() => game.Bounces > 0 || game.Current != GolfGame.State.Flight, 10, "the ball to come down");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-14-pov-landed.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the ball to stop");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-15-pov-rest.png"));
+
+            // a pitch from the landing area short of the green that finishes by the flag: the
+            // ball is its usual size at rest, not the POV's big one
+            game.DropBall(new GolfArcade.Course.CoursePoint(8, 160));
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the pitch to set up");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address for the pitch");
+            game.StrikeToward(pin);
+            Assert.IsTrue(game.PovShot, "a 39 yd pitch landing by the flag should be the ball POV");
+            yield return new WaitForSecondsRealtime(0.9f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-16-pov-pitch-air.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the pitch to stop");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-17-pov-pitch-rest.png"));
+        }
+
+        /// A tee shot that comes up short into the water on Hole 12: the ball must fly a level
+        /// arc off the tee island and drop to the sea, never sink into the island.
+        /// The strike: the starburst at the ball, the ring across the ground, the turf flying.
+        [UnityTest]
+        public IEnumerator CapturesTheStrike()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            // game time in fixed 30 fps steps, so the fifth of a second the flash is up is frames, not
+            // however long the editor takes to draw one
+            Time.captureFramerate = 30;
+            try
+            {
+                game.StrikeToward(game.CurrentHole.Pin);
+                yield return WaitFor(() => GameObject.Find("Strike flash") != null, 5, "the strike flash");
+                yield return null; yield return null;
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2d-strike.png"));
+                for (int i = 0; i < 6; i++) yield return null;
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/12-2e-strike-after.png"));
+            }
+            finally { Time.captureFramerate = 0; }
+        }
+
+        [UnityTest]
+        public IEnumerator CapturesASplash()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
+            Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 32, "the showcase to end");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            game.SetWind(GolfArcade.Course.Wind.Calm);
+            // A shot planned onto open water short of the green (a timed synthetic swing's power
+            // depends on the frame rate, and a short one could land on the tee island or the side
+            // island instead).
+            var hole = game.CurrentHole;
+            GolfArcade.Course.CoursePoint? sea = null;
+            for (double f = 0.35; f <= 0.7 && sea == null; f += 0.02)
+            {
+                var p = new GolfArcade.Course.CoursePoint(hole.Tee.X + (hole.Pin.X - hole.Tee.X) * f, hole.Tee.D + (hole.Pin.D - hole.Tee.D) * f);
+                if (hole.LieAt(p) == GolfArcade.Course.CourseLie.Water) sea = p;
+            }
+            Assert.IsNotNull(sea, "open water between the tee and the island green");
+            game.StrikeToward(sea.Value);
+            yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "impact");
+            Assert.Less(game.LastShot.Carry, 135, "a short one, into the water");
+            yield return new WaitForSecondsRealtime(0.9f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-9-splash-air.png"));
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-10-splash-drop.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the splash");
+            Assert.AreEqual(GolfArcade.Course.CourseLie.Water, game.LastShot.Lie);
+            yield return new WaitForSecondsRealtime(0.5f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-11-splash-result.png"));
+        }
+
+        /// Putting on the sculpted green: the read (grid, beads, ribbon, flag out), the roll
+        /// watched from where it was read, and the hole cam as the ball arrives.
+        [UnityTest]
+        public IEnumerator CapturesTheGreenRead()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            PhoneShaped();
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
+            Assert.IsNotNull(game?.Swing?.Synthetic);
+            yield return null;
+            game.Play();
+            yield return null;
+            game.JumpToHole(12);
+            yield return null;
+            game.DropBall(new GolfArcade.Course.CoursePoint(-7, 186)); // 13 yd out, across the shelf
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 5, "the putt to set up");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            yield return new WaitForSecondsRealtime(0.8f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6-read.png"));
+            // Changing the line: holding the right arrow turns the putt a few degrees a second —
+            // fine enough to read a putt with — and the ribbon follows.
+            var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+            var events = UnityEngine.EventSystems.EventSystem.current ?? Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
+            var press = new UnityEngine.EventSystems.PointerEventData(events);
+            double before = game.AimHeading;
+            hud.AimRight.OnPointerDown(press);
+            yield return new WaitForSecondsRealtime(1.0f);
+            hud.AimRight.OnPointerUp(press);
+            double turned = game.AimHeading - before;
+            Assert.That(turned, Is.InRange(2.0, 10.0), $"a second's hold on the green turns the line a few degrees ({turned:F1}°)");
+            yield return new WaitForSecondsRealtime(0.3f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-6b-read-aimed-right.png"));
+            game.Swing.Synthetic.Backswing(true);
+            yield return new WaitForSecondsRealtime(0.45f);
+            game.Swing.Synthetic.Backswing(false);
+            yield return WaitFor(() => game.Current == GolfGame.State.Flight, 5, "the stroke");
+            Assert.AreEqual(GolfArcade.Shot.GolfClub.Putter, game.LastShot.Club);
+            yield return new WaitForSecondsRealtime(1.0f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-7-roll.png"));
+            yield return WaitFor(() => game.Current == GolfGame.State.Result, 20, "the putt to stop");
+            yield return new WaitForSecondsRealtime(0.4f);
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/12-8-holed-or-hole-cam.png"));
         }
     }
 }
