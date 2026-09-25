@@ -34,9 +34,11 @@ namespace GolfArcade.Tennis
 
         public void Build(Canvas canvas)
         {
-            tip = MakeText(canvas.transform, "Coaching tip", new Vector2(.5f, .78f), new Vector2(900, 90), 26);
+            tip = MakeText(canvas.transform, "Coaching tip", new Vector2(.5f, .71f), new Vector2(900, 90), 26);
             tip.alignment = TextAnchor.MiddleCenter; tip.color = new Color(1, .96f, .8f);
-            tip.gameObject.AddComponent<Outline>().effectColor = new Color(0, 0, 0, .75f);
+            // MakeText already outlines it twice and adds a shadow: every effect multiplies the
+            // glyph mesh, and a third outline pushed a coaching line past Unity's 65k-vertex
+            // limit, so long lines silently never drew.
             card = new GameObject("Match results").AddComponent<Image>();
             card.transform.SetParent(canvas.transform, false);
             // Same family as the score plaque: deep blue gradient, navy frame.
@@ -64,9 +66,22 @@ namespace GolfArcade.Tennis
             return text;
         }
 
+        /// Coaching tips on or off (the phone's setting; the tutorial turns them off, it teaches
+        /// the same things itself).
+        public static bool TipsEnabled = true;
+
+        /// Coach Ray says something, held for `seconds` (the tutorial holds its instruction up
+        /// until the step is done).
+        public void Say(string text, float seconds = 6.5f)
+        {
+            tip.text = string.IsNullOrEmpty(text) ? "" : "COACH RAY:  " + text;
+            tip.canvasRenderer.SetAlpha(1); tipUntil = HudClock.Now + seconds;
+        }
+
         /// Show a tip the first time its moment comes up on this device.
         public void Offer(Tip t)
         {
+            if (!TipsEnabled) return;
             string key = Key + t;
             bool seen;
             try { seen = PlayerPrefs.GetInt(key, 0) == 1; } catch { seen = true; }
@@ -79,12 +94,29 @@ namespace GolfArcade.Tennis
 
         public void Record(Timing grade) => GradeCounts[(int)grade]++;
 
+        // --- Campaign coaching: Coach Ray's tactic reminders at the changeovers ------------
+        string[] changeoverLines;
+        int nextLine;
+
+        /// The lines the story sends for this match (null for none).
+        public void SetChangeoverLines(string[] lines) { changeoverLines = lines; nextLine = 0; }
+
+        /// A game just ended: at a changeover (after odd games, and at every new set), Ray
+        /// calls a reminder from the side of the court, cycling through this match's lines.
+        public void OnGameEnded(TennisMatch match, bool setEnded)
+        {
+            if (changeoverLines == null || changeoverLines.Length == 0 || match.Complete) return;
+            if (!setEnded && (match.PlayerGames + match.OpponentGames) % 2 == 0) return;
+            tip.text = "COACH RAY:  " + changeoverLines[nextLine % changeoverLines.Length];
+            nextLine++; tipUntil = HudClock.Now + 6.5f;
+        }
+
         public void ShowResults(TennisMatch match, int hits, int longestRally)
         {
-            resultTitle.text = match.PlayerWonMatch ? "YOU WIN THE SET" : "OPPONENT WINS THE SET";
+            resultTitle.text = match.MultiSet ? (match.PlayerWonMatch ? "YOU WIN THE MATCH" : "OPPONENT WINS THE MATCH") : (match.PlayerWonMatch ? "YOU WIN THE SET" : "OPPONENT WINS THE SET");
             resultTitle.color = match.PlayerWonMatch ? new Color(.5f, 1, .6f) : new Color(1, .7f, .5f);
             int clean = GradeCounts[(int)Timing.Great] + GradeCounts[(int)Timing.Excellent] + GradeCounts[(int)Timing.Perfect];
-            resultBody.text = $"Games {match.PlayerGames}–{match.OpponentGames}\n" +
+            resultBody.text = (match.MultiSet ? $"Sets {match.FinalScore}\n" : $"Games {match.PlayerGames}–{match.OpponentGames}\n") +
                 $"Balls returned {hits}   ·   Longest rally {longestRally}\n" +
                 $"Perfect {GradeCounts[(int)Timing.Perfect]}   ·   Clean hits {clean}\n\nSwing to play again";
             card.gameObject.SetActive(true);

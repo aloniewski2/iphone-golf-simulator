@@ -1308,67 +1308,9 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Celebrate_RH
-      takeName: 
-      internalID: -9178134487671731340
-      firstFrame: 3156
-      lastFrame: 3216
-      wrapMode: 1
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 0
-      loopBlend: 0
-      loopBlendOrientation: 1
-      loopBlendPositionY: 1
-      loopBlendPositionXZ: 1
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 0
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: Celebrate_LH
-      takeName: 
-      internalID: -7130165865528447229
-      firstFrame: 3225
-      lastFrame: 3285
-      wrapMode: 1
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 0
-      loopBlend: 0
-      loopBlendOrientation: 1
-      loopBlendPositionY: 1
-      loopBlendPositionXZ: 1
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 0
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
       name: ForehandTopspin_RH
       takeName: 
-      internalID: 200684369585926091
+      internalID: -9178134487671731340
       firstFrame: 3294
       lastFrame: 3354
       wrapMode: 1
@@ -1397,7 +1339,7 @@ ModelImporter:
     - serializedVersion: 16
       name: ForehandTopspin_LH
       takeName: 
-      internalID: -3192777718152268906
+      internalID: -7130165865528447229
       firstFrame: 3363
       lastFrame: 3423
       wrapMode: 1
@@ -1426,7 +1368,7 @@ ModelImporter:
     - serializedVersion: 16
       name: RecoverLeft_RH
       takeName: 
-      internalID: 5627333390253102123
+      internalID: 200684369585926091
       firstFrame: 3432
       lastFrame: 3492
       wrapMode: 1
@@ -1455,7 +1397,7 @@ ModelImporter:
     - serializedVersion: 16
       name: RecoverLeft_LH
       takeName: 
-      internalID: -8390439502631197383
+      internalID: -3192777718152268906
       firstFrame: 3501
       lastFrame: 3561
       wrapMode: 1
@@ -1484,7 +1426,7 @@ ModelImporter:
     - serializedVersion: 16
       name: RecoverRight_RH
       takeName: 
-      internalID: -4024016266368654622
+      internalID: 5627333390253102123
       firstFrame: 3570
       lastFrame: 3630
       wrapMode: 1
@@ -1513,7 +1455,7 @@ ModelImporter:
     - serializedVersion: 16
       name: RecoverRight_LH
       takeName: 
-      internalID: 4989161868158874057
+      internalID: -8390439502631197383
       firstFrame: 3639
       lastFrame: 3699
       wrapMode: 1
@@ -1542,7 +1484,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Slice_RH
       takeName: 
-      internalID: 6493115802828618350
+      internalID: -4024016266368654622
       firstFrame: 3708
       lastFrame: 3768
       wrapMode: 1
@@ -1571,7 +1513,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Slice_LH
       takeName: 
-      internalID: 6940544858387496410
+      internalID: 4989161868158874057
       firstFrame: 3777
       lastFrame: 3837
       wrapMode: 1
@@ -1598,11 +1540,185 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Intro_RH
+      name: Celebrate_RH
+      takeName: 
+      internalID: 6493115802828618350
+      firstFrame: 4569
+      lastFrame: 4610
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Celebrate_LH
+      takeName: 
+      internalID: 6940544858387496410
+      firstFrame: 4625
+      lastFrame: 4666
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Upset_RH
       takeName: 
       internalID: 525026686037686618
-      firstFrame: 3847
-      lastFrame: 3959
+      firstFrame: 4681
+      lastFrame: 4735
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Upset_LH
+      takeName: 
+      internalID: -7906883584720471862
+      firstFrame: 4745
+      lastFrame: 4799
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Win_RH
+      takeName: 
+      internalID: 2710532199972193841
+      firstFrame: 4809
+      lastFrame: 4918
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Win_LH
+      takeName: 
+      internalID: 3945580134253113830
+      firstFrame: 4928
+      lastFrame: 5037
+      wrapMode: 1
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 1
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 1
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 0
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Intro_RH
+      takeName: 
+      internalID: 682017965348404410
+      firstFrame: 5047
+      lastFrame: 5159
       wrapMode: 1
       orientationOffsetY: 0
       level: 0
@@ -1629,9 +1745,9 @@ ModelImporter:
     - serializedVersion: 16
       name: Intro_LH
       takeName: 
-      internalID: -7906883584720471862
-      firstFrame: 3969
-      lastFrame: 4081
+      internalID: 5122333060869165283
+      firstFrame: 5169
+      lastFrame: 5281
       wrapMode: 1
       orientationOffsetY: 0
       level: 0

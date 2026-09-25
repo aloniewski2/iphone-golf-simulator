@@ -118,7 +118,7 @@ namespace GolfArcade.Tennis
                 look = rival.position + Vector3.up * 1.0f;
                 fov = 40;
                 if (!rivalEmoted && s > .35f) { rivalEmoted = true; game.Opponent.PlayIntro(); }
-                ShowName(hud.OpponentName, "THE RIVAL", TennisHud.SeaTop, TennisHud.SeaBottom);
+                ShowName(hud.OpponentName, rivalRole, TennisHud.SeaTop, TennisHud.SeaBottom);
                 Card(nameCard, s, RivalIntro, fromLeft: false);
             }
             else if (t < Drone + RivalIntro + PlayerIntro)
@@ -173,6 +173,15 @@ namespace GolfArcade.Tennis
         {
             float h = 74 * amount;
             barTop.sizeDelta = new Vector2(0, h); barBottom.sizeDelta = new Vector2(0, h);
+        }
+
+        string rivalRole = "THE RIVAL";
+        /// Bill the match: the round under the title card, and the rival's billing on their
+        /// name card ("QUARTERFINAL", or "THE CHAMPION" for the boss).
+        public void Bill(string round, string role)
+        {
+            if (subtitle) subtitle.text = "CENTRE COURT  ·  " + round;
+            rivalRole = role;
         }
 
         string shownName;

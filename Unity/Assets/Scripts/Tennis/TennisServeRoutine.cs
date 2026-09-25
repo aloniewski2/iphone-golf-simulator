@@ -19,7 +19,9 @@ namespace GolfArcade.Tennis
 
         /// Tossing-hand side in the server's frame: a right-hander tosses with the left.
         static float Side(TennisActor a) => a.LeftHanded ? 1 : -1;
-        public static Vector3 Hold(TennisActor a) => a.transform.TransformPoint(new Vector3(Side(a) * .26f, .92f, .34f));
+        // Within easy reach of the V5 rig's short arm (shoulder at 1.12 m, about 0.4 m to the palm):
+        // the ball held at the belly, a forearm's length in front, the elbow softly bent.
+        public static Vector3 Hold(TennisActor a) => a.transform.TransformPoint(new Vector3(Side(a) * .24f, .86f, .26f));
         public static Vector3 Release(TennisActor a) => a.transform.TransformPoint(new Vector3(Side(a) * .22f, 1.38f, .26f));
         public static Vector3 Extended(TennisActor a) => a.transform.TransformPoint(new Vector3(Side(a) * .14f, 2.1f, .28f));
 

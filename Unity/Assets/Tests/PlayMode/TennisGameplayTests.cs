@@ -11,6 +11,49 @@ namespace GolfArcade.PlayTests
 {
     public class TennisGameplayTests
     {
+        /// A TV that shows the picture 150 ms late makes the player swing 150 ms late. With the
+        /// measured delay set, that late swing must still meet the ball as well as an on-time
+        /// swing does without delay; without it, the same late swing must do worse.
+        [UnityTest, Timeout(300000)] public IEnumerator DisplayDelayCompensationRestoresLateSwings()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single); yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true;
+            (bool returned, int grade) Trial(float swingAt, float latency)
+            {
+                game.DisplayLatency=latency;
+                game.Player.CancelSwing(); game.Player.Tick(1,0);
+                game.Player.transform.position=new Vector3(0,.035f,-11.2f);
+                game.InjectBall(new Vector3(.8f,1.3f,6f),new Vector3(0,2.2f,-16.5f));
+                int before=game.Returns; bool swung=false;
+                for(float t=0;t<3;t+=1f/120)
+                {
+                    if(!swung && t>=swingAt) { game.RequestSwing(.7f); swung=true; }
+                    game.Step(1f/120);
+                    if(game.Returns>before) return (true,(int)game.LastGrade);
+                }
+                return (false,-1);
+            }
+            // The best-timed swing with no delay.
+            int best=-1; var bestTimes=new System.Collections.Generic.List<float>();
+            for(float at=0;at<1.4f;at+=.01f)
+            {
+                var r=Trial(at,0);
+                if(!r.returned) continue;
+                if(r.grade>best) { best=r.grade; bestTimes.Clear(); }
+                if(r.grade==best) bestTimes.Add(at);
+            }
+            Assert.Greater(best,0,"some swing timing should return the ball");
+            float onTime=bestTimes[bestTimes.Count/2];
+            const float delay=.15f;
+            var compensated=Trial(onTime+delay,delay);
+            var uncompensated=Trial(onTime+delay,0);
+            game.DisplayLatency=0;
+            Debug.Log($"[DelayComp] onTime={onTime:0.00} best={best} compensated={compensated} uncompensated={uncompensated}");
+            Assert.IsTrue(compensated.returned,"a swing late by exactly the TV's delay must still be returned");
+            Assert.GreaterOrEqual(compensated.grade,best-1,"and timed about as well as an on-time swing");
+            Assert.IsTrue(!uncompensated.returned || uncompensated.grade<compensated.grade,"without compensation the same swing must do worse");
+        }
+
         [UnityTest] public IEnumerator StrengthAndPhonePositionChooseReadableStrokes()
         {
             yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single); yield return null;
@@ -76,25 +119,34 @@ namespace GolfArcade.PlayTests
             yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single);
             yield return null;
             var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true; game.Refeed();
-            // Every point now starts from a serve. The player serves first, and the toss is
-            // automatic: the ball sits in the hand, goes up on its own, and must be struck.
+            // Every point starts from a serve. The player serves first: the ball is bounced in
+            // the hand until TOSS is pressed on the phone, then goes high and must be struck.
             Assert.IsTrue(game.Serving); Assert.AreEqual(Vector3.zero,game.BallVelocity);
             Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow);
             Assert.Greater(GameObject.Find("Tennis ball").transform.localScale.x,.15f);
-            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2;i++) game.Step(1f/120);
-            Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow,"toss must launch on its own");
+            game.NativeControlled=true;
+            for(int i=0;i<4*120;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow,"on the phone the toss waits for the TOSS button");
+            // TOSS from the phone is read off the meter under the player's feet.
+            var meter=GameObject.Find("Toss meter");
+            Assert.IsTrue(meter && meter.activeInHierarchy,"the toss meter shows under the server while they bounce the ball");
+            game.Toss();
+            Assert.That(game.TossAccuracy,Is.InRange(0f,1f));
+            for(int i=0;i<2*120 && game.Flow!=TennisGame.Phase.PlayerServeToss;i++) game.Step(1f/120);
+            Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow,"TOSS raises the arm and lets go");
+            game.NativeControlled=false;
             // Not swinging is not a fault: it drops back to the hand and is tossed again.
             for(int i=0;i<(int)(TennisRules.ServeCatch*120)+2;i++) game.Step(1f/120);
             Assert.AreEqual(TennisGame.Phase.PlayerServeHold,game.Flow);
             Assert.IsFalse(game.SecondServe,"a caught toss must not cost a fault");
-            // Toss again, then strike it near the apex: the ball leaves toward the far court.
-            for(int i=0;i<(int)(TennisRules.ServeTossDelay*120)+2 && game.Flow!=TennisGame.Phase.PlayerServeToss;i++) game.Step(1f/120);
+            // Toss again (keyboard play tosses by itself), then swing at the top.
+            for(int i=0;i<5*120 && game.Flow!=TennisGame.Phase.PlayerServeToss;i++) game.Step(1f/120);
             Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow,"the ball is tossed again");
-            for(int i=0;i<(int)(TennisRules.ServeIdealContact*120);i++) game.Step(1f/120);
+            for(int i=0;i<(int)(TennisRules.ServeApex*120);i++) game.Step(1f/120);
             game.RequestSwing(.8f,0,.3f);
             // The ball leaves when the animated racket reaches it, not at the instant the
             // swing is reported, so the serve never flies before it has been hit.
-            for(int i=0;i<60 && game.Flow!=TennisGame.Phase.Rally;i++) game.Step(1f/120);
+            for(int i=0;i<120 && game.Flow!=TennisGame.Phase.Rally;i++) game.Step(1f/120);
             Assert.AreEqual(TennisGame.Phase.Rally,game.Flow,"a well-timed serve starts the rally");
             Assert.Greater(game.BallVelocity.z,0,"the player's serve travels to the far end");
             // Wii Sports model: the character takes itself to the ball. Put one out wide and

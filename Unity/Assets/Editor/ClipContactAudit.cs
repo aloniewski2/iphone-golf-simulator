@@ -17,6 +17,7 @@ namespace GolfArcade.EditorTools
     public static class ClipContactAudit
     {
         const string Output = "Assets/Resources/Tennis/StrokeContacts.json";
+        static readonly Dictionary<string, float> VideoContact = new Dictionary<string, float> { { "Forehand", .55f }, { "Backhand", .55f } };
         static readonly string[] Strokes =
         {
             "Forehand", "Backhand", "RunningForehand", "RunningBackhand", "LowPickup", "DiveForehand", "DiveBackhand",
@@ -42,6 +43,11 @@ namespace GolfArcade.EditorTools
                 // which comes just after its speed peaks on the way up. Groundstrokes strike
                 // at peak racket speed.
                 bool overhead = logical == "Serve" || logical == "Smash";
+                // A volley is a block, not a swing: it meets the ball at the end of a short
+                // punch, where the racket is furthest out in front. Its fastest moment is the
+                // recovery afterwards.
+                bool volley = logical.StartsWith("Volley");
+                float furthest = float.MinValue, furthestT = .5f;
                 float highest = float.MinValue, highestT = .5f;
                 Vector3 previous = Vector3.zero; float best = 0, bestT = .5f;
                 for (int i = 0; i <= samples; i++)
@@ -50,6 +56,7 @@ namespace GolfArcade.EditorTools
                     clip.SampleAnimation(rig, t * clip.length);
                     Vector3 p = rig.transform.InverseTransformPoint(sweet.position);
                     if (overhead && t >= .28f && t <= .7f && p.y > highest) { highest = p.y; highestT = t; }
+                    if (volley && t >= .28f && t <= .7f && -p.z > furthest) { furthest = -p.z; furthestT = t; }   // the model faces -Z
                     if (i > 0 && t >= .28f && t <= .78f)
                     {
                         float speed = (p - previous).magnitude * samples / clip.length;
@@ -58,6 +65,14 @@ namespace GolfArcade.EditorTools
                     previous = p;
                 }
                 if (overhead) { report.AppendLine($"OVERHEAD {clip.name} fastest={bestT:0.000} highest={highestT:0.000} at {highest:0.00}m"); bestT = highestT; }
+                // Neither speed nor reach finds it (the ready stance already holds the racket
+                // head further out than the punch does), so volleys use their authored contact:
+                // frame 30 of 60 (blender/scripts/author_tennis_motion.py).
+                if (volley) { report.AppendLine($"VOLLEY {clip.name} fastest={bestT:0.000} furthest={furthestT:0.000} authored=0.500"); bestT = .5f; }
+                // The groundstrokes taken from the gameplay video are laid out so the video's
+                // contact frame lands on frame 33 of 60 (blender/scripts/retarget_video_pose.py
+                // --timeline); the reconstructed racket can sweep fastest elsewhere.
+                if (VideoContact.TryGetValue(logical, out float laid)) { report.AppendLine($"VIDEO {clip.name} fastest={bestT:0.000} laid out={laid:0.000}"); bestT = laid; }
                 entries.Add($"{{\"clip\":\"{clip.name}\",\"contact\":{bestT:0.000}}}");
                 report.AppendLine($"CONTACT {clip.name} t={bestT:0.000} peak={best:0.0}m/s");
             }

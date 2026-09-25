@@ -209,10 +209,14 @@ namespace GolfArcade.Tennis
             if (!show || !camera) return;
             cue.position = ball;
             cue.rotation = Quaternion.LookRotation(cue.position - camera.transform.position, camera.transform.up);
-            float size = Mathf.Lerp(.28f, 1.5f, Mathf.Clamp01(closing));
+            // Big enough to read from the far court, closing to just around the ball.
+            float size = Mathf.Lerp(.32f, 2.2f, Mathf.Clamp01(closing));
             cue.localScale = Vector3.one * size;
-            bool now = closing < .12f;
-            cueMaterial.color = now ? new Color(.4f, 1f, .55f, 1) : new Color(1, 1, 1, Mathf.Lerp(.9f, .25f, closing));
+            bool now = closing < .06f;
+            // White far out, warming through yellow to green at the moment to swing.
+            Color yellow = new(1f, .88f, .3f), green = new(.4f, 1f, .55f);
+            Color tint = closing > .5f ? Color.Lerp(yellow, Color.white, (closing - .5f) * 2) : Color.Lerp(green, yellow, closing * 2);
+            cueMaterial.color = now ? green : new Color(tint.r, tint.g, tint.b, Mathf.Lerp(1f, .45f, closing));
         }
 
         /// Remove every live particle and mark; used after the shader warm-up.

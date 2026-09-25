@@ -12,6 +12,12 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
     var standardSkinValue: Int?
     var standardFemale: Bool { get { standardFemaleValue ?? false } set { standardFemaleValue=newValue } }
     var standardSkin: Int { get { max(0,min(5,standardSkinValue ?? 2)) } set { standardSkinValue=max(0,min(5,newValue)) } }
+    // Outfit colours: indices into Outfit.palette (see SportProgress.swift). Optional for the
+    // same reason; nil keeps the kit's own colours.
+    var shirt: Int?
+    var shorts: Int?
+    var accent: Int?
+    var racket: Int?
 
     var isScanned: Bool { calibration != nil }
 

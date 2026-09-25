@@ -15,7 +15,13 @@ namespace GolfArcade.Game
     {
         [Serializable] public class Message {
             public int version; public string session, action, sport, playerID, playerName,reason;
-            public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,difficulty=-1;
+            public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,value2,difficulty=-1;
+            // Tennis menu choice: "campaign" or "training", and the campaign round's opponent.
+            public string mode,opponent,opponentName,round;
+            // The match format (sets to win, games per set) and the coach's changeover lines, "|"-separated.
+            public int sets=1,games=3; public string coach;
+            // The player's kit colours (hex, "" = the kit's own), coaching tips, TV edge margin.
+            public string shirt,shorts,accent,racket; public bool tips=true; public float overscan;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -68,7 +74,23 @@ namespace GolfArcade.Game
             var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>();
 #endif
         }
-        void Start()=>Emit("boot","");
+        void Start()
+        {
+            Emit("boot","");
+            // What the phone's controller and campaign screens need from a tennis match.
+            TennisGame.MatchFinished+=(won,score)=>Emit("matchOver",(won?"won|":"lost|")+score);
+            TennisGame.ScoreChanged+=line=>Emit("score",line);
+            TennisGame.PhaseChanged+=phase=>Emit("phase",phase);
+            // The timing check's result, milliseconds, or "failed".
+            TennisGame.TimingChecked+=lag=>Emit("timing",lag<0 ? "failed" : (lag*1000).ToString("0",System.Globalization.CultureInfo.InvariantCulture));
+            TennisGame.ContactMade+=(face,grade,super)=>Emit("contact",
+                string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:0.000},{1:0.000},{2},{3},{4:0}",face.x,face.y,(int)grade,super?1:0,TennisGame.LastLateness*1000));
+            // The tutorial's steps for the phone, and its end; rallies for the stats; golf shots.
+            TennisTutorial.StepChanged+=(i,n,text)=>Emit("tutorialStep",$"{i}|{n}|{text}");
+            TennisTutorial.Finished+=()=>Emit("tutorialDone","");
+            TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
+            GolfGame.ShotStruck+=()=>Emit("shot","");
+        }
         void OnEnable() { Camera.onPostRender+=Rendered; RenderPipelineManager.endCameraRendering+=RenderedSRP; }
         void OnDisable() { Camera.onPostRender-=Rendered; RenderPipelineManager.endCameraRendering-=RenderedSRP; }
         void Rendered(Camera camera) { if(camera==gameplayCamera) frameRendered=true; }
@@ -98,6 +120,14 @@ namespace GolfArcade.Game
                     case "recalibrate": if(golf) golf.NativeReady(); break;
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
                     case "coaching": TennisCoach.ResetTips(); break;
+                    case "latency": if(tennis) tennis.DisplayLatency=m.value; break;
+                    case "timingCheck": if(tennis) tennis.StartTimingCheck(); break;
+                    // The controller serve: the toss meter's reading, the aim in the target box,
+                    // and walking along the baseline before a serve (held buttons: -1, 0, 1).
+                    case "toss": if(tennis) tennis.Toss(m.value); break;
+                    case "serveAim": if(tennis) tennis.SetServeAim(m.value,m.value2); break;
+                    case "nudge": if(tennis) tennis.ServeNudge=Mathf.Clamp(m.value,-1,1); break;
+                    case "flash": if(!flashing) StartCoroutine(Flash(m.value)); break;
                 }
             } catch(Exception e) { Emit("error",e.Message); }
         }
@@ -108,18 +138,36 @@ namespace GolfArcade.Game
             GolferStyle.SkinTone=m.skin; AudioListener.volume=m.sound?1:0; Haptics.Enabled=m.haptics;
             Time.timeScale=1;
             // 60 everywhere; 120 only when asked for and the panel can actually show it.
-            Application.targetFrameRate=FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
+            // A TV runs at 60: rendering faster only adds frames AirPlay has to drop, and a
+            // steady 60 is what keeps its delay steady.
+            Application.targetFrameRate=m.external ? 60 : FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
             QualitySettings.vSyncCount=0;
             TennisQuality.Apply();
             Screen.orientation=m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
-            yield return SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
+            // The phone's loading bar follows the scene load.
+            var op=SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
+            float nextProgress=0;
+            while(!op.isDone) {
+                if(Time.realtimeSinceStartup>=nextProgress) {
+                    nextProgress=Time.realtimeSinceStartup+.1f;
+                    Emit("loadProgress",Mathf.Clamp01(op.progress/.9f).ToString("0.00",System.Globalization.CultureInfo.InvariantCulture));
+                }
+                yield return null;
+            }
+            Emit("loadProgress","1");
             tennis=FindFirstObjectByType<TennisGame>(); golf=FindFirstObjectByType<GolfGame>();
             float deadline=Time.realtimeSinceStartup+15;
             while(m.sport=="tennis" && tennis && !tennis.Initialized && Time.realtimeSinceStartup<deadline) yield return null;
             if((m.sport=="tennis" && (!tennis || !tennis.Initialized)) || (m.sport=="golf" && !golf)) {
                 loading=false; SetPaused(true); Emit("error","The sport did not initialize its gameplay scene."); yield break;
             }
-            if(tennis) { tennis.NativeControlled=true; tennis.AutoPlay=m.bench; if(m.difficulty>=0) tennis.OpponentDifficulty=Mathf.Clamp01(m.difficulty); tennis.SelectCharacter(m.female); }
+            if(tennis) { tennis.NativeControlled=true; tennis.AutoPlay=m.bench; if(m.difficulty>=0) tennis.OpponentDifficulty=Mathf.Clamp01(m.difficulty); tennis.SelectCharacter(m.female);
+                TennisCoach.TipsEnabled=m.tips;
+                tennis.ApplyOutfit(TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin));
+                var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
+                    : m.mode=="tutorial" ? TennisGame.Mode.Tutorial : TennisGame.Mode.Exhibition;
+                tennis.ConfigureMatch(mode,m.opponent,m.opponentName,m.round,m.sets,m.games,
+                    string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress();
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
@@ -128,6 +176,30 @@ namespace GolfArcade.Game
             yield return Present(m.external,"ready");
             loading=false;
         }
+        bool flashing;
+        /// Delay probe for the phone: the whole TV goes black, then white, `count` times. The
+        /// phone's camera, still aimed at the TV from setup, times when each white frame appears;
+        /// "flash" reports when that frame's state was set, on the clock both sides share
+        /// (SportsClock), so the difference is the TV's delay behind the game.
+        IEnumerator Flash(float count) {
+            flashing=true;
+            var root=new GameObject("TV delay probe");
+            var canvas=root.AddComponent<Canvas>();
+            canvas.renderMode=RenderMode.ScreenSpaceOverlay; canvas.sortingOrder=32000; canvas.targetDisplay=outputDisplay;
+            var panel=new GameObject("Probe").AddComponent<UnityEngine.UI.Image>();
+            panel.transform.SetParent(root.transform,false); panel.raycastTarget=false;
+            var rt=panel.rectTransform; rt.anchorMin=Vector2.zero; rt.anchorMax=Vector2.one; rt.offsetMin=rt.offsetMax=Vector2.zero;
+            int flashes=Mathf.Clamp(Mathf.RoundToInt(count),1,8);
+            try {
+                for(int i=0;i<flashes;i++) {
+                    panel.color=Color.black; yield return new WaitForSecondsRealtime(.35f);
+                    panel.color=Color.white;
+                    Emit("flash",SportsClock().ToString("R",System.Globalization.CultureInfo.InvariantCulture));
+                    yield return new WaitForSecondsRealtime(.25f);
+                }
+            } finally { Destroy(root); flashing=false; }
+        }
+
         IEnumerator Present(bool external,string eventType) {
             Ready=false; frameRendered=false;
             if(!ConfigureDisplay(external)) yield break;
@@ -151,6 +223,14 @@ namespace GolfArcade.Game
             foreach(var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None)) {
                 if(camera.targetTexture) continue; // Minimap/render-texture cameras are not TV cameras.
                 camera.enabled=camera==gameplayCamera;
+            }
+            if(external) {
+                // 1080p is what goes over AirPlay (the plugin caps the screen mode); render no
+                // more than that either, whatever the TV reports.
+                var d=Display.displays[index];
+                float shrink=Mathf.Min(1f,Mathf.Min(1920f/Mathf.Max(1,d.systemWidth),1080f/Mathf.Max(1,d.systemHeight)));
+                if(shrink<1f) d.SetRenderingResolution(Mathf.RoundToInt(d.systemWidth*shrink),Mathf.RoundToInt(d.systemHeight*shrink));
+                Debug.Log($"[SportsDisplay] external system {d.systemWidth}x{d.systemHeight} rendering {d.renderingWidth}x{d.renderingHeight}");
             }
             gameplayCamera.targetDisplay=index;
             outputDisplay=index;

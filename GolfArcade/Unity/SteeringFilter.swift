@@ -49,14 +49,19 @@ enum SportsMotionGeometry {
     /// Aim in -1...1 from a face angle, measured against the player's own habitual face
     /// angle for that wing: people hold and swing differently, so "straight" is whatever
     /// this player usually does, and turning the face past it aims.
-    static let aimSpanDegrees = 24.0
+    /// A small dead zone keeps wrist wobble from steering a straight ball; past it the aim
+    /// grows smoothly to full at `aimSpanDegrees` (a wider span than before, so fast wrist
+    /// rotation through contact does not saturate it).
+    static let aimSpanDegrees = 32.0, aimDeadZone = 4.0
     static func aim(faceAngle: Double, neutral: Double) -> Double {
-        max(-1,min(1,(faceAngle-neutral)/aimSpanDegrees))
+        let d = faceAngle-neutral
+        let beyond = max(0, abs(d)-aimDeadZone)/(aimSpanDegrees-aimDeadZone)
+        return (d < 0 ? -1 : 1) * min(1, pow(beyond, 0.85))
     }
-    /// Learn the habitual angle only from ordinary swings, slowly, so deliberately aimed
-    /// shots do not drag "straight" after them.
+    /// Learn the habitual angle only from ordinary, nearly-straight swings, slowly, so
+    /// deliberately aimed shots never drag "straight" after them.
     static func learnNeutral(_ neutral: Double, faceAngle: Double) -> Double {
-        abs(faceAngle-neutral) < 14 ? neutral + (faceAngle-neutral)*0.12 : neutral
+        abs(faceAngle-neutral) < 5 ? neutral + (faceAngle-neutral)*0.1 : neutral
     }
 
     /// Distance band for play: close enough to see the TV, far enough to swing freely and

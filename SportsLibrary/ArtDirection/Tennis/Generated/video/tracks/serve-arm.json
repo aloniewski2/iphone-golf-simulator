@@ -1,0 +1,7 @@
+{"_note": "Racket arm keyed from the video where the body fit misreads it (trophy and racket drop). Directions in the chest frame: x the body's left, -y its front, z up; w = how much the key overrides the tracking. Right-handed; mirrored for left.",
+ "1": {"upper": [-1, 0.35, 0.15], "fore": [0.1, 0.35, 1], "w": 1},
+ "6": {"upper": [-1, 0.35, 0.3], "fore": [0.1, 0.45, 1], "w": 1},
+ "8": {"upper": [-0.9, 0.3, 0.55], "fore": [0.2, 0.8, -0.2], "w": 1},
+ "9": {"upper": [-0.75, 0.2, 0.7], "fore": [0.25, 0.6, -0.75], "w": 0.9},
+ "10": {"upper": [-0.5, 0.1, 1], "fore": [0, 0.3, 1], "w": 0.4},
+ "11": {"upper": [-0.3, 0, 1], "fore": [0, 0, 1], "w": 0}}

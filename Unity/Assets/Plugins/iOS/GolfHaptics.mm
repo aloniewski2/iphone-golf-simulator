@@ -36,6 +36,33 @@ void GolfHaptics_Impact(float intensity)
     [impactGen prepare];
 }
 
+/// The racket meeting the ball. A sharp transient from the Taptic Engine is audible as a crisp
+/// click from the phone itself, and unlike a sound it can never be routed to the (delayed)
+/// TV. Cleaner contact hits harder and sharper; a super shot strikes twice.
+void GolfHaptics_Strike(float quality, int twice)
+{
+    EnsureEngine();
+    if (!engine) { GolfHaptics_Impact(0.5f + 0.5f * quality); return; }
+    float q = Clamp01(quality);
+    NSMutableArray<CHHapticEvent*> *events = [NSMutableArray array];
+    for (int i = 0; i < (twice ? 2 : 1); i++) {
+        float t = i * 0.07f;
+        [events addObject:[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticTransient parameters:@[
+            [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:0.55f + 0.45f * q],
+            [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticSharpness value:0.6f + 0.4f * q]]
+            relativeTime:t]];
+        // A short body behind the click, so it lands as a thock rather than a tick.
+        [events addObject:[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:@[
+            [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:0.35f + 0.35f * q],
+            [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticSharpness value:0.3f]]
+            relativeTime:t + 0.005f duration:0.045f]];
+    }
+    NSError *error = nil;
+    CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:events parameters:@[] error:&error];
+    id<CHHapticPatternPlayer> player = error ? nil : [engine createPlayerWithPattern:pattern error:&error];
+    if (!player || ![player startAtTime:CHHapticTimeImmediate error:&error]) GolfHaptics_Impact(0.5f + 0.5f * q);
+}
+
 void GolfHaptics_Selection(void)
 {
     if (!selectionGen) { selectionGen = [[UISelectionFeedbackGenerator alloc] init]; }

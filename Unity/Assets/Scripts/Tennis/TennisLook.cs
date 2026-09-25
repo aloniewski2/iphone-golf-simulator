@@ -66,6 +66,58 @@ namespace GolfArcade.Tennis
         /// material from its colour alone -- throwing away any texture and giving skin, cloth
         /// and shoes the same 10%-gloss plastic finish. Materials are now per character, so
         /// recolouring one crowd member no longer recolours everyone sharing that colour.
+        /// The player's outfit colours from the character screen. A colour with alpha 0 keeps
+        /// the kit's own; Skin is a GolferStyle skin-tone index (2, the kit's own tan, is left as is).
+        public struct Kit
+        {
+            public Color Shirt, Shorts, Accent, Racket; public int Skin;
+            public bool Any => Shirt.a > 0 || Shorts.a > 0 || Accent.a > 0 || Racket.a > 0 || Skin != 2;
+            static Color Parse(string hex) =>
+                !string.IsNullOrEmpty(hex) && ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : new Color(1, 1, 1, 0);
+            public static Kit From(string shirt, string shorts, string accent, string racket, int skin) => new Kit
+            { Shirt = Parse(shirt), Shorts = Parse(shorts), Accent = Parse(accent), Racket = Parse(racket), Skin = skin };
+        }
+
+        static Material recolor;
+
+        /// Re-tint a player body's kit texture (Higgs<who>_Color) with the outfit colours, using
+        /// its region mask (Higgs<who>_Mask, from blender/scripts/bake_kit_mask.py). Returns the
+        /// new texture, or null when there is nothing to change or no mask for this body.
+        public static Texture RecolorKit(string who, Kit kit)
+        {
+            if (!kit.Any) return null;
+            var source = Resources.Load<Texture2D>("Tennis/Characters/Higgs" + who + "_Color");
+            var mask = Resources.Load<Texture2D>("Tennis/Characters/Higgs" + who + "_Mask");
+            if (!source || !mask) return null;
+            if (!recolor)
+            {
+                var shader = Resources.Load<Shader>("Tennis/Shaders/KitRecolor");
+                if (!shader || !shader.isSupported) return null;
+                recolor = new Material(shader) { name = "Kit recolour" };
+            }
+            var reference = new Vector4(.08f, .08f, .28f, .27f);
+            var json = Resources.Load<TextAsset>("Tennis/Characters/Higgs" + who + "_Mask");
+            if (json)
+            {
+                var r = JsonUtility.FromJson<MaskReference>(json.text);
+                reference = new Vector4(r.shirt, r.shorts, r.accent, r.skin);
+            }
+            recolor.SetTexture("_Mask", mask);
+            recolor.SetVector("_Ref", reference);
+            recolor.SetColor("_Shirt", kit.Shirt);
+            recolor.SetColor("_Shorts", kit.Shorts);
+            recolor.SetColor("_Accent", kit.Accent);
+            var skin = kit.Skin != 2 ? GolfArcade.Game.GolferStyle.SkinTones[Mathf.Clamp(kit.Skin, 0, GolfArcade.Game.GolferStyle.SkinTones.Length - 1)] : new Color(1, 1, 1, 0);
+            skin.a = kit.Skin != 2 ? 1 : 0;
+            recolor.SetColor("_Skin", skin);
+            var target = new RenderTexture(source.width, source.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
+            { name = "Kit " + who + " (recoloured)", useMipMap = true, autoGenerateMips = true, anisoLevel = 2, wrapMode = source.wrapMode };
+            Graphics.Blit(source, target, recolor);
+            return target;
+        }
+
+        [System.Serializable] struct MaskReference { public float shirt, shorts, accent, skin; }
+
         public static void PrepareCharacter(GameObject obj, Color? skin = null)
         {
             var shader = Character;
@@ -80,8 +132,12 @@ namespace GolfArcade.Tennis
                     {
                         // The painted face: an expression atlas cell (see TennisActor.Expression).
                         face ??= Resources.Load<Shader>("Tennis/Shaders/TennisFace");
+                        // A character may carry its own atlas ("V4 face decal Avatar" ->
+                        // FaceAtlas_Avatar); everyone else shares the default one.
                         if (!faceAtlas) faceAtlas = Resources.Load<Texture2D>("Tennis/Characters/FaceAtlas");
-                        converted = new Material(face) { name = "Face (tennis)", mainTexture = faceAtlas };
+                        string suffix = original.name.Length > "V4 face decal".Length ? original.name.Substring("V4 face decal".Length).Trim().Split('.')[0] : "";
+                        var own = suffix.Length > 0 ? Resources.Load<Texture2D>("Tennis/Characters/FaceAtlas_" + suffix) : null;
+                        converted = new Material(face) { name = "Face (tennis)", mainTexture = own ? own : faceAtlas };
                         cache[original] = converted;
                     }
                     if (!cache.TryGetValue(original, out converted) && original.name.StartsWith("V4 Higgs "))
@@ -94,6 +150,9 @@ namespace GolfArcade.Tennis
                         converted.mainTexture = Resources.Load<Texture2D>("Tennis/Characters/Higgs" + who + "_Color");
                         var normal = Resources.Load<Texture2D>("Tennis/Characters/Higgs" + who + "_Normal");
                         if (normal) { converted.SetTexture("_BumpMap", normal); converted.EnableKeyword("_NORMALMAP"); }
+                        // The base avatars are matched to the concept video's smooth, toy-like
+                        // finish: keep a hint of form from the scan's normal map, not its wrinkles.
+                        if (who.StartsWith("Avatar")) converted.SetFloat("_BumpScale", .3f);
                         // Skin and cloth share one map: a middle ground between the two surfaces.
                         converted.SetFloat("_Smoothness", .26f);
                         converted.SetFloat("_Wrap", .45f);

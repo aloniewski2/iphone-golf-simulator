@@ -33,6 +33,23 @@ namespace GolfArcade.Tennis
             return Timing.Ok;
         }
 
+        /// Timing score (1 = dead on .. 0 = missed) for a swing that met the ball `late`
+        /// real seconds after the ideal moment (negative: early). Set in milliseconds a person
+        /// can actually hit with a phone and a TV picture: PERFECT within 35ms, EXCELLENT 60,
+        /// GREAT 95, GOOD 140, and a playable ball out to 210.
+        public static float TimingScore(float late)
+        {
+            float t = Mathf.Abs(late);
+            if (t <= .035f) return Mathf.Lerp(1f, .96f, t / .035f);
+            if (t <= .06f) return Mathf.Lerp(.96f, .88f, (t - .035f) / .025f);
+            if (t <= .095f) return Mathf.Lerp(.88f, .75f, (t - .06f) / .035f);
+            if (t <= .14f) return Mathf.Lerp(.75f, .55f, (t - .095f) / .045f);
+            return Mathf.Clamp01(Mathf.Lerp(.55f, 0f, (t - .14f) / .07f));
+        }
+
+        /// "EARLY" / "LATE" for a swing off by more than a perfect one, else "".
+        public static string TimingWord(float late) => late > .035f ? "LATE" : late < -.035f ? "EARLY" : "";
+
         public static string GradeLabel(Timing grade) => grade switch
         {
             Timing.Perfect => "PERFECT!",
@@ -186,7 +203,10 @@ namespace GolfArcade.Tennis
         public static Vector3 AimedTarget(float aim, float quality, float lift)
         {
             float q = Mathf.Clamp01(quality);
-            float width = Mathf.Lerp(1.3f, 3.9f, Mathf.Pow(q, 1.2f));
+            // The face picks the side and it stays picked: even a scrappy contact goes most of
+            // the way to where it was aimed (it used to collapse toward the middle); a poor hit
+            // pays in pace and depth instead.
+            float width = Mathf.Lerp(2.6f, 3.9f, q);
             float depth = Mathf.Lerp(6.4f, 10.4f, q) + Mathf.Clamp(lift, 0, .4f) * 2f;
             return new Vector3(Mathf.Clamp(aim, -1, 1) * width, BallRadius, Mathf.Min(depth, 11.2f));
         }
@@ -303,11 +323,11 @@ namespace GolfArcade.Tennis
         /// downward swing. Miss the window and it goes into the net — one fault is allowed.
         /// The pre-serve routine (two bounces and the wind-up, see TennisServeRoutine) fills
         /// the time before the toss.
-        public const float ServeTossDelay = 2.2f, ServeApex = .53f, ServeIdealContact = .58f;
+        public const float ServeTossDelay = 2.2f, ServeApex = .62f, ServeIdealContact = .62f;
         /// Generous by design: almost any committed swing during the toss should go in. Only
         /// a wildly early or late one nets. The old +/-0.20s window was unplayable once swing
         /// detection latency was accounted for.
-        public const float ServeCatch = 1.12f, ServePerfectWindow = .18f, ServeLegalWindow = .42f;
+        public const float ServeCatch = 1.3f, ServePerfectWindow = .1f, ServeLegalWindow = .42f;
         /// Motion detection needs a moment of swing before it can confirm one, so the moment
         /// it reports is always later than the moment the player actually started. Without
         /// this correction every serve reads as late.
@@ -315,8 +335,6 @@ namespace GolfArcade.Tennis
         /// The same correction when the swing is reported at onset rather than confirmation:
         /// only the short onset hold and the rise to threshold are left.
         public const float ServeOnsetLatency = .04f;
-        /// A serve needs a real overhead action: the phone must be raised and swung.
-        public const float ServeMinPower = .15f, ServeMinLift = .02f;
         /// Contact happens above the head, not wherever the racket happens to be resting.
         public const float ServeContactHeight = 2.45f;
         /// Clearance the ball must have over the net for a serve to count as safe.
@@ -328,39 +346,121 @@ namespace GolfArcade.Tennis
 
         public struct ServeJudgement
         {
-            public bool Struck, Legal;
+            public bool Struck, Legal, Perfect;
             public Vector3 Landing;
-            public float Speed, Accuracy;
+            public float Speed, Accuracy, Power, Toss;
             public string Label;
         }
 
-        /// Judge a serve attempt. `offset` is how far the contact was from the ideal moment,
-        /// in seconds (negative = early). A weak or flat-handed swing is not a serve at all.
-        public static ServeJudgement JudgeServe(float offset, float power, float lift, Vector3 boxCentre, bool serverNearSide)
+        // --- The controller serve -------------------------------------------------------
+        //
+        // The player bounces the ball until they press TOSS on the phone. A meter there swings
+        // back and forth; pressing it in the middle is a perfect toss. The arm rises slowly and
+        // the ball goes high; the power bar on the TV fills as it rises and peaks at the top,
+        // with a small perfect window there. Swinging commits the power the bar shows. A
+        // perfect toss with a perfect swing goes exactly where the player aimed on the phone,
+        // as fast as a serve goes, and is harder to return. The serve plays slower than the
+        // rally (ServePace) and the game returns to full pace once the ball is struck.
+
+        /// The serve's pace against the rally's: the slowest part of the game.
+        public const float ServePace = .75f;
+        /// The tossing arm's slow rise once TOSS is pressed.
+        public const float ServeWindUp = .5f;
+        /// How far either side of the top of the toss the power bar has anything to give.
+        public const float ServePowerWindow = .5f;
+        /// Swings with less power than this are too early or too late to clear the net.
+        public const float ServeFaultPower = .12f;
+        /// A toss meter reading this good (1 = dead centre) counts as a perfect toss: the
+        /// middle 15% either side, about 60ms of the ticker's sweep.
+        public const float ServePerfectToss = .85f;
+        /// The fastest serve, reserved for a perfect one (m/s).
+        public const float ServeTopSpeed = 50f;
+
+        /// The power bar: 1 at the top of the toss, falling away either side. `fromApex` is
+        /// when the swing began relative to the top (seconds of game time).
+        public static float ServePowerAt(float fromApex) =>
+            Mathf.Clamp01(1 - Mathf.Abs(fromApex) / ServePowerWindow);
+
+        public static bool ServePerfectTiming(float fromApex) => Mathf.Abs(fromApex) <= ServePerfectWindow;
+
+        /// Where an aimed serve lands. `aim.x` runs from the T (-1) to wide (+1) across the
+        /// target box; `aim.y` from short (0) to deep (1).
+        public static Vector3 ServeAimPoint(Vector2 aim, bool serverNearSide, bool deuceCourt)
         {
-            var judgement = new ServeJudgement { Struck = true };
-            if (power < ServeMinPower || lift < ServeMinLift)
-            { judgement.Struck = false; judgement.Label = "NOT A SERVE — swing down hard from above your head"; return judgement; }
-            float error = Mathf.Abs(offset);
-            judgement.Accuracy = Mathf.Clamp01(1 - error / ServeLegalWindow);
-            if (error > ServeLegalWindow)
+            float outward = ServeTargetIsPositiveX(serverNearSide, deuceCourt) ? 1 : -1;
+            float x = outward * Mathf.Lerp(.35f, CourtHalfWidth - .3f, (Mathf.Clamp(aim.x, -1, 1) + 1) / 2);
+            float z = ServiceLine * Mathf.Lerp(.45f, .93f, Mathf.Clamp01(aim.y));
+            return new Vector3(x, BallRadius, serverNearSide ? z : -z);
+        }
+
+        /// Could a receiver standing at (`playerX`, `playerZ`) get a racket on this serve? Flies it
+        /// to where it crosses in front of them after the bounce and compares the time it takes
+        /// with the time they need: react, then run the gap beyond their reach.
+        public static bool ServeReachable(Vector3 start, Vector3 velocity, float spin, float restitution, float playerX, float playerZ)
+        {
+            Vector3 p = start, v = velocity; int bounced = 0;
+            float plane = playerZ + (velocity.z < 0 ? .65f : -.65f);
+            for (float t = 0; t < 3; t += TennisBall.Step)
             {
-                // Mistimed: struck too flat or too late to clear the net.
-                judgement.Legal = false;
-                judgement.Landing = new Vector3(boxCentre.x * .5f, BallRadius, serverNearSide ? .6f : -.6f);
-                judgement.Speed = Mathf.Lerp(14, 20, Mathf.Clamp01(power));
-                judgement.Label = offset < 0 ? "FAULT — too early, into the net" : "FAULT — too late, into the net";
-                return judgement;
+                TennisBall.Integrate(ref p, ref v, spin, TennisBall.Step);
+                if (p.y < BallRadius && v.y < 0) { p.y = BallRadius; TennisBall.Bounce(ref v, ref spin, restitution); bounced++; }
+                if (bounced > 0 && (velocity.z < 0 ? p.z <= plane : p.z >= plane))
+                {
+                    float gap = Mathf.Abs(p.x - playerX) - StrokeReach;
+                    return gap <= 0 || ReactionTime + TimeToCover(gap, RunSpeed) <= t;
+                }
             }
-            judgement.Legal = true;
-            // Placement is automatic: a legal serve always goes to the correct box. Timing
-            // decides only whether the ball clears the net, not where it lands.
-            judgement.Landing = boxCentre;
-            judgement.Speed = Mathf.Lerp(28, 44, Mathf.Clamp01(power));
-            judgement.Label = error <= ServePerfectWindow
-                ? $"ACE ATTEMPT · {judgement.Speed * 3.6f:0} km/h"
-                : $"SERVE IN · {judgement.Speed * 3.6f:0} km/h";
-            return judgement;
+            return false;
+        }
+
+        /// Keep a landing inside the target box, `margin` from its lines.
+        public static Vector3 IntoServiceBox(Vector3 landing, bool serverNearSide, bool deuceCourt, float margin = .15f)
+        {
+            float outward = ServeTargetIsPositiveX(serverNearSide, deuceCourt) ? 1 : -1;
+            float x = outward * Mathf.Clamp(Mathf.Abs(landing.x) * (Mathf.Sign(landing.x) == outward ? 1 : 0), margin, CourtHalfWidth - margin);
+            float z = Mathf.Clamp(Mathf.Abs(landing.z), 1.8f, ServiceLine - margin);
+            return new Vector3(x, BallRadius, serverNearSide ? z : -z);
+        }
+
+        /// Judge a controller serve: `fromApex` from the swing, `toss` from the phone's meter,
+        /// `aim` from the phone's box. The rolls are the caller's randomness for the scatter an
+        /// imperfect serve has.
+        public static ServeJudgement JudgeServeStrike(float fromApex, float toss, Vector2 aim, bool serverNearSide, bool deuceCourt,
+            bool secondServe, float rollX, float rollZ)
+        {
+            var j = new ServeJudgement { Struck = true, Power = ServePowerAt(fromApex), Toss = Mathf.Clamp01(toss) };
+            j.Perfect = ServePerfectTiming(fromApex) && j.Toss >= ServePerfectToss;
+            // Two separate skills: the toss meter decides how close to the aim it lands, the
+            // swing's timing (the power bar) decides how fast. Both perfect: a perfect serve.
+            float quality = j.Perfect ? 1 : j.Power * Mathf.Lerp(.6f, 1, j.Toss);
+            j.Accuracy = quality;
+            var target = ServeAimPoint(aim, serverNearSide, deuceCourt);
+            if (j.Power < ServeFaultPower)
+            {
+                // Swung far too early or late: struck flat into the tape.
+                j.Legal = false;
+                j.Landing = new Vector3(target.x * .5f, BallRadius, serverNearSide ? .6f : -.6f);
+                j.Speed = 18;
+                j.Label = fromApex < 0 ? "FAULT — swung too early" : "FAULT — swung too late";
+                return j;
+            }
+            j.Legal = true;
+            // Placement is the toss: dead centre on the meter lands on the aim, and it wanders
+            // further the further off centre the toss was. The wander is not rescued: aim at
+            // the lines with a loose toss and it can land long or wide -- a fault, called when
+            // it bounces. The risk is what makes the lines worth aiming at.
+            float spread = j.Toss >= ServePerfectToss ? 0 : Mathf.Lerp(1.7f, .2f, j.Toss / ServePerfectToss);
+            var landing = IntoServiceBox(target, serverNearSide, deuceCourt)
+                + new Vector3((Mathf.Clamp01(rollX) * 2 - 1) * spread, 0, (Mathf.Clamp01(rollZ) * 2 - 1) * spread * .7f);
+            // Never so short it would not clear the net.
+            float minZ = 1.8f;
+            if (Mathf.Abs(landing.z) < minZ) landing.z = serverNearSide ? minZ : -minZ;
+            j.Landing = new Vector3(landing.x, BallRadius, landing.z);
+            j.Speed = j.Perfect ? ServeTopSpeed : Mathf.Lerp(22, 44, j.Power * j.Power);
+            if (secondServe) j.Speed *= .82f;
+            bool inBox = ServeIsIn(j.Landing, serverNearSide, deuceCourt);
+            j.Label = j.Perfect ? $"PERFECT SERVE · {j.Speed * 3.6f:0} km/h" : inBox ? $"SERVE IN · {j.Speed * 3.6f:0} km/h" : $"SERVE · {j.Speed * 3.6f:0} km/h";
+            return j;
         }
 
         /// Which half of the court a serve must land in. The server starts each game on the
@@ -419,6 +519,20 @@ namespace GolfArcade.Tennis
                 if (NetClearance(start, best, spin) > NetHeight + margin) return best;
             }
             return best;
+        }
+
+        /// Where an assisted hit met the strings. The swing was steered onto the ball, so the
+        /// ball's distance from the racket when the hit was judged says nothing about the
+        /// strings (it put every dot on the frame). Instead the contact is placed by how well
+        /// it was made: a well-timed, well-positioned hit lands on the sweet spot, a poor one
+        /// out toward the frame. Early/late moves it across the face and a high/low ball up
+        /// or down it. `quality` 0..1, `early` and `high` -1..1. Metres on the string bed.
+        public static Vector2 AssistedFace(float quality, float early, float high)
+        {
+            float radial = Mathf.Lerp(.95f, .04f, Mathf.Clamp01(quality));
+            var dir = new Vector2(Mathf.Clamp(early, -1, 1), Mathf.Clamp(high, -1, 1));
+            dir = dir.sqrMagnitude > .0004f ? dir.normalized : new Vector2(0, -1);
+            return new Vector2(dir.x * radial * StringHalfWidth, dir.y * radial * StringHalfHeight);
         }
 
         /// Clamp a contact offset onto the string bed for display: an assisted hit is measured

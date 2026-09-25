@@ -13,6 +13,8 @@ namespace GolfArcade.Game
     /// builds everything else at runtime.
     public sealed class GolfGame : MonoBehaviour
     {
+        /// A shot was struck (the phone's golf lesson finishes on the first one).
+        public static event System.Action ShotStruck;
         public enum State { Intro, Aim, Flight, Result, HoleDone, RoundDone }
 
         [Tooltip("Degrees per second the aim sweeps while a button is held.")]
@@ -423,6 +425,7 @@ namespace GolfArcade.Game
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, lie.PowerFactor(), Wind);
             holeStrokes++;
             strikePlayed = false;
+            ShotStruck?.Invoke();
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Speed {impact.PeakSpeed:F1} rad/s  ·  Face {impact.FaceDegrees:+0;-0}°  ·  Tempo {impact.TempoSeconds:F2}s" + (impact.Overswing > 0 ? "  ·  TOO HARD" : ""));

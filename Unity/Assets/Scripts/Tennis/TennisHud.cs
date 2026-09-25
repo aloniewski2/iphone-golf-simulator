@@ -65,6 +65,9 @@ namespace GolfArcade.Tennis
         }
 
         public string PlayerName = "YOU", OpponentName = "KAI";
+        Text eventText;
+        /// The gold ribbon over the scoreboard: the event and round.
+        public string EventLabel { set { if (eventText) eventText.text = value; } }
         internal RectTransform Root => root;
         /// Everything that belongs to the match (hidden during the presentation).
         public RectTransform MatchLayer => matchGroup ? (RectTransform)matchGroup.transform : root;
@@ -209,11 +212,15 @@ namespace GolfArcade.Tennis
             shimmerRt = shimmer.rectTransform;
 
             var ribbon = Chunky("Header ribbon", plaque, new Vector2(0, 1), new Vector2(210, 26), new Vector2(124, 4), GoldTop, GoldBottom, 3);
-            Label(ribbon.rectTransform, "TROPICAL OPEN  ·  SET 1", 14, new Vector2(0, 1), new Vector2(210, 26), Navy, TextAnchor.MiddleCenter, 0);
+            eventText = Label(ribbon.rectTransform, "TROPICAL OPEN  ·  SET 1", 14, new Vector2(0, 1), new Vector2(210, 26), Navy, TextAnchor.MiddleCenter, 0);
 
             rows[0] = BuildRow(body.rectTransform, 22, SunTop, SunBottom);
             rows[1] = BuildRow(body.rectTransform, -24, SeaTop, SeaBottom);
             ballIcon = Box("Serve ball", body.rectTransform, new Vector2(0, .5f), new Vector2(26, 26), new Vector2(20, 22), Color.white, ball, false).rectTransform;
+
+            BuildServeMeter(group);
+            BuildSwingCue(group);
+            BuildTimingCheck();
 
             noticeBack = Chunky("Notice", group, new Vector2(0, 1), new Vector2(190, 32), new Vector2(24 + 110, -30 - 136), SunTop, SunBottom, 3);
             noticeGradient = noticeBack.GetComponent<UiGradient>();
@@ -287,6 +294,7 @@ namespace GolfArcade.Tennis
 
         static void Points(TennisMatch m, out string mine, out string theirs)
         {
+            if (m.Tiebreak) { mine = Digits(m.PlayerPoints); theirs = Digits(m.OpponentPoints); return; }
             if (m.PlayerPoints >= 3 && m.OpponentPoints >= 3)
             {
                 if (m.PlayerPoints == m.OpponentPoints) { mine = theirs = "40"; return; }
@@ -320,8 +328,9 @@ namespace GolfArcade.Tennis
         {
             var m = game.Match;
             Points(m, out string pa, out string pb);
-            SetRow(rows[0], PlayerName, Digits(m.PlayerGames), pa);
-            SetRow(rows[1], OpponentName, Digits(m.OpponentGames), pb);
+            // Multi-set matches show sets won ahead of the games in the current set.
+            SetRow(rows[0], PlayerName, m.MultiSet ? $"{m.PlayerSets} {Digits(m.PlayerGames)}" : Digits(m.PlayerGames), pa);
+            SetRow(rows[1], OpponentName, m.MultiSet ? $"{m.OpponentSets} {Digits(m.OpponentGames)}" : Digits(m.OpponentGames), pb);
             shownServer = m.PlayerServes ? 0 : 1;
             string n = m.Complete ? null : TennisGame.IsMatchPoint(m) ? "MATCH POINT" : game.SecondServe ? "2ND SERVE"
                 : m.PlayerPoints == m.OpponentPoints && m.PlayerPoints >= 3 ? "DEUCE" : null;
@@ -413,9 +422,242 @@ namespace GolfArcade.Tennis
         /// when a capture rate is switched) counts as long finished.
         static float Age(float now, float at) { float a = now - at; return a < 0 ? 99 : a; }
 
+        // ---------------------------------------------------------------- swing cue
+        //
+        // When to swing, as a rhythm game shows it: along the bottom of the screen two
+        // brackets close on a target as the ball comes in, meeting it at the moment to START
+        // the swing (the stroke then reaches the ball as it arrives). "SWING!" flashes as they
+        // meet. It reads at a glance without looking away from the ball, and it closes at a
+        // steady speed so the beat can be felt as well as seen.
+        const float CueTravel = 190;
+        RectTransform cue, cueLeft, cueRight, cueTarget; Image cueFill, cueLeftImage, cueRightImage; Text cueText;
+        float cueClosing = 1, cueNowAt = -10, cueShownAt = -10; bool cueShown, cueWasNow;
+        static readonly Color CueGreen = new(.35f, 1f, .45f);
+
+        void BuildSwingCue(RectTransform group)
+        {
+            var body = Chunky("Swing cue", group, new Vector2(.5f, 0), new Vector2(460, 30), new Vector2(0, 44), new Color(.10f, .16f, .40f, .92f), NavyDeep, 3);
+            cue = (RectTransform)body.transform.parent;
+            // Track marks: the closer to the middle, the brighter.
+            for (int i = 1; i <= 4; i++)
+                foreach (float side in new[] { -1f, 1f })
+                    Box("Tick", body.rectTransform, new Vector2(.5f, .5f), new Vector2(4, 14), new Vector2(side * (34 + i * CueTravel / 4.5f), 0), new Color(1, 1, 1, .12f + .06f * (4 - i)), rounded);
+            cueTarget = Box("Target ring", cue, new Vector2(.5f, .5f), new Vector2(64, 64), Vector2.zero, Color.white, disc, false).rectTransform;
+            Box("Target hole", cueTarget, new Vector2(.5f, .5f), new Vector2(50, 50), Vector2.zero, NavyDeep, disc, false);
+            cueFill = Box("Target fill", cueTarget, new Vector2(.5f, .5f), new Vector2(40, 40), Vector2.zero, Color.white, ball, false);
+            cueLeftImage = Box("Bracket left", cue, new Vector2(.5f, .5f), new Vector2(16, 54), Vector2.zero, Color.white, rounded);
+            cueRightImage = Box("Bracket right", cue, new Vector2(.5f, .5f), new Vector2(16, 54), Vector2.zero, Color.white, rounded);
+            cueLeft = cueLeftImage.rectTransform; cueRight = cueRightImage.rectTransform;
+            cueText = Label(cue, "SWING!", 34, new Vector2(0, 58), new Vector2(240, 44), CueGreen, TextAnchor.MiddleCenter, 2.6f);
+            cue.gameObject.SetActive(false);
+        }
+
+        /// Show the swing cue closing: 1 = the ball has just been struck, 0 = swing now.
+        public void SwingCue(bool show, float closing)
+        {
+            if (!cue) return;
+            float now = HudClock.Now;
+            if (show)
+            {
+                if (!cueShown) { cueShownAt = now; cueWasNow = false; }
+                cueShown = true; cueClosing = Mathf.Clamp01(closing);
+                if (!cue.gameObject.activeSelf) cue.gameObject.SetActive(true);
+                if (cueClosing <= .02f && !cueWasNow) { cueWasNow = true; cueNowAt = now; Burst(Centre(cue), 8, CueGreen, 220); }
+            }
+            else if (cueShown)
+            {
+                // Linger a moment after the swing so "SWING!" is seen, then go.
+                cueShown = false;
+                if (!cueWasNow) cue.gameObject.SetActive(false);
+            }
+        }
+
+        void AnimateSwingCue(float now)
+        {
+            if (!cue || !cue.gameObject.activeSelf) return;
+            float sinceNow = Age(now, cueNowAt);
+            if (!cueShown && (!cueWasNow || sinceNow > .45f)) { cue.gameObject.SetActive(false); return; }
+            float c = cueWasNow ? 0 : cueClosing;
+            float x = 40 + c * CueTravel;
+            cueLeft.anchoredPosition = new Vector2(-x, 0); cueRight.anchoredPosition = new Vector2(x, 0);
+            // White far out, warming through yellow to green as the moment arrives.
+            Color tint = c > .5f ? Color.Lerp(SunTop, Color.white, (c - .5f) * 2) : Color.Lerp(CueGreen, SunTop, c * 2);
+            cueLeftImage.color = cueRightImage.color = tint;
+            cueFill.color = cueWasNow ? CueGreen : Color.Lerp(Color.white, new Color(1, 1, 1, .35f), c);
+            cueTarget.localScale = Vector3.one * (cueWasNow && sinceNow < .35f ? 1 + .35f * Mathf.Exp(-sinceNow * 7) * Mathf.Cos(sinceNow * 18) : 1 + (1 - c) * .12f);
+            bool flash = cueWasNow && sinceNow < .45f;
+            cueText.enabled = flash;
+            if (flash) cueText.transform.localScale = Vector3.one * (sinceNow < .1f ? Mathf.Lerp(1.8f, 1f, sinceNow / .1f) : 1);
+            float fadeIn = Mathf.Clamp01(Age(now, cueShownAt) / .12f), fadeOut = cueShown ? 1 : Mathf.Clamp01(1 - (sinceNow - .3f) / .15f);
+            SetGroupAlpha(cue, fadeIn * fadeOut);
+        }
+
+        // ---------------------------------------------------------------- timing check
+        //
+        // A ball bouncing on a line to a steady beat, centre screen; the player swings on
+        // every bounce. Dots fill as swings are counted, and nothing says early or late (see
+        // TennisBeatCalibration).
+        RectTransform check, checkBall, checkRing; Text checkTitle, checkHint; Image[] checkDots;
+        float checkRingAt = -10, checkDoneAt = -10; bool checkDone;
+        const float CheckFloor = -56, CheckBounce = 118;
+
+        void BuildTimingCheck()
+        {
+            var shade = Box("Timing check", root, new Vector2(.5f, .5f), new Vector2(4000, 4000), Vector2.zero, new Color(.02f, .04f, .14f, .78f), null, false);
+            check = shade.rectTransform;
+            var body = Chunky("Timing panel", check, new Vector2(.5f, .5f), new Vector2(640, 380), new Vector2(0, 10), new Color(.10f, .16f, .40f), NavyDeep, 5);
+            var rt = body.rectTransform;
+            checkTitle = Label(rt, "TIMING CHECK", 40, new Vector2(0, 148), new Vector2(600, 50), GoldTop, TextAnchor.MiddleCenter, 2.6f);
+            checkHint = Label(rt, "Get the rhythm…", 24, new Vector2(0, 104), new Vector2(600, 36), Color.white, TextAnchor.MiddleCenter, 1.8f);
+            var line = Box("Line", rt, new Vector2(.5f, .5f), new Vector2(440, 10), new Vector2(0, CheckFloor - 26), Color.white, rounded);
+            UiGradient.On(line, Color.white, PearlBottom);
+            checkRing = Box("Bounce ring", rt, new Vector2(.5f, .5f), new Vector2(70, 22), new Vector2(0, CheckFloor - 26), CueGreen, disc, false).rectTransform;
+            checkBall = Box("Ball", rt, new Vector2(.5f, .5f), new Vector2(46, 46), new Vector2(0, CheckFloor), Color.white, ball, false).rectTransform;
+            int scored = TennisBeatCalibration.Beats - TennisBeatCalibration.WarmUp;
+            checkDots = new Image[scored];
+            for (int i = 0; i < scored; i++)
+            {
+                float x = (i - (scored - 1) / 2f) * 44;
+                Box("Dot outline", rt, new Vector2(.5f, .5f), new Vector2(28, 28), new Vector2(x, -140), Navy, disc, false);
+                checkDots[i] = Box("Dot", rt, new Vector2(.5f, .5f), new Vector2(20, 20), new Vector2(x, -140), new Color(1, 1, 1, .18f), disc, false);
+            }
+            check.gameObject.SetActive(false);
+        }
+
+        public void ShowTimingCheck(bool visible)
+        {
+            if (!check) return;
+            check.gameObject.SetActive(visible); checkDone = false;
+            if (!visible) return;
+            // Over everything, the intro's title cards included.
+            check.SetAsLastSibling();
+            checkTitle.text = "TIMING CHECK"; checkTitle.color = GoldTop; checkHint.text = "Watch the ball…";
+            foreach (var d in checkDots) d.color = new Color(1, 1, 1, .18f);
+            checkBall.gameObject.SetActive(true);
+        }
+
+        /// The ball's height (0 on the line .. 1 at the top) and the beat it is on.
+        public void SetTimingCheck(float height, int beat, int scored, float countdown = 0)
+        {
+            if (!check) return;
+            if (countdown > 0)
+            {
+                // Get ready: what to do, then 5..1 before the ball starts to drop.
+                checkTitle.text = $"GET READY  ·  {Mathf.CeilToInt(countdown)}";
+                checkHint.text = "Swing every time the ball drops onto the line";
+                checkBall.anchoredPosition = new Vector2(0, CheckFloor + CheckBounce);
+                return;
+            }
+            if (checkTitle.text != "TIMING CHECK") checkTitle.text = "TIMING CHECK";
+            checkBall.anchoredPosition = new Vector2(0, CheckFloor + height * CheckBounce);
+            // Squash on the line.
+            float squash = height < .06f ? 1 - height / .06f : 0;
+            checkBall.localScale = new Vector3(1 + .25f * squash, 1 - .25f * squash, 1);
+            checkHint.text = beat < 0 ? "Watch the ball…" : beat < TennisBeatCalibration.WarmUp ? "Get the rhythm…" : "Swing on every bounce!";
+            if (height < .02f && Age(HudClock.Now, checkRingAt) > .3f) checkRingAt = HudClock.Now;
+        }
+
+        /// A swing counted for `beat`.
+        public void TimingCheckSwing(int beat)
+        {
+            int i = beat - TennisBeatCalibration.WarmUp;
+            if (checkDots == null || i < 0 || i >= checkDots.Length) return;
+            checkDots[i].color = CueGreen;
+            checkDots[i].rectTransform.localScale = Vector3.one * 1.5f;
+        }
+
+        public void TimingCheckDone(bool ok)
+        {
+            if (!check) return;
+            checkDone = true; checkDoneAt = HudClock.Now;
+            checkBall.gameObject.SetActive(false);
+            checkTitle.text = ok ? "TIMING SET!" : "NO STEADY RHYTHM";
+            checkTitle.color = ok ? CueGreen : Color.white;
+            checkHint.text = ok ? "Your swings are now timed to what you see" : "No problem — the game learns your timing as you play";
+            if (ok) Burst(Vector2.zero, 14, CueGreen, 300);
+        }
+
+        void AnimateTimingCheck(float now)
+        {
+            if (!check || !check.gameObject.activeSelf) return;
+            float r = Age(now, checkRingAt);
+            checkRing.localScale = Vector3.one * (1 + r * 2.2f);
+            checkRing.GetComponent<Image>().canvasRenderer.SetAlpha(checkDone ? 0 : Mathf.Clamp01(1 - r / .35f));
+            foreach (var d in checkDots) d.rectTransform.localScale = Vector3.Lerp(d.rectTransform.localScale, Vector3.one, Time.unscaledDeltaTime * 10);
+            if (checkDone && Age(now, checkDoneAt) > 2.2f) check.gameObject.SetActive(false);
+        }
+
+        // ---------------------------------------------------------------- serve meter
+        //
+        // The serve's power bar, on the right of the screen: it fills as the toss rises and is
+        // full at the top, where a small gold band marks the perfect window. It locks where
+        // the player swung. The toss meter itself lives on the phone (no display lag there);
+        // its grade shows above the bar.
+        const float MeterHeight = 300;
+        RectTransform meter, meterFill; Image meterFillImage; Text meterLabel, tossLabel;
+        float meterValue, meterLockedAt = -10, tossAt = -10; bool meterLocked, meterPerfect;
+
+        void BuildServeMeter(RectTransform group)
+        {
+            var body = Chunky("Serve power", group, new Vector2(1, .5f), new Vector2(48, MeterHeight), new Vector2(-96, 10), new Color(.10f, .16f, .40f), NavyDeep, 4);
+            meter = (RectTransform)body.transform.parent;
+            float band = MeterHeight * (1 - TennisRules.ServePowerAt(TennisRules.ServePerfectWindow));
+            var perfect = Box("Perfect window", body.rectTransform, new Vector2(.5f, 1), new Vector2(48, Mathf.Max(14, band)), new Vector2(0, -Mathf.Max(14, band) / 2), Color.white, rounded);
+            UiGradient.On(perfect, GoldTop, GoldBottom);
+            meterFillImage = Box("Fill", body.rectTransform, new Vector2(.5f, 0), new Vector2(36, 0), Vector2.zero, Color.white, rounded);
+            UiGradient.On(meterFillImage, SunTop, SunBottom);
+            meterFill = meterFillImage.rectTransform; meterFill.pivot = new Vector2(.5f, 0); meterFill.anchoredPosition = new Vector2(0, 6);
+            meterLabel = Label(meter, "POWER", 20, new Vector2(0, -MeterHeight / 2 - 26), new Vector2(160, 30), Color.white, TextAnchor.MiddleCenter, 2f);
+            tossLabel = Label(meter, "", 22, new Vector2(-10, MeterHeight / 2 + 30), new Vector2(260, 30), GoldTop, TextAnchor.MiddleCenter, 2.2f);
+            meter.gameObject.SetActive(false);
+        }
+
+        public void ShowServeMeter(bool visible)
+        {
+            if (!meter || meter.gameObject.activeSelf == visible) return;
+            meter.gameObject.SetActive(visible);
+            if (visible) { meterLocked = false; meterPerfect = false; meterValue = 0; meterLabel.text = "POWER"; }
+        }
+
+        /// The toss is in the air: the bar shows what a swing now would give.
+        public void SetServeMeter(float value, bool rising) { if (!meterLocked) meterValue = value; }
+
+        /// The player swung: freeze the bar there.
+        public void LockServeMeter(float value, bool perfect)
+        {
+            if (!meter) return;
+            if (!meter.gameObject.activeSelf) ShowServeMeter(true);
+            meterValue = value; meterLocked = true; meterPerfect = perfect; meterLockedAt = HudClock.Now;
+            meterLabel.text = perfect ? "PERFECT!" : value > .75f ? "BIG SERVE" : value > .4f ? "GOOD" : "WEAK";
+            if (perfect) Burst(Centre(meter), 10, GoldTop, 200);
+        }
+
+        /// The phone's toss meter reading, shown above the bar.
+        public void ShowTossGrade(float accuracy)
+        {
+            if (!tossLabel) return;
+            tossLabel.text = accuracy >= TennisRules.ServePerfectToss ? "PERFECT TOSS!" : accuracy > .6f ? "GOOD TOSS" : accuracy > .3f ? "LOOSE TOSS" : "WILD TOSS";
+            tossLabel.color = accuracy >= TennisRules.ServePerfectToss ? GoldTop : Color.white;
+            tossAt = HudClock.Now;
+        }
+
+        void AnimateServeMeter(float now)
+        {
+            if (!meter || !meter.gameObject.activeSelf) return;
+            float h = (MeterHeight - 12) * Mathf.Clamp01(meterValue);
+            meterFill.sizeDelta = new Vector2(36, Mathf.Lerp(meterFill.sizeDelta.y, h, meterLocked ? 1 : .6f));
+            float since = Age(now, meterLockedAt);
+            meter.localScale = Vector3.one * (meterLocked && since < .4f ? 1 + .18f * Mathf.Exp(-since * 8) * Mathf.Cos(since * 20) : 1);
+            meterFillImage.color = meterLocked && meterPerfect ? Color.Lerp(Color.white, new Color(1, .95f, .6f), Mathf.PingPong(now * 6, 1)) : Color.white;
+            tossLabel.transform.localScale = Vector3.one * (Age(now, tossAt) < .3f ? 1.25f - Age(now, tossAt) : 1);
+        }
+
         void Animate()
         {
             float now = HudClock.Now;
+            AnimateServeMeter(now);
+            AnimateSwingCue(now);
+            AnimateTimingCheck(now);
             // The plaque swings in from the left with a bounce when the HUD first appears.
             float intro = Age(now, introAt);
             plaque.anchoredPosition = new Vector2(24 + 204 - (intro < 1.2f ? 420 * Mathf.Exp(-intro * 6) * Mathf.Cos(intro * 9) : 0), -30 - 60);

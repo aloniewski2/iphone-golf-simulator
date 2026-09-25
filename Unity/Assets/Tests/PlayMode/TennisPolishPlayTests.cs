@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -139,7 +140,12 @@ namespace GolfArcade.PlayTests
             TennisGame game = null; yield return Load(g => game = g);
             game.AutoPlay = true;
             float deadline = Time.realtimeSinceStartup + 40;
-            while (game.Hits < 2 && Time.realtimeSinceStartup < deadline) yield return null;
+            float nextLog = 0;
+            while (game.Hits < 2 && Time.realtimeSinceStartup < deadline)
+            {
+                if (Time.realtimeSinceStartup > nextLog) { nextLog = Time.realtimeSinceStartup + 1; UnityEngine.Debug.Log($"[SelfPlay] flow={game.Flow} score={game.Match.Scoreboard} feedback={game.Feedback} ball={game.BallPosition} player={game.Player.transform.position}"); }
+                yield return null;
+            }
             Assert.GreaterOrEqual(game.Hits, 2, $"self-play must return balls (flow {game.Flow}, feedback {game.Feedback})");
             // Measure allocations across steady play.
             long before = System.GC.GetAllocatedBytesForCurrentThread();
@@ -297,6 +303,33 @@ namespace GolfArcade.PlayTests
             finally { Time.timeScale = oldScale; game.AutoPlay = false; TennisGame.LogContactGaps = false; }
         }
 
+        /// Each campaign opponent in the arena, close up, after ConfigureMatch has dressed the
+        /// rival in their own body. Explicit and windowed only.
+        [UnityTest, Explicit] public IEnumerator CaptureOpponents()
+        {
+            TennisGame game = null; yield return Load(g => game = g); game.ManualSimulation = true;
+            string dir = "Library/Captures/opponents"; if (Directory.Exists(dir)) Directory.Delete(dir, true); Directory.CreateDirectory(dir);
+            foreach (var rival in TennisRoster.All)
+            {
+                game.ConfigureMatch(TennisGame.Mode.Campaign, rival.Key, rival.Key, "QUARTERFINAL");
+                Assert.AreEqual(rival.Key, game.Opponent.name.Replace("Opponent — ", ""));
+                Assert.IsTrue(game.Opponent.GetComponentsInChildren<SkinnedMeshRenderer>().Any(r => r.name == "V4 Higgs body " + rival.Key && r.gameObject.activeInHierarchy),
+                    $"{rival.Key} should wear their own body");
+                for (int f = 0; f < 20; f++)
+                {
+                    game.Step(1f / 120);
+                    yield return null;
+                    var t = game.Opponent.transform;
+                    game.GameplayCamera.transform.position = t.position + t.forward * 4.2f + t.right * 1.2f + Vector3.up * 1.3f;
+                    game.GameplayCamera.transform.LookAt(t.position + Vector3.up * 1f);
+                    game.GameplayCamera.fieldOfView = 40;
+                }
+                yield return new WaitForEndOfFrame();
+                var tex = ScreenCapture.CaptureScreenshotAsTexture();
+                File.WriteAllBytes($"{dir}/{rival.Key}.png", tex.EncodeToPNG()); Object.Destroy(tex);
+            }
+        }
+
         /// Aerial views of the island and resort. Explicit and windowed only.
         [UnityTest, Explicit] public IEnumerator CaptureIsland()
         {
@@ -448,6 +481,93 @@ namespace GolfArcade.PlayTests
                     else if (game.RallyShots != shots) UnityEngine.Debug.Log($"[Hit] frame {frame} O");
                     returns = game.Returns; shots = game.RallyShots;
                     GameCapture.Save($"{dir}/frame-{frame:D4}.jpg", 960, 540);
+                }
+            }
+            finally { Time.captureFramerate = oldRate; game.AutoPlay = false; }
+        }
+
+        /// The timing check in the running game: play holds, a ball bounces on the TV, and
+        /// swings that land 150ms after each bounce leave the game compensating 150ms.
+        [UnityTest, Timeout(60000)] public IEnumerator TimingCheckSetsTheLagFromSwingsOnTheBeat()
+        {
+            TennisGame game = null; yield return Load(g => game = g);
+            float result = float.NaN;
+            System.Action<float> done = lag => result = lag;
+            TennisGame.TimingChecked += done;
+            try
+            {
+                int hitsBefore = game.Hits;
+                game.StartTimingCheck();
+                Assert.IsTrue(game.CheckingTiming);
+                float start = Time.unscaledTime;
+                int next = 0; bool captured = false;
+                while (game.CheckingTiming && Time.unscaledTime - start < 20)
+                {
+                    float beat = start + TennisBeatCalibration.LeadIn + next * TennisBeatCalibration.Interval;
+                    if (next < TennisBeatCalibration.Beats && Time.unscaledTime >= beat + .15f) { game.BeginSwing(0, 0, 1); next++; }
+                    if (!captured && next == 4) { captured = true; Directory.CreateDirectory("Library/Captures/timing-check"); GameCapture.Save("Library/Captures/timing-check/check.png", 1280, 720); }
+                    yield return null;
+                }
+                Assert.IsFalse(game.CheckingTiming, "the check ends by itself");
+                Assert.AreEqual(.15f, result, .035f, "measured the swings' lag behind the beat");
+                Assert.AreEqual(result, game.Lag, 1e-4f, "and every swing is now compensated by it");
+                Assert.AreEqual(hitsBefore, game.Hits, "check swings never reach the ball");
+                for (int i = 0; i < 90; i++) yield return null;
+                GameCapture.Save("Library/Captures/timing-check/done.png", 1280, 720);
+            }
+            finally { TennisGame.TimingChecked -= done; }
+        }
+
+        /// Close review of the player's own character in real play (runtime layers included:
+        /// gait, run styling, racket guidance): a camera beside and behind the player, every
+        /// third frame of a self-played rally, for the male and female avatars. Explicit.
+        [UnityTest, Explicit, Timeout(1800000)] public IEnumerator CaptureCharacterInPlay()
+        {
+            foreach (bool female in new[] { false, true })
+            {
+                TennisGame game = null; yield return Load(g => game = g);
+                game.SelectCharacter(female);
+                string dir = $"Library/Captures/character-{(female ? "female" : "male")}";
+                if (Directory.Exists(dir)) Directory.Delete(dir, true); Directory.CreateDirectory(dir);
+                int oldRate = Time.captureFramerate; Time.captureFramerate = 60;
+                try
+                {
+                    game.AutoPlay = true;
+                    for (int frame = 0; frame < 60 * 24; frame++)
+                    {
+                        yield return null;
+                        var p = game.Player.transform.position;
+                        var cam = game.GameplayCamera;
+                        cam.transform.position = p + new Vector3(1.6f, 1.7f, -3.2f);
+                        cam.transform.LookAt(p + new Vector3(0, 1.0f, .4f));
+                        cam.fieldOfView = 45;
+                        if (frame % 3 == 0) GameCapture.Save($"{dir}/frame-{frame:D4}.jpg", 960, 540);
+                    }
+                }
+                finally { Time.captureFramerate = oldRate; game.AutoPlay = false; }
+            }
+        }
+
+        /// Self-play with the swing cue in view: frames while a ball comes in, plus where each
+        /// hit met the strings and why each opponent miss happened. Explicit: for review.
+        [UnityTest, Explicit, Timeout(1800000)] public IEnumerator CaptureSwingCue()
+        {
+            TennisGame game = null; yield return Load(g => game = g);
+            string dir = "Library/Captures/swing-cue"; if (Directory.Exists(dir)) Directory.Delete(dir, true); Directory.CreateDirectory(dir);
+            int oldRate = Time.captureFramerate; Time.captureFramerate = 60;
+            try
+            {
+                game.AutoPlay = true;
+                int returns = game.Returns; string lastFeedback = "";
+                for (int frame = 0; frame < 60 * 90; frame++)
+                {
+                    yield return null;
+                    if (game.Returns != returns)
+                        UnityEngine.Debug.Log($"[Face] {TennisRules.FaceError(game.LastFaceOffset):0.00} grade {game.LastGrade} late {TennisGame.LastLateness * 1000:0}ms");
+                    returns = game.Returns;
+                    if (game.Feedback != lastFeedback) { lastFeedback = game.Feedback; UnityEngine.Debug.Log($"[Call] {lastFeedback.Replace('\n', ' ')}"); }
+                    if (game.Flow == TennisGame.Phase.Rally && game.BallVelocity.z < -1 && game.BallPosition.z > game.Player.transform.position.z && frame % 3 == 0)
+                        GameCapture.Save($"{dir}/frame-{frame:D4}.jpg", 1280, 720);
                 }
             }
             finally { Time.captureFramerate = oldRate; game.AutoPlay = false; }

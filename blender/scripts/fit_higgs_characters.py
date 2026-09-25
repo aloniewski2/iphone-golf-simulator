@@ -17,6 +17,7 @@ on the new head, inside the bare-skin window below the visor.
 Run:  Blender --background sports-animation-studio-v4.blend --python fit_higgs_characters.py -- [--save]
 """
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -80,9 +81,9 @@ def to_world(p, origin):
     return Vector((origin.x + y * HEIGHT, origin.y - f * HEIGHT, .007 + z * HEIGHT))
 
 
-def import_body(gender, rig):
+def import_body(gender, rig, path=None, name=None):
     before = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=str(MODELS / f"player-{gender.lower()}.glb"))
+    bpy.ops.import_scene.gltf(filepath=str(path or MODELS / f"player-{gender.lower()}.glb"))
     new = [o for o in bpy.data.objects if o not in before]
     body = next(o for o in new if o.type == "MESH")
     body.parent = None
@@ -100,7 +101,8 @@ def import_body(gender, rig):
         # Tripo faces +X with its left on +Y; the rig faces -Y with its left on +X.
         v.co = Vector((rig.location.x + y * s, rig.location.y - x * s, .007 + (z - lo) * s))
     me.update()
-    body.name = f"V4 Higgs body {gender}"
+    # The material's last word names its textures in Unity (TennisLook: Higgs<Name>_Color).
+    body.name = f"V4 Higgs body {name or gender}"
     body.data.name = body.name
     body.data.materials[0].name = body.name
     return body
@@ -444,15 +446,19 @@ def build_face(gender, rig, body, collection, px, report):
     report.append(f"{gender}: face window {w:.3f}x{h:.3f} at z={centre.z:.3f} (skin {bottom:.3f}-{top:.3f}, x {xr - cx:.3f}..{xl - cx:.3f}) ref {tuple(round(float(c), 3) for c in ref)}")
 
 
-def main():
-    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    scene = bpy.data.scenes["03 TENNIS"]; bpy.context.window.scene = scene
-    report = []
-    for gender in ("Male", "Female"):
+# Replace the scanned arms below the sleeves with clean skinned arms (real_arms.py).
+REAL_ARMS = True
+
+
+def fit_character(gender, report, path=None, name=None, landmarks=None):
+    """Fit one A-pose model onto the `gender` tennis rig, replacing that rig's body and face
+    in the open file. `name` (default the gender) names the body and its textures."""
+    name = name or gender
+    if True:
         rig = bpy.data.objects[f"{gender}_Tennis_Rig"]
         rig.data.pose_position = "REST"; bpy.context.view_layer.update()
-        k = LANDMARKS[gender]
-        body = import_body(gender, rig)
+        k = landmarks or LANDMARKS[gender]
+        body = import_body(gender, rig, path, name)
         joints = mesh_joints(k)
         removed = remove_fists(body, joints, rig)
         removed += remove_fragments(body, joints, rig)
@@ -497,13 +503,27 @@ def main():
         body.modifiers.new("Armature", "ARMATURE").object = rig
         bpy.ops.object.select_all(action="DESELECT"); body.select_set(True); bpy.context.view_layer.objects.active = body
         bpy.ops.object.shade_smooth()
-        textures = save_textures(body, gender)
+        textures = save_textures(body, name)
         build_face(gender, rig, body, collection, px, report)
+        if REAL_ARMS:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from real_arms import real_arms
+            real_arms(gender, rig, body, px, report)
         rig.data.pose_position = "POSE"
-        report.append(f"{gender}: {len(body.data.vertices)} verts, filled {filled}, fist verts removed {removed}, skirt verts {skirt}, textures {[p.name for p in textures.values()]}")
+        report.append(f"{name}: {len(body.data.vertices)} verts, filled {filled}, fist verts removed {removed}, skirt verts {skirt}, textures {[p.name for p in textures.values()]}")
+        return rig, body
+
+
+def main():
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    scene = bpy.data.scenes["03 TENNIS"]; bpy.context.window.scene = scene
+    report = []
+    for gender in ("Male", "Female"):
+        fit_character(gender, report)
     print("\n".join("FIT " + r for r in report), flush=True)
     if "--save" in argv:
         bpy.ops.wm.save_mainfile(); print("FIT saved", flush=True)
 
 
-main()
+if __name__ == "__main__":
+    main()

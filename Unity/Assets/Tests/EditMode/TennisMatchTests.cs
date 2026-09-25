@@ -78,49 +78,90 @@ public class TennisMatchTests
                     $"near={near} deuce={deuce}");
     }
 
-    [Test] public void MistimedServeGoesIntoTheNetAndGoodOnesLandIn()
+    // --- The controller serve -----------------------------------------------------------
+
+    [Test] public void PowerBarPeaksAtTheTopOfTheToss()
     {
-        var box = TennisRules.ServeTargetCentre(true, true);
-        var good = TennisRules.JudgeServe(0, .8f, .2f, box, true);
-        Assert.IsTrue(good.Struck); Assert.IsTrue(good.Legal);
-        Assert.IsTrue(TennisRules.ServeIsIn(good.Landing, true, true));
+        Assert.AreEqual(1f, TennisRules.ServePowerAt(0), 1e-5f);
+        Assert.Greater(TennisRules.ServePowerAt(.1f), TennisRules.ServePowerAt(.25f));
+        Assert.AreEqual(TennisRules.ServePowerAt(-.2f), TennisRules.ServePowerAt(.2f), 1e-5f, "early and late cost the same");
+        Assert.AreEqual(0f, TennisRules.ServePowerAt(TennisRules.ServePowerWindow), 1e-5f);
+        Assert.IsTrue(TennisRules.ServePerfectTiming(TennisRules.ServePerfectWindow * .9f));
+        Assert.IsFalse(TennisRules.ServePerfectTiming(TennisRules.ServePerfectWindow * 1.5f));
+    }
 
-        var late = TennisRules.JudgeServe(.75f, .8f, .2f, box, true);
-        Assert.IsTrue(late.Struck); Assert.IsFalse(late.Legal);
+    [Test] public void APerfectServeNeedsAPerfectTossAndAPerfectSwing()
+    {
+        var aim = new Vector2(.8f, .9f);
+        var perfect = TennisRules.JudgeServeStrike(0, 1, aim, true, true, false, .9f, .1f);
+        Assert.IsTrue(perfect.Perfect); Assert.IsTrue(perfect.Legal);
+        Assert.AreEqual(TennisRules.ServeTopSpeed, perfect.Speed, 1e-4f, "as fast as a serve goes");
+        var spot = TennisRules.IntoServiceBox(TennisRules.ServeAimPoint(aim, true, true), true, true);
+        Assert.Less(Vector3.Distance(spot, perfect.Landing), .01f, "exactly where it was aimed");
+        var looseToss = TennisRules.JudgeServeStrike(0, .5f, aim, true, true, false, .9f, .1f);
+        var lateSwing = TennisRules.JudgeServeStrike(.2f, 1, aim, true, true, false, .9f, .1f);
+        Assert.IsFalse(looseToss.Perfect); Assert.IsFalse(lateSwing.Perfect);
+        Assert.Less(looseToss.Speed, perfect.Speed); Assert.Less(lateSwing.Speed, perfect.Speed);
+        Assert.Less(TennisRules.JudgeServeStrike(0, 1, aim, true, true, true, .5f, .5f).Speed, perfect.Speed, "a second serve is safer");
+    }
 
-        var early = TennisRules.JudgeServe(-.8f, .8f, .2f, box, true);
-        Assert.IsFalse(early.Legal);
+    [Test] public void TheTossPlacesTheServeAndTheSwingPowersIt()
+    {
+        var aim = new Vector2(0, .7f);
+        var spot = TennisRules.IntoServiceBox(TennisRules.ServeAimPoint(aim, true, true), true, true);
+        // Same swing, different tosses: same pace, but a looser toss lands further off the aim.
+        var clean = TennisRules.JudgeServeStrike(.15f, .95f, aim, true, true, false, .95f, .95f);
+        var loose = TennisRules.JudgeServeStrike(.15f, .4f, aim, true, true, false, .95f, .95f);
+        var wild = TennisRules.JudgeServeStrike(.15f, .05f, aim, true, true, false, .95f, .95f);
+        Assert.AreEqual(clean.Speed, loose.Speed, 1e-4f, "the toss does not change the pace");
+        Assert.Less(Vector3.Distance(clean.Landing, spot), .01f, "a centred toss lands on the aim");
+        Assert.Greater(Vector3.Distance(loose.Landing, spot), Vector3.Distance(clean.Landing, spot));
+        Assert.Greater(Vector3.Distance(wild.Landing, spot), Vector3.Distance(loose.Landing, spot));
+        // Same toss, different swings: same spot, different pace.
+        var early = TennisRules.JudgeServeStrike(-.3f, .95f, aim, true, true, false, .95f, .95f);
+        Assert.Less(early.Speed, clean.Speed);
+        Assert.Less(Vector3.Distance(early.Landing, spot), .01f);
+    }
 
-        // Every legal serve, anywhere in the window, must actually be a legal serve.
-        for (float offset = -TennisRules.ServeLegalWindow; offset <= TennisRules.ServeLegalWindow; offset += .02f)
+    [Test] public void AGoodTossLandsWhereAimedAndALooseOneRisksAFault()
+    {
+        // A centred toss lands exactly on the aim, anywhere in the box, at any legal timing.
+        foreach (bool deuce in new[] { true, false })
+            for (float across = -1; across <= 1; across += .5f)
+                for (float depth = 0; depth <= 1; depth += .5f)
+                    for (float fromApex = -.4f; fromApex <= .4f; fromApex += .1f)
+                    {
+                        var v = TennisRules.JudgeServeStrike(fromApex, 1, new Vector2(across, depth), true, deuce, false, .99f, .01f);
+                        if (TennisRules.ServePowerAt(fromApex) >= TennisRules.ServeFaultPower)
+                            Assert.IsTrue(v.Legal && TennisRules.ServeIsIn(v.Landing, true, deuce), $"aim {across},{depth} at {fromApex}: {v.Landing}");
+                    }
+        // Aimed at the lines with a loose toss, the wander can carry it out: a fault.
+        int outs = 0;
+        for (float r = 0; r <= 1; r += .1f)
         {
-            var v = TennisRules.JudgeServe(offset, .8f, .2f, box, true);
-            if (v.Legal) Assert.IsTrue(TennisRules.ServeIsIn(v.Landing, true, true), $"offset {offset}");
+            var v = TennisRules.JudgeServeStrike(0, .2f, new Vector2(1, 1), true, true, false, r, 1 - r);
+            if (!TennisRules.ServeIsIn(v.Landing, true, true)) outs++;
         }
+        Assert.Greater(outs, 2, "going for the lines with a bad toss must be a real risk");
+        // Aimed safely with a middling toss it still lands in.
+        Assert.IsTrue(TennisRules.ServeIsIn(TennisRules.JudgeServeStrike(0, .7f, new Vector2(0, .5f), true, true, false, .9f, .1f).Landing, true, true));
+        Assert.IsFalse(TennisRules.JudgeServeStrike(.6f, 1, Vector2.zero, true, true, false, .5f, .5f).Legal, "far too late hits the net");
+        Assert.IsFalse(TennisRules.JudgeServeStrike(-.6f, 1, Vector2.zero, true, true, false, .5f, .5f).Legal, "far too early too");
+        // Aim moves the ball: wide lands further out than the T.
+        var t = TennisRules.JudgeServeStrike(0, 1, new Vector2(-1, .8f), true, true, false, .5f, .5f);
+        var wide = TennisRules.JudgeServeStrike(0, 1, new Vector2(1, .8f), true, true, false, .5f, .5f);
+        Assert.Greater(Mathf.Abs(wide.Landing.x), Mathf.Abs(t.Landing.x) + 2);
     }
 
-    [Test] public void APatOrAFlatHandIsNotAServe()
+    [Test] public void ServesTheReceiverCanReachAreToldApart()
     {
-        var box = TennisRules.ServeTargetCentre(true, true);
-        Assert.IsFalse(TennisRules.JudgeServe(0, .05f, .2f, box, true).Struck, "too weak");
-        Assert.IsFalse(TennisRules.JudgeServe(0, .8f, 0f, box, true).Struck, "arm never raised");
-    }
-
-    [Test] public void TimingOnlyDecidesNetOrIn()
-    {
-        var box = TennisRules.ServeTargetCentre(true, true);
-        // Placement is automatic: any legal serve goes to the same correct box, whatever the
-        // timing. Timing decides only whether it clears the net.
-        var sharp = TennisRules.JudgeServe(0, .8f, .2f, box, true);
-        var scruffy = TennisRules.JudgeServe(.17f, .8f, .2f, box, true);
-        Assert.IsTrue(sharp.Legal); Assert.IsTrue(scruffy.Legal);
-        Assert.AreEqual(sharp.Landing, scruffy.Landing);
-        Assert.AreEqual(sharp.Speed, scruffy.Speed, .001f, "speed comes from power, not timing");
-        Assert.IsFalse(TennisRules.JudgeServe(.8f, .8f, .2f, box, true).Legal, "wildly mistimed hits the net");
-        Assert.IsTrue(TennisRules.JudgeServe(.35f, .8f, .2f, box, true).Legal, "ordinary sloppy timing still goes in");
-        // Power still decides pace.
-        Assert.Greater(TennisRules.JudgeServe(0, 1f, .2f, box, true).Speed,
-                       TennisRules.JudgeServe(0, .3f, .2f, box, true).Speed);
+        // Straight at the receiver: always reachable. Top pace into the far corner with the
+        // receiver stood on the other side: not.
+        Vector3 start = new Vector3(-2.35f, 2.45f, 12.35f);
+        var atThem = TennisRules.ServeAimPoint(new Vector2(0, .9f), false, true);
+        Assert.IsTrue(TennisRules.ServeReachable(start, TennisRules.ServeVelocity(start, atThem, 30, .1f), .1f, .6f, atThem.x, -11.2f));
+        var corner = TennisRules.ServeAimPoint(new Vector2(1, .95f), false, true);
+        Assert.IsFalse(TennisRules.ServeReachable(start, TennisRules.ServeVelocity(start, corner, TennisRules.ServeTopSpeed, .1f), .1f, .6f, -corner.x, -11.2f));
     }
 
     [Test] public void ServerAndReceiverStandOnMatchingSides()
@@ -145,25 +186,22 @@ public class TennisMatchTests
     [Test] public void EveryLegalServeActuallyClearsTheNet()
     {
         // The original bug: the flattest arc that reaches the target passes UNDER the net, so
-        // no serve could ever be legal however well it was timed.
+        // no serve could ever be legal however well it was timed. Now at up to top pace.
         foreach (bool deuce in new[] { true, false })
-        {
-            var box = TennisRules.ServeTargetCentre(true, deuce);
             foreach (float contact in new[] { 1.2f, 2.0f, 2.45f, 2.8f })
             {
                 Vector3 start = new Vector3(TennisRules.ServerStanceX(true, deuce), contact, -11.2f);
-                foreach (float power in new[] { 0f, .5f, 1f })
-                {
-                    var v = TennisRules.JudgeServe(0, Mathf.Max(power, TennisRules.ServeMinPower), .2f, box, true);
-                    Vector3 velocity = TennisRules.ServeVelocity(start, v.Landing, v.Speed);
-                    float flight = Mathf.Abs(velocity.z) < .001f ? 1 : (v.Landing.z - start.z) / velocity.z;
-                    Assert.Greater(TennisRules.NetCrossingHeight(start, v.Landing, velocity, flight),
-                        TennisRules.NetHeight, $"contact {contact} power {power} deuce {deuce} must clear the net");
-                    // And it must still land in the box it is required to hit.
-                    Assert.IsTrue(TennisRules.ServeIsIn(v.Landing, true, deuce));
-                }
+                foreach (float fromApex in new[] { 0f, .2f, .35f })
+                    foreach (float across in new[] { -1f, 0f, 1f })
+                    {
+                        var v = TennisRules.JudgeServeStrike(fromApex, 1, new Vector2(across, .9f), true, deuce, false, .5f, .5f);
+                        Vector3 velocity = TennisRules.ServeVelocity(start, v.Landing, v.Speed);
+                        float flight = Mathf.Abs(velocity.z) < .001f ? 1 : (v.Landing.z - start.z) / velocity.z;
+                        Assert.Greater(TennisRules.NetCrossingHeight(start, v.Landing, velocity, flight),
+                            TennisRules.NetHeight, $"contact {contact} timing {fromApex} aim {across} deuce {deuce} must clear the net");
+                        Assert.IsTrue(TennisRules.ServeIsIn(v.Landing, true, deuce));
+                    }
             }
-        }
     }
 
     [Test] public void OnlyTheServeHasToGoDiagonally()
@@ -190,9 +228,47 @@ public class TennisMatchTests
 
         // Error chance grows with stretch rather than being a flat coin-flip.
         Assert.Greater(TennisOpponent.ErrorChance(1f, .5f), TennisOpponent.ErrorChance(0f, .5f) * 4);
-        Assert.Less(TennisOpponent.ErrorChance(0f, .5f), .12f, "comfortable balls come back");
+        Assert.Less(TennisOpponent.ErrorChance(0f, .5f), .05f, "comfortable balls come back");
+        Assert.Less(TennisOpponent.ErrorChance(.4f, .5f), .07f, "and so do ordinary ones: points come from reach, not gifts");
+        Assert.Greater(TennisOpponent.ErrorChance(1f, .5f), .35f, "a ball at full stretch often does not");
         // And a harder setting errs less at the same stretch.
         Assert.Less(TennisOpponent.ErrorChance(.8f, 1f), TennisOpponent.ErrorChance(.8f, 0f));
+    }
+
+    [Test] public void OpponentOnlyMissesBallsThatAreHardToPlay()
+    {
+        // A comfortable ball -- at the body, moderate pace, waist high -- comes back unless the
+        // opponent makes an unforced error, which only weak players do with any regularity.
+        for (float d = 0; d <= 1f; d += .25f)
+        {
+            float unforced = OpponentProfile.FromDifficulty(d).UnforcedError;
+            var easy = TennisOpponent.Decide(0, .4f, 0, d, unforced + .01f, .5f, .5f, .4f, TennisOpponent.Reach, 0, .5f);
+            Assert.IsTrue(easy.Reached && !easy.Error, $"comfortable ball at difficulty {d}");
+            Assert.LessOrEqual(unforced, .1f, "unforced errors stay occasional");
+        }
+        Assert.IsTrue(TennisOpponent.Decide(0, .4f, 0, 0, .02f, .5f, .5f, .4f, TennisOpponent.Reach, 0, .5f).Error,
+            "a club player can shank an easy ball");
+        Assert.Less(OpponentProfile.Rival("boss", 1).UnforcedError, .01f, "the champion almost never gives one away");
+        // Each threat alone makes a ball harder; together they compound.
+        float calm = TennisOpponent.ShotDifficulty(0, 0);
+        Assert.Greater(TennisOpponent.ShotDifficulty(.9f, 0), calm);
+        Assert.Greater(TennisOpponent.ShotDifficulty(0, 1), calm);
+        Assert.Greater(TennisOpponent.ShotDifficulty(0, 0, 1), calm);
+        Assert.Greater(TennisOpponent.ShotDifficulty(0, 0, 0, 1), calm);
+        Assert.Greater(TennisOpponent.ShotDifficulty(.9f, 1, 1, 1), TennisOpponent.ShotDifficulty(.9f, 0));
+
+        // A miss says why, and lands where that kind of miss goes.
+        var wide = TennisOpponent.Decide(0, TennisOpponent.Reach * .97f, 0, .5f, .9f * TennisOpponent.ErrorChance(.97f, .5f), .5f, .5f);
+        Assert.IsTrue(wide.Error); Assert.AreEqual("STRETCHED WIDE", wide.Reason);
+        Assert.Greater(Mathf.Abs(wide.Landing.x), TennisRules.CourtHalfWidth, "sprayed wide of the sideline");
+        Assert.Less(wide.Landing.z, 0, "on the player's side");
+        var low = TennisOpponent.Decide(0, .3f, 0, .5f, 0, .5f, .5f, .2f, TennisOpponent.Reach, -1, 0);
+        var lowChance = TennisOpponent.ErrorChance(.3f / TennisOpponent.Reach, .5f, .2f, 1, 0);
+        if (lowChance > 0) { Assert.IsTrue(low.Error); StringAssert.Contains("LOW", low.Reason); Assert.Greater(low.Landing.z, 0, "into the net"); }
+        var pace = TennisOpponent.Decide(0, 1.2f, 0, .2f, .99f * TennisOpponent.ErrorChance(1.2f / TennisOpponent.Reach, .2f, 1, 0, 1), .5f, .5f, 1, TennisOpponent.Reach, 0, 1);
+        Assert.IsTrue(pace.Error);
+        Assert.Less(pace.Landing.z, -TennisRules.CourtHalfLength, "late on a heavy ball, it flies long");
+        StringAssert.DoesNotContain("WIDE", pace.Reason);
     }
 
     [Test] public void OpponentHitsIntoTheOpenCourtAndInsideTheLines()
@@ -257,7 +333,8 @@ public class TennisMatchTests
         var poor = TennisRules.AimedTarget(1, .3f, 0);
         Assert.Greater(clean.x, 3.4f, "full aim off a clean hit goes near the sideline");
         Assert.Less(clean.x, TennisRules.CourtHalfWidth, "but inside it before error");
-        Assert.Less(poor.x, 2.3f, "a poor contact is pulled toward the middle");
+        Assert.Greater(poor.x, 2.5f, "a poor contact still goes the way the face pointed");
+        Assert.Less(poor.x, clean.x, "just not as close to the line");
         Assert.Greater(clean.z, poor.z + 2, "clean contact lands deep, poor contact sits up short");
         Assert.AreEqual(0, TennisRules.AimedTarget(0, .9f, 0).x, 1e-4, "neutral face goes through the middle");
         Assert.Less(TennisRules.AimedTarget(-1, .9f, 0).x, -3f, "face turned left goes left");
@@ -445,5 +522,85 @@ public class TennisMatchTests
         Assert.IsTrue(TennisRules.BounceIsIn(inBall));
         Assert.IsTrue(TennisRules.PredictLanding(new Vector3(0, 1.2f, -8), new Vector3(9, 4, 14), out var wide));
         Assert.IsFalse(TennisRules.BounceIsIn(wide), "a ball sent this wide must read as out");
+    }
+
+    // --- Timing: fair windows, learned lag, honest contact map --------------------------
+
+    [Test] public void TimingGradesAreSetInMillisecondsAPersonCanHit()
+    {
+        Assert.AreEqual(Timing.Perfect, TennisRules.Grade(TennisRules.TimingScore(.03f)), "30ms late is still perfect");
+        Assert.AreEqual(Timing.Perfect, TennisRules.Grade(TennisRules.TimingScore(-.03f)), "and so is 30ms early");
+        Assert.AreEqual(Timing.Excellent, TennisRules.Grade(TennisRules.TimingScore(.05f)));
+        Assert.AreEqual(Timing.Great, TennisRules.Grade(TennisRules.TimingScore(.08f)));
+        Assert.AreEqual(Timing.Good, TennisRules.Grade(TennisRules.TimingScore(-.12f)));
+        Assert.AreEqual(Timing.Ok, TennisRules.Grade(TennisRules.TimingScore(.18f)));
+        Assert.AreEqual(Timing.Missed, TennisRules.Grade(TennisRules.TimingScore(.3f)));
+        Assert.AreEqual("LATE", TennisRules.TimingWord(.06f));
+        Assert.AreEqual("EARLY", TennisRules.TimingWord(-.06f));
+        Assert.AreEqual("", TennisRules.TimingWord(.02f));
+    }
+
+    [Test] public void LagLearnerCorrectsASteadyBiasAndIgnoresFlukes()
+    {
+        var lag = new TennisLagLearner { Prior = .10f };
+        Assert.AreEqual(.10f, lag.Estimate, 1e-5f, "starts at the measured TV delay");
+        // The player's timing actually runs ~210ms behind (TV plus habit).
+        foreach (float late in new[] { .20f, .23f, .21f, .19f }) lag.Observe(late);
+        Assert.AreEqual(.20f, lag.Estimate, .02f, "a steady bias is learned within a few swings");
+        lag.Observe(.9f); lag.Observe(-.6f);
+        Assert.AreEqual(.20f, lag.Estimate, .02f, "a panicked swing is not a trend");
+        Assert.LessOrEqual(new TennisLagLearner { Prior = 2 }.Estimate, TennisLagLearner.Max);
+        // An unmeasured TV (prior 0) is still learned, from play alone.
+        var unmeasured = new TennisLagLearner();
+        foreach (float late in new[] { .15f, .16f, .14f, .15f }) unmeasured.Observe(late);
+        Assert.AreEqual(.15f, unmeasured.Estimate, .02f);
+    }
+
+    [Test] public void AssistedHitsLandOnTheStringsByHowWellTheyWereMade()
+    {
+        // Clean and on time: the sweet spot, not the frame.
+        Vector2 clean = TennisRules.AssistedFace(1f, .1f, -.1f);
+        Assert.Less(TennisRules.FaceError(clean), .1f);
+        // Scrambled: out toward the frame, but still on the strings.
+        Vector2 poor = TennisRules.AssistedFace(0f, 1f, 0f);
+        Assert.That(TennisRules.FaceError(poor), Is.InRange(.8f, 1f));
+        // Direction follows the timing and the height.
+        Assert.Greater(TennisRules.AssistedFace(.5f, 1, 0).x, 0, "early goes one way across the face");
+        Assert.Less(TennisRules.AssistedFace(.5f, -1, 0).x, 0, "late the other");
+        Assert.Greater(TennisRules.AssistedFace(.5f, 0, 1).y, 0, "a high ball meets the upper strings");
+        // Quality alone decides how far out: a middling contact sits in between.
+        float mid = TennisRules.FaceError(TennisRules.AssistedFace(.5f, .3f, .3f));
+        Assert.Less(mid, TennisRules.FaceError(poor)); Assert.Greater(mid, TennisRules.FaceError(clean));
+    }
+
+    [Test] public void TimingCheckMeasuresHowLateSwingsLandOnTheBeat()
+    {
+        // A player whose swings register 190ms after each bounce they see (+/- a little).
+        var check = new TennisBeatCalibration(10);
+        float[] wobble = { .01f, -.02f, .015f, 0, -.01f, .02f, -.015f, .005f, 0 };
+        for (int b = 0; b < TennisBeatCalibration.Beats; b++)
+            Assert.AreEqual(b, check.Swing(check.BeatTime(b) + .19f + wobble[b]));
+        Assert.IsTrue(check.Finished(check.End));
+        Assert.AreEqual(TennisBeatCalibration.Beats - TennisBeatCalibration.WarmUp, check.Scored, "warm-up beats only set the rhythm");
+        Assert.IsTrue(check.TryResult(out float lag));
+        Assert.AreEqual(.19f, lag, .015f);
+
+        // A second swing on the same bounce, or one between bounces, does not count twice.
+        var again = new TennisBeatCalibration(0);
+        Assert.AreEqual(3, again.Swing(again.BeatTime(3) + .1f));
+        Assert.AreEqual(-1, again.Swing(again.BeatTime(3) + .15f));
+        Assert.AreEqual(-1, again.Swing(again.BeatTime(4) - TennisBeatCalibration.Interval / 2));
+
+        // Flailing is not a rhythm: no result rather than a wrong one.
+        var wild = new TennisBeatCalibration(0);
+        float[] scatter = { 0, 0, -.3f, .3f, -.25f, .28f, .0f, -.3f, .3f };
+        for (int b = 0; b < TennisBeatCalibration.Beats; b++) wild.Swing(wild.BeatTime(b) + scatter[b]);
+        Assert.IsFalse(wild.TryResult(out _));
+        // Nor is standing still.
+        Assert.IsFalse(new TennisBeatCalibration(0).TryResult(out _));
+
+        // The ball is on the line at every beat and up in between.
+        Assert.Less(check.Height(check.BeatTime(4) + .001f, out int onBeat), .01f); Assert.AreEqual(4, onBeat);
+        Assert.Greater(check.Height(check.BeatTime(4) + TennisBeatCalibration.Interval / 2, out _), .95f);
     }
 }

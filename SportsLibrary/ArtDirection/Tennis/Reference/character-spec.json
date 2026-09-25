@@ -1,0 +1,274 @@
+{
+ "source": "SportsLibrary/ArtDirection/Tennis/Generated/video/tennis-gameplay-concept.mp4 (24 fps frames in video/frames24)",
+ "proportions": {
+  "_note": "fractions of total standing height H (crown to sole), measured on f226 (front) and f87 (back)",
+  "head_height": 0.28,
+  "head_width_to_height": 1.15,
+  "ears": "small, no visible neck",
+  "shoulder_width_to_head_width": 0.8,
+  "torso": "boxy tee, shoulders to hem 0.31",
+  "shorts": "mid-thigh, hem at 0.26",
+  "crotch_height": 0.33,
+  "leg": "even tube, no knee definition",
+  "arm_thickness_to_head_width": 0.18,
+  "hand": "small mitten fist with thumb",
+  "shoe_length": 0.15,
+  "shoe_height": 0.1
+ },
+ "colours_srgb": {
+  "skin": "#E8955A",
+  "tee": "#C8C8C8",
+  "shorts": "#6E6E6E",
+  "shoes": "#F4F4F4",
+  "racket_frame": "#E0502A",
+  "racket_rim": "#F2C230",
+  "racket_grip": "#F4F4F4",
+  "female_hair": "#5A3522",
+  "female_skirt": "#8C8C8C",
+  "female_top": "#F0F0F0"
+ },
+ "motion": {
+  "fps": 24,
+  "forehand": {
+   "prep": [
+    97,
+    108
+   ],
+   "forward": [
+    108,
+    114.5
+   ],
+   "follow": [
+    114.5,
+    121
+   ],
+   "recover": [
+    121,
+    128
+   ]
+  },
+  "serve": {
+   "trophy": [
+    1,
+    7
+   ],
+   "drop": [
+    7,
+    9.5
+   ],
+   "contact": 11.5,
+   "airborne": [
+    9,
+    16.5
+   ],
+   "land": [
+    15,
+    19
+   ],
+   "recover": [
+    19,
+    23
+   ]
+  },
+  "backhand": {
+   "prep": [
+    44,
+    45
+   ],
+   "contact": 53.5,
+   "finish": 63
+  },
+  "smash": {
+   "turn": [
+    152,
+    165
+   ],
+   "crouch": 168,
+   "takeoff": 170,
+   "trophy": 176,
+   "contact": 186.5,
+   "land": 189,
+   "recover": 192
+  },
+  "celebrate": {
+   "turn": [
+    207,
+    216
+   ],
+   "pump": [
+    218,
+    240
+   ]
+  },
+  "ready": [
+   21,
+   43
+  ],
+  "run": [
+   [
+    65,
+    95
+   ],
+   [
+    129,
+    165
+   ]
+  ],
+  "feel": "hips and chest lead the arm into contact by 2-3 frames; snappy into contact, smooth after; stand tall, knees bend only when loading; chunky rigid parts, little secondary motion; bouncy steps; running arms pump opposite the legs"
+ },
+ "silhouettes": {
+  "front": {
+   "frame": 226,
+   "height_px": 359,
+   "widest_head": 0.3816155988857939,
+   "width_profile": [
+    0.256,
+    0.348,
+    0.37,
+    0.379,
+    0.376,
+    0.376,
+    0.376,
+    0.365,
+    0.354,
+    0.345,
+    0.343,
+    0.326,
+    0.245,
+    0.217,
+    0.214,
+    0.214,
+    0.226,
+    0.242,
+    0.259,
+    0.27,
+    0.281,
+    0.301,
+    0.32,
+    0.34,
+    0.345,
+    0.362,
+    0.401,
+    0.418,
+    0.426,
+    0.418,
+    0.384,
+    0.379,
+    0.398,
+    0.407,
+    0.412,
+    0.423,
+    0.44,
+    0.46,
+    0.474,
+    0.485,
+    0.501,
+    0.51,
+    0.524,
+    0.248,
+    0.209
+   ]
+  },
+  "back": {
+   "frame": 87,
+   "height_px": 354,
+   "widest_head": 0.307909604519774,
+   "width_profile": [
+    0.065,
+    0.169,
+    0.212,
+    0.24,
+    0.254,
+    0.266,
+    0.266,
+    0.288,
+    0.308,
+    0.302,
+    0.249,
+    0.181,
+    0.169,
+    0.169,
+    0.169,
+    0.218,
+    0.257,
+    0.28,
+    0.294,
+    0.299,
+    0.308,
+    0.299,
+    0.203,
+    0.203,
+    0.203,
+    0.206,
+    0.209,
+    0.209,
+    0.251,
+    0.263,
+    0.266,
+    0.514,
+    0.325,
+    0.336,
+    0.342,
+    0.342,
+    0.342,
+    0.347,
+    0.359,
+    0.412,
+    0.444,
+    0.466,
+    0.466,
+    0.432,
+    0.031
+   ]
+  },
+  "side": {
+   "frame": 1,
+   "height_px": 603,
+   "widest_head": 0.7412935323383084,
+   "width_profile": [
+    0.42,
+    0.471,
+    0.501,
+    0.64,
+    0.69,
+    0.69,
+    0.701,
+    0.701,
+    0.741,
+    0.733,
+    0.741,
+    0.721,
+    0.68,
+    0.675,
+    0.632,
+    0.572,
+    0.496,
+    0.461,
+    0.494,
+    0.509,
+    0.479,
+    0.466,
+    0.466,
+    0.458,
+    0.449,
+    0.433,
+    0.441,
+    0.446,
+    0.426,
+    0.381,
+    0.368,
+    0.371,
+    0.375,
+    0.191,
+    0.229,
+    0.401,
+    0.41,
+    0.415,
+    0.148,
+    0.136,
+    0.045
+   ]
+  },
+  "_note": "GrabCut masks, approximate (about +-3% of height): the back view fills the gap between the legs where the tan decking matches skin"
+ }
+}

@@ -74,10 +74,12 @@ final class SportsIntegrationTests:XCTestCase {
         XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:0,neutral:0),0)
         XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:SportsMotionGeometry.aimSpanDegrees,neutral:0),1)
         XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:90,neutral:0),1)
-        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:-12,neutral:0),-0.5,accuracy:1e-9)
+        XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:3,neutral:0),0,"inside the dead zone the ball goes straight")
+        XCTAssertLessThan(SportsMotionGeometry.aim(faceAngle:-18,neutral:0),-0.4)
         // A player who habitually swings with the face 10° open: that is their "straight".
         XCTAssertEqual(SportsMotionGeometry.aim(faceAngle:10,neutral:10),0)
-        XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:10),1.2,accuracy:1e-9)
+        XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:4),0.4,accuracy:1e-9)
+        XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:10),0,"an aimed shot is not learnt as habit")
         XCTAssertEqual(SportsMotionGeometry.learnNeutral(0,faceAngle:30),0,"a deliberately aimed shot is not learnt as habit")
     }
 

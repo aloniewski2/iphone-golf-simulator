@@ -21,10 +21,16 @@ final class SportsDisplays: NSObject {
         }
         if external == nil, let scene=scenes.first(where: { $0.session.role == .windowExternalDisplayNonInteractive && $0.activationState != .unattached }) {
             let window=UIWindow(windowScene:scene)
-            let waiting=UIViewController(); waiting.view.backgroundColor = .black
-            window.rootViewController=waiting; window.isHidden=false; external=window
+            window.rootViewController=Self.tvRoot(); window.isHidden=false; external=window
         }
         SportsSession.shared.displayConnected = external != nil
+        if let screen = external?.windowScene?.screen {
+            // AirPlay to a Mac arrives like any other screen, usually 16:10 (1440×900,
+            // 1512×982…) or the size of the receiver's window; the TV canvas fits either.
+            NSLog("[SportsDisplay] external %@ bounds=%.0fx%.0f scale=%.1f native=%.0fx%.0f kind=%@",
+                  SportsTiming.currentTV(), screen.bounds.width, screen.bounds.height, screen.scale,
+                  screen.nativeBounds.width, screen.nativeBounds.height, Self.displayKind.rawValue)
+        }
         NSLog("[SportsDisplay] refresh scenes=%@ external=%d",scenes.map { $0.session.role.rawValue }.joined(separator:","),external != nil ? 1 : 0)
     }
     func register(from controller:UIViewController) {
@@ -41,7 +47,7 @@ final class SportsDisplays: NSObject {
     }
     func gameWindow(preview usePreview:Bool) -> UIWindow? {
         refresh()
-        if !usePreview { showWaiting("Loading your game…"); return external }
+        if !usePreview { showMenu(); return external }
         guard let scene=phone?.windowScene else { return nil }
         let window=UIWindow(windowScene:scene); preview=window; return window
     }
@@ -68,12 +74,27 @@ final class SportsDisplays: NSObject {
         preview?.isHidden=true; preview=nil; phone?.makeKeyAndVisible()
     }
     func isPreview(_ window:UIWindow?) -> Bool { window != nil && window === preview }
-    func showWaiting(_ message:String) {
-        guard let window=external,let view=window.rootViewController?.view else { return }
-        let label=(view.subviews.compactMap { $0 as? UILabel }.first) ?? UILabel(frame:view.bounds)
-        label.text=message; label.textColor = .white; label.textAlignment = .center
-        label.autoresizingMask=[.flexibleWidth,.flexibleHeight]
-        if label.superview == nil { view.addSubview(label) }
+
+    enum DisplayKind: String { case none, tv, mac }
+    /// What the phone is mirroring to: a Mac (AirPlay Receiver) or a TV. The receiver's name
+    /// usually says ("Adnan's MacBook Pro"); otherwise a 16:10 screen is almost always a Mac.
+    static var displayKind: DisplayKind {
+        guard let screen = shared.external?.windowScene?.screen else { return .none }
+        let name = SportsTiming.currentTV().lowercased()
+        if name.contains("mac") || name.contains("imac") { return .mac }
+        let aspect = screen.bounds.width / max(1, screen.bounds.height)
+        return abs(aspect - 1.6) < 0.06 ? .mac : .tv
+    }
+    /// The TV's own screen: the menu, loading and results (TennisTVRoot). It sits above
+    /// Unity's display and is hidden while a game is on.
+    static func tvRoot() -> UIViewController {
+        let host=UIHostingController(rootView:TennisTVRoot())
+        host.view.backgroundColor = .black
+        return host
+    }
+    func showMenu() {
+        guard let window=external else { return }
+        if !(window.rootViewController is UIHostingController<TennisTVRoot>) { window.rootViewController=Self.tvRoot() }
         window.windowLevel = .normal + 1
         window.isHidden=false
     }
@@ -99,12 +120,9 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
         NSLog("[SportsDisplay] external scene connected")
         guard let scene=scene as? UIWindowScene else { return }
         let window=UIWindow(windowScene:scene)
-        let waiting=UIViewController(); waiting.view.backgroundColor = .black
-        let label=UILabel(frame:scene.coordinateSpace.bounds); label.text="Choose a sport on your iPhone"; label.textColor = .white; label.textAlignment = .center
-        label.autoresizingMask=[.flexibleWidth,.flexibleHeight]; waiting.view.addSubview(label)
-        window.rootViewController=waiting; window.isHidden=false
+        window.rootViewController=SportsDisplays.tvRoot(); window.isHidden=false
         self.window=window; SportsDisplays.shared.external=window; SportsSession.shared.displayConnected=true
-        SportsDisplays.shared.showWaiting("Choose a sport on your iPhone")
+        SportsDisplays.shared.showMenu()
         if SportsSession.shared.active && SportsSession.shared.ready {
             SportsRuntime.shared().attach(to:window)
             SportsSession.shared.command("display")

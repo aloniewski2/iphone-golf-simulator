@@ -20,11 +20,15 @@ namespace GolfArcade.EditorTools
         void OnPreprocessModel()
         {
             bool standard = IsStandard;
-            if (!standard && !assetPath.StartsWith("Assets/Resources/Golfer/")) return;
+            // Campaign opponents' bodies (blender/scripts/fit_opponents.py): the same rig and
+            // scale as the standard tennis characters, which is what lets TennisActor rebind
+            // them bone for bone. They carry no animation of their own.
+            bool opponent = assetPath.StartsWith("Assets/Resources/Tennis/Opponents/");
+            if (!standard && !opponent && !assetPath.StartsWith("Assets/Resources/Golfer/")) return;
             var importer = (ModelImporter)assetImporter;
             importer.animationType = ModelImporterAnimationType.Generic;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            importer.importAnimation = true;
+            importer.importAnimation = !opponent;
             importer.animationCompression = ModelImporterAnimationCompression.Off;
             importer.resampleCurves = true;
             importer.importCameras = false;

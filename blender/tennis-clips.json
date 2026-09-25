@@ -1,5 +1,5 @@
 {
- "timelineEnd": 4128,
+ "timelineEnd": 5282,
  "clips": [
   {
    "name": "Ready_RH",
@@ -398,24 +398,6 @@
    "lockHeight": true
   },
   {
-   "name": "Celebrate_RH",
-   "clip": "Celebrate",
-   "hand": "RH",
-   "firstFrame": 3156,
-   "lastFrame": 3216,
-   "loop": false,
-   "lockHeight": true
-  },
-  {
-   "name": "Celebrate_LH",
-   "clip": "Celebrate",
-   "hand": "LH",
-   "firstFrame": 3225,
-   "lastFrame": 3285,
-   "loop": false,
-   "lockHeight": true
-  },
-  {
    "name": "ForehandTopspin_RH",
    "clip": "ForehandTopspin",
    "hand": "RH",
@@ -488,11 +470,65 @@
    "lockHeight": true
   },
   {
+   "name": "Celebrate_RH",
+   "clip": "Celebrate",
+   "hand": "RH",
+   "firstFrame": 4569,
+   "lastFrame": 4610,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Celebrate_LH",
+   "clip": "Celebrate",
+   "hand": "LH",
+   "firstFrame": 4625,
+   "lastFrame": 4666,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Upset_RH",
+   "clip": "Upset",
+   "hand": "RH",
+   "firstFrame": 4681,
+   "lastFrame": 4735,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Upset_LH",
+   "clip": "Upset",
+   "hand": "LH",
+   "firstFrame": 4745,
+   "lastFrame": 4799,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Win_RH",
+   "clip": "Win",
+   "hand": "RH",
+   "firstFrame": 4809,
+   "lastFrame": 4918,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
+   "name": "Win_LH",
+   "clip": "Win",
+   "hand": "LH",
+   "firstFrame": 4928,
+   "lastFrame": 5037,
+   "loop": false,
+   "lockHeight": true
+  },
+  {
    "name": "Intro_RH",
    "clip": "Intro",
    "hand": "RH",
-   "firstFrame": 3847,
-   "lastFrame": 3959,
+   "firstFrame": 5047,
+   "lastFrame": 5159,
    "loop": false,
    "lockHeight": false
   },
@@ -500,8 +536,8 @@
    "name": "Intro_LH",
    "clip": "Intro",
    "hand": "LH",
-   "firstFrame": 3969,
-   "lastFrame": 4081,
+   "firstFrame": 5169,
+   "lastFrame": 5281,
    "loop": false,
    "lockHeight": false
   }

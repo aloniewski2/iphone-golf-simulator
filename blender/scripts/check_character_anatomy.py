@@ -7,6 +7,9 @@ this catches before anything is rigged.
 
 Run:  Blender --background --python blender/scripts/check_character_anatomy.py -- model.glb
 """
+import sys
+
+import bpy
 from mathutils import Vector
 path=sys.argv[sys.argv.index("--")+1]
 bpy.ops.wm.read_factory_settings(use_empty=True)

@@ -63,6 +63,31 @@ within 2 fps of the first. If the frame governor stepped quality down, the Unity
    run for wide balls, and plant its feet (no sliding) when it stops.
 3. A ball well wide should produce a dive.
 
+## 3b. Timing and rally realism
+
+- **Swing cue.** As a ball comes in, two brackets close on the target at the bottom of the TV
+  (and a ring closes on the ball). Start the swing as they meet ("SWING!"). The grade badge
+  and the phone both say EARLY / LATE / ON TIME after each hit. Target: after ten balls, most
+  hits say ON TIME or grade Great+.
+- **Contact map.** Clean, well-timed hits land in the sweet-spot rings on the phone's racket;
+  only scrambled ones sit out near the frame. Hits must no longer all sit on the rim.
+- **Learned lag.** If the first few serves or hits all say LATE, keep playing: within three or
+  four swings the game learns how far behind your timing runs and they should start reading
+  ON TIME without you changing anything. It is kept for the next session on the same TV.
+- **Timing check.** First match on a TV: after Ready, the TV shows a ball bouncing on a
+  line. Swing on every bounce (about ten seconds); the dots fill as swings count, then
+  "TIMING SET!" and the phone shows the milliseconds. Next session on the same TV skips both
+  this and the camera flashes. Options → "Re-check swing timing" runs it again. A second
+  run should agree with the first within ~30 ms. Swinging randomly must end in
+  "NO STEADY RHYTHM", not a wrong number.
+- **Toss meter.** The ticker sweeps at a steady speed; the gold-edged zone in the middle is a
+  perfect toss (about ±60 ms). The power bar's perfect band is about ±130 ms either side
+  of the top of the toss.
+- **Opponent misses have a reason.** Comfortable balls always come back. When it misses, the
+  call says why: STRETCHED WIDE, LUNGING — INTO THE NET, RUSHED BY THE PACE, LATE ON THE PACE,
+  DUG OUT LOW, TOO HIGH TO CONTROL, OVERPOWERED. Record any miss whose reason looks wrong
+  for the ball you hit. Target: rallies of 6+ shots are common at Standard.
+
 ## 4. Feel and look
 
 - Contact: fuzz and flash on every hit, a small camera punch on Excellent/Perfect, a thump in
@@ -72,6 +97,23 @@ within 2 fps of the first. If the frame governor stepped quality down, the Unity
 - A winner or long rally plays a slow-motion replay (not every point).
 - Match point shows the banner and the camera tightens.
 - End of match: the results card waits for a swing to start the next match.
+
+## 4b. Input lag (AirPlay)
+
+- After the court direction locks, the TV flashes black/white four times while the phone
+  still points at it; the controller then shows "TV delay NNN ms". Expect roughly 100–250 ms
+  over AirPlay. Repeat setup twice: the two readings should agree within ~30 ms.
+- `SportsDiagnostics.log` has `tv delay flashes=[…] chosen=…`: at least two of the four
+  flashes should have been read. If none are, the camera was not on the TV.
+- With the delay measured, swing when you *see* the ball arrive: shots should grade
+  Great/Perfect as often as they did on the phone screen. Compare with Game Mode on and off.
+- The Game Mode tip appears only when the delay is over 140 ms.
+- Xcode console: `[SportsDisplay] external mode 3840x2160 -> 1920x1080` on a 4K Apple TV, and
+  `external system … rendering …` no larger than 1920x1080.
+- `world tracking run … format=` should show the small play format after the axis locks,
+  and steering must still track sidesteps (the format change keeps the world map).
+- Contact is felt as a sharp click from the phone at the moment of the hit (a double click
+  for a super shot), ahead of the TV's sound.
 
 ## 5. Record
 

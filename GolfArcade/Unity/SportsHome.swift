@@ -1,8 +1,37 @@
 import SwiftUI
 
+/// The app's root. Tennis is a game front end: with no TV the phone shows the menu itself;
+/// with a TV connected the menu moves to the TV and the phone becomes its remote; during a
+/// match the phone is the racket. The classic multi-sport menu is still one option away.
 struct SportsHome: View {
     @State private var session = SportsSession.shared
+    @State private var menu = TennisMenu.shared
     @Environment(\.scenePhase) private var scenePhase
+    var body: some View {
+        Group {
+            if menu.classic { ClassicSportsHome() }
+            else if session.active && session.sport == "golf" { GolfPhoneController(session: session) }
+            else if session.active { TennisRacketController(session: session) }
+            else if session.displayConnected { TennisRemote() }
+            else { TennisPhoneMenu() }
+        }
+        .animation(.easeInOut(duration: 0.3), value: session.active)
+        .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
+        .task {
+            // `-benchTennis`: play a self-driving rally on the phone and log frame times.
+            if SportsSession.benchmark && !session.active { session.sport="tennis"; session.start(preview:true) }
+        }
+        .background(DisplayRegistration().frame(width:0,height:0))
+        .onChange(of:scenePhase) { _,phase in
+            if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
+            SportsRuntime.shared().setForeground(phase == .active)
+        }
+    }
+}
+
+/// Every sport and every raw option, as the app had before the tennis front end.
+struct ClassicSportsHome: View {
+    @State private var session = SportsSession.shared
     var body: some View {
         @Bindable var session=session
         NavigationStack {
@@ -53,23 +82,17 @@ struct SportsHome: View {
             }
             }
             .navigationTitle("Sports Arcade")
-            .task {
-                // `-benchTennis`: play a self-driving rally on the phone and log frame times.
-                if SportsSession.benchmark && !session.active { session.sport="tennis"; session.start(preview:true) }
+            .toolbar {
+                if !session.active { Button("Tennis menu") { TennisMenu.shared.classic=false } }
             }
             .buttonStyle(.borderless)
-            .background(DisplayRegistration().frame(width:0,height:0))
-            .onChange(of:scenePhase) { _,phase in
-                if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
-                SportsRuntime.shared().setForeground(phase == .active)
-            }
         }
     }
 }
 
 /// Blocks play until the court direction is locked. A single Ready tap cannot reveal where
 /// the TV is when the phone's facing changes every stroke, so this is captured once up front.
-private struct AxisGatePanel:View {
+struct AxisGatePanel:View {
     @Bindable var session:SportsSession
     var body:some View {
         VStack(spacing:14) {
@@ -217,6 +240,21 @@ private struct SportsControls:View {
             Button("Switch to motion controls") { session.useMotion() }.disabled(!session.touch || !session.ready)
             Button("Restart") { session.end(); session.start() }
             Button("Return to menu",role:.destructive) { session.end() }.accessibilityIdentifier("sessionMenu")
+        }
+    }
+}
+
+/// Golf in progress, from the new menu: loading, then the golf controls.
+struct GolfPhoneController: View {
+    @Bindable var session: SportsSession
+    var body: some View {
+        if !session.ready || !session.loading.finished {
+            ZStack { MenuBackdrop(dim: 0.55); LoadingScreen(menu: .shared, compact: true) }.preferredColorScheme(.dark)
+        } else {
+            NavigationStack {
+                Form { SportsControls(session: session) }
+                    .navigationTitle(TennisMenu.shared.launch?.mode == .tutorial ? "Golf lesson — hit a shot" : "Cliffside")
+            }
         }
     }
 }

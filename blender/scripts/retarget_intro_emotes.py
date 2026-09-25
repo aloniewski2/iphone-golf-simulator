@@ -26,8 +26,11 @@ import sys
 import bpy
 from mathutils import Matrix, Quaternion, Vector
 
+# Meshy numbers its spine top-down: Spine02 sits just above the hips and Spine just below
+# the neck. Mapping them the other way round flipped the trunk and folded the chest into
+# the pelvis on the intro emotes.
 MAP = {
-    "Hips": "Hips", "Spine": "Spine", "Spine02": "Chest", "neck": "Neck", "Head": "Head",
+    "Hips": "Hips", "Spine02": "Spine", "Spine": "Chest", "neck": "Neck", "Head": "Head",
     "LeftShoulder": "Shoulder.L", "LeftArm": "UpperArm.L", "LeftForeArm": "LowerArm.L", "LeftHand": "Hand.L",
     "RightShoulder": "Shoulder.R", "RightArm": "UpperArm.R", "RightForeArm": "LowerArm.R", "RightHand": "Hand.R",
     "LeftUpLeg": "UpperLeg.L", "LeftLeg": "LowerLeg.L", "LeftFoot": "Foot.L", "LeftToeBase": "Toes.L",
@@ -61,7 +64,10 @@ def import_source(path):
     return arm, new
 
 
-def retarget(src, rig, new_action, start=1, trim=None):
+TRUNK = ("Hips", "Spine", "Chest", "Neck", "Head")
+
+
+def retarget(src, rig, new_action, start=1, trim=None, trunk_align=True):
     """Keys the emote into `new_action` from frame `start`; returns the frame count. `trim`
     is an optional (first, last) source-frame window: library actions can run ten seconds,
     and an intro shot has under four."""
@@ -81,6 +87,9 @@ def retarget(src, rig, new_action, start=1, trim=None):
     align = {}
     for s_name, t_name in MAP.items():
         if s_name not in src_rest: continue
+        # Both skeletons stand upright: a source rig whose spine leans at rest (auto-rigs of
+        # big-headed characters do) would otherwise bake that lean into every frame.
+        if not trunk_align and t_name in TRUNK: align[t_name] = Quaternion(); continue
         nxt = NEXT.get(t_name)
         s_next = tgt_to_src.get(nxt) if nxt else None
         if not nxt or s_next not in src_rest:
