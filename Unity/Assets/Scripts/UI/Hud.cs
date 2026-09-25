@@ -292,19 +292,22 @@ namespace GolfArcade.UI
 
         /// Lays out the round's card: a row per hole, the totals, and a button to go again.
         RoundCard roundCard;
-        /// Pressed on the round's card: the same holes again, or back to the menu.
-        public HoldButton RoundMenu;
+        /// Pressed on the card after a hole: the same holes again, back to the menu, or on to
+        /// the next hole (null on the round's last).
+        public HoldButton RoundMenu, NextHole;
 
-        /// The round's card (option A), with its highlights.
-        public void ShowScorecard(GolfArcade.Course.Scorecard card, RoundCard.Highlight[] highlights)
+        /// The card after a hole or the round (option A): `title` over it, `headline` on its
+        /// ribbon (null: the round against par), the round's stats in tiles, and NEXT HOLE when
+        /// `nextHole`.
+        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole)
         {
             HideScorecard();
             var holes = card.Course.Holes;
             var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
             for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
-            roundCard = new RoundCard(safeArea, $"{card.Course.Name} Open", numbers, pars, strokes, card.Total, card.ToPar, highlights);
+            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole);
             roundCard.Root.SetAsLastSibling();
-            PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu;
+            PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu; NextHole = roundCard.NextHole;
         }
 
         public void HideScorecard() { roundCard?.Destroy(); roundCard = null; }

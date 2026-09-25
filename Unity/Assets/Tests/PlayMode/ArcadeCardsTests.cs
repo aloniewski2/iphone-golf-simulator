@@ -174,5 +174,87 @@ namespace GolfArcade.PlayTests
                 PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
             }
         }
+
+        /// The whole round: after every hole the card comes up with the round's stats — NEXT
+        /// HOLE on to the next one, and on the last hole ROUND COMPLETE with no next hole —
+        /// and MAIN MENU goes back to the menu.
+        [UnityTest]
+        public IEnumerator ACardAfterEveryHole()
+        {
+            Time.timeScale = 1f;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var cam = Camera.main;
+            if (cam) cam.aspect = GameCapture.PhoneWidth / (float)GameCapture.PhoneHeight;
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;
+            var hud = Object.FindFirstObjectByType<GolfArcade.UI.Hud>();
+            int holes = game.ChosenHoles;
+            try
+            {
+                yield return null;
+                game.ChooseHoles(0);
+                game.Play();
+                yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the first tee");
+                var first = game.CurrentHole;
+                yield return PlayOut(game);
+                var card = GameObject.Find("Scorecard");
+                Assert.IsTrue(card, "a card after the first hole");
+                var words = System.Array.ConvertAll(card.GetComponentsInChildren<Text>(), t => t.text);
+                foreach (var stat in new[] { "LONGEST DRIVE", "FAIRWAYS", "GREENS IN REG.", "PUTTS", "PERFECT STRIKES", "TOP SWING SPEED" })
+                    Assert.IsTrue(System.Array.Exists(words, w => w == stat || (stat == "LONGEST DRIVE" && w == "LONGEST SHOT")), $"the card shows {stat}");
+                Assert.IsTrue(System.Array.Exists(words, w => w == $"HOLE {first.Number} COMPLETE"), "it names the hole");
+                Assert.IsTrue(GameObject.Find("Next hole"), "the round goes on: NEXT HOLE");
+                Assert.IsTrue(GameObject.Find("Play again") && GameObject.Find("Main menu"), "PLAY AGAIN and MAIN MENU");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/arcade-e-hole-card.png"));
+
+                hud.NextHole.Pressed();
+                yield return WaitFor(() => game.Current is GolfGame.State.Intro or GolfGame.State.Aim, 10, "the next hole");
+                Assert.IsFalse(GameObject.Find("Scorecard"), "the card is put away");
+                Assert.AreNotEqual(first.Number, game.CurrentHole.Number, "on to the next hole");
+                Assert.AreEqual(first.Number, game.Card.Course.Holes[0].Number, "the same round");
+
+                // the last hole: the round complete, nowhere next but again or the menu
+                var holesOfRound = game.Card.Course.Holes;
+                game.JumpToHole(holesOfRound[holesOfRound.Length - 1].Number);
+                yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the last tee");
+                yield return PlayOut(game);
+                words = System.Array.ConvertAll(GameObject.Find("Scorecard").GetComponentsInChildren<Text>(), t => t.text);
+                Assert.IsTrue(System.Array.Exists(words, w => w == "ROUND COMPLETE"), "the round is complete");
+                Assert.IsFalse(GameObject.Find("Next hole"), "no next hole after the last");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/arcade-f-round-card.png"));
+
+                hud.RoundMenu.Pressed();
+                yield return null;
+                Assert.AreEqual(GolfGame.State.Menu, game.Current, "MAIN MENU goes to the menu");
+                Assert.IsFalse(GameObject.Find("Scorecard"), "the card is put away");
+            }
+            finally
+            {
+                PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
+            }
+        }
+
+        /// A hole played quickly: the tee shot where the hole says to hit it, then the ball on the
+        /// green a few yards short and putted out; waits for the card.
+        static IEnumerator PlayOut(GolfGame game)
+        {
+            var hole = game.CurrentHole;
+            yield return new WaitForSecondsRealtime(0.4f);
+            game.StrikeToward(hole.RecommendedTarget(hole.Tee));
+            yield return WaitFor(() => game.Current is GolfGame.State.Aim or GolfGame.State.HoleDone, 40, "the tee shot to finish");
+            if (game.Current == GolfGame.State.Aim)
+            {
+                var pin = hole.Pin; double d = pin.DistanceTo(hole.Tee);
+                game.DropBall(new GolfArcade.Course.CoursePoint(pin.X + (hole.Tee.X - pin.X) * 4 / d, pin.D + (hole.Tee.D - pin.D) * 4 / d));
+                for (int putt = 0; putt < 4 && game.Current == GolfGame.State.Aim; putt++)
+                {
+                    yield return new WaitForSecondsRealtime(0.4f);
+                    game.StrikeHolingPutt();
+                    yield return WaitFor(() => game.Current is GolfGame.State.Aim or GolfGame.State.HoleDone or GolfGame.State.RoundDone, 30, "the putt to be played");
+                }
+            }
+            yield return WaitFor(() => game.Current == GolfGame.State.RoundDone, 12, "the card after the hole");
+            yield return new WaitForSecondsRealtime(0.6f);
+        }
     }
 }

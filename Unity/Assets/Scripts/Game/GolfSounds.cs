@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, roar, leaves, knockWood, knockStone;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, leaves, knockWood, knockStone, ovation, whistles;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -51,14 +51,28 @@ namespace GolfArcade.Game
         public void PlayReady() => source.PlayOneShot(ready, 0.5f);
         public void PlayFanfare() => source.PlayOneShot(fanfare, 0.7f);
         public void PlayTick() => source.PlayOneShot(tick, 0.5f);
-        /// The gallery's applause, for the introductions on the tee and a holed ball.
-        public void PlayApplause(float volume = 0.55f) => source.PlayOneShot(applause, volume);
+        /// The gallery's applause, for the introductions on the tee and a good shot.
+        public void PlayApplause(float volume = 0.35f) => source.PlayOneShot(applause, volume);
 
         /// The gallery's reactions, sized to the shot: an "ooh" as one flies at the flag or
-        /// finds the water, an "aww" for a lip-out or a ball in the sand, and a roar for a holed one.
+        /// finds the water, an "aww" for a lip-out or a ball in the sand.
         public void PlayGasp(float volume = 0.6f) => source.PlayOneShot(gasp, volume);
         public void PlayGroan(float volume = 0.55f) => source.PlayOneShot(groan, volume);
-        public void PlayRoar(float volume = 0.8f) { source.PlayOneShot(roar, volume); source.PlayOneShot(applause, volume * 0.8f); }
+
+        /// The ball in the hole, the gallery's answer sized to the score: for a birdie or better
+        /// a long round of applause with whistles in it; a par, a warm round; over par, polite.
+        public void PlayHoleOut(int strokes, int par)
+        {
+            int toPar = strokes - par;
+            if (strokes == 1 || toPar < 0)
+            {
+                float big = strokes == 1 || toPar <= -2 ? 1f : 0.85f;
+                source.PlayOneShot(ovation, 0.5f * big);
+                source.PlayOneShot(whistles, 0.15f * big);   // (pure tones: they carry)
+            }
+            else if (toPar == 0) source.PlayOneShot(ovation, 0.42f);
+            else source.PlayOneShot(ovation, 0.3f);
+        }
 
         /// Backswing tension, 0–1 with the meter: the wind-up loop fades in and climbs a fifth
         /// in pitch by the top. Call with the load every frame it changes; Release() lets go.
@@ -82,12 +96,16 @@ namespace GolfArcade.Game
 
         void Synthesize()
         {
-            applause = Applause(3.2f);
+            applause = Applause(3.4f, 16);
+            // A hole finished: more of the gallery clapping, for longer, and a few putting
+            // fingers to their lips. (No roar: the synthesised crowd's voices through breath
+            // noise came over as a loud muffled static.)
+            ovation = Applause(6f, 28, "Ovation");
+            whistles = Whistles();
             // The gallery's voices: a couple of dozen people, men and women, each a buzz of
             // harmonics shaped into a vowel, coming in a beat apart and sliding in pitch.
             gasp = Crowd("Gasp", 1.6f, 18, (300, 870), (330, 900), u => 1 + 0.35 * Math.Sin(Math.PI * Math.Min(1, u * 1.3)), 0.25);
             groan = Crowd("Groan", 1.7f, 18, (660, 1190), (560, 840), u => 1.3 - 0.45 * u, 0.3);
-            roar = Crowd("Roar", 2.6f, 24, (730, 1090), (660, 1700), u => 1.25 + 0.25 * Math.Sin(Math.PI * Math.Min(1, u * 1.6)), 0.55);
             // Strikes: a burst of noise for the contact plus a ringing partial or two for the
             // clubhead's material; the decay times are what make a driver sound hollow and a
             // putter sound dead.
@@ -169,36 +187,78 @@ namespace GolfArcade.Game
             tick = Clip("Tick", 0.03f, (t, rng) => Burst(t, 0.003, rng) * 0.6 + Ring(t, 2200, 0.006) * 0.6);
         }
 
-        /// A gallery applauding: a few hundred claps — each a few milliseconds of noise, some
-        /// brighter, some duller, as hands are — scattered through a quick swell and a long thinning
-        /// tail, so it sounds like a crowd and not a loop.
-        static AudioClip Applause(float seconds)
+        /// A gallery clapping: `people` of them, each at their own steady pace (three and a half
+        /// to five claps a second), joining in over the first half second and dropping out one by
+        /// one. Each clap is a click ringing through the cupped hands' resonance (0.85–2.35 kHz),
+        /// and a small room gathers them, with the fizz above taken off — so it's clapping, not
+        /// the hiss that scattering bursts of white noise made (the user heard static).
+        static AudioClip Applause(float seconds, int people = 16, string name = "Applause")
         {
-            int n = (int)(Rate * seconds);
+            int n = (int)(Rate * seconds), ring = (int)(0.03 * Rate), click = (int)(0.0015 * Rate);
             var mix = new double[n];
-            var rng = new System.Random(Seed("Applause"));
-            double Density(double t) => Math.Min(1, t / 0.25) * (t < seconds * 0.4 ? 1 : Math.Exp(-(t - seconds * 0.4) / (seconds * 0.22)));
-            for (int placed = 0, tries = 0; placed < seconds * 240 && tries < 100000; tries++)
+            var rng = new System.Random(Seed(name));
+            for (int p = 0; p < people; p++)
             {
-                double t0 = rng.NextDouble() * seconds;
-                if (rng.NextDouble() > Density(t0)) continue;
-                placed++;
-                double amp = 0.25 + 0.75 * rng.NextDouble(), tau = 0.0035 + 0.004 * rng.NextDouble(), dull = 0.3 + 0.5 * rng.NextDouble();
-                int start = (int)(t0 * Rate), len = (int)(tau * 5 * Rate);
-                double f = 0;
-                for (int i = 0; i < len && start + i < n; i++)
+                double pace = 3.4 + 1.8 * rng.NextDouble();
+                double start = 0.03 + 0.45 * Math.Pow(rng.NextDouble(), 2), stop = seconds * (0.4 + 0.5 * rng.NextDouble());
+                double f = 850 + 1500 * rng.NextDouble(), q = 4 + 5 * rng.NextDouble(), loud = 0.45 + 0.55 * rng.NextDouble();
+                double r = Math.Exp(-Math.PI * f / q / Rate), c = 2 * r * Math.Cos(2 * Math.PI * f / Rate);
+                for (double t = start; t < stop; t += (1 + 0.07 * Noise(rng)) / pace)
                 {
-                    f += dull * (Noise(rng) - f);
-                    mix[start + i] += amp * f * Math.Exp(-(double)i / Rate / tau);
+                    double amp = loud * (0.7 + 0.3 * rng.NextDouble()) * Math.Min(1, (t - start) / 0.25 + 0.4) * Math.Min(1, (stop - t) / 0.6);
+                    int i0 = (int)(t * Rate);
+                    double y1 = 0, y2 = 0;
+                    for (int i = 0; i < ring && i0 + i < n; i++)
+                    {
+                        double x = i < click ? Noise(rng) * Math.Exp(-i / (0.0004 * Rate)) : 0;
+                        double y = (1 - r) * x + c * y1 - r * r * y2; y2 = y1; y1 = y;
+                        mix[i0 + i] += amp * (3 * y + 0.08 * x);
+                    }
                 }
             }
+            // a small room (three early reflections), then the fizz taken off
+            var room = (double[])mix.Clone();
+            foreach (var (delay, gain) in new[] { (0.019, 0.3), (0.031, 0.22), (0.047, 0.14) })
+            {
+                int k = (int)(delay * Rate);
+                for (int i = k; i < n; i++) room[i] += gain * mix[i - k];
+            }
+            double lp = 0, peak = 1e-9;
+            for (int i = 0; i < n; i++) { lp += 0.4 * (room[i] - lp); room[i] = lp; peak = Math.Max(peak, Math.Abs(lp)); }
             var data = new float[n];
-            double prev = 0, peak = 0;
-            for (int i = 0; i < n; i++) { double v = mix[i] - 0.5 * prev; prev = mix[i]; mix[i] = v; peak = Math.Max(peak, Math.Abs(v)); }
-            for (int i = 0; i < n; i++) data[i] = (float)(mix[i] / Math.Max(peak, 1e-6) * 0.95);
-            var clip = AudioClip.Create("Applause", n, 1, Rate, false);
+            for (int i = 0; i < n; i++) data[i] = (float)(room[i] / peak * 0.9);
+            var clip = AudioClip.Create(name, n, 1, Rate, false);
             clip.SetData(data, 0);
             return clip;
+        }
+
+        /// A few of the gallery whistling through their fingers, one after another: each a bright
+        /// tone that swoops up into its note, holds with a waver, and drops off, with the breath
+        /// in it.
+        static AudioClip Whistles()
+        {
+            // (start, length, from, note, end) in seconds and hertz
+            var calls = new[] { (0.25, 0.75, 1700.0, 2900.0, 2300.0), (0.9, 0.55, 2100.0, 3300.0, 2500.0), (1.55, 0.9, 1600.0, 2700.0, 2000.0), (2.5, 0.5, 2000.0, 3100.0, 2600.0) };
+            return Clip("Whistles", 3.3f, (t, rng) =>
+            {
+                double v = 0;
+                foreach (var (at, len, from, note, end) in calls)
+                {
+                    double u = t - at;
+                    if (u < 0 || u > len) continue;
+                    // the pitch: a swoop up over the first 0.12 s, a hold, a fall over the last
+                    // 0.15 s (the phase integrated piecewise so the glides don't chirp)
+                    double rise = 0.12, fall = 0.15, hold = len - rise - fall;
+                    double phase;
+                    if (u < rise) phase = from * u + (note - from) * u * u / (2 * rise);
+                    else if (u < rise + hold) phase = (from + note) / 2 * rise + note * (u - rise);
+                    else { double w = u - rise - hold; phase = (from + note) / 2 * rise + note * hold + note * w + (end - note) * w * w / (2 * fall); }
+                    phase += 0.004 * Math.Sin(2 * Math.PI * 6.5 * u);   // the waver
+                    double env = Math.Min(1, u / 0.03) * Math.Min(1, (len - u) / 0.06);
+                    v += (Math.Sin(2 * Math.PI * phase) + 0.12 * Math.Sin(4 * Math.PI * phase)) * env * 0.5 + Noise(rng) * env * 0.05;
+                }
+                return v;
+            });
         }
 
         /// A crowd voicing one vowel together: `voices` people, each a harmonic buzz at their own

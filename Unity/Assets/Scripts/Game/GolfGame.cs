@@ -13,6 +13,7 @@ namespace GolfArcade.Game
     /// builds everything else at runtime.
     public sealed class GolfGame : MonoBehaviour
     {
+        /// RoundDone is the card after any hole, with NEXT HOLE while the round goes on.
         /// (Replay is last so the older states keep their numbers.)
         public enum State { Menu, Golfer, Intro, Aim, Flight, Result, HoleDone, RoundDone, Replay }
 
@@ -448,7 +449,7 @@ namespace GolfArcade.Game
         {
             course = CourseFor(chosenHoles);
             Card = new Scorecard(course);
-            longestDrive = longestShot = 0; perfectStrikes = putts = 0;
+            ResetRoundStats();
             hud.HideScorecard();
             StartHole(0);
         }
@@ -475,7 +476,7 @@ namespace GolfArcade.Game
             if (holeView) DestroyImmediate(holeView.gameObject);
             holeView = HoleView.Build(hole, transform);
             ballAt = hole.Tee;
-            holeStrokes = 0;
+            holeStrokes = 0; holeShots = 0; onGreenIn = null;
             Wind = Wind.Random(rng);
             holeView.ShowFlag(true);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
@@ -1526,15 +1527,12 @@ namespace GolfArcade.Game
                     break;
 
                 case State.HoleDone:
+                    // the score stamped and cheered, then the card: the round so far and the way on
                     if (stateTime > 3f)
                     {
-                        if (holeIndex + 1 < course.Holes.Length) StartHole(holeIndex + 1);
-                        else
-                        {
-                            RefreshControls();
-                            ShowRoundCard();
-                            Enter(State.RoundDone);
-                        }
+                        RefreshControls();
+                        ShowRoundCard();
+                        Enter(State.RoundDone);
                     }
                     break;
             }
@@ -1661,41 +1659,92 @@ namespace GolfArcade.Game
 
         // ----- The round's card -----
 
-        double longestDrive, longestShot;
+        double longestDrive, longestShot, topSpeed;
         int perfectStrikes, putts;
+        /// Tee shots on the par 4s and 5s, and those that found the short grass; holes finished,
+        /// and those on the green in regulation (par less two, or better).
+        int fairwayChances, fairwaysHit, greensPlayed, greensHit;
+        /// This hole: swings taken, and the stroke count when the ball was first on the green.
+        int holeShots;
+        int? onGreenIn;
+
+        void ResetRoundStats()
+        {
+            longestDrive = longestShot = topSpeed = 0; perfectStrikes = putts = 0;
+            fairwayChances = fairwaysHit = greensPlayed = greensHit = 0;
+        }
 
         /// The round's highlights, counted as each ball is struck (a ball in the water or out of
         /// bounds is no one's longest drive).
         void CountForTheCard()
         {
+            holeShots++;
             if (club == GolfClub.Putter) { putts++; return; }
             if (lastReport.Grade == StrikeGrade.Perfect) perfectStrikes++;
+            topSpeed = Math.Max(topSpeed, club.ClubSpeedMPH(lastImpact.Power));
             if (LastShot.Lie is CourseLie.Water or CourseLie.OutOfBounds) return;
             longestShot = Math.Max(longestShot, LastShot.Total);
             if (club == GolfClub.Driver) longestDrive = Math.Max(longestDrive, LastShot.Total);
         }
 
-        /// The round is done: the card, and the way on — the same holes again, or the menu.
-        void ShowRoundCard()
+        /// Where a ball came to rest, for the fairways and the greens in regulation.
+        void CountWhereItFinished(CourseShot shot)
         {
-            bool drove = longestDrive > 0;
-            hud.ShowPlayHud(false);
-            hud.ShowScorecard(Card, new[]
+            if (holeShots == 1 && hole.Par >= 4)
             {
-                new RoundCard.Highlight { Icon = "ball", Title = drove ? "Longest drive" : "Longest shot", Value = $"{(drove ? longestDrive : longestShot):F0} yd" },
-                new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
-                new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
-            });
-            hud.PlayAgain.Pressed = PlayAgain;
-            hud.RoundMenu.Pressed = ShowMenu;
+                fairwayChances++;
+                if (shot.IsHoled || shot.Lie == CourseLie.Fairway || shot.Lie.IsPuttingSurface()) fairwaysHit++;
+            }
+            if (onGreenIn == null && (shot.IsHoled || shot.Lie == CourseLie.Green)) onGreenIn = holeStrokes;
+            if (shot.IsHoled)
+            {
+                greensPlayed++;
+                if (onGreenIn <= hole.Par - 2) greensHit++;
+            }
         }
 
-        /// From the round's card straight into the same holes again.
+        /// After each hole: the card with the round so far and its stats, and the way on — the
+        /// next hole while there is one, the same holes again, or the main menu.
+        void ShowRoundCard()
+        {
+            bool drove = longestDrive > 0, more = holeIndex + 1 < course.Holes.Length;
+            bool round = !more && course.Holes.Length > 1;
+            int strokes = Card.StrokesOn(holeIndex) ?? holeStrokes;
+            string holeScore = Scorecard.ScoreName(strokes, hole.Par).TrimEnd('!');
+            string longest = drove ? longestDrive.ToString("F0") : longestShot > 0 ? longestShot.ToString("F0") : null;
+            hud.ShowPlayHud(false);
+            hud.ShowScorecard(Card,
+                round ? "Round complete" : $"Hole {hole.Number} complete",
+                round ? null : strokes <= hole.Par ? holeScore + "!" : holeScore,
+                new[]
+                {
+                    new RoundCard.Highlight { Icon = "ball", Title = drove ? "Longest drive" : "Longest shot", Value = longest != null ? $"{longest} yd" : "—" },
+                    new RoundCard.Highlight { Icon = "grass", Title = "Fairways", Value = fairwayChances > 0 ? $"{fairwaysHit}/{fairwayChances}" : "—" },
+                    new RoundCard.Highlight { Icon = "target", Title = "Greens in reg.", Value = greensPlayed > 0 ? $"{greensHit}/{greensPlayed}" : "—" },
+                    new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
+                    new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
+                    new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
+                }, more);
+            hud.PlayAgain.Pressed = PlayAgain;
+            hud.RoundMenu.Pressed = ShowMenu;
+            if (hud.NextHole) hud.NextHole.Pressed = NextHole;
+            sounds.PlayReady();
+        }
+
+        /// From the card straight into the same holes again.
         public void PlayAgain()
         {
             if (Current != State.RoundDone) return;
             hud.ShowPlayHud(true);
             StartRound();
+        }
+
+        /// From the card on to the round's next hole.
+        public void NextHole()
+        {
+            if (Current != State.RoundDone || holeIndex + 1 >= course.Holes.Length) return;
+            hud.HideScorecard();
+            StartHole(holeIndex + 1);
         }
 
         // ----- The swing card -----
@@ -1783,8 +1832,8 @@ namespace GolfArcade.Game
                 case CourseLie.OutOfBounds: sounds.PlayGroan(0.4f); return;
                 case CourseLie.Bunker: sounds.PlayGroan(0.35f); return;
             }
-            if (shot.Lie.IsPuttingSurface() && toPin <= 4) { sounds.PlayGasp(0.45f); sounds.PlayApplause(0.6f); }
-            else if (shot.Lie == CourseLie.Green) sounds.PlayApplause(0.3f);
+            if (shot.Lie.IsPuttingSurface() && toPin <= 4) { sounds.PlayGasp(0.45f); sounds.PlayApplause(0.4f); }
+            else if (shot.Lie == CourseLie.Green) sounds.PlayApplause(0.25f);
         }
 
         // ----- Instant replay -----
@@ -1862,7 +1911,7 @@ namespace GolfArcade.Game
             if (!replayDone && replayClock >= last)
             {
                 replayDone = true;
-                if (LastShot.IsHoled) { sounds.PlayCup(); sounds.PlayApplause(0.5f); ball.gameObject.SetActive(false); }
+                if (LastShot.IsHoled) { sounds.PlayCup(); sounds.PlayApplause(0.3f); ball.gameObject.SetActive(false); }
                 else if (LastShot.Lie == CourseLie.Water) { effects.Splash(ball.position); sounds.PlaySplash(); ball.gameObject.SetActive(false); }
                 effects.EndFlight();
             }
@@ -1927,7 +1976,8 @@ namespace GolfArcade.Game
                 ball.gameObject.SetActive(false);
                 sounds.PlayCup();
                 sounds.PlayFanfare();
-                sounds.PlayRoar(club == GolfClub.Putter && shot.Total < 2 ? 0.45f : 0.85f);
+                // the gallery claps and cheers the hole out, louder the better the score
+                sounds.PlayHoleOut(holeStrokes, hole.Par);
                 Haptics.Roar();
                 result = "In the hole!";
             }
@@ -1937,6 +1987,7 @@ namespace GolfArcade.Game
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             if (!shot.IsHoled) React(shot);
             holeStrokes += shot.PenaltyStrokes;
+            CountWhereItFinished(shot);
             StampLanding(shot);
             LastResult = result;
             hud.SetStatus(result);   // (the phone controller's line, now the badge has the banner's place)
