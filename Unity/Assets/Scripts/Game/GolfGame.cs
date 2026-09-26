@@ -266,9 +266,15 @@ namespace GolfArcade.Game
             chosenCourse = PlayerPrefs.GetString("course", "cliffside");
             if (Course.Course.ByKey(chosenCourse) == null) chosenCourse = "cliffside";
             if (chosenHoles != 0 && Course.Course.Containing(chosenHoles) == null) chosenHoles = 0;
-            // everything opened for the phone's player, when the launcher asks for it:
-            // xcrun devicectl device process launch -e '{"GOLF_ARCADE_UNLOCK_ALL":"1"}' ...
-            if (System.Environment.GetEnvironmentVariable("GOLF_ARCADE_UNLOCK_ALL") == "1" && !ProfileStore.Active.AllUnlocked)
+            // everything opened for the phone's player, when asked for: a file named unlock_all in
+            // the app's Documents (xcrun devicectl device copy to --domain-type appDataContainer
+            // --destination Documents/unlock_all), GOLF_ARCADE_UNLOCK_ALL=1 in its environment, or
+            // -unlock-all on its command line
+            bool grant = System.Environment.GetEnvironmentVariable("GOLF_ARCADE_UNLOCK_ALL") == "1"
+                         || System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-unlock-all") >= 0;
+            var marker = System.IO.Path.Combine(Application.persistentDataPath, "unlock_all");
+            if (System.IO.File.Exists(marker)) { grant = true; try { System.IO.File.Delete(marker); } catch (System.Exception) { } }
+            if (grant && !ProfileStore.Active.AllUnlocked)
             {
                 Unlocks.GrantAll(ProfileStore.Active);
                 ProfileStore.Save();
