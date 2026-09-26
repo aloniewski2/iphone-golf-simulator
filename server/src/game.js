@@ -5,7 +5,7 @@
 /** Each course's holes (number, par), in the order they're played: Hole.cs Course.All(). */
 const COURSE_HOLES = {
   cliffside: { name: 'Cliffside', holes: [[7, 4], [12, 3], [13, 5], [14, 4], [15, 3]] },
-  wildisles: { name: 'Wild Isles', holes: [[19, 4], [20, 5], [21, 3], [22, 4], [23, 4]] },
+  wildisles: { name: 'Wild Isles', holes: [[16, 4], [17, 5], [18, 3], [19, 4], [20, 4]] },
 };
 
 /** What a round can be: a course's key for its whole round ("cliffside"), or key-number for

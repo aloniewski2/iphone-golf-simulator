@@ -412,7 +412,25 @@ for count, kind, min_d, region in D.TREES:
             if region and not region(p.x, p.y): continue
             if blocked(p) or any((q - p).length < min_d for q, _k in placed): continue
             placed.append((p, kind)); break
-merged("TREES", "ENVIRONMENT", [(trees[k], (p.x, p.y, height(p.x, p.y) - 0.35), rnd.uniform(0, math.tau), [rnd.uniform(0.85, 1.18)] * 2 + [rnd.uniform(0.9, 1.25)]) for p, k in placed])
+tree_items = [(trees[k], (p.x, p.y, height(p.x, p.y) - 0.35), rnd.uniform(0, math.tau), [rnd.uniform(0.85, 1.18)] * 2 + [rnd.uniform(0.9, 1.25)]) for p, k in placed]
+merged("TREES", "ENVIRONMENT", tree_items)
+# A marker at the foot of every plant, for the game's physics (ObstacleScan): the pieces of TREES
+# round it are one plant, and its name says what it is and how big — PLANT_<n>_<class>_<height
+# cm>_<reach cm>, the class T a tree, B a bush, R a cactus (hard), S a tuft (nothing to stop a ball).
+def plant_class(kind):
+    if kind.startswith(("SAGUARO", "BARREL")): return "R"
+    if kind.startswith("DRY_TUFT"): return "S"
+    if "BUSH" in kind or kind.startswith("SHRUB"): return "B"
+    return "T"
+plant_size = {}
+for k in {k for _p, k in placed}:
+    vs = trees[k].data.vertices
+    plant_size[k] = (max(v.co.z for v in vs), max(math.hypot(v.co.x, v.co.y) for v in vs))
+for i, ((_p, k), (_src, loc, _rz, s)) in enumerate(zip(placed, tree_items)):
+    h, r = plant_size[k]
+    e = bpy.data.objects.new(f"PLANT_{i:03d}_{plant_class(k)}_{round(h * s[2] * 100)}_{round(r * s[0] * 100)}", None)
+    e.empty_display_type = 'PLAIN_AXES'; e.empty_display_size = 1
+    sc.collection.objects.link(e); H.link_to(e, "GAMEPLAY"); e.parent = root; e.location = loc
 
 rock_items = []
 for o in outlines:
@@ -481,7 +499,7 @@ lines = [
     f"                    Blurb = \"{D.BLURB}\",",
     f"                    Centerline = new[] {{ {P(centre)} }},",
     f"                    FairwayWidth = {round(2 * widths[len(widths) // 2] * YARDS)}, GreenRadius = {green_r},",
-    f"                    RoughWidth = 100,",
+    f"                    RoughWidth = {getattr(D, 'ROUGH_WIDTH', 100)},",
     f"                    Hazards = new[] {{ " + ", ".join([f"Bunker({yd((cx, cy))[0]}, {yd((cx, cy))[1]}, {round(2 * rx * YARDS, 1)}, {round(2 * ry * YARDS, 1)})" for cx, cy, rx, ry, _r, _s in D.BUNKERS] + X.hazards(D, yd, YARDS)) + " },",
     f"                    Shore = new[] {{ {P(shores[0])} }},",
 ]

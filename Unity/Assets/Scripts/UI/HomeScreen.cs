@@ -244,6 +244,10 @@ namespace GolfArcade.UI
         readonly Image thisFill, fullFill;
         readonly Text thisWord, fullWord;
         readonly CardPop pop;
+        readonly RectTransform lockPill, selectPill;
+        readonly Text lockWord, selectWord;
+        readonly Image selectFill;
+        float shakeAt = -9f;
 
         static readonly Color Frost = new(1f, 1f, 1f, 0.26f), FrostRim = new(1f, 1f, 1f, 0.75f);
 
@@ -307,6 +311,44 @@ namespace GolfArcade.UI
             var hit = select.gameObject.AddComponent<Image>(); hit.color = Color.clear;
             Select = select.gameObject.AddComponent<HoldButton>();
             Select.Fill = selectFill; Select.RestColor = UiKit.ArcadeYellow;
+            selectPill = select; this.selectFill = selectFill; selectWord = sw;
+
+            // a course still to be earned: a padlock and what it takes, over the dots
+            lockPill = UiKit.Pill(Root, "Locked", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0), new Vector2(0, 580), new Vector2(880, 112), out var lockFill, 5f);
+            var padlock = UiKit.Panel(lockFill.transform, "Disc", UiKit.ArcadeYellow, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(62, 0), new Vector2(80, 80));
+            padlock.sprite = UiKit.Circle; padlock.type = Image.Type.Simple; padlock.raycastTarget = false; padlock.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            Icons.Place(padlock.transform, "lock", UiKit.ArcadeInk, new Vector2(0.5f, 0.5f), Vector2.zero, 50);
+            lockWord = UiKit.Label(lockFill.transform, "Text", 34, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            lockWord.color = Color.white; lockWord.raycastTarget = false;
+            lockWord.rectTransform.offsetMin = new Vector2(110, 0); lockWord.rectTransform.offsetMax = new Vector2(-24, 0);
+            Icons.Fit(lockWord, 20, 34);
+            lockPill.gameObject.SetActive(false);
+            Root.gameObject.AddComponent<Ticker>().Tick = () =>
+            {
+                float t = Time.unscaledTime - shakeAt;
+                lockPill.anchoredPosition = new Vector2(t < 0.4f ? Mathf.Sin(t * 60f) * 18f * (1 - t / 0.4f) : 0, 580);
+            };
+        }
+
+        /// A course still to be earned: the padlock and `requirement` over the dots, and SELECT
+        /// greyed to LOCKED. Null opens it.
+        public void SetLocked(string requirement)
+        {
+            bool locked = requirement != null;
+            lockPill.gameObject.SetActive(locked);
+            if (locked) lockWord.text = $"{requirement.ToUpperInvariant()} TO UNLOCK";
+            selectWord.text = locked ? "LOCKED" : "SELECT";
+            var c = locked ? new Color(0.72f, 0.75f, 0.82f) : UiKit.ArcadeYellow;
+            selectFill.color = c; Select.RestColor = c;
+        }
+
+        /// SELECT pressed on a locked course: the padlock shakes its head.
+        public void ShakeLock() => shakeAt = Time.unscaledTime;
+
+        sealed class Ticker : MonoBehaviour
+        {
+            public System.Action Tick;
+            void Update() => Tick?.Invoke();
         }
 
         /// A small see-through white round button with a white arrow: over the course, not on it.

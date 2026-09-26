@@ -14,7 +14,7 @@ namespace GolfArcade.Game
         const int Rate = 44100;
 
         AudioSource source, tensionSource;
-        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, leaves, knockWood, knockStone, ovation, whistles;
+        AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, leaves, knockWood, knockStone, ovation, whistles, lavaHiss, iceSkid;
         float tensionTarget;
 
         public static GolfSounds Create(Transform parent)
@@ -43,6 +43,10 @@ namespace GolfArcade.Game
         public void PlayWhoosh(double load) => source.PlayOneShot(whoosh, Mathf.Lerp(0.2f, 0.8f, Mathf.Clamp01((float)load)));
         public void PlayCup() => source.PlayOneShot(cup, 0.9f);
         public void PlaySplash() => source.PlayOneShot(splash, 0.8f);
+        /// Into the lava: a low whump, then it crackles and sizzles away.
+        public void PlayLavaHiss() => source.PlayOneShot(lavaHiss, 0.6f);
+        /// Skidding onto the ice: a glassy tink and a scrape.
+        public void PlayIceSkid(float strength) => source.PlayOneShot(iceSkid, Mathf.Lerp(0.2f, 0.55f, Mathf.Clamp01(strength)));
         public void PlayThud(float strength) => source.PlayOneShot(thud, Mathf.Lerp(0.25f, 0.8f, Mathf.Clamp01(strength)));
         /// The ball into a tree's branches or a bush: a rustle and a snap of twigs.
         public void PlayLeaves() => source.PlayOneShot(leaves, 0.75f);
@@ -157,6 +161,25 @@ namespace GolfArcade.Game
                 double attack = Math.Min(1, t / 0.03);
                 return Noise(rng) * attack * Math.Exp(-t / 0.18) * 0.9;
             }, lowPass: 0.08);
+            // Lava: a low whump as the ball goes in, crackles popping (short rings, 0.9–1.9 kHz)
+            // thinning out over a second, and a dull sizzle kept well down (noise, heavily
+            // filtered: a hiss up top is what the user heard as static before).
+            var pops = new System.Random(7);
+            var popAt = new System.Collections.Generic.List<(double t, double hz)>();
+            for (double at = 0.04; at < 1.3; at += -Math.Log(1 - pops.NextDouble()) / (30 * Math.Exp(-at / 0.45) + 2))
+                popAt.Add((at, 900 + 1000 * pops.NextDouble()));
+            lavaHiss = Clip("Lava", 1.4f, (t, rng) =>
+            {
+                double whump = Math.Sin(2 * Math.PI * (70 - 25 * t) * t) * Math.Exp(-t / 0.14) * 0.9;
+                double sizzle = Noise(rng) * Math.Min(1, t / 0.05) * Math.Exp(-t / 0.5) * 0.3;
+                double crackle = 0;
+                foreach (var (at, hz) in popAt) if (t >= at && t < at + 0.03) crackle += Ring(t - at, hz, 0.005) * 0.55;
+                return whump + sizzle + crackle;
+            }, lowPass: 0.22);
+            // Ice: a glassy tink as it touches down and a short scrape as it skids off.
+            iceSkid = Clip("Ice", 0.6f, (t, rng) =>
+                Ring(t, 2600, 0.05) * 0.5 + Ring(t, 3900, 0.03) * 0.3
+                + Noise(rng) * Math.Min(1, t / 0.02) * Math.Exp(-t / 0.3) * 0.45, lowPass: 0.2);
             // Tension: a one-second seamless loop — a low drone (whole cycles per second so the
             // loop joins), a ratchet of soft ticks like a creaking shaft, and a breath of noise.
             tension = Clip("Tension", 1.0f, (t, rng) =>

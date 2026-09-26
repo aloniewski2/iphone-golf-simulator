@@ -63,7 +63,12 @@ namespace GolfArcade.Game
         CometTail comet;
         bool cometShot;
         Transform ball;
-        ParticleSystem puffs, splash;
+        ParticleSystem puffs, splash, trail;
+        Gear.TrailStyle trailStyle;
+        Vector3 trailFrom; bool trailing;
+
+        /// The trail the ball leaves in the air (a reward): none, sparkles, fire or a rainbow.
+        public void SetTrail(Gear.TrailStyle style) => trailStyle = style;
         Camera view;
 
         public static ShotEffects Create(Transform parent, Transform ball, Camera view, BallLook look)
@@ -82,6 +87,8 @@ namespace GolfArcade.Game
             var dust = SpriteMaterial("dust");
             if (dust) fx.puffs.GetComponent<ParticleSystemRenderer>().sharedMaterial = dust;
             fx.clippings = fx.BuildParticles("Clippings", 0.28f, 0.5f, 0.55f, 0.95f, -9f);
+            fx.trail = fx.BuildParticles("Trail", 0.3f, 0.5f, 0.5f, 0.9f, 0f);
+            var trailMain = fx.trail.main; trailMain.maxParticles = 3000;
             var grass = SpriteMaterial("grass");
             if (grass)
             {
@@ -337,6 +344,47 @@ namespace GolfArcade.Game
         void LateUpdate()
         {
             if (flying && ball && !cometShot) tracer.Push(ball.position);
+            if (flying && ball && trailStyle != Gear.TrailStyle.None) EmitTrail(ball.position);
+            else trailing = false;
+        }
+
+        /// Puffs laid along the ball's path since the last frame, a third of a yard apart so a
+        /// fast ball leaves no gaps: sparkles twinkling white and gold, fire burning out from
+        /// yellow to red, or bands of every colour.
+        void EmitTrail(Vector3 at)
+        {
+            if (!trailing) { trailFrom = at; trailing = true; return; }
+            float length = (at - trailFrom).magnitude;
+            int steps = Mathf.Clamp(Mathf.CeilToInt(length / 0.14f), 1, 80);
+            for (int i = 1; i <= steps; i++)
+            {
+                var p = Vector3.Lerp(trailFrom, at, i / (float)steps);
+                var e = new ParticleSystem.EmitParams { position = p };
+                switch (trailStyle)
+                {
+                    case Gear.TrailStyle.Sparkle:
+                        e.position = p + Random.insideUnitSphere * 0.25f;
+                        e.velocity = Random.insideUnitSphere * 0.4f;
+                        e.startColor = Color.Lerp(Color.white, new Color(1f, 0.85f, 0.35f), Random.value);
+                        e.startSize = Random.Range(0.15f, 0.4f);
+                        e.startLifetime = Random.Range(0.4f, 0.9f);
+                        break;
+                    case Gear.TrailStyle.Fire:
+                        e.velocity = Vector3.up * Random.Range(0.3f, 1.2f) + Random.insideUnitSphere * 0.3f;
+                        e.startColor = Color.Lerp(new Color(1f, 0.9f, 0.3f), new Color(1f, 0.25f, 0.05f), Random.value);
+                        e.startSize = Random.Range(0.45f, 0.8f);
+                        e.startLifetime = Random.Range(0.35f, 0.7f);
+                        break;
+                    default:
+                        float hue = (Time.time * 0.9f + i / (float)steps * 0.05f) % 1f;
+                        e.startColor = Color.HSVToRGB(hue, 0.75f, 1f);
+                        e.startSize = 0.45f;
+                        e.startLifetime = 0.8f;
+                        break;
+                }
+                trail.Emit(e, 1);
+            }
+            trailFrom = at;
         }
 
         // ---- coming down
@@ -349,6 +397,7 @@ namespace GolfArcade.Game
             Color a, b;
             switch (lie)
             {
+                case CourseLie.Ice: a = new Color(0.94f, 0.98f, 1f); b = new Color(0.7f, 0.88f, 1f); break;
                 case CourseLie.Bunker: a = new Color(0.94f, 0.85f, 0.62f); b = new Color(0.86f, 0.74f, 0.5f); break;
                 case CourseLie.Green: a = new Color(0.75f, 0.95f, 0.5f); b = new Color(0.55f, 0.85f, 0.4f); break;
                 case CourseLie.Rough: case CourseLie.OutOfBounds: a = new Color(0.4f, 0.65f, 0.28f); b = new Color(0.55f, 0.45f, 0.3f); break;
@@ -367,6 +416,57 @@ namespace GolfArcade.Game
                     startLifetime = Random.Range(0.3f, 0.6f),
                 };
                 puffs.Emit(p, 1);
+            }
+        }
+
+        /// The ball into lava: a flash, sparks thrown up and falling back, and a puff of smoke.
+        public void LavaBurst(Vector3 at)
+        {
+            Fire(flash, at + Vector3.up * 0.4f, 0.4f, 0.5f, 3.2f, new Color(1f, 0.6f, 0.2f));
+            for (int i = 0; i < 70; i++)
+            {
+                var dir = Random.insideUnitCircle;
+                splash.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + new Vector3(dir.x * 0.3f, 0.05f, dir.y * 0.3f),
+                    velocity = new Vector3(dir.x * Random.Range(1f, 3.5f), Random.Range(3.5f, 9.5f), dir.y * Random.Range(1f, 3.5f)),
+                    startColor = Color.Lerp(new Color(1f, 0.92f, 0.35f), new Color(1f, 0.32f, 0.05f), Random.value),
+                    startSize = Random.Range(0.18f, 0.45f),
+                    startLifetime = Random.Range(0.6f, 1.3f),
+                }, 1);
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                var dir = Random.insideUnitCircle;
+                puffs.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + new Vector3(dir.x * 0.4f, 0.3f, dir.y * 0.4f),
+                    velocity = new Vector3(dir.x * 0.6f, Random.Range(1.5f, 3.2f), dir.y * 0.6f),
+                    startColor = Color.Lerp(new Color(0.32f, 0.3f, 0.3f), new Color(0.55f, 0.52f, 0.5f), Random.value),
+                    startSize = Random.Range(1.0f, 1.8f),
+                    startLifetime = Random.Range(0.9f, 1.6f),
+                }, 1);
+            }
+        }
+
+        /// A ball skidding on the ice: chips and powder kicked up off its path, thrown back and
+        /// out to the sides.
+        public void IceSpray(Vector3 at, Vector3 along, float strength)
+        {
+            along.y = 0;
+            var fwd = along.sqrMagnitude > 1e-4f ? along.normalized : Vector3.forward;
+            var side = Vector3.Cross(Vector3.up, fwd);
+            int count = Mathf.RoundToInt(3 + 7 * Mathf.Clamp01(strength));
+            for (int i = 0; i < count; i++)
+            {
+                puffs.Emit(new ParticleSystem.EmitParams
+                {
+                    position = at + Vector3.up * 0.04f,
+                    velocity = -fwd * Random.Range(0.2f, 1.2f) + side * Random.Range(-1.4f, 1.4f) + Vector3.up * Random.Range(0.6f, 1.8f),
+                    startColor = Color.Lerp(new Color(0.95f, 0.98f, 1f), new Color(0.72f, 0.88f, 1f), Random.value),
+                    startSize = Random.Range(0.2f, 0.45f),
+                    startLifetime = Random.Range(0.25f, 0.5f),
+                }, 1);
             }
         }
 

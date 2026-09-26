@@ -61,6 +61,32 @@ namespace GolfArcade.Game
         readonly Dictionary<string, AnimationClip> clips = new();
         readonly Dictionary<string, ClipInfo> landmarks = new();
         readonly Dictionary<string, GameObject> clubMeshes = new();
+        /// The clubs' own materials, before a finish went on them.
+        readonly Dictionary<Renderer, Material[]> clubOriginal = new();
+        Color? clubFinish;
+
+        /// A finish on every club (Gear.ClubFinish, one of the rewards): the head and the shaft
+        /// take its colour, the dark grip stays. Null is the steel as modelled.
+        public Color? ClubFinish { get => clubFinish; set { clubFinish = value; DressClubs(); } }
+
+        void DressClubs()
+        {
+            foreach (var club in clubMeshes.Values)
+                foreach (var r in club.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!clubOriginal.TryGetValue(r, out var original)) clubOriginal[r] = original = r.sharedMaterials;
+                    if (clubFinish is not Color finish) { r.sharedMaterials = original; continue; }
+                    var mats = (Material[])original.Clone();
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        if (!mats[i]) continue;
+                        var c = mats[i].color;
+                        if (0.3f * c.r + 0.59f * c.g + 0.11f * c.b < 0.3f) continue;   // the grip
+                        mats[i] = Clay(Color.Lerp(c, finish, 0.85f), false);
+                    }
+                    r.sharedMaterials = mats;
+                }
+        }
         string clipName;
         float TopTime, ImpactTime, EndTime;
         bool hasModel;
@@ -253,7 +279,7 @@ namespace GolfArcade.Game
         bool BuildModel(GameObject prefab, Look look)
         {
             string path = look.ModelPath;
-            clips.Clear(); landmarks.Clear(); clubMeshes.Clear();
+            clips.Clear(); landmarks.Clear(); clubMeshes.Clear(); clubOriginal.Clear();
             foreach (var c in Resources.LoadAll<AnimationClip>(path)) clips[c.name] = c;
             if (clips.Count == 0) return false;
             var json = Resources.Load<TextAsset>(path + "_clips");
@@ -310,6 +336,7 @@ namespace GolfArcade.Game
                 if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == look.HairMesh);
             }
             if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
+            else DressClubs();
             MeasureFeet(model);
             // the Head bone (not a mesh that happens to share the name)
             foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))

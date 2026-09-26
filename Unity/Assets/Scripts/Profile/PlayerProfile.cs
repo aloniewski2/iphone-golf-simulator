@@ -28,6 +28,14 @@ namespace GolfArcade.Profile
 
         public ProfileStats Stats = new();
 
+        /// What they play with, from what they have earned (Unlocks): the ball, the trail behind
+        /// it, the club finish. Ids from Unlocks.All; Unlocks.Chosen falls back to the free one.
+        public string Ball = "ball.white";
+        public string Trail = "trail.none";
+        public string Club = "club.classic";
+        /// Rewards they have been told they earned, so each is announced once.
+        public List<string> Announced = new();
+
         public bool IsSignedIn => !string.IsNullOrEmpty(ServerId) && !string.IsNullOrEmpty(ServerToken);
 
         /// Trimmed, single-line, at most MaxNameLength characters; blank keeps the old name.
@@ -67,8 +75,27 @@ namespace GolfArcade.Profile
         public int MatchesWon;
         public int MatchesTied;
         public int MatchesLost;
+        /// Their longest drive on the fairway, yards (solo rounds).
+        public int LongestDrive;
+        /// Each course's full rounds: how many, and the best against par.
+        public List<CourseBest> Courses = new();
 
         public int MatchesPlayed => MatchesWon + MatchesTied + MatchesLost;
+
+        /// A full round of a course (by its key, "cliffside") finished at `toPar`.
+        public void RecordCourse(string courseKey, int toPar)
+        {
+            if (string.IsNullOrEmpty(courseKey)) return;
+            var c = Courses.Find(x => x.Course == courseKey);
+            if (c == null) { Courses.Add(new CourseBest { Course = courseKey, Rounds = 1, BestToPar = toPar }); return; }
+            c.Rounds++;
+            c.BestToPar = Math.Min(c.BestToPar, toPar);
+        }
+
+        /// The best full round of a course against par; null before the first.
+        public int? BestOn(string courseKey) => Courses.Find(x => x.Course == courseKey) is CourseBest c && c.Rounds > 0 ? c.BestToPar : null;
+
+        public int RoundsOn(string courseKey) => Courses.Find(x => x.Course == courseKey)?.Rounds ?? 0;
 
         /// Average strokes against par per hole; 0 before the first hole.
         public double AverageToParPerHole => HolesPlayed == 0 ? 0 : (double)(TotalStrokes - TotalPar) / HolesPlayed;
@@ -112,5 +139,13 @@ namespace GolfArcade.Profile
             }
             if (!HasBest || card.ToPar < BestToPar) { BestToPar = card.ToPar; HasBest = true; }
         }
+    }
+
+    [Serializable]
+    public sealed class CourseBest
+    {
+        public string Course = "";
+        public int Rounds;
+        public int BestToPar;
     }
 }

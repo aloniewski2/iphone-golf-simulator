@@ -65,10 +65,18 @@ with a clubhouse leaderboard after each round and on the OPEN screen. It is save
 so the event can be played a round at a time. The pros' rounds are played out hole by hole from
 the event's seed and their skill (`Championship.cs`).
 
-**Courses**: *Cliffside* (holes 7, 12–15) and *Wild Isles* (holes 19–23: Volcano Rim, Frostbite
+**Courses**: *Cliffside* (holes 7, 12–15) and *Wild Isles* (holes 16–20: Volcano Rim, Frostbite
 Fjord, Mesa Canyon, Temple Falls, Windmill Links — each its own world, built from
-`hole19_volcano_design.py` … `hole23_windmill_design.py` with the themes, water, lava, ice and
-landmarks of `course_extras.py`).
+`hole16_volcano_design.py` … `hole20_windmill_design.py` with the themes, water, lava, ice and
+landmarks of `course_extras.py`). Each plays its own way: Volcano Rim's lava is a penalty with a
+flare of sparks, Frostbite Fjord's frozen lake is ice a ball skids across (`CourseLie.Ice`), and
+Windmill Links' sails knock a shot down or let it through the gaps depending on where they have
+turned to when it gets there (`SpinningSails`, read off the model's blades).
+
+**Unlocks** (`Profile/Unlocks.cs`): Wild Isles opens once a player beats par on Cliffside; balls,
+trails, club finishes and outfit colours are earned from their record (a birdie, an eagle, a
+250-yard drive, a match won…) and announced at the end of the round. The golfer screen's GEAR
+page picks the ball, the trail and the clubs; padlocks mark what is still to be earned.
 `Course.All()` lists the courses; COURSE browses every course's holes and FULL ROUND picks
 the round of the course on show. New holes are built from design modules with
 `blender/scripts/course_builder.py` (an optional `PALETTE` recolours them, matched in the game

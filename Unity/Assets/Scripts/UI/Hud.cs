@@ -1022,6 +1022,17 @@ namespace GolfArcade.UI
         }
         public void HideLanding() => landingBadge.Hide();
 
+        UnlockToast unlockToast;
+        /// Rewards earned, announced one after another over the card (UI/UnlockToast.cs); `who`
+        /// names the player when more than one is on the phone.
+        public void ShowUnlocks(System.Collections.Generic.IEnumerable<(string who, Profile.Reward reward)> rewards)
+        {
+            if (!unlockToast) unlockToast = UnlockToast.Create(safeArea);
+            unlockToast.Announce(rewards);
+        }
+        /// The reward on show, for the tests.
+        public string UnlockShowing => unlockToast ? unlockToast.Showing : null;
+
         /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
         public void ShowTurn(string word, string detail, Color color)
         {

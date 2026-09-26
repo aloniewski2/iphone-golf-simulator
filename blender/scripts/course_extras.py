@@ -1,4 +1,4 @@
-"""The parts holes 19-23 (Wild Isles) add to course_builder.py: themes for the ground and cliffs (volcano,
+"""The parts holes 16-20 (Wild Isles) add to course_builder.py: themes for the ground and cliffs (volcano,
 snow, desert, jungle), pools and rivers of water, lava or ice, falls down the cliffs, and the new
 holes' landmarks and plants — palms, cacti, snowy pines, a windmill, a temple, a log cabin, a
 rope bridge, tulip fields… Every attribute is optional: a design module without them builds as
@@ -378,12 +378,13 @@ def fall(B, i, f):
 
 
 def hazards(D, yd, YARDS):
-    """Water(x, d, width, length) for Course.Cliffside: the design's water, lava and ice (ellipses
-    in metres, (cx, cy, rx, ry))."""
+    """Water(x, d, width, length), Lava(…) or Ice(…) for the hole's numbers: the design's water,
+    lava and ice (ellipses in metres, (cx, cy, rx, ry[, "lava" | "ice"]))."""
     out = []
-    for cx, cy, rx, ry in getattr(D, "WATER_HAZARDS", []):
+    for cx, cy, rx, ry, *kind in getattr(D, "WATER_HAZARDS", []):
         x, dd = yd((cx, cy))
-        out.append(f"Water({x}, {dd}, {round(2 * rx * YARDS, 1)}, {round(2 * ry * YARDS, 1)})")
+        call = {"lava": "Lava", "ice": "Ice"}.get(kind[0] if kind else "water", "Water")
+        out.append(f"{call}({x}, {dd}, {round(2 * rx * YARDS, 1)}, {round(2 * ry * YARDS, 1)})")
     return out
 
 

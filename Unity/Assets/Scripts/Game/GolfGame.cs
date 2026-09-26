@@ -123,6 +123,8 @@ namespace GolfArcade.Game
         bool touchedDown;
         /// Flight time at which the ball went into the water, or below 0.
         double splashedAt;
+        /// Skidding on the ice: whether it is on it now, and when the next spray of chips is due.
+        bool onIce; float nextSpray;
         /// An approach from further out than `PovFromYards` that comes down within
         /// `PovWithinYards` of the pin is watched through Codex's ball POV (CameraRig.BallPov):
         /// just above the ball, the big ball low in the frame and the flag ahead.
@@ -264,6 +266,7 @@ namespace GolfArcade.Game
             chosenCourse = PlayerPrefs.GetString("course", "cliffside");
             if (Course.Course.ByKey(chosenCourse) == null) chosenCourse = "cliffside";
             if (chosenHoles != 0 && Course.Course.Containing(chosenHoles) == null) chosenHoles = 0;
+            KeepToOpenCourses();
 
             ShowMenu();
         }
@@ -287,6 +290,7 @@ namespace GolfArcade.Game
             ListenToRoom(null);
             setup = null;
             if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); }
+            WearGear(ProfileStore.Active);
             course = CourseFor(chosenHoles);
             ShowHole(course.Holes[0]);
             greenRead.Hide();
@@ -464,7 +468,13 @@ namespace GolfArcade.Game
             courses.ThisHole.Pressed = () => { Click(); browseFull = false; ShowBrowsed(); };
             courses.FullRound.Pressed = () => { Click(); browseFull = true; ShowBrowsed(); };
             courses.Back.Pressed = () => { Click(); ShowMenu(); };
-            courses.Select.Pressed = () => { Click(); ChooseHoles(browseFull ? 0 : AllHoles[browse].Number, Course.Course.Containing(AllHoles[browse].Number)?.Key); };
+            courses.Select.Pressed = () =>
+            {
+                Click();
+                var key = Course.Course.Containing(AllHoles[browse].Number)?.Key;
+                if (!Unlocks.CourseOpen(ProfileStore.Active, key)) { sounds.PlayGroan(0.3f); courses.ShakeLock(); return; }   // not yet
+                ChooseHoles(browseFull ? 0 : AllHoles[browse].Number, key);
+            };
             BrowseHole(0);
         }
 
@@ -500,6 +510,9 @@ namespace GolfArcade.Game
             var h = AllHoles[browse];
             // FULL ROUND is the round of the course this hole is on: its name over the hole
             courses?.Show(browseFull ? Course.Course.Containing(h.Number)?.Name ?? h.Name : h.Name, h.Number, h.Par, h.Length, browse, browseFull);
+            // a course still to be earned: what it takes, and no SELECT
+            var key = Course.Course.Containing(h.Number)?.Key;
+            courses?.SetLocked(Unlocks.CourseOpen(ProfileStore.Active, key) ? null : Unlocks.Find(Unlocks.WildIsles)?.How);
         }
 
         /// One frame of the course screen: round the hole, the haze pushed back beyond it.
@@ -514,6 +527,15 @@ namespace GolfArcade.Game
         {
             RenderSettings.fogStartDistance = Mathf.Max(FogStart, beyond);
             RenderSettings.fogEndDistance = Mathf.Max(FogEnd, beyond + 1200);
+        }
+
+        /// A course still locked for the phone's player (saved from before, or another player's
+        /// choice) gives way to Cliffside.
+        void KeepToOpenCourses()
+        {
+            if (Unlocks.CourseOpen(ProfileStore.Active, chosenCourse)) return;
+            chosenCourse = "cliffside"; chosenHoles = 0;
+            PlayerPrefs.SetInt("holes", 0); PlayerPrefs.SetString("course", chosenCourse); PlayerPrefs.Save();
         }
 
         /// The hole the course screen shows, for tests.
@@ -563,8 +585,67 @@ namespace GolfArcade.Game
             select = hud.ShowGolferSelect(GolferStyle.KitNames, GolferStyle.KitColors, GolferStyle.ShirtNames, GolferStyle.ShirtColors);
             select.Previous.Pressed = () => SwitchGolfer();
             select.Next.Pressed = () => SwitchGolfer();
-            for (int i = 0; i < select.Kits.Length; i++) { int kit = i; select.Kits[i].Pressed = () => { Click(); GolferStyle.Kit = kit; golfer.Redress(); RefreshSelect(); }; }
-            for (int i = 0; i < select.Shirts.Length; i++) { int shirt = i; select.Shirts[i].Pressed = () => { Click(); GolferStyle.Shirt = shirt; golfer.Redress(); RefreshSelect(); }; }
+            var owner = pickingFor ?? ProfileStore.Active;
+            for (int i = 0; i < select.Kits.Length; i++)
+            {
+                int kit = i;
+                select.Kits[i].Pressed = () =>
+                {
+                    if (!Unlocks.OutfitOpen(owner, kit)) { Locked(GolferSelect.Rows.Kit, $"outfit.{kit}"); return; }
+                    Click(); GolferStyle.Kit = kit; golfer.Redress(); RefreshSelect();
+                };
+            }
+            for (int i = 0; i < select.Shirts.Length; i++)
+            {
+                int shirt = i;
+                select.Shirts[i].Pressed = () =>
+                {
+                    if (!Unlocks.OutfitOpen(owner, shirt)) { Locked(GolferSelect.Rows.Shirt, $"outfit.{shirt}"); return; }
+                    Click(); GolferStyle.Shirt = shirt; golfer.Redress(); RefreshSelect();
+                };
+            }
+            // the GEAR page: the ball, its trail, the clubs — each earned (Profile/Unlocks.cs)
+            var balls = Unlocks.Of(RewardKind.Ball); var trails = Unlocks.Of(RewardKind.Trail); var clubs = Unlocks.Of(RewardKind.Club);
+            string[] Names(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(r => r.Name).ToArray();
+            Color[] Swatches(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(Gear.Swatch).ToArray();
+            select.AddGear(Names(balls), Swatches(balls), Names(trails), Swatches(trails),
+                           trails.ConvertAll(r => r.Id == "trail.rainbow" ? RainbowSwatch() : null).ToArray(), Names(clubs), Swatches(clubs));
+            void Wire(HoldButton[] buttons, System.Collections.Generic.List<Reward> rs, GolferSelect.Rows row, System.Action<string> pick)
+            {
+                for (int i = 0; i < buttons.Length; i++)
+                {
+                    var r = rs[i];
+                    buttons[i].Pressed = () =>
+                    {
+                        if (!Unlocks.Has(owner, r.Id)) { Locked(row, r.Id); return; }
+                        Click(); pick(r.Id); WearGear(owner); RefreshSelect();
+                    };
+                }
+            }
+            Wire(select.Balls, balls, GolferSelect.Rows.Ball, id => owner.Ball = id);
+            Wire(select.Trails, trails, GolferSelect.Rows.Trail, id => owner.Trail = id);
+            Wire(select.Clubs, clubs, GolferSelect.Rows.Club, id => owner.Club = id);
+            bool[] Open(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(r => Unlocks.Has(owner, r.Id)).ToArray();
+            bool[] Colours(int n) { var o = new bool[n]; for (int i = 0; i < n; i++) o[i] = Unlocks.OutfitOpen(owner, i); return o; }
+            select.SetOpen(GolferSelect.Rows.Kit, Colours(select.Kits.Length));
+            select.SetOpen(GolferSelect.Rows.Shirt, Colours(select.Shirts.Length));
+            select.SetOpen(GolferSelect.Rows.Ball, Open(balls));
+            select.SetOpen(GolferSelect.Rows.Trail, Open(trails));
+            select.SetOpen(GolferSelect.Rows.Club, Open(clubs));
+            WearGear(owner);
+            // on the GEAR page the ball is out on the tee by the golfer's feet, in its colour
+            var turnPage = select.PageButton.Pressed;
+            select.PageButton.Pressed = () =>
+            {
+                Click(); turnPage();
+                ball.gameObject.SetActive(select.ShowingGear);
+                if (!select.ShowingGear) return;
+                // out in front of the golfer's feet, a little to the side, where the camera sees it
+                var side = Vector3.Cross(Vector3.up, selectFacing).normalized;
+                var at = golfer.transform.position + selectFacing * 0.55f + side * 0.45f;
+                at.y = (float)HoleView.GroundHeight(HoleView.ToCourse(at)) + BallSize * 0.5f;
+                ball.position = at;
+            };
             select.Spin = dx => { spinning = true; selectSpin -= dx * 0.35f; };
             select.SpinDone = () => spinning = false;
             select.Go.Pressed = CloseGolferPicker;
@@ -588,7 +669,41 @@ namespace GolfArcade.Game
             RestyleForPicker();
         }
 
-        void RefreshSelect() => select?.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.Kit, GolferStyle.Shirt);
+        void RefreshSelect()
+        {
+            if (select == null) return;
+            select.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.Kit, GolferStyle.Shirt);
+            var owner = pickingFor ?? ProfileStore.Active;
+            int Index(RewardKind kind) => Unlocks.Of(kind).FindIndex(r => r.Id == Unlocks.Chosen(owner, kind));
+            select.RefreshGear(Index(RewardKind.Ball), Index(RewardKind.Trail), Index(RewardKind.Club));
+        }
+
+        /// A padlocked choice pressed: what it takes, and a low note.
+        void Locked(GolferSelect.Rows row, string rewardId)
+        {
+            sounds.PlayTick(); Haptics.Tick();
+            select?.SayLocked(row, Unlocks.Find(rewardId)?.How ?? "");
+        }
+
+        static Sprite rainbowSwatch;
+        /// The rainbow trail's swatch: a disc with every colour round it.
+        static Sprite RainbowSwatch()
+        {
+            if (rainbowSwatch) return rainbowSwatch;
+            const int n = 96;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = x + 0.5f - n / 2f, dy = y + 0.5f - n / 2f, r = Mathf.Sqrt(dx * dx + dy * dy) / (n / 2f);
+                    var c = Color.HSVToRGB((Mathf.Atan2(dy, dx) / (2 * Mathf.PI) + 1f) % 1f, 0.8f, 1f);
+                    c.a = Mathf.Clamp01((1f - r) * n / 2f);
+                    px[y * n + x] = c;
+                }
+            tex.SetPixels32(px); tex.Apply();
+            return rainbowSwatch = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f));
+        }
 
         void Click() { sounds.PlayTick(); Haptics.Tick(); }
 
@@ -627,6 +742,7 @@ namespace GolfArcade.Game
         public void Play()
         {
             if (Current != State.Menu) return;
+            KeepToOpenCourses();
             if (Mode == PlayMode.LocalVersus) { Click(); OpenLobby(Lobby.Page.Local); return; }
             if (Mode == PlayMode.Online) { Click(); OpenLobby(Lobby.Page.Online); return; }
             if (Mode == PlayMode.Tournament) { Click(); OpenLobby(Lobby.Page.Tournament); return; }
@@ -781,11 +897,24 @@ namespace GolfArcade.Game
         /// model is only rebuilt when the look changes).
         void WearTurn()
         {
+            WearGear(ProfileOf(Match.Current));
             if (Match.LocalCount < 2) { if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); } return; }
             var p = Match.Current;
             if (GolferStyle.Worn && (int)GolferStyle.Body == p.Body && GolferStyle.Kit == p.Kit && GolferStyle.Shirt == p.Shirt) return;
             GolferStyle.Wear(p.Body, p.Kit, p.Shirt);
             golfer.ApplyStyle();
+        }
+
+        /// The profile a player of the round plays as (the phone's own for a guest).
+        static PlayerProfile ProfileOf(MatchPlayer p) => (p != null ? ProfileStore.Book.Find(p.ProfileId) : null) ?? ProfileStore.Active;
+
+        /// Their gear, from what they have earned: the ball's colour, its trail, the clubs' finish.
+        void WearGear(PlayerProfile p)
+        {
+            var cover = DimpledBall();
+            if (cover) cover.color = Gear.BallColor(Unlocks.Chosen(p, RewardKind.Ball));
+            effects.SetTrail(Gear.Trail(Unlocks.Chosen(p, RewardKind.Trail)));
+            golfer.ClubFinish = Gear.ClubFinish(Unlocks.Chosen(p, RewardKind.Club));
         }
 
         // ----- Alternate shots: two or more golfers on this phone -----
@@ -953,6 +1082,9 @@ namespace GolfArcade.Game
             UpdateAimVisuals();
             OnImpact(new SwingImpact { Power = best, Backswing = 0.8, Commit = 1.2, TempoSeconds = 1.0, DownswingSeconds = 0.25 });
         }
+
+        /// The shot StrikeToward would play at `target`, without playing it (for the tests).
+        public CourseShot PlanFor(CoursePoint target) => PlanStrike(target, out _, out _);
 
         /// The aim and the power that bring a full shot down on `target` in today's wind; the
         /// shot that makes.
@@ -1751,6 +1883,10 @@ namespace GolfArcade.Game
             Haptics.Release();
             sounds.Release();
             var lie = hole.LieAt(ballAt);
+            // the club is on its way down: the ball leaves when it gets there, and the windmill's
+            // sails will have turned on by then
+            float toBall = golfer.Strike();
+            if (hole.Windmill is SpinningSails turning) turning.AngleAtLaunch = turning.CurrentAngle() + turning.DegreesPerSecond * toBall;
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
             landingGround = HoleView.GroundHeight(LastShot.Landing);
@@ -1758,7 +1894,7 @@ namespace GolfArcade.Game
             shotLine = landingSpot - HoleView.ToWorld(ballAt); shotLine.y = 0;
             if (shotLine.sqrMagnitude < 1f) shotLine = AimDirection();
             drawnY = launchGround; drawnVy = 0;
-            touchedDown = false; splashedAt = -1;
+            touchedDown = false; splashedAt = -1; onIce = false;
             lastImpact = impact; originWorld = HoleView.ToWorld(ballAt); flightHud = false;
             lastReport = Strikes.Judge(impact); gradeShown = false;
             knocksShown = 0;
@@ -1774,7 +1910,6 @@ namespace GolfArcade.Game
             ShowScore();
             hud.SetMeter((float)impact.Power, (float)impact.Backswing);
             hud.SetTempo($"Swing {club.ClubSpeedMPH(impact.Power):F0} mph  ·  Load {impact.Backswing:P0}  ·  Face {impact.FaceDegrees:+0;-0}°");
-            float toBall = golfer.Strike();
             hud.SetStatus("");
             RefreshControls();
             landingMarker.gameObject.SetActive(false);
@@ -1891,6 +2026,7 @@ namespace GolfArcade.Game
 
                 case State.Flight:
                     flightTime += Time.deltaTime;
+                    hole.Windmill?.Drive(hole.Windmill.AngleAt(flightTime));   // the blades keep the flight's time
                     if (flightTime < 0) break;
                     if (!strikePlayed)
                     {
@@ -1965,7 +2101,7 @@ namespace GolfArcade.Game
                 if (lie != CourseLie.Water)
                 {
                     effects.Touchdown(new Vector3(pos.x, (float)under + 0.02f, pos.z), lie, strength);
-                    sounds.PlayThud(strength);
+                    if (lie == CourseLie.Ice) sounds.PlayIceSkid(strength); else sounds.PlayThud(strength);
                     if (firstDown) Haptics.Tick();
                 }
                 if (firstDown) { touchedDown = true; effects.Land(); }
@@ -1985,6 +2121,15 @@ namespace GolfArcade.Game
             lastHeight = p.h;
             var velocity = (pos - lastBallPos) / dt;
             lastBallPos = pos;
+            // skidding across the ice: a scrape as it goes on, and chips kicked up off its path
+            bool iceNow = touchedDown && p.h <= 0.05 && hole.LieAt(at) == CourseLie.Ice && velocity.magnitude > 1f;
+            if (iceNow && !onIce) sounds.PlayIceSkid(velocity.magnitude / 20f);
+            onIce = iceNow;
+            if (iceNow && Time.time >= nextSpray)
+            {
+                effects.IceSpray(new Vector3(pos.x, (float)under, pos.z), velocity, velocity.magnitude / 20f);
+                nextSpray = Time.time + 0.06f;
+            }
             SpinBall(pos, velocity, p.h > 0.08);
             var trace = hud.Map.Trace;
             if (splashedAt < 0 && (pos - trace[trace.Count - 1]).sqrMagnitude > 4f) { trace.Add(pos); hud.Map.Changed(); }
@@ -2032,8 +2177,8 @@ namespace GolfArcade.Game
             if (LastShot.Lie == CourseLie.Water && splashedAt < 0)
             {
                 splashedAt = flightTime;
-                effects.Splash(new Vector3(pos.x, (float)under, pos.z));
-                sounds.PlaySplash();
+                if (InLava(LastShot)) { effects.LavaBurst(new Vector3(pos.x, (float)under, pos.z)); sounds.PlayLavaHiss(); Haptics.Failure(); }
+                else { effects.Splash(new Vector3(pos.x, (float)under, pos.z)); sounds.PlaySplash(); }
                 sounds.PlayGasp(0.55f);
                 if (trailing) effects.Land();
                 trace.Add(pos); hud.Map.Changed();
@@ -2180,7 +2325,13 @@ namespace GolfArcade.Game
                 var profile = ProfileStore.Book.Find(player.ProfileId);
                 if (profile == null) continue;
                 // a contest counts only as a match; stroke and match play also count the card
-                if (!Match.IsContest) profile.Stats.RecordCard(player.Card);
+                if (!Match.IsContest)
+                {
+                    profile.Stats.RecordCard(player.Card);
+                    // a whole course's round (not one hole of it) counts toward its best
+                    if (setup.CourseId.IndexOf('-') < 0) profile.Stats.RecordCourse(setup.CourseId, player.Card.ToPar);
+                }
+                if (Match.IsSolo && longestDrive > 0) profile.Stats.LongestDrive = Math.Max(profile.Stats.LongestDrive, (int)Math.Round(longestDrive));
                 if (!Match.IsSolo) profile.Stats.RecordResult(Match.ResultFor(player));
                 if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Current?.RecordRound(profile.Id, player.Card.ToPar);
                 if (setup.Mode == PlayMode.Online || Match.IsContest) continue;
@@ -2191,8 +2342,16 @@ namespace GolfArcade.Game
                 string result = opponents.Count == 0 ? null : player.Card.ToPar < best ? "won" : player.Card.ToPar == best ? "tied" : "lost";
                 _ = BackendClient.SubmitRound(profile, setup.CourseId, strokes, result);
             }
+            // and what they have earned with it, each reward announced once
+            var news = new System.Collections.Generic.List<(string who, Reward reward)>();
+            foreach (var player in Match.Players)
+            {
+                if (!player.IsLocal || ProfileStore.Book.Find(player.ProfileId) is not PlayerProfile profile) continue;
+                foreach (var r in Unlocks.Announce(profile)) news.Add((Match.LocalCount > 1 ? profile.Name : null, r));
+            }
             ProfileStore.Save();
             if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Save();
+            if (news.Count > 0) { hud.ShowUnlocks(news); sounds.PlayFanfare(); }
         }
 
         /// From the card straight into the same holes again (online: back to the lobby for a
@@ -2387,6 +2546,7 @@ namespace GolfArcade.Game
             // slow motion through the strike
             Time.timeScale = replayClock > -0.3f && replayClock < 0.35f ? 0.4f : 1f;
             replayClock += Time.deltaTime;
+            hole.Windmill?.Drive(hole.Windmill.AngleAt(replayClock));
             if (!replayStruck && replayClock >= -0.4f) { replayStruck = true; replayClock = -golfer.Strike(); }
             if (replayStruck && !replayLaunched && replayClock >= 0)
             {
@@ -2413,7 +2573,12 @@ namespace GolfArcade.Game
             {
                 replayDone = true;
                 if (LastShot.IsHoled) { sounds.PlayCup(); sounds.PlayApplause(0.3f); ball.gameObject.SetActive(false); }
-                else if (LastShot.Lie == CourseLie.Water) { effects.Splash(ball.position); sounds.PlaySplash(); ball.gameObject.SetActive(false); }
+                else if (LastShot.Lie == CourseLie.Water)
+                {
+                    if (InLava(LastShot)) { effects.LavaBurst(ball.position); sounds.PlayLavaHiss(); }
+                    else { effects.Splash(ball.position); sounds.PlaySplash(); }
+                    ball.gameObject.SetActive(false);
+                }
                 effects.EndFlight();
             }
             ReplayCamera(ball.position);
@@ -2457,6 +2622,7 @@ namespace GolfArcade.Game
 
         void EndReplay()
         {
+            hole.Windmill?.Drive(null);
             Time.timeScale = 1f;
             hud.ShowReplay(false);
             rig.ResetZoom(); rig.RestoreFov();
@@ -2468,6 +2634,7 @@ namespace GolfArcade.Game
 
         void FinishShot()
         {
+            hole.Windmill?.Drive(null);
             var shot = LastShot;
             effects.EndFlight();
             aimLine.positionCount = AimLineSamples;
@@ -2482,7 +2649,7 @@ namespace GolfArcade.Game
                 Haptics.Roar();
                 result = "In the hole!";
             }
-            else if (shot.Lie == CourseLie.Water) { Haptics.Failure(); result = "Water  ·  +1 stroke"; }
+            else if (shot.Lie == CourseLie.Water) { Haptics.Failure(); result = InLava(shot) ? "Lava  ·  +1 stroke" : "Water  ·  +1 stroke"; }
             else if (shot.Lie == CourseLie.OutOfBounds) { Haptics.Failure(); result = "Out of bounds  ·  +1 stroke"; }
             else if (club == GolfClub.Putter) result = $"{shot.Total * 3:F0} ft  ·  {shot.Rest.DistanceTo(hole.Pin) * 3:F1} ft left";
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
@@ -2497,6 +2664,12 @@ namespace GolfArcade.Game
             if (!holeCam && club == GolfClub.Putter) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
         }
+
+        /// The ball went into lava, not water (the rules treat them the same).
+        bool InLava(CourseShot shot) => hole.HazardAt(shot.Rest) == HazardKind.Lava;
+
+        /// Seconds since the ball left the club on the shot in the air, for the tests.
+        public double FlightTime => flightTime;
 
         /// The last shot's result in words (the old banner's), for the tests.
         public string LastResult { get; private set; }
@@ -2517,9 +2690,17 @@ namespace GolfArcade.Game
             switch (shot.Lie)
             {
                 case CourseLie.Water:
-                    hud.ShowLanding(LandingBadge.Kind.Water, "Splash!  +1", "Drop  ·  penalty stroke", stats); return;
+                    if (InLava(shot)) hud.ShowLanding(LandingBadge.Kind.Lava, "Lava!  +1", "Drop  ·  penalty stroke", stats);
+                    else hud.ShowLanding(LandingBadge.Kind.Water, "Splash!  +1", "Drop  ·  penalty stroke", stats);
+                    return;
                 case CourseLie.OutOfBounds:
                     hud.ShowLanding(LandingBadge.Kind.OutOfBounds, "Out of bounds  +1", shot.Origin.DistanceTo(hole.Tee) < 1 ? "Replay from the tee" : "Replay the shot", stats); return;
+            }
+            // down on the ice and skidded right off it
+            if (!putt && shot.Lie != CourseLie.Ice && hole.LieAt(shot.Landing) == CourseLie.Ice)
+            {
+                hud.ShowLanding(LandingBadge.Kind.Ice, "Skid!", $"Off the ice into the {shot.Lie.Label().ToLowerInvariant()}  ·  {toPin:F0} yd", stats);
+                return;
             }
             if (putt)
             {
@@ -2534,6 +2715,7 @@ namespace GolfArcade.Game
                 case CourseLie.Fringe: hud.ShowLanding(LandingBadge.Kind.Green, "Fringe", $"{toPin * 3:F0} ft to the hole", stats); break;
                 case CourseLie.Rough: hud.ShowLanding(LandingBadge.Kind.Rough, "Rough", $"Lie: rough  ·  {toPin:F0} yd", stats); break;
                 case CourseLie.Bunker: hud.ShowLanding(LandingBadge.Kind.Bunker, "Bunker!", $"Sand  ·  {toPin:F0} yd", stats); break;
+                case CourseLie.Ice: hud.ShowLanding(LandingBadge.Kind.Ice, "On the ice!", $"Skidded {shot.Roll:F0} yd  ·  {toPin:F0} yd to go", stats); break;
                 default: hud.ShowLanding(LandingBadge.Kind.Fairway, "Fairway", $"{toPin:F0} yd to the pin", stats); break;
             }
         }

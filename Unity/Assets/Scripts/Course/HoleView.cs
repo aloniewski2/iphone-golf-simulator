@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -85,7 +86,7 @@ namespace GolfArcade.Course
             ["MAT_FLOWER_CORAL"] = Rgb(243, 132, 147), ["MAT_FLOWER_GOLD"] = Rgb(251, 205, 80), ["MAT_FLOWER_LAVENDER"] = Rgb(184, 135, 213),
             // The pin (blender/pin.blend): the cup's liner and the band on the stick.
             ["MAT_CUP_EDGE"] = Rgb(92, 150, 58), ["MAT_POLE_BAND"] = Rgb(250, 200, 40),
-            // Holes 19-23 (blender/scripts/course_extras.py COLORS): volcano, snow, desert,
+            // Wild Isles (blender/scripts/course_extras.py COLORS): volcano, snow, desert,
             // jungle and the windmill's island, their plants and landmarks.
             ["MAT_ROUGH_ASH"] = Rgb(56, 60, 54), ["MAT_BASALT"] = Rgb(50, 50, 56), ["MAT_BASALT_DARK"] = Rgb(32, 32, 38),
             ["MAT_SAND_BLACK"] = Rgb(88, 86, 90), ["MAT_LAVA"] = Rgb(255, 116, 24), ["MAT_LAVA_CRUST"] = Rgb(150, 46, 22),
@@ -107,7 +108,9 @@ namespace GolfArcade.Course
 
         /// Surfaces the ball rests on: everything the raycast should see. Trees, rocks, water and
         /// buildings are scenery.
-        static readonly string[] GroundPrefixes = { "TERRAIN", "FAIRWAY", "GREEN", "TEE_BOX", "BUNKER", "CART_PATH" };
+        /// The meshes the ball lies on (they get colliders): the ground, the turf, and ice a ball
+        /// can skid over (Frostbite Fjord's frozen lake and stream).
+        static readonly string[] GroundPrefixes = { "TERRAIN", "FAIRWAY", "GREEN", "TEE_BOX", "BUNKER", "CART_PATH", "ICE_POOL", "ICE_RIVER" };
         /// Flat sheets over the ground or the sea that cast no shadow: water, lava, ice, smoke, spray.
         static readonly string[] Unshadowed = { "WATER", "LAVA", "ICE_", "SMOKE", "SPRAY" };
         /// Sheets Blender may hand over facing down (it draws both sides; Unity only the front).
@@ -224,9 +227,14 @@ namespace GolfArcade.Course
             // (Not the falls: they stand up, one sheet facing out and one in, as they should.)
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
                 if (StartsWithAny(mf.name, Sheets) && !mf.name.Contains("_FALL") && mf.sharedMesh && mf.sharedMesh.isReadable && FacesDown(mf)) FlipUp(mf);
-            // Windmill Links' sails turn about the axis the model gives them.
+            // Windmill Links' sails turn about the axis the model gives them, and the ball meets them.
+            Hole.Windmill = null;
             if (FindDeep(model.transform, "SAILS_SPIN") is Transform sails && FindDeep(sails, "SAILS_AXIS") is Transform axis)
-                sails.gameObject.AddComponent<Spinner>().Axis = axis;
+            {
+                var spinner = sails.gameObject.AddComponent<Spinner>();
+                spinner.Axis = axis;
+                Hole.Windmill = SailsOf(sails, axis, spinner);
+            }
             // Hole 12's sea comes with its swell as blendshapes and a sheet of glints; drive them.
             WaterMotion.Attach(FindDeep(model.transform, "WATER_WAVES"), FindDeep(model.transform, "WATER_GLINTS"));
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
@@ -266,6 +274,34 @@ namespace GolfArcade.Course
         }
 
         /// Most of the mesh's faces point at the ground.
+        /// The sails for the ball: their blades, off the mesh at rest, laid flat in their own plane.
+        static SpinningSails SailsOf(Transform sails, Transform axis, Spinner spinner)
+        {
+            var mf = sails.GetComponent<MeshFilter>();
+            if (!mf || !mf.sharedMesh || !mf.sharedMesh.isReadable) return null;
+            Vector3 hub = sails.position, axle = (axis.position - sails.position).normalized;
+            var u = Vector3.Cross(axle, Vector3.up);
+            if (u.sqrMagnitude < 1e-6f) u = Vector3.Cross(axle, Vector3.right);
+            u.Normalize();
+            var v = Vector3.Cross(axle, u);
+            var verts = mf.sharedMesh.vertices; var tris = mf.sharedMesh.triangles;
+            var flat = new List<double>();
+            for (int i = 0; i + 2 < tris.Length; i += 3)
+            {
+                var a = sails.TransformPoint(verts[tris[i]]) - hub; var b = sails.TransformPoint(verts[tris[i + 1]]) - hub; var c = sails.TransformPoint(verts[tris[i + 2]]) - hub;
+                double au = Vector3.Dot(a, u), av = Vector3.Dot(a, v), bu = Vector3.Dot(b, u), bv = Vector3.Dot(b, v), cu = Vector3.Dot(c, u), cv = Vector3.Dot(c, v);
+                // the faces that stand edge-on to the plane add nothing
+                if (Math.Abs((bu - au) * (cv - av) - (cu - au) * (bv - av)) < 1e-4) continue;
+                flat.AddRange(new[] { au, av, bu, bv, cu, cv });
+            }
+            return new SpinningSails(hub.x, hub.y, hub.z, axle.x, axle.y, axle.z, u.x, u.y, u.z, flat)
+            {
+                DegreesPerSecond = spinner.DegreesPerSecond,
+                CurrentAngle = () => spinner ? spinner.Angle : 0,
+                Drive = angle => { if (spinner) spinner.Hold(angle); },
+            };
+        }
+
         static bool FacesDown(MeshFilter mf)
         {
             var mesh = mf.sharedMesh; var v = mesh.vertices; var t = mesh.triangles;
@@ -634,13 +670,39 @@ namespace GolfArcade.Course
     {
         public Transform Axis;
         public float DegreesPerSecond = 36f;
+        /// Degrees turned from rest. It turns on by itself; while a shot is in the air (and in
+        /// its replay) the game holds it to the flight's clock, so the blades are where the
+        /// ball meets them (SpinningSails).
+        public double Angle { get; private set; }
+        bool held;
+        Quaternion rest; Vector3 axle; bool ready;
+
+        void Setup()
+        {
+            if (ready || !Axis) return;
+            rest = transform.localRotation;
+            var world = Axis.position - transform.position;
+            axle = transform.parent ? transform.parent.InverseTransformDirection(world).normalized : world.normalized;
+            ready = axle.sqrMagnitude > 0.5f;
+        }
+
+        /// Hold the blades at `angle` degrees from rest; null lets them turn on from there.
+        public void Hold(double? angle)
+        {
+            held = angle.HasValue;
+            if (angle.HasValue) { Angle = angle.Value; Pose(); }
+        }
 
         void Update()
         {
-            if (!Axis) return;
-            var axle = Axis.position - transform.position;
-            if (axle.sqrMagnitude < 1e-6f) return;
-            transform.Rotate(axle.normalized, DegreesPerSecond * Time.deltaTime, Space.World);
+            if (!held) Angle += DegreesPerSecond * Time.deltaTime;
+            Pose();
+        }
+
+        void Pose()
+        {
+            Setup();
+            if (ready) transform.localRotation = Quaternion.AngleAxis((float)(Angle % 360.0), axle) * rest;
         }
     }
 }

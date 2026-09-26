@@ -13,11 +13,28 @@ namespace GolfArcade.Course
         public static Obstacle[] From(Transform model)
         {
             var found = new List<Obstacle>();
+            var plants = Plants(model);
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (!mf.sharedMesh || !mf.gameObject.activeInHierarchy || !mf.sharedMesh.isReadable) continue;
                 var kind = KindOf(mf.name);
                 if (kind == null) continue;
+                if (kind == ObstacleKind.Tree && plants.Count > 0)
+                {
+                    // a course_builder hole marks the foot of every plant: its pieces go to it
+                    var own = new List<Bounds>[plants.Count];
+                    var strays = new List<Bounds>();
+                    foreach (var piece in Pieces(mf))
+                    {
+                        int i = Owner(plants, piece);
+                        if (i < 0) { strays.Add(piece); continue; }
+                        (own[i] ??= new List<Bounds>()).Add(piece);
+                    }
+                    for (int i = 0; i < plants.Count; i++)
+                        if (own[i] != null && PlantOf(plants[i], own[i]) is Obstacle o) found.Add(o);
+                    foreach (var group in Standing(strays)) found.Add(TreeOf(group));
+                    continue;
+                }
                 if (kind == ObstacleKind.Wall)
                 {
                     var b = mf.GetComponent<Renderer>() is Renderer r ? r.bounds : WorldBounds(mf);
@@ -39,6 +56,73 @@ namespace GolfArcade.Course
             return found.ToArray();
         }
 
+        /// A plant's marker (course_builder.py): PLANT_<n>_<class>_<height cm>_<reach cm> at its
+        /// foot — the class T a tree, B a bush, R a cactus, S a tuft the ball goes through.
+        readonly struct Plant
+        {
+            public readonly Vector3 At;
+            public readonly char Class;
+            public readonly float Height, Reach;
+            public Plant(Vector3 at, char cls, float height, float reach) { At = at; Class = cls; Height = height; Reach = reach; }
+        }
+
+        static List<Plant> Plants(Transform model)
+        {
+            var plants = new List<Plant>();
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith("PLANT_")) continue;
+                var bits = t.name.Split('_');
+                if (bits.Length < 5 || bits[2].Length != 1 || !int.TryParse(bits[3], out int cm) || !int.TryParse(bits[4], out int reach)) continue;
+                var s = t.lossyScale;
+                float scale = (Mathf.Abs(s.x) + Mathf.Abs(s.y) + Mathf.Abs(s.z)) / 3f;   // metres to the world's yards
+                plants.Add(new Plant(t.position, bits[2][0], cm / 100f * scale, reach / 100f * scale));
+            }
+            return plants;
+        }
+
+        /// The plant a piece belongs to: the nearest whose reach it is within and whose height it
+        /// is under (a palm's fronds are not the bush below them). -1 for none.
+        static int Owner(List<Plant> plants, Bounds piece)
+        {
+            int best = -1; float bestGap = float.MaxValue;
+            for (int i = 0; i < plants.Count; i++)
+            {
+                var p = plants[i];
+                float gap = new Vector2(piece.center.x - p.At.x, piece.center.z - p.At.z).magnitude;
+                if (gap > p.Reach + 0.6f || piece.min.y > p.At.y + p.Height + 0.6f || piece.max.y < p.At.y - 1f) continue;
+                if (gap < bestGap) { bestGap = gap; best = i; }
+            }
+            return best;
+        }
+
+        /// One plant, from its marker and its pieces: a tree with its trunk and the crown its
+        /// fronds or branches make together, a bush, or a cactus that stands hard like a post.
+        static Obstacle? PlantOf(Plant plant, List<Bounds> parts)
+        {
+            var all = Union(parts);
+            float across = 0.5f * Mathf.Max(all.size.x, all.size.z);
+            switch (plant.Class)
+            {
+                case 'S': return null;
+                case 'B': return Obstacle.Round(ObstacleKind.Bush, all.center.x, all.center.z, all.min.y, all.max.y, across);
+                case 'R': return Obstacle.Round(ObstacleKind.Wall, plant.At.x, plant.At.z, all.min.y, all.max.y, Mathf.Max(0.3f, 0.6f * across));
+            }
+            float widest = 0;
+            foreach (var p in parts) widest = Mathf.Max(widest, Half(p));
+            float trunk = 0; Bounds? crown = null;
+            foreach (var p in parts)
+            {
+                if (Half(p) < 0.35f * widest) trunk = Mathf.Max(trunk, Half(p));
+                else if (crown is Bounds c) { c.Encapsulate(p); crown = c; }
+                else crown = p;
+            }
+            if (trunk <= 0 || !(crown is Bounds top)) return TreeOf(parts);
+            float radius = 0.5f * Mathf.Max(top.size.x, top.size.z);
+            bool cone = (all.max.y - top.min.y) > 1.25f * 2 * radius;
+            return Obstacle.Tree(top.center.x, top.center.z, all.min.y, all.max.y, radius, top.min.y, Mathf.Clamp(trunk, 0.08f, 0.5f), cone);
+        }
+
         /// What a mesh is by its name; null for everything the ball goes through or rests on.
         static ObstacleKind? KindOf(string name)
         {
@@ -47,7 +131,7 @@ namespace GolfArcade.Course
             if (name.StartsWith("BUSH") || name.StartsWith("SHRUB")) return ObstacleKind.Bush;
             if (name.StartsWith("ROCK")) return ObstacleKind.Rock;   // (not CLIFF_ROCK: the cliffs' own boulders are down in the sea)
             if (name.StartsWith("LIGHTHOUSE") || name.StartsWith("TOWER") || name.StartsWith("CLUBHOUSE")) return ObstacleKind.Wall;
-            // holes 19-23: the windmill (not its sails), the cabin, the farmhouse, the temple, the ruins
+            // Wild Isles: the windmill (not its sails), the cabin, the farmhouse, the temple, the ruins
             if (name.StartsWith("WINDMILL") || name.StartsWith("CABIN") || name.StartsWith("FARMHOUSE") || name.StartsWith("TEMPLE") || name.StartsWith("RUIN")) return ObstacleKind.Wall;
             if (name.StartsWith("SNOWMAN")) return ObstacleKind.Rock;
             return null;

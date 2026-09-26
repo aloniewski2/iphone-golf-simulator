@@ -9,7 +9,7 @@ namespace GolfArcade.UI
     /// with the carry and the total. It pops in with a bounce, holds, and shrinks away.
     public sealed class LandingBadge : MonoBehaviour
     {
-        public enum Kind { Green, Fairway, Rough, Bunker, Water, OutOfBounds, Holed, Putt, Turn }
+        public enum Kind { Green, Fairway, Rough, Bunker, Water, OutOfBounds, Holed, Putt, Turn, Ice, Lava }
 
         /// A Turn badge's colour: the player's who is up.
         public Color TurnColor = Color.white;
@@ -69,7 +69,8 @@ namespace GolfArcade.UI
         }
 
         static readonly Color GreenFill = UiKit.Hex("5CC23A"), RoughFill = UiKit.Hex("2F6E2B"), SandFill = UiKit.Hex("F1D38C"),
-                              WaterFill = UiKit.Hex("2A8BEA"), RedFill = UiKit.Hex("E0352F"), FlagRed = UiKit.Hex("E8352F");
+                              WaterFill = UiKit.Hex("2A8BEA"), RedFill = UiKit.Hex("E0352F"), FlagRed = UiKit.Hex("E8352F"),
+                              IceFill = UiKit.Hex("48B6E8"), LavaFill = UiKit.Hex("F0561E");
 
         /// Stamps it: `word` on the badge, `detailText` on the yellow pill, `statsText` on the white
         /// strip (none if null), held `seconds`.
@@ -87,6 +88,8 @@ namespace GolfArcade.UI
                 Kind.Water => (WaterFill, Color.white, null, WaterFill, false),
                 Kind.OutOfBounds => (RedFill, UiKit.Hex("FF5A4E"), null, Color.white, false),
                 Kind.Turn => (TurnColor, Color.white, "swing", TurnColor, false),
+                Kind.Ice => (IceFill, Color.white, "snowflake", IceFill, false),
+                Kind.Lava => (LavaFill, UiKit.Hex("FFE6C4"), "flame", LavaFill, false),
                 _ => (UiKit.ArcadeYellow, UiKit.ArcadeBlue, "trophy", UiKit.ArcadeYellow, true),
             };
             fill.color = fillColor;
