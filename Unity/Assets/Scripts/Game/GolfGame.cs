@@ -266,6 +266,14 @@ namespace GolfArcade.Game
             chosenCourse = PlayerPrefs.GetString("course", "cliffside");
             if (Course.Course.ByKey(chosenCourse) == null) chosenCourse = "cliffside";
             if (chosenHoles != 0 && Course.Course.Containing(chosenHoles) == null) chosenHoles = 0;
+            // everything opened for the phone's player, when the launcher asks for it:
+            // xcrun devicectl device process launch -e '{"GOLF_ARCADE_UNLOCK_ALL":"1"}' ...
+            if (System.Environment.GetEnvironmentVariable("GOLF_ARCADE_UNLOCK_ALL") == "1" && !ProfileStore.Active.AllUnlocked)
+            {
+                Unlocks.GrantAll(ProfileStore.Active);
+                ProfileStore.Save();
+                hud.ShowUnlocks(new[] { ((string)null, new Reward("all", RewardKind.Course, "Everything", "Every course, ball, trail, club and outfit")) });
+            }
             KeepToOpenCourses();
 
             ShowMenu();
@@ -1080,6 +1088,7 @@ namespace GolfArcade.Game
             PlanStrike(target, out heading, out double best);
             aimedByPlayer = true;
             UpdateAimVisuals();
+            plannedShot = true;
             OnImpact(new SwingImpact { Power = best, Backswing = 0.8, Commit = 1.2, TempoSeconds = 1.0, DownswingSeconds = 0.25 });
         }
 
@@ -1169,6 +1178,7 @@ namespace GolfArcade.Game
             }
             heading = bestAim; aimedByPlayer = true;
             UpdateAimVisuals();
+            plannedShot = true;
             OnImpact(new SwingImpact { Power = bestPower, Backswing = Math.Min(1, bestPower * 1.4), Commit = 1.2, TempoSeconds = 1.0, DownswingSeconds = 0.25 });
             return holed;
         }
@@ -1876,9 +1886,16 @@ namespace GolfArcade.Game
             hud.SetStatus("Hold still, then swing");
         }
 
+        /// The next impact is a planned one (the tests' StrikeToward and the like): exactly as
+        /// planned, without the strike's own variety.
+        bool plannedShot;
+
         void OnImpact(SwingImpact impact)
         {
             if (Current != State.Aim) return;
+            // a real swing: how purely and how fast it was struck, and a little of its own luck
+            if (!plannedShot && club != GolfClub.Putter) impact = Strikes.Pure(impact, Strikes.Judge(impact), UnityEngine.Random.value, UnityEngine.Random.value);
+            plannedShot = false;
             Swing.Armed = false;
             Haptics.Release();
             sounds.Release();

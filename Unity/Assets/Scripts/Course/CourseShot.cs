@@ -467,6 +467,9 @@ namespace GolfArcade.Course
             else
             {
                 var launch = hole.LieAt(origin).LaunchFrom(club, Power, StartLine, Curve, impact.Thin, speedFactor);
+                // the strike itself: a pure one off the sweet spot flies past the club's number
+                if (double.IsFinite(impact.SpeedBonus)) launch.BallSpeedMPH *= 1 + Clamp(impact.SpeedBonus, -0.2, 0.2);
+                if (double.IsFinite(impact.SpinScatter)) launch.SpinRPM *= 1 + Clamp(impact.SpinScatter, -0.3, 0.3);
                 launch.WindMPH = wind.SpeedMPH;
                 launch.WindDegrees = wind.RelativeTo(Heading);
                 var flight = BallFlight.Simulate(launch);

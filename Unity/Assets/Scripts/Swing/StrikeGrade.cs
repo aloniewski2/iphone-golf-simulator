@@ -51,6 +51,26 @@ namespace GolfArcade.Swing
             return curveDegrees > 0 ? (big ? ShotShape.Slice : ShotShape.Fade) : (big ? ShotShape.Hook : ShotShape.Draw);
         }
 
+        /// Ball speed a PERFECT strike adds (the sweet spot), a GREAT one, and at most a swing
+        /// faster than just committed (twice the committed speed or more).
+        public const double PerfectBonus = 0.06, GreatBonus = 0.03, FastBonus = 0.04;
+        /// Either way from swing to swing: ball speed, and spin (which moves the roll).
+        public const double SpeedScatter = 0.025, SpinScatter = 0.1;
+
+        /// The strike on top of the swing's power: the full swing is still the whole club, but a
+        /// pure one comes off the face faster, a fast one faster still, and every swing a little
+        /// differently — so the ball does not stop on the club's number every time. `luck` and
+        /// `spinLuck` are 0–1 draws for the scatter.
+        public static SwingImpact Pure(SwingImpact impact, StrikeReport report, double luck, double spinLuck)
+        {
+            double grade = report.Grade switch { StrikeGrade.Perfect => PerfectBonus, StrikeGrade.Great => GreatBonus, _ => 0 };
+            double commit = double.IsFinite(impact.Commit) ? impact.Commit : 1;
+            double fast = FastBonus * Math.Max(0, Math.Min(1, commit - 1));
+            impact.SpeedBonus = grade + fast + (Math.Max(0, Math.Min(1, luck)) - 0.5) * 2 * SpeedScatter;
+            impact.SpinScatter = (Math.Max(0, Math.Min(1, spinLuck)) - 0.5) * 2 * SpinScatter;
+            return impact;
+        }
+
         /// Committed (the downswing had the speed), square (no curve to speak of) and smooth
         /// (a real tempo, not a snatch) is PERFECT; lose one and it is GREAT, more and it is GOOD.
         /// A downswing pushed rather than swung catches the ball THIN whatever else it did.

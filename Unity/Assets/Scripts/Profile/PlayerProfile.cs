@@ -35,6 +35,8 @@ namespace GolfArcade.Profile
         public string Club = "club.classic";
         /// Rewards they have been told they earned, so each is announced once.
         public List<string> Announced = new();
+        /// Everything open to them, whatever their record (Unlocks.GrantAll).
+        public bool AllUnlocked;
 
         public bool IsSignedIn => !string.IsNullOrEmpty(ServerId) && !string.IsNullOrEmpty(ServerToken);
 

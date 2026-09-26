@@ -67,7 +67,7 @@ namespace GolfArcade.Profile
         public static bool Has(PlayerProfile p, string id)
         {
             var r = Find(id);
-            return r == null || Everything || r.EarnedBy(p?.Stats);
+            return r == null || Everything || (p != null && p.AllUnlocked) || r.EarnedBy(p?.Stats);
         }
 
         /// A course is open to the player: Wild Isles once they have beaten par on Cliffside.
@@ -82,6 +82,14 @@ namespace GolfArcade.Profile
             string id = kind switch { RewardKind.Ball => p?.Ball, RewardKind.Trail => p?.Trail, RewardKind.Club => p?.Club, _ => null };
             if (!string.IsNullOrEmpty(id) && Find(id)?.Kind == kind && Has(p, id)) return id;
             return Array.Find(All, r => r.Kind == kind && r.Free)?.Id;
+        }
+
+        /// Opens everything to the player, their record as it is; nothing is announced for it.
+        public static void GrantAll(PlayerProfile p)
+        {
+            if (p == null) return;
+            p.AllUnlocked = true;
+            foreach (var r in All) if (!r.Free && !p.Announced.Contains(r.Id)) p.Announced.Add(r.Id);
         }
 
         /// Rewards the player has earned and not yet been told about, in the catalogue's order;
