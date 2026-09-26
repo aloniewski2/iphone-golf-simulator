@@ -8,7 +8,7 @@ lighthouse. Hole ideas come from the holes in *Rising Impact* (Nakaba Suzuki; Ne
 
 | File | Hole | Par | Idea | What it tests in our game |
 |---|---|---|---|---|
-| `spiral.png` | The Spiral | 5 | Fairway coils up a rock pinnacle in terraces; green on the summit, boardwalk stair to it | Shot shaping: a straight ball runs off the curling fairway, so it has to be drawn round |
+| `spiral.png` | The Spiral | 5 | Fairway coils up a rock pinnacle in terraces; green on the summit, boardwalk stair to it (revamped 2026-09-26: a road winding three-quarters round one smooth hill onto the summit plateau — no cliffs) | Shot shaping: follow the bend left, or cut across the slope through the pines |
 | `witchs_lair.png` | The Witch's Lair | 4 | Green sunk in a crater, dark pines and a ruined tower on the rim, one gap in the front | Chipping down into a bowl; the new cup physics and chip-in hole cam |
 | `the_steps.png` | The Steps | 3 | Tee islet, boardwalk over the water, a three-tier terraced green | Putting across tiers on the height grid; landing on the right step |
 
