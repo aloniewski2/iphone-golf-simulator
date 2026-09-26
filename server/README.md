@@ -60,6 +60,22 @@ Tests: `npm test`. That covers the rules, the rooms, and the HTTP and WebSocket 
 `TEST_DATABASE_URL` to a scratch Postgres database to run the store tests against Postgres too.
 The **server** GitHub workflow runs both on every pull request that touches `server/`.
 
+## Play online at home
+
+No cloud needed: run it on the Mac and every phone on the same Wi-Fi plays through it.
+
+```bash
+cd server && npm install --omit=dev
+nohup node src/index.js > ~/Library/Logs/golf-arcade-server.log 2>&1 &
+```
+
+The app's `BackendConfig.DefaultServerUrl` points at the Mac by its Bonjour name
+(`http://<LocalHostName>.local:8080`, `scutil --get LocalHostName`), which survives the Wi-Fi
+handing it a new address; the Online screen can change it. Builds allow plain http for this
+(`BuildMenu`: Allow downloads over HTTP, and `NSAllowsLocalNetworking`). Without `DATABASE_URL`
+players and rounds live in memory until the server restarts. It stops when the Mac restarts
+(start it again the same way).
+
 ## Deploy it
 
 It is a standard container (`Dockerfile`), so it runs anywhere. Set `DATABASE_URL`, and set

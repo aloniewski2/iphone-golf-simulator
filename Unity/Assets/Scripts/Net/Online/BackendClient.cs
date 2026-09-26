@@ -12,8 +12,9 @@ namespace GolfArcade.Net.Online
     /// put the deployed address in DefaultServerUrl before building.
     public static class BackendConfig
     {
-        /// The deployed server (see server/README.md), e.g. "https://golf-arcade-xxxx.run.app".
-        public const string DefaultServerUrl = "";
+        /// The game server: for now the one at home, on the Mac on the Wi-Fi by its Bonjour name
+        /// (server/README.md, "Play online at home"); a deployed one would be its https address.
+        public const string DefaultServerUrl = "http://Andrews-MacBook-Pro-8.local:8080";
         const string Key = "online.server";
 
         public static string ServerUrl
