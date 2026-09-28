@@ -7,6 +7,9 @@ namespace GolfArcade.Game
     public static class GolferStyle
     {
         public enum BodyKind { Male, Female }
+        public static int Hair=1,HairColor=1,Face,Height=2;
+        public static float Size=.5f;
+        public static GolfArcade.Tennis.TennisLook.Kit Outfit;
 
         /// From light to deep, the same scale as the character sheet's tan in the middle.
         public static readonly Color[] SkinTones =

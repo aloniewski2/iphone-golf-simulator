@@ -1,0 +1,23 @@
+{
+  "Hero_Repair_Ready_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Backhand_v3": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Repair_RunForward_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Repair_Volley_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "max_bone_position_conversion_error_metres": 2.908590629092326e-07
+}

@@ -1,0 +1,14 @@
+{
+  "skin": 0.4410756309013859,
+  "mask_channel": "alpha",
+  "rgb_channels": "zero; existing KitRecolor-compatible",
+  "color_space": "mask linear; base-color sRGB",
+  "reference_mean_linear_luminance": 0.4410756309013859,
+  "mean_srgb_hex": "#DFA352",
+  "example_tones": [
+    "#F2C093",
+    "#B77950",
+    "#6A4030"
+  ],
+  "default": "Keep _Skin.a=0 to preserve approved source texture exactly; >0 enables recoloring."
+}

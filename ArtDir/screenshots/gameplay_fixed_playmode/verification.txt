@@ -1,0 +1,9 @@
+Ready: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0084m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=0.3575m
+JumpServe: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.5185m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=n/a
+Forehand: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0978m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=n/a
+Backhand: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0567m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=n/a
+RunForward: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0236m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=0.1858m
+RunRight: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0219m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=0.1736m
+RunLeft: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0221m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=0.1991m
+Volley: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.0458m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=n/a
+Smash: 120 frames, Humanoid + shared wardrobe + fixed socket PASS; hip vertical range=0.2839m; fixed socket error=0.0000000m / 0.0000deg; hoop-to-torso/thigh capsule clearance=n/a

@@ -1,0 +1,17 @@
+task created c25d51b9-1e44-4b06-9d5e-2e8969b78b09 (@m-bob)
+image_to_model · queued
+image_to_model · running 3% · c25d51b9
+image_to_model · running 8% · c25d51b9
+image_to_model · running 12% · c25d51b9
+image_to_model · running 18% · c25d51b9
+image_to_model · running 27% · c25d51b9
+image_to_model · running 39% · c25d51b9
+image_to_model · running 51% · c25d51b9
+image_to_model · running 63% · c25d51b9
+image_to_model · running 74% · c25d51b9
+image_to_model · running 86% · c25d51b9
+image_to_model · running 98% · c25d51b9
+image_to_model · success 100% · c25d51b9
+✓ image_to_model · c25d51b9-1e44-4b06-9d5e-2e8969b78b09 · 40 credits
+downloading artifacts…
+✓ artifacts saved to bob/model/tripo-out/m-bob-c25d51b9

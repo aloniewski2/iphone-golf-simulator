@@ -255,24 +255,27 @@ struct TennisMenuScreen: View {
     var body: some View {
         Group {
             switch menu.screen {
-            case .title: TitleScreen(menu: menu, compact: compact)
-            case .main: MainScreen(menu: menu, compact: compact)
-            case .gameSelect: GameSelectScreen(menu: menu, compact: compact)
-            case .hub(let sport): HubScreen(menu: menu, sport: sport, compact: compact)
-            case .locked(let sport): LockedScreen(menu: menu, sport: sport, compact: compact)
-            case .campaign: CampaignScreen(menu: menu, compact: compact)
-            case .exhibition: ExhibitionScreen(menu: menu, compact: compact)
-            case .training: TrainingScreen(menu: menu, compact: compact)
-            case .character: CharacterScreen(menu: menu, compact: compact)
-            case .settings: SettingsScreen(menu: menu, compact: compact)
-            case .howTo: HowToScreen(menu: menu, compact: compact)
-            case .golfLesson: GolfLessonScreen(menu: menu, compact: compact)
-            case .connect: ConnectScreen(menu: menu, compact: compact)
+            case .title: ClubTitleScreen(menu: menu, compact: compact)
+            case .main: ClubHomeScreen(menu: menu, compact: compact)
+            case .party: ClubPartyScreen(menu: menu, compact: compact)
+            case .quickPlay: ClubQuickPlayScreen(menu: menu, compact: compact)
+            case .gameSelect: ClubGameSelectScreen(menu: menu, compact: compact)
+            case .hub(let sport): ClubHubScreen(menu: menu, sport: sport, compact: compact)
+            case .locked(let sport): ClubLockedScreen(menu: menu, sport: sport, compact: compact)
+            case .campaign: ClubLadderScreen(menu: menu, compact: compact, exhibition: false)
+            case .exhibition: ClubLadderScreen(menu: menu, compact: compact, exhibition: true)
+            case .training: ClubTrainingScreen(menu: menu, compact: compact)
+            case .character: ClubCharacterScreen(menu: menu, compact: compact)
+            case .settings: ClubSettingsScreen(menu: menu, compact: compact)
+            case .howTo: ClubGuideScreen(menu: menu, compact: compact, golf: false)
+            case .golfLesson: ClubGuideScreen(menu: menu, compact: compact, golf: true)
+            case .connect: ClubConnectScreen(menu: menu, compact: compact)
             case .loading: LoadingScreen(menu: menu, compact: compact)
-            case .results: ResultsScreen(menu: menu, compact: compact)
-            case .story: StoryScreen(menu: menu, compact: compact)
+            case .results: ClubResultsScreen(menu: menu, compact: compact)
+            case .story: ClubStoryScreen(menu: menu, compact: compact)
             }
         }
+        .overlay { ClubWipe(trigger: menu.transitions) }
         .transition(.asymmetric(insertion: .scale(scale: 1.08).combined(with: .opacity), removal: .opacity))
         .animation(.spring(response: 0.45, dampingFraction: 0.82), value: menu.screen)
     }

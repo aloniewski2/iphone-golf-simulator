@@ -1,0 +1,345 @@
+{
+ "steps": [
+  "head",
+  "tripo",
+  "legs",
+  "shorts",
+  "socks",
+  "visor",
+  "arms",
+  "armpit",
+  "styles",
+  "scalp",
+  "female"
+ ],
+ "head_deleted": {
+  "egg": 2287,
+  "fringe": 139,
+  "tufts": 1031,
+  "face_sides": 156
+ },
+ "rim_verts_eased": 0,
+ "face_edge_softened": 471,
+ "face_edge_loops": [
+  125
+ ],
+ "skull_faces": 2250,
+ "skull_rings": 18,
+ "face_loop": 125,
+ "brow_verts_seated": 0,
+ "hair_verts": 913,
+ "hair_tris": 1776,
+ "locks": 0,
+ "head_centre": [
+  0.0,
+  0.06274411827325821,
+  1.4049999713897705
+ ],
+ "tripo_parts": {
+  "tripo_part_0": 204,
+  "tripo_part_1": 1583,
+  "tripo_part_10": 5528,
+  "tripo_part_11": 7130,
+  "tripo_part_12": 288,
+  "tripo_part_13": 17653,
+  "tripo_part_14": 3276,
+  "tripo_part_15": 418,
+  "tripo_part_16": 1026,
+  "tripo_part_2": 1236,
+  "tripo_part_3": 354,
+  "tripo_part_4": 484,
+  "tripo_part_5": 36035,
+  "tripo_part_6": 360,
+  "tripo_part_7": 1404,
+  "tripo_part_8": 6902,
+  "tripo_part_9": 4926,
+  "hairjoin": 50603
+ },
+ "tripo_hair_part": "hairjoin",
+ "tripo_visor_part": "tripo_part_11",
+ "tripo_scale": 0.6665,
+ "tripo_ring": {
+  "tripo": 0.313,
+  "v5": 0.209,
+  "tripo_c": [
+   -0.003,
+   0.022,
+   0.07
+  ],
+  "v5_c": [
+   -0.002,
+   0.08,
+   1.546
+  ]
+ },
+ "tripo_verts_pushed_out": 3120,
+ "tripo_hair_tris": 10499,
+ "hair_tris_total": 12275,
+ "Body_Skin_leg_verts_reshaped": 5390,
+ "Body_Skin_knee_weights": 1704,
+ "Shorts_Default_leg_verts_reshaped": 2007,
+ "Shorts_Default_weights_from_Body_Skin": 2007,
+ "sock_verts": 914,
+ "shoe_tris": 6777,
+ "Hair_BandFill_tris": 864,
+ "hair_verts_under_band": 2013,
+ "Body_Skin_arms": 4261,
+ "Shirt_Default_arms": 1162,
+ "Body_Skin_armpit": 730,
+ "Shirt_Default_armpit": 834,
+ "style_Ponytail": {
+  "hair_verts": 913,
+  "hair_tris": 1776,
+  "locks": 0,
+  "head_centre": [
+   0.0,
+   0.06274411827325821,
+   1.4049999713897705
+  ],
+  "tripo_hair_parts": [
+   "tripo_part_8",
+   "tripo_part_4",
+   "tripo_part_5",
+   "tripo_part_11",
+   "tripo_part_0",
+   "tripo_part_1"
+  ],
+  "tripo_parts": {
+   "tripo_part_0": 1672,
+   "tripo_part_1": 6344,
+   "tripo_part_10": 166,
+   "tripo_part_11": 2242,
+   "tripo_part_12": 834,
+   "tripo_part_13": 248,
+   "tripo_part_2": 12608,
+   "tripo_part_3": 228,
+   "tripo_part_4": 13266,
+   "tripo_part_5": 728,
+   "tripo_part_6": 9160,
+   "tripo_part_7": 1544,
+   "tripo_part_8": 19352,
+   "tripo_part_9": 18326,
+   "hairjoin": 43604
+  },
+  "tripo_hair_part": "hairjoin",
+  "tripo_visor_part": "tripo_part_2",
+  "tripo_scale": 0.7678,
+  "tripo_ring": {
+   "tripo": 0.272,
+   "v5": 0.209,
+   "tripo_c": [
+    -0.03,
+    -0.07,
+    0.154
+   ],
+   "v5_c": [
+    -0.002,
+    0.08,
+    1.546
+   ]
+  },
+  "tripo_verts_pushed_out": 2355,
+  "tripo_hair_tris": 10500,
+  "drape_chest_verts": 0,
+  "hair_tris_total": 12276,
+  "Hair_BandFill_Ponytail_tris": 864,
+  "hair_verts_under_band": 1249
+ },
+ "style_Bob": {
+  "hair_verts": 913,
+  "hair_tris": 1776,
+  "locks": 0,
+  "head_centre": [
+   0.0,
+   0.06274411827325821,
+   1.4049999713897705
+  ],
+  "tripo_hair_parts": [
+   "tripo_part_5",
+   "tripo_part_1",
+   "tripo_part_13",
+   "tripo_part_2",
+   "tripo_part_12",
+   "tripo_part_4",
+   "tripo_part_0",
+   "tripo_part_14",
+   "tripo_part_11",
+   "tripo_part_15",
+   "tripo_part_10"
+  ],
+  "tripo_parts": {
+   "tripo_part_0": 2061,
+   "tripo_part_1": 10164,
+   "tripo_part_10": 120,
+   "tripo_part_11": 1162,
+   "tripo_part_12": 4540,
+   "tripo_part_13": 5267,
+   "tripo_part_14": 1584,
+   "tripo_part_15": 284,
+   "tripo_part_16": 5204,
+   "tripo_part_2": 5226,
+   "tripo_part_3": 11030,
+   "tripo_part_4": 4308,
+   "tripo_part_5": 15406,
+   "tripo_part_6": 228,
+   "tripo_part_7": 10958,
+   "tripo_part_8": 5810,
+   "tripo_part_9": 4198,
+   "hairjoin": 50122
+  },
+  "tripo_hair_part": "hairjoin",
+  "tripo_visor_part": "tripo_part_8",
+  "tripo_scale": 0.7112,
+  "tripo_ring": {
+   "tripo": 0.293,
+   "v5": 0.209,
+   "tripo_c": [
+    -0.012,
+    -0.001,
+    0.186
+   ],
+   "v5_c": [
+    -0.002,
+    0.08,
+    1.546
+   ]
+  },
+  "tripo_verts_pushed_out": 2529,
+  "tripo_hair_tris": 10500,
+  "hair_tris_total": 12276,
+  "Hair_BandFill_Bob_tris": 864,
+  "hair_verts_under_band": 1232
+ },
+ "style_Long": {
+  "hair_verts": 913,
+  "hair_tris": 1776,
+  "locks": 0,
+  "head_centre": [
+   0.0,
+   0.06274411827325821,
+   1.4049999713897705
+  ],
+  "tripo_hair_parts": [
+   "tripo_part_7",
+   "tripo_part_6",
+   "tripo_part_3",
+   "tripo_part_27",
+   "tripo_part_25",
+   "tripo_part_16",
+   "tripo_part_22",
+   "tripo_part_20",
+   "tripo_part_21"
+  ],
+  "tripo_parts": {
+   "tripo_part_0": 132,
+   "tripo_part_1": 1730,
+   "tripo_part_10": 5478,
+   "tripo_part_11": 242,
+   "tripo_part_12": 4568,
+   "tripo_part_13": 2794,
+   "tripo_part_14": 2906,
+   "tripo_part_15": 3834,
+   "tripo_part_16": 815,
+   "tripo_part_17": 230,
+   "tripo_part_18": 234,
+   "tripo_part_19": 312,
+   "tripo_part_2": 252,
+   "tripo_part_20": 492,
+   "tripo_part_21": 724,
+   "tripo_part_22": 2515,
+   "tripo_part_23": 114,
+   "tripo_part_24": 568,
+   "tripo_part_25": 2200,
+   "tripo_part_26": 676,
+   "tripo_part_27": 4092,
+   "tripo_part_3": 4746,
+   "tripo_part_4": 232,
+   "tripo_part_5": 196,
+   "tripo_part_6": 13742,
+   "tripo_part_7": 23622,
+   "tripo_part_8": 10547,
+   "tripo_part_9": 240,
+   "hairjoin": 52948
+  },
+  "tripo_hair_part": "hairjoin",
+  "tripo_visor_part": "tripo_part_15",
+  "tripo_scale": 0.7295,
+  "tripo_ring": {
+   "tripo": 0.286,
+   "v5": 0.209,
+   "tripo_c": [
+    -0.004,
+    0.035,
+    0.148
+   ],
+   "v5_c": [
+    -0.002,
+    0.08,
+    1.546
+   ]
+  },
+  "tripo_verts_pushed_out": 1019,
+  "tripo_hair_tris": 10499,
+  "drape_chest_verts": 0,
+  "hair_tris_total": 12275,
+  "Hair_BandFill_Long_tris": 864,
+  "hair_verts_under_band": 587
+ },
+ "style_Curly": {
+  "hair_verts": 913,
+  "hair_tris": 1776,
+  "locks": 0,
+  "head_centre": [
+   0.0,
+   0.06274411827325821,
+   1.4049999713897705
+  ],
+  "tripo_hair_parts": [
+   "tripo_part_5",
+   "tripo_part_2",
+   "tripo_part_0"
+  ],
+  "tripo_parts": {
+   "tripo_part_0": 802,
+   "tripo_part_1": 826,
+   "tripo_part_10": 680,
+   "tripo_part_2": 1194,
+   "tripo_part_3": 264,
+   "tripo_part_4": 5412,
+   "tripo_part_5": 52066,
+   "tripo_part_6": 7588,
+   "tripo_part_7": 1346,
+   "tripo_part_8": 3334,
+   "tripo_part_9": 15326,
+   "hairjoin": 54062
+  },
+  "tripo_hair_part": "hairjoin",
+  "tripo_visor_part": "tripo_part_6",
+  "tripo_scale": 0.6821,
+  "tripo_ring": {
+   "tripo": 0.306,
+   "v5": 0.209,
+   "tripo_c": [
+    -0.01,
+    0.022,
+    0.197
+   ],
+   "v5_c": [
+    -0.002,
+    0.08,
+    1.546
+   ]
+  },
+  "tripo_verts_pushed_out": 2527,
+  "tripo_hair_tris": 10500,
+  "drape_chest_verts": 0,
+  "hair_tris_total": 12276,
+  "Hair_BandFill_Curly_tris": 864,
+  "hair_verts_under_band": 1707
+ },
+ "Hair_Buzz_tris": 3423,
+ "Hair_Waves_tris": 3423,
+ "female_Body_Skin": 6331,
+ "female_Shirt_Default": 2235,
+ "female_Shorts_Default": 1148
+}

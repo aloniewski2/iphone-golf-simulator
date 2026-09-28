@@ -1,0 +1,14 @@
+task created b059cfc3-f434-473f-9eaf-ec0427ca246c (@m-ponytail)
+image_to_model · queued
+image_to_model · running 5% · b059cfc3
+image_to_model · running 13% · b059cfc3
+image_to_model · running 21% · b059cfc3
+image_to_model · running 31% · b059cfc3
+image_to_model · running 47% · b059cfc3
+image_to_model · running 69% · b059cfc3
+image_to_model · running 90% · b059cfc3
+image_to_model · running 99% · b059cfc3
+image_to_model · success 100% · b059cfc3
+✓ image_to_model · b059cfc3-f434-473f-9eaf-ec0427ca246c · 40 credits
+downloading artifacts…
+✓ artifacts saved to ponytail/model/tripo-out/m-ponytail-b059cfc3

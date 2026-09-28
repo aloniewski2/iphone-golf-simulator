@@ -1,0 +1,68 @@
+{
+ "Forehand": {
+  "take": "tennis-03-forehand hardhit-yamaoka.c3d",
+  "source_frames": [
+   2285,
+   2585
+  ],
+  "peak": 2453,
+  "contact_s": 1.5,
+  "contact_source_frame": 2456,
+  "racket_fit_coverage": 1.0
+ },
+ "Backhand": {
+  "take": "tennis-12-backhand double hardhit-yamaoka.c3d",
+  "source_frames": [
+   2554,
+   2866
+  ],
+  "peak": 2722,
+  "contact_s": 1.5,
+  "contact_source_frame": 2725,
+  "racket_fit_coverage": 1.0
+ },
+ "Serve": {
+  "take": "tennis-15-first service-yamaoka.c3d",
+  "source_frames": [
+   2344,
+   2752
+  ],
+  "peak": 2608,
+  "contact_s": 2.333,
+  "contact_source_frame": 2612,
+  "racket_fit_coverage": 0.966
+ },
+ "Volley": {
+  "take": "tennis-05-forehand volley-yamaoka.c3d",
+  "source_frames": [
+   1306,
+   1516
+  ],
+  "peak": 1450,
+  "contact_s": 1.3,
+  "contact_source_frame": 1452,
+  "racket_fit_coverage": 1.0
+ },
+ "Smash": {
+  "take": "tennis-06-forehand smash-yamaoka.c3d",
+  "source_frames": [
+   2280,
+   2676
+  ],
+  "peak": 2544,
+  "contact_s": 2.2,
+  "contact_source_frame": 2535,
+  "racket_fit_coverage": 0.962
+ },
+ "Ready": {
+  "take": "tennis-17-receive-yamaoka.c3d",
+  "source_frames": [
+   1993,
+   2281
+  ],
+  "peak": null,
+  "contact_s": null,
+  "contact_source_frame": null,
+  "racket_fit_coverage": 1.0
+ }
+}

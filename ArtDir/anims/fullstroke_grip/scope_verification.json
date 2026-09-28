@@ -1,0 +1,26 @@
+{
+  "JumpServe": {
+    "all_non_right_arm_curves_exact": true
+  },
+  "Forehand": {
+    "all_non_right_arm_curves_exact": true
+  },
+  "RunForward": {
+    "all_pose_frames_exact": true,
+    "max_capture_channel_delta": 35,
+    "max_changed_pixels_per_960x960_frame": 31
+  },
+  "RunRight": {
+    "all_pose_frames_exact": true,
+    "max_capture_channel_delta": 95,
+    "max_changed_pixels_per_960x960_frame": 55
+  },
+  "RunLeft": {
+    "all_pose_frames_exact": true,
+    "max_capture_channel_delta": 24,
+    "max_changed_pixels_per_960x960_frame": 16
+  },
+  "Smash": {
+    "all_non_right_arm_curves_exact": true
+  }
+}

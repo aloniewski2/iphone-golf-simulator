@@ -1,0 +1,1 @@
+playerHero=True rivalHero=True heroesInScene=2 hits=11 honestMisses=0 playerGapMean=0.095 visible=3/15 rivalWhiffs=3 score=GAMES 0–0  ·  40–0  ·  YOUR SERVE

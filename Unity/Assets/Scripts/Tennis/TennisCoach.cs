@@ -1,3 +1,4 @@
+using GolfArcade.Game;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -111,14 +112,24 @@ namespace GolfArcade.Tennis
             nextLine++; tipUntil = HudClock.Now + 6.5f;
         }
 
+#if UNITY_IOS && !UNITY_EDITOR
+        [System.Runtime.InteropServices.DllImport("__Internal")]
+        static extern void SportsSetTennisResult(string value);
+#endif
         public void ShowResults(TennisMatch match, int hits, int longestRally)
         {
+#if UNITY_IOS && !UNITY_EDITOR
+            // Persist exactly when the visible TV finish card is presented.
+            // The phone reads this independently of the gameplay event queue.
+            SportsSetTennisResult((match.PlayerWonMatch ? "won|" : "lost|") + match.FinalScore);
+#endif
             resultTitle.text = match.MultiSet ? (match.PlayerWonMatch ? "YOU WIN THE MATCH" : "OPPONENT WINS THE MATCH") : (match.PlayerWonMatch ? "YOU WIN THE SET" : "OPPONENT WINS THE SET");
             resultTitle.color = match.PlayerWonMatch ? new Color(.5f, 1, .6f) : new Color(1, .7f, .5f);
             int clean = GradeCounts[(int)Timing.Great] + GradeCounts[(int)Timing.Excellent] + GradeCounts[(int)Timing.Perfect];
             resultBody.text = (match.MultiSet ? $"Sets {match.FinalScore}\n" : $"Games {match.PlayerGames}–{match.OpponentGames}\n") +
                 $"Balls returned {hits}   ·   Longest rally {longestRally}\n" +
-                $"Perfect {GradeCounts[(int)Timing.Perfect]}   ·   Clean hits {clean}\n\nSwing to play again";
+                $"Perfect {GradeCounts[(int)Timing.Perfect]}   ·   Clean hits {clean}\n\n" +
+                (NativeSportsSession.Active ? "Tap NEXT on your phone to continue" : "Swing to play again");
             card.gameObject.SetActive(true);
         }
 

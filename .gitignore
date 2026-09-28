@@ -11,3 +11,8 @@ blender/previews/*
 !blender/previews/hole_07_overview.png
 !blender/previews/golfer_closeups.png
 __pycache__/
+
+# Unity generated crash reports and temporary test-run scenes
+Unity/mono_crash.*
+Unity/Assets/InitTestScene*.unity
+Unity/Assets/InitTestScene*.unity.meta

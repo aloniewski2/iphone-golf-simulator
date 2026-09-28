@@ -9,7 +9,11 @@ struct SportsHome: View {
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if menu.classic { ClassicSportsHome() }
+            if session.active && session.finishedMatch != nil {
+                MatchFinishControls(session: session)
+                    .background(Club.lagoonDeep.ignoresSafeArea())
+            }
+            else if menu.classic { ClassicSportsHome() }
             else if session.active && session.sport == "golf" { GolfPhoneController(session: session) }
             else if session.active { TennisRacketController(session: session) }
             else if session.displayConnected { TennisRemote() }
@@ -18,6 +22,20 @@ struct SportsHome: View {
         .animation(.easeInOut(duration: 0.3), value: session.active)
         .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
         .task {
+            if ProcessInfo.processInfo.arguments.contains("--resume-tennis-round-2") {
+                menu.resumeCampaign(round: 1)
+            }
+            if ProcessInfo.processInfo.arguments.contains("--resume-tennis-round-3") {
+                menu.resumeCampaign(round: 2)
+            }
+            if ProcessInfo.processInfo.arguments.contains("--resume-tennis-round-4") {
+                menu.resumeCampaign(round: 3)
+            }
+            if ProcessInfo.processInfo.arguments.contains("--resume-tennis-round-5") {
+                menu.resumeCampaign(round: 4)
+            }
+            if ProcessInfo.processInfo.arguments.contains("--lobby"), menu.screen == .title { menu.tap("start") }
+            if ProcessInfo.processInfo.arguments.contains("--character-editor") { menu.openCharacterEditor() }
             // `-benchTennis`: play a self-driving rally on the phone and log frame times.
             if SportsSession.benchmark && !session.active { session.sport="tennis"; session.start(preview:true) }
         }

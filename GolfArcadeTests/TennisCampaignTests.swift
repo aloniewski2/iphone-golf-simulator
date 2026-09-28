@@ -15,6 +15,73 @@ final class TennisCampaignTests: XCTestCase {
         TennisMenu.shared.debugShow(.title)
     }
 
+    func testLobbyRemoteReachesEveryActionAndRoutesSports() {
+        let menu = TennisMenu.shared
+        let session = SportsSession.shared
+        let connected = session.displayConnected
+        session.displayConnected = false
+        defer { session.displayConnected = connected }
+        menu.debugShow(.title); menu.tap("start")
+        XCTAssertEqual(menu.focused, "play", "home lands on PLAY")
+        menu.select(); XCTAssertEqual(menu.screen, .gameSelect)
+        menu.back(); XCTAssertEqual(menu.screen, .main)
+        menu.move(.up); XCTAssertEqual(menu.focused, "howto")
+        menu.move(.right); XCTAssertEqual(menu.focused, "settings")
+        menu.move(.down); menu.move(.right); XCTAssertEqual(menu.focused, "continue")
+        menu.move(.down); XCTAssertEqual(menu.focused, "homePlay")
+        menu.select(); XCTAssertEqual(menu.screen, .party)
+        menu.tap("partySolo"); XCTAssertEqual(menu.screen, .quickPlay)
+        menu.tap("quickTennis"); XCTAssertEqual(menu.screen, .connect)
+        XCTAssertEqual(menu.launch?.mode, .exhibition)
+        menu.debugShow(.quickPlay); menu.tap("quickGolf")
+        XCTAssertEqual(menu.launch?.sport, .golf)
+    }
+
+    func testContinuousBodySizeMigrationAndSaving() throws {
+        var p = Player(name: "Size", colorIndex: 0)
+        p.buildChoice = 4
+        XCTAssertEqual(p.bodySize, 1)
+        p.bodySize = 0.327
+        let saved = try JSONDecoder().decode(Player.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(saved.bodySize, 0.327, accuracy: 0.0001)
+        p.bodySize = -1; XCTAssertEqual(p.bodySize, 0)
+        p.bodySize = 2; XCTAssertEqual(p.bodySize, 1)
+        XCTAssertNotNil(CharacterMeshData.load("PlayerMaleSkin"))
+        XCTAssertNotNil(CharacterMeshData.load("PlayerFemaleSkin"))
+    }
+
+    func testCharacterAppearanceSurvivesSavingAndOldProfilesStillLoad() throws {
+        var player=Player(name: "Custom",colorIndex: 0)
+        player.hairStyle=3;player.hairColor=5;player.faceShape=2;player.heightChoice=4;player.buildChoice=0;player.standardSkin=5
+        let data=try JSONEncoder().encode(player)
+        XCTAssertEqual(try JSONDecoder().decode(Player.self,from:data),player)
+        var json=try XCTUnwrap(JSONSerialization.jsonObject(with:data) as? [String:Any])
+        for key in ["hairStyleValue","hairColorValue","faceShapeValue","heightValue","buildValue"] { json.removeValue(forKey:key) }
+        let old=try JSONDecoder().decode(Player.self,from:JSONSerialization.data(withJSONObject:json))
+        XCTAssertEqual(old.hairStyle,1);XCTAssertEqual(old.heightChoice,2);XCTAssertEqual(old.buildChoice,2)
+    }
+
+    func testFinishWaitsForPhoneNextAndDuplicateEventsDoNotAdvanceAgain() {
+        let session = SportsSession.shared
+        let menu = TennisMenu.shared
+        menu.debugShow(.loading, launch: MenuLaunch(round: 0))
+        session.active = true
+        session.finishedMatch = nil
+        session.receiveMatchFinish(won: true, score: "3–0")
+        XCTAssertTrue(session.active, "Keep the finish screen until Next is tapped")
+        XCTAssertEqual(session.finishedMatch?.score, "3–0")
+        XCTAssertEqual(menu.campaign.won, 1)
+        session.receiveMatchFinish(won: true, score: "3–0")
+        XCTAssertEqual(menu.campaign.won, 1)
+        session.advanceAfterMatch()
+        XCTAssertFalse(session.active, "The phone Next button exits racket mode")
+        XCTAssertNil(session.finishedMatch)
+        XCTAssertEqual(menu.screen, .story)
+        menu.finishStory()
+        XCTAssertEqual(menu.screen, .results)
+        XCTAssertEqual(menu.focused, "continue")
+    }
+
     func testDrawAscendsInDifficultyAndEndsWithTheBoss() {
         let draw = TennisCampaign.draw
         XCTAssertEqual(draw.count, 10)
@@ -121,7 +188,7 @@ final class TennisCampaignTests: XCTestCase {
 
     func testMainMenuReachesEverySection() {
         let menu = TennisMenu.shared
-        for (id, screen) in [("play", MenuScreen.gameSelect), ("character", .character), ("settings", .settings), ("howto", .howTo)] {
+        for (id, screen) in [("play", MenuScreen.gameSelect), ("character", .character), ("settings", .settings), ("howto", .howTo), ("homePlay", .party)] {
             menu.debugShow(.main); menu.tap(id); XCTAssertEqual(menu.screen, screen, id)
         }
     }
@@ -131,7 +198,7 @@ final class TennisCampaignTests: XCTestCase {
         menu.debugShow(.settings, row: 0, column: 0)
         menu.move(.right); XCTAssertEqual(menu.settingsTab, .controls, "moving along the tab row switches tabs")
         XCTAssertEqual(menu.rows(.settings)[1], ["controls"])
-        menu.debugShow(.character, row: 4, column: 0)
+        menu.debugShow(.character, row: TennisMenu.characterRows.firstIndex(of: "shirt") ?? 0, column: 0)
         XCTAssertEqual(menu.focused, "shirt")
         let before = s.players[s.playerIndex].shirt
         menu.move(.right)
@@ -139,7 +206,7 @@ final class TennisCampaignTests: XCTestCase {
         s.players[s.playerIndex].shirt = before; s.savePlayers()
     }
 
-    func testLoadingRunsAtLeastTenSecondsAndOnlyForwards() {
+    func testLoadingCompletesPromptlyWhenReadyAndExplainsStalls() {
         let loading = LoadingModel()
         let start = Date(timeIntervalSince1970: 1000)
         var finished = false
@@ -152,13 +219,19 @@ final class TennisCampaignTests: XCTestCase {
             loading.tick(now: now)
             XCTAssertGreaterThanOrEqual(loading.progress, last, "the bar never goes backwards")
             last = loading.progress
-            if Double(tenth) / 10 < LoadingModel.minimum { XCTAssertFalse(finished, "never done before ten seconds"); XCTAssertLessThan(loading.progress, 1) }
+            if Double(tenth) / 10 < LoadingModel.minimum { XCTAssertFalse(finished, "never complete before the short presentation beat"); XCTAssertLessThan(loading.progress, 1) }
         }
         XCTAssertTrue(finished); XCTAssertEqual(loading.progress, 1)
+        let fast = LoadingModel(); fast.begin(now: start); fast.markReady()
+        fast.tick(now: start.addingTimeInterval(2))
+        fast.tick(now: start.addingTimeInterval(2.4))
+        XCTAssertTrue(fast.finished, "A ready game should finish inside the 2–4 second target")
         // A slow game holds the bar short of 100% until it is ready.
         let slow = LoadingModel(); slow.begin(now: start)
         slow.tick(now: start.addingTimeInterval(30))
         XCTAssertFalse(slow.finished); XCTAssertLessThanOrEqual(slow.progress, LoadingModel.hold)
+        XCTAssertTrue(slow.isStalled)
+        XCTAssertTrue(slow.statusText.contains("Retry"))
         slow.markReady(); slow.tick(now: start.addingTimeInterval(30.1)); slow.tick(now: start.addingTimeInterval(30.8))
         XCTAssertTrue(slow.finished)
     }
@@ -201,5 +274,81 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(TennisContact(line: "0,0,3,0,80")?.timingWord, "LATE")
         XCTAssertEqual(TennisContact(line: "0,0,3,0,-60")?.timingWord, "EARLY")
         XCTAssertEqual(TennisContact(line: "0,0,5,0,10")?.timingWord, "ON TIME")
+    }
+
+    /// Every menu screen can be reached from the title, by D-pad and select alone.
+    func testEveryScreenIsReachableFromTheTitle() {
+        let menu = TennisMenu.shared, progress = SportProgress.shared
+        let session = SportsSession.shared
+        let connected = session.displayConnected
+        session.displayConnected = false
+        defer { session.displayConnected = connected }
+        progress.completeTutorial(.tennis); progress.completeTutorial(.golf)
+        var reached: Set<String> = []
+        func key(_ s: MenuScreen) -> String { "\(s)" }
+        func visit(_ path: [String]) {
+            menu.debugShow(.title)
+            for id in path { menu.tap(id) }
+            reached.insert(key(menu.screen))
+        }
+        visit([]); visit(["start"])
+        visit(["start", "play"])
+        visit(["start", "play", "sport-tennis"])
+        visit(["start", "play", "sport-golf"])
+        visit(["start", "play", "sport-boxing"])
+        visit(["start", "play", "sport-tennis", "campaign"])
+        visit(["start", "play", "sport-tennis", "exhibition"])
+        visit(["start", "play", "sport-tennis", "training"])
+        visit(["start", "play", "sport-golf", "tutorial"])
+        visit(["start", "character"])
+        visit(["start", "settings"])
+        visit(["start", "howto"])
+        visit(["start", "homePlay"])
+        visit(["start", "homePlay", "partySolo"])
+        visit(["start", "continue"])
+        for screen: MenuScreen in [.title, .main, .gameSelect, .hub(.tennis), .hub(.golf), .locked(.boxing), .campaign, .exhibition,
+                                   .training, .golfLesson, .character, .settings, .howTo, .party, .quickPlay] {
+            XCTAssertTrue(reached.contains(key(screen)), "\(screen) is reachable")
+        }
+        XCTAssertTrue(reached.contains(key(.story)) || reached.contains(key(.connect)), "Continue starts the next thing")
+    }
+
+    func testPhoneNextStartsNextRoundWithoutUnseenStoryOrDoubleAdvance() {
+        let menu = TennisMenu.shared, session = SportsSession.shared, campaign = TennisCampaign.shared
+        let connected = session.displayConnected
+        session.displayConnected = false
+        defer { session.displayConnected = connected; session.active = false; session.finishedMatch = nil }
+        campaign.restart()
+        menu.debugShow(.loading, launch: MenuLaunch(round: 0))
+        session.active = true
+        session.finishedMatch = nil
+        session.receiveMatchFinish(won: true, score: "3–0")
+        XCTAssertEqual(menu.afterMatchChoices.first, .next)
+        XCTAssertFalse(campaign.seen("win0"))
+        session.advanceAfterMatch(.next)
+        XCTAssertEqual(menu.launch?.round, 1)
+        XCTAssertNotEqual(menu.screen, .story, "Next must not stop at an unseen story or another Next screen")
+        XCTAssertNil(session.finishedMatch)
+        session.advanceAfterMatch(.next)
+        XCTAssertEqual(menu.launch?.round, 1, "A duplicate tap must not skip a rival")
+    }
+
+    func testAfterAMatchThePhoneOffersNextAndReplay() {
+        let menu = TennisMenu.shared, c = TennisCampaign.shared, session = SportsSession.shared
+        let connected = session.displayConnected
+        session.displayConnected = false
+        defer { session.displayConnected = connected }
+        SportProgress.shared.completeTutorial(.tennis)
+        c.restart(); c.record(round: 0, won: true); c.markSeen("win0"); c.markSeen("pre1")
+        menu.debugShow(.loading, launch: MenuLaunch(round: 0), result: MatchResult(won: true, score: "3–1", round: 0))
+        XCTAssertEqual(menu.afterMatchChoices, [.next, .replay, .menu])
+        menu.finishMatch(.next)
+        XCTAssertEqual(menu.launch?.round, 1, "Next match goes on to the next rival")
+        menu.debugShow(.loading, launch: MenuLaunch(round: 1), result: MatchResult(won: false, score: "1–3", round: 1))
+        XCTAssertEqual(menu.afterMatchChoices, [.replay, .menu], "after a loss: rematch or back")
+        menu.finishMatch(.replay)
+        XCTAssertEqual(menu.launch?.round, 1, "Rematch replays the same rival")
+        menu.debugShow(.loading, launch: MenuLaunch(mode: .exhibition, round: 2))
+        XCTAssertEqual(menu.afterMatchChoices, [.replay, .menu])
     }
 }

@@ -97,74 +97,276 @@ struct TitleScreen: View {
 
 // MARK: - Main menu
 
+// A self-contained lobby design system, independent of the legacy arcade screens.
+private enum LobbyStyle {
+    static let ink = Color(hex: "091321")
+    static let lime = Color(hex: "D5FF42")
+    static func display(_ size: CGFloat) -> Font { .custom("AvenirNextCondensed-Heavy", fixedSize: size) }
+    static func label(_ size: CGFloat) -> Font { .system(size: size, weight: .semibold) }
+}
+
+private struct LobbyButtonStyle: ButtonStyle {
+    var selected = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .overlay(Rectangle().strokeBorder(.white, lineWidth: selected ? 2 : 0).padding(-5))
+            .brightness(configuration.isPressed ? -0.1 : 0)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: selected)
+    }
+}
+
+struct LobbyBackdrop: View {
+    var body: some View {
+        GeometryReader { g in
+            ZStack {
+                LinearGradient(colors: [Color(hex: "254968"), Color(hex: "142A40"), Color(hex: "0A1525")],
+                               startPoint: .topTrailing, endPoint: .bottomLeading)
+                Path { p in
+                    let w = g.size.width, h = g.size.height
+                    p.move(to: CGPoint(x: w * 0.55, y: h * 0.42)); p.addLine(to: CGPoint(x: w * 0.26, y: h))
+                    p.move(to: CGPoint(x: w * 0.86, y: h * 0.42)); p.addLine(to: CGPoint(x: w * 1.2, y: h))
+                    p.move(to: CGPoint(x: w * 0.55, y: h * 0.42)); p.addLine(to: CGPoint(x: w * 0.86, y: h * 0.42))
+                    p.move(to: CGPoint(x: w * 0.44, y: h * 0.64)); p.addLine(to: CGPoint(x: w, y: h * 0.64))
+                    p.move(to: CGPoint(x: w * 0.705, y: h * 0.42)); p.addLine(to: CGPoint(x: w * 0.72, y: h * 0.64))
+                }.stroke(.white.opacity(0.09), lineWidth: 1)
+                LinearGradient(colors: [LobbyStyle.ink.opacity(0.85), .clear], startPoint: .leading, endPoint: .trailing)
+            }
+        }
+    }
+}
+
+/// Home, styled like a character-select stage (Fall Guys, Wii Sports Resort): your player on a
+/// lit pedestal, one big PLAY, and clean cards for everything else. Plain words for people who
+/// don't play games, but a grown-up look: no confetti, no candy gloss.
 struct MainScreen: View {
     let menu: TennisMenu
     let compact: Bool
+    private var player: Player? {
+        let session = SportsSession.shared
+        return session.players.indices.contains(session.playerIndex) ? session.players[session.playerIndex] : nil
+    }
+    private var hello: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        return hour < 12 ? "Good morning" : hour < 18 ? "Welcome back" : "Good evening"
+    }
     var body: some View {
-        let s = SportsSession.shared
-        let player = s.players.indices.contains(s.playerIndex) ? s.players[s.playerIndex] : nil
-        VStack(alignment: .leading, spacing: compact ? 14 : 22) {
-            HStack(alignment: .top) {
-                ArcadeLogo(scale: compact ? 0.36 : 0.44)
-                Spacer()
-                if let player { PlayerChip(player: player, compact: compact) }
-            }
-            if compact {
-                ScrollView {
-                    VStack(spacing: 14) {
-                        ForEach(Self.items, id: \.id) { item in tile(item) }
-                        StatsStrip(compact: true)
-                    }.padding(.vertical, 12).padding(.horizontal, 20)
-                }
-            } else {
-                HStack(spacing: 22) { ForEach(Self.items, id: \.id) { item in tile(item) } }
-                StatsStrip(compact: false)
-                Spacer(minLength: 0)
-                HintBar()
-            }
+        ZStack {
+            ShowroomBackdrop(pedestal: compact ? CGPoint(x: 0.5, y: 0.47) : CGPoint(x: 0.25, y: 0.87))
+            if compact { phone } else { tv }
         }
-        .padding(compact ? 0 : 44).padding(.top, compact ? 12 : 0)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    struct Item { let id, title, subtitle, icon: String; let colors: (Color, Color) }
-    static let items = [
-        Item(id: "play", title: "PLAY", subtitle: "Golf · Tennis · more coming", icon: "sportscourt.fill", colors: (Arcade.sun, Arcade.sunDeep)),
-        Item(id: "character", title: "CHARACTER", subtitle: "Look · kit colours · hand", icon: "person.crop.circle.fill", colors: (Arcade.sea, Arcade.seaDeep)),
-        Item(id: "settings", title: "SETTINGS", subtitle: "Controls · display · sound", icon: "gearshape.fill", colors: (Arcade.sky, Arcade.skyDeep)),
-        Item(id: "howto", title: "HOW TO PLAY", subtitle: "Connect · stand · swing", icon: "questionmark.circle.fill",
-             colors: (Color(red: 0.72, green: 0.42, blue: 1.0), Color(red: 0.30, green: 0.10, blue: 0.62))),
-    ]
+    // MARK: TV (1280×720 canvas)
 
-    private func tile(_ item: Item) -> some View {
-        let focused = menu.isFocused(item.id)
-        return ZStack(alignment: .bottomLeading) {
-            Plaque(top: item.colors.0, bottom: item.colors.1, corner: 26)
-            if item.id == "play" {
-                BrollReel(clips: BrollReel.everySport, interval: 4, dim: 0.15)
-            } else if item.id == "character" {
-                let s = SportsSession.shared
-                let female = s.players.indices.contains(s.playerIndex) && s.players[s.playerIndex].standardFemale
-                HeroArt(name: female ? "menu-hero-player-female" : "menu-hero-player-male")
-                    .frame(height: compact ? 150 : 250).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .offset(x: 16, y: -4)
-            } else {
-                Image(systemName: item.icon).font(.system(size: compact ? 80 : 130, weight: .black))
-                    .foregroundStyle(.white.opacity(0.22)).rotationEffect(.degrees(-8))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(18)
+    private var tv: some View {
+        VStack(spacing: 0) {
+            topBar
+            HStack(alignment: .bottom, spacing: 36) {
+                stage.frame(width: 420)
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(hello), \(player?.name ?? "friend")".uppercased())
+                            .font(Showroom.text(16, .heavy)).tracking(2.5).foregroundStyle(Showroom.cyan)
+                        Text("What are we playing?").font(Showroom.display(52)).foregroundStyle(.white)
+                            .shadow(color: Showroom.violetDeep.opacity(0.6), radius: 0, x: 0, y: 4)
+                    }
+                    playButton.frame(height: 150)
+                    HStack(spacing: 18) {
+                        card("homeCampaign", "Adventure", "Take on 10 island champions", "map.fill", Showroom.magenta)
+                        card("character", "Your look", "Style your player", "tshirt.fill", Showroom.violet)
+                        card("homePlay", "With friends", "Coming soon", "person.2.fill", Color(hex: "1FA8C9"))
+                    }.frame(height: 150)
+                }
+                .padding(.bottom, 30)
             }
-            LinearGradient(colors: [.clear, item.colors.1.opacity(0.95)], startPoint: .center, endPoint: .bottom)
-            VStack(alignment: .leading, spacing: 4) {
-                ArcadeText(text: item.title, size: compact ? 32 : 36)
-                Text(item.subtitle).font(Arcade.font(compact ? 14 : 15, .bold)).foregroundStyle(.white)
-            }.padding(compact ? 18 : 20)
+            .frame(maxHeight: .infinity, alignment: .bottom)
         }
-        .frame(width: compact ? nil : 275, height: compact ? 150 : 350)
-        .frame(maxWidth: compact ? .infinity : nil)
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .focusGlow(focused, corner: 26)
-        .contentShape(Rectangle())
-        .onTapGesture { menu.tap(item.id) }
+        .padding(.horizontal, 44).padding(.top, 28).padding(.bottom, 26)
+    }
+
+    // MARK: Phone, upright
+
+    private var phone: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                topBar
+                stage.frame(height: 330)
+                Text("What are we playing?").font(Showroom.display(34)).foregroundStyle(.white)
+                playButton.frame(height: 110)
+                HStack(spacing: 12) {
+                    card("homeCampaign", "Adventure", "10 island champions", "map.fill", Showroom.magenta)
+                    card("character", "Your look", "Style your player", "tshirt.fill", Showroom.violet)
+                }.frame(height: 130)
+                card("homePlay", "With friends", "Coming soon", "person.2.fill", Color(hex: "1FA8C9")).frame(height: 90)
+            }.padding(20)
+        }
+    }
+
+    // MARK: Pieces
+
+    private var topBar: some View {
+        HStack(alignment: .center, spacing: 14) {
+            wordmark
+            Spacer()
+            pill("howto", "How to play", "questionmark.circle.fill")
+            pill("settings", "Settings", "gearshape.fill")
+        }
+    }
+
+    /// A clean wordmark instead of the tilted sticker logo.
+    private var wordmark: some View {
+        VStack(alignment: .leading, spacing: -4) {
+            Text("ISLAND").font(Showroom.text(compact ? 12 : 15, .heavy)).tracking(compact ? 5 : 7).foregroundStyle(.white.opacity(0.85))
+            Text("SPORTS").font(Showroom.display(compact ? 34 : 44)).foregroundStyle(.white)
+                .overlay(alignment: .bottomLeading) {
+                    Capsule().fill(Showroom.yellow).frame(width: compact ? 58 : 76, height: compact ? 5 : 6).offset(y: compact ? 4 : 5)
+                }
+        }
+    }
+
+    private func pill(_ id: String, _ title: String, _ icon: String) -> some View {
+        let focused = menu.isFocused(id)
+        return Button { menu.tap(id) } label: {
+            Label(compact ? "" : title, systemImage: icon)
+                .labelStyle(.titleAndIcon)
+                .font(Showroom.text(compact ? 15 : 17, .bold))
+                .foregroundStyle(focused ? Showroom.ink : .white)
+                .padding(.horizontal, compact ? 12 : 18).frame(height: compact ? 40 : 46)
+                .background(Capsule().fill(focused ? Color.white : Color.white.opacity(0.14)))
+                .overlay(Capsule().strokeBorder(.white.opacity(focused ? 0 : 0.25), lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(focused ? 1.06 : 1).animation(.spring(response: 0.3, dampingFraction: 0.6), value: focused)
+        .accessibilityLabel(title)
+    }
+
+    /// Your player on the pedestal (the backdrop draws the pedestal and spotlight under it).
+    private var stage: some View {
+        ZStack(alignment: .bottom) {
+            if let player {
+                CharacterModelPreview(player: player, cameraDistance: 3.9)
+                    .padding(.bottom, compact ? 26 : 34)
+            } else {
+                HeroArt(name: "menu-hero-player-male").padding(.bottom, 40)
+            }
+            if let player {
+                Text(player.name.uppercased())
+                    .font(Showroom.text(compact ? 13 : 15, .heavy)).tracking(2).foregroundStyle(Showroom.ink)
+                    .padding(.horizontal, 16).padding(.vertical, 7)
+                    .background(Capsule().fill(.white))
+                    .shadow(color: .black.opacity(0.25), radius: 6, y: 3)
+            }
+        }
+    }
+
+    /// The one big button: straight into a game.
+    private var playButton: some View {
+        SlabButton(fill: Showroom.yellow, slab: Showroom.yellowDeep, focused: menu.isFocused("quickPlay"), corner: 30) {
+            menu.tap("quickPlay")
+        } label: {
+            HStack(spacing: compact ? 16 : 26) {
+                Text("PLAY").font(Showroom.display(compact ? 58 : 92)).foregroundStyle(Showroom.ink)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tennis or golf").font(Showroom.text(compact ? 17 : 24, .heavy)).foregroundStyle(Showroom.ink)
+                    Text("Swing your phone like the real thing").font(Showroom.text(compact ? 13 : 17)).foregroundStyle(Showroom.ink.opacity(0.7))
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "arrow.right").font(.system(size: compact ? 26 : 38, weight: .black)).foregroundStyle(Showroom.ink)
+            }.padding(.horizontal, compact ? 22 : 36)
+        }
+        .accessibilityLabel("Play").accessibilityIdentifier("home-quickPlay")
+    }
+
+    /// A clean white card with a coloured badge.
+    private func card(_ id: String, _ title: String, _ subtitle: String, _ icon: String, _ tint: Color) -> some View {
+        SlabButton(fill: Showroom.card, slab: Color(hex: "C9C4E8"), focused: menu.isFocused(id), corner: 24) { menu.tap(id) } label: {
+            VStack(alignment: .leading, spacing: compact ? 6 : 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous).fill(tint)
+                    Image(systemName: icon).font(.system(size: compact ? 18 : 22, weight: .black)).foregroundStyle(.white)
+                }.frame(width: compact ? 38 : 48, height: compact ? 38 : 48)
+                Spacer(minLength: 0)
+                Text(title).font(Showroom.text(compact ? 18 : 24, .heavy)).foregroundStyle(Showroom.ink).lineLimit(1).minimumScaleFactor(0.7)
+                Text(subtitle).font(Showroom.text(compact ? 12 : 15)).foregroundStyle(Showroom.muted).lineLimit(1).minimumScaleFactor(0.7)
+            }
+            .padding(compact ? 14 : 18).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
+        .accessibilityLabel(title).accessibilityHint(subtitle).accessibilityIdentifier("home-\(id)")
+    }
+}
+
+/// Shared main action for the home, party destination and loading recovery.
+private struct LobbyAction: View {
+    let title: String
+    var icon = "arrow.right"
+    var focused = false
+    var compact = true
+    var primary = true
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(title).font(compact ? .headline : LobbyStyle.display(28))
+                Spacer(minLength: 8)
+                Image(systemName: icon)
+            }
+            .foregroundStyle(primary ? LobbyStyle.ink : .white)
+            .padding(18).frame(maxWidth: .infinity, minHeight: 56)
+            .background(primary ? LobbyStyle.lime : Color.white.opacity(0.08))
+        }.buttonStyle(LobbyButtonStyle(selected: focused))
+            .accessibilityLabel(title)
+    }
+}
+
+/// The party entry is honest about transport not shipping in this checkout.
+struct PartyLobbyScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("PLAY WITH FRIENDS").font(LobbyStyle.display(compact ? 36 : 56)).foregroundStyle(.white)
+                Label("Party play is coming soon", systemImage: "person.2.fill")
+                    .font(compact ? .title2.bold() : .system(size: 26, weight: .bold)).foregroundStyle(LobbyStyle.lime)
+                Text("Save a spot for your friends. Couch parties and online invites are on the way.")
+                    .font(compact ? .body : .system(size: 21)).foregroundStyle(.white.opacity(0.8))
+                Text("Create and Join will appear here when party play is ready.")
+                    .font(compact ? .subheadline : .system(size: 17)).foregroundStyle(.white.opacity(0.65))
+                LobbyAction(title: "Try Quick Play", focused: menu.isFocused("partySolo"), compact: compact) { menu.tap("partySolo") }
+                LobbyAction(title: "Back to Home", icon: "arrow.left", focused: menu.isFocused("back"), compact: compact, primary: false) { menu.tap("back") }
+            }.padding(compact ? 24 : 48).frame(maxWidth: 720)
+                .frame(maxWidth: .infinity)
+        }.background(LobbyBackdrop().ignoresSafeArea())
+    }
+}
+
+struct QuickPlayScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("QUICK PLAY").font(LobbyStyle.display(compact ? 40 : 58)).foregroundStyle(.white)
+                Text("A casual solo game. No ranks, no pressure.")
+                    .font(compact ? .body : .system(size: 22)).foregroundStyle(.white.opacity(0.75))
+                let layout = compact ? AnyLayout(VStackLayout(spacing: 20)) : AnyLayout(HStackLayout(spacing: 24))
+                layout {
+                    sport("quickTennis", "Tennis", "A relaxed match against AI", "tennisball.fill")
+                    sport("quickGolf", "Golf", "A solo round at Cliffside", "figure.golf")
+                }
+                LobbyAction(title: "Back to Home", icon: "arrow.left", focused: menu.isFocused("back"), compact: compact, primary: false) { menu.tap("back") }
+            }.padding(compact ? 24 : 48).frame(maxWidth: 1040).frame(maxWidth: .infinity)
+        }.background(LobbyBackdrop().ignoresSafeArea())
+    }
+    private func sport(_ id: String, _ title: String, _ subtitle: String, _ icon: String) -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Image(systemName: icon).font(.system(size: 40, weight: .medium)).foregroundStyle(LobbyStyle.lime)
+            Text(subtitle).font(compact ? .body : .system(size: 20)).foregroundStyle(.white)
+            LobbyAction(title: "Play \(title)", focused: menu.isFocused(id), compact: compact) { menu.tap(id) }
+        }.padding(24).frame(maxWidth: .infinity, alignment: .leading).background(.white.opacity(0.06))
     }
 }
 
@@ -174,9 +376,9 @@ struct PlayerChip: View {
     let compact: Bool
     var body: some View {
         HStack(spacing: 10) {
-            Circle().fill(Color(hex: Outfit.skins[player.standardSkin]))
+            Circle().fill(Color(hex: player.skinHex))
                 .overlay(Image(systemName: player.standardFemale ? "person.fill" : "person.fill").foregroundStyle(.white.opacity(0.85)).font(.system(size: 18, weight: .black)))
-                .overlay(Circle().strokeBorder(Outfit.color(player.shirt) ?? .white, lineWidth: 3))
+                .overlay(Circle().strokeBorder(player.outfitColor("shirt") ?? .white, lineWidth: 3))
                 .frame(width: compact ? 36 : 46, height: compact ? 36 : 46)
             VStack(alignment: .leading, spacing: 0) {
                 Text(player.name.uppercased()).font(Arcade.font(compact ? 15 : 19)).foregroundStyle(.white)
@@ -453,31 +655,47 @@ struct CharacterScreen: View {
         let p = s.players.indices.contains(s.playerIndex) ? s.players[s.playerIndex] : Player(name: "Player 1", colorIndex: 0)
         let rows: [(String, String, String, Color?)] = [
             ("body", "Body", p.standardFemale ? "Female" : "Male", nil),
-            ("skin", "Skin tone", TennisMenu.skinTones[p.standardSkin], Color(hex: Outfit.skins[p.standardSkin])),
+            ("skin", "Skin tone", TennisMenu.skinTones[p.standardSkin], Color(hex: p.skinHex)),
+            ("hair", "Hairstyle", CharacterOptions.hair[p.hairStyle], nil),
+            ("hairColor", "Hair color", CharacterOptions.hairColors[p.hairColor], Color(hex: p.hairHex)),
+            ("face", "Face shape", CharacterOptions.faces[p.faceShape], nil),
+            ("build", "Size", "\(Int(p.bodySize * 100))%", nil),
             ("hand", "Plays", p.handedness == .left ? "Left-handed" : "Right-handed", nil),
-            ("shirt", "Shirt", Outfit.name(p.shirt), Outfit.color(p.shirt)),
-            ("shorts", "Shorts / skirt", Outfit.name(p.shorts), Outfit.color(p.shorts)),
-            ("accent", "Headband & wristbands", Outfit.name(p.accent), Outfit.color(p.accent)),
-            ("racket", "Racket", Outfit.name(p.racket), Outfit.color(p.racket)),
+            ("shirt", "Shirt", p.outfitName("shirt"), p.outfitColor("shirt")),
+            ("shorts", "Shorts / skirt", p.outfitName("shorts"), p.outfitColor("shorts")),
+            ("accent", "Headband & wristbands", p.outfitName("accent"), p.outfitColor("accent")),
+            ("racket", "Racket", p.outfitName("racket"), p.outfitColor("racket")),
         ]
-        let layout = compact ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(alignment: .top, spacing: 30))
+        let layout = AnyLayout(HStackLayout(alignment: .top, spacing: compact ? 10 : 30))
         VStack(alignment: .leading, spacing: compact ? 10 : 14) {
             ArcadeText(text: "CHARACTER", size: compact ? 34 : 46, top: .white, bottom: Arcade.sea)
             layout {
-                KitPreview(player: p, compact: compact)
                 let list = VStack(spacing: compact ? 8 : 8) {
                     if compact {
                         HStack {
-                            Text("NAME").font(Arcade.font(16, .heavy)).tracking(1).foregroundStyle(.white.opacity(0.85))
-                            TextField("Your name", text: $name).font(Arcade.font(20)).foregroundStyle(Arcade.gold)
+                            Text("NAME").font(Arcade.font(10, .heavy)).tracking(1).foregroundStyle(.white.opacity(0.85))
+                            TextField("Your name", text: $name).font(Arcade.font(14)).foregroundStyle(Arcade.gold)
                                 .multilineTextAlignment(.trailing).submitLabel(.done)
                                 .onSubmit { rename(name) }
+                                .onChange(of: name) { _, value in rename(value) }
                         }
-                        .padding(.horizontal, 22).padding(.vertical, 12)
+                        .padding(.horizontal, 10).padding(.vertical, 12)
                         .background(RoundedRectangle(cornerRadius: 18).fill(Arcade.navyDeep.opacity(0.6)))
                     }
                     ForEach(rows, id: \.0) { row in
-                        ChoiceRow(label: row.1, value: row.2, focused: menu.isFocused(row.0), compact: compact) { menu.tap(row.0) }
+                        if row.0 == "build" {
+                            CharacterSizeControl(value: Binding(get: { p.bodySize }, set: { menu.setBodySize($0) }), focused: menu.isFocused("build"), compact: compact).id("build")
+                        } else {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(row.1.uppercased()).font(Arcade.font(compact ? 10 : 14, .heavy)).foregroundStyle(.white.opacity(0.65))
+                            HStack(spacing: 4) {
+                                Button { _ = menu.adjust(row.0, by: -1) } label: { Image(systemName: "chevron.left").frame(width: compact ? 26 : 40, height: 44) }.accessibilityLabel("Previous \(row.1)")
+                                Text(row.2).font(Arcade.font(compact ? 13 : 22)).frame(maxWidth: .infinity).lineLimit(2).minimumScaleFactor(0.7)
+                                Button { _ = menu.adjust(row.0, by: 1) } label: { Image(systemName: "chevron.right").frame(width: compact ? 26 : 40, height: 44) }.accessibilityLabel("Next \(row.1)")
+                            }.foregroundStyle(.white)
+                        }.padding(compact ? 8 : 12)
+                            .background(RoundedRectangle(cornerRadius: 14).fill(menu.isFocused(row.0) ? Arcade.skyDeep : Arcade.navyDeep.opacity(0.8)))
+                            .id(row.0)
                             .overlay(alignment: .leading) {
                                 if let swatch = row.3 {
                                     Circle().fill(swatch).frame(width: 18, height: 18).overlay(Circle().strokeBorder(.white, lineWidth: 2))
@@ -485,7 +703,8 @@ struct CharacterScreen: View {
                                 }
                             }
                     }
-                    HStack(spacing: 14) {
+                    }
+                    AnyLayout(compact ? VStackLayout(spacing: 8) : VStackLayout(spacing: 10)) {
                         ArcadeButton(title: "Randomize", icon: "dice.fill", focused: menu.isFocused("randomize"),
                                      top: Arcade.sea, bottom: Arcade.seaDeep, size: compact ? 17 : 20) { menu.tap("randomize") }
                         ArcadeButton(title: "Kit colours", icon: "arrow.uturn.backward", focused: menu.isFocused("reset"),
@@ -494,7 +713,12 @@ struct CharacterScreen: View {
                                      size: compact ? 17 : 20) { menu.tap("back") }
                     }.padding(.top, 6)
                 }
-                if compact { ScrollView { list.padding(.horizontal, 6) } } else { list }
+                ScrollViewReader { proxy in
+                    ScrollView { list.padding(.horizontal, 6) }
+                        .onChange(of: menu.focused) { _, id in withAnimation { proxy.scrollTo(id, anchor: .center) } }
+                }
+                .frame(maxWidth: compact ? 205 : 500)
+                KitPreview(player: p, compact: compact)
             }
         }
         .padding(compact ? 18 : 36)
@@ -510,38 +734,21 @@ struct CharacterScreen: View {
     }
 }
 
-/// The character's look: their art, and their kit drawn in the chosen colours.
+/// The same Tripo-derived meshes and saved appearance used by the player on court.
 struct KitPreview: View {
     let player: Player
     let compact: Bool
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Plaque(top: Arcade.sea, bottom: Arcade.seaDeep, corner: 26)
-            HeroArt(name: player.standardFemale ? "menu-hero-player-female" : "menu-hero-player-male")
-                .frame(height: compact ? 190 : 380).offset(x: compact ? -60 : -70, y: -30)
-            VStack(spacing: compact ? 6 : 10) {
-                kitPiece("tshirt.fill", Outfit.color(player.shirt) ?? .white, "SHIRT")
-                kitPiece("rectangle.fill", Outfit.color(player.shorts) ?? Color(white: 0.4), player.standardFemale ? "SKIRT" : "SHORTS")
-                kitPiece("circle.circle.fill", Outfit.color(player.accent) ?? .white, "BANDS")
-                kitPiece("tennis.racket", Outfit.color(player.racket) ?? Arcade.sunDeep, "RACKET")
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(compact ? 12 : 18)
-            Text(player.name.uppercased()).font(Arcade.font(compact ? 18 : 24)).foregroundStyle(.white)
-                .padding(.horizontal, 16).padding(.vertical, 6).background(Capsule().fill(Arcade.navyDeep.opacity(0.8)))
-                .padding(.bottom, 14)
+        VStack(spacing: 12) {
+            Text(player.name.uppercased()).font(Arcade.font(compact ? 16 : 28)).foregroundStyle(.white)
+            CharacterModelPreview(player: player)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Text("DRAG TO ROTATE").font(Arcade.font(compact ? 9 : 13, .heavy)).foregroundStyle(.white.opacity(0.6))
+            Text("Saved automatically").font(.caption).foregroundStyle(Arcade.sea)
         }
-        .frame(width: compact ? nil : 420, height: compact ? 230 : 520)
-        .frame(maxWidth: compact ? .infinity : nil)
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-    }
-    private func kitPiece(_ symbol: String, _ color: Color, _ label: String) -> some View {
-        VStack(spacing: 2) {
-            Image(systemName: symbol).font(.system(size: compact ? 24 : 38, weight: .black)).foregroundStyle(color)
-                .shadow(color: .black.opacity(0.5), radius: 2, y: 2)
-            Text(label).font(Arcade.font(compact ? 9 : 11, .heavy)).tracking(1).foregroundStyle(.white)
-        }
-        .frame(width: compact ? 58 : 84, height: compact ? 50 : 76)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Arcade.navyDeep.opacity(0.7)))
+        .padding(compact ? 8 : 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RoundedRectangle(cornerRadius: 24).fill(Arcade.navyDeep.opacity(0.7)))
     }
 }
 
@@ -723,91 +930,104 @@ struct ConnectScreen: View {
 
 // MARK: - Loading
 
-/// While the game loads: b-roll behind, the match-up, a how-to card and a tip that change as
-/// you wait, and a bar that flows to 100% (LoadingModel keeps it up at least ten seconds).
+/// Ten short tips per sport, including controls, identity and game-night etiquette.
+enum PartyLoadingTips {
+    static func tips(for sport: Sport) -> [String] {
+        let shared = [
+            "Leave a little elbow room before you swing.",
+            "Pass the phone only when the action has stopped.",
+            "Your look is personal. It never adds power online.",
+            "Settle the rematch rules before you start.",
+            "A practice round is a great icebreaker.",
+            "Next game night, bring a friend and your best victory dance."
+        ]
+        return shared + (sport == .golf ? [
+            "A smooth swing beats a frantic one.",
+            "Check your aim before you take the shot.",
+            "Give the golfer a little quiet before the swing.",
+            "A short putt deserves a tiny celebration."
+        ] : [
+            "Tap Toss, then time your serve swing.",
+            "Meet the ball in front of you for a clean return.",
+            "Aim for open court instead of swinging harder.",
+            "Good rally? Give your opponent some credit."
+        ])
+    }
+}
+
 struct LoadingScreen: View {
     let menu: TennisMenu
     let compact: Bool
-    @State private var slam = false
-    @State private var tip = 0
-    @State private var card = 0
-    private let tipTimer = Timer.publish(every: 3.5, on: .main, in: .common).autoconnect()
-    private let cardTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+    @State private var tip = Int.random(in: 0..<10)
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var session: SportsSession { .shared }
     var body: some View {
         let launch = menu.launch ?? MenuLaunch(mode: .training)
-        let sport = launch.sport
-        let s = SportsSession.shared
-        let tips = HowTo.tips(sport), cards = HowTo.loadingCards(sport)
-        ZStack {
-            BrollReel(clips: sport.clips, interval: 5, dim: 0.45).ignoresSafeArea()
-            VStack(spacing: compact ? 10 : 16) {
-                Text(Self.label(launch, menu.loadingOpponent))
-                    .font(Arcade.font(compact ? 15 : 22, .heavy)).tracking(2).foregroundStyle(Arcade.navyDeep)
-                    .padding(.horizontal, 22).padding(.vertical, 8)
-                    .background(Capsule().fill(LinearGradient(colors: [Arcade.gold, Arcade.goldDeep], startPoint: .top, endPoint: .bottom)))
-                    .overlay(Capsule().strokeBorder(Arcade.navyDeep, lineWidth: 3))
-                    .padding(.top, compact ? 14 : 24)
-                matchup(launch, compact: compact).frame(maxHeight: .infinity)
-                HowToCardView(card: cards[card % cards.count], compact: true)
-                    .frame(maxWidth: compact ? .infinity : 860).id(card).transition(.opacity)
-                VStack(spacing: 8) {
-                    Text(tips[tip % tips.count]).font(Arcade.font(compact ? 14 : 19, .semibold)).foregroundStyle(.white)
-                        .multilineTextAlignment(.center).id(tip).transition(.opacity)
-                    ProgressBar(progress: s.loading.progress).frame(width: compact ? 320 : 820, height: 16)
-                    Text(s.loading.progress >= 1 ? "READY!" : "LOADING  \(s.loading.percent)%")
-                        .font(Arcade.font(compact ? 13 : 16, .heavy)).tracking(3).foregroundStyle(.white.opacity(0.9)).monospacedDigit()
-                }
-                .padding(.horizontal, 18).padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 20).fill(Arcade.navyDeep.opacity(0.75)))
-                .padding(.bottom, compact ? 16 : 24)
+        let tips = PartyLoadingTips.tips(for: launch.sport)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: compact ? 16 : 20) {
+                    Text(Self.label(launch, menu.loadingOpponent))
+                        .font(compact ? .headline : LobbyStyle.display(32)).foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                    if let player = session.players[safe: session.playerIndex] {
+                        CharacterModelPreview(player: player, cameraDistance: 3.9, idleSport: launch.sport)
+                            .frame(height: compact ? min(220, geometry.size.height * 0.32) : 290)
+                            .accessibilityLabel(launch.sport == .golf ? "Your golfer dodges a mischievous golf ball" : "Your player tries to keep a tennis ball bouncing")
+                    }
+                    Text(launch.sport == .golf ? "One tiny practice putt…" : "Just one more bounce…")
+                        .font(compact ? .subheadline : .system(size: 17)).foregroundStyle(.white.opacity(0.65))
+                    VStack(spacing: 12) {
+                        ProgressView(value: session.loading.progress)
+                            .tint(LobbyStyle.lime)
+                            .accessibilityLabel("Game preparation")
+                            .accessibilityValue("\(session.loading.percent) percent")
+                        HStack(alignment: .top, spacing: 12) {
+                            if !session.loading.finished { ProgressView().tint(.white).accessibilityHidden(true) }
+                            Text(session.loading.statusText).font(compact ? .subheadline : .system(size: 18)).foregroundStyle(.white)
+                            Spacer(minLength: 0)
+                            Text("\(session.loading.percent)%").font(compact ? .subheadline.monospacedDigit() : .system(size: 18, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
+                        }
+                        Text(tips[tip % tips.count])
+                            .font(compact ? .body : .system(size: 21, weight: .medium))
+                            .foregroundStyle(.white).multilineTextAlignment(.center)
+                            .frame(minHeight: compact ? 44 : 36)
+                            .contentTransition(.opacity)
+                        Text("Next time, make it a game night. Party play is on the way.")
+                            .font(compact ? .footnote : .system(size: 14)).foregroundStyle(.white.opacity(0.65))
+                            .multilineTextAlignment(.center)
+                    }.frame(maxWidth: 720)
+                    HStack(spacing: 18) {
+                        Button { menu.tap("loadingBack") } label: {
+                            Label("Back to Home", systemImage: "arrow.left")
+                                .font(compact ? .body : .system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.8)).padding(12).frame(minHeight: 44)
+                        }.buttonStyle(LobbyButtonStyle(selected: menu.isFocused("loadingBack")))
+                            .accessibilityLabel("Cancel loading and return Home")
+                        if session.loading.isStalled {
+                            LobbyAction(title: "Retry", icon: "arrow.clockwise", focused: menu.isFocused("loadingRetry"), compact: compact) { menu.tap("loadingRetry") }
+                        }
+                    }.frame(maxWidth: 720)
+                }.padding(compact ? 24 : 32).frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, compact ? 12 : 40)
         }
-        .onAppear { withAnimation(.spring(response: 0.45, dampingFraction: 0.55).delay(0.3)) { slam = true } }
-        .onReceive(tipTimer) { _ in withAnimation { tip += 1 } }
-        .onReceive(cardTimer) { _ in withAnimation(.easeInOut(duration: 0.5)) { card += 1 } }
+        .background(LobbyBackdrop().ignoresSafeArea())
+        .task(id: launch.sport) {
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(3.5)) } catch { return }
+                withAnimation(reduceMotion || session.reduceMotion ? nil : .easeInOut(duration: 0.2)) { tip += 1 }
+            }
+        }
     }
-
     static func label(_ launch: MenuLaunch, _ opponent: TennisOpponent?) -> String {
         switch (launch.sport, launch.mode) {
-        case (.golf, .tutorial): "GOLF LESSON · PRACTICE SHOT"
-        case (.golf, _): "CLIFFSIDE LINKS"
-        case (_, .tutorial): "PRACTICE COURT · TUTORIAL"
-        case (_, .training): "TRAINING COURT"
-        case (_, .exhibition): "EXHIBITION · \(opponent?.nickname.uppercased() ?? "")"
-        default: opponent.map { "ISLAND CIRCUIT · \($0.round) · \($0.formatTitle.uppercased())" } ?? "TROPICAL OPEN"
+        case (.golf, .tutorial): "Your first golf swing"
+        case (.golf, _): "Cliffside golf"
+        case (_, .tutorial): "Your first tennis rally"
+        case (_, .training): "A little tennis practice"
+        case (_, .exhibition): "Casual tennis · vs AI"
+        default: "Solo campaign · \(opponent?.name ?? "Tennis")"
         }
-    }
-
-    @ViewBuilder private func matchup(_ launch: MenuLaunch, compact: Bool) -> some View {
-        let s = SportsSession.shared
-        let female = s.players.indices.contains(s.playerIndex) && s.players[s.playerIndex].standardFemale
-        let you = s.players.indices.contains(s.playerIndex) ? s.players[s.playerIndex].name.uppercased() : "YOU"
-        if launch.sport == .golf {
-            VStack(spacing: 4) {
-                Image(systemName: "flag.fill").font(.system(size: compact ? 44 : 70, weight: .black)).foregroundStyle(Arcade.crimson)
-                ArcadeText(text: launch.mode == .tutorial ? "YOUR FIRST SHOT" : "18 HOLES BY THE SEA", size: compact ? 28 : 48)
-            }.scaleEffect(slam ? 1 : 0.6).opacity(slam ? 1 : 0)
-        } else {
-            let opponent = menu.loadingOpponent
-            let rightArt = opponent?.art ?? "menu-hero-ray"
-            let rightName = opponent.map { $0.name.components(separatedBy: " ")[0].uppercased() } ?? (launch.mode == .tutorial ? "COACH RAY" : "COACH")
-            HStack(spacing: 0) {
-                side(art: female ? "menu-hero-player-female" : "menu-hero-player-male", name: you, from: -1)
-                ArcadeText(text: "VS", size: compact ? 54 : 90, top: .white, bottom: Arcade.gold)
-                    .scaleEffect(slam ? 1 : 3).opacity(slam ? 1 : 0).rotationEffect(.degrees(-8))
-                side(art: rightArt, name: rightName, from: 1)
-            }
-        }
-    }
-
-    private func side(art: String, name: String, from: CGFloat) -> some View {
-        VStack(spacing: 0) {
-            HeroArt(name: art).frame(maxHeight: .infinity)
-            ArcadeText(text: name, size: compact ? 22 : 34)
-        }
-        .frame(maxWidth: .infinity)
-        .offset(x: slam ? 0 : from * 300).opacity(slam ? 1 : 0)
     }
 }
 
@@ -844,7 +1064,12 @@ extension TennisMenu {
             return TennisCampaign.shared.unlocked(r) ? "Exhibition · \(o.name)" : "Exhibition · Locked"
         }
         switch id {
-        case "play": return "Play"; case "character": return "Character"; case "settings": return "Settings"
+        case "homePlay": return "Play with Friends"
+        case "quickPlay", "partySolo": return "Quick Play"
+        case "homeCampaign": return "Campaign against AI"
+        case "quickTennis": return "Casual tennis against AI"; case "quickGolf": return "Solo golf round"
+        case "loadingBack": return "Back to Home"; case "loadingRetry": return "Retry loading"
+        case "play": return "All sports"; case "character": return "Cosmetics"; case "settings": return "Settings"
         case "howto": return "How to play"; case "tutorial": return "Tutorial"; case "replayTutorial": return "Replay tutorial"
         case "campaign": return "Island Circuit"; case "training": return "Training court"; case "exhibition": return "Exhibition"
         case "round": return "Play Cliffside"; case "golfCampaign": return "Golf campaign · coming soon"; case "golfTraining": return "Driving range · coming soon"
@@ -857,10 +1082,10 @@ extension TennisMenu {
             switch id {
             case "body": return "Body: \(p?.standardFemale == true ? "Female" : "Male")"
             case "skin": return "Skin: \(TennisMenu.skinTones[p?.standardSkin ?? 2])"
-            case "shirt": return "Shirt: \(Outfit.name(p?.shirt))"
-            case "shorts": return "Shorts: \(Outfit.name(p?.shorts))"
-            case "accent": return "Bands: \(Outfit.name(p?.accent))"
-            case "racket": return "Racket: \(Outfit.name(p?.racket))"
+            case "shirt": return "Shirt: \((p?.outfitName("shirt") ?? "Kit colour"))"
+            case "shorts": return "Shorts: \((p?.outfitName("shorts") ?? "Kit colour"))"
+            case "accent": return "Bands: \((p?.outfitName("accent") ?? "Kit colour"))"
+            case "racket": return "Racket: \((p?.outfitName("racket") ?? "Kit colour"))"
             default: return id.prefix(1).uppercased() + id.dropFirst()
             }
         }

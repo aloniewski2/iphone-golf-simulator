@@ -1,0 +1,13 @@
+task created dffd29c9-3e91-4231-8a1b-3d2956bba9de (@comp-curly)
+mesh_completion · queued
+mesh_completion · running 11% · dffd29c9
+mesh_completion · running 36% · dffd29c9
+mesh_completion · running 59% · dffd29c9
+mesh_completion · running 92% · dffd29c9
+mesh_completion · running 99% · dffd29c9
+mesh_completion · running 99% · dffd29c9
+mesh_completion · running 99% · dffd29c9
+mesh_completion · success 100% · dffd29c9
+✓ mesh_completion · dffd29c9-3e91-4231-8a1b-3d2956bba9de · 50 credits
+downloading artifacts…
+✓ artifacts saved to curly/comp/tripo-out/comp-curly-dffd29c9

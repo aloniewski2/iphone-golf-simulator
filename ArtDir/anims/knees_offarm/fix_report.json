@@ -1,0 +1,83 @@
+{
+  "topology_changed": false,
+  "rest_vertices_changed": 0,
+  "DQ": false,
+  "weight_groups": [
+    "UpperLeg.L",
+    "LowerLeg.L",
+    "UpperLeg.R",
+    "LowerLeg.R"
+  ],
+  "weights": {
+    "L": {
+      "vertices": 1814,
+      "falloff_z_m": [
+        0.31,
+        0.57
+      ]
+    },
+    "R": {
+      "vertices": 1773,
+      "falloff_z_m": [
+        0.31,
+        0.57
+      ]
+    }
+  },
+  "clips": {
+    "Ready": {
+      "max_knee_pole_shift_m": 0.006724951465371284,
+      "max_left_wrist_shift_m": 0.21334824570934913,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03127586884184115
+    },
+    "JumpServe": {
+      "max_knee_pole_shift_m": 0.10056518281537706,
+      "max_left_wrist_shift_m": 0.7532993329553563,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03127586884184115
+    },
+    "Forehand": {
+      "max_knee_pole_shift_m": 0.046241700147681926,
+      "max_left_wrist_shift_m": 0.42927441789898796,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03127586884184115
+    },
+    "Backhand": {
+      "max_knee_pole_shift_m": 0.07978000523927602,
+      "max_left_wrist_shift_m": 0.2108261490014459,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.016372453890640945
+    },
+    "RunForward": {
+      "max_knee_pole_shift_m": 0.02223255673425085,
+      "max_left_wrist_shift_m": 0.20926146487074485,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.030850265355941167
+    },
+    "RunRight": {
+      "max_knee_pole_shift_m": 0.030354446543639873,
+      "max_left_wrist_shift_m": 0.20934370324301152,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03086860431413492
+    },
+    "RunLeft": {
+      "max_knee_pole_shift_m": 0.029138663898476937,
+      "max_left_wrist_shift_m": 0.21234022744943287,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03161481894113445
+    },
+    "Volley": {
+      "max_knee_pole_shift_m": 0.02040545438849757,
+      "max_left_wrist_shift_m": 0.5041797583203064,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": 0.03127586884184115
+    },
+    "Smash": {
+      "max_knee_pole_shift_m": 0.10605022809929082,
+      "max_left_wrist_shift_m": 0.7613401222347983,
+      "right_arm_change": 0,
+      "min_offarm_proxy_clearance_m": -0.014237296256606621
+    }
+  }
+}

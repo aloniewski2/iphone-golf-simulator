@@ -1,0 +1,1 @@
+frames=3600 hits=7 longest=7 ultimates=2 perfects=3 whiffs=0 score=GAMES 1–0  ·  0–0  ·  OPPONENT SERVES playerGap mean=0.090 max=0.173 visible=2/11 rivalGap mean=0.210 max=0.456 steps=71/64 kicks=7 liveCutsRefused=0

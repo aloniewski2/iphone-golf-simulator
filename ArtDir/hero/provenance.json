@@ -1,0 +1,42 @@
+{
+  "phase": "HeroFromPlate",
+  "identity_reference": "ArtDir/plates/01_hero.png",
+  "plate_sha256": "372c7fd8de0fcde04588c926916acd5c11be8c31b7955a5d2f4e332b8a87626e",
+  "new_body_source": "ArtDir/blockout/Hero_01_tripo.glb",
+  "rejected_files_archived": [
+    "Before_comparison.jpg",
+    "HERO.md",
+    "Hero_01.blend",
+    "Hero_01.blend1",
+    "Hero_01.fbx",
+    "Hero_01_Atlas.png",
+    "Hero_01_compare.png",
+    "Hero_01_front.png",
+    "Hero_01_review.jpg",
+    "Hero_01_side.png",
+    "Hero_01_threequarter.png",
+    "build_hero.py",
+    "compose_review.py",
+    "validation.json",
+    "verification.json",
+    "verify_hero.py"
+  ],
+  "image_generation_count": 1,
+  "tripo_task_id": "2286dbbb-2ddf-4f3d-8fff-03c30680a07d",
+  "tripo_inputs": [
+    "front.png",
+    "side.png",
+    "back.png"
+  ],
+  "constraints": [
+    "No rejected mesh reused",
+    "No Mixamo",
+    "No Unity import",
+    "One hero"
+  ],
+  "tripo_credits_consumed": 40,
+  "tripo_model": "v3.1-20260211",
+  "turnaround_source": "/Users/adnanyonathan/.codex/generated_images/01a0d3ae-ec0b-7181-a4ad-90e4aa372018/exec-32eaefb9-d5e3-4ea9-b2a3-4aa9fa6fdaa2.png",
+  "tripo_generations": 1,
+  "rejected_mesh_reused": false
+}

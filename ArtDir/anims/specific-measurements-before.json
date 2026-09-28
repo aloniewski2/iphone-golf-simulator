@@ -1,0 +1,139 @@
+{
+  "plate": {
+    "biceps": {
+      "left_right_px": [
+        56.75000000000001,
+        60.00000000000001
+      ],
+      "mean_max_px": 58.37500000000001,
+      "normalized_to_plate_hip_height": 58.37500000000001
+    },
+    "forearm": {
+      "left_right_px": [
+        60.000000000000036,
+        63.00000000000001
+      ],
+      "mean_max_px": 61.50000000000002,
+      "normalized_to_plate_hip_height": 61.50000000000002
+    },
+    "thigh": {
+      "left_right_px": [
+        75.25000000000001,
+        78.74999999999997
+      ],
+      "mean_max_px": 77.0,
+      "normalized_to_plate_hip_height": 77.0
+    },
+    "calf": {
+      "left_right_px": [
+        84.75000000000009,
+        86.25000000000003
+      ],
+      "mean_max_px": 85.50000000000006,
+      "normalized_to_plate_hip_height": 85.50000000000006
+    }
+  },
+  "v2": {
+    "biceps": {
+      "left_right_px": [
+        66.75000000000003,
+        56.999999999999986
+      ],
+      "mean_max_px": 61.87500000000001,
+      "normalized_to_plate_hip_height": 64.26092544987148
+    },
+    "forearm": {
+      "left_right_px": [
+        75.50000000000001,
+        68.49999999999996
+      ],
+      "mean_max_px": 71.99999999999999,
+      "normalized_to_plate_hip_height": 74.77634961439587
+    },
+    "thigh": {
+      "left_right_px": [
+        88.75000000000004,
+        81.74999999999996
+      ],
+      "mean_max_px": 85.25,
+      "normalized_to_plate_hip_height": 88.53727506426735
+    },
+    "calf": {
+      "left_right_px": [
+        92.25000000000001,
+        87.49999999999996
+      ],
+      "mean_max_px": 89.87499999999999,
+      "normalized_to_plate_hip_height": 93.34061696658095
+    }
+  },
+  "working_v3": {
+    "biceps": {
+      "left_right_px": [
+        66.75000000000003,
+        56.999999999999986
+      ],
+      "mean_max_px": 61.87500000000001,
+      "normalized_to_plate_hip_height": 64.26092544987148
+    },
+    "forearm": {
+      "left_right_px": [
+        71.49999999999999,
+        66.50000000000001
+      ],
+      "mean_max_px": 69.0,
+      "normalized_to_plate_hip_height": 71.66066838046272
+    },
+    "thigh": {
+      "left_right_px": [
+        113.75,
+        110.24999999999999
+      ],
+      "mean_max_px": 112.0,
+      "normalized_to_plate_hip_height": 116.31876606683805
+    },
+    "calf": {
+      "left_right_px": [
+        103.24999999999996,
+        99.50000000000001
+      ],
+      "mean_max_px": 101.37499999999999,
+      "normalized_to_plate_hip_height": 105.28406169665809
+    }
+  },
+  "after": {
+    "biceps": {
+      "left_right_px": [
+        56.75,
+        53.25000000000001
+      ],
+      "mean_max_px": 55.0,
+      "normalized_to_plate_hip_height": 57.41602067183462
+    },
+    "forearm": {
+      "left_right_px": [
+        60.50000000000001,
+        55.500000000000036
+      ],
+      "mean_max_px": 58.00000000000002,
+      "normalized_to_plate_hip_height": 60.54780361757108
+    },
+    "thigh": {
+      "left_right_px": [
+        78.24999999999996,
+        78.74999999999999
+      ],
+      "mean_max_px": 78.49999999999997,
+      "normalized_to_plate_hip_height": 81.94832041343666
+    },
+    "calf": {
+      "left_right_px": [
+        81.99999999999999,
+        80.49999999999999
+      ],
+      "mean_max_px": 81.24999999999999,
+      "normalized_to_plate_hip_height": 84.81912144702841
+    }
+  },
+  "method": "Perpendicular skin silhouette scans at five positions \u00b18 px around each annotated anatomical midpoint; mean of left/right local maxima. Normalize sole-to-polo-hem (hip proxy) height to plate 404 px. Perspective/pose uncertainty remains; no physical 3D dimension can be recovered exactly from one plate."
+}

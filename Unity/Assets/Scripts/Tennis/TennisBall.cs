@@ -25,9 +25,9 @@ namespace GolfArcade.Tennis
             return new Vector3(0, -9.81f - Magnus * spin * horizontal, 0);
         }
 
-        public static void Integrate(ref Vector3 position, ref Vector3 velocity, float spin, float dt)
+        public static void Integrate(ref Vector3 position, ref Vector3 velocity, float spin, float dt, float curve = 0)
         {
-            Vector3 a = Acceleration(velocity, spin);
+            Vector3 a = Acceleration(velocity, spin) + Vector3.right * curve;
             position += velocity * dt + a * (.5f * dt * dt);
             velocity += a * dt;
         }
@@ -43,13 +43,13 @@ namespace GolfArcade.Tennis
         }
 
         /// Where a ball first reaches the court, and when.
-        public static bool Landing(Vector3 position, Vector3 velocity, float spin, out Vector3 landing, out float time)
+        public static bool Landing(Vector3 position, Vector3 velocity, float spin, out Vector3 landing, out float time, float curve = 0)
         {
             landing = position; time = 0;
             for (int i = 0; i < 900; i++)
             {
                 Vector3 p = position, v = velocity;
-                Integrate(ref p, ref v, spin, Step);
+                Integrate(ref p, ref v, spin, Step, curve);
                 if (p.y <= TennisRules.BallRadius && v.y < 0)
                 {
                     float span = position.y - p.y;

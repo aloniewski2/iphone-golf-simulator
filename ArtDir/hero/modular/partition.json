@@ -1,0 +1,15 @@
+{
+  "source_faces": 43326,
+  "partition_faces": {
+    "Shirt_Default": 7246,
+    "Shorts_Default": 5882,
+    "Shoes_Default": 10267,
+    "Hat_Visor": 2981,
+    "Body_Skin": 11083,
+    "Hair_Default": 5867
+  },
+  "covered_body_faces": 32243,
+  "body_hole_caps": 0,
+  "source_visible_vertices_preserved": 6008,
+  "body_underlay_note": "Smoothed/inset covered foundation; not authored unclothed anatomy."
+}

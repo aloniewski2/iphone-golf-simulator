@@ -1,0 +1,9 @@
+Ready -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Ready_v5.fbx / Hero_Ready_v5 / 2.167s
+Forehand -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Forehand_v5.fbx / Hero_Forehand_v5 / 2.667s
+Backhand -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Backhand_v5.fbx / Hero_Backhand_v5 / 2.767s
+Serve -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Serve_v5.fbx / Hero_Serve_v5 / 3.567s
+Volley -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Volley_v5.fbx / Hero_Volley_v5 / 1.900s
+Smash -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Smash_v5.fbx / Hero_Smash_v5 / 3.467s
+RunForward -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunForward_v5.fbx / Hero_RunForward_v5 / 3.967s
+RunRight -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunRight_v5.fbx / Hero_RunRight_v5 / 3.967s
+RunLeft -> Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunLeft_v5.fbx / Hero_RunLeft_v5 / 3.967s

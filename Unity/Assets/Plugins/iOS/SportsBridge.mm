@@ -7,6 +7,7 @@
 // Bounded queues owned by the framework: no callbacks into released Swift objects.
 static std::mutex gate;
 static std::deque<std::string> inputs, events;
+static std::string tennisResult;
 // Mirrors SportsSample in the host's SportsRuntime.h and NativeSportsSession.Sample in C#.
 struct SportsSample {
     int32_t version, session; double time;
@@ -28,6 +29,17 @@ static int pop(std::deque<std::string>& queue, char* output, int capacity) {
     memcpy(output, value.c_str(), value.size()+1); return (int)value.size();
 }
 extern "C" {
+__attribute__((visibility("default"))) void SportsSetTennisResult(const char* value) {
+    std::lock_guard<std::mutex> lock(gate);
+    tennisResult = value ? value : "";
+}
+__attribute__((visibility("default"))) int SportsReadTennisResult(char* output, int capacity) {
+    std::lock_guard<std::mutex> lock(gate);
+    if (!output || tennisResult.empty() || tennisResult.size() >= (size_t)capacity) return 0;
+    memcpy(output, tennisResult.c_str(), tennisResult.size()+1);
+    return (int)tennisResult.size();
+}
+
 __attribute__((visibility("default"))) double SportsClock() {
     static mach_timebase_info_data_t info = [] { mach_timebase_info_data_t i; mach_timebase_info(&i); return i; }();
     return mach_absolute_time() * (double)info.numer / info.denom / 1e9;

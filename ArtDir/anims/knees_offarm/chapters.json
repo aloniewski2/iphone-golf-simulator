@@ -1,0 +1,47 @@
+[
+  {
+    "clip": "Ready",
+    "start_seconds": 0,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Jump serve",
+    "start_seconds": 4,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Forehand",
+    "start_seconds": 8,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Backhand",
+    "start_seconds": 12,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Run forward",
+    "start_seconds": 16,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Run right",
+    "start_seconds": 20,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Run left",
+    "start_seconds": 24,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Forehand volley",
+    "start_seconds": 28,
+    "duration_seconds": 4
+  },
+  {
+    "clip": "Overhead smash",
+    "start_seconds": 32,
+    "duration_seconds": 4
+  }
+]

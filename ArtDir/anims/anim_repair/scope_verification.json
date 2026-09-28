@@ -1,0 +1,17 @@
+{
+  "JumpServe": "exact pose data unchanged",
+  "Forehand": "exact pose data unchanged",
+  "RunRight": "exact pose data unchanged",
+  "RunLeft": "exact pose data unchanged",
+  "Smash": "exact pose data unchanged",
+  "runRight": {
+    "asset": "Models/KneesOffArm/Hero_Gameplay_RunRight_v1.fbx",
+    "sha256": "2f34fbc4f605f1d159948bd271cab223dfc5b01413fc567b5e1a78016ecf4a0b",
+    "same_original_guid": "474cf22de1c9b40fc87b021321735cab"
+  },
+  "runLeft": {
+    "asset": "Models/BackhandRun/Hero_Gameplay_RunLeft_v1.fbx",
+    "sha256": "7d03cc022b10983f2b55c6c7eed84982ac1805778e2d6cd0af9a78e77544ab7e",
+    "same_original_guid": "aee68653ccb854abb85a2c94b24c35a3"
+  }
+}

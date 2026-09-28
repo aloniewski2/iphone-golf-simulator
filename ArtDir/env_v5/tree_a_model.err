@@ -1,0 +1,12 @@
+task created 0c0a0284-57d1-41db-8b62-4ce2900c8286 (@m-tree-a)
+image_to_model · queued
+image_to_model · running 6% · 0c0a0284
+image_to_model · running 18% · 0c0a0284
+image_to_model · running 29% · 0c0a0284
+image_to_model · running 45% · 0c0a0284
+image_to_model · running 68% · 0c0a0284
+image_to_model · running 98% · 0c0a0284
+image_to_model · success 100% · 0c0a0284
+✓ image_to_model · 0c0a0284-57d1-41db-8b62-4ce2900c8286 · 50 credits
+downloading artifacts…
+✓ artifacts saved to tree_a_model/tripo-out/m-tree-a-0c0a0284

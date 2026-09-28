@@ -1,0 +1,4 @@
+./style.sh:4: no matches found: curly/model/tripo-out/*/model.glb
+./style.sh:11: no matches found: curly/seg/tripo-out/*/model.glb
+./style.sh:12: no matches found: curly/comp/tripo-out/*/model.glb
+DONE curly curly/comp/tripo-out/comp-curly-dffd29c9/model.glb

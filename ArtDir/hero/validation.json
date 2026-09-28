@@ -1,0 +1,31 @@
+{
+  "source": "ArtDir/blockout/Hero_01_tripo.glb",
+  "tripo_task": "2286dbbb-2ddf-4f3d-8fff-03c30680a07d",
+  "raw_vertices_before_merge": 24541,
+  "meshes": {
+    "Hero_01_Body": {
+      "vertices": 17306,
+      "triangles": 34263
+    },
+    "Hero_01_EyeSphere_L": {
+      "vertices": 880,
+      "triangles": 1756
+    },
+    "Hero_01_EyeSphere_R": {
+      "vertices": 880,
+      "triangles": 1756
+    },
+    "Hero_01_Hair": {
+      "vertices": 3653,
+      "triangles": 6905
+    },
+    "Hero_01_Visor": {
+      "vertices": 1192,
+      "triangles": 2158
+    }
+  },
+  "height": 1.7000000476837158,
+  "head_chin_z": 1.283987915407855,
+  "armatures": 1,
+  "bones": 22
+}

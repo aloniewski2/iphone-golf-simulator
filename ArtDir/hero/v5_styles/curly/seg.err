@@ -1,0 +1,13 @@
+task created ea14b95f-5727-4869-9aed-b5e17afeb4ef (@seg-curly)
+mesh_segmentation · queued
+mesh_segmentation · running 4% · ea14b95f
+mesh_segmentation · running 11% · ea14b95f
+mesh_segmentation · running 17% · ea14b95f
+mesh_segmentation · running 26% · ea14b95f
+mesh_segmentation · running 39% · ea14b95f
+mesh_segmentation · running 57% · ea14b95f
+mesh_segmentation · running 74% · ea14b95f
+mesh_segmentation · success 100% · ea14b95f
+✓ mesh_segmentation · ea14b95f-5727-4869-9aed-b5e17afeb4ef · 40 credits
+downloading artifacts…
+✓ artifacts saved to curly/seg/tripo-out/seg-curly-ea14b95f

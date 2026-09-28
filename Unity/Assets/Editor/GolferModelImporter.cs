@@ -23,7 +23,7 @@ namespace GolfArcade.EditorTools
             // Campaign opponents' bodies (blender/scripts/fit_opponents.py): the same rig and
             // scale as the standard tennis characters, which is what lets TennisActor rebind
             // them bone for bone. They carry no animation of their own.
-            bool opponent = assetPath.StartsWith("Assets/Resources/Tennis/Opponents/");
+            bool opponent = assetPath.StartsWith("Assets/Resources/Tennis/Opponents/") || assetPath.StartsWith("Assets/Resources/Tennis/Customization/Player");
             if (!standard && !opponent && !assetPath.StartsWith("Assets/Resources/Golfer/")) return;
             var importer = (ModelImporter)assetImporter;
             importer.animationType = ModelImporterAnimationType.Generic;
@@ -33,9 +33,9 @@ namespace GolfArcade.EditorTools
             importer.resampleCurves = true;
             importer.importCameras = false;
             importer.importLights = false;
-            importer.importBlendShapes = false;
+            importer.importBlendShapes = assetPath.StartsWith("Assets/Resources/Tennis/Customization/Player");
             importer.importVisibility = false;
-            importer.isReadable = false;
+            importer.isReadable = opponent;
             importer.meshCompression = ModelImporterMeshCompression.Off;
             importer.importNormals = ModelImporterNormals.Import;
             importer.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;

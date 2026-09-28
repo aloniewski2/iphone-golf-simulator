@@ -12,6 +12,7 @@ Shader "Hidden/GolfArcade/KitRecolor"
         _Shorts ("Shorts", Color) = (1,1,1,0)
         _Accent ("Accent", Color) = (1,1,1,0)
         _Skin ("Skin", Color) = (1,1,1,0)
+        _SkinShading ("Retain skin atlas shading", Range(0,1)) = 1
         _Ref ("Region mean luminance", Vector) = (.08,.08,.28,.27)
     }
     SubShader
@@ -25,6 +26,7 @@ Shader "Hidden/GolfArcade/KitRecolor"
             #include "UnityCG.cginc"
             sampler2D _MainTex, _Mask;
             float4 _Shirt, _Shorts, _Accent, _Skin, _Ref;
+            float _SkinShading;
             float lum(float3 c) { return dot(c, float3(.2126, .7152, .0722)); }
             float3 tint(float3 c, float l, float4 target, float refLum, float w)
             {
@@ -41,7 +43,7 @@ Shader "Hidden/GolfArcade/KitRecolor"
                 o = tint(o, l, _Shirt, _Ref.x, m.r);
                 o = tint(o, l, _Shorts, _Ref.y, m.g);
                 o = tint(o, l, _Accent, _Ref.z, m.b);
-                o = tint(o, l, _Skin, _Ref.w, m.a);
+                o = tint(o, lerp(_Ref.w, l, _SkinShading), _Skin, _Ref.w, m.a);
                 return float4(o, c.a);
             }
             ENDCG

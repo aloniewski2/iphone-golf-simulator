@@ -1,0 +1,74 @@
+{
+  "Ready": {
+    "right_wrist_deviation_max_deg": 7.1864133848964995,
+    "right_elbow_interior_deg": [
+      97.45390107641929,
+      103.94813311945379
+    ],
+    "right_elbow_proxy_gap_min_m": 0.07585040304530874
+  },
+  "JumpServe": {
+    "right_wrist_deviation_max_deg": 28.00002820783716,
+    "right_elbow_interior_deg": [
+      57.74149153485632,
+      153.66854540355473
+    ],
+    "right_elbow_proxy_gap_min_m": 0.12008681059424312
+  },
+  "Forehand": {
+    "right_wrist_deviation_max_deg": 28.00002820783716,
+    "right_elbow_interior_deg": [
+      54.99995103004481,
+      150.14932873786688
+    ],
+    "right_elbow_proxy_gap_min_m": 0.1057986880272174
+  },
+  "Backhand": {
+    "right_wrist_deviation_max_deg": 34.643691771303764,
+    "right_elbow_interior_deg": [
+      57.19949126761977,
+      109.90507874428268
+    ],
+    "right_elbow_proxy_gap_min_m": 0.06319360126916965
+  },
+  "RunForward": {
+    "right_wrist_deviation_max_deg": 8.77218176294078,
+    "right_elbow_interior_deg": [
+      94.20347549539214,
+      138.8970504388451
+    ],
+    "right_elbow_proxy_gap_min_m": 0.08363557202955399
+  },
+  "RunRight": {
+    "right_wrist_deviation_max_deg": 28.00002479411168,
+    "right_elbow_interior_deg": [
+      120.1927498002537,
+      153.66913772223646
+    ],
+    "right_elbow_proxy_gap_min_m": 0.11953930442224972
+  },
+  "RunLeft": {
+    "right_wrist_deviation_max_deg": 28.000032859425797,
+    "right_elbow_interior_deg": [
+      117.0731274408955,
+      153.66915320570487
+    ],
+    "right_elbow_proxy_gap_min_m": 0.11020204368468486
+  },
+  "Volley": {
+    "right_wrist_deviation_max_deg": 6.61613961148589,
+    "right_elbow_interior_deg": [
+      88.55283193761883,
+      147.34817692876481
+    ],
+    "right_elbow_proxy_gap_min_m": 0.110294525473951
+  },
+  "Smash": {
+    "right_wrist_deviation_max_deg": 28.00002820783716,
+    "right_elbow_interior_deg": [
+      82.90618472546839,
+      151.4581508111354
+    ],
+    "right_elbow_proxy_gap_min_m": 0.15180811068626263
+  }
+}

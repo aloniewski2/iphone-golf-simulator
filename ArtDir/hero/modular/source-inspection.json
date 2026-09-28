@@ -1,0 +1,114 @@
+{
+  "Hero_01_Body": {
+    "components": [
+      {
+        "verts": 16792,
+        "z": [
+          0.0,
+          1.5139508247375488
+        ]
+      },
+      {
+        "verts": 278,
+        "z": [
+          1.4367740154266357,
+          1.5240449905395508
+        ]
+      },
+      {
+        "verts": 153,
+        "z": [
+          1.4803581237792969,
+          1.5205689668655396
+        ]
+      },
+      {
+        "verts": 83,
+        "z": [
+          1.5004533529281616,
+          1.5190372467041016
+        ]
+      }
+    ],
+    "boundaries": 383,
+    "materials": {
+      "Hero_01_MatteCloth": 25050,
+      "Hero_01_WarmSkin": 9213,
+      "Hero_01_BlondHair": 0,
+      "Hero_01_Visor": 0
+    }
+  },
+  "Hero_01_EyeSphere_L": {
+    "components": [
+      {
+        "verts": 880,
+        "z": [
+          1.3838309049606323,
+          1.4596374034881592
+        ]
+      }
+    ],
+    "boundaries": 0,
+    "materials": {
+      "Hero_01_EyeCornea": 1756
+    }
+  },
+  "Hero_01_EyeSphere_R": {
+    "components": [
+      {
+        "verts": 880,
+        "z": [
+          1.3838309049606323,
+          1.4596374034881592
+        ]
+      }
+    ],
+    "boundaries": 0,
+    "materials": {
+      "Hero_01_EyeCornea": 1756
+    }
+  },
+  "Hero_01_Hair": {
+    "components": [
+      {
+        "verts": 1859,
+        "z": [
+          1.3015424013137817,
+          1.5590016841888428
+        ]
+      },
+      {
+        "verts": 1794,
+        "z": [
+          1.4871985912322998,
+          1.7000000476837158
+        ]
+      }
+    ],
+    "boundaries": 407,
+    "materials": {
+      "Hero_01_MatteCloth": 35,
+      "Hero_01_WarmSkin": 43,
+      "Hero_01_BlondHair": 6768,
+      "Hero_01_Visor": 59
+    }
+  },
+  "Hero_01_Visor": {
+    "components": [
+      {
+        "verts": 1192,
+        "z": [
+          1.5054954290390015,
+          1.6299645900726318
+        ]
+      }
+    ],
+    "boundaries": 228,
+    "materials": {
+      "Hero_01_MatteCloth": 15,
+      "Hero_01_WarmSkin": 0,
+      "Hero_01_BlondHair": 0,
+      "Hero_01_Visor": 2143
+    }
+  }
+}

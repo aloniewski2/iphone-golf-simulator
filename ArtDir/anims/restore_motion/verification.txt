@@ -1,0 +1,20 @@
+facing check: right hand x in hero space=0.149
+Ready: 66 frames (2.17s) sampled, right-hand travel=0.256m, min left-hand/torso proxy gap=-0.048m
+Serve contact: racket head height=2.07m; left-hand bone to handle axis=0.552m
+Serve |string normal . net| frames c-3..c+3: 0.64 0.70 0.87 0.98 0.99 0.98 0.96  AT CONTACT=0.984 (1=strings square to net, 0=edge-on)
+Serve: 108 frames (3.57s) sampled, right-hand travel=1.040m, min left-hand/torso proxy gap=-0.193m
+Forehand contact: racket head height=0.46m; left-hand bone to handle axis=0.257m
+Forehand |string normal . net| frames c-3..c+3: 0.46 0.81 0.99 1.00 1.00 0.97 0.72  AT CONTACT=0.998 (1=strings square to net, 0=edge-on)
+Forehand: 81 frames (2.67s) sampled, right-hand travel=1.078m, min left-hand/torso proxy gap=-0.085m
+Backhand contact: racket head height=0.52m; left-hand bone to handle axis=0.111m
+Backhand |string normal . net| frames c-3..c+3: 0.59 0.58 0.91 1.00 1.00 0.97 0.66  AT CONTACT=0.997 (1=strings square to net, 0=edge-on)
+Backhand: 84 frames (2.77s) sampled, right-hand travel=0.650m, min left-hand/torso proxy gap=-0.097m
+RunForward: 120 frames (3.97s) sampled, right-hand travel=0.276m, min left-hand/torso proxy gap=-0.091m
+RunRight: 120 frames (3.97s) sampled, right-hand travel=0.425m, min left-hand/torso proxy gap=-0.091m
+RunLeft: 120 frames (3.97s) sampled, right-hand travel=0.383m, min left-hand/torso proxy gap=-0.092m
+Volley contact: racket head height=1.37m; left-hand bone to handle axis=0.504m
+Volley |string normal . net| frames c-3..c+3: 0.73 0.83 0.89 0.92 0.90 0.86 0.78  AT CONTACT=0.916 (1=strings square to net, 0=edge-on)
+Volley: 58 frames (1.90s) sampled, right-hand travel=0.827m, min left-hand/torso proxy gap=0.053m
+Smash contact: racket head height=2.03m; left-hand bone to handle axis=0.315m
+Smash |string normal . net| frames c-3..c+3: 1.00 1.00 1.00 1.00 0.99 0.99 0.97  AT CONTACT=0.997 (1=strings square to net, 0=edge-on)
+Smash: 105 frames (3.47s) sampled, right-hand travel=1.012m, min left-hand/torso proxy gap=-0.095m

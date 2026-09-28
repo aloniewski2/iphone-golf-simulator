@@ -1,0 +1,12 @@
+task created 79bc4b6e-54be-447a-a036-348fec5cfe87 (@hero-v5-hc-segv2)
+mesh_segmentation · queued
+mesh_segmentation · running 4% · 79bc4b6e
+mesh_segmentation · running 12% · 79bc4b6e
+mesh_segmentation · running 20% · 79bc4b6e
+mesh_segmentation · running 31% · 79bc4b6e
+mesh_segmentation · running 46% · 79bc4b6e
+mesh_segmentation · running 67% · 79bc4b6e
+mesh_segmentation · success 100% · 79bc4b6e
+✓ mesh_segmentation · 79bc4b6e-54be-447a-a036-348fec5cfe87 · 40 credits
+downloading artifacts…
+✓ artifacts saved to segv2/tripo-out/hero-v5-hc-segv2-79bc4b6e

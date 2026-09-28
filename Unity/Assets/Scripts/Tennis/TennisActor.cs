@@ -126,6 +126,31 @@ namespace GolfArcade.Tennis
 
         /// Show an expression for a while, over whatever the body is doing.
         public void SetExpression(Expression expression, float seconds) { heldExpression = expression; heldFor = seconds; }
+        // Read-only state for visual puppets (Hero01 driver). No gameplay effect.
+        public bool Backhand => backhand;
+        public float PrepareAmount => prepare;
+        public bool PrepareBackhand => prepareBackhand;
+        public bool PrepareServe => prepareServe;
+        public Transform Model => model;
+        public event Action<bool, Moment> Reacted;
+        /// When a visible character (Hero01) is attached: where ITS strings meet the ball in a stroke.
+        /// Contact planning then aims the ball at the racket the player actually sees.
+        public Func<Stroke, bool, Vector3?> VisualContact;
+        /// Serve-ritual ball points (0 hold, 1 release, 2 extended) in this actor's frame, from the
+        /// visible character's own stance, so the bounce and toss sit in front of the body it shows.
+        public Func<int, Vector3?> VisualTossPoint;
+        /// Where the tossing palm is wanted, and how much (read by the visible character).
+        public Vector3 TossReachTarget => reachTarget;
+        public float TossReachWanted => reachWanted;
+        /// Raised at the end of every Pose(), before the racket velocity is sampled, so an attached
+        /// visual can pose its racket for the same simulation step.
+        public event Action Posed;
+        public bool Guiding => guiding;
+        public Vector3 GuideBall => guideBall;
+        /// Contact tests, launch points and the contact-frame ball use these transforms: point them at
+        /// the visible racket so a hit only happens where the player sees strings.
+        public void RedirectStrings(Transform sweet, Transform right, Transform up, Transform normal)
+        { SweetSpot = sweet; basisOrigin = sweet; stringRight = right; stringUp = up; stringNormal = normal; lastSweetSpot = sweet.position; }
 
         void UpdateFace(float dt)
         {
@@ -197,10 +222,17 @@ namespace GolfArcade.Tennis
                 foreach (var r in racketVisual.GetComponentsInChildren<Renderer>(true))
                 {
                     var materials = r.materials;   // instances: the racket asset is shared with the opponent
-                    foreach (var m in materials) if (m.HasProperty("_Color")) m.color = cast;
+                    foreach (var m in materials) if (m.HasProperty("_Color") || m.HasProperty("_BaseColor")) m.color = cast;
                     r.materials = materials;
                 }
             }
+        }
+
+        bool suppliedPlayerBase;
+        public void Customize(int skin,int hair,int hairColor,int face,int height,int build,float bodySize=-1,TennisLook.Kit? outfit=null)
+        {
+            if(!GetComponent<TennisCustomization>())
+                gameObject.AddComponent<TennisCustomization>().Apply(model,head,skin,hair,hairColor,face,height,build,bodySize,outfit);
         }
 
         public void Build(bool female, Color skin, bool leftHanded, string bodyKey = null)
@@ -214,7 +246,9 @@ namespace GolfArcade.Tennis
             // also flipped text, kit detail and the grip) is no longer needed.
             model.name = female ? "Permanent female tennis player" : "Permanent male tennis player";
             modelRest = model.localPosition;
-            bool ownBody = !string.IsNullOrEmpty(bodyKey) && WearBody(bodyKey);
+            bool playerBase = bodyKey == "Avatar" || bodyKey == "AvatarF";
+            suppliedPlayerBase=playerBase;
+            bool ownBody = playerBase ? TennisCustomization.AttachBase(model, female) : !string.IsNullOrEmpty(bodyKey) && WearBody(bodyKey);
             // Higgsfield bodies are one skinned mesh with their clothes, arms and skin baked in;
             // the procedural arm tubes and the runtime kit are for the older piecewise bodies.
             SkinnedBody = Array.Exists(model.GetComponentsInChildren<SkinnedMeshRenderer>(true), r => r.name.StartsWith("V4 Higgs body"));
@@ -251,13 +285,13 @@ namespace GolfArcade.Tennis
             strokeTrail.startColor = new Color(.55f, .95f, 1, .55f); strokeTrail.endColor = new Color(.25f, .75f, 1, 0);
             strokeTrail.emitting = false;
             strokeTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            if (!SkinnedBody)
+            if (!SkinnedBody || suppliedPlayerBase)
             {
                 arms = model.GetComponent<StandardCharacterArms>() ?? model.gameObject.AddComponent<StandardCharacterArms>();
                 arms.ManualEvaluation = true;
                 // Floating hands hide the arm meshes entirely, which is the single biggest reason
                 // the characters read as toy-like.
-                arms.SetFloatingHandsPreview(false);
+                arms.SetFloatingHandsPreview(suppliedPlayerBase);
             }
             var animator = model.GetComponent<Animator>() ?? model.gameObject.AddComponent<Animator>();
             animator.applyRootMotion = false; animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
@@ -354,6 +388,7 @@ namespace GolfArcade.Tennis
         {
             get
             {
+                if (VisualContact != null && Swinging) { var v = VisualContact(Kind, backhand); if (v.HasValue) return v.Value; }
                 int index = Swinging ? Resolve(StrokeClip(Kind, backhand)) : -1;
                 return index >= 0 && contactPose.TryGetValue(index, out var local) ? model.TransformPoint(local) : SweetSpot.position;
             }
@@ -380,6 +415,7 @@ namespace GolfArcade.Tennis
         /// Where the strings meet the ball in this stroke, for the body as it stands now.
         public Vector3 ContactPoint(Stroke kind, bool useBackhand)
         {
+            if (VisualContact != null) { var v = VisualContact(kind, useBackhand); if (v.HasValue) return v.Value; }
             int index = Resolve(StrokeClip(kind, useBackhand));
             return index >= 0 && contactPose.TryGetValue(index, out var local) ? model.TransformPoint(local) : SweetSpot.position;
         }
@@ -654,10 +690,11 @@ namespace GolfArcade.Tennis
         /// (blender/scripts/retarget_emotes.py).
         public void React(bool won, Moment moment = Moment.Ordinary)
         {
+            Reacted?.Invoke(won, moment);
             if (won)
             {
+                // After-point emotes are off (custom emotes come later): a face only, then Ready.
                 SetExpression(moment == Moment.Ordinary ? Expression.Happy : Expression.Cheer, moment == Moment.Match ? 3.2f : 1.8f);
-                if (moment == Moment.Match) PlayEmote("Win");
             }
             else SetExpression(Expression.Sad, 1.8f);
         }
@@ -953,9 +990,10 @@ namespace GolfArcade.Tennis
             strokeTrail.emitting = Swinging && Kind != Stroke.Celebrate && ContactAge > .06f && ContactAge < .36f;
             float trailPower = Mathf.Lerp(.35f, .8f, Power);
             strokeTrail.startColor = new Color(.55f, .95f, 1, trailPower);
-            if (arms) arms.ApplyAfterAnimation();
+            if (arms && !suppliedPlayerBase) arms.ApplyAfterAnimation();
             ApplyUpright();
             ApplyTossReach(dt);
+            FitPlayerHandSpacing();
             AlignRacket();
             if (guideWeight > 0)
             {
@@ -963,8 +1001,37 @@ namespace GolfArcade.Tennis
                 if (backhand && TwoHanded(Kind) && actionIndex >= 0 && (Swinging || actionWeight > .01f)) ApplyBackhandShape(actionWeight);
                 AlignRacket();
             }
+            if (arms && suppliedPlayerBase) arms.ApplyAfterAnimation();
+            Posed?.Invoke();
             SweetVelocity = dt > 0 ? (SweetSpot.position - lastSweetSpot) / dt : Vector3.zero;
             lastSweetSpot = SweetSpot.position;
+        }
+
+        /// The supplied floating hands need an adult-length reach, with room for the widest
+        /// body. Use the same spacing for every cosmetic size so equipment reach stays equal.
+        void FitPlayerHandSpacing() {
+            if(!suppliedPlayerBase || !hand || !offHand || !armUpper || !offUpper)return;
+            Vector3 Place(Transform wrist,Transform shoulder) {
+                var local=model.InverseTransformPoint(wrist.position);
+                var axis=wrist.position-shoulder.position;
+                if(axis.sqrMagnitude>0.00001f) {
+                    float reach=Mathf.Clamp(axis.magnitude*1.20f,.30f,.55f);
+                    local=model.InverseTransformPoint(shoulder.position+axis.normalized*reach);
+                }
+                if(local.y>.48f && local.y<1.20f) {
+                    var flat=new Vector2(local.x,local.z);
+                    const float clearance=.35f;
+                    if(flat.magnitude<clearance) {
+                        if(flat.sqrMagnitude<.001f)flat=new Vector2(wrist==hand?(LeftHanded?-1:1):(LeftHanded?1:-1),1);
+                        flat=flat.normalized*clearance;local.x=flat.x;local.z=flat.y;
+                    }
+                }
+                return model.TransformPoint(local);
+            }
+            bool sharedGrip=Vector3.Distance(hand.position,offHand.position)<.19f;
+            var next=Place(hand,armUpper);var offset=next-hand.position;
+            hand.position=next;
+            offHand.position=sharedGrip?offHand.position+offset:Place(offHand,offUpper);
         }
 
         void ApplyWeights()

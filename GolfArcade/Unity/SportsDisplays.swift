@@ -137,22 +137,30 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
     }
 }
 
-private struct SportsPreviewControls:View {
+struct SportsPreviewControls:View {
     @State private var position=0.0
     @State private var power=0.6
     @State private var session=SportsSession.shared
     var body:some View {
         VStack {
+            if session.finishedMatch != nil {
+                MatchFinishControls(session: session, compact: true)
+            } else {
             HStack {
                 Text(session.feedback).font(.caption).lineLimit(1)
                 Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
                 Button("Menu") { session.end() }
+            }
+            if session.sport == "tennis" && session.ready {
+                if !session.loadoutLocked { TennisUltimatePicker(session: session) }
+                else if session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
             }
             HStack {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }
                 else { Button("Aim left") { session.setAim(-1) }; Button("Aim right") { session.setAim(1) }; Button("Club") { session.command("club",value:1) } }
                 Slider(value:$power,in:0.1...1).accessibilityLabel("Swing power")
                 Button("Swing") { session.swing(power) }.disabled(session.paused)
+            }
             }
         }.padding().background(.regularMaterial)
     }

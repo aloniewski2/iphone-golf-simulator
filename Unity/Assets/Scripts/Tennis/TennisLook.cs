@@ -70,12 +70,12 @@ namespace GolfArcade.Tennis
         /// the kit's own; Skin is a GolferStyle skin-tone index (2, the kit's own tan, is left as is).
         public struct Kit
         {
-            public Color Shirt, Shorts, Accent, Racket; public int Skin;
-            public bool Any => Shirt.a > 0 || Shorts.a > 0 || Accent.a > 0 || Racket.a > 0 || Skin != 2;
+            public Color Shirt, Shorts, Accent, Racket; public int Skin; public bool HasSkin;
+            public bool Any => Shirt.a > 0 || Shorts.a > 0 || Accent.a > 0 || Racket.a > 0 || HasSkin || Skin != 2;
             static Color Parse(string hex) =>
                 !string.IsNullOrEmpty(hex) && ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : new Color(1, 1, 1, 0);
             public static Kit From(string shirt, string shorts, string accent, string racket, int skin) => new Kit
-            { Shirt = Parse(shirt), Shorts = Parse(shorts), Accent = Parse(accent), Racket = Parse(racket), Skin = skin };
+            { Shirt = Parse(shirt), Shorts = Parse(shorts), Accent = Parse(accent), Racket = Parse(racket), Skin = skin, HasSkin = true };
         }
 
         static Material recolor;
@@ -107,8 +107,8 @@ namespace GolfArcade.Tennis
             recolor.SetColor("_Shirt", kit.Shirt);
             recolor.SetColor("_Shorts", kit.Shorts);
             recolor.SetColor("_Accent", kit.Accent);
-            var skin = kit.Skin != 2 ? GolfArcade.Game.GolferStyle.SkinTones[Mathf.Clamp(kit.Skin, 0, GolfArcade.Game.GolferStyle.SkinTones.Length - 1)] : new Color(1, 1, 1, 0);
-            skin.a = kit.Skin != 2 ? 1 : 0;
+            var skin = (kit.HasSkin || kit.Skin != 2) ? GolfArcade.Game.GolferStyle.SkinTones[Mathf.Clamp(kit.Skin, 0, GolfArcade.Game.GolferStyle.SkinTones.Length - 1)] : new Color(1, 1, 1, 0);
+            skin.a = (kit.HasSkin || kit.Skin != 2) ? 1 : 0;
             recolor.SetColor("_Skin", skin);
             var target = new RenderTexture(source.width, source.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
             { name = "Kit " + who + " (recoloured)", useMipMap = true, autoGenerateMips = true, anisoLevel = 2, wrapMode = source.wrapMode };
@@ -228,17 +228,28 @@ namespace GolfArcade.Tennis
 
         /// Where the sun sits: low over the left of the far court, late afternoon, so shadows
         /// are long and the players are rim-lit toward the camera (art target A).
-        public static readonly Vector3 SunDirection = new Vector3(-.62f, .42f, .66f).normalized;
+        /// Hero V5 light recipe (ArtDir/hero/v5_proof/LIGHTING.md): key at ~40 deg elevation (art bible 35-45).
+        public static readonly Vector3 SunDirection = new Vector3(-.62f, .76f, .66f).normalized;
+        /// Camera-side fill (no shadows): cool, ~35% of the key, so the rival's face (turned to camera, away from
+        /// the sun) and the player's back never go gray.
+        public static readonly Vector3 FillDirection = new Vector3(.30f, .55f, -.78f).normalized;
+        public const float SunIntensity = 2.3f, FillIntensity = .8f;
+        public static readonly Color SunColor = new Color(1f, .90f, .76f), FillColor = new Color(.84f, .90f, 1f);
 
         /// Light the court for URP in linear colour: a warm golden-hour sun, a sky/horizon/
         /// ground ambient, a light distance haze, and the painted sky.
         public static void LightScene(Light sun)
         {
             sun.transform.rotation = Quaternion.LookRotation(-SunDirection);
-            sun.color = new Color(1f, .87f, .70f);
-            sun.intensity = 2.3f;
+            sun.color = SunColor;
+            sun.intensity = SunIntensity;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = .82f;
+            sun.shadowStrength = .72f;   // soft; the cool trilight ambient tints what is left
+            var fillGo = GameObject.Find("Hero fill"); if (!fillGo) fillGo = new GameObject("Hero fill");
+            var fill = fillGo.GetComponent<Light>(); if (!fill) fill = fillGo.AddComponent<Light>();
+            fill.type = LightType.Directional; fill.shadows = LightShadows.None;
+            fill.transform.rotation = Quaternion.LookRotation(-FillDirection);
+            fill.color = FillColor; fill.intensity = FillIntensity;
             sun.shadowBias = .05f; sun.shadowNormalBias = .4f;
             RenderSettings.sun = sun;
             RenderSettings.ambientMode = AmbientMode.Trilight;
@@ -354,14 +365,18 @@ namespace GolfArcade.Tennis
         public float Radius = .5f, Strength = .5f, Ground = .012f, FadeHeight = 3f;
         public Material Material;
         public float HeightOverride = -1;
+        /// What stands on the court surface (a player root). The resort court sits above y=0, so a
+        /// disc at a fixed y=.012 was under the surface and never drawn; it now sits on the court.
+        public Transform Surface;
 
         void LateUpdate()
         {
             if (!Follow) { gameObject.SetActive(false); return; }
             Vector3 p = Follow.position;
-            float height = Mathf.Max(0, HeightOverride >= 0 ? HeightOverride : p.y);
+            float court = Surface ? Surface.position.y : 0;
+            float height = Mathf.Max(0, HeightOverride >= 0 ? HeightOverride : p.y - court);
             float fade = Mathf.Clamp01(1 - height / FadeHeight);
-            transform.position = new Vector3(p.x, Ground, p.z);
+            transform.position = new Vector3(p.x, court + Ground, p.z);
             transform.localScale = Vector3.one * (Radius * 2 * Mathf.Lerp(.6f, 1f, fade));
             if (Material && Material.HasProperty("_Strength")) Material.SetFloat("_Strength", Strength * fade);
         }

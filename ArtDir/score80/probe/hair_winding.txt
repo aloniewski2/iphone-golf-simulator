@@ -1,0 +1,13 @@
+Body_EyeSphere_L mesh=Body_EyeSphere_L verts=1014 sub=2 readable=True mats=Hero_01_EyeCornea|Hero_01_Catchlight
+Body_EyeSphere_R mesh=Body_EyeSphere_R verts=1014 sub=2 readable=True mats=Hero_01_EyeCornea|Hero_01_Catchlight
+Body_Skin mesh=Body_Skin verts=7122 sub=4 readable=True mats=skin_WarmSkin|skin_MatteCloth|Hero_01_HairTuft|skin_CoveredFoundation (scalp)
+   sub0 tris=8815 inwardByCentroid=3676 normalVsWinding=37 centre=(0.00, 0.00, 0.01)
+   sub1 tris=1237 inwardByCentroid=352 normalVsWinding=3 centre=(0.00, 0.00, 0.01)
+   sub2 tris=1031 inwardByCentroid=953 normalVsWinding=578 centre=(0.00, 0.00, 0.01)
+   sub3 tris=202 inwardByCentroid=14 normalVsWinding=2 centre=(0.00, 0.00, 0.01)
+Hair_Default mesh=Hair_Default verts=4103 sub=1 readable=True mats=Hero_01_HairTuft (solid)|Hero hair interior
+   sub0 tris=7099 inwardByCentroid=2888 normalVsWinding=2427 centre=(0.00, 0.00, 0.02)
+Shirt_Default mesh=Shirt_Default verts=4379 sub=2 readable=False mats=Hero_01_WarmSkin|Hero_01_MatteCloth
+Shorts_Default mesh=Shorts_Default verts=3509 sub=2 readable=True mats=Hero_01_MatteCloth|Hero_01_WarmSkin
+Shoes_Default mesh=Shoes_Default verts=5932 sub=3 readable=False mats=Hero_01_ShoeCleanWhite|Hero_01_ShoeCleanWhite|Hero_01_ShoeOrange
+Hat_Visor mesh=Hat_Visor verts=1905 sub=2 readable=False mats=Hero_01_MatteCloth|Hero_01_Visor

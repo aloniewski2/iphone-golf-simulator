@@ -1,0 +1,167 @@
+{
+  "exports": {
+    "Hero_01_Body.fbx": [
+      "Body_Skin",
+      "Body_EyeSphere_L",
+      "Body_EyeSphere_R"
+    ],
+    "Hero_01_Hair_Default.fbx": [
+      "Hair_Default"
+    ],
+    "Hero_01_Hat_Visor.fbx": [
+      "Hat_Visor"
+    ],
+    "Hero_01_Shirt_Default.fbx": [
+      "Shirt_Default"
+    ],
+    "Hero_01_Shorts_Default.fbx": [
+      "Shorts_Default"
+    ],
+    "Hero_01_Shoes_Default.fbx": [
+      "Shoes_Default"
+    ],
+    "Hero_01_Body_DefaultCoverage.fbx": [
+      "Body_Skin",
+      "Body_EyeSphere_L",
+      "Body_EyeSphere_R"
+    ]
+  },
+  "bones": [
+    "Root",
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Shoulder.L",
+    "UpperArm.L",
+    "LowerArm.L",
+    "Hand.L",
+    "Shoulder.R",
+    "UpperArm.R",
+    "LowerArm.R",
+    "Hand.R",
+    "UpperLeg.L",
+    "LowerLeg.L",
+    "Foot.L",
+    "Toes.L",
+    "UpperLeg.R",
+    "LowerLeg.R",
+    "Foot.R",
+    "Toes.R"
+  ],
+  "slots": {
+    "Body_EyeSphere_L": {
+      "triangles": 1756,
+      "vertices": 880,
+      "materials": [
+        "Hero_01_EyeCornea"
+      ]
+    },
+    "Body_EyeSphere_R": {
+      "triangles": 1756,
+      "vertices": 880,
+      "materials": [
+        "Hero_01_EyeCornea"
+      ]
+    },
+    "Hair_Default": {
+      "triangles": 5867,
+      "vertices": 3176,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin",
+        "Hero_01_BlondHair",
+        "Hero_01_Visor"
+      ]
+    },
+    "Hat_Visor": {
+      "triangles": 2981,
+      "vertices": 1706,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_Visor"
+      ]
+    },
+    "Shirt_Default": {
+      "triangles": 7246,
+      "vertices": 3810,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ]
+    },
+    "Shorts_Default": {
+      "triangles": 5882,
+      "vertices": 3081,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ]
+    },
+    "Shoes_Default": {
+      "triangles": 10267,
+      "vertices": 5175,
+      "materials": [
+        "Hero_01_MatteCloth"
+      ]
+    },
+    "Body_Skin": {
+      "triangles": 37617,
+      "vertices": 19277,
+      "materials": [
+        "skin_MatteCloth",
+        "skin_WarmSkin",
+        "skin_BlondHair",
+        "skin_CoveredFoundation"
+      ]
+    }
+  },
+  "sockets": {
+    "Hat": {
+      "bone": "Head",
+      "position": [
+        0.0,
+        0.0,
+        1.6649999618530273
+      ]
+    },
+    "Hand_R": {
+      "bone": "Hand.R",
+      "position": [
+        -0.47700002789497375,
+        -0.022999998182058334,
+        0.6949999332427979
+      ]
+    },
+    "Hand_L": {
+      "bone": "Hand.L",
+      "position": [
+        0.47700002789497375,
+        -0.022999998182058334,
+        0.6949999332427979
+      ]
+    },
+    "Back": {
+      "bone": "Chest",
+      "position": [
+        0.0,
+        0.15000000596046448,
+        1.059999942779541
+      ]
+    },
+    "FaceExtra": {
+      "bone": "Head",
+      "position": [
+        0.0,
+        -0.15000000596046448,
+        1.4049999713897705
+      ]
+    }
+  },
+  "skin_tint_examples": [
+    "#F2C093",
+    "#B77950",
+    "#6A4030"
+  ]
+}

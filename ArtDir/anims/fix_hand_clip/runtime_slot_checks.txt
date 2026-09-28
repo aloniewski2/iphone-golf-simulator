@@ -1,0 +1,8 @@
+Forehand: real GameTime PlayStroke hand travel=1.079m
+Backhand: real GameTime PlayStroke hand travel=0.759m
+Serve: real GameTime PlayStroke hand travel=1.135m
+Volley: real GameTime PlayStroke hand travel=1.264m
+RunForward: real GameTime PlayStroke hand travel=0.500m
+RunRight: real GameTime PlayStroke hand travel=0.523m
+RunLeft: real GameTime PlayStroke hand travel=0.774m
+Smash: real GameTime PlayStroke hand travel=0.767m

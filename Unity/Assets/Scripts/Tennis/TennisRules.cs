@@ -62,8 +62,11 @@ namespace GolfArcade.Tennis
 
         /// Seconds of hit-stop for a contact: nothing for an ordinary hit, a beat for a clean
         /// one, longer for a supercharge. Short enough never to be felt as lag.
+        /// Score80 B: held frames after the contact frame at 60 fps -- supercharged 3, perfect 2, excellent / great 1,
+        /// routine none. (Smash and ultimate take HeavyHitStop.) Heavy weight comes from the body recoil after it.
         public static float HitStopFor(Timing grade, bool supercharged) =>
-            supercharged ? .085f : grade >= Timing.Perfect ? .055f : grade >= Timing.Excellent ? .035f : 0f;
+            supercharged ? HeavyHitStop : grade >= Timing.Perfect ? .03f : grade >= Timing.Great ? .014f : 0f;
+        public const float HeavyHitStop = .045f;
 
         /// Does this grade keep a streak alive?
         public static bool Extends(Timing grade) => grade >= StreakFloor;
@@ -101,7 +104,8 @@ namespace GolfArcade.Tennis
         /// Human movement, not a sprinter on rails: the old 28 m/s² and 9 m/s sprint got the
         /// character to every ball, which took reaching the ball out of the game. A tour player
         /// peaks around 6 m/s and takes most of a second to get there.
-        public const float RunSpeed = 5.6f, SprintSpeed = 6.6f, Acceleration = 10f;
+        public const float CourtMovementScale = .88f;
+        public const float RunSpeed = 5.6f * CourtMovementScale, SprintSpeed = 6.6f * CourtMovementScale, Acceleration = 10f;
         /// Braking the auto-positioning uses to arrive at the ball instead of stopping dead.
         public const float Deceleration = 14f;
 
@@ -150,7 +154,7 @@ namespace GolfArcade.Tennis
         /// and a player at the net volleys it early. Out of reach, the nearest miss is
         /// returned so they can still chase it (and perhaps dive).
         public static InterceptPlan PlanIntercept(Vector3 position, Vector3 velocity, float spin, float restitution,
-            Vector2 player, float reaction, float topSpeed, bool atNet)
+            Vector2 player, float reaction, float topSpeed, bool atNet, float curve = 0)
         {
             var best = new InterceptPlan(); float bestScore = float.MaxValue;
             var nearest = new InterceptPlan { Gap = float.MaxValue };
@@ -159,7 +163,7 @@ namespace GolfArcade.Tennis
             for (int i = 0; i < 360; i++)
             {
                 Vector3 next = position, v = velocity;
-                TennisBall.Integrate(ref next, ref v, spin, dt);
+                TennisBall.Integrate(ref next, ref v, spin, dt, curve);
                 if (next.y < BallRadius && v.y < 0)
                 {
                     next.y = BallRadius; TennisBall.Bounce(ref v, ref spin, restitution);
@@ -214,8 +218,11 @@ namespace GolfArcade.Tennis
         /// a real miss rate, so wide, deep and well-struck balls actually win points.
         public const float OpponentSpeed = 4.6f, OpponentReach = 1.75f, OpponentErrorRate = .24f;
         // Arcade racket: a genuinely bigger string bed than a real one, because the player is
-        // aiming with a phone they cannot see while looking at a TV.
-        public const float StringHalfWidth = .175f, StringHalfHeight = .24f, BallRadius = .10f;
+        // aiming with a phone they cannot see while looking at a TV. The hit box IS the visible head:
+        // the hero racket is drawn at HeroRacketScale (1.3x its 0.29 x 0.40 m sculpt), so the head is
+        // 0.38 x 0.52 m and these half-extents match it (the ball's own radius is added on contact).
+        public const float HeroRacketScale = 1.3f;
+        public const float StringHalfWidth = .19f, StringHalfHeight = .26f, BallRadius = .10f;
         /// Movement assist. The character leans toward where the ball is actually going, but
         /// only while it is further away than `AssistDeadBand` — the last stretch is the
         /// player's own job, so positioning still matters.
@@ -260,8 +267,10 @@ namespace GolfArcade.Tennis
         {
             quality=0;
             // A dive throws the racket much further sideways than a normal stroke can reach.
-            float forgiveness=Mathf.Lerp(1.45f,.95f,Mathf.Clamp01(power))*(dive?1.8f:1f);
-            if(Mathf.Abs(age-SweetTime)>Mathf.Lerp(.2f,.12f,Mathf.Clamp01(power))) return false;
+            // Plan 2 party windows: a little more reach and time than before (never less) — skill is
+            // when you swing and where you aim, not sniper precision.
+            float forgiveness=Mathf.Lerp(1.6f,1.05f,Mathf.Clamp01(power))*(dive?1.8f:1f);
+            if(Mathf.Abs(age-SweetTime)>Mathf.Lerp(.24f,.15f,Mathf.Clamp01(power))) return false;
             // Closest approach measured on the ground plane, then judged against a height BAND
             // rather than a point: the old fixed 1.1m centre turned low and high balls the
             // player had timed perfectly into misses.
@@ -327,7 +336,7 @@ namespace GolfArcade.Tennis
         /// Generous by design: almost any committed swing during the toss should go in. Only
         /// a wildly early or late one nets. The old +/-0.20s window was unplayable once swing
         /// detection latency was accounted for.
-        public const float ServeCatch = 1.3f, ServePerfectWindow = .1f, ServeLegalWindow = .42f;
+        public const float ServeCatch = 1.3f, ServePerfectWindow = .065f, ServeLegalWindow = ServePowerWindow * (1 - ServeFaultPower);
         /// Motion detection needs a moment of swing before it can confirm one, so the moment
         /// it reports is always later than the moment the player actually started. Without
         /// this correction every serve reads as late.
@@ -367,7 +376,7 @@ namespace GolfArcade.Tennis
         /// The tossing arm's slow rise once TOSS is pressed.
         public const float ServeWindUp = .5f;
         /// How far either side of the top of the toss the power bar has anything to give.
-        public const float ServePowerWindow = .5f;
+        public const float ServePowerWindow = .4f;
         /// Swings with less power than this are too early or too late to clear the net.
         public const float ServeFaultPower = .12f;
         /// A toss meter reading this good (1 = dead centre) counts as a perfect toss: the
@@ -511,12 +520,31 @@ namespace GolfArcade.Tennis
         /// tape. Hitting from racket height with a flat arc otherwise netted far too often.
         public static Vector3 RallyVelocity(Vector3 start, Vector3 target, float speed, float spin, float quality)
         {
-            float margin = Mathf.Lerp(-.12f, .32f, Mathf.Clamp01(quality / .7f));
+            // Clean hits arc well over the tape like a real groundstroke; only a poor contact flattens into it.
+            float margin = Mathf.Lerp(-.12f, LegacyFlatShots ? .32f : RallyNetClearance, Mathf.Clamp01(quality / .7f));
             Vector3 best = TennisBall.Solve(start, target, speed, spin);
             for (float s = speed; s > 9; s *= .93f)
             {
                 best = TennisBall.Solve(start, target, s, spin);
                 if (NetClearance(start, best, spin) > NetHeight + margin) return best;
+            }
+            return best;
+        }
+
+        /// How far over the tape a clean rally ball passes (metres above the net).
+        public const float RallyNetClearance = .7f;
+        /// Editor proof only (HERO_OLDARC=1): the pre-Plan-1B flat net-skimming rally lines.
+        public static readonly bool LegacyFlatShots = System.Environment.GetEnvironmentVariable("HERO_OLDARC") == "1";
+
+        /// A rally shot to `target`, lofted until it clears the net by `clearance`: the ball still
+        /// lands where it was aimed, on a visible gravity arc instead of the flattest line.
+        public static Vector3 RallyArcVelocity(Vector3 start, Vector3 target, float speed, float spin, float clearance)
+        {
+            Vector3 best = TennisBall.Solve(start, target, speed, spin);
+            for (float s = speed; s > 8; s *= .94f)
+            {
+                best = TennisBall.Solve(start, target, s, spin);
+                if (NetClearance(start, best, spin) > NetHeight + clearance) return best;
             }
             return best;
         }
@@ -748,8 +776,8 @@ namespace GolfArcade.Tennis
 
         /// Where a ball will first touch the ground, by plain ballistics. Used for the
         /// landing marker and to judge in/out before the bounce actually happens.
-        public static bool PredictLanding(Vector3 position, Vector3 velocity, out Vector3 landing, float spin = 0) =>
-            TennisBall.Landing(position, velocity, spin, out landing, out _);
+        public static bool PredictLanding(Vector3 position, Vector3 velocity, out Vector3 landing, float spin = 0, float curve = 0) =>
+            TennisBall.Landing(position, velocity, spin, out landing, out _, curve);
 
         public static Vector3 ShotTarget(float aim,float power) => new Vector3(Mathf.Clamp(aim,-1,1)*3.25f,BallRadius,Mathf.Lerp(4.5f,9.5f,Mathf.Clamp01(power)));
 

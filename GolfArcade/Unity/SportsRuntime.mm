@@ -20,6 +20,8 @@
     void (*_push)(const char*);
     void (*_pushSample)(const SportsSample*);
     int (*_poll)(char*,int);
+    int (*_readResult)(char*,int);
+    void (*_setResult)(const char*);
     double (*_clock)(void);
     __weak UIWindow *_destination;
 }
@@ -59,6 +61,8 @@
         _push=(void(*)(const char*))dlsym(RTLD_DEFAULT,"SportsPushInput");
         _pushSample=(void(*)(const SportsSample*))dlsym(RTLD_DEFAULT,"SportsPushSample");
         _poll=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsPollEvent");
+        _readResult=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsReadTennisResult");
+        _setResult=(void(*)(const char*))dlsym(RTLD_DEFAULT,"SportsSetTennisResult");
         _clock=(double(*)(void))dlsym(RTLD_DEFAULT,"SportsClock");
     }
     if (!_push || !_pushSample || !_poll || !_clock) {
@@ -105,6 +109,8 @@
 - (void)push:(NSString*)json { if(_push) _push(json.UTF8String); }
 - (void)pushSample:(SportsSample)sample { if(_pushSample) _pushSample(&sample); }
 - (NSString*)pollEvent { char buffer[8192]; if(!_poll || !_poll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
+- (NSString*)tennisResult { char buffer[1024]; if(!_readResult || !_readResult(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
+- (void)clearTennisResult { if(_setResult) _setResult(""); }
 - (double)clock { return _clock ? _clock() : NSProcessInfo.processInfo.systemUptime; }
 - (void)pause:(BOOL)paused {
 #if HAS_UNITY

@@ -114,6 +114,10 @@ namespace GolfArcade.Game
                 r.sharedMaterials = mats;
                 if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
             }
+            GolfArcade.Tennis.TennisCustomization.AttachBase(model.transform, GolferStyle.Body == GolferStyle.BodyKind.Female, golf:true);
+            var head = System.Array.Find(model.GetComponentsInChildren<Transform>(true), t => t.name == "Head");
+            model.AddComponent<GolfArcade.Tennis.TennisCustomization>().Apply(model.transform, head,
+                GolferStyle.SkinTone, GolferStyle.Hair, GolferStyle.HairColor, GolferStyle.Face, GolferStyle.Height, 2, GolferStyle.Size, GolferStyle.Outfit);
             var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
             standardArms = model.GetComponent<StandardCharacterArms>() ?? model.AddComponent<StandardCharacterArms>();
             standardArms.ManualEvaluation = true;

@@ -1,0 +1,14 @@
+{
+  "Ready": "All curves identical; existing FBX reused",
+  "JumpServe": "All curves identical; existing FBX reused",
+  "Forehand": "All curves identical; existing FBX reused",
+  "Backhand": "New hand-keyed action, not the forehand or a mirror",
+  "RunForward": "Only four left-arm bones changed; remaining bones identical",
+  "RunRight": "All curves identical; existing FBX reused",
+  "RunLeft": "Only four left-arm bones changed; remaining bones identical",
+  "Volley": "All curves identical; existing FBX reused",
+  "Smash": "All curves identical; existing FBX reused",
+  "backhand_guid": "59b35041f46cc4ab8b1a14270a27e408",
+  "slot": "ModularHeroLook.backhand",
+  "source_eyes_contact_reference_s": 1.8666666666666667
+}

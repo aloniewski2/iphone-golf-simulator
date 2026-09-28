@@ -1,0 +1,16 @@
+{
+  "protected_bones": [
+    "Root",
+    "Hips",
+    "Spine",
+    "Chest",
+    "Neck",
+    "Head",
+    "Shoulder.R",
+    "UpperArm.R",
+    "LowerArm.R",
+    "Hand.R"
+  ],
+  "maximum_component_change": 0,
+  "frames": 1080
+}

@@ -19,6 +19,25 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
     var accent: Int?
     var racket: Int?
 
+    /// Continuous locker colour picks (LockerColors.swift); nil keeps the preset indices below.
+    var looks: [String: [Double]]?
+    var hairStyleValue: Int?
+    var haircutValue: Int?
+    var hairColorValue: Int?
+    var faceShapeValue: Int?
+    var heightValue: Int?
+    var buildValue: Int?
+    var bodySizeValue: Double?
+    /// Continuous cosmetic width. Older five-step profiles migrate without losing their choice.
+    var bodySize: Double { get { min(1, max(0, bodySizeValue ?? Double(buildChoice) / 4)) } set { bodySizeValue = min(1, max(0, newValue)) } }
+    var hairStyle: Int { get { min(3,max(0,hairStyleValue ?? 1)) } set { hairStyleValue=min(3,max(0,newValue)) } }
+    /// Hero V5 haircut (HeroKit.HaircutNames: Swept, Ponytail, Bob, Long, Curly). Unset follows the body: Ponytail for a girl.
+    var haircut: Int { get { min(7,max(0,haircutValue ?? (standardFemale ? 1 : 0))) } set { haircutValue=min(7,max(0,newValue)) } }
+    var hairColor: Int { get { min(5,max(0,hairColorValue ?? 1)) } set { hairColorValue=min(5,max(0,newValue)) } }
+    var faceShape: Int { get { min(3,max(0,faceShapeValue ?? 0)) } set { faceShapeValue=min(3,max(0,newValue)) } }
+    var heightChoice: Int { get { min(4,max(0,heightValue ?? 2)) } set { heightValue=min(4,max(0,newValue)) } }
+    var buildChoice: Int { get { min(4,max(0,buildValue ?? 2)) } set { buildValue=min(4,max(0,newValue)) } }
+
     var isScanned: Bool { calibration != nil }
 
     init(id: UUID = UUID(), name: String, colorIndex: Int, handedness: Handedness = .right, calibration: PlayerCalibration? = nil) {

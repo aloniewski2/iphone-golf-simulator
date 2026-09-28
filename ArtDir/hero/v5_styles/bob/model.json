@@ -1,0 +1,1 @@
+{"task_id":"c25d51b9-1e44-4b06-9d5e-2e8969b78b09","type":"image_to_model","status":"success","credits_consumed":40,"output_dir":"bob/model/tripo-out/m-bob-c25d51b9","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"bob/model/tripo-out/m-bob-c25d51b9/model.glb","preview":"bob/model/tripo-out/m-bob-c25d51b9/preview.png"}

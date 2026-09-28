@@ -1,0 +1,1 @@
+{"task_id":"f2134e75-78e4-442e-9a28-da29ff0159bc","type":"smartsegment_model","status":"success","credits_consumed":55,"output_dir":"seg/tripo-out/hero-v5-hc-seg-f2134e75","files":["mask.png","seg_model.glb","preview.png"],"model_file":"seg/tripo-out/hero-v5-hc-seg-f2134e75/seg_model.glb","preview":"seg/tripo-out/hero-v5-hc-seg-f2134e75/preview.png"}

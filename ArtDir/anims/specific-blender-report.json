@@ -1,0 +1,94 @@
+{
+  "requested_radial_factors_vs_working_v3": {
+    "biceps": 0.865,
+    "forearm": 0.84,
+    "thigh": 0.635,
+    "calf": 0.8,
+    "shoe": 0.9
+  },
+  "stance_shift_m_per_leg": 0.008,
+  "face_width_factor": 0.93,
+  "visor_raise_m": 0.018,
+  "fringe_raise_max_m": 0.022,
+  "hair_channels": 3,
+  "forehead_bridge_quads": 103,
+  "changed_vertices": {
+    "Body_EyeSphere_L": 942,
+    "Body_EyeSphere_R": 942,
+    "Hair_Default": 3176,
+    "Hat_Visor": 1706,
+    "Shirt_Default": 1604,
+    "Shorts_Default": 2851,
+    "Shoes_Default": 5307,
+    "Body_Skin": 17075
+  },
+  "cuff_vertices_reweighted": 658,
+  "cross_sections_m": {
+    "biceps": {
+      "before": [
+        0.14911565370857716,
+        0.14926110953092575
+      ],
+      "after": [
+        0.12665846478193998,
+        0.1261259038001299
+      ]
+    },
+    "forearm": {
+      "before": [
+        0.13837960036471486,
+        0.13741534762084484
+      ],
+      "after": [
+        0.11623884411528707,
+        0.11542887426912785
+      ]
+    },
+    "thigh": {
+      "before": [
+        0.2367458394728601,
+        0.23083668593608309
+      ],
+      "after": [
+        0.15033572602260392,
+        0.14658130492898636
+      ]
+    },
+    "calf": {
+      "before": [
+        0.20273072103736922,
+        0.20338758506113663
+      ],
+      "after": [
+        0.16218459197261836,
+        0.16271006004535593
+      ]
+    }
+  },
+  "shoe_bounds_m": {
+    "before": [
+      {
+        "width": 0.2694927752017975,
+        "length": 0.4548458606004715,
+        "sole_z": 0.0
+      },
+      {
+        "width": 0.26920782029628754,
+        "length": 0.4550355076789856,
+        "sole_z": 4.699349301517941e-05
+      }
+    ],
+    "after": [
+      {
+        "width": 0.24254348874092102,
+        "length": 0.40936124324798584,
+        "sole_z": 0.0
+      },
+      {
+        "width": 0.2422870546579361,
+        "length": 0.40953195095062256,
+        "sole_z": 4.2294141167076305e-05
+      }
+    ]
+  }
+}

@@ -14,7 +14,7 @@ namespace GolfArcade.Tennis
     ///   timing    a ring that closes on the ball as it reaches the hitting zone
     public sealed class TennisFx : MonoBehaviour
     {
-        ParticleSystem impact, shock, sparkle, fuzz, dust, ripple, confetti, charge, footDust;
+        ParticleSystem impact, shock, sparkle, fuzz, dust, ripple, confetti, charge, footDust, streak;
         Material additiveImpact, additiveRing, additiveSparkle, additiveGlow, alphaDust, alphaFuzz, alphaConfetti;
         Transform[] skids;
         Material[] skidMaterials;
@@ -60,6 +60,9 @@ namespace GolfArcade.Tennis
             impact = System("Impact flash", additiveImpact, 4, .09f, .13f, .9f, 1.3f, 0, 0, 0, grow: 1.5f);
             shock = System("Shockwave", additiveRing, 6, .22f, .3f, .35f, .35f, 0, 0, 0, grow: 7f);
             sparkle = System("Sparkles", additiveSparkle, 60, .25f, .5f, .08f, .2f, 2f, 5.5f, .6f, grow: .4f, spin: true);
+            // Score80 B: heavy-contact impact streaks (stretched sparks that shoot out radially and die fast)
+            streak = System("Impact streaks", additiveGlow, 48, .09f, .16f, .05f, .08f, 9f, 15f, 0, grow: .3f);
+            { var sr = streak.GetComponent<ParticleSystemRenderer>(); sr.renderMode = ParticleSystemRenderMode.Stretch; sr.velocityScale = .045f; sr.lengthScale = 1.2f; }
             fuzz = System("Felt fuzz", alphaFuzz, 50, .22f, .5f, .03f, .06f, 2.8f, 6.5f, 3.5f);
             dust = System("Bounce dust", alphaDust, 40, .35f, .7f, .12f, .28f, .4f, 1.4f, -.3f, grow: 1.8f, spin: true);
             footDust = System("Footstep dust", alphaDust, 60, .3f, .55f, .1f, .2f, .3f, .9f, -.2f, grow: 1.9f, spin: true);
@@ -136,20 +139,74 @@ namespace GolfArcade.Tennis
         }
 
         /// A struck ball. How big and bright it gets says how clean the contact was.
-        public void Contact(Vector3 at, Timing grade, bool supercharged)
+        public void Contact(Vector3 at, Timing grade, bool supercharged) => Contact(at, grade, supercharged, false);
+        /// Contact only. Routine hits get a solid short punch (impact, felt, a small shake); a
+        /// perfect adds a star burst and a double shockwave; a smash is the biggest of all.
+        public void Contact(Vector3 at, Timing grade, bool supercharged, bool smash)
         {
+            if (smash)
+            {
+                Heavy(at, new Color(1, .88f, .45f, 1), 1.2f);
+                Burst(impact, at, 2, new Color(1, .9f, .5f, 1), 2.1f);
+                Burst(shock, at, 3, new Color(1, .85f, .45f, .9f), .6f);
+                Burst(sparkle, at, 34, new Color(1, .9f, .5f, 1));
+                Burst(fuzz, at, 22, Felt);
+                Shake = Mathf.Max(Shake, 1.1f); Flash = Mathf.Max(Flash, .6f);
+                return;
+            }
             int strength = (int)grade;
             float scale = supercharged ? 1.8f : Mathf.Lerp(.6f, 1.25f, strength / 5f);
             Color hot = supercharged ? new Color(.55f, .95f, 1f, 1) : Color.Lerp(new Color(1, .95f, .8f, .8f), new Color(1, .92f, .45f, 1), strength / 5f);
-            Burst(impact, at, 1, hot, scale);
+            // Phase 4: the additive core stays under ~1.2 m and 75% so a Perfect at head height never whites out the face
+            Burst(impact, at, 1, new Color(hot.r, hot.g, hot.b, Mathf.Min(hot.a, .75f)), Mathf.Min(scale, supercharged ? 1.2f : .95f));
             Burst(shock, at, supercharged ? 2 : 1, new Color(hot.r, hot.g, hot.b, .8f), .3f * scale);
             Burst(fuzz, at, 6 + strength * 3, Felt);
             if (grade >= Timing.Great || supercharged) Burst(sparkle, at, supercharged ? 22 : strength * 2, hot);
-            Shake = Mathf.Max(Shake, supercharged ? 1 : grade >= Timing.Perfect ? .7f : grade >= Timing.Excellent ? .45f : grade >= Timing.Great ? .25f : 0);
+            if (grade >= Timing.Perfect && !supercharged) { Burst(shock, at, 1, new Color(1, .95f, .6f, .7f), .55f); Burst(sparkle, at, 16, new Color(1, .95f, .6f, 1)); Flash = Mathf.Max(Flash, .25f); }
+            if (supercharged || grade >= Timing.Perfect) Heavy(at, hot, supercharged ? 1.1f : .8f);
+            // Score80 B: shake by tier; routine contact barely moves the frame
+            Shake = Mathf.Max(Shake, supercharged ? 1 : grade >= Timing.Perfect ? .7f : grade >= Timing.Excellent ? .32f : grade >= Timing.Great ? .18f : .06f);
             if (supercharged) Flash = 1;
         }
 
-        /// The opponent's racket on the ball: the same language, a size smaller.
+        /// A confirmed whiff (the game has called the miss): a big comic air-swish ring around the
+        /// player, a dust puff from the stumble and a shake — more than a routine hit, never on input.
+        public void Whiff(Vector3 feet, Vector3 racket)
+        {
+            Burst(shock, racket, 2, new Color(1, 1, 1, .75f), .7f);
+            Burst(ripple, feet + Vector3.up * .03f, 2, new Color(1, 1, 1, .55f), .5f);
+            Burst(dust, feet + Vector3.up * .06f, 16, new Color(.97f, .95f, .9f, .75f));
+            Burst(sparkle, racket, 10, new Color(.8f, .9f, 1f, .9f));
+            Shake = Mathf.Max(Shake, .5f);
+        }
+
+        /// Heavy contact only (perfect, supercharged, smash, ultimate): radial streaks and a second, flat shock ring.
+        void Heavy(Vector3 at, Color c, float amount)
+        {
+            int n = Mathf.RoundToInt(12 * amount);
+            for (int i = 0; i < n; i++)
+            {
+                var d = Random.onUnitSphere; d.y = Mathf.Abs(d.y) * .6f;
+                Burst(streak, at, 1, new Color(c.r, c.g, c.b, .95f), -1, d.normalized * Random.Range(9f, 15f) * Mathf.Lerp(.8f, 1.1f, amount - .6f));
+            }
+            Burst(ripple, at, 1, new Color(c.r, c.g, c.b, .55f), .35f * amount);
+        }
+
+        /// The ball in the tape: a springy ring on the net and a puff of felt -- a comic beat, not an error screen.
+        public void NetHit(Vector3 at)
+        {
+            Burst(shock, at, 2, new Color(1, 1, 1, .7f), .45f);
+            Burst(fuzz, at, 12, Felt);
+            Burst(sparkle, at, 8, new Color(1, 1, 1, .9f));
+            Shake = Mathf.Max(Shake, .25f);
+        }
+
+        /// The opponent's racket on the ball: the same language, a size smaller (their ultimate gets the heavy set).
+        public void OpponentContact(Vector3 at, bool heavy)
+        {
+            if (heavy) { Heavy(at, new Color(.5f, .9f, 1f, 1), 1f); Burst(impact, at, 1, new Color(.6f, .95f, 1f, 1), 1.5f); Burst(shock, at, 2, new Color(.6f, .95f, 1f, .8f), .5f); }
+            OpponentContact(at);
+        }
         public void OpponentContact(Vector3 at)
         {
             Burst(impact, at, 1, new Color(1, .95f, .85f, .7f), .7f);
@@ -222,7 +279,7 @@ namespace GolfArcade.Tennis
         /// Remove every live particle and mark; used after the shader warm-up.
         public void Clear()
         {
-            foreach (var ps in new[] { impact, shock, sparkle, fuzz, dust, ripple, confetti, charge, footDust }) ps.Clear(true);
+            foreach (var ps in new[] { impact, shock, sparkle, fuzz, dust, ripple, confetti, charge, footDust, streak }) ps.Clear(true);
             for (int i = 0; i < SkidCount; i++) { skidAge[i] = SkidLife; skids[i].gameObject.SetActive(false); }
             cue.gameObject.SetActive(false);
             Shake = 0; Flash = 0;

@@ -1,0 +1,9 @@
+{
+  "vertices_adjusted": 2263,
+  "maximum_reduction": 0.14,
+  "wrist_blend_z": [
+    0.72,
+    0.805
+  ],
+  "bones_and_sockets_unchanged": true
+}

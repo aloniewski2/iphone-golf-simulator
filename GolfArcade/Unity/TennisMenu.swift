@@ -4,7 +4,7 @@ import UIKit
 /// Where the front end is. The same state drives the menu on the TV (steered from the phone's
 /// remote) and on the phone itself when no TV is connected.
 enum MenuScreen: Hashable {
-    case title, main, gameSelect, hub(Sport), locked(Sport)
+    case title, main, party, quickPlay, gameSelect, hub(Sport), locked(Sport)
     case campaign, training, exhibition, character, settings, howTo, golfLesson
     case connect, loading, results, story
 }
@@ -46,6 +46,7 @@ final class TennisMenu {
     private(set) var row = 0
     private(set) var column = 0
     private var previous: MenuScreen = .main
+    private var launchOrigin: MenuScreen?
     var trainingLevel = 1
     private(set) var launch: MenuLaunch?
     private(set) var result: MatchResult?
@@ -64,7 +65,7 @@ final class TennisMenu {
     private(set) var story: [StoryLine] = []
     private(set) var storyIndex = 0
     private var afterStory: AfterStory = .results
-    private enum AfterStory { case play(MenuLaunch), results, hub(Sport) }
+    private enum AfterStory { case play(MenuLaunch), round(Int), results, hub(Sport) }
     /// Tests: show story lines whole instead of typing them out.
     private(set) var storyInstant = false
     var storyLine: StoryLine? { story.indices.contains(storyIndex) ? story[storyIndex] : nil }
@@ -78,9 +79,10 @@ final class TennisMenu {
     static let skinTones = ["Fair", "Light", "Tan", "Olive", "Brown", "Deep"]
     /// Items in a sport's hub, in order. The tutorial comes first and unlocks the rest.
     static func hubItems(_ sport: Sport) -> [String] {
-        sport == .tennis ? ["tutorial", "campaign", "training", "exhibition"] : ["tutorial", "round", "golfCampaign", "golfTraining"]
+        sport == .tennis ? ["tutorial", "campaign", "exhibition", "training"] : ["tutorial", "round", "golfCampaign", "golfTraining"]
     }
-    static let characterRows = ["name", "body", "skin", "hand", "shirt", "shorts", "accent", "racket"]
+    /// Hero V4 identity only (HeroKit.cs / HeroV4 in CharacterModelPreview.swift): the rows the locked hero supports.
+    static let characterRows = ["body", "haircut", "skin", "hair", "hairColor", "hand", "shirt", "shorts", "accent", "racket"]
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
         case .gameplay: ["level", "coaching", "resetTips", "resetProgress"]
@@ -97,7 +99,9 @@ final class TennisMenu {
     func rows(_ screen: MenuScreen) -> [[String]] {
         switch screen {
         case .title: return [["start"]]
-        case .main: return [["play", "character", "settings", "howto"]]
+        case .main: return [["howto", "settings"], ["play", "continue"], ["character", "homePlay"]]
+        case .party: return [["partySolo"], ["back"]]
+        case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
         case .gameSelect: return [Sport.allCases.map { "sport-\($0.rawValue)" }, ["back"]]
         case .hub(let sport): return [Self.hubItems(sport), ["replayTutorial", "back"]]
         case .locked: return [["back"]]
@@ -111,7 +115,7 @@ final class TennisMenu {
         case .howTo: return [["prev", "nextPage", "back"]]
         case .golfLesson: return [["prev", "nextCard", "back"]]
         case .connect: return [["airplay"], ["phone"], ["back"]]
-        case .loading: return []
+        case .loading: return SportsSession.shared.loading.isStalled ? [["loadingBack", "loadingRetry"]] : [["loadingBack"]]
         case .results:
             guard let result else { return [["menu"]] }
             if result.won && campaign.champion && result.round == TennisCampaign.draw.count - 1 { return [["menu"], ["restart"]] }
@@ -136,17 +140,37 @@ final class TennisMenu {
         }
     }
 
+    /// Bumped on every screen change: drives the stripe wipe and its whoosh.
+    private(set) var transitions = 0
+
     private func show(_ next: MenuScreen) {
         if next != screen, screen != .loading, screen != .connect, screen != .story { previous = screen }
+        if next != screen { transitions += 1; ClubSound.play("whoosh", volume: 0.35) }
         screen = next; notice = ""; confirmingReset = false
         // Land on the thing you most likely want.
         switch next {
+        case .main: row = 1; column = 0
         case .campaign: row = campaign.nextRound / 5; column = campaign.nextRound % 5
         case .hub(let sport): row = 0; column = progress.finishedTutorial(sport) ? 1 : 0
         case .settings: row = 1; column = 0
         case .gameSelect: row = 0; column = 1
         default: row = 0; column = 0
         }
+    }
+
+    /// Home → Continue: whatever is next for this player. The tennis tutorial first, then the
+    /// next Island Circuit round (with its story), then the draw to defend the title.
+    var continueLabel: (title: String, subtitle: String) {
+        if !progress.finishedTutorial(.tennis) { return ("Start here", "Your first lesson with Coach Ray") }
+        if campaign.champion { return ("Defend your title", "The Island Circuit awaits") }
+        let o = campaign.next
+        return ("Continue", "\(o.roundTitle) · vs \(o.name)")
+    }
+
+    func continueJourney() {
+        if !progress.finishedTutorial(.tennis) { startTutorial(.tennis); return }
+        if campaign.champion { show(.campaign); return }
+        play(round: campaign.nextRound)
     }
 
     private func refuse(_ message: String) {
@@ -171,7 +195,7 @@ final class TennisMenu {
         }
         c = min(c, grid[r].count - 1)
         if r != row || c != column {
-            row = r; column = c; tick.selectionChanged()
+            row = r; column = c; tick.selectionChanged(); ClubSound.play("tick", volume: 0.4)
             // Moving along the tab row switches tabs, like a controller's shoulder buttons.
             if screen == .settings, r == 0, let tab = SettingsTab.allCases[safe: c] { settingsTab = tab }
         }
@@ -188,8 +212,20 @@ final class TennisMenu {
     func select() {
         let id = focused
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        ClubSound.play("pop", volume: 0.5)
         switch id {
         case "start" where screen == .title: show(.main)
+        case "homePlay": show(.party)
+        case "continue": continueJourney()
+        case "quickPlay", "partySolo": show(.quickPlay)
+        case "homeCampaign": show(.campaign)
+        case "quickTennis": begin(MenuLaunch(mode: .exhibition, round: 0))
+        case "quickGolf": begin(MenuLaunch(sport: .golf, mode: .round))
+        case "loadingBack": session.end(); show(.main)
+        case "loadingRetry":
+            guard let retry = launch else { return }
+            let onPhone = !session.displayConnected
+            session.end(); begin(retry, onPhone: onPhone)
         case "play": show(.gameSelect)
         case "character": show(.character)
         case "settings": show(.settings)
@@ -231,8 +267,7 @@ final class TennisMenu {
         case "start" where screen == .training: begin(MenuLaunch(mode: .training))
         case "randomize": randomize()
         case "reset":
-            session.players[session.playerIndex].shirt = nil; session.players[session.playerIndex].shorts = nil
-            session.players[session.playerIndex].accent = nil; session.players[session.playerIndex].racket = nil
+            for slot in Player.outfitSlots { session.players[session.playerIndex].clearOutfit(slot) }
             session.savePlayers()
         case "resetProgress":
             if confirmingReset {
@@ -263,7 +298,7 @@ final class TennisMenu {
         switch screen {
         case .title, .loading: return
         case .main: show(.title)
-        case .gameSelect, .character, .settings, .howTo: show(.main)
+        case .party, .quickPlay, .gameSelect, .character, .settings, .howTo: show(.main)
         case .hub, .locked: show(.gameSelect)
         case .campaign, .training, .exhibition: show(.hub(.tennis))
         case .golfLesson: show(.hub(.golf))
@@ -275,7 +310,8 @@ final class TennisMenu {
 
     /// Where the menu goes back to after a launch.
     private func hubAfter(_ launch: MenuLaunch) -> MenuScreen {
-        switch launch.mode {
+        if launchOrigin == .quickPlay { return .quickPlay }
+        return switch launch.mode {
         case .campaign: .campaign
         case .training: .training
         case .exhibition: .exhibition
@@ -284,9 +320,9 @@ final class TennisMenu {
     }
 
     /// Sideways on a choice; returns false for items that are not choices.
-    private func adjust(_ id: String, by step: Int) -> Bool {
+    func adjust(_ id: String, by step: Int) -> Bool {
         let s = session
-        let playerItems = ["body", "skin", "hand", "shirt", "shorts", "accent", "racket"]
+        let playerItems = ["body", "haircut", "skin", "hair", "hairColor", "face", "height", "build", "hand", "shirt", "shorts", "accent", "racket"]
         guard s.players.indices.contains(s.playerIndex) || !playerItems.contains(id) else { return false }
         func cycle(_ value: Int, _ count: Int) -> Int { (value + step + count) % count }
         /// Colours cycle through the palette and "kit colour" (nil).
@@ -299,12 +335,18 @@ final class TennisMenu {
         switch id {
         case "level": trainingLevel = cycle(trainingLevel, Self.trainingLevels.count); s.tennisDifficulty = Self.trainingLevels[trainingLevel].difficulty
         case "body": s.players[p].standardFemale.toggle(); s.savePlayers()
-        case "skin": s.players[p].standardSkin = cycle(s.players[p].standardSkin, Self.skinTones.count); s.savePlayers()
+        // colour ranges: the remote walks along the range in small steps (the phone locker has sliders)
+        case "skin": s.players[p].setSkin(min(1, max(0, s.players[p].skinT + Double(step) * 0.05))); s.savePlayers()
+        case "hair": s.players[p].hairStyle = cycle(s.players[p].hairStyle, 4); s.savePlayers()
+        case "haircut": s.players[p].haircut = cycle(min(s.players[p].haircut, HeroV4.offered - 1), HeroV4.offered); s.savePlayers()
+        case "hairColor": s.players[p].setHair(natural: min(1, max(0, s.players[p].hairT + Double(step) * 0.05))); s.savePlayers()
+        case "face": s.players[p].faceShape = cycle(s.players[p].faceShape, 4); s.savePlayers()
+        case "height": s.players[p].heightChoice = cycle(s.players[p].heightChoice, 5); s.savePlayers()
+        case "build": setBodySize(s.players[p].bodySize + Double(step) * 0.05)
         case "hand": s.players[p].handedness = s.players[p].handedness == .left ? .right : .left; s.savePlayers()
-        case "shirt": s.players[p].shirt = cycleColor(s.players[p].shirt); s.savePlayers()
-        case "shorts": s.players[p].shorts = cycleColor(s.players[p].shorts); s.savePlayers()
-        case "accent": s.players[p].accent = cycleColor(s.players[p].accent); s.savePlayers()
-        case "racket": s.players[p].racket = cycleColor(s.players[p].racket); s.savePlayers()
+        case "shirt", "shorts", "accent", "racket":
+            let (h, sh) = s.players[p].hueShade(id)
+            s.players[p].setOutfit(id, hue: h + Double(step) / 24, shade: sh); s.savePlayers()
         case "controls": s.touch.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()
@@ -320,15 +362,26 @@ final class TennisMenu {
         return true
     }
 
+    func setBodySize(_ value: Double) {
+        let s = session
+        guard s.players.indices.contains(s.playerIndex) else { return }
+        s.players[s.playerIndex].bodySize = value
+        s.savePlayers()
+    }
+
     private func randomize() {
         let s = session, p = s.playerIndex
         guard s.players.indices.contains(p) else { return }
+        s.players[p].hairStyle = Int.random(in: 0..<4)
+        s.players[p].faceShape = Int.random(in: 0..<4)
+        s.players[p].heightChoice = Int.random(in: 0..<5)
+        s.players[p].bodySize = Double.random(in: 0...1)
         s.players[p].standardFemale = Bool.random()
-        s.players[p].standardSkin = Int.random(in: 0..<Self.skinTones.count)
-        s.players[p].shirt = Int.random(in: 0..<Outfit.palette.count)
-        s.players[p].shorts = Int.random(in: 0..<Outfit.palette.count)
-        s.players[p].accent = Int.random(in: 0..<Outfit.palette.count)
-        s.players[p].racket = Int.random(in: 0..<Outfit.palette.count)
+        s.players[p].haircut = s.players[p].standardFemale ? [1, 2, 3, 4, 6, 7].filter { $0 < HeroV4.offered }.randomElement()! : [0, 4, 5, 6, 7].filter { $0 < HeroV4.offered }.randomElement()!
+        s.players[p].setSkin(Double.random(in: 0...1))
+        if Int.random(in: 0..<6) == 0 { s.players[p].setHair(dyeHue: Double.random(in: 0...1), shade: Double.random(in: -0.2...0.4)) }
+        else { s.players[p].setHair(natural: Double.random(in: 0...1)) }
+        for slot in Player.outfitSlots { s.players[p].setOutfit(slot, hue: Double.random(in: 0...1), shade: Double.random(in: -0.6...0.7)) }
         s.savePlayers()
     }
 
@@ -352,11 +405,8 @@ final class TennisMenu {
         guard let launch, launch.mode == .tutorial else { return }
         let first = !progress.finishedTutorial(launch.sport)
         progress.completeTutorial(launch.sport)
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(4))
-            if session.active { session.end() }
-            if launch.sport == .tennis && first { tell(TennisStory.tutorialDone, then: .hub(.tennis)) }
-        }
+        session.end()
+        if launch.sport == .tennis && first { tell(TennisStory.tutorialDone, then: .hub(.tennis)) }
     }
 
     // MARK: Story
@@ -385,16 +435,20 @@ final class TennisMenu {
         story = []; storyIndex = 0
         switch afterStory {
         case .play(let launch): begin(launch)
+        case .round(let round): play(round: round)
         case .results: show(.results)
         case .hub(let sport): show(.hub(sport))
         }
     }
+
+    func openCharacterEditor() { classic = false; show(.character) }
 
     // MARK: Matches
 
     /// Play: straight to the TV if one is connected, otherwise ask to connect one (or play on
     /// the phone itself).
     func begin(_ launch: MenuLaunch, onPhone: Bool = false) {
+        if screen != .connect && screen != .loading { launchOrigin = screen }
         self.launch = launch; result = nil
         guard onPhone || session.displayConnected else { show(.connect); return }
         show(.loading)
@@ -418,23 +472,59 @@ final class TennisMenu {
         if connected, screen == .connect, let launch { begin(launch) }
     }
 
-    /// Unity reported the end of a match. Its own results card plays first; then the session
-    /// closes and the menu shows where that leaves the draw.
+    /// Record the result once, then keep it visible until the phone's Next button is tapped.
     func matchFinished(won: Bool, score: String) {
-        guard let launch else { return }
+        guard session.active, let launch else { return }
         progress.recordMatch(won: won)
         if launch.mode == .campaign, let round = launch.round {
             campaign.record(round: round, won: won)
             result = MatchResult(won: won, score: score, round: round)
         }
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(5))
-            if session.active { session.end() }
+        // Keep the TV result visible until the player taps Next on the phone.
+    }
+
+    /// Explicit device-launch recovery, used only when requested by the player.
+    func resumeCampaign(round: Int) {
+        progress.completeTutorial(.tennis)
+        for completed in 0..<min(max(0, round), TennisCampaign.draw.count) {
+            campaign.record(round: completed, won: true)
+            campaign.markSeen("win\(completed)")
         }
+        show(.campaign)
     }
 
     /// The game session closed (finished, quit, or failed to load).
+    /// What the phone's post-match panel chose.
+    enum AfterMatch { case next, replay, menu }
+    private var afterMatch: AfterMatch = .menu
+
+    /// The post-match panel on the phone: next match, replay, or back to the menus.
+    func finishMatch(_ choice: AfterMatch) {
+        afterMatch = choice
+        session.end()
+    }
+
+    /// Which post-match choices make sense for the match just played.
+    var afterMatchChoices: [AfterMatch] {
+        guard let launch else { return [.menu] }
+        if launch.mode == .campaign, let result {
+            return result.won && !campaign.champion ? [.next, .replay, .menu] : [.replay, .menu]
+        }
+        return [.replay, .menu]
+    }
+
     func sessionEnded() {
+        let choice = afterMatch; afterMatch = .menu
+        if choice == .replay, let launch { result = nil; begin(launch, onPhone: !session.displayConnected); return }
+        if choice == .next, let r = result, r.won, !campaign.champion {
+            // A phone Next is an explicit request to play, not a second results/story menu.
+            let next = campaign.nextRound
+            campaign.markSeen("win\(r.round)")
+            result = nil
+            SportsDiagnostics.write("postMatch next: launching round \(next)")
+            begin(MenuLaunch(round: next), onPhone: !session.displayConnected)
+            return
+        }
         if let result {
             // The story carries on after the match: the first win of each round once, a
             // loss every time (it is short, and it repeats the tip).
@@ -458,7 +548,7 @@ final class TennisMenu {
     /// Tests: put the menu in a given state without playing through to it.
     func debugShow(_ screen: MenuScreen, launch: MenuLaunch? = nil, result: MatchResult? = nil, row: Int = 0, column: Int = 0,
                    tab: SettingsTab = .gameplay, page: Int = 0) {
-        self.launch = launch; self.result = result; settingsTab = tab; howToPage = page; lessonCard = page
+        self.launch = launch; self.result = result; launchOrigin = nil; settingsTab = tab; howToPage = page; lessonCard = page
         self.screen = screen; self.row = row; self.column = column; notice = ""
     }
     func debugStory(_ lines: [StoryLine], index: Int = 0) {

@@ -1,0 +1,1 @@
+{"task_id":"c6ce17c5-c78d-4041-a95a-9769384ebbf4","type":"mesh_segmentation","status":"success","credits_consumed":40,"output_dir":"long/seg/tripo-out/seg-long-c6ce17c5","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"long/seg/tripo-out/seg-long-c6ce17c5/model.glb","preview":"long/seg/tripo-out/seg-long-c6ce17c5/preview.png"}

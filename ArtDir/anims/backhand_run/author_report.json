@@ -1,0 +1,119 @@
+{
+  "source": "Hand-keyed in Blender using Eyes Japan Backhand Hard Hit timing; no Owned v1 curves",
+  "source_file": "tennis-11-backhand hardhit-yamaoka.c3d",
+  "source_frames": [
+    880,
+    1408
+  ],
+  "eyes_contact_reference_seconds": 1.8666666666666667,
+  "authored_contact_seconds": 1.1,
+  "run_changes": {
+    "RunForward": {
+      "pump_degrees": [
+        -27.0,
+        27.0
+      ],
+      "elbow_flexion_degrees": [
+        78,
+        94
+      ],
+      "pre_clearance_cadence": true
+    },
+    "RunLeft": {
+      "pump_degrees": [
+        -18.0,
+        18.0
+      ],
+      "elbow_flexion_degrees": [
+        78,
+        94
+      ],
+      "pre_clearance_cadence": true
+    }
+  },
+  "backhand_landmarks": [
+    {
+      "frame": 0,
+      "wrist": [
+        0.3668851852416992,
+        0.8995406031608582,
+        0.3223484754562378
+      ],
+      "racket_hoop_center_approx": [
+        0.42337509989738464,
+        1.1110255718231201,
+        0.6511462926864624
+      ],
+      "hip_yaw": 0,
+      "chest_yaw": 0
+    },
+    {
+      "frame": 25,
+      "wrist": [
+        -0.14870008826255798,
+        1.0396467447280884,
+        0.30005621910095215
+      ],
+      "racket_hoop_center_approx": [
+        -0.4397096335887909,
+        0.9120738506317139,
+        0.06539998948574066
+      ],
+      "hip_yaw": -24.54051082531135,
+      "chest_yaw": -56.93398511472233
+    },
+    {
+      "frame": 33,
+      "wrist": [
+        -0.19999998807907104,
+        1.0,
+        0.36000001430511475
+      ],
+      "racket_hoop_center_approx": [
+        -0.5574549436569214,
+        0.9312049150466919,
+        0.5133564472198486
+      ],
+      "hip_yaw": -10,
+      "chest_yaw": -38
+    },
+    {
+      "frame": 44,
+      "wrist": [
+        0.3400000035762787,
+        1.2300000190734863,
+        0.26999998092651367
+      ],
+      "racket_hoop_center_approx": [
+        0.1809002161026001,
+        1.2596440315246582,
+        0.6303238868713379
+      ],
+      "hip_yaw": 18.0,
+      "chest_yaw": 32.0
+    },
+    {
+      "frame": 81,
+      "wrist": [
+        0.3668851852416992,
+        0.8995406031608582,
+        0.3223484754562378
+      ],
+      "racket_hoop_center_approx": [
+        0.42337509989738464,
+        1.1110255718231201,
+        0.6511462926864624
+      ],
+      "hip_yaw": 0.0,
+      "chest_yaw": 0.0
+    }
+  ],
+  "unchanged_clips": [
+    "Ready",
+    "JumpServe",
+    "Forehand",
+    "RunRight",
+    "Volley",
+    "Smash"
+  ]
+}

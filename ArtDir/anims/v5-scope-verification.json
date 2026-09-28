@@ -1,0 +1,12 @@
+{
+  "unchanged_meshes": {
+    "Shirt_Default": true,
+    "Shoes_Default": true,
+    "Body_EyeSphere_L": true,
+    "Body_EyeSphere_R": true
+  },
+  "body_coordinates_changed_outside_leg_region": 0,
+  "body_leg_vertices_changed": 4305,
+  "skeleton_unchanged": true,
+  "passed": true
+}

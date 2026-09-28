@@ -22,6 +22,31 @@ namespace GolfArcade.PlayTests
             Simulate(game, 6);
         }
 
+        [UnityTest, Timeout(120000)] public IEnumerator CustomizedCharacterKeepsRigAndRacket()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single); yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>();
+            game.ManualSimulation=true;
+            game.ApplyOutfit(TennisLook.Kit.From("E0243C","1E2A6E","9EE63A","8A4FFF",4));
+            game.Player.Customize(4,2,1,1,3,3);
+            Assert.IsNotNull(game.Player.GetComponent<TennisCustomization>());
+            Assert.AreEqual(Vector3.one,game.Player.transform.localScale, "Cosmetics must not change gameplay reach");
+            var head=System.Array.Find(game.Player.GetComponentsInChildren<Transform>(),t=>t.name.EndsWith("Curls"));
+            Assert.IsNotNull(head);
+            var camera=new GameObject("Customization review camera").AddComponent<Camera>();
+            camera.transform.position=game.Player.transform.position+new Vector3(0,1.1f,3.3f);
+            camera.transform.LookAt(game.Player.transform.position+Vector3.up*.95f);
+            camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.05f,.08f,.13f);
+            var target=new RenderTexture(600,800,24);camera.targetTexture=target;
+            yield return null;camera.Render();RenderTexture.active=target;
+            var image=new Texture2D(600,800,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,600,800),0,0);image.Apply();
+            System.IO.File.WriteAllBytes("/tmp/customization-unity-player.png",image.EncodeToPNG());
+            RenderTexture.active=null;camera.targetTexture=null;Object.Destroy(target);Object.Destroy(image);Object.Destroy(camera.gameObject);
+            var position=game.Player.SweetSpot.position;
+            Assert.IsFalse(float.IsNaN(position.x));
+            game.RequestSwing(.6f);
+        }
+
         [UnityTest, Timeout(180000)] public IEnumerator CompleteTheWholeLessonWithRealShotsAndNoSkipping()
         {
             yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single); yield return null;

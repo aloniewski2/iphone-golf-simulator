@@ -1,0 +1,1 @@
+{"task_id":"ea14b95f-5727-4869-9aed-b5e17afeb4ef","type":"mesh_segmentation","status":"success","credits_consumed":40,"output_dir":"curly/seg/tripo-out/seg-curly-ea14b95f","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"curly/seg/tripo-out/seg-curly-ea14b95f/model.glb","preview":"curly/seg/tripo-out/seg-curly-ea14b95f/preview.png"}

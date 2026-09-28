@@ -11,6 +11,16 @@ namespace GolfArcade.EditorTools
 
         void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith("Assets/Resources/Tennis/Customization/")) {
+                var custom=(TextureImporter)assetImporter;
+                custom.textureType=TextureImporterType.Default;
+                custom.sRGBTexture=!assetPath.Contains("Mask");
+                custom.alphaIsTransparency=false;
+                custom.maxTextureSize=512;
+                custom.mipmapEnabled=true;
+                custom.textureCompression=TextureImporterCompression.Uncompressed;
+                return;
+            }
             if (!assetPath.StartsWith(Folder) && !assetPath.StartsWith(Island)) return;
             var t = (TextureImporter)assetImporter;
             bool normal = assetPath.EndsWith("_Normal.png");

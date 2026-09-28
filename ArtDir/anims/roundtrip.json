@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "Ready_frame": 38,
+  "reimported_frame": 39,
+  "meshes": {
+    "Body_EyeSphere_L": {
+      "max_error_m": 4.3213367462158203e-07,
+      "mean_error_m": 3.199570645116203e-07
+    },
+    "Body_EyeSphere_R": {
+      "max_error_m": 4.22060765004062e-07,
+      "mean_error_m": 3.0897155928693626e-07
+    },
+    "Hair_Default": {
+      "max_error_m": 5.29987175923452e-07,
+      "mean_error_m": 3.1497226103756185e-07
+    },
+    "Hat_Visor": {
+      "max_error_m": 5.495782033904106e-07,
+      "mean_error_m": 3.406974038275386e-07
+    },
+    "Shirt_Default": {
+      "max_error_m": 2.7191870685783215e-05,
+      "mean_error_m": 5.246945313986481e-06
+    },
+    "Shorts_Default": {
+      "max_error_m": 3.6085739338886924e-06,
+      "mean_error_m": 1.3835807068499754e-06
+    },
+    "Shoes_Default": {
+      "max_error_m": 0.00010026214295066893,
+      "mean_error_m": 6.367081287260739e-05
+    },
+    "Body_Skin": {
+      "max_error_m": 3.84933955501765e-05,
+      "mean_error_m": 1.5586181312533383e-05
+    }
+  }
+}

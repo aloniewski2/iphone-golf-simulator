@@ -1,0 +1,383 @@
+{
+  "raw": {
+    "Backhand_Raw": {
+      "hip_horizontal_range_m": [
+        0.9814019314944744,
+        0.6029695197939873
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.9134087264537811,
+          0.5494683533906937
+        ],
+        "R": [
+          0.7891019582748413,
+          0.6026805266737938
+        ]
+      },
+      "min_wrist_distance_m": 0.2427258905105684,
+      "frames": 133,
+      "bones": 22
+    },
+    "Forehand_Raw": {
+      "hip_horizontal_range_m": [
+        0.12297030910849571,
+        0.20133373886346817
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.07075784914195538,
+          0.18160969018936157
+        ],
+        "R": [
+          0.3397051617503166,
+          0.10547134280204773
+        ]
+      },
+      "min_wrist_distance_m": 0.2555195703179135,
+      "frames": 133,
+      "bones": 22
+    },
+    "ReadyIdle_Raw": {
+      "hip_horizontal_range_m": [
+        0.11316807195544243,
+        0.060719314962625504
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.04236535727977753,
+          0.06124677509069443
+        ],
+        "R": [
+          0.07824788987636566,
+          0.03579166531562805
+        ]
+      },
+      "min_wrist_distance_m": 0.2773986396066851,
+      "frames": 73,
+      "bones": 22
+    },
+    "Serve_Raw": {
+      "hip_horizontal_range_m": [
+        1.3348175510764122,
+        0.8149532899260521
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          1.007699266076088,
+          0.4801968075335026
+        ],
+        "R": [
+          1.635954424738884,
+          1.0043907165527344
+        ]
+      },
+      "min_wrist_distance_m": 0.32228504613674835,
+      "frames": 133,
+      "bones": 22
+    },
+    "Volley_Raw": {
+      "hip_horizontal_range_m": [
+        0.7506472170352936,
+        0.5100788176059723
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.7338252067565918,
+          0.5391989052295685
+        ],
+        "R": [
+          0.5193734616041183,
+          0.6359986066818237
+        ]
+      },
+      "min_wrist_distance_m": 0.26554357513536864,
+      "frames": 133,
+      "bones": 22
+    }
+  },
+  "clean": {
+    "Backhand_Clean": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.006797417998313904,
+          0.0076505690813064575
+        ],
+        "R": [
+          0.006970956921577454,
+          0.0018851310014724731
+        ]
+      },
+      "min_wrist_distance_m": 0.09848854341885939,
+      "frames": 133,
+      "bones": 22
+    },
+    "Forehand_Clean": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.005698591470718384,
+          0.0059331320226192474
+        ],
+        "R": [
+          0.011416330933570862,
+          0.005659744143486023
+        ]
+      },
+      "min_wrist_distance_m": 0.2393833042344763,
+      "frames": 133,
+      "bones": 22
+    },
+    "ReadyIdle_Clean": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.00027114152908325195,
+          0.00023497268557548523
+        ],
+        "R": [
+          0.0005782544612884521,
+          0.00022504478693008423
+        ]
+      },
+      "min_wrist_distance_m": 0.27884979327786313,
+      "frames": 73,
+      "bones": 22
+    },
+    "Serve_Clean": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.011804506182670593,
+          0.0053486935794353485
+        ],
+        "R": [
+          0.008506432175636292,
+          0.00938665121793747
+        ]
+      },
+      "min_wrist_distance_m": 0.2455151541591551,
+      "frames": 133,
+      "bones": 22
+    },
+    "Volley_Clean": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.00024646520614624023,
+          0.00016288459300994873
+        ],
+        "R": [
+          0.0002731233835220337,
+          0.00015507638454437256
+        ]
+      },
+      "min_wrist_distance_m": 0.26843778536732,
+      "frames": 133,
+      "bones": 22
+    }
+  },
+  "owned": {
+    "Hero_Backhand_v1": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.006836935877799988,
+          0.007678952068090439
+        ],
+        "R": [
+          0.00685448944568634,
+          0.0017870888113975525
+        ]
+      },
+      "min_wrist_distance_m": 0.09999994795069607,
+      "frames": 109,
+      "bones": 22
+    },
+    "Hero_Forehand_v1": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.020966768264770508,
+          0.005961541086435318
+        ],
+        "R": [
+          0.024745941162109375,
+          0.006435960531234741
+        ]
+      },
+      "min_wrist_distance_m": 0.23984003302457915,
+      "frames": 109,
+      "bones": 22
+    },
+    "Hero_ReadyIdle_v1": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.005498513579368591,
+          0.0016242191195487976
+        ],
+        "R": [
+          0.0037003904581069946,
+          0.0008005760610103607
+        ]
+      },
+      "min_wrist_distance_m": 0.2766204645822994,
+      "frames": 73,
+      "bones": 22
+    },
+    "Hero_Serve_v1": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.01814591884613037,
+          0.006271105259656906
+        ],
+        "R": [
+          0.01506909728050232,
+          0.0127660371363163
+        ]
+      },
+      "min_wrist_distance_m": 0.24602527132203839,
+      "frames": 109,
+      "bones": 22
+    },
+    "Hero_Volley_v1": {
+      "hip_horizontal_range_m": [
+        0.0,
+        0.0
+      ],
+      "ankle_horizontal_range_m": {
+        "L": [
+          0.0014093518257141113,
+          0.00027422234416007996
+        ],
+        "R": [
+          0.0011723041534423828,
+          0.0008910819888114929
+        ]
+      },
+      "min_wrist_distance_m": 0.27515655414954,
+      "frames": 109,
+      "bones": 22
+    }
+  },
+  "windup_rotation_measurements": {
+    "Forehand": {
+      "UpperArm.R": {
+        "clean_degrees": 56.758800285819675,
+        "owned_degrees": 67.95126393908491,
+        "ratio": 1.1971934501240946
+      },
+      "LowerArm.R": {
+        "clean_degrees": 127.77982103038053,
+        "owned_degrees": 155.27500708145533,
+        "ratio": 1.2151762761080847
+      },
+      "Chest": {
+        "clean_degrees": 22.794132477442385,
+        "owned_degrees": 27.622828626283987,
+        "ratio": 1.2118394351537702
+      },
+      "Spine": {
+        "clean_degrees": 15.19779074294555,
+        "owned_degrees": 18.415771191147236,
+        "ratio": 1.2117400155476805
+      }
+    },
+    "Backhand": {
+      "UpperArm.R": {
+        "clean_degrees": 73.98393290085029,
+        "owned_degrees": 90.77369218271136,
+        "ratio": 1.2269379123756763
+      },
+      "LowerArm.R": {
+        "clean_degrees": 46.948944505483446,
+        "owned_degrees": 60.424736983189355,
+        "ratio": 1.2870307867332778
+      },
+      "Chest": {
+        "clean_degrees": 23.956386494915726,
+        "owned_degrees": 29.35205152411821,
+        "ratio": 1.2252286683698148
+      },
+      "Spine": {
+        "clean_degrees": 15.97319650620771,
+        "owned_degrees": 19.571012311890268,
+        "ratio": 1.2252408154050023
+      }
+    },
+    "Serve": {
+      "UpperArm.R": {
+        "clean_degrees": 81.62980375211347,
+        "owned_degrees": 98.07350466948668,
+        "ratio": 1.201442367389588
+      },
+      "LowerArm.R": {
+        "clean_degrees": 147.97697727405338,
+        "owned_degrees": 120.52390616940087,
+        "ratio": 0.8144774166199557
+      },
+      "Chest": {
+        "clean_degrees": 26.190179372400888,
+        "owned_degrees": 31.772182207445073,
+        "ratio": 1.2131334327907077
+      },
+      "Spine": {
+        "clean_degrees": 17.46231434905389,
+        "owned_degrees": 21.183271635282605,
+        "ratio": 1.213085001898979
+      }
+    },
+    "Volley": {
+      "UpperArm.R": {
+        "clean_degrees": 66.78956487448163,
+        "owned_degrees": 80.93752309859765,
+        "ratio": 1.2118288725297799
+      },
+      "LowerArm.R": {
+        "clean_degrees": 126.28615428154711,
+        "owned_degrees": 154.58107352216035,
+        "ratio": 1.2240540097335728
+      },
+      "Chest": {
+        "clean_degrees": 8.422111605151377,
+        "owned_degrees": 10.14159977587104,
+        "ratio": 1.2041635460717404
+      },
+      "Spine": {
+        "clean_degrees": 5.615262868094386,
+        "owned_degrees": 6.761564978761164,
+        "ratio": 1.2041404182838888
+      }
+    }
+  }
+}

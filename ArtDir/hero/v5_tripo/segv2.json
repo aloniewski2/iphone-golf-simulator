@@ -1,0 +1,1 @@
+{"task_id":"79bc4b6e-54be-447a-a036-348fec5cfe87","type":"mesh_segmentation","status":"success","credits_consumed":40,"output_dir":"segv2/tripo-out/hero-v5-hc-segv2-79bc4b6e","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"segv2/tripo-out/hero-v5-hc-segv2-79bc4b6e/model.glb","preview":"segv2/tripo-out/hero-v5-hc-segv2-79bc4b6e/preview.png"}

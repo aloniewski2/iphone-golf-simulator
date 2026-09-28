@@ -1,0 +1,5 @@
+JumpServe: frame=23 | face normal=(0.0000, 0.0000, 1.0000) | abs dot net=1.0000
+Forehand: frame=18 | face normal=(0.0000, 0.0000, 1.0000) | abs dot net=1.0000
+Backhand: frame=51 | face normal=(0.0000, 0.0000, 1.0000) | abs dot net=1.0000
+Volley: frame=36 | face normal=(0.0000, 0.0000, 1.0000) | abs dot net=1.0000
+Smash: frame=20 | face normal=(0.0000, 0.0000, 1.0000) | abs dot net=1.0000

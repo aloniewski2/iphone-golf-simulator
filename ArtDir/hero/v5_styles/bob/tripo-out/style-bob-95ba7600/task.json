@@ -1,0 +1,19 @@
+{
+  "task_id": "95ba7600-0d4d-4e3a-8a42-a2e1d8d5c3ae",
+  "type": "image_to_image",
+  "status": "success",
+  "input": {
+    "prompt": "Same stylized 3D toy character render, identical framing, camera, lighting and art style, same face, same white tennis visor and white polo shirt with navy and orange trim. Now a girl: golden blond chin-length rounded bob haircut with bangs under the visor, small eyelashes.",
+    "model_version": "seedream_v5"
+  },
+  "output_fields": [
+    "generated_image_url"
+  ],
+  "credits_consumed": 5,
+  "created_at": "2026-09-28T01:57:15.768160Z",
+  "completed_at": "2026-09-28T01:58:31.938255Z",
+  "files": [
+    "generated_image.png",
+    "preview.png"
+  ]
+}

@@ -17,11 +17,13 @@ namespace GolfArcade.Game
             public int version; public string session, action, sport, playerID, playerName,reason;
             public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,value2,difficulty=-1;
             // Tennis menu choice: "campaign" or "training", and the campaign round's opponent.
-            public string mode,opponent,opponentName,round;
+            public string mode,opponent,opponentName,round; public int ultimate;
             // The match format (sets to win, games per set) and the coach's changeover lines, "|"-separated.
             public int sets=1,games=3; public string coach;
             // The player's kit colours (hex, "" = the kit's own), coaching tips, TV edge margin.
-            public string shirt,shorts,accent,racket; public bool tips=true; public float overscan;
+            public int hairStyle=1,hairColor=1,faceShape,heightChoice=2,buildChoice=2,haircut=-1;
+            public float bodySize=-1;
+            public string shirt,shorts,accent,racket,skinHex,hairHex; public bool tips=true; public float overscan;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -109,10 +111,13 @@ namespace GolfArcade.Game
                     case "pause": SetPaused(true,m.reason); break;
                     case "resume": SetPaused(false); break;
                     case "end": StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
+                    case "ultimateSelect": if(tennis && paused) tennis.SelectUltimate(Mathf.RoundToInt(m.value)); break;
+                    case "ultimate": if(tennis && !paused) tennis.ToggleUltimate(); break;
+                    case "dive": if(tennis && !paused) tennis.RequestDive(); break;
                     case "refeed": if(tennis) tennis.Refeed(); break;
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
                     case "club": if(golf) golf.NativeClub(m.value<0?-1:1); break;
-                    case "sound": AudioListener.volume=m.value>0?1:0; break;
+                    case "sound": AudioListener.volume=m.value>0 && !Application.isBatchMode?1:0; break;
                     case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); break;
                     case "display": if(!loading) StartCoroutine(Present(true,"displayReady")); break;
                     case "touch": Touch=true; touch=true; if(golf) golf.Swing.Detector.Reset(); break;
@@ -136,7 +141,10 @@ namespace GolfArcade.Game
             loading=true; Ready=false; Active=true; session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0;
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
-            GolferStyle.SkinTone=m.skin; AudioListener.volume=m.sound?1:0; Haptics.Enabled=m.haptics;
+            GolferStyle.SkinTone=m.skin;
+            GolferStyle.Hair=m.hairStyle;GolferStyle.HairColor=m.hairColor;GolferStyle.Face=m.faceShape;GolferStyle.Height=m.heightChoice;GolferStyle.Size=m.bodySize<0?m.buildChoice/4f:m.bodySize;
+            GolferStyle.Outfit=TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin);
+            AudioListener.volume=m.sound && !Application.isBatchMode?1:0; Haptics.Enabled=m.haptics;   // automated runs stay silent
             Time.timeScale=1;
             // 60 everywhere; 120 only when asked for and the panel can actually show it.
             // A TV runs at 60: rendering faster only adds frames AirPlay has to drop, and a
@@ -165,10 +173,17 @@ namespace GolfArcade.Game
             if(tennis) { tennis.NativeControlled=true; tennis.AutoPlay=m.bench; if(m.difficulty>=0) tennis.OpponentDifficulty=Mathf.Clamp01(m.difficulty); tennis.SelectCharacter(m.female);
                 TennisCoach.TipsEnabled=m.tips;
                 tennis.ApplyOutfit(TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin));
+                tennis.Player.Customize(m.skin,m.hairStyle,m.hairColor,m.faceShape,m.heightChoice,m.buildChoice,m.bodySize,TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin));
+                // The locker's look on the visible Hero V4 (the gameplay rig above is hidden).
+                { var look=HeroKit.Style.From(m.skin,m.hairColor,m.hairStyle,TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin),m.haircut>=0?m.haircut:(m.female?1:0),m.female);
+                  // locker colour ranges: the exact skin / hair picked (else the preset index)
+                  if(!string.IsNullOrEmpty(m.skinHex)) look.SkinTint=HeroKit.Hex(m.skinHex);
+                  if(!string.IsNullOrEmpty(m.hairHex)) look.HairTint=HeroKit.Hex(m.hairHex);
+                  tennis.SetPlayerLook(look); }   // kept and re-applied on every rebuild
                 var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
                     : m.mode=="tutorial" ? TennisGame.Mode.Tutorial : TennisGame.Mode.Exhibition;
                 tennis.ConfigureMatch(mode,m.opponent,m.opponentName,m.round,m.sets,m.games,
-                    string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
+                    string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); tennis.SelectUltimate(m.ultimate); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress();
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
@@ -246,7 +261,7 @@ namespace GolfArcade.Game
         void SetPaused(bool value,string reason=null) {
             paused=value; PauseReason=value ? (string.IsNullOrEmpty(reason) ? "PAUSED — tap Ready on your phone" : reason) : null;
             if(value) TrackingWarning="";
-            if(!value) resumedAt=SportsClock();
+            if(!value) { resumedAt=SportsClock(); if(tennis) tennis.LockLoadout(); }
             Time.timeScale=value?0:1; Haptics.Release(); if(value && golf) golf.Swing.Detector.Reset();
         }
         void Update() {
@@ -298,6 +313,11 @@ namespace GolfArcade.Game
             // keeps the per-frame string building out of the hot path.
             if(Time.unscaledTime>=nextFeedback) {
                 nextFeedback=Time.unscaledTime+.25f;
+                if(tennis) Emit("abilities", string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.000}|{1}|{2:0.00}|{3}|{4}", tennis.PlayerUltimate, tennis.UltimateArmed?1:0, tennis.DiveCooldownLeft, !paused && tennis.CanDive?1:0, !paused && tennis.CanArmUltimate?1:0));
+                // Results are durable state, not a one-shot event that can be lost
+                // while the phone changes scenes or drains the bounded event queue.
+                if(tennis && tennis.Match.Complete)
+                    Emit("matchOver",(tennis.Match.PlayerWonMatch?"won|":"lost|")+tennis.Match.FinalScore);
                 string message=tennis?tennis.Feedback:golf?golf.NativeFeedback():"";
                 if(!ReferenceEquals(message,lastFeedback) || Time.unscaledTime>=nextHeartbeat) {
                     lastFeedback=message; nextHeartbeat=Time.unscaledTime+1;

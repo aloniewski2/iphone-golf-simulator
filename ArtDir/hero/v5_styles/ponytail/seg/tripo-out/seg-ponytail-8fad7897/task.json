@@ -1,0 +1,20 @@
+{
+  "task_id": "8fad7897-9c0e-41df-8612-ce8ebe733060",
+  "type": "mesh_segmentation",
+  "status": "success",
+  "input": {
+    "original_model_id": "18285073-f3e6-4d4f-915c-9f06c56db0fc"
+  },
+  "output_fields": [
+    "model_url",
+    "rendered_image_url"
+  ],
+  "credits_consumed": 40,
+  "created_at": "2026-09-28T02:03:47.944776Z",
+  "completed_at": "2026-09-28T02:05:35.596147Z",
+  "files": [
+    "model.glb",
+    "rendered_image.webp",
+    "preview.png"
+  ]
+}

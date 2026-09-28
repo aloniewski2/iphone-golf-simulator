@@ -1,0 +1,54 @@
+[
+  {
+    "title": "FOREHAND",
+    "source": "tennis-01-forehand-yamaoka.c3d",
+    "source_fps": 120.0,
+    "source_first_frame": 25,
+    "excerpt_frames": [
+      2231,
+      2759
+    ],
+    "peak_frame": 2447,
+    "valid_marker_fraction": 1.0,
+    "playback_speed": 1.0
+  },
+  {
+    "title": "BACKHAND \u00b7 HARD HIT",
+    "source": "tennis-11-backhand hardhit-yamaoka.c3d",
+    "source_fps": 120.0,
+    "source_first_frame": 22,
+    "excerpt_frames": [
+      880,
+      1408
+    ],
+    "peak_frame": 1096,
+    "valid_marker_fraction": 1.0,
+    "playback_speed": 1.0
+  },
+  {
+    "title": "FIRST SERVE",
+    "source": "tennis-15-first service-yamaoka.c3d",
+    "source_fps": 120.0,
+    "source_first_frame": 1,
+    "excerpt_frames": [
+      1207,
+      1735
+    ],
+    "peak_frame": 1423,
+    "valid_marker_fraction": 1.0,
+    "playback_speed": 1.0
+  },
+  {
+    "title": "FOREHAND VOLLEY",
+    "source": "tennis-05-forehand volley-yamaoka.c3d",
+    "source_fps": 120.0,
+    "source_first_frame": 1,
+    "excerpt_frames": [
+      1648,
+      2176
+    ],
+    "peak_frame": 1864,
+    "valid_marker_fraction": 1.0,
+    "playback_speed": 1.0
+  }
+]

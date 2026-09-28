@@ -9,7 +9,7 @@ struct TennisTVRoot: View {
             // the edge margin for TVs that crop.
             let scale = min(g.size.width / 1280, g.size.height / 720) * (1 - SportsSession.shared.overscan)
             ZStack {
-                MenuBackdrop(dim: TennisMenu.shared.screen == .title ? 0.1 : 0.45)
+                Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
                 TennisMenuScreen(compact: false)
                     .frame(width: 1280, height: 720)
                     .scaleEffect(scale)
@@ -25,7 +25,7 @@ struct TennisTVRoot: View {
 struct TennisPhoneMenu: View {
     var body: some View {
         ZStack {
-            MenuBackdrop(dim: TennisMenu.shared.screen == .title ? 0.1 : 0.55)
+            Club.lagoonDeep.ignoresSafeArea()
             TennisMenuScreen(compact: true)
         }
         .preferredColorScheme(.dark)
@@ -57,6 +57,11 @@ struct TennisRemote: View {
             .frame(maxWidth: .infinity).padding(.vertical, 14)
             .background(RoundedRectangle(cornerRadius: 20).fill(Arcade.navyDeep.opacity(0.7)))
             Spacer(minLength: 0)
+            if menu.screen == .story || menu.screen == .results {
+                ArcadeButton(title: "Next", icon: "arrow.right", focused: false,
+                             top: Arcade.sun, bottom: Arcade.sunDeep, size: 30) { menu.select() }
+                    .accessibilityIdentifier("menuNext")
+            }
             DPad(menu: menu)
             Spacer(minLength: 0)
             HStack(spacing: 40) {
@@ -73,6 +78,7 @@ struct TennisRemote: View {
 
     private var screenName: String {
         switch menu.screen {
+        case .party: "PLAY WITH FRIENDS"; case .quickPlay: "QUICK PLAY"
         case .title: "TITLE"; case .main: "MAIN MENU"; case .gameSelect: "CHOOSE YOUR GAME"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "EXHIBITION"; case .training: "TRAINING"
@@ -173,7 +179,9 @@ struct TennisRacketController: View {
         VStack(spacing: 14) {
             if session.ready && session.loading.finished { Scoreline(session: session) }
             if let step = session.tutorialStep { TutorialPanel(step: step, onSkip: { session.skipTutorialStep() }) }
-            if !session.ready || !session.loading.finished {
+            if session.finishedMatch != nil {
+                MatchFinishControls(session: session)
+            } else if !session.ready || !session.loading.finished {
                 // The same loading screen as the TV: tips, how-to cards, the flowing bar.
                 LoadingScreen(menu: .shared, compact: true).padding(-24)
             } else if !session.touch && !session.axisGate.locked {
@@ -213,7 +221,11 @@ struct TennisRacketController: View {
                     }
                 }
             }
-            if session.ready && session.paused && !session.measuringDelay && (session.touch || session.axisGate.locked) {
+            if session.ready && session.loading.finished && session.finishedMatch == nil {
+                if !session.loadoutLocked { TennisUltimatePicker(session: session) }
+                else if !session.paused && session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
+            }
+            if session.finishedMatch == nil && session.ready && session.paused && !session.measuringDelay && (session.touch || session.axisGate.locked) {
                 Text(session.status).font(Arcade.font(14, .semibold)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
                 if !session.delayTip.isEmpty {
                     Label(session.delayTip, systemImage: "tv.badge.wifi")
@@ -590,5 +602,148 @@ struct TutorialPanel: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 18).fill(LinearGradient(colors: [Arcade.gold, Arcade.goldDeep], startPoint: .top, endPoint: .bottom)))
+    }
+}
+
+/// Shared by the regular controller, classic controller and landscape Unity overlay.
+/// Never exposes an advance action before Unity confirms a completed match.
+struct MatchFinishControls: View {
+    @Bindable var session: SportsSession
+    var compact = false
+    @State private var pop = false
+    var body: some View {
+        if let result = session.finishedMatch {
+            let menu = TennisMenu.shared
+            let opponent = menu.loadingOpponent
+            ScrollView {
+            VStack(spacing: compact ? 8 : 18) {
+                if !compact {
+                    ClubArt(name: result.won ? "trophy" : "whistle").frame(width: 140, height: 140)
+                        .scaleEffect(pop ? 1 : 0.4).rotationEffect(.degrees(pop ? 0 : -20))
+                }
+                Text(result.won ? "Victory!" : "So close!").font(Club.display(compact ? 28 : 56)).foregroundStyle(result.won ? Club.sun : .white)
+                Text(result.score.isEmpty ? " " : result.score).font(Club.title(compact ? 16 : 28)).foregroundStyle(.white)
+                if !compact, let opponent {
+                    Text(result.won ? "You beat \(opponent.name)" : "\(opponent.name) takes this one")
+                        .font(Club.ui(17, 600)).foregroundStyle(.white.opacity(0.8))
+                }
+                Spacer(minLength: compact ? 0 : 10)
+                ForEach(Array(menu.afterMatchChoices.enumerated()), id: \.offset) { i, choice in
+                    let (title, icon, style): (String, String, ClubButton.Style) = switch choice {
+                    case .next: ("Next match", "arrow.right", .primary)
+                    case .replay: (result.won ? "Replay" : "Rematch", "arrow.counterclockwise", i == 0 ? .primary : .secondary)
+                    case .menu: (menu.launch?.mode == .campaign ? "Adventure" : "Menu", "list.bullet", .quiet)
+                    }
+                    Button { session.advanceAfterMatch(choice) } label: {
+                        HStack {
+                            Text(title).font(.system(size: compact ? 18 : 24, weight: .bold))
+                            Spacer()
+                            Image(systemName: icon)
+                        }
+                        .foregroundStyle(style == .quiet ? Color.white : Club.ink)
+                        .padding(.horizontal, 22).frame(maxWidth: .infinity, minHeight: compact ? 48 : 60)
+                        .background(style == .primary ? Club.sun : style == .secondary ? Club.cream : .white.opacity(0.16), in: RoundedRectangle(cornerRadius: 16))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(title)
+                    .accessibilityIdentifier(choice == .next ? "postGameNext" : choice == .replay ? "postGameReplay" : "postGameMenu")
+                }
+            }
+            .padding(compact ? 8 : 24)
+            .frame(maxWidth: .infinity)
+            }
+            .frame(maxWidth: .infinity, maxHeight: compact ? nil : .infinity)
+            .background(compact ? nil : LinearGradient(colors: [Club.lagoon, Club.lagoonDeep], startPoint: .top, endPoint: .bottom).clipShape(RoundedRectangle(cornerRadius: 28)))
+            .onAppear { withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { pop = true }; UINotificationFeedbackGenerator().notificationOccurred(.success) }
+        }
+    }
+}
+
+
+/// Shared by the AirPlay racket screen and on-phone preview. Choices lock at first Ready.
+struct TennisUltimatePicker: View {
+    @Bindable var session: SportsSession
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CHOOSE YOUR ULTIMATE").font(Arcade.font(18, .heavy)).foregroundStyle(.white)
+            ForEach(TennisUltimate.allCases) { choice in
+                let on = session.ultimateChoice == choice
+                Button { session.chooseUltimate(choice) } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: choice.icon).font(.system(size: 26, weight: .heavy)).frame(width: 36)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(choice.title).font(Arcade.font(18, .heavy))
+                            Text(choice.detail).font(Arcade.font(13, .semibold)).opacity(0.85)
+                                .fixedSize(horizontal: false, vertical: true).multilineTextAlignment(.leading)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: on ? "checkmark.circle.fill" : "circle").font(.system(size: 22))
+                    }
+                    .foregroundStyle(.white).padding(12)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(on ? Color.orange.opacity(0.85) : Color.white.opacity(0.12)))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(on ? 0.9 : 0.25), lineWidth: on ? 3 : 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(choice.title). \(choice.detail)").accessibilityAddTraits(on ? .isSelected : [])
+                .accessibilityIdentifier("tennisUltimate_\(choice.rawValue)")
+            }
+            Text("Fill the meter with good returns, tap ULTIMATE, and your next hit fires it. Everyone can dive. Locked once you press Ready.")
+                .font(Arcade.font(12, .semibold)).foregroundStyle(.white.opacity(0.75)).fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityIdentifier("tennisUltimatePicker")
+        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+struct TennisAbilityControls: View {
+    let session: SportsSession
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 14) {
+                AbilityButton(title: "DIVE", icon: "figure.fall",
+                              caption: session.diveCooldown > 0 ? "\(Int(ceil(session.diveCooldown)))s" : "Reach it",
+                              fill: 1, colour: .blue, lit: false,
+                              enabled: !session.paused && session.canDive) { session.dive() }
+                    .accessibilityLabel("Dive toward the ball").accessibilityIdentifier("tennisDive")
+                AbilityButton(title: session.ultimateArmed ? "ARMED" : "ULTIMATE", icon: "bolt.fill",
+                              caption: session.ultimateArmed ? "Next hit fires · tap to cancel"
+                                  : session.ultimateMeter >= 1 ? session.ultimateChoice.title : "\(Int(session.ultimateMeter * 100))%",
+                              fill: session.ultimateMeter, colour: .orange, lit: session.ultimateArmed,
+                              enabled: !session.paused && (session.canArmUltimate || session.ultimateArmed)) { session.armUltimate() }
+                    .accessibilityLabel("\(session.ultimateArmed ? "Cancel" : "Arm") \(session.ultimateChoice.title)")
+                    .accessibilityIdentifier("tennisUltimate")
+            }
+        }
+    }
+}
+
+/// A big square thumb button for mid-rally abilities; the fill shows charge (ultimate meter).
+private struct AbilityButton: View {
+    let title: String, icon: String, caption: String
+    let fill: Double, colour: Color, lit: Bool, enabled: Bool
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            ZStack(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: 22).fill(colour.opacity(0.25))
+                GeometryReader { g in
+                    RoundedRectangle(cornerRadius: 22).fill(colour.opacity(lit ? 1 : 0.85))
+                        .frame(height: g.size.height * min(1, max(0, fill)))
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                }
+                VStack(spacing: 4) {
+                    Image(systemName: icon).font(.system(size: 34, weight: .heavy))
+                    Text(title).font(Arcade.font(22, .heavy))
+                    Text(caption).font(Arcade.font(13, .bold)).opacity(0.85).lineLimit(1).minimumScaleFactor(0.6)
+                }.foregroundStyle(.white).frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(maxWidth: .infinity, minHeight: 130)
+            .clipShape(RoundedRectangle(cornerRadius: 22))
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(lit ? 1 : 0.35), lineWidth: lit ? 4 : 2))
+            .opacity(enabled ? 1 : 0.45)
+        }
+        .buttonStyle(.plain).disabled(!enabled)
     }
 }

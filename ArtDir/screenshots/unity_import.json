@@ -1,0 +1,7 @@
+{
+    "humanoid": true,
+    "avatarValid": true,
+    "clipHuman": true,
+    "renderers": 8,
+    "clip": "Idle"
+}

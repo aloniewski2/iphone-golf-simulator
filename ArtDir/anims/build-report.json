@@ -1,0 +1,27 @@
+{
+  "clips": {
+    "Idle": {
+      "source": "Mixamo_BreathingIdle.fbx",
+      "frames": [
+        1,
+        299
+      ],
+      "fps": 30,
+      "duration_seconds": 9.933333333333334
+    },
+    "Ready": {
+      "source": "Mixamo_ReadyIdle.fbx",
+      "frames": [
+        1,
+        76
+      ],
+      "fps": 30,
+      "duration_seconds": 2.5
+    }
+  },
+  "rest_matrix_error": {
+    "Idle": 0.8851036429405214,
+    "Ready": 0.8851036429405214
+  },
+  "method": "Mixamo recognized and retargeted uploaded shared 22-bone skeleton; no second skeleton."
+}

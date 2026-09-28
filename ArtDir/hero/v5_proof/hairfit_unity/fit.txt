@@ -1,0 +1,16 @@
+boy Swept Hair_Default_Free: minDistToHeadBone=0.089 meanOffsetFromHead=(-0.005, 0.325, -0.031) top=0.534 bones=42 root=Root
+boy Ponytail Hair_Ponytail_Free: minDistToHeadBone=0.079 meanOffsetFromHead=(-0.015, 0.239, -0.138) top=0.520 bones=42 root=Root
+boy Bob Hair_Bob_Free: minDistToHeadBone=0.032 meanOffsetFromHead=(-0.022, 0.220, -0.049) top=0.469 bones=42 root=Root
+boy Long Hair_Long_Free: minDistToHeadBone=0.053 meanOffsetFromHead=(-0.012, 0.140, -0.066) top=0.505 bones=42 root=Root
+boy Curly Hair_Curly_Free: minDistToHeadBone=0.068 meanOffsetFromHead=(-0.005, 0.239, -0.072) top=0.454 bones=42 root=Root
+boy Bald Hair_Bald: minDistToHeadBone=0.039 meanOffsetFromHead=(-0.002, 0.121, -0.013) top=0.332 bones=42 root=Root
+boy Buzz Hair_Buzz: minDistToHeadBone=0.043 meanOffsetFromHead=(-0.002, 0.118, -0.016) top=0.334 bones=42 root=Root
+boy Waves Hair_Waves: minDistToHeadBone=0.044 meanOffsetFromHead=(-0.002, 0.118, -0.016) top=0.335 bones=42 root=Root
+girl Swept Hair_Default_Free: minDistToHeadBone=0.089 meanOffsetFromHead=(-0.005, 0.325, -0.031) top=0.534 bones=42 root=Root
+girl Ponytail Hair_Ponytail_Free: minDistToHeadBone=0.079 meanOffsetFromHead=(-0.015, 0.239, -0.138) top=0.520 bones=42 root=Root
+girl Bob Hair_Bob_Free: minDistToHeadBone=0.032 meanOffsetFromHead=(-0.022, 0.220, -0.049) top=0.469 bones=42 root=Root
+girl Long Hair_Long_Free: minDistToHeadBone=0.053 meanOffsetFromHead=(-0.012, 0.140, -0.066) top=0.505 bones=42 root=Root
+girl Curly Hair_Curly_Free: minDistToHeadBone=0.068 meanOffsetFromHead=(-0.005, 0.239, -0.072) top=0.454 bones=42 root=Root
+girl Bald Hair_Bald: minDistToHeadBone=0.039 meanOffsetFromHead=(-0.002, 0.121, -0.013) top=0.332 bones=42 root=Root
+girl Buzz Hair_Buzz: minDistToHeadBone=0.043 meanOffsetFromHead=(-0.002, 0.118, -0.016) top=0.334 bones=42 root=Root
+girl Waves Hair_Waves: minDistToHeadBone=0.044 meanOffsetFromHead=(-0.002, 0.118, -0.016) top=0.335 bones=42 root=Root

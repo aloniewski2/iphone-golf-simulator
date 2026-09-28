@@ -1,0 +1,8 @@
+Forehand: real GameTime PlayStroke motion=0.515m
+Backhand: real GameTime PlayStroke motion=0.371m
+Serve: real GameTime PlayStroke motion=1.236m
+Volley: real GameTime PlayStroke motion=0.146m
+RunForward: real GameTime PlayStroke motion=0.045m
+RunRight: real GameTime PlayStroke motion=0.140m
+RunLeft: real GameTime PlayStroke motion=0.158m
+Smash: real GameTime PlayStroke motion=1.244m

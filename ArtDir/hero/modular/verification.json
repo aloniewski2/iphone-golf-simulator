@@ -1,0 +1,125 @@
+{
+  "source_triangles": 46838,
+  "default_triangles": 46838,
+  "missing_approved_triangles": 0,
+  "extra_visible_triangles": 0,
+  "assembled_armatures": 1,
+  "wrong_armature_modifiers": [],
+  "bad_weight_sums": 0,
+  "unweighted_vertices": 0,
+  "sockets": true,
+  "exports": {
+    "Hero_01_Body.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Body_EyeSphere_L",
+        "Body_EyeSphere_R",
+        "Body_Skin"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 21037,
+      "actions": 0,
+      "materials": [
+        "Hero_01_EyeCornea",
+        "skin_BlondHair",
+        "skin_CoveredFoundation",
+        "skin_MatteCloth",
+        "skin_WarmSkin"
+      ]
+    },
+    "Hero_01_Body_DefaultCoverage.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Body_EyeSphere_L",
+        "Body_EyeSphere_R",
+        "Body_Skin"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 7768,
+      "actions": 0,
+      "materials": [
+        "Hero_01_EyeCornea",
+        "skin_BlondHair",
+        "skin_CoveredFoundation",
+        "skin_MatteCloth",
+        "skin_WarmSkin"
+      ]
+    },
+    "Hero_01_Hair_Default.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Hair_Default"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 3176,
+      "actions": 0,
+      "materials": [
+        "Hero_01_BlondHair",
+        "Hero_01_MatteCloth",
+        "Hero_01_Visor",
+        "Hero_01_WarmSkin"
+      ]
+    },
+    "Hero_01_Hat_Visor.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Hat_Visor"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 1706,
+      "actions": 0,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_Visor"
+      ]
+    },
+    "Hero_01_Shirt_Default.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Shirt_Default"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 3810,
+      "actions": 0,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ]
+    },
+    "Hero_01_Shoes_Default.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Shoes_Default"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 5175,
+      "actions": 0,
+      "materials": [
+        "Hero_01_MatteCloth"
+      ]
+    },
+    "Hero_01_Shorts_Default.fbx": {
+      "armatures": 1,
+      "meshes": [
+        "Shorts_Default"
+      ],
+      "bone_count": 22,
+      "skeleton_signature": "74c19ef860344e97257bc43acd934967ec647f7416d82cb04bea7e58e4d4d3ac",
+      "vertices": 3081,
+      "actions": 0,
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ]
+    }
+  },
+  "identical_skeletons": true,
+  "full_body_has_foundation": true,
+  "passed": true
+}

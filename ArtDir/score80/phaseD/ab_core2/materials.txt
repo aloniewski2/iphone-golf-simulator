@@ -1,0 +1,19 @@
+hw=0 liner=False verts=241 mat=Hero_01_HairTuft (solid) (kit) (liner) cull=0
+   Body_Skin enabled=True mesh=Body_Skin (wound) mats=skin_WarmSkin(cull 0)|skin_MatteCloth(cull 0)|Hero_01_HairTuft (layer) (kit)(cull 2)|skin_CoveredFoundation (scalp) (kit)(cull 0)
+   HairCore enabled=True mesh= mats=Hero hair core (kit)(cull 0)
+   HatLiner enabled=True mesh= mats=Hero_01_HairTuft (solid) (kit) (liner)(cull 0)
+   Hair_Default enabled=True mesh=Hair_Default (wound) mats=Hero_01_HairTuft (solid) (kit)(cull 2)|Hero hair interior (kit)(cull 1)
+   Hat_Visor enabled=False mesh=Hat_Visor mats=Hero_01_MatteCloth(cull 0)|Hero_01_Visor(cull 0)
+hw=1 liner=True verts=241 mat=Hero_01_HairTuft (solid) (kit) (kit) (liner) cull=0
+   Body_Skin enabled=True mesh=Body_Skin (wound) mats=skin_WarmSkin(cull 0)|skin_MatteCloth(cull 0)|Hero_01_HairTuft (layer) (kit) (kit)(cull 2)|skin_CoveredFoundation (scalp) (kit) (kit)(cull 0)
+   HairCore enabled=True mesh= mats=Hero hair core (kit) (kit)(cull 0)
+   HatLiner enabled=True mesh= mats=Hero_01_HairTuft (solid) (kit) (kit) (liner)(cull 0)
+   Hair_Default enabled=True mesh=Hair_Default (wound) mats=Hero_01_HairTuft (solid) (kit) (kit)(cull 2)|Hero hair interior (kit) (kit)(cull 1)
+   Hat_Visor enabled=True mesh=Hat_Visor mats=Hero_01_MatteCloth(cull 0)|Hero_01_Visor(cull 0)
+hw=3 liner=True verts=241 mat=Hero_01_HairTuft (solid) (kit) (kit) (kit) (liner) cull=0
+   Body_Skin enabled=True mesh=Body_Skin (wound) mats=skin_WarmSkin(cull 0)|skin_MatteCloth(cull 0)|Hero_01_HairTuft (layer) (kit) (kit) (kit)(cull 2)|skin_CoveredFoundation (scalp) (kit) (kit) (kit)(cull 0)
+   HairCore enabled=True mesh= mats=Hero hair core (kit) (kit) (kit)(cull 0)
+   HatLiner enabled=True mesh= mats=Hero_01_HairTuft (solid) (kit) (kit) (kit) (liner)(cull 0)
+   Hair_Default enabled=True mesh=Hair_Default (wound) mats=Hero_01_HairTuft (solid) (kit) (kit) (kit)(cull 2)|Hero hair interior (kit) (kit) (kit)(cull 1)
+   Hat_Sweatband enabled=True mesh=Hat_Sweatband mats=Cos_Band_White(cull 0)
+   Hat_SweatbandStripe enabled=True mesh=Hat_SweatbandStripe mats=Cos_Band_Orange(cull 0)

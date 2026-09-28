@@ -1,0 +1,27 @@
+{
+  "armatures": 1,
+  "height": 1.7465752363204956,
+  "head_chin_z": 1.313,
+  "atlas": "1024 x 1024",
+  "meshes": {
+    "Hero_01_Body": {
+      "vertices": 14315,
+      "triangles": 28174
+    },
+    "Hero_01_Hair": {
+      "vertices": 3458,
+      "triangles": 6768
+    },
+    "Hero_01_Visor": {
+      "vertices": 864,
+      "triangles": 1616
+    }
+  },
+  "sockets": [
+    "Hat",
+    "Hand_R",
+    "Hand_L",
+    "Back",
+    "FaceExtra"
+  ]
+}

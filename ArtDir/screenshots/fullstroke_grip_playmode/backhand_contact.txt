@@ -1,0 +1,1 @@
+frame=51; time=1.70s; anatomical left = negative model X; wrist=(-0.0638, 0.9342, 0.3452); hoop center=(-0.4870, 1.0590, 0.4000)

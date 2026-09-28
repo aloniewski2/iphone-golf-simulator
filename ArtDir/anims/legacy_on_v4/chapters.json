@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Ready stance",
+    "starts_seconds": 0.0
+  },
+  {
+    "name": "Jump serve",
+    "starts_seconds": 2.0
+  },
+  {
+    "name": "Forehand",
+    "starts_seconds": 5.4
+  },
+  {
+    "name": "Backhand",
+    "starts_seconds": 8.8
+  },
+  {
+    "name": "Run forward",
+    "starts_seconds": 12.2
+  },
+  {
+    "name": "Run right",
+    "starts_seconds": 15.2
+  },
+  {
+    "name": "Run left",
+    "starts_seconds": 18.2
+  },
+  {
+    "name": "Forehand volley",
+    "starts_seconds": 21.2
+  },
+  {
+    "name": "Overhead smash",
+    "starts_seconds": 24.6
+  }
+]

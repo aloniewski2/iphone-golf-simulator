@@ -1,0 +1,7 @@
+parent=Hand.R
+localPosition=(-0.0003000, 0.0010316, 0.0000879) (bone units; x100 = hand-local metres)
+localRotation=(-0.405581, -0.579226, 0.405578, 0.579231)
+localEuler=(0.000, 270.000, 70.000)
+hand-frame origin (W,F,N m)=(0.0088, 0.1032, 0.0300)
+racket Y (W,F,N)=(-0.9397, 0.3420, 0.0000)
+string normal (W,F,N)=(0.0000, 0.0000, 1.0000)

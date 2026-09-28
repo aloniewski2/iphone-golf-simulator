@@ -1,0 +1,12 @@
+00_player: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+01_Milo: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+02_Tama: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+03_Suki: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+04_Dex: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+05_Lina: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+06_Bruno: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+07_Rosa: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+08_Jax: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+09_Nadia: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+10_Viktor: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
+11_standard_rival: state=Ready action=Ready prep=0.00 prepServe=False prepBH=False swinging=False flow=PlayerServeHold
