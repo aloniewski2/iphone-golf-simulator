@@ -1022,6 +1022,33 @@ namespace GolfArcade.UI
         }
         public void HideLanding() => landingBadge.Hide();
 
+        RectTransform noticePill;
+        Text noticeText;
+        float noticeUntil;
+
+        /// A short word over the game — it carried on after something went wrong, the connection
+        /// is back — for `seconds`, or held until cleared (null) when `seconds` is 0.
+        public void Notice(string text, float seconds = 3f)
+        {
+            if (string.IsNullOrEmpty(text)) { if (noticePill) noticePill.gameObject.SetActive(false); return; }
+            if (!noticePill)
+            {
+                noticePill = UiKit.Pill(safeArea, "Notice", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 1), new Vector2(0, -330), new Vector2(820, 84), out var fill, 4f);
+                noticeText = UiKit.Label(fill.transform, "Text", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                noticeText.rectTransform.offsetMin = new Vector2(24, 0); noticeText.rectTransform.offsetMax = new Vector2(-24, 0);
+                noticeText.color = Color.white;
+                Icons.Fit(noticeText, 18, 32);
+                foreach (var g in noticePill.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
+            }
+            noticeText.text = text.ToUpperInvariant();
+            noticePill.gameObject.SetActive(true);
+            noticePill.SetAsLastSibling();
+            noticeUntil = seconds > 0 ? Time.unscaledTime + seconds : float.MaxValue;
+        }
+
+        /// The notice on show, for the tests.
+        public string NoticeShowing => noticePill && noticePill.gameObject.activeSelf ? noticeText.text : null;
+
         UnlockToast unlockToast;
         /// Rewards earned, announced one after another over the card (UI/UnlockToast.cs); `who`
         /// names the player when more than one is on the phone.
@@ -1210,6 +1237,7 @@ namespace GolfArcade.UI
 
         void Update()
         {
+            if (noticePill && noticePill.gameObject.activeSelf && Time.unscaledTime > noticeUntil) noticePill.gameObject.SetActive(false);
             ApplySafeArea();
             // Tremble: nothing below 40 % load, up to ±5 px at the top of the backswing.
             float tremble = Mathf.InverseLerp(0.4f, 1f, meterLoad) * 5f;

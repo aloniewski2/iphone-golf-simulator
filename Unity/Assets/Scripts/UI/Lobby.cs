@@ -39,6 +39,9 @@ namespace GolfArcade.UI
         readonly List<string> localIds = new();
         PlayerProfile shown;
         bool signingIn;
+        /// Why signing in last failed, and when; empty once it works.
+        string signInError = "";
+        float signInFailedAt = -99f;
         MatchFormat format = MatchFormat.StrokePlay;
 
         public Page Showing => page;
@@ -330,7 +333,9 @@ namespace GolfArcade.UI
             var me = ProfileStore.Active;
             var room = session.Room;
 
+            bool signInFailed = !me.IsSignedIn && signInError.Length > 0;
             string status = !BackendConfig.IsConfigured ? "SET THE GAME SERVER TO PLAY ONLINE"
+                : signInFailed ? signInError.ToUpperInvariant()
                 : !me.IsSignedIn ? "SIGNING IN…"
                 : session.State == OnlineSession.Status.Online ? $"ONLINE AS {me.Name.ToUpperInvariant()}"
                 : session.StatusText.ToUpperInvariant();
@@ -343,9 +348,22 @@ namespace GolfArcade.UI
             });
             Caption(content, status, 820, UiKit.ArcadeYellow);
 
-            if (BackendConfig.IsConfigured && !me.IsSignedIn) { if (!signingIn) SignInThenConnect(me); }
-            else if (BackendConfig.IsConfigured && session.State == OnlineSession.Status.Offline) session.Connect(me.ServerToken);
+            // Sign in once; after a failure, only when asked (TRY AGAIN) or ten seconds on, never
+            // straight away again: redrawing the page must not hammer an unreachable server.
+            if (BackendConfig.IsConfigured && !me.IsSignedIn)
+            {
+                if (!signingIn && (!signInFailed || Time.unscaledTime - signInFailedAt > 10f)) SignInThenConnect(me);
+            }
+            else if (BackendConfig.IsConfigured && session.State == OnlineSession.Status.Offline && !session.GaveUp) session.Connect(me.ServerToken);
             bool online = session.State == OnlineSession.Status.Online;
+            // not getting through: say so, and let them try again now
+            if (BackendConfig.IsConfigured && !online && !signingIn && (signInFailed || session.State != OnlineSession.Status.Online))
+                Pill(content, "TRY AGAIN", "play", 0, 600, 600, 90, UiKit.ArcadeYellow, UiKit.ArcadeInk, () =>
+                {
+                    signInError = ""; signInFailedAt = -99f;
+                    if (me.IsSignedIn) { session.GaveUp = false; if (session.State == OnlineSession.Status.Offline) session.Connect(me.ServerToken); else session.RetryNow(); }
+                    ShowOnline();
+                }, 34);
 
             if (!room.InRoom)
             {
@@ -366,13 +384,15 @@ namespace GolfArcade.UI
                 if (online)
                 {
                     string course = courseId();
-                    Pill(content, "QUICK MATCH", "play", 0, 540, 900, 130, UiKit.ArcadeYellow, UiKit.ArcadeInk, () => session.Send(OnlineMessage.Quick(course)), 48);
-                    Pill(content, "CREATE A ROOM", "flag", 0, 390, 900, 110, UiKit.ArcadeBlue, Color.white, () => session.Send(OnlineMessage.Create(course)), 40);
+                    Pill(content, "QUICK MATCH", "play", 0, 540, 900, 130, UiKit.ArcadeYellow, UiKit.ArcadeInk, () => { room.LastError = ""; session.Send(OnlineMessage.Quick(course)); }, 48);
+                    Pill(content, "CREATE A ROOM", "flag", 0, 390, 900, 110, UiKit.ArcadeBlue, Color.white, () => { room.LastError = ""; session.Send(OnlineMessage.Create(course)); }, 40);
                     var code = TextField(content, "CODE", -225, 250, 430, 110, 52, 4);
                     code.characterValidation = InputField.CharacterValidation.Alphanumeric;
                     Pill(content, "JOIN", "play", 235, 250, 410, 110, UiKit.ArcadeBlue, Color.white, () =>
                     {
+                        room.LastError = "";
                         if (code.text.Trim().Length == 4) session.Send(OnlineMessage.Join(code.text.Trim().ToUpperInvariant()));
+                        else { room.LastError = "A room code is four letters"; ShowOnline(); }
                     }, 40);
                     Caption(content, $"A NEW ROOM PLAYS {holesName}  ·  CHANGE IT WITH COURSE", 150);
                 }
@@ -381,6 +401,8 @@ namespace GolfArcade.UI
                 leaderboardText.rectTransform.offsetMin = new Vector2(30, 20); leaderboardText.rectTransform.offsetMax = new Vector2(-30, -26);
                 leaderboardText.color = Color.white; leaderboardText.raycastTarget = false;
                 if (BackendConfig.IsConfigured) LoadLeaderboard();
+                // a join or a match that failed (no such room, the room is full…)
+                if (room.LastError.Length > 0) Toast(Friendly(room.LastError));
             }
             else
             {
@@ -405,22 +427,40 @@ namespace GolfArcade.UI
                 {
                     session.Send(OnlineMessage.Leave()); room.Reset(); ShowOnline();
                 }, 40);
-                if (room.LastError.Length > 0) Toast(room.LastError);
+                if (room.LastError.Length > 0) Toast(Friendly(room.LastError));
             }
         }
+
+        /// The server's short error codes, in words.
+        static string Friendly(string error) =>
+            error.StartsWith("no room") ? "No room with that code — check it with your friend"
+            : error == "that room is full" ? "That room is full — make a new one"
+            : error == "that round has already started" ? "That round has already teed off"
+            : error == "only the host can start" ? "Only the host can tee off"
+            : error == "waiting for another player" ? "Waiting for another golfer to join"
+            : error == "unknown course" ? "The game server doesn't have that course — update it on the Mac"
+            : error;
 
         async void SignInThenConnect(PlayerProfile me)
         {
             signingIn = true;
-            bool ok = await BackendClient.SignUp(me);
-            signingIn = false;
+            bool ok = false;
+            try { ok = await BackendClient.SignUp(me); }
+            catch (Exception e) { Debug.LogException(e); }
+            finally { signingIn = false; }
             if (!this || session == null) return;
-            if (ok) session.Connect(me.ServerToken);
+            if (ok) { signInError = ""; session.Connect(me.ServerToken); }
+            else { signInError = string.IsNullOrEmpty(BackendClient.LastError) ? "Couldn't sign in to the game server" : BackendClient.LastError; signInFailedAt = Time.unscaledTime; }
             if (page == Page.Online) ShowOnline();
-            if (!ok) Toast(BackendClient.LastError);
         }
 
         async void LoadLeaderboard()
+        {
+            try { await ShowLeaderboard(); }
+            catch (Exception e) { Debug.LogException(e); if (this && leaderboardText) leaderboardText.text = "THE LEADERBOARD IS OFFLINE"; }
+        }
+
+        async System.Threading.Tasks.Task ShowLeaderboard()
         {
             var target = leaderboardText;
             string course = courseId();

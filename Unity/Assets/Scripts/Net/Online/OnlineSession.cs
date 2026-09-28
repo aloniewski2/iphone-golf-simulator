@@ -20,6 +20,8 @@ namespace GolfArcade.Net.Online
 
         public readonly OnlineRoom Room = new();
         public Status State { get; private set; } = Status.Offline;
+        /// Stopped trying for good (the address can't be a server): only TRY AGAIN starts it.
+        public bool GaveUp { get; set; }
         public string StatusText { get; private set; } = "";
         public Action StateChanged;
 
@@ -29,6 +31,13 @@ namespace GolfArcade.Net.Online
         bool wanted;
         int attempt;
         readonly SemaphoreSlim sending = new(1, 1);
+        /// This phone's scores in its room, kept so a hole holed while the connection was down
+        /// is sent once it is back (the server keeps the first score it gets for a hole).
+        readonly System.Collections.Generic.SortedDictionary<int, int> myHoles = new();
+        /// Cut short the wait before the next try (TRY AGAIN).
+        CancellationTokenSource waiting;
+        /// The room the kept scores belong to.
+        string keptFor = "";
 
         public static OnlineSession Ensure()
         {
@@ -42,6 +51,7 @@ namespace GolfArcade.Net.Online
         /// Connect as the signed-in profile (token from BackendClient.SignUp).
         public void Connect(string playerToken)
         {
+            GaveUp = false;
             token = playerToken ?? "";
             wanted = true;
             attempt = 0;
@@ -53,8 +63,33 @@ namespace GolfArcade.Net.Online
             wanted = false;
             if (Room.InRoom) Send(OnlineMessage.Leave());
             Room.Reset();
+            myHoles.Clear();
             cts?.Cancel();
+            waiting?.Cancel();
         }
+
+        /// Try again now rather than after the back-off.
+        public void RetryNow()
+        {
+            attempt = 0;
+            waiting?.Cancel();
+        }
+
+        /// A hole holed: sent now, or as soon as the connection is back.
+        public void SendHole(int hole, int strokes)
+        {
+            myHoles[hole] = strokes;
+            Send(OnlineMessage.Hole(hole, strokes));
+        }
+
+        /// For the tests: the connection drops, as a Wi-Fi blip would.
+        public void DropForTests()
+        {
+            try { socket?.Abort(); } catch (Exception) { }
+        }
+
+        /// Scores kept for resending, for the tests.
+        public int KeptHoles => myHoles.Count;
 
         public void Send(OnlineMessage message)
         {
@@ -66,8 +101,12 @@ namespace GolfArcade.Net.Online
         {
             var bytes = Encoding.UTF8.GetBytes(json);
             await sending.WaitAsync();
-            try { await socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cts.Token); }
-            catch (Exception e) when (e is WebSocketException || e is OperationCanceledException || e is ObjectDisposedException) { }
+            try
+            {
+                var s = socket;   // (it may be closing as this is sent)
+                if (s != null && s.State == WebSocketState.Open) await s.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cts?.Token ?? CancellationToken.None);
+            }
+            catch (Exception) { }   // a send that fails is a lost connection: Run notices and reconnects
             finally { sending.Release(); }
         }
 
@@ -79,30 +118,39 @@ namespace GolfArcade.Net.Online
                 cts = new CancellationTokenSource();
                 socket = new ClientWebSocket();
                 socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
+                string why = null;
                 try
                 {
                     await socket.ConnectAsync(new Uri(BackendConfig.SocketUrl), cts.Token);
                     await SendNow(JsonUtility.ToJson(OnlineMessage.Hello(token)));
+                    // anything holed while the connection was down, again (a repeat is ignored)
+                    foreach (var kv in new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, int>>(myHoles))
+                        await SendNow(JsonUtility.ToJson(OnlineMessage.Hole(kv.Key, kv.Value)));
                     attempt = 0;
                     SetState(Status.Online, "Online");
                     await Receive();
                 }
-                catch (Exception e) when (e is WebSocketException || e is OperationCanceledException || e is UriFormatException || e is ObjectDisposedException)
+                catch (UriFormatException) { why = "That game server address isn't right"; wanted = false; GaveUp = true; }
+                catch (Exception e)
                 {
-                    if (wanted) Debug.LogWarning($"Online: {e.Message}");
+                    // Any failure — refused, unreachable, dropped, a bad reply — is a lost
+                    // connection to try again, never an end to trying.
+                    if (wanted && !(e is OperationCanceledException)) { Debug.LogWarning($"Online: {e.GetType().Name}: {e.Message}"); why = Reason(e); }
                 }
                 finally
                 {
-                    socket.Dispose();
+                    try { socket?.Dispose(); } catch (Exception) { }
                     socket = null;
                 }
-                if (!wanted || !this) break;
+                if (!wanted || !this) { if (why != null) SetState(Status.Offline, why); break; }
                 // Back off: 1, 2, 4 … up to 15 seconds between tries.
                 attempt++;
-                SetState(Status.Connecting, "Connection lost — retrying…");
-                await Task.Delay(TimeSpan.FromSeconds(Math.Min(15, 1 << Math.Min(attempt - 1, 4))));
+                SetState(Status.Connecting, attempt <= 2 ? "Connection lost — reconnecting…" : (why ?? "Can't reach the game server") + " — retrying…");
+                waiting = new CancellationTokenSource();
+                try { await Task.Delay(TimeSpan.FromSeconds(Math.Min(15, 1 << Math.Min(attempt - 1, 4))), waiting.Token); }
+                catch (OperationCanceledException) { }
             }
-            SetState(Status.Offline, "Offline");
+            if (State != Status.Offline) SetState(Status.Offline, "Offline");
         }
 
         async Task Receive()
@@ -122,17 +170,33 @@ namespace GolfArcade.Net.Online
                 if (!result.EndOfMessage) continue;
                 OnlineMessage message = null;
                 try { message = JsonUtility.FromJson<OnlineMessage>(text.ToString()); }
-                catch (ArgumentException) { }
+                catch (Exception) { }
                 text.Clear();
-                Room.Apply(message);
+                // the game's own handling of a message must not take the connection down with it
+                try { Room.Apply(message); }
+                catch (Exception e) { Debug.LogException(e); }
+                // another room (or none): its scores are not this one's
+                if (Room.Code != keptFor) { myHoles.Clear(); keptFor = Room.Code; }
             }
+        }
+
+        /// A lost connection in words for the player.
+        static string Reason(Exception e)
+        {
+            string m = (e.InnerException?.Message ?? e.Message ?? "").ToLowerInvariant();
+            if (m.Contains("resolve") || m.Contains("host")) return "Can't find the game server — is the Mac on, on this Wi-Fi?";
+            if (m.Contains("refused")) return "The game server isn't running on the Mac";
+            if (m.Contains("timed out") || m.Contains("timeout")) return "The game server isn't answering";
+            return "Can't reach the game server";
         }
 
         void SetState(Status state, string text)
         {
             State = state;
             StatusText = text;
-            StateChanged?.Invoke();
+            // a screen's trouble redrawing must not stop the connection
+            try { StateChanged?.Invoke(); }
+            catch (Exception e) { Debug.LogException(e); }
         }
 
         void OnDestroy()

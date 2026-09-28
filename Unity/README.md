@@ -73,6 +73,22 @@ flare of sparks, Frostbite Fjord's frozen lake is ice a ball skids across (`Cour
 Windmill Links' sails knock a shot down or let it through the gaps depending on where they have
 turned to when it gets there (`SpinningSails`, read off the model's blades).
 
+**When something goes wrong** (`Game/ErrorGuard.cs`): every exception and error is written to
+`errors.log` in the app's Documents (the last 256 KB), and the game gets back on its feet instead of
+freezing — a fault mid-shot settles the shot where it lies, a state that runs far past anything it
+takes (a shot a minute in the air, a card that never comes) is moved on by a watchdog, and fault
+after fault goes back to the home screen. Pull the phone's log with
+
+```bash
+xcrun devicectl device copy from --device <udid> --domain-type appDataContainer --domain-identifier com.aloniewski.iphonegolfsim --source Documents/errors.log --destination errors.log
+```
+
+Online, a server that can't be reached is said in words with TRY AGAIN (never retried in a loop),
+a dropped connection reconnects on its own with the round's scores resent, and the round shows
+when it is down and who it is waiting for. The phone-as-club screen retries its network, follows
+the Mac to a new address, takes the Mac's name as well as its number, and says what to check
+(including iOS's Local Network permission).
+
 **Unlocks** (`Profile/Unlocks.cs`): Wild Isles opens once a player beats par on Cliffside; balls,
 trails, club finishes and outfit colours are earned from their record (a birdie, an eagle, a
 250-yard drive, a match won…) and announced at the end of the round. The golfer screen's GEAR

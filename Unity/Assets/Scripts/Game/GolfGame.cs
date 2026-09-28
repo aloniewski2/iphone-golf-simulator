@@ -783,15 +783,43 @@ namespace GolfArcade.Game
         void ListenToRoom(OnlineRoom room)
         {
             if (onlineRoom != null) { onlineRoom.HoleScored -= OnRemoteHole; onlineRoom.Changed -= OnRoomChanged; }
+            var session = OnlineSession.Instance;
+            if (session) session.StateChanged -= OnConnectionChanged;
             onlineRoom = room;
             if (onlineRoom != null) { onlineRoom.HoleScored += OnRemoteHole; onlineRoom.Changed += OnRoomChanged; }
+            if (onlineRoom != null && session) session.StateChanged += OnConnectionChanged;
+            else if (hud) hud.Notice(null);
         }
+
+        /// The connection to the other players, during an online round: held over the game while
+        /// it's down (your scores wait and go when it's back), a word when it returns.
+        void OnConnectionChanged()
+        {
+            var session = OnlineSession.Instance;
+            if (!session || onlineRoom == null || !hud) return;
+            if (session.State == OnlineSession.Status.Online) { if (connectionLost) hud.Notice("Back online", 2f); connectionLost = false; }
+            else { connectionLost = true; hud.Notice(session.StatusText + "  ·  your scores will follow", 0); }
+        }
+        bool connectionLost;
 
         /// Another phone holed out: onto their card, and the card on screen if it is up.
         void OnRemoteHole(string playerId, int holeNumberIndex, int strokes)
         {
             if (Match == null || playerId == onlineRoom?.MyId) return;
             if (Match.RecordRemote(playerId, holeNumberIndex, strokes) && Current == State.RoundDone) ShowRoundCard();
+        }
+
+        /// Who the round is waiting on, and whether their phone is away.
+        string WaitingFor()
+        {
+            var names = new System.Collections.Generic.List<string>();
+            foreach (var p in Match.Players)
+            {
+                if (p.IsLocal || Match.Finished(p)) continue;
+                var seat = onlineRoom?.Find(p.RemoteId);
+                names.Add(seat != null && !seat.connected ? $"{p.Name} (away)" : p.Name);
+            }
+            return names.Count == 0 ? "Waiting for the others…" : $"Waiting for {string.Join(", ", names)}…";
         }
 
         void OnRoomChanged()
@@ -1234,13 +1262,31 @@ namespace GolfArcade.Game
             UpdateControllerHint(true);
         }
 
+        bool clubLinked;
+
         void UpdateControllerHint(bool force = false)
         {
             if (Demo) { hud.SetControllerHint(""); return; }
-            if (Swing.Network == null) return;
+            if (Swing.Network == null)
+            {
+                // the listener couldn't open its port (another copy of the game has it)
+                if (!Application.isMobilePlatform && (force || Time.unscaledTime >= nextHint))
+                {
+                    nextHint = Time.unscaledTime + 3f;
+                    hud.SetControllerHint("Phone as club is off: another copy of Golf Arcade is running on this Mac — close it and reopen this one");
+                }
+                return;
+            }
             if (!force && Time.unscaledTime < nextHint) return;
             nextHint = Time.unscaledTime + 3f;
-            if (Swing.UsingNetwork) hud.SetControllerHint($"Club: iPhone at {Swing.Network.RemoteAddress}");
+            if (Swing.UsingNetwork) { hud.SetControllerHint($"Club: iPhone at {Swing.Network.RemoteAddress}"); clubLinked = true; }
+            else if (clubLinked && !Application.isMobilePlatform)
+            {
+                // it was there and has gone: say so once, then back to how to connect
+                clubLinked = false;
+                hud.Notice("The phone club dropped out — swing with the keyboard, or reopen it on the phone", 4f);
+                hud.SetControllerHint("Phone club lost — open Golf Arcade on the iPhone → USE AS CLUB to reconnect");
+            }
             else if (Application.isMobilePlatform) hud.SetControllerHint("");
             else
             {
@@ -1958,7 +2004,85 @@ namespace GolfArcade.Game
 
         // ----- Frame loop -----
 
+        // ----- Carrying on when something goes wrong -----
+
+        float lastErrorAt = -99f;
+        int errorsInARow;
+        /// For the tests: the next frame throws, the way a bug would.
+        public bool InjectFault;
+        /// For the tests: as if the current state had already lasted `seconds` longer.
+        public void StallForTests(float seconds) => stateTime += seconds;
+
+        /// Each frame, inside a guard: an exception, or a state that has run far past anything
+        /// it takes (a shot a minute in the air), puts the game back on its feet (Recover)
+        /// instead of freezing it; errors.log keeps the details (ErrorGuard).
         void Update()
+        {
+            ErrorGuard.Pump();
+            try
+            {
+                if (InjectFault) { InjectFault = false; throw new InvalidOperationException("a fault injected for the tests"); }
+                Frame();
+                Watchdog();
+            }
+            catch (Exception e) { Recover(e); }
+        }
+
+        /// The longest each state can reasonably last: a shot and its replay, the result, the
+        /// hole's end, the hole's showcase.
+        void Watchdog()
+        {
+            float limit = Current switch
+            {
+                State.Flight => 60f, State.Replay => 45f, State.Result => 20f, State.HoleDone => 30f, State.Intro => 90f,
+                _ => float.MaxValue,
+            };
+            if (stateTime > limit) throw new TimeoutException($"the game sat in {Current} for {stateTime:F0} s");
+        }
+
+        /// Back on its feet: the shot settled where it lies, the replay ended, the result played
+        /// on, the showcase cut to the tee, the hole's card shown; if it keeps going wrong, the
+        /// home screen.
+        void Recover(Exception e)
+        {
+            errorsInARow = Time.unscaledTime - lastErrorAt < 10f ? errorsInARow + 1 : 1;
+            lastErrorAt = Time.unscaledTime;
+            if (errorsInARow > 20) { if (errorsInARow % 300 == 0) Debug.LogException(e); return; }   // (a fault every frame: don't flood the log)
+            Debug.LogException(e);
+            try
+            {
+                if (errorsInARow > 4 || hole == null) { SafeMenu(); return; }
+                switch (Current)
+                {
+                    case State.Flight: Time.timeScale = 1f; FinishShot(); break;
+                    case State.Replay: Time.timeScale = 1f; EndReplay(); break;
+                    case State.Result: AfterResult(); break;
+                    case State.Intro: BeginAim(false); break;
+                    case State.HoleDone: RefreshControls(); ShowRoundCard(); Enter(State.RoundDone); break;
+                }
+                hud.Notice("Something went wrong — carrying on", 2.5f);
+            }
+            catch (Exception again)
+            {
+                Debug.LogException(again);
+                SafeMenu();
+            }
+        }
+
+        /// The last resort: the home screen, the round left behind.
+        void SafeMenu()
+        {
+            try
+            {
+                Time.timeScale = 1f;
+                hud.HideScorecard();
+                ShowMenu();
+                hud.Notice("Something went wrong — back to the menu", 4f);
+            }
+            catch (Exception e) { Debug.LogException(e); }
+        }
+
+        void Frame()
         {
             stateTime += Time.deltaTime;
             Swing.Update();
@@ -2317,7 +2441,7 @@ namespace GolfArcade.Game
                 tiles[i] = new RoundCard.Highlight { Icon = i == 0 ? "trophy" : "ball", Title = $"{i + 1}. {p.Name}", Value = Match.Standing(p) + played };
             }
             string headline;
-            if (waiting) headline = "Waiting for the others…";
+            if (waiting) headline = WaitingFor();
             else if (!more) headline = Match.Headline();
             else
             {
@@ -2765,7 +2889,7 @@ namespace GolfArcade.Game
             if (shot.IsHoled)
             {
                 Card.Record(holeIndex, holeStrokes);
-                if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.Send(OnlineMessage.Hole(holeIndex, holeStrokes));
+                if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.SendHole(holeIndex, holeStrokes);
                 ShowScore();
                 string score = Scorecard.ScoreName(holeStrokes, hole.Par);
                 hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,
