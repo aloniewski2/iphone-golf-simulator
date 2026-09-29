@@ -8,10 +8,10 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// Holes 13–15 in the game: each model loads and lines up with its numbers (the ball sits on
+    /// Holes 13–20 in the game: each model loads and lines up with its numbers (the ball sits on
     /// the tee's ground, the pin on the green's), a tee shot down the recommended line flies and
-    /// finishes on the island, and the Spiral's pinnacle stops a ball struck straight at the
-    /// summit. Frames of each go to Library/Captures/review, with the menu's five course cards.
+    /// finishes on the island (PlaythroughTests plays each one out). Frames of each go to
+    /// Library/Captures/review, with the menu's course cards.
     public class NewHolesPlayTests
     {
         const string Dir = "Library/Captures/review";
@@ -40,7 +40,7 @@ namespace GolfArcade.PlayTests
             game.ChooseHoles(0);
             game.Play();
             yield return null;
-            foreach (int number in new[] { 7, 12, 13, 14, 15 })
+            foreach (int number in new[] { 7, 12, 13, 14, 15, 16, 17, 18, 19, 20 })
             {
                 game.JumpToHole(number);
                 yield return new WaitForSecondsRealtime(0.5f);
@@ -134,7 +134,7 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(GameCapture.Save($"{Dir}/n-0-menu.png"));
             game.Play();
             yield return null;
-            foreach (int number in new[] { 13, 14, 15 })
+            foreach (int number in new[] { 13, 14, 15, 16, 17, 18, 19, 20 })
             {
                 game.JumpToHole(number);
                 yield return new WaitForSecondsRealtime(2.0f);
@@ -158,16 +158,6 @@ namespace GolfArcade.PlayTests
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/n-{number}-d-result.png"));
                 if (game.LastShot.IsHoled) { yield return WaitFor(() => game.Current == GolfGame.State.HoleDone, 10, "the ace to be scored"); continue; }
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the next shot");
-                if (number == 13)
-                {
-                    // Straight at the summit from the tee: into the pinnacle, not over it.
-                    game.DropBall(hole.Tee);
-                    yield return null;
-                    game.StrikeToward(hole.Pin);
-                    yield return WaitFor(() => game.Current == GolfGame.State.Result, 25, "the shot at the summit to finish");
-                    Assert.Greater(game.LastShot.Rest.DistanceTo(hole.Pin), 30, "the pinnacle stopped it short of the summit green");
-                    yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the next shot");
-                }
             }
         }
     }

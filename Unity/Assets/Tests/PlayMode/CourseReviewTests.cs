@@ -25,7 +25,7 @@ namespace GolfArcade.PlayTests
             }
         }
 
-        [UnityTest]
+        [UnityTest, Timeout(420000)]   // ten holes, about 20 s each
         public IEnumerator EveryHoleFromThreeSides()
         {
             Time.timeScale = 1f;
@@ -38,7 +38,7 @@ namespace GolfArcade.PlayTests
             game.Play();
             yield return null;
             var hudCanvas = Object.FindFirstObjectByType<GolfArcade.UI.Hud>().GetComponent<Canvas>();
-            foreach (int number in new[] { 7, 12, 13, 14, 15 })
+            foreach (int number in new[] { 7, 12, 13, 14, 15, 16, 17, 18, 19, 20 })
             {
                 game.JumpToHole(number);
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, $"hole {number}'s tee");
@@ -87,7 +87,7 @@ namespace GolfArcade.PlayTests
                     body.GetComponent<Renderer>().sharedMaterial = o.Kind == ObstacleKind.Rock || o.Kind == ObstacleKind.Wall ? blue : red;
                 }
                 Debug.Log($"COURSE {number}: {obstacles.Length} obstacles — {trees} trees, {bushes} bushes, {rocks} rocks, {walls} walls");
-                Assert.Greater(trees, 5, $"hole {number}'s trees were found");
+                Assert.Greater(trees + bushes + walls, 5, $"hole {number}'s trees and plants were found (Mesa Canyon's cacti stand hard, as walls)");
                 game.enabled = false;
                 cam.transform.position = views[1].at; cam.transform.LookAt(views[1].look);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/{number:00}-d-obstacles.jpg", 1600, 900));

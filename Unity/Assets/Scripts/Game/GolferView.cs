@@ -25,11 +25,14 @@ namespace GolfArcade.Game
             /// The polo and the trousers, where they differ from the studio's golf kit (teal and
             /// sand); null keeps the kit.
             public Color? Shirt, Trousers;
+            /// Adnan's modular Hero, when the build has it and this figure is a player: the look to assemble.
+            public HeroLook? Hero;
             public static Look Player => new()
             {
                 ModelPath = GolferStyle.ModelPath, HairMesh = GolferStyle.HairMesh,
                 Skin = GolferStyle.SkinColor, Hair = GolferStyle.HairColor,
                 Shirt = GolferStyle.ShirtColor, Trousers = GolferStyle.TrousersColor,
+                Hero = GolferStyle.UseHero ? GolferStyle.Hero : null,
             };
         }
         Look? own;
@@ -61,6 +64,32 @@ namespace GolfArcade.Game
         readonly Dictionary<string, AnimationClip> clips = new();
         readonly Dictionary<string, ClipInfo> landmarks = new();
         readonly Dictionary<string, GameObject> clubMeshes = new();
+        /// The clubs' own materials, before a finish went on them.
+        readonly Dictionary<Renderer, Material[]> clubOriginal = new();
+        Color? clubFinish;
+
+        /// A finish on every club (Gear.ClubFinish, one of the rewards): the head and the shaft
+        /// take its colour, the dark grip stays. Null is the steel as modelled.
+        public Color? ClubFinish { get => clubFinish; set { clubFinish = value; DressClubs(); } }
+
+        void DressClubs()
+        {
+            foreach (var club in clubMeshes.Values)
+                foreach (var r in club.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!clubOriginal.TryGetValue(r, out var original)) clubOriginal[r] = original = r.sharedMaterials;
+                    if (clubFinish is not Color finish) { r.sharedMaterials = original; continue; }
+                    var mats = (Material[])original.Clone();
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        if (!mats[i]) continue;
+                        var c = mats[i].color;
+                        if (0.3f * c.r + 0.59f * c.g + 0.11f * c.b < 0.3f) continue;   // the grip
+                        mats[i] = Clay(Color.Lerp(c, finish, 0.85f), false);
+                    }
+                    r.sharedMaterials = mats;
+                }
+        }
         string clipName;
         float TopTime, ImpactTime, EndTime;
         bool hasModel;
@@ -158,9 +187,27 @@ namespace GolfArcade.Game
 
         GameObject modelGo;
         Material kitMaterial;
+        /// The Hero, when this figure is one (its parts, materials and skeleton); null for the older V4 figure.
+        HeroGolfer heroFigure;
+        /// How the model is turned at rest so the golf clips face the ball (the Hero's export is not yawed as V4's was).
+        Quaternion baseRot = Quaternion.identity;
 
         /// The chosen kit colours on the golfer as they stand, without rebuilding the model.
-        public void Redress() => GolferStyle.Dress(kitMaterial);
+        /// The older V4 figure's kit: the shorts' and the shirt's colours over its colour map (alpha 0 keeps the map's own).
+        static void DressKit(Material m)
+        {
+            if (!m) return;
+            var look = GolferStyle.Current;
+            var shorts = GolferStyle.ColorOf(look.Shorts); var shirt = GolferStyle.ColorOf(look.Shirt);
+            m.SetFloat("_KitOn", shorts.HasValue ? 1 : 0); m.SetColor("_KitColor", shorts ?? Color.white);
+            m.SetFloat("_ShirtOn", shirt.HasValue ? 1 : 0); m.SetColor("_ShirtColor", shirt ?? Color.white);
+        }
+
+        public void Redress()
+        {
+            if (heroFigure != null && CurrentLook.Hero is HeroLook h) heroFigure.Dress(h);
+            else DressKit(kitMaterial);
+        }
 
         // ----- The face: Adnan's expression atlas (Resources/Golfer/Look/FaceAtlas, 4 × 2 cells in
         // this order, as his TennisActor uses it) on the Higgsfield golfer's face decal.
@@ -236,16 +283,82 @@ namespace GolfArcade.Game
         public void ApplyStyle()
         {
             if (graph.IsValid()) graph.Destroy();
+            heroFigure?.Dispose(); heroFigure = null;
             if (modelGo) Destroy(modelGo);
             faceMaterial = null;
             if (body) Destroy(body.gameObject);
             hasModel = false; body = null; modelGo = null; Head = null;
             phase = 0; loadTarget = 0; time = 0; swingThrough = -1; shownLoad = 0;
             var look = CurrentLook;
-            var model = Resources.Load<GameObject>(look.ModelPath);
-            if (model && !BuildModel(model, look)) Debug.LogWarning($"{look.ModelPath} has no swing clips; using the primitive golfer");
+            if (look.Hero.HasValue && BuildHero(look)) { /* the Hero */ }
+            else
+            {
+                var model = Resources.Load<GameObject>(look.ModelPath);
+                if (model && !BuildModel(model, look)) Debug.LogWarning($"{look.ModelPath} has no swing clips; using the primitive golfer");
+            }
             if (!hasModel) BuildFigure();
             SetClub(shownClub, shownShort);
+        }
+
+        // ----- The Hero (Adnan's modular character; see HeroGolfer) -----
+
+        /// The Hero's swing clips and clubs, the parts on one skeleton. False if it isn't in the build.
+        bool BuildHero(Look look)
+        {
+            clips.Clear(); landmarks.Clear(); clubMeshes.Clear(); clubOriginal.Clear();
+            foreach (var c in Resources.LoadAll<AnimationClip>(HeroGolfer.Path))
+                if (!c.name.StartsWith("__preview__")) clips[c.name] = c;
+            if (clips.Count == 0) return false;
+            var json = Resources.Load<TextAsset>(HeroGolfer.Path + "_clips");
+            if (json)
+                foreach (var info in JsonUtility.FromJson<ClipSet>(json.text).clips) landmarks[info.name] = info;
+            heroFigure = HeroGolfer.Build(transform, look.Hero.Value);
+            if (heroFigure == null) return false;
+            var model = modelGo = heroFigure.Root;
+            model.transform.localPosition = Vector3.zero;
+            baseRot = Quaternion.Euler(0, HeroYaw, 0);
+            model.transform.localRotation = baseRot;
+            model.transform.localScale = Vector3.one * MetresToYards;
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (!mats[i]) continue;
+                    string name = mats[i].name.Replace(" (Instance)", "");
+                    if (name.StartsWith("CLUB ")) mats[i] = ClubMaterial(name);
+                }
+                r.sharedMaterials = mats;
+                if (r is SkinnedMeshRenderer smr) { smr.updateWhenOffscreen = !spectator; if (!body0 && !r.name.StartsWith("CLUB_")) body0 = smr; }
+                if (spectator) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+                if (t.name.StartsWith("CLUB_")) clubMeshes[t.name.Substring(5)] = t.gameObject;
+            if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
+            else DressClubs();
+            feetFix.Clear();
+            Head = heroFigure.Bones.TryGetValue("Head", out var head) ? head : null;
+            StartGraph(model);
+            return true;
+        }
+
+        /// The Y rotation that turns the Hero's rig (facing where its clips take it) to face the ball on +Z.
+        const float HeroYaw = -90f;
+
+        void StartGraph(GameObject model)
+        {
+            var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            graph = PlayableGraph.Create("Golfer swing");
+            graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+            output = AnimationPlayableOutput.Create(graph, "Swing", animator);
+            mixer = AnimationMixerPlayable.Create(graph, 2);
+            output.SetSourcePlayable(mixer);
+            fade = 0;
+            graph.Play();
+            hasModel = true;
+            clipName = null;
         }
 
         // ----- Rigged model -----
@@ -253,7 +366,7 @@ namespace GolfArcade.Game
         bool BuildModel(GameObject prefab, Look look)
         {
             string path = look.ModelPath;
-            clips.Clear(); landmarks.Clear(); clubMeshes.Clear();
+            clips.Clear(); landmarks.Clear(); clubMeshes.Clear(); clubOriginal.Clear();
             foreach (var c in Resources.LoadAll<AnimationClip>(path)) clips[c.name] = c;
             if (clips.Count == 0) return false;
             var json = Resources.Load<TextAsset>(path + "_clips");
@@ -279,7 +392,7 @@ namespace GolfArcade.Game
                     if (name.StartsWith("V4 Higgs body"))
                     {
                         mats[i] = kitMaterial = Clay(Color.white, false, Resources.Load<Texture2D>($"{System.IO.Path.GetDirectoryName(path)}/higgs_{(path.EndsWith("_f") ? "f" : "m")}_color"));
-                        GolferStyle.Dress(kitMaterial);
+                        DressKit(kitMaterial);
                         continue;
                     }
                     if (name.StartsWith("V4 face decal"))
@@ -310,23 +423,12 @@ namespace GolfArcade.Game
                 if (t.name.StartsWith("HAIR_")) t.gameObject.SetActive(t.name == look.HairMesh);
             }
             if (spectator) foreach (var club in clubMeshes.Values) club.SetActive(false);
+            else DressClubs();
             MeasureFeet(model);
             // the Head bone (not a mesh that happens to share the name)
             foreach (var smr in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 if ((Head = System.Array.Find(smr.bones, b => b && b.name == "Head")) != null) break;
-            var animator = model.GetComponent<Animator>() ?? model.AddComponent<Animator>();
-            animator.applyRootMotion = false;
-            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-
-            graph = PlayableGraph.Create("Golfer swing");
-            graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
-            output = AnimationPlayableOutput.Create(graph, "Swing", animator);
-            mixer = AnimationMixerPlayable.Create(graph, 2);
-            output.SetSourcePlayable(mixer);
-            fade = 0;
-            graph.Play();
-            hasModel = true;
-            clipName = null;
+            StartGraph(model);
             return true;
         }
 
@@ -382,6 +484,7 @@ namespace GolfArcade.Game
 
         /// The studio's shared moves were made facing a quarter turn from its golf clips; this
         /// turns them back so every clip faces where the golfer stands.
+        Quaternion BaseRot(Quaternion clipYaw) => baseRot * clipYaw;
         static float ClipYaw(string move) => move is "Idle" or "Wave" or "Cheer" ? 90f : 0f;
         float performTime, performLength;
 
@@ -391,7 +494,7 @@ namespace GolfArcade.Game
         public bool Perform(string move, float startAt = 0f)
         {
             if (!hasModel || !clips.TryGetValue(move, out var c)) return false;
-            var yaw = Quaternion.Euler(0, ClipYaw(move), 0);
+            var yaw = Quaternion.Euler(0, ClipYaw(move), 0); yaw = BaseRot(yaw);
             // (the shared moves face a quarter turn round, so from a swing pose there's no fading)
             Play(c, modelGo.transform.localRotation == yaw ? 0.25f : 0f);
             clipName = move;
@@ -403,6 +506,35 @@ namespace GolfArcade.Game
             clip.SetTime(performTime);
             Evaluate();
             return true;
+        }
+
+        /// How far the Hero's hair is swung out by the head's motion right now (0 for other figures), for the tests.
+        public float HairSway => heroFigure?.SwayMagnitude ?? 0f;
+
+        /// True when the figure is Adnan's Hero (else the older V4 golfer or the primitive stand-in).
+        public bool IsHero => heroFigure != null;
+        /// The Hero's parts (for the tests), or null.
+        public HeroGolfer Hero => heroFigure;
+
+        /// The clubhead in world space (the point of the held club farthest from its grip), for the tests.
+        public Vector3? ClubHeadWorld()
+        {
+            if (!modelGo) return null;
+            foreach (var kv in clubMeshes)
+            {
+                if (!kv.Value.activeSelf) continue;
+                var smr = kv.Value.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (!smr) continue;
+                var grip = System.Array.Find(modelGo.GetComponentsInChildren<Transform>(true), t => t.name == "Club");
+                var baked = new Mesh();
+                smr.BakeMesh(baked, true);
+                var origin = grip ? smr.transform.InverseTransformPoint(grip.position) : Vector3.zero;
+                Vector3 far = Vector3.zero; float best = -1;
+                foreach (var v in baked.vertices) { float d = (v - origin).sqrMagnitude; if (d > best) { best = d; far = v; } }
+                Destroy(baked);
+                return smr.transform.TransformPoint(far);
+            }
+            return null;
         }
 
         /// The move playing now, or null while it's the swing.
@@ -442,8 +574,8 @@ namespace GolfArcade.Game
                 "HalfSwing" => (0.34f, 1.35f, 2.4f),
                 _ => (0.38f, 1.4f, 2.6f),           // about twice the studio pace at the ball, and still readable at 60 fps
             };
-            Play(c, modelGo.transform.localRotation == Quaternion.identity ? 0.2f : 0f);
-            modelGo.transform.localRotation = Quaternion.identity;
+            Play(c, modelGo.transform.localRotation == baseRot ? 0.2f : 0f);
+            modelGo.transform.localRotation = baseRot;
             if (phase == 4) { phase = 0; time = 0; }
             Show(Mathf.Min(time, TopTime));
         }
@@ -562,6 +694,12 @@ namespace GolfArcade.Game
         void Update()
         {
             if (hasModel) UpdateModel(); else UpdateFigure();
+        }
+
+        /// The hair lags the head (after the pose is set this frame).
+        void LateUpdate()
+        {
+            if (heroFigure != null && !spectator) heroFigure.Sway(Time.deltaTime);
         }
 
         void UpdateModel()

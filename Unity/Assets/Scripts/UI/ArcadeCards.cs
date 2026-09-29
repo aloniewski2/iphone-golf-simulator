@@ -273,161 +273,200 @@ namespace GolfArcade.UI
         }
     }
 
-    /// A hole or the round finished (option A): the title with a trophy, the headline on a yellow
-    /// ribbon (the hole's score — "BIRDIE!" — or where the round ended against par), the card —
-    /// hole, par, you, a gold ring round a birdie and a blue square round a bogey — the total and
-    /// how it stands against par, the round's stats in tiles, and the way on: the next hole
-    /// while there is one, the same holes again, or the main menu. It pops up over the course,
-    /// shrunk to fit a short screen.
+    /// A hole or the round finished: Adnan's results screen (his ClubResultsScreen) on the Island Sports Club
+    /// system. The course dimmed under the lagoon, what finished in caps, the headline huge in sun yellow
+    /// ("Birdie!", "3 under par"), the card on a cream slab — hole, par, you (a sun disc round a birdie, a
+    /// coral square round a bogey) — the total against par, the round's stats on small cream cards, and the
+    /// way on: NEXT HOLE (the sun slab) while there is one, PLAY AGAIN (cream), MAIN MENU (quiet). It rises in
+    /// over the course, shrunk to fit a short screen.
     public sealed class RoundCard
     {
         public readonly RectTransform Root;
-        public readonly HoldButton PlayAgain, Menu;
+        public HoldButton PlayAgain { get; private set; }
+        public HoldButton Menu { get; private set; }
         /// Null on the round's last hole.
-        public readonly HoldButton NextHole;
+        public HoldButton NextHole { get; private set; }
 
         public struct Highlight { public string Icon, Title, Value; }
 
-        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole)
+        /// A row on the card for each golfer in a round with others: their name in their colour
+        /// and their strokes per hole. Without them the card has the one YOU row and the total.
+        public struct Row
         {
+            public string Name; public Color Color; public int?[] Strokes;
+            /// Text for each hole instead of strokes (a contest's "12 ft", "285 yd"), or null.
+            public string[] Cells;
+        }
+
+        /// What PLAY AGAIN says (NEXT ROUND in the Open).
+        readonly string againLabel;
+
+        public RoundCard(Transform parent, string title, string headline, int[] holes, int[] pars, int?[] strokes, int total, int toPar, Highlight[] highlights, bool nextHole, Row[] players = null, string againLabel = null)
+        {
+            this.againLabel = againLabel ?? "Play again";
+            players ??= new[] { new Row { Name = "You", Color = Club.Sun, Strokes = strokes } };
+            bool solo = players.Length == 1;
+            int tableRows = 2 + players.Length;
             const float W = 980;
             float y = 0;
-            // the course dimmed behind it; touches stop here
-            var sheet = UiKit.Panel(parent, "Scorecard", new Color(0.02f, 0.06f, 0.18f, 0.6f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+            // the course under the lagoon; touches stop here
+            var sheet = UiKit.Panel(parent, "Scorecard", Club.Deep(0.72f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
             Root = sheet.rectTransform;
-            var card = UiKit.Pill(Root, "Round card", UiKit.ArcadeBlue, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(W, 1180), out var fill, 6f, false);
-            foreach (var img in card.GetComponentsInChildren<Image>()) img.sprite = UiKit.RoundedLarge;
-            var f = fill.rectTransform;
-            float inner = W - 48;
+            var card = Club.Box(Root, "Round card", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(W, 1200));
+            var f = card;
+            float inner = W;
 
-            // the title
-            y -= 26;
-            var head = UiKit.Pill(f, "Title", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 1), new Vector2(0, y - 60), new Vector2(inner, 120), out var headFill, 4f);
-            var cup = UiKit.Panel(headFill.transform, "Cup", UiKit.ArcadeYellow, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(64, 0), new Vector2(84, 84));
-            cup.sprite = UiKit.Circle; cup.type = Image.Type.Simple; cup.raycastTarget = false;
-            Icons.Place(cup.transform, "trophy", UiKit.ArcadeInk, new Vector2(0.5f, 0.5f), Vector2.zero, 54);
-            var t = UiKit.Chunky(headFill.transform, "Name", 60, Color.white, UiKit.ArcadeInk, 4f);
-            t.text = title.ToUpperInvariant(); t.rectTransform.offsetMin = new Vector2(120, 16); t.rectTransform.offsetMax = new Vector2(-110, -16);
-            Icons.Fit(t, 34, 60);
-            Icons.Place(headFill.transform, "flag", UiKit.Hex("E8352F"), new Vector2(1, 0.5f), new Vector2(-58, 4), 64);
-            y -= 120 + 22;
+            // what finished, and the headline
+            var what = Club.Words(f, "Title", title.ToUpperInvariant(), Club.Caps, 40, Club.White(0.8f), TextAnchor.UpperLeft);
+            Top(what.rectTransform, y, 50); y -= 58;
+            var head = Club.Words(f, "Headline", headline ?? ToParWords(toPar), Club.Display, 150, Club.Sun, TextAnchor.UpperLeft, 18);
+            Icons.Fit(head, 80, 150);
+            Top(head.rectTransform, y, 170); y -= 170 + 26;
 
-            // the headline, on the ribbon, a star either side
-            var ribbon = UiKit.Pill(f, "Ribbon", UiKit.ArcadeYellow, new Vector2(0.5f, 1), new Vector2(0, y - 56), new Vector2(inner - 120, 112), out var ribbonFill, 4f, false);
-            var rt = UiKit.Chunky(ribbonFill.transform, "Headline", 62, UiKit.ArcadeInk, new Color(1, 1, 1, 0), 0f);
-            rt.text = (headline ?? ToParWords(toPar)).ToUpperInvariant();
-            rt.rectTransform.offsetMin = new Vector2(90, 12); rt.rectTransform.offsetMax = new Vector2(-90, -12);
-            Icons.Fit(rt, 36, 62);
-            Icons.Place(ribbonFill.transform, "star", UiKit.ArcadeBlue, new Vector2(0, 0.5f), new Vector2(56, 0), 54);
-            Icons.Place(ribbonFill.transform, "star", UiKit.ArcadeBlue, new Vector2(1, 0.5f), new Vector2(-56, 0), 54);
-            y -= 112 + 22;
-
-            // the card
+            // the card: a cream slab
             int n = holes.Length;
             const float rowH = 92, labelW = 170;
-            float colW = Mathf.Min(140, (inner - 24 - labelW) / Mathf.Max(1, n));
-            var table = UiKit.Panel(f, "Card", Color.white, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, y - (3 * rowH + 24) / 2), new Vector2(inner, 3 * rowH + 24));
-            table.sprite = UiKit.RoundedLarge; table.raycastTarget = false; table.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            var tt = table.transform;
-            float left = -inner / 2 + 12;
-            Text Cell(string text, float x, float yy, float w, int size, Color c)
+            float colW = Mathf.Min(140, (inner - 48 - labelW) / Mathf.Max(1, n));
+            float tableH = tableRows * rowH + 36;
+            var slab = Club.Box(f, "Card", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(0, tableH));
+            var bas = Club.Paint(slab, "Base", Club.CreamDeep, 60); bas.rectTransform.offsetMin = new Vector2(0, -18); bas.rectTransform.offsetMax = new Vector2(0, -18);
+            var face = Club.Paint(slab, "Face", Club.Cream, 60);
+            var strip = Club.Paint(face.transform, "Strip", Club.Green);
+            face.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+            strip.rectTransform.anchorMin = new Vector2(0, 1); strip.rectTransform.offsetMin = new Vector2(0, -18);
+            var tt = face.transform;
+            float left = -inner / 2 + 24;
+            Text Cell(string text, float x, float yy, float w, int size, Color c, Font font = null)
             {
-                var l = UiKit.Label(tt, "Cell", size, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(x, yy), new Vector2(w, rowH), UiKit.Display, false);
+                var l = UiKit.Label(tt, "Cell", size, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(x, yy), new Vector2(w, rowH), font ?? Club.Title, false);
+                l.rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 l.text = text; l.color = c; l.raycastTarget = false; return l;
             }
             Image Mark(float x, float yy, Color c, bool round, float size)
             {
                 var m = UiKit.Panel(tt, "Mark", c, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(x, yy), new Vector2(size, size));
+                m.rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 if (round) { m.sprite = UiKit.Circle; m.type = Image.Type.Simple; }
                 m.raycastTarget = false; return m;
             }
-            float r0 = (3 * rowH) / 2 - rowH / 2, r1 = 0, r2 = -rowH;
-            var youBand = UiKit.Panel(tt, "You", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(left + labelW / 2, r2), new Vector2(labelW, rowH - 10));
-            youBand.raycastTarget = false;
-            Cell("HOLE", left + labelW / 2, r0, labelW, 34, UiKit.ArcadeBlue);
-            Cell("PAR", left + labelW / 2, r1, labelW, 34, UiKit.ArcadeBlue);
-            Cell("YOU", left + labelW / 2, r2, labelW, 34, UiKit.ArcadeInk);
+            float r0 = (tableRows * rowH) / 2 - rowH / 2 - 9, r1 = r0 - rowH;
+            Cell("HOLE", left + labelW / 2, r0, labelW, 34, Club.Muted, Club.Caps);
+            Cell("PAR", left + labelW / 2, r1, labelW, 34, Club.Muted, Club.Caps);
             for (int i = 0; i < n; i++)
             {
                 float x = left + labelW + 12 + colW * (i + 0.5f);
-                Mark(x, r0, UiKit.ArcadeBlue, true, 62);
-                Cell($"{holes[i]}", x, r0, colW, 30, Color.white);
-                Cell($"{pars[i]}", x, r1, colW, 38, UiKit.ArcadeInk);
-                if (strokes[i] is int s)
-                {
-                    int d = s - pars[i];
-                    bool lit = d < 0 || d > 0;
-                    if (d < 0) Mark(x, r2, UiKit.ArcadeYellow, true, 66);
-                    else if (d > 0) Mark(x, r2, d == 1 ? UiKit.ArcadeBlue : UiKit.ArcadeBlueDeep, false, 64);
-                    Cell($"{s}", x, r2, colW, 40, d > 0 ? Color.white : UiKit.ArcadeInk);
-                }
-                else Cell("–", x, r2, colW, 40, UiKit.ArcadeInk);
+                Mark(x, r0, Club.Ink, true, 62);
+                Cell($"{holes[i]}", x, r0, colW, 32, Color.white, Club.Caps);
+                Cell($"{pars[i]}", x, r1, colW, 42, Club.Ink);
             }
-            y -= 3 * rowH + 24 + 20;
+            for (int p = 0; p < players.Length; p++)
+            {
+                float r2 = r1 - rowH * (p + 1);
+                var band = UiKit.Panel(tt, players[p].Name, players[p].Color, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(left + labelW / 2, r2), new Vector2(labelW, rowH - 14));
+                band.rectTransform.pivot = new Vector2(0.5f, 0.5f); band.sprite = UiKit.Circle; band.type = Image.Type.Sliced; band.raycastTarget = false;
+                var name = Cell(players[p].Name, left + labelW / 2, r2, labelW - 24, 38, Club.Ink);
+                Icons.Fit(name, 18, 38);
+                for (int i = 0; i < n; i++)
+                {
+                    float x = left + labelW + 12 + colW * (i + 0.5f);
+                    if (players[p].Cells != null)
+                    {
+                        var cell = Cell(i < players[p].Cells.Length ? players[p].Cells[i] ?? "–" : "–", x, r2, colW, 32, Club.Ink);
+                        Icons.Fit(cell, 16, 32);
+                    }
+                    else if (i < players[p].Strokes.Length && players[p].Strokes[i] is int st)
+                    {
+                        int d = st - pars[i];
+                        if (d < 0) Mark(x, r2, Club.Sun, true, 70);
+                        else if (d > 0) Mark(x, r2, d == 1 ? Club.Coral : UiKit.Hex("C23A2E"), false, 64);
+                        Cell($"{st}", x, r2, colW, 46, d > 0 ? Color.white : Club.Ink);
+                    }
+                    else Cell("–", x, r2, colW, 46, Club.Muted);
+                }
+            }
+            y -= tableH + 18 + 26;
 
-            // the total, and against par
-            var tot = UiKit.Pill(f, "Total", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 1), new Vector2(0, y - 50), new Vector2(inner, 100), out var totFill, 4f);
-            var tl = UiKit.Label(totFill.transform, "Label", 44, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(40, 0), Vector2.zero, UiKit.Display, false);
-            tl.text = "TOTAL"; tl.color = Color.white;
-            var tv = UiKit.Label(totFill.transform, "Value", 70, TextAnchor.MiddleRight, Vector2.zero, Vector2.one, new Vector2(-50, 0), Vector2.zero, UiKit.Display, false);
-            tv.text = $"{total}"; tv.color = Color.white;
-            var chip = UiKit.Pill(totFill.rectTransform, "To par", toPar < 0 ? UiKit.ArcadeYellow : toPar == 0 ? Color.white : UiKit.ArcadeBlue, new Vector2(1, 0.5f), new Vector2(-230, 0), new Vector2(150, 64), out var chipFill, 3f, false);
-            var cv = UiKit.Label(chipFill.transform, "Text", 38, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
-            cv.text = GolfArcade.Course.Scorecard.FormatToPar(toPar); cv.color = toPar > 0 ? Color.white : UiKit.ArcadeInk;
-            y -= 100 + 22;
+            // the total, and against par (with others, the standings are the tiles below)
+            if (solo) AddTotal(f, ref y, total, toPar);
 
-            // the round's stats, three to a row
+            AddRest(f, y, inner, highlights, nextHole, card, parent, W);
+            Club.Enter(card, 0);
+        }
+
+        static void Top(RectTransform rt, float y, float h)
+        {
+            rt.anchorMin = new Vector2(0, 1); rt.anchorMax = new Vector2(1, 1); rt.pivot = new Vector2(0.5f, 1);
+            rt.anchoredPosition = new Vector2(0, y); rt.sizeDelta = new Vector2(0, h);
+        }
+
+        void AddTotal(RectTransform f, ref float y, int total, int toPar)
+        {
+            var row = Club.Box(f, "Total", new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, y), new Vector2(0, 110));
+            var bg = Club.Paint(row, "Fill", Club.Deep(0.85f), 40);
+            var edge = Club.Paint(row, "Edge", Club.White(0.14f), 40, true);
+            var tl = Club.Words(row, "Label", "Total", Club.Title, 56, Color.white, TextAnchor.MiddleLeft);
+            tl.rectTransform.offsetMin = new Vector2(40, 0);
+            var tv = Club.Words(row, "Value", $"{total}", Club.Display, 90, Color.white, TextAnchor.MiddleRight);
+            tv.rectTransform.offsetMax = new Vector2(-40, 0);
+            var chip = Club.Box(row, "To par", new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-170, 0), new Vector2(170, 70));
+            var ci = chip.gameObject.AddComponent<Image>(); ci.sprite = UiKit.Circle; ci.type = Image.Type.Sliced; ci.raycastTarget = false;
+            ci.color = toPar < 0 ? Club.Sun : toPar == 0 ? Club.Cream : Club.Coral;
+            var cv = Club.Words(chip, "Text", GolfArcade.Course.Scorecard.FormatToPar(toPar), Club.Title, 44, toPar > 0 ? Color.white : Club.Ink, TextAnchor.MiddleCenter);
+            y -= 110 + 26;
+        }
+
+        void AddRest(RectTransform f, float y, float inner, Highlight[] highlights, bool nextHole, RectTransform card, Transform parent, float W)
+        {
+            // the round's stats, three to a row, on small cream cards
             float hw = (inner - 2 * 18) / 3f;
-            const float tileH = 150, tileGap = 18;
+            const float tileH = 156, tileGap = 22;
             for (int i = 0; i < highlights.Length; i++)
             {
                 var h = highlights[i];
                 int col = i % 3;
-                float ty = y - (i / 3) * (tileH + tileGap) - tileH / 2;
-                var tile = UiKit.Panel(f, $"Highlight {i}", Color.white, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-inner / 2 + hw / 2 + col * (hw + tileGap), ty), new Vector2(hw, tileH));
-                tile.sprite = UiKit.RoundedLarge; tile.raycastTarget = false; tile.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                var disc = UiKit.Panel(tile.transform, "Disc", UiKit.ArcadeBlue, new Vector2(0, 1), new Vector2(0, 1), new Vector2(46, -46), new Vector2(60, 60));
+                float ty = y - (i / 3) * (tileH + tileGap);
+                var tile = Club.Box(f, $"Highlight {i}", new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-inner / 2 + hw / 2 + col * (hw + tileGap - 9), ty), new Vector2(hw, tileH));
+                var tb = Club.Paint(tile, "Base", Club.CreamDeep, 40); tb.rectTransform.offsetMin = new Vector2(0, -10); tb.rectTransform.offsetMax = new Vector2(0, -10);
+                Club.Paint(tile, "Face", Club.Cream, 40);
+                var disc = UiKit.Panel(tile, "Disc", Club.Ink, new Vector2(0, 1), new Vector2(0, 1), new Vector2(50, -50), new Vector2(64, 64));
                 disc.sprite = UiKit.Circle; disc.type = Image.Type.Simple; disc.raycastTarget = false; disc.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                Icons.Place(disc.transform, h.Icon, Color.white, new Vector2(0.5f, 0.5f), Vector2.zero, 38);
-                var ht = UiKit.Label(tile.transform, "Title", 22, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(1, 1), new Vector2(84, -46), new Vector2(-92, 56), UiKit.Display, false);
-                ht.rectTransform.pivot = new Vector2(0, 0.5f); ht.rectTransform.sizeDelta = new Vector2(-92, 56); ht.text = h.Title.ToUpperInvariant(); ht.color = UiKit.ArcadeBlue;
-                Icons.Fit(ht, 16, 22);
-                var hv = UiKit.Label(tile.transform, "Value", 42, TextAnchor.MiddleCenter, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 42), new Vector2(0, 60), UiKit.Display, false);
-                hv.text = h.Value.ToUpperInvariant(); hv.color = UiKit.ArcadeInk;
+                Icons.Place(disc.transform, h.Icon, Club.Sun, new Vector2(0.5f, 0.5f), Vector2.zero, 38);
+                var ht = Club.Words(tile, "Title", h.Title.ToUpperInvariant(), Club.Caps, 22, Club.Muted, TextAnchor.MiddleLeft);
+                ht.rectTransform.anchorMin = new Vector2(0, 1); ht.rectTransform.anchorMax = new Vector2(1, 1); ht.rectTransform.pivot = new Vector2(0, 0.5f);
+                ht.rectTransform.anchoredPosition = new Vector2(92, -50); ht.rectTransform.sizeDelta = new Vector2(-104, 56);
+                Icons.Fit(ht, 15, 22);
+                var hv = Club.Words(tile, "Value", h.Value, Club.Title, 50, Club.Ink, TextAnchor.MiddleCenter);
+                hv.rectTransform.anchorMin = new Vector2(0, 0); hv.rectTransform.anchorMax = new Vector2(1, 0); hv.rectTransform.pivot = new Vector2(0.5f, 0);
+                hv.rectTransform.anchoredPosition = new Vector2(0, 14); hv.rectTransform.sizeDelta = new Vector2(-20, 66);
+                Icons.Fit(hv, 26, 50);
             }
             int rows = (highlights.Length + 2) / 3;
-            y -= rows * tileH + Mathf.Max(0, rows - 1) * tileGap + 30;
+            y -= rows * tileH + Mathf.Max(0, rows - 1) * tileGap + 40;
 
             // the way on
-            HoldButton Button(string name, string icon, string text, Color color, Color ink, float x, float w)
+            HoldButton Button(string name, string text, Club.Style style, float size, float x, float w, string art)
             {
-                var b = UiKit.Pill(f, name, color, new Vector2(0.5f, 1), new Vector2(x, y - 58), new Vector2(w, 116), out var bf, 5f);
-                var disc = UiKit.Panel(bf.transform, "Disc", ink, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(64, 0), new Vector2(66, 66));
-                disc.sprite = UiKit.Circle; disc.type = Image.Type.Simple; disc.raycastTarget = false; disc.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                Icons.Place(disc.transform, icon, color, new Vector2(0.5f, 0.5f), new Vector2(icon == "play" ? 3 : 0, 0), 36);
-                var l = UiKit.Label(bf.transform, "Label", 40, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, new Vector2(40, 0), Vector2.zero, UiKit.Display, false);
-                l.text = text; l.color = ink; l.raycastTarget = false;
-                var hit = b.gameObject.AddComponent<Image>(); hit.color = Color.clear;
-                var hold = b.gameObject.AddComponent<HoldButton>();
-                hold.Fill = bf; hold.RestColor = color;
-                return hold;
+                var b = Club.Button(f, name, text, style, size, null, art);
+                var rt = (RectTransform)b.transform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1); rt.pivot = new Vector2(0.5f, 1);
+                rt.anchoredPosition = new Vector2(x, y); rt.sizeDelta = new Vector2(w, 140);
+                return b;
             }
-            float bw = (inner - 20) / 2f;
-            var light = UiKit.Hex("DCEEFD");
+            float bw = (inner - 24) / 2f;
             if (nextHole)
             {
-                NextHole = Button("Next hole", "play", "NEXT HOLE", UiKit.ArcadeYellow, UiKit.ArcadeInk, 0, inner);
-                y -= 116 + 20;
-                PlayAgain = Button("Play again", "swing", "PLAY AGAIN", light, UiKit.ArcadeBlue, -bw / 2 - 10, bw);
+                NextHole = Button("Next hole", "Next hole", Club.Style.Primary, 28, 0, inner, "play");
+                y -= 140 + 34;
+                PlayAgain = Button("Play again", againLabel, Club.Style.Secondary, 20, -bw / 2 - 12, bw, null);
             }
-            else PlayAgain = Button("Play again", "play", "PLAY AGAIN", UiKit.ArcadeYellow, UiKit.ArcadeInk, -bw / 2 - 10, bw);
-            Menu = Button("Main menu", "menu", "MAIN MENU", light, UiKit.ArcadeBlue, bw / 2 + 10, bw);
-            y -= 116 + 30;
+            else PlayAgain = Button("Play again", againLabel, Club.Style.Primary, 22, -bw / 2 - 12, bw, null);
+            Menu = Button("Main menu", "Main menu", Club.Style.Quiet, 20, bw / 2 + 12, bw, null);
+            y -= 140 + 30;
             card.sizeDelta = new Vector2(W, -y);
 
-            // up with a bounce, as small as a short screen needs
+            // as small as a short screen needs
             float room = parent is RectTransform area && area.rect.height > 0 ? area.rect.height - 60 : -y;
-            card.gameObject.AddComponent<CardPop>().Size = Mathf.Min(1f, room / -y);
+            card.localScale = Vector3.one * Mathf.Min(1f, room / -y);
         }
 
         public static string ToParWords(int toPar) => toPar == 0 ? "Even par" : toPar < 0 ? $"{-toPar} under par" : $"{toPar} over par";
