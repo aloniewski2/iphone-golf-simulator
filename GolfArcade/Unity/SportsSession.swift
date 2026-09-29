@@ -19,6 +19,7 @@ final class SportsSession {
     var players = PlayerRosterStore.load()
     var playerIndex = 0
     var sport = "golf"
+    var menuPauseVisible = false
     var touch = false { didSet { routeSamples() } }
     var travel = 0.85
     var sound = (UserDefaults.standard.object(forKey:"range.soundEnabled") as? Bool) ?? true {
@@ -48,10 +49,17 @@ final class SportsSession {
     let loading = LoadingModel()
     /// The tennis tutorial's current step, from Unity: (index, count, text).
     var finishedMatch: (won: Bool, score: String)?
+    /// Unity's numbers for the match just finished (aces, winners, rally, timing...), for the XP screen.
+    var lastMatchStats: MatchStats?
     var tutorialStep: (index: Int, count: Int, text: String)?
     /// Opponent strength for tennis: 0 relaxed, 0.45 standard, 0.8 tough.
     var tennisDifficulty = (UserDefaults.standard.object(forKey:"sports.tennisDifficulty") as? Double) ?? 0.45 {
         didSet { UserDefaults.standard.set(tennisDifficulty,forKey:"sports.tennisDifficulty") }
+    }
+    /// The court for tennis matches: "resort", "skyscraper" or "volcano" (Unity's TennisVenue keys).
+    /// Picked on the map screen before each match and remembered for the next.
+    var tennisVenue = UserDefaults.standard.string(forKey: "sports.tennisVenue") ?? "resort" {
+        didSet { UserDefaults.standard.set(tennisVenue, forKey: "sports.tennisVenue") }
     }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
     static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis")
@@ -67,14 +75,10 @@ final class SportsSession {
     var canDive = false
     var canArmUltimate = false
     var loadoutLocked = false
-    func chooseUltimate(_ choice: TennisUltimate) {
-        guard !loadoutLocked else { return }
-        ultimateChoice = choice
-        UserDefaults.standard.set(choice.rawValue, forKey: "tennis.ultimate")
-        if active && ready { command("ultimateSelect", value: Double(choice.rawValue)) }
-    }
+    // Retained API for older callers; ultimates are no longer a gameplay action.
+    func chooseUltimate(_ choice: TennisUltimate) {}
     func dive() { guard !paused && canDive && finishedMatch == nil else { return }; command("dive"); canDive = false }
-    func armUltimate() { guard !paused && (canArmUltimate || ultimateArmed) && finishedMatch == nil else { return }; command("ultimate") }
+    func armUltimate() {}
     var stamina = 1.0
     var phase = "calibrating"
     var tracking: SportsTrackingQuality = .lost
@@ -222,12 +226,12 @@ final class SportsSession {
     }
     func savePlayers() { PlayerRosterStore.save(players) }
     /// Start tennis from the front end: a campaign round against `opponent`, or training.
-    func startTennis(opponent: TennisOpponent?, round: Int?, mode: String? = nil, difficulty: Double, coach: [String] = [], preview: Bool) {
+    func startTennis(opponent: TennisOpponent?, round: Int?, mode: String? = nil, difficulty: Double, coach: [String] = [], preview: Bool, sets: Int? = nil, games: Int? = nil) {
         sport = "tennis"
         opponentName = opponent?.name.components(separatedBy: " ").first ?? (mode == "tutorial" ? "Ray" : "Coach")
         launchExtras = ["mode": mode ?? (opponent == nil ? "training" : "campaign"), "opponent": opponent?.key ?? "",
                         "opponentName": opponentName, "round": opponent?.round ?? "", "difficulty": difficulty,
-                        "sets": opponent?.sets ?? 1, "games": opponent?.games ?? 3,
+                        "sets": sets ?? opponent?.sets ?? 1, "games": games ?? opponent?.games ?? 3,
                         "coach": coach.joined(separator: "|")]
         start(preview: preview)
         launchExtras = [:]
@@ -252,19 +256,24 @@ final class SportsSession {
             status="No independent external display is available. Connect AirPlay/wired display or choose preview."; return
         }
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
-        finishedMatch=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
+        finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         phase="calibrating"; feedback=""; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
-        pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,
+        pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
                  "skinHex":p.skinHex,"hairHex":p.hairHex,
-                 "tips":coachingTips,"overscan":overscan,"ultimate":ultimateChoice.rawValue,
+                 "tips":coachingTips,"overscan":overscan,
                  "hairStyle":p.hairStyle,"haircut":p.shownHaircut,"hairColor":p.hairColor,"faceShape":p.faceShape,
                  "heightChoice":p.heightChoice,"buildChoice":p.buildChoice,"bodySize":p.bodySize]
         if preview { touch=true }
         pending?["external"] = !preview
         for (key, value) in launchExtras { pending?[key] = value }
+        // Explicit device verification uses a real, short match (no fabricated finish event).
+        if Self.benchmark && ProcessInfo.processInfo.arguments.contains("--postgame-check") {
+            pending?["sets"] = 1; pending?["games"] = 1
+        }
+
         score = TennisScore(); contacts = []; tutorialStep = nil
         loading.begin(now: Date())
         loading.onFinish = { [weak self] in self?.loadingFinished() }
@@ -275,9 +284,10 @@ final class SportsSession {
         SportsRuntime.shared().pause(false)
         status="Loading Unity…"
         timer?.invalidate()
-        timer=Timer.scheduledTimer(withTimeInterval:0.05,repeats:true) { [weak self] _ in
+        timer=Timer(timeInterval:0.05,repeats:true) { [weak self] _ in
             MainActor.assumeIsolated { self?.poll() }
         }
+        if let timer { RunLoop.main.add(timer, forMode: .common) }
         // A persistent runtime is already ready after the first launch.
         sendPending()
         let launchingSession=sessionID
@@ -321,9 +331,14 @@ final class SportsSession {
         guard active else { return }
         SportsDiagnostics.write("pause reason=\(reason) touch=\(touch) phase=\(phase)")
         sendJSON(["version":1,"session":sessionID,"action":"pause","reason":reason]); paused=true; status=reason
+        if reason == "Paused on phone — tap Ready to continue", ready, loading.finished, finishedMatch == nil {
+            menuPauseVisible = true; SportsDisplays.shared.showMenu(); if !displayConnected { SportsDisplays.shared.showMatchControls() }
+        }
     }
     func resume() {
         guard ready, touch || phase == "steering" else { status="Tap Ready to set your center and play."; return }
+        menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
+        if !displayConnected { SportsDisplays.shared.restorePhoneControls() }
         command("resume"); paused=false; status="Playing"; if sport == "tennis" { loadoutLocked=true }
         if sport == "tennis" { tennisControllerActive=true }
         SportsDiagnostics.write("resume touch=\(touch) phase=\(phase) target=\(target)")
@@ -403,6 +418,7 @@ final class SportsSession {
     private func loadingFinished() {
         guard active, ready else { return }
         if displayConnected { SportsDisplays.shared.external?.isHidden=true }
+        else { SportsDisplays.shared.restorePhoneControls() }
         // Compensate from the first point with the last measurement of this TV; the
         // setup re-times it when the camera is aimed at it.
         if displayConnected && startingLag>0 { command("latency",value:startingLag) }
@@ -410,12 +426,29 @@ final class SportsSession {
         else if sport == "tennis" && !motion.axisLocked { beginAxisCapture() }
         else { motion.start(tennis:sport == "tennis",travel:travel); status="Stand at your center, then tap Ready." }
     }
+    /// Completion is part of every Unity heartbeat, independently of one-shot result events.
+    func receiveMatchSnapshot(_ event: [String: Any]) {
+        guard event["matchComplete"] as? Bool == true,
+              let won = event["matchWon"] as? Bool else { return }
+        receiveMatchFinish(won: won, score: event["finalScore"] as? String ?? "")
+    }
+
     func receiveMatchFinish(won: Bool, score: String) {
         guard active, finishedMatch == nil else { return }
         finishedMatch = (won, score)
         SportsDiagnostics.write("match finished: phone Next enabled; classic=\(TennisMenu.shared.classic) external=\(displayConnected)")
         motion.stop()
         TennisMenu.shared.matchFinished(won: won, score: score)
+        // Keep explicit phone actions visible until the player chooses one.
+        canDive = false
+        timingPrompt = false; checkingTiming = false; measuringDelay = false
+        SportsDisplays.shared.showMatchControls()
+        if Self.benchmark {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1))
+                SportsDisplays.shared.captureBenchmarkFinish()
+            }
+        }
     }
 
     func advanceAfterMatch(_ choice: TennisMenu.AfterMatch = .menu) {
@@ -427,7 +460,13 @@ final class SportsSession {
         TennisMenu.shared.finishMatch(choice)
     }
 
+    func showMatchRewards() {
+        guard active, finishedMatch != nil else { return }
+        TennisMenu.shared.beginPostMatch()
+    }
+
     func end() {
+        menuPauseVisible = false
         if active && ready {
             var history=UserDefaults.standard.array(forKey:"sports.sessions.v1") as? [[String:Any]] ?? []
             history.append(["session":sessionID,"sport":sport,"playerID":players[playerIndex].id.uuidString,"endedAt":Date().timeIntervalSince1970,"summary":feedback])
@@ -441,10 +480,6 @@ final class SportsSession {
         TennisMenu.shared.sessionEnded()
     }
     private func poll() {
-        if active && ready && finishedMatch == nil, let result = SportsRuntime.shared().tennisResult() {
-            let parts = result.split(separator: "|", maxSplits: 1).map(String.init)
-            receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? parts[1] : "")
-        }
         if touch && active && !paused { sendInput(valid:true) }
         loading.tick(now: Date())
         for _ in 0..<64 {
@@ -466,6 +501,7 @@ final class SportsSession {
                 // Unity's scene load, 0...1, fills 20% → 80% of the bar.
                 if let p=Double(event["message"] as? String ?? "") { loading.reach(0.2+0.6*p) }
             case "feedback":
+                receiveMatchSnapshot(event)
                 feedback=event["message"] as? String ?? ""; stamina=event["stamina"] as? Double ?? 1
                 if SportsRuntime.shared().clock()>=nextDiagnostic {
                     nextDiagnostic=SportsRuntime.shared().clock()+1
@@ -495,8 +531,8 @@ final class SportsSession {
             case "abilities":
                 let fields = (event["message"] as? String ?? "").split(separator: "|")
                 if fields.count == 5, let meter = Double(fields[0]), let cooldown = Double(fields[2]), meter.isFinite, cooldown.isFinite {
-                    ultimateMeter = min(1, max(0, meter)); ultimateArmed = fields[1] == "1"
-                    diveCooldown = max(0, cooldown); canDive = fields[3] == "1"; canArmUltimate = fields[4] == "1"
+                    ultimateMeter = 0; ultimateArmed = false
+                    diveCooldown = max(0, cooldown); canDive = fields[3] == "1"; canArmUltimate = false
                 }
             case "contact":
                 if let contact = TennisContact(line: event["message"] as? String ?? "") { contacts = Array((contacts + [contact]).suffix(12)) }
@@ -510,20 +546,28 @@ final class SportsSession {
                     // A new serve starts from the aim the player last chose.
                     if phase == "serve" { setServeAim(across:serveAim.across,depth:serveAim.depth) }
                 }
+                if tennisPhase != phase { SportsDiagnostics.write("tennis phase=\(phase)") }
                 tennisPhase=phase
+                if phase == "finished" { receiveMatchSnapshot(event) }
                 if parts.count>1 { serveFromDeuce=parts[1] == "deuce" }
             case "tutorialStep":
                 let parts=(event["message"] as? String ?? "").split(separator:"|",maxSplits:2).map(String.init)
                 if parts.count == 3, let i=Int(parts[0]), let n=Int(parts[1]) { tutorialStep=(i,n,parts[2]) }
             case "tutorialDone", "shot":
                 if event["type"] as? String == "tutorialDone" || TennisMenu.shared.launch?.mode == .tutorial { TennisMenu.shared.tutorialFinished() }
-            case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n) }
+            case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n); SportsDiagnostics.write("rally persisted \(n)") }
+            case "matchStats": lastMatchStats = MatchStats(line: event["message"] as? String ?? "")
             case "matchOver":
                 let parts = (event["message"] as? String ?? "").split(separator: "|")
                 receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? String(parts[1]) : "")
             case "error": pending=nil; status=event["message"] as? String ?? "Unity error"; pause(reason:status)
             default: break
             }
+        }
+        // The durable copy of the result, read after the events so their stats are already in.
+        if active && finishedMatch == nil, let result = SportsRuntime.shared().tennisResult() {
+            let parts = result.split(separator: "|", maxSplits: 1).map(String.init)
+            receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? parts[1] : "")
         }
     }
 }

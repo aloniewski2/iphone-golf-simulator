@@ -33,7 +33,8 @@ namespace GolfArcade.Tennis
             }
         }
 
-        static GameObject Spawn(string asset, Transform parent, Vector3 at, float yaw, float height, float tint = 1)
+        /// (internal: the volcano venue plants the same toy trees on its grassland)
+        internal static GameObject Spawn(string asset, Transform parent, Vector3 at, float yaw, float height, float tint = 1)
         {
             // Env V5: the sculpted (Tripo) toy broadleaf replaces the V4 blob broadleafs when it ships
             if (asset.StartsWith("EnvV4_TreeBroadleaf") && Resources.Load<GameObject>(Root + "EnvV5_TreeA")) asset = "EnvV5_TreeA";

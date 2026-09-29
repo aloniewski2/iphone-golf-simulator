@@ -54,6 +54,10 @@ final class SportsDisplays: NSObject {
     func restorePhoneControls() {
         phone?.isHidden=false; phone?.makeKey()
         if let preview {
+            if !SportsSession.shared.loading.finished {
+                preview.isHidden = true; phone?.makeKeyAndVisible(); return
+            }
+            previewOverlay?.willMove(toParent: nil); previewOverlay?.view.removeFromSuperview(); previewOverlay?.removeFromParent()
             phone?.isHidden=true
             preview.makeKeyAndVisible()
             let overlay=UIHostingController(rootView:SportsPreviewControls())
@@ -68,6 +72,22 @@ final class SportsDisplays: NSObject {
                 overlay.view.heightAnchor.constraint(equalToConstant:150)])
         }
     }
+    /// Finished matches use the full native phone screen, including on-phone gameplay.
+    func showMatchControls() {
+        preview?.isHidden = true
+        phone?.makeKeyAndVisible()
+    }
+
+    /// Opt-in automated device run: capture the actual controller window after completion.
+    func captureBenchmarkFinish() {
+        guard SportsSession.benchmark, let window = phone else { return }
+        let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+        let image = renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("PostGameDevice.png")
+        try? image.pngData()?.write(to: url)
+        SportsDiagnostics.write("postgame device screenshot saved; phoneVisible=\(!window.isHidden) finished=\(SportsSession.shared.finishedMatch != nil)")
+    }
+
     func endPreview() {
         if let child=previewOverlay { child.willMove(toParent:nil); child.view.removeFromSuperview(); child.removeFromParent() }
         previewOverlay=nil
@@ -152,8 +172,7 @@ struct SportsPreviewControls:View {
                 Button("Menu") { session.end() }
             }
             if session.sport == "tennis" && session.ready {
-                if !session.loadoutLocked { TennisUltimatePicker(session: session) }
-                else if session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
+                if session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
             }
             HStack {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }

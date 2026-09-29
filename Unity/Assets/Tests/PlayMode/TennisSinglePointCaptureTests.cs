@@ -19,7 +19,7 @@ namespace GolfArcade.PlayTests
             var game=Object.FindFirstObjectByType<TennisGame>();
             int oldRate=Time.captureFramerate; Time.captureFramerate=60;
             Process encoder=null;
-            string output=Path.GetFullPath("../ArtDir/anims/captures/OnePoint_PlayerPOV_60fps.mp4");
+            string output=Path.GetFullPath(System.Environment.GetEnvironmentVariable("POINT_CAPTURE_OUTPUT") ?? "../ArtDir/anims/captures/OnePoint_PlayerPOV_60fps.mp4");
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             string temp="Library/Captures/onepoint-current.jpg";
             int frame=0,finishedFrames=0; bool complete=false; string score="";
@@ -29,7 +29,7 @@ namespace GolfArcade.PlayTests
                 game.ConfigureMatch(TennisGame.Mode.Exhibition,null,"Rival","CASUAL MATCH");
                 game.AutoPlay=true; game.AutoPlayLean=true;
                 encoder=Process.Start(new ProcessStartInfo {
-                    FileName="/private/tmp/tennis-preview-runtime/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-macos-aarch64-v7.1",
+                    FileName=System.Environment.GetEnvironmentVariable("POINT_CAPTURE_FFMPEG") ?? "/private/tmp/tennis-preview-runtime/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-macos-aarch64-v7.1",
                     Arguments="-y -hide_banner -loglevel error -f image2pipe -framerate 60 -vcodec mjpeg -i pipe:0 -an -c:v libx264 -preset veryfast -crf 19 -pix_fmt yuv420p -r 60 -movflags +faststart \""+output+"\"",
                     UseShellExecute=false,RedirectStandardInput=true,CreateNoWindow=true
                 });

@@ -93,6 +93,10 @@ namespace GolfArcade.Tennis
 
         void EndSet(bool playerTookSet)
         {
+            // TennisMatch is a value type, but List is shared by struct copies. HUD
+            // match-point previews award hypothetical points on a copy every frame.
+            // Detach before appending so prediction cannot corrupt the live final score.
+            SetScores = SetScores == null ? new List<string>() : new List<string>(SetScores);
             SetScores.Add($"{PlayerGames}–{OpponentGames}");
             if (playerTookSet) PlayerSets++; else OpponentSets++;
             if (PlayerSets >= SetsToWin || OpponentSets >= SetsToWin)

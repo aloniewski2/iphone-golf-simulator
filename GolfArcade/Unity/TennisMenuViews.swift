@@ -255,29 +255,31 @@ struct TennisMenuScreen: View {
     var body: some View {
         Group {
             switch menu.screen {
-            case .title: ClubTitleScreen(menu: menu, compact: compact)
-            case .main: ClubHomeScreen(menu: menu, compact: compact)
+            case .title: IslandTitleScreen(menu: menu, compact: compact)
+            case .main: IslandHomeScreen(menu: menu, compact: compact)
             case .party: ClubPartyScreen(menu: menu, compact: compact)
             case .quickPlay: ClubQuickPlayScreen(menu: menu, compact: compact)
-            case .gameSelect: ClubGameSelectScreen(menu: menu, compact: compact)
-            case .hub(let sport): ClubHubScreen(menu: menu, sport: sport, compact: compact)
+            case .gameSelect: IslandSportsScreen(menu: menu, compact: compact)
+            case .hub(let sport): IslandHubScreen(menu: menu, sport: sport, compact: compact)
             case .locked(let sport): ClubLockedScreen(menu: menu, sport: sport, compact: compact)
-            case .campaign: ClubLadderScreen(menu: menu, compact: compact, exhibition: false)
-            case .exhibition: ClubLadderScreen(menu: menu, compact: compact, exhibition: true)
-            case .training: ClubTrainingScreen(menu: menu, compact: compact)
-            case .character: ClubCharacterScreen(menu: menu, compact: compact)
-            case .settings: ClubSettingsScreen(menu: menu, compact: compact)
-            case .howTo: ClubGuideScreen(menu: menu, compact: compact, golf: false)
-            case .golfLesson: ClubGuideScreen(menu: menu, compact: compact, golf: true)
-            case .connect: ClubConnectScreen(menu: menu, compact: compact)
+            case .campaign: IslandLadderScreen(menu: menu, compact: compact, exhibition: false)
+            case .exhibition: IslandLadderScreen(menu: menu, compact: compact, exhibition: true)
+            case .training: IslandTrainingScreen(menu: menu, compact: compact)
+            case .character: IslandLockerScreen(menu: menu, compact: compact)
+            case .settings: IslandSettingsScreen(menu: menu, compact: compact)
+            case .howTo: IslandGuideScreen(menu: menu, compact: compact, golf: false)
+            case .golfLesson: IslandGuideScreen(menu: menu, compact: compact, golf: true)
+            case .connect: IslandConnectScreen(menu: menu, compact: compact)
             case .loading: LoadingScreen(menu: menu, compact: compact)
-            case .results: ClubResultsScreen(menu: menu, compact: compact)
-            case .story: ClubStoryScreen(menu: menu, compact: compact)
+            case .results: IslandResultsScreen(menu: menu, compact: compact)
+            case .story: IslandStoryScreen(menu: menu, compact: compact)
+            case .map: IslandCourtScreen(menu: menu, compact: compact)
+            case .postMatch: IslandResultsScreen(menu: menu, compact: compact, postMatch: true)
             }
         }
-        .overlay { ClubWipe(trigger: menu.transitions) }
-        .transition(.asymmetric(insertion: .scale(scale: 1.08).combined(with: .opacity), removal: .opacity))
-        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: menu.screen)
+
+        .transition(.opacity)
+        .animation(SportsSession.shared.reduceMotion ? nil : .easeOut(duration: 0.2), value: menu.screen)
     }
 }
 

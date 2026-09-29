@@ -39,10 +39,10 @@ namespace GolfArcade.Tennis
 
             var titleBody = hud.Chunky("Title card", root, new Vector2(.5f, .5f), new Vector2(560, 96), new Vector2(0, 150), TennisHud.SkyTop, TennisHud.SkyBottom, 5);
             titleCard = (RectTransform)titleBody.transform.parent;
-            title = hud.Label(titleBody.rectTransform, "TROPICAL OPEN", 58, new Vector2(0, 8), new Vector2(560, 70), Color.white, TextAnchor.MiddleCenter, 3f);
+            title = hud.Label(titleBody.rectTransform, TennisVenue.Title, 58, new Vector2(0, 8), new Vector2(560, 70), Color.white, TextAnchor.MiddleCenter, 3f);
             UiGradient.On(title, TennisHud.GoldTop, TennisHud.GoldBottom);
             var subBody = hud.Chunky("Title ribbon", titleCard, new Vector2(.5f, 0), new Vector2(300, 30), new Vector2(0, -6), TennisHud.GoldTop, TennisHud.GoldBottom, 3);
-            subtitle = hud.Label(subBody.rectTransform, "CENTRE COURT  ·  SUNSET SESSION", 15, new Vector2(0, 1), new Vector2(300, 30), TennisHud.Navy, TextAnchor.MiddleCenter, 0);
+            subtitle = hud.Label(subBody.rectTransform, TennisVenue.CourtName + "  ·  " + TennisVenue.Session, 15, new Vector2(0, 1), new Vector2(300, 30), TennisHud.Navy, TextAnchor.MiddleCenter, 0);
 
             var nameBody = hud.Chunky("Name card", root, new Vector2(0, 0), new Vector2(420, 92), new Vector2(0, 130), TennisHud.SunTop, TennisHud.SunBottom, 5);
             nameCard = (RectTransform)nameBody.transform.parent;
@@ -102,9 +102,8 @@ namespace GolfArcade.Tennis
                 float k = Smooth(Mathf.Clamp01(t / Drone));
                 // High over the bay first, so the whole island reads, then banking low over
                 // the jungle and in over the stands.
-                pos = Bezier(new Vector3(40, 95, 210), new Vector3(-150, 70, 90), new Vector3(-70, 24, -40), new Vector3(-14, 7.5f, -22), k);
-                look = Vector3.Lerp(new Vector3(0, -10, -20), new Vector3(0, .5f, 0), k);
-                fov = Mathf.Lerp(46, 50, k);
+                // (each venue flies its own path: TennisVenue.Drone)
+                TennisVenue.Drone(k, out pos, out look, out fov);
                 Card(titleCard, t, Drone, fromLeft: false);
             }
             else if (t < Drone + RivalIntro)
@@ -180,7 +179,7 @@ namespace GolfArcade.Tennis
         /// name card ("QUARTERFINAL", or "THE CHAMPION" for the boss).
         public void Bill(string round, string role)
         {
-            if (subtitle) subtitle.text = "CENTRE COURT  ·  " + round;
+            if (subtitle) subtitle.text = TennisVenue.CourtName + "  ·  " + round;
             rivalRole = role;
         }
 

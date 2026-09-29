@@ -58,6 +58,57 @@ final class TennisMenuSnapshotTests: XCTestCase {
         XCTAssertEqual(writer.status, .completed, "\(String(describing: writer.error))")
     }
 
+    func testApprovedIslandScreens() async throws {
+        let menu = TennisMenu.shared, session = SportsSession.shared
+        let oldPlayers = session.players, oldIndex = session.playerIndex
+        var referencePlayer = Player(name: "Adnan", colorIndex: 0); referencePlayer.setSkin(0.35); referencePlayer.hairColor = 3
+        session.players = [referencePlayer]; session.playerIndex = 0
+        defer { session.players = oldPlayers; session.playerIndex = oldIndex; session.loading.cancel(); session.menuPauseVisible = false; menu.debugShow(.title) }
+        let out = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("ArtDir/ui/toybox-simple-v6/runtime")
+        try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let screens: [(String, MenuScreen)] = [("intro", .title), ("home", .main), ("sports", .gameSelect), ("courts", .map), ("tennis", .hub(.tennis)), ("campaign", .campaign), ("quick-match", .exhibition), ("training", .training), ("locker", .character), ("settings", .settings), ("guide", .howTo), ("connect", .connect), ("results", .results), ("pause", .main), ("loading", .loading)]
+        for (name, screen) in screens {
+            menu.debugShow(screen, launch: MenuLaunch(round: 0), result: MatchResult(won: true, score: "6–4", round: 0))
+            session.menuPauseVisible = name == "pause"
+            if screen == .loading { session.loading.begin(now: Date()); session.loading.reach(0.72); session.loading.tick(now: Date()) }
+            let size = CGSize(width: 1280, height: 720)
+            let host = UIHostingController(rootView: TennisTVRoot()); host.safeAreaRegions = []
+            let window = UIWindow(windowScene: scene); window.frame = CGRect(origin: .zero, size: size)
+            window.rootViewController = host; window.isHidden = false; host.view.frame = window.bounds; host.view.layoutIfNeeded()
+            try await Task.sleep(for: .seconds(1))
+            let format = UIGraphicsImageRendererFormat(); format.scale = 1
+            func capture(_ suffix: String = "") throws {
+                let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in host.view.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+                try XCTUnwrap(image.pngData()).write(to: out.appendingPathComponent(name + suffix + ".png"))
+            }
+            try capture()
+            if screen == .loading {
+                session.loading.practice(); try await Task.sleep(for: .milliseconds(600)); try capture("-swing")
+                func findScene(_ view: UIView) -> SCNView? { if let v = view as? SCNView { return v }; return view.subviews.compactMap(findScene).first }
+                let scn = try XCTUnwrap(findScene(host.view))
+                let root = try XCTUnwrap(scn.scene?.rootNode.childNode(withName: "heroV4", recursively: true))
+                var animated = 0
+                root.enumerateChildNodes { node, _ in
+                    if let morph = node.morpher, morph.weights.contains(where: { $0.doubleValue > 0.01 }) { animated += 1 }
+                }
+                XCTAssertGreaterThan(animated, 5, "The swing must animate the character, not just increment its trigger.")
+                try await Task.sleep(for: .seconds(2)); session.loading.practice(); XCTAssertEqual(session.loading.practiceSequence, 2)
+                try await Task.sleep(for: .milliseconds(600)); try capture("-repeat")
+            }
+            window.isHidden = true
+        }
+        session.menuPauseVisible = false
+        menu.debugShow(.main)
+        try await saveHosted(TennisPhoneMenu(), "island-home-phone", CGSize(width: 402, height: 874))
+        menu.debugShow(.character)
+        try await saveHosted(TennisPhoneMenu(), "island-locker-phone", CGSize(width: 402, height: 874))
+        for (name, route) in [("quick",MenuScreen.exhibition),("settings",.settings),("campaign",.campaign),("loading",.loading)] {
+            menu.debugShow(route)
+            try await saveHosted(TennisPhoneMenu(), "island-\(name)-phone", CGSize(width:402,height:874))
+        }
+    }
+
     private var folder: URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("tennis-menu")
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -304,14 +355,8 @@ final class TennisMenuSnapshotTests: XCTestCase {
         session.sport = "tennis"; session.ready = true; session.touch = true; session.paused = true
         session.finishedMatch = nil; session.loadoutLocked = false
         defer { session.ready = false; session.paused = true; session.loadoutLocked = false; session.canDive = false; session.canArmUltimate = false }
-        for choice in TennisUltimate.allCases {
-            session.chooseUltimate(choice)
-            XCTAssertEqual(session.ultimateChoice, choice)
-            try await saveHosted(TennisUltimatePicker(session: session).padding().preferredColorScheme(.dark), "ultimate-picker-\(choice.rawValue)", CGSize(width: 390,height: 250))
-        }
-        session.loadoutLocked = true
-        session.chooseUltimate(.skybreaker)
-        XCTAssertEqual(session.ultimateChoice, .curveball, "selection locks at first Ready")
+        session.chooseUltimate(.curveball)
+        XCTAssertEqual(session.ultimateChoice, savedChoice, "removed ultimate selection is ignored")
         session.paused = false; session.ultimateMeter = 1; session.canArmUltimate = true; session.canDive = true; session.tennisPhase = "rally"
         try await saveHosted(TennisAbilityControls(session: session).padding().preferredColorScheme(.dark), "ultimate-actions", CGSize(width: 390,height: 180))
         try await saveHosted(SportsPreviewControls(), "ultimate-preview", CGSize(width: 800,height: 300))

@@ -36,13 +36,30 @@ namespace GolfArcade.Tests
         }
         [Test] public void SwingPowerDeterminesSpeed()
         { Assert.Greater(Hit(power:1).Speed, Hit(power:.2f).Speed); }
-        [Test] public void HardStrokesHaveSmallerContactWindowAndReach() {
+        [Test] public void HardStrokesKeepForgivingContactWindowAndReach() {
             Assert.IsTrue(Hit(age:.29f,power:0).Contact);
-            Assert.IsFalse(Hit(age:.29f,power:1).Contact);
+            Assert.IsTrue(Hit(age:.29f,power:1).Contact);
             Vector3 ball=new Vector3(1,1.1f,.65f);
             Assert.IsTrue(TennisRules.AssistedContact(ball,ball,Vector3.zero,.18f,false,out _,0));
-            Assert.IsFalse(TennisRules.AssistedContact(ball,ball,Vector3.zero,.18f,false,out _,1));
+            Assert.IsTrue(TennisRules.AssistedContact(ball,ball,Vector3.zero,.18f,false,out _,1));
         }
+        [Test] public void ScrappyContactConnectsButTimingControlsPace() {
+            var ball = new Vector3(1.45f,1.1f,.65f);
+            Assert.IsTrue(TennisRules.AssistedContact(ball,ball,Vector3.zero,.42f,false,out _,1));
+            Assert.IsFalse(TennisRules.AssistedContact(ball,ball,Vector3.zero,.50f,false,out _,1));
+            var clean = TennisRules.AssistedHit(.02f,.65f,1,.2f,1);
+            var late = TennisRules.AssistedHit(.24f,.65f,1,1,1);
+            Assert.Greater(clean.Speed, late.Speed * 1.4f, "clean soft swings beat mistimed hard swings");
+            Assert.AreEqual(Timing.Perfect, TennisRules.Grade(clean.Timing));
+            Assert.AreEqual(Timing.Ok, TennisRules.Grade(late.Timing));
+            Assert.Less(TennisRules.AssistedHit(.02f,.2f,1,.2f,1).Speed, clean.Speed);
+            float previous = float.MaxValue;
+            foreach (float t in new[] { 0f,.035f,.06f,.095f,.14f,.21f,.27f }) {
+                float speed=TennisRules.AssistedHit(t,.65f,1,.5f,1).Speed;
+                Assert.LessOrEqual(speed,previous); previous=speed;
+            }
+        }
+
         [Test] public void ShotAimingLandsLeftAndRightWithoutWeakLobs() {
             Vector3 start=new Vector3(0,1,-10.5f);
             foreach(float power in new[]{0f,.5f,1f}) foreach(float aim in new[]{-1f,0f,1f}) {

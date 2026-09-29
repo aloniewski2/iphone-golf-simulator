@@ -185,6 +185,7 @@ struct ClubHeader: View {
             let s = SportsSession.shared
             if s.players.indices.contains(s.playerIndex) {
                 let p = s.players[s.playerIndex]
+                if !compact { LevelStrip(player: p.id).padding(.trailing, 10) }
                 HStack(spacing: 8) {
                     Circle().fill(Color(hex: p.skinHex))
                         .overlay(Circle().strokeBorder(p.outfitColor("shirt") ?? Club.sun, lineWidth: 3))
@@ -505,5 +506,149 @@ struct ClubWipe: View {
             withAnimation(.easeInOut(duration: 0.55)) { progress = 1.6 } completion: { active = false }
         }
         .ignoresSafeArea()
+    }
+}
+
+// MARK: - Approved Island menus (ArtDir/ui/toybox-simple-v6)
+// Deliberately separate from Arcade: the in-match serve meter keeps its original tokens.
+enum IslandUI {
+    static let navy = Color(hex: "09286F")
+    static let lime = Color(hex: "D3F34B")
+    static let paper = Color(hex: "FAF8F3")
+    static let muted = Color(hex: "516383")
+    static func font(_ size: CGFloat, bold: Bool = false) -> Font {
+        .system(size: size, weight: bold ? .bold : .medium, design: .rounded)
+    }
+}
+
+struct IslandBackdrop: View {
+    var intro = false
+    var body: some View {
+        GeometryReader { g in
+            Image(uiImage: UIImage(named: intro ? "island-intro.png" : "island-terrace.png") ?? UIImage(named: "scene-home.jpg") ?? UIImage())
+                .resizable().scaledToFill().frame(width: g.size.width, height: g.size.height).clipped()
+        }.ignoresSafeArea().accessibilityHidden(true)
+    }
+}
+
+struct IslandPalm: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        func move(_ x: CGFloat, _ y: CGFloat) { p.move(to: CGPoint(x: r.width*x, y: r.height*y)) }
+        func curve(_ x: CGFloat, _ y: CGFloat, _ a: CGFloat, _ b: CGFloat, _ c: CGFloat, _ d: CGFloat) {
+            p.addCurve(to: CGPoint(x:r.width*x,y:r.height*y), control1: CGPoint(x:r.width*a,y:r.height*b), control2: CGPoint(x:r.width*c,y:r.height*d))
+        }
+        move(0.43,1); curve(0.5,0.34,0.42,0.72,0.48,0.48); curve(0.55,1,0.53,0.61,0.55,0.85); p.closeSubpath()
+        for tip in [(0.03,0.16,0.27,0.0), (0.01,0.57,0.10,0.27), (0.26,0.88,0.24,0.48), (0.68,0.85,0.69,0.44), (0.94,0.56,0.87,0.27), (0.91,0.16,0.68,0.02)] {
+            move(0.51,0.36)
+            curve(tip.0,tip.1,tip.2,tip.3,tip.2,tip.3)
+            curve(0.51,0.36,(tip.0+0.51)/2,(tip.1+0.36)/2,0.48,0.48)
+            p.closeSubpath()
+        }
+        return p
+    }
+}
+
+struct IslandWordmark: View {
+    var size: CGFloat = 36
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack(alignment: .topTrailing) {
+                Circle().fill(Color(hex: "FFD145")).frame(width: size * 0.9, height: size * 0.9).offset(x: size * 0.25)
+                IslandPalm().fill(IslandUI.navy).frame(width: size * 1.5, height: size * 1.12)
+            }.frame(height: size * 1.12)
+            Text("ISLAND").font(IslandUI.font(size, bold: true)).tracking(size * 0.035)
+            Text("SPORTS CLUB").font(IslandUI.font(size * 0.32, bold: true)).tracking(size * 0.095)
+        }.foregroundStyle(IslandUI.navy).accessibilityElement(children: .ignore).accessibilityLabel("Island Sports Club")
+    }
+}
+
+struct IslandAction: View {
+    let title: String
+    var focused = false
+    var primary = false
+    var tint: Color? = nil
+    var compact = false
+    var identifier = ""
+    let action: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .title3) private var typeScale = 1.0
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Text(title).font(IslandUI.font(compact ? 20 * min(typeScale, 1.5) : 27, bold: true)).lineLimit(1).minimumScaleFactor(0.8)
+                Spacer(minLength: 10)
+                if primary { Image(systemName: "play.fill").font(.system(size: 15, weight: .bold)) }
+            }
+            .foregroundStyle(IslandUI.navy)
+            .padding(.horizontal, 22).frame(minHeight: compact ? 48 : 58)
+            .background(primary ? (tint ?? IslandUI.lime) : focused ? Color.white.opacity(0.8) : .clear, in: RoundedRectangle(cornerRadius: primary ? 26 : 12))
+            .overlay(RoundedRectangle(cornerRadius: primary ? 26 : 12).strokeBorder(IslandUI.navy.opacity(focused ? 0.8 : 0), lineWidth: 2))
+            .shadow(color: IslandUI.navy.opacity(primary ? 0.09 : 0), radius: 3, y: 2)
+        }.buttonStyle(.plain).accessibilityLabel(title).accessibilityIdentifier(identifier)
+            .accessibilityAddTraits(focused ? .isSelected : [])
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: focused)
+    }
+}
+
+struct IslandShell<Content: View>: View {
+    var title: String
+    var compact: Bool
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        ZStack {
+            IslandBackdrop()
+            if compact { IslandUI.paper.opacity(0.92).ignoresSafeArea() }
+            else { LinearGradient(colors: [IslandUI.paper.opacity(0.88), .clear], startPoint: .top, endPoint: .center).ignoresSafeArea().allowsHitTesting(false) }
+            VStack(alignment: .leading, spacing: compact ? 18 : 24) {
+                HStack(alignment: .center) {
+                    if !compact { IslandWordmark(size: 28).frame(width: 180); Divider().frame(height: 52).padding(.horizontal, 20) }
+                    Text(title).font(IslandUI.font(compact ? 30 : 42, bold: true)).foregroundStyle(IslandUI.navy)
+                    Spacer()
+                }
+                content().frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }.padding(.horizontal, compact ? 22 : 52).padding(.vertical, compact ? 22 : 36)
+        }.preferredColorScheme(.light)
+    }
+}
+
+struct IslandPlayer: View {
+    let player: Player
+    var sport: Sport? = nil
+    var body: some View {
+        GeometryReader { g in
+            ZStack {
+                Ellipse().fill(IslandUI.navy.opacity(0.14)).frame(width: g.size.width * 0.35, height: 16).blur(radius: 10)
+                    .position(x: g.size.width * 0.52, y: g.size.height * 0.94).allowsHitTesting(false)
+                CharacterModelPreview(player: player, cameraDistance: 2.95, idleSport: sport)
+                    .accessibilityLabel("\(player.name), equipped character")
+            }
+        }
+    }
+}
+
+struct IslandSelector: View {
+    let label: String
+    let value: String
+    var swatch: Color? = nil
+    var focused = false
+    var compact = false
+    let step: (Int) -> Void
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(label).font(IslandUI.font(compact ? 15 : 20, bold: true)).lineLimit(1).minimumScaleFactor(0.8)
+            Spacer(minLength: 8)
+            if let swatch { Circle().fill(swatch).frame(width: 23, height: 23).overlay(Circle().strokeBorder(IslandUI.navy.opacity(0.18))) }
+            Button { step(-1) } label: { Image(systemName: "chevron.left").frame(width: 36, height: 44) }
+                .accessibilityLabel("Previous \(label)")
+            Text(value).font(IslandUI.font(compact ? 15 : 20, bold: true)).lineLimit(1).minimumScaleFactor(0.7)
+                .frame(width: compact ? 96 : 152)
+            Button { step(1) } label: { Image(systemName: "chevron.right").frame(width: 36, height: 44) }
+                .accessibilityLabel("Next \(label)")
+        }.buttonStyle(.plain).foregroundStyle(IslandUI.navy)
+            .padding(.horizontal, compact ? 12 : 18)
+            .background(focused ? IslandUI.lime : Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 13))
+            .shadow(color: IslandUI.navy.opacity(0.06), radius: 3, y: 2)
+            .accessibilityElement(children: .contain)
     }
 }

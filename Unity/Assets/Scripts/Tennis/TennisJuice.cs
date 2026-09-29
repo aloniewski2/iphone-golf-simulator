@@ -112,12 +112,12 @@ namespace GolfArcade.Tennis
         /// A short called beat (NET!...) on the play camera.
         public void Call(string text) { if (shot != Shot.Ultimate) Title(text, "", .8f); }
 
-        /// After every point: winner reaction, then loser reaction (both auto-emoting), ~2.3 s total.
+        /// Announce the point in the current third-person view; no reaction-camera cut.
         public void PointReaction(Transform winner, Transform loser, string headline)
         {
             Reactions++;
             if (shot == Shot.Ultimate) return;
-            subject = winner; subject2 = loser; Begin(Shot.Reaction, 2.3f); roll = 0; Current = Beat.None;
+            End(); Current = Beat.None;
             Title(headline, "", 1.2f);
         }
 
@@ -128,6 +128,7 @@ namespace GolfArcade.Tennis
         /// play camera and the real contact happens there. Once the ball is hit the camera is regular.
         public void UltimateCharge(Transform hitter, string who, string ability = "SUPERNOVA")
         {
+            if (!TennisAbilities.UltimatesEnabled) return;
             foreach(var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
                 if(c != canvas && c.enabled) { cinematicHidden.Add(c); c.enabled=false; }
             ultimateColor = ability == "Rescue Lob" ? new Color(.25f,.95f,.8f) : ability == "Curveball" ? new Color(.55f,.4f,1) : new Color(1,.55f,.15f);
@@ -138,7 +139,7 @@ namespace GolfArcade.Tennis
             Overlay(ultimateColor * .12f, .92f, .85f, .12f); Title(ability.ToUpperInvariant(), who + " · ULTIMATE", UltimateFreeze);
         }
         /// The ultimate contact itself (play camera): title, flash and punch — no camera change.
-        public void UltimateHit(string who, string ability = "SUPERNOVA") { if (shot == Shot.Cut || shot == Shot.BallTrack) End(); flashA = .22f; Punch(1f); Title(ability.ToUpperInvariant() + "!", who, .7f); /* light flash: the live ball must stay readable */ }
+        public void UltimateHit(string who, string ability = "SUPERNOVA") { if (!TennisAbilities.UltimatesEnabled) return; if (shot == Shot.Cut || shot == Shot.BallTrack) End(); flashA = .22f; Punch(1f); Title(ability.ToUpperInvariant() + "!", who, .7f); /* light flash: the live ball must stay readable */ }
 
         void PlayUltimateCue(string ability)
         {
@@ -323,6 +324,8 @@ namespace GolfArcade.Tennis
             rMeter = Bar("Rival ultimate", new Vector2(1, 1), new Vector2(-24, -64), new Color(.35f, .9f, 1f), out rMeterBack);
             pLabel = Label("You ult label", 20, new Vector2(0, 0), new Vector2(134, 54), new Vector2(240, 26)); pLabel.color = Color.white;
             rLabel = Label("Rival ult label", 20, new Vector2(1, 1), new Vector2(-134, -94), new Vector2(240, 26)); rLabel.color = Color.white;
+            pMeterBack.gameObject.SetActive(false); rMeterBack.gameObject.SetActive(false);
+            pLabel.gameObject.SetActive(false); rLabel.gameObject.SetActive(false);
             // rival cam inset
             rivalRT = new RenderTexture(320, 320, 16) { name = "Rival cam", antiAliasing = 2 };
             rivalFrame = new GameObject("Rival cam frame").AddComponent<Image>(); rivalFrame.transform.SetParent(go.transform, false); rivalFrame.color = new Color(1, 1, 1, 0); rivalFrame.raycastTarget = false;
@@ -376,7 +379,7 @@ namespace GolfArcade.Tennis
             float sc = 1 + .25f * Mathf.Clamp01(1 - titleT / .15f);
             title.color = new Color(1, .93f, .45f, ta); sub.color = new Color(1, 1, 1, ta); title.rectTransform.localScale = Vector3.one * sc;
             rivalFrame.color = new Color(1, 1, 1, .9f * rivalShow); rivalView.color = new Color(1, 1, 1, rivalShow); rivalLabel.color = new Color(1, 1, 1, rivalShow);
-            bool meters = shot != Shot.Reaction && shot != Shot.Ultimate;
+            bool meters = TennisAbilities.UltimatesEnabled && shot != Shot.Reaction && shot != Shot.Ultimate;
             pMeterBack.gameObject.SetActive(meters); rMeterBack.gameObject.SetActive(meters); pLabel.gameObject.SetActive(meters); rLabel.gameObject.SetActive(meters); float ma = meters ? 1 : 0;
             pMeterBack.color = new Color(0, 0, 0, .45f * ma); rMeterBack.color = new Color(0, 0, 0, .45f * ma);
         }

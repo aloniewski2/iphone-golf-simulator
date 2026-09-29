@@ -13,6 +13,8 @@ struct SportsHome: View {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
             }
+            else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
+            else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
             else if menu.classic { ClassicSportsHome() }
             else if session.active && session.sport == "golf" { GolfPhoneController(session: session) }
             else if session.active { TennisRacketController(session: session) }
@@ -37,7 +39,7 @@ struct SportsHome: View {
             if ProcessInfo.processInfo.arguments.contains("--lobby"), menu.screen == .title { menu.tap("start") }
             if ProcessInfo.processInfo.arguments.contains("--character-editor") { menu.openCharacterEditor() }
             // `-benchTennis`: play a self-driving rally on the phone and log frame times.
-            if SportsSession.benchmark && !session.active { session.sport="tennis"; session.start(preview:true) }
+            if SportsSession.benchmark && !session.active { session.sport="tennis"; session.touch=true; session.start(preview:!session.displayConnected) }
         }
         .background(DisplayRegistration().frame(width:0,height:0))
         .onChange(of:scenePhase) { _,phase in

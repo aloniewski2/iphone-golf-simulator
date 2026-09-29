@@ -24,6 +24,8 @@ namespace GolfArcade.Game
             public int hairStyle=1,hairColor=1,faceShape,heightChoice=2,buildChoice=2,haircut=-1;
             public float bodySize=-1;
             public string shirt,shorts,accent,racket,skinHex,hairHex; public bool tips=true; public float overscan;
+            // The tennis court: "" / "resort", "skyscraper" or "volcano"; and a court colour (hex, "" = the venue's own).
+            public string venue,courtHex;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -40,7 +42,7 @@ namespace GolfArcade.Game
             public bool degraded => (flags & 2) != 0;
         }
         [Serializable] class Event {
-            public int version=1; public string session,type,message; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
+            public int version=1; public string session,type,message,finalScore; public bool matchComplete,matchWon; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
         }
         public static bool Active { get; private set; }
         public static bool Left { get; private set; }
@@ -81,6 +83,7 @@ namespace GolfArcade.Game
             Emit("boot","");
             // What the phone's controller and campaign screens need from a tennis match.
             TennisGame.MatchFinished+=(won,score)=>Emit("matchOver",(won?"won|":"lost|")+score);
+            TennisGame.MatchStatsReady+=line=>Emit("matchStats",line);
             TennisGame.ScoreChanged+=line=>Emit("score",line);
             TennisGame.PhaseChanged+=phase=>Emit("phase",phase);
             // The timing check's result, milliseconds, or "failed".
@@ -111,8 +114,8 @@ namespace GolfArcade.Game
                     case "pause": SetPaused(true,m.reason); break;
                     case "resume": SetPaused(false); break;
                     case "end": StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
-                    case "ultimateSelect": if(tennis && paused) tennis.SelectUltimate(Mathf.RoundToInt(m.value)); break;
-                    case "ultimate": if(tennis && !paused) tennis.ToggleUltimate(); break;
+                    case "ultimateSelect": break; // Ignore commands from older controllers.
+                    case "ultimate": break;
                     case "dive": if(tennis && !paused) tennis.RequestDive(); break;
                     case "refeed": if(tennis) tennis.Refeed(); break;
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
@@ -154,6 +157,8 @@ namespace GolfArcade.Game
             TennisQuality.Apply();
             Screen.orientation=m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
             // The phone's loading bar follows the scene load.
+            TennisVenue.Selected=TennisVenue.Parse(m.venue);
+            TennisVenue.CourtColorOverride=string.IsNullOrEmpty(m.courtHex) ? (Color?)null : HeroKit.Hex(m.courtHex);
             var op=SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
             float nextProgress=0;
             while(!op.isDone) {
@@ -183,7 +188,7 @@ namespace GolfArcade.Game
                 var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
                     : m.mode=="tutorial" ? TennisGame.Mode.Tutorial : TennisGame.Mode.Exhibition;
                 tennis.ConfigureMatch(mode,m.opponent,m.opponentName,m.round,m.sets,m.games,
-                    string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); tennis.SelectUltimate(m.ultimate); }
+                    string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress();
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
@@ -327,7 +332,7 @@ namespace GolfArcade.Game
         }
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,matchComplete=tennis && tennis.Match.Complete,matchWon=tennis && tennis.Match.PlayerWonMatch,finalScore=tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power);

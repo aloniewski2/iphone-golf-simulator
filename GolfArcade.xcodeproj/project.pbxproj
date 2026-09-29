@@ -37,14 +37,18 @@
 		1F4FFE1D7BA22E32CF6EA7F1 /* menu-hero-rosa.png in Resources */ = {isa = PBXBuildFile; fileRef = 5C0209D3CB77F9B9FD6C9476 /* menu-hero-rosa.png */; };
 		1FDA1EA688DECA6006313804 /* menu-hero-ray.png in Resources */ = {isa = PBXBuildFile; fileRef = 88B6B4401931A205803C7F45 /* menu-hero-ray.png */; };
 		2053B808B33BC809788CDAFA /* SportsDisplays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615927A5FA382C6B66F2350B /* SportsDisplays.swift */; };
+		27A84D8F0477B26A81B0E873 /* PostMatchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 914B533350FE62615CF1127A /* PostMatchScreen.swift */; };
 		2D4608D2C0C93A787AEF5F18 /* CaptureEvidenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D00BFB83A7DF38C62A002E2 /* CaptureEvidenceTests.swift */; };
 		2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E320C36F9B8F46C0D058A57 /* PracticeLab.swift */; };
 		2F8278F73F32DBCD35721B9C /* BenchmarkRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C369CFADB269389A28A582CD /* BenchmarkRecords.swift */; };
 		2FD1F57497820E3DB4061D31 /* BodyPose3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E20C8882313192878F8991 /* BodyPose3D.swift */; };
 		303ED0D3BAA9A8E0F2A369AA /* AimSignalRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA2FC5FFA83961804142 /* AimSignalRecognizerTests.swift */; };
+		30A9EF4390B249CBAA1CC815 /* PostMatchSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5982062EFCF79577523C54D /* PostMatchSnapshotTests.swift */; };
 		334F63892EDF50143C517101 /* scene-court.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3B258AB1144127B99125F43D /* scene-court.jpg */; };
+		356F62FC179606080DB934E5 /* HeroV4_Hair_Buzz.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F57D1820937278AFF715AD8 /* HeroV4_Hair_Buzz.png */; };
 		35F5750E0E0207D3D760DF71 /* scene-stands.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 583BD0E3C94DDFCC94427545 /* scene-stands.jpg */; };
 		38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78EF7010941BF7671DEFE0B /* PoseFrame.swift */; };
+		3B8848949DB1E2326CE49718 /* Progression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AD673714488E4AEDD11F08 /* Progression.swift */; };
 		3BE06AF686DC2F1071AD324D /* TennisMenuViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19070D2DFBE5FCAC23DCAB46 /* TennisMenuViews.swift */; };
 		3C79286097A2F87B6D39E38A /* PlayerMaleLimb.json in Resources */ = {isa = PBXBuildFile; fileRef = B10D651961B361B30AE8E006 /* PlayerMaleLimb.json */; };
 		3F767DF876B7488F454B29C4 /* AvatarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */; };
@@ -53,6 +57,8 @@
 		42553F21E5A6BAF8C1893FCC /* tick.wav in Resources */ = {isa = PBXBuildFile; fileRef = BE32090F2C8CA92B079BF393 /* tick.wav */; };
 		44B24119B38BAD370122ADCE /* CameraSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115C55F00C9002F0C96850B /* CameraSwing.swift */; };
 		458741145294E2106CF8BC6E /* SportsNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC7F9DA17CF4345B2C7C523 /* SportsNavigationTests.swift */; };
+		47CF8DAA37C134D28D04C220 /* HeroV4_SkinMask.png in Resources */ = {isa = PBXBuildFile; fileRef = FD71295ED3E69083C0283375 /* HeroV4_SkinMask.png */; };
+		4874555E5D36E893B5D616B0 /* map-resort.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 907442548E21552C914E0696 /* map-resort.jpg */; };
 		49CE709851DB23BFF1980057 /* SportProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5C73D0672AF366395D9682 /* SportProgress.swift */; };
 		4B9B46A9C8D55C9B62181567 /* PlayerFemaleHandL.json in Resources */ = {isa = PBXBuildFile; fileRef = AEA5F27F96F1880EC35D84EC /* PlayerFemaleHandL.json */; };
 		4C17B8ACD9506C9533F46915 /* ClubDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC90D5DC2257100347B76E05 /* ClubDesign.swift */; };
@@ -82,11 +88,13 @@
 		79004C9FE7530E0233440443 /* PlayerFemaleTrim.json in Resources */ = {isa = PBXBuildFile; fileRef = 052B84FCA59C26F61C9685F4 /* PlayerFemaleTrim.json */; };
 		7A4108E2D715E60C0E9050C1 /* OFL-Bricolage.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8945EA9CBFC2BD34E2A21E0D /* OFL-Bricolage.txt */; };
 		7B514E9CAE33A66972D9EAAD /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CD92A9DF7C6BE1F31F28DED /* SyntheticGolferTests.swift */; };
+		7D292C7CF10F1B237AE1A73F /* map-skyscraper.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8D017E26BCE2FAC8629675E1 /* map-skyscraper.jpg */; };
 		7D6632D888704E40B73F26A9 /* PlayerFemaleShoes.json in Resources */ = {isa = PBXBuildFile; fileRef = F0FDD12C16778CFAE0E32669 /* PlayerFemaleShoes.json */; };
 		7DAA43A8FC1D8AC77973D069 /* AvatarAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */; };
 		7F8559B9C03EFDF828F5B949 /* PlayerMaleShoes.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C83DA1C58FC869ABAB88503 /* PlayerMaleShoes.json */; };
 		80F8C1776FC2ECC001C3FC2A /* BenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A121EF35B107A6679745CC5B /* BenchmarkTests.swift */; };
 		8315CEB22EDCACCAE095B54A /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5107A8CC1C4F7BFE20F49411 /* Player.swift */; };
+		83467280F5CE524AF37C93C3 /* LockerColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C321109CF944904C57C6724 /* LockerColors.swift */; };
 		85637F90B5252621E328D933 /* CharacterModelPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C4264E5E71347F714B8387 /* CharacterModelPreview.swift */; };
 		8716CB414FE9113417D30AB8 /* SportsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */; };
 		875C300E2750156FA9B01BA4 /* CoursePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B01D1178E26A9C6725329ED /* CoursePlayTests.swift */; };
@@ -110,6 +118,7 @@
 		947EA1291A8D75A376E14389 /* TennisPlayViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA4592868B9D73C7CA26077 /* TennisPlayViews.swift */; };
 		96AEB85B79D7387FEE898AA2 /* SteeringFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */; };
 		97737F2DFA25E2044809A161 /* CameraPoseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0E0ECA9C21D135B2F9CD69 /* CameraPoseTracker.swift */; };
+		9774B970AF1F8C0FDD7E50CD /* HeroV4_KitMask.png in Resources */ = {isa = PBXBuildFile; fileRef = BE70E990B315E8FD61C45C22 /* HeroV4_KitMask.png */; };
 		99A34D2DE97E8734B4EDCDBC /* SportsHome.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD76B426E94F9A3309525CBA /* SportsHome.swift */; };
 		9CBCE7CDE9C6E6B8B675249F /* PlayerFemaleBottom.json in Resources */ = {isa = PBXBuildFile; fileRef = D6ABB775289CCE9158144C18 /* PlayerFemaleBottom.json */; };
 		9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA964DCAB4DFB8A8EC8C33B8 /* MainMenuView.swift */; };
@@ -122,6 +131,7 @@
 		A1740A8519355824FF1CDC5F /* PlayerMaleCurls.json in Resources */ = {isa = PBXBuildFile; fileRef = A69A9F57ECC4520AA1AD55E9 /* PlayerMaleCurls.json */; };
 		A39B3854B09D18FA9FA171BD /* HowToCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4643DA1708919E1F8DCFA3B /* HowToCards.swift */; };
 		A4460B122F937B2CF19995F4 /* club-lesson.png in Resources */ = {isa = PBXBuildFile; fileRef = D300297BC91DEF9C8A5043EB /* club-lesson.png */; };
+		A517851B7AAAF1B0874D9926 /* HeroV4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 7FBCA296B1D469C142DB29DA /* HeroV4.bin */; };
 		A532B4657E46D0BBB26102EE /* SportsDelayProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD2BCF2AE5A5DF6CD7AFD07 /* SportsDelayProbeTests.swift */; };
 		A8810FA0A0F3451053ABEC37 /* PlayerFemaleTop.json in Resources */ = {isa = PBXBuildFile; fileRef = E17D5FCD6E78988CD2573973 /* PlayerFemaleTop.json */; };
 		A96CEA8B8B3455C92E0116A5 /* menu-hero-jax.png in Resources */ = {isa = PBXBuildFile; fileRef = C1869115FCB578E648665CF0 /* menu-hero-jax.png */; };
@@ -130,8 +140,11 @@
 		AB417901BE1E4AF87E7211FE /* PlayerMaleBottom.json in Resources */ = {isa = PBXBuildFile; fileRef = 1CD387A0682960FA7EBAE5C1 /* PlayerMaleBottom.json */; };
 		AC18375B60396D18675162DA /* menu-hero-bruno.png in Resources */ = {isa = PBXBuildFile; fileRef = 6FA01C106D6AF1C5AAB1702E /* menu-hero-bruno.png */; };
 		AC8DCF824F4926D5265F6084 /* PlayerMaleSwept.json in Resources */ = {isa = PBXBuildFile; fileRef = 4214076CDB91F6F8EF9B2AF9 /* PlayerMaleSwept.json */; };
+		AD8E503A321E560824A8E705 /* HeroV4.json in Resources */ = {isa = PBXBuildFile; fileRef = 8542B117525AE52D0AFB18C3 /* HeroV4.json */; };
 		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
+		B501272274D6FC390A08DDBA /* HeroV4_Iris.png in Resources */ = {isa = PBXBuildFile; fileRef = DE92C091A2DF903B8168F447 /* HeroV4_Iris.png */; };
 		B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1835B1CB285BF21CF93D755 /* RangeView.swift */; };
+		BA859057290D0FAE1A2E8B4E /* HeroV4_Atlas.png in Resources */ = {isa = PBXBuildFile; fileRef = 2EF533C46D0B5008A6040971 /* HeroV4_Atlas.png */; };
 		BCB90CBE5C982D36CB356FB9 /* PlayerMaleHandR.json in Resources */ = {isa = PBXBuildFile; fileRef = B07A4C82CCEA3522147274BB /* PlayerMaleHandR.json */; };
 		BD7477CE7F1EC70CBC795EE9 /* TennisMenuSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6191C13068D5A7289FCE8A /* TennisMenuSnapshotTests.swift */; };
 		BD7E9E8764059B91F67B3D37 /* menu-hero-lina.png in Resources */ = {isa = PBXBuildFile; fileRef = F8AB04E6EAB8F9893F9B341B /* menu-hero-lina.png */; };
@@ -139,11 +152,10 @@
 		BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC2D055514FED57CDD5BEAA /* RangeAudio.swift */; };
 		BE840BE488E6E3BD9EB31891 /* PlayerMaleTrim.json in Resources */ = {isa = PBXBuildFile; fileRef = B9EB74EDC8BBB1C4F0385F16 /* PlayerMaleTrim.json */; };
 		BE8422031C44545A1EE61967 /* SportsPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84864A686D7077DBE84BF78 /* SportsPreview.swift */; };
+		BF1C344C505215BFEF0FFEC1 /* TennisMapScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47DBDA475D37776AD658C8C /* TennisMapScreen.swift */; };
 		BF2E430E1A3364CD233637EE /* club-football.png in Resources */ = {isa = PBXBuildFile; fileRef = E490FD46E39481E7FFCB334C /* club-football.png */; };
 		BF2FC47FAA72917865EFD3FC /* ArcadeScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81C2BB9F7801A746F7B958DA /* ArcadeScreens.swift */; };
 		BF86BA622E596426765A757F /* ClubScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2DC9D0DD11083717B3FED /* ClubScreens.swift */; };
-		4CB685848FB0C9EEB11B6085 /* LockerStudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = D52985A503298792172B9E89 /* LockerStudio.swift */; };
-		65F8A8A496837F52D6097748 /* LockerColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0701E646365A55F070C5E8 /* LockerColors.swift */; };
 		C01E71BDD6D5B002276FBE01 /* CourseRound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A27818779D46747D3552626 /* CourseRound.swift */; };
 		C15DAE6A1371B6B3E246193A /* whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0CE2987A0883B1BCE38D8429 /* whoosh.wav */; };
 		C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */; };
@@ -154,10 +166,12 @@
 		C9CFCAF4190EBD7B0B36B11A /* SwingFeedbackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6E32961EBFBD00D1C7AA8E /* SwingFeedbackController.swift */; };
 		CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F80E6B1795239F9406E5D3D /* PoseSkeletonView.swift */; };
 		CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */; };
+		CD928A6FE7B70584E0306450 /* HeroV4_KitRef.json in Resources */ = {isa = PBXBuildFile; fileRef = F2E3739EC60AE2097478BB4A /* HeroV4_KitRef.json */; };
 		CF3C0CD735B62DD4C743336E /* LoadingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E64CAB00DCC5B46DE973AC2 /* LoadingModel.swift */; };
 		D08ED6853665D67E2BA85147 /* ClubContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAD2AB7456C75039060C858 /* ClubContact.swift */; };
 		D09D8344C8EA0CDDE4A5E8F5 /* menu-hero-milo.png in Resources */ = {isa = PBXBuildFile; fileRef = 987A12A6626B7AF3CFEDD7CA /* menu-hero-milo.png */; };
 		D4CCB6A81B4FB839DC26A2FF /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */; };
+		D54B28EF300E3E272348B8E3 /* LockerStudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C4C065BB1FF8435F137C84 /* LockerStudio.swift */; };
 		D7F1B71A5A50A31C5B7B2154 /* SwingFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E3F7A3FD6BB8646F9A4879 /* SwingFeedbackOverlay.swift */; };
 		D9E1DCD89FAA498AC9435858 /* club-dial.png in Resources */ = {isa = PBXBuildFile; fileRef = 84CD7A5E2220B1C2F9213C77 /* club-dial.png */; };
 		DA711E8D4C4776E0134D5BEB /* SportsMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5920675C224DAA5E51E17F10 /* SportsMotion.swift */; };
@@ -170,6 +184,7 @@
 		E877C0BB298E15987592F562 /* PlayerSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9346BDAD7014806EE0A16EB /* PlayerSetupView.swift */; };
 		E9574C0E47213C16FAB0640F /* ArcadeGameSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */; };
 		EB3A66C5E16A2AAAD4ABEB33 /* PlayerMaleSkin.json in Resources */ = {isa = PBXBuildFile; fileRef = F143C6630FD00793ABB39E96 /* PlayerMaleSkin.json */; };
+		EC75E66C4C5304015090AC01 /* map-volcano.jpg in Resources */ = {isa = PBXBuildFile; fileRef = AAED1102C90BEEDC47DE4834 /* map-volcano.jpg */; };
 		EF0F25F6D48F9AA018DBDE3F /* PoseDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */; };
 		EF839F728A10D18A2FF3884B /* PlayerCalibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */; };
 		EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E90B0F05E735C3FCB7D843F /* FlightPath.swift */; };
@@ -180,6 +195,7 @@
 		F4EFDDFE63BF83A6EF674CBA /* ShotResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08572299F1239F439E5A477B /* ShotResultCard.swift */; };
 		F75F8BA3F0DAD255E5DE71DA /* PlayerFemaleMask.mask in Resources */ = {isa = PBXBuildFile; fileRef = 2D09E458C2710D1934A0F2AE /* PlayerFemaleMask.mask */; };
 		F832C9C160A0B765421C4880 /* PlayerMaleTop.json in Resources */ = {isa = PBXBuildFile; fileRef = 54037E4DFD2C24E08F835FC3 /* PlayerMaleTop.json */; };
+		F8461492758C482F0F526061 /* HeroV4_Hair_Waves.png in Resources */ = {isa = PBXBuildFile; fileRef = 57BDE61E6193B42F67F6B40A /* HeroV4_Hair_Waves.png */; };
 		F851D7558225056C90B7006B /* PlayerMaleMask.png in Resources */ = {isa = PBXBuildFile; fileRef = E6B9FC442769B4F01F873445 /* PlayerMaleMask.png */; };
 		FB048E2BB4BC7DA06F1CED5C /* MotionSwing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D807DCA06067D7507F3487F /* MotionSwing.swift */; };
 		FB0E584EAD16B94F4986D580 /* ShotEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38539761E1BFA7845BA2C9CB /* ShotEngine.swift */; };
@@ -187,15 +203,19 @@
 		FD91DE0FEBA483FFB03282C5 /* BallFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC1296D3AF134EB68A180B8 /* BallFlight.swift */; };
 		FE51EDC5E4BAE22687B623A9 /* scene-trophy.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D231EC961AF1EFC069D8CD84 /* scene-trophy.jpg */; };
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
-		0AE73B214572CB2F4FDB707D /* HeroV4.json in Resources */ = {isa = PBXBuildFile; fileRef = B7537C98F663854D8B7A97A5 /* HeroV4.json */; };
-		E036CF1B5F27096EE8E33972 /* HeroV4.bin in Resources */ = {isa = PBXBuildFile; fileRef = F238044BB23EE49F6B4254BA /* HeroV4.bin */; };
-		C5A8F0A3C3FFD9C63EA7ECB1 /* HeroV4_Atlas.png in Resources */ = {isa = PBXBuildFile; fileRef = 425BA46F91B552BFCA2E58EC /* HeroV4_Atlas.png */; };
-		BCD35BD232CA172A43B40C6B /* HeroV4_KitMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 7161FE8E7C159D2A238C01F3 /* HeroV4_KitMask.png */; };
-		E2D4A0081940EACDC5D72782 /* HeroV4_SkinMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 2868D40B669094B5924B88C4 /* HeroV4_SkinMask.png */; };
-		4F0FDE67CA8988C85B45E9EB /* HeroV4_Iris.png in Resources */ = {isa = PBXBuildFile; fileRef = 1FFA88043A806132899BC537 /* HeroV4_Iris.png */; };
-		2962EE13E338C61A45A5899C /* HeroV4_Hair_Waves.png in Resources */ = {isa = PBXBuildFile; fileRef = F64C68597C65B44044CF97AE /* HeroV4_Hair_Waves.png */; };
-		E472EA85DDD3AC0D17F6AEB9 /* HeroV4_Hair_Buzz.png in Resources */ = {isa = PBXBuildFile; fileRef = D3B713E38976B136CBD4D0E1 /* HeroV4_Hair_Buzz.png */; };
-		15E464AEC15A7B10C0810F71 /* HeroV4_KitRef.json in Resources */ = {isa = PBXBuildFile; fileRef = 90C972A3FF811B9ED1C139E8 /* HeroV4_KitRef.json */; };
+		515E225508E3C7FFFF29AE83 /* island-intro.png in Resources */ = {isa = PBXBuildFile; fileRef = BDA29147A0854B6AA7E618B9 /* island-intro.png */; };
+		1BEBBDFD82CE32F3953B39DC /* island-terrace.png in Resources */ = {isa = PBXBuildFile; fileRef = 8081DD6F6AA83D8FD576A6FA /* island-terrace.png */; };
+		176A58801CA44CCE1B7303D6 /* HeroMenu.json in Resources */ = {isa = PBXBuildFile; fileRef = 7B522A1B3F1BD6FDAAD30C0F /* HeroMenu.json */; };
+		00554B1BAEA3BBB4D74F8233 /* HeroSwing_18.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 0A0A6A287E580ACBD4C8859D /* HeroSwing_18.lzfse */; };
+		D007265E05C8DD11B3879C28 /* HeroSwing_03.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 8C7E4070F89477E81DF279CA /* HeroSwing_03.lzfse */; };
+		D4F6D86AC9850B739CD204AE /* HeroSwing_06.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = DDDDBFD0FEB10EF428A91016 /* HeroSwing_06.lzfse */; };
+		18BD3F4EA402E30AF87337EF /* HeroSwing_19.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = D15DE3CC6B4B15400FC32E02 /* HeroSwing_19.lzfse */; };
+		B3B79A973BD18100A13B8A9C /* HeroMenu.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 0B14510321BAB6A3FCBA5C2D /* HeroMenu.lzfse */; };
+		C27E66BFE136E88C4898D29F /* HeroSwing_00.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = AA094BB896748F9C7D1070C9 /* HeroSwing_00.lzfse */; };
+		CD106BEDEE3FFDDF12CB8EBD /* HeroSwing_15.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 8049DA472DD1F7A2DBF650AA /* HeroSwing_15.lzfse */; };
+		A4067EEC6F0975248225C504 /* HeroSwing_09.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = F0211402E9E8EA5C3763E52A /* HeroSwing_09.lzfse */; };
+		36C6B661FBB84900D0CAC0AA /* HeroSwing_12.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = C943156F198455F44B31D664 /* HeroSwing_12.lzfse */; };
+		0677E0E1EE1D09E603602FCC /* island-campaign.png in Resources */ = {isa = PBXBuildFile; fileRef = A566BA488B9C9EB5F093DFC8 /* island-campaign.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -232,10 +252,12 @@
 		1227024977DABD2C99201416 /* menu-trophy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-trophy.png"; sourceTree = "<group>"; };
 		188E8707AD95370AAB8E34B6 /* Club.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Club.swift; sourceTree = "<group>"; };
 		19070D2DFBE5FCAC23DCAB46 /* TennisMenuViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisMenuViews.swift; sourceTree = "<group>"; };
+		1C321109CF944904C57C6724 /* LockerColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockerColors.swift; sourceTree = "<group>"; };
 		1CD387A0682960FA7EBAE5C1 /* PlayerMaleBottom.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleBottom.json; sourceTree = "<group>"; };
 		20C74ABFD8253CC16044C728 /* CameraStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStage.swift; sourceTree = "<group>"; };
 		22ABCF5897678A79FA0824EF /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
 		230AB3A0CED37C4F18CEE8F9 /* club-quick.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-quick.png"; sourceTree = "<group>"; };
+		28AD673714488E4AEDD11F08 /* Progression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progression.swift; sourceTree = "<group>"; };
 		29652EEA3D780D55BE18A39E /* ClubSignRecognizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubSignRecognizerTests.swift; sourceTree = "<group>"; };
 		2BD3748233E92C2AC839DBC1 /* CaptureCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCapabilities.swift; sourceTree = "<group>"; };
 		2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GolfArcadeTests.swift; sourceTree = "<group>"; };
@@ -243,6 +265,7 @@
 		2D4EE22F2A027ED990117D1F /* club-training.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-training.png"; sourceTree = "<group>"; };
 		2E1A490D27DB4CF27E1129A0 /* scene-pavilion.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "scene-pavilion.jpg"; sourceTree = "<group>"; };
 		2E64CAB00DCC5B46DE973AC2 /* LoadingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingModel.swift; sourceTree = "<group>"; };
+		2EF533C46D0B5008A6040971 /* HeroV4_Atlas.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Atlas.png; sourceTree = "<group>"; };
 		3309108562267B2C1CD3AB84 /* BallAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallAddress.swift; sourceTree = "<group>"; };
 		33FF88FD92B1D699BE1AD29F /* TennisCampaignTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisCampaignTests.swift; sourceTree = "<group>"; };
 		346ACF6CEC4890FBBB6F7236 /* PracticeRangeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRangeScreen.swift; sourceTree = "<group>"; };
@@ -270,6 +293,7 @@
 		5107A8CC1C4F7BFE20F49411 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		54037E4DFD2C24E08F835FC3 /* PlayerMaleTop.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleTop.json; sourceTree = "<group>"; };
 		5594829428F89E9598E2F8D7 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		57BDE61E6193B42F67F6B40A /* HeroV4_Hair_Waves.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Hair_Waves.png; sourceTree = "<group>"; };
 		583BD0E3C94DDFCC94427545 /* scene-stands.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "scene-stands.jpg"; sourceTree = "<group>"; };
 		5920675C224DAA5E51E17F10 /* SportsMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsMotion.swift; sourceTree = "<group>"; };
 		5A6191C13068D5A7289FCE8A /* TennisMenuSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisMenuSnapshotTests.swift; sourceTree = "<group>"; };
@@ -282,8 +306,6 @@
 		60F447C72E9C246913F2534E /* SwingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingStateMachine.swift; sourceTree = "<group>"; };
 		615927A5FA382C6B66F2350B /* SportsDisplays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsDisplays.swift; sourceTree = "<group>"; };
 		61A2DC9D0DD11083717B3FED /* ClubScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubScreens.swift; sourceTree = "<group>"; };
-		D52985A503298792172B9E89 /* LockerStudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockerStudio.swift; sourceTree = "<group>"; };
-		3C0701E646365A55F070C5E8 /* LockerColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockerColors.swift; sourceTree = "<group>"; };
 		62AB7973853130618D93E997 /* TennisMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisMenu.swift; sourceTree = "<group>"; };
 		64E2282E0C3713F44D23A87C /* PlayfulGraphics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayfulGraphics.swift; sourceTree = "<group>"; };
 		67A9574D8BBED511A14CB079 /* PlayerCalibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCalibration.swift; sourceTree = "<group>"; };
@@ -298,14 +320,20 @@
 		7C849D74D9AA308C970BB9DD /* SwingReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingReaction.swift; sourceTree = "<group>"; };
 		7EBE2055D56F3C9ECE1C89BF /* CameraSwingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSwingTests.swift; sourceTree = "<group>"; };
 		7ED1CA2572D8066AF00F5667 /* PlayerFemaleCurls.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleCurls.json; sourceTree = "<group>"; };
+		7F57D1820937278AFF715AD8 /* HeroV4_Hair_Buzz.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Hair_Buzz.png; sourceTree = "<group>"; };
+		7FBCA296B1D469C142DB29DA /* HeroV4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = HeroV4.bin; sourceTree = "<group>"; };
 		81C2BB9F7801A746F7B958DA /* ArcadeScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeScreens.swift; sourceTree = "<group>"; };
 		84CD7A5E2220B1C2F9213C77 /* club-dial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-dial.png"; sourceTree = "<group>"; };
+		8542B117525AE52D0AFB18C3 /* HeroV4.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = HeroV4.json; sourceTree = "<group>"; };
 		8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIntegrationTests.swift; sourceTree = "<group>"; };
 		866EF88531D6A9821875118A /* menu-hero-player-male.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-player-male.png"; sourceTree = "<group>"; };
 		88B6B4401931A205803C7F45 /* menu-hero-ray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-ray.png"; sourceTree = "<group>"; };
 		8945EA9CBFC2BD34E2A21E0D /* OFL-Bricolage.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-Bricolage.txt"; sourceTree = "<group>"; };
 		8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarTests.swift; sourceTree = "<group>"; };
+		8D017E26BCE2FAC8629675E1 /* map-skyscraper.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-skyscraper.jpg"; sourceTree = "<group>"; };
 		8D807DCA06067D7507F3487F /* MotionSwing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwing.swift; sourceTree = "<group>"; };
+		907442548E21552C914E0696 /* map-resort.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-resort.jpg"; sourceTree = "<group>"; };
+		914B533350FE62615CF1127A /* PostMatchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostMatchScreen.swift; sourceTree = "<group>"; };
 		921240C97FAD3D968AE599C1 /* club-crest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-crest.png"; sourceTree = "<group>"; };
 		92F02AE9F698900B513CCC9C /* GolfArcadeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		933F461CF287E691F38E2214 /* PlayerMaleHandL.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleHandL.json; sourceTree = "<group>"; };
@@ -323,6 +351,7 @@
 		A1462B8ABF04076ACC110FBB /* menu-hero-viktor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-viktor.png"; sourceTree = "<group>"; };
 		A182FB867A9CA43CF573FAAA /* SyntheticGolfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticGolfer.swift; sourceTree = "<group>"; };
 		A1FEA364831A144FDBDD5079 /* PlayerMaleBob.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleBob.json; sourceTree = "<group>"; };
+		A2C4C065BB1FF8435F137C84 /* LockerStudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockerStudio.swift; sourceTree = "<group>"; };
 		A328FD7EED697070E9F0BA56 /* PoseDelivery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDelivery.swift; sourceTree = "<group>"; };
 		A3F7EB747B2200A0B9C33FA0 /* club-friends.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-friends.png"; sourceTree = "<group>"; };
 		A5CEBC515F2C3F0ECC6078B1 /* SportsRuntime.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SportsRuntime.mm; sourceTree = "<group>"; };
@@ -330,6 +359,7 @@
 		A7C3C079CFEDF668EE920517 /* SportsRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SportsRuntime.h; sourceTree = "<group>"; };
 		AA0FD26F05C0ED1838EA6C37 /* club-tennis.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-tennis.png"; sourceTree = "<group>"; };
 		AAE6410035490B4DC54C444A /* PlayerMaleColor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PlayerMaleColor.png; sourceTree = "<group>"; };
+		AAED1102C90BEEDC47DE4834 /* map-volcano.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-volcano.jpg"; sourceTree = "<group>"; };
 		AC90D5DC2257100347B76E05 /* ClubDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubDesign.swift; sourceTree = "<group>"; };
 		AE5C73D0672AF366395D9682 /* SportProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportProgress.swift; sourceTree = "<group>"; };
 		AEA5F27F96F1880EC35D84EC /* PlayerFemaleHandL.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleHandL.json; sourceTree = "<group>"; };
@@ -340,6 +370,7 @@
 		B16ECDB5D1891C8C6F25A59A /* PowerGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerGauge.swift; sourceTree = "<group>"; };
 		B1835B1CB285BF21CF93D755 /* RangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeView.swift; sourceTree = "<group>"; };
 		B319404DFEEE5ABFF558FD23 /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
+		B47DBDA475D37776AD658C8C /* TennisMapScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisMapScreen.swift; sourceTree = "<group>"; };
 		B4CC2303DF77C0E3F8675AFA /* AvatarRig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarRig.swift; sourceTree = "<group>"; };
 		B8A8815CB17B5974958C6626 /* PlayerFemaleLimb.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleLimb.json; sourceTree = "<group>"; };
 		B9EB74EDC8BBB1C4F0385F16 /* PlayerMaleTrim.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleTrim.json; sourceTree = "<group>"; };
@@ -347,12 +378,14 @@
 		BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionSwingDetectorTests.swift; sourceTree = "<group>"; };
 		BD8419E572E07A2010DC09B0 /* SwingMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingMetrics.swift; sourceTree = "<group>"; };
 		BE32090F2C8CA92B079BF393 /* tick.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tick.wav; sourceTree = "<group>"; };
+		BE70E990B315E8FD61C45C22 /* HeroV4_KitMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_KitMask.png; sourceTree = "<group>"; };
 		C0FB971F4EE2BE8FEDC7EBE0 /* OFL-Rubik.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-Rubik.txt"; sourceTree = "<group>"; };
 		C1869115FCB578E648665CF0 /* menu-hero-jax.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-jax.png"; sourceTree = "<group>"; };
 		C2CB0F956CF51F39E1926726 /* CameraPlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPlayTests.swift; sourceTree = "<group>"; };
 		C369CFADB269389A28A582CD /* BenchmarkRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkRecords.swift; sourceTree = "<group>"; };
 		C379AEBD69F5CDC0F08E67BE /* AvatarAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarAnimations.swift; sourceTree = "<group>"; };
 		C4EC2E42BEC686A8921549A0 /* CourseSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSelectView.swift; sourceTree = "<group>"; };
+		C5982062EFCF79577523C54D /* PostMatchSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostMatchSnapshotTests.swift; sourceTree = "<group>"; };
 		C6A1482B581A0FD8BBAEE394 /* club-crown.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-crown.png"; sourceTree = "<group>"; };
 		C8751ECA918BE4938CECE671 /* menu-hero-dex.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-dex.png"; sourceTree = "<group>"; };
 		CAD9D8D61022FEB7DAD805CF /* scene-locker.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "scene-locker.jpg"; sourceTree = "<group>"; };
@@ -376,6 +409,7 @@
 		DC24364D20A044F1AAAD6156 /* PlayerFemaleMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PlayerFemaleMask.png; sourceTree = "<group>"; };
 		DD153E8956B00197F7C41704 /* club-golf.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-golf.png"; sourceTree = "<group>"; };
 		DE6D13C74E7F3EC0449BF826 /* scene-cliff.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "scene-cliff.jpg"; sourceTree = "<group>"; };
+		DE92C091A2DF903B8168F447 /* HeroV4_Iris.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Iris.png; sourceTree = "<group>"; };
 		DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizer.swift; sourceTree = "<group>"; };
 		E17D5FCD6E78988CD2573973 /* PlayerFemaleTop.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleTop.json; sourceTree = "<group>"; };
 		E3F501F901D94226FE686989 /* TennisStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisStory.swift; sourceTree = "<group>"; };
@@ -392,6 +426,7 @@
 		F0FDD12C16778CFAE0E32669 /* PlayerFemaleShoes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleShoes.json; sourceTree = "<group>"; };
 		F143C6630FD00793ABB39E96 /* PlayerMaleSkin.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerMaleSkin.json; sourceTree = "<group>"; };
 		F1D4E03E0C94BE43DCA09EE7 /* CourseScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseScene.swift; sourceTree = "<group>"; };
+		F2E3739EC60AE2097478BB4A /* HeroV4_KitRef.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = HeroV4_KitRef.json; sourceTree = "<group>"; };
 		F828F238EA418FEA4C358278 /* PlayerFemaleBob.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PlayerFemaleBob.json; sourceTree = "<group>"; };
 		F8AB04E6EAB8F9893F9B341B /* menu-hero-lina.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-lina.png"; sourceTree = "<group>"; };
 		F8C3D058EC10C5FAD6F69E67 /* pop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pop.wav; sourceTree = "<group>"; };
@@ -400,16 +435,21 @@
 		FBA8AC49C740E09CDAEBCF1A /* club-bowling.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-bowling.png"; sourceTree = "<group>"; };
 		FD10F4FBA7F9FE2ED2260B43 /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
+		FD71295ED3E69083C0283375 /* HeroV4_SkinMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_SkinMask.png; sourceTree = "<group>"; };
 		FD76B426E94F9A3309525CBA /* SportsHome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsHome.swift; sourceTree = "<group>"; };
-		B7537C98F663854D8B7A97A5 /* HeroV4.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = HeroV4.json; sourceTree = "<group>"; };
-		F238044BB23EE49F6B4254BA /* HeroV4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = HeroV4.bin; sourceTree = "<group>"; };
-		425BA46F91B552BFCA2E58EC /* HeroV4_Atlas.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Atlas.png; sourceTree = "<group>"; };
-		7161FE8E7C159D2A238C01F3 /* HeroV4_KitMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_KitMask.png; sourceTree = "<group>"; };
-		2868D40B669094B5924B88C4 /* HeroV4_SkinMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_SkinMask.png; sourceTree = "<group>"; };
-		1FFA88043A806132899BC537 /* HeroV4_Iris.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Iris.png; sourceTree = "<group>"; };
-		F64C68597C65B44044CF97AE /* HeroV4_Hair_Waves.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Hair_Waves.png; sourceTree = "<group>"; };
-		D3B713E38976B136CBD4D0E1 /* HeroV4_Hair_Buzz.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HeroV4_Hair_Buzz.png; sourceTree = "<group>"; };
-		90C972A3FF811B9ED1C139E8 /* HeroV4_KitRef.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = HeroV4_KitRef.json; sourceTree = "<group>"; };
+		BDA29147A0854B6AA7E618B9 /* island-intro.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "island-intro.png"; sourceTree = "<group>"; };
+		8081DD6F6AA83D8FD576A6FA /* island-terrace.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "island-terrace.png"; sourceTree = "<group>"; };
+		7B522A1B3F1BD6FDAAD30C0F /* HeroMenu.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "HeroMenu.json"; sourceTree = "<group>"; };
+		0A0A6A287E580ACBD4C8859D /* HeroSwing_18.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_18.lzfse"; sourceTree = "<group>"; };
+		8C7E4070F89477E81DF279CA /* HeroSwing_03.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_03.lzfse"; sourceTree = "<group>"; };
+		DDDDBFD0FEB10EF428A91016 /* HeroSwing_06.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_06.lzfse"; sourceTree = "<group>"; };
+		D15DE3CC6B4B15400FC32E02 /* HeroSwing_19.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_19.lzfse"; sourceTree = "<group>"; };
+		0B14510321BAB6A3FCBA5C2D /* HeroMenu.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroMenu.lzfse"; sourceTree = "<group>"; };
+		AA094BB896748F9C7D1070C9 /* HeroSwing_00.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_00.lzfse"; sourceTree = "<group>"; };
+		8049DA472DD1F7A2DBF650AA /* HeroSwing_15.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_15.lzfse"; sourceTree = "<group>"; };
+		F0211402E9E8EA5C3763E52A /* HeroSwing_09.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_09.lzfse"; sourceTree = "<group>"; };
+		C943156F198455F44B31D664 /* HeroSwing_12.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HeroSwing_12.lzfse"; sourceTree = "<group>"; };
+		A566BA488B9C9EB5F093DFC8 /* island-campaign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "island-campaign.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -466,12 +506,14 @@
 				F0C4264E5E71347F714B8387 /* CharacterModelPreview.swift */,
 				AC90D5DC2257100347B76E05 /* ClubDesign.swift */,
 				61A2DC9D0DD11083717B3FED /* ClubScreens.swift */,
-				D52985A503298792172B9E89 /* LockerStudio.swift */,
-				3C0701E646365A55F070C5E8 /* LockerColors.swift */,
 				D51453D2016C98EF53D1F99A /* GolfArcade-Bridging-Header.h */,
 				D4643DA1708919E1F8DCFA3B /* HowToCards.swift */,
 				2E64CAB00DCC5B46DE973AC2 /* LoadingModel.swift */,
+				1C321109CF944904C57C6724 /* LockerColors.swift */,
+				A2C4C065BB1FF8435F137C84 /* LockerStudio.swift */,
 				64E2282E0C3713F44D23A87C /* PlayfulGraphics.swift */,
+				914B533350FE62615CF1127A /* PostMatchScreen.swift */,
+				28AD673714488E4AEDD11F08 /* Progression.swift */,
 				AE5C73D0672AF366395D9682 /* SportProgress.swift */,
 				615927A5FA382C6B66F2350B /* SportsDisplays.swift */,
 				FD76B426E94F9A3309525CBA /* SportsHome.swift */,
@@ -482,6 +524,7 @@
 				4BC8EB9B22748C90608C448A /* SportsSession.swift */,
 				D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */,
 				D83CDA210BDB7031CA9C9838 /* TennisCampaign.swift */,
+				B47DBDA475D37776AD658C8C /* TennisMapScreen.swift */,
 				62AB7973853130618D93E997 /* TennisMenu.swift */,
 				19070D2DFBE5FCAC23DCAB46 /* TennisMenuViews.swift */,
 				6DA4592868B9D73C7CA26077 /* TennisPlayViews.swift */,
@@ -625,6 +668,25 @@
 		CFBEB2E659D13EC358060998 /* CharacterAssets */ = {
 			isa = PBXGroup;
 			children = (
+				C943156F198455F44B31D664 /* HeroSwing_12.lzfse */,
+				F0211402E9E8EA5C3763E52A /* HeroSwing_09.lzfse */,
+				8049DA472DD1F7A2DBF650AA /* HeroSwing_15.lzfse */,
+				AA094BB896748F9C7D1070C9 /* HeroSwing_00.lzfse */,
+				0B14510321BAB6A3FCBA5C2D /* HeroMenu.lzfse */,
+				D15DE3CC6B4B15400FC32E02 /* HeroSwing_19.lzfse */,
+				DDDDBFD0FEB10EF428A91016 /* HeroSwing_06.lzfse */,
+				8C7E4070F89477E81DF279CA /* HeroSwing_03.lzfse */,
+				0A0A6A287E580ACBD4C8859D /* HeroSwing_18.lzfse */,
+				7B522A1B3F1BD6FDAAD30C0F /* HeroMenu.json */,
+				2EF533C46D0B5008A6040971 /* HeroV4_Atlas.png */,
+				7F57D1820937278AFF715AD8 /* HeroV4_Hair_Buzz.png */,
+				57BDE61E6193B42F67F6B40A /* HeroV4_Hair_Waves.png */,
+				DE92C091A2DF903B8168F447 /* HeroV4_Iris.png */,
+				BE70E990B315E8FD61C45C22 /* HeroV4_KitMask.png */,
+				F2E3739EC60AE2097478BB4A /* HeroV4_KitRef.json */,
+				FD71295ED3E69083C0283375 /* HeroV4_SkinMask.png */,
+				7FBCA296B1D469C142DB29DA /* HeroV4.bin */,
+				8542B117525AE52D0AFB18C3 /* HeroV4.json */,
 				F828F238EA418FEA4C358278 /* PlayerFemaleBob.json */,
 				D6ABB775289CCE9158144C18 /* PlayerFemaleBottom.json */,
 				96ED33E0A0B97A58714CBDA1 /* PlayerFemaleColor.png */,
@@ -649,15 +711,6 @@
 				433661A13392EA6E595EB13C /* PlayerMaleMask.mask */,
 				E6B9FC442769B4F01F873445 /* PlayerMaleMask.png */,
 				9C83DA1C58FC869ABAB88503 /* PlayerMaleShoes.json */,
-				90C972A3FF811B9ED1C139E8 /* HeroV4_KitRef.json */,
-				1FFA88043A806132899BC537 /* HeroV4_Iris.png */,
-				F64C68597C65B44044CF97AE /* HeroV4_Hair_Waves.png */,
-				D3B713E38976B136CBD4D0E1 /* HeroV4_Hair_Buzz.png */,
-				2868D40B669094B5924B88C4 /* HeroV4_SkinMask.png */,
-				7161FE8E7C159D2A238C01F3 /* HeroV4_KitMask.png */,
-				425BA46F91B552BFCA2E58EC /* HeroV4_Atlas.png */,
-				F238044BB23EE49F6B4254BA /* HeroV4.bin */,
-				B7537C98F663854D8B7A97A5 /* HeroV4.json */,
 				F143C6630FD00793ABB39E96 /* PlayerMaleSkin.json */,
 				4214076CDB91F6F8EF9B2AF9 /* PlayerMaleSwept.json */,
 				54037E4DFD2C24E08F835FC3 /* PlayerMaleTop.json */,
@@ -694,6 +747,9 @@
 		E094CBA3C11668BEBDB1A160 /* MenuArt */ = {
 			isa = PBXGroup;
 			children = (
+				A566BA488B9C9EB5F093DFC8 /* island-campaign.png */,
+				8081DD6F6AA83D8FD576A6FA /* island-terrace.png */,
+				BDA29147A0854B6AA7E618B9 /* island-intro.png */,
 				FBA8AC49C740E09CDAEBCF1A /* club-bowling.png */,
 				D8CB00D112FBD5D5B785580B /* club-boxing.png */,
 				921240C97FAD3D968AE599C1 /* club-crest.png */,
@@ -711,6 +767,9 @@
 				2D4EE22F2A027ED990117D1F /* club-training.png */,
 				9CEAA24EF40DB531A7CD4277 /* club-trophy.png */,
 				D79F47C69037F4F53DEE79BE /* club-whistle.png */,
+				907442548E21552C914E0696 /* map-resort.jpg */,
+				8D017E26BCE2FAC8629675E1 /* map-skyscraper.jpg */,
+				AAED1102C90BEEDC47DE4834 /* map-volcano.jpg */,
 				D1B932061F938CE545D9A485 /* menu-backdrop.jpg */,
 				6FA01C106D6AF1C5AAB1702E /* menu-hero-bruno.png */,
 				C8751ECA918BE4938CECE671 /* menu-hero-dex.png */,
@@ -751,6 +810,7 @@
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
 				9C4F6BDC794A10ECF4A5703A /* HandGestureRecognizerTests.swift */,
 				BBE66CBC1CEBCB1BFEBF69D3 /* MotionSwingDetectorTests.swift */,
+				C5982062EFCF79577523C54D /* PostMatchSnapshotTests.swift */,
 				96ADB6AEA3F173373B79F3B2 /* PresentationTests.swift */,
 				FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */,
 				CBD2BCF2AE5A5DF6CD7AFD07 /* SportsDelayProbeTests.swift */,
@@ -925,7 +985,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0677E0E1EE1D09E603602FCC /* island-campaign.png in Resources */,
+				36C6B661FBB84900D0CAC0AA /* HeroSwing_12.lzfse in Resources */,
+				A4067EEC6F0975248225C504 /* HeroSwing_09.lzfse in Resources */,
+				CD106BEDEE3FFDDF12CB8EBD /* HeroSwing_15.lzfse in Resources */,
+				C27E66BFE136E88C4898D29F /* HeroSwing_00.lzfse in Resources */,
+				B3B79A973BD18100A13B8A9C /* HeroMenu.lzfse in Resources */,
+				18BD3F4EA402E30AF87337EF /* HeroSwing_19.lzfse in Resources */,
+				D4F6D86AC9850B739CD204AE /* HeroSwing_06.lzfse in Resources */,
+				D007265E05C8DD11B3879C28 /* HeroSwing_03.lzfse in Resources */,
+				00554B1BAEA3BBB4D74F8233 /* HeroSwing_18.lzfse in Resources */,
+				176A58801CA44CCE1B7303D6 /* HeroMenu.json in Resources */,
+				1BEBBDFD82CE32F3953B39DC /* island-terrace.png in Resources */,
+				515E225508E3C7FFFF29AE83 /* island-intro.png in Resources */,
 				4EFC83E07C20AC47F8CDF327 /* Bricolage.ttf in Resources */,
+				A517851B7AAAF1B0874D9926 /* HeroV4.bin in Resources */,
+				AD8E503A321E560824A8E705 /* HeroV4.json in Resources */,
+				BA859057290D0FAE1A2E8B4E /* HeroV4_Atlas.png in Resources */,
+				356F62FC179606080DB934E5 /* HeroV4_Hair_Buzz.png in Resources */,
+				F8461492758C482F0F526061 /* HeroV4_Hair_Waves.png in Resources */,
+				B501272274D6FC390A08DDBA /* HeroV4_Iris.png in Resources */,
+				9774B970AF1F8C0FDD7E50CD /* HeroV4_KitMask.png in Resources */,
+				CD928A6FE7B70584E0306450 /* HeroV4_KitRef.json in Resources */,
+				47CF8DAA37C134D28D04C220 /* HeroV4_SkinMask.png in Resources */,
 				7A4108E2D715E60C0E9050C1 /* OFL-Bricolage.txt in Resources */,
 				52E568DAB0973BEAA2941EF3 /* OFL-Rubik.txt in Resources */,
 				1C96AF1066A5D2D3FD41D49F /* PlayerFemaleBob.json in Resources */,
@@ -952,15 +1034,6 @@
 				E858A7BEE8A14142EFA03BD4 /* PlayerMaleMask.mask in Resources */,
 				F851D7558225056C90B7006B /* PlayerMaleMask.png in Resources */,
 				7F8559B9C03EFDF828F5B949 /* PlayerMaleShoes.json in Resources */,
-				15E464AEC15A7B10C0810F71 /* HeroV4_KitRef.json in Resources */,
-				4F0FDE67CA8988C85B45E9EB /* HeroV4_Iris.png in Resources */,
-				2962EE13E338C61A45A5899C /* HeroV4_Hair_Waves.png in Resources */,
-				E472EA85DDD3AC0D17F6AEB9 /* HeroV4_Hair_Buzz.png in Resources */,
-				E2D4A0081940EACDC5D72782 /* HeroV4_SkinMask.png in Resources */,
-				BCD35BD232CA172A43B40C6B /* HeroV4_KitMask.png in Resources */,
-				C5A8F0A3C3FFD9C63EA7ECB1 /* HeroV4_Atlas.png in Resources */,
-				E036CF1B5F27096EE8E33972 /* HeroV4.bin in Resources */,
-				0AE73B214572CB2F4FDB707D /* HeroV4.json in Resources */,
 				EB3A66C5E16A2AAAD4ABEB33 /* PlayerMaleSkin.json in Resources */,
 				AC8DCF824F4926D5265F6084 /* PlayerMaleSwept.json in Resources */,
 				F832C9C160A0B765421C4880 /* PlayerMaleTop.json in Resources */,
@@ -983,6 +1056,9 @@
 				724B2958BB9812991EC42DA9 /* club-training.png in Resources */,
 				64C68AC0CF65D32D4D0ADDC0 /* club-trophy.png in Resources */,
 				0F947B7B43C2B39A788ABFAC /* club-whistle.png in Resources */,
+				4874555E5D36E893B5D616B0 /* map-resort.jpg in Resources */,
+				7D292C7CF10F1B237AE1A73F /* map-skyscraper.jpg in Resources */,
+				EC75E66C4C5304015090AC01 /* map-volcano.jpg in Resources */,
 				F08F3D0F98B7E5FF02629259 /* menu-backdrop.jpg in Resources */,
 				AC18375B60396D18675162DA /* menu-hero-bruno.png in Resources */,
 				1E5FBCE01DD5B3938CAD5080 /* menu-hero-dex.png in Resources */,
@@ -1044,8 +1120,6 @@
 				931E672E49CC17F15DA93AFD /* ClubGeometry.swift in Sources */,
 				C8CFD4B78F4108D946ECCF28 /* ClubRail.swift in Sources */,
 				BF86BA622E596426765A757F /* ClubScreens.swift in Sources */,
-				4CB685848FB0C9EEB11B6085 /* LockerStudio.swift in Sources */,
-				65F8A8A496837F52D6097748 /* LockerColors.swift in Sources */,
 				8D2DBB2E63788D5475D000B4 /* ClubSignRecognizer.swift in Sources */,
 				92259CA63028678B96DA3713 /* ContentView.swift in Sources */,
 				8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */,
@@ -1062,6 +1136,8 @@
 				914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */,
 				A39B3854B09D18FA9FA171BD /* HowToCards.swift in Sources */,
 				CF3C0CD735B62DD4C743336E /* LoadingModel.swift in Sources */,
+				83467280F5CE524AF37C93C3 /* LockerColors.swift in Sources */,
+				D54B28EF300E3E272348B8E3 /* LockerStudio.swift in Sources */,
 				9DCB7DC535AE5EC1BF541EA3 /* MainMenuView.swift in Sources */,
 				11C883ED4C07C15D2043B1E3 /* MenuStyle.swift in Sources */,
 				FB048E2BB4BC7DA06F1CED5C /* MotionSwing.swift in Sources */,
@@ -1073,9 +1149,11 @@
 				38DA9A94E4DCEA03202CFF9B /* PoseFrame.swift in Sources */,
 				A024A03F17F2DB843F0924BF /* PoseRetargeter.swift in Sources */,
 				CC2D1E37D9CE9F523A2B624D /* PoseSkeletonView.swift in Sources */,
+				27A84D8F0477B26A81B0E873 /* PostMatchScreen.swift in Sources */,
 				9EF7F584B06F2F9253DB9D70 /* PowerGauge.swift in Sources */,
 				2EBCBE963D7D73EB1D13FC48 /* PracticeLab.swift in Sources */,
 				0280DB830A423B77A9AC2A86 /* PracticeRangeScreen.swift in Sources */,
+				3B8848949DB1E2326CE49718 /* Progression.swift in Sources */,
 				BDE5F8312CF8F0A48AA7E87E /* RangeAudio.swift in Sources */,
 				B7C153218FB2C8D50CD27323 /* RangeView.swift in Sources */,
 				5FB56FE29D65A7457E8028F6 /* ShotCameraDirector.swift in Sources */,
@@ -1098,6 +1176,7 @@
 				52D23824A2E2C3E0B9C78C5E /* SwingStateMachine.swift in Sources */,
 				D4CCB6A81B4FB839DC26A2FF /* SyntheticGolfer.swift in Sources */,
 				12AFA3D5FAAC3AE8B45A3DC7 /* TennisCampaign.swift in Sources */,
+				BF1C344C505215BFEF0FFEC1 /* TennisMapScreen.swift in Sources */,
 				F2EF6D42B9F9A732C400A99B /* TennisMenu.swift in Sources */,
 				3BE06AF686DC2F1071AD324D /* TennisMenuViews.swift in Sources */,
 				947EA1291A8D75A376E14389 /* TennisPlayViews.swift in Sources */,
@@ -1130,6 +1209,7 @@
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,
 				917362F48BC3F19D6FEF5570 /* HandGestureRecognizerTests.swift in Sources */,
 				0C3D15585515A6CF80FD9C78 /* MotionSwingDetectorTests.swift in Sources */,
+				30A9EF4390B249CBAA1CC815 /* PostMatchSnapshotTests.swift in Sources */,
 				C26C9FD82D76FA63BD6EB005 /* PresentationTests.swift in Sources */,
 				CD656317CFA12699750E3DF5 /* RangeSimulationTests.swift in Sources */,
 				A532B4657E46D0BBB26102EE /* SportsDelayProbeTests.swift in Sources */,

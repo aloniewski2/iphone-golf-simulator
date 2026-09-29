@@ -934,23 +934,23 @@ struct ConnectScreen: View {
 enum PartyLoadingTips {
     static func tips(for sport: Sport) -> [String] {
         let shared = [
-            "Leave a little elbow room before you swing.",
-            "Pass the phone only when the action has stopped.",
-            "Your look is personal. It never adds power online.",
-            "Settle the rematch rules before you start.",
-            "A practice round is a great icebreaker.",
-            "Next game night, bring a friend and your best victory dance."
+            "Leave enough room for a full swing.",
+            "Pause before passing the phone.",
+            "Your outfit is saved in the Locker.",
+            "Play on a TV for a wider view.",
+            "Adjust sound and haptics in Settings.",
+            "You can change your look between matches."
         ]
         return shared + (sport == .golf ? [
             "A smooth swing beats a frantic one.",
             "Check your aim before you take the shot.",
             "Give the golfer a little quiet before the swing.",
-            "A short putt deserves a tiny celebration."
+            "Use a shorter swing for a short putt."
         ] : [
             "Tap Toss, then time your serve swing.",
             "Meet the ball in front of you for a clean return.",
             "Aim for open court instead of swinging harder.",
-            "Good rally? Give your opponent some credit."
+            "Tap Dive to reach a wide ball."
         ])
     }
 }
@@ -958,75 +958,50 @@ enum PartyLoadingTips {
 struct LoadingScreen: View {
     let menu: TennisMenu
     let compact: Bool
-    @State private var tip = Int.random(in: 0..<10)
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var tip = 0
     private var session: SportsSession { .shared }
     var body: some View {
         let launch = menu.launch ?? MenuLaunch(mode: .training)
-        let tips = PartyLoadingTips.tips(for: launch.sport)
-        GeometryReader { geometry in
-            ScrollView {
-                VStack(spacing: compact ? 16 : 20) {
-                    Text(Self.label(launch, menu.loadingOpponent))
-                        .font(compact ? .headline : LobbyStyle.display(32)).foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                    if let player = session.players[safe: session.playerIndex] {
-                        CharacterModelPreview(player: player, cameraDistance: 3.9, idleSport: launch.sport)
-                            .frame(height: compact ? min(220, geometry.size.height * 0.32) : 290)
-                            .accessibilityLabel(launch.sport == .golf ? "Your golfer dodges a mischievous golf ball" : "Your player tries to keep a tennis ball bouncing")
+        IslandShell(title: "Loading match", compact: compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout(spacing: 60))
+            layout {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text(Self.label(launch, menu.loadingOpponent)).font(IslandUI.font(compact ? 22 : 28, bold: true)).foregroundStyle(IslandUI.navy)
+                    HStack(spacing: 14) {
+                        ProgressView(value: session.loading.progress).tint(IslandUI.lime)
+                            .accessibilityLabel("Loading progress").accessibilityValue("\(session.loading.percent) percent")
+                        Text("\(session.loading.percent)%").font(IslandUI.font(21, bold: true)).monospacedDigit().foregroundStyle(IslandUI.navy)
                     }
-                    Text(launch.sport == .golf ? "One tiny practice putt…" : "Just one more bounce…")
-                        .font(compact ? .subheadline : .system(size: 17)).foregroundStyle(.white.opacity(0.65))
-                    VStack(spacing: 12) {
-                        ProgressView(value: session.loading.progress)
-                            .tint(LobbyStyle.lime)
-                            .accessibilityLabel("Game preparation")
-                            .accessibilityValue("\(session.loading.percent) percent")
-                        HStack(alignment: .top, spacing: 12) {
-                            if !session.loading.finished { ProgressView().tint(.white).accessibilityHidden(true) }
-                            Text(session.loading.statusText).font(compact ? .subheadline : .system(size: 18)).foregroundStyle(.white)
-                            Spacer(minLength: 0)
-                            Text("\(session.loading.percent)%").font(compact ? .subheadline.monospacedDigit() : .system(size: 18, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
-                        }
-                        Text(tips[tip % tips.count])
-                            .font(compact ? .body : .system(size: 21, weight: .medium))
-                            .foregroundStyle(.white).multilineTextAlignment(.center)
-                            .frame(minHeight: compact ? 44 : 36)
-                            .contentTransition(.opacity)
-                        Text("Next time, make it a game night. Party play is on the way.")
-                            .font(compact ? .footnote : .system(size: 14)).foregroundStyle(.white.opacity(0.65))
-                            .multilineTextAlignment(.center)
-                    }.frame(maxWidth: 720)
-                    HStack(spacing: 18) {
-                        Button { menu.tap("loadingBack") } label: {
-                            Label("Back to Home", systemImage: "arrow.left")
-                                .font(compact ? .body : .system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.8)).padding(12).frame(minHeight: 44)
-                        }.buttonStyle(LobbyButtonStyle(selected: menu.isFocused("loadingBack")))
-                            .accessibilityLabel("Cancel loading and return Home")
-                        if session.loading.isStalled {
-                            LobbyAction(title: "Retry", icon: "arrow.clockwise", focused: menu.isFocused("loadingRetry"), compact: compact) { menu.tap("loadingRetry") }
-                        }
-                    }.frame(maxWidth: 720)
-                }.padding(compact ? 24 : 32).frame(maxWidth: .infinity)
+                    if launch.sport == .tennis { Button { session.loading.practice() } label: {
+                        Label("Swing to practice", systemImage: "tennis.racket").font(IslandUI.font(compact ? 20 : 26, bold: true)).foregroundStyle(IslandUI.navy).padding(.vertical, 12)
+                    }.buttonStyle(.plain).accessibilityLabel("Practice a swing").accessibilityHint("You can also swing your phone while loading.").accessibilityIdentifier("loading-practice") }
+                    Text(session.loading.statusText).font(IslandUI.font(16)).foregroundStyle(IslandUI.muted)
+                    Spacer(minLength: 4)
+                    Text(PartyLoadingTips.tips(for: launch.sport)[tip % 10]).font(IslandUI.font(compact ? 16 : 19)).foregroundStyle(IslandUI.navy).fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        IslandAction(title: "Back", focused: menu.isFocused("loadingBack"), compact: true) { menu.tap("loadingBack") }
+                        if session.loading.isStalled { IslandAction(title: "Retry", focused: menu.isFocused("loadingRetry"), primary: true, compact: true) { menu.tap("loadingRetry") } }
+                    }
+                }.frame(width: compact ? nil : 470)
+                if let player = session.players[safe: session.playerIndex] {
+                    CharacterModelPreview(player: player, cameraDistance: 3.0, idleSport: launch.sport, practiceSequence: launch.sport == .tennis ? session.loading.practiceSequence : nil)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity).frame(minHeight: compact ? 250 : 0)
+                        .accessibilityLabel("Your equipped character practicing")
+                }
             }
-        }
-        .background(LobbyBackdrop().ignoresSafeArea())
-        .task(id: launch.sport) {
+        }.task {
             while !Task.isCancelled {
-                do { try await Task.sleep(for: .seconds(3.5)) } catch { return }
-                withAnimation(reduceMotion || session.reduceMotion ? nil : .easeInOut(duration: 0.2)) { tip += 1 }
+                do { try await Task.sleep(for: .seconds(4)) } catch { return }; tip += 1
             }
         }
     }
     static func label(_ launch: MenuLaunch, _ opponent: TennisOpponent?) -> String {
         switch (launch.sport, launch.mode) {
-        case (.golf, .tutorial): "Your first golf swing"
-        case (.golf, _): "Cliffside golf"
-        case (_, .tutorial): "Your first tennis rally"
-        case (_, .training): "A little tennis practice"
-        case (_, .exhibition): "Casual tennis · vs AI"
-        default: "Solo campaign · \(opponent?.name ?? "Tennis")"
+        case (.golf, .tutorial): "Golf Lesson"
+        case (.golf, _): "Cliffside Golf"
+        case (_, .tutorial): "Tennis Tutorial"
+        case (_, .training): "Practice Court"
+        default: TennisVenueChoice(rawValue: SportsSession.shared.tennisVenue)?.title ?? "Tropical Open"
         }
     }
 }
@@ -1059,14 +1034,20 @@ extension TennisMenu {
     static func label(for id: String) -> String {
         if id.hasPrefix("sport-"), let s = Sport(rawValue: String(id.dropFirst(6))) { return s.playable ? s.title.capitalized : "\(s.title.capitalized) · coming soon" }
         if id.hasPrefix("tab-"), let t = SettingsTab(rawValue: String(id.dropFirst(4))) { return "Settings · \(t.title)" }
+        if id.hasPrefix("map-"), let v = TennisVenueChoice(rawValue: String(id.dropFirst(4))) { return v.title }
         if id.hasPrefix("rival"), let r = Int(id.dropFirst(5)) {
             let o = TennisCampaign.draw[r]
             return TennisCampaign.shared.unlocked(r) ? "Exhibition · \(o.name)" : "Exhibition · Locked"
         }
         switch id {
+        case "homeCampaign": return "Campaign"
+        case "campaignPlay": return "Play Round"
+        case "quickOpponent": return "Opponent"
+        case "quickDifficulty": return "Difficulty"
+        case "quickLength": return "Match length"
+        case "quickStart": return "Start Match"
         case "homePlay": return "Play with Friends"
         case "quickPlay", "partySolo": return "Quick Play"
-        case "homeCampaign": return "Campaign against AI"
         case "quickTennis": return "Casual tennis against AI"; case "quickGolf": return "Solo golf round"
         case "loadingBack": return "Back to Home"; case "loadingRetry": return "Retry loading"
         case "play": return "All sports"; case "character": return "Cosmetics"; case "settings": return "Settings"

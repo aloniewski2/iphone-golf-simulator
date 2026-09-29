@@ -11,6 +11,37 @@ namespace GolfArcade.PlayTests
 {
     public class TennisLobCinematicTests
     {
+        [UnityTest, Timeout(180000)] public IEnumerator ReachableLobsKeepTheirOverheadContact()
+        {
+            yield return SceneManager.LoadSceneAsync("Tennis"); yield return null;
+            var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true;
+            int oldRate=Time.captureFramerate; Time.captureFramerate=60;
+            var results=new System.Collections.Generic.List<string>();
+            int returned=0;
+            try {
+                foreach (float apex in new[]{4.5f,6f,8f})
+                foreach (float landingX in new[]{-2f,0f,2f}) {
+                    game.ConfigureMatch(TennisGame.Mode.Exhibition,null,null,null);
+                    game.AutoPlay=false; game.Player.CancelSwing(); game.Player.Tick(2,0);
+                    game.Player.transform.position=new Vector3(0,.035f,-11.2f);
+                    var from=new Vector3(1,1.5f,5);
+                    game.InjectBall(from,TennisAbilities.LobVelocity(from,new Vector3(landingX,TennisRules.BallRadius,-8.5f),apex));
+                    int hits=game.Hits, attempts=game.AutoSmashAttempts; bool tracked=false;
+                    var trace=new System.Text.StringBuilder();
+                    for(int f=0;f<300 && game.Hits==hits && game.Flow==TennisGame.Phase.Rally;f++) {
+                        game.Step(1f/60); yield return null; tracked |= game.TrackingOverhead;
+                        if(f%6==0) trace.AppendLine($"{f/60f:F2},ball={game.BallPosition:F2},player={game.Player.transform.position:F2},goal={game.MoveGoal:F2},tracking={game.TrackingOverhead},stroke={game.Player.Kind},swing={game.Player.Swinging},gap={game.LastContactGap:F3}");
+                    }
+                    if(game.Hits>hits) returned++;
+                    string line=$"apex={apex} x={landingX} tracked={tracked} attempts={game.AutoSmashAttempts-attempts} hits={game.Hits-hits} gap={game.LastContactGap}";
+                    Debug.Log("[LobAudit] "+line); results.Add(line);
+                    Directory.CreateDirectory("Library/Captures/lob-audit");
+                    File.WriteAllText($"Library/Captures/lob-audit/{apex}-{landingX}.txt",trace.ToString());
+                }
+                Assert.That(returned,Is.EqualTo(9),string.Join("\n",results));
+            } finally { Time.captureFramerate=oldRate; }
+        }
+
         [UnityTest, Timeout(180000)] public IEnumerator LobChasePerfectCameraAndUltimate()
         {
             yield return SceneManager.LoadSceneAsync("Tennis"); yield return null;

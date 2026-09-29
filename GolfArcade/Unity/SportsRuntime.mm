@@ -65,7 +65,7 @@
         _setResult=(void(*)(const char*))dlsym(RTLD_DEFAULT,"SportsSetTennisResult");
         _clock=(double(*)(void))dlsym(RTLD_DEFAULT,"SportsClock");
     }
-    if (!_push || !_pushSample || !_poll || !_clock) {
+    if (!_push || !_pushSample || !_poll || !_clock || !_readResult || !_setResult) {
         if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:2 userInfo:@{NSLocalizedDescriptionKey:@"Unity bridge is missing. Re-export Unity before building the host app."}];
         return NO;
     }

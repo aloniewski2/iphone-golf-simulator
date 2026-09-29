@@ -212,7 +212,7 @@ namespace GolfArcade.Tennis
             shimmerRt = shimmer.rectTransform;
 
             var ribbon = Chunky("Header ribbon", plaque, new Vector2(0, 1), new Vector2(210, 26), new Vector2(124, 4), GoldTop, GoldBottom, 3);
-            eventText = Label(ribbon.rectTransform, "TROPICAL OPEN  ·  SET 1", 14, new Vector2(0, 1), new Vector2(210, 26), Navy, TextAnchor.MiddleCenter, 0);
+            eventText = Label(ribbon.rectTransform, TennisVenue.Title + "  ·  SET 1", 14, new Vector2(0, 1), new Vector2(210, 26), Navy, TextAnchor.MiddleCenter, 0);
 
             rows[0] = BuildRow(body.rectTransform, 22, SunTop, SunBottom);
             rows[1] = BuildRow(body.rectTransform, -24, SeaTop, SeaBottom);

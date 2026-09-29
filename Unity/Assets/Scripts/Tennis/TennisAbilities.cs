@@ -7,6 +7,8 @@ namespace GolfArcade.Tennis
 
     public static class TennisAbilities
     {
+        // Retain archived ability data/recording APIs, but no player or AI ultimates in gameplay.
+        public static bool UltimatesEnabled => false;
         public const float DiveCooldown = 4f, DiveTravel = .42f, DiveDistance = 1.65f;
         public static string Name(TennisUltimate ability) => ability switch {
             TennisUltimate.RescueLob => "Rescue Lob", TennisUltimate.Curveball => "Curveball", _ => "Skybreaker"
@@ -44,19 +46,19 @@ namespace GolfArcade.Tennis
             && (ManualSimulation || Time.timeScale > 0);
         public bool CanDive => LiveAbilityInput && incoming && !Player.Swinging && !Player.GroundRecovering
             && DiveCooldownLeft <= 0 && !DiveActive;
-        public bool CanArmUltimate => LiveAbilityInput && PlayerUltimate >= 1;
+        public bool CanArmUltimate => TennisAbilities.UltimatesEnabled && LiveAbilityInput && PlayerUltimate >= 1;
         /// Armed ultimates fire on the player's very next real contact, whatever the stroke (Skybreaker included).
         bool EligibleUltimateContact => Player.Kind != TennisActor.Stroke.Dive;
 
         public bool SelectUltimate(int value)
         {
-            if (LoadoutLocked || value < 0 || value > 2) return false;
+            if (!TennisAbilities.UltimatesEnabled || LoadoutLocked || value < 0 || value > 2) return false;
             SelectedUltimate = (TennisUltimate)value; UltimateArmed = false; return true;
         }
         public void LockLoadout() => LoadoutLocked = true;
         public bool ToggleUltimate()
         {
-            if (!LiveAbilityInput) return false;
+            if (!TennisAbilities.UltimatesEnabled || !LiveAbilityInput) return false;
             if (UltimateArmed) { UltimateArmed = false; playerUltCharged = false; return true; }
             if (!CanArmUltimate) return false;
             UltimateArmed = true;

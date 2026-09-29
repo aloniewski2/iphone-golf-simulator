@@ -36,7 +36,7 @@ namespace GolfArcade.Tennis
         /// Timing score (1 = dead on .. 0 = missed) for a swing that met the ball `late`
         /// real seconds after the ideal moment (negative: early). Set in milliseconds a person
         /// can actually hit with a phone and a TV picture: PERFECT within 35ms, EXCELLENT 60,
-        /// GREAT 95, GOOD 140, and a playable ball out to 210.
+        /// GREAT 95, GOOD 140, and a playable ball out to 280.
         public static float TimingScore(float late)
         {
             float t = Mathf.Abs(late);
@@ -44,7 +44,7 @@ namespace GolfArcade.Tennis
             if (t <= .06f) return Mathf.Lerp(.96f, .88f, (t - .035f) / .025f);
             if (t <= .095f) return Mathf.Lerp(.88f, .75f, (t - .06f) / .035f);
             if (t <= .14f) return Mathf.Lerp(.75f, .55f, (t - .095f) / .045f);
-            return Mathf.Clamp01(Mathf.Lerp(.55f, 0f, (t - .14f) / .07f));
+            return Mathf.Clamp01(Mathf.Lerp(.55f, 0f, (t - .14f) / .14f));
         }
 
         /// "EARLY" / "LATE" for a swing off by more than a perfect one, else "".
@@ -199,7 +199,7 @@ namespace GolfArcade.Tennis
         /// Shot pace comes from the quality of contact, not how hard the phone was swung:
         /// a clean strike flies, a frame shot floats. Effort only nudges it.
         public static float ShotSpeed(float quality, float power, float stamina) =>
-            Mathf.Lerp(15f, 32f, Mathf.Pow(Mathf.Clamp01(quality), 1.25f)) * Mathf.Lerp(.9f, 1.05f, Mathf.Clamp01(power)) * Mathf.Lerp(.9f, 1f, Mathf.Clamp01(stamina));
+            Mathf.Lerp(13f, 34f, Mathf.Pow(Mathf.Clamp01(quality), 1.35f)) * Mathf.Lerp(.9f, 1.05f, Mathf.Clamp01(power)) * Mathf.Lerp(.9f, 1f, Mathf.Clamp01(stamina));
 
         /// Where an aimed rally ball is sent. The racket face picks the side (-1...1); the
         /// contact decides how much of the court the player can use: a clean hit can go
@@ -235,14 +235,29 @@ namespace GolfArcade.Tennis
             float finish = Mathf.Clamp01((age - SweetTime) / (StrokeDuration - SweetTime));
             return .5f + .5f * (1 - (1 - finish) * (1 - finish));
         }
+        public static float ContactQuality(float timing, float center, float positioning) =>
+            Mathf.Clamp01(timing) * .65f + Mathf.Clamp01(center) * .25f + Mathf.Clamp01(positioning) * .10f;
+
+        /// Reach assistance grants contact, not free power. Recompute pace from the actual timing.
+        public static TennisHit AssistedHit(float late, float center, float balance, float power, float stamina)
+        {
+            float timing = TimingScore(late);
+            float quality = ContactQuality(timing, center, balance);
+            return new TennisHit {
+                Contact = true, Timing = timing, Center = center, Positioning = balance, Quality = quality,
+                Speed = ShotSpeed(quality, power, stamina),
+                ErrorDegrees = Mathf.Lerp(7, 3, quality), Label = "ASSISTED RETURN"
+            };
+        }
+
         public static TennisHit Evaluate(float swingAge, Vector2 faceOffset, float balance, float reachQuality, float power, float stamina)
         {
             float radial = new Vector2(faceOffset.x / StringHalfWidth, faceOffset.y / StringHalfHeight).magnitude;
-            float timing = Mathf.Clamp01(1 - Mathf.Abs(swingAge - SweetTime) / Mathf.Lerp(TimingWindow,.10f,Mathf.Clamp01(power)));
-            bool contact = new Vector2(faceOffset.x / (StringHalfWidth + BallRadius), faceOffset.y / (StringHalfHeight + BallRadius)).magnitude <= 1 && timing > 0;
+            float timing = TimingScore(swingAge - SweetTime);
+            bool contact = new Vector2(faceOffset.x / (StringHalfWidth + BallRadius), faceOffset.y / (StringHalfHeight + BallRadius)).magnitude <= 1 && swingAge >= .04f && timing > 0;
             float center = Mathf.Clamp01(1 - radial);
             float positioning = Mathf.Clamp01(balance) * Mathf.Clamp01(reachQuality);
-            float quality = contact ? timing * .35f + center * .40f + positioning * .25f : 0;
+            float quality = contact ? ContactQuality(timing, center, positioning) : 0;
             return new TennisHit {
                 Contact = contact, Timing = timing, Center = center, Positioning = positioning, Quality = quality,
                 Speed = contact ? ShotSpeed(quality, power, stamina) : 0,
@@ -269,8 +284,8 @@ namespace GolfArcade.Tennis
             // A dive throws the racket much further sideways than a normal stroke can reach.
             // Plan 2 party windows: a little more reach and time than before (never less) — skill is
             // when you swing and where you aim, not sniper precision.
-            float forgiveness=Mathf.Lerp(1.6f,1.05f,Mathf.Clamp01(power))*(dive?1.8f:1f);
-            if(Mathf.Abs(age-SweetTime)>Mathf.Lerp(.24f,.15f,Mathf.Clamp01(power))) return false;
+            float forgiveness=1.6f*(dive?1.8f:1f);
+            if(age < .04f || Mathf.Abs(age-SweetTime) >= .28f) return false;
             // Closest approach measured on the ground plane, then judged against a height BAND
             // rather than a point: the old fixed 1.1m centre turned low and high balls the
             // player had timed perfectly into misses.

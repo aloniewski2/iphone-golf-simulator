@@ -290,9 +290,9 @@ namespace GolfArcade.Tennis
                     switch (m.name.Replace(" (Instance)", ""))
                     {
                         case "TropicalV3_001": result = sea; break;                                     // turquoise water
-                        case "TropicalV3_002": result = Tinted(m, new Color(.015f, .19f, .62f), .1f); break; // court
-                        case "TropicalV3_011": result = Tinted(m, new Color(.02f, .34f, .34f), .22f); break;  // runoff
-                        case "TropicalV3_003": result = Tinted(m, new Color(.95f, .96f, .93f), .25f); break;  // lines
+                        case "TropicalV3_002": result = Tinted(m, TennisVenue.CourtColor, .1f); break; // court
+                        case "TropicalV3_011": result = Tinted(m, TennisVenue.RunoffColor, .22f); break;  // runoff
+                        case "TropicalV3_003": result = Tinted(m, TennisVenue.LineColor, .25f); break;  // lines
                         case "TropicalV3_010": result = Tinted(m, new Color(.78f, .70f, .56f), .15f); break;  // limestone
                         case "TropicalV3_009": result = Tinted(m, new Color(.12f, .36f, .07f), .1f); break;   // turf
                         // Placeholder blob spectators: the real seated crowd sits there instead
@@ -368,11 +368,14 @@ namespace GolfArcade.Tennis
         /// What stands on the court surface (a player root). The resort court sits above y=0, so a
         /// disc at a fixed y=.012 was under the surface and never drawn; it now sits on the court.
         public Transform Surface;
+        /// Sky and crater courts: no shadow where there is no floor (a ball falling off the deck).
+        public bool OnlyOverDeck;
 
         void LateUpdate()
         {
             if (!Follow) { gameObject.SetActive(false); return; }
             Vector3 p = Follow.position;
+            var rend = GetComponent<Renderer>(); if (rend) rend.enabled = !OnlyOverDeck || TennisVenue.OverDeck(p);
             float court = Surface ? Surface.position.y : 0;
             float height = Mathf.Max(0, HeightOverride >= 0 ? HeightOverride : p.y - court);
             float fade = Mathf.Clamp01(1 - height / FadeHeight);

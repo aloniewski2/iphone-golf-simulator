@@ -65,6 +65,7 @@ struct CharacterModelPreview: UIViewRepresentable {
     var cameraDistance: Float = 4.8
     var framing: PreviewFraming = .body
     var idleSport: Sport? = nil
+    var practiceSequence: Int? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeCoordinator() -> Coordinator { Coordinator(cameraDistance: cameraDistance) }
     func makeUIView(context: Context) -> SCNView {
@@ -91,12 +92,14 @@ struct CharacterModelPreview: UIViewRepresentable {
     }
     private func updateIdle(_ view: SCNView, context: Context) {
         let animate = idleSport != nil && !reduceMotion && !SportsSession.shared.reduceMotion
-        context.coordinator.configureIdle(sport: idleSport, animate: animate)
-        view.isPlaying = animate
+        context.coordinator.configureIdle(sport: idleSport, animate: animate && practiceSequence == nil)
+        if let sequence = practiceSequence { context.coordinator.practice(sequence) }
+        view.isPlaying = animate || practiceSequence != nil
         view.preferredFramesPerSecond = 30
     }
     static func dismantleUIView(_ view: SCNView, coordinator: Coordinator) {
         view.isPlaying = false
+        coordinator.practiceTimer?.invalidate()
         coordinator.character.removeAllActions()
         coordinator.scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeAllActions()
         view.scene = nil
@@ -114,22 +117,40 @@ struct CharacterModelPreview: UIViewRepresentable {
             framed = true
             character.childNode(withName: "heroV4", recursively: false)?.childNode(withName: "racket", recursively: false)?.isHidden = framing == .head
             if framing == .head { cam.position = SCNVector3(0, 1.13, 1.7); cam.look(at: Self.headTarget) }
-            else { cam.position = SCNVector3(0, 0.9, heroCameraDistance); cam.look(at: SCNVector3(0, 0.6, 0)) }
+            else { cam.position = SCNVector3(0, 0.9, heroCameraDistance); cam.look(at: SCNVector3(0, 0.76, 0)) }
         }
         func setFraming(_ f: PreviewFraming, view: SCNView, animated: Bool) {
             guard f != framing || !framed else { return }
             framing = f
-            view.defaultCameraController.target = f == .head ? Self.headTarget : SCNVector3(0, 0.6, 0)
+            view.defaultCameraController.target = f == .head ? Self.headTarget : SCNVector3(0, 0.76, 0)
             view.pointOfView = scene.rootNode.childNodes.first(where: { $0.camera != nil })
             SCNTransaction.begin(); SCNTransaction.animationDuration = animated ? 0.45 : 0
             SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             applyFraming(); SCNTransaction.commit()
         }
         var previous: Player?
+        private var lastPractice = 0
+        var practiceTimer: Timer?
+        func practice(_ sequence: Int) {
+            guard sequence != lastPractice else { return }; lastPractice = sequence
+            guard let root = character.childNode(withName: "heroV4", recursively: false) else { return }
+            HeroV4.preparePractice(root)
+            practiceTimer?.invalidate()
+            let start = Date()
+            let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self, let root = self.character.childNode(withName: "heroV4", recursively: false) else { return }
+                    let progress = min(1, Date().timeIntervalSince(start) / 1.5)
+                    HeroV4.practiceFrame(root, progress: progress)
+                    if progress >= 1 { self.practiceTimer?.invalidate(); self.practiceTimer = nil }
+                }
+            }
+            practiceTimer = timer; RunLoop.main.add(timer, forMode: .common)
+        }
         private var idleKey: String?
         let heroCameraDistance: Float
         init(cameraDistance: Float = 4.8) {
-            heroCameraDistance = max(3.2, cameraDistance) * 1.05
+            heroCameraDistance = max(2.4, cameraDistance) * 1.05
             scene.rootNode.addChildNode(character)
             let camera = SCNNode(); camera.camera = SCNCamera(); camera.camera?.fieldOfView = 32; camera.camera?.zNear = 0.05   // close-ups sit ~1 m away
             camera.position = SCNVector3(0, 1.0, cameraDistance); camera.look(at: SCNVector3(0,0.92,0))
@@ -154,7 +175,8 @@ struct CharacterModelPreview: UIViewRepresentable {
             let amb = SCNNode(); amb.light = SCNLight(); amb.light?.type = .ambient; amb.light?.intensity = 210
             amb.light?.color = UIColor(red: 0.86, green: 0.88, blue: 0.96, alpha: 1); scene.rootNode.addChildNode(amb)
             let floor=SCNNode(geometry:SCNCylinder(radius:0.48,height:0.025));floor.position.y = -0.025
-            floor.geometry?.firstMaterial?.diffuse.contents=UIColor(red:0.16,green:0.3,blue:0.48,alpha:1)
+            floor.geometry?.firstMaterial?.diffuse.contents=UIColor.clear
+            floor.isHidden = true
             scene.rootNode.addChildNode(floor)
         }
         func update(_ p: Player) {
@@ -296,9 +318,10 @@ struct CharacterModelPreview: UIViewRepresentable {
 
     static func load() -> Bool {
         if manifest != nil { return true }
-        guard let mu = Bundle.main.url(forResource: "HeroV4", withExtension: "json"), let md = try? Data(contentsOf: mu),
+        let menu = Bundle.main.url(forResource: "HeroMenu", withExtension: "json") != nil
+        guard let mu = Bundle.main.url(forResource: menu ? "HeroMenu" : "HeroV4", withExtension: "json"), let md = try? Data(contentsOf: mu),
               let m = try? JSONDecoder().decode(Manifest.self, from: md),
-              let bu = Bundle.main.url(forResource: "HeroV4", withExtension: "bin"), let bin = try? Data(contentsOf: bu) else { return false }
+              let bin = previewData(menu ? "HeroMenu" : "HeroV4") else { return false }
         if let ru = Bundle.main.url(forResource: "HeroV4_KitRef", withExtension: "json"), let rd = try? Data(contentsOf: ru) { ref = try? JSONDecoder().decode(Ref.self, from: rd) }
         for (i, part) in m.parts.enumerated() {
             func src(_ off: Int, _ comps: Int, _ sem: SCNGeometrySource.Semantic) -> SCNGeometrySource {
@@ -330,7 +353,7 @@ struct CharacterModelPreview: UIViewRepresentable {
     static func build(_ p: Player) -> SCNNode? {
         guard load(), let m = manifest else { return nil }
         let root = SCNNode(); root.name = "heroV4"; root.eulerAngles.y = .pi + 0.35   // exported facing -z; face the camera, a touch of 3/4
-        root.scale = SCNVector3(0.78, 0.78, 0.78)   // the chibi hero is wide in Ready: fit the mirror frame
+        root.scale = SCNVector3(0.92, 0.92, 0.92)   // the chibi hero is wide in Ready: fit the mirror frame
         let racket = SCNNode(); racket.name = "racket"; root.addChildNode(racket)
         let wanted = headwear[max(0, min(3, p.hairStyle))]
         // one haircut (fall back to Swept if this locker bake predates the others)
@@ -369,10 +392,59 @@ struct CharacterModelPreview: UIViewRepresentable {
                 return mat
             }
             let node = SCNNode(geometry: base); node.name = part.name
+            node.setValue(i, forKey: "menuPartIndex")
             (part.name.hasPrefix("Hero_Racket") || part.name.hasPrefix("TwoHand") ? racket : root).addChildNode(node)
         }
         if mirrored { root.scale.x = -root.scale.x }
         return root
+    }
+
+
+    static func previewData(_ name: String) -> Data? {
+        if let u = Bundle.main.url(forResource: name, withExtension: "lzfse"),
+           let d = try? Data(contentsOf: u), let raw = try? (d as NSData).decompressed(using: .lzfse) { return raw as Data }
+        guard let u = Bundle.main.url(forResource: name, withExtension: "bin") else { return nil }
+        return try? Data(contentsOf: u)
+    }
+
+    /// Vertex targets sampled from the unchanged gameplay Forehand. Every wardrobe variant is
+    /// baked with the same indices as HeroMenu, so live tint/slot choices are preserved.
+    static func preparePractice(_ root: SCNNode) {
+        guard let manifest else { return }
+        var nodes: [SCNNode] = []
+        root.enumerateChildNodes { node, _ in if node.value(forKey: "menuPartIndex") != nil { nodes.append(node) } }
+        if nodes.first?.morpher == nil {
+            var targets: [Int: [SCNGeometry]] = [:]
+            for frame in [0, 3, 6, 9, 12, 15, 18, 19] {
+                guard let data = previewData(String(format: "HeroSwing_%02d", frame)) else { return }
+                for node in nodes {
+                    guard let i = node.value(forKey: "menuPartIndex") as? Int, manifest.parts.indices.contains(i), let base = node.geometry else { continue }
+                    let part = manifest.parts[i], length = part.vertexCount * 12
+                    guard part.normalOffset + length <= data.count else { return }
+                    let sources = [(part.positionOffset, SCNGeometrySource.Semantic.vertex), (part.normalOffset, .normal)].map { offset, semantic in
+                        SCNGeometrySource(data: data.subdata(in: offset..<offset+length), semantic: semantic, vectorCount: part.vertexCount,
+                                          usesFloatComponents: true, componentsPerVector: 3, bytesPerComponent: 4, dataOffset: 0, dataStride: 12)
+                    }
+                    targets[i, default: []].append(SCNGeometry(sources: sources, elements: base.elements))
+                }
+            }
+            for node in nodes {
+                guard let i = node.value(forKey: "menuPartIndex") as? Int, let t = targets[i], t.count == 8 else { continue }
+                let morph = SCNMorpher(); morph.targets = t; morph.calculationMode = .normalized; morph.unifiesNormals = false; node.morpher = morph
+            }
+        }
+    }
+
+    static func practiceFrame(_ root: SCNNode, progress: Double) {
+        let active = min(1, progress / 0.1) * min(1, (1 - progress) / 0.15)
+        let frame = min(7, max(0, (progress - 0.1) / 0.75 * 7))
+        let lo = Int(frame), hi = min(7, lo + 1), mix = frame - Double(lo)
+        SCNTransaction.begin(); SCNTransaction.disableActions = true
+        root.enumerateChildNodes { node, _ in
+            guard let morph = node.morpher else { return }
+            for i in 0..<8 { morph.setWeight((i == lo ? (1 - mix) * active : 0) + (i == hi ? mix * active : 0), forTargetAt: i) }
+        }
+        SCNTransaction.commit()
     }
 
     /// Port of Unity KitRecolor as HeroKit drives it (linear light; R shirt, G shorts+trim, B baked hair, skin mask).

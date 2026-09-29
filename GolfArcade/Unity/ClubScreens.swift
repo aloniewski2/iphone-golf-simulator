@@ -108,6 +108,7 @@ struct ClubHomeScreen: View {
             Text("\(hello), \(menu.player?.name ?? "friend")").font(Club.caps(compact ? 13 : 16)).tracking(1.5).foregroundStyle(Club.sun)
             Text("What are we playing today?").font(Club.display(compact ? 36 : 54)).foregroundStyle(.white)
                 .shadow(color: .black.opacity(0.35), radius: 0, x: 0, y: 4)
+            if let p = menu.player { LevelStrip(player: p.id, compact: compact).padding(.top, 4) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -845,5 +846,458 @@ struct CharacterSizeControl: View {
         .foregroundStyle(.white).padding(compact ? 10 : 16)
         .background(RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.3)))
         .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(focused ? Club.sun : .clear, lineWidth: 3))
+    }
+}
+
+// MARK: - Simple Island screen family
+struct IslandTitleScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        GeometryReader { g in
+            ZStack {
+                IslandBackdrop(intro: true)
+                IslandWordmark(size: compact ? 44 : 78)
+                    .position(x: g.size.width * (compact ? 0.5 : 0.45), y: g.size.height * 0.22)
+                IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0))
+                    .frame(width: g.size.width * (compact ? 0.95 : 0.42), height: g.size.height * 0.72)
+                    .position(x: g.size.width * (compact ? 0.5 : 0.76), y: g.size.height * 0.60)
+                IslandAction(title: "Play", focused: menu.isFocused("start"), primary: true, tint: .white, compact: compact, identifier: "intro-play") { menu.tap("start") }
+                    .frame(width: compact ? 200 : 240)
+                    .position(x: g.size.width * (compact ? 0.5 : 0.45), y: g.size.height * 0.89)
+            }
+        }.preferredColorScheme(.light)
+    }
+}
+
+struct IslandHomeScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        ZStack {
+            IslandBackdrop()
+            if compact { IslandUI.paper.opacity(0.45).ignoresSafeArea() }
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 50))
+            layout {
+                VStack(alignment: .leading, spacing: 16) {
+                    IslandWordmark(size: compact ? 34 : 46).padding(.bottom, compact ? 4 : 20)
+                    ForEach([("play", "Play"), ("homeCampaign", "Campaign"), ("character", "Locker"), ("settings", "Settings")], id: \.0) { id, label in
+                        IslandAction(title: label, focused: menu.isFocused(id), primary: id == "play", compact: compact, identifier: "home-\(id)") { menu.tap(id) }
+                    }
+                }.frame(width: compact ? nil : 300).padding(compact ? 20 : 0)
+                IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }.padding(.horizontal, compact ? 16 : 90).padding(.vertical, compact ? 30 : 76)
+            VStack { HStack { Spacer(); Label(menu.player?.name ?? "Player 1", systemImage: "person.crop.circle.fill").font(IslandUI.font(17, bold: true)).foregroundStyle(IslandUI.navy) }; Spacer() }
+                .padding(compact ? 20 : 40).allowsHitTesting(false)
+        }.preferredColorScheme(.light)
+    }
+}
+
+struct IslandSportsScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Select a sport", compact: compact) {
+            VStack(alignment: .leading, spacing: 20) {
+                let layout = compact ? AnyLayout(VStackLayout(spacing: 20)) : AnyLayout(HStackLayout(spacing: 28))
+                layout {
+                    ForEach(Sport.allCases.filter(\.playable), id: \.self) { sport in
+                        Button { menu.tap("sport-\(sport.rawValue)") } label: {
+                            VStack(spacing: 14) {
+                                SceneImage(name: Club.scene(for: sport)).frame(height: compact ? 165 : 290).clipShape(RoundedRectangle(cornerRadius: 16))
+                                Text(sport.title.capitalized).font(IslandUI.font(28, bold: true))
+                                Capsule().fill(menu.isFocused("sport-\(sport.rawValue)") ? IslandUI.navy : .clear).frame(width: 110, height: 4)
+                            }.foregroundStyle(IslandUI.navy)
+                        }.buttonStyle(.plain).accessibilityLabel(sport.title.capitalized)
+                    }
+                }
+                Spacer(minLength: 0)
+                IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
+            }
+        }
+    }
+}
+
+struct IslandHubScreen: View {
+    let menu: TennisMenu
+    let sport: Sport
+    let compact: Bool
+    private func label(_ id: String) -> String {
+        switch id { case "tutorial": "Tutorial"; case "campaign": "Campaign"; case "exhibition": "Quick Match"; case "training": "Training"; case "round": "Play Golf"; case "golfCampaign": "Golf Tour · Soon"; default: "Driving Range · Soon" }
+    }
+    var body: some View {
+        IslandShell(title: sport.title.capitalized, compact: compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 70))
+            layout {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(TennisMenu.hubItems(sport), id: \.self) { id in
+                        IslandAction(title: label(id), focused: menu.isFocused(id), primary: menu.isFocused(id), compact: compact, identifier: "hub-\(id)") { menu.tap(id) }
+                    }
+                    if !menu.notice.isEmpty { Text(menu.notice).font(IslandUI.font(16)).foregroundStyle(IslandUI.navy).fixedSize(horizontal: false, vertical: true) }
+                    Spacer(minLength: 16)
+                    IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }
+                }.frame(width: compact ? nil : 370)
+                IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0), sport: sport == .golf ? .golf : nil)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+}
+
+struct IslandLadderScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    let exhibition: Bool
+    private let points: [CGPoint] = [CGPoint(x:0.10,y:0.28),CGPoint(x:0.28,y:0.52),CGPoint(x:0.43,y:0.22),CGPoint(x:0.59,y:0.55),CGPoint(x:0.80,y:0.29),CGPoint(x:0.91,y:0.65),CGPoint(x:0.72,y:0.84),CGPoint(x:0.48,y:0.77),CGPoint(x:0.26,y:0.87),CGPoint(x:0.08,y:0.70)]
+    var body: some View {
+        if exhibition {
+            IslandShell(title: "Quick Match", compact: compact) {
+                let layout = compact ? AnyLayout(VStackLayout(spacing: 18)) : AnyLayout(HStackLayout(spacing: 56))
+                layout {
+                    VStack(alignment: .leading, spacing: 18) {
+                        IslandSelector(label: "Opponent", value: TennisCampaign.draw[menu.quickOpponent].name, focused: menu.isFocused("quickOpponent"), compact: compact) { _ = menu.adjust("quickOpponent", by: $0) }
+                        IslandSelector(label: "Difficulty", value: TennisMenu.trainingLevels[menu.quickDifficulty].name, focused: menu.isFocused("quickDifficulty"), compact: compact) { _ = menu.adjust("quickDifficulty", by: $0) }
+                        IslandSelector(label: "Match length", value: ["3 games", "1 set", "Best of 3"][menu.quickLength], focused: menu.isFocused("quickLength"), compact: compact) { _ = menu.adjust("quickLength", by: $0) }
+                        IslandAction(title: "Start Match", focused: menu.isFocused("quickStart"), primary: true, compact: compact) { menu.tap("quickStart") }.padding(.top, 20)
+                        Spacer(minLength: 12)
+                        IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }
+                    }.frame(width: compact ? nil : 460)
+                    IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0)).frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+        } else {
+            GeometryReader { g in
+                ZStack {
+                    Image(uiImage: UIImage(named: "island-campaign.png") ?? UIImage(named: "island-terrace.png") ?? UIImage()).resizable().scaledToFill().frame(width:g.size.width,height:g.size.height).clipped().ignoresSafeArea()
+                    if compact { IslandUI.paper.opacity(0.65).ignoresSafeArea() }
+                    let layout = compact ? AnyLayout(VStackLayout(spacing: 14)) : AnyLayout(HStackLayout(spacing: 30))
+                    layout {
+                        VStack(alignment: .leading, spacing: 18) {
+                            Text("Campaign").font(IslandUI.font(compact ? 32 : 42, bold: true))
+                            Text("Round \(menu.selectedRound + 1)").font(IslandUI.font(20, bold: true))
+                            Text(TennisCampaign.draw[menu.selectedRound].name).font(IslandUI.font(25, bold: true))
+                            Text(TennisCampaign.draw[menu.selectedRound].formatTitle).font(IslandUI.font(16))
+                            Image(uiImage: UIImage(named:"map-resort.jpg") ?? UIImage()).resizable().scaledToFill().frame(height:compact ? 95 : 150).clipped().clipShape(RoundedRectangle(cornerRadius:12))
+                            IslandAction(title: "Play Round", focused: menu.isFocused("campaignPlay"), primary: true, compact: compact) { menu.tap("campaignPlay") }
+                            if !menu.notice.isEmpty { Text(menu.notice).font(IslandUI.font(14)) }
+                            Spacer(minLength: 0)
+                            IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }
+                            Button("New tournament") { menu.tap("restart") }.font(IslandUI.font(14)).padding(.leading,22)
+                                .accessibilityAddTraits(menu.isFocused("restart") ? .isSelected : [])
+                        }.foregroundStyle(IslandUI.navy).frame(width: compact ? nil : 305)
+                        GeometryReader { map in
+                            Path { path in
+                                for (i, p) in points.enumerated() {
+                                    let q = CGPoint(x:map.size.width*p.x,y:map.size.height*p.y)
+                                    if i == 0 { path.move(to:q) } else { path.addLine(to:q) }
+                                }
+                            }.stroke(.white.opacity(0.85),style:StrokeStyle(lineWidth:4,lineCap:.round,dash:[2,11]))
+                            ForEach(0..<TennisCampaign.draw.count,id:\.self) { i in
+                                let unlocked = TennisCampaign.shared.unlocked(i)
+                                Button { menu.tap("round\(i)") } label: {
+                                    Group { if unlocked { Text("\(i+1)") } else { Image(systemName:"lock.fill") } }
+                                        .font(IslandUI.font(23,bold:true)).foregroundStyle(menu.selectedRound == i ? IslandUI.navy : .white)
+                                        .frame(width:48,height:48).background(menu.selectedRound == i ? IslandUI.lime : IslandUI.navy,in:Circle())
+                                        .overlay(Circle().strokeBorder(.white,lineWidth:3)).shadow(color:.black.opacity(0.18),radius:3,y:2)
+                                }.buttonStyle(.plain).position(x:map.size.width*points[i].x,y:map.size.height*points[i].y)
+                                    .accessibilityLabel("Round \(i+1), \(TennisCampaign.draw[i].name)\(unlocked ? "" : ", locked")")
+                            }
+                        }.frame(minHeight:compact ? 250 : 0)
+                    }.padding(compact ? 22 : 52)
+                }
+            }.preferredColorScheme(.light)
+        }
+    }
+}
+
+struct IslandTrainingScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Training", compact: compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 20)) : AnyLayout(HStackLayout(spacing: 70))
+            layout {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("Rally practice").font(IslandUI.font(27, bold: true)).foregroundStyle(IslandUI.navy)
+                    Text("Practice timing and placement with the coach.").font(IslandUI.font(18)).foregroundStyle(IslandUI.muted)
+                    IslandSelector(label: "Pace", value: TennisMenu.trainingLevels[menu.trainingLevel].name, focused: menu.isFocused("level"), compact: compact) { _ = menu.adjust("level", by: $0) }
+                    IslandAction(title: "Start Practice", focused: menu.isFocused("start"), primary: true, compact: compact) { menu.tap("start") }
+                    IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }
+                    Spacer(minLength: 0)
+                }.frame(width: compact ? nil : 450)
+                IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0)).frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+}
+
+struct IslandLockerScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    private var rows: [(String, String, String, Color?)] {
+        let p = menu.player ?? Player(name: "Player 1", colorIndex: 0)
+        return [("body", "Player", p.standardFemale ? "Girl" : "Boy", nil),
+                ("haircut", "Hairstyle", HeroV4.haircuts[p.shownHaircut], nil),
+                ("skin", "Skin tone", "\(Int(p.skinT * 100))%", Color(hex: p.skinHex)),
+                ("hair", "Headwear", HeroV4.headwear[p.hairStyle], nil),
+                ("hairColor", "Hair colour", p.hairDyed ? "Dyed" : "Natural", Color(hex: p.hairHex)),
+                ("hand", "Plays", p.handedness == .left ? "Left-handed" : "Right-handed", nil),
+                ("shirt", "Shirt", p.outfitName("shirt"), p.outfitColor("shirt")),
+                ("shorts", "Shorts & trim", p.outfitName("shorts"), p.outfitColor("shorts")),
+                ("accent", "Shoes", p.outfitName("accent"), p.outfitColor("accent")),
+                ("racket", "Racket", p.outfitName("racket"), p.outfitColor("racket"))]
+    }
+    var body: some View {
+        IslandShell(title: "Locker", compact: compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 30))
+            layout {
+                VStack(spacing: 12) {
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(spacing: 4) {
+                                ForEach(rows, id: \.0) { row in
+                                    IslandSelector(label: row.1, value: row.2, swatch: row.3, focused: menu.isFocused(row.0), compact: compact) { _ = menu.adjust(row.0, by: $0) }.id(row.0)
+                                }
+                            }.padding(3)
+                        }.onChange(of: menu.focused) { _, id in withAnimation(.easeOut(duration: 0.15)) { proxy.scrollTo(id, anchor: .center) } }
+                    }
+                    HStack(spacing: 8) {
+                        ForEach([("randomize", "Surprise me"), ("reset", "Kit colours"), ("back", "Done")], id: \.0) { id, label in
+                            Button { menu.tap(id) } label: {
+                                Text(label).font(IslandUI.font(compact ? 14 : 20, bold: true)).lineLimit(1).minimumScaleFactor(0.85)
+                                    .frame(maxWidth: .infinity, minHeight: 48).foregroundStyle(IslandUI.navy)
+                                    .background(id == "back" ? IslandUI.lime : .white.opacity(0.85), in: Capsule())
+                                    .overlay(Capsule().strokeBorder(IslandUI.navy.opacity(menu.isFocused(id) ? 1 : 0), lineWidth: 2))
+                            }.buttonStyle(.plain).accessibilityLabel(label)
+                        }
+                    }
+                }.frame(width: compact ? nil : 640)
+                VStack(spacing: 4) {
+                    IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0))
+                    Text(menu.player?.name ?? "Player 1").font(IslandUI.font(20, bold: true))
+                    Text("Drag to rotate").font(IslandUI.font(14)).foregroundStyle(IslandUI.muted)
+                }.foregroundStyle(IslandUI.navy).frame(maxWidth: .infinity).frame(height: compact ? 230 : nil)
+            }
+        }
+    }
+}
+
+struct IslandSettingsScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Settings", compact: compact) {
+            VStack(alignment: .leading, spacing: 24) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(SettingsTab.allCases, id: \.self) { tab in
+                            Button { menu.tap("tab-\(tab.rawValue)") } label: {
+                                Text(tab.title).font(IslandUI.font(compact ? 16 : 19, bold: true)).foregroundStyle(IslandUI.navy)
+                                    .padding(.horizontal, 14).padding(.vertical, 12)
+                                    .background(menu.settingsTab == tab ? IslandUI.lime : .white.opacity(0.8), in: Capsule())
+                                    .overlay(Capsule().strokeBorder(menu.isFocused("tab-\(tab.rawValue)") ? IslandUI.navy : .clear, lineWidth: 2))
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(TennisMenu.settingsRows(menu.settingsTab), id: \.self) { id in
+                            let item = SettingsScreen.describe(id, .shared, menu.player)
+                            IslandSelector(label: item.0, value: item.1, focused: menu.isFocused(id), compact: compact) { delta in
+                                if !menu.adjust(id, by: delta) { menu.tap(id) }
+                            }
+                        }
+                        if !menu.notice.isEmpty { Text(menu.notice).font(IslandUI.font(16)).foregroundStyle(IslandUI.navy) }
+                    }
+                }.frame(maxWidth: compact ? .infinity : 720)
+                IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 180)
+            }
+        }
+    }
+}
+
+struct IslandGuideScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    let golf: Bool
+    var body: some View {
+        let cards = golf ? GolfLesson.cards : HowTo.pages
+        let index = min(golf ? menu.lessonCard : menu.howToPage, cards.count - 1)
+        let card = cards[index]
+        IslandShell(title: golf ? "Golf Lesson" : "How to Play", compact: compact) {
+            VStack(alignment: .leading, spacing: 24) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("\(index + 1) / \(cards.count)").font(IslandUI.font(17)).foregroundStyle(IslandUI.muted)
+                        Text(card.title).font(IslandUI.font(compact ? 27 : 34, bold: true))
+                        ForEach(Array(card.steps.enumerated()), id: \.offset) { i, text in
+                            HStack(alignment: .top, spacing: 16) {
+                                Text("\(i + 1)").font(IslandUI.font(20, bold: true)).frame(width: 34, height: 34).background(IslandUI.lime, in: Circle())
+                                Text(text).font(IslandUI.font(compact ? 18 : 23)).fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }.foregroundStyle(IslandUI.navy).padding(28).frame(maxWidth: compact ? .infinity : 800, alignment: .leading)
+                        .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 20))
+                }
+                HStack {
+                    IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }
+                    if index > 0 { IslandAction(title: "Previous", focused: menu.isFocused("prev"), compact: compact) { menu.tap("prev") } }
+                    let id = golf ? "nextCard" : "nextPage"
+                    if index < cards.count - 1 || golf {
+                        IslandAction(title: golf && index == cards.count - 1 ? "Practice" : "Next", focused: menu.isFocused(id), primary: true, compact: compact) { menu.tap(id) }
+                    }
+                }.frame(maxWidth: 780)
+            }
+        }
+    }
+}
+
+struct IslandConnectScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Connect to TV", compact: compact) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    ForEach(Array(["Open Screen Mirroring in Control Centre.", "Choose your TV or Mac.", "Use your phone to play."].enumerated()), id: \.offset) { i, text in
+                        HStack(spacing: 18) {
+                            Text("\(i + 1)").font(IslandUI.font(23, bold: true)).frame(width: 42, height: 42).background(.white.opacity(0.85), in: Circle())
+                            Text(text).font(IslandUI.font(compact ? 20 : 26, bold: true))
+                        }
+                    }
+                    Text("On a Mac, enable AirPlay Receiver in System Settings → General → AirDrop & Handoff. Use the same Wi-Fi network.")
+                        .font(IslandUI.font(17)).frame(maxWidth: 580, alignment: .leading)
+                    Text("Waiting for a screen…").font(IslandUI.font(17))
+                    IslandAction(title: "Play on this phone", focused: menu.isFocused("phone"), primary: true, compact: compact) { menu.tap("phone") }.frame(maxWidth: 340)
+                    IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
+                }.foregroundStyle(IslandUI.navy).padding(24).background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 20))
+            }
+        }
+    }
+}
+
+struct IslandResultsScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var postMatch = false
+    var body: some View {
+        let won = postMatch ? menu.postMatch?.won ?? false : menu.result?.won ?? false
+        let score = postMatch ? menu.postMatch?.score ?? "" : menu.result?.score ?? ""
+        IslandShell(title: won ? "Match Won" : "Match Lost", compact: compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 60))
+            layout {
+                VStack(alignment: .leading, spacing: 18) {
+                    Text(score).font(IslandUI.font(compact ? 38 : 56, bold: true)).foregroundStyle(IslandUI.navy)
+                    if let summary = menu.postMatch, postMatch {
+                        Text("\(summary.opponent) · +\(summary.total) XP").font(IslandUI.font(18)).foregroundStyle(IslandUI.muted)
+                        Text("\(summary.stats.aces) aces   ·   \(summary.stats.winners) winners").font(IslandUI.font(16)).foregroundStyle(IslandUI.muted)
+                    }
+                    let ids = postMatch ? menu.postMatchChoices : menu.rows(.results).flatMap { $0 }
+                    ForEach(Array(ids.enumerated()), id: \.element) { i, id in
+                        IslandAction(title: label(id), focused: menu.isFocused(id), primary: i == 0, compact: compact, identifier: id) { menu.tap(id) }
+                    }
+                    Spacer(minLength: 0)
+                }.frame(width: compact ? nil : 390)
+                IslandPlayer(player: menu.player ?? Player(name: "Player 1", colorIndex: 0)).frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }.onAppear { if postMatch { menu.finishPostMatchReveal(immediate: true) } }
+    }
+    private func label(_ id: String) -> String {
+        switch id {
+        case "pm-next": menu.launch?.mode == .campaign ? "Next Round" : "Play Again"
+        case "continue": "Next Round"
+        case "pm-replay", "retry": "Rematch"
+        case "pm-court": "Change Court"
+        case "restart": "New Tournament"
+        default: "Main Menu"
+        }
+    }
+}
+
+struct IslandCourtScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Choose a court", compact: compact) {
+            VStack(alignment: .leading, spacing: 20) {
+                ScrollView(compact ? .vertical : .horizontal) {
+                    let layout = compact ? AnyLayout(VStackLayout(spacing: 18)) : AnyLayout(HStackLayout(spacing: 24))
+                    layout {
+                        ForEach(TennisVenueChoice.allCases) { venue in
+                            let id = "map-\(venue.rawValue)"
+                            Button { menu.tap(id) } label: {
+                                VStack(alignment: .leading, spacing: 14) {
+                                    Image(uiImage: UIImage(named: "\(venue.art).jpg") ?? UIImage()).resizable().scaledToFill()
+                                        .frame(width: compact ? 300 : 366, height: compact ? 150 : 265).clipped()
+                                    Text(venue.title).font(IslandUI.font(24, bold: true)).padding(.horizontal, 18)
+                                    Text(SportsSession.shared.tennisVenue == venue.rawValue ? "Selected court" : "Select court")
+                                        .font(IslandUI.font(16)).padding(.horizontal, 18).padding(.bottom, 18)
+                                }.foregroundStyle(IslandUI.navy)
+                                    .background(menu.isFocused(id) ? IslandUI.lime : .white, in: RoundedRectangle(cornerRadius: 18))
+                                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                            }.buttonStyle(.plain).accessibilityLabel("Play at \(venue.title)")
+                        }
+                    }.padding(3)
+                }
+                IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
+            }
+        }
+    }
+}
+
+struct IslandStoryScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Campaign", compact: compact) {
+            VStack(alignment: .leading, spacing: 24) {
+                if let line = menu.storyLine {
+                    Text(TennisStory.name(for: line.speaker)).font(IslandUI.font(26, bold: true))
+                    Text(line.text).font(IslandUI.font(compact ? 22 : 30)).fixedSize(horizontal: false, vertical: true)
+                        .padding(28).frame(maxWidth: 760, alignment: .leading)
+                        .background(.white.opacity(0.94), in: RoundedRectangle(cornerRadius: 20))
+                }
+                Spacer()
+                HStack {
+                    IslandAction(title: "Continue", focused: menu.isFocused("next"), primary: true, compact: compact) { menu.advanceStory() }.frame(maxWidth: 320)
+                    IslandAction(title: "Skip", focused: menu.isFocused("skip"), compact: compact) { menu.tap("skip") }.frame(maxWidth: 180)
+                }
+            }.foregroundStyle(IslandUI.navy)
+        }
+    }
+}
+
+struct IslandPauseScreen: View {
+    var compact: Bool
+    var dismiss: () -> Void = {}
+    @State private var options = false
+    private var session: SportsSession { .shared }
+    var body: some View {
+        IslandShell(title: "Paused", compact: compact) {
+            VStack(alignment: .leading, spacing: 16) {
+                IslandAction(title: "Resume", primary: true, compact: compact) { session.readyToPlay(); dismiss() }
+                IslandAction(title: "Settings", compact: compact) { options.toggle() }
+                if options {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Toggle("Sound", isOn: Binding(get:{session.sound},set:{session.sound=$0}))
+                            if !session.touch {
+                                Button("Re-aim at the TV") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.beginAxisCapture(); dismiss() }
+                                Button("Flip left / right") { session.flipSteering() }
+                            }
+                            if session.displayConnected && session.sport == "tennis" {
+                                Button("Re-check swing timing") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.recheckTiming(); dismiss() }
+                            }
+                            Button(session.touch ? "Use motion controls" : "Use touch controls") { if session.touch { session.useMotion() } else { session.useTouch() }; dismiss() }
+                        }.font(IslandUI.font(18)).padding(20).background(.white.opacity(0.95),in:RoundedRectangle(cornerRadius:16))
+                    }
+                }
+                IslandAction(title: "Main Menu", compact: compact) { TennisMenu.shared.finishMatch(.menu); dismiss() }
+                Spacer(minLength: 0)
+                if !compact { Text("Use your phone to continue.").font(IslandUI.font(17)) }
+            }.foregroundStyle(IslandUI.navy).frame(maxWidth:compact ? .infinity : 400,alignment:.leading)
+        }
     }
 }

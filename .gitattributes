@@ -9,7 +9,6 @@ Unity/Assets/Resources/Tennis/*.fbx filter=lfs diff=lfs merge=lfs -text
 Unity/Assets/Tests/Fixtures/StandardCharacters/*.fbx filter=lfs diff=lfs merge=lfs -text
 Unity/Assets/Resources/Tennis/**/*.fbx filter=lfs diff=lfs merge=lfs -text
 Unity/Assets/Resources/Tennis/**/*.png filter=lfs diff=lfs merge=lfs -text
-
 *.jpeg filter=lfs diff=lfs merge=lfs -text
 *.gif filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
@@ -26,3 +25,4 @@ Unity/Assets/Resources/Tennis/**/*.png filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.glb filter=lfs diff=lfs merge=lfs -text
+*.lzfse filter=lfs diff=lfs merge=lfs -text

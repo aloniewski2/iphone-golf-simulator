@@ -30,7 +30,7 @@ namespace GolfArcade.PlayTests
             string captures = "../ArtDir/screenshots/tennis_abilities"; Directory.CreateDirectory(captures);
             game.ConfigureMatch(TennisGame.Mode.Training, null, null, null);
             Assert.IsFalse(game.RequestDive(), "cannot dive before the rally");
-            Assert.IsTrue(game.SelectUltimate(2)); game.LockLoadout();
+            Assert.IsFalse(game.SelectUltimate(2)); game.LockLoadout();
             Assert.IsFalse(game.SelectUltimate(1), "cannot switch after Ready");
             game.Player.CancelSwing();
             game.InjectBall(game.Player.transform.position + new Vector3(2, 1, 2), new Vector3(0, 0, -4));
@@ -60,27 +60,16 @@ namespace GolfArcade.PlayTests
             }
             Assert.IsTrue(saved, "a timed dive must return a reachable incoming ball through real contact");
 
-            foreach (var ability in new[] { TennisUltimate.Skybreaker, TennisUltimate.RescueLob, TennisUltimate.Curveball })
-            {
-                game.ConfigureMatch(TennisGame.Mode.Training, null, null, null);
-                Assert.IsTrue(game.SelectUltimate((int)ability));
-                game.Player.CancelSwing(); game.Player.Tick(2, 0);
-                game.InjectBall(game.Player.transform.position + new Vector3(.6f, 2, 1), Vector3.zero);
-                Charge(game);
-                game.Player.Swing(.6f, false, TennisActor.Stroke.Drive);
-                Contact(game);
-                Assert.That(game.PlayerUltimate, Is.EqualTo(1), "a full meter must not auto-fire");
-                game.Player.CancelSwing(); game.Player.Tick(2,0);
-                game.InjectBall(game.Player.transform.position + new Vector3(.6f, 2, 1), Vector3.zero);
-                Assert.IsTrue(game.ToggleUltimate());
-                Assert.That(game.PlayerUltimate, Is.EqualTo(1), "arming alone spends nothing");
-                game.Player.Swing(.7f, false, TennisActor.Stroke.Drive);   // the next contact fires it, any stroke
-                Contact(game);
-                Assert.That(game.PlayerUltimate, Is.Zero); Assert.IsFalse(game.UltimateArmed);
-                Assert.That(game.Feedback, Does.Contain(TennisAbilities.Name(ability).ToUpperInvariant()));
-                yield return null;
-                Capture(game, captures + "/" + ability + ".png");
-            }
+            game.ConfigureMatch(TennisGame.Mode.Training, null, null, null);
+            game.Player.CancelSwing(); game.Player.Tick(2, 0);
+            game.InjectBall(game.Player.transform.position + new Vector3(.6f, 2, 1), Vector3.zero);
+            Charge(game); // Even an old full meter cannot activate an ultimate.
+            Assert.IsFalse(game.CanArmUltimate);
+            Assert.IsFalse(game.ToggleUltimate());
+            game.Player.Swing(.7f, false, TennisActor.Stroke.Drive);
+            Contact(game);
+            Assert.That(game.PlayerUltimate, Is.Zero);
+            Assert.IsFalse(game.UltimateArmed);
             game.ConfigureMatch(TennisGame.Mode.Training, null, null, null);
             Assert.That(game.PlayerUltimate, Is.Zero); Assert.That(game.DiveCooldownLeft, Is.Zero);
         }

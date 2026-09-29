@@ -10,7 +10,10 @@ struct TennisTVRoot: View {
             let scale = min(g.size.width / 1280, g.size.height / 720) * (1 - SportsSession.shared.overscan)
             ZStack {
                 Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
-                TennisMenuScreen(compact: false)
+                Group {
+                    if SportsSession.shared.menuPauseVisible { IslandPauseScreen(compact: false) }
+                    else { TennisMenuScreen(compact: false) }
+                }
                     .frame(width: 1280, height: 720)
                     .scaleEffect(scale)
                     .frame(width: g.size.width, height: g.size.height)
@@ -83,7 +86,7 @@ struct TennisRemote: View {
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "EXHIBITION"; case .training: "TRAINING"
         case .character: "CHARACTER"; case .settings: "SETTINGS"; case .howTo: "HOW TO PLAY"; case .golfLesson: "GOLF LESSON"
-        case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"
+        case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"; case .map: "CHOOSE YOUR COURT"; case .postMatch: "MATCH REP"
         case .story: menu.storyLine.map { TennisStory.name(for: $0.speaker) } ?? "STORY"
         }
     }
@@ -222,8 +225,7 @@ struct TennisRacketController: View {
                 }
             }
             if session.ready && session.loading.finished && session.finishedMatch == nil {
-                if !session.loadoutLocked { TennisUltimatePicker(session: session) }
-                else if !session.paused && session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
+                if !session.paused && session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
             }
             if session.finishedMatch == nil && session.ready && session.paused && !session.measuringDelay && (session.touch || session.axisGate.locked) {
                 Text(session.status).font(Arcade.font(14, .semibold)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
@@ -251,12 +253,8 @@ struct TennisRacketController: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LinearGradient(colors: [Arcade.skyDeep, Arcade.navyDeep], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .preferredColorScheme(.dark)
-        .confirmationDialog("Match options", isPresented: $showOptions, titleVisibility: .visible) {
-            if session.paused && session.ready { Button("Resume") { session.readyToPlay() } }
-            if !session.touch { Button("Re-aim at the TV") { session.beginAxisCapture() }; Button("Left/right swapped — flip") { session.flipSteering() } }
-            if session.displayConnected && session.sport == "tennis" { Button("Re-check swing timing") { session.recheckTiming() } }
-            Button(session.touch ? "Use motion controls" : "Use touch controls") { if session.touch { session.useMotion() } else { session.useTouch() } }
-            Button("Quit to menu", role: .destructive) { session.end() }
+        .sheet(isPresented: $showOptions) {
+            IslandPauseScreen(compact: true) { showOptions = false }.presentationDetents([.large])
         }
     }
 }
@@ -610,93 +608,28 @@ struct TutorialPanel: View {
 struct MatchFinishControls: View {
     @Bindable var session: SportsSession
     var compact = false
-    @State private var pop = false
     var body: some View {
         if let result = session.finishedMatch {
-            let menu = TennisMenu.shared
-            let opponent = menu.loadingOpponent
             ScrollView {
-            VStack(spacing: compact ? 8 : 18) {
-                if !compact {
-                    ClubArt(name: result.won ? "trophy" : "whistle").frame(width: 140, height: 140)
-                        .scaleEffect(pop ? 1 : 0.4).rotationEffect(.degrees(pop ? 0 : -20))
-                }
-                Text(result.won ? "Victory!" : "So close!").font(Club.display(compact ? 28 : 56)).foregroundStyle(result.won ? Club.sun : .white)
-                Text(result.score.isEmpty ? " " : result.score).font(Club.title(compact ? 16 : 28)).foregroundStyle(.white)
-                if !compact, let opponent {
-                    Text(result.won ? "You beat \(opponent.name)" : "\(opponent.name) takes this one")
-                        .font(Club.ui(17, 600)).foregroundStyle(.white.opacity(0.8))
-                }
-                Spacer(minLength: compact ? 0 : 10)
-                ForEach(Array(menu.afterMatchChoices.enumerated()), id: \.offset) { i, choice in
-                    let (title, icon, style): (String, String, ClubButton.Style) = switch choice {
-                    case .next: ("Next match", "arrow.right", .primary)
-                    case .replay: (result.won ? "Replay" : "Rematch", "arrow.counterclockwise", i == 0 ? .primary : .secondary)
-                    case .menu: (menu.launch?.mode == .campaign ? "Adventure" : "Menu", "list.bullet", .quiet)
+                VStack(alignment: .leading, spacing: 18) {
+                    Text(result.won ? "Match Won" : "Match Lost").font(IslandUI.font(compact ? 28 : 38, bold: true))
+                    Text(result.score).font(IslandUI.font(30, bold: true))
+                    if TennisMenu.shared.afterMatchChoices.contains(.next) {
+                        IslandAction(title: "Next Round", primary: true, compact: true, identifier: "postGameNext") { session.advanceAfterMatch(.next) }
                     }
-                    Button { session.advanceAfterMatch(choice) } label: {
-                        HStack {
-                            Text(title).font(.system(size: compact ? 18 : 24, weight: .bold))
-                            Spacer()
-                            Image(systemName: icon)
-                        }
-                        .foregroundStyle(style == .quiet ? Color.white : Club.ink)
-                        .padding(.horizontal, 22).frame(maxWidth: .infinity, minHeight: compact ? 48 : 60)
-                        .background(style == .primary ? Club.sun : style == .secondary ? Club.cream : .white.opacity(0.16), in: RoundedRectangle(cornerRadius: 16))
-                        .contentShape(Rectangle())
+                    IslandAction(title: "Rematch", primary: !TennisMenu.shared.afterMatchChoices.contains(.next), compact: true, identifier: "postGameReplay") { session.advanceAfterMatch(.replay) }
+                    IslandAction(title: "Main Menu", compact: true, identifier: "postGameMenu") { session.advanceAfterMatch(.menu) }
+                    if TennisMenu.shared.postMatch != nil {
+                        Button("View rewards") { session.showMatchRewards() }.font(IslandUI.font(17)).padding(10).accessibilityIdentifier("postGameRewards")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(title)
-                    .accessibilityIdentifier(choice == .next ? "postGameNext" : choice == .replay ? "postGameReplay" : "postGameMenu")
-                }
-            }
-            .padding(compact ? 8 : 24)
-            .frame(maxWidth: .infinity)
-            }
-            .frame(maxWidth: .infinity, maxHeight: compact ? nil : .infinity)
-            .background(compact ? nil : LinearGradient(colors: [Club.lagoon, Club.lagoonDeep], startPoint: .top, endPoint: .bottom).clipShape(RoundedRectangle(cornerRadius: 28)))
-            .onAppear { withAnimation(.spring(response: 0.5, dampingFraction: 0.55)) { pop = true }; UINotificationFeedbackGenerator().notificationOccurred(.success) }
+                }.foregroundStyle(IslandUI.navy).padding(compact ? 14 : 26)
+            }.background(IslandUI.paper, in: RoundedRectangle(cornerRadius: 24))
         }
     }
 }
 
 
 /// Shared by the AirPlay racket screen and on-phone preview. Choices lock at first Ready.
-struct TennisUltimatePicker: View {
-    @Bindable var session: SportsSession
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("CHOOSE YOUR ULTIMATE").font(Arcade.font(18, .heavy)).foregroundStyle(.white)
-            ForEach(TennisUltimate.allCases) { choice in
-                let on = session.ultimateChoice == choice
-                Button { session.chooseUltimate(choice) } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: choice.icon).font(.system(size: 26, weight: .heavy)).frame(width: 36)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(choice.title).font(Arcade.font(18, .heavy))
-                            Text(choice.detail).font(Arcade.font(13, .semibold)).opacity(0.85)
-                                .fixedSize(horizontal: false, vertical: true).multilineTextAlignment(.leading)
-                        }
-                        Spacer(minLength: 0)
-                        Image(systemName: on ? "checkmark.circle.fill" : "circle").font(.system(size: 22))
-                    }
-                    .foregroundStyle(.white).padding(12)
-                    .background(RoundedRectangle(cornerRadius: 16).fill(on ? Color.orange.opacity(0.85) : Color.white.opacity(0.12)))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(on ? 0.9 : 0.25), lineWidth: on ? 3 : 1))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(choice.title). \(choice.detail)").accessibilityAddTraits(on ? .isSelected : [])
-                .accessibilityIdentifier("tennisUltimate_\(choice.rawValue)")
-            }
-            Text("Fill the meter with good returns, tap ULTIMATE, and your next hit fires it. Everyone can dive. Locked once you press Ready.")
-                .font(Arcade.font(12, .semibold)).foregroundStyle(.white.opacity(0.75)).fixedSize(horizontal: false, vertical: true)
-        }
-        .accessibilityIdentifier("tennisUltimatePicker")
-        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
-    }
-}
-
 struct TennisAbilityControls: View {
     let session: SportsSession
     var body: some View {
@@ -707,19 +640,13 @@ struct TennisAbilityControls: View {
                               fill: 1, colour: .blue, lit: false,
                               enabled: !session.paused && session.canDive) { session.dive() }
                     .accessibilityLabel("Dive toward the ball").accessibilityIdentifier("tennisDive")
-                AbilityButton(title: session.ultimateArmed ? "ARMED" : "ULTIMATE", icon: "bolt.fill",
-                              caption: session.ultimateArmed ? "Next hit fires · tap to cancel"
-                                  : session.ultimateMeter >= 1 ? session.ultimateChoice.title : "\(Int(session.ultimateMeter * 100))%",
-                              fill: session.ultimateMeter, colour: .orange, lit: session.ultimateArmed,
-                              enabled: !session.paused && (session.canArmUltimate || session.ultimateArmed)) { session.armUltimate() }
-                    .accessibilityLabel("\(session.ultimateArmed ? "Cancel" : "Arm") \(session.ultimateChoice.title)")
-                    .accessibilityIdentifier("tennisUltimate")
+
             }
         }
     }
 }
 
-/// A big square thumb button for mid-rally abilities; the fill shows charge (ultimate meter).
+/// A thumb-friendly mid-rally action button.
 private struct AbilityButton: View {
     let title: String, icon: String, caption: String
     let fill: Double, colour: Color, lit: Bool, enabled: Bool

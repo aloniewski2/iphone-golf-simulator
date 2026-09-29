@@ -25,14 +25,18 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.focused, "play", "home lands on PLAY")
         menu.select(); XCTAssertEqual(menu.screen, .gameSelect)
         menu.back(); XCTAssertEqual(menu.screen, .main)
-        menu.move(.up); XCTAssertEqual(menu.focused, "howto")
-        menu.move(.right); XCTAssertEqual(menu.focused, "settings")
-        menu.move(.down); menu.move(.right); XCTAssertEqual(menu.focused, "continue")
-        menu.move(.down); XCTAssertEqual(menu.focused, "homePlay")
-        menu.select(); XCTAssertEqual(menu.screen, .party)
-        menu.tap("partySolo"); XCTAssertEqual(menu.screen, .quickPlay)
-        menu.tap("quickTennis"); XCTAssertEqual(menu.screen, .connect)
+        menu.move(.down); XCTAssertEqual(menu.focused, "homeCampaign")
+        menu.move(.down); XCTAssertEqual(menu.focused, "character")
+        menu.move(.down); XCTAssertEqual(menu.focused, "settings")
+        menu.debugShow(.exhibition)
+        menu.quickOpponent = 0; menu.quickDifficulty = 2; menu.quickLength = 2
+        menu.tap("quickStart"); XCTAssertEqual(menu.screen, .map)
         XCTAssertEqual(menu.launch?.mode, .exhibition)
+        XCTAssertEqual(menu.launch?.difficulty, 0.8)
+        XCTAssertEqual(menu.launch?.sets, 2)
+        XCTAssertEqual(menu.launch?.games, 6)
+        menu.tap("map-resort"); XCTAssertEqual(menu.screen, .connect)
+        XCTAssertEqual(SportsSession.shared.tennisVenue, "resort")
         menu.debugShow(.quickPlay); menu.tap("quickGolf")
         XCTAssertEqual(menu.launch?.sport, .golf)
     }
@@ -61,25 +65,71 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(old.hairStyle,1);XCTAssertEqual(old.heightChoice,2);XCTAssertEqual(old.buildChoice,2)
     }
 
-    func testFinishWaitsForPhoneNextAndDuplicateEventsDoNotAdvanceAgain() {
+    func testPhoneReplayKeepsTheSameRoundAfterLoss() {
+        let session = SportsSession.shared, menu = TennisMenu.shared
+        let connected = session.displayConnected
+        session.displayConnected = false
+        defer { session.active = false; session.finishedMatch = nil; session.displayConnected = connected }
+        menu.debugShow(.loading, launch: MenuLaunch(round: 0))
+        session.active = true; session.finishedMatch = nil
+        session.receiveMatchSnapshot(["matchComplete": true, "matchWon": false, "finalScore": "0–3"])
+        XCTAssertEqual(menu.afterMatchChoices, [.replay, .menu])
+        session.advanceAfterMatch(.replay)
+        XCTAssertEqual(menu.launch?.round, 0)
+        XCTAssertNil(session.finishedMatch)
+        XCTAssertNotEqual(menu.screen, .postMatch)
+        XCTAssertNotEqual(menu.screen, .story)
+    }
+
+    func testHeartbeatCompletesControllerWithoutResultEventAndActionsPersist() async throws {
+        let session = SportsSession.shared, menu = TennisMenu.shared
+        menu.debugShow(.loading, launch: MenuLaunch(round: 0))
+        session.active = true; session.finishedMatch = nil
+        defer { session.active = false; session.finishedMatch = nil }
+        session.receiveMatchSnapshot(["matchComplete": false, "matchWon": true])
+        XCTAssertNil(session.finishedMatch, "no post-game actions during a live match")
+        session.receiveMatchSnapshot(["matchComplete": true, "matchWon": true, "finalScore": "3–0"])
+        XCTAssertEqual(session.finishedMatch?.score, "3–0")
+        XCTAssertEqual(menu.afterMatchChoices, [.next, .replay, .menu])
+        try await Task.sleep(for: .seconds(3.6))
+        XCTAssertNotNil(session.finishedMatch, "actions must stay on phone, not disappear into a TV-only rewards screen")
+        session.advanceAfterMatch(.menu)
+        XCTAssertFalse(session.active)
+        XCTAssertNil(session.finishedMatch)
+        XCTAssertNotEqual(menu.screen, .story)
+        XCTAssertNotEqual(menu.screen, .postMatch)
+    }
+
+    func testFinishWaitsForContinueAndDuplicateEventsDoNotAdvanceAgain() async throws {
         let session = SportsSession.shared
         let menu = TennisMenu.shared
         menu.debugShow(.loading, launch: MenuLaunch(round: 0))
         session.active = true
         session.finishedMatch = nil
         session.receiveMatchFinish(won: true, score: "3–0")
-        XCTAssertTrue(session.active, "Keep the finish screen until Next is tapped")
+        XCTAssertTrue(session.active, "Keep the finish screen until Continue is tapped (or the TV moves on)")
         XCTAssertEqual(session.finishedMatch?.score, "3–0")
         XCTAssertEqual(menu.campaign.won, 1)
         session.receiveMatchFinish(won: true, score: "3–0")
         XCTAssertEqual(menu.campaign.won, 1)
-        session.advanceAfterMatch()
-        XCTAssertFalse(session.active, "The phone Next button exits racket mode")
+        session.showMatchRewards()
+        XCTAssertFalse(session.active, "Continue exits racket mode")
         XCTAssertNil(session.finishedMatch)
-        XCTAssertEqual(menu.screen, .story)
-        menu.finishStory()
-        XCTAssertEqual(menu.screen, .results)
-        XCTAssertEqual(menu.focused, "continue")
+        XCTAssertEqual(menu.screen, .postMatch, "the rep screen follows the match")
+        let summary = try XCTUnwrap(menu.postMatch)
+        XCTAssertEqual(menu.focused, "pm-skip", "A skips the show first")
+        menu.finishPostMatchReveal()
+        XCTAssertEqual(menu.postMatchChoices, ["pm-next", "pm-replay", "pm-menu"], "a campaign win offers the next round")
+        menu.tap("pm-menu")
+        XCTAssertEqual(menu.screen, .postMatch, "a press right as the show ends is ignored")
+        try await Task.sleep(for: .milliseconds(800))
+        menu.tap("pm-menu")
+        XCTAssertEqual(menu.screen, .main, "Main Menu must go home without a second results screen")
+        XCTAssertEqual(menu.focused, "play")
+        menu.debugPostMatch(summary, launch: MenuLaunch(round: 0))
+        menu.finishPostMatchReveal(immediate: true)
+        menu.tap("pm-menu")
+        XCTAssertEqual(menu.screen, .main, "The new static results screen accepts the first tap immediately")
     }
 
     func testDrawAscendsInDifficultyAndEndsWithTheBoss() {
@@ -141,7 +191,7 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.focused, "round0")
         menu.move(.right); XCTAssertEqual(menu.focused, "round1")
         menu.move(.down); XCTAssertEqual(menu.focused, "round6", "the second row of the ladder")
-        menu.move(.down); XCTAssertEqual(menu.focused, "restart")
+        menu.move(.down); XCTAssertEqual(menu.focused, "back")
         menu.move(.up); menu.move(.up); menu.move(.left); XCTAssertEqual(menu.focused, "round0")
         menu.move(.right); menu.move(.right)
         let refusals = menu.refusals
@@ -160,7 +210,7 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertFalse(menu.hubUnlocked(.golf, "round"))
         menu.debugShow(.hub(.tennis))
         XCTAssertEqual(menu.focused, "tutorial", "a first-timer lands on the tutorial")
-        menu.move(.right); XCTAssertEqual(menu.focused, "campaign")
+        menu.move(.down); XCTAssertEqual(menu.focused, "campaign")
         let refusals = menu.refusals
         menu.select()
         XCTAssertEqual(menu.refusals, refusals + 1, "the campaign stays locked until the tutorial is done")
@@ -172,13 +222,11 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertFalse(menu.hubUnlocked(.golf, "golfCampaign"), "golf's campaign is coming soon")
     }
 
-    func testGameSelectOffersFiveSportsAndLocksThreeOfThem() {
+    func testGameSelectOffersTheTwoPlayableSports() {
         let menu = TennisMenu.shared
         menu.debugShow(.gameSelect)
-        XCTAssertEqual(menu.rows(.gameSelect).first?.count, 5)
+        XCTAssertEqual(menu.rows(.gameSelect).first?.count, 2)
         XCTAssertEqual(Sport.allCases.filter(\.playable), [.golf, .tennis])
-        menu.tap("sport-bowling"); XCTAssertEqual(menu.screen, .locked(.bowling), "a locked sport shows its coming-soon card")
-        menu.back(); XCTAssertEqual(menu.screen, .gameSelect)
         menu.tap("sport-tennis"); XCTAssertEqual(menu.screen, .hub(.tennis))
         menu.back(); menu.back(); XCTAssertEqual(menu.screen, .main)
         for sport in Sport.allCases {
@@ -188,7 +236,8 @@ final class TennisCampaignTests: XCTestCase {
 
     func testMainMenuReachesEverySection() {
         let menu = TennisMenu.shared
-        for (id, screen) in [("play", MenuScreen.gameSelect), ("character", .character), ("settings", .settings), ("howto", .howTo), ("homePlay", .party)] {
+        SportProgress.shared.completeTutorial(.tennis)
+        for (id, screen) in [("play", MenuScreen.gameSelect), ("character", .character), ("settings", .settings), ("homeCampaign", .campaign)] {
             menu.debugShow(.main); menu.tap(id); XCTAssertEqual(menu.screen, screen, id)
         }
     }
@@ -200,10 +249,11 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.rows(.settings)[1], ["controls"])
         menu.debugShow(.character, row: TennisMenu.characterRows.firstIndex(of: "shirt") ?? 0, column: 0)
         XCTAssertEqual(menu.focused, "shirt")
-        let before = s.players[s.playerIndex].shirt
+        let original = s.players[s.playerIndex]
+        let before = original.outfitHex("shirt")
         menu.move(.right)
-        XCTAssertNotEqual(s.players[s.playerIndex].shirt, before, "sideways changes the shirt colour")
-        s.players[s.playerIndex].shirt = before; s.savePlayers()
+        XCTAssertNotEqual(s.players[s.playerIndex].outfitHex("shirt"), before, "sideways changes the shirt colour")
+        s.players[s.playerIndex] = original; s.savePlayers()
     }
 
     func testLoadingCompletesPromptlyWhenReadyAndExplainsStalls() {
@@ -295,25 +345,22 @@ final class TennisCampaignTests: XCTestCase {
         visit(["start", "play"])
         visit(["start", "play", "sport-tennis"])
         visit(["start", "play", "sport-golf"])
-        visit(["start", "play", "sport-boxing"])
         visit(["start", "play", "sport-tennis", "campaign"])
         visit(["start", "play", "sport-tennis", "exhibition"])
         visit(["start", "play", "sport-tennis", "training"])
         visit(["start", "play", "sport-golf", "tutorial"])
         visit(["start", "character"])
         visit(["start", "settings"])
-        visit(["start", "howto"])
-        visit(["start", "homePlay"])
-        visit(["start", "homePlay", "partySolo"])
-        visit(["start", "continue"])
-        for screen: MenuScreen in [.title, .main, .gameSelect, .hub(.tennis), .hub(.golf), .locked(.boxing), .campaign, .exhibition,
-                                   .training, .golfLesson, .character, .settings, .howTo, .party, .quickPlay] {
+        visit(["start", "settings", "tab-display", "howto"])
+        visit(["start", "homeCampaign", "campaignPlay"])
+        for screen: MenuScreen in [.title, .main, .gameSelect, .hub(.tennis), .hub(.golf), .campaign, .exhibition,
+                                   .training, .golfLesson, .character, .settings, .howTo] {
             XCTAssertTrue(reached.contains(key(screen)), "\(screen) is reachable")
         }
         XCTAssertTrue(reached.contains(key(.story)) || reached.contains(key(.connect)), "Continue starts the next thing")
     }
 
-    func testPhoneNextStartsNextRoundWithoutUnseenStoryOrDoubleAdvance() {
+    func testNextMatchStartsNextRoundWithoutUnseenStoryOrDoubleAdvance() async throws {
         let menu = TennisMenu.shared, session = SportsSession.shared, campaign = TennisCampaign.shared
         let connected = session.displayConnected
         session.displayConnected = false
@@ -323,13 +370,12 @@ final class TennisCampaignTests: XCTestCase {
         session.active = true
         session.finishedMatch = nil
         session.receiveMatchFinish(won: true, score: "3–0")
-        XCTAssertEqual(menu.afterMatchChoices.first, .next)
         XCTAssertFalse(campaign.seen("win0"))
         session.advanceAfterMatch(.next)
         XCTAssertEqual(menu.launch?.round, 1)
         XCTAssertNotEqual(menu.screen, .story, "Next must not stop at an unseen story or another Next screen")
         XCTAssertNil(session.finishedMatch)
-        session.advanceAfterMatch(.next)
+        session.advanceAfterMatch()
         XCTAssertEqual(menu.launch?.round, 1, "A duplicate tap must not skip a rival")
     }
 

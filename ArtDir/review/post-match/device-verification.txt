@@ -1,0 +1,8 @@
+[MatchFinish] score committed 1–0
+[MatchFinish] reactions complete; publishing stats
+[MatchFinish] publishing result card
+[MatchFinish] result card published
+2026-09-29 01:30:45.077 GolfArcade[46029:11850312] [SportsSession] {"version":1,"session":"8AEE4CF5-3857-45C4-B625-63ED148A3B85","type":"score","message":"1,0,YOU WIN 1–0","finalScore":"1–0","matchComplete":true,"matchWon":true,"stamina":1.0,"playerX":0.0,"frame":5007,"paused":false,"inputAge":0.0018079166766256095}
+2026-09-29 01:30:45.077 GolfArcade[46029:11850312] [SportsDiagnostic] match finished: phone Next enabled; classic=false external=true
+2026-09-29 01:30:46.219 GolfArcade[46029:11850312] [SportsDiagnostic] postgame device screenshot saved; phoneVisible=true finished=true
+Scoring tests: 43 passed after fix; regression before fix: 3 failed.

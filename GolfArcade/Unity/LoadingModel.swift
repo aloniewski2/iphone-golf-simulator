@@ -1,4 +1,5 @@
 import Foundation
+import CoreMotion
 
 /// Real readiness gates completion; the short minimum gives the transition a readable beat.
 /// Progress below 90% is an estimate informed by runtime milestones, never a network promise.
@@ -18,20 +19,39 @@ final class LoadingModel {
     private var finishStart: Date?
     private var finishFrom = 0.0
     var onFinish: (() -> Void)?
+    private(set) var practiceSequence = 0
+    private var lastPractice = Date.distantPast
+    private let practiceMotion = CMMotionManager()
+    func practice(now: Date = Date()) {
+        guard !finished, started != nil, now.timeIntervalSince(lastPractice) >= 1.5 else { return }
+        lastPractice = now; practiceSequence += 1
+    }
+    private func startPracticeInput() {
+        guard practiceMotion.isGyroAvailable else { return }
+        practiceMotion.gyroUpdateInterval = 1.0 / 30
+        practiceMotion.startGyroUpdates(to: .main) { [weak self] data, _ in
+            guard let data else { return }
+            let r = data.rotationRate
+            if r.x * r.x + r.y * r.y + r.z * r.z > 20 {
+                MainActor.assumeIsolated { self?.practice() }
+            }
+        }
+    }
 
     private(set) var elapsed: TimeInterval = 0
     var isStalled: Bool { !finished && !ready && elapsed >= 20 }
     var statusText: String {
-        if progress >= 1 || ready { return "Ready — here we go!" }
-        if isStalled { return "The court is taking too long. Retry or head home." }
-        if elapsed >= 8 { return "Still getting the court ready… thanks for waiting." }
-        if milestone >= 0.6 { return "Warming up the court…" }
-        if milestone >= 0.2 { return "Setting up your game…" }
-        return "Getting the sports bag ready…"
+        if progress >= 1 || ready { return "Ready" }
+        if isStalled { return "Loading is taking longer than expected. Retry or return to the menu." }
+        if elapsed >= 8 { return "Still loading…" }
+        if milestone >= 0.6 { return "Preparing court…" }
+        if milestone >= 0.2 { return "Preparing match…" }
+        return "Loading…"
     }
     var percent: Int { Int((progress * 100).rounded(.down)) }
 
     func begin(now: Date) {
+        practiceMotion.stopGyroUpdates(); practiceSequence = 0; lastPractice = .distantPast; startPracticeInput()
         elapsed = 0; started = now; finished = false; progress = 0; milestone = 0.05; ready = false; finishStart = nil
     }
     /// A real milestone (capped below the finish, which only time and readiness unlock).
@@ -39,7 +59,7 @@ final class LoadingModel {
     func markReady() { ready = true; reach(Self.hold) }
     /// Benchmarks and tests: no waiting.
     func skip() { guard !finished else { return }; progress = 1; complete() }
-    func cancel() { finished = true; started = nil; onFinish = nil }
+    func cancel() { practiceMotion.stopGyroUpdates(); finished = true; started = nil; onFinish = nil }
 
     func tick(now: Date) {
         guard let started, !finished else { return }
@@ -57,6 +77,7 @@ final class LoadingModel {
     }
 
     private func complete() {
+        practiceMotion.stopGyroUpdates()
         finished = true
         let done = onFinish; onFinish = nil
         done?()

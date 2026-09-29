@@ -351,7 +351,11 @@ namespace GolfArcade.Tennis
             // Score80 A: the leg source follows the ground speed quickly (0.5 -> 1.8 m/s over 0.14 s) so a
             // follow-through while the body already runs back to the middle is carried by running legs, and a
             // swing into a stop gets the stroke's own planted footwork (no skate either way).
-            bool strokeLegs = actionActive && IsStroke(action) && action != Clip.Serve && !FluidOff;
+            // The tracked overhead meets a standing smash contact. Finish blending
+            // out of running legs before impact, including the smash's hip/torso
+            // contribution; an upper-body-only smash leaves the racket short.
+            bool plantingOverhead = action == Clip.Smash && actor.Guiding && Mathf.Abs(actor.SignedTimeToContact) < .18f;
+            bool strokeLegs = actionActive && IsStroke(action) && action != Clip.Serve && !plantingOverhead && !FluidOff;
             legsFromRun = Mathf.MoveTowards(legsFromRun, strokeLegs ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.5f, 1.8f, move)) : 0, dt / .14f);
             actionLegs = FluidOff ? actionWeight : Mathf.MoveTowards(actionLegs, want, dt / (want > 0 ? .16f : .2f));
             float fullAction = FluidOff ? actionWeight : Mathf.Min(actionWeight, actionLegs) * (1 - legsFromRun);
@@ -504,7 +508,7 @@ namespace GolfArcade.Tennis
             if (lungeOffset != Vector3.zero && !(swinging && IsStroke(action) && Mathf.Abs(actor.SignedTimeToContact) < .16f))
             { lungeOffset = Vector3.MoveTowards(lungeOffset, Vector3.zero, Time.deltaTime * 1.2f); }
             transform.localPosition = lungeOffset;
-            if (!FluidOff) BodyMotion(swinging);
+            if (!FluidOff) { BodyMotion(swinging); ReceivingStance(Time.deltaTime); }
             Ground();
             // ---- hands: grip roll (eastern FH / continental volley), left-hand grip where it holds something
             int roll = -1; float rollW = 0;
@@ -858,6 +862,48 @@ namespace GolfArcade.Tennis
             omega = Vector3.ClampMagnitude(omega, 14f);
             s = Quaternion.AngleAxis(omega.magnitude * dt * Mathf.Rad2Deg, omega.sqrMagnitude > 1e-8f ? omega.normalized : Vector3.up) * s;
         }
+        float stanceW, stanceClock;
+        /// Waiting to return a serve: the baked Ready clip is a deep, wide defensive squat with the head
+        /// down. A returner stands taller than that: knees soft, weight forward on the balls of the feet,
+        /// chest slightly over the front knee, head up watching the toss, and a slow shift of weight from
+        /// foot to foot. Feet stay planted; only the hips, trunk and head change.
+        void ReceivingStance(float dt)
+        {
+            bool receiving = game && actor && ((isPlayer && game.Flow == TennisGame.Phase.OpponentServe)
+                || (!isPlayer && (game.Flow == TennisGame.Phase.PlayerServeHold || game.Flow == TennisGame.Phase.PlayerServeToss))) && !actor.Swinging && !actionActive && !juiceActive && Moving() < .3f;
+            stanceW = Mathf.MoveTowards(stanceW, receiving ? 1 : 0, dt / (receiving ? .35f : .18f));
+            if (stanceW < .005f) return;
+            stanceClock += dt;
+            float w = Mathf.SmoothStep(0, 1, stanceW);
+            float sway = Mathf.Sin(stanceClock * 2.6f);
+            var a = look.animator;
+            var lf = a.GetBoneTransform(HumanBodyBones.LeftFoot); var rf = a.GetBoneTransform(HumanBodyBones.RightFoot);
+            Vector3 footL = lf.position, footR = rf.position;
+            Quaternion footRotL = lf.rotation, footRotR = rf.rotation;
+            Crouch(-StanceRise * w);                                            // hips up: legs straighten to soft knees
+            hips.position += transform.right * (sway * .012f * w);              // weight shifts foot to foot
+            hips.rotation = Quaternion.AngleAxis(sway * 2.2f * w, transform.up) * hips.rotation;
+            spineB.rotation = Quaternion.AngleAxis(StanceLean * w, transform.right) * spineB.rotation;   // chest over the front knee
+            if (chestB) chestB.rotation = Quaternion.AngleAxis(-StanceHead * w, transform.right) * chestB.rotation;   // head comes back up
+            // Racket up and in front of the chest, both hands on it, instead of hanging at the hip. Both hands move by
+            // the same offset, so the grip on the handle is kept.
+            var an = look.animator;
+            Transform ru = an.GetBoneTransform(HumanBodyBones.RightUpperArm), rl = an.GetBoneTransform(HumanBodyBones.RightLowerArm), rh = an.GetBoneTransform(HumanBodyBones.RightHand);
+            Transform lu = an.GetBoneTransform(HumanBodyBones.LeftUpperArm), ll = an.GetBoneTransform(HumanBodyBones.LeftLowerArm), lh = an.GetBoneTransform(HumanBodyBones.LeftHand);
+            if (ru && rl && rh && lu && ll && lh)
+            {
+                Vector3 lift = (transform.up * StanceHandsUp + transform.forward * StanceHandsForward) * w;
+                Vector3 rp = rh.position + lift, lp = lh.position + lift;
+                Quaternion rightGrip = rh.rotation, leftGrip = lh.rotation;
+                TwoBone(ru, rl, rh, rp); rh.rotation = rightGrip;
+                TwoBone(lu, ll, lh, lp); lh.rotation = leftGrip;
+            }
+            // Replant after the complete hip sway, not before it.
+            TwoBone(a.GetBoneTransform(HumanBodyBones.LeftUpperLeg), a.GetBoneTransform(HumanBodyBones.LeftLowerLeg), lf, footL); lf.rotation = footRotL;
+            TwoBone(a.GetBoneTransform(HumanBodyBones.RightUpperLeg), a.GetBoneTransform(HumanBodyBones.RightLowerLeg), rf, footR); rf.rotation = footRotR;
+        }
+        public float StanceRise = .14f, StanceLean = 7f, StanceHead = 9f, StanceHandsUp = .17f, StanceHandsForward = .07f;
+
         /// Drop the hips by `drop` and re-solve both legs so the feet stay where they are (knees bend).
         void Crouch(float drop)
         {

@@ -21,9 +21,18 @@ namespace GolfArcade.EditorTools
     public static class HeroLockerExport
     {
         static string AppAssets => Path.GetFullPath("../GolfArcade/Unity/CharacterAssets");
+        static string ExportAssets => menuBake ? Path.GetFullPath("../ArtDir/ui/toybox-simple-v6/source/preview-raw") : AppAssets;
         const string ResDir = "Assets/Resources/Tennis/Hero/";
         const int MaskSize = 1024;
         static int step; static GameObject hero;
+        // Menu-only vertex animation bake. Existing HeroV4 assets and gameplay clips are untouched.
+        static bool menuBake; static int menuFrame;
+        public static void RunMenuPreview()
+        {
+            SessionState.SetBool("HeroMenuBake", true); menuBake = true; menuFrame = -1; step = 0;
+            EditorSceneManager.OpenScene("Assets/Scenes/Hero01RestoreMotion.unity");
+            SessionState.SetInt("HeroLocker", 1); EditorApplication.isPlaying = true;
+        }
         static HeroLockerExport() { EditorApplication.update += Tick; }
 
         public static void Run()
@@ -149,6 +158,7 @@ namespace GolfArcade.EditorTools
             {
                 if (step == 0)
                 {
+                    menuBake = SessionState.GetBool("HeroMenuBake", false); menuFrame = -1;
                     var old = Object.FindFirstObjectByType<ModularHeroLook>(); if (old) old.gameObject.SetActive(false);
                     hero = Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath), Vector3.zero, Quaternion.identity);
                     hero.GetComponent<HeroTennisDriver>().Build(); step = 1; return;
@@ -161,7 +171,8 @@ namespace GolfArcade.EditorTools
                 bool Shaped(Renderer r) { var sm = (r as SkinnedMeshRenderer)?.sharedMesh; if (!sm) return false; for (int i = 0; i < sm.blendShapeCount; i++) if (sm.GetBlendShapeName(i).EndsWith("Female")) return true; return false; }
                 void Bake(string hatTag, Func<Renderer, bool> want)
                 {
-                    d.Sample(HeroTennisDriver.Clip.Ready, .6f);
+                    d.Sample(menuBake ? (menuFrame < 0 ? HeroTennisDriver.Clip.Idle : HeroTennisDriver.Clip.Forehand) : HeroTennisDriver.Clip.Ready,
+                        menuBake ? (menuFrame < 0 ? 1.5f : d.LengthOf(HeroTennisDriver.Clip.Forehand) * menuFrame / 19f) : .6f);
                     foreach (var r in hero.GetComponentsInChildren<Renderer>(false))
                     {
                         if (!r.enabled || r is TrailRenderer || r is LineRenderer || r is ParticleSystemRenderer || !want(r)) continue;
@@ -237,14 +248,17 @@ namespace GolfArcade.EditorTools
                 { cos.EquipHat(hh); Bake(tag, InHat); }
                 cos.shortHair = false; hatHair = null;
                 man.materials = mats.Values.ToList();
-                Directory.CreateDirectory(AppAssets);
-                File.WriteAllBytes(AppAssets + "/HeroV4.bin", bin.ToArray());
-                File.WriteAllText(AppAssets + "/HeroV4.json", JsonUtility.ToJson(man, true));
+                Directory.CreateDirectory(ExportAssets);
+                man.pose = menuBake ? (menuFrame < 0 ? "Idle" : "Forehand") : "Ready";
+                var stem = menuBake ? (menuFrame < 0 ? "HeroMenu" : "HeroSwing_" + menuFrame.ToString("D2")) : "HeroV4";
+                File.WriteAllBytes(ExportAssets + "/" + stem + ".bin", bin.ToArray());
+                if (!menuBake || menuFrame < 0) File.WriteAllText(ExportAssets + "/" + stem + ".json", JsonUtility.ToJson(man, true));
+                if (menuBake && ++menuFrame < 20) return;
                 Debug.Log($"HERO_LOCKER_EXPORT parts={man.parts.Count} materials={man.materials.Count} bytes={bin.Length}");
-                SessionState.SetInt("HeroLocker", 0);
+                SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false);
                 if (Application.isBatchMode) EditorApplication.Exit(0); else EditorApplication.isPlaying = false;
             }
-            catch (Exception e) { Debug.LogException(e); SessionState.SetInt("HeroLocker", 0); if (Application.isBatchMode) EditorApplication.Exit(1); }
+            catch (Exception e) { Debug.LogException(e); SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false); if (Application.isBatchMode) EditorApplication.Exit(1); }
         }
     }
 }

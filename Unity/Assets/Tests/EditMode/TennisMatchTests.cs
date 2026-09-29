@@ -4,6 +4,31 @@ using UnityEngine;
 
 public class TennisMatchTests
 {
+    [TestCase(true)]
+    [TestCase(false)]
+    public void RepeatedMatchPointPreviewDoesNotAppendPhantomSets(bool playerWins)
+    {
+        var m = TennisMatch.New(true, 1, 1);
+        for (int i = 0; i < 3; i++) m.AwardPoint(playerWins);
+        for (int frame = 0; frame < 1200; frame++) Assert.IsTrue(TennisGame.IsMatchPoint(m));
+        Assert.That(m.SetScores, Is.Empty, "HUD prediction must not mutate the live score list");
+        Assert.IsFalse(m.Complete);
+        m.AwardPoint(playerWins);
+        Assert.IsTrue(m.Complete);
+        Assert.That(m.SetScores.Count, Is.EqualTo(1));
+        Assert.That(m.FinalScore, Is.EqualTo(playerWins ? "1–0" : "0–1"));
+    }
+
+    [Test] public void HypotheticalSetWinDoesNotChangeEarlierSetHistory()
+    {
+        var m = TennisMatch.New(true, 2, 1);
+        for (int i = 0; i < 7; i++) m.AwardPoint(true);
+        for (int frame = 0; frame < 1200; frame++) Assert.IsTrue(TennisGame.IsMatchPoint(m));
+        Assert.That(m.SetScores.Count, Is.EqualTo(1));
+        m.AwardPoint(true);
+        Assert.That(m.FinalScore, Is.EqualTo("1–0 1–0"));
+    }
+
     [Test] public void LoveGameCountsUpAndHandsOverServe()
     {
         var m = TennisMatch.New();

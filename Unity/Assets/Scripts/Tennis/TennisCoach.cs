@@ -129,7 +129,7 @@ namespace GolfArcade.Tennis
             resultBody.text = (match.MultiSet ? $"Sets {match.FinalScore}\n" : $"Games {match.PlayerGames}–{match.OpponentGames}\n") +
                 $"Balls returned {hits}   ·   Longest rally {longestRally}\n" +
                 $"Perfect {GradeCounts[(int)Timing.Perfect]}   ·   Clean hits {clean}\n\n" +
-                (NativeSportsSession.Active ? "Tap NEXT on your phone to continue" : "Swing to play again");
+                (NativeSportsSession.Active ? "Your rewards are coming up…" : "Swing to play again");
             card.gameObject.SetActive(true);
         }
 
