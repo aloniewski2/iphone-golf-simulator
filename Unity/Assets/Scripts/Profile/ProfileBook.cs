@@ -48,6 +48,7 @@ namespace GolfArcade.Profile
                 profile.Body = 1 - last.Body;
                 profile.Kit = (last.Kit + 1) % PlayerProfile.Colours;
             }
+            profile.Look.MigrateFrom(profile.Body, profile.Kit, 0);
             Profiles.Add(profile);
             if (Find(ActiveId) == null) ActiveId = profile.Id;
             return profile;

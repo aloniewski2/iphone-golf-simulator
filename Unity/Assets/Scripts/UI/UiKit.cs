@@ -45,12 +45,13 @@ namespace GolfArcade.UI
             return new Color(((v >> 16) & 255) / 255f, ((v >> 8) & 255) / 255f, (v & 255) / 255f, alpha);
         }
 
-        // ---- Type: Nunito (OFL, Assets/Resources/Fonts), a rounded face that suits the
-        // stylised resort world. Real weights, so nothing is faux-bold.
-        public static Font Display => display ??= Face("Nunito-ExtraBold");
-        public static Font Strong => strong ??= Face("Nunito-Bold");
-        public static Font Ui => ui ??= Face("Nunito-SemiBold");
-        public static Font Body => body ??= Face("Nunito-Regular");
+        // ---- Type: Rubik (OFL, Assets/Resources/Fonts/Club), the face of Adnan's Island Sports Club UI and
+        // his in-game HUD; the menus' big titles are his Bricolage (UI/Club.cs). Real weights, so nothing is
+        // faux-bold.
+        public static Font Display => display ??= Face("Club/Rubik-ExtraBold");
+        public static Font Strong => strong ??= Face("Club/Rubik-Bold");
+        public static Font Ui => ui ??= Face("Club/Rubik-SemiBold");
+        public static Font Body => body ??= Face("Club/Rubik-Medium");
         /// The default face for labels.
         public static Font Font => Ui;
         static Font display, strong, ui, body, fallback;

@@ -287,6 +287,29 @@ namespace GolfArcade.Game
             positionLag = 0.35f; lookLag = 0.3f;
         }
 
+        /// The locker: the golfer in the top of the screen over the panel, level and square in front of
+        /// them. `head` 0 frames the whole golfer, 1 the head and shoulders (the HAIR and HEADWEAR tabs).
+        public void FrameLocker(Vector3 feet, Vector3 facing, float head) => FrameStage(feet, facing, head, 0.60f, 0.905f);
+
+        /// The golfer standing square to the camera between `screenBottom` and `screenTop` (fractions of the
+        /// screen's height from its foot): the locker, and the clubhouse on the home screen. `head` 0 frames
+        /// the whole golfer, 1 the head and shoulders.
+        public void FrameStage(Vector3 feet, Vector3 facing, float head, float screenBottom, float screenTop, float tilt = 0)
+        {
+            var f = facing; f.y = 0; f.Normalize();
+            RestoreFov(); ResetZoom();
+            float ScreenBottom = screenBottom, ScreenTop = screenTop;   // the part of the screen the golfer has (from the bottom)
+            float lo = Mathf.Lerp(0f, 1.32f, head), hi = Mathf.Lerp(2.16f, 2.14f, head);   // yards above the feet at those two lines
+            float span = (hi - lo) / (ScreenTop - ScreenBottom);    // the screen's height, at the golfer
+            float distance = span / (2f * Mathf.Tan(Camera.fieldOfView * 0.5f * Mathf.Deg2Rad));
+            float centre = lo - ScreenBottom * span + 0.5f * span;
+            // looking down a little (`tilt` degrees) onto the floor they stand on, from the same distance
+            var back = Quaternion.AngleAxis(-tilt, Vector3.Cross(Vector3.up, f)) * f;
+            targetLookAt = feet + Vector3.up * centre;
+            targetPosition = targetLookAt + back * distance;
+            positionLag = 0.35f; lookLag = 0.3f;
+        }
+
         /// The home screen: behind the golfer on the first tee, `back` yards back and `up` yards
         /// up and a touch to their left, the hole opening out ahead over their shoulder,
         /// drifting slowly from side to side.

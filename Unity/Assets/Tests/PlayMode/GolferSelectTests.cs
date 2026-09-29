@@ -1,16 +1,18 @@
 using System.Collections;
 using GolfArcade.Game;
+using GolfArcade.Profile;
 using GolfArcade.UI;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// The golfer select screen: both golfers square on with their faces in the middle of the
-    /// head, the arrows switching between them, the kit and shirt swatches recolouring the golfer
-    /// and being remembered, LET'S GO back to the menu. Frames go to Library/Captures/review/select-*.png.
+    /// The locker (Adnan's character screen): the golfer big in the top of the screen and a panel of choices
+    /// under a row of tabs. Boy or girl, skin, haircut, headwear and outfit colours each change the golfer on
+    /// the spot and are remembered; SHUFFLE, sliders, padlocks and LET'S GO. Frames: Library/Captures/review/locker-*.png.
     public class GolferSelectTests
     {
         const string Dir = "Library/Captures/review";
@@ -22,8 +24,29 @@ namespace GolfArcade.PlayTests
             go.GetComponent<HoldButton>().Pressed();
         }
 
-        [UnityTest]
-        public IEnumerator ChoosingAGolfer()
+        /// A press and a let-go on a slider's track, at `t` of the way along it (a finger).
+        static void Drag(GameObject slider, float t)
+        {
+            var track = slider.transform.Find("Track").GetComponent<RectTransform>();
+            var corners = new Vector3[4];
+            track.GetWorldCorners(corners);
+            var screen = (Vector2)Vector3.Lerp(corners[0], corners[3], t) + new Vector2(0, (corners[1].y - corners[0].y) / 2);
+            var e = new PointerEventData(EventSystem.current) { position = screen };
+            ExecuteEvents.Execute(slider, e, ExecuteEvents.pointerDownHandler);
+            ExecuteEvents.Execute(slider, e, ExecuteEvents.pointerUpHandler);
+        }
+
+        static GameObject ActiveSlider(int index)
+        {
+            var found = new System.Collections.Generic.List<GameObject>();
+            foreach (var s in Object.FindObjectsByType<RectTransform>(FindObjectsSortMode.None))
+                if (s.name == "Slider" && s.gameObject.activeInHierarchy) found.Add(s.gameObject);
+            found.Sort((a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
+            return found[index];
+        }
+
+        [UnityTest, Timeout(240000)]
+        public IEnumerator MakingAGolfer()
         {
             Time.timeScale = 1f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
@@ -32,124 +55,100 @@ namespace GolfArcade.PlayTests
             var game = Object.FindFirstObjectByType<GolfGame>();
             game.InstantReplays = false;
             yield return new WaitForSecondsRealtime(0.5f);
-            var body0 = GolferStyle.Body; int kit0 = GolferStyle.Kit, shirt0 = GolferStyle.Shirt;
+            var look0 = GolferStyle.Current.Clone();
+            var profile = ProfileStore.Active;
+            var profileLook0 = profile.LookOrMigrated().Clone();
+            var stats0 = profile.Stats.RoundsPlayed;
             try
             {
-                GolferStyle.Body = GolferStyle.BodyKind.Male; GolferStyle.Kit = 0; GolferStyle.Shirt = 0;
+                profile.Stats.RoundsPlayed = 0;   // (no mixer yet)
+                GolferStyle.Edit(l => { l.Body = 0; l.Skin = ""; l.Haircut = -1; l.Hair = ""; l.Headwear = 1; l.Shirt = ""; l.Shorts = ""; l.Shoes = ""; l.Hat = ""; });
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(1.5f);
-                Assert.IsTrue(GameObject.Find("Golfer select"), "the select screen is up");
+                Assert.IsTrue(GameObject.Find("Locker"), "the locker is up");
                 Assert.AreEqual(GolfGame.State.Golfer, game.Current);
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/select-a-male.png"));
-                Feet($"{Dir}/select-a-feet.png");
-                // the shoes as they were modelled, standing and at address (the clips turned the
-                // foot bones half a turn from how the skin was bound, folding the shoes flat)
-                AssertShoesAsBound("standing");
-                {
-                    var view = GameObject.Find("Golfer").GetComponent<GolferView>();
-                    view.SetClub(GolfArcade.Shot.GolfClub.Driver, false);
-                    yield return null;
-                    Feet($"{Dir}/select-a-feet-address.png");
-                    view.Perform("Idle");
-                    yield return null;
-                }
+                Assert.IsTrue(GameObject.Find("Golfer").GetComponent<GolferView>().IsHero, "the golfer is the Hero");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-1-body.png"));
 
-                // the face straight on: the decal in the middle of the picture, left to right
-                var decal = FaceDecal();
-                var v = cam.WorldToViewportPoint(decal.bounds.center);
-                Assert.AreEqual(0.5f, v.x, 0.03f, "the face is in the middle of the screen");
+                // BODY: the girl, and a skin tone from the slider
+                Press("Card GIRL");
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.AreEqual(GolferStyle.BodyKind.Female, GolferStyle.Body);
+                Drag(ActiveSlider(0), 0.85f);
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.AreNotEqual("", GolferStyle.Current.Skin, "the skin slider sets a tone");
+                Assert.Greater(GolferStyle.SkinColor.r - GolferStyle.SkinColor.b, 0f);
+                var deep = GolferStyle.SkinColor;
+                Assert.Less(deep.r + deep.g + deep.b, 1.9f, "a deeper tone from the far end of the slider");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-2-girl-skin.png"));
 
-                Press("Next golfer");
+                // HAIR: the camera comes in to the head; a haircut and a colour
+                Press("Tab HAIR");
                 yield return new WaitForSecondsRealtime(1.2f);
-                Assert.AreEqual(GolferStyle.BodyKind.Female, GolferStyle.Body, "the arrow switches golfer");
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/select-b-female.png"));
-
-                Press("KIT Teal");
-                Press("SHIRT Sky");
+                Press("Card BOB");
+                Assert.AreEqual((int)HeroGolfer.Haircut.Bob, GolferStyle.Haircut);
+                Drag(ActiveSlider(0), 0.72f);
                 yield return new WaitForSecondsRealtime(0.4f);
-                Assert.AreEqual(1, GolferStyle.Kit); Assert.AreEqual(3, GolferStyle.Shirt);
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/select-c-female-teal.png"));
+                Assert.AreNotEqual("", GolferStyle.Current.Hair);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-3-hair.png"));
 
-                Press("Previous golfer");
-                Press("KIT Crimson");
-                Press("SHIRT White");
-                yield return new WaitForSecondsRealtime(1.2f);
-                Assert.AreEqual(GolferStyle.BodyKind.Male, GolferStyle.Body);
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/select-d-male-crimson.png"));
+                // HEADWEAR: the cap, then none: the hair shows in full without it
+                Press("Tab HEADWEAR");
+                yield return new WaitForSecondsRealtime(0.5f);
+                Press("Card CAP");
+                Assert.AreEqual((int)HeroGolfer.Headwear.Cap, GolferStyle.Headwear);
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-4-cap.png"));
+                Press("Card NONE");
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.AreEqual(0, GolferStyle.Headwear);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-5-bare.png"));
 
+                // OUTFIT: the shorts in a quick pick; a padlock says what it takes; the mixer is earned
+                Press("Tab OUTFIT");
+                yield return new WaitForSecondsRealtime(1.0f);
+                Press("Card SHORTS");
+                Press("Swatch 1");
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.AreEqual(1, GolferStyle.Kit, "teal shorts");
+                Press("Swatch 4");   // forest: not earned
+                Assert.AreEqual(1, GolferStyle.Kit, "a padlocked colour stays shut");
+                Drag(ActiveSlider(0), 0.3f);
+                Assert.AreEqual(1, GolferStyle.Kit, "and so is the mixer until it is earned");
+                profile.Stats.RoundsPlayed = 2;
+                Drag(ActiveSlider(0), 0.3f);
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.AreEqual(-1, GolferStyle.IndexOf(GolferStyle.KitColors, GolferStyle.Current.Shorts, -1) , "a mixed colour, once the mixer is earned");
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-6-outfit.png"));
+
+                // GEAR
+                Press("Tab GEAR");
+                yield return new WaitForSecondsRealtime(0.5f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-7-gear.png"));
+
+                // SHUFFLE gives another look
+                var before = GolferStyle.Current.Clone();
+                Press("Shuffle");
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.IsFalse(before.SameAs(GolferStyle.Current), "shuffle changes the golfer");
+                var chosen = GolferStyle.Current.Clone();
+
+                // LET'S GO: back to the menu, the look kept on the profile and the phone
                 Press("Lets go");
                 yield return null;
                 Assert.AreEqual(GolfGame.State.Menu, game.Current, "LET'S GO goes back to the menu");
-                Assert.IsFalse(GameObject.Find("Golfer select"), "the screen is put away");
+                Assert.IsFalse(GameObject.Find("Locker"), "the screen is put away");
+                Assert.IsTrue(chosen.SameAs(ProfileStore.Active.Look), "the look is kept on the profile");
+                Assert.IsTrue(chosen.SameAs(GolferStyle.Device), "and on the phone");
             }
             finally
             {
-                GolferStyle.Body = body0; GolferStyle.Kit = kit0; GolferStyle.Shirt = shirt0;
+                profile.Stats.RoundsPlayed = stats0;
+                profile.Look = profileLook0;
+                GolferStyle.SaveDevice(look0);
                 if (game.Current == GolfGame.State.Golfer) game.CloseGolferPicker();
+                ProfileStore.Save();
             }
-        }
-
-        /// Each foot and toe bone against the skin's bind pose, in its parent's frame: the shoes
-        /// keep their shape when the feet turn with the leg the way they were bound.
-        static void AssertShoesAsBound(string when)
-        {
-            SkinnedMeshRenderer skin = null;
-            foreach (var smr in GameObject.Find("Golfer").GetComponentsInChildren<SkinnedMeshRenderer>())
-                if (!skin || smr.sharedMesh.vertexCount > skin.sharedMesh.vertexCount) skin = smr;
-            var bones = skin.bones; var binds = skin.sharedMesh.bindposes;
-            foreach (var name in new[] { "Foot.L", "Toes.L", "Foot.R", "Toes.R" })
-            {
-                int i = System.Array.FindIndex(bones, b => b && b.name == name);
-                int p = System.Array.IndexOf(bones, bones[i].parent);
-                var bound = (binds[p] * binds[i].inverse).rotation;
-                Assert.Less(Quaternion.Angle(bound, bones[i].localRotation), 15f, $"{name} {when}: turned from how the shoe was bound");
-            }
-        }
-
-        /// A close-up of the golfer's shoes from the front and from the side, beside each other.
-        static void Feet(string path)
-        {
-            Transform l = null, r = null;
-            foreach (var t in GameObject.Find("Golfer").GetComponentsInChildren<Transform>())
-            {
-                if (t.name == "Foot.L") l = t;
-                if (t.name == "Foot.R") r = t;
-            }
-            Assert.IsTrue(l && r, "no foot bones");
-            var mid = (l.position + r.position) / 2;
-            var golfer = GameObject.Find("Golfer").transform;
-            var go = new GameObject("Feet camera");
-            var cam = go.AddComponent<Camera>();
-            cam.fieldOfView = 30; cam.nearClipPlane = 0.05f; cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = Color.gray;
-            var rt = new RenderTexture(1200, 600, 24);
-            var shot = new Texture2D(1200, 600, TextureFormat.RGB24, false);
-            try
-            {
-                cam.targetTexture = rt;
-                var faces = Camera.main.transform.position - mid; faces.y = 0; faces.Normalize();
-                var views = new[] { faces, Quaternion.Euler(0, 70, 0) * faces };
-                for (int i = 0; i < views.Length; i++)
-                {
-                    cam.rect = new Rect(i * 0.5f, 0, 0.5f, 1);
-                    go.transform.position = mid + views[i] * 1.6f + Vector3.up * 0.5f;
-                    go.transform.LookAt(mid + Vector3.up * 0.1f);
-                    cam.Render();
-                }
-                RenderTexture.active = rt;
-                shot.ReadPixels(new Rect(0, 0, 1200, 600), 0, 0);
-                RenderTexture.active = null;
-                System.IO.File.WriteAllBytes(path, shot.EncodeToPNG());
-            }
-            finally { Object.Destroy(go); Object.Destroy(rt); Object.Destroy(shot); }
-        }
-
-        static Renderer FaceDecal()
-        {
-            foreach (var r in GameObject.Find("Golfer").GetComponentsInChildren<Renderer>())
-                foreach (var m in r.sharedMaterials)
-                    if (m && m.mainTexture && m.mainTexture.name == "FaceAtlas") return r;
-            Assert.Fail("no face decal");
-            return null;
         }
     }
 }

@@ -6,14 +6,15 @@ using UnityEngine.UI;
 
 namespace GolfArcade.UI
 {
-    /// Something earned, announced over the round's card: a yellow medallion with the reward's
-    /// icon, UNLOCKED! on a tab, the reward on a navy pill and how it was earned under it. Each
+    /// Something earned, announced over the round's card, as one of Adnan's club cards: a cream slab with a
+    /// sun strip, the reward's rendered object (a trophy for a course, the kit for an outfit, the driver for a
+    /// ball or clubs, the bolt for a trail), UNLOCKED! on a sun badge, the reward and how it was earned. Each
     /// pops in with a bounce, holds, and makes way for the next.
     public sealed class UnlockToast : MonoBehaviour
     {
         RectTransform root;
-        Image icon;
-        Text tab, title, how;
+        Club.Card card;
+        Text title => card.Title;
         readonly Queue<(string who, Reward reward)> waiting = new();
         float shownAt = -99f;
         const float Hold = 2.6f;
@@ -28,30 +29,22 @@ namespace GolfArcade.UI
             var t = go.AddComponent<UnlockToast>();
             t.root = (RectTransform)go.transform;
             t.root.anchorMin = t.root.anchorMax = new Vector2(0.5f, 1f); t.root.pivot = new Vector2(0.5f, 1f);
-            t.root.anchoredPosition = new Vector2(0, -230); t.root.sizeDelta = new Vector2(900, 250);
-
-            var pill = UiKit.Pill(t.root, "Pill", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0.5f), new Vector2(50, -10), new Vector2(800, 170), out var fill, 6f, false);
-            foreach (var img in pill.GetComponentsInChildren<Image>()) img.sprite = UiKit.RoundedLarge;
-            t.title = UiKit.Chunky(fill.transform, "Title", 56, Color.white, UiKit.ArcadeInk, 4f);
-            t.title.rectTransform.offsetMin = new Vector2(150, 62); t.title.rectTransform.offsetMax = new Vector2(-24, -14);
-            Icons.Fit(t.title, 30, 56);
-            t.how = UiKit.Label(fill.transform, "How", 30, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(1, 0), new Vector2(0, 38), new Vector2(0, 44), UiKit.Display, false);
-            t.how.rectTransform.offsetMin = new Vector2(150, 16); t.how.rectTransform.offsetMax = new Vector2(-24, 60);
-            t.how.color = UiKit.ArcadeYellow;
-            Icons.Fit(t.how, 18, 30);
-
-            var medallion = UiKit.Pill(t.root, "Medallion", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(-330, -10), new Vector2(190, 190), out var disc, 7f);
-            foreach (var img in medallion.GetComponentsInChildren<Image>()) img.type = Image.Type.Simple;
-            t.icon = Icons.Place(disc.transform, "star", UiKit.ArcadeInk, new Vector2(0.5f, 0.5f), Vector2.zero, 104);
-
-            var tabPill = UiKit.Pill(t.root, "Tab", UiKit.ArcadeYellow, new Vector2(0.5f, 0.5f), new Vector2(90, 84), new Vector2(360, 62), out var tabFill, 3f);
-            t.tab = UiKit.Chunky(tabFill.transform, "Word", 36, UiKit.ArcadeInk, new Color(1, 1, 1, 0), 0f);
-            Icons.Fit(t.tab, 20, 36);
-
+            t.root.anchoredPosition = new Vector2(0, -230); t.root.sizeDelta = new Vector2(960, 250);
+            t.card = new Club.Card(t.root, "Card", "trophy", "", "", Club.Sun, true, 0.95f);
+            var rt = t.card.Root;
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
             foreach (var g in go.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
             go.SetActive(false);
             return t;
         }
+
+        static string ArtFor(Reward r) => r.Kind switch
+        {
+            RewardKind.Course => "trophy",
+            RewardKind.Outfit => "kit",
+            RewardKind.Trail => "quick",
+            _ => "golf",
+        };
 
         /// Adds rewards to announce, each with whose it is (null on a phone with one player).
         public void Announce(IEnumerable<(string who, Reward reward)> rewards)
@@ -66,10 +59,8 @@ namespace GolfArcade.UI
             var (who, r) = waiting.Dequeue();
             root.gameObject.SetActive(true);
             transform.SetAsLastSibling();
-            tab.text = (who == null ? "UNLOCKED!" : $"{who} UNLOCKED").ToUpperInvariant();
-            title.text = Gear.Title(r).ToUpperInvariant();
-            how.text = r.How.ToUpperInvariant();
-            icon.sprite = Icons.Get(Gear.Icon(r));
+            card.SetArt(ArtFor(r)).Set(Gear.Title(r), r.How).SetBadge(Club.BadgeKind.New, who == null ? "UNLOCKED!" : $"{who.ToUpperInvariant()} UNLOCKED");
+            ClubSound.Play("pop", 0.55f);
             shownAt = Time.unscaledTime;
         }
 

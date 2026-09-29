@@ -195,7 +195,7 @@ namespace GolfArcade.PlayTests
                 // the golfer screen's GEAR page, the gold ball padlocked
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(1f);
-                Press("Gear");
+                Press("Tab GEAR");
                 yield return new WaitForSecondsRealtime(0.5f);
                 Press("BALL Gold");
                 yield return null;
@@ -215,7 +215,7 @@ namespace GolfArcade.PlayTests
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/lock-c-announced.png"));
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(0.8f);
-                Press("Gear");
+                Press("Tab GEAR");
                 Press("BALL Gold"); Press("TRAIL Fire");
                 yield return new WaitForSecondsRealtime(0.5f);
                 Assert.AreEqual("ball.gold", me.Ball);

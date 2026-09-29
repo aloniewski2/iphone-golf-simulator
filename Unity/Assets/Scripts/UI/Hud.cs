@@ -14,10 +14,24 @@ namespace GolfArcade.UI
         /// The button's fill, lit while held.
         public Image Fill;
         public Color RestColor = UiKit.ButtonFill;
-        public void OnPointerDown(PointerEventData e) { IsHeld = true; Light(true); Pressed?.Invoke(); }
+        /// The fill while held (the HUD's blue unless set).
+        public Color? PressedColor;
+        /// The face that sinks into its base while held (the club's slabs), and the menu sound a press makes.
+        public RectTransform Sink;
+        public string Sound;
+        bool sunk;
+        public void OnPointerDown(PointerEventData e) { IsHeld = true; Light(true); ClubSound.Play(Sound); Pressed?.Invoke(); }
         public void OnPointerUp(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
         public void OnPointerExit(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
-        void Light(bool on) { if (Fill) Fill.color = on ? UiKit.ButtonPressed : RestColor; }
+        void Light(bool on)
+        {
+            if (Fill) Fill.color = on ? PressedColor ?? UiKit.ButtonPressed : RestColor;
+            if (Sink && on != sunk)
+            {
+                var d = new Vector2(0, on ? -12 : 12);
+                Sink.offsetMin += d; Sink.offsetMax += d; sunk = on;
+            }
+        }
     }
 
     /// The whole on-screen layer, built in code so there is nothing to wire in a scene: hole and
@@ -335,17 +349,19 @@ namespace GolfArcade.UI
 
         public void HideCourses() { courses?.Destroy(); courses = null; }
 
-        GolferSelect golferSelect;
+        Locker locker;
+        /// The golfer's locker while it is open (null otherwise).
+        public Locker Locker => locker;
 
-        /// The golfer select screen (UI/GolferSelect.cs) over the golfer on the tee.
-        public GolferSelect ShowGolferSelect(string[] kitNames, Color[] kitColors, string[] shirtNames, Color[] shirtColors)
+        /// The locker (UI/Locker.cs) over the golfer on the tee.
+        public Locker ShowLocker()
         {
-            HideGolferSelect();
-            golferSelect = new GolferSelect(safeArea, kitNames, kitColors, shirtNames, shirtColors);
-            return golferSelect;
+            HideLocker();
+            locker = new Locker(safeArea);
+            return locker;
         }
 
-        public void HideGolferSelect() { golferSelect?.Destroy(); golferSelect = null; }
+        public void HideLocker() { locker?.Destroy(); locker = null; }
 
         /// The title over the hole's flyover, the way the tennis broadcast opens on its island:
         /// the tournament's name in chunky yellow on a cobalt badge with a white rim, and under it

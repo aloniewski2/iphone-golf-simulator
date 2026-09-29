@@ -25,6 +25,8 @@ namespace GolfArcade.Course
         public int Body;
         public int Kit;
         public int Shirt;
+        /// The whole look (skin, hair, headwear, colours); null for a golfer known only by body, kit and shirt.
+        public GolfArcade.Profile.CharacterLook Look;
         /// The PlayerProfile on this phone (local players).
         public string ProfileId = "";
         /// The player's id on the game server (online rounds).

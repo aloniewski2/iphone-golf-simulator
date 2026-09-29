@@ -41,7 +41,7 @@ namespace GolfArcade.Game
         {
             var list = new List<MatchPlayer>();
             foreach (var p in players)
-                list.Add(new MatchPlayer { Name = p.Name, Body = p.Body, Kit = p.Kit, Shirt = p.Shirt, ProfileId = p.ProfileId, RemoteId = p.RemoteId, IsLocal = p.IsLocal });
+                list.Add(new MatchPlayer { Name = p.Name, Body = p.Body, Kit = p.Kit, Shirt = p.Shirt, Look = p.Look?.Version > 0 ? p.Look.Clone() : null, ProfileId = p.ProfileId, RemoteId = p.RemoteId, IsLocal = p.IsLocal });
             return list;
         }
 
@@ -78,7 +78,7 @@ namespace GolfArcade.Game
             foreach (var p in room.Players)
             {
                 bool local = p.id == room.MyId;
-                var player = local ? FromProfile(me) : new MatchPlayer { Name = p.name, Body = p.body, Kit = p.kit, Shirt = p.shirt, IsLocal = false };
+                var player = local ? FromProfile(me) : new MatchPlayer { Name = p.name, Body = p.body, Kit = p.kit, Shirt = p.shirt, Look = GolferStyle.LookFromLegacy(p.body, p.kit, p.shirt), IsLocal = false };
                 player.RemoteId = p.id;
                 setup.players.Add(player);
             }
@@ -86,6 +86,6 @@ namespace GolfArcade.Game
         }
 
         static MatchPlayer FromProfile(PlayerProfile p) =>
-            new() { Name = p.Name, Body = p.Body, Kit = p.Kit, Shirt = p.Shirt, ProfileId = p.Id, IsLocal = true };
+            new() { Name = p.Name, Body = p.Body, Kit = p.Kit, Shirt = p.Shirt, Look = p.LookOrMigrated().Clone(), ProfileId = p.Id, IsLocal = true };
     }
 }

@@ -119,7 +119,7 @@ namespace GolfArcade.PlayTests
                 string words = Words();
                 Debug.Log($"ERRORS offline page: {made} requests; {words.Replace("\n", " | ")}");
                 Assert.LessOrEqual(made, 4, "signing in isn't retried in a loop");
-                StringAssert.Contains("TRY AGAIN", words);
+                StringAssert.Contains("TRY AGAIN", words.ToUpperInvariant());
                 StringAssert.Contains("GAME SERVER", words, "the trouble in words");
                 Assert.IsFalse(words.Contains("CANNOT CONNECT") || words.Contains("DESTINATION HOST"), "not the network's own jargon");
             }

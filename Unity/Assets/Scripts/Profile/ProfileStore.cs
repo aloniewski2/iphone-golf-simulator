@@ -29,9 +29,8 @@ namespace GolfArcade.Profile
                 {
                     book = new ProfileBook();
                     var first = book.Add("Player 1");
-                    first.Body = (int)GolferStyle.SavedBody;
-                    first.Kit = GolferStyle.SavedKit;
-                    first.Shirt = GolferStyle.SavedShirt;
+                    first.Look = GolferStyle.Device.Clone();
+                    GolferStyle.SyncLegacy(first);
                     Save();
                 }
                 foreach (var p in book.Profiles)
@@ -45,6 +44,10 @@ namespace GolfArcade.Profile
                     p.Name = PlayerProfile.CleanName(p.Name).Length > 0 ? PlayerProfile.CleanName(p.Name) : "Player";
                     p.ServerId ??= ""; p.ServerToken ??= "";
                     p.Ball ??= "ball.white"; p.Trail ??= "trail.none"; p.Club ??= "club.classic";
+                    // a save from before looks had their own record: the golfer, kit and shirt it picked
+                    p.Look ??= CharacterLook.Unset();
+                    if (p.Look.Version == 0) p.Look.MigrateFrom(p.Body, p.Kit, p.Shirt);
+                    p.Look.Repair();
                 }
                 return book;
             }

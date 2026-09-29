@@ -20,6 +20,18 @@ namespace GolfArcade.Profile
         public int Kit;
         public int Shirt;
 
+        /// The rest of how the golfer looks (skin, hair, headwear, colours): CharacterLook. Version 0 until made (an older
+        /// save: ProfileStore fills it from Body, Kit and Shirt above, which are kept in step for the server).
+        public CharacterLook Look = CharacterLook.Unset();
+
+        /// The look, made from Body, Kit and Shirt first if it hasn't been made yet (a profile built in code, or an older save).
+        public CharacterLook LookOrMigrated()
+        {
+            Look ??= CharacterLook.Unset();
+            if (Look.Version == 0) Look.MigrateFrom(Body, Kit, Shirt);
+            return Look;
+        }
+
         public const int Colours = 6;
 
         /// The account on the game server, once this profile has signed in there.

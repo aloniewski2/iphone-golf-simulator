@@ -36,6 +36,7 @@ namespace GolfArcade.Profile
         {
             new(WildIsles, RewardKind.Course, "Wild Isles", "Beat par on Cliffside", s => s.BestOn("cliffside") <= 0),
 
+            new("outfit.mixer", RewardKind.Outfit, "Colour mixer", "Finish 2 rounds", s => s.RoundsPlayed >= 2),
             new("outfit.3", RewardKind.Outfit, "Crimson", "Finish 5 rounds", s => s.RoundsPlayed >= 5),
             new("outfit.4", RewardKind.Outfit, "Forest", "Beat par on Cliffside", s => s.BestOn("cliffside") <= 0),
             new("outfit.5", RewardKind.Outfit, "Charcoal", "Win 3 matches", s => s.MatchesWon >= 3),
@@ -75,6 +76,9 @@ namespace GolfArcade.Profile
 
         /// An outfit colour (a kit or a shirt colour by its index) is open to the player.
         public static bool OutfitOpen(PlayerProfile p, int colour) => colour < FreeOutfitColours || Has(p, $"outfit.{colour}");
+
+        /// The locker's colour sliders for the outfit (any colour, not only the quick picks) are earned.
+        public static bool MixerOpen(PlayerProfile p) => Has(p, "outfit.mixer");
 
         /// The player's pick of a kind, if it is open to them; the free one otherwise.
         public static string Chosen(PlayerProfile p, RewardKind kind)

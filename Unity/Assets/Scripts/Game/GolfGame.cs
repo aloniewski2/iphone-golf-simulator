@@ -244,6 +244,7 @@ namespace GolfArcade.Game
             hud.SwingHold.Pressed = () => Swing.Synthetic?.Backswing(true);
             hud.SwingHold.Released = () => Swing.Synthetic?.Backswing(false);
             bigScreen = BigScreen.Create(transform, rig.Camera);
+            stage = gameObject.AddComponent<ClubStage>();
             bigScreen.OnChanged = on =>
             {
                 if (on)
@@ -314,6 +315,7 @@ namespace GolfArcade.Game
             hud.HideCourses(); courses = null;
             hud.ShowPlayHud(false);
             home = hud.ShowMenu();
+            ClubWipe.Play();
             var stamp = Resources.Load<TextAsset>("build_id");
             home.Build.text = stamp ? $"build {stamp.text.Trim()}" : "";
             home.Golfer.Pressed = OpenGolferPicker;
@@ -321,14 +323,15 @@ namespace GolfArcade.Game
             home.BigScreen.Pressed = () => { Click(); bigScreen.SetWanted(true); bigScreen.OpenAirPlayPicker(); RefreshMenu(); };
             home.Play.Pressed = Play;
             home.Profile.Pressed = () => { Click(); OpenLobby(Lobby.Page.Profile); };
+            home.Records.Pressed = () => { Click(); OpenLobby(Lobby.Page.Profile); };
             for (int i = 0; i < home.Modes.Length; i++) { var m = (PlayMode)i; home.Modes[i].Pressed = () => { Click(); ChooseMode(m); }; }
             RefreshMenu();
             SetFog(0);
-            StandOnTheTee();
-            // (the new view now, so the cut lands on it and not on the last one)
-            rig.FrameHome(ball.position, homeLine, homeBack, homeUp, 0);
-            rig.SnapNext();
+            StandInTheClubhouse();
             Enter(State.Menu);
+            // (the new view now, so the cut lands on it and not on the last one)
+            FrameClubhouse();
+            rig.SnapNext();
         }
 
         /// The hole behind the menu, or on show on the course screen, built fresh.
@@ -340,51 +343,31 @@ namespace GolfArcade.Game
             holeView.ShowFlag(true);
         }
 
-        /// The home screen's picture: the golfer at address on the tee with the driver, the ball
-        /// teed up, lined up at the hole's target.
-        Vector3 homeLine = Vector3.forward;
-        void StandOnTheTee()
+        /// The menus' stage (Game/ClubStage.cs): the painted scene behind the golfer.
+        ClubStage stage;
+
+        /// The home screen's picture (Adnan's clubhouse): the golfer standing easy on the lit disc, face to the
+        /// camera, in front of the painted clubhouse.
+        void StandInTheClubhouse()
         {
-            ballAt = hole.Tee; heading = hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
+            ballAt = hole.Tee; heading = hole.Tee.HeadingTo(hole.Pin);
             PlaceBall(ballAt, 0);
-            ball.gameObject.SetActive(true);
-            homeLine = TeeAim();
+            ball.gameObject.SetActive(false);
             golfer.SetClub(GolfClub.Driver, false);
             golfer.Settle();
-            golfer.Stand(ball.position, homeLine);
+            golfer.Stand(ball.position, AimDirection());
             golfer.SetVisible(true);
-            holeView.ShowTeeMarkers(true);
-            PlaceHomeCamera();
+            golfer.Perform("Idle");
+            holeView.ShowTeeMarkers(false);
+            selectFacing = golfer.transform.forward;
+            stage.Show(rig.Camera, golfer.transform, "home", 0.35f);
         }
 
-        /// Where the home camera sits: behind the golfer, as near and as low as it can with a
-        /// clear view of them and the ball — no bank or cliff behind the tee, no tree or rock,
-        /// in the way.
-        float homeBack = 5.6f, homeUp = 2.9f;
-        void PlaceHomeCamera()
+        /// The golfer in the stage the home screen leaves for them.
+        void FrameClubhouse()
         {
-            var right = Vector3.Cross(Vector3.up, homeLine);
-            var head = golfer.transform.position + Vector3.up * 1.2f;
-            foreach (var (back, up) in new[] { (5.6f, 2.9f), (5.6f, 4.3f), (4.8f, 5.6f), (7f, 6f), (4f, 7.5f), (3.2f, 9.5f) })
-            {
-                var at = ball.position - homeLine * back - right * 0.3f + Vector3.up * up;
-                if (Clear(at, head) && Clear(at, ball.position + Vector3.up * 0.15f)) { homeBack = back; homeUp = up; return; }
-            }
-            homeBack = 3.2f; homeUp = 9.5f;
-        }
-
-        /// Nothing between: every step from `from` to `to` above the ground and clear of what
-        /// stands on the hole.
-        bool Clear(Vector3 from, Vector3 to)
-        {
-            for (int i = 0; i < 24; i++)
-            {
-                var p = Vector3.Lerp(from, to, i / 24f);
-                var at = HoleView.ToCourse(p);
-                if (p.y < HoleView.GroundHeight(at) + 0.3) return false;
-                foreach (var o in hole.Obstacles) if (o.Touches(at.X, p.y, at.D, 0.4, out _, out _)) return false;
-            }
-            return true;
+            var band = home != null ? home.StageBand(rig.Camera.aspect) : new Vector2(0.5f, 0.85f);
+            rig.FrameStage(golfer.transform.position, selectFacing, 0, band.x, band.y, 9f);
         }
 
         /// The round: 0 for all the holes, or one hole's number. Remembered on the device.
@@ -415,9 +398,12 @@ namespace GolfArcade.Game
 
         void RefreshMenu()
         {
-            home?.Refresh(chosenHoles == 0 ? ChosenCourseName : $"Hole {chosenHoles}",
-                          $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
-            home?.ShowMode((int)Mode, ProfileStore.Active.Name);
+            if (home == null) return;
+            var h = chosenHoles == 0 ? null : System.Array.Find(AllHoles, x => x.Number == chosenHoles);
+            string courseName = chosenHoles == 0 ? ChosenCourseName : h?.Name ?? $"Hole {chosenHoles}";
+            string what = chosenHoles == 0 ? "full round" : $"hole {chosenHoles} · par {h?.Par}";
+            home.Refresh(courseName, what, $"{GolferStyle.KitNames[GolferStyle.Kit]} kit", bigScreen.Live);
+            home.ShowMode((int)Mode, ProfileStore.Active.Name, GolferStyle.SkinColor, GolferStyle.ShirtColor ?? Club.Sun);
         }
 
         /// SOLO, 2 PLAYERS or ONLINE on the home screen; PLAY then goes that way.
@@ -452,10 +438,10 @@ namespace GolfArcade.Game
             if (lobby) lobby.gameObject.SetActive(false);
             pickingFor = profile;
             pickedThen = then;
-            if (profile.Id != ProfileStore.Book.ActiveId) GolferStyle.Wear(profile.Body, profile.Kit, profile.Shirt);
+            if (profile.Id != ProfileStore.Book.ActiveId) GolferStyle.Wear(profile.LookOrMigrated());
             else GolferStyle.Unwear();
             OpenGolferPicker();
-            select?.SetTab(profile.Name + "'S GOLFER");
+            locker?.SetName(profile.Name + "'s golfer");
         }
 
         // ----- The course screen -----
@@ -473,6 +459,8 @@ namespace GolfArcade.Game
             if (Current != State.Menu || courses != null) return;
             Click();
             hud.HideMenu(); home = null;
+            stage.Hide();
+            ClubWipe.Play();
             browse = chosenHoles == 0 ? Math.Max(0, System.Array.FindIndex(AllHoles, h => Course.Course.Containing(h.Number)?.Key == chosenCourse))
                                       : Math.Max(0, System.Array.FindIndex(AllHoles, h => h.Number == chosenHoles));
             browseFull = chosenHoles == 0;
@@ -523,7 +511,8 @@ namespace GolfArcade.Game
         {
             var h = AllHoles[browse];
             // FULL ROUND is the round of the course this hole is on: its name over the hole
-            courses?.Show(browseFull ? Course.Course.Containing(h.Number)?.Name ?? h.Name : h.Name, h.Number, h.Par, h.Length, browse, browseFull);
+            var courseName = Course.Course.Containing(h.Number)?.Name ?? h.Name;
+            courses?.Show(browseFull ? courseName : h.Name, h.Number, h.Par, h.Length, browse, browseFull, courseName);
             // a course still to be earned: what it takes, and no SELECT
             var key = Course.Course.Containing(h.Number)?.Key;
             courses?.SetLocked(Unlocks.CourseOpen(ProfileStore.Active, key) ? null : Unlocks.Find(Unlocks.WildIsles)?.How);
@@ -555,76 +544,57 @@ namespace GolfArcade.Game
         /// The hole the course screen shows, for tests.
         public Hole BrowsedHole => courses != null ? AllHoles[browse] : null;
 
-        // ----- The golfer's face on the home screen -----
+        // ----- The locker (the golfer select screen) -----
 
-        Camera avatarCamera;
-        RenderTexture avatarTexture;
-
-        /// A small camera on the golfer's face for the GOLFER button, while the home screen is up.
-        void UpdateAvatar()
-        {
-            bool on = home != null && golfer.Head && golfer.isActiveAndEnabled;
-            if (on && !avatarCamera)
-            {
-                avatarTexture = new RenderTexture(256, 256, 16);
-                avatarCamera = new GameObject("Avatar camera").AddComponent<Camera>();
-                avatarCamera.transform.SetParent(transform, false);
-                avatarCamera.targetTexture = avatarTexture;
-                avatarCamera.clearFlags = CameraClearFlags.SolidColor; avatarCamera.backgroundColor = new Color(0.61f, 0.83f, 1f);
-                avatarCamera.fieldOfView = 26; avatarCamera.nearClipPlane = 0.05f; avatarCamera.farClipPlane = 80;
-            }
-            if (avatarCamera) avatarCamera.gameObject.SetActive(on);
-            if (home != null) { home.Avatar.texture = avatarTexture; home.Avatar.enabled = on; }
-            if (!on) return;
-            // at address the face looks down at the ball: the camera is down there, looking up at it
-            var face = golfer.Head.position + Vector3.up * 0.12f + golfer.transform.forward * 0.08f;
-            avatarCamera.transform.position = face + golfer.transform.forward * 1.25f + Vector3.down * 0.35f;
-            avatarCamera.transform.LookAt(face);
-        }
-
-        // ----- The golfer select screen -----
-
-        GolferSelect select;
-        /// The way the golfer faces on the select screen, and how far a drag has turned them.
+        Locker locker;
+        /// The way the golfer faces in the locker, and how far a drag has turned them.
         Vector3 selectFacing = Vector3.forward;
         float selectSpin;
         bool spinning;
+        /// 0 the whole golfer, 1 the head (the HAIR and HEADWEAR tabs bring the camera in), and where it is going.
+        float lockerHead, lockerHeadTarget;
 
-        /// Its own screen (UI/GolferSelect.cs): the golfer stands easy at the tee, face to the
+        /// Its own screen (UI/Locker.cs, after Adnan's locker): the golfer stands easy at the tee, face to the
         /// camera, and every choice changes them on the spot.
         public void OpenGolferPicker()
         {
             if (Current != State.Menu) return;
             hud.HideMenu(); home = null;
-            select = hud.ShowGolferSelect(GolferStyle.KitNames, GolferStyle.KitColors, GolferStyle.ShirtNames, GolferStyle.ShirtColors);
-            select.Previous.Pressed = () => SwitchGolfer();
-            select.Next.Pressed = () => SwitchGolfer();
+            locker = hud.ShowLocker();
             var owner = pickingFor ?? ProfileStore.Active;
-            for (int i = 0; i < select.Kits.Length; i++)
+            locker.Look = () => GolferStyle.Current;
+            // A look changes the figure where it stands (the parts show, the colours go on), never rebuilds it
+            // mid-drag; a discrete pick also re-lights the choices.
+            locker.Change = (edit, commit) =>
             {
-                int kit = i;
-                select.Kits[i].Pressed = () =>
-                {
-                    if (!Unlocks.OutfitOpen(owner, kit)) { Locked(GolferSelect.Rows.Kit, $"outfit.{kit}"); return; }
-                    Click(); GolferStyle.Kit = kit; golfer.Redress(); RefreshSelect();
-                };
-            }
-            for (int i = 0; i < select.Shirts.Length; i++)
+                GolferStyle.Edit(edit);
+                golfer.Redress();
+                if (commit) { Click(); locker.Refresh(); }
+            };
+            locker.OutfitColourOpen = i => Unlocks.OutfitOpen(owner, i);
+            locker.MixerOpen = () => Unlocks.MixerOpen(owner);
+            locker.LockedPressed = (row, id) => Locked(row, id);
+            locker.Shuffle.Pressed = () => { Click(); GolferStyle.Edit(l => GolferStyle.Shuffle(l, i => Unlocks.OutfitOpen(owner, i), Unlocks.MixerOpen(owner))); golfer.Redress(); locker.Refresh(); };
+            locker.TabChanged = tab =>
             {
-                int shirt = i;
-                select.Shirts[i].Pressed = () =>
-                {
-                    if (!Unlocks.OutfitOpen(owner, shirt)) { Locked(GolferSelect.Rows.Shirt, $"outfit.{shirt}"); return; }
-                    Click(); GolferStyle.Shirt = shirt; golfer.Redress(); RefreshSelect();
-                };
-            }
-            // the GEAR page: the ball, its trail, the clubs — each earned (Profile/Unlocks.cs)
+                Click();
+                lockerHeadTarget = tab is Locker.Tab.Hair or Locker.Tab.Headwear ? 1f : 0f;
+                ball.gameObject.SetActive(tab == Locker.Tab.Gear);
+                stage.Extra = tab == Locker.Tab.Gear ? ball : null;
+                if (tab != Locker.Tab.Gear) return;
+                // the GEAR tab: the ball is out on the tee by the golfer's feet, in its colour
+                var side = Vector3.Cross(Vector3.up, selectFacing).normalized;
+                var at = golfer.transform.position + selectFacing * 0.55f + side * 0.45f;
+                at.y = (float)HoleView.GroundHeight(HoleView.ToCourse(at)) + BallSize * 0.5f;
+                ball.position = at;
+            };
+            // the GEAR tab: the ball, its trail, the clubs — each earned (Profile/Unlocks.cs)
             var balls = Unlocks.Of(RewardKind.Ball); var trails = Unlocks.Of(RewardKind.Trail); var clubs = Unlocks.Of(RewardKind.Club);
             string[] Names(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(r => r.Name).ToArray();
             Color[] Swatches(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(Gear.Swatch).ToArray();
-            select.AddGear(Names(balls), Swatches(balls), Names(trails), Swatches(trails),
+            locker.AddGear(Names(balls), Swatches(balls), Names(trails), Swatches(trails),
                            trails.ConvertAll(r => r.Id == "trail.rainbow" ? RainbowSwatch() : null).ToArray(), Names(clubs), Swatches(clubs));
-            void Wire(HoldButton[] buttons, System.Collections.Generic.List<Reward> rs, GolferSelect.Rows row, System.Action<string> pick)
+            void Wire(HoldButton[] buttons, System.Collections.Generic.List<Reward> rs, Locker.Rows row, System.Action<string> pick)
             {
                 for (int i = 0; i < buttons.Length; i++)
                 {
@@ -636,67 +606,45 @@ namespace GolfArcade.Game
                     };
                 }
             }
-            Wire(select.Balls, balls, GolferSelect.Rows.Ball, id => owner.Ball = id);
-            Wire(select.Trails, trails, GolferSelect.Rows.Trail, id => owner.Trail = id);
-            Wire(select.Clubs, clubs, GolferSelect.Rows.Club, id => owner.Club = id);
+            Wire(locker.Balls, balls, Locker.Rows.Ball, id => owner.Ball = id);
+            Wire(locker.Trails, trails, Locker.Rows.Trail, id => owner.Trail = id);
+            Wire(locker.Clubs, clubs, Locker.Rows.Club, id => owner.Club = id);
             bool[] Open(System.Collections.Generic.List<Reward> rs) => rs.ConvertAll(r => Unlocks.Has(owner, r.Id)).ToArray();
-            bool[] Colours(int n) { var o = new bool[n]; for (int i = 0; i < n; i++) o[i] = Unlocks.OutfitOpen(owner, i); return o; }
-            select.SetOpen(GolferSelect.Rows.Kit, Colours(select.Kits.Length));
-            select.SetOpen(GolferSelect.Rows.Shirt, Colours(select.Shirts.Length));
-            select.SetOpen(GolferSelect.Rows.Ball, Open(balls));
-            select.SetOpen(GolferSelect.Rows.Trail, Open(trails));
-            select.SetOpen(GolferSelect.Rows.Club, Open(clubs));
+            locker.SetOpen(Locker.Rows.Ball, Open(balls));
+            locker.SetOpen(Locker.Rows.Trail, Open(trails));
+            locker.SetOpen(Locker.Rows.Club, Open(clubs));
             WearGear(owner);
-            // on the GEAR page the ball is out on the tee by the golfer's feet, in its colour
-            var turnPage = select.PageButton.Pressed;
-            select.PageButton.Pressed = () =>
-            {
-                Click(); turnPage();
-                ball.gameObject.SetActive(select.ShowingGear);
-                if (!select.ShowingGear) return;
-                // out in front of the golfer's feet, a little to the side, where the camera sees it
-                var side = Vector3.Cross(Vector3.up, selectFacing).normalized;
-                var at = golfer.transform.position + selectFacing * 0.55f + side * 0.45f;
-                at.y = (float)HoleView.GroundHeight(HoleView.ToCourse(at)) + BallSize * 0.5f;
-                ball.position = at;
-            };
-            select.Spin = dx => { spinning = true; selectSpin -= dx * 0.35f; };
-            select.SpinDone = () => spinning = false;
-            select.Go.Pressed = CloseGolferPicker;
-            selectSpin = 0; spinning = false;
+            locker.Spin = dx => { spinning = true; selectSpin -= dx * 0.35f; };
+            locker.SpinDone = () => spinning = false;
+            locker.Go.Pressed = CloseGolferPicker;
+            selectSpin = 0; spinning = false; lockerHead = lockerHeadTarget = 0;
             ballAt = hole.Tee; heading = hole.Tee.HeadingTo(hole.Pin);
             PlaceBall(ballAt, 0);
             ball.gameObject.SetActive(false);   // (no ball to address: the golfer stands easy)
             Enter(State.Golfer);
             RestyleForPicker();
             selectFacing = golfer.transform.forward;
-            rig.FramePortrait(golfer.transform.position, selectFacing, 0);
+            stage.Show(rig.Camera, golfer.transform, "locker", 0.35f, 0.62f);
+            ClubWipe.Play();
+            rig.FrameLocker(golfer.transform.position, selectFacing, 0);
             rig.SnapNext();
-        }
-
-        /// Two golfers: either arrow is the other one.
-        void SwitchGolfer()
-        {
-            Click();
-            GolferStyle.CycleBody();
-            selectSpin = 0;
-            RestyleForPicker();
+            locker.Show(Locker.Tab.Body, notify: false);
         }
 
         void RefreshSelect()
         {
-            if (select == null) return;
-            select.Refresh(GolferStyle.Body == GolferStyle.BodyKind.Female, GolferStyle.Kit, GolferStyle.Shirt);
+            if (locker == null) return;
+            locker.Refresh();
             var owner = pickingFor ?? ProfileStore.Active;
             int Index(RewardKind kind) => Unlocks.Of(kind).FindIndex(r => r.Id == Unlocks.Chosen(owner, kind));
-            select.RefreshGear(Index(RewardKind.Ball), Index(RewardKind.Trail), Index(RewardKind.Club));
+            locker.RefreshGear(Index(RewardKind.Ball), Index(RewardKind.Trail), Index(RewardKind.Club));
         }
 
         /// A padlocked choice pressed: what it takes, and a low note.
-        void Locked(GolferSelect.Rows row, string rewardId)
+        void Locked(Locker.Rows row, string rewardId)
         {
             sounds.PlayTick(); Haptics.Tick();
-            select?.SayLocked(row, Unlocks.Find(rewardId)?.How ?? "");
+            locker?.SayLocked(row, Unlocks.Find(rewardId)?.How ?? "");
         }
 
         static Sprite rainbowSwatch;
@@ -723,21 +671,23 @@ namespace GolfArcade.Game
 
         void RestyleForPicker() => RestyleGolfer();
 
-        /// One frame of the select screen: the camera square on, and the golfer turned by the
-        /// drag, easing back to face it once let go.
+        /// One frame of the locker: the camera square on (in to the head on the HAIR and HEADWEAR tabs), and the
+        /// golfer turned by the drag, easing back to face it once let go.
         void UpdateSelect()
         {
             if (!spinning) selectSpin = Mathf.LerpAngle(selectSpin, 0, 1f - Mathf.Exp(-Time.deltaTime * 3f));
+            lockerHead = Mathf.MoveTowards(lockerHead, lockerHeadTarget, Time.deltaTime * 2.2f);
             golfer.transform.rotation = Quaternion.LookRotation(selectFacing, Vector3.up) * Quaternion.Euler(0, selectSpin, 0);
-            rig.FramePortrait(golfer.transform.position, selectFacing, stateTime);
+            rig.FrameLocker(golfer.transform.position, selectFacing, Mathf.SmoothStep(0, 1, lockerHead));
         }
 
         public void CloseGolferPicker()
         {
-            hud.HideGolferSelect(); select = null;
+            hud.HideLocker(); locker = null;
             // the golfer picked belongs to a profile: the one being edited, or the phone's own
             var profile = pickingFor ?? ProfileStore.Active;
-            profile.Body = (int)GolferStyle.Body; profile.Kit = GolferStyle.Kit; profile.Shirt = GolferStyle.Shirt;
+            profile.Look = GolferStyle.Current.Clone();
+            GolferStyle.SyncLegacy(profile);
             ProfileStore.Save();
             _ = BackendClient.PushProfile(profile);
             var then = pickedThen;
@@ -773,7 +723,7 @@ namespace GolfArcade.Game
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
             SetFog(0);
-            UpdateAvatar();
+            stage.Hide();
             hud.ShowPlayHud(true);
             StartRound();
         }
@@ -942,8 +892,9 @@ namespace GolfArcade.Game
             WearGear(ProfileOf(Match.Current));
             if (Match.LocalCount < 2) { if (GolferStyle.Worn) { GolferStyle.Unwear(); golfer.ApplyStyle(); } return; }
             var p = Match.Current;
-            if (GolferStyle.Worn && (int)GolferStyle.Body == p.Body && GolferStyle.Kit == p.Kit && GolferStyle.Shirt == p.Shirt) return;
-            GolferStyle.Wear(p.Body, p.Kit, p.Shirt);
+            var look = p.Look ?? GolferStyle.LookFromLegacy(p.Body, p.Kit, p.Shirt);
+            if (GolferStyle.Worn && GolferStyle.Current.SameAs(look)) return;
+            GolferStyle.Wear(look);
             golfer.ApplyStyle();
         }
 
@@ -1233,6 +1184,7 @@ namespace GolfArcade.Game
         void Enter(State s)
         {
             Current = s; stateTime = 0;
+            if (s is not (State.Menu or State.Golfer)) stage?.Hide();
             ShowControllerForState();
             // the ball is drawn to be seen for a full shot and the settle after it; true size otherwise
             ballLook.Readable((s == State.Flight || s == State.Result || s == State.Replay) && club != GolfClub.Putter);
@@ -2117,9 +2069,8 @@ namespace GolfArcade.Game
                 case State.Menu:
                     // home: behind the golfer on the tee; the course screen: round the hole, high up
                     if (courses != null) UpdateCourses();
-                    else rig.FrameHome(ball.position, homeLine, homeBack, homeUp, stateTime);
+                    else if (home != null) FrameClubhouse();
                     if (home != null && Time.frameCount % 30 == 0) RefreshMenu();
-                    UpdateAvatar();
                     break;
 
                 case State.Golfer:
@@ -2548,7 +2499,7 @@ namespace GolfArcade.Game
             string headline = open.IsOver
                 ? (board[0] == me ? $"You win the {open.Title}!" : $"{open.Position(me)} at {Scorecard.FormatToPar(me.Total)}")
                 : $"{open.Position(me)} after round {played}  ·  {Scorecard.FormatToPar(me.Total)}";
-            hud.ShowScorecard(Card, $"Round {played} complete", headline, tiles.ToArray(), false, null, open.IsOver ? "LEADERBOARD" : "NEXT ROUND");
+            hud.ShowScorecard(Card, $"Round {played} complete", headline, tiles.ToArray(), false, null, open.IsOver ? "Leaderboard" : "Next round");
             hud.PlayAgain.Pressed = PlayAgain;
             hud.RoundMenu.Pressed = ShowMenu;
             sounds.PlayReady();
