@@ -167,12 +167,14 @@ struct SportsPreviewControls:View {
                 MatchFinishControls(session: session, compact: true)
             } else {
             HStack {
-                Text(session.feedback).font(.caption).lineLimit(1)
+                if session.sport == "tennis" { PointClipControls(session: session) }
+                if session.sport != "tennis" { Text(session.feedback).font(.caption).lineLimit(1) }
                 Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
                 Button("Menu") { session.end() }
             }
             if session.sport == "tennis" && session.ready {
-                if session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
+                if session.tennisPhase == "rally" { RallyAimPad(session:session).frame(width:180,height:90); TennisAbilityControls(session: session) }
+                if session.tennisPhase == "serve" || session.tennisPhase == "toss" { ServeAimPad(session:session).frame(width:180,height:90); if session.tennisPhase == "serve" { Button("Toss") { session.toss() } } }
             }
             HStack {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }

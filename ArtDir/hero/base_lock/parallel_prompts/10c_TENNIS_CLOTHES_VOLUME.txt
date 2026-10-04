@@ -1,0 +1,78 @@
+PASTE — TENNIS CLOTHES VOLUME · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye on the 10pm male sheets in work/standard-tennis-kit-worn/tmp/: this does not look like a tennis kit. The polo and shorts are a thin shell of the body. Shorts trace the groin and the glute cleft, so they read as compression underwear. The polo is the chest. A strip of bare skin shows between the shirt hem and a thin waist stripe. Socks and shoes are missing from the pass. White has almost no seams, so it looks painted on.
+
+Fix the CUT. Do not add another stripe and call it done.
+
+REFS (cut language, not the current mesh):
+ArtDir/hero/kits/standard_wb/01_white_full_turnaround.jpg
+ArtDir/hero/kits/standard_wb/02_black_full_turnaround.jpg
+ArtDir/hero/kits/standard_wb/03_white_pieces_ortho.jpg
+ArtDir/hero/kits/standard_wb/04_black_pieces_ortho.jpg
+ArtDir/hero/kits/standard_wb/05_shoes_socks_wb.jpg
+
+START FROM the worn meshes if they exist, else work/standard-tennis-kit-wb/export/. Salvage only if you can add real volume. If the shorts are a body offset, rebuild the bottoms. Do not keep a crotch-tracing shell.
+
+BODIES READ-ONLY (verify SHA; never edit hero, never install over ArtDir):
+Male HeroBase_Male_Silhouette.blend SHA fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347
+Female HeroBase_Female.blend SHA 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd
+Sleeve clearance only: work/female-arms-form2/export/HeroBase_Female_arms_candidate.blend (573ab443…) as fit ref. Do not clobber ArtDir.
+
+WORK: work/tennis-clothes-volume/ only. Stage. No racket edits. No body edits.
+
+PIECES (separate objects, both colorways, both sexes):
+Kit_Top_Polo, Kit_Bottom_Shorts (male) or Kit_Bottom_Skort (female), Kit_Sock_L/R, Kit_Shoe_L/R.
+Parents: Chest_Top, Hip_Bottom, Foot_L_Shoe, Foot_R_Shoe. Top and bottom are not one mesh. Do not paint clothes onto the body.
+
+CUT — this is the job:
+1. POLO
+   - Raglan shoulder seams, like the ref, not a set-in sleeve that is just the arm.
+   - Collar with a real stand and a short button placket (two buttons). Hem is a band, not the skin outline.
+   - Shirt has air in it: about 8–15 mm off the torso at the chest and belly, more at the hem. Side view must NOT match the belly curve.
+   - UNTUCKED. Hem overlaps the shorts waist by about 20–30 mm. No bare skin between shirt and shorts.
+2. MALE SHORTS
+   - Tennis shorts, not briefs. Hem around mid-thigh. Leg openings are loose tubes. The groin and the glute cleft must NOT be modeled in the cloth. From the front the crotch is a smooth short, from the back the seat is one rounded shape with a center seam, not two skin lobes.
+   - Elastic waistband is part of the shorts, about 30–40 mm tall, slightly gathered. White kit: white shorts, BLACK waistband. Black kit: black shorts, WHITE waistband. Waistband sits UNDER the polo hem.
+   - Side pockets as seam lines only. No logos.
+3. FEMALE
+   - Same polo language, cut for her torso, still with air in the shirt.
+   - Skort: outer skirt to about mid-thigh, long enough that inner shorts never show in front, side, or back. A-line, not a second pair of tight shorts. Pleat or wrap seam like the ref, soft, not a hard disk.
+   - Same contrasting waistband under the polo hem. No skin flash. No visible underwear.
+4. SOCKS AND SHOES
+   - Crew socks with a ribbed cuff (geometry, not a texture sticker). Low tennis sneakers, logo-free, white kit white, black kit black. They must be in the on-body proofs. Do not ship a kit that ends at the ankles.
+5. COLOR
+   - White and black only. Contrasting waistband is required. Black kit keeps thin white piping on collar, cuff, and short hem. No swooshes, no text, no three side stripes.
+
+CLEARANCE: no skin intersection in A-pose. Clothes read as worn because of volume and hems, not because of a gap.
+
+PROOFS in work/tennis-clothes-volume/proof/:
+- On-body front, side, back, 3/4 for male white, male black, female white, female black, WITH socks and shoes
+- Waist close-up: polo hem covering the waistband, no skin
+- Shorts close-up front and back: no groin shape, no glute cleft in the cloth
+- Female hem front and back: inner short invisible
+- Ghost or exploded: top, bottom, socks, shoes as separate objects
+- checks.json: body SHA before=after, per-piece TRI, hem overlap mm, shorts inseam vs mid-thigh, min clearance, waistband color
+
+GATES:
+POLO_VOLUME — side silhouette is not the belly
+RAGLAN — shoulder seam reads on white and black
+SHORTS_NOT_BRIEFS — male hem mid-thigh, crotch and glute cleft not in the mesh
+SKIRT_COVERS — female inner shorts invisible front/side/back
+WAIST_COVERED — polo overlaps waistband, zero skin flash
+WAISTBAND_CONTRAST — black band on white, white band on black, on the bottom
+SOCKS_SHOES — on every on-body sheet
+SEPARATE — four piece types, sockets, not fused, not body paint
+NO_LOGOS
+BODY_SHA_UNCHANGED
+EXPORT — blend + FBX scale 1 meters under work/tennis-clothes-volume/export/
+PROOFS
+
+FORBIDDEN: body-offset shrinkwrap, bare midriff, compression shorts, shortening the skirt, editing the hero, logos, dropping socks or shoes to save time.
+
+REPLY ONLY:
+GATE: TENNIS_CLOTHES_VOLUME PASS
+or FAIL with failed lines only.

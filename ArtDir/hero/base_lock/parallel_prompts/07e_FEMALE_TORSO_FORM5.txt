@@ -1,0 +1,133 @@
+PASTE — FEMALE TORSO FORM5 (bust soft-plastic + underbutt continuous) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye-audit on FORM4 (`work/female-torso-form4/`, candidate SHA aa3e1e44…):
+1) **CHEST FAIL** — two weirdly located **circles / disks / target blobs** instead of a conventional female chest with soft-plastic breasts. Soft+clay+zoom proofs (`proof/05*`, `05z*`, `04`) show isolated hemispheres with circular rim shadows, weak cleavage, weak underbust blend, and missing side-fill into the armpit/chest wall. FORM4 automated GATE + author BUST_EYE_PASS do **not** override Adnan.
+2) **BUTT FAIL** — from the back, bottom of butt is **weirdly cut off** (mechanical horizontal shelf / hard underbutt band). Must **round continuously into hamstrings / leg-top**. FORM4 only held FORM3 glutes (+3 mm apex); the cut remains on `proof/06*` and `04` 3q-back.
+
+History (do not repeat):
+- FORM2 (`6859d958…`): pointy / shelf / ellipsoid-cap bust; boxy glute recipes.
+- FORM3 (`a0f69f9d…`): overcorrected **flat** bust (soft matcap nearly vanished); glute twin lobes+soft V almost there but underbutt still a straight horizontal band.
+- FORM4 (`aa3e1e44…`): fixed flat by adding **signed bell domes** → now reads as circular/disk/target blobs; glute mostly held, underbutt cut unchanged.
+
+START (verify SHA before any edit):
+work/female-torso-form4/export/HeroBase_Female_torso_form4_candidate.blend
+SHA-256 aa3e1e443bd46201c18722cd6aa318c7c8de88b48787f473b9cfb5b63664e383
+(fallback: apply `export/torso_form4_delta.npz` onto ArtDir HeroBase_Female.blend 200dc3b9… via form4 merge script — never whole-file clobber)
+ArtDir female is STILL 200dc3b9… (nothing installed). Prefer staged FORM4 candidate as start (keep depth/side wins; reshape bust + underbutt).
+
+READ FIRST (mandatory):
+1) work/female-torso-form4/FEMALE_TORSO_FORM4_RESULTS.md (+ export/honest_notes.md)
+2) work/female-torso-form4/proof/05_bust_closeups_soft.png + _clay.png + 05z_bust_zoom_soft.png  ← circular blobs obvious
+3) work/female-torso-form4/proof/06_glute_closeups_soft.png + _clay.png  ← underbutt horizontal cut
+4) work/female-torso-form4/proof/04_plate_vs_form3_vs_form4_3q.png + 01_torso_before_after_soft.png
+5) ArtDir/hero/base_lock/parallel_prompts/07d_FEMALE_TORSO_FORM4.txt (prior brief)
+6) AGENTS.md + art-bible.md
+AUTHORITY (hard): female_body_bald.jpg + female_multiangle_body.jpg (+ plain) — front/side primary for bust; back/side/3q for glute/underbutt. **Plate BA eye wins over any NCC / mm / author-eye gate.**
+
+WHY FORM4 BUST STILL FAILS (do not repeat):
+1) Compact circular footprints / signed bell domes read as **two disks/targets** bolted on the chest wall (rim shadow = FAIL).
+2) Missing conventional soft-plastic language: **cleavage / sternal valley that looks like soft contact**, continuous **underbust crescent** that blends (not a round moat), **side fill** toward armpit, gentle upper slope into clavicle — not isolated hemispheres.
+3) Soft matcap still shows hard circular boundaries; clay shows rim/target look. Mirror rings polygonal/octagon-like at apex is a disclosed mesh limit — do not "fix" by making footprints even more circular.
+4) Photometric NCC / mound-height mm can soft-pass disk blobs — **Adnan eye overrides**. HARD-FAIL if chest still reads as circles on plate BA.
+
+WHY FORM4 UNDERBUTT STILL FAILS (do not repeat):
+1) Underbutt reads as one **mechanical horizontal cut / shelf**, not a soft continuous round into hamstrings.
+2) Plate has two curved fold "smiles" + longer underside overhang; FORM3/4 stay a straight band at ~zone floor.
+3) Prior honest notes blamed legs zone (thigh backs z≈0.72–0.80 deeper than plate). FORM5 may **document and use a LEG-TOP extension** of the torso zone if required for continuous round (see ZONE below). Do not leave a hard shelf and call it a legs hand-off without trying the documented extension.
+
+KEEP FROM FORM4 (do not regress):
+- Side-profile torso depth / sub-pixel plate tracking wins (bust band RMS, upper-chest diagonal better than FORM3)
+- No return to FORM3 flat pancake OR FORM2 pointy/shelf/ellipsoid-cap
+- Twin glute lobes + soft V cleft language (not box/pit/rectangular cavity)
+- ZONE_OUTSIDE=0 outside the **documented** FORM5 mask (vs FORM4 start AND vs ArtDir 200dc3b9)
+- TOPOLOGY / UV / materials / custom-normal raw codes identical preferred (positions-only)
+- SIDE_SIL torso band ≤ 5%; front/back torso edge XOR ≤ 5% (recompute if zone floor moves)
+- Soft-plastic party style (no pores, no hyperreal, no shredded abs)
+
+PARALLEL SAFETY:
+- Work ONLY under work/female-torso-form5/
+- Stage exports there. ArtDir install ONLY after Adnan eye PASS. **No ArtDir install in this chat.**
+- Do NOT open male blend. Do NOT thrash head / arms / hands / feet.
+- Do NOT densify unless disclosed TRI delta + Adnan note.
+- If ArtDir female moved, STOP and rebase delta — never whole-file clobber.
+
+════════════════════════════════════
+SCOPE — FORM5
+════════════════════════════════════
+
+1) BUST_SOFT_PLASTIC — PRIMARY (must PASS Adnan-eye plate BA or GATE FAIL)
+   Replace circular/disk/target blobs with **conventional soft-plastic breasts**.
+   HARD-FAIL shapes:
+   - circular / disk / target / bullseye / bolted-on hemisphere / rim-shadow rings
+   - flat pancake (FORM3), pointy/shelf/ellipsoid-cap (FORM2)
+   REQUIRED language (plate BA):
+   - soft continuous mounds integrated into the chest wall (not isolated circles)
+   - readable **cleavage / soft sternal valley** (contact, not knife crease)
+   - soft **underbust crescent** that blends into the ribcage (no round moat, no hard shelf)
+   - **side fill** toward armpit / lateral chest wall (no square corners, no gap under the disk)
+   - gentle upper slope into clavicle; lower-mass soft-plastic bias; soft matcap must still show volume WITHOUT circular rim
+   Mandatory proof: plate | FORM4 | FORM5 front + 3/4 + **side** bust close-ups (soft AND clay) + zoom soft.
+
+2) UNDERBUTT_CONTINUOUS — PRIMARY (must PASS Adnan-eye plate BA or GATE FAIL)
+   Remove mechanical cut-off. From back + 3q + side: glute **rounds continuously into hamstrings / leg-top**.
+   HARD-FAIL shapes:
+   - horizontal shelf / mechanical cut / single straight underbutt band / pinched tuck
+   REQUIRED language (plate BA):
+   - soft continuous under-curve; plate-like curved fold(s), not one knife line
+   - volume flows into upper thigh backs (no abrupt stop at old zone floor)
+   - keep soft V cleft + twin lobes; do not reintroduce FORM2 box/pit
+   Mandatory proof: plate | FORM4 | FORM5 back + 3/4 + **side underbutt** (soft AND clay).
+
+3) ZONE — torso only, with **documented LEG-TOP if fold needs it**
+   Default torso mask = chat7 / FORM2–4 (z ≈ 0.795–1.37, arms excluded; neck / arm junction borders bit-identical).
+   If continuous underbutt into hamstrings cannot be achieved without moving verts below z≈0.795:
+   - **Document LEG-TOP extension** explicitly (z floor, |x| window, which verts, why).
+   - Prefer the smallest extension that removes the shelf (typical prior notes: thigh-back z ≈ 0.72–0.80, ~8–13 mm plate deficit).
+   - Border verts of the NEW documented mask must stay bit-identical to ArtDir/start outside that mask; ZONE_OUTSIDE=0 vs FORM4 start AND vs 200dc3b9 for the documented mask.
+   - Do NOT invade full legs/feet/hands/head. Do NOT thrash parallel legs chat beyond the disclosed leg-top band.
+   - If you extend, prove seam-clean at the new border and show before/after underbutt with the extension labeled in RESULTS.
+
+FORBIDDEN:
+- Circular / disk / target / bullseye bust blobs (HARD FAIL even if NCC rises)
+- Flat pancake soft-pass (FORM3 mode)
+- Pointy / shelf / ellipsoid-cap return (FORM2 mode)
+- Leaving underbutt as a mechanical horizontal cut and blaming legs without trying documented LEG-TOP
+- Soft-passing via self-defined mm/NCC/author-eye while Adnan plate BA still looks wrong
+- Invading arms / head / Face / full legs beyond disclosed leg-top
+- ArtDir install / Unity / densify-without-disclose
+
+METHOD HINTS:
+- Prefer sculpt / sculpt-like displace toward **plate silhouette + plate shading**, then fair — avoid compact circular supports
+- Bust: broader, softer integration (cleavage + underbust + side fill) beats taller circular domes; reject candidates that look like targets on soft matcap
+- Glute: reshape lower lobe + under-curve; if shelf is the pinned leg-top ring, use documented LEG-TOP rather than fake a fold above it
+- Fit lighting to plate for proofs (FORM4 plate-fit matcap OK) + clay studio + mirror-stripe
+- Mirror-stripe: soft organic rings on mounds (not square); circular bullseye rings at bust = FAIL signal
+- Iterate plate ROI overlay until soft+clay+side bust AND back/3q/side underbutt both read; then stage
+- Stage superseding delta npz + merge script relative to ArtDir 200dc3b9
+
+HARD GATES (binary — Adnan eye is the boss):
+ZONE_OUTSIDE_MOVED=0 (vs FORM4 start AND vs ArtDir 200dc3b9; borders 0) for the **documented** FORM5 mask
+TOPOLOGY_IDENTICAL preferred
+SIDE_SIL<=5% (torso band; disclose if recomputed with leg-top)
+FRONT_BACK_TORSO_EDGE<=5%
+SEAM_CLEAN hold (arm ≤10 mm, neck ≤1 mm; legs/leg-top border ≤8 mm or disclose new budget)
+BUST_EYE_PASS — plate | FORM4 | FORM5 soft+clay+side+zoom: conventional soft-plastic breasts with cleavage/underbust/side fill; **NO circular/disk/target blobs**
+UNDERBUTT_EYE_PASS — plate | FORM4 | FORM5 back+3q+side: continuous soft round into hamstrings/leg-top; **NO mechanical horizontal cut**
+GLUTE_HOLD_LANGUAGE — twin lobes + soft V retained (no box/pit regression)
+NO_SELF_INTERSECT / no NaN / no flipped faces
+NO densify unless disclosed
+NO ArtDir install
+
+DELIVER:
+- work/female-torso-form5/FEMALE_TORSO_FORM5_RESULTS.md (Honest notes: Adnan-eye gaps; document LEG-TOP if used)
+- proof/: 04 plate|F4|F5 3q; 05 bust soft+clay+zoom; 06 glute/underbutt soft+clay+side; before/after; checks.json
+- export/: candidate blend + torso_form5_delta.npz + merge script + README_MERGE.md
+- Stage only — do not install ArtDir / Unity
+
+REPLY ONLY:
+GATE: FEMALE_TORSO_FORM5 PASS
+or FAIL with failed lines only.

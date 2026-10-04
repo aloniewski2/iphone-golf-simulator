@@ -101,7 +101,7 @@ namespace GolfArcade.Tennis
             caption.fontSize = 14; caption.raycastTarget = false;
             caption.alignment = TextAnchor.LowerRight;
             caption.color = new Color(1, 1, 1, .9f);
-            caption.text = "CONTACT";
+            caption.text = "CONTACT"; caption.enabled = false;
             var capRect = caption.rectTransform;
             capRect.anchorMin = capRect.anchorMax = capRect.pivot = new Vector2(1, 0);
             capRect.sizeDelta = new Vector2(260, 20);

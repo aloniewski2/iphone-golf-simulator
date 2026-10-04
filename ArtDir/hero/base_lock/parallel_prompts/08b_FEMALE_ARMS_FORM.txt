@@ -1,0 +1,26 @@
+PASTE — FEMALE ARMS FORM (undefined tubes) · NEW CHAT · Sonnet 5.5 max
+====================================================================
+Copy below.
+
+---
+
+Adnan: female arms are super undefined. Reopen limbs arms-only; do not thrash torso/glutes/head.
+
+START: clone from current best female blend (ArtDir HeroBase_Female.blend OR merge torso candidate + limbs export — document which). Verify shasum.
+Prefer: apply limbs from work/female-parallel-limbs/ onto torso candidate if both exist, THEN edit arms only.
+
+READ: work/female-parallel-limbs/proof/GATE_RESULTS.md (if any) + female multiangle plates (arms)
+AUTHORITY: female_body_bald.jpg / female_multiangle_body.jpg arm views
+WORK: work/female-arms-form2/
+
+ZONE ONLY: L+R arms deltoid→wrist (exclude hands fingers if separate; include if fused). 0 torso core, 0 head, 0 legs. Optional: hands soft form if in arm component — document.
+
+SCOPE:
+1) Soft-plastic female arm mass: deltoid, biceps/triceps hint, forearm taper — NOT cylinder tubes
+2) Match plate arm thickness / hang pose as far as zone allows (chat7 noted arms ~3cm too forward vs plate — move arm axis back toward plate if in zone)
+3) Clean armpit fair into torso WITHOUT editing torso verts (border only ≤0.3mm or abort)
+4) Keep customize/sockets if any
+
+GATES: ARM_FORM_DEFINED, ZONE_OUTSIDE=0, ARMPIT_CLEAN, SIL not wrecked, TOPOLOGY
+DELIVER: FEMALE_ARMS_FORM_RESULTS.md + arm close-up sheets vs plate + checks
+REPLY: GATE: FEMALE_ARMS_FORM PASS|FAIL + failed lines

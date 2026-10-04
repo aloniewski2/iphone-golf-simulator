@@ -1,0 +1,66 @@
+PASTE — MALE HANDS FORM3 (palm scale + tip round) · NEW CHAT · Sonnet 5.5 max
+======================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye on FORM2 PASS hands: **palms are really small**; **fingertips blunt / not rounded properly**. Keep FORM2 thumb anatomy + finger taper / knuckle hints. Soft-plastic party style. Hands ONLY — do not thrash arms unless a wrist weld needs a tiny blend.
+
+PARALLEL SAFETY:
+- YOUR ZONE: L+R hands + wrist weld rings only (Body_M hand verts / appended hand detail). Prefer 0 move on arm shafts / deltoids / torso / head / legs. If a weld-row must move, document mm and keep ≤ few mm. Audit mandatory.
+- Work under work/male-hands-form3/ only. Stage export first.
+- If ArtDir SHA ≠ start below, STOP or rebase zone-index / hand delta onto current ArtDir — never clobber Micro1k / torso FORM2 / legs.
+- Do NOT open female blend. No racket-socket redesign.
+
+START BLEND (verify SHA before edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 4287ba523218e89ae5a822483c322dc4cfa163c7af143ebcac11abbacea2db21
+(re-verify: shasum -a 256 … — FORM2 hands install; TRI ~63,022)
+
+READ FIRST:
+1) work/male-arms-hands-form2/MALE_ARMS_HANDS_FORM_RESULTS.md
+2) work/male-arms-hands-form2/proof/final/03c_hands_form2_before_after.png
+3) work/male-arms-hands-form2/proof/final/03c_hands_form2_detail.png
+4) work/male-arms-hands-form2/proof/final/03c_hands_form2_plate_silhouette.png
+5) AGENTS.md + art-bible.md
+AUTHORITY: male_body_bald.jpg + male_multiangle_body.jpg (hands/palms) — palm breadth vs plate is hard; tip roundness is visual + profile.
+
+KEEP FROM FORM2 (do not regress):
+- THUMB_ANATOMY (thenar/web, IP bend, pad tip — not pill/spike)
+- FINGER_TAPER (tip/base ~0.60, PIP/DIP bumps, gaps)
+- MIRROR L/R
+- ZONE isolation (no head/torso/legs)
+- SIL bald front/back ≤ 5.0% (do not blow for vanity palms)
+- Soft-plastic style; no hyperreal nails
+
+SCOPE — FORM3 (Adnan-only issues):
+
+PRIMARY (must PASS):
+1) PALM_SCALE — palm length + breadth too small vs plate / soft-plastic hand. Grow palm mass (thenar already OK — expand overall palm pad + metacarpals / width across knuckles) so palm reads adult vs plate hand ROI, not a tiny pad under long fingers. Measure vs plate hand ROIs + front/3/4 palm views. Do not turn fingers into sausages again while scaling.
+2) FINGER_TIP_ROUND — kill blunt / chopped tip caps. Rounded soft-plastic pad tips in dorsal + side profile (smooth hemisphere-ish caps, not flat cylinders). All 8 fingers + both thumbs. Close-ups mandatory (plate | FORM2 | FORM3 tip profiles).
+
+SECONDARY:
+3) Re-weld wrist rings cleanly after palm grow (no step crease)
+4) Optional Unity refresh after audit — update ExpectedTriangles if TRI changes; otherwise stage FBX only
+
+HARD GATES:
+PALM_SCALE PASS (visual + plate hand ROI / palm metrics beat FORM2 “tiny palm”)
+FINGER_TIP_ROUND PASS (no blunt caps; tip profile rounded)
+THUMB_ANATOMY hold
+FINGER_TAPER hold (no sausage return)
+MIRROR_L_R
+ZONE_OUTSIDE=0 (or documented weld-only ≤ few mm)
+SIL_FRONT_BACK<=5.0%
+NO_SELF_INTERSECT
+TOPOLOGY: prefer edit existing hand shell; if densify tips, disclose TRI delta + Adnan note
+
+DELIVER:
+- work/male-hands-form3/proof/MALE_HANDS_FORM3_RESULTS.md
+- palm BA sheet + tip close-up sheet (plate | FORM2 | FORM3) + checks.json
+- ArtDir install only after SHA guard + zone audit; append INSTALL_LOG_MALE.md
+
+REPLY ONLY:
+GATE: MALE_HANDS_FORM3 PASS
+or
+GATE: MALE_HANDS_FORM3 FAIL
+<failed lines only>

@@ -1,0 +1,28 @@
+{
+  "saved_blender_and_fbx_verification": "PASS",
+  "vertices": 24578,
+  "triangles": 49176,
+  "metres": true,
+  "height_metres": 1.7021874501369894,
+  "body_origin_unchanged": true,
+  "topology_unchanged": true,
+  "cameras_and_origins_unchanged": true,
+  "upper_head_vertices_revised": false,
+  "head_stage_baseline_sha256": "d977d900d02058c4893d5169e690675a6379ae1e328ca26dbe2dc7648301ca6a",
+  "outside_distal_hand_region_unchanged": true,
+  "head_geometry_unchanged": true,
+  "chin_geometry_preserved_from_stage_checkpoint": true,
+  "distal_hand_vertices_revised": true,
+  "packed_reference_images": 3,
+  "hair": false,
+  "female_work": false,
+  "face_textures": false,
+  "foot_low_contact_vertices": 318,
+  "foot_contact_height_range_metres": [
+    0.0024724886752665043,
+    0.003959150984883308
+  ],
+  "independent_fbx_reimport_maximum_coordinate_error_metres": 2.7939677238464355e-07,
+  "source_sha256": "d39c6c5e5157ff15428759c01eaa227a09ea1bcd4b0d1a51acfe4110795d2413",
+  "fbx_sha256": "5dd325f0a77c30605ffa2d78b4c6457dd13781664cf5b9d716e8390aa7e3565d"
+}

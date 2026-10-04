@@ -1,0 +1,39 @@
+STUDIO_PIPELINE=Assets/Characters/HeroBase/Rendering/HeroBaseStudioURP.asset SSAO_radius_metres=.025 intensity=.75 downsample=False samples=12 additional_lights=4 MSAA=4
+Male Body_M material=Base_Grey_M shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Skin_M shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=Assets/Characters/HeroBase/Textures/Head_Male_Albedo.png
+Male Body_M material=Ear_Shadow_M shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Eye_White shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Iris_Dark shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Pupil shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Brow shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Mouth_Male shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M material=Lip_M shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Body_M vertices=23695 tris=39268 bounds=Center: (0.00, 0.00, -0.85), Extents: (0.68, 0.14, 0.85) normals=23695
+Male PART_PREFAB=Assets/Characters/HeroBase/Bodies/HeroBase_Male_Body.prefab root_position=0 root_rotation=0 root_scale=1
+Male importer=HeroBase_Male_Body.fbx globalScale=1 fileScale=1 meshCompression=Off normals=Import animator=None
+Male Hair_M material=Hair_M shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Male Hair_M vertices=8083 tris=9824 bounds=Center: (0.00, 0.01, -0.04), Extents: (0.12, 0.10, 0.12) normals=8083
+Male PART_PREFAB=Assets/Characters/HeroBase/Hair/Hair_Default_Male.prefab root_position=0 root_rotation=0 root_scale=1
+Male importer=Hair_Default_Male.fbx globalScale=1 fileScale=1 meshCompression=Off normals=Import animator=None
+Male REMOVE_HAIR_ROOT body_mesh_unchanged=True body_renderers=1
+Male BODY_PREFAB hair_dependencies=0 path=Assets/Characters/HeroBase/Bodies/HeroBase_Male_Body.prefab scalp_height=1.7043 hair_anchor=(0.00, 1.58, 0.00)
+Male BASE_PREFAB bald=True hair_dependencies=0
+Female Body_F material=Base_Grey_F shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Skin_F shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=Assets/Characters/HeroBase/Textures/Head_Female_Albedo.png
+Female Body_F material=Ear_Shadow_F shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Eye_White shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Iris_Dark shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Pupil shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Brow shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Mouth_Female shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F material=Lip_F shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Body_F vertices=26562 tris=44708 bounds=Center: (0.00, -0.01, -0.85), Extents: (0.26, 0.12, 0.85) normals=26562
+Female PART_PREFAB=Assets/Characters/HeroBase/Bodies/HeroBase_Female_Body.prefab root_position=0 root_rotation=0 root_scale=1
+Female importer=HeroBase_Female_Body.fbx globalScale=1 fileScale=1 meshCompression=Off normals=Import animator=None
+Female Hair_F material=Hair_F shader=Universal Render Pipeline/Lit surface=0 queue=2000 baseMap=flat
+Female Hair_F vertices=4184 tris=4960 bounds=Center: (0.00, 0.01, -0.02), Extents: (0.16, 0.12, 0.13) normals=4184
+Female PART_PREFAB=Assets/Characters/HeroBase/Hair/Hair_Default_Female.prefab root_position=0 root_rotation=0 root_scale=1
+Female importer=Hair_Default_Female.fbx globalScale=1 fileScale=1 meshCompression=Off normals=Import animator=None
+Female REMOVE_HAIR_ROOT body_mesh_unchanged=True body_renderers=1
+Female BODY_PREFAB hair_dependencies=0 path=Assets/Characters/HeroBase/Bodies/HeroBase_Female_Body.prefab scalp_height=1.703894 hair_anchor=(0.00, 1.56, 0.00)
+Female BASE_PREFAB bald=True hair_dependencies=0

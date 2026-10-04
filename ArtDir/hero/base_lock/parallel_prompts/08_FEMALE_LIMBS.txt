@@ -1,0 +1,18 @@
+PASTE — CHAT 8 / 8 — FEMALE ARMS + HANDS + LEGS + FEET
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY):
+- Own ONLY your zone/files. Never touch male blend/FBX.
+- Work under work/<your-folder>/ only.
+- If SHA mismatch, STOP.
+
+YOUR ZONE: female limbs only (arms+hands+legs+feet). EXCLUDE head/neck/torso core.
+START: HeroBase_Female.blend SHA 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd (re-verify)
+WORK: work/female-parallel-limbs/
+AUTHORITY: female multiangle body plates (limbs)
+Soft-plastic hands/feet; no male file touches.
+If chat 7 also writing Female.blend: prefer edit copy in work/female-parallel-limbs/HeroBase_Female_limbs.blend cloned from start SHA; install ArtDir only after torso chat idle OR merge with documented vertex masks.
+DELIVER: limbs proof + outside-zone=0
+REPLY: GATE: FEMALE_LIMBS PASS|FAIL

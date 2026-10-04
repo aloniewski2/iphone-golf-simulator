@@ -10,6 +10,7 @@ namespace GolfArcade.Tennis
     public sealed class ModularHeroLook : MonoBehaviour
     {
         public enum Slot { Hair, Hat, Shirt, Shorts, Shoes }
+        public event Action<Slot> WardrobeChanged;
         [Serializable] public struct WardrobeSlot { public Slot slot; public GameObject asset; }
         public Transform skeletonRoot;
         public Animator animator;
@@ -258,6 +259,7 @@ namespace GolfArcade.Tennis
             } catch { Release(container.gameObject); throw; }
             foreach(Transform child in skeletonRoot)
                 if(child != container && child.name == container.name) { child.gameObject.SetActive(false); Release(child.gameObject); }
+            WardrobeChanged?.Invoke(slot);
         }
         public void SetSkinTone(Color tone)
         {

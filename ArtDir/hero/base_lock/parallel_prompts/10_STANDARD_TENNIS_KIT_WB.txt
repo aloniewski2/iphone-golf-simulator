@@ -1,0 +1,73 @@
+PASTE — STANDARD TENNIS KIT (white + black) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan unlocked clothes. Build the **standard Court Navy–cut tennis kit** in **WHITE** and **BLACK** only (no other colors). Logo-free. Separate garment meshes that fit HeroBase male + female — **do not bake clothes into the body**. Soft-plastic party sports, readable on iPhone.
+
+AUTHORITY REFS (hard):
+ArtDir/hero/kits/standard_wb/
+  01_white_full_turnaround.jpg
+  02_black_full_turnaround.jpg
+  03_white_pieces_ortho.jpg
+  04_black_pieces_ortho.jpg
+  05_shoes_socks_wb.jpg
+  README.md
+Also: AGENTS.md + art-bible.md (customize sockets; clothes never replace body).
+
+BODIES (fit targets — verify SHA; do NOT edit body topology for vanity):
+- Male: ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+  SHA-256 fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347
+- Female: ArtDir/hero/base_lock/blender/HeroBase_Female.blend
+  SHA-256 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd
+  If female limbs missing for fit, ALSO open work/female-arms-form2/export/HeroBase_Female_arms_candidate.blend (573ab443…) as fit reference only — still do not clobber ArtDir body.
+
+WORK DIR: work/standard-tennis-kit-wb/ only. Stage exports. No ArtDir body install.
+
+PIECES (both colorways):
+MALE: polo (collar, short sleeves, button placket) + shorts + crew socks + sneakers
+FEMALE: polo (same language, feminine fit) + skort (skirt + shorts underneath) + crew socks + sneakers
+BLACK variant: same cut; thin white piping on collar/cuffs/side seams/hems OK (match refs). WHITE: clean white, subtle light-gray seams only.
+NO logos, brand marks, text, or Nike-like swooshes.
+
+TECH:
+- Separate meshes (or clear piece objects): Top_M/F, Bottom_M/F, Sock_L/R, Shoe_L/R — name clearly.
+- Fit over body with tiny clearance (no intersection with skin in A-pose); thickness readable at phone distance.
+- Prefer URP Lit materials: solid White / Black ( + thin trim as separate material or vertex color — disclose).
+- Empty sockets spirit: Chest_Top, Hip_Bottom, Foot_L/R_Shoe — parents/empties OK even if not fully wired.
+- Tris budget: keep kit pieces modest; disclose TRI count per piece + total. Body tris unchanged.
+- Positions/meshes for clothes only — do not reshape HeroBase body/face/hands for the kit.
+- Export: Blender + FBX (scale 1, meters) under work/standard-tennis-kit-wb/export/
+
+PROOFS (mandatory):
+- Ghost / on-body: front, back, L, R, 3/4 for male white, male black, female white, female black
+- Piece orthos matching ref language
+- No-logo check (close-up chest + shorts/skort)
+- Soft-intersect check: body vs clothes
+
+GATES (binary):
+KIT_MATCH_REF — cut/silhouette matches standard_wb refs (Court Navy polo + shorts/skort)
+COLORWAYS — white + black only; black piping OK
+NO_LOGOS
+FIT_NO_INTERSECT — no skin poke-through in A-pose proofs
+SEPARATE_MESH — body topology/SHA unchanged
+MALE_AND_FEMALE — both sexes delivered
+EXPORT_FBX_BLEND — present under work/…
+PROOF_SHEETS — multi-angle on-body for all 4 kits (M/F × W/B)
+
+FORBIDDEN:
+- Painting clothes into body albedo as the only “kit”
+- Extra colorways / neon / logos
+- Remeshing or densifying the hero body to “support” clothes
+- Installing over ArtDir hero blends without Adnan OK
+
+DELIVER:
+- work/standard-tennis-kit-wb/STANDARD_TENNIS_KIT_WB_RESULTS.md
+- proof/ sheets + checks.json
+- export/ blends + FBX per piece or per outfit
+- Stage only
+
+REPLY ONLY:
+GATE: STANDARD_TENNIS_KIT_WB PASS
+or FAIL with failed lines only.

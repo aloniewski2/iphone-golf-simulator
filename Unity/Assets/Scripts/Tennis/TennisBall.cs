@@ -35,11 +35,14 @@ namespace GolfArcade.Tennis
         /// Bounce off the court. `restitution` is the court's flat-ball value.
         public static void Bounce(ref Vector3 velocity, ref float spin, float restitution)
         {
+            bool pacedServe = spin > 1;
             float s = Mathf.Clamp(spin, -1, 1);
             float vertical = Mathf.Clamp(restitution + (s > 0 ? .10f : .14f) * s, .3f, .95f);
             float along = .94f + (s > 0 ? .05f : .04f) * s;
             velocity = new Vector3(velocity.x * along, -velocity.y * vertical, velocity.z * along);
-            spin *= .45f;
+            // The arcade net-clearance force must not turn a short fast serve into a moonball.
+            if (pacedServe) velocity.y = Mathf.Min(velocity.y, 6.5f);
+            spin = s * .45f; // A serve-only downforce boost must not survive the first bounce.
         }
 
         /// Where a ball first reaches the court, and when.

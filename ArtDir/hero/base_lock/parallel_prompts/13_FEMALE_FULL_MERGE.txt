@@ -1,0 +1,71 @@
+PASTE — FEMALE FULL MODEL (merge only) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Build ONE staged female body from the pieces that already exist. This is a merge, not a new sculpt. Do not "improve" the bust, the butt, the face, or the hands while you merge. If a seam cannot be welded without moving a locked ring, FAIL that seam and stop.
+
+ArtDir HeroBase_Female.blend stays SHA 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd. Nothing installed. No Unity. No clothes. No male.
+
+WHY A NAIVE JOIN FAILS
+Each piece is a whole-body blend with its own vertex count (about 22,419 on the arms/limbs order, 23,247 after the hands append). Torso FORM5's delta is written in the ORIGINAL ArtDir vertex order. Copying coordinates by index will corrupt the mesh. Map by identity, then apply.
+
+PIECES (verify SHA before use; if a file's SHA differs, stop and report it):
+1. BASE = hands candidate, already arms + old torso + new hands:
+   work/female-hands-fingers/export/HeroBase_Female_hands_candidate.blend
+   SHA 1149e620985248e546e2fab93eb19f447f1a5ae673d50a2525fcae5769529ff4
+   23,247 verts. Wrist rings were not moved. Appended hand verts are indices 22,419..23,246.
+2. TORSO = FORM5 delta, NOT the FORM5 blend pasted on top:
+   work/female-torso-form5/export/torso_form5_delta.npz
+   and work/female-torso-form5/export/merge_torso_delta.py
+   Candidate blend SHA 7aa351d5… is the proof that ArtDir + this delta matches. Use --vmap. The author already merged this delta into the limbs-chat order with 0 conflicts (4,540 verts). Re-verify that on THIS base. Do not apply it to the 828 new hand verts.
+3. HEAD = MicroF3, head zone only:
+   work/female-micro-f3-head/export/HeroBase_Female_MicroF3_head_STAGED.blend
+   SHA 7d78b3a3f1224fe68d1f92665f5b3554eb25264bec803b9befdcaf5489e59e02
+   Its body is not the hands mesh. Transfer only the head/face/neck vertices that F3 moved, by a spatial match onto the base (same rest pose, unique nearest vertex, max 0.5 mm on vertices F3 did not intend to move). Do not overwrite torso, arms, hands, or legs with the F3 body.
+4. ARMS are already in the hands base (arms candidate SHA 573ab443…). Do not re-apply them.
+5. LEGS: there is no female legs form pass. Leave the legs that are on the hands base. Do not invent a legs sculpt.
+
+KNOWN OPEN FAILURES — carry them, do not fix them here:
+- FORM5 eye: bust side fill FAIL, underbutt crease FAIL. The merge may show those. Say so in the notes. Do not resculpt.
+- FORM5 neck-base ring sits ~30 mm in front of the plate neck. The head chat was asked to slim the neck base. After the head transfer, measure the step at the neck ring. If the step is over 2 mm, do not blend it away by pulling the chest or the jaw. Record NECK_STEP_MM and FAIL NECK_WELD.
+- Hands are ~51.4k tris with hair. Disclose. Do not densify to "match."
+
+WORK: work/female-full-merge/ only.
+
+METHOD
+- Confirm base SHA, then dump vertex positions.
+- Build a vmap from ArtDir 200dc3b9 indices to base indices using unchanged body vertices (position match). Hands' extra 828 verts have no ArtDir index. Torso delta applies only through the vmap. 0 conflicts required. If a delta vert has no unique match, stop.
+- Apply torso delta + its custom-normal weight (cn_vertex_weight in the delta). Do not clear split normals on the whole body.
+- Transfer F3 head the same way: zone mask from the F3 results (jaw/lips/neck they actually moved), not a nearest-neighbor on the whole head that drags the scalp into the chest.
+- Weld check only: neck ring, arm-torso border, wrist rings, leg-top ring at the FORM5 floor (z ~0.62). Max step at each ring. Pins stay pins.
+- Topology: 0 boundary, 0 non-manifold, 0 hand-vs-body intersect that the hands candidate did not already have.
+
+PROOFS (shape assembly, not tone):
+work/female-full-merge/proof/ full figure front, back, left, right, 3/4. Close-ups: neck, armpit, wrist, underbutt, bust side. Label them as studio light, not plate-matched. One sheet that shows the seams, not a beauty pass.
+
+EXPORT
+work/female-full-merge/export/HeroBase_Female_FULL_STAGED.blend
+plus a delta from the hands base, plus README_MERGE.md that states the vmap and the open eye fails.
+FBX scale 1 meters. ArtDir untouched.
+
+GATES
+BASE_SHA — hands candidate verified before edit
+VMAP_CLEAN — torso delta applied, 0 conflicts, 0 writes on hand verts 22419-23246
+HEAD_ZONE_ONLY — F3 body did not replace torso/arms/hands/legs
+ARMS_KEPT — arms positions unchanged except the torso border pins
+LEGS_UNSCULPTED
+SEAMS — neck, armpit, wrist, leg-top step reported; NECK_WELD fails if step > 2 mm
+OPEN_FAILS_DISCLOSED — bust side fill and underbutt crease still called FAIL
+TOPOLOGY
+ARTDIR_UNCHANGED — 200dc3b9 before and after
+PROOFS
+NOT_A_FORM_PASS — the reply must not say the body matches the plate
+
+FORBIDDEN: resculpt bust or glute, slim the neck by moving the chest, remesh, densify, install ArtDir, edit the male, merge clothes.
+
+REPLY ONLY:
+GATE: FEMALE_FULL_MERGE PASS
+or FAIL with failed lines only.
+If NECK_WELD is the only failure, still deliver the staged blend and say so.

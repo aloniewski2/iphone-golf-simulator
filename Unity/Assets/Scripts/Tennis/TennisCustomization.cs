@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -22,9 +23,21 @@ namespace GolfArcade.Tennis
             return v;
         }
 
-        /// Rebind the supplied base to either sport's existing animation skeleton.
+        /// HERO_MAINSTAY: the tennis player base. Resources/Tennis/Customization/PlayerMale and PlayerFemale are the two match heroes
+        /// (work/match-anim-set: the bald grey-mannequin male and female bodies with their own skeleton, the painted face, the classic
+        /// racket on Hand_Racket, and their 16 clips), built by MatchHeroBuild. TennisHeroSetup puts one on every actor. The old
+        /// Higgsfield tennis bases (PlayerMale.fbx / PlayerFemale.fbx) are archived under Assets/Characters/Archive and are not loaded.
+        public static string HeroPath(bool female) => "Tennis/Customization/Player" + (female ? "Female" : "Male");
+        public static GameObject HeroBase(bool female) => Resources.Load<GameObject>(HeroPath(female));
+
+        /// Rebind the supplied base to the golf animation skeleton. Tennis no longer rebinds a base to its hidden gameplay rig: the body
+        /// on court is the match hero (HeroBase), so for tennis this only checks that both heroes exist.
         public static bool AttachBase(Transform model,bool female,bool golf=false) {
-            var prefab=Resources.Load<GameObject>("Tennis/Customization/Player"+(female?"Female":"Male")+(golf?"Golf":""));
+            if(!golf) {
+                if(!HeroBase(female)) throw new InvalidOperationException("Match hero base asset is missing: "+HeroPath(female));
+                return true;
+            }
+            var prefab=Resources.Load<GameObject>("Tennis/Customization/Player"+(female?"Female":"Male")+"Golf");
             if(!prefab) throw new InvalidOperationException("Player base asset is missing");
             var bones=new Dictionary<string,Transform>();
             foreach(var t in model.GetComponentsInChildren<Transform>(true)) bones.TryAdd(t.name,t);
@@ -47,8 +60,14 @@ namespace GolfArcade.Tennis
         /// Shared cosmetic mesh binding, also used by the modular Humanoid look prefab.
         public static SkinnedMeshRenderer RebindCosmetic(SkinnedMeshRenderer source, Transform sourceRoot, Transform targetRoot, Transform slot)
         {
+            if (!source || !source.sharedMesh || !sourceRoot || !targetRoot || !slot)
+                throw new InvalidOperationException("Cosmetic requires a mesh, skeleton and slot");
+            if (source.sharedMesh.bindposes.Length != source.bones.Length)
+                throw new InvalidOperationException("Cosmetic bind-pose count differs from its bone list: " + source.name);
             var lookup = new Dictionary<string, Transform>();
             foreach (var bone in targetRoot.GetComponentsInChildren<Transform>(true)) lookup.TryAdd(bone.name, bone);
+            foreach (var bone in source.bones) if (bone && targetRoot.GetComponentsInChildren<Transform>(true).Count(t => t.name == bone.name) != 1)
+                throw new InvalidOperationException("Cosmetic bone name must resolve once: " + bone.name);
             var rebound = Array.ConvertAll(source.bones, b => b && lookup.TryGetValue(b.name, out var match)
                 ? match : throw new InvalidOperationException("Cosmetic bone mismatch: " + (b ? b.name : "null")));
             var renderer = new GameObject(source.name).AddComponent<SkinnedMeshRenderer>();
@@ -70,6 +89,8 @@ namespace GolfArcade.Tennis
         public void Apply(Transform model,Transform head,int skin,int hair,int hairColor,int face,int height,int build,float bodySize=-1,TennisLook.Kit? outfit=null)
         {
             if(!head)return;
+            // The hidden tennis gameplay rig wears no player base (see AttachBase): nothing to dress, and no hair is ever added to it.
+            if(!Array.Exists(model.GetComponentsInChildren<SkinnedMeshRenderer>(true),r=>r.name.Contains("Player")))return;
             float size=bodySize<0?Mathf.Clamp(build,0,4)/4f:Mathf.Clamp01(bodySize);
             bool female=Array.Exists(model.GetComponentsInChildren<Renderer>(),r=>r.name.Contains("PlayerFemale"));
             bool golf=Array.Exists(model.GetComponentsInChildren<Renderer>(),r=>r.name.EndsWith("Golf"));

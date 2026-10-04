@@ -25,7 +25,7 @@ namespace GolfArcade.Game
             public float bodySize=-1;
             public string shirt,shorts,accent,racket,skinHex,hairHex; public bool tips=true; public float overscan;
             // The tennis court: "" / "resort", "skyscraper" or "volcano"; and a court colour (hex, "" = the venue's own).
-            public string venue,courtHex;
+            public string venue,courtHex; public int aimSequence;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -62,11 +62,25 @@ namespace GolfArcade.Game
         public bool Ready { get; private set; }
         public Camera GameplayCamera => gameplayCamera;
 #if UNITY_IOS && !UNITY_EDITOR
+        [DllImport("__Internal")] static extern void SportsRecorderConfigure(string session,int display);
+        [DllImport("__Internal")] static extern void SportsRecorderEnable([MarshalAs(UnmanagedType.I1)] bool enabled);
+        [DllImport("__Internal")] static extern void SportsRecorderPause([MarshalAs(UnmanagedType.I1)] bool paused);
+        [DllImport("__Internal")] static extern void SportsRecorderBeginPoint();
+        [DllImport("__Internal")] static extern void SportsRecorderEndPoint();
+        [DllImport("__Internal")] static extern void SportsRecorderSave();
+        [DllImport("__Internal")] static extern void SportsRecorderStop();
         [DllImport("__Internal")] static extern int SportsPollSample(out Sample sample);
         [DllImport("__Internal")] static extern void SportsEmit(string value);
         [DllImport("__Internal")] static extern double SportsClock();
         [DllImport("__Internal")][return: MarshalAs(UnmanagedType.I1)] static extern bool SportsPresentExternalDisplay();
 #else
+        static void SportsRecorderConfigure(string session,int display) {}
+        static void SportsRecorderEnable(bool enabled) {}
+        static void SportsRecorderPause(bool paused) {}
+        static void SportsRecorderBeginPoint() {}
+        static void SportsRecorderEndPoint() {}
+        static void SportsRecorderSave() {}
+        static void SportsRecorderStop() {}
         static int SportsPollSample(out Sample sample) { sample=default; return 0; }
         static void SportsEmit(string value) {}
         static double SportsClock()=>Time.realtimeSinceStartupAsDouble;
@@ -81,6 +95,8 @@ namespace GolfArcade.Game
         void Start()
         {
             Emit("boot","");
+            TennisGame.RecordingPointStarted+=SportsRecorderBeginPoint;
+            TennisGame.RecordingPointEnded+=SportsRecorderEndPoint;
             // What the phone's controller and campaign screens need from a tennis match.
             TennisGame.MatchFinished+=(won,score)=>Emit("matchOver",(won?"won|":"lost|")+score);
             TennisGame.MatchStatsReady+=line=>Emit("matchStats",line);
@@ -95,6 +111,22 @@ namespace GolfArcade.Game
             TennisTutorial.Finished+=()=>Emit("tutorialDone","");
             TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
             GolfGame.ShotStruck+=()=>Emit("shot","");
+            TennisGame.Landed += AimLanding;
+            TennisGame.DrillPoint += AimMiss;
+        }
+        void AimLanding(bool player, bool legal, Vector3 at, bool serve) {
+            if (tennis && tennis.AimPractice && player)
+                Emit("aimLanding", string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0}|{1:0.000}|{2:0.000}|{3}",tennis.AimPracticeSequence,at.x,at.z,legal?1:0));
+        }
+        void AimMiss(bool player, string why) {
+            if (tennis && tennis.AimPractice && !player) Emit("aimMiss",tennis.AimPracticeSequence+"|"+why);
+        }
+        void OnDestroy() {
+            TennisGame.RecordingPointStarted-=SportsRecorderBeginPoint;
+            TennisGame.RecordingPointEnded-=SportsRecorderEndPoint;
+            TennisGame.Landed -= AimLanding; TennisGame.DrillPoint -= AimMiss;
+            SportsRecorderStop();
+            Active=false; Left=false; TrackingWarning=""; Time.timeScale=1;
         }
         void OnEnable() { Camera.onPostRender+=Rendered; RenderPipelineManager.endCameraRendering+=RenderedSRP; }
         void OnDisable() { Camera.onPostRender-=Rendered; RenderPipelineManager.endCameraRendering-=RenderedSRP; }
@@ -113,17 +145,22 @@ namespace GolfArcade.Game
                 switch(m.action) {
                     case "pause": SetPaused(true,m.reason); break;
                     case "resume": SetPaused(false); break;
-                    case "end": StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
+                    case "end": SportsRecorderStop(); StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
+                    case "recordPoints": if(tennis) SportsRecorderEnable(m.value>0); break;
+                    case "savePoint": if(tennis) SportsRecorderSave(); break;
                     case "ultimateSelect": break; // Ignore commands from older controllers.
                     case "ultimate": break;
                     case "dive": if(tennis && !paused) tennis.RequestDive(); break;
                     case "refeed": if(tennis) tennis.Refeed(); break;
+                    case "rallyAim": if(tennis) tennis.SetShotAim(m.value,m.value2); break;
+                    case "aimPractice": if(tennis) tennis.SetAimPractice(m.value>0); break;
+                    case "aimFeed": if(tennis) tennis.FeedAimPractice(m.value,m.value2<0,m.aimSequence); break;
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
                     case "club": if(golf) golf.NativeClub(m.value<0?-1:1); break;
                     case "sound": AudioListener.volume=m.value>0 && !Application.isBatchMode?1:0; break;
                     case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); break;
                     case "display": if(!loading) StartCoroutine(Present(true,"displayReady")); break;
-                    case "touch": Touch=true; touch=true; if(golf) golf.Swing.Detector.Reset(); break;
+                    case "touch": Touch=true; touch=true; if(tennis) { tennis.CancelTimingCheck(); tennis.SetAimPractice(false); } if(golf) golf.Swing.Detector.Reset(); break;
                     case "motion": Touch=false; touch=false; if(golf) golf.NativeReady(); break;
                     case "recalibrate": if(golf) golf.NativeReady(); break;
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
@@ -184,6 +221,7 @@ namespace GolfArcade.Game
                   // locker colour ranges: the exact skin / hair picked (else the preset index)
                   if(!string.IsNullOrEmpty(m.skinHex)) look.SkinTint=HeroKit.Hex(m.skinHex);
                   if(!string.IsNullOrEmpty(m.hairHex)) look.HairTint=HeroKit.Hex(m.hairHex);
+                  look.BodySize=Mathf.Clamp01(m.bodySize<0?m.buildChoice/4f:m.bodySize);
                   tennis.SetPlayerLook(look); }   // kept and re-applied on every rebuild
                 var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
                     : m.mode=="tutorial" ? TennisGame.Mode.Tutorial : TennisGame.Mode.Exhibition;
@@ -255,6 +293,10 @@ namespace GolfArcade.Game
             }
             gameplayCamera.targetDisplay=index;
             outputDisplay=index;
+            foreach(var listener in FindObjectsByType<AudioListener>(FindObjectsSortMode.None))
+                if(listener.enabled && !listener.GetComponent<PointClipAudioTap>()) listener.gameObject.AddComponent<PointClipAudioTap>();
+            SportsRecorderConfigure(session,index);
+            SportsRecorderPause(paused);
             gameplayCamera.rect=new Rect(0,0,1,1);
             gameplayCamera.aspect=(float)Display.displays[index].renderingWidth/Mathf.Max(1,Display.displays[index].renderingHeight);
             gameplayCamera.enabled=true;
@@ -264,7 +306,7 @@ namespace GolfArcade.Game
             return true;
         }
         void SetPaused(bool value,string reason=null) {
-            paused=value; PauseReason=value ? (string.IsNullOrEmpty(reason) ? "PAUSED — tap Ready on your phone" : reason) : null;
+            paused=value; SportsRecorderPause(value); PauseReason=value ? (string.IsNullOrEmpty(reason) ? "PAUSED — tap Ready on your phone" : reason) : null;
             if(value) TrackingWarning="";
             if(!value) { resumedAt=SportsClock(); if(tennis) tennis.LockLoadout(); }
             Time.timeScale=value?0:1; Haptics.Release(); if(value && golf) golf.Swing.Detector.Reset();
@@ -284,20 +326,22 @@ namespace GolfArcade.Game
                 // A degraded sample still carries the last good court position, so the player
                 // holds station through the blip instead of the game pausing.
                 target=Mathf.Clamp(sample.target,-1,1);
+                float inputAge = Mathf.Clamp((float)(SportsClock() - sample.time), 0, .25f);
+                if (tennis && !touch) tennis.AimInput = Mathf.Clamp(sample.aim, -1, 1);
                 if(golf && !touch) golf.NativeMotion(sample);
                 // Onset first: the character starts the stroke the moment the phone does, and
                 // confirmation (or a write-off) arrives a few samples later. All three can land
                 // in one sample when frames are slow, so the order here matters.
                 if(sample.swingStart>lastSwingStart) {
                     lastSwingStart=sample.swingStart;
-                    if(tennis) tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing);
+                    if(tennis) tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing,inputAge);
                 }
                 if(sample.swing>lastSwing) {
                     lastSwing=sample.swing;
                     // Racket-face aim, measured on the phone at the moment the stroke confirmed.
                     // Touch play aims with its own control (the "aim" command) instead.
                     if(tennis && !touch) tennis.AimInput=Mathf.Clamp(sample.aim,-1,1);
-                    if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing);
+                    if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing,inputAge);
                     if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
                 }
                 if(sample.swingAbort>lastSwingAbort) {
@@ -335,7 +379,7 @@ namespace GolfArcade.Game
         void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,matchComplete=tennis && tennis.Match.Complete,matchWon=tennis && tennis.Match.PlayerWonMatch,finalScore=tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
-            !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power);
-        void OnDestroy() { Active=false; Left=false; TrackingWarning=""; Time.timeScale=1; }
+            !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&
+            !float.IsNaN(s.aim) && !float.IsInfinity(s.aim) && !float.IsNaN(s.strokeFacing) && !float.IsInfinity(s.strokeFacing);
     }
 }

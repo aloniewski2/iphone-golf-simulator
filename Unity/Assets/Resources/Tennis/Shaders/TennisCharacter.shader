@@ -11,6 +11,10 @@ Shader "GolfArcade/TennisCharacter"
         [MainTexture] _BaseMap ("Albedo", 2D) = "white" {}
         [Normal] _BumpMap ("Normal map", 2D) = "bump" {}
         _BumpScale ("Normal strength", Range(0,2)) = 1
+        // The hero body has no UVs. With this on, _BumpMap is projected along the three axes from the BIND-POSE position carried in mesh channel 1
+        // (MatchHeroLook writes it), so the soft break in the light stays on the skin as the body moves. _BumpTile = tiles per metre.
+        _BumpTriplanar ("Bump from bind-pose position (meshes with no UVs)", Float) = 0
+        _BumpTile ("Triplanar bump tiles per metre", Float) = 5
         _Saturation ("Saturation", Range(0,1.5)) = 0.82
         _Smoothness ("Smoothness", Range(0,1)) = 0.2
         _Wrap ("Wrap", Range(0,1)) = 0.35
@@ -33,6 +37,7 @@ Shader "GolfArcade/TennisCharacter"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            #pragma multi_compile _ _LIGHT_LAYERS
             #pragma multi_compile_fog
             // multi_compile, not shader_feature: the materials are made at runtime, so no
             // material asset would keep a shader_feature variant alive in the build.
@@ -42,13 +47,13 @@ Shader "GolfArcade/TennisCharacter"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor; float4 _BaseMap_ST; half4 _Subsurface; half4 _RimColor;
-                float4 _BumpMap_ST; half _Smoothness, _Wrap, _RimPower, _RimStrength, _BumpScale, _Saturation;
+                float4 _BumpMap_ST; half _Smoothness, _Wrap, _RimPower, _RimStrength, _BumpScale, _Saturation, _BumpTriplanar; float _BumpTile;
             CBUFFER_END
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; };
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 positionWS : TEXCOORD1; float3 normalWS : TEXCOORD2; half fog : TEXCOORD3; float4 tangentWS : TEXCOORD4; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; float3 bindPos : TEXCOORD1; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 positionWS : TEXCOORD1; float3 normalWS : TEXCOORD2; half fog : TEXCOORD3; float4 tangentWS : TEXCOORD4; float3 bindPos : TEXCOORD5; float3 normalOS : TEXCOORD6; };
 
             Varyings vert (Attributes i)
             {
@@ -59,6 +64,7 @@ Shader "GolfArcade/TennisCharacter"
                 o.normalWS = nrm.normalWS;
                 o.tangentWS = float4(nrm.tangentWS, i.tangentOS.w * GetOddNegativeScale());
                 o.uv = TRANSFORM_TEX(i.uv, _BaseMap);
+                o.bindPos = i.bindPos; o.normalOS = i.normalOS;
                 o.fog = ComputeFogFactor(p.positionCS.z);
                 return o;
             }
@@ -79,9 +85,24 @@ Shader "GolfArcade/TennisCharacter"
             {
                 half3 n = normalize(i.normalWS);
                 #if defined(_NORMALMAP)
-                half3 ts = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
-                half3 t = normalize(i.tangentWS.xyz); half3 b = cross(n, t) * i.tangentWS.w;
-                n = normalize(TransformTangentToWorld(ts, half3x3(t, b, n)));
+                if (_BumpTriplanar > 0.5)
+                {
+                    // Three axis projections of the soft normal map from the bind-pose position, blended by the skinned object-space normal
+                    // and added to it (UDN blend), then back to world: a break in the light that rides on the skin.
+                    float3 nO = normalize(i.normalOS);
+                    float3 w = pow(abs(nO), 4); w /= (w.x + w.y + w.z + 1e-5);
+                    half2 tx = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.bindPos.zy * _BumpTile), _BumpScale).xy;
+                    half2 ty = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.bindPos.xz * _BumpTile), _BumpScale).xy;
+                    half2 tz = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.bindPos.xy * _BumpTile), _BumpScale).xy;
+                    nO = normalize(nO + w.x * float3(0, tx.y, tx.x) + w.y * float3(ty.x, 0, ty.y) + w.z * float3(tz.x, tz.y, 0));
+                    n = normalize(TransformObjectToWorldNormal(nO));
+                }
+                else
+                {
+                    half3 ts = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, i.uv), _BumpScale);
+                    half3 t = normalize(i.tangentWS.xyz); half3 b = cross(n, t) * i.tangentWS.w;
+                    n = normalize(TransformTangentToWorld(ts, half3x3(t, b, n)));
+                }
                 #endif
                 half3 v = normalize(GetWorldSpaceViewDir(i.positionWS));
                 half4 c = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv) * _BaseColor;
@@ -92,7 +113,18 @@ Shader "GolfArcade/TennisCharacter"
                 half3 colour = Shade(main, n, v, c.rgb);
                 #if defined(_ADDITIONAL_LIGHTS)
                 uint count = GetAdditionalLightsCount();
-                for (uint li = 0; li < count; li++) colour += Shade(GetAdditionalLight(li, i.positionWS), n, v, c.rgb);
+                #if defined(_LIGHT_LAYERS)
+                uint meshLayers = GetMeshRenderingLayer();
+                #endif
+                for (uint li = 0; li < count; li++)
+                {
+                    Light extra = GetAdditionalLight(li, i.positionWS);
+                    // A light on its own rendering layer (the hero rim) only reaches meshes that carry that layer.
+                    #if defined(_LIGHT_LAYERS)
+                    if (!IsMatchingLightLayer(extra.layerMask, meshLayers)) continue;
+                    #endif
+                    colour += Shade(extra, n, v, c.rgb);
+                }
                 #endif
                 half3 ambient = SampleSH(n) * c.rgb;
                 #if defined(_SCREEN_SPACE_OCCLUSION)

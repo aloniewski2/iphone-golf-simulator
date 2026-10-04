@@ -191,6 +191,7 @@ private struct TennisController:View {
                         .font(.footnote).accessibilityIdentifier("reAimAxis")
                 }
                 Spacer(minLength:0)
+                PointClipControls(session: session)
                 Button("Quit to menu",role:.destructive) { session.end() }
                     .frame(maxWidth:.infinity,minHeight:48)
                     .accessibilityIdentifier("sessionMenu")
@@ -251,6 +252,9 @@ private struct SportsControls:View {
                 Slider(value:$power,in:0.1...1) { Text("Swing power") }
                 Button("Swing") { session.swing(power) }.disabled(session.paused).accessibilityIdentifier("controllerSwing")
             }
+        }
+        if session.sport == "tennis" {
+            Section("Recording") { PointRecordingSettings(session: session) }
         }
         Section("Session") {
             if session.paused {

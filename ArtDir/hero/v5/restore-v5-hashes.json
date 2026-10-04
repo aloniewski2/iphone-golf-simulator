@@ -1,0 +1,30 @@
+[
+  {
+    "path": "Unity/Assets/Resources/Tennis/Hero/Hero_01_Tennis.prefab",
+    "sha256": "1f15fd7aab6fa66157eb034b2b3b844bf8db9fce30f9a0781733c0c5c3296094"
+  },
+  {
+    "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shirt_Default.fbx",
+    "sha256": "bf33756046e78fb3bda64acb972362b5c640362990522880b304614ee5c45e6d"
+  },
+  {
+    "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx",
+    "sha256": "41f56405a31643291f6cfb4e1c64f769bf815853ba0f9eb34e13a101e1db30ae"
+  },
+  {
+    "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_01_FingerBody.fbx",
+    "sha256": "6d0979796f03a6479f32713c61028bc1c1b2ac7ce2096e5a6105a32d986fea0f"
+  },
+  {
+    "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shorts_Default.fbx",
+    "sha256": "151eebaa5df626c4080879ae3c7972863b1530ddf0330f3a7e51f154d7168cd3"
+  },
+  {
+    "path": "Unity/Assets/ArtDirection/Hero01/Prefabs/Hero_01_RestoreMotion.prefab",
+    "sha256": "8c1b5a1dfd952250d314bf3235a7802a74791853cb8f1d65639e05a8ff49edcf"
+  },
+  {
+    "path": "ArtDir/hero/v5/Hero_01_V5.blend",
+    "sha256": "bcd2b1e0bef1d1ab3624ad4870a8bbcf6a05af8fd79178349f6e1f8dffc65226"
+  }
+]

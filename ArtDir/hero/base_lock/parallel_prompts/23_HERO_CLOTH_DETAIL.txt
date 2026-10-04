@@ -1,0 +1,43 @@
+PASTE — HERO CLOTH AND SKIN DETAIL · NEW CHAT
+
+The shine pass made the body a bit more plastic. It still looks cheap because skin and cloth are one flat color. Do not raise smoothness. Do not add bloom, a toon ramp, an outline, or a new post stack.
+
+Live shaders, already in the project. Edit these. Do not write a third skin shader.
+- Unity/Assets/Resources/Tennis/Shaders/TennisCharacter.shader (GolfArcade/TennisCharacter). Skin, eyes, racket frame.
+- Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader (GolfArcade/TennisCloth). Shirt, shorts, skirt, socks, shoes.
+MatchHeroLook builds the materials at runtime and copies only _BaseColor. A texture set on a .mat asset will not show. Set the new maps in that runtime path.
+
+What is wrong now.
+- Cloth has no texture slots and no UVs in the shader. Shirt, shorts, socks, and shoes are _BaseColor #EDEDED. Kit_ShirtTrim is the same white as the shirt, smoothness 0.25. Only the shorts band is black.
+- Skin smoothness is 0.35. The normal slot exists and _NORMALMAP is off. No albedo, no detail.
+- Brow, lid, lip, nostril, and seam decals are URP Lit. Grip and strings are URP Lit. They stay flatter than the body.
+
+Cloth.
+- Add a base map and a detail normal. Tile the detail normal small so a weave reads on the shirt, the shorts, the socks, and the shoes. Multiply a faint thread pattern into the white. Seams, the collar, the placket, and the hems go darker in that map.
+- Kit_ShirtTrim must not be the same white as the shirt. Keep it a dark band, same family as the shorts band (#09090A), smoothness about 0.25.
+- Shoe sole is its own roughness, darker and rougher than the upper. Do not leave Kit_Sole at 0.14 on #EDEDED.
+- Replace the cloth Blinn dot with a soft grazing sheen: bright as the surface turns away from the camera, tinted by the cloth color, dead in shadow. FAIL if the shirt still has a small hard specular dot.
+- Keep cloth smoothness at or under 0.14 except the dark trim. No subsurface on cloth.
+
+Skin.
+- Turn the existing normal on, very weak. A soft break in the light, not pores.
+- Drop body smoothness from 0.35 to about 0.2. Keep the wrap and the warm subsurface (0.18, 0.06, 0.03). FAIL if the skin highlight gets tighter or brighter than the current locker close-up.
+- Eyes stay smoother than skin (about 0.85). Do not put the weave on the eyes or the skin.
+
+Decals, grip, strings.
+- Move brow, lid, lip, nostril, and seam off URP Lit onto TennisCharacter. They keep their colors. No weave, no skin smoothness.
+- Grip uses TennisCloth, dark, rougher than the shirt. Strings use TennisCharacter, a touch smoother than the grip, no weave.
+
+Do not touch Serve, the emotes, the golf course, or hole 7. Do not retune the Hero rim light except if the new normals blow it out. If they do, lower rim strength on cloth only.
+
+Proof, in-game, under work/character-shader/proof/detail/.
+- Locker close-ups of the male torso, the female skort, a shoe, and the face.
+- One match view from behind at the baseline.
+FAIL if the shirt is still a flat white with a hard dot, the trim matches the shirt, the sole matches the upper, or the skin is shinier than today.
+
+GATE HERO_DETAIL. Every line is PASS or FAIL.
+- TennisCloth samples a weave normal and a thread break in the color. Shirt trim is dark. Sole is darker and rougher than the upper.
+- Skin smoothness is about 0.2, normal on and weak, subsurface unchanged.
+- Decals, grip, and strings are no longer URP Lit.
+- No new post, no bloom change, no toon ramp, no outline.
+- Serve FBX, walk, runs, and the course files are untouched.

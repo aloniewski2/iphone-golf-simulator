@@ -156,7 +156,7 @@ namespace GolfArcade.Tennis
             ultimateAudio.PlayOneShot(cue); Destroy(cue,UltimateFreeze+1);
         }
 
-        public void Punch(float amount) { punch = Mathf.Max(punch, amount); }
+        public void Punch(float amount) { punch = 0; }
         public const float UltimateFreeze = 2.2f;
         /// Plan 2C law: a live ball the player must play is always on the play camera. Any hit cut or
         /// toss cam still running is ended (the rival just struck, the server is swinging...).
@@ -288,8 +288,8 @@ namespace GolfArcade.Tennis
         public void Apply(ref Vector3 position, ref Vector3 look, ref float fov, float approach, float rivalBias, Vector3 rivalChest)
         {
             // Score80 C: the contact pulse is tiny (<= 1.8 deg) and only for Perfect-class contact
-            fov -= approach * 2.5f + punch * 1.8f;
-            if (rivalBias > 0) { look = Vector3.Lerp(look, rivalChest, .38f * rivalBias); fov -= 6 * rivalBias; }
+            // Gameplay framing owns a constant FOV; contacts never move or zoom the camera.
+            // Rival focus stays in the shoulder composition.
         }
         public void Apply(ref Vector3 position, ref Vector3 look, ref float fov) => Apply(ref position, ref look, ref fov, 0, 0, Vector3.zero);
 
@@ -336,7 +336,10 @@ namespace GolfArcade.Tennis
         }
 
         void Overlay(Color v, float vA, float linesAlpha, float flashAlpha) { vignetteColor = v; vignetteA = vA; linesA = linesAlpha; flashA = flashAlpha; }
-        void Title(string t, string s, float len) { title.text = t; sub.text = s; titleT = 0; titleLen = len; }
+        void Title(string t, string s, float len) {
+            if (GetComponent<TennisGame>()?.ScoreOnlyText ?? true) { title.text = sub.text = ""; titleLen = 0; return; }
+            title.text = t; sub.text = s; titleT = 0; titleLen = len;
+        }
 
         public void SetMeters(float player, float rival, string ability = "ULTIMATE", bool armed = false)
         {
@@ -351,6 +354,7 @@ namespace GolfArcade.Tennis
         public void UpdateRivalCam(bool show, Transform rival, string name)
         {
             if (!rival) return;
+            show &= !(GetComponent<TennisGame>()?.ScoreOnlyText ?? true);
             if (!rivalCam)
             {
                 rivalCam = new GameObject("Rival cam camera").AddComponent<Camera>(); rivalCam.transform.SetParent(transform, false);
@@ -368,6 +372,7 @@ namespace GolfArcade.Tennis
 
         void UpdateOverlay(float udt)
         {
+            if (GetComponent<TennisGame>()?.ScoreOnlyText ?? true) { title.text = sub.text = rivalLabel.text = ""; titleLen = 0; rivalShow = 0; }
             bool active = shot == Shot.Cut || shot == Shot.Ultimate || shot == Shot.BallTrack;
             float tv = active ? vignetteA : 0, tl = active ? linesA : 0;
             var vc = vignette.color; vc = Color.Lerp(vc, new Color(vignetteColor.r, vignetteColor.g, vignetteColor.b, tv), 1 - Mathf.Exp(-udt * 18)); vignette.color = vc;

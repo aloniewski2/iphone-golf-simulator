@@ -126,14 +126,17 @@ namespace GolfArcade.Tennis
 
         /// Show an expression for a while, over whatever the body is doing.
         public void SetExpression(Expression expression, float seconds) { heldExpression = expression; heldFor = seconds; }
-        // Read-only state for visual puppets (Hero01 driver). No gameplay effect.
+        // Read-only state for visual puppets (the match-hero driver). No gameplay effect.
         public bool Backhand => backhand;
+        /// The sex this actor was built as (locker sex for the player, TennisRoster.Female for a campaign rival, the opposite of the player
+        /// for the default rival): the visual puppet picks the male or female match hero from it.
+        public bool Female { get; private set; }
         public float PrepareAmount => prepare;
         public bool PrepareBackhand => prepareBackhand;
         public bool PrepareServe => prepareServe;
         public Transform Model => model;
         public event Action<bool, Moment> Reacted;
-        /// When a visible character (Hero01) is attached: where ITS strings meet the ball in a stroke.
+        /// When a visible character (a match hero) is attached: where ITS strings meet the ball in a stroke.
         /// Contact planning then aims the ball at the racket the player actually sees.
         public Func<Stroke, bool, Vector3?> VisualContact;
         /// Serve-ritual ball points (0 hold, 1 release, 2 extended) in this actor's frame, from the
@@ -237,7 +240,7 @@ namespace GolfArcade.Tennis
 
         public void Build(bool female, Color skin, bool leftHanded, string bodyKey = null)
         {
-            LeftHanded = leftHanded;
+            LeftHanded = leftHanded; Female = female;
             string path = "StandardCharacters/standard_" + (female ? "female" : "male") + "_tennis";
             var prefab = Resources.Load<GameObject>(path);
             if (!prefab) throw new InvalidOperationException("Missing permanent tennis character: " + path);
@@ -535,10 +538,6 @@ namespace GolfArcade.Tennis
             root.position -= shift; racket.position -= shift;
         }
 
-        /// Dress the standard rig in another character's body: their fitted mesh and face decal
-        /// (Resources/Tennis/Opponents/<key>), rebound bone-for-bone to this rig, which the
-        /// animations were authored on. The file carries no animation: one set of clips drives
-        /// every body.
         /// The centre of the fist a body mesh models on `bone` (the vertices it fully owns), in
         /// that bone's space -- for bodies whose hands are part of the mesh.
         bool PalmOfBody(Transform bone, out Vector3 local)
@@ -559,41 +558,10 @@ namespace GolfArcade.Tennis
             return true;
         }
 
-        bool WearBody(string key)
-        {
-            var prefab = Resources.Load<GameObject>("Tennis/Opponents/" + key);
-            if (!prefab) { Debug.LogWarning($"[Tennis] missing opponent body '{key}'"); return false; }
-            var donor = Instantiate(prefab);
-            donor.SetActive(false);
-            var bones = new Dictionary<string, Transform>();
-            foreach (var t in model.GetComponentsInChildren<Transform>(true)) bones.TryAdd(t.name, t);
-            bool worn = false;
-            foreach (var source in donor.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-            {
-                bool body = source.name.StartsWith("V4 Higgs body"), face = source.name.StartsWith("V4 face decal");
-                // Some bodies bring their own grip fists, sized for their arms.
-                string fist = source.name.StartsWith("V4 grip hand L") ? "V4 grip hand L" : source.name.StartsWith("V4 grip hand R") ? "V4 grip hand R" : null;
-                if (!body && !face && fist == null) continue;
-                string kind = body ? "V4 Higgs body" : face ? "V4 face decal" : fist;
-                // Retire this rig's own piece of the same kind.
-                foreach (var own in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-                    if (own.name.StartsWith(kind)) own.gameObject.SetActive(false);
-                var mapped = new Transform[source.bones.Length];
-                bool complete = true;
-                for (int i = 0; i < mapped.Length; i++)
-                    if (!source.bones[i] || !bones.TryGetValue(source.bones[i].name, out mapped[i])) complete = false;
-                if (!complete) { Debug.LogWarning($"[Tennis] '{key}' {source.name} does not match the rig"); continue; }
-                var target = new GameObject(source.name).AddComponent<SkinnedMeshRenderer>();
-                target.transform.SetParent(model, false);
-                target.sharedMesh = source.sharedMesh; target.sharedMaterials = source.sharedMaterials;
-                target.bones = mapped;
-                target.rootBone = source.rootBone && bones.TryGetValue(source.rootBone.name, out var rootBone) ? rootBone : mapped[0];
-                target.updateWhenOffscreen = true;
-                worn |= body;
-            }
-            Destroy(donor);
-            return worn;
-        }
+        /// HERO_MAINSTAY: the per-rival Higgsfield bodies (Resources/Tennis/Opponents/<key>) that used to be rebound onto this rig are
+        /// unhooked. The rival on screen is the male or female match hero (TennisHeroSetup, by TennisRoster.Female); this hidden gameplay
+        /// rig keeps its standard body. Nothing is loaded here.
+        bool WearBody(string key) => false;
 
         Leg[] BuildLegs(Transform[] bones)
         {
@@ -713,6 +681,8 @@ namespace GolfArcade.Tennis
         public void PlayIntro()
         {
             SetExpression(Expression.Cheer, 2.4f);
+            var emoteDriver = GetComponentInChildren<HeroTennisDriver>();     // EMOTES: a match hero greets with Intro_Wave / Intro_BringIt / Intro_Pushups
+            if (emoteDriver && emoteDriver.PlayIntroEmote()) return;
             int index = Resolve("Intro");
             if (index >= 0) PlayOneShot("Intro", clipLength[index]);
         }

@@ -250,6 +250,7 @@ namespace GolfArcade.Tennis
             fill.type = LightType.Directional; fill.shadows = LightShadows.None;
             fill.transform.rotation = Quaternion.LookRotation(-FillDirection);
             fill.color = FillColor; fill.intensity = FillIntensity;
+            HeroRimLight.Ensure();   // the one warm rim light on the heroes, back toward the camera (own rendering layer, never on the court)
             sun.shadowBias = .05f; sun.shadowNormalBias = .4f;
             RenderSettings.sun = sun;
             RenderSettings.ambientMode = AmbientMode.Trilight;

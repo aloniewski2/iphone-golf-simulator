@@ -1,7 +1,7 @@
 import SwiftUI
 import SceneKit
 
-/// Catalog shared with TennisCustomization. The preview uses the exported game meshes.
+/// Catalog shared with TennisCustomization.
 enum CharacterOptions {
     static let hair = ["Bald", "Swept", "Curls", "Bob"]
     static let hairColors = ["Black", "Brown", "Auburn", "Blond", "Silver", "Blue"]
@@ -18,47 +18,9 @@ enum CharacterOptions {
     }
 }
 
-@MainActor struct CharacterMeshData: Decodable {
-    let positions: [Float], normals: [Float], uv: [Float], triangles: [Int32]
-    let texture: String, mask: String, reference: [Float]
-    let positionsSlim: [Float]?, positionsBroad: [Float]?
-    static var cache: [String: CharacterMeshData] = [:]
-    static func load(_ name: String) -> CharacterMeshData? {
-        if let cached = cache[name] { return cached }
-        guard let url = Bundle.main.url(forResource: name, withExtension: "json"),
-              let data = try? Data(contentsOf: url), let mesh = try? JSONDecoder().decode(Self.self, from: data) else { return nil }
-        cache[name] = mesh; return mesh
-    }
-    func geometry(player: Player? = nil, shapeBody: Bool = false) -> SCNGeometry {
-        var points = positions
-        if shapeBody, let player {
-            let target = player.bodySize < 0.5 ? positionsSlim : positionsBroad
-            if let target, target.count == points.count {
-                let weight = Float(abs(player.bodySize - 0.5) * 2)
-                for i in points.indices { points[i] += (target[i] - points[i]) * weight }
-            }
-            for i in stride(from: 0, to: points.count, by: 3) {
-                let y = points[i+1]
-                if y > 1.22 {
-                    let face = CharacterOptions.faceScale(player.faceShape)
-                    points[i] *= face.x; points[i+1] = 1.22 + (y-1.22)*face.y; points[i+2] *= face.z
-                }
-            }
-        }
-        func source(_ values: [Float], _ semantic: SCNGeometrySource.Semantic, _ size: Int) -> SCNGeometrySource {
-            let bytes = values.withUnsafeBytes { Data($0) }
-            return SCNGeometrySource(data: bytes, semantic: semantic, vectorCount: values.count / size,
-                                     usesFloatComponents: true, componentsPerVector: size, bytesPerComponent: 4,
-                                     dataOffset: 0, dataStride: size * 4)
-        }
-        let indices = triangles.withUnsafeBytes { Data($0) }
-        return SCNGeometry(sources: [source(points, .vertex, 3), source(normals, .normal, 3), source(uv.enumerated().map { $0.offset % 2 == 1 ? 1 - $0.element : $0.element }, .texcoord, 2)],
-                           elements: [SCNGeometryElement(data: indices, primitiveType: .triangles, primitiveCount: triangles.count / 3, bytesPerIndex: 4)])
-    }
-}
-
-/// Locker framing: the whole player, or a close-up of the head (hair / headwear tabs), like a cosmetics shop.
-enum PreviewFraming: Equatable { case body, head }
+/// Locker framing, like a cosmetics shop: the whole player, or a close-up of the part being changed
+/// (head, torso for the kit, feet for shoes, the racket hand for the racket).
+enum PreviewFraming: Equatable { case body, head, torso, feet, racket }
 
 struct CharacterModelPreview: UIViewRepresentable {
     let player: Player
@@ -66,13 +28,14 @@ struct CharacterModelPreview: UIViewRepresentable {
     var framing: PreviewFraming = .body
     var idleSport: Sport? = nil
     var practiceSequence: Int? = nil
+    var menuActivity: ClubPreviewActivity? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeCoordinator() -> Coordinator { Coordinator(cameraDistance: cameraDistance) }
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
         view.backgroundColor = .clear
         view.scene = context.coordinator.scene
-        view.allowsCameraControl = idleSport == nil
+        view.allowsCameraControl = idleSport == nil && menuActivity == nil
         view.defaultCameraController.interactionMode = .orbitTurntable
         view.defaultCameraController.target = SCNVector3(0, 0.95, 0)
         view.defaultCameraController.minimumVerticalAngle = -15
@@ -91,15 +54,23 @@ struct CharacterModelPreview: UIViewRepresentable {
         updateIdle(view, context: context)
     }
     private func updateIdle(_ view: SCNView, context: Context) {
+        if let menuActivity {
+            context.coordinator.configureClub(menuActivity, animate: !reduceMotion && !SportsSession.shared.reduceMotion)
+            view.isPlaying = !reduceMotion && !SportsSession.shared.reduceMotion
+            view.preferredFramesPerSecond = 60
+            return
+        }
         let animate = idleSport != nil && !reduceMotion && !SportsSession.shared.reduceMotion
-        context.coordinator.configureIdle(sport: idleSport, animate: animate && practiceSequence == nil)
+        context.coordinator.configureIdle(sport: idleSport, animate: animate)   // (the idle used to stop for the practice swing because it turned the whole character; it is the skeleton now)
         if let sequence = practiceSequence { context.coordinator.practice(sequence) }
         view.isPlaying = animate || practiceSequence != nil
-        view.preferredFramesPerSecond = 30
+        view.preferredFramesPerSecond = 60   // LOCKER_MIRROR: the idle view runs at the same 60 fps as the club tiles
     }
     static func dismantleUIView(_ view: SCNView, coordinator: Coordinator) {
         view.isPlaying = false
         coordinator.practiceTimer?.invalidate()
+        coordinator.clubTimer?.invalidate()
+        coordinator.stopMotion()
         coordinator.character.removeAllActions()
         coordinator.scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeAllActions()
         view.scene = nil
@@ -109,21 +80,54 @@ struct CharacterModelPreview: UIViewRepresentable {
         let scene = SCNScene(), character = SCNNode()
         var framing: PreviewFraming = .body
         private var framed = false
-        /// Hero head centre in the locker (Ready crouch): about y = 1.08. Close-ups hide the racket, which the
-        /// Ready pose holds across the chin.
-        static let headTarget = SCNVector3(0, 1.08, 0)
+        /// Head centre of the hero on stage (set by update): the head close-up and the style-card thumbnails aim here.
+        private(set) var headCentre: Float = 1.27
+        var headTarget: SCNVector3 { SCNVector3(0, headCentre, 0) }
+        var camera: SCNNode? { scene.rootNode.childNodes.first(where: { $0.camera != nil }) }
+        /// The hero on stage (the match hero for the locker's body pick) and its racket (hidden in close-ups, for golf and in the club menus that are not tennis).
+        var hero: SCNNode? { character.childNode(withName: MatchHero.rootName, recursively: false) }
+        var racket: SCNNode? { hero?.childNode(withName: MatchHero.racketName, recursively: false) }
         func applyFraming() {
-            guard let cam = scene.rootNode.childNodes.first(where: { $0.camera != nil }) else { return }
+            guard let cam = camera else { return }
             framed = true
-            character.childNode(withName: "heroV4", recursively: false)?.childNode(withName: "racket", recursively: false)?.isHidden = framing == .head
-            if framing == .head { cam.position = SCNVector3(0, 1.13, 1.7); cam.look(at: Self.headTarget) }
-            else { cam.position = SCNVector3(0, 0.9, heroCameraDistance); cam.look(at: SCNVector3(0, 0.76, 0)) }
+            racket?.isHidden = framing == .head
+            let t = framingTarget(framing)
+            switch framing {
+            case .head: cam.position = SCNVector3(0, headCentre + 0.04, 1.15)
+            case .torso: cam.position = SCNVector3(0, t.y + 0.06, 2.1)
+            case .feet: cam.position = SCNVector3(0.15, t.y + 0.22, 1.5)
+            case .racket: cam.position = SCNVector3(t.x * 0.5, t.y + 0.08, 1.7)
+            case .body: cam.position = SCNVector3(0, 0.9, heroCameraDistance)
+            }
+            cam.look(at: t)
+            if var zoom = serveZoom { zoom.base = cam.simdPosition; serveZoom = zoom }
+        }
+        /// What the camera looks at in each framing (hero space).
+        func framingTarget(_ f: PreviewFraming) -> SCNVector3 {
+            switch f {
+            case .head: return headTarget
+            case .torso: return SCNVector3(0, headCentre - 0.40, 0)
+            case .feet: return SCNVector3(0, 0.30, 0)
+            case .racket:
+                // The racket node's origin is the hero's: aim at the middle of its geometry (the frame and strings), in world space.
+                if let r = racket {
+                    let (lo, hi) = r.boundingBox
+                    if hi.x > lo.x { return r.convertPosition(SCNVector3((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, (lo.z + hi.z) / 2), to: nil) }
+                }
+                return SCNVector3(0.25, 0.95, 0.2)
+            case .body: return SCNVector3(0, 0.76, 0)
+            }
+        }
+        /// 3/4 head shot for the style cards: a metre from the face, a little off centre.
+        func headShotCamera() {
+            guard let cam = camera else { return }
+            cam.position = SCNVector3(0.42, headCentre + 0.05, 0.95); cam.look(at: SCNVector3(0, headCentre - 0.01, 0))
         }
         func setFraming(_ f: PreviewFraming, view: SCNView, animated: Bool) {
             guard f != framing || !framed else { return }
             framing = f
-            view.defaultCameraController.target = f == .head ? Self.headTarget : SCNVector3(0, 0.76, 0)
-            view.pointOfView = scene.rootNode.childNodes.first(where: { $0.camera != nil })
+            view.defaultCameraController.target = framingTarget(f)
+            view.pointOfView = camera
             SCNTransaction.begin(); SCNTransaction.animationDuration = animated ? 0.45 : 0
             SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             applyFraming(); SCNTransaction.commit()
@@ -131,21 +135,162 @@ struct CharacterModelPreview: UIViewRepresentable {
         var previous: Player?
         private var lastPractice = 0
         var practiceTimer: Timer?
+        /// The tennis idle plays ReadyIdle between practice swings (the practice swing itself is still the Forehand morph on the static Ready stance).
+        private var idleWanted = false
+        private var settleTask: Task<Void, Never>?
         func practice(_ sequence: Int) {
             guard sequence != lastPractice else { return }; lastPractice = sequence
-            guard let root = character.childNode(withName: "heroV4", recursively: false) else { return }
-            HeroV4.preparePractice(root)
+            guard hero != nil else { return }
+            practiceTimer?.invalidate(); practiceTimer = nil; settleTask?.cancel()
+            guard rig != nil, var playing = motion else { startMorphPractice(); return }
+            // the hero is on its skeleton (ReadyIdle): ease it to the still Ready stance first, then hand over to the morph swing
+            playing.settleFrom = CACurrentMediaTime() - motionStart; motion = playing
+            let wait = playing.settleDuration
+            settleTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(wait))
+                if !Task.isCancelled { self?.startMorphPractice() }
+            }
+        }
+        /// One practice swing: the match Forehand as morph targets on the static Ready-stance hero, ending back on the ReadyIdle loop when the tennis idle is on.
+        private func startMorphPractice() {
+            guard let root = hero else { return }
+            stopMotion()   // the morph swing builds on the static Ready stance: no skeleton in its way
+            MatchHero.preparePractice(root)
             practiceTimer?.invalidate()
             let start = Date()
             let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
                 MainActor.assumeIsolated {
-                    guard let self, let root = self.character.childNode(withName: "heroV4", recursively: false) else { return }
+                    guard let self, let root = self.hero else { return }
                     let progress = min(1, Date().timeIntervalSince(start) / 1.5)
-                    HeroV4.practiceFrame(root, progress: progress)
-                    if progress >= 1 { self.practiceTimer?.invalidate(); self.practiceTimer = nil }
+                    MatchHero.practiceFrame(root, progress: progress)
+                    if progress >= 1 { self.practiceTimer?.invalidate(); self.practiceTimer = nil; self.endMorphPractice() }
                 }
             }
             practiceTimer = timer; RunLoop.main.add(timer, forMode: .common)
+        }
+        private func endMorphPractice() {
+            // the swing ends on the still Ready stance (all weights 0): drop the morphers so the skeleton can take over again at ReadyIdle frame 0
+            hero?.enumerateChildNodes { node, _ in node.morpher = nil }
+            if idleWanted { play(.ready) }
+        }
+        // MARK: LOCKER_MIRROR - the hero moves by playing clips on its own skeleton, never by turning the character root
+        /// The skeleton player on the hero on stage (nil while the hero is the static Ready stance) and what it is playing (nil = a still Ready pose).
+        private(set) var rig: HeroRig?
+        private(set) var motion: MenuMotion?
+        private(set) var motionStart: CFTimeInterval = 0
+        /// Seconds into the motion at the last pose (the proof film and the tests read it).
+        private(set) var motionTime: Double = 0
+        private var displayLink: CADisplayLink?
+        /// The play tile's camera pull-back (the Serve reaches 2 m high, the tile frames a 1.4 m hero): the camera position is scaled about the hero's feet by `k` at the Serve's peak, with the
+        /// Serve's own blend weight, so the feet stay where they are on screen and nothing leaves the tile. `base` is the camera position with no Serve in the pose.
+        private var serveZoom: (base: SIMD3<Float>, k: Float)?
+
+        /// Play `m` on the hero (ReadyIdle loop, or one Serve then the loop); nil leaves the static Ready stance. A display link poses the skeleton every frame.
+        func play(_ m: MenuMotion?, keepClock: Bool = false) {
+            stopLink(); rig?.detach(); rig = nil
+            motion = m
+            guard let m, let root = hero, let asset = MatchHero.asset(female: root.value(forKey: "heroFemale") as? Bool ?? false), let r = HeroRig(root: root, asset: asset) else { return }
+            r.attach(); rig = r
+            serveZoom = m.kind == .serveOnce && framing == .body ? computeServeZoom(root: root, rig: r.data, asset: asset) : nil
+            if !keepClock { motionStart = CACurrentMediaTime() }
+            pose(at: CACurrentMediaTime() - motionStart)
+            let link = CADisplayLink(target: LinkTarget(self), selector: #selector(LinkTarget.fire(_:)))
+            link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
+            link.add(to: .main, forMode: .common); displayLink = link
+        }
+        func stopMotion() {
+            settleTask?.cancel(); settleTask = nil
+            stopLink(); rig?.detach(); rig = nil; motion = nil
+            if let zoom = serveZoom { camera?.simdPosition = zoom.base; serveZoom = nil }
+        }
+        /// How far the camera has to back off (about the feet) for the whole Serve to stay in the tile: the racket (its box, moved by its own track) and the top of the head at every frame of the
+        /// clip must stay inside the top of the view (7 % margin).
+        private func computeServeZoom(root: SCNNode, rig: RigData, asset: MatchHero.Asset) -> (base: SIMD3<Float>, k: Float)? {
+            guard let cam = camera, let cc = cam.camera, let serve = rig.clips["serve"] else { return nil }
+            let racketParts = rig.info.parts.filter { $0.kind == "rigid" && $0.part.hasPrefix("Racket_") }.compactMap { rp -> (track: Int, box: (SCNVector3, SCNVector3))? in
+                guard let i = asset.partIndex(rp.part) else { return nil }
+                return (rp.track, asset.geometry[i].boundingBox)
+            }
+            let head = rig.info.bones.firstIndex(of: "Head")
+            var points: [SIMD3<Float>] = []
+            for f in 0 ..< serve.frames {
+                let pose = serve.pose(at: Double(f) * serve.length / Double(serve.frames - 1), loop: false)
+                for r in racketParts {
+                    let (lo, hi) = r.box
+                    for x in [lo.x, hi.x] { for y in [lo.y, hi.y] { for z in [lo.z, hi.z] { let w = pose[r.track].matrix * SIMD4(Float(x), Float(y), Float(z), 1); points.append(root.simdConvertPosition(SIMD3(w.x, w.y, w.z), to: nil)) } } }
+                }
+                if let head { let h = pose[head].t; points.append(root.simdConvertPosition(h + SIMD3(0, 0.2, 0), to: nil)) }   // the head bone is at the jaw: 0.2 m clears the crown
+            }
+            let base = cam.simdPosition, view = simd_inverse(simd_float4x4(cam.simdOrientation))   // the camera keeps its orientation; only its position is scaled
+            let tanHalf = Float(tan(cc.fieldOfView * .pi / 360))
+            func ndcTop(_ k: Float) -> Float {
+                points.map { q in let v = view * SIMD4(q - base * k, 1); return v.y / max(0.01, -v.z) / tanHalf }.max() ?? 0
+            }
+            guard ndcTop(1) > 0.93 else { return (base, 1) }
+            var lowK: Float = 1, highK: Float = 2
+            for _ in 0 ..< 24 { let mid = (lowK + highK) / 2; if ndcTop(mid) > 0.93 { lowK = mid } else { highK = mid } }
+            return (base, highK)
+        }
+        private func stopLink() { displayLink?.invalidate(); displayLink = nil }
+        /// Stop the display link but keep the skeleton and the motion: a film or a test then poses the hero at explicit times (`pose(at:)`).
+        func pauseDisplayLink() { stopLink() }
+        /// Pose the skeleton for `time` seconds into the motion (the display link calls this every frame; tests and the proof film call it with explicit times).
+        func pose(at time: Double) {
+            motionTime = time
+            guard let motion, let rig else { return }
+            rig.apply(motion, at: time)
+            if let zoom = serveZoom { camera?.simdPosition = zoom.base * (1 + (zoom.k - 1) * motion.serveWeight(rig.data, at: time)) }
+        }
+        @MainActor private final class LinkTarget: NSObject {
+            weak var owner: Coordinator?
+            init(_ owner: Coordinator) { self.owner = owner }
+            @objc func fire(_ link: CADisplayLink) { if let owner { owner.pose(at: link.targetTimestamp - owner.motionStart) } }
+        }
+
+        var clubTimer: Timer?
+        private var clubKey: String?
+        func configureClub(_ activity: ClubPreviewActivity, animate: Bool) {
+            let key = "\(activity.rawValue)-\(animate)"
+            guard key != clubKey else { return }
+            clubTimer?.invalidate(); practiceTimer?.invalidate(); practiceTimer = nil
+            stopMotion()
+            character.removeAllActions(); character.eulerAngles = SCNVector3Zero
+            scene.rootNode.childNode(withName: "clubProps", recursively: false)?.removeFromParentNode()
+            scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeFromParentNode()
+            guard let equipped = previous else { return }
+            previous = nil; update(equipped); clubKey = key
+            guard hero != nil else { return }
+            racket?.isHidden = activity != .play
+            let props = SCNNode(); props.name = "clubProps"; scene.rootNode.addChildNode(props)
+            func box(_ size: SCNVector3, _ position: SCNVector3, _ color: UIColor, _ radius: CGFloat = 0.02) -> SCNNode {
+                let n = SCNNode(geometry: SCNBox(width: CGFloat(size.x), height: CGFloat(size.y), length: CGFloat(size.z), chamferRadius: radius))
+                n.position = position; n.geometry?.firstMaterial?.diffuse.contents = color
+                n.geometry?.firstMaterial?.roughness.contents = 0.85; props.addChildNode(n); return n
+            }
+            let wood = UIColor(red: 0.57, green: 0.34, blue: 0.16, alpha: 1)
+            let navy = UIColor(IslandUI.navy)
+            if activity == .settings {
+                // Open wooden deck chair, angled with the hero. Navy/cream canvas strips. The match set has no seated clip, so the hero stands
+                // in front of the chair in the Ready pose.
+                let chair = SCNNode(); props.addChildNode(chair)
+                for x: Float in [-0.30, 0.30] {
+                    for z: Float in [-0.22, 0.30] { _ = box(SCNVector3(0.045,0.48,0.045), SCNVector3(x,0.23,z),wood) }
+                    _ = box(SCNVector3(0.055,0.055,0.65),SCNVector3(x,0.56,0.03),wood)
+                }
+                for i in 0..<9 {
+                    let x = Float(i-4)*0.06
+                    _ = box(SCNVector3(0.06,0.035,0.55),SCNVector3(x,0.36,0.02),i%2 == 0 ? navy : .white,0)
+                    let back = box(SCNVector3(0.06,0.64,0.035),SCNVector3(x,0.68,-0.28),i%2 == 0 ? navy : .white,0)
+                    back.eulerAngles.x = -0.20
+                }
+                props.eulerAngles.y = 0.35
+                props.position = SCNVector3(-0.12, 0, -0.66)   // the chair stands behind the hero, who stands in front of it
+            } else if activity == .store {
+                _ = box(SCNVector3(0.40,0.6,0.3), SCNVector3(0.57,0.3,-0.13), wood)
+                _ = box(SCNVector3(0.075,0.095,0.03),SCNVector3(0.57,0.44,0.035),UIColor(red:0.8,green:0.64,blue:0.3,alpha:1))
+            }
+            // The hero is the motion: the locker, settings and store tiles play the ReadyIdle loop in place; the play tile plays one Serve and goes back to Ready. Reduced motion keeps the still Ready stance.
+            play(animate ? (activity == .play ? .serveOnce : .ready) : nil)
         }
         private var idleKey: String?
         let heroCameraDistance: Float
@@ -155,7 +300,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             let camera = SCNNode(); camera.camera = SCNCamera(); camera.camera?.fieldOfView = 32; camera.camera?.zNear = 0.05   // close-ups sit ~1 m away
             camera.position = SCNVector3(0, 1.0, cameraDistance); camera.look(at: SCNVector3(0,0.92,0))
             scene.rootNode.addChildNode(camera)
-            // Hero V5 light recipe (ArtDir/hero/v5_proof/LIGHTING.md), same philosophy as the court: warm soft key at
+            // Light recipe (ArtDir/hero/v5_proof/LIGHTING.md), same philosophy as the court: warm soft key at
             // 40 deg elevation from camera-left, cool fill at ~35% from camera-right, a rim from behind, low cool ambient.
             func light(_ type: SCNLight.LightType, _ intensity: CGFloat, _ color: UIColor, elevation: Float, azimuth: Float, shadow: Bool = false) {
                 let node = SCNNode(), l = SCNLight(); l.type = type; l.intensity = intensity; l.color = color
@@ -181,26 +326,30 @@ struct CharacterModelPreview: UIViewRepresentable {
         }
         func update(_ p: Player) {
             guard p != previous else { return }; previous=p; idleKey = nil
+            let playing = motion
+            stopLink(); rig = nil   // the old hero's skeleton goes with its nodes
             character.childNodes.forEach { $0.removeFromParentNode() }
             character.scale = SCNVector3(1, 1, 1)
-            // The locker mirror is the game's own Hero V4 (exported by HeroLockerExport), dressed by the
-            // same rules the game uses (HeroKit.cs): what you pick here is what walks onto the court.
-            if let hero = HeroV4.build(p) {
-                character.addChildNode(hero)
-                if !framed { applyFraming() }   // re-dressing never moves the camera the player has turned
-                hero.childNode(withName: "racket", recursively: false)?.isHidden = framing == .head
-                return
-            }
+            // The locker mirror is the match hero itself (MatchHero.build): the male or female body the locker's sex pick selects, bald,
+            // skin-tinted by the pick, holding the classic racket. What you see here is the mesh that walks onto the court.
+            guard let hero = MatchHero.build(p), let asset = MatchHero.asset(female: p.standardFemale) else { return }
+            headCentre = asset.manifest.headCentreY * asset.scale
+            character.addChildNode(hero)
+            if !framed { applyFraming() }   // re-tinting never moves the camera the player has turned
+            racket?.isHidden = framing == .head
+            if let playing { play(playing, keepClock: true) }   // a new look on the stage keeps the tile's motion (and its clock) going
         }
         /// Small original prop comedy: a ball bounces too high, or rolls past a golfer's feet.
         /// Reduced motion keeps the same sport-specific props in a still pose.
         func configureIdle(sport: Sport?, animate: Bool) {
             let key = "\(sport?.rawValue ?? "none")-\(animate)"
             guard key != idleKey else { return }; idleKey = key
+            idleWanted = animate && sport == .tennis
             character.removeAllActions(); character.position = SCNVector3Zero; character.eulerAngles = SCNVector3Zero
+            stopMotion()
             scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeFromParentNode()
             character.childNode(withName: "idleClub", recursively: false)?.removeFromParentNode()
-            character.childNode(withName: "racket", recursively: true)?.isHidden = sport == .golf || framing == .head   // close-ups: the Ready racket crosses the chin
+            character.childNode(withName: MatchHero.racketName, recursively: true)?.isHidden = sport == .golf || framing == .head   // close-ups: the Ready racket crosses the chin
             guard let sport else { return }
             let ball = SCNNode(geometry: SCNSphere(radius: sport == .golf ? 0.032 : 0.065))
             ball.name = "idleBall"
@@ -233,265 +382,120 @@ struct CharacterModelPreview: UIViewRepresentable {
                 bounce.timingMode = .easeOut
                 let drop = SCNAction.move(to: SCNVector3(0.45, 0.10, 0.25), duration: 0.65)
                 drop.timingMode = .easeIn
-                ball.runAction(.repeatForever(.sequence([bounce, drop, .wait(duration: 0.2)])))
-                character.runAction(.repeatForever(.sequence([
-                    .rotateTo(x: -0.06, y: 0.12, z: -0.05, duration: 0.65),
-                    .rotateTo(x: 0.03, y: -0.08, z: 0.05, duration: 0.65), .wait(duration: 0.2)
-                ])))
+                ball.runAction(.repeatForever(.sequence([bounce, drop, .wait(duration: 0.2)])))   // the loose ball is a prop; the hero's motion is the ReadyIdle clip, not a twist of the whole character
+                play(.ready)
             }
-        }
-        func node(_ name:String, player:Player, hair:Bool=false, part:String?=nil) -> SCNNode? {
-            guard let mesh=CharacterMeshData.load(name) else { return nil }
-            let geometry=mesh.geometry(player:player, shapeBody:part != nil && !(part?.hasPrefix("Hand") ?? false));let material=SCNMaterial();material.lightingModel = .blinn
-            material.specular.contents=UIColor(white:0.025,alpha:1)
-            material.roughness.contents=0.7;material.isDoubleSided=true
-            if part == "Top" { material.diffuse.contents = UIColor(player.outfitColor("shirt") ?? Color(red:0.12,green:0.48,blue:0.68)) }
-            else if part == "Bottom" { material.diffuse.contents = UIColor(player.outfitColor("shorts") ?? Color(red:0.035,green:0.08,blue:0.17)) }
-            else if part == "Shoes" { material.diffuse.contents = UIColor(player.outfitColor("accent") ?? Color(red:0.9,green:0.93,blue:0.95)) }
-            else if part == "Trim" { material.diffuse.contents = UIColor(white:0.94,alpha:1) }
-            else if part == "Limb" || (part?.hasPrefix("Hand") ?? false) { material.diffuse.contents = UIColor(Color(hex:player.skinHex)) }
-            else { material.diffuse.contents = hair ? UIColor(Color(hex:player.hairHex)) : CharacterTextures.recolor(mesh, player:player) }
-            geometry.materials=[material];return SCNNode(geometry:geometry)
         }
     }
 }
 
-/// Uses the same four-region masks and luminance-preserving tint as Unity KitRecolor.
-@MainActor enum CharacterTextures {
-    static var tintCache: [String: UIImage] = [:]
-    static var tintProfile = ""
-    static var originals: [String:[UInt8]] = [:]
-    static func bytes(_ name:String) -> [UInt8]? {
-        if let b=originals[name] { return b }
-        if let url=Bundle.main.url(forResource:name,withExtension:"mask"), let data=try? Data(contentsOf:url) { let b=Array(data); originals[name]=b; return b }
-        guard let url=Bundle.main.url(forResource:name,withExtension:"png"), let image=UIImage(contentsOfFile:url.path)?.cgImage else { return nil }
-        var b=[UInt8](repeating:0,count:512*512*4)
-        b.withUnsafeMutableBytes { ptr in
-            let ctx=CGContext(data:ptr.baseAddress,width:512,height:512,bitsPerComponent:8,bytesPerRow:2048,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue)!
-            ctx.draw(image,in:CGRect(x:0,y:0,width:512,height:512))
-        }
-        originals[name]=b;return b
-    }
-    static func recolor(_ mesh:CharacterMeshData, player:Player) -> Any {
-        let profile = "\(player.standardSkin)-\(player.shirt ?? -1)-\(player.shorts ?? -1)-\(player.accent ?? -1)"
-        if profile != tintProfile { tintCache.removeAll(); tintProfile = profile }
-        if let cached = tintCache[mesh.texture] { return cached }
-        guard var pixels=bytes(mesh.texture), let mask=bytes(mesh.mask) else { return UIColor(Color(hex:player.skinHex)) }
-        let hexes:[String?]=[player.outfitHex("shirt"),player.outfitHex("shorts"),player.outfitHex("accent"),player.skinHex]
-        let colors=hexes.map { hex -> [Double]? in
-            guard let hex, let n=UInt32(hex,radix:16) else { return nil }
-            return [Double((n>>16)&255)/255,Double((n>>8)&255)/255,Double(n&255)/255]
-        }
-        for i in stride(from:0,to:pixels.count,by:4) {
-            let lum=(Double(pixels[i])*0.2126+Double(pixels[i+1])*0.7152+Double(pixels[i+2])*0.0722)/255
-            for channel in 0..<4 {
-                guard mask[i+channel]>0, let color=colors[channel] else { continue }
-                let weight=Double(mask[i+channel])/255
-                let shade=min(1.35,max(0.25,lum/max(0.01,Double(mesh.reference[channel]))))
-                for c in 0..<3 { pixels[i+c]=UInt8(min(255,max(0,Double(pixels[i+c])*(1-weight)+color[c]*shade*255*weight))) }
-            }
-        }
-        let data=Data(pixels) as CFData
-        guard let provider=CGDataProvider(data:data),let cg=CGImage(width:512,height:512,bitsPerComponent:8,bitsPerPixel:32,bytesPerRow:2048,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGBitmapInfo(rawValue:CGImageAlphaInfo.premultipliedLast.rawValue),provider:provider,decode:nil,shouldInterpolate:true,intent:.defaultIntent) else { return UIColor.white }
-        let image=UIImage(cgImage:cg); tintCache[mesh.texture]=image; return image
-    }
-}
-
-/// The locked Hero V4 as the game plays it: baked Ready pose + racket + the three hats
-/// (CharacterAssets/HeroV4.json/.bin, written by Unity HeroLockerExport), recoloured with a Swift port of
-/// Unity HeroKit / KitRecolor (linear-light, luminance-preserving region tint) so the mirror matches the court.
+/// Menu catalogue only: the names and counts the locker lists for haircut and headwear (HeroKit.cs keeps the same tables on the Unity side).
+/// The match heroes are bald and wear no kit (HERO_MAINSTAY), so nothing in this enum is drawn; the hero on the locker stage is `MatchHero`.
 @MainActor enum HeroV4 {
-    struct Sub: Decodable { let material: String; let indexOffset: Int; let indexCount: Int }
-    struct Part: Decodable { let name: String; let hat: String?; let hair: String?; let body: String?; let vertexCount: Int, positionOffset: Int, normalOffset: Int, uvOffset: Int; let submeshes: [Sub] }
-    struct Mat: Decodable { let name: String; let texture: String?; let color: [Float]; let transparent: Bool; let smoothness: Float }
-    struct Manifest: Decodable { let parts: [Part]; let materials: [Mat] }
-    struct Ref: Decodable { let shirt: Float, shorts: Float, hair: Float, skin: Float }
     static let headwear = ["None", "Visor", "Cap", "Sweatband"]
     static let haircuts = ["Swept", "Ponytail", "Bob", "Long", "Curly", "Bald", "Buzz", "Waves"]
-    /// Haircuts the menus offer. Bald / Buzz / Waves stay out until the head rebuild lands (the V4 skull under
-    /// them is a face panel on an oversized dome).
+    /// Haircuts the menus offer. Bald / Buzz / Waves stay out until the head rebuild lands.
     nonisolated static var offered: Int { HeadRebuild.shipped ? 8 : 5 }
     nonisolated enum HeadRebuild { static let shipped = false }
-    static var manifest: Manifest?, ref: Ref?, geometry: [String: SCNGeometry] = [:]
-    static var atlasCache: (key: String, image: UIImage)?
-    static var iris: UIImage?
+}
 
-    static func load() -> Bool {
-        if manifest != nil { return true }
-        let menu = Bundle.main.url(forResource: "HeroMenu", withExtension: "json") != nil
-        guard let mu = Bundle.main.url(forResource: menu ? "HeroMenu" : "HeroV4", withExtension: "json"), let md = try? Data(contentsOf: mu),
-              let m = try? JSONDecoder().decode(Manifest.self, from: md),
-              let bin = previewData(menu ? "HeroMenu" : "HeroV4") else { return false }
-        if let ru = Bundle.main.url(forResource: "HeroV4_KitRef", withExtension: "json"), let rd = try? Data(contentsOf: ru) { ref = try? JSONDecoder().decode(Ref.self, from: rd) }
-        for (i, part) in m.parts.enumerated() {
-            func src(_ off: Int, _ comps: Int, _ sem: SCNGeometrySource.Semantic) -> SCNGeometrySource {
-                SCNGeometrySource(data: bin.subdata(in: off ..< off + part.vertexCount * comps * 4), semantic: sem, vectorCount: part.vertexCount,
-                                  usesFloatComponents: true, componentsPerVector: comps, bytesPerComponent: 4, dataOffset: 0, dataStride: comps * 4)
-            }
-            let elements = part.submeshes.map { sub in
-                SCNGeometryElement(data: bin.subdata(in: sub.indexOffset ..< sub.indexOffset + sub.indexCount * 4), primitiveType: .triangles,
-                                   primitiveCount: sub.indexCount / 3, bytesPerIndex: 4)
-            }
-            geometry["\(i)"] = SCNGeometry(sources: [src(part.positionOffset, 3, .vertex), src(part.normalOffset, 3, .normal), src(part.uvOffset, 2, .texcoord)], elements: elements)
+/// The two match heroes as the game plays them (HERO_MAINSTAY + DRESS_MATCH_HEROES): the male and female bodies from work/match-anim-set, bald, with the painted face,
+/// the classic racket in the right hand and the White tennis kit (polo, shorts / skort, socks, shoes: parts `Kit_Top`, `Kit_Bottom`, `Kit_Sock_L/R`, `Kit_Shoe_L/R`), exported by Unity
+/// (MatchHeroLockerExport) from Resources/Tennis/Customization/PlayerMale|PlayerFemale:
+///   CharacterAssets/MatchHero_<Sex>.json         parts, submeshes (each with the LOOK numbers of Unity's runtime material), bounds, the rig description
+///   CharacterAssets/MatchHero_<Sex>.lzfse        the Ready stance (frame 0 of <Sex>_ReadyIdle), positions + normals + indices; the kit's UVs; the body's bind-pose positions
+///   CharacterAssets/MatchHero_<Sex>_Swing_NN     the match Forehand clip sampled at manifest.swingTimes (morph targets for the loading screen's practice swing)
+///   CharacterAssets/MatchHero_<Sex>_Rig.lzfse    LOCKER_MIRROR: bind-pose meshes + bone weights + the clips <Sex>_ReadyIdle and <Sex>_Serve as bone tracks (the menu tiles play these)
+///   CharacterAssets/MatchHero_<map>.png          the cloth weave, the kit's seam maps and the soft skin normal Unity's materials sample
+/// The data types, loaders, surfaces (the cloth / skin look) and the skeleton player are in MatchHeroData / MatchHeroSurfaces / MatchHeroMotion.swift.
+/// The locker's skin pick tints the body, its racket colour tints the frame, and its shirt / shorts / shoes ("accent") picks recolour the kit by role with the SAME maths as Unity's
+/// MatchHeroLook.SetKit (`kitTint`, `kitDerive`); hair and headwear are not part of these bodies.
+@MainActor enum MatchHero {
+    static let rootName = MatchHeroData.rootName, racketName = MatchHeroData.racketName
+    /// Height the hero stands on the locker stage: the frame the old chibi filled, so every locker camera keeps its framing.
+    static let stageHeight = MatchHeroData.stageHeight
+
+    // The export's data types, loaders and the skeleton player live in MatchHeroData / MatchHeroSurfaces / MatchHeroMotion (no UIKit, no Player: the same files build the hero in the render harness).
+    typealias Look = MatchHeroData.Look
+    typealias Sub = MatchHeroData.Sub
+    typealias Part = MatchHeroData.Part
+    typealias Mat = MatchHeroData.Mat
+    typealias Manifest = MatchHeroData.Manifest
+    typealias Asset = MatchHeroData.Asset
+
+    static func previewData(_ name: String) -> Data? { MatchHeroData.data(name) }
+    static func asset(female: Bool) -> Asset? { MatchHeroData.asset(female: female) }
+
+    // MARK: the worn kit (DRESS_MATCH_HEROES) - the same maths as Unity's MatchHeroLook.SetKit
+    /// sRGB albedo of the authored White kit, and the floor of a tint (the authored Black kit's albedo, so a black pick still shows folds and seams).
+    static let kitWhite: Float = 0.9300, kitBlackR: Float = 0.0350, kitBlackB: Float = 0.0401
+    /// A picked colour on the near-white kit material: multiply (a white pick is the authored white), floored at the authored black.
+    static func kitTint(_ pick: SIMD3<Float>) -> SIMD3<Float> {
+        SIMD3(max(kitWhite * pick.x, kitBlackR), max(kitWhite * pick.y, kitBlackR), max(kitWhite * pick.z, kitBlackB))
+    }
+    /// The trim / band colour that goes with a shirt / shorts pick: darkened 35 % when the pick is light (luminance >= .5), lightened 35 % toward white when it is dark.
+    static func kitDerive(_ pick: SIMD3<Float>) -> SIMD3<Float> {
+        let l = 0.2126 * pick.x + 0.7152 * pick.y + 0.0722 * pick.z
+        return l >= 0.5 ? pick * 0.65 : pick + (SIMD3<Float>(repeating: 1) - pick) * 0.35
+    }
+    /// The colour of one kit role for this player, or nil for the authored colour (no pick = "kit colour"):
+    /// shirt -> Kit_Shirt + Kit_ShirtTrim, shorts -> Kit_Shorts + Kit_ShortsBand, accent (shoes) -> Kit_Shoe; Kit_Sole and Kit_Sock are never touched.
+    static func kitColour(role: String, player p: Player) -> SIMD3<Float>? {
+        func pick(_ slot: String) -> SIMD3<Float>? { p.outfitHex(slot).map(rgb) }
+        switch role {
+        case "Kit_Shirt": return pick("shirt").map(kitTint)
+        case "Kit_ShirtTrim": return pick("shirt").map { kitTint(kitDerive($0)) }
+        case "Kit_Shorts": return pick("shorts").map(kitTint)
+        case "Kit_ShortsBand": return pick("shorts").map { kitTint(kitDerive($0)) }
+        case "Kit_Shoe": return pick("accent").map(kitTint)
+        default: return nil
         }
-        if let u = Bundle.main.url(forResource: "HeroV4_Iris", withExtension: "png") { iris = UIImage(contentsOfFile: u.path) }
-        manifest = m; return true
     }
 
-    static var hairDetailCache: [String: UIImage] = [:]
-    static func hairDetail(_ name: String) -> UIImage? {
-        if let c = hairDetailCache[name] { return c }
-        guard let u = Bundle.main.url(forResource: "HeroV4_" + name, withExtension: "png"), let img = UIImage(contentsOfFile: u.path) else { return nil }
-        hairDetailCache[name] = img; return img
-    }
     static func rgb(_ hex: String) -> SIMD3<Float> {
         let n = UInt32(hex, radix: 16) ?? 0xFFFFFF
         return SIMD3(Float((n >> 16) & 255) / 255, Float((n >> 8) & 255) / 255, Float(n & 255) / 255)
     }
-    static func color(_ c: SIMD3<Float>) -> UIColor { UIColor(red: CGFloat(c.x), green: CGFloat(c.y), blue: CGFloat(c.z), alpha: 1) }
 
+    /// The hero node: Body, Face, the six Kit_* parts and a "racket" group (frame, strings, grip), turned to the camera a touch 3/4, mirrored for a left-hander. Surfaces follow Unity's runtime
+    /// materials (MatchHeroSurfaces): the skin tone, the racket colour and the kit's role tints are the locker's picks, everything else is the authored look.
     static func build(_ p: Player) -> SCNNode? {
-        guard load(), let m = manifest else { return nil }
-        let root = SCNNode(); root.name = "heroV4"; root.eulerAngles.y = .pi + 0.35   // exported facing -z; face the camera, a touch of 3/4
-        root.scale = SCNVector3(0.92, 0.92, 0.92)   // the chibi hero is wide in Ready: fit the mirror frame
-        let racket = SCNNode(); racket.name = "racket"; root.addChildNode(racket)
-        let wanted = headwear[max(0, min(3, p.hairStyle))]
-        // one haircut (fall back to Swept if this locker bake predates the others)
-        let cuts = Set(m.parts.compactMap { $0.hair }), cut = cuts.contains(haircuts[p.shownHaircut]) ? haircuts[p.shownHaircut] : "Swept"
-        let skin = rgb(p.skinHex), hair = rgb(p.hairHex)
-        let mats = Dictionary(uniqueKeysWithValues: m.materials.map { ($0.name, $0) })
-        let atlas = tintedAtlas(p)
-        let mirrored = p.handedness == .left
-        for (i, part) in m.parts.enumerated() {
-            if let hat = part.hat, !hat.isEmpty, hat == "Worn" ? wanted == "None" : hat != wanted { continue }
-            let short = ["Bald", "Buzz", "Waves"].contains(cut)
-            if let h = part.hair, !h.isEmpty, h == "Short" ? !short : h != cut { continue }
-            if part.hat != nil, !(part.hat ?? "").isEmpty, part.hat != "Worn", part.hat != "None", (part.hair ?? "").isEmpty, short { continue }   // short cuts wear the "Short" hats
-            if let b = part.body, !b.isEmpty, b != (p.standardFemale ? "Girl" : "Boy") { continue }
-            guard let base = geometry["\(i)"]?.copy() as? SCNGeometry else { continue }
-            base.materials = part.submeshes.map { sub in
-                let info = mats[sub.material]; let mat = SCNMaterial()
-                mat.lightingModel = .blinn; mat.specular.contents = UIColor(white: 0.05, alpha: 1); mat.shininess = 0.15   // soft plastic, no specular blobs
-                mat.isDoubleSided = true   // the hero's Unity materials render with Cull Off: thin shells (hair!) need both sides
-                var c = SIMD3<Float>(info?.color[0] ?? 1, info?.color[1] ?? 1, info?.color[2] ?? 1)
-                let n = sub.material
-                if n.hasPrefix("Hero_01_HairTuft") { c = hair }
-                else if n.contains("CoveredFoundation") { c = hair * 0.8 }
-                else if n.hasPrefix("Hero lid skin") { c = skin * SIMD3(0.97, 0.9, 0.86) }
-                else if n.hasPrefix("Hero_01_ShoeCleanWhite"), let a = p.outfitHex("accent") { c = rgb(a) }
-                else if n.hasPrefix("Hero_Racket_Blue"), let r = p.outfitHex("racket") { c = rgb(r) }
-                if info?.texture == "atlas", let atlas { mat.diffuse.contents = atlas }
-                else if info?.texture == "iris", let iris { mat.diffuse.contents = iris }
-                else if let t = info?.texture, t.hasPrefix("Hair_"), let img = hairDetail(t) {
-                    mat.diffuse.contents = img; mat.diffuse.wrapS = .repeat; mat.diffuse.wrapT = .repeat
-                    let l = c.x * 0.2126 + c.y * 0.7152 + c.z * 0.0722   // keep the pattern readable on near-black hair (HeroKit.DetailTint)
-                    mat.multiply.contents = color(l >= 0.16 ? c : c + SIMD3(repeating: 0.16 - l))
-                }
-                else { mat.diffuse.contents = color(c) }
-                if info?.transparent == true { mat.transparency = CGFloat(info?.color[3] ?? 1); mat.writesToDepthBuffer = false }
-                return mat
+        guard let asset = asset(female: p.standardFemale) else { return nil }
+        let picks = MatchHeroData.Picks(colour: { name in
+            switch name {
+            case "Skin": return rgb(p.skinHex)
+            case "White_Frame": return p.outfitHex("racket").map(rgb)
+            case let role where role.hasPrefix("Kit_"): return kitColour(role: role, player: p)
+            default: return nil
             }
-            let node = SCNNode(geometry: base); node.name = part.name
-            node.setValue(i, forKey: "menuPartIndex")
-            (part.name.hasPrefix("Hero_Racket") || part.name.hasPrefix("TwoHand") ? racket : root).addChildNode(node)
-        }
-        if mirrored { root.scale.x = -root.scale.x }
-        return root
+        }, leftHanded: p.handedness == .left)
+        return MatchHeroData.buildHero(asset, picks: picks)
     }
 
-
-    static func previewData(_ name: String) -> Data? {
-        if let u = Bundle.main.url(forResource: name, withExtension: "lzfse"),
-           let d = try? Data(contentsOf: u), let raw = try? (d as NSData).decompressed(using: .lzfse) { return raw as Data }
-        guard let u = Bundle.main.url(forResource: name, withExtension: "bin") else { return nil }
-        return try? Data(contentsOf: u)
-    }
-
-    /// Vertex targets sampled from the unchanged gameplay Forehand. Every wardrobe variant is
-    /// baked with the same indices as HeroMenu, so live tint/slot choices are preserved.
+    /// Vertex targets sampled from the unchanged match Forehand (the clip the court plays), for the locker's practice swing.
     static func preparePractice(_ root: SCNNode) {
-        guard let manifest else { return }
-        var nodes: [SCNNode] = []
-        root.enumerateChildNodes { node, _ in if node.value(forKey: "menuPartIndex") != nil { nodes.append(node) } }
-        if nodes.first?.morpher == nil {
-            var targets: [Int: [SCNGeometry]] = [:]
-            for frame in [0, 3, 6, 9, 12, 15, 18, 19] {
-                guard let data = previewData(String(format: "HeroSwing_%02d", frame)) else { return }
-                for node in nodes {
-                    guard let i = node.value(forKey: "menuPartIndex") as? Int, manifest.parts.indices.contains(i), let base = node.geometry else { continue }
-                    let part = manifest.parts[i], length = part.vertexCount * 12
-                    guard part.normalOffset + length <= data.count else { return }
-                    let sources = [(part.positionOffset, SCNGeometrySource.Semantic.vertex), (part.normalOffset, .normal)].map { offset, semantic in
-                        SCNGeometrySource(data: data.subdata(in: offset..<offset+length), semantic: semantic, vectorCount: part.vertexCount,
-                                          usesFloatComponents: true, componentsPerVector: 3, bytesPerComponent: 4, dataOffset: 0, dataStride: 12)
-                    }
-                    targets[i, default: []].append(SCNGeometry(sources: sources, elements: base.elements))
-                }
-            }
-            for node in nodes {
-                guard let i = node.value(forKey: "menuPartIndex") as? Int, let t = targets[i], t.count == 8 else { continue }
-                let morph = SCNMorpher(); morph.targets = t; morph.calculationMode = .normalized; morph.unifiesNormals = false; node.morpher = morph
-            }
+        guard let female = root.value(forKey: "heroFemale") as? Bool, let asset = asset(female: female), let targets = asset.swingTargets() else { return }
+        root.enumerateChildNodes { node, _ in
+            guard node.morpher == nil, let i = node.value(forKey: "menuPartIndex") as? Int, targets.indices.contains(i), !targets[i].isEmpty else { return }
+            let morph = SCNMorpher(); morph.targets = targets[i]; morph.calculationMode = .normalized; morph.unifiesNormals = false; node.morpher = morph
         }
     }
 
+    /// progress 0...1 over one practice swing: ease out of the Ready stance, play the Forehand clip, ease back.
     static func practiceFrame(_ root: SCNNode, progress: Double) {
+        guard let female = root.value(forKey: "heroFemale") as? Bool, let asset = asset(female: female) else { return }
+        let times = asset.manifest.swingTimes.map(Double.init)
         let active = min(1, progress / 0.1) * min(1, (1 - progress) / 0.15)
-        let frame = min(7, max(0, (progress - 0.1) / 0.75 * 7))
-        let lo = Int(frame), hi = min(7, lo + 1), mix = frame - Double(lo)
+        let clipTime = min(1, max(0, (progress - 0.1) / 0.75)) * Double(asset.manifest.swingLength)
+        let hi = min(times.count - 1, times.firstIndex(where: { $0 >= clipTime }) ?? times.count - 1), lo = max(0, hi - 1)
+        let span = times[hi] - times[lo], mix = span > 0 ? min(1, max(0, (clipTime - times[lo]) / span)) : 1
         SCNTransaction.begin(); SCNTransaction.disableActions = true
         root.enumerateChildNodes { node, _ in
             guard let morph = node.morpher else { return }
-            for i in 0..<8 { morph.setWeight((i == lo ? (1 - mix) * active : 0) + (i == hi ? mix * active : 0), forTargetAt: i) }
+            for i in 0 ..< morph.targets.count {
+                morph.setWeight(CGFloat((i == lo ? (1 - mix) * active : 0) + (i == hi ? (lo == hi ? 1 : mix) * active : 0)), forTargetAt: i)
+            }
         }
         SCNTransaction.commit()
-    }
-
-    /// Port of Unity KitRecolor as HeroKit drives it (linear light; R shirt, G shorts+trim, B baked hair, skin mask).
-    static func tintedAtlas(_ p: Player) -> UIImage? {
-        let key = "\(p.skinHex)-\(p.hairHex)-\(p.outfitHex("shirt") ?? "-")-\(p.outfitHex("shorts") ?? "-")"
-        if let c = atlasCache, c.key == key { return c.image }
-        let size = 1024
-        func pixels(_ name: String) -> [UInt8]? {
-            guard let u = Bundle.main.url(forResource: name, withExtension: "png"), let img = UIImage(contentsOfFile: u.path)?.cgImage else { return nil }
-            var b = [UInt8](repeating: 0, count: size * size * 4)
-            b.withUnsafeMutableBytes { ptr in
-                let ctx = CGContext(data: ptr.baseAddress, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
-                                    space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
-                ctx.interpolationQuality = .high; ctx.draw(img, in: CGRect(x: 0, y: 0, width: size, height: size))
-            }
-            return b
-        }
-        guard var px = pixels("HeroV4_Atlas"), let mask = pixels("HeroV4_KitMask"), let skinMask = pixels("HeroV4_SkinMask"), let ref else { return nil }
-        let toLin: [Float] = (0..<256).map { i in let c = Float(i) / 255; return c <= 0.04045 ? c / 12.92 : powf((c + 0.055) / 1.055, 2.4) }
-        func lin(_ c: SIMD3<Float>) -> SIMD3<Float> { SIMD3(toLin[Int(c.x * 255)], toLin[Int(c.y * 255)], toLin[Int(c.z * 255)]) }
-        func srgb(_ v: Float) -> UInt8 { let c = max(0, min(1, v)); let s = c <= 0.0031308 ? c * 12.92 : 1.055 * powf(c, 1 / 2.4) - 0.055; return UInt8(max(0, min(255, s * 255 + 0.5))) }
-        let targets: [SIMD3<Float>?] = [p.outfitHex("shirt").map { lin(rgb($0)) }, p.outfitHex("shorts").map { lin(rgb($0)) },
-                                        lin(rgb(p.hairHex)), lin(rgb(p.skinHex))]
-        let refs: [Float] = [ref.shirt, ref.shorts, ref.hair, ref.skin]
-        px.withUnsafeMutableBufferPointer { o in
-            mask.withUnsafeBufferPointer { mk in
-                skinMask.withUnsafeBufferPointer { sk in
-                    for i in stride(from: 0, to: size * size * 4, by: 4) {
-                        let w: [Float] = [Float(mk[i]) / 255, Float(mk[i + 1]) / 255, Float(mk[i + 2]) / 255, Float(sk[i]) / 255]
-                        if w[0] + w[1] + w[2] + w[3] <= 0 { continue }
-                        var c = SIMD3<Float>(toLin[Int(o[i])], toLin[Int(o[i + 1])], toLin[Int(o[i + 2])])
-                        let l = c.x * 0.2126 + c.y * 0.7152 + c.z * 0.0722
-                        for k in 0..<4 {
-                            guard w[k] > 0, let t = targets[k] else { continue }
-                            let lu = k == 3 ? refs[3] + (l - refs[3]) * 0.45 : l
-                            let shaded = t * min(1.35, max(0.25, lu / max(refs[k], 0.01)))
-                            c = c + (shaded - c) * min(1, w[k])
-                        }
-                        o[i] = srgb(c.x); o[i + 1] = srgb(c.y); o[i + 2] = srgb(c.z)
-                    }
-                }
-            }
-        }
-        let data = Data(px) as CFData
-        guard let provider = CGDataProvider(data: data),
-              let cg = CGImage(width: size, height: size, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: size * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                               bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue), provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else { return nil }
-        let image = UIImage(cgImage: cg); atlasCache = (key, image); return image
     }
 }

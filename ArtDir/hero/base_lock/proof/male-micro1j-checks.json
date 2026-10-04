@@ -1,0 +1,619 @@
+{
+ "created": "2026-10-01",
+ "brief": "01_MALE_HEAD_Micro1j.txt",
+ "scope": "male head+neck zone z>=1.40 only (position-only edits on the Micro1i topology)",
+ "hashes": {
+  "start_blend_68de53ca": "68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf",
+  "artdir_base_at_install_0dd37baf": "0dd37baf20fcc3524ee1d8557b88b87ce0d2d3782d13c5eb15a8df9fe38802b7",
+  "artdir_base_fbx_614cccf3": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+  "delta_D_sha256": "a303f6c596f4e8a92bc611d46487d2c11374946578bfa2eec3f91d5654bf432b"
+ },
+ "zone_audit": {
+  "zone": "start z >= 1.40",
+  "moved_total_numeric": 1475,
+  "moved_outside_zone": 0,
+  "moved_below_z_1_40": 0,
+  "min_z_of_moved": 1.4000918865203857,
+  "max_move_mm": 8.0226432552589,
+  "hands_moved": 0
+ },
+ "audit_vs_artdir_base_0dd37baf": {
+  "moved_total": 1243,
+  "moved_outside_zone_z_lt_1_40": 0,
+  "min_z_of_moved_verts": 1.4000918865203857,
+  "hands_moved": 0,
+  "arms_moved": 0,
+  "torso_pelvis_legs_feet_moved": 0,
+  "topology_identical": true,
+  "tris": 60358,
+  "vertex_groups_identical": true,
+  "face_m_identical": true,
+  "boundary_edges": 92,
+  "nonmanifold_edges": 2,
+  "normals_far_from_edit": {
+   "corners": 115313,
+   "max_angle_deg": 0.454134076833725,
+   "changed_corners_gt_0_05deg": 42
+  },
+  "normals_edit_region": {
+   "corners": 6081,
+   "mean_rotation_deg": 3.1296234130859375,
+   "max_rotation_deg": 32.578731536865234
+  },
+  "silhouette": {
+   "body_bald_front": {
+    "diff": 3245,
+    "union": 74879,
+    "pct": 4.333658302060658
+   },
+   "body_bald_back": {
+    "diff": 3255,
+    "union": 74133,
+    "pct": 4.390757152685039
+   },
+   "withface_bald_front": {
+    "diff": 3245,
+    "union": 74879,
+    "pct": 4.333658302060658
+   },
+   "withface_bald_back": {
+    "diff": 3255,
+    "union": 74133,
+    "pct": 4.390757152685039
+   }
+  }
+ },
+ "audit_vs_start_68de53ca_(my_edit_alone)": {
+  "moved_total": 1243,
+  "moved_outside_zone_z_lt_1_40": 0,
+  "min_z_of_moved_verts": 1.4000918865203857,
+  "hands_moved": 0,
+  "tris": 60358,
+  "silhouette": {
+   "body_bald_front": {
+    "diff": 3231,
+    "union": 74991,
+    "pct": 4.308517022042645
+   },
+   "body_bald_back": {
+    "diff": 3415,
+    "union": 74319,
+    "pct": 4.595056445861758
+   },
+   "withface_bald_front": {
+    "diff": 3231,
+    "union": 74991,
+    "pct": 4.308517022042645
+   },
+   "withface_bald_back": {
+    "diff": 3415,
+    "union": 74319,
+    "pct": 4.595056445861758
+   }
+  },
+  "height_m": 1.702187418937683
+ },
+ "regions": {
+  "front_neck_apple_throat (y<-0.02, z<1.4545)": {
+   "verts": 92,
+   "max_mm": 8.0226432552589,
+   "mean_mm": 1.0387098418272778
+  },
+  "nape (y>0)": {
+   "verts": 432,
+   "max_mm": 2.087499413381613,
+   "mean_mm": 0.6695471271556388
+  },
+  "jaw/ramus (|x|>0.01, z 1.43..1.545, y -0.16..0.03)": {
+   "verts": 1112,
+   "max_mm": 6.010839623605277,
+   "mean_mm": 0.47795693520586235
+  }
+ },
+ "loops_move": {
+  "LOOP_mouth_seam": {
+   "verts": 59,
+   "max_move_mm": 0.0
+  },
+  "LOOP_mouth_lip_upper": {
+   "verts": 39,
+   "max_move_mm": 0.0
+  },
+  "LOOP_mouth_lip_lower": {
+   "verts": 49,
+   "max_move_mm": 0.0
+  },
+  "LOOP_nostril_L": {
+   "verts": 23,
+   "max_move_mm": 0.0
+  },
+  "LOOP_nostril_R": {
+   "verts": 23,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ala_L": {
+   "verts": 20,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ala_R": {
+   "verts": 19,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ear_attach_L": {
+   "verts": 117,
+   "max_move_mm": 0.0024192323206947406
+  },
+  "LOOP_helix_L": {
+   "verts": 65,
+   "max_move_mm": 0.0
+  },
+  "LOOP_concha_L": {
+   "verts": 50,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ear_attach_R": {
+   "verts": 117,
+   "max_move_mm": 0.002421765806538561
+  },
+  "LOOP_helix_R": {
+   "verts": 65,
+   "max_move_mm": 0.0
+  },
+  "LOOP_concha_R": {
+   "verts": 50,
+   "max_move_mm": 0.0
+  },
+  "LOOP_jaw_ear_L": {
+   "verts": 30,
+   "max_move_mm": 1.1288825475290838
+  },
+  "LOOP_jaw_ear_R": {
+   "verts": 30,
+   "max_move_mm": 1.1271900486134245
+  },
+  "LOOP_lid_margin_L": {
+   "verts": 46,
+   "max_move_mm": 0.0
+  },
+  "LOOP_lid_margin_R": {
+   "verts": 46,
+   "max_move_mm": 0.0
+  }
+ },
+ "mirror_asymmetry_mm": {
+  "mean": 0.002455871013717822,
+  "p95": 0.01436271866865276,
+  "max": 0.03414075149003881
+ },
+ "head_edge_mm": {
+  "mean": 4.315037351102941,
+  "median": 3.3974313713734916,
+  "n": 15399
+ },
+ "face_zone_edge_mm": {
+  "mean": 3.5921739348480437,
+  "median": 3.415229813335529,
+  "n": 8943
+ },
+ "apple_throat_front_contour_mm": [
+  {
+   "z": 1.4033,
+   "plate_avg": -77.85,
+   "start": -78.50441897669211,
+   "now": -78.49335831141921,
+   "err_start": -0.6544189766921136,
+   "err_now": -0.6433583114192203
+  },
+  {
+   "z": 1.4112,
+   "plate_avg": -79.15,
+   "start": -79.39769244863636,
+   "now": -79.40563540079923,
+   "err_start": -0.2476924486363572,
+   "err_now": -0.2556354007992212
+  },
+  {
+   "z": 1.419,
+   "plate_avg": -81.75,
+   "start": -81.14207344582016,
+   "now": -81.35424006045571,
+   "err_start": 0.6079265541798407,
+   "err_now": 0.39575993954429123
+  },
+  {
+   "z": 1.4229,
+   "plate_avg": -83.05000000000001,
+   "start": -82.12345289035807,
+   "now": -82.454751585949,
+   "err_start": 0.9265471096419446,
+   "err_now": 0.5952484140510137
+  },
+  {
+   "z": 1.4307,
+   "plate_avg": -88.25,
+   "start": -88.00632244422476,
+   "now": -87.20036619949167,
+   "err_start": 0.24367755577523553,
+   "err_now": 1.0496338005083317
+  },
+  {
+   "z": 1.4347,
+   "plate_avg": -89.55000000000001,
+   "start": -90.20690278268842,
+   "now": -88.72703485265554,
+   "err_start": -0.6569027826884053,
+   "err_now": 0.8229651473444761
+  },
+  {
+   "z": 1.4386,
+   "plate_avg": -90.2,
+   "start": -91.11024405725662,
+   "now": -88.833640442315,
+   "err_start": -0.9102440572566195,
+   "err_now": 1.3663595576850014
+  },
+  {
+   "z": 1.4425,
+   "plate_avg": -90.85,
+   "start": -92.01358533182477,
+   "now": -88.94024603197445,
+   "err_start": -1.1635853318247769,
+   "err_now": 1.9097539680255409
+  },
+  {
+   "z": 1.4464,
+   "plate_avg": -90.2,
+   "start": -94.65994217140492,
+   "now": -89.31326792035212,
+   "err_start": -4.4599421714049186,
+   "err_now": 0.886732079647885
+  },
+  {
+   "z": 1.4503,
+   "plate_avg": -88.25,
+   "start": -97.65209523900914,
+   "now": -91.99886821279632,
+   "err_start": -9.402095239009142,
+   "err_now": -3.7488682127963244
+  }
+ ],
+ "nape_back_contour_mm": [
+  {
+   "z": 1.4033,
+   "plate_avg": 83.95,
+   "start": 83.5362849346764,
+   "now": 82.74746204242533,
+   "err_start": -0.4137150653236006,
+   "err_now": -1.2025379575746769
+  },
+  {
+   "z": 1.4112,
+   "plate_avg": 78.05,
+   "start": 79.20545265788516,
+   "now": 77.72378834833879,
+   "err_start": 1.1554526578851636,
+   "err_now": -0.326211651661211
+  },
+  {
+   "z": 1.419,
+   "plate_avg": 71.5,
+   "start": 73.89507420143013,
+   "now": 71.97912995410145,
+   "err_start": 2.395074201430134,
+   "err_now": 0.4791299541014524
+  },
+  {
+   "z": 1.4268,
+   "plate_avg": 65.65,
+   "start": 67.53058267396923,
+   "now": 65.44993873621728,
+   "err_start": 1.8805826739692293,
+   "err_now": -0.20006126378272882
+  },
+  {
+   "z": 1.4347,
+   "plate_avg": 59.15,
+   "start": 60.5023055181556,
+   "now": 58.46559341605981,
+   "err_start": 1.3523055181556032,
+   "err_now": -0.6844065839401878
+  },
+  {
+   "z": 1.4425,
+   "plate_avg": 53.95,
+   "start": 54.54960577406433,
+   "now": 52.53694125222854,
+   "err_start": 0.5996057740643295,
+   "err_now": -1.4130587477714656
+  },
+  {
+   "z": 1.4503,
+   "plate_avg": 46.7,
+   "start": 49.732825296276836,
+   "now": 47.68847670971742,
+   "err_start": 3.032825296276833,
+   "err_now": 0.9884767097174176
+  },
+  {
+   "z": 1.4581,
+   "plate_avg": 44.1,
+   "start": 46.08797813385866,
+   "now": 44.035854817768865,
+   "err_start": 1.987978133858661,
+   "err_now": -0.06414518223113674
+  },
+  {
+   "z": 1.466,
+   "plate_avg": 41.5,
+   "start": 43.60127130260826,
+   "now": 41.610400298207225,
+   "err_start": 2.101271302608261,
+   "err_now": 0.11040029820722452
+  },
+  {
+   "z": 1.4777,
+   "plate_avg": 38.9,
+   "start": 41.95911171182736,
+   "now": 40.16810001579693,
+   "err_start": 3.059111711827363,
+   "err_now": 1.2681000157969322
+  },
+  {
+   "z": 1.4933,
+   "plate_avg": 37.6,
+   "start": 40.216851846552096,
+   "now": 38.97331929923431,
+   "err_start": 2.6168518465520947,
+   "err_now": 1.3733192992343106
+  },
+  {
+   "z": 1.5012,
+   "plate_avg": 38.25,
+   "start": 40.2177587373413,
+   "now": 39.1522120890853,
+   "err_start": 1.967758737341299,
+   "err_now": 0.9022120890853031
+  }
+ ],
+ "q3_contour_max_change_mm": 1.7618026190670264,
+ "profile_front_y_max_change_mm": 5.1944726298103205e-08,
+ "front_half_width_jaw_rows_err_mm": {
+  "232": [
+   -0.40917599809001115,
+   -0.13890836533747564
+  ],
+  "236": [
+   0.34083482699692746,
+   0.7529181249137235
+  ],
+  "240": [
+   1.6360147964111504,
+   1.8540445668625005
+  ],
+  "244": [
+   1.4182982869218597,
+   1.0789984262048746
+  ],
+  "248": [
+   1.5541674393281109,
+   -0.6672480747351855
+  ],
+  "252": [
+   1.743658725101238,
+   -0.7684725804950887
+  ],
+  "256": [
+   1.603844537160379,
+   0.814381086752386
+  ],
+  "260": [
+   1.2809318852600171,
+   1.2667522094182009
+  ],
+  "264": [
+   0.9661537727458647,
+   0.963692619148776
+  ]
+ },
+ "profile_back_y_jaw_rows_err_mm": {
+  "232": [
+   0.0011173400435576797,
+   -1.0649813412386133
+  ],
+  "236": [
+   0.0005183846220266353,
+   -1.1831309659021545
+  ],
+  "240": [
+   0.00816727535296602,
+   -1.2940476031129342
+  ],
+  "244": [
+   0.701556038851539,
+   -0.8036014355504926
+  ],
+  "248": [
+   0.09055735943044874,
+   -1.6175427109077143
+  ],
+  "252": [
+   0.7891916825819092,
+   -1.0472734935426318
+  ],
+  "256": [
+   0.18608176676062488,
+   -1.7411693950257698
+  ],
+  "260": [
+   -0.10441997113398022,
+   -2.1057376013716573
+  ],
+  "264": [
+   0.23353646691119667,
+   -1.8082352120437628
+  ]
+ },
+ "nape_midline_rows": [
+  {
+   "z_mm": 1343.428134918213,
+   "y_start_mm": 92.82523393630981,
+   "y_now_mm": 92.82523393630981
+  },
+  {
+   "z_mm": 1352.7863025665283,
+   "y_start_mm": 90.14389663934708,
+   "y_now_mm": 90.14389663934708
+  },
+  {
+   "z_mm": 1361.8673086166382,
+   "y_start_mm": 87.07506209611893,
+   "y_now_mm": 87.07506209611893
+  },
+  {
+   "z_mm": 1370.6084489822388,
+   "y_start_mm": 86.04789525270462,
+   "y_now_mm": 86.04789525270462
+  },
+  {
+   "z_mm": 1378.0988454818726,
+   "y_start_mm": 88.24406564235687,
+   "y_now_mm": 88.24406564235687
+  },
+  {
+   "z_mm": 1385.469913482666,
+   "y_start_mm": 88.53840082883835,
+   "y_now_mm": 88.53840082883835
+  },
+  {
+   "z_mm": 1393.9898014068604,
+   "y_start_mm": 86.82257682085037,
+   "y_now_mm": 86.82257682085037
+  },
+  {
+   "z_mm": 1401.5661478042603,
+   "y_start_mm": 84.41206812858582,
+   "y_now_mm": 83.79225646118424
+  },
+  {
+   "z_mm": 1408.9958667755127,
+   "y_start_mm": 80.65842092037201,
+   "y_now_mm": 79.31435991811597
+  },
+  {
+   "z_mm": 1417.338252067566,
+   "y_start_mm": 75.15896111726761,
+   "y_now_mm": 73.29408382633326
+  },
+  {
+   "z_mm": 1424.1739511489868,
+   "y_start_mm": 69.95923072099686,
+   "y_now_mm": 67.88428311012271
+  },
+  {
+   "z_mm": 1429.9606084823608,
+   "y_start_mm": 64.60714340209961,
+   "y_now_mm": 62.51964399412016
+  },
+  {
+   "z_mm": 1436.9127750396729,
+   "y_start_mm": 58.58571082353592,
+   "y_now_mm": 56.572711411370896
+  },
+  {
+   "z_mm": 1445.2611207962036,
+   "y_start_mm": 52.5548979640007,
+   "y_now_mm": 50.54239893982414
+  },
+  {
+   "z_mm": 1455.1494121551514,
+   "y_start_mm": 47.01662436127663,
+   "y_now_mm": 44.94162361699919
+  },
+  {
+   "z_mm": 1466.3857221603394,
+   "y_start_mm": 43.47971826791763,
+   "y_now_mm": 41.49183785527351
+  },
+  {
+   "z_mm": 1478.5569906234741,
+   "y_start_mm": 41.84328019618988,
+   "y_now_mm": 40.06718033764557
+  },
+  {
+   "z_mm": 1490.80228805542,
+   "y_start_mm": 40.21511599421501,
+   "y_now_mm": 38.9008203472649
+  },
+  {
+   "z_mm": 1502.6795864105225,
+   "y_start_mm": 40.18488526344299,
+   "y_now_mm": 39.152674077829076
+  },
+  {
+   "z_mm": 1502.6795864105225,
+   "y_start_mm": 40.183842182159424,
+   "y_now_mm": 39.15162990404382
+  },
+  {
+   "z_mm": 1502.679705619812,
+   "y_start_mm": 40.07074609398842,
+   "y_now_mm": 39.03840712530192
+  },
+  {
+   "z_mm": 1505.5118799209595,
+   "y_start_mm": 40.23147374391556,
+   "y_now_mm": 39.35788386686115
+  },
+  {
+   "z_mm": 1505.5118799209595,
+   "y_start_mm": 40.19885137677193,
+   "y_now_mm": 39.32526219061615
+  },
+  {
+   "z_mm": 1508.3441734313965,
+   "y_start_mm": 40.30808433890343,
+   "y_now_mm": 39.602395883842654
+  },
+  {
+   "z_mm": 1508.3441734313965,
+   "y_start_mm": 40.2756929397583,
+   "y_now_mm": 39.57000448469753
+  },
+  {
+   "z_mm": 1508.3441734313965,
+   "y_start_mm": 40.163107216358185,
+   "y_now_mm": 39.45787640659821
+  },
+  {
+   "z_mm": 1514.0087604522705,
+   "y_start_mm": 40.79842194914818,
+   "y_now_mm": 40.362938830198715
+  }
+ ],
+ "install": {
+  "base_found_at_install": {
+   "blend": "0dd37baf20fcc3524ee1d8557b88b87ce0d2d3782d13c5eb15a8df9fe38802b7",
+   "fbx": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+   "note": "another parallel chat had already installed (z<1.40 only: 18,063 verts moved vs 68de53ca, 0 in the head/neck zone); Micro1j delta merged by vertex index onto it (merge_j.py), merge-on-start reproduces the validated result bit-exactly"
+  },
+  "installed_blend": "72fc6465f0623a3c963ca3af58a5358c0a498265c7b9da059a941b58050c1059",
+  "installed_fbx": "4d0c8b41e970fa3e9fe6be7f3f7fd9976fc6e490598c38a23d8d2c1db19fe55d",
+  "rollback_blend_fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/male-micro1j-head/baseline/artdir_now/ (0dd37baf blend, 614cccf3 fbx)",
+  "micro1i_start": "work/male-micro1j-head/baseline/ (68de53ca blend, 81276df0 fbx)"
+ },
+ "unity": {
+  "verify": "MALE_FORM_SAVED_UNITY_VERIFY_PASS",
+  "complete": "MALE_FORM_UNITY_PROOF_COMPLETE",
+  "mesh_line": "mesh=Body_M triangles=60358 vertices=30223 height_metres=1.702187 renderers=2(Body_M+Face_M) root_identity=True hair=False face_texture=False",
+  "prefab_sha256": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+  "fbx_matches_source": true,
+  "unity_model_sha256": "4d0c8b41e970fa3e9fe6be7f3f7fd9976fc6e490598c38a23d8d2c1db19fe55d"
+ },
+ "gate": {
+  "JAW_UPPER_PROFILE": "PASS - plate-measured jaw border (ear lobe -> angle y -0.040,z 1.484 -> chin) carries a smooth relief (ridge +1.6 mm, inclined recess behind/below, 2-6 mm); visible as one continuous line in Unity profile + 3/4; width change <= 2.1 mm, 3/4 plate contours <= 1.8 mm",
+  "ADAMS_APPLE_ROUND": "PASS - front neck contour vs plate avg: start +0.9..-9.4 mm (wedge, 3-5 mm proud) -> now within +-1.3 mm for z 1.403-1.446, throat top within ~5 mm (was 9.4)",
+  "NAPE_LUMP": "FAIL (zone-limited) - in-zone nape/diag aligned to the plate (+1.1..+2.2 mm behind -> -0.9..+0.4); the visible lump = C7 bump (+2.5 mm) + crease (-1.8 mm) at z 1.375-1.395 |x|<20 mm and the knee at the zone line sit BELOW z 1.40: not touched (bit-identical)",
+  "OVERALL_LIKENESS / FAIL_WRONG_LIKENESS": "FAIL - unchanged from Micro1i (expression: smile/cheek lift; plate stubble tone is pigment); jaw+neck now closer to the plate in profile and 3/4",
+  "ALL_OTHER_LINES": "PASS / unchanged (ears, nose, mouth, eyes, brows, chin front/profile, cranium, loops, Face_M paint-only, no hair, tris 60,358, silhouettes 4.33 / 4.39 %)"
+ }
+}

@@ -1,0 +1,3 @@
+System.Exception: Mask background is not clear
+  at GolfArcade.EditorTools.HeroBaseFemaleHeadProof.Capture (System.String name) [0x00386] in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Editor/HeroBaseFemaleHeadProof.cs:117 
+  at GolfArcade.EditorTools.HeroBaseFemaleHeadProof.Tick () [0x0006a] in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Editor/HeroBaseFemaleHeadProof.cs:101 

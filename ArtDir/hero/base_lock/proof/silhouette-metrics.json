@@ -1,0 +1,55 @@
+{
+  "method": "Independent manual polygon tracing of unmodified front/back plates. Orthographic renders at frozen metre/pixel scale, translated to measured source x center; no scaling/warping or threshold fitting of proof. Target boundary precision estimated \u00b12px. Symmetric difference over union; alpha threshold 127.",
+  "measurements": [
+    {
+      "sex": "male",
+      "metrics": {
+        "front": {
+          "symmetric_difference_over_union": 0.11304120111731844,
+          "intersection_over_union": 0.8869587988826816,
+          "target_pixels": 74685,
+          "model_pixels": 76634,
+          "render_translation_px": [
+            -286,
+            0
+          ]
+        },
+        "back": {
+          "symmetric_difference_over_union": 0.15060269328562012,
+          "intersection_over_union": 0.8493973067143799,
+          "target_pixels": 80479,
+          "model_pixels": 76631,
+          "render_translation_px": [
+            277,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "sex": "female",
+      "metrics": {
+        "front": {
+          "symmetric_difference_over_union": 0.08068135175810645,
+          "intersection_over_union": 0.9193186482418936,
+          "target_pixels": 71096,
+          "model_pixels": 69187,
+          "render_translation_px": [
+            -200,
+            0
+          ]
+        },
+        "back": {
+          "symmetric_difference_over_union": 0.1101105198526402,
+          "intersection_over_union": 0.8898894801473598,
+          "target_pixels": 69325,
+          "model_pixels": 69185,
+          "render_translation_px": [
+            207,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}

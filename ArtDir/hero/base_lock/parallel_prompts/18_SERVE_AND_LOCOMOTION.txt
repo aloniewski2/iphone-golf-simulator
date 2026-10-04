@@ -1,0 +1,72 @@
+PASTE — SERVE TOSS, WALK, AND RUN · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line. Fix only the serve and the feet. Do not rebuild the other swings.
+
+---
+
+Three things are wrong in the game, on the new heroes.
+
+1. The serve jumps into the swing. The hips stay square. Key the toss, the hip and shoulder coil, the jump, and the landing from the serve video. Do not copy a pro's proportions. Add a ball bounce only if that video shows one.
+
+2. There is no walk. Between points the hero must take real steps. Both feet plant and lift. No sliding.
+
+3. Running to the ball drags one leg. That leg stays dead and scrapes the court while the other moves. Both legs have to run. Knees lift, feet leave the ground one at a time, and neither foot stays glued down.
+
+WHERE
+- Bodies, do not edit the mesh: work/match-anim-set/export/HeroBase_Male_MatchAnims.blend and HeroBase_Female_MatchAnims.blend
+- Source SHAs, verify first, stop if either differs:
+  male d6c4dcfb1150853a8802a8dc7501aa64066adb8b2734c14a4d6ed8e82dada781
+  female a1d73a334f4dc18052db0582df6b4b54b1df166d9a3531ab700ee114e86d2ac1
+- The other 15 clips stay. Do not re-key Forehand, Backhand, volleys, or Overhead.
+- Work in work/serve-and-feet/. Export new FBX only for Serve, Walk, RunForward, RunLeft, RunRight, both sexes.
+- In-place. Gameplay still moves the actor. A step is a plant and a weight shift, not root motion that carries them across the court.
+- 30 fps. Racket stays in the racket hand except when the free hand takes the ball for the bounce and the toss. Put it back before the swing.
+- Do not use the old Hero_* run clips. Do not put the reference video files in the repo.
+
+WATCH FIRST
+Watch only these two videos. Write work/serve-and-feet/WATCH.md. Do not download the files. Do not retarget a skeleton. Do not go find a different clip. The notes are the order only, on these heroes' bone lengths.
+- Run and the steps between balls: https://www.youtube.com/watch?v=JJEDwXeDjBc from 0:02 to 0:14 (Alcaraz vs Sinner, court-level match, Six Kings Slam). Widescreen. Both feet stay in frame on that rally. Write which foot is up when the other plants, and how he recovers. If a stretch crops the feet, skip that stretch.
+- Walk between points: the same video, if a few walking steps are in frame. If they are not, say so and key a plain walk from the running notes. Do not use a third video.
+- Serve: https://www.youtube.com/watch?v=rxo1uEdLouY from 2:58 to 3:02 (Alcaraz, slow motion, feet visible). Write the hip coil, the toss, the jump, the contact, and the landing. This clip starts with the ball already in the left hand, so a bounce may not be in frame. If you cannot see a bounce, do not invent one. Key the toss and the hip turn you can see, and say THIN on the bounce.
+Seconds on slow motion are not real duration. Use the order.
+
+SERVE
+Key the order from the Alcaraz serve notes. Name the contact time in seconds. Name a bounce time only if WATCH.md saw a bounce.
+Hips must yaw. If the hip yaw through the load is under 25 degrees, it fails.
+The ball in the game is the gameplay ball. Do not spawn a second ball that the physics uses. A small visual ball for the bounce and the toss is fine if it is gone by contact and the gameplay ball is the one that is hit. Do not change ball flight or scoring.
+
+WALK AND RUN
+Key the order from WATCH.md. Both feet leave the ground the way the notes describe.
+Walk: a loop, about 1.0 to 1.3 s, both feet, usable between points.
+RunForward, RunLeft, RunRight: loops, both legs alive. Measure the lowest foot on each leg. In each cycle both feet must rise clear of the ground. A leg whose foot never leaves the ground fails.
+Left and right runs face the run direction. Do not mirror one dead pose.
+
+GAME
+Wire Serve over the current serve, using the new contact time so it still meets the actor's gameplay contact.
+Wire Walk where the hero currently slides between points.
+Wire the three runs where the hero currently slides toward the ball.
+Do not play ReadyIdle as a substitute for these. Do not bring back Hero01 or the old Hero_* clips.
+Leave locker sex, roster, and the bald heads as they are. No shoes, no worn kit.
+
+PROOF
+Play mode, game camera, both sexes somewhere in the shots:
+- one serve that shows the hip coil and the toss. A bounce only if the serve video had one
+- a few steps of walk
+- a run to the ball where you can see both feet leave the ground
+Save under work/serve-and-feet/proof/.
+
+GATES
+FROM_WATCH — running cites JJEDwXeDjBc and the serve cites rxo1uEdLouY t=178–181. No other video.
+SERVE_BOUNCE — a bounce is in the clip, or the serve is marked THIN and no bounce was invented
+SERVE_HIPS — hip yaw through the load is at least 25 degrees, both sexes
+SERVE_CONTACT — named contact still lands on the gameplay hit
+WALK_STEPS — both feet plant and lift
+RUN_BOTH_LEGS — in RunForward, RunLeft, and RunRight, each foot clears the ground every cycle, both sexes
+NO_SLIDE_SUBSTITUTE — walk and run are not ReadyIdle
+OTHER_CLIPS_UNCHANGED — the other swing FBXs are the same files
+NO_OLD_HERO — Hero01 and old Hero_* clips stay unwired
+BALL_UNCHANGED — scoring and ball flight code are untouched
+
+REPLY ONLY:
+GATE: SERVE_AND_FEET PASS
+or FAIL with failed lines only.

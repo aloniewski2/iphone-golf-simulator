@@ -1,0 +1,937 @@
+{
+ "gate": "MALE_ARMS_HANDS_FORM",
+ "result": "PASS",
+ "start_blend_sha256": "1fe4d53b3bcb9cfaef885d64350150e323a1d726cc4d54cc305ea71e323119bb",
+ "start_fbx_sha256": "73582af619f63ba34db74a390eccfcca2f321b123761d4f3d971278a1aaa3f90",
+ "installed_blend_sha256": "4287ba523218e89ae5a822483c322dc4cfa163c7af143ebcac11abbacea2db21",
+ "installed_fbx_sha256": "2d052746eb2ff26403080df24131abecd83564cf04528e77c46a9c2af245c483",
+ "gates": {
+  "FINGER_TAPER.tip_over_base<=0.70": {
+   "result": "PASS",
+   "detail": [
+    0.601,
+    0.597,
+    0.599,
+    0.604,
+    0.601,
+    0.597,
+    0.599,
+    0.604
+   ]
+  },
+  "FINGER_TAPER.mid_over_base<=0.90": {
+   "result": "PASS",
+   "detail": [
+    0.823,
+    0.823,
+    0.823,
+    0.822,
+    0.823,
+    0.823,
+    0.823,
+    0.822
+   ]
+  },
+  "FINGER_TAPER.no_equal_width_run(<=35% of rows)": {
+   "result": "PASS",
+   "detail": [
+    {
+     "finger": 0,
+     "run_frac": 0.17,
+     "cv": 0.147
+    },
+    {
+     "finger": 1,
+     "run_frac": 0.17,
+     "cv": 0.147
+    },
+    {
+     "finger": 2,
+     "run_frac": 0.17,
+     "cv": 0.147
+    },
+    {
+     "finger": 3,
+     "run_frac": 0.17,
+     "cv": 0.146
+    }
+   ]
+  },
+  "FINGER_TAPER.knuckle_hint(PIP>=1.0mm,DIP>=0.6mm)": {
+   "result": "PASS",
+   "detail": [
+    [
+     1.62,
+     0.83
+    ],
+    [
+     2.01,
+     0.99
+    ],
+    [
+     2.11,
+     1.06
+    ],
+    [
+     1.98,
+     0.88
+    ],
+    [
+     1.62,
+     0.83
+    ],
+    [
+     2.01,
+     0.99
+    ],
+    [
+     2.11,
+     1.06
+    ],
+    [
+     1.98,
+     0.88
+    ]
+   ]
+  },
+  "FINGER_TAPER.pad_tips(>=6 cap rows)": {
+   "result": "PASS",
+   "detail": [
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "FINGER_TAPER.fingers_separate(gap>=4mm at 40%/70%)": {
+   "result": "PASS",
+   "detail": [
+    -7.2,
+    -11.8,
+    -7.7,
+    -12.6,
+    -7.0,
+    -11.4
+   ]
+  },
+  "FINGER_TAPER.depth_over_width_base<=1.4": {
+   "result": "PASS",
+   "detail": [
+    1.15,
+    1.14,
+    1.14,
+    1.15,
+    1.15,
+    1.14,
+    1.14,
+    1.15
+   ]
+  },
+  "THUMB_ANATOMY.R.thenar_mound>=4mm": {
+   "result": "PASS",
+   "detail": 13.5
+  },
+  "THUMB_ANATOMY.R.two_phalanges(IP bend>=8deg, IP radius bump>=2%)": {
+   "result": "PASS",
+   "detail": {
+    "ip_bend_deg": 15.5,
+    "radius_bumps": [
+     [
+      6,
+      0.9500000000000011
+     ]
+    ]
+   }
+  },
+  "THUMB_ANATOMY.R.taper_not_pill(last/max<=0.65)": {
+   "result": "PASS",
+   "detail": 0.534
+  },
+  "THUMB_ANATOMY.R.pad_tip(>=6 cap rows, radii decreasing)": {
+   "result": "PASS",
+   "detail": [
+    10.68,
+    10.52,
+    9.91,
+    8.64,
+    6.58,
+    4.0,
+    1.49
+   ]
+  },
+  "THUMB_ANATOMY.R.not_spike(min shaft radius>=8mm, length/diameter<=5)": {
+   "result": "PASS",
+   "detail": {
+    "min_r": 10.7,
+    "len_over_diam": 3.89
+   }
+  },
+  "THUMB_ANATOMY.L.thenar_mound>=4mm": {
+   "result": "PASS",
+   "detail": 13.5
+  },
+  "THUMB_ANATOMY.L.two_phalanges(IP bend>=8deg, IP radius bump>=2%)": {
+   "result": "PASS",
+   "detail": {
+    "ip_bend_deg": 15.5,
+    "radius_bumps": [
+     [
+      6,
+      0.9500000000000011
+     ]
+    ]
+   }
+  },
+  "THUMB_ANATOMY.L.taper_not_pill(last/max<=0.65)": {
+   "result": "PASS",
+   "detail": 0.534
+  },
+  "THUMB_ANATOMY.L.pad_tip(>=6 cap rows, radii decreasing)": {
+   "result": "PASS",
+   "detail": [
+    10.68,
+    10.52,
+    9.91,
+    8.64,
+    6.58,
+    4.0,
+    1.49
+   ]
+  },
+  "THUMB_ANATOMY.L.not_spike(min shaft radius>=8mm, length/diameter<=5)": {
+   "result": "PASS",
+   "detail": {
+    "min_r": 10.7,
+    "len_over_diam": 3.89
+   }
+  },
+  "THUMB_ANATOMY.root_continuity(max dihedral near root<=75deg)": {
+   "result": "PASS",
+   "detail": {
+    "edges": 132,
+    "max": 68.24161904945925,
+    "gt60": 2,
+    "gt45": 7
+   }
+  },
+  "THUMB_ANATOMY.plate_match(hand ROI xor <= 1.15x ArtDir)": {
+   "result": "PASS",
+   "detail": {
+    "after": 2347,
+    "before": 2218
+   }
+  },
+  "MIRROR_L_R(<=0.05mm distal hand)": {
+   "result": "PASS",
+   "detail": {
+    "mean": 3.825146230459828e-05,
+    "p95": 0.00015058823331671792,
+    "max": 0.005427678199427644
+   }
+  },
+  "ZONE_OUTSIDE=0": {
+   "result": "PASS",
+   "detail": {
+    "moved_outside_arm_zone": 0,
+    "bit_identical": {
+     "head_neck(z>=1.40)": true,
+     "torso+pelvis(|x|<0.215,z>=0.78)": true,
+     "legs_feet(z<0.78,|x|<0.40)": true
+    },
+    "moved_original_verts": 6130,
+    "appended": 1332
+   }
+  },
+  "NO_SELF_INTERSECT": {
+   "result": "PASS",
+   "detail": {
+    "tris": 15688,
+    "n_pairs": 0
+   }
+  },
+  "SIL_BALD_FRONT<=5.0%(Blender native)": {
+   "result": "PASS",
+   "detail": {
+    "before": 4.32,
+    "after": 4.324
+   }
+  },
+  "SIL_BALD_BACK<=5.0%(Blender native)": {
+   "result": "PASS",
+   "detail": {
+    "before": 4.385,
+    "after": 4.632
+   }
+  },
+  "TOPOLOGY(manifold boundary/nonmanifold unchanged, no degenerate polys, custom normals+vgroups kept)": {
+   "result": "PASS",
+   "detail": {
+    "manifold": {
+     "edges": 63409,
+     "boundary": 92,
+     "nonmanifold": 2,
+     "bad_orient": 46
+    },
+    "baseline": {
+     "edges": 60741,
+     "boundary": 92,
+     "nonmanifold": 2,
+     "bad_orient": 46
+    },
+    "custom_normal_nonzero": 31246,
+    "vg_equal": true
+   }
+  },
+  "ARMS_SECONDARY(no worse: seam step 0, noise down, silhouette within gate)": {
+   "result": "PASS",
+   "detail": {
+    "hf_rms_mm": {
+     "before": 0.34608762003071075,
+     "after": 0.08606160225825486
+    },
+    "max_move_mm": 2.53
+   }
+  }
+ },
+ "tris": {
+  "before": 60358,
+  "after": 63022
+ },
+ "verts": {
+  "before": 30296,
+  "after": 31628
+ },
+ "silhouette_native": {
+  "before": {
+   "bald_front": {
+    "xor": 3235,
+    "union": 74879,
+    "pct": 4.32,
+    "plate_only": 1786,
+    "mesh_only": 1449
+   },
+   "bald_back": {
+    "xor": 3251,
+    "union": 74133,
+    "pct": 4.385,
+    "plate_only": 2034,
+    "mesh_only": 1217
+   },
+   "left": {
+    "xor": 1012,
+    "union": 11235,
+    "pct": 9.008,
+    "plate_only": 728,
+    "mesh_only": 284
+   },
+   "right": {
+    "xor": 1117,
+    "union": 11443,
+    "pct": 9.761,
+    "plate_only": 925,
+    "mesh_only": 192
+   },
+   "sheet_front": {
+    "xor": 1337,
+    "union": 18623,
+    "pct": 7.179,
+    "plate_only": 893,
+    "mesh_only": 444
+   },
+   "sheet_back": {
+    "xor": 1464,
+    "union": 18553,
+    "pct": 7.891,
+    "plate_only": 814,
+    "mesh_only": 650
+   }
+  },
+  "after": {
+   "bald_front": {
+    "xor": 3235,
+    "union": 74807,
+    "pct": 4.324,
+    "plate_only": 1858,
+    "mesh_only": 1377
+   },
+   "bald_back": {
+    "xor": 3436,
+    "union": 74173,
+    "pct": 4.632,
+    "plate_only": 2179,
+    "mesh_only": 1257
+   },
+   "left": {
+    "xor": 1012,
+    "union": 11235,
+    "pct": 9.008,
+    "plate_only": 728,
+    "mesh_only": 284
+   },
+   "right": {
+    "xor": 1114,
+    "union": 11440,
+    "pct": 9.738,
+    "plate_only": 925,
+    "mesh_only": 189
+   },
+   "sheet_front": {
+    "xor": 1323,
+    "union": 18602,
+    "pct": 7.112,
+    "plate_only": 900,
+    "mesh_only": 423
+   },
+   "sheet_back": {
+    "xor": 1500,
+    "union": 18550,
+    "pct": 8.086,
+    "plate_only": 853,
+    "mesh_only": 647
+   }
+  }
+ },
+ "fbx": {
+  "fbx": "export/HeroBase_Male_Body_form2.fbx",
+  "fbx_sha256": "2d052746eb2ff26403080df24131abecd83564cf04528e77c46a9c2af245c483",
+  "src_verts": 31628,
+  "imported_verts": 31628,
+  "imported_tris": 63022,
+  "max_nearest_distance_mm": 0.00027939677238464355,
+  "mean_nearest_distance_mm": 0.00016105754355466456,
+  "reimport_height_m": 1.7021871663164347,
+  "imported_scale": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "imported_rotation": [
+   -1.6292068494294654e-07,
+   0.0,
+   0.0
+  ]
+ },
+ "face_quality": {
+  "new_faces": 3140,
+  "new_tris": 44,
+  "min_area_mm2": 0.3810523230843525,
+  "max_edge_aspect": 14.693914253815247,
+  "aspect_gt10": 4,
+  "area_lt_0p3mm2": 0
+ },
+ "arms": {
+  "slabs": [
+   {
+    "t": -0.3,
+    "before_mm": [
+     141.78497848335226,
+     102.85773750849874
+    ],
+    "after_mm": [
+     141.78917998132044,
+     103.78935736536639
+    ]
+   },
+   {
+    "t": -0.27,
+    "before_mm": [
+     136.16978982953353,
+     124.21585813340238
+    ],
+    "after_mm": [
+     136.56299343642837,
+     125.44044942507271
+    ]
+   },
+   {
+    "t": -0.21,
+    "before_mm": [
+     117.36555068402244,
+     119.86956794665309
+    ],
+    "after_mm": [
+     119.62335580988382,
+     120.73318720983863
+    ]
+   },
+   {
+    "t": -0.17,
+    "before_mm": [
+     107.67488212861653,
+     110.73413053474543
+    ],
+    "after_mm": [
+     111.40155727823044,
+     111.51745018240142
+    ]
+   },
+   {
+    "t": -0.13,
+    "before_mm": [
+     107.6415441781364,
+     102.25329255790835
+    ],
+    "after_mm": [
+     108.59759184869222,
+     101.85908080354052
+    ]
+   },
+   {
+    "t": -0.105,
+    "before_mm": [
+     111.41023958200422,
+     103.52417524376142
+    ],
+    "after_mm": [
+     110.39478361035366,
+     102.20718230137416
+    ]
+   },
+   {
+    "t": -0.08,
+    "before_mm": [
+     113.45694189241496,
+     110.37411504699293
+    ],
+    "after_mm": [
+     113.54077036048244,
+     111.51517837768468
+    ]
+   },
+   {
+    "t": -0.045,
+    "before_mm": [
+     115.49748025594097,
+     114.46208915201986
+    ],
+    "after_mm": [
+     116.89356596232705,
+     116.73059878677064
+    ]
+   },
+   {
+    "t": -0.01,
+    "before_mm": [
+     111.44848449644836,
+     112.98681781562297
+    ],
+    "after_mm": [
+     112.63871815377831,
+     113.96488069971703
+    ]
+   },
+   {
+    "t": 0.03,
+    "before_mm": [
+     106.86181158277637,
+     100.03631415367322
+    ],
+    "after_mm": [
+     106.53887231545778,
+     100.18806125298414
+    ]
+   },
+   {
+    "t": 0.07,
+    "before_mm": [
+     98.177166196765,
+     85.44512294545659
+    ],
+    "after_mm": [
+     98.37296820507804,
+     85.38341672741156
+    ]
+   }
+  ],
+  "hf_rms_mm": {
+   "before": 0.34608762003071075,
+   "after": 0.08606160225825486
+  },
+  "moved": 4381,
+  "max_mm": 2.5343858803463464,
+  "mean_mm": 0.6839599805999075
+ },
+ "hand_metrics": {
+  "verts_total": 31628,
+  "verts_appended": 1332,
+  "moved_total": 6130,
+  "moved_outside_zone": 0,
+  "bit_identical": {
+   "head_neck(z>=1.40)": true,
+   "torso+pelvis(|x|<0.215,z>=0.78)": true,
+   "legs_feet(z<0.78,|x|<0.40)": true
+  },
+  "manifold": {
+   "edges": 63409,
+   "boundary": 92,
+   "nonmanifold": 2,
+   "bad_orient": 46
+  },
+  "manifold_baseline": {
+   "edges": 60741,
+   "boundary": 92,
+   "nonmanifold": 2,
+   "bad_orient": 46
+  },
+  "degenerate_polys": 0,
+  "topology_same_outside_hands": true,
+  "polys": 31854,
+  "tris": 63022,
+  "tris_baseline": 60358,
+  "fingers": {
+   "R": [
+    {
+     "finger": 0,
+     "width_base_mm": 24.983163476150104,
+     "width_mid_mm": 20.568347614156824,
+     "width_tip_shaft_mm": 15.006830928038832,
+     "taper_tip_over_base": 0.6006777701456797,
+     "taper_mid_over_base": 0.8232883571286784,
+     "width_monotone": true,
+     "depth_base_mm": 28.645099071715297,
+     "depth_over_width_base": 1.1465761371277507,
+     "depth_tip_mm": 18.68721326049726,
+     "pip_bump_mm": 1.6178369624766098,
+     "dip_bump_mm": 0.8323604187687322,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 95.300952171427
+    },
+    {
+     "finger": 1,
+     "width_base_mm": 25.0042201439295,
+     "width_mid_mm": 20.568347614156796,
+     "width_tip_shaft_mm": 14.922283925857899,
+     "taper_tip_over_base": 0.5967906153426151,
+     "taper_mid_over_base": 0.8225950457867153,
+     "width_monotone": true,
+     "depth_base_mm": 28.541470542312418,
+     "depth_over_width_base": 1.1414661356371751,
+     "depth_tip_mm": 18.508215330276354,
+     "pip_bump_mm": 2.0137521703778374,
+     "dip_bump_mm": 0.9936445003298489,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 111.4090777027622
+    },
+    {
+     "finger": 2,
+     "width_base_mm": 25.00411415750659,
+     "width_mid_mm": 20.568347614156803,
+     "width_tip_shaft_mm": 14.974036846720242,
+     "taper_tip_over_base": 0.5988629212135006,
+     "taper_mid_over_base": 0.8225985325691649,
+     "width_monotone": true,
+     "depth_base_mm": 28.544721113804087,
+     "depth_over_width_base": 1.1416009755032477,
+     "depth_tip_mm": 18.618893984423185,
+     "pip_bump_mm": 2.107070650099907,
+     "dip_bump_mm": 1.055903285449189,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 98.67795173201
+    },
+    {
+     "finger": 3,
+     "width_base_mm": 25.01532597440013,
+     "width_mid_mm": 20.568347614156824,
+     "width_tip_shaft_mm": 15.120805709868387,
+     "taper_tip_over_base": 0.6044616698316275,
+     "taper_mid_over_base": 0.8222298456236709,
+     "width_monotone": true,
+     "depth_base_mm": 28.66426294992351,
+     "depth_over_width_base": 1.14586805621712,
+     "depth_tip_mm": 18.902658263279726,
+     "pip_bump_mm": 1.9817864063101653,
+     "dip_bump_mm": 0.8839540176592067,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 75.81511919926464
+    }
+   ],
+   "L": [
+    {
+     "finger": 0,
+     "width_base_mm": 24.983163477031848,
+     "width_mid_mm": 20.568347614156824,
+     "width_tip_shaft_mm": 15.006830928038832,
+     "taper_tip_over_base": 0.6006777701244796,
+     "taper_mid_over_base": 0.8232883570996218,
+     "width_monotone": true,
+     "depth_base_mm": 28.645099071475105,
+     "depth_over_width_base": 1.14657613707767,
+     "depth_tip_mm": 18.68721326049726,
+     "pip_bump_mm": 1.617836962476603,
+     "dip_bump_mm": 0.8323604187687322,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 95.300952171427
+    },
+    {
+     "finger": 1,
+     "width_base_mm": 25.004220143860643,
+     "width_mid_mm": 20.568347614156796,
+     "width_tip_shaft_mm": 14.922283925857899,
+     "taper_tip_over_base": 0.5967906153442586,
+     "taper_mid_over_base": 0.8225950457889806,
+     "width_monotone": true,
+     "depth_base_mm": 28.541470541938125,
+     "depth_over_width_base": 1.1414661356253495,
+     "depth_tip_mm": 18.508215330276354,
+     "pip_bump_mm": 2.0137521703778027,
+     "dip_bump_mm": 0.9936445003298489,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 111.4090777027622
+    },
+    {
+     "finger": 2,
+     "width_base_mm": 25.004114157507072,
+     "width_mid_mm": 20.568347614156803,
+     "width_tip_shaft_mm": 14.974036846720242,
+     "taper_tip_over_base": 0.598862921213489,
+     "taper_mid_over_base": 0.822598532569149,
+     "width_monotone": true,
+     "depth_base_mm": 28.544721113804084,
+     "depth_over_width_base": 1.1416009755032255,
+     "depth_tip_mm": 18.618893984423185,
+     "pip_bump_mm": 2.1070706500998932,
+     "dip_bump_mm": 1.055903285449189,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 98.67795173201
+    },
+    {
+     "finger": 3,
+     "width_base_mm": 25.01532597440012,
+     "width_mid_mm": 20.568347614156824,
+     "width_tip_shaft_mm": 15.120805709868387,
+     "taper_tip_over_base": 0.6044616698316277,
+     "taper_mid_over_base": 0.8222298456236712,
+     "width_monotone": true,
+     "depth_base_mm": 28.6642629499235,
+     "depth_over_width_base": 1.14586805621712,
+     "depth_tip_mm": 18.902658263279726,
+     "pip_bump_mm": 1.9817864063101653,
+     "dip_bump_mm": 0.8839540176592067,
+     "rows": 18,
+     "cap_rows": 6,
+     "length_mm": 75.81511919926464
+    }
+   ]
+  },
+  "thumb": {
+   "R": {
+    "radius_root_mm": 20.000346896086374,
+    "radius_max_shaft_mm": 20.000346896086374,
+    "radius_at_max_row": 2,
+    "radius_last_shaft_mm": 10.68459339692586,
+    "taper_last_over_max": 0.5342204038979244,
+    "radii_mm": [
+     20.0,
+     18.43,
+     16.93,
+     16.06,
+     15.11,
+     14.09,
+     13.44,
+     14.39,
+     12.91,
+     11.74,
+     10.68,
+     10.52,
+     9.91,
+     8.64,
+     6.58,
+     4.0,
+     1.49
+    ],
+    "ip_axis_bend_deg": 15.520205919230985,
+    "length_mm": 83.01445296819692,
+    "rows": 17,
+    "cap_rows": 6,
+    "max_ring_to_ring_bend_deg": 9.102521300399676
+   },
+   "L": {
+    "radius_root_mm": 20.00082306287769,
+    "radius_max_shaft_mm": 20.00082306287769,
+    "radius_at_max_row": 2,
+    "radius_last_shaft_mm": 10.68459339692586,
+    "taper_last_over_max": 0.5342076855205466,
+    "radii_mm": [
+     20.0,
+     18.43,
+     16.93,
+     16.06,
+     15.11,
+     14.09,
+     13.44,
+     14.39,
+     12.91,
+     11.74,
+     10.68,
+     10.52,
+     9.91,
+     8.64,
+     6.58,
+     4.0,
+     1.49
+    ],
+    "ip_axis_bend_deg": 15.520205919230985,
+    "length_mm": 83.01445296819692,
+    "rows": 17,
+    "cap_rows": 6,
+    "max_ring_to_ring_bend_deg": 9.102566259710725
+   }
+  },
+  "gaps_mm": {
+   "R": [
+    -7.176307173410095,
+    -11.756265975466317,
+    -7.714517413100927,
+    -12.608770497502526,
+    -6.992515513059863,
+    -11.421673152733666
+   ],
+   "L": [
+    -7.176307173410095,
+    -11.756265975466317,
+    -7.714517413100927,
+    -12.608770497502526,
+    -6.992515513059863,
+    -11.421673152733666
+   ]
+  },
+  "mirror_err_mm_distal_hand": {
+   "mean": 3.825146230459828e-05,
+   "p95": 0.00015058823331671792,
+   "max": 0.005427678199427644
+  },
+  "dihedral_new_faces": {
+   "edges": 6216,
+   "gt30": 1428,
+   "gt45": 126,
+   "gt60": 28,
+   "gt90": 0,
+   "max": 81.01879598801783
+  },
+  "roi_xor_total": 2347,
+  "roi_xor": {
+   "bald_front_L": 264,
+   "bald_front_R": 453,
+   "bald_back_L": 439,
+   "bald_back_R": 421,
+   "sheet_front_L": 153,
+   "sheet_front_R": 171,
+   "sheet_back_L": 341,
+   "sheet_back_R": 105
+  },
+  "full_sil_numpy": {
+   "bald_front": {
+    "xor": 3405,
+    "union": 75447,
+    "pct": 4.513,
+    "plate_only": 1388,
+    "mesh_only": 2017
+   },
+   "bald_back": {
+    "xor": 3359,
+    "union": 74672,
+    "pct": 4.498,
+    "plate_only": 1603,
+    "mesh_only": 1756
+   },
+   "left": {
+    "xor": 1021,
+    "union": 11381,
+    "pct": 8.971,
+    "plate_only": 591,
+    "mesh_only": 430
+   },
+   "right": {
+    "xor": 1056,
+    "union": 11549,
+    "pct": 9.144,
+    "plate_only": 758,
+    "mesh_only": 298
+   },
+   "sheet_front": {
+    "xor": 1353,
+    "union": 18875,
+    "pct": 7.168,
+    "plate_only": 657,
+    "mesh_only": 696
+   },
+   "sheet_back": {
+    "xor": 1535,
+    "union": 18834,
+    "pct": 8.15,
+    "plate_only": 604,
+    "mesh_only": 931
+   }
+  }
+ },
+ "audit": {
+  "verts_current": 30296,
+  "verts_staged": 31628,
+  "appended": 1332,
+  "moved_original_verts": 6130,
+  "moved_outside_arm_zone": 0,
+  "bit_identical": {
+   "head_neck(z>=1.40)": true,
+   "torso+pelvis(|x|<0.215,z>=0.78)": true,
+   "legs_feet(z<0.78,|x|<0.40)": true
+  },
+  "polys_current": 30518,
+  "polys_staged": 31854,
+  "tris_current": 60358,
+  "tris_staged": 63022,
+  "sharp_face_true": 0,
+  "sharp_edge_true": 0,
+  "custom_normal_nonzero_current": 31246,
+  "custom_normal_nonzero_staged": 31246,
+  "vg_entries_equal": true
+ },
+ "verify_blend": {
+  "verts": 31628,
+  "polys": 31854,
+  "loops": 126730,
+  "verts_equal_candidate": true,
+  "polys_equal_candidate_multiset": true,
+  "sharp_face_true": 0,
+  "sharp_edge_true": 0,
+  "custom_normal_loops": 126730,
+  "custom_normal_nonzero": 31246,
+  "custom_normal_loops_same_as_baseline": 117428,
+  "custom_normal_loops_diff_from_baseline": 0,
+  "has_custom_normals": true,
+  "vertex_groups": [
+   "LOOP_mouth_seam",
+   "LOOP_mouth_lip_upper",
+   "LOOP_mouth_lip_lower",
+   "LOOP_nostril_L",
+   "LOOP_nostril_R",
+   "LOOP_ala_L",
+   "LOOP_ala_R",
+   "LOOP_ear_attach_L",
+   "LOOP_helix_L",
+   "LOOP_concha_L",
+   "LOOP_ear_attach_R",
+   "LOOP_helix_R",
+   "LOOP_concha_R",
+   "LOOP_jaw_ear_L",
+   "LOOP_jaw_ear_R",
+   "LOOP_lid_margin_L",
+   "LOOP_lid_margin_R"
+  ],
+  "vertex_group_entries": 848,
+  "baseline_vertex_group_entries": 848,
+  "materials": [
+   "Blockout_Grey"
+  ]
+ }
+}

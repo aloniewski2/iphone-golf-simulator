@@ -1,0 +1,39 @@
+PASTE — CHAT 1 / 8 — MALE HEAD FINISH (Micro1j)
+Sonnet 5.5 max · NEW CHAT · do not share this chat with other zones
+
+---
+
+PARALLEL SAFETY (MANDATORY — violate = STOP):
+- You own ONLY the vertex ZONE named below. Any vert outside your zone: DO NOT MOVE (bit-identical vs start SHA).
+- Work ONLY under work/<your-folder>/ . Never edit another chat's work/.
+- Do NOT overwrite ArtDir blend/FBX until your zone audit proves 0 verts moved outside zone.
+- Unity: write captures to Library/Captures is OK; only touch YOUR prefab import path listed below; never run a full HeroBase import that other chats are writing in the same minute — prefer export to work/<folder>/export/ then copy to ArtDir ONLY at end if zone audit PASS.
+- Do NOT delete/rename LOOP_* groups you do not own. Do NOT open female blend.
+- If start SHA mismatches, STOP.
+
+YOUR ZONE: head + neck only. Approx verts with z >= 1.40 (head/neck). MUST NOT move: hands, arms, torso, pelvis, legs, feet (everything below neck weld / z < 1.40 bit-identical).
+
+START BLEND SHA (verify):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf
+shasum -a 256 ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+
+READ: GOAL if present; face_lock/FACE_SPEC.md; PROCESS_FaceMatch.md; proof/MALE_HEAD_RESULTS.md (Micro1i); AGENTS.md; art-bible.md
+AUTHORITY: ArtDir/hero/base_lock/face_lock/ + male_head_detail.jpg + male_body_bald.jpg (head/neck crops)
+REJECT: preview/face_example/
+
+WORK DIR: work/male-micro1j-head/
+EXPORT STAGING: work/male-micro1j-head/export/ (blend+FBX here first)
+FINAL INSTALL (only if zone audit PASS): ArtDir blend + unity_import/HeroBase_Male_Body.fbx + Unity HeroBase_Male
+
+SCOPE (Adnan eye on Micro1i):
+1) Upper jawline MORE DEFINED in PROFILE (soft jaw FAIL)
+2) Adam's apple more ROUNDED (less pointy)
+3) Kill NAPE LUMP on back of neck
+4) Keep densify/loops; Face_M paint-only; no hair; OVERALL_LIKENESS still hard vs face_lock
+5) TRI ~60k OK
+
+DO NOT: densify redo, full remesh, sticker volume, body/hands, female, Mixamo
+
+DELIVER: proofs 02_match_m_head.png + 03_unity_m.png refreshed; MALE_HEAD_RESULTS.md; male-micro1j-checks.json with outside-zone moved=0
+REPLY: GATE: MALE_HEAD PASS|FAIL + failed lines only

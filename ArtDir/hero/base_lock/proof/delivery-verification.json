@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "unity_prefabs": 8,
+  "primary_bases_bald": true,
+  "independent_fbx_files": 4,
+  "public_prefab_roots_identity": true,
+  "independent_prefab_renderer_count": 1,
+  "packaged_asset_hashes_match_current_assets": true,
+  "packed_blender_images": true,
+  "archive_integrity": "PASS",
+  "both_bald_and_optional_assembly_triangle_budgets": "PASS",
+  "reference_hashes": {
+    "Male": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+    "Female": "ef62ce52ac6772fa13fac2b4e62727859efebf995c52d78e86e04517eddd5614"
+  },
+  "base_vs_body_only_render_difference_pixels": 0,
+  "overall_base_fidelity_gate": "FAIL",
+  "verified_asset_paths": [
+    "Assets/Characters/HeroBase/HeroBase_Male.prefab",
+    "Assets/Characters/HeroBase/Bodies/HeroBase_Male_Body.prefab",
+    "Assets/Characters/HeroBase/Hair/Hair_Default_Male.prefab",
+    "Assets/Characters/HeroBase/Previews/HeroBase_Male_DefaultHair.prefab",
+    "Assets/Characters/HeroBase/Models/HeroBase_Male_Body.fbx",
+    "Assets/Characters/HeroBase/Models/Hair_Default_Male.fbx",
+    "Assets/Characters/HeroBase/Textures/Head_Male_Albedo.png",
+    "Assets/Characters/HeroBase/HeroBase_Female.prefab",
+    "Assets/Characters/HeroBase/Bodies/HeroBase_Female_Body.prefab",
+    "Assets/Characters/HeroBase/Hair/Hair_Default_Female.prefab",
+    "Assets/Characters/HeroBase/Previews/HeroBase_Female_DefaultHair.prefab",
+    "Assets/Characters/HeroBase/Models/HeroBase_Female_Body.fbx",
+    "Assets/Characters/HeroBase/Models/Hair_Default_Female.fbx",
+    "Assets/Characters/HeroBase/Textures/Head_Female_Albedo.png"
+  ]
+}

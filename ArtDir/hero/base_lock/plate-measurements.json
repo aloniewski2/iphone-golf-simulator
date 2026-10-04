@@ -1,0 +1,32 @@
+{
+  "male": {
+    "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+    "image_size": [
+      1280,
+      720
+    ],
+    "authority": "User replacement bald reference supplied 2026-09-30",
+    "source_filename": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0.jpg",
+    "front_center_x": 354,
+    "back_center_x": 917,
+    "sole_y": 654,
+    "top_y": 61,
+    "reference_height_px": 593,
+    "base_has_hair": false
+  },
+  "female": {
+    "sha256": "ef62ce52ac6772fa13fac2b4e62727859efebf995c52d78e86e04517eddd5614",
+    "image_size": [
+      1280,
+      720
+    ],
+    "authority": "User replacement bald reference supplied 2026-09-30",
+    "source_filename": "ef62ce52ac6772fa13fac2b4e62727859efebf995c52d78e86e04517eddd5614.jpg",
+    "front_center_x": 440,
+    "back_center_x": 847,
+    "sole_y": 679,
+    "top_y": 24,
+    "reference_height_px": 655,
+    "base_has_hair": false
+  }
+}

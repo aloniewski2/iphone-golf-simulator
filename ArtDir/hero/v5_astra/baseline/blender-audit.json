@@ -1,0 +1,1343 @@
+{
+  "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/v5/Hero_01_V5.blend",
+  "rig": {
+    "bones": 42,
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "bones_data": [
+      {
+        "name": "Root",
+        "parent": null,
+        "head": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tail": [
+          0.0,
+          0.0,
+          0.11999999731779099
+        ]
+      },
+      {
+        "name": "Hips",
+        "parent": "Root",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          0.7300000190734863
+        ],
+        "tail": [
+          0.0,
+          0.054999999701976776,
+          0.8700000047683716
+        ]
+      },
+      {
+        "name": "Spine",
+        "parent": "Hips",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          0.8700000047683716
+        ],
+        "tail": [
+          0.0,
+          0.054999999701976776,
+          1.0299999713897705
+        ]
+      },
+      {
+        "name": "Chest",
+        "parent": "Spine",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          1.0299999713897705
+        ],
+        "tail": [
+          0.0,
+          0.054999999701976776,
+          1.190000057220459
+        ]
+      },
+      {
+        "name": "Neck",
+        "parent": "Chest",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          1.190000057220459
+        ],
+        "tail": [
+          0.0,
+          0.054999999701976776,
+          1.2999999523162842
+        ]
+      },
+      {
+        "name": "Head",
+        "parent": "Neck",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          1.2999999523162842
+        ],
+        "tail": [
+          0.0,
+          0.054999999701976776,
+          1.6200000047683716
+        ]
+      },
+      {
+        "name": "Shoulder.L",
+        "parent": "Chest",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          1.1799999475479126
+        ],
+        "tail": [
+          0.2199999988079071,
+          0.054999999701976776,
+          1.1699999570846558
+        ]
+      },
+      {
+        "name": "UpperArm.L",
+        "parent": "Shoulder.L",
+        "head": [
+          0.2199999988079071,
+          0.054999999701976776,
+          1.1699999570846558
+        ],
+        "tail": [
+          0.36000001430511475,
+          0.05000000074505806,
+          0.9649999737739563
+        ]
+      },
+      {
+        "name": "LowerArm.L",
+        "parent": "UpperArm.L",
+        "head": [
+          0.36000001430511475,
+          0.05000000074505806,
+          0.9649999737739563
+        ],
+        "tail": [
+          0.4580000042915344,
+          0.041999999433755875,
+          0.777999997138977
+        ]
+      },
+      {
+        "name": "Hand.L",
+        "parent": "LowerArm.L",
+        "head": [
+          0.4580000042915344,
+          0.041999999433755875,
+          0.777999997138977
+        ],
+        "tail": [
+          0.4749999940395355,
+          0.04100000113248825,
+          0.6549999713897705
+        ]
+      },
+      {
+        "name": "Index1.L",
+        "parent": "Hand.L",
+        "head": [
+          0.47138291597366333,
+          -0.023489132523536682,
+          0.6895235776901245
+        ],
+        "tail": [
+          0.47576388716697693,
+          -0.023746836930513382,
+          0.6578259468078613
+        ]
+      },
+      {
+        "name": "Index2.L",
+        "parent": "Index1.L",
+        "head": [
+          0.47576388716697693,
+          -0.023746836930513382,
+          0.6578259468078613
+        ],
+        "tail": [
+          0.4801448583602905,
+          -0.024004539474844933,
+          0.6261283159255981
+        ]
+      },
+      {
+        "name": "Middle1.L",
+        "parent": "Hand.L",
+        "head": [
+          0.4760311543941498,
+          0.010189617052674294,
+          0.6898922324180603
+        ],
+        "tail": [
+          0.4804121255874634,
+          0.009931913577020168,
+          0.6581946015357971
+        ]
+      },
+      {
+        "name": "Middle2.L",
+        "parent": "Middle1.L",
+        "head": [
+          0.4804121255874634,
+          0.009931913577020168,
+          0.6581946015357971
+        ],
+        "tail": [
+          0.484793096780777,
+          0.009674210101366043,
+          0.6264969110488892
+        ]
+      },
+      {
+        "name": "Ring1.L",
+        "parent": "Hand.L",
+        "head": [
+          0.48067939281463623,
+          0.04386836662888527,
+          0.6902608275413513
+        ],
+        "tail": [
+          0.48506036400794983,
+          0.04361066222190857,
+          0.6585631966590881
+        ]
+      },
+      {
+        "name": "Ring2.L",
+        "parent": "Ring1.L",
+        "head": [
+          0.48506036400794983,
+          0.04361066222190857,
+          0.6585631966590881
+        ],
+        "tail": [
+          0.4894413352012634,
+          0.04335295781493187,
+          0.626865565776825
+        ]
+      },
+      {
+        "name": "Pinky1.L",
+        "parent": "Hand.L",
+        "head": [
+          0.48519089818000793,
+          0.07655656337738037,
+          0.690618634223938
+        ],
+        "tail": [
+          0.48957186937332153,
+          0.07629886269569397,
+          0.6589210033416748
+        ]
+      },
+      {
+        "name": "Pinky2.L",
+        "parent": "Pinky1.L",
+        "head": [
+          0.48957186937332153,
+          0.07629886269569397,
+          0.6589210033416748
+        ],
+        "tail": [
+          0.4925837814807892,
+          0.07612168788909912,
+          0.6371288895606995
+        ]
+      },
+      {
+        "name": "Thumb1.L",
+        "parent": "Hand.L",
+        "head": [
+          0.4304061233997345,
+          -0.028530485928058624,
+          0.7444734573364258
+        ],
+        "tail": [
+          0.4240676760673523,
+          -0.05049173906445503,
+          0.7094516754150391
+        ]
+      },
+      {
+        "name": "Thumb2.L",
+        "parent": "Thumb1.L",
+        "head": [
+          0.4240676760673523,
+          -0.05049173906445503,
+          0.7094516754150391
+        ],
+        "tail": [
+          0.42343011498451233,
+          -0.05612901970744133,
+          0.6791232228279114
+        ]
+      },
+      {
+        "name": "Shoulder.R",
+        "parent": "Chest",
+        "head": [
+          0.0,
+          0.054999999701976776,
+          1.1799999475479126
+        ],
+        "tail": [
+          -0.2199999988079071,
+          0.054999999701976776,
+          1.1699999570846558
+        ]
+      },
+      {
+        "name": "UpperArm.R",
+        "parent": "Shoulder.R",
+        "head": [
+          -0.2199999988079071,
+          0.054999999701976776,
+          1.1699999570846558
+        ],
+        "tail": [
+          -0.36000001430511475,
+          0.05000000074505806,
+          0.9649999737739563
+        ]
+      },
+      {
+        "name": "LowerArm.R",
+        "parent": "UpperArm.R",
+        "head": [
+          -0.36000001430511475,
+          0.05000000074505806,
+          0.9649999737739563
+        ],
+        "tail": [
+          -0.4580000042915344,
+          0.041999999433755875,
+          0.777999997138977
+        ]
+      },
+      {
+        "name": "Hand.R",
+        "parent": "LowerArm.R",
+        "head": [
+          -0.4580000042915344,
+          0.041999999433755875,
+          0.777999997138977
+        ],
+        "tail": [
+          -0.4749999940395355,
+          0.04100000113248825,
+          0.6549999713897705
+        ]
+      },
+      {
+        "name": "Index1.R",
+        "parent": "Hand.R",
+        "head": [
+          -0.47138291597366333,
+          -0.023489132523536682,
+          0.6895235776901245
+        ],
+        "tail": [
+          -0.47576388716697693,
+          -0.023746836930513382,
+          0.6578259468078613
+        ]
+      },
+      {
+        "name": "Index2.R",
+        "parent": "Index1.R",
+        "head": [
+          -0.47576388716697693,
+          -0.023746836930513382,
+          0.6578259468078613
+        ],
+        "tail": [
+          -0.4801448583602905,
+          -0.024004539474844933,
+          0.6261283159255981
+        ]
+      },
+      {
+        "name": "Middle1.R",
+        "parent": "Hand.R",
+        "head": [
+          -0.4760311543941498,
+          0.010189617052674294,
+          0.6898922324180603
+        ],
+        "tail": [
+          -0.4804121255874634,
+          0.009931913577020168,
+          0.6581946015357971
+        ]
+      },
+      {
+        "name": "Middle2.R",
+        "parent": "Middle1.R",
+        "head": [
+          -0.4804121255874634,
+          0.009931913577020168,
+          0.6581946015357971
+        ],
+        "tail": [
+          -0.484793096780777,
+          0.009674210101366043,
+          0.6264969110488892
+        ]
+      },
+      {
+        "name": "Ring1.R",
+        "parent": "Hand.R",
+        "head": [
+          -0.48067939281463623,
+          0.04386836662888527,
+          0.6902608275413513
+        ],
+        "tail": [
+          -0.48506036400794983,
+          0.04361066222190857,
+          0.6585631966590881
+        ]
+      },
+      {
+        "name": "Ring2.R",
+        "parent": "Ring1.R",
+        "head": [
+          -0.48506036400794983,
+          0.04361066222190857,
+          0.6585631966590881
+        ],
+        "tail": [
+          -0.4894413352012634,
+          0.04335295781493187,
+          0.626865565776825
+        ]
+      },
+      {
+        "name": "Pinky1.R",
+        "parent": "Hand.R",
+        "head": [
+          -0.48519089818000793,
+          0.07655656337738037,
+          0.690618634223938
+        ],
+        "tail": [
+          -0.48957186937332153,
+          0.07629886269569397,
+          0.6589210033416748
+        ]
+      },
+      {
+        "name": "Pinky2.R",
+        "parent": "Pinky1.R",
+        "head": [
+          -0.48957186937332153,
+          0.07629886269569397,
+          0.6589210033416748
+        ],
+        "tail": [
+          -0.4925837814807892,
+          0.07612168788909912,
+          0.6371288895606995
+        ]
+      },
+      {
+        "name": "Thumb1.R",
+        "parent": "Hand.R",
+        "head": [
+          -0.4304061233997345,
+          -0.028530485928058624,
+          0.7444734573364258
+        ],
+        "tail": [
+          -0.4240676760673523,
+          -0.05049173906445503,
+          0.7094516754150391
+        ]
+      },
+      {
+        "name": "Thumb2.R",
+        "parent": "Thumb1.R",
+        "head": [
+          -0.4240676760673523,
+          -0.05049173906445503,
+          0.7094516754150391
+        ],
+        "tail": [
+          -0.42343011498451233,
+          -0.05612901970744133,
+          0.6791232228279114
+        ]
+      },
+      {
+        "name": "UpperLeg.L",
+        "parent": "Hips",
+        "head": [
+          0.1119999960064888,
+          0.054999999701976776,
+          0.7699999809265137
+        ],
+        "tail": [
+          0.15399999916553497,
+          0.054999999701976776,
+          0.4399999976158142
+        ]
+      },
+      {
+        "name": "LowerLeg.L",
+        "parent": "UpperLeg.L",
+        "head": [
+          0.15399999916553497,
+          0.054999999701976776,
+          0.4399999976158142
+        ],
+        "tail": [
+          0.18699999153614044,
+          0.054999999701976776,
+          0.16500000655651093
+        ]
+      },
+      {
+        "name": "Foot.L",
+        "parent": "LowerLeg.L",
+        "head": [
+          0.18699999153614044,
+          0.054999999701976776,
+          0.16500000655651093
+        ],
+        "tail": [
+          0.18699999153614044,
+          -0.10499999672174454,
+          0.06599999964237213
+        ]
+      },
+      {
+        "name": "Toes.L",
+        "parent": "Foot.L",
+        "head": [
+          0.18699999153614044,
+          -0.10499999672174454,
+          0.06599999964237213
+        ],
+        "tail": [
+          0.18699999153614044,
+          -0.1849999874830246,
+          0.054999999701976776
+        ]
+      },
+      {
+        "name": "UpperLeg.R",
+        "parent": "Hips",
+        "head": [
+          -0.1119999960064888,
+          0.054999999701976776,
+          0.7699999809265137
+        ],
+        "tail": [
+          -0.15399999916553497,
+          0.054999999701976776,
+          0.4399999976158142
+        ]
+      },
+      {
+        "name": "LowerLeg.R",
+        "parent": "UpperLeg.R",
+        "head": [
+          -0.15399999916553497,
+          0.054999999701976776,
+          0.4399999976158142
+        ],
+        "tail": [
+          -0.18699999153614044,
+          0.054999999701976776,
+          0.16500000655651093
+        ]
+      },
+      {
+        "name": "Foot.R",
+        "parent": "LowerLeg.R",
+        "head": [
+          -0.18699999153614044,
+          0.054999999701976776,
+          0.16500000655651093
+        ],
+        "tail": [
+          -0.18699999153614044,
+          -0.10499999672174454,
+          0.06599999964237213
+        ]
+      },
+      {
+        "name": "Toes.R",
+        "parent": "Foot.R",
+        "head": [
+          -0.18699999153614044,
+          -0.10499999672174454,
+          0.06599999964237213
+        ],
+        "tail": [
+          -0.18699999153614044,
+          -0.1849999874830246,
+          0.054999999701976776
+        ]
+      }
+    ]
+  },
+  "parts": [
+    {
+      "name": "Body_EyeSphere_L",
+      "vertices": 942,
+      "triangles": 1876,
+      "uv": "IrisUV",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 120,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 0,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_EyeCornea",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Iris.png"
+          ]
+        },
+        {
+          "name": "Hero_01_Catchlight",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Body_EyeSphere_R",
+      "vertices": 942,
+      "triangles": 1876,
+      "uv": "IrisUV",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 120,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 0,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_EyeCornea",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Iris.png"
+          ]
+        },
+        {
+          "name": "Hero_01_Catchlight",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Body_Skin",
+      "vertices": 19539,
+      "triangles": 38300,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 28404,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 4,
+      "nonbone_groups": [
+        "Default_VisibleSkin"
+      ],
+      "open_edges": 770,
+      "nonmanifold_edges": 16,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [
+        "Basis",
+        "Female"
+      ],
+      "materials": [
+        {
+          "name": "skin_MatteCloth",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png",
+            "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/modular/Hero_01_SkinMask.png"
+          ]
+        },
+        {
+          "name": "skin_WarmSkin",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png",
+            "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/modular/Hero_01_SkinMask.png"
+          ]
+        },
+        {
+          "name": "skin_BlondHair",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png",
+            "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/modular/Hero_01_SkinMask.png"
+          ]
+        },
+        {
+          "name": "skin_CoveredFoundation",
+          "images": []
+        }
+      ],
+      "leg_profile": {
+        "0.3": {
+          "width": 0.17434750497341156,
+          "depth": 0.19104312360286713
+        },
+        "0.37": {
+          "width": 0.19519435614347458,
+          "depth": 0.22470003366470337
+        },
+        "0.44": {
+          "width": 0.18055076152086258,
+          "depth": 0.20144430547952652
+        },
+        "0.53": {
+          "width": 0.17173592001199722,
+          "depth": 0.20668762922286987
+        },
+        "0.6": {
+          "width": 0.06542611122131348,
+          "depth": 0.06131424009799957
+        }
+      }
+    },
+    {
+      "name": "Hair_Bald",
+      "vertices": 3,
+      "triangles": 1,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 3,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_BandFill",
+      "vertices": 504,
+      "triangles": 864,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 144,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_BandFill_Bob",
+      "vertices": 504,
+      "triangles": 864,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 144,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_BandFill_Curly",
+      "vertices": 504,
+      "triangles": 864,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 144,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_BandFill_Long",
+      "vertices": 504,
+      "triangles": 864,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 144,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_BandFill_Ponytail",
+      "vertices": 504,
+      "triangles": 864,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 144,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Bob",
+      "vertices": 11849,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 10380,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Bob_Free",
+      "vertices": 11849,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 10380,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Buzz",
+      "vertices": 1790,
+      "triangles": 3423,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 155,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft_Buzz",
+          "images": [
+            "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Textures/Hair_Buzz.png"
+          ]
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Curly",
+      "vertices": 10298,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 7766,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Curly_Free",
+      "vertices": 10298,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 7766,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Default",
+      "vertices": 11010,
+      "triangles": 12275,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 9091,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Default_Free",
+      "vertices": 11010,
+      "triangles": 12275,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 9091,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Long",
+      "vertices": 11691,
+      "triangles": 12275,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 2,
+      "nonbone_groups": [],
+      "open_edges": 10161,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Long_Free",
+      "vertices": 11691,
+      "triangles": 12275,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 2,
+      "nonbone_groups": [],
+      "open_edges": 10161,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Ponytail",
+      "vertices": 11154,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 2,
+      "nonbone_groups": [],
+      "open_edges": 9260,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Ponytail_Free",
+      "vertices": 11154,
+      "triangles": 12276,
+      "uv": null,
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 2,
+      "nonbone_groups": [],
+      "open_edges": 9260,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hair_Waves",
+      "vertices": 1790,
+      "triangles": 3423,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 155,
+      "nonmanifold_edges": 0,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_HairTuft_Waves",
+          "images": [
+            "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Textures/Hair_Waves.png"
+          ]
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Hat_Visor",
+      "vertices": 1706,
+      "triangles": 2981,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 1,
+      "nonbone_groups": [],
+      "open_edges": 427,
+      "nonmanifold_edges": 4,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_MatteCloth",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        },
+        {
+          "name": "Hero_01_Visor",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Shirt_Default",
+      "vertices": 3810,
+      "triangles": 7246,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 5,
+      "nonbone_groups": [],
+      "open_edges": 401,
+      "nonmanifold_edges": 9,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [
+        "Basis",
+        "Female"
+      ],
+      "materials": [
+        {
+          "name": "Hero_01_MatteCloth",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        },
+        {
+          "name": "Hero_01_WarmSkin",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Shoes_Default",
+      "vertices": 3471,
+      "triangles": 6777,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 102,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 3,
+      "nonbone_groups": [],
+      "open_edges": 163,
+      "nonmanifold_edges": 10,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [],
+      "materials": [
+        {
+          "name": "Hero_01_MatteCloth",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        },
+        {
+          "name": "Hero_01_ShoeOrange",
+          "images": []
+        },
+        {
+          "name": "Hero_01_ShoeCleanWhite",
+          "images": []
+        }
+      ],
+      "leg_profile": {}
+    },
+    {
+      "name": "Shorts_Default",
+      "vertices": 3081,
+      "triangles": 5882,
+      "uv": "UVMap",
+      "uv_nonfinite_triangles": 0,
+      "uv_zero_area_triangles": 0,
+      "unweighted": 0,
+      "unnormalized": 0,
+      "max_influences": 3,
+      "nonbone_groups": [
+        "Default_VisibleSkin"
+      ],
+      "open_edges": 324,
+      "nonmanifold_edges": 4,
+      "armatures": [
+        "Hero_01_Rig"
+      ],
+      "shape_keys": [
+        "Basis",
+        "Female"
+      ],
+      "materials": [
+        {
+          "name": "Hero_01_MatteCloth",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        },
+        {
+          "name": "Hero_01_WarmSkin",
+          "images": [
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_BaseColor.png",
+            "//../../anims/v4_before/specific_before/polish_v3_before/polish_v3_before/polish_before/polish_before/hero/modular/Hero_01_Normal.png"
+          ]
+        }
+      ],
+      "leg_profile": {}
+    }
+  ]
+}

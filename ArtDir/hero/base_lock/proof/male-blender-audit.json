@@ -1,0 +1,59 @@
+{
+  "sex": "male",
+  "scale_m_per_pixel": 0.0028667790893760537,
+  "source_sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+  "parts": [
+    {
+      "name": "Body_M",
+      "vertices": 19678,
+      "tris": 39268,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "z_min": -8.543667162630442e-11,
+      "z_max": 1.7043001651763916,
+      "material_names": [
+        "Base_Grey_M",
+        "Skin_M",
+        "Eye_White",
+        "Iris_Dark",
+        "Pupil",
+        "Brow",
+        "Mouth",
+        "Teeth",
+        "Lip_M",
+        "Ear_Shadow_M"
+      ]
+    },
+    {
+      "name": "Hair_M",
+      "vertices": 4990,
+      "tris": 9824,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "z_min": 1.4918718338012695,
+      "z_max": 1.7394468784332275,
+      "material_names": [
+        "Hair_M"
+      ]
+    }
+  ],
+  "height_m": 1.7043001652618284,
+  "optional_hair_preview_height_m": 1.7394468785186643,
+  "tris": 49092
+}

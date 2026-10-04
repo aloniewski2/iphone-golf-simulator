@@ -1,0 +1,54 @@
+PASTE PROMPT — Male HeroBase Micro1g FACE LOCK
+================================================
+Copy everything below this line into Claude/Codex.
+
+---
+
+You are locking the MALE HeroBase FACE only. Recent face_example is WAY OFF — do not match it.
+
+START BLEND (Micro1f):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 57a08123bd714e58d744e2a59780e6aacb81dd71879f3ffeb14b31725eee6d73
+
+READ FIRST (mandatory):
+1) GOAL_HeroBase_Micro1g_MaleFaceLock.md  (project root)
+2) ArtDir/hero/base_lock/face_lock/FACE_SPEC.md  ← binary PASS/FAIL for EVERY feature
+3) AGENTS.md + art-bible.md
+
+AUTHORITY (ONLY — do not invent faces):
+- ArtDir/hero/base_lock/face_lock/   ← cropped PNG plates + contact sheets
+- ArtDir/hero/base_lock/male_head_detail.jpg
+- ArtDir/hero/base_lock/male_body_bald.jpg
+- ArtDir/hero/base_lock/male_multiangle_body.jpg
+
+CONTACT SHEETS (open these while sculpting):
+- ArtDir/hero/base_lock/face_lock/SHEET_head_detail_6.png
+- ArtDir/hero/base_lock/face_lock/SHEET_multiangle_heads.png
+- ArtDir/hero/base_lock/face_lock/SHEET_all_face_angles.png
+- ArtDir/hero/base_lock/face_lock/SHEET_plate_vs_bad_example.png  ← shows FAIL mesh
+
+PER-ANGLE CROPS:
+01_front_face.png … 06_top_cranial.png
+07_body_front_head.png / 08_body_back_head.png
+09_ma_front.png … 16_ma_threequarter_back_right.png
+
+REJECT:
+ArtDir/hero/base_lock/preview/face_example/  (hair bowl, pink shirt, dough cheeks, lump ears, sticker eyes, low nose, wrong likeness)
+
+SCOPE: FACE ONLY on Body_M bald head. Prefer sculpt primary forms into Body_M. No hair mesh. Grey shirt on plates is NOT mesh scope.
+
+DO NOT REGRESS: hands (Micro1f), body below neck, silhouette ≤5.0% bald front/back, Micro1e chin lock.
+
+CRITICAL FIX: nose tip height must match plates (current/wrong meshes sit nose too low). Eyes need socket depth under soft brow shelf — not flat stickers. Ears need simplified helix — not lumps. Cheeks athletic — not balloon under ears.
+
+DELIVER:
+- updated blend + FBX → Unity HeroBase_Male
+- proof/02_match_m_head.png (multi-angle overlays)
+- refreshed proof/03_unity_m.png head close-ups
+- proof/MALE_HEAD_RESULTS.md with binary GATE lines per FACE_SPEC regions
+
+REPLY ONLY:
+GATE: MALE_HEAD PASS
+or
+GATE: MALE_HEAD FAIL
+<failed lines only>

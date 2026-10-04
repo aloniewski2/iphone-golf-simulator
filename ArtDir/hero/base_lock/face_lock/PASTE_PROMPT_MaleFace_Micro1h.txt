@@ -1,0 +1,76 @@
+PASTE PROMPT — Male HeroBase Micro1h FACE DENSIFY + PLATE MATCH
+================================================================
+Copy everything below this line into Claude/Codex.
+
+---
+
+You are locking the MALE HeroBase FACE to match face_lock plates. Micro1g FAILED — do not repeat its method.
+
+START BLEND (Micro1g lock — VERIFY SHA BEFORE EDIT):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 c6b66edefc902c38c8696d7d5b25feb846f58c60c3edb21cd7a465d3c8dfd0d4
+Run: shasum -a 256 ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+If hash differs, STOP and report.
+
+READ FIRST (mandatory):
+1) GOAL_HeroBase_Micro1h_MaleFaceDensify.md  (project root)
+2) ArtDir/hero/base_lock/face_lock/PROCESS_FaceMatch.md  ← fixed pipeline
+3) ArtDir/hero/base_lock/face_lock/FACE_SPEC.md  ← binary PASS/FAIL every feature
+4) AGENTS.md + art-bible.md
+
+AUTHORITY (ONLY — do not invent faces):
+- ArtDir/hero/base_lock/face_lock/   ← cropped PNG plates + contact sheets
+- ArtDir/hero/base_lock/male_head_detail.jpg
+- ArtDir/hero/base_lock/male_body_bald.jpg
+- ArtDir/hero/base_lock/male_multiangle_body.jpg
+
+CONTACT SHEETS (open while sculpting):
+- ArtDir/hero/base_lock/face_lock/SHEET_head_detail_6.png
+- ArtDir/hero/base_lock/face_lock/SHEET_multiangle_heads.png
+- ArtDir/hero/base_lock/face_lock/SHEET_all_face_angles.png
+- ArtDir/hero/base_lock/face_lock/SHEET_plate_vs_bad_example.png  ← FAIL contrast only
+
+PER-ANGLE CROPS:
+01_front_face.png … 06_top_cranial.png
+07_body_front_head.png / 08_body_back_head.png
+09_ma_front.png … 16_ma_threequarter_back_right.png
+
+REJECT:
+ArtDir/hero/base_lock/preview/face_example/  (hair bowl, pink shirt, dough, lump ears, sticker eyes, low nose, wrong likeness)
+
+WHY MICRO1G FAILED (do not repeat):
+- Head ~9.5 mm vertex spacing + displacement fields + Face_M stickers as volume engine
+- Landmarks landed; Unity still blockout: thin ridge nose (no alae), bean ears (no helix/concha), midface ripples, cheeks too wide
+- FAIL lines: OVERALL_LIKENESS, NOSE_WIDTH_FRONT, NOSE_ALAE, CHEEK_WIDTH, EAR_ANATOMY, SCALP_SURFACE
+
+MANDATORY METHOD (PROCESS_FaceMatch):
+1) STOP displacement + Face_M stickers as volume engine
+2) Path A: local densify Body_M HEAD ONLY to ~2–4 mm spacing (neck weld down), OR
+   Path B: welded nose block + ear shells (same idea as hands), OR A then B
+3) Mandatory loops before feature PASS: alae/nostril, lids, mouth, jaw→ear, helix+concha
+4) Sculpt primary forms into Body_M / welded solids; thin Face_M only for non-volume paint after forms exist
+5) Hard binary gates vs face_lock/ + FACE_SPEC — every line
+
+SCOPE: HEAD TOPOLOGY + FACE FORMS on Body_M bald head. No hair mesh. Grey shirt on plates is NOT mesh scope.
+
+DO NOT REGRESS: hands (Micro1f), body below neck, silhouette ≤5.0% bald front/back, Micro1e chin lock.
+
+CRITICAL TARGETS:
+- Nose = proper block (bulb + alar lobes + nostril openings in 3/4); tip height already OK — WIDTH/ALAE must PASS
+- Ears = helix shell + concha bowl — not lump + wire rims
+- Cheeks = plate zygomatic width (narrow if needed without melting chin)
+- Midface = clean soft-plastic planes (no displacement ripples)
+- Eyes stay socketed under soft brow shelf; slight closed-mouth smile
+
+DELIVER:
+- updated blend + FBX → Unity HeroBase_Male
+- proof/02_match_m_head.png (multi-angle overlays)
+- refreshed proof/03_unity_m.png head close-ups
+- proof/MALE_HEAD_RESULTS.md with binary GATE lines per FACE_SPEC + TOPO_DENSITY / MANDATORY_LOOPS / NO_STICKER_VOLUME
+- optional proof/male-micro1h-checks.json (include head edge-length stats)
+
+REPLY ONLY:
+GATE: MALE_HEAD PASS
+or
+GATE: MALE_HEAD FAIL
+<failed lines only>

@@ -95,7 +95,7 @@ enum Outfit {
         return palette[index].name
     }
     /// Skin tones, matching the six the game offers.
-    static let skins: [String] = ["FFE0C4", "EEC4A0", "E2A06E", "C47C50", "965A38", "603C28"]
+    static let skins: [String] = ["F3C9A6", "EEBB8F", "E2A06E", "C47A4C", "965835", "603924"]   // = GolferStyle.SkinTones (liveliness retune 2026-10-02)
 }
 
 extension Color {

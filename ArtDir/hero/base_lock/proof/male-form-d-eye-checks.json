@@ -1,0 +1,35 @@
+{
+  "review": "Current saved Blender body/hand views and actual saved Unity front/back/left/right/three-quarter/detail captures reviewed after distal-hand correction. Head/neck/torso/legs and arm depth above wrist are exactly preserved. Five flags cover their defined defects only; head likeness and hand anatomy remain unfinished.",
+  "source_sha256": "d39c6c5e5157ff15428759c01eaa227a09ea1bcd4b0d1a51acfe4110795d2413",
+  "unity_capture_sha256": {
+    "front": "fa9a280432abbe4f39a7e2aa84a907fd6bcf8957090db2f9e61e304f5a16ac5e",
+    "back": "e201d353f4b2b5b7d5a386e076f63af70c9a0e3b4deb8d6904064025bcead6c0",
+    "left": "74bf63876c0dba1630bc33f6dc4d2c793502465bc6e8d1f5efef671d9e8ca670",
+    "right": "6dc537ef37e39e31b5107933236b9b2e9ff079fcf566370900cc5eda1c126a13",
+    "threequarter": "24ae21e64d0ae14b028c23a2e25d7612b713076a37f05cf410f10a28492c0d09",
+    "head_side": "e969eb473376185efc868bd8c2d353062b7bf01a419a762507b109e902700309",
+    "foot_side": "15c527758a20dcb5de21d48e3ade334e5ee05eefbf7428b3cdf5d8e0ec4cd205"
+  },
+  "checks": {
+    "ARMS_SIDE": {
+      "flag": "PASS",
+      "note": "Left/right profiles show closed rounded deltoid, upper-arm and forearm depth; wrist narrows continuously. No thin arm cards."
+    },
+    "CHIN": {
+      "flag": "FAIL",
+      "note": "Old beard/stubble cap absent. Local jaw/under-chin/neck depth sculpt reduces surface ripples and retains the improved central reference profile. Lower-jaw curvature and neck transition remain visibly different in actual all-around Blender and saved Unity proof; no chin likeness PASS."
+    },
+    "FEET_SIDE": {
+      "flag": "PASS",
+      "note": "Both profiles show a rounded toe box, sloped instep, ankle and heel; a broad low sole can plant on the ground. No old twisted slab."
+    },
+    "SHOULDERS": {
+      "flag": "PASS",
+      "note": "Full rounded deltoid at both arm joins. Folded front/rear deltoid/torso triangles were locally unfolded; the previous horizontal cavity/crease is absent in front, back and three-quarter proof."
+    },
+    "WAIST": {
+      "flag": "PASS",
+      "note": "Waist tapers below the chest and widens toward the hips without the former waist shelf/love-handle ridge. Front/back and three-quarter views reviewed."
+    }
+  }
+}

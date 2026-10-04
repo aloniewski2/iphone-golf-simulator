@@ -12,10 +12,17 @@ namespace GolfArcade.Game
         public static GolfArcade.Tennis.TennisLook.Kit Outfit;
 
         /// From light to deep, the same scale as the character sheet's tan in the middle.
+        /// Chroma retune (skin liveliness, 2026-10-02): hue and value ladder kept, colour saturation (HSV S) lifted where the tone rendered pale/grey in the
+        /// neutral studio (HeroBase studio, URP Lit, smoothness 0.40; rendered S Fair .224→.278, Light .292→.361, Olive .547→.564, Brown .549→.565, Deep .448→.474).
+        /// Colour S: Fair .231→.317 (value 1.00→.95 so the highlights stop clipping to chalk), Light .328→.399, Olive .592→.612, Brown .627→.647, Deep .583→.625.
+        /// Tan is held: it already renders at the plate's skin chroma (S≈.48 vs plate ≈.46), raising it would overshoot.
+        /// Old → new RGB: Fair 255,224,196→243,201,166 · Light 238,196,160→238,187,143 · Tan 226,160,110 (unchanged)
+        /// · Olive 196,124,80→196,122,76 · Brown 150,90,56→150,88,53 · Deep 96,60,40→96,57,36.
+        /// HeroBase materials take their BaseColor from these values (neutral albedo), so a tone change never needs a new texture.
         public static readonly Color[] SkinTones =
         {
-            Rgb(255, 224, 196), Rgb(238, 196, 160), Rgb(226, 160, 110),
-            Rgb(196, 124, 80), Rgb(150, 90, 56), Rgb(96, 60, 40),
+            Rgb(243, 201, 166), Rgb(238, 187, 143), Rgb(226, 160, 110),
+            Rgb(196, 122, 76), Rgb(150, 88, 53), Rgb(96, 57, 36),
         };
         public static readonly string[] SkinToneNames = { "Fair", "Light", "Tan", "Olive", "Brown", "Deep" };
 

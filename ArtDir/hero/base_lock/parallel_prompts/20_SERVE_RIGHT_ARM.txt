@@ -1,0 +1,20 @@
+PASTE — SERVE TOSS, DIP, AND JUMP · NEW CHAT
+
+The break is the toss, not the contact. Watch work/serve-and-feet/film/serve_male.mp4 from the frame the ball is still in the left hand. The next seven frames are wrong.
+
+The ball climbs to the head while both arms stay at the waist. The left arm never goes up with the ball. It pops up late, elbow bent. The racket stays sideways in front of the belt, hoop out to the right, handle in the middle. The hoop is not above the handle.
+
+The load and the jump are flat. Before the toss the hips stay upright. The jump barely leaves the ground. Make both bouncy and goofy, the same exaggeration as the run, not a realistic pro serve.
+
+Fix the toss frames first. Then the dip and the jump on the same clip.
+
+1. The left arm rises with the ball. When the ball is at the head, the left hand is at the head, arm straightening up. FAIL if the ball is by the ear and both hands are still at the belt.
+2. The racket turns as the arm rises. By the time the left arm is straight up, the racket head is above the handle, hoop up beside the right ear. FAIL if the hoop is still sticking out sideways at the waist.
+3. Before the ball leaves the hand, fold at the hips the way a real toss load does, then play it bigger and bouncier, the same exaggeration as the run. Pop up out of that dip into the toss. FAIL if the spine stays straight through the load.
+4. The jump is a clear hop. Both feet leave the ground and the hips rise well above the ready stance, then land. Still in place. FAIL if the feet barely leave the court.
+
+The chest punch after the toss is the arm catching up. Do not key that punch. Once the toss is right, the elbow goes behind the back, then the arm reaches up in front of the forehead. The forearm never passes through the chest.
+
+Re-key the left arm, the right shoulder, upper arm, forearm, and hand, plus the hip fold and the vertical jump. Male first. Copy those keys to the female by bone name. Leave the walk and the three runs. Do not slide the root sideways.
+
+Proof is a new in-game clip, both sexes, from before the ball leaves the hand through the landing. FAIL if the first frames still show the ball at the head with the arms down, the racket sideways, a straight spine through the load, or a jump that barely leaves the ground. Export only Male_Serve.fbx and Female_Serve.fbx.

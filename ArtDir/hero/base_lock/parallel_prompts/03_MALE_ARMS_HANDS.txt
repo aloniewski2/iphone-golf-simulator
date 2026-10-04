@@ -1,0 +1,26 @@
+PASTE — CHAT 3 / 8 — MALE ARMS + HANDS
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY — violate = STOP):
+- You own ONLY the vertex ZONE named below. Any vert outside your zone: DO NOT MOVE (bit-identical vs start SHA).
+- Work ONLY under work/<your-folder>/ . Never edit another chat's work/.
+- Do NOT overwrite ArtDir blend/FBX until your zone audit proves 0 verts moved outside zone.
+- Unity: write captures to Library/Captures is OK; only touch YOUR prefab import path listed below; never run a full HeroBase import that other chats are writing in the same minute — prefer export to work/<folder>/export/ then copy to ArtDir ONLY at end if zone audit PASS.
+- Do NOT delete/rename LOOP_* groups you do not own. Do NOT open female blend.
+- If start SHA mismatches, STOP.
+
+YOUR ZONE: left+right arms from shoulder deltoid through fingers. EXCLUDE: head/neck, torso midline/chest/abs/back/pelvis, legs, feet.
+Hands: improve form toward Micro1f quality if regressed; do not break grip sockets.
+0 verts outside arms/hands.
+
+START SHA: 68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf (or current ArtDir SHA if newer — re-verify; never move non-arm verts)
+
+AUTHORITY: male plates multiangle arms/hands; proof/01f_hands_m.png as prior PASS reference
+WORK: work/male-parallel-arms/
+STAGING then ArtDir only after audit.
+
+SCOPE: arm mass, forearm, wrist, finger separation/soft-plastic hands. No body/head.
+DELIVER: arm/hand Unity or Blender proof; checks outside-zone=0
+REPLY: GATE: MALE_ARMS_HANDS PASS|FAIL

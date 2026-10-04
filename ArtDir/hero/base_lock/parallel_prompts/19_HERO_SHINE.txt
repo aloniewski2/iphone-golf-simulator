@@ -1,0 +1,18 @@
+PASTE — CHARACTER SHADER AND CLOTH SHADER · NEW CHAT
+================================================================================
+Do not remodel anyone. Do not change the court, the ball, the clips, or the rules.
+
+Characters. The new male and female heroes in the match and in the locker are flat because MatchHeroLook only tints _BaseColor. Put their body, eyes, and racket on the existing shader Resources/Tennis/Shaders/TennisCharacter, the one TennisLook already uses. Do not write a second skin shader.
+
+Body: _Smoothness 0.35, _Wrap 0.55, _RimStrength 0.35, _Subsurface a light warm red-brown.
+Eyes: _Smoothness 0.85.
+Racket frame: _Smoothness 0.65, _RimStrength 0.2.
+Keep the roster skin tint and the roster racket tint. They must set _BaseColor on this shader, not on the imported flat material.
+
+Clothes. Write one new shader, TennisCloth, next to TennisCharacter. Use it on the shirt, shorts, skirt, socks, and shoes when a kit is worn. Do not put cloth on TennisCharacter.
+
+TennisCloth is matte. _Smoothness about 0.14. A soft wrap so folds are not black. _RimStrength about 0.2, weaker than skin. No subsurface glow. The black waistband and the black trim stay black and a little sharper than the white cloth (_Smoothness about 0.25). White cloth must not blow out to a flat white.
+
+One rim light in the match and one in the locker, aimed back toward the camera, warm, dimmer than the sun. No bloom, no new post stack, no extra court lights.
+
+Reply with one match still and one locker still. Skin shinier than the shirt. Folds visible. Rim on the shoulder.

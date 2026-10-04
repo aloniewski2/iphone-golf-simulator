@@ -31,20 +31,21 @@ namespace GolfArcade.Tennis
         bool overheadAttempted;
         Vector2 overheadStand;
         TennisRules.InterceptPlan overheadPlan;
-        void TryTrackedOverhead()
+        bool TryTrackedOverhead(float power)
         {
             if(!TrackingOverhead || overheadAttempted || Player.Swinging || Player.GroundRecovering || DiveActive
-                || !incoming || Flow!=Phase.Rally || resetTimer>0 || bounces>0) return;
-            if(overheadPlan.Time<.06f || overheadPlan.Time>.4f) return;
+                || !incoming || Flow!=Phase.Rally || resetTimer>0 || bounces>0) return false;
+            if(overheadPlan.Time<.06f || overheadPlan.Time>.45f) return false;
             Vector3 cp=Player.ContactPoint(TennisActor.Stroke.Smash,false)-Player.transform.position;
             Vector2 goal=new Vector2(overheadPlan.Point.x-cp.x,overheadPlan.Point.z-cp.z);
             // Allow the last approach step during windup, leaving time for the
             // run-to-smash blend before the ball descends to contact height.
-            if(Vector2.Distance(goal,new Vector2(Player.transform.position.x,Player.transform.position.z))>.85f) return;
+            if(Vector2.Distance(goal,new Vector2(Player.transform.position.x,Player.transform.position.z))>.85f) return false;
             overheadAttempted=true; overheadStand=goal; AutoSmashAttempts++;
-            Player.Swing(.85f,false,TennisActor.Stroke.Smash);
+            Player.Swing(Mathf.Clamp01(power),false,TennisActor.Stroke.Smash);
             // A descending lob may need a slower windup than the normal rally
             // pace floor permits; otherwise the racket passes contact too early.
+            float rawLate = (Player.TimeToContact - overheadPlan.Time) / SpeedScale;
             Player.PaceToContact(overheadPlan.Time, .1f); Player.GuideContact(overheadPlan.Point,overheadPlan.Time);
             consumedStroke=false; honestRejected=false;
             // Commit the descending overhead intercept. The ordinary reach assist can
@@ -52,11 +53,12 @@ namespace GolfArcade.Tennis
             // the smash to that unreachable point, and consume the only attempt.
             pending = new PendingHit {
                 Active = true,
-                Hit = TennisRules.AssistedHit(0, 1, 1-Mathf.Abs(LateralSpeed)/10, Player.Power, Stamina),
+                Hit = TennisRules.AssistedHit(rawLate, 1, 1-Mathf.Abs(LateralSpeed)/10, Player.Power, Stamina),
                 Face = Vector2.zero, At = overheadPlan.Point, Age = 0, Lead = overheadPlan.Time
             };
-            hitLateness = 0;
+            hitLateness = rawLate;
             Feedback="OVERHEAD!";
+            return true;
         }
     }
 }

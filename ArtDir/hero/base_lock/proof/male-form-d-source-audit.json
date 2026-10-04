@@ -1,0 +1,34 @@
+{
+  "source_sha256": "825055d85ef2940bee117cabcf5dc5571bf2780ffd362747e54017d8fbf9a3d3",
+  "continuation_baseline_sha256": "d6aa844afce8ae8ac2d9cdb9135d38f00fcdc1cc16980da8e822e66cb54490b4",
+  "head_stage_baseline_sha256": "d39c6c5e5157ff15428759c01eaa227a09ea1bcd4b0d1a51acfe4110795d2413",
+  "connectivity_sha256": "d7cc011b2a202b2fdc92e1506096663e1ab7bfad612f0ecc40a2cff565e1d1f9",
+  "height_metres": 1.7021874501369894,
+  "vertices": 24578,
+  "triangles": 49176,
+  "body_origin_unchanged": true,
+  "cameras_unchanged": true,
+  "remesh": false,
+  "female": false,
+  "hair": false,
+  "edits": {
+    "method": "Local existing-coordinate fairing plus smooth lower-jaw anterior depth displacement from the fixed head-detail outer contour and the full visible mesh profile. No remesh or primary camera/mask changes.",
+    "baseline_sha256": "d39c6c5e5157ff15428759c01eaa227a09ea1bcd4b0d1a51acfe4110795d2413",
+    "profile_step_fraction": 0.55,
+    "changed_vertices": 1102,
+    "maximum_displacement_metres": 0.010972660179820494,
+    "triangle_normal_reversals": 0,
+    "body_below_1_35m_unchanged": true,
+    "visible_profile_diagnostic": {
+      "before_mean_absolute_visible_profile_gap_mm": 4.877420011735102,
+      "before_max_absolute_visible_profile_gap_mm": 27.708750986580196,
+      "after_mean_absolute_visible_profile_gap_mm": 2.694401605228899,
+      "after_max_absolute_visible_profile_gap_mm": 8.807774016572623
+    },
+    "actual_maximum_displacement_metres": 0.01097268602105835,
+    "upper_head_above_1_54m_unchanged": true,
+    "hands_torso_legs_unchanged": true,
+    "native_authority_masks_unchanged": true,
+    "rejected_candidates": "15 mm and 6 mm local mandibular-angle lifts introduced a crease below the ear; not saved to the main source."
+  }
+}

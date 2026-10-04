@@ -1,0 +1,82 @@
+{
+  "device": "mps",
+  "source_sha256": "bcd2b1e0bef1d1ab3624ad4870a8bbcf6a05af8fd79178349f6e1f8dffc65226",
+  "joints": 41,
+  "frames": 60,
+  "native_fps": 30,
+  "clean_joint_names": {
+    "Hips": "Hips",
+    "Spine": "Spine",
+    "UpperLeg.L": "Left Upper Leg",
+    "UpperLeg.R": "Right Upper Leg",
+    "Chest": "Spine",
+    "LowerLeg.L": "Left Lower Leg",
+    "LowerLeg.R": "Right Lower Leg",
+    "Shoulder.L": "Left Shoulder",
+    "Shoulder.R": "Right Shoulder",
+    "Neck": "Neck",
+    "Foot.L": "Left Foot",
+    "Foot.R": "Right Foot",
+    "UpperArm.L": "Left Upper Arm",
+    "UpperArm.R": "Right Upper Arm",
+    "Head": "Head",
+    "Toes.L": "Left Toe",
+    "Toes.R": "Right Toe",
+    "LowerArm.L": "Left Forearm",
+    "LowerArm.R": "Right Forearm",
+    "Hand.L": "Left Hand",
+    "Hand.R": "Right Hand",
+    "Thumb1.L": "Left Thumb Finger",
+    "Ring1.L": "Left Ring Finger",
+    "Middle1.L": "Left Middle Finger",
+    "Pinky1.L": "Left Pinky Finger",
+    "Index1.L": "Left Index Finger",
+    "Thumb1.R": "Right Thumb Finger",
+    "Ring1.R": "Right Ring Finger",
+    "Middle1.R": "Right Middle Finger",
+    "Pinky1.R": "Right Pinky Finger",
+    "Index1.R": "Right Index Finger",
+    "Thumb2.L": "Left Thumb Finger",
+    "Ring2.L": "Left Ring Finger",
+    "Middle2.L": "Left Middle Finger",
+    "Pinky2.L": "Left Pinky Finger",
+    "Index2.L": "Left Index Finger",
+    "Thumb2.R": "Right Thumb Finger",
+    "Ring2.R": "Right Ring Finger",
+    "Middle2.R": "Right Middle Finger",
+    "Pinky2.R": "Right Pinky Finger",
+    "Index2.R": "Right Index Finger"
+  },
+  "clips": {
+    "01_ready": {
+      "seconds": 84.92703890800476,
+      "prompt": "A tennis player waits to return a serve, knees slightly bent, leaning forward, hands in front of the waist, making small light ready steps.",
+      "seed": 730,
+      "finite": true
+    },
+    "02_forehand": {
+      "seconds": 123.8712260723114,
+      "prompt": "A right handed tennis player performs a strong forehand tennis swing, turning the hips and shoulders, swinging the right arm from behind the right side forward across the body, finishing high near the left shoulder.",
+      "seed": 731,
+      "finite": true
+    },
+    "03_backhand": {
+      "seconds": 145.55310487747192,
+      "prompt": "A right handed tennis player hits a two handed backhand tennis stroke. Both hands together load low on the left side, the hips and shoulders turn, then both arms swing forward and finish high over the right shoulder.",
+      "seed": 732,
+      "finite": true
+    },
+    "04_serve": {
+      "seconds": 207.65481686592102,
+      "prompt": "A tennis player performs an overhead tennis serve. The left hand tosses the ball upward, the knees bend, the right arm draws back behind the head, then the player stretches upward and swings the right arm overhead, following through across the body.",
+      "seed": 733,
+      "finite": true
+    },
+    "05_volley": {
+      "seconds": 150.09008622169495,
+      "prompt": "A tennis player makes a short forehand volley with the right arm. Starting in a ready crouch, the player steps forward, punches the racket forward in front of the chest with a firm wrist, then returns to ready.",
+      "seed": 734,
+      "finite": true
+    }
+  }
+}

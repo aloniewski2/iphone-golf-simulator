@@ -1,0 +1,354 @@
+[
+  {
+    "sex": "Male",
+    "meshes": [
+      "Body_M",
+      "Hair_M"
+    ],
+    "armatures": 0,
+    "parts": [
+      {
+        "name": "Body_M",
+        "triangles": 39268,
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "rotation_radians": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonfinite_vertices": 0,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 6,
+        "alpha_materials": [
+          [
+            "Base_Grey_M",
+            1.0
+          ],
+          [
+            "Skin_M",
+            1.0
+          ],
+          [
+            "Eye_White",
+            1.0
+          ],
+          [
+            "Iris_Dark",
+            1.0
+          ],
+          [
+            "Pupil",
+            1.0
+          ],
+          [
+            "Brow",
+            1.0
+          ],
+          [
+            "Mouth",
+            1.0
+          ],
+          [
+            "Teeth",
+            1.0
+          ],
+          [
+            "Lip_M",
+            1.0
+          ],
+          [
+            "Ear_Shadow_M",
+            1.0
+          ]
+        ],
+        "scalp_region_floor_metres": 1.6483979763912309,
+        "scalp_boundary_edges": 0,
+        "scalp_nonmanifold_edges": 0,
+        "hair_materials": 0,
+        "height_metres": 1.7043001652618284
+      },
+      {
+        "name": "Hair_M",
+        "triangles": 9824,
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "rotation_radians": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonfinite_vertices": 0,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 0,
+        "alpha_materials": [
+          [
+            "Hair_M",
+            1.0
+          ]
+        ]
+      }
+    ],
+    "source_sha256": "82ea9610c60597bc34f41f0c0e6bbdc8f433ca95012c96832b9982cebbb7e7ae",
+    "plate_hash_matches": true,
+    "attachment": {
+      "body_fbx": "HeroBase_Male_Body.fbx",
+      "default_hair_fbx": "Hair_Default_Male.fbx",
+      "hair_anchor_metres": [
+        0,
+        1.5795952782462055,
+        0
+      ],
+      "hair_origin": "head-local; Unity Y up",
+      "body_contains_hair": false,
+      "bald_height_m": 1.7043001652618284
+    },
+    "exports": [
+      {
+        "path": "HeroBase_Male_Body.fbx",
+        "sha256": "53e9096905c51a6a35d0323c5ebdc7244c9ba7dd2a151fab5253ee7b85432030",
+        "mesh_names": [
+          "Body_M"
+        ],
+        "triangles": 39268,
+        "materials": [
+          "Base_Grey_M",
+          "Skin_M",
+          "Eye_White",
+          "Iris_Dark",
+          "Pupil",
+          "Brow",
+          "Mouth",
+          "Teeth",
+          "Lip_M",
+          "Ear_Shadow_M"
+        ],
+        "armatures": 0,
+        "z_min_metres": 8.48678571863104e-10,
+        "z_max_metres": 1.7043001651763916,
+        "head_local_origin": false
+      },
+      {
+        "path": "Hair_Default_Male.fbx",
+        "sha256": "f786a6a38a5449fb93279ef24378ff25d322620aca8fcc0bd3adab0aec9fddd6",
+        "mesh_names": [
+          "Hair_M.001"
+        ],
+        "triangles": 9824,
+        "materials": [
+          "Hair_M"
+        ],
+        "armatures": 0,
+        "z_min_metres": -0.08772344887256622,
+        "z_max_metres": 0.15985159575939178,
+        "head_local_origin": true
+      }
+    ],
+    "source_images": [
+      {
+        "name": "Head_Male_Albedo.png",
+        "packed": true
+      },
+      {
+        "name": "male_body_plain.jpg",
+        "packed": true
+      },
+      {
+        "name": "male_body_plain.jpg.001",
+        "packed": true
+      }
+    ]
+  },
+  {
+    "sex": "Female",
+    "meshes": [
+      "Body_F",
+      "Hair_F"
+    ],
+    "armatures": 0,
+    "parts": [
+      {
+        "name": "Body_F",
+        "triangles": 44708,
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "rotation_radians": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonfinite_vertices": 0,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 0,
+        "alpha_materials": [
+          [
+            "Base_Grey_F",
+            1.0
+          ],
+          [
+            "Skin_F",
+            1.0
+          ],
+          [
+            "Eye_White",
+            1.0
+          ],
+          [
+            "Iris_Dark",
+            1.0
+          ],
+          [
+            "Pupil",
+            1.0
+          ],
+          [
+            "Brow",
+            1.0
+          ],
+          [
+            "Mouth",
+            1.0
+          ],
+          [
+            "Teeth",
+            1.0
+          ],
+          [
+            "Lip_F",
+            1.0
+          ],
+          [
+            "Ear_Shadow_F",
+            1.0
+          ]
+        ],
+        "scalp_region_floor_metres": 1.6195419847328245,
+        "scalp_boundary_edges": 0,
+        "scalp_nonmanifold_edges": 0,
+        "hair_materials": 0,
+        "height_metres": 1.7038941025379017
+      },
+      {
+        "name": "Hair_F",
+        "triangles": 4960,
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "rotation_radians": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonfinite_vertices": 0,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 0,
+        "alpha_materials": [
+          [
+            "Hair_F",
+            1.0
+          ]
+        ]
+      }
+    ],
+    "source_sha256": "200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd",
+    "plate_hash_matches": true,
+    "attachment": {
+      "body_fbx": "HeroBase_Female_Body.fbx",
+      "default_hair_fbx": "Hair_Default_Female.fbx",
+      "hair_anchor_metres": [
+        0,
+        1.5572519083969465,
+        0
+      ],
+      "hair_origin": "head-local; Unity Y up",
+      "body_contains_hair": false,
+      "bald_height_m": 1.7038941025379017
+    },
+    "exports": [
+      {
+        "path": "HeroBase_Female_Body.fbx",
+        "sha256": "47aa5cc8f1dbe96a4ca20717162427fe18134b2502aabba90e46c051fb3fb2e2",
+        "mesh_names": [
+          "Body_F"
+        ],
+        "triangles": 44708,
+        "materials": [
+          "Base_Grey_F",
+          "Skin_F",
+          "Eye_White",
+          "Iris_Dark",
+          "Pupil",
+          "Brow",
+          "Mouth",
+          "Teeth",
+          "Lip_F",
+          "Ear_Shadow_F"
+        ],
+        "armatures": 0,
+        "z_min_metres": -9.146623938249832e-07,
+        "z_max_metres": 1.7038931846618652,
+        "head_local_origin": false
+      },
+      {
+        "path": "Hair_Default_Female.fbx",
+        "sha256": "7d5524047494501d305dcb1e9b5a8debedf6ffcb6cb2c50ee200534f35808649",
+        "mesh_names": [
+          "Hair_F.001"
+        ],
+        "triangles": 4960,
+        "materials": [
+          "Hair_F"
+        ],
+        "armatures": 0,
+        "z_min_metres": -0.10794780403375626,
+        "z_max_metres": 0.1504305750131607,
+        "head_local_origin": true
+      }
+    ],
+    "source_images": [
+      {
+        "name": "female_body_plain.jpg",
+        "packed": true
+      },
+      {
+        "name": "female_body_plain.jpg.001",
+        "packed": true
+      },
+      {
+        "name": "Head_Female_Albedo.png",
+        "packed": true
+      }
+    ]
+  }
+]

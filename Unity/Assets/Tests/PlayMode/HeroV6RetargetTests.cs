@@ -19,7 +19,7 @@ namespace GolfArcade.PlayTests
         [UnityTest, Explicit, Timeout(900000)]
         public IEnumerator ClipsPlayOnTheGeneratedHero()
         {
-            var old = Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath), new Vector3(-.75f, 0, 0), Quaternion.identity);
+            var old = Object.Instantiate(Resources.Load<GameObject>("Tennis/Hero/Hero_01_Tennis"), new Vector3(-.75f, 0, 0), Quaternion.identity);
             var drv = old.GetComponent<HeroTennisDriver>(); drv.enabled = false;
             foreach (var mb in old.GetComponentsInChildren<MonoBehaviour>()) mb.enabled = false;
             var src = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/ArtDirection/HeroV6/Hero_V6.fbx");

@@ -93,7 +93,7 @@ namespace GolfArcade.EditorTools {
   AudioListener.volume=0;AudioListener.pause=true;   // capture runs are silent (no game audio on the user's speakers)
   if(m==1){
    if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();var pos=old.transform.position;var rot=old.transform.rotation;old.gameObject.SetActive(false);
-    rev=Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath),pos,rot);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;return;}
+    rev=Object.Instantiate(Resources.Load<GameObject>(LegacyHero01.PrefabPath),pos,rot);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;return;}
    int total=Looks.Length*Poses.Length;int k=step-1;
    if(k>=total){File.WriteAllLines(Out+"/stills_log.txt",log);Finish();return;}
    var d=rev.GetComponent<HeroTennisDriver>();var cos=rev.GetComponent<HeroCosmetics>();var (ln,apply)=Looks[k/Poses.Length];var (clip,t)=Poses[k%Poses.Length];
@@ -111,7 +111,7 @@ namespace GolfArcade.EditorTools {
   }
   if(m==6){
    // Env HERO_STRIP="Clip:t0:t1:dt;..." HERO_STRIP_VIEWS="front,side,back" HERO_STRIP_OUT=dir : frames per clip/view for review.
-   if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();old.gameObject.SetActive(false);rev=Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath),Vector3.zero,Quaternion.identity);rev.GetComponent<HeroTennisDriver>().Build();
+   if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();old.gameObject.SetActive(false);rev=Object.Instantiate(Resources.Load<GameObject>(LegacyHero01.PrefabPath),Vector3.zero,Quaternion.identity);rev.GetComponent<HeroTennisDriver>().Build();
     stripJobs=new List<(HeroTennisDriver.Clip,float,string)>();var views=(Environment.GetEnvironmentVariable("HERO_STRIP_VIEWS")??"front,side").Split(',');
     foreach(var job in Environment.GetEnvironmentVariable("HERO_STRIP").Split(';')){var q=job.Split(':');var c=(HeroTennisDriver.Clip)Enum.Parse(typeof(HeroTennisDriver.Clip),q[0]);float t0=float.Parse(q[1]),t1=float.Parse(q[2]),dt=float.Parse(q[3]);
      for(float t=t0;t<=t1+1e-4f;t+=dt)foreach(var v in views)stripJobs.Add((c,t,v));}
@@ -127,7 +127,7 @@ namespace GolfArcade.EditorTools {
    Capture(cam,stripOut+$"/{k:D4}_{sc}_{st:0.00}_{sv}.png",480,480);log.Add($"{k} {sc} {st:0.00} {sv} {d.ProbeArms()}");step++;return;
   }
   if(m==5){
-   if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();old.gameObject.SetActive(false);rev=Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath),Vector3.zero,Quaternion.identity);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;return;}
+   if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();old.gameObject.SetActive(false);rev=Object.Instantiate(Resources.Load<GameObject>(LegacyHero01.PrefabPath),Vector3.zero,Quaternion.identity);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;return;}
    var d=rev.GetComponent<HeroTennisDriver>();var an=look(rev).animator;
    foreach(HeroTennisDriver.Clip c in Enum.GetValues(typeof(HeroTennisDriver.Clip))){
     float len=d.LengthOf(c);if(len<=0)continue;float worst=0,wt=0;float hipsMin=9;
@@ -140,7 +140,7 @@ namespace GolfArcade.EditorTools {
   }
   if(m==3){
    if(step==0){var old=Object.FindFirstObjectByType<ModularHeroLook>();var pos=old.transform.position;var rot=old.transform.rotation;old.gameObject.SetActive(false);
-    rev=Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath),pos,rot);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;juiceIdx=0;juiceT=0;return;}
+    rev=Object.Instantiate(Resources.Load<GameObject>(LegacyHero01.PrefabPath),pos,rot);rev.GetComponent<HeroTennisDriver>().Build();log=new List<string>();step=1;juiceIdx=0;juiceT=0;return;}
    var jc=new[]{HeroTennisDriver.Clip.Idle,HeroTennisDriver.Clip.HitPerfect,HeroTennisDriver.Clip.MissWhiff,HeroTennisDriver.Clip.CelebratePoint,HeroTennisDriver.Clip.SadPointLost,HeroTennisDriver.Clip.MatchWin,HeroTennisDriver.Clip.MatchLose};
    if(juiceIdx>=jc.Length){File.WriteAllLines(Out+"/juice_manifest.txt",log);Finish();return;}
    var d=rev.GetComponent<HeroTennisDriver>();var c=jc[juiceIdx];

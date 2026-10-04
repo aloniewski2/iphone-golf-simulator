@@ -82,7 +82,7 @@ namespace GolfArcade.Tennis
         /// Show a tip the first time its moment comes up on this device.
         public void Offer(Tip t)
         {
-            if (!TipsEnabled) return;
+            if (!TipsEnabled || (GetComponent<TennisGame>()?.ScoreOnlyText ?? true)) return;
             string key = Key + t;
             bool seen;
             try { seen = PlayerPrefs.GetInt(key, 0) == 1; } catch { seen = true; }
@@ -106,7 +106,7 @@ namespace GolfArcade.Tennis
         /// calls a reminder from the side of the court, cycling through this match's lines.
         public void OnGameEnded(TennisMatch match, bool setEnded)
         {
-            if (changeoverLines == null || changeoverLines.Length == 0 || match.Complete) return;
+            if ((GetComponent<TennisGame>()?.ScoreOnlyText ?? true) || changeoverLines == null || changeoverLines.Length == 0 || match.Complete) return;
             if (!setEnded && (match.PlayerGames + match.OpponentGames) % 2 == 0) return;
             tip.text = "COACH RAY:  " + changeoverLines[nextLine % changeoverLines.Length];
             nextLine++; tipUntil = HudClock.Now + 6.5f;
@@ -141,6 +141,7 @@ namespace GolfArcade.Tennis
 
         void Update()
         {
+            if (GetComponent<TennisGame>()?.ScoreOnlyText ?? true) { tip.text = ""; return; }
             if (tip.text.Length == 0) return;
             float left = tipUntil - HudClock.Now;
             if (left <= 0) tip.text = "";

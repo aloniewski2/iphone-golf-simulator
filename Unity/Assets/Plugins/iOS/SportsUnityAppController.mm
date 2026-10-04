@@ -58,7 +58,14 @@ extern "C" __attribute__((visibility("default"))) bool SportsPresentExternalDisp
 // DisplayManager still treats the phone as display 0, so always initialize there.
 @interface SportsUnityAppController : UnityAppController
 @end
+extern "C" void SportsRegisterPointCapture();
+extern "C" id SportsMakePointRenderDelegate(id existing);
 @implementation SportsUnityAppController
+- (void)preStartUnity { [super preStartUnity]; SportsRegisterPointCapture(); }
+- (void)shouldAttachRenderDelegate {
+    [super shouldAttachRenderDelegate];
+    self.renderDelegate=SportsMakePointRenderDelegate(self.renderDelegate);
+}
 - (UIWindowScene*)pickStartupWindowScene:(NSSet<UIScene*>*)scenes {
     for (UIScene *scene in scenes) {
         if ([scene isKindOfClass:UIWindowScene.class] &&

@@ -1,0 +1,146 @@
+{
+  "01_front_face.png": {
+    "box": [
+      5,
+      62,
+      433,
+      352
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "02_left_profile.png": {
+    "box": [
+      433,
+      62,
+      834,
+      352
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "03_right_profile.png": {
+    "box": [
+      834,
+      62,
+      1271,
+      352
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "04_threequarter_front_left.png": {
+    "box": [
+      5,
+      390,
+      433,
+      668
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "05_threequarter_front_right.png": {
+    "box": [
+      433,
+      390,
+      834,
+      668
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "06_top_cranial.png": {
+    "box": [
+      834,
+      390,
+      1272,
+      668
+    ],
+    "source": "male_head_detail.jpg"
+  },
+  "07_body_front_head.png": {
+    "box": [
+      265,
+      68,
+      443,
+      253
+    ],
+    "source": "male_body_bald.jpg"
+  },
+  "08_body_back_head.png": {
+    "box": [
+      834,
+      68,
+      998,
+      220
+    ],
+    "source": "male_body_bald.jpg"
+  },
+  "09_ma_front.png": {
+    "box": [
+      146,
+      58,
+      224,
+      145
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "10_ma_back.png": {
+    "box": [
+      436,
+      58,
+      526,
+      145
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "11_ma_left_profile.png": {
+    "box": [
+      744,
+      58,
+      828,
+      143
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "12_ma_right_profile.png": {
+    "box": [
+      1045,
+      58,
+      1111,
+      146
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "13_ma_threequarter_front_left.png": {
+    "box": [
+      133,
+      379,
+      227,
+      481
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "14_ma_threequarter_front_right.png": {
+    "box": [
+      432,
+      379,
+      522,
+      481
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "15_ma_threequarter_back_left.png": {
+    "box": [
+      740,
+      380,
+      844,
+      465
+    ],
+    "source": "male_multiangle_body.jpg"
+  },
+  "16_ma_threequarter_back_right.png": {
+    "box": [
+      1024,
+      380,
+      1132,
+      462
+    ],
+    "source": "male_multiangle_body.jpg"
+  }
+}

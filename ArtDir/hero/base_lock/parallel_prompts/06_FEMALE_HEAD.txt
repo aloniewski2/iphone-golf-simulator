@@ -1,0 +1,24 @@
+PASTE — CHAT 6 / 8 — FEMALE HEAD (wait until chat 5 PASS, or STOP if face_lock_f missing)
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY):
+- Own ONLY your zone/files. Never touch male blend/FBX.
+- Work under work/<your-folder>/ only.
+- If SHA mismatch, STOP.
+
+YOUR ZONE: female head+neck only on HeroBase_Female.blend. 0 verts below neck / hands / body.
+If ArtDir/hero/base_lock/face_lock_f/FACE_SPEC.md missing → STOP and say wait for chat 5.
+
+START:
+ArtDir/hero/base_lock/blender/HeroBase_Female.blend
+SHA-256 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd (re-verify)
+WORK: work/female-micro-f1-head/
+AUTHORITY: face_lock_f/ ONLY + female_head_detail.jpg
+METHOD: same as male Micro1h/1i — densify head ~2–4mm OR welded nose/ears; mandatory loops; no sticker volume; bald; OVERALL_LIKENESS hard
+TRI budget: document; densify OK with note
+EXPORT staging then Female FBX/prefab paths only (do not touch male)
+
+DELIVER: proof/02_match_f_head.png, 03_unity_f.png, FEMALE_HEAD_RESULTS.md
+REPLY: GATE: FEMALE_HEAD PASS|FAIL

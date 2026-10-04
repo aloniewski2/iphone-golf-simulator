@@ -9,7 +9,7 @@ namespace GolfArcade.Tennis
     /// coordinates, so play, contact and the cameras are identical; what changes is what the court
     /// sits on, the light, the court colour and the opening drone shot.
     ///
-    ///   Skyscraper  the deck on top of a tower a hundred times taller than anything around it. The
+    ///   Skyscraper  a rooftop among neighbouring skyscrapers above the cloud-covered city. The
     ///               edge is open -- no glass, no netting -- so a ball hit wide falls into the clouds.
     ///   Volcano     a slab of obsidian hovering over the crater's lava lake; a ball that leaves it
     ///               falls into the magma.

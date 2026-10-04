@@ -29,7 +29,9 @@ namespace GolfArcade.PlayTests
                     int hits=game.Hits, attempts=game.AutoSmashAttempts; bool tracked=false;
                     var trace=new System.Text.StringBuilder();
                     for(int f=0;f<300 && game.Hits==hits && game.Flow==TennisGame.Phase.Rally;f++) {
-                        game.Step(1f/60); yield return null; tracked |= game.TrackingOverhead;
+                        game.Step(1f/60);
+                    if(game.TrackingOverhead && !game.Player.Swinging) { var op=(TennisRules.InterceptPlan)typeof(TennisGame).GetField("overheadPlan",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(game); if(op.Time>.1f && op.Time<.3f) game.RequestSwing(.85f); }
+                    yield return null; tracked |= game.TrackingOverhead;
                         if(f%6==0) trace.AppendLine($"{f/60f:F2},ball={game.BallPosition:F2},player={game.Player.transform.position:F2},goal={game.MoveGoal:F2},tracking={game.TrackingOverhead},stroke={game.Player.Kind},swing={game.Player.Swinging},gap={game.LastContactGap:F3}");
                     }
                     if(game.Hits>hits) returned++;
@@ -42,7 +44,7 @@ namespace GolfArcade.PlayTests
             } finally { Time.captureFramerate=oldRate; }
         }
 
-        [UnityTest, Timeout(180000)] public IEnumerator LobChasePerfectCameraAndUltimate()
+        [UnityTest, Timeout(180000)] public IEnumerator ManualLobChaseKeepsGameplayCameraAndOptionalUltimate()
         {
             yield return SceneManager.LoadSceneAsync("Tennis"); yield return null;
             var game=Object.FindFirstObjectByType<TennisGame>(); game.ManualSimulation=true;
@@ -53,10 +55,13 @@ namespace GolfArcade.PlayTests
                 game.ConfigureMatch(TennisGame.Mode.Training,null,null,null);
                 game.Player.CancelSwing(); game.Player.Tick(2,0);
                 game.Player.transform.position=new Vector3(0,.035f,-11.2f);
-                game.InjectBall(new Vector3(2,4,-2),new Vector3(0,4,-5));
+                var from=new Vector3(1,1.5f,5);
+                game.InjectBall(from,TennisAbilities.LobVelocity(from,new Vector3(2,TennisRules.BallRadius,-8.5f),6));
                 bool chased=false, swung=false; int initialHits=game.Hits;
                 for(int f=0;f<240;f++) {
-                    game.Step(1f/60); yield return null;
+                    game.Step(1f/60);
+                    if(game.TrackingOverhead && !game.Player.Swinging) { var op=(TennisRules.InterceptPlan)typeof(TennisGame).GetField("overheadPlan",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(game); if(op.Time>.1f && op.Time<.3f) game.RequestSwing(.85f); }
+                    yield return null;
                     chased |= game.TrackingOverhead; swung |= game.Player.Kind==TennisActor.Stroke.Smash && game.Player.Swinging;
                     GameCapture.Save($"{dir}/frame-{frame++:D4}.jpg",1280,720);
                 }
@@ -70,6 +75,7 @@ namespace GolfArcade.PlayTests
                 Assert.IsFalse(j.OverrideCamera(game.GameplayCamera));
                 j.Trigger(TennisJuice.Beat.Smash,game.Player.transform); Assert.IsFalse(j.OverrideCamera(game.GameplayCamera));
                 Object.Destroy(go);
+                if(!TennisAbilities.UltimatesEnabled) yield break;
                 foreach(var name in new[]{"Skybreaker","Rescue Lob","Curveball"}) {
                     game.Player.CancelSwing(); game.Player.Tick(2,0); game.Player.Swing(.8f,false,name=="Skybreaker" ? TennisActor.Stroke.Smash : TennisActor.Stroke.Drive); game.Player.Tick(.08f,0); game.Player.Pose(); yield return null;
                     game.Juice.UltimateCharge(game.Player.transform,"YOU",name);

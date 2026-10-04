@@ -126,29 +126,6 @@ struct MenuBackdrop: View {
     }
 }
 
-/// "TROPICAL OPEN" with its tennis ball, tilted like a sticker.
-struct TennisLogo: View {
-    var scale: CGFloat = 1
-    @State private var spin = false
-    var body: some View {
-        VStack(spacing: -14 * scale) {
-            HStack(spacing: 10 * scale) {
-                TennisBallIcon().frame(width: 64 * scale, height: 64 * scale)
-                    .rotationEffect(.degrees(spin ? 360 : 0))
-                ArcadeText(text: "TROPICAL", size: 72 * scale, top: .white, bottom: Arcade.sky)
-            }
-            ArcadeText(text: "OPEN", size: 118 * scale, top: Arcade.gold, bottom: Arcade.sunDeep)
-            Text("ISLAND TENNIS CHAMPIONSHIP")
-                .font(Arcade.font(15 * scale, .heavy)).tracking(3 * scale).foregroundStyle(Arcade.navy)
-                .padding(.horizontal, 18 * scale).padding(.vertical, 7 * scale)
-                .background(Capsule().fill(LinearGradient(colors: [Arcade.gold, Arcade.goldDeep], startPoint: .top, endPoint: .bottom)))
-                .overlay(Capsule().strokeBorder(Arcade.navyDeep, lineWidth: 2.5 * scale))
-                .padding(.top, 22 * scale)
-        }
-        .rotationEffect(.degrees(-4))
-        .onAppear { withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) { spin = true } }
-    }
-}
 
 struct TennisBallIcon: View {
     var body: some View {
@@ -252,9 +229,14 @@ struct HintBar: View {
 struct TennisMenuScreen: View {
     @Bindable var menu = TennisMenu.shared
     var compact: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
+        ClubCameraHost(route: menu.screen, reducedMotion: reduceMotion || SportsSession.shared.reduceMotion, paused: SportsSession.shared.menuPauseVisible, content: AnyView(screenContent))
+    }
+    private var screenContent: some View {
         Group {
-            switch menu.screen {
+            if SportsSession.shared.menuPauseVisible { IslandPauseScreen(compact: compact) }
+            else { switch menu.screen {
             case .title: IslandTitleScreen(menu: menu, compact: compact)
             case .main: IslandHomeScreen(menu: menu, compact: compact)
             case .party: ClubPartyScreen(menu: menu, compact: compact)
@@ -275,77 +257,13 @@ struct TennisMenuScreen: View {
             case .story: IslandStoryScreen(menu: menu, compact: compact)
             case .map: IslandCourtScreen(menu: menu, compact: compact)
             case .postMatch: IslandResultsScreen(menu: menu, compact: compact, postMatch: true)
-            }
+            } }
         }
 
-        .transition(.opacity)
-        .animation(SportsSession.shared.reduceMotion ? nil : .easeOut(duration: 0.2), value: menu.screen)
+
     }
 }
 
-private struct CampaignScreen: View {
-    let menu: TennisMenu
-    let compact: Bool
-    var body: some View {
-        let campaign = TennisCampaign.shared
-        let focusedRound = Int(menu.focused.dropFirst(5)) ?? campaign.nextRound
-        let shown = TennisCampaign.draw[menu.focused.hasPrefix("round") ? focusedRound : campaign.nextRound]
-        let shownRound = TennisCampaign.draw.firstIndex(of: shown) ?? 0
-        VStack(spacing: compact ? 14 : 12) {
-            HStack(alignment: .firstTextBaseline) {
-                ArcadeText(text: "ISLAND CIRCUIT", size: compact ? 34 : 44)
-                Spacer()
-                if campaign.titles > 0 {
-                    Label("× \(campaign.titles)", systemImage: "trophy.fill").font(Arcade.font(compact ? 18 : 24)).foregroundStyle(Arcade.gold)
-                }
-            }
-            Text(campaign.champion ? "You are the Tropical Open champion. Replay any round, or start a new tournament."
-                 : "Ten rivals stand between you and the trophy. Each one is tougher than the last — and Viktor waits at the end.")
-                .font(Arcade.font(compact ? 15 : 16, .semibold)).foregroundStyle(.white.opacity(0.9))
-                .frame(maxWidth: .infinity, alignment: .leading)
-            if compact {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(Array(TennisCampaign.draw.enumerated()), id: \.offset) { i, o in
-                            OpponentCard(opponent: o, round: i, compact: true, focused: menu.isFocused("round\(i)"), refusals: menu.refusals)
-                                .onTapGesture { menu.tap("round\(i)") }
-                        }
-                        buttons
-                    }.padding(.vertical, 18).padding(.horizontal, 14)
-                }
-            } else {
-                VStack(spacing: 12) {
-                    ForEach(0..<2, id: \.self) { half in
-                        HStack(spacing: 14) {
-                            ForEach(half * 5..<half * 5 + 5, id: \.self) { i in
-                                OpponentCard(opponent: TennisCampaign.draw[i], round: i, compact: false,
-                                             focused: menu.isFocused("round\(i)"), refusals: menu.refusals)
-                                    .onTapGesture { menu.tap("round\(i)") }
-                                if i % 5 < 4 {
-                                    Image(systemName: "chevron.right").font(.system(size: 18, weight: .black)).foregroundStyle(Arcade.gold)
-                                }
-                            }
-                        }
-                    }
-                }
-                OpponentDetail(opponent: shown, round: shownRound, notice: menu.notice)
-                HStack(spacing: 22) { buttons; Spacer(); HintBar() }
-            }
-            if compact && !menu.notice.isEmpty {
-                Text(menu.notice).font(Arcade.font(15, .bold)).foregroundStyle(Arcade.gold)
-            }
-        }
-        .padding(.horizontal, compact ? 20 : 40).padding(.top, compact ? 20 : 30).padding(.bottom, compact ? 20 : 18)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-
-    @ViewBuilder private var buttons: some View {
-        ArcadeButton(title: "Back", icon: "chevron.left", focused: menu.isFocused("back"),
-                     top: Arcade.skyDeep, bottom: Arcade.navy, size: compact ? 20 : 22) { menu.tap("back") }
-        ArcadeButton(title: "New tournament", icon: "arrow.counterclockwise", focused: menu.isFocused("restart"),
-                     top: Arcade.skyDeep, bottom: Arcade.navy, size: compact ? 20 : 22) { menu.tap("restart") }
-    }
-}
 
 /// One opponent on the draw: their art (a silhouette until unlocked), round, name and rating.
 struct OpponentCard: View {
@@ -407,53 +325,6 @@ extension OpponentCard {
     }
 }
 
-private struct OpponentDetail: View {
-    let opponent: TennisOpponent
-    let round: Int
-    let notice: String
-    var body: some View {
-        let campaign = TennisCampaign.shared
-        let locked = !campaign.unlocked(round)
-        HStack(spacing: 18) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(locked ? "LOCKED" : "\(opponent.name.uppercased()) · \(opponent.nickname.uppercased()) · \(opponent.formatTitle.uppercased())")
-                    .font(Arcade.font(18)).foregroundStyle(opponent.boss ? Arcade.crimson : Arcade.gold)
-                Text(notice.isEmpty ? (locked ? "Win the previous round to reveal this opponent." : opponent.blurb) : notice)
-                    .font(Arcade.font(16, .semibold)).foregroundStyle(.white).lineLimit(2)
-            }
-            Spacer()
-            if !locked {
-                Text(campaign.beaten(round) ? "Ⓐ Replay" : "Ⓐ Play match").font(Arcade.font(22)).italic().foregroundStyle(Arcade.gold)
-            }
-        }
-        .padding(.horizontal, 22).padding(.vertical, 10)
-        .background(RoundedRectangle(cornerRadius: 18).fill(Arcade.navyDeep.opacity(0.75)))
-    }
-}
-
-private struct TrainingScreen: View {
-    let menu: TennisMenu
-    let compact: Bool
-    var body: some View {
-        let level = TennisMenu.trainingLevels[menu.trainingLevel]
-        VStack(alignment: .leading, spacing: compact ? 16 : 24) {
-            ArcadeText(text: "TRAINING COURT", size: compact ? 36 : 56, top: .white, bottom: Arcade.sea)
-            Text("A free rally against the club coach. No score pressure: work on timing the ball at the top of its bounce, aiming with the racket face, and hitting the sweet spot. Your controller shows every contact on the strings.")
-                .font(Arcade.font(compact ? 16 : 21, .semibold)).foregroundStyle(.white).frame(maxWidth: 760, alignment: .leading)
-            ChoiceRow(label: "Coach level", value: level.name, focused: menu.isFocused("level"), compact: compact) { menu.tap("level") }
-            HStack(spacing: 20) {
-                ArcadeButton(title: "Start training", icon: "play.fill", focused: menu.isFocused("start"),
-                             top: Arcade.sea, bottom: Arcade.seaDeep, size: compact ? 24 : 30) { menu.tap("start") }
-                ArcadeButton(title: "Back", icon: "chevron.left", focused: menu.isFocused("back"),
-                             top: Arcade.skyDeep, bottom: Arcade.navy, size: compact ? 20 : 24) { menu.tap("back") }
-            }
-            Spacer(minLength: 0)
-            if !compact { HintBar() }
-        }
-        .padding(compact ? 22 : 60)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-}
 
 /// "Label   ‹ value ›", changed with left/right (or a tap, which steps forward).
 struct ChoiceRow: View {
@@ -481,161 +352,4 @@ struct ChoiceRow: View {
     }
 }
 
-struct AirPlayButton: UIViewRepresentable {
-    func makeUIView(context: Context) -> AVRoutePickerView {
-        let view = AVRoutePickerView()
-        view.tintColor = .white; view.activeTintColor = UIColor(Arcade.gold)
-        view.prioritizesVideoDevices = true
-        return view
-    }
-    func updateUIView(_ view: AVRoutePickerView, context: Context) {}
-}
 
-private struct ResultsScreen: View {
-    let menu: TennisMenu
-    let compact: Bool
-    @State private var pop = false
-    var body: some View {
-        let campaign = TennisCampaign.shared
-        let result = menu.result
-        let round = result?.round ?? 0
-        let opponent = TennisCampaign.draw[round]
-        let won = result?.won ?? false
-        let crowned = won && round == TennisCampaign.draw.count - 1
-        let layout = compact ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 40))
-        ZStack {
-            (won ? LinearGradient(colors: [Arcade.sun.opacity(0.55), Arcade.navyDeep.opacity(0.9)], startPoint: .top, endPoint: .bottom)
-                 : LinearGradient(colors: [Arcade.crimsonDeep.opacity(0.8), Arcade.navyDeep.opacity(0.95)], startPoint: .top, endPoint: .bottom))
-                .ignoresSafeArea()
-            if crowned { Confetti() }
-            layout {
-                if crowned {
-                    HeroArt(name: "menu-trophy").frame(maxWidth: compact ? 200 : 380, maxHeight: compact ? 220 : 460)
-                        .scaleEffect(pop ? 1 : 0.4).rotationEffect(.degrees(pop ? 0 : -20))
-                } else {
-                    HeroArt(name: opponent.art).frame(maxWidth: compact ? 160 : 360, maxHeight: compact ? 220 : 480)
-                        .saturation(won ? 0.4 : 1).opacity(won ? 0.75 : 1)
-                }
-                VStack(alignment: compact ? .center : .leading, spacing: compact ? 10 : 16) {
-                    ArcadeText(text: crowned ? "CHAMPION!" : won ? "VICTORY!" : "DEFEAT",
-                               size: compact ? 58 : 96, top: won ? .white : Color(white: 0.9), bottom: won ? Arcade.gold : Arcade.crimson)
-                        .scaleEffect(pop ? 1 : 1.8).opacity(pop ? 1 : 0)
-                    Text(won ? "You beat \(opponent.name) \(result?.score ?? "")" : "\(opponent.name) wins \(result.map { String($0.score.reversed()) } ?? "")")
-                        .font(Arcade.font(compact ? 20 : 30)).foregroundStyle(.white)
-                    Text(crowned ? "Tropical Open champion. Viktor \"The Wall\" has finally fallen — and Old Ray finally gets his final back."
-                         : won ? "Coach Ray: \"Next up, \(campaign.next.roundTitle.lowercased()): \(campaign.next.name), \(campaign.next.nickname). \(campaign.next.formatTitle).\""
-                         : "Coach Ray: \"Shake it off. \(opponent.blurb)\"")
-                        .font(Arcade.font(compact ? 15 : 20, .semibold)).foregroundStyle(.white.opacity(0.9))
-                        .multilineTextAlignment(compact ? .center : .leading).frame(maxWidth: 560)
-                    let items = menu.rows(.results).flatMap { $0 }
-                    VStack(alignment: compact ? .center : .leading, spacing: 12) {
-                        ForEach(items, id: \.self) { id in
-                            ArcadeButton(title: label(id, crowned: crowned), icon: icon(id), focused: menu.isFocused(id),
-                                         top: id == "menu" ? Arcade.skyDeep : Arcade.sun, bottom: id == "menu" ? Arcade.navy : Arcade.sunDeep,
-                                         size: compact ? 20 : 26) { menu.tap(id) }
-                        }
-                    }.padding(.top, 10)
-                }
-            }
-            .padding(compact ? 20 : 60)
-        }
-        .onAppear { withAnimation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.2)) { pop = true } }
-    }
-    private func label(_ id: String, crowned: Bool) -> String {
-        switch id {
-        case "continue": "Next match"
-        case "retry": "Rematch"
-        case "restart": "New tournament"
-        default: crowned ? "Back to the draw" : "The draw"
-        }
-    }
-    private func icon(_ id: String) -> String {
-        switch id { case "continue": "play.fill"; case "retry": "arrow.clockwise"; case "restart": "arrow.counterclockwise"; default: "list.bullet" }
-    }
-}
-
-/// A story scene: the speaker's portrait, their name plaque, and the line typing out. A / tap
-/// finishes the line, then moves on; B / Skip jumps to what comes after.
-private struct StoryScreen: View {
-    let menu: TennisMenu
-    let compact: Bool
-    @State private var shown = 0
-    @State private var typing: Task<Void, Never>?
-    var body: some View {
-        let line = menu.storyLine ?? StoryLine(speaker: "ray", text: "")
-        let s = SportsSession.shared
-        let female = s.players.indices.contains(s.playerIndex) && s.players[s.playerIndex].standardFemale
-        let rival = TennisCampaign.draw.first { $0.key == line.speaker }
-        let accent: Color = line.speaker == "ray" || line.speaker == "stranger" ? Arcade.sea
-            : line.speaker == "you" ? Arcade.sun : rival?.boss == true ? Arcade.crimson : rival != nil ? Arcade.sunDeep : Arcade.gold
-        let text = String(line.text.prefix(shown))
-        ZStack(alignment: .bottom) {
-            LinearGradient(colors: [.clear, Arcade.navyDeep.opacity(0.85)], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
-            HeroArt(name: TennisStory.art(for: line.speaker, female: female), silhouette: line.speaker == "stranger")
-                .frame(maxHeight: compact ? 360 : 560)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: line.speaker == "you" ? .bottomTrailing : .bottomLeading)
-                .padding(.horizontal, compact ? 0 : 70).padding(.bottom, compact ? 190 : 120)
-                .id(line.speaker).transition(.move(edge: line.speaker == "you" ? .trailing : .leading).combined(with: .opacity))
-            VStack(alignment: .leading, spacing: 10) {
-                Text(TennisStory.name(for: line.speaker)).font(Arcade.font(compact ? 18 : 24, .heavy)).tracking(2)
-                    .foregroundStyle(Arcade.navyDeep).padding(.horizontal, 18).padding(.vertical, 6)
-                    .background(Capsule().fill(LinearGradient(colors: [.white, accent], startPoint: .top, endPoint: .bottom)))
-                    .overlay(Capsule().strokeBorder(Arcade.navyDeep, lineWidth: 3))
-                    .offset(y: compact ? -22 : -28).padding(.bottom, compact ? -22 : -28)
-                Text(text).font(Arcade.font(compact ? 18 : 27, .bold)).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: compact ? 110 : 120, alignment: .topLeading)
-                HStack {
-                    Text("\(menu.storyIndex + 1) / \(menu.story.count)").font(Arcade.font(compact ? 13 : 16, .heavy)).foregroundStyle(.white.opacity(0.5))
-                    Spacer()
-                    ArcadeButton(title: "Skip", icon: "forward.end.fill", focused: menu.isFocused("skip"),
-                                 top: Arcade.skyDeep, bottom: Arcade.navy, size: compact ? 16 : 18) { menu.tap("skip") }
-                    ArcadeButton(title: shown < line.text.count ? "…" : "Next", icon: "chevron.right", focused: menu.isFocused("next"),
-                                 size: compact ? 16 : 18) { advance(line) }
-                }
-            }
-            .padding(.horizontal, compact ? 20 : 34).padding(.top, compact ? 26 : 30).padding(.bottom, compact ? 16 : 20)
-            .background(Plaque(top: Arcade.navy, bottom: Arcade.navyDeep, corner: 26).opacity(0.95))
-            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).strokeBorder(accent.opacity(0.8), lineWidth: 3))
-            .padding(.horizontal, compact ? 12 : 60).padding(.bottom, compact ? 20 : 34)
-        }
-        .contentShape(Rectangle())
-        .onTapGesture { advance(line) }
-        .onAppear { if menu.storyInstant { shown = line.text.count } else { type(line) } }
-        .onChange(of: menu.storyIndex) { _, _ in type(menu.storyLine ?? line) }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: line.speaker)
-    }
-
-    /// A tap mid-line shows the whole line; a tap on a finished line moves on.
-    private func advance(_ line: StoryLine) {
-        if shown < line.text.count { typing?.cancel(); shown = line.text.count } else { menu.advanceStory() }
-    }
-
-    private func type(_ line: StoryLine) {
-        typing?.cancel(); shown = 0
-        typing = Task { @MainActor in
-            while shown < line.text.count, !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(24)); shown += 1
-            }
-        }
-    }
-}
-
-/// Falling confetti for the title.
-struct Confetti: View {
-    @State private var fall = false
-    private let pieces = (0..<70).map { _ in (x: CGFloat.random(in: 0...1), delay: Double.random(in: 0...2.5), hue: Double.random(in: 0...1), size: CGFloat.random(in: 8...16), spin: Double.random(in: -360...360)) }
-    var body: some View {
-        GeometryReader { g in
-            ForEach(0..<pieces.count, id: \.self) { i in
-                let p = pieces[i]
-                RoundedRectangle(cornerRadius: 2).fill(Color(hue: p.hue, saturation: 0.8, brightness: 1))
-                    .frame(width: p.size, height: p.size * 0.5)
-                    .rotationEffect(.degrees(fall ? p.spin : 0))
-                    .position(x: p.x * g.size.width, y: fall ? g.size.height + 40 : -40)
-                    .animation(.linear(duration: 3.2).delay(p.delay).repeatForever(autoreverses: false), value: fall)
-            }
-        }
-        .ignoresSafeArea()
-        .onAppear { fall = true }
-    }
-}

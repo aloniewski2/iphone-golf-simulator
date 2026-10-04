@@ -1,0 +1,128 @@
+{
+  "method": "new lofted skin, unioned trunk only, retained head/hands/knee loops",
+  "removed_old_foundation_vertices_above_1_30": 7,
+  "Body_RetainedHead_overlapping_triangles_removed": [],
+  "head_stitch_vertices": 82,
+  "Body_RetainedHand_L_overlapping_triangles_removed": [
+    5.644008282956747e-08,
+    3.1452341886506474e-07,
+    4.950506991008297e-07,
+    1.469696098155282e-08
+  ],
+  "hand_L_stitch_vertices": 64,
+  "Body_RetainedHand_R_overlapping_triangles_removed": [],
+  "hand_R_stitch_vertices": 64,
+  "skin_components": [
+    9075,
+    35,
+    32
+  ],
+  "stitches": [
+    {
+      "a": [
+        0.0011910441098734736,
+        0.047529563307762146,
+        1.2350002527236938
+      ],
+      "b": [
+        -0.002514313207939267,
+        0.030376994982361794,
+        1.2450007200241089
+      ],
+      "ring_counts": [
+        35,
+        82
+      ]
+    },
+    {
+      "a": [
+        -0.13265667855739594,
+        0.05664373189210892,
+        0.6949998140335083
+      ],
+      "b": [
+        -0.1234545111656189,
+        0.055000003427267075,
+        0.6800001859664917
+      ],
+      "ring_counts": [
+        80,
+        40
+      ]
+    },
+    {
+      "a": [
+        0.13148456811904907,
+        0.05142419785261154,
+        0.6949997544288635
+      ],
+      "b": [
+        0.12345456331968307,
+        0.055000003427267075,
+        0.6800001859664917
+      ],
+      "ring_counts": [
+        87,
+        40
+      ]
+    },
+    {
+      "a": [
+        0.43396782875061035,
+        0.040726643055677414,
+        0.7903159260749817
+      ],
+      "b": [
+        0.4425466060638428,
+        0.04682101309299469,
+        0.8126280307769775
+      ],
+      "ring_counts": [
+        64,
+        48
+      ]
+    },
+    {
+      "a": [
+        -0.43275487422943115,
+        0.0362798348069191,
+        0.7898705005645752
+      ],
+      "b": [
+        -0.4385283291339874,
+        0.043124936521053314,
+        0.8106802701950073
+      ],
+      "ring_counts": [
+        64,
+        50
+      ]
+    }
+  ],
+  "skin_boundary_edges": 0,
+  "face_coordinates_unchanged": true,
+  "triangles": {
+    "Body_EyeSphere_L": 1876,
+    "Body_EyeSphere_R": 1876,
+    "Body_Skin": 18272,
+    "Shirt_Collar": 780,
+    "Shirt_CollarOrange": 388,
+    "Shirt_CuffNavy_L": 488,
+    "Shirt_CuffNavy_R": 488,
+    "Shirt_CuffOrange_L": 488,
+    "Shirt_CuffOrange_R": 488,
+    "Shirt_Default": 5372,
+    "Shirt_PlacketOrange": 28
+  },
+  "body_key_names": [
+    "Basis",
+    "Female",
+    "BuildSlim",
+    "BuildBroad",
+    "Knee_L_60",
+    "Knee_L_110",
+    "Knee_R_60",
+    "Knee_R_110"
+  ],
+  "bone_rest_preserved": true
+}

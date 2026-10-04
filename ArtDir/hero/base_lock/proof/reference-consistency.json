@@ -1,0 +1,19 @@
+{
+  "method": "Frozen native scale and source centres. Back target is horizontally mirrored to the front frame; no scale, roll or local deformation. Manual trace precision is estimated \u00b12 pixels. Jaccard distance is a metric, so a single identical orthographic projection cannot be within 5% of two masks whose pairwise distance exceeds 10%.",
+  "measurements": [
+    {
+      "sex": "male",
+      "reference_front_vs_mirrored_back_jaccard_distance": 0.20787470692184198,
+      "lower_bound_on_worst_of_two_fixed_orthographic_errors": 0.10393735346092099,
+      "actual_model_front_vs_mirrored_back_jaccard_distance": 0.0008343654259826608,
+      "model_front_back_difference_pixels": 64
+    },
+    {
+      "sex": "female",
+      "reference_front_vs_mirrored_back_jaccard_distance": 0.1434143374672766,
+      "lower_bound_on_worst_of_two_fixed_orthographic_errors": 0.0717071687336383,
+      "actual_model_front_vs_mirrored_back_jaccard_distance": 0.0008379686484143611,
+      "model_front_back_difference_pixels": 58
+    }
+  ]
+}

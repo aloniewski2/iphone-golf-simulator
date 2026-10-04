@@ -204,6 +204,29 @@ namespace GolfArcade.Tennis
         /// Where an aimed rally ball is sent. The racket face picks the side (-1...1); the
         /// contact decides how much of the court the player can use: a clean hit can go
         /// close to the lines and deep, a poor one is pulled toward the middle and lands short.
+        public static Vector3 PlacementTarget(float aim, float depth) =>
+            new Vector3(Mathf.Clamp(aim, -1, 1) * (CourtHalfWidth - .35f), BallRadius, Mathf.Lerp(3.2f, 10.8f, Mathf.Clamp01(depth)));
+
+        public struct ServeFlight { public Vector3 Velocity; public float Spin; }
+        /// Arcade serve downforce preserves the chosen horizontal pace, net clearance and landing.
+        /// All predictors use the same spin acceleration; the temporary boost ends at the bounce.
+        public static ServeFlight PacedServe(Vector3 start, Vector3 landing, float speed, float baseSpin)
+        {
+            Vector3 delta = landing - start;
+            float distance = new Vector2(delta.x, delta.z).magnitude;
+            float flight = Mathf.Max(.18f, distance / Mathf.Max(12, speed));
+            float horizontal = distance / flight;
+            float fraction = Mathf.Abs(delta.z) > .001f ? Mathf.Clamp01(-start.z / delta.z) : .5f;
+            float linearAtNet = Mathf.Lerp(start.y, landing.y, fraction);
+            float denominator = flight * flight * fraction * (1 - fraction);
+            float gravity = Mathf.Max(9.81f + TennisBall.Magnus * baseSpin * horizontal,
+                2 * (NetHeight + NetMargin + .025f - linearAtNet) / Mathf.Max(.001f, denominator));
+            return new ServeFlight {
+                Velocity = delta / flight + Vector3.up * (.5f * gravity * flight),
+                Spin = (gravity - 9.81f) / Mathf.Max(.001f, TennisBall.Magnus * horizontal)
+            };
+        }
+
         public static Vector3 AimedTarget(float aim, float quality, float lift)
         {
             float q = Mathf.Clamp01(quality);
@@ -351,7 +374,7 @@ namespace GolfArcade.Tennis
         /// Generous by design: almost any committed swing during the toss should go in. Only
         /// a wildly early or late one nets. The old +/-0.20s window was unplayable once swing
         /// detection latency was accounted for.
-        public const float ServeCatch = 1.3f, ServePerfectWindow = .065f, ServeLegalWindow = ServePowerWindow * (1 - ServeFaultPower);
+        public const float ServeCatch = 1.3f, ServePerfectWindow = ServePerfectRealSeconds * ServePace, ServeLegalWindow = ServePowerWindow * (1 - ServeFaultPower);
         /// Motion detection needs a moment of swing before it can confirm one, so the moment
         /// it reports is always later than the moment the player actually started. Without
         /// this correction every serve reads as late.
@@ -396,9 +419,10 @@ namespace GolfArcade.Tennis
         public const float ServeFaultPower = .12f;
         /// A toss meter reading this good (1 = dead centre) counts as a perfect toss: the
         /// middle 15% either side, about 60ms of the ticker's sweep.
-        public const float ServePerfectToss = .85f;
+        public const float ServePerfectRealSeconds = .025f;
+        public const float ServePerfectToss = .95f;
         /// The fastest serve, reserved for a perfect one (m/s).
-        public const float ServeTopSpeed = 50f;
+        public const float ServeTopSpeed = 53f;
 
         /// The power bar: 1 at the top of the toss, falling away either side. `fromApex` is
         /// when the swing began relative to the top (seconds of game time).
@@ -480,7 +504,7 @@ namespace GolfArcade.Tennis
             float minZ = 1.8f;
             if (Mathf.Abs(landing.z) < minZ) landing.z = serverNearSide ? minZ : -minZ;
             j.Landing = new Vector3(landing.x, BallRadius, landing.z);
-            j.Speed = j.Perfect ? ServeTopSpeed : Mathf.Lerp(22, 44, j.Power * j.Power);
+            j.Speed = j.Perfect ? ServeTopSpeed : Mathf.Lerp(22, 42, j.Power * j.Power);
             if (secondServe) j.Speed *= .82f;
             bool inBox = ServeIsIn(j.Landing, serverNearSide, deuceCourt);
             j.Label = j.Perfect ? $"PERFECT SERVE · {j.Speed * 3.6f:0} km/h" : inBox ? $"SERVE IN · {j.Speed * 3.6f:0} km/h" : $"SERVE · {j.Speed * 3.6f:0} km/h";

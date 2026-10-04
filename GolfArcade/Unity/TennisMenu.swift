@@ -33,6 +33,14 @@ struct MatchResult: Equatable { var won: Bool; var score: String; var round: Int
 
 /// Settings tabs.
 enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio, access, developer
+    /// The tabs a player sees. Developer (classic menu, benchmark) is for debug builds only.
+    static var visible: [SettingsTab] {
+        #if DEBUG
+        return allCases
+        #else
+        return allCases.filter { $0 != .developer }
+        #endif
+    }
     var title: String {
         switch self {
         case .gameplay: "Gameplay"; case .controls: "Controls"; case .display: "Display"
@@ -41,7 +49,6 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio
     }
 }
 
-typealias ArcadeMenu = TennisMenu
 
 /// The menu's navigation model. Every screen is a small grid of focusable items (rows of ids);
 /// the D-pad moves between them, A selects, B goes back. Touch on the phone selects directly.
@@ -59,6 +66,16 @@ final class TennisMenu {
     var quickDifficulty = 1
     var quickLength = 0
     var selectedRound = 0
+    var pendingCampaignRound: Int?
+    /// Campaign → More → New tournament asks once before it erases the draw.
+    private(set) var confirmingRestart = false
+
+    func confirmCampaignRound() {
+        guard let round = pendingCampaignRound else { return }
+        pendingCampaignRound = nil
+        guard campaign.unlocked(round) else { refuse("Win the previous round to unlock"); return }
+        play(round: round)
+    }
     private(set) var launch: MenuLaunch?
     /// A tennis match waiting on the court picker.
     private var pendingPick: (launch: MenuLaunch, onPhone: Bool)?
@@ -75,6 +92,16 @@ final class TennisMenu {
     /// The classic multi-sport form (every raw option), from Settings → Developer.
     var classic = false
     private(set) var settingsTab: SettingsTab = .gameplay
+    /// The locker: Gear (equip per sport and slot) or Customize (colours). See `lockerRows()` and the extension at the bottom.
+    enum LockerTab: String { case gear, customize }
+    private(set) var lockerTab: LockerTab = .gear
+    private(set) var lockerSport: Sport = .tennis
+    private(set) var lockerSlot: LockerSlot = .skin
+    /// The colour whose full gradient panel is open (skin / shirt / shorts / accent / racket); nil = closed.
+    private(set) var lockerRange: String?
+    /// The player as the locker was opened, so Revert can put it back.
+    fileprivate var lockerOpening: Player?
+    fileprivate var lockerRangeFrom: String?
     /// Settings → Gameplay → Reset progress asks once more before wiping anything.
     private(set) var confirmingReset = false
     /// The golf lesson's card, and the how-to guide's page.
@@ -118,21 +145,23 @@ final class TennisMenu {
     func rows(_ screen: MenuScreen) -> [[String]] {
         switch screen {
         case .title: return [["start"]]
-        case .main: return [["play"], ["homeCampaign"], ["character"], ["settings"]]
+        case .main: return [["homeContinue"], ["play"], ["character"], ["settings"]]
         case .party: return [["partySolo"], ["back"]]
         case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
         case .gameSelect: return [Sport.allCases.filter(\.playable).map { "sport-\($0.rawValue)" }, ["back"]]
         case .hub(let sport): return Self.hubItems(sport).map { [$0] } + [["back"]]
         case .locked: return [["back"]]
-        case .campaign: return [(0..<5).map { "round\($0)" }, (5..<10).map { "round\($0)" }, ["campaignPlay", "back", "restart"]]
+        case .campaign:
+            if confirmingRestart { return [["restartNo", "restartYes"]] }
+            return [(0..<5).map { "round\($0)" }, (5..<10).map { "round\($0)" }, ["campaignPlay", "campaignMore"], ["back"]]
         case .exhibition: return [["quickOpponent"], ["quickDifficulty"], ["quickLength"], ["quickStart"], ["back"]]
         case .story: return [["next", "skip"]]
         case .map: return [TennisVenueChoice.allCases.map { "map-\($0.rawValue)" }, ["back"]]
         case .postMatch: return postMatchDone ? postMatchChoices.map { [$0] } : [["pm-skip"]]
         case .training: return [["level"], ["start"], ["back"]]
-        case .character: return Self.characterRows.map { [$0] } + [["randomize", "reset", "back"]]
+        case .character: return lockerRows()
         case .settings:
-            return [SettingsTab.allCases.map { "tab-\($0.rawValue)" }] + Self.settingsRows(settingsTab).map { [$0] } + [["back"]]
+            return [SettingsTab.visible.map { "tab-\($0.rawValue)" }] + Self.settingsRows(settingsTab).map { [$0] } + [["back"]]
         case .howTo: return [["prev", "nextPage", "back"]]
         case .golfLesson: return [["prev", "nextCard", "back"]]
         case .connect: return [["phone"], ["back"]]
@@ -140,7 +169,7 @@ final class TennisMenu {
         case .results:
             guard let result else { return [["menu"]] }
             if result.won && campaign.champion && result.round == TennisCampaign.draw.count - 1 { return [["menu"], ["restart"]] }
-            return result.won ? [["continue"], ["menu"]] : [["retry"], ["menu"]]
+            return result.won ? [["continue"], ["court"], ["menu"]] : [["retry"], ["court"], ["menu"]]
         }
     }
 
@@ -168,13 +197,14 @@ final class TennisMenu {
         if next != screen, screen != .loading, screen != .connect, screen != .story, screen != .postMatch { previous = screen }
         if next == .postMatch { postMatchDone = false }
         if next != screen { transitions += 1; ClubSound.play("whoosh", volume: 0.35) }
-        screen = next; notice = ""; confirmingReset = false
+        screen = next; notice = ""; confirmingReset = false; pendingCampaignRound = nil; confirmingRestart = false
         // Land on the thing you most likely want.
         switch next {
         case .main: row = 0; column = 0
-        case .campaign: selectedRound = campaign.nextRound; row = campaign.nextRound / 5; column = campaign.nextRound % 5
+        case .campaign: selectedRound = min(campaign.nextRound, TennisCampaign.draw.count - 1); row = 2; column = 0   // on Play Round
         case .hub(let sport): row = progress.finishedTutorial(sport) ? 1 : 0; column = 0
         case .settings: row = 1; column = 0
+        case .character: lockerOpen()
         case .gameSelect: row = 0; column = 0
         case .map: row = 0; column = TennisVenueChoice.allCases.firstIndex { $0.rawValue == session.tennisVenue } ?? 0   // start on the last court
         default: row = 0; column = 0
@@ -196,8 +226,12 @@ final class TennisMenu {
         play(round: campaign.nextRound)
     }
 
+    /// Notices fade on their own (IslandMenuNotice): clear it if it is still the one that was shown.
+    func clearNotice(_ shown: String) { if notice == shown { notice = "" } }
+
     private func refuse(_ message: String) {
-        refusals += 1; notice = message; UINotificationFeedbackGenerator().notificationOccurred(.error)
+        refusals += 1; notice = message
+        if session.haptics { UINotificationFeedbackGenerator().notificationOccurred(.error) }
     }
 
     // MARK: Input
@@ -205,9 +239,10 @@ final class TennisMenu {
     func move(_ direction: MenuMove) {
         let grid = rows(screen)
         guard !grid.isEmpty else { return }
+        row = min(row, grid.count - 1); column = min(column, max(0, grid[row].count - 1))   // a row can disappear (e.g. Revert)
         // Choice rows change their value sideways; on the settings tab row, sideways changes tab.
         if direction == .left || direction == .right, grid[row].count == 1, adjust(focused, by: direction == .left ? -1 : 1) {
-            tick.selectionChanged(); return
+            if session.haptics { tick.selectionChanged() }; return
         }
         var r = row, c = column
         switch direction {
@@ -218,26 +253,40 @@ final class TennisMenu {
         }
         c = min(c, grid[r].count - 1)
         if r != row || c != column {
-            row = r; column = c; if screen == .campaign, focused.hasPrefix("round"), let index = Int(focused.dropFirst(5)) { selectedRound = index }; tick.selectionChanged(); ClubSound.play("tick", volume: 0.4)
+            row = r; column = c; if screen == .campaign, focused.hasPrefix("round"), let index = Int(focused.dropFirst(5)) { selectedRound = index }; if session.haptics { tick.selectionChanged() }; ClubSound.play("tick", volume: 0.4)
             // Moving along the tab row switches tabs, like a controller's shoulder buttons.
-            if screen == .settings, r == 0, let tab = SettingsTab.allCases[safe: c] { settingsTab = tab }
+            if screen == .settings, r == 0, let tab = SettingsTab.visible[safe: c] { settingsTab = tab }
         }
+    }
+
+    /// Pointer and remote focus change the preview without navigating.
+    @discardableResult func focus(_ id: String) -> Bool {
+        for (r, items) in rows(screen).enumerated() {
+            if let c = items.firstIndex(of: id) { row = r; column = c; return true }
+        }
+        return false
     }
 
     /// Touch: focus an item and act on it.
     func tap(_ id: String) {
-        for (r, items) in rows(screen).enumerated() {
-            if let c = items.firstIndex(of: id) { row = r; column = c }
-        }
+        guard focus(id) else { return }
         select()
     }
 
     func select() {
         let id = focused
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if session.haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
         ClubSound.play("pop", volume: 0.5)
         switch id {
         case "start" where screen == .title: show(.main)
+        case "store": refuse("Store · Coming soon")
+        case "homeContinue": continueJourney()
+        case "campaignMore": confirmingRestart = true; row = 0; column = 0
+        case "restartNo": confirmingRestart = false; _ = focus("campaignPlay")
+        case "restartYes": confirmingRestart = false; campaign.restart(); result = nil; show(.campaign)
+        case "court":
+            // Change court after a match: the same match again, but the court picker first.
+            if let launch { result = nil; postMatch = nil; launchOrigin = hubAfter(launch); begin(launch, onPhone: !session.displayConnected) }
         case "homePlay": show(.party)
         case "campaignPlay":
             if campaign.unlocked(selectedRound) { play(round: selectedRound) } else { refuse("Win the previous round to unlock") }
@@ -284,8 +333,9 @@ final class TennisMenu {
             }
         case let r where r.hasPrefix("round"):
             let round = Int(r.dropFirst(5)) ?? 0
-            if campaign.unlocked(round) { selectedRound = round }
-            else { refuse("Beat \(TennisCampaign.draw[round - 1].name) to unlock") }
+            // Picking a round shows it and puts focus on Play Round; playing is one more click (no dialog a remote can't answer).
+            if campaign.unlocked(round) { selectedRound = round; _ = focus("campaignPlay") }
+            else { refuse("Beat \(TennisCampaign.draw[max(0, round - 1)].name) to unlock") }
         case let r where r.hasPrefix("rival"):
             let round = Int(r.dropFirst(5)) ?? 0
             if campaign.unlocked(round) { begin(MenuLaunch(mode: .exhibition, round: round)) }
@@ -306,6 +356,7 @@ final class TennisMenu {
         case "relock": notice = "The court direction is set again at the start of your next match"; session.motion.clearAxis()
         case "timing": session.forceTimingCheckNextMatch(); notice = "The timing check runs at the start of your next match"
         case "classic": classic = true
+        case let l where l.hasPrefix("lk-"): lockerSelect(l)
         case "prev": if screen == .howTo { howToPage = max(0, howToPage - 1) } else { lessonCard = max(0, lessonCard - 1) }
         case "nextPage": howToPage = min(HowTo.pages.count - 1, howToPage + 1)
         case "nextCard":
@@ -336,9 +387,12 @@ final class TennisMenu {
         switch screen {
         case .title, .loading: return
         case .main: show(.title)
-        case .party, .quickPlay, .gameSelect, .character, .settings, .howTo: show(.main)
+        case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
+        case .howTo: show(.settings)
+        case .party, .quickPlay, .gameSelect, .settings: show(.main)
         case .hub, .locked: show(.gameSelect)
-        case .campaign, .training, .exhibition: show(.hub(.tennis))
+        case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
+        case .training, .exhibition: show(.hub(.tennis))
         case .golfLesson: show(.hub(.golf))
         case .connect: show(launch.map(hubAfter) ?? .main)
         case .results: show(.campaign)
@@ -372,6 +426,7 @@ final class TennisMenu {
             return next < 0 ? nil : next
         }
         let p = s.playerIndex
+        if id.hasPrefix("lk-") { return lockerAdjust(id, by: step) }
         switch id {
         case "quickOpponent": quickOpponent = cycle(quickOpponent, min(TennisCampaign.draw.count, campaign.nextRound + 1))
         case "quickDifficulty": quickDifficulty = cycle(quickDifficulty, Self.trainingLevels.count)
@@ -470,7 +525,7 @@ final class TennisMenu {
     }
 
     func advanceStory() {
-        if storyIndex + 1 < story.count { storyIndex += 1; tick.selectionChanged() } else { finishStory() }
+        if storyIndex + 1 < story.count { storyIndex += 1; if session.haptics { tick.selectionChanged() } } else { finishStory() }
     }
 
     func finishStory() {
@@ -485,6 +540,10 @@ final class TennisMenu {
     }
 
     func openCharacterEditor() { classic = false; show(.character) }
+    /// The remote's Home button: back to the main menu from anywhere that is not a match loading or a story in progress.
+    func goHome() {
+        switch screen { case .loading, .connect, .story, .main, .title: return; default: show(.main) }
+    }
 
     // MARK: Matches
 
@@ -550,7 +609,7 @@ final class TennisMenu {
 
     /// The game session closed (finished, quit, or failed to load).
     /// What the phone's post-match panel chose.
-    enum AfterMatch { case next, replay, menu }
+    enum AfterMatch { case next, replay, court, menu }
     private var afterMatch: AfterMatch = .menu
 
     /// The post-match panel on the phone: next match, replay, or back to the menus.
@@ -565,10 +624,12 @@ final class TennisMenu {
     /// Which post-match choices make sense for the match just played.
     var afterMatchChoices: [AfterMatch] {
         guard let launch else { return [.replay, .menu] }
+        // Change court is offered wherever a tennis match asks for a court (everything but the tutorial).
+        let court: [AfterMatch] = launch.sport == .tennis && launch.mode != .tutorial ? [.court] : []
         if launch.mode == .campaign, let result {
-            return result.won && !campaign.champion ? [.next, .replay, .menu] : [.replay, .menu]
+            return result.won && !campaign.champion ? [.next, .replay] + court + [.menu] : [.replay] + court + [.menu]
         }
-        return [.replay, .menu]
+        return [.replay] + court + [.menu]
     }
 
     /// The match is over: close Unity and show the XP screen. Called by the phone's Continue button,
@@ -616,6 +677,11 @@ final class TennisMenu {
     func sessionEnded() {
         if showPostMatchAfterEnd, postMatch != nil { showPostMatchAfterEnd = false; show(.postMatch); return }
         let choice = afterMatch; afterMatch = .menu
+        if choice == .court, let launch {
+            // Same match, new court: the court picker comes first.
+            result = nil; postMatch = nil; launchOrigin = hubAfter(launch)
+            begin(launch, onPhone: !session.displayConnected); return
+        }
         if choice == .replay, launch == nil {
             begin(MenuLaunch(mode: .exhibition), onPhone: !session.displayConnected, skipMap: true); return
         }
@@ -653,7 +719,8 @@ final class TennisMenu {
     func debugShow(_ screen: MenuScreen, launch: MenuLaunch? = nil, result: MatchResult? = nil, row: Int = 0, column: Int = 0,
                    tab: SettingsTab = .gameplay, page: Int = 0) {
         self.launch = launch; self.result = result; launchOrigin = nil; settingsTab = tab; howToPage = page; lessonCard = page
-        self.screen = screen; self.row = row; self.column = column; notice = ""
+        self.screen = screen; self.row = row; self.column = column; notice = ""; confirmingRestart = false
+        if screen == .character, row == 0, column == 0 { lockerOpen() }
     }
     func debugStory(_ lines: [StoryLine], index: Int = 0) {
         story = lines; storyIndex = index; afterStory = .results; storyInstant = true
@@ -666,6 +733,208 @@ final class TennisMenu {
         screen = .postMatch; row = 0; column = 0; notice = ""
     }
     #endif
+}
+
+
+// MARK: - Locker (Gear + Customize)
+
+extension TennisMenu {
+    /// Colours offered as swatches for clothes, shoes and rackets: the palette's eight friendliest tones.
+    static let lockerSwatches: [(name: String, hex: String)] = [
+        ("White", "F2F2F0"), ("Sky", "3FA9F5"), ("Navy", "1E2A6E"), ("Lime", "9EE63A"),
+        ("Sun", "FFC233"), ("Coral", "FF6B4A"), ("Violet", "8A4FFF"), ("Charcoal", "2E3138"),
+    ]
+
+    var lockerShelf: [LockerItem] { LockerCatalog.items(sport: lockerSport, slot: lockerSlot) }
+    var lockerEquipped: LockerItem? { player.map { $0.equipped(lockerSlot, sport: lockerSport) } }
+    /// Changed since the locker opened (Revert shows only then).
+    var lockerDirty: Bool { player != nil && lockerOpening != nil && player != lockerOpening }
+    /// The colour the Gear tab's colour row edits for the equipped item; nil when that item has none.
+    var lockerItemColourSlot: String? { lockerEquipped?.tintable == true ? lockerSlot.colourSlot : nil }
+
+    /// The focus grid, top to bottom as drawn. Gear: sport, tabs, slots, the shelf, the item's colour, actions. Customize: tabs, then one row per choice.
+    func lockerRows() -> [[String]] {
+        if let range = lockerRange {
+            return range == "skin" ? [["lk-range-skin"], ["lk-range-close"]] : [["lk-range-hue"], ["lk-range-shade"], ["lk-range-close"]]
+        }
+        var actions = ["lk-shuffle"]
+        if lockerDirty { actions.append("lk-revert") }
+        actions.append("lk-done")
+        let tabs = ["lk-tab-gear", "lk-tab-customize"]
+        switch lockerTab {
+        case .gear:
+            var rows = [LockerCatalog.sports.map { "lk-sport-\($0.rawValue)" }, tabs,
+                        LockerCatalog.slots(for: lockerSport).map { "lk-slot-\($0.rawValue)" },
+                        lockerShelf.map { "lk-item-\($0.id)" }]
+            if lockerItemColourSlot != nil { rows.append(["lk-colour"]) }
+            rows.append(actions)
+            return rows
+        case .customize:
+            return [tabs, ["lk-body"], ["lk-hand"], ["lk-skin"], ["lk-shirt"], ["lk-shorts"], actions]
+        }
+    }
+
+    /// Opening the locker: Gear, on the shelf, on the item you wear.
+    fileprivate func lockerOpen() {
+        lockerOpening = player; lockerTab = .gear; lockerRange = nil; lockerRangeFrom = nil
+        if !LockerCatalog.sports.contains(lockerSport) { lockerSport = .tennis }
+        if !LockerCatalog.slots(for: lockerSport).contains(lockerSlot) { lockerSlot = LockerCatalog.slots(for: lockerSport)[0] }
+        row = 3
+        column = max(0, lockerShelf.firstIndex { $0.id == lockerEquipped?.id } ?? 0)
+    }
+
+    fileprivate func lockerClampFocus() {
+        let grid = lockerRows()
+        row = min(row, grid.count - 1); column = min(column, max(0, grid[row].count - 1))
+    }
+
+    /// Change the current player; saved to disk straight away, or later while a slider drags.
+    func lockerEdit(save: Bool = true, _ change: (inout Player) -> Void) {
+        let s = session
+        guard s.players.indices.contains(s.playerIndex) else { return }
+        change(&s.players[s.playerIndex])
+        if save { s.savePlayers() }
+    }
+
+    fileprivate func lockerSelect(_ id: String) {
+        switch id {
+        case "lk-tab-gear": lockerTab = .gear; _ = focus(id)
+        case "lk-tab-customize": lockerTab = .customize; _ = focus(id)
+        case "lk-sport-tennis", "lk-sport-golf":
+            lockerSport = id == "lk-sport-golf" ? .golf : .tennis
+            if !LockerCatalog.slots(for: lockerSport).contains(lockerSlot) { lockerSlot = lockerSlot == .racket ? .club : lockerSlot == .club ? .racket : .skin }
+        case let s where s.hasPrefix("lk-slot-"):
+            if let slot = LockerSlot(rawValue: String(s.dropFirst(8))) { lockerSlot = slot }
+        case let s where s.hasPrefix("lk-item-"):
+            let itemID = String(s.dropFirst(8))
+            if let item = lockerShelf.first(where: { $0.id == itemID }) { lockerEdit { $0.equip(item, sport: lockerSport) } }
+        case "lk-colour": if let c = lockerItemColourSlot { lockerOpenRange(c, from: id) }
+        case "lk-skin": lockerOpenRange("skin", from: id)
+        case "lk-shirt": lockerOpenRange("shirt", from: id)
+        case "lk-shorts": lockerOpenRange("shorts", from: id)
+        case "lk-body": lockerEdit { $0.standardFemale.toggle() }
+        case "lk-hand": lockerEdit { $0.handedness = $0.handedness == .left ? .right : .left }
+        case "lk-shuffle": lockerShuffle()
+        case "lk-revert": lockerRevert()
+        case "lk-done": show(.main)
+        case "lk-range-close": lockerCloseRange()
+        default: break
+        }
+        if screen == .character { lockerClampFocus() }
+    }
+
+    /// Sideways on a locker row: step along its swatches, or flip a two-way choice. False = not a stepping row (move focus instead).
+    fileprivate func lockerAdjust(_ id: String, by step: Int) -> Bool {
+        switch id {
+        case "lk-colour": guard let c = lockerItemColourSlot else { return false }; lockerStepSwatch(c, by: step); return true
+        case "lk-shirt": lockerStepSwatch("shirt", by: step); return true
+        case "lk-shorts": lockerStepSwatch("shorts", by: step); return true
+        case "lk-skin":
+            let presets = LockerColor.skinPresets, i = lockerSkinIndex()
+            let next = i < 0 ? (step > 0 ? 0 : presets.count - 1) : (i + step + presets.count) % presets.count
+            lockerEdit { $0.setSkin(presets[next]) }
+            return true
+        case "lk-body", "lk-hand": lockerSelect(id); return true
+        case "lk-range-hue", "lk-range-shade":
+            guard let slot = lockerRange else { return false }
+            lockerEdit { p in
+                let (h, sh) = p.hueShade(slot)
+                p.setOutfit(slot, hue: id == "lk-range-hue" ? h + Double(step) / 24 : h, shade: id == "lk-range-shade" ? sh + Double(step) * 0.1 : sh)
+            }
+            return true
+        case "lk-range-skin": lockerEdit { $0.setSkin($0.skinT + Double(step) * 0.05) }; return true
+        default: return false
+        }
+    }
+
+    // MARK: swatches
+
+    /// -1 = the kit's own colour, -2 = a custom colour, otherwise the swatch index.
+    func lockerSwatchIndex(_ slot: String) -> Int {
+        guard let hex = player?.outfitHex(slot) else { return -1 }
+        if let exact = Self.lockerSwatches.firstIndex(where: { $0.hex.caseInsensitiveCompare(hex) == .orderedSame }) { return exact }
+        // A colour from the sliders (or an older save) that is close to a swatch still lights it.
+        func norm(_ h: String) -> String { let (a, b) = LockerColor.hueShadeOf(h); return LockerColor.hueShade(a, b) }
+        let mine = norm(hex)
+        return Self.lockerSwatches.firstIndex { norm($0.hex) == mine } ?? -2
+    }
+    func lockerSkinIndex() -> Int {
+        guard let t = player?.skinT else { return -2 }
+        return LockerColor.skinPresets.enumerated().min { abs($0.element - t) < abs($1.element - t) }.flatMap { abs($0.element - t) < 0.035 ? $0.offset : nil } ?? -2
+    }
+    /// Touch: pick swatch `index` (-1 = kit colour) for a colour slot.
+    func lockerPick(_ slot: String, index: Int) {
+        lockerEdit { p in
+            if index < 0 { p.clearOutfit(slot) }
+            else { p.setOutfitHex(slot, Self.lockerSwatches[index].hex) }
+        }
+        if session.haptics { tick.selectionChanged() }
+    }
+    func lockerPickSkin(_ index: Int) { lockerEdit { $0.setSkin(LockerColor.skinPresets[index]) }; if session.haptics { tick.selectionChanged() } }
+
+    fileprivate func lockerStepSwatch(_ slot: String, by step: Int) {
+        let cycle = [-1] + Array(Self.lockerSwatches.indices)
+        let i = lockerSwatchIndex(slot)
+        let at = cycle.firstIndex(of: i) ?? 0
+        lockerPick(slot, index: cycle[(at + step + cycle.count) % cycle.count])
+    }
+
+    // MARK: ranges, shuffle, revert
+
+    fileprivate func lockerOpenRange(_ slot: String, from id: String) {
+        lockerRange = slot; lockerRangeFrom = id; row = 0; column = 0
+    }
+    func lockerCloseRange() {
+        lockerRange = nil
+        if let from = lockerRangeFrom { _ = focus(from) } else { row = 0; column = 0 }
+        lockerRangeFrom = nil
+        lockerClampFocus()
+    }
+    func lockerOpenRangeForTouch(_ slot: String) { lockerOpenRange(slot, from: slot == "skin" ? "lk-skin" : slot == "shirt" ? "lk-shirt" : slot == "shorts" ? "lk-shorts" : "lk-colour") }
+
+    fileprivate func lockerShuffle() {
+        lockerEdit { p in
+            p.setSkin(Double.random(in: 0...1))
+            var last = -1
+            for slot in ["shirt", "shorts", "accent", "racket"] {
+                var pick = Int.random(in: 0..<Self.lockerSwatches.count)
+                if pick == last { pick = (pick + 1) % Self.lockerSwatches.count }
+                last = pick
+                p.setOutfitHex(slot, Self.lockerSwatches[pick].hex)
+            }
+        }
+    }
+    fileprivate func lockerRevert() {
+        guard let original = lockerOpening else { return }
+        lockerEdit { $0 = original }
+    }
+
+    /// Phone remote text for a locker item.
+    static func lockerLabel(_ id: String) -> String {
+        switch id {
+        case "lk-tab-gear": return "Locker · Gear"
+        case "lk-tab-customize": return "Locker · Customize"
+        case "lk-sport-tennis": return "Gear for Tennis"
+        case "lk-sport-golf": return "Gear for Golf"
+        case "lk-colour": return "Colour"
+        case "lk-skin": return "Skin tone"
+        case "lk-shirt": return "Shirt colour"
+        case "lk-shorts": return "Shorts colour"
+        case "lk-body": return "Player"
+        case "lk-hand": return "Plays"
+        case "lk-shuffle": return "Shuffle"
+        case "lk-revert": return "Revert changes"
+        case "lk-done": return "Done"
+        case "lk-range-hue": return "Hue"
+        case "lk-range-shade": return "Shade"
+        case "lk-range-skin": return "Skin tone range"
+        case "lk-range-close": return "Close range"
+        default:
+            if id.hasPrefix("lk-slot-"), let slot = LockerSlot(rawValue: String(id.dropFirst(8))) { return "Slot · \(slot.title(for: .tennis))" }
+            if id.hasPrefix("lk-item-") { return "Equip · \(id.dropFirst(8).prefix(1).uppercased() + id.dropFirst(9))" }
+            return id
+        }
+    }
 }
 
 extension Array {

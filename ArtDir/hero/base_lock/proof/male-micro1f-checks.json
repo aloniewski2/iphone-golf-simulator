@@ -1,0 +1,161 @@
+{
+  "gate": "MALE_FORM PASS",
+  "date": "2026-10-01",
+  "scope": "Micro1f hands + Unity skin",
+  "lines": {
+    "HANDS": "PASS",
+    "UNITY_SKIN": "PASS",
+    "SIL_%": "PASS",
+    "CHIN": "PASS (unchanged)",
+    "SHOULDERS": "PASS (unchanged)",
+    "WAIST": "PASS (unchanged)",
+    "ARMS_SIDE": "PASS (unchanged)",
+    "FEET_SIDE": "PASS (unchanged)"
+  },
+  "silhouette_percent": {
+    "gate_each_max": 5.0,
+    "bald_front": 3.97,
+    "bald_back": 4.2166,
+    "micro1e": {
+      "bald_front": 4.0007,
+      "bald_back": 4.1899
+    }
+  },
+  "mesh": {
+    "verts": 24652,
+    "polys": 24670,
+    "tris": 49304,
+    "height_m": 1.702187418937683,
+    "same_faces_as_micro1e": true,
+    "boundary_edges": 0,
+    "nonmanifold_edges_inherited": 2,
+    "zero_area_faces": 0,
+    "loose_vertices": 0
+  },
+  "vertex_changes": {
+    "moved": 1746,
+    "all_in_hand_shell": true,
+    "original_body_vertices_moved": 0,
+    "weld_ring_vertices": 84,
+    "weld_ring_unchanged": true,
+    "max_disp_mm": 23.71894442287907
+  },
+  "regression_regions": {
+    "SHOULDERS": {
+      "verts": 4806,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "WAIST": {
+      "verts": 1832,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "ARMS_SIDE(upper+fore, above wrist)": {
+      "verts": 3366,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "FEET_SIDE": {
+      "verts": 3482,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    }
+  },
+  "feet": {
+    "below_4mm": 318,
+    "lowest_z_m": 0.0024724886752665043
+  },
+  "hand_params": {
+    "r_a": 0.0136,
+    "r_n": 0.0185,
+    "gap": 0.0016,
+    "taper": 0.08,
+    "taper2": 0.03,
+    "tip_bulb": 0.14,
+    "f_tip": [
+      0.15,
+      0.162,
+      0.154,
+      0.134
+    ],
+    "splay_deg": [
+      3.5,
+      1.2,
+      -1.2,
+      -3.5
+    ],
+    "pad_mcp": 0.2,
+    "pad_pip": 0.18,
+    "pad_dip": 0.14,
+    "hinge_pip": 0.02,
+    "hinge_dip": 0.016,
+    "curl": 0.0,
+    "curl2": 0.0,
+    "ridge": 0.0035,
+    "palm_thick": 0.003,
+    "thenar": 0.009,
+    "thenar_sig": 0.7,
+    "hypo": 0.0035,
+    "thumb_pts": [
+      [
+        0.04,
+        -0.004,
+        0.036
+      ],
+      [
+        0.055,
+        0.012,
+        0.047
+      ],
+      [
+        0.062,
+        0.028,
+        0.072
+      ],
+      [
+        0.06,
+        0.042,
+        0.098
+      ]
+    ],
+    "thumb_r": [
+      0.024,
+      0.0225,
+      0.0195,
+      0.0165
+    ],
+    "thumb_flat": 0.9,
+    "thumb_first": 0.014
+  },
+  "unity": {
+    "material": "Assets/Characters/HeroBase/Materials/Male_Form_Skin.mat",
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_srgb": [
+      0.74,
+      0.555,
+      0.435
+    ],
+    "smoothness": 0.4,
+    "roughness": 0.6,
+    "metallic": 0,
+    "texture": null,
+    "ambient": "Trilight sky(.46,.48,.54) equator(.38,.38,.40) ground(.26,.23,.21)",
+    "lights": {
+      "Key": 1.05,
+      "Fill": 0.38,
+      "Back": 0.62,
+      "Bounce": 0.22
+    },
+    "audit": "male-form-unity-audit.txt",
+    "verify": "MALE_FORM_SAVED_UNITY_VERIFY=PASS"
+  },
+  "hashes": {
+    "start_lock_blend": "35766aea1c493bab0ce1bddd6bc7639c4b304630c500c1d654b4336c2e113d90",
+    "blend": "57a08123bd714e58d744e2a59780e6aacb81dd71879f3ffeb14b31725eee6d73",
+    "fbx": "db600eb1fd9eec00b5077da2a9ed49fe489e4619fffb4b38b97df91617f962cc",
+    "prefab": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+    "skin_mat": "5a253517a3ca18d7db42725d0cf3073fa4d45a25c5dcea758242cc30cf29776c"
+  },
+  "fbx_reimport_max_mm": 0.00027939677238464355
+}

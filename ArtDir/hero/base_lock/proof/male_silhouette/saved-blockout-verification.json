@@ -1,0 +1,41 @@
+{
+  "saved_source_verification": "PASS",
+  "one_plain_grey_male_blockout": true,
+  "metres_unit_scale": 1,
+  "height_metres": 1.703570878218727,
+  "triangles": 49176,
+  "vertices": 24578,
+  "topology_matches_micro1": true,
+  "camera_and_reference_transforms_match_micro1": true,
+  "body_origin_and_transform_match_micro1": true,
+  "depth_coordinates_match_micro1": true,
+  "locked_reference_cameras": 6,
+  "packed_authority_images": 3,
+  "hair": false,
+  "stubble": false,
+  "facial_textures_or_polish": false,
+  "rig": false,
+  "boundary_edges": 0,
+  "nonmanifold_edges_more_than_two_faces": 10,
+  "delivered_blend_and_proof_hashes_match": true,
+  "silhouette_gate": "MALE_SIL PASS",
+  "gate_authority": [
+    "bald_front",
+    "bald_back"
+  ],
+  "saved_source_rerender_pixels_match_proof": true,
+  "independently_verified_primary_measurements": [
+    {
+      "view": "bald_front",
+      "difference_pixels": 3301,
+      "union_pixels": 75213,
+      "percent": 4.388868945528034
+    },
+    {
+      "view": "bald_back",
+      "difference_pixels": 2662,
+      "union_pixels": 74141,
+      "percent": 3.5904560229832345
+    }
+  ]
+}

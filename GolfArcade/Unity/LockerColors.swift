@@ -83,6 +83,8 @@ extension Player {
     }
     /// nil = the kit's own colour.
     func outfitHex(_ slot: String) -> String? {
+        // A swatch pick stores its exact colour after hue and shade ([h, shade, r, g, b]); the sliders store [hue, shade] only.
+        if let v = look[slot], v.count >= 5 { return LockerColor.hex((v[2], v[3], v[4])) }
         if let v = look[slot], v.count >= 2 { return LockerColor.hueShade(v[0], v[1]) }
         let index: Int? = slot == "shirt" ? shirt : slot == "shorts" ? shorts : slot == "accent" ? accent : racket
         return index.flatMap { Outfit.palette.indices.contains($0) ? Outfit.palette[$0].hex : nil }
@@ -101,6 +103,11 @@ extension Player {
         look["hair"] = [hue, shade, 1]; hairColor = LockerColor.nearest(CharacterOptions.hairHex, hairHex)
     }
     mutating func setOutfit(_ slot: String, hue: Double, shade: Double) { look[slot] = [hue - floor(hue), min(1, max(-1, shade))] }
+    /// An exact colour (a swatch pick): the hue / shade are kept too so the sliders open where the colour is.
+    mutating func setOutfitHex(_ slot: String, _ hex: String) {
+        let (h, sh) = LockerColor.hueShadeOf(hex), c = LockerColor.rgb(hex)
+        look[slot] = [h - floor(h), min(1, max(-1, sh)), c.0, c.1, c.2]
+    }
     mutating func clearOutfit(_ slot: String) {
         look[slot] = nil
         switch slot { case "shirt": shirt = nil; case "shorts": shorts = nil; case "accent": accent = nil; default: racket = nil }

@@ -1,0 +1,84 @@
+PASTE — MALE LEGS+FEET FORM (feet primary) · NEW CHAT · Sonnet 5.5 max
+======================================================================
+Copy everything below the line.
+
+---
+
+Adnan: chat 4 already hit GATE: MALE_LEGS_FEET PASS on placement / kneecap / de-banding / sil. Do NOT undo those. Eye still fails form: **calves = heavy tubes**, **feet = sock wedges / stubby toes** (same class as sausage fingers). Fix legs+feet together; **≥65% effort on feet/toes**. Soft-plastic party style, not bodybuilder shred.
+
+PARALLEL SAFETY (MANDATORY — violate = STOP):
+- YOUR ZONE ONLY: Body_M verts with start **z < 0.765 m** (crotch apex) AND **|x| < 0.27 m** — thigh, knee, calf, ankle, foot, toes. Document exact mask in results.
+- 0 verts moved outside zone (head, torso z≥0.765, arms, hands, Face_M, LOOP_*). Audit mandatory; float32 bit-identical outside.
+- Work ONLY under work/male-legs-feet-form2/ . Never edit another chat's work/.
+- Do NOT overwrite ArtDir blend/FBX until zone audit PASS + SHA guard. Stage export under work/male-legs-feet-form2/export/ first.
+- Do NOT open female blend. Do NOT thrash crotch roof / hip crease above z≈0.765 (torso owns that).
+- If start SHA mismatches, STOP or rebase with zone-index patch onto current ArtDir (same spirit as work/male-parallel-legs/export/merge_legs.py) — never clobber head/torso/arms.
+
+START BLEND (verify SHA before any edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 7f145b948a2f4d679ffbd4f62a8b32857e41e8ef4ceed6808f2366e2ae9cdf13
+(re-verify: shasum -a 256 … — if different, re-read current SHA; still 0 outside legs zone)
+Known prior install chain: torso+arms+legs were merged; Micro1j head also landed on this SHA. Legs zone should still be the PASS mesh unless someone else touched z<0.765.
+
+READ FIRST:
+1) work/male-parallel-legs/export/MALE_LEGS_FEET_RESULTS.md  (PASS wins + open gaps)
+2) work/male-parallel-legs/proof/ sheets: LEGS_01..07 / 04l_legs_* (knee BA, feet BA, profiles, sagittal, zone heatmap)
+3) AGENTS.md + art-bible.md
+AUTHORITY plates: male_body_bald.jpg, male_multiangle_body.jpg, male_body_plain.jpg — **legs + feet only**
+Note: profile plates have a second raised far-foot artifact — use **near-foot** contour only (PASS already documented this).
+
+KEEP FROM PASS (do not regress):
+- ZONE_ISOLATION = 0 outside
+- TOPOLOGY_INTACT preferred (positions-only; no densify unless Adnan explicitly allows — prefer none)
+- FOOT_PLACEMENT vs profile plates (toe/heel/ankle mm errors not worse than PASS: toe ~1 mm, heel ≤6 mm, ankle ~1 mm)
+- INSTEP/ANKLE sagittal mean not worse than ~1.1 mm
+- KNEECAP stays proud (not a dent) — you may refine shape but do not flatten
+- SURFACE_CLEAN — no return of horizontal banding / pits / chopped bevels
+- GROUND_CONTACT — min z / flat soles / height ~1.702 m hold; no floating or sunk feet
+- SIL bald front/back ≤ 5.0% (whole figure, locked cameras); do not worsen for vanity calf flares
+
+SCOPE — FORM (plate likeness):
+
+PRIMARY (must PASS) — FEET / TOES (~65%+ effort):
+1) TOE_SEPARATION — five readable toes per foot (or clear soft-plastic toe mass that reads as toes from front + 3/4), not a single sock wedge. Big toe distinctly larger; others distinct; no fused mitt.
+2) TOE_TAPER — kill stubby equal-width sausages; slight knuckle hint + pad tips; soft-plastic party style (match hand-form spirit, not hyperreal nails).
+3) FOOT_VOLUME — arch / instep / heel pad / lateral edge read as a foot, not a rounded boot mold. Keep placement wins; reshape surface on top of them.
+4) ANKLE_READ — soft malleoli hint + Achilles plane; calf→ankle taper (not a cylinder dropping into a wedge). Mirror L/R.
+5) Close-ups mandatory: front feet, side near-foot, 3/4 feet — plate | PASS | FORM side-by-side.
+
+SECONDARY (must improve; blocker if worse than PASS look):
+6) CALF_FORM — soft gastrocnemius mass + shin plane vs plate; kill pure heavy tube. Soft-plastic, not shredded muscle maps. Respect silhouette consensus (plates disagree ~2 cm on calf width — stay near consensus, don't explode width).
+7) THIGH_FORM — light soft-plastic quad / ham taper so thighs aren't uniform sausages; hold continuous handoff at zone top (top ~3 cm of zone stays ≤~1 mm drift vs PASS unless intentional blend into crotch).
+8) KNEE_SHAPE polish — keep proud kneecap; refine soft peri-patellar planes if needed (no hard crease rings).
+
+OUT OF SCOPE:
+- Torso / pelvis roof / outer thigh crease above z≈0.765
+- Arms, hands, head, Face_M, clothes, Mixamo
+- Unity install while other chats are writing — stage FBX only unless Adnan clears a solo import window
+- Densifying the whole body / changing TRI budget without explicit ask
+
+HARD GATES:
+ZONE_OUTSIDE_MOVED=0
+TOPOLOGY_IDENTICAL (or document any loop carve with Adnan note — prefer none)
+SIL_FRONT_BACK<=5.0%
+FOOT_PLACEMENT hold (toe/heel/ankle not worse than PASS mm)
+INSTEP_SAGITTAL hold (mean not worse than ~1.1 mm)
+GROUND_CONTACT hold
+KNEECAP_PROUD hold
+TOE_SEPARATION PASS (visual + close-ups)
+TOE_TAPER PASS (no sausage equal-width)
+FOOT_VOLUME PASS (not sock wedge)
+CALF_FORM improved vs PASS tube look (visual + optional width profile vs plate consensus)
+NO_SELF_INTERSECT / no flipped faces / no NaN
+
+DELIVER:
+- work/male-legs-feet-form2/proof/MALE_LEGS_FEET_FORM_RESULTS.md
+- proof sheets: full legs front/back/q3/side (plate | PASS | FORM) + **feet close-up sheet** + calf/knee close-ups
+- male-legs-feet-form2-checks.json (zone + sil + placement + topology)
+- Optional staged FBX under export/; ArtDir blend+FBX install ONLY after SHA guard + zone audit PASS; append INSTALL_LOG_MALE.md
+
+REPLY ONLY:
+GATE: MALE_LEGS_FEET_FORM PASS
+or
+GATE: MALE_LEGS_FEET_FORM FAIL
+<failed lines only>

@@ -2,7 +2,7 @@ import AVFoundation
 import CoreText
 import SwiftUI
 
-// "Island Sports Club": the one visual system for every menu. A resort sports club — Wii Sports
+// "Motion Club": the one visual system for every menu. A resort sports club — Wii Sports
 // Resort warmth, Fall Guys energy — with its own type (Bricolage Grotesque display, Rubik UI),
 // a fixed palette, rendered 3D objects instead of stock icons (MenuArt/club-*.png), a painted
 // scene behind each area (MenuArt/scene-*.jpg), and one motion language: staggered springs in,
@@ -173,7 +173,7 @@ struct ClubHeader: View {
         HStack(alignment: .center, spacing: compact ? 10 : 14) {
             ClubCrest(size: compact ? 40 : 54)
             VStack(alignment: .leading, spacing: -2) {
-                Text("ISLAND SPORTS CLUB").font(Club.caps(compact ? 10 : 12)).tracking(3).foregroundStyle(.white.opacity(0.75))
+                Text("MOTION CLUB").font(Club.caps(compact ? 10 : 12)).tracking(3).foregroundStyle(.white.opacity(0.75))
                 HStack(spacing: 8) {
                     ForEach(Array(breadcrumb.enumerated()), id: \.offset) { i, part in
                         if i > 0 { Image(systemName: "chevron.right").font(.system(size: compact ? 11 : 14, weight: .heavy)).foregroundStyle(.white.opacity(0.5)) }
@@ -410,59 +410,6 @@ struct ClubBadge: View {
     }
 }
 
-/// A small pill (header actions, tabs).
-struct ClubPill: View {
-    let title: String
-    var icon: String? = nil
-    var selected = false
-    var focused: Bool
-    var compact = false
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                if let icon { Image(systemName: icon).font(.system(size: compact ? 13 : 16, weight: .heavy)) }
-                Text(title).font(Club.ui(compact ? 13 : 16, 700))
-            }
-            .foregroundStyle(selected || focused ? Club.ink : .white)
-            .padding(.horizontal, compact ? 12 : 16).frame(height: compact ? 34 : 42)
-            .background(Capsule().fill(selected ? Club.sun : focused ? Color.white : Color.white.opacity(0.14)))
-            .overlay(Capsule().strokeBorder(.white.opacity(selected || focused ? 0 : 0.25), lineWidth: 1))
-        }
-        .buttonStyle(ClubPress())
-        .scaleEffect(focused ? 1.07 : 1).animation(Club.pop, value: focused)
-    }
-}
-
-/// "Label   ‹ value ›", changed sideways (or with the arrows by touch).
-struct ClubRow: View {
-    let label: String
-    let value: String
-    var swatch: Color? = nil
-    var focused: Bool
-    var compact = false
-    var step: ((Int) -> Void)? = nil
-    let action: () -> Void
-    var body: some View {
-        HStack(spacing: 10) {
-            Text(label).font(Club.ui(compact ? 14 : 18, 600)).foregroundStyle(focused ? Club.ink : .white)
-            Spacer(minLength: 8)
-            if let swatch { Circle().fill(swatch).frame(width: 18, height: 18).overlay(Circle().strokeBorder(.white, lineWidth: 2)) }
-            HStack(spacing: 8) {
-                Button { step?(-1) } label: { Image(systemName: "chevron.left").frame(width: 30, height: 34) }.buttonStyle(.plain).opacity(focused ? 1 : 0.4)
-                Text(value).font(Club.title(compact ? 16 : 21)).frame(minWidth: compact ? 70 : 130).lineLimit(1).minimumScaleFactor(0.7)
-                Button { step?(1) } label: { Image(systemName: "chevron.right").frame(width: 30, height: 34) }.buttonStyle(.plain).opacity(focused ? 1 : 0.4)
-            }
-            .foregroundStyle(focused ? Club.ink : .white)
-        }
-        .padding(.horizontal, compact ? 12 : 18).padding(.vertical, compact ? 6 : 8)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(focused ? Club.cream : Color.black.opacity(0.28)))
-        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.white.opacity(focused ? 0 : 0.12), lineWidth: 1))
-        .scaleEffect(focused ? 1.02 : 1).animation(Club.pop, value: focused)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: action)
-    }
-}
 
 /// The controller legend along the bottom of the TV.
 struct ClubHintBar: View {
@@ -479,43 +426,14 @@ struct ClubHintBar: View {
     }
 }
 
-/// The stripe wipe between screens: three diagonal bands sweep across and away.
-struct ClubWipe: View {
-    let trigger: Int
-    @State private var progress: CGFloat = 1.2
-    @State private var active = false
-    var body: some View {
-        GeometryReader { g in
-            let w = g.size.width, h = g.size.height
-            ZStack {
-                ForEach(0..<3, id: \.self) { i in
-                    let colors = [Club.sun, Club.coral, Club.violet]
-                    Rectangle().fill(colors[i])
-                        .frame(width: w * 0.5, height: h * 2)
-                        .rotationEffect(.degrees(20))
-                        .offset(x: (progress - CGFloat(i) * 0.12) * (w * 1.6) - w * 0.8)
-                }
-            }
-            .frame(width: w, height: h).clipped()
-        }
-        .opacity(active ? 1 : 0)   // only visible while it sweeps
-        .allowsHitTesting(false)
-        .onChange(of: trigger) { _, _ in
-            guard !Club.still else { return }
-            progress = -0.6; active = true
-            withAnimation(.easeInOut(duration: 0.55)) { progress = 1.6 } completion: { active = false }
-        }
-        .ignoresSafeArea()
-    }
-}
 
 // MARK: - Approved Island menus (ArtDir/ui/toybox-simple-v6)
 // Deliberately separate from Arcade: the in-match serve meter keeps its original tokens.
 enum IslandUI {
-    static let navy = Color(hex: "09286F")
+    static let navy = Color(hex: "101D35")
     static let lime = Color(hex: "D3F34B")
     static let paper = Color(hex: "FAF8F3")
-    static let muted = Color(hex: "516383")
+    static let muted = Color(hex: "34435A")
     static func font(_ size: CGFloat, bold: Bool = false) -> Font {
         .system(size: size, weight: bold ? .bold : .medium, design: .rounded)
     }
@@ -523,11 +441,16 @@ enum IslandUI {
 
 struct IslandBackdrop: View {
     var intro = false
+    var room: ClubRoom = .terrace
     var body: some View {
-        GeometryReader { g in
-            Image(uiImage: UIImage(named: intro ? "island-intro.png" : "island-terrace.png") ?? UIImage(named: "scene-home.jpg") ?? UIImage())
-                .resizable().scaledToFill().frame(width: g.size.width, height: g.size.height).clipped()
-        }.ignoresSafeArea().accessibilityHidden(true)
+        Group {
+            if !intro && room == .locker {
+                ClubEnvironmentView(room: .locker)
+            } else {
+                ClubLivingImageView(room: intro ? .entrance : room)
+            }
+        }
+        .ignoresSafeArea().accessibilityHidden(true).allowsHitTesting(false)
     }
 }
 
@@ -557,9 +480,9 @@ struct IslandWordmark: View {
                 Circle().fill(Color(hex: "FFD145")).frame(width: size * 0.9, height: size * 0.9).offset(x: size * 0.25)
                 IslandPalm().fill(IslandUI.navy).frame(width: size * 1.5, height: size * 1.12)
             }.frame(height: size * 1.12)
-            Text("ISLAND").font(IslandUI.font(size, bold: true)).tracking(size * 0.035)
-            Text("SPORTS CLUB").font(IslandUI.font(size * 0.32, bold: true)).tracking(size * 0.095)
-        }.foregroundStyle(IslandUI.navy).accessibilityElement(children: .ignore).accessibilityLabel("Island Sports Club")
+            Text("MOTION").font(IslandUI.font(size, bold: true)).tracking(size * 0.035)
+            Text("CLUB").font(IslandUI.font(size * 0.32, bold: true)).tracking(size * 0.095)
+        }.foregroundStyle(IslandUI.navy).accessibilityElement(children: .ignore).accessibilityLabel("Motion Club")
     }
 }
 
@@ -582,7 +505,7 @@ struct IslandAction: View {
             }
             .foregroundStyle(IslandUI.navy)
             .padding(.horizontal, 22).frame(minHeight: compact ? 48 : 58)
-            .background(primary ? (tint ?? IslandUI.lime) : focused ? Color.white.opacity(0.8) : .clear, in: RoundedRectangle(cornerRadius: primary ? 26 : 12))
+            .background(primary ? (tint ?? IslandUI.lime) : focused ? Color.white : IslandUI.paper, in: RoundedRectangle(cornerRadius: primary ? 26 : 12))
             .overlay(RoundedRectangle(cornerRadius: primary ? 26 : 12).strokeBorder(IslandUI.navy.opacity(focused ? 0.8 : 0), lineWidth: 2))
             .shadow(color: IslandUI.navy.opacity(primary ? 0.09 : 0), radius: 3, y: 2)
         }.buttonStyle(.plain).accessibilityLabel(title).accessibilityIdentifier(identifier)
@@ -597,9 +520,8 @@ struct IslandShell<Content: View>: View {
     @ViewBuilder var content: () -> Content
     var body: some View {
         ZStack {
-            IslandBackdrop()
-            if compact { IslandUI.paper.opacity(0.92).ignoresSafeArea() }
-            else { LinearGradient(colors: [IslandUI.paper.opacity(0.88), .clear], startPoint: .top, endPoint: .center).ignoresSafeArea().allowsHitTesting(false) }
+            IslandBackdrop(room: ClubRoom.forTitle(title))
+            IslandUI.paper.opacity(0.94).ignoresSafeArea().allowsHitTesting(false)
             VStack(alignment: .leading, spacing: compact ? 18 : 24) {
                 HStack(alignment: .center) {
                     if !compact { IslandWordmark(size: 28).frame(width: 180); Divider().frame(height: 52).padding(.horizontal, 20) }

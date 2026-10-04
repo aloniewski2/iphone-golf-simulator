@@ -1,0 +1,30 @@
+PASTE — CHAT 5 / 8 — FEMALE FACE_LOCK PACK (DOCS/PLATES ONLY — NO MESH)
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY):
+- Own ONLY your zone/files. Never touch male blend/FBX.
+- Work under work/<your-folder>/ only.
+- If SHA mismatch, STOP.
+
+YOUR ZONE: files under ArtDir/hero/base_lock/face_lock_f/ ONLY (create).
+FORBIDDEN: any .blend/.fbx edit, Unity mesh import, male face_lock/ writes.
+
+MIRROR male pipeline from ArtDir/hero/base_lock/face_lock/ (FACE_SPEC, PROCESS, sheets, crops).
+
+SOURCE PLATES:
+- ArtDir/hero/base_lock/female_head_detail.jpg
+- ArtDir/hero/base_lock/female_body_bald.jpg
+- ArtDir/hero/base_lock/female_multiangle_body.jpg
+
+DELIVER in face_lock_f/:
+- 01–16 angle crops (same naming pattern as male)
+- SHEET_* contact sheets
+- FACE_SPEC.md (binary gates; female anatomy — no Adam's apple; feminine jaw/cheek)
+- PROCESS_FaceMatch.md (same densify/loops/no-sticker rules)
+- PASTE_PROMPT_FemaleFace_MicroF1.txt ready for chat 6
+- REF note in REF_INDEX.md pointing to face_lock_f/
+
+NO mesh. Chat 6 blocked until this exists.
+REPLY: GATE: FEMALE_FACE_LOCK_PACK PASS|FAIL

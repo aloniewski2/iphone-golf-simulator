@@ -1,0 +1,27 @@
+PASTE — FEMALE TORSO FORM2 (bust + glute) · NEW CHAT · Sonnet 5.5 max
+===================================================================
+Copy below.
+
+---
+
+Adnan REJECTED chat7 PASS quality: chest and butt not done properly. Depth OK; forms FAIL.
+
+START (prefer torso candidate; verify SHA):
+work/female-parallel-torso/export/HeroBase_Female_torso_candidate.blend
+(fallback ArtDir HeroBase_Female.blend — re-shasum; if ArtDir changed, merge torso delta first via export/merge_torso_delta.py)
+
+READ: work/female-parallel-torso/FEMALE_TORSO_RESULTS.md + proof/01_torso_before_after.png + proof/04_plate_vs_model_3q.png
+AUTHORITY: female_body_bald.jpg, female_multiangle_body.jpg, female_body_plain.jpg
+AGENTS.md + art-bible.md
+
+ZONE ONLY: same torso mask as chat7 (z≈0.795–1.37, arms excluded). 0 head/arms/hands/legs. Work: work/female-torso-form2/
+
+SCOPE — HARD:
+1) BUST: plate-volume breasts — clear soft mounds, underbust shelf, separation; not flat pancake. Soft-plastic (no pores).
+2) GLUTES: plate round lobes + readable cleft + upper shelf; kill flat/dent look on back 3/4.
+3) Keep waist depth win; sil torso side ≤5%; front/back torso edge ≤5%.
+4) No clothes. Stage export only unless ArtDir free.
+
+GATES: BUST_VOLUME, GLUTE_FORM, ZONE_OUTSIDE=0, TOPOLOGY, SIDE_SIL≤5%, SEAM_CLEAN
+DELIVER: FEMALE_TORSO_FORM2_RESULTS.md + before/after + 3q vs plate + checks.json
+REPLY: GATE: FEMALE_TORSO_FORM2 PASS|FAIL + failed lines

@@ -1,0 +1,90 @@
+Ready t=0.108 left_knee=149.2deg
+Ready t=0.650 left_knee=132.4deg
+Ready t=1.192 left_knee=121.2deg
+Ready t=1.733 left_knee=99.0deg
+Serve t=0.178 left_knee=132.6deg
+Serve t=1.070 left_knee=123.0deg
+Serve t=1.962 left_knee=170.8deg
+Serve t=2.853 left_knee=148.3deg
+Forehand t=0.133 left_knee=153.0deg
+Forehand t=0.800 left_knee=109.6deg
+Forehand t=1.467 left_knee=172.0deg
+Forehand t=2.133 left_knee=128.2deg
+Backhand t=0.138 left_knee=132.5deg
+Backhand t=0.830 left_knee=113.1deg
+Backhand t=1.522 left_knee=124.1deg
+Backhand t=2.213 left_knee=117.9deg
+RunForward t=0.198 left_knee=151.1deg
+RunForward t=1.190 left_knee=174.0deg
+RunForward t=2.182 left_knee=130.0deg
+RunForward t=3.173 left_knee=165.6deg
+RunRight t=0.198 left_knee=157.5deg
+RunRight t=1.190 left_knee=162.7deg
+RunRight t=2.182 left_knee=172.9deg
+RunRight t=3.173 left_knee=173.4deg
+RunLeft t=0.198 left_knee=130.4deg
+RunLeft t=1.190 left_knee=101.2deg
+RunLeft t=2.182 left_knee=99.1deg
+RunLeft t=3.173 left_knee=121.0deg
+Volley t=0.095 left_knee=125.5deg
+Volley t=0.570 left_knee=118.7deg
+Volley t=1.045 left_knee=105.5deg
+Volley t=1.520 left_knee=116.3deg
+Smash t=0.173 left_knee=148.6deg
+Smash t=1.040 left_knee=136.2deg
+Smash t=1.907 left_knee=155.5deg
+Smash t=2.773 left_knee=148.3deg
+Head position=(-0.02, 1.22, 0.04) scale=(100.00, 100.00, 100.00)
+Body_Skin head-centroid=(0.01, 1.32, 0.16) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=1051 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Hair_Default head-centroid=(-0.02, 1.55, 0.01) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=11373 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Hair_Default_Free head-centroid=(-0.02, 1.55, 0.01) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=11375 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Hair=0 Headwear=0 visible_hair=1
+Hair=0 Headwear=1 visible_hair=1
+Hair=0 Headwear=2 visible_hair=1
+Hair=0 Headwear=3 visible_hair=1
+Hair=1 Headwear=0 visible_hair=1
+Hair=1 Headwear=1 visible_hair=1
+Hair=1 Headwear=2 visible_hair=1
+Hair=1 Headwear=3 visible_hair=1
+Hair=2 Headwear=0 visible_hair=1
+Hair=2 Headwear=1 visible_hair=1
+Hair=2 Headwear=2 visible_hair=1
+Hair=2 Headwear=3 visible_hair=1
+Hair=3 Headwear=0 visible_hair=1
+Hair=3 Headwear=1 visible_hair=1
+Hair=3 Headwear=2 visible_hair=1
+Hair=3 Headwear=3 visible_hair=1
+Hair=4 Headwear=0 visible_hair=1
+Hair=4 Headwear=1 visible_hair=1
+Hair=4 Headwear=2 visible_hair=1
+Hair=4 Headwear=3 visible_hair=1
+Hair=5 Headwear=0 visible_hair=1
+Hair=5 Headwear=1 visible_hair=1
+Hair=5 Headwear=2 visible_hair=1
+Hair=5 Headwear=3 visible_hair=1
+Hair=6 Headwear=0 visible_hair=1
+Hair=6 Headwear=1 visible_hair=1
+Hair=6 Headwear=2 visible_hair=1
+Hair=6 Headwear=3 visible_hair=1
+Hair=7 Headwear=0 visible_hair=1
+Hair=7 Headwear=1 visible_hair=1
+Hair=7 Headwear=2 visible_hair=1
+Hair=7 Headwear=3 visible_hair=1
+Female=False size=0 build_morph=False
+Female=False size=0.5 build_morph=False
+Female=False size=1 build_morph=False
+Female=True size=0 build_morph=False
+Female=True size=0.5 build_morph=False
+Female=True size=1 build_morph=False

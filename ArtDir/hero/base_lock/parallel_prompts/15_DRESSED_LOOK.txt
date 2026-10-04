@@ -1,0 +1,60 @@
+PASTE — DRESSED LOOK · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Put the clothes that already exist, and the classic racket that already exists, onto the full male and female bodies so Adnan can see them. This is a look. Do not resculpt the body, the clothes, or the racket. Do not refit. If a piece clips or floats, leave it and label the sheet CLIP or FLOAT.
+
+BODIES (duplicate into the work folder, then dress the copies)
+- Male: work/male-pelvis-form3/export/merged_fd04bc28.blend SHA d6c4dcfb1150853a8802a8dc7501aa64066adb8b2734c14a4d6ed8e82dada781
+- Female: work/female-full-merge/export/HeroBase_Female_FULL_STAGED.blend SHA a1d73a334f4dc18052db0582df6b4b54b1df166d9a3531ab700ee114e86d2ac1
+- Verify both SHAs before you touch anything. If either file is missing or the SHA differs, stop and say so.
+- Mesh SHA of each copy must match the source when you finish. Actions and parents only.
+
+CLOTHES (append, do not rebuild)
+- Male pieces from work/standard-tennis-kit-worn/export/StandardKit_Male.blend SHA ad07a7b9ba984b0f220f975b9fe1b0c1b7068d9897c7e6f96e44f70d23aa77a9
+  Kit_Top_Polo_M → Chest_Top
+  Kit_Bottom_Shorts_M → Hip_Bottom
+  Kit_Sock_L, Kit_Shoe_L → Foot_L_Shoe
+  Kit_Sock_R, Kit_Shoe_R → Foot_R_Shoe
+- Female pieces from work/standard-tennis-kit-worn/export/StandardKit_Female.blend SHA f19a9c03789b7af343c56b005ed587137e8764779d31c3109942156ee71eaf4e
+  Kit_Top_Polo_F → Chest_Top
+  Kit_Bottom_Skort_F → Hip_Bottom
+  Kit_Sock_L, Kit_Shoe_L → Foot_L_Shoe
+  Kit_Sock_R, Kit_Shoe_R → Foot_R_Shoe
+- Use the authority pieces, not the ArmsCandFit extras.
+- These clothes were fit to the older ArtDir bodies, not to these full meshes. Do not shrinkwrap, do not move verts, do not hide skin by editing. Parent each piece to the socket named above. Keep them separate objects. Never join them to the body.
+- Show white and black. The materials are already on the kit blends (Std_White_Lit, Std_Black_Lit). One collection per color. Do not invent a third color. No logos.
+
+RACKET
+- work/classic-tennis-racket/export/Racket_Classic.blend SHA 53e83714856a14c1533653b3fce3e164dfb17e9c58c995cbdb325d86eec7e8ba
+- Parent to Hand_Racket on the character's right hand. Grip origin stays at the palm. Do not use the old RacketOnHero proof blends. Those are the previous bodies.
+- If the fingers are open in the bind pose, pose the hand closed on the grip. That is a pose, not a mesh edit. If the grip still misses the palm, leave it and label the hand closeup FLOAT.
+
+POSE
+- Bind pose, plus the same ready stance on both if the hero already has one. Do not invent a swing.
+
+WORK: work/dressed-look/
+Export one blend per hero. Do not write ArtDir. Do not change the source kit, racket, or body files.
+
+PROOFS (what Adnan looks at)
+- Four sheets: male white, male black, female white, female black.
+- Each sheet: full figure front, 3/4, side, back, plus a waist closeup and a racket-hand closeup.
+- Caption any CLIP or FLOAT in plain words on the sheet.
+- Also one turntable mp4 per hero in the white kit, behind-the-court camera, so the racket reads.
+
+GATES
+BODIES — both source SHAs verified, mesh unchanged
+KIT_SEPARATE — polo, bottom, socks, shoes are their own objects on the named sockets
+RACKET_IN_HAND — classic racket on Hand_Racket, both heroes
+BOTH_COLORS
+BOTH_SEXES
+NO_REFIT — zero clothing verts moved
+SOURCES_UNCHANGED — kit blends, racket blend, and the two source body blends still have the SHAs above
+ARTDIR_UNCHANGED
+PROOFS — four sheets plus two turntables
+
+REPLY ONLY:
+GATE: DRESSED_LOOK PASS
+or FAIL with failed lines only.

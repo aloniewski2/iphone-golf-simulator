@@ -3,8 +3,11 @@ using UnityEngine;
 namespace GolfArcade.Tennis
 {
     /// What the opponent decides to do with a ball, so the choice can be tested without a scene.
+    public enum TennisReturnKind { Drive, Slice, Lob, Drop }
+
     public struct TennisReturn
     {
+        public TennisReturnKind Kind;
         public bool Reached;        // false = the ball went past them, point to the player
         public bool Error;          // reached it but put it out or in the net
         public Vector3 Landing;
@@ -148,7 +151,7 @@ namespace GolfArcade.Tennis
         /// `weakSide` the side of the court (-1/+1, 0 unknown) where the player has been missing.
         public static TennisReturn Decide(float opponentX, float ballX, float playerX, float playerVX, float weakSide,
             OpponentProfile p, float roll, float widthRoll, float depthRoll, float pace, float reach,
-            float height = 0, float quality = 0)
+            float height = 0, float quality = 0, bool returningServe = false, float playerZ = -11.2f, bool previousLob = false)
         {
             var result = new TennisReturn();
             if (!CanReach(opponentX, ballX, reach))
@@ -230,23 +233,28 @@ namespace GolfArcade.Tennis
             else if (weakSide != 0 && Mathf.Repeat(sideRoll * 3.7f, 1f) < p.Hunt * .6f * (1 - defend)) targetSide = Mathf.Sign(weakSide);
             float width = Mathf.Lerp(Mathf.Lerp(.9f, 2.6f, p.Width), Mathf.Lerp(1.8f, 3.8f, p.Width), widthRoll) * (1 - .6f * defend);
             float depth = Mathf.Lerp(Mathf.Lerp(5.0f, 8.6f, p.Depth), Mathf.Lerp(8.0f, 11.1f, p.Depth), depthRoll) * (1 - .4f * defend);
-            float speed = Mathf.Lerp(p.PaceMax, p.PaceMin, Mathf.Max(stretch, defend));
+            float speed = Mathf.Max(18.5f, Mathf.Lerp(p.PaceMax, p.PaceMin, Mathf.Max(stretch, defend)));
             float spin = Mathf.Lerp(p.SpinMin, p.SpinMax, Mathf.Repeat(widthRoll * 3.1f, 1f));
             float special = Mathf.Repeat(depthRoll * 6.73f, 1f);
             result.Label = defend > .6f ? "Opponent scrambles it back" : "Opponent returns";
-            if (special < p.LobChance)
+            float lobChance = previousLob ? 0 : returningServe ? (playerZ > -5 ? .03f : 0)
+                : Mathf.Min(.18f, p.LobChance + (defend > .65f ? .035f : 0));
+            if (p.Style == "moonballer" && !previousLob && !returningServe) lobChance = playerZ > -5 || defend > .4f ? .24f : .12f;
+            if (special < lobChance)
             {
+                result.Kind = TennisReturnKind.Lob;
                 // A high, heavy loop to the baseline.
                 depth = Mathf.Lerp(10.2f, 11.1f, depthRoll); speed = Mathf.Lerp(15, 17.5f, widthRoll); spin = .95f;
                 result.Label = "Opponent loops it deep";
             }
-            else if (special < p.LobChance + p.DropChance && defend < .3f)
+            else if (special < lobChance + p.DropChance && defend < .3f && !returningServe)
             {
+                result.Kind = TennisReturnKind.Drop;
                 // A drop shot, just over the net.
                 depth = Mathf.Lerp(2.6f, 3.8f, depthRoll); width *= .7f; speed = Mathf.Lerp(10.5f, 12.5f, widthRoll); spin = -.8f;
                 result.Label = "Opponent drops it short";
             }
-            else if (special < p.LobChance + p.DropChance + p.SliceChance) spin = Mathf.Lerp(-.9f, -.45f, widthRoll);
+            else if (special < lobChance + p.DropChance + p.SliceChance) { result.Kind = TennisReturnKind.Slice; spin = Mathf.Lerp(-.55f, -.25f, widthRoll); }
             result.Landing = new Vector3(targetSide * Mathf.Min(width, 3.95f), TennisRules.BallRadius, -Mathf.Clamp(depth, 2.4f, 11.3f));
             result.Speed = speed;
             result.Spin = spin;

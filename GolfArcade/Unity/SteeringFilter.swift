@@ -289,3 +289,126 @@ struct SteeringFilter {
         return nil
     }
 }
+
+struct TennisAimWing: Codable, Equatable, Sendable {
+    var neutral: Double
+    var left: Double
+    var right: Double
+    static let standard = Self(neutral: 0, left: -32, right: 32)
+    var valid: Bool { neutral.isFinite && left.isFinite && right.isFinite && neutral-left >= 8 && right-neutral >= 8 && right-left <= 150 }
+    static func relative(_ angle: Double, to center: Double) -> Double {
+        SportsMotionGeometry.wrap((angle-center) * .pi/180) * 180 / .pi
+    }
+    func aim(_ angle: Double) -> Double {
+        guard valid, angle.isFinite else { return 0 }
+        let delta = Self.relative(angle, to: neutral)
+        let dead = 2.5
+        let span = delta < 0 ? neutral-left : right-neutral
+        return (delta < 0 ? -1 : 1) * min(1, 0.8 * max(0, abs(delta)-dead) / (span-dead))
+    }
+    static func fit(_ samples: [Int: [Double]]) -> Self? {
+        guard let centers=samples[0], let ls=samples[-1], let rs=samples[1], centers.count >= 2, ls.count >= 2, rs.count >= 2,
+              (centers+ls+rs).allSatisfy({ $0.isFinite }) else { return nil }
+        func mean(_ angles: [Double], around center: Double) -> Double {
+            center + angles.map { relative($0, to: center) }.reduce(0,+) / Double(angles.count)
+        }
+        let center=mean(centers,around:centers[0])
+        let l=mean(ls,around:center), r=mean(rs,around:center)
+        for angles in [centers,ls,rs] {
+            let m=mean(angles,around:center)
+            if angles.contains(where:{ abs(relative($0,to:m)) > 7 }) { return nil }
+        }
+        let wing=Self(neutral:center,left:l,right:r)
+        return wing.valid ? wing : nil
+    }
+}
+
+struct TennisAimProfile: Codable, Equatable, Sendable {
+    var forehand: TennisAimWing
+    var backhand: TennisAimWing
+    var valid: Bool { forehand.valid && backhand.valid }
+    func aim(angle: Double, facing: Double) -> Double { (facing >= 0 ? forehand : backhand).aim(angle) }
+}
+
+struct TennisAimSwing: Sendable {
+    var time: Double
+    var angle: Double
+    var facing: Double
+}
+
+/// The requested lane is a lesson instruction; only actual new-shot landings validate it.
+struct TennisAimLesson {
+    enum Phase { case capture, validation, complete }
+    struct Trial { var wing: Int; var lane: Int }
+    var phase: Phase
+    var trials: [Trial]
+    var index=0
+    var samples = [Int: [Int: [Double]]]()
+    var profile: TennisAimProfile?
+    var successes=0
+    var wingSuccesses=[0,0]
+    var quick: Bool
+    var message="Watch the highlighted target, then swing comfortably."
+    var current: Trial? { index < trials.count ? trials[index] : nil }
+    var progress: String { phase == .capture ? "Learn your swing · \(index+1) of \(trials.count)" : "Aim check · \(min(index+1,trials.count)) of \(trials.count)" }
+    init(saved: TennisAimProfile? = nil) {
+        quick=saved?.valid == true; profile=quick ? saved : nil
+        phase=quick ? .validation : .capture
+        trials=quick ? [Trial(wing:0,lane:-1),Trial(wing:1,lane:0),Trial(wing:0,lane:1)] : Self.captureTrials
+    }
+    static var captureTrials: [Trial] {
+        [0,1].flatMap { wing in [0,-1,1,0,-1,1].map { Trial(wing:wing,lane:$0) } }
+    }
+    static var validationTrials: [Trial] {
+        [0,1].flatMap { wing in [1,0,-1,0,-1,1].map { Trial(wing:wing,lane:$0) } }
+    }
+    static func lane(at x: Double) -> Int { x < -1.2 ? -1 : x > 1.2 ? 1 : 0 }
+    /// Returns true when this attempt is accepted; retries preserve the current instruction.
+    mutating func record(_ swing: TennisAimSwing, landingX: Double, legal: Bool) -> Bool {
+        guard let trial=current, swing.time.isFinite, swing.angle.isFinite, swing.facing.isFinite, landingX.isFinite else { return false }
+        let wing=swing.facing >= 0 ? 0 : 1
+        guard wing == trial.wing else { message="Use the \(trial.wing == 0 ? "forehand" : "backhand") grip for this shot. Try again."; return false }
+        if phase == .capture {
+            guard legal else { message="Let's repeat that shot. Swing as the practice ball reaches you."; return false }
+            samples[wing,default:[:]][trial.lane,default:[]].append(swing.angle)
+        } else {
+            if legal && Self.lane(at:landingX) == trial.lane { successes+=1; wingSuccesses[wing]+=1; message="That reached the target." }
+            else { message="That missed the lane. Keep the racket face pointed toward the target." }
+        }
+        index+=1
+        if index == trials.count {
+            if phase == .capture {
+                guard let forehand=TennisAimWing.fit(samples[0] ?? [:]), let backhand=TennisAimWing.fit(samples[1] ?? [:]) else {
+                    // Keep valid lanes and recapture only an ambiguous lane or stroke side.
+                    let badWing=TennisAimWing.fit(samples[0] ?? [:]) == nil ? 0 : 1
+                    let group=samples[badWing] ?? [:]
+                    let center=group[0]?.first ?? 0
+                    let badLane=[0,-1,1].first { lane in
+                        guard let angles=group[lane], angles.count >= 2 else { return true }
+                        let d=angles.map { TennisAimWing.relative($0,to:center) }
+                        return (d.max() ?? 0)-(d.min() ?? 0) > 14 || (lane != 0 && d.reduce(0,+)/Double(d.count)*Double(lane) < 8)
+                    } ?? 0
+                    samples[badWing]?[badLane]=[]
+                    trials=[Trial(wing:badWing,lane:badLane),Trial(wing:badWing,lane:badLane)]; index=0
+                    message="Those swings overlapped. Repeat this target with a small, clear change of racket angle."
+                    return true
+                }
+                profile=TennisAimProfile(forehand:forehand,backhand:backhand)
+                phase = .validation; trials=Self.validationTrials; index=0; successes=0; wingSuccesses=[0,0]
+                message="Your grip is set. Now try fresh targets."
+            } else if quick ? successes == 3 : wingSuccesses.allSatisfy({ $0 >= 5 }) {
+                phase = .complete; message="Aiming is ready. Your swing mapping stays fixed during the match."
+            } else {
+                if quick { self=Self(); message="Let's refresh your swing calibration for this session." }
+                else {
+                    // Recalibrate only the stroke side that failed new-shot validation.
+                    let badWing=wingSuccesses[0] < 5 ? 0 : 1
+                    samples[badWing]=[:]; phase = .capture
+                    trials=[0,-1,1,0,-1,1].map { Trial(wing:badWing,lane:$0) }; index=0
+                    message="Let's tune the \(badWing == 0 ? "forehand" : "backhand") again."
+                }
+            }
+        }
+        return true
+    }
+}

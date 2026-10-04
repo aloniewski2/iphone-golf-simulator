@@ -13,7 +13,7 @@ namespace GolfArcade.PlayTests
     public class TennisReceiveCameraTests
     {
         [UnityTest, Timeout(180000)]
-        public IEnumerator ReceiverAndPointKeepElevatedGameplayCamera()
+        public IEnumerator ReceiverAndPointKeepShoulderGameplayCamera()
         {
             yield return SceneManager.LoadSceneAsync("Tennis"); yield return null;
             var game = Object.FindFirstObjectByType<TennisGame>();
@@ -42,8 +42,8 @@ namespace GolfArcade.PlayTests
                 }
                 Assert.That(game.Flow, Is.EqualTo(TennisGame.Phase.OpponentServe));
                 var cam = game.GameplayCamera;
-                if(!before) Assert.Greater(cam.transform.position.y, 5f);
-                if(!before) Assert.Less(cam.transform.position.z, game.Player.transform.position.z - 5);
+                if(!before) Assert.That(cam.transform.position.y - game.Player.transform.position.y, Is.InRange(2f, 2.5f));
+                if(!before) Assert.Less(cam.transform.position.z, game.Player.transform.position.z - 3.5f);
                 GameCapture.Save(dir + "/receiver-gameplay.png",1280,720);
                 var pos=cam.transform.position; var rot=cam.transform.rotation; float fov=cam.fieldOfView;
                 cam.transform.position=game.Player.transform.position + new Vector3(2.6f,1.4f,3);
@@ -54,22 +54,23 @@ namespace GolfArcade.PlayTests
                 for(int f=0; f<120; f++) {
                     game.Step(1f/60); yield return null;
                     Frame();
-                    if(!before) Assert.Greater(cam.transform.position.y,5f,"point result must not cut to character close-up");
-                    if(!before) Assert.Less(Vector3.Distance(cam.transform.position,pos),1f,"point result stays in the same gameplay view");
+                    if(!before) Assert.That(cam.transform.position.y-game.Player.transform.position.y,Is.InRange(2f,2.5f),"point result keeps the shoulder view");
+                    if(!before) Assert.That(cam.fieldOfView, Is.EqualTo(fov), "point result does not switch lenses");
+                    if(!before) Assert.Less(cam.transform.position.z,game.Player.transform.position.z-3.5f,"point result stays behind the player");
                 }
                 GameCapture.Save(dir + "/point-gameplay.png",1280,720);
-                // Serve preparation/toss retain their shoulder view; the rally returns to the midpoint POV.
+                // All point phases retain the same shoulder framing.
                 var flow = typeof(TennisGame).GetProperty("Flow");
                 var updateCamera = typeof(TennisGame).GetMethod("UpdateCamera", flags);
                 foreach (var phase in new[] { TennisGame.Phase.PlayerServeHold, TennisGame.Phase.PlayerServeToss }) {
                     flow.SetValue(game, phase);
                     updateCamera.Invoke(game, new object[] { true });
-                    Assert.That(cam.transform.position.y - game.Player.transform.position.y, Is.EqualTo(2.5f).Within(.1f));
-                    Assert.That(cam.fieldOfView, Is.EqualTo(52f).Within(.1f));
+                    Assert.That(cam.transform.position.y - game.Player.transform.position.y, Is.InRange(2f,2.5f));
+                    Assert.That(cam.fieldOfView, Is.InRange(60f,66f));
                 }
                 flow.SetValue(game, TennisGame.Phase.Rally);
                 updateCamera.Invoke(game, new object[] { true });
-                Assert.That(cam.transform.position.y, Is.EqualTo(5.8f).Within(.1f));
+                Assert.That(cam.transform.position.y-game.Player.transform.position.y, Is.InRange(2f,2.5f));
 
             }
             finally { Time.captureFramerate=oldRate; if(encoder!=null) { encoder.StandardInput.Close();encoder.WaitForExit(); Assert.That(encoder.ExitCode,Is.Zero);encoder.Dispose(); } }

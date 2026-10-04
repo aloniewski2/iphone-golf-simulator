@@ -1,0 +1,114 @@
+Ready t=0.108 left_knee=149.2deg
+Ready t=0.650 left_knee=132.4deg
+Ready t=1.192 left_knee=121.2deg
+Ready t=1.733 left_knee=99.0deg
+Serve t=0.178 left_knee=132.6deg
+Serve t=1.070 left_knee=123.0deg
+Serve t=1.962 left_knee=170.8deg
+Serve t=2.853 left_knee=148.3deg
+Forehand t=0.133 left_knee=153.0deg
+Forehand t=0.800 left_knee=109.6deg
+Forehand t=1.467 left_knee=172.0deg
+Forehand t=2.133 left_knee=128.2deg
+Backhand t=0.138 left_knee=132.5deg
+Backhand t=0.830 left_knee=113.1deg
+Backhand t=1.522 left_knee=124.1deg
+Backhand t=2.213 left_knee=117.9deg
+RunForward t=0.198 left_knee=151.1deg
+RunForward t=1.190 left_knee=174.0deg
+RunForward t=2.182 left_knee=130.0deg
+RunForward t=3.173 left_knee=165.6deg
+RunRight t=0.198 left_knee=157.5deg
+RunRight t=1.190 left_knee=162.7deg
+RunRight t=2.182 left_knee=172.9deg
+RunRight t=3.173 left_knee=173.4deg
+RunLeft t=0.198 left_knee=130.4deg
+RunLeft t=1.190 left_knee=101.2deg
+RunLeft t=2.182 left_knee=99.1deg
+RunLeft t=3.173 left_knee=121.0deg
+Volley t=0.095 left_knee=125.5deg
+Volley t=0.570 left_knee=118.7deg
+Volley t=1.045 left_knee=105.5deg
+Volley t=1.520 left_knee=116.3deg
+Smash t=0.173 left_knee=148.6deg
+Smash t=1.040 left_knee=136.2deg
+Smash t=1.907 left_knee=155.5deg
+Smash t=2.773 left_knee=148.3deg
+Head position=(-0.02, 1.22, 0.04) scale=(100.00, 100.00, 100.00)
+Hair_Default head-centroid=(0.00, 1.53, 0.08) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=7312 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Hair_Default_Free head-centroid=(-0.01, 1.54, 0.07) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=6535 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Body_Skin head-centroid=(-0.01, 1.37, 0.04) renderer=(0.00, 0.00, 0.00) rotation=(270.02, 0.00, 0.00) scale=(100.00, 100.00, 100.00) n=3637 bind=1.00000	0.00000	0.00000	0.00000
+0.00000	0.00000	1.00000	-0.01300
+0.00000	-1.00000	0.00000	0.00055
+0.00000	0.00000	0.00000	1.00000
+
+Hair=0 Headwear=0 visible_hair=1
+Hair=0 Headwear=1 visible_hair=1
+Hair=0 Headwear=2 visible_hair=1
+Hair=0 Headwear=3 visible_hair=1
+Hair=5 Headwear=0 visible_hair=1
+Hair=5 Headwear=1 visible_hair=1
+Hair=5 Headwear=2 visible_hair=1
+Hair=5 Headwear=3 visible_hair=1
+Hair=0 Headwear=0 visible_hair=1
+Hair=0 Headwear=1 visible_hair=1
+Hair=0 Headwear=2 visible_hair=1
+Hair=0 Headwear=3 visible_hair=1
+Hair=5 Headwear=0 visible_hair=1
+Hair=5 Headwear=1 visible_hair=1
+Hair=5 Headwear=2 visible_hair=1
+Hair=5 Headwear=3 visible_hair=1
+Hair=0 Headwear=0 visible_hair=1
+Hair=0 Headwear=1 visible_hair=1
+Hair=0 Headwear=2 visible_hair=1
+Hair=0 Headwear=3 visible_hair=1
+Hair=5 Headwear=0 visible_hair=1
+Hair=5 Headwear=1 visible_hair=1
+Hair=5 Headwear=2 visible_hair=1
+Hair=5 Headwear=3 visible_hair=1
+Hair=0 Headwear=0 visible_hair=1
+Hair=0 Headwear=1 visible_hair=1
+Hair=0 Headwear=2 visible_hair=1
+Hair=0 Headwear=3 visible_hair=1
+Hair=5 Headwear=0 visible_hair=1
+Hair=5 Headwear=1 visible_hair=1
+Hair=5 Headwear=2 visible_hair=1
+Hair=5 Headwear=3 visible_hair=1
+Female=False size=0 build_morph=True
+Female=False size=0.5 build_morph=True
+Female=False size=1 build_morph=True
+Female=True size=0 build_morph=True
+Female=True size=0.5 build_morph=True
+Female=True size=1 build_morph=True
+CORRECTIVE enabled=False knee_L=56.5 knee_R=20.3
+CORRECTIVE enabled=True knee_L=56.5 knee_R=20.3
+CORRECTIVE enabled=False knee_L=50.0 knee_R=6.3
+CORRECTIVE enabled=True knee_L=50.0 knee_R=6.3
+DIRECT_HAIR_SWAP aliases_and_LOD=PASS
+REPEAT_CUSTOMIZE calls=25 same_atlas=PASS materials=13 stable_material_count=PASS
+FULL_CLIP Female=False Ready samples=131 wrist_path=3.033m PASS
+FULL_CLIP Female=False Serve samples=216 wrist_path=5.310m PASS
+FULL_CLIP Female=False Forehand samples=161 wrist_path=5.594m PASS
+FULL_CLIP Female=False Backhand samples=168 wrist_path=5.548m PASS
+FULL_CLIP Female=False RunForward samples=240 wrist_path=7.255m PASS
+FULL_CLIP Female=False RunRight samples=240 wrist_path=6.322m PASS
+FULL_CLIP Female=False RunLeft samples=240 wrist_path=6.136m PASS
+FULL_CLIP Female=False Volley samples=116 wrist_path=2.828m PASS
+FULL_CLIP Female=False Smash samples=210 wrist_path=6.026m PASS
+FULL_CLIP Female=True Ready samples=131 wrist_path=3.033m PASS
+FULL_CLIP Female=True Serve samples=216 wrist_path=5.310m PASS
+FULL_CLIP Female=True Forehand samples=161 wrist_path=5.594m PASS
+FULL_CLIP Female=True Backhand samples=168 wrist_path=5.548m PASS
+FULL_CLIP Female=True RunForward samples=240 wrist_path=7.255m PASS
+FULL_CLIP Female=True RunRight samples=240 wrist_path=6.322m PASS
+FULL_CLIP Female=True RunLeft samples=240 wrist_path=6.136m PASS
+FULL_CLIP Female=True Volley samples=116 wrist_path=2.828m PASS
+FULL_CLIP Female=True Smash samples=210 wrist_path=6.026m PASS

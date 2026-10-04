@@ -40,7 +40,7 @@ namespace GolfArcade.Tennis
             Style = "club", Skill = 0,
             Reach = 2.0f, Speed = 4.4f, Reaction = .30f,
             Threshold = .25f, MissScale = .8f, UnforcedError = .07f,
-            Width = .05f, Depth = .15f, PaceMin = 14, PaceMax = 21, SpinMin = -.2f, SpinMax = .5f,
+            LobChance = .07f, Width = .05f, Depth = .15f, PaceMin = 18.5f, PaceMax = 23, SpinMin = -.2f, SpinMax = .5f,
             ServeSpeed = 26, SecondServeSpeed = 19, ServeAccuracy = .3f, ServeWide = .25f, FirstFault = .16f, SecondFault = .06f,
             ReturnReach = .2f, ReturnReaction = .3f,
         };
@@ -50,7 +50,7 @@ namespace GolfArcade.Tennis
             Style = "pro", Skill = 1,
             Reach = 2.3f, Speed = 5.3f, Reaction = .18f,
             Threshold = .5f, MissScale = .52f, UnforcedError = .006f,
-            Width = .85f, Depth = .85f, PaceMin = 20, PaceMax = 33, SpinMin = -.4f, SpinMax = .95f,
+            LobChance = .06f, Width = .85f, Depth = .85f, PaceMin = 20, PaceMax = 33, SpinMin = -.4f, SpinMax = .95f,
             WrongFoot = .3f, Hunt = .5f,
             ServeSpeed = 44, SecondServeSpeed = 30, ServeAccuracy = .9f, ServeWide = .4f, FirstFault = .06f, SecondFault = .01f,
             ReturnReach = .45f, ReturnReaction = .1f,

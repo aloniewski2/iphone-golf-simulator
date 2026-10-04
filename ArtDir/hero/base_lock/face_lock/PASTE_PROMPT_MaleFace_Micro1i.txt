@@ -1,0 +1,51 @@
+PASTE PROMPT — Male HeroBase Micro1i FACE REFORM (chin → ears → face shape)
+==========================================================================
+Copy everything below into Claude/Codex (Sonnet 5.5 max). Blender MCP OK if live.
+
+---
+
+You are reforming the MALE HeroBase FACE to match face_lock EXACTLY. Micro1h densified topology stays — do NOT densify again. This is NOT a chin-only patch.
+
+START BLEND (Micro1h — VERIFY SHA BEFORE EDIT):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 349d790e28147aedaf7aa6aa1b0879dc2856bf0d6ba7bb054552d1177bccfc12
+Run: shasum -a 256 ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+If hash differs, STOP and report.
+
+READ FIRST:
+1) GOAL_HeroBase_Micro1i_ChinEarAttach.md
+2) ArtDir/hero/base_lock/proof/MALE_HEAD_RESULTS.md
+3) ArtDir/hero/base_lock/face_lock/FACE_SPEC.md  ← every line binary
+4) ArtDir/hero/base_lock/face_lock/PROCESS_FaceMatch.md
+5) AGENTS.md + art-bible.md
+
+AUTHORITY (exact reference):
+ArtDir/hero/base_lock/face_lock/ (01–16 + sheets)
+ArtDir/hero/base_lock/male_head_detail.jpg
+ArtDir/hero/base_lock/male_body_bald.jpg
+ArtDir/hero/base_lock/male_multiangle_body.jpg
+REJECT: preview/face_example/
+
+SUCCESS = OVERALL_LIKENESS PASS on Unity captures (03_unity_m.png) at arm’s length vs face_lock. “Closer than Micro1h” without plate identity = FAIL. FAIL_WRONG_LIKENESS must clear.
+
+ORDER OF WORK:
+1) CHIN FIRST — reopen Micro1e lock. 3/4 plates 04+05 OVERRIDE lower-face width. Front+profile must still PASS. Fix the fucked chin.
+2) EARS — fair attach into skull (no glued seam); keep helix+concha; jaw→ear continuity.
+3) FACE SHAPE — malar/cheek lift, zygomatic width, smile corners + lip volume so Unity front/3q reads as the plate man (friendly soft-plastic, not flat artificial mask).
+Sculpt/fair existing dense Body_M. No sticker volume. No full remesh. No hair.
+
+ADNAN LOCKS:
+- TRI_BUDGET ~60k APPROVED (do not undensify face)
+- Keep LOOP_* / ear_attach; Face_M paint-only; future hair = separate mesh; skin = tint
+- Hands / below-neck / sil ≤5.0% bald front/back must not regress
+
+HARD GATES (any fail = GATE FAIL):
+OVERALL_LIKENESS, FAIL_WRONG_LIKENESS, CHIN_WIDTH_3Q, CHIN_FRONT_PROFILE, EAR_ATTACH, EAR_ANATOMY, CHEEK_*, MOUTH_SMILE / LIP_VOLUME, + all other FACE_SPEC lines, NO_STICKER_VOLUME, TOPO_DENSITY, MANDATORY_LOOPS, HANDS, BODY_BELOW_NECK, SIL_%, CUSTOMIZE_SOCKETS
+
+DELIVER: blend + FBX → Unity HeroBase_Male; refresh proof/02_match_m_head.png + 03_unity_m.png; MALE_HEAD_RESULTS.md + male-micro1i-checks.json
+
+REPLY ONLY:
+GATE: MALE_HEAD PASS
+or
+GATE: MALE_HEAD FAIL
+<failed lines only>

@@ -1,0 +1,68 @@
+PASTE — MATCH ANIM SET (one shot) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Author a full in-place tennis motion set for the existing hero. These YouTube clips are inspiration for timing and shape only. Do not download them into the repo, do not ship the footage, and do not retarget a ripped skeleton. Watch each link, write the phases, then key the hero.
+
+CLIPS (inspiration):
+- Movement, serves, returns, volleys, overheads: https://www.youtube.com/watch?v=DGIkkdxMrWc
+  groundstrokes 0:00, serves 4:22, returns 10:31, volleys and overheads 13:49
+- Forehand side leverage: https://www.youtube.com/watch?v=yAM1j_B6yQs (Alcaraz 0:24, Djokovic 1:03)
+- Forehand from behind the court: https://www.youtube.com/watch?v=HI0bvG0pw4w (Djokovic 0:16, Alcaraz 1:55)
+- Forehand and two-hand backhand, same session: https://www.youtube.com/watch?v=-Eu80hGbgVA
+  real-speed running: https://www.youtube.com/watch?v=bvVXmtHt0DM
+- Two-hand backhand: https://www.youtube.com/watch?v=0a_DL1I4q38
+- Serve shape: https://www.youtube.com/watch?v=s8BvHWqlodI and https://www.youtube.com/watch?v=rxo1uEdLouY
+- Wider court, feet, volley, overhead: https://www.youtube.com/watch?v=sH3iK7Wm5EY (volleys 6:36 and 8:50, serves 10:35)
+- Female proportions reference only, do not change the body: https://www.youtube.com/watch?v=vD0wO3tq6BM
+
+LOCKS
+- Use the current gameplay humanoid and the clips already in the project as the rig. Do not change bone lengths, mesh, weights, clothes, or racket mesh.
+- Racket stays parented to the racket hand socket. Fingers close on the grip for every swing. Two-hand backhand brings the off hand to the throat, then releases on the finish.
+- In-place. A step is a weight shift and a foot plant, not root motion across the court. Gameplay already moves the actor.
+- 30 fps. Each swing has a named contact time in seconds. Ready idle loops.
+- Do not change ball physics, reach, or scoring. Animation is visual.
+- Party read: poses must read from a behind-the-court camera. Big shoulder turn, clear contact, held finish. Not a tiny wrist flick.
+
+BUILD ALL OF THESE in work/match-anim-set/ as separate clips. One blend, one FBX each, plus a contact sheet.
+
+1. ReadyIdle. Split-step bounce, racket up in front, loop 2.0–2.4 s.
+2. SplitToForehand. From ready, land, outside foot pushes, racket unit turn. 0.6 s. No swing.
+3. SplitToBackhand. Mirror of 2. 0.6 s.
+4. RecoverCenter. After a hit, small steps back to ready. 0.8 s.
+5. Forehand. Semi-open. Unit turn, low-to-high, contact out front, finish over the shoulder. Contact ~40% of the clip. 1.2 s.
+6. ForehandOpen. Late ball. Stance stays open, more arm, less step. Same contact idea, shorter prep. 1.0 s.
+7. ForehandWide. Running reach. Last step is a plant, arm extends, contact later and wider than 5. 1.3 s.
+8. ForehandShort. Low ball near the feet. Bend the knees, compact swing, do not spike it. 1.0 s.
+9. Backhand. Two hands. Off hand joins before the forward swing. Contact out front, finish high. 1.2 s.
+10. BackhandWide. Same two hands, stretched. Off hand still on at contact. 1.3 s.
+11. SliceApproach. One-hand slice, racket face slightly closed, step through toward the net, then the clip ends in a split. 1.2 s.
+12. Serve. Toss hand up, trophy, contact at full reach, land on the front foot, racket down the opposite side. Contact named. 1.6 s.
+13. Return. Compact, split already landed, short backswing, contact out front. Deuce side. 0.9 s.
+14. VolleyForehand and VolleyBackhand. Punch, almost no backswing, step through, racket face open. 0.7 s each.
+15. Overhead. Pointing arm tracks up, racket in an L, scissor step if the ball is behind, contact high, finish down. 1.2 s.
+
+Do not blend these into one montage. Each clip starts and ends on a pose that can blend to ReadyIdle in under 0.16 s.
+
+PROOFS
+- work/match-anim-set/proof/ contact sheet: ready, each swing at contact, each finish, from behind the court and from the side.
+- checks.json: clip name, length, contact time, loop or not, racket parent, body mesh untouched.
+- One 10 s review mp4, clips in the order above, behind-the-court camera.
+
+GATES
+ALL_CLIPS — the 15 names exist
+CONTACT_NAMED — every hit clip has a contact time
+IN_PLACE — no root translation across court
+RACKET_HELD — grip closed, two-hand backhands use the off hand at contact
+READS_FROM_BEHIND — contact sheet includes the match camera
+READY_LOOP
+BODY_UNCHANGED
+NO_FOOTAGE_IN_REPO
+
+FORBIDDEN: downloading the YouTube files into the repo, retargeting a ripped pro skeleton, editing the hero mesh, root-motion running, one-hand backhand as the default backhand.
+
+REPLY ONLY:
+GATE: MATCH_ANIM_SET PASS
+or FAIL with failed lines only.

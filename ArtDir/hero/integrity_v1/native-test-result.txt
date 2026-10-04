@@ -1,0 +1,16 @@
+Test Suite 'TennisMenuSnapshotTests' passed at 2026-09-29 20:03:51.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 4.876 (4.880) seconds
+Test Suite 'GolfArcadeTests.xctest' passed at 2026-09-29 20:03:51.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 4.876 (4.881) seconds
+Test Suite 'Selected tests' passed at 2026-09-29 20:03:51.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 4.876 (4.881) seconds
+2026-09-29 20:03:51.764 xcodebuild[13741:2367534] [MT] IDETestOperationsObserverDebug: 13.315 elapsed -- Testing started completed.
+2026-09-29 20:03:51.764 xcodebuild[13741:2367534] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-29 20:03:51.764 xcodebuild[13741:2367534] [MT] IDETestOperationsObserverDebug: 13.315 sec, +13.315 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/motion-club-build/Logs/Test/Test-GolfArcade-2026.09.29_20-03-31--0400.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started

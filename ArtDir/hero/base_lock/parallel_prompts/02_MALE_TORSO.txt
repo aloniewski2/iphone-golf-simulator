@@ -1,0 +1,30 @@
+PASTE — CHAT 2 / 8 — MALE TORSO ONLY
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY — violate = STOP):
+- You own ONLY the vertex ZONE named below. Any vert outside your zone: DO NOT MOVE (bit-identical vs start SHA).
+- Work ONLY under work/<your-folder>/ . Never edit another chat's work/.
+- Do NOT overwrite ArtDir blend/FBX until your zone audit proves 0 verts moved outside zone.
+- Unity: write captures to Library/Captures is OK; only touch YOUR prefab import path listed below; never run a full HeroBase import that other chats are writing in the same minute — prefer export to work/<folder>/export/ then copy to ArtDir ONLY at end if zone audit PASS.
+- Do NOT delete/rename LOOP_* groups you do not own. Do NOT open female blend.
+- If start SHA mismatches, STOP.
+
+YOUR ZONE: torso only — chest, abs, back, waist, pelvis shell. EXCLUDE: head/neck (z>=1.40), arms (beyond shoulder ball), hands, legs below crotch, feet.
+Hard audit: 0 verts moved in head/neck/hands/legs/feet.
+
+START BLEND SHA: 68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf
+Path: ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+Verify shasum before edit. If chat 1 already updated ArtDir SHA, RE-READ current SHA and use THAT as start — still 0 head verts.
+
+AUTHORITY: male_body_bald.jpg, male_multiangle_body.jpg, male_body_plain.jpg (torso)
+READ: AGENTS.md, art-bible.md, proof/MALE_FORM_RESULTS.md if present
+
+WORK: work/male-parallel-torso/
+STAGING export only until audit PASS.
+
+SCOPE: soft-plastic athletic torso closer to plates — shoulders/chest/waist silhouette, no clothes mesh, no head/hands/legs edits.
+Silhouette bald front/back still ≤5.0% if you affect outline; report numbers.
+DELIVER: torso proof sheet under proof/ or work/.../proof; checks json outside-zone=0
+REPLY: GATE: MALE_TORSO PASS|FAIL

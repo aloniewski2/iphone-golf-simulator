@@ -1,0 +1,32 @@
+{
+  "01_ready": {
+    "frames": 60,
+    "finite": true,
+    "max_joint_step_degrees": 2.341788719667831,
+    "quaternion_norm_max_error": 1.0000078543015434e-10
+  },
+  "02_forehand": {
+    "frames": 60,
+    "finite": true,
+    "max_joint_step_degrees": 27.352322990468224,
+    "quaternion_norm_max_error": 1.0000078543015434e-10
+  },
+  "03_backhand": {
+    "frames": 60,
+    "finite": true,
+    "max_joint_step_degrees": 32.48223769606522,
+    "quaternion_norm_max_error": 1.0000078543015434e-10
+  },
+  "04_serve": {
+    "frames": 60,
+    "finite": true,
+    "max_joint_step_degrees": 30.100775205096106,
+    "quaternion_norm_max_error": 1.0000078543015434e-10
+  },
+  "05_volley": {
+    "frames": 60,
+    "finite": true,
+    "max_joint_step_degrees": 30.402850546755555,
+    "quaternion_norm_max_error": 1.000008964524568e-10
+  }
+}

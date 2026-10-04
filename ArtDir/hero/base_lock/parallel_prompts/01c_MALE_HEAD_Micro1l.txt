@@ -1,0 +1,80 @@
+PASTE — MALE HEAD Micro1l (jaw define + cheek de-fat) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye (Oct 2): male face still a bit lacking vs female (female almost perfect). Shared issue: **jaw too soft / undefined all around**. Male-specific: **cheekbones too fatty / padded**. Soft-plastic party style. Do NOT chase full face redesign, ears, eyes, mouth paint, or body.
+
+START (verify SHA before any edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba
+(re-verify: shasum -a 256 … — if different, rebase head-zone delta onto current ArtDir; never whole-file clobber torso/arms/hands/legs/nape/pelvis installs)
+Face_M paint mesh: prefer **0 move** unless a tiny seam align is required and disclosed.
+
+READ FIRST (mandatory):
+1) ArtDir/hero/base_lock/proof/male_head_micro1k_plate_vs_now.png
+2) ArtDir/hero/base_lock/proof/male_now_vs_ref/SHEET_head_ref_vs_now_v2.png
+3) ArtDir/hero/base_lock/proof/02_match_m_head.png
+4) work/male-micro1k-head/proof/MALE_HEAD_RESULTS.md (keep Micro1k wins: no neck jaw crease, real mandible on jaw not neck)
+5) face_lock/ plates + FACE_SPEC (male) — authority for jaw + cheek
+6) AGENTS.md + art-bible.md
+
+WHY STILL FAILS:
+1) Jaw reads soft / undefined in front, 3/4, and profile — need a **continuous soft-plastic mandible edge all around** (chin → body → gonial → soft ramus fade), readable at game distance without knife crease or Micro1j neck groove.
+2) Cheeks still too fatty / puffy vs plate — soften malar pad so cheekbones read cleaner (not blank, not shredded).
+
+KEEP FROM Micro1k (do not regress):
+- KILL_NECK_JAW_CREASE — no dark groove on neck under jaw
+- Mandible crest ON the jaw (not on neck plane / stubble tone edge)
+- Adams apple / throat work
+- Face_M bit-identical preferred; LOOP mouth/nose/eye/ear ≤ tiny documented drift
+- SIL bald front/back ≤ 5%
+- Positions-only preferred; no densify unless disclosed
+
+PARALLEL SAFETY:
+- Work ONLY under work/male-micro1l-head/
+- HEAD ZONE only: roughly z ≥ 1.40 (jaw/cheek/chin). Document exact mask. Prefer 0 move on arms/hands/torso/legs/feet. Nape/pelvis chat already installed — do NOT reopen those zones unless a ≤2 mm border blend is required and disclosed.
+- Stage then ArtDir install only after zone audits PASS + Adnan-ready proofs.
+
+════════════════════════════════════
+SCOPE — Micro1l
+════════════════════════════════════
+
+1) JAW_DEFINE_ALL_AROUND — PRIMARY
+   - Clear soft-plastic jaw edge continuous from chin midline → both sides → gonial angles → soft fade up ramus toward ear (not a neck crease).
+   - Front: readable jaw corners / width vs plate (not melted into neck).
+   - 3/4 + profile: mandible silhouette closer to plate; under-jaw plane cleaner without a tube neck.
+   - Soft-plastic only — crest height modest (target peak ~2–4 mm class, not razor), fair into cheek and chin.
+   - Mandatory proof: plate | Micro1k | Micro1l front + 3/4 + profile + 3/4-back jaw crops (soft + clay if available).
+
+2) CHEEK_DEFAT — SECONDARY (male-specific)
+   - Reduce fatty/puffy malar pad toward plate (cleaner cheekbone read).
+   - Keep some soft-plastic cheek volume — not a hollow fashion face, not Micro1j over-ridge.
+   - Stay clear of mouth / nose / eye / ear loops (smooth falloff weights).
+   - Mandatory proof: plate | before | after 3/4 cheek crops.
+
+FORBIDDEN:
+- Recreating Micro1j neck jaw crease / recessed border under the mandible
+- Shredded / hyperreal anatomy
+- Face_M sticker redesign, stubble bake, pores, hair
+- Whole-file ArtDir clobber; densify without note
+
+HARD GATES:
+ZONE_OUTSIDE=0 (document nape-border if any ≤2 mm)
+TOPOLOGY_IDENTICAL preferred
+SIL bald front/back ≤ 5.0%
+KILL_NECK_JAW_CREASE hold PASS
+JAW_DEFINE_EYE — Adnan-eye: defined mandible all around vs plate BA (FAIL if still soft/melted)
+CHEEK_DEFAT_EYE — Adnan-eye: less fatty than Micro1k; closer to plate (FAIL if still puffy pads)
+NO_SELF_INTERSECT / no NaN / Face_M paint-only hold
+NO densify unless disclosed
+
+DELIVER:
+- work/male-micro1l-head/MALE_HEAD_RESULTS.md
+- proof/: plate|1k|1l jaw+cheek BA sheets, checks.json, optional Unity refresh
+- Stage blend/FBX; ArtDir install only after SHA guard + audits; append INSTALL_LOG_MALE.md if installing
+
+REPLY ONLY:
+GATE: MALE_HEAD_Micro1l PASS
+or FAIL with failed lines only.

@@ -1,0 +1,45 @@
+PASTE — MALE SKIN MATCH FEMALE VIBRANCY · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye (Oct 2): female looks **much more vibrant / better skin**; male still looks **super dull** — even after chat-9 SKIN_LIVELINESS claimed PASS. Fix male to **match female liveliness** under the same studio light. Must still work for **all 6 SkinTones**. Soft-plastic, not photoreal SSS porn.
+
+START / READ:
+1) work/male-nape-pelvis-skin/SKIN_LIVELINESS_RESULTS.md — what 09 already changed + honest Lit-only limits
+2) ArtDir/hero/base_lock/parallel_prompts/SKIN_LIVELINESS_BRIEF.md
+3) Side-by-side Unity: female MicroF1 face captures vs male form_d / skin proof (same key lights if possible)
+4) GolferStyle.SkinTones[], Male_*_Skin.mat, Female Skin_F / Female_Form_Skin.mat, build_albedo.py
+5) Female albedo still has cheek blush path; male was rebuilt neutral+relative flush but **mesh may lack UVs** so flush never samples — diagnose and fix so male gets the same class of life female has.
+
+DO THIS (priority order):
+1) **Prove the gap** — measure skinish HSV on matched male vs female Unity crops (Fair/Tan/Deep). Document why female reads livelier (blush atlas? warmer materials? lighting exposure? shadow chroma?).
+2) **Close the gap without breaking tones**:
+   - If male Body has no UVs: add/copy a clean UV set OR drive life without atlas (material response / warm shadow path) so default bald body is not flat grey-peach.
+   - Match female soft-plastic response: Smoothness, any warm wrap/subsurface/rim that **multiplies with BaseColor** (not add fixed peach). Prefer bringing male onto the same material family female uses if that is why she wins.
+   - Relative cheek/ear flush must actually show on the male head path Adnan sees (Face_M / Body_M / whichever is on camera).
+   - Do not re-mute Fair into chalk or push Deep into cartoon orange.
+3) Proof sheet: female | male before | male after for Fair / Tan / Deep under identical lighting.
+
+FORBIDDEN:
+- Baking one lively peach into albedo as “the” skin
+- Stubble / pores / hyperreal SSS
+- Mesh sculpt (this chat = materials/textures/shaders/palette only)
+- Breaking GolferStyle customization
+
+HARD GATES:
+SKIN_MALE_MATCHES_FEMALE_ENERGY — Adnan-eye: male no longer dull next to female on Tan (and Fair/Deep still alive)
+SKIN_ALL_TONES hold
+SKIN_NO_BAKED_PEACH hold
+SKIN_SOFT_PLASTIC hold
+Honest notes if Lit-only still can't match plate shadow chroma — propose the smallest shader follow-up
+
+DELIVER:
+- work/male-skin-match-female/SKIN_MATCH_RESULTS.md
+- proof/: female_vs_male_Fair_Tan_Deep_before_after.png
+- Updated mats/scripts/atlas as needed; no ArtDir mesh install
+
+REPLY ONLY:
+GATE: MALE_SKIN_MATCH_FEMALE PASS
+or FAIL with failed lines only.

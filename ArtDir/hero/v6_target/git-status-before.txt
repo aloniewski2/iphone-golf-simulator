@@ -1,0 +1,118 @@
+ M ArtDir/hero/v5/Hero_01_V5.blend
+ M ArtDir/review/post-match/map-phone.png
+ M ArtDir/review/post-match/map-tv.png
+ M ArtDir/review/post-match/phone-finish-actions.png
+ M ArtDir/review/post-match/rep-phone-final.png
+ M ArtDir/review/post-match/rep-tv-00.png
+ M ArtDir/review/post-match/rep-tv-01.png
+ M ArtDir/review/post-match/rep-tv-02.png
+ M ArtDir/review/post-match/rep-tv-03.png
+ M ArtDir/review/post-match/rep-tv-04.png
+ M ArtDir/review/post-match/rep-tv-05.png
+ M ArtDir/review/post-match/rep-tv-06.png
+ M ArtDir/review/post-match/rep-tv-07.png
+ M ArtDir/review/post-match/rep-tv-08.png
+ M ArtDir/review/post-match/rep-tv-09.png
+ M ArtDir/review/post-match/rep-tv-10.png
+ M ArtDir/review/post-match/rep-tv-11.png
+ M ArtDir/review/post-match/rep-tv-12.png
+ M ArtDir/review/post-match/rep-tv-13.png
+ M ArtDir/review/post-match/rep-tv-final.png
+ M ArtDir/score80/lineup/00_player.png
+ M ArtDir/score80/lineup/01_Milo.png
+ M ArtDir/score80/lineup/02_Tama.png
+ M ArtDir/score80/lineup/03_Suki.png
+ M ArtDir/score80/lineup/04_Dex.png
+ M ArtDir/score80/lineup/05_Lina.png
+ M ArtDir/score80/lineup/06_Bruno.png
+ M ArtDir/score80/lineup/07_Rosa.png
+ M ArtDir/score80/lineup/08_Jax.png
+ M ArtDir/score80/lineup/09_Nadia.png
+ M ArtDir/score80/lineup/10_Viktor.png
+ M ArtDir/score80/lineup/11_standard_rival.png
+ M ArtDir/screenshots/venues/skyscraper_1_gameplay.png
+ M ArtDir/screenshots/venues/skyscraper_2_postcard.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone0.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone1.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone2.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone3.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone4.png
+ M ArtDir/screenshots/venues/skyscraper_3_drone5.png
+ M ArtDir/screenshots/venues/skyscraper_4_side.png
+ M ArtDir/screenshots/venues/skyscraper_5_below.png
+ M ArtDir/screenshots/venues/skyscraper_6_edge.png
+ M GolfArcade.xcodeproj/project.pbxproj
+ M GolfArcade/Unity/ArcadeScreens.swift
+ M GolfArcade/Unity/CharacterAssets/HeroMenu.json
+ M GolfArcade/Unity/CharacterModelPreview.swift
+ M GolfArcade/Unity/ClubDesign.swift
+ M GolfArcade/Unity/ClubScreens.swift
+ M GolfArcade/Unity/SportsDisplays.swift
+ M GolfArcade/Unity/SportsHome.swift
+ M GolfArcade/Unity/SportsInfo.plist
+ M GolfArcade/Unity/SportsSession.swift
+ M GolfArcade/Unity/TennisMenu.swift
+ M GolfArcade/Unity/TennisMenuViews.swift
+ M GolfArcade/Unity/TennisPlayViews.swift
+ M GolfArcadeTests/TennisCampaignTests.swift
+ M GolfArcadeTests/TennisMenuSnapshotTests.swift
+ M GolfArcadeUnity.xcodeproj/project.pbxproj
+ M Unity/Assets/Editor/HeroLockerExport.cs
+ M Unity/Assets/Plugins/iOS/SportsUnityAppController.mm
+ M Unity/Assets/Scripts/Game/NativeSportsSession.cs
+ M Unity/Assets/Scripts/Tennis/HeroKit.cs
+ M Unity/Assets/Scripts/Tennis/TennisCustomization.cs
+ M Unity/Assets/Scripts/Tennis/TennisGame.cs
+ M Unity/Assets/Scripts/Tennis/TennisHud.cs
+ M Unity/Assets/Scripts/Tennis/TennisVenue.cs
+ M Unity/Assets/Scripts/Tennis/TennisVenueBuilder.cs
+?? ArtDir/environments/
+?? ArtDir/hero/integrity_v1/
+?? ArtDir/hero/v5/RESTORE_V5.md
+?? ArtDir/hero/v5/restore-lounge.log
+?? ArtDir/hero/v5/restore-menu.log
+?? ArtDir/hero/v5/restore-v5-hashes.json
+?? ArtDir/hero/v5/viewer/
+?? ArtDir/hero/v5_astra/
+?? ArtDir/hero/v6_polish/
+?? ArtDir/hero/v6_target/
+?? ArtDir/review/point-clips/
+?? ArtDir/review/unimate-tennis/
+?? ArtDir/ui/motion-club-gameplay-hud-v1/
+?? ArtDir/ui/motion-club-radial-v1/
+?? ArtDir/ui/motion-club-resort-v1/
+?? GolfArcade/Unity/CharacterAssets/HeroLounge.lzfse
+?? GolfArcade/Unity/ClubEnvironmentView.swift
+?? GolfArcade/Unity/ClubEnvironments/
+?? GolfArcade/Unity/MenuArt/club-entrance.png
+?? GolfArcade/Unity/MenuArt/club-loading.png
+?? GolfArcade/Unity/MenuArt/club-locker.png
+?? GolfArcade/Unity/MenuArt/club-terrace.png
+?? GolfArcade/Unity/MotionClubMenus.swift
+?? GolfArcade/Unity/PointClips.swift
+?? GolfArcadeTests/ClubEnvironmentTests.swift
+?? GolfArcadeTests/MotionClubReviewTests.swift
+?? GolfArcadeTests/PointClipsTests.swift
+?? PLAN_HeroV5_AstraTextureSidePass.md
+?? PLAN_HeroV6_ZeroDeficiency.md
+?? Tools/
+?? Unity/Assets/ArtDirection/Hero01/Materials/Hero_NeckSkin.mat
+?? Unity/Assets/ArtDirection/Hero01/Materials/Hero_NeckSkin.mat.meta
+?? Unity/Assets/ArtDirection/HeroV5AstraTex.meta
+?? Unity/Assets/ArtDirection/HeroV5AstraTex/
+?? Unity/Assets/Editor/HeroIntegrityAudit.cs
+?? Unity/Assets/Editor/HeroIntegrityAudit.cs.meta
+?? Unity/Assets/Editor/HeroIntegrityReview.cs
+?? Unity/Assets/Editor/HeroIntegrityReview.cs.meta
+?? Unity/Assets/Editor/PointClipAudioProbe.cs
+?? Unity/Assets/Editor/PointClipAudioProbe.cs.meta
+?? Unity/Assets/Editor/RallyPopHudCapture.cs
+?? Unity/Assets/Editor/RallyPopHudCapture.cs.meta
+?? Unity/Assets/Plugins/iOS/SportsPointCapture.mm
+?? Unity/Assets/Plugins/iOS/SportsPointCapture.mm.meta
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.h
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.h.meta
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.mm
+?? Unity/Assets/Plugins/iOS/SportsPointRecorder.mm.meta
+?? Unity/Assets/Scripts/Game/PointClipAudioTap.cs
+?? Unity/Assets/Scripts/Game/PointClipAudioTap.cs.meta

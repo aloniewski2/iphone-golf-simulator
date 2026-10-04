@@ -1,0 +1,30 @@
+PASTE — MALE ARMS+HANDS FORM (hands primary) · NEW CHAT · Sonnet 5.5 max
+======================================================================
+Copy below.
+
+---
+
+Adnan: fix arms+hands together, **focus on hands**. Thumb still fucked (stubby pill); fingers are sausages. Palm OK. Arms can get light soft-plastic mass but hands are the hard gate.
+
+START BLEND (verify SHA):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 72fc6465f0623a3c963ca3af58a5358c0a498265c7b9da059a941b58050c1059
+If mismatch STOP/report — re-read current SHA; zone still arms+hands only.
+
+READ: work/male-parallel-arms/proof/01k_arms_hands_m.png, hand_base_zoom_sheet.png, data/male-arms-hands-checks.json; proof/01f_hands_m.png / 01h_hand_form_m.png if present; AGENTS.md + art-bible.md
+AUTHORITY: male_body_bald.jpg + male_multiangle_body.jpg (arms/hands)
+
+ZONE: L+R arms deltoid→fingertips (same spirit as chat3: |x| arm components; 0 head/torso core/legs). Work: work/male-arms-hands-form2/
+Budget: ≥70% effort on hands; arms secondary polish only.
+
+PRIMARY (must PASS):
+1) THUMB_ANATOMY — thenar/web + real phalanges + tip pad; not glued pill; plate match front/side/palm
+2) FINGER_TAPER — knuckle hint + pad tips; kill sausage equal-width
+3) No skinny spike thumbs; mirror L/R; soft-plastic party style
+
+SECONDARY (nice, not blocker unless worse):
+4) Light deltoid/forearm taper so arms aren’t pure tubes — do not thrash shoulder ball into torso
+
+GATES: THUMB_ANATOMY, FINGER_TAPER, ZONE_OUTSIDE=0, NO_SELF_INTERSECT, SIL≤5% if affected
+DELIVER: MALE_ARMS_HANDS_FORM_RESULTS.md + hand close-ups vs plate + arm sheet + checks.json; ArtDir install only after SHA guard
+REPLY ONLY: GATE: MALE_ARMS_HANDS_FORM PASS|FAIL + failed lines

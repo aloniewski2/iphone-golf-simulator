@@ -90,6 +90,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     private var tvHeading: Double?
     /// Each player's habitual face angle per wing (forehand, backhand), learnt as they play.
     private var faceNeutral = [0.0, 0.0]
+    private var aimProfile: TennisAimProfile?
+    private var aimHistory = [(time:Double,angle:Double,wing:Int)]()
     private var faceAim = 0.0
     /// Distance to the TV from the depth sensor while the axis is being captured.
     private var tvDistance: Double?
@@ -114,6 +116,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     @MainActor var onProblem: ((String) -> Void)?
     @MainActor var onGate: ((SportsAxisGate) -> Void)?
     @MainActor var onStatus: ((SportsMotionStatus) -> Void)?
+    @MainActor var onAimSwing: ((TennisAimSwing) -> Void)?
     @MainActor weak var preview: SportsPreviewView?
 
     override init() {
@@ -218,6 +221,9 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
 
     /// Where samples go and whether they flow: `live` while a motion-controlled session is
     /// playing (not paused). `swingBase` continues the swing count after touch play.
+    func setAimProfile(_ profile: TennisAimProfile?) {
+        queue.sync { aimProfile=profile?.valid == true ? profile : nil; aimHistory.removeAll(); faceAim=0 }
+    }
     func setOutput(token: Int32, live: Bool, swingBase: Int) {
         queue.async { self.token=token; self.live=live; self.swings=max(self.swings,swingBase) }
     }
@@ -375,27 +381,37 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
             else { strokeFacing=SportsMotionGeometry.strokeFacing(screenNormal:screenNormal,courtForward:courtForward,previous:strokeFacing) }
         }
         if previousPhase != .swinging && filter.phase == .swinging { activeStrokeFacing=strokeFacing }
-        // Racket-face aim, read live through the whole swing so the game samples the face at
-        // the moment of contact (it used to be frozen when the stroke was confirmed, mid-swing).
-        // A face pointing straight up or down (phone held flat) has no direction: aim straight.
+        // Use the same short filtered racket-face window for practice and live shots.
+        // Profiles stay fixed throughout a match; follow-through cannot re-learn "straight".
         let swinging = filter.phase == .swinging || swing != nil
-        if swinging, tennis, tvHeading != nil, screenHeading == nil { faceAim=0 }
-        if swinging, tennis, let tv=tvHeading, let screen=screenHeading {
-            let wing = activeStrokeFacing >= 0 ? 0 : 1
-            let angle=SportsMotionGeometry.faceAngle(screenHeading:screen,tvHeading:tv,facing:activeStrokeFacing)
-            faceAim=SportsMotionGeometry.aim(faceAngle:angle,neutral:faceNeutral[wing])
-            if swing != nil {
-                // "Straight" is learned once per stroke, and only from nearly-straight ones.
-                faceNeutral[wing]=SportsMotionGeometry.learnNeutral(faceNeutral[wing],faceAngle:angle)
-                SportsDiagnostics.write(String(format:"face aim=%.2f angle=%.1f neutral=%.1f wing=%d",faceAim,angle,faceNeutral[wing],wing))
-            }
+        let facing = swinging ? activeStrokeFacing : strokeFacing
+        let wing = facing >= 0 ? 0 : 1
+        if tennis, let tv=tvHeading, let screen=screenHeading {
+            let angle=SportsMotionGeometry.faceAngle(screenHeading:screen,tvHeading:tv,facing:facing)
+            aimHistory.append((time,angle,wing))
+        }
+        aimHistory.removeAll { time-$0.time > 0.06 }
+        if aimHistory.count > 8 { aimHistory.removeFirst(aimHistory.count-8) }
+        let recent=aimHistory.filter { $0.wing == wing }
+        var filteredAngle:Double?
+        if let latest=recent.last {
+            let offsets=recent.map { TennisAimWing.relative($0.angle,to:latest.angle) }.sorted()
+            let angle=latest.angle+offsets[offsets.count/2]
+            filteredAngle=angle
+            faceAim=(aimProfile ?? TennisAimProfile(forehand:.standard,backhand:.standard)).aim(angle:angle,facing:facing)
         }
         if let swing { NSLog("[SportsMotion] tennis stroke power=%.2f",swing) }
         recordTrace(time:time,rate:speed,force:force,swing:swing)
         let valid = tennis ? calibrated : current != .lost && calibrated
         // Straight to Unity, from this queue: no hop through the main thread.
         if live {
-            if let swing { lastPower=swing; swings+=1 }
+            if let swing {
+                lastPower=swing; swings+=1
+                if let angle=filteredAngle {
+                    let aimSwing=TennisAimSwing(time:time,angle:angle,facing:activeStrokeFacing)
+                    Task { @MainActor [weak self] in self?.onAimSwing?(aimSwing) }
+                }
+            }
             var flags:Int32 = valid ? Int32(SportsSampleValid) : 0
             if current != .good { flags |= Int32(SportsSampleDegraded) }
             let handSide = tracked ? Float(x-neutralX-filter.target*filter.travel) : 0
@@ -435,7 +451,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     private func captureTVHeading() {
         guard let attitude else { tvHeading=nil; return }
         tvHeading=SportsMotionGeometry.heading(SportsMotionGeometry.rotate(SIMD3<Double>(0,0,-1),by:attitude))
-        faceNeutral=[0,0]; faceAim=0
+        faceNeutral=[0,0]; faceAim=0; aimHistory.removeAll()
     }
 
     /// Median LiDAR depth over the middle of the frame: the distance to whatever the lens is

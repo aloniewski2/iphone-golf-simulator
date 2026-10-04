@@ -1,0 +1,1633 @@
+{
+  "version": "5.2.2 LTS",
+  "python": "3.13.13 (main, Apr 25 2025, 12:39:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+  "objects": [
+    {
+      "name": "Back",
+      "type": "EMPTY",
+      "hidden": false,
+      "location": [
+        0.0,
+        -0.13000011444091797,
+        -0.0950000062584877
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Body_EyeSphere_L",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.054737940430641174,
+        0.037332065403461456,
+        0.07580649852752686
+      ],
+      "materials": [
+        "Hero_01_EyeCornea",
+        "Hero_01_Catchlight"
+      ],
+      "vertices": 942,
+      "modifiers": [
+        [
+          "Provisional rest skin",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Body_EyeSphere_R",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.054737940430641174,
+        0.039037756621837616,
+        0.07580649852752686
+      ],
+      "materials": [
+        "Hero_01_EyeCornea",
+        "Hero_01_Catchlight"
+      ],
+      "vertices": 942,
+      "modifiers": [
+        [
+          "Provisional rest skin",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Body_Skin",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        1.083606243133545,
+        0.39212244749069214,
+        1.3724020719528198
+      ],
+      "materials": [
+        "skin_MatteCloth",
+        "skin_WarmSkin",
+        "skin_BlondHair",
+        "skin_CoveredFoundation"
+      ],
+      "vertices": 19539,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ],
+        [
+          "Default outfit coverage",
+          "MASK"
+        ]
+      ]
+    },
+    {
+      "name": "FaceExtra",
+      "type": "EMPTY",
+      "hidden": false,
+      "location": [
+        0.0,
+        -0.21500003337860107,
+        0.20500001311302185
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Fill",
+      "type": "LIGHT",
+      "hidden": false,
+      "location": [
+        3.0,
+        -2.0,
+        3.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Hair_Bald",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0010000000474974513,
+        0.000999998301267624,
+        0.0
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 3,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_BandFill",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.44685491919517517,
+        0.5123735666275024,
+        0.21111738681793213
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 504,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_BandFill_Bob",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.45332223176956177,
+        0.5537723898887634,
+        0.21111738681793213
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 504,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_BandFill_Curly",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.43837180733680725,
+        0.4834551215171814,
+        0.21111738681793213
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 504,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_BandFill_Long",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.46409717202186584,
+        0.5284854769706726,
+        0.21111738681793213
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 504,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_BandFill_Ponytail",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.4164149761199951,
+        0.5740753412246704,
+        0.21111738681793213
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 504,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Bob",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.48412567377090454,
+        0.5184810161590576,
+        0.6115872859954834
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11849,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Bob_Free",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.48412567377090454,
+        0.5184810161590576,
+        0.6115872859954834
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11849,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Buzz",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.35741087794303894,
+        0.37875211238861084,
+        0.3051114082336426
+      ],
+      "materials": [
+        "Hero_01_HairTuft_Buzz"
+      ],
+      "vertices": 1790,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Curly",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.4561004042625427,
+        0.4975685477256775,
+        0.45951640605926514
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 10298,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Curly_Free",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.46253079175949097,
+        0.4975685477256775,
+        0.45951640605926514
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 10298,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Default",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.5357493162155151,
+        0.5549960136413574,
+        0.519270658493042
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11010,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Default_Free",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.5357493162155151,
+        0.5585184097290039,
+        0.519270658493042
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11010,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Long",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.5841439366340637,
+        0.5098801255226135,
+        0.7353535890579224
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11691,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Long_Free",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.5841439366340637,
+        0.5098801255226135,
+        0.7353535890579224
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11691,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Ponytail",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.43169859051704407,
+        0.6856448650360107,
+        0.7194689512252808
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11154,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Ponytail_Free",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.4372050166130066,
+        0.6873533725738525,
+        0.7194689512252808
+      ],
+      "materials": [
+        "Hero_01_HairTuft"
+      ],
+      "vertices": 11154,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hair_Waves",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.35741087794303894,
+        0.3802517354488373,
+        0.3066112995147705
+      ],
+      "materials": [
+        "Hero_01_HairTuft_Waves"
+      ],
+      "vertices": 1790,
+      "modifiers": [
+        [
+          "Armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hand_L",
+      "type": "EMPTY",
+      "hidden": false,
+      "location": [
+        0.016192644834518433,
+        -0.03883283585309982,
+        -0.0626881793141365
+      ],
+      "scale": [
+        0.9999999403953552,
+        1.0,
+        0.9999999403953552
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Hand_R",
+      "type": "EMPTY",
+      "hidden": false,
+      "location": [
+        -0.016192644834518433,
+        -0.03883283585309982,
+        -0.0626881793141365
+      ],
+      "scale": [
+        0.9999999403953552,
+        1.0,
+        0.9999999403953552
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Hat",
+      "type": "EMPTY",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.06299996376037598,
+        0.054999999701976776
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Hat_Visor",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.4282945394515991,
+        0.5786915421485901,
+        0.1931905746459961
+      ],
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_Visor"
+      ],
+      "vertices": 1706,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Hero_01_Rig",
+      "type": "ARMATURE",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.9851675629615784,
+        0.2615565359592438,
+        1.6200000047683716
+      ],
+      "bones": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tail": [
+            0.0,
+            0.0,
+            0.11999999731779099
+          ],
+          "deform": true
+        },
+        {
+          "name": "Hips",
+          "parent": "Root",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            0.7300000190734863
+          ],
+          "tail": [
+            0.0,
+            0.054999999701976776,
+            0.8700000047683716
+          ],
+          "deform": true
+        },
+        {
+          "name": "Spine",
+          "parent": "Hips",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            0.8700000047683716
+          ],
+          "tail": [
+            0.0,
+            0.054999999701976776,
+            1.0299999713897705
+          ],
+          "deform": true
+        },
+        {
+          "name": "Chest",
+          "parent": "Spine",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            1.0299999713897705
+          ],
+          "tail": [
+            0.0,
+            0.054999999701976776,
+            1.190000057220459
+          ],
+          "deform": true
+        },
+        {
+          "name": "Neck",
+          "parent": "Chest",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            1.190000057220459
+          ],
+          "tail": [
+            0.0,
+            0.054999999701976776,
+            1.2999999523162842
+          ],
+          "deform": true
+        },
+        {
+          "name": "Head",
+          "parent": "Neck",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            1.2999999523162842
+          ],
+          "tail": [
+            0.0,
+            0.054999999701976776,
+            1.6200000047683716
+          ],
+          "deform": true
+        },
+        {
+          "name": "Shoulder.L",
+          "parent": "Chest",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            1.1799999475479126
+          ],
+          "tail": [
+            0.2199999988079071,
+            0.054999999701976776,
+            1.1699999570846558
+          ],
+          "deform": true
+        },
+        {
+          "name": "UpperArm.L",
+          "parent": "Shoulder.L",
+          "head": [
+            0.2199999988079071,
+            0.054999999701976776,
+            1.1699999570846558
+          ],
+          "tail": [
+            0.36000001430511475,
+            0.05000000074505806,
+            0.9649999737739563
+          ],
+          "deform": true
+        },
+        {
+          "name": "LowerArm.L",
+          "parent": "UpperArm.L",
+          "head": [
+            0.36000001430511475,
+            0.05000000074505806,
+            0.9649999737739563
+          ],
+          "tail": [
+            0.4580000042915344,
+            0.041999999433755875,
+            0.777999997138977
+          ],
+          "deform": true
+        },
+        {
+          "name": "Hand.L",
+          "parent": "LowerArm.L",
+          "head": [
+            0.4580000042915344,
+            0.041999999433755875,
+            0.777999997138977
+          ],
+          "tail": [
+            0.4749999940395355,
+            0.04100000113248825,
+            0.6549999713897705
+          ],
+          "deform": true
+        },
+        {
+          "name": "Index1.L",
+          "parent": "Hand.L",
+          "head": [
+            0.47138291597366333,
+            -0.023489132523536682,
+            0.6895235776901245
+          ],
+          "tail": [
+            0.47576388716697693,
+            -0.023746836930513382,
+            0.6578259468078613
+          ],
+          "deform": true
+        },
+        {
+          "name": "Index2.L",
+          "parent": "Index1.L",
+          "head": [
+            0.47576388716697693,
+            -0.023746836930513382,
+            0.6578259468078613
+          ],
+          "tail": [
+            0.4801448583602905,
+            -0.024004539474844933,
+            0.6261283159255981
+          ],
+          "deform": true
+        },
+        {
+          "name": "Middle1.L",
+          "parent": "Hand.L",
+          "head": [
+            0.4760311543941498,
+            0.010189617052674294,
+            0.6898922324180603
+          ],
+          "tail": [
+            0.4804121255874634,
+            0.009931913577020168,
+            0.6581946015357971
+          ],
+          "deform": true
+        },
+        {
+          "name": "Middle2.L",
+          "parent": "Middle1.L",
+          "head": [
+            0.4804121255874634,
+            0.009931913577020168,
+            0.6581946015357971
+          ],
+          "tail": [
+            0.484793096780777,
+            0.009674210101366043,
+            0.6264969110488892
+          ],
+          "deform": true
+        },
+        {
+          "name": "Ring1.L",
+          "parent": "Hand.L",
+          "head": [
+            0.48067939281463623,
+            0.04386836662888527,
+            0.6902608275413513
+          ],
+          "tail": [
+            0.48506036400794983,
+            0.04361066222190857,
+            0.6585631966590881
+          ],
+          "deform": true
+        },
+        {
+          "name": "Ring2.L",
+          "parent": "Ring1.L",
+          "head": [
+            0.48506036400794983,
+            0.04361066222190857,
+            0.6585631966590881
+          ],
+          "tail": [
+            0.4894413352012634,
+            0.04335295781493187,
+            0.626865565776825
+          ],
+          "deform": true
+        },
+        {
+          "name": "Pinky1.L",
+          "parent": "Hand.L",
+          "head": [
+            0.48519089818000793,
+            0.07655656337738037,
+            0.690618634223938
+          ],
+          "tail": [
+            0.48957186937332153,
+            0.07629886269569397,
+            0.6589210033416748
+          ],
+          "deform": true
+        },
+        {
+          "name": "Pinky2.L",
+          "parent": "Pinky1.L",
+          "head": [
+            0.48957186937332153,
+            0.07629886269569397,
+            0.6589210033416748
+          ],
+          "tail": [
+            0.4925837814807892,
+            0.07612168788909912,
+            0.6371288895606995
+          ],
+          "deform": true
+        },
+        {
+          "name": "Thumb1.L",
+          "parent": "Hand.L",
+          "head": [
+            0.4304061233997345,
+            -0.028530485928058624,
+            0.7444734573364258
+          ],
+          "tail": [
+            0.4240676760673523,
+            -0.05049173906445503,
+            0.7094516754150391
+          ],
+          "deform": true
+        },
+        {
+          "name": "Thumb2.L",
+          "parent": "Thumb1.L",
+          "head": [
+            0.4240676760673523,
+            -0.05049173906445503,
+            0.7094516754150391
+          ],
+          "tail": [
+            0.42343011498451233,
+            -0.05612901970744133,
+            0.6791232228279114
+          ],
+          "deform": true
+        },
+        {
+          "name": "Shoulder.R",
+          "parent": "Chest",
+          "head": [
+            0.0,
+            0.054999999701976776,
+            1.1799999475479126
+          ],
+          "tail": [
+            -0.2199999988079071,
+            0.054999999701976776,
+            1.1699999570846558
+          ],
+          "deform": true
+        },
+        {
+          "name": "UpperArm.R",
+          "parent": "Shoulder.R",
+          "head": [
+            -0.2199999988079071,
+            0.054999999701976776,
+            1.1699999570846558
+          ],
+          "tail": [
+            -0.36000001430511475,
+            0.05000000074505806,
+            0.9649999737739563
+          ],
+          "deform": true
+        },
+        {
+          "name": "LowerArm.R",
+          "parent": "UpperArm.R",
+          "head": [
+            -0.36000001430511475,
+            0.05000000074505806,
+            0.9649999737739563
+          ],
+          "tail": [
+            -0.4580000042915344,
+            0.041999999433755875,
+            0.777999997138977
+          ],
+          "deform": true
+        },
+        {
+          "name": "Hand.R",
+          "parent": "LowerArm.R",
+          "head": [
+            -0.4580000042915344,
+            0.041999999433755875,
+            0.777999997138977
+          ],
+          "tail": [
+            -0.4749999940395355,
+            0.04100000113248825,
+            0.6549999713897705
+          ],
+          "deform": true
+        },
+        {
+          "name": "Index1.R",
+          "parent": "Hand.R",
+          "head": [
+            -0.47138291597366333,
+            -0.023489132523536682,
+            0.6895235776901245
+          ],
+          "tail": [
+            -0.47576388716697693,
+            -0.023746836930513382,
+            0.6578259468078613
+          ],
+          "deform": true
+        },
+        {
+          "name": "Index2.R",
+          "parent": "Index1.R",
+          "head": [
+            -0.47576388716697693,
+            -0.023746836930513382,
+            0.6578259468078613
+          ],
+          "tail": [
+            -0.4801448583602905,
+            -0.024004539474844933,
+            0.6261283159255981
+          ],
+          "deform": true
+        },
+        {
+          "name": "Middle1.R",
+          "parent": "Hand.R",
+          "head": [
+            -0.4760311543941498,
+            0.010189617052674294,
+            0.6898922324180603
+          ],
+          "tail": [
+            -0.4804121255874634,
+            0.009931913577020168,
+            0.6581946015357971
+          ],
+          "deform": true
+        },
+        {
+          "name": "Middle2.R",
+          "parent": "Middle1.R",
+          "head": [
+            -0.4804121255874634,
+            0.009931913577020168,
+            0.6581946015357971
+          ],
+          "tail": [
+            -0.484793096780777,
+            0.009674210101366043,
+            0.6264969110488892
+          ],
+          "deform": true
+        },
+        {
+          "name": "Ring1.R",
+          "parent": "Hand.R",
+          "head": [
+            -0.48067939281463623,
+            0.04386836662888527,
+            0.6902608275413513
+          ],
+          "tail": [
+            -0.48506036400794983,
+            0.04361066222190857,
+            0.6585631966590881
+          ],
+          "deform": true
+        },
+        {
+          "name": "Ring2.R",
+          "parent": "Ring1.R",
+          "head": [
+            -0.48506036400794983,
+            0.04361066222190857,
+            0.6585631966590881
+          ],
+          "tail": [
+            -0.4894413352012634,
+            0.04335295781493187,
+            0.626865565776825
+          ],
+          "deform": true
+        },
+        {
+          "name": "Pinky1.R",
+          "parent": "Hand.R",
+          "head": [
+            -0.48519089818000793,
+            0.07655656337738037,
+            0.690618634223938
+          ],
+          "tail": [
+            -0.48957186937332153,
+            0.07629886269569397,
+            0.6589210033416748
+          ],
+          "deform": true
+        },
+        {
+          "name": "Pinky2.R",
+          "parent": "Pinky1.R",
+          "head": [
+            -0.48957186937332153,
+            0.07629886269569397,
+            0.6589210033416748
+          ],
+          "tail": [
+            -0.4925837814807892,
+            0.07612168788909912,
+            0.6371288895606995
+          ],
+          "deform": true
+        },
+        {
+          "name": "Thumb1.R",
+          "parent": "Hand.R",
+          "head": [
+            -0.4304061233997345,
+            -0.028530485928058624,
+            0.7444734573364258
+          ],
+          "tail": [
+            -0.4240676760673523,
+            -0.05049173906445503,
+            0.7094516754150391
+          ],
+          "deform": true
+        },
+        {
+          "name": "Thumb2.R",
+          "parent": "Thumb1.R",
+          "head": [
+            -0.4240676760673523,
+            -0.05049173906445503,
+            0.7094516754150391
+          ],
+          "tail": [
+            -0.42343011498451233,
+            -0.05612901970744133,
+            0.6791232228279114
+          ],
+          "deform": true
+        },
+        {
+          "name": "UpperLeg.L",
+          "parent": "Hips",
+          "head": [
+            0.1119999960064888,
+            0.054999999701976776,
+            0.7699999809265137
+          ],
+          "tail": [
+            0.15399999916553497,
+            0.054999999701976776,
+            0.4399999976158142
+          ],
+          "deform": true
+        },
+        {
+          "name": "LowerLeg.L",
+          "parent": "UpperLeg.L",
+          "head": [
+            0.15399999916553497,
+            0.054999999701976776,
+            0.4399999976158142
+          ],
+          "tail": [
+            0.18699999153614044,
+            0.054999999701976776,
+            0.16500000655651093
+          ],
+          "deform": true
+        },
+        {
+          "name": "Foot.L",
+          "parent": "LowerLeg.L",
+          "head": [
+            0.18699999153614044,
+            0.054999999701976776,
+            0.16500000655651093
+          ],
+          "tail": [
+            0.18699999153614044,
+            -0.10499999672174454,
+            0.06599999964237213
+          ],
+          "deform": true
+        },
+        {
+          "name": "Toes.L",
+          "parent": "Foot.L",
+          "head": [
+            0.18699999153614044,
+            -0.10499999672174454,
+            0.06599999964237213
+          ],
+          "tail": [
+            0.18699999153614044,
+            -0.1849999874830246,
+            0.054999999701976776
+          ],
+          "deform": true
+        },
+        {
+          "name": "UpperLeg.R",
+          "parent": "Hips",
+          "head": [
+            -0.1119999960064888,
+            0.054999999701976776,
+            0.7699999809265137
+          ],
+          "tail": [
+            -0.15399999916553497,
+            0.054999999701976776,
+            0.4399999976158142
+          ],
+          "deform": true
+        },
+        {
+          "name": "LowerLeg.R",
+          "parent": "UpperLeg.R",
+          "head": [
+            -0.15399999916553497,
+            0.054999999701976776,
+            0.4399999976158142
+          ],
+          "tail": [
+            -0.18699999153614044,
+            0.054999999701976776,
+            0.16500000655651093
+          ],
+          "deform": true
+        },
+        {
+          "name": "Foot.R",
+          "parent": "LowerLeg.R",
+          "head": [
+            -0.18699999153614044,
+            0.054999999701976776,
+            0.16500000655651093
+          ],
+          "tail": [
+            -0.18699999153614044,
+            -0.10499999672174454,
+            0.06599999964237213
+          ],
+          "deform": true
+        },
+        {
+          "name": "Toes.R",
+          "parent": "Foot.R",
+          "head": [
+            -0.18699999153614044,
+            -0.10499999672174454,
+            0.06599999964237213
+          ],
+          "tail": [
+            -0.18699999153614044,
+            -0.1849999874830246,
+            0.054999999701976776
+          ],
+          "deform": true
+        }
+      ]
+    },
+    {
+      "name": "Key",
+      "type": "LIGHT",
+      "hidden": false,
+      "location": [
+        -3.0,
+        -4.0,
+        5.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Review camera",
+      "type": "CAMERA",
+      "hidden": false,
+      "location": [
+        2.299999952316284,
+        -5.0,
+        1.0700000524520874
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Rim",
+      "type": "LIGHT",
+      "hidden": false,
+      "location": [
+        1.0,
+        3.0,
+        4.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Shirt_Default",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.6973404884338379,
+        0.3651338815689087,
+        0.46299469470977783
+      ],
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ],
+      "vertices": 3810,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Shoes_Default",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.7535938024520874,
+        0.4096713662147522,
+        0.271240234375
+      ],
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_ShoeOrange",
+        "Hero_01_ShoeCleanWhite"
+      ],
+      "vertices": 3471,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Shorts_Default",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        0.504920482635498,
+        0.3851010501384735,
+        0.3330468535423279
+      ],
+      "materials": [
+        "Hero_01_MatteCloth",
+        "Hero_01_WarmSkin"
+      ],
+      "vertices": 3081,
+      "modifiers": [
+        [
+          "Shared Hero_01 armature",
+          "ARMATURE"
+        ]
+      ]
+    },
+    {
+      "name": "Studio floor",
+      "type": "MESH",
+      "hidden": false,
+      "location": [
+        0.0,
+        0.0,
+        -0.003000000026077032
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dimensions": [
+        2000.0,
+        2000.0,
+        0.0
+      ],
+      "materials": [
+        "Studio warm neutral"
+      ],
+      "vertices": 4,
+      "modifiers": []
+    }
+  ],
+  "actions": [
+    "Hero_01_Rig.001|mixamo.com|Layer0",
+    "Hero_01_Rig.001|mixamo.com|Layer0.001",
+    "Idle",
+    "Ready"
+  ]
+}

@@ -1,0 +1,2416 @@
+{
+    "version": 2,
+    "sex": "Female",
+    "source": "Resources/Tennis/Customization/PlayerFemale.prefab (work/match-anim-set/export/HeroBase_Female_MatchAnims.blend)",
+    "baseClip": "Female_ReadyIdle",
+    "swingClip": "Female_Forehand",
+    "baseTime": 0.0,
+    "swingLength": 1.2000000476837159,
+    "swingContact": 0.666670024394989,
+    "parts": [
+        {
+            "name": "Body",
+            "kind": "body",
+            "vertexCount": 23683,
+            "positionOffset": 0,
+            "normalOffset": 284196,
+            "swingPositionOffset": 0,
+            "swingNormalOffset": 284196,
+            "uvOffset": -1,
+            "bindPositionOffset": 1096272,
+            "submeshes": [
+                {
+                    "material": "Skin",
+                    "indexOffset": 568392,
+                    "indexCount": 62796,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.8999999761581421,
+                            0.699999988079071,
+                            0.5849999785423279,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.17999997735023499,
+                            0.059999965131282809,
+                            0.029999999329447748,
+                            1.0
+                        ],
+                        "smoothness": 0.20000000298023225,
+                        "wrap": 0.550000011920929,
+                        "rimStrength": 0.3499999940395355,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 0.18000000715255738,
+                        "bumpTriplanar": 1.0,
+                        "bumpTile": 6.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": "MatchHero_Skin_Soft_N"
+                    }
+                },
+                {
+                    "material": "Skin",
+                    "indexOffset": 819576,
+                    "indexCount": 69174,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.8999999761581421,
+                            0.699999988079071,
+                            0.5849999785423279,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.17999997735023499,
+                            0.059999965131282809,
+                            0.029999999329447748,
+                            1.0
+                        ],
+                        "smoothness": 0.20000000298023225,
+                        "wrap": 0.550000011920929,
+                        "rimStrength": 0.3499999940395355,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 0.18000000715255738,
+                        "bumpTriplanar": 1.0,
+                        "bumpTile": 6.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": "MatchHero_Skin_Soft_N"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Face",
+            "kind": "face",
+            "vertexCount": 3986,
+            "positionOffset": 1380468,
+            "normalOffset": 1428300,
+            "swingPositionOffset": 568392,
+            "swingNormalOffset": 616224,
+            "uvOffset": -1,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Face_Brow",
+                    "indexOffset": 1476132,
+                    "indexCount": 1404,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.19999992847442628,
+                            0.13499993085861207,
+                            0.09499993175268173,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.3400000035762787,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_BrowSoft",
+                    "indexOffset": 1481748,
+                    "indexCount": 1908,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.3299999535083771,
+                            0.22999992966651917,
+                            0.16999992728233338,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.30000001192092898,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Pupil",
+                    "indexOffset": 1489380,
+                    "indexCount": 720,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.019999999552965165,
+                            0.014999999664723874,
+                            0.012000000104308129,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_IrisIn",
+                    "indexOffset": 1492260,
+                    "indexCount": 480,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.3699999451637268,
+                            0.20999988913536073,
+                            0.10499993711709976,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Iris",
+                    "indexOffset": 1494180,
+                    "indexCount": 480,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.2999999523162842,
+                            0.16999992728233338,
+                            0.08499995619058609,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Limbal",
+                    "indexOffset": 1496100,
+                    "indexCount": 480,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.11999992281198502,
+                            0.059999942779541019,
+                            0.029999999329447748,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Sclera",
+                    "indexOffset": 1498020,
+                    "indexCount": 2400,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.8600000143051148,
+                            0.8500000238418579,
+                            0.8399999141693115,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Catch",
+                    "indexOffset": 1507620,
+                    "indexCount": 96,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.8500000238418579,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.2199999988079071,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_LidLine",
+                    "indexOffset": 1508004,
+                    "indexCount": 2544,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.06999994814395905,
+                            0.049999967217445376,
+                            0.03999999910593033,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.4000000059604645,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_LidLower",
+                    "indexOffset": 1518180,
+                    "indexCount": 720,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.2999999523162842,
+                            0.16999992728233338,
+                            0.12999993562698365,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.3499999940395355,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Lip",
+                    "indexOffset": 1521060,
+                    "indexCount": 3264,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.8799999952316284,
+                            0.5899999737739563,
+                            0.49000000953674319,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.44999998807907107,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_LipUp",
+                    "indexOffset": 1534116,
+                    "indexCount": 3024,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.8199999928474426,
+                            0.5299999713897705,
+                            0.4199999272823334,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.4000000059604645,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Nostril",
+                    "indexOffset": 1546212,
+                    "indexCount": 108,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.3299999535083771,
+                            0.1499999463558197,
+                            0.10999993234872818,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.15000000596046449,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Face_Seam",
+                    "indexOffset": 1546644,
+                    "indexCount": 528,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.47999995946884158,
+                            0.239999920129776,
+                            0.1799999475479126,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.30000001192092898,
+                        "wrap": 0.30000001192092898,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Bottom",
+            "kind": "kit",
+            "vertexCount": 16744,
+            "positionOffset": 1548756,
+            "normalOffset": 1749684,
+            "swingPositionOffset": 664056,
+            "swingNormalOffset": 864984,
+            "uvOffset": 2258364,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Shorts",
+                    "indexOffset": 1950612,
+                    "indexCount": 68298,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.10000000149011612,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 57.20204162597656,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 1.0,
+                        "weaveThread": 0.550000011920929,
+                        "sheenStrength": 0.5,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.028999999165534974,
+                        "baseMap": "MatchHero_Kit_Female_Bottom",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Kit_ShortsBand",
+                    "indexOffset": 2223804,
+                    "indexCount": 8640,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.25,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 75.53202819824219,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.3499999940395355,
+                        "sheenStrength": 0.20000000298023225,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.02199999988079071,
+                        "baseMap": "MatchHero_Kit_Female_Bottom",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Shoe_L",
+            "kind": "kit",
+            "vertexCount": 9935,
+            "positionOffset": 2392316,
+            "normalOffset": 2511536,
+            "swingPositionOffset": 1065912,
+            "swingNormalOffset": 1185132,
+            "uvOffset": 2785676,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Shoe",
+                    "indexOffset": 2630756,
+                    "indexCount": 31956,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.11999999731779099,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 30.495548248291017,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.44999998807907107,
+                        "sheenStrength": 0.3499999940395355,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.024000000208616258,
+                        "baseMap": "MatchHero_Kit_Female_ShoeL",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Kit_Sole",
+                    "indexOffset": 2758580,
+                    "indexCount": 6774,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.6599999666213989,
+                            0.6499999761581421,
+                            0.6299999952316284,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.03999999910593033,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 35.523197174072269,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.25,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.019999999552965165,
+                        "baseMap": "MatchHero_Kit_Female_ShoeL",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Shoe_R",
+            "kind": "kit",
+            "vertexCount": 9935,
+            "positionOffset": 2865156,
+            "normalOffset": 2984376,
+            "swingPositionOffset": 1304352,
+            "swingNormalOffset": 1423572,
+            "uvOffset": 3258516,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Shoe",
+                    "indexOffset": 3103596,
+                    "indexCount": 31956,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.11999999731779099,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 30.495548248291017,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.44999998807907107,
+                        "sheenStrength": 0.3499999940395355,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.024000000208616258,
+                        "baseMap": "MatchHero_Kit_Female_ShoeR",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Kit_Sole",
+                    "indexOffset": 3231420,
+                    "indexCount": 6774,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.6599999666213989,
+                            0.6499999761581421,
+                            0.6299999952316284,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.03999999910593033,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 35.523197174072269,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.25,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.019999999552965165,
+                        "baseMap": "MatchHero_Kit_Female_ShoeR",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Sock_L",
+            "kind": "kit",
+            "vertexCount": 3426,
+            "positionOffset": 3337996,
+            "normalOffset": 3379108,
+            "swingPositionOffset": 1542792,
+            "swingNormalOffset": 1583904,
+            "uvOffset": 3481204,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Sock",
+                    "indexOffset": 3420220,
+                    "indexCount": 15246,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.07999999821186066,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 39.79955291748047,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.8999999761581421,
+                        "weaveThread": 0.550000011920929,
+                        "sheenStrength": 0.699999988079071,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.019999999552965165,
+                        "baseMap": "MatchHero_Kit_Female_SockL",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Sock_R",
+            "kind": "kit",
+            "vertexCount": 3443,
+            "positionOffset": 3508612,
+            "normalOffset": 3549928,
+            "swingPositionOffset": 1625016,
+            "swingNormalOffset": 1666332,
+            "uvOffset": 3652228,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Sock",
+                    "indexOffset": 3591244,
+                    "indexCount": 15246,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.07999999821186066,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 38.9169807434082,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.8999999761581421,
+                        "weaveThread": 0.550000011920929,
+                        "sheenStrength": 0.699999988079071,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.019999999552965165,
+                        "baseMap": "MatchHero_Kit_Female_SockR",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Kit_Top",
+            "kind": "kit",
+            "vertexCount": 13600,
+            "positionOffset": 3679772,
+            "normalOffset": 3842972,
+            "swingPositionOffset": 1707648,
+            "swingNormalOffset": 1870848,
+            "uvOffset": 4239068,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Kit_Shirt",
+                    "indexOffset": 4006172,
+                    "indexCount": 54240,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.10000000149011612,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 54.46635818481445,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 1.0,
+                        "weaveThread": 0.550000011920929,
+                        "sheenStrength": 0.550000011920929,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.026000000536441804,
+                        "baseMap": "MatchHero_Kit_Female_Top",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                },
+                {
+                    "material": "Kit_ShirtTrim",
+                    "indexOffset": 4223132,
+                    "indexCount": 3984,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.25,
+                        "wrap": 0.5,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 64.8804702758789,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.3499999940395355,
+                        "sheenStrength": 0.25,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.02199999988079071,
+                        "baseMap": "MatchHero_Kit_Female_Top",
+                        "weaveMap": "MatchHero_Cloth_Weave",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Racket_Racket_Classic",
+            "kind": "racket",
+            "vertexCount": 2998,
+            "positionOffset": 4347868,
+            "normalOffset": 4383844,
+            "swingPositionOffset": 2034048,
+            "swingNormalOffset": 2070024,
+            "uvOffset": -1,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "White_Frame",
+                    "indexOffset": 4419820,
+                    "indexCount": 18000,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.9333000183105469,
+                            0.9294000267982483,
+                            0.9175999760627747,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.6499999761581421,
+                        "wrap": 0.3499999940395355,
+                        "rimStrength": 0.20000000298023225,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 0.8199999928474426,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Racket_ButtCap",
+            "kind": "racket",
+            "vertexCount": 314,
+            "positionOffset": 4491820,
+            "normalOffset": 4495588,
+            "swingPositionOffset": 2106000,
+            "swingNormalOffset": 2109768,
+            "uvOffset": -1,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Black_Grip",
+                    "indexOffset": 4499356,
+                    "indexCount": 1440,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.10979994386434555,
+                            0.10979994386434555,
+                            0.1215999498963356,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.05000000074505806,
+                        "wrap": 0.5,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 120.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.15000000596046449,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.026000000536441804,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Racket_Grip",
+            "kind": "racket",
+            "vertexCount": 1442,
+            "positionOffset": 4505116,
+            "normalOffset": 4522420,
+            "swingPositionOffset": 2113536,
+            "swingNormalOffset": 2130840,
+            "uvOffset": -1,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "Black_Grip",
+                    "indexOffset": 4539724,
+                    "indexCount": 6912,
+                    "look": {
+                        "shader": "TennisCloth",
+                        "color": [
+                            0.10979994386434555,
+                            0.10979994386434555,
+                            0.1215999498963356,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [],
+                        "smoothness": 0.05000000074505806,
+                        "wrap": 0.5,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.699999988079071,
+                        "knee": 0.699999988079071,
+                        "weaveTile": 120.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.15000000596046449,
+                        "sheenPower": 3.0,
+                        "saturation": 0.0,
+                        "bumpScale": 0.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 0.0,
+                        "tileMetres": 0.026000000536441804,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Racket_StringBed",
+            "kind": "racket",
+            "vertexCount": 1368,
+            "positionOffset": 4567372,
+            "normalOffset": 4583788,
+            "swingPositionOffset": 2148144,
+            "swingNormalOffset": 2164560,
+            "uvOffset": -1,
+            "bindPositionOffset": -1,
+            "submeshes": [
+                {
+                    "material": "White_Strings",
+                    "indexOffset": 4600204,
+                    "indexCount": 5928,
+                    "look": {
+                        "shader": "TennisCharacter",
+                        "color": [
+                            0.9097999930381775,
+                            0.9059000015258789,
+                            0.8901999592781067,
+                            1.0
+                        ],
+                        "rimColor": [
+                            1.0,
+                            0.9599999785423279,
+                            0.8799999952316284,
+                            1.0
+                        ],
+                        "subsurface": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "smoothness": 0.15000000596046449,
+                        "wrap": 0.20000000298023225,
+                        "rimStrength": 0.10000000149011612,
+                        "rimPower": 3.5,
+                        "exposure": 0.0,
+                        "knee": 0.0,
+                        "weaveTile": 0.0,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.0,
+                        "weaveThread": 0.0,
+                        "sheenStrength": 0.0,
+                        "sheenPower": 0.0,
+                        "saturation": 1.0,
+                        "bumpScale": 1.0,
+                        "bumpTriplanar": 0.0,
+                        "bumpTile": 5.0,
+                        "tileMetres": 0.0,
+                        "baseMap": "",
+                        "weaveMap": "",
+                        "bumpMap": ""
+                    }
+                }
+            ]
+        }
+    ],
+    "materials": [
+        {
+            "name": "Black_Grip",
+            "color": [
+                0.10979994386434555,
+                0.10979994386434555,
+                0.1215999498963356,
+                1.0
+            ],
+            "smoothness": 0.05000000074505806
+        },
+        {
+            "name": "Face_Brow",
+            "color": [
+                0.19999992847442628,
+                0.13499993085861207,
+                0.09499993175268173,
+                1.0
+            ],
+            "smoothness": 0.3400000035762787
+        },
+        {
+            "name": "Face_BrowSoft",
+            "color": [
+                0.3299999535083771,
+                0.22999992966651917,
+                0.16999992728233338,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Face_Catch",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_Iris",
+            "color": [
+                0.2999999523162842,
+                0.16999992728233338,
+                0.08499995619058609,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_IrisIn",
+            "color": [
+                0.3699999451637268,
+                0.20999988913536073,
+                0.10499993711709976,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_LidLine",
+            "color": [
+                0.06999994814395905,
+                0.049999967217445376,
+                0.03999999910593033,
+                1.0
+            ],
+            "smoothness": 0.4000000059604645
+        },
+        {
+            "name": "Face_LidLower",
+            "color": [
+                0.2999999523162842,
+                0.16999992728233338,
+                0.12999993562698365,
+                1.0
+            ],
+            "smoothness": 0.3499999940395355
+        },
+        {
+            "name": "Face_Limbal",
+            "color": [
+                0.11999992281198502,
+                0.059999942779541019,
+                0.029999999329447748,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_Lip",
+            "color": [
+                0.8799999952316284,
+                0.5899999737739563,
+                0.49000000953674319,
+                1.0
+            ],
+            "smoothness": 0.44999998807907107
+        },
+        {
+            "name": "Face_LipUp",
+            "color": [
+                0.8199999928474426,
+                0.5299999713897705,
+                0.4199999272823334,
+                1.0
+            ],
+            "smoothness": 0.4000000059604645
+        },
+        {
+            "name": "Face_Nostril",
+            "color": [
+                0.3299999535083771,
+                0.1499999463558197,
+                0.10999993234872818,
+                1.0
+            ],
+            "smoothness": 0.15000000596046449
+        },
+        {
+            "name": "Face_Pupil",
+            "color": [
+                0.019999999552965165,
+                0.014999999664723874,
+                0.012000000104308129,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_Sclera",
+            "color": [
+                0.8600000143051148,
+                0.8500000238418579,
+                0.8399999141693115,
+                1.0
+            ],
+            "smoothness": 0.8500000238418579
+        },
+        {
+            "name": "Face_Seam",
+            "color": [
+                0.47999995946884158,
+                0.239999920129776,
+                0.1799999475479126,
+                1.0
+            ],
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Kit_Shirt",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.10000000149011612
+        },
+        {
+            "name": "Kit_ShirtTrim",
+            "color": [
+                0.03500000014901161,
+                0.03500000014901161,
+                0.04010000079870224,
+                1.0
+            ],
+            "smoothness": 0.25
+        },
+        {
+            "name": "Kit_Shoe",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.11999999731779099
+        },
+        {
+            "name": "Kit_Shorts",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.10000000149011612
+        },
+        {
+            "name": "Kit_ShortsBand",
+            "color": [
+                0.03500000014901161,
+                0.03500000014901161,
+                0.04010000079870224,
+                1.0
+            ],
+            "smoothness": 0.25
+        },
+        {
+            "name": "Kit_Sock",
+            "color": [
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
+                1.0
+            ],
+            "smoothness": 0.07999999821186066
+        },
+        {
+            "name": "Kit_Sole",
+            "color": [
+                0.6599999666213989,
+                0.6499999761581421,
+                0.6299999952316284,
+                1.0
+            ],
+            "smoothness": 0.03999999910593033
+        },
+        {
+            "name": "Skin",
+            "color": [
+                0.8999999761581421,
+                0.699999988079071,
+                0.5849999785423279,
+                1.0
+            ],
+            "smoothness": 0.20000000298023225
+        },
+        {
+            "name": "White_Frame",
+            "color": [
+                0.9333000183105469,
+                0.9294000267982483,
+                0.9175999760627747,
+                1.0
+            ],
+            "smoothness": 0.6499999761581421
+        },
+        {
+            "name": "White_Strings",
+            "color": [
+                0.9097999930381775,
+                0.9059000015258789,
+                0.8901999592781067,
+                1.0
+            ],
+            "smoothness": 0.15000000596046449
+        }
+    ],
+    "swingFrames": [
+        "MatchHero_Female_Swing_00",
+        "MatchHero_Female_Swing_01",
+        "MatchHero_Female_Swing_02",
+        "MatchHero_Female_Swing_03",
+        "MatchHero_Female_Swing_04",
+        "MatchHero_Female_Swing_05",
+        "MatchHero_Female_Swing_06",
+        "MatchHero_Female_Swing_07",
+        "MatchHero_Female_Swing_08",
+        "MatchHero_Female_Swing_09",
+        "MatchHero_Female_Swing_10",
+        "MatchHero_Female_Swing_11"
+    ],
+    "swingTimes": [
+        0.0,
+        0.15000000596046449,
+        0.30000001192092898,
+        0.41999998688697817,
+        0.5,
+        0.5600000023841858,
+        0.6200000047683716,
+        0.6669999957084656,
+        0.7200000286102295,
+        0.7799999713897705,
+        0.8999999761581421,
+        1.2000000476837159
+    ],
+    "boundsMin": [
+        -0.3834514915943146,
+        0.0010702013969421387,
+        -0.40027424693107607
+    ],
+    "boundsMax": [
+        0.3834514319896698,
+        1.652618169784546,
+        0.11879602074623108
+    ],
+    "height": 1.651547908782959,
+    "headCentreY": 1.5041556358337403,
+    "headTopY": 1.652618169784546,
+    "headRadius": 0.12816576659679414,
+    "rig": {
+        "file": "MatchHero_Female_Rig",
+        "bones": [
+            "Root",
+            "Hips",
+            "Spine",
+            "Chest",
+            "UpperChest",
+            "Neck",
+            "Head",
+            "LeftShoulder",
+            "LeftUpperArm",
+            "LeftLowerArm",
+            "LeftHand",
+            "LeftThumbProximal",
+            "LeftThumbIntermediate",
+            "LeftThumbDistal",
+            "LeftIndexProximal",
+            "LeftIndexIntermediate",
+            "LeftIndexDistal",
+            "LeftMiddleProximal",
+            "LeftMiddleIntermediate",
+            "LeftMiddleDistal",
+            "LeftRingProximal",
+            "LeftRingIntermediate",
+            "LeftRingDistal",
+            "LeftLittleProximal",
+            "LeftLittleIntermediate",
+            "LeftLittleDistal",
+            "RightShoulder",
+            "RightUpperArm",
+            "RightLowerArm",
+            "RightHand",
+            "RightThumbProximal",
+            "RightThumbIntermediate",
+            "RightThumbDistal",
+            "RightIndexProximal",
+            "RightIndexIntermediate",
+            "RightIndexDistal",
+            "RightMiddleProximal",
+            "RightMiddleIntermediate",
+            "RightMiddleDistal",
+            "RightRingProximal",
+            "RightRingIntermediate",
+            "RightRingDistal",
+            "RightLittleProximal",
+            "RightLittleIntermediate",
+            "RightLittleDistal",
+            "LeftUpperLeg",
+            "LeftLowerLeg",
+            "LeftFoot",
+            "LeftToes",
+            "RightUpperLeg",
+            "RightLowerLeg",
+            "RightFoot",
+            "RightToes"
+        ],
+        "rigid": [
+            "Face",
+            "Racket_Racket_Classic",
+            "Racket_ButtCap",
+            "Racket_Grip",
+            "Racket_StringBed"
+        ],
+        "trackCount": 58,
+        "floatsPerTrack": 10,
+        "parts": [
+            {
+                "part": "Body",
+                "kind": "skin",
+                "vertexCount": 23683,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 284196,
+                "weightOffset": 568392,
+                "indexOffset": 947320,
+                "inverseBindOffset": 1042052,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Bottom",
+                "kind": "skin",
+                "vertexCount": 16744,
+                "bindPositionOffset": 1045444,
+                "bindNormalOffset": 1246372,
+                "weightOffset": 1447300,
+                "indexOffset": 1715204,
+                "inverseBindOffset": 1782180,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Shoe_L",
+                "kind": "skin",
+                "vertexCount": 9935,
+                "bindPositionOffset": 1785572,
+                "bindNormalOffset": 1904792,
+                "weightOffset": 2024012,
+                "indexOffset": 2182972,
+                "inverseBindOffset": 2222712,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Shoe_R",
+                "kind": "skin",
+                "vertexCount": 9935,
+                "bindPositionOffset": 2226104,
+                "bindNormalOffset": 2345324,
+                "weightOffset": 2464544,
+                "indexOffset": 2623504,
+                "inverseBindOffset": 2663244,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Sock_L",
+                "kind": "skin",
+                "vertexCount": 3426,
+                "bindPositionOffset": 2666636,
+                "bindNormalOffset": 2707748,
+                "weightOffset": 2748860,
+                "indexOffset": 2803676,
+                "inverseBindOffset": 2817380,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Sock_R",
+                "kind": "skin",
+                "vertexCount": 3443,
+                "bindPositionOffset": 2820772,
+                "bindNormalOffset": 2862088,
+                "weightOffset": 2903404,
+                "indexOffset": 2958492,
+                "inverseBindOffset": 2972264,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Kit_Top",
+                "kind": "skin",
+                "vertexCount": 13600,
+                "bindPositionOffset": 2975656,
+                "bindNormalOffset": 3138856,
+                "weightOffset": 3302056,
+                "indexOffset": 3519656,
+                "inverseBindOffset": 3574056,
+                "track": -1,
+                "bones": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49,
+                    50,
+                    51,
+                    52
+                ]
+            },
+            {
+                "part": "Face",
+                "kind": "rigid",
+                "vertexCount": 3986,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 0,
+                "weightOffset": 0,
+                "indexOffset": 0,
+                "inverseBindOffset": 0,
+                "track": 53,
+                "bones": []
+            },
+            {
+                "part": "Racket_Racket_Classic",
+                "kind": "rigid",
+                "vertexCount": 2998,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 0,
+                "weightOffset": 0,
+                "indexOffset": 0,
+                "inverseBindOffset": 0,
+                "track": 54,
+                "bones": []
+            },
+            {
+                "part": "Racket_ButtCap",
+                "kind": "rigid",
+                "vertexCount": 314,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 0,
+                "weightOffset": 0,
+                "indexOffset": 0,
+                "inverseBindOffset": 0,
+                "track": 55,
+                "bones": []
+            },
+            {
+                "part": "Racket_Grip",
+                "kind": "rigid",
+                "vertexCount": 1442,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 0,
+                "weightOffset": 0,
+                "indexOffset": 0,
+                "inverseBindOffset": 0,
+                "track": 56,
+                "bones": []
+            },
+            {
+                "part": "Racket_StringBed",
+                "kind": "rigid",
+                "vertexCount": 1368,
+                "bindPositionOffset": 0,
+                "bindNormalOffset": 0,
+                "weightOffset": 0,
+                "indexOffset": 0,
+                "inverseBindOffset": 0,
+                "track": 57,
+                "bones": []
+            }
+        ],
+        "clips": [
+            {
+                "id": "ready",
+                "name": "Female_ReadyIdle",
+                "loop": true,
+                "length": 2.200000047683716,
+                "fps": 60.0,
+                "contact": 0.0,
+                "frames": 133,
+                "offset": 3577448,
+                "boundsMin": [
+                    -0.3999706208705902,
+                    -0.025577686727046968,
+                    -0.648960530757904
+                ],
+                "boundsMax": [
+                    0.3999705910682678,
+                    1.652618169784546,
+                    0.13733352720737458
+                ]
+            },
+            {
+                "id": "serve",
+                "name": "Female_Serve",
+                "loop": false,
+                "length": 2.500000238418579,
+                "fps": 59.999996185302737,
+                "contact": 1.7000000476837159,
+                "frames": 151,
+                "offset": 3886008,
+                "boundsMin": [
+                    -0.7696325778961182,
+                    -0.026275042444467546,
+                    -1.0989415645599366
+                ],
+                "boundsMax": [
+                    0.7095454335212708,
+                    2.318129062652588,
+                    0.6922491788864136
+                ]
+            }
+        ]
+    },
+    "coordinates": "Unity metres, z negated, winding flipped (hero faces -z)"
+}

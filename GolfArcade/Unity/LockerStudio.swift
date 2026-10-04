@@ -1,261 +1,391 @@
 import SwiftUI
 import SceneKit
 
-/// The phone locker. Cosmetics-shop layout (Switch Sports / Mii Maker / Fortnite locker): a big turntable of your
-/// player on top, category tabs, then visual pickers — thumbnail cards for styles, swatch rows and continuous
-/// colour ranges (LockerColors.swift) for every colour. Hair and headwear tabs zoom the camera to the head.
-struct LockerStudio: View {
+/// The locker. Item-first, like a cosmetics locker: it opens on **Gear** — a shelf of big tiles per sport and slot, one tap
+/// equips and the character changes at once — and keeps colour work on its own **Customize** tab as swatch rows, with the full
+/// hue / shade gradients one tap away under "Custom". The camera reframes to the part being changed (body, racket hand, feet).
+/// The phone layout is touch-first; the TV layout is the same screen driven by the click remote (`TennisMenu.lockerRows()`).
+struct IslandLockerScreen: View {
     let menu: TennisMenu
-    @State private var tab: Tab
-    init(menu: TennisMenu, startTab: Tab = .body) { self.menu = menu; _tab = State(initialValue: startTab) }
-    @State private var outfitSlot = "shirt"
+    let compact: Bool
     @State private var editingName = false
-    @State private var name = ""
-    @State private var lastSave = Date.distantPast
+    @State private var nameDraft = ""
 
-    enum Tab: String, CaseIterable, Identifiable {
-        case body, hair, headwear, outfit, racket
-        var id: String { rawValue }
-        var title: String { ["Body", "Hair", "Headwear", "Outfit", "Racket"][Self.allCases.firstIndex(of: self)!] }
-        var icon: String { ["figure.stand", "scissors", "sun.max.fill", "tshirt.fill", "tennis.racket"][Self.allCases.firstIndex(of: self)!] }
+    private var player: Player { menu.player ?? Player(name: "Player 1", colorIndex: 0) }
+    private var k: CGFloat { compact ? 1 : 1.3 }
+    private var framing: PreviewFraming {
+        guard menu.lockerTab == .gear else { return .body }
+        switch menu.lockerSlot { case .skin: return .body; case .racket, .club: return .racket; case .shoes: return .feet }
     }
 
     var body: some View {
-        let p = menu.player ?? Player(name: "Player 1", colorIndex: 0)
         GeometryReader { geo in
-            VStack(spacing: 10) {
-                stage(p).frame(height: max(260, geo.size.height * 0.46))
-                tabBar
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) { panel(p) }
-                        .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+            ZStack {
+                IslandBackdrop(room: .locker)
+                if compact {
+                    LinearGradient(colors: [IslandUI.paper.opacity(0.45), .clear], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.3)).ignoresSafeArea()
+                } else {
+                    LinearGradient(colors: [IslandUI.paper.opacity(0.62), .clear], startPoint: .leading, endPoint: UnitPoint(x: 0.56, y: 0.5)).ignoresSafeArea()
                 }
-                .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Club.lagoonDeep.opacity(0.78)))
-                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.white.opacity(0.12), lineWidth: 1))
-                HStack(spacing: 10) {
-                    ClubButton(title: "Shuffle", icon: "dice.fill", focused: false, style: .secondary, size: 16) { menu.tap("randomize") }
-                    ClubButton(title: "Done", icon: "checkmark", focused: false, size: 16) { menu.tap("back") }
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
+                if compact { phone(geo.size) } else { tv(geo.size) }
             }
         }
-        .onAppear { name = p.name }
+        .preferredColorScheme(.light)
+        .onAppear { nameDraft = player.name }
+    }
+
+    // MARK: layouts
+
+    private func phone(_ size: CGSize) -> some View {
+        let panelHeight = min(500, size.height * 0.56)
+        return VStack(spacing: 0) {
+            topBar.padding(.horizontal, 16).padding(.top, 10)
+            stage.frame(maxHeight: .infinity)
+            panel.frame(height: panelHeight)
+        }
+    }
+
+    private func tv(_ size: CGSize) -> some View {
+        ZStack(alignment: .topLeading) {
+            HStack(alignment: .top, spacing: 0) {
+                panel.frame(width: 640, height: 500).padding(.leading, 48).padding(.top, 118)
+                stage.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.top, 20).padding(.bottom, 14)
+            }
+            HStack(alignment: .center, spacing: 28) {
+                Text("Locker").font(IslandUI.font(42, bold: true)).foregroundStyle(IslandUI.navy)
+                if menu.lockerTab == .gear { sportToggle }
+            }.padding(.leading, 56).padding(.top, 36)
+            VStack { Spacer(); HStack { IslandHintBar(items: IslandHintBar.move); Spacer() }.padding(.leading, 48).padding(.bottom, 28) }
+        }
+    }
+
+    private var topBar: some View {
+        HStack(spacing: 10) {
+            roundButton("chevron.left", id: "lk-done", label: "Back")
+            Spacer()
+            if menu.lockerTab == .gear { sportToggle }
+            Spacer()
+            roundButton("dice.fill", id: "lk-shuffle", label: "Shuffle colours")
+        }
+    }
+
+    private func roundButton(_ icon: String, id: String, label: String) -> some View {
+        Button { menu.tap(id) } label: {
+            Image(systemName: icon).font(.system(size: 17, weight: .bold)).foregroundStyle(IslandUI.navy)
+                .frame(width: 42, height: 42).background(IslandUI.paper.opacity(0.94), in: Circle())
+                .overlay(Circle().strokeBorder(IslandUI.navy, lineWidth: menu.isFocused(id) ? 3 : 0))
+                .shadow(color: .black.opacity(0.2), radius: 3, y: 2)
+        }.buttonStyle(.plain).accessibilityLabel(label)
+    }
+
+    private var sportToggle: some View {
+        HStack(spacing: 0) {
+            ForEach(LockerCatalog.sports, id: \.self) { sport in
+                let on = menu.lockerSport == sport, id = "lk-sport-\(sport.rawValue)"
+                Button { menu.tap(id) } label: {
+                    Text(sport.title.capitalized).font(IslandUI.font(16 * k, bold: true))
+                        .foregroundStyle(on ? .white : IslandUI.muted)
+                        .padding(.horizontal, 20 * k).padding(.vertical, 8 * k)
+                        .background(on ? IslandUI.navy : .clear, in: Capsule())
+                        .overlay(Capsule().strokeBorder(IslandUI.lime, lineWidth: menu.isFocused(id) ? 3.5 : 0))
+                }.buttonStyle(.plain).accessibilityLabel("\(sport.title.capitalized) gear").accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .padding(4).background(IslandUI.paper.opacity(0.94), in: Capsule()).shadow(color: .black.opacity(0.2), radius: 3, y: 2)
     }
 
     // MARK: stage
 
-    private func stage(_ p: Player) -> some View {
+    private var stage: some View {
         ZStack(alignment: .bottom) {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(RadialGradient(colors: [Color(hex: "FFE7B8").opacity(0.55), Color(hex: "FF9F7A").opacity(0.18), .clear],
-                                     center: .init(x: 0.5, y: 0.42), startRadius: 10, endRadius: 260))
-            CharacterModelPreview(player: p, cameraDistance: 3.3, framing: tab == .hair || tab == .headwear ? .head : .body)
-                .padding(.bottom, 34)
-            VStack {
-                HStack {
-                    Label("Drag to spin", systemImage: "arrow.left.and.right").font(Club.ui(11, 700)).foregroundStyle(.white.opacity(0.75))
-                        .padding(.horizontal, 10).padding(.vertical, 5).background(Capsule().fill(.black.opacity(0.28)))
-                    Spacer()
-                }
-                Spacer()
-            }.padding(10)
-            nameTag(p).padding(.bottom, 8)
+            if framing == .body {
+                Ellipse().fill(RadialGradient(colors: [.white.opacity(0.9), IslandUI.lime.opacity(0.55), .clear], center: .center, startRadius: 4, endRadius: 150 * k))
+                    .frame(width: 260 * k, height: 40 * k).offset(y: -26 * k).allowsHitTesting(false)
+            }
+            CharacterModelPreview(player: player, cameraDistance: 2.7, framing: framing)
+                .padding(.bottom, 18)
+                .accessibilityLabel("\(player.name), your character")
+            if compact { nameTag.padding(.bottom, 6) }
         }
     }
 
-    private func nameTag(_ p: Player) -> some View {
+    private var nameTag: some View {
         Group {
             if editingName {
-                TextField("Your name", text: $name)
-                    .font(Club.title(18)).foregroundStyle(Club.ink).multilineTextAlignment(.center)
-                    .submitLabel(.done).onSubmit { rename(name); editingName = false }
-                    .frame(width: 180)
+                TextField("Your name", text: $nameDraft).font(IslandUI.font(17, bold: true)).multilineTextAlignment(.center)
+                    .submitLabel(.done).onSubmit { rename(nameDraft); editingName = false }.frame(width: 170)
             } else {
-                Button { name = p.name; editingName = true } label: {
-                    HStack(spacing: 6) { Text(p.name).font(Club.title(18)); Image(systemName: "pencil").font(.system(size: 12, weight: .black)) }
+                Button { nameDraft = player.name; editingName = true } label: {
+                    HStack(spacing: 6) { Text(player.name).font(IslandUI.font(16, bold: true)); Image(systemName: "pencil").font(.system(size: 11, weight: .bold)) }
                 }.buttonStyle(.plain)
             }
         }
-        .foregroundStyle(Club.ink).padding(.horizontal, 18).padding(.vertical, 7).background(Capsule().fill(Club.sun))
-        .accessibilityLabel("Name, \(p.name)")
+        .foregroundStyle(IslandUI.navy).padding(.horizontal, 16).padding(.vertical, 6)
+        .background(IslandUI.lime, in: Capsule()).shadow(color: IslandUI.navy.opacity(0.25), radius: 0, y: 2)
+        .accessibilityLabel("Name, \(player.name). Tap to change.")
     }
 
-    private var tabBar: some View {
-        HStack(spacing: 6) {
-            ForEach(Tab.allCases) { t in
-                Button { withAnimation(Club.spring) { tab = t } } label: {
-                    VStack(spacing: 3) {
-                        Image(systemName: t.icon).font(.system(size: 18, weight: .bold))
-                        Text(t.title).font(Club.ui(11, 700)).lineLimit(1).minimumScaleFactor(0.8)
-                    }
-                    .foregroundStyle(tab == t ? Club.ink : .white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 8)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(tab == t ? Club.sun : .white.opacity(0.12)))
-                }
-                .buttonStyle(.plain).accessibilityAddTraits(tab == t ? .isSelected : [])
-            }
-        }
-    }
-
-    // MARK: panels
-
-    @ViewBuilder private func panel(_ p: Player) -> some View {
-        switch tab {
-        case .body:
-            section("Player") {
-                HStack(spacing: 10) {
-                    card("Boy", icon: "figure.stand", selected: !p.standardFemale) { edit { $0.standardFemale = false; if $0.haircutValue == nil { $0.haircut = 0 } } }
-                    card("Girl", icon: "figure.stand.dress", selected: p.standardFemale) { edit { $0.standardFemale = true; if $0.haircutValue == nil { $0.haircut = 1 } } }
-                }
-            }
-            section("Skin tone", swatch: Color(hex: p.skinHex)) {
-                RangeSlider(value: p.skinT, stops: LockerColor.skinStops.map { Color(hex: $0) }, label: "Skin tone") { t, done in edit(save: done) { $0.setSkin(t) } }
-                swatchRow(LockerColor.skinPresets.map { (LockerColor.ramp(LockerColor.skinStops, $0), $0) }, selected: p.skinT) { t in edit { $0.setSkin(t) } }
-            }
-            section("Plays") {
-                HStack(spacing: 10) {
-                    card("Right-handed", icon: "hand.raised.fill", selected: p.handedness != .left) { edit { $0.handedness = .right } }
-                    card("Left-handed", icon: "hand.raised.fill", selected: p.handedness == .left, mirror: true) { edit { $0.handedness = .left } }
-                }
-            }
-        case .hair:
-            section("Hairstyle") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    ForEach(0..<HeroV4.offered, id: \.self) { i in
-                        thumbCard(HeroV4.haircuts[i], image: LockerThumbs.image(p, haircut: i, headwear: 0), selected: p.shownHaircut == i) { edit { $0.haircut = i } }
-                    }
-                }
-            }
-            section("Natural colour", swatch: p.hairDyed ? nil : Color(hex: p.hairHex)) {
-                RangeSlider(value: p.hairT, stops: LockerColor.hairStops.map { Color(hex: $0) }, label: "Hair colour") { t, done in edit(save: done) { $0.setHair(natural: t) } }
-                swatchRow(LockerColor.hairPresets.map { (LockerColor.ramp(LockerColor.hairStops, $0.1), $0.1) }, selected: p.hairDyed ? -1 : p.hairT) { t in edit { $0.setHair(natural: t) } }
-            }
-            section("Dye", swatch: p.hairDyed ? Color(hex: p.hairHex) : nil) {
-                let v = p.look["hair"] ?? []
-                RangeSlider(value: p.hairDyed ? v[0] : 0.6, stops: LockerColor.rainbow, label: "Hair dye", dimmed: !p.hairDyed) { h, done in
-                    edit(save: done) { $0.setHair(dyeHue: h, shade: p.hairDyed ? v[1] : 0.1) }
-                }
-            }
-        case .headwear:
-            section("Headwear") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
-                    ForEach(HeroV4.headwear.indices, id: \.self) { i in
-                        thumbCard(HeroV4.headwear[i], image: LockerThumbs.image(p, haircut: p.shownHaircut, headwear: i), selected: p.hairStyle == i) { edit { $0.hairStyle = i } }
-                    }
-                }
-            }
-        case .outfit:
-            HStack(spacing: 8) {
-                ForEach([("shirt", "Shirt"), ("shorts", "Shorts"), ("accent", "Shoes")], id: \.0) { slot, title in
-                    Button { withAnimation(Club.spring) { outfitSlot = slot } } label: {
-                        HStack(spacing: 6) {
-                            Circle().fill(p.outfitColor(slot) ?? .white.opacity(0.3)).frame(width: 14, height: 14).overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: 1))
-                            Text(title).font(Club.ui(14, 700))
-                        }
-                        .foregroundStyle(outfitSlot == slot ? Club.ink : .white).padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(Capsule().fill(outfitSlot == slot ? Club.cream : .white.opacity(0.12)))
-                    }.buttonStyle(.plain)
-                }
-            }
-            colourEditor(p, slot: outfitSlot)
-        case .racket:
-            colourEditor(p, slot: "racket")
-        }
-    }
-
-    /// Hue + shade ranges, the palette as quick swatches, and "Kit" (the club kit's own colour).
-    @ViewBuilder private func colourEditor(_ p: Player, slot: String) -> some View {
-        let (h, sh) = p.hueShade(slot)
-        let kit = p.outfitHex(slot) == nil
-        section("Colour", swatch: p.outfitColor(slot), detail: p.outfitName(slot)) {
-            RangeSlider(value: h, stops: LockerColor.rainbow, label: "Hue", dimmed: kit) { v, done in edit(save: done) { $0.setOutfit(slot, hue: v, shade: sh) } }
-            RangeSlider(value: (sh + 1) / 2, stops: [Color(hex: LockerColor.hueShade(h, -1)), Color(hex: LockerColor.hueShade(h, 0)), Color(hex: LockerColor.hueShade(h, 1))],
-                        label: "Shade", dimmed: kit) { v, done in edit(save: done) { $0.setOutfit(slot, hue: h, shade: v * 2 - 1) } }
-        }
-        section("Quick picks") {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    Button { edit { $0.clearOutfit(slot) } } label: {
-                        Text("Kit").font(Club.ui(12, 800)).foregroundStyle(kit ? Club.ink : .white)
-                            .frame(width: 40, height: 40).background(Circle().fill(kit ? Club.sun : .white.opacity(0.14)))
-                    }.buttonStyle(.plain).accessibilityLabel("Kit colour")
-                    ForEach(Outfit.palette.indices, id: \.self) { i in
-                        let hex = Outfit.palette[i].hex
-                        Button { let (a, b) = LockerColor.hueShadeOf(hex); edit { $0.setOutfit(slot, hue: a, shade: b) } } label: {
-                            Circle().fill(Color(hex: hex)).frame(width: 40, height: 40)
-                                .overlay(Circle().strokeBorder(p.outfitHex(slot) == LockerColor.hueShade(LockerColor.hueShadeOf(hex).0, LockerColor.hueShadeOf(hex).1) ? Club.sun : .white.opacity(0.35), lineWidth: 3))
-                        }.buttonStyle(.plain).accessibilityLabel(Outfit.palette[i].name)
-                    }
-                }.padding(.vertical, 2)
-            }
-        }
-    }
-
-    // MARK: building blocks
-
-    private func section<C: View>(_ title: String, swatch: Color? = nil, detail: String? = nil, @ViewBuilder _ content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Text(title).font(Club.title(17)).foregroundStyle(.white)
-                if let detail { Text(detail).font(Club.ui(13, 600)).foregroundStyle(.white.opacity(0.6)) }
-                Spacer()
-                if let swatch { Circle().fill(swatch).frame(width: 22, height: 22).overlay(Circle().strokeBorder(.white.opacity(0.7), lineWidth: 2)) }
-            }
-            content()
-        }
-    }
-
-    private func card(_ title: String, icon: String, selected: Bool, mirror: Bool = false, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon).font(.system(size: 26, weight: .bold)).scaleEffect(x: mirror ? -1 : 1)
-                Text(title).font(Club.ui(14, 700)).lineLimit(1).minimumScaleFactor(0.8)
-            }
-            .foregroundStyle(selected ? Club.ink : .white).frame(maxWidth: .infinity).padding(.vertical, 14)
-            .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(selected ? Club.sun : .white.opacity(0.1)))
-        }
-        .buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    private func thumbCard(_ title: String, image: UIImage?, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous).fill(LinearGradient(colors: [Color(hex: "FFE2C4").opacity(0.5), Color(hex: "FF9F7A").opacity(0.25)], startPoint: .top, endPoint: .bottom))
-                    if let image { Image(uiImage: image).resizable().scaledToFit().padding(2) }
-                }.aspectRatio(1, contentMode: .fit)
-                Text(title).font(Club.ui(12, 700)).lineLimit(1).minimumScaleFactor(0.8).foregroundStyle(selected ? Club.ink : .white)
-            }
-            .padding(6)
-            .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(selected ? Club.sun : .white.opacity(0.1)))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(selected ? Club.sunDeep : .clear, lineWidth: 2))
-        }
-        .buttonStyle(.plain).accessibilityLabel(title).accessibilityAddTraits(selected ? .isSelected : [])
-    }
-
-    private func swatchRow(_ items: [(String, Double)], selected: Double, pick: @escaping (Double) -> Void) -> some View {
-        HStack(spacing: 0) {
-            ForEach(items.indices, id: \.self) { i in
-                Button { pick(items[i].1) } label: {
-                    Circle().fill(Color(hex: items[i].0)).frame(width: 30, height: 30)
-                        .overlay(Circle().strokeBorder(abs(selected - items[i].1) < 0.02 ? Club.sun : .white.opacity(0.35), lineWidth: 3))
-                        .frame(maxWidth: .infinity)
-                }.buttonStyle(.plain)
-            }
-        }
-    }
-
-    /// Change the player; saving to disk is throttled while a slider drags and always happens at the end.
-    private func edit(save done: Bool = true, _ change: (inout Player) -> Void) {
-        let s = SportsSession.shared
-        guard s.players.indices.contains(s.playerIndex) else { return }
-        change(&s.players[s.playerIndex])
-        if done || Date().timeIntervalSince(lastSave) > 0.5 { s.savePlayers(); lastSave = Date() }
-    }
     private func rename(_ text: String) {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
-        edit { $0.name = String(t.prefix(14)) }
+        menu.lockerEdit { $0.name = String(t.prefix(14)) }
+    }
+
+    // MARK: panel
+
+    private var panel: some View {
+        VStack(alignment: .leading, spacing: 12 * k) {
+            if let range = menu.lockerRange { rangePanel(range) }
+            else {
+                tabs
+                Group {
+                    switch menu.lockerTab {
+                    case .gear: gear
+                    case .customize: customize
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                footer
+            }
+        }
+        .padding(.horizontal, 18 * k).padding(.top, 16 * k).padding(.bottom, compact ? 26 : 20)
+        .frame(maxWidth: .infinity)
+        .background(IslandUI.paper.opacity(0.96), in: RoundedRectangle(cornerRadius: compact ? 32 : 26, style: .continuous))
+        .shadow(color: IslandUI.navy.opacity(0.22), radius: 18, y: compact ? -8 : 8)
+    }
+
+    private var tabs: some View {
+        HStack(spacing: 6) {
+            ForEach([(TennisMenu.LockerTab.gear, "Gear", "lk-tab-gear"), (.customize, "Customize", "lk-tab-customize")], id: \.2) { tab, title, id in
+                let on = menu.lockerTab == tab
+                Button { menu.tap(id) } label: {
+                    Text(title).font(IslandUI.font(17 * k, bold: true)).foregroundStyle(IslandUI.navy)
+                        .frame(maxWidth: .infinity).padding(.vertical, 11 * k)
+                        .background(on ? IslandUI.lime : .clear, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(IslandUI.navy, lineWidth: menu.isFocused(id) ? 3.5 : 0))
+                }.buttonStyle(.plain).accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+        .padding(5).background(IslandUI.navy.opacity(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var footer: some View {
+        HStack(spacing: 12) {
+            if !compact { footerButton("Shuffle", id: "lk-shuffle", primary: false) }
+            if menu.lockerDirty {
+                if compact {
+                    Button { menu.tap("lk-revert") } label: {
+                        Text("Revert").font(IslandUI.font(16, bold: true)).foregroundStyle(IslandUI.muted).padding(.horizontal, 6)
+                    }.buttonStyle(.plain)
+                } else { footerButton("Revert", id: "lk-revert", primary: false) }
+            }
+            footerButton("Done", id: "lk-done", primary: true)
+        }
+    }
+
+    private func footerButton(_ title: String, id: String, primary: Bool) -> some View {
+        Button { menu.tap(id) } label: {
+            Text(title).font(IslandUI.font(compact ? 18 : 22, bold: true)).foregroundStyle(IslandUI.navy)
+                .frame(maxWidth: .infinity, minHeight: compact ? 52 : 58)
+                .background(primary ? IslandUI.lime : .white, in: Capsule())
+                .overlay(Capsule().strokeBorder(IslandUI.navy, lineWidth: menu.isFocused(id) ? 4 : primary ? 2 : 0))
+                .shadow(color: IslandUI.navy.opacity(0.15), radius: 3, y: 2)
+        }.buttonStyle(.plain).accessibilityLabel(title)
+    }
+
+    // MARK: gear
+
+    private var gear: some View {
+        VStack(alignment: .leading, spacing: 12 * k) {
+            HStack(spacing: 8) {
+                ForEach(LockerCatalog.slots(for: menu.lockerSport)) { slot in
+                    let on = menu.lockerSlot == slot, id = "lk-slot-\(slot.rawValue)"
+                    Button { menu.tap(id) } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: slot.icon).font(.system(size: 14 * k, weight: .bold))
+                            Text(slot.title(for: menu.lockerSport)).font(IslandUI.font(15 * k, bold: true))
+                        }
+                        .foregroundStyle(on ? .white : IslandUI.navy).frame(maxWidth: .infinity).padding(.vertical, 10 * k)
+                        .background(on ? IslandUI.navy : .white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(IslandUI.lime, lineWidth: menu.isFocused(id) ? 4 : 0))
+                        .shadow(color: IslandUI.navy.opacity(0.1), radius: 2, y: 1)
+                    }.buttonStyle(.plain).accessibilityAddTraits(on ? .isSelected : [])
+                }
+            }
+            shelf
+            if let colour = menu.lockerItemColourSlot { colourRow(colour) }
+            else if menu.lockerSlot == .skin {
+                Button { menu.tap("lk-tab-customize") } label: {
+                    HStack(spacing: 6) { Text("Shirt, shorts and skin colours").font(IslandUI.font(14 * k, bold: true)); Text("Customize ›").font(IslandUI.font(14 * k, bold: true)).foregroundStyle(IslandUI.muted) }
+                        .foregroundStyle(IslandUI.navy)
+                }.buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var shelf: some View {
+        let items = menu.lockerShelf, worn = menu.lockerEquipped
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10 * k) {
+                ForEach(items) { item in
+                    let id = "lk-item-\(item.id)"
+                    LockerTile(item: item, player: player, sport: menu.lockerSport, selected: worn?.id == item.id, focused: menu.isFocused(id), scale: k)
+                        .onTapGesture { menu.tap(id) }
+                }
+                if items.count < 4 {
+                    Text("More gear\ncoming soon").font(IslandUI.font(13 * k, bold: false)).multilineTextAlignment(.center).foregroundStyle(IslandUI.muted)
+                        .frame(width: 112 * k, height: 134 * k)
+                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(IslandUI.navy.opacity(0.25), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+                        .accessibilityHidden(true)
+                }
+            }.padding(.horizontal, 8).padding(.vertical, 8)
+        }.padding(.horizontal, -8)
+    }
+
+    private func colourRow(_ slot: String) -> some View {
+        VStack(alignment: .leading, spacing: 8 * k) {
+            HStack {
+                Text("Colour").font(IslandUI.font(15 * k, bold: true))
+                Spacer()
+                Button { menu.tap("lk-colour") } label: { Text("Custom ›").font(IslandUI.font(13 * k, bold: true)).foregroundStyle(IslandUI.muted) }.buttonStyle(.plain)
+            }
+            IslandSwatchRow(colours: TennisMenu.lockerSwatches.map { Color(hex: $0.hex) }, selected: menu.lockerSwatchIndex(slot), kit: true, size: 27 * k) { menu.lockerPick(slot, index: $0) }
+        }
+        .foregroundStyle(IslandUI.navy).padding(.horizontal, 12).padding(.vertical, 9)
+        .islandFocus(menu.isFocused("lk-colour"), radius: 14, base: .clear, ringWidth: 3)
+    }
+
+    // MARK: customize
+
+    private var customize: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 8 * k) {
+                labelledRow("Player", id: "lk-body") {
+                    IslandSegments(titles: ["Boy", "Girl"], selected: player.standardFemale ? 1 : 0, compact: compact) { i in menu.lockerEdit { $0.standardFemale = i == 1 } }
+                }
+                labelledRow("Plays", id: "lk-hand") {
+                    IslandSegments(titles: ["Right", "Left"], selected: player.handedness == .left ? 1 : 0, compact: compact) { i in menu.lockerEdit { $0.handedness = i == 1 ? .left : .right } }
+                }
+                labelledRow("Skin", id: "lk-skin", custom: "skin") {
+                    IslandSwatchRow(colours: LockerColor.skinPresets.map { Color(hex: LockerColor.ramp(LockerColor.skinStops, $0)) }, selected: menu.lockerSkinIndex(), size: 28 * k) { menu.lockerPickSkin($0) }
+                }
+                labelledRow("Shirt", id: "lk-shirt", custom: "shirt") {
+                    IslandSwatchRow(colours: TennisMenu.lockerSwatches.map { Color(hex: $0.hex) }, selected: menu.lockerSwatchIndex("shirt"), kit: true, size: 23 * k) { menu.lockerPick("shirt", index: $0) }
+                }
+                labelledRow("Shorts", id: "lk-shorts", custom: "shorts") {
+                    IslandSwatchRow(colours: TennisMenu.lockerSwatches.map { Color(hex: $0.hex) }, selected: menu.lockerSwatchIndex("shorts"), kit: true, size: 23 * k) { menu.lockerPick("shorts", index: $0) }
+                }
+            }.padding(.horizontal, 3).padding(.vertical, 4)
+        }
+    }
+
+    private func labelledRow<C: View>(_ title: String, id: String, custom: String? = nil, @ViewBuilder _ content: () -> C) -> some View {
+        HStack(spacing: 8 * k) {
+            Text(title).font(IslandUI.font(16 * k, bold: true)).frame(width: 54 * k, alignment: .leading)
+            content()
+            if let custom {
+                Button { menu.lockerOpenRangeForTouch(custom) } label: { Image(systemName: "slider.horizontal.3").font(.system(size: 15 * k, weight: .bold)).foregroundStyle(IslandUI.muted).frame(width: 28 * k, height: 28 * k) }
+                    .buttonStyle(.plain).accessibilityLabel("Custom \(title.lowercased()) colour")
+            }
+        }
+        .foregroundStyle(IslandUI.navy).padding(.horizontal, 12 * k).padding(.vertical, 9 * k)
+        .islandFocus(menu.isFocused(id), radius: 15)
+    }
+
+    // MARK: full range
+
+    private func rangePanel(_ slot: String) -> some View {
+        let p = player
+        let title = slot == "skin" ? "Skin tone" : slot == "shirt" ? "Shirt" : slot == "shorts" ? "Shorts" : slot == "accent" ? "Shoes" : (menu.lockerSlot == .club ? "Club" : "Racket")
+        return VStack(alignment: .leading, spacing: 14 * k) {
+            HStack {
+                Text("\(title) · custom colour").font(IslandUI.font(20 * k, bold: true))
+                Spacer()
+                Circle().fill(slot == "skin" ? Color(hex: p.skinHex) : (p.outfitColor(slot) ?? .white.opacity(0.4))).frame(width: 26, height: 26).overlay(Circle().strokeBorder(IslandUI.navy.opacity(0.3), lineWidth: 2))
+            }
+            if slot == "skin" {
+                rangeRow("Tone", id: "lk-range-skin") {
+                    RangeSlider(value: p.skinT, stops: LockerColor.skinStops.map { Color(hex: $0) }, label: "Skin tone") { t, done in menu.lockerEdit(save: done) { $0.setSkin(t) } }
+                }
+            } else {
+                let (h, sh) = p.hueShade(slot)
+                rangeRow("Hue", id: "lk-range-hue") {
+                    RangeSlider(value: h, stops: LockerColor.rainbow, label: "Hue") { v, done in menu.lockerEdit(save: done) { $0.setOutfit(slot, hue: v, shade: sh) } }
+                }
+                rangeRow("Shade", id: "lk-range-shade") {
+                    RangeSlider(value: (sh + 1) / 2, stops: [Color(hex: LockerColor.hueShade(h, -1)), Color(hex: LockerColor.hueShade(h, 0)), Color(hex: LockerColor.hueShade(h, 1))], label: "Shade") { v, done in
+                        menu.lockerEdit(save: done) { $0.setOutfit(slot, hue: h, shade: v * 2 - 1) }
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+            footerButton("Done", id: "lk-range-close", primary: true)
+        }
+    }
+
+    private func rangeRow<C: View>(_ title: String, id: String, @ViewBuilder _ content: () -> C) -> some View {
+        HStack(spacing: 10) {
+            Text(title).font(IslandUI.font(16 * k, bold: true)).frame(width: 56 * k, alignment: .leading)
+            content()
+        }
+        .foregroundStyle(IslandUI.navy).padding(.horizontal, 12).padding(.vertical, 6)
+        .islandFocus(menu.isFocused(id), radius: 15)
+    }
+}
+
+/// One item on the shelf: a thumbnail of the real hero wearing / holding it, its name, a check when equipped.
+struct LockerTile: View {
+    let item: LockerItem
+    let player: Player
+    let sport: Sport
+    let selected: Bool
+    let focused: Bool
+    var scale: CGFloat = 1
+    @State private var image: UIImage?
+    private var key: String { LockerThumbs.key(player, slot: item.slot, item: item) }
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                LinearGradient(colors: [Color(hex: "F4F0E6"), Color(hex: "E7E0CF")], startPoint: .top, endPoint: .bottom)
+                if let image { Image(uiImage: image).resizable().scaledToFill() }
+            }.frame(height: 98 * scale).clipped()
+            Text(item.name).font(IslandUI.font(14 * scale, bold: true)).foregroundStyle(IslandUI.navy).frame(maxWidth: .infinity, minHeight: 36 * scale)
+        }
+        .frame(width: 112 * scale, height: 134 * scale)
+        .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(alignment: .topTrailing) {
+            if selected {
+                Image(systemName: "checkmark").font(.system(size: 12 * scale, weight: .black)).foregroundStyle(IslandUI.navy)
+                    .frame(width: 24 * scale, height: 24 * scale).background(IslandUI.lime, in: Circle()).overlay(Circle().strokeBorder(IslandUI.navy, lineWidth: 2)).padding(7)
+            }
+        }
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(IslandUI.navy, lineWidth: selected ? 3.5 : 0))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(IslandUI.lime, lineWidth: focused ? 5 : 0).padding(-5))
+        .shadow(color: IslandUI.navy.opacity(0.14), radius: 4, y: 2)
+        .task(id: key) { image = LockerThumbs.image(player, slot: item.slot, item: item) }
+        .accessibilityElement(children: .ignore).accessibilityLabel("\(item.name) \(item.slot.title(for: sport))")
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+    }
+}
+
+/// Offscreen renders of the real hero for the shelf tiles (cached per look).
+@MainActor enum LockerThumbs {
+    private static var cache: [String: UIImage] = [:]
+    static func key(_ p: Player, slot: LockerSlot, item: LockerItem) -> String {
+        "\(p.standardFemale)|\(p.skinHex)|\(p.outfitHex("shirt") ?? "k")|\(p.outfitHex("shorts") ?? "k")|\(p.outfitHex("accent") ?? "k")|\(p.outfitHex("racket") ?? "k")|\(slot.rawValue)|\(item.id)"
+    }
+    static func image(_ p: Player, slot: LockerSlot, item: LockerItem) -> UIImage? {
+        let k = key(p, slot: slot, item: item)
+        if let c = cache[k] { return c }
+        let c = CharacterModelPreview.Coordinator(cameraDistance: 3.1); c.update(p)
+        c.framing = slot == .skin ? .body : slot == .shoes ? .feet : .racket; c.applyFraming()
+        c.scene.rootNode.childNode(withName: "idleBall", recursively: true)?.removeFromParentNode()
+        let r = SCNRenderer(device: nil, options: nil); r.scene = c.scene; r.pointOfView = c.camera
+        let img = r.snapshot(atTime: 0, with: CGSize(width: 240, height: 240), antialiasingMode: .multisampling4X)
+        if cache.count > 80 { cache.removeAll() }
+        cache[k] = img
+        return img
     }
 }
 
@@ -292,27 +422,5 @@ struct RangeSlider: View {
         guard stops.count > 1 else { return stops.first ?? .white }
         let x = min(1, max(0, t)) * Double(stops.count - 1); let i = min(stops.count - 2, Int(x))
         return x - Double(i) < 0.5 ? stops[i] : stops[i + 1]
-    }
-}
-
-/// Head-shot thumbnails of the real locker hero for the style cards (rendered offscreen once per look).
-@MainActor enum LockerThumbs {
-    private static var cache: [String: UIImage] = [:]
-    static func image(_ p: Player, haircut: Int, headwear: Int) -> UIImage? {
-        let key = "\(haircut)-\(headwear)-\(p.hairHex)-\(p.skinHex)-\(p.standardFemale)"
-        if let c = cache[key] { return c }
-        var q = p; q.haircut = haircut; q.hairStyle = headwear
-        let c = CharacterModelPreview.Coordinator(); c.update(q)
-        c.framing = .head; c.applyFraming()
-        c.scene.rootNode.childNode(withName: "idleBall", recursively: true)?.removeFromParentNode()
-        if let cam = c.scene.rootNode.childNodes.first(where: { $0.camera != nil }) {
-            cam.position = SCNVector3(0.5, 1.16, 1.2); cam.look(at: SCNVector3(0, 1.1, 0))   // 3/4 head shot: hair front, side and back read
-        }
-        let r = SCNRenderer(device: nil, options: nil); r.scene = c.scene
-        r.pointOfView = c.scene.rootNode.childNodes.first(where: { $0.camera != nil })
-        let img = r.snapshot(atTime: 0, with: CGSize(width: 220, height: 220), antialiasingMode: .multisampling4X)
-        if cache.count > 60 { cache.removeAll() }
-        cache[key] = img
-        return img
     }
 }

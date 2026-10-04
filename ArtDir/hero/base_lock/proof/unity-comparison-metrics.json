@@ -1,0 +1,43 @@
+{
+  "method": "Native 1280x720 Unity images. Separate geometry captures use transparent clear, opaque unlit geometry, SSAO disabled, linear render target and 4x MSAA. Alpha coverage is saved as RGB bytes; threshold 127 matches Blender alpha. Bald main prefab and independently instantiated body prefab must render identically. Plate comparisons use frozen metre/pixel scale with x-only framing translation. No image warp or target adjustment. Shading and face fidelity remain visual gates.",
+  "measurements": [
+    {
+      "sex": "Male",
+      "views": {
+        "front": {
+          "blender_unity_silhouette_difference_over_union": 0.005128071974762096,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0,
+          "unity_plate_silhouette_difference_over_union": 0.11284845318505803
+        },
+        "back": {
+          "blender_unity_silhouette_difference_over_union": 0.005270400083080199,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0,
+          "unity_plate_silhouette_difference_over_union": 0.1497274692228174
+        },
+        "threequarter": {
+          "blender_unity_silhouette_difference_over_union": 0.004962745963588694,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0
+        }
+      }
+    },
+    {
+      "sex": "Female",
+      "views": {
+        "front": {
+          "blender_unity_silhouette_difference_over_union": 0.005691208807001911,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0,
+          "unity_plate_silhouette_difference_over_union": 0.07970569365384877
+        },
+        "back": {
+          "blender_unity_silhouette_difference_over_union": 0.005734324025236774,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0,
+          "unity_plate_silhouette_difference_over_union": 0.11131960024474812
+        },
+        "threequarter": {
+          "blender_unity_silhouette_difference_over_union": 0.004239863398257749,
+          "primary_base_vs_independent_body_mask_difference_pixels": 0
+        }
+      }
+    }
+  ]
+}

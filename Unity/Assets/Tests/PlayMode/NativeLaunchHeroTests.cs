@@ -10,8 +10,8 @@ using Object = UnityEngine.Object;
 namespace GolfArcade.PlayTests
 {
     /// The phone launch path (NativeSportsSession): SelectCharacter, outfit, locker look, then a campaign match
-    /// against a named rival. Both players must still be the Hero01 visual afterwards, and a self-played rally
-    /// must not be eaten by honest-contact misses.
+    /// against a named rival. Both players must still be the match hero (HERO_MAINSTAY: the male or female HeroBase body of work/match-anim-set)
+    /// afterwards, the sex following the locker and the roster, and a self-played rally must not be eaten by honest-contact misses.
     public class NativeLaunchHeroTests
     {
         [UnityTest, Timeout(600000)]
@@ -39,8 +39,10 @@ namespace GolfArcade.PlayTests
             string report = $"playerHero={(ph != null)} rivalHero={(rh != null)} heroesInScene={heroes} hits={game.Hits} honestMisses={game.HonestMisses} playerGapMean={game.PlayerGaps.Mean:0.000} visible={game.PlayerGaps.Visible}/{game.PlayerGaps.Count} rivalWhiffs={game.RivalWhiffs} score={game.Match.Scoreboard}";
             Debug.Log("[NativeLaunch] " + report);
             File.WriteAllText(Path.GetFullPath("../ArtDir/score80/native_launch_" + (System.Environment.GetEnvironmentVariable("NL_TAG") ?? "run") + ".txt"), report + "\n");
-            Assert.IsNotNull(ph, "the player's Hero01 must survive SelectCharacter");
-            Assert.IsNotNull(rh, "the campaign rival's Hero01 must survive ConfigureMatch");
+            Assert.IsNotNull(ph, "the player's match hero must survive SelectCharacter");
+            Assert.IsNotNull(rh, "the campaign rival's match hero must survive ConfigureMatch");
+            Assert.IsNotNull(ph.matchLook, "the player is a match hero, not the old Hero01"); Assert.IsNotNull(rh.matchLook, "the rival is a match hero, not the old Hero01");
+            Assert.IsFalse(ph.matchLook.female, "SelectCharacter(false) is the male body"); Assert.AreEqual(TennisRoster.Find("Milo").Female, rh.matchLook.female, "Milo's body follows TennisRoster.Female");
             Assert.AreEqual(2, heroes, "exactly one hero per player (no orphans)");
         }
 
@@ -57,8 +59,9 @@ namespace GolfArcade.PlayTests
             yield return null; yield return null;
             var ph = game.Player.GetComponentInChildren<HeroTennisDriver>(true);
             Assert.IsNotNull(ph, "player hero after two rebuilds");
-            Assert.AreEqual(HeroCosmetics.Hat.Cap, ph.cosmetics.CurrentHat, "the locker look (cap) is re-applied on rebuild");
-            string dir = Path.GetFullPath("../ArtDir/score80/lineup"); Directory.CreateDirectory(dir);
+            Assert.IsNotNull(ph.matchLook, "the player is a match hero"); Assert.IsTrue(ph.matchLook.female, "the second rebuild (SelectCharacter(true)) is the female body");
+            Assert.IsNull(ph.look, "no old Hero01 look on the player"); Assert.IsNull(ph.cosmetics, "no old hair / headwear on the player");
+            string dir = Path.GetFullPath("../work/hero-mainstay/proof/lineup"); Directory.CreateDirectory(dir);
             var cam = new GameObject("Lineup cam").AddComponent<Camera>(); cam.enabled = false; cam.fieldOfView = 30;
             var rt = new RenderTexture(360, 540, 24); var tex = new Texture2D(360, 540, TextureFormat.RGB24, false); cam.targetTexture = rt;
             var states = new System.Text.StringBuilder();
@@ -77,7 +80,9 @@ namespace GolfArcade.PlayTests
                 game.ConfigureMatch(TennisGame.Mode.Campaign, r.Key, r.Key, "ROUND");
                 yield return null; yield return null;
                 var rh = game.Opponent.GetComponentInChildren<HeroTennisDriver>(true);
-                Assert.IsNotNull(rh, r.Key + " must be on the hero standard");
+                Assert.IsNotNull(rh, r.Key + " must be a match hero");
+                Assert.IsNotNull(rh.matchLook, r.Key + " is a match hero, not the old Hero01"); Assert.AreEqual(r.Female, rh.matchLook.female, r.Key + " body follows TennisRoster.Female");
+                Assert.IsNull(rh.look, r.Key + " has no old Hero01 look"); Assert.IsNull(rh.cosmetics, r.Key + " has no old hair / headwear");
                 Assert.AreEqual(2, Object.FindObjectsByType<HeroTennisDriver>(FindObjectsSortMode.None).Length, "no orphan heroes after " + r.Key);
                 Shot(game.Opponent.transform, $"{n++:00}_{r.Key}");
             }

@@ -1,0 +1,313 @@
+{
+ "task": "MALE_NAPE_PELVIS",
+ "start_blend_sha256": "548a83f4bf3f8624e452955bfef84e3f5bf84a3088f8cd9ae5325dc20d426495",
+ "installed_blend_sha256": "9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba",
+ "start_fbx_sha256": "2e0740d7127556fc2176e4d35d7f8d916180e856187de3de71b46ef16f5e5bfc",
+ "installed_fbx_sha256": "69428fc8cf5d1deea5ebc9e232440bf20a8e67b8492e20145ba3f463029570d7",
+ "zones": {
+  "declared": {
+   "NAPE": {
+    "z": [
+     1.3,
+     1.5
+    ],
+    "ax": 0.18
+   },
+   "PELVIS": {
+    "z": [
+     0.725,
+     1.07
+    ],
+    "ax": 0.22
+   }
+  },
+  "brief_nominal": {
+   "NAPE": "z[1.28,1.42] |x|<=.18",
+   "PELVIS": "z[0.77,1.05] |x|<=.22"
+  },
+  "note": "declared zones extend the brief by: nape up to z 1.50 (hump shoulder at 1.42-1.46 + fade), pelvis down to z 0.725 (underbutt / leg-top fade band) and up to 1.07 (blend)"
+ },
+ "mesh_audit": {
+  "TOPOLOGY_IDENTICAL": true,
+  "NAN": 0,
+  "moved": 2887,
+  "moved_in_NAPE": 536,
+  "moved_in_PELVIS": 2351,
+  "ZONE_OUTSIDE_NAPE": 0,
+  "ZONE_OUTSIDE_PELVIS": 0,
+  "max_move_mm": 22.680336857072778,
+  "mean_move_mm_moved": 3.2750892312407838,
+  "max_dx_mm": 11.0298433303833,
+  "max_dz_mm": 0.0,
+  "max_move_nape_mm": 20.449932664632797,
+  "max_move_pelvis_mm": 22.680336857072778,
+  "moved_below_z0p77": 410,
+  "max_move_below_z0p77_mm": 16.647598694992343,
+  "moved_legs_feet_z_lt_0p735": 84,
+  "moved_head_z_ge_1p47": 38,
+  "moved_loop_groups": 0,
+  "moved_arms_hands_absx_gt_0p215_z_gt_0p78": 0,
+  "face_m_identical": true,
+  "micro1k_strip_vertices": 33,
+  "micro1k_strip_max_move_mm": 16.45834743976593,
+  "flipped_faces_vs_start": 0,
+  "min_face_normal_dot": 0.6183676726613369,
+  "faces_turned_gt_45deg": 6,
+  "degenerate_faces_after": 0,
+  "self_intersections_start": 6,
+  "self_intersections_after": 6,
+  "self_intersections_new": 0,
+  "custom_normals": {
+   "has_custom": true,
+   "moved_corner_count": 11583,
+   "angle_deg_median": 0.005519180430525248,
+   "angle_deg_p95": 0.26967202080459934,
+   "angle_deg_max": 8.57612569575316
+  },
+  "delta_axes_mm": {
+   "max_dx": 11.03,
+   "max_dy": 22.68,
+   "max_dz": 0.0
+  }
+ },
+ "zone_edge_max_move_mm": 1.738954335451126,
+ "moved_before_mask_outside_zone": {
+  "vertices": 286,
+  "max_mm": 0.24828882437578356,
+  "note": "displacement-field smoothing spread, set to exactly 0 by the zone mask"
+ },
+ "silhouette_pct": {
+  "start": {
+   "bald_front": 4.1407,
+   "bald_back": 4.734,
+   "left": 9.0052,
+   "right": 9.9267
+  },
+  "installed": {
+   "bald_front": 4.1273,
+   "bald_back": 4.7467,
+   "left": 9.1687,
+   "right": 9.4523
+  },
+  "gate": "bald front/back <= 5.0 %",
+  "front_back_PASS": true,
+  "note": "left/right are reported only (not gated)"
+ },
+ "nape_contour": {
+  "range": [
+   1.3,
+   1.44
+  ],
+  "before_mean_abs_mm": 7.661260409284041,
+  "before_max_abs_mm": 24.65890288914285,
+  "after_mean_abs_mm": 1.470885106170124,
+  "after_max_abs_mm": 6.2312353047566935
+ },
+ "pelvis_contour": {
+  "range": [
+   0.74,
+   1.04
+  ],
+  "before_mean_abs_mm": 4.3117902518494455,
+  "before_max_abs_mm": 10.177108115252187,
+  "after_mean_abs_mm": 1.7728629484061211,
+  "after_max_abs_mm": 8.859811437130633
+ },
+ "glute_lobes_rear_depth": {
+  "z0.80": {
+   "start": {
+    "center_mm": 89.8,
+    "peak_mm": 100.1,
+    "peak_x_mm": 30.0,
+    "cleft_depth_mm": 10.3
+   },
+   "installed": {
+    "center_mm": 68.5,
+    "peak_mm": 93.8,
+    "peak_x_mm": 60.0,
+    "cleft_depth_mm": 25.3
+   }
+  },
+  "z0.84": {
+   "start": {
+    "center_mm": 105.4,
+    "peak_mm": 112.0,
+    "peak_x_mm": 40.0,
+    "cleft_depth_mm": 6.5
+   },
+   "installed": {
+    "center_mm": 86.7,
+    "peak_mm": 103.0,
+    "peak_x_mm": 50.0,
+    "cleft_depth_mm": 16.3
+   }
+  },
+  "z0.88": {
+   "start": {
+    "center_mm": 105.1,
+    "peak_mm": 105.2,
+    "peak_x_mm": 10.0,
+    "cleft_depth_mm": 0.2
+   },
+   "installed": {
+    "center_mm": 95.9,
+    "peak_mm": 100.0,
+    "peak_x_mm": 40.0,
+    "cleft_depth_mm": 4.1
+   }
+  },
+  "z0.92": {
+   "start": {
+    "center_mm": 93.2,
+    "peak_mm": 93.2,
+    "peak_x_mm": 0.0,
+    "cleft_depth_mm": 0.0
+   },
+   "installed": {
+    "center_mm": 89.1,
+    "peak_mm": 89.1,
+    "peak_x_mm": 0.0,
+    "cleft_depth_mm": 0.0
+   }
+  }
+ },
+ "bandpass_correlation_vs_plate": {
+  "start": {
+   "back_glute": -0.034,
+   "back_glute_sr": 3.226,
+   "back_lumbar": 0.738,
+   "back_lumbar_sr": 1.248,
+   "front_groin": 0.42,
+   "front_groin_sr": 1.732,
+   "q3BL_glute": 0.477,
+   "q3BL_glute_sr": 1.316,
+   "q3BR_glute": 0.51,
+   "q3BR_glute_sr": 1.303,
+   "left_glute": 0.409,
+   "left_glute_sr": 0.605,
+   "right_glute": 0.59,
+   "right_glute_sr": 1.289
+  },
+  "installed": {
+   "back_glute": -0.08,
+   "back_glute_sr": 3.585,
+   "back_lumbar": 0.729,
+   "back_lumbar_sr": 1.261,
+   "front_groin": 0.59,
+   "front_groin_sr": 1.455,
+   "q3BL_glute": 0.488,
+   "q3BL_glute_sr": 1.319,
+   "q3BR_glute": 0.532,
+   "q3BR_glute_sr": 1.292,
+   "left_glute": 0.382,
+   "left_glute_sr": 0.606,
+   "right_glute": 0.851,
+   "right_glute_sr": 1.264
+  },
+  "note": "DoG(1.2,5.0) px (sheet panels 0.8/3.0), Pearson r; *_sr = render/plate band-pass std ratio"
+ },
+ "dihedral_roughness_deg": {
+  "pelvis rear+front z.735-1.06 |x|<.2": {
+   "edges": 6874,
+   "start_p99": 34.3,
+   "start_max": 49.5,
+   "installed_p99": 30.9,
+   "installed_max": 42.2,
+   "new_edges_gt40deg": 2
+  },
+  "crotch z.735-.83 |x|<.1": {
+   "edges": 1230,
+   "start_p99": 43.5,
+   "start_max": 49.5,
+   "installed_p99": 37.9,
+   "installed_max": 42.2,
+   "new_edges_gt40deg": 2
+  },
+  "nape z1.30-1.48 |x|<.14": {
+   "edges": 2895,
+   "start_p99": 29.1,
+   "start_max": 79.9,
+   "installed_p99": 29.9,
+   "installed_max": 79.9,
+   "new_edges_gt40deg": 0
+  }
+ },
+ "torso_form3_gate_regions": {
+  "values": {
+   "start": {
+    "front_chest": 0.651,
+    "front_abdomen": 0.621,
+    "front_pelvis": 0.69,
+    "back_chest": 0.453,
+    "back_abdomen": 0.294,
+    "back_pelvis": 0.177,
+    "mean": 0.481
+   },
+   "installed": {
+    "front_chest": 0.651,
+    "front_abdomen": 0.621,
+    "front_pelvis": 0.784,
+    "back_chest": 0.447,
+    "back_abdomen": 0.331,
+    "back_pelvis": 0.197,
+    "mean": 0.505
+   }
+  },
+  "note": "torso FORM3 gate metric (Unity-clay band-pass r, |x|<0.12, DoG 1.2/5) recomputed on this chat's renders; regions chest z1.15-1.32, abdomen .90-1.15, pelvis .80-.90"
+ },
+ "fbx": {
+  "blend_sha256": "9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba",
+  "fbx_sha256": "69428fc8cf5d1deea5ebc9e232440bf20a8e67b8492e20145ba3f463029570d7",
+  "body_tris": 66158,
+  "face_tris": 5416,
+  "imported_objects": [
+   "Body_M",
+   "Face_M"
+  ],
+  "Body_M": {
+   "verts": 33196,
+   "tris": 66158,
+   "max_reimport_mm": 0.00027939677238464355,
+   "materials": [
+    "Blockout_Grey"
+   ],
+   "height_m": 1.7021871663164347
+  },
+  "Face_M": {
+   "verts": 3322,
+   "tris": 5416,
+   "max_reimport_mm": 0.0002682209014892578,
+   "materials": [
+    "Face_Brow",
+    "Face_Sclera",
+    "Face_Iris",
+    "Face_Pupil",
+    "Face_Limbal",
+    "Face_Catch",
+    "Face_LidLine",
+    "Face_Lip",
+    "Face_LipUp",
+    "Face_Seam",
+    "Face_Nostril",
+    "Face_BrowSoft",
+    "Face_LidCrease"
+   ],
+   "height_m": null
+  }
+ },
+ "unity_refresh": {
+  "verify": "MALE_FORM_SAVED_UNITY_VERIFY=PASS (final run on blend 9bfd788a\u2026, FBX 69428fc8\u2026; 66,158 tris, 2 renderers)",
+  "body_triangles": 66158,
+  "renderers": "Body_M+Face_M"
+ },
+ "history": {
+  "first_install": {
+   "blend": "84f4b529057fffe5f72ecfca847746cc19d203ac836def5376fa7f996f020720",
+   "note": "F4: narrow deep cleft; lowered torso FORM3 back_pelvis/back_abdomen gate regions (0.177->0.063, 0.294->0.222)"
+  },
+  "upgrade": {
+   "blend": "9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba",
+   "note": "W1: broad cleft; FORM3 gate regions not regressed"
+  }
+ }
+}

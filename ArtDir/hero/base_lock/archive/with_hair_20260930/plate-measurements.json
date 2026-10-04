@@ -1,0 +1,34 @@
+{
+  "male": {
+    "height_px": 658,
+    "top_y": 22,
+    "sole_y": 680,
+    "center_x": 305,
+    "head_including_hair_px": 174,
+    "shoulder_width_px": 198,
+    "waist_width_px": 133,
+    "hip_width_px": 165,
+    "upper_leg_width_px": 81,
+    "calf_width_px": 56,
+    "sha256": "53875f7d573566df5f262d0041a5dbbd4ce14df8bdf77f1d2c16aba561e3ea94",
+    "height_m": 1.7,
+    "meters_per_pixel": 0.0025835866261398176,
+    "measurement_method": "Manual pixel landmarks on the unchanged 1280 x 720 authority plate; geometry and rendered masks must independently validate these estimates."
+  },
+  "female": {
+    "height_px": 598,
+    "top_y": 78,
+    "sole_y": 676,
+    "center_x": 379,
+    "head_including_hair_px": 128,
+    "shoulder_width_px": 134,
+    "waist_width_px": 92,
+    "hip_width_px": 140,
+    "upper_leg_width_px": 63,
+    "calf_width_px": 45,
+    "sha256": "a2f47787be7fc8138b89c078330b38c3ab1dfad3f82c661a431197d25d28061a",
+    "height_m": 1.7,
+    "meters_per_pixel": 0.002842809364548495,
+    "measurement_method": "Manual pixel landmarks on the unchanged 1280 x 720 authority plate; geometry and rendered masks must independently validate these estimates."
+  }
+}

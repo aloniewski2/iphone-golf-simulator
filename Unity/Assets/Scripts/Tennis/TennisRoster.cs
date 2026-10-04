@@ -2,20 +2,21 @@ using UnityEngine;
 
 namespace GolfArcade.Tennis
 {
-    /// The campaign's opponents, as the game needs them: which rig their animations come from,
-    /// their skin tone, whether they are the boss, and how they play (a style on a rung of the
+    /// The campaign's opponents, as the game needs them: which sex they are (Female picks the female match hero, otherwise the male
+    /// one: HERO_MAINSTAY), their skin tone, whether they are the boss, and how they play (a style on a rung of the
     /// difficulty ladder, see OpponentProfile.Rival). Names, rounds and the story belong to the
     /// native menu, which sends the key with the match.
     ///
-    /// Each body is built by blender/scripts/build_video_character.py (VARIANTS) and exported
-    /// to Resources/Tennis/Opponents/<Key>.
+    /// Every rival is one of the two match heroes (TennisHeroSetup); the roster only tints them (skin tone, racket colour). The old
+    /// per-rival bodies (Resources/Tennis/Opponents/<Key>) are not loaded.
     public sealed class TennisRoster
     {
         public string Key; public bool Female; public Color Skin; public bool Boss;
         /// Playing style (see OpponentProfile.Rival) and rung on the ladder, 0 club .. 1 pro.
         public string Style; public float Rung;
-        /// Their look on the one character standard (Hero V4 body + Hero_* clips): skin / hair index into
-        /// HeroKit's palettes, headwear (0 none, 1 visor, 2 cap, 3 sweatband) and kit colours. Identity only.
+        /// Their look on the one character standard (the match heroes): skin index into HeroKit's palette and the racket colour are
+        /// what is worn; hair, headwear and kit fields are kept for the roster / native menu and are not applied (the heroes are bald, no worn
+        /// kit). Identity only.
         public int HeroSkin, HeroHair, Headwear; public string Shirt, Shorts, Shoes, Racket;
         /// Haircut (HeroKit.HaircutNames): female rivals wear the female cuts.
         public int Haircut => Key switch { "Suki" => 2, "Lina" => 1, "Rosa" => 3, "Nadia" => 1, "Tama" => 4, "Dex" => 4, _ => 0 };   // Bald / Buzz / Waves return after the head rebuild

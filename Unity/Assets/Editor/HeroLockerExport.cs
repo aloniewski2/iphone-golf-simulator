@@ -27,6 +27,37 @@ namespace GolfArcade.EditorTools
         static int step; static GameObject hero;
         // Menu-only vertex animation bake. Existing HeroV4 assets and gameplay clips are untouched.
         static bool menuBake; static int menuFrame;
+        static bool loungeBake;
+        // Menu-only seated pose. Does not alter the prefab, clips, or gameplay rig.
+        public static void RunClubLoungePreview()
+        {
+            SessionState.SetBool("HeroLoungeBake", true);
+            RunMenuPreview();
+        }
+        static void SeatForClub(Animator a)
+        {
+            Transform B(HumanBodyBones b) => a.GetBoneTransform(b);
+            void Aim(HumanBodyBones from, HumanBodyBones to, Vector3 direction)
+            {
+                var f = B(from); var t = B(to);
+                if (f && t) f.rotation = Quaternion.FromToRotation(t.position - f.position, direction) * f.rotation;
+            }
+            B(HumanBodyBones.Hips).position += Vector3.down * .30f;
+            Aim(HumanBodyBones.Hips, HumanBodyBones.Spine, new Vector3(0, 1, -.18f));
+            foreach (bool left in new[] { true, false })
+            {
+                Aim(left ? HumanBodyBones.LeftUpperLeg : HumanBodyBones.RightUpperLeg,
+                    left ? HumanBodyBones.LeftLowerLeg : HumanBodyBones.RightLowerLeg, new Vector3(left ? -.14f : .14f, -.25f, 1));
+                Aim(left ? HumanBodyBones.LeftLowerLeg : HumanBodyBones.RightLowerLeg,
+                    left ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot, new Vector3(0, -1, .32f));
+                Aim(left ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot,
+                    left ? HumanBodyBones.LeftToes : HumanBodyBones.RightToes, new Vector3(0, 0, 1));
+                Aim(left ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm,
+                    left ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm, new Vector3(left ? -.4f : .4f, -1, .15f));
+                Aim(left ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm,
+                    left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand, new Vector3(0, -.15f, 1));
+            }
+        }
         public static void RunMenuPreview()
         {
             SessionState.SetBool("HeroMenuBake", true); menuBake = true; menuFrame = -1; step = 0;
@@ -47,7 +78,7 @@ namespace GolfArcade.EditorTools
         [Serializable] class Ref { public float shirt, shorts, hair, skin; }
         static void BuildMask()
         {
-            var prefab = Resources.Load<GameObject>(TennisHeroSetup.PrefabPath);
+            var prefab = Resources.Load<GameObject>(LegacyHero01.PrefabPath);
             var look = prefab.GetComponent<ModularHeroLook>();
             var atlasPath = AssetDatabase.GetAssetPath(look.skinAtlas);
             var atlas = Readable(look.skinAtlas, MaskSize); var skinMask = Readable(look.skinMask, MaskSize);
@@ -147,7 +178,7 @@ namespace GolfArcade.EditorTools
 
         // ------------------------------------------------------------------ mesh bake (play mode: the runtime fixes are built there)
         [Serializable] class Sub { public string material; public int indexOffset, indexCount; }
-        [Serializable] class Part { public string name, hat, hair, body; public int vertexCount, positionOffset, normalOffset, uvOffset; public List<Sub> submeshes = new List<Sub>(); }
+        [Serializable] class Part { public string name, hat, hair, body; public int vertexCount, positionOffset, normalOffset, uvOffset, slimOffset, broadOffset; public List<Sub> submeshes = new List<Sub>(); }
         [Serializable] class Mat { public string name, texture; public float[] color; public bool transparent; public float smoothness; }
         [Serializable] class Manifest { public int version = 1; public string pose = "Ready"; public List<Part> parts = new List<Part>(); public List<Mat> materials = new List<Mat>(); public float[] bounds; }
 
@@ -158,9 +189,9 @@ namespace GolfArcade.EditorTools
             {
                 if (step == 0)
                 {
-                    menuBake = SessionState.GetBool("HeroMenuBake", false); menuFrame = -1;
+                    menuBake = SessionState.GetBool("HeroMenuBake", false); loungeBake = SessionState.GetBool("HeroLoungeBake", false); menuFrame = -1;
                     var old = Object.FindFirstObjectByType<ModularHeroLook>(); if (old) old.gameObject.SetActive(false);
-                    hero = Object.Instantiate(Resources.Load<GameObject>(TennisHeroSetup.PrefabPath), Vector3.zero, Quaternion.identity);
+                    hero = Object.Instantiate(Resources.Load<GameObject>(LegacyHero01.PrefabPath), Vector3.zero, Quaternion.identity);
                     hero.GetComponent<HeroTennisDriver>().Build(); step = 1; return;
                 }
                 if (step == 1) { step = 2; return; }   // let the face / occluder components run once
@@ -173,6 +204,7 @@ namespace GolfArcade.EditorTools
                 {
                     d.Sample(menuBake ? (menuFrame < 0 ? HeroTennisDriver.Clip.Idle : HeroTennisDriver.Clip.Forehand) : HeroTennisDriver.Clip.Ready,
                         menuBake ? (menuFrame < 0 ? 1.5f : d.LengthOf(HeroTennisDriver.Clip.Forehand) * menuFrame / 19f) : .6f);
+                    if (loungeBake) SeatForClub(hero.GetComponent<ModularHeroLook>().animator);
                     foreach (var r in hero.GetComponentsInChildren<Renderer>(false))
                     {
                         if (!r.enabled || r is TrailRenderer || r is LineRenderer || r is ParticleSystemRenderer || !want(r)) continue;
@@ -186,6 +218,20 @@ namespace GolfArcade.EditorTools
                         part.normalOffset = (int)bin.Position;
                         for (int i = 0; i < v.Length; i++) { var q = (n.Length == v.Length ? toHero.MultiplyVector(n[i]) : Vector3.up).normalized; w.Write(q.x); w.Write(q.y); w.Write(-q.z); }
                         part.uvOffset = (int)bin.Position; foreach (var t in uv) { w.Write(t.x); w.Write(1 - t.y); }
+                        // Bake the authored body/clothing build deltas in this exact pose. This keeps the
+                        // locker, loading swings and seated preview consistent with Unity's blend shapes.
+                        if (r is SkinnedMeshRenderer buildRenderer && Enumerable.Range(0, buildRenderer.sharedMesh.blendShapeCount).Any(i => buildRenderer.sharedMesh.GetBlendShapeName(i).EndsWith("BuildSlim")))
+                        {
+                            foreach (float size in new[] { 0f, 1f })
+                            {
+                                HeroKit.SetBuild(buildRenderer, size); var shaped = new Mesh(); buildRenderer.BakeMesh(shaped, false);
+                                if (size == 0) part.slimOffset = (int)bin.Position; else part.broadOffset = (int)bin.Position;
+                                var sv = shaped.vertices;
+                                for (int i = 0; i < v.Length; i++) { var q = toHero.MultiplyVector(sv[i] - v[i]); w.Write(q.x); w.Write(q.y); w.Write(-q.z); }
+                                Object.Destroy(shaped);
+                            }
+                            HeroKit.SetBuild(buildRenderer, .5f);
+                        }
                         var sm = r.sharedMaterials;
                         for (int s = 0; s < mesh.subMeshCount && s < sm.Length; s++)
                         {
@@ -250,15 +296,15 @@ namespace GolfArcade.EditorTools
                 man.materials = mats.Values.ToList();
                 Directory.CreateDirectory(ExportAssets);
                 man.pose = menuBake ? (menuFrame < 0 ? "Idle" : "Forehand") : "Ready";
-                var stem = menuBake ? (menuFrame < 0 ? "HeroMenu" : "HeroSwing_" + menuFrame.ToString("D2")) : "HeroV4";
+                var stem = loungeBake ? "HeroLounge" : menuBake ? (menuFrame < 0 ? "HeroMenu" : "HeroSwing_" + menuFrame.ToString("D2")) : "HeroV4";
                 File.WriteAllBytes(ExportAssets + "/" + stem + ".bin", bin.ToArray());
                 if (!menuBake || menuFrame < 0) File.WriteAllText(ExportAssets + "/" + stem + ".json", JsonUtility.ToJson(man, true));
-                if (menuBake && ++menuFrame < 20) return;
+                if (menuBake && !loungeBake && ++menuFrame < 20) return;
                 Debug.Log($"HERO_LOCKER_EXPORT parts={man.parts.Count} materials={man.materials.Count} bytes={bin.Length}");
-                SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false);
+                SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false); SessionState.SetBool("HeroLoungeBake", false);
                 if (Application.isBatchMode) EditorApplication.Exit(0); else EditorApplication.isPlaying = false;
             }
-            catch (Exception e) { Debug.LogException(e); SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false); if (Application.isBatchMode) EditorApplication.Exit(1); }
+            catch (Exception e) { Debug.LogException(e); SessionState.SetInt("HeroLocker", 0); SessionState.SetBool("HeroMenuBake", false); SessionState.SetBool("HeroLoungeBake", false); if (Application.isBatchMode) EditorApplication.Exit(1); }
         }
     }
 }

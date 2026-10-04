@@ -4,18 +4,7 @@ using UnityEngine.UI;
 
 namespace GolfArcade.Tennis
 {
-    /// The match HUD, in the same arcade language as the Higgsfield grade badges: chunky
-    /// rounded type (Rubik Bold) with thick navy outlines, glossy gradients, and everything
-    /// that changes moving -- points pop and sparkle, calls slam in, the server's ball bounces.
-    ///
-    ///   * score plaque top-left: gold header ribbon, a tag per player (orange = you, cyan =
-    ///     rival), games in gold coins, points in white pills, a bouncing ball on the server
-    ///   * grade badge top-right after every clean hit, with the shot caption under it
-    ///   * word-art calls mid-screen for the moments (ACE!, OUT!, DEUCE!, GAME!...)
-    ///   * the racket contact map and supercharge pips bottom-right (TennisHitMap)
-    ///
-    /// Built once; text is rewritten only when its value changes, and all motion is done with
-    /// transforms and canvas-renderer alpha so the canvas is not rebuilt every frame.
+    /// Rally Pop match HUD. Native text and panels; legacy serve-meter visuals are preserved.
     public sealed class TennisHud : MonoBehaviour
     {
         // Palette: tropical daylight, one navy for every outline so it all reads as one set.
@@ -27,28 +16,28 @@ namespace GolfArcade.Tennis
         static readonly Color PearlTop = Color.white, PearlBottom = new(.82f, .88f, 1f);
         static readonly Color CaptionTop = new(.16f, .24f, .55f);
 
+        bool scoreOnly = true;
         Font font;
-        Sprite rounded, disc, star, ball;
-        RectTransform root, plaque, ballIcon, shimmerRt;
+        Sprite rounded, disc, star, ball, rallyRounded;
+        static readonly Color RallyNavy = new(.055f,.12f,.21f), RallyCream = new(.98f,.965f,.90f), RallyLime = new(.80f,.94f,.30f);
+        RectTransform feedbackPanel, callPanel; Text gradeText, setsText;
+        RectTransform root, plaque, ballIcon;
         readonly Row[] rows = new Row[2];
         Image noticeBack;
         Text notice;
-        UiGradient noticeGradient;
         string shownNotice;
         int shownServer = -1, shownStreak = -1;
         float introAt;
         readonly Image[] pips = new Image[TennisRules.SuperchargeStreak];
 
         // Grade badge.
-        readonly Sprite[] grades = new Sprite[6]; Sprite super;
-        Image badge; RectTransform badgeCaptionBack; Text badgeCaption;
-        float badgeAt = -9; bool badgeSuper;
+        Text badgeCaption;
+        float badgeAt = -9;
 
         // Word-art calls, queued so two never overlap.
-        Image callArt; Text callFallback, callSub; RectTransform callSubBack;
-        readonly Dictionary<string, Sprite> callSprites = new();
+        Text callFallback, callSub;
         readonly Queue<(string key, string sub, bool good)> calls = new();
-        float callAt = -9; bool callGood;
+        float callAt = -9;
         const float CallHold = 1.55f;
 
         // Sparkle bursts.
@@ -66,7 +55,7 @@ namespace GolfArcade.Tennis
 
         public string PlayerName = "YOU", OpponentName = "KAI";
         Text eventText;
-        /// The gold ribbon over the scoreboard: the event and round.
+        /// Event title above the score rows.
         public string EventLabel { set { if (eventText) eventText.text = value; } }
         internal RectTransform Root => root;
         /// Everything that belongs to the match (hidden during the presentation).
@@ -145,12 +134,6 @@ namespace GolfArcade.Tennis
             return Whole(t);
         }
 
-        static Sprite LoadSprite(string path)
-        {
-            var t = Resources.Load<Texture2D>(path);
-            return t ? Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(.5f, .5f), 100) : null;
-        }
-
         // ---------------------------------------------------------------- building blocks
 
         static Image Box(string name, RectTransform parent, Vector2 anchor, Vector2 size, Vector2 pos, Color color, Sprite sprite, bool sliced = true)
@@ -201,60 +184,36 @@ namespace GolfArcade.Tennis
             group.SetParent(root, false); group.anchorMin = Vector2.zero; group.anchorMax = Vector2.one; group.offsetMin = group.offsetMax = Vector2.zero;
             matchGroup = group.gameObject.AddComponent<CanvasGroup>(); matchGroup.blocksRaycasts = false;
 
-            // Score plaque.
-            var body = Chunky("Score plaque", group, new Vector2(0, 1), new Vector2(400, 112), new Vector2(24 + 204, -30 - 60), SkyTop, SkyBottom, 5);
-            plaque = (RectTransform)body.transform.parent;
-            var clip = new GameObject("Shimmer mask").AddComponent<RectMask2D>();
-            clip.transform.SetParent(body.transform, false);
-            var clipRt = clip.rectTransform; clipRt.anchorMin = Vector2.zero; clipRt.anchorMax = Vector2.one; clipRt.offsetMin = clipRt.offsetMax = Vector2.zero;
-            var shimmer = Box("Shimmer", clipRt, new Vector2(0, .5f), new Vector2(46, 220), new Vector2(-80, 0), new Color(1, 1, 1, .2f), null, false);
-            shimmer.rectTransform.localRotation = Quaternion.Euler(0, 0, -22);
-            shimmerRt = shimmer.rectTransform;
-
-            var ribbon = Chunky("Header ribbon", plaque, new Vector2(0, 1), new Vector2(210, 26), new Vector2(124, 4), GoldTop, GoldBottom, 3);
-            eventText = Label(ribbon.rectTransform, TennisVenue.Title + "  ·  SET 1", 14, new Vector2(0, 1), new Vector2(210, 26), Navy, TextAnchor.MiddleCenter, 0);
-
-            rows[0] = BuildRow(body.rectTransform, 22, SunTop, SunBottom);
-            rows[1] = BuildRow(body.rectTransform, -24, SeaTop, SeaBottom);
-            ballIcon = Box("Serve ball", body.rectTransform, new Vector2(0, .5f), new Vector2(26, 26), new Vector2(20, 22), Color.white, ball, false).rectTransform;
-
+            rallyRounded = RoundedSprite(7);
+            var body = RallyPanel("Rally Pop score", group, new Vector2(0,1), new Vector2(352,126), new Vector2(200,-87), RallyNavy);
+            plaque = body.rectTransform;
+            eventText = RallyLabel(plaque, TennisVenue.Title.ToUpperInvariant(), 12, new Vector2(-60,48), new Vector2(200,20), RallyCream, TextAnchor.MiddleLeft);
+            setsText = RallyLabel(plaque, "SET 1", 11, new Vector2(-76,-51), new Vector2(174,16), RallyCream, TextAnchor.MiddleLeft);
+            RallyLabel(plaque, "GAMES", 10, new Vector2(70,48), new Vector2(48,20), RallyCream, TextAnchor.MiddleCenter);
+            RallyLabel(plaque, "PTS", 10, new Vector2(130,48), new Vector2(62,20), RallyCream, TextAnchor.MiddleCenter);
+            rows[0] = BuildRow(plaque, 17, RallyCream, RallyCream);
+            rows[1] = BuildRow(plaque, -23, RallyCream, RallyCream);
+            ballIcon = Box("Server ball", plaque, new Vector2(0,.5f), new Vector2(17,17), new Vector2(27,17), Color.white, ball, false).rectTransform;
             BuildServeMeter(group);
             BuildSwingCue(group);
             BuildTimingCheck();
+            noticeBack = RallyPanel("Match state", plaque, new Vector2(.5f,.5f), new Vector2(138,22), new Vector2(87,-51), RallyLime);
+            notice = RallyLabel(noticeBack.rectTransform, "", 9, Vector2.zero, new Vector2(132,18), RallyNavy, TextAnchor.MiddleCenter);
+            noticeBack.gameObject.SetActive(false);
 
-            noticeBack = Chunky("Notice", group, new Vector2(0, 1), new Vector2(190, 32), new Vector2(24 + 110, -30 - 136), SunTop, SunBottom, 3);
-            noticeGradient = noticeBack.GetComponent<UiGradient>();
-            notice = Label(noticeBack.rectTransform, "", 18, new Vector2(0, 1), new Vector2(190, 32), Color.white, TextAnchor.MiddleCenter, 1.6f);
-            noticeBack.transform.parent.gameObject.SetActive(false);
+            var feedback = RallyPanel("Shot feedback", group, Vector2.zero, new Vector2(226,94), new Vector2(137,88), RallyNavy);
+            feedbackPanel = feedback.rectTransform;
+            var quality = Box("Quality", feedbackPanel, new Vector2(.5f,.5f), new Vector2(202,26), new Vector2(0,25), RallyLime, rallyRounded);
+            gradeText = RallyLabel(quality.rectTransform, "PERFECT", 17, Vector2.zero, new Vector2(192,26), RallyNavy, TextAnchor.MiddleLeft);
+            badgeCaption = RallyLabel(feedbackPanel, "", 16, new Vector2(0,-9), new Vector2(202,40), RallyCream, TextAnchor.MiddleLeft);
+            feedbackPanel.gameObject.SetActive(false);
 
-            // Grade badge (Higgsfield word-art), top-right.
-            grades[(int)Timing.Ok] = LoadSprite("Tennis/UI/grade-ok"); grades[(int)Timing.Good] = LoadSprite("Tennis/UI/grade-good");
-            grades[(int)Timing.Great] = LoadSprite("Tennis/UI/grade-great"); grades[(int)Timing.Excellent] = LoadSprite("Tennis/UI/grade-excellent");
-            grades[(int)Timing.Perfect] = LoadSprite("Tennis/UI/grade-perfect"); super = LoadSprite("Tennis/UI/grade-super");
-            badge = Box("Grade badge", root, new Vector2(1, 1), new Vector2(250, 100), new Vector2(-24 - 125, -18 - 50), Color.white, null, false);
-            badge.preserveAspect = true; badge.enabled = false;
-            var captionBody = Chunky("Badge caption", root, new Vector2(1, 1), new Vector2(200, 30), new Vector2(-24 - 125, -18 - 118), CaptionTop, NavyDeep, 3);
-            badgeCaptionBack = (RectTransform)captionBody.transform.parent;
-            badgeCaption = Label(captionBody.rectTransform, "", 16, new Vector2(0, 1), new Vector2(200, 30), Color.white, TextAnchor.MiddleCenter, 1.2f);
-            badgeCaptionBack.gameObject.SetActive(false);
-
-            // Calls, upper middle.
-            foreach (var key in new[] { "ace", "winner", "out", "net", "fault", "double-fault", "deuce", "game", "match-point", "missed", "point", "second-serve", "play" })
-            {
-                var s = LoadSprite("Tennis/UI/call-" + key); if (s) callSprites[key] = s;
-            }
-            callArt = Box("Call", root, new Vector2(.5f, .5f), new Vector2(360, 200), new Vector2(0, 110), Color.white, null, false);
-            callArt.preserveAspect = true; callArt.enabled = false;
-            callFallback = Label(root, "", 64, new Vector2(0, 110), new Vector2(900, 90), Color.white, TextAnchor.MiddleCenter, 3.5f);
-            // Gradient before the outlines so the outline copies stay navy.
-            DestroyImmediate(callFallback.GetComponent<Shadow>());
-            foreach (var o in callFallback.GetComponents<Outline>()) DestroyImmediate(o);
-            UiGradient.On(callFallback, SunTop, SunBottom);
-            foreach (var d in new[] { new Vector2(3.5f, -3.5f), new Vector2(-3.5f, 3.5f) }) { var o = callFallback.gameObject.AddComponent<Outline>(); o.effectColor = Navy; o.effectDistance = d; }
-            var subBody = Chunky("Call caption", root, new Vector2(.5f, .5f), new Vector2(320, 34), new Vector2(0, 8), CaptionTop, NavyDeep, 3);
-            callSubBack = (RectTransform)subBody.transform.parent;
-            callSub = Label(subBody.rectTransform, "", 17, new Vector2(0, 1), new Vector2(320, 34), Color.white, TextAnchor.MiddleCenter, 1.2f);
-            callSubBack.gameObject.SetActive(false);
+            var call = RallyPanel("Point call", group, new Vector2(.5f,1), new Vector2(320,90), new Vector2(0,-118), RallyNavy);
+            callPanel = call.rectTransform;
+            Box("Lime accent", callPanel, new Vector2(0,.5f), new Vector2(4,62), new Vector2(8,0), RallyLime, rallyRounded);
+            callFallback = RallyLabel(callPanel, "", 30, new Vector2(0,13), new Vector2(284,38), RallyLime, TextAnchor.MiddleCenter);
+            callSub = RallyLabel(callPanel, "", 13, new Vector2(0,-22), new Vector2(284,26), RallyCream, TextAnchor.MiddleCenter);
+            callPanel.gameObject.SetActive(false);
 
             // Supercharge pips beside the contact racket.
             for (int i = 0; i < pips.Length; i++)
@@ -271,19 +230,36 @@ namespace GolfArcade.Tennis
             introAt = HudClock.Now;
         }
 
+        // These helpers are deliberately independent of Chunky/Label: serve power stays pixel-identical.
+        Image RallyPanel(string name, RectTransform parent, Vector2 anchor, Vector2 size, Vector2 pos, Color color)
+        {
+            var panel = Box(name, parent, anchor, size, pos, color, rallyRounded);
+            var shadow = panel.gameObject.AddComponent<Shadow>(); shadow.effectColor = new Color(.015f,.03f,.06f,.35f); shadow.effectDistance = new Vector2(0,-4);
+            Box("Top highlight", panel.rectTransform, new Vector2(.5f,1), new Vector2(size.x-16,1), new Vector2(0,-1), new Color(1,1,1,.14f), null);
+            return panel;
+        }
+
+        Text RallyLabel(RectTransform parent, string text, int size, Vector2 pos, Vector2 box, Color color, TextAnchor align)
+        {
+            var label = Label(parent,text,size * 2,pos,box * 2,color,align,0);
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
+            label.resizeTextForBestFit = true; label.resizeTextMinSize = Mathf.Max(10,size-5) * 2; label.resizeTextMaxSize = size * 2;
+            // Higher atlas resolution for couch-readable type; no change to legacy meter labels.
+            label.rectTransform.localScale = Vector3.one * .5f;
+            return label;
+        }
+
         Row BuildRow(RectTransform body, float y, Color top, Color bottom)
         {
             var row = new Row();
-            var tag = Chunky("Name tag", body, new Vector2(0, .5f), new Vector2(170, 36), new Vector2(40 + 85, y), top, bottom, 3);
-            row.tag = (RectTransform)tag.transform.parent;
-            row.name = Label(tag.rectTransform, "", 24, new Vector2(0, 1), new Vector2(170, 36), Color.white, TextAnchor.MiddleCenter, 2f);
-            var coin = Chunky("Games coin", body, new Vector2(0, .5f), new Vector2(40, 40), new Vector2(262, y), GoldTop, GoldBottom, 3);
-            row.coin = (RectTransform)coin.transform.parent;
-            row.games = Label(coin.rectTransform, "0", 24, new Vector2(0, 1), new Vector2(40, 40), Navy, TextAnchor.MiddleCenter, 0);
-            var cell = Chunky("Points", body, new Vector2(0, .5f), new Vector2(76, 40), new Vector2(334, y), PearlTop, PearlBottom, 3);
-            row.cell = (RectTransform)cell.transform.parent;
-            row.points = Label(cell.rectTransform, "0", 28, new Vector2(0, 1), new Vector2(76, 40), Navy, TextAnchor.MiddleCenter, 0);
-            row.flash = Box("Flash", cell.rectTransform, new Vector2(.5f, .5f), new Vector2(76, 40), Vector2.zero, Color.white, rounded);
+            row.tag = Box("Player name", body, new Vector2(0,.5f), new Vector2(212,36), new Vector2(116,y), RallyCream, rallyRounded).rectTransform;
+            row.name = RallyLabel(row.tag,"",19,new Vector2(12,0),new Vector2(160,34),RallyNavy,TextAnchor.MiddleLeft);
+            row.coin = Box("Games",body,new Vector2(0,.5f),new Vector2(44,36),new Vector2(246,y),RallyCream,rallyRounded).rectTransform;
+            row.games = RallyLabel(row.coin,"0",22,Vector2.zero,new Vector2(42,34),RallyNavy,TextAnchor.MiddleCenter);
+            row.cell = Box("Points",body,new Vector2(0,.5f),new Vector2(68,36),new Vector2(306,y),RallyLime,rallyRounded).rectTransform;
+            row.points = RallyLabel(row.cell,"0",28,Vector2.zero,new Vector2(64,34),RallyNavy,TextAnchor.MiddleCenter);
+            row.flash = Box("Score flash",row.cell,new Vector2(.5f,.5f),new Vector2(68,36),Vector2.zero,Color.white,rallyRounded);
             row.flash.canvasRenderer.SetAlpha(0);
             return row;
         }
@@ -318,7 +294,7 @@ namespace GolfArcade.Tennis
             if ((pointChanged && points != "0") || gameChanged)
             {
                 row.popAt = row.wiggleAt = HudClock.Now;
-                Burst(Centre(gameChanged ? row.coin : row.cell), 7, gameChanged ? GoldTop : Color.white, 170);
+
             }
         }
 
@@ -326,23 +302,25 @@ namespace GolfArcade.Tennis
 
         public void Refresh(TennisGame game)
         {
+            scoreOnly = game.ScoreOnlyText;
+            if (scoreOnly) { calls.Clear(); badgeAt = callAt = -99; feedbackPanel.gameObject.SetActive(false); callPanel.gameObject.SetActive(false); }
+            meterLabel.enabled = tossLabel.enabled = !scoreOnly;
             var m = game.Match;
             Points(m, out string pa, out string pb);
             // Multi-set matches show sets won ahead of the games in the current set.
-            SetRow(rows[0], PlayerName, m.MultiSet ? $"{m.PlayerSets} {Digits(m.PlayerGames)}" : Digits(m.PlayerGames), pa);
-            SetRow(rows[1], OpponentName, m.MultiSet ? $"{m.OpponentSets} {Digits(m.OpponentGames)}" : Digits(m.OpponentGames), pb);
+            SetRow(rows[0], PlayerName, Digits(m.PlayerGames), pa);
+            SetRow(rows[1], OpponentName, Digits(m.OpponentGames), pb);
+            setsText.text = m.Tiebreak ? "TIEBREAK" : m.MultiSet ? $"SET {m.PlayerSets + m.OpponentSets + (m.Complete ? 0 : 1)}  ·  SETS {m.PlayerSets}–{m.OpponentSets}" : "SET 1";
             shownServer = m.PlayerServes ? 0 : 1;
             string n = m.Complete ? null : TennisGame.IsMatchPoint(m) ? "MATCH POINT" : game.SecondServe ? "2ND SERVE"
                 : m.PlayerPoints == m.OpponentPoints && m.PlayerPoints >= 3 ? "DEUCE" : null;
             if (n != shownNotice)
             {
                 shownNotice = n;
-                noticeBack.transform.parent.gameObject.SetActive(n != null);
+                noticeBack.gameObject.SetActive(n != null);
                 if (n != null)
                 {
                     notice.text = n;
-                    var (top, bottom) = n == "DEUCE" ? (new Color(.95f, .6f, 1f), new Color(.55f, .2f, .85f)) : n == "2ND SERVE" ? (SeaTop, SeaBottom) : (SunTop, new Color(1f, .3f, .15f));
-                    noticeGradient.Top = top; noticeGradient.Bottom = bottom; noticeBack.SetVerticesDirty();
                     // Second serves are already called by the fault; announce the others.
                     if (n != "2ND SERVE") ShowCall(n, null, n == "MATCH POINT" && m.PlayerPoints > m.OpponentPoints);
                 }
@@ -357,23 +335,20 @@ namespace GolfArcade.Tennis
 
         // ---------------------------------------------------------------- events
 
-        /// A clean hit: the grade badge pops in top-right with the shot under it.
+        /// A clean hit: quality and shot detail settle into the lower-left panel.
         public void ShowGrade(Timing grade, bool supercharged, string detail)
         {
-            var sprite = supercharged ? super : grades[Mathf.Clamp((int)grade, 1, 5)];
-            if (!sprite) return;
-            badge.sprite = sprite; badge.enabled = true; badgeSuper = supercharged;
-            badge.rectTransform.sizeDelta = supercharged ? new Vector2(260, 120) : new Vector2(250, 100);
-            badgeCaption.text = detail;
-            badgeCaptionBack.gameObject.SetActive(true);
+            if (scoreOnly) return;
+            gradeText.text = supercharged ? "SUPER SHOT" : grade.ToString().ToUpperInvariant();
+            badgeCaption.text = (detail ?? "").Replace("KM/H", "km/h").Replace("  ·  ", " · ");
+            feedbackPanel.gameObject.SetActive(true);
             badgeAt = HudClock.Now;
-            if (grade >= Timing.Excellent || supercharged)
-                Burst(Centre(badge.rectTransform), supercharged ? 12 : 8, supercharged ? SeaTop : GoldTop, 230);
         }
 
         /// A point, game or state call. Queued behind whatever is showing.
         public void ShowCall(string key, string sub, bool good)
         {
+            if (scoreOnly) { calls.Clear(); return; }
             if (calls.Count >= 3) calls.Dequeue();
             calls.Enqueue((key, sub, good));
             if (HudClock.Now - callAt > CallHold) NextCall();
@@ -383,17 +358,10 @@ namespace GolfArcade.Tennis
         {
             if (calls.Count == 0) return;
             var (key, sub, good) = calls.Dequeue();
-            callGood = good;
-            if (callSprites.TryGetValue(key.ToLowerInvariant().Replace(' ', '-'), out var sprite))
-            {
-                callArt.sprite = sprite; callArt.enabled = true; callFallback.text = "";
-            }
-            else { callArt.enabled = false; callFallback.text = key + "!"; }
-            bool hasSub = !string.IsNullOrEmpty(sub);
-            callSubBack.gameObject.SetActive(hasSub);
-            if (hasSub) callSub.text = sub;
+            callFallback.text = key.Replace("!", "").ToUpperInvariant();
+            callSub.text = sub ?? "";
+            callPanel.gameObject.SetActive(true);
             callAt = HudClock.Now;
-            if (good) Burst(new Vector2(0, 110), 12, GoldTop, 320);
         }
 
         void Burst(Vector2 at, int count, Color tint, float speed)
@@ -486,7 +454,7 @@ namespace GolfArcade.Tennis
             cueFill.color = cueWasNow ? CueGreen : Color.Lerp(Color.white, new Color(1, 1, 1, .35f), c);
             cueTarget.localScale = Vector3.one * (cueWasNow && sinceNow < .35f ? 1 + .35f * Mathf.Exp(-sinceNow * 7) * Mathf.Cos(sinceNow * 18) : 1 + (1 - c) * .12f);
             bool flash = cueWasNow && sinceNow < .45f;
-            cueText.enabled = flash;
+            cueText.enabled = flash && !scoreOnly;
             if (flash) cueText.transform.localScale = Vector3.one * (sinceNow < .1f ? Mathf.Lerp(1.8f, 1f, sinceNow / .1f) : 1);
             float fadeIn = Mathf.Clamp01(Age(now, cueShownAt) / .12f), fadeOut = cueShown ? 1 : Mathf.Clamp01(1 - (sinceNow - .3f) / .15f);
             SetGroupAlpha(cue, fadeIn * fadeOut);
@@ -602,7 +570,7 @@ namespace GolfArcade.Tennis
             var body = Chunky("Serve power", group, new Vector2(1, .5f), new Vector2(48, MeterHeight), new Vector2(-96, 10), new Color(.10f, .16f, .40f), NavyDeep, 4);
             meter = (RectTransform)body.transform.parent;
             float band = MeterHeight * (1 - TennisRules.ServePowerAt(TennisRules.ServePerfectWindow));
-            var perfect = Box("Perfect window", body.rectTransform, new Vector2(.5f, 1), new Vector2(48, Mathf.Max(14, band)), new Vector2(0, -Mathf.Max(14, band) / 2), Color.white, rounded);
+            var perfect = Box("Perfect window", body.rectTransform, new Vector2(.5f, 1), new Vector2(48, Mathf.Max(4, band)), new Vector2(0, -Mathf.Max(4, band) / 2), Color.white, rounded);
             UiGradient.On(perfect, GoldTop, GoldBottom);
             meterFillImage = Box("Fill", body.rectTransform, new Vector2(.5f, 0), new Vector2(36, 0), Vector2.zero, Color.white, rounded);
             UiGradient.On(meterFillImage, SunTop, SunBottom);
@@ -658,70 +626,36 @@ namespace GolfArcade.Tennis
             AnimateServeMeter(now);
             AnimateSwingCue(now);
             AnimateTimingCheck(now);
-            // The plaque swings in from the left with a bounce when the HUD first appears.
-            float intro = Age(now, introAt);
-            plaque.anchoredPosition = new Vector2(24 + 204 - (intro < 1.2f ? 420 * Mathf.Exp(-intro * 6) * Mathf.Cos(intro * 9) : 0), -30 - 60);
-            // A gloss sweep every few seconds.
-            shimmerRt.anchoredPosition = new Vector2(-60 + Mathf.Repeat(now, 5.5f) * 520, 0);
-            // The server's ball bounces beside their tag.
-            var server = rows[Mathf.Max(0, shownServer)];
-            ballIcon.anchoredPosition = new Vector2(20, server.tag.anchoredPosition.y + Mathf.Abs(Mathf.Sin(now * 4.2f)) * 7);
-            ballIcon.localRotation = Quaternion.Euler(0, 0, now * -140);
+            // Safe-area offsets affect the new panels only; the serve meter never moves.
+            float left = Screen.width > 0 ? Screen.safeArea.xMin / Screen.width * root.rect.width : 0;
+            float top = Screen.height > 0 ? (Screen.height-Screen.safeArea.yMax) / Screen.height * root.rect.height : 0;
+            float bottom = Screen.height > 0 ? Screen.safeArea.yMin / Screen.height * root.rect.height : 0;
+            float intro = Age(now,introAt);
+            plaque.anchoredPosition = new Vector2(200+left-18*Mathf.Exp(-intro*10),-87-top);
+            noticeBack.rectTransform.anchoredPosition = new Vector2(87,-51);
+            ballIcon.anchoredPosition = new Vector2(27,rows[Mathf.Max(0,shownServer)].tag.anchoredPosition.y);
             foreach (var row in rows)
             {
-                float p = Age(now, row.popAt);
-                float scale = p < 1.2f ? Elastic(p, .45f) : 1;
-                row.cell.localScale = row.coin.localScale = Vector3.one * scale;
-                row.flash.canvasRenderer.SetAlpha(p < .35f ? 1 - p / .35f : 0);
-                float w = Age(now, row.wiggleAt);
-                row.tag.localRotation = Quaternion.Euler(0, 0, w < 1f ? Mathf.Sin(w * 26) * 7 * Mathf.Exp(-w * 5) : 0);
+                float p = Age(now,row.popAt);
+                row.cell.localScale = row.coin.localScale = Vector3.one*(p < .6f ? Elastic(p,.07f,18,10) : 1);
+                row.flash.canvasRenderer.SetAlpha(p < .2f ? .22f*(1-p/.2f) : 0);
             }
-            // The notice pill breathes so it is noticed without shouting.
-            if (shownNotice != null) noticeBack.transform.parent.localScale = Vector3.one * (1 + Mathf.Sin(now * 5) * .04f);
-            for (int i = 0; i < pips.Length; i++)
-                pips[i].rectTransform.localScale = Vector3.one * (i < shownStreak ? 1 + Mathf.Sin(now * 8 + i) * .12f : 1);
-
-            // Grade badge: pop with a tilt that settles, hold, then lift and fade.
-            float since = Age(now, badgeAt);
-            if (since < 1.5f)
+            for (int i=0;i<pips.Length;i++) pips[i].rectTransform.localScale = Vector3.one;
+            float since = Age(now,badgeAt);
+            if (since < 1.8f)
             {
-                float s = since < .08f ? Mathf.Lerp(.2f, 1.25f, since / .08f) : Elastic(since - .08f, .25f, 20, 8);
-                float exit = Mathf.Clamp01((since - 1.2f) / .3f);
-                badge.rectTransform.localScale = Vector3.one * s * (1 + exit * .15f);
-                badge.rectTransform.localRotation = Quaternion.Euler(0, 0, (since < .5f ? -12 * Mathf.Exp(-since * 6) * Mathf.Cos(since * 20) : 0) + (badgeSuper ? Mathf.Sin(now * 30) * 1.5f : 0));
-                badge.canvasRenderer.SetAlpha(1 - exit);
-                // The caption drops in just after the word and leaves with it.
-                float c = Mathf.Clamp01((since - .06f) / .1f);
-                badgeCaptionBack.localScale = Vector3.one * (c < 1 ? Mathf.Lerp(.5f, 1.1f, c) : Elastic(since - .16f, .1f));
-                SetGroupAlpha(badgeCaptionBack, c > 0 ? 1 - exit : 0);
+                feedbackPanel.anchoredPosition = new Vector2(137+left,88+bottom-6*Mathf.Exp(-since*15));
+                SetGroupAlpha(feedbackPanel,Mathf.Min(Mathf.Clamp01(since/.08f),Mathf.Clamp01((1.8f-since)/.25f)));
             }
-            else if (badge.enabled) { badge.enabled = false; badgeCaptionBack.gameObject.SetActive(false); }
-
-            // Calls: slam in from big, settle with a shake, hold, then zip up and away.
-            float t = Age(now, callAt);
+            else feedbackPanel.gameObject.SetActive(false);
+            float t = Age(now,callAt);
             if (t < CallHold)
             {
-                float land = Mathf.Clamp01(t / .13f);
-                float s = t < .13f ? Mathf.Lerp(2.3f, .9f, land * land) : Elastic(t - .13f, -.1f, 22, 9);
-                float exit = Mathf.Clamp01((t - (CallHold - .25f)) / .25f);
-                var shake = t < .45f ? new Vector2(Mathf.Sin(t * 90) * 9, Mathf.Cos(t * 77) * 6) * Mathf.Exp(-t * 9) : Vector2.zero;
-                Graphic art = callArt.enabled ? callArt : callFallback;
-                art.rectTransform.anchoredPosition = new Vector2(0, 110 + exit * 40) + shake;
-                art.rectTransform.localScale = Vector3.one * s * (1 - exit * .2f);
-                art.rectTransform.localRotation = Quaternion.Euler(0, 0, (callGood ? -4 : 3) * Mathf.Exp(-t * 4));
-                art.canvasRenderer.SetAlpha(Mathf.Min(land * 1.5f, 1 - exit));
-                if (callSubBack.gameObject.activeSelf)
-                {
-                    float c = Mathf.Clamp01((t - .15f) / .15f);
-                    callSubBack.anchoredPosition = new Vector2(0, 8 + exit * 40 - (1 - c) * 20);
-                    SetGroupAlpha(callSubBack, Mathf.Min(c, 1 - exit));
-                }
+                callPanel.anchoredPosition = new Vector2(0,-118-top+8*Mathf.Exp(-t*15));
+                callPanel.localScale = Vector3.one*(1+.035f*Mathf.Exp(-t*12));
+                SetGroupAlpha(callPanel,Mathf.Min(Mathf.Clamp01(t/.09f),Mathf.Clamp01((CallHold-t)/.2f)));
             }
-            else
-            {
-                if (callArt.enabled || callFallback.text.Length > 0) { callArt.enabled = false; callFallback.text = ""; callSubBack.gameObject.SetActive(false); }
-                if (calls.Count > 0) NextCall();
-            }
+            else { callPanel.gameObject.SetActive(false); if (calls.Count > 0) NextCall(); }
 
             // Sparkles fly out, spin, shrink and fade.
             foreach (var sp in sparks)

@@ -1,5 +1,7 @@
 import XCTest
 import simd
+import SwiftUI
+import UIKit
 @testable import GolfArcade
 
 final class SportsIntegrationTests:XCTestCase {
@@ -348,5 +350,99 @@ final class SportsIntegrationTests:XCTestCase {
     func testNewCharacterFieldsRoundTrip() throws {
         var p=Player(name:"Test",colorIndex:0); p.standardFemale=true; p.standardSkin=5
         XCTAssertEqual(try JSONDecoder().decode(Player.self,from:JSONEncoder().encode(p)),p)
+    }
+}
+
+
+extension SportsIntegrationTests {
+    func testAimCalibrationSupportsAsymmetricGripsAndHeadingWrap() throws {
+        let wing=try XCTUnwrap(TennisAimWing.fit([0:[179,-179],-1:[158,160],1:[-151,-149]]))
+        XCTAssertEqual(wing.aim(180),0,accuracy:0.001)
+        XCTAssertEqual(wing.aim(159),-0.8,accuracy:0.001)
+        XCTAssertEqual(wing.aim(-150),0.8,accuracy:0.001)
+        XCTAssertEqual(wing.aim(-130),1)
+        let back=TennisAimWing(neutral:12,left:-28,right:32)
+        let profile=TennisAimProfile(forehand:wing,backhand:back)
+        XCTAssertEqual(profile.aim(angle:12,facing:-1),0)
+        XCTAssertEqual(profile.aim(angle:32,facing:-1),0.8,accuracy:0.001)
+        XCTAssertEqual(try JSONDecoder().decode(TennisAimProfile.self,from:JSONEncoder().encode(profile)),profile)
+    }
+    func testAimCalibrationRejectsAmbiguousOrInvalidSwings() {
+        XCTAssertNil(TennisAimWing.fit([0:[0,1],-1:[-4,-3],1:[32,33]]))
+        XCTAssertNil(TennisAimWing.fit([0:[0,20],-1:[-32,-31],1:[32,33]]))
+        XCTAssertNil(TennisAimWing.fit([0:[0,.nan],-1:[-32,-31],1:[32,33]]))
+        var lesson=TennisAimLesson()
+        XCTAssertFalse(lesson.record(TennisAimSwing(time:1,angle:0,facing:-1),landingX:0,legal:true))
+        XCTAssertFalse(lesson.record(TennisAimSwing(time:1,angle:0,facing:1),landingX:0,legal:false))
+        XCTAssertFalse(lesson.record(TennisAimSwing(time:1,angle:0,facing:.nan),landingX:0,legal:true))
+        XCTAssertEqual(lesson.index,0)
+    }
+    private func captureAim(_ lesson:inout TennisAimLesson) {
+        while lesson.phase == .capture {
+            let t=lesson.current!
+            let angle=Double(t.lane)*32+Double(t.wing)*8
+            XCTAssertTrue(lesson.record(TennisAimSwing(time:1,angle:angle,facing:t.wing == 0 ? 1 : -1),landingX:0,legal:true))
+        }
+    }
+    func testAimLessonUsesFreshActualLandingsAndRetriesOnlyFailedWing() throws {
+        var lesson=TennisAimLesson(); captureAim(&lesson)
+        XCTAssertEqual(lesson.phase,.validation)
+        let first=try XCTUnwrap(lesson.profile)
+        while lesson.phase == .validation {
+            let t=lesson.current!
+            // Raw angle says correct; wrong actual backhand landings must still fail.
+            let x=t.wing == 0 ? Double(t.lane)*3 : Double(t.lane == 0 ? 1 : 0)*3
+            _=lesson.record(TennisAimSwing(time:2,angle:Double(t.lane)*32,facing:t.wing == 0 ? 1 : -1),landingX:x,legal:true)
+        }
+        XCTAssertEqual(lesson.phase,.capture); XCTAssertEqual(lesson.current?.wing,1)
+        XCTAssertEqual(lesson.samples[0]?[0]?.count,2)
+        captureAim(&lesson)
+        XCTAssertEqual(lesson.profile?.forehand,first.forehand)
+        while lesson.phase == .validation {
+            let t=lesson.current!
+            _=lesson.record(TennisAimSwing(time:3,angle:Double(t.lane)*32,facing:t.wing == 0 ? 1 : -1),landingX:Double(t.lane)*3,legal:true)
+        }
+        XCTAssertEqual(lesson.phase,.complete)
+    }
+    func testSavedAimQuickCheckNeedsAllThreeNewLandings() {
+        let saved=TennisAimProfile(forehand:.standard,backhand:.standard)
+        var good=TennisAimLesson(saved:saved)
+        for _ in 0..<3 {
+            let t=good.current!
+            _=good.record(TennisAimSwing(time:2,angle:Double(t.lane)*32,facing:t.wing == 0 ? 1 : -1),landingX:Double(t.lane)*3,legal:true)
+        }
+        XCTAssertEqual(good.phase,.complete)
+        var bad=TennisAimLesson(saved:saved)
+        for _ in 0..<3 {
+            let t=bad.current!
+            _=bad.record(TennisAimSwing(time:2,angle:Double(t.lane)*32,facing:t.wing == 0 ? 1 : -1),landingX:Double(t.lane)*3,legal:false)
+        }
+        XCTAssertEqual(bad.phase,.capture); XCTAssertFalse(bad.quick)
+    }
+    @MainActor func testTouchSelectionLeavesNeitherAimingNorTimingSetupRunning() {
+        let session=SportsSession(); session.sport="tennis"
+        session.timingPrompt=true; session.checkingTiming=true; session.timingCountdownEnds=Date()
+        session.useTouch()
+        XCTAssertTrue(session.touch); XCTAssertNil(session.aimLesson)
+        XCTAssertFalse(session.timingPrompt); XCTAssertFalse(session.checkingTiming); XCTAssertNil(session.timingCountdownEnds)
+        session.touch=false; session.aimLesson=TennisAimLesson()
+        session.useTouch(); XCTAssertNil(session.aimLesson); XCTAssertTrue(session.touch)
+    }
+    @MainActor func testIndependentDepthControlsAndCalibrationProof() throws {
+        let session=SportsSession()
+        session.setShotAim(across:-0.8,depth:0.2)
+        session.setShotDepth(0.9)
+        XCTAssertEqual(session.shotAim,-0.8); XCTAssertEqual(session.shotDepth,0.9)
+        session.setShotAim(across:4,depth:-2)
+        XCTAssertEqual(session.shotAim,1); XCTAssertEqual(session.shotDepth,0)
+        session.aimLesson=TennisAimLesson()
+        session.aimLessonMessage="Watch the highlighted target, then swing comfortably."
+        let renderer=ImageRenderer(content:AimingCalibrationPanel(session:session)
+            .frame(width:393,height:852).background(Color(red:0.08,green:0.12,blue:0.22)))
+        renderer.scale=3
+        let image=try XCTUnwrap(renderer.uiImage)
+        let path=FileManager.default.urls(for:.documentDirectory,in:.userDomainMask)[0].appendingPathComponent("aiming-calibration-phone.png")
+        try XCTUnwrap(image.pngData()).write(to:path)
+        let attachment=XCTAttachment(image:image);attachment.name="Aiming calibration phone";attachment.lifetime = .keepAlways;add(attachment)
     }
 }

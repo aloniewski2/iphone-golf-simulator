@@ -1,0 +1,19 @@
+{
+  "authority": [
+    "bald_front",
+    "bald_back"
+  ],
+  "unchanged_masks": true,
+  "unchanged_cameras": true,
+  "method": "Exact intersection/union of source pixel cells in world space under frozen camera scale/origin; back reflected into the same X/Z projection. No candidate mesh used. The contact image uses nearest source pixels for display only.",
+  "continuous_world_space_reference_distance": 0.06247885628516998,
+  "continuous_world_space_minimax_lower_bound": 0.03123942814258499,
+  "native_pixel_gate_caveat": "The delivered gate is still measured separately at each native raster, alpha >127. The continuous bound explains the conflicting outlines; native sampling introduces subpixel boundary quantization.",
+  "front_area_metres_squared": 0.6034787529610491,
+  "back_area_metres_squared": 0.6074214014141551,
+  "union_metres_squared": 0.6249739045704205,
+  "mask_sha256": {
+    "bald_front": "520a0b3722ea06aa3f57de4a29dc5fed6ebb141de072a683869937e632649594",
+    "bald_back": "bd9ebba965727696c8180062ef647b5ef1926b2ae347106cd62f13d48a735a64"
+  }
+}

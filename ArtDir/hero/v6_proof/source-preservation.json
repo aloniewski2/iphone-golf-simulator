@@ -1,0 +1,347 @@
+{
+  "ArtDir/hero/v5/Hero_01_V5.blend": {
+    "before": "bcd2b1e0bef1d1ab3624ad4870a8bbcf6a05af8fd79178349f6e1f8dffc65226",
+    "after": "bcd2b1e0bef1d1ab3624ad4870a8bbcf6a05af8fd79178349f6e1f8dffc65226",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Ready.fbx": {
+    "before": "0d12034b35a3c5d0aa43e1c0e4927c66970a81f14ca9cc4c09f92203a9bba539",
+    "after": "0d12034b35a3c5d0aa43e1c0e4927c66970a81f14ca9cc4c09f92203a9bba539",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx": {
+    "before": "4cb6363ce0222c3f5d8a695641301f62f446c9a036927eff173105799da1707a",
+    "after": "4cb6363ce0222c3f5d8a695641301f62f446c9a036927eff173105799da1707a",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shirt_Default.fbx": {
+    "before": "bf33756046e78fb3bda64acb972362b5c640362990522880b304614ee5c45e6d",
+    "after": "bf33756046e78fb3bda64acb972362b5c640362990522880b304614ee5c45e6d",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Backhand_v1.fbx": {
+    "before": "3350206d9ea315b3985912c9e41bbe12d4a6f92b26a93d53e4dddd1aa4971f9a",
+    "after": "3350206d9ea315b3985912c9e41bbe12d4a6f92b26a93d53e4dddd1aa4971f9a",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx": {
+    "before": "41f56405a31643291f6cfb4e1c64f769bf815853ba0f9eb34e13a101e1db30ae",
+    "after": "41f56405a31643291f6cfb4e1c64f769bf815853ba0f9eb34e13a101e1db30ae",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_Smash_v1.fbx": {
+    "before": "04769220fa2065e9681c6c576600a67d8058f24c357cd4ae0000808733a31ebf",
+    "after": "04769220fa2065e9681c6c576600a67d8058f24c357cd4ae0000808733a31ebf",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_JumpServe_v1.fbx": {
+    "before": "5693947d75c7aa1c08f58d637df0c974c372bc46f3d186255742107998dec998",
+    "after": "5693947d75c7aa1c08f58d637df0c974c372bc46f3d186255742107998dec998",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Idle.fbx": {
+    "before": "6fdc484eddd472666df61ddb657e14e010b46532a010e1933c3852cc9e753349",
+    "after": "6fdc484eddd472666df61ddb657e14e010b46532a010e1933c3852cc9e753349",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_RunRight_v1.fbx": {
+    "before": "29916942aaf41d2a2d4a7c7d0161e30c0625eec431da6a60b2862a2d77e2700f",
+    "after": "29916942aaf41d2a2d4a7c7d0161e30c0625eec431da6a60b2862a2d77e2700f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_ReadyIdle_v1.fbx": {
+    "before": "87afe3b013d50b89c7f68adac1f6946221ae899d002ec9f3a28891da2997726f",
+    "after": "87afe3b013d50b89c7f68adac1f6946221ae899d002ec9f3a28891da2997726f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shorts_Default.fbx": {
+    "before": "151eebaa5df626c4080879ae3c7972863b1530ddf0330f3a7e51f154d7168cd3",
+    "after": "151eebaa5df626c4080879ae3c7972863b1530ddf0330f3a7e51f154d7168cd3",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_Forehand_v1.fbx": {
+    "before": "b70267f5aca855fb80e957a6717805f2e6768e61046f460d5da56eb27db7cb16",
+    "after": "b70267f5aca855fb80e957a6717805f2e6768e61046f460d5da56eb27db7cb16",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shoes_Default.fbx": {
+    "before": "6643bd9b814b272d27d468d9af7414d767c98a128071507a6b2a01c1967492ca",
+    "after": "6643bd9b814b272d27d468d9af7414d767c98a128071507a6b2a01c1967492ca",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_Ready_v1.fbx": {
+    "before": "e7cbaa173c20d4d223593a2235104fdb3c8cf144b0b949073720d37c57b969ab",
+    "after": "e7cbaa173c20d4d223593a2235104fdb3c8cf144b0b949073720d37c57b969ab",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_RunForward_v1.fbx": {
+    "before": "ec54d422323c59fa579bec3f0c4ea8b97d73ef408ef32f250970d7b0c9ab16d9",
+    "after": "ec54d422323c59fa579bec3f0c4ea8b97d73ef408ef32f250970d7b0c9ab16d9",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Serve_v1.fbx": {
+    "before": "b9082d8ddb4c3601cc2ad51160308ebcccc9af89acb3e84c42d4e802458da6a5",
+    "after": "b9082d8ddb4c3601cc2ad51160308ebcccc9af89acb3e84c42d4e802458da6a5",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Forehand_v1.fbx": {
+    "before": "7b04ade391c943141bb975c56ed105d344daf4c1418031b30275b4f09192622f",
+    "after": "7b04ade391c943141bb975c56ed105d344daf4c1418031b30275b4f09192622f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_RunLeft_v1.fbx": {
+    "before": "791cf40e64c20e04bdc0af1d9df7a37a8c09577bacd2339dbaf808c0902dd300",
+    "after": "791cf40e64c20e04bdc0af1d9df7a37a8c09577bacd2339dbaf808c0902dd300",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_Backhand_v1.fbx": {
+    "before": "559ed43cafc01c65e734247ac9a1b147dde4da6a15c1afed416cfc4903cd79ba",
+    "after": "559ed43cafc01c65e734247ac9a1b147dde4da6a15c1afed416cfc4903cd79ba",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hat_Visor.fbx": {
+    "before": "616a312840556bc34557d1992211e4254ca12b77bcafccd74ad34cdc43333cb7",
+    "after": "616a312840556bc34557d1992211e4254ca12b77bcafccd74ad34cdc43333cb7",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Gameplay_Volley_v1.fbx": {
+    "before": "07ea308241e8355573d9d90b0d7fbe2ef3dabb0f46847adcfd521ac166bf390a",
+    "after": "07ea308241e8355573d9d90b0d7fbe2ef3dabb0f46847adcfd521ac166bf390a",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Hero_Volley_v1.fbx": {
+    "before": "eb7c2bcb8d90d2d102f7a119022769e7bce376f4083db06dbfdaa472cb07fa62",
+    "after": "eb7c2bcb8d90d2d102f7a119022769e7bce376f4083db06dbfdaa472cb07fa62",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Backhand_v4.fbx": {
+    "before": "9ac0568ebcd544325ca0f5fbc68a3d1389de2ef811403665ac8afb431b105301",
+    "after": "9ac0568ebcd544325ca0f5fbc68a3d1389de2ef811403665ac8afb431b105301",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Smash_v1.fbx": {
+    "before": "27cf54b36e836ee060eb7ac0f559b4ffbb5453833e2f5b0b1fff6318d1bbbd2e",
+    "after": "27cf54b36e836ee060eb7ac0f559b4ffbb5453833e2f5b0b1fff6318d1bbbd2e",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_01_GripBody.fbx": {
+    "before": "d34968bf88cd306299f17aaefc8eea808e4ac8438656f94c37befb9034120190",
+    "after": "d34968bf88cd306299f17aaefc8eea808e4ac8438656f94c37befb9034120190",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_JumpServe_v1.fbx": {
+    "before": "2fc83c8075808dfa5dc4a0f684106761d51293056afbf58e98e4b40700ec0899",
+    "after": "2fc83c8075808dfa5dc4a0f684106761d51293056afbf58e98e4b40700ec0899",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Forehand_v1.fbx": {
+    "before": "3d95f2ee119bdd6df4e0ff0c43387e87071e06b8e7b392e5a522f41721ae0810",
+    "after": "3d95f2ee119bdd6df4e0ff0c43387e87071e06b8e7b392e5a522f41721ae0810",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Ready_v1.fbx": {
+    "before": "8d0b79b8ceab5bb338e62d37b6879a812c38f7fc5ae7ee7152069b16e1b45b4d",
+    "after": "8d0b79b8ceab5bb338e62d37b6879a812c38f7fc5ae7ee7152069b16e1b45b4d",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Volley_v3.fbx": {
+    "before": "0769e29cf565f785fcd76e4c062042dda6897c5849ffa0490c6985ee9b80c392",
+    "after": "0769e29cf565f785fcd76e4c062042dda6897c5849ffa0490c6985ee9b80c392",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_CelebratePoint_v5.fbx": {
+    "before": "a8bfb04466f69c100f5c6a7d317551f5a6fb09b8bf6d9f9a6d5c4da476284322",
+    "after": "a8bfb04466f69c100f5c6a7d317551f5a6fb09b8bf6d9f9a6d5c4da476284322",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_HitPerfect_v5.fbx": {
+    "before": "95f150e4e7f1402c64824792eea2143f43bc1a15b8d593ae1799cef87e2b8dd5",
+    "after": "95f150e4e7f1402c64824792eea2143f43bc1a15b8d593ae1799cef87e2b8dd5",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Backhand_v5.fbx": {
+    "before": "97a64588ba8534dfce321e66d1586ae2252be50303af1229e87e3ca0b1f86a1f",
+    "after": "97a64588ba8534dfce321e66d1586ae2252be50303af1229e87e3ca0b1f86a1f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Walk_v5.fbx": {
+    "before": "76f3c8404476c55d207129cf16807b4583e00d3eb39cd5f4f8d202408c4fce2d",
+    "after": "76f3c8404476c55d207129cf16807b4583e00d3eb39cd5f4f8d202408c4fce2d",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunLeft_v5.fbx": {
+    "before": "4ec2d71ab88e93d29e20ef29823ce2d220b030b1529046b7572597e58af86d04",
+    "after": "4ec2d71ab88e93d29e20ef29823ce2d220b030b1529046b7572597e58af86d04",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchWin_v5.fbx": {
+    "before": "9875f634fa640f497ac9b73cd6562ed21eecfafa00c5793f11690b346922bf16",
+    "after": "9875f634fa640f497ac9b73cd6562ed21eecfafa00c5793f11690b346922bf16",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_01_FingerBody.fbx": {
+    "before": "6d0979796f03a6479f32713c61028bc1c1b2ac7ce2096e5a6105a32d986fea0f",
+    "after": "6d0979796f03a6479f32713c61028bc1c1b2ac7ce2096e5a6105a32d986fea0f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Smash_v5.fbx": {
+    "before": "f27fb64b56f8b6378f757863efb13d1264bcd19d1939a73c83d52b8446ea12e0",
+    "after": "f27fb64b56f8b6378f757863efb13d1264bcd19d1939a73c83d52b8446ea12e0",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunForward_v5.fbx": {
+    "before": "a0f5994c9063aea241273b963eec804b9f8c2b8da3e18eb9fbf006481c91e731",
+    "after": "a0f5994c9063aea241273b963eec804b9f8c2b8da3e18eb9fbf006481c91e731",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchLose_v5.fbx": {
+    "before": "62ed61cd10ccc2ce685fd68bd045155027cfed29d6bcc793847f616ffa46577c",
+    "after": "62ed61cd10ccc2ce685fd68bd045155027cfed29d6bcc793847f616ffa46577c",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Forehand_v5.fbx": {
+    "before": "32090544d19f0fac8fe5622b9680ef65f4acce2e8358c679bc160037b813357e",
+    "after": "32090544d19f0fac8fe5622b9680ef65f4acce2e8358c679bc160037b813357e",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Ready_v5.fbx": {
+    "before": "df6507ab79ba1b9e54a0524cec62c25e45c0d62a2ab71c0d698c0e34dbf8686b",
+    "after": "df6507ab79ba1b9e54a0524cec62c25e45c0d62a2ab71c0d698c0e34dbf8686b",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Serve_v5.fbx": {
+    "before": "598b43ae6b68dd9d93dfae925b4d8b24b238205cbfa587dafa6243d38b8ba9f8",
+    "after": "598b43ae6b68dd9d93dfae925b4d8b24b238205cbfa587dafa6243d38b8ba9f8",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunRight_v5.fbx": {
+    "before": "88368c52c4adb71803f34840e16c92a393f014c45d48cb18f0e7445263cb4053",
+    "after": "88368c52c4adb71803f34840e16c92a393f014c45d48cb18f0e7445263cb4053",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MissWhiff_v5.fbx": {
+    "before": "3ad3a9774a16b34a30ec6b13662e151ab2dd5520c16411cefe784e5156ab4bd0",
+    "after": "3ad3a9774a16b34a30ec6b13662e151ab2dd5520c16411cefe784e5156ab4bd0",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Idle_v5.fbx": {
+    "before": "1f30d7c530143482873c65c0a35c90e44d0b7ee986b4a7c7ef0c7c9770d85c58",
+    "after": "1f30d7c530143482873c65c0a35c90e44d0b7ee986b4a7c7ef0c7c9770d85c58",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Volley_v5.fbx": {
+    "before": "5bb89ff90388498672be46694b64bb9686ad011ac637474f67c90cf08f402410",
+    "after": "5bb89ff90388498672be46694b64bb9686ad011ac637474f67c90cf08f402410",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_SadPointLost_v5.fbx": {
+    "before": "4dbfca0a3e2180d2712b725e974b5b26442bde10ef5f2d771359af9ee7e29944",
+    "after": "4dbfca0a3e2180d2712b725e974b5b26442bde10ef5f2d771359af9ee7e29944",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_01_Hat_Sweatband.fbx": {
+    "before": "95bd7b4cbe39cab3a867123f75507dcb9193d8689e7d454875218f45fab79274",
+    "after": "95bd7b4cbe39cab3a867123f75507dcb9193d8689e7d454875218f45fab79274",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_01_Hat_Cap.fbx": {
+    "before": "ad056a36dda15c4efbe0901d59bc696fd4c49d4a9edb3578e4828e147c4de240",
+    "after": "ad056a36dda15c4efbe0901d59bc696fd4c49d4a9edb3578e4828e147c4de240",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_Prop_Trophy.fbx": {
+    "before": "cd9eb78f9d056fb9ec19ded768cfa1eb2e663a0a17d927e0b53aa402fe4ae93c",
+    "after": "cd9eb78f9d056fb9ec19ded768cfa1eb2e663a0a17d927e0b53aa402fe4ae93c",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/BackhandRun/Hero_Backhand_v1.fbx": {
+    "before": "141ed0ac8f75987142439132bc1481819add72a94994fdb7712e45d869226200",
+    "after": "141ed0ac8f75987142439132bc1481819add72a94994fdb7712e45d869226200",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/BackhandRun/Hero_Gameplay_RunForward_v1.fbx": {
+    "before": "631a745a193d0e9c692139fde807b0e87264aad65b284cc46cdc60ad47f72d58",
+    "after": "631a745a193d0e9c692139fde807b0e87264aad65b284cc46cdc60ad47f72d58",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/BackhandRun/Hero_Gameplay_RunLeft_v1.fbx": {
+    "before": "7d03cc022b10983f2b55c6c7eed84982ac1805778e2d6cd0af9a78e77544ab7e",
+    "after": "7d03cc022b10983f2b55c6c7eed84982ac1805778e2d6cd0af9a78e77544ab7e",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/AnimRepair/Hero_Repair_Ready_v1.fbx": {
+    "before": "19e8ced47ef2b2401a2ca34ab91a547af03e4e18b8708d42f95e13bbbec46680",
+    "after": "19e8ced47ef2b2401a2ca34ab91a547af03e4e18b8708d42f95e13bbbec46680",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/AnimRepair/Hero_Backhand_v3.fbx": {
+    "before": "26287cfb66d590fceac143dc77f53dffc870656a94dc4bc41a0e3dcd95380740",
+    "after": "26287cfb66d590fceac143dc77f53dffc870656a94dc4bc41a0e3dcd95380740",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/AnimRepair/Hero_Repair_Volley_v1.fbx": {
+    "before": "abda0af1d207682b8ed72c35e04b4ce5bf415ac0c7a0a6c0704c992e13cc80a5",
+    "after": "abda0af1d207682b8ed72c35e04b4ce5bf415ac0c7a0a6c0704c992e13cc80a5",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/AnimRepair/Hero_Repair_RunForward_v1.fbx": {
+    "before": "20ee6160979e4415b85dfcc36a6724d956e017f847925b697c271eb0e0b2ddf4",
+    "after": "20ee6160979e4415b85dfcc36a6724d956e017f847925b697c271eb0e0b2ddf4",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_01_KneeBody.fbx": {
+    "before": "1c111e525b36030b627938072dc3524951e661e641d0c493499425d33aa890f7",
+    "after": "1c111e525b36030b627938072dc3524951e661e641d0c493499425d33aa890f7",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_Smash_v1.fbx": {
+    "before": "3e5690ba637b787aebc29fe5f5bed86a260528fd683f381f78f78458f10e6b21",
+    "after": "3e5690ba637b787aebc29fe5f5bed86a260528fd683f381f78f78458f10e6b21",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_JumpServe_v1.fbx": {
+    "before": "4b233523cb2cf71d4593d572ce92334c3c8621ea5b629cc540fab7393e8f1b6d",
+    "after": "4b233523cb2cf71d4593d572ce92334c3c8621ea5b629cc540fab7393e8f1b6d",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_RunRight_v1.fbx": {
+    "before": "2f34fbc4f605f1d159948bd271cab223dfc5b01413fc567b5e1a78016ecf4a0b",
+    "after": "2f34fbc4f605f1d159948bd271cab223dfc5b01413fc567b5e1a78016ecf4a0b",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_Forehand_v1.fbx": {
+    "before": "08a557d04183e19c7f497ba7b3646d534e302daad3a7be166195b2929edc2903",
+    "after": "08a557d04183e19c7f497ba7b3646d534e302daad3a7be166195b2929edc2903",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_Ready_v1.fbx": {
+    "before": "98fc211510709ac7dfb33b1854db403ecee916ee449c9710e6bc1b3a7a7e2baf",
+    "after": "98fc211510709ac7dfb33b1854db403ecee916ee449c9710e6bc1b3a7a7e2baf",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_RunForward_v1.fbx": {
+    "before": "368bfca5f5a135e3f47a9d83ef48c5ddcb4d33a7f1ea56cb627d80e0995ccf4f",
+    "after": "368bfca5f5a135e3f47a9d83ef48c5ddcb4d33a7f1ea56cb627d80e0995ccf4f",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_RunLeft_v1.fbx": {
+    "before": "d6f548f61db62bcdcef835edec08a5bfda1c13a3b41ab548d67629064e810ef0",
+    "after": "d6f548f61db62bcdcef835edec08a5bfda1c13a3b41ab548d67629064e810ef0",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_Backhand_v1.fbx": {
+    "before": "3540c809f33d992aff28c5a38c8488f9ef393a6a154e26ce9de8a2e3280da472",
+    "after": "3540c809f33d992aff28c5a38c8488f9ef393a6a154e26ce9de8a2e3280da472",
+    "identical": true
+  },
+  "Unity/Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_Volley_v1.fbx": {
+    "before": "ed23f7771d5cf6830faf30fbb5e9d6afe005b2a13f7a2d4e14702010a3544c90",
+    "after": "ed23f7771d5cf6830faf30fbb5e9d6afe005b2a13f7a2d4e14702010a3544c90",
+    "identical": true
+  },
+  "Unity/Assets/Resources/Tennis/Hero/Hero_01_Tennis.prefab": {
+    "before": "1f15fd7aab6fa66157eb034b2b3b844bf8db9fce30f9a0781733c0c5c3296094",
+    "after": "1f15fd7aab6fa66157eb034b2b3b844bf8db9fce30f9a0781733c0c5c3296094",
+    "identical": true
+  }
+}

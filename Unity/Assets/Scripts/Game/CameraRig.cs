@@ -21,7 +21,7 @@ namespace GolfArcade.Game
             rig.Camera = go.AddComponent<Camera>();
             go.tag = "MainCamera";
             rig.Camera.fieldOfView = 60; // portrait phone: tall and narrow, so open it up
-            rig.Camera.nearClipPlane = 0.05f;
+            rig.Camera.nearClipPlane = 0.3f; // depth precision for the postcard overlay meshes (surf, path, shelf) 900 yd out
             rig.Camera.farClipPlane = 900;
             rig.Camera.clearFlags = CameraClearFlags.Skybox;
             rig.Camera.backgroundColor = new Color(0.55f, 0.78f, 0.95f);

@@ -47,6 +47,7 @@ final class SportsSession {
     }
     /// A short loading transition, gated by actual runtime readiness.
     let loading = LoadingModel()
+    let pointClips = PointClips()
     /// The tennis tutorial's current step, from Unity: (index, count, text).
     var finishedMatch: (won: Bool, score: String)?
     /// Unity's numbers for the match just finished (aces, winners, rally, timing...), for the XP screen.
@@ -101,6 +102,18 @@ final class SportsSession {
     var serveFromDeuce = true
     /// The controller serve's aim in the target box: across (T -1 .. wide +1), depth (0..1).
     var serveAim = (across: 0.0, depth: 0.8)
+    var shotDepth=0.75
+    var shotAim=0.0
+    var aimLesson:TennisAimLesson?
+    var aimLessonMessage=""
+    private var aimChecked=false
+    private var aimFeedSequence=0
+    private var aimFeedAt=0.0
+    private var aimWaiting=false
+    private var aimSwing:TennisAimSwing?
+    @ObservationIgnored private var aimFeedTask:Task<Void,Never>?
+    @ObservationIgnored private var aimTimeoutTask:Task<Void,Never>?
+    var aimingSetup:Bool { aimLesson != nil }
     /// Extra start fields for the tennis front end (mode, opponent, round).
     private var launchExtras: [String:Any] = [:]
     private var sessionID = ""
@@ -139,6 +152,10 @@ final class SportsSession {
     private var nextDiagnostic=0.0
     let motion = SportsMotion()
     init() {
+        motion.onAimSwing = { [weak self] swing in
+            guard let self, self.aimWaiting, self.aimLesson != nil, swing.time >= self.aimFeedAt else { return }
+            self.aimSwing=swing
+        }
         if players.isEmpty { players=[Player(name:"Player 1",colorIndex:0)] }
         motion.onProblem = { [weak self] message in self?.pause(reason:message); self?.status=message }
         motion.onGate = { [weak self] gate in
@@ -256,16 +273,19 @@ final class SportsSession {
             status="No independent external display is available. Connect AirPlay/wired display or choose preview."; return
         }
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
+        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         phase="calibrating"; feedback=""; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
+        motion.setAimProfile(storedAimProfile())
         pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
                  "skinHex":p.skinHex,"hairHex":p.hairHex,
                  "tips":coachingTips,"overscan":overscan,
                  "hairStyle":p.hairStyle,"haircut":p.shownHaircut,"hairColor":p.hairColor,"faceShape":p.faceShape,
-                 "heightChoice":p.heightChoice,"buildChoice":p.buildChoice,"bodySize":p.bodySize]
+                 "heightChoice":p.heightChoice,"buildChoice":p.buildChoice,"bodySize":p.bodySize,
+                 "loadout":p.loadoutPayload(sport:Sport(rawValue:sport) ?? .tennis)]
         if preview { touch=true }
         pending?["external"] = !preview
         for (key, value) in launchExtras { pending?[key] = value }
@@ -310,6 +330,71 @@ final class SportsSession {
         NSLog("[SportsSession] command=%@ value=%.2f",action,value)
         sendJSON(["version":1,"session":sessionID,"action":action,"value":value])
     }
+
+    private var aimProfileKey:String {
+        let player=players[min(playerIndex,players.count-1)]
+        return "tennis.aim.v1.\(player.id.uuidString).\(player.handedness == .left ? "left" : "right")"
+    }
+    private func storedAimProfile() -> TennisAimProfile? {
+        guard !players.isEmpty, let data=UserDefaults.standard.data(forKey:aimProfileKey),
+              let profile=try? JSONDecoder().decode(TennisAimProfile.self,from:data), profile.valid else { return nil }
+        return profile
+    }
+    func skipTimingCheck() { timingPrompt=false; beginAimingSetup() }
+    func beginAimingSetup(force:Bool=false) {
+        guard active, ready, !paused, sport == "tennis", !touch, !checkingTiming, !timingPrompt,
+              launchExtras["mode"] as? String != "tutorial", !Self.benchmark, force || !aimChecked else { return }
+        aimFeedTask?.cancel(); aimTimeoutTask?.cancel()
+        aimLesson=TennisAimLesson(saved:force ? nil : storedAimProfile())
+        aimLessonMessage=aimLesson?.message ?? ""
+        motion.setAimProfile(aimLesson?.profile)
+        command("aimPractice",value:1)
+        setShotDepth(0.75)
+        queueAimFeed()
+    }
+    func recalibrateAiming() {
+        guard active, ready, !touch, !checkingTiming, !measuringDelay, motion.axisLocked else { return }
+        guard motion.calibrate() else { return }
+        phase="steering"; resume(); beginAimingSetup(force:true)
+    }
+    private func queueAimFeed() {
+        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimWaiting=false; aimSwing=nil
+        guard let lesson=aimLesson else { return }
+        motion.setAimProfile(lesson.profile)
+        guard lesson.phase != .complete else { return }
+        let launched=sessionID
+        aimFeedTask=Task { @MainActor [weak self] in
+            do { try await Task.sleep(for:.milliseconds(650)) } catch { return }
+            guard let self, self.sessionID == launched, !self.paused, let trial=self.aimLesson?.current else { return }
+            self.aimFeedSequence+=1; self.aimFeedAt=SportsRuntime.shared().clock(); self.aimWaiting=true
+            let sequence=self.aimFeedSequence
+            self.sendJSON(["version":1,"session":self.sessionID,"action":"aimFeed","value":trial.lane,"value2":trial.wing == 0 ? 1 : -1,"aimSequence":sequence])
+            self.aimTimeoutTask=Task { @MainActor [weak self] in
+                do { try await Task.sleep(for:.seconds(7)) } catch { return }
+                guard let self, self.sessionID == launched, self.aimWaiting, self.aimFeedSequence == sequence else { return }
+                self.aimWaiting=false; self.aimLessonMessage="Take another comfortable swing toward the target."; self.queueAimFeed()
+            }
+        }
+    }
+    private func receiveAimLanding(sequence:Int,x:Double,legal:Bool) {
+        guard sequence == aimFeedSequence, aimWaiting, !paused, var lesson=aimLesson else { return }
+        aimWaiting=false; aimTimeoutTask?.cancel()
+        guard let swing=aimSwing else { aimLessonMessage="Keep the phone face angled toward the target and try again."; queueAimFeed(); return }
+        _=lesson.record(swing,landingX:x,legal:legal)
+        aimLesson=lesson; aimLessonMessage=lesson.message
+        motion.setAimProfile(lesson.profile)
+        if lesson.phase == .complete, let profile=lesson.profile, let data=try? JSONEncoder().encode(profile) {
+            UserDefaults.standard.set(data,forKey:aimProfileKey)
+        }
+        queueAimFeed()
+    }
+    func finishAimingSetup(resumePlay:Bool=true) {
+        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimWaiting=false; aimSwing=nil; aimLesson=nil; aimChecked=true
+        motion.setAimProfile(storedAimProfile())
+        contacts=[]; command("aimPractice",value:0)
+        if resumePlay && paused { phase="steering"; resume() }
+    }
+
     // MARK: Controller serve
 
     /// TOSS pressed. The game judges it against the toss meter under the player's feet on the
@@ -352,13 +437,17 @@ final class SportsSession {
             phase="steering"
             command("recalibrate")
         }
+        if sport == "tennis", !touch, !Self.benchmark, !aimChecked, launchExtras["mode"] as? String != "tutorial" {
+            command("aimPractice",value:1) // Hold the court score-free throughout setup.
+        }
         resume()
+        if aimLesson != nil { queueAimFeed(); return }
         // First time on this TV (or asked for): the timing check, before the first point.
         if !paused && sport == "tennis" && displayConnected && (checkTimingOnResume || timingCalibration == nil) {
             // Asked for explicitly (Options → re-check): straight in. First time on this TV:
             // offer it, with an explanation and a Start button.
             if checkTimingOnResume { checkTimingOnResume=false; startTimingCheck() } else { timingPrompt=true }
-        }
+        } else { beginAimingSetup() }
     }
     /// Swing along with a ball bouncing on the TV for a few seconds; Unity measures how far
     /// behind the picture the swings land and times every swing to what the player sees.
@@ -373,11 +462,16 @@ final class SportsSession {
         if paused { checkTimingOnResume=true; readyToPlay() } else { startTimingCheck() }
     }
     func useTouch() {
+        if sport == "tennis" {
+            timingPrompt=false; checkingTiming=false; timingCountdownEnds=nil; checkTimingOnResume=false
+            finishAimingSetup(resumePlay:false)
+        }
         pause(); swingSequence=max(swingSequence,motion.swingCount); touch=true; trackingWarning=""; measuringDelay=false
         motion.stop(); command("touch"); status="Touch controls selected. Tap Ready to play."
     }
     func useMotion() {
         pause(); touch=false; phase="calibrating"; trackingWarning=""; command("motion")
+        if sport == "tennis" { aimChecked=false }
         if sport == "tennis" && !motion.axisLocked { beginAxisCapture(); return }
         motion.start(tennis:sport == "tennis",travel:travel)
         status="Motion controls selected. Stand at your center, then tap Ready." 
@@ -385,6 +479,9 @@ final class SportsSession {
     /// Locking the court direction is a separate, gated step. Once it is done the phone can
     /// be held at any angle — which is the whole point, since forehands and backhands flip it.
     func beginAxisCapture() {
+        if sport == "tennis" {
+            aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimWaiting=false; aimSwing=nil; aimChecked=false
+        }
         axisGate=SportsAxisGate()
         status="Stand about 2.5 m back, point the back of your phone at the TV and hold still."
         motion.beginAxisCapture(travel:travel)
@@ -401,7 +498,12 @@ final class SportsSession {
         status=motion.courtSign<0 ? "Steering flipped. Tap Ready to recenter." : "Steering restored. Tap Ready to recenter."
     }
     func steer(_ value:Double) { target=value; if !paused { sendInput(valid:true) } }
-    func setAim(_ value:Double) { aim=value; command("aim",value:value) }
+    func setAim(_ value:Double) { if sport == "tennis" { setShotAim(across:value,depth:shotDepth) } else { aim=value; command("aim",value:value) } }
+    func setShotAim(across:Double,depth:Double) {
+        shotAim=max(-1,min(1,across)); shotDepth=max(0,min(1,depth)); aim=shotAim
+        sendJSON(["version":1,"session":sessionID,"action":"rallyAim","value":shotAim,"value2":shotDepth])
+    }
+    func setShotDepth(_ depth:Double) { setShotAim(across:shotAim,depth:depth) }
     func swing(_ value:Double) { guard !paused else { return }; power=value; swingSequence+=1; NSLog("[SportsSession] touch swing=%d power=%.2f",swingSequence,value); sendInput(valid:true) }
     private func sendInput(valid:Bool) {
         // Touch play only: motion samples go to Unity from SportsMotion's own queue.
@@ -413,6 +515,16 @@ final class SportsSession {
             handSide:0,lift:0,strokeFacing:0,qx:0,qy:0,qz:0,qw:0,rx:0,ry:0,rz:0,gx:0,gy:0,gz:0)
         SportsRuntime.shared().push(sample)
     }
+    func setPointRecording(_ enabled: Bool) {
+        guard active, ready, sport == "tennis", finishedMatch == nil else { return }
+        pointClips.bufferingEnabled = enabled
+        pointClips.state = enabled ? "checking" : "off"
+        pointClips.message = enabled
+            ? (paused ? "Resume play to check 1080p · 60 fps." : "Checking 1080p · 60 fps…")
+            : "Point buffering off."
+        command("recordPoints", value: enabled ? 1 : 0)
+    }
+
     /// The loading screen has run its course: show the game, and start the setup that the
     /// player sees (court direction, motion) only now.
     private func loadingFinished() {
@@ -442,6 +554,7 @@ final class SportsSession {
         // Keep explicit phone actions visible until the player chooses one.
         canDive = false
         timingPrompt = false; checkingTiming = false; measuringDelay = false
+        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimWaiting=false
         SportsDisplays.shared.showMatchControls()
         if Self.benchmark {
             Task { @MainActor in
@@ -472,6 +585,7 @@ final class SportsSession {
             history.append(["session":sessionID,"sport":sport,"playerID":players[playerIndex].id.uuidString,"endedAt":Date().timeIntervalSince1970,"summary":feedback])
             UserDefaults.standard.set(Array(history.suffix(100)),forKey:"sports.sessions.v1")
         }
+        pointClips.reset()
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false
         loading.cancel(); tutorialStep=nil; finishedMatch=nil
         SportsRuntime.shared().pause(true); active=false; ready=false; paused=true; tennisControllerActive=false
@@ -510,6 +624,7 @@ final class SportsSession {
             case "displayReady":
                 if displayConnected { SportsDisplays.shared.external?.isHidden=true }
                 status="Display reconnected. Tap Ready to set your center and play."
+            case "recording": pointClips.receive(event)
             case "perf": SportsDiagnostics.write("perf \(event["message"] as? String ?? "")")
             case "score":
                 score = TennisScore(line: event["message"] as? String ?? "")
@@ -528,6 +643,17 @@ final class SportsSession {
                     timingNote="No steady rhythm found — the game will learn your timing as you play."
                 }
                 SportsDiagnostics.write("timing check tv=\(SportsTiming.currentTV()) result=\(message)")
+                beginAimingSetup()
+            case "aimLanding":
+                let parts=(event["message"] as? String ?? "").split(separator:"|")
+                if parts.count == 4, let sequence=Int(parts[0]), let x=Double(parts[1]) {
+                    receiveAimLanding(sequence:sequence,x:x,legal:parts[3] == "1")
+                }
+            case "aimMiss":
+                let parts=(event["message"] as? String ?? "").split(separator:"|",maxSplits:1)
+                if let first=parts.first, let sequence=Int(first), sequence == aimFeedSequence, aimWaiting {
+                    aimWaiting=false; aimTimeoutTask?.cancel(); aimLessonMessage="Try again as the practice ball reaches you."; queueAimFeed()
+                }
             case "abilities":
                 let fields = (event["message"] as? String ?? "").split(separator: "|")
                 if fields.count == 5, let meter = Double(fields[0]), let cooldown = Double(fields[2]), meter.isFinite, cooldown.isFinite {

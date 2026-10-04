@@ -1,0 +1,8 @@
+Male BASE_BALD WORLD_BOUNDS=Center: (0.00, 0.85, 0.00), Extents: (0.68, 0.85, 0.14) HEIGHT=1.7043 scale=(1.00, 1.00, 1.00) renderers=1
+Female BASE_BALD WORLD_BOUNDS=Center: (0.00, 0.85, -0.01), Extents: (0.26, 0.85, 0.12) HEIGHT=1.703894 scale=(1.00, 1.00, 1.00) renderers=1
+Male BALD WORLD_BOUNDS=Center: (0.00, 0.85, 0.00), Extents: (0.68, 0.85, 0.14) HEIGHT=1.7043 scale=(1.00, 1.00, 1.00) renderers=1
+Female BALD WORLD_BOUNDS=Center: (0.00, 0.85, -0.01), Extents: (0.26, 0.85, 0.12) HEIGHT=1.703894 scale=(1.00, 1.00, 1.00) renderers=1
+Male OPTIONAL_HAIR WORLD_BOUNDS=Center: (0.00, 0.87, 0.00), Extents: (0.68, 0.87, 0.14) HEIGHT=1.739447 scale=(1.00, 1.00, 1.00) renderers=2
+Female OPTIONAL_HAIR WORLD_BOUNDS=Center: (0.00, 0.85, 0.00), Extents: (0.26, 0.85, 0.13) HEIGHT=1.707684 scale=(1.00, 1.00, 1.00) renderers=2
+Male BALD WORLD_BOUNDS=Center: (0.00, 0.85, 0.00), Extents: (0.68, 0.85, 0.14) HEIGHT=1.7043 scale=(1.00, 1.00, 1.00) renderers=1
+Female BALD WORLD_BOUNDS=Center: (0.00, 0.85, -0.01), Extents: (0.26, 0.85, 0.12) HEIGHT=1.703894 scale=(1.00, 1.00, 1.00) renderers=1
