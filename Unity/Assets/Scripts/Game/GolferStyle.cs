@@ -37,9 +37,8 @@ namespace GolfArcade.Game
         public static readonly Color[] KitColors = Palette(CharacterLook.KitHex);
         public static readonly string[] ShirtNames = { "White", "Ivory", "Sand", "Sky", "Blush", "Mint" };
         public static readonly Color[] ShirtColors = Palette(CharacterLook.ShirtHex);
-        /// Shoes take the shirt palette, and the cap or band the kit's.
+        /// Shoes take the shirt palette; a hat's own colour as designed is HeroGolfer.HatDefault.
         public static readonly Color ShoesAsDesigned = Rgb(227, 226, 222);
-        public static readonly Color HatAsDesigned = Rgb(255, 107, 61);
 
         // ---- The look on screen
         const string LookKey = "golfer.look.v1";
@@ -155,6 +154,30 @@ namespace GolfArcade.Game
             set => Edit(l => l.Headwear = Mathf.Clamp(value, 0, HeroGolfer.HeadwearNames.Length - 1));
         }
 
+        public static int Glasses
+        {
+            get => Current.Glasses;
+            set => Edit(l => l.Glasses = Mathf.Clamp(value, 0, HeroGolfer.GlassesNames.Length - 1));
+        }
+
+        public static int Facial
+        {
+            get => Current.Facial;
+            set => Edit(l => l.Facial = Mathf.Clamp(value, 0, HeroGolfer.FacialNames.Length - 1));
+        }
+
+        public static int Top
+        {
+            get => Current.Top;
+            set => Edit(l => l.Top = Mathf.Clamp(value, 0, HeroGolfer.TopNames.Length - 1));
+        }
+
+        public static int Bottom
+        {
+            get => Current.Bottom;
+            set => Edit(l => l.Bottom = Mathf.Clamp(value, 0, HeroGolfer.BottomNames.Length - 1));
+        }
+
         /// The kit (shorts) and shirt as palette entries; 0 is the kit as designed (also what a mixed colour reads as).
         public static int Kit
         {
@@ -177,12 +200,15 @@ namespace GolfArcade.Game
         /// The look on screen as the Hero's own record.
         public static HeroLook Hero => HeroOf(Current);
 
+        /// The locker's HAIR tab shows the haircut with no hat over it (the look keeps its hat).
+        public static bool PreviewBareHead;
+
         public static HeroLook HeroOf(CharacterLook l) => new()
         {
             Female = l.Female,
             Skin = ColorOf(l.Skin) ?? SkinTones[DefaultSkin],
             HairColor = ColorOf(l.Hair) ?? HairColors[DefaultHairTone],
-            Haircut = l.HaircutId, Headwear = l.Headwear,
+            Haircut = l.HaircutId, Headwear = PreviewBareHead ? 0 : l.Headwear, Glasses = l.Glasses, Facial = l.Facial, Top = l.Top, Bottom = l.Bottom,
             Shirt = ColorOf(l.Shirt), Shorts = ColorOf(l.Shorts),
             Shoes = ColorOf(l.Shoes), Hat = ColorOf(l.Hat),
         };
@@ -191,13 +217,13 @@ namespace GolfArcade.Game
         public enum HairKind { Short, Long, Curly, None }
         public static readonly string[] HairNames = { "Short", "Bob", "Curls", "None" };
         /// The V4 figure's hair mesh for a Hero haircut: none for a bare head, a cut of its own otherwise.
-        public static string HairMesh => Current.HaircutId switch { 5 or 6 or 7 => null, 2 or 3 => "HAIR_LONG", 4 => "HAIR_CURLY", _ => "HAIR_SHORT" };
+        public static string HairMesh => Current.HaircutId switch { 5 => null, 2 or 3 or 10 or 14 => "HAIR_LONG", 4 or 8 => "HAIR_CURLY", _ => "HAIR_SHORT" };
         public static Color? ShirtColor => ColorOf(Current.Shirt) ?? Rgb(62, 62, 66);
         public static Color? TrousersColor => ColorOf(Current.Shorts) ?? Rgb(56, 56, 60);
         /// Resources path of the V4 model for the body.
         public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
 
-        /// A random look (the locker's SHUFFLE): skin, haircut, hair colour, headwear and, where earned, outfit colours.
+        /// A random look (the locker's SHUFFLE): skin, haircut, hair colour, headwear, glasses, facial hair, clothes and, where earned, outfit colours.
         public static void Shuffle(CharacterLook l, Func<int, bool> outfitOpen, bool mixerOpen)
         {
             var rng = new System.Random();
@@ -205,6 +231,9 @@ namespace GolfArcade.Game
             l.Haircut = rng.Next(HeroGolfer.OfferedHaircuts);
             l.Hair = HexOf(HairColors[rng.Next(HairColors.Length)]);
             l.Headwear = rng.Next(HeroGolfer.HeadwearNames.Length);
+            l.Glasses = rng.NextDouble() < 0.3 ? rng.Next(1, HeroGolfer.GlassesNames.Length) : 0;
+            l.Facial = rng.NextDouble() < 0.25 ? rng.Next(1, HeroGolfer.FacialNames.Length) : 0;
+            l.Top = rng.Next(HeroGolfer.TopNames.Length); l.Bottom = rng.Next(HeroGolfer.BottomNames.Length);
             int Pick() { for (int tries = 0; tries < 12; tries++) { int i = rng.Next(KitColors.Length); if (outfitOpen(i)) return i; } return 0; }
             l.Shirt = HexOf(ShirtColors[Pick()]); l.Shorts = HexOf(KitColors[Pick()]);
             if (mixerOpen) l.Hat = HexOf(Color.HSVToRGB((float)rng.NextDouble(), 0.75f, 0.95f));

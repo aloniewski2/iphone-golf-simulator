@@ -48,6 +48,7 @@ namespace GolfArcade.Course
             var model = Resources.Load<GameObject>($"Course/hole_{hole.Number:00}");
             if (model) view.BuildFromModel(model); else view.BuildGeometry();
             view.BuildPin();
+            HoleAtmosphere.Apply(hole);
             return view;
         }
 
@@ -57,7 +58,20 @@ namespace GolfArcade.Course
 
         /// A course's own look over the palette, by the hole's Theme: material name → colour.
         /// Empty for now; a new course with its own colours adds its theme here.
-        static readonly Dictionary<string, Dictionary<string, Color>> Themes = new();
+        static readonly Dictionary<string, Dictionary<string, Color>> Themes = new()
+        {
+            // the Magma Open (blender/scripts/course_extras.py PALETTES): greens that stay green under the fire's light,
+            // ash for the rough, the trees scorched, the sea the lava's own colours
+            ["magma"] = new()
+            {
+                ["MAT_FAIRWAY"] = Rgb(70, 142, 74), ["MAT_FAIRWAY_STRIPE"] = Rgb(60, 130, 68), ["MAT_FIRSTCUT"] = Rgb(52, 116, 60), ["MAT_GREEN"] = Rgb(108, 190, 104),
+                ["MAT_BUNKER_LIP"] = Rgb(112, 178, 102), ["MAT_ROUGH_ASH"] = Rgb(58, 54, 60),
+                ["MAT_WATER"] = Rgb(255, 116, 24), ["MAT_WATER_SHALLOW"] = Rgb(172, 50, 20), ["MAT_FOAM"] = Rgb(255, 190, 72),
+                ["MAT_TREE_DARK"] = Rgb(44, 48, 38), ["MAT_TREE_MID"] = Rgb(60, 64, 44), ["MAT_TREE_LIGHT"] = Rgb(84, 86, 54),
+                ["MAT_PALM_FROND"] = Rgb(60, 82, 44), ["MAT_PALM_TRUNK"] = Rgb(74, 60, 54), ["MAT_COCONUT"] = Rgb(40, 30, 26),
+                ["MAT_ROCK"] = Rgb(76, 72, 76), ["MAT_ROCK_DARK"] = Rgb(50, 48, 54),
+            },
+        };
 
         /// A material's colour on this hole: its course's theme first, then the palette.
         Color? Colour(string name)
@@ -208,7 +222,8 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (Colour(name) is Color color)
+                    if (HoleAtmosphere.IsMagma(Hole) && name is "MAT_WATER" or "MAT_WATER_SHALLOW" or "MAT_FOAM") mats[i] = LavaWorld.ShoreMaterial(name);   // the sea is the crater's lava
+                    else if (Colour(name) is Color color)
                         mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color)
                                 : name is "MAT_LAVA" or "MAT_WINDOW" ? UnlitMat(color)       // they glow
                                 // a waterfall stays bright from every side (lit, its far side went grey)
@@ -261,7 +276,16 @@ namespace GolfArcade.Course
                 if (!StartsWithAny(mf.name, GroundPrefixes) || !mf.TryGetComponent(out Renderer lr)) continue;
                 if (any) land.Encapsulate(lr.bounds); else { land = lr.bounds; any = true; }
             }
-            if (any) Backdrop.Place(transform, land, pinC - teeC, WaterMat(Colour("MAT_WATER").Value));
+            if (any)
+            {
+                if (HoleAtmosphere.IsMagma(Hole))
+                {
+                    LavaWorld.Build(transform, land, pinC - teeC, Hole.Number);   // the crater it floats in
+                    foreach (var t in model.GetComponentsInChildren<Transform>(true))   // and the geysers the model marks in its lava
+                        if (t.name.StartsWith("GEYSER_")) LavaWorld.Geyser(transform, t.position);
+                }
+                else Backdrop.Place(transform, land, pinC - teeC, WaterMat(Colour("MAT_WATER").Value));
+            }
         }
 
         /// The ground around the green as the ball will roll over it, read off the meshes the

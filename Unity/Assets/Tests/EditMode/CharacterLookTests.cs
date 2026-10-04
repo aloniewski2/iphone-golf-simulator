@@ -27,7 +27,7 @@ namespace GolfArcade.Tests
         {
             var look = new CharacterLook { Body = 7, Haircut = 99, Headwear = -4, Skin = "not a colour", Hair = "#a1b2c3", Shirt = null, Shoes = "12345" };
             look.Repair();
-            Assert.AreEqual(1, look.Body); Assert.AreEqual(7, look.Haircut); Assert.AreEqual(0, look.Headwear);
+            Assert.AreEqual(1, look.Body); Assert.AreEqual(CharacterLook.Haircuts - 1, look.Haircut); Assert.AreEqual(0, look.Headwear);
             Assert.AreEqual("", look.Skin, "a colour that isn't one is as designed");
             Assert.AreEqual("A1B2C3", look.Hair, "a real one is tidied");
             Assert.AreEqual("", look.Shirt); Assert.AreEqual("", look.Shoes);

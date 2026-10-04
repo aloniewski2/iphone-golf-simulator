@@ -515,7 +515,7 @@ namespace GolfArcade.Game
             courses?.Show(browseFull ? courseName : h.Name, h.Number, h.Par, h.Length, browse, browseFull, courseName);
             // a course still to be earned: what it takes, and no SELECT
             var key = Course.Course.Containing(h.Number)?.Key;
-            courses?.SetLocked(Unlocks.CourseOpen(ProfileStore.Active, key) ? null : Unlocks.Find(Unlocks.WildIsles)?.How);
+            courses?.SetLocked(Unlocks.CourseOpen(ProfileStore.Active, key) ? null : Unlocks.CourseReward(key)?.How);
         }
 
         /// One frame of the course screen: round the hole, the haze pushed back beyond it.
@@ -528,8 +528,8 @@ namespace GolfArcade.Game
         /// The haze: where it starts and ends, pushed back past `beyond` yards (0 for the usual).
         void SetFog(float beyond)
         {
-            RenderSettings.fogStartDistance = Mathf.Max(FogStart, beyond);
-            RenderSettings.fogEndDistance = Mathf.Max(FogEnd, beyond + 1200);
+            RenderSettings.fogStartDistance = Mathf.Max(HoleAtmosphere.FogStart, beyond);
+            RenderSettings.fogEndDistance = Mathf.Max(HoleAtmosphere.FogEnd, beyond + 1200);
         }
 
         /// A course still locked for the phone's player (saved from before, or another player's
@@ -578,7 +578,9 @@ namespace GolfArcade.Game
             locker.TabChanged = tab =>
             {
                 Click();
-                lockerHeadTarget = tab is Locker.Tab.Hair or Locker.Tab.Headwear ? 1f : 0f;
+                lockerHeadTarget = tab is Locker.Tab.Hair or Locker.Tab.Face or Locker.Tab.Headwear ? 1f : 0f;
+                // the HAIR tab shows the haircut bare (a hat would hide what is being chosen); the others wear the look
+                if (GolferStyle.PreviewBareHead != (tab == Locker.Tab.Hair)) { GolferStyle.PreviewBareHead = tab == Locker.Tab.Hair; golfer.Redress(); }
                 ball.gameObject.SetActive(tab == Locker.Tab.Gear);
                 stage.Extra = tab == Locker.Tab.Gear ? ball : null;
                 if (tab != Locker.Tab.Gear) return;
@@ -624,7 +626,7 @@ namespace GolfArcade.Game
             Enter(State.Golfer);
             RestyleForPicker();
             selectFacing = golfer.transform.forward;
-            stage.Show(rig.Camera, golfer.transform, "locker", 0.35f, 0.62f);
+            stage.Show(rig.Camera, golfer.transform, "studio");
             ClubWipe.Play();
             rig.FrameLocker(golfer.transform.position, selectFacing, 0);
             rig.SnapNext();
@@ -684,6 +686,7 @@ namespace GolfArcade.Game
         public void CloseGolferPicker()
         {
             hud.HideLocker(); locker = null;
+            GolferStyle.PreviewBareHead = false;
             // the golfer picked belongs to a profile: the one being edited, or the phone's own
             var profile = pickingFor ?? ProfileStore.Active;
             profile.Look = GolferStyle.Current.Clone();
@@ -1375,7 +1378,7 @@ namespace GolfArcade.Game
         /// The tournament: the course's name, as an Open.
         string Tournament => setup?.Mode == PlayMode.Tournament && ChampionshipStore.Current is Championship open
             ? $"{open.Title}   ·   Round {Math.Min(open.Round + 1, Championship.Rounds)}"
-            : Match != null && Match.Format != MatchFormat.StrokePlay ? Match.FormatName(Match.Format) : $"{course.Name} Open";
+            : Match != null && Match.Format != MatchFormat.StrokePlay ? Match.FormatName(Match.Format) : Championship.TitleOf(course.Name);
 
         /// The scoreboard: every hole of the round against its par, the one being played live.
         void ShowScore()

@@ -6,11 +6,13 @@ himself flagged, and what is done about it here:
   * "The legs are fat": the thighs and calves (body skin), the shorts' legs and the socks are slimmed
     about each leg's own axis, by bone weight, so nothing kinks at the knee. Every shape key (the girl) is
     slimmed the same way, or the blend from one to the other would undo it.
-  * The head, the hair and the hats (hero_head.py, run by hero_parts_export.py): a closed scalp where his
-    head stopped at the forehead, every haircut seated on it without the visor ring it was built on, the
-    hats fitted over the hair (not cut into it), and the hair's flex (below) so it moves.
+  * The head, the hair and the hats (hero_head.py, hero_hair.py, hero_hats.py, run by hero_parts_export.py):
+    his head was a torn face mask under a visor-shaped scalp, and his haircuts and hats scans built round the
+    visor. The head is closed (the mask trimmed, a shell with ears behind it) and the haircuts and hats are made
+    to sit on it, so none of his hair or hat sculpts is used.
   * The clothes: the Tripo noise on the shirt and shorts is relaxed (a light smooth that keeps the
-    silhouette, the hems and the seams).
+    silhouette, the hems and the seams), and the shirt's collar, which was left torn at the back of the neck
+    (the hair covered it), has its hanging shards peeled and its rim smoothed (`mend_collar`).
 
 Every step is a function of (object, parameters), and `apply(slot, meshes)` is the only entry point.
 """
@@ -130,28 +132,37 @@ def relax(obj, iterations=2, factor=0.5, skip=("Head", "Neck", "Hand", "Index", 
             for d, co in zip(kb.data, c): d.co = co
 
 
-def hair_flex(hair_objs, reference_objs, near=0.03, far=0.22):
-    """Per-vertex 'flex' for the hair: 0 at the roots on the scalp, 1 at the free ends, written as the R of a vertex
-    colour layer (Col). The game's HeroKit shader swings the hair by it, so hair follows the head with a lag: the
-    strands' ends move, the roots stay. `reference_objs` are the head (face and skull) the hair grows from."""
-    from mathutils.bvhtree import BVHTree
-    dg = bpy.context.evaluated_depsgraph_get()
-    verts, polys = [], []
-    for o in reference_objs:
-        base = len(verts)
-        verts += [o.matrix_world @ v.co for v in o.data.vertices]
-        polys += [tuple(base + i for i in p.vertices) for p in o.data.polygons]
-    tree = BVHTree.FromPolygons(verts, polys)
-    for o in hair_objs:
-        me = o.data
-        attr = me.color_attributes.get("Col") or me.color_attributes.new("Col", 'FLOAT_COLOR', 'POINT')
-        mw = o.matrix_world
-        for v in me.vertices:
-            hit = tree.find_nearest(mw @ v.co)
-            d = hit[3] if hit and hit[3] is not None else far
-            t = max(0.0, min(1.0, (d - near) / (far - near)))
-            f = t * t * (3 - 2 * t)
-            attr.data[v.index].color = (f, 0.0, 0.0, 1.0)
+def mend_collar(obj, low=1.20, passes=8, rounds=8, factor=0.5, behind=0.0):
+    """The shirt's collar was left torn at the back of the neck (Adnan's Hero wore hair over it): its rim is a sawtooth
+    of triangles hanging by a corner or an edge. They are peeled, over and over, above `low`, and what is left of the
+    rim behind the neck (y > `behind`) is eased along itself, so the back of the collar is one clean curve. `relax`
+    leaves boundary vertices alone, so nothing else touches it. The shape keys follow. Returns (peeled faces)."""
+    mw = obj.matrix_world
+    bm = bmesh.new(); bm.from_mesh(obj.data); bm.faces.ensure_lookup_table()
+    peeled = 0
+    for _ in range(passes):
+        bad = [f for f in bm.faces if (mw @ f.calc_center_median()).z > low
+               and (sum(1 for e in f.edges if e.is_boundary) >= 2 or any(len(v.link_faces) == 1 for v in f.verts))]
+        if not bad: break
+        peeled += len(bad)
+        bmesh.ops.delete(bm, geom=bad, context='FACES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        bm.faces.ensure_lookup_table()
+    layers = list(bm.verts.layers.shape.values())
+    for _ in range(rounds):
+        moves = {}
+        for v in bm.verts:
+            p = mw @ v.co
+            if p.z <= low or p.y <= behind: continue
+            nb = [e.other_vert(v) for e in v.link_edges if e.is_boundary]
+            if len(nb) != 2: continue
+            moves[v] = ((nb[0].co + nb[1].co) / 2 - v.co) * factor
+        for v, d in moves.items():
+            v.co += d
+            for L in layers: v[L] = v[L] + d
+    bm.to_mesh(obj.data); bm.free()
+    obj.data.update()
+    return peeled
 
 
 def apply(slot, meshes, hero_dir=None):
@@ -162,7 +173,9 @@ def apply(slot, meshes, hero_dir=None):
             slim_legs(m, arm, *SLIM["body"])
             relax(m, 2, 0.5)
         elif slot == "shirt":
-            relax(m, 2, 0.5)
+            # (HERO_SKIP_RELAX=1: the source is already a repaired hero_shirt.fbx, not Adnan's original)
+            if os.environ.get("HERO_SKIP_RELAX") != "1": relax(m, 2, 0.5)
+            print("collar: peeled", mend_collar(m))
         elif slot == "shorts":
             slim_legs(m, arm, SLIM["shorts"], 1.0)
             relax(m, 2, 0.5)

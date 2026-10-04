@@ -40,7 +40,11 @@ namespace GolfArcade.Course
         public List<Entry> Field = new();
 
         public bool IsOver => Round >= Rounds;
-        public string Title => $"{CourseName} Open";
+        public string Title => TitleOf(CourseName);
+
+        /// A course's name, as an Open ("Cliffside Open"); a course already called an Open (Magma Open) stays as it is.
+        public static string TitleOf(string courseName) =>
+            courseName.EndsWith(" Open", StringComparison.OrdinalIgnoreCase) ? courseName : $"{courseName} Open";
 
         /// The touring pros: their names and how good they are.
         static readonly (string name, int skill)[] Pros =

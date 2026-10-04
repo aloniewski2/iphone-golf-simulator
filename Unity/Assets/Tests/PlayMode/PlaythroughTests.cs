@@ -94,6 +94,10 @@ namespace GolfArcade.PlayTests
         [UnityTest, Timeout(600000)]
         public IEnumerator TheSpiralPlaysOut() => Play(new[] { 13 });
 
+        /// The Magma Open's three holes on the crater's lava.
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheMagmaOpenPlaysOut() => Play(new[] { 21, 22, 23 });
+
         static IEnumerator Play(int[] holes)
         {
             Time.timeScale = 1f;

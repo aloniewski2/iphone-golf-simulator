@@ -508,9 +508,6 @@ namespace GolfArcade.Game
             return true;
         }
 
-        /// How far the Hero's hair is swung out by the head's motion right now (0 for other figures), for the tests.
-        public float HairSway => heroFigure?.SwayMagnitude ?? 0f;
-
         /// True when the figure is Adnan's Hero (else the older V4 golfer or the primitive stand-in).
         public bool IsHero => heroFigure != null;
         /// The Hero's parts (for the tests), or null.
@@ -694,12 +691,6 @@ namespace GolfArcade.Game
         void Update()
         {
             if (hasModel) UpdateModel(); else UpdateFigure();
-        }
-
-        /// The hair lags the head (after the pose is set this frame).
-        void LateUpdate()
-        {
-            if (heroFigure != null && !spectator) heroFigure.Sway(Time.deltaTime);
         }
 
         void UpdateModel()

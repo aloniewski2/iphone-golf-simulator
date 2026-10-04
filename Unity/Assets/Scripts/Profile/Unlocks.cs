@@ -27,6 +27,7 @@ namespace GolfArcade.Profile
     public static class Unlocks
     {
         public const string WildIsles = "course.wildisles";
+        public const string Magma = "course.magma";
         /// The first outfit colours are everyone's; the rest are earned (outfit.3 to outfit.5).
         public const int FreeOutfitColours = 3;
 
@@ -35,6 +36,7 @@ namespace GolfArcade.Profile
         public static readonly Reward[] All =
         {
             new(WildIsles, RewardKind.Course, "Wild Isles", "Beat par on Cliffside", s => s.BestOn("cliffside") <= 0),
+            new(Magma, RewardKind.Course, "Magma Open", "Finish a round on Wild Isles", s => s.RoundsOn("wildisles") >= 1),
 
             new("outfit.mixer", RewardKind.Outfit, "Colour mixer", "Finish 2 rounds", s => s.RoundsPlayed >= 2),
             new("outfit.3", RewardKind.Outfit, "Crimson", "Finish 5 rounds", s => s.RoundsPlayed >= 5),
@@ -71,8 +73,12 @@ namespace GolfArcade.Profile
             return r == null || Everything || (p != null && p.AllUnlocked) || r.EarnedBy(p?.Stats);
         }
 
-        /// A course is open to the player: Wild Isles once they have beaten par on Cliffside.
-        public static bool CourseOpen(PlayerProfile p, string courseKey) => courseKey != "wildisles" || Has(p, WildIsles);
+        /// The reward that opens a course, if it has to be earned (Cliffside is everyone's).
+        public static Reward CourseReward(string courseKey) => courseKey switch { "wildisles" => Find(WildIsles), "magma" => Find(Magma), _ => null };
+
+        /// A course is open to the player: Wild Isles once they have beaten par on Cliffside, the Magma Open once they
+        /// have finished a round on Wild Isles.
+        public static bool CourseOpen(PlayerProfile p, string courseKey) => CourseReward(courseKey) is not Reward r || Has(p, r.Id);
 
         /// An outfit colour (a kit or a shirt colour by its index) is open to the player.
         public static bool OutfitOpen(PlayerProfile p, int colour) => colour < FreeOutfitColours || Has(p, $"outfit.{colour}");

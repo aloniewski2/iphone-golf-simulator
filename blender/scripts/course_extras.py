@@ -14,6 +14,7 @@ from mathutils import Vector, Matrix
 THEMES = {
     None:      dict(rough="MAT_ROUGH", cliff="MAT_CLIFF", cliff_dark="MAT_CLIFF_DARK", sand="MAT_SAND"),
     "volcano": dict(rough="MAT_ROUGH_ASH", cliff="MAT_BASALT", cliff_dark="MAT_BASALT_DARK", sand="MAT_SAND_BLACK", rock="MAT_BASALT"),
+    "magma":   dict(rough="MAT_ROUGH_ASH", cliff="MAT_BASALT", cliff_dark="MAT_BASALT_DARK", sand="MAT_PUMICE", rock="MAT_BASALT"),
     "snow":    dict(rough="MAT_SNOW", cliff="MAT_CLIFF", cliff_dark="MAT_CLIFF_DARK", sand="MAT_SAND"),
     "desert":  dict(rough="MAT_DESERT", cliff="MAT_REDROCK", cliff_dark="MAT_REDROCK_DARK", sand="MAT_SAND", rock="MAT_REDROCK",
                     bands=["MAT_REDROCK", "MAT_REDROCK_ORANGE", "MAT_REDROCK_CREAM", "MAT_REDROCK_ORANGE", "MAT_REDROCK_DARK"]),
@@ -23,7 +24,7 @@ THEMES = {
 # sRGB; Unity's HoleView.Palette carries the same numbers
 COLORS = {
     "MAT_ROUGH_ASH": (56, 60, 54), "MAT_BASALT": (50, 50, 56), "MAT_BASALT_DARK": (32, 32, 38), "MAT_SAND_BLACK": (88, 86, 90),
-    "MAT_LAVA": (255, 116, 24), "MAT_LAVA_CRUST": (150, 46, 22), "MAT_SMOKE": (222, 222, 228), "MAT_CANVAS": (240, 230, 206),
+    "MAT_LAVA": (255, 116, 24), "MAT_LAVA_CRUST": (150, 46, 22), "MAT_PUMICE": (206, 192, 170), "MAT_SMOKE": (222, 222, 228), "MAT_CANVAS": (240, 230, 206),
     "MAT_SNOW": (238, 244, 250), "MAT_ICE": (170, 218, 242), "MAT_ICE_DEEP": (122, 186, 224),
     "MAT_DESERT": (228, 152, 82), "MAT_REDROCK": (198, 90, 60), "MAT_REDROCK_DARK": (160, 70, 48),
     "MAT_REDROCK_ORANGE": (228, 130, 72), "MAT_REDROCK_CREAM": (240, 208, 162),
@@ -36,6 +37,20 @@ COLORS = {
     "MAT_TULIP_RED": (234, 52, 60), "MAT_TULIP_YELLOW": (250, 212, 52), "MAT_TULIP_PINK": (246, 132, 182), "MAT_TULIP_PURPLE": (152, 92, 204),
     "MAT_TULIP_LEAF": (72, 150, 60),
     "MAT_TEMPLE": (172, 166, 148), "MAT_TEMPLE_DARK": (128, 124, 110), "MAT_VINE": (62, 142, 58),
+}
+
+
+# a theme's own colours over the palette (sRGB); Unity's HoleView.Themes carries the same numbers.
+# The magma holes float on the crater's lava: the sea's materials are the lava, its crust and its glowing rim.
+PALETTES = {
+    "magma": {
+        "MAT_FAIRWAY": (70, 142, 74), "MAT_FAIRWAY_STRIPE": (60, 130, 68), "MAT_FIRSTCUT": (52, 116, 60), "MAT_GREEN": (108, 190, 104),
+        "MAT_BUNKER_LIP": (112, 178, 102), "MAT_ROUGH_ASH": (58, 54, 60),
+        "MAT_WATER": (255, 116, 24), "MAT_WATER_SHALLOW": (172, 50, 20), "MAT_FOAM": (255, 190, 72),
+        "MAT_TREE_DARK": (44, 48, 38), "MAT_TREE_MID": (60, 64, 44), "MAT_TREE_LIGHT": (84, 86, 54),
+        "MAT_PALM_FROND": (60, 82, 44), "MAT_PALM_TRUNK": (74, 60, 54), "MAT_COCONUT": (40, 30, 26),
+        "MAT_ROCK": (76, 72, 76), "MAT_ROCK_DARK": (50, 48, 54),
+    },
 }
 
 
@@ -258,6 +273,15 @@ def plant_assets(H, M, make):
                 for f in {f for vv in v for f in vv.link_faces}: f.material_index = 3
         return build
 
+    def obsidian(h, seed):
+        def build(bm):
+            rr = random.Random(seed)
+            for k, (dx, dy, hh, rad) in enumerate([(0.0, 0.0, h, 1.15), (1.5, 0.7, h * 0.62, 0.85), (-1.2, -1.0, h * 0.44, 0.7)]):
+                tilt = (Vector((-dy - 0.01, dx + 0.01, 0)), rr.uniform(0.06, 0.2)) if k else None
+                v = cone(bm, dx, dy, -0.2, hh, rad, 0, 5, rz=rr.uniform(0, 1), tilt=tilt)
+                for f in {f for vv in v for f in vv.link_faces}: f.material_index = 0 if k == 0 else 1
+        return build
+
     wood = M.get("MAT_WOOD")
     dark = H.get_material("MAT_TREE_DARK", H.rgb(34, 104, 52))
     mid = H.get_material("MAT_TREE_MID", H.rgb(52, 140, 62))
@@ -270,6 +294,7 @@ def plant_assets(H, M, make):
         "BARREL_CACTUS": make("BARREL_CACTUS", barrel(1.2, 4), [M["MAT_CACTUS_DARK"], M["MAT_BLOOM"]]),
         "DRY_TUFT": make("DRY_TUFT", tuft(0.9, 6), [M["MAT_TUFT"]]),
         "DEAD_TREE": make("DEAD_TREE", dead_tree(11, 9), [M["MAT_DEAD_WOOD"]]),
+        "OBSIDIAN_SPIRE": make("OBSIDIAN_SPIRE", obsidian(7.5, 12), [M["MAT_COAL"], M["MAT_BASALT_DARK"]]),
         "SNOW_PINE_LARGE": make("SNOW_PINE_LARGE", snow_pine(26, 7.8, 4), [wood, dark, mid, M["MAT_SNOW"]]),
         "SNOW_PINE_MEDIUM": make("SNOW_PINE_MEDIUM", snow_pine(18, 6.0, 3), [wood, dark, mid, M["MAT_SNOW"]]),
         "SNOW_PINE_SMALL": make("SNOW_PINE_SMALL", snow_pine(11, 4.2, 3), [wood, dark, mid, M["MAT_SNOW"]]),
@@ -700,6 +725,29 @@ def landmark(B, kind, x, y, *args):
                 s = rr.uniform(2.0, 6.0)
                 cone(bm, x + math.cos(t) * r, y + math.sin(t) * r, -0.4, 1.0, s, s * 0.85, 6, rz=rr.uniform(0, 1))
         object_from(H, "ICE_FLOES", "ENVIRONMENT", M, [("MAT_SNOW", floes)])
+        return 0
+    if kind == "BRAZIER":                     # a torch: a black stone stand and bowl with a flame of lava colour
+        O(tag, [("MAT_BASALT_DARK", lambda bm: (cone(bm, x, y, z - 0.3, 1.6, 0.55, 0.36, 6), cone(bm, x, y, z + 1.3, 0.5, 0.95, 1.15, 8))),
+                ("MAT_LAVA", lambda bm: cone(bm, x, y, z + 1.75, 1.9, 0.8, 0, 6))])
+        return 3
+    if kind == "GEYSER":                      # a vent in the lava: a black collar; the game puts a fire fountain on its marker (size)
+        (size,) = args
+        O(tag, [("MAT_BASALT_DARK", lambda bm: cone(bm, x, y, -0.6, 2.4 + size * 0.15, size, size * 0.55, 9)),
+                ("MAT_LAVA_CRUST", lambda bm: cone(bm, x, y, 1.7 + size * 0.15, 0.25, size * 0.6, size * 0.5, 9))])
+        e = bpy.data.objects.new(f"GEYSER_{n + 1}", None)
+        e.empty_display_type = 'PLAIN_AXES'; e.empty_display_size = 1
+        bpy.context.scene.collection.objects.link(e); H.link_to(e, "ENVIRONMENT"); e.location = (x, y, 2.2 + size * 0.15)
+        return 0
+    if kind == "STACKS":                      # basalt stacks standing in the lava round (x, y): (inner radius, outer radius, height)
+        r0, r1, tall = args
+        count = max(3, int(round((r1 - r0) / 6.0 + r1 / 9.0)))
+        rr = random.Random(n + 53)
+        def stacks(bm):
+            for k in range(count):
+                t = rr.uniform(0, math.tau); r = rr.uniform(r0, r1)
+                s = rr.uniform(2.5, 6.5); hh = rr.uniform(0.4, 1.0) * tall
+                cone(bm, x + math.cos(t) * r, y + math.sin(t) * r, -1.0, hh, s, s * rr.uniform(0.35, 0.7), 6, rz=rr.uniform(0, 1))
+        object_from(H, f"STACKS_{n + 1}", "ENVIRONMENT", M, [("MAT_BASALT", stacks)])
         return 0
     raise ValueError(f"unknown landmark {kind}")
 

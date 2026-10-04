@@ -17,7 +17,7 @@ namespace GolfArcade.Game
         public Transform Extra;
         readonly System.Collections.Generic.Dictionary<GameObject, int> savedLayers = new();
         GameObject quad, disc;
-        Material quadMaterial, discMaterial;
+        Material quadMaterial, discMaterial, studioMaterial;
         int savedMask; CameraClearFlags savedClear; Color savedBackground;
         float focus = 0.5f;
         public bool Active { get; private set; }
@@ -35,8 +35,22 @@ namespace GolfArcade.Game
             }
             subject = golfer; focus = focusX; Scene = scene;
             Build();
-            quadMaterial.mainTexture = UI.Club.Scene(scene);
-            quadMaterial.SetFloat("_Tint", tint);
+            // "studio": a plain soft gradient and a soft shadow under the feet (the golfer picker); anything else is one of the
+            // clubhouse's painted scenes with the lit disc
+            bool studio = scene == "studio";
+            var quadRenderer = quad.GetComponent<MeshRenderer>();
+            if (studio)
+            {
+                studioMaterial ??= new Material(Shader.Find("Unlit/Transparent")) { mainTexture = StudioTexture() };
+                quadRenderer.sharedMaterial = studioMaterial;
+            }
+            else
+            {
+                quadRenderer.sharedMaterial = quadMaterial;
+                quadMaterial.mainTexture = UI.Club.Scene(scene);
+                quadMaterial.SetFloat("_Tint", tint);
+            }
+            discMaterial.mainTexture = studio ? ShadowTexture() : DiscTexture();
             cam.cullingMask = 1 << Layer;
             cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = UI.Club.LagoonDeep;
             quad.SetActive(true); disc.SetActive(true);
@@ -90,20 +104,24 @@ namespace GolfArcade.Game
             quad.transform.localPosition = new Vector3(0, 0, d);
             quad.transform.localRotation = Quaternion.identity;
             quad.transform.localScale = new Vector3(h * cam.aspect, h, 1);
-            // cover: a wide scene cropped to the screen, about `focus`
-            var tex = quadMaterial.mainTexture;
-            float ta = tex ? tex.width / (float)tex.height : 16f / 9f, a = cam.aspect;
-            var cover = a < ta ? new Vector4(a / ta, 1, 0, 0) : new Vector4(1, ta / a, 0, 0);
-            float room = (1 - cover.x) / 2;
-            cover.z = Mathf.Clamp(focus - 0.5f, -room, room);
-            quadMaterial.SetVector("_Cover", cover);
+            bool studio = Scene == "studio";
+            if (!studio)
+            {
+                // cover: a wide scene cropped to the screen, about `focus`
+                var tex = quadMaterial.mainTexture;
+                float ta = tex ? tex.width / (float)tex.height : 16f / 9f, a = cam.aspect;
+                var cover = a < ta ? new Vector4(a / ta, 1, 0, 0) : new Vector4(1, ta / a, 0, 0);
+                float room = (1 - cover.x) / 2;
+                cover.z = Mathf.Clamp(focus - 0.5f, -room, room);
+                quadMaterial.SetVector("_Cover", cover);
+            }
             if (!subject) return;
             OnStage(subject);
             if (Extra) OnStage(Extra);
             // the lit disc at their feet
             disc.transform.position = subject.position + Vector3.up * 0.02f;
             disc.transform.rotation = Quaternion.Euler(90, 0, 0);
-            disc.transform.localScale = Vector3.one * 2.4f;
+            disc.transform.localScale = Vector3.one * (studio ? 1.7f : 2.4f);
         }
 
         /// Onto the stage's layer, remembering each object's own to put back.
@@ -115,6 +133,41 @@ namespace GolfArcade.Game
                 if (go.layer == Layer) continue;
                 savedLayers[go] = go.layer; go.layer = Layer;
             }
+        }
+
+        static Texture2D studioTexture, shadowTexture;
+        /// The studio: a soft gradient, light at the top.
+        static Texture2D StudioTexture()
+        {
+            if (studioTexture) return studioTexture;
+            const int n = 256;
+            studioTexture = new Texture2D(4, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var top = new Color(0.969f, 0.961f, 0.992f); var bottom = new Color(0.875f, 0.863f, 0.953f);
+            for (int y = 0; y < n; y++)
+            {
+                var c = Color.Lerp(bottom, top, Mathf.SmoothStep(0, 1, y / (n - 1f)));
+                for (int x = 0; x < 4; x++) studioTexture.SetPixel(x, y, c);
+            }
+            studioTexture.Apply();
+            return studioTexture;
+        }
+
+        /// A soft shadow under the feet: dark in the middle, fading out.
+        static Texture2D ShadowTexture()
+        {
+            if (shadowTexture) return shadowTexture;
+            const int n = 128;
+            shadowTexture = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = (x + 0.5f) / n * 2 - 1, dy = (y + 0.5f) / n * 2 - 1, r = Mathf.Sqrt(dx * dx + dy * dy);
+                    float a = Mathf.Clamp01(1 - r); a = a * a * (3 - 2 * a) * 0.38f;
+                    px[y * n + x] = new Color32(52, 44, 96, (byte)(255 * a));
+                }
+            shadowTexture.SetPixels32(px); shadowTexture.Apply();
+            return shadowTexture;
         }
 
         static Texture2D discTexture;
@@ -140,6 +193,6 @@ namespace GolfArcade.Game
             return discTexture;
         }
 
-        void OnDestroy() { if (quadMaterial) Destroy(quadMaterial); if (discMaterial) Destroy(discMaterial); }
+        void OnDestroy() { if (quadMaterial) Destroy(quadMaterial); if (discMaterial) Destroy(discMaterial); if (studioMaterial) Destroy(studioMaterial); }
     }
 }

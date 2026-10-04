@@ -249,8 +249,13 @@ namespace GolfArcade.Course
         public HazardKind? HazardAt(CoursePoint p)
         {
             foreach (var h in Hazards) if (h.Contains(p)) return h.Kind;
+            // a hole in the crater floats on lava: what is not land is lava
+            if (SeaIsLava && !OnLand(p)) return HazardKind.Lava;
             return null;
         }
+
+        /// The Magma Open's holes float on the crater's lava: their sea is lava, so a ball that leaves the land burns.
+        public bool SeaIsLava => Theme == "magma";
 
         public CourseLie LieAt(CoursePoint p)
         {
@@ -276,7 +281,7 @@ namespace GolfArcade.Course
         public Hole[] Holes;
 
         /// Every course with modelled holes, in the order the course screen shows them.
-        public static Course[] All() => new[] { Cliffside(), WildIsles() };
+        public static Course[] All() => new[] { Cliffside(), WildIsles(), Magma() };
 
         /// The course a hole belongs to, by its number (hole numbers are unique across courses).
         public static Course Containing(int holeNumber)
@@ -455,6 +460,53 @@ namespace GolfArcade.Course
                     RoughWidth = 300,
                     Hazards = new[] { Bunker(28.4, 129.0, 19.7, 13.1), Bunker(-26.2, 238.4, 19.7, 13.1), Bunker(-6.6, 411.2, 15.3, 10.9), Bunker(39.4, 367.4, 13.1, 8.7), Water(0.0, 156.4, 192.5, 8.7), Water(0.0, 287.6, 192.5, 8.7), Water(63.4, 387.1, 33.9, 25.2) },
                     Shore = new[] { P(-40.8, -25.0), P(-19.3, -29.6), P(-8.2, -27.2), P(30.1, -27.8), P(61.9, -19.6), P(71.7, -14.7), P(91.5, 3.3), P(103.2, 34.0), P(109.2, 82.5), P(106.9, 166.5), P(109.5, 182.0), P(108.7, 198.8), P(111.8, 209.4), P(108.9, 236.6), P(111.7, 248.2), P(108.9, 258.4), P(110.9, 264.8), P(107.5, 274.4), P(107.1, 290.7), P(109.2, 297.8), P(106.7, 312.4), P(109.0, 325.4), P(107.2, 339.6), P(109.0, 363.4), P(104.5, 407.0), P(92.0, 437.5), P(70.8, 454.4), P(65.2, 454.5), P(45.1, 463.7), P(6.8, 467.1), P(-20.4, 464.2), P(-26.1, 466.7), P(-47.8, 462.9), P(-73.3, 453.2), P(-90.7, 440.5), P(-92.7, 433.2), P(-96.8, 431.3), P(-107.7, 389.1), P(-107.7, 278.0), P(-111.7, 246.1), P(-109.1, 234.7), P(-111.9, 224.0), P(-111.2, 201.8), P(-108.5, 196.8), P(-110.1, 185.3), P(-108.1, 180.4), P(-109.2, 135.4), P(-107.2, 120.8), P(-109.6, 96.9), P(-105.8, 42.7), P(-102.9, 26.3), P(-92.1, 1.3), P(-67.5, -19.9), P(-56.7, -21.6), P(-52.0, -25.5) },
+                },
+            },
+        };
+
+        /// Magma Open: three holes on the molten lake of a crater — an obsidian slab to carry the lava to, a winding
+        /// causeway of black rock, and a horseshoe of rock round a lagoon of lava that can be played round or across —
+        /// in the world of Adnan's Volcano venue (LavaWorld, HoleAtmosphere). Built by course_builder.py from
+        /// blender/scripts/hole21_slab_design.py … hole23_caldera_design.py; the sea is lava, so a ball that leaves the
+        /// rock burns (Hole.SeaIsLava).
+        public static Course Magma() => new()
+        {
+            Name = "Magma Open", Key = "magma",
+            Holes = new[]
+            {
+                new Hole
+                {
+                    Number = 21, Par = 3, Name = "Obsidian Slab",
+                    Blurb = "A par 3 over the molten lake: carry the lava from a slab of black rock to a green on the far side.",
+                    Theme = "magma",
+                    Centerline = new[] { P(0.0, 0.0), P(2.2, 117.0), P(7.7, 136.7), P(10.9, 149.8), P(12.0, 165.1) },
+                    FairwayWidth = 33, GreenRadius = 21,
+                    RoughWidth = 300,
+                    Hazards = new[] { Bunker(-17.5, 143.3, 19.7, 13.1), Bunker(39.4, 156.4, 17.5, 13.1), Bunker(13.1, 188.1, 19.7, 13.1), Bunker(30.6, 133.4, 13.1, 9.8) },
+                    Shore = new[] { P(-14.1, -19.9), P(-3.3, -22.3), P(17.8, -16.3), P(28.7, -4.6), P(32.5, 5.7), P(30.0, 39.3), P(24.0, 49.0), P(18.5, 50.6), P(14.5, 55.3), P(-2.2, 57.9), P(-12.8, 54.4), P(-22.4, 49.3), P(-28.4, 40.0), P(-32.6, 12.3), P(-26.2, -9.4), P(-19.7, -18.7) },
+                    Islets = new[] { new[] { P(-37.9, 114.1), P(-26.4, 112.2), P(-22.5, 108.5), P(5.4, 106.0), P(33.0, 109.7), P(53.3, 119.1), P(63.7, 131.8), P(70.6, 146.9), P(72.4, 157.9), P(69.6, 163.3), P(69.8, 174.5), P(64.0, 184.2), P(52.5, 196.1), P(28.8, 209.1), P(17.1, 208.7), P(12.1, 211.0), P(-15.5, 209.1), P(-39.7, 196.9), P(-61.0, 178.6), P(-67.0, 151.7), P(-56.8, 126.1) } },
+                },
+                new Hole
+                {
+                    Number = 22, Par = 4, Name = "Ember Causeway",
+                    Blurb = "A par 4 along a winding causeway of black rock: thread the neck where the lava bites in, and hit the plateau green.",
+                    Theme = "magma",
+                    Centerline = new[] { P(0.0, 0.0), P(2.2, 41.6), P(15.3, 90.8), P(36.1, 136.7), P(55.8, 183.7), P(60.1, 231.8), P(48.1, 277.8), P(21.9, 319.3), P(2.2, 345.6), P(-2.2, 363.1) },
+                    FairwayWidth = 28, GreenRadius = 21,
+                    RoughWidth = 300,
+                    Hazards = new[] { Bunker(27.3, 145.3, 19.7, 14.2), Bunker(44.9, 197.4, 17.5, 13.1), Bunker(51.6, 288.0, 17.5, 13.1), Bunker(18.3, 305.6, 17.5, 13.1), Bunker(-7.1, 326.0, 17.5, 13.1), Bunker(25.4, 345.0, 15.3, 12.0), Bunker(-26.1, 386.2, 15.3, 10.9), Lava(64.4, 158.9, 17.5, 13.1) },
+                    Shore = new[] { P(-17.9, -4.5), P(-16.6, -11.5), P(-9.2, -19.2), P(1.5, -20.5), P(15.1, -11.8), P(18.4, -3.3), P(18.1, 42.6), P(23.2, 63.4), P(39.5, 97.7), P(58.2, 124.0), P(65.6, 139.7), P(75.9, 151.6), P(83.5, 172.7), P(87.4, 199.4), P(86.2, 210.4), P(82.1, 215.2), P(81.9, 226.6), P(78.0, 230.8), P(78.4, 237.2), P(75.0, 241.2), P(75.3, 247.8), P(71.6, 251.0), P(57.6, 299.9), P(50.3, 312.3), P(38.8, 344.1), P(35.5, 383.2), P(28.9, 392.5), P(10.8, 403.9), P(-10.9, 406.6), P(-35.3, 395.0), P(-41.4, 383.8), P(-45.1, 382.0), P(-49.7, 366.4), P(-46.3, 344.6), P(-39.8, 335.2), P(17.2, 293.9), P(29.0, 281.9), P(38.3, 268.9), P(45.0, 253.4), P(47.0, 236.5), P(43.5, 221.2), P(29.2, 191.1), P(-5.5, 76.8), P(-13.1, 42.6) },
+                },
+                new Hole
+                {
+                    Number = 23, Par = 5, Name = "Caldera Crown",
+                    Blurb = "A par 5 round a lagoon of lava: three shots along the ridge, or gamble on the carry straight across.",
+                    Theme = "magma",
+                    Centerline = new[] { P(0.0, 0.0), P(-37.0, 48.2), P(-44.7, 102.7), P(-25.8, 154.4), P(15.1, 191.3), P(68.4, 204.6), P(121.8, 191.3), P(162.7, 154.4), P(181.6, 102.7), P(173.9, 48.2), P(143.7, 7.0) },
+                    FairwayWidth = 37, GreenRadius = 22,
+                    RoughWidth = 300,
+                    Hazards = new[] { Bunker(-58.4, 67.6, 19.7, 14.2), Bunker(-25.4, 108.2, 19.7, 13.1), Bunker(-21.5, 182.8, 21.9, 14.2), Bunker(117.4, 182.9, 19.7, 13.1), Bunker(190.0, 140.8, 17.5, 13.1), Bunker(174.1, 13.2, 17.5, 13.1), Bunker(143.8, 37.5, 15.3, 12.0), Lava(-27.3, 85.5, 17.5, 13.1), Lava(162.7, 179.6, 17.5, 12.0) },
+                    Shore = new[] { P(-16.6, -9.7), P(-8.1, -16.1), P(2.4, -15.2), P(11.0, -7.6), P(14.8, 3.9), P(9.2, 19.0), P(-15.1, 55.1), P(-16.9, 65.9), P(-14.8, 82.8), P(-11.5, 104.3), P(-5.8, 120.0), P(-6.6, 125.8), P(12.1, 159.8), P(21.1, 166.0), P(27.7, 175.6), P(33.8, 176.0), P(37.3, 181.2), P(58.1, 188.3), P(74.6, 190.5), P(90.9, 186.8), P(95.4, 182.5), P(106.1, 179.9), P(117.6, 167.5), P(122.9, 165.5), P(124.4, 159.2), P(134.0, 146.1), P(150.6, 99.1), P(148.7, 93.9), P(150.6, 82.9), P(149.2, 60.8), P(139.2, 47.7), P(112.7, 28.2), P(105.8, 13.7), P(107.7, -9.5), P(113.3, -19.4), P(131.1, -31.8), P(141.8, -33.1), P(162.5, -26.8), P(176.9, -10.8), P(182.4, -1.1), P(183.0, 5.5), P(187.8, 8.5), P(188.3, 15.0), P(192.1, 18.9), P(207.1, 54.3), P(214.2, 86.5), P(212.2, 124.8), P(200.2, 155.6), P(187.8, 173.8), P(166.9, 191.8), P(151.0, 198.3), P(147.5, 202.5), P(121.0, 210.9), P(116.7, 214.6), P(61.9, 221.4), P(40.5, 217.2), P(34.3, 219.3), P(24.4, 214.9), P(18.0, 216.0), P(13.8, 212.3), P(-17.4, 200.9), P(-30.9, 191.5), P(-37.6, 183.3), P(-43.9, 181.1), P(-61.1, 159.5), P(-76.0, 124.0), P(-74.1, 118.3), P(-77.3, 107.5), P(-75.4, 91.2), P(-77.3, 85.5), P(-74.5, 74.8), P(-70.6, 70.1), P(-71.4, 64.3), P(-64.9, 54.9), P(-65.7, 48.7), P(-54.8, 29.5), P(-30.0, -0.2) },
                 },
             },
         };

@@ -30,6 +30,8 @@ Shader "GolfArcade/HeroKit"
         _UseScalp ("Scalp: skin to hair by the vertex colour's R (the hairline)", Float) = 0
         _ScalpSkin ("Scalp: the skin below the hairline", Color) = (1, 0.8, 0.7, 1)
         _HairAmount ("Scalp: hair above the hairline (0 bald)", Range(0, 1)) = 1
+        _Fill ("Fill light: a floor under the shadows (soft clay, no black undersides)", Range(0, 1)) = 0.10
+        _Clear ("Clear: draw nothing (a clear lens: the frame shows, the eyes behind it too)", Float) = 0
     }
     SubShader
     {
@@ -42,7 +44,7 @@ Shader "GolfArcade/HeroKit"
         sampler2D _MainTex, _Mask, _MatCap;
         fixed4 _Color, _Shirt, _Shorts, _Accent, _Skin, _ScalpSkin;
         float4 _Ref;
-        float _UseAtlas, _MatCapStrength, _Wrap, _SkinShading, _UseFlex, _UseScalp, _HairAmount;
+        float _UseAtlas, _MatCapStrength, _Wrap, _SkinShading, _UseFlex, _UseScalp, _HairAmount, _Clear, _Fill;
         float4 _HairSway, _HatHold;
 
         struct Input { float2 uv_MainTex; float3 worldNormal; float4 color : COLOR; };
@@ -71,6 +73,7 @@ Shader "GolfArcade/HeroKit"
 
         void surf(Input IN, inout SurfaceOutput o)
         {
+            clip(_Clear > 0.5 ? -1 : 1);
             float3 vn = normalize(mul((float3x3)UNITY_MATRIX_V, IN.worldNormal));
             half cap = tex2D(_MatCap, vn.xy * 0.49 + 0.5).r;
             half3 map = tex2D(_MainTex, IN.uv_MainTex).rgb;
@@ -92,6 +95,9 @@ Shader "GolfArcade/HeroKit"
                 // hair's map) above the hairline; all skin when bald
                 albedo = lerp(_ScalpSkin.rgb, _Color.rgb * map, saturate(IN.color.r * _HairAmount));
             }
+            // hair: each lock a touch darker at its root than at its free end (the flex is the lock's length, 0 to 1)
+            // so overlapping locks read as strands
+            if (_UseFlex > 0.5) albedo *= lerp(0.82, 1.1, saturate(IN.color.r * 2.4));
             o.Albedo = albedo * lerp(1, cap, _MatCapStrength);
             o.Alpha = 1;
         }
@@ -101,7 +107,7 @@ Shader "GolfArcade/HeroKit"
             half nl = dot(s.Normal, gi.light.dir);
             half lit = saturate((nl + _Wrap) / (1 + _Wrap));
             half4 c;
-            c.rgb = s.Albedo * gi.light.color * lit;
+            c.rgb = s.Albedo * (gi.light.color * lit + _Fill);
             #ifdef UNITY_LIGHT_FUNCTION_APPLY_INDIRECT
             c.rgb += s.Albedo * gi.indirect.diffuse;
             #endif

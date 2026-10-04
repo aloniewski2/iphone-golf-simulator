@@ -14,11 +14,13 @@ namespace GolfArcade.Profile
         public const int CurrentVersion = 1;
 
         public const int Boy = 0, Girl = 1;
-        /// HeroGolfer.Headwear: none, visor, cap, sweatband.
+        /// How many styles the kit has of each (the lengths of HeroGolfer's lists, which a test keeps in step); saves are clamped to them.
+        public const int Haircuts = 15, Headwears = 15, GlassesStyles = 7, FacialStyles = 6, Tops = 4, Bottoms = 3;
+        /// HeroGolfer.Headwear (0 none).
         public const int Visor = 1;
 
         public int Version = CurrentVersion;
-        /// 0 boy, 1 girl (the Hero's one skeleton, with the "Female" shape on the body and the clothes).
+        /// 0 boy, 1 girl (one body for both: the girl starts with a ponytail, and any haircut is open to either).
         public int Body;
         public string Skin = "";
         /// HeroGolfer.Haircut; -1 follows the body (swept for a boy, a ponytail for a girl).
@@ -26,6 +28,8 @@ namespace GolfArcade.Profile
         public string Hair = "";
         /// HeroGolfer.Headwear.
         public int Headwear = Visor;
+        /// HeroGolfer.GlassesNames (0 none), FacialNames (0 none), TopNames (0 polo), BottomNames (0 shorts).
+        public int Glasses, Facial, Top, Bottom;
         /// The shirt, the shorts (and their trim), the shoes, and the cap or band.
         public string Shirt = "", Shorts = "", Shoes = "", Hat = "";
 
@@ -68,8 +72,12 @@ namespace GolfArcade.Profile
         public void Repair()
         {
             Body = Math.Max(0, Math.Min(1, Body));
-            Haircut = Math.Max(-1, Math.Min(7, Haircut));
-            Headwear = Math.Max(0, Math.Min(3, Headwear));
+            Haircut = Math.Max(-1, Math.Min(Haircuts - 1, Haircut));
+            Headwear = Math.Max(0, Math.Min(Headwears - 1, Headwear));
+            Glasses = Math.Max(0, Math.Min(GlassesStyles - 1, Glasses));
+            Facial = Math.Max(0, Math.Min(FacialStyles - 1, Facial));
+            Top = Math.Max(0, Math.Min(Tops - 1, Top));
+            Bottom = Math.Max(0, Math.Min(Bottoms - 1, Bottom));
             Skin = Clean(Skin); Hair = Clean(Hair); Shirt = Clean(Shirt); Shorts = Clean(Shorts); Shoes = Clean(Shoes); Hat = Clean(Hat);
             if (Version < CurrentVersion) Version = CurrentVersion;
         }
@@ -78,7 +86,7 @@ namespace GolfArcade.Profile
         static string Clean(string hex) => IsHex(hex) ? hex.TrimStart('#').ToUpperInvariant() : "";
 
         public bool SameAs(CharacterLook o) =>
-            o != null && Body == o.Body && Skin == o.Skin && Haircut == o.Haircut && Hair == o.Hair && Headwear == o.Headwear
-            && Shirt == o.Shirt && Shorts == o.Shorts && Shoes == o.Shoes && Hat == o.Hat;
+            o != null && Body == o.Body && Skin == o.Skin && Haircut == o.Haircut && Hair == o.Hair && Headwear == o.Headwear && Glasses == o.Glasses
+            && Facial == o.Facial && Top == o.Top && Bottom == o.Bottom && Shirt == o.Shirt && Shorts == o.Shorts && Shoes == o.Shoes && Hat == o.Hat;
     }
 }

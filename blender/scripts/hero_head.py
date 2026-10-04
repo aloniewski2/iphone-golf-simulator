@@ -1,23 +1,21 @@
-"""The Hero's head, made whole, and the hair and hats layered on it (called from hero_repair.py).
+"""The Hero's head, made whole (hero_hair.py grows the haircuts on it, hero_hats.py the hats).
 
-Adnan's Hero was sculpted wearing a visor. His body's head stops at the forehead (z 1.51); the skull
-exists only as the bald piece, set ~10 cm back from the face; and every haircut was modelled around the
-visor's band. Without the visor the front of the head was a hole, and the hair floated where the band
-had been. Here:
+Adnan's Hero was sculpted wearing a visor. His body's head is a mask: a thin, lumpy face plate that stops at the
+forehead and wraps the cheeks in a ragged edge, with torn shards where the ears should be; the skull exists only
+as the bald piece, set ~10 cm back from the face. Everything behind the mask was hair. Patching the mask left a
+dented, kidney-shaped head (and blurring the scan into a shell left a bean, the skull sitting far behind the face),
+so none of it is used: the head is made here, whole, round and low poly.
 
-  * `build_scalp` makes one closed head: a sphere around the head's centre, each direction pushed out to
-    the skull where there is skull and tucked just under the face where there is face, the gap between
-    them (the forehead and temples he never modelled) filled smoothly. It carries a hairline mask
-    (vertex colour R: 0 skin, 1 hair) so the game can paint it skin at the forehead and in the hair's
-    colour under the hair; bald, it is all skin.
-  * `seat_hair` lowers each haircut onto that scalp: every direction from the head's centre is moved in by
-    the gap between the hair's innermost surface and the scalp (smoothed), so the roots sit on the head.
-  * `fit_hat` / `under_hat` layer a hat over any head: the hat grows where the scalp (or bare skull)
-    would show through it, and each haircut gets a shape key per hat that tucks the hair in under it,
-    so the full hair is always there and the hat sits on top (nothing is cut away).
+  * `build_round_head` makes one closed shell: an egg (`EGG`: a rounded, box-ish ellipsoid with squarish
+    cross-sections, full cheeks and a jaw that narrows), the size of his face and skull together, on a UV sphere
+    of 40 x 28 (about 1.5k vertices). A nose is raised on it; the mouth (a smile) and the brows are thin dark strips
+    lying on it (their own material, `Hero_01_FaceLine`); an ear is grown on each side. It carries the hairline as
+    vertex colour R (0 skin, 1 hair) so the game paints it skin on the face, temples, ears and nape and in the
+    hair's colour under the hair; bald, it is all skin. His eyeballs stand out of it as they did out of his mask.
+  * `fix_neck` mends the body's neck (see below) and takes the mask away: the body's head faces go.
 
-Everything works in directions from one centre, `CENTER`, which sees the whole cranium (the head is
-star-shaped from it). Units are metres, Blender axes (the face looks down -Y, Z up).
+Everything works in directions from one centre, `CENTER`, which sees the whole head (it is star-shaped from it).
+Units are metres, Blender axes (the face looks down -Y, Z up).
 """
 import bpy, bmesh, math
 import numpy as np
@@ -26,10 +24,10 @@ from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
 CENTER = Vector((0.0, 0.03, 1.42))
-FACE_TUCK = 0.007        # the scalp runs this far under the face (his face is bumpy: any shallower and they cross)
-SKULL_BAND = math.radians(22)   # skull this close (in angle) to the face is re-shaped to meet it
-FACE_MARGIN = math.radians(10)  # how far the scalp reaches in under the face
-HAIRLINE = (math.radians(16), math.radians(28))   # skin below, hair above: angular distance from the face
+HEAD_CUT = 1.255                # the body's faces above this are the mask (and the top of the neck cone): they go
+# The hairline: elevation (degrees above CENTER) of the lowest hair at each angle from straight ahead (0 the
+# forehead, 90 the ears, 180 the nape). Skin below, hair above; the hair meshes grow from here.
+HAIRLINE_PTS = ((0, 33), (30, 30), (55, 22), (78, 8), (100, 14), (125, -4), (155, -22), (180, -28))
 
 
 def _world_bvh(objs, poly_filter=None):
@@ -51,99 +49,162 @@ def _ray(tree, d, far=1.0):
     return hit[3] if hit[0] is not None else None
 
 
-def _neighbours(bm):
-    adj = [[] for _ in bm.verts]
-    for e in bm.edges:
-        a, b = e.verts[0].index, e.verts[1].index
-        adj[a].append(b); adj[b].append(a)
-    return adj
-
-
-def _harmonic(values, fixed, adj, active, iterations=600):
-    """Fill the unfixed active entries of `values` smoothly from their fixed neighbours (Jacobi)."""
-    v = values.copy()
-    free = [i for i in range(len(v)) if active[i] and not fixed[i]]
-    nb = {i: [j for j in adj[i] if active[j]] for i in free}
-    for _ in range(iterations):
-        new = v.copy()
-        for i in free:
-            if nb[i]: new[i] = sum(v[j] for j in nb[i]) / len(nb[i])
-        v = new
-    return v
-
-
-def _angular_distance(dirs, mask):
-    """For each direction, the angle to the nearest direction where mask is set."""
-    kd = KDTree(int(mask.sum()))
-    k = 0
-    for i, d in enumerate(dirs):
-        if mask[i]: kd.insert(d, k); k += 1
-    kd.balance()
-    out = np.zeros(len(dirs))
-    for i, d in enumerate(dirs):
-        if mask[i]: continue
-        _, _, chord = kd.find(d)
-        out[i] = 2 * math.asin(min(1.0, chord / 2))
-    return out
-
-
 def _face_filter(face):
     skin_slots = {i for i, s in enumerate(face.material_slots) if s.material and "WarmSkin" in s.material.name}
     return lambda o, p: o is not face or (p.material_index in skin_slots and (o.matrix_world @ p.center).z > 1.25)
 
 
-def build_scalp(face, skull, arm, eyes=(), name="Head_Scalp", segments=64, rings=44):
-    """One closed skull under the hair: see the module's note. `face` is the body (only its skin faces above
-    the jaw count) and `eyes` its eyeballs (they count as face: nothing may show round them), `skull` Adnan's
-    bald piece. Returns the new object, bound to `arm`'s Head bone."""
-    face_tree = _world_bvh([face, *eyes], _face_filter(face))
-    skull_tree = _world_bvh([skull])
+def _azimuth(d):
+    """Angle from straight ahead (-Y) round to direction d, 0..pi (the two sides folded together)."""
+    return math.atan2(abs(d.x), -d.y)
 
+
+def _smooth(t):
+    t = min(1.0, max(0.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def hairline_mask(d, soft=math.radians(7)):
+    """1 in hair, 0 in skin, for direction d from CENTER (the hairline is HAIRLINE_PTS)."""
+    phi = math.degrees(_azimuth(d)); el = math.degrees(math.asin(max(-1.0, min(1.0, d.z))))
+    line = HAIRLINE_PTS[-1][1]
+    for (a0, e0), (a1, e1) in zip(HAIRLINE_PTS, HAIRLINE_PTS[1:]):
+        if a0 <= phi <= a1:
+            line = e0 + (e1 - e0) * (phi - a0) / (a1 - a0); break
+    return _smooth((el - line) / math.degrees(soft) * 0.5 + 0.5)
+
+
+EAR = dict(y=0.066, z=1.398, half_w=0.021, half_h=0.034, rise=0.016, tilt=0.2)
+
+
+def _ear_height(rho):
+    """A raised rim round a shallow dish, sinking into the head at the edge (rho 0 centre .. 1 edge)."""
+    fade = 1.0 - _smooth((rho - 0.72) / 0.28)
+    return fade * (0.45 + 0.75 * math.exp(-((rho - 0.68) / 0.2) ** 2) - 0.35 * math.exp(-(rho / 0.42) ** 2)) - 0.25 * (1 - fade)
+
+
+def add_ears(bm, col_layer, rings=7, segs=22):
+    """A small ear on each side, grown from the shell (bm's faces must already be in place): a rim ring round a
+    dish on a disc that lies on the head's surface and sinks into it at the edge."""
+    tree = BVHTree.FromBMesh(bm)
+    e = EAR
+    for side in (1, -1):
+        rows = []
+        for k in range(rings + 1):
+            rho = k / rings
+            ring = []
+            for j in range(1 if k == 0 else segs):
+                th = 2 * math.pi * j / segs
+                uu, vv = math.cos(th) * rho * e["half_w"], math.sin(th) * rho * e["half_h"] * (1.0 if math.sin(th) > 0 else 0.92)
+                y = e["y"] + uu * math.cos(e["tilt"]) + vv * math.sin(e["tilt"])
+                z = e["z"] - uu * math.sin(e["tilt"]) + vv * math.cos(e["tilt"])
+                hit = tree.ray_cast(Vector((side * 0.5, y, z)), Vector((-side, 0, 0)), 0.6)
+                x = hit[0].x if hit[0] is not None else side * 0.15
+                v = bm.verts.new(Vector((x + side * (e["rise"] * _ear_height(rho)), y, z)))
+                v[col_layer] = (0.0, 0.0, 0.0, 1.0)
+                ring.append(v)
+            rows.append(ring)
+        faces = []
+        for j in range(segs):
+            faces.append(bm.faces.new((rows[0][0], rows[1][j], rows[1][(j + 1) % segs])))
+        for k in range(1, rings):
+            for j in range(segs):
+                faces.append(bm.faces.new((rows[k][j], rows[k + 1][j], rows[k + 1][(j + 1) % segs], rows[k][(j + 1) % segs])))
+        for f in faces:
+            f.normal_update()
+            if f.normal.x * side < 0: f.normal_flip()
+
+
+def _strip_on(bm, tree, col_layer, pts, width, lift=0.0007, mat=1):
+    """A thin dark strip lying on the shell: `pts` are (x, z, half-width scale) along it; each is dropped onto the
+    surface from the front (a ray along +Y), so the strip follows the face. Faces out (toward -Y)."""
+    rows = []
+    for x, z, s in pts:
+        hit = tree.ray_cast(Vector((x, -0.6, z)), Vector((0, 1, 0)), 1.0)
+        if hit[0] is None: continue
+        p, n = hit[0], hit[1]
+        up = (Vector((0, 0, 1)) - n * n.z).normalized()
+        a = bm.verts.new(p + n * lift + up * (width * s / 2)); b = bm.verts.new(p + n * lift - up * (width * s / 2))
+        a[col_layer] = b[col_layer] = (0.0, 0.0, 0.0, 1.0)
+        rows.append((a, b))
+    for (a0, b0), (a1, b1) in zip(rows, rows[1:]):
+        f = bm.faces.new((a0, a1, b1, b0))
+        f.material_index = mat; f.normal_update()
+        if f.normal.y > 0: f.normal_flip()
+        f.smooth = True
+
+
+def _neck_fits(bm, mw, skin_slots, levels, fit_top):
+    """The neck's circle (centre x, centre y, radius) at each height in `levels`, fitted to the front of it (the
+    front is whole where the back was torn); None where it can't be told. Returns a list."""
+    skin_verts = [mw @ v.co for v in bm.verts if any(f.material_index in skin_slots for f in v.link_faces)]
+    fits = []
+    for z in levels:
+        if z > fit_top: fits.append(None); continue
+        pts = [p for p in skin_verts if abs(p.z - z) < 0.012 and abs(p.x) < 0.12 and abs(p.y - CENTER.y) < 0.14]
+        if len(pts) < 10: fits.append(None); continue
+        ymid = sorted(p.y for p in pts)[len(pts) // 2]
+        front = [p for p in pts if p.y <= ymid + 0.005]
+        if len(front) < 6: fits.append(None); continue
+        A = np.array([[2 * p.x, 2 * p.y, 1.0] for p in front]); b = np.array([p.x ** 2 + p.y ** 2 for p in front])
+        (ca, cb, cc), *_ = np.linalg.lstsq(A, b, rcond=None)
+        r = math.sqrt(max(1e-8, cc + ca * ca + cb * cb))
+        fits.append((float(ca), float(cb), float(r)) if 0.03 < r < 0.09 else None)
+    return fits
+
+
+def _egg_radius(d, iterations=34):
+    """How far from CENTER the head's surface is along d: the egg (`EGG`) is a rounded box-ish ellipsoid whose
+    cross-sections are squarish (full cheeks, a flat-ish face), narrowing to the jaw."""
+    ax, ay, az, p, q, jaw, jaw_top, jaw_span = EGG["a"], EGG["b"], EGG["c"], EGG["p"], EGG["q"], EGG["jaw"], EGG["jaw_top"], EGG["jaw_span"]
+    hc = EGG["centre"]
+
+    def inside(t):
+        pt = CENTER + d * t
+        k = 1.0 - jaw * _smooth((jaw_top - pt.z) / jaw_span)
+        f = ((abs(pt.x - hc.x) / (ax * k)) ** p + (abs(pt.y - hc.y) / (ay * k)) ** p) ** (q / p) + (abs(pt.z - hc.z) / az) ** q
+        return f < 1.0
+    lo, hi = 0.0, 0.45
+    for _ in range(iterations):
+        mid = (lo + hi) / 2
+        if inside(mid): lo = mid
+        else: hi = mid
+    return lo
+
+
+EGG = dict(centre=Vector((0.0, 0.03, 1.46)), a=0.140, b=0.150, c=0.170, p=2.6, q=2.4, jaw=0.16, jaw_top=1.40, jaw_span=0.10)
+NOSE = dict(tip=Vector((0.001, -0.150, 1.372)), amp=0.024, sigma=6.5)
+
+
+def build_round_head(arm, name="Head_Scalp", segments=40, rings=28, features=True):
+    """One closed, round, low-poly head: see the module's note. The egg (`EGG`) has the size of Adnan's head (his
+    face and skull together), a nose is raised on it, the mouth and the brows lie on it as dark strips, and an
+    ear is grown on each side. His eyeballs stand out of it. Returns the new object, bound to `arm`'s Head bone."""
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=segments, v_segments=rings, radius=1.0)
     bm.verts.ensure_lookup_table(); bm.verts.index_update()
     dirs = [v.co.normalized() for v in bm.verts]
-    n = len(dirs)
-    rf = np.array([_ray(face_tree, d) or 0.0 for d in dirs])
-    rk = np.array([_ray(skull_tree, d) or 0.0 for d in dirs])
-    has_f, has_k = rf > 0, rk > 0
-    to_face = _angular_distance(dirs, has_f)
-
-    r = np.zeros(n); fixed = np.zeros(n, bool)
-    # under the face the scalp runs FACE_TUCK below it (blend_face_edge then brings the face's edge down onto it)
-    r[has_f] = rf[has_f] - FACE_TUCK; fixed[has_f] = True
-    far_skull = has_k & ~has_f & (to_face > SKULL_BAND)
-    r[far_skull] = rk[far_skull]; fixed[far_skull] = True
-    # the cranium: skull, face, and the band between them; nothing under the jaw
-    active = has_f | has_k | np.array([d.z > -0.25 and to_face[i] < math.radians(40) for i, d in enumerate(dirs)])
-    start = np.where(fixed, r, np.mean(rk[far_skull]))
-    r = _harmonic(start, fixed, _neighbours(bm), active)
-
-    # keep: the cranium (everything not face that joins the crown; not the gaps round the eyes or ears) and the
-    # face only near the cranium's edge, where the scalp reaches in under it
-    adj = _neighbours(bm)
-    top = max(range(n), key=lambda i: dirs[i].z)
-    cranium = np.zeros(n, bool); cranium[top] = True; stack = [top]
-    while stack:
-        i = stack.pop()
-        for j in adj[i]:
-            if not cranium[j] and not has_f[j] and active[j]: cranium[j] = True; stack.append(j)
-    keep = cranium | (active & (_angular_distance(dirs, cranium) < FACE_MARGIN))
-    for i, v in enumerate(bm.verts): v.co = CENTER + dirs[i] * float(r[i])
-    bmesh.ops.delete(bm, geom=[f for f in bm.faces if not all(keep[v.index] for v in f.verts)], context='FACES')
-    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
-
-    # hairline: skin at the forehead and temples, hair colour under the hair
+    d_nose = (NOSE["tip"] - CENTER).normalized()
+    for i, v in enumerate(bm.verts):
+        d = dirs[i]
+        r = _egg_radius(d)
+        ang = math.acos(max(-1.0, min(1.0, d.dot(d_nose))))
+        r += NOSE["amp"] * math.exp(-(ang / math.radians(NOSE["sigma"])) ** 2)
+        v.co = CENTER + d * r
+    # hairline: skin on the face, temples, ears and nape, hair colour under the hair
     col = bm.verts.layers.float_color.new("Col")
-    lo, hi = HAIRLINE
-    kd = KDTree(n)
-    for i, d in enumerate(dirs): kd.insert(d, i)
-    kd.balance()
     for v in bm.verts:
-        _, i, _ = kd.find((v.co - CENTER).normalized())
-        t = 0.0 if has_f[i] else min(1.0, max(0.0, (to_face[i] - lo) / (hi - lo)))
-        m = t * t * (3 - 2 * t)
-        v[col] = (m, 0.0, 0.0, 1.0)
+        v[col] = (hairline_mask((v.co - CENTER).normalized()), 0.0, 0.0, 1.0)
+    bm.normal_update()
+    tree = BVHTree.FromBMesh(bm)
+    if features:     # the mouth: a smile, and the brows over the eyes (dark strips on the shell)
+        def taper(t): return math.sin(math.pi * t) ** 0.5
+        mouth = [(x, 1.336 + 0.008 * (x / 0.030) ** 2, taper((x + 0.030) / 0.060) + 0.05) for x in np.linspace(-0.030, 0.030, 15)]
+        _strip_on(bm, tree, col, mouth, 0.0036)
+        for side in (1, -1):
+            brow = [(side * (0.046 + 0.062 * t), 1.482 + 0.008 * math.sin(math.pi * t) - 0.006 * t, taper(t) + 0.05) for t in np.linspace(0, 1, 13)]
+            _strip_on(bm, tree, col, brow, 0.0048)
+    add_ears(bm, col)
 
     me = bpy.data.meshes.new(name)
     bm.to_mesh(me); bm.free()
@@ -152,99 +213,117 @@ def build_scalp(face, skull, arm, eyes=(), name="Head_Scalp", segments=64, rings
     bpy.context.scene.collection.objects.link(obj)
     _bind_to_head(obj, arm)
     obj.data.materials.append(bpy.data.materials.get("Hero_01_Scalp") or bpy.data.materials.new("Hero_01_Scalp"))
+    obj.data.materials.append(bpy.data.materials.get("Hero_01_FaceLine") or bpy.data.materials.new("Hero_01_FaceLine"))
     return obj
 
 
-def trim_face(face, eyes=(), margin=math.radians(4), segments=128, rings=88):
-    """Trim the ragged top of the body's head: it was cut for the visor, and its last centimetre or two curls
-    out in a torn lip (a ridge on a bald forehead, and through the rim of any hat). It goes back to one smooth
-    line `margin` below the lowest point of the tear in each direction round the head; the scalp takes over
-    from there, flush. Only the edge toward the cranium is touched (not round the eyes, ears or mouth, and
-    never under the jaw). Returns how many faces went."""
-    tree = _world_bvh([face, *eyes], _face_filter(face))
-    bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=segments, v_segments=rings, radius=1.0)
-    bm.verts.ensure_lookup_table(); bm.verts.index_update()
-    dirs = [v.co.normalized() for v in bm.verts]
-    adj = _neighbours(bm); bm.free()
-    n = len(dirs)
-    has_f = np.array([_ray(tree, d) is not None for d in dirs])
-    # the cranium: up from the brow, and down the back to the nape (never round under the jaw)
-    up = np.array([d.z > -0.2 or d.y > 0.35 for d in dirs])
-    top = max(range(n), key=lambda i: dirs[i].z)
-    cranium = np.zeros(n, bool); cranium[top] = True; stack = [top]
-    while stack:
-        i = stack.pop()
-        for j in adj[i]:
-            if not cranium[j] and not has_f[j] and up[j]: cranium[j] = True; stack.append(j)
-    # the edge: in each slice of azimuth, the lowest the cranium reaches (the bottom of the tear), smoothed
-    bins = 96
-    azim = lambda d: (math.atan2(d.x, -d.y) + math.pi) / (2 * math.pi) * bins
-    elev = lambda d: math.asin(max(-1.0, min(1.0, d.z)))
-    low = np.full(bins, math.pi / 2)
-    for i in range(n):
-        if cranium[i]:
-            b = int(azim(dirs[i])) % bins
-            low[b] = min(low[b], elev(dirs[i]))
-    low = np.array([np.median([low[(b + k) % bins] for k in range(-3, 4)]) for b in range(bins)])
-    for _ in range(3):
-        low = np.array([np.mean([low[(b + k) % bins] for k in range(-2, 3)]) for b in range(bins)])
+NECK_BAND = (1.13, 1.32)   # the neck as the body has it: from inside the shirt up to under the jaw (metres)
+NECK_FIT_TOP = 1.275       # above this the jaw is in the fit's way: the tube runs straight on up inside the head
+PEEL_BAND = (1.20, 1.31)   # where torn shards are peeled: the collar, up to the jaw
 
-    def above(p):
-        d = (p - CENTER).normalized()
-        a = azim(d); b0 = int(math.floor(a)) % bins; t = a - math.floor(a)
-        edge = low[b0] * (1 - t) + low[(b0 + 1) % bins] * t
-        return elev(d) > edge - margin
 
-    head_slots = {i for i, s in enumerate(face.material_slots) if s.material and "WarmSkin" in s.material.name}
-    mw = face.matrix_world
-    fbm = bmesh.new(); fbm.from_mesh(face.data); fbm.faces.ensure_lookup_table()
-    gone = []
-    for f in fbm.faces:
-        if f.material_index not in head_slots: continue
+def fix_neck(face, segments=28, rings=10, tuck=0.99):
+    """Mend the body's neck. Adnan's Hero wore hair over the back of the neck and a collar over the rest, so the
+    skin there was left torn: shards standing out at the collar and, behind it, a hole to the background. This
+    peels the shards (triangles hanging by an edge or a corner, over and over), takes away the mask (the head is
+    `build_round_head`'s) and puts in a closed tube, skinned like the neck beside it, that fills whatever
+    is left open: a circle fitted to the front of the neck at each height (the front is whole), `tuck` of its size
+    so it lies just under the skin where that is there. The tube runs on up inside the head and down inside the
+    shirt. Returns a report."""
+    mw = face.matrix_world; inv = mw.inverted()
+    # the neck cone is his "MatteCloth" skin (the face plate above the jaw is "WarmSkin"): both are skin here
+    skin_slots = [i for i, s in enumerate(face.material_slots) if s.material and ("MatteCloth" in s.material.name or "WarmSkin" in s.material.name)]
+    neck_slot = next((i for i, s in enumerate(face.material_slots) if s.material and "MatteCloth" in s.material.name), None)
+    if not skin_slots or neck_slot is None: return {"neck": "no skin slot"}
+    bm = bmesh.new(); bm.from_mesh(face.data); bm.faces.ensure_lookup_table()
+    lo, hi = NECK_BAND
+    levels = [lo + (hi - lo) * k / (rings - 1) for k in range(rings)]
+    fits = _neck_fits(bm, mw, skin_slots, levels, NECK_FIT_TOP)     # (before anything is taken away)
+    peeled = 0
+    for _ in range(10):
+        bad = []
+        for f in bm.faces:
+            if f.material_index not in skin_slots: continue
+            z = (mw @ f.calc_center_median()).z
+            if not (PEEL_BAND[0] <= z <= PEEL_BAND[1]): continue     # (the cone's open bottom is inside the shirt: leave it)
+            if sum(1 for e in f.edges if e.is_boundary) >= 2 or any(len(v.link_faces) == 1 for v in f.verts): bad.append(f)
+        if not bad: break
+        peeled += len(bad)
+        bmesh.ops.delete(bm, geom=bad, context='FACES')
+        bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+        bm.faces.ensure_lookup_table()
+    bm.verts.ensure_lookup_table()
+    good = [i for i, f in enumerate(fits) if f]
+    if not good: bm.free(); return {"neck": "no fit", "peeled": peeled}
+    for i in range(rings):     # holes in the fits take their nearest neighbour's (above the fit, the last one)
+        if fits[i] is None: fits[i] = fits[min(good, key=lambda j: abs(j - i))]
+    fits = [tuple(sum(fits[min(rings - 1, max(0, i + k))][c] for k in (-1, 0, 1)) / 3 for c in range(3)) for i in range(rings)]
+
+    # thin sheets of skin flaring out sideways from the neck at the collar (the tears): anything of the neck's own
+    # skin standing well outside the circle goes, and the tube takes its place
+    def circle_at(z):
+        t = (z - lo) / (hi - lo) * (rings - 1)
+        i = int(max(0, min(rings - 2, math.floor(t)))); u = min(1.0, max(0.0, t - i))
+        return tuple(fits[i][c] * (1 - u) + fits[i + 1][c] * u for c in range(3))
+    flares = []
+    for f in bm.faces:
+        if f.material_index != neck_slot: continue
         c = mw @ f.calc_center_median()
-        if c.z < 1.30 or (c - CENTER).length > 0.3: continue
-        if any(above(mw @ v.co) for v in f.verts): gone.append(f)
-    bmesh.ops.delete(fbm, geom=gone, context='FACES')
-    bmesh.ops.delete(fbm, geom=[v for v in fbm.verts if not v.link_faces], context='VERTS')
-    fbm.to_mesh(face.data); fbm.free()
-    # where the face now ends (for blend_face_edge): its boundary near that line, not round the eyes or mouth
-    wide = margin + math.radians(4)
-    def near_edge(p):
-        d = (p - CENTER).normalized()
-        a = azim(d); b0 = int(math.floor(a)) % bins; t = a - math.floor(a)
-        edge = low[b0] * (1 - t) + low[(b0 + 1) % bins] * t
-        return elev(d) > edge - wide
-    return len(gone), near_edge
+        if not (1.21 <= c.z <= 1.34): continue
+        ca, cb, r = circle_at(c.z)
+        # behind the neck's top (where the head's nape is) the cone's rim is all scraps: the tube stands in for it
+        behind = c.z >= 1.283 and c.y > 0.06
+        if behind or (c.z <= 1.30 and math.hypot(c.x - ca, c.y - cb) > r * 1.04 + 0.003): flares.append(f)
+    bmesh.ops.delete(bm, geom=flares, context='FACES')
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    peeled += len(flares)
+    # the mask goes (the head is the shell's), and the neck cone's top with it
+    mask = [f for f in bm.faces if (mw @ f.calc_center_median()).z > HEAD_CUT and abs((mw @ f.calc_center_median()).x) < 0.3]
+    bmesh.ops.delete(bm, geom=mask, context='FACES')
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    bm.verts.ensure_lookup_table(); bm.faces.ensure_lookup_table()
+    skin_verts = [(mw @ v.co, v) for v in bm.verts if any(f.material_index in skin_slots for f in v.link_faces)]
 
-
-def blend_face_edge(face, scalp, near_edge, reach=0.02, above=0.0005):
-    """Ease the last `reach` of the face down onto the scalp (which runs FACE_TUCK under it), so the forehead
-    runs smoothly into the scalp: no step at the face's edge, and no sawtooth where a bumpy face and a smooth
-    scalp would cross."""
-    me = face.data; mw = face.matrix_world; inv = mw.inverted()
-    bm = bmesh.new(); bm.from_mesh(me); bm.verts.ensure_lookup_table()
-    seeds = [v.index for v in bm.verts if any(e.is_boundary for e in v.link_edges)
-             and (mw @ v.co).z > 1.36 and near_edge(mw @ v.co)]
-    bm.free()
-    adj = _mesh_adjacency(face)
-    dist = _hop_distance(face, seeds, adj)
-    tree = _world_bvh([scalp])
-    moved = 0
-    for v in me.vertices:
-        g = dist[v.index]
-        if g >= reach: continue
-        p = mw @ v.co; d = (p - CENTER); r = d.length; d = d / r
-        rs = _ray(tree, d)
-        if rs is None or rs + above >= r: continue
-        t = 1 - g / reach; w = t * t * (3 - 2 * t)
-        v.co = inv @ (CENTER + d * (r + (rs + above - r) * w))
-        moved += 1
-    if me.shape_keys:   # the girl's shape carries the same edge
-        for kb in me.shape_keys.key_blocks:
-            for v in me.vertices:
-                if dist[v.index] < reach: kb.data[v.index].co = v.co.copy()
-    return moved
+    # the tube: skinned like the nearest neck vertex, one flat skin texel, faces out
+    kd = KDTree(len(skin_verts))
+    for i, (p, _) in enumerate(skin_verts): kd.insert(p, i)
+    kd.balance()
+    dvl = bm.verts.layers.deform.active
+    shape_layers = list(bm.verts.layers.shape.values())
+    uvl = bm.loops.layers.uv.active
+    ca, cb, r = fits[rings // 2]
+    _, ni, _ = kd.find(Vector((ca, cb - r, 1.22)))
+    uv0 = skin_verts[ni][1].link_loops[0][uvl].uv.copy() if uvl else None
+    rows = []
+    for (ca, cb, r), z in zip(fits, levels):
+        ring = []
+        for j in range(segments):
+            th = 2 * math.pi * j / segments
+            p = Vector((ca + math.cos(th) * r * tuck, cb + math.sin(th) * r * tuck, z))
+            v = bm.verts.new(inv @ p)
+            for L in shape_layers: v[L] = v.co.copy()
+            if dvl:
+                _, si, _ = kd.find(p)
+                for g, w in skin_verts[si][1][dvl].items(): v[dvl][g] = w
+            ring.append(v)
+        rows.append(ring)
+    tube = []
+    for k in range(rings - 1):
+        for j in range(segments):
+            f = bm.faces.new((rows[k][j], rows[k][(j + 1) % segments], rows[k + 1][(j + 1) % segments], rows[k + 1][j]))
+            f.material_index = neck_slot; f.smooth = True
+            if uv0 is not None:
+                for lp in f.loops: lp[uvl].uv = uv0
+            tube.append((k, f))
+    bm.normal_update()
+    flipped = 0     # faces out: away from the ring's centre (Unity culls the inside)
+    for k, f in tube:
+        mid = sum((v.co for v in rows[k]), Vector()) / segments
+        c = f.calc_center_median()
+        if f.normal.x * (c.x - mid.x) + f.normal.y * (c.y - mid.y) < 0: f.normal_flip(); flipped += 1
+    bm.to_mesh(face.data); bm.free()
+    face.data.update()
+    return {"neck": {"peeled": peeled, "mask": len(mask), "rings": rings, "flipped": flipped, "circle_mid": tuple(round(x, 3) for x in fits[rings // 2])}}
 
 
 def _bind_to_head(obj, arm):
@@ -262,111 +341,6 @@ class Radial:
 
     def __call__(self, d, far=1.0):
         return _ray(self.tree, d, far)
-
-
-class Sphere:
-    """Directions around CENTER (a UV sphere's vertices) with their neighbours, and a lookup from any direction."""
-    def __init__(self, segments=72, rings=48):
-        bm = bmesh.new()
-        bmesh.ops.create_uvsphere(bm, u_segments=segments, v_segments=rings, radius=1.0)
-        bm.verts.ensure_lookup_table(); bm.verts.index_update()
-        self.dirs = [v.co.normalized() for v in bm.verts]
-        self.adj = _neighbours(bm)
-        bm.free()
-        self.kd = KDTree(len(self.dirs))
-        for i, d in enumerate(self.dirs): self.kd.insert(d, i)
-        self.kd.balance()
-
-    def sample(self, field, d, k=6):
-        """field (one value per direction) at direction d, inverse-distance weighted."""
-        num = den = 0.0
-        for _, i, dist in self.kd.find_n(d, k):
-            w = 1.0 / max(dist, 1e-4)
-            num += field[i] * w; den += w
-        return num / den
-
-
-def _median_smooth(values, valid, adj):
-    out = values.copy()
-    for i in range(len(values)):
-        if not valid[i]: continue
-        ring = [values[j] for j in adj[i] if valid[j]] + [values[i]]
-        out[i] = float(np.median(ring))
-    return out
-
-
-def head_surface(face, scalp, eyes=()):
-    """The whole head as seen from CENTER: the scalp, the face's skin and the eyes."""
-    return Radial([face, scalp, *eyes], _face_filter(face))
-
-
-def face_weight(sphere, face, eyes=()):
-    """1 over the cranium, fading to 0 across the face (hair beside the cheeks is left where it hangs)."""
-    tree = _world_bvh([face, *eyes], _face_filter(face))
-    has_f = np.array([_ray(tree, d) is not None for d in sphere.dirs])
-    into = _angular_distance(sphere.dirs, ~has_f)
-    t = np.clip(into / math.radians(14), 0, 1)
-    return 1 - t * t * (3 - 2 * t)
-
-
-def seat_hair(hair, head, sphere, weight, max_shift=0.08, iterations=300):
-    """Lower `hair` onto the head: in each direction the hair moves in by the gap between its innermost surface
-    and the head (smoothed over neighbouring directions, weighted by `weight`), so its roots sit on the scalp and
-    its thickness is kept. Returns the per-direction shift (metres) for the report."""
-    hair_r = Radial([hair])
-    n = len(sphere.dirs)
-    gap = np.zeros(n); valid = np.zeros(n, bool)
-    for i, d in enumerate(sphere.dirs):
-        rh, rs = hair_r(d), head(d)
-        if rh is not None and rs is not None:
-            gap[i] = rh - rs; valid[i] = True
-    gap = np.clip(_median_smooth(_median_smooth(gap, valid, sphere.adj), valid, sphere.adj), 0.0, max_shift)
-    # where the hair leaves the head bare (the old band) the shift carries on smoothly from either side
-    active = np.array([head(d) is not None for d in sphere.dirs])
-    field = _harmonic(np.where(valid, gap, 0.0), valid & (weight > 0.99), sphere.adj, active, iterations)
-    field = np.where(active, field, 0.0) * weight
-    mw = hair.matrix_world; inv = mw.inverted()
-    for v in hair.data.vertices:
-        p = mw @ v.co
-        d = (p - CENTER); r = d.length; d = d / r
-        s = sphere.sample(field, d)
-        v.co = inv @ (CENTER + d * max(0.01, r - s))
-    return field
-
-
-def islands(obj):
-    """Vertex index lists of obj's connected pieces, largest first."""
-    bm = bmesh.new(); bm.from_mesh(obj.data); bm.verts.ensure_lookup_table()
-    seen = set(); out = []
-    for v in bm.verts:
-        if v.index in seen: continue
-        comp = [v.index]; seen.add(v.index); stack = [v]
-        while stack:
-            x = stack.pop()
-            for e in x.link_edges:
-                y = e.other_vert(x)
-                if y.index not in seen: seen.add(y.index); comp.append(y.index); stack.append(y)
-        out.append(comp)
-    bm.free()
-    return sorted(out, key=len, reverse=True)
-
-
-def remove_band(hair):
-    """Drop the base each haircut was built on: one piece (913 vertices in every cut) wrapped round the head from
-    the nape to the visor's band, pressed flat where the band sat and flared out from the forehead like a brim in
-    the hat-less cuts. The scalp is under the hair now; the clumps are the haircut."""
-    pieces = islands(hair)
-    mw = hair.matrix_world
-    ring = pieces[0]
-    pts = [mw @ hair.data.vertices[i].co for i in ring]
-    span = lambda k: max(p[k] for p in pts) - min(p[k] for p in pts)
-    wraps = span(0) > 0.3 and span(1) > 0.3 and min(p.z for p in pts) > 1.25 and max(p.z for p in pts) < 1.7
-    if not wraps:
-        return 0
-    bm = bmesh.new(); bm.from_mesh(hair.data); bm.verts.ensure_lookup_table()
-    bmesh.ops.delete(bm, geom=[bm.verts[i] for i in ring], context='VERTS')
-    bm.to_mesh(hair.data); bm.free()
-    return len(ring)
 
 
 def uv_from(target, source):
@@ -394,263 +368,10 @@ def uv_from(target, source):
     bm.free()
 
 
-def _mesh_adjacency(obj):
-    adj = [[] for _ in obj.data.vertices]
-    for e in obj.data.edges:
-        a, b = e.vertices
-        adj[a].append(b); adj[b].append(a)
-    return adj
-
-
-def _hop_distance(obj, seeds, adj):
-    """Edge-length distance over the mesh from the seed vertices (Dijkstra)."""
-    import heapq
-    co = [v.co for v in obj.data.vertices]
-    dist = [math.inf] * len(co)
-    heap = []
-    for s in seeds: dist[s] = 0.0; heap.append((0.0, s))
-    heapq.heapify(heap)
-    while heap:
-        d, i = heapq.heappop(heap)
-        if d > dist[i]: continue
-        for j in adj[i]:
-            nd = d + (co[i] - co[j]).length
-            if nd < dist[j]: dist[j] = nd; heapq.heappush(heap, (nd, j))
-    return dist
-
-
-def fit_hat(hat, head, lift=0.006, snug=0.05):
-    """Where `hat` must sit so it rests on the head, `lift` over it: returns each vertex's new world position.
-    First the whole hat is scaled (its width on its own, its depth and height together, so a brim keeps its
-    angle) and moved so its lower edge best meets the head all round; then, wherever it would still sink in,
-    it is eased out there alone. `head` is a Radial of what it sits on: the scalp (and face), or the hair's
-    pressed layer."""
-    me = hat.data; mw = hat.matrix_world
-    adj = _mesh_adjacency(hat)
-    n = len(me.vertices)
-    pts = [mw @ v.co for v in me.vertices]
-    polys = [tuple(p.vertices) for p in me.polygons]
-
-    def bumps(d):
-        """The most the head reaches within a few degrees of d (a hat must clear its bumps, not its average)."""
-        a = d.orthogonal().normalized(); b = d.cross(a)
-        best = head(d)
-        for k in range(6):
-            t = k * math.pi / 3
-            e = (d + (a * math.cos(t) + b * math.sin(t)) * 0.06).normalized()
-            r = head(e)
-            if r is not None and (best is None or r > best): best = r
-        return best
-
-    def classify(positions):
-        tree = BVHTree.FromPolygons(positions, polys)
-        need = np.zeros(n); known = np.zeros(n, bool)
-        for i, p in enumerate(positions):
-            d = (p - CENTER).normalized()
-            hit = tree.ray_cast(CENTER, d, 1.0)
-            rs = bumps(d)
-            if hit[0] is None or rs is None: continue
-            # on the head where the hat's surface wraps round it (faces the centre); a brim or a bill lies across
-            if abs(hit[1].dot(d)) < 0.5: continue
-            need[i] = rs + lift - hit[3]; known[i] = True
-        return need, known
-
-    need, known = classify(pts)
-    # the hat's lower edge round the head: the lowest point on the head in each slice of azimuth
-    az = lambda p: math.atan2(p.x - CENTER.x, CENTER.y - p.y)
-    bins = 24
-    bottom = [math.inf] * bins
-    for i in range(n):
-        if known[i]:
-            b = int((az(pts[i]) + math.pi) / (2 * math.pi) * bins) % bins
-            bottom[b] = min(bottom[b], pts[i].z)
-    edge = []
-    for i in range(n):
-        if not known[i]: continue
-        b = int((az(pts[i]) + math.pi) / (2 * math.pi) * bins) % bins
-        low = min(bottom[b], bottom[(b - 1) % bins], bottom[(b + 1) % bins])
-        if pts[i].z - low < snug: edge.append(i)
-    # 1. scale and move the whole hat so its edge meets the head
-    P = np.array([tuple(pts[i]) for i in edge])
-    Q = np.array([tuple(pts[i] + (pts[i] - CENTER).normalized() * need[i]) for i in edge])
-    pc, qc = P.mean(0), Q.mean(0)
-    dp, dq = P - pc, Q - qc
-    sx = float((dp[:, 0] * dq[:, 0]).sum() / max((dp[:, 0] ** 2).sum(), 1e-9))
-    syz = float(((dp[:, 1:] * dq[:, 1:]).sum()) / max((dp[:, 1:] ** 2).sum(), 1e-9))
-    sx, syz = min(1.3, max(0.7, sx)), min(1.3, max(0.7, syz))
-    moved = [Vector((sx * (p.x - pc[0]) + qc[0], syz * (p.y - pc[1]) + qc[1], syz * (p.z - pc[2]) + qc[2])) for p in pts]
-    # 2. wherever it still sinks into the head, ease it out (a brim moves with its band, as one piece)
-    need2, known2 = classify(moved)
-    need2 = np.where(known2, np.maximum(need2, 0.0), 0.0)
-    # a smooth push that clears every bump (the least smooth envelope over what each vertex needs): pushing
-    # each vertex by its own need left a thin band's edge in a zigzag
-    push = need2.copy()
-    for _ in range(12):
-        push = np.array([max(need2[i], (push[i] + sum(push[j] for j in adj[i])) / (1 + len(adj[i]))) if known2[i] and adj[i] else push[i] for i in range(n)])
-    off = [(moved[i] - CENTER).normalized() * push[i] for i in range(n)]
-    seen = known2.copy()
-    kd = KDTree(max(1, int(known2.sum())))
-    for i in range(n):
-        if known2[i]: kd.insert(moved[i], i)
-    kd.balance()
-    for i in range(n):
-        if seen[i]: continue
-        piece = [i]; seen[i] = True; stack = [i]
-        while stack:
-            a = stack.pop()
-            for b in adj[a]:
-                if not seen[b]: seen[b] = True; piece.append(b); stack.append(b)
-        # the piece's nearest point on the head part carries it
-        best = min(piece, key=lambda j: kd.find(moved[j])[2] if known2.any() else 0)
-        _, k, _ = kd.find(moved[best]) if known2.any() else (None, None, None)
-        o = off[k] if k is not None else Vector()
-        for j in piece: off[j] = o
-    return [moved[i] + off[i] for i in range(n)]
-
-
-def double_side(obj):
-    """Open shells (a cap's brim and crown, a visor's bill) get a back face, so they show from below as well as
-    from above (the game culls back faces). Closed ones (a sweatband) are left as they are."""
-    bm = bmesh.new(); bm.from_mesh(obj.data)
-    if not any(e.is_boundary for e in bm.edges):
-        bm.free(); return False
-    dup = bmesh.ops.duplicate(bm, geom=list(bm.faces))
-    faces = [g for g in dup["geom"] if isinstance(g, bmesh.types.BMFace)]
-    bmesh.ops.reverse_faces(bm, faces=faces)
-    bm.to_mesh(obj.data); bm.free()
-    return True
-
-
-def under_hat(hair, hat_inner, head, margin=0.006, floor=0.004, taper=0.025):
-    """The hair tucked in under a hat: every vertex beyond the hat's inner surface (seen from CENTER) comes in to
-    just inside it (never into the head), and its neighbours along the strand ease in after it over `taper`,
-    so the hair runs in under the hat's edge instead of breaking there. Returns (new world positions, how much
-    each vertex is held by the hat 0..1: the game keeps held hair from swaying through the hat)."""
-    me = hair.data; mw = hair.matrix_world
-    n = len(me.vertices)
-    pts = [mw @ v.co for v in me.vertices]
-    push = np.zeros(n)
-    for i, p in enumerate(pts):
-        d = (p - CENTER); r = d.length; d = d / r
-        rh = hat_inner(d)
-        if rh is None: continue
-        rs = head(d)
-        target = rh - margin
-        if rs is not None: target = max(target, rs + floor)
-        if r > target: push[i] = r - target
-    held = push > 0
-    adj = _mesh_adjacency(hair)
-    # ease: each un-held vertex takes a falling share of its held neighbours' push
-    ease = push.copy()
-    co = pts
-    for _ in range(6):
-        new = ease.copy()
-        for i in range(n):
-            if held[i]: continue
-            best = 0.0
-            for j in adj[i]:
-                fall = max(0.0, 1.0 - (co[i] - co[j]).length / taper)
-                best = max(best, ease[j] * fall)
-            new[i] = max(new[i], best)
-        ease = new
-    out = []
-    for i, p in enumerate(pts):
-        d = (p - CENTER); r = d.length; d = d / r
-        rr = r - ease[i]
-        if ease[i] > 0:
-            rs = head(d)
-            if rs is not None: rr = max(rr, min(r, rs + floor))
-        out.append(CENTER + d * rr)
-    hold = np.clip(ease / 0.01, 0, 1)
-    return out, hold
-
-
-HAT_LAYER = 0.02       # the hair pressed under a hat: this thick (under a cap; at least this under a band)
-BAND_RIDE = 0.65       # a band rides on this share of the hair's thickness under it
-BAND_MAX = 0.09        # but no more than this far off the scalp
-HATS = ("Visor", "Cap", "Sweatband")   # the order of their hold channels in the hair's colour: G, B, A
-
-
-def _tree(obj, world_positions):
-    polys = [tuple(p.vertices) for p in obj.data.polygons]
-    return BVHTree.FromPolygons(list(world_positions), polys)
-
-
-def _set_key(obj, name, world_positions):
-    if not obj.data.shape_keys: obj.shape_key_add(name="Basis", from_mix=False)
-    key = obj.shape_key_add(name=name, from_mix=False)
-    inv = obj.matrix_world.inverted()
-    for d, p in zip(key.data, world_positions): d.co = inv @ p
-
-
-def build_head(arm, face, eyes, skull, buzz, cuts, hats, flex=None):
-    """The whole head, from Adnan's pieces: the scalp (UVs from `buzz`), every haircut (`cuts`, name -> object)
-    with its visor ring dropped and seated on the scalp, every hat (`hats`, "Visor"/"Cap"/"Sweatband" -> object)
-    fitted to the bare head with a shape key "OnHair_<cut>" for over each haircut, and on every haircut a shape key
-    "Under_<hat>" that tucks it in under that hat plus how firmly each vertex is held there (colour G/B/A in
-    HATS order; R is the hair's flex, from `flex(hair_objs, reference_objs)`). Returns the scalp."""
-    trimmed, near_edge = trim_face(face, eyes)
-    scalp = build_scalp(face, skull, arm, eyes)
-    blended = blend_face_edge(face, scalp, near_edge)
+def build_head(arm, face, buzz):
+    """The whole head: the round shell (with ears, mouth and brows; UVs from `buzz`, Adnan's buzz cut, for the
+    short-hair maps) and, with it made, his mask taken off the body and its neck mended. Returns (the shell, a
+    report). The haircuts (hero_hair.py) and hats (hero_hats.py) are made on it."""
+    scalp = build_round_head(arm)
     uv_from(scalp, buzz)
-    sphere = Sphere()
-    head = head_surface(face, scalp, eyes)
-    weight = face_weight(sphere, face, eyes)
-    report = {"face": {"trimmed": trimmed, "edge_blended": blended}}
-    for name, hair in cuts.items():
-        dropped = remove_band(hair)
-        shift = seat_hair(hair, head, sphere, weight)
-        report[name] = {"ring": dropped, "seated_cm": round(float(shift.max()) * 100, 1)}
-    if flex: flex(list(cuts.values()), [face, scalp])
-    # how thick each cut is round the head (its outer surface over the scalp), smoothed over directions
-    thick = {}
-    for name, hair in cuts.items():
-        tree = _world_bvh([hair])
-        field = np.zeros(len(sphere.dirs)); valid = np.zeros(len(sphere.dirs), bool)
-        for i, d in enumerate(sphere.dirs):
-            hit = tree.ray_cast(CENTER + d * 0.6, -d, 0.6)
-            rs = head(d)
-            if hit[0] is not None and rs is not None:
-                field[i] = max(0.0, 0.6 - hit[3] - rs); valid[i] = True
-        field = _median_smooth(_median_smooth(field, valid, sphere.adj), valid, sphere.adj)
-        thick[name] = (field, valid)
-
-    def layer(hname, name):
-        """What a hat sits on over a cut: a band (visor, sweatband) rides on most of the hair, pressing in only
-        its outer part, as a headband does on big hair; a cap presses the hair flat under its crown."""
-        if hname == "Cap":
-            return lambda d: (lambda r: None if r is None else r + HAT_LAYER)(head(d))
-        field, valid = thick[name]
-        def on(d):
-            r = head(d)
-            if r is None: return None
-            t = sphere.sample(np.where(valid, field, 0.0), d)
-            return r + min(BAND_MAX, max(HAT_LAYER, BAND_RIDE * t))
-        return on
-
-    trees = {}
-    for hname, hat in hats.items():
-        bare = fit_hat(hat, head, lift=0.009)
-        inv = hat.matrix_world.inverted()
-        overs = {name: fit_hat(hat, layer(hname, name)) for name in cuts}
-        for v, p in zip(hat.data.vertices, bare): v.co = inv @ p
-        for name, over in overs.items():
-            tree = _tree(hat, over)
-            trees[(hname, name)] = lambda d, t=tree: (lambda h: h[3] if h[0] is not None else None)(t.ray_cast(CENTER, d, 1.0))
-            _set_key(hat, "OnHair_" + name, over)
-        double_side(hat)
-    for name, hair in cuts.items():
-        col = hair.data.color_attributes.get("Col") or hair.data.color_attributes.new("Col", 'FLOAT_COLOR', 'POINT')
-        holds = {}
-        for hname in HATS:
-            if (hname, name) not in trees: continue
-            pos, hold = under_hat(hair, trees[(hname, name)], head)
-            _set_key(hair, "Under_" + hname, pos)
-            holds[hname] = hold
-        for v in hair.data.vertices:
-            c = list(col.data[v.index].color)
-            for k, hname in enumerate(HATS):
-                c[1 + k] = float(holds[hname][v.index]) if hname in holds else 0.0
-            col.data[v.index].color = c
-        report[name]["held"] = {h: int((holds[h] > 0.5).sum()) for h in holds}
-    return scalp, report
+    return scalp, {"head": {"verts": len(scalp.data.vertices), "tris": sum(len(p.vertices) - 2 for p in scalp.data.polygons)}, **fix_neck(face)}

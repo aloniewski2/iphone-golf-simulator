@@ -30,7 +30,7 @@ namespace GolfArcade.Game
             go.tag = "MainCamera";
             rig.Camera.fieldOfView = 60; // portrait phone: tall and narrow, so open it up
             rig.Camera.nearClipPlane = 0.05f;
-            rig.Camera.farClipPlane = 900;
+            rig.Camera.farClipPlane = GolfArcade.Course.HoleAtmosphere.FarClip;
             rig.Camera.clearFlags = CameraClearFlags.Skybox;
             rig.Camera.backgroundColor = new Color(0.55f, 0.78f, 0.95f);
             go.AddComponent<AudioListener>();
@@ -289,7 +289,7 @@ namespace GolfArcade.Game
 
         /// The locker: the golfer in the top of the screen over the panel, level and square in front of
         /// them. `head` 0 frames the whole golfer, 1 the head and shoulders (the HAIR and HEADWEAR tabs).
-        public void FrameLocker(Vector3 feet, Vector3 facing, float head) => FrameStage(feet, facing, head, 0.60f, 0.905f);
+        public void FrameLocker(Vector3 feet, Vector3 facing, float head) => FrameStage(feet, facing, head, 0.53f, 0.93f);
 
         /// The golfer standing square to the camera between `screenBottom` and `screenTop` (fractions of the
         /// screen's height from its foot): the locker, and the clubhouse on the home screen. `head` 0 frames
@@ -345,7 +345,7 @@ namespace GolfArcade.Game
             return distance;
         }
 
-        const float FarClip = 900;
+        static float FarClip => GolfArcade.Course.HoleAtmosphere.FarClip;
 
         public void SnapNext() => snap = true;
 

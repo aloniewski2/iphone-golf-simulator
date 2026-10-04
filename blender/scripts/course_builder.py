@@ -247,7 +247,9 @@ rocks = run_part("phase7_rocks.py", 'col = sub_collection("ROCKS")')["rocks"]
 # A course's own look: the design's PALETTE recolours any material by name (turf, cliffs,
 # trees, rocks, water) for the card render. The game colours by the same names from the
 # hole's Theme (HoleView.Themes), so keep the two in step.
-for _name, _rgb in getattr(D, "PALETTE", {}).items():
+_palette = dict(X.PALETTES.get(getattr(D, "THEME", None), {}))
+_palette.update(getattr(D, "PALETTE", {}))
+for _name, _rgb in _palette.items():
     _m = bpy.data.materials.get(_name)
     if _m is None: continue
     _c = H.rgb(*_rgb)
@@ -255,6 +257,15 @@ for _name, _rgb in getattr(D, "PALETTE", {}).items():
     if _m.use_nodes:
         for _n in _m.node_tree.nodes:
             if _n.type == 'BSDF_PRINCIPLED': _n.inputs["Base Color"].default_value = _c
+# a hole on lava: the sea, its shallows and its surf glow, in the card as in the game
+if getattr(D, "LAVA_SEA", False):
+    for _name, _k in (("MAT_WATER", 2.4), ("MAT_WATER_SHALLOW", 1.4), ("MAT_FOAM", 2.8)):
+        _m = bpy.data.materials.get(_name)
+        if _m is not None and _m.use_nodes:
+            for _n in _m.node_tree.nodes:
+                if _n.type == 'BSDF_PRINCIPLED' and "Emission Color" in _n.inputs:
+                    _n.inputs["Emission Color"].default_value = _n.inputs["Base Color"].default_value
+                    _n.inputs["Emission Strength"].default_value = _k
 root = H.get_root()
 H.BLEND_PATH = os.path.join(REPO, "blender", f"hole_{N:02d}.blend")   # (their reload of the library reset it to Hole 7's)
 
@@ -418,7 +429,7 @@ merged("TREES", "ENVIRONMENT", tree_items)
 # round it are one plant, and its name says what it is and how big — PLANT_<n>_<class>_<height
 # cm>_<reach cm>, the class T a tree, B a bush, R a cactus (hard), S a tuft (nothing to stop a ball).
 def plant_class(kind):
-    if kind.startswith(("SAGUARO", "BARREL")): return "R"
+    if kind.startswith(("SAGUARO", "BARREL", "OBSIDIAN")): return "R"
     if kind.startswith("DRY_TUFT"): return "S"
     if "BUSH" in kind or kind.startswith("SHRUB"): return "B"
     return "T"
@@ -541,7 +552,7 @@ if "--no-render" not in ARGS:
     sun = bpy.data.objects.new("SUN", bpy.data.lights.new("SUN", 'SUN')); sc.collection.objects.link(sun)
     sun.data.energy = 4.0; sun.data.angle = math.radians(4); sun.rotation_euler = (math.radians(48), 0, math.radians(135))
     world = bpy.data.worlds.new("World"); sc.world = world; world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs[0].default_value = H.rgb(150, 205, 245)
+    world.node_tree.nodes["Background"].inputs[0].default_value = H.rgb(70, 28, 38) if getattr(D, "LAVA_SEA", False) else H.rgb(150, 205, 245)
     sc.camera = cam
     # EEVEE where there's a GPU (the Mac); Cycles on the CPU for a headless Linux box
     sc.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items} else 'BLENDER_EEVEE'

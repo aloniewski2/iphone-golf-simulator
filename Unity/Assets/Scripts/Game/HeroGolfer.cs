@@ -12,49 +12,72 @@ namespace GolfArcade.Game
         public Color Skin, HairColor;
         public int Haircut;      // HeroGolfer.Haircut
         public int Headwear;     // HeroGolfer.Headwear
-        /// Colours of the shirt, the shorts (and the navy trim), the shoes and the cap or band; null keeps the kit as designed.
+        public int Glasses;      // HeroGolfer.GlassesNames (0 none)
+        public int Facial;       // HeroGolfer.FacialNames (0 none)
+        public int Top, Bottom;  // HeroGolfer.TopNames, BottomNames
+        /// Colours of the shirt, the shorts (and the trim), the shoes and the hat; null keeps the kit as designed.
         public Color? Shirt, Shorts, Shoes, Hat;
     }
 
-    /// Adnan's modular Hero (blender/scripts/hero_golf_retarget.py + hero_parts_export.py), assembled the
-    /// way his handoff asks: ONE skeleton (hero_golf.fbx, the golf clips and the clubs) and every part
-    /// (body, eyes, hair cuts, headwear, shirt, shorts, shoes) a skinned mesh in its own FBX, rebound to
-    /// that skeleton by bone name. Any slot can change without touching another: the hair does not depend
-    /// on the visor, the visor not on the hair.
+    /// The Hero, built from the avatar kit (blender/scripts/avatar_*.py, docs/avatar-kit.md): ONE skeleton
+    /// (hero_golf.fbx, the golf clips and the clubs) and every part a skinned mesh in its own FBX, rebound to that
+    /// skeleton by bone name: the body (neck, torso, arms, hands, legs), the head and the face on it, the shirt, the
+    /// shorts, the shoes, the haircuts, the hats, the glasses. Any slot changes without touching another.
     ///
-    /// The colour atlas is re-coloured per region by the HeroKit shader (shirt, shorts and trim, skin);
-    /// flat parts (hair, shoes, cap) take a colour; the girl is the "Female" blend shape on the body and the
-    /// clothes over it.
-    ///
-    /// The head (blender/scripts/hero_head.py): one closed scalp under everything, skin below its hairline
-    /// and hair above (bald: all skin; buzz and waves: the short-hair maps on it); each haircut seated on it;
-    /// a hat sits over the hair and the hair is tucked in under it by a blend shape per hat ("Under_Visor"...),
-    /// the hat eased out to sit on that cut's hair by one of its own ("OnHair_Hair_Bob"...). Nothing is cut away.
+    /// Nothing is textured. A part's colours are its material roles (Hero_Skin, Hero_Hair, Hero_Top, Hero_HatA ...):
+    /// the FBX names them, this class makes one HeroKit material per role and tints it from the look, so one mesh is
+    /// every colour. Each haircut ships twice, as it is and with its crown pressed down ("Hair_Bob_Hat"): the second
+    /// is shown when a hat is worn, so a hat never meets hair standing up through it.
     public sealed class HeroGolfer
     {
-        public enum Haircut { Swept, Ponytail, Bob, Long, Curly, Bald, Buzz, Waves }
-        public enum Headwear { None, Visor, Cap, Sweatband }
-        public static readonly string[] HaircutNames = { "Swept", "Ponytail", "Bob", "Long", "Curly", "Bald", "Buzz", "Waves" };
-        public static readonly string[] HeadwearNames = { "None", "Visor", "Cap", "Sweatband" };
-        /// The cuts the game offers (all of them, now the head is whole).
-        public const int OfferedHaircuts = 8;
+        // The styles, in id order: the position is the id saved on the profile, so a new style goes at the END of its
+        // list and nothing is ever reordered. They are the kit's catalog (blender/scripts/avatar_catalog.py), by the names
+        // the FBX parts carry (Hair_<Name>, Hat_<Name>, Glasses_<Name>, Face_<Name>, Top_<Name>, Bottom_<Name>).
+        public enum Haircut { Swept, Ponytail, Bob, Long, Curly, Bald, Crop, Spikes, Afro, Bun, Pigtails, Mohawk, Quiff, Buzz, Braids }
+        public enum Headwear { None, Visor, Cap, Bucket, Beanie, Straw, Headband, Beret, Flatcap, Fedora, Cowboy, Headphones, Bandana, Tophat, Crown }
+        public static readonly string[] HaircutNames = { "Swept", "Ponytail", "Bob", "Long", "Curly", "Bald", "Crop", "Spikes", "Afro", "Bun", "Pigtails", "Mohawk", "Quiff", "Buzz", "Braids" };
+        public static readonly string[] HeadwearNames = { "None", "Visor", "Cap", "Bucket", "Beanie", "Straw", "Headband", "Beret", "Flatcap", "Fedora", "Cowboy", "Headphones", "Bandana", "Tophat", "Crown" };
+        public static readonly string[] GlassesNames = { "None", "Round", "Square", "Shades", "Aviator", "Cateye", "Wrap" };
+        public static readonly string[] FacialNames = { "None", "Beard", "Mustache", "Goatee", "Handlebar", "Stubble" };
+        public static readonly string[] TopNames = { "Polo", "Tee", "Hoodie", "Vest" };
+        public static readonly string[] BottomNames = { "Shorts", "Trousers", "Skirt" };
+        /// The cuts the game offers (all of them).
+        public const int OfferedHaircuts = 15;
+
+        /// A style's name as a person reads it ("Flat cap", "Cat-eye", "Top hat").
+        public static string Pretty(string name) => name switch
+        {
+            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport",
+            _ => name,
+        };
 
         public const string Path = "Hero/hero_golf";
-        static readonly string[] Slots = { "body", "eyes", "hair", "visor", "cap", "sweatband", "shirt", "shorts", "shoes" };
+        static readonly string[] Slots = { "body", "head", "shirt", "shorts", "shoes", "hair", "hats", "glasses" };
 
         public GameObject Root { get; private set; }
         public readonly Dictionary<string, Transform> Bones = new();
         readonly List<SkinnedMeshRenderer> parts = new();
         readonly List<Material> owned = new();
+        /// One material per colour role (the names Blender gave the materials).
+        readonly Dictionary<string, Material> roles = new();
         /// Each renderer's materials as the FBX gave them (the names decide what they become, every time a look is put on).
         readonly Dictionary<SkinnedMeshRenderer, Material[]> original = new();
 
-        // materials, one set per figure
-        Material atlas, foundation, underHair, hair, scalp, shoeWhite, shoeOrange, cap, iris, catchlight, plain;
+        static Texture2D matCap;
 
-        static Texture2D atlasTex, maskTex, irisTex, buzzTex, wavesTex, matCap;
-        static Vector4 kitRef = new(0.85f, 0.19f, 0.3f, 0.67f);
-        [System.Serializable] class Ref { public float shirt, shorts, hair, skin; }
+        // role, the colour as designed (sRGB), how much the MatCap shades it (the clay look)
+        static readonly (string role, string hex, float cap)[] Designed =
+        {
+            ("Hero_Skin", "E8A074", 0.60f), ("Hero_Ear", "D9826A", 0.60f), ("Hero_Blush", "F0806E", 0.60f),
+            ("Hero_Hair", "E0A43A", 0.60f), ("Hero_HairB", "C07F22", 0.60f),
+            ("Hero_Eye", "1C1412", 0.25f), ("Hero_EyeGlint", "FFFFFF", 0f), ("Hero_MouthIn", "7A1F22", 0.30f),
+            ("Hero_Tongue", "E0606A", 0.30f), ("Hero_Teeth", "F7F2EA", 0.25f),
+            ("Hero_Top", "F2F3F5", 0.60f), ("Hero_TopTrim", "1B2F6B", 0.60f), ("Hero_Accent", "F0501A", 0.60f),
+            ("Hero_Bottom", "1B2F6B", 0.60f), ("Hero_Sock", "F2F3F5", 0.60f), ("Hero_Shoe", "F4F4F6", 0.55f),
+            ("Hero_ShoeSole", "A9B0C4", 0.55f), ("Hero_Lace", "C9CFE2", 0.55f),
+            ("Hero_HatA", "1B2F6B", 0.60f), ("Hero_HatB", "F0501A", 0.60f),
+            ("Hero_Frame", "23262E", 0.45f), ("Hero_Lens", "9FD3FF", 0.45f), ("Hero_LensDark", "1B2230", 0.30f), ("Hero_Metal", "D8B45A", 0.45f),
+        };
 
         public static bool Available => Resources.Load<GameObject>(Path) != null;
 
@@ -90,160 +113,118 @@ namespace GolfArcade.Game
                 smr.bones = mapped;
                 smr.rootBone = Bones.TryGetValue("Hips", out var hips) ? hips : null;
                 smr.updateWhenOffscreen = true;
+                // smooth low-poly skin and shoes speckle with self-shadow (on the face, where the shorts and the socks meet them)
+                smr.receiveShadows = slot != "body" && slot != "head" && slot != "shoes";
                 original[smr] = smr.sharedMaterials;
                 parts.Add(smr);
             }
             Object.Destroy(inst);
         }
 
-        // ----- Hair that follows the head: a damped spring on the head's acceleration, fed to the shader
-        Vector3 swayX, swayV, lastHead, lastHeadVel;
-        bool haveHead;
-        float breeze;
+        static Color Hex(string hex) => ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : Color.magenta;
 
-        /// How far the hair is swung right now, in world units (for the tests).
-        public float SwayMagnitude => swayX.magnitude;
-
-        /// Call each frame after the pose: the hair lags the head, settles, and stirs a little.
-        public void Sway(float dt)
-        {
-            if (!hair || !Bones.TryGetValue("Head", out var head) || dt <= 0f) return;
-            dt = Mathf.Min(dt, 1f / 20f);
-            var pos = head.position;
-            if (!haveHead) { lastHead = pos; lastHeadVel = Vector3.zero; haveHead = true; return; }
-            var vel = (pos - lastHead) / dt;
-            var acc = Vector3.ClampMagnitude((vel - lastHeadVel) / dt, 60f);
-            lastHead = pos; lastHeadVel = vel;
-            breeze += dt;
-            var stir = new Vector3(Mathf.Sin(breeze * 1.7f), 0f, Mathf.Sin(breeze * 1.3f + 1f)) * 0.6f;
-            int steps = Mathf.CeilToInt(dt * 120f);
-            float h = dt / steps;
-            for (int i = 0; i < steps; i++)
-            {
-                var a = -260f * swayX - 14f * swayV - 0.8f * (acc + stir);
-                swayV += a * h;
-                swayX += swayV * h;
-            }
-            swayX = Vector3.ClampMagnitude(swayX, 0.09f);
-            hair.SetVector("_HairSway", swayX);
-        }
-
-        static Material Make(string name, Color color, bool useAtlas, Texture map = null, Texture mask = null, float capStrength = 0.85f)
+        Material Make(string name, Color color, float capStrength)
         {
             var shader = Shader.Find("GolfArcade/HeroKit");
             if (!shader) return null;
             var m = new Material(shader) { name = name, color = color };
-            if (!matCap) matCap = Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
+            matCap ??= Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
             if (matCap) m.SetTexture("_MatCap", matCap);
-            m.SetFloat("_UseAtlas", useAtlas ? 1 : 0);
+            m.SetFloat("_UseAtlas", 0);
             m.SetFloat("_MatCapStrength", capStrength);
-            if (map) m.SetTexture("_MainTex", map);
-            m.SetTexture("_Mask", mask ? mask : Texture2D.blackTexture);
+            m.SetFloat("_Wrap", 0.6f);                      // a wide wrap: soft shadows, so a hat's underside is shaded, not black
+            m.SetTexture("_Mask", Texture2D.blackTexture);
+            owned.Add(m);
             return m;
         }
 
         void MakeMaterials()
         {
-            atlasTex ??= Resources.Load<Texture2D>("Hero/Look/hero_atlas");
-            maskTex ??= Resources.Load<Texture2D>("Hero/Look/hero_mask");
-            irisTex ??= Resources.Load<Texture2D>("Hero/Look/hero_iris");
-            buzzTex ??= Resources.Load<Texture2D>("Hero/Look/hero_hair_buzz");
-            wavesTex ??= Resources.Load<Texture2D>("Hero/Look/hero_hair_waves");
-            var refJson = Resources.Load<TextAsset>("Hero/Look/hero_kitref");
-            if (refJson) { var r = JsonUtility.FromJson<Ref>(refJson.text); kitRef = new Vector4(r.shirt, r.shorts, Mathf.Max(r.hair, 0.3f), r.skin); }
-            atlas = Own(Make("Hero atlas", Color.white, true, atlasTex, maskTex, 0.6f));
-            if (atlas) atlas.SetVector("_Ref", kitRef);
-            foundation = Own(Make("Hero foundation", Color.gray, false));
-            underHair = Own(Make("Hero under hair", Color.gray, false));
-            hair = Own(Make("Hero hair", Color.white, false));
-            if (hair) hair.SetFloat("_UseFlex", 1f);
-            scalp = Own(Make("Hero scalp", Color.white, false, buzzTex, null, 0.6f));
-            if (scalp) scalp.SetFloat("_UseScalp", 1f);
-            shoeWhite = Own(Make("Hero shoe", new Color(0.89f, 0.89f, 0.87f), false));
-            shoeOrange = Own(Make("Hero shoe accent", new Color(1f, 0.42f, 0.24f), false));
-            cap = Own(Make("Hero cap", new Color(1f, 0.42f, 0.24f), false));
-            iris = Own(Make("Hero eye", Color.white, true, irisTex, null, 0f));
-            catchlight = Own(Make("Hero catchlight", Color.white, false, null, null, 0f));
-            plain = Own(Make("Hero plain", Color.white, false));
+            foreach (var (role, hex, cap) in Designed) roles[role] = Make(role, Hex(hex), cap);
+            // the blush is skin that goes pink toward the middle of its patch (the vertex colour's R is how pink): the scalp mode of the shader
+            if (roles.TryGetValue("Hero_Blush", out var blush) && blush) { blush.SetFloat("_UseScalp", 1); blush.SetFloat("_HairAmount", 1); }
+            // clear glasses have a frame and no lens (a lens would hide the eyes); the shades' lens is solid
+            if (roles.TryGetValue("Hero_Lens", out var lens) && lens) lens.SetFloat("_Clear", 1);
         }
 
-        Material Own(Material m) { if (m) owned.Add(m); return m; }
+        void Tint(string role, Color c) { if (roles.TryGetValue(role, out var m) && m) { c.a = 1f; m.color = c; } }
 
-        /// Puts the look on: which parts show, their colours, the shape.
+        static Color Mix(Color a, Color b, float t) => new(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, 1f);
+
+        /// Puts the look on: which parts show, their colours.
         public void Dress(in HeroLook look)
         {
             var skin = look.Skin; skin.a = 1f;
-            var hairColor = look.HairColor; hairColor.a = 1f;
-            if (atlas)
-            {
-                atlas.SetColor("_Skin", skin);
-                SetTint(atlas, "_Shirt", look.Shirt);
-                SetTint(atlas, "_Shorts", look.Shorts);
-            }
-            // the body's inner shell (under the clothes, and behind the odd tear in the face by the ears): skin
-            if (foundation) foundation.color = new Color(skin.r * 0.85f, skin.g * 0.82f, skin.b * 0.8f);
-            int cut = Mathf.Clamp(look.Haircut, 0, HaircutNames.Length - 1);
-            bool bald = cut == (int)Haircut.Bald;
-            // where hair meets skin on the body (the temples): the hair's colour, or the skin's when bald
-            if (underHair) underHair.color = bald ? new Color(skin.r * 0.96f, skin.g * 0.94f, skin.b * 0.92f) : hairColor * 0.82f;
-            if (hair) hair.color = hairColor;
-            if (scalp)
-            {
-                scalp.SetColor("_ScalpSkin", new Color(skin.r * 0.97f, skin.g * 0.95f, skin.b * 0.94f));
-                scalp.SetFloat("_HairAmount", bald ? 0f : 1f);
-                scalp.color = DetailTint(hairColor);
-                var map = cut == (int)Haircut.Waves ? wavesTex : buzzTex;
-                if (map) scalp.SetTexture("_MainTex", map);
-            }
-            if (shoeWhite) shoeWhite.color = look.Shoes ?? new Color(0.89f, 0.89f, 0.87f);
-            if (cap && look.Hat is Color hatColor) cap.color = hatColor;
+            var hair = look.HairColor; hair.a = 1f;
+            Tint("Hero_Skin", skin);
+            Tint("Hero_Ear", Mix(skin, new Color(0.75f, 0.29f, 0.29f), 0.30f));
+            var blushColor = Mix(skin, new Color(0.93f, 0.31f, 0.38f), 0.45f);
+            Tint("Hero_Blush", blushColor);
+            if (roles.TryGetValue("Hero_Blush", out var blush) && blush) blush.SetColor("_ScalpSkin", skin);
+            Tint("Hero_Hair", hair);
+            Tint("Hero_HairB", hair * 0.78f);
+            // the kit as designed: a white polo, navy shorts and trim, white shoes; a picked colour replaces its own
+            Tint("Hero_Top", look.Shirt ?? Hex("F2F3F5"));
+            var navy = look.Shorts ?? Hex("1B2F6B");
+            Tint("Hero_Bottom", navy); Tint("Hero_TopTrim", navy);
+            Tint("Hero_Shoe", look.Shoes ?? Hex("F4F4F6"));
 
-            string want = HairRenderer(cut);
-            if (want != null && !parts.Exists(r => r.name == want)) want = HairRenderer(0);
+            int cut = Mathf.Clamp(look.Haircut, 0, HaircutNames.Length - 1);
             int wear = Mathf.Clamp(look.Headwear, 0, HeadwearNames.Length - 1);
-            string hat = wear == (int)Headwear.None ? null : "Hat_" + HeadwearNames[wear];
-            string under = hat == null ? null : "Under_" + HeadwearNames[wear];
-            // the hair held by the hat (it must not swing out through it)
-            if (hair) hair.SetVector("_HatHold", new Vector4(wear == (int)Headwear.Visor ? 1 : 0, wear == (int)Headwear.Cap ? 1 : 0, wear == (int)Headwear.Sweatband ? 1 : 0, 0));
+            int glasses = Mathf.Clamp(look.Glasses, 0, GlassesNames.Length - 1);
+            int facial = Mathf.Clamp(look.Facial, 0, FacialNames.Length - 1);
+            int top = Mathf.Clamp(look.Top, 0, TopNames.Length - 1);
+            int bottom = Mathf.Clamp(look.Bottom, 0, BottomNames.Length - 1);
+            // the hat's colour (its own as designed until one is picked) and its band, bill and button a shade to match
+            var hatColor = look.Hat ?? HatDefault(wear);
+            Tint("Hero_HatA", hatColor); Tint("Hero_HatB", TrimOf(hatColor));
+
+            bool hatOn = wear != (int)Headwear.None;
+            string hairName = cut == (int)Haircut.Bald ? null : "Hair_" + HaircutNames[cut] + (hatOn ? "_Hat" : "");
+            string hatName = hatOn ? "Hat_" + HeadwearNames[wear] : null;
+            string glassesName = glasses > 0 ? "Glasses_" + GlassesNames[glasses] : null;
+            string facialName = facial > 0 ? "Face_" + FacialNames[facial] : null;
+            string topName = "Top_" + TopNames[top], bottomName = "Bottom_" + BottomNames[bottom];
             foreach (var r in parts)
             {
                 string n = r.name;
-                if (n.StartsWith("Hair_")) r.enabled = n == want;
-                else if (n.StartsWith("Hat_")) r.enabled = n == hat;
-                var mesh = r.sharedMesh;
-                if (mesh)
-                    for (int i = 0; i < mesh.blendShapeCount; i++)
-                    {
-                        string shape = mesh.GetBlendShapeName(i);
-                        float w = 0;
-                        if (shape.EndsWith("Female")) w = look.Female ? 100 : 0;              // the girl: the body and the clothes over it
-                        else if (shape.Contains("OnHair_")) w = want != null && shape.EndsWith("OnHair_" + want) ? 100 : 0;   // a hat sits on this cut's hair
-                        else if (shape.Contains("Under_")) w = under != null && shape.EndsWith(under) ? 100 : 0;   // the hair tucked in under the hat
-                        r.SetBlendShapeWeight(i, w);
-                    }
+                if (n.StartsWith("Hair_")) r.enabled = n == hairName;
+                else if (n.StartsWith("Hat_")) r.enabled = n == hatName;
+                else if (n.StartsWith("Glasses_")) r.enabled = n == glassesName;
+                else if (n.StartsWith("Face_")) r.enabled = n == facialName;
+                else if (n.StartsWith("Top_")) r.enabled = n == topName;
+                else if (n.StartsWith("Bottom_")) r.enabled = n == bottomName;
                 AssignMaterials(r);
             }
         }
 
-        static void SetTint(Material m, string prop, Color? c) => m.SetColor(prop, c is Color v ? new Color(v.r, v.g, v.b, 1f) : new Color(1, 1, 1, 0));
-
-        /// The haircut's mesh, or null for the cuts that are the scalp alone (bald, buzz, waves).
-        static string HairRenderer(int cut) => cut switch
+        /// A hat's colour as designed.
+        public static Color HatDefault(int wear) => wear switch
         {
-            (int)Haircut.Bald or (int)Haircut.Buzz or (int)Haircut.Waves => null,
-            <= 0 => "Hair_Default",
-            _ => "Hair_" + HaircutNames[cut],
+            (int)Headwear.Cap => new Color(1f, 0.42f, 0.24f),
+            (int)Headwear.Bucket => new Color(0.20f, 0.50f, 0.32f),
+            (int)Headwear.Beanie => new Color(0.13f, 0.20f, 0.42f),
+            (int)Headwear.Straw => new Color(0.95f, 0.82f, 0.45f),
+            (int)Headwear.Headband => new Color(0.94f, 0.31f, 0.10f),
+            (int)Headwear.Beret => new Color(0.60f, 0.12f, 0.22f),
+            (int)Headwear.Flatcap => new Color(0.42f, 0.36f, 0.30f),
+            (int)Headwear.Fedora => new Color(0.36f, 0.27f, 0.20f),
+            (int)Headwear.Cowboy => new Color(0.65f, 0.45f, 0.27f),
+            (int)Headwear.Headphones => new Color(0.17f, 0.18f, 0.22f),
+            (int)Headwear.Bandana => new Color(0.80f, 0.15f, 0.16f),
+            (int)Headwear.Tophat => new Color(0.12f, 0.12f, 0.15f),
+            (int)Headwear.Crown => new Color(0.96f, 0.76f, 0.20f),
+            _ => new Color(0.95f, 0.95f, 0.93f),
         };
 
-        /// Buzz and waves carry a detail map multiplied by the tint: on near-black hair the pattern vanishes,
-        /// so the tint keeps a little brightness for the ridges to read.
-        static Color DetailTint(Color c)
+        /// The colour of a hat's band, bill and button: navy on a light hat, a deeper shade of the hat's own on a dark one.
+        public static Color TrimOf(Color hat)
         {
-            float l = c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f;
-            return l >= 0.16f ? c : new Color(c.r + (0.16f - l), c.g + (0.16f - l), c.b + (0.16f - l), 1f);
+            float l = hat.r * 0.2126f + hat.g * 0.7152f + hat.b * 0.0722f;
+            return l > 0.72f ? new Color(0.13f, 0.2f, 0.42f) : new Color(hat.r * 0.66f, hat.g * 0.66f, hat.b * 0.66f, 1f);
         }
 
-        /// The renderer's materials, by the names the FBX gave them.
+        /// The renderer's materials, by the role names the FBX gave them.
         void AssignMaterials(SkinnedMeshRenderer r)
         {
             var mats = original.TryGetValue(r, out var o) ? (Material[])o.Clone() : r.sharedMaterials;
@@ -252,19 +233,8 @@ namespace GolfArcade.Game
                 var m = mats[i];
                 if (!m) continue;
                 string n = m.name.Replace(" (Instance)", "");
-                Material use = null;
-                if (n.StartsWith("Hero_01_Scalp")) use = scalp;
-                else if (n.StartsWith("skin_BlondHair")) use = underHair;
-                else if (n.StartsWith("skin_CoveredFoundation")) use = foundation;
-                else if (n.StartsWith("skin_") || n == "Hero_01_MatteCloth" || n == "Hero_01_WarmSkin" || n.StartsWith("Hero_01_Visor") || n.StartsWith("Hero_01_BlondHair")) use = atlas;
-                else if (n.StartsWith("Hero_01_MatteCloth_TrimTeal")) use = atlas;
-                else if (n.StartsWith("Hero_01_HairTuft")) use = hair;
-                else if (n.StartsWith("Hero_01_ShoeCleanWhite")) use = shoeWhite;
-                else if (n.StartsWith("Hero_01_ShoeOrange")) use = shoeOrange;
-                else if (n.StartsWith("Hero_01_EyeCornea")) use = iris;
-                else if (n.StartsWith("Hero_01_Catchlight")) use = catchlight;
-                else if (n.StartsWith("Cos_")) use = cap;
-                if (use) mats[i] = use;
+                int dot = n.IndexOf('.'); if (dot > 0) n = n.Substring(0, dot);
+                if (roles.TryGetValue(n, out var use) && use) mats[i] = use;
             }
             r.sharedMaterials = mats;
         }
@@ -276,7 +246,7 @@ namespace GolfArcade.Game
         public void Dispose()
         {
             foreach (var m in owned) if (m) Object.Destroy(m);
-            owned.Clear();
+            owned.Clear(); roles.Clear();
             if (Root) Object.Destroy(Root);
         }
     }

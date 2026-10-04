@@ -24,6 +24,8 @@ test('the courses are the round and each of its holes', () => {
   assert.deepEqual(COURSES['cliffside-12'].pars, [3]);
   assert.deepEqual(COURSES.wildisles.pars, [4, 5, 3, 4, 4]);
   assert.deepEqual(COURSES['wildisles-18'].pars, [3]);
+  assert.deepEqual(COURSES.magma.pars, [3, 4, 5]);
+  assert.deepEqual(COURSES['magma-23'].pars, [5]);
   assert.equal(COURSES['cliffside-99'], undefined);
 });
 

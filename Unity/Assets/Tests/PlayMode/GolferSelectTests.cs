@@ -10,8 +10,7 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// The locker (Adnan's character screen): the golfer big in the top of the screen and a panel of choices
-    /// under a row of tabs. Boy or girl, skin, haircut, headwear and outfit colours each change the golfer on
+    /// The locker: the golfer big in the top of the screen over a white sheet of choices under a row of tabs. Boy or girl, skin, haircut, headwear and outfit colours each change the golfer on
     /// the spot and are remembered; SHUFFLE, sliders, padlocks and LET'S GO. Frames: Library/Captures/review/locker-*.png.
     public class GolferSelectTests
     {
@@ -21,7 +20,9 @@ namespace GolfArcade.PlayTests
         {
             var go = GameObject.Find(name);
             Assert.IsTrue(go, $"no {name} on the screen");
-            go.GetComponent<HoldButton>().Pressed();
+            // a tab or a button is a HoldButton (pressed); a style tile, a swatch or a segment is a Choice (clicked)
+            if (go.TryGetComponent<HoldButton>(out var hold)) hold.Pressed();
+            else go.GetComponent<Locker.Choice>().Clicked();
         }
 
         /// A press and a let-go on a slider's track, at `t` of the way along it (a finger).
@@ -58,10 +59,11 @@ namespace GolfArcade.PlayTests
             var look0 = GolferStyle.Current.Clone();
             var profile = ProfileStore.Active;
             var profileLook0 = profile.LookOrMigrated().Clone();
-            var stats0 = profile.Stats.RoundsPlayed;
+            var stats0 = profile.Stats;
             try
             {
-                profile.Stats.RoundsPlayed = 0;   // (no mixer yet)
+                // a clean record: no mixer yet, and nothing earned by the rounds other tests have played on this profile
+                profile.Stats = new ProfileStats();
                 GolferStyle.Edit(l => { l.Body = 0; l.Skin = ""; l.Haircut = -1; l.Hair = ""; l.Headwear = 1; l.Shirt = ""; l.Shorts = ""; l.Shoes = ""; l.Hat = ""; });
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(1.5f);
@@ -71,7 +73,7 @@ namespace GolfArcade.PlayTests
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-1-body.png"));
 
                 // BODY: the girl, and a skin tone from the slider
-                Press("Card GIRL");
+                Press("Segment Girl");
                 yield return new WaitForSecondsRealtime(0.3f);
                 Assert.AreEqual(GolferStyle.BodyKind.Female, GolferStyle.Body);
                 Drag(ActiveSlider(0), 0.85f);
@@ -85,7 +87,7 @@ namespace GolfArcade.PlayTests
                 // HAIR: the camera comes in to the head; a haircut and a colour
                 Press("Tab HAIR");
                 yield return new WaitForSecondsRealtime(1.2f);
-                Press("Card BOB");
+                Press("Tile 2 hair_bob");
                 Assert.AreEqual((int)HeroGolfer.Haircut.Bob, GolferStyle.Haircut);
                 Drag(ActiveSlider(0), 0.72f);
                 yield return new WaitForSecondsRealtime(0.4f);
@@ -95,11 +97,11 @@ namespace GolfArcade.PlayTests
                 // HEADWEAR: the cap, then none: the hair shows in full without it
                 Press("Tab HEADWEAR");
                 yield return new WaitForSecondsRealtime(0.5f);
-                Press("Card CAP");
+                Press("Tile 2 hat_cap");
                 Assert.AreEqual((int)HeroGolfer.Headwear.Cap, GolferStyle.Headwear);
                 yield return new WaitForSecondsRealtime(0.3f);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-4-cap.png"));
-                Press("Card NONE");
+                Press("Tile 0 none");
                 yield return new WaitForSecondsRealtime(0.3f);
                 Assert.AreEqual(0, GolferStyle.Headwear);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-5-bare.png"));
@@ -107,7 +109,7 @@ namespace GolfArcade.PlayTests
                 // OUTFIT: the shorts in a quick pick; a padlock says what it takes; the mixer is earned
                 Press("Tab OUTFIT");
                 yield return new WaitForSecondsRealtime(1.0f);
-                Press("Card SHORTS");
+                Press("Segment Shorts");
                 Press("Swatch 1");
                 yield return new WaitForSecondsRealtime(0.3f);
                 Assert.AreEqual(1, GolferStyle.Kit, "teal shorts");
@@ -143,7 +145,7 @@ namespace GolfArcade.PlayTests
             }
             finally
             {
-                profile.Stats.RoundsPlayed = stats0;
+                profile.Stats = stats0;
                 profile.Look = profileLook0;
                 GolferStyle.SaveDevice(look0);
                 if (game.Current == GolfGame.State.Golfer) game.CloseGolferPicker();

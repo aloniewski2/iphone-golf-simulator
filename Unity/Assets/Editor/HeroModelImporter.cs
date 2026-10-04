@@ -34,6 +34,15 @@ namespace GolfArcade.EditorTools
 
         void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith("Assets/Resources/UI/Look/"))
+            {
+                // the style thumbnails of the locker's tiles: small, clear, no mip blur
+                var thumb = (TextureImporter)assetImporter;
+                thumb.mipmapEnabled = false; thumb.alphaIsTransparency = true; thumb.maxTextureSize = 256;
+                thumb.textureCompression = TextureImporterCompression.CompressedHQ;
+                thumb.filterMode = UnityEngine.FilterMode.Bilinear; thumb.wrapMode = UnityEngine.TextureWrapMode.Clamp;
+                return;
+            }
             if (!assetPath.StartsWith("Assets/Resources/Hero/Look/")) return;
             var importer = (TextureImporter)assetImporter;
             if (assetPath.EndsWith("hero_mask.png"))
