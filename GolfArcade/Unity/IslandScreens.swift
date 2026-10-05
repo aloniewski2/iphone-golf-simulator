@@ -409,3 +409,249 @@ struct IslandSettingsScreen: View {
         .shadow(color: IslandUI.navy.opacity(0.15), radius: 12, y: 6)
     }
 }
+
+// MARK: - Party / online lobby
+
+struct IslandPartyScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title:"Play with friends",compact:compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing:16)) : AnyLayout(HStackLayout(spacing:48))
+            layout {
+                VStack(alignment:.leading,spacing:12) {
+                    Text("Meet on the island").islandType(compact ? 23 : 32,bold:true)
+                    Text("Invite friends online or find a lobby nearby. Bring your own look.").islandType(compact ? 15 : 20).foregroundStyle(IslandUI.muted).padding(.bottom,10)
+                    IslandLobbyRow(title:"Solo",icon:"person.fill",id:"partySolo",menu:menu,compact:compact)
+                    IslandLobbyRow(title:"Play Online",subtitle:"Quick match or invite friends",icon:"globe",id:"partyOnline",menu:menu,compact:compact)
+                    IslandLobbyRow(title:"Nearby",subtitle:"On the same Wi-Fi",icon:"wifi",id:"partyNearby",menu:menu,compact:compact)
+                    IslandLobbyRow(title:"Back",icon:"arrow.left",id:"back",menu:menu,compact:compact)
+                }.frame(maxWidth:compact ? .infinity : 500)
+                if !compact { CharacterModelPreview(player:menu.player ?? Player(name:"Player 1",colorIndex:0),cameraDistance:3.8,idleSport:.tennis).frame(maxWidth:.infinity) }
+            }.foregroundStyle(IslandUI.navy)
+        }
+    }
+}
+
+struct IslandOnlineScreen: View {
+    let menu: TennisMenu
+    let route: OnlineLobbyScreen
+    let compact: Bool
+    var room: ClubRoom = .locker
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var online: OnlineLobbyMenu { menu.online }
+    private var service: MultiplayerService { online.service }
+    private var lobby: MultiplayerLobby? { service.lobby }
+    private var local: MultiplayerParticipant? { lobby?.participants.first { $0.id == service.localID } }
+    private var title: String {
+        switch route {
+        case .entry: "Play Online"; case .nearby: "Nearby"; case .searching: "Finding friends"
+        case .emotes: "Emotes"; case .clothes: "Change Clothes"; case .settings: "Match Settings"
+        case .match: "Playing together"
+        case .loading: "Loading the match"; case .results: "Match complete"; case .leave: "Leave the party?"
+        case .lobby: "Your party"
+        }
+    }
+    var body: some View {
+        Group {
+            if [.entry,.nearby,.searching].contains(route) && lobby == nil { entry }
+            else { sharedRoom }
+        }.preferredColorScheme(.light)
+        .sheet(item:Binding(get:{online.sheet},set:{online.sheet=$0})) { sheet in OnlineGameCenterSheet(controller:sheet.controller).ignoresSafeArea() }
+    }
+    private var entry: some View {
+        IslandShell(title:title,compact:compact) {
+            let layout = compact ? AnyLayout(VStackLayout(spacing:12)) : AnyLayout(HStackLayout(spacing:48))
+            layout {
+                VStack(alignment:.leading,spacing:compact ? 10 : 14) {
+                    if route == .entry {
+                        if !service.authenticated {
+                            IslandNotice(text:"Sign in to play with friends",compact:compact)
+                            action("net-signin","Sign in to Game Center",icon:"person.crop.circle")
+                        }
+                        action("net-tennis","Quick Match Tennis",icon:"tennis.racket")
+                        action("net-golf","Quick Match Golf",icon:"figure.golf")
+                        action("net-invite","Invite Friends",icon:"person.badge.plus")
+                        action("back","Back",icon:"arrow.left")
+                    } else if route == .nearby {
+                        Text("Choose a friend's lobby on the same Wi-Fi.").islandType(compact ? 15 : 19).foregroundStyle(IslandUI.muted)
+                        if online.nearbyItems.isEmpty { IslandNotice(text:"Looking for nearby lobbies…",compact:compact) }
+                        ForEach(online.nearbyItems) { found in
+                            action("net-join-\(found.id)",found.name,subtitle:"\(found.sport.capitalized) · \(found.players)/4 players",icon:"person.2.fill")
+                        }
+                        if service.discoveredLobbies.count > 4 {
+                            HStack { action("net-page-prev","Previous",icon:"chevron.left"); action("net-page-next","Next",icon:"chevron.right") }
+                        }
+                        action("net-host","Host a Lobby",icon:"plus")
+                        action("back","Back",icon:"arrow.left")
+                    } else {
+                        Text(online.searchSport.rawValue.capitalized).islandType(compact ? 25 : 34,bold:true)
+                        TimelineView(.periodic(from:.now,by:1)) { context in
+                            Text("Searching · \(max(0,Int(context.date.timeIntervalSince(online.searchStarted)))) s").islandType(compact ? 17 : 22).monospacedDigit()
+                        }
+                        Text("Your hero is warming up while we find a match.").islandType(compact ? 14 : 18).foregroundStyle(IslandUI.muted)
+                        action("net-cancel","Cancel",icon:"xmark")
+                    }
+                    if !menu.notice.isEmpty { IslandMenuNotice(menu:menu,compact:compact) }
+                }.frame(maxWidth:compact ? .infinity : 500,alignment:.leading)
+                if route == .searching || !compact {
+                    CharacterModelPreview(player:menu.player ?? Player(name:"Player 1",colorIndex:0),cameraDistance:3.4,idleSport:.tennis).frame(maxWidth:.infinity,minHeight:compact ? 230 : 400)
+                }
+            }.foregroundStyle(IslandUI.navy)
+        }
+    }
+    private var sharedRoom: some View {
+        GeometryReader { geo in
+            ZStack {
+                IslandBackdrop(room:room)
+                LinearGradient(colors:[IslandUI.paper.opacity(0.5),.clear],startPoint:.top,endPoint:.center).ignoresSafeArea()
+                VStack(spacing:compact ? 8 : 14) {
+                    HStack(alignment:.firstTextBaseline) {
+                        Text(title).islandType(compact ? 28 : 38,bold:true)
+                        Spacer()
+                        Text(lobby?.sport.rawValue.capitalized ?? "Tennis").islandType(compact ? 13 : 18,bold:true).padding(.horizontal,14).padding(.vertical,7).background(IslandUI.paper,in:Capsule())
+                    }.foregroundStyle(IslandUI.navy).padding(.horizontal,compact ? 18 : 48).padding(.top,compact ? 12 : 22)
+                    let layout = compact ? AnyLayout(VStackLayout(spacing:10)) : AnyLayout(HStackLayout(alignment:.top,spacing:24))
+                    layout {
+                        VStack(spacing:8) {
+                            stage.frame(maxWidth:.infinity,maxHeight:.infinity)
+                            HStack(spacing:compact ? 5 : 10) {
+                                ForEach(online.participants,id:\.id) { p in
+                                    IslandLobbyPlayerCard(participant:p,host:p.id == lobby?.ownerID,local:p.id == service.localID,loading:route == .loading,compact:compact)
+                                }
+                            }.padding(.horizontal,compact ? 12 : 0)
+                        }.frame(maxWidth:.infinity,minHeight:compact ? 210 : nil,maxHeight:.infinity)
+                        panel.frame(width:compact ? nil : (route == .clothes ? 560 : 440),height:compact ? panelHeight(geo.size.height) : nil)
+                    }.padding(.horizontal,compact ? 0 : 48)
+                    if !compact { IslandHintBar(items:IslandHintBar.move + [("A · Emotes","Emote"),("A · Ready","Ready")]).padding(.bottom,20) }
+                }
+                if !menu.notice.isEmpty { VStack { Spacer(); IslandMenuNotice(menu:menu,compact:compact).padding(.bottom,compact ? 16 : 72) } }
+            }
+        }
+    }
+    private var stage: some View {
+        LobbyHeroStage(participants:online.participants,sport:lobby?.sport ?? .tennis,localID:service.localID,
+                       editingPlayer:route == .clothes ? menu.player : nil,emotes:service.emotes,networkTime:service.networkTime,
+                       winnerID:route == .results ? online.winnerID : nil,introduce:lobby?.phase == .lobby,animate:!reduceMotion && !SportsSession.shared.reduceMotion)
+            .id("online-shared-stage")
+    }
+    private func panelHeight(_ height: CGFloat) -> CGFloat {
+        switch route {
+        case .clothes: min(480,height * 0.56)
+        case .settings: min(445,height * 0.53)
+        case .emotes: 355
+        case .lobby: min(438,height * 0.51)
+        default: min(330,height * 0.38)
+        }
+    }
+    @ViewBuilder private var panel: some View {
+        if route == .clothes { IslandLockerScreen(menu:menu,compact:compact,lobbyPanel:true) }
+        else {
+            VStack(alignment:.leading,spacing:compact ? 9 : 12) {
+                switch route {
+                case .lobby:
+                    action("net-ready",local?.ready == true ? "Ready" : "Ready?",icon:"checkmark",ready:local?.ready ?? false)
+                    HStack { action("net-emotes","Emotes",icon:"face.smiling"); action("net-clothes","Clothes",icon:"tshirt") }
+                    action("net-settings","Match Settings",icon:"slider.horizontal.3")
+                    HStack { action("net-invite","Invite More",icon:"person.badge.plus"); action("net-find","Find More",icon:"magnifyingglass") }
+                    if service.isOwner { action("net-start","Start Match",subtitle:lobby?.startReason ?? "Invite another player to play",icon:"play.fill",enabled:lobby?.canStart == true) }
+                    else { Text("\(lobby?.startReason ?? "Waiting for the host") · Host starts the match").islandType(compact ? 12 : 15).foregroundStyle(IslandUI.muted) }
+                    action("net-leave","Leave",icon:"arrow.left")
+                case .emotes: emotePicker
+                case .settings: settings
+                case .loading:
+                    let total = lobby?.participants.filter(\.connected).count ?? 0, loaded = lobby?.participants.filter { $0.connected && $0.loaded }.count ?? 0
+                    Text("Loading \(loaded)/\(total)").islandType(compact ? 26 : 34,bold:true)
+                    Text("Everyone travels together. The match starts when seated players have loaded.").islandType(compact ? 15 : 19).foregroundStyle(IslandUI.muted)
+                    action("net-leave","Leave",icon:"arrow.left")
+                case .results:
+                    Text(online.winnerID.flatMap { id in lobby?.participants.first { $0.id == id }?.name }.map { "\($0) wins!" } ?? "Thanks for playing").islandType(compact ? 25 : 32,bold:true)
+                    if service.isOwner { action("net-rematch","Rematch",subtitle:"Return together, then ready up",icon:"arrow.clockwise") }
+                    action("net-return","Back to Lobby",icon:"person.2")
+                    if service.localSeat < 0 { action("net-queue",lobby?.queue.contains(service.localID) == true ? "Queued for Next" : "Queue for Next",icon:"person.crop.circle.badge.plus") }
+                    action("net-leave","Leave",icon:"arrow.left")
+                case .leave:
+                    Text("Your friends will see that you've left.").islandType(compact ? 18 : 24).foregroundStyle(IslandUI.muted)
+                    HStack { action("net-stay","Stay",icon:"person.2.fill"); action("net-confirm-leave","Leave",icon:"arrow.left") }
+                default: EmptyView()
+                }
+            }.foregroundStyle(IslandUI.navy).padding(compact ? 16 : 22).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.top)
+                .background(IslandUI.paper.opacity(0.96),in:RoundedRectangle(cornerRadius:compact ? 32 : 26,style:.continuous))
+        }
+    }
+    private var emotePicker: some View {
+        TimelineView(.periodic(from:.now,by:0.1)) { _ in
+            VStack(alignment:.leading,spacing:8) {
+                ForEach(0..<2) { row in
+                    Text(row == 0 ? "Taunts" : "Intros").islandType(compact ? 13 : 18,bold:true)
+                    HStack(spacing:compact ? 9 : 12) {
+                        ForEach(row*3..<row*3+3,id:\.self) { i in
+                            IslandEmoteTile(id:MultiplayerEmote.ids[i],title:MultiplayerEmote.names[i],image:LobbyEmoteThumbs.image(MultiplayerEmote.ids[i],player:menu.player ?? local?.lobbyPlayer ?? Player(name:"Player",colorIndex:0)),menu:menu,cooldown:service.emoteCooldown,scale:compact ? 0.9 : 1)
+                        }
+                    }
+                }
+                action("back","Back",icon:"arrow.left")
+            }
+        }
+    }
+    @ViewBuilder private var settings: some View {
+        if let lobby {
+            VStack(alignment:.leading,spacing:10) {
+                if !service.isOwner { IslandNotice(text:"Only the host changes settings",compact:compact) }
+                if online.settingsSeats {
+                    ForEach(online.participants,id:\.id) { p in
+                        if service.isOwner { action("net-seat-\(p.id)",p.name,subtitle:p.seat < 0 ? "Watching · Select to take a seat" : "P\(p.seat+1) · Select to watch",icon:"person.fill") }
+                        else { Text("\(p.name) · \(p.seat < 0 ? "Watching" : "P\(p.seat+1)")").islandType(compact ? 15 : 19) }
+                    }
+                    action("net-settings-match","Match Options",icon:"slider.horizontal.3")
+                } else {
+                    choices("Sport",values:["tennis","golf"],selected:lobby.sport.rawValue,prefix:"net-sport-")
+                    choices(lobby.sport == .tennis ? "Court" : "Course",values:lobby.sport == .tennis ? ["resort","skyscraper","volcano"] : ["postcards"],selected:lobby.venue,prefix:"net-venue-")
+                    if lobby.sport == .tennis {
+                        choices("Sets",values:["1","2","3"],selected:String(lobby.sets),prefix:"net-sets-")
+                        choices("Games",values:["1","3","6"],selected:String(lobby.games),prefix:"net-games-")
+                    }
+                    action("net-settings-seats","Player Seats",icon:"person.2.fill")
+                }
+                action("back","Back",icon:"arrow.left")
+            }
+        }
+    }
+    private func choices(_ label: String,values:[String],selected:String,prefix:String) -> some View {
+        VStack(alignment:.leading,spacing:5) {
+            Text(label).islandType(compact ? 12 : 15,bold:true)
+            IslandSegments(titles:values.map(\.capitalized),selected:values.firstIndex(of:selected) ?? 0,compact:compact,focused:values.firstIndex { menu.isFocused(prefix+$0) }) { i in menu.tap(prefix+values[i]) }.disabled(!service.isOwner)
+        }.id(values.first { menu.isFocused(prefix+$0) }.map { prefix+$0 } ?? prefix+values[0])
+    }
+    private func action(_ id: String,_ title: String,subtitle: String = "",icon: String = "chevron.right",enabled: Bool = true,ready: Bool? = nil) -> some View {
+        IslandLobbyRow(title:title,subtitle:subtitle,icon:icon,id:id,menu:menu,compact:compact,enabled:enabled,ready:ready)
+    }
+}
+
+struct OnlineGameCenterSheet: UIViewControllerRepresentable {
+    let controller: UIViewController
+    func makeUIViewController(context:Context) -> UIViewController { controller }
+    func updateUIViewController(_ controller:UIViewController,context:Context) { }
+}
+
+/// Small native notices over a network match; the same card works on the controller and Unity preview.
+struct MultiplayerMatchOverlay: View {
+    var menu = TennisMenu.shared
+    var compact = true
+    private var service: MultiplayerService { menu.online.service }
+    var body: some View {
+        if let lobby = service.lobby, [.playing,.interrupted].contains(lobby.phase) {
+            VStack(alignment:.leading,spacing:8) {
+                HStack {
+                    if service.localSeat < 0 { IslandNotice(text:"Watching",compact:compact) }
+                    Spacer()
+                    IslandLobbyRow(title:"Leave",icon:"arrow.left",id:"net-leave",menu:menu,compact:compact).frame(width:compact ? 150 : 190)
+                }
+                ForEach(lobby.participants.filter { $0.id != service.localID && (!$0.connected || $0.paused == true) },id:\.id) { p in
+                    IslandNotice(text:!p.connected ? "\(p.name) reconnecting · Match paused" : "\(p.name) paused",compact:compact)
+                }
+                if let error = service.lastError { IslandNotice(text:error,compact:compact) }
+            }.padding(compact ? 12 : 24)
+        }
+    }
+}

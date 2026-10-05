@@ -333,3 +333,38 @@ final class LockerMirrorProofTests: XCTestCase {
         await film.finish(); XCTAssertEqual(film.writer.status, .completed)
     }
 }
+
+extension LockerMirrorProofTests {
+    func testRecordLobbyEmoteParityFilms() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let output = repo.appendingPathComponent("work/online-lobby/emote_parity")
+        try FileManager.default.createDirectory(at:output,withIntermediateDirectories:true)
+        for female in [false,true] {
+            for id in ["scuba","pushups"] {
+                let sex = female ? "female" : "male", c = CharacterModelPreview.Coordinator(cameraDistance:4.6)
+                var p = Player(name:sex,colorIndex:0); p.standardFemale = female
+                c.update(p); c.scene.background.contents = UIColor(IslandUI.paper)
+                let rig = try XCTUnwrap(HeroRig(root:try XCTUnwrap(c.hero),asset:try XCTUnwrap(MatchHero.asset(female:female))));rig.attach()
+                c.camera?.position = SCNVector3(0,0.9,4.6);c.camera?.look(at:SCNVector3(0,0.8,0))
+                let size=CGSize(width:480,height:640),view=SCNView(frame:CGRect(origin:.zero,size:size))
+                view.scene=c.scene;view.pointOfView=c.camera;view.antialiasingMode = .multisampling4X;view.autoenablesDefaultLighting=false;view.isPlaying=true;view.contentScaleFactor=1
+                let window=UIWindow(windowScene:scene);window.frame=view.frame;window.addSubview(view);window.isHidden=false
+                defer { window.isHidden=true;view.isPlaying=false }
+                let clip=try XCTUnwrap(rig.data.clips[id]), duration=clip.length+1.3
+                let motion=MenuMotion(kind:.clipOnce(id),lead:0.3,fadeIn:0.12,fadeOut:0.2)
+                let film=try Film(url:output.appendingPathComponent("\(sex)_\(id)_unity_vs_scenekit.mp4"),size:CGSize(width:960,height:640))
+                for frame in 0...Int((duration*30).rounded()) {
+                    let t=Double(frame)/30;rig.apply(motion,at:t)
+                    try await Task.sleep(for:.milliseconds(28))
+                    let unity=try XCTUnwrap(UIImage(contentsOfFile:output.appendingPathComponent("unity_frames/\(sex)_\(id)/\(String(format:"%05d",frame)).png").path))
+                    let swift=view.snapshot(), format=UIGraphicsImageRendererFormat();format.scale=1;format.opaque=true
+                    let joined=UIGraphicsImageRenderer(size:CGSize(width:960,height:640),format:format).image { _ in
+                        unity.draw(in:CGRect(x:0,y:0,width:480,height:640));swift.draw(in:CGRect(x:480,y:0,width:480,height:640))
+                    }
+                    try await film.append(caption(joined,["Unity CPU skin (left) · SceneKit (right) · \(sex) \(id) · t=\(String(format:"%.2f",t))", "Same installed clip · 60 Hz base tracks + cut guards · Ready at both ends"]),at:t)
+                }
+                await film.finish();XCTAssertEqual(film.writer.status,.completed)
+            }
+        }
+    }
+}

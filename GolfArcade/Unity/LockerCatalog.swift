@@ -77,6 +77,10 @@ enum LockerCatalog {
 }
 
 extension Player {
+    var multiplayerLoadout: MultiplayerLoadout {
+        MultiplayerLoadout(gear: Dictionary(uniqueKeysWithValues: LockerCatalog.sports.map { ($0.rawValue, loadoutPayload(sport: $0)) }),
+                           skinHex: skinHex, colours: Dictionary(uniqueKeysWithValues: Player.outfitSlots.compactMap { slot in outfitHex(slot).map { (slot, $0) } }))
+    }
     func equipped(_ slot: LockerSlot, sport: Sport) -> LockerItem {
         LockerCatalog.item(id: loadout?[sport.rawValue]?[slot.rawValue], sport: sport, slot: slot)
     }
@@ -90,5 +94,20 @@ extension Player {
     /// What the launch message carries for a sport: slot -> item id for every slot (Standard included), so the game never guesses.
     func loadoutPayload(sport: Sport) -> [String: String] {
         Dictionary(uniqueKeysWithValues: LockerCatalog.slots(for: sport).map { ($0.rawValue, equipped($0, sport: sport).id) })
+    }
+}
+
+extension MultiplayerParticipant {
+    /// A transient locker profile for the preview; each peer supplies cosmetic values only.
+    var lobbyPlayer: Player {
+        var p = Player(id:UUID(uuidString:id) ?? UUID(uuidString:"00000000-0000-0000-0000-000000000000")!,name:name,colorIndex:0,handedness:left ? .left : .right)
+        p.standardFemale = female
+        if let loadout {
+            p.loadout = loadout.gear
+            let skin = LockerColor.rgb(loadout.skinHex)
+            p.look["skin"] = [0,skin.0,skin.1,skin.2]
+            for (slot,hex) in loadout.colours { p.setOutfitHex(slot,hex) }
+        }
+        return p
     }
 }

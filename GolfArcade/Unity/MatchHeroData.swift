@@ -46,6 +46,7 @@ import simd
         let length: Float, fps: Float, contact: Float
         let frames: Int, offset: Int
         let boundsMin: [Float], boundsMax: [Float]
+        let times: [Float]?
     }
     struct RigInfo: Decodable {
         let file: String
@@ -230,7 +231,13 @@ extension HeroTrackPose {
             var f: Double
             if loop { f = time.truncatingRemainder(dividingBy: length) / length * Double(n); if f < 0 { f += Double(n) } }
             else { f = min(max(time, 0), length) / length * Double(n) }
-            let i0 = min(n, Int(f.rounded(.down))), i1 = min(n, i0 + 1), w = Float(f - Double(i0))
+            var i0 = min(n, Int(f.rounded(.down))), i1 = min(n, i0 + 1), w = Float(f - Double(i0))
+            if let times = info.times, times.count == frames {
+                let t = Float(min(max(time,0),length))
+                var low = 0, high = n
+                while low < high { let mid = (low+high+1)/2; if times[mid] <= t { low=mid } else { high=mid-1 } }
+                i0=low; i1=min(n,low+1); w=i0 == i1 ? 0 : (t-times[i0])/max(0.000001,times[i1]-times[i0])
+            }
             return (0 ..< trackCount).map { i in
                 let a = track(i0, i)
                 return w == 0 || i0 == i1 ? a : HeroTrackPose.mix(a, track(i1, i), w)

@@ -499,3 +499,149 @@ struct CharacterModelPreview: UIViewRepresentable {
         SCNTransaction.commit()
     }
 }
+
+/// One SceneKit surface for the whole party. Each hero keeps its own rig, look and animation clock.
+struct LobbyHeroStage: UIViewRepresentable {
+    let participants: [MultiplayerParticipant]
+    let sport: MultiplayerSport
+    let localID: String
+    var editingPlayer: Player?
+    var emotes: [String: MultiplayerEmote] = [:]
+    var networkTime: Double
+    var winnerID: String?
+    var introduce = true
+    var animate = true
+    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView(); view.backgroundColor = .clear
+        view.delegate = context.coordinator
+        view.scene = context.coordinator.recipe.scene; view.pointOfView = context.coordinator.recipe.camera
+        view.autoenablesDefaultLighting = false; view.allowsCameraControl = false
+        view.antialiasingMode = .multisampling4X; view.preferredFramesPerSecond = 60; view.isPlaying = animate
+        view.accessibilityIdentifier = "online-hero-stage"
+        context.coordinator.view = view; context.coordinator.update(self); context.coordinator.start()
+        return view
+    }
+    func updateUIView(_ view: SCNView, context: Context) {
+        view.isPlaying = animate; context.coordinator.update(self)
+        view.accessibilityLabel = participants.map { "\($0.name), \($0.female ? "female" : "male"), \($0.left ? "left handed" : "right handed")" }.joined(separator: "; ")
+    }
+    static func dismantleUIView(_ view: SCNView, coordinator: Coordinator) { coordinator.stop(); view.isPlaying = false; view.scene = nil }
+
+    @MainActor final class Coordinator: NSObject, SCNSceneRendererDelegate {
+        let recipe = CharacterModelPreview.Coordinator(cameraDistance: 5)
+        weak var view: SCNView?
+        struct Hero { var container: SCNNode; var player: Player; var motion: LobbyHeroMotion; var eventID: String? }
+        private(set) var heroes: [String: Hero] = [:]
+        private var link: CADisplayLink?
+        private var offset = 0.0
+        private var ordered: [MultiplayerParticipant] = []
+        private var sport: MultiplayerSport = .tennis
+        private var winner: String?
+        private var animate = true
+        private(set) var frames = 0
+        private(set) var measuredSeconds = 0.0
+        private var previousFrame = 0.0
+        private var framedSize = CGSize.zero
+        func resetMeasurement() { frames = 0; measuredSeconds = 0; previousFrame = 0 }
+        nonisolated func renderer(_ renderer: any SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
+            Task { @MainActor [weak self] in self?.recordFrame(time) }
+        }
+        private func recordFrame(_ time: Double) {
+            if previousFrame > 0 { measuredSeconds += time - previousFrame; frames += 1 }; previousFrame = time
+        }
+        var measuredFPS: Double { measuredSeconds > 0 ? Double(frames) / measuredSeconds : 0 }
+        func update(_ state: LobbyHeroStage) {
+            offset = state.networkTime - CACurrentMediaTime(); animate = state.animate; sport = state.sport
+            let now = state.networkTime, incoming = Set(state.participants.map(\.id))
+            for id in Array(heroes.keys) where !incoming.contains(id) {
+                if let hero = heroes.removeValue(forKey: id) { hero.container.runAction(.sequence([.fadeOut(duration: 0.18),.removeFromParentNode()])) }
+            }
+            ordered = state.participants
+            for (i,p) in ordered.enumerated() {
+                let player = p.id == state.localID ? state.editingPlayer ?? p.lobbyPlayer : p.lobbyPlayer
+                let old = heroes[p.id]
+                if old?.player != player {
+                    guard let root = MatchHero.build(player), let asset = MatchHero.asset(female:player.standardFemale), let rig = HeroRig(root:root,asset:asset) else { continue }
+                    let holder = old?.container ?? SCNNode()
+                    holder.childNodes.filter { $0.name != "lobby-floor" }.forEach { $0.removeFromParentNode() }; holder.addChildNode(root)
+                    let motion = LobbyHeroMotion(rig:rig,idleOffset:Double(i) * 0.73)
+                    if let previous = old?.motion, let clip = previous.clip {
+                        motion.play(clip,at:previous.startedAt,now:now)
+                        if let queued = previous.queued { motion.play(queued,at:now,now:now) }
+                    }
+                    heroes[p.id] = Hero(container:holder,player:player,motion:motion,eventID:old?.eventID)
+                    #if DEBUG
+                    OnlineLobbyProofDriver.event("hero-look","\(p.id) \(player.outfitHex("shirt") ?? "kit")")
+                    #endif
+                    if old == nil {
+                        let shadow = SCNNode(geometry:SCNPlane(width:0.85,height:0.42))
+                        shadow.name = "lobby-floor"
+                        holder.position = SCNVector3((Float(i)-Float(ordered.count-1)/2)*1.8,0,sport == .tennis && p.seat < 0 ? -0.65 : 0)
+                        shadow.eulerAngles.x = -.pi / 2; shadow.position.y = -0.02
+                        shadow.geometry?.firstMaterial?.diffuse.contents = UIColor(IslandUI.navy).withAlphaComponent(0.15)
+                        shadow.geometry?.firstMaterial?.lightingModel = .constant; shadow.geometry?.firstMaterial?.isDoubleSided = true
+                        holder.addChildNode(shadow)
+                        recipe.scene.rootNode.addChildNode(holder)
+                        holder.opacity = state.animate ? 0 : 1; holder.scale = SCNVector3(0.92,0.92,0.92)
+                        // Give existing heroes time to make room before the newcomer appears.
+                        let joinDelay = state.animate ? 0.22 : 0
+                        holder.runAction(.sequence([.wait(duration:joinDelay),.group([.fadeIn(duration:0.2),.scale(to:1,duration:0.22)])]))
+                        if state.animate && state.introduce { motion.play("wave",at:now+joinDelay,now:now) }
+                    }
+                }
+                if let event = state.emotes[p.id], heroes[p.id]?.eventID != event.id {
+                    heroes[p.id]?.eventID = event.id; heroes[p.id]?.motion.play(event.emoteID,at:event.startedAt,now:now)
+                    #if DEBUG
+                    OnlineLobbyProofDriver.event("hero-emote","\(p.id) \(event.emoteID) sent=\(event.startedAt) queued=\(heroes[p.id]?.motion.queued ?? "none")")
+                    #endif
+                }
+            }
+            if state.winnerID != winner { winner = state.winnerID; if let winner, state.animate { heroes[winner]?.motion.play("thrust",at:now,now:now) } }
+            reframe(); tickPose(at:now)
+        }
+        private func reframe() {
+            let count = max(1,ordered.count), spacing: Float = 1.8
+            SCNTransaction.begin(); SCNTransaction.animationDuration = animate ? 0.22 : 0
+            for (i,p) in ordered.enumerated() {
+                let x = (Float(i) - Float(count-1)/2) * spacing
+                heroes[p.id]?.container.position = SCNVector3(x,0,sport == .tennis && p.seat < 0 ? -0.65 : 0)
+            }
+            SCNTransaction.commit()
+            // Panel height changes resize the view immediately; matching its camera immediately keeps every hero in frame.
+            SCNTransaction.begin(); SCNTransaction.disableActions = true
+            if let camera = recipe.camera {
+                let aspect = Float(max(1,view?.bounds.width ?? 402) / max(1,view?.bounds.height ?? 300))
+                let width = Float(count - 1) * spacing + 1.6
+                let distance = max(4.5,width / (2 * tan(Float.pi * 32 / 360) * aspect))
+                camera.position = SCNVector3(0,1.05,distance); camera.look(at:SCNVector3(0,0.94,0))
+            }
+            SCNTransaction.commit()
+        }
+        func start() {
+            guard link == nil else { return }
+            let l = CADisplayLink(target:self,selector:#selector(frame(_:))); l.preferredFrameRateRange = CAFrameRateRange(minimum:60,maximum:60,preferred:60); l.add(to:.main,forMode:.common); link = l
+        }
+        @objc private func frame(_ link: CADisplayLink) {
+            if let size = view?.bounds.size, size != framedSize { framedSize = size; reframe() }
+            tickPose(at:link.timestamp + offset)
+        }
+        func tickPose(at time: Double) { for h in heroes.values { h.motion.pose(at:animate ? time : 0) } }
+        func stop() { link?.invalidate(); link = nil; heroes.removeAll() }
+    }
+}
+
+@MainActor enum LobbyEmoteThumbs {
+    private static var cache: [String:UIImage] = [:]
+    static func image(_ id: String, player: Player) -> UIImage? {
+        let key = "\(id)|\(player.standardFemale)|\(player.handedness)|\(player.skinHex)|\(Player.outfitSlots.map { player.outfitHex($0) ?? "kit" }.joined(separator:"|"))"
+        if let image = cache[key] { return image }
+        let c = CharacterModelPreview.Coordinator(cameraDistance:4.6); c.update(player)
+        guard let root = c.hero, let asset = MatchHero.asset(female:player.standardFemale), let rig = HeroRig(root:root,asset:asset), let clip = rig.data.clips[id] else { return nil }
+        rig.attach(); rig.apply(clip.pose(at:clip.length * 0.35,loop:false))
+        c.camera?.position = SCNVector3(0,0.9,4.6); c.camera?.look(at:SCNVector3(0,0.8,0))
+        let renderer = SCNRenderer(device:nil,options:nil); renderer.scene = c.scene; renderer.pointOfView = c.camera
+        let image = renderer.snapshot(atTime:0,with:CGSize(width:224,height:196),antialiasingMode:.multisampling4X)
+        if cache.count > 24 { cache.removeAll() }; cache[key] = image; return image
+    }
+}

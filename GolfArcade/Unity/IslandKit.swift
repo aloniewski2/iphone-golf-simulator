@@ -93,15 +93,16 @@ struct IslandSegments: View {
     let titles: [String]
     let selected: Int
     var compact = false
+    var focused: Int? = nil
     let pick: (Int) -> Void
     var body: some View {
         HStack(spacing: 4) {
             ForEach(titles.indices, id: \.self) { i in
                 Button { pick(i) } label: {
-                    Text(titles[i]).font(IslandUI.font(compact ? 14 : 18, bold: true)).foregroundStyle(selected == i ? .white : IslandUI.navy)
+                    Text(titles[i]).font(IslandUI.font(compact ? 14 : 18, bold: true)).foregroundStyle(focused == i ? IslandUI.navy : selected == i ? .white : IslandUI.navy)
                         .lineLimit(1).minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity).padding(.vertical, compact ? 9 : 12)
-                        .background(selected == i ? IslandUI.navy : .clear, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                        .islandFocus(focused == i, radius: 11, base: selected == i ? IslandUI.navy : .clear)
                 }.buttonStyle(.plain)
             }
         }
@@ -152,5 +153,95 @@ struct IslandMenuNotice: View {
                 try? await Task.sleep(for: .seconds(3.5))
                 menu.clearNotice(shown)
             }
+    }
+}
+
+/// Typography for Island screens. Kept beside the shared palette and focus treatment.
+extension View {
+    func islandType(_ size: CGFloat, bold: Bool = false) -> some View { font(IslandUI.font(size, bold: bold)) }
+}
+
+/// A lobby action / discovery row. Uses the hub row's spacing, radius and common focus treatment.
+struct IslandLobbyRow: View {
+    let title: String
+    var subtitle = ""
+    var icon = "chevron.right"
+    let id: String
+    let menu: TennisMenu
+    var compact = false
+    var enabled = true
+    var ready: Bool? = nil
+    var body: some View {
+        Button { menu.tap(id) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon).islandType(compact ? 20 : 24, bold: true).frame(width: 30)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title).islandType(compact ? 18 : 24, bold: true).lineLimit(1).minimumScaleFactor(0.75)
+                    if !subtitle.isEmpty { Text(subtitle).islandType(compact ? 12 : 15).foregroundStyle(IslandUI.muted).fixedSize(horizontal: false, vertical: true) }
+                }
+                Spacer(minLength: 0)
+                if let ready { IslandSwitch(on: ready, compact: compact) }
+            }.foregroundStyle(IslandUI.navy).padding(.horizontal, 16).padding(.vertical, compact ? 12 : 15)
+                .frame(maxWidth: .infinity, minHeight: compact ? 54 : 66, alignment: .leading)
+                .islandFocus(menu.isFocused(id), radius: 20, base: IslandUI.card)
+                .opacity(enabled ? 1 : 0.65)
+        }.buttonStyle(.plain).disabled(!enabled).accessibilityIdentifier(id)
+    }
+}
+
+/// A participant's small paper card under the shared stage.
+struct IslandLobbyPlayerCard: View {
+    let participant: MultiplayerParticipant
+    var host = false
+    var local = false
+    var loading = false
+    var compact = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 5) {
+                Circle().fill(participant.connected ? IslandUI.lime : IslandUI.coral).frame(width: 7, height: 7)
+                Text(participant.name).islandType(compact ? 13 : 18, bold: true).lineLimit(1).minimumScaleFactor(0.65)
+                if host { Image(systemName: "crown.fill").islandType(compact ? 11 : 15) }
+                Spacer(minLength: 0)
+            }
+            HStack(spacing: 4) {
+                Text(participant.seat < 0 ? "Watching" : "P\(participant.seat + 1)").islandType(compact ? 11 : 14, bold: true).lineLimit(1).minimumScaleFactor(0.6)
+                if local { Text("· You").islandType(compact ? 10 : 13) }
+                Spacer(minLength: 0)
+                if participant.ready { Image(systemName: "checkmark.circle.fill").foregroundStyle(IslandUI.navy).background(IslandUI.lime, in: Circle()) }
+            }
+            if loading {
+                Text(participant.loaded ? "Loaded 1/1" : "Loading 0/1").islandType(compact ? 10 : 13)
+                Capsule().fill(IslandUI.navy.opacity(0.15)).frame(height: 5)
+                    .overlay(alignment: .leading) { if participant.loaded { Capsule().fill(IslandUI.lime) } }
+            } else if !participant.connected { Text("Reconnecting").islandType(compact ? 10 : 13).foregroundStyle(IslandUI.coral) }
+        }.foregroundStyle(IslandUI.navy).padding(compact ? 10 : 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(IslandUI.paper.opacity(0.96), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .accessibilityElement(children: .combine)
+    }
+}
+
+/// Emote shelf tiles share the locker's tile dimensions and radius, with the single Island focus look.
+struct IslandEmoteTile: View {
+    let id: String
+    let title: String
+    let image: UIImage?
+    let menu: TennisMenu
+    var cooldown: Double = 0
+    var scale: CGFloat = 1
+    var body: some View {
+        Button { menu.tap("net-emote-\(id)") } label: {
+            VStack(spacing: 0) {
+                ZStack {
+                    IslandUI.paper
+                    if let image { Image(uiImage: image).resizable().scaledToFit() }
+                    if cooldown > 0 { Text(String(format: "%.1f s", cooldown)).islandType(14 * scale, bold: true).padding(8).background(IslandUI.paper, in: Capsule()) }
+                }.frame(height: 98 * scale).clipped()
+                Text(title).islandType(14 * scale, bold: true).frame(maxWidth: .infinity, minHeight: 36 * scale)
+            }.foregroundStyle(IslandUI.navy).frame(width: 112 * scale, height: 134 * scale)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .islandFocus(menu.isFocused("net-emote-\(id)"), radius: 18)
+        }.buttonStyle(.plain).disabled(cooldown > 0).accessibilityIdentifier("net-emote-\(id)")
     }
 }

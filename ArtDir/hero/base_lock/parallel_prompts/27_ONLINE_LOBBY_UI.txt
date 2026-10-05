@@ -1,0 +1,104 @@
+PASTE: ONLINE PLAY + SHARED LOBBY UI (Codex Goal Mode, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+Build the online play and lobby front end for Party Sports in the EXISTING Island design system. When a player invites a friend (or gets matched, or joins nearby), the friend's hero appears in the lobby BESIDE the host's hero, live, in their own locker look. Everyone in the lobby can play emotes and change clothes, and the others see it happen in the same lobby. Then the host starts a tennis or golf match from there. Done = every gate passes AND the screenshots and films read as the same game as the current menus and locker. Adnan's eye overrides any PASS.
+
+----------------------------------------------------------------
+0. WHAT ALREADY EXISTS (verify; do not rebuild it)
+Backend (uncommitted, tests in work/multiplayer/*.log):
+- GolfArcade/Multiplayer/MultiplayerService.swift: host / connect, createOnlineLobby, authenticate (Game Center), inviteFriends() and acceptInvitation() (return Game Center view controllers), quickMatch(sport), cancelSearch, hostLocal / browseLocal / joinLocal (nearby), configure(sport, venue, sets, games), assignSeat, setReady, queueForNextMatch, startMatch, returnToLobby, findMorePlayers, leave, runtimeLoaded, setForeground; control packets ready / queue / loaded / leave / availability; lobby broadcast on every change.
+- MultiplayerModels.swift: MultiplayerLobby (owner, sport, venue, sets 1-3, games 1/3/6, phase lobby/loading/playing/results/interrupted, participants <= 4 counting spectators, seats: tennis 2, golf 4, seat -1 = spectator, queue, canStart), MultiplayerParticipant (id, name, seat, ready, loaded, connected, female, left, invited), MultiplayerPacket (version 1, max 60,000 bytes), MultiplayerError (unavailable, invalidOperation, incompatible, full).
+- GameCenterTransport.swift, LocalMultiplayerTransport.swift; Unity side Unity/Assets/Scripts/Multiplayer/ (NetworkTennisMatch, NetworkGolfRound, SportsMultiplayer, MultiplayerProtocol); SportsSession.startMultiplayer(configuration) and the motion gating for spectators.
+- GolfArcadeApp.swift calls MultiplayerService.shared.prepare().
+Front end today:
+- Menus are SwiftUI in GolfArcade/Unity/. MenuScreen enum + focus grid + tap ids in TennisMenu.swift; views in TennisMenuViews.swift, IslandScreens.swift, MotionClubMenus.swift, SportsHome.swift.
+- The Party screen (.party, ClubPartyScreen) has only "partySolo" and "back".
+- ArcadeScreens.swift has an old dead PartyLobbyScreen (listed in work/new-menus/DEAD_CODE_PLAN.md). Do NOT revive it; it is the old design.
+Design system to reuse:
+- Tokens: IslandUI in ClubDesign.swift (navy 101D35, lime D3F34B, paper FAF8F3, muted 34435A, IslandUI.font rounded) + IslandKit.swift (ring, dark 0A1424, coral FF6B4A, card white).
+- Components: islandFocus (lime fill + navy ring = the ONE focus look), IslandHintBar, IslandSwatch / IslandSwatchRow, IslandSegments, IslandSwitch, IslandNotice, IslandMenuNotice, IslandBackdrop / ClubEnvironmentView rooms (entrance, terrace, locker, loading), LockerTile.
+- Locker: LockerStudio.swift (IslandLockerScreen, Gear + Customize tabs, Revert / Shuffle / Done), LockerCatalog.swift, Player.loadout + loadoutPayload(sport:).
+- 3D heroes: CharacterModelPreview.swift (SceneKit UIViewRepresentable, PreviewFraming), MatchHeroData.swift (MatchHero_<Sex>.json / .lzfse / _Rig.lzfse), MatchHeroMotion.swift (plays Unity clips as 60 Hz bone tracks on the real skeleton; today only ReadyIdle and Serve), exported by Unity/Assets/Editor/MatchHeroLockerExport.cs.
+- Emotes in Unity: Emote_Scuba, Emote_Thrust, Emote_Spike, Intro_Wave, Intro_BringIt, Intro_Pushups on both match heroes (Unity/Assets/Characters/MatchHeroes/<Sex>/). The Swift locker cannot play them yet.
+- Controls: TV = click remote, click to move, NEVER swipe; phone = touch. Every screen has a focus grid and a hint bar.
+
+Known gaps to fix (found in the code):
+- MultiplayerLobby.valid() only accepts the venues resort, skyscraper, volcano, so a golf lobby with a course id fails. Accept golf course ids for sport == golf.
+- MultiplayerParticipant has no loadout, so other players can't see your skin or kit. Add it.
+
+----------------------------------------------------------------
+1. READ FIRST
+The files above, plus work/new-menus/README.md, work/locker-mirror/ (notes), ArtDir/screenshots of the current menus and locker (find the newest), and work/multiplayer/check.sh.
+Before coding, take 6 screenshots of the CURRENT app (home, party, locker gear, locker customize, map, post-match) on an iPhone simulator AND the TV layout. Save them to work/online-lobby/before/. These are the style reference for every gate below.
+
+----------------------------------------------------------------
+2. HARD RULES
+- Design: no new colours, fonts, corner radii, or focus styles. Use IslandUI tokens and Island components. A new component is allowed only when no Island one fits; it goes in IslandKit.swift, in the same style, and is listed in the report.
+- Every focusable element goes through the TennisMenu focus grid with a tap id, works with the click remote (move + A select + B back), and works with touch. No swipe gestures anywhere.
+- Do not touch Unity gameplay, match clips (Serve, emotes, etc.), hero meshes, shaders, golf course files, QualitySettings, URP assets, or the tennis rules.
+- Allowed edits: GolfArcade/Multiplayer/*, GolfArcade/Unity/ menu, locker, and hero-preview Swift files, GolfArcade/Domain/Player.swift (loadout), Unity/Assets/Editor/MatchHeroLockerExport.cs (to add emote tracks), the generated MatchHero_* resources, new files under GolfArcade/Unity/ for the lobby, and tests.
+- Backward compatible: new packet fields are optional. Bump MultiplayerPacket.version to 2 and show the existing "incompatible" error to a version 1 peer.
+- Work and scratch in work/online-lobby/. Never git-add work/.
+
+----------------------------------------------------------------
+3. PHASES
+
+PHASE 0: BASE
+0.1 Run work/multiplayer/check.sh (or the tests it runs). Record the results in work/online-lobby/BASE.md.
+0.2 Fix the golf venue gap and add `loadout` (optional, Codable) to MultiplayerParticipant, filled from Player.loadout + skin and kit colours. setIdentity sends it.
+0.3 New packet kinds, owner-validated and rate-limited:
+- "look": a participant's new loadout; the owner applies it to the lobby and rebroadcasts.
+- "emote": { participantID, emoteID, startedAt }, max 1 per 1.5 s per player, ignored while phase != lobby.
+GATE P0: tests pass; new unit tests for look / emote / golf venue / version 2 pass; lobby JSON stays < 60,000 bytes with 4 full loadouts.
+
+PHASE 1: EMOTES IN THE SWIFT HERO
+1.1 Extend MatchHeroLockerExport.cs to bake the 6 emote clips (Emote_Scuba, Emote_Thrust, Emote_Spike, Intro_Wave, Intro_BringIt, Intro_Pushups) into MatchHero_<Sex>_Rig.lzfse as 60 Hz bone tracks, with the racket rigid track (the Scuba racket drop and pick-up and the Pushups racket put-down must play right). Re-export in an APFS clone of the Unity project, using the current installed emote FBXs.
+1.2 MatchHeroMotion: play any clip once and settle back to ReadyIdle with a short blend, queue at most one, and loop ReadyIdle with a per-hero time offset so 4 heroes don't idle in sync.
+GATE P1: each emote played in Swift matches the Unity clip. Per-bone rotation error <= 2 deg at 10 sampled frames, the racket on the socket while held, READY at both ends. Side-by-side film Unity vs SceneKit for Scuba and Pushups, male and female, in work/online-lobby/emote_parity/.
+
+PHASE 2: ENTRY SCREENS (Island style)
+2.1 Party screen: Solo | Play Online | Nearby | Back.
+2.2 Play Online: if not signed in, a Game Center sign-in card (IslandNotice style), then the buttons Quick Match Tennis, Quick Match Golf, Invite Friends (creates the lobby and opens the Game Center invite sheet), Back. Incoming Game Center invites open the app straight into the lobby from any screen.
+2.3 Nearby: a list of found lobbies (host name, sport, players x/4) as Island rows, plus Host a Lobby.
+2.4 Searching: sport, timer, a looping hero idle, Cancel. Errors as IslandMenuNotice in plain words (no Game Center, wrong version, lobby full, connection lost).
+GATE P2: every screen reachable by remote and touch; screenshots phone + TV.
+
+PHASE 3: THE SHARED LOBBY ROOM (the core)
+Layout: the locker room backdrop (ClubEnvironmentView .locker, or the terrace if it reads better; pick one, show both in the report).
+3.1 Heroes on a stage, side by side: one SceneKit view showing up to 4 heroes, each from MatchHeroData with that participant's loadout and sex and handedness (mirrored for left-handers).
+- Tennis: the 2 seated heroes in front, spectators a step behind.
+- Golf: up to 4 in a row.
+- The local player's hero is always first (left). Framing re-centres as people join or leave.
+3.2 Join moment: when someone joins, their hero pops in beside the others with a small Island-style pop and plays Intro_Wave. When someone leaves, a short fade, and the others close the gap.
+3.3 Above or below each hero, a small Island card with name, seat (P1 / P2 / spectator), a host crown, a Ready check (lime), and a connection dot (coral = reconnecting).
+3.4 Emote button: opens an Island emote picker (6 tiles in the LockerTile style with the emote name; Taunts and Intros rows). Picking one plays it on YOUR hero right away and sends "emote"; everyone else sees your hero do it. Cooldown shown on the tiles.
+3.5 Change Clothes: opens the existing IslandLockerScreen as a panel over the lobby (not a new locker). While it's open, your hero in the lobby is the one being edited (live preview). On Done, it sends "look" and the others see your new look right away. Revert cancels. Other players' heroes stay visible.
+3.6 Host panel (host only): sport (IslandSegments Tennis / Golf), venue or course, sets / games, seat swap (move a spectator into a seat), Start (disabled with the reason until canStart: "Waiting for Sam to be ready"). Guests see the same settings read-only.
+3.7 Everyone: Ready (IslandSwitch), Invite More (Game Center sheet), Find More Players (fills empty seats), Leave (confirm).
+3.8 Hint bar on TV: Move / Select / Back / Emote / Ready.
+GATE P3:
+- LOBBY_HEROES_LIVE: with 4 participants (2 real simulators + 2 mock), every hero shows its own loadout; a look change on one device appears on the other within 1 s.
+- LOBBY_EMOTE_SYNC: an emote started on device A starts on device B within 0.5 s and plays to the end; the rate limit holds.
+- LOBBY_JOIN_LEAVE: join = pop + Intro_Wave beside the others; leave = close the gap; no hero overlaps another.
+- LOBBY_HOST_RULES: Start disabled with the right reason until canStart; seat swap works; guests can't change settings.
+- STYLE_MATCH: every new screen uses only IslandUI tokens and Island components (grep check: no Color(hex:) or .font( outside IslandUI/IslandKit in the new files) and a side-by-side with the before/ screenshots.
+- PERF: 4 heroes idle + 1 emote at >= 55 fps on an iPhone 15-class simulator or device, measured; memory reported.
+
+PHASE 4: LOADING, MATCH, RESULTS
+4.1 Loading: the lobby heroes stay, with a "Loading x/y" bar per player, then the handoff to SportsSession.startMultiplayer. On timeout (20 s), return everyone to the lobby with a notice.
+4.2 In-match overlays (Island cards): opponent reconnecting / left, opponent paused, Watching badge for spectators, a leave confirm.
+4.3 Results: winner hero plays a taunt; Rematch, Back to Lobby, Leave; spectators can Queue for Next; seats rotate from the queue.
+GATE P4: a full loop on 2 simulators over the nearby transport: lobby -> ready -> start -> play a game -> results -> back to lobby -> rematch, plus a forced disconnect mid-match. Film it.
+
+PHASE 5: MOCK + PROOF
+5.1 A launch argument --lobby-mock N (1-4) that fills the lobby with fake participants and loadouts for screenshots, no network.
+5.2 Screenshots (phone + TV) of every new screen and state: party, online, sign-in, searching, error, nearby, lobby 1/2/4 players, emote picker, clothes panel over the lobby, host panel, loading, in-match overlays, results. Save to ArtDir/screenshots/online_lobby/.
+5.3 Films to work/online-lobby/film/: a 2-device invite -> join -> both emote -> one changes clothes -> start; and the full loop from P4.
+5.4 Game Center sandbox on 2 real devices if available. If not, report GAMECENTER_DEVICE NOT RUN and say what is needed.
+
+PHASE 6: COMMIT
+Run the unit tests, the Swift build, and the Unity export check. Stage only: GolfArcade/Multiplayer/, the changed GolfArcade/Unity/ Swift files and new lobby files, GolfArcade/Domain/Player.swift, GolfArcade/App/GolfArcadeApp.swift, the Unity/Assets/Scripts/Multiplayer/ files, MatchHeroLockerExport.cs, the regenerated MatchHero_* resources, tests, ArtDir/screenshots/online_lobby/, and this prompt. Check git diff --cached for QualitySettings, URP, golf course files, emote/serve FBX, and work/: unstage any of them. Commit on newmapsandmenus, push, no force-push.
+
+----------------------------------------------------------------
+4. FINAL REPORT
+One line per gate (PASS or FAIL with the number), the screenshot and film paths, any new Island components added, the files changed, the commit sha, and what is left (e.g., Game Center device test).

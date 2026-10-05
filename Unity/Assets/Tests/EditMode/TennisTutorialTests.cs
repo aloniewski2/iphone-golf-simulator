@@ -60,7 +60,10 @@ public class TennisTutorialTests
         Assert.AreEqual(1f, kit.Shirt.r, 1e-3); Assert.AreEqual(1f, kit.Shirt.a);
         Assert.AreEqual(0f, kit.Shorts.a, "empty keeps the kit's own colour");
         Assert.IsTrue(kit.Any);
-        Assert.IsFalse(TennisLook.Kit.From("", "", "", "", 2).Any, "nothing chosen, nothing recoloured");
+        Assert.IsFalse(new TennisLook.Kit { Skin = 2 }.Any, "no skin or kit override keeps the authored look");
+        var defaultSkin = TennisLook.Kit.From("", "", "", "", 2);
+        Assert.IsTrue(defaultSkin.HasSkin);
+        Assert.IsTrue(defaultSkin.Any, "an explicit default skin tone still overrides another player\'s skin");
         Assert.IsTrue(TennisLook.Kit.From("", "", "", "", 4).Any, "a different skin tone recolours");
     }
 }

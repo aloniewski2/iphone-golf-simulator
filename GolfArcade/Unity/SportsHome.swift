@@ -9,7 +9,10 @@ struct SportsHome: View {
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if session.active && session.finishedMatch != nil {
+            if menu.screen.isOnline && menu.screen != .online(.match) {
+                if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
+            }
+            else if session.active && session.finishedMatch != nil {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
             }
@@ -21,9 +24,21 @@ struct SportsHome: View {
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
         }
+        .overlay(alignment:.top) { if session.active && menu.screen == .online(.match) { MultiplayerMatchOverlay() } }
         .animation(.easeInOut(duration: 0.3), value: session.active)
         .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
+        .onChange(of:menu.online.service.lobby?.revision) { _,_ in menu.online.sync(menu) }
+        .onChange(of:menu.online.service.lastError) { _,error in if let error { menu.onlineNotice(error) } }
+        .onChange(of:menu.online.service.pendingInvite) { _,invite in if invite != nil { menu.online.acceptInvite(menu) } }
         .task {
+            menu.online.installCallbacks(menu)
+            let args = ProcessInfo.processInfo.arguments
+            #if DEBUG
+            OnlineLobbyProofDriver.start(menu,args:args)
+            #endif
+            if let index = args.firstIndex(of:"--lobby-mock"), let count = args[safe:index+1].flatMap(Int.init) {
+                try? menu.online.service.enableMock(count:count,player:menu.player ?? Player(name:"Player 1",colorIndex:0)); menu.showOnline(.lobby)
+            }
             if ProcessInfo.processInfo.arguments.contains("--resume-tennis-round-2") {
                 menu.resumeCampaign(round: 1)
             }
@@ -192,7 +207,7 @@ private struct TennisController:View {
                 }
                 Spacer(minLength:0)
                 PointClipControls(session: session)
-                Button("Quit to menu",role:.destructive) { session.end() }
+                Button("Quit to menu",role:.destructive) { if session.multiplayerMatchID != nil { TennisMenu.shared.online.select("net-leave",menu:TennisMenu.shared) } else { session.end() } }
                     .frame(maxWidth:.infinity,minHeight:48)
                     .accessibilityIdentifier("sessionMenu")
             }.padding(24).frame(maxWidth:.infinity,maxHeight:.infinity)

@@ -116,6 +116,8 @@ final class SportsSession {
     var aimingSetup:Bool { aimLesson != nil }
     /// Extra start fields for the tennis front end (mode, opponent, round).
     private var launchExtras: [String:Any] = [:]
+    private(set) var multiplayerMatchID: String?
+    private var multiplayerSeat = -1
     private var sessionID = ""
     /// Numeric stand-in for the session id on the binary sample channel.
     private var sessionToken: Int32 = 0
@@ -195,7 +197,7 @@ final class SportsSession {
     /// Motion samples flow from the sensor queue straight to Unity while a motion-controlled
     /// session is playing; touch play sends its own from here.
     private func routeSamples() {
-        motion.setOutput(token:sessionToken,live:active && !paused && !touch,swingBase:swingSequence)
+        motion.setOutput(token:sessionToken,live:active && !paused && !touch && (multiplayerMatchID == nil || multiplayerSeat >= 0),swingBase:swingSequence)
     }
 
     /// Time the TV: flash it black-then-white a few times while the camera still looks at it,
@@ -262,6 +264,16 @@ final class SportsSession {
     }
     /// Settings → Controls: run the timing check at the start of the next match.
     func forceTimingCheckNextMatch() { checkTimingOnResume = true }
+    func startMultiplayer(_ configuration: MultiplayerMatchConfiguration) {
+        guard !active, let data=try? JSONEncoder().encode(configuration), let json=String(data:data,encoding:.utf8) else { return }
+        multiplayerMatchID=configuration.matchID
+        multiplayerSeat=configuration.participants.first { $0.id == configuration.localID }?.seat ?? -1
+        sport=configuration.sport; tennisVenue=configuration.venue
+        launchExtras=["mode":"multiplayer", "network":json, "sets":configuration.sets, "games":configuration.games, "tips":false]
+        start(preview: !displayConnected)
+        launchExtras=[:]
+        if !active { multiplayerMatchID=nil }
+    }
     func start(preview: Bool = false) {
         guard !active else { return }
         SportsDisplays.shared.refresh()
@@ -534,6 +546,15 @@ final class SportsSession {
         // Compensate from the first point with the last measurement of this TV; the
         // setup re-times it when the camera is aimed at it.
         if displayConnected && startingLag>0 { command("latency",value:startingLag) }
+        if multiplayerMatchID != nil {
+            guard SportsRuntime.shared().multiplayerAvailable() else {
+                MultiplayerService.shared.runtimeUnavailable("This Unity export does not contain multiplayer. Re-export and rebuild the integrated app.")
+                return
+            }
+            paused=false; status=multiplayerSeat<0 ? "Watching" : "Playing"
+            if !touch && multiplayerSeat>=0 { motion.start(tennis:sport == "tennis",travel:travel) }
+            command("resume"); MultiplayerService.shared.runtimeLoaded(); return
+        }
         if touch { status="Tap Ready to play."; if SportsSession.benchmark { readyToPlay() } }
         else if sport == "tennis" && !motion.axisLocked { beginAxisCapture() }
         else { motion.start(tennis:sport == "tennis",travel:travel); status="Stand at your center, then tap Ready." }
@@ -586,6 +607,7 @@ final class SportsSession {
             UserDefaults.standard.set(Array(history.suffix(100)),forKey:"sports.sessions.v1")
         }
         pointClips.reset()
+        multiplayerMatchID=nil; multiplayerSeat = -1
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false
         loading.cancel(); tutorialStep=nil; finishedMatch=nil
         SportsRuntime.shared().pause(true); active=false; ready=false; paused=true; tennisControllerActive=false

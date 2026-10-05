@@ -43,7 +43,12 @@ namespace GolfArcade.EditorTools
         /// Bone tracks are sampled at this rate (the clips are authored at 30 fps; 60 Hz keeps the curves' own smoothness and the Swift side interpolates between samples).
         const float ClipRate = 60f;
         /// The clips the menus play, with the id the Swift side looks them up by.
-        static readonly (HeroTennisDriver.Clip slot, string id, bool loop)[] RigClips = { (HeroTennisDriver.Clip.Ready, "ready", true), (HeroTennisDriver.Clip.Serve, "serve", false) };
+        static readonly (HeroTennisDriver.Clip slot, string id, bool loop)[] RigClips = {
+            (HeroTennisDriver.Clip.Ready, "ready", true), (HeroTennisDriver.Clip.Serve, "serve", false),
+            (HeroTennisDriver.Clip.EmoteScuba, "scuba", false), (HeroTennisDriver.Clip.EmoteThrust, "thrust", false),
+            (HeroTennisDriver.Clip.EmoteSpike, "spike", false), (HeroTennisDriver.Clip.IntroWave, "wave", false),
+            (HeroTennisDriver.Clip.IntroBringIt, "bringIt", false), (HeroTennisDriver.Clip.IntroPushups, "pushups", false)
+        };
         static readonly Matrix4x4 FlipZ = Matrix4x4.Scale(new Vector3(1, 1, -1));
 
         [Serializable]
@@ -62,7 +67,7 @@ namespace GolfArcade.EditorTools
         [Serializable] class PartInfo { public string name, kind; public int vertexCount, positionOffset, normalOffset, swingPositionOffset, swingNormalOffset, uvOffset = -1, bindPositionOffset = -1; public Sub[] submeshes; }
         [Serializable] class MatInfo { public string name; public float[] color; public float smoothness; }
         [Serializable] class RigPart { public string part, kind; public int vertexCount, bindPositionOffset, bindNormalOffset, weightOffset, indexOffset, inverseBindOffset, track = -1; public int[] bones; }
-        [Serializable] class ClipInfo { public string id, name; public bool loop; public float length, fps, contact; public int frames, offset; public float[] boundsMin, boundsMax; }
+        [Serializable] class ClipInfo { public string id, name; public bool loop; public float length, fps, contact; public int frames, offset; public float[] boundsMin, boundsMax, times; }
         [Serializable] class Rig { public string file; public string[] bones, rigid; public int trackCount, floatsPerTrack = 10; public RigPart[] parts; public ClipInfo[] clips; }
         [Serializable]
         class Manifest
@@ -96,6 +101,52 @@ namespace GolfArcade.EditorTools
             File.WriteAllText(Report, log.ToString());
             Debug.Log("[MatchHeroLockerExport]\n" + log);
             if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
+        /// Live Unity frames for the side-by-side SceneKit parity recorder. Run with graphics enabled.
+        public static void CaptureEmoteParity()
+        {
+            int code=0;
+            try {
+                string output=Environment.GetEnvironmentVariable("MH_EMOTE_FRAMES"); if(string.IsNullOrEmpty(output))throw new ArgumentException("MH_EMOTE_FRAMES required");
+                UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
+                var camera=new GameObject("ParityCamera").AddComponent<Camera>(); camera.fieldOfView=32; camera.nearClipPlane=.05f;
+                camera.transform.position=new Vector3(0,.9f,4.6f);camera.transform.LookAt(new Vector3(0,.8f,0));camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.98f,.97f,.95f);
+                RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;RenderSettings.ambientLight=new Color(.86f,.88f,.96f)*.21f;
+                void Light(float intensity,Color color,float elevation,float azimuth) {
+                    var l=new GameObject("ParityLight").AddComponent<Light>(); l.type=LightType.Directional;l.intensity=intensity;l.color=color;
+                    float e=elevation*Mathf.Deg2Rad,a=azimuth*Mathf.Deg2Rad;l.transform.position=new Vector3(-Mathf.Sin(a)*Mathf.Cos(e)*6,Mathf.Sin(e)*6,Mathf.Cos(a)*Mathf.Cos(e)*6);l.transform.LookAt(new Vector3(0,.8f,0));
+                }
+                Light(1.05f,new Color(1,.92f,.82f),40,38);Light(.37f,new Color(.84f,.9f,1),18,-55);Light(.52f,new Color(1,.96f,.9f),35,160);
+                var rt=new RenderTexture(480,640,24,RenderTextureFormat.ARGB32,RenderTextureReadWrite.sRGB);rt.antiAliasing=4;rt.Create();camera.targetTexture=rt;
+                var tex=new Texture2D(480,640,TextureFormat.RGB24,false);var previous=RenderTexture.active;
+                foreach(string sex in new[]{"Male","Female"}) {
+                    var root=(GameObject)Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir+"Player"+sex+".prefab"));
+                    var driver=root.GetComponent<HeroTennisDriver>();var look=root.GetComponent<MatchHeroLook>();typeof(MatchHeroLook).GetMethod("OwnMaterials",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(look,null);
+                    root.GetComponentsInChildren<Transform>(true).First(t=>t.name=="Racket_Classic").localScale*=TennisRules.HeroRacketScale;
+                    foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()){skin.quality=SkinQuality.Bone4;skin.updateWhenOffscreen=true;}
+                    var ready=driver.slots.First(s=>s.id==HeroTennisDriver.Clip.Ready).clip;ready.SampleAnimation(root,0);
+                    // Manual SampleAnimation in a batch loop does not advance Unity's GPU skinning frame cache.
+                    // Draw the live clip's CPU skinning in Unity, using exactly the same Pose path independently checked against BakeMesh.
+                    var sources=Collect(root);foreach(var source in sources)Pose(root,source);
+                    var bounds=new Bounds();bool has=false;foreach(var source in sources.Where(p=>p.kind=="body"||p.kind=="face"))foreach(var v in source.pos){if(!has){bounds=new Bounds(v,Vector3.zero);has=true;}else bounds.Encapsulate(v);}
+                    var drawMeshes=new List<Mesh>();
+                    foreach(var source in sources){source.renderer.enabled=false;var node=new GameObject("UnityCPUSkin_"+source.name);node.transform.SetParent(root.transform,false);var mesh=Object.Instantiate(source.mesh);node.AddComponent<MeshFilter>().sharedMesh=mesh;node.AddComponent<MeshRenderer>().sharedMaterials=source.materials;drawMeshes.Add(mesh);}
+                    root.transform.localScale=Vector3.one*(1.387f/bounds.size.y);root.transform.rotation=Quaternion.Euler(0,-.35f*Mathf.Rad2Deg,0);
+                    foreach(var entry in RigClips.Where(e=>e.id=="scuba"||e.id=="pushups")) {
+                        var clip=driver.slots.First(s=>s.id==entry.slot).clip;string dir=Path.Combine(output,sex.ToLower()+"_"+entry.id);Directory.CreateDirectory(dir);
+                        int frames=Mathf.CeilToInt((clip.length+1.3f)*30)+1;
+                        for(int frame=0;frame<frames;frame++) {
+                            float time=frame/30f-.3f;ready.SampleAnimation(root,0);if(time>=0&&time<=clip.length+.2f)clip.SampleAnimation(root,Mathf.Min(clip.length,time));
+                            for(int part=0;part<sources.Count;part++){Pose(root,sources[part]);drawMeshes[part].vertices=sources[part].pos;drawMeshes[part].normals=sources[part].nrm;drawMeshes[part].RecalculateBounds();}
+                            camera.Render();RenderTexture.active=rt;tex.ReadPixels(new Rect(0,0,480,640),0,0);tex.Apply();File.WriteAllBytes(Path.Combine(dir,frame.ToString("D5")+".png"),tex.EncodeToPNG());
+                        }
+                    }
+                    Object.DestroyImmediate(root);
+                }
+                RenderTexture.active=previous;camera.targetTexture=null;rt.Release();Object.DestroyImmediate(rt);Object.DestroyImmediate(tex);
+            }catch(Exception e){Debug.LogException(e);code=1;}
+            if(Application.isBatchMode)EditorApplication.Exit(code);
         }
 
         static string ExportSex(string sex)
@@ -348,6 +399,8 @@ namespace GolfArcade.EditorTools
             foreach (var (slotId, id, loop) in RigClips)
             {
                 var slot = driver.slots.First(s => s.id == slotId); var clip = slot.clip;
+                if (!clip) throw new InvalidOperationException("Missing lobby clip: " + slotId);
+                ready.SampleAnimation(root, 0f);
                 int n = Mathf.Max(1, Mathf.RoundToInt(clip.length * ClipRate)), frames = n + 1;
                 var data = new float[frames * rig.trackCount * 10];
                 var prevQ = new Quaternion[rig.trackCount];
@@ -372,6 +425,41 @@ namespace GolfArcade.EditorTools
                     }
                     if (k % 4 == 0 || k == n) foreach (var p in sources) { Pose(root, p); foreach (var v in p.pos) { var f = new Vector3(v.x, v.y, -v.z); bmin = Vector3.Min(bmin, f); bmax = Vector3.Max(bmax, f); } }
                 }
+                // Keep the 60 Hz base samples. Abrupt authored cuts need extra guard samples so interpolation
+                // does not pull the racket off its socket early or smear a one-frame hand transition.
+                float baseFps = n / clip.length; float[] sampleTimes = null;
+                if (!loop && id != "serve") {
+                    var times = new List<float>(); var refined = new List<float>();
+                    float[] Sample(float time) {
+                        clip.SampleAnimation(root, time); var pose = new float[rig.trackCount * 10];
+                        for (int tr = 0; tr < rig.trackCount; tr++) {
+                            var m = tr < bones.Count ? FlipZ * (inv * bones[tr].localToWorldMatrix) * FlipZ
+                                : FlipZ * (inv * rigid[tr - bones.Count].renderer.transform.localToWorldMatrix) * FlipZ * rigidRef[tr - bones.Count];
+                            Decompose(m, out var t, out var q, out var scale); int o = tr * 10;
+                            pose[o]=t.x; pose[o+1]=t.y; pose[o+2]=t.z; pose[o+3]=q.x; pose[o+4]=q.y; pose[o+5]=q.z; pose[o+6]=q.w; pose[o+7]=scale.x; pose[o+8]=scale.y; pose[o+9]=scale.z;
+                        }
+                        return pose;
+                    }
+                    bool Accurate(float[] a, float[] b, float[] actual, float u) {
+                        for (int tr = 0; tr < rig.trackCount; tr++) { int o=tr*10;
+                            var ta=new Vector3(a[o],a[o+1],a[o+2]); var tb=new Vector3(b[o],b[o+1],b[o+2]); var t=new Vector3(actual[o],actual[o+1],actual[o+2]);
+                            var qa=new Quaternion(a[o+3],a[o+4],a[o+5],a[o+6]); var qb=new Quaternion(b[o+3],b[o+4],b[o+5],b[o+6]); var q=new Quaternion(actual[o+3],actual[o+4],actual[o+5],actual[o+6]);
+                            if (Vector3.Distance(Vector3.Lerp(ta,tb,u),t)>.001f || Quaternion.Angle(Quaternion.Slerp(qa,qb,u),q)>.7f) return false;
+                        }
+                        return true;
+                    }
+                    void Append(float time, float[] pose) { times.Add(time); refined.AddRange(pose); }
+                    void Refine(float aTime, float[] aPose, float bTime, float[] bPose, int depth) {
+                        float mid=(aTime+bTime)*.5f; var m=Sample(mid);
+                        bool accurate=Accurate(aPose,bPose,m,.5f) && Accurate(aPose,bPose,Sample(Mathf.Lerp(aTime,bTime,.25f)),.25f) && Accurate(aPose,bPose,Sample(Mathf.Lerp(aTime,bTime,.75f)),.75f);
+                        if (accurate || depth >= 8) { Append(bTime,bPose); return; }
+                        Refine(aTime,aPose,mid,m,depth+1); Refine(mid,m,bTime,bPose,depth+1);
+                    }
+                    var previous=Sample(0); Append(0,previous);
+                    for(int k=1;k<frames;k++) { float at=k*clip.length/n; var next=Sample(at); Refine((k-1)*clip.length/n,previous,at,next,0); previous=next; }
+                    sampleTimes=times.ToArray(); data=refined.ToArray(); frames=sampleTimes.Length; n=frames-1;
+                    sb.AppendLine($"  clip {id}: {frames} total samples including 60 Hz base + cut guards");
+                }
                 // loop seam: how far the last frame is from the first (positions in mm, rotation in degrees)
                 float seamPos = 0, seamRot = 0;
                 for (int tr = 0; tr < rig.trackCount; tr++)
@@ -380,7 +468,7 @@ namespace GolfArcade.EditorTools
                     seamPos = Mathf.Max(seamPos, new Vector3(data[a] - data[b], data[a + 1] - data[b + 1], data[a + 2] - data[b + 2]).magnitude);
                     seamRot = Mathf.Max(seamRot, Quaternion.Angle(new Quaternion(data[a + 3], data[a + 4], data[a + 5], data[a + 6]), new Quaternion(data[b + 3], data[b + 4], data[b + 5], data[b + 6])));
                 }
-                var ci = new ClipInfo { id = id, name = clip.name, loop = loop, length = clip.length, fps = n / clip.length, contact = slot.contact, frames = frames, offset = blob.Count,
+                var ci = new ClipInfo { id = id, name = clip.name, loop = loop, length = clip.length, fps = baseFps, contact = slot.contact, frames = frames, offset = blob.Count, times = sampleTimes,
                                         boundsMin = new[] { bmin.x, bmin.y, bmin.z }, boundsMax = new[] { bmax.x, bmax.y, bmax.z } };
                 var cb = new byte[data.Length * 4]; Buffer.BlockCopy(data, 0, cb, 0, cb.Length); blob.AddRange(cb);
                 clipInfos.Add(ci); clipFrames[id] = data;
@@ -397,7 +485,7 @@ namespace GolfArcade.EditorTools
                 float worst = 0; string where = "";
                 foreach (float u in new[] { 0f, .21f, .47f, .83f, 1f })
                 {
-                    float fk = u * (ci.frames - 1); int k = Mathf.RoundToInt(fk); float t = Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
+                    float fk = u * (ci.frames - 1); int k = Mathf.RoundToInt(fk); float t = ci.times != null ? ci.times[k] : Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
                     clip.SampleAnimation(root, t);
                     foreach (var p in sources) Pose(root, p);
                     foreach (var rp in rig.parts.Where(r => r.kind == "skin"))
@@ -421,8 +509,36 @@ namespace GolfArcade.EditorTools
             }
 
             // ---- golden samples for the Swift tests (what the live rig gives at known clip times), when asked for
-            if (!string.IsNullOrEmpty(GoldenDir)) WriteGolden(root, driver, sources, rig, clipInfos, baseName);
+            if (!string.IsNullOrEmpty(GoldenDir)) {
+                WriteGolden(root, driver, sources, rig, clipInfos, baseName);
+                WriteEmoteParity(root, driver, bones, rigid, rigidRef, baseName);
+            }
             return rig;
+        }
+
+        /// Independent Unity samples at ten times BETWEEN the 60 Hz samples. Swift checks bone rotation and rigid racket playback against these.
+        static void WriteEmoteParity(GameObject root, HeroTennisDriver driver, List<Transform> bones, List<PartSource> rigid, Matrix4x4[] rigidRef, string baseName)
+        {
+            var inv = root.transform.worldToLocalMatrix;
+            var sb = new StringBuilder("{\"samples\":["); bool first = true;
+            foreach (var entry in RigClips.Where(e => !e.loop && e.id != "serve")) {
+                var clip = driver.slots.First(s => s.id == entry.slot).clip;
+                for (int frame = 0; frame < 10; frame++) {
+                    float time = clip.length * frame / 9f;
+                    clip.SampleAnimation(root, time);
+                    if (!first) sb.Append(','); first = false;
+                    sb.Append($"{{\"clip\":\"{entry.id}\",\"time\":{time:R},\"tracks\":[");
+                    for (int tr = 0; tr < bones.Count + rigid.Count; tr++) {
+                        if (tr > 0) sb.Append(',');
+                        var m = tr < bones.Count ? FlipZ * (inv * bones[tr].localToWorldMatrix) * FlipZ
+                            : FlipZ * (inv * rigid[tr - bones.Count].renderer.transform.localToWorldMatrix) * FlipZ * rigidRef[tr - bones.Count];
+                        Decompose(m, out var t, out var q, out var s);
+                        sb.Append($"[{t.x:R},{t.y:R},{t.z:R},{q.x:R},{q.y:R},{q.z:R},{q.w:R},{s.x:R},{s.y:R},{s.z:R}]");
+                    }
+                    sb.Append("]}");
+                }
+            }
+            sb.Append("]}"); File.WriteAllText(Path.Combine(GoldenDir, baseName + "_emote_parity.json"), sb.ToString());
         }
 
         /// A few hundred vertices per part at 6 clip times per clip, straight from the CPU skinning of the live rig, so the Swift tests can check the shipped rig file against Unity itself.
@@ -435,7 +551,7 @@ namespace GolfArcade.EditorTools
                 var clip = driver.slots.First(s => s.id == RigClips.First(c => c.id == ci.id).slot).clip;
                 foreach (float u in new[] { 0f, .17f, .38f, .55f, .8f, 1f })
                 {
-                    int k = Mathf.RoundToInt(u * (ci.frames - 1)); float t = Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
+                    int k = Mathf.RoundToInt(u * (ci.frames - 1)); float t = ci.times != null ? ci.times[k] : Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
                     clip.SampleAnimation(root, t);
                     foreach (var p in sources) Pose(root, p);
                     foreach (var p in sources)

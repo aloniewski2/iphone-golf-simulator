@@ -670,3 +670,57 @@ final class LockerMirrorTests: XCTestCase {
         }
     }
 }
+
+extension LockerMirrorTests {
+    func testLobbyEmoteTracksMatchLiveUnityAtTenFrames() throws {
+        struct Samples: Decodable { var samples:[Sample] }
+        struct Sample: Decodable { var clip:String; var time:Double; var tracks:[[Float]] }
+        var maxRotation: Float = 0, maxRigidMM: Float = 0
+        for female in [false,true] {
+            let asset = try XCTUnwrap(MatchHero.asset(female:female)), data = try XCTUnwrap(asset.rig())
+            let file = repo.appendingPathComponent("work/online-lobby/emote_parity/data/MatchHero_\(female ? "Female" : "Male")_emote_parity.json")
+            let samples = try JSONDecoder().decode(Samples.self,from:Data(contentsOf:file))
+            XCTAssertEqual(samples.samples.count,60)
+            for sample in samples.samples {
+                let clip = try XCTUnwrap(data.clips[sample.clip]); XCTAssertEqual(clip.info.fps,60,accuracy:0.001)
+                let got = clip.pose(at:sample.time,loop:false)
+                XCTAssertEqual(got.count,sample.tracks.count)
+                for (i,p) in got.enumerated() {
+                    let values = sample.tracks[i], q = simd_quatf(ix:values[3],iy:values[4],iz:values[5],r:values[6])
+                    let angle = 2 * acos(min(1,abs(simd_dot(simd_normalize(p.q).vector,simd_normalize(q).vector)))) * 180 / .pi
+                    maxRotation = max(maxRotation,angle); XCTAssertLessThanOrEqual(angle,2,"\(female) \(sample.clip) t\(sample.time) track\(i)")
+                    if i >= data.info.bones.count {
+                        let error = simd_distance(p.t,SIMD3(values[0],values[1],values[2])) * 1000
+                        maxRigidMM = max(maxRigidMM,error); XCTAssertLessThan(error,5,"rigid racket follows Unity")
+                    }
+                }
+            }
+            for id in MultiplayerEmote.ids {
+                let clip = try XCTUnwrap(data.clips[id])
+                let motion = MenuMotion(kind:.clipOnce(id),lead:0,fadeIn:0.12,fadeOut:0.2)
+                for time in [0,clip.length+0.2] {
+                    let readyAtTime = try XCTUnwrap(data.clips["ready"]).pose(at:time,loop:true)
+                    for (p,r) in zip(motion.pose(data,at:time),readyAtTime) {
+                        XCTAssertLessThan(simd_distance(p.t,r.t),0.005,"\(id) READY end")
+                        let angle = 2 * acos(min(1,abs(simd_dot(p.q.vector,r.q.vector)))) * 180 / .pi
+                        XCTAssertLessThan(angle,2,"\(id) READY end rotation")
+                    }
+                }
+            }
+        }
+        let report = "P1 sampled 6 clips × 2 heroes × 10 times; max rotation \(maxRotation) degrees; max rigid translation \(maxRigidMM) mm\n"
+        try report.write(to:repo.appendingPathComponent("work/online-lobby/emote_parity/rotation-report.txt"),atomically:true,encoding:.utf8)
+    }
+    func testLobbyMotionQueuesAtMostOneAndSettlesToOffsetIdle() throws {
+        let c = CharacterModelPreview.Coordinator(); c.update(player(female:false))
+        let rig = try XCTUnwrap(HeroRig(root:try XCTUnwrap(c.hero),asset:try XCTUnwrap(MatchHero.asset(female:false))))
+        let motion = LobbyHeroMotion(rig:rig,idleOffset:0.73)
+        motion.play("scuba",at:100,now:100); motion.play("wave",at:101,now:101); motion.play("pushups",at:102,now:102)
+        XCTAssertEqual(motion.queued,"pushups")
+        motion.pose(at:motion.endTime + 0.01); XCTAssertEqual(motion.clip,"pushups"); XCTAssertNil(motion.queued)
+        motion.pose(at:motion.endTime + 0.01); XCTAssertNil(motion.clip)
+        let t = motion.endTime + 1, expected = try XCTUnwrap(rig.data.clips["ready"]).pose(at:t+0.73,loop:true)
+        motion.pose(at:t)
+        for (node,pose) in zip(rig.boneNodes,expected) { XCTAssertLessThan(simd_distance(node.simdPosition,pose.t),0.00001) }
+    }
+}

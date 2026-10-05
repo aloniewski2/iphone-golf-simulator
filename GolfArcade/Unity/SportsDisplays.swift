@@ -51,6 +51,15 @@ final class SportsDisplays: NSObject {
         guard let scene=phone?.windowScene else { return nil }
         let window=UIWindow(windowScene:scene); preview=window; return window
     }
+    private var networkOverlay: UIHostingController<MultiplayerMatchOverlay>?
+    func installMultiplayerOverlay(in root: UIViewController) {
+        guard SportsSession.shared.multiplayerMatchID != nil else { return }
+        networkOverlay?.willMove(toParent:nil); networkOverlay?.view.removeFromSuperview(); networkOverlay?.removeFromParent()
+        let host = UIHostingController(rootView:MultiplayerMatchOverlay(compact:true)); host.view.backgroundColor = .clear
+        root.addChild(host); root.view.addSubview(host.view); host.didMove(toParent:root); networkOverlay = host
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([host.view.leadingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.leadingAnchor),host.view.trailingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.trailingAnchor),host.view.topAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.topAnchor),host.view.heightAnchor.constraint(equalToConstant:150)])
+    }
     func restorePhoneControls() {
         phone?.isHidden=false; phone?.makeKey()
         if let preview {
@@ -64,13 +73,14 @@ final class SportsDisplays: NSObject {
             previewOverlay=overlay
             guard let root=preview.rootViewController else { return }
             root.addChild(overlay); root.view.addSubview(overlay.view); overlay.didMove(toParent:root)
+            installMultiplayerOverlay(in:root)
             overlay.view.translatesAutoresizingMaskIntoConstraints=false
             NSLayoutConstraint.activate([
                 overlay.view.leadingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.leadingAnchor),
                 overlay.view.trailingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.trailingAnchor),
                 overlay.view.bottomAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.bottomAnchor),
                 overlay.view.heightAnchor.constraint(equalToConstant:150)])
-        }
+        } else if let root = external?.rootViewController { installMultiplayerOverlay(in:root) }
     }
     /// Finished matches use the full native phone screen, including on-phone gameplay.
     func showMatchControls() {
@@ -89,6 +99,7 @@ final class SportsDisplays: NSObject {
     }
 
     func endPreview() {
+        networkOverlay?.willMove(toParent:nil); networkOverlay?.view.removeFromSuperview(); networkOverlay?.removeFromParent(); networkOverlay = nil
         if let child=previewOverlay { child.willMove(toParent:nil); child.view.removeFromSuperview(); child.removeFromParent() }
         previewOverlay=nil
         preview?.isHidden=true; preview=nil; phone?.makeKeyAndVisible()
@@ -170,7 +181,7 @@ struct SportsPreviewControls:View {
                 if session.sport == "tennis" { PointClipControls(session: session) }
                 if session.sport != "tennis" { Text(session.feedback).font(.caption).lineLimit(1) }
                 Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
-                Button("Menu") { session.end() }
+                Button("Menu") { if session.multiplayerMatchID != nil { TennisMenu.shared.online.select("net-leave",menu:TennisMenu.shared) } else { session.end() } }
             }
             if session.sport == "tennis" && session.ready {
                 if session.tennisPhase == "rally" { RallyAimPad(session:session).frame(width:180,height:90); TennisAbilityControls(session: session) }

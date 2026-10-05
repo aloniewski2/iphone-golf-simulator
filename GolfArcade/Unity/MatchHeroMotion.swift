@@ -75,10 +75,11 @@ import simd
 
 /// What a menu tile plays on the hero, as a function of time since the tile came up. Never the character root.
 struct MenuMotion: Equatable {
-    enum Kind: Equatable { case ready, serveOnce }
+    enum Kind: Equatable { case ready, serveOnce, clipOnce(String) }
     var kind: Kind
     /// Serve once: a beat of Ready first, then the Serve is blended in over `fadeIn`, plays through, and blends back out into the Ready loop over `fadeOut`. After that it is the Ready loop for good.
     var lead = 0.7, fadeIn = 0.2, fadeOut = 0.4
+    var idleOffset = 0.0
     /// Set when something has to take the hero off the skeleton (the loading screen's morph practice swing builds on the static Ready stance, which is frame 0 of ReadyIdle): from this time the
     /// pose eases from where it was to ReadyIdle frame 0 over `settleDuration`, so nothing pops.
     var settleFrom: Double?
@@ -90,7 +91,13 @@ struct MenuMotion: Equatable {
     private static func smooth(_ x: Double) -> Float { let c = min(1, max(0, x)); return Float(c * c * (3 - 2 * c)) }
 
     /// Seconds until only the Ready loop is left playing (0 for the Ready loop itself).
-    @MainActor func settledAfter(_ rig: RigData) -> Double { kind == .serveOnce ? lead + (rig.clips["serve"]?.length ?? 0) : 0 }
+    @MainActor func settledAfter(_ rig: RigData) -> Double {
+        switch kind {
+        case .ready: return 0
+        case .serveOnce: return lead + (rig.clips["serve"]?.length ?? 0)
+        case .clipOnce(let id): return lead + (rig.clips[id]?.length ?? 0) + fadeOut
+        }
+    }
 
     /// 0...1: how much of the Serve is in the pose at `t` (0 before it and after it, eased in over `fadeIn` and out over `fadeOut`).
     @MainActor func serveWeight(_ rig: RigData, at t: Double) -> Float {
@@ -107,9 +114,42 @@ struct MenuMotion: Equatable {
     }
     @MainActor private func playing(_ rig: RigData, at t: Double) -> [HeroTrackPose] {
         guard let ready = rig.clips["ready"] else { return [] }
-        let base = ready.pose(at: t, loop: true)
+        let base = ready.pose(at: t + idleOffset, loop: true)
+        if case .clipOnce(let id) = kind, let clip = rig.clips[id] {
+            let elapsed = t - lead
+            if elapsed < 0 { return base }
+            // Play through the last frame, then ease into the idle. Never cut the end of an emote off.
+            let weight = elapsed <= clip.length ? Self.smooth(elapsed / max(0.001, fadeIn)) : 1 - Self.smooth((elapsed - clip.length) / max(0.001, fadeOut))
+            return RigData.blend(base, clip.pose(at: elapsed, loop: false), weight)
+        }
         let w = serveWeight(rig, at: t)
         guard w > 0, let serve = rig.clips["serve"] else { return base }
         return RigData.blend(base, serve.pose(at: t - lead, loop: false), w)
+    }
+}
+
+/// A lobby hero owns one animation clock and at most one pending emote. Clock values use the lobby owner's timeline.
+@MainActor final class LobbyHeroMotion {
+    let rig: HeroRig
+    let idleOffset: Double
+    private(set) var clip: String?
+    private(set) var queued: String?
+    private(set) var startedAt = 0.0
+    init(rig: HeroRig, idleOffset: Double) { self.rig = rig; self.idleOffset = idleOffset; rig.attach() }
+    func play(_ id: String, at time: Double, now: Double) {
+        guard rig.data.clips[id] != nil else { return }
+        if clip != nil, now < endTime { queued = id; return }
+        clip = id; startedAt = min(time, now)
+    }
+    var endTime: Double { startedAt + (clip.flatMap { rig.data.clips[$0]?.length } ?? 0) + 0.2 }
+    func pose(at time: Double) {
+        if clip != nil, time >= endTime {
+            if let next = queued { startedAt = endTime; clip = next; queued = nil }
+            else { clip = nil }
+        }
+        var motion = MenuMotion.ready; var t = time
+        if let clip { motion = MenuMotion(kind: .clipOnce(clip), lead: 0, fadeIn: 0.12, fadeOut: 0.2); t = time - startedAt }
+        motion.idleOffset = idleOffset + (clip == nil ? 0 : startedAt)
+        rig.apply(motion, at: t)
     }
 }

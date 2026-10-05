@@ -72,6 +72,7 @@ extension Player {
     var shownHaircut: Int { haircut < HeroV4.offered ? haircut : (standardFemale ? 1 : 0) }
 
     var skinHex: String {
+        if let v = look["skin"], v.count == 4 { return LockerColor.hex((v[1],v[2],v[3])) }
         if let t = look["skin"]?.first { return LockerColor.ramp(LockerColor.skinStops, t) }
         return Outfit.skins[standardSkin]
     }

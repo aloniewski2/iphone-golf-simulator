@@ -8,6 +8,7 @@ import SceneKit
 struct IslandLockerScreen: View {
     let menu: TennisMenu
     let compact: Bool
+    var lobbyPanel = false
     @State private var editingName = false
     @State private var nameDraft = ""
 
@@ -19,6 +20,8 @@ struct IslandLockerScreen: View {
     }
 
     var body: some View {
+        Group {
+        if lobbyPanel { panel } else {
         GeometryReader { geo in
             ZStack {
                 IslandBackdrop(room: .locker)
@@ -30,6 +33,7 @@ struct IslandLockerScreen: View {
                 if compact { phone(geo.size) } else { tv(geo.size) }
             }
         }
+        } }
         .preferredColorScheme(.light)
         .onAppear { nameDraft = player.name }
     }
@@ -138,6 +142,7 @@ struct IslandLockerScreen: View {
             if let range = menu.lockerRange { rangePanel(range) }
             else {
                 tabs
+                if lobbyPanel && menu.lockerTab == .gear { sportToggle }
                 Group {
                     switch menu.lockerTab {
                     case .gear: gear

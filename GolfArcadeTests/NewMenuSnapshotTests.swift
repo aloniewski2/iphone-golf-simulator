@@ -1,4 +1,6 @@
 import SwiftUI
+import SceneKit
+import Darwin
 import XCTest
 @testable import GolfArcade
 
@@ -6,6 +8,96 @@ import XCTest
 /// Output folder: $MENU_SNAP_DIR (pass TEST_RUNNER_MENU_SNAP_DIR=... to xcodebuild) or $TMPDIR/tennis-menu.
 @MainActor
 final class NewMenuSnapshotTests: XCTestCase {
+    /// Online lobby style reference. Runs before any application changes and uses the live phone / TV roots.
+    func testOnlineLobbyBeforeScreens() async throws {
+        let restore = setUpPlayer(); defer { restore() }
+        let menu = TennisMenu.shared
+        for (name, screen) in [("home", MenuScreen.main), ("party", .party), ("locker-gear", .character),
+                               ("locker-customize", .character), ("map", .map), ("post-match", .results)] {
+            menu.debugShow(screen, launch: MenuLaunch(round: 0), result: MatchResult(won: true, score: "6–3", round: 0))
+            if name == "locker-customize" { menu.tap("lk-tab-customize") }
+            try await saveHosted(TennisPhoneMenu(), "\(name)-phone", phone)
+            try await saveHosted(TennisTVRoot(), "\(name)-tv", tv)
+        }
+    }
+    func testOnlineLobbyScreens() async throws {
+        let restore = setUpPlayer(); defer { restore() }
+        let menu = TennisMenu.shared, original = menu.online
+        let service = MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
+        menu.online = OnlineLobbyMenu(service:service); defer { service.leave(); menu.online = original }
+        menu.debugShow(.party)
+        try await both("party") { IslandPartyScreen(menu:menu,compact:$0) }
+        for route in [OnlineLobbyScreen.entry,.nearby,.searching] {
+            menu.debugShow(.online(route)); try await both(route.rawValue) { IslandOnlineScreen(menu:menu,route:route,compact:$0) }
+        }
+        service.mockNearby(); menu.debugShow(.online(.nearby))
+        try await both("nearby-found") { IslandOnlineScreen(menu:menu,route:.nearby,compact:$0) }
+        menu.debugShow(.online(.entry)); try await both("signin") { IslandOnlineScreen(menu:menu,route:.entry,compact:$0) }
+        menu.onlineNotice("The players need compatible versions of the game.")
+        try await both("error") { IslandOnlineScreen(menu:menu,route:.entry,compact:$0) }
+        for count in [1,2,4] {
+            try service.enableMock(count:count,player:try XCTUnwrap(menu.player)); menu.debugShow(.online(.lobby))
+            try await both("lobby-\(count)") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
+        }
+        try await both("lobby-terrace") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0,room:.terrace) }
+        for route in [OnlineLobbyScreen.emotes,.clothes,.settings,.leave] {
+            menu.debugShow(.online(route)); try await both(route.rawValue) { IslandOnlineScreen(menu:menu,route:route,compact:$0) }
+        }
+        menu.debugShow(.online(.settings)); menu.tap("net-settings-seats")
+        try await both("settings-seats") { IslandOnlineScreen(menu:menu,route:.settings,compact:$0) }
+        menu.tap("net-settings-match")
+        menu.debugShow(.online(.clothes)); menu.tap("lk-tab-customize")
+        try await both("clothes-customize") { IslandOnlineScreen(menu:menu,route:.clothes,compact:$0) }
+        menu.tap("lk-revert")
+        try service.configure(.golf,venue:"postcards"); menu.debugShow(.online(.lobby))
+        try await both("golf-four") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
+        try service.configure(.tennis,venue:"resort")
+        service.mockState(phase:.lobby,ready:true); menu.debugShow(.online(.lobby))
+        try await both("lobby-ready") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
+        service.mockState(phase:.loading); menu.debugShow(.online(.loading))
+        try await both("loading") { IslandOnlineScreen(menu:menu,route:.loading,compact:$0) }
+        service.mockState(phase:.playing,disconnected:true,spectator:true); menu.debugShow(.online(.match))
+        try await both("match-reconnecting") { compact in ZStack { IslandBackdrop(room:.terrace); MultiplayerMatchOverlay(menu:menu,compact:compact) } }
+        service.mockState(phase:.playing,paused:true,spectator:true)
+        try await both("match-paused") { compact in ZStack { IslandBackdrop(room:.terrace); MultiplayerMatchOverlay(menu:menu,compact:compact) } }
+        service.mockState(phase:.playing,spectator:true,error:"Sam left the match.")
+        try await both("match-left") { compact in ZStack { IslandBackdrop(room:.terrace); MultiplayerMatchOverlay(menu:menu,compact:compact) } }
+        service.mockState(phase:.results); menu.online.winnerID = service.localID; menu.debugShow(.online(.results))
+        try await both("results") { IslandOnlineScreen(menu:menu,route:.results,compact:$0) }
+        service.mockState(phase:.lobby,guest:true); menu.debugShow(.online(.settings))
+        try await both("settings-guest") { IslandOnlineScreen(menu:menu,route:.settings,compact:$0) }
+        service.mockState(phase:.lobby,error:"Loading took too long. Everyone is back in the lobby."); menu.debugShow(.online(.lobby));menu.onlineNotice(service.lastError!)
+        try await both("loading-timeout") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
+    }
+    func testOnlineLobbyClickRemoteAndTouchPanels() throws {
+        let restore=setUpPlayer();defer { restore() }
+        let menu=TennisMenu.shared,original=menu.online
+        let service=MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
+        menu.online=OnlineLobbyMenu(service:service);defer { service.leave();menu.online=original }
+        menu.debugShow(.party);menu.move(.down);menu.select()
+        XCTAssertEqual(menu.screen,.online(.entry));menu.back();XCTAssertEqual(menu.screen,.party)
+        menu.tap("partyOnline");XCTAssertEqual(menu.screen,.online(.entry));menu.back()
+        try service.enableMock(count:4,player:try XCTUnwrap(menu.player));menu.showOnline(.lobby)
+        menu.select();XCTAssertTrue(service.lobby!.participants[0].ready)
+        menu.move(.down);menu.select();XCTAssertEqual(menu.screen,.online(.emotes))
+        menu.select();XCTAssertEqual(service.emotes[service.localID]?.emoteID,"scuba");menu.back()
+        menu.tap("net-clothes");let previous=try XCTUnwrap(menu.player)
+        menu.tap("lk-tab-customize");menu.lockerEdit { $0.setOutfitHex("shirt","D3F34B") };menu.tap("lk-revert")
+        XCTAssertEqual(menu.player,previous);XCTAssertEqual(menu.screen,.online(.lobby))
+        menu.tap("net-settings");menu.tap("net-settings-seats")
+        let observer=service.lobby!.participants[2].id;menu.tap("net-seat-\(observer)")
+        XCTAssertEqual(service.lobby!.participants[2].seat,1)
+        menu.tap("net-settings-match");menu.tap("net-sport-golf");XCTAssertEqual(service.lobby?.sport,.golf)
+        menu.back();menu.tap("net-leave");XCTAssertEqual(menu.screen,.online(.leave));menu.back();XCTAssertEqual(menu.screen,.online(.lobby))
+        service.mockState(phase:.lobby,guest:true);menu.tap("net-settings")
+        XCTAssertEqual(menu.rows(menu.screen),[["net-settings-seats"],["back"]])
+        let before=service.lobby;menu.tap("net-sport-tennis");XCTAssertEqual(service.lobby,before)
+        menu.online.installCallbacks(menu)
+        menu.online.winnerID = service.localID
+        service.onResult?("{\"reason\":\"interrupted\",\"winner\":-1}")
+        XCTAssertNil(menu.online.winnerID,"An interrupted result cannot crown a spectator in seat -1")
+    }
+
     private var folder: URL {
         let url = ProcessInfo.processInfo.environment["MENU_SNAP_DIR"].map { URL(fileURLWithPath: $0) }
             ?? FileManager.default.temporaryDirectory.appendingPathComponent("tennis-menu")
@@ -109,5 +201,35 @@ final class NewMenuSnapshotTests: XCTestCase {
         try await saveHosted(TennisRemote(), "remote-phone", phone)
         menu.debugShow(.character)
         try await saveHosted(TennisRemote(), "remote-locker-phone", phone)
+    }
+}
+
+extension NewMenuSnapshotTests {
+    func testOnlineLobbyFourHeroesRenderedFPSAndMemory() async throws {
+        let service = MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
+        try service.enableMock(count:4,player:Player(name:"Adnan",colorIndex:0)); defer { service.leave() }
+        let peers = try XCTUnwrap(service.lobby?.participants)
+        let stage = LobbyHeroStage(participants:peers,sport:.tennis,localID:service.localID,networkTime:service.networkTime)
+        let coordinator = LobbyHeroStage.Coordinator()
+        let scn = SCNView(frame:CGRect(x:0,y:0,width:390,height:420)); scn.backgroundColor = UIColor(IslandUI.paper)
+        scn.scene = coordinator.recipe.scene; scn.pointOfView = coordinator.recipe.camera; scn.delegate = coordinator
+        scn.isPlaying = true; scn.preferredFramesPerSecond = 60; scn.antialiasingMode = .multisampling4X
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene:scene), controller = UIViewController(); controller.view = scn
+        window.rootViewController = controller; window.frame = scn.frame; window.isHidden = false
+        coordinator.view = scn; coordinator.update(stage); coordinator.start()
+        defer { coordinator.stop(); scn.isPlaying = false; window.isHidden = true }
+        try await Task.sleep(for:.seconds(5))
+        coordinator.resetMeasurement()
+        coordinator.heroes[peers[0].id]?.motion.play("scuba",at:service.networkTime,now:service.networkTime)
+        try await Task.sleep(for:.seconds(10))
+        let fps = coordinator.measuredFPS
+        var info = task_vm_info_data_t(); var size = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+        let status = withUnsafeMutablePointer(to:&info) { ptr in ptr.withMemoryRebound(to:integer_t.self,capacity:Int(size)) { task_info(mach_task_self_,task_flavor_t(TASK_VM_INFO),$0,&size) } }
+        let memory = status == KERN_SUCCESS ? Double(info.phys_footprint) / 1_048_576 : -1
+        let report = "Rendered SceneKit frames=\(coordinator.frames), seconds=\(coordinator.measuredSeconds), fps=\(fps), footprintMB=\(memory), model=\(ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? UIDevice.current.model), 4 heroes + Scuba, 4x MSAA\n"
+        let repo = URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent()
+        try report.write(to:repo.appendingPathComponent("work/online-lobby/performance.txt"),atomically:true,encoding:.utf8)
+        XCTAssertGreaterThanOrEqual(fps,55,report)
     }
 }

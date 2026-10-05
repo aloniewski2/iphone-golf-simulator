@@ -11,7 +11,10 @@ enum MenuScreen: Hashable {
     case map
     /// After a match: the result and the XP it earned.
     case postMatch
+    case online(OnlineLobbyScreen)
 }
+enum OnlineLobbyScreen: String, Hashable { case entry, nearby, searching, lobby, emotes, clothes, settings, loading, match, results, leave }
+extension MenuScreen { var isOnline: Bool { if case .online = self { return true }; return false } }
 enum MenuMove { case up, down, left, right }
 
 /// What the player chose to play.
@@ -55,6 +58,7 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio
 @MainActor @Observable
 final class TennisMenu {
     static let shared = TennisMenu()
+    var online = OnlineLobbyMenu()
 
     private(set) var screen: MenuScreen = .title
     private(set) var row = 0
@@ -146,7 +150,8 @@ final class TennisMenu {
         switch screen {
         case .title: return [["start"]]
         case .main: return [["homeContinue"], ["play"], ["character"], ["settings"]]
-        case .party: return [["partySolo"], ["back"]]
+        case .party: return [["partySolo"], ["partyOnline"], ["partyNearby"], ["back"]]
+        case .online(let route): return online.rows(route, menu: self)
         case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
         case .gameSelect: return [Sport.allCases.filter(\.playable).map { "sport-\($0.rawValue)" }, ["back"]]
         case .hub(let sport): return Self.hubItems(sport).map { [$0] } + [["back"]]
@@ -204,7 +209,7 @@ final class TennisMenu {
         case .campaign: selectedRound = min(campaign.nextRound, TennisCampaign.draw.count - 1); row = 2; column = 0   // on Play Round
         case .hub(let sport): row = progress.finishedTutorial(sport) ? 1 : 0; column = 0
         case .settings: row = 1; column = 0
-        case .character: lockerOpen()
+        case .character, .online(.clothes): lockerOpen()
         case .gameSelect: row = 0; column = 0
         case .map: row = 0; column = TennisVenueChoice.allCases.firstIndex { $0.rawValue == session.tennisVenue } ?? 0   // start on the last court
         default: row = 0; column = 0
@@ -275,6 +280,9 @@ final class TennisMenu {
 
     func select() {
         let id = focused
+        if screen.isOnline || id == "partyOnline" || id == "partyNearby" {
+            online.select(id, menu: self); return
+        }
         if session.haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
         ClubSound.play("pop", volume: 0.5)
         switch id {
@@ -385,6 +393,7 @@ final class TennisMenu {
 
     func back() {
         switch screen {
+        case .online(let route): online.back(route, menu: self)
         case .title, .loading: return
         case .main: show(.title)
         case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
@@ -542,6 +551,7 @@ final class TennisMenu {
     func openCharacterEditor() { classic = false; show(.character) }
     /// The remote's Home button: back to the main menu from anywhere that is not a match loading or a story in progress.
     func goHome() {
+        if screen.isOnline { showOnline(.leave); return }
         switch screen { case .loading, .connect, .story, .main, .title: return; default: show(.main) }
     }
 
@@ -793,7 +803,7 @@ extension TennisMenu {
         let s = session
         guard s.players.indices.contains(s.playerIndex) else { return }
         change(&s.players[s.playerIndex])
-        if save { s.savePlayers() }
+        if save && screen != .online(.clothes) { s.savePlayers() }
     }
 
     fileprivate func lockerSelect(_ id: String) {
@@ -815,12 +825,14 @@ extension TennisMenu {
         case "lk-body": lockerEdit { $0.standardFemale.toggle() }
         case "lk-hand": lockerEdit { $0.handedness = $0.handedness == .left ? .right : .left }
         case "lk-shuffle": lockerShuffle()
-        case "lk-revert": lockerRevert()
-        case "lk-done": show(.main)
+        case "lk-revert": lockerRevert(); if screen == .online(.clothes) { show(.online(.lobby)) }
+        case "lk-done":
+            if screen == .online(.clothes) { online.finishClothes(menu: self) }
+            else { show(.main) }
         case "lk-range-close": lockerCloseRange()
         default: break
         }
-        if screen == .character { lockerClampFocus() }
+        if screen == .character || screen == .online(.clothes) { lockerClampFocus() }
     }
 
     /// Sideways on a locker row: step along its swatches, or flip a two-way choice. False = not a stepping row (move focus instead).
@@ -940,3 +952,266 @@ extension TennisMenu {
 extension Array {
     subscript(safe index: Int) -> Element? { indices.contains(index) ? self[index] : nil }
 }
+
+// MARK: - Online play (the same focus grid as every Island screen)
+
+extension TennisMenu {
+    func showOnline(_ route: OnlineLobbyScreen) { show(.online(route)) }
+    func onlineNotice(_ text: String) { notice = text }
+    func openOnlineParty() { show(.party) }
+    func onlineLockerTap(_ id: String) { lockerSelect(id) }
+    func cancelOnlineClothes() { lockerRevert(); show(.online(.lobby)) }
+}
+
+struct OnlineAppleSheet: Identifiable {
+    let id = UUID()
+    let controller: UIViewController
+}
+
+@MainActor @Observable final class OnlineLobbyMenu {
+    let service: MultiplayerService
+    var sheet: OnlineAppleSheet?
+    var searchSport: MultiplayerSport = .tennis
+    var searchStarted = Date()
+    var settingsSeats = false
+    var nearbyPage = 0
+    var winnerID: String?
+    @ObservationIgnored private var operation: Task<Void, Never>?
+    @ObservationIgnored private var operationID = UUID()
+    init(service: MultiplayerService = .shared) { self.service = service }
+    var nearbyItems: [LocalMultiplayerTransport.DiscoveredLobby] { Array(service.discoveredLobbies.dropFirst(nearbyPage * 4).prefix(4)) }
+    var participants: [MultiplayerParticipant] {
+        (service.lobby?.participants ?? []).sorted { a, b in
+            if a.id == b.id { return false }; if a.id == service.localID { return true }; if b.id == service.localID { return false }
+            return a.seat == b.seat ? a.id < b.id : a.seat >= 0 && (b.seat < 0 || a.seat < b.seat)
+        }
+    }
+    func identity(_ menu: TennisMenu) {
+        guard let p = menu.player else { return }
+        service.setIdentity(name:p.name, female:p.standardFemale, left:p.handedness == .left, loadout:p.multiplayerLoadout)
+    }
+    func rows(_ route: OnlineLobbyScreen, menu: TennisMenu) -> [[String]] {
+        switch route {
+        case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["net-invite"],["back"]]
+        case .nearby: return nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-host"],["back"]]
+        case .searching: return [["net-cancel"]]
+        case .lobby: return [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
+        case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
+        case .clothes: return menu.lockerRows()
+        case .settings:
+            if settingsSeats { return (service.isOwner ? participants.map { ["net-seat-\($0.id)"] } : []) + [["net-settings-match"],["back"]] }
+            guard service.isOwner else { return [["net-settings-seats"],["back"]] }
+            let sport = service.lobby?.sport ?? .tennis
+            let venues = sport == .tennis ? ["resort","skyscraper","volcano"] : ["postcards"]
+            return [["net-sport-tennis","net-sport-golf"],venues.map { "net-venue-\($0)" }]
+                + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
+                + [["net-settings-seats"],["back"]]
+        case .loading,.match: return [["net-leave"]]
+        case .results: return (service.isOwner ? [["net-rematch"]] : []) + [["net-return"]] + (service.localSeat < 0 ? [["net-queue"]] : []) + [["net-leave"]]
+        case .leave: return [["net-stay","net-confirm-leave"]]
+        }
+    }
+    func select(_ id: String, menu: TennisMenu) {
+        do {
+            switch id {
+            case "partyOnline": identity(menu); menu.showOnline(.entry)
+            case "partyNearby": identity(menu); nearbyPage = 0; service.browseLocal(); menu.showOnline(.nearby)
+            case "net-signin":
+                run(menu) { [self] in try await service.authenticate { [weak self] vc in self?.sheet = OnlineAppleSheet(controller:vc) } }
+            case "net-tennis","net-golf":
+                identity(menu); searchSport = id == "net-golf" ? .golf : .tennis; searchStarted = Date(); menu.showOnline(.searching)
+                run(menu) { [self] in try await service.quickMatch(searchSport) }
+            case "net-cancel": cancel(); service.leave(); menu.showOnline(.entry)
+            case "net-host": identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends"); menu.showOnline(.lobby)
+            case "net-page-prev": nearbyPage = max(0,nearbyPage - 1)
+            case "net-page-next": nearbyPage = min(max(0,(service.discoveredLobbies.count - 1) / 4),nearbyPage + 1)
+            case let id where id.hasPrefix("net-join-"):
+                guard let found = service.discoveredLobbies.first(where: { $0.id == String(id.dropFirst(9)) }) else { return }
+                identity(menu); try service.joinLocal(found); searchStarted = Date(); menu.showOnline(.searching)
+            case "net-invite":
+                identity(menu)
+                if service.isNearby { menu.onlineNotice("Ask your friend to open Nearby on the same Wi-Fi."); return }
+                sheet = OnlineAppleSheet(controller:try service.inviteFriends()); menu.showOnline(.lobby)
+            case "net-find":
+                if service.isNearby { menu.onlineNotice("Your lobby is visible in Nearby. Ask a friend to join."); return }
+                run(menu) { [self] in try await service.findMorePlayers() }
+            case "net-ready": try service.setReady(!(service.lobby?.participants.first { $0.id == service.localID }?.ready ?? false))
+            case "net-start": try service.startMatch(); sync(menu)
+            case "net-emotes": menu.showOnline(.emotes)
+            case let id where id.hasPrefix("net-emote-"): try service.playEmote(String(id.dropFirst(10)))
+            case "net-clothes": menu.showOnline(.clothes)
+            case let id where id.hasPrefix("lk-"): menu.onlineLockerTap(id)
+            case "net-settings": settingsSeats = false; menu.showOnline(.settings)
+            case "net-settings-seats": settingsSeats = true; menu.showOnline(.settings)
+            case "net-settings-match": settingsSeats = false; menu.showOnline(.settings)
+            case "net-sport-tennis","net-sport-golf":
+                let sport: MultiplayerSport = id == "net-sport-golf" ? .golf : .tennis
+                try service.configure(sport,venue:sport == .golf ? "postcards" : "resort")
+                _ = menu.focus(id)
+            case let id where id.hasPrefix("net-venue-"):
+                guard let l = service.lobby else { return }; try service.configure(l.sport,venue:String(id.dropFirst(10)),sets:l.sets,games:l.games)
+            case let id where id.hasPrefix("net-sets-") || id.hasPrefix("net-games-"):
+                guard let l = service.lobby else { return }
+                try service.configure(l.sport,venue:l.venue,sets:id.hasPrefix("net-sets-") ? Int(id.dropFirst(9)) ?? 1 : l.sets,games:id.hasPrefix("net-games-") ? Int(id.dropFirst(10)) ?? 3 : l.games)
+            case let id where id.hasPrefix("net-seat-"):
+                guard let l = service.lobby, let p = l.participants.first(where: { $0.id == String(id.dropFirst(9)) }) else { return }
+                if p.seat >= 0 { try service.assignSeat(p.id,seat:-1) }
+                else if let seat = (0..<l.capacity).first(where: { n in !l.participants.contains { $0.seat == n } }) { try service.assignSeat(p.id,seat:seat) }
+                else if let outgoing = l.participants.last(where: { $0.seat >= 0 && $0.id != l.ownerID }) { try service.swapSeat(p.id,with:outgoing.id) }
+            case "net-leave": SportsDisplays.shared.showMatchControls(); menu.showOnline(.leave)
+            case "net-stay": sync(menu,force:true)
+            case "net-confirm-leave": cancel(); service.leave(); menu.openOnlineParty()
+            case "net-return","net-rematch": try service.requestReturnToLobby(); sync(menu,force:true)
+            case "net-queue": try service.queueForNextMatch(!(service.lobby?.queue.contains(service.localID) ?? false))
+            case "back": if case .online(let route) = menu.screen { back(route,menu:menu) }
+            default: break
+            }
+        } catch { menu.onlineNotice(error.localizedDescription) }
+    }
+    private func run(_ menu: TennisMenu, _ work: @escaping @MainActor () async throws -> Void) {
+        operation?.cancel(); let token = UUID(); operationID = token
+        operation = Task { @MainActor [weak self, weak menu] in
+            do { try await work(); guard let self, let menu, self.operationID == token else { return }; self.sync(menu) }
+            catch is CancellationError { }
+            catch { guard let self, let menu, self.operationID == token else { return }; if menu.screen == .online(.searching) { menu.showOnline(.entry) }; menu.onlineNotice(error.localizedDescription) }
+        }
+    }
+    private func cancel() { operationID = UUID(); operation?.cancel(); operation = nil; service.cancelSearch() }
+    func finishClothes(menu: TennisMenu) {
+        guard let p = menu.player else { return }
+        do { try service.updateLook(p.multiplayerLoadout,name:p.name,female:p.standardFemale,left:p.handedness == .left); SportsSession.shared.savePlayers(); menu.showOnline(.lobby) }
+        catch { menu.onlineNotice(error.localizedDescription) }
+    }
+    func back(_ route: OnlineLobbyScreen, menu: TennisMenu) {
+        switch route {
+        case .entry,.nearby: cancel(); service.stopBrowsing(); menu.openOnlineParty()
+        case .searching: cancel(); service.leave(); menu.showOnline(.entry)
+        case .emotes,.settings: menu.showOnline(.lobby)
+        case .clothes: if menu.lockerRange != nil { menu.onlineLockerTap("lk-range-close") } else { menu.cancelOnlineClothes() }
+        case .leave: sync(menu,force:true)
+        case .lobby,.loading,.match,.results: menu.showOnline(.leave)
+        }
+    }
+    func sync(_ menu: TennisMenu, force: Bool = false) {
+        guard let l = service.lobby else { return }
+        switch l.phase {
+        case .lobby:
+            if force || !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen) { menu.showOnline(.lobby) }
+        case .loading: if menu.screen != .online(.leave) { menu.showOnline(.loading) }
+        case .results: if menu.screen != .online(.leave) { SportsDisplays.shared.showMatchControls(); menu.showOnline(.results) }
+        case .playing: if menu.screen != .online(.leave) { menu.showOnline(.match); SportsDisplays.shared.restorePhoneControls() }
+        case .interrupted: if menu.screen != .online(.leave) { menu.showOnline(.lobby) }
+        }
+    }
+    func acceptInvite(_ menu: TennisMenu) {
+        guard service.pendingInvite != nil else { return }
+        do {
+            if service.lobby != nil || SportsSession.shared.active { service.leave(); SportsSession.shared.end() }
+            identity(menu); sheet = OnlineAppleSheet(controller:try service.acceptInvitation()); menu.showOnline(.searching)
+        } catch { menu.onlineNotice(error.localizedDescription) }
+    }
+}
+
+extension OnlineLobbyMenu {
+    func installCallbacks(_ menu: TennisMenu) {
+        service.onResult = { [weak self, weak menu] payload in
+            guard let self, let menu else { return }
+            self.winnerID = nil
+            if let data = payload.data(using:.utf8), let result = try? JSONSerialization.jsonObject(with:data) as? [String:Any], result["reason"] as? String == "complete", let seat = result["winner"] as? Int, seat >= 0 {
+                self.winnerID = self.service.lobby?.participants.first { $0.seat == seat }?.id
+            }
+            SportsDisplays.shared.showMatchControls(); SportsDisplays.shared.showMenu(); menu.showOnline(.results)
+        }
+        service.onReturnToLobby = { [weak menu] in
+            guard let menu else { return }
+            if SportsSession.shared.multiplayerMatchID != nil { SportsSession.shared.end() }
+            SportsDisplays.shared.showMatchControls(); SportsDisplays.shared.showMenu()
+            if menu.online.service.lobby != nil { menu.showOnline(.lobby) }
+        }
+    }
+}
+
+#if DEBUG
+/// An opt-in two-simulator proof driver. It uses the production focus ids and Nearby transport.
+@MainActor enum OnlineLobbyProofDriver {
+    private static var task: Task<Void,Never>?
+    private static var logURL: URL?
+    static func event(_ name: String, _ detail: String = "") {
+        guard let logURL else { return }
+        let line = "\(ProcessInfo.processInfo.systemUptime)\t\(name)\t\(detail)\n"
+        if let data=line.data(using:.utf8), let handle=try? FileHandle(forWritingTo:logURL) { _ = try? handle.seekToEnd();try? handle.write(contentsOf:data);try? handle.close() }
+    }
+    static func start(_ menu: TennisMenu, args:[String]) {
+        guard task == nil,let i=args.firstIndex(of:"--lobby-proof"),let role=args[safe:i+1] else { return }
+        let host=role == "host"
+        let output=args.firstIndex(of:"--lobby-proof-output").flatMap { args[safe:$0+1] } ?? NSTemporaryDirectory()
+        try? FileManager.default.createDirectory(atPath:output,withIntermediateDirectories:true)
+        logURL=URL(fileURLWithPath:output).appendingPathComponent("\(role).tsv");try? Data().write(to:logURL!)
+        let service=menu.online.service;service.proofRecording=true
+        task=Task { @MainActor in
+            do {
+                var p=Player(name:host ? "Adnan" : "Sam",colorIndex:host ? 0 : 1,handedness:host ? .right : .left)
+                p.standardFemale = !host;p.setSkin(host ? 0.45 : 0.2);p.setOutfitHex("shirt",host ? "FF6B4A" : "D3F34B")
+                p.setOutfitHex("shorts",host ? "101D35" : "FAF8F3")
+                SportsSession.shared.players=[p];SportsSession.shared.playerIndex=0
+                let session=SportsSession.shared
+                session.startTennis(opponent:nil,round:nil,difficulty:0.1,preview:true,sets:1,games:1)
+                for _ in 0..<1200 { if session.ready { break };try await Task.sleep(for:.milliseconds(100)) }
+                guard session.ready else { throw MultiplayerError.unavailable("Unity proof warmup did not become ready") }
+                event("warmup-ready");session.end();try await Task.sleep(for:.seconds(1))
+                menu.openOnlineParty();menu.tap("partyNearby")
+                if host { menu.tap("net-host");try service.configure(.tennis,venue:"resort",sets:1,games:1);menu.tap("net-invite");event("nearby-invitation") }
+                else {
+                    var found:LocalMultiplayerTransport.DiscoveredLobby?
+                    for _ in 0..<1200 { found=service.discoveredLobbies.first { $0.name == "Adnan" };if found != nil {break};try await Task.sleep(for:.milliseconds(100)) }
+                    menu.tap("net-join-\(try requireValue(found).id)")
+                }
+                for _ in 0..<1200 { if (service.lobby?.participants.count ?? 0) >= 2 { break };try await Task.sleep(for:.milliseconds(100)) }
+                guard (service.lobby?.participants.count ?? 0) >= 2 else { throw MultiplayerError.unavailable("Nearby proof did not connect") }
+                event("joined",service.localID)
+                if host { try service.addProofSpectators() }
+                try await Task.sleep(for:.seconds(5))
+                menu.tap("net-emotes");menu.tap(host ? "net-emote-scuba" : "net-emote-pushups");event("emote-selected",service.localID)
+                try await Task.sleep(for:.seconds(2));menu.back();menu.tap("net-clothes");menu.tap("lk-tab-customize")
+                menu.lockerEdit { $0.setOutfitHex("shirt",host ? "34435A" : "FF6B4A") }
+                event("look-preview",service.localID);try await Task.sleep(for:.seconds(1));menu.tap("lk-done");event("look-done",service.localID)
+                try await Task.sleep(for:.seconds(5))
+                if host { service.removeProofSpectator();event("mock-leave");try await Task.sleep(for:.seconds(1));try service.addProofSpectators();event("mock-rejoin") }
+                try await Task.sleep(for:.seconds(3));menu.tap("net-ready");event("ready",service.localID)
+                if args.contains("--lobby-proof-lobby-only") { event("finished"); return }
+                if host {
+                    for _ in 0..<100 { if service.lobby?.canStart == true { break };try await Task.sleep(for:.milliseconds(100)) }
+                    menu.tap("net-start");event("start")
+                }
+                var completed=0,action:Int64=1_000_000,lastTossPoint = "",lastSwingPoint = "",lastSwingAt=0.0
+                for step in 0..<1800 {
+                    if step % 100 == 0 { event("phase","\(String(describing:service.lobby?.phase)) active=\(session.active) ready=\(session.ready) \(session.status) snapshot=\(service.proofSnapshot?.prefix(500) ?? "none")") }
+                    if service.lobby?.phase == .playing,let text=service.proofSnapshot,let data=text.data(using:.utf8),let s=try JSONSerialization.jsonObject(with:data) as? [String:Any],let phase=s["phase"] as? String,let time=s["time"] as? Double,let point=s["point"] as? Int64,let contact=s["contact"] as? Int64 {
+                        let server=s["server"] as? Int ?? 0,seat=service.localSeat,phaseAt=s["phaseAt"] as? Double ?? 0
+                        var input:[String:Any]? = nil
+                        if phase == "serve",server == seat,"\(point):\(phaseAt)" != lastTossPoint,time-phaseAt > 0.4 { input=["action":"toss"];lastTossPoint="\(point):\(phaseAt)" }
+                        if phase == "toss",server == seat,"\(point):\(phaseAt)" != lastSwingPoint,time-phaseAt > 0.65 { input=["action":"swing","power":0.65,"aim":0.0];lastSwingPoint="\(point):\(phaseAt)" }
+                        if phase == "rally",contact < 6,s["receiver"] as? Int == seat,time-lastSwingAt > 0.3,let ball=s["ball"] as? [String:Double],abs((ball["z"] ?? 0)-(seat == 0 ? -12.2 : 12.2)) < 1.8 {
+                            input=["action":"swing","power":0.55,"aim":0.0];lastSwingAt=time
+                        }
+                        if var input { action+=1;input["eventID"]=action;input["point"]=point;input["contact"]=contact;input["time"]=service.networkTime;input["age"]=0;try service.sendProofInput(input);event("input",input["action"] as? String ?? "") }
+                    }
+                    if service.lobby?.phase == .results {
+                        completed+=1;event("result",String(completed));try await Task.sleep(for:.seconds(3))
+                        if completed == 1 {
+                            menu.tap("net-return");try await Task.sleep(for:.seconds(2));menu.tap("net-ready");lastTossPoint = "";lastSwingPoint = ""
+                            if host { for _ in 0..<100 { if service.lobby?.canStart == true {break};try await Task.sleep(for:.milliseconds(100)) };menu.tap("net-start");event("rematch-start") }
+                        } else { break }
+                    }
+                    if completed >= 1,service.lobby?.phase == .playing {
+                        if !host { try await Task.sleep(for:.seconds(3));service.breakProofConnection();menu.openOnlineParty();event("forced-disconnect");break }
+                    }
+                    try await Task.sleep(for:.milliseconds(100))
+                }
+                event("finished")
+            }catch { event("error",error.localizedDescription);menu.onlineNotice(error.localizedDescription) }
+        }
+    }
+    private static func requireValue<T>(_ value:T?) throws -> T { guard let value else { throw MultiplayerError.unavailable("Nearby proof host not found") };return value }
+}
+#endif
