@@ -19,30 +19,30 @@ namespace GolfArcade.Game
         public Color? Shirt, Shorts, Shoes, Hat;
     }
 
-    /// The Hero, built from the avatar kit (blender/scripts/avatar_*.py, docs/avatar-kit.md): ONE skeleton
-    /// (hero_golf.fbx, the golf clips and the clubs) and every part a skinned mesh in its own FBX, rebound to that
-    /// skeleton by bone name: the body (neck, torso, arms, hands, legs), the head and the face on it, the shirt, the
-    /// shorts, the shoes, the haircuts, the hats, the glasses. Any slot changes without touching another.
+    /// The golfer: Adnan's match hero (HERO_MAINSTAY from his newmapsandmenus branch), the grey-bodied, painted-faced
+    /// boy or girl in the white tennis kit, swinging the game's golf clips. One FBX per sex (blender/scripts/matchhero_golf.py:
+    /// "Hero/golfer_m" and "Hero/golfer_f") carries the 53-bone rig, the body, the face, the kit (polo, shorts or skort, socks,
+    /// shoes), his default hair, the four clubs and the nine golf takes, so there is nothing to assemble: this class makes a
+    /// HeroKit material for every material name the FBX uses and dresses the look on them.
     ///
-    /// Nothing is textured. A part's colours are its material roles (Hero_Skin, Hero_Hair, Hero_Top, Hero_HatA ...):
-    /// the FBX names them, this class makes one HeroKit material per role and tints it from the look, so one mesh is
-    /// every colour. Each haircut ships twice, as it is and with its crown pressed down ("Hair_Bob_Hat"): the second
-    /// is shown when a hat is worn, so a hat never meets hair standing up through it.
+    /// The kit is the extension point the earlier icon avatar had (docs/avatar-kit.md): more haircuts, hats, glasses, facial
+    /// hair, tops and bottoms are rigid or skinned parts named Hair_*, Hat_*, Glasses_*, Face_*, Top_*, Bottom_* in the FBX
+    /// (or a part FBX next to it), listed in the arrays below at the END; `Dress` shows the one that is picked. His head is not
+    /// the icon head, so until those parts are fitted to it the lists hold what the FBX has: his hair, or none.
     public sealed class HeroGolfer
     {
-        // The styles, in id order: the position is the id saved on the profile, so a new style goes at the END of its
-        // list and nothing is ever reordered. They are the kit's catalog (blender/scripts/avatar_catalog.py), by the names
-        // the FBX parts carry (Hair_<Name>, Hat_<Name>, Glasses_<Name>, Face_<Name>, Top_<Name>, Bottom_<Name>).
-        public enum Haircut { Swept, Ponytail, Bob, Long, Curly, Bald, Crop, Spikes, Afro, Bun, Pigtails, Mohawk, Quiff, Buzz, Braids }
-        public enum Headwear { None, Visor, Cap, Bucket, Beanie, Straw, Headband, Beret, Flatcap, Fedora, Cowboy, Headphones, Bandana, Tophat, Crown }
-        public static readonly string[] HaircutNames = { "Swept", "Ponytail", "Bob", "Long", "Curly", "Bald", "Crop", "Spikes", "Afro", "Bun", "Pigtails", "Mohawk", "Quiff", "Buzz", "Braids" };
-        public static readonly string[] HeadwearNames = { "None", "Visor", "Cap", "Bucket", "Beanie", "Straw", "Headband", "Beret", "Flatcap", "Fedora", "Cowboy", "Headphones", "Bandana", "Tophat", "Crown" };
-        public static readonly string[] GlassesNames = { "None", "Round", "Square", "Shades", "Aviator", "Cateye", "Wrap" };
-        public static readonly string[] FacialNames = { "None", "Beard", "Mustache", "Goatee", "Handlebar", "Stubble" };
-        public static readonly string[] TopNames = { "Polo", "Tee", "Hoodie", "Vest" };
-        public static readonly string[] BottomNames = { "Shorts", "Trousers", "Skirt" };
+        // The styles, in id order: the position is the id saved on the profile, so a new style goes at the END of its list and
+        // nothing is ever reordered. A name is the part the FBX carries (Hair_<Name>...), "Classic" being his own hair (with a scalp cap under it).
+        public enum Haircut { Classic, Bald, Short, Curly, Long, Tail }
+        public enum Headwear { None }
+        public static readonly string[] HaircutNames = { "Classic", "Bald", "Short", "Curly", "Long", "Tail" };
+        public static readonly string[] HeadwearNames = { "None" };
+        public static readonly string[] GlassesNames = { "None" };
+        public static readonly string[] FacialNames = { "None" };
+        public static readonly string[] TopNames = { "Polo" };
+        public static readonly string[] BottomNames = { "Shorts" };
         /// The cuts the game offers (all of them).
-        public const int OfferedHaircuts = 15;
+        public const int OfferedHaircuts = 6;
 
         /// A style's name as a person reads it ("Flat cap", "Cat-eye", "Top hat").
         public static string Pretty(string name) => name switch
@@ -51,79 +51,68 @@ namespace GolfArcade.Game
             _ => name,
         };
 
-        public const string Path = "Hero/hero_golf";
-        static readonly string[] Slots = { "body", "head", "shirt", "shorts", "shoes", "hair", "hats", "glasses" };
+        /// The golfer's FBX (rig, parts, clubs, clips) and, beside it, "<path>_clips" (the clips' landmarks).
+        public static string PathFor(bool female) => female ? "Hero/golfer_f" : "Hero/golfer_m";
 
         public GameObject Root { get; private set; }
         public readonly Dictionary<string, Transform> Bones = new();
         readonly List<SkinnedMeshRenderer> parts = new();
         readonly List<Material> owned = new();
-        /// One material per colour role (the names Blender gave the materials).
+        /// One material per name the FBX gave (Kit_Shirt, Face_Iris, Hair_M ...).
         readonly Dictionary<string, Material> roles = new();
         /// Each renderer's materials as the FBX gave them (the names decide what they become, every time a look is put on).
         readonly Dictionary<SkinnedMeshRenderer, Material[]> original = new();
+        bool female;
 
         static Texture2D matCap;
 
-        // role, the colour as designed (sRGB), how much the MatCap shades it (the clay look)
-        static readonly (string role, string hex, float cap)[] Designed =
+        // ---- the colours, as Adnan authored them (sRGB; his material files hold them linear)
+        const string AuthoredSkinM = "F2D0AF", AuthoredSkinF = "F3DAC9";
+        /// The painted face: each layer's colour for the boy and the girl, whether it follows the skin tone (a seam, a lip, a nostril is
+        /// the skin a shade deeper: its ratio to his authored skin is kept on any tone), and how far it sits in front of the skin (depth offset).
+        static readonly (string name, string boy, string girl, bool skin, int front)[] Decals =
         {
-            ("Hero_Skin", "E8A074", 0.60f), ("Hero_Ear", "D9826A", 0.60f), ("Hero_Blush", "F0806E", 0.60f),
-            ("Hero_Hair", "E0A43A", 0.60f), ("Hero_HairB", "C07F22", 0.60f),
-            ("Hero_Eye", "1C1412", 0.25f), ("Hero_EyeGlint", "FFFFFF", 0f), ("Hero_MouthIn", "7A1F22", 0.30f),
-            ("Hero_Tongue", "E0606A", 0.30f), ("Hero_Teeth", "F7F2EA", 0.25f),
-            ("Hero_Top", "F2F3F5", 0.60f), ("Hero_TopTrim", "1B2F6B", 0.60f), ("Hero_Accent", "F0501A", 0.60f),
-            ("Hero_Bottom", "1B2F6B", 0.60f), ("Hero_Sock", "F2F3F5", 0.60f), ("Hero_Shoe", "F4F4F6", 0.55f),
-            ("Hero_ShoeSole", "A9B0C4", 0.55f), ("Hero_Lace", "C9CFE2", 0.55f),
-            ("Hero_HatA", "1B2F6B", 0.60f), ("Hero_HatB", "F0501A", 0.60f),
-            ("Hero_Frame", "23262E", 0.45f), ("Hero_Lens", "9FD3FF", 0.45f), ("Hero_LensDark", "1B2230", 0.30f), ("Hero_Metal", "D8B45A", 0.45f),
+            ("Face_Seam", "AD7659", "B88676", true, 1), ("Face_LidCrease", "9E7C69", "957365", true, 1), ("Face_LidLower", "957365", "957365", true, 1),
+            ("Face_Nostril", "8B6555", "9B6C5D", true, 1), ("Face_Lip", "F8D1B8", "F1CABA", true, 1), ("Face_LipUp", "E2BA9C", "EAC0AD", true, 2),
+            ("Face_Sclera", "E7E3DD", "EFEDEC", false, 1), ("Face_BrowSoft", "817469", "9B8473", false, 1), ("Face_Brow", "73695F", "7C6757", false, 2),
+            ("Face_Iris", "957352", "957352", false, 2), ("Face_IrisIn", "A47E5B", "A47E5B", false, 3), ("Face_Limbal", "553C2C", "614530", false, 3),
+            ("Face_Pupil", "2C241D", "27211D", false, 4), ("Face_LidLine", "5F4B3F", "4B3F38", false, 4), ("Face_Catch", "FFFFFF", "FFFFFF", false, 5),
         };
+        static readonly string[] SkinMaterials = { "Blockout_Grey", "Base_Grey_F", "Skin_F" };
+        static readonly string[] HairMaterials = { "Hair_M", "Hair_F", "Hair_Dark" };
 
-        public static bool Available => Resources.Load<GameObject>(Path) != null;
+        public static bool Available => Resources.Load<GameObject>(PathFor(false)) != null;
 
-        /// The figure, or null when the Hero isn't in the build.
+        /// The figure, or null when the golfer isn't in the build.
         public static HeroGolfer Build(Transform parent, in HeroLook look)
         {
-            var prefab = Resources.Load<GameObject>(Path);
+            var prefab = Resources.Load<GameObject>(PathFor(look.Female));
             if (!prefab) return null;
-            var g = new HeroGolfer();
+            // the bodies are skinned by up to four bones a vertex (shoulders, wrists, the fingers); the phone's default quality blends two
+            if (QualitySettings.skinWeights != SkinWeights.FourBones && QualitySettings.skinWeights != SkinWeights.Unlimited) QualitySettings.skinWeights = SkinWeights.FourBones;
+            var g = new HeroGolfer { female = look.Female };
             g.Root = Object.Instantiate(prefab, parent);
             g.Root.name = "Golfer model";
             foreach (var t in g.Root.GetComponentsInChildren<Transform>(true)) g.Bones[t.name] = t;
-            foreach (var slot in Slots) g.AddPart(slot);
+            foreach (var smr in g.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (smr.name.StartsWith("CLUB_")) continue;
+                smr.updateWhenOffscreen = true;
+                // smooth skin and the painted face speckle with self-shadow; the face is a thin shell that casts nothing worth having
+                bool skin = smr.name is "Body" or "Face";
+                smr.receiveShadows = !skin;
+                if (smr.name == "Face") smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                g.original[smr] = smr.sharedMaterials;
+                g.parts.Add(smr);
+            }
             g.MakeMaterials();
             g.Dress(look);
             return g;
         }
 
-        void AddPart(string slot)
-        {
-            var prefab = Resources.Load<GameObject>("Hero/hero_" + slot);
-            if (!prefab) { Debug.LogWarning($"Hero part hero_{slot} is missing"); return; }
-            var inst = Object.Instantiate(prefab);
-            foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-            {
-                // Rebind to the shared skeleton by NAME, in this mesh's own bone order (each mesh lists its
-                // bones its own way; copying one renderer's array to another deforms badly).
-                var own = smr.bones;
-                var mapped = new Transform[own.Length];
-                for (int i = 0; i < own.Length; i++)
-                    mapped[i] = own[i] && Bones.TryGetValue(own[i].name, out var b) ? b : null;
-                smr.transform.SetParent(Root.transform, false);
-                smr.bones = mapped;
-                smr.rootBone = Bones.TryGetValue("Hips", out var hips) ? hips : null;
-                smr.updateWhenOffscreen = true;
-                // smooth low-poly skin and shoes speckle with self-shadow (on the face, where the shorts and the socks meet them)
-                smr.receiveShadows = slot != "body" && slot != "head" && slot != "shoes";
-                original[smr] = smr.sharedMaterials;
-                parts.Add(smr);
-            }
-            Object.Destroy(inst);
-        }
-
         static Color Hex(string hex) => ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : Color.magenta;
 
-        Material Make(string name, Color color, float capStrength)
+        Material Make(string name, Color color, float capStrength, int front = 0)
         {
             var shader = Shader.Find("GolfArcade/HeroKit");
             if (!shader) return null;
@@ -132,19 +121,22 @@ namespace GolfArcade.Game
             if (matCap) m.SetTexture("_MatCap", matCap);
             m.SetFloat("_UseAtlas", 0);
             m.SetFloat("_MatCapStrength", capStrength);
-            m.SetFloat("_Wrap", 0.6f);                      // a wide wrap: soft shadows, so a hat's underside is shaded, not black
+            m.SetFloat("_Wrap", 0.6f);                      // a wide wrap: soft shadows, no black undersides
             m.SetTexture("_Mask", Texture2D.blackTexture);
+            // the layers of the painted face sit a hair in front of the skin: a depth offset, deeper for each layer on top
+            m.SetFloat("_OffsetFactor", -front); m.SetFloat("_OffsetUnits", -front);
             owned.Add(m);
             return m;
         }
 
         void MakeMaterials()
         {
-            foreach (var (role, hex, cap) in Designed) roles[role] = Make(role, Hex(hex), cap);
-            // the blush is skin that goes pink toward the middle of its patch (the vertex colour's R is how pink): the scalp mode of the shader
-            if (roles.TryGetValue("Hero_Blush", out var blush) && blush) { blush.SetFloat("_UseScalp", 1); blush.SetFloat("_HairAmount", 1); }
-            // clear glasses have a frame and no lens (a lens would hide the eyes); the shades' lens is solid
-            if (roles.TryGetValue("Hero_Lens", out var lens) && lens) lens.SetFloat("_Clear", 1);
+            foreach (var n in SkinMaterials) roles[n] = Make(n, Hex(female ? AuthoredSkinF : AuthoredSkinM), 0.5f);
+            foreach (var n in HairMaterials) roles[n] = Make(n, Hex("3C3732"), 0.5f);
+            foreach (var (name, boy, girl, skin, front) in Decals) roles[name] = Make(name, Hex(female ? girl : boy), skin ? 0.5f : 0.15f, front);
+            foreach (var n in new[] { "Kit_Shirt", "Kit_Shorts", "Kit_Shoe", "Kit_Sock" }) roles[n] = Make(n, Hex("F7F7F7"), 0.5f);
+            foreach (var n in new[] { "Kit_ShirtTrim", "Kit_ShortsBand" }) roles[n] = Make(n, Hex("353538"), 0.5f);
+            roles["Kit_Sole"] = Make("Kit_Sole", Hex("D4D3D0"), 0.5f);
         }
 
         void Tint(string role, Color c) { if (roles.TryGetValue(role, out var m) && m) { c.a = 1f; m.color = c; } }
@@ -156,75 +148,46 @@ namespace GolfArcade.Game
         {
             var skin = look.Skin; skin.a = 1f;
             var hair = look.HairColor; hair.a = 1f;
-            Tint("Hero_Skin", skin);
-            Tint("Hero_Ear", Mix(skin, new Color(0.75f, 0.29f, 0.29f), 0.30f));
-            var blushColor = Mix(skin, new Color(0.93f, 0.31f, 0.38f), 0.45f);
-            Tint("Hero_Blush", blushColor);
-            if (roles.TryGetValue("Hero_Blush", out var blush) && blush) blush.SetColor("_ScalpSkin", skin);
-            Tint("Hero_Hair", hair);
-            Tint("Hero_HairB", hair * 0.78f);
-            // the kit as designed: a white polo, navy shorts and trim, white shoes; a picked colour replaces its own
-            Tint("Hero_Top", look.Shirt ?? Hex("F2F3F5"));
-            var navy = look.Shorts ?? Hex("1B2F6B");
-            Tint("Hero_Bottom", navy); Tint("Hero_TopTrim", navy);
-            Tint("Hero_Shoe", look.Shoes ?? Hex("F4F4F6"));
+            foreach (var n in SkinMaterials) Tint(n, skin);
+            foreach (var n in HairMaterials) Tint(n, n == "Hair_Dark" ? hair * 0.78f : hair);
+            // a seam, a lip, a nostril is the skin a shade deeper: his ratio to his own skin, on any tone
+            var authored = Hex(female ? AuthoredSkinF : AuthoredSkinM);
+            foreach (var (name, boy, girl, follows, _) in Decals)
+            {
+                if (!follows) continue;
+                var d = Hex(female ? girl : boy);
+                Tint(name, new Color(Mathf.Clamp01(skin.r * d.r / authored.r), Mathf.Clamp01(skin.g * d.g / authored.g), Mathf.Clamp01(skin.b * d.b / authored.b), 1f));
+            }
+            // the brows take the hair's colour, a shade deeper (a soft brow is that colour fading into the skin)
+            var brow = Mix(hair, Color.black, 0.45f);
+            Tint("Face_Brow", brow); Tint("Face_BrowSoft", Mix(brow, skin, 0.5f));
+            // the kit as designed: a white polo with dark trim, navy shorts with a dark band, white shoes and socks; a picked colour replaces its own
+            var shirt = look.Shirt ?? Hex("F7F7F7");
+            var shorts = look.Shorts ?? Hex("1E2B5A");
+            Tint("Kit_Shirt", shirt); Tint("Kit_ShirtTrim", TrimOf(shirt));
+            Tint("Kit_Shorts", shorts); Tint("Kit_ShortsBand", TrimOf(shorts));
+            Tint("Kit_Shoe", look.Shoes ?? Hex("F7F7F7"));
 
             int cut = Mathf.Clamp(look.Haircut, 0, HaircutNames.Length - 1);
-            int wear = Mathf.Clamp(look.Headwear, 0, HeadwearNames.Length - 1);
-            int glasses = Mathf.Clamp(look.Glasses, 0, GlassesNames.Length - 1);
-            int facial = Mathf.Clamp(look.Facial, 0, FacialNames.Length - 1);
-            int top = Mathf.Clamp(look.Top, 0, TopNames.Length - 1);
-            int bottom = Mathf.Clamp(look.Bottom, 0, BottomNames.Length - 1);
-            // the hat's colour (its own as designed until one is picked) and its band, bill and button a shade to match
-            var hatColor = look.Hat ?? HatDefault(wear);
-            Tint("Hero_HatA", hatColor); Tint("Hero_HatB", TrimOf(hatColor));
-
-            bool hatOn = wear != (int)Headwear.None;
-            string hairName = cut == (int)Haircut.Bald ? null : "Hair_" + HaircutNames[cut] + (hatOn ? "_Hat" : "");
-            string hatName = hatOn ? "Hat_" + HeadwearNames[wear] : null;
-            string glassesName = glasses > 0 ? "Glasses_" + GlassesNames[glasses] : null;
-            string facialName = facial > 0 ? "Face_" + FacialNames[facial] : null;
-            string topName = "Top_" + TopNames[top], bottomName = "Bottom_" + BottomNames[bottom];
+            string hairName = cut == (int)Haircut.Bald ? null : "Hair_" + HaircutNames[cut];
             foreach (var r in parts)
             {
-                string n = r.name;
-                if (n.StartsWith("Hair_")) r.enabled = n == hairName;
-                else if (n.StartsWith("Hat_")) r.enabled = n == hatName;
-                else if (n.StartsWith("Glasses_")) r.enabled = n == glassesName;
-                else if (n.StartsWith("Face_")) r.enabled = n == facialName;
-                else if (n.StartsWith("Top_")) r.enabled = n == topName;
-                else if (n.StartsWith("Bottom_")) r.enabled = n == bottomName;
+                if (r.name.StartsWith("Hair_")) r.enabled = r.name == hairName;
                 AssignMaterials(r);
             }
         }
 
-        /// A hat's colour as designed.
-        public static Color HatDefault(int wear) => wear switch
-        {
-            (int)Headwear.Cap => new Color(1f, 0.42f, 0.24f),
-            (int)Headwear.Bucket => new Color(0.20f, 0.50f, 0.32f),
-            (int)Headwear.Beanie => new Color(0.13f, 0.20f, 0.42f),
-            (int)Headwear.Straw => new Color(0.95f, 0.82f, 0.45f),
-            (int)Headwear.Headband => new Color(0.94f, 0.31f, 0.10f),
-            (int)Headwear.Beret => new Color(0.60f, 0.12f, 0.22f),
-            (int)Headwear.Flatcap => new Color(0.42f, 0.36f, 0.30f),
-            (int)Headwear.Fedora => new Color(0.36f, 0.27f, 0.20f),
-            (int)Headwear.Cowboy => new Color(0.65f, 0.45f, 0.27f),
-            (int)Headwear.Headphones => new Color(0.17f, 0.18f, 0.22f),
-            (int)Headwear.Bandana => new Color(0.80f, 0.15f, 0.16f),
-            (int)Headwear.Tophat => new Color(0.12f, 0.12f, 0.15f),
-            (int)Headwear.Crown => new Color(0.96f, 0.76f, 0.20f),
-            _ => new Color(0.95f, 0.95f, 0.93f),
-        };
+        /// A hat's colour as designed (there are no hats yet: the kit's place for them).
+        public static Color HatDefault(int wear) => new Color(0.95f, 0.95f, 0.93f);
 
-        /// The colour of a hat's band, bill and button: navy on a light hat, a deeper shade of the hat's own on a dark one.
-        public static Color TrimOf(Color hat)
+        /// The colour of a garment's trim or band: a deep shade of a light colour, a lighter one of a dark colour.
+        public static Color TrimOf(Color c)
         {
-            float l = hat.r * 0.2126f + hat.g * 0.7152f + hat.b * 0.0722f;
-            return l > 0.72f ? new Color(0.13f, 0.2f, 0.42f) : new Color(hat.r * 0.66f, hat.g * 0.66f, hat.b * 0.66f, 1f);
+            float l = c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f;
+            return l > 0.55f ? new Color(c.r * 0.22f, c.g * 0.22f, c.b * 0.24f, 1f) : Mix(c, Color.white, 0.4f);
         }
 
-        /// The renderer's materials, by the role names the FBX gave them.
+        /// The renderer's materials, by the names the FBX gave them.
         void AssignMaterials(SkinnedMeshRenderer r)
         {
             var mats = original.TryGetValue(r, out var o) ? (Material[])o.Clone() : r.sharedMaterials;
@@ -239,7 +202,7 @@ namespace GolfArcade.Game
             r.sharedMaterials = mats;
         }
 
-        /// Renderers of a part by name ("Hat_Visor", "Hair_Bob"...).
+        /// Renderers of a part by name ("Body", "Face", "Kit_Top", "Hair_Classic"...).
         public SkinnedMeshRenderer Part(string name) => parts.Find(r => r.name == name);
         public IReadOnlyList<SkinnedMeshRenderer> Parts => parts;
 

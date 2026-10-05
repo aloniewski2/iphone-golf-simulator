@@ -34,14 +34,32 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void TheHaircutFollowsTheBodyUntilOneIsChosen()
+        public void TheHaircutIsTheClassicCutUntilOneIsChosen()
         {
             var boy = new CharacterLook { Body = CharacterLook.Boy };
             var girl = new CharacterLook { Body = CharacterLook.Girl };
-            Assert.AreEqual(0, boy.HaircutId, "swept for a boy");
-            Assert.AreEqual(1, girl.HaircutId, "a ponytail for a girl");
-            girl.Haircut = 4;
-            Assert.AreEqual(4, girl.HaircutId, "curly, once chosen");
+            Assert.AreEqual(0, boy.HaircutId, "the classic cut for a boy");
+            Assert.AreEqual(0, girl.HaircutId, "and for a girl");
+            girl.Haircut = 1;
+            Assert.AreEqual(1, girl.HaircutId, "bald, once chosen");
+        }
+
+        [Test]
+        public void ASaveFromTheIconAvatarKitKeepsWhatStillExists()
+        {
+            // version 1 was the icon avatar kit: 15 haircuts (5 was bald), hats, glasses, beards and clothes that are no longer on the golfer
+            var curly = new CharacterLook { Version = 1, Haircut = 4, Headwear = 9, Glasses = 3, Facial = 2, Top = 2, Bottom = 1, Shirt = "112233" };
+            curly.Repair();
+            Assert.AreEqual(CharacterLook.CurrentVersion, curly.Version);
+            Assert.AreEqual(0, curly.Haircut, "a cut the match hero has not got is the classic cut");
+            Assert.AreEqual(0, curly.Headwear + curly.Glasses + curly.Facial + curly.Top + curly.Bottom, "the old hats, glasses, beards and clothes are gone");
+            Assert.AreEqual("112233", curly.Shirt, "the colours stay");
+            var bald = new CharacterLook { Version = 1, Haircut = 5 };
+            bald.Repair();
+            Assert.AreEqual(1, bald.Haircut, "bald stays bald");
+            var followed = new CharacterLook { Version = 1, Haircut = -1 };
+            followed.Repair();
+            Assert.AreEqual(-1, followed.Haircut);
         }
 
         [Test]
@@ -62,8 +80,8 @@ namespace GolfArcade.Tests
             var one = book.Add("One"); var two = book.Add("Two");
             Assert.AreEqual(CharacterLook.CurrentVersion, one.Look.Version);
             Assert.AreNotEqual(one.Look.Body, two.Look.Body, "two golfers on one phone differ");
-            two.Look.Headwear = 2;
-            Assert.AreEqual(CharacterLook.Visor, one.Look.Headwear, "changing one's look leaves the other's");
+            two.Look.Haircut = 1;
+            Assert.AreEqual(-1, one.Look.Haircut, "changing one's look leaves the other's");
         }
     }
 }

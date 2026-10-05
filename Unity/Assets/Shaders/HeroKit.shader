@@ -32,11 +32,14 @@ Shader "GolfArcade/HeroKit"
         _HairAmount ("Scalp: hair above the hairline (0 bald)", Range(0, 1)) = 1
         _Fill ("Fill light: a floor under the shadows (soft clay, no black undersides)", Range(0, 1)) = 0.10
         _Clear ("Clear: draw nothing (a clear lens: the frame shows, the eyes behind it too)", Float) = 0
+        [HideInInspector] _OffsetFactor ("Depth offset factor (painted face layers sit a hair above the skin)", Float) = 0
+        [HideInInspector] _OffsetUnits ("Depth offset units", Float) = 0
     }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
         Cull Back
+        Offset [_OffsetFactor], [_OffsetUnits]
         CGPROGRAM
         #pragma surface surf Clay fullforwardshadows vertex:vert
         #pragma target 3.5

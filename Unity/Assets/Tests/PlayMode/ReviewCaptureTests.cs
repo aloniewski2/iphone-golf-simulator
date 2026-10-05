@@ -50,16 +50,16 @@ namespace GolfArcade.PlayTests
             Assert.IsNotNull(game?.Swing?.Synthetic);
             yield return new WaitForSecondsRealtime(1.0f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/0-menu.png"));
-            // The golfer picker: a bob in auburn on the girl, then back the way it was.
+            // The golfer picker: the girl in a deep skin tone and auburn hair, then bald, then back the way it was.
             var look0 = GolferStyle.Current.Clone();
             game.OpenGolferPicker();
-            GolferStyle.Body = GolferStyle.BodyKind.Female; GolferStyle.SkinTone = 3; GolferStyle.Haircut = (int)HeroGolfer.Haircut.Bob; GolferStyle.HairTone = 3;
+            GolferStyle.Body = GolferStyle.BodyKind.Female; GolferStyle.SkinTone = 3; GolferStyle.Haircut = (int)HeroGolfer.Haircut.Classic; GolferStyle.HairTone = 3;
             game.RestyleGolfer();
             yield return new WaitForSecondsRealtime(1.2f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/0b-golfer-picker.png"));
-            GolferStyle.Haircut = (int)HeroGolfer.Haircut.Curly; GolferStyle.HairTone = 4; game.RestyleGolfer();
+            GolferStyle.Haircut = (int)HeroGolfer.Haircut.Bald; GolferStyle.HairTone = 4; game.RestyleGolfer();
             yield return new WaitForSecondsRealtime(0.6f);
-            Assert.IsNotNull(GameCapture.Save($"{Dir}/0c-golfer-curls.png"));
+            Assert.IsNotNull(GameCapture.Save($"{Dir}/0c-golfer-bald.png"));
             GolferStyle.Edit(l => { l.Body = look0.Body; l.Skin = look0.Skin; l.Haircut = look0.Haircut; l.Hair = look0.Hair; });
             game.CloseGolferPicker();
             yield return null;

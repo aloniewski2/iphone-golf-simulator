@@ -17,3 +17,6 @@ Unity/Assets/Resources/build_id.txt
 
 # Blender scripts import each other
 __pycache__/
+
+# Adnan's match hero sources are Git LFS on his branch: blender/scripts/fetch_matchheroes.sh downloads them
+blender/matchhero/*.fbx

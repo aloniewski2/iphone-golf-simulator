@@ -10,24 +10,25 @@ namespace GolfArcade.Profile
     [Serializable]
     public sealed class CharacterLook
     {
-        /// 0: not made yet (a profile saved before looks had their own record: see MigrateFrom).
-        public const int CurrentVersion = 1;
+        /// 0: not made yet (a profile saved before looks had their own record: see MigrateFrom). 2: Adnan's match heroes replaced the icon
+        /// avatar kit, whose haircuts, hats, glasses, facial hair, tops and bottoms are no longer on the golfer (see Repair).
+        public const int CurrentVersion = 2;
 
         public const int Boy = 0, Girl = 1;
-        /// How many styles the kit has of each (the lengths of HeroGolfer's lists, which a test keeps in step); saves are clamped to them.
-        public const int Haircuts = 15, Headwears = 15, GlassesStyles = 7, FacialStyles = 6, Tops = 4, Bottoms = 3;
-        /// HeroGolfer.Headwear (0 none).
-        public const int Visor = 1;
+        /// How many styles the golfer has of each (the lengths of HeroGolfer's lists, which a test keeps in step); saves are clamped to them.
+        public const int Haircuts = 6, Headwears = 1, GlassesStyles = 1, FacialStyles = 1, Tops = 1, Bottoms = 1;
+        /// The icon avatar kit's id for no hair (version 1 saves), which is Bald in the list now.
+        const int KitBald = 5;
 
         public int Version = CurrentVersion;
-        /// 0 boy, 1 girl (one body for both: the girl starts with a ponytail, and any haircut is open to either).
+        /// 0 boy, 1 girl (each has its own match hero; any haircut is open to either).
         public int Body;
         public string Skin = "";
-        /// HeroGolfer.Haircut; -1 follows the body (swept for a boy, a ponytail for a girl).
+        /// HeroGolfer.Haircut; -1 is the classic cut.
         public int Haircut = -1;
         public string Hair = "";
-        /// HeroGolfer.Headwear.
-        public int Headwear = Visor;
+        /// HeroGolfer.Headwear (0 none).
+        public int Headwear;
         /// HeroGolfer.GlassesNames (0 none), FacialNames (0 none), TopNames (0 polo), BottomNames (0 shorts).
         public int Glasses, Facial, Top, Bottom;
         /// The shirt, the shorts (and their trim), the shoes, and the cap or band.
@@ -40,8 +41,8 @@ namespace GolfArcade.Profile
 
         public bool Female => Body == Girl;
 
-        /// The haircut shown: the one chosen, or the body's own.
-        public int HaircutId => Haircut >= 0 ? Haircut : (Female ? 1 : 0);
+        /// The haircut shown: the one chosen, or the classic cut.
+        public int HaircutId => Haircut >= 0 ? Haircut : 0;
 
         /// The quick-pick colours of the shorts (and trim) and the shirt, as hex: the first of each is the kit as designed.
         /// (Here, not in GolferStyle, so the profile code stays free of engine types and testable on its own.)
@@ -71,6 +72,13 @@ namespace GolfArcade.Profile
         /// What an older or damaged save may have got wrong, put right.
         public void Repair()
         {
+            if (Version == 1)
+            {
+                // saved with the icon avatar kit: its bald head stays bald, every other cut is the classic cut, and its hats, glasses, beards and clothes are gone
+                Haircut = Haircut == KitBald ? 1 : (Haircut >= 0 ? 0 : -1);
+                Headwear = Glasses = Facial = Top = Bottom = 0;
+                Version = CurrentVersion;
+            }
             Body = Math.Max(0, Math.Min(1, Body));
             Haircut = Math.Max(-1, Math.Min(Haircuts - 1, Haircut));
             Headwear = Math.Max(0, Math.Min(Headwears - 1, Headwear));

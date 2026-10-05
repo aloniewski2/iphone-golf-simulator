@@ -673,6 +673,10 @@ namespace GolfArcade.Game
 
         void RestyleForPicker() => RestyleGolfer();
 
+        /// Hold the picker's golfer turned to an angle (as a finger dragging it would; it stays there until the picker is opened again):
+        /// the tests that look at every side of a haircut.
+        public void TurnPickerGolfer(float degrees) { spinning = true; selectSpin = degrees; }
+
         /// One frame of the locker: the camera square on (in to the head on the HAIR and HEADWEAR tabs), and the
         /// golfer turned by the drag, easing back to face it once let go.
         void UpdateSelect()

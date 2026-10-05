@@ -2,18 +2,17 @@ using UnityEditor;
 
 namespace GolfArcade.EditorTools
 {
-    /// Import settings for Adnan's modular Hero in Resources/Hero (blender/scripts/hero_golf_retarget.py
-    /// and hero_parts_export.py): one Generic rig with the golf clips, and skinned parts (body, hair
-    /// cuts, headwear, clothes, shoes) that the game rebinds to that rig by bone name. The clips are kept
-    /// uncompressed (the phone scrubs the backswing through them) and blend shapes are kept, since the
-    /// girl's shape is a blend shape ("Female") on the body and the clothes.
+    /// Import settings for the golfers in Resources/Hero (blender/scripts/matchhero_golf.py: golfer_m.fbx and
+    /// golfer_f.fbx, Adnan's match heroes with the golf clips): one Generic 53-bone rig with the body, the face,
+    /// the kit, the hair, the clubs and the clips. The clips are kept uncompressed (the phone scrubs the
+    /// backswing through them), the skin keeps up to four bones a vertex (shoulders, wrists, fingers).
     public sealed class HeroModelImporter : AssetPostprocessor
     {
         void OnPreprocessModel()
         {
             if (!assetPath.StartsWith("Assets/Resources/Hero/")) return;
             var importer = (ModelImporter)assetImporter;
-            bool clips = assetPath.EndsWith("/hero_golf.fbx");
+            bool clips = assetPath.EndsWith("/golfer_m.fbx") || assetPath.EndsWith("/golfer_f.fbx");
             importer.animationType = ModelImporterAnimationType.Generic;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.importAnimation = clips;
@@ -21,7 +20,10 @@ namespace GolfArcade.EditorTools
             importer.resampleCurves = true;
             importer.importCameras = false;
             importer.importLights = false;
-            importer.importBlendShapes = true;
+            importer.importBlendShapes = false;
+            importer.skinWeights = ModelImporterSkinWeights.Custom;
+            importer.maxBonesPerVertex = 4;
+            importer.minBoneWeight = 0.001f;
             importer.importVisibility = false;
             importer.isReadable = false;
             importer.meshCompression = ModelImporterMeshCompression.Off;

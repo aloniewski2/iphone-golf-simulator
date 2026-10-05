@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GolfArcade.Game;
 using GolfArcade.Profile;
+using GolfArcade.Shot;
 using GolfArcade.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -11,8 +12,8 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
-    /// The Hero (the avatar kit on Adnan's skeleton) as the golfer: it builds, stands at the ball, swings a clip per
-    /// club, meets the ball, and every look (girl/boy, haircut, headwear, colours) builds and shows. Frames to
+    /// The golfer (Adnan's match hero, boy and girl): it builds, stands at the ball, swings a clip per
+    /// club, meets the ball, and every look (girl/boy, haircut, skin and kit colours) builds and shows. Frames to
     /// Library/Captures/hero.
     public class HeroGolferTests
     {
@@ -103,9 +104,10 @@ namespace GolfArcade.PlayTests
             yield return new WaitForSecondsRealtime(0.9f);
             Assert.IsNotNull(GameCapture.Save($"{Dir}/2-top.png"));
             game.Swing.Synthetic.Backswing(false);
-            // the club's path to the ball: its closest approach
+            // the club's path to the ball: its closest approach (no screenshots in this loop: one takes a third of a second, which is a frame that skips the ball)
             float closest = float.MaxValue; Vector3 at = default;
-            float until = Time.realtimeSinceStartup + 1.2f; int shots = 0;
+            float until = Time.realtimeSinceStartup + 1.2f;
+            var path = new System.Text.StringBuilder(); float t0 = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup < until)
             {
                 yield return null;
@@ -113,17 +115,100 @@ namespace GolfArcade.PlayTests
                 {
                     float d = Vector3.Distance(ball, h);
                     if (d < closest) { closest = d; at = h; }
+                    path.Append($"[{Time.realtimeSinceStartup - t0:F2}s {game.Current} d={d:F2}] ");
                 }
-                if (shots == 0 && game.Current == GolfGame.State.Flight) { shots++; Assert.IsNotNull(GameCapture.Save($"{Dir}/3-impact.png")); }
             }
             Debug.Log($"HERO impact: closest approach {closest:F3} yd at {at}");
+            Debug.Log("HERO path: " + path);
             yield return WaitFor(() => game.Current is GolfGame.State.Flight or GolfGame.State.Result or GolfGame.State.Aim, 10, "the shot");
             Assert.IsNotNull(GameCapture.Save($"{Dir}/4-through.png"));
             Assert.Less(closest, 0.6f, "the clubhead comes to within 60 cm of the ball");
         }
 
-        /// Every body × haircut × headwear builds, and shows the right parts (CheckParts). Each is captured close up
-        /// from the front and from the side.
+        /// The same swing in slow motion, boy and girl, a frame every moment from the top through the ball to the finish
+        /// (Library/Captures/hero/slow-<m|f>-NN.png).
+        [UnityTest, Timeout(480000)]
+        public IEnumerator TheSwingInSlowMotion()
+        {
+            GolfGame game = null;
+            yield return Start(g => game = g);
+            var look0 = JsonUtility.ToJson(GolferStyle.Current);
+            try
+            {
+                foreach (var female in new[] { false, true })
+                {
+                    GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                    game.ChooseHoles(0); game.Play();
+                    yield return null;
+                    game.JumpToHole(7);
+                    yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the tee");
+                    yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+                    game.RestyleGolfer();
+                    yield return new WaitForSecondsRealtime(0.6f);
+                    Assert.IsNotNull(GameCapture.Save($"{Dir}/slow-{(female ? "f" : "m")}-addr.png"));
+                    game.Swing.Synthetic.Backswing(true);
+                    yield return new WaitForSecondsRealtime(1.2f);
+                    game.Swing.Synthetic.Backswing(false);
+                    Time.timeScale = 0.08f;
+                    try
+                    {
+                        for (int i = 0; i < 12; i++)
+                        {
+                            yield return new WaitForSecondsRealtime(0.25f);
+                            Assert.IsNotNull(GameCapture.Save($"{Dir}/slow-{(female ? "f" : "m")}-{i:D2}.png"));
+                        }
+                    }
+                    finally { Time.timeScale = 1f; }
+                    yield return WaitFor(() => game.Current is GolfGame.State.Result or GolfGame.State.Aim, 30, "the shot to end");
+                }
+            }
+            finally { Time.timeScale = 1f; GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
+        }
+
+        /// Every club's swing on the golfer, straight on the figure (no ball): address, the top, then slow motion through the ball
+        /// (Library/Captures/hero/club-<label>-*.png). Each starts with the club at the ball.
+        [UnityTest, Timeout(480000)]
+        public IEnumerator EveryClubSwings()
+        {
+            GolfGame game = null;
+            yield return Start(g => game = g);
+            game.ChooseHoles(0); game.Play();
+            yield return null;
+            game.JumpToHole(7);
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 45, "the tee");
+            yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "address");
+            var golfer = Golfer();
+            foreach (var (club, shortShot, label) in new[] { (GolfClub.Iron, false, "iron"), (GolfClub.Wedge, false, "wedge-half"), (GolfClub.Wedge, true, "chip"), (GolfClub.Putter, false, "putt") })
+            {
+                golfer.SetClub(club, shortShot);
+                golfer.Settle();
+                yield return new WaitForSecondsRealtime(0.4f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/club-{label}-addr.png"));
+                var head = golfer.ClubHeadWorld(); Assert.IsTrue(head.HasValue, $"{label}: a club in hand");
+                Assert.Less(Vector3.Distance(game.BallPosition, head.Value), 0.45f, $"{label}: the club starts at the ball ({Vector3.Distance(game.BallPosition, head.Value):F2} yd)");
+                golfer.ShowLoad(1f);
+                yield return new WaitForSecondsRealtime(1.2f);
+                Assert.IsNotNull(GameCapture.Save($"{Dir}/club-{label}-top.png"));
+                golfer.Strike();
+                Time.timeScale = 0.1f;
+                float closest = float.MaxValue;
+                try
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        yield return new WaitForSecondsRealtime(0.22f);
+                        if (golfer.ClubHeadWorld() is Vector3 h) closest = Mathf.Min(closest, Vector3.Distance(game.BallPosition, h));
+                        Assert.IsNotNull(GameCapture.Save($"{Dir}/club-{label}-{i}.png"));
+                    }
+                }
+                finally { Time.timeScale = 1f; }
+                golfer.Settle();
+                yield return new WaitForSecondsRealtime(0.3f);
+            }
+        }
+
+        /// Every body × haircut builds, in several skin tones, hair colours and kit colours, and shows the right parts (CheckParts).
+        /// Each is captured close up.
         [UnityTest, Timeout(600000)]
         public IEnumerator EveryLookBuilds()
         {
@@ -134,39 +219,72 @@ namespace GolfArcade.PlayTests
             {
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(0.5f);
-                var buttons = GameObject.Find("Tab HEADWEAR").GetComponent<HoldButton>();
-                buttons.Pressed();                        // in to the head
+                GameObject.Find("Tab HAIR").GetComponent<HoldButton>().Pressed();      // in to the head
                 yield return new WaitForSecondsRealtime(1.0f);
                 int n = 0;
-                // every haircut and every hat at least three times over, in different pairs (not every pairing: 15 x 15 x 2 is too many)
-                int cuts = HeroGolfer.HaircutNames.Length, wears = HeroGolfer.HeadwearNames.Length;
+                int cuts = HeroGolfer.HaircutNames.Length;
                 foreach (var female in new[] { false, true })
-                    for (int k = 0; k < Mathf.Max(cuts, wears) * 3; k++)
+                    for (int k = 0; k < cuts * 3; k++)
                     {
-                        int cut = k % cuts, wear = (k * 7 + k / cuts) % wears;
-                        {
-                            GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
-                            GolferStyle.Haircut = cut; GolferStyle.Headwear = wear;
-                            GolferStyle.Glasses = k % 3 == 0 ? 1 + k % (HeroGolfer.GlassesNames.Length - 1) : 0; GolferStyle.Facial = k % 4 == 0 ? 1 + k % (HeroGolfer.FacialNames.Length - 1) : 0;
-                            GolferStyle.Top = k % HeroGolfer.TopNames.Length; GolferStyle.Bottom = k % HeroGolfer.BottomNames.Length;
-                            GolferStyle.SkinTone = (cut + wear) % GolferStyle.SkinTones.Length; GolferStyle.HairTone = (cut * 2 + wear) % GolferStyle.HairColors.Length;
-                            game.RestyleGolfer();
-                            yield return null;
-                            var g = Golfer();
-                            Assert.IsTrue(g.IsHero);
-                            CheckParts(g.Hero, cut, wear);
-                            string name = $"{(female ? "f" : "m")}-{k:D2}-{HeroGolfer.HaircutNames[cut]}-{HeroGolfer.HeadwearNames[wear]}";
-                            yield return new WaitForSecondsRealtime(0.1f);
-                            Assert.IsNotNull(GameCapture.Save($"{Dir}/looks/{name}.png"));
-                            n++;
-                        }
+                        int cut = k % cuts;
+                        GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                        GolferStyle.Haircut = cut;
+                        GolferStyle.SkinTone = k % GolferStyle.SkinTones.Length; GolferStyle.HairTone = (k * 2 + 1) % GolferStyle.HairColors.Length;
+                        GolferStyle.Kit = k % GolferStyle.KitColors.Length; GolferStyle.Shirt = (k + 1) % GolferStyle.ShirtColors.Length;
+                        game.RestyleGolfer();
+                        yield return null;
+                        var g = Golfer();
+                        Assert.IsTrue(g.IsHero);
+                        CheckParts(g.Hero, cut);
+                        string name = $"{(female ? "f" : "m")}-{k:D2}-{HeroGolfer.HaircutNames[cut]}-skin{GolferStyle.SkinTone}";
+                        yield return new WaitForSecondsRealtime(0.1f);
+                        Assert.IsNotNull(GameCapture.Save($"{Dir}/looks/{name}.png"));
+                        n++;
                     }
                 Debug.Log($"HERO looks built: {n}");
             }
             finally { GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
         }
 
-        /// The picker: every tab draws (a frame of each to Library/Captures/locker), and a tile picks its style.
+        /// Every haircut on both bodies seen from all the way round (every 45 degrees), up close on the HAIR tab, and the whole golfer from the same
+        /// eight sides in the long cuts (the hair on the shoulders): frames in Library/Captures/hero/spin, for the eyes that look for bald spots and overlaps.
+        [UnityTest, Timeout(900000)]
+        public IEnumerator EveryHaircutFromEverySide()
+        {
+            GolfGame game = null;
+            yield return Start(g => game = g);
+            var look0 = JsonUtility.ToJson(GolferStyle.Current);
+            try
+            {
+                game.OpenGolferPicker();
+                yield return new WaitForSecondsRealtime(0.5f);
+                foreach (var close in new[] { true, false })
+                {
+                    if (close) GameObject.Find("Tab HAIR").GetComponent<HoldButton>().Pressed();      // in to the head
+                    else GameObject.Find("Tab OUTFIT").GetComponent<HoldButton>().Pressed();          // the whole golfer
+                    yield return new WaitForSecondsRealtime(1.2f);
+                    foreach (var female in new[] { false, true })
+                        for (int cut = 0; cut < HeroGolfer.HaircutNames.Length; cut++)
+                        {
+                            if (!close && HeroGolfer.HaircutNames[cut] != "Long" && HeroGolfer.HaircutNames[cut] != "Tail") continue;
+                            GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                            GolferStyle.Haircut = cut; GolferStyle.SkinTone = 2; GolferStyle.HairTone = 1;
+                            game.RestyleGolfer();
+                            for (int a = 0; a < 8; a++)
+                            {
+                                game.TurnPickerGolfer(a * 45f);
+                                yield return null; yield return null;
+                                string name = $"{(close ? "head" : "body")}-{(female ? "f" : "m")}-{HeroGolfer.HaircutNames[cut]}-{a * 45:D3}";
+                                Assert.IsNotNull(GameCapture.Save($"{Dir}/spin/{name}.png"));
+                            }
+                        }
+                }
+            }
+            finally { GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
+        }
+
+        /// The picker: every tab it has draws (a frame of each to Library/Captures/locker), a tile picks its style, and the tabs the
+        /// golfer has nothing for (glasses, hats) are not there.
         [UnityTest, Timeout(240000)]
         public IEnumerator TheLockerShowsEveryTabAndATilePicksAStyle()
         {
@@ -177,9 +295,10 @@ namespace GolfArcade.PlayTests
             {
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(0.8f);
-                foreach (var tab in new[] { "BODY", "HAIR", "FACE", "HEADWEAR", "OUTFIT", "GEAR" })
+                foreach (var (tab, kind) in new[] { ("BODY", Locker.Tab.Body), ("HAIR", Locker.Tab.Hair), ("FACE", Locker.Tab.Face), ("HEADWEAR", Locker.Tab.Headwear), ("OUTFIT", Locker.Tab.Outfit), ("GEAR", Locker.Tab.Gear) })
                 {
                     var button = GameObject.Find("Tab " + tab);
+                    if (!Locker.TabAvailable(kind)) { Assert.IsNull(button, $"no {tab} tab while there is nothing on it"); continue; }
                     Assert.IsNotNull(button, $"the {tab} tab");
                     button.GetComponent<HoldButton>().Pressed();
                     yield return new WaitForSecondsRealtime(1.0f);
@@ -187,29 +306,23 @@ namespace GolfArcade.PlayTests
                 }
                 GameObject.Find("Tab HAIR").GetComponent<HoldButton>().Pressed();
                 yield return null;
-                var tile = GameObject.Find("Tile 8 hair_afro");
-                Assert.IsNotNull(tile, "the Afro's tile");
+                var tile = GameObject.Find("Tile 1 hair_bald");
+                Assert.IsNotNull(tile, "the bald head's tile");
                 tile.GetComponent<Locker.Choice>().Clicked();
                 yield return null;
-                Assert.AreEqual((int)HeroGolfer.Haircut.Afro, GolferStyle.Haircut, "the tile picked the haircut");
-                GameObject.Find("Tab FACE").GetComponent<HoldButton>().Pressed();
-                yield return null;
-                GameObject.Find("Tile 4 glasses_aviator").GetComponent<Locker.Choice>().Clicked();
-                GameObject.Find("Tile 3 facial_goatee").GetComponent<Locker.Choice>().Clicked();
-                yield return null;
-                Assert.AreEqual(4, GolferStyle.Glasses); Assert.AreEqual(3, GolferStyle.Facial);
+                Assert.AreEqual((int)HeroGolfer.Haircut.Bald, GolferStyle.Haircut, "the tile picked the haircut");
                 yield return new WaitForSecondsRealtime(0.5f);
-                Assert.IsNotNull(GameCapture.Save("Library/Captures/locker/face-picked.png"));
+                Assert.IsNotNull(GameCapture.Save("Library/Captures/locker/hair-picked.png"));
+                Assert.IsFalse(Golfer().Hero.Part("Hair_Classic").enabled, "bald: the hair is off");
             }
             finally { GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
         }
 
-        /// The head and the face are always on; the haircut is one mesh (none when bald), and the version with its crown
-        /// pressed down when a hat is on; the hat is one mesh over it; no glasses unless chosen.
-        static void CheckParts(HeroGolfer hero, int cut, int wear)
+        /// The body, the painted face and the kit are always on; his hair is on unless the head is bald. (Nothing is worn that the golfer has not got: no hats, no glasses.)
+        static void CheckParts(HeroGolfer hero, int cut)
         {
-            string look = $"{HeroGolfer.HaircutNames[cut]} + {HeroGolfer.HeadwearNames[wear]}";
-            foreach (var slot in new[] { "Hero_Head", "Hero_Face", "Hero_BodySkin", "Shoes_Golf" })
+            string look = HeroGolfer.HaircutNames[cut];
+            foreach (var slot in new[] { "Body", "Face", "Kit_Top", "Kit_Bottom", "Kit_Sock_L", "Kit_Sock_R", "Kit_Shoe_L", "Kit_Shoe_R" })
             {
                 var part = hero.Part(slot);
                 Assert.IsNotNull(part, $"{slot} is in the build");
@@ -218,19 +331,11 @@ namespace GolfArcade.PlayTests
             bool bald = cut == (int)HeroGolfer.Haircut.Bald;
             var hairs = hero.Parts.Where(r => r.name.StartsWith("Hair_") && r.enabled).ToList();
             Assert.AreEqual(bald ? 0 : 1, hairs.Count, $"{look}: {(bald ? "no hair mesh" : "one haircut")} ({string.Join(", ", hairs.Select(h => h.name))})");
-            if (!bald) Assert.AreEqual("Hair_" + HeroGolfer.HaircutNames[cut] + (wear == 0 ? "" : "_Hat"), hairs[0].name, $"{look}: the haircut, pressed down under a hat");
-            var hats = hero.Parts.Where(r => r.name.StartsWith("Hat_") && r.enabled).ToList();
-            Assert.AreEqual(wear == 0 ? 0 : 1, hats.Count, $"{look}: the hat");
-            if (wear != 0) Assert.AreEqual("Hat_" + HeroGolfer.HeadwearNames[wear], hats[0].name);
-            int glasses = GolferStyle.Glasses, facial = GolferStyle.Facial;
-            Assert.AreEqual(glasses == 0 ? 0 : 1, hero.Parts.Count(r => r.name.StartsWith("Glasses_") && r.enabled), $"{look}: the glasses");
-            Assert.AreEqual(facial == 0 ? 0 : 1, hero.Parts.Count(r => r.name.StartsWith("Face_") && r.enabled), $"{look}: the facial hair");
-            Assert.AreEqual(1, hero.Parts.Count(r => r.name.StartsWith("Top_") && r.enabled), $"{look}: one top");
-            Assert.AreEqual(1, hero.Parts.Count(r => r.name.StartsWith("Bottom_") && r.enabled), $"{look}: one pair of bottoms");
+            if (!bald) Assert.AreEqual("Hair_" + look, hairs[0].name, $"{look}: the haircut picked");
         }
 
-        /// The style lists are the kit's catalog and what a saved look is clamped to: they must agree, and every name in
-        /// them must be a part in the build (so a new style cannot be listed before it is exported, or the reverse).
+        /// The style lists are what a saved look is clamped to: they must agree, and every style in them must be a part in the build
+        /// (so a new style cannot be listed before it is exported, or the reverse).
         [UnityTest, Timeout(120000)]
         public IEnumerator EveryStyleIsAPartInTheBuild()
         {
@@ -242,28 +347,27 @@ namespace GolfArcade.PlayTests
             Assert.AreEqual(CharacterLook.FacialStyles, HeroGolfer.FacialNames.Length);
             Assert.AreEqual(CharacterLook.Tops, HeroGolfer.TopNames.Length);
             Assert.AreEqual(CharacterLook.Bottoms, HeroGolfer.BottomNames.Length);
-            var hero = Golfer().Hero;
-            Assert.IsNotNull(hero);
-            void Has(string prefix, string[] names, bool skipFirst, string skip = null)
+            foreach (var female in new[] { false, true })
             {
-                for (int i = skipFirst ? 1 : 0; i < names.Length; i++)
-                {
-                    if (names[i] == skip) continue;
-                    Assert.IsNotNull(hero.Part(prefix + names[i]), $"{prefix}{names[i]} is in the build");
-                    if (prefix == "Hair_") Assert.IsNotNull(hero.Part(prefix + names[i] + "_Hat"), $"{prefix}{names[i]}_Hat is in the build");
-                }
+                GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                game.RestyleGolfer();
+                yield return null;
+                var hero = Golfer().Hero;
+                Assert.IsNotNull(hero);
+                for (int i = 0; i < HeroGolfer.HaircutNames.Length; i++)
+                    if (i != (int)HeroGolfer.Haircut.Bald) Assert.IsNotNull(hero.Part("Hair_" + HeroGolfer.HaircutNames[i]), $"{(female ? "her" : "his")} Hair_{HeroGolfer.HaircutNames[i]} is in the build");
+                for (int i = 1; i < HeroGolfer.HeadwearNames.Length; i++) Assert.IsNotNull(hero.Part("Hat_" + HeroGolfer.HeadwearNames[i]), $"Hat_{HeroGolfer.HeadwearNames[i]} is in the build");
+                for (int i = 1; i < HeroGolfer.GlassesNames.Length; i++) Assert.IsNotNull(hero.Part("Glasses_" + HeroGolfer.GlassesNames[i]));
+                for (int i = 1; i < HeroGolfer.FacialNames.Length; i++) Assert.IsNotNull(hero.Part("Face_" + HeroGolfer.FacialNames[i]));
             }
-            Has("Hair_", HeroGolfer.HaircutNames, false, "Bald"); Has("Hat_", HeroGolfer.HeadwearNames, true);
-            Has("Glasses_", HeroGolfer.GlassesNames, true); Has("Face_", HeroGolfer.FacialNames, true);
-            Has("Top_", HeroGolfer.TopNames, false); Has("Bottom_", HeroGolfer.BottomNames, false);
-            // and each has its picture for the locker's tile
-            foreach (var (prefix, names, none) in new[] { ("hair_", HeroGolfer.HaircutNames, "Bald"), ("hat_", HeroGolfer.HeadwearNames, "None"), ("glasses_", HeroGolfer.GlassesNames, "None"),
-                                                          ("facial_", HeroGolfer.FacialNames, "None"), ("top_", HeroGolfer.TopNames, ""), ("bottom_", HeroGolfer.BottomNames, "") })
-                foreach (var n in names)
-                {
-                    if (n == none && n != "Bald") continue;
-                    Assert.IsNotNull(Resources.Load<Texture2D>("UI/Look/" + prefix + n.ToLowerInvariant()), $"UI/Look/{prefix}{n.ToLowerInvariant()} is a picture");
-                }
+            // and each style has its picture for the locker's tile (a haircut one for the boy and one for the girl)
+            foreach (var n in HeroGolfer.HaircutNames)
+                foreach (var sex in new[] { "_m", "_f" })
+                    Assert.IsNotNull(Resources.Load<Texture2D>("UI/Look/hair_" + n.ToLowerInvariant() + sex), $"UI/Look/hair_{n.ToLowerInvariant()}{sex} is a picture");
+            foreach (var (prefix, names) in new[] { ("hat_", HeroGolfer.HeadwearNames), ("glasses_", HeroGolfer.GlassesNames), ("facial_", HeroGolfer.FacialNames) })
+                for (int i = 1; i < names.Length; i++)
+                    Assert.IsNotNull(Resources.Load<Texture2D>("UI/Look/" + prefix + names[i].ToLowerInvariant()), $"UI/Look/{prefix}{names[i].ToLowerInvariant()} is a picture");
+            Assert.IsNotNull(Resources.Load<Texture2D>("UI/Look/tab_outfit"), "the outfit tab's picture");
         }
     }
 }

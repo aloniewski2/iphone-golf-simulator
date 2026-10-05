@@ -306,14 +306,15 @@ namespace GolfArcade.Game
         bool BuildHero(Look look)
         {
             clips.Clear(); landmarks.Clear(); clubMeshes.Clear(); clubOriginal.Clear();
-            foreach (var c in Resources.LoadAll<AnimationClip>(HeroGolfer.Path))
+            string path = HeroGolfer.PathFor(look.Hero.Value.Female);
+            foreach (var c in Resources.LoadAll<AnimationClip>(path))
                 if (!c.name.StartsWith("__preview__")) clips[c.name] = c;
-            if (clips.Count == 0) return false;
-            var json = Resources.Load<TextAsset>(HeroGolfer.Path + "_clips");
+            if (clips.Count == 0) { Debug.LogWarning($"{path} has no swing clips"); return false; }
+            var json = Resources.Load<TextAsset>(path + "_clips");
             if (json)
                 foreach (var info in JsonUtility.FromJson<ClipSet>(json.text).clips) landmarks[info.name] = info;
             heroFigure = HeroGolfer.Build(transform, look.Hero.Value);
-            if (heroFigure == null) return false;
+            if (heroFigure == null) { Debug.LogWarning($"{path} is not in the build"); return false; }
             var model = modelGo = heroFigure.Root;
             model.transform.localPosition = Vector3.zero;
             baseRot = Quaternion.Euler(0, HeroYaw, 0);

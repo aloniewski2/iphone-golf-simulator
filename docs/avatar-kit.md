@@ -1,5 +1,9 @@
 # The avatar kit
 
+> **2026-10-04: retired from the game** in favour of Adnan's match heroes (`docs/matchhero-golfer.md`). The scripts here still run and its
+> FBXs and tile pictures are in `Unity/Assets/Archive/IconKit/`; its hats, glasses and hair would need refitting to his heads
+> (they are authored in the icon head's space, about 2.2 times the size).
+
 The Hero is a kit, not a model. One skeleton, one body, one head; every haircut, hat, pair of glasses, beard, top,
 pair of shorts and pair of shoes is its own small mesh made against the same head and body, so any part fits any
 avatar and a new part is one function, not a new character.

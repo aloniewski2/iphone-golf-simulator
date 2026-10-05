@@ -1,5 +1,11 @@
 # The Hero golfer
 
+> **2026-10-04: the golfer is now Adnan's match hero** (`docs/matchhero-golfer.md`): the boy and the girl in his white tennis kit,
+> one FBX each (`Resources/Hero/golfer_m.fbx`, `golfer_f.fbx`) with the 53-bone rig, body, face, kit, hair, clubs and the golf clips.
+> Everything below describes the earlier pipelines (the icon avatar kit and, before it, his scanned Hero parts), kept for reference; the
+> icon kit's FBXs are in `Unity/Assets/Archive/IconKit/`.
+
+
 > **2026-09-30: the Hero's parts are now the avatar kit** (`docs/avatar-kit.md`, `blender/scripts/avatar_*.py`):
 > a new body, head, face, haircuts, hats, glasses, shirt, shorts and shoes in the soft clay "icon avatar" style,
 > on the same skeleton and golf clips. Adnan's scanned parts, the repair scripts that mended them (`hero_head.py`,

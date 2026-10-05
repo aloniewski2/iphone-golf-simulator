@@ -64,7 +64,7 @@ namespace GolfArcade.PlayTests
             {
                 // a clean record: no mixer yet, and nothing earned by the rounds other tests have played on this profile
                 profile.Stats = new ProfileStats();
-                GolferStyle.Edit(l => { l.Body = 0; l.Skin = ""; l.Haircut = -1; l.Hair = ""; l.Headwear = 1; l.Shirt = ""; l.Shorts = ""; l.Shoes = ""; l.Hat = ""; });
+                GolferStyle.Edit(l => { l.Body = 0; l.Skin = ""; l.Haircut = -1; l.Hair = ""; l.Headwear = 0; l.Shirt = ""; l.Shorts = ""; l.Shoes = ""; l.Hat = ""; });
                 game.OpenGolferPicker();
                 yield return new WaitForSecondsRealtime(1.5f);
                 Assert.IsTrue(GameObject.Find("Locker"), "the locker is up");
@@ -87,24 +87,19 @@ namespace GolfArcade.PlayTests
                 // HAIR: the camera comes in to the head; a haircut and a colour
                 Press("Tab HAIR");
                 yield return new WaitForSecondsRealtime(1.2f);
-                Press("Tile 2 hair_bob");
-                Assert.AreEqual((int)HeroGolfer.Haircut.Bob, GolferStyle.Haircut);
+                Press("Tile 1 hair_bald");
+                Assert.AreEqual((int)HeroGolfer.Haircut.Bald, GolferStyle.Haircut);
+                Press("Tile 0 hair_classic");
+                Assert.AreEqual((int)HeroGolfer.Haircut.Classic, GolferStyle.Haircut);
+                Press("Tile 4 hair_long");
+                Assert.AreEqual((int)HeroGolfer.Haircut.Long, GolferStyle.Haircut);
                 Drag(ActiveSlider(0), 0.72f);
                 yield return new WaitForSecondsRealtime(0.4f);
                 Assert.AreNotEqual("", GolferStyle.Current.Hair);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-3-hair.png"));
 
-                // HEADWEAR: the cap, then none: the hair shows in full without it
-                Press("Tab HEADWEAR");
-                yield return new WaitForSecondsRealtime(0.5f);
-                Press("Tile 2 hat_cap");
-                Assert.AreEqual((int)HeroGolfer.Headwear.Cap, GolferStyle.Headwear);
-                yield return new WaitForSecondsRealtime(0.3f);
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-4-cap.png"));
-                Press("Tile 0 none");
-                yield return new WaitForSecondsRealtime(0.3f);
-                Assert.AreEqual(0, GolferStyle.Headwear);
-                Assert.IsNotNull(GameCapture.Save($"{Dir}/locker-5-bare.png"));
+                // (no HEADWEAR or FACE tab: the golfer has no hats, glasses or facial hair to choose from)
+                Assert.IsNull(GameObject.Find("Tab HEADWEAR")); Assert.IsNull(GameObject.Find("Tab FACE"));
 
                 // OUTFIT: the shorts in a quick pick; a padlock says what it takes; the mixer is earned
                 Press("Tab OUTFIT");

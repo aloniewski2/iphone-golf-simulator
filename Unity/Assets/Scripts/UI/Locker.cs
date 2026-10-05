@@ -9,8 +9,9 @@ using UnityEngine.UI;
 namespace GolfArcade.UI
 {
     /// Where a golfer is made. The golfer stands large above a plain studio (Game/ClubStage.cs, the "studio" scene),
-    /// turned by dragging; a white sheet below holds six tabs (Skin, Hair, Face, Hats, Outfit, Gear) and, under them,
-    /// the choices: a picture tile for every style (the kit's renders, Resources/UI/Look), colour swatches for the
+    /// turned by dragging; a white sheet below holds the tabs (Skin, Hair, Face, Hats, Outfit, Gear: Face and Hats only
+    /// while the golfer has glasses, facial hair or hats to choose) and, under them,
+    /// the choices: a picture tile for every style (renders in Resources/UI/Look), colour swatches for the
     /// quick picks and a quiet slider for any colour. Each tab scrolls, so a new style is one more tile and no layout
     /// work. The Hair, Face and Hats tabs bring the camera in to the head. The game supplies the look and receives
     /// edits through the members below; this class only draws and reports.
@@ -112,16 +113,28 @@ namespace GolfArcade.UI
 
         // ================================================================= the tabs
 
+        /// A tab is there when the golfer has something to choose on it (Face: glasses or facial hair; Hats: headwear).
+        public static bool TabAvailable(Tab tab) => tab switch
+        {
+            Tab.Face => HeroGolfer.GlassesNames.Length > 1 || HeroGolfer.FacialNames.Length > 1,
+            Tab.Headwear => HeroGolfer.HeadwearNames.Length > 1,
+            _ => true,
+        };
+
         void BuildTabs(RectTransform sheet)
         {
             string[] names = { "BODY", "HAIR", "FACE", "HEADWEAR", "OUTFIT", "GEAR" };      // (the objects' names)
             string[] words = { "Skin", "Hair", "Face", "Hats", "Outfit", "Gear" };
-            string[] pictures = { null, "hair_swept", "glasses_round", "hat_cap", "tab_outfit", null };
-            float w = (W - 2 * 24) / Tabs;
+            string[] pictures = { null, "hair_classic_m", "glasses_round", "hat_cap", "tab_outfit", null };
+            int shown = 0;
+            for (int i = 0; i < Tabs; i++) if (TabAvailable((Tab)i)) shown++;
+            float w = (W - 2 * 24) / shown;
+            int slotAt = 0;
             for (int i = 0; i < Tabs; i++)
             {
+                if (!TabAvailable((Tab)i)) continue;
                 int index = i;
-                var tab = UiKit.Panel(sheet, "Tab " + names[i], Color.clear, TL, TL, new Vector2(24 + i * w, 0), new Vector2(w, TabH), false);
+                var tab = UiKit.Panel(sheet, "Tab " + names[i], Color.clear, TL, TL, new Vector2(24 + slotAt++ * w, 0), new Vector2(w, TabH), false);
                 tab.rectTransform.pivot = TL;
                 var hold = tab.gameObject.AddComponent<HoldButton>();
                 hold.Fill = tab; hold.RestColor = Color.clear; hold.PressedColor = Color.clear;
@@ -154,6 +167,7 @@ namespace GolfArcade.UI
             {
                 bool on = i == (int)tab;
                 pages[i].parent.gameObject.SetActive(on);
+                if (!tabBars[i]) continue;      // (a tab the golfer has nothing for)
                 tabBars[i].gameObject.SetActive(on);
                 tabWords[i].color = on ? Ink : Muted;
                 var c = tabIcons[i].color; c.a = on ? 1f : 0.5f; if (tabIcons[i] is RawImage) c = new Color(1, 1, 1, c.a); tabIcons[i].color = c;
@@ -181,6 +195,7 @@ namespace GolfArcade.UI
                     skinSwatches.Choose(NearestSwatch(LockerColor.SkinStops, LockerColor.SkinPresets, skin));
                     break;
                 case Tab.Hair:
+                    haircutTiles.Retexture(look.Female ? "_f" : "_m");
                     haircutTiles.Choose(look.HaircutId);
                     haircutNames.text = HeroGolfer.Pretty(HeroGolfer.HaircutNames[Mathf.Clamp(look.HaircutId, 0, HeroGolfer.HaircutNames.Length - 1)]);
                     var hair = GolferStyle.ColorOf(look.Hair) ?? GolferStyle.HairColors[GolferStyle.DefaultHairTone];
@@ -211,10 +226,13 @@ namespace GolfArcade.UI
                     break;
                 case Tab.Outfit:
                     slotSegments.Choose(slot);
-                    topTiles.Root.gameObject.SetActive(slot == 0); bottomTiles.Root.gameObject.SetActive(slot == 1); shoeTiles.Root.gameObject.SetActive(slot == 2);
-                    topTiles.Choose(look.Top); bottomTiles.Choose(look.Bottom); shoeTiles.Choose(0);
-                    styleNames.text = slot == 0 ? HeroGolfer.Pretty(HeroGolfer.TopNames[Mathf.Clamp(look.Top, 0, HeroGolfer.TopNames.Length - 1)])
-                        : slot == 1 ? HeroGolfer.Pretty(HeroGolfer.BottomNames[Mathf.Clamp(look.Bottom, 0, HeroGolfer.BottomNames.Length - 1)]) : "Golf shoes";
+                    if (topTiles != null)
+                    {
+                        topTiles.Root.gameObject.SetActive(slot == 0); bottomTiles.Root.gameObject.SetActive(slot == 1); shoeTiles.Root.gameObject.SetActive(slot == 2);
+                        topTiles.Choose(look.Top); bottomTiles.Choose(look.Bottom); shoeTiles.Choose(0);
+                        styleNames.text = slot == 0 ? HeroGolfer.Pretty(HeroGolfer.TopNames[Mathf.Clamp(look.Top, 0, HeroGolfer.TopNames.Length - 1)])
+                            : slot == 1 ? HeroGolfer.Pretty(HeroGolfer.BottomNames[Mathf.Clamp(look.Bottom, 0, HeroGolfer.BottomNames.Length - 1)]) : "Golf shoes";
+                    }
                     string hex = slot == 0 ? look.Shirt : slot == 1 ? look.Shorts : look.Shoes;
                     var asDesigned = string.IsNullOrEmpty(hex);
                     var fallback = slot == 0 ? Cream : slot == 1 ? GolferStyle.KitColors[0] : GolferStyle.ShoesAsDesigned;
@@ -285,7 +303,7 @@ namespace GolfArcade.UI
             {
                 if (!LockedOk(Rows.Haircut, cut.ToString())) return;
                 Change?.Invoke(l => l.Haircut = cut, true);
-            });
+            }, 5, "_m");      // (his hair and hers are not the same: each cut has a picture for the boy and the girl)
             y += 24;
             Section(p, ref y, "Hair colour", out hairChip);
             var hairColours = new Color[LockerColor.HairPresets.Length];
@@ -362,18 +380,22 @@ namespace GolfArcade.UI
             float y = 8;
             slotSegments = Segment(p, ref y, new[] { "Shirt", "Shorts", "Shoes" }, i => { slot = i; Refresh(); });
             y += 34;
-            styleNames = Section(p, ref y, "Style", null);
-            float gridY = y;
-            var tops = new string[HeroGolfer.TopNames.Length];
-            for (int i = 0; i < tops.Length; i++) tops[i] = "top_" + HeroGolfer.TopNames[i].ToLowerInvariant();
-            topTiles = Grid(p, ref y, tops, i => Change?.Invoke(l => l.Top = i, true));
-            y = gridY;
-            var bottoms = new string[HeroGolfer.BottomNames.Length];
-            for (int i = 0; i < bottoms.Length; i++) bottoms[i] = "bottom_" + HeroGolfer.BottomNames[i].ToLowerInvariant();
-            bottomTiles = Grid(p, ref y, bottoms, i => Change?.Invoke(l => l.Bottom = i, true));
-            y = gridY;
-            shoeTiles = Grid(p, ref y, new[] { "shoes_golf" }, _ => { });
-            y += 24;
+            if (HeroGolfer.TopNames.Length > 1 || HeroGolfer.BottomNames.Length > 1)
+            {
+                // the styles of top and bottom, once there is more than the one kit
+                styleNames = Section(p, ref y, "Style", null);
+                float gridY = y;
+                var tops = new string[HeroGolfer.TopNames.Length];
+                for (int i = 0; i < tops.Length; i++) tops[i] = "top_" + HeroGolfer.TopNames[i].ToLowerInvariant();
+                topTiles = Grid(p, ref y, tops, i => Change?.Invoke(l => l.Top = i, true));
+                y = gridY;
+                var bottoms = new string[HeroGolfer.BottomNames.Length];
+                for (int i = 0; i < bottoms.Length; i++) bottoms[i] = "bottom_" + HeroGolfer.BottomNames[i].ToLowerInvariant();
+                bottomTiles = Grid(p, ref y, bottoms, i => Change?.Invoke(l => l.Bottom = i, true));
+                y = gridY;
+                shoeTiles = Grid(p, ref y, new[] { "shoes_golf" }, _ => { });
+                y += 24;
+            }
             Section(p, ref y, "Colour", out outfitChip);
             outfitName = Caption(p, ref y, "");
             outfitHue = Slider.Make(p, 0, y, Inner, null, null); outfitHue.Rainbow = true;
@@ -450,6 +472,8 @@ namespace GolfArcade.UI
         {
             var chosen = Section(page, ref y, label, null);
             var row = Swatches.Make(page, ref y, colors, 78, true, faces);
+            // each is findable by what it is ("BALL Gold", "TRAIL Fire", "CLUBS Classic"): the tests press them, and so would anything reading the screen
+            for (int i = 0; i < row.Holds.Length && i < names.Length; i++) if (row.Holds[i]) row.Holds[i].gameObject.name = $"{label.ToUpperInvariant()} {names[i]}";
             parts = new RowParts { Holds = row.Holds, Row = row, Chosen = chosen, Names = names };
             return row.Holds;
         }
@@ -605,16 +629,26 @@ namespace GolfArcade.UI
         // ---- a grid of picture tiles; the chosen one is ringed
         sealed class TileGrid
         {
-            public RectTransform Root; Image[] rings, fills;
+            public RectTransform Root; Image[] rings, fills; RawImage[] pics; string[] bases;
             public void Choose(int index)
             {
                 for (int i = 0; i < rings.Length; i++) { rings[i].enabled = i == index; fills[i].color = i == index ? TileOn : Tile; }
             }
-            public static TileGrid Make(RectTransform p, ref float y, string[] textures, Action<int> pick, int cols)
+            /// The pictures again for another golfer ("_m", "_f": a style that looks different on the boy and the girl, like hair).
+            public void Retexture(string suffix)
+            {
+                for (int i = 0; i < pics.Length; i++)
+                {
+                    if (!pics[i]) continue;
+                    pics[i].texture = Resources.Load<Texture2D>("UI/Look/" + bases[i] + suffix);
+                    pics[i].color = pics[i].texture ? Color.white : new Color(1, 1, 1, 0);
+                }
+            }
+            public static TileGrid Make(RectTransform p, ref float y, string[] textures, Action<int> pick, int cols, string suffix = "")
             {
                 const float gap = 20;
                 float size = (Inner - (cols - 1) * gap) / cols;
-                var g = new TileGrid { rings = new Image[textures.Length], fills = new Image[textures.Length] };
+                var g = new TileGrid { rings = new Image[textures.Length], fills = new Image[textures.Length], pics = new RawImage[textures.Length], bases = textures };
                 g.Root = Rect(p, "Tiles", TL, TL, Vector2.zero, Vector2.zero); g.Root.pivot = TL;
                 int rows = (textures.Length + cols - 1) / cols;
                 g.Root.anchoredPosition = new Vector2(0, -y); g.Root.sizeDelta = new Vector2(Inner, rows * (size + gap) - gap);
@@ -625,11 +659,12 @@ namespace GolfArcade.UI
                     var ring = Box(g.Root, "Ring " + i, Accent, size + 10, size + 10, x - 5, yy - 5); ring.raycastTarget = false; ring.enabled = false; g.rings[i] = ring;
                     var tile = Box(g.Root, "Tile " + i + " " + (textures[i] ?? "none"), Tile, size, size, x, yy); g.fills[i] = tile;
                     tile.gameObject.AddComponent<Choice>().Clicked = () => pick(index);
-                    if (textures[i] != null && Resources.Load<Texture2D>("UI/Look/" + textures[i]))
+                    if (textures[i] != null)
                     {
-                        var pic = Picture(tile.transform, "Picture", textures[i], 0);
+                        var pic = Picture(tile.transform, "Picture", textures[i] + suffix, 0);
                         pic.rectTransform.anchorMin = Vector2.zero; pic.rectTransform.anchorMax = Vector2.one;
                         pic.rectTransform.offsetMin = new Vector2(8, 8); pic.rectTransform.offsetMax = new Vector2(-8, -8);
+                        g.pics[i] = pic;
                     }
                     else DrawNone(tile.transform, size);
                 }
@@ -646,7 +681,7 @@ namespace GolfArcade.UI
             }
         }
 
-        static TileGrid Grid(RectTransform p, ref float y, string[] textures, Action<int> pick, int cols = 5) => TileGrid.Make(p, ref y, textures, pick, cols);
+        static TileGrid Grid(RectTransform p, ref float y, string[] textures, Action<int> pick, int cols = 5, string suffix = "") => TileGrid.Make(p, ref y, textures, pick, cols, suffix);
 
         // ---- a segmented control: a few words in one rounded bar, the chosen one filled
         sealed class Segments

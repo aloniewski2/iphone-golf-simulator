@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GolfArcade.Game
 {
-    /// Who the player looks like: Adnan's Hero (HeroGolfer) dressed by a CharacterLook — boy or girl, skin,
+    /// Who the player looks like: Adnan's match hero (HeroGolfer) dressed by a CharacterLook — boy or girl, skin,
     /// haircut and hair colour, headwear, and the colours of the shirt, shorts, shoes and cap. The device's
     /// own look is kept in PlayerPrefs; with more than one golfer on the phone the round `Wear`s the look of
     /// whoever is up (their profile's), and the locker edits whichever is on. The older V4 figure (the
@@ -29,8 +29,8 @@ namespace GolfArcade.Game
             Rgb(28, 24, 22), Rgb(62, 40, 26), Rgb(118, 78, 48), Rgb(152, 62, 34), Rgb(222, 190, 122), Rgb(204, 206, 212),
         };
         public static readonly string[] HairColorNames = { "Black", "Dark brown", "Brown", "Auburn", "Blonde", "Silver" };
-        /// Blonde, as the Hero is designed.
-        public const int DefaultHairTone = 4;
+        /// Dark brown, as his match heroes are designed.
+        public const int DefaultHairTone = 1;
 
         /// The shorts (and their trim) and the shirt: the quick picks; the first of each is the kit as designed.
         public static readonly string[] KitNames = { "Navy", "Teal", "Coral", "Crimson", "Forest", "Charcoal" };
@@ -217,7 +217,7 @@ namespace GolfArcade.Game
         public enum HairKind { Short, Long, Curly, None }
         public static readonly string[] HairNames = { "Short", "Bob", "Curls", "None" };
         /// The V4 figure's hair mesh for a Hero haircut: none for a bare head, a cut of its own otherwise.
-        public static string HairMesh => Current.HaircutId switch { 5 => null, 2 or 3 or 10 or 14 => "HAIR_LONG", 4 or 8 => "HAIR_CURLY", _ => "HAIR_SHORT" };
+        public static string HairMesh => Current.HaircutId switch { 1 => null, _ => Current.Female ? "HAIR_LONG" : "HAIR_SHORT" };
         public static Color? ShirtColor => ColorOf(Current.Shirt) ?? Rgb(62, 62, 66);
         public static Color? TrousersColor => ColorOf(Current.Shorts) ?? Rgb(56, 56, 60);
         /// Resources path of the V4 model for the body.
@@ -231,8 +231,8 @@ namespace GolfArcade.Game
             l.Haircut = rng.Next(HeroGolfer.OfferedHaircuts);
             l.Hair = HexOf(HairColors[rng.Next(HairColors.Length)]);
             l.Headwear = rng.Next(HeroGolfer.HeadwearNames.Length);
-            l.Glasses = rng.NextDouble() < 0.3 ? rng.Next(1, HeroGolfer.GlassesNames.Length) : 0;
-            l.Facial = rng.NextDouble() < 0.25 ? rng.Next(1, HeroGolfer.FacialNames.Length) : 0;
+            l.Glasses = HeroGolfer.GlassesNames.Length > 1 && rng.NextDouble() < 0.3 ? rng.Next(1, HeroGolfer.GlassesNames.Length) : 0;
+            l.Facial = HeroGolfer.FacialNames.Length > 1 && rng.NextDouble() < 0.25 ? rng.Next(1, HeroGolfer.FacialNames.Length) : 0;
             l.Top = rng.Next(HeroGolfer.TopNames.Length); l.Bottom = rng.Next(HeroGolfer.BottomNames.Length);
             int Pick() { for (int tries = 0; tries < 12; tries++) { int i = rng.Next(KitColors.Length); if (outfitOpen(i)) return i; } return 0; }
             l.Shirt = HexOf(ShirtColors[Pick()]); l.Shorts = HexOf(KitColors[Pick()]);
