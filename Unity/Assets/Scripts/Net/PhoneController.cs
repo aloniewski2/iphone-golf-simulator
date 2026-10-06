@@ -27,6 +27,11 @@ namespace GolfArcade.Net
         PhoneMotionSource gyro;
         ushort sequence;
         byte lastPhase;
+        /// When the network could not be opened (to try again), when this screen started
+        /// looking, and when the Mac last answered.
+        float socketsFailedAt = -1f, lookingSince, lastLinkedAt = -99f;
+        /// A name typed for the Mac, being looked up off the main thread.
+        volatile string resolving; volatile string resolvedHost, resolveError;
 
         HoldButton aimLeft, aimRight, clubUp, clubDown, connect, exit;
         Text title, status, hint;
@@ -48,20 +53,44 @@ namespace GolfArcade.Net
             gyro = new PhoneMotionSource();
             gyro.Start();
             BuildUi();
-            try
-            {
-                socket = new UdpClient(AddressFamily.InterNetwork);
-                socket.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
-                beaconListener = new UdpClient(AddressFamily.InterNetwork);
-                beaconListener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                beaconListener.Client.Bind(new IPEndPoint(IPAddress.Any, ControllerProtocol.BeaconPort));
-                running = true;
-                ackThread = new Thread(ReceiveAcks) { IsBackground = true }; ackThread.Start();
-                beaconThread = new Thread(ListenForBeacon) { IsBackground = true }; beaconThread.Start();
-            }
-            catch (Exception e) { status.text = $"Network unavailable: {e.Message}"; }
+            lookingSince = Time.unscaledTime;
+            OpenSockets();
             string remembered = PlayerPrefs.GetString("display.address", "");
             if (!string.IsNullOrEmpty(remembered)) { address.text = remembered; TryConnect(remembered); }
+        }
+
+        /// The sockets to the Mac: one to send on (and hear it answer), one to hear its beacon.
+        /// If the network won't open (no Wi-Fi yet), it is tried again every few seconds.
+        void OpenSockets()
+        {
+            try
+            {
+                socket ??= NewSocket(0, false);
+                beaconListener ??= NewSocket(ControllerProtocol.BeaconPort, true);
+                if (!running)
+                {
+                    running = true;
+                    ackThread = new Thread(ReceiveAcks) { IsBackground = true }; ackThread.Start();
+                    beaconThread = new Thread(ListenForBeacon) { IsBackground = true }; beaconThread.Start();
+                }
+                socketsFailedAt = -1f;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Phone controller: the network won't open: {e.Message}");
+                try { socket?.Close(); } catch { }
+                try { beaconListener?.Close(); } catch { }
+                socket = beaconListener = null;
+                socketsFailedAt = Time.unscaledTime;
+            }
+        }
+
+        static UdpClient NewSocket(int port, bool shared)
+        {
+            var u = new UdpClient(AddressFamily.InterNetwork);
+            if (shared) u.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            u.Client.Bind(new IPEndPoint(IPAddress.Any, port));
+            return u;
         }
 
         void OnDestroy()
@@ -93,10 +122,10 @@ namespace GolfArcade.Net
             var text = UiKit.Label(field.transform, "Text", 40, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 0), new Vector2(480, 90));
             text.fontStyle = FontStyle.Normal; text.supportRichText = false;
             var placeholder = UiKit.Label(field.transform, "Placeholder", 40, TextAnchor.MiddleLeft, new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 0), new Vector2(480, 90));
-            placeholder.text = "Mac address, e.g. 192.168.1.20"; placeholder.color = new Color(1, 1, 1, 0.4f); placeholder.fontStyle = FontStyle.Normal;
+            placeholder.text = "Mac address or name, e.g. 192.168.1.20"; placeholder.color = new Color(1, 1, 1, 0.4f); placeholder.fontStyle = FontStyle.Normal;
             address.textComponent = text; address.placeholder = placeholder;
-            address.keyboardType = TouchScreenKeyboardType.DecimalPad;
-            address.characterLimit = 21;
+            address.keyboardType = TouchScreenKeyboardType.URL;
+            address.characterLimit = 64;
             connect = UiKit.Button(root, "CONNECT", new Vector2(0.5f, 1), new Vector2(330, -405), new Vector2(260, 90), 34);
             connect.Pressed = () => { Haptics.Tick(); TryConnect(address.text); };
 
@@ -120,16 +149,32 @@ namespace GolfArcade.Net
             exit.Pressed = () => UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
 
+        /// The Mac by its address (192.168.1.20) or its name (my-mac.local), which is looked up
+        /// without holding the screen.
         void TryConnect(string host)
         {
             host = (host ?? "").Trim();
+            if (host.Length == 0) return;
             if (IPAddress.TryParse(host, out var ip))
             {
                 display = new IPEndPoint(ip, ControllerProtocol.StatePort);
                 PlayerPrefs.SetString("display.address", host);
                 PlayerPrefs.Save();
+                return;
             }
-            else status.text = "That is not an address";
+            if (resolving != null) return;
+            resolving = host; resolveError = null;
+            new Thread(() =>
+            {
+                try
+                {
+                    foreach (var a in Dns.GetHostAddresses(host))
+                        if (a.AddressFamily == AddressFamily.InterNetwork) { resolvedHost = a.ToString(); break; }
+                    if (resolvedHost == null) resolveError = $"Can't find “{host}” on this Wi-Fi";
+                }
+                catch (Exception) { resolveError = $"Can't find “{host}” on this Wi-Fi"; }
+                finally { resolving = null; }
+            }) { IsBackground = true }.Start();
         }
 
         void ListenForBeacon()
@@ -161,10 +206,26 @@ namespace GolfArcade.Net
 
         void Update()
         {
-            // A beacon names the display; take it unless the player typed one.
-            if (discoveredHost != null && (display == null || PlayerPrefs.GetString("display.address", "") == ""))
+            // the network, if it wouldn't open: again every three seconds
+            if (socketsFailedAt >= 0 && Time.unscaledTime - socketsFailedAt > 3f) OpenSockets();
+            // a name typed for the Mac, looked up
+            if (resolvedHost != null)
             {
-                display = new IPEndPoint(IPAddress.Parse(discoveredHost), discoveredPort);
+                display = new IPEndPoint(IPAddress.Parse(resolvedHost), ControllerProtocol.StatePort);
+                PlayerPrefs.SetString("display.address", address.text.Trim()); PlayerPrefs.Save();
+                resolvedHost = null;
+            }
+            // A beacon names the display: take it unless the player typed one — or the one they
+            // typed hasn't answered for a while (the Mac has a new address on the Wi-Fi).
+            if (discoveredHost != null)
+            {
+                bool typed = PlayerPrefs.GetString("display.address", "") != "";
+                bool lost = Time.unscaledTime - lastLinkedAt > 4f;
+                if (display == null || !typed || (lost && discoveredHost != display.Address.ToString()))
+                {
+                    if (IPAddress.TryParse(discoveredHost, out var found)) display = new IPEndPoint(found, discoveredPort);
+                    if (typed && lost) { PlayerPrefs.SetString("display.address", ""); PlayerPrefs.Save(); }
+                }
                 discoveredHost = null;
             }
 
@@ -196,9 +257,15 @@ namespace GolfArcade.Net
             lock (ackLock) { a = ack; fresh = ackDirty; ackDirty = false; }
             if (fresh) ackAt = Time.unscaledTimeAsDouble;
             bool linked = Time.unscaledTimeAsDouble - ackAt < NetworkMotionSource.ConnectionTimeout;
+            if (linked) lastLinkedAt = Time.unscaledTime;
+            float searching = Time.unscaledTime - Mathf.Max(lookingSince, lastLinkedAt);
 
-            if (display == null) status.text = "Looking for the Mac on Wi-Fi…  or type its address";
-            else if (!linked) status.text = $"Calling {display.Address}…";
+            if (socket == null) status.text = "No network yet — join the Wi-Fi the Mac is on";
+            else if (resolveError != null) status.text = resolveError;
+            else if (resolving != null) status.text = $"Looking up {resolving}…";
+            else if (display == null) status.text = searching < 12f ? "Looking for the Mac on Wi-Fi…  or type its address"
+                                                                    : "Can't see the Mac — see below";
+            else if (!linked) status.text = searching < 8f ? $"Calling {display.Address}…" : $"No answer from {display.Address} — looking again…";
             else status.text = $"Connected  ·  {a.Status}";
 
             // Mirror the game: the meter fills in the hand, the tension buzzes, impact thumps.
@@ -209,7 +276,9 @@ namespace GolfArcade.Net
             if (phase == 2) Haptics.Tension(load); else Haptics.Release();
             if (phase == 3 && lastPhase != 3) Haptics.Impact(load);
             lastPhase = phase;
-            hint.text = !linked ? "Open Golf Arcade on the Mac.\nThis phone is the club."
+            hint.text = !linked && searching >= 12f
+                        ? "Is Golf Arcade open on the Mac, on the same Wi-Fi?\nIf so: Settings › Privacy & Security › Local Network › Golf Arcade — turn it on."
+                      : !linked ? "Open Golf Arcade on the Mac.\nThis phone is the club."
                       : phase == 1 ? "Aim with ◀ ▶, pick a club with ▲ ▼.\nHold still, then swing."
                       : phase == 2 ? "Swing through!"
                       : phase == 3 ? "" : "Hold the phone like a club.";

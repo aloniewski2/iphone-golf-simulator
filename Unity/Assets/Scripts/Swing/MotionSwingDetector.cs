@@ -47,6 +47,12 @@ namespace GolfArcade.Swing
         /// Ball-striking faults on top of the face: 0 clean, up to 1 fully thin (a push through
         /// the ball — it comes off low and hot with little spin).
         public double Thin;
+        /// What the strike adds to the ball's speed (0.06 is 6 % faster off the face) and how its
+        /// spin wanders, over the club's full-swing figures: a pure, fast strike flies past the
+        /// club's number and no two swings go quite the same way (Strikes.Pure). Zero for a shot
+        /// planned exactly (the tests, the preview).
+        public double SpeedBonus;
+        public double SpinScatter;
     }
 
     /// Phone-as-club swing recognizer. Feed it attitude and rotation-rate samples and it reports

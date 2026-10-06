@@ -44,6 +44,9 @@ namespace GolfArcade.Shot
             /// it soaks up and how much of the run it takes out, each 0–1.
             public double LandingSoftness;
             public double LandingGrab;
+            /// 0–1: how little the ground lets the spin grip — ice (1) takes none of the run out
+            /// of a spinning ball, so even a wedge skids on.
+            public double LandingSlide;
         }
 
         public const double SampleInterval = 1.0 / 60;
@@ -171,6 +174,8 @@ namespace GolfArcade.Shot
                         // spinning iron hops and stops, a wedge checks up almost where it lands.
                         double grip = Math.Max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * Math.PI)) / 10_000);
                         grip *= 1 - grab;
+                        double slide = double.IsFinite(launch.LandingSlide) ? Math.Max(0, Math.Min(1, launch.LandingSlide)) : 0;
+                        grip += (0.92 - grip) * slide;
                         vx *= grip; vz *= grip;
                         spin = 0;
                         if (vy < 1.2) { vy = 0; airborne = false; rolling = true; rollStartTime = time; rollVx = vx; rollVz = vz; }

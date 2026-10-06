@@ -217,6 +217,9 @@ def fill_polygon(outline, spacing, height_fn, z_offset=0.0, margin=None):
         row += 1
     face = list(range(len(poly)))
     v_out, e_out, f_out, _, _, _ = geometry.delaunay_2d_cdt(verts2, [], [face], 1, 1e-5, False)
+    # Keep only triangles inside the outline: the triangulation can bridge a concave outline
+    # (a crescent's bay would come out as land).
+    f_out = [f for f in f_out if point_in_poly(sum((v_out[i] for i in f), Vector((0, 0))) / len(f), poly)]
     verts3 = [(v.x, v.y, height_fn(v.x, v.y) + z_offset) for v in v_out]
     return verts3, [list(f) for f in f_out]
 

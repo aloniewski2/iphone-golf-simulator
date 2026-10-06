@@ -151,6 +151,9 @@ MonoBehaviour:
   AimSweepDegreesPerSecond: 28
   AimTapDegrees: 1.5
   ForceSyntheticSwing: 0
+  LookHeld: 0
+  InjectFault: 0
+  InstantReplays: 1
 --- !u!4 &990759699
 Transform:
   m_ObjectHideFlags: 0

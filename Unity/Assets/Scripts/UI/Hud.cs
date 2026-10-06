@@ -14,10 +14,24 @@ namespace GolfArcade.UI
         /// The button's fill, lit while held.
         public Image Fill;
         public Color RestColor = UiKit.ButtonFill;
-        public void OnPointerDown(PointerEventData e) { IsHeld = true; Light(true); Pressed?.Invoke(); }
+        /// The fill while held (the HUD's blue unless set).
+        public Color? PressedColor;
+        /// The face that sinks into its base while held (the club's slabs), and the menu sound a press makes.
+        public RectTransform Sink;
+        public string Sound;
+        bool sunk;
+        public void OnPointerDown(PointerEventData e) { IsHeld = true; Light(true); ClubSound.Play(Sound); Pressed?.Invoke(); }
         public void OnPointerUp(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
         public void OnPointerExit(PointerEventData e) { if (IsHeld) Released?.Invoke(); IsHeld = false; Light(false); }
-        void Light(bool on) { if (Fill) Fill.color = on ? UiKit.ButtonPressed : RestColor; }
+        void Light(bool on)
+        {
+            if (Fill) Fill.color = on ? PressedColor ?? UiKit.ButtonPressed : RestColor;
+            if (Sink && on != sunk)
+            {
+                var d = new Vector2(0, on ? -12 : 12);
+                Sink.offsetMin += d; Sink.offsetMax += d; sunk = on;
+            }
+        }
     }
 
     /// The whole on-screen layer, built in code so there is nothing to wire in a scene: hole and
@@ -299,13 +313,13 @@ namespace GolfArcade.UI
         /// The card after a hole or the round (option A): `title` over it, `headline` on its
         /// ribbon (null: the round against par), the round's stats in tiles, and NEXT HOLE when
         /// `nextHole`.
-        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole)
+        public void ShowScorecard(GolfArcade.Course.Scorecard card, string title, string headline, RoundCard.Highlight[] highlights, bool nextHole, RoundCard.Row[] players = null, string againLabel = null)
         {
             HideScorecard();
             var holes = card.Course.Holes;
             var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
             for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
-            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole);
+            roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole, players, againLabel);
             roundCard.Root.SetAsLastSibling();
             PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu; NextHole = roundCard.NextHole;
         }
@@ -335,17 +349,19 @@ namespace GolfArcade.UI
 
         public void HideCourses() { courses?.Destroy(); courses = null; }
 
-        GolferSelect golferSelect;
+        Locker locker;
+        /// The golfer's locker while it is open (null otherwise).
+        public Locker Locker => locker;
 
-        /// The golfer select screen (UI/GolferSelect.cs) over the golfer on the tee.
-        public GolferSelect ShowGolferSelect(string[] kitNames, Color[] kitColors, string[] shirtNames, Color[] shirtColors)
+        /// The locker (UI/Locker.cs) over the golfer on the tee.
+        public Locker ShowLocker()
         {
-            HideGolferSelect();
-            golferSelect = new GolferSelect(safeArea, kitNames, kitColors, shirtNames, shirtColors);
-            return golferSelect;
+            HideLocker();
+            locker = new Locker(safeArea);
+            return locker;
         }
 
-        public void HideGolferSelect() { golferSelect?.Destroy(); golferSelect = null; }
+        public void HideLocker() { locker?.Destroy(); locker = null; }
 
         /// The title over the hole's flyover, the way the tennis broadcast opens on its island:
         /// the tournament's name in chunky yellow on a cobalt badge with a white rim, and under it
@@ -1022,6 +1038,51 @@ namespace GolfArcade.UI
         }
         public void HideLanding() => landingBadge.Hide();
 
+        RectTransform noticePill;
+        Text noticeText;
+        float noticeUntil;
+
+        /// A short word over the game — it carried on after something went wrong, the connection
+        /// is back — for `seconds`, or held until cleared (null) when `seconds` is 0.
+        public void Notice(string text, float seconds = 3f)
+        {
+            if (string.IsNullOrEmpty(text)) { if (noticePill) noticePill.gameObject.SetActive(false); return; }
+            if (!noticePill)
+            {
+                noticePill = UiKit.Pill(safeArea, "Notice", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 1), new Vector2(0, -330), new Vector2(820, 84), out var fill, 4f);
+                noticeText = UiKit.Label(fill.transform, "Text", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                noticeText.rectTransform.offsetMin = new Vector2(24, 0); noticeText.rectTransform.offsetMax = new Vector2(-24, 0);
+                noticeText.color = Color.white;
+                Icons.Fit(noticeText, 18, 32);
+                foreach (var g in noticePill.GetComponentsInChildren<Graphic>()) g.raycastTarget = false;
+            }
+            noticeText.text = text.ToUpperInvariant();
+            noticePill.gameObject.SetActive(true);
+            noticePill.SetAsLastSibling();
+            noticeUntil = seconds > 0 ? Time.unscaledTime + seconds : float.MaxValue;
+        }
+
+        /// The notice on show, for the tests.
+        public string NoticeShowing => noticePill && noticePill.gameObject.activeSelf ? noticeText.text : null;
+
+        UnlockToast unlockToast;
+        /// Rewards earned, announced one after another over the card (UI/UnlockToast.cs); `who`
+        /// names the player when more than one is on the phone.
+        public void ShowUnlocks(System.Collections.Generic.IEnumerable<(string who, Profile.Reward reward)> rewards)
+        {
+            if (!unlockToast) unlockToast = UnlockToast.Create(safeArea);
+            unlockToast.Announce(rewards);
+        }
+        /// The reward on show, for the tests.
+        public string UnlockShowing => unlockToast ? unlockToast.Showing : null;
+
+        /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
+        public void ShowTurn(string word, string detail, Color color)
+        {
+            landingBadge.TurnColor = color;
+            ShowLanding(LandingBadge.Kind.Turn, word, detail, null, 1.8f);
+        }
+
         /// The club face while setting up and swinging (degrees, positive open); null hides it.
         public void SetFace(double? degrees) => faceDial.Set(Controller == null ? degrees : null);
 
@@ -1192,6 +1253,7 @@ namespace GolfArcade.UI
 
         void Update()
         {
+            if (noticePill && noticePill.gameObject.activeSelf && Time.unscaledTime > noticeUntil) noticePill.gameObject.SetActive(false);
             ApplySafeArea();
             // Tremble: nothing below 40 % load, up to ±5 px at the top of the backswing.
             float tremble = Mathf.InverseLerp(0.4f, 1f, meterLoad) * 5f;

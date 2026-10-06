@@ -14,3 +14,15 @@ blender/previews/*
 !blender/previews/pin.png
 !blender/previews/golfer_closeups.png
 Unity/Assets/Resources/build_id.txt
+
+# Blender scripts import each other
+__pycache__/
+
+# Adnan's match hero sources are Git LFS on his branch: blender/scripts/fetch_matchheroes.sh downloads them
+blender/matchhero/*.fbx
+
+# MakeHuman hair sources (CC0): blender/scripts/fetch_mhhair.py downloads them; the game's textures are committed
+blender/mhhair/
+
+# CMU motion capture (subject 64, golf) used only to measure real swing form: cmu_golf_measure.py reads it; not committed
+blender/cmugolf/

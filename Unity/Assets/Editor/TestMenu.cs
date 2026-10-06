@@ -23,6 +23,8 @@ namespace GolfArcade.EditorTools
         /// Hole 12 played by script and recorded to Library/Captures/demo (DemoVideoTests);
         /// Tools/demo_video.sh turns it into the MP4.
         [MenuItem("Golf Arcade/Record Putting Demo")] public static void RecordPuttingDemo() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsPutting");
+        /// The swing, filmed in real time and in slow motion from three angles (DemoVideoTests.RecordsSwingShowcase, Library/Captures/swing); Tools/swing_video.sh makes the MP4.
+        [MenuItem("Golf Arcade/Record Swing Showcase")] public static void RecordSwing() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsSwingShowcase");
         [MenuItem("Golf Arcade/Record Demo Video")] public static void RecordDemo() => Run(TestMode.PlayMode, "GolfArcade.PlayTests.DemoVideoTests.RecordsHoleTwelve");
 
         /// The PlayMode tests named in Library/TestResults/chosen.txt (full names, one a line):
