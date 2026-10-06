@@ -37,7 +37,7 @@ namespace GolfArcade.Tennis
         // Word-art calls, queued so two never overlap.
         Text callFallback, callSub;
         readonly Queue<(string key, string sub, bool good)> calls = new();
-        float callAt = -9;
+        float callAt = -9, callDuration = CallHold;
         const float CallHold = 1.55f;
 
         // Sparkle bursts.
@@ -303,7 +303,7 @@ namespace GolfArcade.Tennis
         public void Refresh(TennisGame game)
         {
             scoreOnly = game.ScoreOnlyText;
-            if (scoreOnly) { calls.Clear(); badgeAt = callAt = -99; feedbackPanel.gameObject.SetActive(false); callPanel.gameObject.SetActive(false); }
+            if (scoreOnly) { badgeAt = -99; feedbackPanel.gameObject.SetActive(false); }
             meterLabel.enabled = tossLabel.enabled = !scoreOnly;
             var m = game.Match;
             Points(m, out string pa, out string pb);
@@ -351,8 +351,19 @@ namespace GolfArcade.Tennis
             if (scoreOnly) { calls.Clear(); return; }
             if (calls.Count >= 3) calls.Dequeue();
             calls.Enqueue((key, sub, good));
-            if (HudClock.Now - callAt > CallHold) NextCall();
+            if (HudClock.Now - callAt > callDuration) NextCall();
         }
+
+        /// Point winners remain visible even with the uncluttered rally HUD.
+        public void ShowPointResult(string winnerName, string detail, bool good) {
+            calls.Clear();
+            callFallback.text = winnerName.ToUpperInvariant() + " SCORED";
+            callFallback.resizeTextForBestFit = true; callFallback.resizeTextMinSize = 28; callFallback.resizeTextMaxSize = 60;
+            callSub.text = detail;
+            callPanel.gameObject.SetActive(true);
+            callAt = HudClock.Now; callDuration = 3f;
+        }
+        public string PointResultText => callPanel && callPanel.gameObject.activeSelf ? callFallback.text : "";
 
         void NextCall()
         {
@@ -361,7 +372,7 @@ namespace GolfArcade.Tennis
             callFallback.text = key.Replace("!", "").ToUpperInvariant();
             callSub.text = sub ?? "";
             callPanel.gameObject.SetActive(true);
-            callAt = HudClock.Now;
+            callAt = HudClock.Now; callDuration = CallHold;
         }
 
         void Burst(Vector2 at, int count, Color tint, float speed)
@@ -649,11 +660,11 @@ namespace GolfArcade.Tennis
             }
             else feedbackPanel.gameObject.SetActive(false);
             float t = Age(now,callAt);
-            if (t < CallHold)
+            if (t < callDuration)
             {
                 callPanel.anchoredPosition = new Vector2(0,-118-top+8*Mathf.Exp(-t*15));
                 callPanel.localScale = Vector3.one*(1+.035f*Mathf.Exp(-t*12));
-                SetGroupAlpha(callPanel,Mathf.Min(Mathf.Clamp01(t/.09f),Mathf.Clamp01((CallHold-t)/.2f)));
+                SetGroupAlpha(callPanel,Mathf.Min(Mathf.Clamp01(t/.09f),Mathf.Clamp01((callDuration-t)/.2f)));
             }
             else { callPanel.gameObject.SetActive(false); if (calls.Count > 0) NextCall(); }
 

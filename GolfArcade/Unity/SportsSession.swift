@@ -175,6 +175,7 @@ final class SportsSession {
     /// the picture: the one setting outside the app that helps most.
     var delayTip = ""
     private var flashDelays: [Double] = []
+    private var flashProbeID = UUID()
     private static let flashes = 4, gameModeHint = 0.14
     private var nextDiagnostic=0.0
     let motion = SportsMotion()
@@ -225,45 +226,45 @@ final class SportsSession {
     /// Time the TV: flash it black-then-white a few times while the camera still looks at it,
     /// and take the median delay. Unity then judges swings against what the player saw.
     func measureTVDelay() {
-        // A TV already timed with the swing check needs no camera probe.
-        guard active, ready, displayConnected, !touch, sport == "tennis", !measuringDelay, timingCalibration == nil else { return }
-        measuringDelay=true; flashDelays=[]
-        status="Keep pointing at the TV for a moment — timing its picture…"
+        guard active, ready, displayConnected, !touch, sport == "tennis", setupStage == .timing,
+              !measuringDelay, !checkingTiming else { return }
+        measuringDelay = true; timingPrompt = false; flashDelays = []; flashProbeID = UUID()
+        let probeID = flashProbeID, launched = sessionID
+        status = "Keep the rear camera aimed at the screen while it flashes."
         motion.setDelayProbe(true)
-        let launched=sessionID
         Task { @MainActor [weak self] in
-            // Let ARKit settle into its play configuration first.
-            try? await Task.sleep(for:.milliseconds(400))
-            guard let self, self.sessionID == launched else { return }
-            self.command("flash",value:Double(Self.flashes))
-            try? await Task.sleep(for:.seconds(Double(Self.flashes)*0.6+1.5))
+            try? await Task.sleep(for: .milliseconds(500))
+            guard let self, self.active, self.sessionID == launched, self.flashProbeID == probeID, self.measuringDelay else { return }
+            self.command("flash", value: Double(Self.flashes))
+            try? await Task.sleep(for: .seconds(Double(Self.flashes) * 1.7 + 1.5))
+            guard self.active, self.sessionID == launched, self.flashProbeID == probeID else { return }
             self.finishTVDelay()
         }
     }
-
     private func flashShown(at rendered: Double) {
         guard measuringDelay else { return }
-        // The camera needs the TV's delay (and a little) to see it: read it back after that.
+        let launched = sessionID, probeID = flashProbeID
         Task { @MainActor [weak self] in
-            try? await Task.sleep(for:.milliseconds(700))
-            guard let self, self.measuringDelay else { return }
-            if let delay=self.motion.delayAfterFlash(rendered:rendered) { self.flashDelays.append(delay) }
+            try? await Task.sleep(for: .milliseconds(1250))
+            guard let self, self.active, self.sessionID == launched, self.flashProbeID == probeID, self.measuringDelay else { return }
+            if let delay = self.motion.delayAfterFlash(rendered: rendered) { self.flashDelays.append(delay) }
         }
     }
-
     private func finishTVDelay() {
         guard measuringDelay else { return }
-        measuringDelay=false; motion.setDelayProbe(false)
-        if let delay=SportsDelayProbe.combine(flashDelays) {
-            tvDelay=delay; UserDefaults.standard.set(delay,forKey:"sports.tv.delay.v1")
-            status=String(format:"TV delay %.0f ms — your swings are timed to what you see. Stand at your center, then tap Ready.",delay*1000)
+        measuringDelay = false; motion.setDelayProbe(false); timingPrompt = true
+        if let delay = SportsDelayProbe.combine(flashDelays) {
+            tvDelay = delay; SportsTiming.store(delay, for: SportsTiming.currentTV())
+            timingNote = String(format: "Screen delay measured: %.0f ms. The swing check keeps this measurement.", delay * 1000)
         } else {
-            status=tvDelay>0 ? "Couldn't re-time the TV; using the last measurement. Stand at your center, then tap Ready."
-                             : "Couldn't time the TV's picture; playing without delay compensation. Stand at your center, then tap Ready."
+            tvDelay = timingCalibration ?? 0
+            timingNote = tvDelay > 0 ? "Flashes were unclear. Using this screen's last measurement; you can retry."
+                : "Flashes were unclear. Point the rear camera at the screen and retry, or use the swing check."
         }
-        command("latency",value:tvDelay)
-        delayTip=tvDelay>Self.gameModeHint ? "If your TV has Game Mode, turn it on for this input — it cuts the delay you feel." : ""
-        SportsDiagnostics.write("tv delay flashes=\(flashDelays.map { String(format:"%.3f",$0) }) chosen=\(tvDelay)")
+        command("latency", value: tvDelay)
+        status = "Screen measurement finished. Start the swing timing check."
+        delayTip = tvDelay > Self.gameModeHint ? "TV Game Mode can reduce picture delay." : ""
+        SportsDiagnostics.write("tv delay flashes=\(flashDelays.map { String(format: "%.3f", $0) }) chosen=\(tvDelay)")
     }
     func savePlayers() { PlayerRosterStore.save(players) }
     /// Start tennis from the front end: a campaign round against `opponent`, or training.
@@ -308,6 +309,7 @@ final class SportsSession {
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
+        tvDelay = timingCalibration ?? 0
         setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
@@ -396,6 +398,7 @@ final class SportsSession {
         command("cancelTimingCheck"); command("controllerSetup", value: 1)
         pause(reason: status)
         SportsDisplays.shared.external?.isHidden = true
+        measureTVDelay()
     }
     func skipTimingCheck() {
         guard setupStage == .timing else { return }
@@ -483,7 +486,7 @@ final class SportsSession {
     /// Unity renders the timing ball on the TV; motion samples keep flowing from the phone.
     func startTimingCheck() {
         guard active, ready, loading.finished, displayConnected, sport == "tennis",
-              setupStage == .timing, !checkingTiming else { return }
+              setupStage == .timing, !checkingTiming, !measuringDelay else { return }
         if !touch {
             guard motion.axisLocked, motion.calibrate() else { return }
             phase = "steering"
@@ -803,7 +806,7 @@ struct TennisContact: Equatable, Identifiable {
 
 /// Per-TV timing check results, keyed by the AirPlay receiver's name.
 enum SportsTiming {
-    private static let key = "sports.tv.timing.v1"
+    private static let key = "sports.tv.timing.v2"
     static func currentTV() -> String {
         let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
         return outputs.first(where: { $0.portType == .airPlay })?.portName ?? outputs.first?.portName ?? "screen"
@@ -813,7 +816,8 @@ enum SportsTiming {
     }
     static func store(_ lag: Double, for tv: String, defaults: UserDefaults = .standard) {
         var all = defaults.dictionary(forKey: key) as? [String: Double] ?? [:]
-        all[tv] = max(0, min(0.35, lag))
+        guard lag.isFinite else { return }
+        all[tv] = max(0, min(1.0, lag))
         defaults.set(all, forKey: key)
     }
 }

@@ -524,8 +524,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         frameAt=SportsRuntime.shared().clock()
         if case .normal = frame.camera.trackingState { reliableAt=frameAt }
         if probing, let luma=Self.centreLuma(frame.capturedImage) { probe.add(time:frame.timestamp,luma:luma) }
-        if capturingAxis {
-            evaluateGate(frame:frame,time:frameAt)
+        if capturingAxis { evaluateGate(frame:frame,time:frameAt) }
+        if capturingAxis || probing {
             // The viewfinder only matters while aiming at the TV.
             if frameAt>=nextPreview {
                 nextPreview=frameAt+0.08
@@ -568,7 +568,7 @@ enum SportsDelayProbe {
     }
 
     /// Plausible delays: anything outside this is a misread, not a TV.
-    static let shortest = 0.01, longest = 0.55
+    static let shortest = 0.01, longest = 1.0
     /// The flash must move the camera's reading by at least this much (0-255 luma).
     static let minimumContrast = 22.0
 
@@ -577,13 +577,16 @@ enum SportsDelayProbe {
     /// crossed halfway between them, interpolated between camera frames.
     static func delay(_ series: [(Double, Double)], rendered: Double) -> Double? {
         let window = series.filter { $0.0 >= rendered - 0.25 && $0.0 <= rendered + longest + 0.05 }
-        guard window.count >= 6, let darkIndex = window.indices.min(by: { window[$0].1 < window[$1].1 }) else { return nil }
-        let after = window[darkIndex...]
-        guard let bright = after.map(\.1).max() else { return nil }
-        let dark = window[darkIndex].1
-        guard bright - dark >= minimumContrast else { return nil }
+        guard window.count >= 6 else { return nil }
+        // Each pulse has a long black lead-in, so the first frames are the baseline.
+        // Searching for the darkest frame anywhere can pick the *end* of a white pulse.
+        let baseline = window.prefix(6).map(\.1).sorted()
+        let dark = baseline[baseline.count / 2]
+        guard let bright = window.map(\.1).max(), bright - dark >= minimumContrast else { return nil }
         let half = (dark + bright) / 2
-        guard let cross = after.indices.first(where: { window[$0].1 >= half }), cross > darkIndex else { return nil }
+        guard let cross = window.indices.dropFirst().first(where: {
+            window[$0 - 1].1 < half && window[$0].1 >= half && window[$0].0 >= rendered + shortest
+        }) else { return nil }
         let (t1, v1) = window[cross - 1], (t2, v2) = window[cross]
         let t = v2 > v1 ? t1 + (t2 - t1) * (half - v1) / (v2 - v1) : t2
         let delay = t - rendered
@@ -594,6 +597,9 @@ enum SportsDelayProbe {
     static func combine(_ delays: [Double]) -> Double? {
         guard delays.count >= 2 else { return nil }
         let sorted = delays.sorted()
-        return sorted[sorted.count / 2]
+        let median = sorted[sorted.count / 2]
+        let agreeing = sorted.filter { abs($0 - median) <= 0.06 }
+        guard agreeing.count >= 2 else { return nil }
+        return agreeing[agreeing.count / 2]
     }
 }

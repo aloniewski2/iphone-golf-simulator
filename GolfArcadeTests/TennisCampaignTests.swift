@@ -331,7 +331,7 @@ final class TennisCampaignTests: XCTestCase {
         SportsTiming.store(0.182, for: "Living Room", defaults: defaults)
         SportsTiming.store(0.9, for: "Bedroom", defaults: defaults)
         XCTAssertEqual(SportsTiming.stored(for: "Living Room", defaults: defaults) ?? 0, 0.182, accuracy: 1e-9)
-        XCTAssertEqual(SportsTiming.stored(for: "Bedroom", defaults: defaults), 0.35, "clamped to what the game compensates")
+        XCTAssertEqual(SportsTiming.stored(for: "Bedroom", defaults: defaults), 0.9, "AirPlay delay is preserved")
     }
 
     func testUnityEventsParse() {

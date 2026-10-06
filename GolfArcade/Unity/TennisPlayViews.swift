@@ -253,7 +253,7 @@ struct TennisRacketController: View {
             } else if session.setupStage == .scan {
                 ScrollView { AxisGatePanel(session: session) }
             } else if session.measuringDelay {
-                DelayProbePanel()
+                DelayProbePanel(session: session)
             } else if session.timingPrompt {
                 TimingCheckPrompt(session: session)
             } else if session.checkingTiming {
@@ -494,12 +494,16 @@ private struct MoveButtons: View {
 
 /// While the TV flashes: the camera is timing how far its picture lags the game.
 private struct DelayProbePanel: View {
+    let session: SportsSession
     @State private var pulse = false
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
             Image(systemName: "tv").font(.system(size: 64, weight: .bold)).foregroundStyle(IslandUI.lime).scaleEffect(pulse ? 1.08 : 0.95)
-            Text("Keep pointing at the TV").font(IslandUI.font(24, bold: true))
+            SportsCameraPreview(motion: session.motion).frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay { Image(systemName: "plus").font(.title).foregroundStyle(.white) }
+            Text("2 · Measure screen delay").font(IslandUI.font(24, bold: true))
             Text("It will flash a few times while we time its picture, so your swings land when you see the ball.")
                 .font(IslandUI.font(15, bold: true)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
             ProgressView().tint(IslandUI.lime)
@@ -517,8 +521,14 @@ private struct TimingCheckPrompt: View {
             Spacer()
             Image(systemName: "metronome.fill").font(.system(size: 56, weight: .bold)).foregroundStyle(IslandUI.lime)
             Text("2 · Timing calibration").font(IslandUI.font(26, bold: true))
-            Text("Every TV shows the picture a little late. This quick check measures that delay so your swings land exactly when you see the ball.\n\nA ball will bounce on a line on the TV. Swing every time it drops onto the line — a steady rhythm, about ten seconds.")
+            Text("Every TV shows the picture a little late. This quick check measures that delay so your swings land exactly when you see the ball.\n\nThe flashes measure picture delay directly. Now follow the bouncing ball to check your swings. Swing every time it reaches the line; the check will keep the screen measurement.")
                 .font(IslandUI.font(15, bold: true)).foregroundStyle(.white.opacity(0.85)).multilineTextAlignment(.center).padding(.horizontal, 12)
+            if !session.timingNote.isEmpty {
+                Text(session.timingNote).font(IslandUI.font(14, bold: true)).multilineTextAlignment(.center)
+            }
+            if !session.touch {
+                Button("Retry screen flashes") { session.measureTVDelay() }.accessibilityIdentifier("timing-flashes")
+            }
             ControllerButton(title: "Start timing check", icon: "play.fill", height: 58, size: 21) { session.startTimingCheck() }.accessibilityIdentifier("timing-start")
             Button("Skip for now") { session.skipTimingCheck() }.accessibilityIdentifier("timing-skip")
                 .font(IslandUI.font(15, bold: true)).foregroundStyle(.white.opacity(0.7))

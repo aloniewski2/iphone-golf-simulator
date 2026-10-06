@@ -267,10 +267,11 @@ namespace GolfArcade.Game
             int flashes=Mathf.Clamp(Mathf.RoundToInt(count),1,8);
             try {
                 for(int i=0;i<flashes;i++) {
-                    panel.color=Color.black; yield return new WaitForSecondsRealtime(.35f);
+                    panel.color=Color.black; yield return new WaitForSecondsRealtime(1.25f);
                     panel.color=Color.white;
+                    yield return new WaitForEndOfFrame();
                     Emit("flash",SportsClock().ToString("R",System.Globalization.CultureInfo.InvariantCulture));
-                    yield return new WaitForSecondsRealtime(.25f);
+                    yield return new WaitForSecondsRealtime(.45f);
                 }
             } finally { Destroy(root); flashing=false; }
         }

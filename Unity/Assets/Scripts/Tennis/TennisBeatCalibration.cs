@@ -27,7 +27,7 @@ namespace GolfArcade.Tennis
         public const int Needed = 4;
         public const float MaxSpread = .12f;
 
-        readonly float start;
+        readonly float start, displayDelay;
         readonly List<float> late = new();
         readonly bool[] taken = new bool[Beats];
 
@@ -35,13 +35,13 @@ namespace GolfArcade.Tennis
         /// coming ("swing every time the ball lands on the line") before it begins.
         public const float Countdown = 5f;
 
-        public TennisBeatCalibration(float now, float countdown = 0) { start = now + countdown; }
+        public TennisBeatCalibration(float now, float countdown = 0, float measuredDisplayDelay = 0) { start = now + countdown; displayDelay = Mathf.Clamp(measuredDisplayDelay, 0, TennisLagLearner.Max); }
 
         /// Seconds left of the countdown (0 once the ball is on its way).
         public float CountdownLeft(float now) => Mathf.Max(0, start - now);
 
         public float BeatTime(int beat) => start + LeadIn + beat * Interval;
-        public float End => BeatTime(Beats - 1) + Window;
+        public float End => BeatTime(Beats - 1) + displayDelay + Window;
         public bool Finished(float now) => now >= End;
         public int Scored => late.Count;
 
@@ -65,10 +65,10 @@ namespace GolfArcade.Tennis
         /// The player swung at `now`. Returns the beat it counted for (-1 if none).
         public int Swing(float now)
         {
-            int beat = Mathf.RoundToInt((now - start - LeadIn) / Interval);
+            int beat = Mathf.RoundToInt((now - start - LeadIn - displayDelay) / Interval);
             if (beat < 0 || beat >= Beats || taken[beat]) return -1;
             float off = now - BeatTime(beat);
-            if (Mathf.Abs(off) > Window) return -1;
+            if (Mathf.Abs(off - displayDelay) > Window) return -1;
             taken[beat] = true;
             if (beat >= WarmUp) late.Add(off);
             return beat;

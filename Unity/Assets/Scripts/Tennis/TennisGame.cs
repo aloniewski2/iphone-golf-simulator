@@ -406,12 +406,8 @@ namespace GolfArcade.Tennis
             {
                 float before = lag.Prior; bool first = !lagPriorSet;
                 lag.Prior = value; lagPriorSet = true;
-                // Re-sent for the same TV (a reconnect): keep what this session has learned.
-                if (!first && Mathf.Abs(before - lag.Prior) < .04f) return;
-                // Same TV as last time: start from what was learned then.
-                if (PlayerPrefs.HasKey(LagKey) && Mathf.Abs(PlayerPrefs.GetFloat(LagPriorKey, -1) - lag.Prior) < .04f)
-                    lag.Seed(PlayerPrefs.GetFloat(LagKey));
-                else lag.Reset();
+                // A fresh camera measurement must not seed an older rhythm-derived estimate.
+                if (first || Mathf.Abs(before - lag.Prior) >= .001f) lag.Reset();
             }
         }
         readonly TennisLagLearner lag = new();
@@ -421,7 +417,7 @@ namespace GolfArcade.Tennis
         /// corrected by how the player's timing actually runs (see TennisLagLearner).
         public float Lag => lag.Estimate;
         /// Only a person on the phone teaches it: never self-play, the keyboard or tests.
-        void Learn(float rawLate) { if (NativeControlled && !AutoPlay && !NativeSportsSession.Touch) lag.Observe(rawLate); }
+        void Learn(float rawLate) { if ((!lagPriorSet || lag.Prior <= 0) && NativeControlled && !AutoPlay && !NativeSportsSession.Touch) lag.Observe(rawLate); }
         void SaveLag()
         {
             if (lag.Count < 3) return;
@@ -450,7 +446,7 @@ namespace GolfArcade.Tennis
         public void StartTimingCheck()
         {
             if (!Player || ReplayPlaying) return;
-            calibration = new TennisBeatCalibration(Time.unscaledTime, TennisBeatCalibration.Countdown); calibrationBeat = -1;
+            calibration = new TennisBeatCalibration(Time.unscaledTime, TennisBeatCalibration.Countdown, lagPriorSet ? lag.Prior : 0); calibrationBeat = -1;
             if (hud) hud.ShowTimingCheck(true);
         }
 
@@ -469,6 +465,10 @@ namespace GolfArcade.Tennis
             if (!calibration.Finished(now)) return;
             bool ok = calibration.TryResult(out float measured);
             calibration = null;
+            // The flash probe measures the physical screen delay. A predictable beat can
+            // be anticipated and includes detector latency: it must never overwrite that.
+            if (lagPriorSet && lag.Prior > 0) { measured = lag.Prior; ok = true; }
+            else if (ok) measured = Mathf.Clamp(measured - TennisRules.ServeLatency, 0, TennisLagLearner.Max);
             if (ok)
             {
                 // The new baseline: learning in play refines it from here.
@@ -783,7 +783,7 @@ namespace GolfArcade.Tennis
             Flow = Match.Complete ? Phase.MatchOver : Phase.PointOver;
             playerWonPoint = toPlayer; pointEmoteChosen = false; pendingPointEmote = null;
             // A finished set gets a longer beat (the SET call below), then the next set starts by itself.
-            resetTimer = Match.Complete ? (AutoPlay ? 5f : ResultsHold) : setWon ? 4.4f : 2.4f;   // 2B: reaction cam + auto emotes, then the next serve
+            resetTimer = Match.Complete ? (AutoPlay ? 5f : ResultsHold) : (setWon ? 7f : 6f) * GameSpeed;   // Six real seconds to see the score and select a celebration.
             ApplyTauntHold();                                                                       // EMOTES: a taunt started by the reactions above holds the serve until it is over
             if (juice) juice.PointReaction(toPlayer ? Player.transform : Opponent.transform, toPlayer ? Opponent.transform : Player.transform,
                 toPlayer ? "POINT " + (hud ? hud.PlayerName : "YOU") : "POINT " + (hud ? hud.OpponentName : "RIVAL"));
@@ -808,7 +808,7 @@ namespace GolfArcade.Tennis
             else sounds.Applaud(toPlayer ? .5f + excitement * .5f : .3f + excitement * .3f);
             if (hud && !Match.Complete)
             {
-                hud.ShowCall(CallFor(call, toPlayer, winner), PointContext(toPlayer, toPlayer ? opponentMissReason : null), toPlayer);
+                hud.ShowPointResult(toPlayer ? hud.PlayerName : hud.OpponentName, gameWon ? $"{(setWon ? "SET" : "GAME")} · {Match.PlayerGames}–{Match.OpponentGames}" : $"{CallFor(call, toPlayer, winner)} · {Match.PointCall}", toPlayer);
                 if (gameWon) hud.ShowCall("GAME", $"GAME {(toPlayer ? hud.PlayerName : hud.OpponentName)}  ·  {Match.PlayerGames}-{Match.OpponentGames}", toPlayer);
                 if (setWon && Match.SetScores != null && Match.SetScores.Count > 0)
                     hud.ShowCall("SET", $"SET {(toPlayer ? hud.PlayerName : hud.OpponentName)}  ·  {Match.SetScores[Match.SetScores.Count - 1]}  ·  SETS {Match.PlayerSets}-{Match.OpponentSets}", toPlayer);
@@ -840,7 +840,8 @@ namespace GolfArcade.Tennis
         string PointContext(bool toPlayer, string why = null)
         {
             // An opponent's miss says why: the player sees what earned the point.
-            string who = why ?? (toPlayer ? "POINT " + (hud ? hud.PlayerName : "YOU") : "POINT " + (hud ? hud.OpponentName : "KAI"));
+            string who = toPlayer ? "POINT " + (hud ? hud.PlayerName : "YOU") : "POINT " + (hud ? hud.OpponentName : "RIVAL");
+            if (!string.IsNullOrEmpty(why)) who += " · " + why;
             return RallyShots >= 4 ? $"{who}  ·  {RallyShots}-SHOT RALLY" : who;
         }
 

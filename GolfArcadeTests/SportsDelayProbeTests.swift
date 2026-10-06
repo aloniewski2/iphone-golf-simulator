@@ -12,11 +12,11 @@ final class SportsDelayProbeTests: XCTestCase {
         var out = [(Double, Double)]()
         var generator = SystemRandomNumberGenerator()
         var t = rendered - 0.8 + phase
-        while t < rendered + 0.9 {
+        while t < rendered + 1.3 {
             let shown = t - delay        // what the game was drawing when this light left the TV
             var level = game
-            if shown >= rendered - 0.35 && shown < rendered { level = dark }
-            if shown >= rendered && shown < rendered + 0.25 { level = bright }
+            if shown >= rendered - 1.25 && shown < rendered { level = dark }
+            if shown >= rendered && shown < rendered + 0.45 { level = bright }
             let jitter = noise > 0 ? Double.random(in: -noise...noise, using: &generator) : 0
             out.append((t, level + jitter))
             t += 1.0 / 60
@@ -25,7 +25,7 @@ final class SportsDelayProbeTests: XCTestCase {
     }
 
     func testRecoversTheDelayWithinAFrame() throws {
-        for delay in [0.05, 0.12, 0.18, 0.26, 0.4] {
+        for delay in [0.05, 0.12, 0.18, 0.26, 0.4, 0.68, 0.9] {
             let measured = try XCTUnwrap(SportsDelayProbe.delay(series(rendered: 100, delay: delay), rendered: 100), "delay \(delay)")
             XCTAssertEqual(measured, delay, accuracy: 1.0 / 60, "delay \(delay)")
         }
@@ -43,8 +43,31 @@ final class SportsDelayProbeTests: XCTestCase {
         XCTAssertNil(SportsDelayProbe.delay([], rendered: 10))
     }
 
+    func testInconsistentFlashReadingsAreRejected() {
+        XCTAssertNil(SportsDelayProbe.combine([0.1, 0.4]))
+        XCTAssertEqual(SportsDelayProbe.combine([0.69, 0.7, 0.71, 0.12]) ?? 0, 0.7, accuracy: 1e-9)
+    }
+    func testTimingStorageKeepsLongAirPlayDelayAndIgnoresOldRhythmOnlyResults() {
+        let defaults = UserDefaults(suiteName: "timing-\(UUID())")!
+        defaults.set(["TV": 0.05], forKey: "sports.tv.timing.v1")
+        XCTAssertNil(SportsTiming.stored(for: "TV", defaults: defaults))
+        SportsTiming.store(0.72, for: "TV", defaults: defaults)
+        XCTAssertEqual(SportsTiming.stored(for: "TV", defaults: defaults), 0.72)
+    }
+    @MainActor func testFlashesRunBeforeTheSwingCheck() {
+        let session = SportsSession()
+        session.active = true; session.ready = true; session.displayConnected = true
+        session.sport = "tennis"; session.touch = false; session.loading.cancel()
+        session.offerTimingCalibration()
+        XCTAssertTrue(session.measuringDelay)
+        XCTAssertFalse(session.timingPrompt)
+        session.startTimingCheck()
+        XCTAssertFalse(session.checkingTiming)
+        XCTAssertTrue(session.paused)
+        session.active = false; session.motion.setDelayProbe(false)
+    }
     func testMedianNeedsTwoReadings() {
         XCTAssertNil(SportsDelayProbe.combine([0.15]))
-        XCTAssertEqual(SportsDelayProbe.combine([0.15, 0.30, 0.16, 0.14]) ?? 0, 0.16, accuracy: 1e-9)
+        XCTAssertEqual(SportsDelayProbe.combine([0.15, 0.30, 0.16, 0.14]) ?? 0, 0.15, accuracy: 1e-9)
     }
 }
