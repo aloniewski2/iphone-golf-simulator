@@ -7,21 +7,7 @@ struct OnboardingRoot: View {
             if flow.step == .account { OnboardingAccountScreen(flow: flow) }
             else if flow.step == .character { OnboardingCharacterScreen(flow: flow) }
             else if flow.step == .connect { OnboardingConnectScreen(flow: flow) }
-            else if flow.step == .motionPrimer { OnboardingMotionPrimer(flow: flow) }
-            else if flow.step == .choose { OnboardingGamePicker(flow: flow) }
-            else if case .reward(let sport) = flow.step { OnboardingRewardScreen(flow: flow, sport: sport) }
-            else if case .tutorial(let sport) = flow.step {
-                OnboardingScaffold(title: flow.coachIntro ? "A warm welcome" : "Let’s practice", step: sport.title.uppercased()) {
-                    if flow.coachIntro {
-                        Text("???").font(IslandUI.font(13, bold: true))
-                        Text(TennisStory.tutorialIntro[0].text).font(IslandUI.font(24, bold: true))
-                        IslandAction(title: "Let’s play", focused: false, primary: true) { flow.continueIntro() }.accessibilityIdentifier("onboarding-coach-play")
-                    } else {
-                        Text(SportsSession.shared.status).font(IslandUI.font(17))
-                        IslandAction(title: "Try again", focused: false, primary: true) { flow.resumeTutorial() }.accessibilityIdentifier("onboarding-tutorial-retry")
-                    }
-                }
-            }
+            else if flow.step != .done { OnboardingGamePicker(flow: flow) }
             else { Text(flow.step.key).accessibilityIdentifier("onboarding-root") }
         }
         .safeAreaInset(edge: .top) {

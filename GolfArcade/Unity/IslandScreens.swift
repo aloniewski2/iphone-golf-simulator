@@ -39,7 +39,7 @@ struct IslandHubScreen: View {
 
     private func mode(_ id: String) -> Mode {
         let unlocked = menu.hubUnlocked(sport, id)
-        let finished = menu.progress.finishedTutorial(sport)
+        let finished = true
         let reason = "Finish the tutorial first"
         switch id {
         case "tutorial":
@@ -52,7 +52,7 @@ struct IslandHubScreen: View {
         case "training":
             return Mode(title: "Training", subtitle: finished ? "Free rally with the coach" : reason, icon: "tennis.racket", locked: !unlocked, done: false)
         case "round":
-            return Mode(title: "Play Golf", subtitle: "Cliffside round", icon: "figure.golf", locked: false, done: false)
+            return Mode(title: "Play Golf", subtitle: "Choose a course, then tee off", icon: "figure.golf", locked: false, done: false)
         case "golfCampaign":
             return Mode(title: "Golf Tour", subtitle: "Coming soon", icon: "trophy.fill", locked: true, done: false)
         default:
@@ -76,7 +76,7 @@ struct IslandHubScreen: View {
     }
 
     private func row(_ id: String) -> some View {
-        let m = mode(id), focused = menu.isFocused(id), primary = sport == .golf ? id == "round" : id == "tutorial" && !m.done
+        let m = mode(id), focused = menu.isFocused(id), primary = sport == .golf ? id == "round" : id == "exhibition"
         return Button { menu.tap(id) } label: {
             HStack(spacing: 16) {
                 Image(systemName: m.icon).font(.system(size: compact ? 19 : 25, weight: .bold)).frame(width: compact ? 40 : 54, height: compact ? 40 : 54)
@@ -300,7 +300,7 @@ struct IslandSettingsScreen: View {
         case "coaching": return Item(title: "Coaching tips", detail: "Short hints on the phone and TV during matches.", control: .toggle(s.coachingTips))
         case "resetTips": return Item(title: "Show every coaching tip again", detail: "The hints you have already seen will come back.", control: .action("Reset", danger: false))
         case "replayOnboarding": return Item(title: "Replay onboarding", detail: "Account, look, screen setup and a tutorial again. Your progress stays.", control: .action("Replay", danger: false))
-        case "resetProgress": return Item(title: "Erase tutorials & campaign", detail: "Starts the tutorial and the Island Circuit from the beginning. Your look and level stay. Asks twice.", control: .action(menu.confirmingReset ? "Press again" : "Erase…", danger: true))
+        case "resetProgress": return Item(title: "Reset campaign", detail: "Starts the Island Circuit from the beginning. Your look and level stay. Asks twice.", control: .action(menu.confirmingReset ? "Press again" : "Erase…", danger: true))
         case "controls": return Item(title: "Controls", detail: "Swing the phone like a racket, or play with touch buttons.", control: .choice(["Swing", "Touch"], s.touch ? 1 : 0))
         case "range": return Item(title: "Step to cross court", detail: "How far you walk for a full court width.", control: .stepper("\(Int(s.travel * 100)) cm"))
         case "hand": return Item(title: "Plays", detail: "Which hand holds the racket.", control: .choice(["Right", "Left"], p?.handedness == .left ? 1 : 0))

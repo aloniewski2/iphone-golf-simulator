@@ -23,7 +23,7 @@ struct OnboardingConnectScreen: View {
             if session.displayConnected {
                 IslandAction(title: "Play on the TV", focused: false, primary: true) { flow.playOnTV() }.accessibilityIdentifier("onboarding-tv")
             }
-            IslandAction(title: "Play on this phone for now", focused: false, primary: !session.displayConnected) { flow.playOnPhone() }.accessibilityIdentifier("onboarding-phone")
+            Text("A TV or Mac is required. This phone stays your controller.").font(IslandUI.font(15))
         }
         .onAppear {
             SportsDisplays.shared.refresh()

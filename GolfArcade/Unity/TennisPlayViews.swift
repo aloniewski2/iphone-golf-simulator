@@ -45,7 +45,7 @@ struct TennisRemote: View {
             HStack {
                 HStack(spacing: 8) {
                     Circle().fill(IslandUI.lime).frame(width: 10, height: 10).shadow(color: IslandUI.lime, radius: 5)
-                    Text("Connected to TV").font(IslandUI.font(15, bold: true))
+                    Text("Connected to TV").font(IslandUI.font(15, bold: true)).accessibilityIdentifier("controller-connection")
                 }
                 .padding(.horizontal, 14).padding(.vertical, 8).background(.white.opacity(0.1), in: Capsule())
                 Spacer()
@@ -100,12 +100,13 @@ struct TennisRemote: View {
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"
         case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: "HOW TO PLAY"; case .golfLesson: "GOLF LESSON"
-        case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"; case .map: "CHOOSE YOUR COURT"; case .postMatch: "MATCH REP"
+        case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"; case .map: menu.mapSport == .golf ? "CHOOSE YOUR COURSE" : "CHOOSE YOUR COURT"; case .postMatch: "MATCH REP"
         case .story: menu.storyLine.map { TennisStory.name(for: $0.speaker).uppercased() } ?? "STORY"
         }
     }
     private var focusName: String {
         let id = menu.focused
+        if menu.screen == .map, let choice = menu.mapChoices.first(where: { "map-\($0.id)" == id }) { return choice.title }
         if id.hasPrefix("round"), let r = Int(id.dropFirst(5)) {
             let o = TennisCampaign.draw[r]
             return TennisCampaign.shared.unlocked(r) ? "\(o.roundTitle.capitalized) · \(o.name)" : "\(o.roundTitle.capitalized) · Locked"
@@ -192,10 +193,9 @@ private struct RemoteButton: View {
                     .background(filled ? IslandUI.lime : .clear, in: Circle())
                     .overlay(Circle().strokeBorder(filled ? IslandUI.navy.opacity(0.0) : .white.opacity(0.42), lineWidth: 3))
                     .shadow(color: filled ? .black.opacity(0.4) : .clear, radius: 0, y: filled ? 5 : 0)
-            }.buttonStyle(PressStyle())
+            }.buttonStyle(PressStyle()).accessibilityLabel(caption).accessibilityIdentifier("remote-\(caption.lowercased())")
             Text(caption.uppercased()).font(IslandUI.font(12, bold: true)).tracking(1.6).foregroundStyle(.white.opacity(0.6))
         }
-        .accessibilityLabel(caption)
     }
 }
 

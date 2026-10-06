@@ -30,6 +30,10 @@
 + (instancetype)shared { static SportsRuntime *instance; static dispatch_once_t token; dispatch_once(&token, ^{instance=[SportsRuntime new];}); return instance; }
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error {
 #if HAS_UNITY
+    if (![window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive]) {
+        if (error) *error=[NSError errorWithDomain:@"SportsRuntime" code:4 userInfo:@{NSLocalizedDescriptionKey:@"Connect an external TV or Mac to play. This phone remains the controller."}];
+        return NO;
+    }
     if (!_unity) {
         // Debug builds put app code in GolfArcade.debug.dylib, where the
         // executable-only _mh_execute_header symbol cannot be linked directly.
@@ -93,16 +97,6 @@
         _unity.appController.window.hidden=YES;
         return;
     }
-    UIViewController *controller=_unity.appController.rootViewController;
-    if(!controller) return;
-    UIWindow *previous=_unity.appController.window;
-    if(previous != window) previous.hidden=YES;
-    [controller.view removeFromSuperview];
-    window.rootViewController=controller;
-    _unity.appController.window=window;
-    controller.view.frame=window.bounds;
-    controller.view.autoresizingMask=UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    window.hidden=NO;
 #endif
 }
 - (void)send:(NSString*)json {

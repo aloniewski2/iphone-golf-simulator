@@ -38,7 +38,14 @@ final class OnboardingFlow {
         if progress.anyTutorialDone && !store.explicitRun {
             selected = .done; Analytics.track("onboarding_skipped_existing")
         }
-        if selected == .tutorial(.golf) { selected = .choose; store.explicitRun = false }
+        switch selected {
+        case .tutorial, .reward, .motionPrimer: selected = .choose; store.explicitRun = false
+        default: break
+        }
+        // The shipped app opens the menu directly. Identity editing remains in the locker.
+        if arguments == ProcessInfo.processInfo.arguments && !arguments.contains("-forceOnboarding") {
+            selected = .done; store.explicitRun = false
+        }
         store.step = selected; step = selected
         if first { Analytics.track("app_first_open") }
         let n = store.defaults.integer(forKey: "ftue.sessions.v1") + 1
@@ -62,10 +69,10 @@ final class OnboardingFlow {
         }
     }
     func guest() { _ = store.guest(); Analytics.track("guest_selected"); next() }
-    func playOnPhone() { store.touch = true; SportsSession.shared.touch = true; Analytics.track("play_on_phone"); move(to: .choose) }
+    func playOnPhone() { move(to: .connect) }
     func playOnTV() {
         guard SportsSession.shared.displayConnected else { return }
-        store.touch = false; move(to: .motionPrimer)
+        store.touch = false; SportsSession.shared.touch = false; move(to: .choose)
     }
     func primer(touch: Bool) {
         store.touch = touch; SportsSession.shared.touch = touch
@@ -73,20 +80,12 @@ final class OnboardingFlow {
     }
     func choose(_ sport: Sport) {
         guard sport.playable else { return }
-        if sport == .golf {
-            store.explicitRun = false; launched = false; coachIntro = false
-            move(to: .done)
-            TennisMenu.shared.begin(MenuLaunch(sport: .golf, mode: .round))
-            return
-        }
-        store.tutorialStep = 0; store.explicitRun = true; launched = false
-        Analytics.track("game_chosen", ["sport": sport.rawValue]); move(to: .tutorial(sport))
+        store.explicitRun = false; launched = false; coachIntro = false
+        move(to: .done)
+        TennisMenu.shared.begin(MenuLaunch(sport: sport, mode: sport == .golf ? .round : .exhibition, round: sport == .tennis ? 0 : nil))
     }
     func launchTutorialIfNeeded() {
-        guard case .tutorial(let sport) = step, !launched else { return }
-        launched = true
-        SportsSession.shared.touch = store.touch || !SportsSession.shared.displayConnected
-        TennisMenu.shared.startTutorial(sport)
+        if case .tutorial = step { move(to: .choose) }
     }
     func tutorialStarted(_ sport: Sport) {
         tutorialBegan = ProcessInfo.processInfo.systemUptime; firstHit = false; reportedExercise = nil
@@ -137,7 +136,7 @@ final class OnboardingFlow {
         case .character: destination = .account
         case .connect: destination = .character
         case .motionPrimer: destination = .connect
-        case .choose: destination = store.touch ? .connect : .motionPrimer
+        case .choose: destination = .connect
         case .tutorial: destination = .choose
         case .reward(let sport): finish(sport); return
         }

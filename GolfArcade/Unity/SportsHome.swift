@@ -10,7 +10,8 @@ struct SportsHome: View {
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
+            if session.displayConnected && !session.active { TennisRemote() }
+            else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
             else if menu.screen.isOnline && menu.screen != .online(.match) {
                 if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
             }
@@ -18,7 +19,7 @@ struct SportsHome: View {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
             }
-            else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
+            else if session.active && !session.loading.finished { TennisRemote() }
             else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
             else if session.active && session.sport == "golf" {
                 GolfPhoneController(session: session)
@@ -49,6 +50,10 @@ struct SportsHome: View {
             menu.online.installCallbacks(menu)
             let args = ProcessInfo.processInfo.arguments
             #if DEBUG
+            if args.contains("-controllerMenuCheck") {
+                SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+                session.displayConnected = true
+            }
             OnlineLobbyProofDriver.start(menu,args:args)
             #endif
             if let index = args.firstIndex(of:"--lobby-mock"), let count = args[safe:index+1].flatMap(Int.init) {
@@ -69,6 +74,7 @@ struct SportsHome: View {
             if ProcessInfo.processInfo.arguments.contains("--lobby"), menu.screen == .title { menu.tap("start") }
             if ProcessInfo.processInfo.arguments.contains("--character-editor") { menu.openCharacterEditor() }
             // `-benchTennis`: play a self-driving rally on the phone and log frame times.
+            if args.contains("--playability-check") { await PlayabilityCheck.run(); return }
             if SportsSession.benchmark && !session.active { session.sport="tennis"; session.touch=true; session.start(preview:!session.displayConnected) }
         }
         .background(DisplayRegistration().frame(width:0,height:0))
@@ -125,8 +131,7 @@ struct ClassicSportsHome: View {
                     Section {
                         Button("Play on external display") { session.start() }.accessibilityIdentifier("startExternalGame")
                         Text("TV shows the game. This iPhone stays your controller.")
-                        Button("On-phone touch preview") { session.start(preview:true) }.accessibilityIdentifier("startUnityPreview").disabled(session.displayConnected)
-                        if session.displayConnected { Text("Disconnect the TV to use on-phone preview.").font(.caption) }
+                        Text("A connected TV or Mac is required to play.")
                     }
                 }
             }
@@ -349,5 +354,44 @@ struct GolfPhoneController: View {
                 }
             }
         }
+    }
+}
+
+@MainActor private enum PlayabilityCheck {
+    static func run() async {
+        let session = SportsSession.shared, menu = TennisMenu.shared
+        OnboardingFlow.shared.exitToMenu()
+        guard session.displayConnected else { SportsDiagnostics.write("PLAYABILITY CHECK requires external screen; phone gameplay disabled"); return }
+        session.touch = true
+        for sport in [Sport.golf, .tennis] {
+            menu.begin(MenuLaunch(sport: sport, mode: sport == .golf ? .round : .exhibition, round: sport == .tennis ? 0 : nil))
+            guard menu.screen == .map else { SportsDiagnostics.write("PLAYABILITY FAIL map \(sport)"); return }
+            let key = sport == .golf ? "postcards" : "resort"
+            menu.tap("map-\(key)")
+            for _ in 0..<400 {
+                if session.ready && session.loading.finished || !session.active { break }
+                try? await Task.sleep(for: .milliseconds(100))
+            }
+            guard session.active && session.ready && !session.paused else {
+                SportsDiagnostics.write("PLAYABILITY FAIL \(sport) \(session.status)"); return
+            }
+            SportsDiagnostics.write("PLAYABILITY READY \(sport) map=\(key) external=\(session.displayConnected)")
+            if sport == .golf {
+                session.swing(0.65)
+                var flight = false
+                for _ in 0..<80 {
+                    flight = flight || session.golfPhase == "Flight"
+                    try? await Task.sleep(for: .milliseconds(100))
+                }
+                SportsDiagnostics.write("PLAYABILITY \(flight ? "PASS" : "FAIL") golf swing state=\(session.golfPhase) feedback=\(session.feedback)")
+            } else {
+                try? await Task.sleep(for: .seconds(12))
+                SportsDiagnostics.write("PLAYABILITY \(session.active && !session.paused && session.contacts.count > 0 ? "PASS" : "FAIL") tennis contacts=\(session.contacts.count) phase=\(session.tennisPhase)")
+            }
+            session.end()
+            try? await Task.sleep(for: .seconds(1))
+        }
+        menu.goHome()
+        SportsDiagnostics.write("PLAYABILITY CHECK COMPLETE")
     }
 }

@@ -57,6 +57,17 @@ namespace GolfArcade.PlayTests {
                 Assert.That(GameObject.Find("Menu"), Is.Null);
             } finally { GolfGame.NativeExitRequested -= exit; }
         }
+        [UnityTest] public IEnumerator EveryNativeCourseStartsAtItsOwnFirstHole() {
+            game = new GameObject("Native course selection check").AddComponent<GolfGame>();
+            yield return null;
+            foreach (var course in GolfArcade.Course.Course.All()) {
+                game.PrepareNativeAddress(course.Key);
+                yield return null;
+                Assert.That(game.CurrentHole.Number, Is.EqualTo(course.Holes[0].Number), course.Key);
+                Assert.That(game.Current, Is.EqualTo(GolfGame.State.Aim), course.Key);
+                Assert.That(GameObject.Find("Menu"), Is.Null);
+            }
+        }
         [UnityTearDown] public IEnumerator Cleanup() {
             Time.timeScale = 1;
             if (game) {

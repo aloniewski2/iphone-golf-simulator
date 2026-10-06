@@ -27,7 +27,7 @@ namespace GolfArcade.Game
             public float bodySize=-1;
             public string shirt,shorts,accent,racket,skinHex,hairHex; public bool tips=true; public float overscan;
             // The tennis court: "" / "resort", "skyscraper" or "volcano"; and a court colour (hex, "" = the venue's own).
-            public string venue,courtHex,network; public int aimSequence;
+            public string venue,course,courtHex,network; public int aimSequence;
             public string[] emotes;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
@@ -75,7 +75,7 @@ namespace GolfArcade.Game
         [DllImport("__Internal")] static extern int SportsPollSample(out Sample sample);
         [DllImport("__Internal")] static extern void SportsEmit(string value);
         [DllImport("__Internal")] static extern double SportsClock();
-        [DllImport("__Internal")][return: MarshalAs(UnmanagedType.I1)] static extern bool SportsPresentExternalDisplay();
+        [DllImport("__Internal")] static extern int SportsPrepareExternalDisplay();
 #else
         static void SportsRecorderConfigure(string session,int display) {}
         static void SportsRecorderEnable(bool enabled) {}
@@ -87,7 +87,7 @@ namespace GolfArcade.Game
         static int SportsPollSample(out Sample sample) { sample=default; return 0; }
         static void SportsEmit(string value) {}
         static double SportsClock()=>Time.realtimeSinceStartupAsDouble;
-        static bool SportsPresentExternalDisplay()=>true;
+        static int SportsPrepareExternalDisplay()=>1;
 #endif
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot() {
@@ -246,13 +246,13 @@ namespace GolfArcade.Game
                   look.BodySize=Mathf.Clamp01(m.bodySize<0?m.buildChoice/4f:m.bodySize);
                   tennis.SetPlayerLook(look); }   // kept and re-applied on every rebuild
                 var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
-                    : m.mode=="tutorial" ? TennisGame.Mode.Tutorial : TennisGame.Mode.Exhibition;
+                    : TennisGame.Mode.Exhibition;
                 TennisTutorial.StartIndex = mode == TennisGame.Mode.Tutorial ? m.tutorialStart : 0;
                 tennis.ConfigureMatch(mode,m.opponent,m.opponentName,m.round,m.sets,m.games,
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) tennis.EquipEmotes(m.emotes);
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) golf.PrepareNativeAddress();
+            if(golf) golf.PrepareNativeAddress(m.course);
             if(!string.IsNullOrEmpty(m.network)) SportsMultiplayer.Configure(m.network);
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
@@ -289,24 +289,24 @@ namespace GolfArcade.Game
 
         IEnumerator Present(bool external,string eventType) {
             Ready=false; frameRendered=false;
-            if(!ConfigureDisplay(external)) yield break;
+            float attachDeadline=Time.realtimeSinceStartup+8;
+            while(!ConfigureDisplay(external)) {
+                if(!external || Time.realtimeSinceStartup>=attachDeadline) {
+                    Emit("error", external ? "The external display could not start. Check AirPlay and choose a map to retry." : "Gameplay camera is missing.");
+                    yield break;
+                }
+                yield return null;
+            }
             float deadline=Time.realtimeSinceStartup+8;
             while(!frameRendered && Time.realtimeSinceStartup<deadline) yield return null;
             if(!frameRendered) { Emit("error","Gameplay camera did not render a frame. Return to the menu and retry."); yield break; }
             Ready=true; Emit(eventType,"Gameplay camera rendered");
         }
         bool ConfigureDisplay(bool external) {
-            int index=external?1:0;
-            Debug.Log($"[SportsDisplay] Configure external={external} available={Display.displays.Length}");
-            if(Display.displays.Length<=index) { Emit("error","This route does not expose an independent Unity display. Use a supported AirPlay receiver/wired display, or choose on-phone preview."); return false; }
-            // On iOS Display.active reports screen availability even before a
-            // render window exists. Always activate; native initialization is idempotent.
-            if(external) Display.displays[index].Activate();
-            if(external && !SportsPresentExternalDisplay()) {
-                Emit("error","Unity could not attach its renderer to the external scene. Return to menu and reconnect the display.");
-                return false;
-            }
-            if(!gameplayCamera) { Emit("error","Gameplay camera is missing."); return false; }
+            // The scene's UIScreen can appear after Unity's initial display cache was built.
+            // Native code registers and activates that exact screen and returns its cache index.
+            int index=external ? SportsPrepareExternalDisplay() : 0;
+            if(index<0 || Display.displays.Length<=index || !gameplayCamera) return false;
             foreach(var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None)) {
                 if(camera.targetTexture) continue; // Minimap/render-texture cameras are not TV cameras.
                 camera.enabled=camera==gameplayCamera;

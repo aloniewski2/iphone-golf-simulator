@@ -1,4 +1,5 @@
 using UnityEngine;
+using GolfArcade.Profile;
 using GolfArcade.Swing;
 namespace GolfArcade.Game {
     public sealed partial class GolfGame {
@@ -11,14 +12,16 @@ namespace GolfArcade.Game {
         public double TutorialHeading => heading;
         public GolfArcade.UI.Hud TutorialHud => hud;
         public int TutorialHole => holeIndex;
-        public void PrepareNativeAddress() {
+        public void PrepareNativeAddress(string courseKey = null) {
             NativeControlled = true;
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
             hud.HideLocker(); stage?.Hide();
             if (bigScreen) bigScreen.enabled = false;
             SetFog(0);
-            if (Match == null) StartRound();
+            var selected = GolfArcade.Course.Course.ByKey(courseKey ?? "cliffside") ?? GolfArcade.Course.Course.Cliffside();
+            setup = GameSetup.Solo(ProfileStore.Active, selected.Key);
+            StartRound();
             BeginAim(false); hud.ShowPlayHud(true); RefreshControls();
             rig.SnapNext(); rig.ApplyFrame();
         }

@@ -26,3 +26,31 @@ enum TennisVenueChoice: String, CaseIterable, Identifiable {
 }
 
 
+
+/// Keys match Unity's Course.All(); every listed course has modelled playable holes.
+enum GolfCourseChoice: String, CaseIterable {
+    case cliffside, postcards, wildisles, magma
+    var title: String {
+        switch self { case .cliffside: "Cliffside"; case .postcards: "Postcards"; case .wildisles: "Wild Isles"; case .magma: "Magma Open" }
+    }
+    var detail: String {
+        switch self {
+        case .cliffside: "Ocean cliffs and island carries"
+        case .postcards: "Needle, The Steps and Volcano Rim"
+        case .wildisles: "A tour through the wild islands"
+        case .magma: "Lava hazards and volcanic greens"
+        }
+    }
+}
+struct SportMapChoice: Identifiable {
+    let id: String
+    let title: String
+    let detail: String
+    let art: String
+    static func choices(for sport: Sport) -> [Self] {
+        if sport == .golf {
+            return GolfCourseChoice.allCases.map { Self(id: $0.rawValue, title: $0.title, detail: $0.detail, art: "club-golf") }
+        }
+        return TennisVenueChoice.allCases.map { Self(id: $0.rawValue, title: $0.title, detail: $0.tagline, art: $0.art) }
+    }
+}

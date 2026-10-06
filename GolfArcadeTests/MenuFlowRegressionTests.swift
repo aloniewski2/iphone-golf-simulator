@@ -10,6 +10,43 @@ import UIKit
         menu.debugShow(.hub(.golf))
         XCTAssertEqual(menu.focused, "round")
     }
+    func testBothSportsChooseMapsBeforeStartingTheRuntime() {
+        let menu = TennisMenu()
+        for sport in [Sport.golf, .tennis] {
+            menu.debugShow(.hub(sport))
+            menu.begin(MenuLaunch(sport: sport, mode: .tutorial), onPhone: true)
+            XCTAssertEqual(menu.screen, .map)
+            XCTAssertEqual(menu.launch?.mode, sport == .golf ? .round : .exhibition)
+            XCTAssertEqual(menu.mapChoices.count, sport == .golf ? 4 : 3)
+            XCTAssertFalse(SportsSession.shared.active)
+            menu.back()
+            XCTAssertEqual(menu.screen, .hub(sport))
+        }
+        XCTAssertEqual(TennisMenu.hubItems(.tennis), ["exhibition", "campaign", "training"])
+        for id in TennisMenu.hubItems(.tennis) { XCTAssertTrue(menu.hubUnlocked(.tennis, id)) }
+    }
+    func testStartupFailureStopsLoadingAndOffersTheSameMapAgain() {
+        let menu = TennisMenu.shared
+        menu.begin(MenuLaunch(sport: .golf, mode: .round), onPhone: true)
+        SportsSession.shared.loading.begin(now: Date())
+        SportsSession.shared.failStartup("Display unavailable")
+        XCTAssertTrue(SportsSession.shared.loading.finished)
+        XCTAssertFalse(SportsSession.shared.active)
+        XCTAssertEqual(menu.screen, .map)
+        XCTAssertEqual(menu.mapSport, .golf)
+        XCTAssertEqual(menu.notice, "Display unavailable")
+        menu.goHome()
+    }
+    func testRetiredTennisTutorialAndRewardSavesReturnToSelection() {
+        for step in [OnboardingStep.tutorial(.tennis), .reward(.tennis), .motionPrimer] {
+            let defaults = UserDefaults(suiteName: "retired-\(UUID())")!
+            let store = OnboardingStore(defaults: defaults)
+            store.step = step; store.explicitRun = true
+            let flow = OnboardingFlow(store: store, progress: SportProgress(defaults: defaults), arguments: [])
+            XCTAssertEqual(flow.step, .choose)
+            XCTAssertFalse(store.rewardClaimed(.tennis))
+        }
+    }
     func testMainMenuIsReachableFromLoadingStoryAndEverySetupRoute() {
         let menu = TennisMenu()
         for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .golfLesson, .postMatch, .hub(.golf)] {
@@ -46,6 +83,21 @@ import UIKit
         store.step = .tutorial(.golf); store.explicitRun = true
         let flow = OnboardingFlow(store: store, progress: SportProgress(defaults: defaults), arguments: [])
         XCTAssertEqual(flow.step, .choose)
+    }
+    func testPhoneGameplayIsBlockedWithoutAnExternalScreen() {
+        let displays = SportsDisplays.shared
+        let saved = displays.external
+        defer { displays.external = saved }
+        displays.external = nil
+        XCTAssertNil(displays.gameWindow(preview: true))
+        XCTAssertNil(displays.gameWindow(preview: false))
+        let menu = TennisMenu.shared
+        menu.begin(MenuLaunch(sport: .golf, mode: .round), onPhone: true)
+        menu.tap("map-cliffside")
+        XCTAssertEqual(menu.screen, .connect)
+        XCTAssertFalse(SportsSession.shared.active)
+        XCTAssertFalse(menu.rows(.connect).flatMap { $0 }.contains("phone"))
+        menu.goHome()
     }
     func testAirPlayWindowWinsOverRequestedPhonePreview() {
         let displays = SportsDisplays.shared

@@ -47,9 +47,9 @@ final class SportsDisplays: NSObject {
     }
     func gameWindow(preview usePreview:Bool) -> UIWindow? {
         refresh()
-        if external != nil || !usePreview { showMenu(); return external }
-        guard let scene=phone?.windowScene else { return nil }
-        let window=UIWindow(windowScene:scene); preview=window; return window
+        guard let external else { return nil }
+        showMenu()
+        return external
     }
     private var networkOverlay: UIHostingController<MultiplayerMatchOverlay>?
     func installMultiplayerOverlay(in root: UIViewController) {
@@ -159,7 +159,7 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
     }
     func sceneDidDisconnect(_ scene:UIScene) {
         SportsSession.shared.pause(reason:"Display disconnected — reconnect and tap Ready"); SportsSession.shared.displayConnected=false
-        SportsSession.shared.status="Display disconnected. Reconnect or return to the menu for on-phone preview."
+        SportsSession.shared.status="Display disconnected. Reconnect your TV or Mac to continue; this phone remains your controller."
         SportsDisplays.shared.external=nil; window=nil
     }
 }

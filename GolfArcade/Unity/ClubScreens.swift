@@ -84,7 +84,7 @@ struct ClubQuickPlayScreen: View {
                 HStack(spacing: 18) {
                     ClubCard(art: "tennis", title: "Tennis", subtitle: "A relaxed match", tint: Club.sky,
                              focused: menu.isFocused("quickTennis"), compact: compact) { menu.tap("quickTennis") }.clubEntrance(0)
-                    ClubCard(art: "golf", title: "Golf", subtitle: "A round at Cliffside", tint: Club.green,
+                    ClubCard(art: "golf", title: "Golf", subtitle: "Choose your course", tint: Club.green,
                              focused: menu.isFocused("quickGolf"), compact: compact) { menu.tap("quickGolf") }.clubEntrance(1)
                 }.frame(height: compact ? 220 : 320)
                 ClubButton(title: "Back", icon: "", focused: menu.isFocused("back"), style: .quiet, size: 20) { menu.tap("back") }
@@ -236,7 +236,7 @@ struct IslandConnectScreen: View {
                     Text("On a Mac, enable AirPlay Receiver in System Settings → General → AirDrop & Handoff. Use the same Wi-Fi network.")
                         .font(IslandUI.font(17)).frame(maxWidth: 580, alignment: .leading)
                     Text("Waiting for a screen…").font(IslandUI.font(17))
-                    IslandAction(title: "Play on this phone", focused: menu.isFocused("phone"), primary: true, compact: compact) { menu.tap("phone") }.frame(maxWidth: 340)
+                    Text("A connected screen is required to play. Your phone stays the controller.").font(IslandUI.font(17, bold: true))
                     IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
                 }.foregroundStyle(IslandUI.navy).padding(24).background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 20))
             }
@@ -281,7 +281,7 @@ struct IslandResultsScreen: View {
         case "pm-next": menu.launch?.mode == .campaign ? "Next Round" : "Play Again"
         case "continue": "Next Round"
         case "pm-replay", "retry": "Rematch"
-        case "pm-court", "court": "Change Court"
+        case "pm-court", "court": menu.launch?.sport == .golf ? "Change Course" : "Change Court"
         case "restart": "New Tournament"
         default: "Main Menu"
         }
@@ -292,26 +292,33 @@ struct IslandCourtScreen: View {
     let menu: TennisMenu
     let compact: Bool
     var body: some View {
-        IslandShell(title: "Choose a court", compact: compact) {
+        IslandShell(title: menu.mapSport == .golf ? "Choose a course" : "Choose a court", compact: compact) {
             VStack(alignment: .leading, spacing: 20) {
+                if !menu.notice.isEmpty { IslandMenuNotice(menu: menu, compact: compact) }
+                ScrollViewReader { proxy in
                 ScrollView(compact ? .vertical : .horizontal) {
                     let layout = compact ? AnyLayout(VStackLayout(spacing: 18)) : AnyLayout(HStackLayout(spacing: 24))
                     layout {
-                        ForEach(TennisVenueChoice.allCases) { venue in
-                            let id = "map-\(venue.rawValue)"
+                        ForEach(menu.mapChoices) { venue in
+                            let id = "map-\(venue.id)"
                             Button { menu.tap(id) } label: {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Image(uiImage: UIImage(named: "\(venue.art).jpg") ?? UIImage()).resizable().scaledToFill()
+                                    Image(uiImage: UIImage(named: "\(venue.art).jpg") ?? UIImage(named: "\(venue.art).png") ?? UIImage()).resizable().scaledToFill()
                                         .frame(width: compact ? 300 : 366, height: compact ? 150 : 265).clipped()
                                     Text(venue.title).font(IslandUI.font(24, bold: true)).padding(.horizontal, 18)
-                                    Text(SportsSession.shared.tennisVenue == venue.rawValue ? "Selected court" : "Select court")
+                                    Text(venue.detail)
                                         .font(IslandUI.font(16)).padding(.horizontal, 18).padding(.bottom, 18)
                                 }.foregroundStyle(IslandUI.navy)
                                     .background(menu.isFocused(id) ? IslandUI.lime : .white, in: RoundedRectangle(cornerRadius: 18))
                                     .clipShape(RoundedRectangle(cornerRadius: 18))
-                            }.buttonStyle(.plain).accessibilityLabel("Play at \(venue.title)")
+                            }.buttonStyle(.plain).accessibilityLabel("Play at \(venue.title)").accessibilityIdentifier(id).id(id)
                         }
                     }.padding(3)
+                }
+                .onChange(of: menu.focused) { _, id in
+                    if !compact { withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(id, anchor: .center) } }
+                }
+                .onAppear { if !compact { proxy.scrollTo(menu.focused, anchor: .center) } }
                 }
                 IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
             }
