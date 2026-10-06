@@ -24,6 +24,16 @@ struct OnboardingRoot: View {
             }
             else { Text(flow.step.key).accessibilityIdentifier("onboarding-root") }
         }
+        .safeAreaInset(edge: .top) {
+            HStack {
+                Button { flow.back() } label: { Label("Back", systemImage: "chevron.left") }
+                    .accessibilityIdentifier("onboarding-back")
+                Spacer()
+                Button("Main Menu") { flow.exitToMenu() }.accessibilityIdentifier("onboarding-exit")
+            }
+            .font(IslandUI.font(16, bold: true)).foregroundStyle(IslandUI.navy)
+            .padding(.horizontal, 22).frame(minHeight: 48).background(IslandUI.paper)
+        }
     }
 }
 

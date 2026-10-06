@@ -5,7 +5,7 @@ struct OnboardingGamePicker: View {
     var body: some View {
         OnboardingScaffold(title: "Choose your game", step: "LET’S PLAY") {
             game(.tennis, title: "Tennis", detail: "The Tropical Open · Island Circuit", scene: "tennis", art: "racket", symbol: "tennis.racket")
-            game(.golf, title: "Golf", detail: "Cliffside · tutorial + 1 round", scene: "golf", art: "golf", symbol: "figure.golf")
+            game(.golf, title: "Golf", detail: "Cliffside · play a round", scene: "golf", art: "golf", symbol: "figure.golf")
         }
     }
     private func game(_ sport: Sport, title: String, detail: String, scene: String, art: String, symbol: String) -> some View {

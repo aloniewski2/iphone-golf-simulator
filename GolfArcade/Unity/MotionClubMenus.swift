@@ -177,11 +177,10 @@ struct ClubCameraHost: UIViewControllerRepresentable {
             }
         }
         func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-            guard flag else { return }
             outgoing?.removeFromSuperview(); outgoing = nil
             host.view.layer.transform = CATransform3DIdentity; host.view.alpha = 1; view.isUserInteractionEnabled = true
         }
-        func stop() { displayLink?.invalidate(); displayLink = nil; outgoing?.removeFromSuperview(); outgoing = nil }
+        func stop() { displayLink?.invalidate(); displayLink = nil; outgoing?.removeFromSuperview(); outgoing = nil; view.isUserInteractionEnabled = true }
     }
     static func dismantleUIViewController(_ controller: Controller, coordinator: ()) { controller.stop() }
 }

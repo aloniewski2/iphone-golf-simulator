@@ -47,7 +47,7 @@ final class SportsDisplays: NSObject {
     }
     func gameWindow(preview usePreview:Bool) -> UIWindow? {
         refresh()
-        if !usePreview { showMenu(); return external }
+        if external != nil || !usePreview { showMenu(); return external }
         guard let scene=phone?.windowScene else { return nil }
         let window=UIWindow(windowScene:scene); preview=window; return window
     }
@@ -61,7 +61,8 @@ final class SportsDisplays: NSObject {
         NSLayoutConstraint.activate([host.view.leadingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.leadingAnchor),host.view.trailingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.trailingAnchor),host.view.topAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.topAnchor),host.view.heightAnchor.constraint(equalToConstant:150)])
     }
     func restorePhoneControls() {
-        phone?.isHidden=false; phone?.makeKey()
+        if external != nil && preview != nil { endPreview() }
+        phone?.makeKeyAndVisible()
         if let preview {
             if !SportsSession.shared.loading.finished {
                 preview.isHidden = true; phone?.makeKeyAndVisible(); return
@@ -154,12 +155,7 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
         window.rootViewController=SportsDisplays.tvRoot(); window.isHidden=false
         self.window=window; SportsDisplays.shared.external=window; SportsSession.shared.displayConnected=true
         SportsDisplays.shared.showMenu()
-        if SportsSession.shared.active && SportsSession.shared.ready {
-            SportsRuntime.shared().attach(to:window)
-            SportsSession.shared.command("display")
-            SportsDisplays.shared.restorePhoneControls()
-            SportsSession.shared.status="Display reconnected. Waiting for a gameplay frame…"
-        }
+        SportsSession.shared.routeGameToExternalDisplay()
     }
     func sceneDidDisconnect(_ scene:UIScene) {
         SportsSession.shared.pause(reason:"Display disconnected — reconnect and tap Ready"); SportsSession.shared.displayConnected=false
@@ -181,7 +177,11 @@ struct SportsPreviewControls:View {
                 if session.sport == "tennis" { PointClipControls(session: session) }
                 if session.sport != "tennis" { Text(session.feedback).font(.caption).lineLimit(1) }
                 Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
-                Button("Menu") { if session.multiplayerMatchID != nil { TennisMenu.shared.online.select("net-leave",menu:TennisMenu.shared) } else { session.end() } }
+                Button("Exit Game") { session.exitGame() }.accessibilityIdentifier("game-exit")
+            }
+            if session.sport == "golf", session.golfPhase == "RoundDone" {
+                Button(session.golfHasNextHole ? "Next Hole" : "Play Again") { session.command("golfContinue") }
+                    .accessibilityIdentifier("golf-continue")
             }
             if session.sport == "tennis" && session.ready {
                 if session.tennisPhase == "rally" { RallyAimPad(session:session).frame(width:180,height:90); TennisAbilityControls(session: session) }
@@ -190,8 +190,8 @@ struct SportsPreviewControls:View {
             HStack {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }
                 else { Button("Aim left") { session.setAim(-1) }; Button("Aim right") { session.setAim(1) }; Button("Club") { session.command("club",value:1) } }
-                Slider(value:$power,in:0.1...1).accessibilityLabel("Swing power")
-                Button("Swing") { session.swing(power) }.disabled(session.paused)
+                Slider(value:$power,in:(session.sport == "golf" ? 0.02 : 0.1)...1).accessibilityLabel("Swing power")
+                Button("Swing") { session.swing(power) }.disabled(session.paused || (session.sport == "golf" && session.golfPhase != "Aim"))
             }
             }
         }.padding().background(.regularMaterial)

@@ -20,14 +20,24 @@ struct SportsHome: View {
             }
             else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
             else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
-            else if menu.classic { ClassicSportsHome() }
             else if session.active && session.sport == "golf" {
-                if menu.launch?.mode == .tutorial { GolfTutorialController(session: session) }
-                else { GolfPhoneController(session: session) }
+                GolfPhoneController(session: session)
             }
             else if session.active { TennisRacketController(session: session) }
+            else if menu.classic { ClassicSportsHome() }
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
+        }
+        .safeAreaInset(edge: .top) {
+            if session.active {
+                HStack {
+                    Text(session.displayConnected ? "Phone controller" : "Game controls")
+                    Spacer()
+                    Button("Exit Game") { session.exitGame() }.accessibilityIdentifier("controller-exit")
+                }
+                .font(IslandUI.font(16, bold: true)).foregroundStyle(IslandUI.navy)
+                .padding(.horizontal, 20).frame(minHeight: 48).background(IslandUI.paper)
+            }
         }
         .overlay(alignment:.top) { if session.active && menu.screen == .online(.match) { MultiplayerMatchOverlay() } }
         .animation(.easeInOut(duration: 0.3), value: session.active)
@@ -293,13 +303,50 @@ private struct SportsControls:View {
 /// Golf in progress, from the new menu: loading, then the golf controls.
 struct GolfPhoneController: View {
     @Bindable var session: SportsSession
+    @State private var power = 0.6
     var body: some View {
         if !session.ready || !session.loading.finished {
             ZStack { MenuBackdrop(dim: 0.55); LoadingScreen(menu: .shared, compact: true) }.preferredColorScheme(.dark)
         } else {
-            NavigationStack {
-                Form { SportsControls(session: session) }
-                    .navigationTitle(TennisMenu.shared.launch?.mode == .tutorial ? "Golf lesson — hit a shot" : "Cliffside")
+            IslandShell(title: "Golf", compact: true) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        Text(session.status).font(IslandUI.font(16)).accessibilityIdentifier("golf-status")
+                        Text(session.feedback).font(IslandUI.font(18)).accessibilityIdentifier("golf-feedback")
+                        Text(session.touch ? "Touch controller" : "Phone motion controller").font(IslandUI.font(16, bold: true))
+                        if session.paused {
+                            Button(session.touch ? "Use phone motion" : "Use touch controls") {
+                                if session.touch { session.useMotion() } else { session.useTouch() }
+                            }.accessibilityIdentifier("golf-input-mode")
+                        }
+                        HStack {
+                            IslandAction(title: session.paused ? "Ready" : "Pause", primary: true, compact: true) {
+                                if session.paused { session.readyToPlay() } else { session.pause() }
+                            }
+                            IslandAction(title: "Exit Round", compact: true) { session.exitGame() }
+                                .accessibilityIdentifier("golf-exit")
+                        }
+                        Text("Aim at the flag, choose your club, then swing.").font(IslandUI.font(16))
+                        if session.golfPhase == "RoundDone" {
+                            IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Play Again", primary: true, compact: true) { session.command("golfContinue") }
+                                .accessibilityIdentifier("golf-continue")
+                        }
+                        HStack {
+                            IslandAction(title: "◀ Aim", compact: true) { session.setAim(-1) }
+                            IslandAction(title: "Aim ▶", compact: true) { session.setAim(1) }
+                        }
+                        HStack {
+                            IslandAction(title: "◀ Club", compact: true) { session.command("club", value: -1) }
+                            IslandAction(title: "Club ▶", compact: true) { session.command("club", value: 1) }
+                        }
+                        if session.touch {
+                            Slider(value: $power, in: 0.02...1).accessibilityLabel("Swing power")
+                            IslandAction(title: "Swing", primary: true, compact: true) { session.swing(power) }.disabled(session.paused || session.golfPhase != "Aim")
+                        } else {
+                            Text("Take the phone back slowly, then swing through smoothly.").font(IslandUI.font(17))
+                        }
+                    }
+                }
             }
         }
     }

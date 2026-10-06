@@ -283,7 +283,7 @@ namespace GolfArcade.Game
             }
             KeepToOpenCourses();
 
-            ShowMenu();
+            if (!NativeSportsSession.Active) ShowMenu();
         }
 
         // ----- The menu -----
@@ -300,6 +300,7 @@ namespace GolfArcade.Game
         /// be played, the hole stretching away under the logo, and PLAY between COURSE and GOLFER.
         public void ShowMenu()
         {
+            if (NativeControlled) { RequestNativeExit(); return; }
             // back from a round: out of any online room, and the device's own golfer again
             if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.Disconnect();
             ListenToRoom(null);
@@ -1217,7 +1218,7 @@ namespace GolfArcade.Game
         void RefreshControls()
         {
             bool aiming = Current == State.Aim;
-            hud.ShowSwingControls(aiming, Swing.Source == Swing.Synthetic, !Swing.UsingNetwork);
+            hud.ShowSwingControls(aiming && !NativeControlled, Swing.Source == Swing.Synthetic && !NativeControlled, !Swing.UsingNetwork && !NativeControlled);
             UpdateControllerHint(true);
         }
 
@@ -1979,6 +1980,7 @@ namespace GolfArcade.Game
         /// instead of freezing it; errors.log keeps the details (ErrorGuard).
         void Update()
         {
+            if (NativeSportsSession.Active && !NativeControlled) return;
             if (NetworkFrame()) return;
             ErrorGuard.Pump();
             try

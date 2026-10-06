@@ -38,6 +38,7 @@ final class OnboardingFlow {
         if progress.anyTutorialDone && !store.explicitRun {
             selected = .done; Analytics.track("onboarding_skipped_existing")
         }
+        if selected == .tutorial(.golf) { selected = .choose; store.explicitRun = false }
         store.step = selected; step = selected
         if first { Analytics.track("app_first_open") }
         let n = store.defaults.integer(forKey: "ftue.sessions.v1") + 1
@@ -72,6 +73,12 @@ final class OnboardingFlow {
     }
     func choose(_ sport: Sport) {
         guard sport.playable else { return }
+        if sport == .golf {
+            store.explicitRun = false; launched = false; coachIntro = false
+            move(to: .done)
+            TennisMenu.shared.begin(MenuLaunch(sport: .golf, mode: .round))
+            return
+        }
         store.tutorialStep = 0; store.explicitRun = true; launched = false
         Analytics.track("game_chosen", ["sport": sport.rawValue]); move(to: .tutorial(sport))
     }
@@ -115,6 +122,27 @@ final class OnboardingFlow {
         store.explicitRun = false; move(to: .done)
         TennisMenu.shared.finishOnboarding(sport)
         Analytics.track("onboarding_done", ["seconds_since_install": String(Analytics.secondsSinceInstall)])
+    }
+    /// Leaving setup never claims a tutorial or awards its reward.
+    func exitToMenu() {
+        store.explicitRun = false; launched = false; coachIntro = false; tutorialBegan = nil
+        move(to: .done)
+        TennisMenu.shared.goHome()
+    }
+    func back() {
+        coachIntro = false; launched = false
+        let destination: OnboardingStep
+        switch step {
+        case .account, .done: exitToMenu(); return
+        case .character: destination = .account
+        case .connect: destination = .character
+        case .motionPrimer: destination = .connect
+        case .choose: destination = store.touch ? .connect : .motionPrimer
+        case .tutorial: destination = .choose
+        case .reward(let sport): finish(sport); return
+        }
+        move(to: destination)
+        if SportsSession.shared.active { SportsSession.shared.end() }
     }
     func replay() {
         for sport in [Sport.tennis, .golf] where progress.finishedTutorial(sport) && !store.rewardClaimed(sport) {

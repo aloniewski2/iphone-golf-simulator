@@ -232,6 +232,19 @@ struct TennisMenuScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
         ClubCameraHost(route: menu.screen, reducedMotion: reduceMotion || SportsSession.shared.reduceMotion, paused: SportsSession.shared.menuPauseVisible, content: AnyView(screenContent))
+            .safeAreaInset(edge: .top) {
+                if menu.screen != .title && menu.screen != .main && !SportsSession.shared.menuPauseVisible {
+                    HStack {
+                        Button { menu.back() } label: { Label("Back", systemImage: "chevron.left") }
+                            .accessibilityIdentifier("menu-back")
+                        Spacer()
+                        Button("Main Menu") { menu.goHome() }.accessibilityIdentifier("menu-home")
+                    }
+                    .font(IslandUI.font(compact ? 16 : 22, bold: true)).foregroundStyle(IslandUI.navy)
+                    .padding(.horizontal, compact ? 22 : 40).frame(minHeight: compact ? 48 : 60)
+                    .background(IslandUI.paper)
+                }
+            }
     }
     private var screenContent: some View {
         Group {
@@ -251,7 +264,7 @@ struct TennisMenuScreen: View {
             case .character: IslandLockerScreen(menu: menu, compact: compact)
             case .settings: IslandSettingsScreen(menu: menu, compact: compact)
             case .howTo: IslandGuideScreen(menu: menu, compact: compact, golf: false)
-            case .golfLesson: IslandGuideScreen(menu: menu, compact: compact, golf: true)
+            case .golfLesson: IslandHubScreen(menu: menu, sport: .golf, compact: compact)
             case .connect: IslandConnectScreen(menu: menu, compact: compact)
             case .loading: LoadingScreen(menu: menu, compact: compact)
             case .results: IslandResultsScreen(menu: menu, compact: compact)

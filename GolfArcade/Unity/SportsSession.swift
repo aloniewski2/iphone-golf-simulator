@@ -269,10 +269,10 @@ final class SportsSession {
         start(preview: preview)
         launchExtras = [:]
     }
-    /// Golf's Cliffside round, or (tutorial) its practice shot.
+    /// Start a golf round; legacy tutorial requests use the same playable round.
     func startGolf(tutorial: Bool, preview: Bool) {
         sport = "golf"; opponentName = ""
-        launchExtras = ["mode": tutorial ? "tutorial" : "round"]
+        launchExtras = ["mode": "round"]
         start(preview: preview)
         launchExtras = [:]
     }
@@ -291,9 +291,7 @@ final class SportsSession {
     func start(preview: Bool = false) {
         guard !active else { return }
         SportsDisplays.shared.refresh()
-        guard !preview || !displayConnected else {
-            status="TV connected. Choose Play on external display to keep this phone as your controller."; return
-        }
+        let preview = preview && !displayConnected
         NSLog("[SportsSession] launch sport=%@ mode=%@ touch=%d",sport,preview ? "phone-preview" : "external-controller",touch ? 1 : 0)
         guard let window=SportsDisplays.shared.gameWindow(preview:preview) else {
             status="No independent external display is available. Connect AirPlay/wired display or choose preview."; return
@@ -301,7 +299,7 @@ final class SportsSession {
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
-        phase="calibrating"; feedback=""; stamina=1
+        phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
         matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
@@ -319,7 +317,8 @@ final class SportsSession {
                  "heightChoice":p.heightChoice,"buildChoice":p.buildChoice,"bodySize":p.bodySize,
                  "loadout":p.loadoutPayload(sport:Sport(rawValue:sport) ?? .tennis)]
         if preview { touch=true }
-        pending?["external"] = !preview
+        runtimeExternalDisplay = !preview
+        pending?["external"] = runtimeExternalDisplay
         pending?["emotes"] = matchEmotes
         for (key, value) in launchExtras { pending?[key] = value }
         // Explicit device verification uses a real, short match (no fabricated finish event).
@@ -620,6 +619,24 @@ final class SportsSession {
         TennisMenu.shared.beginPostMatch()
     }
 
+    var golfPhase = ""
+    var golfHasNextHole = false
+    private var runtimeExternalDisplay = false
+    /// A display can arrive after a phone game has begun, including while it is loading.
+    func routeGameToExternalDisplay() {
+        guard active, ready, let window = SportsDisplays.shared.external else { return }
+        runtimeExternalDisplay = true
+        SportsRuntime.shared().attach(to: window)
+        command("display")
+        SportsDisplays.shared.endPreview()
+        SportsDisplays.shared.restorePhoneControls()
+        status = "Display connected. Waiting for a gameplay frame…"
+    }
+    func exitGame() {
+        if multiplayerMatchID != nil { TennisMenu.shared.online.select("net-leave", menu: .shared) }
+        else if OnboardingFlow.shared.active { OnboardingFlow.shared.exitToMenu() }
+        else { TennisMenu.shared.goHome() }
+    }
     func end() {
         menuPauseVisible = false
         if active && ready {
@@ -648,6 +665,7 @@ final class SportsSession {
             switch event["type"] as? String {
             case "ready":
                 pending=nil; ready=true
+                if displayConnected && !runtimeExternalDisplay { routeGameToExternalDisplay() }
                 if UserDefaults.standard.bool(forKey:"sports.resetCoaching") {
                     UserDefaults.standard.set(false,forKey:"sports.resetCoaching"); command("coaching")
                 }
@@ -658,6 +676,10 @@ final class SportsSession {
                 // Unity's scene load, 0...1, fills 20% → 80% of the bar.
                 if let p=Double(event["message"] as? String ?? "") { loading.reach(0.2+0.6*p) }
             case "feedback":
+                if sport == "golf" {
+                    golfPhase = event["golfState"] as? String ?? ""
+                    golfHasNextHole = event["golfHasNextHole"] as? Bool ?? false
+                }
                 receiveMatchSnapshot(event)
                 feedback=event["message"] as? String ?? ""; stamina=event["stamina"] as? Double ?? 1
                 if SportsRuntime.shared().clock()>=nextDiagnostic {
@@ -743,6 +765,7 @@ final class SportsSession {
             case "matchOver":
                 let parts = (event["message"] as? String ?? "").split(separator: "|")
                 receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? String(parts[1]) : "")
+            case "exit": if active { exitGame() }
             case "error": pending=nil; status=event["message"] as? String ?? "Unity error"; pause(reason:status)
             default: break
             }

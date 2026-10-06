@@ -76,7 +76,7 @@ struct IslandHubScreen: View {
     }
 
     private func row(_ id: String) -> some View {
-        let m = mode(id), focused = menu.isFocused(id), primary = id == "tutorial" && !m.done
+        let m = mode(id), focused = menu.isFocused(id), primary = sport == .golf ? id == "round" : id == "tutorial" && !m.done
         return Button { menu.tap(id) } label: {
             HStack(spacing: 16) {
                 Image(systemName: m.icon).font(.system(size: compact ? 19 : 25, weight: .bold)).frame(width: compact ? 40 : 54, height: compact ? 40 : 54)

@@ -45,7 +45,7 @@ namespace GolfArcade.Game
             public bool degraded => (flags & 2) != 0;
         }
         [Serializable] class Event {
-            public int version=1; public string session,type,message,finalScore; public bool matchComplete,matchWon; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
+            public int version=1; public string session,type,message,finalScore,golfState; public bool matchComplete,matchWon,golfHasNextHole; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
         }
         public static bool Active { get; private set; }
         public static bool Left { get; private set; }
@@ -114,6 +114,8 @@ namespace GolfArcade.Game
             TennisTutorial.Finished+=()=>Emit("tutorialDone","");
             TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
             GolfGame.ShotStruck+=()=>Emit("shot","");
+            GolfGame.NativeExitRequested+=GolfExit;
+
             GolfTutorial.StepChanged+=(i,n,text)=>Emit("tutorialStep",$"{i}|{n}|{text}");
             GolfTutorial.StepResolved+=(i,misses,skip)=>Emit(skip ? "tutorialSkip" : "tutorialSuccess",$"{i}|{misses}");
             GolfTutorial.HoleDone+=(strokes,capped)=>Emit("golfHoleDone",$"{strokes}|{(capped ? "true" : "false")}");
@@ -132,6 +134,7 @@ namespace GolfArcade.Game
             TennisGame.RecordingPointStarted-=SportsRecorderBeginPoint;
             TennisGame.RecordingPointEnded-=SportsRecorderEndPoint;
             TennisGame.Landed -= AimLanding; TennisGame.DrillPoint -= AimMiss;
+            GolfGame.NativeExitRequested -= GolfExit;
             SportsRecorderStop();
             Active=false; Left=false; TrackingWarning=""; Time.timeScale=1;
         }
@@ -169,6 +172,7 @@ namespace GolfArcade.Game
                     case "aimPractice": if(tennis) tennis.SetAimPractice(m.value>0); break;
                     case "aimFeed": if(tennis) tennis.FeedAimPractice(m.value,m.value2<0,m.aimSequence); break;
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
+                    case "golfContinue": if(golf && !paused) golf.NativeContinue(); break;
                     case "club": if(golf) golf.NativeClub(m.value<0?-1:1); break;
                     case "sound": AudioListener.volume=m.value>0 && !Application.isBatchMode?1:0; break;
                     case "haptics": Haptics.Enabled=m.value>0; Haptics.Release(); break;
@@ -179,7 +183,9 @@ namespace GolfArcade.Game
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
                     case "coaching": TennisCoach.ResetTips(); break;
                     case "latency": if(tennis) tennis.DisplayLatency=m.value; break;
-                    case "tutorialNext": if(tennis && tennis.PlayMode == TennisGame.Mode.Tutorial) tennis.GetComponent<TennisTutorial>()?.SkipStep(); break;
+                    case "tutorialNext":
+                        if(tennis && tennis.PlayMode == TennisGame.Mode.Tutorial) tennis.GetComponent<TennisTutorial>()?.SkipStep();
+                        break;
                     case "timingCheck": if(tennis) tennis.StartTimingCheck(); break;
                     // The controller serve: the toss meter's reading, the aim in the target box,
                     // and walking along the baseline before a serve (held buttons: -1, 0, 1).
@@ -247,13 +253,15 @@ namespace GolfArcade.Game
             if(tennis) tennis.EquipEmotes(m.emotes);
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress();
-            if(golf && m.mode == "tutorial") golf.gameObject.AddComponent<GolfTutorial>().Begin(golf);
             if(!string.IsNullOrEmpty(m.network)) SportsMultiplayer.Configure(m.network);
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
             SetPaused(true);
             yield return Present(m.external,"ready");
             loading=false;
+        }
+        void GolfExit() {
+            SetPaused(true); Emit("exit", "Golf session ended");
         }
         bool flashing;
         /// Delay probe for the phone: the whole TV goes black, then white, `count` times. The
@@ -398,7 +406,7 @@ namespace GolfArcade.Game
         }
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&
