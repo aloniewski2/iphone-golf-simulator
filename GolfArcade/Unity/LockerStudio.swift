@@ -106,7 +106,7 @@ struct IslandLockerScreen: View {
                 Ellipse().fill(RadialGradient(colors: [.white.opacity(0.9), IslandUI.lime.opacity(0.55), .clear], center: .center, startRadius: 4, endRadius: 150 * k))
                     .frame(width: 260 * k, height: 40 * k).offset(y: -26 * k).allowsHitTesting(false)
             }
-            CharacterModelPreview(player: player, cameraDistance: 2.7, framing: framing)
+            CharacterModelPreview(player: player, cameraDistance: 2.7, framing: framing, outfitSport: menu.lockerSport)
                 .padding(.bottom, 18)
                 .accessibilityLabel("\(player.name), your character")
             if compact { nameTag.padding(.bottom, 6) }
@@ -383,7 +383,7 @@ struct LockerTile: View {
     static func image(_ p: Player, slot: LockerSlot, item: LockerItem) -> UIImage? {
         let k = key(p, slot: slot, item: item)
         if let c = cache[k] { return c }
-        let c = CharacterModelPreview.Coordinator(cameraDistance: 3.1); c.update(p)
+        let c = CharacterModelPreview.Coordinator(cameraDistance: 3.1); c.update(p, sport: item.sports == [.golf] ? .golf : .tennis)
         c.framing = slot == .skin ? .body : slot == .shoes ? .feet : .racket; c.applyFraming()
         c.scene.rootNode.childNode(withName: "idleBall", recursively: true)?.removeFromParentNode()
         let r = SCNRenderer(device: nil, options: nil); r.scene = c.scene; r.pointOfView = c.camera

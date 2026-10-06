@@ -24,6 +24,20 @@ Shader "GolfArcade/GolfPlants"
         [MainColor] _BaseColor ("Tint", Color) = (1, 1, 1, 1)
         _Smoothness ("Smoothness", Range(0.0, 1.0)) = 0.1
         _Metallic ("Metallic", Range(0.0, 1.0)) = 0.0
+        // LitInput's complete material buffer contract. Missing fields previously
+        // fell back to zero; retain those defaults while declaring them for SRP.
+        [HideInInspector] _SpecColor ("Specular", Color) = (0,0,0,0)
+        [HideInInspector] _EmissionColor ("Emission", Color) = (0,0,0,0)
+        [HideInInspector] _Cutoff ("Cutoff", Float) = 0
+        [HideInInspector] _BumpScale ("Normal strength", Float) = 0
+        [HideInInspector] _Parallax ("Parallax", Float) = 0
+        [HideInInspector] _OcclusionStrength ("Occlusion", Float) = 0
+        [HideInInspector] _ClearCoatMask ("Clear coat", Float) = 0
+        [HideInInspector] _ClearCoatSmoothness ("Coat smoothness", Float) = 0
+        [HideInInspector] _DetailAlbedoMapScale ("Detail albedo", Float) = 0
+        [HideInInspector] _DetailNormalMapScale ("Detail normal", Float) = 0
+        [HideInInspector] _DetailAlbedoMap ("Detail map", 2D) = "gray" {}
+        [HideInInspector] _Surface ("Surface", Float) = 0
         [HideInInspector][Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2.0
     }
 
@@ -55,12 +69,12 @@ Shader "GolfArcade/GolfPlants"
 
         // World-space sway of one vertex, returned as an OBJECT-space offset (the stock vertex functions then run unchanged on the displaced position).
         // vcol: R = weight, G = phase, B = 0 for a mesh with sway data (white = no data = static).
-        float3 GolfPlantsSwayOS(float3 positionOS, float4 vcol)
+        float3 GolfPlantsSwayOS(float3 positionOS, float4 vcol, float3 pivotData)
         {
             float amp = length(_GolfWind.xz);
             float w = (amp > 1e-5 && vcol.b < 0.5) ? saturate(vcol.r) : 0.0;
             float2 dir = _GolfWind.xz / max(amp, 1e-5);
-            float2 origin = GetObjectToWorldMatrix()._m03_m23;               // the instance pivot (world XZ, yd)
+            float2 origin = pivotData.z > .5 ? pivotData.xy : GetObjectToWorldMatrix()._m03_m23;               // the instance pivot (world XZ, yd)
             float2 cell = round(origin * 100.0);                             // 1 cm cells
             float h  = GolfPlantsHash(cell);                                 // per instance, one independent hash per oscillator
             float h2 = GolfPlantsHash(cell + 31.7);
@@ -142,6 +156,7 @@ Shader "GolfArcade/GolfPlants"
                 float2 staticLightmapUV : TEXCOORD1;
                 float2 dynamicLightmapUV : TEXCOORD2;
                 float4 color : COLOR;
+                float3 pivotData : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -149,7 +164,7 @@ Shader "GolfArcade/GolfPlants"
             {
                 UNITY_SETUP_INSTANCE_ID(p);
                 Attributes a = (Attributes)0;
-                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color), p.positionOS.w);
+                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color, p.pivotData), p.positionOS.w);
                 a.normalOS = p.normalOS;
                 a.tangentOS = p.tangentOS;
                 a.texcoord = p.texcoord;
@@ -192,6 +207,7 @@ Shader "GolfArcade/GolfPlants"
                 float3 normalOS : NORMAL;
                 float2 texcoord : TEXCOORD0;
                 float4 color : COLOR;
+                float3 pivotData : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -199,7 +215,7 @@ Shader "GolfArcade/GolfPlants"
             {
                 UNITY_SETUP_INSTANCE_ID(p);
                 Attributes a = (Attributes)0;
-                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color), p.positionOS.w);
+                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color, p.pivotData), p.positionOS.w);
                 a.normalOS = p.normalOS;
                 a.texcoord = p.texcoord;
                 UNITY_TRANSFER_INSTANCE_ID(p, a);
@@ -235,6 +251,7 @@ Shader "GolfArcade/GolfPlants"
                 float4 position : POSITION;
                 float2 texcoord : TEXCOORD0;
                 float4 color : COLOR;
+                float3 pivotData : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -242,7 +259,7 @@ Shader "GolfArcade/GolfPlants"
             {
                 UNITY_SETUP_INSTANCE_ID(p);
                 Attributes a = (Attributes)0;
-                a.position = float4(p.position.xyz + GolfPlantsSwayOS(p.position.xyz, p.color), p.position.w);
+                a.position = float4(p.position.xyz + GolfPlantsSwayOS(p.position.xyz, p.color, p.pivotData), p.position.w);
                 a.texcoord = p.texcoord;
                 UNITY_TRANSFER_INSTANCE_ID(p, a);
                 return DepthOnlyVertex(a);
@@ -279,6 +296,7 @@ Shader "GolfArcade/GolfPlants"
                 float2 texcoord : TEXCOORD0;
                 float3 normal : NORMAL;
                 float4 color : COLOR;
+                float3 pivotData : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -286,7 +304,7 @@ Shader "GolfArcade/GolfPlants"
             {
                 UNITY_SETUP_INSTANCE_ID(p);
                 Attributes a = (Attributes)0;
-                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color), p.positionOS.w);
+                a.positionOS = float4(p.positionOS.xyz + GolfPlantsSwayOS(p.positionOS.xyz, p.color, p.pivotData), p.positionOS.w);
                 a.tangentOS = p.tangentOS;
                 a.texcoord = p.texcoord;
                 a.normal = p.normal;

@@ -49,6 +49,22 @@ namespace GolfArcade.Course
             if (model) view.BuildFromModel(model); else view.BuildGeometry();
             view.BuildPin();
             HoleAtmosphere.Apply(hole);
+            var sunObject = GameObject.Find("Sun");
+            var sun = sunObject ? sunObject.GetComponent<Light>() : null;
+            if (hole.Number == 7 || GolfLook.IsPostcard(hole.Number))
+                GolfAtmosphere.Apply(sun, null, hole.Number);
+            else
+            {
+                // New courses keep the light and sky chosen by their theme.
+                bool flat = RenderSettings.ambientMode == UnityEngine.Rendering.AmbientMode.Flat;
+                GolfArcade.Tennis.HeroLightingProfile.Golf(sun,
+                    flat ? RenderSettings.ambientLight : RenderSettings.ambientSkyColor,
+                    flat ? RenderSettings.ambientLight : RenderSettings.ambientEquatorColor,
+                    flat ? RenderSettings.ambientLight : RenderSettings.ambientGroundColor, 0);
+                GolfFigureExposure.Set(Color.white);
+            }
+            var game = FindFirstObjectByType<GolfArcade.Game.GolfGame>();
+            GolfWindSway.SetWind(game ? game.Wind : Wind.Calm);
             return view;
         }
 
@@ -222,7 +238,8 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (HoleAtmosphere.IsMagma(Hole) && name is "MAT_WATER" or "MAT_WATER_SHALLOW" or "MAT_FOAM") mats[i] = LavaWorld.ShoreMaterial(name);   // the sea is the crater's lava
+                    if (GolfLook.Handles(name)) mats[i] = GolfLook.Get(name);
+                    else if (HoleAtmosphere.IsMagma(Hole) && name is "MAT_WATER" or "MAT_WATER_SHALLOW" or "MAT_FOAM") mats[i] = LavaWorld.ShoreMaterial(name);   // the sea is the crater's lava
                     else if (Colour(name) is Color color)
                         mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color)
                                 : name is "MAT_LAVA" or "MAT_WINDOW" ? UnlitMat(color)       // they glow
@@ -233,6 +250,8 @@ namespace GolfArcade.Course
                 r.sharedMaterials = mats;
                 r.shadowCastingMode = StartsWithAny(r.name, Unshadowed) ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
+            if (Hole.Number == 7) GolfLook.DressLegacy(model, Hole.Number);
+            if (GolfLook.IsPostcard(Hole.Number)) GolfLook.DressModel(model, Hole.Number);
             // The model's own open sea is one quad kilometres across, which the fog paints the
             // colour of the sky; the backdrop's sea (Backdrop.Place) replaces it.
             if (FindDeep(model.transform, "WATER_OCEAN") is Transform ocean)

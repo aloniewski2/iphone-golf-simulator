@@ -29,7 +29,7 @@ enum LockerSlot: String, CaseIterable, Identifiable, Codable, Sendable {
     /// The continuous-colour key (`Player.look`) an equipped item of this slot is tinted with; nil = colours are edited elsewhere.
     var colourSlot: String? {
         switch self {
-        case .skin: nil
+        case .skin: "shirt"
         case .racket, .club: "racket"
         case .shoes: "accent"
         }
@@ -49,6 +49,12 @@ struct LockerItem: Identifiable, Equatable, Sendable {
 
 enum LockerCatalog {
     static let standardID = "standard"
+    static let golfKitID = "golf-classic-kit"
+    static let golfShoesID = "golf-spikeless"
+    static func defaultID(sport: Sport, slot: LockerSlot) -> String {
+        guard sport == .golf else { return standardID }
+        switch slot { case .skin: return golfKitID; case .shoes: return golfShoesID; default: return standardID }
+    }
     /// Sports with a locker (and a gear shelf).
     static let sports: [Sport] = [.tennis, .golf]
 
@@ -59,10 +65,12 @@ enum LockerCatalog {
 
     /// Every item the game knows. One Standard item per slot, nothing else yet.
     static let all: [LockerItem] = [
-        LockerItem(id: standardID, slot: .skin, name: "Standard", sports: [.tennis, .golf], tintable: false),
+        LockerItem(id: standardID, slot: .skin, name: "Standard", sports: [.tennis], tintable: false),
+        LockerItem(id: golfKitID, slot: .skin, name: "Golf Polo", sports: [.golf], tintable: true),
         LockerItem(id: standardID, slot: .racket, name: "Standard", sports: [.tennis], tintable: true),
         LockerItem(id: standardID, slot: .club, name: "Standard", sports: [.golf], tintable: true),
-        LockerItem(id: standardID, slot: .shoes, name: "Standard", sports: [.tennis, .golf], tintable: true),
+        LockerItem(id: standardID, slot: .shoes, name: "Standard", sports: [.tennis], tintable: true),
+        LockerItem(id: golfShoesID, slot: .shoes, name: "Spikeless", sports: [.golf], tintable: true),
     ]
 
     static func items(sport: Sport, slot: LockerSlot) -> [LockerItem] {
@@ -72,7 +80,9 @@ enum LockerCatalog {
     /// The item for an id, or the slot's Standard item when the catalog no longer has it (saves outlive catalog changes).
     static func item(id: String?, sport: Sport, slot: LockerSlot) -> LockerItem {
         let pool = items(sport: sport, slot: slot)
-        return pool.first { $0.id == id } ?? pool.first { $0.isStandard } ?? LockerItem(id: standardID, slot: slot, name: "Standard", sports: [sport], tintable: false)
+        let fallback = defaultID(sport: sport, slot: slot)
+        let resolved = id == nil || id == standardID ? fallback : id
+        return pool.first { $0.id == resolved } ?? pool.first { $0.id == fallback } ?? LockerItem(id: fallback, slot: slot, name: "Standard", sports: [sport], tintable: false)
     }
 }
 

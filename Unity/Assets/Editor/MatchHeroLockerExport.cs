@@ -234,7 +234,7 @@ namespace GolfArcade.EditorTools
                     {
                         var idx = p.mesh.GetIndices(s); if (idx.Length == 0) continue;
                         var mat = p.materials[Mathf.Min(s, p.materials.Length - 1)];
-                        subs.Add(new Sub { material = Key(mat), indexOffset = bin.Count, indexCount = idx.Length, look = ReadLook(mat, copiedMaps) });
+                        subs.Add(new Sub { material = Key(mat), indexOffset = bin.Count, indexCount = idx.Length, look = ReadLook(mat, copiedMaps, golf) });
                         for (int i = 0; i + 2 < idx.Length; i += 3) { AddInt(bin, idx[i]); AddInt(bin, idx[i + 2]); AddInt(bin, idx[i + 1]); }   // winding flipped with the z mirror
                     }
                     if (p.kind == "kit")
@@ -260,7 +260,7 @@ namespace GolfArcade.EditorTools
                 string baseName = (golf ? "GolfKitHero_" : "MatchHero_") + sex;
                 var man = new Manifest
                 {
-                    sex = sex, source = "Resources/Tennis/Customization/Player" + sex + ".prefab (work/match-anim-set/export/HeroBase_" + sex + "_MatchAnims.blend)",
+                    sex = sex, source = golf ? "Resources/Tennis/Customization/Player" + sex + "GolfKit.prefab" : "Resources/Tennis/Customization/Player" + sex + ".prefab (work/match-anim-set/export/HeroBase_" + sex + "_MatchAnims.blend)",
                     baseClip = ready.name, baseTime = 0, swingClip = fore.clip.name, swingLength = fore.clip.length, swingContact = fore.contact,
                     parts = infos.ToArray(), swingTimes = SwingTimes,
                     boundsMin = new[] { bounds.min.x, bounds.min.y, -bounds.max.z }, boundsMax = new[] { bounds.max.x, bounds.max.y, -bounds.min.z },
@@ -286,7 +286,7 @@ namespace GolfArcade.EditorTools
 
                 File.WriteAllText(Path.Combine(OutDir, baseName + ".json"), JsonUtility.ToJson(man, true));
                 WriteCompressed(baseName, bin.ToArray());
-                foreach (var map in copiedMaps) File.Copy(map, Path.Combine(OutDir, "MatchHero_" + Path.GetFileName(map)), true);
+                foreach (var map in copiedMaps) File.Copy(map, Path.Combine(OutDir, MapResourceName(map, golf) + Path.GetExtension(map)), true);
                 long total = new[] { baseName }.Concat(frames).Sum(n => new FileInfo(Path.Combine(OutDir, n + ".lzfse")).Length);
                 sb.AppendLine($"  wrote {baseName}.json + .lzfse + {frames.Count} swing frames ({total / 1024 / 1024.0:F1} MB compressed); triangles={tris / 3}; materials={string.Join(",", man.materials.Select(m => m.name))}");
                 sb.AppendLine($"  maps copied: {string.Join(", ", copiedMaps.Select(Path.GetFileName))}");
@@ -309,7 +309,17 @@ namespace GolfArcade.EditorTools
         // ================================================================== look
 
         /// The numbers of one runtime material, read off the material itself. Properties a shader does not have stay 0 (the Swift side picks the family by `shader`).
-        static Look ReadLook(Material m, SortedSet<string> maps)
+        // Static golf kit resources have their own namespace beside the existing
+        // GolfHero motion resources. Use it for both manifest references and files.
+        static string MapResourceName(string path, bool golf)
+        {
+            string name = Path.GetFileNameWithoutExtension(path);
+            if (golf && name.StartsWith("Golf_", StringComparison.Ordinal))
+                name = "GolfKit_" + name.Substring("Golf_".Length);
+            return "MatchHero_" + name;
+        }
+
+        static Look ReadLook(Material m, SortedSet<string> maps, bool golf)
         {
             var look = new Look { shader = m && m.shader ? m.shader.name.Replace("GolfArcade/", "") : "Missing" };
             if (!m) return look;
@@ -323,7 +333,7 @@ namespace GolfArcade.EditorTools
                 if (string.IsNullOrEmpty(path)) return "";   // a built-in default (the shader's "bump" / "white"), nothing to ship
                 if (!path.EndsWith(".png")) throw new InvalidOperationException($"{m.name}.{n}: texture '{tex.name}' is not a PNG asset ({path})");
                 maps.Add(path);
-                return "MatchHero_" + Path.GetFileNameWithoutExtension(path);
+                return MapResourceName(path, golf);
             }
             look.color = C("_BaseColor"); look.rimColor = C("_RimColor"); look.subsurface = C("_Subsurface");
             look.smoothness = F("_Smoothness"); look.wrap = F("_Wrap"); look.rimStrength = F("_RimStrength"); look.rimPower = F("_RimPower"); look.exposure = F("_Exposure"); look.knee = F("_Knee");
