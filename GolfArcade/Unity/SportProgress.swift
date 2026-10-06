@@ -59,6 +59,7 @@ final class SportProgress {
     private static func key(_ s: Sport) -> String { "sport.\(s.rawValue).tutorialDone.v1" }
 
     func finishedTutorial(_ s: Sport) -> Bool { tutorialDone.contains(s) }
+    var anyTutorialDone: Bool { finishedTutorial(.tennis) || finishedTutorial(.golf) }
     func completeTutorial(_ s: Sport) { tutorialDone.insert(s); defaults.set(true, forKey: Self.key(s)) }
     func resetTutorials() {
         for s in Sport.allCases { defaults.removeObject(forKey: Self.key(s)) }

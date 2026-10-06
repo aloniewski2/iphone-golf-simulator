@@ -1,0 +1,374 @@
+32_ONBOARDING_SOL_GOAL — Party Sports first-time onboarding (Goal Mode brief)
+Repo: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator   (the repo is named "golf" but it is Party Sports)
+Author context: written 2026-10-06 from a read-only audit of this repo. Every path/line below was checked then; re-verify before editing (other chats are live).
+
+======================================================================
+0. GOAL (one sentence)
+======================================================================
+A brand-new player opens Party Sports and, without ever being blocked, goes:
+  (1) Account (Game Center, or guest) + Character (body, skin, hair, name) ->
+  (2) "Connect to a TV or Mac" (live detection, or "Play on this phone for now") ->
+  (3) Choose a game (Tennis / Golf cards) ->
+  (4) That game's tutorial -> reward (XP + level 2 + white headband) -> that sport's hub.
+Returning players resume where they left off; existing players who already finished a tutorial never see onboarding.
+
+======================================================================
+1. HARD RULES (read twice)
+======================================================================
+R1  Work is STAGED ONLY. No commits, no pushes, no branch changes, no stash, no reset, unless Adnan asks in this chat.
+R2  The working tree already holds many staged/unstaged changes from OTHER chats (e.g. ArtDir/hero/kit/*, ArtDir/screenshots/cloth_overhaul/*).
+    NEVER `git add -A`, `git add .`, `git add -u`, `git checkout -- <file>`, `git restore`, `git stash`. Stage only your owned paths, by explicit path.
+R3  Existing files are changed ONLY with hunk patches (apply_patch / unified-diff hunks). Never overwrite an existing file with a whole-file copy.
+    Before the first hunk in any existing file run `git diff -- <file>` and `git diff --cached -- <file>`. If someone else's change is present, your hunk
+    must apply on top of it and leave it intact. If your hunk would touch the same lines as a foreign change: STOP that edit and log it in NEEDS_OWNER.md.
+R4  New files are fine as whole files, but only at the paths in §4 "Owned files".
+R5  FILE-OWNERSHIP LOCKS (other chats own these RIGHT NOW). Do NOT edit, move, regenerate or reformat:
+      - Unity/Assets/Scripts/Tennis/HeroTennisDriver.cs, TennisActor.cs, TennisServeRoutine.cs
+      - Any Serve / emote FBX, .anim clips, animator controllers; work/emote-fluid/**; emote-fluid files anywhere
+      - Golf course / shader / material / kit files: work/golf-look/**, Unity/Assets/Scripts/Course/**, course Resources, all shaders and materials,
+        golf garment files, ArtDir/hero/kit/**
+      - GolfArcade/Unity/LockerCatalog.swift, GolfArcade/Unity/LockerColors.swift, locker resources / catalog payloads
+      - Postcard-look files (Tools/PostcardCheck/**, anything named *postcard*)
+      - Multiplayer networking internals: GolfArcade/Multiplayer/** (MultiplayerService.swift, GameCenterTransport.swift, LocalMultiplayerTransport.swift,
+        MultiplayerModels.swift), Unity/Assets/Scripts/Multiplayer/**, Unity/Assets/Scripts/Net/**, and the OnlineLobbyMenu section of TennisMenu.swift
+        (from `final class OnlineLobbyMenu` / `func rows(_ route: OnlineLobbyScreen` ~line 1000 to the end of that type)
+    Also treat as READ-ONLY (shared with hero/locker chats; not on your owned list): GolfArcade/Domain/Player.swift (save format), LockerStudio.swift,
+    CharacterModelPreview.swift, MatchHero*.swift, HeroKit.cs, ModularHeroLook.cs, MatchHeroLook.cs, TennisRoster.cs, all CharacterAssets/**,
+    project.yml / project-unity.yml (new files under GolfArcade/ are picked up automatically by `path: GolfArcade` in project.yml — just run xcodegen).
+    You may CALL public APIs in these files. If a change inside one seems required: STOP that sub-task and append to work/onboarding/NEEDS_OWNER.md:
+      ## <file>  — <what change, why, smallest diff you'd want, which gate is blocked>
+    and carry on with everything else. A gate blocked this way is FAIL(BLOCKED-OWNER), never PASS.
+R6  Gates are binary. PASS only if the stated check is met exactly, with the proof file saved. No "mostly", no "PASS with caveats".
+    Adnan's eye overrides any agent PASS. The FINAL gate is Adnan approving a recorded walkthrough; until then the goal is not done.
+R7  No third-party SDKs. No ATT prompt (no ATTrackingManager, no NSUserTrackingUsageDescription). No notification permission request anywhere in this work.
+R8  Don't delete the app from Adnan's iPhone (it wipes his saves) unless he says so in chat. Use the DEBUG launch args in §6 to simulate fresh installs on device;
+    real fresh-install runs happen on the Simulator.
+R9  Proofs go in work/onboarding/ (see §8). Each phase writes work/onboarding/P<N>_RESULT.md: gate id, PASS/FAIL, exact command or steps, proof file names.
+
+======================================================================
+2. WHAT EXISTS TODAY (verified; reuse it)
+======================================================================
+App entry / routing
+  - GolfArcade/App/GolfArcadeApp.swift — root view `SportsHome()`; `init()` calls `MultiplayerService.shared.prepare()` (registers GameKit listeners only;
+    it does NOT start sign-in — GameCenterTransport.authenticate(present:) is only called from the Online entry today, TennisMenu.swift ~1034).
+  - GolfArcade/Unity/SportsHome.swift — `SportsHome.body` picks: online menu / match-finish / loading / pause / classic / GolfPhoneController / TennisRacketController /
+    TennisRemote (TV connected) / TennisPhoneMenu (no TV). `.background(DisplayRegistration())` registers the external-display scene.
+  - GolfArcade/Unity/TennisMenu.swift — `TennisMenu.shared` (@Observable) owns `screen: MenuScreen` (.title, .main, .gameSelect, .hub(Sport), .connect, .story, .postMatch,
+    .character, .settings, .howTo, .golfLesson, …). Today a first launch goes: title "start" -> main "homeContinue" (`continueJourney()`) ->
+    `startTutorial(.tennis)` -> 3 story lines (`TennisStory.tutorialIntro`) -> `begin(MenuLaunch(mode:.tutorial))` -> no TV => `.connect` screen -> "phone" -> loading -> Unity.
+    Key funcs: `select()`, `begin(_:onPhone:skipMap:)` (~563), `startTutorial(_:)` (~499), `tutorialFinished()` (~512), `matchFinished(won:score:)` (~593,
+    skips XP when mode == .tutorial), `hubUnlocked(_:_:)` (~191), `adjust(_:by:)` (~427: "body" toggles standardFemale, "skin", "haircut", "hairColor", "hair"...),
+    private `randomize()` (~480), settings rows `settingsRows(_:)` (~137: gameplay = level, coaching, resetTips, resetProgress).
+Progress flags
+  - GolfArcade/Unity/SportProgress.swift — `enum Sport { golf, tennis, bowling, football, boxing }`, `playable` = golf || tennis.
+    `SportProgress.shared`: key `sport.<rawValue>.tutorialDone.v1`, `finishedTutorial(_:)`, `completeTutorial(_:)`, `resetTutorials()`.
+  - TennisCampaign `seen(_:)/markSeen(_:)` story beats ("tutorialIntro").
+Player / character
+  - GolfArcade/Domain/Player.swift — `PlayerRosterStore` key `players.v1`; default roster = one `Player(name:"Player 1", colorIndex:0)`.
+  - SportsSession.shared.players / playerIndex / savePlayers() (SportsSession.swift ~19, ~259). `menu.player` is the current player.
+  - Locker: GolfArcade/Unity/LockerStudio.swift (`IslandLockerScreen`; name TextField at line 119 bound to a `nameDraft`; `RangeSlider` ~461; `LockerTile` ~405).
+    Body = `standardFemale`; skin = `setSkin(_:)`/`skinT`; hair = `haircut` (HeroV4.offered), `setHair(natural:)`/`hairT`.
+  - Hero preview: `IslandPlayer(player:sport:)` (ClubDesign.swift ~537) and `CharacterModelPreview(player:cameraDistance:idleSport:)` (used in IslandScreens.swift ~430/498).
+External display (TV / Mac)
+  - GolfArcade/Unity/SportsDisplays.swift — `SportsDisplays.shared.refresh()` looks for a `UIWindowScene` with role `.windowExternalDisplayNonInteractive`;
+    sets `SportsSession.shared.displayConnected`. iOS 27+: `registerSceneAccessory(.externalNonInteractive…)` in `register(from:)`. Scene delegate `SportsExternalScene`
+    sets displayConnected = true on connect, pauses + false on disconnect (~155/165). `SportsDisplays.displayKind` -> .none/.tv/.mac (name contains "mac" or 16:10 aspect).
+    `SportsTiming.currentTV()` = receiver name. `SportsSession.displayConnected.didSet` -> `TennisMenu.displayChanged(connected:)`.
+  - Copy that already exists: HowTo.connectTV / HowTo.connectMac (HowToCards.swift 15–24), IslandConnectScreen (ClubScreens.swift 223) with "Play on this phone".
+Controls
+  - Tennis motion (default when a TV is connected): phone = racket; court direction locked once by `AxisGatePanel` (SportsHome.swift ~130) which uses ARKit + rear camera ->
+    camera permission requested inside `SportsMotion.start(tennis:)` / `beginAxisCapture(travel:)` (SportsMotion.swift ~150 / ~245). Tutorial already skips timing check
+    and aiming calibration (SportsSession.swift ~378, ~472) but NOT the axis gate.
+  - Tennis touch (phone preview forces `session.touch = true`, SportsSession.swift ~320): TennisRacketController (TennisPlayViews.swift ~236–290):
+    court-position Slider (`session.steer`), `RallyAimPad`, power Slider + "Swing" (`session.swing(power)`), `ServePanel` / `ReceivePanel` during serve phases.
+  - Golf: GolfPhoneController (SportsHome.swift 288) = a plain Form with SportsControls (aim slider, club prev/next, touch power + Swing). Unity side ignores the
+    "tutorial" mode today; golf tutorial completes on the first `shot` event (SportsSession.swift ~729, NativeSportsSession.cs 115 `GolfGame.ShotStruck`).
+Tutorials
+  - Unity/Assets/Scripts/Tennis/TennisTutorial.cs — `TutorialLesson.Steps` = Serve, Forehand, Backhand, Aim(Goal 2: left then right), Point.
+    Misses retry, hint after 3 misses (`HintAfter`), `SkipStep()`; events `StepChanged(i,n,text)` / `Finished` -> NativeSportsSession.cs 112–113 -> Swift "tutorialStep"/"tutorialDone".
+    Started from TennisGame.cs ~928 when Mode.Tutorial. Tests: Unity/Assets/Tests/EditMode/TennisTutorialTests.cs, PlayMode/TennisTutorialPlayTests.cs.
+  - TennisPlayViews.swift ~704 `TutorialPanel` (phone step text + Skip), `LastHit`.
+  - TennisCoach.cs — one-time in-match tips (reset key `sports.resetCoaching`).
+  - Golf lesson: HowToCards.swift `GolfLesson.cards` (4 text cards) shown by IslandGuideScreen (ClubScreens.swift 187) then `begin(MenuLaunch(sport:.golf, mode:.tutorial))`.
+Rewards / XP
+  - GolfArcade/Unity/Progression.swift — `LevelCurve.needed(level)` (200 for L1->L2), `Progression.shared.award(player:stats:won:score:opponent:practice:difficulty:)` (~137)
+    returns PostMatchSummary; `LevelRewards.rewards(for:)` returns [] (~63); level bar view ~154.
+Design system (match it exactly)
+  - ClubDesign.swift: `Club` palette (lagoon, lagoonDeep, coral, green, sun, cream, ink, sky), `Club.ui()/caps()`, `Club.spring/pop`, ClubBackdrop, ClubScreen, ClubHeader,
+    ClubCard, ClubButton, ClubBadge, ClubPress, ClubEntrance; `IslandUI` (navy, lime, paper, muted, font(_:bold:)), IslandBackdrop, IslandWordmark,
+    IslandAction(title:focused:primary:compact:action:), IslandShell(title:compact:content:), IslandPlayer, IslandSelector.
+  - IslandKit.swift: IslandUI.dark/coral/card, IslandFocusStyle, IslandHintBar, IslandSwatch(Row), IslandSegments, IslandSwitch, IslandNotice, IslandMenuNotice.
+  - Sound/haptics: `ClubSound.play("pop"|"whoosh"|"tick")`, UIImpactFeedbackGenerator gated on `session.haptics`.
+  - Screens to imitate: IslandTitleScreen / IslandHomeScreen / IslandSportsScreen (ClubScreens.swift 115–165), IslandHubScreen (IslandScreens.swift 33), IslandLockerScreen.
+Account / analytics / permissions
+  - Game Center: entitlement GolfArcade/Multiplayer/GolfArcade.entitlements. Public API to call: `MultiplayerService.shared.authenticate(present:)` (MultiplayerService.swift 116),
+    `.authenticated`. Sheet presenter already exists: `OnlineGameCenterSheet` (IslandScreens.swift 631).
+  - Analytics: none. Only NSLog + `SportsDiagnostics.write(_:)` (SportsMotion.swift 5) -> Documents/SportsDiagnostics.log. com.unity.analytics is in manifest but unused.
+  - Info.plist keys (project.yml): NSCameraUsageDescription, NSMotionUsageDescription. No notifications, no ATT. Keep it that way.
+Tests / builds (from CONTRIBUTING.md, Unity/README.md, SportsLibrary/IOS-UNITY-INTEGRATION.md)
+  - xcodegen generate   (after adding Swift files; never edit project.yml)
+  - xcodebuild test -project GolfArcade.xcodeproj -scheme GolfArcade -only-testing:GolfArcadeTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+  - UI tests: -only-testing:GolfArcadeUITests/<Class>   (existing: CameraPlayTests, CoursePlayTests, SportsNavigationTests)
+  - Unity compile: Unity/Tools/check.sh
+  - Unity EditMode: /Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath Unity -runTests -testPlatform EditMode -testResults /tmp/editmode.xml -logFile /tmp/tests.log
+  - Unity PlayMode: Unity/Tools/run-playmode-windowed.sh (read it first for args)
+  - iPhone: Unity export (Golf Arcade > Build iOS Xcode Project) then `zsh Unity/Tools/build-integrated-ios.sh`;
+    install: `SPORTS_TEAM=<team> SPORTS_DEVICE=<device> zsh Unity/Tools/install-phone.sh` (does not change bundle id/signing — never change them).
+
+======================================================================
+3. DISPLAY PATHS — teach ONLY what works
+======================================================================
+Verified in code (detection is generic: any external display scene):
+  A. iPhone Screen Mirroring (AirPlay) to an Apple TV or AirPlay-compatible smart TV. Copy exists: HowTo.connectTV.
+  B. iPhone Screen Mirroring to a Mac with AirPlay Receiver on (System Settings -> General -> AirDrop & Handoff -> AirPlay Receiver). Copy: HowTo.connectMac.
+     Detected as `.mac` by name or 16:10 aspect (SportsDisplays.displayKind).
+  C. Wired adapter (USB-C / Lightning -> HDMI): same external-scene path; DisplayLatencyMeasurement.swift lists "wired". NOT verified on a device and not in any player copy.
+     -> Only add a "Cable" tip if you prove it on Adnan's phone (P4.6). Otherwise leave it out.
+NOT supported — never mention: Windows/Linux laptops, Chromecast/Google TV casting, any web/browser receiver, the old Unity "phone as club for the Mac game" LAN mode
+  (Unity/Assets/Scripts/Game/AppLauncher.cs + Net/PhoneController.cs — bypassed in the app because NativeSportsSession.Active forces Mode.Play).
+Facts to respect: the app cannot open Control Center or start Screen Mirroring itself — the screen must TELL the player how (swipe down from top-right, tap Screen Mirroring,
+pick the TV/Mac). Same Wi-Fi network. Keep the phone unlocked.
+
+======================================================================
+4. OWNED FILES (only these may change)
+======================================================================
+NEW (whole files OK):
+  GolfArcade/Onboarding/OnboardingStore.swift        — keys, step enum, persistence, account key, install time, reward-claimed flag
+  GolfArcade/Onboarding/OnboardingFlow.swift         — @MainActor @Observable state machine: next(), resume, skip rules, replay
+  GolfArcade/Onboarding/OnboardingRoot.swift         — the view that shows the current onboarding screen (phone) + TV holding card view
+  GolfArcade/Onboarding/OnboardingAccountScreen.swift
+  GolfArcade/Onboarding/OnboardingCharacterScreen.swift
+  GolfArcade/Onboarding/OnboardingConnectScreen.swift
+  GolfArcade/Onboarding/OnboardingMotionPrimer.swift
+  GolfArcade/Onboarding/OnboardingGamePicker.swift
+  GolfArcade/Onboarding/OnboardingRewardScreen.swift
+  GolfArcade/Onboarding/GolfTutorialController.swift — Island-styled phone controller for the golf tutorial (replaces the Form only in tutorial mode)
+  GolfArcade/Onboarding/GameCenterAccount.swift      — protocol + live impl (calls MultiplayerService.shared.authenticate) + DEBUG fake
+  GolfArcade/Onboarding/Analytics.swift
+  GolfArcadeTests/OnboardingTests.swift, GolfArcadeTests/AnalyticsTests.swift
+  GolfArcadeUITests/OnboardingUITests.swift
+  Unity/Assets/Scripts/Game/GolfTutorial.cs (+ its .meta)
+  Unity/Assets/Tests/EditMode/GolfTutorialTests.cs (+ .meta)
+  work/onboarding/**   (proofs, NEEDS_OWNER.md, P<N>_RESULT.md)
+EXISTING (hunks only, and only the named regions):
+  GolfArcade/Unity/SportsHome.swift        — route to OnboardingRoot when flow active; golf tutorial -> GolfTutorialController
+  GolfArcade/Unity/TennisMenu.swift        — startTutorial, tutorialFinished, matchFinished (tutorial XP), select("sport-…") first-time tutorial, settings row
+                                             "replayOnboarding", an internal `randomizeLook()` wrapper around private randomize(), golf lesson routing. NOT the OnlineLobbyMenu section.
+  GolfArcade/Unity/TennisMenuViews.swift   — screen switch hooks only
+  GolfArcade/Unity/TennisPlayViews.swift   — TennisRacketController touch block (tutorial simplification) + TutorialPanel; TennisTVRoot holding card hook
+  GolfArcade/Unity/IslandScreens.swift     — IslandSettingsScreen item for "replayOnboarding" only (NOT IslandOnlineScreen / OnlineGameCenterSheet — reuse those as-is)
+  GolfArcade/Unity/ClubScreens.swift       — IslandGuideScreen golf path only, if needed
+  GolfArcade/Unity/SportProgress.swift     — nothing structural; helper `anyTutorialDone`
+  GolfArcade/Unity/Progression.swift       — `awardTutorial(...)`, first LevelRewards entry
+  GolfArcade/Unity/TennisStory.swift       — `tutorialIntro` only
+  GolfArcade/Unity/HowToCards.swift        — `GolfLesson` only
+  GolfArcade/Unity/SportsSession.swift     — launchExtras for tutorial start index / golf tutorial; analytics taps in the "tutorialStep"/"contact"/"tutorialDone" handlers (~700–735)
+  Unity/Assets/Scripts/Tennis/TennisTutorial.cs
+  Unity/Assets/Scripts/Game/NativeSportsSession.cs — ONLY: read "tutorialStart" + golf "mode"=="tutorial" in the launch message, attach GolfTutorial, emit golf tutorial events
+  Unity/Assets/Scripts/Game/GolfGame.cs    — ONLY additive public hooks (events/read-only props), <= 20 added lines, no behaviour change for non-tutorial play
+  Unity/Assets/Scripts/Tennis/TennisGame.cs — ONLY if touch auto-move in the tutorial is impossible otherwise: <= 20 lines, guarded by `PlayMode == Mode.Tutorial`
+  Unity/Assets/Tests/EditMode/TennisTutorialTests.cs, Unity/Assets/Tests/PlayMode/TennisTutorialPlayTests.cs
+Anything else = not yours. Ask via NEEDS_OWNER.md.
+
+======================================================================
+5. DEFAULTS — Adnan can change
+======================================================================
+D1  First cosmetic = a WHITE HEADBAND, no logos (kit is white/black). Asset reality: HeroV4.json has a "Sweatband" hat mesh (Hat_Sweatband / HatLiner) and
+    CharacterModelPreview.swift:399 lists headwear ["None","Visor","Cap","Sweatband"], BUT the Locker has no headwear slot (LockerSlot = skin/racket/club/shoes in the locked
+    LockerCatalog.swift), Player has no headwear field (Player.swift read-only), and TennisRoster.cs says headwear is not applied on match heroes.
+    => Implement the reward record + reward screen + "equip" call path; if showing it equipped needs any locked file, write NEEDS_OWNER.md (LockerCatalog headwear slot +
+    white sweatband item; Player headwear field; match-hero headwear render) and mark P8.3 FAIL(BLOCKED-OWNER). Do NOT substitute another item unless Adnan says so.
+D2  Story intro = 1 line, spoken by Ray (speaker key stays "stranger" so the name reveal at TennisStory.swift ~135 still lands):
+      "New face, huh? Grab a racket — I'll feed you a few."
+D3  No TV -> touch controls on the phone (session.touch = true). Motion only after a display is connected AND the player taps "Play on the TV".
+D4  Tutorial steps skippable one at a time (existing Skip in TutorialPanel / SkipStep()). Onboarding steps 1–3 are NOT skippable, except the connect step's
+    "Play on this phone for now" (always available, always continues).
+D5  Name optional; default "Player 1" (existing default). Trim spaces, max 40 chars (MultiplayerService truncates to 40), empty -> "Player 1".
+D6  Character screen opens pre-randomized once (existing randomize()) so every new hero looks different; the player can change anything.
+D7  Game picker shows Tennis and Golf only. Golf card honest label: "Cliffside · tutorial + 1 round" with a small "Campaign & training coming soon".
+    Bowling / football / boxing are not shown in onboarding (they still appear as "coming soon" in the normal Play menu, as today).
+D8  Tutorial reward XP = exactly what is needed to reach level 2 (LevelCurve.needed(1) - current xp, min 0) for the FIRST tutorial; second sport's tutorial = flat 50 XP,
+    no second cosmetic. Reward is granted once per sport (flag), replays grant nothing.
+D9  Golf "short friendly hole" = Cliffside hole 1 as it exists (course data is locked). Friendly = stroke cap 6: on the 6th stroke without holing out, the coach
+    says "Pick it up — nice round!" and the hole counts as done. If a shorter/easier hole is needed, that's NEEDS_OWNER (course owner).
+D10 Online lobby and full Locker stay reachable from the main menu after onboarding, ungated (as today). Not reachable DURING onboarding (no main menu yet).
+D11 If a display is already connected at first launch, onboarding still runs on the phone; the TV shows a holding card ("Finish setup on your phone") in the Island style.
+D12 Game Center sheet is presented once at the account step. If GameKit returns no UI and no auth within 8 s, show "Continue as guest" as primary. Guest is always visible
+    as a secondary button from the first frame.
+D13 Thresholds used in gates (character ≤ 60 s, first hit ≤ 45 s, connect detection ≤ 5 s) are Adnan's starting numbers — edit here if he changes them.
+
+======================================================================
+6. DESIGN SPEC (step by step)
+======================================================================
+Persistence (OnboardingStore, UserDefaults.standard):
+  ftue.step.v1          String: "account" | "character" | "connect" | "motionPrimer" | "choose" | "tutorial:tennis" | "tutorial:golf" | "reward:tennis" | "reward:golf" | "done"
+  ftue.tutorialStep.v1  Int, last tennis lesson index reported by Unity (for mid-tutorial resume)
+  ftue.account.v1       "gc:<GKLocalPlayer.local.teamPlayerID>" or "guest:<UUID>"  (progress key for future sync; no migration of other keys in this goal)
+  ftue.guestID.v1       UUID string, created once
+  ftue.installedAt.v1   Double (first launch time) — for seconds_since_install
+  ftue.reward.<sport>.v1 Bool — reward granted
+Entry rule (at launch, before any UI that could prompt):
+  if SportProgress.finishedTutorial(.tennis) || .finishedTutorial(.golf)  -> ftue.step = "done" (if unset) and log onboarding_skipped_existing. Never show onboarding.
+  else if ftue.step == "done" -> normal menus.
+  else -> OnboardingRoot at ftue.step (default "account").
+  DEBUG args (#if DEBUG only): -skipOnboarding (force done), -forceOnboarding (run from "account" even with tutorialDone; does NOT clear tutorialDone/progress),
+    -resetOnboarding (clear ftue.* keys only), -fakeGameCenter signedIn|decline|unavailable, -onboardingStep <step>.
+  Existing UI tests must be unaffected: if any of the existing DEBUG test args are present (-skipPlayerCalibration, -startInCameraMode, -startCourse, --lobby-mock, --lobby,
+    --character-editor, --resume-tennis-round-*, -benchTennis, -range.swingInput) and -forceOnboarding is absent, treat as -skipOnboarding.
+Step 1a — Account (OnboardingAccountScreen)
+  IslandBackdrop + IslandWordmark; title "Welcome to the Island Sports Club"; one line "Sign in with Game Center to play friends online and keep your progress."
+  Primary IslandAction "Sign in with Game Center" (auto-triggered once on appear — D12); secondary "Continue as guest".
+  Live: GameCenterAccount.authenticate { vc in present via OnlineGameCenterSheet-style representable }. Success -> "Signed in as <displayName>" ✓ then auto-advance after 0.8 s.
+  Decline / error / unavailable -> guest key, notice "You can sign in later from Play Online." -> advance. Never blocks.
+  Note to verify on device: after a user cancels, GameKit may not show the sheet again in later launches until signed in via Settings — so "Replay onboarding" must not
+  depend on the sheet appearing; the Online entry's existing `net-signin` remains the later path.
+Step 1b — Character (OnboardingCharacterScreen)
+  Large bouncy hero preview (CharacterModelPreview(player:, cameraDistance: ~3.4, idleSport: .tennis) or IslandPlayer) with a Club.spring pop when anything changes.
+  Rows (IslandSegments / IslandSwatchRow / RangeSlider look-alikes built in your file — do not edit LockerStudio.swift):
+    Body: Male | Female  (TennisMenu.adjust("body") semantics => players[p].standardFemale)
+    Skin: slider -> setSkin(_:)        Hair: haircut cycle (HeroV4.offered) + hair colour slider -> setHair(natural:)
+    Randomize button (TennisMenu.randomizeLook() wrapper you add)
+    Name: TextField "Your name" (D5), keyboard "Done"
+  Primary "That's me!" -> session.savePlayers() (PlayerRosterStore / players.v1) -> MultiplayerService.shared.setIdentity(name:female:...) (public API) -> next.
+  Footer hint: "More clothes in the Locker later."
+Step 2 — Connect (OnboardingConnectScreen)
+  Title "Play on the big screen". Two tabs/cards: "TV" (HowTo.connectTV steps) and "Mac" (HowTo.connectMac steps), each with the existing art (.mirror / .mac) and
+  numbered lime circles like IslandConnectScreen. Live status pill bound to SportsSession.shared.displayConnected + SportsDisplays.displayKind + SportsTiming.currentTV():
+    waiting: "Waiting for a screen…" (pulsing)   connected: "Connected to <name>!" green check + haptic success + ClubSound "pop".
+  Buttons: when connected -> primary "Play on the TV" (goes to motion primer). Always -> "Play on this phone for now" (sets touch, continues to Choose).
+  If a display connects while on later steps, nothing breaks (TennisMenu.displayChanged keeps working).
+Step 2b — Motion primer (OnboardingMotionPrimer) — only if "Play on the TV"
+  One screen: "Your phone is the racket. To know where the TV is, the game uses the rear camera once to lock the court direction. Nothing is recorded or uploaded."
+  Primary "Got it" -> the system camera prompt appears later, in context, when AxisGatePanel/beginAxisCapture runs at tutorial start (existing code). Secondary "Use touch instead".
+  If camera is denied -> existing message "touch remains available" + one tap "Switch to touch" (session.useTouch()).
+Step 3 — Choose (OnboardingGamePicker)
+  Two big ClubCard-style cards with SceneImage/ClubArt art: TENNIS "The Tropical Open · Island Circuit" and GOLF (D7 label). Tap -> ftue.step = tutorial:<sport>.
+Step 4 — Tutorial
+  Tennis: TennisStory.tutorialIntro (1 line, D2) -> begin(MenuLaunch(mode:.tutorial), onPhone: !displayConnected || touch) — skip the `.connect` screen during onboarding
+    (connect already happened). New TutorialLesson.Steps order and goals:
+      0 Forehand (Goal 1) — coach feeds to forehand; player auto-moves; touch: ONLY the big Swing button + aim pad hidden, court-position and power sliders hidden,
+        power fixed 0.7. Motion: existing text.
+      1 Backhand (Goal 1) — same simplification in touch.
+      2 Aim (Goal 1, left ring only; remove the "AIM RIGHT" second half) — touch: show RallyAimPad now (first time aim is introduced); sliders still hidden.
+      3 Serve (Goal 1) — existing ServePanel / toss meter (TennisTossMeter). Call existing APIs only (TennisServeRoutine.cs is locked).
+      4 Point (Goal 1) — "winnable": tutorial difficulty 0.1 (already); lesson completes on the point end win or lose (existing OnScore).
+    Add touch wording per step (e.g. "Tap SWING as the ball rises after the bounce") chosen by NativeSportsSession.Touch; keep motion wording for TV.
+    Auto-move in touch: check first whether the tutorial player already runs to the ball in touch mode. If not, add it inside TennisTutorial.cs (preferred) or the guarded
+    TennisGame.cs hunk; if it needs TennisActor.cs/HeroTennisDriver.cs -> NEEDS_OWNER and P6.3 FAIL(BLOCKED-OWNER).
+    Mid-tutorial resume: Swift stores ftue.tutorialStep.v1 from "tutorialStep" events; next launch passes launchExtras["tutorialStart"] = index;
+    NativeSportsSession reads it; TennisTutorial.Begin skips to that index.
+  Golf: replace GolfLesson.cards (4 text cards) with an interactive lesson: optional 1 "Set up" card (stance art, one sentence) then straight into Unity:
+      a) practice swing — any struck shot (GolfGame.ShotStruck) passes;   b) aim — use the aim arrows then swing;   c) play Cliffside hole 1 to hole-out or stroke cap (D9).
+    Coach prompts on the phone (GolfTutorialController, Island style: big Swing area, aim ◀ ▶ buttons -> session.setAim, club ◀ ▶ -> session.command("club"),
+    touch power hold/release or fixed power) and short on-screen prompt on the TV/phone game view via GolfTutorial.cs using existing HUD/text APIs only.
+    Completion -> emit "tutorialDone" (same Swift path as tennis). Keep today's "complete on first shot" behaviour OFF only in the new tutorial mode.
+Step 5 — Reward (OnboardingRewardScreen) then hub
+  On tutorialDone: Progression.shared.awardTutorial(player:sport:) (D8) -> level 2 animation using the existing level bar view, + "NEW: White Headband" card with the hero
+  preview wearing it (D1) and an "Equip" (auto-equipped) state; LevelRewards.rewards(for: 2) = [white headband]. Then ftue.step = "done", show(.hub(sport)).
+  Remove the old tutorialDone story double-up only if it would show twice (keep one celebration).
+After onboarding: choosing the other sport the first time (gameSelect "sport-<x>" while !finishedTutorial(x)) runs that sport's tutorial directly, then its reward (D8), then its hub.
+Settings: Gameplay tab new row "replayOnboarding" — title "Replay onboarding", detail "Account, look, screen setup and a tutorial again. Your progress stays."
+  Sets ftue.step = "account" with character prefilled; does not clear tutorialDone or campaign; does not re-grant rewards.
+Analytics (GolfArcade/Onboarding/Analytics.swift)
+  `enum Analytics { @MainActor static func track(_ name: String, _ props: [String: String] = [:]) }` -> SportsDiagnostics.write("analytics \(name) k=v …") with a
+  monotonic `t=` seconds since ftue.installedAt.v1; DEBUG keeps the last 200 events in memory for tests. No network.
+  Events: app_first_open, onboarding_step_view{step}, onboarding_skipped_existing, gc_signin{result: signedIn|declined|unavailable|error}, guest_selected,
+    hero_created{female, named, randomizedOnly}, connect_view, tv_connected{kind: tv|mac|other}, play_on_phone, motion_primer{choice}, camera_prompt{result},
+    game_chosen{sport}, tutorial_start{sport, resumedAt}, tutorial_step_start{i}, tutorial_step_success{i, misses}, tutorial_step_skip{i},
+    first_hit{seconds_since_tutorial_start, seconds_since_install}, golf_hole_done{strokes, capped}, tutorial_complete{sport, seconds},
+    reward_claimed{sport, item, level}, onboarding_done{seconds_since_install}, onboarding_replay, match_start{mode}, match_end{mode, won}, session_start{n}.
+
+======================================================================
+7. PHASES AND BINARY GATES
+======================================================================
+P0  Baseline (read-only)
+  P0.1 PASS iff work/onboarding/BASELINE.md lists `git status --short` for every owned existing file + results (pass/fail counts) of: GolfArcadeTests, Unity check.sh,
+       Unity EditMode. Pre-existing failures are recorded by name (they are not yours, but you may not add new ones).
+  P0.2 PASS iff you re-confirmed every anchor in §2 you will touch (file + function still there) and noted any drift in BASELINE.md.
+P1  Store, flow, routing, analytics (no visuals yet)
+  P1.1 PASS iff OnboardingTests unit tests prove: fresh defaults -> step "account"; tutorialDone(tennis or golf) -> "done" + no onboarding; step persists across a new
+       OnboardingFlow instance; -resetOnboarding clears only ftue.* keys (assert players.v1 and sport.*.tutorialDone.v1 untouched).
+  P1.2 PASS iff AnalyticsTests prove track() writes one SportsDiagnostics line per event with name, props and t=.
+  P1.3 PASS iff all existing GolfArcadeTests results equal P0.1 (no new failures) and SportsNavigationTests still pass with no onboarding shown.
+P2  Account
+  P2.1 PASS iff a UI test from a fresh Simulator install records zero system alerts before the account screen is visible (addUIInterruptionMonitor counts 0) — "no system prompt before account step".
+  P2.2 PASS iff with -fakeGameCenter decline AND -fakeGameCenter unavailable, onboarding reaches "done" as guest (ftue.account.v1 starts "guest:") — UI test.
+  P2.3 PASS iff on Adnan's iPhone (signed in to Game Center) the account step shows "Signed in as …" and ftue.account.v1 starts "gc:" — screen recording.
+  P2.4 PASS iff grep finds no ATTrackingManager, NSUserTrackingUsageDescription, UNUserNotificationCenter requestAuthorization in the repo diff.
+P3  Character
+  P3.1 PASS iff scripted UI run (fresh install, -fakeGameCenter decline) reaches "character saved" (players.v1 written with the chosen body/name) in ≤ 60 s wall clock from launch.
+  P3.2 PASS iff after kill + relaunch the saved hero (body, skin, hair, name) matches, in phone preview and in the first tutorial match (screenshot pair).
+  P3.3 PASS iff empty name saves as "Player 1" and a 60-char name saves as 40 chars (unit test).
+P4  Connect
+  P4.1 PASS iff with no display the screen shows "Waiting for a screen…" and "Play on this phone for now" continues to Choose (UI test).
+  P4.2 PASS iff on device, starting Screen Mirroring to an Apple TV/AirPlay TV flips the pill to "Connected to <name>!" within 5 s (video of phone + TV).
+  P4.3 PASS iff the same with a Mac AirPlay Receiver shows kind mac (video + analytics line tv_connected kind=mac).
+  P4.4 PASS iff the camera permission prompt never appears unless "Play on the TV" -> primer -> tutorial start was chosen (video of both paths).
+  P4.5 PASS iff screen copy mentions only TV (AirPlay/Apple TV) and Mac (AirPlay Receiver) — no Windows/Chromecast/web/cable wording (grep of your strings).
+  P4.6 (optional) Cable tip may be added only with a device video proving a wired HDMI adapter is detected; otherwise gate = N/A and no cable copy exists.
+P5  Choose
+  P5.1 PASS iff both cards render in the Island style (snapshot) and both start their tutorial; golf card states what is not available (D7).
+P6  Tennis tutorial
+  P6.1 PASS iff EditMode tests assert the new order [Forehand, Backhand, Aim(goal 1), Serve, Point] and that Skip advances one step.
+  P6.2 PASS iff first player contact happens ≤ 45 s after tutorial_start (PlayMode test with auto-swing AND one device recording; both under 45 s).
+  P6.3 PASS iff in touch mode the court-position and power sliders are not on screen during steps 0–1 (snapshot/UI query) and the player reaches the ball without steering.
+  P6.4 PASS iff motion variant on TV completes all 5 steps on device (video).
+  P6.5 PASS iff killing the app during step 2 and relaunching resumes at step 2 (tutorial_start resumedAt=2 + video).
+  P6.6 PASS iff Point step: 10/10 seeded PlayMode runs with on-time auto-swing win the point, and 1 run with no swing still completes the lesson.
+P7  Golf tutorial
+  P7.1 PASS iff the 4 text cards are gone from the first-time flow and the lesson goes practice swing -> aim -> hole 1 -> tutorialDone (PlayMode or device video).
+  P7.2 PASS iff stroke cap (D9) completes the hole on stroke 6 (EditMode test of GolfTutorial logic).
+  P7.3 PASS iff normal golf round (non-tutorial) behaves exactly as before (existing tests + a 1-hole manual check video).
+P8  Reward + hub
+  P8.1 PASS iff after the first tutorial the player is level 2 (Progression entry) and reward_claimed is logged once; replay grants nothing (unit test).
+  P8.2 PASS iff the flow lands in .hub(<sport>) with the hub's tutorial row marked done (snapshot).
+  P8.3 PASS iff the white headband shows equipped on the reward screen hero AND in the next match. If blocked by locks -> FAIL(BLOCKED-OWNER) with NEEDS_OWNER.md entry.
+  P8.4 PASS iff choosing the other sport for the first time runs its tutorial, grants D8 XP, lands in its hub.
+P9  Resume / skip / replay
+  P9.1 PASS iff kill + relaunch at EACH onboarding step (account, character, connect, motionPrimer, choose, tutorial, reward) returns to that same step (UI test loop).
+  P9.2 PASS iff a save with sport.tennis.tutorialDone.v1 = true (seeded) launches straight to the normal menu with zero onboarding screens.
+  P9.3 PASS iff Settings -> Gameplay -> Replay onboarding runs the flow again with the hero prefilled and progress/level unchanged.
+  P9.4 PASS iff Online lobby and full Locker open from the main menu right after onboarding (UI test taps both).
+P10 Regression + device
+  P10.1 PASS iff GolfArcadeTests, Unity check.sh, Unity EditMode and the touched PlayMode tests show no new failures vs P0.1.
+  P10.2 PASS iff `zsh Unity/Tools/build-integrated-ios.sh` succeeds and the app installs and runs on Adnan's iPhone (install-phone.sh log + launch video).
+  P10.3 PASS iff `git diff --cached --name-only` ⊆ §4 owned list, and `git diff --name-only` shows no new changes outside owned files caused by you.
+P11 FINAL — Adnan's eye
+  P11.1 PASS iff Adnan approves work/onboarding/WALKTHROUGH_phone.mov (no TV: account -> character -> "play on phone" -> tennis tutorial -> reward -> hub) and
+        work/onboarding/WALKTHROUGH_tv.mov (phone + TV/Mac side by side or sequential). Agent PASS on P0–P10 does not count without this.
+
+======================================================================
+8. PROOFS
+======================================================================
+work/onboarding/
+  BASELINE.md, NEEDS_OWNER.md, P<N>_RESULT.md
+  P<N>_*.png  (Simulator: xcrun simctl io booted screenshot …)   P<N>_*.mov (xcrun simctl io booted recordVideo …; device: Control Center screen recording)
+  External display: record the TV with a second camera, or on a Mac receiver record the AirPlay window; name files *_tv.mov / *_mac.mov.
+  analytics_<run>.log — the analytics lines copied from SportsDiagnostics.log for each scripted run (used for the timing gates).
+
+======================================================================
+9. DESIGN RATIONALE (reference games, briefly)
+======================================================================
+- Teach by playing, not reading; few coached moments: Clash Royale coaches only unit placement and upgrading, then ramps training difficulty.
+  https://medium.com/@Matthewwspencerr/clash-royale-creating-a-sticky-first-time-user-experience-113e17b18f36
+  Clash Royale asks for Game Center at first open, then an easy first battle + chest: https://medium.com/design-bootcamp/6-lessons-from-clash-royal-onboarding-40ed13bf2483
+- Auto-run, just swing (our forehand-first, sliders-hidden step): Wii Sports Tennis moves the player automatically. https://strategywiki.org/wiki/Wii_Sports/Tennis
+- Create your character first, then short scored lessons (our order 1 -> 4): Mario Golf Super Rush starts with Mii creation, then drive/approach/putt lessons, then a Rookie course.
+  https://www.ign.com/wikis/mario-golf-super-rush/Tutorial
+- Per-sport tutorial only the first time you pick that sport (our "other sport's tutorial on first pick"): Nintendo Switch Sports. https://game8.co/games/Nintendo-Switch-Sports/archives/376681
+- One mechanic per mini-challenge, XP even for failing: Mario Tennis Aces Adventure. https://kotaku.com/mario-tennis-aces-adventure-mode-is-a-great-teacher-1826462641
+- Mandatory short controls tutorial, then a no-stakes match: Brawl Stars. https://skycoach.gg/blog/brawl-stars/articles/br-beginners-guide
+- No-fail first course introducing one obstacle per section: Fall Guys "Welcome to Fall Guys!". https://fallguysultimateknockout.fandom.com/wiki/Welcome_to_Fall_Guys!
+- Text-free first level with a hand icon (our golf lesson): What the Golf? https://what-the-wiki.fandom.com/wiki/What_the_Golf%3F_Tutorial
+- Simple controls, straight into play: Stumble Guys. https://blakeir.com/how-stumble-guys-hit-225m-downloads
+- FTUE: get playing fast, teach through gameplay (https://www.liquidandgrit.com/first-time-user-experience-ftue-toolkit/); per-step tutorial funnel, D0/D1, no sign-up wall
+  in session 1 (https://www.devtodev.com/resources/articles/main-metrics-ftue) — our Game Center step is skippable to guest for this reason.
+- Permissions in context (camera only when motion is chosen; no ATT): Apple HIG Privacy https://developer.apple.com/design/human-interface-guidelines/privacy ;
+  Game Center auth early at launch: https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/GameKit_Guide/Users/Users.html
+
+======================================================================
+10. ORDER OF WORK + REPORTING
+======================================================================
+P0 -> P1 -> P2 -> P3 -> P4 -> P5 -> P6 -> P7 -> P8 -> P9 -> P10 -> P11. Don't start a phase while the previous one has a FAIL you can fix; FAIL(BLOCKED-OWNER)
+may be carried forward. At the end post in chat: a table of every gate id with PASS/FAIL/BLOCKED-OWNER and proof file, the NEEDS_OWNER.md contents, the exact list of
+staged files, and the two walkthrough video paths for Adnan's review. Nothing is committed.

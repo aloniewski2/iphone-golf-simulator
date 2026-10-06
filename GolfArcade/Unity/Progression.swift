@@ -60,7 +60,9 @@ struct LevelReward: Identifiable, Equatable {
     var icon: String
 }
 enum LevelRewards {
-    static func rewards(for level: Int) -> [LevelReward] { [] }
+    static func rewards(for level: Int) -> [LevelReward] {
+        level == 2 ? [LevelReward(id: "white-headband", title: "White Headband", detail: "Your first Island Sports Club reward.", icon: "sparkles")] : []
+    }
 }
 
 /// One line of the post-match XP breakdown.
@@ -134,6 +136,37 @@ final class Progression {
     }
 
     /// Bank a finished match: add its XP, level up as far as it goes, and describe it for the screen.
+    @discardableResult
+    func awardTutorial(player: UUID, sport: Sport, store: OnboardingStore = OnboardingFlow.shared.store) -> Int {
+        guard sport.playable, !store.rewardClaimed(sport) else { return 0 }
+        let pendingKey = "ftue.pendingReward.\(sport.rawValue).v1"
+        let amountKey = pendingKey + ".xp", itemKey = pendingKey + ".item"
+        var entry: Entry
+        let amount: Int
+        let item: String?
+        // A durable target entry lets a launch interrupted between XP and claim writes finish once.
+        if let data = store.defaults.data(forKey: pendingKey), let saved = try? JSONDecoder().decode(Entry.self, from: data) {
+            entry = saved; amount = store.defaults.integer(forKey: amountKey); item = store.defaults.string(forKey: itemKey)
+        } else {
+            entry = self.entry(for: player)
+            let first = !store.anyRewardClaimed
+            amount = first ? (entry.level < 2 ? max(0, LevelCurve.needed(1) - entry.xp) : 0) : 50
+            item = first ? "white-headband" : nil
+            entry.xp += amount; entry.totalXP += amount
+            while entry.level < LevelCurve.maxLevel && entry.xp >= LevelCurve.needed(entry.level) {
+                entry.xp -= LevelCurve.needed(entry.level); entry.level += 1
+            }
+            store.defaults.set(amount, forKey: amountKey); store.defaults.set(item, forKey: itemKey)
+            guard let data = try? JSONEncoder().encode(entry) else { return 0 }
+            store.defaults.set(data, forKey: pendingKey)
+        }
+        entries[player.uuidString] = entry; save()
+        store.markReward(sport, xp: amount, item: item)
+        store.defaults.removeObject(forKey: pendingKey)
+        Analytics.track("reward_claimed", ["sport": sport.rawValue, "item": item ?? "none", "level": String(entry.level)])
+        return amount
+    }
+
     func award(player: UUID, stats: MatchStats, won: Bool, score: String, opponent: String, practice: Bool, difficulty: Double) -> PostMatchSummary {
         let lines = Self.breakdown(stats: stats, won: won, practice: practice, difficulty: difficulty)
         let total = max(0, lines.reduce(0) { $0 + $1.xp })

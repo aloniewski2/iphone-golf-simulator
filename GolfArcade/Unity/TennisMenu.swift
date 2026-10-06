@@ -97,8 +97,9 @@ final class TennisMenu {
     var classic = false
     private(set) var settingsTab: SettingsTab = .gameplay
     /// The locker: Gear (equip per sport and slot) or Customize (colours). See `lockerRows()` and the extension at the bottom.
-    enum LockerTab: String { case gear, customize }
+    enum LockerTab: String { case gear, customize, emotes }
     private(set) var lockerTab: LockerTab = .gear
+    private(set) var lockerEmoteSlot = 0
     private(set) var lockerSport: Sport = .tennis
     private(set) var lockerSlot: LockerSlot = .skin
     /// The colour whose full gradient panel is open (skin / shirt / shorts / accent / racket); nil = closed.
@@ -135,7 +136,7 @@ final class TennisMenu {
     static let characterRows = ["body", "haircut", "skin", "hair", "hairColor", "hand", "shirt", "shorts", "accent", "racket"]
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
-        case .gameplay: ["level", "coaching", "resetTips", "resetProgress"]
+        case .gameplay: ["level", "coaching", "replayOnboarding", "resetTips", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
         case .display: ["howto", "fps", "overscan"]
         case .audio: ["sound", "haptics"]
@@ -318,6 +319,7 @@ final class TennisMenu {
         case "howto": howToPage = 0; show(.howTo)
         case let s where s.hasPrefix("sport-"):
             guard let sport = Sport(rawValue: String(s.dropFirst(6))) else { return }
+            if sport.playable && !progress.finishedTutorial(sport) { OnboardingFlow.shared.choose(sport); return }
             show(sport.playable ? .hub(sport) : .locked(sport))
         case let t where t.hasPrefix("tab-"):
             settingsTab = SettingsTab(rawValue: String(t.dropFirst(4))) ?? .gameplay
@@ -361,6 +363,7 @@ final class TennisMenu {
                 confirmingReset = false; progress.resetTutorials(); campaign.restart(); notice = "Progress reset"
             } else { confirmingReset = true; notice = "Press again to erase tutorials and campaign progress" }
         case "resetTips": UserDefaults.standard.set(true, forKey: "sports.resetCoaching"); notice = "Coaching tips will show again"
+        case "replayOnboarding": OnboardingFlow.shared.replay()
         case "relock": notice = "The court direction is set again at the start of your next match"; session.motion.clearAxis()
         case "timing": session.forceTimingCheckNextMatch(); notice = "The timing check runs at the start of your next match"
         case "classic": classic = true
@@ -369,7 +372,7 @@ final class TennisMenu {
         case "nextPage": howToPage = min(HowTo.pages.count - 1, howToPage + 1)
         case "nextCard":
             if lessonCard + 1 < GolfLesson.cards.count { lessonCard += 1 }
-            else { begin(MenuLaunch(sport: .golf, mode: .tutorial)) }
+            else { begin(MenuLaunch(sport: .golf, mode: .tutorial), onPhone: !session.displayConnected || session.touch) }
         case "pm-skip": postMatchSkips += 1
         // A second press of the button that skipped the show must not also pick a choice.
         case "pm-next", "pm-replay", "pm-court", "pm-menu":
@@ -492,10 +495,23 @@ final class TennisMenu {
         s.savePlayers()
     }
 
+    func randomizeLook() { randomize() }
+
     // MARK: Tutorials
+
+    func finishOnboarding(_ sport: Sport) { show(.hub(sport)) }
 
     /// Tennis: Ray's on-court lesson. Golf: the lesson cards, then one practice shot.
     func startTutorial(_ sport: Sport) {
+        if OnboardingFlow.shared.step == .tutorial(sport) {
+            if sport == .tennis && !campaign.seen("tutorialIntro") && OnboardingFlow.shared.store.tutorialStep == 0 {
+                OnboardingFlow.shared.showCoachIntro(); return
+            }
+            OnboardingFlow.shared.tutorialStarted(sport)
+            begin(MenuLaunch(sport: sport, mode: .tutorial), onPhone: !session.displayConnected || session.touch)
+            return
+        }
+        if !progress.finishedTutorial(sport) { OnboardingFlow.shared.choose(sport); OnboardingFlow.shared.launchTutorialIfNeeded(); return }
         switch sport {
         case .tennis:
             let beat = "tutorialIntro"
@@ -510,10 +526,12 @@ final class TennisMenu {
     /// Unity finished the tutorial (tennis: every step; golf: the practice shot).
     func tutorialFinished() {
         guard let launch, launch.mode == .tutorial else { return }
-        let first = !progress.finishedTutorial(launch.sport)
+        if progress.finishedTutorial(launch.sport) && !OnboardingFlow.shared.store.explicitRun && !OnboardingFlow.shared.store.rewardClaimed(launch.sport) {
+            OnboardingFlow.shared.store.markReward(launch.sport, xp: 0, item: nil)
+        }
         progress.completeTutorial(launch.sport)
         session.end()
-        if launch.sport == .tennis && first { tell(TennisStory.tutorialDone, then: .hub(.tennis)) }
+        OnboardingFlow.shared.completed(launch.sport)
     }
 
     // MARK: Story
@@ -770,7 +788,7 @@ extension TennisMenu {
         var actions = ["lk-shuffle"]
         if lockerDirty { actions.append("lk-revert") }
         actions.append("lk-done")
-        let tabs = ["lk-tab-gear", "lk-tab-customize"]
+        let tabs = ["lk-tab-gear", "lk-tab-customize", "lk-tab-emotes"]
         switch lockerTab {
         case .gear:
             var rows = [LockerCatalog.sports.map { "lk-sport-\($0.rawValue)" }, tabs,
@@ -781,12 +799,16 @@ extension TennisMenu {
             return rows
         case .customize:
             return [tabs, ["lk-body"], ["lk-hand"], ["lk-skin"], ["lk-shirt"], ["lk-shorts"], actions]
+        case .emotes:
+            return [tabs, (0..<3).map { "lk-emote-slot-\($0)" },
+                    Array(EmoteCatalog.ids.prefix(3)).map { "lk-emote-\($0)" },
+                    Array(EmoteCatalog.ids.suffix(3)).map { "lk-emote-\($0)" }, actions]
         }
     }
 
     /// Opening the locker: Gear, on the shelf, on the item you wear.
     fileprivate func lockerOpen() {
-        lockerOpening = player; lockerTab = .gear; lockerRange = nil; lockerRangeFrom = nil
+        lockerOpening = player; lockerTab = .gear; lockerEmoteSlot = 0; lockerRange = nil; lockerRangeFrom = nil
         if !LockerCatalog.sports.contains(lockerSport) { lockerSport = .tennis }
         if !LockerCatalog.slots(for: lockerSport).contains(lockerSlot) { lockerSlot = LockerCatalog.slots(for: lockerSport)[0] }
         row = 3
@@ -810,6 +832,12 @@ extension TennisMenu {
         switch id {
         case "lk-tab-gear": lockerTab = .gear; _ = focus(id)
         case "lk-tab-customize": lockerTab = .customize; _ = focus(id)
+        case "lk-tab-emotes": lockerTab = .emotes; _ = focus(id)
+        case let s where s.hasPrefix("lk-emote-slot-"):
+            if let slot = Int(s.dropFirst(14)), (0..<3).contains(slot) { lockerEmoteSlot = slot }
+        case let s where s.hasPrefix("lk-emote-"):
+            let emote = String(s.dropFirst(9))
+            lockerEdit { $0.equipEmote(emote, slot: lockerEmoteSlot) }
         case "lk-sport-tennis", "lk-sport-golf":
             lockerSport = id == "lk-sport-golf" ? .golf : .tennis
             if !LockerCatalog.slots(for: lockerSport).contains(lockerSlot) { lockerSlot = lockerSlot == .racket ? .club : lockerSlot == .club ? .racket : .skin }
@@ -926,6 +954,7 @@ extension TennisMenu {
         switch id {
         case "lk-tab-gear": return "Locker · Gear"
         case "lk-tab-customize": return "Locker · Customize"
+        case "lk-tab-emotes": return "Locker · Emotes"
         case "lk-sport-tennis": return "Gear for Tennis"
         case "lk-sport-golf": return "Gear for Golf"
         case "lk-colour": return "Colour"
@@ -942,6 +971,8 @@ extension TennisMenu {
         case "lk-range-skin": return "Skin tone range"
         case "lk-range-close": return "Close range"
         default:
+            if id.hasPrefix("lk-emote-slot-"), let slot = Int(id.dropFirst(14)) { return "Emote slot \(slot + 1)" }
+            if id.hasPrefix("lk-emote-") { return "Equip · \(EmoteCatalog.name(String(id.dropFirst(9))))" }
             if id.hasPrefix("lk-slot-"), let slot = LockerSlot(rawValue: String(id.dropFirst(8))) { return "Slot · \(slot.title(for: .tennis))" }
             if id.hasPrefix("lk-item-") { return "Equip · \(id.dropFirst(8).prefix(1).uppercased() + id.dropFirst(9))" }
             return id

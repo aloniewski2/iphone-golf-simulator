@@ -6,10 +6,12 @@ import SwiftUI
 struct SportsHome: View {
     @State private var session = SportsSession.shared
     @State private var menu = TennisMenu.shared
+    @State private var onboarding = OnboardingFlow.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if menu.screen.isOnline && menu.screen != .online(.match) {
+            if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
+            else if menu.screen.isOnline && menu.screen != .online(.match) {
                 if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
             }
             else if session.active && session.finishedMatch != nil {
@@ -19,7 +21,10 @@ struct SportsHome: View {
             else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
             else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
             else if menu.classic { ClassicSportsHome() }
-            else if session.active && session.sport == "golf" { GolfPhoneController(session: session) }
+            else if session.active && session.sport == "golf" {
+                if menu.launch?.mode == .tutorial { GolfTutorialController(session: session) }
+                else { GolfPhoneController(session: session) }
+            }
             else if session.active { TennisRacketController(session: session) }
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
@@ -57,6 +62,7 @@ struct SportsHome: View {
             if SportsSession.benchmark && !session.active { session.sport="tennis"; session.touch=true; session.start(preview:!session.displayConnected) }
         }
         .background(DisplayRegistration().frame(width:0,height:0))
+        .task(id: onboarding.step.key) { onboarding.launchTutorialIfNeeded() }
         .onChange(of:scenePhase) { _,phase in
             if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
             SportsRuntime.shared().setForeground(phase == .active)

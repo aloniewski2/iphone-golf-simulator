@@ -20,8 +20,9 @@ public class TennisTutorialTests
     [Test] public void TheLessonTeachesEachSkillInOrder()
     {
         var kinds = System.Array.ConvertAll(TutorialLesson.Steps, s => s.Kind);
-        Assert.AreEqual(new[] { TutorialLesson.Kind.Serve, TutorialLesson.Kind.Forehand, TutorialLesson.Kind.Backhand,
-            TutorialLesson.Kind.Aim, TutorialLesson.Kind.Point }, kinds);
+        Assert.AreEqual(new[] { TutorialLesson.Kind.Forehand, TutorialLesson.Kind.Backhand, TutorialLesson.Kind.Aim,
+            TutorialLesson.Kind.Serve, TutorialLesson.Kind.Point }, kinds);
+        Assert.AreEqual(1, TutorialLesson.Steps[2].Goal);
         foreach (var s in TutorialLesson.Steps) { Assert.IsNotEmpty(s.Say); Assert.IsNotEmpty(s.Hint); Assert.Greater(s.Goal, 0); }
     }
 
@@ -39,19 +40,29 @@ public class TennisTutorialTests
         var lesson = new TutorialLesson();
         for (int i = 0; i < 20; i++) Assert.IsFalse(lesson.Miss());
         Assert.IsTrue(lesson.HintDue);
-        Assert.AreEqual(TutorialLesson.Kind.Serve, lesson.Current.Kind);
+        Assert.AreEqual(TutorialLesson.Kind.Forehand, lesson.Current.Kind);
         Assert.AreEqual(0, lesson.Progress);
         lesson.Success();
-        Assert.AreEqual(TutorialLesson.Kind.Forehand, lesson.Current.Kind);
+        Assert.AreEqual(TutorialLesson.Kind.Backhand, lesson.Current.Kind);
         Assert.AreEqual(0, lesson.Misses);
     }
 
-    [Test] public void AimAsksForTheLeftRingThenTheRight()
+    [Test] public void AimAsksForOneLeftRing()
     {
         var lesson = new TutorialLesson();
         while (lesson.Current.Kind != TutorialLesson.Kind.Aim) lesson.Success();
         Assert.IsTrue(lesson.AimLeft); Assert.That(lesson.Instruction, Does.Contain("LEFT"));
-        lesson.Success(); Assert.IsFalse(lesson.AimLeft); Assert.That(lesson.Instruction, Does.Contain("RIGHT"));
+        lesson.Success(); Assert.AreEqual(TutorialLesson.Kind.Serve, lesson.Current.Kind);
+    }
+
+    [Test] public void SkipAdvancesExactlyOneExerciseAndResumeRestoresAim()
+    {
+        var lesson = new TutorialLesson(2);
+        Assert.AreEqual(TutorialLesson.Kind.Aim, lesson.Current.Kind);
+        lesson.Skip(); Assert.AreEqual(3, lesson.Index);
+        Assert.AreEqual(0, new TutorialLesson(-100).Index);
+        Assert.AreEqual(4, new TutorialLesson(100).Index);
+        Assert.That(new TutorialLesson().TouchInstruction, Does.Contain("Tap SWING"));
     }
 
     [Test] public void KitColoursParseFromTheLaunchMessage()

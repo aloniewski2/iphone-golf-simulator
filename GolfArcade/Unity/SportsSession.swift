@@ -99,6 +99,19 @@ final class SportsSession {
     /// What the match is doing, from Unity, for the controller: "serve", "toss", "receive",
     /// "rally" or "point"; and which court a serve goes from.
     var tennisPhase = ""
+    private(set) var matchEmotes = EmoteCatalog.defaults
+    var emoteWindow = ""
+    var emoteNotice = ""
+    var canPlayEmote: Bool {
+        active && ready && loading.finished && !paused && finishedMatch == nil && sport == "tennis"
+        && (emoteWindow == "intro" || emoteWindow == "point")
+    }
+    func playEmote(slot: Int) {
+        guard canPlayEmote, matchEmotes.indices.contains(slot) else { return }
+        command("emote", value: Double(slot))
+        emoteWindow = ""
+        emoteNotice = "\(EmoteCatalog.name(matchEmotes[slot])) selected"
+    }
     var serveFromDeuce = true
     /// The controller serve's aim in the target box: across (T -1 .. wide +1), depth (0..1).
     var serveAim = (across: 0.0, depth: 0.8)
@@ -252,6 +265,7 @@ final class SportsSession {
                         "opponentName": opponentName, "round": opponent?.round ?? "", "difficulty": difficulty,
                         "sets": sets ?? opponent?.sets ?? 1, "games": games ?? opponent?.games ?? 3,
                         "coach": coach.joined(separator: "|")]
+        if mode == "tutorial" { launchExtras["tutorialStart"] = OnboardingFlow.shared.store.tutorialStep }
         start(preview: preview)
         launchExtras = [:]
     }
@@ -290,6 +304,12 @@ final class SportsSession {
         phase="calibrating"; feedback=""; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
+        matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
+        if let network = launchExtras["network"] as? String, let data = network.data(using: .utf8),
+           let configuration = try? JSONDecoder().decode(MultiplayerMatchConfiguration.self, from: data),
+           let local = configuration.participants.first(where: { $0.id == configuration.localID }) {
+            matchEmotes = EmoteCatalog.normalized(local.loadout?.emotes)
+        }
         motion.setAimProfile(storedAimProfile())
         pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
@@ -300,6 +320,7 @@ final class SportsSession {
                  "loadout":p.loadoutPayload(sport:Sport(rawValue:sport) ?? .tennis)]
         if preview { touch=true }
         pending?["external"] = !preview
+        pending?["emotes"] = matchEmotes
         for (key, value) in launchExtras { pending?[key] = value }
         // Explicit device verification uses a real, short match (no fabricated finish event).
         if Self.benchmark && ProcessInfo.processInfo.arguments.contains("--postgame-check") {
@@ -655,6 +676,11 @@ final class SportsSession {
                 for (prefix, won) in [("YOU WIN ", true), ("OPPONENT WINS ", false)] where score.detail.hasPrefix(prefix) {
                     receiveMatchFinish(won: won, score: String(score.detail.dropFirst(prefix.count)))
                 }
+            case "emoteState":
+                let window = event["message"] as? String ?? ""
+                if window != emoteWindow { emoteNotice = "" }
+                emoteWindow = window
+            case "emoteResult": emoteNotice = event["message"] as? String ?? ""
             case "timing":
                 checkingTiming=false
                 let message=event["message"] as? String ?? "failed"
@@ -684,6 +710,7 @@ final class SportsSession {
                 }
             case "contact":
                 if let contact = TennisContact(line: event["message"] as? String ?? "") { contacts = Array((contacts + [contact]).suffix(12)) }
+                if TennisMenu.shared.launch?.mode == .tutorial { OnboardingFlow.shared.hit() }
             case "flash": if let rendered=Double(event["message"] as? String ?? "") { flashShown(at:rendered) }
             case "phase":
                 let parts=(event["message"] as? String ?? "").split(separator:"|").map(String.init)
@@ -700,9 +727,17 @@ final class SportsSession {
                 if parts.count>1 { serveFromDeuce=parts[1] == "deuce" }
             case "tutorialStep":
                 let parts=(event["message"] as? String ?? "").split(separator:"|",maxSplits:2).map(String.init)
-                if parts.count == 3, let i=Int(parts[0]), let n=Int(parts[1]) { tutorialStep=(i,n,parts[2]) }
-            case "tutorialDone", "shot":
-                if event["type"] as? String == "tutorialDone" || TennisMenu.shared.launch?.mode == .tutorial { TennisMenu.shared.tutorialFinished() }
+                if parts.count == 3, let i=Int(parts[0]), let n=Int(parts[1]) {
+                    tutorialStep=(i,n,parts[2]); OnboardingFlow.shared.reportedStep(i, sport: Sport(rawValue: sport) ?? .tennis)
+                }
+            case "tutorialSuccess", "tutorialSkip":
+                let parts = (event["message"] as? String ?? "").split(separator: "|").map(String.init)
+                if parts.count == 2 { Analytics.track(event["type"] as? String == "tutorialSkip" ? "tutorial_step_skip" : "tutorial_step_success", ["i": parts[0], "misses": parts[1]]) }
+            case "golfHoleDone":
+                let parts = (event["message"] as? String ?? "").split(separator: "|").map(String.init)
+                if parts.count == 2 { Analytics.track("golf_hole_done", ["strokes": parts[0], "capped": parts[1]]) }
+            case "tutorialDone": TennisMenu.shared.tutorialFinished()
+            case "shot": if TennisMenu.shared.launch?.mode == .tutorial { OnboardingFlow.shared.hit() }
             case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n); SportsDiagnostics.write("rally persisted \(n)") }
             case "matchStats": lastMatchStats = MatchStats(line: event["message"] as? String ?? "")
             case "matchOver":

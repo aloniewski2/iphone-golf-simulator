@@ -10,7 +10,10 @@ struct TennisTVRoot: View {
             let scale = min(g.size.width / 1280, g.size.height / 720) * (1 - SportsSession.shared.overscan)
             ZStack {
                 Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
-                TennisMenuScreen(compact: false)
+                Group {
+                    if OnboardingFlow.shared.holdsMenu { OnboardingHoldingCard() }
+                    else { TennisMenuScreen(compact: false) }
+                }
                     .frame(width: 1280, height: 720)
                     .scaleEffect(scale)
                     .frame(width: g.size.width, height: g.size.height)
@@ -273,12 +276,16 @@ struct TennisRacketController: View {
                 if !session.touch { ShotDepthControl(session:session) }
                 if session.touch {
                     VStack(spacing: 6) {
+                        if session.tutorialStep == nil {
                         Slider(value: $steering, in: -1...1) { Text("Court position") }
                             .onChange(of: steering) { _, v in session.steer(v) }
-                        RallyAimPad(session:session).frame(height:150)
+                        }
+                        if session.tutorialStep == nil || (session.tutorialStep?.index ?? 0) >= 2 { RallyAimPad(session:session).frame(height:150) }
                         HStack {
+                            if session.tutorialStep == nil {
                             Slider(value: $power, in: 0.15...1) { Text("Swing power") }
-                            Button("Swing") { session.swing(power) }.font(IslandUI.font(20, bold: true)).buttonStyle(.borderedProminent).tint(IslandUI.lime)
+                            }
+                            Button("Swing") { session.swing(session.tutorialStep == nil ? power : 0.7) }.font(IslandUI.font(24, bold: true)).frame(maxWidth: .infinity, minHeight: 70).buttonStyle(.borderedProminent).tint(IslandUI.lime)
                                 .foregroundStyle(IslandUI.navy).disabled(session.paused)
                         }
                     }.tint(IslandUI.lime)
@@ -286,6 +293,7 @@ struct TennisRacketController: View {
             }
             if session.ready && session.loading.finished && session.finishedMatch == nil {
                 if !session.paused && session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
+                TennisEmoteControls(session: session)
             }
             if session.finishedMatch == nil && session.ready && session.paused && !session.measuringDelay && (session.touch || session.axisGate.locked) {
                 Text(session.status).font(IslandUI.font(14, bold: true)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
@@ -352,6 +360,32 @@ struct TennisRacketController: View {
                 .overlay(alignment: .leading) {
                     GeometryReader { g in Capsule().fill(session.stamina > 0.35 ? IslandUI.lime : Arcade.crimson).frame(width: g.size.width * min(1, max(0, session.stamina))) }
                 }
+        }
+    }
+}
+
+struct TennisEmoteControls: View {
+    let session: SportsSession
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(session.emoteWindow == "intro" ? "YOUR INTRO · PICK AN EMOTE" : session.emoteWindow == "point" ? "YOUR POINT · CELEBRATE" : "EMOTES")
+                .font(IslandUI.font(12, bold: true)).foregroundStyle(session.canPlayEmote ? IslandUI.lime : .white.opacity(0.55))
+            HStack(spacing: 8) {
+                ForEach(0..<3, id: \.self) { slot in
+                    Button { session.playEmote(slot: slot) } label: {
+                        VStack(spacing: 4) {
+                            Text("\(slot + 1)").font(IslandUI.font(11, bold: true)).opacity(0.6)
+                            Text(EmoteCatalog.name(session.matchEmotes[slot])).font(IslandUI.font(15, bold: true)).lineLimit(1).minimumScaleFactor(0.75)
+                        }.frame(maxWidth: .infinity, minHeight: 52)
+                            .foregroundStyle(session.canPlayEmote ? IslandUI.navy : .white.opacity(0.5))
+                            .background(session.canPlayEmote ? IslandUI.lime : .white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                    }.buttonStyle(.plain).disabled(!session.canPlayEmote)
+                        .accessibilityIdentifier("controller-emote-\(slot)")
+                        .accessibilityLabel("Play \(EmoteCatalog.name(session.matchEmotes[slot])), emote slot \(slot + 1)")
+                }
+            }
+            Text(session.emoteNotice.isEmpty ? "Available for your intro and after you score a point." : session.emoteNotice)
+                .font(IslandUI.font(11, bold: false)).foregroundStyle(.white.opacity(0.55))
         }
     }
 }
@@ -684,7 +718,7 @@ struct TutorialPanel: View {
                 Spacer()
                 Text("STEP \(min(step.index + 1, step.count)) OF \(step.count)").font(IslandUI.font(13, bold: true))
             }
-            Button("Skip this exercise", action: onSkip).font(IslandUI.font(12, bold: true))
+            Button("Skip this exercise", action: onSkip).font(IslandUI.font(12, bold: true)).accessibilityIdentifier("tutorial-skip-step")
             Text(step.text).font(IslandUI.font(18, bold: true)).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 4) {
                 ForEach(0..<step.count, id: \.self) { i in

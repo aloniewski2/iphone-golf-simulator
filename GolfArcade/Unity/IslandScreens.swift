@@ -299,6 +299,7 @@ struct IslandSettingsScreen: View {
             return Item(title: "Training coach", detail: "How hard the practice coach hits back. Standard is a proper rally.", control: .choice(TennisMenu.trainingLevels.map(\.name), i))
         case "coaching": return Item(title: "Coaching tips", detail: "Short hints on the phone and TV during matches.", control: .toggle(s.coachingTips))
         case "resetTips": return Item(title: "Show every coaching tip again", detail: "The hints you have already seen will come back.", control: .action("Reset", danger: false))
+        case "replayOnboarding": return Item(title: "Replay onboarding", detail: "Account, look, screen setup and a tutorial again. Your progress stays.", control: .action("Replay", danger: false))
         case "resetProgress": return Item(title: "Erase tutorials & campaign", detail: "Starts the tutorial and the Island Circuit from the beginning. Your look and level stay. Asks twice.", control: .action(menu.confirmingReset ? "Press again" : "Erase…", danger: true))
         case "controls": return Item(title: "Controls", detail: "Swing the phone like a racket, or play with touch buttons.", control: .choice(["Swing", "Touch"], s.touch ? 1 : 0))
         case "range": return Item(title: "Step to cross court", detail: "How far you walk for a full court width.", control: .stepper("\(Int(s.travel * 100)) cm"))

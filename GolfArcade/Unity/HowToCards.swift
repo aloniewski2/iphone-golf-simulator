@@ -77,25 +77,12 @@ enum HowTo {
     }
 }
 
-/// Golf's first-time lesson: these cards, then one practice shot.
+/// Optional setup before the interactive practice, aim and hole lesson.
 enum GolfLesson {
     static let cards = [
         HowToCard(id: "g-stance", title: "Set up", steps: [
-            "Stand side-on to the TV, feet shoulder-width apart.",
-            "Hold the phone in both hands like a club grip, screen facing you.",
+            "Hold the phone like a club grip, or use touch controls — we’ll practice, aim, then play a friendly hole.",
         ], art: .golfStance),
-        HowToCard(id: "g-swing", title: "Swing", steps: [
-            "Take the phone back slowly over your shoulder.",
-            "Swing down and through in one smooth motion — tempo beats force.",
-        ], art: .golfSwing),
-        HowToCard(id: "g-aim", title: "Aim", steps: [
-            "Use the arrows on your phone to aim before the shot.",
-            "Watch the flag: wind pushes the ball in the air.",
-        ], art: .golfAim),
-        HowToCard(id: "g-clubs", title: "Clubs", steps: [
-            "Switch clubs with the club button: driver off the tee, irons toward the green.",
-            "Now hit your first practice shot to finish the lesson.",
-        ], art: .golfClubs),
     ]
 }
 
