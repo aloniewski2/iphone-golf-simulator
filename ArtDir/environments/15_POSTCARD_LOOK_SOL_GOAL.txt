@@ -1,0 +1,157 @@
+PASTE: POSTCARD LOOK, FINISH (Codex Goal Mode, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+Make golf holes 8 (Needle), 9 (Split), and 10 (Crater) look like their reference stills in the real Unity Game view on iPhone, without changing how they play. Install the result, prove it with in-game stills set beside each reference, and commit only the course files. Done means every gate below passes AND the side-by-side stills read as the same place as the reference. My eye overrides any gate PASS. Report an honest FAIL instead of softening a gate.
+
+The previous work was done by Claude Code, which ran out of usage. Ignore anything under .claude/ and any Claude "Workflow" or resumeFromRunId instructions in old notes. Use only the shell scripts, Python, Blender headless, and Unity batch tools listed here.
+
+----------------------------------------------------------------
+0. WHERE THINGS STAND (Oct 5, 2026 ~06:35 ET; verify every line, do not trust it)
+
+Installed in the repo (the round 3 / "round 7" look build, installed 04:19 ET Oct 5):
+- Unity/Assets/Resources/Course/hole_08.fbx, hole_09.fbx, hole_10.fbx and blender/hole_08|09|10.blend
+- Game-view stills: ArtDir/screenshots/golf_postcards/look/hole08_1_tee, _2_approach, _3_arch; hole09_1_tee, _2_approach, _3_ruin; hole10_1_tee, _2_approach, _3_lavarim; stills_stats.json
+- Overview sheet: work/postcard-look/v2/progress/progress_sheet_gameview_r3.jpg
+
+Passing at that install: GolfLookSmoke 88/88 (both URP assets), PostcardImportCheck 0 failed, EditMode PostcardHoleTests 37/37, verifier hole 10 99 gates, Game-view GRASS_HUE 8/9/10, SHELF, LAVA_ORANGE, SMOKE_SOFT, NO_PLANT_ON_SEA, NO_ROCK_STRETCH_2X, NO_FOAM_STRIP, PATH_UNDER_BALL.
+
+Failing or open:
+- BASALT_JOINTS FAIL. Basalt reads as vertical streaks or planks, not columns with a branching joint network.
+- PLANT_SWAY_COLORS and PLANT_SWAY_CAPS FAIL on the installed FBXs. The GolfPlants sway shader works, but the installed meshes carry no sway vertex colours.
+- Hole 10 had GROUND_UV_LOCAL_SMEAR on FAIRWAY_FIRSTCUT. Hole 9 had a LK_TEXTURED@blend relative-path fail. Check whether either is still open.
+- Metal shaders were compiled only in the editor. No iOS build was run.
+
+Staged, NOT installed (the round 8 "grass liveliness + gentle sway" pass, 06:03 to 06:35 ET):
+- work/postcard-look/v2/hole08/stage/, hole09/stage/, hole10/stage/ (each has INSTALL.md with sha256 lines and a GATES file)
+- These add edge-fringe tufts, sway vertex colours on every PLANT_ mesh, and a thinner hole 10 tee edge.
+- hole10/INSTALL.md says v2/proof/install_holes.py LIBLISTS["10"] must point at libs_sha_repair_r4.txt before the pre step.
+
+What the eye says is still wrong (this is the real work):
+- ALL HOLES: the staged mow stripes are far too dark. They read as tire tracks or shadows, not mowing.
+- HOLE 9 SPLIT is the furthest off. From above it is two flat strips with straight dark edges sitting in flat blue water. split.jpg shows two rugged rocky islands with steep, eroded cliffs, scrubby grass tops, white surf at the base, and a deep channel between them. From the tee and approach, the player sees only grass to the horizon. The ruin is still a pile of square boxes.
+- HOLE 10 CRATER: the lava is close. The basalt wall reads as a black plank fence. crater.jpg shows stacked hexagonal basalt columns with glowing orange cracks, a jagged broken rim, a tee box of grass set into a dark stone platform, a smoking volcano with lava streams, and the green on a basalt column pillar. The fairway in the ref is a lighter centre band with a darker collar, not stripes.
+- HOLE 8 NEEDLE is closest: stone path, arch, and sea stacks all read. It still lacks needle.jpg's layered stone island sides with hanging vines, the big waterfall off the green island, and tall tapered sea stacks with grass caps around the course.
+- GAMEPLAY VIEW: the tee and approach cameras are where the player spends 95% of the time, and they currently show almost none of the postcard: no cliff drop at the fairway edge, little sea, landmarks tiny on the horizon.
+
+----------------------------------------------------------------
+1. READ FIRST (in order)
+- ArtDir/environments/refs/needle.jpg, split.jpg, crater.jpg (the target; open them as images)
+- ArtDir/environments/13_POSTCARD_HOLES.txt, 14_POSTCARD_LOOK.txt, 14b_POSTCARD_LOOK_CONTINUE.txt (earlier briefs and rules)
+- work/postcard-look/v2/RESUME_at_continue.md (old notes; skip the Claude Workflow parts)
+- work/postcard-look/v2/hole08|09|10/INSTALL.md and GATES_hole*.* (latest state per hole)
+- work/postcard-look/v2/proof/run_proof.sh, install_holes.py, GATE_LINES.txt, METRICS.md
+- blender/scripts/POSTCARDS_README.md, postcard_look_lib.py, postcard_props_lib.py, golf_look_textures.py, postcard_look_verify.py, hole08|09|10_build.py, _look.py, hole09_masonry.py, hole09_stone.py
+- Unity/Assets/Editor/GolfLookSmoke.cs, PostcardImportCheck.cs, PostcardLookStills.cs, GolfFlyoverCapture.cs, GolfPlantSwayCheck.cs, GolfLookGrassCheck.cs
+- Unity/Assets/Resources/Course/Shaders/GolfLava.shader, GolfPlants.shader, GolfSurf.shader
+- work/postcard-look/guards.sh and heavy.sh
+
+----------------------------------------------------------------
+2. HARD RULES (any break = whole job FAIL)
+Scoring is frozen:
+- Hole 7 files, Hole.cs, HoleView.cs scoring logic, GolfGame.cs, and every hole_NN_design.py stay byte-identical. Run work/postcard-look/guards.sh before and after every install; it must stay 7/7 PASS.
+- Scoring meshes (PLAY_SURFACE_*, markers, cups, tee, pin) stay bit-identical to work/postcard-look/baseline/blender/hole_NN.blend. Max vertex delta 0.000 m.
+- One shore, one centerline, one pin, PLAY_Z = 6. No second green. No hovering green: anything that looks like an island green must sit on a pillar that reaches the lava or sea. No animated lava geometry (shader UV flow is fine).
+- Scenery may be added or replaced anywhere that is not a scoring mesh, including cliff skirts below the play edge, outer islands, rocks, plants, background.
+
+Do not touch:
+- QualitySettings.asset, any URP pipeline or renderer asset (TennisURP, HeroBaseStudioURP), tennis, locker, menu, hero, kit, racket, Serve, Walk, runs, emotes, Multiplayer files.
+- Do not add bloom or any post-processing. Post does not render (the renderers have no postProcessData). Everything must read correctly with lighting, textures, vertex colour, and emission alone.
+- Never overwrite hole_NN.fbx.meta (it holds the GUID and import settings).
+
+Process:
+- Every Unity or xcodebuild run goes through work/postcard-look/heavy.sh, one at a time. Never reimport a changed FBX while a Unity batch is running.
+- Install only through work/postcard-look/v2/proof/install_holes.py (pre, then install), which copies the .blend and the .fbx only and checks sha256.
+- Builders export with postcard_look_lib.export_look_fbx (LINEAR vertex colours), never postcard_lib.export_fbx.
+- All scratch, renders, and logs go under work/postcard-look/v3/. Never git-add anything under work/.
+- If two fixes resting on the same idea fail the same gate, stop and question the idea before a third try. Write down why in v3/DECISIONS.md.
+- A gate threshold may be calibrated ONCE, on the reference image, before you measure your own build. Record it in v3/THRESHOLDS.md. Never loosen a threshold after your build fails it.
+
+----------------------------------------------------------------
+3. PHASES
+
+PHASE 0: AUDIT (no writes outside work/postcard-look/v3/)
+0.1 Run guards.sh. Record sha256 of the installed hole_08|09|10 .blend, .fbx, and .fbx.meta, every lib in blender/scripts used by the holes, and all Course/Look/*.png in v3/start_sha.txt.
+0.2 Compile check: open Unity batch through heavy.sh and confirm 0 "error CS".
+0.3 For each hole, compare stage/ against installed. Run postcard_look_verify.py on the staged .blend and .fbx and on the installed ones. Write a table in v3/AUDIT.md listing every gate: installed result, staged result.
+0.4 Render the reference angle: use GolfFlyoverCapture (or a fixed camera added for proof only) to shoot an aerial of each installed hole from roughly the same height, angle, and framing as its reference. Save v3/audit/holeNN_aerial_installed.png and a side-by-side with the ref.
+0.5 Write the 10 biggest visual differences per hole against its ref, ranked, in v3/AUDIT.md. This list drives Phases 1 to 4.
+GATE P0: AUDIT.md exists with the full gate table, three aerial side-by-sides, and three ranked difference lists. guards 7/7.
+
+PHASE 1: SHARED LIBRARY AND TEXTURE FIXES (blender/scripts libs, golf_look_textures.py, Course/Look PNGs)
+Fix in the libraries first, then rebuild every hole on them. Re-run postcard_look_smoke.py and postcard_props_smoke.py after each lib change.
+1.1 Mow stripes. Keep stripes subtle: in the Game view, the luminance gap between light and dark bands is at most 12% on the fairway and 8% on the green. The ref greens are bright and nearly uniform. Add a distinct first cut / collar ring that is darker than the fairway.
+1.2 Grass life. Keep the round 8 edge fringe and tuft variety. No carpet of identical tufts. Tufts thin out toward the play line and never sit on PLAY_SURFACE where the ball rolls.
+1.3 Sway. Every PLANT_ mesh carries R = sway weight (0 at the base, rising toward the tip), G = phase, B = 0, A = 1. Sway amplitude caps match GolfPlantSwayCheck. Plants stay still at the base so they don't slide on the ground.
+1.4 Basalt. Rebuild Basalt_C, Basalt_E, Basalt_N, and the column geometry generator. Columns are 5 or 6 sided prisms, 0.6 to 1.8 m across, with varied heights, visible flat tops, and chipped edges. Joints between columns form a connected branching network. Glow (emission) lives only inside the joints and fades with depth, never in repeating ladder rungs or straight full-height streaks.
+1.5 Cliff skirts. Add a library function that hangs a cliff from any play edge down to sea or lava level: irregular silhouette (no straight outline run longer than 4 m seen from above), horizontal strata and overhangs for Needle, rugged eroded rock with scrub ledges for Split, column faces for Crater. Vines and moss hang from the top lip on Needle and Split.
+1.6 Rocks and stacks. Sea stacks are tall tapered needles (height at least 3x base width) with layered rock, a grass or scrub cap, and a surf ring at the waterline. No 12-vertex rocks. No stacked-box look. No piece stretched more than 2x.
+1.7 Surf and sea. Surf is broken white foam that hugs each shoreline unevenly, thicker on exposed points. No continuous white strip. Water stays deep blue right up to the foam, with only a thin lighter shelf.
+1.8 Masonry. hole09_masonry.py and the Needle arch use courses of cut stone blocks of varied size, broken tops, gaps, fallen blocks at the base, moss in the joints. No floating blocks.
+GATE P1: smoke tests pass; BASALT_JOINTS PASS on a library test scene; PLANT_SWAY_COLORS and PLANT_SWAY_CAPS PASS on a test scene; MOW_BAND_CONTRAST measured and within the caps; a turntable or 3-view render of a sea stack, a cliff skirt section, and a basalt wall section saved to v3/lib/.
+
+PHASE 2: HOLE 8 NEEDLE (hole08_build.py, hole08_look.py only)
+Target needle.jpg: floating stone-sided islands linked by a paved path, a ruined stone arch, a waterfall pouring off the green island into the sea, tall needle sea stacks scattered across deep blue water, vines and purple flowers along the edges, warm late-afternoon light and soft clouds.
+2.1 Cliff skirts under every island, layered stone with hanging vines and moss.
+2.2 Waterfall: a visible fall from the green island edge to the sea with mist and foam at the base (Fall_C, Surf). Static mesh with shader UV scroll only.
+2.3 Six or more needle sea stacks of varied height around the hole, at least two visible from the tee camera and two from the approach camera.
+2.4 Keep the path flush with or under the ball (PATH_UNDER_BALL) and the arch landmark.
+GATE P2: postcard_look_verify.py hole 8 ALL PASS on the staged blend and FBX; scoring meshes bit-identical; aerial side-by-side saved; ranked difference list re-scored with every item from P0 either fixed or explained.
+
+PHASE 3: HOLE 9 SPLIT (hole09_*.py only). The biggest job.
+Target split.jpg: two rugged islands separated by a channel of open sea. Steep eroded rock cliffs drop to white surf. Island tops are scrubby golden-green grass and heather, with the fairway and greens a clean bright green cut through them. Bunkers sit on the fairway. A stone ruin (broken walls, an arch) stands on the ridge of the left island. Small rocks and stacks dot the water.
+3.1 Turn the flat strips into islands: cliff skirts on every edge; the non-play island and rough get real height variation (ridges, slopes, outcrops) built as scenery around the frozen play meshes.
+3.2 The channel between the islands is open sea with surf on both shores, visible from the approach camera.
+3.3 Rough and scrub: rough grass, heather, and bare rock patches replace the flat brown-olive plane. Scrub colour matches the ref (golden green and brown), clearly different from the fairway.
+3.4 Bunkers present as in the scoring design, with a sand texture and a soft lip.
+3.5 Ruin rebuilt with the Phase 1 masonry: at least one standing arch or doorway, broken wall runs of different heights, rubble. No square box piles.
+3.6 Fix the LK_TEXTURED@blend relative-path fail if still open.
+3.7 Draw-call budget: the staged hole 9 has 1,417 mesh objects. Merge static scenery by material so the tee view stays within the budget in Phase 6.
+GATE P3: verifier hole 9 ALL PASS; SPLIT_CLIFF_ISLANDS PASS (from the aerial, both islands show cliff faces on at least 80% of their outline and surf at the base); RUIN_NOT_BOXES PASS (no more than 20% of ruin pieces are unbroken axis-aligned cuboids); scoring bit-identical; aerial side-by-side saved.
+
+PHASE 4: HOLE 10 CRATER (hole10_*.py only)
+Target crater.jpg: a deep crater of hexagonal basalt columns with glowing orange cracks, a bright swirling lava lake below, a winding fairway on top of a column ridge (lighter centre band, darker collar, bunkers), a square tee box of grass set into a dark stone platform, the green on a column pillar rising from the lava, a smoking volcano with lava streams in the background, and smoke plumes.
+4.1 Walls and ridge built from the Phase 1 basalt columns, jagged broken rim, no plank fence. BASALT_JOINTS must PASS in the Game view.
+4.2 Tee box: a grass square on a raised dark stone platform with a stone edge, a couple of tropical plants at the corners.
+4.3 Green pillar: column-sided pillar reaching the lava (not hovering).
+4.4 Background volcano with glowing lava streams and 2 or 3 soft smoke plumes (Smoke_C, soft wisp, no hard grey ball).
+4.5 Fairway: lighter centre band and darker collar, subtle mow stripes only.
+4.6 Fix GROUND_UV_LOCAL_SMEAR on FAIRWAY_FIRSTCUT if still open.
+GATE P4: verifier hole 10 ALL PASS; BASALT_JOINTS PASS; LAVA_ORANGE and SMOKE_SOFT still PASS; scoring bit-identical; aerial side-by-side saved.
+
+PHASE 5: GAMEPLAY CAMERA FRAMING (proof cameras and scenery placement only; do not change the gameplay camera code)
+The postcard has to show while playing, not only from above.
+5.1 From each tee and approach camera, the frame must show: the fairway edge dropping into a cliff or crater on at least one side, the sea or lava in at least 15% of the frame, and the hole's landmark (Needle arch or stacks, Split ruin or channel, Crater volcano or pillar green) at a readable size (at least 4% of frame height).
+5.2 Achieve this with scenery placement, scale, and height only. Do not move the tee, pin, or any scoring mesh, and do not edit the gameplay camera.
+GATE P5: GAMEPLAY_FRAMING PASS for all six tee and approach shots, measured from renderer masks (PostcardProofMasks) on the Game-view stills.
+
+PHASE 6: INSTALL AND UNITY PROOF
+6.1 Point install_holes.py LIBLISTS at the final lib sha lists. Run run_proof.sh pre, then install.
+6.2 Run run_proof.sh with all remaining steps: blender, unity, stills, studio, masks, gates, mesh, metrics, sheets, protected, report.
+6.3 Extra stills: the three reference-angle aerials in the Game view (GolfFlyoverCapture) at iPhone portrait resolution, each beside its ref, saved to ArtDir/screenshots/golf_postcards/look/holeNN_4_aerial.png and holeNN_vs_ref.jpg.
+6.4 iPhone cost: report triangles, draw calls, and SetPass calls on each tee shot. Caps: at most 300,000 triangles per hole, at most 250 draw calls on the tee shot. Over cap = FAIL with numbers.
+6.5 Metal: compile the golf shaders for iOS through heavy.sh. If the repo has an iOS build script, run a device-target build and report its result; otherwise report IOS_BUILD NOT RUN.
+GATE P6 (all binary, all on the INSTALLED files):
+- guards.sh 7/7, PROTECTED_FILES unchanged (QualitySettings, URP assets, tennis, hole 7 hashes identical to v3/start_sha.txt)
+- postcard_look_verify.py holes 8, 9, 10 ALL PASS
+- PLANT_SWAY_COLORS, PLANT_SWAY_CAPS, BASALT_JOINTS, MOW_BAND_CONTRAST, SPLIT_CLIFF_ISLANDS, RUIN_NOT_BOXES, GAMEPLAY_FRAMING all PASS
+- GRASS_HUE 8/9/10, SHELF, LAVA_ORANGE, SMOKE_SOFT, NO_PLANT_ON_SEA, NO_ROCK_STRETCH_2X, NO_FOAM_STRIP, PATH_UNDER_BALL still PASS
+- GolfLookSmoke all pass under both URP assets; PostcardImportCheck 0 failed; EditMode PostcardHoleTests all pass; Tools/PostcardCheck pass
+- Scoring meshes bit-identical; fbx.meta files unchanged
+- 12 Game-view stills (tee, approach, landmark, aerial per hole) plus 3 vs-ref sheets exist and are dated this run
+- Triangle and draw-call caps met; Metal iOS compile clean
+
+PHASE 7: EYE REVIEW LOOP (up to 3 rounds)
+7.1 Put each vs-ref sheet in front of yourself as an image. For each hole, answer YES or NO: Would a player who saw the reference recognise this as the same place? Does any part read as boxes, planks, flat strips, stripes, or plastic?
+7.2 Re-score the P0 ranked difference list. Fix the top remaining items in the hole and lib scripts, re-stage, re-install through run_proof.sh, and re-shoot.
+7.3 Stop after 3 rounds or when every hole is YES with no box, plank, flat-strip, or stripe read. Keep the honest list of what still differs.
+
+PHASE 8: COMMIT
+Stage only course files: blender/scripts hole and postcard and look and props libs and golf_look_textures.py, blender/hole_08|09|10.blend, Unity/Assets/Resources/Course/ (hole_08|09|10.fbx, Look/, Shaders/, GolfLookVariants.mat and their metas), the golf Editor checks you changed, ArtDir/environments/15_POSTCARD_LOOK_SOL_GOAL.txt, ArtDir/screenshots/golf_postcards/look/. Check git diff --cached for QualitySettings, URP, tennis, hole 7, Hole.cs, GolfGame.cs, Multiplayer, work/: any of those staged = unstage and report. Commit on newmapsandmenus with a message listing the gates, push, no force-push. If the push is rejected, stop and report; do not rebase over someone else's work.
+
+----------------------------------------------------------------
+4. FINAL REPORT (write v3/REPORT.md and paste it in chat)
+- One line per gate in Phase 6: PASS or FAIL with the measured number.
+- Per hole: the 12-still contact sheet path, the vs-ref sheet path, and the remaining honest differences from the ref.
+- Triangles, draw calls, SetPass per tee shot; Metal and iOS build result.
+- Files changed (grouped), the commit sha, and push result.
+- Anything you could not finish, and the exact next step.
