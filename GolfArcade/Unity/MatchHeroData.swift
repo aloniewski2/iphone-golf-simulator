@@ -22,8 +22,10 @@ import simd
         let weaveTile: Float, weaveAngle: Float, weaveNormal: Float, weaveThread: Float, sheenStrength: Float, sheenPower: Float
         let saturation: Float, bumpScale: Float, bumpTriplanar: Float, bumpTile: Float
         let baseMap: String, weaveMap: String, bumpMap: String
+        let normalMap: String?, maskMap: String?, trimColor: [Float]?, normalStrength: Float?, useGarmentMaps: Float?
         /// Cloth only: the size in metres of one weave tile (TennisCloth's tile = metres per UV unit / this).
         let tileMetres: Float?
+        let fabricVersion: Float?
         var isCloth: Bool { shader == "TennisCloth" }
         var isCharacter: Bool { shader == "TennisCharacter" }
     }
@@ -112,11 +114,11 @@ import simd
         }
     }
 
-    private static var assets: [Bool: Asset] = [:]
+    private static var assets: [String: Asset] = [:]
 
-    static func asset(female: Bool) -> Asset? {
-        if let a = assets[female] { return a }
-        let name = female ? "MatchHero_Female" : "MatchHero_Male"
+    static func asset(female: Bool, golf: Bool = false) -> Asset? {
+        let name = (golf ? "GolfKitHero_" : "MatchHero_") + (female ? "Female" : "Male")
+        if let a = assets[name] { return a }
         guard let url = locate(name, "json"), let md = try? Data(contentsOf: url),
               let manifest = try? JSONDecoder().decode(Manifest.self, from: md), let bin = data(name) else { return nil }
         var geometry: [SCNGeometry] = []
@@ -137,7 +139,7 @@ import simd
             sources += texcoordSources(part, bin: bin) ?? []
             geometry.append(SCNGeometry(sources: sources, elements: elements))
         }
-        let a = Asset(manifest: manifest, geometry: geometry); assets[female] = a; return a
+        let a = Asset(manifest: manifest, geometry: geometry); assets[name] = a; return a
     }
 
     /// The kit's UV0 (texcoord channel 0), or for the body (which has no UVs) its BIND-pose position in two channels: (x, y) and (z): the skin's soft normal is projected from there.
@@ -176,8 +178,20 @@ import simd
         let racket = SCNNode(); racket.name = racketName; root.addChildNode(racket)
         for (i, part) in m.parts.enumerated() {
             guard let geometry = asset.geometry[i].copy() as? SCNGeometry else { continue }
-            geometry.materials = part.submeshes.map { MatchHeroSurfaces.material($0, colour: picks.colour($0.material), sceneScale: s) }
+            geometry.materials = part.submeshes.map { sub in
+                let trimRole = (sub.material == "Kit_Shirt" || sub.material == "Kit_ShirtTrim" || sub.material == "Kit_GolfHead" || sub.material == "Kit_GolfGlove") ? "Kit_ShirtTrim" : (sub.material == "Kit_Shorts" || sub.material == "Kit_ShortsBand") ? "Kit_ShortsBand" : ""
+                let colour = picks.colour(sub.material)
+                var trim = trimRole.isEmpty ? nil : picks.colour(trimRole)
+                if sub.material == "Kit_Shoe", let tint = colour {
+                    let pick = SIMD3<Float>(tint.x <= 0.035 ? 0 : tint.x / 0.93, tint.y <= 0.035 ? 0 : tint.y / 0.93, tint.z <= 0.0401 ? 0 : tint.z / 0.93)
+                    let luminance = simd_dot(pick, SIMD3<Float>(0.2126, 0.7152, 0.0722))
+                    let derived = luminance >= 0.5 ? pick * 0.65 : pick + (SIMD3<Float>(repeating: 1) - pick) * 0.35
+                    trim = SIMD3<Float>(max(derived.x * 0.93, 0.035), max(derived.y * 0.93, 0.035), max(derived.z * 0.93, 0.0401))
+                }
+                return MatchHeroSurfaces.material(sub, colour: colour, sceneScale: s, trimColour: trim)
+            }
             let node = SCNNode(geometry: geometry); node.name = part.name
+            if part.name == "Kit_Glove_R" { node.isHidden = true }
             node.setValue(i, forKey: "menuPartIndex")
             (part.kind == "racket" ? racket : root).addChildNode(node)
         }

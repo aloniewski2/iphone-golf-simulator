@@ -44,6 +44,7 @@ Shader "GolfArcade/TennisCharacter"
             #pragma multi_compile_local _ _NORMALMAP
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "HeroLighting.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor; float4 _BaseMap_ST; half4 _Subsurface; half4 _RimColor;
@@ -69,17 +70,7 @@ Shader "GolfArcade/TennisCharacter"
                 return o;
             }
 
-            half3 Shade (Light light, half3 n, half3 v, half3 albedo)
-            {
-                half ndl = dot(n, light.direction);
-                half wrapped = saturate((ndl + _Wrap) / (1 + _Wrap));
-                // Warmth where light wraps past the edge: reads as soft skin rather than plastic.
-                half edge = saturate(wrapped - saturate(ndl)) * 2;
-                half3 h = normalize(light.direction + v);
-                half spec = pow(saturate(dot(n, h)), _Smoothness * 96 + 6) * _Smoothness * 0.6;
-                half atten = light.distanceAttenuation * light.shadowAttenuation;
-                return (albedo * wrapped + _Subsurface.rgb * edge * albedo + spec) * light.color * atten;
-            }
+            
 
             half4 frag (Varyings i) : SV_Target
             {
@@ -109,8 +100,9 @@ Shader "GolfArcade/TennisCharacter"
                 // The generated textures are painted warm and the resort grade warms again;
                 // pull saturation back so skin reads peach rather than orange.
                 c.rgb = lerp(dot(c.rgb, half3(0.2126, 0.7152, 0.0722)).xxx, c.rgb, _Saturation);
-                Light main = GetMainLight(TransformWorldToShadowCoord(i.positionWS));
-                half3 colour = Shade(main, n, v, c.rgb);
+                Light main = HeroMain(GetMainLight(TransformWorldToShadowCoord(i.positionWS)));
+                half3 reflection;
+                half3 colour = HeroCharacterShade(main, n, v, c.rgb, _Wrap, _Smoothness, _Subsurface.rgb, reflection);
                 #if defined(_ADDITIONAL_LIGHTS)
                 uint count = GetAdditionalLightsCount();
                 #if defined(_LIGHT_LAYERS)
@@ -123,17 +115,22 @@ Shader "GolfArcade/TennisCharacter"
                     #if defined(_LIGHT_LAYERS)
                     if (!IsMatchingLightLayer(extra.layerMask, meshLayers)) continue;
                     #endif
-                    colour += Shade(extra, n, v, c.rgb);
+                    half3 extraReflection;
+                    colour += HeroCharacterShade(extra, n, v, c.rgb, _Wrap, _Smoothness, _Subsurface.rgb, extraReflection);
+                    reflection += extraReflection;
                 }
                 #endif
-                half3 ambient = SampleSH(n) * c.rgb;
+                half3 ambient = HeroAmbient(n) * c.rgb;
                 #if defined(_SCREEN_SPACE_OCCLUSION)
                 AmbientOcclusionFactor ao = GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.positionCS));
-                ambient *= ao.indirectAmbientOcclusion; colour *= ao.directAmbientOcclusion;
+                half indirectAO = _HeroProfile > .5h ? lerp(1,ao.indirectAmbientOcclusion,.35h) : ao.indirectAmbientOcclusion;
+                half directAO = _HeroProfile > .5h ? lerp(1,ao.directAmbientOcclusion,.35h) : ao.directAmbientOcclusion;
+                ambient *= indirectAO; colour *= directAO; reflection *= directAO;
                 #endif
-                half rim = pow(1 - saturate(dot(v, n)), _RimPower) * _RimStrength;
-                colour += ambient + _RimColor.rgb * rim * (0.35 + 0.65 * c.rgb) * main.color;
-                return half4(MixFog(colour, i.fog), 1);
+                half rim = pow(1 - saturate(dot(v, n)), _RimPower) * _RimStrength * (_HeroProfile > .5h ? _HeroRim : 1);
+                half3 rimLight = _RimColor.rgb * rim * (0.35 + 0.65 * c.rgb) * main.color;
+                colour += ambient + rimLight; reflection += rimLight;
+                return half4(MixFog(HeroCharacterFinish(colour, reflection), i.fog), 1);
             }
             ENDHLSL
         }

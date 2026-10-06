@@ -14,6 +14,14 @@ namespace GolfArcade.Tennis
     public sealed class MatchHeroLook : MonoBehaviour
     {
         public bool female;
+        public bool golfKit;
+        public const string RoleGolfHead = "Kit_GolfHead", RoleGolfGlove = "Kit_GolfGlove", RoleGolfHardware = "Kit_GolfHardware";
+        public void SetGolfHand(bool leftHanded)
+        {
+            if (!golfKit || kit == null) return;
+            foreach (var r in kit) if (r && (r.name == "Kit_Glove_L" || r.name == "Kit_Glove_R"))
+                r.enabled = r.name == (leftHanded ? "Kit_Glove_R" : "Kit_Glove_L");
+        }
         public Animator animator;
         /// Racket_Classic: its origin is the centre of the usable grip, +Y runs along the shaft towards the head.
         public Transform racketGrip;
@@ -66,13 +74,15 @@ namespace GolfArcade.Tennis
         public const float MaleShirtWeaveAngle = 41f;
         public static readonly Color SkinSubsurface = new Color(.18f, .06f, .03f, 1);
         /// The shoe sole: darker than the white upper (sRGB), and the roughest thing on the kit.
-        public static readonly Color KitSole = new Color(.66f, .65f, .63f, 1);
+        public static readonly Color KitSole = new Color(KitWhite, KitWhite, KitWhite, 1);
         static readonly string[] EyeParts = { "Sclera", "Iris", "IrisIn", "Pupil", "Limbal", "Catch" };
         static Shader characterShader, clothShader;
         static Shader CharacterShader => characterShader ? characterShader : characterShader = Resources.Load<Shader>("Tennis/Shaders/TennisCharacter");
         static Shader ClothShader => clothShader ? clothShader : clothShader = Resources.Load<Shader>("Tennis/Shaders/TennisCloth");
-        static Texture2D weaveMap, skinBumpMap;
+        static Texture2D weaveMap, skinBumpMap, fabricAtlas, golfFabricAtlas;
+        static Texture2D GolfFabricAtlas => golfFabricAtlas ? golfFabricAtlas : golfFabricAtlas = Resources.Load<Texture2D>("Golf/HeroDetail/Golf_FabricAtlas");
         static Texture2D WeaveMap => weaveMap ? weaveMap : weaveMap = Resources.Load<Texture2D>("Tennis/HeroDetail/Cloth_Weave");
+        static Texture2D FabricAtlas => fabricAtlas ? fabricAtlas : fabricAtlas = Resources.Load<Texture2D>("Tennis/HeroDetail/Cloth_FabricAtlas");
         static Texture2D SkinBumpMap => skinBumpMap ? skinBumpMap : skinBumpMap = Resources.Load<Texture2D>("Tennis/HeroDetail/Skin_Soft_N");
 
         /// How one kit role looks on TennisCloth. tileMetres = the size of one weave tile (8 threads); the smoothness only widens a faint broad gloss (cloth has no highlight dot).
@@ -166,8 +176,28 @@ namespace GolfArcade.Tennis
             float mpu = MetresPerUv(mesh, sub, scale);
             m.SetFloat("_WeaveTile", mpu > 0 ? mpu / look.tileMetres : 60f);
             if (!female && tag == "Top" && role == RoleShirt) m.SetFloat("_WeaveAngle", MaleShirtWeaveAngle);
-            var seams = Resources.Load<Texture2D>($"Tennis/HeroDetail/Kit_{(female ? "Female" : "Male")}_{tag}");
-            if (seams) m.SetTexture("_BaseMap", seams);
+            string garment = golfKit ? $"Golf/HeroDetail/Golf_{(female ? "Female" : "Male")}_{tag}" : $"Tennis/HeroDetail/Kit_{(female ? "Female" : "Male")}_{tag}";
+            var normal = Resources.Load<Texture2D>(garment + "_N");
+            var mask = Resources.Load<Texture2D>(garment + "_M");
+            if (normal && mask)
+            {
+                m.SetTexture("_NormalMap", normal); m.SetTexture("_MaskMap", mask);
+                var atlas = golfKit ? GolfFabricAtlas : FabricAtlas;
+                if (atlas) m.SetTexture("_WeaveMap", atlas);
+                if (golfKit) m.SetFloat("_FabricVersion", 2);
+                m.SetFloat("_UseGarmentMaps", 1); m.SetFloat("_NormalStrength", 1);
+                m.SetColor("_TrimColor", new Color(KitBlackR, KitBlackR, KitBlackB, 1));
+                m.SetFloat("_WeaveNormal", look.weaveNormal * .8f); m.SetFloat("_WeaveThread", look.thread * .85f);
+                // New construction UVs use the fabric atlas at their authored orientation.
+                // The legacy 41-degree male correction remains above for old garments.
+                m.SetFloat("_WeaveAngle", 0);
+                m.SetFloat("_Exposure", tag.StartsWith("Shoe") ? .78f : 1.05f);
+            }
+            else
+            {
+                var seams = Resources.Load<Texture2D>(garment);
+                if (seams && m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", seams);
+            }
             return m;
         }
 
@@ -357,6 +387,16 @@ namespace GolfArcade.Tennis
             Put(RoleShirt, hs, KitTint(shirt)); Put(RoleShirtTrim, hs, KitTint(KitDerive(shirt)));
             Put(RoleShorts, hh, KitTint(shorts)); Put(RoleShortsBand, hh, KitTint(KitDerive(shorts)));
             Put(RoleShoe, ho, KitTint(shoes));
+            if (golfKit) { Put(RoleGolfHead, hs, KitTint(shirt)); Put(RoleGolfGlove, hs, KitTint(shirt)); Put(RoleGolfHardware, hh, KitTint(KitDerive(shorts))); }
+            void Trim(string role, bool picked, Color pick)
+            {
+                if (!kitMaterials.TryGetValue(role, out var list)) return;
+                var trim = picked ? KitTint(KitDerive(pick)) : new Color(KitBlackR, KitBlackR, KitBlackB, 1);
+                foreach (var m in list) if (m.HasProperty("_TrimColor")) m.SetColor("_TrimColor", trim);
+            }
+            Trim(RoleShirt, hs, shirt); Trim(RoleShirtTrim, hs, shirt);
+            Trim(RoleShorts, hh, shorts); Trim(RoleShortsBand, hh, shorts); Trim(RoleShoe, ho, shoes);
+            if (golfKit) { Trim(RoleGolfHead, hs, shirt); Trim(RoleGolfGlove, hs, shirt); }
         }
         /// The colour a kit role currently has on this hero (tests and proofs).
         public bool TryGetKitColour(string role, out Color c)

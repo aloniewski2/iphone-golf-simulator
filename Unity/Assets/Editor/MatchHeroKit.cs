@@ -16,7 +16,7 @@ namespace GolfArcade.EditorTools
     /// with the role materials Kit_Shirt, Kit_ShirtTrim, Kit_Shorts, Kit_ShortsBand, Kit_Shoe, Kit_Sole, Kit_Sock (Assets/Characters/MatchHeroes/Materials/Kit/).
     public sealed class MatchHeroKitPostprocessor : AssetPostprocessor
     {
-        public static bool Owns(string path) => path.StartsWith(MatchHeroKit.KitRoot) && path.EndsWith(".fbx");
+        public static bool Owns(string path) => (path.StartsWith(MatchHeroKit.KitRoot) || path.StartsWith(GolfHeroKit.KitRoot)) && path.EndsWith(".fbx");
 
         void OnPreprocessModel()
         {
@@ -40,9 +40,30 @@ namespace GolfArcade.EditorTools
     {
         public const string KitRoot = "Assets/Characters/MatchHeroKit/";
         public const string MatDir = "Assets/Characters/MatchHeroes/Materials/Kit/";
-        const string Source = "../work/hero-dressed/export/";
+        const string Source = "../work/cloth-overhaul/export/";
         public static readonly string[] Pieces = { "Kit_Top", "Kit_Bottom", "Kit_Sock_L", "Kit_Sock_R", "Kit_Shoe_L", "Kit_Shoe_R" };
         public static string FbxPath(string sex) => KitRoot + sex + "_Kit.fbx";
+
+        // Re-exported FBX files can reorder their bone palettes. Rebuild only the six kit renderers,
+        // binding the imported palette by name; never reuse an old serialized bones[] order.
+        public static void RebindCloth()
+        {
+            foreach (string sex in new[] { "Male", "Female" })
+            {
+                string path = "Assets/Resources/Tennis/Customization/Player" + sex + ".prefab";
+                var root = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    var look = root.GetComponent<MatchHeroLook>();
+                    foreach (var r in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => Pieces.Contains(r.name)).ToArray()) UnityEngine.Object.DestroyImmediate(r.gameObject);
+                    Debug.Log(Attach(root, sex, look, look.body));
+                    PrefabUtility.SaveAsPrefabAsset(root, path);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(root); }
+            }
+            AssetDatabase.SaveAssets();
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
 
         /// Authored colours of the White kit (sRGB): Std_White_Lit everywhere except the waistband and the shirt piping, which the White kit authors as the
         /// black contrast (#09090A), and the shoe sole, a darker warm grey rubber (HERO_DETAIL: the trim must not be the shirt's white, the sole not the upper's).
@@ -93,19 +114,23 @@ namespace GolfArcade.EditorTools
         /// Create the kit SkinnedMeshRenderers on the (not yet saved) prefab instance `root` and wire MatchHeroLook.kit. Returns a report.
         public static string Attach(GameObject root, string sex, MatchHeroLook look, SkinnedMeshRenderer body)
         {
+            return AttachVariant(root, sex, look, body, FbxPath(sex), Pieces, EnsureMaterials());
+        }
+
+        public static string AttachVariant(GameObject root, string sex, MatchHeroLook look, SkinnedMeshRenderer body, string fbxPath, string[] pieces, Dictionary<string, Material> mats)
+        {
             var sb = new StringBuilder();
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath(sex));
-            if (!model) throw new FileNotFoundException("kit FBX not imported: " + FbxPath(sex));
-            var mats = EnsureMaterials();
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
+            if (!model) throw new FileNotFoundException("kit FBX not imported: " + fbxPath);
             // bones of the prefab, by name (they must be unique: the rig is named after the humanoid bones)
             var rig = root.transform.Find("Rig_" + sex);
             if (!rig) throw new InvalidOperationException("no Rig_" + sex + " on the prefab");
             var byName = new Dictionary<string, Transform>(); var dup = new HashSet<string>();
             foreach (var t in rig.GetComponentsInChildren<Transform>(true)) if (!byName.TryAdd(t.name, t)) dup.Add(t.name);
             var kitSmrs = model.GetComponentsInChildren<SkinnedMeshRenderer>(true);
-            if (kitSmrs.Length != Pieces.Length || Pieces.Any(p => !kitSmrs.Any(s => s.name == p))) throw new InvalidOperationException($"{sex} kit FBX has {kitSmrs.Length} skinned renderers: {string.Join(",", kitSmrs.Select(s => s.name))}");
+            if (kitSmrs.Length != pieces.Length || pieces.Any(p => !kitSmrs.Any(s => s.name == p))) throw new InvalidOperationException($"{sex} kit FBX has {kitSmrs.Length} skinned renderers: {string.Join(",", kitSmrs.Select(s => s.name))}");
             var made = new List<SkinnedMeshRenderer>();
-            foreach (var name in Pieces)
+            foreach (var name in pieces)
             {
                 var src = kitSmrs.First(s => s.name == name);
                 var go = new GameObject(name); go.transform.SetParent(root.transform, false);

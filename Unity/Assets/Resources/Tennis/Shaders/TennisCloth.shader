@@ -1,24 +1,17 @@
-// Worn cloth for the match heroes' kit: shirt, shorts / skirt, socks, shoes, the racket grip (URP).
-//
-// The partner of TennisCharacter, and deliberately its opposite: matte, no subsurface, a weaker rim.
-// A soft wrap keeps the inside of a fold from going black, and a soft shoulder on the lit result keeps
-// a white garment from clipping to one flat white in the sun, so the fold shading survives on it.
-//
-// HERO_DETAIL: white is no longer one flat colour.
-//   * _BaseMap  : the kit mesh's own UV layout, baked from the shell geometry (work/character-shader/detail/bake_kit.py): collar, placket,
-//                 raglan seams, side seams, hems and folds go darker. It multiplies the colour.
-//   * _WeaveMap : one small tiling map. R,G = weave normal, B = thread break. The normal tilts the lit surface (so the weave breaks the light) and the thread
-//                 break is multiplied into the colour (so the white has a faint thread in it). Tiled per UV unit (_WeaveTile, set per piece from the mesh's
-//                 own metres-per-UV), turned to the cloth's grain with _WeaveAngle. Mip levels average it flat, so it fades out with distance instead of shimmering.
-//   * sheen     : replaces the Blinn highlight. A soft grazing sheen that grows as the surface turns away from the camera, tinted by the cloth colour, and
-//                 gated by the light on that side (dead in shadow, dead on the unlit side). Smoothness now only sets how wide a faint broad gloss is (dark trim
-//                 at 0.25 is a little glossier; the cloth at <= 0.14 has no visible highlight at all).
+// CLOTH_OVERHAUL: colour-neutral garment normal/masks, six fabric IDs, derivative-filtered detail atlas.
+// Same shader name and seven-role runtime API. No new keywords or pipeline settings.
 Shader "GolfArcade/TennisCloth"
 {
     Properties
     {
         [MainColor] _BaseColor ("Color", Color) = (1,1,1,1)
-        [MainTexture] _BaseMap ("Seam / collar / hem map (kit UV)", 2D) = "white" {}
+        _TrimColor ("Trim colour", Color) = (0.035,0.035,0.0401,1)
+        _NormalMap ("Garment normal (kit UV)", 2D) = "bump" {}
+        _MaskMap ("AO / cavity / trim / fabric ID", 2D) = "white" {}
+        _UseGarmentMaps ("Use garment construction", Float) = 0
+        _FabricVersion ("Fabric encoding: 1 tennis, 2 golf", Float) = 1
+        _AOStrength ("Garment AO strength", Range(0,1)) = 1
+        _NormalStrength ("Garment normal strength", Range(0,2)) = 1
         _Smoothness ("Smoothness", Range(0,1)) = 0.1
         _Wrap ("Wrap", Range(0,1)) = 0.5
         _RimColor ("Rim colour", Color) = (1,0.96,0.88,1)
@@ -34,6 +27,21 @@ Shader "GolfArcade/TennisCloth"
         _SheenStrength ("Sheen strength", Range(0,2)) = 0.55
         _SheenPower ("Sheen power", Range(1,8)) = 3
     }
+    HLSLINCLUDE
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseColor, _TrimColor; half4 _RimColor; float4 _WeaveMap_ST; float4 _NormalMap_ST, _MaskMap_ST;
+                half _Smoothness, _Wrap, _RimPower, _RimStrength, _Exposure, _Knee;
+                float _WeaveTile, _WeaveAngle;
+                half _WeaveNormal, _WeaveThread, _SheenStrength, _SheenPower;
+                half _UseGarmentMaps, _NormalStrength, _AOStrength;
+                half _FabricVersion;
+            CBUFFER_END
+            TEXTURE2D(_NormalMap); SAMPLER(sampler_NormalMap);
+            TEXTURE2D(_MaskMap); SAMPLER(sampler_MaskMap);
+            TEXTURE2D(_WeaveMap); SAMPLER(sampler_WeaveMap);
+
+    ENDHLSL
     SubShader
     {
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry" }
@@ -52,15 +60,8 @@ Shader "GolfArcade/TennisCloth"
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _BaseColor; half4 _RimColor; float4 _BaseMap_ST; float4 _WeaveMap_ST;
-                half _Smoothness, _Wrap, _RimPower, _RimStrength, _Exposure, _Knee;
-                float _WeaveTile, _WeaveAngle;
-                half _WeaveNormal, _WeaveThread, _SheenStrength, _SheenPower;
-            CBUFFER_END
-            TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
-            TEXTURE2D(_WeaveMap); SAMPLER(sampler_WeaveMap);
+            #include "HeroLighting.hlsl"
+            #include "HeroCloth.hlsl"
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; };
             struct Varyings
@@ -82,56 +83,63 @@ Shader "GolfArcade/TennisCloth"
                 return o;
             }
 
-            // Direct light on the cloth: wrapped diffuse, a faint BROAD gloss (never a dot), and the grazing sheen.
-            half3 Shade (Light light, half3 n, half3 v, half3 albedo, half3 sheenTint, half ndv)
-            {
-                half ndl = dot(n, light.direction);
-                half wrapped = saturate((ndl + _Wrap) / (1 + _Wrap));
-                half atten = light.distanceAttenuation * light.shadowAttenuation;
-                half3 h = normalize(light.direction + v);
-                // smoothness only widens / narrows a very low, very broad lobe: exponent 2..30, peak <= 0.35 * smoothness
-                half spec = pow(saturate(dot(n, h)), _Smoothness * 28 + 2) * _Smoothness * 0.35 * saturate(ndl * 4);
-                // grazing sheen: grows as the surface turns away from the eye, only where this light reaches (ndl) and not in shadow (atten)
-                half graze = pow(1 - ndv, _SheenPower);
-                half3 sheen = sheenTint * (graze * saturate(ndl * 1.5) * _SheenStrength);
-                return (albedo * wrapped + spec + sheen) * light.color * atten;
-            }
+            // Two symmetric comparison taps keep cloth shadow sampling within the six-fetch phone budget.
+            // Court/pipeline shadow settings stay unchanged; this receiver alone uses two taps.
+            
+
+            // Charlie distribution with Ashikhmin visibility. Knit fibres have a broad grazing lobe,
+            // while rubber/foam have zero sheen. Numbers are shared with GARMENT_SPEC.md.
+            
+            
 
             // Roll the brightest channel off above the knee (hue kept): a lit white keeps a gradient instead of clipping.
-            half3 SoftShoulder (half3 c)
-            {
-                half peak = max(max(c.r, c.g), max(c.b, 1e-4));
-                half k = _Knee;
-                half rolled = peak <= k ? peak : k + (1 - k) * (1 - exp(-(peak - k) / (1 - k)));
-                return c * (rolled / peak);
-            }
+            
 
             half4 frag (Varyings i) : SV_Target
             {
                 half3 n = normalize(i.normalWS);
                 half3 v = normalize(GetWorldSpaceViewDir(i.positionWS));
 
-                // weave: the cloth's grain turned to the mesh, tiled small
+                half4 mask = half4(1, 1, 0, 0);
+                half3 garment = half3(0, 0, 1);
+                if (_UseGarmentMaps > .5h) {
+                    mask = SAMPLE_TEXTURE2D(_MaskMap, sampler_MaskMap, i.uv);
+                    garment = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
+                    garment.xy *= _NormalStrength;
+                }
+                half id = floor(mask.a * (_FabricVersion > 1.5h ? 9 : 5) + .5h), smoothness, sheen, knit, frequency;
+                float2 quadrant;
+                Fabric(id, smoothness, sheen, knit, quadrant, frequency);
+                if (_UseGarmentMaps < .5h) { smoothness = _Smoothness; sheen = _SheenStrength; }
                 float ang = radians(_WeaveAngle); float sn, cs; sincos(ang, sn, cs);
                 float2 wuv = float2(cs * i.uv.x - sn * i.uv.y, sn * i.uv.x + cs * i.uv.y) * _WeaveTile;
-                half4 weave = SAMPLE_TEXTURE2D(_WeaveMap, sampler_WeaveMap, wuv);
+                // Fade individual threads before their Nyquist limit; UV derivatives are evaluated before frac.
+                float2 dx = ddx(wuv), dy = ddy(wuv);
+                half fade = 1 - smoothstep(.32h, .72h, max(max(abs(dx.x), abs(dx.y)), max(abs(dy.x), abs(dy.y))) * frequency);
+                float2 atlasUV = (quadrant + .03125 + frac(wuv) * .9375) * .5;
+                if (_UseGarmentMaps < .5h) atlasUV = wuv;
+                half4 weave = SAMPLE_TEXTURE2D_GRAD(_WeaveMap, sampler_WeaveMap, atlasUV, dx * .46875, dy * .46875);
+                half2 slope = (weave.rg * 2 - 1) * _WeaveNormal * fade;
+                if (id > 2.5h && id < 4.5h) slope = 0;
+                // Rotate slopes back from the grain coordinate system (the previous male 41-degree correction).
+                slope = half2(cs * slope.x + sn * slope.y, -sn * slope.x + cs * slope.y);
+                half3 ts = normalize(half3(garment.xy + slope, garment.z));
                 float3 tw = i.tangentWS.xyz;
-                if (_WeaveNormal > 0.001 && dot(tw, tw) > 1e-8)   // a mesh with no tangents (or a strength of 0) keeps its own normal
-                {
-                    half2 txy = (weave.rg * 2 - 1) * _WeaveNormal;
-                    txy = half2(cs * txy.x + sn * txy.y, -sn * txy.x + cs * txy.y);   // the pattern was turned by -angle: turn its slopes with it
-                    half3 ts = half3(txy, sqrt(saturate(1 - dot(txy, txy))));
-                    half3 t = normalize(tw); half3 b = cross(n, t) * i.tangentWS.w;
+                if (dot(tw, tw) > 1e-8) {
+                    half3 t = normalize(tw), b = cross(n, t) * i.tangentWS.w;
                     n = normalize(TransformTangentToWorld(ts, half3x3(t, b, n)));
                 }
-                half thread = lerp((half)1, weave.b * 1.28, _WeaveThread);   // a thread break multiplied into the colour; x1.28 re-centres the map's B (mean ~0.76) on 1, so the white keeps its average
-
-                half3 albedo = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv * _BaseMap_ST.xy + _BaseMap_ST.zw).rgb * (1.07 * thread);   // 1.07: the seam map averages ~0.93
-                half3 sheenTint = sqrt(albedo);   // tinted by the cloth: white cloth -> white sheen, black trim -> a dim one
+                half threadBreak = lerp(1, weave.b * 1.28h, _WeaveThread * fade);
+                if (id > 2.5h && id < 4.5h) threadBreak = 1;
+                half3 albedo = lerp(_BaseColor.rgb, _TrimColor.rgb, mask.b) * threadBreak;
+                half aoVisibility = lerp(1, max(mask.r, .70h), _AOStrength);
+                half ao = lerp(1, aoVisibility, .5h);
+                albedo *= lerp(.40h, 1, mask.g);
                 half ndv = saturate(dot(n, v));
 
-                Light main = GetMainLight(TransformWorldToShadowCoord(i.positionWS));
-                half3 colour = Shade(main, n, v, albedo, sheenTint, ndv);
+                Light main = HeroMain(GetMainLight());
+                main.shadowAttenuation = ClothShadow(i.positionWS);
+                half3 colour = Shade(main, n, v, albedo, smoothness, sheen, ao);
                 #if defined(_ADDITIONAL_LIGHTS)
                 uint count = GetAdditionalLightsCount();
                 #if defined(_LIGHT_LAYERS)
@@ -143,24 +151,97 @@ Shader "GolfArcade/TennisCloth"
                     #if defined(_LIGHT_LAYERS)
                     if (!IsMatchingLightLayer(extra.layerMask, meshLayers)) continue;
                     #endif
-                    colour += Shade(extra, n, v, albedo, sheenTint, ndv);
+                    colour += Shade(extra, n, v, albedo, smoothness, sheen, ao);
                 }
                 #endif
-                half3 ambient = SampleSH(n) * albedo;
+                half3 ambient = HeroAmbient(n) * albedo * ao;
                 #if defined(_SCREEN_SPACE_OCCLUSION)
-                AmbientOcclusionFactor ao = GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.positionCS));
-                ambient *= ao.indirectAmbientOcclusion; colour *= ao.directAmbientOcclusion;
+                AmbientOcclusionFactor screenAO = GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.positionCS));
+                ambient *= _HeroProfile > .5h ? lerp(1,screenAO.indirectAmbientOcclusion,.35h) : screenAO.indirectAmbientOcclusion;
+                colour *= _HeroProfile > .5h ? lerp(1,screenAO.directAmbientOcclusion,.35h) : screenAO.directAmbientOcclusion;
                 #endif
-                half rim = pow(1 - ndv, _RimPower) * _RimStrength;
+                half rim = pow(1 - ndv, _RimPower) * _RimStrength * (_HeroProfile > .5h ? _HeroRim : 1);
+                colour += albedo * knit * pow(1 - ndv, 5) * .045h * saturate(dot(n, main.direction)) * main.shadowAttenuation * main.color;
                 colour += ambient + _RimColor.rgb * rim * (0.35 + 0.65 * albedo) * main.color;
-                colour = SoftShoulder(colour * _Exposure);
-                return half4(MixFog(colour, i.fog), 1);
+                // Preserve moderate AO contrast through the bright-white highlight shoulder.
+                if (_HeroProfile > .5h) {
+                    // Neutral construction maps retain the palette under warm postcard keys.
+                    // A cloth exposure controls white reflectance; trim keeps its measured dark value.
+                    half neutralWhite = smoothstep(.4h,.8h,dot(albedo,half3(.2126h,.7152h,.0722h)));
+                    half clothGain = lerp(min(_HeroClothExposure,3),_HeroClothExposure,neutralWhite);
+                    colour *= _HeroClothBalance * lerp(clothGain, 1, mask.b);
+                    colour *= lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
+                    colour = max(colour, albedo * lerp(.35h,4.0h,mask.b));
+                } else {
+                    colour = SoftShoulder(colour * _Exposure) * lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
+                }
+                return half4(MixFog(HeroClothFinish(colour), i.fog), 1);
             }
             ENDHLSL
         }
-        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
-        UsePass "Universal Render Pipeline/Lit/DepthOnly"
-        UsePass "Universal Render Pipeline/Lit/DepthNormals"
+        // Own depth/shadow passes share the exact UnityPerMaterial layout: SRP Batcher compatible.
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On ZTest LEqual ColorMask 0
+            HLSLPROGRAM
+            #pragma vertex shadowVert
+            #pragma fragment shadowFrag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+            float3 _LightDirection;
+            struct ShadowInput { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
+            float4 shadowVert(ShadowInput i) : SV_POSITION {
+                float3 p = TransformObjectToWorld(i.positionOS.xyz), n = TransformObjectToWorldNormal(i.normalOS);
+                float4 clip = TransformWorldToHClip(ApplyShadowBias(p,n,_LightDirection));
+                #if UNITY_REVERSED_Z
+                clip.z = min(clip.z, UNITY_NEAR_CLIP_VALUE * clip.w);
+                #else
+                clip.z = max(clip.z, UNITY_NEAR_CLIP_VALUE * clip.w);
+                #endif
+                return clip;
+            }
+            half4 shadowFrag() : SV_Target { return 0; }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode"="DepthOnly" }
+            ZWrite On ColorMask R
+            HLSLPROGRAM
+            #pragma vertex depthVert
+            #pragma fragment depthFrag
+            float4 depthVert(float4 p : POSITION) : SV_POSITION { return TransformObjectToHClip(p.xyz); }
+            half4 depthFrag() : SV_Target { return 0; }
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "DepthNormals"
+            Tags { "LightMode"="DepthNormals" }
+            ZWrite On
+            HLSLPROGRAM
+            #pragma vertex normalVert
+            #pragma fragment normalFrag
+            struct NInput { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; };
+            struct NOutput { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float4 tangentWS : TEXCOORD1; float2 uv : TEXCOORD2; };
+            NOutput normalVert(NInput i) {
+                NOutput o; o.positionCS=TransformObjectToHClip(i.positionOS.xyz);
+                VertexNormalInputs n=GetVertexNormalInputs(i.normalOS,i.tangentOS);o.normalWS=n.normalWS;
+                o.tangentWS=float4(n.tangentWS,i.tangentOS.w*GetOddNegativeScale());o.uv=i.uv;return o;
+            }
+            half4 normalFrag(NOutput i) : SV_Target {
+                half3 n=normalize(i.normalWS);
+                if(_UseGarmentMaps>.5h) {
+                    half3 ts=UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap,sampler_NormalMap,i.uv));ts.xy*=_NormalStrength;
+                    half3 t=normalize(i.tangentWS.xyz),b=cross(n,t)*i.tangentWS.w;
+                    n=normalize(TransformTangentToWorld(ts,half3x3(t,b,n)));
+                }
+                return half4(n,0);
+            }
+            ENDHLSL
+        }
     }
     FallBack "Universal Render Pipeline/Lit"
 }

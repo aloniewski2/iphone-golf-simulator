@@ -27,6 +27,7 @@ Shader "GolfArcade/TennisFace"
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "HeroLighting.hlsl"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST; float4 _Grid; float _Cell; half _Wrap;
@@ -50,10 +51,10 @@ Shader "GolfArcade/TennisFace"
                 // Without MSAA, alpha-to-coverage does nothing; discard what is clearly empty.
                 clip(c.a - 0.08);
                 half3 n = normalize(i.normalWS);
-                Light main = GetMainLight(TransformWorldToShadowCoord(i.positionWS));
-                half wrapped = saturate((dot(n, main.direction) + _Wrap) / (1 + _Wrap));
-                half3 lit = c.rgb * (main.color * wrapped * main.shadowAttenuation + SampleSH(n));
-                return half4(MixFog(lit, i.fog), c.a);
+                Light main = HeroMain(GetMainLight(TransformWorldToShadowCoord(i.positionWS)));
+                half wrapped = HeroWrapped(n, main.direction, _Wrap);
+                half3 lit = c.rgb * (main.color * wrapped * main.shadowAttenuation + HeroAmbient(n));
+                return half4(MixFog(HeroFinish(lit), i.fog), c.a);
             }
             ENDHLSL
         }

@@ -61,7 +61,8 @@ namespace GolfArcade.EditorTools
             /// Cloth only: the size in metres of one weave tile (MatchHeroLook.ClothFor(role).tileMetres): weaveTile = metres per UV unit / tileMetres.
             public float tileMetres;
             /// Shipped file names (no extension; "" = none): the kit seam map, the weave map, the skin's soft normal.
-            public string baseMap = "", weaveMap = "", bumpMap = "";
+            public string baseMap = "", weaveMap = "", bumpMap = "", normalMap = "", maskMap = "";
+            public float[] trimColor; public float normalStrength, useGarmentMaps, fabricVersion;
         }
         [Serializable] class Sub { public string material; public int indexOffset, indexCount; public Look look; }
         [Serializable] class PartInfo { public string name, kind; public int vertexCount, positionOffset, normalOffset, swingPositionOffset, swingNormalOffset, uvOffset = -1, bindPositionOffset = -1; public Sub[] submeshes; }
@@ -149,10 +150,16 @@ namespace GolfArcade.EditorTools
             if(Application.isBatchMode)EditorApplication.Exit(code);
         }
 
-        static string ExportSex(string sex)
+        public static void RunGolf() { RunVariant(true); }
+        static void RunVariant(bool golf) {
+            try { Directory.CreateDirectory(OutDir); foreach(string sex in new[]{"Male","Female"}) Debug.Log(ExportSex(sex,golf)); if(Application.isBatchMode)EditorApplication.Exit(0); }
+            catch(Exception e){Debug.LogException(e);if(Application.isBatchMode)EditorApplication.Exit(1);else throw;}
+        }
+
+        static string ExportSex(string sex, bool golf = false)
         {
             var sb = new StringBuilder("== " + sex + "\n");
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + "Player" + sex + ".prefab");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + "Player" + sex + (golf ? "GolfKit" : "") + ".prefab");
             if (!prefab) throw new FileNotFoundException("prefab " + sex);
             var root = (GameObject)Object.Instantiate(prefab);
             try
@@ -177,6 +184,7 @@ namespace GolfArcade.EditorTools
 
                 // ---- base pose
                 ready.SampleAnimation(root, 0f);
+                if(golf)root.GetComponent<GolfGarmentCorrectives>()?.Apply();
                 foreach (var p in sources) Pose(root, p);
                 var bounds = new Bounds(); bool first = true;
                 foreach (var p in sources.Where(s => s.kind == "body")) foreach (var v in p.pos) { if (first) { bounds = new Bounds(v, Vector3.zero); first = false; } else bounds.Encapsulate(v); }
@@ -219,8 +227,8 @@ namespace GolfArcade.EditorTools
                 foreach (var p in sources)
                 {
                     var info = new PartInfo { name = p.name, kind = p.kind, vertexCount = p.pos.Length };
-                    info.positionOffset = bin.Count; AddV3(bin, p.pos, true);
-                    info.normalOffset = bin.Count; AddV3(bin, p.nrm, true);
+                    info.positionOffset = bin.Count; AddV3(bin, p.pos, true, p.kind == "kit" ? 10 : 0);
+                    info.normalOffset = bin.Count; AddV3(bin, p.nrm, true, p.kind == "kit" ? 12 : 0);
                     var subs = new List<Sub>();
                     for (int s = 0; s < p.mesh.subMeshCount; s++)
                     {
@@ -243,13 +251,13 @@ namespace GolfArcade.EditorTools
                     info.submeshes = subs.ToArray(); infos.Add(info);
                 }
                 int tris = infos.Sum(i => i.submeshes.Sum(s => s.indexCount)) / 3;
-                var unfit = infos.SelectMany(i => i.submeshes.Select(s => (i.name, s))).Where(x => x.s.look.shader != "TennisCloth" && x.s.look.shader != "TennisCharacter").ToList();
+                var unfit = infos.SelectMany(i => i.submeshes.Select(s => (i.name, s))).Where(x => x.s.look.shader != "TennisCloth" && x.s.look.shader != "TennisCharacter" && !(golf && x.name == "Hair_F" && x.s.look.shader == "Universal Render Pipeline/Lit")).ToList();
                 if (unfit.Count > 0) throw new InvalidOperationException("hero materials not on a hero shader (OwnMaterials did not run?): " + string.Join(", ", unfit.Select(x => x.name + ":" + x.s.material + "=" + x.s.look.shader)));
                 // swing frames use their own offsets (positions then normals, part order)
                 int swingCursor = 0;
                 foreach (var info in infos) { info.swingPositionOffset = swingCursor; swingCursor += info.vertexCount * 12; info.swingNormalOffset = swingCursor; swingCursor += info.vertexCount * 12; }
 
-                string baseName = "MatchHero_" + sex;
+                string baseName = (golf ? "GolfKitHero_" : "MatchHero_") + sex;
                 var man = new Manifest
                 {
                     sex = sex, source = "Resources/Tennis/Customization/Player" + sex + ".prefab (work/match-anim-set/export/HeroBase_" + sex + "_MatchAnims.blend)",
@@ -260,20 +268,21 @@ namespace GolfArcade.EditorTools
                 };
                 var frames = new List<string>();
                 // ---- swing frames
-                for (int k = 0; k < SwingTimes.Length; k++)
+                for (int k = 0; !golf && k < SwingTimes.Length; k++)
                 {
                     fore.clip.SampleAnimation(root, Mathf.Min(SwingTimes[k], fore.clip.length));
                     foreach (var p in sources) Pose(root, p);
                     var fb = new List<byte>(swingCursor);
-                    foreach (var p in sources) { AddV3(fb, p.pos, true); AddV3(fb, p.nrm, true); }
+                    foreach (var p in sources) { AddV3(fb, p.pos, true, p.kind == "kit" ? 10 : 0); AddV3(fb, p.nrm, true, p.kind == "kit" ? 12 : 0); }
                     string name = $"{baseName}_Swing_{k:00}"; frames.Add(name);
                     WriteCompressed(name, fb.ToArray());
                 }
                 man.swingFrames = frames.ToArray();
+                if(golf){man.swingTimes=Array.Empty<float>();man.swingClip="";man.swingLength=0;man.swingContact=0;}
                 man.materials = mats.Values.OrderBy(m => m.name).ToArray();
 
                 // ---- the rig: bind-pose skin data + the ReadyIdle and Serve bone tracks
-                man.rig = ExportRig(root, driver, sources, ready, sb, baseName);
+                man.rig = golf ? null : ExportRig(root, driver, sources, ready, sb, baseName);
 
                 File.WriteAllText(Path.Combine(OutDir, baseName + ".json"), JsonUtility.ToJson(man, true));
                 WriteCompressed(baseName, bin.ToArray());
@@ -321,6 +330,7 @@ namespace GolfArcade.EditorTools
             look.weaveTile = F("_WeaveTile"); look.weaveAngle = F("_WeaveAngle"); look.weaveNormal = F("_WeaveNormal"); look.weaveThread = F("_WeaveThread"); look.sheenStrength = F("_SheenStrength"); look.sheenPower = F("_SheenPower");
             look.saturation = F("_Saturation"); look.bumpScale = F("_BumpScale"); look.bumpTriplanar = F("_BumpTriplanar"); look.bumpTile = F("_BumpTile");
             look.baseMap = Map("_BaseMap"); look.weaveMap = Map("_WeaveMap"); look.bumpMap = Map("_BumpMap");
+            look.normalMap = Map("_NormalMap"); look.maskMap = Map("_MaskMap"); look.trimColor = C("_TrimColor"); look.normalStrength = F("_NormalStrength"); look.useGarmentMaps = F("_UseGarmentMaps"); look.fabricVersion = F("_FabricVersion");
             if (look.shader == "TennisCloth")
             {
                 // the role's cloth numbers live in MatchHeroLook.ClothFor (private): read them off it, so the tile size the Swift side fades the weave by is the one Unity tiles with
@@ -594,6 +604,11 @@ namespace GolfArcade.EditorTools
             // the worn kit: skinned to the same bones, posed by the same CPU skinning as the body (checked against BakeMesh below)
             foreach (var k in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Kit_")).OrderBy(r => r.name, StringComparer.Ordinal))
                 list.Add(new PartSource { name = k.name, kind = "kit", mesh = k.sharedMesh, renderer = k, skinned = k, materials = k.sharedMaterials });
+            var hair = root.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.name == "Hair_F");
+            if (hair) list.Add(new PartSource { name=hair.name,kind="hair",mesh=hair.sharedMesh,renderer=hair,skinned=hair,materials=hair.sharedMaterials });
+            var rigidHair = root.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(r => r.name == "Hair_F");
+            if (rigidHair) list.Add(new PartSource {name=rigidHair.name,kind="hair",mesh=rigidHair.GetComponent<MeshFilter>().sharedMesh,renderer=rigidHair,materials=rigidHair.sharedMaterials});
+            if (root.GetComponent<MatchHeroLook>().golfKit) return list;
             var racket = root.GetComponentsInChildren<Transform>(true).First(t => t.name == "Racket_Classic");
             foreach (var r in racket.GetComponentsInChildren<MeshRenderer>(true))
             {
@@ -609,6 +624,15 @@ namespace GolfArcade.EditorTools
         {
             var inv = root.transform.worldToLocalMatrix;
             var verts = p.mesh.vertices; var norms = p.mesh.normals;
+            if(p.skinned && p.mesh.blendShapeCount>0) {
+                var delta=new Vector3[verts.Length];var normals=new Vector3[verts.Length];var tangents=new Vector3[verts.Length];
+                for(int shape=0;shape<p.mesh.blendShapeCount;shape++) {
+                    float weight=p.skinned.GetBlendShapeWeight(shape);if(Mathf.Abs(weight)<.00001f)continue;
+                    int frame=p.mesh.GetBlendShapeFrameCount(shape)-1;float factor=weight/p.mesh.GetBlendShapeFrameWeight(shape,frame);
+                    p.mesh.GetBlendShapeFrameVertices(shape,frame,delta,normals,tangents);
+                    for(int i=0;i<verts.Length;i++){verts[i]+=factor*delta[i];norms[i]+=factor*normals[i];}
+                }
+            }
             if (norms == null || norms.Length != verts.Length) throw new InvalidOperationException(p.name + " has no normals");
             if (p.pos == null) { p.pos = new Vector3[verts.Length]; p.nrm = new Vector3[verts.Length]; }
             if (p.skinned)
@@ -632,14 +656,23 @@ namespace GolfArcade.EditorTools
             }
         }
 
-        static void AddV3(List<byte> bin, Vector3[] v, bool mirrorZ)
+        // Only kit pose data uses mantissa rounding for LZFSE: <0.15 mm position error,
+        // <0.0005 normal-vector error. Non-kit geometry and all rig/clip data stay exact.
+        static float Packed(float value, int clear)
+        {
+            if (clear == 0) return value;
+            uint bits = unchecked((uint)BitConverter.SingleToInt32Bits(value));
+            bits = (bits + (1u << (clear - 1))) & ~((1u << clear) - 1u);
+            return BitConverter.Int32BitsToSingle(unchecked((int)bits));
+        }
+        static void AddV3(List<byte> bin, Vector3[] v, bool mirrorZ, int clear = 0)
         {
             var buf = new byte[v.Length * 12];
             for (int i = 0; i < v.Length; i++)
             {
-                Buffer.BlockCopy(BitConverter.GetBytes(v[i].x), 0, buf, i * 12, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(v[i].y), 0, buf, i * 12 + 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(mirrorZ ? -v[i].z : v[i].z), 0, buf, i * 12 + 8, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(Packed(v[i].x, clear)), 0, buf, i * 12, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(Packed(v[i].y, clear)), 0, buf, i * 12 + 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(Packed(mirrorZ ? -v[i].z : v[i].z, clear)), 0, buf, i * 12 + 8, 4);
             }
             bin.AddRange(buf);
         }

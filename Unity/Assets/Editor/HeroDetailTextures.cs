@@ -22,7 +22,25 @@ namespace GolfArcade.EditorTools
             ti.npotScale = TextureImporterNPOTScale.None; ti.filterMode = FilterMode.Trilinear; ti.anisoLevel = 4;
             ti.alphaIsTransparency = false;
             var ios = new TextureImporterPlatformSettings { name = "iPhone", overridden = true, maxTextureSize = 2048, textureCompression = TextureImporterCompression.Compressed };
-            if (n == "Skin_Soft_N")
+            if (n.EndsWith("_N") && n.StartsWith("Kit_"))
+            {
+                ti.textureType = TextureImporterType.NormalMap; ti.sRGBTexture = false; ti.wrapMode = TextureWrapMode.Clamp;
+                ti.alphaSource = TextureImporterAlphaSource.None; ti.textureCompression = TextureImporterCompression.CompressedHQ;
+                ti.maxTextureSize = 2048; ios.maxTextureSize = 2048; ios.format = TextureImporterFormat.ASTC_8x8;
+            }
+            else if (n.EndsWith("_M") && n.StartsWith("Kit_"))
+            {
+                ti.textureType = TextureImporterType.Default; ti.sRGBTexture = false; ti.wrapMode = TextureWrapMode.Clamp;
+                ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.textureCompression = TextureImporterCompression.CompressedHQ;
+                ti.maxTextureSize = 2048; ios.maxTextureSize = 2048; ios.format = TextureImporterFormat.ASTC_8x8;
+            }
+            else if (n == "Cloth_FabricAtlas")
+            {
+                ti.textureType = TextureImporterType.Default; ti.sRGBTexture = false; ti.wrapMode = TextureWrapMode.Clamp;
+                ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.textureCompression = TextureImporterCompression.CompressedHQ;
+                ti.maxTextureSize = 512; ios.maxTextureSize = 512; ios.format = TextureImporterFormat.ASTC_4x4;
+            }
+            else if (n == "Skin_Soft_N")
             {
                 ti.textureType = TextureImporterType.NormalMap; ti.wrapMode = TextureWrapMode.Repeat; ti.anisoLevel = 2;
                 ti.textureCompression = TextureImporterCompression.CompressedHQ; ios.format = TextureImporterFormat.ASTC_4x4; ios.maxTextureSize = 256;

@@ -62,7 +62,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": "MatchHero_Skin_Soft_N"
+                        "bumpMap": "MatchHero_Skin_Soft_N",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -121,7 +126,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -167,7 +177,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -213,7 +228,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -259,7 +279,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -305,7 +330,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -351,7 +381,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -397,7 +432,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -443,7 +483,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -489,7 +534,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -535,7 +585,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -581,7 +636,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -627,7 +687,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 },
                 {
@@ -673,7 +738,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -681,18 +751,18 @@
         {
             "name": "Kit_Bottom",
             "kind": "kit",
-            "vertexCount": 13425,
+            "vertexCount": 15901,
             "positionOffset": 2145480,
-            "normalOffset": 2306580,
+            "normalOffset": 2336292,
             "swingPositionOffset": 882576,
-            "swingNormalOffset": 1043676,
-            "uvOffset": 2720064,
+            "swingNormalOffset": 1073388,
+            "uvOffset": 2811216,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shorts",
-                    "indexOffset": 2467680,
-                    "indexCount": 54456,
+                    "indexOffset": 2527104,
+                    "indexCount": 61680,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
@@ -712,12 +782,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 51.838134765625,
+                        "weaveTile": 61.99388122558594,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 1.0,
-                        "weaveThread": 0.550000011920929,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.4675000309944153,
                         "sheenStrength": 0.5,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -725,15 +795,25 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.028999999165534974,
-                        "baseMap": "MatchHero_Kit_Male_Bottom",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_Bottom_N",
+                        "maskMap": "MatchHero_Kit_Male_Bottom_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 },
                 {
                     "material": "Kit_ShortsBand",
-                    "indexOffset": 2685504,
-                    "indexCount": 8640,
+                    "indexOffset": 2773824,
+                    "indexCount": 9348,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
@@ -753,12 +833,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 68.2210464477539,
+                        "weaveTile": 82.97886657714844,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.3499999940395355,
+                        "weaveNormal": 0.64000004529953,
+                        "weaveThread": 0.29750001430511477,
                         "sheenStrength": 0.20000000298023225,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -766,9 +846,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.02199999988079071,
-                        "baseMap": "MatchHero_Kit_Male_Bottom",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_Bottom_N",
+                        "maskMap": "MatchHero_Kit_Male_Bottom_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -777,16 +867,16 @@
             "name": "Kit_Shoe_L",
             "kind": "kit",
             "vertexCount": 12868,
-            "positionOffset": 2827464,
-            "normalOffset": 2981880,
-            "swingPositionOffset": 1204776,
-            "swingNormalOffset": 1359192,
-            "uvOffset": 3348432,
+            "positionOffset": 2938424,
+            "normalOffset": 3092840,
+            "swingPositionOffset": 1264200,
+            "swingNormalOffset": 1418616,
+            "uvOffset": 3459392,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 3136296,
+                    "indexOffset": 3247256,
                     "indexCount": 44760,
                     "look": {
                         "shader": "TennisCloth",
@@ -807,12 +897,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 0.7799999713897705,
                         "knee": 0.699999988079071,
-                        "weaveTile": 40.311466217041019,
+                        "weaveTile": 49.004966735839847,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.44999998807907107,
+                        "weaveNormal": 0.64000004529953,
+                        "weaveThread": 0.3824999928474426,
                         "sheenStrength": 0.3499999940395355,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -820,21 +910,31 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.024000000208616258,
-                        "baseMap": "MatchHero_Kit_Male_ShoeL",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_ShoeL_N",
+                        "maskMap": "MatchHero_Kit_Male_ShoeL_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 },
                 {
                     "material": "Kit_Sole",
-                    "indexOffset": 3315336,
+                    "indexOffset": 3426296,
                     "indexCount": 8274,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
-                            0.6599999666213989,
-                            0.6499999761581421,
-                            0.6299999952316284,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
                             1.0
                         ],
                         "rimColor": [
@@ -848,11 +948,11 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 0.7799999713897705,
                         "knee": 0.699999988079071,
-                        "weaveTile": 46.473976135253909,
+                        "weaveTile": 56.49646759033203,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.25,
+                        "weaveNormal": 0.20000000298023225,
                         "weaveThread": 0.0,
                         "sheenStrength": 0.0,
                         "sheenPower": 3.0,
@@ -861,9 +961,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.019999999552965165,
-                        "baseMap": "MatchHero_Kit_Male_ShoeL",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_ShoeL_N",
+                        "maskMap": "MatchHero_Kit_Male_ShoeL_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -872,16 +982,16 @@
             "name": "Kit_Shoe_R",
             "kind": "kit",
             "vertexCount": 12868,
-            "positionOffset": 3451376,
-            "normalOffset": 3605792,
-            "swingPositionOffset": 1513608,
-            "swingNormalOffset": 1668024,
-            "uvOffset": 3972344,
+            "positionOffset": 3562336,
+            "normalOffset": 3716752,
+            "swingPositionOffset": 1573032,
+            "swingNormalOffset": 1727448,
+            "uvOffset": 4083304,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 3760208,
+                    "indexOffset": 3871168,
                     "indexCount": 44760,
                     "look": {
                         "shader": "TennisCloth",
@@ -902,12 +1012,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 0.7799999713897705,
                         "knee": 0.699999988079071,
-                        "weaveTile": 40.31147003173828,
+                        "weaveTile": 48.98347091674805,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.44999998807907107,
+                        "weaveNormal": 0.64000004529953,
+                        "weaveThread": 0.3824999928474426,
                         "sheenStrength": 0.3499999940395355,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -915,21 +1025,31 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.024000000208616258,
-                        "baseMap": "MatchHero_Kit_Male_ShoeR",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_ShoeR_N",
+                        "maskMap": "MatchHero_Kit_Male_ShoeR_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 },
                 {
                     "material": "Kit_Sole",
-                    "indexOffset": 3939248,
+                    "indexOffset": 4050208,
                     "indexCount": 8274,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
-                            0.6599999666213989,
-                            0.6499999761581421,
-                            0.6299999952316284,
+                            0.9300000071525574,
+                            0.9300000071525574,
+                            0.9300000071525574,
                             1.0
                         ],
                         "rimColor": [
@@ -943,11 +1063,11 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 0.7799999713897705,
                         "knee": 0.699999988079071,
-                        "weaveTile": 46.47397994995117,
+                        "weaveTile": 56.471675872802737,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.25,
+                        "weaveNormal": 0.20000000298023225,
                         "weaveThread": 0.0,
                         "sheenStrength": 0.0,
                         "sheenPower": 3.0,
@@ -956,9 +1076,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.019999999552965165,
-                        "baseMap": "MatchHero_Kit_Male_ShoeR",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_ShoeR_N",
+                        "maskMap": "MatchHero_Kit_Male_ShoeR_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -966,17 +1096,17 @@
         {
             "name": "Kit_Sock_L",
             "kind": "kit",
-            "vertexCount": 4164,
-            "positionOffset": 4075288,
-            "normalOffset": 4125256,
-            "swingPositionOffset": 1822440,
-            "swingNormalOffset": 1872408,
-            "uvOffset": 4250464,
+            "vertexCount": 4162,
+            "positionOffset": 4186248,
+            "normalOffset": 4236192,
+            "swingPositionOffset": 1881864,
+            "swingNormalOffset": 1931808,
+            "uvOffset": 4361376,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Sock",
-                    "indexOffset": 4175224,
+                    "indexOffset": 4286136,
                     "indexCount": 18810,
                     "look": {
                         "shader": "TennisCloth",
@@ -997,12 +1127,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 48.21168518066406,
+                        "weaveTile": 47.262508392333987,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.8999999761581421,
-                        "weaveThread": 0.550000011920929,
+                        "weaveNormal": 0.7199999690055847,
+                        "weaveThread": 0.4675000309944153,
                         "sheenStrength": 0.699999988079071,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -1010,9 +1140,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.019999999552965165,
-                        "baseMap": "MatchHero_Kit_Male_SockL",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_SockL_N",
+                        "maskMap": "MatchHero_Kit_Male_SockL_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -1021,16 +1161,16 @@
             "name": "Kit_Sock_R",
             "kind": "kit",
             "vertexCount": 4197,
-            "positionOffset": 4283776,
-            "normalOffset": 4334140,
-            "swingPositionOffset": 1922376,
-            "swingNormalOffset": 1972740,
-            "uvOffset": 4459744,
+            "positionOffset": 4394672,
+            "normalOffset": 4445036,
+            "swingPositionOffset": 1981752,
+            "swingNormalOffset": 2032116,
+            "uvOffset": 4570640,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Sock",
-                    "indexOffset": 4384504,
+                    "indexOffset": 4495400,
                     "indexCount": 18810,
                     "look": {
                         "shader": "TennisCloth",
@@ -1051,12 +1191,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 48.27449035644531,
+                        "weaveTile": 47.939544677734378,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.8999999761581421,
-                        "weaveThread": 0.550000011920929,
+                        "weaveNormal": 0.7199999690055847,
+                        "weaveThread": 0.4675000309944153,
                         "sheenStrength": 0.699999988079071,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -1064,9 +1204,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.019999999552965165,
-                        "baseMap": "MatchHero_Kit_Male_SockR",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_SockR_N",
+                        "maskMap": "MatchHero_Kit_Male_SockR_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -1074,18 +1224,18 @@
         {
             "name": "Kit_Top",
             "kind": "kit",
-            "vertexCount": 15273,
-            "positionOffset": 4493320,
-            "normalOffset": 4676596,
-            "swingPositionOffset": 2023104,
-            "swingNormalOffset": 2206380,
-            "uvOffset": 5127448,
+            "vertexCount": 15401,
+            "positionOffset": 4604216,
+            "normalOffset": 4789028,
+            "swingPositionOffset": 2082480,
+            "swingNormalOffset": 2267292,
+            "uvOffset": 5241044,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shirt",
-                    "indexOffset": 4859872,
-                    "indexCount": 61650,
+                    "indexOffset": 4973840,
+                    "indexCount": 61557,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
@@ -1105,12 +1255,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 67.50940704345703,
-                        "weaveAngle": 41.0,
-                        "weaveNormal": 1.0,
-                        "weaveThread": 0.550000011920929,
+                        "weaveTile": 79.27378845214844,
+                        "weaveAngle": 0.0,
+                        "weaveNormal": 0.800000011920929,
+                        "weaveThread": 0.4675000309944153,
                         "sheenStrength": 0.550000011920929,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -1118,14 +1268,24 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.026000000536441804,
-                        "baseMap": "MatchHero_Kit_Male_Top",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_Top_N",
+                        "maskMap": "MatchHero_Kit_Male_Top_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 },
                 {
                     "material": "Kit_ShirtTrim",
-                    "indexOffset": 5106472,
+                    "indexOffset": 5220068,
                     "indexCount": 5244,
                     "look": {
                         "shader": "TennisCloth",
@@ -1146,12 +1306,12 @@
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
-                        "exposure": 0.699999988079071,
+                        "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 80.08405303955078,
+                        "weaveTile": 93.49199676513672,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.3499999940395355,
+                        "weaveNormal": 0.64000004529953,
+                        "weaveThread": 0.29750001430511477,
                         "sheenStrength": 0.25,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
@@ -1159,9 +1319,19 @@
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
                         "tileMetres": 0.02199999988079071,
-                        "baseMap": "MatchHero_Kit_Male_Top",
-                        "weaveMap": "MatchHero_Cloth_Weave",
-                        "bumpMap": ""
+                        "baseMap": "",
+                        "weaveMap": "MatchHero_Cloth_FabricAtlas",
+                        "bumpMap": "",
+                        "normalMap": "MatchHero_Kit_Male_Top_N",
+                        "maskMap": "MatchHero_Kit_Male_Top_M",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 1.0
                     }
                 }
             ]
@@ -1170,16 +1340,16 @@
             "name": "Racket_Racket_Classic",
             "kind": "racket",
             "vertexCount": 2998,
-            "positionOffset": 5249632,
-            "normalOffset": 5285608,
-            "swingPositionOffset": 2389656,
-            "swingNormalOffset": 2425632,
+            "positionOffset": 5364252,
+            "normalOffset": 5400228,
+            "swingPositionOffset": 2452104,
+            "swingNormalOffset": 2488080,
             "uvOffset": -1,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "White_Frame",
-                    "indexOffset": 5321584,
+                    "indexOffset": 5436204,
                     "indexCount": 18000,
                     "look": {
                         "shader": "TennisCharacter",
@@ -1220,7 +1390,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -1229,16 +1404,16 @@
             "name": "Racket_ButtCap",
             "kind": "racket",
             "vertexCount": 314,
-            "positionOffset": 5393584,
-            "normalOffset": 5397352,
-            "swingPositionOffset": 2461608,
-            "swingNormalOffset": 2465376,
+            "positionOffset": 5508204,
+            "normalOffset": 5511972,
+            "swingPositionOffset": 2524056,
+            "swingNormalOffset": 2527824,
             "uvOffset": -1,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Black_Grip",
-                    "indexOffset": 5401120,
+                    "indexOffset": 5515740,
                     "indexCount": 1440,
                     "look": {
                         "shader": "TennisCloth",
@@ -1274,7 +1449,17 @@
                         "tileMetres": 0.026000000536441804,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -1283,16 +1468,16 @@
             "name": "Racket_Grip",
             "kind": "racket",
             "vertexCount": 1442,
-            "positionOffset": 5406880,
-            "normalOffset": 5424184,
-            "swingPositionOffset": 2469144,
-            "swingNormalOffset": 2486448,
+            "positionOffset": 5521500,
+            "normalOffset": 5538804,
+            "swingPositionOffset": 2531592,
+            "swingNormalOffset": 2548896,
             "uvOffset": -1,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Black_Grip",
-                    "indexOffset": 5441488,
+                    "indexOffset": 5556108,
                     "indexCount": 6912,
                     "look": {
                         "shader": "TennisCloth",
@@ -1328,7 +1513,17 @@
                         "tileMetres": 0.026000000536441804,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [
+                            0.03500000014901161,
+                            0.03500000014901161,
+                            0.04010000079870224,
+                            1.0
+                        ],
+                        "normalStrength": 1.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -1337,16 +1532,16 @@
             "name": "Racket_StringBed",
             "kind": "racket",
             "vertexCount": 1368,
-            "positionOffset": 5469136,
-            "normalOffset": 5485552,
-            "swingPositionOffset": 2503752,
-            "swingNormalOffset": 2520168,
+            "positionOffset": 5583756,
+            "normalOffset": 5600172,
+            "swingPositionOffset": 2566200,
+            "swingNormalOffset": 2582616,
             "uvOffset": -1,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "White_Strings",
-                    "indexOffset": 5501968,
+                    "indexOffset": 5616588,
                     "indexCount": 5928,
                     "look": {
                         "shader": "TennisCharacter",
@@ -1387,7 +1582,12 @@
                         "tileMetres": 0.0,
                         "baseMap": "",
                         "weaveMap": "",
-                        "bumpMap": ""
+                        "bumpMap": "",
+                        "normalMap": "",
+                        "maskMap": "",
+                        "trimColor": [],
+                        "normalStrength": 0.0,
+                        "useGarmentMaps": 0.0
                     }
                 }
             ]
@@ -1597,9 +1797,9 @@
         {
             "name": "Kit_Sole",
             "color": [
-                0.6599999666213989,
-                0.6499999761581421,
-                0.6299999952316284,
+                0.9300000071525574,
+                0.9300000071525574,
+                0.9300000071525574,
                 1.0
             ],
             "smoothness": 0.03999999910593033
@@ -1813,12 +2013,12 @@
             {
                 "part": "Kit_Bottom",
                 "kind": "skin",
-                "vertexCount": 13425,
+                "vertexCount": 15901,
                 "bindPositionOffset": 1464016,
-                "bindNormalOffset": 1625116,
-                "weightOffset": 1786216,
-                "indexOffset": 2001016,
-                "inverseBindOffset": 2054716,
+                "bindNormalOffset": 1654828,
+                "weightOffset": 1845640,
+                "indexOffset": 2100056,
+                "inverseBindOffset": 2163660,
                 "track": -1,
                 "bones": [
                     0,
@@ -1880,11 +2080,11 @@
                 "part": "Kit_Shoe_L",
                 "kind": "skin",
                 "vertexCount": 12868,
-                "bindPositionOffset": 2058108,
-                "bindNormalOffset": 2212524,
-                "weightOffset": 2366940,
-                "indexOffset": 2572828,
-                "inverseBindOffset": 2624300,
+                "bindPositionOffset": 2167052,
+                "bindNormalOffset": 2321468,
+                "weightOffset": 2475884,
+                "indexOffset": 2681772,
+                "inverseBindOffset": 2733244,
                 "track": -1,
                 "bones": [
                     0,
@@ -1946,11 +2146,11 @@
                 "part": "Kit_Shoe_R",
                 "kind": "skin",
                 "vertexCount": 12868,
-                "bindPositionOffset": 2627692,
-                "bindNormalOffset": 2782108,
-                "weightOffset": 2936524,
-                "indexOffset": 3142412,
-                "inverseBindOffset": 3193884,
+                "bindPositionOffset": 2736636,
+                "bindNormalOffset": 2891052,
+                "weightOffset": 3045468,
+                "indexOffset": 3251356,
+                "inverseBindOffset": 3302828,
                 "track": -1,
                 "bones": [
                     0,
@@ -2011,12 +2211,12 @@
             {
                 "part": "Kit_Sock_L",
                 "kind": "skin",
-                "vertexCount": 4164,
-                "bindPositionOffset": 3197276,
-                "bindNormalOffset": 3247244,
-                "weightOffset": 3297212,
-                "indexOffset": 3363836,
-                "inverseBindOffset": 3380492,
+                "vertexCount": 4162,
+                "bindPositionOffset": 3306220,
+                "bindNormalOffset": 3356164,
+                "weightOffset": 3406108,
+                "indexOffset": 3472700,
+                "inverseBindOffset": 3489348,
                 "track": -1,
                 "bones": [
                     0,
@@ -2078,11 +2278,11 @@
                 "part": "Kit_Sock_R",
                 "kind": "skin",
                 "vertexCount": 4197,
-                "bindPositionOffset": 3383884,
-                "bindNormalOffset": 3434248,
-                "weightOffset": 3484612,
-                "indexOffset": 3551764,
-                "inverseBindOffset": 3568552,
+                "bindPositionOffset": 3492740,
+                "bindNormalOffset": 3543104,
+                "weightOffset": 3593468,
+                "indexOffset": 3660620,
+                "inverseBindOffset": 3677408,
                 "track": -1,
                 "bones": [
                     0,
@@ -2143,12 +2343,12 @@
             {
                 "part": "Kit_Top",
                 "kind": "skin",
-                "vertexCount": 15273,
-                "bindPositionOffset": 3571944,
-                "bindNormalOffset": 3755220,
-                "weightOffset": 3938496,
-                "indexOffset": 4182864,
-                "inverseBindOffset": 4243956,
+                "vertexCount": 15401,
+                "bindPositionOffset": 3680800,
+                "bindNormalOffset": 3865612,
+                "weightOffset": 4050424,
+                "indexOffset": 4296840,
+                "inverseBindOffset": 4358444,
                 "track": -1,
                 "bones": [
                     0,
@@ -2276,16 +2476,16 @@
                 "fps": 60.0,
                 "contact": 0.0,
                 "frames": 133,
-                "offset": 4247348,
+                "offset": 4361836,
                 "boundsMin": [
-                    -0.4114336669445038,
-                    -0.030810926109552385,
+                    -0.41143375635147097,
+                    -0.03081108257174492,
                     -0.7405306696891785
                 ],
                 "boundsMax": [
-                    0.41143372654914858,
+                    0.41143378615379336,
                     1.6580296754837037,
-                    0.11415020376443863
+                    0.11415049433708191
                 ],
                 "times": []
             },
@@ -2297,10 +2497,10 @@
                 "fps": 59.999996185302737,
                 "contact": 1.7000000476837159,
                 "frames": 151,
-                "offset": 4555908,
+                "offset": 4670396,
                 "boundsMin": [
                     -0.8536537885665894,
-                    -0.03559400141239166,
+                    -0.03559434413909912,
                     -1.1313438415527344
                 ],
                 "boundsMax": [
@@ -2318,16 +2518,16 @@
                 "fps": 59.999996185302737,
                 "contact": 0.0,
                 "frames": 375,
-                "offset": 4906228,
+                "offset": 5020716,
                 "boundsMin": [
-                    -0.4198532700538635,
-                    -0.031240012496709825,
+                    -0.41985347867012026,
+                    -0.031240375712513925,
                     -1.0827546119689942
                 ],
                 "boundsMax": [
                     0.5763454437255859,
                     1.6580296754837037,
-                    0.11598561704158783
+                    0.1161552369594574
                 ],
                 "times": [
                     0.0,
@@ -2715,16 +2915,16 @@
                 "fps": 59.999996185302737,
                 "contact": 0.0,
                 "frames": 491,
-                "offset": 5776228,
+                "offset": 5890716,
                 "boundsMin": [
                     -0.4417631924152374,
-                    -0.03188338130712509,
+                    -0.03188342973589897,
                     -1.0077027082443238
                 ],
                 "boundsMax": [
                     0.4623405337333679,
                     1.6944587230682374,
-                    0.19564394652843476
+                    0.1956440508365631
                 ],
                 "times": [
                     0.0,
@@ -3228,10 +3428,10 @@
                 "fps": 59.999996185302737,
                 "contact": 0.0,
                 "frames": 450,
-                "offset": 6915348,
+                "offset": 7029836,
                 "boundsMin": [
                     -0.45507708191871645,
-                    -0.03083878755569458,
+                    -0.030838944017887117,
                     -1.2566989660263062
                 ],
                 "boundsMax": [
@@ -3700,16 +3900,16 @@
                 "fps": 60.0,
                 "contact": 0.0,
                 "frames": 164,
-                "offset": 7959348,
+                "offset": 8073836,
                 "boundsMin": [
                     -0.4579927325248718,
-                    -0.030754748731851579,
+                    -0.030754905194044114,
                     -0.7405306100845337
                 ],
                 "boundsMax": [
-                    0.41143369674682619,
+                    0.41143372654914858,
                     1.6580296754837037,
-                    0.11407595872879029
+                    0.11407623440027237
                 ],
                 "times": [
                     0.0,
@@ -3886,16 +4086,16 @@
                 "fps": 59.999996185302737,
                 "contact": 0.0,
                 "frames": 209,
-                "offset": 8339828,
+                "offset": 8454316,
                 "boundsMin": [
-                    -0.41143354773521426,
-                    -0.030801281332969667,
+                    -0.4114336669445038,
+                    -0.03080143593251705,
                     -1.0707863569259644
                 ],
                 "boundsMax": [
                     0.4391569495201111,
                     1.664926528930664,
-                    0.11407595872879029
+                    0.11407623440027237
                 ],
                 "times": [
                     0.0,
@@ -4117,16 +4317,16 @@
                 "fps": 59.999996185302737,
                 "contact": 0.0,
                 "frames": 475,
-                "offset": 8824708,
+                "offset": 8939196,
                 "boundsMin": [
-                    -0.41143369674682619,
-                    -0.031016025692224504,
+                    -0.41143378615379336,
+                    -0.03101632371544838,
                     -1.7098325490951539
                 ],
                 "boundsMax": [
                     0.9679785370826721,
                     1.6580296754837037,
-                    0.11407595127820969
+                    0.11407622694969177
                 ],
                 "times": [
                     0.0,
