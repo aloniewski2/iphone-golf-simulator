@@ -19,6 +19,8 @@
 #endif
     void (*_push)(const char*);
     void (*_pushSample)(const SportsSample*);
+    int (*_networkPush)(const char*);
+    int (*_networkPoll)(char*,int);
     int (*_poll)(char*,int);
     int (*_readResult)(char*,int);
     void (*_setResult)(const char*);
@@ -64,6 +66,8 @@
         _readResult=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsReadTennisResult");
         _setResult=(void(*)(const char*))dlsym(RTLD_DEFAULT,"SportsSetTennisResult");
         _clock=(double(*)(void))dlsym(RTLD_DEFAULT,"SportsClock");
+        _networkPush=(int(*)(const char*))dlsym(RTLD_DEFAULT,"SportsNetworkPush");
+        _networkPoll=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsNetworkPollOutput");
     }
     if (!_push || !_pushSample || !_poll || !_clock || !_readResult || !_setResult) {
         if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:2 userInfo:@{NSLocalizedDescriptionKey:@"Unity bridge is missing. Re-export Unity before building the host app."}];
@@ -108,6 +112,9 @@
 }
 - (void)push:(NSString*)json { if(_push) _push(json.UTF8String); }
 - (void)pushSample:(SportsSample)sample { if(_pushSample) _pushSample(&sample); }
+- (BOOL)multiplayerAvailable { return _networkPush && _networkPoll; }
+- (BOOL)pushNetwork:(NSString*)json { return _networkPush && _networkPush(json.UTF8String); }
+- (NSString*)pollNetwork { char buffer[65536]; if(!_networkPoll || !_networkPoll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (NSString*)pollEvent { char buffer[8192]; if(!_poll || !_poll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (NSString*)tennisResult { char buffer[1024]; if(!_readResult || !_readResult(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (void)clearTennisResult { if(_setResult) _setResult(""); }

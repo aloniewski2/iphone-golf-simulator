@@ -8,6 +8,19 @@
 static std::mutex gate;
 static std::deque<std::string> inputs, events;
 static std::string tennisResult;
+static std::deque<std::string> networkInputs, networkOutputs;
+static bool networkFault = false;
+static int networkPush(std::deque<std::string>& queue,const char* json) {
+    if(!json || strlen(json)>60000) return 0;
+    std::lock_guard<std::mutex> lock(gate);
+    if(queue.size()>=128) {
+        auto old=queue.begin();
+        while(old!=queue.end() && old->find("\"reliable\":false")==std::string::npos) ++old;
+        if(old==queue.end()) { networkFault=true; return 0; }
+        queue.erase(old);
+    }
+    queue.emplace_back(json);return 1;
+}
 // Mirrors SportsSample in the host's SportsRuntime.h and NativeSportsSession.Sample in C#.
 struct SportsSample {
     int32_t version, session; double time;
@@ -29,6 +42,20 @@ static int pop(std::deque<std::string>& queue, char* output, int capacity) {
     memcpy(output, value.c_str(), value.size()+1); return (int)value.size();
 }
 extern "C" {
+__attribute__((visibility("default"))) int SportsNetworkPush(const char* json) { return networkPush(networkInputs,json); }
+__attribute__((visibility("default"))) int SportsNetworkPoll(char* output,int capacity) { return pop(networkInputs,output,capacity); }
+__attribute__((visibility("default"))) int SportsNetworkEmit(const char* json) { return networkPush(networkOutputs,json); }
+__attribute__((visibility("default"))) int SportsNetworkPollOutput(char* output,int capacity) {
+    {
+        std::lock_guard<std::mutex> lock(gate);
+        if(networkFault) {
+            const char* fault="{\"version\":1,\"lobbyID\":\"\",\"matchID\":\"\",\"sender\":\"\",\"sequence\":0,\"kind\":\"bridgeError\",\"reliable\":true,\"sentAt\":0,\"payload\":\"Multiplayer message queue overflow.\"}";
+            if(output && capacity>(int)strlen(fault)) { networkFault=false;strcpy(output,fault);return (int)strlen(fault); }
+        }
+    }
+    return pop(networkOutputs,output,capacity);
+}
+
 __attribute__((visibility("default"))) void SportsSetTennisResult(const char* value) {
     std::lock_guard<std::mutex> lock(gate);
     tennisResult = value ? value : "";
@@ -69,6 +96,6 @@ __attribute__((visibility("default"))) void SportsEmit(const char* json) {
 }
 __attribute__((visibility("default"))) int SportsPollEvent(char* output,int capacity) { return pop(events,output,capacity); }
 __attribute__((visibility("default"))) void SportsClear() {
-    std::lock_guard<std::mutex> lock(gate); inputs.clear(); events.clear(); sampleHead = sampleCount = 0;
+    std::lock_guard<std::mutex> lock(gate); inputs.clear(); events.clear(); networkInputs.clear(); networkOutputs.clear(); networkFault=false; sampleHead = sampleCount = 0;
 }
 }

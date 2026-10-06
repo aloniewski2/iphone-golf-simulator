@@ -195,8 +195,11 @@ namespace GolfArcade.Game
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
             GolferStyle.SkinTone=m.skin;
-            GolferStyle.Hair=m.hairStyle;GolferStyle.HairColor=m.hairColor;GolferStyle.Face=m.faceShape;GolferStyle.Height=m.heightChoice;GolferStyle.Size=m.bodySize<0?m.buildChoice/4f:m.bodySize;
-            GolferStyle.Outfit=TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin);
+            GolferStyle.Edit(look => {
+                look.Haircut = m.hairStyle;
+                look.Hair = GolferStyle.HexOf(GolferStyle.HairColors[Mathf.Clamp(m.hairColor, 0, GolferStyle.HairColors.Length - 1)]);
+                look.Shirt = m.shirt; look.Shorts = m.shorts; look.Shoes = m.accent;
+            });
             AudioListener.volume=m.sound && !Application.isBatchMode?1:0; Haptics.Enabled=m.haptics;   // automated runs stay silent
             Time.timeScale=1;
             // 60 everywhere; 120 only when asked for and the panel can actually show it.

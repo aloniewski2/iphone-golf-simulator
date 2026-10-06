@@ -348,9 +348,21 @@ namespace GolfArcade.Game
         static float FarClip => GolfArcade.Course.HoleAtmosphere.FarClip;
 
         public void SnapNext() => snap = true;
+        public void ApplyFrame() => LateUpdate();
 
         /// Chase these with the given lags (seconds) — for a shot keyed elsewhere that should
         /// still move like a camera operator, not jump (the instant replay).
+        public void Follow(Vector3 ball, Vector3 velocity, bool putting)
+        {
+            var dir = velocity; dir.y = 0;
+            if (dir.sqrMagnitude < .01f) dir = transform.forward;
+            dir.Normalize();
+            float back = putting ? 3f : 14f, up = putting ? 1.6f : 3.5f;
+            targetPosition = ball - dir * back + Vector3.up * up;
+            targetLookAt = ball + dir * (putting ? 1f : 8f);
+            positionLag = .25f; lookLag = .08f;
+        }
+
         public void Follow(Vector3 position, Vector3 look, float lag, float lookLagSeconds)
         {
             targetPosition = position; targetLookAt = look; positionLag = lag; lookLag = lookLagSeconds;

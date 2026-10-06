@@ -14,7 +14,7 @@ namespace GolfArcade.Tennis
         /// Seconds for the ticker to go end to end and back. It moves at a steady speed (not
         /// easing at the ends like a pendulum), so a given distance from the middle is always
         /// the same number of milliseconds and the timing can be learned.
-        public const float Period = 1.6f;
+        public const float Period = 1f;
         /// End-to-end speed, in half-widths per second.
         public const float Speed = 4 / Period;
         const float Width = 2.0f, Depth = .3f;
@@ -22,7 +22,7 @@ namespace GolfArcade.Tennis
         RectTransform ticker, frame;
         Canvas canvas;
         float clock, frozenAt = -1, frozenValue, shownFor;
-        bool running;
+        bool running, manualClock;
 
         public static TennisTossMeter Create(Transform owner)
         {
@@ -35,7 +35,10 @@ namespace GolfArcade.Tennis
 
         /// The ticker's position, -1 (left end) .. 1 (right end), `ago` seconds before now.
         /// It starts at the left end, so the first pass through the middle comes after a beat.
-        public float Value(float ago = 0) => Triangle((clock - ago) / Period);
+        public float Value(float ago = 0) => PositionAt(clock - ago);
+
+        public static float PositionAt(float seconds) => Triangle(seconds / Period);
+        public static float AccuracyAt(float seconds) => 1 - Mathf.Abs(PositionAt(Mathf.Max(0, seconds)));
 
         static float Triangle(float cycles)
         {
@@ -58,8 +61,14 @@ namespace GolfArcade.Tennis
         public void Run(Vector3 feet)
         {
             if (!running) { clock = 0; frozenAt = -1; }
-            running = true; gameObject.SetActive(true);
+            running = true; manualClock = false; gameObject.SetActive(true);
             Place(feet);
+        }
+
+        /// Network play uses the replicated match clock so the visible and judged sweeps agree.
+        public void RunAt(Vector3 feet, float seconds)
+        {
+            Run(feet); manualClock = true; clock = Mathf.Max(0, seconds);
         }
 
         public void Place(Vector3 feet) => transform.position = feet + new Vector3(0, .02f, -.42f);
@@ -68,7 +77,7 @@ namespace GolfArcade.Tennis
         /// a moment, and return the accuracy (1 = dead centre).
         public float Press(float seenAgo)
         {
-            frozenValue = Mathf.Clamp(Value(seenAgo), -1, 1);
+            frozenValue = Mathf.Clamp(PositionAt(Mathf.Max(0, clock - seenAgo)), -1, 1);
             frozenAt = clock; running = false;
             return 1 - Mathf.Abs(frozenValue);
         }
@@ -77,7 +86,7 @@ namespace GolfArcade.Tennis
 
         void Update()
         {
-            if (running) clock += Time.deltaTime;
+            if (running && !manualClock) clock += Time.deltaTime;
             else if (frozenAt >= 0) { shownFor = Time.deltaTime; clock += shownFor; if (clock - frozenAt > .9f) Hide(); }
             float v = frozenAt >= 0 ? frozenValue : Value();
             ticker.anchoredPosition = new Vector2(v * (Width * 100 / 2 - 6), 0);

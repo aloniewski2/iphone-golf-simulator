@@ -15,8 +15,42 @@ namespace GolfArcade.Tennis
         /// without anyone holding the phone.
         public bool AutoPlay;
         public bool Initialized { get; private set; }
+        string[] equippedEmotes = TennisEmotes.Normalize(null);
+        bool playerWonPoint, pointEmoteChosen;
+        HeroTennisDriver.Clip? pendingPointEmote;
+        public void EquipEmotes(string[] ids) { equippedEmotes = TennisEmotes.Normalize(ids); }
+        public float PlayEquippedIntro() {
+            var driver = Player ? Player.GetComponentInChildren<HeroTennisDriver>() : null;
+            if (driver && TennisEmotes.TryClip(equippedEmotes[0], out var clip) && driver.PlayEmote(clip)) return driver.EmoteDuration(clip);
+            if (Player) Player.PlayIntro();
+            return 0;
+        }
+        public string EmoteWindow {
+            get {
+                if (GolfArcade.Multiplayer.SportsMultiplayer.Active) return GolfArcade.Multiplayer.SportsMultiplayer.Instance.EmoteWindow;
+                if (IntroPlaying && presentation.CanChooseEmote) return "intro";
+                return Flow == Phase.PointOver && playerWonPoint && !pointEmoteChosen && !Drill ? "point" : "";
+            }
+        }
+        public bool RequestEquippedEmote(int slot) {
+            if (slot < 0 || slot >= equippedEmotes.Length || EmoteWindow.Length == 0) return false;
+            if (!TennisEmotes.TryClip(equippedEmotes[slot], out var clip)) return false;
+            var driver = Player ? Player.GetComponentInChildren<HeroTennisDriver>() : null;
+            if (!driver || !driver.HasEmote(clip)) return false;
+            if (IntroPlaying) return presentation.ChooseEmote(clip);
+            pointEmoteChosen = true;
+            if (!driver.PlayEmote(clip)) pendingPointEmote = clip;
+            HoldNextPoint((driver.EmoteDuration(clip) + .6f) * GameSpeed);
+            replayDue = -1; if (replay) replay.Stop();
+            return true;
+        }
         public Camera GameplayCamera { get; private set; }
         public void Refeed() { resetTimer=0; BeginPoint(); }
+        /// EMOTES: a taunt longer than the between-points beat keeps the next serve waiting until it has played out. The request (game seconds) is kept until the point-over timer exists, then the timer is
+        /// raised to it once (it only ever grows; a match result or a live point is never touched).
+        float tauntHold;
+        public void HoldNextPoint(float seconds) { tauntHold = Mathf.Max(tauntHold, seconds); ApplyTauntHold(); }
+        void ApplyTauntHold() { if (tauntHold > 0 && Flow == Phase.PointOver && resetTimer > 0 && resetTimer < 1e5f) { resetTimer = Mathf.Max(resetTimer, tauntHold); tauntHold = 0; } }
         /// Point flow. A point always starts from a serve, as in real tennis.
         public enum Phase { PlayerServeHold, PlayerServeToss, OpponentServe, Rally, PointOver, MatchOver }
         public Phase Flow { get; private set; }
@@ -350,7 +384,7 @@ namespace GolfArcade.Tennis
 
         public void SetServeAim(float across, float depth) => ServeAim = new Vector2(Mathf.Clamp(across, -1, 1), Mathf.Clamp01(depth));
 
-        string PhoneState() => Flow switch
+        string PhoneState() => IntroPlaying ? "intro" : Flow switch
         {
             // The serve states say which court, so the phone can draw the right target box.
             Phase.PlayerServeHold => (windup < 0 ? "serve|" : "toss|") + (Match.DeuceCourt ? "deuce" : "ad"),
@@ -734,8 +768,10 @@ namespace GolfArcade.Tennis
             if (Opponent) Opponent.React(!toPlayer, moment);
             if (!toPlayer) { Misses++; if (RallyShots > 1 && incoming) sideMisses[Wing(BallPosition.x)]++; }
             Flow = Match.Complete ? Phase.MatchOver : Phase.PointOver;
+            playerWonPoint = toPlayer; pointEmoteChosen = false; pendingPointEmote = null;
             // A finished set gets a longer beat (the SET call below), then the next set starts by itself.
             resetTimer = Match.Complete ? (AutoPlay ? 5f : ResultsHold) : setWon ? 4.4f : 2.4f;   // 2B: reaction cam + auto emotes, then the next serve
+            ApplyTauntHold();                                                                       // EMOTES: a taunt started by the reactions above holds the serve until it is over
             if (juice) juice.PointReaction(toPlayer ? Player.transform : Opponent.transform, toPlayer ? Opponent.transform : Player.transform,
                 toPlayer ? "POINT " + (hud ? hud.PlayerName : "YOU") : "POINT " + (hud ? hud.OpponentName : "RIVAL"));
             ultimateBall = false; if (ballTrail) { ballTrail.startWidth = .12f; ballTrail.startColor = Color.white; }
@@ -905,6 +941,7 @@ namespace GolfArcade.Tennis
 
         void Update()
         {
+            if (NetworkFrame()) return;
             if (!Player) return;
             if (ReplayPlaying)
             {
@@ -958,6 +995,13 @@ namespace GolfArcade.Tennis
                 if (replayDue <= 0 && replay.Play(2.6f, .5f)) { banner.text = "REPLAY"; bannerUntil = HudClock.Now + 99; }
             }
             PoseActors();
+            if (pendingPointEmote.HasValue && Flow == Phase.PointOver && Player) {
+                var driver = Player.GetComponentInChildren<HeroTennisDriver>();
+                if (driver) {
+                    HoldNextPoint((driver.EmoteDuration(pendingPointEmote.Value) + .6f) * GameSpeed);
+                    if (driver.PlayEmote(pendingPointEmote.Value)) pendingPointEmote = null;
+                }
+            }
             string phoneState = PhoneState();
             if (phoneState != reportedPhase) { reportedPhase = phoneState; PhaseChanged?.Invoke(phoneState); }
             if (hud && Flow != Phase.PlayerServeToss && Flow != Phase.PlayerServeHold) hud.ShowServeMeter(false);
@@ -1230,7 +1274,7 @@ namespace GolfArcade.Tennis
                     // Up and across to where the serve's strings will meet it as it comes down; a
                     // loose toss (the phone's meter off centre) wanders off that line.
                     Vector3 across = Player.ContactPoint(TennisActor.Stroke.Serve, false) - tossOrigin; across.y = 0;
-                    float miss = (1 - TossAccuracy) * .7f;
+                    float miss = TennisRules.TossError(TossAccuracy);
                     Vector3 wander = Player.transform.right * ((float)random.NextDouble() * 2 - 1) * miss
                                    + Player.transform.forward * ((float)random.NextDouble() * 2 - 1) * miss * .6f;
                     tossDrift = (across + wander) / ServeContactTime();
@@ -1862,7 +1906,7 @@ namespace GolfArcade.Tennis
         }
 
         /// Start the next point from whichever end is serving.
-        void BeginPoint() {
+        void BeginPoint() { tauntHold = 0; playerWonPoint = false; pointEmoteChosen = false; pendingPointEmote = null;
             ResetPointAbilities();
             lastRivalLob = false; serveOnsetPending = false; shotAimLocked = false;
             Stamina=1; SecondServe=false; consumedStroke=false;

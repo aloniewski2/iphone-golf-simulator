@@ -30,9 +30,10 @@ struct MultiplayerLoadout: Codable, Equatable, Sendable {
     var gear: [String: [String: String]] = [:]
     var skinHex: String
     var colours: [String: String] = [:]
+    var emotes: [String]?
     func valid() -> Bool {
         func hex(_ s: String) -> Bool { s.utf8.count == 6 && s.allSatisfy { $0.isHexDigit && $0.isASCII } }
-        return hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
+        return (emotes.map(EmoteCatalog.valid) ?? true) && hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
             ["shirt", "shorts", "accent", "racket"].contains($0.key) && hex($0.value)
         } && gear.count <= 2 && gear.allSatisfy { sport, slots in
             ["tennis", "golf"].contains(sport) && slots.count <= 3 && slots.allSatisfy {
@@ -54,8 +55,8 @@ struct MultiplayerEmote: Codable, Equatable, Sendable, Identifiable {
     var startedAt: Double
     var eventID: String?
     var id: String { eventID ?? "\(participantID):\(startedAt)" }
-    static let ids = ["scuba", "thrust", "spike", "wave", "bringIt", "pushups"]
-    static let names = ["Scuba", "Thrust", "Spike", "Wave", "Bring it", "Pushups"]
+    static let ids = EmoteCatalog.ids
+    static let names = EmoteCatalog.names
     static let cooldown = 1.5
 }
 struct MultiplayerLobby: Codable, Equatable, Sendable {

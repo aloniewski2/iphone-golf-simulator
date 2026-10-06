@@ -22,6 +22,14 @@ namespace GolfArcade.Tennis
         TennisHud hud;
         TennisUmpire umpire;
         float t;
+        float emoteHold;
+        HeroTennisDriver.Clip? chosenEmote;
+        bool chosenPlayed;
+        public bool CanChooseEmote => Playing && t < Drone + RivalIntro + PlayerIntro && !chosenEmote.HasValue;
+        public bool ChooseEmote(HeroTennisDriver.Clip clip) {
+            if (!CanChooseEmote) return false;
+            chosenEmote = clip; return true;
+        }
         bool rivalEmoted, playerEmoted, umpireCalled;
         RectTransform barTop, barBottom, titleCard, nameCard;
         Text title, subtitle, nameText, roleText;
@@ -90,7 +98,10 @@ namespace GolfArcade.Tennis
         public bool Drive(Camera camera, Vector3 playTarget, Vector3 playLook, float playFov, float dt)
         {
             if (!Playing) return false;
-            t += dt;
+            if (emoteHold > 0) emoteHold = Mathf.Max(0, emoteHold - dt);
+            else t += dt;
+            if (chosenEmote.HasValue && !chosenPlayed && t >= Drone + RivalIntro)
+                t = Mathf.Min(t, Drone + RivalIntro + PlayerIntro - .001f);
             Vector3 pos, look; float fov;
             var player = game.Player.transform; var rival = game.Opponent.transform;
             float bars = 1;
@@ -130,7 +141,17 @@ namespace GolfArcade.Tennis
                 pos = player.position + face * Mathf.Lerp(5.6f, 4.7f, k) + side * Mathf.Lerp(1.6f, 1.0f, k) + Vector3.up * 1.25f;
                 look = player.position + Vector3.up * 1.0f;
                 fov = 40;
-                if (!playerEmoted && s > .35f) { playerEmoted = true; game.Player.PlayIntro(); }
+                if (chosenEmote.HasValue && !chosenPlayed) {
+                    var driver = game.Player.GetComponentInChildren<HeroTennisDriver>();
+                    if (driver && driver.PlayEmote(chosenEmote.Value)) {
+                        chosenPlayed = true; playerEmoted = true;
+                        emoteHold = driver.EmoteDuration(chosenEmote.Value) + .4f;
+                    }
+                }
+                if (!chosenEmote.HasValue && !playerEmoted && s > .35f) {
+                    playerEmoted = true;
+                    emoteHold = Mathf.Max(0, game.PlayEquippedIntro() + .3f - (PlayerIntro - s));
+                }
                 ShowName(hud.PlayerName, "THE CHALLENGER", TennisHud.SunTop, TennisHud.SunBottom);
                 Card(nameCard, s, PlayerIntro, fromLeft: true);
             }

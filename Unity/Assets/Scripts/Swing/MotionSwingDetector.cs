@@ -71,6 +71,12 @@ namespace GolfArcade.Swing
     /// face: open slices, closed hooks.
     public sealed class MotionSwingDetector
     {
+        // Phone Ready calibrates the chosen grip; other sources retain club-down arming.
+        public bool UseReadyPose;
+        public void SetReadyPose(Quaternion attitude) {
+            Reset(); reference = Quaternion.Normalize(attitude); Phase = SwingPhase.Address;
+        }
+
         /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
         /// is in a Z-vertical frame.
         public Vector3 WorldUp = Vector3.UnitZ;
@@ -190,6 +196,7 @@ namespace GolfArcade.Swing
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
             FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio; StrikeOnSlowing = o.StrikeOnSlowing; CanStrikeThin = o.CanStrikeThin; AlongTheArc = o.AlongTheArc; CommitPerRadian = o.CommitPerRadian;
+            UseReadyPose = o.UseReadyPose;
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
@@ -223,7 +230,7 @@ namespace GolfArcade.Swing
             PointedDown = LeanDegrees <= PointedDownDegrees && topDown;
             WrongEndDown = LeanDegrees <= PointedDownDegrees && !topDown;
             // "Ready" = hanging like a club and not mid-swing, for a moment.
-            if (PointedDown && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
+            if ((UseReadyPose || PointedDown) && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
             bool ready = stillSince is double since && time - since >= StillDuration;
             bool isStill = speed < StillSpeed;
 
@@ -248,7 +255,7 @@ namespace GolfArcade.Swing
 
                 case SwingPhase.Address:
                     // Lifted the phone out of the club position without swinging: back to settling.
-                    if (!PointedDown && isStill)
+                    if (!UseReadyPose && !PointedDown && isStill)
                     {
                         Phase = SwingPhase.Settling;
                         stillSince = null;

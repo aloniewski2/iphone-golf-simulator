@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
 namespace GolfArcade.Multiplayer {
-    [Serializable] public sealed class NetworkParticipant { public string id,name; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; }
+    [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; }
+    [Serializable] public sealed class NetworkParticipant { public string id,name; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
     [Serializable] public sealed class NetworkConfiguration {
         public string lobbyID,matchID,hostID,localID,sport,venue; public int sets=1,games=3,seed;
         public NetworkParticipant[] participants;
@@ -11,6 +12,7 @@ namespace GolfArcade.Multiplayer {
             && participants.Any(p=>p.id==hostID) && participants.Any(p=>p.id==localID)
             && participants.Select(p=>p.id).Distinct().Count()==participants.Length
             && participants.All(p=>p.seat>=-1 && p.seat<(sport=="tennis"?2:4))
+            && participants.All(p=>GolfArcade.Tennis.TennisEmotes.Valid(p.loadout?.emotes))
             && participants.Where(p=>p.seat>=0).Select(p=>p.seat).Distinct().Count()==participants.Count(p=>p.seat>=0)
             && participants.Count(p=>p.seat>=0)>=2 && sets>=1 && sets<=3 && (games==1 || games==3 || games==6);
     }

@@ -350,7 +350,7 @@ namespace GolfArcade.Tennis
         int emoteRoll;
         void OnReacted(bool won, TennisActor.Moment moment)
         {
-            GameEndedTaunt(won);                                    // EMOTES: after a won game (not a point) the winner taunts
+            // Celebrations are selected from the equipped controller slots.
             if (!PointEmotes) { PointReactionsSuppressed++; return; }
             emoteRoll++;
             var c = moment == TennisActor.Moment.Match ? (won ? Clip.MatchWin : Clip.MatchLose)
@@ -404,6 +404,8 @@ namespace GolfArcade.Tennis
         public string LastEmotePlayed { get; private set; }
         int tauntRoll, lastGameKey = 0;
         public bool EmoteActive => juiceActive && IsEmote(juice);
+        public bool HasEmote(Clip c) => Match && IsEmote(c) && valid[(int)c];
+        public float EmoteDuration(Clip c) => HasEmote(c) ? length[(int)c] : 0;
         bool BetweenPointsGone() { if (actor && (actor.PrepareAmount > .02f || actor.PrepareServe)) { hasPendingEmote = false; return true; } return false; }
         /// Play one emote clip now. False when this hero has no such clip, is not a match hero, or is in a stroke.
         public bool PlayEmote(Clip c)
@@ -412,6 +414,7 @@ namespace GolfArcade.Tennis
             if (actionActive || (actor && actor.Swinging)) return false;
             juice = c; juiceActive = true; juiceTime = 0; perfectPending = false; hasQueued = false;
             EmotesPlayed++; LastEmotePlayed = c.ToString(); LastEmote = c.ToString();
+            if (game && Array.IndexOf(Taunts, c) >= 0) game.HoldNextPoint((length[(int)c] + .4f) * TennisGame.GameSpeed);      // the next serve waits for the taunt (the game's timers run at GameSpeed x real time)
             return true;
         }
         /// The player picks a taunt ("Scuba", "Thrust", "Spike" or 0..2) or lets the game rotate them.

@@ -24,6 +24,16 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
     /// Equipped gear, sport -> slot -> item id (LockerCatalog.swift). Optional like every field added after players.v1:
     /// older profiles decode without it, and an id the catalog no longer has falls back to the Standard item.
     var loadout: [String: [String: String]]?
+    /// Three controller slots. Optional storage keeps players.v1 saves compatible.
+    var emoteIDs: [String]?
+    var equippedEmotes: [String] { EmoteCatalog.normalized(emoteIDs) }
+    mutating func equipEmote(_ id: String, slot: Int) {
+        guard (0..<3).contains(slot), EmoteCatalog.ids.contains(id) else { return }
+        var picks = equippedEmotes
+        if let other = picks.firstIndex(of: id) { picks.swapAt(slot, other) }
+        else { picks[slot] = id }
+        emoteIDs = picks
+    }
     var hairStyleValue: Int?
     var haircutValue: Int?
     var hairColorValue: Int?
@@ -49,6 +59,24 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
         self.colorIndex = colorIndex
         self.handedness = handedness
         self.calibration = calibration
+    }
+}
+
+enum EmoteCatalog {
+    static let ids = ["scuba", "thrust", "spike", "wave", "bringIt", "pushups"]
+    static let names = ["Scuba", "Thrust", "Spike", "Wave", "Bring it", "Pushups"]
+    static let defaults = ["wave", "scuba", "spike"]
+    static func name(_ id: String) -> String { ids.firstIndex(of: id).map { names[$0] } ?? "Emote" }
+    static func normalized(_ saved: [String]?) -> [String] {
+        var result: [String] = []
+        for id in (saved ?? defaults) + defaults + ids where ids.contains(id) && !result.contains(id) {
+            result.append(id)
+            if result.count == 3 { break }
+        }
+        return result
+    }
+    static func valid(_ picks: [String]) -> Bool {
+        picks.count == 3 && Set(picks).count == 3 && picks.allSatisfy(ids.contains)
     }
 }
 

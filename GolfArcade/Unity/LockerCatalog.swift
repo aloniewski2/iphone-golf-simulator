@@ -89,7 +89,7 @@ enum LockerCatalog {
 extension Player {
     var multiplayerLoadout: MultiplayerLoadout {
         MultiplayerLoadout(gear: Dictionary(uniqueKeysWithValues: LockerCatalog.sports.map { ($0.rawValue, loadoutPayload(sport: $0)) }),
-                           skinHex: skinHex, colours: Dictionary(uniqueKeysWithValues: Player.outfitSlots.compactMap { slot in outfitHex(slot).map { (slot, $0) } }))
+                           skinHex: skinHex, colours: Dictionary(uniqueKeysWithValues: Player.outfitSlots.compactMap { slot in outfitHex(slot).map { (slot, $0) } }), emotes: equippedEmotes)
     }
     func equipped(_ slot: LockerSlot, sport: Sport) -> LockerItem {
         LockerCatalog.item(id: loadout?[sport.rawValue]?[slot.rawValue], sport: sport, slot: slot)
@@ -113,6 +113,7 @@ extension MultiplayerParticipant {
         var p = Player(id:UUID(uuidString:id) ?? UUID(uuidString:"00000000-0000-0000-0000-000000000000")!,name:name,colorIndex:0,handedness:left ? .left : .right)
         p.standardFemale = female
         if let loadout {
+            p.emoteIDs = loadout.emotes
             p.loadout = loadout.gear
             let skin = LockerColor.rgb(loadout.skinHex)
             p.look["skin"] = [0,skin.0,skin.1,skin.2]

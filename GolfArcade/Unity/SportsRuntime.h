@@ -21,6 +21,9 @@ enum { SportsSampleVersion = 2, SportsSampleValid = 1, SportsSampleDegraded = 2 
 - (void)send:(NSString*)json;
 - (void)push:(NSString*)json;
 - (void)pushSample:(SportsSample)sample;
+- (BOOL)pushNetwork:(NSString*)json;
+- (nullable NSString*)pollNetwork;
+- (BOOL)multiplayerAvailable;
 - (nullable NSString*)pollEvent;
 - (nullable NSString*)tennisResult;
 - (void)clearTennisResult;

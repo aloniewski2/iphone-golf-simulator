@@ -13,7 +13,7 @@ namespace GolfArcade.Game
     /// The round, Wii Sports style: fly over the hole, aim with the buttons, swing the phone,
     /// watch the ball, read the result, repeat until it drops. One component on one object
     /// builds everything else at runtime.
-    public sealed class GolfGame : MonoBehaviour
+    public sealed partial class GolfGame : MonoBehaviour
     {
         /// RoundDone is the card after any hole, with NEXT HOLE while the round goes on.
         /// (Replay is last so the older states keep their numbers.)
@@ -33,7 +33,7 @@ namespace GolfArcade.Game
         /// on their own phone at once, the same wind from the room's seed). One card each.
         public Match Match { get; private set; }
         /// The card of the golfer who is up.
-        public Scorecard Card => Match?.Current.Card;
+        public Scorecard Card => networkConfigured ? networkCard : Match?.Current.Card;
         public Wind Wind { get; private set; }
         /// Who the home screen's PLAY is for: solo, 2 players on this phone, or online.
         public PlayMode Mode { get; private set; } = PlayMode.Solo;
@@ -1904,6 +1904,8 @@ namespace GolfArcade.Game
         void OnImpact(SwingImpact impact)
         {
             if (Current != State.Aim) return;
+            if (NetworkShot(impact)) return;
+            ShotStruck?.Invoke();
             // a real swing: how purely and how fast it was struck, and a little of its own luck
             if (!plannedShot && club != GolfClub.Putter) impact = Strikes.Pure(impact, Strikes.Judge(impact), UnityEngine.Random.value, UnityEngine.Random.value);
             plannedShot = false;
@@ -1977,6 +1979,7 @@ namespace GolfArcade.Game
         /// instead of freezing it; errors.log keeps the details (ErrorGuard).
         void Update()
         {
+            if (NetworkFrame()) return;
             ErrorGuard.Pump();
             try
             {

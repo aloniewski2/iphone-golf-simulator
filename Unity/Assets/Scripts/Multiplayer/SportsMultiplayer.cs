@@ -20,6 +20,15 @@ namespace GolfArcade.Multiplayer {
         public NetworkGolfState GolfState {get;private set;}
         public NetworkGolfShot GolfShot {get;private set;}
         public float LocalTarget {get;private set;}
+        public string EmoteWindow {
+            get {
+                var s=TennisState; int seat=LocalSeat;
+                if (!Running || seat < 0 || s == null || s.paused || s.complete) return "";
+                var p=s.players[seat];
+                if (s.phase=="intro" && !p.introEmoted) return "intro";
+                return s.phase=="point" && s.winner==seat && p.emotePoint!=s.point ? "point" : "";
+            }
+        }
         NetworkTennisMatch tennis;NetworkGolfRound golf;
         TennisGame tennisView;GolfGame golfView;
         double clockOffset,lastSnapshot,nextSnapshot,lastMove,packetAt;long eventID,lastTick=-1,lastRevision=-1;
@@ -47,7 +56,7 @@ namespace GolfArcade.Multiplayer {
             Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
-                if(c.sport=="tennis") {tennis=new(c.sets,c.games);TennisState=tennis.State;golf=null;tennis.Result=Result;}
+                if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;}
                 else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
@@ -123,6 +132,8 @@ namespace GolfArcade.Multiplayer {
                 case "touch":case "motion":case "recalibrate":case "latency":return false;
                 case "toss":
                     Instance.Submit(new NetworkInput {action="toss",age=Instance.tennisView?.TossSeenAgo??0});return true;
+                case "emote":
+                    Instance.Submit(new NetworkInput {action="emote",value=m.value});return true;
                 case "serveAim":case "nudge":case "aim":case "rallyAim":case "club":case "dive":
                     Instance.Submit(new NetworkInput {action=m.action=="rallyAim"?"aim":m.action,value=m.value,value2=m.value2});return true;
                 case "sound":case "haptics":case "display":case "flash":return false;

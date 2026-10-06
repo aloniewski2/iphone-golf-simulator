@@ -417,10 +417,23 @@ namespace GolfArcade.Tennis
         public const float ServePowerWindow = .4f;
         /// Swings with less power than this are too early or too late to clear the net.
         public const float ServeFaultPower = .12f;
-        /// A toss meter reading this good (1 = dead centre) counts as a perfect toss: the
-        /// middle 15% either side, about 60ms of the ticker's sweep.
+        /// Swing onset must be within 25 real milliseconds of the apex for a perfect serve.
         public const float ServePerfectRealSeconds = .025f;
+        /// A perfect toss is inside the middle 5% of the meter's half-width.
         public const float ServePerfectToss = .95f;
+        /// Maximum landing scatter, in metres, for a press at either end of the toss meter.
+        public const float ServeTossMaxSpread = 2.6f;
+
+        /// Continuous penalty outside the perfect zone: further from centre means more error.
+        public static float TossError(float accuracy) =>
+            Mathf.Clamp01((ServePerfectToss - Mathf.Clamp01(accuracy)) / ServePerfectToss);
+
+        public static Vector2 ServeTossScatter(float accuracy, float rollX, float rollZ)
+        {
+            float spread = ServeTossMaxSpread * TossError(accuracy);
+            return new Vector2((Mathf.Clamp01(rollX) * 2 - 1) * spread,
+                (Mathf.Clamp01(rollZ) * 2 - 1) * spread * .7f);
+        }
         /// The fastest serve, reserved for a perfect one (m/s).
         public const float ServeTopSpeed = 53f;
 
@@ -497,9 +510,9 @@ namespace GolfArcade.Tennis
             // further the further off centre the toss was. The wander is not rescued: aim at
             // the lines with a loose toss and it can land long or wide -- a fault, called when
             // it bounces. The risk is what makes the lines worth aiming at.
-            float spread = j.Toss >= ServePerfectToss ? 0 : Mathf.Lerp(1.7f, .2f, j.Toss / ServePerfectToss);
+            Vector2 scatter = ServeTossScatter(j.Toss, rollX, rollZ);
             var landing = IntoServiceBox(target, serverNearSide, deuceCourt)
-                + new Vector3((Mathf.Clamp01(rollX) * 2 - 1) * spread, 0, (Mathf.Clamp01(rollZ) * 2 - 1) * spread * .7f);
+                + new Vector3(scatter.x, 0, scatter.y);
             // Never so short it would not clear the net.
             float minZ = 1.8f;
             if (Mathf.Abs(landing.z) < minZ) landing.z = serverNearSide ? minZ : -minZ;

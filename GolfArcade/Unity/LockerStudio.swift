@@ -147,6 +147,7 @@ struct IslandLockerScreen: View {
                     switch menu.lockerTab {
                     case .gear: gear
                     case .customize: customize
+                    case .emotes: emotes
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -161,7 +162,7 @@ struct IslandLockerScreen: View {
 
     private var tabs: some View {
         HStack(spacing: 6) {
-            ForEach([(TennisMenu.LockerTab.gear, "Gear", "lk-tab-gear"), (.customize, "Customize", "lk-tab-customize")], id: \.2) { tab, title, id in
+            ForEach([(TennisMenu.LockerTab.gear, "Gear", "lk-tab-gear"), (.customize, "Customize", "lk-tab-customize"), (.emotes, "Emotes", "lk-tab-emotes")], id: \.2) { tab, title, id in
                 let on = menu.lockerTab == tab
                 Button { menu.tap(id) } label: {
                     Text(title).font(IslandUI.font(17 * k, bold: true)).foregroundStyle(IslandUI.navy)
@@ -185,6 +186,68 @@ struct IslandLockerScreen: View {
                 } else { footerButton("Revert", id: "lk-revert", primary: false) }
             }
             footerButton("Done", id: "lk-done", primary: true)
+        }
+    }
+
+    private var emotes: some View {
+        VStack(alignment: .leading, spacing: 10 * k) {
+            Text("Pick a slot, then choose an emote.")
+                .font(IslandUI.font(14 * k, bold: true)).foregroundStyle(IslandUI.muted)
+            HStack(spacing: 8) {
+                ForEach(0..<3, id: \.self) { slot in
+                    let id = "lk-emote-slot-\(slot)", selected = menu.lockerEmoteSlot == slot
+                    Button { menu.tap(id) } label: {
+                        VStack(spacing: 4) {
+                            Text("SLOT \(slot + 1)").font(IslandUI.font(10 * k, bold: true))
+                            Text(EmoteCatalog.name(player.equippedEmotes[slot])).font(IslandUI.font(14 * k, bold: true))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 50 * k)
+                        .background(selected ? IslandUI.lime : .white, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(IslandUI.navy, lineWidth: menu.isFocused(id) ? 3 : selected ? 1.5 : 0))
+                    }.buttonStyle(.plain).accessibilityIdentifier(id).accessibilityAddTraits(selected ? .isSelected : [])
+                }
+            }
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                    ForEach(EmoteCatalog.ids, id: \.self) { emote in
+                        emoteTile(emote)
+                    }
+                }
+            }
+            Text("Tap one on your controller for your intro or after you score.")
+                .font(IslandUI.font(12 * k, bold: false)).foregroundStyle(IslandUI.muted)
+        }.foregroundStyle(IslandUI.navy)
+    }
+
+    private func emoteTile(_ emote: String) -> some View {
+        let id = "lk-emote-\(emote)", slot = player.equippedEmotes.firstIndex(of: emote)
+        return Button { menu.tap(id) } label: {
+            Group {
+                if compact {
+                    VStack(spacing: 4) { emoteImage(emote); emoteDetails(emote, slot: slot) }
+                } else {
+                    HStack(spacing: 2) { emoteImage(emote); emoteDetails(emote, slot: slot) }.padding(.horizontal, 4)
+                }
+            }
+            .frame(maxWidth: .infinity).padding(.vertical, 6)
+            .background(slot != nil ? IslandUI.lime.opacity(0.3) : .white, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(IslandUI.navy, lineWidth: menu.isFocused(id) ? 3 : 0))
+        }.buttonStyle(.plain).accessibilityIdentifier(id)
+            .accessibilityLabel("\(EmoteCatalog.name(emote)), \(slot.map { "equipped in slot \($0 + 1)" } ?? "not equipped"). Equip in slot \(menu.lockerEmoteSlot + 1).")
+    }
+
+    private func emoteImage(_ emote: String) -> some View {
+        Group {
+            if let image = LobbyEmoteThumbs.image(emote, player: player) {
+                Image(uiImage: image).resizable().scaledToFit()
+            } else { Image(systemName: "figure.dance").font(.system(size: 32)) }
+        }.frame(height: compact ? 54 : 56)
+    }
+
+    private func emoteDetails(_ emote: String, slot: Int?) -> some View {
+        VStack(spacing: 4) {
+            Text(EmoteCatalog.name(emote)).font(IslandUI.font(13 * k, bold: true)).lineLimit(1).minimumScaleFactor(0.75)
+            Text(slot.map { "Slot \($0 + 1)" } ?? "Equip").font(IslandUI.font(10 * k, bold: true)).foregroundStyle(IslandUI.muted)
         }
     }
 
