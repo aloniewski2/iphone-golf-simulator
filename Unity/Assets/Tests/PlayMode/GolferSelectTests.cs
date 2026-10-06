@@ -91,7 +91,7 @@ namespace GolfArcade.PlayTests
                 Assert.AreEqual((int)HeroGolfer.Haircut.Bald, GolferStyle.Haircut);
                 Press("Tile 0 hair_classic");
                 Assert.AreEqual((int)HeroGolfer.Haircut.Classic, GolferStyle.Haircut);
-                Press("Tile 4 hair_long");
+                Press("Tile 9 hair_long");
                 Assert.AreEqual((int)HeroGolfer.Haircut.Long, GolferStyle.Haircut);
                 Drag(ActiveSlider(0), 0.72f);
                 yield return new WaitForSecondsRealtime(0.4f);

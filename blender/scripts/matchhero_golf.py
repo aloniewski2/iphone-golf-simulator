@@ -74,6 +74,9 @@ ALPHA0 = {}
 # A real golfer's address: the clubs at their real lengths, the hands at belt height, the back hinged from the hips. V4's golfer is short and stylised (hands at
 # chest height on a 1.3 m club-and-golfer); "--v4like" keeps its poses scaled up, as the first version did.
 REAL = "--v4like" not in ARGV
+# The swings (Drive, IronSwing, HalfSwing, Chip, Putt) are authored from scratch (blender/scripts/golf_swing.py: key poses and a solver on his skeleton, not the studio's clips);
+# "--v4swing" brings back the studio's swings retargeted onto his rig, as the first versions had.
+NEW_SWING = "--v4swing" not in ARGV
 # real club lengths in metres (driver 45", iron ~38", wedge 36", putter 34") against the studio club meshes' own lengths (1.156, 1.018, 0.955, 0.906)
 CLUB_LENGTH = {"Driver": 1.14, "Iron": 0.97, "Wedge": 0.92, "Putter": 0.86}
 V4_CLUB_LENGTH = {"Driver": 1.156, "Iron": 1.018, "Wedge": 0.955, "Putter": 0.906}
@@ -84,6 +87,20 @@ STANCE_BACK = {"Driver": 0.20, "Iron": 0.12, "Wedge": 0.10, "Putter": 0.08}
 STANCE_DROP = float(arg("--drop", "0.04"))
 FEET_SHARE = float(arg("--feet-share", "0.5"))
 HINGE_MIN, HINGE_MAX = float(arg("--hinge-min", "12")), float(arg("--hinge-max", "38"))
+# Through the ball a golfer stands up: the hips rise and the lead leg straightens ("posts up"), the back comes up out of its hinge, the weight goes onto the lead foot;
+# the finish is tall and rotated to the target, not the crouch of the address. The seat (pelvis back and down) and the hinge held from address to impact are let go of
+# from just before impact over EXT_FRAMES frames: by the finish SEAT_UP of the seat and HINGE_UP of the hinge are gone. (A half swing finishes lower.)
+SEAT_UP, HINGE_UP, EXT_FRAMES = float(arg("--seat-up", "0.9")), float(arg("--hinge-up", "0.7")), float(arg("--ext-frames", "16"))
+EXT_BY_CLIP = {} if "--noext" in ARGV else {"Drive": 1.0, "IronSwing": 1.0, "HalfSwing": 0.6}
+# The arms through the ball and after: V4's short arms fold at once and its hands finish in front of the face. A golfer's arms stay extended through the hitting zone, then fold up
+# as the club goes round, the hands finishing high beside and a little behind the head (FIN_UP, FIN_BACK: metres from where V4's finish had them, in the chest's frame).
+RETIME_IN = float(arg("--retime-in", "2.3"))
+RETIME_FOLLOW = {"HalfSwing": float(arg("--half-follow", "1.2"))}      # the longest follow-through (as a multiple of the downswing's club head path) a clip gets
+RETIME_HOLD = int(arg("--retime-hold", "4"))                # frames the finish is held at the end of the clip
+RETIME_OUT_MIN = float(arg("--retime-out-min", "1.1"))      # the least the club slows toward the finish (the speed at impact is kept continuous where it can be)     # how the club head speeds up into the ball: speed ~ t ** (this - 1) from the top
+FIN_FRAMES, FIN_UP, FIN_BACK, REACH_END = float(arg("--fin-frames", "16")), float(arg("--fin-up", "0.14")), float(arg("--fin-back", "0.10")), float(arg("--reach-end", "0.62"))
+PELVIS_MAX = float(arg("--pelvis-max", "0.995"))      # the pelvis's ceiling, as a share of his standing height
+HEEL_UP_MAX = float(arg("--heel-up", "0.10"))         # how far the trail ankle lifts (heel up, toes planted): metres
 ARM_EASE = float(arg("--arm-ease", "0.93"))     # how much of his arm's length a golfer's address leaves: the arms hang a touch bent
 BONE_MAP = {"Root": "Root", "Hips": "Hips", "Spine": "Spine", "Chest": "Chest", "Neck": "Neck", "Head": "Head"}
 for s, side in SIDES:
@@ -194,6 +211,7 @@ def rest_dir(arm, n):
     b = arm.data.bones[n]; return (b.tail_local - b.head_local).normalized()
 
 
+STAND_HIPS = rest_head(rig, "Hips").z
 S = rest_head(rig, "Hips").z / rest_head(v4, "Hips").z      # one similarity for the whole swing: same ground, a taller golfer
 A0 = rest_head(rig, "Hips"); B0 = rest_head(v4, "Hips")
 print(f"{SEX}: scale {S:.4f}")
@@ -357,7 +375,7 @@ def follow_body():
 
 # ======================================================================= hairstyles (blender/scripts/matchhero_hair.py), made against his head before it is reduced
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import matchhero_hair
+import matchhero_hair, matchhero_mhhair
 STYLE_OBJS = {}
 
 
@@ -369,14 +387,29 @@ def hair_material(role_name):
     return m
 
 
+MH_STYLES = arg("--mh")       # "Crop,Quiff": only these MakeHuman hairs (default: all)
+MH_DIR = arg("--mhhair", os.path.join(REPO, "blender", "mhhair"))
+MH_TEX = arg("--mhtex", os.path.join(OUT, "Hair"))
+STYLES_FILTER = arg("--styles").split(",") if arg("--styles") else None
+
+
 def make_styles():
     made = matchhero_hair.build(body, FEMALE, rest_head(rig, "Neck").z)
     scalp = made.pop("Scalp")
     for name, o in made.items():
+        if name != "Afro" and "--oldstyles" not in ARGV: remove(o); continue    # (only the Afro is built here: the rest are the free models)
         o.name = o.data.name = "Hair_" + name
         STYLE_OBJS[name] = o
-    # the classic: his own hair, with a scalp cap in the hair's colour under it
-    classic = join_objs("Hair_Classic", [hair, scalp])
+    if "--nomh" not in ARGV:
+        # MakeHuman's strand-textured hairs, fitted to this head and pushed clear of it, its ears and the shirt
+        cols = matchhero_mhhair.colliders_bvh([body] + kit)
+        for name, o in matchhero_mhhair.build(matchhero_hair.LAST["skull"], cols, MH_DIR, MH_TEX, MH_STYLES.split(",") if MH_STYLES else None).items():
+            STYLE_OBJS[name] = o
+    # the classic: his own hair, with the soft scalp under it (hair colour, fading into the skin past his hair's edge: his hair left bare patches and a hard line)
+    remove(scalp)
+    cap = matchhero_mhhair.fade_cap(matchhero_hair.LAST["skull"], hair, "Scalp_Classic", fade=0.012)
+    classic = matchhero_mhhair.join_into(hair, cap)
+    classic.name = classic.data.name = "Hair_Classic"
     STYLE_OBJS["Classic"] = classic
     for o in STYLE_OBJS.values():
         for i, m in enumerate(list(o.data.materials)):
@@ -405,6 +438,7 @@ if "--nostyles" not in ARGV:
     for n_, o_ in STYLE_OBJS.items(): print(f"  hair {n_}: {tris(o_)} tris")
     if "--hair-check" in ARGV:
         for n_, o_ in STYLE_OBJS.items():
+            if n_ not in matchhero_hair.HAIRLINE: continue          # (a measure for the cap-built cuts: the strand cards have their own outlines)
             bad = matchhero_hair.exposed(o_, n_)
             rows = {}
             for az_, el_ in bad: rows.setdefault(el_, []).append(az_)
@@ -454,6 +488,57 @@ for key, (a, b, c, *_r) in LIMBS.items():
 
 
 KK = EXTEND * (LEN["armL"][0] + LEN["armL"][1]) / ((rest_head(v4, "LowerArm.L") - rest_head(v4, "UpperArm.L")).length + (rest_head(v4, "Hand.L") - rest_head(v4, "LowerArm.L")).length)
+
+
+# ---- the authored swings (golf_swing.py): the clubs mirrored into right-handed ones and their heads set flat at their lie, then the golfer and his swings
+GOLFER, GEO = None, {}
+AUTHORED = {}
+if NEW_SWING:
+    sys.path.insert(0, os.path.join(REPO, "blender", "scripts"))
+    import golf_swing as gs
+    for m_ in club_meshes:
+        nm_ = m_.name[5:].title()
+        gs.prepare_club_mesh(m_, gs.LIE[nm_])
+        GEO[nm_] = gs.ClubGeo(m_, nm_, CLUB_LENGTH[nm_], V4_CLUB_LENGTH[nm_])
+    GOLFER = gs.Golfer(gs.Rig({b.name: rest_head(rig, b.name) for b in rig.data.bones}, {b.name: rest_rot(rig, b.name) for b in rig.data.bones}, {b.name: (b.parent.name if b.parent else None) for b in rig.data.bones}, LEN), FEMALE, GEO)
+    AUTHORED = {"Drive": lambda: gs.full_swing(GOLFER, "Driver", top=56, impact=69, finish=90, end=104),
+                "IronSwing": lambda: gs.full_swing(GOLFER, "Iron"),
+                "HalfSwing": lambda: gs.half_swing(GOLFER),
+                "Chip": lambda: gs.chip(GOLFER),
+                "Putt": lambda: gs.putt(GOLFER)}
+
+
+def finger_pose(gamma):
+    """Every finger bone's rotation for a fist round the grip: each curls about its own X, the proximal ones fanned about Z by the hand's grip angle (the grip runs across the palm)."""
+    out = {}
+    for s_, side_ in SIDES:
+        fan = -gamma[s_] if s_ == "L" else gamma[s_]
+        for fin in FINGERS:
+            for i, part in enumerate(("Proximal", "Intermediate", "Distal")):
+                q = Quaternion((1, 0, 0), math.radians(GRIP[fin][i]))
+                if i == 0: q = Quaternion((0, 0, 1), fan) @ q
+                out[f"{side_}{fin}{part}"] = q
+    return out
+
+
+def authored_clip(clip):
+    """One of the authored swings as per-frame records (as retarget_clip returns them): 30 frames a second from frame 1."""
+    sw = AUTHORED[clip]()
+    frames = []
+    for i in range(sw.end + 1):
+        P, info = sw.pose(i)
+        frames.append((i + 1, {"basis": P.basis, "club": info["M"], "posed": P.posed, "heads": P.heads, "alpha": 0.0, "head": info["head"], "v4club": None, "fingers": finger_pose(info["gamma"]),
+                              "miss": info["miss"], "leg_miss": info["leg_miss"]}))
+    worst_arm = max(max(r["miss"].values()) for _f, r in frames); worst_leg = max(max(r["leg_miss"].values()) for _f, r in frames)
+    # how far any limb or trunk bone turns between two frames (a flip, or a bone taking the long way round, shows as one jump; the hands and fingers follow the club, which is fast through impact)
+    turns = []
+    for (f_a, ra), (f_b, rb) in zip(frames, frames[1:]):
+        for n_, (R_, _loc) in rb["basis"].items():
+            if n_.endswith(("Hand", "Toes", "Foot")): continue
+            d_ = math.degrees(R_.to_quaternion().rotation_difference(ra["basis"][n_][0].to_quaternion()).angle); turns.append((min(d_, 360 - d_), n_, f_b))
+    turns.sort(reverse=True)
+    print(f"{clip}: authored, {len(frames)} frames, top {sw.top}, impact {sw.impact}; the hands miss the grip by {worst_arm * 100:.1f} cm at most, a foot its ground by {worst_leg * 100:.1f} cm; the quickest a bone turns: {turns[0][0]:.0f} degrees in a frame ({turns[0][1]}, frame {turns[0][2]})")
+    return 1, len(frames), frames, sw
 
 
 def two_bone(Sp, E, T, l1, l2, radius=None):
@@ -566,7 +651,7 @@ def retarget_clip(clip):
             if src: delta[n] = sp[src].matrix.to_3x3().normalized() @ rest_rot(v4, src).inverted()
         return sp, delta
 
-    def trunk(sp, delta, alpha):
+    def trunk(sp, delta, alpha, ext=0.0):
         """The hips, the spine, the neck, the head and the collar bones: the V4 bone's world rotation change, the hips travelling as V4's did,
         and (a real address) the back hinged forward `alpha` about the lateral axis from the spine's base."""
         posed, heads, basis = {}, {}, {}
@@ -584,7 +669,8 @@ def retarget_clip(clip):
             posed[n] = R; heads[n] = h
 
         hinge = Matrix.Rotation(alpha, 3, delta["Hips"] @ Vector((1, 0, 0))) if alpha else None
-        seat = Vector((STANCE_BACK[HELD[clip]], 0, -STANCE_DROP)) if real else Vector((0, 0, 0))
+        # through the ball the pelvis comes forward only as far as the feet are (it stays over the lead foot: a straight lead leg, a post to turn on), and up
+        seat = Vector((STANCE_BACK[HELD[clip]] * (1.0 - (1.0 - FEET_SHARE) * ext), 0, -STANCE_DROP * (1.0 - ext))) if real else Vector((0, 0, 0))
         for n in names_fk:
             dsrc = delta[n] if n in delta else delta[FOLLOW[n]]
             R = dsrc @ rest_rot(rig, n)
@@ -594,6 +680,9 @@ def retarget_clip(clip):
                 head = rest_head(rig, n) + S * (sp["Root"].head - rest_head(v4, "Root")) + OFFSET
             elif n == "Hips":
                 head = X(sp["Hips"].head) + seat
+                if real:      # never taller than he stands (V4's finish lifts its pelvis well above that: the lead foot came off the ground): a soft ceiling
+                    k_ = 0.012; cap = STAND_HIPS * PELVIS_MAX
+                    head.z = -k_ * math.log(math.exp(-head.z / k_) + math.exp(-cap / k_))
             put(n, R, head)
         return posed, heads, basis, put
 
@@ -645,11 +734,19 @@ def retarget_clip(clip):
             vals = [alphas[k] for k in keys]
             alphas = {k: min(a0, sum(vals[max(0, i - 2):i + 3]) / len(vals[max(0, i - 2):i + 3])) for i, k in enumerate(keys)}
 
+    def extension(i):
+        """0 until just before the ball, 1 at the finish: how far he has stood up out of the address (his back and his seat are let go of)."""
+        k = EXT_BY_CLIP.get(clip, 0.0) if real else 0.0
+        if not k or clip not in V4_LANDMARKS: return 0.0
+        imp = V4_LANDMARKS[clip]["impact"] + (8 if clip == "HalfSwing" else 0)       # (V4 labels the half swing's impact eight frames early)
+        return k * smooth((i - (imp - 4)) / EXT_FRAMES)
+
     frames = []
     short_worst = 0.0
     for f in range(f0, f1 + 1):
         sp, delta = inputs(f)
-        posed, heads, basis, put = trunk(sp, delta, alphas.get(f, 0.0))
+        ext = extension(f - f0)
+        posed, heads, basis, put = trunk(sp, delta, alphas.get(f, 0.0) * (1.0 - HINGE_UP * ext), ext)
         ct = club_target(sp, clip) if real else None
         if real and not NO_ARC and clip not in ("Putt", "Chip"):       # (a putt or a chip keeps its triangle of arms: V4's hands, as they were)
             w = arc_weight(clip, f - f0)
@@ -659,6 +756,24 @@ def retarget_clip(clip):
                 want = Sp + (sp["Hand.L"].head - sp["UpperArm.L"].head) * KK
                 d = (want - ct[1]["L"]) * w
                 ct = (Matrix.Translation(d) @ ct[0], {k: v + d for k, v in ct[1].items()}, ct[2])
+
+        if real and held and clip in EXT_BY_CLIP and "--nofinish" not in ARGV:
+            imp_ = V4_LANDMARKS[clip]["impact"] + (8 if clip == "HalfSwing" else 0)
+            tp = (f - f0) - imp_
+            if tp > 2:
+                k_ = EXT_BY_CLIP[clip]
+                Sp = shoulder(posed, heads, "LeftUpperArm")
+                p = ct[1]["L"]; v = p - Sp; dist = v.length
+                if dist > 1e-6:
+                    arm_ = sum(LEN["armL"])
+                    b = smooth((tp - 2) / 4.0)                                                        # (let go of V4's hands gently after the ball)
+                    want_d = arm_ * (0.985 - (0.985 - REACH_END) * smooth((tp - 5) / FIN_FRAMES) * k_)  # extended through the hitting zone, folding up toward the finish
+                    dist2 = dist + (want_d - dist) * b
+                    lat_, fwd_, up_ = torso_frame(posed, heads)
+                    s2 = smooth((tp - 4) / FIN_FRAMES) * k_
+                    newp = Sp + v / dist * dist2 + (up_ * FIN_UP - fwd_ * FIN_BACK) * (s2 * s2)
+                    dv = newp - p
+                    ct = (Matrix.Translation(dv) @ ct[0], {kk: vv + dv for kk, vv in ct[1].items()}, ct[2])
 
         # ---- legs and arms: two-bone IK to where V4's ankle and wrist were
         def solve(key, target, pole, R_root, R_mid, R_end):
@@ -679,6 +794,22 @@ def retarget_clip(clip):
             if real: ank += Vector((STANCE_BACK[HELD[clip]] * FEET_SHARE, 0, 0))      # (the feet step back a little way too: the knees do not have to take all of it)
             a, b, c, va, vb, vc = LIMBS[f"leg{s}"]
             Rs = [delta[x] @ rest_rot(rig, x) for x in (a, b, c)]
+            if real:
+                # a planted foot stays on the ground: the ankle rises only as far as a heel can (the toes stay down: the foot pitches up round them), the lead foot not at all
+                ground = rest_head(rig, f"{side}Foot").z
+                lift_ = max(0.0, ank.z - ground)
+                lift_ = min(lift_, HEEL_UP_MAX) if s == "R" else min(lift_, 0.012)
+                ank.z = ground + lift_
+                pitch = math.asin(min(0.95, lift_ / 0.12))
+                if pitch > 1e-3:
+                    fwd = rest_head(rig, f"{side}Toes") - rest_head(rig, f"{side}Foot"); fwd.z = 0
+                    if fwd.length > 1e-6:
+                        fwd = (Rs[2] @ rest_rot(rig, c).inverted() @ fwd) if False else (delta[c] @ fwd)
+                        fwd.z = 0; fwd.normalize()
+                        lat_ = Vector((0, 0, 1)).cross(fwd)
+                        cand = [Matrix.Rotation(sg * pitch, 3, lat_) for sg in (1, -1)]
+                        up_ = [(m @ fwd).z for m in cand]
+                        Rs[2] = cand[0 if up_[0] < up_[1] else 1] @ Rs[2]        # (the rotation that lowers the toe: the heel comes up)
             solve(f"leg{s}", ank, X(sp[vb].head), *Rs)
             put(f"{side}Toes", delta[f"{side}Toes"] @ rest_rot(rig, f"{side}Toes"))
         # arms: the lead hand (V4's L) first; the club follows it
@@ -711,7 +842,39 @@ def retarget_clip(clip):
                 loc, rot, scl = sp["Club"].matrix.decompose()
                 # (V4 stretches or shortens each club along its shaft: 0.99 the driver, 1.13-1.15 the irons and the putter; the same on his scaled club)
                 club_M = Matrix.Translation(X(loc) + shift) @ rot.to_matrix().to_4x4() @ Matrix.Diagonal(Vector((scl.x, scl.y, scl.z, 1)))
-        frames.append((f, {"basis": basis, "club": club_M, "posed": posed, "heads": heads, "v4club": sp["Club"].matrix.copy(), "alpha": alphas.get(f, 0.0)}))
+        head_ = (club_M @ ct[2]) if (held and real and club_M is not None and ct is not None) else None
+        frames.append((f, {"basis": basis, "club": club_M, "posed": posed, "heads": heads, "v4club": sp["Club"].matrix.copy(), "alpha": alphas.get(f, 0.0), "head": head_}))
+    if "--swing-diag" in ARGV and held:
+        # the posture through the swing, in numbers: pelvis height as a share of standing, each knee's bend (0 straight), the shoulder line and hip line turn from address (about up)
+        def yaw(R): v = R @ Vector((1, 0, 0)); return math.degrees(math.atan2(v.y, v.x))
+        stand = rest_head(rig, "Hips").z
+        L = V4_LANDMARKS[clip]
+        marks = [0, L["top"], L["impact"], L["impact"] + 6, L["impact"] + 12, f1 - f0]
+        for i in marks:
+            if not 0 <= i < len(frames): continue
+            rec = frames[i][1]; H = rec["heads"]; P = rec["posed"]
+            def bend(side):
+                a, b, c = H[f"{side}UpperLeg"], H[f"{side}LowerLeg"], H[f"{side}Foot"]
+                u, v = (a - b).normalized(), (c - b).normalized()
+                return 180.0 - math.degrees(math.acos(max(-1, min(1, u.dot(v)))))
+            y0 = (yaw(frames[0][1]["posed"]["Chest"]), yaw(frames[0][1]["posed"]["Hips"]))
+            H0 = frames[0][1]["heads"]
+            tgt = Vector((H0["LeftFoot"].x - H0["RightFoot"].x, H0["LeftFoot"].y - H0["RightFoot"].y, 0)).normalized()      # (from the trail foot to the lead foot: along the target line)
+            mid = (H0["LeftFoot"] + H0["RightFoot"]) / 2
+            along = lambda v: (v - mid).dot(tgt) * 100
+            lift = lambda side: (H[f"{side}Foot"].z - H0[f"{side}Foot"].z) * 100
+            print(f"SWING {SEX} {clip} f{i:3d}: pelvis {H['Hips'].z / stand * 100:5.1f}% of standing, knees lead {bend('Left'):4.0f} trail {bend('Right'):4.0f} deg, "
+                  f"chest turn {yaw(P['Chest']) - y0[0]:+5.0f}, hips turn {yaw(P['Hips']) - y0[1]:+5.0f}, back hinge {math.degrees(rec['alpha'] * (1 - HINGE_UP * extension(i))):4.0f} deg, "
+                  f"hips ballward {(H['Hips'].x - H0['Hips'].x) * 100:+4.0f} cm, along the line {along(H['Hips']):+4.0f} cm (feet: lead {along(H['LeftFoot']):+4.0f} trail {along(H['RightFoot']):+4.0f}), ankle up lead {lift('Left'):+4.1f} trail {lift('Right'):+4.1f} cm")
+    if "--swing-diag" in ARGV and held:
+        sp_ = []
+        for i in range(1, len(frames)):
+            a_, b_ = frames[i - 1][1]["heads"]["LeftHand"], frames[i][1]["heads"]["LeftHand"]
+            sp_.append((b_ - a_).length * 30.0)
+        print(f"HANDSPEED {SEX} {clip} (lead hand, m/s, frame by frame from the top): " + " ".join(f"{v:.1f}" for v in sp_[V4_LANDMARKS[clip]['top']:]))
+        if all(fr[1].get("head") is not None for fr in frames):
+            hs = [(frames[i][1]["head"] - frames[i - 1][1]["head"]).length * 30.0 for i in range(1, len(frames))]
+            print(f"HEADSPEED {SEX} {clip} (club head, m/s, from the top; impact is index {V4_LANDMARKS[clip]['impact'] - V4_LANDMARKS[clip]['top']}): " + " ".join(f"{v:.0f}" for v in hs[V4_LANDMARKS[clip]['top']:]))
     if real: print(f"{clip}: back hinged {math.degrees(alphas[f0]):.0f} deg at address, {math.degrees(min(alphas.values())):.0f}-{math.degrees(max(alphas.values())):.0f} through the swing")
     print(f"{clip}: {len(frames)} frames, worst reach shortfall {short_worst * 100:.1f} cm")
     return f0, f1, frames
@@ -756,12 +919,16 @@ def write_action(name, f0, f1, frames_data, held, fingers=True):
         for k in range(4): curve(f'pose.bones["{n}"].rotation_quaternion', k, [q[k] for q in qs])
         if n in ("Root", "Hips"):
             for k in range(3): curve(f'pose.bones["{n}"].location', k, [rec["basis"][n][1][k] for _, rec in frames_data])
-    # the fingers close round the handle while a club is held
+    # the fingers close round the handle while a club is held (an authored swing: round the grip as the wrists turn it)
     for s, side in SIDES:
         for fin in FINGERS if fingers else ():
             for i, part in enumerate(("Proximal", "Intermediate", "Distal")):
                 n = f"{side}{fin}{part}"
                 if n not in rig.data.bones: continue
+                if held and "fingers" in frames_data[0][1]:
+                    qs_ = quats(lambda rec: rec["fingers"][n])
+                    for k in range(4): curve(f'pose.bones["{n}"].rotation_quaternion', k, [q_[k] for q_ in qs_])
+                    continue
                 q = Quaternion((1, 0, 0), math.radians(GRIP[fin][i] if held else 0))
                 for k in range(4): curve(f'pose.bones["{n}"].rotation_quaternion', k, [q[k]] * n_f)
     # the club, parked away from the hands when nothing is held
@@ -864,7 +1031,50 @@ def mix_rec(a, b, t):
     if a["club"] is not None and b["club"] is not None:
         la, ra, sa = a["club"].decompose(); lb, rb, sb = b["club"].decompose()
         club = Matrix.Translation(la.lerp(lb, t)) @ ra.slerp(rb, t).to_matrix().to_4x4() @ Matrix.Diagonal(Vector((*sa.lerp(sb, t), 1)))
-    return dict(b, basis=basis, club=club)
+    head = a["head"].lerp(b["head"], t) if a.get("head") is not None and b.get("head") is not None else b.get("head")
+    return dict(b, basis=basis, club=club, head=head)
+
+
+def retime(data, top, imp, clip):
+    """The poses are right but their timing is V4's: the club head crawls into the ball (a few m/s at impact) and whips up after it (its fastest, 55 m/s, comes eight frames
+    AFTER impact). A swing accelerates all the way into the ball (the head's speed peaks AT impact) and slows into the finish. So the same poses are sampled at new times:
+    the club head's path, from the top to impact and from impact to the end, is travelled at a speed that rises as t**P_IN to impact, then falls from the same speed to the
+    finish (the exponent after the ball is chosen so the speed is continuous at impact). The clip's length, its top and its impact frames do not move.
+    The game plays these clips at an even rate (GolferView.SetClub: Accel = EaseOut = 1): the clip carries the whole speed profile, nothing is eased twice."""
+    N = len(data)
+    heads = [rec.get("head") for _f, rec in data]
+    if any(h is None for h in heads[top:]) or not (0 < top < imp < N - 1): return data
+    A = [0.0] * N
+    for i in range(top + 1, N): A[i] = A[i - 1] + (heads[i] - heads[i - 1]).length
+    A1, A2 = A[imp] - A[top], A[N - 1] - A[imp]
+    if A1 < 1e-4 or A2 < 1e-4: return data
+    cap_ = RETIME_FOLLOW.get(clip)           # a part swing finishes short: its follow-through is only so long a path after the ball as the downswing was before it
+    if cap_ and A2 > cap_ * A1: A2 = cap_ * A1
+    A_end = A[imp] + A2
+    D1 = imp - top
+    D2 = N - 1 - imp - RETIME_HOLD          # the swing arrives at the finish a few frames before the clip ends and the finish is held
+    if D2 < 6: return data
+    p_in = RETIME_IN
+    p_out = max(RETIME_OUT_MIN, min(3.0, p_in * (A1 / D1) * (D2 / A2)))
+    def source_at(target):
+        lo, hi = top, N - 1
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if A[mid] <= target: lo = mid
+            else: hi = mid
+        span = A[hi] - A[lo]
+        return lo + ((target - A[lo]) / span if span > 1e-9 else 0.0)
+    out = list(data[:top + 1])
+    for t in range(top + 1, N):
+        if t <= imp: target = A[top] + ((t - top) / D1) ** p_in * A1
+        elif t < imp + D2: target = A[imp] + (1.0 - (1.0 - (t - imp) / D2) ** p_out) * A2
+        else: target = A_end
+        s = max(top, min(N - 1, source_at(target)))
+        i0 = int(math.floor(s)); i1 = min(N - 1, i0 + 1); fr = s - i0
+        rec = mix_rec(data[i0][1], data[i1][1], fr) if fr > 1e-6 else data[i0][1]
+        out.append((data[t][0], rec))
+    print(f"{clip}: re-timed: club head path {A1:.2f} m to impact in {D1} frames (speed ~ t^{p_in - 1:.2f}), {A2:.2f} m after it in {D2} (ease-out ^{p_out:.2f}), the finish held {RETIME_HOLD} frames")
+    return out
 
 
 def stitch(first, second, upto=STITCH_AT, blend=STITCH_BLEND):
@@ -878,6 +1088,17 @@ def stitch(first, second, upto=STITCH_AT, blend=STITCH_BLEND):
 results, actions = {}, {}
 for clip in CLIPS:
     OFFSET = Vector((0, 0, 0))
+    if NEW_SWING and clip in AUTHORED:
+        f0, f1, data, sw_ = authored_clip(clip)
+        V4_LANDMARKS[clip] = dict(V4_LANDMARKS.get(clip, {}), frames=len(data), top=sw_.top, impact=sw_.impact)
+        RETARGETED[clip] = (f0, f1, data)
+        act = write_action(clip, f0, f1, data, True)
+        actions[clip] = (act, f0, f1)
+        m = next(o for o in club_meshes if o.name == "CLUB_" + HELD[clip].upper())
+        head_local = min((v.co for v in m.data.vertices), key=lambda v: v.z).copy()
+        heads = [rec["club"] @ head_local for _, rec in data]
+        results[clip] = {"address": list(heads[0]), "path": [list(h) for h in heads]}
+        continue
     f0, f1, data = retarget_clip(clip)
     if clip in HELD and not REAL:
         # stand the golfer so the club head is at the ball as V4's was at address: shift the whole clip along the ground
@@ -898,6 +1119,16 @@ for clip in CLIPS:
         f0, f1 = data[0][0], data[-1][0]
         V4_LANDMARKS["HalfSwing"] = dict(V4_LANDMARKS["HalfSwing"], frames=len(data), top=V4_LANDMARKS["HalfSwing"]["top"] + STITCH_AT, impact=V4_LANDMARKS["HalfSwing"]["impact"] + STITCH_AT)
         print(f"HalfSwing: stitched on the iron's first {STITCH_AT} frames: {len(data)} frames, top {V4_LANDMARKS['HalfSwing']['top']}, impact {V4_LANDMARKS['HalfSwing']['impact']}")
+    if clip in ("Drive", "IronSwing", "HalfSwing") and "--noretime" not in ARGV:
+        top_ = V4_LANDMARKS[clip]["top"]; imp_ = V4_LANDMARKS[clip]["impact"]
+        if clip == "HalfSwing" and all(rec.get("head") is not None for _f, rec in data):
+            # (V4's label for its impact is eight frames early: the ball is where the club head is back at its address)
+            imp_ = min(range(top_, len(data)), key=lambda i: (data[i][1]["head"] - data[0][1]["head"]).length)
+        data = retime(data, top_, imp_, clip)
+    if "--swing-diag" in ARGV and clip in HELD and all(rec.get("head") is not None for _f, rec in data):
+        hs = [(data[i][1]["head"] - data[i - 1][1]["head"]).length * 30.0 for i in range(1, len(data))]
+        tp = V4_LANDMARKS[clip]["top"]
+        print(f"HEADSPEED-AFTER {SEX} {clip} (club head m/s from the top; impact index {V4_LANDMARKS[clip]['impact'] - tp}): " + " ".join(f"{v:.0f}" for v in hs[tp:]))
     if "--armdiag" in ARGV: arm_diag(clip, data)
     if "--elbows" in ARGV:
         rows = dict(data)
@@ -998,7 +1229,7 @@ if PREVIEW:
     for o in parts + club_meshes:
         for slot in o.material_slots:
             mt = slot.material
-            if not mt: continue
+            if not mt or mt.name.startswith(("HairCard_", "Hair_Scalp")): continue      # (the strand cards and the soft scalp keep their own look)
             mt.use_nodes = True; nt = mt.node_tree; nt.nodes.clear()
             b = nt.nodes.new('ShaderNodeBsdfPrincipled'); out_ = nt.nodes.new('ShaderNodeOutputMaterial')
             nt.links.new(b.outputs['BSDF'], out_.inputs['Surface'])
@@ -1017,7 +1248,7 @@ if PREVIEW:
         co = bpy.data.objects.new(name, c); scn.collection.objects.link(co); co.location = loc
         co.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler(); return co
     cams = {"a": cam("a", (3.4, -4.2, 1.5), (0.0, 0.0, 0.8), 55), "b": cam("b", (-3.6, 3.0, 1.4), (0.0, 0.0, 0.8), 55),
-            "c": cam("c", (0.0, -4.5, 1.1), (0.0, 0.0, 0.85), 55), "d": cam("d", (1.1, -1.3, 1.25), (0.0, -0.3, 1.0), 60), "e": cam("e", (-1.1, -1.3, 1.25), (0.0, -0.3, 1.0), 60)}
+            "c": cam("c", (0.0, -4.5, 1.1), (0.0, 0.0, 0.85), 55), "f": cam("f", (-4.6, 0.0, 1.1), (0.0, 0.0, 0.85), 55), "g": cam("g", (4.6, 0.0, 1.1), (0.0, 0.0, 0.85), 55), "d": cam("d", (1.1, -1.3, 1.25), (0.0, -0.3, 1.0), 60), "e": cam("e", (-1.1, -1.3, 1.25), (0.0, -0.3, 1.0), 60)}
     if "--hair-turn" in ARGV:
         # every hairstyle seen all the way round (every 45 degrees) at three heights, from above and from low behind: for the eyes that look for bald spots and overlaps
         rig.animation_data_clear()
@@ -1026,6 +1257,7 @@ if PREVIEW:
         scn.render.resolution_x = 360; scn.render.resolution_y = 360
         views = [(a, 8) for a in range(0, 360, 45)] + [(a, 40) for a in range(0, 360, 45)] + [(a, 72) for a in range(0, 360, 90)] + [(a, -14) for a in (135, 180, 225, 90)]
         for style, obj in STYLE_OBJS.items():
+            if STYLES_FILTER and style not in STYLES_FILTER: continue
             for o in STYLE_OBJS.values(): o.hide_render = o is not obj
             for i, (az, el) in enumerate(views):
                 d = sk.dir(az, el); loc = sk.C + d * 0.62
@@ -1040,6 +1272,7 @@ if PREVIEW:
                  "h3": cam("h3", (0.5, -0.5, hz + 0.35), (0, 0, hz), 70), "h4": cam("h4", (-0.5, 0.5, hz + 0.2), (0, 0, hz), 70)}
         scn.render.resolution_x = 500; scn.render.resolution_y = 500
         for style, obj in STYLE_OBJS.items():
+            if STYLES_FILTER and style not in STYLES_FILTER: continue
             for o in STYLE_OBJS.values(): o.hide_render = o is not obj
             for k, c in hcams.items():
                 scn.camera = c; scn.render.filepath = os.path.join(PREVIEW, f"hair_{TAG}_{style}_{k}.png"); bpy.ops.render.render(write_still=True)

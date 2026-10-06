@@ -569,8 +569,11 @@ namespace GolfArcade.Game
             {
                 "Putt" => (0.42f, 1.1f, 1.6f),     // a pendulum: hardly any acceleration
                 "Chip" => (0.42f, 1.25f, 2.0f),
-                "HalfSwing" => (0.34f, 1.35f, 2.4f),
-                _ => (0.38f, 1.4f, 2.6f),           // about twice the studio pace at the ball, and still readable at 60 fps
+                // The full and part swings are authored from scratch (blender/scripts/golf_swing.py) and carry the whole speed profile themselves (Swing.retime(): the club
+                // head's speed rises to its peak at the ball and eases into the finish), so both the downswing and the follow-through play at an even rate here: easing either
+                // again made the club hang at the top and then snap, or stop short of the finish. 0.38 s down is about twice the studio pace at the ball, and still readable at 60 fps.
+                "HalfSwing" => (0.34f, 1.0f, 1.0f),
+                _ => (0.38f, 1.0f, 1.0f),
             };
             Play(c, modelGo.transform.localRotation == baseRot ? 0.2f : 0f);
             modelGo.transform.localRotation = baseRot;

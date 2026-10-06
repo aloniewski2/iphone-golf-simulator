@@ -45,6 +45,16 @@ namespace GolfArcade.EditorTools
                 thumb.filterMode = UnityEngine.FilterMode.Bilinear; thumb.wrapMode = UnityEngine.TextureWrapMode.Clamp;
                 return;
             }
+            if (assetPath.StartsWith("Assets/Resources/Hero/Hair/"))
+            {
+                // the hair cards' strand maps (grey, with the card's cut-out in the alpha): soft, small, and the cut-out keeps its coverage down the mips
+                var card = (TextureImporter)assetImporter;
+                card.textureType = TextureImporterType.Default; card.sRGBTexture = true; card.alphaSource = TextureImporterAlphaSource.FromInput;
+                card.alphaIsTransparency = true; card.mipmapEnabled = true; card.mipMapsPreserveCoverage = true; card.alphaTestReferenceValue = 0.42f;
+                card.maxTextureSize = 1024; card.textureCompression = TextureImporterCompression.CompressedHQ;
+                card.filterMode = UnityEngine.FilterMode.Bilinear; card.wrapMode = UnityEngine.TextureWrapMode.Clamp;
+                return;
+            }
             if (!assetPath.StartsWith("Assets/Resources/Hero/Look/")) return;
             var importer = (TextureImporter)assetImporter;
             if (assetPath.EndsWith("hero_mask.png"))

@@ -33,21 +33,21 @@ namespace GolfArcade.Game
     {
         // The styles, in id order: the position is the id saved on the profile, so a new style goes at the END of its list and
         // nothing is ever reordered. A name is the part the FBX carries (Hair_<Name>...), "Classic" being his own hair (with a scalp cap under it).
-        public enum Haircut { Classic, Bald, Short, Curly, Long, Tail }
+        public enum Haircut { Classic, Bald, Crop, Fringe, Mop, Quiff, Afro, SideBob, Bob, Long, Ponytail, Braid }
         public enum Headwear { None }
-        public static readonly string[] HaircutNames = { "Classic", "Bald", "Short", "Curly", "Long", "Tail" };
+        public static readonly string[] HaircutNames = { "Classic", "Bald", "Crop", "Fringe", "Mop", "Quiff", "Afro", "SideBob", "Bob", "Long", "Ponytail", "Braid" };
         public static readonly string[] HeadwearNames = { "None" };
         public static readonly string[] GlassesNames = { "None" };
         public static readonly string[] FacialNames = { "None" };
         public static readonly string[] TopNames = { "Polo" };
         public static readonly string[] BottomNames = { "Shorts" };
         /// The cuts the game offers (all of them).
-        public const int OfferedHaircuts = 6;
+        public const int OfferedHaircuts = 12;
 
         /// A style's name as a person reads it ("Flat cap", "Cat-eye", "Top hat").
         public static string Pretty(string name) => name switch
         {
-            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport",
+            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport", "SideBob" => "Side bob",
             _ => name,
         };
 
@@ -129,10 +129,27 @@ namespace GolfArcade.Game
             return m;
         }
 
+        /// A hair card material (the MakeHuman hairs: Resources/Hero/Hair/<Name>.png, grey strands with the card's cut-out in the alpha), or null for a cut that has none.
+        Material MakeCard(string name)
+        {
+            var tex = Resources.Load<Texture2D>("Hero/Hair/" + name);
+            var shader = Shader.Find("GolfArcade/HeroHairCard");
+            if (!tex || !shader) return null;
+            var m = new Material(shader) { name = "HairCard_" + name, mainTexture = tex, color = Hex("3C3732") };
+            matCap ??= Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
+            if (matCap) m.SetTexture("_MatCap", matCap);
+            owned.Add(m);
+            return m;
+        }
+
         void MakeMaterials()
         {
             foreach (var n in SkinMaterials) roles[n] = Make(n, Hex(female ? AuthoredSkinF : AuthoredSkinM), 0.5f);
             foreach (var n in HairMaterials) roles[n] = Make(n, Hex("3C3732"), 0.5f);
+            foreach (var n in HaircutNames) { var card = MakeCard(n); if (card) roles["HairCard_" + n] = card; }
+            // the soft scalp under every cut: the hair colour where the vertex colour's R is 1, the skin where it is 0 (a hairline, a taper: no hard line)
+            roles["Hair_Scalp"] = Make("Hair_Scalp", Hex("3C3732"), 0.5f);
+            if (roles["Hair_Scalp"]) roles["Hair_Scalp"].SetFloat("_UseScalp", 1f);
             foreach (var (name, boy, girl, skin, front) in Decals) roles[name] = Make(name, Hex(female ? girl : boy), skin ? 0.5f : 0.15f, front);
             foreach (var n in new[] { "Kit_Shirt", "Kit_Shorts", "Kit_Shoe", "Kit_Sock" }) roles[n] = Make(n, Hex("F7F7F7"), 0.5f);
             foreach (var n in new[] { "Kit_ShirtTrim", "Kit_ShortsBand" }) roles[n] = Make(n, Hex("353538"), 0.5f);
@@ -150,6 +167,9 @@ namespace GolfArcade.Game
             var hair = look.HairColor; hair.a = 1f;
             foreach (var n in SkinMaterials) Tint(n, skin);
             foreach (var n in HairMaterials) Tint(n, n == "Hair_Dark" ? hair * 0.78f : hair);
+            foreach (var n in HaircutNames) Tint("HairCard_" + n, hair);
+            Tint("Hair_Scalp", hair * 0.86f);        // (a touch deeper than the cards over it: it is the shade under them)
+            if (roles.TryGetValue("Hair_Scalp", out var scalp) && scalp) scalp.SetColor("_ScalpSkin", skin);
             // a seam, a lip, a nostril is the skin a shade deeper: his ratio to his own skin, on any tone
             var authored = Hex(female ? AuthoredSkinF : AuthoredSkinM);
             foreach (var (name, boy, girl, follows, _) in Decals)

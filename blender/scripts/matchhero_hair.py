@@ -16,7 +16,7 @@ from mathutils.bvhtree import BVHTree
 import avatar_kit as K
 from avatar_kit import tube, blob, join
 
-STYLES = ("Classic", "Short", "Curly", "Long", "Tail")      # Classic is his own hair, given a scalp underneath; the rest are made here
+STYLES = ("Classic", "Afro")      # Classic is his own hair, given a scalp underneath; the Afro is made here (the free models are fitted by matchhero_mhhair.py)
 
 
 class Skull:
@@ -31,13 +31,20 @@ class Skull:
         bmesh.ops.delete(src, geom=[v for v in src.verts if not v.link_faces], context='VERTS')
         src.verts.ensure_lookup_table(); src.faces.ensure_lookup_table()
         self.full = BVHTree.FromBMesh(src)
-        # the cap is cut from a lighter copy of the head
         me = bpy.data.meshes.new("skull"); src.to_mesh(me); src.free()
-        o = bpy.data.objects.new("skull", me); bpy.context.scene.collection.objects.link(o)
-        mod = o.modifiers.new("d", 'DECIMATE'); mod.decimate_type = 'COLLAPSE'; mod.ratio = 0.24; mod.use_collapse_triangulate = True
-        with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]): bpy.ops.object.modifier_apply(modifier="d")
-        self.light = bmesh.new(); self.light.from_mesh(o.data)
-        bpy.data.objects.remove(o, do_unlink=True); bpy.data.meshes.remove(me)
+
+        def decimated(mesh, ratio):
+            m2 = mesh.copy()
+            o = bpy.data.objects.new("skull", m2); bpy.context.scene.collection.objects.link(o)
+            mod = o.modifiers.new("d", 'DECIMATE'); mod.decimate_type = 'COLLAPSE'; mod.ratio = ratio; mod.use_collapse_triangulate = True
+            with bpy.context.temp_override(object=o, active_object=o, selected_objects=[o]): bpy.ops.object.modifier_apply(modifier="d")
+            bm = bmesh.new(); bm.from_mesh(o.data)
+            bpy.data.objects.remove(o, do_unlink=True); bpy.data.meshes.remove(m2)
+            return bm
+        # the cap is cut from a lighter copy of the head; the soft scalp under a hair (matchhero_mhhair.fade_cap) from a finer one, its triangles hugging the real skin
+        self.light = decimated(me, 0.24)
+        self.fine = bmesh.new(); self.fine.from_mesh(me)             # (not decimated: a fade a centimetre wide needs triangles of a few millimetres)
+        bpy.data.meshes.remove(me)
         zs = [v.co.z for v in self.light.verts]
         self.top = max(zs)
         # the middle of the skull: half way up the cranium, between the front of the forehead and the back
@@ -167,65 +174,23 @@ def _make(name, objs):
 
 
 # ---------------------------------------------------------------------------------------------------- the styles
-def short(sk):
-    """Short and neat: a close cap, a small quiff (the girl's a side-swept fringe over the brow)."""
-    cap = sk.cap("ShortCap", front=33, side=13, back=-9, thick=0.011, crown=0.006)
-    o = [cap]
-    R = lambda *a, **k: sk.ribbon(*a, base=0.011, **k)
-    if not sk.female:
-        o += [R([(-46, 70, 0.004), (-14, 60, 0.018), (22, 50, 0.020), (54, 38, 0.010)], 0.040, 0.032, 0.018, "Hero_Hair", "QuiffA"),
-              R([(-52, 54, 0.002), (-20, 46, 0.012), (14, 38, 0.012), (40, 30, 0.006)], 0.034, 0.028, 0.014, "Hero_HairB", "QuiffB")]
-    else:
-        o += [R([(-72, 66, 0.004), (-40, 52, 0.014), (-6, 44, 0.020), (28, 38, 0.014), (58, 32, 0.006)], 0.044, 0.036, 0.018, "Hero_Hair", "FringeA"),
-              R([(-80, 52, 0.002), (-48, 42, 0.010), (-14, 36, 0.014), (20, 31, 0.008)], 0.036, 0.030, 0.014, "Hero_HairB", "FringeB")]
-    return _make("Hair_Short", o)
-
-
-def curly(sk, seed=4):
-    """Soft curls: a ball for each, over the top and back, on a close cap."""
-    cap = sk.cap("CurlCap", front=34, side=14, back=-6, thick=0.010, crown=0.004)
+def afro(sk, seed=4):
+    """Big soft curls: a ball for each, all over the top and round the back, on a thick close cap (the free afro model is a lattice of small cards with
+    open ear cut-outs: it cannot be made solid, so this one is built here)."""
+    cap = sk.cap("AfroCap", front=36, side=0, back=-16, thick=0.018, crown=0.010)
     r = random.Random(seed); o = [cap]
-    b = (34 + 6) / 2; d = 34 - 14 - b
-    line = lambda c: 14 + b * c + d * c * c
-    rad = 0.031 if not sk.female else 0.029
-    for el, n_az in ((84, 1), (70, 5), (56, 8), (42, 11), (28, 14), (14, 15), (2, 15)):
+    b = (36 + 16) / 2; d = 36 - 0 - b
+    line = lambda c: 0 + b * c + d * c * c
+    rad = 0.036 if not sk.female else 0.034
+    for el, n_az in ((84, 1), (72, 6), (60, 9), (48, 12), (36, 15), (24, 17), (12, 18), (0, 18), (-10, 16)):
         for k in range(n_az):
             az = (360 / n_az) * k + r.uniform(-7, 7) + el * 3
             p, n = sk.hit(az, el, 0.0)
             if p is None: continue
-            if el < line(math.cos(math.radians(az))) + 6: continue
-            rr = rad * (1 + r.uniform(-0.12, 0.22))
-            o.append(blob("Curl", p + n * (rr * 0.45), (rr, rr, rr * 0.9), "Hero_HairB" if r.random() < 0.3 else "Hero_Hair", segs=10, rings=7))
-    return _make("Hair_Curly", o)
-
-
-def long_hair(sk, length=None):
-    """Hair over the ears to the jaw at the sides and down the back (to the collar; the girl's to the shoulder blades): a cap whose sides and back hang
-    in a skirt, and a fringe."""
-    fem = sk.female
-    length = length or (0.30 if fem else 0.20)
-    cap = sk.cap("LongCap", front=34, side=-6, back=-44, thick=0.012, crown=0.006, skirt=(length, 62), ear=0.024)
-    o = [cap]
-    R = lambda *a, **k: sk.ribbon(*a, base=0.012, **k)
-    o += [R([(-64, 62, 0.004), (-34, 50, 0.016), (-2, 42, 0.020), (30, 38, 0.014), (64, 40, 0.004)], 0.050, 0.040, 0.018, "Hero_Hair", "Fringe"),
-          R([(-70, 74, 0.003), (-40, 64, 0.012), (-8, 56, 0.016), (24, 52, 0.010)], 0.040, 0.034, 0.014, "Hero_HairB", "FringeB")]
-    return _make("Hair_Long", o)
-
-
-def tail(sk):
-    """A tidy cap with a high tail: a tie and a swinging tail (a boy's is a short one)."""
-    cap = sk.cap("TailCap", front=33, side=12, back=-14, thick=0.012, crown=0.005)
-    o = [cap]
-    R = lambda *a, **k: sk.ribbon(*a, base=0.011, **k)
-    o += [R([(-62, 68, 0.004), (-30, 55, 0.016), (4, 46, 0.020), (36, 38, 0.014), (62, 30, 0.006)], 0.044, 0.036, 0.016, "Hero_Hair", "SwoopA"),
-          R([(-66, 52, 0.002), (-32, 42, 0.010), (2, 36, 0.012), (34, 30, 0.008)], 0.036, 0.030, 0.013, "Hero_HairB", "SwoopB")]
-    root, n = sk.hit(180, 34, 0.004)
-    if root is not None:
-        L = 0.19 if sk.female else 0.12
-        path = [root, root + Vector((0, 0.040, 0.022)), root + Vector((0, 0.082, 0.004)), root + Vector((0, 0.100, -0.045)), root + Vector((0, 0.096, -0.045 - L * 0.6)), root + Vector((0, 0.080, -0.045 - L))]
-        o.append(tube("Tail", path, [(0.026, 0.026), (0.030, 0.030), (0.033, 0.032), (0.031, 0.030), (0.024, 0.022), (0.006, 0.006)], "Hero_Hair", segs=12, per=3))
-        o.append(blob("Tie", root + Vector((0, 0.030, 0.012)), (0.034, 0.030, 0.030), "Hero_HairB", segs=10, rings=6))
-    return _make("Hair_Tail", o)
+            if el < line(math.cos(math.radians(az))) + 5: continue
+            rr = rad * (1 + r.uniform(-0.10, 0.22))
+            o.append(blob("Curl", p + n * (rr * 0.5), (rr, rr, rr * 0.92), "Hero_HairB" if r.random() < 0.25 else "Hero_Hair", segs=10, rings=7))
+    return _make("Hair_Afro", o)
 
 
 def scalp_under(sk):
@@ -233,9 +198,9 @@ def scalp_under(sk):
     return sk.cap("Hair_Scalp", front=29, side=5, back=-8, thick=0.007, crown=0.003)
 
 
-BUILDERS = {"Short": short, "Curly": curly, "Long": long_hair, "Tail": tail}
+BUILDERS = {"Afro": afro}
 # each style's hairline (front, side, back elevations): the skull above it must never show
-HAIRLINE = {"Classic": (29, 5, -8), "Short": (33, 13, -9), "Curly": (34, 14, -6), "Long": (34, -6, -44), "Tail": (33, 12, -14)}
+HAIRLINE = {"Classic": (29, 5, -8), "Afro": (36, 0, -16)}
 LAST = {}
 
 
@@ -265,6 +230,5 @@ def build(body, female, neck_z):
     sk = Skull(body, female, neck_z)
     out = {n: f(sk) for n, f in BUILDERS.items()}
     out["Scalp"] = scalp_under(sk)
-    sk.light.free()
     LAST["skull"] = sk
     return out

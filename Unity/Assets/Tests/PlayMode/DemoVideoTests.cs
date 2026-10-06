@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using GolfArcade.Course;
 using GolfArcade.Game;
+using GolfArcade.Shot;
 using NUnit.Framework;
 using Unity.Collections;
 using UnityEngine;
@@ -105,6 +106,110 @@ namespace GolfArcade.PlayTests
                 if (rec && rec.On) rec.End();
                 Time.captureFramerate = 0;
                 PlayerPrefs.SetInt("holes", holes); PlayerPrefs.Save();
+            }
+        }
+
+        [Serializable] class Take { public string label; public string club; public float slow; public int start, impact, end; }
+        [Serializable] class TakeList { public int fps; public List<Take> takes = new(); }
+
+        /// The swing, filmed: the golfer on the Cliffside tee in the game's own look, no HUD, from a camera of its own (1920x1080), a full swing in real time and the same swing at a
+        /// quarter of the speed, three golfers and three angles. The ball leaves at the club's impact. Frames in Library/Captures/swing, the takes (where each starts and when the
+        /// ball is struck) in takes.json; Tools/swing_video.sh makes the MP4 with its labels and the whoosh and the strike. Golf Arcade -> Record Swing Showcase.
+        [UnityTest, Explicit, Timeout(3600000)]
+        public IEnumerator RecordsSwingShowcase()
+        {
+            string dir = Path.GetFullPath("Library/Captures/swing");
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+            Directory.CreateDirectory(dir);
+            Time.timeScale = 1f;
+            Time.captureFramerate = Fps;
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var main = Camera.main;
+            var game = Object.FindFirstObjectByType<GolfGame>();
+            Assert.IsNotNull(game);
+            game.InstantReplays = false;
+            var look0 = JsonUtility.ToJson(GolferStyle.Current);
+            Recorder rec = null; GameObject camGo = null;
+            var list = new TakeList { fps = Fps };
+            try
+            {
+                game.ChooseHoles(0); game.Play();
+                yield return null;
+                game.JumpToHole(7);
+                yield return Until(() => game.Current == GolfGame.State.Aim, 45, "the tee");
+                yield return Until(() => game.Swing.Phase == GolfArcade.Swing.SwingPhase.Address, 5, "address");
+                foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None)) c.enabled = false;      // the golfer and the course, nothing over them
+                camGo = new GameObject("Swing showcase camera");
+                var cam = camGo.AddComponent<Camera>();
+                cam.depth = 100; cam.fieldOfView = 34; cam.nearClipPlane = 0.1f; cam.farClipPlane = 3000f;
+                cam.clearFlags = main.clearFlags; cam.backgroundColor = main.backgroundColor; cam.allowMSAA = main.allowMSAA;
+                var ball = GameObject.Find("Ball").transform;
+                var ball0 = ball.position;
+                rec = new GameObject("Recorder").AddComponent<Recorder>();
+                rec.Width = 1920; rec.Height = 1080;
+                rec.Begin(dir);
+
+                // who swings what, from where (degrees round the golfer from straight in front of him), and how fast it is played
+                var plan = new[]
+                {
+                    (female: false, cut: HeroGolfer.Haircut.Quiff, club: GolfClub.Driver, name: "DRIVER", angle: 18f, slow: 1f),
+                    (female: false, cut: HeroGolfer.Haircut.Quiff, club: GolfClub.Driver, name: "DRIVER", angle: 18f, slow: 0.25f),
+                    (female: true, cut: HeroGolfer.Haircut.Ponytail, club: GolfClub.Iron, name: "IRON", angle: -48f, slow: 1f),
+                    (female: true, cut: HeroGolfer.Haircut.Ponytail, club: GolfClub.Iron, name: "IRON", angle: -48f, slow: 0.25f),
+                    (female: false, cut: HeroGolfer.Haircut.Mop, club: GolfClub.Driver, name: "DRIVER", angle: 100f, slow: 1f),
+                    (female: false, cut: HeroGolfer.Haircut.Mop, club: GolfClub.Driver, name: "DRIVER", angle: 100f, slow: 0.25f),
+                };
+                foreach (var tk in plan)
+                {
+                    GolferStyle.Body = tk.female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                    GolferStyle.Haircut = (int)tk.cut;
+                    game.RestyleGolfer();
+                    yield return Seconds(0.2f);
+                    var golfer = GameObject.Find("Golfer").GetComponent<GolferView>();
+                    golfer.SetClub(tk.club, false);
+                    golfer.Settle();
+                    // the camera, round the golfer; the shot goes to his left, so the view is held a little that way and the ball has room
+                    Vector3 foot = golfer.transform.position, f = golfer.transform.forward, r = golfer.transform.right;
+                    float a = tk.angle * Mathf.Deg2Rad;
+                    Vector3 out_ = (f * Mathf.Cos(a) + r * Mathf.Sin(a)).normalized;
+                    camGo.transform.position = foot + out_ * 5.4f + Vector3.up * 1.25f;
+                    camGo.transform.LookAt(foot + Vector3.up * 1.05f - r * 0.45f);
+                    ball.position = ball0;
+                    var take = new Take { label = tk.name, club = tk.name, slow = tk.slow, start = rec.Frames };
+                    yield return Seconds(0.9f);                                          // at address
+                    int n = Mathf.RoundToInt(1.0f * Fps);
+                    for (int i = 1; i <= n; i++) { golfer.ShowLoad(Mathf.SmoothStep(0, 1, (float)i / n)); yield return null; }       // the backswing
+                    yield return Seconds(0.3f);                                          // the top
+                    Time.timeScale = tk.slow;
+                    float toBall = golfer.Strike();
+                    take.impact = rec.Frames + Mathf.RoundToInt(toBall / tk.slow * Fps);
+                    int through = Mathf.RoundToInt(2.4f / tk.slow * Fps);               // the downswing, the follow-through, the finish held
+                    Vector3 v = Vector3.zero; bool gone = false;
+                    for (int i = 0; i < through; i++)
+                    {
+                        yield return null;
+                        if (!gone && rec.Frames >= take.impact) { gone = true; v = -r * 34f + Vector3.up * 15f; }
+                        if (gone) { v += Vector3.down * 9.81f * Time.deltaTime; ball.position += v * Time.deltaTime; }
+                    }
+                    Time.timeScale = 1f;
+                    take.end = rec.Frames;
+                    list.takes.Add(take);
+                    golfer.Settle();
+                    ball.position = ball0;
+                    yield return Seconds(0.25f);
+                }
+                rec.End();
+                File.WriteAllText($"{dir}/takes.json", JsonUtility.ToJson(list, true));
+                Debug.Log($"swing showcase: {rec.Frames} frames, {list.takes.Count} takes in {dir}");
+                Assert.Greater(rec.Frames, Fps * 20);
+            }
+            finally
+            {
+                if (rec && rec.On) rec.End();
+                Time.timeScale = 1f;
+                Time.captureFramerate = 0;
+                if (camGo) Object.Destroy(camGo);
+                GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l));
             }
         }
 
@@ -254,6 +359,8 @@ namespace GolfArcade.PlayTests
         {
             public bool On { get; private set; }
             public int Frames { get; private set; }
+            /// The size of each frame (the phone's by default).
+            public int Width = GameCapture.PhoneWidth, Height = GameCapture.PhoneHeight;
             public float AudioSeconds => rate > 0 ? sound.Count / (float)(rate * channels) : 0;
             string dir;
             readonly List<float> sound = new();
@@ -276,7 +383,7 @@ namespace GolfArcade.PlayTests
             void LateUpdate()
             {
                 if (!On) return;
-                GameCapture.Save($"{dir}/f_{Frames:D5}.jpg");
+                GameCapture.Save($"{dir}/f_{Frames:D5}.jpg", Width, Height);
                 Frames++;
                 if (!audio) return;
                 int n = AudioRenderer.GetSampleCountForCaptureFrame();

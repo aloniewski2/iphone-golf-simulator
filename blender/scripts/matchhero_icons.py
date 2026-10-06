@@ -10,7 +10,7 @@ from PIL import Image
 
 src = sys.argv[1]
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Unity", "Assets", "Resources", "UI", "Look")
-STYLES = ("classic", "short", "curly", "long", "tail", "bald")
+STYLES = ("classic", "bald", "crop", "fringe", "mop", "quiff", "afro", "sidebob", "bob", "long", "ponytail", "braid")
 names = {f"head_{s}_{t}": f"hair_{s}_{t}" for s in STYLES for t in "mf"}
 names["polo_m"] = "tab_outfit"
 

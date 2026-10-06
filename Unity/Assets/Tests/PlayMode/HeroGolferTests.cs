@@ -266,7 +266,7 @@ namespace GolfArcade.PlayTests
                     foreach (var female in new[] { false, true })
                         for (int cut = 0; cut < HeroGolfer.HaircutNames.Length; cut++)
                         {
-                            if (!close && HeroGolfer.HaircutNames[cut] != "Long" && HeroGolfer.HaircutNames[cut] != "Tail") continue;
+                            if (!close && HeroGolfer.HaircutNames[cut] is not ("Long" or "Ponytail" or "Braid" or "Afro")) continue;
                             GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
                             GolferStyle.Haircut = cut; GolferStyle.SkinTone = 2; GolferStyle.HairTone = 1;
                             game.RestyleGolfer();
@@ -279,6 +279,41 @@ namespace GolfArcade.PlayTests
                             }
                         }
                 }
+            }
+            finally { GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
+        }
+
+        /// Under every cut but the afro lies a soft scalp (the Hair_Scalp material): the hair colour under the hair, fading into the skin past its edge (a hairline, a taper:
+        /// no hard line). It is the vertex colour's R that does it, 1 under the hair and 0 at the skin, so the mesh must arrive with vertex colours and a scalp material in scalp mode.
+        [UnityTest, Timeout(240000)]
+        public IEnumerator EveryCutsScalpFadesIntoTheSkin()
+        {
+            GolfGame game = null;
+            yield return Start(g => game = g);
+            var look0 = JsonUtility.ToJson(GolferStyle.Current);
+            try
+            {
+                game.OpenGolferPicker();
+                yield return new WaitForSecondsRealtime(0.4f);
+                foreach (var female in new[] { false, true })
+                    for (int cut = 0; cut < HeroGolfer.HaircutNames.Length; cut++)
+                    {
+                        if (cut == (int)HeroGolfer.Haircut.Bald || cut == (int)HeroGolfer.Haircut.Afro) continue;
+                        GolferStyle.Body = female ? GolferStyle.BodyKind.Female : GolferStyle.BodyKind.Male;
+                        GolferStyle.Haircut = cut;
+                        game.RestyleGolfer();
+                        yield return null;
+                        string name = HeroGolfer.HaircutNames[cut];
+                        var part = Golfer().Hero.Part("Hair_" + name);
+                        Assert.IsNotNull(part, $"Hair_{name}");
+                        var mesh = part.sharedMesh;
+                        // (the meshes are not readable on purpose: the phone keeps no second copy: so the colour channel is asked for, not read)
+                        Assert.IsTrue(mesh.HasVertexAttribute(UnityEngine.Rendering.VertexAttribute.Color), $"{name}: the hair mesh carries vertex colours");
+                        int scalpSub = System.Array.FindIndex(part.sharedMaterials, m => m && m.name.StartsWith("Hair_Scalp"));
+                        Assert.GreaterOrEqual(scalpSub, 0, $"{name}: a Hair_Scalp material");
+                        Assert.Greater(mesh.GetSubMesh(scalpSub).indexCount, 0, $"{name}: the scalp has triangles");
+                        Assert.AreEqual(1f, part.sharedMaterials[scalpSub].GetFloat("_UseScalp"), $"{name}: drawn in scalp mode");
+                    }
             }
             finally { GolferStyle.Edit(l => JsonUtility.FromJsonOverwrite(look0, l)); }
         }
@@ -332,6 +367,18 @@ namespace GolfArcade.PlayTests
             var hairs = hero.Parts.Where(r => r.name.StartsWith("Hair_") && r.enabled).ToList();
             Assert.AreEqual(bald ? 0 : 1, hairs.Count, $"{look}: {(bald ? "no hair mesh" : "one haircut")} ({string.Join(", ", hairs.Select(h => h.name))})");
             if (!bald) Assert.AreEqual("Hair_" + look, hairs[0].name, $"{look}: the haircut picked");
+            if (!bald && cut != (int)HeroGolfer.Haircut.Classic && cut != (int)HeroGolfer.Haircut.Afro)      // (the afro is built from curls, not cards)
+            {
+                // a strand-card cut: its card drawn by the card shader with its texture, and the soft scalp under it by the hero shader in scalp mode
+                var mats = hairs[0].sharedMaterials;
+                var card = mats.FirstOrDefault(m => m && m.name.StartsWith("HairCard_"));
+                Assert.IsNotNull(card, $"{look}: its card material");
+                Assert.AreEqual("GolfArcade/HeroHairCard", card.shader.name, $"{look}: drawn as hair cards");
+                Assert.IsNotNull(card.mainTexture, $"{look}: its strand texture");
+                var scalp = mats.FirstOrDefault(m => m && m.name.StartsWith("Hair_Scalp"));
+                Assert.IsNotNull(scalp, $"{look}: the soft scalp under it");
+                Assert.AreEqual(1f, scalp.GetFloat("_UseScalp"), $"{look}: the scalp fades into the skin");
+            }
         }
 
         /// The style lists are what a saved look is clamped to: they must agree, and every style in them must be a part in the build

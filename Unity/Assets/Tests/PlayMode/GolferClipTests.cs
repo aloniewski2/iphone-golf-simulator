@@ -44,6 +44,9 @@ namespace GolfArcade.PlayTests
                         line.Append($"t={t:F2} head=({h.x:F2},{h.y:F2},{h.z:F2}) ");
                     }
                     Debug.Log(line.ToString());
+                    // the authored swings (blender/scripts/golf_swing.py) bring the club head back to the ball: where it sat at address it passes at impact
+                    float toBall = (Head(info.impact / fps) - Head(0f)).magnitude;
+                    Assert.Less(toBall, 0.08f, $"{sex}: the {info.name}'s club head is {toBall * 100:F0} cm from where it was at address when the clip says it strikes");
                     mesh.gameObject.SetActive(false);
                 }
                 Object.Destroy(go);

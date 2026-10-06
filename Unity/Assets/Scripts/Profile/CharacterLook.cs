@@ -16,7 +16,7 @@ namespace GolfArcade.Profile
 
         public const int Boy = 0, Girl = 1;
         /// How many styles the golfer has of each (the lengths of HeroGolfer's lists, which a test keeps in step); saves are clamped to them.
-        public const int Haircuts = 6, Headwears = 1, GlassesStyles = 1, FacialStyles = 1, Tops = 1, Bottoms = 1;
+        public const int Haircuts = 12, Headwears = 1, GlassesStyles = 1, FacialStyles = 1, Tops = 1, Bottoms = 1;
         /// The icon avatar kit's id for no hair (version 1 saves), which is Bald in the list now.
         const int KitBald = 5;
 
