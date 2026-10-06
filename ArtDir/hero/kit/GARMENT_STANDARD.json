@@ -1,0 +1,175 @@
+{
+  "schema": "sports-garment-authoring-standard",
+  "version": 1,
+  "authority": "GARMENT_SPEC.md",
+  "approved_visual_baseline": "prompt-29 / 2026-10-05 / Adnan: clothes look good",
+  "implementations": {
+    "unity_shader": "GolfArcade/TennisCloth",
+    "unity_binder": "Unity/Assets/Scripts/Tennis/MatchHeroLook.cs",
+    "locker_binder": "GolfArcade/Unity/MatchHeroSurfaces.swift"
+  },
+  "normal": {
+    "suffix": "_N",
+    "space": "tangent",
+    "y": "positive/OpenGL",
+    "linear": true,
+    "astc_block": "8x8"
+  },
+  "mask": {
+    "suffix": "_M",
+    "linear": true,
+    "preserve_alpha": true,
+    "astc_block": "8x8",
+    "R": "AO visibility; 1 = open; minimum 0.70",
+    "G": "cavity/stitch visibility; 1 = uncreased",
+    "B": "trim blend; 0 main / 1 trim",
+    "A": "round(ID * 255 / 5)"
+  },
+  "fabric_ids": [
+    {
+      "id": 0,
+      "alpha_byte": 0,
+      "surface": "body pique / shorts knit",
+      "smoothness": 0.1,
+      "sheen": 0.55
+    },
+    {
+      "id": 1,
+      "alpha_byte": 51,
+      "surface": "collar/cuff/waist rib",
+      "smoothness": 0.13,
+      "sheen": 0.38
+    },
+    {
+      "id": 2,
+      "alpha_byte": 102,
+      "surface": "shoe upper mesh",
+      "smoothness": 0.16,
+      "sheen": 0.24
+    },
+    {
+      "id": 3,
+      "alpha_byte": 153,
+      "surface": "rubber",
+      "smoothness": 0.04,
+      "sheen": 0
+    },
+    {
+      "id": 4,
+      "alpha_byte": 204,
+      "surface": "foam",
+      "smoothness": 0.08,
+      "sheen": 0
+    },
+    {
+      "id": 5,
+      "alpha_byte": 255,
+      "surface": "lace/drawcord",
+      "smoothness": 0.1,
+      "sheen": 0.18
+    }
+  ],
+  "pieces": {
+    "Top": {
+      "size": 2048,
+      "density_px_cm": [
+        9,
+        18
+      ],
+      "gutter_px": 12
+    },
+    "Bottom": {
+      "size": 1024,
+      "density_px_cm": [
+        5.5,
+        14
+      ],
+      "gutter_px": 6
+    },
+    "ShoeL": {
+      "size": 1024,
+      "density_px_cm": [
+        8,
+        20
+      ],
+      "gutter_px": 6
+    },
+    "ShoeR": {
+      "size": 1024,
+      "density_px_cm": [
+        8,
+        20
+      ],
+      "gutter_px": 6
+    },
+    "SockL": {
+      "size": 512,
+      "density_px_cm": [
+        5,
+        10
+      ],
+      "gutter_px": 3
+    },
+    "SockR": {
+      "size": 512,
+      "density_px_cm": [
+        5,
+        10
+      ],
+      "gutter_px": 3
+    }
+  },
+  "shared_detail": {
+    "resource": "Tennis/HeroDetail/Cloth_FabricAtlas",
+    "size": 512,
+    "astc_block": "4x4",
+    "count_once_per_hero": true,
+    "derivative_fade": true
+  },
+  "semantic_roles": [
+    "Kit_Shirt",
+    "Kit_ShirtTrim",
+    "Kit_Shorts",
+    "Kit_ShortsBand",
+    "Kit_Shoe",
+    "Kit_Sole",
+    "Kit_Sock"
+  ],
+  "trim_rule": "Existing KitDerive + KitTint: light main darkens 35%; dark main lightens 35% toward white; existing black floor retained",
+  "limits": {
+    "extra_kit_tris_per_hero": 6000,
+    "resident_kit_texture_bytes_per_hero": 6000000,
+    "max_texture_samples_per_pixel": 6,
+    "max_added_frame_ms": 0.5,
+    "max_skin_weights": 4,
+    "new_bones": 0,
+    "socket_delta_mm": 0.5
+  },
+  "construction_baseline": [
+    "rolled collar and stand",
+    "separate buttons and placket stitching",
+    "rib cuff with mask trim",
+    "turned hem and stitches",
+    "pocket opening where applicable",
+    "waistband construction",
+    "pleat silhouette where applicable",
+    "moderate neutral-pose folds",
+    "sock rib cuff",
+    "flat geometric laces",
+    "shoe panel stitching",
+    "separate foam/rubber response",
+    "sole tread"
+  ],
+  "requires": [
+    "close-up construction crops",
+    "match-distance proof",
+    "motion fit for destination sport",
+    "phone shimmer proof",
+    "all selected colour/trim combinations",
+    "Unity/SceneKit parity",
+    "compiled Metal stats and iOS build",
+    "device timing",
+    "human visual approval"
+  ],
+  "runtime_manifest_loader": false
+}
