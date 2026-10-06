@@ -27,10 +27,13 @@ namespace GolfArcade.PlayTests
             Time.timeScale = 4f;
             yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
             var game = Object.FindFirstObjectByType<GolfGame>();
+            game.InstantReplays = false;   // (ReplayTests covers the replays; these keep their timings)
             Assert.IsNotNull(game, "the Golf scene bootstraps the game");
             Assert.IsNotNull(game.Swing.Synthetic, "no gyro in the editor, so the synthetic swing drives it");
+            yield return null;
+            game.Play();
 
-            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 10, "the flyover to end");
+            yield return WaitFor(() => game.Current == GolfGame.State.Aim, 22, "the showcase to end");
             yield return WaitFor(() => game.Swing.Phase == Swing.SwingPhase.Address, 5, "the phone to settle");
 
             game.Swing.Synthetic.Backswing(true);

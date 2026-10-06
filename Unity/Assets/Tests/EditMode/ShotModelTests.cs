@@ -19,11 +19,35 @@ namespace GolfArcade.Tests
             }
         }
 
+        /// A club every 15–50 yards, longest to shortest, each flying its number on a full swing
+        /// (the chipper's is where it finishes), and the game hands you the shortest one that
+        /// gets there.
+        [Test]
+        public void TheBagStepsDownAndTheRightClubIsPicked()
+        {
+            var full = new[] { 240.0, 190, 175, 150, 125, 100, 80, 50, 25 };
+            for (int i = 0; i < full.Length; i++)
+            {
+                var club = GolfClubs.All[i];
+                Assert.AreEqual(full[i], club.ReferenceDistanceYards(), 1e-9, club.ToString());
+                var flight = BallFlight.Simulate(club.Launch(1, 0, 0));
+                Assert.AreEqual(full[i], club.RatedByTotal() ? flight.Total : flight.Carry, 2.5, $"{club} flies its number");
+            }
+            Assert.AreEqual(GolfClub.Putter, GolfClubs.All[GolfClubs.All.Length - 1]);
+            Assert.AreEqual(GolfClub.Driver, GolfClubs.ForDistance(230, _ => 1));
+            Assert.AreEqual(GolfClub.Hybrid, GolfClubs.ForDistance(185, _ => 1));
+            Assert.AreEqual(GolfClub.Iron, GolfClubs.ForDistance(146, _ => 1));
+            Assert.AreEqual(GolfClub.PitchingWedge, GolfClubs.ForDistance(95, _ => 1));
+            Assert.AreEqual(GolfClub.Chipper, GolfClubs.ForDistance(18, _ => 1));
+            Assert.AreEqual(GolfClub.Driver, GolfClubs.ForDistance(320, _ => 1), "past everything: the driver");
+            Assert.AreEqual(GolfClub.Iron5, GolfClubs.ForDistance(146, c => CourseLie.Rough.PowerFactor(c)), "out of the rough, a club more");
+        }
+
         [Test]
         public void MeterReadsDistanceStraight()
         {
             var half = BallFlight.Simulate(GolfClub.Driver.Launch(0.5, 0, 0));
-            Assert.AreEqual(125, half.Carry, 3);
+            Assert.AreEqual(120, half.Carry, 3);
             Assert.AreEqual(0, BallFlight.Simulate(GolfClub.Iron.Launch(0, 0, 0)).Total, 0.01);
         }
 
@@ -46,6 +70,25 @@ namespace GolfArcade.Tests
             Assert.AreEqual(fade.Landing.LateralYards, -draw.Landing.LateralYards, 0.5);
         }
 
+        /// Each club flies the way it is meant to: the driver lowest-spinning and running out
+        /// most; down the bag higher, steeper and stopping sooner; the lob wedge the highest for
+        /// its distance and dropping nearly dead; the chipper a bump-and-run that carries a third
+        /// and runs the rest.
+        [Test]
+        public void EachClubFliesItsOwnWay()
+        {
+            BallFlight Full(GolfClub c) => BallFlight.Simulate(c.Launch(1, 0, 0));
+            var bag = new[] { GolfClub.Driver, GolfClub.Hybrid, GolfClub.Iron5, GolfClub.Iron, GolfClub.Iron9, GolfClub.PitchingWedge, GolfClub.Wedge, GolfClub.LobWedge };
+            for (int i = 1; i < bag.Length; i++)
+                Assert.Less(Full(bag[i]).Roll, Full(bag[i - 1]).Roll + 0.5, $"{bag[i]} stops no later than {bag[i - 1]}");
+            Assert.Greater(Full(GolfClub.Driver).Roll, 15, "the driver runs out");
+            Assert.Less(Full(GolfClub.LobWedge).Roll, 2.5, "the lob wedge drops nearly dead");
+            Assert.Greater(Full(GolfClub.LobWedge).Apex / Full(GolfClub.LobWedge).Carry, Full(GolfClub.Wedge).Apex / Full(GolfClub.Wedge).Carry, "the lob is the highest for its distance");
+            var chip = Full(GolfClub.Chipper);
+            Assert.Less(chip.Carry, chip.Total * 0.55, "a chip runs more than it carries");
+            Assert.Less(chip.Apex, 1.5, "and stays low");
+        }
+
         [Test]
         public void StartLineTurnsTheWholeShot()
         {
@@ -64,8 +107,8 @@ namespace GolfArcade.Tests
             var hole = Hole1;
             var shot = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
             Assert.AreEqual(CourseLie.Fairway, shot.Lie);
-            Assert.AreEqual(160, shot.Carry, 2);
-            Assert.Greater(shot.Total, 162);
+            Assert.AreEqual(150, shot.Carry, 2);
+            Assert.Greater(shot.Total, 152);
             Assert.AreEqual(shot.Rest.X, shot.NextPosition.X, 1e-9);
             Assert.Greater(shot.Duration, 5);
         }
@@ -114,7 +157,7 @@ namespace GolfArcade.Tests
         {
             var hole = Hole1;
             var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 3);
-            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / 1.5);
+            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / GolfClub.Putter.MeterExponent());
             var dying = new CourseShot(GolfClub.Putter, Impact(meterFor(3.4)), 0, from, hole);
             Assert.IsTrue(dying.IsHoled, "a putt with a little more than enough drops");
             Assert.AreEqual(0, dying.PenaltyStrokes);
@@ -123,11 +166,75 @@ namespace GolfArcade.Tests
             Assert.Greater(firm.Rest.DistanceTo(hole.Pin), 0.5);
         }
 
+        /// Too quick for the hole: through the middle it hops the back lip and runs on along its
+        /// line; off the edge the rim swings it round (a horseshoe); a slow one off the edge drops.
+        [Test]
+        public void TheRimDecidesHowAMissComesOut()
+        {
+            var pin = new CoursePoint(0, 10);
+            double r = Hole.CupCaptureRadius, v = CourseShot.CentreCaptureSpeed * 1.25;
+            var middle = CourseShot.CrossTheCup(0, 10 - r, 0, v, pin);
+            Assert.IsFalse(middle.Holed);
+            Assert.AreEqual(0, middle.Vx, 1e-6, "hops out straight on");
+            Assert.Less(middle.Vd, v * 0.8, "and loses pace doing it");
+            var edge = CourseShot.CrossTheCup(r * 0.6, 10 - r * 0.8, 0, v, pin);
+            Assert.IsFalse(edge.Holed);
+            Assert.IsTrue(edge.Lipped);
+            double turned = Math.Atan2(edge.Vx, edge.Vd) * 180 / Math.PI;
+            Assert.Greater(Math.Abs(turned), 15, "the lip swings it round");
+            var dying = CourseShot.CrossTheCup(r * 0.8, 10 - r * 0.6, 0, CourseShot.CentreCaptureSpeed * 0.4, pin);
+            Assert.IsTrue(dying.Holed, "a dying ball drops in the side door");
+            var skim = CourseShot.CrossTheCup(r * 0.97, 10 - r * 0.3, 0, v * 2, pin);
+            Assert.IsFalse(skim.Holed); Assert.IsFalse(skim.Lipped, "a quick one on the very edge skims over");
+        }
+
+        /// A putt a little firm drops through the middle; one that would stop just short of the
+        /// rim, or trickle just past it, topples in; one well short stays out.
+        [Test]
+        public void ALittleFastOrALittleSlowStillDrops()
+        {
+            var hole = Hole1;
+            var from = new CoursePoint(hole.Pin.X, hole.Pin.D - 3);
+            double meterFor(double yards) => Math.Pow(yards / 25.0, 1 / GolfClub.Putter.MeterExponent());
+            // arriving at 1.3x a real cup's limit: would have run a couple of yards past
+            double firmish = 3 + Math.Pow(1.3 * 1.63 / BallFlight.MetersPerYard, 2) / (2 * CourseShot.GreenDeceleration);
+            Assert.IsTrue(new CourseShot(GolfClub.Putter, Impact(meterFor(firmish)), 0, from, hole).IsHoled, "a little firm goes down");
+            double r = Hole.CupCaptureRadius;
+            // would stop 0.08 yd (3 in) short of the rim: topples in
+            var shortish = new CourseShot(GolfClub.Putter, Impact(meterFor(3 - r - 0.08)), 0, from, hole);
+            Assert.IsTrue(shortish.IsHoled, "a whisker short topples in");
+            // aimed to pass just outside the rim, dying: curls in
+            var trickle = new CourseShot(GolfClub.Putter, Impact(meterFor(3.2)), Math.Atan2(r + 0.06, 3) * 180 / Math.PI, from, hole);
+            Assert.IsTrue(trickle.IsHoled, "trickling just past the edge, it falls in");
+            // a foot and a half short: stays out
+            var wellShort = new CourseShot(GolfClub.Putter, Impact(meterFor(3 - r - 0.5)), 0, from, hole);
+            Assert.IsFalse(wellShort.IsHoled, "well short stays short");
+        }
+
+        /// A cliff in the way is met, not flown through: the ball strikes the face and drops to
+        /// its foot; a shelf above the landing catches the ball earlier than the flat would.
+        [Test]
+        public void TheGroundInTheWayIsMet()
+        {
+            var hole = Course.Course.Meadow().Holes[0];
+            var flat = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            hole.Ground = p => p.D > 90 && p.D < 100 ? 40 : 0;             // a wall 40 yards high
+            var walled = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            Assert.Less(walled.Rest.D, 92, "stopped by the wall");
+            Assert.Greater(walled.Rest.D, 60, "at its foot, not back at the tee");
+            Assert.Less(walled.Carry, flat.Carry * 0.7);
+            hole.Ground = p => p.D > 110 ? 12 : p.D > 100 ? (p.D - 100) * 1.2 : 0;   // a ramp up to a shelf
+            var shelf = new CourseShot(GolfClub.Iron, Impact(1), 0, hole.Tee, hole);
+            Assert.Less(shelf.Landing.D, flat.Landing.D - 5, "it comes down on the shelf, earlier");
+            Assert.Greater(shelf.Landing.D, 110);
+        }
+
         [Test]
         public void CupCaptureFollowsTheSpeedAndOffsetRule()
         {
             Assert.IsTrue(CourseShot.CupCaptures(1.0, 0));
-            Assert.IsFalse(CourseShot.CupCaptures(2.5, 0));
+            Assert.IsTrue(CourseShot.CupCaptures(2.5, 0), "a little firm through the middle still drops");
+            Assert.IsFalse(CourseShot.CupCaptures(CourseShot.CentreCaptureSpeed * 1.1, 0));
             Assert.IsFalse(CourseShot.CupCaptures(1.0, Hole.CupCaptureRadius + 0.01));
             Assert.IsTrue(CourseShot.CupCaptures(0.3, Hole.CupCaptureRadius * 0.95));
         }
