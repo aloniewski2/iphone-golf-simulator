@@ -245,13 +245,12 @@ struct TennisRacketController: View {
     var body: some View {
         VStack(spacing: 14) {
             topBar
-            if let step = session.tutorialStep { TutorialPanel(step: step, onSkip: { session.skipTutorialStep() }) }
             if session.finishedMatch != nil {
                 MatchFinishControls(session: session)
             } else if !session.ready || !session.loading.finished {
                 // The same loading screen as the TV: tips, how-to cards, the flowing bar.
                 LoadingScreen(menu: .shared, compact: true).padding(-24)
-            } else if !session.touch && !session.axisGate.locked {
+            } else if session.setupStage == .scan {
                 ScrollView { AxisGatePanel(session: session) }
             } else if session.measuringDelay {
                 DelayProbePanel()
@@ -259,8 +258,8 @@ struct TennisRacketController: View {
                 TimingCheckPrompt(session: session)
             } else if session.checkingTiming {
                 TimingCheckPanel(countdownEnds: session.timingCountdownEnds)
-            } else if session.aimingSetup {
-                AimingCalibrationPanel(session:session)
+            } else if session.setupStage == .ready {
+                ControllerReadyPanel(session: session)
             } else if !session.paused && (session.tennisPhase == "serve" || session.tennisPhase == "toss") {
                 ServePanel(session: session)
             } else if !session.paused && session.tennisPhase == "receive" {
@@ -268,46 +267,30 @@ struct TennisRacketController: View {
             } else {
                 RacketRadar(contacts: session.contacts)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .overlay(alignment: .top) { if session.tutorialStep != nil { LastHit(contact: session.contacts.last) } }
-                if session.tutorialStep != nil && !session.timingNote.isEmpty && session.contacts.isEmpty {
-                    Text(session.timingNote).font(IslandUI.font(14, bold: true)).foregroundStyle(IslandUI.lime).multilineTextAlignment(.center)
-                }
                 stamina
                 if !session.touch { ShotDepthControl(session:session) }
                 if session.touch {
                     VStack(spacing: 6) {
-                        if session.tutorialStep == nil {
                         Slider(value: $steering, in: -1...1) { Text("Court position") }
                             .onChange(of: steering) { _, v in session.steer(v) }
-                        }
-                        if session.tutorialStep == nil || (session.tutorialStep?.index ?? 0) >= 2 { RallyAimPad(session:session).frame(height:150) }
+                        RallyAimPad(session:session).frame(height:150)
                         HStack {
-                            if session.tutorialStep == nil {
                             Slider(value: $power, in: 0.15...1) { Text("Swing power") }
-                            }
-                            Button("Swing") { session.swing(session.tutorialStep == nil ? power : 0.7) }.font(IslandUI.font(24, bold: true)).frame(maxWidth: .infinity, minHeight: 70).buttonStyle(.borderedProminent).tint(IslandUI.lime)
+                            Button("Swing") { session.swing(power) }.font(IslandUI.font(24, bold: true)).frame(maxWidth: .infinity, minHeight: 70).buttonStyle(.borderedProminent).tint(IslandUI.lime)
                                 .foregroundStyle(IslandUI.navy).disabled(session.paused)
                         }
                     }.tint(IslandUI.lime)
                 }
             }
             if session.ready && session.loading.finished && session.finishedMatch == nil {
-                if !session.paused && session.tennisPhase == "rally" { TennisAbilityControls(session: session) }
-                TennisEmoteControls(session: session)
+                if session.pointControlsVisible { TennisAbilityControls(session: session) }
+                if session.canPlayEmote { TennisEmoteControls(session: session) }
             }
-            if session.finishedMatch == nil && session.ready && session.paused && !session.measuringDelay && (session.touch || session.axisGate.locked) {
-                Text(session.status).font(IslandUI.font(14, bold: true)).foregroundStyle(.white.opacity(0.8)).multilineTextAlignment(.center)
-                if !session.delayTip.isEmpty {
-                    Label(session.delayTip, systemImage: "tv.badge.wifi")
-                        .font(IslandUI.font(13, bold: true)).foregroundStyle(IslandUI.lime).multilineTextAlignment(.leading)
-                        .padding(10).background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                }
-                if !session.touch && session.sport == "tennis" {
-                    Button("Recalibrate aiming") { session.recalibrateAiming() }.foregroundStyle(IslandUI.lime)
-                }
-                ControllerButton(title: "Ready", icon: "play.fill") { session.readyToPlay() }
+            if session.finishedMatch == nil && session.ready && session.paused && session.setupStage == .playing {
+                Text(session.status).font(IslandUI.font(14, bold: true)).multilineTextAlignment(.center)
+                ControllerButton(title: "Resume", icon: "play.fill") { session.readyToPlay() }
             }
-            if session.ready && session.loading.finished && session.finishedMatch == nil {
+            if session.ready && session.loading.finished && session.finishedMatch == nil && session.setupStage == .playing && session.tennisPhase == "point" {
                 PointClipControls(session: session).tint(.white)
             }
         }
@@ -368,7 +351,7 @@ struct TennisEmoteControls: View {
     let session: SportsSession
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(session.emoteWindow == "intro" ? "YOUR INTRO · PICK AN EMOTE" : session.emoteWindow == "point" ? "YOUR POINT · CELEBRATE" : "EMOTES")
+            Text("YOUR POINT · CELEBRATE")
                 .font(IslandUI.font(12, bold: true)).foregroundStyle(session.canPlayEmote ? IslandUI.lime : .white.opacity(0.55))
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { slot in
@@ -384,7 +367,7 @@ struct TennisEmoteControls: View {
                         .accessibilityLabel("Play \(EmoteCatalog.name(session.matchEmotes[slot])), emote slot \(slot + 1)")
                 }
             }
-            Text(session.emoteNotice.isEmpty ? "Available for your intro and after you score a point." : session.emoteNotice)
+            Text(session.emoteNotice.isEmpty ? "Choose an emote to celebrate your point." : session.emoteNotice)
                 .font(IslandUI.font(11, bold: false)).foregroundStyle(.white.opacity(0.55))
         }
     }
@@ -414,7 +397,7 @@ private struct ServePanel: View {
                 ControllerButton(title: "TOSS", icon: "arrow.up.circle.fill", height: 112, size: 40) {
                     if session.haptics { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
                     session.toss()
-                }
+                }.accessibilityIdentifier("tennisToss")
 
             }
         }
@@ -533,11 +516,11 @@ private struct TimingCheckPrompt: View {
         VStack(spacing: 14) {
             Spacer()
             Image(systemName: "metronome.fill").font(.system(size: 56, weight: .bold)).foregroundStyle(IslandUI.lime)
-            Text("Timing check").font(IslandUI.font(26, bold: true))
+            Text("2 · Timing calibration").font(IslandUI.font(26, bold: true))
             Text("Every TV shows the picture a little late. This quick check measures that delay so your swings land exactly when you see the ball.\n\nA ball will bounce on a line on the TV. Swing every time it drops onto the line — a steady rhythm, about ten seconds.")
                 .font(IslandUI.font(15, bold: true)).foregroundStyle(.white.opacity(0.85)).multilineTextAlignment(.center).padding(.horizontal, 12)
-            ControllerButton(title: "Start timing check", icon: "play.fill", height: 58, size: 21) { session.startTimingCheck() }
-            Button("Skip for now") { session.skipTimingCheck() }
+            ControllerButton(title: "Start timing check", icon: "play.fill", height: 58, size: 21) { session.startTimingCheck() }.accessibilityIdentifier("timing-start")
+            Button("Skip for now") { session.skipTimingCheck() }.accessibilityIdentifier("timing-skip")
                 .font(IslandUI.font(15, bold: true)).foregroundStyle(.white.opacity(0.7))
             Spacer()
         }
@@ -707,31 +690,6 @@ struct RacketRadar: View {
     }
 }
 
-/// The tutorial's current step on the phone: what to do now, and how far through the lesson.
-struct TutorialPanel: View {
-    let step: (index: Int, count: Int, text: String)
-    var onSkip: () -> Void = {}
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Label("COACH RAY", systemImage: "graduationcap.fill").font(IslandUI.font(13, bold: true)).tracking(2)
-                Spacer()
-                Text("STEP \(min(step.index + 1, step.count)) OF \(step.count)").font(IslandUI.font(13, bold: true))
-            }
-            Button("Skip this exercise", action: onSkip).font(IslandUI.font(12, bold: true)).accessibilityIdentifier("tutorial-skip-step")
-            Text(step.text).font(IslandUI.font(18, bold: true)).fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 4) {
-                ForEach(0..<step.count, id: \.self) { i in
-                    Capsule().fill(i <= step.index ? IslandUI.navy : IslandUI.navy.opacity(0.25)).frame(height: 6)
-                }
-            }
-        }
-        .foregroundStyle(IslandUI.navy)
-        .padding(14)
-        .background(IslandUI.lime, in: RoundedRectangle(cornerRadius: 18))
-    }
-}
-
 /// Shared by the regular controller, classic controller and landscape Unity overlay.
 /// Never exposes an advance action before Unity confirms a completed match.
 struct MatchFinishControls: View {
@@ -765,7 +723,7 @@ struct MatchFinishControls: View {
 struct TennisAbilityControls: View {
     let session: SportsSession
     var body: some View {
-        AbilityButton(title: "DIVE", icon: "arrow.down.to.line", caption: session.diveCooldown > 0 ? "\(Int(ceil(session.diveCooldown)))s" : "ready",
+        AbilityButton(title: "DIVE", icon: "arrow.down.to.line", caption: session.diveCooldown > 0 ? "\(Int(ceil(session.diveCooldown)))s" : session.canDive ? "ready" : "waiting for ball",
                       enabled: !session.paused && session.canDive) { session.dive() }
             .accessibilityLabel("Dive toward the ball").accessibilityIdentifier("tennisDive")
     }
@@ -792,37 +750,26 @@ private struct AbilityButton: View {
     }
 }
 
-struct AimingCalibrationPanel: View {
-    @Bindable var session:SportsSession
-    var body:some View {
-        VStack(spacing:18) {
-            if let lesson=session.aimLesson {
-                if lesson.phase == .complete {
-                    Image(systemName:"checkmark.circle.fill").font(.system(size:64)).foregroundStyle(IslandUI.lime)
-                    Text("Aiming ready").font(IslandUI.font(28,bold:true))
-                    Text(session.aimLessonMessage).font(IslandUI.font(16,bold:false)).multilineTextAlignment(.center)
-                    ControllerButton(title:"Start match",icon:"play.fill") { session.finishAimingSetup() }
-                } else if let trial=lesson.current {
-                    Text(lesson.quick ? "Quick aiming check" : "Find your aim").font(IslandUI.font(27,bold:true))
-                    Text(lesson.progress).font(IslandUI.font(13,bold:true)).foregroundStyle(.white.opacity(0.65))
-                    HStack(spacing:10) {
-                        ForEach([-1,0,1],id:\.self) { lane in
-                            RoundedRectangle(cornerRadius:14).fill(lane == trial.lane ? IslandUI.lime : .white.opacity(0.12))
-                                .overlay { Image(systemName:lane < 0 ? "arrow.left" : lane > 0 ? "arrow.right" : "arrow.up").font(.system(size:28,weight:.bold)).foregroundStyle(lane == trial.lane ? IslandUI.navy : .white) }
-                        }
-                    }.frame(height:90)
-                    Text("\(trial.wing == 0 ? "Forehand" : "Backhand") · \(trial.lane < 0 ? "Left" : trial.lane > 0 ? "Right" : "Straight")")
-                        .font(IslandUI.font(24,bold:true)).foregroundStyle(IslandUI.lime)
-                    Text(session.aimLessonMessage).font(IslandUI.font(16,bold:false)).multilineTextAlignment(.center)
-                    Text("Watch the target on the court. Turn the racket face toward it and make a comfortable swing.")
-                        .font(IslandUI.font(14,bold:false)).foregroundStyle(.white.opacity(0.7)).multilineTextAlignment(.center)
-                    if session.paused { ControllerButton(title:"Continue practice",icon:"play.fill") { session.readyToPlay() } }
-                    Button("Use default aiming") { session.finishAimingSetup() }.foregroundStyle(.white.opacity(0.65))
-                }
-            }
-        }.foregroundStyle(.white).padding(20).frame(maxWidth:.infinity,maxHeight:.infinity)
-            .accessibilityIdentifier("aiming-calibration")
+struct ControllerReadyPanel: View {
+    let session: SportsSession
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundStyle(IslandUI.lime)
+            Text("3 · Ready to play").font(IslandUI.font(28, bold: true))
+            if !session.timingNote.isEmpty { Text(session.timingNote).multilineTextAlignment(.center) }
+            Text("Watch the TV. Your phone stays your controller.").multilineTextAlignment(.center)
+            ControllerButton(title: "Ready to play", icon: "play.fill") { session.readyToPlay() }
+                .accessibilityIdentifier("controller-ready")
+            Spacer()
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
+
+// Compatibility for archived previews; the aiming exercise has been retired.
+struct AimingCalibrationPanel: View {
+    let session: SportsSession
+    var body: some View { ControllerReadyPanel(session: session) }
 }
 
 struct RallyAimPad:View {

@@ -39,18 +39,14 @@ struct IslandHubScreen: View {
 
     private func mode(_ id: String) -> Mode {
         let unlocked = menu.hubUnlocked(sport, id)
-        let finished = true
-        let reason = "Finish the tutorial first"
         switch id {
-        case "tutorial":
-            return Mode(title: "Tutorial", subtitle: finished ? "Coach Ray · done" : "Start here · a few minutes with Coach Ray", icon: "graduationcap.fill", locked: false, done: finished)
         case "campaign":
             let c = menu.campaign
-            return Mode(title: "Campaign", subtitle: !finished ? reason : c.champion ? "Island Circuit champion — defend your title" : "Next: \(c.next.roundTitle.capitalized) · \(c.next.name)", icon: "trophy.fill", locked: !unlocked, done: false)
+            return Mode(title: "Campaign", subtitle: c.champion ? "Island Circuit champion — defend your title" : "Next: \(c.next.roundTitle.capitalized) · \(c.next.name)", icon: "trophy.fill", locked: !unlocked, done: false)
         case "exhibition":
-            return Mode(title: "Quick Match", subtitle: finished ? "Pick a rival and the length" : reason, icon: "bolt.fill", locked: !unlocked, done: false)
+            return Mode(title: "Quick Match", subtitle: "Pick a rival and the length", icon: "bolt.fill", locked: !unlocked, done: false)
         case "training":
-            return Mode(title: "Training", subtitle: finished ? "Free rally with the coach" : reason, icon: "tennis.racket", locked: !unlocked, done: false)
+            return Mode(title: "Training", subtitle: "Free rally with the coach", icon: "tennis.racket", locked: !unlocked, done: false)
         case "round":
             return Mode(title: "Play Golf", subtitle: "Choose a course, then tee off", icon: "figure.golf", locked: false, done: false)
         case "golfCampaign":

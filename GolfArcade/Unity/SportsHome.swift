@@ -54,6 +54,15 @@ struct SportsHome: View {
                 SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
                 session.displayConnected = true
             }
+            if let i = args.firstIndex(of: "-controllerPhaseCheck"), let phase = args[safe: i + 1] {
+                SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+                session.displayConnected = true; session.active = true; session.ready = true
+                session.sport = "tennis"; session.touch = true; session.loading.cancel()
+                session.setupStage = .playing; session.paused = false; session.tennisPhase = phase
+                session.canDive = phase == "rally"; session.emoteWindow = phase == "point" ? "point" : ""
+                if phase == "timing" { session.offerTimingCalibration() }
+                if phase == "ready" { session.setupStage = .ready; session.paused = true }
+            }
             OnlineLobbyProofDriver.start(menu,args:args)
             #endif
             if let index = args.firstIndex(of:"--lobby-mock"), let count = args[safe:index+1].flatMap(Int.init) {
@@ -78,7 +87,6 @@ struct SportsHome: View {
             if SportsSession.benchmark && !session.active { session.sport="tennis"; session.touch=true; session.start(preview:!session.displayConnected) }
         }
         .background(DisplayRegistration().frame(width:0,height:0))
-        .task(id: onboarding.step.key) { onboarding.launchTutorialIfNeeded() }
         .onChange(of:scenePhase) { _,phase in
             if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
             SportsRuntime.shared().setForeground(phase == .active)
@@ -152,13 +160,13 @@ struct AxisGatePanel:View {
     @Bindable var session:SportsSession
     var body:some View {
         VStack(spacing:14) {
-            Text("Set the court direction").font(.headline)
+            Text("1 · TV scan").font(.headline)
             SportsCameraPreview(motion:session.motion)
                 .frame(height:180).clipShape(RoundedRectangle(cornerRadius:12))
                 .overlay(RoundedRectangle(cornerRadius:12).stroke(session.axisGate.progress>0 ? .green : .secondary,lineWidth:2))
                 .overlay { Image(systemName: "plus").font(.title2).foregroundStyle(.white).shadow(radius: 2) }
                 .accessibilityIdentifier("axisGatePreview")
-            Text("Point the rear camera at your TV or MacBook screen and hold still. Keep the screen under the crosshair, with some of the room visible. A laptop can sit below eye level. Leave enough room to swing; no scan or code is needed.")
+            Text("Point the rear camera at your TV or MacBook screen and hold still. Keep the screen under the crosshair, with some of the room visible. A laptop can sit below eye level. Leave enough room to swing.")
                 .font(.subheadline).multilineTextAlignment(.center)
             ProgressView(value:session.axisGate.progress)
             Text(session.axisGate.message).font(.footnote).multilineTextAlignment(.center)

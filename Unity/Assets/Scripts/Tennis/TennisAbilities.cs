@@ -41,7 +41,7 @@ namespace GolfArcade.Tennis
         public int DiveAttempts { get; private set; }
         float diveTime, diveTravelled, ballCurve;
         Vector3 diveDirection;
-        bool LiveAbilityInput => Player && Flow == Phase.Rally && resetTimer <= 0 && faultDelay <= 0
+        bool LiveAbilityInput => !ControllerSetup && Player && Flow == Phase.Rally && resetTimer <= 0 && faultDelay <= 0
             && !CheckingTiming && !IntroPlaying && !ReplayPlaying && !(juice && juice.UltimateActive)
             && (ManualSimulation || Time.timeScale > 0);
         public bool CanDive => LiveAbilityInput && incoming && !Player.Swinging && !Player.GroundRecovering

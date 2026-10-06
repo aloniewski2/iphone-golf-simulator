@@ -3,6 +3,68 @@ import UIKit
 @testable import GolfArcade
 
 @MainActor final class MenuFlowRegressionTests: XCTestCase {
+    func testCalibrationPrecedesReadyAndDoesNotStartAPoint() {
+        let session = SportsSession()
+        session.active = true; session.ready = true; session.displayConnected = true
+        session.sport = "tennis"; session.touch = true; session.loading.cancel()
+        session.readyToPlay()
+        XCTAssertTrue(session.paused)
+        XCTAssertEqual(session.setupStage, .scan)
+        session.offerTimingCalibration()
+        XCTAssertEqual(session.setupStage, .timing)
+        XCTAssertTrue(session.timingPrompt)
+        session.readyToPlay(); session.resume()
+        XCTAssertTrue(session.paused, "Ready/Resume must not bypass calibration")
+        session.startTimingCheck()
+        XCTAssertTrue(session.checkingTiming)
+        XCTAssertFalse(session.paused, "Phone samples must flow during TV calibration")
+        XCTAssertFalse(session.pointControlsVisible)
+        session.receiveTimingResult("failed")
+        XCTAssertEqual(session.setupStage, .ready)
+        XCTAssertTrue(session.paused, "Calibration completion must wait for Ready")
+        XCTAssertFalse(session.checkingTiming)
+        session.readyToPlay()
+        XCTAssertEqual(session.setupStage, .playing)
+        XCTAssertFalse(session.paused)
+        session.tennisPhase = "serve"
+        XCTAssertTrue(session.tossVisible)
+    }
+    func testPointControlsAndCelebrationFollowActualPointPhase() {
+        let session = SportsSession()
+        session.active = true; session.ready = true; session.loading.cancel()
+        session.sport = "tennis"; session.setupStage = .playing; session.paused = false
+        for phase in ["serve", "toss", "receive", "rally"] {
+            session.tennisPhase = phase
+            XCTAssertTrue(session.pointControlsVisible)
+            XCTAssertEqual(session.tossVisible, phase == "serve")
+            XCTAssertFalse(session.canPlayEmote)
+        }
+        session.tennisPhase = "point"
+        XCTAssertFalse(session.pointControlsVisible)
+        session.emoteWindow = "intro"; XCTAssertFalse(session.canPlayEmote)
+        session.emoteWindow = ""; XCTAssertFalse(session.canPlayEmote)
+        session.emoteWindow = "point"; XCTAssertTrue(session.canPlayEmote)
+        session.paused = true; XCTAssertFalse(session.canPlayEmote)
+    }
+    func testInterruptedTimingReturnsToCalibrationWithoutStartingPlay() {
+        let session = SportsSession()
+        session.active = true; session.ready = true; session.displayConnected = true
+        session.sport = "tennis"; session.touch = true; session.loading.cancel()
+        session.offerTimingCalibration(); session.startTimingCheck()
+        session.pause(reason: "Display disconnected")
+        XCTAssertTrue(session.timingPrompt)
+        XCTAssertFalse(session.checkingTiming)
+        XCTAssertEqual(session.setupStage, .timing)
+        session.menuPauseVisible = true
+        session.readyToPlay()
+        XCTAssertFalse(session.menuPauseVisible, "Resume must return to the interrupted setup screen")
+        XCTAssertTrue(session.paused)
+        session.receiveTimingResult("100")
+        XCTAssertEqual(session.setupStage, .timing, "Ignore late results from a cancelled check")
+        session.skipTimingCheck()
+        XCTAssertEqual(session.setupStage, .ready)
+        XCTAssertTrue(session.paused)
+    }
     func testGolfHasOnePlayableRouteWithoutATutorialPrerequisite() {
         let menu = TennisMenu()
         XCTAssertEqual(TennisMenu.hubItems(.golf), ["round"])

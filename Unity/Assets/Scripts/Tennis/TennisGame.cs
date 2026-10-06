@@ -328,7 +328,7 @@ namespace GolfArcade.Tennis
         /// (`AbortSwing`) follows within a few samples.
         public void BeginSwing(float handSide, float lift, float strokeFacing, float inputAge = 0)
         {
-            if (calibration != null) return; // Only confirmed strokes count in the timing check.
+            if (ControllerSetup || calibration != null) return; // Only confirmed strokes count in the timing check.
             if (IntroPlaying) { presentation.Skip(); return; }
             if (!Player || Player.Swinging || resetTimer > 0 || ReplayPlaying) return;
             if (Flow == Phase.PlayerServeToss && !serveCommitted)
@@ -375,6 +375,7 @@ namespace GolfArcade.Tennis
         /// self-play pass their own.
         public void Toss(float accuracy = -1)
         {
+            if (ControllerSetup) return;
             if (Flow != Phase.PlayerServeHold || windup >= 0) return;
             if (tossMeter && accuracy < 0) Learn(tossMeter.Lateness(TossInputDelay));
             float read = tossMeter ? tossMeter.Press(Lag + TossInputDelay) : 1;
@@ -435,6 +436,17 @@ namespace GolfArcade.Tennis
 
         /// Run the timing check now: play holds while a ball bounces on the TV to a beat and
         /// the player swings along with it.
+        public bool ControllerSetup { get; private set; }
+        /// Keep the court visible but hold point play while the phone scans and calibrates.
+        public void SetControllerSetup(bool active) {
+            if (ControllerSetup == active) return;
+            ControllerSetup = active;
+            CancelTimingCheck();
+            if (active) { replayDue = -1; if (replay) replay.Stop(); if (presentation) presentation.Skip(); }
+            if (hud) hud.MatchVisible = !active;
+            if (!active) Refeed();
+        }
+
         public void StartTimingCheck()
         {
             if (!Player || ReplayPlaying) return;
@@ -490,6 +502,7 @@ namespace GolfArcade.Tennis
         public void RequestSwing(float power, float handSide=0, float lift=0, float strokeFacing=0, float inputAge=0)
         {
             if (calibration != null) { TimingCheckSwing(); return; }
+            if (ControllerSetup) return;
             if (IntroPlaying) { presentation.Skip(); return; }
             if (juice && juice.UltimateActive) return;   // the world is frozen for the ultimate cinematic
             // A finished match waits on the results card: swing to play again.
@@ -876,6 +889,7 @@ namespace GolfArcade.Tennis
         public void ConfigureMatch(Mode mode, string opponentKey, string opponentName, string roundLabel,
             int sets = 1, int games = TennisMatch.GamesToWin, string[] coachLines = null)
         {
+            if (mode == Mode.Tutorial) mode = Mode.Exhibition;
             PlayMode = mode;
             var rival = TennisRoster.Find(opponentKey);
             // The rival plays its own game; anyone else follows the difficulty slider.
@@ -924,13 +938,12 @@ namespace GolfArcade.Tennis
             matchReported = false;
             ResetMatchAbilities();
             BeginPoint();
-            // The tutorial drives the court itself: coach feeds, targets, a lesson at a time.
+            // Remove a lesson component left by an older saved route.
             var tutorial = GetComponent<TennisTutorial>();
-            if (mode == Mode.Tutorial) { if (!tutorial) tutorial = gameObject.AddComponent<TennisTutorial>(); tutorial.Begin(this, coach); }
-            else if (tutorial) { tutorial.Stop(); Destroy(tutorial); }
+            if (tutorial) { tutorial.Stop(); Destroy(tutorial); }
             if (presentation)
             {
-                if (mode == Mode.Training || mode == Mode.Tutorial) presentation.Finish();
+                if (mode == Mode.Training) presentation.Finish();
                 else if (mode == Mode.Campaign) presentation.Bill(label, rival != null && rival.Boss ? "THE CHAMPION" : label);
             }
         }
@@ -965,6 +978,7 @@ namespace GolfArcade.Tennis
                 // Hit-stop: a few frames of stillness on contact, then play resumes. The phone's
                 // input is still read, so nothing the player does is lost.
                 if (calibration != null) TickTimingCheck();
+                else if (ControllerSetup) { Player.Tick(Time.deltaTime, 0); Opponent.Tick(Time.deltaTime, 0); }
                 else if (hitStop > 0) hitStop -= Time.deltaTime;
                 // The first point waits for the presentation; the players still live and emote.
                 else if (IntroPlaying)
@@ -1163,6 +1177,7 @@ namespace GolfArcade.Tennis
 
         public void Step(float dt)
         {
+            if (ControllerSetup) return;
             if (!Player || dt <= 0 || ReplayPlaying) return;
             TickAbilities(dt);
             contactHitter = null;

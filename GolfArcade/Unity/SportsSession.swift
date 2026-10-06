@@ -1,6 +1,8 @@
 import SwiftUI
 import AVFoundation
 
+enum ControllerSetupStage { case scan, timing, ready, playing }
+
 enum TennisUltimate: Int, CaseIterable, Identifiable {
     case skybreaker = 0, rescueLob = 1, curveball = 2
     var id: Int { rawValue }
@@ -81,12 +83,13 @@ final class SportsSession {
     var loadoutLocked = false
     // Retained API for older callers; ultimates are no longer a gameplay action.
     func chooseUltimate(_ choice: TennisUltimate) {}
-    func dive() { guard !paused && canDive && finishedMatch == nil else { return }; command("dive"); canDive = false }
+    func dive() { guard pointControlsVisible && canDive else { return }; command("dive"); canDive = false }
     func armUltimate() {}
     var stamina = 1.0
     var phase = "calibrating"
     var tracking: SportsTrackingQuality = .lost
     var trackingWarning = ""
+    var setupStage: ControllerSetupStage = .scan
     var axisGate = SportsAxisGate()
     var active = false
     var tennisControllerActive = false
@@ -107,8 +110,14 @@ final class SportsSession {
     var emoteNotice = ""
     var canPlayEmote: Bool {
         active && ready && loading.finished && !paused && finishedMatch == nil && sport == "tennis"
-        && (emoteWindow == "intro" || emoteWindow == "point")
+        && setupStage == .playing && emoteWindow == "point"
     }
+    var pointControlsVisible: Bool {
+        active && ready && loading.finished && !paused && setupStage == .playing
+        && finishedMatch == nil && sport == "tennis"
+        && ["serve", "toss", "receive", "rally"].contains(tennisPhase)
+    }
+    var tossVisible: Bool { pointControlsVisible && tennisPhase == "serve" }
     func playEmote(slot: Int) {
         guard canPlayEmote, matchEmotes.indices.contains(slot) else { return }
         command("emote", value: Double(slot))
@@ -178,13 +187,10 @@ final class SportsSession {
         motion.onProblem = { [weak self] message in self?.pause(reason:message); self?.status=message }
         motion.onGate = { [weak self] gate in
             guard let self else { return }
-            let justLocked = gate.locked && !self.axisGate.locked
             self.axisGate=gate
             if gate.locked {
                 self.motion.start(tennis:true,travel:self.travel)
-                self.status="Court direction locked. Stand at your center, then tap Ready."
-                // Still aimed at the TV: time its delay now, while it costs the player nothing.
-                if justLocked { self.measureTVDelay() }
+                if self.setupStage == .scan { self.offerTimingCalibration() }
             }
         }
         // Unity gets every sample straight from the sensor queue; this is only for the screens.
@@ -302,7 +308,7 @@ final class SportsSession {
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
-        phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; stamina=1
+        setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
         matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
@@ -381,59 +387,44 @@ final class SportsSession {
               let profile=try? JSONDecoder().decode(TennisAimProfile.self,from:data), profile.valid else { return nil }
         return profile
     }
-    func skipTimingCheck() { timingPrompt=false; finishAimingSetup() }
-    func beginAimingSetup(force:Bool=false) {
-        guard active, ready, !paused, sport == "tennis", !touch, !checkingTiming, !timingPrompt,
-              !Self.benchmark, force else { return }
-        aimFeedTask?.cancel(); aimTimeoutTask?.cancel()
-        aimLesson=TennisAimLesson(saved:force ? nil : storedAimProfile())
-        aimLessonMessage=aimLesson?.message ?? ""
-        motion.setAimProfile(aimLesson?.profile)
-        command("aimPractice",value:1)
-        setShotDepth(0.75)
-        queueAimFeed()
+    /// Court scanning finishes before timing. The match remains held until Ready.
+    func offerTimingCalibration() {
+        guard active, ready, loading.finished, sport == "tennis" else { return }
+        setupStage = .timing; timingPrompt = true; checkingTiming = false
+        menuPauseVisible = false; measuringDelay = false
+        status = "TV scan complete. Calibrate your swing timing on the TV."
+        command("cancelTimingCheck"); command("controllerSetup", value: 1)
+        pause(reason: status)
+        SportsDisplays.shared.external?.isHidden = true
     }
+    func skipTimingCheck() {
+        guard setupStage == .timing else { return }
+        command("cancelTimingCheck")
+        completeTimingCalibration(message: timingCalibration == nil ? "The game will refine your timing as you play." : "Using the saved timing for this screen.")
+    }
+    func completeTimingCalibration(message: String) {
+        guard setupStage == .timing else { return }
+        timingPrompt = false; checkingTiming = false; timingCountdownEnds = nil
+        timingNote = message; setupStage = .ready
+        pause(reason: "Timing calibration complete. Tap Ready to play.")
+    }
+    func receiveTimingResult(_ message: String) {
+        guard checkingTiming, setupStage == .timing else { return }
+        let note: String
+        if let ms = Double(message), ms.isFinite, ms >= 0 {
+            SportsTiming.store(ms / 1000, for: SportsTiming.currentTV())
+            note = String(format: "Timing set — %.0f ms.", ms)
+        } else {
+            note = "The game will refine your timing as you play."
+        }
+        SportsDiagnostics.write("timing check tv=\(SportsTiming.currentTV()) result=\(message)")
+        completeTimingCalibration(message: note)
+    }
+    /// Recenter the racket without entering the retired aiming lesson.
     func recalibrateAiming() {
-        guard active, ready, !touch, !checkingTiming, !measuringDelay, motion.axisLocked else { return }
-        guard motion.calibrate() else { return }
-        phase="steering"; resume(); beginAimingSetup(force:true)
-    }
-    private func queueAimFeed() {
-        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimWaiting=false; aimSwing=nil
-        guard let lesson=aimLesson else { return }
-        motion.setAimProfile(lesson.profile)
-        guard lesson.phase != .complete else { return }
-        let launched=sessionID
-        aimFeedTask=Task { @MainActor [weak self] in
-            do { try await Task.sleep(for:.milliseconds(650)) } catch { return }
-            guard let self, self.sessionID == launched, !self.paused, let trial=self.aimLesson?.current else { return }
-            self.aimFeedSequence+=1; self.aimFeedAt=SportsRuntime.shared().clock(); self.aimWaiting=true
-            let sequence=self.aimFeedSequence
-            self.sendJSON(["version":1,"session":self.sessionID,"action":"aimFeed","value":trial.lane,"value2":trial.wing == 0 ? 1 : -1,"aimSequence":sequence])
-            self.aimTimeoutTask=Task { @MainActor [weak self] in
-                do { try await Task.sleep(for:.seconds(7)) } catch { return }
-                guard let self, self.sessionID == launched, self.aimWaiting, self.aimFeedSequence == sequence else { return }
-                self.aimWaiting=false; self.aimLessonMessage="Take another comfortable swing toward the target."; self.queueAimFeed()
-            }
-        }
-    }
-    private func receiveAimLanding(sequence:Int,x:Double,legal:Bool) {
-        guard sequence == aimFeedSequence, aimWaiting, !paused, var lesson=aimLesson else { return }
-        aimWaiting=false; aimTimeoutTask?.cancel()
-        guard let swing=aimSwing else { aimLessonMessage="Keep the phone face angled toward the target and try again."; queueAimFeed(); return }
-        _=lesson.record(swing,landingX:x,legal:legal)
-        aimLesson=lesson; aimLessonMessage=lesson.message
-        motion.setAimProfile(lesson.profile)
-        if lesson.phase == .complete, let profile=lesson.profile, let data=try? JSONEncoder().encode(profile) {
-            UserDefaults.standard.set(data,forKey:aimProfileKey)
-        }
-        queueAimFeed()
-    }
-    func finishAimingSetup(resumePlay:Bool=true) {
-        aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimWaiting=false; aimSwing=nil; aimLesson=nil; aimChecked=true
-        motion.setAimProfile(storedAimProfile())
-        contacts=[]; command("aimPractice",value:0)
-        if resumePlay && paused { phase="steering"; resume() }
+        guard active, ready, !touch, motion.axisLocked, motion.calibrate() else { return }
+        phase = "steering"; command("recalibrate")
+        pause(reason: "Center set. Tap Ready to continue.")
     }
 
     // MARK: Controller serve
@@ -441,7 +432,7 @@ final class SportsSession {
     /// TOSS pressed. The game judges it against the toss meter under the player's feet on the
     /// TV, as the player saw it then (value -1: "read your meter").
     func toss() {
-        guard active, !paused else { return }
+        guard tossVisible else { return }
         sendJSON(["version":1,"session":sessionID,"action":"toss","value":-1])
     }
     func setServeAim(across: Double, depth: Double) {
@@ -450,11 +441,13 @@ final class SportsSession {
         sendJSON(["version":1,"session":sessionID,"action":"serveAim","value":serveAim.across,"value2":serveAim.depth])
     }
     /// Walk along the baseline before a serve: -1 left, 0 stop, 1 right (held buttons).
-    func skipTutorialStep() { command("tutorialNext") }
     func nudge(_ direction: Double) { command("nudge",value:direction) }
 
     func pause(reason:String="Paused on phone — tap Ready to continue") {
         guard active else { return }
+        if checkingTiming {
+            command("cancelTimingCheck"); checkingTiming = false; timingPrompt = true; timingCountdownEnds = nil
+        }
         SportsDiagnostics.write("pause reason=\(reason) touch=\(touch) phase=\(phase)")
         sendJSON(["version":1,"session":sessionID,"action":"pause","reason":reason]); paused=true; status=reason
         if reason == "Paused on phone — tap Ready to continue", ready, loading.finished, finishedMatch == nil {
@@ -463,6 +456,7 @@ final class SportsSession {
     }
     func resume() {
         guard displayConnected else { pause(reason: "Reconnect your TV or Mac to continue."); return }
+        guard sport != "tennis" || setupStage == .playing else { status = "Finish TV scan and timing calibration, then tap Ready."; return }
         guard ready, touch || phase == "steering" else { status="Tap Ready to set your center and play."; return }
         menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
         if !displayConnected { SportsDisplays.shared.restorePhoneControls() }
@@ -471,40 +465,45 @@ final class SportsSession {
         SportsDiagnostics.write("resume touch=\(touch) phase=\(phase) target=\(target)")
     }
     func readyToPlay() {
-        guard displayConnected else { pause(reason: "Reconnect your TV or Mac to continue."); return }
-        guard ready else { return }
+        guard displayConnected, active, ready, loading.finished else { return }
+        if sport == "tennis", setupStage == .scan || setupStage == .timing {
+            menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
+            status = setupStage == .scan ? "Scan your TV to continue." : "Start the timing calibration to continue."
+            return
+        }
         if !touch {
-            guard sport != "tennis" || motion.axisLocked else { status="Aim the back of the phone at the TV to set the court direction first."; return }
-            guard !measuringDelay else { status="Keep pointing at the TV for a moment — timing its picture…"; return }
+            guard sport != "tennis" || motion.axisLocked else { return }
             guard motion.calibrate() else { return }
-            phase="steering"
-            command("recalibrate")
+            phase = "steering"; command("recalibrate")
         }
-        let needsTiming = sport == "tennis" && !Self.benchmark && (checkTimingOnResume || timingCalibration == nil)
-        if needsTiming { command("aimPractice", value: 1) }
+        setupStage = .playing
+        command("controllerSetup", value: 0)
         resume()
-        if aimLesson != nil { queueAimFeed(); return }
-        if !paused && needsTiming {
-            if checkTimingOnResume { checkTimingOnResume = false; startTimingCheck() }
-            else { timingPrompt = true }
-        }
     }
-    /// Swing along with a ball bouncing on the TV for a few seconds; Unity measures how far
-    /// behind the picture the swings land and times every swing to what the player sees.
+    /// Unity renders the timing ball on the TV; motion samples keep flowing from the phone.
     func startTimingCheck() {
-        guard active, !paused, sport == "tennis" else { return }
-        timingPrompt=false; checkingTiming=true; timingNote=""
-        timingCountdownEnds=Date().addingTimeInterval(5)
+        guard active, ready, loading.finished, displayConnected, sport == "tennis",
+              setupStage == .timing, !checkingTiming else { return }
+        if !touch {
+            guard motion.axisLocked, motion.calibrate() else { return }
+            phase = "steering"
+        }
+        menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
+        command("controllerSetup", value: 1)
+        command("resume"); paused = false
+        timingPrompt = false; checkingTiming = true; timingNote = ""
+        timingCountdownEnds = Date().addingTimeInterval(5)
+        status = "Swing with the bouncing ball on your TV."
         command("timingCheck")
     }
-    /// Options → re-check: runs on resuming if the match is paused.
     func recheckTiming() {
-        if paused { checkTimingOnResume=true; readyToPlay() } else { startTimingCheck() }
+        guard touch || motion.axisLocked else { beginAxisCapture(); return }
+        offerTimingCalibration()
     }
     func useTouch() {
         if sport == "tennis" {
             timingPrompt=false; checkingTiming=false; timingCountdownEnds=nil; checkTimingOnResume=false
-            finishAimingSetup(resumePlay:false)
+            command("cancelTimingCheck"); aimLesson = nil; setupStage = .ready
         }
         pause(); swingSequence=max(swingSequence,motion.swingCount); touch=true; trackingWarning=""; measuringDelay=false
         motion.stop(); command("touch"); status="Touch controls selected. Tap Ready to play."
@@ -522,6 +521,9 @@ final class SportsSession {
         if sport == "tennis" {
             aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimWaiting=false; aimSwing=nil; aimChecked=false
         }
+        setupStage = .scan; timingPrompt = false; checkingTiming = false
+        command("cancelTimingCheck"); command("controllerSetup", value: 1)
+        pause(reason: "Scan your TV to set the court direction.")
         axisGate=SportsAxisGate()
         status="Stand about 2.5 m back, point the back of your phone at the TV and hold still."
         motion.beginAxisCapture(travel:travel)
@@ -530,7 +532,7 @@ final class SportsSession {
     func useCurrentDirection() {
         guard motion.forceAxisFromCurrentPose() else { return }
         motion.start(tennis:true,travel:travel)
-        status="Court direction set. Stand at your center, then tap Ready. Use flip if left/right are swapped."
+        if setupStage == .scan { offerTimingCalibration() }
     }
     /// One tap to mirror steering, for when left and right come out swapped.
     func flipSteering() {
@@ -579,13 +581,18 @@ final class SportsSession {
                 MultiplayerService.shared.runtimeUnavailable("This Unity export does not contain multiplayer. Re-export and rebuild the integrated app.")
                 return
             }
-            paused=false; status=multiplayerSeat<0 ? "Watching" : "Playing"
+            setupStage = .playing; paused=false; status=multiplayerSeat<0 ? "Watching" : "Playing"
             if !touch && multiplayerSeat>=0 { motion.start(tennis:sport == "tennis",travel:travel) }
             command("resume"); MultiplayerService.shared.runtimeLoaded(); return
         }
-        if touch { readyToPlay() }
-        else if sport == "tennis" && !motion.axisLocked { beginAxisCapture() }
-        else { motion.start(tennis:sport == "tennis",travel:travel); status="Stand at your center, then tap Ready." }
+        if Self.benchmark { setupStage = .ready; readyToPlay(); return }
+        if sport == "tennis" {
+            if touch { offerTimingCalibration() } else { beginAxisCapture() }
+        } else {
+            setupStage = .ready
+            if !touch { motion.start(tennis:false,travel:travel) }
+            status = "Stand at your center, then tap Ready."
+        }
     }
     /// Completion is part of every Unity heartbeat, independently of one-shot result events.
     func receiveMatchSnapshot(_ event: [String: Any]) {
@@ -655,7 +662,7 @@ final class SportsSession {
         pointClips.reset()
         multiplayerMatchID=nil; multiplayerSeat = -1
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false
-        loading.cancel(); tutorialStep=nil; finishedMatch=nil
+        loading.cancel(); tutorialStep=nil; finishedMatch=nil; timingPrompt=false; setupStage = .scan
         SportsRuntime.shared().pause(true); active=false; ready=false; paused=true; tennisControllerActive=false
         SportsDisplays.shared.endPreview(); status="Choose a sport."
         SportsDisplays.shared.showMenu()
@@ -711,27 +718,7 @@ final class SportsSession {
                 if window != emoteWindow { emoteNotice = "" }
                 emoteWindow = window
             case "emoteResult": emoteNotice = event["message"] as? String ?? ""
-            case "timing":
-                checkingTiming=false
-                let message=event["message"] as? String ?? "failed"
-                if let ms=Double(message) {
-                    SportsTiming.store(ms/1000, for: SportsTiming.currentTV())
-                    timingNote=String(format:"Timing set — %.0f ms. Swings now land when you see them.",ms)
-                } else {
-                    timingNote="No steady rhythm found — the game will learn your timing as you play."
-                }
-                SportsDiagnostics.write("timing check tv=\(SportsTiming.currentTV()) result=\(message)")
-                finishAimingSetup()
-            case "aimLanding":
-                let parts=(event["message"] as? String ?? "").split(separator:"|")
-                if parts.count == 4, let sequence=Int(parts[0]), let x=Double(parts[1]) {
-                    receiveAimLanding(sequence:sequence,x:x,legal:parts[3] == "1")
-                }
-            case "aimMiss":
-                let parts=(event["message"] as? String ?? "").split(separator:"|",maxSplits:1)
-                if let first=parts.first, let sequence=Int(first), sequence == aimFeedSequence, aimWaiting {
-                    aimWaiting=false; aimTimeoutTask?.cancel(); aimLessonMessage="Try again as the practice ball reaches you."; queueAimFeed()
-                }
+            case "timing": receiveTimingResult(event["message"] as? String ?? "failed")
             case "abilities":
                 let fields = (event["message"] as? String ?? "").split(separator: "|")
                 if fields.count == 5, let meter = Double(fields[0]), let cooldown = Double(fields[2]), meter.isFinite, cooldown.isFinite {
@@ -740,7 +727,6 @@ final class SportsSession {
                 }
             case "contact":
                 if let contact = TennisContact(line: event["message"] as? String ?? "") { contacts = Array((contacts + [contact]).suffix(12)) }
-                if TennisMenu.shared.launch?.mode == .tutorial { OnboardingFlow.shared.hit() }
             case "flash": if let rendered=Double(event["message"] as? String ?? "") { flashShown(at:rendered) }
             case "phase":
                 let parts=(event["message"] as? String ?? "").split(separator:"|").map(String.init)
@@ -755,19 +741,9 @@ final class SportsSession {
                 tennisPhase=phase
                 if phase == "finished" { receiveMatchSnapshot(event) }
                 if parts.count>1 { serveFromDeuce=parts[1] == "deuce" }
-            case "tutorialStep":
-                let parts=(event["message"] as? String ?? "").split(separator:"|",maxSplits:2).map(String.init)
-                if parts.count == 3, let i=Int(parts[0]), let n=Int(parts[1]) {
-                    tutorialStep=(i,n,parts[2]); OnboardingFlow.shared.reportedStep(i, sport: Sport(rawValue: sport) ?? .tennis)
-                }
-            case "tutorialSuccess", "tutorialSkip":
-                let parts = (event["message"] as? String ?? "").split(separator: "|").map(String.init)
-                if parts.count == 2 { Analytics.track(event["type"] as? String == "tutorialSkip" ? "tutorial_step_skip" : "tutorial_step_success", ["i": parts[0], "misses": parts[1]]) }
             case "golfHoleDone":
                 let parts = (event["message"] as? String ?? "").split(separator: "|").map(String.init)
                 if parts.count == 2 { Analytics.track("golf_hole_done", ["strokes": parts[0], "capped": parts[1]]) }
-            case "tutorialDone": TennisMenu.shared.tutorialFinished()
-            case "shot": if TennisMenu.shared.launch?.mode == .tutorial { OnboardingFlow.shared.hit() }
             case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n); SportsDiagnostics.write("rally persisted \(n)") }
             case "matchStats": lastMatchStats = MatchStats(line: event["message"] as? String ?? "")
             case "matchOver":

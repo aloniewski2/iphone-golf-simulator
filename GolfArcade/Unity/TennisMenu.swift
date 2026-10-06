@@ -328,7 +328,7 @@ final class TennisMenu {
                 if id == "campaign" { show(.campaign) }; return
             }
             guard hubUnlocked(sport, id) else {
-                refuse(id.hasPrefix("golf") ? "Coming soon" : "Finish the tutorial first — it only takes a few minutes")
+                refuse("Coming soon")
                 return
             }
             switch id {
@@ -358,7 +358,7 @@ final class TennisMenu {
             if confirmingReset {
                 confirmingReset = false; progress.resetTutorials(); campaign.restart(); notice = "Progress reset"
             } else { confirmingReset = true; notice = "Press again to erase campaign progress" }
-        case "resetTips": UserDefaults.standard.set(true, forKey: "sports.resetCoaching"); notice = "Coaching tips will show again"
+        case "resetTips": notice = "Coaching is disabled"
         case "replayOnboarding": OnboardingFlow.shared.replay()
         case "relock": notice = "The court direction is set again at the start of your next match"; session.motion.clearAxis()
         case "timing": session.forceTimingCheckNextMatch(); notice = "The timing check runs at the start of your next match"

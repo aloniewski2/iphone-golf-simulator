@@ -372,7 +372,7 @@ struct IslandPauseScreen: View {
                             if !session.touch {
                                 Button("Re-aim at the TV") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.beginAxisCapture(); dismiss() }
                                 if session.sport == "tennis" {
-                                    Button("Recalibrate aiming") { session.recalibrateAiming(); dismiss() }
+                                    Button("Recenter racket") { session.recalibrateAiming(); dismiss() }
                                         .disabled(!session.motion.axisLocked || session.checkingTiming || session.measuringDelay)
                                 }
                                 Button("Flip left / right") { session.flipSteering() }

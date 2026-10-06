@@ -21,7 +21,6 @@ namespace GolfArcade.Game
             public string mode,opponent,opponentName,round; public int ultimate;
             // The match format (sets to win, games per set) and the coach's changeover lines, "|"-separated.
             public int sets=1,games=3; public string coach;
-            public int tutorialStart;
             // The player's kit colours (hex, "" = the kit's own), coaching tips, TV edge margin.
             public int hairStyle=1,hairColor=1,faceShape,heightChoice=2,buildChoice=2,haircut=-1;
             public float bodySize=-1;
@@ -109,17 +108,8 @@ namespace GolfArcade.Game
             TennisGame.TimingChecked+=lag=>Emit("timing",lag<0 ? "failed" : (lag*1000).ToString("0",System.Globalization.CultureInfo.InvariantCulture));
             TennisGame.ContactMade+=(face,grade,super)=>Emit("contact",
                 string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:0.000},{1:0.000},{2},{3},{4:0}",face.x,face.y,(int)grade,super?1:0,TennisGame.LastLateness*1000));
-            // The tutorial's steps for the phone, and its end; rallies for the stats; golf shots.
-            TennisTutorial.StepChanged+=(i,n,text)=>Emit("tutorialStep",$"{i}|{n}|{text}");
-            TennisTutorial.Finished+=()=>Emit("tutorialDone","");
             TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
-            GolfGame.ShotStruck+=()=>Emit("shot","");
             GolfGame.NativeExitRequested+=GolfExit;
-
-            GolfTutorial.StepChanged+=(i,n,text)=>Emit("tutorialStep",$"{i}|{n}|{text}");
-            GolfTutorial.StepResolved+=(i,misses,skip)=>Emit(skip ? "tutorialSkip" : "tutorialSuccess",$"{i}|{misses}");
-            GolfTutorial.HoleDone+=(strokes,capped)=>Emit("golfHoleDone",$"{strokes}|{(capped ? "true" : "false")}");
-            GolfTutorial.Finished+=()=>Emit("tutorialDone","");
             TennisGame.Landed += AimLanding;
             TennisGame.DrillPoint += AimMiss;
         }
@@ -183,13 +173,12 @@ namespace GolfArcade.Game
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
                     case "coaching": TennisCoach.ResetTips(); break;
                     case "latency": if(tennis) tennis.DisplayLatency=m.value; break;
-                    case "tutorialNext":
-                        if(tennis && tennis.PlayMode == TennisGame.Mode.Tutorial) tennis.GetComponent<TennisTutorial>()?.SkipStep();
-                        break;
+                    case "controllerSetup": if(tennis) tennis.SetControllerSetup(m.value>0); break;
+                    case "cancelTimingCheck": if(tennis) tennis.CancelTimingCheck(); break;
                     case "timingCheck": if(tennis) tennis.StartTimingCheck(); break;
                     // The controller serve: the toss meter's reading, the aim in the target box,
                     // and walking along the baseline before a serve (held buttons: -1, 0, 1).
-                    case "toss": if(tennis) tennis.Toss(m.value); break;
+                    case "toss": if(tennis && !paused && !tennis.ControllerSetup) tennis.Toss(m.value); break;
                     case "serveAim": if(tennis) tennis.SetServeAim(m.value,m.value2); break;
                     case "nudge": if(tennis) tennis.ServeNudge=Mathf.Clamp(m.value,-1,1); break;
                     case "flash": if(!flashing) StartCoroutine(Flash(m.value)); break;
@@ -235,7 +224,7 @@ namespace GolfArcade.Game
                 loading=false; SetPaused(true); Emit("error","The sport did not initialize its gameplay scene."); yield break;
             }
             if(tennis) { tennis.NativeControlled=true; tennis.AutoPlay=m.bench; if(m.difficulty>=0) tennis.OpponentDifficulty=Mathf.Clamp01(m.difficulty); tennis.SelectCharacter(m.female);
-                TennisCoach.TipsEnabled=m.tips;
+                TennisCoach.TipsEnabled=false;
                 tennis.ApplyOutfit(TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin));
                 tennis.Player.Customize(m.skin,m.hairStyle,m.hairColor,m.faceShape,m.heightChoice,m.buildChoice,m.bodySize,TennisLook.Kit.From(m.shirt,m.shorts,m.accent,m.racket,m.skin));
                 // The locker's look on the visible Hero V4 (the gameplay rig above is hidden).
@@ -247,10 +236,9 @@ namespace GolfArcade.Game
                   tennis.SetPlayerLook(look); }   // kept and re-applied on every rebuild
                 var mode=m.mode=="campaign" ? TennisGame.Mode.Campaign : m.mode=="training" ? TennisGame.Mode.Training
                     : TennisGame.Mode.Exhibition;
-                TennisTutorial.StartIndex = mode == TennisGame.Mode.Tutorial ? m.tutorialStart : 0;
                 tennis.ConfigureMatch(mode,m.opponent,m.opponentName,m.round,m.sets,m.games,
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
-            if(tennis) tennis.EquipEmotes(m.emotes);
+            if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) golf.PrepareNativeAddress(m.course);
             if(!string.IsNullOrEmpty(m.network)) SportsMultiplayer.Configure(m.network);
