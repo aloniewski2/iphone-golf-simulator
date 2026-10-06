@@ -505,6 +505,10 @@ namespace GolfArcade.Tennis
             float dt = Time.deltaTime;
             // ---- action layer: prepare / swing / follow-through, contact-locked to gameplay
             bool swinging = actor.Swinging;
+            // The phone already spends time detecting a stroke and the TV transporting
+            // it. Layer fades must not add another 80–150 ms to the player's response.
+            // Keep locomotion/leg and emote transitions; apply the stroke arms now.
+            bool responsiveStroke = Match && isPlayer && swinging;
             if (swinging)
             {
                 if (!wasSwinging) swingClip = Playable(StrokeClip());
@@ -585,7 +589,8 @@ namespace GolfArcade.Tennis
             float want = actionActive || juiceActive ? 1 : 0;
             // emotes ease in (lead-in) instead of popping; strokes stay snappy
             float rise = juiceActive && !actionActive ? .26f : .08f;
-            if (FluidOff || (want > 0 && actionActive)) actionWeight = Mathf.MoveTowards(actionWeight, want, dt / (want > 0 ? rise : .2f));
+            if (responsiveStroke) { actionWeight = 1; actionWeightVel = 0; }
+            else if (FluidOff || (want > 0 && actionActive)) actionWeight = Mathf.MoveTowards(actionWeight, want, dt / (want > 0 ? rise : .2f));
             // Score80 A: ease-in/ease-out (not a linear ramp) out of a follow-through and into / out of emotes.
             else { actionWeight = Mathf.SmoothDamp(actionWeight, want, ref actionWeightVel, want > 0 ? rise * .55f : .1f, Mathf.Infinity, dt); if (Mathf.Abs(actionWeight - want) < .002f) actionWeight = want; }
             // Legs: a stroke taken on the move keeps the run legs (planted cycle) and swings only the upper body;
@@ -607,6 +612,7 @@ namespace GolfArcade.Tennis
                 if (actionActive) target[(int)action] += fullAction; else if (juiceActive) target[(int)juice] += fullAction;
             }
             float upperW = FluidOff || !actionActive || !IsStroke(action) ? 0 : actionWeight * Mathf.Max(legsFromRun, 1 - Mathf.Min(1, actionLegs / Mathf.Max(.01f, actionWeight)));
+            if (responsiveStroke && !FluidOff) upperW = 1;
             if (Match)
             {
                 // the stroke that just ended keeps its upper-body clip (frozen at its last time) while the layer eases out
@@ -624,7 +630,7 @@ namespace GolfArcade.Tennis
             for (int k = 0; k < Count; k++)
             {
                 if (!valid[k]) continue;
-                weight[k] = FluidOff ? Mathf.MoveTowards(weight[k], target[k], dt / .12f)
+                weight[k] = responsiveStroke ? target[k] : FluidOff ? Mathf.MoveTowards(weight[k], target[k], dt / .12f)
                     : Mathf.Abs(weight[k] - target[k]) < .002f ? target[k] : Mathf.SmoothDamp(weight[k], target[k], ref weightVel[k], .06f, Mathf.Infinity, dt);   // eased cross-fades
                 var id = (Clip)k;
                 if (id == Clip.Ready || id == Clip.Idle) time[k] = (time[k] + dt) % length[k];
@@ -644,7 +650,7 @@ namespace GolfArcade.Tennis
             if (Match)
             {
                 int wantUp = actionActive && IsStroke(action) ? (int)action : upperFadeClip; float upSum = 0;
-                for (int k = 0; k < Count; k++) { if (!upperPlayables[k].IsValid()) continue; upperBlend[k] = Mathf.MoveTowards(upperBlend[k], k == wantUp ? 1 : 0, dt / MatchUpperSwitch); upSum += upperBlend[k]; }
+                for (int k = 0; k < Count; k++) { if (!upperPlayables[k].IsValid()) continue; upperBlend[k] = responsiveStroke ? (k == wantUp ? 1 : 0) : Mathf.MoveTowards(upperBlend[k], k == wantUp ? 1 : 0, dt / MatchUpperSwitch); upSum += upperBlend[k]; }
                 for (int k = 0; k < Count; k++) if (upperPlayables[k].IsValid()) upperMixer.SetInputWeight(k, upSum > 1e-4f ? upperBlend[k] / upSum : (k == wantUp ? 1 : 0));
             }
             else for (int k = 0; k < Count; k++) if (upperPlayables[k].IsValid()) upperMixer.SetInputWeight(k, actionActive && k == (int)action ? 1 : 0);
@@ -784,6 +790,12 @@ namespace GolfArcade.Tennis
         {
             if (dt < 1e-4f) return;
             var raw = actor.transform.position; raw.y = 0;
+            if (isPlayer && game && game.PlayerUsesTrackedMovement) {
+                // Gameplay already receives the filtered tracking position. A second
+                // 100 ms visual correction makes live steering appear to trail it.
+                smoothPos = lastRawPos = raw; smoothInit = true; smoothLocal = Vector3.zero;
+                return;
+            }
             if (!smoothInit) { smoothPos = raw; lastRawPos = raw; smoothInit = true; }
             stillFrames = Vector3.Distance(raw, lastRawPos) < 1e-5f ? stillFrames + 1 : 0; lastRawPos = raw;
             var vel = actor.transform.right * actor.Speed + actor.transform.forward * actor.ForwardSpeed; vel.y = 0; vel *= paceRatio;

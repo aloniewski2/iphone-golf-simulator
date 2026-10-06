@@ -709,6 +709,7 @@ final class SportsSession {
                 status="Display reconnected. Tap Ready to set your center and play."
             case "recording": pointClips.receive(event)
             case "perf": SportsDiagnostics.write("perf \(event["message"] as? String ?? "")")
+            case "stroke": SportsDiagnostics.write("stroke \(event["message"] as? String ?? "")")
             case "score":
                 score = TennisScore(line: event["message"] as? String ?? "")
                 // The final scoreboard ("YOU WIN 6–4 3–6 7–5" / "OPPONENT WINS …") also ends the

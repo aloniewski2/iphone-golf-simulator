@@ -352,14 +352,20 @@ namespace GolfArcade.Game
                 // in one sample when frames are slow, so the order here matters.
                 if(sample.swingStart>lastSwingStart) {
                     lastSwingStart=sample.swingStart;
-                    if(tennis) tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing,inputAge);
+                    if(tennis) {
+                        tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing,inputAge);
+                        Emit("stroke",$"onset ageMs={inputAge*1000:0.0} animated={tennis.Player && tennis.Player.Swinging} provisional={tennis.Player && tennis.Player.Provisional} screenMs={tennis.Lag*1000:0.0}");
+                    }
                 }
                 if(sample.swing>lastSwing) {
                     lastSwing=sample.swing;
                     // Racket-face aim, measured on the phone at the moment the stroke confirmed.
                     // Touch play aims with its own control (the "aim" command) instead.
                     if(tennis && !touch) tennis.AimInput=Mathf.Clamp(sample.aim,-1,1);
-                    if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing,inputAge);
+                    if(tennis) {
+                        tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing,inputAge);
+                        Emit("stroke",$"confirmed ageMs={inputAge*1000:0.0} animated={tennis.Player && tennis.Player.Swinging} provisional={tennis.Player && tennis.Player.Provisional}");
+                    }
                     if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
                 }
                 if(sample.swingAbort>lastSwingAbort) {

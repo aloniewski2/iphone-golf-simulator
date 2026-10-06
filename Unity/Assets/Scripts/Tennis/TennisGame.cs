@@ -333,11 +333,13 @@ namespace GolfArcade.Tennis
             if (!Player || Player.Swinging || resetTimer > 0 || ReplayPlaying) return;
             if (Flow == Phase.PlayerServeToss && !serveCommitted)
             {
-                // Keep the compensated onset for grading, then wait for a real stroke.
+                // Start the visible serve on onset, as rally strokes do. Confirmation
+                // gates the ball and score, never the player's animation.
                 if (!serveOnsetPending) {
                     serveOnsetAt = phaseTimer - (TennisRules.ServeOnsetLatency + Mathf.Clamp(inputAge, 0, .25f) + Lag) * SpeedScale;
                     serveOnsetPending = true;
-                } // Grade the original onset only after the detector confirms a real swing.
+                    Player.Serve(.65f, true);
+                }
                 return;
             }
             if (Flow != Phase.Rally || faultDelay > 0 || TrackingOverhead) return;
@@ -508,6 +510,14 @@ namespace GolfArcade.Tennis
             // A finished match waits on the results card: swing to play again.
             if (!NativeControlled && Flow == Phase.MatchOver && PlayMode != Mode.Campaign && coach && coach.ShowingResults && resetTimer < ResultsHold - 1.5f) { NewMatch(); return; }
             if (!Player || resetTimer > 0 || ReplayPlaying) return;
+            if (Flow == Phase.PlayerServeToss && !serveCommitted)
+            {
+                bool touchSwing = !NativeControlled || NativeSportsSession.Touch;
+                float at = serveOnsetPending ? serveOnsetAt : phaseTimer - ((touchSwing ? 0 : TennisRules.ServeLatency) + Lag + Mathf.Clamp(inputAge, 0, .25f)) * SpeedScale;
+                serveOnsetPending = false;
+                CommitServe(at);
+                return;
+            }
             if (Player.Swinging && Player.Provisional)
             {
                 LockShotAim();
@@ -516,16 +526,6 @@ namespace GolfArcade.Tennis
                 return;
             }
             if (Player.Swinging) return;
-            if (Flow == Phase.PlayerServeToss && !serveCommitted)
-            {
-                // A confirmed swing with no onset before it (touch, keyboard): its moment is now,
-                // less what detection took and what the TV's delay hid.
-                bool touchSwing = !NativeControlled || NativeSportsSession.Touch;
-                float at = serveOnsetPending ? serveOnsetAt : phaseTimer - ((touchSwing ? 0 : TennisRules.ServeLatency) + Lag + Mathf.Clamp(inputAge, 0, .25f)) * SpeedScale;
-                serveOnsetPending = false;
-                CommitServe(at);
-                return;
-            }
             if (Flow != Phase.Rally || faultDelay > 0) return;
             StartRallySwing(power, handSide, lift, strokeFacing, false);
         }
@@ -594,7 +594,8 @@ namespace GolfArcade.Tennis
             Feedback = verdict.Label;
             if (hud) hud.LockServeMeter(verdict.Power, verdict.Perfect);
             pendingServe = verdict; pendingServePower = verdict.Power; serveLaunchPending = true;
-            if (HonestContactEnabled && !Player.Swinging)
+            if (Player.Provisional) Player.Confirm(Mathf.Lerp(.5f, 1f, verdict.Power));
+            if (!NativeControlled && HonestContactEnabled && !Player.Swinging)
             {
                 // Honest serve: the visible strings meet the toss. If the ball needs longer to drop
                 // to the racket than a paced swing can wait, hold the trophy position and start
@@ -952,6 +953,9 @@ namespace GolfArcade.Tennis
         // Public adapter boundary: tracked phone position can supply this without changing physics.
         public void SetLateralInput(float normalizedSpeed, bool sprint)
         { MoveInput = Mathf.Clamp(normalizedSpeed,-1,1); Sprint = sprint; }
+        /// Physical steering owns the lateral axis. Automatic depth positioning remains
+        /// available, but the phone must never wait on the AI's reaction timer.
+        public bool PlayerUsesTrackedMovement => NativeControlled && !AutoPlay && !NativeSportsSession.Touch && !GolfArcade.Multiplayer.SportsMultiplayer.Active;
 
         void Update()
         {
@@ -1163,9 +1167,20 @@ namespace GolfArcade.Tennis
             Vector2 gap = goal - me; float distance = gap.magnitude;
             float arrive = Mathf.Sqrt(2 * TennisRules.Deceleration * distance);
             Vector2 wanted = distance > .02f ? gap / distance * Mathf.Min(top, arrive) : Vector2.zero;
-            moveVelocity = Vector2.MoveTowards(moveVelocity, wanted, dt * TennisRules.Acceleration);
+            bool tracked = PlayerUsesTrackedMovement && resetTimer <= 0;
+            if (tracked) {
+                float lateralTop = (Sprint ? TennisRules.SprintSpeed : TennisRules.RunSpeed) * Mathf.Lerp(.72f, 1, Mathf.Clamp01(Stamina / .35f));
+                if (Player.GroundRecovering) lateralTop *= .08f;
+                wanted.x = Mathf.Clamp(MoveInput, -1, 1) * lateralTop;
+                // A live controller reversal is input, rather than the rival's human
+                // reaction animation. Keep court speed bounded, respond within 120 ms.
+                moveVelocity.x = Mathf.MoveTowards(moveVelocity.x, wanted.x, dt * 48f);
+                moveVelocity.y = Mathf.MoveTowards(moveVelocity.y, wanted.y, dt * TennisRules.Acceleration);
+            } else moveVelocity = Vector2.MoveTowards(moveVelocity, wanted, dt * TennisRules.Acceleration);
             Vector2 next = me + moveVelocity * dt;
-            if (Vector2.Dot(goal - next, gap) < 0 && distance < .3f) { next = goal; moveVelocity = Vector2.zero; }
+            if (!tracked && Vector2.Dot(goal - next, gap) < 0 && distance < .3f) { next = goal; moveVelocity = Vector2.zero; }
+            float courtX = Mathf.Clamp(next.x, -TennisRules.CourtHalfWidth - 2.4f, TennisRules.CourtHalfWidth + 2.4f);
+            if (courtX != next.x) { next.x = courtX; moveVelocity.x = 0; }
             LateralSpeed = moveVelocity.x;
             Player.transform.position = new Vector3(next.x, playerPosition.y, next.y);
         }
@@ -1188,7 +1203,13 @@ namespace GolfArcade.Tennis
             if (!ServeLocked) Player.ReachTossHand(Vector3.zero, 0);
             if (Flow != Phase.OpponentServe) Opponent.ReachTossHand(Vector3.zero, 0);
             Vector3 playerPosition = Player.transform.position;
-            if (ServeLocked)
+            if (Flow == Phase.PlayerServeToss)
+            {
+                // The toss is anchored to the release position. Continuing the walk-in
+                // under it moves the racket away from that flight and manufactures a miss.
+                LateralSpeed = 0; moveVelocity = Vector2.zero; serveWalkSpeed = 0;
+            }
+            else if (ServeLocked)
             {
                 // Before the toss the player may walk along the baseline, within the half they
                 // must serve from; once TOSS is pressed the feet are planted.

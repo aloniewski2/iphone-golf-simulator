@@ -10,6 +10,94 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests {
     public sealed class NativeTennisSetupTests {
+        [UnityTest] public IEnumerator MotionSteeringRespondsWithoutWaitingForTheAutomaticReaction() {
+            yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single);
+            yield return null;
+            var game = Object.FindFirstObjectByType<TennisGame>();
+            game.NativeControlled = true; game.ManualSimulation = true;
+            game.ConfigureMatch(TennisGame.Mode.Exhibition, null, null, null);
+            game.SetControllerSetup(true); game.SetControllerSetup(false);
+            game.Player.transform.position = new Vector3(0, .035f, -11.2f);
+            game.InjectBall(new Vector3(-3, 1.4f, -4), new Vector3(0, 0, -4));
+            Assert.That(game.PlayerUsesTrackedMovement, Is.True);
+            game.SetLateralInput(1, true);
+            float before = game.Player.transform.position.x;
+            game.Step(1f / 120);
+            Assert.That(game.Player.transform.position.x, Is.GreaterThan(before), "A right step must react on the first input frame, even while AI reads a leftward ball");
+            for (int i = 0; i < 12; i++) game.Step(1f / 120);
+            Assert.That(game.LateralSpeed, Is.GreaterThan(0));
+            game.SetLateralInput(-1, true);
+            for (int i = 0; i < 15; i++) game.Step(1f / 120);
+            Assert.That(game.LateralSpeed, Is.LessThan(0), "Changing direction must not wait through an AI reaction");
+            var driver = game.Player.GetComponentInChildren<HeroTennisDriver>();
+            typeof(HeroTennisDriver).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(driver, null);
+            Assert.That((Vector3)typeof(HeroTennisDriver).GetField("smoothLocal", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(driver), Is.EqualTo(Vector3.zero), "The visible player must stay on the controller-driven actor");
+        }
+
+        [UnityTest] public IEnumerator ServeMovesOnOnsetButCannotLaunchBeforeConfirmation() {
+            yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single);
+            yield return null;
+            var game = Object.FindFirstObjectByType<TennisGame>();
+            game.NativeControlled = true; game.ManualSimulation = true;
+            game.ConfigureMatch(TennisGame.Mode.Exhibition, null, null, null);
+            game.SetControllerSetup(true); game.SetControllerSetup(false);
+            game.DisplayLatency = .18f;
+            game.Toss(1);
+            for (int i = 0; i < 300 && game.Flow != TennisGame.Phase.PlayerServeToss; i++) game.Step(1f / 120);
+            Assert.That(game.Flow, Is.EqualTo(TennisGame.Phase.PlayerServeToss));
+            Vector3 planted = game.Player.transform.position;
+            // A swing at the apex as seen on this screen arrives after the measured
+            // transport delay and detector onset. Grade that original moment.
+            for (int i = 0; i < 101; i++) game.Step(1f / 120);
+            Assert.That(game.Player.transform.position, Is.EqualTo(planted), "The server must not keep walking away from an in-flight toss");
+            var committed = typeof(TennisGame).GetField("serveCommitted", BindingFlags.Instance | BindingFlags.NonPublic);
+            var launch = typeof(TennisGame).GetField("serveLaunchPending", BindingFlags.Instance | BindingFlags.NonPublic);
+            game.BeginSwing(0, .3f, 1);
+            Assert.That(game.Player.Swinging, Is.True, "The first stroke sample must move the server immediately");
+            Assert.That(game.Player.Provisional, Is.True);
+            Assert.That(committed.GetValue(game), Is.EqualTo(false));
+            Assert.That(launch.GetValue(game), Is.EqualTo(false));
+            game.AbortSwing();
+            Assert.That(game.Player.Swinging, Is.False);
+            Assert.That(committed.GetValue(game), Is.EqualTo(false), "A rejected step cannot commit a serve");
+            game.BeginSwing(0, .3f, 1);
+            for (int i = 0; i < 8; i++) game.Step(1f / 120);
+            var driver = game.Player.GetComponentInChildren<HeroTennisDriver>();
+            typeof(HeroTennisDriver).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(driver, null);
+            game.RequestSwing(.8f, 0, .3f, 1);
+            Assert.That(game.Player.Swinging, Is.True);
+            Assert.That(game.Player.Provisional, Is.False);
+            Assert.That(committed.GetValue(game), Is.EqualTo(true));
+            Assert.That(launch.GetValue(game), Is.EqualTo(true));
+            Assert.That((float)typeof(TennisGame).GetField("serveSwingIn", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(game), Is.LessThan(0), "Confirmation must not add a second animation wait");
+            for (int i = 0; i < 60 && game.Flow == TennisGame.Phase.PlayerServeToss; i++) game.Step(1f / 120);
+            Assert.That(game.Flow, Is.EqualTo(TennisGame.Phase.Rally), "An on-time confirmed serve must leave the strings and start play");
+            Assert.That(game.LastContactGap, Is.LessThanOrEqualTo(.23f), "Immediate animation must preserve visible racket-ball contact");
+        }
+
+        [UnityTest] public IEnumerator PhoneRallyStrokeHasFullArmWeightInItsFirstRenderedFrame() {
+            yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single);
+            yield return null;
+            var game = Object.FindFirstObjectByType<TennisGame>();
+            game.NativeControlled = true; game.ManualSimulation = true;
+            game.ConfigureMatch(TennisGame.Mode.Exhibition, null, null, null);
+            game.SetControllerSetup(true); game.SetControllerSetup(false);
+            game.DisplayLatency = .18f;
+            game.InjectBall(game.Player.transform.position + new Vector3(.6f, 1.3f, 2), new Vector3(0, 0, -8));
+            var driver = game.Player.GetComponentInChildren<HeroTennisDriver>();
+            Assert.That(driver, Is.Not.Null);
+            game.BeginSwing(0, 0, 1);
+            Assert.That(game.Player.Provisional, Is.True);
+            game.Step(1f / 120);
+            typeof(HeroTennisDriver).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(driver, null);
+            Assert.That(driver.ActionWeight, Is.EqualTo(1).Within(.001f), "No animation fade may hide a time-critical phone stroke");
+            Assert.That(driver.UpperLayerWeight, Is.GreaterThan(.9f), "The arms react while the legs keep their normal transition");
+            var arms = (float[])typeof(HeroTennisDriver).GetField("upperBlend", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(driver);
+            Assert.That(arms[(int)driver.CurrentAction], Is.EqualTo(1).Within(.001f), "The first frame plays the new stroke instead of crossfading from a stale clip");
+            game.AbortSwing();
+            Assert.That(game.Player.Swinging, Is.False);
+        }
+
         [UnityTest] public IEnumerator TimingFinishesWithTheMatchStillHeldForReady() {
             yield return SceneManager.LoadSceneAsync("Tennis", LoadSceneMode.Single);
             yield return null;
