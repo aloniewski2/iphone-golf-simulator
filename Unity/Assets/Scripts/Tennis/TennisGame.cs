@@ -328,7 +328,11 @@ namespace GolfArcade.Tennis
         /// (`AbortSwing`) follows within a few samples.
         public void BeginSwing(float handSide, float lift, float strokeFacing, float inputAge = 0)
         {
-            if (ControllerSetup || calibration != null) return; // Only confirmed strokes count in the timing check.
+            if (calibration != null) {
+                timingOnsetAt = Time.unscaledTime - Mathf.Clamp(inputAge, 0, .25f) - TennisRules.ServeOnsetLatency;
+                return; // The confirmed stroke will score this original sensor moment.
+            }
+            if (ControllerSetup) return;
             if (IntroPlaying) { presentation.Skip(); return; }
             if (!Player || Player.Swinging || resetTimer > 0 || ReplayPlaying) return;
             if (Flow == Phase.PlayerServeToss && !serveCommitted)
@@ -339,11 +343,12 @@ namespace GolfArcade.Tennis
                     serveOnsetAt = phaseTimer - (TennisRules.ServeOnsetLatency + Mathf.Clamp(inputAge, 0, .25f) + Lag) * SpeedScale;
                     serveOnsetPending = true;
                     Player.Serve(.65f, true);
+                    PlanPlayerServeContact();
                 }
                 return;
             }
             if (Flow != Phase.Rally || faultDelay > 0 || TrackingOverhead) return;
-            StartRallySwing(.65f, handSide, lift, strokeFacing, true);
+            StartRallySwing(.65f, handSide, lift, strokeFacing, true, inputAge);
         }
 
         // --- The controller serve (see TennisRules: "The controller serve") -------------
@@ -428,6 +433,7 @@ namespace GolfArcade.Tennis
         // --- Timing check (see TennisBeatCalibration) ---------------------------------------
         TennisBeatCalibration calibration;
         int calibrationBeat = -1;
+        float timingOnsetAt = -1;
         /// The timing check finished: the lag it measured (seconds), or -1 if it could not.
         public static event System.Action<float> TimingChecked;
         public bool CheckingTiming => calibration != null;
@@ -449,12 +455,14 @@ namespace GolfArcade.Tennis
         {
             if (!Player || ReplayPlaying) return;
             calibration = new TennisBeatCalibration(Time.unscaledTime, TennisBeatCalibration.Countdown, lagPriorSet ? lag.Prior : 0); calibrationBeat = -1;
+            timingOnsetAt = -1;
             if (hud) hud.ShowTimingCheck(true);
         }
 
         public void CancelTimingCheck()
         {
             calibration = null;
+            timingOnsetAt = -1;
             if (hud) hud.ShowTimingCheck(false);
         }
 
@@ -467,10 +475,9 @@ namespace GolfArcade.Tennis
             if (!calibration.Finished(now)) return;
             bool ok = calibration.TryResult(out float measured);
             calibration = null;
-            // The flash probe measures the physical screen delay. A predictable beat can
-            // be anticipated and includes detector latency: it must never overwrite that.
-            if (lagPriorSet && lag.Prior > 0) { measured = lag.Prior; ok = true; }
-            else if (ok) measured = Mathf.Clamp(measured - TennisRules.ServeLatency, 0, TennisLagLearner.Max);
+            // A consistent swing check is independent evidence. The flash probe can
+            // misread reflections or a moving exposure; it must not override the player's
+            // measured timing or turn an empty/failed check into a reported success.
             if (ok)
             {
                 // The new baseline: learning in play refines it from here.
@@ -481,9 +488,11 @@ namespace GolfArcade.Tennis
             TimingChecked?.Invoke(ok ? measured : -1);
         }
 
-        void TimingCheckSwing()
+        void TimingCheckSwing(float inputAge)
         {
-            int beat = calibration.Swing(Time.unscaledTime);
+            float at = timingOnsetAt >= 0 ? timingOnsetAt : Time.unscaledTime - Mathf.Clamp(inputAge, 0, .25f) - TennisRules.ServeLatency;
+            timingOnsetAt = -1;
+            int beat = calibration.Swing(at);
             if (beat >= 0 && hud) hud.TimingCheckSwing(beat);
         }
 
@@ -493,17 +502,17 @@ namespace GolfArcade.Tennis
         /// A stroke begins where it would be had the player seen the ball on time: the swing
         /// skips ahead by the TV's delay (never past contact), so the racket reaches the ball
         /// when the player meant it to. Timing windows and reach are unchanged.
-        void CompensateDisplayDelay()
+        void CompensateDisplayDelay(float inputAge = 0)
         {
             swingAdvance = 0;
-            if (Lag <= 0 || !Player.Swinging) return;
-            swingAdvance = Mathf.Max(0, Mathf.Min(Lag * SpeedScale, Player.TimeToContact - .02f));
+            if (!Player.Swinging) return;
+            swingAdvance = Mathf.Max(0, Mathf.Min((Lag + Mathf.Clamp(inputAge, 0, .25f)) * SpeedScale, Player.TimeToContact - .02f));
             Player.AdvanceSwing(swingAdvance);
         }
 
         public void RequestSwing(float power, float handSide=0, float lift=0, float strokeFacing=0, float inputAge=0)
         {
-            if (calibration != null) { TimingCheckSwing(); return; }
+            if (calibration != null) { TimingCheckSwing(inputAge); return; }
             if (ControllerSetup) return;
             if (IntroPlaying) { presentation.Skip(); return; }
             if (juice && juice.UltimateActive) return;   // the world is frozen for the ultimate cinematic
@@ -527,12 +536,13 @@ namespace GolfArcade.Tennis
             }
             if (Player.Swinging) return;
             if (Flow != Phase.Rally || faultDelay > 0) return;
-            StartRallySwing(power, handSide, lift, strokeFacing, false);
+            StartRallySwing(power, handSide, lift, strokeFacing, false, inputAge);
         }
 
         /// The phone wrote the stroke off -- it was a step, not a swing.
         public void AbortSwing()
         {
+            timingOnsetAt = -1;
             serveOnsetPending = false;
             if (Player && Player.Provisional) Player.CancelSwing();
         }
@@ -553,7 +563,7 @@ namespace GolfArcade.Tennis
         bool preparedLeft;
         bool BallOnLeft(float offset) => Mathf.Abs(offset) > .1f ? offset < 0 : preparedLeft;
 
-        void StartRallySwing(float power, float handSide, float lift, float strokeFacing, bool provisional)
+        void StartRallySwing(float power, float handSide, float lift, float strokeFacing, bool provisional, float inputAge = 0)
         {
             if (!provisional) { LockShotAim(); if (TryTrackedOverhead(power)) return; }
             // The wing follows the ball, exactly as the preparation did. The phone's grip only
@@ -577,7 +587,7 @@ namespace GolfArcade.Tennis
             // Aim is the racket face (phone), the arrow keys, or the touch aim control; it is
             // read when the ball is struck, so it is not set here.
             Player.Swing(power,backhand,StrokeKind(kind),provisional);
-            CompensateDisplayDelay();
+            CompensateDisplayDelay(inputAge);
             if (!provisional) Feedback=Player.StrokeLabel;
             consumedStroke = false; honestRejected = false;
             // No swing sound on the button: audio fires on contact, or on the called whiff.
@@ -595,34 +605,27 @@ namespace GolfArcade.Tennis
             if (hud) hud.LockServeMeter(verdict.Power, verdict.Perfect);
             pendingServe = verdict; pendingServePower = verdict.Power; serveLaunchPending = true;
             if (Player.Provisional) Player.Confirm(Mathf.Lerp(.5f, 1f, verdict.Power));
-            if (!NativeControlled && HonestContactEnabled && !Player.Swinging)
-            {
-                // Honest serve: the visible strings meet the toss. If the ball needs longer to drop
-                // to the racket than a paced swing can wait, hold the trophy position and start
-                // the swing later at its natural speed (the verdict above is unchanged).
-                Vector3 aimAt = Player.ContactPoint(TennisActor.Stroke.Serve, false);
-                float bestD = float.MaxValue, when = 0;
-                for (float t = 0; t <= 1.6f; t += TennisBall.Step)
-                { float d = (PlayerToss(phaseTimer + t) - aimAt).sqrMagnitude; if (d < bestD) { bestD = d; when = t; } }
-                float naturalServe = TennisRules.SweetTime;
-                if (when > naturalServe * 1.25f) { serveSwingIn = when - naturalServe; serveSwingPower = Mathf.Lerp(.5f, 1f, verdict.Power); return; }
-            }
             if (!Player.Swinging) Player.Serve(Mathf.Lerp(.5f, 1f, verdict.Power));
-            // Meet the ball where it passes closest to the serve's contact point, slowing the
-            // swing (down to a stately 0.4) for a ball that is still high.
-            float natural = Player.TimeToContact, best = float.MaxValue, lead = natural;
+            PlanPlayerServeContact();
+        }
+
+        void PlanPlayerServeContact()
+        {
+            // Plan against the toss's actual flight, independent of the animation's
+            // remaining duration. The old 2.5x search and 0.4 pace floor ended a low-lag
+            // serve while its perfectly tossed ball was still half a metre above the strings.
+            float best = float.MaxValue, lead = TennisBall.Step;
             Vector3 aim = Player.AuthoredContact;
-            for (float t = natural * .6f; t <= natural * 2.5f; t += TennisBall.Step)
+            for (float t = TennisBall.Step; t <= 1.6f; t += TennisBall.Step)
             {
                 float d = (PlayerToss(phaseTimer + t) - aim).sqrMagnitude;
                 if (d < best) { best = d; lead = t; }
             }
-            Player.PaceToContact(lead, .4f);
+            Player.PaceToContact(lead, .05f);
             Player.GuideContact(PlayerToss(phaseTimer + lead), lead);
         }
 
         Vector3 tossDrift;
-        float serveSwingIn = -1, serveSwingPower;
         /// The player's toss, `t` seconds after release: straight ballistics, drifting across
         /// to the racket side.
         Vector3 PlayerToss(float t) => tossOrigin + tossDrift * t + new Vector3(0, 9.81f * TennisRules.ServeApex * t - 4.905f * t * t, 0);
@@ -953,9 +956,9 @@ namespace GolfArcade.Tennis
         // Public adapter boundary: tracked phone position can supply this without changing physics.
         public void SetLateralInput(float normalizedSpeed, bool sprint)
         { MoveInput = Mathf.Clamp(normalizedSpeed,-1,1); Sprint = sprint; }
-        /// Physical steering owns the lateral axis. Automatic depth positioning remains
-        /// available, but the phone must never wait on the AI's reaction timer.
-        public bool PlayerUsesTrackedMovement => NativeControlled && !AutoPlay && !NativeSportsSession.Touch && !GolfArcade.Multiplayer.SportsMultiplayer.Active;
+        /// Before a serve the phone's left/right buttons own positioning. During the
+        /// rally physical steering responds immediately, alongside ball interception.
+        public bool PlayerUsesTrackedMovement => Flow == Phase.Rally && NativeControlled && !AutoPlay && !NativeSportsSession.Touch && !GolfArcade.Multiplayer.SportsMultiplayer.Active;
 
         void Update()
         {
@@ -1044,7 +1047,7 @@ namespace GolfArcade.Tennis
                 juice.UpdateRivalCam(rivalMoment, Opponent.transform, hud ? hud.OpponentName : "RIVAL");
             }
             if (umpire) umpire.Follow(BallPosition, Flow == Phase.Rally, Time.deltaTime);
-            replay.Record(Time.time);
+            if (InstantReplayEnabled) replay.Record(Time.time);
         }
 
         /// Build both skeletons once for everything simulated this frame.
@@ -1066,6 +1069,7 @@ namespace GolfArcade.Tennis
         // part of it: a short ball pulls the player in, a deep one pushes them back, and a
         // player who comes forward stays at the net to volley.
         Vector2 moveVelocity;
+        float trackedAssistVelocity;
         float reactionLeft, replanIn;
         TennisRules.InterceptPlan plan;
         /// True once the player has read the current ball early (see above).
@@ -1168,20 +1172,33 @@ namespace GolfArcade.Tennis
             float arrive = Mathf.Sqrt(2 * TennisRules.Deceleration * distance);
             Vector2 wanted = distance > .02f ? gap / distance * Mathf.Min(top, arrive) : Vector2.zero;
             bool tracked = PlayerUsesTrackedMovement && resetTimer <= 0;
+            float assistedVelocity = 0;
             if (tracked) {
                 float lateralTop = (Sprint ? TennisRules.SprintSpeed : TennisRules.RunSpeed) * Mathf.Lerp(.72f, 1, Mathf.Clamp01(Stamina / .35f));
                 if (Player.GroundRecovering) lateralTop *= .08f;
+                float assistWeight = Mathf.Clamp01(1 - Mathf.Abs(MoveInput) / .6f);
+                float assistWanted = live && plan.Found && reactionLeft <= 0 ? wanted.x * assistWeight : 0;
+                // A deliberate step takes priority immediately. Quiet hands let the
+                // character run to its predicted racket contact, as the assist intends.
+                trackedAssistVelocity = assistWeight <= 0 ? 0 : Mathf.MoveTowards(trackedAssistVelocity, assistWanted, dt * TennisRules.Acceleration);
                 wanted.x = Mathf.Clamp(MoveInput, -1, 1) * lateralTop;
                 // A live controller reversal is input, rather than the rival's human
                 // reaction animation. Keep court speed bounded, respond within 120 ms.
                 moveVelocity.x = Mathf.MoveTowards(moveVelocity.x, wanted.x, dt * 48f);
                 moveVelocity.y = Mathf.MoveTowards(moveVelocity.y, wanted.y, dt * TennisRules.Acceleration);
-            } else moveVelocity = Vector2.MoveTowards(moveVelocity, wanted, dt * TennisRules.Acceleration);
+                assistedVelocity = Mathf.Clamp(moveVelocity.x + trackedAssistVelocity, -lateralTop, lateralTop) - moveVelocity.x;
+            } else {
+                trackedAssistVelocity = 0;
+                moveVelocity = Vector2.MoveTowards(moveVelocity, wanted, dt * TennisRules.Acceleration);
+            }
             Vector2 next = me + moveVelocity * dt;
+            float manualNextX = next.x;
+            next.x += assistedVelocity * dt;
             if (!tracked && Vector2.Dot(goal - next, gap) < 0 && distance < .3f) { next = goal; moveVelocity = Vector2.zero; }
             float courtX = Mathf.Clamp(next.x, -TennisRules.CourtHalfWidth - 2.4f, TennisRules.CourtHalfWidth + 2.4f);
             if (courtX != next.x) { next.x = courtX; moveVelocity.x = 0; }
-            LateralSpeed = moveVelocity.x;
+            if (tracked) AssistOffset += next.x - Mathf.Clamp(manualNextX, -TennisRules.CourtHalfWidth - 2.4f, TennisRules.CourtHalfWidth + 2.4f);
+            LateralSpeed = (next.x - me.x) / dt;
             Player.transform.position = new Vector3(next.x, playerPosition.y, next.y);
         }
 
@@ -1197,7 +1214,6 @@ namespace GolfArcade.Tennis
             if (!Player || dt <= 0 || ReplayPlaying) return;
             TickAbilities(dt);
             contactHitter = null;
-            AssistOffset = 0;
             Player.Upright = Opponent.Upright = 0;   // only while being introduced
             // The tossing hand is only driven during a serve routine.
             if (!ServeLocked) Player.ReachTossHand(Vector3.zero, 0);
@@ -1238,17 +1254,7 @@ namespace GolfArcade.Tennis
             if (precise) Player.Pose(); else posePending = true;
             if (wasSwinging && !Player.Swinging && !consumedStroke && Flow == Phase.Rally && incoming)
             { Feedback = "WHIFF — time the swing to the bounce"; if (coach && NativeControlled) coach.Offer(TennisCoach.Tip.Whiff); Whiffed?.Invoke(); WhiffJuice(); }
-            if (serveSwingIn >= 0)
-            {
-                serveSwingIn -= dt;
-                if (serveSwingIn < 0)
-                {
-                    Player.Serve(serveSwingPower);
-                    float lead = Mathf.Max(.05f, Player.TimeToContact);
-                    Player.GuideContact(PlayerToss(phaseTimer + lead), lead);
-                }
-            }
-            if (serveLaunchPending && serveSwingIn < 0 && (!Player.Swinging || Player.ContactAge >= TennisRules.SweetTime - .002f)) LaunchServe();
+            if (serveLaunchPending && !Player.Provisional && (!Player.Swinging || Player.ContactAge >= TennisRules.SweetTime - .002f)) LaunchServe();
             UpdateOpponent(dt);
             UpdateAttention();
             phaseTimer += dt;
@@ -1883,13 +1889,9 @@ namespace GolfArcade.Tennis
             serveInFlight = false; bounceRestitution=.75f;
             RallyShots++;
             overheadAttempted = false; TrackingOverhead = false;
-            float error = ((float)random.NextDouble()*2-1) * hit.ErrorDegrees;
-            // The confirmed racket face chooses direction; depth is an independent control.
-            // Contact quality adds bounded scatter around that target.
-            Vector3 target=ShotAimTarget;
-            float scatter = Mathf.Lerp(.55f, .05f, hit.Quality);
-            target.x += Mathf.Clamp(error / 12f, -1, 1) * scatter;
-            target.z += ((float)random.NextDouble() * 2 - 1) * scatter;
+            // The confirmed face selects aim. Timing decides how faithfully the ball follows it.
+            Vector3 target = TennisRules.TimedPlacement(ShotAimTarget, hit.Timing,
+                (float)random.NextDouble() * 2 - 1, (float)random.NextDouble() * 2 - 1);
             BallSpin = Player.Kind == TennisActor.Stroke.Dive ? 0 : SpinFor(Player.Kind, Player.Power);
             BallVelocity = Player.Kind == TennisActor.Stroke.Dive
                 ? TennisAbilities.LobVelocity(BallPosition, new Vector3(target.x, TennisRules.BallRadius, 6.5f), 4.2f)
@@ -1937,7 +1939,7 @@ namespace GolfArcade.Tennis
             ballCurve = 0;
             Flow = Phase.Rally; BallPosition = previousBall = position; BallVelocity = velocity; BallSpin = 0;
             incoming = true; shotAimLocked = false; bounces = 0; resetTimer = 0; consumedStroke = false; honestRejected = false; serveInFlight = false; faultDelay = 0;
-            serveLaunchPending = false; serveSwingIn = -1; pending.Active = false;
+            serveLaunchPending = false; pending.Active = false;
             StartReading();
             if (ball) ball.position = renderedBall = position;
         }
@@ -1945,9 +1947,14 @@ namespace GolfArcade.Tennis
         /// Start the next point from whichever end is serving.
         void BeginPoint() { tauntHold = 0; playerWonPoint = false; pointEmoteChosen = false; pendingPointEmote = null;
             ResetPointAbilities();
+            // A player who just served is now a receiver: no trophy pose or tossing
+            // hand may carry into their normal two-handed ReadyIdle stance.
+            Player.Prepare(0, false); Opponent.Prepare(0, false);
+            Player.ReachTossHand(Vector3.zero, 0); Opponent.ReachTossHand(Vector3.zero, 0);
+            AssistOffset = 0; trackedAssistVelocity = 0;
             lastRivalLob = false; serveOnsetPending = false; shotAimLocked = false;
             Stamina=1; SecondServe=false; consumedStroke=false;
-            bounces=0; bounceRestitution=.75f; incoming=true; honestRejected=false; serveInFlight=false; faultDelay=0; serveLaunchPending=false; serveSwingIn=-1;
+            bounces=0; bounceRestitution=.75f; incoming=true; honestRejected=false; serveInFlight=false; faultDelay=0; serveLaunchPending=false;
             serveTimer=0; phaseTimer=0; BallVelocity=Vector3.zero; BallSpin=0; RallyShots=0; replayDue=-1;
             resetTimer=0; LastWasSupercharged=false; sinceStrike=0; opponentMissReason=null;
             if (ballRenderer) ballRenderer.material.color=Color.white;
@@ -2049,7 +2056,7 @@ namespace GolfArcade.Tennis
         public void PrepareLesson()
         {
             Flow = Phase.PointOver; resetTimer = 1e6f; faultDelay = 0; replayDue = -1;
-            serveLaunchPending = serveInFlight = false; serveSwingIn = -1; pending.Active = false;
+            serveLaunchPending = serveInFlight = false; pending.Active = false;
             BallVelocity = Vector3.zero; BallPosition = new Vector3(0, -10, 0);
             moveVelocity = Vector2.zero; ServeNudge = 0; MoveInput = 0;
             Player.CancelSwing(); Opponent.CancelSwing();

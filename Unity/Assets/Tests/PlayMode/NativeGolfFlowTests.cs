@@ -24,7 +24,10 @@ namespace GolfArcade.PlayTests {
             Time.timeScale = 4;
             float deadline = Time.realtimeSinceStartup + 45;
             while (game.Current != GolfGame.State.Aim && game.Current != GolfGame.State.RoundDone && Time.realtimeSinceStartup < deadline)
+            {
+                if (game.Current == GolfGame.State.Result) game.NativeContinue();
                 yield return null;
+            }
             Assert.That(game.Current, Is.EqualTo(GolfGame.State.Aim).Or.EqualTo(GolfGame.State.RoundDone));
             // Finish a short putt through the normal shot/result/card flow, then advance
             // using the same command exposed on the phone controller.
@@ -37,7 +40,10 @@ namespace GolfArcade.PlayTests {
                     game.StrikeHolingPutt();
                     deadline = Time.realtimeSinceStartup + 30;
                     while (game.Current != GolfGame.State.Aim && game.Current != GolfGame.State.RoundDone && Time.realtimeSinceStartup < deadline)
+                    {
+                        if (game.Current == GolfGame.State.Result) game.NativeContinue();
                         yield return null;
+                    }
                 }
             }
             Assert.That(game.Current, Is.EqualTo(GolfGame.State.RoundDone));

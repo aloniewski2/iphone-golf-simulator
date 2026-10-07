@@ -1,7 +1,7 @@
 {
     "version": 2,
     "sex": "Male",
-    "source": "Resources/Tennis/Customization/PlayerMale.prefab (work/match-anim-set/export/HeroBase_Male_MatchAnims.blend)",
+    "source": "Resources/Tennis/Customization/PlayerMaleGolfKit.prefab",
     "baseClip": "Male_ReadyIdle",
     "swingClip": "",
     "baseTime": 0.0,
@@ -17,12 +17,12 @@
             "swingPositionOffset": 0,
             "swingNormalOffset": 398352,
             "uvOffset": -1,
-            "bindPositionOffset": 1590600,
+            "bindPositionOffset": 1384932,
             "submeshes": [
                 {
                     "material": "Skin",
                     "indexOffset": 796704,
-                    "indexCount": 198474,
+                    "indexCount": 147057,
                     "look": {
                         "shader": "TennisCharacter",
                         "color": [
@@ -77,8 +77,8 @@
             "name": "Face",
             "kind": "face",
             "vertexCount": 3578,
-            "positionOffset": 1988952,
-            "normalOffset": 2031888,
+            "positionOffset": 1783284,
+            "normalOffset": 1826220,
             "swingPositionOffset": 796704,
             "swingNormalOffset": 839640,
             "uvOffset": -1,
@@ -86,7 +86,7 @@
             "submeshes": [
                 {
                     "material": "Face_Pupil",
-                    "indexOffset": 2074824,
+                    "indexOffset": 1869156,
                     "indexCount": 576,
                     "look": {
                         "shader": "TennisCharacter",
@@ -138,7 +138,7 @@
                 },
                 {
                     "material": "Face_Iris",
-                    "indexOffset": 2077128,
+                    "indexOffset": 1871460,
                     "indexCount": 1152,
                     "look": {
                         "shader": "TennisCharacter",
@@ -190,7 +190,7 @@
                 },
                 {
                     "material": "Face_Limbal",
-                    "indexOffset": 2081736,
+                    "indexOffset": 1876068,
                     "indexCount": 384,
                     "look": {
                         "shader": "TennisCharacter",
@@ -242,7 +242,7 @@
                 },
                 {
                     "material": "Face_Sclera",
-                    "indexOffset": 2083272,
+                    "indexOffset": 1877604,
                     "indexCount": 3648,
                     "look": {
                         "shader": "TennisCharacter",
@@ -294,7 +294,7 @@
                 },
                 {
                     "material": "Face_Catch",
-                    "indexOffset": 2097864,
+                    "indexOffset": 1892196,
                     "indexCount": 60,
                     "look": {
                         "shader": "TennisCharacter",
@@ -346,7 +346,7 @@
                 },
                 {
                     "material": "Face_BrowSoft",
-                    "indexOffset": 2098104,
+                    "indexOffset": 1892436,
                     "indexCount": 1488,
                     "look": {
                         "shader": "TennisCharacter",
@@ -398,7 +398,7 @@
                 },
                 {
                     "material": "Face_Brow",
-                    "indexOffset": 2104056,
+                    "indexOffset": 1898388,
                     "indexCount": 2808,
                     "look": {
                         "shader": "TennisCharacter",
@@ -450,7 +450,7 @@
                 },
                 {
                     "material": "Face_LidLine",
-                    "indexOffset": 2115288,
+                    "indexOffset": 1909620,
                     "indexCount": 2580,
                     "look": {
                         "shader": "TennisCharacter",
@@ -502,7 +502,7 @@
                 },
                 {
                     "material": "Face_LidCrease",
-                    "indexOffset": 2125608,
+                    "indexOffset": 1919940,
                     "indexCount": 468,
                     "look": {
                         "shader": "TennisCharacter",
@@ -554,7 +554,7 @@
                 },
                 {
                     "material": "Face_Nostril",
-                    "indexOffset": 2127480,
+                    "indexOffset": 1921812,
                     "indexCount": 360,
                     "look": {
                         "shader": "TennisCharacter",
@@ -606,7 +606,7 @@
                 },
                 {
                     "material": "Face_LipUp",
-                    "indexOffset": 2128920,
+                    "indexOffset": 1923252,
                     "indexCount": 1692,
                     "look": {
                         "shader": "TennisCharacter",
@@ -658,7 +658,7 @@
                 },
                 {
                     "material": "Face_Lip",
-                    "indexOffset": 2135688,
+                    "indexOffset": 1930020,
                     "indexCount": 1692,
                     "look": {
                         "shader": "TennisCharacter",
@@ -710,7 +710,7 @@
                 },
                 {
                     "material": "Face_Seam",
-                    "indexOffset": 2142456,
+                    "indexOffset": 1936788,
                     "indexCount": 756,
                     "look": {
                         "shader": "TennisCharacter",
@@ -765,18 +765,18 @@
         {
             "name": "Kit_Bottom",
             "kind": "kit",
-            "vertexCount": 16710,
-            "positionOffset": 2145480,
-            "normalOffset": 2346000,
+            "vertexCount": 14290,
+            "positionOffset": 1939812,
+            "normalOffset": 2111292,
             "swingPositionOffset": 882576,
-            "swingNormalOffset": 1083096,
-            "uvOffset": 2801496,
+            "swingNormalOffset": 1054056,
+            "uvOffset": 2550228,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shorts",
-                    "indexOffset": 2546520,
-                    "indexCount": 62124,
+                    "indexOffset": 2282772,
+                    "indexCount": 65244,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
@@ -792,23 +792,23 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.10000000149011612,
+                        "smoothness": 0.09000000357627869,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 51.50892639160156,
+                        "weaveTile": 48.97716522216797,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.4675000309944153,
-                        "sheenStrength": 0.5,
+                        "weaveNormal": 0.7599999904632568,
+                        "weaveThread": 0.5950000286102295,
+                        "sheenStrength": 0.23999999463558198,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
-                        "tileMetres": 0.028999999165534974,
+                        "tileMetres": 0.03200000151991844,
                         "baseMap": "",
                         "weaveMap": "MatchHero_GolfKit_FabricAtlas",
                         "bumpMap": "",
@@ -827,7 +827,7 @@
                 },
                 {
                     "material": "Kit_GolfHardware",
-                    "indexOffset": 2795016,
+                    "indexOffset": 2543748,
                     "indexCount": 1620,
                     "look": {
                         "shader": "TennisCloth",
@@ -850,7 +850,7 @@
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 53.97810745239258,
+                        "weaveTile": 56.761322021484378,
                         "weaveAngle": 0.0,
                         "weaveNormal": 0.800000011920929,
                         "weaveThread": 0.42500001192092898,
@@ -883,16 +883,16 @@
             "name": "Kit_Glove_L",
             "kind": "kit",
             "vertexCount": 4957,
-            "positionOffset": 2935176,
-            "normalOffset": 2994660,
-            "swingPositionOffset": 1283616,
-            "swingNormalOffset": 1343100,
-            "uvOffset": 3138528,
+            "positionOffset": 2664548,
+            "normalOffset": 2724032,
+            "swingPositionOffset": 1225536,
+            "swingNormalOffset": 1285020,
+            "uvOffset": 2867900,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_GolfGlove",
-                    "indexOffset": 3054144,
+                    "indexOffset": 2783516,
                     "indexCount": 21096,
                     "look": {
                         "shader": "TennisCloth",
@@ -909,23 +909,23 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.10000000149011612,
+                        "smoothness": 0.18000000715255738,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 22.654809951782228,
+                        "weaveTile": 26.773866653442384,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.42500001192092898,
-                        "sheenStrength": 0.5,
+                        "weaveNormal": 0.35999998450279238,
+                        "weaveThread": 0.29750001430511477,
+                        "sheenStrength": 0.10000000149011612,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
-                        "tileMetres": 0.026000000536441804,
+                        "tileMetres": 0.02199999988079071,
                         "baseMap": "",
                         "weaveMap": "MatchHero_GolfKit_FabricAtlas",
                         "bumpMap": "",
@@ -948,16 +948,16 @@
             "name": "Kit_Glove_R",
             "kind": "kit",
             "vertexCount": 5012,
-            "positionOffset": 3178184,
-            "normalOffset": 3238328,
-            "swingPositionOffset": 1402584,
-            "swingNormalOffset": 1462728,
-            "uvOffset": 3382808,
+            "positionOffset": 2907556,
+            "normalOffset": 2967700,
+            "swingPositionOffset": 1344504,
+            "swingNormalOffset": 1404648,
+            "uvOffset": 3112180,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_GolfGlove",
-                    "indexOffset": 3298472,
+                    "indexOffset": 3027844,
                     "indexCount": 21084,
                     "look": {
                         "shader": "TennisCloth",
@@ -974,23 +974,23 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.10000000149011612,
+                        "smoothness": 0.18000000715255738,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 22.477481842041017,
+                        "weaveTile": 26.56429672241211,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.42500001192092898,
-                        "sheenStrength": 0.5,
+                        "weaveNormal": 0.35999998450279238,
+                        "weaveThread": 0.29750001430511477,
+                        "sheenStrength": 0.10000000149011612,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
-                        "tileMetres": 0.026000000536441804,
+                        "tileMetres": 0.02199999988079071,
                         "baseMap": "",
                         "weaveMap": "MatchHero_GolfKit_FabricAtlas",
                         "bumpMap": "",
@@ -1013,16 +1013,16 @@
             "name": "Kit_Head",
             "kind": "kit",
             "vertexCount": 3211,
-            "positionOffset": 3422904,
-            "normalOffset": 3461436,
-            "swingPositionOffset": 1522872,
-            "swingNormalOffset": 1561404,
-            "uvOffset": 3547488,
+            "positionOffset": 3152276,
+            "normalOffset": 3190808,
+            "swingPositionOffset": 1464792,
+            "swingNormalOffset": 1503324,
+            "uvOffset": 3276860,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_GolfHead",
-                    "indexOffset": 3499968,
+                    "indexOffset": 3229340,
                     "indexCount": 11880,
                     "look": {
                         "shader": "TennisCloth",
@@ -1039,23 +1039,23 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.10000000149011612,
+                        "smoothness": 0.07999999821186066,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 30.334806442260743,
+                        "weaveTile": 28.168033599853517,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.42500001192092898,
-                        "sheenStrength": 0.5,
+                        "weaveNormal": 0.64000004529953,
+                        "weaveThread": 0.4675000309944153,
+                        "sheenStrength": 0.18000000715255738,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
-                        "tileMetres": 0.026000000536441804,
+                        "tileMetres": 0.02800000086426735,
                         "baseMap": "",
                         "weaveMap": "MatchHero_GolfKit_FabricAtlas",
                         "bumpMap": "",
@@ -1078,16 +1078,16 @@
             "name": "Kit_Shoe_L",
             "kind": "kit",
             "vertexCount": 9791,
-            "positionOffset": 3573176,
-            "normalOffset": 3690668,
-            "swingPositionOffset": 1599936,
-            "swingNormalOffset": 1717428,
-            "uvOffset": 3939800,
+            "positionOffset": 3302548,
+            "normalOffset": 3420040,
+            "swingPositionOffset": 1541856,
+            "swingNormalOffset": 1659348,
+            "uvOffset": 3669172,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 3808160,
+                    "indexOffset": 3537532,
                     "indexCount": 32910,
                     "look": {
                         "shader": "TennisCloth",
@@ -1104,7 +1104,7 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.11999999731779099,
+                        "smoothness": 0.18000000715255738,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
@@ -1112,9 +1112,9 @@
                         "knee": 0.699999988079071,
                         "weaveTile": 46.01467514038086,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.64000004529953,
+                        "weaveNormal": 0.5600000023841858,
                         "weaveThread": 0.3824999928474426,
-                        "sheenStrength": 0.3499999940395355,
+                        "sheenStrength": 0.10000000149011612,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
@@ -1143,16 +1143,16 @@
             "name": "Kit_Shoe_R",
             "kind": "kit",
             "vertexCount": 9745,
-            "positionOffset": 4018128,
-            "normalOffset": 4135068,
-            "swingPositionOffset": 1834920,
-            "swingNormalOffset": 1951860,
-            "uvOffset": 4383648,
+            "positionOffset": 3747500,
+            "normalOffset": 3864440,
+            "swingPositionOffset": 1776840,
+            "swingNormalOffset": 1893780,
+            "uvOffset": 4113020,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 4252008,
+                    "indexOffset": 3981380,
                     "indexCount": 32910,
                     "look": {
                         "shader": "TennisCloth",
@@ -1169,7 +1169,7 @@
                             1.0
                         ],
                         "subsurface": [],
-                        "smoothness": 0.11999999731779099,
+                        "smoothness": 0.18000000715255738,
                         "wrap": 0.5,
                         "rimStrength": 0.20000000298023225,
                         "rimPower": 3.5,
@@ -1177,9 +1177,9 @@
                         "knee": 0.699999988079071,
                         "weaveTile": 46.055633544921878,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.64000004529953,
+                        "weaveNormal": 0.5600000023841858,
                         "weaveThread": 0.3824999928474426,
-                        "sheenStrength": 0.3499999940395355,
+                        "sheenStrength": 0.10000000149011612,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
@@ -1207,18 +1207,18 @@
         {
             "name": "Kit_Top",
             "kind": "kit",
-            "vertexCount": 13871,
-            "positionOffset": 4461608,
-            "normalOffset": 4628060,
-            "swingPositionOffset": 2068800,
-            "swingNormalOffset": 2235252,
-            "uvOffset": 5004908,
+            "vertexCount": 12920,
+            "positionOffset": 4190980,
+            "normalOffset": 4346020,
+            "swingPositionOffset": 2010720,
+            "swingNormalOffset": 2165760,
+            "uvOffset": 4725256,
             "bindPositionOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shirt",
-                    "indexOffset": 4794512,
-                    "indexCount": 52599,
+                    "indexOffset": 4501060,
+                    "indexCount": 56049,
                     "look": {
                         "shader": "TennisCloth",
                         "color": [
@@ -1240,17 +1240,17 @@
                         "rimPower": 3.5,
                         "exposure": 1.0499999523162842,
                         "knee": 0.699999988079071,
-                        "weaveTile": 43.760684967041019,
+                        "weaveTile": 34.25801467895508,
                         "weaveAngle": 0.0,
-                        "weaveNormal": 0.800000011920929,
-                        "weaveThread": 0.4675000309944153,
-                        "sheenStrength": 0.550000011920929,
+                        "weaveNormal": 0.9200000166893005,
+                        "weaveThread": 0.6800000071525574,
+                        "sheenStrength": 0.3199999928474426,
                         "sheenPower": 3.0,
                         "saturation": 0.0,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 0.0,
-                        "tileMetres": 0.026000000536441804,
+                        "tileMetres": 0.03400000184774399,
                         "baseMap": "",
                         "weaveMap": "MatchHero_GolfKit_FabricAtlas",
                         "bumpMap": "",
@@ -1409,7 +1409,7 @@
                 0.9300000071525574,
                 1.0
             ],
-            "smoothness": 0.10000000149011612
+            "smoothness": 0.18000000715255738
         },
         {
             "name": "Kit_GolfHardware",
@@ -1429,7 +1429,7 @@
                 0.04010000079870224,
                 1.0
             ],
-            "smoothness": 0.10000000149011612
+            "smoothness": 0.07999999821186066
         },
         {
             "name": "Kit_Shirt",
@@ -1449,7 +1449,7 @@
                 0.9300000071525574,
                 1.0
             ],
-            "smoothness": 0.11999999731779099
+            "smoothness": 0.18000000715255738
         },
         {
             "name": "Kit_Shorts",
@@ -1459,7 +1459,7 @@
                 0.0769999548792839,
                 1.0
             ],
-            "smoothness": 0.10000000149011612
+            "smoothness": 0.09000000357627869
         },
         {
             "name": "Skin",

@@ -344,7 +344,7 @@ namespace GolfArcade.EditorTools
             if (look.shader == "TennisCloth")
             {
                 // the role's cloth numbers live in MatchHeroLook.ClothFor (private): read them off it, so the tile size the Swift side fades the weave by is the one Unity tiles with
-                var clothFor = typeof(MatchHeroLook).GetMethod("ClothFor", BindingFlags.Static | BindingFlags.NonPublic);
+                var clothFor = typeof(MatchHeroLook).GetMethod(golf ? "GolfClothFor" : "ClothFor", BindingFlags.Static | BindingFlags.NonPublic);
                 var entry = clothFor?.Invoke(null, new object[] { m.name.Replace(" (hero)", "").Replace(" (Instance)", "") });
                 var field = entry?.GetType().GetField("tileMetres");
                 if (field == null) throw new InvalidOperationException("MatchHeroLook.ClothFor(...).tileMetres not found");

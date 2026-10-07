@@ -20,7 +20,7 @@ final class LockerTests: XCTestCase {
 
     // MARK: catalog and saves
 
-    func testNoGearShipsYetOnlyStandardItems() {
+    func testEachSportShipsItsOwnDefaultItems() {
         for sport in LockerCatalog.sports {
             for slot in LockerCatalog.slots(for: sport) {
                 let items = LockerCatalog.items(sport: sport, slot: slot)
@@ -51,7 +51,22 @@ final class LockerTests: XCTestCase {
         // The game never sees an id the catalog does not have: it falls back to Standard.
         XCTAssertTrue(again.equipped(.racket, sport: .tennis).isStandard)
         XCTAssertEqual(again.loadoutPayload(sport: .tennis), ["skin": "standard", "racket": "standard", "shoes": "standard"])
-        XCTAssertEqual(again.loadoutPayload(sport: .golf), ["skin": "standard", "club": "standard", "shoes": "standard"])
+        XCTAssertEqual(again.loadoutPayload(sport: .golf), ["skin": "golf-classic-kit", "club": "standard", "shoes": "golf-spikeless"])
+    }
+
+    func testLegacyGolfDefaultsAndPerSportSelectionsSurviveRoundTrip() throws {
+        var p = Player(name: "Golfer", colorIndex: 0)
+        p.loadout = ["golf": ["skin": "standard", "shoes": "standard"], "tennis": ["racket": "future-racket"]]
+        let saved = try JSONDecoder().decode(Player.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(saved.equipped(.skin, sport: .golf).id, "golf-classic-kit")
+        XCTAssertEqual(saved.equipped(.shoes, sport: .golf).id, "golf-spikeless")
+        XCTAssertEqual(saved.equipped(.skin, sport: .tennis).id, "standard")
+        XCTAssertEqual(saved.loadout, p.loadout, "resolving defaults preserves the saved per-sport dictionary")
+        for id in [nil, "standard", "removed-kit"] as [String?] {
+            XCTAssertEqual(LockerCatalog.item(id: id, sport: .golf, slot: .skin).id, "golf-classic-kit")
+        }
+        p.equip(LockerCatalog.item(id: nil, sport: .golf, slot: .skin), sport: .golf)
+        XCTAssertEqual(p.loadout?["tennis"]?["racket"], "future-racket")
     }
 
     func testAnUnreadableRosterIsKeptNotOverwritten() throws {
@@ -78,7 +93,7 @@ final class LockerTests: XCTestCase {
         XCTAssertEqual(menu.focused, "lk-item-standard", "opens on the shelf, on the item you wear")
         let gear = menu.rows(.character)
         XCTAssertEqual(gear[0], ["lk-sport-tennis", "lk-sport-golf"])
-        XCTAssertEqual(gear[1], ["lk-tab-gear", "lk-tab-customize"])
+        XCTAssertEqual(gear[1], ["lk-tab-gear", "lk-tab-customize", "lk-tab-emotes"])
         XCTAssertEqual(gear[2], ["lk-slot-skin", "lk-slot-racket", "lk-slot-shoes"])
         XCTAssertEqual(gear[3], ["lk-item-standard"])
         XCTAssertFalse(gear.contains(["lk-colour"]), "the Standard skin has no colour row: colours live in Customize")
@@ -150,4 +165,53 @@ final class LockerTests: XCTestCase {
         XCTAssertEqual(menu.rows(.main).first, ["homeContinue"])
         XCTAssertEqual(menu.rows(.main).flatMap { $0 }, ["homeContinue", "play", "character", "settings"])
     }
+    func testThreeEmoteSlotsPersistAndOldProfilesGetDefaults() throws {
+        var p = Player(name: "Emoter", colorIndex: 0)
+        let old = try JSONDecoder().decode(Player.self, from: JSONEncoder().encode(p))
+        XCTAssertNil(old.emoteIDs)
+        XCTAssertEqual(old.equippedEmotes, ["wave", "scuba", "spike"])
+        p.equipEmote("pushups", slot: 0)
+        p.equipEmote("bringIt", slot: 1)
+        p.equipEmote("thrust", slot: 2)
+        let saved = try JSONDecoder().decode(Player.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(saved.equippedEmotes, ["pushups", "bringIt", "thrust"])
+        XCTAssertEqual(saved.multiplayerLoadout.emotes, saved.equippedEmotes)
+        XCTAssertTrue(saved.multiplayerLoadout.valid())
+        let peer = MultiplayerParticipant(id: p.id.uuidString, name: p.name, loadout: p.multiplayerLoadout)
+        XCTAssertEqual(peer.lobbyPlayer.equippedEmotes, p.equippedEmotes)
+    }
+
+    func testEquippedEmotesSwapWithoutDuplicatesAndRejectInvalidChoices() {
+        var p = Player(name: "Emoter", colorIndex: 0)
+        p.equipEmote("spike", slot: 0)
+        XCTAssertEqual(p.equippedEmotes, ["spike", "scuba", "wave"])
+        let before = p
+        p.equipEmote("deleted", slot: 0); p.equipEmote("wave", slot: 3)
+        XCTAssertEqual(p, before)
+        p.emoteIDs = ["deleted", "spike", "spike", "thrust", "pushups", "scuba"]
+        XCTAssertEqual(p.equippedEmotes, ["spike", "thrust", "pushups"])
+        var loadout = p.multiplayerLoadout
+        loadout.emotes = ["wave", "wave", "spike"]
+        XCTAssertFalse(loadout.valid())
+        loadout.emotes = nil
+        XCTAssertTrue(loadout.valid(), "older peer profiles stay compatible")
+    }
+
+    func testLockerEmoteTabSupportsRemoteSlotsAndRevert() {
+        let menu = TennisMenu.shared, session = SportsSession.shared
+        menu.debugShow(.character)
+        let original = session.players[0]
+        menu.tap("lk-tab-emotes")
+        XCTAssertEqual(menu.lockerTab, .emotes)
+        XCTAssertEqual(menu.rows(.character)[1], ["lk-emote-slot-0", "lk-emote-slot-1", "lk-emote-slot-2"])
+        XCTAssertTrue(menu.focus("lk-emote-slot-1"))
+        menu.select(); XCTAssertEqual(menu.lockerEmoteSlot, 1)
+        menu.tap("lk-emote-pushups")
+        XCTAssertEqual(session.players[0].equippedEmotes, ["wave", "pushups", "spike"])
+        XCTAssertTrue(menu.lockerDirty)
+        menu.tap("lk-revert")
+        XCTAssertEqual(session.players[0], original)
+        XCTAssertFalse(menu.lockerDirty)
+    }
+
 }

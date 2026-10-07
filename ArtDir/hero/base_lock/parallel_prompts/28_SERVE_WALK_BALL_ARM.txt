@@ -1,0 +1,67 @@
+PASTE: SERVE WALK, BALL ARM GOES THROUGH THE BODY (Codex, GPT-6.1 Sol). NEW CHAT.
+
+THE BUG (Adnan's eye, in the game)
+Before a serve, when the player walks LEFT along the baseline, the arm holding the ball goes through the body. It must read clearly as a full arm just carrying a tennis ball at the side or in front: whole arm visible, ball in the fingers, nothing inside the torso, hips, or legs. Walking right, standing, bouncing, and the toss must stay as good as or better than now.
+
+YOU MUST SEE IT HAPPEN FIRST. Build a simulation that reproduces the bug, proves it with numbers and a film, and only then fix it. A fix without a failing BEFORE run is a FAIL.
+
+----------------------------------------------------------------
+WHERE IT LIVES (read these, confirm or correct this theory)
+- Unity/Assets/Scripts/Tennis/TennisGame.cs ~1135-1235: Phase.PlayerServeHold. The player walks with PreServeNudge (ServeNudge / MoveInput) along the baseline; serveWalkSpeed > .2 sets routine = 0 ("carry the ball while walking in"); TennisServeRoutine.Pose(...) gives the palm, then Player.ReachTossHand(palm, 1). The opponent path is ~1270-1292.
+- Unity/Assets/Scripts/Tennis/TennisServeRoutine.cs: Hold / Release / Extended call actor.VisualTossPoint(0/1/2) in the actor's frame.
+- Unity/Assets/Scripts/Tennis/HeroTennisDriver.cs:
+  - ~652-657: walkYaw turns the hero to face the walk direction (Atan2 of travel) while walkMode; transform.localRotation = serveYaw + walkYaw.
+  - ~962-968 VisualTossPoint: in Match it ALWAYS returns tossPoints (read off the Serve clip's side-on stance by BuildServeRitualPoints, ~278) rotated by serveYaw + walkYaw. The low CarryPoint (-.3, .66, .08) used "walking in" is only for non-Match heroes.
+  - ~970-989 TossArm: two-bone IK pulls the left hand to that target at tossWeight = TossReachWanted (1 while PrepareServe).
+- Unity/Assets/Scripts/Tennis/TennisActor.cs ~698-720 ApplyTossReach (the actor-side reach, elbow pole down / out / back).
+Theory: while walking, the body is posed by the Walk clip facing the travel direction, but the hand target is the serve stance's ball point (chest side-on, ball in front of the front hip), turned by serveYaw + walkYaw. Walking left, that point lands inside or behind the torso, and the IK drags the arm through the body to reach it. Walking right it happens to land outside. Prove or disprove this with the simulation before changing code.
+
+----------------------------------------------------------------
+RULES
+- Do NOT edit any FBX (Serve, Walk, emotes), the hero meshes, rig, sockets, QualitySettings, URP, golf files, or TennisRules timing.
+- Prompt 26 (serve toss then jump) may run in parallel and owns the Serve clip and work/serve-toss-jump/. You own only the pre-serve WALK and CARRY: HeroTennisDriver VisualTossPoint / TossArm / walk-carry code, TennisActor ApplyTossReach, TennisServeRoutine if needed, and a new editor tool. If you must touch a line 26 also touches, stop and report it.
+- Match heroes (PlayerMale / PlayerFemale) are what matters. Do not change the non-Match path's look.
+- No hiding the arm, shrinking it, scaling bones, or changing bone lengths. The fix is pose and target, not visibility.
+- Work in work/serve-walk-arm/. Back up every file you edit to work/serve-walk-arm/rollback/ first. Stage only, no commit.
+
+----------------------------------------------------------------
+PHASE 1: THE SIMULATION (build it, run it on the CURRENT code)
+1.1 New editor tool Unity/Assets/Editor/ServeWalkFilm.cs, modelled on Editor/ServeTossFilm.cs (batchmode, Tennis.unity, real TennisGame in a campaign match, match hero, the game's own serve flow). Env: SW_OUT, SW_FEMALE=0|1, SW_LEFTY=0|1, SW_SIDE=deuce|ad.
+1.2 Scripted input in Phase.PlayerServeHold through ServeNudge only (no new game code paths): stand 0.5 s, walk LEFT full speed 1.5 s, stop and plant 0.8 s (bounce ritual starts), walk RIGHT 1.5 s, plant, then toss and serve. Also a short tap-left and tap-right (0.25 s) to catch the turn-in and turn-out.
+1.3 Record 60 fps: game camera (the real one, with HUD), a front camera on the server at chest height, a camera from the server's left (the side the ball arm is on for a right-hander), and a top camera. Every 2nd frame to PNG, then ffmpeg to mp4.
+1.4 trace.csv per frame: phase, routine time, walkYaw, serveYaw, speed, walkMode, tossWeight, and the world positions of the ball, the tossing shoulder / elbow / wrist / palm, hips, chest, and both thighs.
+1.5 Penetration measure (the core metric), on the real skinned mesh each frame:
+- Bake the body SkinnedMeshRenderer (BakeMesh). Split vertices by bone weight: ARM = verts weighted > 0.5 to the tossing upper arm, forearm, hand, or fingers; TRUNK = spine, chest, hips, both thighs.
+- Build a signed-distance or closest-triangle test of ARM vertices against the TRUNK surface (or MeshCollider + Physics.ComputePenetration on per-segment capsules that you prove match the mesh within 1 cm). Report per frame the deepest penetration in mm and the % of ARM vertices inside the trunk.
+- Also report: ball-to-palm distance (ball centre to the palm point between the hand and the middle knuckle), whether the ball is visible from the game camera (raycast ball to camera against the body mesh), elbow angle, and the hand's frame-to-frame speed.
+1.6 Also run 6 control states with no walking: plain hold, bounce ritual, wind-up, toss, trophy, and contact. These are the "don't break it" baseline.
+1.7 Run the matrix: male and female; right- and left-handed; deuce and ad side. Put a contact sheet per run (12 frames around the worst frame) in work/serve-walk-arm/before/.
+
+GATE REPRO (must FAIL on the current code, or the simulation is wrong):
+- A real BEFORE number: deepest ARM-in-TRUNK penetration while walking left, in mm, at which frame, with which bones, and a still of that frame from the front and the left. Write it in work/serve-walk-arm/REPRO.md, along with whether the theory above is right.
+- If walking left shows no penetration, the simulation is not driving the same path as the game. Fix the simulation (compare against a real device or Editor play with keyboard input) until it shows what Adnan sees. Do not move on.
+
+----------------------------------------------------------------
+PHASE 2: THE FIX (after REPRO)
+Target look while walking (match heroes): a natural walking carry. The tossing arm hangs at the side, slightly in front of the hip, with the elbow softly bent (about 20-45 deg of flexion) and swinging gently with the walk opposite the front leg. The ball sits in the fingers on the outside or front of the thigh, clearly visible, never against the belly. When the player plants, the arm moves smoothly (about 0.15-0.25 s) up to the ritual hold point, and the bounces start from there.
+Likely shape (adapt to what REPRO finds):
+- In Match, while walkMode or |walkYaw| > a few degrees or serveWalkSpeed > .2, VisualTossPoint(0) returns a CARRY point built in the walking body's own frame (walkYaw only, NOT serveYaw), read off the Walk clip's tossing hand where possible, with a small offset outward and forward. Blend carry to the ritual hold on the planted/turn-in, using the same eased weight the body turn uses, so the hand never crosses the body during the turn.
+- The IK target must never be inside the trunk: before the two-bone solve, push the palm goal out of a trunk capsule set (chest, belly, hips, thighs) plus a ball-radius clearance, and choose the elbow pole outward from the body side so the elbow cannot fold across the chest.
+- Lefties mirror it exactly. The opponent's serve walk uses the same code.
+Keep: the bounce ritual, wind-up, toss height and path, the serve timing (0.2 / 0.7 / 1.3333 / 1.7), and the strings at contact, all unchanged once planted.
+
+----------------------------------------------------------------
+PHASE 3: GATES (binary, rerun the full matrix from PHASE 1 on the fixed code)
+G1 NO_ARM_IN_BODY: in every walking, turning, and planting frame of every run, the deepest ARM-in-TRUNK penetration is <= 3 mm and inside-vertex share = 0.0%. Report the worst frame and value per run.
+G2 BALL_IN_HAND: ball centre to palm <= 3.5 cm on every pre-toss frame; the ball never inside the hand or body mesh.
+G3 BALL_VISIBLE: the ball is visible from the game camera on >= 95% of walking frames (report the % per run) and from the front camera on 100%.
+G4 FULL_ARM: tossing arm bone lengths unchanged (<= 0.1 mm); elbow flexion while walking 15-60 deg; the hand at or below the belt and on the outside or front of the thigh line (report the lateral offset from the hip in cm, >= 8 cm outside the trunk surface).
+G5 SMOOTH: no hand jump while walking or on the turn-in or plant (hand speed change <= 0.6 m/s per frame at 60 fps; no single-frame jumps > 3 cm); the walk-to-hold blend lasts 0.15-0.30 s.
+G6 NO_REGRESSION: the 6 control states and the rest of the serve match the BEFORE run within 1 cm (palm, ball, strings) and 2 deg (arm bones). Toss release height and serve contact point are unchanged. Walking right is no worse than before on G1-G5.
+G7 MATRIX: G1-G6 pass for male and female, right- and left-handed, deuce and ad, player and opponent.
+G8 GAME_PATH: one real Editor Play run with keyboard input walking left and right before a serve, filmed from the game camera, matches the simulation's result (no penetration visible, G1 measured on it too).
+G9 EYE: side-by-side BEFORE and AFTER films (game camera + front + left) for male and female, plus contact sheets, in work/serve-walk-arm/film/. List the exact paths. Adnan's eye decides.
+
+----------------------------------------------------------------
+REPORT
+REPRO numbers (before) and the root cause in two or three sentences, the change in plain words, each gate PASS or FAIL with its number, the film and sheet paths, and the files changed (with rollback paths). No commit.

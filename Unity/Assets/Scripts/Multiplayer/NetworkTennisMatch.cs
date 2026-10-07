@@ -29,6 +29,7 @@ namespace GolfArcade.Multiplayer {
         readonly Dictionary<string,long> events=new();
         readonly Queue<History> history=new();
         readonly Random serveRandom=new(2701);
+        readonly Random rallyRandom=new(2702);
         struct History { public double time; public long point,contact; public NetworkVector ball,velocity; public float ax,az,bx,bz; public int receiver,bounces; }
         public const double MaximumRewind=.15;
         const float Radius=.034f, HalfWidth=4.115f, HalfLength=11.885f, NetHeight=.97f, Gravity=9.81f;
@@ -83,7 +84,10 @@ namespace GolfArcade.Multiplayer {
                     State.tossAccuracy=TennisTossMeter.AccuracyAt((float)Math.Max(0,State.time-State.phaseAt-tossAge));
                     State.tossRollX=(float)serveRandom.NextDouble();State.tossRollZ=(float)serveRandom.NextDouble();
                     State.phase="toss";State.phaseAt=State.time;return true;
-                case "beginSwing": if(State.phase=="rally") {p.swingAt=State.time;p.confirmedSwing=false;p.swings++;} return true;
+                case "beginSwing": if(State.phase=="rally" && State.receiver==seat) {
+                    p.swingAt=State.time-Math.Max(0,Math.Min(MaximumRewind,hostTime-input.time+input.age));
+                    p.confirmedSwing=false;p.swings++;
+                } return true;
                 case "abortSwing":p.swingAt=-100;p.confirmedSwing=false;return true;
                 case "swing":
                     p.power=NetworkMath.Clamp(input.power,.1f,1);
@@ -94,15 +98,20 @@ namespace GolfArcade.Multiplayer {
                         Serve(seat);return true;
                     }
                     if(State.phase!="rally"||State.receiver!=seat)return false;
-                    p.aim=NetworkMath.Clamp(input.aim,-1,1);p.swingAt=State.time;p.confirmedSwing=true;p.swings++;
+                    p.aim=NetworkMath.Clamp(input.aim,-1,1);
+                    // Preserve the detected onset through confirmation, including packet delay.
+                    double confirmedAt=State.time-age;
+                    if(p.confirmedSwing || confirmedAt-p.swingAt>TennisRules.SweetTime+TennisRules.ContactTimingWindow || p.swingAt>confirmedAt)
+                        p.swingAt=confirmedAt;
+                    p.confirmedSwing=true;p.swings++;
                     // A late packet may meet a historical ball, but never one from a previous
                     // point or before a newer confirmed contact.
                     foreach(var h in history) {
                         if(h.time<State.time-age-.025||h.point!=State.point||h.contact!=State.contact||h.receiver!=seat||(State.serveFlight&&h.bounces==0))continue;
                         float px=seat==0?h.ax:h.bx,pz=seat==0?h.az:h.bz;
-                        if(CanReach(h.ball,px,pz,p.diveUntil>State.time)) {
+                        if(h.time>=p.swingAt && CanReach(h.ball,px,pz,p.diveUntil>State.time)) {
                             State.ball=h.ball;State.velocity=h.velocity;State.bounces=h.bounces;
-                            Return(seat,p); AdvanceBall((float)(State.time-h.time));return true;
+                            Return(seat,p,h.time,px,pz); AdvanceBall((float)(State.time-h.time));return true;
                         }
                     }
                     return true;
@@ -120,12 +129,18 @@ namespace GolfArcade.Multiplayer {
             Launch(new(targetX+scatter.x,Radius,targetZ+scatter.y),25+p.power*14);
             State.phase="rally";State.receiver=1-seat;State.bounces=0;State.serveFlight=true;State.contact++;p.serves++;
         }
-        static bool CanReach(NetworkVector b,float x,float z,bool dive)=>b.y>.1f&&b.y<3.6f&&Math.Abs(b.x-x)<(dive?2.15f:1.55f)&&Math.Abs(b.z-z)<2f;
-        void Return(int seat,NetworkTennisPlayer p) {
+        static bool CanReach(NetworkVector b,float x,float z,bool dive)=>b.y>.1f&&b.y<3.6f&&Math.Abs(b.x-x)<(dive?2.15f:TennisRules.ContactReach)&&Math.Abs(b.z-z)<2f;
+        void Return(int seat,NetworkTennisPlayer p,double contactTime,float playerX,float playerZ) {
             float sign=seat==0?1:-1;
+            float due=Math.Abs(State.velocity.z)>.5f?(playerZ+sign*.65f-State.ball.z)/State.velocity.z:0;
+            float late=(float)(p.swingAt+TennisRules.SweetTime-contactTime)-due;
+            float centre=1-NetworkMath.Clamp(Math.Abs(State.ball.x-playerX)/TennisRules.ContactReach,0,1);
+            var hit=TennisRules.AssistedHit(late,centre,1,p.power,p.stamina);
+            var target=TennisRules.TimedPlacement(TennisRules.PlacementTarget(p.aim,p.depth),hit.Timing,
+                (float)rallyRandom.NextDouble()*2-1,(float)rallyRandom.NextDouble()*2-1);
             State.ball.y=Math.Max(.45f,State.ball.y);
-            float depth=5f+p.depth*6.4f;
-            Launch(new(p.aim*3.6f,Radius,sign*depth),18+p.power*15);
+            Launch(new(target.x,Radius,sign*target.z),hit.Speed);
+            State.reason=TennisRules.GradeLabel(TennisRules.Grade(hit.Timing));
             State.receiver=1-seat;State.bounces=0;State.serveFlight=false;State.contact++;p.swingAt=-100;p.confirmedSwing=false;
         }
         void Launch(NetworkVector target,float speed) {
@@ -170,7 +185,7 @@ namespace GolfArcade.Multiplayer {
             history.Enqueue(new History {time=State.time,point=State.point,contact=State.contact,ball=State.ball,velocity=State.velocity,ax=State.players[0].x,az=State.players[0].z,bx=State.players[1].x,bz=State.players[1].z,receiver=State.receiver,bounces=State.bounces});
             while(history.Count>0&&State.time-history.Peek().time>MaximumRewind+.05)history.Dequeue();
             var receiver=State.players[State.receiver];
-            if(receiver.confirmedSwing && State.time-receiver.swingAt>=.09&&State.time-receiver.swingAt<=.32 && (!State.serveFlight||State.bounces>0)&&CanReach(State.ball,receiver.x,receiver.z,receiver.diveUntil>State.time))Return(State.receiver,receiver);
+            if(receiver.confirmedSwing && State.time-receiver.swingAt>=TennisRules.ContactStart&&State.time-receiver.swingAt<=TennisRules.SweetTime+TennisRules.ContactTimingWindow && (!State.serveFlight||State.bounces>0)&&CanReach(State.ball,receiver.x,receiver.z,receiver.diveUntil>State.time))Return(State.receiver,receiver,State.time,receiver.x,receiver.z);
             AdvanceBall(dt);
         }
         void AdvanceBall(float elapsed) {

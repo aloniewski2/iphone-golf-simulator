@@ -328,7 +328,26 @@ namespace GolfArcade.Tennis
         /// same instant so string-crossing tests and launch points see the racket on screen.
         void OnActorPosed()
         {
-            if (!graph.IsValid() || (game && game.ReplayPlaying) || !actor.Swinging || !actionActive || !IsStroke(action)) return;
+            if (!graph.IsValid() || (game && game.ReplayPlaying) || !actor.Swinging) return;
+            // A compensated stroke can reach contact in the simulation before LateUpdate
+            // runs. Install its upper-body pose now; the previous Ready/prepare pose must
+            // never decide whether that first contact sub-step hits the ball.
+            if (Match && isPlayer && (!wasSwinging || !actionActive || !IsStroke(action)))
+            {
+                swingClip = Playable(StrokeClip()); action = swingClip; actionActive = true;
+                juiceActive = false; followThrough = true; wasSwinging = true;
+                swingStartTtc = Mathf.Max(actor.SignedTimeToContact, .05f);
+                actionWeight = 1; actionWeightVel = 0;
+                upperFade = 1; upperFadeClip = (int)action;
+                for (int k = 0; k < Count; k++)
+                {
+                    if (!upperPlayables[k].IsValid()) continue;
+                    upperBlend[k] = k == (int)action ? 1 : 0;
+                    upperMixer.SetInputWeight(k, upperBlend[k]);
+                }
+                layers.SetInputWeight(1, 1); UpperLayerWeight = 1;
+            }
+            if (!actionActive || !IsStroke(action)) return;
             int i = (int)action;
             playables[i].SetTime(StrokeTime(i, actor.SignedTimeToContact));
             if (upperPlayables[i].IsValid()) upperPlayables[i].SetTime(StrokeTime(i, actor.SignedTimeToContact));
@@ -1686,7 +1705,12 @@ namespace GolfArcade.Tennis
         void AssistContact()
         {
             float ttc = Mathf.Abs(actor.SignedTimeToContact);
-            float w = Mathf.Clamp01(1 - ttc / .16f); if (w <= 0 || !Grip) return;
+            float w = Mathf.Clamp01(1 - ttc / .16f);
+            // An assisted hit can meet the ball before or after the authored sweet frame.
+            // Follow the planned contact envelope so the visible racket earns that contact,
+            // while the original swing timing still determines shot quality.
+            if (!Baseline && actor.Guiding) w = Mathf.Max(w, actor.ContactGuideWeight);
+            if (w <= 0 || !Grip) return;
             if (Baseline) { if (action == Clip.Serve || !actor.SweetSpot) return; }
             else if (!actor.Guiding) return;
             var a = Anim;
@@ -1695,8 +1719,9 @@ namespace GolfArcade.Tennis
             {
                 // A reach is carried by the body too: lunge the whole hero toward the ball.
                 var toBall = (game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall) - stringCentre.position; toBall.y = 0;
-                var lunge = Vector3.ClampMagnitude(toBall, bodyReach) * w;
-                transform.position += lunge; lungeOffset = Vector3.ClampMagnitude(transform.localPosition - smoothLocal, bodyReach); transform.localPosition = lungeOffset + smoothLocal;
+                float reach = isPlayer && actor.Guiding ? Mathf.Max(bodyReach, .45f) : bodyReach;
+                var lunge = Vector3.ClampMagnitude(toBall, reach) * w;
+                transform.position += lunge; lungeOffset = Vector3.ClampMagnitude(transform.localPosition - smoothLocal, reach); transform.localPosition = lungeOffset + smoothLocal;
                 // A low ball is reached by bending the knees, not by driving the arm down through the
                 // thigh: drop the hips and re-solve both legs so the feet stay planted on the court.
                 Vector3 g0 = game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall;
@@ -1716,7 +1741,8 @@ namespace GolfArcade.Tennis
             // The rival's racket reaches for the live ball (its planned meet point can sit off the real
             // flight), so the honest-contact check judges what is on screen.
             Vector3 goal = Baseline ? actor.SweetSpot.position : game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall;
-            var delta = Vector3.ClampMagnitude(goal - sweet, contactAssist) * w;
+            float armAssist = isPlayer && actor.Guiding ? Mathf.Max(contactAssist, .65f) : contactAssist;
+            var delta = Vector3.ClampMagnitude(goal - sweet, armAssist) * w;
             if (delta.sqrMagnitude < 1e-6f) return;
             // Never buy reach by driving an arm into the torso. The hitting arm keeps the nudge only as far
             // as it stays clear (past that the honest-contact rule calls a real miss); on the two-hander the

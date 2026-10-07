@@ -102,6 +102,20 @@ namespace GolfArcade.Tennis
             }
         }
 
+        // Golf has coarser pique/twill construction; preserve distinct leather and rubber.
+        static ClothLook GolfClothFor(string role)
+        {
+            switch (role)
+            {
+                case RoleShirt: return new ClothLook(.10f, .034f, 1.15f, .80f, .32f);
+                case RoleShorts: return new ClothLook(.09f, .032f, .95f, .70f, .24f);
+                case RoleShoe: return new ClothLook(.18f, .024f, .70f, .45f, .10f);
+                case RoleGolfGlove: return new ClothLook(.18f, .022f, .45f, .35f, .10f);
+                case RoleGolfHead: return new ClothLook(.08f, .028f, .80f, .55f, .18f);
+                default: return ClothFor(role);
+            }
+        }
+
         /// A copy of an authored flat material on `shader`, keeping its colour (a missing shader leaves the flat copy, never a pink one).
         static Material OnShader(Material source, Shader shader, string name)
         {
@@ -168,7 +182,7 @@ namespace GolfArcade.Tennis
         Material ClothSurface(Material m, string role, string tag, Mesh mesh, int sub, float scale)
         {
             if (m.shader != ClothShader) return m;
-            var look = ClothFor(role);
+            var look = golfKit ? GolfClothFor(role) : ClothFor(role);
             m.SetFloat("_Smoothness", look.smooth); m.SetFloat("_Wrap", ClothWrap); m.SetFloat("_RimStrength", ClothRim);
             m.SetFloat("_WeaveNormal", look.weaveNormal); m.SetFloat("_WeaveThread", look.thread); m.SetFloat("_SheenStrength", look.sheen);
             if (WeaveMap) m.SetTexture("_WeaveMap", WeaveMap);

@@ -12,8 +12,9 @@ typedef struct SportsSample {
     int32_t swing, swingStart, swingAbort, flags;
     float handSide, lift, strokeFacing;
     float qx, qy, qz, qw, rx, ry, rz, gx, gy, gz;
+    double onsetTime, confirmationTime, abortTime;
 } SportsSample;
-enum { SportsSampleVersion = 2, SportsSampleValid = 1, SportsSampleDegraded = 2 };
+enum { SportsSampleVersion = 3, SportsSampleValid = 1, SportsSampleDegraded = 2 };
 @interface SportsRuntime : NSObject
 + (instancetype)shared;
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error;

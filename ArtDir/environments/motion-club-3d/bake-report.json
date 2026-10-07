@@ -1,0 +1,30 @@
+[
+  {
+    "room": "entrance",
+    "triangles": 83056,
+    "atlas": "2048x2048",
+    "projection": "six orthographic ImageGen material panels -> unique BakedUV emission bake",
+    "objects_before_join": 2774
+  },
+  {
+    "room": "terrace",
+    "triangles": 80256,
+    "atlas": "2048x2048",
+    "projection": "six orthographic ImageGen material panels -> unique BakedUV emission bake",
+    "objects_before_join": 2572
+  },
+  {
+    "room": "locker",
+    "triangles": 64592,
+    "atlas": "2048x2048",
+    "projection": "six orthographic ImageGen material panels -> unique BakedUV emission bake",
+    "objects_before_join": 1138
+  },
+  {
+    "room": "loading",
+    "triangles": 77128,
+    "atlas": "2048x2048",
+    "projection": "six orthographic ImageGen material panels -> unique BakedUV emission bake",
+    "objects_before_join": 2881
+  }
+]

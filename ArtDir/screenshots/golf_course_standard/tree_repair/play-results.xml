@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.3711587">
+  <test-suite type="TestSuite" id="1223" name="Golf Arcade" fullname="Golf Arcade" runstate="Runnable" testcasecount="162" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.371159" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1217" name="GolfArcade.PlayTests.dll" fullname="/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/golf-course-standard/AfterUnity/Library/ScriptAssemblies/GolfArcade.PlayTests.dll" runstate="Runnable" testcasecount="162" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.364798" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="57837" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1218" name="GolfArcade" fullname="GolfArcade" runstate="Runnable" testcasecount="162" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.363419" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1220" name="PlayTests" fullname="GolfArcade.PlayTests" runstate="Runnable" testcasecount="154" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.361250" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1040" name="GolfCourseStandardPlayTests" fullname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" classname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:13Z" duration="38.356205" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1041" name="UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" fullname="GolfArcade.PlayTests.GolfCourseStandardPlayTests.UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" methodname="UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" classname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" runstate="Runnable" seed="709130521" result="Passed" start-time="2026-10-07 00:36:34Z" end-time="2026-10-07 00:37:12Z" duration="38.339996" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="Timeout" value="300000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 159 original visual renderers into 43 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+Releasing render texture that is set to be RenderTexture.active!
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 159 original visual renderers into 43 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 159 original visual renderers into 43 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 163 original visual renderers into 49 bounded groups; meshes/colliders/scoring unchanged
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 159 original visual renderers into 43 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCourseFringe] hole 12: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 1531/1110/186/8; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 22 original visual renderers into 35 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 8 pivot-preserving visual batches
+[GolfCourseFringe] hole 13: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/1288/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 18 original visual renderers into 13 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 12 pivot-preserving visual batches
+[GolfCourseFringe] hole 14: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/523/140/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 17 original visual renderers into 21 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCourseFringe] hole 15: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 202/0/72/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 17 original visual renderers into 23 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 8 pivot-preserving visual batches
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfCoursePalms] 32 continuous palms, 15960 detached leaf triangles replaced, 25344 new triangles; original obstacle meshes retained
+[GolfCourseFringe] hole 16: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/880/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 20 original visual renderers into 21 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfCourseFringe] hole 17: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/648/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 26 original visual renderers into 26 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[GolfCourseFringe] hole 18: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/0/72/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 12 original visual renderers into 18 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfCoursePalms] 38 continuous palms, 18960 detached leaf triangles replaced, 30096 new triangles; original obstacle meshes retained
+[GolfCourseFringe] hole 19: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/800/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 27 original visual renderers into 27 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCourseFringe] hole 20: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/564/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 30 original visual renderers into 55 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCoursePalms] 5 continuous palms, 2400 detached leaf triangles replaced, 3960 new triangles; original obstacle meshes retained
+[GolfCourseFringe] hole 21: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/168/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 19 original visual renderers into 22 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[GolfCoursePalms] 3 continuous palms, 1440 detached leaf triangles replaced, 2376 new triangles; original obstacle meshes retained
+[GolfCourseFringe] hole 22: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/252/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 26 original visual renderers into 25 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[GolfCoursePalms] 7 continuous palms, 3360 detached leaf triangles replaced, 5544 new triangles; original obstacle meshes retained
+[GolfCourseFringe] hole 23: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/648/252/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 27 original visual renderers into 21 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+DONE PlayMode: 1 passed, 0 failed, 0 skipped
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

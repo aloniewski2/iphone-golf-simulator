@@ -37,16 +37,18 @@ namespace GolfArcade.Game
             return rig;
         }
 
-        /// Behind the ball on the aim line and up high, pitched down about 27°, so on a portrait
-        /// screen the hole ahead opens out down the middle — fairway, hazards, the landing area —
-        /// with the horizon near the top and the ball and golfer seen from above in the lower
-        /// third, over the buttons. Putts sit lower and closer.
+        /// Close third-person address: the whole golfer sits left of the ball, with the
+        /// target line and course ahead. The camera stays near shoulder height.
         public void FrameAddress(Vector3 ball, Vector3 aimDirection, bool putting, float look = 0, Vector3? pin = null)
         {
-            float back = putting ? 3.2f : 8.5f, up = putting ? 1.4f : 6.8f, ahead = putting ? 2.5f : 5f;
-            targetPosition = ball - aimDirection * back + Vector3.up * up;
-            targetLookAt = ball + aimDirection * ahead;
+            aimDirection = GroundDirection(aimDirection);
+            var right = Vector3.Cross(Vector3.up, aimDirection);
+            float back = putting ? 3.3f : 3.65f;
+            targetPosition = ball - aimDirection * back + right * .2f + Vector3.up * 2.05f;
+            targetLookAt = ball + aimDirection * 2.4f + Vector3.up * .85f;
             Look(ball, aimDirection, look, pin, 14f, 5f);
+            ClearGround();
+            cueUp = Vector3.up; targetRoll = 0;
             positionLag = 0.35f; lookLag = 0.3f;
         }
 
@@ -77,13 +79,75 @@ namespace GolfArcade.Game
         /// cup — with the whole read in view, and it stays put while the putt rolls.
         public void FrameGreen(Vector3 ball, Vector3 aimDirection, float distanceToPin, float look = 0, Vector3? pin = null)
         {
-            var right = Vector3.Cross(Vector3.up, aimDirection).normalized;
-            float reach = Mathf.Clamp(distanceToPin, 4, 30);
-            // back and up far enough that the golfer is a figure at the edge, not half the screen
-            targetPosition = ball + right * 3.2f - aimDirection * (8.5f + reach * 0.2f) + Vector3.up * (6.2f + reach * 0.08f);
-            targetLookAt = ball + aimDirection * Mathf.Max(distanceToPin * 0.5f, 3f) + Vector3.up * 0.15f;
+            aimDirection = GroundDirection(aimDirection);
+            var right = Vector3.Cross(Vector3.up, aimDirection);
+            targetPosition = ball + right * .65f - aimDirection * 3.8f + Vector3.up * 2.5f;
+            targetLookAt = ball + aimDirection * Mathf.Clamp(distanceToPin * .4f, 2f, 4f) + Vector3.up * .35f;
             Look(ball, aimDirection, look, pin, 7f, 3f);
+            ClearGround();
+            cueUp = Vector3.up; targetRoll = 0;
             positionLag = 0.35f; lookLag = 0.3f;
+        }
+
+        /// Return to the exact address composition, so the result feels like part of the shot.
+        public void FrameShotResult()
+        {
+            RestoreFov(); ResetZoom();
+            targetPosition = launchCamera;
+            targetLookAt = launchLook;
+            cueUp = Vector3.up; targetRoll = 0;
+            shotFrame = povThisFrame = false;
+        }
+
+        public const float LaunchHoldSeconds = 1.5f;
+        public const float FollowTransitionSeconds = .28f;
+        Vector3 launchCamera, launchLook, flightDirection;
+        Vector3 flightBall;
+        bool shotFrame;
+
+        static Vector3 GroundDirection(Vector3 direction)
+        {
+            direction.y = 0;
+            return direction.sqrMagnitude > .0001f ? direction.normalized : Vector3.forward;
+        }
+
+        void ClearGround()
+        {
+            float floor = (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(targetPosition)) + .65f;
+            targetPosition.y = Mathf.Max(targetPosition.y, floor);
+        }
+
+        /// Keep the strike's heading for the whole shot, including bounce, cup and runout.
+        /// Capturing the current pose lets the launch view lead into the chase without a cut.
+        public void BeginShot(Vector3 direction)
+        {
+            launchCamera = transform.position;
+            launchLook = lookAt;
+            flightDirection = GroundDirection(direction);
+            positionVelocity = lookVelocity = Vector3.zero;
+            cueUp = Vector3.up;
+            targetRoll = 0;
+            povThisFrame = false;
+        }
+
+        public void FollowShot(Vector3 ball, float sinceLaunch, bool down, bool putting)
+        {
+            float hold = putting ? .6f : LaunchHoldSeconds;
+            float follow = Mathf.SmoothStep(0, 1, Mathf.Clamp01((sinceLaunch - hold) / FollowTransitionSeconds));
+            var right = Vector3.Cross(Vector3.up, flightDirection);
+            float back = putting ? 5f : down ? 9f : 12f;
+            float height = putting ? 2.8f : down ? 4.5f : 7f;
+            var chase = ball - flightDirection * back + right * (putting ? .65f : 2.4f) + Vector3.up * height;
+            targetPosition = Vector3.Lerp(launchCamera, chase, follow);
+            // Even a ricochet cannot put the camera ahead of its subject and reverse the view.
+            float ahead = Vector3.Dot(targetPosition - ball, flightDirection);
+            if (ahead > -2f) targetPosition -= flightDirection * (ahead + 2f);
+            ClearGround();
+            flightBall = ball;
+            targetLookAt = Vector3.Lerp(launchLook, ball + flightDirection * .8f, follow);
+            positionLag = .065f; lookLag = .055f;
+            cueUp = Vector3.up; targetRoll = 0; targetZoom = 1;
+            shotFrame = true;
         }
 
         /// The hole cam: behind the cup, low, looking back along the line at the ball rolling in.
@@ -415,6 +479,14 @@ namespace GolfArcade.Game
                 transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref positionVelocity, positionLag);
                 lookAt = Vector3.SmoothDamp(lookAt, targetLookAt, ref lookVelocity, lookLag);
             }
+            if (shotFrame)
+            {
+                // Position and look smoothing must never let the ball pass behind the lens.
+                float ahead = Vector3.Dot(transform.position - flightBall, flightDirection);
+                if (ahead > -1f) transform.position -= flightDirection * (ahead + 1f);
+                float lookAhead = Vector3.Dot(lookAt - transform.position, flightDirection);
+                if (lookAhead < 1f) lookAt += flightDirection * (1f - lookAhead);
+            }
             var forward = lookAt - transform.position;
             roll = cut ? targetRoll : Mathf.SmoothDamp(roll, targetRoll, ref rollVelocity, 0.4f);
             if (povThisFrame)
@@ -428,7 +500,12 @@ namespace GolfArcade.Game
                 povThisFrame = false;
             }
             else if (forward.sqrMagnitude > 1e-4f)
-                transform.rotation = Quaternion.LookRotation(forward, cueUp) * Quaternion.Euler(0, 0, roll);
+            {
+                var wanted = Quaternion.LookRotation(forward, cueUp) * Quaternion.Euler(0, 0, roll);
+                transform.rotation = shotFrame && !cut
+                    ? Quaternion.Slerp(transform.rotation, wanted, 1f - Mathf.Exp(-Time.deltaTime / .10f)) : wanted;
+            }
+            shotFrame = false;
             if (cut) cueUp = Vector3.up;
             // the lens
             if (cut) { zoom = targetZoom; zoomVelocity = 0; }

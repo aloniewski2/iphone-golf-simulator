@@ -12,6 +12,16 @@ namespace GolfArcade.Course
         const int Size=256;
         struct Segment { public Vector2 a,b; }
         static Texture2D active;
+        static Texture2D neutral;
+        public static void Reset()
+        {
+            if(!neutral) {
+                neutral=new Texture2D(1,1,TextureFormat.RGBA32,false,true){name="Golf neutral surface edges"};
+                neutral.SetPixel(0,0,new Color(1,1,.5f,1));neutral.Apply(false,true);
+            }
+            Shader.SetGlobalTexture("_GolfEdgeMap",neutral);
+            Shader.SetGlobalVector("_GolfEdgeBounds",Vector4.zero);
+        }
         static float Smooth(float a,float b,float x){float t=Mathf.Clamp01((x-a)/(b-a));return t*t*(3-2*t);}
         static byte Byte(float x)=>(byte)Mathf.RoundToInt(Mathf.Clamp01(x)*255);
         static string Point(Vector3 p) => $"{Mathf.RoundToInt(p.x*1000)}:{Mathf.RoundToInt(p.z*1000)}";
@@ -43,7 +53,7 @@ namespace GolfArcade.Course
                 }
                 foreach(var e in counts)if(e.Value==1)lines[kind].Add(segs[e.Key]);
             }
-            if(lo.x==float.MaxValue){Shader.SetGlobalVector("_GolfEdgeBounds",Vector4.zero);return;}
+            if(lo.x==float.MaxValue){Reset();return;}
             lo-=Vector2.one*4;hi+=Vector2.one*4;var extent=hi-lo;var origin=lo;
             var pixels=new Color32[Size*Size];
             Parallel.For(0,Size,y=>{

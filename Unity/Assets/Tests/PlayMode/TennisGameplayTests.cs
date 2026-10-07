@@ -11,6 +11,35 @@ namespace GolfArcade.PlayTests
 {
     public class TennisGameplayTests
     {
+        [UnityTest, Timeout(180000)] public IEnumerator TossMeterUsesSeenTimeAndMistimedTossesDriftFarther()
+        {
+            string dir=System.Environment.GetEnvironmentVariable("GAMEPLAY_PROOF_DIR")??"Library/Captures/serve-toss";
+            var rows=new System.Text.StringBuilder("tossAccuracy,ballX,ballY,ballZ,errorMetres\n");
+            Vector3 clean=Vector3.zero;float previous=-1;
+            foreach(float accuracy in new[]{1f,.5f,0f}) {
+                yield return SceneManager.LoadSceneAsync("Tennis",LoadSceneMode.Single);yield return null;
+                var game=Object.FindFirstObjectByType<TennisGame>();game.ManualSimulation=true;game.NativeControlled=true;
+                game.ConfigureMatch(TennisGame.Mode.Training,null,null,null);
+                for(int i=0;i<360;i++)game.Step(1f/120);
+                var meter=Object.FindFirstObjectByType<TennisTossMeter>();Assert.IsNotNull(meter);
+                meter.RunAt(game.Player.transform.position,.35f);
+                Assert.That(meter.Press(.1f),Is.EqualTo(1).Within(.0001f),"Grade the frame the player saw, not the delayed tap.");
+                meter.RunAt(game.Player.transform.position,.25f+(1-accuracy)/TennisTossMeter.Speed+.03f);
+                game.Toss(accuracy);
+                for(int i=0;i<120&&game.Flow!=TennisGame.Phase.PlayerServeToss;i++)game.Step(1f/120);
+                Assert.AreEqual(TennisGame.Phase.PlayerServeToss,game.Flow);
+                for(int i=0;i<36;i++)game.Step(1f/120);
+                if(accuracy==1)clean=game.BallPosition;
+                float error=Vector3.Distance(clean,game.BallPosition);
+                Assert.Greater(error,previous);previous=error;
+                Assert.AreEqual(accuracy,game.TossAccuracy);
+                rows.AppendLine(System.FormattableString.Invariant($"{accuracy},{game.BallPosition.x:F4},{game.BallPosition.y:F4},{game.BallPosition.z:F4},{error:F4}"));
+                yield return null;
+                GameCapture.Save($"{dir}/toss-{accuracy:F1}.png",1280,720);
+            }
+            Directory.CreateDirectory(dir);File.WriteAllText(dir+"/toss-drift.csv",rows.ToString());
+        }
+
         /// A TV that shows the picture 150 ms late makes the player swing 150 ms late. With the
         /// measured delay set, that late swing must still meet the ball as well as an on-time
         /// swing does without delay; without it, the same late swing must do worse.

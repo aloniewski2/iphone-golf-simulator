@@ -8,6 +8,99 @@ import XCTest
 /// layouts can be reviewed without a TV attached. Output: $TMPDIR/tennis-menu/.
 @MainActor
 final class TennisMenuSnapshotTests: XCTestCase {
+    func testEmoteLoadoutScreens() async throws {
+        let menu = TennisMenu.shared, session = SportsSession.shared
+        let oldPlayers = session.players, oldIndex = session.playerIndex
+        let oldActive = session.active, oldReady = session.ready, oldPaused = session.paused
+        let oldSport = session.sport, oldWindow = session.emoteWindow
+        defer {
+            session.players = oldPlayers; session.playerIndex = oldIndex
+            session.active = oldActive; session.ready = oldReady; session.paused = oldPaused
+            session.sport = oldSport; session.emoteWindow = oldWindow
+            session.loading.cancel(); menu.debugShow(.title)
+        }
+        var p = Player(name: "Adnan", colorIndex: 0)
+        p.equipEmote("pushups", slot: 0); p.equipEmote("bringIt", slot: 1)
+        session.players = [p]; session.playerIndex = 0
+        menu.debugShow(.character); menu.tap("lk-tab-emotes")
+        XCTAssertEqual(menu.lockerTab, .emotes)
+        let out = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("ArtDir/screenshots/emote_loadout")
+        try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        func capture<V: View>(_ view: V, size: CGSize, name: String) async throws {
+            let host = UIHostingController(rootView: view); host.safeAreaRegions = []
+            let window = UIWindow(windowScene: scene); window.frame = CGRect(origin: .zero, size: size)
+            window.rootViewController = host; window.isHidden = false
+            host.view.frame = window.bounds; host.view.layoutIfNeeded()
+            defer { window.isHidden = true }
+            try await Task.sleep(for: .milliseconds(750))
+            let format = UIGraphicsImageRendererFormat(); format.scale = 1
+            let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true) }
+            try XCTUnwrap(image.pngData()).write(to: out.appendingPathComponent(name + ".png"))
+        }
+        try await capture(IslandLockerScreen(menu: menu, compact: true), size: CGSize(width: 402, height: 874), name: "locker_phone")
+        try await capture(IslandLockerScreen(menu: menu, compact: false), size: CGSize(width: 1280, height: 720), name: "locker_tv")
+        session.active = true; session.ready = true; session.paused = false; session.sport = "tennis"
+        session.loading.begin(now: Date()); session.loading.markReady(); session.loading.skip()
+        session.emoteWindow = "intro"
+        XCTAssertTrue(session.canPlayEmote)
+        try await capture(TennisEmoteControls(session: session).padding(20).background(IslandUI.navy), size: CGSize(width: 402, height: 180), name: "controller_intro_layout")
+        session.emoteWindow = "point"
+        XCTAssertTrue(session.canPlayEmote)
+        session.emoteWindow = ""
+        XCTAssertFalse(session.canPlayEmote)
+        try await capture(TennisEmoteControls(session: session).padding(20).background(IslandUI.navy), size: CGSize(width: 402, height: 180), name: "controller_rally_layout")
+    }
+
+    func testSportLockerPreviewSwitchesOutfitEquipmentAndBack() async throws {
+        let menu = TennisMenu.shared, session = SportsSession.shared
+        let oldPlayers = session.players, oldIndex = session.playerIndex
+        defer { session.players = oldPlayers; session.playerIndex = oldIndex; menu.debugShow(.title) }
+        let out = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("ArtDir/screenshots/golf_locker_swap")
+        try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        for female in [false, true] {
+            var p = Player(name: "Adnan", colorIndex: 0); p.standardFemale = female
+            let c = CharacterModelPreview.Coordinator(cameraDistance: 2.7)
+            c.update(p, sport: .tennis)
+            let tennis = try XCTUnwrap(c.hero)
+            XCTAssertGreaterThan(try XCTUnwrap(c.racket).childNodes.count, 0)
+            c.update(p, sport: .golf)
+            let golf = try XCTUnwrap(c.hero)
+            XCTAssertFalse(golf === tennis, "sport switch must replace the preview even when Player is unchanged")
+            XCTAssertNotNil(golf.childNode(withName: "Kit_Head", recursively: true))
+            XCTAssertNotNil(golf.childNode(withName: "Kit_Glove_L", recursively: true))
+            XCTAssertNil(golf.childNode(withName: "Kit_Sock_L", recursively: true))
+            XCTAssertEqual(c.racket?.childNodes.count, 0)
+            XCTAssertNotNil(golf.childNode(withName: "clubHead", recursively: true))
+            let tool = try XCTUnwrap(golf.childNode(withName: "golfClub", recursively: false))
+            let target = c.framingTarget(.racket), box = tool.boundingBox
+            let centre = tool.convertPosition(SCNVector3((box.min.x + box.max.x)/2, (box.min.y + box.max.y)/2, (box.min.z + box.max.z)/2), to: nil)
+            XCTAssertEqual(target.y, centre.y, accuracy: 0.001, "club close-up targets its full geometry")
+            c.configureIdle(sport: nil, animate: false); c.applyFraming()
+            XCTAssertTrue(try XCTUnwrap(c.racket).isHidden)
+            XCTAssertFalse(try XCTUnwrap(golf.childNode(withName: "golfClub", recursively: false)).isHidden)
+            c.update(p, sport: .tennis)
+            XCTAssertGreaterThan(try XCTUnwrap(c.racket).childNodes.count, 0)
+            XCTAssertNil(c.hero?.childNode(withName: "golfClub", recursively: true))
+            session.players = [p]; session.playerIndex = 0; menu.debugShow(.character)
+            for sport in ["tennis", "golf"] {
+                menu.tap("lk-sport-" + sport)
+                let size = CGSize(width: 402, height: 874)
+                let host = UIHostingController(rootView: IslandLockerScreen(menu: menu, compact: true)); host.safeAreaRegions = []
+                let window = UIWindow(windowScene: scene); window.frame = CGRect(origin: .zero, size: size)
+                window.rootViewController = host; window.isHidden = false; host.view.frame = window.bounds; host.view.layoutIfNeeded()
+                try await Task.sleep(for: .milliseconds(900))
+                let format = UIGraphicsImageRendererFormat(); format.scale = 1
+                let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true) }
+                try XCTUnwrap(image.pngData()).write(to: out.appendingPathComponent("\(female ? "female" : "male")_\(sport).png"))
+                window.isHidden = true
+            }
+            p.handedness = .left; c.update(p, sport: .golf)
+            XCTAssertLessThan(try XCTUnwrap(c.hero).scale.x, 0, "club and glove mirror with the left-handed hero")
+        }
+    }
+
     /// Live capture of the same widescreen root used by SportsDisplays on AirPlay.
     func testRecordTVMenuTour() async throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["RECORD_TV_MENU"] == "1", "Opt-in review capture")

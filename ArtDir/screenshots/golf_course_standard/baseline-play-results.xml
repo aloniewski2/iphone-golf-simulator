@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.4894426">
+  <test-suite type="TestSuite" id="1221" name="Golf Arcade" fullname="Golf Arcade" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.489443" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1215" name="GolfArcade.PlayTests.dll" fullname="/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/golf-course-standard/BaselineUnity/Library/ScriptAssemblies/GolfArcade.PlayTests.dll" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.484375" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="49413" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1216" name="GolfArcade" fullname="GolfArcade" runstate="Runnable" testcasecount="161" result="Failed" site="Child" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.483223" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1218" name="PlayTests" fullname="GolfArcade.PlayTests" runstate="Runnable" testcasecount="153" result="Failed" site="Child" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.482070" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1092" name="NewHolesPlayTests" fullname="GolfArcade.PlayTests.NewHolesPlayTests" classname="GolfArcade.PlayTests.NewHolesPlayTests" runstate="Runnable" testcasecount="3" result="Failed" site="Child" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.478182" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1095" name="TheNewHolesPlay" fullname="GolfArcade.PlayTests.NewHolesPlayTests.TheNewHolesPlay" methodname="TheNewHolesPlay" classname="GolfArcade.PlayTests.NewHolesPlayTests" runstate="Runnable" seed="23996809" result="Failed" start-time="2026-10-07 00:02:28Z" end-time="2026-10-07 00:02:55Z" duration="27.463432" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[timed out waiting for the next shot]]></message>
+                <stack-trace><![CDATA[at GolfArcade.PlayTests.NewHolesPlayTests+<WaitFor>d__1.MoveNext () [0x00038] in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/golf-course-standard/BaselineUnity/Assets/Tests/PlayMode/NewHolesPlayTests.cs:24
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEngine.TestRunner/NUnitExtensions/Attributes/TestEnumerator.cs:44
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 163 original visual renderers into 49 bounded groups; meshes/colliders/scoring unchanged
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 163 original visual renderers into 49 bounded groups; meshes/colliders/scoring unchanged
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 163 original visual renderers into 49 bounded groups; meshes/colliders/scoring unchanged
+DONE PlayMode: 0 passed, 1 failed, 0 skipped
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

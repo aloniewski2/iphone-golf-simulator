@@ -1,0 +1,19 @@
+{
+  "heroes": [
+    {
+      "sex": "Male",
+      "parts": 9,
+      "clothSurfaces": 8,
+      "maps": 15,
+      "kitTriangles": 83649
+    },
+    {
+      "sex": "Female",
+      "parts": 10,
+      "clothSurfaces": 8,
+      "maps": 15,
+      "kitTriangles": 57499
+    }
+  ],
+  "uvAmbiguity": 0
+}

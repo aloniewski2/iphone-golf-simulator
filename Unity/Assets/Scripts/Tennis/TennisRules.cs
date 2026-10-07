@@ -19,8 +19,8 @@ namespace GolfArcade.Tennis
         public const int SuperchargeStreak = 3;
         /// A hit must grade at least this well to extend the streak.
         public const Timing StreakFloor = Timing.Great;
-        /// A supercharged ball has to look and feel like a different class of shot.
-        public const float SuperchargeSpeed = 1.7f;
+        /// A streak rewards pace without making the next rally ball unreturnable.
+        public const float SuperchargeSpeed = 1.15f, MaxRallySpeed = 34f;
 
         /// Grade a contact from its timing score (0 = mistimed, 1 = dead on).
         public static Timing Grade(float timing)
@@ -36,7 +36,7 @@ namespace GolfArcade.Tennis
         /// Timing score (1 = dead on .. 0 = missed) for a swing that met the ball `late`
         /// real seconds after the ideal moment (negative: early). Set in milliseconds a person
         /// can actually hit with a phone and a TV picture: PERFECT within 35ms, EXCELLENT 60,
-        /// GREAT 95, GOOD 140, and a playable ball out to 280.
+        /// GREAT 95, GOOD 140, and a scrappy playable ball out to 340 ms.
         public static float TimingScore(float late)
         {
             float t = Mathf.Abs(late);
@@ -44,7 +44,7 @@ namespace GolfArcade.Tennis
             if (t <= .06f) return Mathf.Lerp(.96f, .88f, (t - .035f) / .025f);
             if (t <= .095f) return Mathf.Lerp(.88f, .75f, (t - .06f) / .035f);
             if (t <= .14f) return Mathf.Lerp(.75f, .55f, (t - .095f) / .045f);
-            return Mathf.Clamp01(Mathf.Lerp(.55f, 0f, (t - .14f) / .14f));
+            return Mathf.Clamp01(Mathf.Lerp(.55f, 0f, (t - .14f) / (ContactTimingWindow - .14f)));
         }
 
         /// "EARLY" / "LATE" for a swing off by more than a perfect one, else "".
@@ -75,7 +75,7 @@ namespace GolfArcade.Tennis
         /// the reward for three well-timed balls in a row.
         public static TennisHit Supercharge(TennisHit hit)
         {
-            hit.Speed *= SuperchargeSpeed;
+            hit.Speed = Mathf.Min(MaxRallySpeed, hit.Speed * SuperchargeSpeed);
             hit.ErrorDegrees *= .25f;
             hit.Quality = Mathf.Max(hit.Quality, .95f);
             hit.Label = "SUPERCHARGED";
@@ -101,6 +101,7 @@ namespace GolfArcade.Tennis
         public const float ServiceLine = 6.40f, NetHeight = .97f;
         // Reference animation time; actors stretch this timeline by strength.
         public const float StrokeDuration = .46f, SweetTime = .18f, TimingWindow = .19f;
+        public const float ContactTimingWindow = .34f, ContactStart = .02f, ContactReach = 1.8f;
         /// Human movement, not a sprinter on rails: the old 28 m/s² and 9 m/s sprint got the
         /// character to every ball, which took reaching the ball out of the game. A tour player
         /// peaks around 6 m/s and takes most of a second to get there.
@@ -199,13 +200,25 @@ namespace GolfArcade.Tennis
         /// Shot pace comes from the quality of contact, not how hard the phone was swung:
         /// a clean strike flies, a frame shot floats. Effort only nudges it.
         public static float ShotSpeed(float quality, float power, float stamina) =>
-            Mathf.Lerp(13f, 34f, Mathf.Pow(Mathf.Clamp01(quality), 1.35f)) * Mathf.Lerp(.9f, 1.05f, Mathf.Clamp01(power)) * Mathf.Lerp(.9f, 1f, Mathf.Clamp01(stamina));
+            Mathf.Lerp(13f, 30f, Mathf.Pow(Mathf.Clamp01(quality), 1.35f)) * Mathf.Lerp(.9f, 1.05f, Mathf.Clamp01(power)) * Mathf.Lerp(.9f, 1f, Mathf.Clamp01(stamina));
 
         /// Where an aimed rally ball is sent. The racket face picks the side (-1...1); the
         /// contact decides how much of the court the player can use: a clean hit can go
         /// close to the lines and deep, a poor one is pulled toward the middle and lands short.
         public static Vector3 PlacementTarget(float aim, float depth) =>
             new Vector3(Mathf.Clamp(aim, -1, 1) * (CourtHalfWidth - .35f), BallRadius, Mathf.Lerp(3.2f, 10.8f, Mathf.Clamp01(depth)));
+
+        /// Timing earns the full chosen angle and depth. A scrappy hit stays playable but
+        /// drifts toward the middle with bounded scatter; a clean hit follows the aim.
+        public static Vector3 TimedPlacement(Vector3 intended, float timing, float rollX, float rollZ)
+        {
+            float control = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timing));
+            float spread = Mathf.Lerp(.9f, .03f, control);
+            float x = intended.x * Mathf.Lerp(.6f, 1f, control) + Mathf.Clamp(rollX, -1, 1) * spread;
+            float z = Mathf.Lerp(6.5f, intended.z, Mathf.Lerp(.65f, 1f, control)) + Mathf.Clamp(rollZ, -1, 1) * spread;
+            return new Vector3(Mathf.Clamp(x, -CourtHalfWidth + .12f, CourtHalfWidth - .12f), BallRadius,
+                Mathf.Clamp(z, 2.8f, CourtHalfLength - .3f));
+        }
 
         public struct ServeFlight { public Vector3 Velocity; public float Spin; }
         /// Arcade serve downforce preserves the chosen horizontal pace, net clearance and landing.
@@ -259,12 +272,13 @@ namespace GolfArcade.Tennis
             return .5f + .5f * (1 - (1 - finish) * (1 - finish));
         }
         public static float ContactQuality(float timing, float center, float positioning) =>
-            Mathf.Clamp01(timing) * .65f + Mathf.Clamp01(center) * .25f + Mathf.Clamp01(positioning) * .10f;
+            Mathf.Clamp01(timing) * .80f + Mathf.Clamp01(center) * .15f + Mathf.Clamp01(positioning) * .05f;
 
         /// Reach assistance grants contact, not free power. Recompute pace from the actual timing.
         public static TennisHit AssistedHit(float late, float center, float balance, float power, float stamina)
         {
-            float timing = TimingScore(late);
+            // A return that physically connects is at least a scrappy OK hit.
+            float timing = Mathf.Max(.01f, TimingScore(late));
             float quality = ContactQuality(timing, center, balance);
             return new TennisHit {
                 Contact = true, Timing = timing, Center = center, Positioning = balance, Quality = quality,
@@ -277,7 +291,7 @@ namespace GolfArcade.Tennis
         {
             float radial = new Vector2(faceOffset.x / StringHalfWidth, faceOffset.y / StringHalfHeight).magnitude;
             float timing = TimingScore(swingAge - SweetTime);
-            bool contact = new Vector2(faceOffset.x / (StringHalfWidth + BallRadius), faceOffset.y / (StringHalfHeight + BallRadius)).magnitude <= 1 && swingAge >= .04f && timing > 0;
+            bool contact = new Vector2(faceOffset.x / (StringHalfWidth + BallRadius), faceOffset.y / (StringHalfHeight + BallRadius)).magnitude <= 1 && swingAge >= ContactStart && timing > 0;
             float center = Mathf.Clamp01(1 - radial);
             float positioning = Mathf.Clamp01(balance) * Mathf.Clamp01(reachQuality);
             float quality = contact ? ContactQuality(timing, center, positioning) : 0;
@@ -307,8 +321,8 @@ namespace GolfArcade.Tennis
             // A dive throws the racket much further sideways than a normal stroke can reach.
             // Plan 2 party windows: a little more reach and time than before (never less) — skill is
             // when you swing and where you aim, not sniper precision.
-            float forgiveness=1.6f*(dive?1.8f:1f);
-            if(age < .04f || Mathf.Abs(age-SweetTime) >= .28f) return false;
+            float forgiveness=ContactReach*(dive?1.8f:1f);
+            if(age < ContactStart || Mathf.Abs(age-SweetTime) >= ContactTimingWindow) return false;
             // Closest approach measured on the ground plane, then judged against a height BAND
             // rather than a point: the old fixed 1.1m centre turned low and high balls the
             // player had timed perfectly into misses.
@@ -321,7 +335,7 @@ namespace GolfArcade.Tennis
             float bandTop=overhead ? ReachOverhead : ReachHigh;
             float outside=height<ReachLow ? ReachLow-height : height>bandTop ? height-bandTop : 0;
             float distance=new Vector3((at.x-centre.x)/forgiveness,outside/.45f,(at.z-centre.z)/forgiveness).magnitude;
-            if(distance>1 || ball.z<player.z-.25f) return false;
+            if(distance>1 || ball.z<player.z-.5f) return false;
             // Balls at the edges of the band are harder to hit cleanly.
             float awkward=Mathf.Clamp01(Mathf.Abs(height-1.1f)/1.3f);
             quality=Mathf.Lerp(.3f,.65f,1-distance)*Mathf.Lerp(1f,.85f,awkward);

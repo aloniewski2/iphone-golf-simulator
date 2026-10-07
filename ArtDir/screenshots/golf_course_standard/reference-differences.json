@@ -1,0 +1,80 @@
+{
+  "8": {
+    "tee": {
+      "baseline_mae": 0.09327824074074074,
+      "baseline_pixels_over_10_pct": 0.5101388888888889,
+      "repeat_mae": 0.09574074074074074,
+      "repeat_pixels_over_10_pct": 0.5
+    },
+    "approach": {
+      "baseline_mae": 0.09848356481481481,
+      "baseline_pixels_over_10_pct": 0.4488194444444445,
+      "repeat_mae": 0.09904421296296297,
+      "repeat_pixels_over_10_pct": 0.47604166666666664
+    },
+    "putting": {
+      "baseline_mae": 1.362676851851852,
+      "baseline_pixels_over_10_pct": 4.006458333333334,
+      "repeat_mae": 0.7375048611111111,
+      "repeat_pixels_over_10_pct": 3.5160416666666667
+    },
+    "aerial": {
+      "baseline_mae": 10.22251736111111,
+      "baseline_pixels_over_10_pct": 31.43638888888889,
+      "repeat_mae": 10.592038194444445,
+      "repeat_pixels_over_10_pct": 33.49666666666667
+    }
+  },
+  "9": {
+    "tee": {
+      "baseline_mae": 0.01198125,
+      "baseline_pixels_over_10_pct": 0.03333333333333333,
+      "repeat_mae": 0.01158587962962963,
+      "repeat_pixels_over_10_pct": 0.036388888888888894
+    },
+    "approach": {
+      "baseline_mae": 0.09175856481481481,
+      "baseline_pixels_over_10_pct": 0.24625,
+      "repeat_mae": 0.05335694444444444,
+      "repeat_pixels_over_10_pct": 0.2575694444444444
+    },
+    "putting": {
+      "baseline_mae": 1.2127034722222223,
+      "baseline_pixels_over_10_pct": 1.9679166666666668,
+      "repeat_mae": 0.25452685185185187,
+      "repeat_pixels_over_10_pct": 1.1511805555555557
+    },
+    "aerial": {
+      "baseline_mae": 6.261663888888889,
+      "baseline_pixels_over_10_pct": 16.614583333333332,
+      "repeat_mae": 6.447285185185185,
+      "repeat_pixels_over_10_pct": 17.53763888888889
+    }
+  },
+  "10": {
+    "tee": {
+      "baseline_mae": 0.0005423611111111111,
+      "baseline_pixels_over_10_pct": 0.0001388888888888889,
+      "repeat_mae": 2.3148148148148148e-07,
+      "repeat_pixels_over_10_pct": 0.0
+    },
+    "approach": {
+      "baseline_mae": 0.007149537037037037,
+      "baseline_pixels_over_10_pct": 0.001736111111111111,
+      "repeat_mae": 0.00010023148148148148,
+      "repeat_pixels_over_10_pct": 0.0006944444444444445
+    },
+    "putting": {
+      "baseline_mae": 0.5584006944444444,
+      "baseline_pixels_over_10_pct": 1.0640972222222222,
+      "repeat_mae": 0.05293055555555556,
+      "repeat_pixels_over_10_pct": 0.14625
+    },
+    "aerial": {
+      "baseline_mae": 0.002792824074074074,
+      "baseline_pixels_over_10_pct": 0.0061111111111111106,
+      "repeat_mae": 0.0031900462962962963,
+      "repeat_pixels_over_10_pct": 0.007083333333333334
+    }
+  }
+}

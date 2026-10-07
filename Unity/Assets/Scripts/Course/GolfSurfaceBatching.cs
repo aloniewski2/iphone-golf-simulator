@@ -20,6 +20,12 @@ namespace GolfArcade.Course
             foreach(var r in model.GetComponentsInChildren<MeshRenderer>(true))
             {
                 if(!r.enabled||!r.gameObject.activeInHierarchy)continue;
+                // Animated parent transforms must remain live (Windmill Links' sails),
+                // and blendshape water cannot be baked into a static mesh.
+                bool moving=false;
+                for(var t=r.transform;t&&t!=model.transform;t=t.parent)
+                    if(t.name.StartsWith("SAILS")||t.name.StartsWith("WATER_WAVES")||t.GetComponent<Animator>()||t.GetComponent<Animation>()) {moving=true;break;}
+                if(moving)continue;
                 // Model stand-ins are disabled later by HoleView. Never bake
                 // them into an always-visible batch before that happens.
                 bool placeholder=false;
@@ -34,7 +40,7 @@ namespace GolfArcade.Course
                 foreach(var m in mats)if(!m||!(m.shader.name=="GolfArcade/GolfGround"||m.shader.name=="GolfArcade/GolfRock"||m.shader.name=="Universal Render Pipeline/Lit"))surface=false;
                 if(!surface)continue;
                 var p=r.bounds.center;float cell=40;
-                bool basalt=false;foreach(var m in mats)if(m.name.Contains("BASALT"))basalt=true;
+                bool basalt=false;foreach(var m in mats)if(m.name.IndexOf("basalt",System.StringComparison.OrdinalIgnoreCase)>=0)basalt=true;
                 if(!basalt)cell=240;
                 int x=Mathf.FloorToInt(p.x/cell),z=Mathf.FloorToInt(p.z/cell);
                 for(int sub=0;sub<mf.sharedMesh.subMeshCount;sub++)

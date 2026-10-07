@@ -179,6 +179,9 @@ struct SportsPreviewControls:View {
                 Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
                 Button("Exit Game") { session.exitGame() }.accessibilityIdentifier("game-exit")
             }
+            if session.sport == "golf", session.golfPhase == "Result" {
+                GolfShotResultControls(session: session)
+            }
             if session.sport == "golf", session.golfPhase == "RoundDone" {
                 Button(session.golfHasNextHole ? "Next Hole" : "Play Again") { session.command("golfContinue") }
                     .accessibilityIdentifier("golf-continue")
@@ -187,11 +190,13 @@ struct SportsPreviewControls:View {
                 if session.tennisPhase == "rally" { RallyAimPad(session:session).frame(width:180,height:90); TennisAbilityControls(session: session) }
                 if session.tennisPhase == "serve" || session.tennisPhase == "toss" { ServeAimPad(session:session).frame(width:180,height:90); if session.tennisPhase == "serve" { Button("Toss") { session.toss() } } }
             }
+            if session.sport != "golf" || session.golfPhase == "Aim" {
             HStack {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }
                 else { Button("Aim left") { session.setAim(-1) }; Button("Aim right") { session.setAim(1) }; Button("Club") { session.command("club",value:1) } }
                 Slider(value:$power,in:(session.sport == "golf" ? 0.02 : 0.1)...1).accessibilityLabel("Swing power")
                 Button("Swing") { session.swing(power) }.disabled(session.paused || (session.sport == "golf" && session.golfPhase != "Aim"))
+            }
             }
             }
         }.padding().background(.regularMaterial)

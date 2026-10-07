@@ -1,0 +1,93 @@
+26c — SERVE TOSS-JUMP: RUNTIME FOOT-STEP FIX + FINISH THE CLIP (Party Sports, Unity, branch newmapsandmenus)
+Staged work only. Do NOT commit. Install only if EVERY gate passes. Adnan's eye overrides any agent GATE PASS.
+
+READ FIRST, IN FULL
+- ArtDir/hero/base_lock/parallel_prompts/26b_SERVE_TOSS_JUMP_FINISH.txt (gate definitions you keep, except
+  where this file changes them)
+- work/serve-toss-jump/r2/GATE_REPORT.md, r2/MINIMAL_RUNTIME_CHANGE.md, r2/live_metrics.json,
+  r2/gate_results.json, NOT_INSTALLED_R2.md, plus prompt 26's report, rekey scripts and candidate FBXs
+- Unity/Assets/Editor/ServeJumpProof.cs (your live proof tool — reuse and extend it, don't rewrite it)
+
+WHAT 26b PROVED (don't re-investigate)
+- The 64 mm in-game foot lift is HeroTennisDriver.LockFeet, NOT the clip: the procedural replant arc
+  (`goal.y = foot.position.y + sin(pi*stepT) * .065f`) fires during match Serve when planted-foot drift
+  exceeds StepDrift (0.20 m), including a step carried over from the walk-in. Prediction residual < 0.001 mm.
+- That same step also causes the G2 female knee fail and the early G3 takeoff.
+- Remaining real clip problems: Serve exits at 1.978 s but the authored front touch is 2.033 s; front knee
+  78/66° at contact; female strings 33 mm off; hand/wrist pops; extra collisions; 31–35 mm toe drift;
+  a ~350 mm pose gap between live ReadyIdle and Serve at the live entry point (~0.199 s clip time);
+  toss knee reaches ~60° at 1.083 s in the live trace.
+
+OWNERSHIP CHANGE (this is the unblock)
+- Prompt 28b is running in parallel and owns HeroTennisDriver's ball-hand carry / hold / toss-reach code.
+- YOU now own ONLY the `LockFeet` method in HeroTennisDriver.cs (and, if G7 truly needs it, the single line
+  that sets the crossfade duration when the match driver enters Serve). Nothing else in that file.
+- You also own: Male_Serve.fbx / Female_Serve.fbx (+ metas), the Blender rekey scripts, and Editor-only
+  proof tools. Do NOT touch: other clips, prefabs, serve phase times, TennisActor/TennisServeRoutine,
+  run 29's files (MatchHeroLook.cs, TennisCloth.shader, MatchHeroLockerExport.cs, HeroDetailTextures.cs),
+  Multiplayer/lobby/network files, golf, QualitySettings, skeleton/bones.
+- HeroTennisDriver.cs already has uncommitted changes from other chats. NEVER copy the whole file over
+  production and never revert hunks you didn't write. Edit/install with a hunk-level patch against the
+  CURRENT production file, re-read the file immediately before applying, and save your hunk as
+  work/serve-toss-jump/r3/LOCKFEET.patch so it can be re-applied if anything overwrites it.
+
+STEP 1 — RUNTIME FIX (in your clone first)
+- Apply the MINIMAL_RUNTIME_CHANGE.md guard: `authoredServe = Match && actionActive && action == Clip.Serve`;
+  clear `stepping[f]` while authoredServe; add `!authoredServe &&` to the step-creation condition.
+  Keep the planted-foot lock.
+- If toe drift (G11) is caused by the lock letting the toe pivot while the authored foot is flat, extend the
+  lock to the toe during authoredServe grounded frames (same method only). If the clip itself pivots the toe,
+  fix it in the clip instead. Say which it was, with numbers.
+- Re-run the UNCHANGED candidate live trace. Report G1/G2/G3/G11 before you touch the clip. Prove non-Serve
+  clips are unaffected: run, rally strokes and the walk-in still take replant steps (StepsTaken > 0 in a
+  run/rally trace, identical to before within one step).
+
+STEP 2 — CLIP FINISH (resume from prompt 26's rekey scripts + candidate FBXs; no from-scratch rebuild)
+- LANDING: front foot touches by 1.90 s, squash 1.90–1.96 s, settled by 1.97 s, before the 1.978 s exit.
+  Measure it in the LIVE game trace, not in Blender.
+- ENTRY / NO POP: measure the live ReadyIdle pose at the actual Serve entry (ReadyIdle has an absolute-time
+  sway, so test 5 different entry phases). Author the Serve 0.00–0.20 s pose to match the sway-centered
+  ReadyIdle within 10 mm on head and hands. If that alone can't meet G7 at all 5 phases, you may lengthen
+  the Serve-entry crossfade (that one line only) and report the value.
+- CONTACT: front knee <= 35° at 1.70 s (extended, in the air); racket elbow >= 170°; strings within 15 mm
+  of the installed contact point for BOTH heroes (female is 33 mm off now). Contact time stays 1.70 s.
+- TOSS KNEE: <= 40° up to release (0.70 s); the load into trophy (65–80° at 1.25–1.36 s) is separate and
+  stays. Keep the bouncy cartoon read: big squash on load, big stretch on the jump, squash on landing.
+- SMOOTHNESS (revised limits, 60 Hz live trace):
+  * Non-racket (toss) hand: <= 150 mm/frame everywhere.
+  * Racket hand: <= 150 mm/frame before 1.65 s, <= 260 mm/frame in 1.65–1.75 s (the real swing speed),
+    <= 220 mm/frame after 1.75 s, and no direction reversals in follow-through.
+  * Wrist twist <= 15°/frame on both wrists.
+  The 390 mm "contact-crossing" step and the 250 mm left-hand step at 1.53–1.57 s must be gone.
+- CLEARANCE: penetrate_dj.py at 1.3×/3 mm: 0 new frame/obstacle pairs, 0 increased existing pairs,
+  extra intersecting vertices <= 0 versus the installed clip, both heroes.
+
+GATES (binary; all must PASS)
+G1  TOSS_FEET_DOWN: live heel/toe <= 10 mm for 0.20–1.55 s, both heroes.
+G2  LOAD_AT_TROPHY: deepest pre-takeoff knee 65–80° inside 1.25–1.36 s, both heroes.
+G3  TAKEOFF: first > 3 mm clearance (after 0.20 s) in 1.57–1.63 s, both heroes.
+G4  AIR_AT_CONTACT: both feet clear at 1.70 s, front knee <= 35°.
+G5  APEX 1.72–1.82 s.
+G6  LANDING_IN_GAME: front touch <= 1.90 s, settled <= 1.97 s, inside Serve (not after the Run blend).
+G7  NO_POP_IN: head/hand step <= 30 mm in the first 0.15 s after live Serve entry, at all 5 entry phases.
+G8  CONTACT_POSE_KEPT: strings within 15 mm (live, paired installed-vs-candidate), elbow >= 170°.
+G9  SMOOTH: the revised limits above.
+G10 CLEARANCE: as above.
+G11 NO_FOOT_SLIDE: planted toe and heel drift <= 5 mm.
+G12 GAME_TIMES_UNCHANGED: 0.20/0.70/1.3333334/1.70 s, length 2.5 s, prefab hashes unchanged.
+G13 RUNTIME_SCOPE: git diff of HeroTennisDriver.cs from you = LockFeet (+ optional crossfade line) only;
+    non-Serve replant steps unchanged; LOCKFEET.patch saved.
+G14 PROOF_COMPLETE: 16 live films (front/side/back/game × M/F × full/half) into work/serve-toss-jump/r3/film/,
+    plus a live keys contact sheet with the landing, contact and entry frames labeled.
+G15 INSTALLED_EQUALS_TESTED: installed FBX/meta hashes == tested; LockFeet hunk present in production;
+    every gate re-run on PRODUCTION after install.
+G16 EYE: films listed for Adnan. Do not self-pass the look.
+
+INSTALL RULE
+- All gates pass -> install the 4 serve files + the LockFeet hunk, re-run all gates on production, print
+  hashes and `git status --short`. Keep rollback_r3/ with originals + SHA256SUMS.
+- Any fail -> install NOTHING (revert your LockFeet hunk in production if you applied it), save the candidate,
+  and report gate, hero, frame and your best next fix. No commit either way.
+
+FINAL REPORT (short): gate table with numbers, what the runtime fix changed (before/after G1–G3/G11),
+what you rekeyed, film paths, installed or not.

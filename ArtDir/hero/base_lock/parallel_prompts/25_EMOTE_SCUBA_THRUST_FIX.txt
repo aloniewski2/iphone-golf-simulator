@@ -1,0 +1,57 @@
+PASTE: EMOTE FIX, SCUBA HAND + THRUST ARMS (Codex, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+Re-key two installed taunts on both match heroes (male and female). Change only what is listed. Everything else in the clips stays as it is now.
+1. Emote_Scuba: the swimming (right) hand is turned sideways and the arm reaches further out.
+2. Emote_Thrust: the arms start FORWARD and pull BACK to a normal position as the hips drive forward, so it reads as thrusting. Today it is the reverse (arms start at a normal height, then go forward), which kills the read.
+Done = both gates pass AND the new films read right to Adnan's eye. His eye overrides any PASS.
+
+READ FIRST
+- work/emote-overhaul/README.md, GATE_DEFS_preregistered.md, GATE_RESULTS.md
+- work/emote-overhaul/scripts/emo_clips2.py: class Scuba2 (right swim hand block in P(), about lines 901-944) and class Thrust2 (P(), about lines 667-724)
+- work/emote-overhaul/scripts/run_all2.sh, unity_run2.sh, make_film2.py
+- The current films: work/emote-overhaul/film/Emote_Scuba_male.mp4, Emote_Thrust_male.mp4 (+ female)
+
+RULES
+- Edit only Scuba2 and Thrust2 in emo_clips2.py, and the matching gate lines in check_gates2.py where the old pose is hard-coded (the Thrust T3 "crossed" check). Write any gate change into GATE_DEFS_preregistered.md as a disclosed amendment BEFORE you build.
+- Do not touch Emote_Spike, the 3 Intro clips, Serve, Walk, runs, prefabs, HeroTennisDriver/TennisGame code, kit, shaders, locker, tennis courts, golf, QualitySettings, or URP assets.
+- Same skeleton, no new bones, clips stay in place (Root never moves, feet stay planted), READY at both ends, racket stays on its socket (Thrust) and the Scuba drop / lie / pick-up stays as it is.
+- Keep the body-clearance pass (emo_clear.py) on: no forearm, hand, or racket inside the body or clothes beyond the current limits (<= 12 mm, READY ends <= 20 mm).
+- Unity only in the APFS clone via unity_run2.sh. Copy the 4 new FBX into Unity/Assets/Characters/MatchHeroes/<Sex>/ only after all gates pass. Never overwrite the .meta files except lastFrame if the length changes (it should not).
+- Back up the 4 current FBX to work/emote-overhaul/rollback_r2/ first.
+
+CHANGE 1: SCUBA (Scuba2.P, right swim hand)
+Now: palm faces the floor (pm_sw = [0.05, 0.10, -1.0]), so the hand reads flat and normal. The wrist sits only 0.40 m (x scale k) forward of the right shoulder, 0.13 m below it, 0.10 m inward, so the elbow stays bent.
+Wanted:
+- Hand SIDEWAYS like a blade or a fish: the palm faces LEFT (toward the body's midline), the thumb on top, the pinky edge down, the fingers pointing forward and flat together (keep flat_R). In the authoring frame that means the palm is about [-1, 0, 0] and the fingers about [0, 1, 0], with the side-to-side sweep (psi) still yawing the fingers left and right. Keep the 4 sweeps and the 163 BPM timing (22 frames each).
+- More extended: the arm almost straight out in front at about chest height. Wrist about 0.52-0.55 m (x k) forward of the shoulder, about 0.05-0.08 m below the shoulder, 0.0-0.04 m inward. The elbow is no more than 25 deg bent through the sweeps. Raise the elbow pole so the elbow points down and slightly out, not out to the side.
+- Blend in and out exactly where the current swim weight does (ps). The pick-up handover stays as it is, starting from the new swim pose.
+GATES (both heroes, every frame of 0.55-3.40 s):
+- SCUBA_PALM_SIDEWAYS: the angle between the right palm normal and the hero's left direction (pelvis frame) <= 25 deg.
+- SCUBA_THUMB_UP: the thumb side of the hand points within 35 deg of world up.
+- SCUBA_REACH: the wrist is >= 0.50 m x k from the right shoulder, and the elbow angle is >= 155 deg (straight = 180).
+- SCUBA_SWEEP_KEPT: the hand still sweeps side to side, 4 cycles, peak-to-peak yaw >= 50 deg.
+- The pinch on the nose, the knees, the racket drop and the pick-up gates in GATE_RESULTS.md still pass.
+
+CHANGE 2: THRUST (Thrust2.P)
+Now: while the hips are back, the fists are "cocked" up near the shoulders. On each hit, the forearms swing forward and cross in front of the pelvis. That reads as punching forward, not thrusting.
+Wanted, the classic arm pull:
+- HIPS BACK (th = 0, between hits and at the settle): both arms EXTENDED FORWARD in front of the chest at about shoulder height, nearly straight (elbow >= 150 deg), fists closed, fists about shoulder width apart, wrists about 0.45-0.55 m (x k) in front of the chest. The racket stays in the right fist, pointing up and slightly forward.
+- HIPS FORWARD (th = 1, on each hit): both fists YANK BACK to the hip sides at belt height, elbows bent about 90 deg and driven behind the torso, as if pulling a rope toward the hips. The racket comes back with the right fist, shaft pointing up and back.
+- The arms are driven by the SAME th driver as the hips, so the pull lands on the exact frame the hips arrive (same HITS times, RISE 0.14 s, FALL 0.26 s). The arms go back forward as the hips go back.
+- Remove the crossed-forearm X pose and the "arc around the head" term (they belong to the old cocked/cross path).
+- Keep everything else: wide bowlegged stance, 3 growing hits (0.86 / 0.95 / 1.0), head thrown back, the held third hit with the head and shoulder shake, the strut with fists on hips, READY at 3.5 s. Settle in: from READY the arms go to the FORWARD pose during 0.00-0.50 s (not up to the shoulders).
+GATES (both heroes):
+- THRUST_ARMS_FORWARD_AT_BACK: at every frame where th <= 0.1 between 0.45 and 1.95 s, both wrists are >= 0.40 m x k in front of the chest (pelvis frame forward), between 0.15 m below and 0.15 m above shoulder height.
+- THRUST_ARMS_BACK_AT_HIT: on each of the 3 hit frames, both wrists are within 0.12 m of belt height, beside the hips (lateral 0.15-0.35 m x k), and the elbows are behind the chest plane.
+- THRUST_SYNC: the frame where the wrists are furthest back is within 1 frame of the frame where the pelvis is furthest forward, for every hit.
+- THRUST_OPPOSITE: across every hit, the wrists' forward-back motion has a correlation <= -0.8 with the pelvis forward-back motion (arms back as hips go forward).
+- Replace the old T3 crossed-forearm line with these four, as a disclosed amendment.
+- The racket stays on the socket, and clearance <= 12 mm still holds.
+
+BUILD AND PROOF
+1. run_all2.sh (solve, bake, export, re-import, trace, penetration, gates). All new gates + every unchanged gate PASS, or report FAIL with numbers.
+2. Unity clone: EmoteWire.Run, then EmoteFilm.Run, then make_film2.py. New films go to work/emote-overhaul/film_r2/ (front | side cameras + gamecam) for Scuba and Thrust, male and female.
+3. Contact sheets to work/emote-overhaul/proof_r2/: Scuba at 1.0 s and 2.0 s, front and side views (show the sideways hand and the straight arm). Thrust at a hips-back frame and the 3 hit frames, side view.
+4. Install the 4 FBX only after all gates pass. Write INSTALLED_SHA256SUMS_r2.txt.
+5. Report: one line per gate (PASS or FAIL with the number), the film and sheet paths, the files changed, and the rollback path. No commit.

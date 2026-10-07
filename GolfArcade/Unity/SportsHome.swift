@@ -321,47 +321,91 @@ struct GolfPhoneController: View {
         if !session.ready || !session.loading.finished {
             ZStack { MenuBackdrop(dim: 0.55); LoadingScreen(menu: .shared, compact: true) }.preferredColorScheme(.dark)
         } else {
-            IslandShell(title: "Golf", compact: true) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text(session.status).font(IslandUI.font(16)).accessibilityIdentifier("golf-status")
-                        Text(session.feedback).font(IslandUI.font(18)).accessibilityIdentifier("golf-feedback")
-                        Text(session.touch ? "Touch controller" : "Phone motion controller").font(IslandUI.font(16, bold: true))
-                        if session.paused {
-                            Button(session.touch ? "Use phone motion" : "Use touch controls") {
-                                if session.touch { session.useMotion() } else { session.useTouch() }
-                            }.accessibilityIdentifier("golf-input-mode")
-                        }
-                        HStack {
-                            IslandAction(title: session.paused ? "Ready" : "Pause", primary: true, compact: true) {
+            GeometryReader { geometry in
+            ZStack {
+                IslandUI.navy.ignoresSafeArea()
+                VStack(spacing: 16) {
+                    HStack {
+                        Text("GOLF").font(IslandUI.font(17, bold: true)).tracking(3)
+                        Spacer()
+                        Menu {
+                            Button(session.paused ? "Resume" : "Pause") {
                                 if session.paused { session.readyToPlay() } else { session.pause() }
                             }
-                            IslandAction(title: "Exit Round", compact: true) { session.exitGame() }
-                                .accessibilityIdentifier("golf-exit")
-                        }
-                        Text("Aim at the flag, choose your club, then swing.").font(IslandUI.font(16))
-                        if session.golfPhase == "RoundDone" {
-                            IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Play Again", primary: true, compact: true) { session.command("golfContinue") }
-                                .accessibilityIdentifier("golf-continue")
-                        }
-                        HStack {
-                            IslandAction(title: "◀ Aim", compact: true) { session.setAim(-1) }
-                            IslandAction(title: "Aim ▶", compact: true) { session.setAim(1) }
-                        }
-                        HStack {
-                            IslandAction(title: "◀ Club", compact: true) { session.command("club", value: -1) }
-                            IslandAction(title: "Club ▶", compact: true) { session.command("club", value: 1) }
-                        }
-                        if session.touch {
-                            Slider(value: $power, in: 0.02...1).accessibilityLabel("Swing power")
-                            IslandAction(title: "Swing", primary: true, compact: true) { session.swing(power) }.disabled(session.paused || session.golfPhase != "Aim")
-                        } else {
-                            Text("Take the phone back slowly, then swing through smoothly.").font(IslandUI.font(17))
+                            Button(session.touch ? "Use motion controls" : "Use touch controls") {
+                                if session.touch { session.useMotion() } else { session.useTouch() }
+                            }
+                            Button("Exit round", role: .destructive) { session.exitGame() }
+                        } label: {
+                            Image(systemName: "ellipsis").font(.system(size: 22, weight: .bold)).frame(width: 48, height: 48)
+                        }.accessibilityLabel("Golf options").accessibilityIdentifier("golf-options")
+                    }
+                    Spacer(minLength: 0)
+                    if session.paused {
+                        Text("Ready to swing?").font(IslandUI.font(28, bold: true))
+                        IslandAction(title: "Ready", primary: true) { session.readyToPlay() }
+                            .accessibilityIdentifier("golf-ready")
+                    } else if session.golfPhase == "Result" {
+                        GolfShotResultControls(session: session)
+                    } else if session.golfPhase == "RoundDone" {
+                        IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Play Again", primary: true) { session.command("golfContinue") }
+                            .accessibilityIdentifier("golf-continue")
+                    } else {
+                        GolfClubControllerArt()
+                            .frame(maxWidth: .infinity).frame(height: min(300, max(140, geometry.size.height * 0.32)))
+                            .opacity(session.golfPhase == "Aim" ? 1 : 0.45)
+                            .accessibilityLabel("Your golf club")
+                        Text(session.golfPhase == "Aim" ? "Swing when ready" : "Watch your shot")
+                            .font(IslandUI.font(22, bold: true)).accessibilityIdentifier("golf-status")
+                        if session.golfPhase == "Aim" {
+                            HStack(spacing: 28) {
+                                Button { session.setAim(-1) } label: { Image(systemName: "chevron.left").frame(width: 56, height: 52) }
+                                    .accessibilityLabel("Aim left")
+                                Text("AIM").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
+                                Button { session.setAim(1) } label: { Image(systemName: "chevron.right").frame(width: 56, height: 52) }
+                                    .accessibilityLabel("Aim right")
+                            }
+                            HStack(spacing: 24) {
+                                Button { session.command("club", value: -1) } label: { Image(systemName: "minus").frame(width: 48, height: 44) }
+                                    .accessibilityLabel("Previous club")
+                                Text("CLUB").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
+                                Button { session.command("club", value: 1) } label: { Image(systemName: "plus").frame(width: 48, height: 44) }
+                                    .accessibilityLabel("Next club")
+                            }
+                            if session.touch {
+                                Slider(value: $power, in: 0.02...1).tint(IslandUI.lime).accessibilityLabel("Swing power")
+                                    .onChange(of: power) { _, value in session.command("golfLoad", value: value) }
+                                IslandAction(title: "Swing", primary: true) { session.swing(power) }
+                                    .accessibilityIdentifier("golf-swing")
+                            }
                         }
                     }
-                }
+                    Spacer(minLength: 0)
+                }.padding(28)
+            }.foregroundStyle(.white).preferredColorScheme(.dark)
             }
         }
+    }
+}
+
+/// One simple club silhouette, like the tennis controller's racket.
+private struct GolfClubControllerArt: View {
+    var body: some View {
+        Canvas { context, size in
+            let x = size.width * 0.53
+            var shaft = Path()
+            shaft.move(to: CGPoint(x: x - 25, y: 32)); shaft.addLine(to: CGPoint(x: x + 38, y: size.height - 62))
+            context.stroke(shaft, with: .linearGradient(Gradient(colors: [.white.opacity(0.9), .gray, .white]), startPoint: .zero, endPoint: CGPoint(x: size.width, y: size.height)), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+            var grip = Path(); grip.move(to: CGPoint(x: x - 27, y: 26)); grip.addLine(to: CGPoint(x: x - 8, y: 106))
+            context.stroke(grip, with: .color(IslandUI.lime), style: StrokeStyle(lineWidth: 18, lineCap: .round))
+            let head = Path(roundedRect: CGRect(x: x - 10, y: size.height - 92, width: 104, height: 56), cornerRadius: 22)
+            context.fill(head, with: .linearGradient(Gradient(colors: [.white, Color(white: 0.6)]), startPoint: CGPoint(x: x, y: size.height - 92), endPoint: CGPoint(x: x + 60, y: size.height - 30)))
+            for i in 0..<4 {
+                var groove = Path(); let y = size.height - 78 + CGFloat(i) * 9
+                groove.move(to: CGPoint(x: x + 1, y: y)); groove.addLine(to: CGPoint(x: x + 75, y: y))
+                context.stroke(groove, with: .color(IslandUI.navy.opacity(0.4)), lineWidth: 1)
+            }
+        }.accessibilityHidden(true)
     }
 }
 
@@ -401,5 +445,21 @@ struct GolfPhoneController: View {
         }
         menu.goHome()
         SportsDiagnostics.write("PLAYABILITY CHECK COMPLETE")
+    }
+}
+
+/// The result stays on the TV while the player chooses an emote or continues.
+struct GolfShotResultControls: View {
+    @Bindable var session: SportsSession
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            EquippedEmoteControls(title: "YOUR SHOT · EMOTE", ids: session.matchEmotes,
+                enabled: !session.paused && session.golfPhase == "Result",
+                notice: "Choose an emote, then continue when you’re ready.", identifier: "golf-emote") {
+                    session.command("golfEmote", value: Double($0))
+                }
+            IslandAction(title: "Continue", primary: true, compact: true) { session.command("golfContinue") }
+                .accessibilityIdentifier("golf-shot-continue")
+        }.disabled(session.paused)
     }
 }

@@ -462,7 +462,9 @@ public class TennisMatchTests
     {
         var plain = TennisRules.Evaluate(TennisRules.SweetTime, Vector2.zero, 1, 1, .8f, 1);
         var boosted = TennisRules.Supercharge(plain);
-        Assert.Greater(boosted.Speed, plain.Speed * 1.3f);
+        Assert.Greater(boosted.Speed, plain.Speed);
+        Assert.LessOrEqual(boosted.Speed, TennisRules.MaxRallySpeed);
+        Assert.LessOrEqual(boosted.Speed, plain.Speed * 1.15f);
         Assert.Less(boosted.ErrorDegrees, plain.ErrorDegrees);
         Assert.AreEqual("SUPERCHARGED", boosted.Label);
     }
@@ -559,7 +561,7 @@ public class TennisMatchTests
         Assert.AreEqual(Timing.Great, TennisRules.Grade(TennisRules.TimingScore(.08f)));
         Assert.AreEqual(Timing.Good, TennisRules.Grade(TennisRules.TimingScore(-.12f)));
         Assert.AreEqual(Timing.Ok, TennisRules.Grade(TennisRules.TimingScore(.18f)));
-        Assert.AreEqual(Timing.Missed, TennisRules.Grade(TennisRules.TimingScore(.3f)));
+        Assert.AreEqual(Timing.Missed, TennisRules.Grade(TennisRules.TimingScore(.35f)));
         Assert.AreEqual("LATE", TennisRules.TimingWord(.06f));
         Assert.AreEqual("EARLY", TennisRules.TimingWord(-.06f));
         Assert.AreEqual("", TennisRules.TimingWord(.02f));

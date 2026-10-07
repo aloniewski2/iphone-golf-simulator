@@ -19,6 +19,15 @@ Properties {
  _Cap("Grass cap",Float)=0
  _NormalEnabled("Normal map present",Float)=0
  _EmissionEnabled("Emission map present",Float)=0
+ _WorldUV("World mapped legacy surface",Float)=0
+ _TileYards("Texture repeat in yards",Float)=10.936
+ _FollowCourse("Follow the fairway centerline",Float)=0
+ _MowingMap("Course coordinates",2D)="black"{}
+ _MowingBounds("Course coordinate bounds",Vector)=(0,0,1,1)
+ _RockScale("Rock repeats per yard",Float)=.09
+ _StrataStrength("Rock strata strength",Float)=.075
+ _TriplanarNormals("Triplanar normal detail",Float)=0
+ _RockMipBias("Rock mip bias",Float)=1.5
 
 }
 SubShader {
@@ -95,13 +104,30 @@ half4 GolfFragment(V i):SV_Target {
   half columns=GolfBand(i.w.x*.16+i.w.z*.12);
   base.rgb*=1+columns*_Basalt*.07h;
  #else
-  base=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,i.uv);
+  float2 groundUV=i.uv;
+  half3 surfaceT=i.t.xyz,surfaceB=cross(n,surfaceT)*i.t.w;
+  if(_WorldUV>.5h) {
+   groundUV=i.w.xz/max(_TileYards,.5);
+   surfaceT=SafeNormalize(half3(1,0,0)-n*n.x);surfaceB=cross(surfaceT,n);
+  }
+  base=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,groundUV);
+  // Keep texel density on steep legacy fairway banks. Course coordinates drive
+  // only broad mowing bands; microscopic blades must never collapse at a bend.
+  if(_WorldUV>.5h && abs(n.y)<.75h) {
+   half side=1-smoothstep(.35h,.75h,abs(n.y));
+   float2 sideUV=(abs(n.x)>abs(n.z)?i.w.zy:i.w.xy)/max(_TileYards,.5);
+   base=lerp(base,SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,sideUV),side);
+   if(side>.5h) {
+    groundUV=sideUV;
+    half3 axis=abs(n.x)>abs(n.z)?half3(0,0,1):half3(1,0,0);
+    surfaceT=SafeNormalize(axis-n*dot(n,axis));surfaceB=cross(n,surfaceT);
+   }
+  }
   if (_NormalEnabled>.5h) {
-   half3 ts=UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,i.uv));
+   half3 ts=UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,groundUV));
    half fade=saturate(1-dot(view,view)*.000025h);
    ts.xy*=_BumpScale*fade;
-   half3 t=i.t.xyz,b=cross(n,t)*i.t.w;
-   n=SafeNormalize(t*ts.x+b*ts.y+n*ts.z);
+   n=SafeNormalize(surfaceT*ts.x+surfaceB*ts.y+n*ts.z);
   }
   half4 edges=SAMPLE_TEXTURE2D(_GolfEdgeMap,sampler_GolfEdgeMap,(i.w.xz-_GolfEdgeBounds.xy)*_GolfEdgeBounds.zw);
   #if defined(_GOLF_SAND)
@@ -110,6 +136,10 @@ half4 GolfFragment(V i):SV_Target {
    n=SafeNormalize(n+half3(.025h*ripple,0,.018h*ripple));
   #else
    half phase=dot(i.w.xz,_StripeDirection.xz)/max(_StripeWidth,.5h);
+   if(_WorldUV>.5h && _FollowCourse>.5h) {
+    float4 course=SAMPLE_TEXTURE2D(_MowingMap,sampler_MowingMap,(i.w.xz-_MowingBounds.xy)*_MowingBounds.zw);
+    phase=course.y/max(_StripeWidth,.5h);
+   }
    half bands=GolfBand(phase)*_Bands;
    if (_Surface>1.5h&&_Surface<2.5h) bands+=GolfBand(dot(i.w.xz,_StripeDirection.zx*float2(-1,1))/max(_StripeWidth,.5h))*.018h;
    base.rgb*=1+bands;

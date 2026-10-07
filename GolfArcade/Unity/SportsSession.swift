@@ -255,7 +255,7 @@ final class SportsSession {
         measuringDelay = false; motion.setDelayProbe(false); timingPrompt = true
         if let delay = SportsDelayProbe.combine(flashDelays) {
             tvDelay = delay; SportsTiming.store(delay, for: SportsTiming.currentTV())
-            timingNote = String(format: "Screen delay measured: %.0f ms. The swing check keeps this measurement.", delay * 1000)
+            timingNote = String(format: "Screen delay measured: %.0f ms. The swing check will verify your timing.", delay * 1000)
         } else {
             tvDelay = timingCalibration ?? 0
             timingNote = tvDelay > 0 ? "Flashes were unclear. Using this screen's last measurement; you can retry."
@@ -554,10 +554,12 @@ final class SportsSession {
         // Touch play only: motion samples go to Unity from SportsMotion's own queue.
         guard touch else { return }
         let flags:Int32 = valid ? Int32(SportsSampleValid) : 0
-        let sample=SportsSample(version:Int32(SportsSampleVersion),session:sessionToken,time:SportsRuntime.shared().clock(),
+        let time=SportsRuntime.shared().clock()
+        let sample=SportsSample(version:Int32(SportsSampleVersion),session:sessionToken,time:time,
             target:Float(target),power:Float(power),aim:Float(aim),
             swing:Int32(swingSequence),swingStart:0,swingAbort:0,flags:flags,
-            handSide:0,lift:0,strokeFacing:0,qx:0,qy:0,qz:0,qw:0,rx:0,ry:0,rz:0,gx:0,gy:0,gz:0)
+            handSide:0,lift:0,strokeFacing:0,qx:0,qy:0,qz:0,qw:0,rx:0,ry:0,rz:0,gx:0,gy:0,gz:0,
+            onsetTime:0,confirmationTime:time,abortTime:0)
         SportsRuntime.shared().push(sample)
     }
     func setPointRecording(_ enabled: Bool) {

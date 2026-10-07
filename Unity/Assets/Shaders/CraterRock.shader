@@ -14,6 +14,44 @@ Shader "GolfArcade/CraterRock"
         _GlowColor ("Glow", Color) = (1.0, 0.36, 0.06, 1)
         _GlowAmount ("Glow amount", Float) = 1.6
     }
+    // Native golf uses URP. Keep the Built-in subshader for legacy previews.
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        Cull Back
+
+        HLSLINCLUDE
+        #define GOLF_CRATER 1
+        #include "GolfLegacyURP.hlsl"
+        ENDHLSL
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode"="UniversalForward" }
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyVertex
+            #pragma fragment GolfLegacyFragment
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fog
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyShadowVertex
+            #pragma fragment GolfLegacyShadowFragment
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            ENDHLSL
+        }
+    }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }

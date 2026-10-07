@@ -51,7 +51,7 @@ namespace GolfArcade.Course
             HoleAtmosphere.Apply(hole);
             var sunObject = GameObject.Find("Sun");
             var sun = sunObject ? sunObject.GetComponent<Light>() : null;
-            if (hole.Number == 7 || GolfLook.IsPostcard(hole.Number))
+            if (hole.Number == 7 || GolfLook.IsPostcard(hole.Number) || GolfCourseLook.Handles(hole.Number))
                 GolfAtmosphere.Apply(sun, null, hole.Number);
             else
             {
@@ -231,6 +231,8 @@ namespace GolfArcade.Course
             float tilt = Vector3.Angle((up.position - tee.position), Vector3.up);
             if (tilt > 1f) Debug.LogWarning($"Course model up is {tilt:F1}° off vertical after alignment");
 
+            var standardLook = GolfCourseLook.Attach(Hole, gameObject);
+            if (standardLook) GolfCoursePalms.Prepare(model);
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 var mats = r.sharedMaterials;
@@ -238,7 +240,9 @@ namespace GolfArcade.Course
                 {
                     if (!mats[i]) continue;
                     string name = mats[i].name.Replace(" (Instance)", "");
-                    if (GolfLook.Handles(name)) mats[i] = GolfLook.Get(name);
+                    var standard = standardLook ? standardLook.Resolve(mats[i], r.name, Colour(name.Split('.')[0])) : null;
+                    if (standard) mats[i] = standard;
+                    else if (GolfLook.Handles(name)) mats[i] = GolfLook.Get(name);
                     else if (HoleAtmosphere.IsMagma(Hole) && name is "MAT_WATER" or "MAT_WATER_SHALLOW" or "MAT_FOAM") mats[i] = LavaWorld.ShoreMaterial(name);   // the sea is the crater's lava
                     else if (Colour(name) is Color color)
                         mats[i] = name.StartsWith("MAT_WATER") ? WaterMat(color)
@@ -246,11 +250,12 @@ namespace GolfArcade.Course
                                 // a waterfall stays bright from every side (lit, its far side went grey)
                                 : name == "MAT_FOAM" && r.name.StartsWith("WATER_FALL") ? UnlitMat(Color.Lerp(color, Colour("MAT_WATER_SHALLOW") ?? color, 0.3f))
                                 : Turf.TryGetValue(name, out var turf) ? TurfMat(color, turf) : Mat(color);
+                    else if (mats[i].shader.name == "Standard") mats[i] = ImportedMaterial(mats[i]);
                 }
                 r.sharedMaterials = mats;
                 r.shadowCastingMode = StartsWithAny(r.name, Unshadowed) ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
             }
-            if (Hole.Number == 7) GolfLook.DressLegacy(model, Hole.Number);
+            if (Hole.Number == 7 && !standardLook) GolfLook.DressLegacy(model, Hole.Number);
             if (GolfLook.IsPostcard(Hole.Number)) GolfLook.DressModel(model, Hole.Number);
             // The model's own open sea is one quad kilometres across, which the fog paints the
             // colour of the sky; the backdrop's sea (Backdrop.Place) replaces it.
@@ -303,8 +308,9 @@ namespace GolfArcade.Course
                     foreach (var t in model.GetComponentsInChildren<Transform>(true))   // and the geysers the model marks in its lava
                         if (t.name.StartsWith("GEYSER_")) LavaWorld.Geyser(transform, t.position);
                 }
-                else Backdrop.Place(transform, land, pinC - teeC, WaterMat(Colour("MAT_WATER").Value));
+                else Backdrop.Place(transform, land, pinC - teeC, standardLook ? standardLook.Get(GolfCourseLook.Surface.Water) : WaterMat(Colour("MAT_WATER").Value));
             }
+            if (standardLook) standardLook.FinishModel(model);
         }
 
         /// The ground around the green as the ball will roll over it, read off the meshes the
@@ -413,6 +419,8 @@ namespace GolfArcade.Course
             tee.transform.localScale = new Vector3(7, 0.02f, 5);
 
             PlantTrees();
+            var standardLook = GolfCourseLook.Attach(Hole, gameObject);
+            if (standardLook) standardLook.DressProcedural(gameObject);
         }
 
         /// The flagstick and its flag, which come out while the player putts.
@@ -630,9 +638,12 @@ namespace GolfArcade.Course
             mesh.uv = uv;
             if (r is SkinnedMeshRenderer sk) sk.sharedMesh = mesh; else flag.GetComponent<MeshFilter>().sharedMesh = mesh;
             tex.wrapMode = TextureWrapMode.Clamp;
-            var shader = Shader.Find("Standard");
+            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             var m = new Material(shader) { mainTexture = tex, color = Color.white, name = $"Flag {number}" };
             if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.15f);
+            if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", Color.white);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", .15f);
             r.sharedMaterial = m;
         }
 
@@ -667,15 +678,30 @@ namespace GolfArcade.Course
 
         static readonly Dictionary<Color, Material> materials = new();
         static readonly Dictionary<Color, Material> waterMaterials = new();
+        static readonly Dictionary<Material, Material> importedMaterials = new();
+
+        // FBX props outside the palette still arrive with Built-in Standard materials.
+        // Preserve their authored colour/map while making them visible in the native URP app.
+        static Material ImportedMaterial(Material source)
+        {
+            if (importedMaterials.TryGetValue(source, out var existing) && existing) return existing;
+            var material = new Material(Mat(source.color)) { name = source.name };
+            if (source.mainTexture) material.mainTexture = source.mainTexture;
+            if (material.HasProperty("_BaseMap") && source.mainTexture) material.SetTexture("_BaseMap", source.mainTexture);
+            importedMaterials[source] = material;
+            return material;
+        }
 
         /// Water is the one flat colour that wants a sheen: the swell only reads where it catches
         /// the sun.
         public static Material WaterMat(Color color)
         {
             if (waterMaterials.TryGetValue(color, out var m) && m) return m;
-            m = new Material(Mat(color));
-            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.62f);
-            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.62f);
+            m = new Material(Resources.Load<Shader>("Golf/GolfWater"));
+            m.SetColor("_Shallow", new Color(.025f,.43f,.42f));
+            m.SetColor("_Deep", new Color(.015f,.16f,.26f));
+            m.SetColor("_Sky", new Color(.22f,.46f,.58f));
+            m.SetFloat("_DeepDistance", 160); m.SetFloat("_WaveScale", .48f); m.SetFloat("_Sparkle", .45f);
             waterMaterials[color] = m;
             return m;
         }

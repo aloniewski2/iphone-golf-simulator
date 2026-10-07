@@ -69,7 +69,7 @@ namespace GolfArcade.PlayTests {
             Assert.That(game.Player.Provisional, Is.False);
             Assert.That(committed.GetValue(game), Is.EqualTo(true));
             Assert.That(launch.GetValue(game), Is.EqualTo(true));
-            Assert.That((float)typeof(TennisGame).GetField("serveSwingIn", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(game), Is.LessThan(0), "Confirmation must not add a second animation wait");
+            Assert.That(game.Player.TimeToContact, Is.GreaterThan(0), "The in-progress stroke keeps its contact plan after confirmation");
             for (int i = 0; i < 60 && game.Flow == TennisGame.Phase.PlayerServeToss; i++) game.Step(1f / 120);
             Assert.That(game.Flow, Is.EqualTo(TennisGame.Phase.Rally), "An on-time confirmed serve must leave the strings and start play");
             Assert.That(game.LastContactGap, Is.LessThanOrEqualTo(.23f), "Immediate animation must preserve visible racket-ball contact");
@@ -110,7 +110,7 @@ namespace GolfArcade.PlayTests {
             var phase = game.Flow;
             game.StartTimingCheck();
             var check = (TennisBeatCalibration)typeof(TennisGame).GetField("calibration", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(game);
-            for (int beat = 0; beat < TennisBeatCalibration.Beats; beat++) check.Swing(check.BeatTime(beat) + .82f);
+            for (int beat = 0; beat < TennisBeatCalibration.Beats; beat++) check.Swing(check.BeatTime(beat) + .72f);
             float deadline = Time.realtimeSinceStartup + 30;
             while (game.CheckingTiming && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(game.CheckingTiming, Is.False, "The TV calibration must finish without starting a point");

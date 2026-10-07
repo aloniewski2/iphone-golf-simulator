@@ -1,0 +1,619 @@
+{
+    "hole": 18,
+    "obstacleCount": 84,
+    "colliders": 9,
+    "drawCalls": 446,
+    "triangles": 602735,
+    "pipeline": "TennisURP",
+    "unity": "6000.3.24f1",
+    "obstacleHash": "7f340a914c4f0b5e72822acfb8784d7fa0b056e4bcaf2976b61fc76fb70a7e20",
+    "textureBytes": 6745856,
+    "materials": [
+        {
+            "renderer": "BRIDGE_ROPE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 3768,
+            "triangles": 1884,
+            "visible": true
+        },
+        {
+            "renderer": "BRIDGE_ROPE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 3768,
+            "triangles": 1884,
+            "visible": true
+        },
+        {
+            "renderer": "BUNKER_01",
+            "material": "Turf sand",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 79,
+            "triangles": 120,
+            "visible": true
+        },
+        {
+            "renderer": "BUNKER_01_LIP",
+            "material": "Turf rough",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "BUNKER_02",
+            "material": "Turf sand",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 55,
+            "triangles": 72,
+            "visible": true
+        },
+        {
+            "renderer": "BUNKER_02_LIP",
+            "material": "Turf rough",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "GREEN_1",
+            "material": "Turf green",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 532,
+            "triangles": 982,
+            "visible": true
+        },
+        {
+            "renderer": "GREEN_APRON_1",
+            "material": "Turf fairway",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 251,
+            "triangles": 420,
+            "visible": true
+        },
+        {
+            "renderer": "ROCKS",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2763,
+            "triangles": 1000,
+            "visible": true
+        },
+        {
+            "renderer": "SPRAY_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 240,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "TEE_BOX",
+            "material": "Turf green",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 84,
+            "triangles": 118,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Turf sand",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 1772,
+            "triangles": 1874,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 1772,
+            "triangles": 1874,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 2,
+            "vertices": 1772,
+            "triangles": 1874,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 3,
+            "vertices": 1772,
+            "triangles": 1874,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 4,
+            "vertices": 1772,
+            "triangles": 1874,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_2",
+            "material": "Turf sand",
+            "shader": "GolfArcade/Turf",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2659,
+            "triangles": 3066,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 2659,
+            "triangles": 3066,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 2,
+            "vertices": 2659,
+            "triangles": 3066,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 3,
+            "vertices": 2659,
+            "triangles": 3066,
+            "visible": true
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 4,
+            "vertices": 2659,
+            "triangles": 3066,
+            "visible": true
+        },
+        {
+            "renderer": "TREES",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 13054,
+            "triangles": 5576,
+            "visible": true
+        },
+        {
+            "renderer": "TREES",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 13054,
+            "triangles": 5576,
+            "visible": true
+        },
+        {
+            "renderer": "TREES",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 2,
+            "vertices": 13054,
+            "triangles": 5576,
+            "visible": true
+        },
+        {
+            "renderer": "TREES",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 3,
+            "vertices": 13054,
+            "triangles": 5576,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FALL_1",
+            "material": "Universal Render Pipeline/Unlit",
+            "shader": "Universal Render Pipeline/Unlit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 44,
+            "triangles": 40,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FOAM_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 216,
+            "triangles": 216,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FOAM_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 288,
+            "triangles": 288,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FOAM_CREST_1",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 152,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FOAM_CREST_2",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 208,
+            "triangles": 198,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_OCEAN",
+            "material": "GolfArcade/GolfWater",
+            "shader": "GolfArcade/GolfWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 4,
+            "triangles": 2,
+            "visible": false
+        },
+        {
+            "renderer": "WATER_SHALLOW_1",
+            "material": "GolfArcade/GolfWater",
+            "shader": "GolfArcade/GolfWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 216,
+            "triangles": 216,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_SHALLOW_2",
+            "material": "GolfArcade/GolfWater",
+            "shader": "GolfArcade/GolfWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 288,
+            "triangles": 288,
+            "visible": true
+        },
+        {
+            "renderer": "Tee marker L",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 515,
+            "triangles": 768,
+            "visible": true
+        },
+        {
+            "renderer": "Band",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 88,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "Tee marker R",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 515,
+            "triangles": 768,
+            "visible": true
+        },
+        {
+            "renderer": "Band",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 88,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "Open sea",
+            "material": "GolfArcade/GolfWater",
+            "shader": "GolfArcade/GolfWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2017,
+            "triangles": 3960,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG",
+            "material": "Flag 18",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "flag_18",
+            "normal": "",
+            "slot": 0,
+            "vertices": 270,
+            "triangles": 448,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG_POLE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 100,
+            "triangles": 188,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG_POLE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 100,
+            "triangles": 188,
+            "visible": true
+        },
+        {
+            "renderer": "CUP",
+            "material": "GolfArcade/HoleInside",
+            "shader": "GolfArcade/HoleInside",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 481,
+            "triangles": 816,
+            "visible": true
+        },
+        {
+            "renderer": "CUP_MOUTH",
+            "material": "GolfArcade/HoleMask",
+            "shader": "GolfArcade/HoleMask",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 48,
+            "triangles": 46,
+            "visible": true
+        },
+        {
+            "renderer": "CUP_EDGE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 96,
+            "triangles": 96,
+            "visible": true
+        }
+    ],
+    "ground": [
+        {
+            "name": "BUNKER_01",
+            "hash": "629cd4102b196768f966c585101f36deca24d3f4f08f41bffad0018db18dc125",
+            "vertices": 79,
+            "triangles": 120
+        },
+        {
+            "name": "BUNKER_01_LIP",
+            "hash": "480857a7cbb6a6a109951048c59eb4ff5f29cdf5ae37762f03d9662ffa49c4d9",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "BUNKER_02",
+            "hash": "d9bd3a8900817c8212ea35901338273742b6ab5132323c3b2ba98bfb4d6e76d7",
+            "vertices": 55,
+            "triangles": 72
+        },
+        {
+            "name": "BUNKER_02_LIP",
+            "hash": "413730e611a5cdfb57cf0f682e471ed29072310ebab394a4d1023b1a020ce9e5",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "GREEN_1",
+            "hash": "55b58d331c76b4f1a84e2336507bfd9a9ce3294291d5c97d845109348c1d7da2",
+            "vertices": 532,
+            "triangles": 982
+        },
+        {
+            "name": "GREEN_APRON_1",
+            "hash": "bf470923412d164e81976af95c8feed61ed26310149911226d3fdea4c2861c98",
+            "vertices": 251,
+            "triangles": 420
+        },
+        {
+            "name": "TEE_BOX",
+            "hash": "66e99161a06f2313e1b67ceca541567cdec8878bfc493165b7dc4d61d50b62e4",
+            "vertices": 84,
+            "triangles": 118
+        },
+        {
+            "name": "TERRAIN_ISLAND_1",
+            "hash": "fad80e9fbd5d443b6480616064a32eb9e8a975f1a24299b0e28ed6f7c068326a",
+            "vertices": 1772,
+            "triangles": 1874
+        },
+        {
+            "name": "TERRAIN_ISLAND_2",
+            "hash": "d02d741faa6f4c9dd4f00fb6432807542a3e0c9139facb2078560b186c4c0c87",
+            "vertices": 2659,
+            "triangles": 3066
+        }
+    ]
+}

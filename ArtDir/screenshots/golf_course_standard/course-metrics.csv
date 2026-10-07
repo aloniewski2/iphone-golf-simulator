@@ -1,0 +1,17 @@
+hole,name,colliders,obstacles,textures_mib,camera_mesh_triangles,camera_material_passes,editor_aggregate_draws,editor_aggregate_triangles
+7,Cliffside,21,119,15.73,54412,64,568,848679
+12,Island Carry,14,161,16.78,139476,61,536,979372
+13,The Spiral,16,138,14.52,58950,31,498,864513
+14,The Witch’s Lair,14,247,15.13,69552,52,520,871965
+15,The Steps,11,97,15.13,58866,51,507,851387
+16,Volcano Rim,16,178,18.35,89552,53,510,903789
+17,Frostbite Fjord,19,186,14.78,72190,44,509,871980
+18,Mesa Canyon,9,84,10.73,39398,40,487,812169
+19,Temple Falls,14,171,16.49,106320,60,530,945324
+20,Windmill Links,14,125,15.13,84486,92,590,899237
+21,Obsidian Slab,15,66,15.68,93996,55,529,947502
+22,Ember Causeway,20,75,15.68,97090,57,539,954592
+23,Caldera Crown,20,84,15.68,100540,34,540,968187
+8,Needle · reference,8,133,14.93,251397,114,621,1241279
+9,Split · reference,12,762,16.26,247395,153,698,1251604
+10,Crater · reference,10,8291,16.83,160839,95,628,1058023

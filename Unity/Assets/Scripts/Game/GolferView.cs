@@ -176,11 +176,13 @@ namespace GolfArcade.Game
         {
             if (clubMaterials.TryGetValue(name, out var m) && m) return m;
             var f = ClubFinishes.TryGetValue(name, out var known) ? known : (color: Color.grey, metal: 0f, smooth: 0.3f);
-            var shader = Shader.Find("Standard");
+            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             if (!shader) return HoleView.Mat(f.color);
             m = new Material(shader) { color = f.color };
             m.SetFloat("_Metallic", f.metal);
             m.SetFloat("_Glossiness", f.smooth);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", f.color);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", f.smooth);
             clubMaterials[name] = m;
             return m;
         }
@@ -189,6 +191,7 @@ namespace GolfArcade.Game
         Material kitMaterial;
         /// The Hero, when this figure is one (its parts, materials and skeleton); null for the older V4 figure.
         HeroGolfer heroFigure;
+        GolfSwingClearance swingClearance;
         /// How the model is turned at rest so the golf clips face the ball (the Hero's export is not yawed as V4's was).
         Quaternion baseRot = Quaternion.identity;
 
@@ -339,6 +342,7 @@ namespace GolfArcade.Game
             else DressClubs();
             feetFix.Clear();
             Head = heroFigure.Bones.TryGetValue("Head", out var head) ? head : null;
+            swingClearance = new GolfSwingClearance(heroFigure);
             StartGraph(model);
             return true;
         }
@@ -470,6 +474,11 @@ namespace GolfArcade.Game
         void Evaluate()
         {
             graph.Evaluate();
+            if (phase != 4)
+            {
+                if (clipName == "Drive" && clip.IsValid()) swingClearance?.ApplyDriveFollowThrough((float)clip.GetTime());
+                swingClearance?.Apply();
+            }
             foreach (var (bone, fix, at) in feetFix)
             {
                 bone.localRotation *= fix;
@@ -486,13 +495,15 @@ namespace GolfArcade.Game
         /// The studio's shared moves were made facing a quarter turn from its golf clips; this
         /// turns them back so every clip faces where the golfer stands.
         Quaternion BaseRot(Quaternion clipYaw) => baseRot * clipYaw;
-        static float ClipYaw(string move) => move is "Idle" or "Wave" or "Cheer" ? 90f : 0f;
+        static float ClipYaw(string move) => move is "Idle" or "Wave" or "Cheer" || move.StartsWith("Intro_") || move.StartsWith("Emote_") ? 90f : 0f;
         float performTime, performLength;
+        bool loopPerformance;
+        public float PerformanceDuration => performLength;
 
         /// Plays a move off the course — "Wave", "Cheer", "FistPump", "Idle" — at real speed,
         /// looping, empty-handed, from `startAt` seconds in. Settle() (or SetClub) brings the
         /// swing back. False when the model has no such clip.
-        public bool Perform(string move, float startAt = 0f)
+        public bool Perform(string move, float startAt = 0f, bool loop = true)
         {
             if (!hasModel || !clips.TryGetValue(move, out var c)) return false;
             var yaw = Quaternion.Euler(0, ClipYaw(move), 0); yaw = BaseRot(yaw);
@@ -501,6 +512,7 @@ namespace GolfArcade.Game
             clipName = move;
             foreach (var kv in clubMeshes) kv.Value.SetActive(false);
             modelGo.transform.localRotation = yaw;
+            loopPerformance = loop;
             performLength = Mathf.Max(0.1f, c.length);
             performTime = Mathf.Repeat(startAt, performLength);
             phase = 4;
@@ -525,7 +537,7 @@ namespace GolfArcade.Game
                 if (!smr) continue;
                 var grip = System.Array.Find(modelGo.GetComponentsInChildren<Transform>(true), t => t.name == "Club");
                 var baked = new Mesh();
-                smr.BakeMesh(baked, true);
+                smr.BakeMesh(baked, false);
                 var origin = grip ? smr.transform.InverseTransformPoint(grip.position) : Vector3.zero;
                 Vector3 far = Vector3.zero; float best = -1;
                 foreach (var v in baked.vertices) { float d = (v - origin).sqrMagnitude; if (d > best) { best = d; far = v; } }
@@ -725,6 +737,11 @@ namespace GolfArcade.Game
                     if (fade > 0) Evaluate();
                     break;
                 case 4:
+                    if (!loopPerformance && performTime + dt >= performLength)
+                    {
+                        Perform("Idle");
+                        break;
+                    }
                     performTime = Mathf.Repeat(performTime + dt, performLength);
                     // a spectator nobody can see isn't worth posing
                     if (spectator && body0 && !body0.isVisible) break;

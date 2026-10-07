@@ -43,3 +43,9 @@ Verified in Unity 6000.3.24f1: **61 EditMode and 4 PlayMode tests passed**. Both
 Frame-by-frame browser review of [Professional Wii Sports Tennis Players](https://www.youtube.com/watch?v=vl4kjeBLrrY) informed the elevated, steadier behind-baseline camera and faster, larger strokes. This is hand-authored interpretation, not motion capture or an exact reproduction; doubles and dives shown in the reference are not implemented.
 
 Strokes now last 0.46 seconds with contact at 0.18 seconds, nonlinear anticipation/follow-through, additional torso rotation and a wider hand/racket sweep that preserves their relative grip. A brief racket trail emphasizes speed. Running/sprinting target 6.2/9 m/s with faster acceleration and lateral lean. Feeds and shot speed are faster; timing, sweet-spot contact, positioning and stamina penalties remain active. The camera uses a 56-degree FOV at 6.4 m height, behind the near baseline. Both permanent floating-hands characters share this behavior.
+
+## Serve toss timing revision — 2026-10-04
+
+The toss meter completes its round trip in 1.0 second, previously 1.6 seconds (60% faster). Toss error grows continuously outside the perfect centre zone: a worse miss adds more visible toss drift and widens serve landing scatter, up to 2.6 m sideways and 1.82 m in depth. The scatter can produce wide/long faults; the existing two-fault scoring rule applies. Centred tosses retain accurate placement.
+
+Online tennis displays the same sweep using the replicated host clock. The host grades the compensated tap time, ignores claimed client accuracy, and applies the shared landing penalty. Verified with 79 focused EditMode checks and 7 PlayMode checks, including rendered toss captures, existing valid serves, and the native online launch/controller path. The updated Unity iOS export and unsigned integrated Release build both succeeded. Physical phone/TV timing feel still needs playtesting.

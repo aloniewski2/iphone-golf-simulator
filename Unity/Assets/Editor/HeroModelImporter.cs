@@ -25,7 +25,7 @@ namespace GolfArcade.EditorTools
             importer.maxBonesPerVertex = 4;
             importer.minBoneWeight = 0.001f;
             importer.importVisibility = false;
-            importer.isReadable = false;
+            importer.isReadable = clips; // Skin micro-normals and one-time head/club clearance calibration.
             importer.meshCompression = ModelImporterMeshCompression.Off;
             importer.importNormals = ModelImporterNormals.Import;
             importer.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;

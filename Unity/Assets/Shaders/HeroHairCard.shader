@@ -18,6 +18,44 @@ Shader "GolfArcade/HeroHairCard"
         _Sheen ("Sheen: the highlight along the strands", Range(0, 1)) = 0.34
         _SheenPower ("Sheen tightness", Range(4, 96)) = 20
     }
+    // Native golf uses URP. Keep the Built-in subshader for legacy previews.
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        Cull Off
+
+        HLSLINCLUDE
+        #define GOLF_HAIR 1
+        #include "GolfLegacyURP.hlsl"
+        ENDHLSL
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode"="UniversalForward" }
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyVertex
+            #pragma fragment GolfLegacyFragment
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fog
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyShadowVertex
+            #pragma fragment GolfLegacyShadowFragment
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            ENDHLSL
+        }
+    }
     SubShader
     {
         Tags { "RenderType" = "TransparentCutout" "Queue" = "AlphaTest" }

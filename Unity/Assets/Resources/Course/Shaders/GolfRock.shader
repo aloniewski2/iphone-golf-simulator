@@ -19,10 +19,22 @@ Properties {
  _Cap("Grass cap",Float)=0
  _NormalEnabled("Normal map present",Float)=0
  _EmissionEnabled("Emission map present",Float)=0
+ _WorldUV("World mapped legacy surface",Float)=0
+ _TileYards("Texture repeat in yards",Float)=10.936
+ _FollowCourse("Follow the fairway centerline",Float)=0
+ _MowingMap("Course coordinates",2D)="black"{}
+ _MowingBounds("Course coordinate bounds",Vector)=(0,0,1,1)
+ _RockScale("Rock repeats per yard",Float)=.09
+ _StrataStrength("Rock strata strength",Float)=.075
+ _TriplanarNormals("Triplanar normal detail",Float)=0
+ _RockMipBias("Rock mip bias",Float)=1.5
+ [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull mode",Float)=2
+ _Foliage("Two sided foliage lighting",Float)=0
 
 }
 SubShader {
 Tags {"RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry"}
+Cull [_Cull]
 HLSLINCLUDE
 #include "GolfSurface.hlsl"
 ENDHLSL
@@ -75,22 +87,30 @@ V GolfLitVertex(A a) {
  #endif
  return o;
 }
-half4 GolfFragment(V i):SV_Target {
+half4 GolfFragment(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
  UNITY_SETUP_INSTANCE_ID(i);
  float3 view=GetWorldSpaceViewDir(i.w);
  half3 n=normalize(i.n),v=SafeNormalize(view);
+ if(_Foliage>.5h) n*=IS_FRONT_VFACE(face,1,-1);
  half4 base;
  #if defined(GOLF_ROCK)
   // Metric world coordinates: cliff UV aspect never stretches a stratum.
   // A broad rock tile mip suppresses subpixel basalt detail while the world
   // strata and column rhythm keep their independently filtered read.
   half3 weight=abs(n);weight*=weight;weight/=max(dot(weight,half3(1,1,1)),.001h);
-  float3 p=i.w*.09;
-  base=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.zy,1.5)*weight.x;
-  base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xz,1.5)*weight.y;
-  base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xy,1.5)*weight.z;
+  float3 p=i.w*_RockScale;
+  base=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.zy,_RockMipBias)*weight.x;
+  base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xz,_RockMipBias)*weight.y;
+  base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xy,_RockMipBias)*weight.z;
+  if(_TriplanarNormals>.5h && _NormalEnabled>.5h) {
+   half2 nx=UnpackNormal(SAMPLE_TEXTURE2D_BIAS(_BumpMap,sampler_BumpMap,p.zy,_RockMipBias)).xy;
+   half2 ny=UnpackNormal(SAMPLE_TEXTURE2D_BIAS(_BumpMap,sampler_BumpMap,p.xz,_RockMipBias)).xy;
+   half2 nz=UnpackNormal(SAMPLE_TEXTURE2D_BIAS(_BumpMap,sampler_BumpMap,p.xy,_RockMipBias)).xy;
+   half3 detail=half3(0,nx.y,nx.x)*weight.x+half3(ny.x,0,ny.y)*weight.y+half3(nz.x,nz.y,0)*weight.z;
+   n=SafeNormalize(n+detail*_BumpScale*.35h);
+  }
   half strata=GolfBand(i.w.y*.22+sin(i.w.x*.025)*.10);
-  base.rgb*=1+strata*.075h;
+  base.rgb*=1+strata*_StrataStrength;
   half cap=smoothstep(.65h,.94h,n.y)*_Cap;
   base.rgb=lerp(base.rgb,base.rgb*half3(.70h,1.10h,.55h),cap);
   // Basalt is a broad static column rhythm, filtered before a phone can alias it.
@@ -123,6 +143,11 @@ half4 GolfFragment(V i):SV_Target {
  Light main=HeroMain(GetMainLight());
  main.shadowAttenuation=GolfShadowAttenuation(i.w);
  half3 colour=albedo*(i.illumination-i.key+HeroWrapped(n,main.direction,_Wrap)*main.color*main.shadowAttenuation);
+ if(_Foliage>.5h) {
+  colour+=albedo*(HeroAmbient(n)-HeroAmbient(normalize(i.n)));
+  // A little transmitted light keeps the underside of a frond readable.
+  colour+=albedo*main.color*saturate(-dot(n,main.direction))*.12h*main.shadowAttenuation;
+ }
  half edge=1-saturate(dot(n,v));edge*=edge;edge*=edge;
  colour+=albedo*edge*gloss*.10h*main.color*main.shadowAttenuation;
  #if defined(GOLF_ROCK)
@@ -155,7 +180,10 @@ HLSLPROGRAM
 #pragma vertex GolfVertex
 #pragma fragment GolfNormals
 #pragma multi_compile_instancing
-half4 GolfNormals(V i):SV_Target {return half4(normalize(i.n),0);}
+half4 GolfNormals(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
+ half3 n=normalize(i.n);if(_Foliage>.5h)n*=IS_FRONT_VFACE(face,1,-1);
+ return half4(n,0);
+}
 ENDHLSL
 }
 }

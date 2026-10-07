@@ -15,7 +15,7 @@ namespace GolfArcade.Tennis {
    if(profile!=null)return true;if(!look)look=GetComponent<MatchHeroLook>();if(!look||!look.golfKit)return false;
    var text=Resources.Load<TextAsset>("Golf/Correctives/"+(look.female?"Female":"Male"));if(!text)return false;
    profile=JsonUtility.FromJson<Profile>(text.text);targets=look.kit?.Where(r=>r&&r.sharedMesh&&r.sharedMesh.blendShapeCount>0).ToArray();if(targets==null||targets.Length==0||profile?.anchors==null){profile=null;return false;}
-   joints=new Transform[8,2];var rig=transform.Find("Rig_"+(look.female?"Female":"Male"));var all=rig.GetComponentsInChildren<Transform>(true);
+   joints=new Transform[8,2];var all=look.GetComponentsInChildren<Transform>(true);
    for(int i=0;i<8;i++)for(int j=0;j<2;j++)joints[i,j]=all.First(t=>t.name==Segments[i,j]);
    shapes=new int[targets.Length][];weights=new float[profile.anchors.Length];
    for(int t=0;t<targets.Length;t++){

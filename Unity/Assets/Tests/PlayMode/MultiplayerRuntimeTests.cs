@@ -17,14 +17,97 @@ namespace GolfArcade.Tests {
         static string Packet(NetworkConfiguration c,string kind,string payload="",string sender="a",string match=null)=>JsonUtility.ToJson(new NetworkPacket {lobbyID=c.lobbyID,matchID=match??c.matchID,sender=sender,kind=kind,payload=payload});
         static void Clean(){SportsMultiplayer.TestOutput=null;SportsMultiplayer.Shutdown();if(SportsMultiplayer.Instance)Object.DestroyImmediate(SportsMultiplayer.Instance.gameObject);Time.timeScale=1;}
 
+        [UnityTest] public IEnumerator EquippedIntroAcceptsLateChoiceAndHoldsUntilFinished() {
+            Clean();Time.captureFramerate=10;
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
+            var game=Object.FindFirstObjectByType<TennisGame>();
+            for(int i=0;i<120 && (!game || !game.Initialized);i++)yield return null;
+            Assert.True(game && game.Initialized);
+            game.NativeControlled=true;game.AutoPlay=false;game.ManualSimulation=false;
+            game.EquipEmotes(new[]{"scuba","wave","pushups"});
+            var presentation=game.GetComponent<TennisPresentation>();
+            typeof(TennisPresentation).GetField("t",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(presentation,TennisPresentation.Drone+TennisPresentation.RivalIntro+TennisPresentation.PlayerIntro-.005f);
+            var driver=game.Player.GetComponentInChildren<HeroTennisDriver>();int before=driver.EmotesPlayed;
+            try {
+                Assert.AreEqual("intro",game.EmoteWindow);
+                Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0));
+                for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
+                Assert.AreEqual(before+1,driver.EmotesPlayed);Assert.AreEqual("IntroPushups",driver.LastEmotePlayed);
+                while(driver.EmoteActive){Assert.True(game.IntroPlaying,"Intro camera waits for the whole chosen clip");yield return null;}
+                for(int i=0;i<100 && game.IntroPlaying;i++)yield return null;
+                Assert.False(game.IntroPlaying,"Match proceeds after the selected intro");
+                Assert.AreNotEqual("intro",game.EmoteWindow);
+            } finally {Time.captureFramerate=0;Clean();}
+        }
+
+        [UnityTest] public IEnumerator EquippedOnlineEmotePlaysOnRemoteActorAndControllerSendsSlot() {
+            Clean();Time.captureFramerate=10;
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
+            var game=Object.FindFirstObjectByType<TennisGame>();
+            for(int i=0;i<120 && (!game || !game.Initialized);i++)yield return null;
+            Assert.True(game && game.Initialized);
+            var c=Config(local:"b");var sent=new List<string>();SportsMultiplayer.TestOutput=sent.Add;
+            SportsMultiplayer.Configure(JsonUtility.ToJson(c));var net=SportsMultiplayer.Instance;
+            var state=new NetworkTennisMatch(intro:true).State;
+            state.players[0].emoteID="scuba";state.players[0].emoteSequence=1;state.players[0].emoteUntil=5.2;
+            try {
+                var driver=game.Opponent.GetComponentInChildren<HeroTennisDriver>();int before=driver.EmotesPlayed;
+                net.Receive(Packet(c,"snapshot",JsonUtility.ToJson(state)));net.Receive(Packet(c,"run"));
+                for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
+                Assert.AreEqual(before+1,driver.EmotesPlayed);Assert.AreEqual("EmoteScuba",driver.LastEmotePlayed);
+                Assert.AreEqual("intro",game.EmoteWindow);
+                SportsMultiplayer.Command(new NativeSportsSession.Message{action="emote",value=2});
+                var packet=sent.ConvertAll(JsonUtility.FromJson<NetworkPacket>).Find(p=>p.kind=="input");
+                Assert.NotNull(packet);var input=JsonUtility.FromJson<NetworkInput>(packet.payload);
+                Assert.AreEqual("emote",input.action);Assert.AreEqual(2,input.value);
+                Assert.AreEqual(state.point,input.point);Assert.AreEqual(state.contact,input.contact);
+            } finally {Time.captureFramerate=0;Clean();}
+        }
+
+        [UnityTest] public IEnumerator EquippedEmotePlaysRequestedClipOnBothBodies() {
+            Clean();Time.captureFramerate=10;
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
+            var game=Object.FindFirstObjectByType<TennisGame>();
+            for(int i=0;i<120 && (!game || !game.Initialized);i++) yield return null;
+            Assert.True(game && game.Initialized);
+            game.NativeControlled=true;game.AutoPlay=false;game.ManualSimulation=true;
+            game.GetComponent<TennisPresentation>().Finish();
+            var flags=BindingFlags.Instance|BindingFlags.NonPublic;
+            try {
+                foreach(bool female in new[]{false,true}) {
+                    game.SelectCharacter(female);
+                    typeof(TennisGame).GetProperty("Flow").GetSetMethod(true).Invoke(game,new object[]{TennisGame.Phase.PointOver});
+                    typeof(TennisGame).GetField("resetTimer",flags).SetValue(game,100f);
+                    for(int i=0;i<15;i++) yield return null;
+                    var driver=game.Player.GetComponentInChildren<HeroTennisDriver>();Assert.True(driver);
+                    foreach(string id in TennisEmotes.IDs) {
+                        game.EquipEmotes(new[]{id,"wave","spike"});
+                        typeof(TennisGame).GetField("playerWonPoint",flags).SetValue(game,false);
+                        typeof(TennisGame).GetField("pointEmoteChosen",flags).SetValue(game,false);
+                        Assert.False(game.RequestEquippedEmote(0),"Cannot celebrate an opponent point");
+                        typeof(TennisGame).GetField("playerWonPoint",flags).SetValue(game,true);
+                        int before=driver.EmotesPlayed;
+                        Assert.True(game.RequestEquippedEmote(0),id+" equipped slot must be accepted");
+                        Assert.False(game.RequestEquippedEmote(1),"Only one selection per point");
+                        for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
+                        Assert.AreEqual(before+1,driver.EmotesPlayed);
+                        TennisEmotes.TryClip(id,out var clip);Assert.AreEqual(clip.ToString(),driver.LastEmotePlayed);
+                        Assert.GreaterOrEqual((float)typeof(TennisGame).GetField("resetTimer",flags).GetValue(game),driver.EmoteDuration(clip)*TennisGame.GameSpeed);
+                        for(int i=0;i<70 && driver.EmoteActive;i++)yield return null;
+                        Assert.False(driver.EmoteActive,id+" completes rather than looping");
+                    }
+                }
+            } finally {Time.captureFramerate=0;Clean();}
+        }
+
         [UnityTest] public IEnumerator AuthorityRejectsObserverInputAndOldContest() {
             Clean();var c=Config();SportsMultiplayer.Configure(JsonUtility.ToJson(c));var net=SportsMultiplayer.Instance;
             try {
                 net.Receive(Packet(c,"run",sender:"c"));Assert.False(net.Running);net.Receive(Packet(c,"run"));Assert.True(net.Running);
                 var toss=new NetworkInput {action="toss",point=net.TennisState.point,contact=net.TennisState.contact,eventID=1,time=Time.realtimeSinceStartupAsDouble};
-                net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"c"));Assert.AreEqual("serve",net.TennisState.phase);
-                net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"a","older"));Assert.AreEqual("serve",net.TennisState.phase);
-                net.Receive(Packet(c,"input",JsonUtility.ToJson(toss)));Assert.AreEqual("toss",net.TennisState.phase);yield return null;
+                net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"c"));Assert.AreEqual("intro",net.TennisState.phase);
+                net.Receive(Packet(c,"input",JsonUtility.ToJson(toss),"a","older"));Assert.AreEqual("intro",net.TennisState.phase);
+                net.TennisState.phase="serve";net.Receive(Packet(c,"input",JsonUtility.ToJson(toss)));Assert.AreEqual("toss",net.TennisState.phase);yield return null;
             } finally {Clean();}
         }
         [UnityTest] public IEnumerator ObserverCannotEmitControlsAndClientRejectsOldSnapshots() {
@@ -73,6 +156,8 @@ namespace GolfArcade.Tests {
                     Assert.False((bool)typeof(NativeSportsSession).GetField("paused",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(bridge));
                     SportsMultiplayer.Instance.Receive(Packet(c,"run"));Assert.True(SportsMultiplayer.Instance.Running);
                     if(sport=="tennis"){
+                        for(int i=0;i<900 && SportsMultiplayer.Instance.TennisState.phase=="intro";i++) yield return null;
+                        Assert.AreEqual("serve",SportsMultiplayer.Instance.TennisState.phase);
                         yield return null;
                         var meter=Object.FindFirstObjectByType<TennisTossMeter>();Assert.True(meter&&meter.gameObject.activeInHierarchy,"The server must see the host-clock toss meter.");
                         SportsMultiplayer.Command(new NativeSportsSession.Message {action="toss",value=1});Assert.AreEqual("toss",SportsMultiplayer.Instance.TennisState.phase);

@@ -1,0 +1,8 @@
+{'sex': 'Male', 'part': 'Top', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Male', 'part': 'Bottom', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Male', 'part': 'Shoe_L', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Male', 'part': 'Shoe_R', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Female', 'part': 'Top', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Female', 'part': 'Bottom', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Female', 'part': 'Shoe_L', 'ambiguousTexels': 0, 'triangles': 0}
+{'sex': 'Female', 'part': 'Shoe_R', 'ambiguousTexels': 0, 'triangles': 0}

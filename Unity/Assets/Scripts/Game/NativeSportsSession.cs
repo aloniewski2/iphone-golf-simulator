@@ -38,7 +38,8 @@ namespace GolfArcade.Game
             public int swing, swingStart, swingAbort, flags;
             public float handSide,lift,strokeFacing;
             public float qx,qy,qz,qw,rx,ry,rz,gx,gy,gz;
-            public const int Version = 2;
+            public double onsetTime,confirmationTime,abortTime;
+            public const int Version = 3;
             public bool valid => (flags & 1) != 0;
             /// World tracking is blurred or limited; the rally continues with a warning.
             public bool degraded => (flags & 2) != 0;
@@ -57,6 +58,7 @@ namespace GolfArcade.Game
         public static string TrackingWarning { get; private set; }
         string session; int token; bool loading,paused=true,touch,multiplayerSession; int lastSwing,lastSwingStart,lastSwingAbort;
         double lastSample=-1,resumedAt; float target, nextFeedback;
+        bool steeringTracked; float steeringOrigin;
         TennisGame tennis; GolfGame golf;
         Camera gameplayCamera;
         bool frameRendered;
@@ -162,6 +164,8 @@ namespace GolfArcade.Game
                     case "aimPractice": if(tennis) tennis.SetAimPractice(m.value>0); break;
                     case "aimFeed": if(tennis) tennis.FeedAimPractice(m.value,m.value2<0,m.aimSequence); break;
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
+                    case "golfEmote": if(golf && !paused && m.value == Mathf.Floor(m.value)) golf.PlayResultEmote((int)m.value); break;
+                    case "golfLoad": if(golf && touch && !paused && !float.IsNaN(m.value) && !float.IsInfinity(m.value)) golf.ShowBackswing(Mathf.Clamp01(m.value)); break;
                     case "golfContinue": if(golf && !paused) golf.NativeContinue(); break;
                     case "club": if(golf) golf.NativeClub(m.value<0?-1:1); break;
                     case "sound": AudioListener.volume=m.value>0 && !Application.isBatchMode?1:0; break;
@@ -186,7 +190,7 @@ namespace GolfArcade.Game
             } catch(Exception e) { Emit("error",e.Message); }
         }
         IEnumerator Load(Message m) {
-            loading=true; Ready=false; Active=true; multiplayerSession=!string.IsNullOrEmpty(m.network); session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0;
+            loading=true; Ready=false; Active=true; multiplayerSession=!string.IsNullOrEmpty(m.network); session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0; steeringTracked=false;
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
             GolferStyle.SkinTone=m.skin;
@@ -240,7 +244,7 @@ namespace GolfArcade.Game
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) golf.PrepareNativeAddress(m.course);
+            if(golf) { golf.EquipResultEmotes(m.emotes); golf.PrepareNativeAddress(m.course); }
             if(!string.IsNullOrEmpty(m.network)) SportsMultiplayer.Configure(m.network);
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
@@ -324,6 +328,7 @@ namespace GolfArcade.Game
         }
         void SetPaused(bool value,string reason=null) {
             paused=value; SportsRecorderPause(value); PauseReason=value ? (string.IsNullOrEmpty(reason) ? "PAUSED — tap Ready on your phone" : reason) : null;
+            if(value) steeringTracked=false;
             if(value) TrackingWarning="";
             if(!value) { resumedAt=SportsClock(); if(tennis) tennis.LockLoadout(); }
             Time.timeScale=SportsMultiplayer.Active?1:value?0:1; Haptics.Release(); if(value && golf) golf.Swing.Detector.Reset();
@@ -333,54 +338,33 @@ namespace GolfArcade.Game
             // Rotation settles after scene loading; do not freeze the initial portrait aspect.
             if(gameplayCamera && outputDisplay==0 && Screen.height>0)
                 gameplayCamera.aspect=(float)Screen.width/Screen.height;
+            Sample latest = default; bool haveSample = false;
+            double now = SportsClock();
             for(int i=0;i<64;i++) {
                 if(SportsPollSample(out var sample)==0) break;
-                if(!AcceptSample(sample,token,lastSample,SportsClock())) continue;
+                if(!AcceptSample(sample,token,lastSample,now)) continue;
                 lastSample=sample.time;
-                // The phone decides tracking quality; Unity only decides how to show it.
-                TrackingWarning = sample.degraded ? DegradedWarning : "";
-                if(paused || !sample.valid) continue;
-                if (SportsMultiplayer.Active) { if(golf && !touch) golf.NativeMotion(sample); else SportsMultiplayer.Sample(sample,touch); continue; }
-                // A degraded sample still carries the last good court position, so the player
-                // holds station through the blip instead of the game pausing.
-                target=Mathf.Clamp(sample.target,-1,1);
-                float inputAge = Mathf.Clamp((float)(SportsClock() - sample.time), 0, .25f);
-                if (tennis && !touch) tennis.AimInput = Mathf.Clamp(sample.aim, -1, 1);
-                if(golf && !touch) golf.NativeMotion(sample);
-                // Onset first: the character starts the stroke the moment the phone does, and
-                // confirmation (or a write-off) arrives a few samples later. All three can land
-                // in one sample when frames are slow, so the order here matters.
-                if(sample.swingStart>lastSwingStart) {
-                    lastSwingStart=sample.swingStart;
-                    if(tennis) {
-                        tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing,inputAge);
-                        Emit("stroke",$"onset ageMs={inputAge*1000:0.0} animated={tennis.Player && tennis.Player.Swinging} provisional={tennis.Player && tennis.Player.Provisional} screenMs={tennis.Lag*1000:0.0}");
-                    }
-                }
-                if(sample.swing>lastSwing) {
-                    lastSwing=sample.swing;
-                    // Racket-face aim, measured on the phone at the moment the stroke confirmed.
-                    // Touch play aims with its own control (the "aim" command) instead.
-                    if(tennis && !touch) tennis.AimInput=Mathf.Clamp(sample.aim,-1,1);
-                    if(tennis) {
-                        tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing,inputAge);
-                        Emit("stroke",$"confirmed ageMs={inputAge*1000:0.0} animated={tennis.Player && tennis.Player.Swinging} provisional={tennis.Player && tennis.Player.Provisional}");
-                    }
-                    if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
-                }
-                if(sample.swingAbort>lastSwingAbort) {
-                    lastSwingAbort=sample.swingAbort;
-                    if(tennis) tennis.AbortSwing();
-                }
+                latest=sample; haveSample=true;
+                // Golf integrates the gyro path; network play forwards its samples.
+                // Local tennis needs the latest position and cumulative stroke events,
+                // not an animation replay of every queued controller sample.
+                if(golf || SportsMultiplayer.Active) ApplySample(sample,now);
             }
+            if(haveSample && !golf && !SportsMultiplayer.Active) ApplySample(latest,now);
             if(!SportsMultiplayer.Active && !paused && SportsClock()-Math.Max(lastSample,resumedAt)>.5) {
                 SetPaused(true,"INPUT PAUSED — tap Ready on your phone"); Emit("error","Motion input stopped. Tap Ready or select touch controls.");
             }
             if(!SportsMultiplayer.Active && !paused && tennis && tennis.Player) {
+                bool tracked = tennis.PlayerUsesTrackedMovement;
+                if(tracked && !steeringTracked)
+                    steeringOrigin=tennis.Player.transform.position.x-target*3.6f-tennis.AssistOffset;
+                steeringTracked=tracked;
                 // The assist moves the servo's reference, so steering cooperates with it
                 // rather than fighting it back to the raw phone position.
-                float delta=target*3.6f+tennis.AssistOffset-tennis.Player.transform.position.x;
-                tennis.SetLateralInput(Mathf.Clamp(delta*1.25f,-1,1),Mathf.Abs(delta)>1.1f);
+                // Capture the receiving spot when the rally starts; zero phone movement
+                // must not pull a D-pad-positioned receiver back to the court centre.
+                float delta=target*3.6f+(tracked ? steeringOrigin+tennis.AssistOffset : 0)-tennis.Player.transform.position.x;
+                tennis.SetLateralInput(tracked || touch ? Mathf.Clamp(delta*1.25f,-1,1) : 0, (tracked || touch) && Mathf.Abs(delta)>1.1f);
             }
             // The phone only shows this as status text; four updates a second is plenty and
             // keeps the per-frame string building out of the hot path.
@@ -399,12 +383,55 @@ namespace GolfArcade.Game
                 }
             }
         }
+        void ApplySample(in Sample sample,double now) {
+            TrackingWarning = sample.degraded ? DegradedWarning : "";
+            if(paused || !sample.valid) {
+                lastSwing=Math.Max(lastSwing,sample.swing);
+                lastSwingStart=Math.Max(lastSwingStart,sample.swingStart);
+                lastSwingAbort=Math.Max(lastSwingAbort,sample.swingAbort);
+                return;
+            }
+            if(SportsMultiplayer.Active) {
+                if(golf && !touch) golf.NativeMotion(sample); else SportsMultiplayer.Sample(sample,touch);
+                return;
+            }
+            target=Mathf.Clamp(sample.target,-1,1);
+            if(tennis && !touch) tennis.AimInput=Mathf.Clamp(sample.aim,-1,1);
+            if(golf && !touch) golf.NativeMotion(sample);
+            double onset = EventTime(sample.onsetTime,sample.time);
+            double confirmed = EventTime(sample.confirmationTime,sample.time);
+            double aborted = EventTime(sample.abortTime,sample.time);
+            if(sample.swingStart>lastSwingStart) {
+                lastSwingStart=sample.swingStart;
+                if(tennis && FreshEvent(onset,now,resumedAt))
+                    tennis.BeginSwing(sample.handSide,sample.lift,sample.strokeFacing,EventAge(onset,now));
+            }
+            if(sample.swing>lastSwing) {
+                lastSwing=sample.swing;
+                if(FreshEvent(confirmed,now,resumedAt) && (sample.swingStart==0 || confirmed>=onset)) {
+                    if(tennis) tennis.RequestSwing(Mathf.Clamp01(sample.power),sample.handSide,sample.lift,sample.strokeFacing,EventAge(confirmed,now));
+                    if(golf && touch) golf.NativeSwing(Mathf.Clamp01(sample.power));
+                }
+            }
+            if(sample.swingAbort>lastSwingAbort) {
+                lastSwingAbort=sample.swingAbort;
+                // A dropped candidate before a newer stroke must not cancel that stroke.
+                if(tennis && aborted>=onset && FreshEvent(aborted,now,resumedAt)) tennis.AbortSwing();
+            }
+        }
+        static double EventTime(double stamp,double sampleTime) => stamp>0 ? stamp : sampleTime;
+        public static bool FreshEvent(double stamp,double now,double resumed) =>
+            !double.IsNaN(stamp) && !double.IsInfinity(stamp) && stamp>=resumed && stamp>=now-.25 && stamp<=now+.05;
+        public static float EventAge(double stamp,double now) => Mathf.Clamp((float)(now-stamp),0,.25f);
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
         void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&
-            !float.IsNaN(s.aim) && !float.IsInfinity(s.aim) && !float.IsNaN(s.strokeFacing) && !float.IsInfinity(s.strokeFacing);
+            !float.IsNaN(s.aim) && !float.IsInfinity(s.aim) && !float.IsNaN(s.strokeFacing) && !float.IsInfinity(s.strokeFacing) &&
+            !double.IsNaN(s.onsetTime) && !double.IsInfinity(s.onsetTime) &&
+            !double.IsNaN(s.confirmationTime) && !double.IsInfinity(s.confirmationTime) &&
+            !double.IsNaN(s.abortTime) && !double.IsInfinity(s.abortTime);
     }
 }

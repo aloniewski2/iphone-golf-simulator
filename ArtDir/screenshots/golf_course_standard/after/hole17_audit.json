@@ -1,0 +1,1092 @@
+{
+    "hole": 17,
+    "obstacleCount": 186,
+    "colliders": 19,
+    "drawCalls": 509,
+    "triangles": 871980,
+    "pipeline": "TennisURP",
+    "unity": "6000.3.24f1",
+    "obstacleHash": "b032d8305650e647495f8a20f940953f3d54f306bb0ab9c092b8819c70edba20",
+    "textureBytes": 15500288,
+    "cameraMeshTriangles": 72190,
+    "cameraMaterialPasses": 44,
+    "graphics": "Metal / Apple M5",
+    "repairedPalms": 0,
+    "replacedPalmTriangles": 0,
+    "newPalmTriangles": 0,
+    "materials": [
+        {
+            "renderer": "BUNKER_01",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 87,
+            "triangles": 136,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_01_LIP",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_02",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 95,
+            "triangles": 152,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_02_LIP",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_03",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 82,
+            "triangles": 126,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_03_LIP",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_04",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 63,
+            "triangles": 88,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_04_LIP",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_05",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 59,
+            "triangles": 80,
+            "visible": false
+        },
+        {
+            "renderer": "BUNKER_05_LIP",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": false
+        },
+        {
+            "renderer": "CABIN_1",
+            "material": "Course 17 Bark:925C34FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Bark_C",
+            "normal": "Bark_N",
+            "slot": 0,
+            "vertices": 288,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "CABIN_1",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 1,
+            "vertices": 288,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "CABIN_1",
+            "material": "Course 17 Rock",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Rock_CE",
+            "normal": "Rock_N",
+            "slot": 2,
+            "vertices": 288,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "CABIN_1",
+            "material": "Universal Render Pipeline/Unlit",
+            "shader": "Universal Render Pipeline/Unlit",
+            "albedo": "",
+            "normal": "",
+            "slot": 3,
+            "vertices": 288,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "FAIRWAY",
+            "material": "Course 17 Fairway",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 1320,
+            "triangles": 2314,
+            "visible": false
+        },
+        {
+            "renderer": "FAIRWAY",
+            "material": "Course 17 Fairway",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 1,
+            "vertices": 1320,
+            "triangles": 2314,
+            "visible": false
+        },
+        {
+            "renderer": "FAIRWAY_FIRSTCUT",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 1116,
+            "triangles": 1906,
+            "visible": false
+        },
+        {
+            "renderer": "GREEN_1",
+            "material": "Course 17 Green",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Green_C",
+            "normal": "Green_N",
+            "slot": 0,
+            "vertices": 513,
+            "triangles": 944,
+            "visible": false
+        },
+        {
+            "renderer": "GREEN_APRON_1",
+            "material": "Course 17 Fairway",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 248,
+            "triangles": 414,
+            "visible": false
+        },
+        {
+            "renderer": "ICE_FALL_1",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 44,
+            "triangles": 40,
+            "visible": false
+        },
+        {
+            "renderer": "ICE_FLOES",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 936,
+            "triangles": 520,
+            "visible": false
+        },
+        {
+            "renderer": "ICE_POOL_1",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 1311,
+            "triangles": 2556,
+            "visible": false
+        },
+        {
+            "renderer": "ICE_POOL_1_EDGE",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 256,
+            "triangles": 256,
+            "visible": false
+        },
+        {
+            "renderer": "ICE_RIVER_1",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 169,
+            "triangles": 236,
+            "visible": false
+        },
+        {
+            "renderer": "ICICLES",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 2620,
+            "triangles": 1048,
+            "visible": false
+        },
+        {
+            "renderer": "ROCKS",
+            "material": "Course 17 Rock",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Rock_CE",
+            "normal": "Rock_N",
+            "slot": 0,
+            "vertices": 4293,
+            "triangles": 1540,
+            "visible": false
+        },
+        {
+            "renderer": "SMOKE_CABIN_1",
+            "material": "Course 17 Smoke",
+            "shader": "GolfArcade/GolfSurf",
+            "albedo": "Smoke_C",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2497,
+            "triangles": 880,
+            "visible": true
+        },
+        {
+            "renderer": "SNOWMAN_1",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 822,
+            "triangles": 290,
+            "visible": false
+        },
+        {
+            "renderer": "SNOWMAN_1",
+            "material": "Course 17 Paint:DE3705FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "UnityWhite",
+            "normal": "Rock_N",
+            "slot": 1,
+            "vertices": 822,
+            "triangles": 290,
+            "visible": false
+        },
+        {
+            "renderer": "SNOWMAN_1",
+            "material": "Course 17 Ash",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ash_C",
+            "normal": "Ash_N",
+            "slot": 2,
+            "vertices": 822,
+            "triangles": 290,
+            "visible": false
+        },
+        {
+            "renderer": "TEE_BOX",
+            "material": "Course 17 Tee",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Green_C",
+            "normal": "Green_N",
+            "slot": 0,
+            "vertices": 107,
+            "triangles": 164,
+            "visible": false
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 12588,
+            "triangles": 16792,
+            "visible": false
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Course 17 Cliff",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Cliff_CE",
+            "normal": "Cliff_N",
+            "slot": 1,
+            "vertices": 12588,
+            "triangles": 16792,
+            "visible": false
+        },
+        {
+            "renderer": "TERRAIN_ISLAND_1",
+            "material": "Course 17 Cliff",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Cliff_CE",
+            "normal": "Cliff_N",
+            "slot": 2,
+            "vertices": 12588,
+            "triangles": 16792,
+            "visible": false
+        },
+        {
+            "renderer": "TREES",
+            "material": "Course 17 Wood:704A2EFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 0,
+            "vertices": 24200,
+            "triangles": 10856,
+            "visible": false
+        },
+        {
+            "renderer": "TREES",
+            "material": "Course 17 Leaves:206836FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Leaves_C",
+            "normal": "Leaves_N",
+            "slot": 1,
+            "vertices": 24200,
+            "triangles": 10856,
+            "visible": false
+        },
+        {
+            "renderer": "TREES",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 2,
+            "vertices": 24200,
+            "triangles": 10856,
+            "visible": false
+        },
+        {
+            "renderer": "TREES",
+            "material": "Course 17 Leaves:328C3EFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Leaves_C",
+            "normal": "Leaves_N",
+            "slot": 3,
+            "vertices": 24200,
+            "triangles": 10856,
+            "visible": false
+        },
+        {
+            "renderer": "WATER_FOAM_1",
+            "material": "Course 17 Surf",
+            "shader": "GolfArcade/GolfSurf",
+            "albedo": "Surf_C",
+            "normal": "",
+            "slot": 0,
+            "vertices": 6264,
+            "triangles": 4176,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_FOAM_CREST_1",
+            "material": "Course 17 Surf",
+            "shader": "GolfArcade/GolfSurf",
+            "albedo": "Surf_C",
+            "normal": "",
+            "slot": 0,
+            "vertices": 4212,
+            "triangles": 2808,
+            "visible": true
+        },
+        {
+            "renderer": "WATER_OCEAN",
+            "material": "Course 17 Water",
+            "shader": "GolfArcade/TennisWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 4,
+            "triangles": 2,
+            "visible": false
+        },
+        {
+            "renderer": "WATER_SHALLOW_1",
+            "material": "Course 17 Shallow",
+            "shader": "GolfArcade/TennisWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 1044,
+            "triangles": 1044,
+            "visible": true
+        },
+        {
+            "renderer": "WHITE_BRIDGE_1",
+            "material": "Course 17 Wood:924F1DFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 0,
+            "vertices": 1248,
+            "triangles": 624,
+            "visible": false
+        },
+        {
+            "renderer": "WHITE_BRIDGE_1",
+            "material": "Course 17 Wood:291107FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 1,
+            "vertices": 1248,
+            "triangles": 624,
+            "visible": false
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_0",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 87,
+            "triangles": 136,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_1",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_2",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 95,
+            "triangles": 152,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_3",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_4",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 145,
+            "triangles": 214,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_5",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 1332,
+            "triangles": 2194,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_6",
+            "material": "Course 17 Sand",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Sand_C",
+            "normal": "Sand_N",
+            "slot": 0,
+            "vertices": 59,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_7",
+            "material": "Course 17 Fringe",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 108,
+            "triangles": 144,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_8",
+            "material": "Course 17 Fairway",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 2016,
+            "triangles": 2314,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_9",
+            "material": "Course 17 Green",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Green_C",
+            "normal": "Green_N",
+            "slot": 0,
+            "vertices": 513,
+            "triangles": 944,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_10",
+            "material": "Course 17 Fairway",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Fairway_C",
+            "normal": "Fairway_N",
+            "slot": 0,
+            "vertices": 248,
+            "triangles": 414,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_11",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 1780,
+            "triangles": 3088,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_12",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 936,
+            "triangles": 520,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_13",
+            "material": "Course 17 Ice",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ice_C",
+            "normal": "Ice_N",
+            "slot": 0,
+            "vertices": 2620,
+            "triangles": 1048,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_14",
+            "material": "Course 17 Rock",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Rock_CE",
+            "normal": "Rock_N",
+            "slot": 0,
+            "vertices": 4293,
+            "triangles": 1540,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_15",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 678,
+            "triangles": 240,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_16",
+            "material": "Course 17 Paint:DE3705FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "UnityWhite",
+            "normal": "Rock_N",
+            "slot": 0,
+            "vertices": 24,
+            "triangles": 10,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_17",
+            "material": "Course 17 Ash",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Ash_C",
+            "normal": "Ash_N",
+            "slot": 0,
+            "vertices": 120,
+            "triangles": 40,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_18",
+            "material": "Course 17 Tee",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Green_C",
+            "normal": "Green_N",
+            "slot": 0,
+            "vertices": 107,
+            "triangles": 164,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_19",
+            "material": "Course 17 Snow",
+            "shader": "GolfArcade/GolfGround",
+            "albedo": "Snow_C",
+            "normal": "Snow_N",
+            "slot": 0,
+            "vertices": 17286,
+            "triangles": 18255,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_20",
+            "material": "Course 17 Cliff",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Cliff_CE",
+            "normal": "Cliff_N",
+            "slot": 0,
+            "vertices": 14185,
+            "triangles": 2905,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_21",
+            "material": "Course 17 Wood:704A2EFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 0,
+            "vertices": 3816,
+            "triangles": 2120,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_22",
+            "material": "Course 17 Leaves:206836FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Leaves_C",
+            "normal": "Leaves_N",
+            "slot": 0,
+            "vertices": 5936,
+            "triangles": 2544,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_23",
+            "material": "Course 17 Leaves:328C3EFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Leaves_C",
+            "normal": "Leaves_N",
+            "slot": 0,
+            "vertices": 4256,
+            "triangles": 1824,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_24",
+            "material": "Course 17 Wood:924F1DFF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 0,
+            "vertices": 240,
+            "triangles": 120,
+            "visible": true
+        },
+        {
+            "renderer": "GOLF_SURFACE_BATCH_25",
+            "material": "Course 17 Wood:291107FF",
+            "shader": "GolfArcade/GolfRock",
+            "albedo": "Wood_C",
+            "normal": "Wood_N",
+            "slot": 0,
+            "vertices": 1008,
+            "triangles": 504,
+            "visible": true
+        },
+        {
+            "renderer": "Tee marker L",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 515,
+            "triangles": 768,
+            "visible": true
+        },
+        {
+            "renderer": "Band",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 88,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "Tee marker R",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 515,
+            "triangles": 768,
+            "visible": true
+        },
+        {
+            "renderer": "Band",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 88,
+            "triangles": 80,
+            "visible": true
+        },
+        {
+            "renderer": "Open sea",
+            "material": "Course 17 Water",
+            "shader": "GolfArcade/TennisWater",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2017,
+            "triangles": 3960,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "island",
+            "material": "MAT_ISLAND",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "island",
+            "normal": "",
+            "slot": 0,
+            "vertices": 5174,
+            "triangles": 5000,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "sailboat",
+            "material": "MAT_SAILBOAT",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "sailboat",
+            "normal": "",
+            "slot": 0,
+            "vertices": 2618,
+            "triangles": 2500,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG",
+            "material": "Flag 17",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "flag_17",
+            "normal": "",
+            "slot": 0,
+            "vertices": 270,
+            "triangles": 448,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG_POLE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 100,
+            "triangles": 188,
+            "visible": true
+        },
+        {
+            "renderer": "FLAG_POLE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 1,
+            "vertices": 100,
+            "triangles": 188,
+            "visible": true
+        },
+        {
+            "renderer": "CUP",
+            "material": "GolfArcade/HoleInside",
+            "shader": "GolfArcade/HoleInside",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 481,
+            "triangles": 816,
+            "visible": true
+        },
+        {
+            "renderer": "CUP_MOUTH",
+            "material": "GolfArcade/HoleMask",
+            "shader": "GolfArcade/HoleMask",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 48,
+            "triangles": 46,
+            "visible": true
+        },
+        {
+            "renderer": "CUP_EDGE",
+            "material": "Universal Render Pipeline/Lit",
+            "shader": "Universal Render Pipeline/Lit",
+            "albedo": "",
+            "normal": "",
+            "slot": 0,
+            "vertices": 96,
+            "triangles": 96,
+            "visible": true
+        }
+    ],
+    "ground": [
+        {
+            "name": "BUNKER_01",
+            "hash": "b106340acfbe37dc16094500ff1a8fab25e7a084f92452fd6ec39fd468f4284c",
+            "vertices": 87,
+            "triangles": 136
+        },
+        {
+            "name": "BUNKER_01_LIP",
+            "hash": "3126a9e6c2fbb809188f9bc54959023b9365169110c6d87e339d085f4c113657",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "BUNKER_02",
+            "hash": "900458015bc734f2bd62d8d85884e17e4f9bd5f2712ff174115ec0e8a6361af3",
+            "vertices": 95,
+            "triangles": 152
+        },
+        {
+            "name": "BUNKER_02_LIP",
+            "hash": "ba6707757a46ca0740d796cfe2ba962899478fbefc9d40c281a857f66851cf1a",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "BUNKER_03",
+            "hash": "6fc0397fa070ca8d4980ecebb80abccbccddccbb1a70090284170be3d9d47262",
+            "vertices": 82,
+            "triangles": 126
+        },
+        {
+            "name": "BUNKER_03_LIP",
+            "hash": "8b0a002027c8008d99f3a2c6ea8ca59cec5264510ccbeed5b77e1a39d0d77e07",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "BUNKER_04",
+            "hash": "7f9a14a03e7beb57c27e498449ee914920a0e7b927e27230439ecd760d2f7a1f",
+            "vertices": 63,
+            "triangles": 88
+        },
+        {
+            "name": "BUNKER_04_LIP",
+            "hash": "089db5e200fc2e243002dd1480290aaebf900374bfb19655f29594e2907120ee",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "BUNKER_05",
+            "hash": "a7723a2e44b7381045f4b64a891325d030c49c78e637095baa1fed11fbc51f27",
+            "vertices": 59,
+            "triangles": 80
+        },
+        {
+            "name": "BUNKER_05_LIP",
+            "hash": "d0b8b7f3434366a864d450875d3c3fa7caa4a57f7c33c483a76e11e94dfbe9e5",
+            "vertices": 108,
+            "triangles": 144
+        },
+        {
+            "name": "FAIRWAY",
+            "hash": "27f550b2cdc1738ee1e8d818fdea21ca11a31567d916a14c1fa081a610c68fd6",
+            "vertices": 1320,
+            "triangles": 2314
+        },
+        {
+            "name": "FAIRWAY_FIRSTCUT",
+            "hash": "85264b245c422a117c63f70f1183f2f19aef5bf16bc0bea9fef15ee9de5d04ca",
+            "vertices": 1116,
+            "triangles": 1906
+        },
+        {
+            "name": "GREEN_1",
+            "hash": "3382815671c60f300e2f4d472960716987e109ad00781f3eda8d40d84f03827d",
+            "vertices": 513,
+            "triangles": 944
+        },
+        {
+            "name": "GREEN_APRON_1",
+            "hash": "2e27bf8652de600963dc52b730574d97d0259c87a0264e3828196af83669c619",
+            "vertices": 248,
+            "triangles": 414
+        },
+        {
+            "name": "ICE_POOL_1",
+            "hash": "db387746030758c0c05621e02077bda6db4fdba12bd1313a90f804d7151265c8",
+            "vertices": 1311,
+            "triangles": 2556
+        },
+        {
+            "name": "ICE_POOL_1_EDGE",
+            "hash": "4aff5d2ae43a646eee6b6b3f1949e077244353649b5a7ac865c1acecf6d5b7f0",
+            "vertices": 256,
+            "triangles": 256
+        },
+        {
+            "name": "ICE_RIVER_1",
+            "hash": "42c830bfaba09f13290f0e9b8a16420591e5c15fc03437497dc81eee491c52b2",
+            "vertices": 169,
+            "triangles": 236
+        },
+        {
+            "name": "TEE_BOX",
+            "hash": "d4f51310b194def133d43cdad1edae0d1e8a153dc43d49f02cf55cc409fbc212",
+            "vertices": 107,
+            "triangles": 164
+        },
+        {
+            "name": "TERRAIN_ISLAND_1",
+            "hash": "98d215f97942b88d2243fdea214880fa05dd89891f94a30b152703046bc6f527",
+            "vertices": 12588,
+            "triangles": 16792
+        }
+    ]
+}

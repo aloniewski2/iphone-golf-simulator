@@ -26,6 +26,7 @@ namespace GolfArcade.Game {
             rig.SnapNext(); rig.ApplyFrame();
         }
         public void NativeContinue() {
+            if (Current == State.Result) { ContinueShotResult(); return; }
             if (Current != State.RoundDone) return;
             if (NativeHasNextHole) NextHole(); else PlayAgain();
             if (Current == State.Intro) BeginAim(false);
@@ -34,7 +35,8 @@ namespace GolfArcade.Game {
         public void NativeClub(int value) { if(Current==State.Aim) CycleClub(value); }
         public string NativeFeedback() {
             if(Current==State.RoundDone) return $"Round complete · {Card.Total} strokes · {Card.ToPar:+0;-0;0} to par";
-            if(LastShot!=null && (Current==State.Result || Current==State.HoleDone)) return $"Carry {LastShot.Carry:F0} yd · Total {LastShot.Total:F0} yd · {LastShot.Lie}";
+            if(Current==State.Result) return ShotResultTitle + " · " + ShotStatistics;
+            if(LastShot!=null && Current==State.HoleDone) return $"Carry {LastShot.Carry:F0} yd · Total {LastShot.Total:F0} yd · {LastShot.Lie}";
             return $"{Current} · {Swing.Phase} · Load {Swing.Detector.Load:P0}";
         }
         public void NativeSwing(float power) {

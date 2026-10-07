@@ -46,7 +46,7 @@ namespace GolfArcade.Tests
         [Test] public void ScrappyContactConnectsButTimingControlsPace() {
             var ball = new Vector3(1.45f,1.1f,.65f);
             Assert.IsTrue(TennisRules.AssistedContact(ball,ball,Vector3.zero,.42f,false,out _,1));
-            Assert.IsFalse(TennisRules.AssistedContact(ball,ball,Vector3.zero,.50f,false,out _,1));
+            Assert.IsFalse(TennisRules.AssistedContact(ball,ball,Vector3.zero,.54f,false,out _,1));
             var clean = TennisRules.AssistedHit(.02f,.65f,1,.2f,1);
             var late = TennisRules.AssistedHit(.24f,.65f,1,1,1);
             Assert.Greater(clean.Speed, late.Speed * 1.4f, "clean soft swings beat mistimed hard swings");

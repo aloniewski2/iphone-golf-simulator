@@ -28,7 +28,9 @@ struct SportsSample {
     int32_t swing, swingStart, swingAbort, flags;
     float handSide, lift, strokeFacing;
     float qx, qy, qz, qw, rx, ry, rz, gx, gy, gz;
+    double onsetTime, confirmationTime, abortTime;
 };
+static_assert(sizeof(SportsSample) == 120, "Motion sample layout must match the host and managed bridge");
 // Fixed ring: pushing and polling never allocate on either side of the bridge.
 static SportsSample samples[64];
 static int sampleHead = 0, sampleCount = 0;

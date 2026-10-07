@@ -53,7 +53,7 @@ struct SportsMotionStatus: Equatable, Sendable {
 /// world tracking (court position, and the court axis captured once by aiming at the TV).
 ///
 /// Threading. Everything time-critical runs on `queue`, a serial high-priority queue of its
-/// own: the sensor callback, ARKit frames, swing detection and the sample handed to Unity.
+/// own: latest-sensor polling, ARKit frames, swing detection and the sample handed to Unity.
 /// It used to run on the main thread, which Unity renders on, so a swing could sit behind a
 /// frame being drawn before Unity heard of it. Samples now go to the bridge (a mutex-guarded
 /// ring) the moment they are read, and Unity takes the newest at the start of its next frame.
@@ -69,7 +69,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     private static let degradedGrace=2.0
 
     private let queue = DispatchQueue(label: "sports.motion", qos: .userInteractive)
-    private let operations = OperationQueue()
+    private var motionTimer: DispatchSourceTimer?
+    private var lastSensorTimestamp = -Double.infinity
     private let ar = ARSession()
     private let motion = CMMotionManager()
     private var filter = SteeringFilter()
@@ -118,12 +119,6 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     @MainActor var onStatus: ((SportsMotionStatus) -> Void)?
     @MainActor var onAimSwing: ((TennisAimSwing) -> Void)?
     @MainActor weak var preview: SportsPreviewView?
-
-    override init() {
-        super.init()
-        operations.underlyingQueue = queue
-        operations.maxConcurrentOperationCount = 1
-    }
 
     /// Flips left/right without recapturing the axis, for when the mapping comes out mirrored.
     var courtSign: Double {
@@ -208,13 +203,25 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         // anchored to the TV direction for a whole match.
         let frame: CMAttitudeReferenceFrame = CMMotionManager.availableAttitudeReferenceFrames().contains(.xArbitraryCorrectedZVertical)
             ? .xArbitraryCorrectedZVertical : .xArbitraryZVertical
-        // Delivered straight onto `queue`, not the main thread.
-        motion.startDeviceMotionUpdates(using:frame,to:operations) { [weak self] sample,error in
-            guard let self else { return }
-            if let error { self.report("Motion sensor error: \(error.localizedDescription)"); return }
-            guard let sample else { return }
+        // Keep one latest sensor value instead of queuing a callback for every 10 ms of
+        // motion. Dispatch timers coalesce overdue firings: after heavy work we read NOW,
+        // rather than spend the next second playing through a backlog of old arm motion.
+        motion.startDeviceMotionUpdates(using:frame)
+        lastSensorTimestamp = -Double.infinity
+        let timer=DispatchSource.makeTimerSource(queue:queue)
+        timer.schedule(deadline:.now(),repeating:.milliseconds(10),leeway:.milliseconds(1))
+        timer.setEventHandler { [weak self] in
+            guard let self, let sample=self.motion.deviceMotion,
+                  sample.timestamp>self.lastSensorTimestamp else { return }
+            self.lastSensorTimestamp=sample.timestamp
             self.consume(sample)
         }
+        motionTimer=timer; timer.resume()
+    }
+
+    private func stopDeviceMotion() {
+        motionTimer?.cancel(); motionTimer=nil
+        motion.stopDeviceMotionUpdates()
     }
 
     // MARK: - Output to Unity
@@ -351,7 +358,12 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     // MARK: - Per-sample steering
 
     private func consume(_ sample: CMDeviceMotion) {
-        let time=SportsRuntime.shared().clock()
+        // Core Motion timestamps acquisition, not callback delivery. Rendering or an AR
+        // callback can delay this queue; do not turn that backlog into slow detector time
+        // or report an old stroke to Unity as if it just happened.
+        let now=SportsRuntime.shared().clock()
+        guard let time=SportsMotionSampleClock.acquisitionTime(sensor:sample.timestamp,
+            uptime:ProcessInfo.processInfo.systemUptime,now:now) else { return }
         let rate=sample.rotationRate
         let speed=sqrt(rate.x*rate.x+rate.y*rate.y+rate.z*rate.z)
         lastRotation=speed
@@ -421,7 +433,8 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
                 swing:Int32(swings),swingStart:Int32(filter.onsets),swingAbort:Int32(filter.aborts),flags:flags,
                 handSide:handSide,lift:lift,strokeFacing:tennis ? Float(activeStrokeFacing) : 0,
                 qx:Float(q.x),qy:Float(q.y),qz:Float(q.z),qw:Float(q.w),rx:Float(rate.x),ry:Float(rate.y),rz:Float(rate.z),
-                gx:Float(g.x),gy:Float(g.y),gz:Float(g.z)))
+                gx:Float(g.x),gy:Float(g.y),gz:Float(g.z),
+                onsetTime:filter.onsetTime,confirmationTime:filter.confirmationTime,abortTime:filter.abortTime))
         }
         // The screens only need the gist, and not every hundredth of a second.
         let next = SportsMotionStatus(target:filter.target,phase:filter.phase.rawValue,quality:current,valid:valid)
@@ -502,11 +515,11 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     }
 
     /// Stop steering but keep the world map, so the locked axis survives menus and pauses.
-    func suspend() { queue.async { self.motion.stopDeviceMotionUpdates(); self.calibrated=false } }
+    func suspend() { queue.async { self.stopDeviceMotion(); self.calibrated=false } }
 
     func stop() {
         queue.async {
-            self.ar.pause(); self.motion.stopDeviceMotionUpdates()
+            self.ar.pause(); self.stopDeviceMotion()
             self.interrupted=false; self.calibrated=false; self.live=false; self.probing=false
             self.worldRunning=false; self.capturingAxis=false; self.gate=SportsAxisGate()
             self.frameAt = -Double.infinity; self.reliableAt = -Double.infinity

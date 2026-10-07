@@ -35,6 +35,8 @@ namespace GolfArcade.Course
         /// The lake's own material (the model's water bands round the island join it).
         public static Material LakeMaterial()
         {
+            if (GolfCourseLook.Current && GolfCourseLook.Current.Hole.Theme == "magma")
+                return GolfCourseLook.Current.Get(GolfCourseLook.Surface.Lava);
             if (lake) return lake;
             lake = Make("GolfArcade/LavaLake", Color.white);
             lake.SetTexture("_MainTex", T("lava_base")); lake.SetTexture("_GlowTex", T("lava_glow"));
@@ -216,6 +218,12 @@ namespace GolfArcade.Course
 
         static GameObject Spawn(Transform parent, string name, Mesh mesh, Material mat, bool shadows = false)
         {
+            var standard = GolfCourseLook.Current;
+            if (standard && standard.Hole.Theme == "magma")
+            {
+                if (mat == rockMat || mat == hotMat || mat == plainBoulderMat) mat = standard.Get(GolfCourseLook.Surface.Basalt);
+                else if (mat == plainMat) mat = standard.Get(GolfCourseLook.Surface.Ash);
+            }
             var go = new GameObject(name); go.transform.SetParent(parent, false);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var r = go.AddComponent<MeshRenderer>(); r.sharedMaterial = mat;

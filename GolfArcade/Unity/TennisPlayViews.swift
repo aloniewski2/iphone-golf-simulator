@@ -350,25 +350,40 @@ struct TennisRacketController: View {
 struct TennisEmoteControls: View {
     let session: SportsSession
     var body: some View {
+        EquippedEmoteControls(title: "YOUR POINT · CELEBRATE", ids: session.matchEmotes,
+            enabled: session.canPlayEmote,
+            notice: session.emoteNotice.isEmpty ? "Choose an emote to celebrate your point." : session.emoteNotice,
+            identifier: "controller-emote") { session.playEmote(slot: $0) }
+    }
+}
+
+/// Shared presentation for the same equipped emotes in golf and tennis.
+struct EquippedEmoteControls: View {
+    let title: String
+    let ids: [String]
+    let enabled: Bool
+    let notice: String
+    let identifier: String
+    let select: (Int) -> Void
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("YOUR POINT · CELEBRATE")
-                .font(IslandUI.font(12, bold: true)).foregroundStyle(session.canPlayEmote ? IslandUI.lime : .white.opacity(0.55))
+            Text(title).font(IslandUI.font(12, bold: true))
+                .foregroundStyle(enabled ? IslandUI.lime : .white.opacity(0.55))
             HStack(spacing: 8) {
-                ForEach(0..<3, id: \.self) { slot in
-                    Button { session.playEmote(slot: slot) } label: {
+                ForEach(Array(ids.enumerated()), id: \.offset) { slot, id in
+                    Button { select(slot) } label: {
                         VStack(spacing: 4) {
                             Text("\(slot + 1)").font(IslandUI.font(11, bold: true)).opacity(0.6)
-                            Text(EmoteCatalog.name(session.matchEmotes[slot])).font(IslandUI.font(15, bold: true)).lineLimit(1).minimumScaleFactor(0.75)
+                            Text(EmoteCatalog.name(id)).font(IslandUI.font(15, bold: true)).lineLimit(1).minimumScaleFactor(0.75)
                         }.frame(maxWidth: .infinity, minHeight: 52)
-                            .foregroundStyle(session.canPlayEmote ? IslandUI.navy : .white.opacity(0.5))
-                            .background(session.canPlayEmote ? IslandUI.lime : .white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
-                    }.buttonStyle(.plain).disabled(!session.canPlayEmote)
-                        .accessibilityIdentifier("controller-emote-\(slot)")
-                        .accessibilityLabel("Play \(EmoteCatalog.name(session.matchEmotes[slot])), emote slot \(slot + 1)")
+                            .foregroundStyle(enabled ? IslandUI.navy : .white.opacity(0.5))
+                            .background(enabled ? IslandUI.lime : .white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                    }.buttonStyle(.plain).disabled(!enabled)
+                        .accessibilityIdentifier("\(identifier)-\(slot)")
+                        .accessibilityLabel("Play \(EmoteCatalog.name(id)), emote slot \(slot + 1)")
                 }
             }
-            Text(session.emoteNotice.isEmpty ? "Choose an emote to celebrate your point." : session.emoteNotice)
-                .font(IslandUI.font(11, bold: false)).foregroundStyle(.white.opacity(0.55))
+            Text(notice).font(IslandUI.font(11, bold: false)).foregroundStyle(.white.opacity(0.55))
         }
     }
 }

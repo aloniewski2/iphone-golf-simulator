@@ -17,12 +17,28 @@ namespace GolfArcade.Tests {
         [Test] public void OldJsonVersionRejected() {var s=Sample();s.version=1;Assert.IsFalse(NativeSportsSession.AcceptSample(s,Current,9,10.1));}
 
         /// The struct is copied byte-for-byte from the C struct in SportsBridge.mm, so its
-        /// size and field offsets are a contract. 4+4+8 + 3*4 + 4*4 + 3*4 + 10*4 = 96 bytes.
+        /// size and field offsets are a contract: 96 bytes of state plus three event clocks.
         [Test] public void SampleLayoutMatchesTheNativeStruct() {
-            Assert.AreEqual(96,Marshal.SizeOf<NativeSportsSession.Sample>());
+            Assert.AreEqual(120,Marshal.SizeOf<NativeSportsSession.Sample>());
             Assert.AreEqual(8,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("time"));
             Assert.AreEqual(28,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("swing"));
             Assert.AreEqual(56,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("qx"));
+            Assert.AreEqual(96,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("onsetTime"));
+            Assert.AreEqual(104,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("confirmationTime"));
+            Assert.AreEqual(112,(int)Marshal.OffsetOf<NativeSportsSession.Sample>("abortTime"));
+        }
+        [Test] public void FreshPacketCannotResurrectAnOldSwing() {
+            Assert.IsTrue(NativeSportsSession.FreshEvent(9.9,10,9.8));
+            Assert.IsFalse(NativeSportsSession.FreshEvent(9.5,10,9.8));
+            Assert.IsFalse(NativeSportsSession.FreshEvent(9.9,10,9.95), "A stroke made before Ready cannot launch after Ready");
+            Assert.IsFalse(NativeSportsSession.FreshEvent(double.NaN,10,0));
+            Assert.That(NativeSportsSession.EventAge(9.9,10),Is.EqualTo(.1f).Within(.0001f));
+        }
+        [Test] public void InvalidEventClocksAndThePreviousBinaryLayoutAreRejected() {
+            var s=Sample();s.version=2;
+            Assert.IsFalse(NativeSportsSession.AcceptSample(s,Current,9,10));
+            s=Sample();s.onsetTime=double.NaN;
+            Assert.IsFalse(NativeSportsSession.AcceptSample(s,Current,9,10));
         }
         [Test] public void FlagsDecode() {
             var s=Sample(); s.flags=3;

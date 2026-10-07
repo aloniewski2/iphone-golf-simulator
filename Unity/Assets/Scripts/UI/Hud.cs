@@ -109,6 +109,20 @@ namespace GolfArcade.UI
         public float LookStick => Controller != null && Controller.Stick ? DeadZone(Controller.Stick.Value.y) : 0f;
         static float DeadZone(float v) => Mathf.Sign(v) * Mathf.Max(0f, Mathf.Abs(v) - 0.2f) / 0.8f;
 
+        GolfShotHud simple;
+        public bool UsesGolfPresentation => simple;
+        public void UseGolfPresentation(Camera camera)
+        {
+            simple = GolfShotHud.Create(camera);
+            // Retain the legacy control callbacks and menus, but retire their dense broadcast widgets.
+            foreach (var t in new Transform[] { board, shotCard, meterRect, minimapHolder, statusText.transform,
+                tempoText.transform, faceDial.transform, tvMap.transform, swingCard.transform })
+            {
+                var group = t.gameObject.AddComponent<CanvasGroup>(); group.alpha = 0; group.blocksRaycasts = false;
+            }
+        }
+        void OnDestroy() { if (simple) Destroy(simple.gameObject); }
+
         public static Hud Create()
         {
             var go = new GameObject("HUD");
@@ -301,6 +315,7 @@ namespace GolfArcade.UI
             if (calm) yardage.SetRow(1, "wind", "Wind", "Calm");
             else yardage.SetRow(1, "wind", "Wind", $"{mph:F0} mph", null, relativeDegrees);
             lastWind = (true, relativeDegrees, mph, calm);
+            if (simple) simple.SetWind(relativeDegrees, mph, calm);
             Controller?.SetWind(relativeDegrees, mph, calm);
         }
 
@@ -488,6 +503,7 @@ namespace GolfArcade.UI
         public void ShowPlayHud(bool on)
         {
             playHud = on;
+            if (simple) simple.gameObject.SetActive(on);
             foreach (Transform child in safeArea)
                 if (child.name != "Menu" && child.name != "Course select" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Landing badge" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
                     && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
@@ -598,6 +614,7 @@ namespace GolfArcade.UI
         public void DrawMinimap(Camera map)
         {
             if (!map) return;
+            if (simple) simple.Draw(map, Minimap.texture, Map);
             if (mapBall == null) BuildMinimapMarks();
             var plan = Map;
             bool Place(RectTransform mark, Vector3 world, bool show)
@@ -766,6 +783,7 @@ namespace GolfArcade.UI
         /// comes down; empty or `show` false hides them.
         public void SetCourseTargets(Camera view, System.Collections.Generic.IList<Vector3> spots, bool show)
         {
+            if (simple) show = false;
             while (courseTargets.Count < (spots?.Count ?? 0))
             {
                 // on the whole canvas (the picture runs under the notch), placed by viewport so
@@ -847,6 +865,7 @@ namespace GolfArcade.UI
         {
             if (flightMode == on) return;
             flightMode = on;
+            if (simple) simple.SetFlight(on);
             // (the scoreboard and the distance card stay in their corner through the shot)
             if (Controller == null || onTv) meterRect.gameObject.SetActive(!on);
             minimapHolder.gameObject.SetActive(!on && !onTv && playHud);
@@ -861,6 +880,7 @@ namespace GolfArcade.UI
         public SwingCard ShowSwingCard(string grade, Color gradeColor, string shape, (string icon, string title, string value)[] tiles)
         {
             swingCard.Show(grade, gradeColor, shape, tiles);
+            if (simple) simple.SetContact(grade);
             swingCard.transform.SetAsLastSibling();
             return swingCard;
         }
@@ -914,6 +934,7 @@ namespace GolfArcade.UI
         public void SetHole(int number, int par, double yards, string picture = null, string name = null)
         {
             lastHole = (number, par, yards, name);
+            if (simple) simple.SetHole(number, par);
             Controller?.SetHole(number, par, yards, name);
         }
         (int number, int par, double yards, string name) lastHole;
@@ -977,12 +998,13 @@ namespace GolfArcade.UI
         public void SetDistance(double amount, string unit, string caption)
         {
             yardage.SetDistance(amount, unit, caption);
+            if (simple) simple.SetDistance(amount, unit);
             lastDistance = (amount, unit);
             Controller?.SetDistance(amount, unit);
         }
 
         /// The club and what it carries, on the yellow pill.
-        public void SetClub(string text, bool putter = false) => yardage.SetClub(text, putter);
+        public void SetClub(string text, bool putter = false) { yardage.SetClub(text, putter); if (simple) simple.SetClub(text); }
 
         /// One of the yardage card's rows (0 plays / slope, 1 wind / break, 2 lie).
         public void SetCardRow(int row, string icon, string label, string value, string note = null, float? arrowDegrees = null)
@@ -1000,6 +1022,7 @@ namespace GolfArcade.UI
         public void SetMeter(float load, float? mark = null, string yards = null)
         {
             meterLoad = Mathf.Clamp01(load);
+            if (simple) simple.SetPower(meterLoad, yards);
             bool gauge = yards != null && meterLoad > 0.02f;
             gaugeRoot.gameObject.SetActive(gauge);
             if (gauge)

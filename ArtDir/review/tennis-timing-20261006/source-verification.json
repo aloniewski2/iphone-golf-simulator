@@ -1,0 +1,52 @@
+[
+  {
+    "file": "Scripts/Tennis/TennisRules.cs",
+    "sha256": "b5f74c7431c9f155a0b42d07d4768c40f4d8448f833b0d86a3802b311977c6bd",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Scripts/Tennis/TennisGame.cs",
+    "sha256": "b00fd2028965b5e04a232ebaaac1c80f0cb477d0e32a198bef0a0a7549f1971c",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Scripts/Tennis/TennisCoach.cs",
+    "sha256": "7a80aa370eeb161a926caa837df14b25de4dda6eedaa52f675019ab720446abd",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Scripts/Tennis/TennisActor.cs",
+    "sha256": "cead55696cda8bab427b6b3896c0327899d180e6630fbad71d97e2fc39f901b5",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Scripts/Tennis/HeroTennisDriver.cs",
+    "sha256": "8f91b572868a4f152e8e559d9aefcf26586f76d7ad97c5d45a1cfff15e8da15b",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Scripts/Multiplayer/NetworkTennisMatch.cs",
+    "sha256": "3bef7388b007b686e9eb7715d3157ebbfd668d29d82c46c07b901aa5a88bf8c2",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Tests/EditMode/TennisRulesTests.cs",
+    "sha256": "1db39e5b187cfecbfb8751776e427c20e5edc13f8d0464348c745fa2c7e5e7e4",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Tests/EditMode/TennisMatchTests.cs",
+    "sha256": "8ead37bf02eed93c899fc86be04318099dfc25c50342b250ae22d0b01e48baea",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Tests/EditMode/TennisTimingBalanceTests.cs",
+    "sha256": "29b8666c51e3fb24dac109eaae6e843226c05e7a2d52750ed7ea04916d3240b8",
+    "matches_verified_copy": true
+  },
+  {
+    "file": "Tests/PlayMode/TennisTimingBalancePlayTests.cs",
+    "sha256": "f8b9443fb585a1f2d132f977584b7c90bd03275416356e10e89c098abca03d97",
+    "matches_verified_copy": true
+  }
+]

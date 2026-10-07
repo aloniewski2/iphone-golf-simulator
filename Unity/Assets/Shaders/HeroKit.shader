@@ -35,6 +35,44 @@ Shader "GolfArcade/HeroKit"
         [HideInInspector] _OffsetFactor ("Depth offset factor (painted face layers sit a hair above the skin)", Float) = 0
         [HideInInspector] _OffsetUnits ("Depth offset units", Float) = 0
     }
+    // Native golf uses URP. Keep the Built-in subshader for legacy previews.
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
+        Cull Back
+        Offset [_OffsetFactor], [_OffsetUnits]
+        HLSLINCLUDE
+        #define GOLF_HERO 1
+        #include "GolfLegacyURP.hlsl"
+        ENDHLSL
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode"="UniversalForward" }
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyVertex
+            #pragma fragment GolfLegacyFragment
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile_fog
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode"="ShadowCaster" }
+            ZWrite On
+            ColorMask 0
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex GolfLegacyShadowVertex
+            #pragma fragment GolfLegacyShadowFragment
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            ENDHLSL
+        }
+    }
     SubShader
     {
         Tags { "RenderType" = "Opaque" }

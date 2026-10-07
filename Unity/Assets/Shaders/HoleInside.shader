@@ -15,26 +15,27 @@ Shader "GolfArcade/HoleInside"
         Stencil { Ref 64 ReadMask 64 Comp Equal }
         Pass
         {
-            Tags { "LightMode" = "ForwardBase" }
-            CGPROGRAM
+            Tags { "LightMode" = "SRPDefaultUnlit" }
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
-            fixed4 _Color;
-            struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; fixed4 color : COLOR; };
-            struct v2f { float4 pos : SV_POSITION; fixed4 color : COLOR; };
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            half4 _Color;
+            struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; half4 color : COLOR; };
+            struct v2f { float4 pos : SV_POSITION; half4 color : COLOR; };
             v2f vert(appdata v)
             {
                 v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
-                float3 n = UnityObjectToWorldNormal(v.normal);
-                float lit = 0.72 + 0.28 * saturate(dot(n, normalize(_WorldSpaceLightPos0.xyz)));
+                o.pos = TransformObjectToHClip(v.vertex.xyz);
+                float3 n = TransformObjectToWorldNormal(v.normal);
+                float lit = 0.72 + 0.28 * saturate(dot(n, GetMainLight().direction));
                 o.color = v.color * _Color * lit;
                 o.color.a = 1;
                 return o;
             }
-            fixed4 frag(v2f i) : SV_Target { return i.color; }
-            ENDCG
+            half4 frag(v2f i) : SV_Target { return i.color; }
+            ENDHLSL
         }
     }
 }

@@ -5,6 +5,38 @@ import UIKit
 @testable import GolfArcade
 
 final class SportsIntegrationTests:XCTestCase {
+    func testSensorBacklogKeepsTheOriginalStrokeTiming() throws {
+        var f=SteeringFilter(); f.tennisStroke=true; f.calibrate(position:0,time:0)
+        var confirmations=0
+        // These 100 Hz samples arrive together after 200 ms of other work. Callback
+        // arrival times would collapse their intervals and fail to detect the stroke.
+        for i in 1...20 {
+            let stamp=Double(i)/100
+            let time=try XCTUnwrap(SportsMotionSampleClock.acquisitionTime(sensor:stamp,uptime:0.21,now:100.21))
+            if i == 1 { f.calibrate(position:0,time:100) }
+            if f.step(position:0,rate:10,time:time,valid:true,acceleration:0.9) != nil { confirmations+=1 }
+        }
+        XCTAssertEqual(f.onsets,1)
+        XCTAssertEqual(confirmations,1)
+        XCTAssertLessThan(f.onsetTime,100.06)
+        XCTAssertLessThan(f.confirmationTime,100.15)
+    }
+
+    func testOldAndInvalidSensorSamplesCannotBecomeFreshSwings() {
+        XCTAssertNil(SportsMotionSampleClock.acquisitionTime(sensor:1,uptime:2,now:20))
+        XCTAssertNil(SportsMotionSampleClock.acquisitionTime(sensor:.nan,uptime:2,now:20))
+        XCTAssertNil(SportsMotionSampleClock.acquisitionTime(sensor:3,uptime:2,now:20))
+        XCTAssertEqual(SportsMotionSampleClock.acquisitionTime(sensor:1.9,uptime:2,now:20)!,19.9,accuracy:1e-9)
+    }
+
+    func testNativeMotionBridgeLayoutMatchesTheManagedPacket() {
+        XCTAssertEqual(SportsSampleVersion,3)
+        XCTAssertEqual(MemoryLayout<SportsSample>.size,120)
+        XCTAssertEqual(MemoryLayout<SportsSample>.offset(of: \.onsetTime),96)
+        XCTAssertEqual(MemoryLayout<SportsSample>.offset(of: \.confirmationTime),104)
+        XCTAssertEqual(MemoryLayout<SportsSample>.offset(of: \.abortTime),112)
+    }
+
     func testEveryRhythmicSwingRearmsDuringRecoveryEvenWithoutCamera() {
         for tracked in [true, false] {
             var f = SteeringFilter(); f.tennisStroke = true; f.calibrate(position: 0, time: 0)

@@ -22,6 +22,7 @@ namespace GolfArcade.Course
         /// Colours are sRGB as authored (Unity converts lights, ambient and fog in a linear project).
         public sealed class Look
         {
+            public Look Copy() => (Look)MemberwiseClone();
             public string Name;
             public float SunAzimuth, SunElevation, SunIntensity = 2.3f, ShadowStrength = .72f;
             public Color SunColor = new(1f, .90f, .76f);
@@ -123,21 +124,30 @@ namespace GolfArcade.Course
         static AmbientMode sceneAmbientMode;
         static Light sceneSun;
 
-        public static bool Handles(int holeNumber) => Holes.ContainsKey(holeNumber);
+        public static bool Handles(int holeNumber) => Holes.ContainsKey(holeNumber) || GolfCourseLook.Handles(holeNumber);
 
         /// Light the Golf scene for this hole. `camera` may be null (GolfGame.Awake runs before the rig exists;
         /// StartHole calls again with it).
         public static void Apply(Light sun, Camera camera, int holeNumber)
         {
             if (!captured) { captured = true; sceneSkybox = RenderSettings.skybox; sceneAmbientMode = RenderSettings.ambientMode; sceneSun = RenderSettings.sun; }
-            if (!Holes.TryGetValue(holeNumber, out var look)) {
+            Holes.TryGetValue(holeNumber, out var look);
+            look ??= GolfCourseAtmosphere.For(holeNumber);
+            if (look == null) {
                 Legacy(sun, camera);
                 var legacyAmbient=RenderSettings.ambientLight;
-                GolfArcade.Tennis.HeroLightingProfile.Golf(sun,legacyAmbient,legacyAmbient,legacyAmbient,0,90f);
-                Shader.SetGlobalFloat("_HeroExposure",4f);
+                GolfArcade.Tennis.HeroLightingProfile.Golf(sun,legacyAmbient,legacyAmbient,legacyAmbient,0,1.2f);
+                Shader.SetGlobalFloat("_HeroExposure",1.05f);
+                Shader.SetGlobalFloat("_HeroRim",.35f);
                 return;
             }
             float heading = Heading(holeNumber, look);
+            if (GolfCourseLook.Handles(holeNumber))
+            {
+                HoleAtmosphere.FogStart = look.FogStart; HoleAtmosphere.FogEnd = look.FogEnd;
+                HoleAtmosphere.FarClip = Mathf.Max(1800,look.FogEnd + 300);
+                foreach (var c in Camera.allCameras) if (c.clearFlags == CameraClearFlags.Skybox) c.farClipPlane = HoleAtmosphere.FarClip;
+            }
 
             if (sun)
             {
@@ -152,7 +162,9 @@ namespace GolfArcade.Course
             rim = Directional(rim, "Golf rim", look.RimColor, look.RimIntensity, Direction(heading + look.RimAzimuth, look.RimElevation));
 
             GolfFigureExposure.Set(look.FigureExposure);
-            GolfArcade.Tennis.HeroLightingProfile.Golf(sun,AmbientSkyOf(look),look.AmbientEquator,look.AmbientGround,look.RimIntensity);
+            GolfArcade.Tennis.HeroLightingProfile.Golf(sun,AmbientSkyOf(look),look.AmbientEquator,look.AmbientGround,look.RimIntensity,1.05f);
+            Shader.SetGlobalFloat("_HeroRim",.35f);
+            Shader.SetGlobalFloat("_HeroExposure",.9f);
             SetBallLook(look.BallExposure, look.BallSelfLight);
 
             RenderSettings.ambientMode = AmbientMode.Trilight;

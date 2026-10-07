@@ -1,0 +1,56 @@
+PASTE — VENUE PRESENCE (sky + volcano first) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan wants the current tennis maps much more detailed, with a stronger presence. Priority is the sky map (Skyscraper / SKY OPEN) and the volcano map (Volcano / MAGMA OPEN). Resort (TROPICAL OPEN) is in the audit, but do not rebuild it unless the plan names one small fix. Party-sports, soft and readable on iPhone. Not photoreal, not grim.
+
+Look at the shipped captures before writing anything:
+ArtDir/screenshots/venues/skyscraper_2_postcard.png
+ArtDir/screenshots/venues/skyscraper_1_gameplay.png
+ArtDir/screenshots/venues/skyscraper_6_edge.png
+ArtDir/screenshots/venues/volcano_2_postcard.png
+ArtDir/screenshots/venues/volcano_1_gameplay.png
+ArtDir/screenshots/venues/volcano_5_below.png
+ArtDir/screenshots/venues/resort_2_postcard.png
+Code: Unity/Assets/Scripts/Tennis/TennisVenue.cs and TennisVenueBuilder.cs (Skyscraper.Build, Volcano.Build, their Light methods).
+
+WHAT IS WRONG (starting point, confirm or correct from the shots):
+- Sky: towers share one curtain-wall texture, clouds are flat puffs, the city is a distant noise plane, the peach sky does not sell height. The drop off the open edge should feel like a cloud sea, not a beige horizon.
+- Volcano: lava is wallpaper on the crater wall. The court is a flat black slab with the resort's sofas, plants and lamps still sitting on it. The sky is a red gradient. The crater does not light the court.
+
+PLAY LOCKS (do not break):
+- Same court kit and coordinates. Deck half extents stay DeckHalfX 12.6 and DeckHalfZ 21.6. OverDeck rules stay. Off the deck the ball still falls (clouds on sky, lava on volcano).
+- No glass, rail, or netting on the sky deck. Volcano court stays a slab over the lava lake, centred.
+- Do not move the drone path's end pose, gameplay cameras, contact, or ball rules.
+- Do not edit hero body, clothes, or racket.
+
+STEAL THESE, THEN ADAPT TO THIS SOFT LOOK (name the steal in the plan, do not paste assets):
+- Mario Kart: one landmark you can recognise in a thumbnail, near / mid / far layers, the course reads before you notice props.
+- Mario Tennis / Wii Sports Resort: the court stays clean and playable. Spectacle is the bowl around it, not clutter on the lines.
+- Bowser's Castle lava: lava is a light. It colors the deck edge and the near rock. It is not a flat orange texture in the distance.
+- Splatoon stages: the sky belongs to the map. A bold gradient and a few huge shapes, not a default sunset.
+- A rooftop game's height read: a few unique towers (setbacks, a mast, one odd silhouette), window variation, and a cloud layer BELOW the deck so the open edge feels high.
+
+PHASES, IN ORDER, SAME CHAT:
+1. AUDIT. Write work/venue-presence/AUDIT.md. For sky, volcano, and a short resort note: what reads in the postcard, what is flat, what is a reused resort prop, what fights the ball. Cite the screenshot filenames. No code yet.
+2. PLAN. Write work/venue-presence/PLAN.md. Concrete changes only, each tied to a steal above. Sky and volcano first. List what you will not touch. Then start building. Do not wait for another prompt.
+3. BUILD sky and volcano in TennisVenueBuilder only, unless the plan needs a tiny helper next to it. Keep materials URP Lit. Disclose triangle counts. Resort props that make the crater or rooftop feel like the beach club get replaced or removed off the playing lines, not duplicated.
+4. RECAPTURE with the existing TennisVenueCapture path into work/venue-presence/proof/, same views as ArtDir/screenshots/venues (postcard, gameplay, edge or below, one drone frame) for sky and volcano. Put the old shot and the new shot in one comparison sheet per map.
+
+GATES (binary):
+AUDIT_WRITTEN
+PLAN_WRITTEN — each change names a reference game idea
+COURT_UNCHANGED — deck extents, OverDeck, court kit coordinates, drone end pose
+SKY_HEIGHT — cloud layer or equivalent under the open edge, towers not one cloned texture
+VOLCANO_LIGHT — lava lights the slab edge and near rock, not only the far wall
+NO_RESORT_CLUTTER — sky and volcano no longer read as the beach club with a new backdrop
+PROOFS — before/after sheets for both maps
+PLAY_SAFE — no ball, contact, or camera-end edits
+
+FORBIDDEN: new gameplay maps, moving the court, photoreal rocks, logos, editing ArtDir hero blends, installing vgpu.
+
+REPLY ONLY:
+GATE: VENUE_PRESENCE PASS
+or FAIL with failed lines only.

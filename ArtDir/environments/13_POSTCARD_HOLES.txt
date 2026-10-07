@@ -1,0 +1,62 @@
+PASTE — THREE POSTCARD HOLES · NEW CHAT
+================================================================================
+Build three new golf holes the current Unity shot code can score. Do not invent rules. Do not replace Cliffside.
+
+Look at these stills first. They are mood, not a blueprint. Where a still disagrees with this prompt, this prompt wins.
+- ArtDir/environments/refs/needle.jpg
+- ArtDir/environments/refs/split.jpg
+- ArtDir/environments/refs/crater.jpg
+
+What the code already does (Hole.cs, CourseShot.cs). Do not change these numbers.
+- One shore polygon per hole. Outside it is water.
+- Water ellipses and bunker ellipses already exist (HazardKind.Water, HazardKind.Bunker).
+- Green is a radius around the pin, not a second surface.
+- Fairway is a width around the one centerline. It cannot be a different width on the left and the right.
+- Rough is the band outside that width, still inside the shore.
+- Rough is 0.85 power. Bunker is 0.6. Water and out of bounds are +1 stroke.
+- The Unity ball does not roll on slopes. Keep the play surface one height. Cliffs, lava, and the ocean sit below that height as scenery.
+
+CUT from the stills. Do not build these.
+- No second green. split.jpg shows one at the bottom of the fairway. Ignore it.
+- No waterfall, no flowing lava, no moving platforms.
+- The green does not hover above the fairway. crater.jpg floats the pin over the lava. Build the pin on a rock pillar whose TOP is the same height as the fairway. Lava is lower, and it scores as water.
+- The ruined arch does not block the ball. needle.jpg puts an arch in the carry. Copy an existing rock mesh for the look. Do not add a new collision type.
+
+Holes. Add them as Course.Postcards() in Unity/Assets/Scripts/Course/Hole.cs. Leave Course.Cliffside() in the file.
+
+1. Needle. Hole number 8. Par 4. About 320 to 360 yards.
+   One shore shaped like a broken chain of pads, but it is still one polygon.
+   Two water ellipses make the gaps you have to carry. Each carry is 140 yards or less, and there is dry ground to lay up short of each ellipse.
+   Fairway width about 16 yards on the ribbons. Green radius about 14. Rough band about 8, then the shore, so a big miss is water.
+   One bunker ellipse in front of the green. The arch rock sits beside that bunker, visual only.
+   Play height is flat. The mesh drops to the water inside the ellipses so the pads look separated.
+
+2. Split. Hole number 9. Par 5. About 460 to 500 yards.
+   One island shore. One pin.
+   The centerline follows the RIGHT ribbon only, so that ribbon is the fairway (about 18 yards wide) and the LEFT ridge falls in the rough band. Playing the ridge is the safe route at 0.85 power. There is no second fairway.
+   One water ellipse across the right ribbon, carry 140 yards or less, with dry fairway short of it.
+   Two bunker ellipses pinching that ribbon. One more bunker short of the green.
+   The ruin on the left ridge is an existing rock mesh, visual only.
+   Do not add the extra green from the still.
+
+3. Crater. Hole number 10. Par 4. About 340 to 380 yards.
+   Shore follows the crater rim and ends in a green bulb. Same play height the whole way.
+   One water ellipse of lava between the end of the fairway and the green bulb. Carry 150 yards or less, with dry fairway short of it.
+   Two bunker ellipses on the rim where a bailout would land.
+   Lava outside the shore and inside that ellipse uses an orange material, but the lie is water. Do not animate it.
+   The green bulb's sides drop to the lava so it reads as a pillar. The top is level with the fairway.
+
+Build. Copy the hole 7 pattern (blender/scripts/hole07_design.py, hole07_lib.py, phase2_5_course.py). New scripts. Do not edit hole_07.blend or hole_07.fbx.
+- Export Unity/Assets/Resources/Course/hole_08.fbx, hole_09.fbx, hole_10.fbx.
+- Mesh names and markers the importer already expects: MARKER_TEE, MARKER_PIN, MARKER_UP, and the TERRAIN / FAIRWAY / GREEN / TEE_BOX / BUNKER prefixes. Reuse the existing materials. Crater water may be a new orange material on that mesh only.
+- In GolfGame.cs, change the one Course.Cliffside() load to Course.Postcards(). Do not delete Cliffside.
+- Do not render a flyover video. Do not touch the hero, the menu, or tennis.
+
+GATE POSTCARD_HOLES. Every line is PASS or FAIL.
+- Three holes, numbers 8, 9, 10, and Cliffside still in the file.
+- Each hole has one shore, one centerline, one pin.
+- No forced carry over 150 yards, and each carry has dry ground short of it.
+- Play surfaces are one height. No slope the ball is expected to roll on.
+- Needle has two water ellipses and one bunker. Split has one water ellipse and three bunkers. Crater has one lava water ellipse and two bunkers.
+- GolfGame starts Postcards. hole_07.fbx is unchanged.
+- Reply with the three centerlines, the hazard list, and the FBX paths.

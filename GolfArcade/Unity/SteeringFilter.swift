@@ -1,6 +1,17 @@
 import Foundation
 import simd
 
+enum SportsMotionSampleClock {
+    /// Match the sensor's boot-relative acquisition time to the bridge clock while
+    /// retaining callback backlog. Reject old or invalid samples instead of replaying them.
+    static func acquisitionTime(sensor: Double, uptime: Double, now: Double) -> Double? {
+        guard sensor.isFinite, uptime.isFinite, now.isFinite else { return nil }
+        let age = uptime - sensor
+        guard age >= -0.05, age <= 0.25 else { return nil }
+        return now - max(0, age)
+    }
+}
+
 enum SportsMotionGeometry {
     // MARK: Motion-sensor (IMU) geometry
     //
@@ -159,6 +170,7 @@ struct SteeringFilter {
     /// starts the animation on a new onset and cancels it on a new abort, so the character
     /// moves with the player's arm instead of a confirmation window later.
     private(set) var onsets = 0, aborts = 0
+    private(set) var onsetTime = 0.0, confirmationTime = 0.0, abortTime = 0.0
     /// Peak excursion actually seen on each side, for diagnostics.
     private(set) var seenRight = 0.0, seenLeft = 0.0
     var adaptiveReach = true
@@ -205,7 +217,7 @@ struct SteeringFilter {
             // A stroke in flight is driven by the gyro, not the camera. Motion blur must
             // never abandon a swing the player has already started.
             if !valid && !allowSwingWhileUntracked {
-                if !emitted { aborts+=1 }
+                if !emitted { aborts+=1; abortTime=time }
                 lostAt=time; lostPosition=position; phase = .trackingLost; return nil
             }
         } else if !valid {
@@ -235,7 +247,7 @@ struct SteeringFilter {
             candidateDuration = onset ? candidateDuration+dt : 0
             if detectSwings && onset && (!tennisStroke || candidateDuration >= Self.strokeHold) {
                 phase = .swinging; started=time; peak=rate; peakAcceleration=acceleration; arc=0; emitted=false; strokeArmed=false
-                onsets+=1
+                onsets+=1; onsetTime=time
                 return nil
             }
             guard valid, phase == .steering else { return nil }
@@ -262,18 +274,18 @@ struct SteeringFilter {
             // rotation the old 70ms hold used to absorb: the same flick is still rejected.
             let confirmed = tennisStroke ? arc>=Self.strokeArc && peakAcceleration>=Self.strokeForce : arc>=0.25
             if !emitted && time-started>=0.06 && confirmed && rate>=2.2 {
-                emitted=true
+                emitted=true; confirmationTime=time
                 return tennisStroke ? max(0.15,min(1,(peak-Self.strokeRate)/10)) : min(1,peak/12)
             }
             // A candidate that never becomes a real stroke hands steering straight back,
             // instead of freezing the player for three quarters of a second.
             if tennisStroke && !emitted && time-started>=Self.strokeAbort && !confirmed {
                 phase = .steering; peak=0; candidateDuration=0; strokeArmed=false
-                aborts+=1
+                aborts+=1; abortTime=time
                 return nil
             }
             if time-started>=0.46 {
-                if !emitted { aborts+=1 }
+                if !emitted { aborts+=1; abortTime=time }
                 phase = .recovering; settled=time
             }
         case .recovering:

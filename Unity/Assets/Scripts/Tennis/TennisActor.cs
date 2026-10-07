@@ -149,6 +149,7 @@ namespace GolfArcade.Tennis
         /// visual can pose its racket for the same simulation step.
         public event Action Posed;
         public bool Guiding => guiding;
+        public float ContactGuideWeight => guideWeight;
         public Vector3 GuideBall => guideBall;
         /// Contact tests, launch points and the contact-frame ball use these transforms: point them at
         /// the visible racket so a hit only happens where the player sees strings.
@@ -468,7 +469,7 @@ namespace GolfArcade.Tennis
             Vector3 flat = new Vector3(want.x, 0, want.z);
             // A low ball is met by sinking at the knees: the stroke's hop gives way first, then
             // the body drops and the planted legs bend under it (PlantFeet).
-            guideBody = Vector3.ClampMagnitude(flat * .55f, .45f) + Vector3.up * Mathf.Clamp(want.y * .5f, -(hop + .14f), .1f);
+            guideBody = Vector3.ClampMagnitude(flat * .65f, .60f) + Vector3.up * Mathf.Clamp(want.y * .5f, -(hop + .14f), .1f);
             if (guideBody.y < 0) hop = Mathf.Max(0, hop + guideBody.y);
         }
         float pendingDtUsed;

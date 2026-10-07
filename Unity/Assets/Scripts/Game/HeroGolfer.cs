@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using GolfArcade.Tennis;
 
 namespace GolfArcade.Game
 {
@@ -63,6 +65,7 @@ namespace GolfArcade.Game
         /// Each renderer's materials as the FBX gave them (the names decide what they become, every time a look is put on).
         readonly Dictionary<SkinnedMeshRenderer, Material[]> original = new();
         bool female;
+        MatchHeroLook surface;
 
         static Texture2D matCap;
 
@@ -100,14 +103,66 @@ namespace GolfArcade.Game
                 smr.updateWhenOffscreen = true;
                 // smooth skin and the painted face speckle with self-shadow; the face is a thin shell that casts nothing worth having
                 bool skin = smr.name is "Body" or "Face";
-                smr.receiveShadows = !skin;
+                smr.receiveShadows = smr.name != "Face";
                 if (smr.name == "Face") smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 g.original[smr] = smr.sharedMaterials;
                 g.parts.Add(smr);
             }
             g.MakeMaterials();
             g.Dress(look);
+            g.InstallMatchSurfaces(look);
             return g;
+        }
+
+        // Reuse the finished golf garment meshes and the exact tennis skin/cloth pipeline.
+        // Both exports share the Match Hero bind pose; palette indices are remapped by name.
+        void InstallMatchSurfaces(in HeroLook look)
+        {
+            var source = Resources.Load<GameObject>("Tennis/Customization/Player" + (female ? "Female" : "Male") + "GolfKit");
+            if (!source) throw new System.InvalidOperationException("Detailed golf kit is missing");
+            Root.SetActive(false);
+            foreach (var r in parts.Where(r => r.name.StartsWith("Kit_")).ToArray())
+            {
+                r.enabled = false;
+                parts.Remove(r);
+            }
+            // The legacy golf body was cut away under its old tennis sleeves/socks.
+            // Restore the original match body so a newly fitted cuff cannot reveal holes.
+            var sourceBody = source.GetComponent<MatchHeroLook>().body;
+            var liveBody = Part("Body");
+            liveBody.sharedMesh = sourceBody.sharedMesh;
+            liveBody.bones = sourceBody.bones.Select(b => Bones[b.name]).ToArray();
+            liveBody.rootBone = Bones[sourceBody.rootBone.name];
+            liveBody.transform.localPosition = source.transform.InverseTransformPoint(sourceBody.transform.position);
+            liveBody.transform.localRotation = Quaternion.Inverse(source.transform.rotation) * sourceBody.transform.rotation;
+            liveBody.transform.localScale = sourceBody.transform.lossyScale;
+            liveBody.quality = SkinQuality.Bone4;
+            var garments = new List<SkinnedMeshRenderer>();
+            foreach (var src in source.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                // Keep the bald silhouette; no cap, visor, or hair for this iteration.
+                if (!src.name.StartsWith("Kit_") || src.name == "Kit_Head" || src.name == "Kit_Glove_R") continue;
+                var node = new GameObject(src.name); node.transform.SetParent(Root.transform, false);
+                node.transform.localPosition = source.transform.InverseTransformPoint(src.transform.position);
+                node.transform.localRotation = Quaternion.Inverse(source.transform.rotation) * src.transform.rotation;
+                node.transform.localScale = src.transform.lossyScale;
+                var r = node.AddComponent<SkinnedMeshRenderer>();
+                r.sharedMesh = src.name == "Kit_Top" ? Resources.Load<Mesh>("Golf/Fitted_" + (female ? "Female" : "Male") + "_Top") : src.sharedMesh;
+                if (!r.sharedMesh) throw new System.InvalidOperationException("Fitted golf shirt mesh is missing");
+                r.sharedMaterials = src.sharedMaterials;
+                r.bones = src.bones.Select(b => Bones[b.name]).ToArray();
+                r.rootBone = Bones[src.rootBone.name]; r.localBounds = Part("Body").localBounds;
+                r.updateWhenOffscreen = true; r.quality = SkinQuality.Bone4;
+                garments.Add(r); parts.Add(r);
+            }
+            surface = Root.AddComponent<MatchHeroLook>();
+            surface.female = female; surface.golfKit = true;
+            surface.body = Part("Body"); surface.face = Part("Face"); surface.kit = garments.ToArray();
+            surface.bones = new Transform[(int)HumanBodyBones.LastBone];
+            for (int i = 0; i < surface.bones.Length; i++) Bones.TryGetValue(((HumanBodyBones)i).ToString(), out surface.bones[i]);
+            var corrections = Root.AddComponent<GolfGarmentCorrectives>(); corrections.look = surface;
+            Root.SetActive(true);
+            Dress(look);
         }
 
         static Color Hex(string hex) => ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : Color.magenta;
@@ -163,6 +218,12 @@ namespace GolfArcade.Game
         /// Puts the look on: which parts show, their colours.
         public void Dress(in HeroLook look)
         {
+            if (surface)
+            {
+                surface.SetSkin(look.Skin);
+                surface.SetKit(look.Shirt ?? Color.clear, look.Shorts ?? Color.clear, look.Shoes ?? Color.clear);
+                return;
+            }
             var skin = look.Skin; skin.a = 1f;
             var hair = look.HairColor; hair.a = 1f;
             foreach (var n in SkinMaterials) Tint(n, skin);
@@ -189,7 +250,7 @@ namespace GolfArcade.Game
             Tint("Kit_Shoe", look.Shoes ?? Hex("F7F7F7"));
 
             int cut = Mathf.Clamp(look.Haircut, 0, HaircutNames.Length - 1);
-            string hairName = cut == (int)Haircut.Bald ? null : "Hair_" + HaircutNames[cut];
+            string hairName = null; // Hair is temporarily disabled; the complete bald head is the base mesh.
             foreach (var r in parts)
             {
                 if (r.name.StartsWith("Hair_")) r.enabled = r.name == hairName;

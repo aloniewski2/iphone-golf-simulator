@@ -66,7 +66,6 @@ namespace GolfArcade.Game
         /// The course whose round is picked (its Key), when chosenHoles is 0; remembered too.
         string chosenCourse = "cliffside";
         CameraRig rig;
-        bool holeCam;
         GolferView golfer;
         /// The spectators at the tee, behind the rope.
         Gallery gallery;
@@ -125,15 +124,10 @@ namespace GolfArcade.Game
         double splashedAt;
         /// Skidding on the ice: whether it is on it now, and when the next spray of chips is due.
         bool onIce; float nextSpray;
-        /// An approach from further out than `PovFromYards` that comes down within
-        /// `PovWithinYards` of the pin is watched through Codex's ball POV (CameraRig.BallPov):
-        /// just above the ball, the big ball low in the frame and the flag ahead.
-        const double PovFromYards = 30, PovWithinYards = 10;
+        // All live shots use one forward-facing camera. The ball remains at its readable
+        // game size while the launch view eases into the follow after 1.5 seconds.
         bool povShot;
-        /// The shot from the air: this long after the strike (the ball just off the face) the
-        /// camera starts its crane up and back into the aerial (CameraRig.Drone); at DroneHold
-        /// the HUD clears to the swing-stat tiles and the yardage riding the ball.
-        const float CraneStart = 0.12f, DroneHold = 0.8f;
+        const float DroneHold = .8f;
         bool flightHud;
         SwingImpact lastImpact;
         Vector3 originWorld;
@@ -202,6 +196,7 @@ namespace GolfArcade.Game
 
             rig = CameraRig.Create();
             hud = Hud.Create();
+            hud.UseGolfPresentation(rig.Camera);
             greenRead = GreenRead.Create(transform);
             golfer = GolferView.Create(transform);
             gallery = Gallery.Create(transform);
@@ -820,6 +815,7 @@ namespace GolfArcade.Game
         /// controller's wide card (the same hole, with more of the sea either side).
         void SizeMinimap(Vector2 size)
         {
+            if (hud.UsesGolfPresentation) size = GolfShotHud.MapSize;
             if (minimapTexture && minimapTexture.width == (int)size.x && minimapTexture.height == (int)size.y) return;
             var old = minimapTexture;
             minimapTexture = new RenderTexture((int)size.x, (int)size.y, 16);
@@ -1191,7 +1187,14 @@ namespace GolfArcade.Game
 
         void Enter(State s)
         {
+            bool leavingResult = s != State.Result && shotResultPanel && shotResultPanel.gameObject.activeSelf;
+            if (leavingResult)
+            {
+                shotResultPanel.gameObject.SetActive(false);
+                hud.ShowPlayHud(s is not (State.Menu or State.Golfer or State.RoundDone));
+            }
             Current = s; stateTime = 0;
+            if (leavingResult) RefreshControls();
             if (s is not (State.Menu or State.Golfer)) stage?.Hide();
             ShowControllerForState();
             // the ball is drawn to be seen for a full shot and the settle after it; true size otherwise
@@ -1294,7 +1297,6 @@ namespace GolfArcade.Game
         /// The aim line is drawn as short segments laid on the ground, so it follows the terrain.
         const int AimLineSamples = 24;
         /// Yards from the cup at which a putt's camera cuts to the hole cam.
-        const float HoleCamReach = 3.5f;
         /// The hole's showcase before the first shot, seconds: the aerial and the walkthrough — or,
         /// on a hole with a signature shot, the aerial and then that shot.
         const float ShowcaseSeconds = 10f;
@@ -1489,11 +1491,13 @@ namespace GolfArcade.Game
             // the meter's checkpoints and their targets on the course and the map: short of the
             // pin, on it, past it
             checkpointSpots.Clear(); plan.Targets.Clear();
-            int onPin = PinTargets(lie, checkpointPowers, out var yards);
+            int onPin = -1;
+            var yards = new double[checkpointPowers.Length];
             var labels = new string[checkpointPowers.Length];
             for (int i = 0; i < checkpointPowers.Length; i++)
             {
-                var spot = FinishFor(checkpointPowers[i], lie);
+                var spot = LandingFor(checkpointPowers[i], lie);
+                yards[i] = ballAt.DistanceTo(spot);
                 checkpointSpots.Add(HoleView.ToWorld(spot, 0.05));
                 plan.Targets.Add(new Vector3((float)spot.X, 0, (float)spot.D));
                 labels[i] = i == onPin ? $"PIN {yards[i]:F0}" : $"{yards[i]:F0} yd";
@@ -1526,7 +1530,7 @@ namespace GolfArcade.Game
         /// The power meter's three checkpoints, as powers (the meter reads power: empty to the
         /// club's full distance), each with a numbered target where that power comes down: one
         /// short of the pin, one on it, one past it (PinTargets).
-        readonly float[] checkpointPowers = new float[3];
+        readonly float[] checkpointPowers = { .25f, .5f, .75f, 1f };
         readonly System.Collections.Generic.List<Vector3> checkpointSpots = new();
 
         /// The three targets around the pin, in `powers` (and where they finish, in `yards`): the
@@ -1868,7 +1872,7 @@ namespace GolfArcade.Game
                 // the amber dot slides out over the ground to where the meter's reading comes to
                 // rest, the meter says how far (the same yards as the checkpoints), and the
                 // checkpoints it has passed light up
-                var spot = FinishFor(load, hole.LieAt(ballAt));
+                var spot = LandingFor(load, hole.LieAt(ballAt));
                 aimDots.MarkAt(HoleView.ToWorld(spot, 0.05));
                 hud.Map.ShowLoad = aimDots.MarkShown; hud.Map.Load = aimDots.MarkPosition;
                 hud.SetMeter((float)load, null, $"{ballAt.DistanceTo(spot):F0} yd");
@@ -1932,10 +1936,9 @@ namespace GolfArcade.Game
             CountForTheCard();
             replayPath.Clear();
             hud.SetFace(null);
-            povShot = club != GolfClub.Putter && ballAt.DistanceTo(hole.Pin) > PovFromYards
-                      && LastShot.LandingTime > 0 && LastShot.Landing.DistanceTo(hole.Pin) <= PovWithinYards;
+            povShot = false;
+            rig.BeginShot(shotLine);
             greenRead.Hide();
-            holeCam = false;
             holeStrokes++;
             strikePlayed = false;
             ShowScore();
@@ -1998,7 +2001,7 @@ namespace GolfArcade.Game
         {
             float limit = Current switch
             {
-                State.Flight => 60f, State.Replay => 45f, State.Result => 20f, State.HoleDone => 30f, State.Intro => 90f,
+                State.Flight => 60f, State.Replay => 45f, State.HoleDone => 30f, State.Intro => 90f,
                 _ => float.MaxValue,
             };
             if (stateTime > limit) throw new TimeoutException($"the game sat in {Current} for {stateTime:F0} s");
@@ -2148,7 +2151,8 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Result:
-                    if (stateTime > 2.4f) { if (ReplayWorthy()) StartReplay(); else AfterResult(); }
+                    rig.FrameShotResult();
+                    if (Demo && stateTime > 4.5f) ContinueShotResult();
                     break;
 
                 case State.Replay:
@@ -2244,33 +2248,7 @@ namespace GolfArcade.Game
             var trace = hud.Map.Trace;
             if (splashedAt < 0 && (pos - trace[trace.Count - 1]).sqrMagnitude > 4f) { trace.Add(pos); hud.Map.Changed(); }
 
-            var cupAt = HoleView.ToWorld(hole.Pin);
-            // a chip or a full shot that is going in gets the hole cam too, once it is rolling
-            bool holingOut = club != GolfClub.Putter && LastShot.IsHoled && flightTime >= LastShot.CarryTime && (cupAt - pos).magnitude <= HoleCamReach;
-            if (holingOut && !holeCam) { ballLook.Pov(false); rig.RestoreFov(); rig.ResetZoom(); }
-            if (club == GolfClub.Putter || holingOut || holeCam)
-            {
-                // Watch the putt from where it was read; as it closes on the cup, cut to
-                // behind the hole to watch it arrive (the games' hole cam).
-                var cup = cupAt;
-                bool closing = Vector3.Dot(cup - pos, velocity) > 0;
-                if (!holeCam && (cup - pos).magnitude <= HoleCamReach && (closing || LastShot.IsHoled)) { holeCam = true; rig.SnapNext(); }
-                if (holeCam) rig.HoleCam(pos, cup);
-            }
-            else if (povShot)
-            {
-                // big in the air; back to its usual size as it comes down by the flag
-                ballLook.Pov(flightTime < land - 0.5);
-                rig.BallPov(pos, shotLine, (float)(land - flightTime), (float)flightTime);
-                rig.EaseHorizontalFov(CameraRig.PovLensHorizontal, 72f, 0.6f);
-            }
-            else if (flightTime >= CraneStart)
-            {
-                var flat = pos - originWorld; flat.y = 0;
-                float along = Vector3.Dot(flat, shotLine.normalized);
-                float carryYards = new Vector2(landingSpot.x - originWorld.x, landingSpot.z - originWorld.z).magnitude;
-                rig.Drone(pos, originWorld, new Vector3(landingSpot.x, (float)landingGround, landingSpot.z), shotLine, along, carryYards, touchedDown, (float)(flightTime - CraneStart));
-            }
+            rig.FollowShot(pos, (float)flightTime, touchedDown, club == GolfClub.Putter);
             // the shot's HUD, once the ball is away and the camera is climbing
             if (club != GolfClub.Putter && !flightHud && flightTime >= DroneHold)
             {
@@ -2527,20 +2505,32 @@ namespace GolfArcade.Game
 
         /// Up while the ball flies: the grade and the shape, what the swing measured, and the
         /// line drawing itself as the ball goes; carry and total fill in as they happen.
-        void ShowSwingCard()
+        (string icon, string title, string value)[] SwingTiles(bool completed)
         {
             var r = lastReport;
             double deadZone = Swing?.Detector.FaceDeadZoneDegrees ?? 10, f = lastImpact.FaceDegrees;
             double face = Math.Abs(f) <= deadZone ? 0 : Math.Abs(f) - deadZone;
-            swingCard = hud.ShowSwingCard(r.GradeWord, GradeColor(r.Grade), r.ShapeWord, new[]
+            bool putt = club == GolfClub.Putter;
+            return new[]
             {
                 ("speed", "Swing speed", $"{club.ClubSpeedMPH(lastImpact.Power):F0} mph"),
                 ("swing", "Backswing", $"{Math.Min(1, lastImpact.Backswing) * 100:F0}%"),
                 ("stopwatch", "Tempo", r.TempoRatio > 0 ? $"{r.TempoRatio:F1} : 1" : "—"),
                 ("face", "Face", face < 0.5 ? "Square" : $"{face:F0}° {(f > 0 ? "open" : "closed")}"),
-                ("ball", "Carry", "—"),
-                ("target", "Total", "—"),
-            });
+                ("ball", "Carry", completed && !putt ? $"{LastShot.Carry:F0} yd" : "—"),
+                ("target", "Total", !completed ? "—" : putt ? $"{LastShot.Total * 3:F0} ft" : $"{LastShot.Total:F0} yd"),
+            };
+        }
+
+        void ShowSwingCard()
+        {
+            var r = lastReport;
+            swingCard = hud.ShowSwingCard(r.GradeWord, GradeColor(r.Grade), r.ShapeWord, SwingTiles(false));
+            BuildSwingCurve();
+        }
+
+        void BuildSwingCurve()
+        {
             // the whole line now, drawn as far as the ball has got each frame
             curvePoints.Clear(); curveTimes.Clear();
             double h = LastShot.Heading * Math.PI / 180, sin = Math.Sin(h), cos = Math.Cos(h);
@@ -2770,9 +2760,8 @@ namespace GolfArcade.Game
             LastResult = result;
             hud.SetStatus(result);   // (the phone controller's line, now the badge has the banner's place)
             ShowScore();
-            // the POV stays where it is, on the ball by the flag, as Codex's does
-            if (!holeCam && club == GolfClub.Putter) rig.HoldOn(ball.position, HoleView.ToWorld(hole.Pin) - ball.position, club == GolfClub.Putter);
             Enter(State.Result);
+            ShowShotResult();
         }
 
         /// The ball went into lava, not water (the rules treat them the same).

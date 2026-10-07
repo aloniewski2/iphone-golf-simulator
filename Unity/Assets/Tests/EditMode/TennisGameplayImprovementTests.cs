@@ -6,6 +6,60 @@ namespace GolfArcade.Tests
 {
     public class TennisGameplayImprovementTests
     {
+        [Test] public void FasterTossSweepIsSymmetricAndReachesCentreInAQuarterSecond()
+        {
+            Assert.That(TennisTossMeter.Period,Is.EqualTo(1f).Within(.0001f));
+            Assert.That(TennisTossMeter.PositionAt(0),Is.EqualTo(-1f).Within(.0001f));
+            Assert.That(TennisTossMeter.AccuracyAt(.25f),Is.EqualTo(1f).Within(.0001f));
+            Assert.That(TennisTossMeter.AccuracyAt(.75f),Is.EqualTo(1f).Within(.0001f));
+            foreach(float miss in new[]{.01f,.05f,.1f,.2f,.25f}) {
+                Assert.That(TennisTossMeter.AccuracyAt(.25f-miss),Is.EqualTo(TennisTossMeter.AccuracyAt(.25f+miss)).Within(.0001f));
+                Assert.That(TennisTossMeter.AccuracyAt(.25f+miss),Is.EqualTo(TennisTossMeter.AccuracyAt(.75f+miss)).Within(.0001f));
+            }
+            Assert.AreEqual(0,TennisTossMeter.AccuracyAt(-.1f),"Before the sweep starts, delay compensation must read the starting end.");
+        }
+
+        [Test] public void LargerTossTimingMissesScatterServesFartherFromTheirAim()
+        {
+            foreach(bool near in new[]{true,false}) foreach(bool deuce in new[]{true,false}) {
+                var aim=new Vector2(0,.5f);
+                var target=TennisRules.IntoServiceBox(TennisRules.ServeAimPoint(aim,near,deuce),near,deuce);
+                float previous=-1;
+                foreach(float miss in new[]{0f,.02f,.05f,.1f,.2f,.25f}) {
+                    float accuracy=TennisTossMeter.AccuracyAt(.25f+miss);
+                    var serve=TennisRules.JudgeServeStrike(.1f,accuracy,aim,near,deuce,false,.9f,.1f);
+                    float error=Vector3.Distance(serve.Landing,target);
+                    Assert.Greater(error,previous,$"timing miss {miss}");previous=error;
+                }
+            }
+        }
+
+        [Test] public void TossPenaltyIsContinuousAtThePerfectZoneAndBoundedAtTheEnds()
+        {
+            Assert.AreEqual(Vector2.zero,TennisRules.ServeTossScatter(1,1,0));
+            Assert.AreEqual(Vector2.zero,TennisRules.ServeTossScatter(TennisRules.ServePerfectToss,1,0));
+            Assert.Less(TennisRules.ServeTossScatter(TennisRules.ServePerfectToss-.0001f,1,0).magnitude,.001f);
+            var worst=TennisRules.ServeTossScatter(0,1,0);
+            Assert.That(worst.x,Is.EqualTo(2.6f).Within(.0001f));
+            Assert.AreEqual(worst,TennisRules.ServeTossScatter(-1,2,-1));
+            Assert.AreEqual(Vector2.zero,TennisRules.ServeTossScatter(2,1,0));
+        }
+
+        [Test] public void WorseTossTimingRaisesTheRiskOfWideAndLongFaults()
+        {
+            foreach(bool near in new[]{true,false}) foreach(bool deuce in new[]{true,false}) {
+                int previous=-1;
+                foreach(float accuracy in new[]{1f,.7f,.4f,0f}) {
+                    int faults=0;
+                    for(int x=0;x<=20;x++) for(int z=0;z<=20;z++) {
+                        var serve=TennisRules.JudgeServeStrike(0,accuracy,new Vector2(1,1),near,deuce,false,x/20f,z/20f);
+                        if(!TennisRules.ServeIsIn(serve.Landing,near,deuce))faults++;
+                    }
+                    Assert.Greater(faults,previous,$"accuracy {accuracy}");previous=faults;
+                }
+            }
+        }
+
         [Test] public void PerfectServeUsesTwentyFiveRealMillisecondsAndStrictToss()
         {
             float boundary = .025f * TennisRules.ServePace;

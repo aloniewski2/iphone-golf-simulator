@@ -10,12 +10,12 @@ using Object = UnityEngine.Object;
 namespace GolfArcade.PlayTests
 {
     /// HERO_MAINSTAY: every stroke the game can play maps to its own clip of the hero's own sex (Male_* on the male, Female_* on the female), with the contact
-    /// times of work/match-anim-set (the brief's table; male = female), and the old Hero_* clips are not on the prefab.
+    /// times of work/match-anim-set and the replacement work/serve-and-feet Serve (male = female), and the old Hero_* clips are not on the prefab.
     public class MatchHeroClipMapTests
     {
         static readonly (HeroTennisDriver.Clip slot, string clip, float contact)[] Table =
         {
-            (HeroTennisDriver.Clip.Forehand, "Forehand", .667f), (HeroTennisDriver.Clip.Backhand, "Backhand", .633f), (HeroTennisDriver.Clip.Serve, "Serve", .900f),
+            (HeroTennisDriver.Clip.Forehand, "Forehand", .667f), (HeroTennisDriver.Clip.Backhand, "Backhand", .633f), (HeroTennisDriver.Clip.Serve, "Serve", 1.700f),
             (HeroTennisDriver.Clip.Volley, "VolleyForehand", .300f), (HeroTennisDriver.Clip.VolleyBackhand, "VolleyBackhand", .300f), (HeroTennisDriver.Clip.Smash, "Overhead", .733f),
             (HeroTennisDriver.Clip.ForehandWide, "ForehandWide", .867f), (HeroTennisDriver.Clip.BackhandWide, "BackhandWide", .767f), (HeroTennisDriver.Clip.Return, "Return", .433f),
             (HeroTennisDriver.Clip.ForehandShort, "ForehandShort", .467f), (HeroTennisDriver.Clip.ForehandOpen, "ForehandOpen", .533f), (HeroTennisDriver.Clip.SliceApproach, "SliceApproach", .500f),
