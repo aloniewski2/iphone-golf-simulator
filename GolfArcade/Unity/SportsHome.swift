@@ -335,14 +335,21 @@ struct GolfPhoneController: View {
                             Button(session.touch ? "Use motion controls" : "Use touch controls") {
                                 if session.touch { session.useMotion() } else { session.useTouch() }
                             }
+                            if !session.touch && session.golfPhase == "Aim" {
+                                Button("Calibrate golf swing") { session.requestGolfCalibration() }
+                            }
                             Button("Exit round", role: .destructive) { session.exitGame() }
                         } label: {
                             Image(systemName: "ellipsis").font(.system(size: 22, weight: .bold)).frame(width: 48, height: 48)
                         }.accessibilityLabel("Golf options").accessibilityIdentifier("golf-options")
                     }
                     Spacer(minLength: 0)
-                    if session.paused {
+                    if !session.touch && session.golfCalibrationRequired {
+                        GolfCalibrationPanel(session: session)
+                    } else if session.paused || (session.golfPhase == "Aim" && !session.golfShotReady) {
                         Text("Ready to swing?").font(IslandUI.font(28, bold: true))
+                        Text("Hold the phone where you want to start this shot, then tap Ready. Each shot uses a fresh starting position.")
+                            .font(IslandUI.font(16)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.7))
                         IslandAction(title: "Ready", primary: true) { session.readyToPlay() }
                             .accessibilityIdentifier("golf-ready")
                     } else if session.golfPhase == "Result" {
@@ -357,33 +364,62 @@ struct GolfPhoneController: View {
                             .accessibilityLabel("Your golf club")
                         Text(session.golfPhase == "Aim" ? "Swing when ready" : "Watch your shot")
                             .font(IslandUI.font(22, bold: true)).accessibilityIdentifier("golf-status")
-                        if session.golfPhase == "Aim" {
-                            HStack(spacing: 28) {
-                                Button { session.setAim(-1) } label: { Image(systemName: "chevron.left").frame(width: 56, height: 52) }
-                                    .accessibilityLabel("Aim left")
-                                Text("AIM").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
-                                Button { session.setAim(1) } label: { Image(systemName: "chevron.right").frame(width: 56, height: 52) }
-                                    .accessibilityLabel("Aim right")
-                            }
-                            HStack(spacing: 24) {
-                                Button { session.command("club", value: -1) } label: { Image(systemName: "minus").frame(width: 48, height: 44) }
-                                    .accessibilityLabel("Previous club")
-                                Text("CLUB").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
-                                Button { session.command("club", value: 1) } label: { Image(systemName: "plus").frame(width: 48, height: 44) }
-                                    .accessibilityLabel("Next club")
-                            }
-                            if session.touch {
-                                Slider(value: $power, in: 0.02...1).tint(IslandUI.lime).accessibilityLabel("Swing power")
-                                    .onChange(of: power) { _, value in session.command("golfLoad", value: value) }
-                                IslandAction(title: "Swing", primary: true) { session.swing(power) }
-                                    .accessibilityIdentifier("golf-swing")
-                            }
+                    }
+                    if session.golfPhase == "Aim" && (session.touch || !session.golfCalibrationRequired) {
+                        HStack(spacing: 28) {
+                            Button { session.setAim(-1) } label: { Image(systemName: "chevron.left").frame(width: 56, height: 52) }
+                                .accessibilityLabel("Aim left")
+                            Text("AIM").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
+                            Button { session.setAim(1) } label: { Image(systemName: "chevron.right").frame(width: 56, height: 52) }
+                                .accessibilityLabel("Aim right")
+                        }
+                        HStack(spacing: 24) {
+                            Button { session.command("club", value: -1) } label: { Image(systemName: "minus").frame(width: 48, height: 44) }
+                                .accessibilityLabel("Previous club")
+                            Text("CLUB").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
+                            Button { session.command("club", value: 1) } label: { Image(systemName: "plus").frame(width: 48, height: 44) }
+                                .accessibilityLabel("Next club")
+                        }
+                        if session.touch && session.golfShotReady && !session.paused {
+                            Slider(value: $power, in: 0.02...1).tint(IslandUI.lime).accessibilityLabel("Swing power")
+                                .onChange(of: power) { _, value in session.command("golfLoad", value: value) }
+                            IslandAction(title: "Swing", primary: true) { session.swing(power) }
+                                .accessibilityIdentifier("golf-swing")
                         }
                     }
                     Spacer(minLength: 0)
                 }.padding(28)
             }.foregroundStyle(.white).preferredColorScheme(.dark)
             }
+        }
+    }
+}
+
+private struct GolfCalibrationPanel: View {
+    @Bindable var session: SportsSession
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "figure.golf").font(.system(size: 64)).foregroundStyle(IslandUI.lime)
+            Text(session.golfCalibrating ? "Practice swings \(session.golfCalibrationCount) / 3" : "Set your golf swing")
+                .font(IslandUI.font(27, bold: true)).accessibilityIdentifier("golf-calibration-status")
+            Text(session.golfCalibrating
+                 ? "Swing back and through at your comfortable full speed. Tap Ready before each practice swing to set its starting position. Practice swings don't count as shots."
+                 : "Hold the phone securely in a comfortable golf grip. Keep it still, then start. Three practice swings will set your range and speed.")
+                .font(IslandUI.font(17)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.8))
+            if session.golfCalibrationCount == 3 {
+                IslandAction(title: "Use this swing", primary: true) { session.finishGolfCalibration() }
+            } else if !session.golfCalibrating {
+                IslandAction(title: "Ready for practice", primary: true) { session.startGolfCalibration() }
+                    .accessibilityIdentifier("golf-calibration-start")
+            } else if !session.golfShotReady || session.paused {
+                IslandAction(title: "Ready for next swing", primary: true) { session.readyGolfPracticeSwing() }
+            } else {
+                Text("Ready — swing back and through").font(IslandUI.font(18, bold: true)).foregroundStyle(IslandUI.lime)
+            }
+            Button("Use default swing") { session.finishGolfCalibration(usePractice: false) }
+                .font(IslandUI.font(15)).foregroundStyle(.white.opacity(0.7))
+            Text("For a quicker TV response, use Game Mode or a wired display.")
+                .font(IslandUI.font(13)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.5))
         }
     }
 }

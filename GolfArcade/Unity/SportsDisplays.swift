@@ -176,7 +176,7 @@ struct SportsPreviewControls:View {
             HStack {
                 if session.sport == "tennis" { PointClipControls(session: session) }
                 if session.sport != "tennis" { Text(session.feedback).font(.caption).lineLimit(1) }
-                Button(session.paused ? "Ready" : "Pause") { if session.paused { session.readyToPlay() } else { session.pause() } }
+                Button(session.paused || (session.sport == "golf" && !session.golfShotReady) ? "Ready" : "Pause") { if session.paused || (session.sport == "golf" && !session.golfShotReady) { session.readyToPlay() } else { session.pause() } }
                 Button("Exit Game") { session.exitGame() }.accessibilityIdentifier("game-exit")
             }
             if session.sport == "golf", session.golfPhase == "Result" {
@@ -195,7 +195,7 @@ struct SportsPreviewControls:View {
                 if session.sport == "tennis" { Slider(value:$position,in:-1...1).accessibilityLabel("Court position").onChange(of:position) { _,v in session.steer(v) } }
                 else { Button("Aim left") { session.setAim(-1) }; Button("Aim right") { session.setAim(1) }; Button("Club") { session.command("club",value:1) } }
                 Slider(value:$power,in:(session.sport == "golf" ? 0.02 : 0.1)...1).accessibilityLabel("Swing power")
-                Button("Swing") { session.swing(power) }.disabled(session.paused || (session.sport == "golf" && session.golfPhase != "Aim"))
+                Button("Swing") { session.swing(power) }.disabled(session.paused || (session.sport == "golf" && (session.golfPhase != "Aim" || !session.golfShotReady)))
             }
             }
             }

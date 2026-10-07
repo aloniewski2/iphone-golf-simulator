@@ -310,7 +310,8 @@ final class SportsSession {
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         tvDelay = timingCalibration ?? 0
-        setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; stamina=1
+        golfCalibrationRequired = true; golfCalibrating = false; golfCalibrationCount = 0
+        setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
         matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
@@ -474,11 +475,17 @@ final class SportsSession {
             status = setupStage == .scan ? "Scan your TV to continue." : "Start the timing calibration to continue."
             return
         }
+        if sport == "golf", !touch, golfCalibrationRequired {
+            if golfCalibrating { readyGolfPracticeSwing() } else { startGolfCalibration() }
+            return
+        }
         if !touch {
             guard sport != "tennis" || motion.axisLocked else { return }
             guard motion.calibrate() else { return }
-            phase = "steering"; command("recalibrate")
+            phase = "steering"
+            if sport == "golf" { sendGolfReady("recalibrate") } else { command("recalibrate") }
         }
+        if sport == "golf", touch { sendGolfReady("recalibrate") }
         setupStage = .playing
         command("controllerSetup", value: 0)
         resume()
@@ -504,6 +511,7 @@ final class SportsSession {
         offerTimingCalibration()
     }
     func useTouch() {
+        if sport == "golf" { golfCalibrating = false; golfCalibrationCount = 0; golfShotReady = false }
         if sport == "tennis" {
             timingPrompt=false; checkingTiming=false; timingCountdownEnds=nil; checkTimingOnResume=false
             command("cancelTimingCheck"); aimLesson = nil; setupStage = .ready
@@ -512,6 +520,7 @@ final class SportsSession {
         motion.stop(); command("touch"); status="Touch controls selected. Tap Ready to play."
     }
     func useMotion() {
+        if sport == "golf" { golfShotReady = false }
         pause(); touch=false; phase="calibrating"; trackingWarning=""; command("motion")
         if sport == "tennis" { aimChecked=false }
         if sport == "tennis" && !motion.axisLocked { beginAxisCapture(); return }
@@ -549,7 +558,7 @@ final class SportsSession {
         sendJSON(["version":1,"session":sessionID,"action":"rallyAim","value":shotAim,"value2":shotDepth])
     }
     func setShotDepth(_ depth:Double) { setShotAim(across:shotAim,depth:depth) }
-    func swing(_ value:Double) { guard !paused else { return }; power=value; swingSequence+=1; NSLog("[SportsSession] touch swing=%d power=%.2f",swingSequence,value); sendInput(valid:true) }
+    func swing(_ value:Double) { guard !paused, sport != "golf" || (golfShotReady && golfPhase == "Aim") else { return }; power=value; swingSequence+=1; NSLog("[SportsSession] touch swing=%d power=%.2f",swingSequence,value); sendInput(valid:true) }
     private func sendInput(valid:Bool) {
         // Touch play only: motion samples go to Unity from SportsMotion's own queue.
         guard touch else { return }
@@ -596,7 +605,7 @@ final class SportsSession {
         } else {
             setupStage = .ready
             if !touch { motion.start(tennis:false,travel:travel) }
-            status = "Stand at your center, then tap Ready."
+            status = "Hold the phone in your golf grip, then calibrate your swing."
         }
     }
     /// Completion is part of every Unity heartbeat, independently of one-shot result events.
@@ -639,6 +648,44 @@ final class SportsSession {
         TennisMenu.shared.beginPostMatch()
     }
 
+    private func sendGolfReady(_ action: String) {
+        guard active else { return }
+        var message: [String: Any] = ["version": 1, "session": sessionID, "action": action]
+        if !touch, let grip = motion.golfReadyGrip() {
+            message["hasReadyPose"] = true
+            message["qx"] = grip.x; message["qy"] = grip.y; message["qz"] = grip.z; message["qw"] = grip.w
+        }
+        sendJSON(message)
+    }
+    var golfShotReady = false
+    var golfCalibrationRequired = true
+    var golfCalibrating = false
+    var golfCalibrationCount = 0
+    func startGolfCalibration() {
+        guard sport == "golf", active, ready, loading.finished, displayConnected, !touch,
+              golfPhase == "Aim" || golfPhase.isEmpty else { return }
+        guard motion.calibrate() else { return }
+        golfCalibrationRequired = true; golfCalibrating = true; golfCalibrationCount = 0
+        phase = "steering"; menuPauseVisible = false
+        SportsDisplays.shared.external?.isHidden = true
+        sendGolfReady("golfCalibration"); command("resume"); paused = false
+        status = "Take three comfortable practice swings. Tap Ready before each one."
+    }
+    func readyGolfPracticeSwing() {
+        guard sport == "golf", active, ready, displayConnected, golfCalibrating, golfCalibrationCount < 3,
+              motion.calibrate() else { return }
+        phase = "steering"; sendGolfReady("recalibrate"); command("resume"); paused = false
+    }
+    func finishGolfCalibration(usePractice: Bool = true) {
+        guard sport == "golf", !usePractice || golfCalibrationCount == 3 else { return }
+        command(usePractice ? "golfCalibrationDone" : "golfCalibrationCancel")
+        golfCalibrating = false; golfCalibrationRequired = false; setupStage = .ready
+        pause(reason: usePractice ? "Swing calibrated. Hold your starting grip and tap Ready." : "Hold your starting grip and tap Ready.")
+    }
+    func requestGolfCalibration() {
+        guard sport == "golf", golfPhase == "Aim", !touch else { return }
+        pause(); golfCalibrationRequired = true; golfCalibrating = false; golfCalibrationCount = 0
+    }
     var golfPhase = ""
     var golfHasNextHole = false
     private var runtimeExternalDisplay = false
@@ -699,6 +746,8 @@ final class SportsSession {
                 if sport == "golf" {
                     golfPhase = event["golfState"] as? String ?? ""
                     golfHasNextHole = event["golfHasNextHole"] as? Bool ?? false
+                    golfShotReady = event["golfShotReady"] as? Bool ?? false
+                    if golfCalibrating { golfCalibrationCount = event["golfCalibrationCount"] as? Int ?? 0 }
                 }
                 receiveMatchSnapshot(event)
                 feedback=event["message"] as? String ?? ""; stamina=event["stamina"] as? Double ?? 1

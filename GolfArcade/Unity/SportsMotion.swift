@@ -514,6 +514,11 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         return true
     }
 
+    /// Snapshot the grip at the Ready tap, before the next sensor/render frame can move it.
+    func golfReadyGrip() -> SIMD4<Double>? {
+        queue.sync { attitude?.vector }
+    }
+
     /// Stop steering but keep the world map, so the locked axis survives menus and pauses.
     func suspend() { queue.async { self.stopDeviceMotion(); self.calibrated=false } }
 

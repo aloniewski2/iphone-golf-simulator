@@ -1034,6 +1034,7 @@ namespace GolfArcade.Game
             // the club for where this shot is going: the pin, or on a long hole the next landing
             club = AutoClub(lie, putting ? ballAt.DistanceTo(hole.Pin) : PlaysLike(ballAt, hole.RecommendedTarget(ballAt)));
             Swing.SetClub(club);
+            if (NativeControlled) RequireNativeReady();
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             Swing.Armed = true;
             golfer.SetVisible(true);
@@ -1827,6 +1828,7 @@ namespace GolfArcade.Game
             Tick();
             club = chosen;
             Swing.SetClub(club);
+            if (NativeControlled) RequireNativeReady();
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             UpdateAimVisuals();
         }
@@ -1899,7 +1901,8 @@ namespace GolfArcade.Game
             golfer.Settle();
             Haptics.Release();
             sounds.Release();
-            hud.SetStatus("Hold still, then swing");
+            hud.SetStatus(NativeControlled && !NativeCalibrating ? "Tap Ready on your phone" : "Hold still, then swing");
+            if (NativeControlled) RequireNativeReady();
         }
 
         /// The next impact is a planned one (the tests' StrikeToward and the like): exactly as
@@ -1909,6 +1912,7 @@ namespace GolfArcade.Game
         void OnImpact(SwingImpact impact)
         {
             if (Current != State.Aim) return;
+            if (NativeControlled) RequireNativeReady();
             if (NetworkShot(impact)) return;
             ShotStruck?.Invoke();
             // a real swing: how purely and how fast it was struck, and a little of its own luck
@@ -1920,7 +1924,7 @@ namespace GolfArcade.Game
             var lie = hole.LieAt(ballAt);
             // the club is on its way down: the ball leaves when it gets there, and the windmill's
             // sails will have turned on by then
-            float toBall = golfer.Strike();
+            float toBall = golfer.Strike(atImpact: NativeControlled && !NativeSportsSession.Touch);
             if (hole.Windmill is SpinningSails turning) turning.AngleAtLaunch = turning.CurrentAngle() + turning.DegreesPerSecond * toBall;
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
@@ -2130,7 +2134,12 @@ namespace GolfArcade.Game
                     bool swinging = Swing.Phase is SwingPhase.Address or SwingPhase.Backswing or SwingPhase.Downswing;
                     hud.SetFace(club != GolfClub.Putter && swinging && !Demo ? Swing.Detector.FaceNow : null);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
-                    if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
+                    if (NativeControlled) {
+                        if (NativeCalibrating) hud.SetStatus($"Practice swings {NativeCalibrationCount}/3 · " + (NativeShotReady ? "swing back and through" : "tap Ready on your phone"));
+                        else if (!NativeShotReady) hud.SetStatus("Tap Ready on your phone to set this shot's starting grip");
+                        else if (Swing.Phase == SwingPhase.Address) hud.SetStatus("Ready — swing back and through!");
+                    }
+                    else if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
                     else if (Swing.Phase == SwingPhase.Address || Demo) hud.SetStatus(Swing.UsingPhone || Demo ? "Ready — swing!" : "Ready — hold SPACE or the button, release to swing");
                     else if (Swing.UsingPhone && Swing.Detector.WrongEndDown) hud.SetStatus("Flip the phone: top edge toward the ground, like a club");
                     else if (Swing.UsingPhone && !Swing.Detector.PointedDown) hud.SetStatus($"Point the phone down at the ball, like a club  ({Swing.Detector.LeanDegrees:F0}° off)");

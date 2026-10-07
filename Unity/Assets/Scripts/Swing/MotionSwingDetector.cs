@@ -74,7 +74,19 @@ namespace GolfArcade.Swing
         // Phone Ready calibrates the chosen grip; other sources retain club-down arming.
         public bool UseReadyPose;
         public void SetReadyPose(Quaternion attitude) {
-            Reset(); reference = Quaternion.Normalize(attitude); Phase = SwingPhase.Address;
+            Reset(); UseReadyPose = true; hasReadyPose = true;
+            readyPose = reference = previous = Quaternion.Normalize(attitude); Phase = SwingPhase.Address;
+        }
+        Quaternion readyPose = Quaternion.Identity;
+        bool hasReadyPose;
+        double calibratedBackswing, calibratedSpeedScale = 1;
+        GolfClub configuredClub;
+
+        // Practice learns a comfortable full swing. Putting keeps its own short pendulum scale.
+        public void CalibrateFullSwing(double radians, double peakRate) {
+            calibratedBackswing = Clamp(radians, .7, 2.8);
+            calibratedSpeedScale = Clamp(peakRate / 8, .35, 1.75);
+            Configure(configuredClub);
         }
 
         /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
@@ -163,12 +175,15 @@ namespace GolfArcade.Swing
             Phase = SwingPhase.Settling;
             stillSince = null;
             peakAngle = peakSpeed = downswingStart = swingStart = backswingLoad = 0;
+            swingAxis = Vector3.Zero;
+            previous = reference = hasReadyPose ? readyPose : Quaternion.Identity;
             Load = 0;
         }
 
         /// Resets and re-tunes for a club. The putter needs a far gentler scale.
         public void Configure(Shot.GolfClub club)
         {
+            configuredClub = club;
             var fresh = new MotionSwingDetector { FullSpeed = club.MotionFullSpeed() };
             if (club == Shot.GolfClub.Putter)
             {
@@ -189,6 +204,11 @@ namespace GolfArcade.Swing
                 fresh.MaxStartLineDegrees = 5;
             }
             CopyTuning(fresh);
+            if (club != GolfClub.Putter && calibratedBackswing > 0) {
+                FullBackswing = calibratedBackswing;
+                FullSpeed *= calibratedSpeedScale;
+                DownswingSpeed *= Math.Min(1, calibratedSpeedScale);
+            }
             Reset();
         }
 
@@ -196,7 +216,6 @@ namespace GolfArcade.Swing
         {
             BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
             FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio; StrikeOnSlowing = o.StrikeOnSlowing; CanStrikeThin = o.CanStrikeThin; AlongTheArc = o.AlongTheArc; CommitPerRadian = o.CommitPerRadian;
-            UseReadyPose = o.UseReadyPose;
             StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
             CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
             FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
@@ -230,7 +249,8 @@ namespace GolfArcade.Swing
             PointedDown = LeanDegrees <= PointedDownDegrees && topDown;
             WrongEndDown = LeanDegrees <= PointedDownDegrees && !topDown;
             // "Ready" = hanging like a club and not mid-swing, for a moment.
-            if ((UseReadyPose || PointedDown) && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
+            bool atReadyPose = UseReadyPose && (!hasReadyPose || AngleBetween(readyPose, attitude) < .6);
+            if ((UseReadyPose ? atReadyPose : PointedDown) && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
             bool ready = stillSince is double since && time - since >= StillDuration;
             bool isStill = speed < StillSpeed;
 
@@ -264,7 +284,7 @@ namespace GolfArcade.Swing
                     // Still hanging and at rest: follow the hands, so address is wherever the
                     // club settles and a small waggle never becomes a backswing. (Not for the
                     // putter's tiny strokes: its StillSpeed is far below any real stroke.)
-                    if (angle <= BackswingStart && isStill && ready) reference = attitude;
+                    if (!UseReadyPose && angle <= BackswingStart && isStill && ready) reference = attitude;
                     if (angle <= BackswingStart) return null;
                     Phase = SwingPhase.Backswing;
                     swingStart = time;
@@ -307,7 +327,16 @@ namespace GolfArcade.Swing
                 case SwingPhase.Downswing:
                     peakSpeed = Math.Max(peakSpeed, speed);
                     bool decelerated = StrikeOnSlowing && speed < peakSpeed * 0.4;
-                    if (!(angle < ImpactAngle || decelerated || time - downswingStart > (StrikeOnSlowing ? 1.2 : 2.0))) return null;
+                    if (UseReadyPose && !AlongTheArc) {
+                        // A Ready tap fixes the ball plane. Require a small crossing of that
+                        // plane; stopping before it cancels instead of spending a shot.
+                        bool crossed = TurnAbout(reference, attitude, swingAxis) < -.08;
+                        if (!crossed) {
+                            if (!decelerated && time - downswingStart <= 1.2) return null;
+                            Reset(); return SwingEvent.Cancelled();
+                        }
+                    }
+                    if (!(UseReadyPose && !AlongTheArc) && !(angle < ImpactAngle || decelerated || time - downswingStart > (StrikeOnSlowing ? 1.2 : 2.0))) return null;
                     Phase = SwingPhase.Finish;
                     stillSince = null;
                     Load = 0;

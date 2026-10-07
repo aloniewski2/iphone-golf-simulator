@@ -193,3 +193,53 @@ import XCTest
     }
 
 }
+
+@MainActor final class GolfReadyControllerTests: XCTestCase {
+    func testSwitchingToTouchCancelsPracticeState() {
+        let session = SportsSession(); session.sport = "golf"
+        session.golfCalibrating = true; session.golfCalibrationCount = 2; session.golfShotReady = true
+        session.useTouch()
+        XCTAssertFalse(session.golfCalibrating)
+        XCTAssertFalse(session.golfShotReady)
+        XCTAssertEqual(session.golfCalibrationCount, 0)
+        XCTAssertTrue(session.golfCalibrationRequired, "Motion setup must still be offered when switching back")
+    }
+    func testPracticeCannotBeAcceptedBeforeThreeSwings() {
+        let session = SportsSession(); session.sport = "golf"
+        session.golfCalibrationRequired = true; session.golfCalibrating = true
+        session.golfCalibrationCount = 2
+        session.finishGolfCalibration()
+        XCTAssertTrue(session.golfCalibrationRequired)
+        session.golfCalibrationCount = 3
+        session.finishGolfCalibration()
+        XCTAssertFalse(session.golfCalibrationRequired)
+        XCTAssertFalse(session.golfCalibrating)
+        XCTAssertEqual(session.setupStage, .ready)
+    }
+    func testCaptureGolfReadyAndPracticeScreens() async throws {
+        let session = SportsSession(); session.sport = "golf"; session.ready = true
+        session.loading.cancel(); session.golfPhase = "Aim"; session.paused = false
+        let out = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("work/golf-motion-fix/proof")
+        try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        for stage in 0..<4 {
+            session.golfCalibrationRequired = stage < 2
+            session.golfCalibrating = stage == 1
+            session.golfCalibrationCount = stage == 1 ? 1 : 0
+            session.golfShotReady = stage == 3
+            let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+            let host = UIHostingController(rootView: GolfPhoneController(session: session)); host.safeAreaRegions = []
+            let window = UIWindow(windowScene: scene); window.frame = CGRect(x: 0, y: 0, width: 393, height: 800)
+            window.rootViewController = host; window.isHidden = false; host.view.frame = window.bounds
+            host.view.layoutIfNeeded()
+            try await Task.sleep(for: .milliseconds(150))
+            let format = UIGraphicsImageRendererFormat(); format.scale = 1
+            let image = UIGraphicsImageRenderer(size: window.bounds.size, format: format).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            window.isHidden = true
+            try XCTUnwrap(image.pngData()).write(to: out.appendingPathComponent("controller-\(stage).png"))
+            XCTAssertEqual(image.size.width,393)
+        }
+    }
+}

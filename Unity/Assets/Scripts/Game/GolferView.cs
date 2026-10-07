@@ -671,10 +671,10 @@ namespace GolfArcade.Game
 
         /// Swing through from wherever the backswing got to. Returns the seconds until the club
         /// reaches the ball, so the ball can leave exactly then.
-        public float Strike()
+        public float Strike(bool atImpact = false)
         {
             swingThrough = 0;
-            if (!hasModel) return 0.12f;
+            if (!hasModel) return atImpact ? 0 : 0.12f;
             // How far back it got. A full swing comes down from the top; a shorter one joins the
             // downswing where the club is about as far back, a little slower (a shorter swing
             // is a gentler one), and its follow-through stops short of the full finish.
@@ -688,6 +688,12 @@ namespace GolfArcade.Game
             // (a putt's follow-through mirrors its stroke: a short one is short through the ball too)
             finishTime = full ? EndTime : ImpactTime + (EndTime - ImpactTime) * Mathf.Max(clipName == "Putt" ? 0.3f : 0.55f, f);
             throughSeconds = Mathf.Clamp((finishTime - ImpactTime) * EaseOut / Mathf.Max(0.01f, impactSpeed), 0.35f, 1.6f);
+            if (atImpact) {
+                // The real club has reached the ball. Never schedule a second downswing.
+                fade = 0; Weigh(); throughV = 0; phase = 5;
+                Show(ImpactTime);
+                return 0;
+            }
             Crossfade(full ? 0.07f : 0.12f);   // from the backswing pose into the downswing's
             phase = 2;
             Show(DownswingTime(swingU));
