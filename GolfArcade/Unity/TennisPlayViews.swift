@@ -51,6 +51,7 @@ struct TennisRemote: View {
                 Spacer()
             }
             onTV
+            if menu.screen == .world { LobbyRemotePad(world: .shared, menu: menu) } else {
             Spacer(minLength: 0)
             if menu.screen == .story || menu.screen == .results {
                 Button { menu.select() } label: {
@@ -68,6 +69,7 @@ struct TennisRemote: View {
             }
             Text(menu.screen == .loading ? "Loading the court on your TV…" : "When the match starts, hold this like a racket.")
                 .font(IslandUI.font(13, bold: false)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
+            }
         }
         .foregroundStyle(.white)
         .padding(24)
@@ -96,7 +98,7 @@ struct TennisRemote: View {
         switch menu.screen {
         case .online(let route): route.rawValue.uppercased()
         case .party: "PLAY WITH FRIENDS"; case .quickPlay: "QUICK PLAY"
-        case .title: "TITLE"; case .main: "HOME"; case .gameSelect: "CHOOSE YOUR SPORT"
+        case .title: "TITLE"; case .main: "HOME"; case .world: "THE CLUB"; case .gameSelect: "CHOOSE YOUR SPORT"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"
         case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: "HOW TO PLAY"; case .golfLesson: "GOLF LESSON"
@@ -115,6 +117,7 @@ struct TennisRemote: View {
         case "start": return menu.screen == .title ? "Press A to start" : "Start"
         case "level" where menu.screen == .training: return "Coach: \(TennisMenu.trainingLevels[menu.trainingLevel].name)"
         case "homeContinue": return menu.continueLabel.subtitle
+        case "world": return LobbyWorld.shared.nearStation.map { "At \($0.title) · A: \(LobbyCopy.prompt($0))" } ?? "Walking around the club"
         case "": return "…"
         default: return TennisMenu.label(for: id)
         }

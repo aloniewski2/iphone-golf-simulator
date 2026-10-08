@@ -303,6 +303,7 @@ struct IslandSettingsScreen: View {
         case "relock": return Item(title: "Court direction", detail: "Point at the TV again at the start of your next match.", control: .action("Set again", danger: false))
         case "timing": return Item(title: "Swing timing check", detail: "Re-measure your TV's picture delay at the start of your next match.", control: .action("Run next match", danger: false))
         case "howto": return Item(title: "How to play", detail: "A few short pages: connecting a TV, swinging, serving.", control: .link)
+        case "lobbyWorld": return Item(title: "Walkable club", detail: "Walk around the club to reach the Locker, the games and your friends. Off: the classic menus.", control: .toggle(LobbyWorld.enabled))
         case "fps": return Item(title: "120 fps on the phone", detail: "Smoother on ProMotion phones, uses more battery.", control: .toggle(s.highFrameRate))
         case "overscan": return Item(title: "Screen edge margin", detail: "Pulls the picture in from the edges if your TV crops it.", control: .stepper(s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%"))
         case "sound": return Item(title: "Sound", detail: "Menu and match sound.", control: .toggle(s.sound))
@@ -553,6 +554,7 @@ struct IslandOnlineScreen: View {
                     HStack { action("net-invite","Invite More",icon:"person.badge.plus"); action("net-find","Find More",icon:"magnifyingglass") }
                     if service.isOwner { action("net-start","Start Match",subtitle:lobby?.startReason ?? "Invite another player to play",icon:"play.fill",enabled:lobby?.canStart == true) }
                     else { Text("\(lobby?.startReason ?? "Waiting for the host") · Host starts the match").islandType(compact ? 12 : 15).foregroundStyle(IslandUI.muted) }
+                    if LobbyWorld.available { action("net-world","The Club",subtitle:"Walk around together",icon:"figure.walk") }
                     action("net-leave","Leave",icon:"arrow.left")
                 case .emotes: emotePicker
                 case .settings: settings

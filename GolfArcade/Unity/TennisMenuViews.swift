@@ -233,7 +233,7 @@ struct TennisMenuScreen: View {
     var body: some View {
         ClubCameraHost(route: menu.screen, reducedMotion: reduceMotion || SportsSession.shared.reduceMotion, paused: SportsSession.shared.menuPauseVisible, content: AnyView(screenContent))
             .safeAreaInset(edge: .top) {
-                if menu.screen != .title && menu.screen != .main && !SportsSession.shared.menuPauseVisible {
+                if menu.screen != .title && menu.screen != .main && menu.screen != .world && !SportsSession.shared.menuPauseVisible {
                     HStack {
                         Button { menu.back() } label: { Label("Back", systemImage: "chevron.left") }
                             .accessibilityIdentifier("menu-back")
@@ -252,6 +252,7 @@ struct TennisMenuScreen: View {
             else { switch menu.screen {
             case .title: IslandTitleScreen(menu: menu, compact: compact)
             case .main: IslandHomeScreen(menu: menu, compact: compact)
+            case .world: LobbyWorldScreen(menu: menu, compact: compact)
             case .party: IslandPartyScreen(menu: menu, compact: compact)
             case .online(let route): IslandOnlineScreen(menu: menu, route: route, compact: compact)
             case .quickPlay: ClubQuickPlayScreen(menu: menu, compact: compact)

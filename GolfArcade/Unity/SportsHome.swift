@@ -4,13 +4,22 @@ import SwiftUI
 /// with a TV connected the menu moves to the TV and the phone becomes its remote; during a
 /// match the phone is the racket. The classic multi-sport menu is still one option away.
 struct SportsHome: View {
+    /// DEBUG: show the TV's screen on the phone (LOBBY_TV=1) to look at the TV layout in the simulator.
+    static var debugTV: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["LOBBY_TV"] != nil
+        #else
+        return false
+        #endif
+    }
     @State private var session = SportsSession.shared
     @State private var menu = TennisMenu.shared
     @State private var onboarding = OnboardingFlow.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if session.displayConnected && !session.active { TennisRemote() }
+            if Self.debugTV { TennisTVRoot() }
+            else if session.displayConnected && !session.active { TennisRemote() }
             else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
             else if menu.screen.isOnline && menu.screen != .online(.match) {
                 if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
@@ -64,6 +73,7 @@ struct SportsHome: View {
                 if phase == "ready" { session.setupStage = .ready; session.paused = true }
             }
             OnlineLobbyProofDriver.start(menu,args:args)
+            LobbyWorldProof.start(menu,args:args)
             #endif
             if let index = args.firstIndex(of:"--lobby-mock"), let count = args[safe:index+1].flatMap(Int.init) {
                 try? menu.online.service.enableMock(count:count,player:menu.player ?? Player(name:"Player 1",colorIndex:0)); menu.showOnline(.lobby)

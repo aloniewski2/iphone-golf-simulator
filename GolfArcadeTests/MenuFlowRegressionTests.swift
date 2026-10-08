@@ -114,7 +114,7 @@ import UIKit
         for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .golfLesson, .postMatch, .hub(.golf)] {
             menu.debugShow(screen)
             menu.goHome()
-            XCTAssertEqual(menu.screen, .main, "\(screen)")
+            XCTAssertEqual(menu.screen, menu.homeScreen, "\(screen)")   // home: the walkable club, or the classic menu when that is off
             XCTAssertNil(menu.launch)
         }
     }
@@ -122,7 +122,7 @@ import UIKit
         let menu = TennisMenu()
         menu.debugShow(.loading)
         menu.back()
-        XCTAssertEqual(menu.screen, .main)
+        XCTAssertEqual(menu.screen, menu.homeScreen)
         XCTAssertFalse(SportsSession.shared.active)
     }
     func testSetupCanGoBackAndExitWithoutCompletingATutorial() {

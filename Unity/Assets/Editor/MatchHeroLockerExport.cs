@@ -47,7 +47,9 @@ namespace GolfArcade.EditorTools
             (HeroTennisDriver.Clip.Ready, "ready", true), (HeroTennisDriver.Clip.Serve, "serve", false),
             (HeroTennisDriver.Clip.EmoteScuba, "scuba", false), (HeroTennisDriver.Clip.EmoteThrust, "thrust", false),
             (HeroTennisDriver.Clip.EmoteSpike, "spike", false), (HeroTennisDriver.Clip.IntroWave, "wave", false),
-            (HeroTennisDriver.Clip.IntroBringIt, "bringIt", false), (HeroTennisDriver.Clip.IntroPushups, "pushups", false)
+            (HeroTennisDriver.Clip.IntroBringIt, "bringIt", false), (HeroTennisDriver.Clip.IntroPushups, "pushups", false),
+            // the walkable lobby: the heroes walk and run on the club's plaza (the Swift side blends by ground speed; both clips are in place)
+            (HeroTennisDriver.Clip.Walk, "walk", true), (HeroTennisDriver.Clip.RunForward, "run", true)
         };
         static readonly Matrix4x4 FlipZ = Matrix4x4.Scale(new Vector3(1, 1, -1));
 

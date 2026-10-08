@@ -23,6 +23,8 @@ final class MultiplayerService {
     var onMatchRequested: ((MultiplayerMatchConfiguration) -> Void)?
     var onReturnToLobby: (() -> Void)?
     var onResult: ((String) -> Void)?
+    /// Someone in the lobby world moved (the walkable lobby draws them where their phone says).
+    @ObservationIgnored var onLobbyPose: ((LobbyPoseMessage) -> Void)?
     @ObservationIgnored private var transport: (any MultiplayerTransport)?
     @ObservationIgnored private var gameCenter: GameCenterTransport?
     @ObservationIgnored private var local: LocalMultiplayerTransport?
@@ -314,6 +316,7 @@ final class MultiplayerService {
             return
         }
         guard let state = lobby, packet.lobbyID == state.id else { return }
+        if packet.kind == "pose" { receiveLobbyPose(packet, in: state); return }
         if packet.kind == "emote", !isOwner {
             guard peer == state.ownerID, state.phase == .lobby,
                   let event = try? decoder.decode(MultiplayerEmote.self, from: Data(packet.payload.utf8)),
@@ -570,3 +573,25 @@ extension MultiplayerService {
     }
 }
 #endif
+
+
+// MARK: - the walkable lobby: where everyone is standing
+
+extension MultiplayerService {
+    /// Where I am in the lobby world. Sent often and never queued: a late position is worth nothing, so a busy connection keeps only the newest.
+    func sendLobbyPose(_ pose: LobbyPoseMessage) {
+        guard let lobby, lobby.phase == .lobby, transport != nil, let text = try? json(pose) else { return }
+        try? transmit("pose", payload: text, reliable: false, to: nil)
+    }
+    /// Someone else's position. In a nearby (Wi-Fi) party every phone talks only to the host, so the host passes each position on to the rest.
+    fileprivate func receiveLobbyPose(_ packet: MultiplayerPacket, in state: MultiplayerLobby) {
+        guard state.phase == .lobby, var pose = try? decoder.decode(LobbyPoseMessage.self, from: Data(packet.payload.utf8)) else { return }
+        if isOwner { pose.id = packet.sender }            // a guest cannot speak for someone else
+        guard pose.id != localID, state.participants.contains(where: { $0.id == pose.id && $0.connected }) else { return }
+        onLobbyPose?(pose)
+        if isOwner, local != nil, let transport, let relay = try? json(pose) {
+            let others = transport.peers.filter { $0 != packet.sender }
+            if !others.isEmpty { try? transmit("pose", payload: relay, reliable: false, to: others) }
+        }
+    }
+}

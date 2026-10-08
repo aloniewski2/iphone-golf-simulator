@@ -129,6 +129,8 @@ struct ClubCameraHost: UIViewControllerRepresentable {
         func show(_ content: AnyView, route next: MenuScreen, paused: Bool, reduced: Bool) {
             guard isViewLoaded else { host.rootView = content; route = next; self.paused = paused; return }
             guard next != route || self.paused != paused else { host.rootView = content; return }
+            // the 3D club is a live Metal view that a snapshot cannot hold: to and from the club the screen is swapped, with no page turn
+            if route == .world || next == .world { displayLink?.invalidate(); outgoing?.removeFromSuperview(); outgoing = nil; view.isUserInteractionEnabled = true; route = next; self.paused = paused; self.reduced = reduced; host.rootView = content; return }
             displayLink?.invalidate(); outgoing?.removeFromSuperview(); outgoing = nil
             host.view.layer.transform = CATransform3DIdentity; host.view.alpha = 1
             let format = UIGraphicsImageRendererFormat(); format.scale = 1
@@ -136,7 +138,7 @@ struct ClubCameraHost: UIViewControllerRepresentable {
                 host.view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
             }
             let old = UIImageView(image: image); old.frame = view.bounds
-            direction = next == .main || next == .title || (route != .main && next == .gameSelect) ? -1 : 1
+            direction = next == .main || next == .world || next == .title || (route != .main && next == .gameSelect) ? -1 : 1
             // Keep the hinge edge fixed in screen space. Changing anchorPoint alone would jump the layer.
             old.layer.anchorPoint = CGPoint(x: direction > 0 ? 0 : 1, y: 0.5)
             old.layer.position = CGPoint(x: direction > 0 ? view.bounds.minX : view.bounds.maxX, y: view.bounds.midY)

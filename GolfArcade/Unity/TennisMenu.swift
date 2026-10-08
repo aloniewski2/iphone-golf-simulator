@@ -5,6 +5,8 @@ import UIKit
 /// remote) and on the phone itself when no TV is connected.
 enum MenuScreen: Hashable {
     case title, main, party, quickPlay, gameSelect, hub(Sport), locked(Sport)
+    /// The walkable lobby: the club you walk around as your own character. It is the home screen unless the classic menus are chosen.
+    case world
     case campaign, training, exhibition, character, settings, howTo, golfLesson
     case connect, loading, results, story
     /// Choose the court or course before the game loads.
@@ -61,6 +63,8 @@ final class TennisMenu {
     var online = OnlineLobbyMenu()
 
     private(set) var screen: MenuScreen = .title
+    /// The current menu was opened from a station in the lobby: Back returns there instead of walking up the old menu tree.
+    fileprivate(set) var enteredFromWorld = false
     private(set) var row = 0
     private(set) var column = 0
     private var previous: MenuScreen = .main
@@ -138,7 +142,7 @@ final class TennisMenu {
         switch tab {
         case .gameplay: ["level", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
-        case .display: ["howto", "fps", "overscan"]
+        case .display: ["lobbyWorld", "howto", "fps", "overscan"]
         case .audio: ["sound", "haptics"]
         case .access: ["bigText", "reduceMotion"]
         case .developer: ["classic", "bench"]
@@ -151,6 +155,7 @@ final class TennisMenu {
         switch screen {
         case .title: return [["start"]]
         case .main: return [["homeContinue"], ["play"], ["character"], ["settings"]]
+        case .world: return [["world"]]
         case .party: return [["partySolo"], ["partyOnline"], ["partyNearby"], ["back"]]
         case .online(let route): return online.rows(route, menu: self)
         case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
@@ -201,6 +206,7 @@ final class TennisMenu {
     private func show(_ next: MenuScreen) {
         if next != screen, screen != .loading, screen != .connect, screen != .story, screen != .postMatch { previous = screen }
         if next == .postMatch { postMatchDone = false }
+        if next == .world || next == .main || next == .title { enteredFromWorld = false }
         if next != screen { transitions += 1; ClubSound.play("whoosh", volume: 0.35) }
         screen = next; notice = ""; confirmingReset = false; pendingCampaignRound = nil; confirmingRestart = false
         // Land on the thing you most likely want.
@@ -284,7 +290,7 @@ final class TennisMenu {
         if session.haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
         ClubSound.play("pop", volume: 0.5)
         switch id {
-        case "start" where screen == .title: show(.main)
+        case "start" where screen == .title: show(homeScreen)
         case "store": refuse("Store · Coming soon")
         case "homeContinue": continueJourney()
         case "campaignMore": confirmingRestart = true; row = 0; column = 0
@@ -385,7 +391,7 @@ final class TennisMenu {
         case "retry": if let launch { begin(launch, skipMap: true) }
         case "next": advanceStory()
         case "skip": finishStory()
-        case "menu": show(.main)
+        case "menu": show(homeScreen)
         case "back": back()
         default: _ = adjust(id, by: 1)
         }
@@ -397,19 +403,20 @@ final class TennisMenu {
         case .title: return
         case .loading:
             if OnboardingFlow.shared.active { OnboardingFlow.shared.back(); return }
-            let destination = launchOrigin ?? launch.map(hubAfter) ?? .main
+            let destination = launchOrigin ?? launch.map(hubAfter) ?? homeScreen
             pendingPick = nil; result = nil
             if session.active { session.end() }
             launch = nil; show(destination)
         case .main: show(.title)
-        case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
-        case .howTo: show(.settings)
-        case .party, .quickPlay, .gameSelect, .settings: show(.main)
-        case .hub, .locked: show(.gameSelect)
+        case .character: if lockerRange != nil { lockerCloseRange() } else { show(homeScreen) }
+        case .howTo: show(enteredFromWorld ? homeScreen : .settings)
+        case .party, .quickPlay, .gameSelect, .settings: show(homeScreen)
+        case .world: LobbyWorld.shared.back()
+        case .hub, .locked: show(enteredFromWorld ? homeScreen : .gameSelect)
         case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
         case .training, .exhibition: show(.hub(.tennis))
         case .golfLesson: show(.hub(.golf))
-        case .connect: show(launch.map(hubAfter) ?? .main)
+        case .connect: show(launch.map(hubAfter) ?? homeScreen)
         case .results: show(.campaign)
         case .story:
             story = []
@@ -419,7 +426,7 @@ final class TennisMenu {
             case .results: show(.results)
             case .hub(let sport): show(.hub(sport))
             }
-        case .map: pendingPick = nil; show(launchOrigin ?? .main)
+        case .map: pendingPick = nil; show(launchOrigin ?? homeScreen)
         case .postMatch: if postMatchDone { if Date().timeIntervalSince(postMatchDoneAt) > 0.7 { leavePostMatch(.menu) } } else { postMatchSkips += 1 }
         }
     }
@@ -472,6 +479,7 @@ final class TennisMenu {
         case "haptics": s.haptics.toggle()
         case "coaching": s.coachingTips.toggle()
         case "fps": s.highFrameRate.toggle()
+        case "lobbyWorld": LobbyWorld.enabled.toggle(); notice = LobbyWorld.enabled ? "The walkable club is on" : "Classic menus are on"
         case "range": s.travel = min(1.2, max(0.3, s.travel + Double(step) * 0.1))
         case "overscan": s.overscan = min(0.1, max(0, s.overscan + Double(step) * 0.02))
         case "bigText": s.bigText.toggle()
@@ -556,7 +564,7 @@ final class TennisMenu {
         pendingPick = nil; result = nil; postMatch = nil; showPostMatchAfterEnd = false; afterMatch = .menu
         if session.active { session.end() }
         launch = nil; launchOrigin = nil; story = []
-        show(.main)
+        show(homeScreen)
     }
 
     // MARK: Matches
@@ -568,6 +576,7 @@ final class TennisMenu {
         if launch.mode == .tutorial { launch.mode = launch.sport == .golf ? .round : .exhibition }
         if screen != .connect && screen != .loading && screen != .map && screen != .postMatch { launchOrigin = screen }
         self.launch = launch; result = nil
+        LobbyWorld.shared.matchStarted()
         // Choose the map first; retries and replays keep the selected map.
         if !skipMap, launch.sport.playable {
             pendingPick = (launch, onPhone); show(.map); return
@@ -595,7 +604,7 @@ final class TennisMenu {
         if let launch {
             pendingPick = (launch, !session.displayConnected)
             show(.map)
-        } else { show(.main) }
+        } else { show(homeScreen) }
         notice = message
     }
 
@@ -644,7 +653,7 @@ final class TennisMenu {
         showPostMatchAfterEnd = false
         if choice == .menu { result = nil; postMatch = nil }
         session.end()
-        if choice == .menu { show(.main) }
+        if choice == .menu { show(homeScreen) }
     }
 
     /// Which post-match choices make sense for the match just played.
@@ -696,7 +705,7 @@ final class TennisMenu {
         case .menu:
             postMatch = nil
             if let result, result.won { campaign.markSeen("win\(result.round)") }
-            show(.main)
+            show(homeScreen)
         }
     }
 
@@ -732,7 +741,7 @@ final class TennisMenu {
             } else { show(.results) }
         }
         else if screen == .story { return }
-        else if screen == .loading || screen == .connect || launch != nil { show(launch.map(hubAfter) ?? .main) }
+        else if screen == .loading || screen == .connect || launch != nil { show(launch.map(hubAfter) ?? homeScreen) }
     }
 
     var loadingOpponent: TennisOpponent? {
@@ -854,7 +863,7 @@ extension TennisMenu {
         case "lk-revert": lockerRevert(); if screen == .online(.clothes) { show(.online(.lobby)) }
         case "lk-done":
             if screen == .online(.clothes) { online.finishClothes(menu: self) }
-            else { show(.main) }
+            else { show(homeScreen) }
         case "lk-range-close": lockerCloseRange()
         default: break
         }
@@ -1024,7 +1033,7 @@ struct OnlineAppleSheet: Identifiable {
         case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["net-invite"],["back"]]
         case .nearby: return nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-host"],["back"]]
         case .searching: return [["net-cancel"]]
-        case .lobby: return [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
+        case .lobby: return [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + (LobbyWorld.available ? [["net-world"]] : []) + [["net-leave"]]
         case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
         case .clothes: return menu.lockerRows()
         case .settings:
@@ -1051,7 +1060,7 @@ struct OnlineAppleSheet: Identifiable {
                 identity(menu); searchSport = id == "net-golf" ? .golf : .tennis; searchStarted = Date(); menu.showOnline(.searching)
                 run(menu) { [self] in try await service.quickMatch(searchSport) }
             case "net-cancel": cancel(); service.leave(); menu.showOnline(.entry)
-            case "net-host": identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends"); menu.showOnline(.lobby)
+            case "net-host": identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends"); menu.showPartyLobby(gather: false)
             case "net-page-prev": nearbyPage = max(0,nearbyPage - 1)
             case "net-page-next": nearbyPage = min(max(0,(service.discoveredLobbies.count - 1) / 4),nearbyPage + 1)
             case let id where id.hasPrefix("net-join-"):
@@ -1087,6 +1096,7 @@ struct OnlineAppleSheet: Identifiable {
                 if p.seat >= 0 { try service.assignSeat(p.id,seat:-1) }
                 else if let seat = (0..<l.capacity).first(where: { n in !l.participants.contains { $0.seat == n } }) { try service.assignSeat(p.id,seat:seat) }
                 else if let outgoing = l.participants.last(where: { $0.seat >= 0 && $0.id != l.ownerID }) { try service.swapSeat(p.id,with:outgoing.id) }
+            case "net-world": menu.showPartyLobby(gather: false)
             case "net-leave": SportsDisplays.shared.showMatchControls(); menu.showOnline(.leave)
             case "net-stay": sync(menu,force:true)
             case "net-confirm-leave": cancel(); service.leave(); menu.openOnlineParty()
@@ -1125,7 +1135,10 @@ struct OnlineAppleSheet: Identifiable {
         guard let l = service.lobby else { return }
         switch l.phase {
         case .lobby:
-            if force || !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen) { menu.showOnline(.lobby) }
+            // the world is the lobby: people arriving or leaving while you walk around change nothing on your screen
+            if menu.screen == .world { return }
+            let fresh = !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen)
+            if force || fresh { menu.showPartyLobby(gather: fresh) }
         case .loading: if menu.screen != .online(.leave) { menu.showOnline(.loading) }
         case .results: if menu.screen != .online(.leave) { SportsDisplays.shared.showMatchControls(); menu.showOnline(.results) }
         case .playing: if menu.screen != .online(.leave) { menu.showOnline(.match); SportsDisplays.shared.restorePhoneControls() }
@@ -1155,7 +1168,7 @@ extension OnlineLobbyMenu {
             guard let menu else { return }
             if SportsSession.shared.multiplayerMatchID != nil { SportsSession.shared.end() }
             SportsDisplays.shared.showMatchControls(); SportsDisplays.shared.showMenu()
-            if menu.online.service.lobby != nil { menu.showOnline(.lobby) }
+            if menu.online.service.lobby != nil { menu.showPartyLobby(gather: true) }
         }
     }
 }
@@ -1244,3 +1257,39 @@ extension OnlineLobbyMenu {
     private static func requireValue<T>(_ value:T?) throws -> T { guard let value else { throw MultiplayerError.unavailable("Nearby proof host not found") };return value }
 }
 #endif
+
+
+// MARK: - The walkable lobby (stations open the menus the app already has)
+
+extension TennisMenu {
+    /// Home: the walkable lobby, or the classic menu when it is switched off (Settings) or could not load.
+    var homeScreen: MenuScreen { LobbyWorld.available ? .world : .main }
+
+    /// The Locker, on the tab for the station you used.
+    func openLocker(tab: String) {
+        enteredFromWorld = true
+        show(.character)
+        lockerTab = tab == "customize" ? .customize : tab == "emotes" ? .emotes : .gear
+        lockerClampFocus()
+    }
+    /// A sport's game picker (the gate).
+    func openHub(_ sport: Sport) { enteredFromWorld = true; show(.hub(sport)) }
+    func openHowTo() { enteredFromWorld = true; howToPage = 0; show(.howTo) }
+    func openSettings() { enteredFromWorld = true; show(.settings) }
+    /// The party board: the friends menus, or the lobby you are already in.
+    func openParty() {
+        enteredFromWorld = true
+        if online.service.lobby != nil { show(.online(.lobby)) } else { show(.party) }
+    }
+    func showWorld() { show(.world) }
+    /// Your party's lobby: the walkable world when it is on (everyone in the party is in it), or the party screen. `gather` puts you on the terrace with the others (a lobby that has just formed, or a match that has just ended).
+    func showPartyLobby(gather: Bool) {
+        guard LobbyWorld.available else { show(.online(.lobby)); return }
+        if gather { LobbyWorld.shared.returnStation = "party-board" }
+        show(.world)
+    }
+    /// A refused station (the Pro Shop): the same notice the classic menu's locked items give.
+    func refuseFromWorld(_ message: String) { refuse(message) }
+    /// The world could not be built: the classic menus take over.
+    func worldUnavailable() { if screen == .world { show(.main) } }
+}

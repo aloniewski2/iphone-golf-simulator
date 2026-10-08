@@ -382,6 +382,14 @@
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
 		FF610AAED2BC5C17F3280CAE /* GolfHero_Female_Swing_01.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 194946D0661AAF717760F9F5 /* GolfHero_Female_Swing_01.lzfse */; };
 		FFFAC7B0993BE08E6207445B /* MatchHero_Golf_Male_GloveR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 573A326081430ADDD7795D1F /* MatchHero_Golf_Male_GloveR_N.ktx */; };
+		BC5B064BAA84F2D71D6E04A6 /* LobbyLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A461CAF44D716DBD4722608 /* LobbyLayout.swift */; };
+		228D36298C57A4F08CC657E2 /* LobbyKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E1F9575DC98850BFCAFF18 /* LobbyKit.swift */; };
+		FB2F79D890336201F82A34DF /* LobbyWorldBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 320E715CA15B046AD9F845F1 /* LobbyWorldBuilder.swift */; };
+		A4E4108C772AA45D0805F57D /* LobbyAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC2375A8A13B25501A62C1E /* LobbyAvatar.swift */; };
+		7970BED8B0BCA499F70E2EE0 /* LobbyWorld.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874D42C77AED4A2130CB25DB /* LobbyWorld.swift */; };
+		703F65F26E9813D31DC7DD04 /* LobbyWorldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6391FBB39A202D7E4FDE3D82 /* LobbyWorldView.swift */; };
+		6BEE4DD9BB9D055DB3EFF4FA /* LobbyWorldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EB1F771989210473D3DCD30 /* LobbyWorldTests.swift */; };
+		DACB6CD60BCB316858CAA746 /* LobbyWorldProof.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3747691317697BD097D4926A /* LobbyWorldProof.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -783,6 +791,14 @@
 		FEA9F688563659DA5A118301 /* MatchHero_GolfKit_Female_ShoeL_N.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Female_ShoeL_N.ktx; sourceTree = "<group>"; };
 		FEBD4CB653AB5A4CBF9C24E4 /* MatchHero_Kit_Male_ShoeL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Male_ShoeL.png; sourceTree = "<group>"; };
 		FFF9B83611636F6BE5E18334 /* MatchHero_GolfKit_Male_Bottom_M.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Male_Bottom_M.ktx; sourceTree = "<group>"; };
+		2A461CAF44D716DBD4722608 /* LobbyLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyLayout.swift; sourceTree = "<group>"; };
+		E3E1F9575DC98850BFCAFF18 /* LobbyKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyKit.swift; sourceTree = "<group>"; };
+		320E715CA15B046AD9F845F1 /* LobbyWorldBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyWorldBuilder.swift; sourceTree = "<group>"; };
+		BFC2375A8A13B25501A62C1E /* LobbyAvatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyAvatar.swift; sourceTree = "<group>"; };
+		874D42C77AED4A2130CB25DB /* LobbyWorld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyWorld.swift; sourceTree = "<group>"; };
+		6391FBB39A202D7E4FDE3D82 /* LobbyWorldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyWorldView.swift; sourceTree = "<group>"; };
+		2EB1F771989210473D3DCD30 /* LobbyWorldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyWorldTests.swift; sourceTree = "<group>"; };
+		3747691317697BD097D4926A /* LobbyWorldProof.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyWorldProof.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -957,6 +973,7 @@
 				EEDFBB2EF6A041270AFB9F3C /* Swing */,
 				D49424BEF925DC29647C19F8 /* Tracking */,
 				4009040AB0033A7EF2CE8619 /* Unity */,
+				97963C0909FEA9CD73274BCE /* Lobby */,
 			);
 			path = GolfArcade;
 			sourceTree = "<group>";
@@ -1343,6 +1360,7 @@
 				33FF88FD92B1D699BE1AD29F /* TennisCampaignTests.swift */,
 				5A6191C13068D5A7289FCE8A /* TennisMenuSnapshotTests.swift */,
 				60B1FAF9F257610A76213E8E /* TerrainTests.swift */,
+				2EB1F771989210473D3DCD30 /* LobbyWorldTests.swift */,
 			);
 			path = GolfArcadeTests;
 			sourceTree = "<group>";
@@ -1403,6 +1421,20 @@
 				E9692821E4474822BE46A669 /* SwingRecorder.swift */,
 			);
 			path = Avatar;
+			sourceTree = "<group>";
+		};
+		97963C0909FEA9CD73274BCE /* Lobby */ = {
+			isa = PBXGroup;
+			children = (
+				2A461CAF44D716DBD4722608 /* LobbyLayout.swift */,
+				E3E1F9575DC98850BFCAFF18 /* LobbyKit.swift */,
+				320E715CA15B046AD9F845F1 /* LobbyWorldBuilder.swift */,
+				BFC2375A8A13B25501A62C1E /* LobbyAvatar.swift */,
+				874D42C77AED4A2130CB25DB /* LobbyWorld.swift */,
+				6391FBB39A202D7E4FDE3D82 /* LobbyWorldView.swift */,
+				3747691317697BD097D4926A /* LobbyWorldProof.swift */,
+			);
+			path = Lobby;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1856,6 +1888,13 @@
 				3BE06AF686DC2F1071AD324D /* TennisMenuViews.swift in Sources */,
 				947EA1291A8D75A376E14389 /* TennisPlayViews.swift in Sources */,
 				01A5FE7CF59D40F3735A28BA /* TennisStory.swift in Sources */,
+				BC5B064BAA84F2D71D6E04A6 /* LobbyLayout.swift in Sources */,
+				228D36298C57A4F08CC657E2 /* LobbyKit.swift in Sources */,
+				FB2F79D890336201F82A34DF /* LobbyWorldBuilder.swift in Sources */,
+				A4E4108C772AA45D0805F57D /* LobbyAvatar.swift in Sources */,
+				7970BED8B0BCA499F70E2EE0 /* LobbyWorld.swift in Sources */,
+				703F65F26E9813D31DC7DD04 /* LobbyWorldView.swift in Sources */,
+				DACB6CD60BCB316858CAA746 /* LobbyWorldProof.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1908,6 +1947,7 @@
 				AA90E98FB45C9EE9DF479CA0 /* TennisCampaignTests.swift in Sources */,
 				BD7477CE7F1EC70CBC795EE9 /* TennisMenuSnapshotTests.swift in Sources */,
 				8865D94E6407B563F940EED3 /* TerrainTests.swift in Sources */,
+				6BEE4DD9BB9D055DB3EFF4FA /* LobbyWorldTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

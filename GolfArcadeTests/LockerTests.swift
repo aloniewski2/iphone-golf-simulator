@@ -148,7 +148,7 @@ final class LockerTests: XCTestCase {
         XCTAssertNil(menu.lockerRange)
         XCTAssertEqual(menu.screen, .character, "Back closes the range first, then the locker")
         XCTAssertEqual(menu.focused, "lk-shirt", "focus returns to the row that opened it")
-        menu.back(); XCTAssertEqual(menu.screen, .main)
+        menu.back(); XCTAssertEqual(menu.screen, menu.homeScreen)
     }
 
     func testShuffleChangesColoursButNeverGear() {
