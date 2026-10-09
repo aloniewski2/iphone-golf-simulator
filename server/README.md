@@ -1,5 +1,11 @@
 # Golf Arcade server
 
+> **Legacy: this is not the multiplayer the iPhone app uses.** The iPhone app (`GolfArcade/`, hosting Unity) plays online and nearby
+> through Game Center and Bonjour, with one phone as the host: see [`SportsLibrary/MULTIPLAYER.md`](../SportsLibrary/MULTIPLAYER.md)
+> and [`PLAN_Multiplayer_OnlineLocal.md`](../PLAN_Multiplayer_OnlineLocal.md). This server, and the Unity "Online" screen that talks
+> to it (`Unity/Assets/Scripts/Net/Online`), belong to the older stand-alone Unity build, where every phone plays its own round and
+> only scores are shared. It is kept as it was; nothing has been removed. Whether to delete it is your decision.
+
 The backend for the Unity game: **profiles**, **round history and stats**, a **leaderboard**, and
 **online rooms** where two to four phones play the same course at the same time. One small Node
 process (HTTP + WebSocket on one port) and one Postgres database.

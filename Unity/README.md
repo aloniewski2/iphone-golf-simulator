@@ -46,6 +46,12 @@ scaled by power, success for a holed ball, a buzz for water or out of bounds. Th
 
 ## Profiles, two players on one phone, and online
 
+> **Legacy for the iPhone app.** This section describes the stand-alone Unity build's own home screen, with its own "2 players" and
+> "Online" modes (each phone plays its own round and only scores travel, through the Node server in `server/`). The iPhone app drives
+> Unity from its own menus (`GolfArcade/`), where Play → Local / Online uses Game Center and Bonjour with one phone as the host:
+> see `Assets/Scripts/Multiplayer/`, [`../SportsLibrary/MULTIPLAYER.md`](../SportsLibrary/MULTIPLAYER.md) and
+> [`../PLAN_Multiplayer_OnlineLocal.md`](../PLAN_Multiplayer_OnlineLocal.md). The text below is kept as it was; nothing was removed.
+
 The home screen has **SOLO · 2 PLAYERS · ONLINE** over the dock and a **profile** button at the
 top left. PLAY goes the chosen way, on the holes COURSE picked (one hole, or the round):
 
@@ -176,11 +182,11 @@ and device as env overrides, nothing committed), installs it with `devicectl` an
   `GameCapture` (render what the phone shows to a PNG).
 - `Assets/Editor` — project setup, the test and play menus.
 - `Assets/Scripts/UI` — the HUD, the home, golfer and course screens, and `Lobby` (profile,
-  2 players, online).
+  2 players, online; the online part is legacy, see above).
 - `Assets/Scripts/Profile` — `PlayerProfile`, `ProfileBook` (pure C#) and `ProfileStore` (PlayerPrefs).
 - `Assets/Scripts/Course/Match.cs` — turns, the shared wind and the standings for any number of players.
-- `Assets/Scripts/Net/Online` — the server's message shapes, `OnlineRoom` (pure C#), the socket
-  session and the REST client.
+- `Assets/Scripts/Net/Online` — **legacy** (stand-alone build only): the server's message shapes, `OnlineRoom` (pure C#), the socket
+  session and the REST client. The iPhone app's multiplayer is in `Assets/Scripts/Multiplayer`.
 - `Assets/Tests` — EditMode tests for the detector, shot model, wind and scorecard; a PlayMode
   smoke test.
 - `Tools` — `check.sh`, the editor-free compile + EditMode test run.

@@ -4,6 +4,19 @@ Plan: `PLAN_Multiplayer_OnlineLocal.md`. Format follows `proof/menu-beta/GATE_RE
 Tiers: **S** sandbox (run here), **M** needs a Mac (Xcode/Unity), **D** needs real phones.
 A gate is PASS only with its evidence. Gates that need a Mac or phones are listed as NOT RUN until someone runs them.
 
+## Summary
+
+57 gates: **27 PASS**, **0 FAIL**, **27 NOT RUN**, **3 NOT BUILT**. Every PASS is tier S: it was run in the sandbox (`dotnet test Tools/netsim/NetSim.csproj`: **72 tests pass**, covering the game's real tennis and golf host rules, the clock filter model, view selection, the split-screen camera math, and the compact update format; `python3 Tools/check-syntax.py` parses every changed Swift and C# file). Several PASS lines also carry a NOT RUN clause for the part that needs a Mac or a phone.
+
+What has **never been run**, and is the first thing to do with a Mac and then with phones:
+
+1. **The Swift tests** (`MultiplayerTests`, `MenuBetaTests`, `NewMenuSnapshotTests`, the UI test): there is no Swift compiler in the sandbox. They were written against the code and syntax-checked only.
+2. **The Unity compile and EditMode tests** (`Unity/Tools/check.sh`): includes the first compile of the split-screen camera copy (URP property names) and of the compact update code.
+3. **The picture**: the split screen, the setup screens on the TV, frame rate over AirPlay.
+4. **Everything on real phones**: the two-phone, one-TV flow; calibration; the connection-check thresholds (guesses); Apple's size limit for unreliable messages; heat on the controller-only phone; the Local Network permission prompt. `FIELD_TEST.md` is the script for these.
+
+Not built (documented in the plan): P4.2 TV status badges, P4.3 swing-timing check for both players, P6.3 silent Quick Match re-queue, P3e split-screen quality step-down, P7.1/7.2/7.4/7.5.
+
 ## Phase 0 — Safety net
 
 GATE: G0.1 Sandbox harness runs the game's real multiplayer rule tests — PASS (S). `dotnet test Tools/netsim/NetSim.csproj`: 33 passed, 0 failed (the real `MultiplayerRulesTests`: tennis host rules, golf host rules, serialization round trips).
@@ -115,3 +128,11 @@ GATE: G7.3.6 Apple accepts the compact update as an unreliable message — NOT R
 ### P7.1, 7.2, 7.4, 7.5
 
 GATE: G7.x Predict own hit, immediate updates, wake signal, ball blending — NOT BUILT. They change what a player sees or feels at the moment of contact, or add native callbacks whose failure is a crash; each needs a device to judge (see the plan, P7).
+
+## Phase 8 — Docs and field kit
+
+GATE: G8.1 Every relative link in the touched docs resolves — PASS (S). 13 links checked across `SportsLibrary/MULTIPLAYER.md`, `Unity/README.md`, `server/README.md`, `PLAN_Multiplayer_OnlineLocal.md`, `proof/multiplayer/FIELD_TEST.md`, this file and `Tools/netsim/README.md`: 0 broken.
+GATE: G8.2 The legacy online system is labelled, not removed — PASS (S). The changes to `server/README.md` and `Unity/README.md` only add text (a banner, a note under the online heading, two source-tree bullets); `git ls-files --deleted` is empty.
+GATE: G8.3 A field-test script exists for the first run on real phones — PASS (S, the file). `proof/multiplayer/FIELD_TEST.md`.
+GATE: G8.4 The field test has been run — NOT RUN (D). Nobody has had real phones and a TV yet; every NOT RUN (D) line above is waiting on it.
+

@@ -1,8 +1,24 @@
 # Multiplayer backend integration
 
-The backend supports Apple Game Center online parties and Bonjour local parties. No online/lobby entry screens are installed. The lobby holds four people total: up to four golfers, or two tennis competitors and up to two observers. Golf waiting players watch the current shot. One participating phone owns the simulation; no dedicated game server is used.
+The backend supports Apple Game Center online parties and Bonjour local parties. The in-game menu has the entry screens (Play → Single Player / Local / Online; see below). The lobby holds four people total: up to four golfers, or two tennis competitors and up to two observers. Golf waiting players watch the current shot. One participating phone owns the simulation; no dedicated game server is used.
 
 This source implementation has native protocol tests, Unity rule tests and rendered gameplay tests. It still requires signed, multi-device Game Center and local-network validation before release. A successful build does not establish internet responsiveness or matchmaking availability.
+
+## What the October 2026 multiplayer pass changed
+
+The plan is [`PLAN_Multiplayer_OnlineLocal.md`](../PLAN_Multiplayer_OnlineLocal.md); the evidence, and what is still unproven, is [`proof/multiplayer/GATE_RESULTS.md`](../proof/multiplayer/GATE_RESULTS.md). Everything below is implemented and was checked in a sandbox (the real tennis and golf rules, the wire formats, the camera math, syntax). The Swift tests, the Unity compile and everything on real phones are listed there as **NOT RUN** until someone runs them on a Mac and on devices.
+
+- **Menus.** Play → **Single Player**, **Local** or **Online**. Local → **Golf · Pass the Phone** (2–4 players share one phone: pick the count and the round starts, with a "pass the phone" card between turns), **Tennis · Two Phones** (two phones, one lobby, starts when the friend joins), **Join a Friend**. If the app has no permission for the local network it says so and offers Settings.
+- **Protocol version 4.** `MultiplayerPacket.version` (Swift) and `NetworkPacket.Version` (C#) are both 4 and must move together; a phone on another version reports "incompatible" and Unity drops its packets. All phones in a match must run the same build.
+- **Tennis setup.** Lobby phases are now `lobby → loading → calibrating → playing` (golf skips `calibrating`). Each phone points at the TV and taps Ready (touch players report at once); the owner starts the match when every competitor has loaded, calibrated **and** has a steady connection. A player who drops and returns sets up again (45 s allowed, 15 s for a plain dropped connection).
+- **One TV, two phones.** Each participant has `hasScreen`, `view` (`near` = own TV and own court, `split` = this TV shows both players, `none` = controller only), `calibrated` and `screenDelay`. A tennis lobby needs at least one phone with a TV. With one TV, that phone shows a **split screen** (a camera per player, each half framed so the whole court and both players stay in view) and the other phone is a hidden controller that applies the TV's delay. Two TVs behave as before. Only one phone needs to AirPlay.
+- **Fair timing.** A swing is credited with the TV's picture delay (up to 0.30 s) and the host rewinds up to 0.40 s to judge it; the clock between phones is filtered (median of the best round trips, slewed); each phone sends a heartbeat 10×/s and a silent phone pauses the match within 0.4 s; the phone stays awake. Details and the measured effect: plan P1 and Appendix A.
+- **Connection check.** During setup guests ping the owner 10×/s and grade the link (Good ≤ 80 ms / 30 ms jitter / 2% loss, Fair ≤ 150 / 60 / 5). The match starts after the link has been Fair or better for 1.5 s; after 8 s without that, everyone is told and the owner may **Play anyway**. The thresholds are guesses until field data exists (`MultiplayerTuning`).
+- **Compact updates.** The host's 30-per-second tennis update is sent as `NetworkTennisWire` (366 bytes instead of about 1.2 KB, whole millimetres and milliseconds); checkpoints still use the full form and guests read either. The host tests the form with the build's own JSON when a match starts and falls back to the full form if it fails; the `unity network stats` line in `SportsDiagnostics.log` says `"compact":true|false`. An unreliable message that Apple refuses is resent reliably from then on.
+- **Switches.** `NetworkTuning.CompactSnapshots` (C#), `TennisGame.SplitScreen` (C#: `false` gives one shared view), and the constants in `MultiplayerTuning` (Swift) and `NetworkTuning` (C#).
+- **Not built:** predicting your own hit, immediate updates on contact, a native wake signal, blending retroactive hits (all need phones to judge); a swing-timing check for both players on one TV; TV badges for who is ready; a quiet re-queue for Quick Match; a lower quality level for split screen (waiting for frame-rate data). See the plan.
+- **Legacy.** The Node server in `server/` and the Unity "Online" screen (`Unity/Assets/Scripts/Net/Online`) belong to the older stand-alone build and are not used by this path. They are kept and labelled, not deleted.
+- **Field test.** [`proof/multiplayer/FIELD_TEST.md`](../proof/multiplayer/FIELD_TEST.md) is the script for the first test with real phones.
 
 ## Future SwiftUI/UIKit integration
 
@@ -71,7 +87,7 @@ Every packet carries a protocol version, party/contest IDs, sender sequence, typ
 
 ## Gameplay and bridge
 
-`SportsMultiplayer` consumes native messages on Unity's main thread. Only the authority advances official ball, rules and scoring. Spectators cannot submit gameplay actions. Reliable full snapshots and golf paths initialize late viewers; replaceable snapshots run at about 30 Hz. Queue overflow reports an interruption rather than silently freezing a live contest.
+`SportsMultiplayer` consumes native messages on Unity's main thread. Only the authority advances official ball, rules and scoring. Spectators cannot submit gameplay actions. Reliable full snapshots and golf paths initialize late viewers; replaceable snapshots run at about 30 Hz (tennis uses the compact form described above). Queue overflow reports an interruption rather than silently freezing a live contest.
 
 Tennis has a symmetric two-human simulation sharing existing tennis scoring and presentation. It uses 120 Hz authority stepping, bounded 150 ms contact history, both serving sides, provisional animation separated from confirmed contact, local animation/movement prediction and near-side coordinate conversion. It is a separate multiplayer contact/trajectory model from the asymmetric solo/AI loop. Tune responsiveness and visual contact on phones; passing rule tests does not prove the proposed 150 ms RTT / 20 ms jitter / 1% loss envelope.
 
@@ -82,6 +98,8 @@ The native/Unity bridge exports `SportsNetworkPush`, `SportsNetworkPoll`, `Sport
 ## Build and proof
 
 Open `GolfArcadeUnity.xcworkspace` for the playable phone build. Re-export Unity after managed or bridge changes, then run `Unity/Tools/build-integrated-ios.sh`. `project.yml` owns Game Center entitlements and Bonjour/privacy settings so XcodeGen preserves them; `project-unity.yml` inherits them. Native-only Simulator builds verify Swift/protocol logic, not Unity or Game Center gameplay.
+
+Without a Mac, the rules, wire formats and camera math can be run with `dotnet test Tools/netsim/NetSim.csproj` (see `Tools/netsim/README.md`; CI runs it from `.github/workflows/netcode.yml`), and `python3 Tools/check-syntax.py` parses the changed Swift and C# files. These do not replace the Swift tests, the Unity compile or a device.
 
 Evidence is under repository `work/multiplayer/`: native test log/xcresult, `multiplayer-rules.xml`, rendered `playmode.xml`, Unity export log and integrated build log. The final implementation report records the latest totals and build outcome.
 

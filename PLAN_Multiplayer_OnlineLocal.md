@@ -1,6 +1,6 @@
 # PLAN — Multiplayer: fast online play, one-tap local play, two-phone tennis on one TV
 
-**Status:** IN PROGRESS. You told me to proceed on my own, so I am working through the phases in order using the defaults in section 8. Done: P0 (safety net), P1 (fair, playable multiplayer tennis), P2 (roles), P3 (split screen), P4.1 (shared TV delay), P5 (simple local flow), P6 (connection check) and P7.3 (compact updates). Not done: P4.2/4.3, P7.1/7.2/7.4/7.5 and P8, with the reasons in each phase. Progress and evidence: `proof/multiplayer/GATE_RESULTS.md`. Gates that need a Mac or real phones are listed there as NOT RUN until someone runs them.
+**Status:** IN PROGRESS. You told me to proceed on my own, so I am working through the phases in order using the defaults in section 8. Done: P0 (safety net), P1 (fair, playable multiplayer tennis), P2 (roles), P3 (split screen), P4.1 (shared TV delay), P5 (simple local flow), P6 (connection check), P7.3 (compact updates) and P8 (docs, legacy labels, field-test script). Not done, with the reasons in each phase: P4.2/4.3, P6.3 (the silent Quick Match re-queue), P3e, P7.1/7.2/7.4/7.5. Nothing has been run on a Mac or a phone yet: the first things to do are in the summary of `proof/multiplayer/GATE_RESULTS.md` and the script `proof/multiplayer/FIELD_TEST.md`. Progress and evidence: `proof/multiplayer/GATE_RESULTS.md`. Gates that need a Mac or real phones are listed there as NOT RUN until someone runs them.
 **Written:** 2026-10-09, from a read-only audit of the code. No phone, Unity editor or Xcode was available, so every claim below is from reading code, plus one headless experiment (Appendix A) that runs the real host rules.
 **Scope:** tennis and golf. Online (Game Center), Nearby (same Wi-Fi), and Pass-the-Phone.
 **Not in scope:** characters, clothes, maps, lights, or the existing single-view camera framing. The `AGENTS.md` character-pass limits do not apply to this work, and this plan does not touch those assets.
@@ -153,7 +153,7 @@ Relative size: S small, M medium, L large. Order matters; each phase ends with a
   - **Unverified, to check on a device:** what the TV shows during setup. Unity stays paused until the phone unpauses it, so the TV should show the court with the existing "PAUSED — tap Ready on your phone" line (accurate, but plain). If it looks poor, the fix belongs in P3/P4 (a setup card on the TV).
   - **G1.1** (M): XCTests in `MultiplayerTests.swift` (syntax-checked here, not run): tennis cannot reach `playing` until both report; spectators never hold up the start; golf ignores calibration; a forged or old-match `calibrated` is ignored; a returning player during setup reloads and sets up again; a reloaded player stays paused until calibrated (also against foreground); a reloaded player gets longer than 15 s but not forever; setup is abandoned when a player leaves; a long setup is mentioned to everyone. Five existing tests and the shared `start` helper were updated for the extra phase and the version bump.
   - **G1.1d** (D): after calibration, a motion swing registers in a Nearby match.
-- **1.2 Screen-delay credit.** `SportsMultiplayer.Sample` adds `Lag` (≤ 0.30 s) to the swing `age`; `NetworkTuning.MaxRewind = 0.40`; `NetworkInput.Valid` age ≤ 0.5; history window sized from the constant.
+- **1.2 Screen-delay credit.** `SportsMultiplayer.Sample` adds `Lag` (≤ 0.30 s) to the swing `age`; `NetworkTuning.MaxSwingRewind = 0.40` (and `MaxDisplayCredit = 0.30`); `NetworkInput.Valid` age ≤ 0.5; history window sized from the constant.
   - **G1.2** (S, **PASS**): `dotnet test Tools/netsim/NetSim.csproj` (49 pass) and the before/after experiment from the actual changed source: PERFECT wherever screen + network ≤ 0.30 s.
   - **G1.2b** (S, **PASS**): all existing tennis `MultiplayerRulesTests` still pass; a phone cannot claim more than 0.30 s.
   - Added during execution: the unreturned-ball winner fix (F17) and the bounded late-swing hold (F18), each with tests that failed before the fix.
@@ -229,8 +229,12 @@ Relative size: S small, M medium, L large. Order matters; each phase ends with a
 - **7.5 Not built.** Blending the displayed ball when the host applies a retroactive hit. Same reason as 7.1.
 - **Gates:** each feel feature needs a determinism or reconciliation test (S) and a before/after device measurement (D) and is turned on only with a recorded PASS.
 
-### P8 — Docs, cleanup, field kit (S)
-- Update `SportsLibrary/MULTIPLAYER.md`; mark the legacy online system as legacy in `Unity/README.md` and `server/README.md` (no deletion without your approval); finalize `proof/multiplayer/GATE_RESULTS.md`; add the field-test script (section 9).
+### P8 — Docs, cleanup, field kit (S) — done
+- **8.1 Done.** `SportsLibrary/MULTIPLAYER.md` now has a section describing what this pass changed (menus, protocol 4, tennis setup phases, one TV with two phones, fair timing, connection check, compact updates, switches, what is not built) and no longer says there are no entry screens.
+- **8.2 Done.** The older stand-alone online system is labelled **legacy** at the top of `server/README.md`, under the online heading of `Unity/README.md`, and on the two source-tree bullets there (`Net/Online`, `Lobby`). Nothing was deleted; deleting it is your decision (section 8, item 5).
+- **8.3 Done.** `proof/multiplayer/GATE_RESULTS.md` has a summary at the top and a line for every gate, including the ones nobody has been able to run.
+- **8.4 Done.** `proof/multiplayer/FIELD_TEST.md` is the script for the first session with real phones: what to bring, the nine tests with pass lines, how to pull the log off a phone, result tables, and a table of which constant to change for which symptom.
+- **Gates.** **G8.1** (S): every relative link in the touched docs resolves (13 checked). **G8.2** (S): the diff to the legacy READMEs only adds text, and no file under `server/` or `Net/` was removed.
 
 ### Suggested order
 P0 → P1 → P2 → P3a → P4.1/4.2 → P5 → P3b/3c/3d → P4.3 → P6 → P7 → P8. Reason: P1 fixes the "swings don't register / TV delay" problems for every multiplayer mode; P2–P3a prove the one-TV roles with the simplest camera before the visual work; P5 delivers the simple flow you described; split screen polish and the parallel timing check follow once the plumbing is proven.
@@ -272,8 +276,8 @@ Host chosen by link quality or host migration; a UDP data channel for Nearby; re
 
 ## 9. Field-test kit (for when the app is live)
 
-Record these and bring the telemetry log from "Send feedback":
-1. **Apple unreliable message size:** between two real phones, send unreliable messages of 400 / 800 / 1,200 / 1,500 / 2,000 / 4,000 bytes; note which arrive. *(First test: it decides how aggressive snapshot slimming must be.)*
+The step-by-step script is `proof/multiplayer/FIELD_TEST.md`. The telemetry log is `SportsDiagnostics.log` in the app's Documents folder (nothing is uploaded; pull it with Xcode). The list below is the reasoning behind it:
+1. **Apple unreliable message size:** play a normal match with `NetworkTuning.CompactSnapshots` on (about 0.5 KB with the packet) and again with it off (about 1.7 KB) and compare `unreliable refused` in the log. *(First test: it decides whether the compact form was needed and how aggressive any further slimming must be. No special test message was built; the real traffic is the experiment.)*
 2. **Online link quality:** RTT, jitter, loss for Wi-Fi↔Wi-Fi, Wi-Fi↔LTE, LTE↔LTE, same city and cross-country. Tune the P6 thresholds from this.
 3. **TV delay by receiver:** Apple TV, Mac AirPlay Receiver, HDMI adapter (existing flash probe). Confirm the 0.30 s credit cap covers typical TVs.
 4. **Nearby path A/B:** infrastructure Wi-Fi vs peer-to-peer (`includePeerToPeer`); service class on/off; note RTT and jitter.
