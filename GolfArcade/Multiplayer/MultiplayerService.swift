@@ -47,6 +47,11 @@ final class MultiplayerService {
     @ObservationIgnored private var clockFilter = ClockFilter()
     @ObservationIgnored private var nextPing: Double = 0
     @ObservationIgnored private var nextHello: Double = 0
+    // Noticing a player who goes quiet without Apple (or Wi-Fi) reporting a disconnect.
+    @ObservationIgnored private var lastHeard: [String: Double] = [:]
+    @ObservationIgnored private var silent: [String: Int] = [:]
+    @ObservationIgnored private var nextHeartbeat: Double = 0
+    @ObservationIgnored private var silenceArmedAt: Double = .infinity
     @ObservationIgnored private var rate: [String: (Double, Int)] = [:]
     @ObservationIgnored private var name = "Player"
     @ObservationIgnored private var female = false
@@ -224,7 +229,7 @@ final class MultiplayerService {
         try requireOwnerIdle()
         guard onMatchRequested != nil || !SportsSession.shared.active else { throw MultiplayerError.invalidOperation("Finish the current sport session first.") }
         guard let lobby, lobby.canStart else { throw MultiplayerError.invalidOperation("At least two competitors must be ready.") }
-        presentationReadyAt.removeAll(); scheduledRunAt = 0
+        presentationReadyAt.removeAll(); scheduledRunAt = 0; silent.removeAll(); silenceArmedAt = .infinity
         let id = UUID().uuidString
         self.lobby?.matchID = id; self.lobby?.phase = .loading; emotes.removeAll()
         loadingStarted = now; loadingNeedsDecision = false; winnerSeat = -1; quickSport = nil
@@ -273,7 +278,7 @@ final class MultiplayerService {
         proofPeers.removeAll();proofSnapshot=nil
         #endif
         loadingNeedsDecision = false; lobby = nil; hello.removeAll(); seen.removeAll(); disconnected.removeAll(); rate.removeAll(); matchConfiguration = nil; quickSport = nil; searching = false
-        lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0; clockFilter = ClockFilter(); nextPing = 0
+        lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0; clockFilter = ClockFilter(); nextPing = 0; lastHeard.removeAll(); silent.removeAll(); nextHeartbeat = 0; silenceArmedAt = .infinity
     }
     private func requireOwnerIdle() throws {
         guard isOwner, lobby?.phase == .lobby else { throw MultiplayerError.invalidOperation("The owner can change this only in the lobby.") }
@@ -341,6 +346,8 @@ final class MultiplayerService {
         packet.sender = peer
         let key = peer + ":" + packet.kind + ":" + String(packet.reliable)
         guard packet.sequence > (seen[key] ?? -1) else { return }; seen[key] = packet.sequence
+        lastHeard[peer] = now
+        if silent[peer] != nil { quietPeerHeard(peer) }
         if packet.kind == "hello" {
             guard var p = try? decoder.decode(MultiplayerParticipant.self, from: Data(packet.payload.utf8)), p.loadout?.valid() ?? true else { return }
             p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
@@ -403,6 +410,14 @@ final class MultiplayerService {
         default: break
         }
     }
+    /// A competitor that went quiet is heard again: after a few packets, resume play.
+    private func quietPeerHeard(_ id: String) {
+        guard isOwner, let heard = silent[id] else { return }
+        silent[id] = heard + 1
+        guard heard + 1 >= MultiplayerTuning.resumeBeats else { return }
+        silent.removeValue(forKey: id); disconnected.removeValue(forKey: id)
+        try? broadcast("resumePeer", payload: id); pushRuntime("resumePeer", payload: id)
+    }
     private func handleControl(_ p: MultiplayerPacket) {
         guard let i = lobby?.participants.firstIndex(where: { $0.id == p.sender }) else { return }
         switch p.kind {
@@ -444,6 +459,7 @@ final class MultiplayerService {
                 lobby!.participants[g].loaded = true
                 presentationReadyAt[lobby!.participants[g].id] = presentationReadyAt[p.sender]
             }
+            silent.removeValue(forKey: p.sender); lastHeard[p.sender] = now
             if disconnected.removeValue(forKey: p.sender) != nil {
                 try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender)
             }
@@ -457,7 +473,7 @@ final class MultiplayerService {
             lobby!.participants[i].paused = p.payload == "false"
             if lobby!.participants[i].seat >= 0 && lobby!.phase == .playing {
                 if p.payload == "false" { disconnected[p.sender] = now; try? broadcast("suspend", payload: p.sender); pushRuntime("suspend", payload: p.sender) }
-                else { disconnected.removeValue(forKey: p.sender); try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender) }
+                else { disconnected.removeValue(forKey: p.sender); silent.removeValue(forKey: p.sender); lastHeard[p.sender] = now; try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender) }
             }
         default: break
         }
@@ -467,6 +483,8 @@ final class MultiplayerService {
             scheduledRunAt = max(now, lobby!.competitors.map { presentationReadyAt[$0.id] ?? now }.max() ?? now) + max(0.5, roundTrip * 2)
             lobby!.phase = .playing; lobby!.revision += 1; publishLobby()
             try? broadcast("run", payload: String(scheduledRunAt)); pushRuntime("run", payload: String(scheduledRunAt))
+            silenceArmedAt = scheduledRunAt + MultiplayerTuning.silenceGrace; silent.removeAll()
+            for c in lobby!.competitors { lastHeard[c.id] = now }
         } else if quickSport != nil, lobby?.canStart == true { try? startMatch() }
     }
     func runtimeLoaded(readyAfter: Double = 0) { try? sendControl("loaded", payload: String(networkTime + min(2, max(0, readyAfter)))) }
@@ -542,6 +560,11 @@ final class MultiplayerService {
         if now >= nextPing { nextPing = now + (lobby?.phase == .playing ? 0.2 : 0.5)
             if !isOwner, let owner = lobby?.ownerID { try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
         }
+        // A competitor's phone tells the owner it is still there, 10 times a second during play.
+        if !isOwner, lobby?.phase == .playing, localSeat >= 0, now >= nextHeartbeat, let owner = lobby?.ownerID {
+            nextHeartbeat = now + MultiplayerTuning.heartbeatInterval
+            try? transmit("hb", reliable: false, to: [owner])
+        }
         if now >= nextHello { nextHello = now + 1
             if lobby == nil { try? broadcast("hello", payload: (try? json(identity())) ?? "") }
         }
@@ -550,8 +573,19 @@ final class MultiplayerService {
                 loadingNeedsDecision = true
                 try? broadcast("loadTimeout")
             }
+            // A competitor we have heard nothing from pauses the match for everyone until it is heard again. Apple only
+            // reports a disconnect after a while, and meanwhile the opponent would keep scoring.
+            if lobby?.phase == .playing, now >= silenceArmedAt {
+                for p in lobby!.participants where p.seat >= 0 && p.connected && !p.isGuest && p.id != localID {
+                    guard disconnected[p.id] == nil, silent[p.id] == nil else { continue }
+                    if now - (lastHeard[p.id] ?? now) >= MultiplayerTuning.silenceSeconds {
+                        silent[p.id] = 0; disconnected[p.id] = now
+                        try? broadcast("suspend", payload: p.id); pushRuntime("suspend", payload: p.id)
+                    }
+                }
+            }
             for (id, since) in disconnected where now - since >= 15 {
-                disconnected.removeValue(forKey: id); try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
+                disconnected.removeValue(forKey: id); silent.removeValue(forKey: id); try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
                 if let i = lobby?.participants.firstIndex(where: { $0.id == id }) { lobby!.participants[i].seat = -1; lobby!.participants[i].connected = id == localID || transport.peers.contains(id) }
                 lobby?.revision += 1; publishLobby()
             }

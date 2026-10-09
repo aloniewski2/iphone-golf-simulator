@@ -63,7 +63,7 @@ namespace GolfArcade.Tennis {
             TossAccuracy=s.tossAccuracy;
             Flow=s.phase=="rally"?Phase.Rally:s.phase=="point"?Phase.PointOver:s.complete?Phase.MatchOver:localServing?(s.phase=="toss"?Phase.PlayerServeToss:Phase.PlayerServeHold):Phase.OpponentServe;
             SecondServe=s.secondServe;incoming=s.receiver==n;Stamina=a.stamina;
-            Feedback=net.Stale?"Connection interrupted":s.paused?"Waiting for a player":networkLocalSide<0?"Watching":s.reason;
+            Feedback=net.Stale?"Connection interrupted":net.Quiet?"Reconnecting…":s.paused?"Waiting for a player":networkLocalSide<0?"Watching":s.reason;
             string phase=s.phase=="intro"?"intro":networkLocalSide<0?"watching":s.complete?"finished":s.phase=="rally"?"rally":s.phase=="point"?"point":localServing?(s.phase=="toss"?"toss|":"serve|")+(match.DeuceCourt?"deuce":"ad"):"receive";
             if(phase!=networkPhase){networkPhase=phase;PhaseChanged?.Invoke(phase);}
             string score=match.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{match.PlayerGames},{match.OpponentGames},{score}");}

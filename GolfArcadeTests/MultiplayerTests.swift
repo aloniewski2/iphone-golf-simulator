@@ -15,11 +15,14 @@ final class MultiplayerTests: XCTestCase {
         var onPeersChanged: (() -> Void)?
         var onError: ((Error) -> Void)?
         var connected = true
+        /// A link that is still "connected" but delivers nothing: the player has gone quiet without the transport noticing.
+        var drop = false
         var peers: [String] { connected ? bus.links.keys.filter { $0 != localID }.sorted() : [] }
         var sent: [MultiplayerPacket] = []
         init(id: String, bus: Bus) { localID = id; self.bus = bus }
         func send(_ data: Data, to ids: [String]?, reliable: Bool) throws {
             if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: data) { sent.append(packet) }
+            if drop { return }
             for id in ids ?? peers { bus.links[id]?.onData?(data, localID) }
         }
         func disconnect() { bus.links.removeValue(forKey: localID); for link in bus.links.values { link.onPeersChanged?() } }
@@ -380,5 +383,57 @@ final class MultiplayerTests: XCTestCase {
         try pong(sent: 200.30, hostSentAt: 5.0 + (200.30 + 200.50) / 2 + 0.075, sequence: 5002)
         XCTAssertEqual(guest.networkTime - runtime.time, 5.0, accuracy: 0.006, "a slow pong may nudge the clock by at most one slew step")
         XCTAssertEqual(guest.roundTrip, 0.12, accuracy: 1e-6, "round trip is the median of the recent pongs, not the last one")
+    }
+
+    // MARK: Quiet players
+
+    /// Moves every phone's clock forward in 0.1 s steps and lets each service run its update (heartbeats, silence checks).
+    private func advance(_ p: Party, by seconds: Double) {
+        for _ in 0..<Int((seconds * 10).rounded()) {
+            for r in p.runtimes { r.time += 0.1 }
+            for s in p.services { s.update() }
+        }
+    }
+    func testAQuietCompetitorPausesPlayWithinHalfASecondAndResumesWhenHeardAgain() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        advance(p, by: 3)   // past the start grace, with heartbeats flowing
+        XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" }, "a healthy link never pauses")
+        p.bus.links["b"]!.drop = true
+        advance(p, by: 0.5)
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "suspend" && $0.payload == "b" }, "the owner must pause within half a second of silence")
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.connected, true, "...without waiting for the transport to report a disconnect")
+        let resumedBefore = p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count
+        p.bus.links["b"]!.drop = false
+        advance(p, by: 0.5)
+        XCTAssertGreaterThan(p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count, resumedBefore, "...and resume once it is heard again")
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+    }
+    func testACompetitorQuietForTooLongIsDropped() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        p.bus.links["b"]!.drop = true
+        advance(p, by: 16)
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "drop" && $0.payload == "b" })
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.seat, -1)
+    }
+    func testOccasionalLostPacketsDoNotPausePlay() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        // About 3% of the guest's packets are lost, from a fixed seed (the longest run of lost steps is 2).
+        var seed: UInt64 = 20261009
+        func chance() -> Double { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Double(seed >> 11) / Double(1 << 53) }
+        for _ in 0..<600 {
+            p.bus.links["b"]!.drop = chance() < 0.03
+            advance(p, by: 0.1)
+        }
+        p.bus.links["b"]!.drop = false
+        XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" }, "occasional packet loss must not pause play")
+    }
+    func testASpectatorGoingQuietNeverPausesPlay() throws {
+        let p = try party(3); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        p.bus.links["c"]!.drop = true
+        advance(p, by: 5)
+        XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" })
     }
 }

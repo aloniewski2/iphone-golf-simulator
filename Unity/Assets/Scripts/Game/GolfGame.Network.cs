@@ -126,7 +126,7 @@ namespace GolfArcade.Game {
                 if(armMotion) NativeReady();
                 if(myTurn){float sweep=(Input.GetKey(KeyCode.LeftArrow)?-1:0)+(Input.GetKey(KeyCode.RightArrow)?1:0);if(sweep!=0)NativeAim(sweep);}
             }
-            hud.SetScore(networkCard.Total,networkCard.ToPar,holeStrokes);hud.SetStatus(state.paused?"Waiting for a player":state.complete?"Round complete":myTurn?"Your turn":$"{NetworkName(state.turn)}'s turn");
+            hud.SetScore(networkCard.Total,networkCard.ToPar,holeStrokes);hud.SetStatus(net.Quiet?"Reconnecting…":state.paused?"Waiting for a player":state.complete?"Round complete":myTurn?"Your turn":$"{NetworkName(state.turn)}'s turn");
             if(myTurn)UpdateAimVisuals();else aimLine.positionCount=0;
             var plan=hud.Map;plan.Ball=ball.position;plan.Pin=HoleView.ToWorld(hole.Pin);plan.ShowBall=true;
             plan.Landing=landingMarker.position;plan.ShowLanding=myTurn;

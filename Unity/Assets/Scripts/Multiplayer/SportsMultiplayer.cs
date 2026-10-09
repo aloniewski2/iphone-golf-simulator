@@ -182,6 +182,7 @@ namespace GolfArcade.Multiplayer {
         double ScreenDelay=>tennisView?tennisView.Lag:0;
         public double RenderAdvance=>IsHost?0:Math.Min(.1,Math.Max(0,Clock+clockOffset-packetAt));
         public bool Stale=>Running&&!IsHost&&Clock-lastSnapshot>2;
+        public bool Quiet=>Running&&!IsHost&&Clock-lastSnapshot>NetworkTuning.QuietSeconds;
         void SendSnapshot(bool full) {
             if(!IsHost)return;
             if(tennis!=null)Send("snapshot",JsonUtility.ToJson(tennis.State),full);

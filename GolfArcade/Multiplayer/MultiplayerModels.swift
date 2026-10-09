@@ -205,3 +205,15 @@ struct ClockFilter {
         return n % 2 == 1 ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2
     }
 }
+
+/// Timing rules for noticing that a player's connection has gone quiet (see PLAN_Multiplayer_OnlineLocal.md, P1.4).
+enum MultiplayerTuning {
+    /// A competitor the owner has heard nothing from (no packet of any kind) for this long pauses the match for everyone.
+    static let silenceSeconds = 0.4
+    /// Packets heard from a quiet competitor before play resumes.
+    static let resumeBeats = 3
+    /// How often a competitor's phone tells the owner it is still there during play (10 per second).
+    static let heartbeatInterval = 0.1
+    /// Seconds after the shared start before silence is judged: the first frames of a freshly loaded scene can stall the app.
+    static let silenceGrace = 1.0
+}

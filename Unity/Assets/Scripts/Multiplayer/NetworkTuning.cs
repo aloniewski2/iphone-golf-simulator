@@ -23,6 +23,8 @@ namespace GolfArcade.Multiplayer {
         /// confirmation has not arrived yet (slow TV or link), the host waits at most this long (from hearing
         /// the swing start) before awarding the point.
         public const double PendingSwingHold = .35;
+        /// A guest that has heard nothing from the host for this long shows "Reconnecting..." (the 2 s Stale label comes later).
+        public const double QuietSeconds = .4;
 
         /// The screen delay a phone may credit to its own swings.
         public static double ScreenCredit(double screenDelay) =>

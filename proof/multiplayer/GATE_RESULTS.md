@@ -29,3 +29,9 @@ GATE: G1.3 Filtered clock stays within 20 ms where the latest-sample clock does 
 GATE: G1.3b Swift port matches the model — NOT RUN (M). `testClockFilterMatchesTheSharedVector`, `testClockFilterIgnoresBadSamples` and `testASlowPongDoesNotMoveTheSharedClock` (GolfArcadeTests/MultiplayerTests.swift) pass the syntax check here; they need Xcode or CI to run. The same 18-sample vector is asserted by the C# model test.
 GATE: G1.3c Rejected timestamps are counted — PASS (S). `NetworkTennisMatch.StampRejects` increments for impossible timestamps and not for sane ones (`ImpossibleTimestampsAreCountedSoASkewedClockShowsUp`). The host still rejects them (the game's `ImpossibleTimestampsAreRejected` test is unchanged).
 Note: new Swift code lives in existing files (`MultiplayerModels.swift`, `MultiplayerService.swift`, `MultiplayerTests.swift`) because both Xcode projects list every Swift file explicitly; a new file needs the projects regenerated with XcodeGen on a Mac.
+
+### P1.4 Heartbeats and pausing when a player goes quiet
+
+GATE: G1.4 Quiet competitor pauses play and resumes — NOT RUN (M). Four XCTests were added to `GolfArcadeTests/MultiplayerTests.swift` (`testAQuietCompetitorPausesPlayWithinHalfASecondAndResumesWhenHeardAgain`, `testACompetitorQuietForTooLongIsDropped`, `testOccasionalLostPacketsDoNotPausePlay`, `testASpectatorGoingQuietNeverPausesPlay`). They pass the syntax check; they need Xcode or CI to run. The seeded loss pattern in the third was verified offline: 21 of 600 steps lost, longest run 2, and the owner only pauses after 3 lost steps in a row.
+GATE: G1.4b Existing Swift tests unaffected — NOT RUN (M); read-through only. The one existing test that jumps the clock (`testCompetitorRecoveryAndExpiry`) already has the player marked disconnected, which the new check skips.
+GATE: G1.4c Changed Unity-only files parse — PASS (S, syntax only): `SportsMultiplayer.cs`, `TennisGame.Network.cs`, `GolfGame.Network.cs`, `NetworkTuning.cs`.
