@@ -99,6 +99,8 @@ struct CharacterModelPreview: UIViewRepresentable {
     var idleSport: Sport? = nil
     var practiceSequence: Int? = nil
     var menuActivity: ClubPreviewActivity? = nil
+    var emote: String? = nil
+    var emoteSequence = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     func makeCoordinator() -> Coordinator { Coordinator(cameraDistance: cameraDistance) }
     func makeUIView(context: Context) -> SCNView {
@@ -125,12 +127,13 @@ struct CharacterModelPreview: UIViewRepresentable {
     }
     private func updateIdle(_ view: SCNView, context: Context) {
         if let menuActivity {
-            context.coordinator.configureClub(menuActivity, animate: !reduceMotion && !SportsSession.shared.reduceMotion)
-            view.isPlaying = !reduceMotion && !SportsSession.shared.reduceMotion
+            context.coordinator.configureClub(menuActivity, animate: false)
+            context.coordinator.playEmote(emote, sequence: emoteSequence)
+            view.isPlaying = context.coordinator.motion != nil
             view.preferredFramesPerSecond = 60
             return
         }
-        let animate = idleSport != nil && !reduceMotion && !SportsSession.shared.reduceMotion
+        let animate = false
         context.coordinator.configureIdle(sport: idleSport, animate: animate)   // (the idle used to stop for the practice swing because it turned the whole character; it is the skeleton now)
         if let sequence = practiceSequence { context.coordinator.practice(sequence) }
         view.isPlaying = animate || practiceSequence != nil
@@ -319,6 +322,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             motionTime = time
             guard let motion, let rig else { return }
             rig.apply(motion, at: time)
+            if motion.freezeIdle, time >= motion.settledAfter(rig.data) { stopLink() }
             if let zoom = serveZoom { camera?.simdPosition = zoom.base * (1 + (zoom.k - 1) * motion.serveWeight(rig.data, at: time)) }
         }
         @MainActor private final class LinkTarget: NSObject {
@@ -337,41 +341,18 @@ struct CharacterModelPreview: UIViewRepresentable {
             character.removeAllActions(); character.eulerAngles = SCNVector3Zero
             scene.rootNode.childNode(withName: "clubProps", recursively: false)?.removeFromParentNode()
             scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeFromParentNode()
-            guard let equipped = previous else { return }
-            previous = nil; update(equipped, sport: outfitSport); clubKey = key
-            guard hero != nil else { return }
-            racket?.isHidden = activity != .play
-            let props = SCNNode(); props.name = "clubProps"; scene.rootNode.addChildNode(props)
-            func box(_ size: SCNVector3, _ position: SCNVector3, _ color: UIColor, _ radius: CGFloat = 0.02) -> SCNNode {
-                let n = SCNNode(geometry: SCNBox(width: CGFloat(size.x), height: CGFloat(size.y), length: CGFloat(size.z), chamferRadius: radius))
-                n.position = position; n.geometry?.firstMaterial?.diffuse.contents = color
-                n.geometry?.firstMaterial?.roughness.contents = 0.85; props.addChildNode(n); return n
-            }
-            let wood = UIColor(red: 0.57, green: 0.34, blue: 0.16, alpha: 1)
-            let navy = UIColor(IslandUI.navy)
-            if activity == .settings {
-                // Open wooden deck chair, angled with the hero. Navy/cream canvas strips. The match set has no seated clip, so the hero stands
-                // in front of the chair in the Ready pose.
-                let chair = SCNNode(); props.addChildNode(chair)
-                for x: Float in [-0.30, 0.30] {
-                    for z: Float in [-0.22, 0.30] { _ = box(SCNVector3(0.045,0.48,0.045), SCNVector3(x,0.23,z),wood) }
-                    _ = box(SCNVector3(0.055,0.055,0.65),SCNVector3(x,0.56,0.03),wood)
-                }
-                for i in 0..<9 {
-                    let x = Float(i-4)*0.06
-                    _ = box(SCNVector3(0.06,0.035,0.55),SCNVector3(x,0.36,0.02),i%2 == 0 ? navy : .white,0)
-                    let back = box(SCNVector3(0.06,0.64,0.035),SCNVector3(x,0.68,-0.28),i%2 == 0 ? navy : .white,0)
-                    back.eulerAngles.x = -0.20
-                }
-                props.eulerAngles.y = 0.35
-                props.position = SCNVector3(-0.12, 0, -0.66)   // the chair stands behind the hero, who stands in front of it
-            } else if activity == .store {
-                _ = box(SCNVector3(0.40,0.6,0.3), SCNVector3(0.57,0.3,-0.13), wood)
-                _ = box(SCNVector3(0.075,0.095,0.03),SCNVector3(0.57,0.44,0.035),UIColor(red:0.8,green:0.64,blue:0.3,alpha:1))
-            }
-            // The hero is the motion: the locker, settings and store tiles play the ReadyIdle loop in place; the play tile plays one Serve and goes back to Ready. Reduced motion keeps the still Ready stance.
-            play(animate ? (activity == .play ? .serveOnce : .ready) : nil)
+            clubKey = key
+            racket?.isHidden = outfitSport == .golf || framing == .head
+            applyFraming()
         }
+        private var lastEmoteSequence = 0
+        func playEmote(_ id: String?, sequence: Int) {
+            guard sequence != lastEmoteSequence, let id, (EmoteCatalog.ids + ["cheer", "hitPerfect"]).contains(id) else { return }
+            lastEmoteSequence = sequence
+            // Golf exports share the emotes that are supported by that character's rig.
+            play(MenuMotion(kind: .clipOnce(id), lead: 0, fadeIn: 0.15, fadeOut: 0.25, freezeIdle: true))
+        }
+
         private var idleKey: String?
         let heroCameraDistance: Float
         init(cameraDistance: Float = 4.8) {
@@ -690,7 +671,7 @@ struct LobbyHeroStage: UIViewRepresentable {
                         // Give existing heroes time to make room before the newcomer appears.
                         let joinDelay = state.animate ? 0.22 : 0
                         holder.runAction(.sequence([.wait(duration:joinDelay),.group([.fadeIn(duration:0.2),.scale(to:1,duration:0.22)])]))
-                        if state.animate && state.introduce { motion.play("wave",at:now+joinDelay,now:now) }
+                        // Lobby arrivals hold their sport stance until the player chooses an emote.
                     }
                 }
                 if let event = state.emotes[p.id], heroes[p.id]?.eventID != event.id {
@@ -700,7 +681,7 @@ struct LobbyHeroStage: UIViewRepresentable {
                     #endif
                 }
             }
-            if state.winnerID != winner { winner = state.winnerID; if let winner, state.animate { heroes[winner]?.motion.play("matchWin",at:now,now:now) } }
+            winner = state.winnerID
             reframe(); tickPose(at:now)
         }
         private func reframe() {

@@ -18,6 +18,7 @@ enum { SportsSampleVersion = 3, SportsSampleValid = 1, SportsSampleDegraded = 2 
 @interface SportsRuntime : NSObject
 + (instancetype)shared;
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error;
+- (BOOL)loadInWindow:(UIWindow*)window controllerReplica:(BOOL)controllerReplica error:(NSError**)error;
 - (void)attachToWindow:(UIWindow*)window;
 - (void)send:(NSString*)json;
 - (void)push:(NSString*)json;

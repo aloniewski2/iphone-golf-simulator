@@ -12,7 +12,13 @@ struct TennisTVRoot: View {
                 Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
                 Group {
                     if OnboardingFlow.shared.holdsMenu { OnboardingHoldingCard() }
-                    else { TennisMenuScreen(compact: false) }
+                    else { TennisMenuScreen(compact: false)
+                        .overlay(alignment: .bottomTrailing) {
+                            Text("BETA · Feedback on your phone").font(IslandUI.font(13, bold: true))
+                                .foregroundStyle(IslandUI.navy).padding(8).background(IslandUI.paper, in: Capsule()).padding(12)
+                                .allowsHitTesting(false)
+                        }
+                    }
                 }
                     .frame(width: 1280, height: 720)
                     .scaleEffect(scale)
@@ -95,7 +101,7 @@ struct TennisRemote: View {
     private var screenName: String {
         switch menu.screen {
         case .online(let route): route.rawValue.uppercased()
-        case .party: "PLAY WITH FRIENDS"; case .quickPlay: "QUICK PLAY"
+        case .party: "PLAY"; case .multiplayer: "MULTIPLAYER"; case .localChoice: "LOCAL MULTIPLAYER"; case .onlineChoice: "ONLINE"; case .homeEmotes: "EMOTES"; case .quickPlay: "QUICK PLAY"
         case .title: "TITLE"; case .main: "HOME"; case .gameSelect: "CHOOSE YOUR SPORT"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"

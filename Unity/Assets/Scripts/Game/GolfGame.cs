@@ -1075,7 +1075,6 @@ namespace GolfArcade.Game
             // the club for where this shot is going: the pin, or on a long hole the next landing
             club = AutoClub(lie, putting ? ballAt.DistanceTo(hole.Pin) : PlaysLike(ballAt, hole.RecommendedTarget(ballAt)));
             Swing.SetClub(club);
-            if (NativeControlled) RequireNativeReady();
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             Swing.Armed = true;
             golfer.SetVisible(true);
@@ -1095,6 +1094,7 @@ namespace GolfArcade.Game
             holeView.ShowFlag(!putting || ballAt.DistanceTo(hole.Pin) > 6);
             if (putting) greenRead.Show(hole); else greenRead.Hide();
             Enter(State.Aim);
+            if (NativeControlled) NativeReady();
             RefreshControls();   // after Enter: the aim buttons and the joystick show only while aiming
             hud.HideHoleIntro();  // a skip from the flyover leaves the title up otherwise
         }
@@ -1872,7 +1872,7 @@ namespace GolfArcade.Game
             hud.SetClubSelection(chosen, announce: true);
             club = chosen;
             Swing.SetClub(club);
-            if (NativeControlled) RequireNativeReady();
+            if (NativeControlled) NativeReady();
             golfer.SetClub(club, ballAt.DistanceTo(hole.Pin) < 40);
             UpdateAimVisuals();
         }
@@ -1945,8 +1945,8 @@ namespace GolfArcade.Game
             golfer.Settle();
             Haptics.Release();
             sounds.Release();
-            hud.SetStatus(NativeControlled && !NativeCalibrating ? "Tap Ready on your phone" : "Hold still, then swing");
-            if (NativeControlled) RequireNativeReady();
+            hud.SetStatus("Hold still, then swing");
+            if (NativeControlled) NativeReady();
         }
 
         /// The next impact is a planned one (the tests' StrikeToward and the like): exactly as
@@ -2170,8 +2170,7 @@ namespace GolfArcade.Game
                     hud.SetFace(club != GolfClub.Putter && swinging && !Demo ? Swing.Detector.FaceNow : null);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (NativeControlled) {
-                        if (NativeCalibrating) hud.SetStatus($"Practice swings {NativeCalibrationCount}/3 · " + (NativeShotReady ? "swing back and through" : "tap Ready on your phone"));
-                        else if (!NativeShotReady) hud.SetStatus("Tap Ready on your phone to set this shot's starting grip");
+                        if (!NativeShotReady) hud.SetStatus("Tap Ready on your phone to set this shot's starting grip");
                         else if (Swing.Phase == SwingPhase.Address) hud.SetStatus("Ready — swing back and through!");
                     }
                     else if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }
@@ -2195,8 +2194,9 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Result:
+                    shotResultPanel?.SetCountdown(Mathf.Max(0,Mathf.Max(3f,ResultReactionSeconds)-stateTime),"NEXT SHOT");
                     if(resultHeroCamera) rig.FrameCharacterResult(golfer.transform); else rig.FrameShotResult();
-                    if (stateTime >= ResultReactionSeconds || (stateTime >= ResultSkipAfter && Input.GetMouseButtonDown(0))) ContinueShotResult();
+                    if (stateTime >= Mathf.Max(3f,ResultReactionSeconds)) ContinueShotResult();
                     break;
 
                 case State.Replay:

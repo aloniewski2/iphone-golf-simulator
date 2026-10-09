@@ -62,7 +62,35 @@ final class MultiplayerService {
     private var now: Double { clock() }
     var networkTime: Double { now + (isOwner ? 0 : clockOffset) }
     var emoteCooldown: Double { max(0, MultiplayerEmote.cooldown - (now - localEmoteAt)) }
-    var isNearby: Bool { local != nil && transport != nil }
+    @ObservationIgnored private var sharedPhoneHost = false
+    var isNearby: Bool { (local != nil || sharedPhoneHost) && transport != nil }
+    var localJoinCode: String? { isNearby && isOwner ? local?.joinCode : nil }
+    func joinLocal(code: String) throws {
+        let clean = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let matches = discoveredLobbies.filter { LocalMultiplayerTransport.joinCode(for: $0.id.components(separatedBy: "~").last ?? "") == clean }
+        guard clean.count == 6, matches.count == 1, let item = matches.first else {
+            throw MultiplayerError.invalidOperation("Lobby not found. Check the six-character code and use the same Wi-Fi.")
+        }
+        try joinLocal(item)
+    }
+    func addLocalGuest() throws {
+        try requireOwnerIdle()
+        guard isNearby, lobby?.sport == .golf else { throw MultiplayerError.invalidOperation("Shared-phone guests are available in local golf.") }
+        let number = (1...4).first { n in !lobby!.participants.contains { $0.name == "Guest \(n)" } } ?? 4
+        let palette = ["F4A65A", "78C5E8", "C997DF", "8AD0AD", "F19DAB", "F5DD7C"]
+        let used = Set(lobby!.participants.compactMap { $0.loadout?.colours["shirt"] })
+        let shirt = palette.filter { !used.contains($0) }.randomElement() ?? palette[0]
+        let shorts = ["23344D", "F0E2CC", "425D4D"].randomElement()!
+        let skin = ["F2D0AF", "D5A17C", "A8704E", "754B37"].randomElement()!
+        let look = MultiplayerLoadout(skinHex: skin, colours: ["shirt":shirt,"shorts":shorts], emotes: EmoteCatalog.defaults, shirtHex:shirt, shortsHex:shorts)
+        try lobby?.add(MultiplayerParticipant(id: UUID().uuidString, name: "Guest \(number)", ready: true, female: Bool.random(), loadout:look, controllerID:localID))
+        publishLobby()
+    }
+    func removeLocalGuest() throws {
+        try requireOwnerIdle()
+        guard let index = lobby?.participants.lastIndex(where: { $0.controllerID == localID }) else { return }
+        lobby?.participants.remove(at:index); lobby?.revision += 1; publishLobby()
+    }
     var authenticated: Bool { GKLocalPlayer.local.isAuthenticated }
     func clearError() { lastError = nil }
 
@@ -72,9 +100,9 @@ final class MultiplayerService {
         self.runtimeSend = sendToRuntime; self.runtimePoll = pollRuntime; self.clock = clock
     }
     /// Shared host path also permits an injected transport for protocol verification.
-    func host(using connection: any MultiplayerTransport) throws {
+    func host(using connection: any MultiplayerTransport, sharedPhone: Bool = false) throws {
         guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave the current lobby first.") }
-        bind(connection); createLobby(owner: localID)
+        sharedPhoneHost = sharedPhone; bind(connection); createLobby(owner: localID)
     }
     func connect(using connection: any MultiplayerTransport) throws {
         guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave the current lobby first.") }
@@ -179,7 +207,10 @@ final class MultiplayerService {
     func configure(_ sport: MultiplayerSport, venue: String = "resort", sets: Int = 1, games: Int = 3) throws {
         try requireOwnerIdle()
         guard MultiplayerLobby.validVenue(venue, sport: sport), (1...3).contains(sets), [1,3,6].contains(games) else { throw MultiplayerError.invalidOperation("Invalid match settings.") }
-        lobby?.configure(sport: sport, venue: venue); lobby?.sets = sets; lobby?.games = games; publishLobby()
+        if sport != .golf { lobby?.participants.removeAll { $0.isGuest } }
+        lobby?.configure(sport: sport, venue: venue)
+        for i in lobby!.participants.indices where lobby!.participants[i].isGuest { lobby!.participants[i].ready = true }
+        lobby?.sets = sets; lobby?.games = games; publishLobby()
     }
     func assignSeat(_ player: String, seat: Int) throws { try requireOwnerIdle(); try lobby?.assign(player, seat: seat); publishLobby() }
     func setReady(_ ready: Bool) throws {
@@ -220,7 +251,7 @@ final class MultiplayerService {
         let remaining = Set(lobby!.participants.map(\.id))
         lobby?.queue.removeAll { !remaining.contains($0) }
         if rotateSeats && lobby?.sport == .tennis { rotate() }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = false; lobby!.participants[i].loaded = false }
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false }
         lobby?.revision += 1; publishLobby()
     }
     func findMorePlayers() async throws {
@@ -232,6 +263,7 @@ final class MultiplayerService {
         try await gc.findMore(sport: lobby!.sport)
     }
     func leave() {
+        sharedPhoneHost = false
         if transport != nil { try? broadcast("leave") }
         epoch += 1; searchGeneration += 1; timer?.invalidate(); timer = nil; stopRuntime()
         transport?.onPeersChanged = nil; transport?.disconnect(); transport = nil; local = nil
@@ -278,7 +310,7 @@ final class MultiplayerService {
         guard let transport else { return }
         try? broadcast("hello", payload: (try? json(identity())) ?? "")
         if isOwner {
-            for i in lobby!.participants.indices where lobby!.participants[i].id != localID {
+            for i in lobby!.participants.indices where lobby!.participants[i].id != localID && !lobby!.participants[i].isGuest {
                 let id = lobby!.participants[i].id, connected = transport.peers.contains(id)
                 #if DEBUG
                 if proofPeers.contains(id) { continue }
@@ -309,7 +341,7 @@ final class MultiplayerService {
         guard packet.sequence > (seen[key] ?? -1) else { return }; seen[key] = packet.sequence
         if packet.kind == "hello" {
             guard var p = try? decoder.decode(MultiplayerParticipant.self, from: Data(packet.payload.utf8)), p.loadout?.valid() ?? true else { return }
-            p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
+            p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
             hello[peer] = p
             if isOwner { do {
                 try lobby?.add(p); publishLobby()
@@ -392,7 +424,10 @@ final class MultiplayerService {
                   (event.eventID?.utf8.count ?? 0) <= 64 else { return }
             lastEmote[p.sender] = now; event.startedAt = now; emotes[p.sender] = event
             try? broadcast("emote", payload: json(event)); return
-        case "ready": if lobby?.phase == .lobby { lobby!.participants[i].ready = p.payload == "true" }
+        case "ready": if lobby?.phase == .lobby {
+            lobby!.participants[i].ready = p.payload == "true"
+            for g in lobby!.participants.indices where lobby!.participants[g].controllerID == p.sender { lobby!.participants[g].ready = p.payload == "true" }
+        }
         case "queue": if lobby!.participants[i].seat == -1 {
             lobby!.queue.removeAll { $0 == p.sender }; if p.payload == "true" { lobby!.queue.append(p.sender) }
         }
@@ -401,6 +436,10 @@ final class MultiplayerService {
             guard reported.isFinite else { return }
             presentationReadyAt[p.sender] = max(now, min(now + 2, reported))
             lobby!.participants[i].loaded = true
+            for g in lobby!.participants.indices where lobby!.participants[g].controllerID == p.sender {
+                lobby!.participants[g].loaded = true
+                presentationReadyAt[lobby!.participants[g].id] = presentationReadyAt[p.sender]
+            }
             if disconnected.removeValue(forKey: p.sender) != nil {
                 try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender)
             }

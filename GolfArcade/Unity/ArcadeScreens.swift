@@ -188,12 +188,11 @@ private struct PresentationRosterCard: View {
 struct LoadingScreen: View {
     let menu: TennisMenu
     let compact: Bool
-    @State private var drift = false
     private var session: SportsSession { .shared }
     private var service: MultiplayerService { menu.online.service }
     private var sport: Sport { service.lobby?.phase == .loading ? (service.lobby?.sport == .golf ? .golf : .tennis) : menu.launch?.sport ?? Sport(rawValue: session.sport) ?? .tennis }
-    private var venue: String { sport == .golf ? (GolfCourseChoice(rawValue: session.golfCourse)?.title ?? "Cliffside") : (TennisVenueChoice(rawValue: service.lobby?.venue ?? session.tennisVenue)?.title ?? "Tropical Resort") }
-    private var art: String { sport == .golf ? (GolfCourseChoice(rawValue: session.golfCourse)?.art ?? "map-golf-cliffside") : "map-\(service.lobby?.venue ?? session.tennisVenue)" }
+    private var venueID: String { service.lobby?.phase == .loading ? service.lobby?.venue ?? (sport == .golf ? session.golfCourse : session.tennisVenue) : (sport == .golf ? session.golfCourse : session.tennisVenue) }
+    private var venue: String { sport == .golf ? (GolfCourseChoice(rawValue: venueID)?.title ?? "Cliffside") : (TennisVenueChoice(rawValue: venueID)?.title ?? "Tropical Resort") }
     private var modeLine: String {
         if sport == .golf { return "Golf · Stroke Play · \(venue)" }
         if menu.launch?.mode == .training { return "Tennis · Practice · \(venue)" }
@@ -203,16 +202,12 @@ struct LoadingScreen: View {
         GeometryReader { geometry in
             ZStack {
                 Club.lagoonDeep
-                if let image = UIImage(named: art + ".jpg") {
-                    Image(uiImage: image).resizable().scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height).clipped()
-                        .scaleEffect(drift && !session.reduceMotion ? 1.03 : 1)
-                }
-                LinearGradient(colors: [.black.opacity(0.25), Club.lagoonDeep.opacity(0.96)], startPoint: .top, endPoint: .bottom)
                 VStack(spacing: compact ? 18 : 24) {
+                    Text("MOTION CLUB · BETA").font(IslandUI.font(12, bold: true)).tracking(1.5)
                     Text(venue).font(IslandUI.font(compact ? 32 : 58, bold: true))
                     Text(modeLine).font(IslandUI.font(compact ? 15 : 23)).multilineTextAlignment(.center)
-                    roster
+                    GameplayPreview(sport: sport, venue: venueID)
+                        .aspectRatio(16 / 9, contentMode: .fit).clipShape(RoundedRectangle(cornerRadius: 18))
                     Spacer(minLength: 0)
                     loadingStatus
                     HStack(spacing: 16) {
@@ -231,7 +226,6 @@ struct LoadingScreen: View {
                 }.padding(compact ? 24 : 64).frame(maxWidth: .infinity)
             }.foregroundStyle(.white).clipped()
         }.ignoresSafeArea().accessibilityIdentifier("presentation-loading-card")
-        .onAppear { withAnimation(.easeInOut(duration: 5).repeatForever(autoreverses: true)) { drift = true } }
     }
     private var roster: some View {
         let competitors = session.multiplayerMatchID != nil || service.lobby?.phase == .loading ? service.lobby?.competitors ?? [] : []
@@ -276,6 +270,7 @@ struct LoadingScreen: View {
 extension TennisMenu {
     /// A readable name for a menu item, for the phone remote.
     static func label(for id: String) -> String {
+        if id.hasPrefix("home-emote-") { return TennisMenu.homeEmoteName(String(id.dropFirst(11))) }
         if id.hasPrefix("sport-"), let s = Sport(rawValue: String(id.dropFirst(6))) { return s.playable ? s.title.capitalized : "\(s.title.capitalized) · coming soon" }
         if id.hasPrefix("tab-"), let t = SettingsTab(rawValue: String(id.dropFirst(4))) { return "Settings · \(t.title)" }
         if id.hasPrefix("lk-") { return lockerLabel(id) }
@@ -293,7 +288,16 @@ extension TennisMenu {
         case "quickLength": return "Match length"
         case "quickStart": return "Start Match"
         case "homePlay": return "Play with Friends"
-        case "quickPlay", "partySolo": return "Quick Play"
+        case "quickPlay", "partySolo": return "Single Player"
+        case "partyMultiplayer": return "Multiplayer"
+        case "partyOnline": return "Online"
+        case "partyLocal": return "Local"
+        case "partyNearby": return "Nearby Lobby"
+        case "partyLocalGolf": return "Pass the Phone · Golf"
+        case "onlineQuick": return "Quick Match"
+        case "homeInvite": return "Play with Friends"
+        case "homeEmotes": return "Emotes"
+        case "betaFeedback": return "Beta Feedback"
         case "quickTennis": return "Casual tennis against AI"; case "quickGolf": return "Solo golf round"
         case "loadingBack": return "Back to Home"; case "loadingRetry": return "Retry loading"
         case "play": return "Play"; case "character": return "Locker"; case "settings": return "Settings"

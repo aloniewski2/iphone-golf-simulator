@@ -56,7 +56,7 @@ struct ClubEnvironmentView: UIViewRepresentable {
         return view
     }
     func updateUIView(_ view: SCNView, context: Context) {
-        context.coordinator.show(room, in: view, animate: !reduceMotion && !SportsSession.shared.reduceMotion)
+        context.coordinator.show(room, in: view, animate: false)
     }
     static func dismantleUIView(_ view: SCNView, coordinator: Coordinator) {
         view.isPlaying = false; coordinator.camera.removeAllActions(); view.scene = nil
@@ -150,7 +150,7 @@ struct ClubLivingImageView: UIViewRepresentable {
         return view
     }
     func updateUIView(_ view: LivingClubView, context: Context) {
-        view.show(room, animated: !reduceMotion && !SportsSession.shared.reduceMotion && scenePhase == .active)
+        view.show(room, animated: false)
     }
     static func dismantleUIView(_ view: LivingClubView, coordinator: ()) {
         view.isPaused = true

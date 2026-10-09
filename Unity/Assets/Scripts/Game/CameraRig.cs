@@ -107,6 +107,16 @@ namespace GolfArcade.Game
         }
 
         /// Return to the exact address composition, so the result feels like part of the shot.
+        public void FrameGolfParty(Vector3 origin,Vector3 direction,bool result) {
+            RestoreFov();ResetZoom();direction=GroundDirection(direction);
+            float back=Camera.aspect<1.2f?10.5f:7.5f;
+            var center=origin-direction*1.3f;
+            targetPosition=center+direction*(result?back:-back)+Vector3.up*3.4f;
+            targetLookAt=center+Vector3.up*.85f;
+            cueUp=Vector3.up;targetRoll=0;shotFrame=povThisFrame=false;
+            positionLag=.22f;lookLag=.22f;ClearGround();
+        }
+
         public void FrameShotResult()
         {
             RestoreFov(); ResetZoom();

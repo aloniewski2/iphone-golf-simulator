@@ -6,6 +6,7 @@ final class SportsDisplays: NSObject {
     weak var phone: UIWindow?
     var external: UIWindow?
     private var preview: UIWindow?
+    private var multiplayerRenderer: UIWindow?
     private var loadingCover: UIWindow?
     private var previewOverlay: UIViewController?
     private var registration: AnyObject?
@@ -51,6 +52,22 @@ final class SportsDisplays: NSObject {
         guard let external else { return nil }
         showMenu()
         return external
+    }
+    /// Golf guests watch the host's screen. Keep their Unity replica underneath
+    /// the opaque native controller so it can supply map and turn state.
+    func multiplayerControllerWindow() -> UIWindow? {
+        guard SportsSession.shared.multiplayerControllerOnly else { return nil }
+        refresh()
+        if let external { return external }
+        guard let scene=phone?.windowScene else { return nil }
+        if multiplayerRenderer == nil {
+            let window=UIWindow(windowScene:scene)
+            window.windowLevel = UIWindow.Level(rawValue:UIWindow.Level.normal.rawValue - 1)
+            let root=UIViewController();root.view.backgroundColor = .black
+            window.rootViewController=root;multiplayerRenderer=window
+        }
+        multiplayerRenderer?.isHidden=false
+        return multiplayerRenderer
     }
     /// Explicit automated verification may render on the paired phone without
     /// an AirPlay receiver. Normal play retains its external-display contract.
@@ -133,7 +150,22 @@ final class SportsDisplays: NSObject {
         host.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([host.view.leadingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.leadingAnchor),host.view.trailingAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.trailingAnchor),host.view.topAnchor.constraint(equalTo:root.view.safeAreaLayoutGuide.topAnchor),host.view.heightAnchor.constraint(equalToConstant:150)])
     }
+    private func installBetaMark(in root: UIViewController) {
+        let tag = 9023
+        guard root.view.viewWithTag(tag) == nil else { return }
+        let label = UILabel(); label.tag = tag; label.text = " MOTION CLUB · BETA "
+        label.font = .boldSystemFont(ofSize: 12); label.textColor = .white
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        label.layer.cornerRadius = 6; label.clipsToBounds = true; label.isUserInteractionEnabled = false
+        root.view.addSubview(label); label.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            label.trailingAnchor.constraint(equalTo: root.view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            label.bottomAnchor.constraint(equalTo: root.view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
+            label.heightAnchor.constraint(equalToConstant: 24)
+        ])
+    }
     func restorePhoneControls() {
+        if let root = external?.rootViewController { installBetaMark(in: root) }
         if external != nil && preview != nil { endPreview() }
         phone?.makeKeyAndVisible()
         if let preview {
@@ -190,7 +222,7 @@ final class SportsDisplays: NSObject {
         networkOverlay?.willMove(toParent:nil); networkOverlay?.view.removeFromSuperview(); networkOverlay?.removeFromParent(); networkOverlay = nil
         if let child=previewOverlay { child.willMove(toParent:nil); child.view.removeFromSuperview(); child.removeFromParent() }
         previewOverlay=nil
-        preview?.isHidden=true; preview=nil; phone?.makeKeyAndVisible()
+        preview?.isHidden=true; preview=nil; multiplayerRenderer?.isHidden=true; multiplayerRenderer=nil; phone?.makeKeyAndVisible()
     }
     func isPreview(_ window:UIWindow?) -> Bool { window != nil && window === preview }
 

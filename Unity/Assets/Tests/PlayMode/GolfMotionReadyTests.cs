@@ -28,6 +28,7 @@ namespace GolfArcade.PlayTests {
             double time=1;
             foreach(var grip in new[]{Q.Identity,Q.CreateFromAxisAngle(V.UnitY,.8f)}) {
                 game.DropBall(game.CurrentHole.Tee);
+                game.RequireNativeReady();
                 Assert.IsFalse(game.NativeShotReady);
                 Stroke(game,ref time,grip);
                 Assert.AreEqual(GolfGame.State.Aim,game.Current,"Motion without Ready must not spend a stroke");
@@ -38,18 +39,9 @@ namespace GolfArcade.PlayTests {
                 Assert.GreaterOrEqual(game.FlightTime,0,"Physical impact must not schedule another animated downswing");
             }
             game.DropBall(game.CurrentHole.Tee); game.NativeReady(Q.Identity); game.NativeClub(1);
-            Assert.IsFalse(game.NativeShotReady,"Changing club requires Ready again");
-            game.StartGolfCalibration(Q.Identity);
-            for(int i=0;i<3;i++) {
-                if(i>0) game.NativeReady(Q.Identity);
-                Stroke(game,ref time,Q.Identity);
-                Assert.AreEqual(i+1,game.NativeCalibrationCount);
-                Assert.AreEqual(GolfGame.State.Aim,game.Current,"Practice swings cannot launch a ball");
-                Assert.IsFalse(game.NativeShotReady,"Practice also needs Ready for every swing");
-            }
-            game.FinishGolfCalibration();
-            Assert.IsFalse(game.NativeShotReady);
-            Assert.Less(game.Swing.Detector.FullBackswing,2.0,"The comfortable practice range is learned");
+            Assert.IsTrue(game.NativeShotReady,"Changing club must immediately allow the next shot without calibration");
+            Stroke(game,ref time,Q.Identity);
+            Assert.AreEqual(GolfGame.State.Flight,game.Current,"A club change must not strand the player behind Ready");
         }
     }
 }

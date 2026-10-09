@@ -492,7 +492,7 @@ final class LockerMirrorTests: XCTestCase {
     private func bone(_ rig: HeroRig, _ name: String) throws -> SCNNode { try XCTUnwrap(rig.boneNodes.first { $0.name == name }, "bone \(name)") }
 
     /// Locker tile and tennis idle play ReadyIdle, in place: the pose changes, the loop closes on the same Ready pose, and nothing turns the character root.
-    func testLockerTileAndTennisIdlePlayReadyIdleInPlace() throws {
+    func testMenuTilesHoldStillAndExplicitIdlePlaysInPlace() throws {
         for female in [false, true] {
             for mode in ["locker", "settings", "store", "tennisIdle"] {
                 let c = CharacterModelPreview.Coordinator(); c.update(player(female: female))
@@ -504,6 +504,11 @@ final class LockerMirrorTests: XCTestCase {
                 }
                 defer { c.stopMotion() }
                 let label = "\(female ? "female" : "male") \(mode)"
+                if mode != "tennisIdle" {
+                    XCTAssertNil(c.motion); XCTAssertNil(c.rig)
+                    XCTAssertFalse(c.character.hasActions)
+                    continue
+                }
                 XCTAssertEqual(c.motion, .ready, "\(label) plays ReadyIdle")
                 let rig = try XCTUnwrap(c.rig, "\(label): the hero is on its skeleton"); XCTAssertTrue(rig.isAttached)
                 let hero = try XCTUnwrap(c.hero)
@@ -530,10 +535,10 @@ final class LockerMirrorTests: XCTestCase {
     }
 
     /// The play tile plays one Serve in place, then returns to Ready and stays there: the hips rise for the hop once, never again.
-    func testPlayTilePlaysOneServeThenReady() throws {
+    func testExplicitServePlaybackReturnsToReady() throws {
         for female in [false, true] {
             let c = CharacterModelPreview.Coordinator(); c.update(player(female: female))
-            c.configureClub(.play, animate: true); defer { c.stopMotion() }
+            c.configureClub(.play, animate: true); c.play(.serveOnce); defer { c.stopMotion() }
             XCTAssertEqual(c.motion, .serveOnce)
             let rig = try XCTUnwrap(c.rig), hips = try bone(rig, "Hips"), hero = try XCTUnwrap(c.hero)
             let motion = try XCTUnwrap(c.motion)
@@ -580,7 +585,7 @@ final class LockerMirrorTests: XCTestCase {
     func testLeftHandedHeroPlaysTheSameClipsMirrored() throws {
         for female in [false, true] {
             var p = player(female: female); p.handedness = .left
-            let c = CharacterModelPreview.Coordinator(); c.update(p); c.configureClub(.play, animate: true); c.pauseDisplayLink()
+            let c = CharacterModelPreview.Coordinator(); c.update(p); c.configureClub(.play, animate: true); c.play(.serveOnce); c.pauseDisplayLink()
             defer { c.stopMotion() }
             let hero = try XCTUnwrap(c.hero), rig = try XCTUnwrap(c.rig), hand = try bone(rig, "RightHand")
             XCTAssertLessThan(hero.scale.x, 0, "the left-hander's hero is mirrored")
@@ -594,47 +599,25 @@ final class LockerMirrorTests: XCTestCase {
             XCTAssertGreaterThan(worst, 0.05, "the hand moves")
             // the same pose as the right-hander's, mirrored in world x about the hero's axis (the bone's local position is the same file-space number)
             var r = player(female: female); r.handedness = .right
-            let d = CharacterModelPreview.Coordinator(); d.update(r); d.configureClub(.play, animate: true); d.pauseDisplayLink(); defer { d.stopMotion() }
+            let d = CharacterModelPreview.Coordinator(); d.update(r); d.configureClub(.play, animate: true); d.play(.serveOnce); d.pauseDisplayLink(); defer { d.stopMotion() }
             let rhand = try bone(try XCTUnwrap(d.rig), "RightHand")
             c.pose(at: 1.3); d.pose(at: 1.3)
             XCTAssertLessThan(simd_distance(hand.simdPosition, rhand.simdPosition), 1e-6, "same bone transform in the hero's own space")
         }
     }
 
-    /// The tennis idle on the loading screen plays ReadyIdle between practice swings and hands over cleanly to the swing (still the Forehand morph on the static Ready stance) and back: the real loading
-    /// screen in the TV root, driven by the real "Swing to practice" trigger.
-    func testLoadingScreenIdlesBetweenPracticeSwingsAndHandsOverCleanly() async throws {
+    /// Loading uses gameplay/map imagery and never runs a character warm-up.
+    func testLoadingScreenHasNoCharacterAnimationSurface() async throws {
         let menu = TennisMenu.shared, session = SportsSession.shared
-        let oldPlayers = session.players, oldIndex = session.playerIndex, oldMotion = session.reduceMotion
-        session.players = [player(female: true)]; session.playerIndex = 0; session.reduceMotion = false
-        defer { session.players = oldPlayers; session.playerIndex = oldIndex; session.reduceMotion = oldMotion; session.loading.cancel(); menu.debugShow(.title) }
-        menu.debugShow(.loading, launch: MenuLaunch(mode: .training)); session.loading.begin(now: Date()); session.loading.reach(0.72); session.loading.tick(now: Date())
-        let windowScene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
-        let size = CGSize(width: 1280, height: 720)
-        let host = UIHostingController(rootView: TennisTVRoot()); host.safeAreaRegions = []
-        let window = UIWindow(windowScene: windowScene); window.frame = CGRect(origin: .zero, size: size)
+        defer { session.loading.cancel(); menu.debugShow(.title) }
+        menu.debugShow(.loading, launch: MenuLaunch(mode: .training)); session.loading.begin(now: Date())
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let host = UIHostingController(rootView: LoadingScreen(menu: menu, compact: false)); host.safeAreaRegions = []
+        let window = UIWindow(windowScene: scene); window.frame = CGRect(x: 0, y: 0, width: 1280, height: 720)
         window.rootViewController = host; window.isHidden = false; host.view.frame = window.bounds; host.view.layoutIfNeeded()
         defer { window.isHidden = true }
-        try await Task.sleep(for: .seconds(1.2))
-        let scn = try XCTUnwrap(findScene(host.view), "the loading screen shows the hero")
-        let hero = try XCTUnwrap(scn.scene?.rootNode.childNode(withName: MatchHero.rootName, recursively: true))
-        func skeleton() -> SCNNode? { scn.scene?.rootNode.childNode(withName: "skeleton", recursively: true) }
-        func morphing() -> Int { var n = 0; hero.enumerateChildNodes { node, _ in if let m = node.morpher, m.weights.contains(where: { $0.doubleValue > 0.01 }) { n += 1 } }; return n }
-        func morphers() -> Int { var n = 0; hero.enumerateChildNodes { node, _ in if node.morpher != nil { n += 1 } }; return n }
-        XCTAssertEqual(scn.preferredFramesPerSecond, 60, "the idle view runs at 60 fps")
-        XCTAssertNotNil(skeleton(), "the tennis idle plays ReadyIdle on the skeleton, not a turn of the character"); XCTAssertEqual(morphers(), 0)
-        XCTAssertEqual(hero.eulerAngles.y, .pi + 0.35, accuracy: 1e-6)
-        for round in 1 ... 2 {
-            session.loading.practice()
-            try await Task.sleep(for: .milliseconds(650))
-            XCTAssertGreaterThan(morphing(), 3, "round \(round): the practice swing animates the body, the face and the racket")
-            XCTAssertNil(skeleton(), "round \(round): the swing builds on the static Ready stance")
-            XCTAssertEqual(hero.eulerAngles.y, .pi + 0.35, accuracy: 1e-6)
-            try await Task.sleep(for: .milliseconds(1700))
-            XCTAssertEqual(morphers(), 0, "round \(round): the swing is over")
-            XCTAssertNotNil(skeleton(), "round \(round): back on the ReadyIdle loop")
-            XCTAssertEqual(hero.eulerAngles.y, .pi + 0.35, accuracy: 1e-6)
-        }
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertNil(findScene(host.view), "Loading previews the venue, without a warm-up character")
     }
 
     /// Reduced motion keeps a still Ready pose: no skeleton, no clock, no display link; the static Ready-stance hero.

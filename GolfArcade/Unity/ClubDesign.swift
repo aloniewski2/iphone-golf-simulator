@@ -38,7 +38,7 @@ enum Club {
     // Motion.
     static let spring = Animation.spring(response: 0.42, dampingFraction: 0.72)
     static let pop = Animation.spring(response: 0.3, dampingFraction: 0.6)
-    @MainActor static var still: Bool { SportsSession.shared.reduceMotion }
+    static let still = true
 }
 
 /// The bundled variable fonts, registered once and instanced at the exact axes asked for.
@@ -481,8 +481,8 @@ struct IslandWordmark: View {
                 IslandPalm().fill(IslandUI.navy).frame(width: size * 1.5, height: size * 1.12)
             }.frame(height: size * 1.12)
             Text("MOTION").font(IslandUI.font(size, bold: true)).tracking(size * 0.035)
-            Text("CLUB").font(IslandUI.font(size * 0.32, bold: true)).tracking(size * 0.095)
-        }.foregroundStyle(IslandUI.navy).accessibilityElement(children: .ignore).accessibilityLabel("Motion Club")
+            Text("CLUB · BETA").font(IslandUI.font(size * 0.32, bold: true)).tracking(size * 0.095)
+        }.foregroundStyle(IslandUI.navy).accessibilityElement(children: .ignore).accessibilityLabel("Motion Club Beta")
     }
 }
 
@@ -541,7 +541,7 @@ struct IslandPlayer: View {
     var body: some View {
         GeometryReader { g in
             ZStack {
-                CharacterModelPreview(player: player, cameraDistance: 2.95, idleSport: sport)
+                CharacterModelPreview(player: player, cameraDistance: 2.95, outfitSport: sport ?? .tennis, idleSport: sport)
                     .accessibilityLabel("\(player.name), equipped character")
             }
         }

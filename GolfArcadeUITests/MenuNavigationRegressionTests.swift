@@ -58,7 +58,8 @@ final class MenuNavigationRegressionTests: XCTestCase {
         let play = app.buttons["home-play"]
         XCTAssertTrue(play.waitForExistence(timeout: 5))
         play.tap()
-        let golf = app.buttons["Golf"]
+        app.buttons["partySolo"].tap()
+        let golf = app.buttons["select-golf"]
         XCTAssertTrue(golf.waitForExistence(timeout: 5))
         golf.tap()
         XCTAssertTrue(app.buttons["hub-round"].waitForExistence(timeout: 5))
@@ -70,8 +71,8 @@ final class MenuNavigationRegressionTests: XCTestCase {
         app.buttons["menu-back"].tap()
         XCTAssertTrue(app.buttons["hub-round"].waitForExistence(timeout: 5))
         app.buttons["menu-back"].tap()
-        XCTAssertTrue(app.buttons["Golf"].waitForExistence(timeout: 5))
-        app.buttons["Tennis"].tap()
+        XCTAssertTrue(app.buttons["select-golf"].waitForExistence(timeout: 5))
+        app.buttons["select-tennis"].tap()
         XCTAssertTrue(app.buttons["hub-exhibition"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["hub-tutorial"].exists)
         app.buttons["hub-exhibition"].tap()

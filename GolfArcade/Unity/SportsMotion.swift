@@ -155,7 +155,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
     }
 
     private func startOnQueue(tennis: Bool, travel: Double) {
-        calibrated=false; self.tennis=tennis; filter=SteeringFilter(); filter.travel=travel
+        calibrated = !tennis; self.tennis=tennis; filter=SteeringFilter(); filter.travel=travel
         filter.tennisStroke = tennis
         SportsDiagnostics.write("motion start tennis=\(tennis) axisLocked=\(gate.locked)")
         guard motion.isDeviceMotionAvailable else { report("Motion sensors unavailable. Select touch controls."); return }
@@ -414,7 +414,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         }
         if let swing { NSLog("[SportsMotion] tennis stroke power=%.2f",swing) }
         recordTrace(time:time,rate:speed,force:force,swing:swing)
-        let valid = tennis ? calibrated : current != .lost && calibrated
+        let valid = tennis ? calibrated : current != .lost
         // Straight to Unity, from this queue: no hop through the main thread.
         if live {
             if let swing {

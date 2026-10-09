@@ -61,13 +61,13 @@ namespace GolfArcade.Game {
             golfBeat=overviewReturn?3:2; BeginGolfBeat();
         }
         public void Overview() {
-            if(Current!=State.Aim || NativeCalibrating || PresentationPolicy.Multiplayer)return;
+            if(Current!=State.Aim || PresentationPolicy.Multiplayer)return;
             overviewReturn=true; golfSkipped=false; golfBeat=0; golfVenueCut=PresentationCut.Full;
             hud.ShowHoleIntro(Tournament,hole.Number,hole.Name,hole.Par,hole.Length,Wind.Describe(heading));
             Current=State.Intro; Swing.Armed=false; BeginGolfBeat(); RefreshControls();
         }
         public void TryNativePresentation() {
-            if(!pendingNativeIntro || NativeCalibrating || !NativeShotReady || PresentationPolicy.Multiplayer)return;
+            if(!pendingNativeIntro || !NativeShotReady || PresentationPolicy.Multiplayer)return;
             pendingNativeIntro=false; introReady=NativeShotReady;
             // Setup has completed at the original address; no scoring or turn changes occur.
             meeting=cheered=false; golfer.SetVisible(false); hud.ShowPlayHud(false);

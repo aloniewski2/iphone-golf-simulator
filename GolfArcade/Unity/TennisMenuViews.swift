@@ -231,7 +231,7 @@ struct TennisMenuScreen: View {
     var compact: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        ClubCameraHost(route: menu.screen, reducedMotion: reduceMotion || SportsSession.shared.reduceMotion, paused: SportsSession.shared.menuPauseVisible, content: AnyView(screenContent))
+        ClubCameraHost(route: menu.screen, reducedMotion: true, paused: SportsSession.shared.menuPauseVisible, content: AnyView(screenContent))
             .safeAreaInset(edge: .top) {
                 if menu.screen != .title && menu.screen != .main && !SportsSession.shared.menuPauseVisible {
                     HStack {
@@ -252,7 +252,8 @@ struct TennisMenuScreen: View {
             else { switch menu.screen {
             case .title: IslandTitleScreen(menu: menu, compact: compact)
             case .main: IslandHomeScreen(menu: menu, compact: compact)
-            case .party: IslandPartyScreen(menu: menu, compact: compact)
+            case .party, .multiplayer, .localChoice, .onlineChoice: IslandPartyScreen(menu: menu, compact: compact)
+            case .homeEmotes: HomeEmoteScreen(menu: menu, compact: compact)
             case .online(.loading): LoadingScreen(menu: menu, compact: compact)
             case .online(let route): IslandOnlineScreen(menu: menu, route: route, compact: compact)
             case .quickPlay: ClubQuickPlayScreen(menu: menu, compact: compact)
@@ -273,9 +274,7 @@ struct TennisMenuScreen: View {
             case .map: IslandCourtScreen(menu: menu, compact: compact)
             case .postMatch: IslandResultsScreen(menu: menu, compact: compact, postMatch: true)
             } }
-        }
-
-
+        }.transaction { $0.animation = nil; $0.disablesAnimations = true }
     }
 }
 

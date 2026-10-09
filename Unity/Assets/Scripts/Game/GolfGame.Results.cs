@@ -19,7 +19,7 @@ namespace GolfArcade.Game
 
         string GolfReactionKey => "golf.reaction."+(holeStrokes==1?"holeinone":holeStrokes-hole.Par<=-2?"eagle":holeStrokes-hole.Par==-1?"birdie":holeStrokes==hole.Par?"par":"bogey");
         string GolfBoundaryKey => holeIndex+1>=course.Holes.Length?"golf.matchend":"golf.holeout."+course.Key+"."+hole.Number;
-        float ResultReactionSeconds => LastShot!=null && LastShot.IsHoled ? Mathf.Max(PresentationDirector.GolfReaction(holeStrokes-hole.Par,holeStrokes==1,PresentationPolicy.Cut(GolfReactionKey)), PresentationDirector.Budget(holeIndex+1>=course.Holes.Length?PresentationBeat.MatchEnd:PresentationBeat.HoleOut,true,PresentationPolicy.Cut(GolfBoundaryKey))) : .5f;
+        float ResultReactionSeconds => LastShot!=null && LastShot.IsHoled ? Mathf.Max(PresentationDirector.GolfReaction(holeStrokes-hole.Par,holeStrokes==1,PresentationPolicy.Cut(GolfReactionKey)), PresentationDirector.Budget(holeIndex+1>=course.Holes.Length?PresentationBeat.MatchEnd:PresentationBeat.HoleOut,true,PresentationPolicy.Cut(GolfBoundaryKey))) : 3f;
         void MarkNaturalGolfResultSeen() {
             if(LastShot==null || !LastShot.IsHoled || stateTime<ResultReactionSeconds)return;
             if(PresentationPolicy.Cut(GolfReactionKey)==PresentationCut.Full)PresentationPolicy.Seen(GolfReactionKey);
@@ -51,6 +51,7 @@ namespace GolfArcade.Game
             shotResultPanel.Show(quality, putt ? UiKit.ArcadeYellow : GradeColor(lastReport.Grade), outcome, SwingTiles(true), detail,
                 curvePoints, curveReach, curveTarget,
                 shot.IsHoled || Match?.IsContest == true ? "SCORECARD" : "NEXT SHOT", resultEmotes.Select(TennisEmotes.Name).ToArray(), ContinueShotResult, PlayResultEmote);
+            shotResultPanel.AnimateStats(shot.Total,shot.Roll,shot.Apex,putt);
             // The result waits on a front view so equipped emotes read clearly.
             golfer.Perform("Idle");
             resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;

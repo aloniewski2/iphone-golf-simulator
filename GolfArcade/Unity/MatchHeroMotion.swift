@@ -100,6 +100,7 @@ struct MenuMotion: Equatable {
     /// Serve once: a beat of Ready first, then the Serve is blended in over `fadeIn`, plays through, and blends back out into the Ready loop over `fadeOut`. After that it is the Ready loop for good.
     var lead = 0.7, fadeIn = 0.2, fadeOut = 0.4
     var idleOffset = 0.0
+    var freezeIdle = false
     /// Set when something has to take the hero off the skeleton (the loading screen's morph practice swing builds on the static Ready stance, which is frame 0 of ReadyIdle): from this time the
     /// pose eases from where it was to ReadyIdle frame 0 over `settleDuration`, so nothing pops.
     var settleFrom: Double?
@@ -134,7 +135,7 @@ struct MenuMotion: Equatable {
     }
     @MainActor private func playing(_ rig: RigData, at t: Double) -> [HeroTrackPose] {
         guard let ready = rig.clips["ready"] else { return [] }
-        let base = ready.pose(at: t + idleOffset, loop: true)
+        let base = ready.pose(at: freezeIdle ? 0 : t + idleOffset, loop: true)
         if case .clipOnce(let id) = kind, let clip = rig.clips[id] {
             let elapsed = t - lead
             if elapsed < 0 { return base }
@@ -170,6 +171,7 @@ struct MenuMotion: Equatable {
         var motion = MenuMotion.ready; var t = time
         if let clip { motion = MenuMotion(kind: .clipOnce(clip), lead: 0, fadeIn: 0.12, fadeOut: 0.2); t = time - startedAt }
         motion.idleOffset = idleOffset + (clip == nil ? 0 : startedAt)
+        motion.freezeIdle = true
         rig.apply(motion, at: t)
     }
 }

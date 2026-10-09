@@ -30,11 +30,16 @@ static BOOL SportsExplicitBenchmark(void) {
     void (*_setResult)(const char*);
     double (*_clock)(void);
     __weak UIWindow *_destination;
+    BOOL _controllerReplica;
 }
 + (instancetype)shared { static SportsRuntime *instance; static dispatch_once_t token; dispatch_once(&token, ^{instance=[SportsRuntime new];}); return instance; }
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error {
+    return [self loadInWindow:window controllerReplica:NO error:error];
+}
+- (BOOL)loadInWindow:(UIWindow*)window controllerReplica:(BOOL)controllerReplica error:(NSError**)error {
+    _controllerReplica=controllerReplica;
 #if HAS_UNITY
-    if (![window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive] && !SportsExplicitBenchmark()) {
+    if (![window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive] && !SportsExplicitBenchmark() && !controllerReplica) {
         if (error) *error=[NSError errorWithDomain:@"SportsRuntime" code:4 userInfo:@{NSLocalizedDescriptionKey:@"Connect an external TV or Mac to play. This phone remains the controller."}];
         return NO;
     }
@@ -101,7 +106,7 @@ static BOOL SportsExplicitBenchmark(void) {
         _unity.appController.window.hidden=YES;
         return;
     }
-    if (SportsExplicitBenchmark()) {
+    if (SportsExplicitBenchmark() || _controllerReplica) {
         // The opt-in phone proof stays on Unity's main UIScreen. The normal TV
         // route above remains owned by Unity's multi-display renderer.
         UIWindow *unityWindow = _unity.appController.window;
@@ -124,7 +129,13 @@ static BOOL SportsExplicitBenchmark(void) {
 - (BOOL)multiplayerAvailable { return _networkPush && _networkPoll; }
 - (BOOL)pushNetwork:(NSString*)json { return _networkPush && _networkPush(json.UTF8String); }
 - (NSString*)pollNetwork { char buffer[65536]; if(!_networkPoll || !_networkPoll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
-- (NSString*)pollEvent { char buffer[8192]; if(!_poll || !_poll(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
+- (NSString*)pollEvent {
+    // Course thumbnails travel with golf telemetry; an 8 KB buffer dropped the whole
+    // event (including its first and only terrain image) at the native queue boundary.
+    static thread_local std::vector<char> buffer(512 * 1024);
+    if(!_poll || !_poll(buffer.data(),(int)buffer.size())) return nil;
+    return [NSString stringWithUTF8String:buffer.data()];
+}
 - (NSString*)tennisResult { char buffer[1024]; if(!_readResult || !_readResult(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (void)clearTennisResult { if(_setResult) _setResult(""); }
 - (double)clock { return _clock ? _clock() : NSProcessInfo.processInfo.systemUptime; }

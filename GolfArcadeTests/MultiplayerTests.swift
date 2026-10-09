@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import GolfArcade
 
 @MainActor
@@ -56,6 +57,66 @@ final class MultiplayerTests: XCTestCase {
     }
     func packet(_ service: MultiplayerService, kind: String, sender: String, sequence: Int64 = 10000, payload: String = "") throws -> Data {
         try JSONEncoder().encode(MultiplayerPacket(lobbyID: service.lobby!.id, matchID: service.lobby!.matchID, sender: sender, sequence: sequence, kind: kind, payload: payload))
+    }
+    func testSharedPhoneGuestsLoadWithHostAndKeepIndependentLooks() throws {
+        let bus=Bus(); let phone=bus.link("host"); let host=MultiplayerService(sendToRuntime:{_ in true},pollRuntime:{nil})
+        host.onMatchRequested={ _ in }; defer { host.leave() }
+        try host.host(using:phone,sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.addLocalGuest();try host.addLocalGuest();try host.addLocalGuest()
+        XCTAssertEqual(host.lobby?.participants.count,4);XCTAssertTrue(host.lobby!.valid())
+        let guests=host.lobby!.participants.filter(\.isGuest)
+        XCTAssertEqual(Set(guests.compactMap{$0.loadout?.colours["shirt"]}).count,3)
+        XCTAssertTrue(guests.allSatisfy{$0.controllerID==host.localID && $0.loadout?.valid()==true})
+        XCTAssertThrowsError(try host.addLocalGuest());try host.setReady(true);try host.startMatch();host.runtimeLoaded()
+        XCTAssertEqual(host.lobby?.phase,.playing);XCTAssertTrue(host.lobby!.competitors.allSatisfy(\.loaded))
+    }
+    func testSharedGuestsAndSeparatePhoneKeepTheirOwnSeatsAndLooks() throws {
+        let bus=Bus(), runtime=Runtime(), remoteRuntime=Runtime()
+        let host=runtime.service(), remote=remoteRuntime.service()
+        defer { remote.leave();host.leave() }
+        try host.host(using:bus.link("host"),sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.addLocalGuest();try host.addLocalGuest()
+        let look=MultiplayerLoadout(skinHex:"A8704E",colours:["shirt":"78C5E8"],emotes:EmoteCatalog.defaults,shirtHex:"78C5E8")
+        remote.setIdentity(name:"Sam",female:true,loadout:look)
+        try remote.connect(using:bus.link("remote"))
+        XCTAssertEqual(remote.localSeat,3);XCTAssertEqual(host.lobby,remote.lobby)
+        XCTAssertEqual(host.lobby?.participants.first{$0.id=="remote"}?.loadout,look)
+        XCTAssertTrue(host.lobby!.participants.allSatisfy(\.connected))
+        try host.setReady(true);XCTAssertFalse(host.lobby!.canStart)
+        try remote.setReady(true);try host.startMatch();host.runtimeLoaded()
+        XCTAssertEqual(host.lobby?.phase,.loading)
+        remote.runtimeLoaded();XCTAssertEqual(host.lobby?.phase,.playing)
+        XCTAssertTrue(remoteRuntime.configurations.last!.usesHostGolfDisplay)
+        XCTAssertFalse(runtime.configurations.last!.usesHostGolfDisplay)
+        XCTAssertTrue(host.lobby!.competitors.allSatisfy(\.loaded))
+    }
+    func testGolfPartyPhoneScreens() async throws {
+        let session=SportsSession.shared
+        let before=session.golfController;let oldPhase=session.golfPhase;let oldReady=session.ready;let oldPaused=session.paused
+        defer { session.golfController=before;session.golfPhase=oldPhase;session.ready=oldReady;session.paused=oldPaused }
+        let players=(0..<4).map { GolfControllerReading.PartyPlayer(seat:$0,name:$0==0 ? "Adnan" : "Guest \($0)",controlled:true,canEmote:true,emotes:EmoteCatalog.defaults) }
+        var reading=GolfControllerReading.reference
+        reading.party = .init(turn:0,shotID:1,player:"Adnan",outcome:"FAIRWAY",phase:"result",myTurn:true,shared:true,putt:false,resultSeconds:2,carry:176,roll:22,apex:28,total:198,players:players)
+        session.golfController=reading;session.golfPhase="Result";session.ready=true;session.paused=false
+        session.loading.begin(now:.now);session.loading.markReady();session.loading.skip()
+        let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap{$0 as? UIWindowScene}.first)
+        let window=UIWindow(windowScene:scene);window.frame=CGRect(x:0,y:0,width:402,height:874)
+        let host=UIHostingController(rootView:GolfPhoneController(session:session));host.safeAreaRegions=[]
+        window.rootViewController=host;window.isHidden=false;host.view.frame=window.bounds
+        defer { window.isHidden=true }
+        try await Task.sleep(for:.milliseconds(500));host.view.layoutIfNeeded()
+        let out=URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("work/golf-party/native-proof")
+        try FileManager.default.createDirectory(at:out,withIntermediateDirectories:true)
+        let format=UIGraphicsImageRendererFormat();format.scale=2
+        let image=UIGraphicsImageRenderer(size:window.bounds.size,format:format).image { _ in host.view.drawHierarchy(in:window.bounds,afterScreenUpdates:true) }
+        try XCTUnwrap(image.pngData()).write(to:out.appendingPathComponent("phone-result.png"))
+        XCTAssertEqual(session.golfController.party?.players.filter(\.controlled).count,4)
+    }
+    func testNearbyCodeAndForgedGuestOwnership() {
+        XCTAssertEqual(LocalMultiplayerTransport.joinCode(for:"abc12345-6789-1234-5678-123456789012"),"ABC123")
+        let host=MultiplayerParticipant(id:"host",name:"Host",seat:0)
+        let guest=MultiplayerParticipant(id:"guest",name:"Guest",seat:1,controllerID:"intruder")
+        XCTAssertFalse(MultiplayerLobby(ownerID:"host",sport:.golf,participants:[host,guest]).valid())
     }
     func testFourPersonPartyAgreesOnOwnerSeatsAndWatchers() throws {
         let p = try party(); defer { p.close() }
@@ -261,12 +322,12 @@ final class MultiplayerTests: XCTestCase {
         p.runtimes[0].time += 1.49; try send("b",1003); XCTAssertEqual(p.host.emotes["b"]?.id,"1001")
         p.runtimes[0].time += 0.02; try send("b",1004); XCTAssertEqual(p.host.emotes["b"]?.id,"1004")
     }
-    func testV1PeerShowsIncompatibleAndV2OptionalLookDecodes() throws {
+    func testOldPeerShowsIncompatibleAndOptionalLookDecodes() throws {
         let p = try party(2); defer { p.close() }
         var old = MultiplayerPacket(kind:"hello"); old.version = 1
         try p.bus.links["b"]!.send(JSONEncoder().encode(old),to:["a"],reliable:true)
         XCTAssertEqual(p.host.lastError,MultiplayerError.incompatible.localizedDescription)
-        XCTAssertEqual(MultiplayerPacket.version,2)
+        XCTAssertEqual(MultiplayerPacket.version,3)
         let data = try JSONEncoder().encode(MultiplayerParticipant(id:"old",name:"Old"))
         XCTAssertNil(try JSONDecoder().decode(MultiplayerParticipant.self,from:data).loadout)
     }

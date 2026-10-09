@@ -75,8 +75,9 @@ final class NewMenuSnapshotTests: XCTestCase {
         let service=MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
         menu.online=OnlineLobbyMenu(service:service);defer { service.leave();menu.online=original }
         menu.debugShow(.party);menu.move(.down);menu.select()
-        XCTAssertEqual(menu.screen,.online(.entry));menu.back();XCTAssertEqual(menu.screen,.party)
-        menu.tap("partyOnline");XCTAssertEqual(menu.screen,.online(.entry));menu.back()
+        XCTAssertEqual(menu.screen,.multiplayer)
+        menu.tap("partyOnline");XCTAssertEqual(menu.screen,.onlineChoice)
+        menu.tap("onlineQuick");XCTAssertEqual(menu.screen,.online(.entry));menu.back();XCTAssertEqual(menu.screen,.onlineChoice)
         try service.enableMock(count:4,player:try XCTUnwrap(menu.player));menu.showOnline(.lobby)
         menu.select();XCTAssertTrue(service.lobby!.participants[0].ready)
         menu.move(.down);menu.select();XCTAssertEqual(menu.screen,.online(.emotes))

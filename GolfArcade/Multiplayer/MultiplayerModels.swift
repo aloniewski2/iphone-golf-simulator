@@ -24,6 +24,10 @@ struct MultiplayerParticipant: Codable, Equatable, Sendable {
     var invited = true
     var loadout: MultiplayerLoadout?
     var paused: Bool?
+    /// Nil for a real device; guests are controlled only by the host that created them.
+    var controllerID: String?
+    var isGuest: Bool { controllerID != nil }
+
 }
 /// Cosmetic data only. Never transmits a saved profile, calibration, mesh, or image.
 struct MultiplayerLoadout: Codable, Equatable, Sendable {
@@ -31,9 +35,13 @@ struct MultiplayerLoadout: Codable, Equatable, Sendable {
     var skinHex: String
     var colours: [String: String] = [:]
     var emotes: [String]?
+    // Flat colour fields are also readable by Unity JsonUtility.
+    var shirtHex: String?
+    var shortsHex: String?
+
     func valid() -> Bool {
         func hex(_ s: String) -> Bool { s.utf8.count == 6 && s.allSatisfy { $0.isHexDigit && $0.isASCII } }
-        return (emotes.map(EmoteCatalog.valid) ?? true) && hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
+        return (shirtHex.map(hex) ?? true) && (shortsHex.map(hex) ?? true) && (emotes.map(EmoteCatalog.valid) ?? true) && hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
             ["shirt", "shorts", "accent", "racket"].contains($0.key) && hex($0.value)
         } && gear.count <= 2 && gear.allSatisfy { sport, slots in
             ["tennis", "golf"].contains(sport) && slots.count <= 3 && slots.allSatisfy {
@@ -105,6 +113,7 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
         let seats = participants.filter { $0.seat >= 0 }.map(\.seat)
         return participants.count <= 4 && !participants.isEmpty && participants.contains { $0.id == ownerID }
             && Set(participants.map(\.id)).count == participants.count && Set(seats).count == seats.count
+            && participants.allSatisfy { $0.controllerID == nil || (sport == .golf && $0.controllerID == ownerID && $0.id != ownerID) }
             && participants.allSatisfy { !$0.id.isEmpty && (-1..<capacity).contains($0.seat) }
             && participants.allSatisfy { $0.id.utf8.count <= 128 && $0.name.count <= 40 && ($0.loadout?.valid() ?? true) }
             && (1...3).contains(sets) && [1,3,6].contains(games) && Self.validVenue(venue, sport: sport)
@@ -133,6 +142,7 @@ struct MultiplayerMatchConfiguration: Codable, Sendable {
     var games: Int
     var seed: Int
     var participants: [MultiplayerParticipant]
+    var usesHostGolfDisplay: Bool { sport == "golf" && localID != hostID }
     func valid() -> Bool {
         guard let mode = MultiplayerSport(rawValue: sport), !lobbyID.isEmpty, !matchID.isEmpty,
               participants.contains(where: { $0.id == localID }), participants.filter({ $0.seat >= 0 }).count >= 2 else { return false }
@@ -141,7 +151,7 @@ struct MultiplayerMatchConfiguration: Codable, Sendable {
 }
 /// The transport's actual sender overrides the packet's claimed sender before delivery.
 struct MultiplayerPacket: Codable, Sendable {
-    static let version = 2
+    static let version = 3
     static let maximumBytes = 60_000
     var version = Self.version
     var lobbyID = ""

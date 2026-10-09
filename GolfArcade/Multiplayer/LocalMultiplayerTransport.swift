@@ -27,6 +27,11 @@ final class LocalMultiplayerTransport: MultiplayerTransport {
     private var latest: [String: Data] = [:]
     private struct Hello: Codable { var id: String; var version: Int; var token: String; var reason: String? }
     private var token = ""
+    var joinCode: String { Self.joinCode(for: token) }
+    static func joinCode(for token: String) -> String {
+        String(token.replacingOccurrences(of: "-", with: "").prefix(6)).uppercased()
+    }
+
     static func advertisedName(_ name: String, token: String) -> String {
         var prefix = ""
         for character in name.replacingOccurrences(of: "~", with: " ") {

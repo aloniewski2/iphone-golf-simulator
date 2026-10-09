@@ -4,7 +4,7 @@ import UIKit
 /// Where the front end is. The same state drives the menu on the TV (steered from the phone's
 /// remote) and on the phone itself when no TV is connected.
 enum MenuScreen: Hashable {
-    case title, main, party, quickPlay, gameSelect, hub(Sport), locked(Sport)
+    case title, main, party, multiplayer, localChoice, onlineChoice, homeEmotes, quickPlay, gameSelect, hub(Sport), locked(Sport)
     case campaign, training, exhibition, character, settings, howTo, golfLesson
     case connect, loading, results, story
     /// Choose the court or course before the game loads.
@@ -59,6 +59,17 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio
 final class TennisMenu {
     static let shared = TennisMenu()
     var online = OnlineLobbyMenu()
+    private(set) var homeEmote: String?
+    private(set) var homeEmoteSequence = 0
+    var homeSport: Sport { session.lastPlayedSport }
+    var homeEmotes: [String] { homeSport == .golf ? ["wave", "cheer", "hitPerfect"] : player?.equippedEmotes ?? EmoteCatalog.defaults }
+    static func homeEmoteName(_ id: String) -> String {
+        switch id { case "cheer": "Cheer"; case "hitPerfect": "Fist Pump"; default: EmoteCatalog.name(id) }
+    }
+    private(set) var previewSport: Sport = .tennis
+    private func updateSportPreview() {
+        if screen == .gameSelect, focused.hasPrefix("sport-"), let sport = Sport(rawValue: String(focused.dropFirst(6))) { previewSport = sport }
+    }
 
     private(set) var screen: MenuScreen = .title
     private(set) var row = 0
@@ -150,8 +161,12 @@ final class TennisMenu {
     func rows(_ screen: MenuScreen) -> [[String]] {
         switch screen {
         case .title: return [["start"]]
-        case .main: return [["homeContinue"], ["play"], ["character"], ["settings"]]
-        case .party: return [["partySolo"], ["partyOnline"], ["partyNearby"], ["back"]]
+        case .main: return [["play", "homeInvite"], ["character"], ["homeEmotes"], ["settings"], ["betaFeedback"]]
+        case .party: return [["partySolo"], ["partyMultiplayer"], ["back"]]
+        case .multiplayer: return [["partyOnline"], ["partyLocal"], ["back"]]
+        case .localChoice: return [["partyLocalGolf"], ["partyNearby"], ["back"]]
+        case .onlineChoice: return [["onlineQuick"], ["homeInvite"], ["back"]]
+        case .homeEmotes: return homeEmotes.map { ["home-emote-\($0)"] } + [["back"]]
         case .online(let route): return online.rows(route, menu: self)
         case .quickPlay: return [["quickTennis", "quickGolf"], ["back"]]
         case .gameSelect: return [Sport.allCases.filter(\.playable).map { "sport-\($0.rawValue)" }, ["back"]]
@@ -210,7 +225,7 @@ final class TennisMenu {
         case .hub: row = 0; column = 0
         case .settings: row = 1; column = 0
         case .character, .online(.clothes): lockerOpen()
-        case .gameSelect: row = 0; column = 0
+        case .gameSelect: row = 0; column = Sport.allCases.filter(\.playable).firstIndex(of: homeSport) ?? 0; updateSportPreview()
         case .map: row = 0; column = mapChoices.firstIndex { $0.id == selectedMap } ?? 0   // start on the last court
         default: row = 0; column = 0
         }
@@ -256,7 +271,7 @@ final class TennisMenu {
         }
         c = min(c, grid[r].count - 1)
         if r != row || c != column {
-            row = r; column = c; if screen == .campaign, focused.hasPrefix("round"), let index = Int(focused.dropFirst(5)) { selectedRound = index }; if session.haptics { tick.selectionChanged() }; ClubSound.play("tick", volume: 0.4)
+            row = r; column = c; updateSportPreview(); if screen == .campaign, focused.hasPrefix("round"), let index = Int(focused.dropFirst(5)) { selectedRound = index }; if session.haptics { tick.selectionChanged() }; ClubSound.play("tick", volume: 0.4)
             // Moving along the tab row switches tabs, like a controller's shoulder buttons.
             if screen == .settings, r == 0, let tab = SettingsTab.visible[safe: c] { settingsTab = tab }
         }
@@ -265,7 +280,7 @@ final class TennisMenu {
     /// Pointer and remote focus change the preview without navigating.
     @discardableResult func focus(_ id: String) -> Bool {
         for (r, items) in rows(screen).enumerated() {
-            if let c = items.firstIndex(of: id) { row = r; column = c; return true }
+            if let c = items.firstIndex(of: id) { row = r; column = c; updateSportPreview(); return true }
         }
         return false
     }
@@ -278,7 +293,7 @@ final class TennisMenu {
 
     func select() {
         let id = focused
-        if screen.isOnline || id == "partyOnline" || id == "partyNearby" {
+        if screen.isOnline || id == "partyNearby" {
             online.select(id, menu: self); return
         }
         if session.haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
@@ -301,7 +316,17 @@ final class TennisMenu {
             match.difficulty = Self.trainingLevels[quickDifficulty].difficulty
             match.sets = quickLength == 2 ? 2 : 1; match.games = quickLength == 0 ? 3 : 6
             begin(match)
-        case "quickPlay", "partySolo": show(.quickPlay)
+        case "quickPlay", "partySolo": show(.gameSelect)
+        case "partyLocalGolf": online.select(id, menu: self)
+        case "partyMultiplayer": show(.multiplayer)
+        case "partyLocal": show(.localChoice)
+        case "partyOnline": show(.onlineChoice)
+        case "onlineQuick": online.select("partyOnline", menu: self)
+        case "homeInvite": online.select("net-invite", menu: self)
+        case "homeEmotes": homeEmote = nil; show(.homeEmotes)
+        case let emote where emote.hasPrefix("home-emote-"):
+            homeEmote = String(emote.dropFirst(11)); homeEmoteSequence += 1
+        case "betaFeedback": BetaFeedback.open()
         case "homeCampaign": show(.campaign)
         case "quickTennis": begin(MenuLaunch(mode: .exhibition, round: 0))
         case "quickGolf": begin(MenuLaunch(sport: .golf, mode: .round))
@@ -310,7 +335,7 @@ final class TennisMenu {
             guard let retry = launch else { return }
             let onPhone = !session.displayConnected
             session.end(); begin(retry, onPhone: onPhone, skipMap: true)
-        case "play": show(.gameSelect)
+        case "play": show(.party)
         case "character": show(.character)
         case "settings": show(.settings)
         case "howto": howToPage = 0; show(.howTo)
@@ -404,7 +429,9 @@ final class TennisMenu {
         case .main: show(.title)
         case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
         case .howTo: show(.settings)
-        case .party, .quickPlay, .gameSelect, .settings: show(.main)
+        case .party, .settings, .homeEmotes: show(.main)
+        case .multiplayer, .quickPlay, .gameSelect: show(.party)
+        case .onlineChoice, .localChoice: show(.multiplayer)
         case .hub, .locked: show(.gameSelect)
         case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
         case .training, .exhibition: show(.hub(.tennis))
@@ -557,7 +584,10 @@ final class TennisMenu {
     func openCharacterEditor() { classic = false; show(.character) }
     /// Leave the current local screen or game and return to the main menu.
     func goHome() {
-        if screen.isOnline { showOnline(.leave); return }
+        if screen.isOnline {
+            if online.service.lobby != nil { showOnline(.leave); return }
+            online.cancel(); online.service.stopBrowsing()
+        }
         pendingPick = nil; result = nil; postMatch = nil; showPostMatchAfterEnd = false; afterMatch = .menu
         if session.active { session.end() }
         launch = nil; launchOrigin = nil; story = []
@@ -740,6 +770,10 @@ final class TennisMenu {
         }
         else if screen == .story { return }
         else if screen == .loading || screen == .connect || launch != nil { show(launch.map(hubAfter) ?? .main) }
+    }
+
+    func returnFromNetworkEntry(_ route: OnlineLobbyScreen) {
+        show(route == .entry ? .onlineChoice : .localChoice)
     }
 
     var loadingOpponent: TennisOpponent? {
@@ -994,7 +1028,7 @@ extension Array {
 extension TennisMenu {
     func showOnline(_ route: OnlineLobbyScreen) { show(.online(route)) }
     func onlineNotice(_ text: String) { notice = text }
-    func openOnlineParty() { show(.party) }
+    func openOnlineParty() { show(.multiplayer) }
     func onlineLockerTap(_ id: String) { lockerSelect(id) }
     func cancelOnlineClothes() { lockerRevert(); show(.online(.lobby)) }
 }
@@ -1011,6 +1045,7 @@ struct OnlineAppleSheet: Identifiable {
     var searchStarted = Date()
     var settingsSeats = false
     var nearbyPage = 0
+    var joinCode = ""
     var winnerID: String?
     @ObservationIgnored private var operation: Task<Void, Never>?
     @ObservationIgnored private var operationID = UUID()
@@ -1028,10 +1063,10 @@ struct OnlineAppleSheet: Identifiable {
     }
     func rows(_ route: OnlineLobbyScreen, menu: TennisMenu) -> [[String]] {
         switch route {
-        case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["net-invite"],["back"]]
-        case .nearby: return nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-host"],["back"]]
+        case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["back"]]
+        case .nearby: return nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-join-code"],["net-host"],["back"]]
         case .searching: return [["net-cancel"]]
-        case .lobby: return [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
+        case .lobby: return (service.isNearby && service.isOwner && service.lobby?.sport == .golf ? [["net-add-guest","net-remove-guest"]] : []) + [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
         case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
         case .clothes: return menu.lockerRows()
         case .settings:
@@ -1052,6 +1087,13 @@ struct OnlineAppleSheet: Identifiable {
         do {
             switch id {
             case "partyOnline": identity(menu); menu.showOnline(.entry)
+            case "partyLocalGolf":
+                identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
+                try service.configure(.golf, venue:"postcards"); try service.addLocalGuest(); menu.showOnline(.lobby)
+            case "net-add-guest": try service.addLocalGuest()
+            case "net-remove-guest": try service.removeLocalGuest()
+            case "net-join-code":
+                identity(menu); try service.joinLocal(code:joinCode); searchStarted = Date(); menu.showOnline(.searching)
             case "partyNearby": identity(menu); nearbyPage = 0; service.browseLocal(); menu.showOnline(.nearby)
             case "net-signin":
                 run(menu) { [self] in try await service.authenticate { [weak self] vc in self?.sheet = OnlineAppleSheet(controller:vc) } }
@@ -1068,7 +1110,11 @@ struct OnlineAppleSheet: Identifiable {
             case "net-invite":
                 identity(menu)
                 if service.isNearby { menu.onlineNotice("Ask your friend to open Nearby on the same Wi-Fi."); return }
-                sheet = OnlineAppleSheet(controller:try service.inviteFriends()); menu.showOnline(.lobby)
+                run(menu) { [self] in
+                    if !service.authenticated { try await service.authenticate { [weak self] vc in self?.sheet = OnlineAppleSheet(controller: vc) } }
+                    sheet = OnlineAppleSheet(controller: try service.inviteFriends())
+                    menu.showOnline(.lobby)
+                }
             case "net-find":
                 if service.isNearby { menu.onlineNotice("Your lobby is visible in Nearby. Ask a friend to join."); return }
                 run(menu) { [self] in try await service.findMorePlayers() }
@@ -1115,7 +1161,7 @@ struct OnlineAppleSheet: Identifiable {
             catch { guard let self, let menu, self.operationID == token else { return }; if menu.screen == .online(.searching) { menu.showOnline(.entry) }; menu.onlineNotice(error.localizedDescription) }
         }
     }
-    private func cancel() { operationID = UUID(); operation?.cancel(); operation = nil; service.cancelSearch() }
+    fileprivate func cancel() { operationID = UUID(); operation?.cancel(); operation = nil; service.cancelSearch() }
     func finishClothes(menu: TennisMenu) {
         guard let p = menu.player else { return }
         do { try service.updateLook(p.multiplayerLoadout,name:p.name,female:p.standardFemale,left:p.handedness == .left); SportsSession.shared.savePlayers(); menu.showOnline(.lobby) }
@@ -1123,7 +1169,7 @@ struct OnlineAppleSheet: Identifiable {
     }
     func back(_ route: OnlineLobbyScreen, menu: TennisMenu) {
         switch route {
-        case .entry,.nearby: cancel(); service.stopBrowsing(); menu.openOnlineParty()
+        case .entry,.nearby: cancel(); service.stopBrowsing(); menu.returnFromNetworkEntry(route)
         case .searching: cancel(); service.leave(); menu.showOnline(.entry)
         case .emotes,.settings: menu.showOnline(.lobby)
         case .clothes: if menu.lockerRange != nil { menu.onlineLockerTap("lk-range-close") } else { menu.cancelOnlineClothes() }
@@ -1198,7 +1244,7 @@ extension OnlineLobbyMenu {
                 for _ in 0..<1200 { if session.ready { break };try await Task.sleep(for:.milliseconds(100)) }
                 guard session.ready else { throw MultiplayerError.unavailable("Unity proof warmup did not become ready") }
                 event("warmup-ready");session.end();try await Task.sleep(for:.seconds(1))
-                menu.openOnlineParty();menu.tap("partyNearby")
+                menu.openOnlineParty();menu.tap("partyLocal");menu.tap("partyNearby")
                 if host { menu.tap("net-host");try service.configure(.tennis,venue:"resort",sets:1,games:1);menu.tap("net-invite");event("nearby-invitation") }
                 else {
                     var found:LocalMultiplayerTransport.DiscoveredLobby?

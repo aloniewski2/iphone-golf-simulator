@@ -12,7 +12,7 @@ struct SportsHome: View {
         Group {
             if session.displayConnected && !session.active { TennisRemote() }
             else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
-            else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
+            else if session.active && (!session.loading.finished || (session.sport == "golf" && !session.ready)) { LoadingScreen(menu: menu, compact: true) }
             else if menu.screen.isOnline && menu.screen != .online(.match) {
                 if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
             }
@@ -20,7 +20,7 @@ struct SportsHome: View {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
             }
-            else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
+            else if session.active && session.menuPauseVisible && session.sport != "golf" { IslandPauseScreen(compact: true) }
             else if session.active && session.sport == "golf" {
                 GolfPhoneController(session: session)
             }
@@ -29,6 +29,12 @@ struct SportsHome: View {
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
         }
+        .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 })) { sheet in
+            OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !session.active || session.sport != "golf" { BetaFeedbackBar() }
+        }
         .simultaneousGesture(TapGesture().onEnded {
             guard session.active, session.loading.finished, !session.paused, session.multiplayerMatchID == nil else { return }
             if ["intro", "point", "finished"].contains(session.tennisPhase) || ["Intro", "Result"].contains(session.golfPhase) {
@@ -36,7 +42,7 @@ struct SportsHome: View {
             }
         })
         .safeAreaInset(edge: .top) {
-            if session.active {
+            if session.active && session.sport != "golf" {
                 HStack {
                     Text(session.displayConnected ? "Phone controller" : "Game controls")
                     Spacer()
@@ -70,6 +76,16 @@ struct SportsHome: View {
             menu.online.installCallbacks(menu)
             let args = ProcessInfo.processInfo.arguments
             #if DEBUG
+            if args.contains("-golfControllerDesign") {
+                OnboardingFlow.shared.exitToMenu()
+                SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+                session.sport = "golf"; session.active = true; session.ready = true
+                session.displayConnected = true; session.touch = false; session.paused = false
+                session.golfShotReady = true; session.golfPhase = "Aim"
+                session.golfController = .reference; session.loading.cancel()
+                if args.contains("-golfControllerNotReady") { session.ready = false }
+                if args.contains("-golfControllerLoading") { session.loading.begin(now: Date()) }
+            }
             if args.contains("-controllerMenuCheck") {
                 SportsDisplays.shared.external = UIWindow(frame: CGRect(x: 0, y: 0, width: 1920, height: 1080))
                 session.displayConnected = true
@@ -336,139 +352,6 @@ private struct SportsControls:View {
     }
 }
 
-/// Golf in progress, from the new menu: loading, then the golf controls.
-struct GolfPhoneController: View {
-    @Bindable var session: SportsSession
-    @State private var power = 0.6
-    var body: some View {
-        if !session.ready || !session.loading.finished {
-            ZStack { MenuBackdrop(dim: 0.55); LoadingScreen(menu: .shared, compact: true) }.preferredColorScheme(.dark)
-        } else {
-            GeometryReader { geometry in
-            ZStack {
-                IslandUI.navy.ignoresSafeArea()
-                VStack(spacing: 16) {
-                    HStack {
-                        Text("GOLF").font(IslandUI.font(17, bold: true)).tracking(3)
-                        Spacer()
-                        Menu {
-                            Button(session.paused ? "Resume" : "Pause") {
-                                if session.paused { session.readyToPlay() } else { session.pause() }
-                            }
-                            Button(session.touch ? "Use motion controls" : "Use touch controls") {
-                                if session.touch { session.useMotion() } else { session.useTouch() }
-                            }
-                            if !session.touch && session.golfPhase == "Aim" {
-                                Button("Calibrate golf swing") { session.requestGolfCalibration() }
-                            }
-                            if session.golfPhase == "Aim" && session.multiplayerMatchID == nil { Button("Overview") { session.command("golfOverview") } }
-                            Button("Exit round", role: .destructive) { session.exitGame() }
-                        } label: {
-                            Image(systemName: "ellipsis").font(.system(size: 22, weight: .bold)).frame(width: 48, height: 48)
-                        }.accessibilityLabel("Golf options").accessibilityIdentifier("golf-options")
-                    }
-                    Spacer(minLength: 0)
-                    if !session.touch && session.golfCalibrationRequired {
-                        GolfCalibrationPanel(session: session)
-                    } else if session.paused || (session.golfPhase == "Aim" && !session.golfShotReady) {
-                        Text("Ready to swing?").font(IslandUI.font(28, bold: true))
-                        Text("Hold the phone where you want to start this shot, then tap Ready. Each shot uses a fresh starting position.")
-                            .font(IslandUI.font(16)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.7))
-                        IslandAction(title: "Ready", primary: true) { session.readyToPlay() }
-                            .accessibilityIdentifier("golf-ready")
-                    } else if session.golfPhase == "Result" {
-                        GolfShotResultControls(session: session)
-                    } else if session.golfPhase == "RoundDone" {
-                        IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Rematch", primary: true) { session.continueGolfRound() }
-                            .accessibilityIdentifier("golf-continue")
-                    } else {
-                        GolfClubControllerArt()
-                            .frame(maxWidth: .infinity).frame(height: min(300, max(140, geometry.size.height * 0.32)))
-                            .opacity(session.golfPhase == "Aim" ? 1 : 0.45)
-                            .accessibilityLabel("Your golf club")
-                        Text(session.golfPhase == "Aim" ? "Swing when ready" : "Watch your shot")
-                            .font(IslandUI.font(22, bold: true)).accessibilityIdentifier("golf-status")
-                    }
-                    if session.golfPhase == "Aim" && (session.touch || !session.golfCalibrationRequired) {
-                        HStack(spacing: 28) {
-                            Button { session.setAim(-1) } label: { Image(systemName: "chevron.left").frame(width: 56, height: 52) }
-                                .accessibilityLabel("Aim left")
-                            Text("AIM").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
-                            Button { session.setAim(1) } label: { Image(systemName: "chevron.right").frame(width: 56, height: 52) }
-                                .accessibilityLabel("Aim right")
-                        }
-                        HStack(spacing: 24) {
-                            Button { session.command("club", value: -1) } label: { Image(systemName: "minus").frame(width: 48, height: 44) }
-                                .accessibilityLabel("Previous club")
-                            Text("CLUB").font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
-                            Button { session.command("club", value: 1) } label: { Image(systemName: "plus").frame(width: 48, height: 44) }
-                                .accessibilityLabel("Next club")
-                        }
-                        if session.touch && session.golfShotReady && !session.paused {
-                            Slider(value: $power, in: 0.02...1).tint(IslandUI.lime).accessibilityLabel("Swing power")
-                                .onChange(of: power) { _, value in session.command("golfLoad", value: value) }
-                            IslandAction(title: "Swing", primary: true) { session.swing(power) }
-                                .accessibilityIdentifier("golf-swing")
-                        }
-                    }
-                    Spacer(minLength: 0)
-                }.padding(28)
-            }.foregroundStyle(.white).preferredColorScheme(.dark)
-            }
-        }
-    }
-}
-
-private struct GolfCalibrationPanel: View {
-    @Bindable var session: SportsSession
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "figure.golf").font(.system(size: 64)).foregroundStyle(IslandUI.lime)
-            Text(session.golfCalibrating ? "Practice swings \(session.golfCalibrationCount) / 3" : "Set your golf swing")
-                .font(IslandUI.font(27, bold: true)).accessibilityIdentifier("golf-calibration-status")
-            Text(session.golfCalibrating
-                 ? "Swing back and through at your comfortable full speed. Tap Ready before each practice swing to set its starting position. Practice swings don't count as shots."
-                 : "Hold the phone securely in a comfortable golf grip. Keep it still, then start. Three practice swings will set your range and speed.")
-                .font(IslandUI.font(17)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.8))
-            if session.golfCalibrationCount == 3 {
-                IslandAction(title: "Use this swing", primary: true) { session.finishGolfCalibration() }
-            } else if !session.golfCalibrating {
-                IslandAction(title: "Ready for practice", primary: true) { session.startGolfCalibration() }
-                    .accessibilityIdentifier("golf-calibration-start")
-            } else if !session.golfShotReady || session.paused {
-                IslandAction(title: "Ready for next swing", primary: true) { session.readyGolfPracticeSwing() }
-            } else {
-                Text("Ready — swing back and through").font(IslandUI.font(18, bold: true)).foregroundStyle(IslandUI.lime)
-            }
-            Button("Use default swing") { session.finishGolfCalibration(usePractice: false) }
-                .font(IslandUI.font(15)).foregroundStyle(.white.opacity(0.7))
-            Text("For a quicker TV response, use Game Mode or a wired display.")
-                .font(IslandUI.font(13)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.5))
-        }
-    }
-}
-
-/// One simple club silhouette, like the tennis controller's racket.
-private struct GolfClubControllerArt: View {
-    var body: some View {
-        Canvas { context, size in
-            let x = size.width * 0.53
-            var shaft = Path()
-            shaft.move(to: CGPoint(x: x - 25, y: 32)); shaft.addLine(to: CGPoint(x: x + 38, y: size.height - 62))
-            context.stroke(shaft, with: .linearGradient(Gradient(colors: [.white.opacity(0.9), .gray, .white]), startPoint: .zero, endPoint: CGPoint(x: size.width, y: size.height)), style: StrokeStyle(lineWidth: 8, lineCap: .round))
-            var grip = Path(); grip.move(to: CGPoint(x: x - 27, y: 26)); grip.addLine(to: CGPoint(x: x - 8, y: 106))
-            context.stroke(grip, with: .color(IslandUI.lime), style: StrokeStyle(lineWidth: 18, lineCap: .round))
-            let head = Path(roundedRect: CGRect(x: x - 10, y: size.height - 92, width: 104, height: 56), cornerRadius: 22)
-            context.fill(head, with: .linearGradient(Gradient(colors: [.white, Color(white: 0.6)]), startPoint: CGPoint(x: x, y: size.height - 92), endPoint: CGPoint(x: x + 60, y: size.height - 30)))
-            for i in 0..<4 {
-                var groove = Path(); let y = size.height - 78 + CGFloat(i) * 9
-                groove.move(to: CGPoint(x: x + 1, y: y)); groove.addLine(to: CGPoint(x: x + 75, y: y))
-                context.stroke(groove, with: .color(IslandUI.navy.opacity(0.4)), lineWidth: 1)
-            }
-        }.accessibilityHidden(true)
-    }
-}
-
 @MainActor private enum PlayabilityCheck {
     static func run() async {
         let session = SportsSession.shared, menu = TennisMenu.shared
@@ -508,18 +391,59 @@ private struct GolfClubControllerArt: View {
     }
 }
 
-/// The result stays on the TV while the player chooses an emote or continues.
+/// Shot statistics and reactions remain visible until the automatic handoff.
 struct GolfShotResultControls: View {
     @Bindable var session: SportsSession
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            EquippedEmoteControls(title: "YOUR SHOT · EMOTE", ids: session.matchEmotes,
-                enabled: !session.paused && session.golfPhase == "Result",
-                notice: "Choose an emote, then continue when you’re ready.", identifier: "golf-emote") {
-                    session.command("golfEmote", value: Double($0))
+        if let party=session.golfController.party {
+            VStack(spacing:12) {
+                Text(party.outcome).font(Club.ui(22,900)).foregroundStyle(.white)
+                HStack {
+                    stat("CARRY",party.carry); stat("ROLL",party.roll); stat("TOTAL",party.total)
                 }
-            IslandAction(title: "Continue", primary: true, compact: true) { session.command("golfContinue") }
-                .accessibilityIdentifier("golf-shot-continue")
-        }.disabled(session.paused)
+                Text("Next player in \(Int(ceil(party.resultSeconds)))").font(Club.ui(16,700)).monospacedDigit().foregroundStyle(.white)
+                ProgressView(value:max(0,min(1,party.resultSeconds/3))).tint(IslandUI.lime)
+            }.accessibilityIdentifier("golf-party-shot-result")
+        } else {
+            EquippedEmoteControls(title:"YOUR SHOT · EMOTE",ids:session.matchEmotes,
+                enabled:!session.paused && session.golfPhase == "Result",notice:"Next shot starts automatically.",identifier:"golf-emote") {
+                    session.command("golfEmote",value:Double($0))
+                }
+        }
+    }
+    private func stat(_ title:String,_ yards:Double) -> some View {
+        VStack { Text(title).font(Club.ui(11,700)); Text("\(Int((yards * (session.golfController.party?.putt == true ? 3 : 1)).rounded())) \(session.golfController.party?.putt == true ? "ft" : "yd")").font(Club.ui(22,900)).monospacedDigit() }
+            .frame(maxWidth:.infinity).foregroundStyle(.white)
+    }
+}
+
+/// A host can choose any guest sharing this phone; peers only receive controls for their own seat.
+struct GolfPartyEmoteControls: View {
+    @Bindable var session: SportsSession
+    let party: GolfControllerReading.Party
+    @State private var selectedSeat: Int = -1
+    private var localPlayers: [GolfControllerReading.PartyPlayer] { party.players.filter(\.controlled) }
+    private var selected: GolfControllerReading.PartyPlayer? {
+        localPlayers.first { $0.seat == selectedSeat } ?? localPlayers.first { $0.seat == party.turn } ?? localPlayers.first
+    }
+    var body: some View {
+        VStack(alignment:.leading,spacing:14) {
+            Text(party.phase == "result" ? "EVERYONE CAN REACT" : "\(party.player.uppercased())’S TURN")
+                .font(Club.ui(20,900)).foregroundStyle(.white)
+            if party.shared {
+                Text(party.phase == "result" ? "Choose a player, then an emote." : "React as a guest while \(party.player) takes their shot.").font(Club.ui(14,600)).foregroundStyle(.white)
+            }
+            if localPlayers.count > 1 {
+                Picker("Emote as",selection:Binding(get:{selected?.seat ?? -1},set:{selectedSeat=$0})) {
+                    ForEach(localPlayers) { player in Text(player.name).tag(player.seat) }
+                }.pickerStyle(.menu).tint(.white).accessibilityIdentifier("golf-emote-player")
+            }
+            if let selected {
+                EquippedEmoteControls(title:selected.name.uppercased(),ids:selected.emotes,
+                    enabled:selected.canEmote && !session.paused,notice:selected.canEmote ? "Pick an emote" : "Watch the shot · react after it lands",identifier:"golf-party-emote") { slot in
+                        session.command("golfEmote",value:Double(slot),value2:Double(selected.seat))
+                    }
+            }
+        }.accessibilityIdentifier("golf-party-controls")
     }
 }

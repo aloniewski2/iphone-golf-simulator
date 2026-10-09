@@ -22,6 +22,14 @@ final class SportsSession {
     var players = PlayerRosterStore.load()
     var playerIndex = 0
     var sport = "golf"
+    var lastPlayedSport: Sport {
+        guard players.indices.contains(playerIndex) else { return .tennis }
+        let id = players[playerIndex].id.uuidString
+        let defaults = UserDefaults.standard
+        let history = defaults.array(forKey: "sports.sessions.v1") as? [[String: Any]] ?? []
+        let saved = defaults.string(forKey: "sports.lastSport.\(id)") ?? history.last(where: { $0["playerID"] as? String == id })?["sport"] as? String
+        return Sport(rawValue: saved ?? "tennis") ?? .tennis
+    }
     var menuPauseVisible = false
     var touch = false { didSet { routeSamples() } }
     var travel = 0.85
@@ -159,6 +167,7 @@ final class SportsSession {
     /// Extra start fields for the tennis front end (mode, opponent, round).
     private var launchExtras: [String:Any] = [:]
     private(set) var multiplayerMatchID: String?
+    private(set) var multiplayerControllerOnly = false
     private var multiplayerSeat = -1
     private(set) var sessionID = ""
     /// Numeric stand-in for the session id on the binary sample channel.
@@ -308,30 +317,32 @@ final class SportsSession {
     func startMultiplayer(_ configuration: MultiplayerMatchConfiguration) {
         guard !active, let data=try? JSONEncoder().encode(configuration), let json=String(data:data,encoding:.utf8) else { return }
         multiplayerMatchID=configuration.matchID
+        multiplayerControllerOnly=configuration.usesHostGolfDisplay
         multiplayerSeat=configuration.participants.first { $0.id == configuration.localID }?.seat ?? -1
         sport=configuration.sport; tennisVenue=configuration.venue
         if configuration.sport == "golf" { golfCourse=configuration.venue }
         launchExtras=["course":configuration.venue,"mode":"multiplayer", "network":json, "sets":configuration.sets, "games":configuration.games, "tips":false]
         start(preview: !displayConnected)
         launchExtras=[:]
-        if !active { multiplayerMatchID=nil }
+        if !active { multiplayerMatchID=nil; multiplayerControllerOnly=false }
     }
     func start(preview: Bool = false) {
         guard !active else { return }
         SportsDisplays.shared.refresh()
         let preview = Self.benchmark && !displayConnected
         NSLog("[SportsSession] launch sport=%@ mode=%@ touch=%d",sport,preview ? "phone-preview" : "external-controller",touch ? 1 : 0)
-        guard let window = Self.benchmark ? SportsDisplays.shared.benchmarkWindow() : SportsDisplays.shared.gameWindow(preview:preview) else {
+        guard let window = Self.benchmark ? SportsDisplays.shared.benchmarkWindow() : multiplayerControllerOnly ? SportsDisplays.shared.multiplayerControllerWindow() : SportsDisplays.shared.gameWindow(preview:preview) else {
             status="Connect a TV or Mac with AirPlay or a wired display to play. This phone is your controller."; return
         }
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         resultPresentationReady = true; finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         tvDelay = timingCalibration ?? 0
-        golfCalibrationRequired = true; golfCalibrating = false; golfCalibrationCount = 0
+        golfController = .waiting; golfControllerMap = nil
         setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
+        UserDefaults.standard.set(sport, forKey: "sports.lastSport.\(p.id.uuidString)")
         matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
         if let network = launchExtras["network"] as? String, let data = network.data(using: .utf8),
            let configuration = try? JSONDecoder().decode(MultiplayerMatchConfiguration.self, from: data),
@@ -347,7 +358,7 @@ final class SportsSession {
                  "heightChoice":p.heightChoice,"buildChoice":p.buildChoice,"bodySize":p.bodySize,
                  "loadout":p.loadoutPayload(sport:Sport(rawValue:sport) ?? .tennis)]
         if preview { touch=true }
-        runtimeExternalDisplay = !preview
+        runtimeExternalDisplay = displayConnected
         pending?["external"] = runtimeExternalDisplay
         pending?["emotes"] = matchEmotes
         for (key, value) in launchExtras { pending?[key] = value }
@@ -379,7 +390,7 @@ final class SportsSession {
         SportsDisplays.shared.beginLoadingCover(in: window) { [weak self] in self?.loadCoveredRuntime(in: window) }
     }
     private func loadCoveredRuntime(in window: UIWindow) {
-        do { try SportsRuntime.shared().load(in:window) }
+        do { try SportsRuntime.shared().load(in:window,controllerReplica:multiplayerControllerOnly) }
         catch { failStartup(error.localizedDescription); return }
         SportsRuntime.shared().clearTennisResult()
         SportsDisplays.shared.restorePhoneControls()
@@ -414,10 +425,10 @@ final class SportsSession {
         guard let data=try? JSONSerialization.data(withJSONObject:object),let text=String(data:data,encoding:.utf8) else { return }
         SportsRuntime.shared().send(text)
     }
-    func command(_ action:String, value:Double=0) {
+    func command(_ action:String, value:Double=0, value2:Double=0) {
         guard active else { return }
         NSLog("[SportsSession] command=%@ value=%.2f",action,value)
-        sendJSON(["version":1,"session":sessionID,"action":action,"value":value])
+        sendJSON(["version":1,"session":sessionID,"action":action,"value":value,"value2":value2])
     }
 
     private var aimProfileKey:String {
@@ -494,11 +505,12 @@ final class SportsSession {
         SportsDiagnostics.write("pause reason=\(reason) touch=\(touch) phase=\(phase)")
         sendJSON(["version":1,"session":sessionID,"action":"pause","reason":reason]); paused=true; status=reason
         if reason == "Paused on phone — tap Ready to continue", ready, loading.finished, finishedMatch == nil {
-            menuPauseVisible = true; SportsDisplays.shared.showMenu(); if !displayConnected { SportsDisplays.shared.showMatchControls() }
+            menuPauseVisible = true
+            if sport != "golf" { SportsDisplays.shared.showMenu(); if !displayConnected { SportsDisplays.shared.showMatchControls() } }
         }
     }
     func resume() {
-        guard displayConnected else { pause(reason: "Reconnect your TV or Mac to continue."); return }
+        guard displayConnected || multiplayerControllerOnly else { pause(reason: "Reconnect your TV or Mac to continue."); return }
         guard sport != "tennis" || setupStage == .playing else { status = "Finish TV scan and timing calibration, then tap Ready."; return }
         guard ready, touch || phase == "steering" else { status="Tap Ready to set your center and play."; return }
         menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
@@ -508,14 +520,16 @@ final class SportsSession {
         SportsDiagnostics.write("resume touch=\(touch) phase=\(phase) target=\(target)")
     }
     func readyToPlay() {
-        guard displayConnected, active, ready, loading.finished else { return }
+        guard displayConnected || multiplayerControllerOnly, active, ready, loading.finished else { return }
         if sport == "tennis", setupStage == .scan || setupStage == .timing {
             menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
             status = setupStage == .scan ? "Scan your TV to continue." : "Start the timing calibration to continue."
             return
         }
-        if sport == "golf", !touch, golfCalibrationRequired {
-            if golfCalibrating { readyGolfPracticeSwing() } else { startGolfCalibration() }
+        if sport == "golf" {
+            phase = "steering"; setupStage = .playing
+            sendGolfReady("recalibrate")
+            resume()
             return
         }
         if !touch {
@@ -550,7 +564,7 @@ final class SportsSession {
         offerTimingCalibration()
     }
     func useTouch() {
-        if sport == "golf" { golfCalibrating = false; golfCalibrationCount = 0; golfShotReady = false }
+        if sport == "golf" { golfShotReady = false }
         if sport == "tennis" {
             timingPrompt=false; checkingTiming=false; timingCountdownEnds=nil; checkTimingOnResume=false
             command("cancelTimingCheck"); aimLesson = nil; setupStage = .ready
@@ -591,7 +605,14 @@ final class SportsSession {
         status=motion.courtSign<0 ? "Steering flipped. Tap Ready to recenter." : "Steering restored. Tap Ready to recenter."
     }
     func steer(_ value:Double) { target=value; if !paused { sendInput(valid:true) } }
-    func setAim(_ value:Double) { if sport == "tennis" { setShotAim(across:value,depth:shotDepth) } else { aim=value; command("aim",value:value) } }
+    func setAim(_ value:Double) { if sport == "tennis" { setShotAim(across:value,depth:shotDepth) } else { command("aim",value:value) } }
+    /// A direction in the phone course map: +x right, +y toward the top of the map.
+    func aimGolf(across: Double, forward: Double) {
+        guard active, sport == "golf", ready, !paused, golfPhase == "Aim",
+              across.isFinite, forward.isFinite else { return }
+        sendJSON(["version":1,"session":sessionID,"action":"golfAimDirection",
+                  "value":max(-1,min(1,across)),"value2":max(-1,min(1,forward))])
+    }
     func setShotAim(across:Double,depth:Double) {
         shotAim=max(-1,min(1,across)); shotDepth=max(0,min(1,depth)); aim=shotAim
         sendJSON(["version":1,"session":sessionID,"action":"rallyAim","value":shotAim,"value2":shotDepth])
@@ -656,9 +677,8 @@ final class SportsSession {
         if sport == "tennis" {
             if touch { offerTimingCalibration() } else { beginAxisCapture() }
         } else {
-            setupStage = .ready
             if !touch { motion.start(tennis:false,travel:travel) }
-            status = "Hold the phone in your golf grip, then calibrate your swing."
+            readyToPlay()
         }
     }
     private func recordPresentationEvent(_ event: [String: Any]) {
@@ -725,34 +745,8 @@ final class SportsSession {
         sendJSON(message)
     }
     var golfShotReady = false
-    var golfCalibrationRequired = true
-    var golfCalibrating = false
-    var golfCalibrationCount = 0
-    func startGolfCalibration() {
-        guard sport == "golf", active, ready, loading.finished, displayConnected, !touch,
-              golfPhase == "Aim" || golfPhase.isEmpty else { return }
-        guard motion.calibrate() else { return }
-        golfCalibrationRequired = true; golfCalibrating = true; golfCalibrationCount = 0
-        phase = "steering"; menuPauseVisible = false
-        SportsDisplays.shared.external?.isHidden = true
-        sendGolfReady("golfCalibration"); command("resume"); paused = false
-        status = "Take three comfortable practice swings. Tap Ready before each one."
-    }
-    func readyGolfPracticeSwing() {
-        guard sport == "golf", active, ready, displayConnected, golfCalibrating, golfCalibrationCount < 3,
-              motion.calibrate() else { return }
-        phase = "steering"; sendGolfReady("recalibrate"); command("resume"); paused = false
-    }
-    func finishGolfCalibration(usePractice: Bool = true) {
-        guard sport == "golf", !usePractice || golfCalibrationCount == 3 else { return }
-        command(usePractice ? "golfCalibrationDone" : "golfCalibrationCancel")
-        golfCalibrating = false; golfCalibrationRequired = false; setupStage = .ready
-        pause(reason: usePractice ? "Swing calibrated. Hold your starting grip and tap Ready." : "Hold your starting grip and tap Ready.")
-    }
-    func requestGolfCalibration() {
-        guard sport == "golf", golfPhase == "Aim", !touch else { return }
-        pause(); golfCalibrationRequired = true; golfCalibrating = false; golfCalibrationCount = 0
-    }
+    var golfController = GolfControllerReading.waiting
+    var golfControllerMap: UIImage?
     var golfPhase = ""
     var golfHasNextHole = false
     private var runtimeExternalDisplay = false
@@ -780,7 +774,7 @@ final class SportsSession {
             UserDefaults.standard.set(Array(history.suffix(100)),forKey:"sports.sessions.v1")
         }
         pointClips.reset()
-        multiplayerMatchID=nil; multiplayerSeat = -1
+        multiplayerMatchID=nil; multiplayerSeat = -1; multiplayerControllerOnly=false
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false
         loading.cancel(); tutorialStep=nil; finishedMatch=nil; timingPrompt=false; setupStage = .scan
         SportsRuntime.shared().pause(true); active=false; ready=false; paused=true; tennisControllerActive=false
@@ -797,9 +791,14 @@ final class SportsSession {
         for _ in 0..<64 {
             guard let json=SportsRuntime.shared().pollEvent(),let data=json.data(using:.utf8),
                   let event=(try? JSONSerialization.jsonObject(with:data)) as? [String:Any] else { break }
-            if event["type"] as? String != "feedback" { NSLog("[SportsSession] %@",json) }
+            if !["feedback", "golfController"].contains(event["type"] as? String ?? "") { NSLog("[SportsSession] %@",json) }
             if event["type"] as? String == "boot" { loading.markBoot(); sendPending(); continue }
             guard event["session"] as? String == sessionID else { continue }
+            if sport == "golf", let state = event["golfState"] as? String, !state.isEmpty {
+                golfPhase = state
+                golfHasNextHole = event["golfHasNextHole"] as? Bool ?? false
+                golfShotReady = event["golfShotReady"] as? Bool ?? false
+            }
             if let allowed = event["presentationResultReady"] as? Bool { resultPresentationReady = allowed }
             switch event["type"] as? String {
             case "ready":
@@ -815,13 +814,15 @@ final class SportsSession {
             case "sceneReady": loading.markSceneReady(now: Date(timeIntervalSince1970: event["clock"] as? Double ?? ProcessInfo.processInfo.systemUptime))
             case "loadProgress":
                 if let p=Double(event["message"] as? String ?? "") { loading.reach(p) }
-            case "feedback":
-                if sport == "golf" {
-                    golfPhase = event["golfState"] as? String ?? ""
-                    golfHasNextHole = event["golfHasNextHole"] as? Bool ?? false
-                    golfShotReady = event["golfShotReady"] as? Bool ?? false
-                    if golfCalibrating { golfCalibrationCount = event["golfCalibrationCount"] as? Int ?? 0 }
+            case "golfController":
+                if let object = event["golfController"], let data = try? JSONSerialization.data(withJSONObject: object),
+                   let reading = try? JSONDecoder().decode(GolfControllerReading.self, from: data) {
+                    if reading.hole != golfController.hole { golfControllerMap = nil }
+                    golfController = reading
+                    if let encoded = reading.mapImage, !encoded.isEmpty, let bytes = Data(base64Encoded: encoded),
+                       let image = UIImage(data: bytes) { golfControllerMap = image }
                 }
+            case "feedback":
                 receiveMatchSnapshot(event)
                 feedback=event["message"] as? String ?? ""; stamina=event["stamina"] as? Double ?? 1
                 if SportsRuntime.shared().clock()>=nextDiagnostic {

@@ -14,7 +14,7 @@ namespace GolfArcade.Multiplayer {
         public static bool Active=>Instance && Instance.Configuration!=null;
         public NetworkConfiguration Configuration {get;private set;}
         public bool IsHost=>Configuration?.hostID==Configuration?.localID;
-        public int LocalSeat=>Configuration?.Seat(Configuration.localID)??-1;
+        public int LocalSeat => Configuration==null ? -1 : GolfState!=null && Configuration.Controls(Configuration.localID,GolfState.turn) ? GolfState.turn : Configuration.Seat(Configuration.localID);
         public bool Running {get;private set;}
         public NetworkTennisState TennisState {get;private set;}
         public NetworkGolfState GolfState {get;private set;}
@@ -99,6 +99,10 @@ namespace GolfArcade.Multiplayer {
                 case "input":
                     if(!IsHost||!Running)return;var seat=Configuration.Seat(p.sender);if(seat<0)return;
                     NetworkInput value;try{value=JsonUtility.FromJson<NetworkInput>(p.payload);}catch{return;}
+                    if(value!=null && value.actorSeat>=0) {
+                        if(!Configuration.Controls(p.sender,value.actorSeat))return;
+                        seat=value.actorSeat;
+                    }
                     ApplyInput(seat,value);break;
                 case "snapshot":
                     if(IsHost||p.sender!=Configuration.hostID)return;
@@ -127,6 +131,9 @@ namespace GolfArcade.Multiplayer {
         }
         public void Submit(NetworkInput input,bool reliable=true) {
             if(!Running||LocalSeat<0||input==null||!input.Valid)return;
+            int actor=input.actorSeat>=0?input.actorSeat:LocalSeat;
+            if(!Configuration.Controls(Configuration.localID,actor))return;
+            input.actorSeat=actor;
             if(Configuration.sport=="tennis") {if(TennisState==null)return;input.point=TennisState.point;input.contact=TennisState.contact;}
             if(Configuration.sport=="tennis"&&LocalSeat==1) {
                 input.target=-input.target;input.aim=-input.aim;
@@ -134,7 +141,7 @@ namespace GolfArcade.Multiplayer {
             }
             if(input.action=="move")LocalTarget=input.target;
             input.time=Clock+(IsHost?0:clockOffset);if(input.eventID==0)input.eventID=++eventID;
-            if(IsHost){ApplyInput(LocalSeat,input);return;}
+            if(IsHost){ApplyInput(actor,input);return;}
             Send("input",JsonUtility.ToJson(input),reliable);
         }
         public static bool Command(NativeSportsSession.Message m) {
@@ -143,13 +150,16 @@ namespace GolfArcade.Multiplayer {
                 case "start":case "end":return false;
                 case "pause":Instance.Send("availability","false");return true;
                 case "resume":Instance.Send("availability","true");Time.timeScale=1;return true;
-                case "touch":case "motion":case "recalibrate":case "latency":return false;
+                case "touch":case "motion":case "recalibrate":case "latency":case "golfAimDirection":return false;
                 case "toss":
                     Instance.Submit(new NetworkInput {action="toss",age=Instance.tennisView?.TossSeenAgo??0});return true;
+                case "golfEmote":
+                    Instance.Submit(new NetworkInput {action="emote",value=m.value,actorSeat=(int)m.value2});return true;
                 case "emote":
                     Instance.Submit(new NetworkInput {action="emote",value=m.value});return true;
                 case "serveAim":case "nudge":case "aim":case "rallyAim":case "club":case "dive":
-                    Instance.Submit(new NetworkInput {action=m.action=="rallyAim"?"aim":m.action,value=m.value,value2=m.value2});return true;
+                    Instance.Submit(new NetworkInput {action=m.action=="rallyAim"?"aim":m.action,value=m.value,value2=m.value2,
+                        actorSeat=Instance.GolfState?.turn ?? -1});return true;
                 case "sound":case "haptics":case "display":case "flash":return false;
                 default:return true; // Solo tutorials, campaign cheats and resets cannot change a network match.
             }
@@ -162,7 +172,7 @@ namespace GolfArcade.Multiplayer {
                 self.lastMove=Clock;self.Submit(new NetworkInput {action="move",target=s.target,aim=aim},false);
             }
             if(s.swingStart>self.lastStart){self.lastStart=s.swingStart;self.Submit(new NetworkInput {action="beginSwing",power=s.power});self.tennisView?.PredictNetworkSwing(s.power);}
-            if(s.swing>self.lastSwing) {self.lastSwing=s.swing;self.Submit(new NetworkInput {action="swing",power=s.power,aim=aim,handSide=s.handSide,lift=s.lift,facing=s.strokeFacing,age=Math.Min(.25,Math.Max(0,Clock-s.time))});self.tennisView?.PredictNetworkSwing(s.power);}
+            if(s.swing>self.lastSwing) {self.lastSwing=s.swing;self.Submit(new NetworkInput {action="swing",power=s.power,aim=aim,handSide=s.handSide,lift=s.lift,facing=s.strokeFacing,age=Math.Min(.25,Math.Max(0,Clock-s.time)),actorSeat=self.GolfState?.turn ?? -1});self.tennisView?.PredictNetworkSwing(s.power);}
             if(s.swingAbort>self.lastAbort){self.lastAbort=s.swingAbort;self.Submit(new NetworkInput {action="abortSwing"});}
         }
         int lastSwing,lastStart,lastAbort;

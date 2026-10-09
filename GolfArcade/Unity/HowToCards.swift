@@ -92,6 +92,7 @@ enum GolfLesson {
 struct LoopingVideo: View {
     let clip: String
     var playing = true
+    var aspectFit = false
     /// Snapshots (ImageRenderer cannot draw a player layer) show the poster frames.
     nonisolated(unsafe) static var stillsOnly = false
     var body: some View {
@@ -115,8 +116,10 @@ struct LoopingVideo: View {
     }
 }
 
-private struct LoopingPlayer: UIViewRepresentable {
+struct LoopingPlayer: UIViewRepresentable {
     let url: URL
+    var playing = true
+    var aspectFit = false
     final class PlayerView: UIView {
         override static var layerClass: AnyClass { AVPlayerLayer.self }
         var looper: AVPlayerLooper?
@@ -130,11 +133,11 @@ private struct LoopingPlayer: UIViewRepresentable {
         view.looper = AVPlayerLooper(player: player, templateItem: AVPlayerItem(url: url))
         view.player = player
         let layer = view.layer as! AVPlayerLayer
-        layer.player = player; layer.videoGravity = .resizeAspectFill
+        layer.player = player; layer.videoGravity = aspectFit ? .resizeAspect : .resizeAspectFill
         view.backgroundColor = .clear
-        player.play()
+        if playing { player.play() }
         return view
     }
-    func updateUIView(_ view: PlayerView, context: Context) {}
+    func updateUIView(_ view: PlayerView, context: Context) { if playing { view.player?.play() } else { view.player?.pause() } }
     static func dismantleUIView(_ view: PlayerView, coordinator: ()) { view.player?.pause(); view.looper = nil }
 }

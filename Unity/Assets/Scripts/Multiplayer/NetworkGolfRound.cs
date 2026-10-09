@@ -5,10 +5,10 @@ using GolfArcade.Shot;
 using GolfArcade.Swing;
 namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkGolfer {
-        public int seat,strokes,club,total; public double x,d,heading; public bool holed,dnf; public int[] card;
+        public int seat,strokes,club,total; public int emoteSlot=-1; public long emoteID; public double emoteAt=-100; public double x,d,heading; public bool holed,dnf; public int[] card;
     }
     [Serializable] public sealed class NetworkGolfState {
-        public long revision,shotID;public int hole,turn;public double time,turnAt,windSpeed,windDirection,presentationUntil;
+        public long revision,shotID;public int hole,turn;public double time,turnAt,windSpeed,windDirection,presentationUntil,resultUntil;
         public string phase="aim";public bool paused,complete;
         public NetworkGolfer[] golfers;public NetworkGolfShot shot;
     }
@@ -18,6 +18,7 @@ namespace GolfArcade.Multiplayer {
     }
     /// The existing CourseShot engine runs once, on the authority. Every peer receives its path and ruling.
     public sealed class NetworkGolfRound {
+        public const double ResultSeconds=3;
         public readonly NetworkGolfState State;
         readonly bool intros; readonly Course.Course course;readonly Random random;readonly long[] lastEvent=new long[4];
         public Action<NetworkGolfShot> Shot;public Action<string> Result;
@@ -38,10 +39,20 @@ namespace GolfArcade.Multiplayer {
         }
         public bool Input(int seat,NetworkInput input,double hostTime) {
             var p=State.golfers.FirstOrDefault(p=>p.seat==seat);
-            if(p==null||p.dnf||p.holed||State.complete||State.paused||State.turn!=seat||State.phase!="aim"||input==null||!input.Valid||input.time>hostTime+.05||input.time<hostTime-.5)return false;
+            if(p==null||p.dnf||State.complete||State.paused||input==null||!input.Valid||input.time>hostTime+.05||input.time<hostTime-.5)return false;
+            if(input.action=="emote") {
+                if(State.phase=="intro" || (State.turn==seat && State.phase!="result") || input.value<0 || input.value>2 || input.value!=Math.Floor(input.value) || State.time-p.emoteAt<1.5 || input.eventID<=lastEvent[seat])return false;
+                lastEvent[seat]=input.eventID;p.emoteSlot=(int)input.value;p.emoteID++;p.emoteAt=State.time;State.revision++;return true;
+            }
+            if(p.holed || State.turn!=seat || State.phase!="aim")return false;
             switch(input.action) {
                 case "aim":p.heading+=NetworkMath.Clamp(input.value,-1,1)*1.5;State.revision++;return true;
-                case "club":p.club=(p.club+(input.value>=0?1:3))%4;State.revision++;return true;
+                case "golfAimHeading":p.heading=(input.value%360+360)%360;State.revision++;return true;
+                case "club":
+                    if(input.value==0)return false;
+                    int index=Array.IndexOf(GolfClubs.All,(GolfClub)p.club);
+                    p.club=(int)GolfClubs.All[(index+(input.value>0?1:-1)+GolfClubs.All.Length)%GolfClubs.All.Length];
+                    State.revision++;return true;
                 case "swing":
                     if(input.eventID<=lastEvent[seat])return false;lastEvent[seat]=input.eventID;
                     Play(p,new SwingImpact {Power=NetworkMath.Clamp(input.power,0,1),StartLineDegrees=NetworkMath.Clamp(input.aim,-1,1)*8,CurveDegrees=NetworkMath.Clamp(input.facing,-1,1)*10});return true;
@@ -63,7 +74,9 @@ namespace GolfArcade.Multiplayer {
         public void Step(double elapsed) {
             if(State.paused||State.complete)return;State.time+=Math.Max(0,Math.Min(.1,elapsed));
             if(State.phase=="intro") { if(State.time>=State.presentationUntil) {State.phase="aim";State.turnAt=State.time;State.revision++;} return; }
-            if(State.phase=="flight" && State.time>=State.shot.start+State.shot.duration+2) {
+            if(State.phase=="flight" && State.time>=State.shot.start+State.shot.duration) {
+                State.phase="result";State.resultUntil=State.time+ResultSeconds;State.revision++;
+            } else if(State.phase=="result" && State.time>=State.resultUntil) {
                 var p=State.golfers.First(g=>g.seat==State.shot.seat);p.x=State.shot.nextX;p.d=State.shot.nextD;
                 if(State.shot.holed||p.strokes>=course.Holes[State.hole].Par+5)FinishGolfer(p);
                 NextTurn();

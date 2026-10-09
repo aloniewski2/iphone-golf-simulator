@@ -1,28 +1,30 @@
 using System;
 using System.Linq;
 namespace GolfArcade.Multiplayer {
-    [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; }
-    [Serializable] public sealed class NetworkParticipant { public string id,name; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
+    [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; public string skinHex,shirtHex,shortsHex; }
+    [Serializable] public sealed class NetworkParticipant { public string id,name,controllerID; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
     [Serializable] public sealed class NetworkConfiguration {
         public string lobbyID,matchID,hostID,localID,sport,venue; public int sets=1,games=3,seed;
         public NetworkParticipant[] participants;
+        public bool Controls(string device, int seat) => participants != null && participants.Any(p=>p.seat==seat && p.connected && (p.id==device || (sport=="golf" && device==hostID && p.controllerID==device)));
         public int Seat(string id)=>participants?.FirstOrDefault(p=>p.id==id)?.seat ?? -1;
         public bool Valid => !string.IsNullOrEmpty(matchID) && !string.IsNullOrEmpty(lobbyID) && !string.IsNullOrEmpty(localID)
             && (sport=="tennis" || sport=="golf") && participants!=null && participants.Length>=2 && participants.Length<=4
             && participants.Any(p=>p.id==hostID) && participants.Any(p=>p.id==localID)
             && participants.Select(p=>p.id).Distinct().Count()==participants.Length
+            && participants.All(p=>string.IsNullOrEmpty(p.controllerID) || (sport=="golf" && p.controllerID==hostID && p.id!=hostID))
             && participants.All(p=>p.seat>=-1 && p.seat<(sport=="tennis"?2:4))
             && participants.All(p=>GolfArcade.Tennis.TennisEmotes.Valid(p.loadout?.emotes))
             && participants.Where(p=>p.seat>=0).Select(p=>p.seat).Distinct().Count()==participants.Count(p=>p.seat>=0)
             && participants.Count(p=>p.seat>=0)>=2 && sets>=1 && sets<=3 && (games==1 || games==3 || games==6);
     }
     [Serializable] public sealed class NetworkPacket {
-        public const int Version=2;
+        public const int Version=3;
         public int version=Version; public string lobbyID,matchID,sender,kind,payload; public long sequence; public bool reliable=true; public double sentAt;
     }
     [Serializable] public sealed class NetworkInput {
         public string action; public double time,age; public float target,power,aim,depth=.75f,handSide,lift,facing,value,value2;
-        public long eventID,point,contact; public int club;
+        public long eventID,point,contact; public int club; public int actorSeat=-1;
         public bool Valid => !string.IsNullOrEmpty(action) && Finite(time) && Finite(age) && age>=0 && age<=.25
             && Finite(target) && Finite(power) && Finite(aim) && Finite(depth) && Finite(value) && Finite(value2)
             && Finite(handSide) && Finite(lift) && Finite(facing);

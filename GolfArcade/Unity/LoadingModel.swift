@@ -60,7 +60,6 @@ final class LoadingModel {
         tipIndex = -1; tipStarted = nil
         waitingPlayers = []; finishStart = nil; errorMessage = ""; stalledAfter = 20
         timing = ["commit": now.timeIntervalSince1970]
-        startPracticeInput()
     }
     func cardAppeared(now: Date = LoadingModel.clockNow) { record("cardVisibleCallback", now) }
     func markBoot(now: Date = LoadingModel.clockNow) { guard phase == .loading else { return }; record("boot", now) }

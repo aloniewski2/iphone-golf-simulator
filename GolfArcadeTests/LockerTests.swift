@@ -159,11 +159,11 @@ final class LockerTests: XCTestCase {
         XCTAssertNil(session.players[0].loadout, "shuffle never touches equipped gear")
     }
 
-    func testHomeContinuesAndHasNoStore() {
+    func testHomePlayInviteEmotesAndFeedbackHaveFocusTargets() {
         let menu = TennisMenu.shared
         menu.debugShow(.main)
-        XCTAssertEqual(menu.rows(.main).first, ["homeContinue"])
-        XCTAssertEqual(menu.rows(.main).flatMap { $0 }, ["homeContinue", "play", "character", "settings"])
+        XCTAssertEqual(menu.rows(.main).first, ["play", "homeInvite"])
+        XCTAssertEqual(menu.rows(.main).flatMap { $0 }, ["play", "homeInvite", "character", "homeEmotes", "settings", "betaFeedback"])
     }
     func testThreeEmoteSlotsPersistAndOldProfilesGetDefaults() throws {
         var p = Player(name: "Emoter", colorIndex: 0)

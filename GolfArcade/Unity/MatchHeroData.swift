@@ -411,7 +411,7 @@ extension MenuMotion {
         func ease(_ value: Double) -> Float { let x=min(1,max(0,value)); return Float(x*x*(3-2*x)) }
         func playing(_ t: Double) -> [Int:[Float]] {
             guard let ready=rig.clips["ready"] else { return [:] }
-            let base=ready.morphWeights(at:t+idleOffset,loop:true)
+            let base=ready.morphWeights(at:freezeIdle ? 0 : t+idleOffset,loop:true)
             if case .clipOnce(let id)=kind, let clip=rig.clips[id] {
                 let elapsed=t-lead; if elapsed<0 { return base }
                 let weight=elapsed<=clip.length ? ease(elapsed/max(0.001,fadeIn)):1-ease((elapsed-clip.length)/max(0.001,fadeOut))

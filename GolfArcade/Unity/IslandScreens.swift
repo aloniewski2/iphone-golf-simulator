@@ -415,20 +415,48 @@ struct IslandSettingsScreen: View {
 struct IslandPartyScreen: View {
     let menu: TennisMenu
     let compact: Bool
+    private var title: String {
+        switch menu.screen { case .multiplayer: "Multiplayer"; case .localChoice: "Local Multiplayer"; case .onlineChoice: "Online"; default: "Play" }
+    }
     var body: some View {
-        IslandShell(title:"Play with friends",compact:compact) {
-            let layout = compact ? AnyLayout(VStackLayout(spacing:16)) : AnyLayout(HStackLayout(spacing:48))
-            layout {
-                VStack(alignment:.leading,spacing:12) {
-                    Text("Meet on the island").islandType(compact ? 23 : 32,bold:true)
-                    Text("Invite friends online or find a lobby nearby. Bring your own look.").islandType(compact ? 15 : 20).foregroundStyle(IslandUI.muted).padding(.bottom,10)
-                    IslandLobbyRow(title:"Solo",icon:"person.fill",id:"partySolo",menu:menu,compact:compact)
-                    IslandLobbyRow(title:"Play Online",subtitle:"Quick match or invite friends",icon:"globe",id:"partyOnline",menu:menu,compact:compact)
-                    IslandLobbyRow(title:"Nearby",subtitle:"On the same Wi-Fi",icon:"wifi",id:"partyNearby",menu:menu,compact:compact)
-                    IslandLobbyRow(title:"Back",icon:"arrow.left",id:"back",menu:menu,compact:compact)
-                }.frame(maxWidth:compact ? .infinity : 500)
-                if !compact { CharacterModelPreview(player:menu.player ?? Player(name:"Player 1",colorIndex:0),cameraDistance:3.8,idleSport:.tennis).frame(maxWidth:.infinity) }
-            }.foregroundStyle(IslandUI.navy)
+        IslandShell(title: title, compact: compact) {
+            VStack(alignment: .leading, spacing: compact ? 16 : 24) {
+                switch menu.screen {
+                case .multiplayer:
+                    IslandLobbyRow(title: "Online", subtitle: "Quick match or play with friends", icon: "globe", id: "partyOnline", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Local", subtitle: "Share a phone or play on the same Wi-Fi", icon: "person.2.fill", id: "partyLocal", menu: menu, compact: compact)
+                case .localChoice:
+                    IslandLobbyRow(title: "Pass the Phone · Golf", subtitle: "2–4 players on one phone", icon: "figure.golf", id: "partyLocalGolf", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Nearby Lobby", subtitle: "Host or join on the same Wi-Fi", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
+                case .onlineChoice:
+                    IslandLobbyRow(title: "Quick Match", subtitle: "Find players for golf or tennis", icon: "bolt.fill", id: "onlineQuick", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Play with Friends", subtitle: "Invite friends to your lobby", icon: "person.badge.plus", id: "homeInvite", menu: menu, compact: compact)
+                default:
+                    IslandLobbyRow(title: "Single Player", subtitle: "Choose golf or tennis", icon: "person.fill", id: "partySolo", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Multiplayer", subtitle: "Play online or locally", icon: "person.2.fill", id: "partyMultiplayer", menu: menu, compact: compact)
+                }
+                IslandLobbyRow(title: "Back", icon: "arrow.left", id: "back", menu: menu, compact: compact)
+                if !menu.notice.isEmpty { IslandMenuNotice(menu: menu, compact: compact) }
+                Spacer(minLength: 0)
+            }.frame(maxWidth: 700)
+        }
+    }
+}
+
+struct HomeEmoteScreen: View {
+    let menu: TennisMenu
+    let compact: Bool
+    var body: some View {
+        IslandShell(title: "Emotes", compact: compact) {
+            VStack(spacing: 12) {
+                CharacterModelPreview(player: menu.player ?? Player(name: "Player 1", colorIndex: 0), cameraDistance: 3.4,
+                    outfitSport: menu.homeSport, menuActivity: .play, emote: menu.homeEmote, emoteSequence: menu.homeEmoteSequence)
+                    .frame(maxHeight: .infinity)
+                ForEach(menu.homeEmotes, id: \.self) { id in
+                    IslandLobbyRow(title: TennisMenu.homeEmoteName(id), icon: "face.smiling", id: "home-emote-\(id)", menu: menu, compact: compact)
+                }
+                IslandLobbyRow(title: "Back", icon: "arrow.left", id: "back", menu: menu, compact: compact)
+            }
         }
     }
 }
@@ -445,7 +473,7 @@ struct IslandOnlineScreen: View {
     private var local: MultiplayerParticipant? { lobby?.participants.first { $0.id == service.localID } }
     private var title: String {
         switch route {
-        case .entry: "Play Online"; case .nearby: "Nearby"; case .searching: "Finding friends"
+        case .entry: "Quick Match"; case .nearby: "Nearby"; case .searching: "Finding friends"
         case .emotes: "Emotes"; case .clothes: "Change Clothes"; case .settings: "Match Settings"
         case .match: "Playing together"
         case .loading: "Loading the match"; case .results: "Match complete"; case .leave: "Leave the party?"
@@ -457,7 +485,7 @@ struct IslandOnlineScreen: View {
             if [.entry,.nearby,.searching].contains(route) && lobby == nil { entry }
             else { sharedRoom }
         }.preferredColorScheme(.light)
-        .sheet(item:Binding(get:{online.sheet},set:{online.sheet=$0})) { sheet in OnlineGameCenterSheet(controller:sheet.controller).ignoresSafeArea() }
+
     }
     private var entry: some View {
         IslandShell(title:title,compact:compact) {
@@ -471,10 +499,16 @@ struct IslandOnlineScreen: View {
                         }
                         action("net-tennis","Quick Match Tennis",icon:"tennis.racket")
                         action("net-golf","Quick Match Golf",icon:"figure.golf")
-                        action("net-invite","Invite Friends",icon:"person.badge.plus")
                         action("back","Back",icon:"arrow.left")
                     } else if route == .nearby {
-                        Text("Choose a friend's lobby on the same Wi-Fi.").islandType(compact ? 15 : 19).foregroundStyle(IslandUI.muted)
+                        Text("Join on the same Wi-Fi to bring your saved player and look.").islandType(compact ? 15 : 19).foregroundStyle(IslandUI.muted)
+                        HStack {
+                            TextField("6-character code", text: Binding(get: { online.joinCode }, set: { online.joinCode = String($0.uppercased().filter { $0.isASCII && $0.isHexDigit }.prefix(6)) }))
+                                .textInputAutocapitalization(.characters).autocorrectionDisabled().textFieldStyle(.roundedBorder)
+                                .accessibilityIdentifier("golf-join-code")
+                            Button("Join") { menu.tap("net-join-code") }.disabled(online.joinCode.count != 6)
+                                .accessibilityIdentifier("net-join-code")
+                        }
                         if online.nearbyItems.isEmpty { IslandNotice(text:"Looking for nearby lobbies…",compact:compact) }
                         ForEach(online.nearbyItems) { found in
                             action("net-join-\(found.id)",found.name,subtitle:"\(found.sport.capitalized) · \(found.players)/4 players",icon:"person.2.fill")
@@ -489,7 +523,7 @@ struct IslandOnlineScreen: View {
                         TimelineView(.periodic(from:.now,by:1)) { context in
                             Text("Searching · \(max(0,Int(context.date.timeIntervalSince(online.searchStarted)))) s").islandType(compact ? 17 : 22).monospacedDigit()
                         }
-                        Text("Your hero is warming up while we find a match.").islandType(compact ? 14 : 18).foregroundStyle(IslandUI.muted)
+                        Text("Finding an available match…").islandType(compact ? 14 : 18).foregroundStyle(IslandUI.muted)
                         action("net-cancel","Cancel",icon:"xmark")
                     }
                     if !menu.notice.isEmpty { IslandMenuNotice(menu:menu,compact:compact) }
@@ -549,9 +583,20 @@ struct IslandOnlineScreen: View {
     @ViewBuilder private var panel: some View {
         if route == .clothes { IslandLockerScreen(menu:menu,compact:compact,lobbyPanel:true) }
         else {
+            ScrollView {
             VStack(alignment:.leading,spacing:compact ? 9 : 12) {
                 switch route {
                 case .lobby:
+                    if let code = service.localJoinCode {
+                        Text("JOIN CODE  \(code)").islandType(compact ? 19 : 24,bold:true).monospaced().textSelection(.enabled)
+                        Text("Friends: Nearby → enter code. Guests: pass this phone.").islandType(compact ? 12 : 15).foregroundStyle(IslandUI.muted)
+                    }
+                    if service.isNearby && service.isOwner && lobby?.sport == .golf {
+                        HStack {
+                            action("net-add-guest","Add Guest",icon:"person.badge.plus",enabled:(lobby?.participants.count ?? 4) < 4)
+                            action("net-remove-guest","Remove Guest",icon:"person.badge.minus",enabled:lobby?.participants.contains(where: \.isGuest) == true)
+                        }
+                    }
                     action("net-ready",local?.ready == true ? "Ready" : "Ready?",icon:"checkmark",ready:local?.ready ?? false)
                     HStack { action("net-emotes","Emotes",icon:"face.smiling"); action("net-clothes","Clothes",icon:"tshirt") }
                     action("net-settings","Match Settings",icon:"slider.horizontal.3")
@@ -575,6 +620,7 @@ struct IslandOnlineScreen: View {
                     HStack { action("net-stay","Stay",icon:"person.2.fill"); action("net-confirm-leave","Leave",icon:"arrow.left") }
                 default: EmptyView()
                 }
+            }
             }.foregroundStyle(IslandUI.navy).padding(compact ? 16 : 22).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.top)
                 .background(IslandUI.paper.opacity(0.96),in:RoundedRectangle(cornerRadius:compact ? 32 : 26,style:.continuous))
         }

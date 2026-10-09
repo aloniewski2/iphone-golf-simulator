@@ -293,6 +293,12 @@ namespace GolfArcade.Game
             return v;
         }
 
+        public static GolferView CreatePlayer(Transform parent, Look look)
+        {
+            var go = new GameObject("Party golfer"); go.transform.SetParent(parent, false);
+            var v = go.AddComponent<GolferView>(); v.own = look; v.ApplyStyle(); return v;
+        }
+
         public static GolferView CreateSpectator(Transform parent, Look look)
         {
             var go = new GameObject("Spectator");

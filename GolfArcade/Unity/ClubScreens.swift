@@ -138,28 +138,52 @@ struct IslandHomeScreen: View {
     var body: some View { MotionClubHome(menu: menu, compact: compact) }
 }
 
+/// Preview changes as soon as the controller or pointer focuses a sport.
 struct IslandSportsScreen: View {
     let menu: TennisMenu
     let compact: Bool
     var body: some View {
         IslandShell(title: "Select a sport", compact: compact) {
-            VStack(alignment: .leading, spacing: 20) {
-                let layout = compact ? AnyLayout(VStackLayout(spacing: 20)) : AnyLayout(HStackLayout(spacing: 28))
-                layout {
+            VStack(spacing: compact ? 14 : 24) {
+                GameplayPreview(sport: menu.previewSport, venue: menu.previewSport == .golf ? "cliffside" : "skyscraper")
+                    .aspectRatio(16 / 9, contentMode: .fit).clipShape(RoundedRectangle(cornerRadius: 20))
+                    .accessibilityIdentifier("sport-preview-\(menu.previewSport.rawValue)")
+                HStack(spacing: 16) {
                     ForEach(Sport.allCases.filter(\.playable), id: \.self) { sport in
-                        Button { menu.tap("sport-\(sport.rawValue)") } label: {
-                            VStack(spacing: 14) {
-                                SceneImage(name: Club.scene(for: sport)).frame(height: compact ? 165 : 290).clipShape(RoundedRectangle(cornerRadius: 16))
-                                Text(sport.title.capitalized).font(IslandUI.font(28, bold: true))
-                                Capsule().fill(menu.isFocused("sport-\(sport.rawValue)") ? IslandUI.navy : .clear).frame(width: 110, height: 4)
-                            }.foregroundStyle(IslandUI.navy)
-                        }.buttonStyle(.plain).accessibilityLabel(sport.title.capitalized)
+                        IslandAction(title: sport.title.capitalized, focused: menu.isFocused("sport-\(sport.rawValue)"), primary: menu.isFocused("sport-\(sport.rawValue)"), compact: compact, identifier: "select-\(sport.rawValue)") { menu.tap("sport-\(sport.rawValue)") }
+                            .onHover { if $0 { menu.focus("sport-\(sport.rawValue)") } }
                     }
                 }
                 Spacer(minLength: 0)
                 IslandAction(title: "Back", focused: menu.isFocused("back"), compact: compact) { menu.tap("back") }.frame(width: 170)
             }
         }
+    }
+}
+
+/// Bundled captures of actual play. Venue-specific stills remain visible if a clip is unavailable.
+struct GameplayPreview: View {
+    let sport: Sport
+    let venue: String
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var art: String { sport == .golf ? "map-golf-\(venue)" : "map-\(venue)" }
+    private var clip: String { "gameplay-\(sport.rawValue)-\(venue)" }
+    var body: some View {
+        GeometryReader { g in
+            ZStack(alignment: .bottomLeading) {
+                Color.black
+                if let poster = UIImage(named: art + ".jpg") {
+                    Image(uiImage: poster).resizable().scaledToFit().frame(width: g.size.width, height: g.size.height)
+                }
+                if let url = Bundle.main.url(forResource: clip, withExtension: "mp4") {
+                    LoopingPlayer(url: url, playing: scenePhase == .active && !reduceMotion && !SportsSession.shared.reduceMotion, aspectFit: true).id(clip)
+                }
+                Text("\(sport.title.capitalized) · Gameplay preview")
+                    .font(IslandUI.font(13, bold: true)).foregroundStyle(.white).padding(10)
+                    .background(.black.opacity(0.65), in: Capsule()).padding(12)
+            }.clipped()
+        }.accessibilityLabel("\(sport.title.capitalized) gameplay preview")
     }
 }
 
