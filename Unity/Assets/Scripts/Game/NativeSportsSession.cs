@@ -49,6 +49,19 @@ namespace GolfArcade.Game
             public int version=1; public string session,type,message,finalScore,golfState; public bool matchComplete,matchWon,golfHasNextHole,golfCalibrating,golfShotReady; public int golfCalibrationCount; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
         }
         public static bool Active { get; private set; }
+        /// Golf the way it played before the TV controller: the game's own menus (the clubhouse, the
+        /// course screen and its flyover), the round on this phone's screen, and the controller sheet
+        /// with the map and the clubs when a TV takes the course. Opened from the app's Golf menu;
+        /// the native session stays out of it (Active is false), and Main menu hands back.
+        public static bool Classic { get; private set; }
+        static NativeSportsSession instance;
+        /// Back to the app's menus: the native side hides this screen.
+        public static void ExitToMenu() {
+            if (!Classic) return;
+            Classic = false;
+            AudioListener.pause = true;
+            if (instance) instance.Emit("classicExit", "");
+        }
         public static bool Left { get; private set; }
         public static string PauseReason { get; private set; }
         /// True while input comes from on-screen controls rather than phone motion. Serving
@@ -99,6 +112,7 @@ namespace GolfArcade.Game
         }
         void Start()
         {
+            instance=this;
             Emit("boot","");
             TennisGame.RecordingPointStarted+=SportsRecorderBeginPoint;
             TennisGame.RecordingPointEnded+=SportsRecorderEndPoint;
@@ -124,6 +138,8 @@ namespace GolfArcade.Game
             if (tennis && tennis.AimPractice && !player) Emit("aimMiss",tennis.AimPracticeSequence+"|"+why);
         }
         void OnDestroy() {
+            if(instance==this) instance=null;
+            Classic=false;
             TennisGame.RecordingPointStarted-=SportsRecorderBeginPoint;
             TennisGame.RecordingPointEnded-=SportsRecorderEndPoint;
             TennisGame.Landed -= AimLanding; TennisGame.DrillPoint -= AimMiss;
@@ -139,6 +155,18 @@ namespace GolfArcade.Game
             try {
                 var m=JsonUtility.FromJson<Message>(json);
                 if(m==null || m.version!=1 || string.IsNullOrEmpty(m.session)) return;
+                if(m.action=="classicDisplay") {
+                    // a TV mirrored mid-round takes the course (the phone becomes the controller sheet)
+                    Debug.Log($"[ClassicTV] native says the TV is {(m.value>0 ? "connected" : "gone")} (classic={Classic} loading={loading})");
+                    BigScreen.ExternalChanged(m.value>0);
+                    if(m.value>0 && Classic && !loading) { if(classicTV!=null) StopCoroutine(classicTV); classicTV=StartCoroutine(ClassicTV()); }
+                    if(m.value<=0 && Classic) Emit("classicTV","0");
+                    return;
+                }
+                if(m.action=="classic") {
+                    if(loading || m.sport!="golf") return;
+                    StartCoroutine(LoadClassic(m)); return;
+                }
                 if(m.action=="start") {
                     if(loading || (Active && m.session==session)) return;
                     if(m.sport!="golf" && m.sport!="tennis") return;
@@ -200,7 +228,78 @@ namespace GolfArcade.Game
             return !float.IsNaN(length) && !float.IsInfinity(length) && length > .5f
                 ? System.Numerics.Quaternion.Normalize(q) : null;
         }
+        /// Classic golf: a fresh Golf scene that starts at its own clubhouse menu (AppLauncher plays it
+        /// at once while Classic is set), on the phone's screen in portrait, with the phone's own motion.
+        IEnumerator LoadClassic(Message m) {
+            loading=true; Ready=false; Active=false; Classic=true; multiplayerSession=false;
+            session=m.session; token=m.token; Left=m.left; Touch=false; touch=false; tennis=null; golf=null; gameplayCamera=null;
+            GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;
+            GolferStyle.SkinTone=m.skin;
+            GolferStyle.Edit(look => {
+                look.Haircut = m.hairStyle;
+                look.Hair = GolferStyle.HexOf(GolferStyle.HairColors[Mathf.Clamp(m.hairColor, 0, GolferStyle.HairColors.Length - 1)]);
+                look.Shirt = m.shirt; look.Shorts = m.shorts; look.Shoes = m.accent;
+            });
+            AudioListener.pause=false;
+            AudioListener.volume=m.sound && !Application.isBatchMode?1:0; Haptics.Enabled=m.haptics;
+            Time.timeScale=1;
+            Application.targetFrameRate=FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
+            QualitySettings.vSyncCount=0;
+            Screen.orientation=ScreenOrientation.Portrait;
+            BigScreen.ExternalChanged(m.external);
+            var op=SceneManager.LoadSceneAsync("Golf");
+            float nextProgress=0;
+            while(!op.isDone) {
+                if(Time.realtimeSinceStartup>=nextProgress) {
+                    nextProgress=Time.realtimeSinceStartup+.1f;
+                    Emit("loadProgress",Mathf.Clamp01(op.progress/.9f).ToString("0.00",System.Globalization.CultureInfo.InvariantCulture));
+                }
+                yield return null;
+            }
+            Emit("loadProgress","1");
+            // the game's Start shows the clubhouse; a couple of frames so the phone shows it, not a blank
+            yield return null; yield return null;
+            var game=FindFirstObjectByType<GolfGame>();
+            if(!game) { loading=false; Classic=false; Emit("error","The golf course did not load."); yield break; }
+            loading=false;
+            Emit("classicReady","");
+            if(m.external) { if(classicTV!=null) StopCoroutine(classicTV); classicTV=StartCoroutine(ClassicTV()); }
+        }
+        Coroutine classicTV;
+        /// Classic golf onto the TV, the way the native match does it (ConfigureDisplay): the club app's
+        /// TV arrives as a UIKit scene Unity's display list does not know, so the native side registers
+        /// that screen (retrying while AirPlay settles), then the game's big screen takes the course
+        /// there and the phone becomes the controller sheet. The phone is told only once the course is
+        /// really on the TV, so its own TV picture is never swapped for a black screen.
+        IEnumerator ClassicTV() {
+            float deadline=Time.realtimeSinceStartup+12;
+            int index=-1;
+            while(Classic && Time.realtimeSinceStartup<deadline) {
+                index=SportsPrepareExternalDisplay();
+                if(index>0 && Display.displays.Length>index) break;
+                yield return new WaitForSecondsRealtime(.25f);
+            }
+            Debug.Log($"[ClassicTV] external display index={index} displays={Display.displays.Length}");
+            if(!Classic) { classicTV=null; yield break; }
+            var game=FindFirstObjectByType<GolfGame>();
+            if(index<=0 || Display.displays.Length<=index || !game) {
+                Emit("classicTV","0"); Debug.Log("[ClassicTV] the TV could not be used; the course stays on the phone"); classicTV=null; yield break;
+            }
+            // 1080p at most over AirPlay, as the native match does (a Mac receiver reports 4K)
+            var tv=Display.displays[index];
+            float shrink=Mathf.Min(1f,Mathf.Min(1920f/Mathf.Max(1,tv.systemWidth),1080f/Mathf.Max(1,tv.systemHeight)));
+            if(shrink<1f) tv.SetRenderingResolution(Mathf.RoundToInt(tv.systemWidth*shrink),Mathf.RoundToInt(tv.systemHeight*shrink));
+            BigScreen.ExternalChanged(true);
+            game.ClassicBigScreen();
+            // the course's first frames on the TV before the phone hides its own picture
+            for(int i=0;i<3;i++) yield return new WaitForEndOfFrame();
+            bool live=game.BigScreenLive;
+            Debug.Log($"[ClassicTV] big screen live={live}");
+            Emit("classicTV",live ? "1" : "0");
+            classicTV=null;
+        }
         IEnumerator Load(Message m) {
+            Classic=false;
             loading=true; Ready=false; Active=true; multiplayerSession=!string.IsNullOrEmpty(m.network); session=m.session; token=m.token; Left=m.left;Touch=m.touch; lastSwing=0; lastSwingStart=0; lastSwingAbort=0; lastSample=-1; target=0; steeringTracked=false;
             touch=m.touch;
             GolferStyle.Body=m.female?GolferStyle.BodyKind.Female:GolferStyle.BodyKind.Male;

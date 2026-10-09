@@ -12,6 +12,8 @@ namespace GolfArcade.UI
     {
         public readonly RectTransform Root;
         public readonly HoldButton Play, Course, Golfer, BigScreen, Profile, Records;
+        /// Back to the app's menus; only when golf was opened from them (null otherwise).
+        public readonly HoldButton MenuExit;
         /// SOLO, 2 PLAYERS, ONLINE, OPEN (GameSetup.PlayMode order).
         public readonly HoldButton[] Modes = new HoldButton[4];
         readonly Club.Pill[] modePills = new Club.Pill[4];
@@ -40,6 +42,13 @@ namespace GolfArcade.UI
             tvDot = Club.Box(tv.Root, "On", new Vector2(1, 1), new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(-10, -10), new Vector2(28, 28)).gameObject.AddComponent<Image>();
             tvDot.sprite = UiKit.Circle; tvDot.raycastTarget = false;
             BigScreen = tv.Button;
+            // opened from the app's Golf menu (classic golf): the way back, in the stage's other corner
+            if (GolfArcade.Game.NativeSportsSession.Classic)
+            {
+                var menu = new Club.Pill(stage, "Main menu", "Main menu", 96);
+                menu.Root.anchorMin = menu.Root.anchorMax = new Vector2(0, 1); menu.Root.pivot = new Vector2(0, 1); menu.Root.anchoredPosition = Vector2.zero;
+                MenuExit = menu.Button;
+            }
 
             // the greeting, the players, PLAY, the course, your look and your records, up from the foot
             float y = 34;

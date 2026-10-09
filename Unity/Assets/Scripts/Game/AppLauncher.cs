@@ -21,7 +21,7 @@ namespace GolfArcade.Game
         void Awake()
         {
             var mode = Startup;
-            if (NativeSportsSession.Active) mode = Mode.Play;
+            if (NativeSportsSession.Active || NativeSportsSession.Classic) mode = Mode.Play;
             if (mode == Mode.Ask && !Application.isMobilePlatform) mode = Mode.Play;
             switch (mode)
             {

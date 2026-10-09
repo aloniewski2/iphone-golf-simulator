@@ -72,31 +72,44 @@ import UIKit
         menu.debugShow(.hub(.golf))
         XCTAssertEqual(menu.focused, "round")
     }
-    func testBothSportsChooseMapsBeforeStartingTheRuntime() {
+    /// Tennis picks its court here; golf picks its course on the game's own course screen (ClassicGolf).
+    func testTennisChoosesACourtBeforeStartingTheRuntime() {
         let menu = TennisMenu()
-        for sport in [Sport.golf, .tennis] {
-            menu.debugShow(.hub(sport))
-            menu.begin(MenuLaunch(sport: sport, mode: .tutorial), onPhone: true)
-            XCTAssertEqual(menu.screen, .map)
-            XCTAssertEqual(menu.launch?.mode, sport == .golf ? .round : .exhibition)
-            XCTAssertEqual(menu.mapChoices.count, sport == .golf ? 4 : 3)
-            XCTAssertFalse(SportsSession.shared.active)
-            menu.back()
-            XCTAssertEqual(menu.screen, .hub(sport))
-        }
+        menu.debugShow(.hub(.tennis))
+        menu.begin(MenuLaunch(sport: .tennis, mode: .tutorial), onPhone: true)
+        XCTAssertEqual(menu.screen, .map)
+        XCTAssertEqual(menu.launch?.mode, .exhibition)
+        XCTAssertEqual(menu.mapChoices.count, 3)
+        XCTAssertFalse(SportsSession.shared.active)
+        menu.back()
+        XCTAssertEqual(menu.screen, .hub(.tennis))
         XCTAssertEqual(TennisMenu.hubItems(.tennis), ["exhibition", "campaign", "training"])
         for id in TennisMenu.hubItems(.tennis) { XCTAssertTrue(menu.hubUnlocked(.tennis, id)) }
     }
     func testStartupFailureStopsLoadingAndOffersTheSameMapAgain() {
         let menu = TennisMenu.shared
-        menu.begin(MenuLaunch(sport: .golf, mode: .round), onPhone: true)
+        menu.begin(MenuLaunch(sport: .tennis, mode: .exhibition), onPhone: true)
         SportsSession.shared.loading.begin(now: Date())
         SportsSession.shared.failStartup("Display unavailable")
         XCTAssertTrue(SportsSession.shared.loading.finished)
         XCTAssertFalse(SportsSession.shared.active)
         XCTAssertEqual(menu.screen, .map)
-        XCTAssertEqual(menu.mapSport, .golf)
+        XCTAssertEqual(menu.mapSport, .tennis)
         XCTAssertEqual(menu.notice, "Display unavailable")
+        menu.goHome()
+    }
+    /// Golf skips the native map and TV setup: it opens the game's own clubhouse on the phone
+    /// (ClassicGolf). The Simulator has no Unity, so it says so and stays where golf was chosen.
+    func testGolfOpensTheGamesOwnMenusInsteadOfTheTVSetup() {
+        let menu = TennisMenu.shared
+        menu.debugShow(.hub(.golf))
+        menu.begin(MenuLaunch(sport: .golf, mode: .round), onPhone: true)
+        XCTAssertNotEqual(menu.screen, .map)
+        XCTAssertNotEqual(menu.screen, .connect)
+        XCTAssertEqual(menu.screen, .hub(.golf))
+        XCTAssertFalse(ClassicGolf.shared.active)
+        XCTAssertFalse(SportsSession.shared.active)
+        XCTAssertTrue(menu.notice.contains("iPhone build"), menu.notice)
         menu.goHome()
     }
     func testRetiredTennisTutorialAndRewardSavesReturnToSelection() {
@@ -154,8 +167,8 @@ import UIKit
         XCTAssertNil(displays.gameWindow(preview: true))
         XCTAssertNil(displays.gameWindow(preview: false))
         let menu = TennisMenu.shared
-        menu.begin(MenuLaunch(sport: .golf, mode: .round), onPhone: true)
-        menu.tap("map-cliffside")
+        menu.begin(MenuLaunch(sport: .tennis, mode: .exhibition), onPhone: true)
+        menu.tap("map-resort")
         XCTAssertEqual(menu.screen, .connect)
         XCTAssertFalse(SportsSession.shared.active)
         XCTAssertFalse(menu.rows(.connect).flatMap { $0 }.contains("phone"))

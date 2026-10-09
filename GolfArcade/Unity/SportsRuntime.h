@@ -18,6 +18,11 @@ enum { SportsSampleVersion = 3, SportsSampleValid = 1, SportsSampleDegraded = 2 
 @interface SportsRuntime : NSObject
 + (instancetype)shared;
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error;
+/// Classic golf: start Unity (once) on the phone's own screen, without a TV. Its window stays
+/// hidden until `showUnityOnPhone:YES`.
+- (BOOL)loadOnPhone:(NSError**)error;
+/// Puts Unity's own phone window in front (classic golf), or hides it again for the club.
+- (void)showUnityOnPhone:(BOOL)visible;
 - (void)attachToWindow:(UIWindow*)window;
 - (void)send:(NSString*)json;
 - (void)push:(NSString*)json;

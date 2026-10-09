@@ -396,6 +396,7 @@ final class TennisMenu {
         case .online(let route): online.back(route, menu: self)
         case .title: return
         case .loading:
+            if ClassicGolf.shared.active { ClassicGolf.shared.cancel(); return }
             if OnboardingFlow.shared.active { OnboardingFlow.shared.back(); return }
             let destination = launchOrigin ?? launch.map(hubAfter) ?? .main
             pendingPick = nil; result = nil
@@ -568,6 +569,9 @@ final class TennisMenu {
         if launch.mode == .tutorial { launch.mode = launch.sport == .golf ? .round : .exhibition }
         if screen != .connect && screen != .loading && screen != .map && screen != .postMatch { launchOrigin = screen }
         self.launch = launch; result = nil
+        // Golf is the game's own: its clubhouse, course screen and flyover, the round on the phone and
+        // the old controller sheet with a TV (ClassicGolf). Automated checks keep the native round.
+        if launch.sport == .golf && !SportsSession.benchmark { ClassicGolf.shared.start(menu: self); return }
         // Choose the map first; retries and replays keep the selected map.
         if !skipMap, launch.sport.playable {
             pendingPick = (launch, onPhone); show(.map); return
@@ -759,6 +763,25 @@ final class TennisMenu {
         screen = .postMatch; row = 0; column = 0; notice = ""
     }
     #endif
+}
+
+// MARK: - Classic golf (the game's own menus, round and controller; ClassicGolf)
+
+extension TennisMenu {
+    /// While Unity starts and loads the course.
+    func showClassicGolfLoading() { show(.loading) }
+    /// Unity could not start (the Simulator, a missing export): back where golf was chosen.
+    func classicGolfFailed(_ message: String) {
+        let back = launchOrigin ?? .main
+        launch = nil; launchOrigin = nil
+        show(back); notice = message
+    }
+    /// "Main menu" in golf's clubhouse (or Back while it loads): the app's main menu.
+    func classicGolfEnded(notice message: String?) {
+        launch = nil; launchOrigin = nil
+        show(.main)
+        if let message { notice = message }
+    }
 }
 
 

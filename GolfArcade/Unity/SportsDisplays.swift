@@ -36,13 +36,7 @@ final class SportsDisplays: NSObject {
     func register(from controller:UIViewController) {
         guard let window=controller.view.window else { return }
         phone=window
-        if #available(iOS 27.0, *), registration == nil {
-            let config=UISceneConfiguration(name:"Sports External",sessionRole:.windowExternalDisplayNonInteractive)
-            config.delegateClass=SportsExternalScene.self
-            var owner=controller
-            while let parent=owner.parent { owner=parent }
-            registration=owner.registerSceneAccessory(.externalNonInteractive(sceneConfiguration:config))
-        }
+        // (the iOS 27 scene-accessory registration is left out: it needs the iOS 27 SDK, and this build uses Xcode 26.2)
         refresh()
     }
     func gameWindow(preview usePreview:Bool) -> UIWindow? {

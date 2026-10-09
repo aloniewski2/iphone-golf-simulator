@@ -382,6 +382,7 @@
 		FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4147C03A0122123852F5094 /* CourseTests.swift */; };
 		FF610AAED2BC5C17F3280CAE /* GolfHero_Female_Swing_01.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 194946D0661AAF717760F9F5 /* GolfHero_Female_Swing_01.lzfse */; };
 		FFFAC7B0993BE08E6207445B /* MatchHero_Golf_Male_GloveR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 573A326081430ADDD7795D1F /* MatchHero_Golf_Male_GloveR_N.ktx */; };
+		706E9180478AC01C0E40A03C /* ClassicGolf.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFADB1EB6D8697E67EB25FD /* ClassicGolf.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -783,6 +784,7 @@
 		FEA9F688563659DA5A118301 /* MatchHero_GolfKit_Female_ShoeL_N.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Female_ShoeL_N.ktx; sourceTree = "<group>"; };
 		FEBD4CB653AB5A4CBF9C24E4 /* MatchHero_Kit_Male_ShoeL.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Male_ShoeL.png; sourceTree = "<group>"; };
 		FFF9B83611636F6BE5E18334 /* MatchHero_GolfKit_Male_Bottom_M.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Male_Bottom_M.ktx; sourceTree = "<group>"; };
+		DFFADB1EB6D8697E67EB25FD /* ClassicGolf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassicGolf.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -918,6 +920,7 @@
 				19070D2DFBE5FCAC23DCAB46 /* TennisMenuViews.swift */,
 				6DA4592868B9D73C7CA26077 /* TennisPlayViews.swift */,
 				E3F501F901D94226FE686989 /* TennisStory.swift */,
+				DFFADB1EB6D8697E67EB25FD /* ClassicGolf.swift */,
 			);
 			path = Unity;
 			sourceTree = "<group>";
@@ -1856,6 +1859,7 @@
 				3BE06AF686DC2F1071AD324D /* TennisMenuViews.swift in Sources */,
 				947EA1291A8D75A376E14389 /* TennisPlayViews.swift in Sources */,
 				01A5FE7CF59D40F3735A28BA /* TennisStory.swift in Sources */,
+				706E9180478AC01C0E40A03C /* ClassicGolf.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

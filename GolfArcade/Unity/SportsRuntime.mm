@@ -34,6 +34,44 @@
         if (error) *error=[NSError errorWithDomain:@"SportsRuntime" code:4 userInfo:@{NSLocalizedDescriptionKey:@"Connect an external TV or Mac to play. This phone remains the controller."}];
         return NO;
     }
+    if (![self bootUnity:error]) return NO;
+    [self initOnPhoneScene];
+    [self attachToWindow:window];
+    return YES;
+#else
+    if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:1 userInfo:@{NSLocalizedDescriptionKey:@"Unity requires the integrated physical-device build. Simulator can preview native menus only."}];
+    return NO;
+#endif
+}
+- (BOOL)loadOnPhone:(NSError**)error {
+#if HAS_UNITY
+    BOOL first = _unity == nil;
+    if (![self bootUnity:error]) return NO;
+    [self initOnPhoneScene];
+    // Nothing shows until the course is ready; the club's loading screen stays up meanwhile.
+    if (first) _unity.appController.window.hidden=YES;
+    return YES;
+#else
+    if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:1 userInfo:@{NSLocalizedDescriptionKey:@"Golf needs the full iPhone build (with Unity). The Simulator only shows the menus."}];
+    return NO;
+#endif
+}
+- (void)showUnityOnPhone:(BOOL)visible {
+#if HAS_UNITY
+    UIWindow *window=_unity.appController.window;
+    if (!window) return;
+    if (visible) { window.hidden=NO; [window makeKeyAndVisible]; }
+    else window.hidden=YES;
+#endif
+}
+#if HAS_UNITY
+- (void)initOnPhoneScene {
+    UIWindowScene *phoneScene=nil;
+    for(UIScene *scene in UIApplication.sharedApplication.connectedScenes)
+        if([scene isKindOfClass:UIWindowScene.class] && [scene.session.role isEqualToString:UIWindowSceneSessionRoleApplication]) { phoneScene=(UIWindowScene*)scene; break; }
+    [_unity.appController initUnityWithScene:phoneScene];
+}
+- (BOOL)bootUnity:(NSError**)error {
     if (!_unity) {
         // Debug builds put app code in GolfArcade.debug.dylib, where the
         // executable-only _mh_execute_header symbol cannot be linked directly.
@@ -77,17 +115,9 @@
         if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:2 userInfo:@{NSLocalizedDescriptionKey:@"Unity bridge is missing. Re-export Unity before building the host app."}];
         return NO;
     }
-    UIWindowScene *phoneScene=nil;
-    for(UIScene *scene in UIApplication.sharedApplication.connectedScenes)
-        if([scene isKindOfClass:UIWindowScene.class] && [scene.session.role isEqualToString:UIWindowSceneSessionRoleApplication]) { phoneScene=(UIWindowScene*)scene; break; }
-    [_unity.appController initUnityWithScene:phoneScene];
-    [self attachToWindow:window];
     return YES;
-#else
-    if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:1 userInfo:@{NSLocalizedDescriptionKey:@"Unity requires the integrated physical-device build. Simulator can preview native menus only."}];
-    return NO;
-#endif
 }
+#endif
 - (void)attachToWindow:(UIWindow*)window {
     _destination=window;
 #if HAS_UNITY

@@ -385,6 +385,7 @@
 		FC941C69594F22699BBE9F9B /* MatchHero_Kit_Male_SockL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 3E95E05448ECCAB59F098105 /* MatchHero_Kit_Male_SockL_M.ktx */; };
 		FDDF645BDBE8177B1857D4B1 /* DisplayLatencyMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92067E75656ECEDCE9CF56D7 /* DisplayLatencyMeasurement.swift */; };
 		FE924C42EB574F1E91810076 /* MatchHero_GolfKit_Female_ShoeR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 37D1A6783711E60B7CB9BEF6 /* MatchHero_GolfKit_Female_ShoeR_N.ktx */; };
+		64C94A646D46338194E5390F /* ClassicGolf.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB4FDB8A55BB132ABCF726B /* ClassicGolf.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -816,6 +817,7 @@
 		FFBD23805DB5A26DE2D20DEA /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
 		FFD0F1482F0E8423BA602B19 /* TennisCampaign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisCampaign.swift; sourceTree = "<group>"; };
 		FFE1317191CBE7FE7F1B58D9 /* MatchHero_Golf_Male_Head_N.ktx */ = {isa = PBXFileReference; path = MatchHero_Golf_Male_Head_N.ktx; sourceTree = "<group>"; };
+		FDB4FDB8A55BB132ABCF726B /* ClassicGolf.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassicGolf.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -901,6 +903,7 @@
 				60371CFFF3A14689A1DDC509 /* TennisMenuViews.swift */,
 				0C18FAEC8D4AA75C95B3A3B9 /* TennisPlayViews.swift */,
 				9314FCC1B14BFD8F379BC8B3 /* TennisStory.swift */,
+				FDB4FDB8A55BB132ABCF726B /* ClassicGolf.swift */,
 			);
 			path = Unity;
 			sourceTree = "<group>";
@@ -1938,6 +1941,7 @@
 				50738332063F533AA74163F8 /* TennisMenuViews.swift in Sources */,
 				4FAC1F92E137012357AC3BD8 /* TennisPlayViews.swift in Sources */,
 				BB938D32A8965CB39BFB3172 /* TennisStory.swift in Sources */,
+				64C94A646D46338194E5390F /* ClassicGolf.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2071,7 +2075,7 @@
 					"$(inherited)",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.iphonegolfsim;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "GolfArcade/Unity/GolfArcade-Bridging-Header.h";
@@ -2119,7 +2123,7 @@
 					"$(inherited)",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.GolfArcade;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aloniewski.iphonegolfsim;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "GolfArcade/Unity/GolfArcade-Bridging-Header.h";

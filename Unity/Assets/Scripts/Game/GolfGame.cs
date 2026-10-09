@@ -320,6 +320,7 @@ namespace GolfArcade.Game
             home.Play.Pressed = Play;
             home.Profile.Pressed = () => { Click(); OpenLobby(Lobby.Page.Profile); };
             home.Records.Pressed = () => { Click(); OpenLobby(Lobby.Page.Profile); };
+            if (home.MenuExit != null) home.MenuExit.Pressed = () => { Click(); NativeSportsSession.ExitToMenu(); };
             for (int i = 0; i < home.Modes.Length; i++) { var m = (PlayMode)i; home.Modes[i].Pressed = () => { Click(); ChooseMode(m); }; }
             RefreshMenu();
             SetFog(0);
@@ -1845,6 +1846,12 @@ namespace GolfArcade.Game
 
         /// The phone-as-controller layout without a big screen, for reviews (and a look at it).
         public void PreviewBigScreen(bool on) => bigScreen.SetPreview(on);
+
+        /// Classic golf opened with a TV already connected: the course goes there and this phone
+        /// becomes the controller sheet (the map, the club cards, the aim pad).
+        public void ClassicBigScreen() { bigScreen.SetWanted(true); if (home != null) RefreshMenu(); }
+        /// The course is on the TV now (not a preview).
+        public bool BigScreenLive => bigScreen && bigScreen.Live;
 
         /// For reviews: lay the HUD out as it is on a live big screen (the course camera standing in
         /// for the TV's), with the controller on the phone's own canvas; false puts it back.

@@ -28,7 +28,7 @@ namespace GolfArcade.Game
         /// Fired when the controller layout should come or go.
         public System.Action<bool> OnChanged;
 
-        public static bool DisplayAvailable => Display.displays.Length > 1;
+        public static bool DisplayAvailable => !externalLost && Display.displays.Length > 1;
         /// The course is really on another screen (not a preview).
         public bool Live => Active && !Preview;
 
@@ -69,6 +69,11 @@ namespace GolfArcade.Game
             bool on = Wanted && (DisplayAvailable || Preview);
             if (on != Active) Apply(on);
         }
+        static bool externalLost;
+        /// Inside the sports app the TV arrives as a UIKit scene, which NativeSportsSession registers
+        /// with Unity (classic golf); the app also says when it goes (Unity's own list can keep a
+        /// screen that has gone): gone puts the course back on the phone.
+        public static void ExternalChanged(bool connected) { externalLost = !connected; }
 
         void Apply(bool on)
         {
@@ -97,6 +102,7 @@ namespace GolfArcade.Game
                 if (backdrop) backdrop.gameObject.SetActive(false);
                 course.fieldOfView = PhoneFov;
             }
+            if (NativeSportsSession.Classic) Debug.Log($"[ClassicTV] big screen {(on ? "on" : "off")} displays={Display.displays.Length} preview={Preview} course→display {course.targetDisplay}");
             if (was != on) OnChanged?.Invoke(on);
         }
     }
