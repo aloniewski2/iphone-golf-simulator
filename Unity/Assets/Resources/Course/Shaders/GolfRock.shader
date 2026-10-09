@@ -1,5 +1,8 @@
 Shader "GolfArcade/GolfRock" {
 Properties {
+ _HeightStrength("Stone colour relief",Range(0,2))=0
+ _GeologicalMacro("Broad geological weathering",Range(0,1))=0
+ _WetFoot("Wet lower coastal cliff",Range(0,1))=0
 
  [MainTexture] _BaseMap("Albedo / band sheen",2D)="white"{}
  [MainColor] _BaseColor("Tint",Color)=(1,1,1,1)
@@ -27,7 +30,15 @@ Properties {
  _RockScale("Rock repeats per yard",Float)=.09
  _StrataStrength("Rock strata strength",Float)=.075
  _TriplanarNormals("Triplanar normal detail",Float)=0
+ _AuthoredUV("Use scanned mesh UVs",Float)=0
  _RockMipBias("Rock mip bias",Float)=1.5
+ _PaletteMode("Quiet colour palette",Float)=0
+ _LowColor("Low palette",Color)=(.25,.45,.19,1)
+ _HighColor("High palette",Color)=(.46,.66,.29,1)
+ _DetailContrast("Texture contrast",Float)=1
+ _PaletteDetail("Retained stone fissure colour",Range(0,1))=0
+ _PaletteMidpoint("Authored scan linear-luma midpoint",Float)=.22
+ _PaletteLightShoulder("Authored scan exposed-plane shoulder",Range(0,1))=1
  [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull mode",Float)=2
  _Foliage("Two sided foliage lighting",Float)=0
 
@@ -47,6 +58,7 @@ HLSLPROGRAM
 #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 #pragma multi_compile _ _ADDITIONAL_LIGHTS
 #pragma multi_compile_fragment _ _SHADOWS_SOFT
+#pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
 #pragma multi_compile_fog
 #define GOLF_ROCK 1
 
@@ -87,6 +99,15 @@ V GolfLitVertex(A a) {
  #endif
  return o;
 }
+float GolfStoneHash(float3 p){return frac(sin(dot(p,float3(127.1,311.7,74.7)))*43758.5453);}
+float GolfStoneNoise(float3 p){
+ float3 cell=floor(p),q=frac(p);q=q*q*(3-2*q);
+ float a=lerp(GolfStoneHash(cell),GolfStoneHash(cell+float3(1,0,0)),q.x);
+ float b=lerp(GolfStoneHash(cell+float3(0,1,0)),GolfStoneHash(cell+float3(1,1,0)),q.x);
+ float c=lerp(GolfStoneHash(cell+float3(0,0,1)),GolfStoneHash(cell+float3(1,0,1)),q.x);
+ float e=lerp(GolfStoneHash(cell+float3(0,1,1)),GolfStoneHash(cell+1),q.x);
+ return lerp(lerp(a,b,q.y),lerp(c,e,q.y),q.z);
+}
 half4 GolfFragment(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
  UNITY_SETUP_INSTANCE_ID(i);
  float3 view=GetWorldSpaceViewDir(i.w);
@@ -99,6 +120,17 @@ half4 GolfFragment(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
   // strata and column rhythm keep their independently filtered read.
   half3 weight=abs(n);weight*=weight;weight/=max(dot(weight,half3(1,1,1)),.001h);
   float3 p=i.w*_RockScale;
+  // Mirrored coordinates meet at the same image edge. The fissured limestone
+  // scan is not perfectly periodic; ordinary repeat exposed rectangular seams.
+  p=1-abs(frac(p*.5)*2-1);
+  if(_AuthoredUV>.5h) {
+   base=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,i.uv);
+   if(_NormalEnabled>.5h) {
+    half3 ts=UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap,sampler_BumpMap,i.uv));
+    ts.xy*=_BumpScale;half3 t=normalize(i.t.xyz),b=cross(n,t)*i.t.w;
+    n=SafeNormalize(t*ts.x+b*ts.y+n*ts.z);
+   }
+  } else {
   base=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.zy,_RockMipBias)*weight.x;
   base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xz,_RockMipBias)*weight.y;
   base+=SAMPLE_TEXTURE2D_BIAS(_BaseMap,sampler_BaseMap,p.xy,_RockMipBias)*weight.z;
@@ -108,6 +140,37 @@ half4 GolfFragment(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
    half2 nz=UnpackNormal(SAMPLE_TEXTURE2D_BIAS(_BumpMap,sampler_BumpMap,p.xy,_RockMipBias)).xy;
    half3 detail=half3(0,nx.y,nx.x)*weight.x+half3(ny.x,0,ny.y)*weight.y+half3(nz.x,nz.y,0)*weight.z;
    n=SafeNormalize(n+detail*_BumpScale*.35h);
+  }
+  }
+  if(_HeightStrength>.001h) {
+   // Derive consistent surface relief from the actual fissured colour scan.
+   // Screen-space gradients add tactile stone response without extra map reads.
+   float height=dot(base.rgb,float3(.2126,.7152,.0722));
+   float3 dx=ddx(i.w),dy=ddy(i.w),r1=cross(dy,n),r2=cross(n,dx);
+   float determinant=dot(dx,r1);
+   float3 gradient=(r1*ddx(height)+r2*ddy(height))*sign(determinant)/max(abs(determinant),.00001);
+   n=SafeNormalize(n-gradient*_HeightStrength);
+  }
+  if(_PaletteMode>.5h) {
+   half value=dot(base.rgb,half3(.2126h,.7152h,.0722h));
+   half midpoint=_AuthoredUV>.5h ? _PaletteMidpoint : .22h;
+   half blend=.5h+(value-midpoint)*_DetailContrast;
+   if(_AuthoredUV>.5h && _PaletteLightShoulder<.999h) {
+    // A material-local shoulder holds the scan median and darker fissures.
+    // Bright exposed albedo retains a gradient instead of clipping to cream.
+    half above=max(blend-.5h,0.0h),span=max(_PaletteLightShoulder,.001h);
+    blend=min(blend,.5h)+span*above/(span+above);
+   }
+   half3 palette=lerp(_LowColor.rgb,_HighColor.rgb,saturate(blend));
+   // Retain broad authored fissures at a bounded strength. Full palette mapping
+   // made actual rounded limestone chalk-white; full scan reads as wallpaper.
+   base.rgb=lerp(palette,base.rgb*.75h,_PaletteDetail);
+  }
+  if(_GeologicalMacro>.001h){
+   float broad=GolfStoneNoise(i.w*.020+float3(7,23,11))*.63+GolfStoneNoise(i.w*.006+float3(31,5,17))*.37;
+   base.rgb*=lerp(1,lerp(.54h,1.48h,saturate((broad-.20)*1.65)),_GeologicalMacro);
+   half elevation=saturate(i.w.y*.007h);
+   base.rgb*=lerp(half3(.85h,.87h,.91h),half3(1.08h,1.06h,1.02h),elevation*_GeologicalMacro);
   }
   half strata=GolfBand(i.w.y*.22+sin(i.w.x*.025)*.10);
   base.rgb*=1+strata*_StrataStrength;
@@ -140,18 +203,34 @@ half4 GolfFragment(V i, FRONT_FACE_TYPE face : FRONT_FACE_SEMANTIC):SV_Target {
  #endif
  half3 albedo=base.rgb*_BaseColor.rgb;
  half gloss=_Smoothness*lerp(1,base.a,_SheenFromAlpha);
+ half wetFoot=_WetFoot*(1-smoothstep(0.0,4.5,i.w.y));
+ albedo*=lerp(1.0h,.64h,wetFoot);
+ albedo*=lerp(half3(1,1,1),half3(.86h,.92h,1),wetFoot*.45h);
+ gloss=saturate(gloss+wetFoot*.28h);
  Light main=HeroMain(GetMainLight());
  main.shadowAttenuation=GolfShadowAttenuation(i.w);
  half3 colour=albedo*(i.illumination-i.key+HeroWrapped(n,main.direction,_Wrap)*main.color*main.shadowAttenuation);
+ colour+=albedo*(HeroAmbient(n)-HeroAmbient(normalize(i.n)));
+ #if defined(_SCREEN_SPACE_OCCLUSION)
+ if(_AuthoredUV>.5h) {
+  // The renderer publishes pre-opaque AO. Consume only its indirect visibility
+  // on authored scans: sunlight, specular and legacy rocks remain unchanged.
+  AmbientOcclusionFactor screenAO=GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.p));
+  half indirectVisibility=lerp(1.0h,screenAO.indirectAmbientOcclusion,.65h);
+  colour+=albedo*HeroAmbient(n)*(indirectVisibility-1.0h);
+ }
+ #endif
  if(_Foliage>.5h) {
-  colour+=albedo*(HeroAmbient(n)-HeroAmbient(normalize(i.n)));
   // A little transmitted light keeps the underside of a frond readable.
   colour+=albedo*main.color*saturate(-dot(n,main.direction))*.12h*main.shadowAttenuation;
  }
+ half3 h=SafeNormalize(main.direction+v);
+ half spec=pow(saturate(dot(n,h)),lerp(24.0h,90.0h,saturate(gloss)));
+ colour+=main.color*main.shadowAttenuation*spec*(.008h+gloss*.025h);
  half edge=1-saturate(dot(n,v));edge*=edge;edge*=edge;
  colour+=albedo*edge*gloss*.10h*main.color*main.shadowAttenuation;
  #if defined(GOLF_ROCK)
- if(_EmissionEnabled>.5h)colour+=base.aaa*_EmissionColor.rgb;
+ if(_EmissionEnabled>.5h)colour+=base.aaa*_EmissionColor.rgb*saturate(1-length(view)/450.0);
  #endif
  return half4(MixFog(colour,i.fog),1);
 }

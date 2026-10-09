@@ -24,8 +24,10 @@ namespace GolfArcade.EditorTools
             if (!assetPath.StartsWith(Folder) && !assetPath.StartsWith(Island)) return;
             var t = (TextureImporter)assetImporter;
             bool normal = assetPath.EndsWith("_Normal.png");
+            bool mask = assetPath.EndsWith("_Mask.png");
             t.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
-            t.sRGBTexture = !normal;
+            t.sRGBTexture = !normal && !mask;
+            if(mask){t.alphaIsTransparency=false;t.alphaSource=TextureImporterAlphaSource.FromInput;}
             t.maxTextureSize = normal ? 1024 : 2048;
             t.mipmapEnabled = true;
             t.anisoLevel = 4;

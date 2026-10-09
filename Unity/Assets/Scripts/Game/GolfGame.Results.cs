@@ -17,6 +17,18 @@ namespace GolfArcade.Game
         public string ShotResultTitle { get; private set; }
         public string ResultEmote => golfer ? golfer.Performing : null;
 
+        string GolfReactionKey => "golf.reaction."+(holeStrokes==1?"holeinone":holeStrokes-hole.Par<=-2?"eagle":holeStrokes-hole.Par==-1?"birdie":holeStrokes==hole.Par?"par":"bogey");
+        string GolfBoundaryKey => holeIndex+1>=course.Holes.Length?"golf.matchend":"golf.holeout."+course.Key+"."+hole.Number;
+        float ResultReactionSeconds => LastShot!=null && LastShot.IsHoled ? Mathf.Max(PresentationDirector.GolfReaction(holeStrokes-hole.Par,holeStrokes==1,PresentationPolicy.Cut(GolfReactionKey)), PresentationDirector.Budget(holeIndex+1>=course.Holes.Length?PresentationBeat.MatchEnd:PresentationBeat.HoleOut,true,PresentationPolicy.Cut(GolfBoundaryKey))) : .5f;
+        void MarkNaturalGolfResultSeen() {
+            if(LastShot==null || !LastShot.IsHoled || stateTime<ResultReactionSeconds)return;
+            if(PresentationPolicy.Cut(GolfReactionKey)==PresentationCut.Full)PresentationPolicy.Seen(GolfReactionKey);
+            if(PresentationPolicy.Cut(GolfBoundaryKey)==PresentationCut.Full)PresentationPolicy.Seen(GolfBoundaryKey);
+        }
+        bool boundaryPresented;
+        float ResultSkipAfter => LastShot!=null && LastShot.IsHoled ? (holeIndex+1>=course.Holes.Length?1.5f:holeStrokes==1?1f:.5f) : 0f;
+        bool resultHeroCamera;
+        void NextPresentationHole() { Enter(State.RoundDone); NextHole(); }
         void ShowShotResult()
         {
             var shot = LastShot;
@@ -32,15 +44,17 @@ namespace GolfArcade.Game
             hud.HideLanding(); hud.HideShotStats(); hud.FlightMode(false); hud.ShowPlayHud(false);
             flightHud = false;
             aimLine.positionCount = 0;
+            effects.ClearTracer();
             if (!shotResultPanel) shotResultPanel = ShotResultPanel.Create(transform, rig.Camera);
             BuildSwingCurve();
             string outcome = shot.IsHoled ? "HOLED!" : shot.PenaltyStrokes > 0 ? "PENALTY +1" : shot.Lie.Label();
             shotResultPanel.Show(quality, putt ? UiKit.ArcadeYellow : GradeColor(lastReport.Grade), outcome, SwingTiles(true), detail,
                 curvePoints, curveReach, curveTarget,
                 shot.IsHoled || Match?.IsContest == true ? "SCORECARD" : "NEXT SHOT", resultEmotes.Select(TennisEmotes.Name).ToArray(), ContinueShotResult, PlayResultEmote);
-            // Cut back only after rest, using the same camera position and angle as address.
+            // The result waits on a front view so equipped emotes read clearly.
             golfer.Perform("Idle");
-            rig.FrameShotResult();
+            resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;
+            if(resultHeroCamera) {bigMomentUsed=true;rig.FrameCharacterResult(golfer.transform);} else rig.FrameShotResult();
             rig.SnapNext(); rig.ApplyFrame();
         }
 
@@ -53,7 +67,8 @@ namespace GolfArcade.Game
 
         public void ContinueShotResult()
         {
-            if (Current != State.Result || Time.timeScale <= 0) return;
+            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter) return;
+            boundaryPresented = LastShot.IsHoled;
             AfterResult();
         }
     }

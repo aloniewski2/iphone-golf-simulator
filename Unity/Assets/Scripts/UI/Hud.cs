@@ -1004,6 +1004,7 @@ namespace GolfArcade.UI
         }
 
         /// The club and what it carries, on the yellow pill.
+        public void SetClubSelection(GolfArcade.Shot.GolfClub club, bool announce = false) { if (simple) simple.SetClubSelection(club, announce); }
         public void SetClub(string text, bool putter = false) { yardage.SetClub(text, putter); if (simple) simple.SetClub(text); }
 
         /// One of the yardage card's rows (0 plays / slope, 1 wind / break, 2 lie).
@@ -1012,7 +1013,12 @@ namespace GolfArcade.UI
 
         public void SetStatus(string text) { statusText.text = text; Controller?.SetStatus(text); }
         public void SetTempo(string text) => tempoText.text = text;
-        public void SetControllerHint(string text) => controllerText.text = text;
+        public void SetControllerHint(string text)
+        {
+            controllerText.text=text;
+            // Connection diagnostics belong to the developer view; normal play has its own notices.
+            controllerText.gameObject.SetActive(!simple || (Debug.isDebugBuild && System.Environment.GetEnvironmentVariable("GOLF_CONNECTION_HINT")=="1"));
+        }
         /// What the player is being told right now — the banner while it shows, else the status.
         public string CurrentMessage => bannerGroup.alpha > 0.5f ? bannerText.text : statusText.text;
 

@@ -50,7 +50,7 @@ namespace GolfArcade.Tennis
         /// raised to it once (it only ever grows; a match result or a live point is never touched).
         float tauntHold;
         public void HoldNextPoint(float seconds) { tauntHold = Mathf.Max(tauntHold, seconds); ApplyTauntHold(); }
-        void ApplyTauntHold() { if (tauntHold > 0 && Flow == Phase.PointOver && resetTimer > 0 && resetTimer < 1e5f) { resetTimer = Mathf.Max(resetTimer, tauntHold); tauntHold = 0; } }
+        void ApplyTauntHold() { tauntHold = 0; } // Emotes share the existing beat; they never delay the next serve.
         /// Point flow. A point always starts from a serve, as in real tennis.
         public enum Phase { PlayerServeHold, PlayerServeToss, OpponentServe, Rally, PointOver, MatchOver }
         public Phase Flow { get; private set; }
@@ -116,6 +116,10 @@ namespace GolfArcade.Tennis
         TennisHud hud;
         float shownFlash;
         float accumulator, resetTimer, charge;
+        float pointBeatDuration, pointBeatElapsed, pointSkipAfter; int pointBeatSequence;
+        string pointSeenKey, pointBeatName;
+        GolfArcade.Game.PresentationCut pointPresentationCut;
+        public bool PresentationResultsReady => Flow==Phase.MatchOver && pointBeatElapsed>=pointBeatDuration;
         TennisHitMap hitMap;
         TennisFx fx;
         TennisSounds sounds;
@@ -268,6 +272,7 @@ namespace GolfArcade.Tennis
             presentation = gameObject.AddComponent<TennisPresentation>();
             presentation.Build(this, hud, umpire);
             gameObject.AddComponent<TennisFrameGovernor>();
+            gameObject.AddComponent<SportsVisualTelemetry>();
             TennisWarmup.Run(camera, fx);
             BeginPoint(); UpdateCamera(true);
             Initialized=true;
@@ -334,6 +339,8 @@ namespace GolfArcade.Tennis
             }
             if (ControllerSetup) return;
             if (IntroPlaying) { presentation.Skip(); return; }
+            if(Flow==Phase.MatchOver) { if(pointBeatElapsed>=1.5f) { pointBeatElapsed=pointBeatDuration; resetTimer=0; } return; }
+            if(Flow==Phase.PointOver && resetTimer>0 && resetTimer<1e5f) { if(pointBeatElapsed>=pointSkipAfter) resetTimer=0.001f; return; }
             if (!Player || Player.Swinging || resetTimer > 0 || ReplayPlaying) return;
             if (Flow == Phase.PlayerServeToss && !serveCommitted)
             {
@@ -515,6 +522,8 @@ namespace GolfArcade.Tennis
             if (calibration != null) { TimingCheckSwing(inputAge); return; }
             if (ControllerSetup) return;
             if (IntroPlaying) { presentation.Skip(); return; }
+            if(Flow==Phase.MatchOver) { if(pointBeatElapsed>=1.5f) { pointBeatElapsed=pointBeatDuration; resetTimer=0; } return; }
+            if(Flow==Phase.PointOver && resetTimer>0 && resetTimer<1e5f) { if(pointBeatElapsed>=pointSkipAfter) resetTimer=0.001f; return; }
             if (juice && juice.UltimateActive) return;   // the world is frozen for the ultimate cinematic
             // A finished match waits on the results card: swing to play again.
             if (!NativeControlled && Flow == Phase.MatchOver && PlayMode != Mode.Campaign && coach && coach.ShowingResults && resetTimer < ResultsHold - 1.5f) { NewMatch(); return; }
@@ -787,7 +796,17 @@ namespace GolfArcade.Tennis
             Flow = Match.Complete ? Phase.MatchOver : Phase.PointOver;
             playerWonPoint = toPlayer; pointEmoteChosen = false; pendingPointEmote = null;
             // A finished set gets a longer beat (the SET call below), then the next set starts by itself.
-            resetTimer = Match.Complete ? (AutoPlay ? 5f : ResultsHold) : (setWon ? 7f : 6f) * GameSpeed;   // Six real seconds to see the score and select a celebration.
+            pointBeatName=Match.Complete?"MatchEnd":setWon?"Set":gameWon?"Game":"Point";
+            pointSeenKey=Match.Complete?"tennis.matchend":setWon?"tennis.set":gameWon?"tennis.game":"tennis.reaction";
+            var cut=pointPresentationCut=GolfArcade.Game.PresentationPolicy.Cut(pointSeenKey);
+            float beatSeconds=Match.Complete ? GolfArcade.Game.PresentationDirector.Budget(GolfArcade.Game.PresentationBeat.MatchEnd,false,cut)
+                : setWon ? GolfArcade.Game.PresentationDirector.Budget(GolfArcade.Game.PresentationBeat.Set,false,cut)
+                : gameWon ? GolfArcade.Game.PresentationDirector.Budget(GolfArcade.Game.PresentationBeat.Game,false,cut)
+                : !toPlayer ? .8f : Feedback!=null && Feedback.StartsWith("ACE") ? (cut==GolfArcade.Game.PresentationCut.Full?1.45f:1f)
+                : GolfArcade.Game.PresentationDirector.Budget(GolfArcade.Game.PresentationBeat.Point,false,cut);
+            resetTimer = beatSeconds * GameSpeed;
+            pointSkipAfter=Match.Complete?1.5f:setWon||gameWon?.5f:0; pointBeatDuration=beatSeconds; pointBeatElapsed=0; pointBeatSequence++;
+            GolfArcade.Game.PresentationPolicy.Event(Match.Complete?"MatchEnd":setWon?"Set":gameWon?"Game":"Point","begin",pointBeatSequence,beatSeconds.ToString("F2"));
             ApplyTauntHold();                                                                       // EMOTES: a taunt started by the reactions above holds the serve until it is over
             if (juice) juice.PointReaction(toPlayer ? Player.transform : Opponent.transform, toPlayer ? Opponent.transform : Player.transform,
                 toPlayer ? "POINT " + (hud ? hud.PlayerName : "YOU") : "POINT " + (hud ? hud.OpponentName : "RIVAL"));
@@ -956,9 +975,10 @@ namespace GolfArcade.Tennis
         // Public adapter boundary: tracked phone position can supply this without changing physics.
         public void SetLateralInput(float normalizedSpeed, bool sprint)
         { MoveInput = Mathf.Clamp(normalizedSpeed,-1,1); Sprint = sprint; }
-        /// Before a serve the phone's left/right buttons own positioning. During the
-        /// rally physical steering responds immediately, alongside ball interception.
-        public bool PlayerUsesTrackedMovement => Flow == Phase.Rally && NativeControlled && !AutoPlay && !NativeSportsSession.Touch && !GolfArcade.Multiplayer.SportsMultiplayer.Active;
+        /// The computer positions the player during rallies; phone motion owns swings.
+        /// Physical steering is an explicit opt-in, not the default phone mode.
+        public bool ManualRallyMovement;
+        public bool PlayerUsesTrackedMovement => ManualRallyMovement && Flow == Phase.Rally && NativeControlled && !AutoPlay && !NativeSportsSession.Touch && !GolfArcade.Multiplayer.SportsMultiplayer.Active;
 
         void Update()
         {
@@ -969,6 +989,12 @@ namespace GolfArcade.Tennis
                 replay.Tick(Time.deltaTime);
                 UpdateHud();
                 return;
+            }
+            if(Flow==Phase.PointOver || Flow==Phase.MatchOver) {
+                float before=pointBeatElapsed; pointBeatElapsed+=Time.deltaTime;
+                if(before<pointBeatDuration && pointBeatElapsed>=pointBeatDuration)
+                    { GolfArcade.Game.PresentationPolicy.Event(pointBeatName??"Point","complete",pointBeatSequence);
+                    if(pointSeenKey!=null && pointPresentationCut==GolfArcade.Game.PresentationCut.Full) GolfArcade.Game.PresentationPolicy.Seen(pointSeenKey); }
             }
             if (!ManualSimulation)
             {
@@ -1278,7 +1304,7 @@ namespace GolfArcade.Tennis
                 if (resetTimer <= 0)
                 {
                     // A campaign match stays on its result until the phone moves on.
-                    if (Flow == Phase.MatchOver) { if (!NativeControlled && PlayMode != Mode.Campaign) NewMatch(); }
+                    if (Flow == Phase.MatchOver) { /* Results wait for Rematch or Leave. */ }
                     else BeginPoint();
                     return;
                 }
@@ -2201,7 +2227,7 @@ namespace GolfArcade.Tennis
         /// Seconds of opening flyover left: the camera sweeps in over the resort to the
         /// player before the first serve. Game time, so it waits while the session is paused.
         TennisPresentation presentation;
-        public const float IntroSeconds = TennisPresentation.Length;
+        public const float IntroSeconds = TennisPresentation.FullLength;
         /// Play runs this much faster than real time: balls, feet and strokes alike. The
         /// phone's latencies are real seconds and are converted wherever they meet game time.
         public const float GameSpeed = 1.2f;

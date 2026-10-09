@@ -1,10 +1,5 @@
-// The golfer, shaded like Adnan's standard characters in his studio renders: soft matte clay
-// rather than flat plastic. A MatCap (Resources/Golfer/Look/clay_matcap.png, a Higgsfield
-// render of his studio lighting on a neutral sphere) gives every surface that gentle form
-// shading, darkening toward the silhouette and underneath; the sun wraps round the body so
-// there is no hard terminator, and still casts and receives the course's shadows. Cloth
-// (_Fabric > 0) carries the knit of his tee and joggers (knit_detail.png, grey, 0.5 = none),
-// laid on in object space from three sides so the kit's missing UVs don't matter.
+// Legacy golfer compatibility surface. Scene lights describe the form, with distinct
+// restrained skin highlights and cloth sheen; the old studio matcap is a small fill only.
 Shader "GolfArcade/GolferClay"
 {
     Properties
@@ -13,8 +8,12 @@ Shader "GolfArcade/GolferClay"
         _MainTex ("Colour map (the Higgsfield bodies)", 2D) = "white" {}
         _MatCap ("MatCap (grey)", 2D) = "white" {}
         _MatCapGain ("MatCap gain", Float) = 1.0
-        _MatCapStrength ("How much the MatCap shades", Range(0, 1)) = 0.85
+        _MatCapStrength ("How much the MatCap shades", Range(0, 1)) = .12
         _Wrap ("Light wrap", Range(0, 1)) = 0.3
+        _SurfaceSmoothness ("Surface smoothness", Range(0,1)) = 0.28
+        _SurfaceSpecular ("Surface highlight", Range(0,2)) = 0.8
+        _SurfaceSheen ("Fabric grazing sheen", Range(0,1)) = 0
+        _SurfaceWarmth ("Skin warmth", Color) = (0.12,0.035,0.02,1)
         _Knit ("Knit detail (grey)", 2D) = "gray" {}
         _KnitTile ("Knit tiles per metre", Float) = 9
         _Fabric ("Knit strength", Range(0, 2)) = 0
@@ -70,6 +69,7 @@ Shader "GolfArcade/GolferClay"
         #include "UnityPBSLighting.cginc"
         sampler2D _MatCap, _Knit, _MainTex;
         fixed4 _Color, _KitColor, _ShirtColor;
+        float _SurfaceSmoothness, _SurfaceSpecular, _SurfaceSheen; float4 _SurfaceWarmth;
         float _MatCapGain, _MatCapStrength, _Wrap, _KnitTile, _Fabric, _KitOn, _ShirtOn;
 
         struct Input { float2 uv_MainTex; float3 worldNormal; float3 objPos; float3 objNormal; };
@@ -121,6 +121,9 @@ Shader "GolfArcade/GolferClay"
             half lit = saturate((nl + _Wrap) / (1 + _Wrap));
             half4 c;
             c.rgb = s.Albedo * gi.light.color * lit;
+            half3 h = normalize(gi.light.dir + viewDir);
+            half spec = pow(saturate(dot(s.Normal,h)), 16 + _SurfaceSmoothness * 80) * _SurfaceSpecular * .08 * saturate(nl * 3);
+            c.rgb += gi.light.color * spec;
             #ifdef UNITY_LIGHT_FUNCTION_APPLY_INDIRECT
             c.rgb += s.Albedo * gi.indirect.diffuse;
             #endif

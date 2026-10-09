@@ -11,6 +11,7 @@ namespace GolfArcade.Tennis
         static Shader character, blob, face;
         static Texture2D faceAtlas;
         static Texture2D falloff;
+        static Material resortSky;
 
         static Shader Character => character ? character : character = Resources.Load<Shader>("Tennis/Shaders/TennisCharacter");
         static Shader Blob => blob ? blob : blob = Resources.Load<Shader>("Tennis/Shaders/TennisShadowBlob");
@@ -21,6 +22,9 @@ namespace GolfArcade.Tennis
         /// The island terrain: its Higgsfield colour and normal maps on URP Lit.
         public static void StyleIsland(GameObject island)
         {
+            // The replacement coast owns its own material roles; avoid loading the
+            // obsolete scan atlas / normal map for an invisible fallback island.
+            if (Resources.Load<GameObject>("Tennis/Premium/TennisCoast")) return;
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "Tropical island" };
             var color = Resources.Load<Texture2D>("Tennis/Island/Island_Color");
             var normal = Resources.Load<Texture2D>("Tennis/Island/Island_Normal");
@@ -54,12 +58,12 @@ namespace GolfArcade.Tennis
         public static Surface SurfaceFor(string materialName)
         {
             string n = materialName.ToLowerInvariant();
-            if (n.Contains("skin") || n.Contains("hand") || n.Contains("face")) return new Surface { Smoothness = .32f, Wrap = .55f, Rim = .24f, Subsurface = new Color(.55f, .12f, .05f) };
-            if (n.Contains("hair") || n.Contains("brow")) return new Surface { Smoothness = .55f, Wrap = .35f, Rim = .38f, Subsurface = new Color(.25f, .12f, .02f) };
-            if (n.Contains("shoe") || n.Contains("sole") || n.Contains("sneaker")) return new Surface { Smoothness = .42f, Wrap = .15f, Rim = .18f };
+            if (n.Contains("skin") || n.Contains("hand") || n.Contains("face")) return new Surface { Smoothness = .28f, Wrap = .32f, Rim = .075f, Subsurface = new Color(.12f, .035f, .02f) };
+            if (n.Contains("hair") || n.Contains("brow")) return new Surface { Smoothness = .32f, Wrap = .25f, Rim = .055f, Subsurface = new Color(.25f, .12f, .02f) };
+            if (n.Contains("shoe") || n.Contains("sole") || n.Contains("sneaker")) return new Surface { Smoothness = .28f, Wrap = .22f, Rim = .045f };
             if (n.Contains("eye")) return new Surface { Smoothness = .85f, Wrap = .1f, Rim = 0 };
-            if (n.Contains("racket") || n.Contains("frame")) return new Surface { Smoothness = .65f, Wrap = .1f, Rim = .2f };
-            return new Surface { Smoothness = .14f, Wrap = .32f, Rim = .2f };
+            if (n.Contains("racket") || n.Contains("frame")) return new Surface { Smoothness = .72f, Wrap = .18f, Rim = .075f };
+            return new Surface { Smoothness = .18f, Wrap = .30f, Rim = .055f };
         }
 
         /// Re-shade a character. This used to rebuild every material as a flat Standard
@@ -118,6 +122,23 @@ namespace GolfArcade.Tennis
 
         [System.Serializable] struct MaskReference { public float shirt, shorts, accent, skin; }
 
+        static readonly Dictionary<string,Texture> crowdPalettes=new();
+        /// Six coherent existing-kit palettes. Authored atlas shading remains intact and
+        /// the masks deliberately exclude all skin/hair pixels, so identity is preserved.
+        public static void ApplyCrowdPalette(GameObject fan,bool female,int index)
+        {
+            string who=female ? "Female":"Male";int pick=Mathf.Abs(index)%6;string key=who+pick;
+            if(!crowdPalettes.TryGetValue(key,out var texture)){
+                string[] shirts={"EEEAE0","A8C7C4","E6BF8F","B6BAD5","D5AEB6","D1D8AB"};
+                string[] shorts={"334B61","385E59","46545B","3A4262","674657","4D5D43"};
+                string[] accents={"E8BC5A","EFE4CF","C69C69","D3C0A0","E8C7BC","F3E3AA"};
+                texture=RecolorKit(who,Kit.From(shirts[pick],shorts[pick],accents[pick],null,2));
+                if(!texture)return;crowdPalettes[key]=texture;
+            }
+            foreach(var renderer in fan.GetComponentsInChildren<Renderer>(true))foreach(var material in renderer.sharedMaterials)
+                if(material&&material.name.StartsWith("Higgs "+who+" "))material.mainTexture=texture;
+        }
+
         public static void PrepareCharacter(GameObject obj, Color? skin = null)
         {
             var shader = Character;
@@ -152,12 +173,13 @@ namespace GolfArcade.Tennis
                         if (normal) { converted.SetTexture("_BumpMap", normal); converted.EnableKeyword("_NORMALMAP"); }
                         // The base avatars are matched to the concept video's smooth, toy-like
                         // finish: keep a hint of form from the scan's normal map, not its wrinkles.
-                        if (who.StartsWith("Avatar")) converted.SetFloat("_BumpScale", .3f);
+                        converted.SetFloat("_BumpScale", who.StartsWith("Avatar") ? .18f : .10f);
                         // Skin and cloth share one map: a middle ground between the two surfaces.
-                        converted.SetFloat("_Smoothness", .26f);
-                        converted.SetFloat("_Wrap", .45f);
-                        converted.SetFloat("_RimStrength", .26f);
-                        converted.SetColor("_Subsurface", new Color(.18f, .06f, .03f));
+                        converted.SetFloat("_Smoothness", .18f);
+                        converted.SetFloat("_Wrap", .30f);
+                        converted.SetFloat("_RimStrength", .055f);
+                        converted.SetFloat("_SpecularStrength", .35f); converted.SetFloat("_EnvironmentStrength", .035f);
+                        converted.SetColor("_Subsurface", new Color(.08f, .022f, .012f));
                         cache[original] = converted;
                     }
                     if (!cache.TryGetValue(original, out converted))
@@ -173,6 +195,7 @@ namespace GolfArcade.Tennis
                             converted.SetFloat("_Wrap", surface.Wrap);
                             converted.SetFloat("_RimStrength", surface.Rim);
                             converted.SetColor("_Subsurface", surface.Subsurface);
+                            converted.SetFloat("_SpecularStrength", original.name.ToLowerInvariant().Contains("eye") ? .55f : .6f);converted.SetFloat("_EnvironmentStrength", .08f);
                         }
                         else converted = GolfArcade.Course.HoleView.Mat(color);
                         cache[original] = converted;
@@ -199,22 +222,37 @@ namespace GolfArcade.Tennis
             return m;
         }
 
-        /// Post-processing: the profile authored by UrpSetup (ACES, bloom, warm grade,
-        /// vignette; depth of field for replays). Off on the lowest tier.
+        /// ACES, restrained bloom and neutral grading. Low tier retains tone mapping.
         public static Volume SetupPost(Camera camera)
         {
+            var existing = camera.GetComponent<SportsPostProcessing>();
+            if (existing) return existing.Volume;
             var data = camera.GetUniversalAdditionalCameraData();
-            bool on = TennisQuality.Current != TennisQuality.Tier.Low;
-            data.renderPostProcessing = on;
+            camera.allowHDR = true;
+            data.renderPostProcessing = true;
             data.antialiasing = AntialiasingMode.None; // MSAA comes from the pipeline asset
             data.renderShadows = true;
             var profile = Resources.Load<VolumeProfile>("Tennis/Rendering/TennisPost");
             if (!profile) return null;
-            var go = new GameObject("Tennis post-processing");
+            var go = new GameObject("Sports post-processing");
+            go.transform.SetParent(camera.transform, false);
+            data.volumeLayerMask = 1 << go.layer;
             var volume = go.AddComponent<Volume>();
             volume.isGlobal = true; volume.priority = 10;
             // A private copy, so replay depth of field never edits the shared asset.
-            volume.profile = Object.Instantiate(profile);
+            volume.sharedProfile = profile; // Volume.profile deep-clones the components on first access.
+            if (volume.profile.TryGet(out Bloom bloom))
+            {
+                bloom.threshold.Override(1.05f); bloom.intensity.Override(.28f); bloom.tint.Override(Color.white);
+                bloom.maxIterations.Override(4); // local glow with a bounded mobile blur chain
+            }
+            if (volume.profile.TryGet(out WhiteBalance balance))
+            { balance.temperature.Override(0); balance.tint.Override(0); }
+            if (volume.profile.TryGet(out ColorAdjustments grade))
+            { grade.postExposure.Override(0); grade.contrast.Override(5); grade.saturation.Override(8); grade.colorFilter.Override(Color.white); }
+            if (volume.profile.TryGet(out Vignette vignette)) vignette.intensity.Override(.12f);
+            if (volume.profile.TryGet(out LiftGammaGain lift)) lift.lift.Override(new Vector4(1,1,1,0));
+            camera.gameObject.AddComponent<SportsPostProcessing>().Initialize(volume);
             return volume;
         }
 
@@ -233,8 +271,8 @@ namespace GolfArcade.Tennis
         /// Camera-side fill (no shadows): cool, ~35% of the key, so the rival's face (turned to camera, away from
         /// the sun) and the player's back never go gray.
         public static readonly Vector3 FillDirection = new Vector3(.30f, .55f, -.78f).normalized;
-        public const float SunIntensity = 2.3f, FillIntensity = .8f;
-        public static readonly Color SunColor = new Color(1f, .90f, .76f), FillColor = new Color(.84f, .90f, 1f);
+        public const float SunIntensity = 1.65f, FillIntensity = .18f;
+        public static readonly Color SunColor = new Color(1f, .94f, .85f), FillColor = new Color(.94f, .97f, 1f);
 
         /// Light the court for URP in linear colour: a warm golden-hour sun, a sky/horizon/
         /// ground ambient, a light distance haze, and the painted sky.
@@ -251,24 +289,26 @@ namespace GolfArcade.Tennis
             fill.transform.rotation = Quaternion.LookRotation(-FillDirection);
             fill.color = FillColor; fill.intensity = FillIntensity;
             HeroRimLight.Ensure();   // the one warm rim light on the heroes, back toward the camera (own rendering layer, never on the court)
-            sun.shadowBias = .05f; sun.shadowNormalBias = .4f;
+            sun.shadowBias = .025f; sun.shadowNormalBias = .18f;
             RenderSettings.sun = sun;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(.42f, .58f, .86f);
-            RenderSettings.ambientEquatorColor = new Color(.66f, .58f, .50f);
-            RenderSettings.ambientGroundColor = new Color(.24f, .26f, .22f);
+            RenderSettings.ambientSkyColor = new Color(.36f, .50f, .70f);
+            RenderSettings.ambientEquatorColor = new Color(.28f, .35f, .39f);
+            RenderSettings.ambientGroundColor = new Color(.26f, .30f, .24f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = new Color(.80f, .84f, .90f);
-            RenderSettings.fogStartDistance = 140; RenderSettings.fogEndDistance = 900;
-            var skyShader = Resources.Load<Shader>("Tennis/Shaders/TennisSky");
-            var panorama = Resources.Load<Texture2D>("Tennis/Environment/SkyPanorama");
-            if (skyShader)
+            RenderSettings.fogColor = new Color(.53f, .70f, .80f);
+            RenderSettings.fogStartDistance = 180; RenderSettings.fogEndDistance = 900;
+            var skyShader = Resources.Load<Shader>("Tennis/Shaders/TennisCoastalSky");
+            var panorama = Resources.Load<Texture2D>("Course/Resort/SkyCoastalSmall");
+            if (skyShader && panorama)
             {
-                var sky = new Material(skyShader) { name = "Painted sky" };
-                if (panorama) sky.SetTexture("_Panorama", panorama);
-                sky.SetVector("_SunDir", SunDirection);
-                RenderSettings.skybox = sky;
+                if (!resortSky) resortSky = new Material(skyShader) { name = "Resort coastal sky" };
+                resortSky.SetTexture("_Panorama", panorama);
+                resortSky.SetFloat("_Rotation", -45); resortSky.SetFloat("_Exposure", 1);
+                resortSky.SetFloat("_AirColorShare",.24f);resortSky.SetFloat("_DayHaze",.04f);
+                if (resortSky.HasProperty("_CloudCompression")) resortSky.SetFloat("_CloudCompression", 1.05f);
+                RenderSettings.skybox = resortSky;
             }
         }
 
@@ -276,8 +316,23 @@ namespace GolfArcade.Tennis
         /// with the export in materials.json): animated sea, a richer court, turquoise runoff.
         public static void StyleArena(GameObject arena)
         {
+            TennisVenue.CacheRenderedCourtHeight(arena);
             var water = Resources.Load<Shader>("Tennis/Shaders/TennisWater");
             Material sea = water ? new Material(water) { name = "Resort sea" } : null;
+            if (sea)
+            {
+                sea.SetColor("_Shallow", new Color(.035f, .51f, .56f));
+                sea.SetColor("_Deep", new Color(.015f, .245f, .46f));
+                sea.SetColor("_Sky", new Color(.19f, .53f, .74f));
+                sea.SetFloat("_Sparkle", 1.0f);
+                var shore = Resources.Load<Texture2D>("Tennis/Premium/CoastShallows");
+                if (shore && sea.HasProperty("_ShoreMap"))
+                {
+                    sea.SetTexture("_ShoreMap",shore); sea.SetFloat("_UseShoreMap",1);
+                    sea.SetVector("_ShoreBounds",new Vector4(-242.5f,-187.5f,477.5f,632.5f));
+                }
+                TennisResortMaterials.Sea(sea);
+            }
             var cache = new Dictionary<Material, Material>();
             foreach (var r in arena.GetComponentsInChildren<Renderer>(true))
             {
@@ -291,32 +346,45 @@ namespace GolfArcade.Tennis
                     switch (m.name.Replace(" (Instance)", ""))
                     {
                         case "TropicalV3_001": result = sea; break;                                     // turquoise water
-                        case "TropicalV3_002": result = Tinted(m, TennisVenue.CourtColor, .1f); break; // court
-                        case "TropicalV3_011": result = Tinted(m, TennisVenue.RunoffColor, .22f); break;  // runoff
+                        case "TropicalV3_002": result = Tinted(m, TennisVenue.CourtColor, .12f); result.SetFloat("_CourtFinish",1); result.SetFloat("_Grain",.010f);
+                            result.SetTexture("_MicroMap",Resources.Load<Texture2D>("Tennis/Premium/AcrylicAggregate"));result.SetFloat("_MicroStrength",.07f);result.SetFloat("_MicroScale",2); break; // fine acrylic court
+                        case "TropicalV3_011": result = Tinted(m, TennisVenue.RunoffColor, .14f); result.SetFloat("_CourtFinish",1);
+                            result.SetTexture("_MicroMap",Resources.Load<Texture2D>("Tennis/Premium/AcrylicAggregate"));result.SetFloat("_MicroStrength",.06f);result.SetFloat("_MicroScale",2);break;  // runoff
                         case "TropicalV3_003": result = Tinted(m, TennisVenue.LineColor, .25f); break;  // lines
-                        case "TropicalV3_010": result = Tinted(m, new Color(.78f, .70f, .56f), .15f); break;  // limestone
-                        case "TropicalV3_009": result = Tinted(m, new Color(.12f, .36f, .07f), .1f); break;   // turf
+                        case "TropicalV3_010": result = Tinted(m, new Color(.79f, .74f, .64f), .27f); result.SetFloat("_Paving",1);
+                            result.SetTexture("_MicroMap",Resources.Load<Texture2D>("Tennis/Premium/AcrylicAggregate"));result.SetFloat("_MicroStrength",.10f);result.SetFloat("_MicroScale",.5f);break;  // limestone
+                        case "TropicalV3_009": result = Tinted(m, new Color(.13f, .30f, .10f), .1f); break;   // turf
+                        case "TropicalV3_008": result = Tinted(m, new Color(.035f, .11f, .105f), .48f); break; // enamel posts
+                        case "TropicalV3_012": result = Tinted(m, new Color(.022f, .033f, .031f), .08f); break; // braided net
+                        case "TropicalV3_027": result = Tinted(m, new Color(.87f, .83f, .73f), .17f); break; // ivory retaining stone
+                        case "TropicalV3_016": result = Tinted(m, new Color(.81f, .83f, .78f), .35f); break; // lighter crafted railing
+                        case "TropicalV3_019": result = Tinted(m, new Color(.88f, .83f, .73f), .18f); break; // terrace stairs
+                        case "TropicalV3_021": result = Tinted(m, new Color(.38f, .59f, .48f), .10f); break; // lush distant headlands
                         // Placeholder blob spectators: the real seated crowd sits there instead
                         // (TennisStandsCrowd).
                         // ...and the flat rectangular sand slab off the sea side, which read as an
                         // unfinished box from the air: the terrace meets the sea at its seawall.
                         case "TropicalV3_000":
                         case "TropicalV3_004": case "TropicalV3_005": case "TropicalV3_006": case "TropicalV3_007":
+                        case "TropicalV3_013": // The same baked stand-in spectators' exposed skin / heads.
                             result = Invisible; break;
                     }
                     if (!result) continue;
                     cache[m] = result; mats[i] = result; changed = true;
                 }
-                if (changed) r.sharedMaterials = mats;
+                if (changed)
+                {
+                    r.sharedMaterials = mats;
+                    if (System.Array.TrueForAll(mats, material => !material || material.name == "Hidden placeholder")) r.enabled = false;
+                }
             }
         }
 
         static Material Tinted(Material source, Color color, float smoothness)
         {
-            var m = new Material(source) { name = source.name + " (styled)" };
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color); else m.color = color;
-            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
-            return m;
+            Texture map = source.HasProperty("_BaseMap") ? source.GetTexture("_BaseMap") : source.mainTexture;
+            return TennisVenueArt.Surface(source.name + " (styled) " + ColorUtility.ToHtmlStringRGB(color), color,
+                smoothness, 0, source.name.Contains("_002") || source.name.Contains("_011") ? .028f : .045f, .009f, map);
         }
 
         /// Radial falloff shared by every contact shadow.
@@ -326,7 +394,7 @@ namespace GolfArcade.Tennis
             {
                 if (falloff) return falloff;
                 const int size = 64;
-                falloff = new Texture2D(size, size, TextureFormat.Alpha8, false) { wrapMode = TextureWrapMode.Clamp, name = "Contact shadow falloff" };
+                falloff = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "Contact shadow falloff" };
                 var pixels = new Color32[size * size];
                 for (int y = 0; y < size; y++)
                     for (int x = 0; x < size; x++)
@@ -334,7 +402,7 @@ namespace GolfArcade.Tennis
                         float dx = (x + .5f) / size * 2 - 1, dy = (y + .5f) / size * 2 - 1;
                         float r = Mathf.Sqrt(dx * dx + dy * dy);
                         float a = Mathf.Clamp01(1 - r); a = a * a * (3 - 2 * a);
-                        pixels[y * size + x] = new Color32(0, 0, 0, (byte)(a * 255));
+                        pixels[y * size + x] = new Color32((byte)(a * 255), (byte)(a * 255), (byte)(a * 255), (byte)(a * 255));
                     }
                 falloff.SetPixels32(pixels); falloff.Apply(false, true);
                 return falloff;
@@ -354,6 +422,7 @@ namespace GolfArcade.Tennis
             renderer.sharedMaterial = material;
             var shadow = quad.AddComponent<ContactShadow>();
             shadow.Follow = follow; shadow.Radius = radius; shadow.Strength = strength; shadow.Material = material;
+            if (follow.GetComponent<TennisActor>()) quad.AddComponent<TennisShoeOcclusion>().shadow = shadow;
             return shadow;
         }
     }
@@ -363,21 +432,22 @@ namespace GolfArcade.Tennis
     public sealed class ContactShadow : MonoBehaviour
     {
         public Transform Follow;
-        public float Radius = .5f, Strength = .5f, Ground = .012f, FadeHeight = 3f;
+        public float Radius = .5f, Strength = .5f, Ground = .004f, FadeHeight = 3f;
         public Material Material;
         public float HeightOverride = -1;
-        /// What stands on the court surface (a player root). The resort court sits above y=0, so a
-        /// disc at a fixed y=.012 was under the surface and never drawn; it now sits on the court.
+        /// Legacy fallback for scenes without the venue court kit. Live matches use the
+        /// cached rendered court plane, not this actor root, for the occlusion disc.
         public Transform Surface;
         /// Sky and crater courts: no shadow where there is no floor (a ball falling off the deck).
         public bool OnlyOverDeck;
+        public bool GolfGround;
 
         void LateUpdate()
         {
             if (!Follow) { gameObject.SetActive(false); return; }
             Vector3 p = Follow.position;
             var rend = GetComponent<Renderer>(); if (rend) rend.enabled = !OnlyOverDeck || TennisVenue.OverDeck(p);
-            float court = Surface ? Surface.position.y : 0;
+            float court = GolfGround ? (float)GolfArcade.Course.HoleView.GroundHeight(new GolfArcade.Course.CoursePoint(p.x,p.z)) : TennisVenue.HasRenderedCourtHeight ? TennisVenue.RenderedCourtHeight : Surface ? Surface.position.y : 0;
             float height = Mathf.Max(0, HeightOverride >= 0 ? HeightOverride : p.y - court);
             float fade = Mathf.Clamp01(1 - height / FadeHeight);
             transform.position = new Vector3(p.x, court + Ground, p.z);

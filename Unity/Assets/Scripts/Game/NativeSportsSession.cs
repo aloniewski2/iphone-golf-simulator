@@ -27,7 +27,7 @@ namespace GolfArcade.Game
             public string shirt,shorts,accent,racket,skinHex,hairHex; public bool tips=true; public float overscan;
             // The tennis court: "" / "resort", "skyscraper" or "volcano"; and a court colour (hex, "" = the venue's own).
             public string venue,course,courtHex,network; public int aimSequence;
-            public string[] emotes;
+            public string[] emotes; public string intros="full"; public bool presentationConstrained,bigMoments=true,holeFlyover=true;
             public bool hasReadyPose; public float qx,qy,qz,qw;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
@@ -46,7 +46,7 @@ namespace GolfArcade.Game
             public bool degraded => (flags & 2) != 0;
         }
         [Serializable] class Event {
-            public int version=1; public string session,type,message,finalScore,golfState; public bool matchComplete,matchWon,golfHasNextHole,golfCalibrating,golfShotReady; public int golfCalibrationCount; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge;
+            public int version=1; public string session,type,message,finalScore,golfState; public bool presentationResultReady=true; public bool matchComplete,matchWon,golfHasNextHole,golfCalibrating,golfShotReady; public int golfCalibrationCount; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge,clock,renderedAt;
         }
         public static bool Active { get; private set; }
         public static bool Left { get; private set; }
@@ -62,7 +62,7 @@ namespace GolfArcade.Game
         bool steeringTracked; float steeringOrigin;
         TennisGame tennis; GolfGame golf;
         Camera gameplayCamera;
-        bool frameRendered;
+        bool frameRendered; double firstFrameAt;
         int outputDisplay;
         public bool Ready { get; private set; }
         public Camera GameplayCamera => gameplayCamera;
@@ -100,6 +100,7 @@ namespace GolfArcade.Game
         void Start()
         {
             Emit("boot","");
+            PresentationPolicy.Trace += PresentationTrace;
             TennisGame.RecordingPointStarted+=SportsRecorderBeginPoint;
             TennisGame.RecordingPointEnded+=SportsRecorderEndPoint;
             // What the phone's controller and campaign screens need from a tennis match.
@@ -124,6 +125,7 @@ namespace GolfArcade.Game
             if (tennis && tennis.AimPractice && !player) Emit("aimMiss",tennis.AimPracticeSequence+"|"+why);
         }
         void OnDestroy() {
+            PresentationPolicy.Trace -= PresentationTrace;
             TennisGame.RecordingPointStarted-=SportsRecorderBeginPoint;
             TennisGame.RecordingPointEnded-=SportsRecorderEndPoint;
             TennisGame.Landed -= AimLanding; TennisGame.DrillPoint -= AimMiss;
@@ -133,7 +135,7 @@ namespace GolfArcade.Game
         }
         void OnEnable() { Camera.onPostRender+=Rendered; RenderPipelineManager.endCameraRendering+=RenderedSRP; }
         void OnDisable() { Camera.onPostRender-=Rendered; RenderPipelineManager.endCameraRendering-=RenderedSRP; }
-        void Rendered(Camera camera) { if(camera==gameplayCamera) frameRendered=true; }
+        void Rendered(Camera camera) { if(camera==gameplayCamera && !frameRendered) { frameRendered=true; firstFrameAt=SportsClock(); } }
         void RenderedSRP(ScriptableRenderContext context,Camera camera)=>Rendered(camera);
         public void Receive(string json) {
             try {
@@ -150,7 +152,7 @@ namespace GolfArcade.Game
                 switch(m.action) {
                     case "pause": SetPaused(true,m.reason); break;
                     case "resume": SetPaused(false); break;
-                    case "end": SportsMultiplayer.Shutdown(); SportsRecorderStop(); StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
+                    case "end": PresentationStinger.Stop(); SportsMultiplayer.Shutdown(); SportsRecorderStop(); StopAllCoroutines(); loading=false; Ready=false; SetPaused(true); Emit("exit",tennis ? $"Rally hits: {tennis.Hits}" : "Golf session ended"); Active=false; Left=false; break;
                     case "recordPoints": if(tennis) SportsRecorderEnable(m.value>0); break;
                     case "savePoint": if(tennis) SportsRecorderSave(); break;
                     case "ultimateSelect": break; // Ignore commands from older controllers.
@@ -167,6 +169,8 @@ namespace GolfArcade.Game
                     case "aim": if(tennis) tennis.AimInput=Mathf.Clamp(m.value,-1,1); if(golf) golf.NativeAim(m.value); break;
                     case "golfEmote": if(golf && !paused && m.value == Mathf.Floor(m.value)) golf.PlayResultEmote((int)m.value); break;
                     case "golfLoad": if(golf && touch && !paused && !float.IsNaN(m.value) && !float.IsInfinity(m.value)) golf.ShowBackswing(Mathf.Clamp01(m.value)); break;
+                    case "presentationSkip": if(!paused) { if(tennis) tennis.RequestSwing(.1f); if(golf) golf.NativeContinue(); } break;
+                    case "golfOverview": if(golf && !paused) golf.Overview(); break;
                     case "golfContinue": if(golf && !paused) golf.NativeContinue(); break;
                     case "golfCalibration": if(golf && !touch) golf.StartGolfCalibration(ReadyGrip(m)); break;
                     case "golfCalibrationDone": if(golf && golf.NativeCalibrationCount == 3) golf.FinishGolfCalibration(); break;
@@ -217,7 +221,10 @@ namespace GolfArcade.Game
             // steady 60 is what keeps its delay steady.
             Application.targetFrameRate=m.external ? 60 : FrameRate.Target(m.fps,Screen.currentResolution.refreshRateRatio.value);
             QualitySettings.vSyncCount=0;
+            PresentationPolicy.HoleFlyover=m.holeFlyover;
+            PresentationPolicy.Configure(m.intros,m.presentationConstrained,m.bigMoments,!string.IsNullOrEmpty(m.network));
             TennisQuality.Apply();
+            PresentationPolicy.Constrained |= TennisQuality.Current==TennisQuality.Tier.Low;
             Screen.orientation=m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
             // The phone's loading bar follows the scene load.
             TennisVenue.Selected=TennisVenue.Parse(m.venue);
@@ -231,7 +238,7 @@ namespace GolfArcade.Game
                 }
                 yield return null;
             }
-            Emit("loadProgress","1");
+            Emit("loadProgress","1"); Emit("sceneReady","Scene loaded");
             tennis=FindFirstObjectByType<TennisGame>(); golf=FindFirstObjectByType<GolfGame>();
             float deadline=Time.realtimeSinceStartup+15;
             while(m.sport=="tennis" && tennis && !tennis.Initialized && Time.realtimeSinceStartup<deadline) yield return null;
@@ -256,6 +263,10 @@ namespace GolfArcade.Game
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
             if(golf) { golf.EquipResultEmotes(m.emotes); golf.PrepareNativeAddress(m.course); }
+            if(golf && m.bench) {
+                golf.gameObject.AddComponent<GolfVisualBenchmark>();
+                golf.gameObject.AddComponent<SportsVisualTelemetry>().GolfBenchmarkEnabled=true;
+            }
             if(!string.IsNullOrEmpty(m.network)) SportsMultiplayer.Configure(m.network);
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
@@ -292,7 +303,7 @@ namespace GolfArcade.Game
         }
 
         IEnumerator Present(bool external,string eventType) {
-            Ready=false; frameRendered=false;
+            Ready=false; frameRendered=false; firstFrameAt=0;
             float attachDeadline=Time.realtimeSinceStartup+8;
             while(!ConfigureDisplay(external)) {
                 if(!external || Time.realtimeSinceStartup>=attachDeadline) {
@@ -341,7 +352,7 @@ namespace GolfArcade.Game
             paused=value; SportsRecorderPause(value); PauseReason=value ? (string.IsNullOrEmpty(reason) ? "PAUSED — tap Ready on your phone" : reason) : null;
             if(value) steeringTracked=false;
             if(value) TrackingWarning="";
-            if(!value) { resumedAt=SportsClock(); if(tennis) tennis.LockLoadout(); }
+            if(!value) { resumedAt=SportsClock(); if(tennis) tennis.LockLoadout(); if(golf) golf.TryNativePresentation(); }
             Time.timeScale=SportsMultiplayer.Active?1:value?0:1; Haptics.Release(); if(value && golf) golf.RequireNativeReady();
         }
         void Update() {
@@ -437,7 +448,8 @@ namespace GolfArcade.Game
         public static float EventAge(double stamp,double now) => Mathf.Clamp((float)(now-stamp),0,.25f);
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfCalibrating=golf && golf.NativeCalibrating,golfShotReady=golf && golf.NativeShotReady,golfCalibrationCount=golf ? golf.NativeCalibrationCount : 0,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void PresentationTrace(string line) => Emit("presentation",line);
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfCalibrating=golf && golf.NativeCalibrating,golfShotReady=golf && golf.NativeShotReady,golfCalibrationCount=golf ? golf.NativeCalibrationCount : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&

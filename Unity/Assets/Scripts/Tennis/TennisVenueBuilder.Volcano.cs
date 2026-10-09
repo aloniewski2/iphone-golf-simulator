@@ -115,7 +115,7 @@ namespace GolfArcade.Tennis
                 void Strip(float x0, float x1, float z0, float z1)
                     => ch.Face(new Vector3(x0, y, z0), new Vector3(x1, y, z0), new Vector3(x1, y, z1), new Vector3(x0, y, z1), x0 / 9f, x1 / 9f, z0 / 9f, z1 / 9f);
                 Strip(-xb, xb, za, zb); Strip(-xb, xb, -zb, -za); Strip(xb - cw, xb, -za, za); Strip(-xb, -xb + cw, -za, za);
-                var lava = Glowing(new Color(.3f, .12f, .06f), .35f, crust, crustGlow, new Color(2.6f, .9f, .16f), Vector2.one);
+                var lava = MoltenSurface("Tennis inset molten deck channels",crust,crustGlow,1,3.8f,false);
                 MeshObject(root, "Lava channel", ch.ToMesh("Lava channel"), lava, false).AddComponent<TennisVenueFx.LavaFlow>().Material = lava;
                 // kerbs either side of the channel keep it crisp
                 var kb = new MB(); const float kw = .12f, kh = .08f;
@@ -189,8 +189,8 @@ namespace GolfArcade.Tennis
                         int i0 = r * (around + 1) + a, i1 = i0 + 1, i2 = i0 + around + 1, i3 = i2 + 1;
                         mb.T.AddRange(new[] { i0, i1, i2, i1, i3, i2 });
                     }
-                var mat = Glowing(Color.white, .16f, rock, cracks, new Color(3.6f, 1.2f, .2f), Vector2.one);
-                MeshObject(root, "Rock keel", mb.ToMesh("Rock keel"), mat, false).AddComponent<TennisVenueFx.Pulse>().Material = mat;
+                var mat = BasaltSurface("Volcanic shaped rock keel",new Color(.13f,.12f,.135f));
+                MeshObject(root, "Rock keel", mb.ToMesh("Rock keel"), mat, false);
                 var kb = mb.V[0]; Vector3 lo = kb, hi = kb; foreach (var q in mb.V) { lo = Vector3.Min(lo, q); hi = Vector3.Max(hi, q); }
                 Log("volcano: rock keel x " + lo.x.ToString("F1") + ".." + hi.x.ToString("F1") + " y " + lo.y.ToString("F1") + ".." + hi.y.ToString("F1") + " z " + lo.z.ToString("F1") + ".." + hi.z.ToString("F1"), mb.Tris);
             }
@@ -212,54 +212,40 @@ namespace GolfArcade.Tennis
 
             static float Periodic(float th, float scale, float seed) => Noise(Mathf.Cos(th) * scale + seed, Mathf.Sin(th) * scale + seed * 1.7f);
 
+            // An eroded caldera shoulder replaces the old five overhanging shelves.
+            // Its source/landing radii and maximum crest envelope stay outside play.
             static void Profile()
             {
-                var pts = new List<(float r, float y, byte kind, int t)>();
-                float y = LakeY;
-                pts.Add((112f, LakeY - 5f, 1, 0));
-                for (int i = 0; i < Foot.Length; i++)
+                float[] radii={112,121,150,182,222,262,292,312,345,400,470,540};
+                float[] elevations={-51,-46,-22,-1,18,35,50,53,36,-1,-50,-54};
+                var slopes=new float[radii.Length-1];var tangents=new float[radii.Length];
+                for(int i=0;i<slopes.Length;i++)slopes[i]=(elevations[i+1]-elevations[i])/(radii[i+1]-radii[i]);
+                tangents[0]=slopes[0];tangents[tangents.Length-1]=slopes[slopes.Length-1];
+                for(int i=1;i<tangents.Length-1;i++)tangents[i]=slopes[i-1]*slopes[i]>0?2*slopes[i-1]*slopes[i]/(slopes[i-1]+slopes[i]):0;
+                var list=new List<Row>();float arc=0;
+                for(int segment=0;segment<radii.Length-1;segment++)
                 {
-                    float rf = Foot[i], h = Rise[i];
-                    pts.Add((rf, y, 0, i));
-                    pts.Add((rf + 1.2f, y + .18f * h, 0, i));
-                    pts.Add((rf + 2.0f, y + .46f * h, 0, i));
-                    pts.Add((rf + 1.4f, y + .76f * h, 0, i));
-                    pts.Add((rf - .6f, y + .95f * h, 0, i));
-                    pts.Add((rf - 1.8f, y + h, 0, i));          // the lip leans out over the riser: its underside catches the lava's up-light
-                    y += h;
-                    float next = i + 1 < Foot.Length ? Foot[i + 1] : 292f;
-                    pts.Add((rf + 3f, y + .5f, 1, i));
-                    pts.Add(((rf + next) / 2, y + 1.2f, 1, i));
-                    pts.Add((next - 5f, y + 1.7f, 1, i));
-                    y += 1.8f;
-                }
-                pts.Add((312f, y + 3f, 2, 5)); pts.Add((345f, y - 14f, 2, 5)); pts.Add((400f, y - 48f, 2, 5)); pts.Add((470f, -50f, 2, 5)); pts.Add((540f, -54f, 2, 5));
-
-                var list = new List<Row>(); float arc = 0;
-                for (int i = 0; i < pts.Count; i++)
-                {
-                    if (i == 0) { list.Add(new Row { r = pts[0].r, y = pts[0].y, kind = pts[0].kind, terrace = pts[0].t }); continue; }
-                    var a = pts[i - 1]; var b = pts[i]; float len = Mathf.Sqrt((b.r - a.r) * (b.r - a.r) + (b.y - a.y) * (b.y - a.y));
-                    float step = b.kind == 0 ? 2.4f : b.kind == 1 ? 4f : 14f; int n = Mathf.Max(1, Mathf.CeilToInt(len / step));
-                    for (int k = 1; k <= n; k++)
+                    float span=radii[segment+1]-radii[segment];int steps=Mathf.CeilToInt(span/3.4f);
+                    for(int n=segment==0?0:1;n<=steps;n++)
                     {
-                        float f = k / (float)n; arc += len / n;
-                        list.Add(new Row { r = Mathf.Lerp(a.r, b.r, f), y = Mathf.Lerp(a.y, b.y, f), kind = b.kind, terrace = b.t, arc = arc });
+                        float t=n/(float)steps,t2=t*t,t3=t2*t;
+                        float r=Mathf.Lerp(radii[segment],radii[segment+1],t);
+                        float y=(2*t3-3*t2+1)*elevations[segment]+(t3-2*t2+t)*span*tangents[segment]
+                            +(-2*t3+3*t2)*elevations[segment+1]+(t3-t2)*span*tangents[segment+1];
+                        if(list.Count>0){var p=list[list.Count-1];arc+=new Vector2(r-p.r,y-p.y).magnitude;}
+                        list.Add(new Row{r=r,y=y,kind=(byte)(r<292?0:2),terrace=Mathf.Clamp(segment-1,0,4),arc=arc});
                     }
                 }
-                rows = list.ToArray();
-                for (int i = 0; i < rows.Length; i++)
+                rows=list.ToArray();
+                for(int i=0;i<rows.Length;i++)
                 {
-                    var p0 = rows[Mathf.Max(0, i - 1)]; var p1 = rows[Mathf.Min(rows.Length - 1, i + 1)];
-                    float tx = p1.r - p0.r, ty = p1.y - p0.y, l = Mathf.Max(.0001f, Mathf.Sqrt(tx * tx + ty * ty));
-                    rows[i].nx = -ty / l; rows[i].ny = tx / l;                    // toward the crater's air: smaller r, higher y
+                    var p0=rows[Mathf.Max(0,i-1)];var p1=rows[Mathf.Min(rows.Length-1,i+1)];
+                    var tangent=new Vector2(p1.r-p0.r,p1.y-p0.y).normalized;rows[i].nx=-tangent.y;rows[i].ny=tangent.x;
                 }
-                for (int t = 0; t < 5; t++) { riserStart[t] = -1; treadStart[t] = -1; }
-                for (int i = 0; i < rows.Length; i++)
+                for(int terrace=0;terrace<5;terrace++)
                 {
-                    int t = rows[i].terrace; if (t > 4) continue;
-                    if (rows[i].kind == 0 && riserStart[t] < 0) riserStart[t] = i;
-                    if (rows[i].kind == 1 && treadStart[t] < 0 && rows[i].terrace == t && riserStart[t] >= 0) treadStart[t] = i;
+                    int Nearest(float radius){int best=0;float distance=float.MaxValue;for(int i=0;i<rows.Length;i++){float d=Mathf.Abs(rows[i].r-radius);if(d<distance){distance=d;best=i;}}return best;}
+                    riserStart[terrace]=Nearest(Foot[terrace]);treadStart[terrace]=Nearest(Foot[terrace]+18);
                 }
             }
 
@@ -270,20 +256,40 @@ namespace GolfArcade.Tennis
                 for (int i = 0; i < rows.Length; i++)
                 {
                     grid[i] = new Vector3[Around + 1]; var rw = rows[i];
-                    float amp = rw.kind == 0 ? 1.7f : rw.kind == 1 ? .8f : 2.6f;
+                    float amp = rw.kind == 0 ? 2.6f : 3.5f;
                     for (int j = 0; j <= Around; j++)
                     {
                         float th = (j % Around) / (float)Around * Mathf.PI * 2, c = Mathf.Cos(th), s = Mathf.Sin(th);
-                        float nz = (Noise(c * 3.1f + rw.r * .02f, s * 3.1f + rw.y * .05f) - .5f) * 2 * amp + (Noise(c * 9f + rw.y * .11f, s * 9f + rw.r * .03f) - .5f) * amp;
-                        float warp = rw.r > 118 ? (Periodic(th, 5f, 2f + rw.r * .01f) - .5f) * 14f + (Periodic(th, 14f, 7f) - .5f) * 6f : 0;
-                        float rr = rw.r + rw.nx * nz + warp, yy = rw.y + rw.ny * nz;
-                        if (rw.r > 255 && rw.r < 335) yy += (Periodic(th, 30f, 2f) - .5f) * 2 * 8f + Mathf.Max(0, Periodic(th, 34f, 4f) - .56f) * 55f;   // a toothed crest with a few horns
+                        // Broad radial gullies and rounded shoulders catch light;
+                        // low frequency displacement avoids a uniform sawtooth rim.
+                        float gully=(Periodic(th,5,7+rw.r*.004f)-.5f)*2;
+                        float nz=(Noise(c*3.8f+rw.r*.012f,s*3.8f+rw.y*.02f)-.5f)*2*amp;
+                        float warp=(Periodic(th,3,2)-.5f)*18+gully*3;
+                        float rr=rw.r+rw.nx*nz+warp,yy=rw.y+rw.ny*nz;
+                        float crest=Mathf.SmoothStep(0,1,Mathf.InverseLerp(230,292,rw.r))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(320,405,rw.r)));
+                        yy+=(Periodic(th,4,17)-.5f)*12*crest+gully*1.5f;
+                        // Six authored asymmetric buttresses break the uniform
+                        // bowl into broad geological masses. They blend into the
+                        // same continuous surface used by the flowing cascades.
+                        float radial=Mathf.SmoothStep(0,1,Mathf.InverseLerp(122,255,rw.r))
+                            *(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(338,475,rw.r)));
+                        float Ridge(float angle,float width,float high)
+                        {
+                            float bend=(rw.r-275)*.030f;
+                            float delta=Mathf.Abs(Mathf.DeltaAngle(th*Mathf.Rad2Deg,angle+bend));
+                            float shoulder=Mathf.Clamp01(1-delta/width);
+                            return high*Mathf.Pow(shoulder,1.45f)*radial;
+                        }
+                        float ridge=Ridge(18,24,30)+Ridge(50,22,46)+Ridge(121,26,57)
+                                   +Ridge(152,23,34)+Ridge(210,28,28)+Ridge(282,25,62);
+                        yy+=ridge;
+                        rr+=ridge*.16f;
                         grid[i][j] = new Vector3(Lake.x + c * rr, yy, Lake.z + s * rr);
                     }
                 }
                 // three bands so the glow dies away with height (emission cannot vary per vertex on a lit material)
                 int b1 = riserStart[2], b2 = riserStart[4];
-                var normalMap = rockNormal; var bands = new[] { (0, b1, 2.6f, "Bowl low"), (b1, b2, 1.0f, "Bowl middle"), (b2, rows.Length - 1, .5f, "Bowl high") };
+                var normalMap = rockNormal; var bands = new[] { (0, b1, .85f, "Bowl low"), (b1, b2, .32f, "Bowl middle"), (b2, rows.Length - 1, .12f, "Bowl high") };
                 int total = 0;
                 foreach (var (a, b, glow, name) in bands)
                 {
@@ -298,10 +304,9 @@ namespace GolfArcade.Tennis
                             var dst = a > 0 && Mathf.Abs(Mathf.DeltaAngle(j / (float)Around * 360f, 90f)) < 24f ? mb.T2 : mb.T;
                             dst.AddRange(new[] { i0, i1, i2, i1, i3, i2 });
                         }
-                    Material Rock(float g) => WithRelief(Glowing(Color.white, .10f, rock, cracks, new Color(g, g * .34f, g * .06f), Vector2.one), normalMap, 1.8f, Vector2.one);
-                    var mat = Rock(glow); var go = MeshObject(root, name, mb.ToMesh(name), mat, false);   // far geometry: no shadow pass (its bounds span the crater)
-                    if (mb.T2.Count > 0) go.GetComponent<MeshRenderer>().sharedMaterials = new[] { mat, Rock(glow * .16f) };
-                    if (glow > 2) go.AddComponent<TennisVenueFx.Pulse>().Material = mat;
+                    var mat=BasaltSurface(name+" quiet eroded basalt",a==0?new Color(.245f,.23f,.225f):a==b1?new Color(.235f,.245f,.27f):new Color(.29f,.29f,.305f));
+                    var go=MeshObject(root,name,mb.ToMesh(name),mat,false);
+                    if(mb.T2.Count>0)go.GetComponent<MeshRenderer>().sharedMaterials=new[]{mat,mat};
                     total += mb.Tris + mb.T2.Count / 3;
                 }
                 Log("volcano: bowl", total);
@@ -316,28 +321,44 @@ namespace GolfArcade.Tennis
                 return Vector3.Lerp(grid[row][c0], grid[row][c1], f);
             }
 
-            /// A lavafall: a glowing ribbon laid on the bowl from a terrace tread down to the lake.
-            static void Fall(MB mb, float thetaDeg, int topRow, int bottomRow, float widthTop, float widthRiser, float phase)
+            static Vector3 SlopePoint(float row,float theta)
             {
-                float colF = thetaDeg / 360f * Around; int a = mb.Count;
-                int n = topRow - bottomRow + 1;
-                for (int k = 0; k < n; k++)
+                int a=Mathf.Clamp(Mathf.FloorToInt(row),0,rows.Length-1),b=Mathf.Min(a+1,rows.Length-1);
+                return Vector3.Lerp(Grid(a,theta/360*Around),Grid(b,theta/360*Around),row-a);
+            }
+
+            /// Closed shallow volume follows the actual continuous slope. Every
+            /// ring stays in air above basalt, including the meandering side banks.
+            static void Fall(MB mb,float thetaDeg,int topRow,int bottomRow,float widthTop,float widthRiser,float phase)
+            {
+                const int along=144,around=20;int start=mb.Count;float length=0;
+                Vector3 Centre(float t)
                 {
-                    int row = bottomRow + k; var rw = rows[row];
-                    float wobble = Mathf.Sin(row * .07f + phase) * .9f + Mathf.Sin(row * .19f + phase * 2) * .3f;
-                    float cf = colF + wobble;
-                    float width = rw.kind == 0 ? widthRiser : widthTop;
-                    float half = width * .5f / (2 * Mathf.PI * Mathf.Max(rw.r, 60f) / Around);
-                    Vector3 P(float c) => Grid(row, c);
-                    Vector3 tcol = P(cf + 1) - P(cf - 1), trow = Grid(Mathf.Min(rows.Length - 1, row + 1), cf) - Grid(Mathf.Max(0, row - 1), cf);
-                    Vector3 nrm = Vector3.Cross(tcol, trow).normalized;
-                    var l = P(cf - half) + nrm * .45f; var r = P(cf + half) + nrm * .45f; float v = rw.arc / 12f;
-                    mb.Add(l, new Vector2(0, v)); mb.Add(r, new Vector2(1, v));
+                    float row=Mathf.Lerp(bottomRow,topRow,t);
+                    float theta=thetaDeg+Mathf.Sin(t*6.2f+phase)*1.6f+Mathf.Sin(t*11+phase*.7f)*.45f;
+                    var point=SlopePoint(row,theta);
+                    int a=Mathf.Clamp(Mathf.RoundToInt(row),0,rows.Length-1);var profile=rows[a];
+                    var radial=new Vector3(point.x,0,point.z).normalized;
+                    var air=radial*profile.nx+Vector3.up*profile.ny;
+                    return point+air*3.4f;
                 }
-                for (int k = 0; k < n - 1; k++)
+                Vector3 previous=Centre(0);
+                for(int row=0;row<=along;row++)
                 {
-                    int i0 = a + k * 2, i1 = i0 + 1, i2 = i0 + 2, i3 = i0 + 3;
-                    mb.T.AddRange(new[] { i0, i1, i2, i1, i3, i2 });
+                    float t=row/(float)along;var c=Centre(t);length+=Vector3.Distance(previous,c);previous=c;
+                    var tangent=(Centre(Mathf.Min(1,t+.004f))-Centre(Mathf.Max(0,t-.004f))).normalized;
+                    var across=new Vector3(-c.z,0,c.x).normalized;var front=Vector3.Cross(across,tangent).normalized;
+                    float width=Mathf.Lerp(widthRiser,widthTop,t)*(.84f+.12f*Mathf.Sin(t*7+phase)+.075f*Mathf.Sin(t*13+phase*1.6f));
+                    for(int ring=0;ring<=around;ring++)
+                    {
+                        float angle=ring/(float)around*Mathf.PI*2;
+                        var point=c+across*(Mathf.Cos(angle)*width*.5f)+front*(Mathf.Sin(angle)*(.56f+.08f*Mathf.Sin(t*13+phase)));
+                        mb.Add(point,new Vector2(ring/(float)around,length/18));
+                    }
+                }
+                for(int row=0;row<along;row++)for(int ring=0;ring<around;ring++)
+                {
+                    int p=start+row*(around+1)+ring,q=p+around+1;mb.T.AddRange(new[]{p,q,p+1,p+1,q,q+1});
                 }
             }
 
@@ -347,25 +368,42 @@ namespace GolfArcade.Tennis
                 // (angle from +x toward +z, terrace the fall starts on). The pair flanking +z (90) sit at +-30 deg: in frame, clear of the lob band.
                 var falls = new[] { (58f, 4), (122f, 4), (16f, 3), (164f, 3), (238f, 4), (292f, 4), (200f, 2), (336f, 3) };
                 int i = 0;
-                foreach (var (th, t) in falls) { Fall(mb, th, treadStart[t], riserStart[0], 10f, 13f, i * 1.7f); i++; }
-                var mat = Glowing(new Color(.3f, .12f, .06f), .3f, fallTex, fallGlow, new Color(3.0f, .98f, .17f), Vector2.one);
+                foreach (var (th, t) in falls) { Fall(mb, th, treadStart[t], 0, 7f, 11f, i * 1.7f); i++; }
+                var mat=MoltenSurface("Tennis lava cascades",fallTex,fallGlow,.93f,18,true);
                 var go = MeshObject(root, "Lavafalls", mb.ToMesh("Lavafalls"), mat, false);
                 var flow = go.AddComponent<TennisVenueFx.FallFlow>(); flow.Material = mat;
+                var pools=new MB();
+                foreach(var (theta,terrace) in falls)
+                {
+                    var at=SlopePoint(0,theta);var radial=new Vector3(at.x,0,at.z).normalized;at=radial*110;at.y=LakeY+.55f;
+                    int centre=pools.Add(at,Vector2.zero);const int segments=48;
+                    for(int n=0;n<=segments;n++)
+                    {
+                        float angle=n/(float)segments*Mathf.PI*2;
+                        float radius=10.5f+(Noise(Mathf.Cos(angle)*2+theta,Mathf.Sin(angle)*2)-.5f)*4;
+                        pools.Add(at+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius),new Vector2(Mathf.Cos(angle),Mathf.Sin(angle)));
+                    }
+                    for(int n=0;n<segments;n++)pools.Tri(centre,centre+n+2,centre+n+1);
+                }
+                MeshObject(root,"Lavafall landing pools",pools.ToMesh("Lavafall landing pools"),MoltenSurface("Tennis cascade landing pools",crust,crustGlow,1,12,false),false);
                 Log("volcano: lavafalls", mb.Tris);
             }
 
             /// Low-poly rocks on the ledges: silhouette on the lips and something for the light to catch.
             static void Ledges(Transform root)
             {
-                var rng = new System.Random(64); var mb = new MB(); int count = TennisQuality.Current == TennisQuality.Tier.Low ? 70 : 150;
+                var rng = new System.Random(64); var mb = new MB(); int count = TennisQuality.Current == TennisQuality.Tier.Low ? 12 : 24;
                 for (int k = 0; k < count; k++)
                 {
                     int t = rng.Next(1, 5); int i0 = treadStart[t], i1 = Mathf.Min(rows.Length - 1, i0 + 6);
                     int row = rng.Next(i0, i1 + 1); float col = Rand(rng, 0, Around - 1);
-                    var p = Grid(row, col); float size = Rand(rng, 1.6f, 5.2f);
-                    mb.FlatLump(p + Vector3.up * size * .22f, new Vector3(size * Rand(rng, .8f, 1.4f), size * Rand(rng, .5f, .9f), size * Rand(rng, .8f, 1.4f)), Rand(rng, 0, 100), .32f);
+                    var p = Grid(row, col); float size = Rand(rng, 3.6f, 7.0f);
+                    // Contact-embedded eroded shoulders, no thin floating plates.
+                    // Most of each volume is buried in the continuous slope.
+                    mb.Lump(p-Vector3.up*size*.40f,new Vector3(size*Rand(rng,1.05f,1.50f),size*.90f,size*Rand(rng,.80f,1.25f)),
+                            2,Rand(rng,0,100),.5f,.16f);
                 }
-                MeshObject(root, "Ledge rocks", mb.ToMesh("Ledge rocks"), WithRelief(Lit(new Color(.9f, .84f, .8f), .12f, rock, Vector2.one * 1f), rockNormal, 1.4f, Vector2.one), false);
+                MeshObject(root, "Ledge rocks", mb.ToMesh("Ledge rocks"), BasaltSurface("Volcanic eroded shoulder outcrops",new Color(.26f,.265f,.28f)), false);
                 Log("volcano: ledge rocks", mb.Tris);
             }
 
@@ -399,9 +437,34 @@ namespace GolfArcade.Tennis
 
             // ----------------------------------------------------------------- the lake and the islands in it
 
+            static Material BasaltSurface(string name,Color colour)
+            {
+                var material=TennisVenueArt.Surface(name,colour,.22f,0,.09f,.005f);
+                material.SetTexture("_WorldMap",Resources.Load<Texture2D>("Course/Resort/ResortBasalt_C"));
+                // Basalt albedo is charcoal already; normalize around its measured
+                // midtone instead of multiplying two dark colours into a black wall.
+                material.SetFloat("_WorldMapWeight",.72f);material.SetFloat("_WorldMapReference",.075f);
+                material.SetFloat("_WorldMapScale",.055f);
+                material.SetTexture("_WorldNormal",Resources.Load<Texture2D>("Course/Resort/ResortBasalt_N"));
+                material.SetFloat("_WorldNormalStrength",.65f);
+                return material;
+            }
+
+            static Material MoltenSurface(string name,Texture albedo,Texture emission,float cooling,float plate,bool vertical)
+            {
+                var shader=Resources.Load<Shader>("Tennis/Shaders/TennisLava");
+                if(!shader)return Glowing(new Color(.35f,.13f,.055f),.3f,albedo,emission,new Color(1.7f,.5f,.08f),Vector2.one);
+                var m=new Material(shader){name=name};m.SetTexture("_BaseMap",albedo);m.SetTexture("_EmissionMap",emission);
+                m.SetFloat("_PlateScale",plate);m.SetFloat("_Cooling",cooling);m.SetFloat("_WorldUV",vertical?0:1);m.SetFloat("_Stream",vertical?1:0);m.SetFloat("_WorldTile",vertical?.09f:.055f);m.SetFloat("_SlopeFlow",vertical?1:0);
+                m.SetFloat("_HeatAlbedo",.75f);m.SetFloat("_HeatGlow",.7f);m.SetFloat("_HeatGain",1.15f);m.SetFloat("_HeatBias",-.10f);m.SetFloat("_Relief",0);
+                m.SetColor("_Deep",new Color(.22f,.06f,.028f));m.SetColor("_Crust",new Color(.42f,.105f,.026f));
+                m.SetColor("_Flow",new Color(.95f,.25f,.025f));m.SetColor("_Hot",new Color(1.5f,.62f,.12f));
+                return m;
+            }
+
             static void LakeSurface(Transform root)
             {
-                var lakeMat = Glowing(new Color(.5f, .25f, .12f), .3f, crust, crustGlow, new Color(2.6f, .95f, .18f), new Vector2(2.2f, 2.2f));
+                var lakeMat=MoltenSurface("Tennis cooling lava lake",crust,crustGlow,1,38,false);
                 var lake = Prim(PrimitiveType.Cylinder, root, "Lava lake", Lake + Vector3.up * .3f, new Vector3(246, .2f, 246), lakeMat, false);
                 lake.AddComponent<TennisVenueFx.LavaFlow>().Material = lakeMat;
             }
@@ -425,7 +488,7 @@ namespace GolfArcade.Tennis
                     if (hit) { dropped++; continue; }
                     Island(mb, new Vector3(s.x, 0, s.y), s.z, s.w, rng); islands++;
                 }
-                var mat = Glowing(Color.white, .22f, basalt, basaltGlow, new Color(2.4f, .8f, .15f), Vector2.one);
+                var mat = WithRelief(Glowing(Color.white, .18f, basalt, basaltGlow, new Color(1.8f, .46f, .06f), Vector2.one), rockNormal, .85f, new Vector2(1.5f, 5));
                 MeshObject(root, "Basalt islands", mb.ToMesh("Basalt islands"), mat, false).AddComponent<TennisVenueFx.Pulse>().Material = mat;
                 Log("volcano: basalt islands (" + islands + ", dropped " + dropped + ")", mb.Tris);
             }
@@ -449,14 +512,28 @@ namespace GolfArcade.Tennis
                             lo[k] = mb.Add(new Vector3(p.x + ca * R, yb, p.z + sa * R), new Vector2(u, v0));
                             hi[k] = mb.Add(new Vector3(p.x + ca * R, h - bevel, p.z + sa * R), new Vector2(u, v1));
                         }
-                        for (int k = 0; k < 6; k++) mb.Quad(lo[k], lo[k + 1], hi[k + 1], hi[k]);
+                        // Fractures interrupt the long smooth shaft. Faceted rings catch
+                        // grazing light, with small radial offsets and a narrow natural seam.
+                        for (int ring = 0; ring < 7; ring++)
+                            for (int k = 0; k < 6; k++)
+                            {
+                                float t0 = ring / 7f, t1 = (ring + 1) / 7f;
+                                float y0 = Mathf.Lerp(yb, h - bevel, t0), y1 = Mathf.Lerp(yb, h - bevel, t1);
+                                float r0 = R * (1 + .055f * Mathf.Sin(ring * 2.3f + q * 1.7f + r * 3.1f));
+                                float r1 = R * (1 + .055f * Mathf.Sin((ring + 1) * 2.3f + q * 1.7f + r * 3.1f));
+                                float a0 = k / 6f * Mathf.PI * 2 + Mathf.PI / 6, a1 = (k + 1) / 6f * Mathf.PI * 2 + Mathf.PI / 6;
+                                Vector3 P(float angle, float y, float rad) => new Vector3(p.x + Mathf.Cos(angle) * rad, y, p.z + Mathf.Sin(angle) * rad);
+                                mb.Face4(P(a0,y0,r0),P(a1,y0,r0),P(a1,y1-.045f,r1),P(a0,y1-.045f,r1),
+                                    new Vector2(k/6f,Mathf.Clamp01((y0-LakeY)/56f)),new Vector2((k+1)/6f,Mathf.Clamp01((y0-LakeY)/56f)),
+                                    new Vector2((k+1)/6f,Mathf.Clamp01((y1-LakeY)/56f)),new Vector2(k/6f,Mathf.Clamp01((y1-LakeY)/56f)));
+                            }
                         // bevel ring (hot rim) and cap (dark)
                         var rim = new int[7]; var cap = new int[7];
                         for (int k = 0; k <= 6; k++)
                         {
                             float a = (k % 6) / 6f * Mathf.PI * 2 + Mathf.PI / 6, ca = Mathf.Cos(a), sa = Mathf.Sin(a);
-                            rim[k] = mb.Add(new Vector3(p.x + ca * R, h - bevel, p.z + sa * R), new Vector2(k / 6f, .02f));
-                            cap[k] = mb.Add(new Vector3(p.x + ca * (R - bevel), h, p.z + sa * (R - bevel)), new Vector2(k / 6f, .03f));
+                            rim[k] = mb.Add(new Vector3(p.x + ca * R, h - bevel, p.z + sa * R), new Vector2(k / 6f, .84f));
+                            cap[k] = mb.Add(new Vector3(p.x + ca * (R - bevel), h, p.z + sa * (R - bevel)), new Vector2(k / 6f, .90f));
                         }
                         for (int k = 0; k < 6; k++) mb.Quad(rim[k], rim[k + 1], cap[k + 1], cap[k]);
                         int ctr = mb.Add(new Vector3(p.x, h, p.z), new Vector2(.5f, .98f)); var top6 = new int[7];
@@ -488,14 +565,23 @@ namespace GolfArcade.Tennis
             static void Braziers(Transform root, float hx, float hz)
             {
                 var bowl = Lit(new Color(.09f, .08f, .09f), .3f);
-                var flame = Sprite(Additive, Soft, new Color(1f, .55f, .16f, .9f), 3008);
+                var flame = Glowing(new Color(.7f,.16f,.025f), .1f, Texture2D.whiteTexture, Texture2D.whiteTexture, new Color(2.4f,.36f,.035f), Vector2.one);
                 bool light = TennisQuality.Current != TennisQuality.Tier.Low;
                 foreach (var c in new[] { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(1, 1) })
                 {
                     var p = new Vector3(c.x * (hx - .9f), 0, c.y * (hz - .9f));
                     Prim(PrimitiveType.Cylinder, root, "Brazier stand", p + Vector3.up * .55f, new Vector3(.32f, .55f, .32f), bowl);
                     Prim(PrimitiveType.Cylinder, root, "Brazier bowl", p + Vector3.up * 1.15f, new Vector3(.9f, .16f, .9f), bowl);
-                    var f = Billboard(root, "Flame", flame, p + Vector3.up * 1.9f, new Vector2(1.5f, 2.4f));
+                    var fm = new MB();
+                    for (int tongue = 0; tongue < 3; tongue++)
+                    {
+                        float a = tongue / 3f * Mathf.PI * 2;
+                        var at = new Vector3(Mathf.Cos(a)*.12f,0,Mathf.Sin(a)*.12f);
+                        fm.Cyl(at, .18f, .10f, .38f + tongue*.05f, 6, Vector2.zero, Vector2.zero, false);
+                        fm.Cyl(at + Vector3.up*(.38f + tongue*.05f), .10f, .006f, .52f - tongue*.07f, 6, Vector2.zero, Vector2.zero);
+                    }
+                    var f = MeshObject(root, "Shaped brazier flame", fm.ToMesh("Brazier flame"), flame, false);
+                    f.transform.localPosition = p + Vector3.up * 1.28f;
                     f.AddComponent<TennisVenueFx.Flicker>();
                     if (light)
                     {
@@ -509,33 +595,8 @@ namespace GolfArcade.Tennis
 
             static void Sky(Transform root)
             {
-                float[] edge = { 0f, 3f, 7f, 13f, 22f, 36f };
-                Color[] col = { new Color(1f, .46f, .14f), new Color(.92f, .27f, .15f), new Color(.66f, .17f, .33f), new Color(.40f, .13f, .38f), new Color(.21f, .09f, .31f), new Color(.10f, .06f, .20f) };
-                var warpCol = new float[1025]; for (int i = 0; i < warpCol.Length; i++) warpCol[i] = float.NaN;
-                TexDome(root, "volcano", (az, el) =>
-                {
-                    float u01 = az / (Mathf.PI * 2);
-                    int column = Mathf.Min(1024, Mathf.FloorToInt(u01 * 1024f));
-                    if (float.IsNaN(warpCol[column])) warpCol[column] = (Fbm((column + .5f) / 1024f, .5f, 7, 3, 61) - .5f) * 4f;
-                    float warp = warpCol[column], e = el + warp * Sm(-1, 8, el);
-                    Color c = new Color(.30f, .10f, .08f);
-                    c = Color.Lerp(c, col[0], Sm(-1.2f, .4f, e));
-                    for (int i = 1; i < edge.Length; i++) c = Color.Lerp(c, col[i], Sm(edge[i] - .6f, edge[i] + .6f, e));
-                    // billows of smoke: dark bodies, glowing undersides lit by the crater
-                    float body = 0, lower = 0;   // the smoke term is exactly zero at or below 1.5 degrees, and its under-lit edge only matters where there is smoke
-                    if (el > 1.5f)
-                    {
-                        body = Sm(.54f, .60f, Smoke(u01, el)) * Sm(1.5f, 9f, el);
-                        if (body > 0) lower = body * (1 - Sm(.54f, .60f, Smoke(u01, el - 1.5f)));
-                    }
-                    c = Color.Lerp(c, new Color(.16f, .07f, .17f), body * .85f);
-                    c = Color.Lerp(c, new Color(1f, .50f, .16f), lower * (1 - Sm(22f, 40f, el)) * .9f);
-                    c.a = 1; return c;
-                });
-                var rings = Sprite(Alpha, VolcanoSun(), Color.white, 2998);
-                Billboard(root, "Sun", rings, SunDir * 2790, new Vector2(900, 900), false).AddComponent<TennisVenueFx.FollowCamera>().Offset = SunDir * 2790;
-                var glow = Sprite(Additive, Soft, new Color(1f, .5f, .2f, .55f), 2999, null, .7f);
-                Billboard(root, "Sun glow", glow, SunDir * 2800, new Vector2(1500, 1500), false).AddComponent<TennisVenueFx.FollowCamera>().Offset = SunDir * 2800;
+                // The original CPU-baked striped dome and ring sun are replaced by
+                // the authored panorama in Light. It has no scene geometry or gameplay effect.
             }
 
             static Texture2D VolcanoSun() => Tex(512, 512, (u, v) =>
@@ -607,21 +668,29 @@ namespace GolfArcade.Tennis
             public static void Light(Light sun, Camera camera)
             {
                 sun.transform.rotation = Quaternion.LookRotation(-SunDir);
-                sun.color = new Color(1f, .52f, .26f); sun.intensity = 2.3f;
+                sun.color = new Color(.86f, .91f, 1f); sun.intensity = 1.65f;
                 RenderSettings.ambientMode = AmbientMode.Trilight;
-                RenderSettings.ambientSkyColor = new Color(.34f, .24f, .40f);
-                RenderSettings.ambientEquatorColor = new Color(.55f, .30f, .22f);
-                RenderSettings.ambientGroundColor = new Color(.60f, .22f, .08f);   // the lava lights everything from below
+                RenderSettings.ambientSkyColor = new Color(.30f, .38f, .56f);
+                RenderSettings.ambientEquatorColor = new Color(.31f, .32f, .40f);
+                RenderSettings.ambientGroundColor = new Color(.33f, .15f, .10f);   // a restrained lava bounce underneath the cool ash key
                 RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear;
-                RenderSettings.fogColor = new Color(.42f, .19f, .14f);
-                RenderSettings.fogStartDistance = 350; RenderSettings.fogEndDistance = 3800;
-                RenderSettings.skybox = null;
-                camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.42f, .19f, .14f);
+                RenderSettings.fogColor = new Color(.36f, .29f, .34f);
+                RenderSettings.fogStartDistance = 115; RenderSettings.fogEndDistance = 1450;
+                var skyShader=Resources.Load<Shader>("Tennis/Shaders/TennisVolcanicSky");
+                if(skyShader)
+                {
+                    var sky=new Material(skyShader){name="Volcanic dusk cloud panorama"};
+                    sky.SetTexture("_Panorama",Resources.Load<Texture2D>("Course/Resort/SkyVolcanic"));
+                    sky.SetFloat("_Rotation",-55);sky.SetFloat("_CloudCompression",1.75f);sky.SetFloat("_Exposure",.95f);
+                    RenderSettings.skybox=sky;camera.clearFlags=CameraClearFlags.Skybox;
+                }
+                else {RenderSettings.skybox=null;camera.clearFlags=CameraClearFlags.SolidColor;}
+                camera.backgroundColor = new Color(.36f,.29f,.34f);
                 // an orange up-light from the crater, on the players' undersides and the racket
                 var wallGlow = new GameObject("Lava wall glow").AddComponent<Light>(); wallGlow.type = LightType.Directional; wallGlow.shadows = LightShadows.None;
-                wallGlow.transform.rotation = Quaternion.LookRotation(new Vector3(0f, .30f, .95f)); wallGlow.color = new Color(1f, .52f, .22f); wallGlow.intensity = .38f;
+                wallGlow.transform.rotation = Quaternion.LookRotation(new Vector3(0f, .30f, .95f)); wallGlow.color = new Color(1f, .39f, .14f); wallGlow.intensity = .22f;
                 var up = new GameObject("Lava up-light").AddComponent<Light>(); up.type = LightType.Directional; up.shadows = LightShadows.None;
-                up.transform.rotation = Quaternion.LookRotation(new Vector3(.05f, .95f, .25f)); up.color = new Color(1f, .42f, .12f); up.intensity = .8f;
+                up.transform.rotation = Quaternion.LookRotation(new Vector3(.05f, .95f, .25f)); up.color = new Color(1f, .34f, .10f); up.intensity = .26f;
             }
         }
     }

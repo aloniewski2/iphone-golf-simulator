@@ -1,3 +1,4 @@
+using GolfArcade.Game;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,17 +16,53 @@ namespace GolfArcade.Tennis
     /// play. Runs on game time, so it waits while the session is paused.
     public sealed class TennisPresentation : MonoBehaviour
     {
-        public const float Drone = 5.2f, RivalIntro = 3.8f, PlayerIntro = 3.8f, Umpire = 1.3f, Swoop = 1.3f;
-        public const float Length = Drone + RivalIntro + PlayerIntro + Umpire + Swoop;
+        public const float FullLength = 7.2f;
+        public const float Drone=3, RivalIntro=1.2f, PlayerIntro=1.2f, Umpire=.6f, Swoop=1.2f;
+        float drone = 3f, rivalIntro = 1.2f, playerIntro = 1.2f, umpireSeconds = .6f, swoop = 1.2f;
+        public const float Length = FullLength;
+        float TotalLength => drone + rivalIntro + playerIntro + umpireSeconds + swoop;
+        readonly PresentationDirector director = new();
+        int beatIndex; bool skipped, cueLed;
+        PresentationCut venueCut, walkCut, startCut;
+        string VenueKey => "tennis.venue." + TennisVenue.Selected;
+        string WalkKey => "tennis.walkon";
+        public void RestartShared() {
+            director.Cancel(); t=0; skipped=false; rivalEmoted=playerEmoted=umpireCalled=chosenPlayed=false;
+            chosenEmote=null; shownName=null; Configure(true); hud.MatchVisible=false;
+        }
+        void Configure(bool shared = false) {
+            venueCut = shared ? PresentationCut.Short : PresentationPolicy.Cut(VenueKey);
+            walkCut = shared ? PresentationCut.Short : PresentationPolicy.Cut(WalkKey);
+            startCut = shared ? PresentationCut.Short : PresentationPolicy.Cut("tennis.start");
+            drone=PresentationDirector.Budget(PresentationBeat.Venue,false,venueCut);
+            float walk=PresentationDirector.Budget(PresentationBeat.WalkOn,false,walkCut);
+            rivalIntro=walk*.4f; playerIntro=walk*.4f; umpireSeconds=walk*.2f;
+            swoop=PresentationDirector.Budget(PresentationBeat.Start,false,startCut);
+            beatIndex=0; BeginBeat();
+        }
+        void BeginBeat() {
+            if(beatIndex>2) { if(practiced && game.Player) {game.Player.CancelSwing();practiced=false;} t=TotalLength; SetBars(0); hud.MatchVisible=true; return; }
+            var beat=beatIndex==0?PresentationBeat.Venue:beatIndex==1?PresentationBeat.WalkOn:PresentationBeat.Start;
+            var cut=beatIndex==0?venueCut:beatIndex==1?walkCut:startCut;
+            float duration=beatIndex==0?drone:beatIndex==1?rivalIntro+playerIntro+umpireSeconds:swoop;
+            cueLed=false; settleCaptured=false; int entered=beatIndex;
+            PresentationPolicy.Event(beat.ToString(),"begin",director.Sequence+1,cut.ToString());
+            director.Begin(beat,cut,duration,.3f,()=>{},()=> {
+                if(!skipped) PresentationPolicy.Event(beat.ToString(),"complete",director.Sequence);
+                if(!skipped && cut==PresentationCut.Full && entered<2) PresentationPolicy.Seen(entered==0?VenueKey:WalkKey);
+                if(!skipped && cut==PresentationCut.Full && entered==2) PresentationPolicy.Seen("tennis.start");
+                beatIndex=entered+1; BeginBeat();
+            }, shared:PresentationPolicy.Multiplayer);
+        }
 
         TennisGame game;
         TennisHud hud;
         TennisUmpire umpire;
         float t;
-        float emoteHold;
+        bool settleCaptured, practiced;
         HeroTennisDriver.Clip? chosenEmote;
         bool chosenPlayed;
-        public bool CanChooseEmote => Playing && t < Drone + RivalIntro + PlayerIntro && !chosenEmote.HasValue;
+        public bool CanChooseEmote => Playing && t < drone + rivalIntro + playerIntro && !chosenEmote.HasValue;
         public bool ChooseEmote(HeroTennisDriver.Clip clip) {
             if (!CanChooseEmote) return false;
             chosenEmote = clip; return true;
@@ -36,8 +73,8 @@ namespace GolfArcade.Tennis
         UiGradient nameGradient;
         Vector3 lastPos; Quaternion lastRot; float lastFov = 50;
 
-        public bool Playing => t < Length;
-        public float Remaining => Mathf.Max(0, Length - t);
+        public bool Playing => t < TotalLength;
+        public float Remaining => Mathf.Max(0, TotalLength - t);
 
         public void Build(TennisGame owner, TennisHud hudOwner, TennisUmpire chairUmpire)
         {
@@ -60,6 +97,7 @@ namespace GolfArcade.Tennis
             roleText = hud.Label(roleBody.rectTransform, "", 16, new Vector2(0, 1), new Vector2(240, 30), Color.white, TextAnchor.MiddleCenter, 1.2f);
             titleCard.gameObject.SetActive(false); nameCard.gameObject.SetActive(false);
             hud.MatchVisible = false;
+            Configure();
         }
 
         static RectTransform Bar(RectTransform root, float edge)
@@ -75,16 +113,21 @@ namespace GolfArcade.Tennis
         public void Finish()
         {
             if (!Playing) return;
-            t = Length;
+            director.Cancel(); t = TotalLength;
+
             titleCard.gameObject.SetActive(false); nameCard.gameObject.SetActive(false);
             SetBars(0); hud.MatchVisible = true;
         }
 
         /// Jump to the swoop into play.
-        public void Skip()
-        {
-            if (!Playing || t >= Length - Swoop) return;
-            t = Length - Swoop;
+        public void Skip() {
+            if(!Playing || PresentationPolicy.Multiplayer || t<.3f) return;
+            if(beatIndex==2) { if(game.Player && !game.Player.Swinging) { practiced=true; game.Player.Swing(.2f,false); } return; }
+            skipped=true; director.Cancel(); PresentationStinger.Stop();
+            titleCard.gameObject.SetActive(false); nameCard.gameObject.SetActive(false);
+            // Skip input is consumed by the caller. Retain a camera settle before the serve.
+            drone=rivalIntro=playerIntro=umpireSeconds=0; swoop=.3f; t=0; beatIndex=2; BeginBeat();
+            PresentationPolicy.Event("Intro","skip",director.Sequence);
         }
 
         static float Smooth(float x) => x * x * (3 - 2 * x);
@@ -98,28 +141,27 @@ namespace GolfArcade.Tennis
         public bool Drive(Camera camera, Vector3 playTarget, Vector3 playLook, float playFov, float dt)
         {
             if (!Playing) return false;
-            if (emoteHold > 0) emoteHold = Mathf.Max(0, emoteHold - dt);
-            else t += dt;
-            if (chosenEmote.HasValue && !chosenPlayed && t >= Drone + RivalIntro)
-                t = Mathf.Min(t, Drone + RivalIntro + PlayerIntro - .001f);
+            if(!cueLed && beatIndex<2 && director.Duration-director.Elapsed<=.15f) { cueLed=true; PresentationStinger.Lead(); }
+            director.Tick(dt);
+            t = beatIndex==0 ? director.Elapsed : beatIndex==1 ? drone+director.Elapsed : beatIndex==2 ? drone+rivalIntro+playerIntro+umpireSeconds+director.Elapsed : TotalLength;
             Vector3 pos, look; float fov;
             var player = game.Player.transform; var rival = game.Opponent.transform;
             float bars = 1;
 
-            if (t < Drone)
+            if (t < drone)
             {
                 // In from the sea behind the far baseline, banking round the resort, settling
                 // high over the court's side.
-                float k = Smooth(Mathf.Clamp01(t / Drone));
+                float k = Smooth(Mathf.Clamp01(t / drone));
                 // High over the bay first, so the whole island reads, then banking low over
                 // the jungle and in over the stands.
-                // (each venue flies its own path: TennisVenue.Drone)
+                // (each venue flies its own path: TennisVenue.drone)
                 TennisVenue.Drone(k, out pos, out look, out fov);
-                Card(titleCard, t, Drone, fromLeft: false);
+                Card(titleCard, t, drone, fromLeft: false);
             }
-            else if (t < Drone + RivalIntro)
+            else if (t < drone + rivalIntro)
             {
-                float s = t - Drone, k = Smooth(Mathf.Clamp01(s / RivalIntro));
+                float s = t - drone, k = Smooth(Mathf.Clamp01(s / rivalIntro));
                 Vector3 face = rival.forward;
                 Vector3 side = Vector3.Cross(Vector3.up, face);
                 // Full body, head to toe, from chest height (a camera above the chest
@@ -127,13 +169,18 @@ namespace GolfArcade.Tennis
                 pos = rival.position + face * Mathf.Lerp(5.6f, 4.7f, k) + side * Mathf.Lerp(-1.6f, -1.0f, k) + Vector3.up * 1.25f;
                 look = rival.position + Vector3.up * 1.0f;
                 fov = 40;
-                if (!rivalEmoted && s > .35f) { rivalEmoted = true; game.Opponent.PlayIntro(); }
+                if (!rivalEmoted && s > .35f)
+                {
+                    rivalEmoted = true; game.Opponent.PlayIntro();
+                    var driver = game.Opponent.GetComponentInChildren<HeroTennisDriver>();
+
+                }
                 ShowName(hud.OpponentName, rivalRole, TennisHud.SeaTop, TennisHud.SeaBottom);
-                Card(nameCard, s, RivalIntro, fromLeft: false);
+                Card(nameCard, s, rivalIntro, fromLeft: false);
             }
-            else if (t < Drone + RivalIntro + PlayerIntro)
+            else if (t < drone + rivalIntro + playerIntro)
             {
-                float s = t - Drone - RivalIntro, k = Smooth(Mathf.Clamp01(s / PlayerIntro));
+                float s = t - drone - rivalIntro, k = Smooth(Mathf.Clamp01(s / playerIntro));
                 Vector3 face = player.forward;
                 Vector3 side = Vector3.Cross(Vector3.up, face);
                 // Full body, head to toe, from chest height (a camera above the chest
@@ -145,31 +192,31 @@ namespace GolfArcade.Tennis
                     var driver = game.Player.GetComponentInChildren<HeroTennisDriver>();
                     if (driver && driver.PlayEmote(chosenEmote.Value)) {
                         chosenPlayed = true; playerEmoted = true;
-                        emoteHold = driver.EmoteDuration(chosenEmote.Value) + .4f;
+
                     }
                 }
                 if (!chosenEmote.HasValue && !playerEmoted && s > .35f) {
                     playerEmoted = true;
-                    emoteHold = Mathf.Max(0, game.PlayEquippedIntro() + .3f - (PlayerIntro - s));
+                    game.PlayEquippedIntro();
                 }
                 ShowName(hud.PlayerName, "THE CHALLENGER", TennisHud.SunTop, TennisHud.SunBottom);
-                Card(nameCard, s, PlayerIntro, fromLeft: true);
+                Card(nameCard, s, playerIntro, fromLeft: true);
             }
-            else if (t < Length - Swoop)
+            else if (t < TotalLength - swoop)
             {
                 // The umpire, from the court, as he calls play.
-                float s = t - (Length - Swoop - Umpire);
-                Vector3 seat = TennisUmpire.Seat + Vector3.up * .5f;
-                pos = seat + new Vector3(3.6f, -.6f, -2.2f + s * .5f);
-                look = seat;
-                fov = 34;
+                float s = t - (TotalLength - swoop - umpireSeconds);
+                pos = new Vector3(0, 4.5f, -15);
+                look = Vector3.Lerp(player.position, rival.position, .5f) + Vector3.up;
+                fov = 48;
                 nameCard.gameObject.SetActive(false);
                 if (!umpireCalled) { umpireCalled = true; if (umpire) umpire.Call(); hud.ShowCall("PLAY", null, true); }
             }
             else
             {
-                // Swoop from wherever the show was into the gameplay camera.
-                float s = Mathf.Clamp01((t - (Length - Swoop)) / Swoop), k = Smooth(s);
+                if(!settleCaptured) { settleCaptured=true; lastPos=camera.transform.position; lastRot=camera.transform.rotation; lastFov=camera.fieldOfView; if(lastRot==default(Quaternion)) lastRot=Quaternion.LookRotation(playLook-playTarget); }
+                // swoop from wherever the show was into the gameplay camera.
+                float s = Mathf.Clamp01((t - (TotalLength - swoop)) / swoop), k = Smooth(s);
                 if (!umpireCalled) { umpireCalled = true; hud.ShowCall("PLAY", null, true); }
                 titleCard.gameObject.SetActive(false); nameCard.gameObject.SetActive(false);
                 Vector3 high = playTarget + new Vector3(0, 6, -6);
@@ -179,7 +226,7 @@ namespace GolfArcade.Tennis
                 camera.fieldOfView = Mathf.Lerp(lastFov, playFov, k);
                 bars = 1 - k;
                 SetBars(bars);
-                if (t >= Length) { hud.MatchVisible = true; SetBars(0); }
+                if (t >= TotalLength) { hud.MatchVisible = true; SetBars(0); }
                 return true;
             }
             camera.transform.position = lastPos = pos;
@@ -189,6 +236,7 @@ namespace GolfArcade.Tennis
             return true;
         }
 
+        void OnDisable() { director.Cancel(); }
         void SetBars(float amount)
         {
             float h = 74 * amount;
@@ -218,7 +266,7 @@ namespace GolfArcade.Tennis
         {
             card.gameObject.SetActive(s < length - .05f);
             float width = hud.Root.rect.width;
-            float enter = Mathf.Clamp01((s - .25f) / .5f), exit = Mathf.Clamp01((s - (length - .45f)) / .35f);
+            float enter = Mathf.Clamp01(s / Mathf.Min(.2f, length*.2f)), exit = Mathf.Clamp01((s - (length - .2f)) / .2f);
             float spring = enter < 1 ? 1 - Mathf.Exp(-enter * 7) * Mathf.Cos(enter * 11) : 1;
             float side = fromLeft ? -1 : 1;
             bool title = card == titleCard;

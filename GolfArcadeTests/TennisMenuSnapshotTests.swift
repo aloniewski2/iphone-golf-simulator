@@ -424,3 +424,107 @@ final class TennisMenuSnapshotTests: XCTestCase {
         menu.debugShow(.title)
     }
 }
+
+
+// Scripted component review, intentionally separate from integrated-device acceptance.
+extension TennisMenuSnapshotTests {
+    func testFilmPresentationNativeComponents() async throws {
+        let session=SportsSession.shared, menu=TennisMenu.shared, displays=SportsDisplays.shared
+        let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window=UIWindow(windowScene:scene)
+        let oldPhone=displays.phone, oldActive=session.active, oldSport=session.sport, oldIntros=session.presentationIntros
+        let oldMatch=session.finishedMatch
+        let oldFlyover=session.holeFlyover, oldMoments=session.presentationBigMoments
+        let root=URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("presentation-native-films",isDirectory:true)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        window.frame=CGRect(x:0,y:0,width:402,height:874); window.windowLevel = .normal + 2
+        window.isHidden=false; displays.phone=window
+        defer {
+            displays.finishLoadingCover();session.loading.cancel();session.active=oldActive;session.sport=oldSport
+            session.presentationIntros=oldIntros;session.finishedMatch=oldMatch
+            session.holeFlyover=oldFlyover;session.presentationBigMoments=oldMoments
+            displays.phone=oldPhone;window.isHidden=true;menu.debugShow(.title)
+        }
+        func show<V:View>(_ view:V, size:CGSize=CGSize(width:402,height:874)) {
+            window.frame=CGRect(origin:.zero,size:size)
+            let host=UIHostingController(rootView:view);host.safeAreaRegions=[];window.rootViewController=host
+            host.view.frame=window.bounds;host.view.layoutIfNeeded()
+        }
+        func film(_ name:String, seconds:Double, update:(Double)->Void={_ in}) async throws {
+            let dir=root.appendingPathComponent(name,isDirectory:true);try FileManager.default.createDirectory(at:dir,withIntermediateDirectories:true)
+            let format=UIGraphicsImageRendererFormat();format.scale=1
+            for frame in 0..<Int(seconds*10) {
+                update(Double(frame)/10);window.rootViewController?.view.layoutIfNeeded()
+                let image=UIGraphicsImageRenderer(size:window.bounds.size,format:format).image { _ in
+                    for visible in scene.windows.filter({!$0.isHidden}).sorted(by:{$0.windowLevel < $1.windowLevel}) {
+                        visible.drawHierarchy(in:window.bounds,afterScreenUpdates:true)
+                    }
+                }
+                try XCTUnwrap(image.jpegData(compressionQuality:0.88)).write(to:dir.appendingPathComponent(String(format:"frame-%04d.jpg",frame)))
+                try await Task.sleep(for:.milliseconds(100))
+            }
+        }
+        for sport in ["tennis","golf"] {
+            session.active=true;session.sport=sport
+            menu.debugShow(.loading,launch:MenuLaunch(sport:sport=="golf" ? .golf:.tennis,mode:sport=="golf" ? .round:.exhibition,round:sport=="tennis" ? 0:nil))
+            show(TennisPhoneMenu());session.loading.begin(now:LoadingModel.clockNow)
+            session.loading.onFinish={displays.finishLoadingCover()};displays.beginLoadingCover(in:window,startRuntime:{})
+            try await film("L1_\(sport)_native_cover_fixture_phone",seconds:5) { t in
+                if t>=2 {session.loading.reach(t<3 ? 0.4:1)}
+                if t>=3.5 {session.loading.markSceneReady();session.loading.markReady()}
+                session.loading.tick(now:LoadingModel.clockNow)
+            }
+            displays.finishLoadingCover();session.loading.cancel()
+        }
+        session.active=false;session.sport="tennis"
+        menu.debugShow(.loading,launch:MenuLaunch(mode:.training))
+        session.loading.begin(now:LoadingModel.clockNow)
+        show(LoadingScreen(menu:menu,compact:true))
+        try await film("L1_long_load_tips_retry_fixture_phone",seconds:23) { t in
+            if t>=10 {session.loading.reach(0.4)}
+            session.loading.tick(now:LoadingModel.clockNow)
+        }
+        session.loading.cancel()
+        let service=MultiplayerService.shared,bus=MultiplayerTests.Bus()
+        let oldLaunch=service.onMatchRequested,oldReturn=service.onReturnToLobby
+        service.onMatchRequested={_ in};service.onReturnToLobby={}
+        service.setIdentity(name:"Adnan")
+        try service.host(using:bus.link("film-host"))
+        var peers:[MultiplayerService]=[]
+        for (i,name) in ["Maya","Sam","Leo"].enumerated() {
+            let peer=MultiplayerService(sendToRuntime:{_ in true},pollRuntime:{nil},clock:{ProcessInfo.processInfo.systemUptime})
+            peer.setIdentity(name:name);peer.onMatchRequested={_ in};peer.onReturnToLobby={}
+            try peer.connect(using:bus.link("film-\(i)"));peers.append(peer)
+        }
+        defer {for peer in peers.reversed(){peer.leave()};service.leave();service.onMatchRequested=oldLaunch;service.onReturnToLobby=oldReturn}
+        try service.configure(.golf)
+        for peer in peers {try peer.setReady(true)};try service.setReady(true);try service.startMatch()
+        session.sport="golf"
+        session.loading.begin(now:LoadingModel.clockNow,multiplayer:true)
+        menu.debugShow(.online(.loading));show(LoadingScreen(menu:menu,compact:true))
+        try await film("L1_multiplayer_delayed_keep_waiting_fixture_phone",seconds:24) { t in
+            if t==2 {session.loading.markReady();service.runtimeLoaded();peers[0].runtimeLoaded();peers[1].runtimeLoaded()}
+            service.update()
+            session.loading.updatePlayers(waiting:service.lobby!.competitors.filter{!$0.loaded}.map(\.name),allReady:false)
+            session.loading.tick(now:LoadingModel.clockNow)
+            if t==22 {try? service.keepWaitingForLoad();session.loading.keepWaiting()}
+        }
+        for peer in peers.reversed(){peer.leave()};peers=[];service.leave()
+        menu.debugShow(.settings);show(IslandSettingsScreen(menu:menu,compact:true))
+        try await film("preferences_full_short_off_flyover_big_moments_fixture_phone",seconds:6) { t in
+            session.presentationIntros=t<2 ? "full":t<4 ? "short":"off"
+            session.holeFlyover=t<3;session.presentationBigMoments=t<4
+        }
+        session.active=true;session.sport="tennis";session.finishedMatch=(true,"3–1")
+        show(MatchFinishControls(session:session))
+        try await film("L7_results_rematch_leave_fixture_phone",seconds:4)
+        session.finishedMatch=nil;session.active=false;menu.debugShow(.main);show(TennisPhoneMenu())
+        session.presentationIntros="full";displays.beginExitCover()
+        try await film("L8_native_exit_cover_fixture_phone",seconds:3)
+        menu.debugShow(.loading,launch:MenuLaunch(mode:.exhibition,round:0));session.sport="tennis"
+        session.loading.begin(now:LoadingModel.clockNow)
+        show(LoadingScreen(menu:menu,compact:false),size:CGSize(width:1280,height:720))
+        try await film("L1_tennis_loading_card_fixture_tv_canvas",seconds:4) {_ in session.loading.tick(now:LoadingModel.clockNow)}
+        print("PRESENTATION_NATIVE_FILMS=\(root.path)")
+    }
+}

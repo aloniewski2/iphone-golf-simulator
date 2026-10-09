@@ -17,6 +17,7 @@ here are only for Blender renders (club_renders.py).
 """
 import bpy, bmesh, math
 from mathutils import Vector, Matrix
+from mathutils.bvhtree import BVHTree
 
 CLUBS = ("Driver", "Iron", "Wedge", "Putter")
 # The studio's sole and ferrule heights, per club (root space, before the root's own scale).
@@ -110,6 +111,9 @@ class Builder:
 
     def finish(self, name):
         me = bpy.data.meshes.new(name)
+        # Caps of the iron's XZ outline have a different axis from the driver's XY
+        # rings. Orient each closed shell outwards instead of assuming +Z cap order.
+        bmesh.ops.recalc_face_normals(self.bm, faces=list(self.bm.faces))
         self.bm.normal_update()
         self.bm.to_mesh(me); self.bm.free()
         for n in self.mats: me.materials.append(material(n))
@@ -193,7 +197,10 @@ def driver(b):
         z = sole + 0.016 + k * 0.007
         y = -0.0315 + (z - sole) * math.tan(loft)
         b.box(Vector((0.044, y - 0.0004, z)), (0.050, 0.0012, 0.0010), "CLUB groove", Matrix.Rotation(-loft, 3, 'X'))
-    b.box(Vector((0.045, 0.004, sole + 0.0605)), (0.010, 0.004, 0.0015), "CLUB accent")
+    crown = BVHTree.FromBMesh(b.bm)
+    p, _, _, _ = crown.ray_cast(Vector((0.045, 0.004, sole + 0.12)), Vector((0,0,-1)))
+    if p:
+        b.box(p + Vector((0,0,.00045)), (0.010, 0.004, 0.0010), "CLUB accent")
     # hosel from the heel of the crown up to the ferrule
     b.ring_tube([(sole + 0.030, 0.0078, (0, 0)), (sole + 0.064, 0.0072, (0, 0)), (FERRULE_TOP["Driver"] - 0.030, 0.0068, (0, 0))], 16, "CLUB satin")
 
@@ -233,7 +240,16 @@ def blade(b, club):
     n_g = 11 if wedge else 9
     for k in range(n_g):
         z = 0.006 + k * (0.0038 if wedge else 0.0040)
-        b.box(Vector((0.036, -0.0142 + z * math.tan(loft) - 0.0002, sole + z)), (0.056, 0.0008, 0.0009), "CLUB groove", Matrix.Rotation(-loft, 3, 'X'))
+        # Intersect the real rising top-line outline at this height; leave a 3mm
+        # unscored border, so high scorelines never float past the heel silhouette.
+        cuts=[]
+        for a,c in zip(pts,pts[1:]+pts[:1]):
+            if (a[1] <= z < c[1]) or (c[1] <= z < a[1]):
+                cuts.append(a[0]+(c[0]-a[0])*(z-a[1])/(c[1]-a[1]))
+        if len(cuts)<2: continue
+        lo=max(.008,min(cuts)+.003);hi=min(.064,max(cuts)-.003)
+        if hi<=lo: continue
+        b.box(Vector(((lo+hi)*.5, -0.0142 + z * math.tan(loft) - 0.0002, sole + z)), (hi-lo, 0.0008, 0.0009), "CLUB groove", Matrix.Rotation(-loft, 3, 'X'))
     # cavity badge on the back
     zb = 0.020
     b.box(Vector((0.040, -0.014 + zb * math.tan(loft) + 0.006 + 0.0022, sole + zb)), (0.042, 0.002, 0.012), "CLUB accent", Matrix.Rotation(-loft, 3, 'X'))

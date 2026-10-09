@@ -24,7 +24,8 @@ namespace GolfArcade.EditorTools
     public static class ServeAndFeetProof
     {
         const string Flag = "ServeAndFeetProof";
-        static IEnumerator script;
+        static IEnumerator script; static int lastFrame = -1;
+        static readonly Stack<IEnumerator> steps = new();
         static string Out => Path.GetFullPath(Environment.GetEnvironmentVariable("SF_PROOF_OUT") ?? "../work/serve-and-feet/proof");
         static string Repo => ServeAndFeetWire.Repo;
         static bool Quick => Environment.GetEnvironmentVariable("SF_QUICK") == "1";
@@ -102,7 +103,7 @@ namespace GolfArcade.EditorTools
         }
 
         // ================================================================ trace
-        const string TraceHeader = "scenario,role,sex,frame,t,flow,state,clip,clipTime,actionWeight,speed,fwdSpeed,speedMag,footSkate,hipsYaw,chestYaw,footL_mm,footR_mm,swinging,ttc,prepare,actorX,actorZ,weights,fc";
+        const string TraceHeader = "scenario,role,sex,frame,t,flow,state,clip,clipTime,actionWeight,speed,fwdSpeed,speedMag,footSkate,hipsYaw,chestYaw,footL_mm,footR_mm,swinging,ttc,prepare,actorX,actorZ,weights,unityFrame";
         static void Trace(TennisGame game, string scenario, int frame, HeroTennisDriver d, string role, bool bake)
         {
             if (!d || !d.actor) return;
@@ -121,6 +122,7 @@ namespace GolfArcade.EditorTools
 
         public static void Run()
         {
+            script = null; steps.Clear(); lastFrame = -1;
             Directory.CreateDirectory(Out + "/raw");
             EditorSceneManager.OpenScene("Assets/Scenes/Tennis.unity");
             SessionState.SetBool(Flag, true);
@@ -129,11 +131,20 @@ namespace GolfArcade.EditorTools
 
         static void Tick()
         {
-            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying) return;
+            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying || lastFrame == Time.frameCount) return;
+            lastFrame = Time.frameCount;
             var game = Object.FindFirstObjectByType<TennisGame>();
             if (!game || !game.Initialized) return;
-            if (script == null) script = Script(game);
-            try { if (!script.MoveNext()) Finish(0); }
+            try {
+                if (script == null) { script = Script(game); steps.Push(script); }
+                while (steps.Count > 0) {
+                    var step = steps.Peek();
+                    if (!step.MoveNext()) { steps.Pop(); continue; }
+                    if (step.Current is IEnumerator nested) { steps.Push(nested); continue; }
+                    return;
+                }
+                Finish(0);
+            }
             catch (Exception e) { Debug.LogException(e); Finish(1); }
         }
 
@@ -188,7 +199,7 @@ namespace GolfArcade.EditorTools
                 var kit = TennisLook.Kit.From("FFFFFF", "1E2A5A", "F28C28", playerFemale ? "E8508F" : "2E6BD6", playerFemale ? 1 : 3);
                 var look = HeroKit.Style.From(playerFemale ? 1 : 3, 2, 1, kit, playerFemale ? 1 : 0, playerFemale);
                 look.SkinTint = HeroKit.Hex(playerFemale ? "EEBB8F" : "C47A4C");
-                game.SelectCharacter(playerFemale); game.SetPlayerLook(look);
+                game.SelectCharacter(playerFemale); if(Environment.GetEnvironmentVariable("SF_PRODUCTION_KIT")!="1")game.SetPlayerLook(look);
                 game.ConfigureMatch(TennisGame.Mode.Campaign, key, key, "ROUND");
                 if (presentation) presentation.Finish();
                 yield return Frames(45);

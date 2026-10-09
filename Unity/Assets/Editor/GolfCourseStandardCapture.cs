@@ -37,6 +37,8 @@ namespace GolfArcade.EditorTools
             public int cameraMeshTriangles,cameraMaterialPasses;
             public string graphics;
             public int repairedPalms, replacedPalmTriangles, newPalmTriangles;
+            public int cliffAddedTriangles,cliffMovedVertices;
+            public float cliffMaximumDisplacement;
             public List<Slot> materials = new();
             public List<Geometry> ground = new();
         }
@@ -47,6 +49,7 @@ namespace GolfArcade.EditorTools
             string path = Environment.GetEnvironmentVariable("GOLF_STANDARD_OUT");
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("GOLF_STANDARD_OUT required");
             Directory.CreateDirectory(path);
+            GolfVisualPhysicsGate.Reports.Clear();
             SessionState.SetString(Key + "out", Path.GetFullPath(path));
             SessionState.SetString(Key + "holes", Environment.GetEnvironmentVariable("GOLF_STANDARD_HOLES") ?? "7,12,13,14,15,16,17,18,19,20,21,22,23,8,9,10");
             SessionState.SetBool(Key, true);
@@ -84,6 +87,8 @@ namespace GolfArcade.EditorTools
         {
             if (++index >= holes.Length) { Finish(0); return; }
             game.enabled = true; rig.enabled = true;
+            if(holes[index] is >=1 and <=3)
+                typeof(GolfGame).GetField("course",Private).SetValue(game,GolfArcade.Course.Course.Meadow());
             game.JumpToHole(holes[index]);
             game.DropBall(game.CurrentHole.Tee);
             frame = Time.frameCount; deadline = EditorApplication.timeSinceStartup + 180;
@@ -100,9 +105,18 @@ namespace GolfArcade.EditorTools
         static void Capture()
         {
             game.enabled = false; rig.enabled = false;
+            cam.aspect = 9f / 16f;
             var h = game.CurrentHole;
             var view = HoleView.Current;
             var golfer = (GolferView)typeof(GolfGame).GetField("golfer", Private).GetValue(game);
+            var reviewSex=Environment.GetEnvironmentVariable("GOLF_STANDARD_CHARACTER_SEX");
+            if(reviewSex=="male" || reviewSex=="female"){
+                var characterLook=GolferView.Look.Player;
+                var heroLook=GolferStyle.Hero;heroLook.Female=reviewSex=="female";
+                characterLook.Hero=heroLook;
+                typeof(GolferView).GetField("own",Private).SetValue(golfer,characterLook);
+                golfer.ApplyStyle();
+            }
             var ball = (Transform)typeof(GolfGame).GetField("ball", Private).GetValue(game);
             var line = (LineRenderer)typeof(GolfGame).GetField("aimLine", Private).GetValue(game);
             var marker = (Transform)typeof(GolfGame).GetField("landingMarker", Private).GetValue(game);
@@ -119,6 +133,7 @@ namespace GolfArcade.EditorTools
                 w.Write(o.Radius); w.Write(o.TrunkRadius); w.Write(o.CrownBase); w.Write(o.Cone);
             } });
             var textures = new HashSet<Texture>();
+            var cliff=view.GetComponentInChildren<GolfCliffSculpt>();if(cliff){report.cliffAddedTriangles=cliff.AddedTriangles;report.cliffMovedVertices=cliff.MovedVertices;report.cliffMaximumDisplacement=cliff.MaximumDisplacement;}
             var palms = view.GetComponentInChildren<GolfCoursePalms>();
             if(palms) { report.repairedPalms=palms.PalmCount;report.replacedPalmTriangles=palms.RemovedFrondTriangles;report.newPalmTriangles=palms.AddedTriangles; }
             foreach (var r in view.GetComponentsInChildren<Renderer>(true))
@@ -166,9 +181,20 @@ namespace GolfArcade.EditorTools
             var putt = new CoursePoint(h.Pin.X - direction.x * 5, h.Pin.D - direction.z * 5);
             Address(putt, h.Pin, true); Save(stem + "_putting.png");
             float length = Vector3.Distance(tee, pin);
-            rig.transform.position = (tee + pin) * .5f - direction * length * .4f + right * length * .25f + Vector3.up * (length * .7f + 55);
-            rig.transform.LookAt((tee + pin) * .5f); cam.fieldOfView = 60;
+            FrameAerial();
             Save(stem + "_aerial.png");
+            cam.aspect=16f/9f;
+            FrameAerial();
+            Save(stem+"_preview.png",1280,720);
+            cam.aspect=9f/16f;
+            if(Environment.GetEnvironmentVariable("GOLF_STANDARD_SHOWCASE")=="1")
+            {
+                foreach(float progress in new[]{0f,.10f,.25f,.39f,.40f,.55f,.70f,.85f,1f})
+                {
+                    rig.Showcase(h,progress);rig.SnapNext();rig.ApplyFrame();
+                    Save(stem+"_showcase_"+Mathf.RoundToInt(progress*100).ToString("000")+".png");
+                }
+            }
             if(Environment.GetEnvironmentVariable("GOLF_STANDARD_TREES")=="1" && h.Number is 16 or 19 or 21 or 22 or 23)
             {
                 int plant = h.Number switch { 21=>7,22=>10,23=>12,_=>0 };
@@ -214,9 +240,52 @@ namespace GolfArcade.EditorTools
                 canvas.renderMode=RenderMode.ScreenSpaceCamera;canvas.worldCamera=cam;canvas.planeDistance=1;
             }
             Canvas.ForceUpdateCanvases();
-            try { Save(stem+"_gameplay.png"); }
+            try {
+                Save(stem+"_gameplay.png");
+                if(Environment.GetEnvironmentVariable("GOLF_STANDARD_CHARACTER")=="1" && golfer.Head)
+                {
+                    foreach(var canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))canvas.enabled=false;
+                    var head=golfer.Head.position;
+                    var facing=golfer.Hero.Root.transform.forward;
+                    var across=golfer.Hero.Root.transform.right;
+                    cam.aspect=1;cam.fieldOfView=28;
+                    rig.transform.position=head+facing*1.5f+across*.48f+Vector3.up*.12f;
+                    rig.transform.LookAt(head+Vector3.up*.02f);
+                    Save(stem+"_character_face.png",1000,1000);
+                    cam.aspect=.75f;cam.fieldOfView=34;
+                    var centre=head-Vector3.up*.48f;
+                    rig.transform.position=centre+facing*3.1f+across*1.4f+Vector3.up*.25f;
+                    rig.transform.LookAt(centre);
+                    Save(stem+"_character_full.png",900,1200);
+                    cam.aspect=9f/16f;Address(h.Tee,h.RecommendedTarget(h.Tee),false);
+                }
+                if(Environment.GetEnvironmentVariable("GOLF_STANDARD_TURF_DIAGNOSTIC")=="1")
+                    TurfDiagnostic(view,stem);
+                if(Environment.GetEnvironmentVariable("GOLF_STANDARD_CAMERA_SWEEP")=="1" && h.Number is 12 or 19 or 21)
+                {
+                    var heading=HoleView.ToWorld(h.RecommendedTarget(h.Tee))-tee;heading.y=0;heading.Normalize();
+                    var across=Vector3.Cross(Vector3.up,heading);
+                    foreach(float height in new[]{3.4f,4.5f,6f})
+                    {
+                        rig.transform.position=ball.position-heading*5.8f-across*.2f+Vector3.up*height;
+                        rig.transform.LookAt(ball.position+heading*3.3f+Vector3.up*.55f);
+                        Save(stem+"_camera_"+height.ToString("0.0",System.Globalization.CultureInfo.InvariantCulture)+".png");
+                    }
+                    int composition = 0;
+                    foreach(var shot in new[]{new Vector3(5.8f,4f,75f),new Vector3(4.5f,3.2f,70f),new Vector3(4.5f,2.6f,60f)})
+                    {
+                        cam.fieldOfView=shot.z;
+                        rig.transform.position=ball.position-heading*shot.x+across*.25f+Vector3.up*shot.y;
+                        rig.transform.rotation=Quaternion.LookRotation(heading,Vector3.up)*Quaternion.Euler(12f,0,0);
+                        Save(stem+"_reference_camera_"+(++composition)+".png");
+                    }
+                    Address(h.Tee,h.RecommendedTarget(h.Tee),false);
+                }
+            }
             finally { foreach(var c in canvases){c.canvas.renderMode=c.mode;c.canvas.worldCamera=c.camera;c.canvas.planeDistance=c.distance;} }
             File.WriteAllText(stem + "_audit.json", JsonUtility.ToJson(report, true));
+            if(GolfVisualPhysicsGate.Reports.TryGetValue(h.Number,out var physics))
+                File.WriteAllText(stem+"_dressing_physics.json",JsonUtility.ToJson(physics,true));
             Debug.Log($"[GolfCourseStandard] captured {h.Number}, {report.materials.Count} slots, {report.drawCalls} draws, {report.triangles} triangles");
 
             void Address(CoursePoint at, CoursePoint target, bool putting)
@@ -225,6 +294,92 @@ namespace GolfArcade.EditorTools
                 var aim = HoleView.ToWorld(target) - HoleView.ToWorld(at); aim.y = 0; aim.Normalize();
                 cam.fieldOfView = 60; rig.FrameAddress(ball.position, aim, putting); rig.SnapNext(); rig.ApplyFrame();
             }
+            void FrameAerial()
+            {
+                var bounds=new Bounds(tee,Vector3.one);
+                bounds.Encapsulate(pin);
+                if(h.Number is >=1 and <=3)
+                {
+                    // Procedural Meadow's 1200-yard rough is a backdrop, not the
+                    // course footprint. Use the playable corridor for this proof camera.
+                    float halfWidth=(float)(h.FairwayWidth*.5+h.RoughWidth);
+                    foreach(var point in h.Centerline)
+                    {
+                        var centre=HoleView.ToWorld(point);
+                        bounds.Encapsulate(centre+new Vector3(-halfWidth,0,-halfWidth));
+                        bounds.Encapsulate(centre+new Vector3( halfWidth,0, halfWidth));
+                    }
+                    float greenRadius=(float)(h.GreenRadius+h.FringeWidth);
+                    bounds.Encapsulate(pin+new Vector3(-greenRadius,0,-greenRadius));
+                    bounds.Encapsulate(pin+new Vector3( greenRadius,0, greenRadius));
+                    foreach(var hazard in h.Hazards)
+                    {
+                        var centre=HoleView.ToWorld(new CoursePoint(hazard.X,hazard.Distance));
+                        var half=new Vector3((float)hazard.Width*.5f,0,(float)hazard.Length*.5f);
+                        bounds.Encapsulate(centre-half);bounds.Encapsulate(centre+half);
+                    }
+                    // The small authored clubhouse is meaningful course context;
+                    // distant hills and the infinite ground stay outside the fit bounds.
+                    foreach(var renderer in view.GetComponentsInChildren<MeshRenderer>())
+                        if(renderer.name=="RESORT_MEADOW_COUNTRY_CLUB")bounds.Encapsulate(renderer.bounds);
+                }
+                else foreach(var collider in view.GetComponentsInChildren<MeshCollider>())
+                    if(collider.sharedMesh && collider.bounds.size.x<2000 && collider.bounds.size.z<2000)bounds.Encapsulate(collider.bounds);
+                float low=Mathf.Min(tee.y,pin.y),high=Mathf.Max(tee.y,pin.y);
+                foreach(var point in h.Centerline){float y=HoleView.ToWorld(point).y;low=Mathf.Min(low,y);high=Mathf.Max(high,y);}
+                // Frame the playable surface rather than the underside of an island.
+                var bmin=bounds.min;var bmax=bounds.max;bmin.y=low-6;bmax.y=high+12;bounds.SetMinMax(bmin,bmax);
+                var look=bounds.center;
+                var from=cam.aspect>1.2f ? (-direction*.15f+right*.82f+Vector3.up*.62f).normalized :
+                    (-direction*.55f+right*.35f+Vector3.up*.78f).normalized;
+                float distance=Mathf.Max(60,bounds.size.magnitude*.6f);cam.fieldOfView=48;
+                bool Fits(float at)
+                {
+                    rig.transform.position=look+from*at;rig.transform.LookAt(look);
+                    for(int corner=0;corner<8;corner++)
+                    {
+                        var v=cam.WorldToViewportPoint(look+Vector3.Scale(bounds.extents,new Vector3((corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1)));
+                        if(v.z<=0||v.x<.06f||v.x>.94f||v.y<.06f||v.y>.94f)return false;
+                    }
+                    return true;
+                }
+                for(int attempt=0;attempt<20;attempt++)
+                {
+                    if(Fits(distance))break;distance*=1.15f;
+                }
+                for(int attempt=0;attempt<20&&Fits(distance*.96f);attempt++)distance*=.96f;
+                Fits(distance);
+            }
+        }
+
+        static void TurfDiagnostic(HoleView view,string stem)
+        {
+            var turf=view.GetComponentInChildren<GolfCoastalTurf>();if(!turf)return;
+            var type=typeof(GolfCoastalTurf);
+            var material=(Material)type.GetField("grass",Private).GetValue(turf);
+            var ground=(List<Material>)type.GetField("groundMaterials",Private).GetValue(turf);
+            var root=material.GetColor("_RootColor");var tip=material.GetColor("_TipColor");
+            var colours=ground.Select(m=>(m,low:m.GetColor("_LowColor"),high:m.GetColor("_HighColor"))).ToArray();
+            try {
+                material.SetColor("_RootColor",Color.magenta);material.SetColor("_TipColor",Color.magenta);
+                foreach(var item in colours){item.m.SetColor("_LowColor",Color.black);item.m.SetColor("_HighColor",Color.black);}
+                Debug.Log($"[TurfDiagnostic] submitted near/mid/far {turf.LastNearCells}/{turf.LastMidCells}/{turf.LastFarCells}");
+                Save(stem+"_turf_submitted.png");
+                type.GetMethod("LateUpdate",Private).Invoke(turf,null);
+                Debug.Log($"[TurfDiagnostic] refreshed near/mid/far {turf.LastNearCells}/{turf.LastMidCells}/{turf.LastFarCells}");
+                foreach(string lod in new[]{"near","mid","far"}){
+                    var mesh=(Mesh)type.GetField(lod+"Mesh",Private).GetValue(turf);
+                    var basis=(Matrix4x4)type.GetField(lod+"Basis",Private).GetValue(turf);
+                    float lo=float.MaxValue,hi=float.MinValue;
+                    foreach(var vertex in mesh.vertices){float y=basis.MultiplyPoint3x4(vertex).y;lo=Mathf.Min(lo,y);hi=Mathf.Max(hi,y);}
+                    Debug.Log($"[TurfDiagnostic] {lod}: prefab height {hi-lo:R}m; vertices={mesh.vertexCount}; triangle count={mesh.GetIndexCount(0)/3}");
+                }
+                Save(stem+"_turf_refreshed.png");
+            }
+            finally {
+                material.SetColor("_RootColor",root);material.SetColor("_TipColor",tip);
+                foreach(var item in colours){item.m.SetColor("_LowColor",item.low);item.m.SetColor("_HighColor",item.high);}
+            }
         }
 
         static void Save(string path,int width=900,int height=1600)
@@ -232,7 +387,9 @@ namespace GolfArcade.EditorTools
             var rt = new RenderTexture(width, height, 24) { antiAliasing = 4 };
             var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
             var oldTarget = cam.targetTexture; var oldActive = RenderTexture.active;
-            try { GolfWindSway.Push(); cam.targetTexture = rt; cam.Render(); RenderTexture.active = rt;
+            try { GolfWindSway.Push(); cam.targetTexture = rt;
+                foreach(var hud in Object.FindObjectsByType<GolfArcade.UI.GolfShotHud>(FindObjectsSortMode.None))hud.RefreshLayout();
+                Canvas.ForceUpdateCanvases();cam.Render(); RenderTexture.active = rt;
                 tex.ReadPixels(new Rect(0, 0, width, height), 0, 0); tex.Apply(); File.WriteAllBytes(path, tex.EncodeToPNG()); }
             finally { cam.targetTexture = oldTarget; RenderTexture.active = oldActive; rt.Release(); Object.DestroyImmediate(rt); Object.DestroyImmediate(tex); }
         }

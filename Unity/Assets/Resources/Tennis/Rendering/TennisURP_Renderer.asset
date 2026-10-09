@@ -16,12 +16,12 @@ MonoBehaviour:
   m_Settings:
     AOMethod: 0
     Downsample: 1
-    AfterOpaque: 0
-    Source: 1
+    AfterOpaque: 1
+    Source: 0
     NormalSamples: 1
-    Intensity: 1.4
+    Intensity: 0.5
     DirectLightingStrength: 0.25
-    Radius: 0.3
+    Radius: 0.2
     Samples: 1
     BlurQuality: 0
     Falloff: 100
@@ -55,7 +55,7 @@ MonoBehaviour:
   m_RendererFeatureMap: 9d7b97f398fc128b
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
-  postProcessData: {fileID: 0}
+  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
   m_PrepassLayerMask:
     serializedVersion: 2

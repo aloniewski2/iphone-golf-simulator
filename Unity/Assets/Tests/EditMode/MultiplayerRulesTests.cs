@@ -59,17 +59,17 @@ namespace GolfArcade.Tests {
         }
         [Test] public void FourGolfersCanFinishAllHolesAndReceiveMatchingTotals(){var m=new NetworkGolfRound(new[]{0,1,2,3},1);int results=0;m.Result=_=>results++;for(int i=0;i<260000&& !m.State.complete;i++)m.Step(.1);Assert.True(m.State.complete);Assert.AreEqual("complete",m.State.phase);Assert.AreEqual(1,results);foreach(var p in m.State.golfers){Assert.True(p.card.All(score=>score>0));Assert.AreEqual(p.card.Sum(),p.total);}Assert.AreEqual(m.State.golfers[0].total,m.State.golfers[3].total);}
         [Test] public void ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople(){var c=Config();Assert.True(c.Valid);c.participants[2].seat=1;Assert.False(c.Valid);c=Config();c.participants=new[]{c.participants[0],c.participants[1],c.participants[2],new NetworkParticipant{id="d"},new NetworkParticipant{id="e"}};Assert.False(c.Valid);}
-        [Test] public void EquippedEmoteRequiresWinningPointAndHoldsNextServe() {
+        [Test] public void EquippedEmoteRequiresWinningPointAndCannotExtendNextServe() {
             var m=new NetworkTennisMatch(emotes:new[]{new[]{"pushups","wave","scuba"},new[]{"thrust","spike","bringIt"}});
-            m.State.phase="point";m.State.winner=1;
+            m.State.phase="point";m.State.winner=1;m.State.presentationUntil=.8;
             var request=Input(m,"emote");request.value=0;
             Assert.False(m.Input(0,request,m.State.time),"loser cannot emote");
             Assert.True(m.Input(1,request,m.State.time));
             Assert.AreEqual("thrust",m.State.players[1].emoteID);
             Assert.AreEqual(1,m.State.players[1].emoteSequence);
             Assert.False(m.Input(1,Input(m,"emote",2),m.State.time),"one celebration per point");
-            Step(m,2.1);Assert.AreEqual("point",m.State.phase,"serve waits for animation");
-            Step(m,2.4);Assert.AreEqual("serve",m.State.phase);
+            Step(m,.7);Assert.AreEqual("point",m.State.phase);
+            Step(m,.2);Assert.AreEqual("serve",m.State.phase,"A cosmetic emote cannot postpone the shared serve");
         }
         [Test] public void EmotesRejectRalliesSpectatorsStalePointsAndInvalidSlots() {
             var m=new NetworkTennisMatch();
@@ -82,14 +82,14 @@ namespace GolfArcade.Tests {
             Assert.True(m.Input(0,Input(m,"emote",30),m.State.time));
             Assert.AreEqual("wave",m.State.players[0].emoteID);
         }
-        [Test] public void BothPlayersChooseIntroOnceAndPlayWaitsUntilClipsFinish() {
+        [Test] public void BothPlayersChooseIntroOnceAndPlayStartsAtTheSharedCap() {
             var m=new NetworkTennisMatch(intro:true);
-            Step(m,5);Assert.AreEqual("intro",m.State.phase);
+            Step(m,2);Assert.AreEqual("intro",m.State.phase);
             var a=Input(m,"emote");a.value=1;Assert.True(m.Input(0,a,m.State.time));
             var b=Input(m,"emote");b.value=2;Assert.True(m.Input(1,b,m.State.time));
             Assert.False(m.Input(0,Input(m,"emote",2),m.State.time));
-            Step(m,2);Assert.AreEqual("intro",m.State.phase);
-            Step(m,4);Assert.AreEqual("serve",m.State.phase);
+            Step(m,1.4);Assert.AreEqual("intro",m.State.phase);
+            Step(m,.2);Assert.AreEqual("serve",m.State.phase);
             Assert.AreEqual("scuba",m.State.players[0].emoteID);
             Assert.AreEqual("spike",m.State.players[1].emoteID);
         }

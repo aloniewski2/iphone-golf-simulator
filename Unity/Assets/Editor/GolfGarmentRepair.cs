@@ -48,13 +48,15 @@ namespace GolfArcade.EditorTools {
    var instance=PrefabUtility.LoadPrefabContents(prefabPath);
    try {
     var body=instance.GetComponent<MatchHeroLook>().body;var src=body.sharedMesh;
-    var mesh=UnityEngine.Object.Instantiate(src);mesh.name=sex+" golf body (clothing coverage)";
+    var mesh=UnityEngine.Object.Instantiate(src);mesh.name=sex+" golf body (clothing coverage)"+(src.name.Contains("original lower coverage restored")?" (original lower coverage restored)":"");
     var v=src.vertices;var weights=src.boneWeights;var allowed=new HashSet<string>{"Hips","Spine","Chest","UpperChest","LeftUpperLeg","RightUpperLeg"};
     float Torso(int i,float w)=>allowed.Contains(body.bones[i].name)?w:0;
     float Weight(BoneWeight w,HashSet<string> names)=> (names.Contains(body.bones[w.boneIndex0].name)?w.weight0:0)+(names.Contains(body.bones[w.boneIndex1].name)?w.weight1:0)+(names.Contains(body.bones[w.boneIndex2].name)?w.weight2:0)+(names.Contains(body.bones[w.boneIndex3].name)?w.weight3:0);
     var torso=new HashSet<string>{"Hips","Spine","Chest","UpperChest"};
     bool Sleeve(int i,string side){int upper=Array.FindIndex(body.bones,b=>b.name==side+"UpperArm"),lower=Array.FindIndex(body.bones,b=>b.name==side+"LowerArm");var a=src.bindposes[upper].inverse.MultiplyPoint3x4(Vector3.zero);var b=src.bindposes[lower].inverse.MultiplyPoint3x4(Vector3.zero);float along=Vector3.Dot(v[i]-a,b-a)/(b-a).sqrMagnitude;return along<.46f&&Weight(weights[i],new HashSet<string>{side+"Shoulder",side+"UpperArm"})>.45f;}
-    bool Covered(int i){var w=weights[i];bool waist=v[i].z>(sex=="Female"?.615f:.70f)&&v[i].z<1.115f&&Torso(w.boneIndex0,w.weight0)+Torso(w.boneIndex1,w.weight1)+Torso(w.boneIndex2,w.weight2)+Torso(w.boneIndex3,w.weight3)>.85f;bool chest=v[i].z>1.08f&&v[i].z<1.40f&&Weight(w,torso)>.5f;return waist||chest||Sleeve(i,"Left")||Sleeve(i,"Right");}
+    // A moving skirt cannot guarantee coverage over the entire upper leg.
+    // Keep female lower torso/thigh triangles even when rebuilding the kit.
+    bool Covered(int i){var w=weights[i];bool waist=sex!="Female"&&v[i].z>.70f&&v[i].z<1.115f&&Torso(w.boneIndex0,w.weight0)+Torso(w.boneIndex1,w.weight1)+Torso(w.boneIndex2,w.weight2)+Torso(w.boneIndex3,w.weight3)>.85f;bool chest=v[i].z>(sex=="Female"?1.16f:1.08f)&&v[i].z<1.40f&&Weight(w,torso)>.5f;return waist||chest||Sleeve(i,"Left")||Sleeve(i,"Right");}
     int removed=0;
     for(int sub=0;sub<src.subMeshCount;sub++){var triangles=src.GetTriangles(sub);var keep=new List<int>();for(int i=0;i<triangles.Length;i+=3){if(Covered(triangles[i])&&Covered(triangles[i+1])&&Covered(triangles[i+2])){removed++;continue;}keep.Add(triangles[i]);keep.Add(triangles[i+1]);keep.Add(triangles[i+2]);}mesh.SetTriangles(keep,sub,false);}
     string path="Assets/Resources/Golf/Fitted_"+sex+"_Body.asset";var existing=AssetDatabase.LoadAssetAtPath<Mesh>(path);

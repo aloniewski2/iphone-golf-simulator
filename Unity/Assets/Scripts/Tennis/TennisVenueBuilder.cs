@@ -34,12 +34,14 @@ namespace GolfArcade.Tennis
                 if (!keep) r.enabled = false;
             }
             var root = new GameObject(kind + " venue").transform;
+            root.SetParent(arena.transform, true);
             var clock = System.Diagnostics.Stopwatch.StartNew();
             switch (kind)
             {
                 case TennisVenueKind.Skyscraper: Skyscraper.Build(root); break;
                 case TennisVenueKind.Volcano: Volcano.Build(root); break;
             }
+            TennisVenueArt.Build(kind, arena);
             Log(kind + " venue built in " + clock.ElapsedMilliseconds + " ms", 0);
         }
 
@@ -204,8 +206,12 @@ namespace GolfArcade.Tennis
 
         internal static float Rand(System.Random rng, float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
-        /// A rectangular slab with a chamfer-free clean edge: top at y=0.
+        /// Shaped construction edges catch the venue key light at close / flyover distance.
         internal static void Slab(Transform parent, string name, Vector3 centre, Vector3 size, Material mat)
-            => Prim(PrimitiveType.Cube, parent, name, centre, size, mat);
+        {
+            var mb = new MB();
+            TennisVenueArt.BevelBox(mb, centre, size, Mathf.Min(.12f, Mathf.Min(size.x, Mathf.Min(size.y, size.z)) * .18f));
+            MeshObject(parent, name, mb.ToMesh(name), mat, true);
+        }
     }
 }

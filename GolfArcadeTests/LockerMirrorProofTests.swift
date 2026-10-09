@@ -11,7 +11,8 @@ import simd
 final class LockerMirrorProofTests: XCTestCase {
     private var repo: URL { URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent() }
     private var proof: URL {
-        let url = repo.appendingPathComponent("work/locker-mirror/proof")
+        let url = ProcessInfo.processInfo.environment["VISUAL_NATIVE_FILM_DIR"].map { URL(fileURLWithPath:$0) }
+            ?? repo.appendingPathComponent("work/locker-mirror/proof")
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }
@@ -87,6 +88,42 @@ final class LockerMirrorProofTests: XCTestCase {
     }
 
     // MARK: films
+
+    /// All motions exported for native presentation, played through the real
+    /// coordinator and a live multisampled SceneKit view at full clip speed.
+    func testRecordFullSportMotionLibrary() async throws {
+        let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let size=CGSize(width:480,height:640)
+        for sport in [Sport.tennis,.golf] { for female in [false,true] {
+            let c=CharacterModelPreview.Coordinator(cameraDistance:4.8)
+            c.update(player(female:female),sport:sport); c.configureIdle(sport:sport,animate:true); c.pauseDisplayLink()
+            c.camera?.position=SCNVector3(0,1.1,4.8); c.camera?.look(at:SCNVector3(0,0.82,0))
+            let rig=try XCTUnwrap(c.rig)
+            let view=SCNView(frame:CGRect(origin:.zero,size:size)); view.scene=c.scene; view.pointOfView=c.camera
+            view.antialiasingMode = .multisampling4X; view.preferredFramesPerSecond=60; view.isPlaying=true; view.contentScaleFactor=1
+            let window=UIWindow(windowScene:scene); window.frame=view.frame; window.addSubview(view); window.isHidden=false
+            defer { view.isPlaying=false; window.isHidden=true; c.stopMotion() }
+            let name="\(sport == .golf ? "golf" : "tennis")_\(female ? "female" : "male")_native_motions"
+            let film=try Film(url:proof.appendingPathComponent(name+".mp4"),size:size,bitrate:3_000_000)
+            var time=0.0
+            for id in rig.data.clips.keys.sorted() {
+                let clip=try XCTUnwrap(rig.data.clips[id])
+                let motion=MenuMotion(kind:.clipOnce(id),lead:0.18,fadeIn:0.2,fadeOut:0.35)
+                c.play(motion); c.pauseDisplayLink()
+                let duration=id == "ready" || id == "idle" ? 2.0 : motion.settledAfter(rig.data)+0.4
+                for frame in 0...Int(ceil(duration*30)) {
+                    let t=Double(frame)/30; c.pose(at:t)
+                    try await Task.sleep(for:.milliseconds(28))
+                    let format=UIGraphicsImageRendererFormat(); format.scale=1; format.opaque=true
+                    let image=UIGraphicsImageRenderer(size:size,format:format).image { _ in view.snapshot().draw(in:CGRect(origin:.zero,size:size)) }
+                    try await film.append(caption(image,[name,String(format:"%@ %.2fs / %.2fs",id,t,clip.length)]),at:time)
+                    if frame == Int(clip.length*15) { try save(image,name+"_"+id+".png") }
+                    time += 1.0/30
+                }
+            }
+            await film.finish(); XCTAssertEqual(film.writer.status,.completed)
+        } }
+    }
 
     private final class Film {
         let writer: AVAssetWriter, input: AVAssetWriterInput, adapter: AVAssetWriterInputPixelBufferAdaptor, size: CGSize

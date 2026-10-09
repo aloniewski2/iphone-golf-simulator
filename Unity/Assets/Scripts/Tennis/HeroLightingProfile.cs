@@ -17,7 +17,13 @@ namespace GolfArcade.Tennis
         {
             if(scene.name!="Golf")Tennis();
         }
-        public static void Tennis() => Shader.SetGlobalFloat("_HeroProfile",0);
+        static void Presentation()
+        {
+            Shader.SetGlobalFloat("_HeroFilmResponse",1);
+            Shader.SetGlobalFloat("_HeroSkinPolish", System.Environment.GetEnvironmentVariable("VISUAL_CHARACTER_SKIN_POLISH")=="1" ? 1f : 0f);
+            Shader.SetGlobalFloat("_HeroPresentationFill", System.Environment.GetEnvironmentVariable("VISUAL_CHARACTER_STAGE_LIGHT")=="0" ? 0f : .12f);
+        }
+        public static void Tennis() { Shader.SetGlobalFloat("_HeroProfile",0); Presentation(); }
         static void Colour(string property,Color value)
         {
             var c=value.linear;
@@ -25,6 +31,7 @@ namespace GolfArcade.Tennis
         }
         public static void Golf(Light sun,Color sky,Color equator,Color ground,float rim,float clothExposure=3f)
         {
+            Presentation();
             Shader.SetGlobalFloat("_HeroProfile",1);
             Colour("_HeroKeyColor",sun?sun.color:Color.white);
             Shader.SetGlobalFloat("_HeroKeyStrength",sun?sun.intensity:1.1f);
@@ -35,14 +42,8 @@ namespace GolfArcade.Tennis
             Shader.SetGlobalFloat("_HeroExposure",1f);
             Shader.SetGlobalFloat("_HeroShoulderKnee",.88f);
             Shader.SetGlobalFloat("_HeroShoulderCeiling",.985f);
-            // Balance neutral kit reflectance against the actual sun/sky energy.
-            // Skin and eyes retain the unbalanced course key through the shared core.
-            var key=(sun?sun.color:Color.white).linear;
-            var fill=(sky.linear+equator.linear+ground.linear)/3f;
-            var white=key*(sun?sun.intensity:1.1f)+fill;
-            float peak=Mathf.Max(white.r,Mathf.Max(white.g,white.b));
-            Shader.SetGlobalVector("_HeroClothBalance",new Vector4(peak/Mathf.Max(.1f,white.r),peak/Mathf.Max(.1f,white.g),peak/Mathf.Max(.1f,white.b),1));
-            if(clothExposure>3f)Shader.SetGlobalVector("_HeroClothBalance",new Vector4(1.16f,1.06f,1,1));
+            // Let neutral garments inherit the course lighting without inverse tint compensation.
+            Shader.SetGlobalVector("_HeroClothBalance",Vector4.one);
             Shader.SetGlobalFloat("_HeroClothExposure",clothExposure);
         }
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using GolfArcade.Tennis;
+using GolfArcade.Game;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -47,7 +48,11 @@ namespace GolfArcade.EditorTools
             (HeroTennisDriver.Clip.Ready, "ready", true), (HeroTennisDriver.Clip.Serve, "serve", false),
             (HeroTennisDriver.Clip.EmoteScuba, "scuba", false), (HeroTennisDriver.Clip.EmoteThrust, "thrust", false),
             (HeroTennisDriver.Clip.EmoteSpike, "spike", false), (HeroTennisDriver.Clip.IntroWave, "wave", false),
-            (HeroTennisDriver.Clip.IntroBringIt, "bringIt", false), (HeroTennisDriver.Clip.IntroPushups, "pushups", false)
+            (HeroTennisDriver.Clip.IntroBringIt, "bringIt", false), (HeroTennisDriver.Clip.IntroPushups, "pushups", false),
+            (HeroTennisDriver.Clip.Idle, "idle", true), (HeroTennisDriver.Clip.HitPerfect, "hitPerfect", false),
+            (HeroTennisDriver.Clip.MissWhiff, "missWhiff", false), (HeroTennisDriver.Clip.CelebratePoint, "celebratePoint", false),
+            (HeroTennisDriver.Clip.SadPointLost, "sadPointLost", false), (HeroTennisDriver.Clip.MatchWin, "matchWin", false),
+            (HeroTennisDriver.Clip.MatchLose, "matchLose", false)
         };
         static readonly Matrix4x4 FlipZ = Matrix4x4.Scale(new Vector3(1, 1, -1));
 
@@ -56,7 +61,9 @@ namespace GolfArcade.EditorTools
         {
             /// "TennisCloth", "TennisCharacter", or "Lit" (a hero material that is not on one of the hero shaders: the export refuses it).
             public string shader;
-            public float[] color, rimColor, subsurface;
+            public float[] color, rimColor, subsurface, headOrigin, headRight, headUp, headForward, headEye;
+            public float specularStrength, environmentStrength, metallic, craftedPaint, skinFinish, skinPigmentUV;
+            public bool anatomicalFace, baseMapLinear;
             public float smoothness, wrap, rimStrength, rimPower, exposure, knee, weaveTile, weaveAngle, weaveNormal, weaveThread, sheenStrength, sheenPower, saturation, bumpScale, bumpTriplanar, bumpTile;
             /// Cloth only: the size in metres of one weave tile (MatchHeroLook.ClothFor(role).tileMetres): weaveTile = metres per UV unit / tileMetres.
             public float tileMetres;
@@ -67,8 +74,11 @@ namespace GolfArcade.EditorTools
         [Serializable] class Sub { public string material; public int indexOffset, indexCount; public Look look; }
         [Serializable] class PartInfo { public string name, kind; public int vertexCount, positionOffset, normalOffset, swingPositionOffset, swingNormalOffset, uvOffset = -1, bindPositionOffset = -1; public Sub[] submeshes; }
         [Serializable] class MatInfo { public string name; public float[] color; public float smoothness; }
-        [Serializable] class RigPart { public string part, kind; public int vertexCount, bindPositionOffset, bindNormalOffset, weightOffset, indexOffset, inverseBindOffset, track = -1; public int[] bones; }
-        [Serializable] class ClipInfo { public string id, name; public bool loop; public float length, fps, contact; public int frames, offset; public float[] boundsMin, boundsMax, times; }
+        [Serializable] class RigMorph { public string name; public int positionOffset, normalOffset; }
+        [Serializable] class MorphTrack { public string part; public int offset, count; }
+        class MotionSource { public AnimationClip clip; public string id, equipment; public bool loop; public float contact; }
+        [Serializable] class RigPart { public string part, kind; public int vertexCount, bindPositionOffset, bindNormalOffset, weightOffset, indexOffset, inverseBindOffset, track = -1; public int[] bones; public RigMorph[] morphs; }
+        [Serializable] class ClipInfo { public string id, name; public bool loop; public float length, fps, contact; public int frames, offset; public float[] boundsMin, boundsMax, times; public MorphTrack[] morphWeights; public string equipment; }
         [Serializable] class Rig { public string file; public string[] bones, rigid; public int trackCount, floatsPerTrack = 10; public RigPart[] parts; public ClipInfo[] clips; }
         [Serializable]
         class Manifest
@@ -95,7 +105,7 @@ namespace GolfArcade.EditorTools
             try
             {
                 Directory.CreateDirectory(OutDir);
-                foreach (var sex in new[] { "Male", "Female" }) log.AppendLine(ExportSex(sex));
+                foreach (var sex in new[] { "Male", "Female" }) if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MH_LOCKER_SEX")) || Environment.GetEnvironmentVariable("MH_LOCKER_SEX") == sex) log.AppendLine(ExportSex(sex));
             }
             catch (Exception e) { Debug.LogException(e); log.AppendLine("EXCEPTION " + e); code = 1; }
             Directory.CreateDirectory(Path.GetDirectoryName(Report));
@@ -126,7 +136,7 @@ namespace GolfArcade.EditorTools
                     var driver=root.GetComponent<HeroTennisDriver>();var look=root.GetComponent<MatchHeroLook>();typeof(MatchHeroLook).GetMethod("OwnMaterials",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(look,null);
                     root.GetComponentsInChildren<Transform>(true).First(t=>t.name=="Racket_Classic").localScale*=TennisRules.HeroRacketScale;
                     foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()){skin.quality=SkinQuality.Bone4;skin.updateWhenOffscreen=true;}
-                    var ready=driver.slots.First(s=>s.id==HeroTennisDriver.Clip.Ready).clip;ready.SampleAnimation(root,0);
+                    var ready=driver.slots.First(s=>s.id==HeroTennisDriver.Clip.Ready).clip;SamplePose(root,ready,0);
                     // Manual SampleAnimation in a batch loop does not advance Unity's GPU skinning frame cache.
                     // Draw the live clip's CPU skinning in Unity, using exactly the same Pose path independently checked against BakeMesh.
                     var sources=Collect(root);foreach(var source in sources)Pose(root,source);
@@ -138,12 +148,12 @@ namespace GolfArcade.EditorTools
                         var clip=driver.slots.First(s=>s.id==entry.slot).clip;string dir=Path.Combine(output,sex.ToLower()+"_"+entry.id);Directory.CreateDirectory(dir);
                         int frames=Mathf.CeilToInt((clip.length+1.3f)*30)+1;
                         for(int frame=0;frame<frames;frame++) {
-                            float time=frame/30f-.3f;ready.SampleAnimation(root,0);if(time>=0&&time<=clip.length+.2f)clip.SampleAnimation(root,Mathf.Min(clip.length,time));
+                            float time=frame/30f-.3f;SamplePose(root,ready,0);if(time>=0&&time<=clip.length+.2f)SamplePose(root,clip,Mathf.Min(clip.length,time));
                             for(int part=0;part<sources.Count;part++){Pose(root,sources[part]);drawMeshes[part].vertices=sources[part].pos;drawMeshes[part].normals=sources[part].nrm;drawMeshes[part].RecalculateBounds();}
                             camera.Render();RenderTexture.active=rt;tex.ReadPixels(new Rect(0,0,480,640),0,0);tex.Apply();File.WriteAllBytes(Path.Combine(dir,frame.ToString("D5")+".png"),tex.EncodeToPNG());
                         }
                     }
-                    Object.DestroyImmediate(root);
+                    menuIronSockets.Remove(root);Object.DestroyImmediate(root);
                 }
                 RenderTexture.active=previous;camera.targetTexture=null;rt.Release();Object.DestroyImmediate(rt);Object.DestroyImmediate(tex);
             }catch(Exception e){Debug.LogException(e);code=1;}
@@ -151,40 +161,94 @@ namespace GolfArcade.EditorTools
         }
 
         public static void RunGolf() { RunVariant(true); }
+        public static void RunDistance() {
+            try { Directory.CreateDirectory(OutDir); foreach(string sex in new[]{"Male","Female"}) if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MH_LOCKER_SEX")) || Environment.GetEnvironmentVariable("MH_LOCKER_SEX") == sex) Debug.Log(ExportSex(sex,false,true));if(Application.isBatchMode)EditorApplication.Exit(0); }
+            catch(Exception e){Debug.LogException(e);if(Application.isBatchMode)EditorApplication.Exit(1);else throw;}
+        }
         static void RunVariant(bool golf) {
             try { Directory.CreateDirectory(OutDir); foreach(string sex in new[]{"Male","Female"}) Debug.Log(ExportSex(sex,golf)); if(Application.isBatchMode)EditorApplication.Exit(0); }
             catch(Exception e){Debug.LogException(e);if(Application.isBatchMode)EditorApplication.Exit(1);else throw;}
         }
 
-        static string ExportSex(string sex, bool golf = false)
+        [Serializable] class GolfLandmarks { public string gender;public GolferView.ClipInfo[] clips; }
+        static List<MotionSource> GolfMotions(string sex) {
+            string path=HeroGolfer.PathFor(sex=="Female");
+            var clips=Resources.LoadAll<AnimationClip>(path).Where(c=>!c.name.StartsWith("__preview__")).ToDictionary(c=>c.name);
+            var landmarks=JsonUtility.FromJson<GolfLandmarks>(Resources.Load<TextAsset>(path+"_clips").text).clips;
+            var definitions=new[]{("ready","Idle",true),("idle","Idle",true),("serve","Drive",false),("golfDrive","Drive",false),("golfIron","IronSwing",false),("golfHalf","HalfSwing",false),("golfChip","Chip",false),("golfPutt","Putt",false),("wave","Wave",false),("cheer","Cheer",false),("matchWin","Cheer",false),("hitPerfect","FistPump",false),("celebratePoint","FistPump",false)};
+            return definitions.Select(d=>{var mark=landmarks.First(m=>m.name==d.Item2);return new MotionSource{clip=clips[d.Item2],id=d.Item1,loop=d.Item3,contact=mark.fps>0 ? (float)mark.impact/mark.fps:0,equipment=string.IsNullOrEmpty(mark.club)?"iron":mark.club.ToLowerInvariant()};}).ToList();
+        }
+
+        static string ExportSex(string sex, bool golf = false,bool distance=false)
         {
             var sb = new StringBuilder("== " + sex + "\n");
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + "Player" + sex + (golf ? "GolfKit" : "") + ".prefab");
-            if (!prefab) throw new FileNotFoundException("prefab " + sex);
-            var root = (GameObject)Object.Instantiate(prefab);
+            GameObject root;
+            if(golf) {
+                var golfer=HeroGolfer.Build(null,new HeroLook {Female=sex=="Female",Haircut=(int)HeroGolfer.Haircut.Bald,Skin=sex=="Female" ? new Color(.953f,.855f,.788f):new Color(.949f,.816f,.686f),HairColor=new Color(.35f,.25f,.18f)});
+                if(golfer==null)throw new FileNotFoundException("Actual golf hero "+sex);
+                root=golfer.Root;
+            } else {
+                var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir+"Player"+sex+".prefab");
+                if(!prefab)throw new FileNotFoundException("prefab "+sex);
+                root=(GameObject)Object.Instantiate(prefab);
+            }
             try
             {
                 root.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity); root.transform.localScale = Vector3.one;
                 var driver = root.GetComponent<HeroTennisDriver>();
+                if(driver)driver.ResolvePerformanceClips();
+                if(golf) {
+                    var finish=typeof(GolferView).GetMethod("ClubMaterial",BindingFlags.Static|BindingFlags.NonPublic);
+                    if(finish==null)throw new InvalidOperationException("Runtime club finish registry is missing");
+                    foreach(var equipment in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r=>r.name.StartsWith("CLUB_")))
+                        equipment.sharedMaterials=equipment.sharedMaterials.Select(m=>(Material)finish.Invoke(null,new object[]{m.name.Replace(" (Instance)","")})).ToArray();
+                }
                 // What Awake does in the game: the hero's own material copies move onto TennisCharacter / TennisCloth with their maps. Edit mode does not run Awake, so it is called here.
                 // Everything below reads the materials AFTER this, so the manifest carries the numbers the court draws.
                 var look = root.GetComponent<MatchHeroLook>();
                 var own = typeof(MatchHeroLook).GetMethod("OwnMaterials", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (!look || own == null) throw new InvalidOperationException("MatchHeroLook.OwnMaterials not found");
                 own.Invoke(look, null);
+                if(distance){
+                    var asset=Resources.Load<GameObject>("Tennis/KitsLOD/"+sex);
+                    if(!asset)throw new FileNotFoundException("Bounded distance kit missing: "+sex);
+                    var byName=root.GetComponentsInChildren<Transform>(true).GroupBy(t=>t.name).ToDictionary(g=>g.Key,g=>g.First());
+                    foreach(var src in asset.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
+                        var live=look.kit.FirstOrDefault(r=>r&&r.name==src.name);if(!live)throw new InvalidOperationException("Distance role missing: "+src.name);
+                        bool skirt=live.sharedMesh && live.sharedMesh.name.StartsWith("TailoredSkirt");
+                        bool tailored=live.sharedMesh && live.sharedMesh.name.StartsWith("TailoredPolo");
+                        var selected=src;
+                        if(skirt)selected=Resources.Load<GameObject>("Tennis/KitsTailored/FemaleSkirtDistance").GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.name=="Kit_Bottom");
+                        if(tailored){
+                            var tailoredAsset=Resources.Load<GameObject>("Tennis/KitsTailored/"+sex+"Distance");
+                            selected=tailoredAsset ? tailoredAsset.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r=>r.name=="Kit_Top") : null;
+                            if(!selected)throw new InvalidOperationException("Tailored polo distance source missing: "+sex);
+                        }
+                        live.sharedMesh=selected.sharedMesh;live.bones=selected.bones.Select(b=>byName[b.name]).ToArray();
+                        if(tailored){live.sharedMesh=Object.Instantiate(live.sharedMesh);live.sharedMesh.name="TailoredPolo32 "+sex+" distance";live.sharedMesh=TailoredPoloDeformation.Prepare(look,live,live.sharedMesh,live.bones);}
+                        else if(skirt) { }
+                        else live.sharedMesh=HeroGarmentHemWeights.Prepare(look,live,live.sharedMesh,live.bones);
+                    }
+                    sb.AppendLine("  bounded Distance variant: exact clips/materials, two-way source envelope <=1.5mm");
+                }
                 // the court draws the racket TennisRules.HeroRacketScale bigger about its grip (HeroTennisDriver.Build; the arcade string bed is wider than a real one):
                 // the locker mirror shows the same racket the match plays with
-                var racketRoot = root.GetComponentsInChildren<Transform>(true).First(t => t.name == "Racket_Classic");
-                racketRoot.localScale *= TennisRules.HeroRacketScale;
-                var ready = driver.slots.First(s => s.id == HeroTennisDriver.Clip.Ready).clip;
-                var fore = driver.slots.First(s => s.id == HeroTennisDriver.Clip.Forehand);
+                if(!golf)root.GetComponentsInChildren<Transform>(true).First(t=>t.name=="Racket_Classic").localScale*=TennisRules.HeroRacketScale;
+                var motions=golf ? GolfMotions(sex):RigClips.Select(entry=>{var slot=driver.slots.First(s=>s.id==entry.slot);return new MotionSource{clip=slot.clip,id=entry.id,loop=entry.loop,contact=slot.contact};}).ToList();
+                var ready=motions.First(m=>m.id=="ready").clip;
+                if(golf)PrepareMenuIronSocket(root,motions.First(m=>m.id=="golfIron").clip);
+                var fore=golf ? motions.First(m=>m.id=="golfDrive"):new MotionSource{clip=driver.slots.First(s=>s.id==HeroTennisDriver.Clip.Forehand).clip,contact=driver.slots.First(s=>s.id==HeroTennisDriver.Clip.Forehand).contact};
+                if (!golf && Environment.GetEnvironmentVariable("MH_LOCKER_FACE_PARITY") == "1")
+                    motions.Add(new MotionSource { id="forehand", clip=fore.clip, contact=fore.contact, loop=false });
                 var sources = Collect(root);
                 sb.AppendLine("  parts: " + string.Join(", ", sources.Select(p => $"{p.name}[{p.kind}] v={p.mesh.vertexCount} subs={p.mesh.subMeshCount}")));
                 foreach (var p in sources) if (!p.mesh.isReadable) throw new InvalidOperationException(p.name + " mesh is not readable");
 
                 // ---- base pose
-                ready.SampleAnimation(root, 0f);
+                SamplePose(root, ready, 0f);
                 if(golf)root.GetComponent<GolfGarmentCorrectives>()?.Apply();
+            root.GetComponent<HeroGarmentPoseCorrectives>()?.Apply();
+            root.GetComponent<TailoredPoloDeformation>()?.Apply();
                 foreach (var p in sources) Pose(root, p);
                 var bounds = new Bounds(); bool first = true;
                 foreach (var p in sources.Where(s => s.kind == "body")) foreach (var v in p.pos) { if (first) { bounds = new Bounds(v, Vector3.zero); first = false; } else bounds.Encapsulate(v); }
@@ -210,9 +274,10 @@ namespace GolfArcade.EditorTools
 
                 // ---- materials (flat colours; the body skin is tinted at run time by the locker's skin pick, the racket frame by the racket colour)
                 var mats = new Dictionary<string, MatInfo>();
-                string Key(Material m)
+                string Key(Material m,bool skinRole=false)
                 {
                     string n = m ? m.name.Replace(" (Instance)", "").Replace(" (hero)", "").Replace("MatchHero_" + sex + "_", "") : "Missing";
+                    if(skinRole)n="Skin"; // Native saved skin pick uses the semantic role, irrespective of source slot name.
                     if (m && !mats.ContainsKey(n))
                     {
                         var c = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : m.color;
@@ -234,16 +299,16 @@ namespace GolfArcade.EditorTools
                     {
                         var idx = p.mesh.GetIndices(s); if (idx.Length == 0) continue;
                         var mat = p.materials[Mathf.Min(s, p.materials.Length - 1)];
-                        subs.Add(new Sub { material = Key(mat), indexOffset = bin.Count, indexCount = idx.Length, look = ReadLook(mat, copiedMaps, golf) });
+                        subs.Add(new Sub { material = Key(mat,p.kind=="body"), indexOffset = bin.Count, indexCount = idx.Length, look = ReadLook(mat, copiedMaps, golf, p.kind == "face" && p.skinned) });
                         for (int i = 0; i + 2 < idx.Length; i += 3) { AddInt(bin, idx[i]); AddInt(bin, idx[i + 2]); AddInt(bin, idx[i + 1]); }   // winding flipped with the z mirror
                     }
-                    if (p.kind == "kit")
+                    if (p.kind == "kit" || ((p.kind == "body" || p.kind == "face") && p.mesh.uv.Length == p.pos.Length))
                     {
                         // the kit parts have UVs in Unity (seam / collar / hem maps, the weave tiles per UV unit); the body, the painted face and the racket do not
                         var uv = p.mesh.uv; if (uv.Length != p.pos.Length) throw new InvalidOperationException(p.name + ": kit mesh has no UV0");
                         info.uvOffset = bin.Count; AddV2(bin, uv);
                     }
-                    else if (p.kind == "body")
+                    if (p.kind == "body")
                     {
                         // the soft skin normal is projected from the BIND-pose position (the body has no UVs): MatchHeroLook.WithBindPose puts mesh.vertices in channel 1
                         info.bindPositionOffset = bin.Count; AddV3(bin, p.mesh.vertices, true);
@@ -251,16 +316,16 @@ namespace GolfArcade.EditorTools
                     info.submeshes = subs.ToArray(); infos.Add(info);
                 }
                 int tris = infos.Sum(i => i.submeshes.Sum(s => s.indexCount)) / 3;
-                var unfit = infos.SelectMany(i => i.submeshes.Select(s => (i.name, s))).Where(x => x.s.look.shader != "TennisCloth" && x.s.look.shader != "TennisCharacter" && !(golf && x.name == "Hair_F" && x.s.look.shader == "Universal Render Pipeline/Lit")).ToList();
+                var unfit = infos.SelectMany(i => i.submeshes.Select(s => (i.name, s))).Where(x => x.s.look.shader != "TennisCloth" && x.s.look.shader != "TennisCharacter" && !(golf && x.name.StartsWith("Club_") && x.s.look.shader == "Universal Render Pipeline/Lit")).ToList();
                 if (unfit.Count > 0) throw new InvalidOperationException("hero materials not on a hero shader (OwnMaterials did not run?): " + string.Join(", ", unfit.Select(x => x.name + ":" + x.s.material + "=" + x.s.look.shader)));
                 // swing frames use their own offsets (positions then normals, part order)
                 int swingCursor = 0;
                 foreach (var info in infos) { info.swingPositionOffset = swingCursor; swingCursor += info.vertexCount * 12; info.swingNormalOffset = swingCursor; swingCursor += info.vertexCount * 12; }
 
-                string baseName = (golf ? "GolfKitHero_" : "MatchHero_") + sex;
+                string baseName = (golf ? "GolfKitHero_" : "MatchHero_") + sex+(distance ? "_Distance":"");
                 var man = new Manifest
                 {
-                    sex = sex, source = golf ? "Resources/Tennis/Customization/Player" + sex + "GolfKit.prefab" : "Resources/Tennis/Customization/Player" + sex + ".prefab (work/match-anim-set/export/HeroBase_" + sex + "_MatchAnims.blend)",
+                    sex = sex, source = golf ? "HeroGolfer.Build(Resources/Hero/golfer_" + (sex=="Female" ? "f":"m") + "), detailed golf kit + actual Club palette" : "Resources/Tennis/Customization/Player" + sex + ".prefab (work/match-anim-set/export/HeroBase_" + sex + "_MatchAnims.blend)",
                     baseClip = ready.name, baseTime = 0, swingClip = fore.clip.name, swingLength = fore.clip.length, swingContact = fore.contact,
                     parts = infos.ToArray(), swingTimes = SwingTimes,
                     boundsMin = new[] { bounds.min.x, bounds.min.y, -bounds.max.z }, boundsMax = new[] { bounds.max.x, bounds.max.y, -bounds.min.z },
@@ -270,7 +335,7 @@ namespace GolfArcade.EditorTools
                 // ---- swing frames
                 for (int k = 0; !golf && k < SwingTimes.Length; k++)
                 {
-                    fore.clip.SampleAnimation(root, Mathf.Min(SwingTimes[k], fore.clip.length));
+                    SamplePose(root, fore.clip, Mathf.Min(SwingTimes[k], fore.clip.length));
                     foreach (var p in sources) Pose(root, p);
                     var fb = new List<byte>(swingCursor);
                     foreach (var p in sources) { AddV3(fb, p.pos, true, p.kind == "kit" ? 10 : 0); AddV3(fb, p.nrm, true, p.kind == "kit" ? 12 : 0); }
@@ -282,13 +347,13 @@ namespace GolfArcade.EditorTools
                 man.materials = mats.Values.OrderBy(m => m.name).ToArray();
 
                 // ---- the rig: bind-pose skin data + the ReadyIdle and Serve bone tracks
-                man.rig = golf ? null : ExportRig(root, driver, sources, ready, sb, baseName);
+                man.rig = ExportRig(root, motions, sources, ready, sb, baseName);
 
                 File.WriteAllText(Path.Combine(OutDir, baseName + ".json"), JsonUtility.ToJson(man, true));
                 WriteCompressed(baseName, bin.ToArray());
                 foreach (var map in copiedMaps) File.Copy(map, Path.Combine(OutDir, MapResourceName(map, golf) + Path.GetExtension(map)), true);
                 long total = new[] { baseName }.Concat(frames).Sum(n => new FileInfo(Path.Combine(OutDir, n + ".lzfse")).Length);
-                sb.AppendLine($"  wrote {baseName}.json + .lzfse + {frames.Count} swing frames ({total / 1024 / 1024.0:F1} MB compressed); triangles={tris / 3}; materials={string.Join(",", man.materials.Select(m => m.name))}");
+                sb.AppendLine($"  wrote {baseName}.json + .lzfse + {frames.Count} swing frames ({total / 1024 / 1024.0:F1} MB compressed); triangles={tris}; materials={string.Join(",", man.materials.Select(m => m.name))}");
                 sb.AppendLine($"  maps copied: {string.Join(", ", copiedMaps.Select(Path.GetFileName))}");
                 sb.AppendLine($"  swing clip {fore.clip.name} len={fore.clip.length:F3}s contact={fore.contact:F3}s sampled at [{string.Join(", ", SwingTimes.Select(t => t.ToString("0.000")))}]");
                 int kitVerts = infos.Where(i => i.kind == "kit").Sum(i => i.vertexCount), allVerts = infos.Sum(i => i.vertexCount);
@@ -301,7 +366,7 @@ namespace GolfArcade.EditorTools
                 // the instance's own material copies are normally freed by OnDestroy (edit mode does not call it): free them so repeated exports in an open editor do not pile them up
                 var look = root ? root.GetComponent<MatchHeroLook>() : null;
                 typeof(MatchHeroLook).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(look, null);
-                Object.DestroyImmediate(root);
+                menuIronSockets.Remove(root);Object.DestroyImmediate(root);
             }
             return sb.ToString();
         }
@@ -319,7 +384,7 @@ namespace GolfArcade.EditorTools
             return "MatchHero_" + name;
         }
 
-        static Look ReadLook(Material m, SortedSet<string> maps, bool golf)
+        static Look ReadLook(Material m, SortedSet<string> maps, bool golf, bool anatomicalFace)
         {
             var look = new Look { shader = m && m.shader ? m.shader.name.Replace("GolfArcade/", "") : "Missing" };
             if (!m) return look;
@@ -330,12 +395,24 @@ namespace GolfArcade.EditorTools
                 if (!m.HasProperty(n)) return "";
                 var tex = m.GetTexture(n); if (!tex) return "";
                 string path = AssetDatabase.GetAssetPath(tex);
-                if (string.IsNullOrEmpty(path)) return "";   // a built-in default (the shader's "bump" / "white"), nothing to ship
+                if (string.IsNullOrEmpty(path)) {
+                    // Eye13 and relative pigment are runtime, linear multiplier LUTs.
+                    // Built-in white/bump defaults still have nothing to ship.
+                    if (!(tex is Texture2D generated) || !tex.name.StartsWith("Original")) return "";
+                    string cache = Path.Combine(OutDir, ".generated-maps"); Directory.CreateDirectory(cache);
+                    path = Path.Combine(cache, generated.name + ".png");
+                    File.WriteAllBytes(path, generated.EncodeToPNG());
+                    if (n == "_BaseMap") look.baseMapLinear = true;
+                }
                 if (!path.EndsWith(".png")) throw new InvalidOperationException($"{m.name}.{n}: texture '{tex.name}' is not a PNG asset ({path})");
                 maps.Add(path);
                 return MapResourceName(path, golf);
             }
+            float[] V(string name){if(!m.HasProperty(name))return new float[0];var v=m.GetVector(name);return new[]{v.x,v.y,v.z,v.w};}
+            look.headOrigin=V("_HeadOrigin");look.headRight=V("_HeadRight");look.headUp=V("_HeadUp");look.headForward=V("_HeadForward");look.headEye=V("_HeadEye");
             look.color = C("_BaseColor"); look.rimColor = C("_RimColor"); look.subsurface = C("_Subsurface");
+            look.anatomicalFace=anatomicalFace; look.skinFinish=F("_SkinFinish"); look.skinPigmentUV=F("_SkinPigmentUV");
+            look.craftedPaint=F("_CraftedPaint"); look.specularStrength = F("_SpecularStrength"); look.environmentStrength = F("_EnvironmentStrength"); look.metallic=F("_Metallic");
             look.smoothness = F("_Smoothness"); look.wrap = F("_Wrap"); look.rimStrength = F("_RimStrength"); look.rimPower = F("_RimPower"); look.exposure = F("_Exposure"); look.knee = F("_Knee");
             look.weaveTile = F("_WeaveTile"); look.weaveAngle = F("_WeaveAngle"); look.weaveNormal = F("_WeaveNormal"); look.weaveThread = F("_WeaveThread"); look.sheenStrength = F("_SheenStrength"); look.sheenPower = F("_SheenPower");
             look.saturation = F("_Saturation"); look.bumpScale = F("_BumpScale"); look.bumpTriplanar = F("_BumpTriplanar"); look.bumpTile = F("_BumpTile");
@@ -355,10 +432,39 @@ namespace GolfArcade.EditorTools
 
         // ================================================================== rig
 
+        static readonly Dictionary<GameObject,Matrix4x4> menuIronSockets=new Dictionary<GameObject,Matrix4x4>();
+        /// Menu Idle parks the original prop off-stage. Use the actual Iron address
+        /// socket relative to RightHand, then carry it on every sampled Idle pose.
+        /// Source actions and gameplay contact clips retain their original tracks.
+        static void PrepareMenuIronSocket(GameObject root,AnimationClip iron) {
+            var bones=root.GetComponentsInChildren<Transform>(true);
+            var positions=bones.Select(b=>b.localPosition).ToArray();var rotations=bones.Select(b=>b.localRotation).ToArray();var scales=bones.Select(b=>b.localScale).ToArray();
+            iron.SampleAnimation(root,0);
+            var hand=FindBone(root.transform,"RightHand");var club=FindBone(root.transform,"Club");
+            menuIronSockets[root]=hand.worldToLocalMatrix*club.localToWorldMatrix;
+            for(int i=0;i<bones.Length;i++){bones[i].localPosition=positions[i];bones[i].localRotation=rotations[i];bones[i].localScale=scales[i];}
+            Debug.Log("[MatchHeroLockerExport] measured native Idle Iron socket "+menuIronSockets[root]);
+        }
+
+        static void SamplePose(GameObject root, AnimationClip clip, float time)
+        {
+            clip.SampleAnimation(root, time);
+            if(clip.name=="Idle"&&menuIronSockets.TryGetValue(root,out var socket)) {
+                var hand=FindBone(root.transform,"RightHand");var club=FindBone(root.transform,"Club");
+                var local=club.parent.worldToLocalMatrix*hand.localToWorldMatrix*socket;
+                Decompose(local,out var p,out var q,out var scale);club.localPosition=p;club.localRotation=q;club.localScale=scale;
+            }
+            HeroGripPolish.ApplyGrip(root.GetComponent<MatchHeroLook>());
+            root.GetComponent<MatchHeroLook>()?.body?.GetComponent<HeroArmSkinning>()?.Apply();
+            root.GetComponent<GolfGarmentCorrectives>()?.Apply();
+            root.GetComponent<HeroGarmentPoseCorrectives>()?.Apply();
+            root.GetComponent<TailoredPoloDeformation>()?.Apply();
+        }
+
         static Transform FindBone(Transform root, string name) => root.GetComponentsInChildren<Transform>(true).First(t => t.name == name);
 
         /// Bind-pose mesh + bone weights + inverse binds of every skinned part, and the clip tracks. Returns the manifest block; writes MatchHero_<Sex>_Rig.lzfse.
-        static Rig ExportRig(GameObject root, HeroTennisDriver driver, List<PartSource> sources, AnimationClip ready, StringBuilder sb, string baseName)
+        static Rig ExportRig(GameObject root, List<MotionSource> motions, List<PartSource> sources, AnimationClip ready, StringBuilder sb, string baseName)
         {
             // the skeleton: every transform a skinned part is bound to (flat list; the Swift side keeps the bones as a flat set of nodes carrying hero-space transforms)
             var bones = new List<Transform>(); var boneIndex = new Dictionary<Transform, int>();
@@ -398,6 +504,15 @@ namespace GolfArcade.EditorTools
                 blob.AddRange(wb); blob.AddRange(ib);
                 rp.inverseBindOffset = blob.Count;
                 foreach (var bp in bind) AddMatrix(blob, FlipZ * bp * FlipZ);
+                if(mesh.blendShapeCount>0) {
+                    rp.morphs=new RigMorph[mesh.blendShapeCount];var baseVertices=mesh.vertices;var baseNormals=mesh.normals;
+                    for(int shape=0;shape<mesh.blendShapeCount;shape++) {
+                        var dv=new Vector3[mesh.vertexCount];var dn=new Vector3[mesh.vertexCount];var dt=new Vector3[mesh.vertexCount];int frame=mesh.GetBlendShapeFrameCount(shape)-1;
+                        mesh.GetBlendShapeFrameVertices(shape,frame,dv,dn,dt);var target=new RigMorph{name=mesh.GetBlendShapeName(shape),positionOffset=blob.Count};
+                        AddV3(blob,baseVertices.Zip(dv,(v,d)=>v+d).ToArray(),true);target.normalOffset=blob.Count;AddV3(blob,baseNormals.Zip(dn,(v,d)=>v+d).ToArray(),true);rp.morphs[shape]=target;
+                    }
+                    sb.AppendLine("  corrective targets "+p.name+": "+string.Join(",",rp.morphs.Select(m=>m.name)));
+                }
                 rig.parts[partNo++] = rp;
             }
             foreach (var p in rigid)
@@ -413,14 +528,14 @@ namespace GolfArcade.EditorTools
 
             // ---- clips: the hero-space transform of every track at ClipRate. Bones are world TRS (z mirrored); a rigid part's track is its transform relative to frame 0 of ReadyIdle (the base pose its geometry is in)
             var inv = root.transform.worldToLocalMatrix;
-            ready.SampleAnimation(root, 0f);
+            SamplePose(root, ready, 0f);
             var rigidRef = rigid.Select(r => FlipZ * (inv * r.renderer.transform.localToWorldMatrix) * FlipZ).Select(m => m.inverse).ToArray();
             var clipInfos = new List<ClipInfo>(); var clipFrames = new Dictionary<string, float[]>();
-            foreach (var (slotId, id, loop) in RigClips)
+            foreach (var motion in motions)
             {
-                var slot = driver.slots.First(s => s.id == slotId); var clip = slot.clip;
-                if (!clip) throw new InvalidOperationException("Missing lobby clip: " + slotId);
-                ready.SampleAnimation(root, 0f);
+                var clip=motion.clip;var id=motion.id;var loop=motion.loop;
+                if(!clip)throw new InvalidOperationException("Missing lobby clip: "+id);
+                SamplePose(root, ready, 0f);
                 int n = Mathf.Max(1, Mathf.RoundToInt(clip.length * ClipRate)), frames = n + 1;
                 var data = new float[frames * rig.trackCount * 10];
                 var prevQ = new Quaternion[rig.trackCount];
@@ -429,7 +544,7 @@ namespace GolfArcade.EditorTools
                 for (int k = 0; k < frames; k++)
                 {
                     float t = Mathf.Min(clip.length, k * clip.length / n);
-                    clip.SampleAnimation(root, t);
+                    SamplePose(root, clip, t);
                     for (int tr = 0; tr < rig.trackCount; tr++)
                     {
                         Matrix4x4 m = tr < bones.Count
@@ -451,7 +566,7 @@ namespace GolfArcade.EditorTools
                 if (!loop && id != "serve") {
                     var times = new List<float>(); var refined = new List<float>();
                     float[] Sample(float time) {
-                        clip.SampleAnimation(root, time); var pose = new float[rig.trackCount * 10];
+                        SamplePose(root, clip, time); var pose = new float[rig.trackCount * 10];
                         for (int tr = 0; tr < rig.trackCount; tr++) {
                             var m = tr < bones.Count ? FlipZ * (inv * bones[tr].localToWorldMatrix) * FlipZ
                                 : FlipZ * (inv * rigid[tr - bones.Count].renderer.transform.localToWorldMatrix) * FlipZ * rigidRef[tr - bones.Count];
@@ -488,9 +603,19 @@ namespace GolfArcade.EditorTools
                     seamPos = Mathf.Max(seamPos, new Vector3(data[a] - data[b], data[a + 1] - data[b + 1], data[a + 2] - data[b + 2]).magnitude);
                     seamRot = Mathf.Max(seamRot, Quaternion.Angle(new Quaternion(data[a + 3], data[a + 4], data[a + 5], data[a + 6]), new Quaternion(data[b + 3], data[b + 4], data[b + 5], data[b + 6])));
                 }
-                var ci = new ClipInfo { id = id, name = clip.name, loop = loop, length = clip.length, fps = baseFps, contact = slot.contact, frames = frames, offset = blob.Count, times = sampleTimes,
+                var ci = new ClipInfo { id = id, name = clip.name, loop = loop, length = clip.length, fps = baseFps, contact = motion.contact, equipment=motion.equipment, frames = frames, offset = blob.Count, times = sampleTimes,
                                         boundsMin = new[] { bmin.x, bmin.y, bmin.z }, boundsMax = new[] { bmax.x, bmax.y, bmax.z } };
                 var cb = new byte[data.Length * 4]; Buffer.BlockCopy(data, 0, cb, 0, cb.Length); blob.AddRange(cb);
+                var morphTracks=new List<MorphTrack>();
+                foreach(var p in skinned.Where(p=>p.mesh.blendShapeCount>0)) {
+                    var mt=new MorphTrack{part=p.name,offset=blob.Count,count=p.mesh.blendShapeCount};
+                    for(int k=0;k<frames;k++) {
+                        float at=sampleTimes!=null ? sampleTimes[k]:k*clip.length/(frames-1);SamplePose(root,clip,at);
+                        for(int shape=0;shape<mt.count;shape++)blob.AddRange(BitConverter.GetBytes(p.skinned.GetBlendShapeWeight(shape)/p.mesh.GetBlendShapeFrameWeight(shape,p.mesh.GetBlendShapeFrameCount(shape)-1)));
+                    }
+                    morphTracks.Add(mt);
+                }
+                ci.morphWeights=morphTracks.ToArray();
                 clipInfos.Add(ci); clipFrames[id] = data;
                 sb.AppendLine($"  clip {id}: {clip.name} length {clip.length:F3}s, {frames} frames at {ci.fps:F2} Hz, loop seam {seamPos * 1000f:F3} mm / {seamRot:F3} deg (last frame vs first), TRS recompose error {worstRecompose:E2}, bone scale error {worstScale:E2}; mesh bounds (file space) min={bmin:F3} max={bmax:F3}");
             }
@@ -498,19 +623,27 @@ namespace GolfArcade.EditorTools
             WriteCompressed(rig.file, blob.ToArray());
             sb.AppendLine($"  rig file {rig.file}: {blob.Count / 1024.0 / 1024.0:F2} MB decompressed");
 
+            var parityBlob=blob.ToArray();
             // ---- self check: skin the exported bind mesh with the exported tracks and compare with the CPU skinning of the live rig, at a few clip times
             foreach (var ci in clipInfos)
             {
-                var clip = driver.slots.First(s => s.id == RigClips.First(c => c.id == ci.id).slot).clip; var data = clipFrames[ci.id];
+                var clip = motions.First(m=>m.id==ci.id).clip; var data = clipFrames[ci.id];
                 float worst = 0; string where = "";
                 foreach (float u in new[] { 0f, .21f, .47f, .83f, 1f })
                 {
                     float fk = u * (ci.frames - 1); int k = Mathf.RoundToInt(fk); float t = ci.times != null ? ci.times[k] : Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
-                    clip.SampleAnimation(root, t);
+                    SamplePose(root, clip, t);
                     foreach (var p in sources) Pose(root, p);
                     foreach (var rp in rig.parts.Where(r => r.kind == "skin"))
                     {
                         var src = sources.First(s => s.name == rp.part); var mesh = src.mesh; var w = mesh.boneWeights; var bind = mesh.bindposes; var verts = mesh.vertices;
+                        if(mesh.blendShapeCount>0) {
+                            var dv=new Vector3[verts.Length];var dn=new Vector3[verts.Length];var dt=new Vector3[verts.Length];
+                            foreach(var mt in ci.morphWeights.Where(mt=>mt.part==rp.part))for(int shape=0;shape<mt.count;shape++) {
+                                float weight=BitConverter.ToSingle(parityBlob,mt.offset+(k*mt.count+shape)*4);mesh.GetBlendShapeFrameVertices(shape,mesh.GetBlendShapeFrameCount(shape)-1,dv,dn,dt);
+                                for(int vertex=0;vertex<verts.Length;vertex++)verts[vertex]+=dv[vertex]*weight;
+                            }
+                        }
                         var m = new Matrix4x4[rp.bones.Length];
                         for (int b = 0; b < m.Length; b++) { int tr = rp.bones[b]; int o = (k * rig.trackCount + tr) * 10; m[b] = Matrix4x4.TRS(new Vector3(data[o], data[o + 1], data[o + 2]), new Quaternion(data[o + 3], data[o + 4], data[o + 5], data[o + 6]), new Vector3(data[o + 7], data[o + 8], data[o + 9])) * (FlipZ * bind[b] * FlipZ); }
                         for (int i = 0; i < verts.Length; i += 7)
@@ -530,22 +663,62 @@ namespace GolfArcade.EditorTools
 
             // ---- golden samples for the Swift tests (what the live rig gives at known clip times), when asked for
             if (!string.IsNullOrEmpty(GoldenDir)) {
-                WriteGolden(root, driver, sources, rig, clipInfos, baseName);
-                WriteEmoteParity(root, driver, bones, rigid, rigidRef, baseName);
+                WriteGolden(root, motions, sources, rig, clipInfos, baseName);
+                WriteBlinkParity(root, motions, sources, clipInfos, baseName);
+                WriteEmoteParity(root, motions, bones, rigid, rigidRef, baseName);
             }
             return rig;
         }
 
+        [Serializable] class BlinkVertex { public int index; public float[] position; }
+        [Serializable] class BlinkSample { public string clip, part; public float time, blink; public BlinkVertex[] vertices; }
+        [Serializable] class BlinkProof { public BlinkSample[] samples; }
+        static void WriteBlinkParity(GameObject root, List<MotionSource> motions, List<PartSource> sources, List<ClipInfo> clips, string baseName)
+        {
+            var face = sources.First(p => p.name == "Face");
+            if (!face.skinned || face.mesh.GetBlendShapeIndex("Hero_Blink_Half") < 0) return;
+            Directory.CreateDirectory(GoldenDir);
+            var result = new List<BlinkSample>();
+            var look = root.GetComponent<MatchHeroLook>();
+            foreach (var ci in clips.Where(c => c.id == "ready" || c.id == "serve" || c.id == "forehand" || c.id == "wave")) {
+                var clip = motions.First(m => m.id == ci.id).clip;
+                foreach (float requested in (ci.contact > 0 ? new[] {clip.length*.5f,ci.contact} : new[] {clip.length*.5f}).Distinct()) {
+                int frame = ci.times != null ? Enumerable.Range(0,ci.frames).OrderBy(i => Mathf.Abs(ci.times[i]-requested)).First() : Mathf.RoundToInt(requested / clip.length * (ci.frames-1));
+                float t = ci.times != null ? ci.times[frame] : frame * clip.length / (ci.frames - 1);
+                foreach (float blink in new[] { 0f, .25f, .5f, .75f, 1f }) {
+                    SamplePose(root, clip, t); look.SetFacePerformance(blink, Vector2.zero);
+                    foreach (var part in sources.Where(p => p.name == "Body" || p.name == "Face")) {
+                        Pose(root, part);
+                        var indices = new SortedSet<int>();
+                        int stride = Mathf.Max(1, part.pos.Length / 160);
+                        for (int i = 0; i < part.pos.Length; i += stride) indices.Add(i);
+                        // Include every moved eyelid vertex, not a sparse anatomical guess.
+                        if (part.name == "Body") foreach (string name in new[] { "Hero_Blink_Half", "Hero_Blink" }) {
+                            int shape = part.mesh.GetBlendShapeIndex(name); if (shape < 0) continue;
+                            var dp = new Vector3[part.mesh.vertexCount]; var dn = new Vector3[dp.Length]; var dt = new Vector3[dp.Length];
+                            part.mesh.GetBlendShapeFrameVertices(shape, part.mesh.GetBlendShapeFrameCount(shape)-1, dp, dn, dt);
+                            for (int i = 0; i < dp.Length; i++) if (dp[i].sqrMagnitude > 1e-12f) indices.Add(i);
+                        }
+                        result.Add(new BlinkSample { clip=ci.id, part=part.name, time=t, blink=blink,
+                            vertices=indices.Select(i => new BlinkVertex { index=i, position=new[] {part.pos[i].x,part.pos[i].y,-part.pos[i].z} }).ToArray() });
+                    }
+                }
+            }
+            }
+            look.SetFacePerformance(0, Vector2.zero);
+            File.WriteAllText(Path.Combine(GoldenDir, baseName + "_blink_parity.json"), JsonUtility.ToJson(new BlinkProof { samples=result.ToArray() }, true));
+        }
+
         /// Independent Unity samples at ten times BETWEEN the 60 Hz samples. Swift checks bone rotation and rigid racket playback against these.
-        static void WriteEmoteParity(GameObject root, HeroTennisDriver driver, List<Transform> bones, List<PartSource> rigid, Matrix4x4[] rigidRef, string baseName)
+        static void WriteEmoteParity(GameObject root, List<MotionSource> motions, List<Transform> bones, List<PartSource> rigid, Matrix4x4[] rigidRef, string baseName)
         {
             var inv = root.transform.worldToLocalMatrix;
             var sb = new StringBuilder("{\"samples\":["); bool first = true;
-            foreach (var entry in RigClips.Where(e => !e.loop && e.id != "serve")) {
-                var clip = driver.slots.First(s => s.id == entry.slot).clip;
+            foreach (var entry in motions.Where(e => !e.loop && e.id != "serve")) {
+                var clip=entry.clip;
                 for (int frame = 0; frame < 10; frame++) {
                     float time = clip.length * frame / 9f;
-                    clip.SampleAnimation(root, time);
+                    SamplePose(root, clip, time);
                     if (!first) sb.Append(','); first = false;
                     sb.Append($"{{\"clip\":\"{entry.id}\",\"time\":{time:R},\"tracks\":[");
                     for (int tr = 0; tr < bones.Count + rigid.Count; tr++) {
@@ -562,23 +735,23 @@ namespace GolfArcade.EditorTools
         }
 
         /// A few hundred vertices per part at 6 clip times per clip, straight from the CPU skinning of the live rig, so the Swift tests can check the shipped rig file against Unity itself.
-        static void WriteGolden(GameObject root, HeroTennisDriver driver, List<PartSource> sources, Rig rig, List<ClipInfo> clips, string baseName)
+        static void WriteGolden(GameObject root, List<MotionSource> motions, List<PartSource> sources, Rig rig, List<ClipInfo> clips, string baseName)
         {
             Directory.CreateDirectory(GoldenDir);
             var sb = new StringBuilder("{\n  \"samples\": [\n"); bool firstSample = true;
             foreach (var ci in clips)
             {
-                var clip = driver.slots.First(s => s.id == RigClips.First(c => c.id == ci.id).slot).clip;
+                var clip = motions.First(m=>m.id==ci.id).clip;
                 foreach (float u in new[] { 0f, .17f, .38f, .55f, .8f, 1f })
                 {
                     int k = Mathf.RoundToInt(u * (ci.frames - 1)); float t = ci.times != null ? ci.times[k] : Mathf.Min(clip.length, k * clip.length / (ci.frames - 1));
-                    clip.SampleAnimation(root, t);
+                    SamplePose(root, clip, t);
                     foreach (var p in sources) Pose(root, p);
                     foreach (var p in sources)
                     {
                         if (!firstSample) sb.Append(",\n"); firstSample = false;
                         sb.Append($"    {{\"clip\":\"{ci.id}\",\"frame\":{k},\"part\":\"{p.name}\",\"vertices\":[");
-                        int step = Mathf.Max(1, p.pos.Length / 160), count = 0;
+                        int step = (p.name == "Kit_Top" || p.name == "Kit_Bottom") && Environment.GetEnvironmentVariable("MH_LOCKER_CLOTH_GOLDEN") == "1" ? 1 : Mathf.Max(1, p.pos.Length / 160), count = 0;
                         for (int i = 0; i < p.pos.Length; i += step)
                         {
                             if (count++ > 0) sb.Append(',');
@@ -607,18 +780,26 @@ namespace GolfArcade.EditorTools
         static List<PartSource> Collect(GameObject root)
         {
             var list = new List<PartSource>();
-            var body = root.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.name.StartsWith("Body_"));
+            var body = root.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.enabled && (r.name.StartsWith("Body_")||r.name=="Body"));
             list.Add(new PartSource { name = "Body", kind = "body", mesh = body.sharedMesh, renderer = body, skinned = body, materials = body.sharedMaterials });
-            var face = root.GetComponentsInChildren<MeshRenderer>(true).First(r => r.name.StartsWith("Face_"));
-            list.Add(new PartSource { name = "Face", kind = "face", mesh = face.GetComponent<MeshFilter>().sharedMesh, renderer = face, materials = face.sharedMaterials });
+            var face = root.GetComponent<MatchHeroLook>().face;
+            if (!face || !face.enabled) throw new InvalidOperationException("Active match face renderer missing");
+            var skinnedFace = face as SkinnedMeshRenderer;
+            var faceMesh = skinnedFace ? skinnedFace.sharedMesh : face.GetComponent<MeshFilter>()?.sharedMesh;
+            if (!faceMesh) throw new InvalidOperationException("Active match face mesh missing");
+            list.Add(new PartSource { name = "Face", kind = "face", mesh = faceMesh, renderer = face, skinned = skinnedFace, materials = face.sharedMaterials });
             // the worn kit: skinned to the same bones, posed by the same CPU skinning as the body (checked against BakeMesh below)
-            foreach (var k in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Kit_")).OrderBy(r => r.name, StringComparer.Ordinal))
+            foreach (var k in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.name.StartsWith("Kit_") && (r.enabled||r.name=="Kit_Glove_R")).OrderBy(r => r.name, StringComparer.Ordinal))
                 list.Add(new PartSource { name = k.name, kind = "kit", mesh = k.sharedMesh, renderer = k, skinned = k, materials = k.sharedMaterials });
             var hair = root.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.name == "Hair_F");
-            if (hair) list.Add(new PartSource { name=hair.name,kind="hair",mesh=hair.sharedMesh,renderer=hair,skinned=hair,materials=hair.sharedMaterials });
+            if (hair && hair.enabled) list.Add(new PartSource { name=hair.name,kind="hair",mesh=hair.sharedMesh,renderer=hair,skinned=hair,materials=hair.sharedMaterials });
             var rigidHair = root.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(r => r.name == "Hair_F");
-            if (rigidHair) list.Add(new PartSource {name=rigidHair.name,kind="hair",mesh=rigidHair.GetComponent<MeshFilter>().sharedMesh,renderer=rigidHair,materials=rigidHair.sharedMaterials});
-            if (root.GetComponent<MatchHeroLook>().golfKit) return list;
+            if (rigidHair && rigidHair.enabled) list.Add(new PartSource {name=rigidHair.name,kind="hair",mesh=rigidHair.GetComponent<MeshFilter>().sharedMesh,renderer=rigidHair,materials=rigidHair.sharedMaterials});
+            if(root.GetComponent<MatchHeroLook>().golfKit) {
+                foreach(var club in root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r=>r.name.StartsWith("CLUB_")).OrderBy(r=>r.name))
+                    list.Add(new PartSource{name="Club_"+System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(club.name.Substring(5).ToLowerInvariant()),kind="equipment",mesh=club.sharedMesh,renderer=club,skinned=club,materials=club.sharedMaterials});
+                return list;
+            }
             var racket = root.GetComponentsInChildren<Transform>(true).First(t => t.name == "Racket_Classic");
             foreach (var r in racket.GetComponentsInChildren<MeshRenderer>(true))
             {

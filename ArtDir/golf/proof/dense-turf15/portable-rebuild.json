@@ -1,0 +1,53 @@
+{
+  "status": "SOURCE_REBUILT; geometry accepted by Dense15 actual capture; current material response is runtime-owned",
+  "sourceInput": "ArtDir/golf/source/turf-history/CoastalTurf8.blend",
+  "inputSha256": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+  "lods": {
+    "TURF_NEAR": {
+      "blades": 2304,
+      "vertices": 11520,
+      "triangles": 6912,
+      "heightMaxMeters": 0.08488665521144867
+    },
+    "TURF_MID": {
+      "blades": 512,
+      "vertices": 2560,
+      "triangles": 1536,
+      "heightMaxMeters": 0.06493226438760757
+    },
+    "TURF_FAR": {
+      "blades": 128,
+      "vertices": 384,
+      "triangles": 128,
+      "heightMaxMeters": 0.06411241739988327
+    }
+  },
+  "tuftsPerSquareMeter": 192,
+  "nearBladesPerTuft": 12,
+  "nearWidthMeters": [
+    0.006,
+    0.01
+  ],
+  "cutHeightMeters": [
+    0.024,
+    0.085
+  ],
+  "existingRoughScale": 1.8,
+  "roughResultHeightMeters": [
+    0.0432,
+    0.153
+  ],
+  "budget": {
+    "nearCells": 48,
+    "midCells": 96,
+    "maximumCells": 640,
+    "maximumTriangles": 542720,
+    "submissions": 3
+  },
+  "mapsPaletteShaders": "UNCHANGED; export mesh geometry only",
+  "proofCamera": "Reference camera2: 70deg vertical FOV, camera -4.5yards,+3.2yards and12deg downward; exact source meters converted using .9144. Plain48-tile near patch, not a Unity performance/appearance certificate.",
+  "files": {
+    "CoastalTurf.fbx": "cede3c85a5d5c262fc3fc34b51114268297d3bde29def26413b5b16132ab542f",
+    "CoastalTurf.blend": "a5b2176901796e22ffd13b08278a98e38f95d817b33a20bf09f41abc8822e09e"
+  }
+}

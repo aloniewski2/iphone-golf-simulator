@@ -37,12 +37,16 @@ import simd
             skinner.skeleton = skeleton
             node.skinner = skinner
         }
+        data.attachMorphers(to: root)
         rigid = data.info.parts.compactMap { rp in
             guard rp.kind == "rigid", let node = root.childNode(withName: rp.part, recursively: true) else { return nil }
             return (node, rp.track)
         }
         isAttached = true
-        if let ready = data.clips["ready"] { apply(ready.pose(at: 0, loop: true)) }
+        if let ready = data.clips["ready"] {
+            apply(ready.pose(at: 0, loop: true))
+            data.applyMorphWeights(ready.morphWeights(at: 0, loop: true), to: root)
+        }
     }
 
     /// Back to the static Ready-stance hero (what the morph practice swing and the thumbnails build on).
@@ -50,7 +54,7 @@ import simd
         guard isAttached else { return }
         for part in data.skinned {
             guard let node = root.childNode(withName: part.name, recursively: false) else { continue }
-            node.skinner = nil
+            node.skinner = nil; node.morpher = nil
             if let old = staticGeometry[part.name] { old.materials = node.geometry?.materials ?? old.materials; node.geometry = old }
         }
         SCNTransaction.begin(); SCNTransaction.disableActions = true
@@ -70,7 +74,23 @@ import simd
         SCNTransaction.commit()
     }
 
-    func apply(_ motion: MenuMotion, at time: Double) { apply(motion.pose(data, at: time)) }
+    func apply(_ motion: MenuMotion, at time: Double) {
+        apply(motion.pose(data, at: time))
+        data.applyMorphWeights(motion.morphWeights(data, at: time), to: root, includeFaceBlink:false)
+        var equipment = "iron"
+        if case .clipOnce(let id) = motion.kind, let clip = data.clips[id], time >= motion.lead, time < motion.settledAfter(data) {
+            equipment = clip.info.equipment ?? equipment
+        } else if motion.kind == .serveOnce, motion.serveWeight(data, at: time) > 0 {
+            equipment = data.clips["serve"]?.info.equipment ?? equipment
+        }
+        let hideEquipment = root.value(forKey: "heroEquipmentHidden") as? Bool ?? false
+        for node in root.childNodes where node.name?.hasPrefix("Club_") == true {
+            node.isHidden = hideEquipment || node.name?.lowercased() != "club_" + equipment
+        }
+        let happy: Bool
+        if case .clipOnce(let id) = motion.kind { happy = ["celebratePoint","matchWin","hitPerfect","introWave"].contains(id) } else { happy = false }
+        MatchHeroSurfaces.performFace(on:root,at:time,happy:happy)
+    }
 }
 
 /// What a menu tile plays on the hero, as a function of time since the tile came up. Never the character root.

@@ -10,7 +10,7 @@ enum TennisVenueChoice: String, CaseIterable, Identifiable {
     }
     var tagline: String {
         switch self {
-        case .resort: "The original: sunset over the bay, stands full of fans"
+        case .resort: "A bright tropical bay, lush gardens and stands full of fans"
         case .skyscraper: "A rooftop above the clouds. Hit it wide and the ball falls forever"
         case .volcano: "A court floating over a lava lake. Don't miss long"
         }
@@ -41,6 +41,7 @@ enum GolfCourseChoice: String, CaseIterable {
         case .magma: "Lava hazards and volcanic greens"
         }
     }
+    var art: String { "map-golf-\(rawValue)" }
 }
 struct SportMapChoice: Identifiable {
     let id: String
@@ -49,7 +50,7 @@ struct SportMapChoice: Identifiable {
     let art: String
     static func choices(for sport: Sport) -> [Self] {
         if sport == .golf {
-            return GolfCourseChoice.allCases.map { Self(id: $0.rawValue, title: $0.title, detail: $0.detail, art: "club-golf") }
+            return GolfCourseChoice.allCases.map { Self(id: $0.rawValue, title: $0.title, detail: $0.detail, art: $0.art) }
         }
         return TennisVenueChoice.allCases.map { Self(id: $0.rawValue, title: $0.title, detail: $0.tagline, art: $0.art) }
     }

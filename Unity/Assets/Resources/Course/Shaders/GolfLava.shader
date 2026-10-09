@@ -1,18 +1,5 @@
-// Golf postcard lava (LK_LAVA, hole 10 only). STATIC (no _Time): the brief forbids animated lava.
-// SELF-LIT, built from emission alone: there is no post-processing in this project (no PostProcessData on either renderer, so no bloom and no
-// tone mapper), and URP Lit would turn the painted albedo + a scene light into a pink / yellow / black mess depending on light and angle (measured:
-// 76-78 % of the lava pixels in the orange band at best, the texture's hue spread being wider than the band). So the textures only say HOW HOT each
-// texel is, and a 3-stop ramp chosen in the orange band says what colour that is:
-//     heat   = saturate(((lum(Lava_C) * _HeatAlbedo + lum(Lava_E) * _HeatGlow + _HeatBias + relief) - .5) * _HeatGain + .5)
-//     colour = ramp(_Deep @0, _Crust @.2, _Flow @.6, _Hot @1)(heat)   // 4 stops authored in sRGB (SetColor converts them), all with hue 8..28 deg;
-//                                                                       // only _Deep (a few % of the texels) may be darker than V .7
-// v2 2026-10-04 (review fix): the maps are WORLD-PROJECTED by default (_WorldUV = 1: planar from above on floors, from the side on walls, _WorldTile =
-// .9144 / 24 tiles per yard = one Lava tile per 24 m), so the lava never depends on the mesh's UVs: a lava mesh without UVs, or with UVs at the wrong
-// density, used to render one flat orange (a baseline WATER_LAVA has none). _WorldUV = 0 uses the mesh UV (tile units = metres / 24) instead.
-// v2 repair round 3 2026-10-05: _FogShare (how much of the distance fog the lava takes, default 1 = like URP Lit). Crater's fog went from ember red to a neutral smoke-grey (basalt must not read maroon), and a grey haze over
-// the 430 yd cone lava took its saturation below the orange band (tee still: 65 % of the cone's lava in band, limit 85). Lava is the brightest thing in the scene and glows through haze (crater.jpg's far cone lava is not hazed).
-// Distance fog is applied per fragment like URP Lit (the crater's dusk fog). No lights, no shadows, no depth pass (opaque, one pass, like TennisWater).
-// Lives under Resources so a player build always carries it (Resources.Load<Shader>("Course/Shaders/GolfLava")); only multi_compile keywords (fog).
+// Resort lava: authored fine heat relief under broad moving cooling plates and luminous channels.
+// Geometry, hazards and lava height remain authoritative gameplay data.
 Shader "GolfArcade/GolfLava"
 {
     Properties
@@ -33,6 +20,10 @@ Shader "GolfArcade/GolfLava"
         _WorldUV ("Project the maps from the world (1) or use the mesh UV (0)", Range(0,1)) = 1
         _WorldTile ("World projection: tiles per world unit (yard); .9144 / 24 = one tile per 24 m", Float) = 0.0381
         _FogShare ("Share of the distance fog the lava takes (1 = like the rest of the scene; lava glows through haze)", Range(0,1)) = 1
+        _PlateScale ("Broad cooling plate size in yards",Float)=38
+        _Cooling ("Cooling plate coverage",Range(0,1))=1
+        _SlopeFlow ("Consistent vertical flow projection",Range(0,1))=0
+        _Cascade ("Tapered cascade hot core",Range(0,1))=0
     }
     SubShader
     {
@@ -55,7 +46,7 @@ Shader "GolfArcade/GolfLava"
                 half _BumpScale, _HeatAlbedo, _HeatGlow, _HeatBias, _HeatGain, _Relief;
                 half4 _Deep, _Crust, _Flow, _Hot;
                 half _WorldUV, _FogShare;
-                float _WorldTile;
+                float _WorldTile,_PlateScale;half _Cooling,_SlopeFlow,_Cascade;
             CBUFFER_END
 
             struct A { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; };
@@ -72,11 +63,24 @@ Shader "GolfArcade/GolfLava"
                 return o;
             }
 
+            float2 LavaHash(float2 p) { return frac(sin(float2(dot(p,float2(127.1,311.7)),dot(p,float2(269.5,183.3))))*43758.5453); }
+            float LavaNoise(float2 p) {
+                float2 cell=floor(p),f=frac(p);f=f*f*(3-2*f);
+                return lerp(lerp(LavaHash(cell).x,LavaHash(cell+float2(1,0)).x,f.x),lerp(LavaHash(cell+float2(0,1)).x,LavaHash(cell+1).x,f.x),f.y);
+            }
+            float2 Plate(float2 p) {
+                float2 cell=floor(p),f=frac(p);float first=8,second=8;
+                for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+                    float2 offset=float2(x,y);float2 delta=offset+LavaHash(cell+offset)-f;float d=dot(delta,delta);
+                    if(d<first){second=first;first=d;}else second=min(second,d);
+                }
+                return float2(sqrt(second)-sqrt(first),LavaHash(cell).x);
+            }
             half4 frag (V i) : SV_Target
             {
                 // world projection: from above on floors (|n.y| >= .5), from the side on walls; the same tile size whatever the mesh's UVs are
                 float3 an = abs(normalize(i.normalWS));
-                float2 pw = an.y >= 0.5 ? i.positionWS.xz : (an.x > an.z ? i.positionWS.zy : i.positionWS.xy);
+                float2 pw=lerp(i.positionWS.xz,float2(i.positionWS.x+i.positionWS.z*.37,i.positionWS.y),_SlopeFlow);
                 float2 uv = lerp(i.uv, pw * _WorldTile * _BaseMap_ST.xy + _BaseMap_ST.zw, _WorldUV);
                 half3 c = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb;
                 half3 e = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv).rgb;
@@ -90,7 +94,37 @@ Shader "GolfArcade/GolfLava"
                 half3 ramp = heat < 0.2h ? lerp(_Deep.rgb, _Crust.rgb, heat * 5.0h)
                            : heat < 0.6h ? lerp(_Crust.rgb, _Flow.rgb, (heat - 0.2h) * 2.5h)
                            : lerp(_Flow.rgb, _Hot.rgb, (heat - 0.6h) * 2.5h);
-                half3 colour = ramp;
+                // Warped iso-flow regions make asymmetrical warm channels and
+                // cooling islands. No Voronoi joint lattice dominates the lake.
+                float2 field=pw/max(_PlateScale,1);
+                float2 warp=float2(LavaNoise(field*.24+13),LavaNoise(field*.24+47))*4.6;
+                float2 flow=field+warp+float2(.009,-.006)*_Time.y;
+                half broad=LavaNoise(flow*.48+float2(8,31));
+                half meander=LavaNoise(flow*.69+float2(47,9));
+                half temperature=LavaNoise(field*.17+float2(19,31));
+                float width=.060+temperature*.065;
+                half lane=1-smoothstep(width*.30,width,abs(meander-.49));
+                half pool=smoothstep(.57,.76,broad);
+                half flowing=saturate(lane*(.55+temperature*.45)+pool*.84);
+                half warm=1-smoothstep(width,width+.10,abs(meander-.49));
+                half crustGrain=LavaNoise(pw*.16+float2(17,29))*.55h+LavaNoise(pw*.047+float2(3,61))*.45h;
+                half3 basalt=half3(.009h,.012h,.016h)*(.62h+crustGrain*.72h+heat*.16h);
+                basalt+=half3(.024h,.004h,.001h)*warm*flowing;
+                half3 channel=lerp(_Flow.rgb*.65h,_Hot.rgb,saturate(.22h+heat*.58h+temperature*.20h));
+                half3 colour=lerp(basalt,channel,flowing);
+                colour=lerp(ramp,colour,_Cooling);
+                if(_Cascade>.5h){
+                    // Mesh U is cross-stream: a white-hot interior grades through
+                    // orange into cooling dark margins, flowing down the slope.
+                    float crossFlow=abs(i.uv.x*2-1);
+                    float streak=LavaNoise(float2(i.uv.x*8,i.uv.y*18-_Time.y*.16));
+                    float core=1-smoothstep(.30,.93,crossFlow+streak*.085);
+                    half3 edgeColour=half3(.019h,.023h,.029h)*(.85h+heat*.24h);
+                    half3 coreColour=lerp(_Flow.rgb,_Hot.rgb,saturate(.52h+heat*.40h+streak*.12h));
+                    colour=lerp(edgeColour,coreColour,core);
+                }
+                // Keep the cooling crust dark while hot channels cross the HDR bloom threshold.
+                colour *= lerp(1.0h, 3.0h, smoothstep(.06h,.55h,max(colour.r,max(colour.g,colour.b))));
                 half fog = InitializeInputDataFog(float4(i.positionWS, 1), 0);
                 return half4(lerp(colour, MixFog(colour, fog), _FogShare), 1);
             }

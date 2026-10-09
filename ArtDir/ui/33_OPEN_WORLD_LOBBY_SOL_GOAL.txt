@@ -1,0 +1,580 @@
+PASTE: Read ArtDir/ui/33_OPEN_WORLD_LOBBY_SOL_GOAL.txt and execute in Goal Mode.
+
+33_OPEN_WORLD_LOBBY_SOL_GOAL — Party Sports walkable menu hub, the "Island Sports Club" (Codex Goal Mode, GPT-6.1 Sol, NEW CHAT)
+Repo: /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator   (it's called "golf", but it is Party Sports: tennis + golf)
+Branch at audit: codex/full-visual-overhaul checked out at b3075bd8. final-build points at the same commit (0 commits apart). The working tree is very dirty
+(other chats are live: golf clothing, shaders, emotes, onboarding, menu art). Every path and line below was checked read-only on 2026-10-07. Re-verify before editing.
+This is a STRUCTURE + FUNCTION brief. It defines layout topology, numbers, systems, wiring and gates. It is not art direction. Do not copy, trace or
+"match" any concept still. Concept images made in other chats are not targets and are not proof references.
+
+======================================================================
+0. GOAL (one sentence) + NON-GOALS
+======================================================================
+GOAL: Replace the flat Home menu with a small walkable 3D club hub. After onboarding the player's own hero spawns there, can walk (or tap) to the Locker,
+the Tennis and Golf gates and the Party terrace, and opens each one's EXISTING Island screen as an in-world station. Players can emote, change clothes,
+see friends who are in their party, launch a match, and land back in the hub after it. The hub must never block play: one tap on Quick Menu does
+anything that walking does, and a Classic Menus fallback is always one setting away.
+
+Done = every gate in §11 passes with proof AND Adnan approves the walkthrough films (P9). Adnan's eye overrides any agent PASS.
+
+NON-GOALS (do NOT build in this goal):
+  N1  No open world beyond the club. No new sports, no bowling/football/boxing zones (Sport.playable stays golf || tennis).
+  N2  No new clothes, skins, hair, meshes or cosmetics. The hub only DISPLAYS what Locker/Player already hold.
+  N3  No Unity gameplay changes. Matches still load Unity/Assets/Scenes/Tennis.unity or Golf.unity through NativeSportsSession.Load (NativeSportsSession.cs ~203–269).
+  N4  No new network protocol in the required phases. Positional presence is an optional, owner-gated phase (P10).
+  N5  No shop, currency or store. The Pro Shop is a closed stub that reuses the existing refuse("Store · Coming soon").
+  N6  No change to onboarding order or files (ArtDir/onboarding/32_ONBOARDING_SOL_GOAL.txt and GolfArcade/Onboarding/** belong to the onboarding chat).
+  N7  No final art pass. You build a graybox, then a simple modular blockout kit (§9). The art direction is only the guardrails in §9.4.
+  N8  No changes to the phone-as-racket / phone-as-club control flows during matches.
+
+======================================================================
+1. HARD RULES (read twice)
+======================================================================
+R1  Work is STAGED ONLY. No commit, push, branch switch, stash, reset, checkout or restore unless Adnan asks in chat.
+    NEVER run `git add -A`, `git add .` or `git add -u`. Stage only your owned paths, by explicit path. Never git-add work/.
+R2  Existing files: hunk patches only. Before the first hunk in any existing file, run `git diff -- <file>` AND `git diff --cached -- <file>`.
+    Foreign changes must survive intact. If your hunk would overlap a foreign hunk, STOP that edit and log it in work/hub/NEEDS_OWNER.md.
+R3  New files go only at the paths in §10 "Owned files" (whole files are fine there).
+R4  One writer per file (§10). Locked files: read and call their public APIs only. If a change inside one is needed, append to
+    work/hub/NEEDS_OWNER.md:   ## <file> — <change, why, smallest diff, which gate is blocked>   and mark that gate FAIL(BLOCKED-OWNER). Then carry on.
+R5  Gates are binary: PASS only if the check is met exactly and the proof file exists. No "mostly", no "PASS with caveats", no soft fails.
+    FAIL(BLOCKED-OWNER) is a FAIL, but you may carry it forward to later phases.
+R6  Design system only: IslandUI / Club tokens and Island components (ClubDesign.swift, IslandKit.swift). No new colours, fonts, corner radii or focus
+    styles. A new HUD component is allowed only when no Island one fits. It goes in a NEW file under GolfArcade/Hub/ in the same style and is listed in the report.
+R7  The TV remote is click-based: no swipe gestures anywhere on the TV path (the 27_ONLINE_LOBBY_UI rule). Hold-to-repeat is allowed.
+R8  No third-party SDKs. No ATT. No notification prompt. Don't delete the app from Adnan's iPhone (it wipes saves).
+R9  Proof goes in work/hub/ (§12). Each phase writes work/hub/P<N>_RESULT.md and updates work/hub/PHASE_STATUS.md (§13).
+
+======================================================================
+2. WHAT EXISTS TODAY (verified; reuse it; NEW = does not exist)
+======================================================================
+App shell / routing (SwiftUI shell, Unity only for matches)
+  - GolfArcade/App/GolfArcadeApp.swift: root `SportsHome()`. init calls `MultiplayerService.shared.prepare()`.
+  - GolfArcade/Unity/SportsHome.swift `SportsHome.body`, in order:
+    display connected & !active -> TennisRemote
+    onboarding.holdsMenu -> OnboardingRoot
+    online screens -> TennisRemote/TennisPhoneMenu
+    finished match -> MatchFinishControls
+    loading -> TennisRemote
+    pause -> IslandPauseScreen
+    golf -> GolfPhoneController
+    tennis -> TennisRacketController
+    classic -> ClassicSportsHome
+    otherwise TennisRemote (TV) / TennisPhoneMenu (phone)
+  - GolfArcade/Unity/TennisPlayViews.swift: TennisTVRoot (draws the menu on a 1280×720 canvas scaled to the TV, line 5), TennisPhoneMenu
+    (portrait phone menu, line 28) and TennisRemote (phone D-pad remote while the TV shows the menu: DPad, A/B/Home, "Click to move one step · hold to repeat", line 41).
+  - GolfArcade/Unity/TennisMenuViews.swift `TennisMenuScreen` (line 229): wraps everything in ClubCameraHost (hinge transition, MotionClubMenus.swift 102).
+    `screenContent` switch: .main -> IslandHomeScreen, .party -> IslandPartyScreen, .online -> IslandOnlineScreen, .gameSelect -> IslandSportsScreen,
+    .hub(sport) -> IslandHubScreen, .character -> IslandLockerScreen, .settings -> IslandSettingsScreen, .howTo -> IslandGuideScreen, .connect -> IslandConnectScreen,
+    .loading -> LoadingScreen, .map -> IslandCourtScreen, .postMatch -> IslandResultsScreen(postMatch: true), etc.
+  - GolfArcade/Unity/TennisMenu.swift `TennisMenu.shared` (@Observable):
+    - `MenuScreen` (line 6): title, main, party, quickPlay, gameSelect, hub(Sport), locked, campaign, training, exhibition, character, settings, howTo,
+      golfLesson, connect, loading, results, story, map, postMatch, online(OnlineLobbyScreen).
+    - `rows(_:)` focus grid (line 150). `.main` = [homeContinue],[play],[character],[settings].
+    - `private func show(_:)` (201).
+    - `tap(_:)` only works for ids in the current screen's rows (274). So "homePlay", "howto" and "store" can't be tapped from .main. A hub entry hunk is NEW (§10).
+    - `select()` (279): "homeContinue" -> continueJourney(), "play" -> .gameSelect, "homePlay" -> .party, "character" -> .character, "settings",
+      "store" -> refuse("Store · Coming soon"), "sport-<x>" -> .hub(x), "howto" -> .howTo.
+    - `back()` (394): .party/.quickPlay/.gameSelect/.settings -> .main; .hub -> .gameSelect.
+    - `begin(_:onPhone:skipMap:)` (565) -> .map -> needs displayConnected, else .connect -> .loading -> session.startTennis / startGolf.
+    - `leavePostMatch(.menu)` -> show(.main) (681–699). `goHome()` (554). `finishOnboarding(sport)` -> show(.hub(sport)) (512).
+    - `OnlineLobbyMenu` (line 1000 to end of type) is LOCKED (multiplayer owner).
+  - GolfArcade/Unity/SportsSession.swift: startTennis (272), startGolf (284), startMultiplayer (292), start (302), exitGame (728), end (733); event handler "ready",
+    "loadProgress", "matchOver", "exit" (~759–833). SportsRuntime.h/.mm = Unity bridge (loadInWindow, send, push, pushNetwork, pollEvent).
+  - Unity: EditorBuildSettings has only Assets/Scenes/Golf.unity and Assets/Scenes/Tennis.unity. NativeSportsSession.Load does SceneManager.LoadSceneAsync("Tennis"|"Golf").
+    No Unity hub/menu scene exists, and you won't add one (§3 decision).
+FACT TO RESPECT (gap): matches need an external display today. In TennisMenu.begin, `let onPhone = false` and `guard session.displayConnected else { show(.connect) }`.
+  SportsSession.start only allows phone preview under -benchTennis. So on phone-only, the Play gates end at IslandConnectScreen. The hub calls begin() and
+  accepts whatever it decides. Do NOT change this. (It conflicts with onboarding D3 "touch on phone"; that conflict belongs to the menu/onboarding owners.)
+Menus / design system
+  - ClubDesign.swift: Club palette, ClubSound.play("pop"|"whoosh"|"tick"), IslandUI (navy 101D35, lime D3F34B, paper FAF8F3, muted 34435A, font()),
+    IslandBackdrop, IslandAction, IslandShell, IslandPlayer.
+  - IslandKit.swift: IslandFocusStyle / islandFocus, IslandHintBar, IslandSegments, IslandSwitch, IslandNotice, IslandMenuNotice, IslandLobbyRow,
+    IslandLobbyPlayerCard, IslandEmoteTile.
+  - MotionClubMenus.swift: `ClubRoom` {entrance, terrace, locker, loading}, `ClubPreviewActivity` {play, locker, settings, store}, MotionClubHome.
+  - ClubEnvironmentView.swift renders Club_<room>.json from GolfArcade/Unity/ClubEnvironments/. These are FIXED-CAMERA projection bakes
+    (camera [0,4.3,12] -> target [0,2,-5]; 65k–83k tris; 14–18 MB JSON each; albedo projected from one viewpoint). They break as soon as the camera moves,
+    so they are NOT walkable geometry. You may keep one as a far skybox card behind the hub; never walk inside them.
+Heroes / customization / sockets
+  - Unity source heroes: Unity/Assets/Resources/Tennis/Customization/PlayerMale.prefab and PlayerFemale.prefab (+ *GolfKit.prefab).
+    Clips: Unity/Assets/Characters/MatchHeroes/<Sex>/<Sex>_{ReadyIdle, Walk, RunForward, RunLeft, RunRight, RecoverCenter, Emote_Scuba, Emote_Thrust,
+    Emote_Spike, Intro_Wave, Intro_BringIt, Intro_Pushups, ...}.fbx.
+  - Swift mirror: Unity/Assets/Editor/MatchHeroLockerExport.cs writes GolfArcade/Unity/CharacterAssets/MatchHero_<Sex>.json/.lzfse/_Rig.lzfse.
+    RigClips (line 47) = ready, serve, scuba, thrust, spike, wave, bringIt, pushups, idle, hitPerfect, missWhiff, celebratePoint, sadPointLost, matchWin, matchLose.
+    GAP: walk/run are NOT exported to Swift, although HeroTennisDriver.Clip has Walk, RunForward, RunLeft, RunRight and the FBX files exist.
+  - CharacterModelPreview.swift: `MatchHero.build(player, sport:, distance:)`, `MatchHero.asset(female:golf:distance:)` (line 485),
+    `HeroStageGround.terrace()/plinth()` (26), `LobbyHeroStage` (604; one SCNView, up to 4 heroes, join pop + "wave", emote playback by eventID,
+    reframe, CADisplayLink at 60), `LobbyEmoteThumbs` (737).
+  - MatchHeroMotion.swift: `HeroRig` (9), `LobbyHeroMotion` (152: play once + queue 1 + ready loop with per-hero offset). It has no looping locomotion layer (NEW).
+  - Player (GolfArcade/Domain/Player.swift, READ-ONLY): loadout [sport:[slot:id]], outfit hex per slot, standardFemale, handedness, skinHex, hair.
+    `EmoteCatalog.ids` = scuba, thrust, spike, wave, bringIt, pushups; 3 equipped (defaults wave, scuba, spike).
+  - LockerCatalog.swift (LOCKED): LockerSlot = skin, racket, club, shoes. `LockerCatalog.item(id:sport:slot:)` falls back to standard. `Player.lobbyPlayer` (line 112).
+  - Sockets verified in code: Hand_Racket (MatchHeroLook.cs, TennisCustomization.cs), Hand_L (HeroCosmetics.cs trophy), the head hair socket built in
+    TennisCustomization.cs ~157. AGENTS.md lists HairRoot, Headwear, Chest_Top, Hip_Bottom, Foot_L/R_Shoe, Hand_Racket. Only Hand_Racket/Hand_L exist as
+    named sockets. Headwear has no Locker slot and no Player field (32 brief D1). The others are NEW / not present.
+Multiplayer (LOCKED internals; public API only)
+  - GolfArcade/Multiplayer/MultiplayerService.swift (@MainActor @Observable, `shared`):
+    - State: lobby, lastError, searching, discoveredLobbies, pendingInvite, emotes[participantID], localID, isOwner, localSeat, networkTime, emoteCooldown, authenticated.
+    - Calls: prepare, authenticate(present:), createOnlineLobby, setIdentity(name:female:left:loadout:), updateLook, playEmote(id) (lobby phase only, 1.5 s cooldown),
+      inviteFriends, acceptInvitation, quickMatch, hostLocal/browseLocal/joinLocal, configure, assignSeat, setReady, queueForNextMatch, startMatch,
+      returnToLobby, leave.
+    - Callbacks: onMatchRequested / onReturnToLobby / onResult are single closures. OnlineLobbyMenu.installCallbacks (TennisMenu.swift ~1145) sets onResult and
+      onReturnToLobby (-> menu.showOnline(.results / .lobby)). onMatchRequested is nil, so launch() calls SportsSession.startMultiplayer directly
+      (MultiplayerService.swift ~437). The hub must NEVER assign any of these closures, because that would silently clobber the online flow. Observe state instead.
+  - MultiplayerModels.swift: MultiplayerLobby (≤4 participants incl. spectators; tennis 2 seats, golf 4; phase lobby/loading/playing/results/interrupted),
+    MultiplayerParticipant (id, name, seat, ready, connected, female, left, loadout), packet v2, ≤60,000 bytes.
+    NO position data exists anywhere in the protocol (positional presence = NEW, P10).
+  - The existing online UI ("prompt 27", ArtDir/hero/base_lock/parallel_prompts/27_ONLINE_LOBBY_UI.txt; results work/online-lobby/GATE_RESULTS.md, commit 23cbedab on
+    newmapsandmenus): IslandOnlineScreen (IslandScreens.swift 433), OnlineGameCenterSheet (630), MultiplayerMatchOverlay (637). The shared lobby room is
+    LobbyHeroStage on the locker/terrace backdrop. Measured: 4 heroes + Scuba = 60 fps, 145.06 MB footprint (iPhone 15-class sim).
+    GAMECENTER_DEVICE NOT RUN.
+  - Game Center: GameCenterTransport.swift (authenticate, invitationController, accept, quickMatch). Entitlement GolfArcade/Multiplayer/GolfArcade.entitlements.
+Onboarding / progress (the hub sits AFTER these)
+  - GolfArcade/Onboarding/OnboardingFlow.swift: `holdsMenu`, steps account -> character -> connect -> motionPrimer -> choose -> tutorial(sport) -> reward(sport) -> done
+    (OnboardingStore.swift). Status per work/onboarding/FINAL_RESULT.md: incomplete, many gates FAIL/BLOCKED. The hub must not depend on onboarding being finished.
+  - SportProgress.swift: `sport.<x>.tutorialDone.v1`, finishedTutorial, completeTutorial.
+  - TennisTutorial.cs exists. GAP: TennisMenu.startTutorial now launches a normal exhibition/round, and begin() rewrites .tutorial. So any "coach/tutorial"
+    station opens How to Play (IslandGuideScreen), not a tutorial match.
+Performance references already in the repo
+  - Courses: ≤250 draw calls on the tee shot and ≤300,000 rendered tris per hole (ArtDir/environments/15_POSTCARD_LOOK_SOL_GOAL.txt §6.4; 30_GOLF_SHADERS_AND_KIT).
+  - Lobby: 60 fps with 4 heroes, 145 MB (above). ClubEnvironmentView = 30 fps backdrop, 4× MSAA, 2048 shadow map.
+Tests / builds (same as 32 brief)
+  xcodegen generate (after adding Swift files; project.yml picks up GolfArcade/** automatically — never edit project.yml)
+  xcodebuild test -project GolfArcade.xcodeproj -scheme GolfArcade -only-testing:GolfArcadeTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+  UI: -only-testing:GolfArcadeUITests/<Class>   (existing: SportsNavigationTests, MenuNavigationRegressionTests, OnboardingUITests, ...)
+  Unity compile: Unity/Tools/check.sh   iPhone: Unity export then `zsh Unity/Tools/build-integrated-ios.sh`; install via Unity/Tools/install-phone.sh (read it first).
+
+======================================================================
+3. ARCHITECTURE DECISION (binding unless P1 gate H1.6 fails)
+======================================================================
+The hub is a native SceneKit scene inside the SwiftUI shell, at a NEW folder GolfArcade/Hub/. It is NOT a Unity scene. Reasons, all from the code:
+  a) Unity loads only for a match (SportsRuntime.loadInWindow; NativeSportsSession loads "Tennis"/"Golf" by name). Booting Unity for the menu would add load
+     time and memory before every match and fight the match handoff.
+  b) The heroes already render in SceneKit with the real rig, kit colours and emotes (MatchHero.build, HeroRig, LobbyHeroStage). 4 heroes measured at 60 fps.
+  c) The menu already renders on the TV through TennisTVRoot. A SceneKit view inside TennisMenuScreen shows on the phone and on the TV with no new display path.
+  d) Unity/Assets/** is the busiest contested area (126 modified script paths in the working tree right now). Staying in Swift avoids collisions.
+Fallback rule: if H1.6 (graybox ≥ 55 fps p95 on iPhone 15-class with 4 heroes) FAILS, STOP and write work/hub/ARCH_FALLBACK.md with the numbers.
+  Do not switch engines without Adnan.
+
+Scene architecture (one scene, zones as named subtrees, no streaming needed at this size):
+  HubScene (SCNScene, NEW)
+   ├─ Zone_Plaza   ├─ Zone_Locker   ├─ Zone_PlayGate   ├─ Zone_Terrace   ├─ Zone_ProShop
+   │    each zone node contains ONLY these standard children (names are the contract):
+   │      Geo_*            replaceable geometry (graybox now, kit later; never referenced by code)
+   │      Col_*            collision footprints (boxes/cylinders on the XZ plane) -> baked into the nav grid
+   │      Anchor_Stand_<stationID>    where the hero stands to use a station (position + facing)
+   │      Anchor_Look_<stationID>     camera focus when that station's panel opens
+   │      Volume_Prompt_<stationID>   cylinder trigger (radius in HubLayout, not in geometry)
+   │      Cam_<zoneID>                camera rail parameters (yaw, distance, height, pitch)
+   │      Sign_<zoneID>               signage anchor (text comes from HubLayout, never baked into textures)
+   │      Spot_Party_<n>              party presence spots (terrace only)
+   ├─ Landmark_Tower (central vertical landmark, visible from every walkable cell)
+   ├─ Spawn_Default, Spawn_Return_Tennis, Spawn_Return_Golf, Spawn_Return_Party
+   ├─ Heroes (local hero + up to 3 party heroes)
+   └─ Light_Key (1 directional, shadows), Light_Fill (ambient), optional Backdrop_Far (one ClubEnvironment room as a far card, never walkable)
+HubLayout.swift is the single source of truth for coordinates, radii, speeds and station→action mapping. Geometry is authored to match HubLayout,
+never the other way round. Art swaps (§9) replace Geo_* only and must pass the same layout tests.
+
+======================================================================
+4. PLAYER LOOP THROUGH THE HUB
+======================================================================
+Launch -> (OnboardingFlow.holdsMenu ? onboarding : title "start") -> HUB at Spawn_Default.
+  First visit after onboarding: finishOnboarding(sport) -> spawn at that sport's gate, facing it, with that sport's panel open (one tap to play).
+  A 3-beat coach-mark tour runs once (key hub.tour.v1): "Walk or tap the ground" -> "Walk up to a sign and press A" -> "Quick Menu does it all".
+  Non-blocking; any input dismisses it.
+Core loop: walk/tap to a gate -> panel (IslandHubScreen: Tennis exhibition/campaign/training, Golf round) -> court/course pick (IslandCourtScreen) ->
+  begin() -> connect (no TV) or loading -> Unity match -> post-match (IslandResultsScreen) -> "Menu" -> HUB at Spawn_Return_<sport>,
+  facing the plaza with the gate one step behind (Play again = turn around + A, or the post-match "Next"/"Replay" as today).
+Side loops: Locker (change look, see it on your walking hero right away) · Party terrace (Solo / Play Online / Nearby; friends' heroes stand on the
+  terrace; emote; Ready; host starts) · Emote anywhere (local only outside a party lobby) · Pro Shop stub · Settings via Quick Menu.
+The "never blocked" rule: every station action is also in Quick Menu (≤1 tap from free roam). Classic Menus (the existing IslandHomeScreen) is in
+  Settings and is used automatically if the hub fails to load.
+
+======================================================================
+5. ZONE MAP — STRUCTURAL SPEC
+======================================================================
+Units are metres. SceneKit y-up. North = -z, east = +x. Plaza centre = (0,0). Walk surface y=0 except the Terrace (y=0.6, ramp 1:6).
+Positions are a starting layout. Any one may move ±1.5 m if every §6 timing gate still passes. Every station is a named entry in HubLayout.stations.
+
+Z0 HOME PLAZA (spawn, orientation, landmark)
+  - Disc radius 7.0. Landmark_Tower at (0,0): footprint radius 1.2, height 7 (structural landmark; it's the compass, visible from every cell).
+  - Spawn_Default (0, 4.0), facing north. All four zone mouths are visible from here in the default camera (gate H1.4).
+  - Plaza mouths (2.4 m wide openings with a Sign_ each): West -> Locker, North -> Play Gate, East -> Terrace, South-west -> Pro Shop.
+  - Inside the plaza ring, only the tower is taller than 1.2 m (props stay low so they don't block sightlines). Buildings sit outside the ring.
+Z1 LOCKER (customization) — west
+  - Entrance arch at (-8.5, 0). Interior room 7 × 6 centred (-12.5, 0), open front (no door animation), roof cut away for the camera.
+  - Stations map 1:1 to the existing locker tabs (TennisMenu.LockerTab: gear, customize, emotes):
+      locker.gear       Anchor_Stand (-14.5,-1.8)  -> open .character, then tap "lk-tab-gear"
+      locker.customize  Anchor_Stand (-15.5, 0.0)  -> open .character, then tap "lk-tab-customize"
+      locker.emotes     Anchor_Stand (-14.5, 1.8)  -> open .character, then tap "lk-tab-emotes"
+  - Function: the panel is the existing IslandLockerScreen (Revert / Shuffle / Done unchanged). The hub hero stays visible and mirrors the edit live
+    (the same editingPlayer idea as LobbyHeroStage). On Done the hub hero rebuilds with the saved Player. Inside an online lobby, use the existing
+    `.online(.clothes)` route instead, so `look` still goes through MultiplayerService.updateLook.
+Z2 PLAY GATE (sport picker) — north
+  - Gate arch at (0,-8.5), small fork plaza at (0,-10.5), two gate pads:
+      play.tennis  Anchor_Stand (-4.0,-12.5) -> open .hub(.tennis) (IslandHubScreen: exhibition / campaign / training; Continue shown first if campaign not champion)
+      play.golf    Anchor_Stand ( 4.0,-12.5) -> open .hub(.golf)   (IslandHubScreen: round)
+      play.howto   Anchor_Stand ( 0.0,-12.8) -> open .howTo (IslandGuideScreen). This is the coach post, not a tutorial match (see §2 GAP).
+  - Spawn_Return_Tennis (-3.0,-9.5) and Spawn_Return_Golf (3.0,-9.5), facing south (toward the plaza).
+  - The sport gates show their sport's current venue name from session.tennisVenue / session.golfCourse (text on the Sign_, from data).
+Z3 PARTY TERRACE (match wait / friends) — east
+  - Steps/ramp at (8.5, 0). Raised platform 7 × 6 centred (12.5, 0), y=0.6.
+  - party.board  Anchor_Stand (12.5,-2.5) -> open .party (IslandPartyScreen: partySolo / partyOnline / partyNearby) -> the existing online flow.
+  - Spot_Party_0 (11.5,0.5) and Spot_Party_1 (13.5,0.5) front row = seats 0/1. Spot_Party_2 (11.0,2.2) and Spot_Party_3 (14.0,2.2) back row = seats 2/3 or spectators
+    (tennis: seats 0–1 front, spectators back; golf: 4 across both rows), matching LobbyHeroStage's tennis rule.
+  - Spawn_Return_Party (10.5, 0.0), facing east.
+Z4 PRO SHOP (stub) — south-west
+  - shop.kiosk  Anchor_Stand (-5.0, 5.5) -> TennisMenu "store" -> refuse("Store · Coming soon") (IslandMenuNotice). Shutters closed. No other function.
+Z5 QUICK MENU / SETTINGS (not a place, always on)
+  - HUD button top-right (phone) / Home ⌂ on the remote (TV). Opens a NEW Island-styled sheet with:
+    Continue (homeContinue), Play Tennis, Play Golf, Locker, Party, How to Play, Settings, Classic Menus, Back to Hub.
+  - Picking an item = quick travel: 0.3 s fade, the hero is placed at that station's Anchor_Stand, and the panel opens. Total ≤0.8 s.
+  - Settings rows (IslandSettingsScreen, hunk): "hubMode" Walkable Club | Classic Menus (key hub.enabled.v1, default ON).
+Z6 POST-MATCH RETURN (function, not a zone)
+  - leavePostMatch(.menu) and goHome() already end at show(.main). In hub mode, .main = the hub, and the spawn is picked by the last launch:
+    tennis -> Spawn_Return_Tennis, golf -> Spawn_Return_Golf, multiplayer -> Spawn_Return_Party (detected by observing the screen going
+    .online(.results)/.online(.lobby) -> .main while the lobby is non-nil or was just left; never by assigning service callbacks).
+    If there was no launch -> Spawn_Default.
+
+Station registry (HubLayout.stations — the ONLY station→action table; tests iterate it):
+  id              zone      promptText            action (existing API)                       radius in/out
+  locker.gear     Locker    "Locker · Gear"       hubOpen(.character)+tap lk-tab-gear          1.8/2.2
+  locker.customize Locker   "Locker · Colours"    hubOpen(.character)+tap lk-tab-customize     1.8/2.2
+  locker.emotes   Locker    "Locker · Emotes"     hubOpen(.character)+tap lk-tab-emotes        1.8/2.2
+  play.tennis     PlayGate  "Tennis"              hubOpen(.hub(.tennis))                       2.0/2.4
+  play.golf       PlayGate  "Golf"                hubOpen(.hub(.golf))                         2.0/2.4
+  play.howto      PlayGate  "How to Play"         hubOpen(.howTo)                              1.6/2.0
+  party.board     Terrace   "Play with Friends"   hubOpen(.party)                              2.0/2.4
+  shop.kiosk      ProShop   "Pro Shop"            select "store" path (Coming soon notice)      1.6/2.0
+
+======================================================================
+6. TOPOLOGY + DISTANCE / WALK-TIME TARGETS
+======================================================================
+Topology: hub-and-spoke with ONE central node (the plaza) and no dead-end mazes. Each spoke is ≤1 room deep. No route passes through another zone.
+
+                         [play.howto]
+              [play.tennis]   |    [play.golf]
+                    \     FORK (0,-10.5)    /
+                     \        |            /
+                       PLAY GATE arch (0,-8.5)
+                              |
+   LOCKER room ---- arch ---- PLAZA (tower) ---- ramp ---- PARTY TERRACE
+   (-12.5,0)      (-8.5,0)   spawn (0,4)       (8.5,0)     (12.5,0) board + 4 spots
+   gear/customize/emotes      |
+                          PRO SHOP kiosk (-5,5.5)
+
+  mermaid (same graph):
+  graph LR
+    Plaza((Plaza+Tower)) --- Locker[Locker: gear/customize/emotes]
+    Plaza --- Gate[Play Gate] --- Fork{Fork}
+    Fork --- Tennis[play.tennis] & Golf[play.golf] & HowTo[play.howto]
+    Plaza --- Terrace[Party Terrace: board + spots 0-3]
+    Plaza --- Shop[Pro Shop stub]
+    QM[[Quick Menu]] -. 1 tap .-> Locker & Tennis & Golf & Terrace & HowTo & Shop
+
+Movement constants (HubLayout): jog 4.5 m/s (stick ≥50% or tap-to-move), walk 1.8 m/s (stick <50%), accel 0→jog in 0.15 s, stop in 0.10 s,
+  turn rate 720°/s, capsule radius 0.35 m, height 1.8 m. Cartoony arrival: a 0.12 s squash on stop (scale 1.04/0.96) is allowed, and is off under Reduce Motion.
+Timing targets (gates H1.2/H1.3; measured on nav-grid shortest paths, at jog speed):
+  T1  Spawn_Default -> each core station Anchor_Stand: path ≤ 18.0 m (≤ 4.0 s). Starting layout, approximate: locker.gear 15.8 m, locker.customize 16.0 m,
+      play.tennis/golf ~17.3 m (around the tower), play.howto 17.0 m, party.board 14.1 m, shop.kiosk 5.2 m.
+  T2  Any station -> any other station: path ≤ 31.5 m (≤ 7.0 s).
+  T3  Each Spawn_Return_<x> -> its own station: ≤ 4.5 m (≤ 1.0 s). "Play again" is right there.
+  T4  Quick travel to any station: 1 tap + ≤ 0.8 s until the panel is interactive.
+  T5  Hub ready (controllable) after "start" on the title, or after a match ends: cold ≤ 1.5 s, warm re-entry ≤ 1.0 s (iPhone 15-class).
+Sightlines (gate H1.4): from Spawn_Default in the default camera, in BOTH portrait phone (393×852) and the TV canvas (1280×720), every zone mouth's Sign_
+  is ≥ 50% on screen. The tower is visible from every walkable nav cell (raycast test over the grid). Interior rule: the locker has an open front + no roof,
+  so the hero is never occluded > 20% of its silhouette pixels in any locker cell (render test at 9 sample points).
+
+======================================================================
+7. CONTROLS, CAMERA, INTERACTION, UI OVERLAYS
+======================================================================
+7.1 Phone, no TV (TennisPhoneMenu, portrait)
+  - Floating joystick: it appears where the thumb lands in the lower-left 50% × 40% of the screen. Dead zone 12 pt, full deflection 56 pt.
+    Direction is camera-relative and locked while held through a camera yaw blend, so it never flips.
+  - Tap-to-move: tap walkable ground -> A* on the nav grid -> lime ring marker -> jog. Tap a station or sign -> walk to its Anchor_Stand and open the panel on arrival.
+    A tap that starts a drag > 10 pt is a joystick, not a tap.
+  - A button (84 pt, lower-right). It shows only inside a prompt volume, with the prompt card above it ("A · Tennis").
+    Emote button (64 pt) next to it opens the IslandEmoteTile picker with the 3 equipped emotes (Player.equippedEmotes), Scuba/Thrust included.
+  - Quick Menu button (48 pt, top-right, safe-area aware). Hint text via IslandHintBar.
+  - Accessibility: VoiceOver exposes the station registry as a list of buttons (quick travel), so the whole hub works without walking.
+    session.bigText scales prompts. session.reduceMotion disables squash, camera drift and coach-mark bounce and makes quick travel a cut.
+7.2 TV / Mac connected (menu on TV via TennisTVRoot, phone = TennisRemote)
+  - DPad: hold an arrow = jog in that camera-relative direction (hold-to-repeat semantics, no swipe; two arrows held = diagonal). Single click = 0.5 m step.
+  - A = interact / select in panels. B = close panel / back. ⌂ Home = Quick Menu.
+  - NEW remote strip (only while the hub is free-roaming): three buttons "Play · Locker · Party" = quick travel.
+  - TV hint bar (IslandHintBar): Move · A Use · B Back · ⌂ Quick Menu.
+  - Panels on TV use the existing focus grid (TennisMenu.rows) unchanged.
+7.3 Camera (HubCamera, NEW)
+  - Third-person chase, fixed per-zone yaw rails: Plaza 0°, PlayGate 0°, Locker −90° (looking west into the open front), Terrace +90°, ProShop 0°.
+    Yaw blends over 0.6 s when the hero crosses a zone threshold. The player can't orbit (phones get lost, TV remotes can't orbit).
+  - Offset: distance 7.0, height 5.0, pitch 32°, look-ahead 0.8 m toward velocity, critically damped follow 0.18 s.
+  - FOV like ClubEnvironmentSceneView: 55° vertical in portrait, 60° horizontal in landscape/TV.
+  - Station framing: when a panel opens, dolly over 0.4 s to Anchor_Look_<id> so the hero stays visible in the top 45% (phone) or left 40% (TV) beside the panel.
+  - No camera collision raycasts. Per-zone rail parameters keep the camera outside walls (cheaper and deterministic). A test asserts the camera is never inside any Col_ footprint.
+7.4 Interaction system (HubInteraction, NEW)
+  - Trigger = cylinder at the station's Anchor_Stand with radius in/out hysteresis (table §5). The nearest eligible station wins, then registry order.
+    No facing requirement. Nothing opens automatically by walking in: open only on A, a tap on the station, or tap-to-move arrival.
+  - Opening a station: hero stops, faces Anchor_Look, plays its ready idle. HubState -> stationOpen(id). Call the action from the registry. Panel interactive ≤ 0.3 s.
+  - Panels ARE the existing screens. TennisMenuScreen renders the hub behind them, dimmed 35%. The panel sits as a bottom sheet (phone, 62% height) or right panel (TV, 58% width).
+    The ClubCameraHost hinge is skipped (fade 0.16 s) when either side of the transition is the hub.
+    Back/B from a panel's root -> .main = hub, with the hero still at that station.
+  - Sub-flows that go deeper (map picker, connect, loading, online lobby, story, results) run as today, full-screen. The hub is paused behind them and unloaded once Unity loads (§8).
+7.5 HUD (HubHUD, NEW, Island components only): joystick, A + prompt card, Emote, Quick Menu, notice (IslandMenuNotice for refusals like "Store · Coming soon"),
+  coach marks. Every focusable HUD element has a tap id and a place in the TV focus model.
+
+======================================================================
+8. STATE MACHINE + MULTIPLAYER PRESENCE + NETCODE BOUNDARY
+======================================================================
+8.1 HubState (NEW @MainActor @Observable, GolfArcade/Hub/HubState.swift). TennisMenu.screen stays the source of truth for WHICH panel is shown.
+    HubState owns only the world state.
+  stateDiagram-v2
+    [*] --> Onboarding: OnboardingFlow.holdsMenu
+    [*] --> Title: !holdsMenu
+    Onboarding --> Booting: finishOnboarding(sport) [spawn = sport gate, panel .hub(sport)]
+    Title --> Booting: tap "start" (screen -> .main)
+    Booting --> FreeRoam: scene + heroes ready (≤1.5 s) / timeout 4 s -> Fallback
+    Booting --> Fallback: asset missing | memory warning | hub.enabled.v1 == false
+    FreeRoam --> Prompting: enter Volume_Prompt
+    Prompting --> FreeRoam: leave volume (out radius)
+    Prompting --> StationOpen: A | tap station | tap-to-move arrival
+    FreeRoam --> QuickMenu: QM button | ⌂
+    QuickMenu --> StationOpen: pick item (quick travel)
+    QuickMenu --> FreeRoam: close
+    StationOpen --> FreeRoam: panel back to .main
+    StationOpen --> DeepFlow: screen leaves hub panels (map/connect/loading/online/story/settings tabs)
+    DeepFlow --> StationOpen: back to that panel
+    DeepFlow --> Suspended: session.active (Unity match running)
+    Suspended --> Returning: session ended (postMatch shown as today)
+    Returning --> FreeRoam: screen == .main [spawn = Spawn_Return_<last>]
+    Fallback --> [*]: IslandHomeScreen (classic) until next launch or setting change
+  Rules:
+  - Suspended: release hub GPU/geometry (scene = nil, heroes freed) BEFORE SportsRuntime loads Unity. Rebuild on return within the T5 warm budget.
+    Keep only HubLayout + the last spawn id.
+  - The hub never reads or writes SportsSession match state. It only watches session.active to suspend.
+  - OnboardingFlow.holdsMenu always wins (SportsHome order already does this). The hub never shows during onboarding.
+  - Persist: hub.enabled.v1 (Bool, default true), hub.tour.v1 (Bool), hub.lastSpawn.v1 (String). Nothing else. No change to players.v1 or the progress keys.
+  - DEBUG args: -hub (force on), -noHub (force classic), -hubStats (SceneKit showsStatistics + perf overlay), -hubSpawn <spawnID>, -hubScripted <route>
+    (deterministic walk for timing gates). If any existing UI-test arg is present (-skipPlayerCalibration, --lobby-mock, --lobby, --character-editor,
+    --resume-tennis-round-*, -benchTennis, -controllerMenuCheck, -controllerPhaseCheck, -forceOnboarding ...) and -hub is absent, behave as -noHub,
+    so existing UI tests keep passing.
+8.2 Multiplayer presence (P6) — uses ONLY MultiplayerService public state and calls
+  - Source of truth: MultiplayerService.shared.lobby (participants, seat, ready, connected, loadout) + .emotes + .networkTime. Hero look = participant.lobbyPlayer
+    (LockerCatalog.swift 112). Local hero = editing/saved Player.
+  - Anchored presence (required): while lobby != nil and phase == .lobby/.results, remote participants appear on Spot_Party_<seat-mapped>. They pop in with the
+    same 0.22 s pop + "wave" that LobbyHeroStage uses and fade out on leave. Ready = lime check card (IslandLobbyPlayerCard); reconnecting = coral dot.
+  - The local hero walks freely. Walking onto the terrace while in a lobby shows a "Party" prompt that opens .online(.lobby).
+  - Emotes: in a lobby, the Emote button calls MultiplayerService.playEmote(id) (respect emoteCooldown). Remote emotes play by eventID, de-duplicated like
+    LobbyHeroStage.Coordinator. Outside a lobby, emotes are local only.
+  - Clothes in a lobby -> .online(.clothes) (existing; it sends look via updateLook). Ready/Start/Invite/Leave -> the existing IslandOnlineScreen panel over the terrace.
+  - Match start -> the existing path (MultiplayerService.launch -> SportsSession.startMultiplayer, since onMatchRequested is nil) -> session.active -> hub Suspended.
+    Return -> the existing onReturnToLobby closure shows .online(.lobby). Closing that panel -> .main -> hub at Spawn_Return_Party. The hub assigns NO service callbacks.
+  NETCODE BOUNDARY (hard): the hub never touches transports, packets, MultiplayerPacket, sendControl, Unity/Assets/Scripts/Multiplayer/** or Net/**, and never
+  assigns onMatchRequested/onReturnToLobby/onResult. Allowed calls: playEmote, and (through the existing panels only) the lobby actions IslandOnlineScreen already makes.
+  Remote players do NOT walk around in the required phases (no position data exists).
+  - Duplicate-stage rule: IslandOnlineScreen embeds its own LobbyHeroStage. Over the hub terrace, two hero sets must not show at once. If hiding the
+    embedded stage needs a change in IslandOnlineScreen (shared/locked), log NEEDS_OWNER ("add `showsStage: Bool = true` to IslandOnlineScreen") and mark
+    P6.4 FAIL(BLOCKED-OWNER). In the meantime the terrace hides its own presence heroes whenever an .online(...) panel is open (no duplicates, ever).
+8.3 Optional P10 (owner-gated): positional presence = a new unreliable "hubPos" kind {participantID, x, z, yaw, speed, t} at ≤5 Hz, ≤64 bytes, interpolated 150 ms
+    behind, dropped when phase != lobby. This needs the multiplayer owner's approval and a version gate. Draft the diff in NEEDS_OWNER.md. Do not implement it without approval.
+
+======================================================================
+9. CUSTOMIZABILITY, ASSET STRUCTURE, STYLE GUARDRAILS, PERFORMANCE
+======================================================================
+9.1 Customizability rule (new clothes/skins/tools must never break the hub)
+  C1  Heroes are built ONLY through MatchHero.build(player, sport:, distance:) + HeroRig. The hub never loads meshes, materials or kit textures itself.
+  C2  Looks come only from Player (saved) or MultiplayerParticipant.loadout -> lobbyPlayer. Unknown item ids must render through LockerCatalog.item(...)
+      fallback (standard). Test: a Player with an unknown skin id and an unknown racket id builds and walks without a crash or a missing body.
+  C3  The hub attaches nothing to bones directly. If a hub prop ever needs the hero (none are required now), it parents to a named socket through a NEW
+      HubSocketMap that resolves names: Hand_Racket, Hand_L today; HairRoot / Headwear / Chest_Top / Hip_Bottom / Foot_L_Shoe / Foot_R_Shoe when they exist.
+      A missing socket = skip the prop and log once. Never crash, never fall back to the root.
+  C4  Collision, prompts, camera framing and party spots use the fixed capsule (r 0.35, h 1.8) and anchors, never mesh bounds. A bigger outfit, hat or
+      tool can't change reachability or framing.
+  C5  The sport tool shown in the hub follows the zone: tennis kit + racket by default and at play.tennis; golf kit at play.golf (MatchHero.build sport:.golf).
+      Swapping must not rebuild other heroes.
+  C6  Station geometry is replaceable (Geo_*). Station identity, prompts and actions live in HubLayout. Changing art can't break wiring (gate H7.2).
+9.2 Asset structure (blockout, P7)
+  - Graybox (P1): built in code from SceneKit primitives in HubGraybox.swift. Zero art dependency.
+  - Modular kit (P7): blender/hub/HubKit.blend (NEW) -> GolfArcade/Hub/Assets/HubKit.usdz (or .scn). Modules on a 1 m grid, pivots at the floor centre:
+    floor tiles 2×2/4×4, ramp 1:6, low wall 0.6/1.2 m, arch 2.4 m opening, room shell 7×6 open-front, kiosk, sign board, tower, terrace platform, planter, bench.
+    Each module ≤ 2,000 tris (tower ≤ 6,000). One shared 2048² atlas + ≤ 2 small atlases. No per-module materials beyond the atlas set.
+    The scene graph keeps the §3 node names exactly. A test loads the asset and asserts every required Anchor_/Volume_/Spawn_/Cam_/Sign_ name exists.
+9.3 Performance budgets (iPhone 15-class device; the simulator alone can't prove device numbers)
+  P-a  Frame rate: ≥ 55 fps p95 and ≥ 58 fps median over a 30 s scripted walk (-hubScripted loop) with 4 heroes (1 local walking + 3 party) and 1 emote playing.
+       TV mode: steady 60 on the external display (the same rule as NativeSportsSession: a TV runs at 60).
+  P-b  Draw calls ≤ 120 in the worst hub view (SceneKit statistics, -hubStats). That's well under the 250 course cap because the SwiftUI HUD and panels also cost GPU.
+  P-c  Rendered triangles ≤ 150,000 scene (excluding heroes) in the worst view. Heroes beyond 9 m use the distance asset (MatchHero.asset distance:true).
+  P-d  Memory: phys_footprint ≤ 220 MB in free roam with 4 heroes (lobby baseline 145 MB). After Suspended (Unity loading), the hub's own allocations
+       release to ≤ 15 MB residual (measured before vs after).
+  P-e  Load: T5 (cold ≤ 1.5 s, warm ≤ 1.0 s), measured by signposts + SportsDiagnostics lines "hub_boot_start"/"hub_ready".
+  P-f  Shadows: 1 directional, shadow map 1024² (not the 2048 used by ClubEnvironmentView), 4× MSAA phone / none needed on TV if P-a fails. Hub texture memory ≤ 48 MB.
+  P-g  Thermal: 10-minute free-roam soak on device without thermal state reaching .serious (ProcessInfo.thermalState log).
+9.4 Style guardrails (only these; no reference photos)
+  - Simple, readable blockout: big flat shapes, rounded edges, few materials, high contrast between the walk surface and the walls. Signs are text in
+    IslandUI.font, never baked into textures.
+  - Heroes are the bouncy cartoon focus: the hub stays quieter than the heroes (lower saturation, no busy patterns behind them).
+  - Island tokens for every 2D element. Lime = the interactive highlight (prompt ring, tap marker, focus).
+  - Readable at phone distance: a zone sign is ≥ 28 pt equivalent at the 1280×720 canvas from Spawn_Default.
+
+======================================================================
+10. FILE OWNERSHIP / ONE-WRITER LOCKS
+======================================================================
+OWNED — NEW (whole files OK):
+  GolfArcade/Hub/HubLayout.swift          zones, anchors, spawns, stations, radii, speeds, camera rails (single source of truth)
+  GolfArcade/Hub/HubState.swift           state machine, flag, persistence keys, DEBUG args
+  GolfArcade/Hub/HubScene.swift           SCNScene assembly, zone nodes, lights, suspend/rebuild
+  GolfArcade/Hub/HubGraybox.swift         primitive geometry from HubLayout
+  GolfArcade/Hub/HubNavGrid.swift         0.25 m walkable grid baked from Col_ footprints, A*, capsule slide
+  GolfArcade/Hub/HubPlayerController.swift   input -> velocity, joystick/tap/DPad routing
+  GolfArcade/Hub/HubHeroMotion.swift      looping locomotion layer (walk/run blend by speed) over HeroRig + one-shot emotes (re-uses LobbyHeroMotion ideas; does not edit it)
+  GolfArcade/Hub/HubCamera.swift
+  GolfArcade/Hub/HubInteraction.swift
+  GolfArcade/Hub/HubStations.swift        registry action execution (calls TennisMenu public API + hubOpen)
+  GolfArcade/Hub/HubPresence.swift        MultiplayerService -> party heroes (read-only use of the service + playEmote)
+  GolfArcade/Hub/HubHUD.swift             joystick, A/prompt, emote, quick menu, coach marks (Island components)
+  GolfArcade/Hub/HubWorldScreen.swift     SwiftUI entry: SCNView host + HUD + panel layout
+  GolfArcade/Hub/HubSocketMap.swift
+  GolfArcade/Hub/HubPerf.swift            DEBUG probes: fps, draw calls, tris, footprint, signposts
+  GolfArcade/Hub/Assets/**                (P7 kit export)
+  blender/hub/**                          (P7 source + export script)
+  GolfArcadeTests/HubLayoutTests.swift, HubNavGridTests.swift, HubStateTests.swift, HubInteractionTests.swift, HubPresenceTests.swift, HubAssetContractTests.swift
+  GolfArcadeUITests/HubUITests.swift
+  work/hub/**                             proofs, PHASE_STATUS.md, NEEDS_OWNER.md, P<N>_RESULT.md
+OWNED — EXISTING (hunks only, only these regions):
+  GolfArcade/Unity/TennisMenuViews.swift  TennisMenuScreen.screenContent `.main` branch (hub vs IslandHomeScreen) + hub-behind-panel host for the station screens
+  GolfArcade/Unity/TennisMenu.swift       ONLY: (a) NEW `func hubOpen(_ destination: MenuScreen)` (calls show) + `func hubTapAfterOpen(_ id:)`;
+                                          (b) back(): in hub mode `.hub(_)`, `.locked`, `.howTo` (when opened from the hub) -> .main;
+                                          (c) settingsRows(.gameplay) + adjust(): "hubMode" row.
+                                          NOT OnlineLobbyMenu (line ~1000 to end of that type), NOT the onboarding regions (startTutorial, tutorialFinished, finishOnboarding, matchFinished).
+  GolfArcade/Unity/MotionClubMenus.swift  ClubCameraHost: a fade instead of the hinge when either route is the hub (≤ 6 lines)
+  GolfArcade/Unity/TennisPlayViews.swift  TennisRemote ONLY: hold-to-walk routing + the Play/Locker/Party quick-travel strip while the hub is free-roaming.
+                                          (TennisRacketController/TutorialPanel/TennisTVRoot holding card = onboarding owner.)
+  GolfArcade/Unity/IslandScreens.swift    IslandSettingsScreen: the "hubMode" row only. NOT IslandOnlineScreen / OnlineGameCenterSheet / MultiplayerMatchOverlay.
+LOCKED — read/call only (log NEEDS_OWNER for changes):
+  - Multiplayer: GolfArcade/Multiplayer/** (MultiplayerService.swift, MultiplayerModels.swift, GameCenterTransport.swift, LocalMultiplayerTransport.swift),
+    Unity/Assets/Scripts/Multiplayer/**, Unity/Assets/Scripts/Net/**, the TennisMenu OnlineLobbyMenu section, IslandOnlineScreen.
+  - Onboarding: GolfArcade/Onboarding/**, the onboarding regions of TennisMenu.swift / SportsHome.swift / SportsSession.swift / TennisPlayViews.swift.
+  - Heroes/locker: GolfArcade/Domain/Player.swift, LockerCatalog.swift, LockerColors.swift, LockerStudio.swift, CharacterModelPreview.swift (incl. LobbyHeroStage),
+    MatchHeroData.swift, MatchHeroMotion.swift, MatchHeroSurfaces.swift, GolfArcade/Unity/CharacterAssets/**, Unity/Assets/Editor/MatchHeroLockerExport.cs,
+    HeroKit.cs, ModularHeroLook.cs, MatchHeroLook.cs, TennisCustomization.cs, TennisRoster.cs, all hero FBX/anim/animator files, work/emote-fluid/**.
+  - Golf/tennis/shader/look: Unity/Assets/Scripts/** (all gameplay), Unity/Assets/Scripts/Course/**, course Resources, all shaders/materials, QualitySettings,
+    URP/Graphics settings, ArtDir/hero/kit/**, work/golf-look/**, Tools/PostcardCheck/**, *postcard*, ClubEnvironments/** (read-only reuse as a far card).
+  - Shell: SportsHome.swift, SportsSession.swift, SportsRuntime.*, SportsDisplays.swift, project.yml, project-unity.yml (run xcodegen; never edit).
+Known owner requests to file on day 1 (they block specific gates, not the whole goal):
+  NO-1 MatchHeroLockerExport.cs RigClips: add ("walk" <- HeroTennisDriver.Clip.Walk, loop), ("run" <- Clip.RunForward, loop), optional runLeft/runRight. Re-export
+       MatchHero_<Sex>_Rig.lzfse for both sexes (and GolfKitHero if the golf kit walks). Blocks H2.4. Interim allowed (and it still counts as FAIL(BLOCKED-OWNER)):
+       the "ready" loop + root slide + 2 Hz bob 3 cm.
+  NO-2 IslandOnlineScreen `showsStage: Bool = true` parameter. Blocks P6.4.
+  NO-3 (optional P10) hubPos packet kind.
+
+======================================================================
+11. PHASES AND BINARY GATES (PASS/FAIL only; proof file required for every PASS)
+======================================================================
+P0  BASELINE (read-only)
+  H0.1 PASS iff work/hub/BASELINE.md lists `git status --short` + `git diff --stat` for every owned EXISTING file and pass/fail counts of GolfArcadeTests,
+       SportsNavigationTests, MenuNavigationRegressionTests, Unity/Tools/check.sh (pre-existing failures named).
+  H0.2 PASS iff every §2 anchor you'll use (file + symbol + approximate line) was re-checked, with drift noted in BASELINE.md.
+  H0.3 PASS iff baseline perf of the current Home/locker/lobby screens (fps, footprint) is recorded with the method used (it's the before for §9.3).
+  H0.4 PASS iff NEEDS_OWNER.md contains NO-1 and NO-2 drafted with exact diffs.
+P1  STRUCTURE AS DATA + GRAYBOX (no controls yet; fixed camera fly-through allowed)
+  H1.1 PASS iff HubLayoutTests prove: every station id in §5 exists once; every station has Anchor_Stand + radius in<out; each zone has a Cam_ rail and a Sign_; spawns exist.
+  H1.2 PASS iff HubNavGridTests prove T1 (every spawn->station path ≤ 18.0 m) and T3, from A* on the baked grid (printed table in P1_RESULT.md).
+  H1.3 PASS iff the same tests prove T2 (all station pairs ≤ 31.5 m) and that every Anchor_Stand cell is reachable from Spawn_Default (no islands).
+  H1.4 PASS iff sightline proof: screenshots from Spawn_Default, portrait 393×852 and TV 1280×720 (work/hub/P1_sightline_phone.png, P1_sightline_tv.png),
+       plus a test asserting each Sign_ projects ≥ 50% inside the viewport and the tower is visible from 100% of walkable cells (raycast over the grid).
+  H1.5 PASS iff work/hub/P1_topdown.png = an orthographic top-down render with zones, anchors, volumes and nav grid drawn, generated by code from HubLayout.
+  H1.6 PASS iff graybox + 4 idle heroes ≥ 55 fps p95 over 30 s on an iPhone 15-class device or simulator profile (numbers in P1_perf.txt). FAIL -> §3 fallback stop.
+P2  LOCOMOTION, CONTROLS, CAMERA (phone, no TV)
+  H2.1 PASS iff a UI test drives the joystick from spawn to each core station and the prompt appears at each (HubUITests.testJoystickReachesAllStations).
+  H2.2 PASS iff tap-to-move to each station opens its panel on arrival, and a tap on a non-walkable point never moves the hero into a Col_ footprint (unit + UI).
+  H2.3 PASS iff the scripted jog (-hubScripted) spawn->each station logs hub_station_open with elapsed ≤ 4.0 s (log lines in P2_timing.log).
+  H2.4 PASS iff the hero plays real walk/run clips that blend by speed with no foot pop (≥ 2 s capture P2_locomotion.mov). FAIL(BLOCKED-OWNER) until NO-1 lands.
+  H2.5 PASS iff the camera is never inside a Col_ footprint over the whole scripted loop (test) and the joystick direction never flips during a yaw blend (test).
+  H2.6 PASS iff Reduce Motion disables squash, drift and coach-mark bounce, and quick travel becomes a cut (snapshot pair).
+P3  INTERACTION, STATIONS, QUICK MENU, FALLBACK
+  H3.1 PASS iff, for EVERY registry station, opening it sets TennisMenu.screen to the exact destination in §5 (and the locker tab), and Back returns to .main with
+       the hero at that Anchor_Stand (HubInteractionTests, parameterized over the registry).
+  H3.2 PASS iff Quick Menu reaches every station in exactly 1 tap from free roam, with the panel interactive ≤ 0.8 s (UI test timing + P3_quickmenu.mov).
+  H3.3 PASS iff Play Tennis -> exhibition -> court pick -> begin() reaches .connect with no TV, and .loading with -controllerMenuCheck (fake display) — the same as today's flow.
+  H3.4 PASS iff shop.kiosk shows "Store · Coming soon" and changes nothing else (UI test).
+  H3.5 PASS iff hub.enabled.v1 = false shows IslandHomeScreen, and a forced asset-load failure (-hubFailLoad DEBUG) falls back to it within 4 s, logging hub_fallback.
+  H3.6 PASS iff SportsNavigationTests + MenuNavigationRegressionTests + OnboardingUITests results equal baseline (they run with -noHub semantics, §8.1).
+  H3.7 PASS iff the Locker panel edits mirror live on the hub hero and Done persists (players.v1 changed exactly as when edited from classic Home; snapshot pair).
+P4  STATE MACHINE + MATCH ROUND TRIP
+  H4.1 PASS iff HubStateTests cover every transition in §8.1, including illegal ones (e.g. StationOpen while session.active is rejected).
+  H4.2 PASS iff a device run hub -> tennis match (TV) -> post-match -> Menu lands at Spawn_Return_Tennis facing the plaza, ≤ 1.0 s warm (P4_roundtrip_tennis.mov + log).
+  H4.3 PASS iff the same for golf -> Spawn_Return_Golf (P4_roundtrip_golf.mov).
+  H4.4 PASS iff footprint before Unity load minus hub residual meets P-d (hub residual ≤ 15 MB after Suspended), with numbers in P4_memory.txt.
+  H4.5 PASS iff with OnboardingFlow active (-forceOnboarding) the hub never renders, and after the reward the player spawns at that sport's gate with .hub(sport) open.
+  H4.6 PASS iff killing the app in free roam and relaunching restores hub.lastSpawn.v1 (not the middle of a panel).
+P5  TV / MAC MODE
+  H5.1 PASS iff with a display connected (device: AirPlay to Apple TV or a Mac AirPlay Receiver) the hub renders on the TV canvas and the phone shows TennisRemote.
+       DPad hold walks, A opens, B closes, ⌂ opens Quick Menu (P5_tv.mov + P5_phone.mov, or one side-by-side).
+  H5.2 PASS iff no swipe gesture exists in the TV path (code grep of Hub/ + TennisRemote hunk: no DragGesture on the remote path) — grep output saved.
+  H5.3 PASS iff the TV holds 60 fps steady in free roam (frame log) and the quick-travel strip reaches Play/Locker/Party in 1 press each.
+  H5.4 PASS iff connecting/disconnecting the display mid-roam keeps the hero position and doesn't crash (TennisMenu.displayChanged untouched) — video.
+P6  PARTY PRESENCE (MultiplayerService public API only)
+  H6.1 PASS iff with --lobby-mock 3 (and 4), mock participants appear on the correct Spot_Party_ by seat rule (tennis vs golf), each with its own look (snapshots).
+  H6.2 PASS iff on 2 simulators over Nearby: a join pops in + wave ≤ 1 s, an emote on A starts on B ≤ 0.5 s by eventID (no duplicates), and a look change after
+       Done appears ≤ 1 s (logs + P6_nearby_host.mov / P6_nearby_guest.mov).
+  H6.3 PASS iff Ready/Start/Leave via the panel over the terrace -> match -> results -> return lands at Spawn_Return_Party with the party heroes back on their spots.
+  H6.4 PASS iff two hero sets are never visible at once when an .online panel is open over the terrace. FAIL(BLOCKED-OWNER) if NO-2 isn't granted and the
+       interim hide rule is what's running (state which).
+  H6.5 PASS iff `git diff` shows zero changes in GolfArcade/Multiplayer/**, Unity/Assets/Scripts/Multiplayer/**, Net/** caused by you, AND
+       `grep -rn "onMatchRequested\|onReturnToLobby\|onResult" GolfArcade/Hub` returns nothing (grep + diff saved in P6_netcode_diff.txt).
+P7  BLOCKOUT KIT SWAP (structure-preserving)
+  H7.1 PASS iff HubAssetContractTests load GolfArcade/Hub/Assets/HubKit.* and find every required node name (§3), and all P1 layout/nav/sightline tests still pass on the kit.
+  H7.2 PASS iff swapping Geo_* between graybox and kit (DEBUG toggle) changes NO test result in P1–P3 (both runs saved).
+  H7.3 PASS iff the per-module tri limits and atlas count in §9.2 hold (a script prints a table from the asset).
+  H7.4 PASS iff the style guardrails in §9.4 are met: sign text is live text (grep: no baked sign textures), only Island tokens in HUD files (grep: no Color(hex:)/.font( outside IslandUI/IslandKit in Hub/).
+P8  PERFORMANCE + REGRESSION + DEVICE
+  H8.1 PASS iff P-a…P-g are all met on device, with numbers in work/hub/P8_perf.md (method + raw logs). Any over-cap number = FAIL with that number.
+  H8.2 PASS iff GolfArcadeTests, the UI suites above, Unity check.sh show no new failures vs H0.1.
+  H8.3 PASS iff `zsh Unity/Tools/build-integrated-ios.sh` succeeds and the app installs and runs on Adnan's iPhone (log + launch video).
+  H8.4 PASS iff `git diff --cached --name-only` ⊆ §10 owned list, and no foreign hunk in a shared file changed (save before/after hunk hashes).
+P9  FINAL — ADNAN'S EYE
+  H9.1 PASS iff Adnan approves work/hub/WALKTHROUGH_phone.mov (spawn -> locker change + Done -> emote -> tennis gate -> connect screen -> Quick Menu -> golf gate ->
+       party board -> back), work/hub/WALKTHROUGH_tv.mov (TV + phone remote: walk, open, play a match, return), and WALKTHROUGH_party.mov (2 devices/sims).
+       An agent PASS on P0–P8 doesn't count without this.
+P10 OPTIONAL — POSITIONAL PRESENCE (only if Adnan + the multiplayer owner approve NO-3 in chat)
+  H10.1 PASS iff remote heroes walk with ≤ 150 ms interpolation delay, ≤ 5 Hz, ≤ 64 B/packet, and the version gate rejects old peers cleanly. Otherwise N/A.
+
+======================================================================
+12. PROOF ARTIFACTS (paths)
+======================================================================
+work/hub/
+  BASELINE.md, NEEDS_OWNER.md, PHASE_STATUS.md, ARCH_FALLBACK.md (only if needed), P<N>_RESULT.md
+  P1_topdown.png, P1_sightline_phone.png, P1_sightline_tv.png, P1_paths.txt, P1_perf.txt
+  P2_timing.log, P2_locomotion.mov, P2_joystick.mov, P2_reducemotion_{on,off}.png
+  P3_stations_<id>.png (one per registry entry, phone + TV), P3_quickmenu.mov, P3_fallback.png
+  P4_roundtrip_tennis.mov, P4_roundtrip_golf.mov, P4_memory.txt
+  P5_tv.mov, P5_phone.mov, P5_swipe_grep.txt
+  P6_mock_{3,4}_{tennis,golf}.png, P6_nearby_host.mov, P6_nearby_guest.mov, P6_netcode_diff.txt
+  P7_kit_contract.txt, P7_swap_{graybox,kit}.xml, P7_tris.txt
+  P8_perf.md (+ raw *_frames.csv, *_footprint.log), P8_device_install.log
+  WALKTHROUGH_phone.mov, WALKTHROUGH_tv.mov, WALKTHROUGH_party.mov
+Capture: Simulator `xcrun simctl io booted screenshot|recordVideo`; device = Control Center screen recording; TV = a second camera or the Mac AirPlay window
+(name *_tv.mov / *_mac.mov). Perf numbers come from a device or a named simulator profile, and the method is always written next to the number.
+
+======================================================================
+13. PHASE_STATUS.md PROTOCOL
+======================================================================
+work/hub/PHASE_STATUS.md is the live ledger. Rewrite it (whole file, it's yours) at: phase start, every gate result, every NEEDS_OWNER entry, phase end.
+Format (exact):
+  # PHASE_STATUS — 33 Open World Lobby          updated: <YYYY-MM-DD HH:MM ET>
+  CURRENT: P<N> <name> — <IN PROGRESS | DONE | BLOCKED>
+  | Gate | Result | Proof | Note (≤ 12 words) |
+  |------|--------|-------|-------------------|
+  | H0.1 | PASS | work/hub/BASELINE.md | |
+  | H2.4 | FAIL(BLOCKED-OWNER) | work/hub/P2_locomotion.mov | NO-1 walk/run clips not exported |
+  ...every gate listed from the start as PENDING...
+  OPEN OWNER REQUESTS: NO-1 (open), NO-2 (open), ...
+  STAGED FILES: <git diff --cached --name-only, filtered to owned paths>
+  NEXT: <one line>
+Rules: allowed values = PENDING | PASS | FAIL | FAIL(BLOCKED-OWNER) | N/A. Never edit a PASS back to PENDING. If a later change breaks a passed gate, set it to FAIL
+and re-prove it. Don't start phase N+1 while phase N has a FAIL you can fix. FAIL(BLOCKED-OWNER) may carry forward.
+
+======================================================================
+14. ORDER OF WORK + FINAL REPORT
+======================================================================
+P0 -> P1 -> P2 -> P3 -> P4 -> P5 -> P6 -> P7 -> P8 -> P9 (P10 only on approval). At the end, post in chat: the PHASE_STATUS table, the NEEDS_OWNER.md contents,
+the exact staged file list, the three walkthrough paths, the perf table (P-a…P-g with numbers), and every place you had to stop. Nothing is committed.

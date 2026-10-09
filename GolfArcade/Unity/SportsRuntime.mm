@@ -9,6 +9,10 @@
 #else
 #define HAS_UNITY 0
 #endif
+static BOOL SportsExplicitBenchmark(void) {
+    NSArray<NSString*> *arguments = NSProcessInfo.processInfo.arguments;
+    return [arguments containsObject:@"-benchTennis"] || [arguments containsObject:@"-benchGolf"];
+}
 
 @implementation SportsRuntime {
 #if HAS_UNITY
@@ -30,7 +34,7 @@
 + (instancetype)shared { static SportsRuntime *instance; static dispatch_once_t token; dispatch_once(&token, ^{instance=[SportsRuntime new];}); return instance; }
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error {
 #if HAS_UNITY
-    if (![window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive]) {
+    if (![window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive] && !SportsExplicitBenchmark()) {
         if (error) *error=[NSError errorWithDomain:@"SportsRuntime" code:4 userInfo:@{NSLocalizedDescriptionKey:@"Connect an external TV or Mac to play. This phone remains the controller."}];
         return NO;
     }
@@ -96,6 +100,17 @@
     if([window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive]) {
         _unity.appController.window.hidden=YES;
         return;
+    }
+    if (SportsExplicitBenchmark()) {
+        // The opt-in phone proof stays on Unity's main UIScreen. The normal TV
+        // route above remains owned by Unity's multi-display renderer.
+        UIWindow *unityWindow = _unity.appController.window;
+        UIViewController *controller = _unity.appController.rootViewController;
+        unityWindow.rootViewController = nil;
+        window.rootViewController = controller;
+        controller.view.frame = window.bounds;
+        controller.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        unityWindow.hidden = YES;
     }
 #endif
 }

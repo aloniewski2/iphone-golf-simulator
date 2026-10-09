@@ -85,7 +85,7 @@ namespace GolfArcade.Game
                         if (!mats[i]) continue;
                         var c = mats[i].color;
                         if (0.3f * c.r + 0.59f * c.g + 0.11f * c.b < 0.3f) continue;   // the grip
-                        mats[i] = Clay(Color.Lerp(c, finish, 0.85f), false);
+                        mats[i] = FinishedClub(original[i], Color.Lerp(c, finish, 0.85f));
                     }
                     r.sharedMaterials = mats;
                 }
@@ -150,8 +150,14 @@ namespace GolfArcade.Game
             m = new Material(shader) { color = color };
             if (matCap) m.SetTexture("_MatCap", matCap);
             if (knit) m.SetTexture("_Knit", knit);
-            m.SetFloat("_Fabric", cloth ? 0.6f : 0f);
-            if (map) { m.SetTexture("_MainTex", map); m.SetFloat("_MatCapStrength", 0.6f); }   // (the map carries its own shading)
+            m.SetFloat("_MatCapStrength", .12f);
+            m.SetFloat("_Wrap", cloth ? .34f : .32f);
+            m.SetFloat("_Fabric", cloth ? .18f : 0f);
+            m.SetFloat("_SurfaceSmoothness", cloth ? .12f : .28f);
+            m.SetFloat("_SurfaceSpecular", cloth ? .25f : .8f);
+            m.SetFloat("_SurfaceSheen", cloth ? .45f : 0f);
+            m.SetColor("_SurfaceWarmth", cloth ? Color.black : new Color(.12f, .035f, .02f));
+            if (map) { m.SetTexture("_MainTex", map); m.SetFloat("_MatCapStrength", .08f); }   // (the map carries its own shading)
             clayMaterials[(color, cloth, map)] = m;
             return m;
         }
@@ -171,6 +177,21 @@ namespace GolfArcade.Game
         };
         static readonly Dictionary<string, Material> clubMaterials = new();
 
+        static readonly Dictionary<(Material, Color), Material> finishedClubMaterials = new();
+        static Material FinishedClub(Material source, Color tint)
+        {
+            if (finishedClubMaterials.TryGetValue((source, tint), out var cached) && cached) return cached;
+            // A reward changes the finish colour, retaining the authored metal/carbon roughness.
+            // The former clay replacement erased both sky reflections and the material identity.
+            var m = new Material(source) { name = source.name + " (finish)" };
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", tint);
+            if (m.HasProperty("_Color")) m.SetColor("_Color", tint);
+            finishedClubMaterials[(source, tint)] = m;
+            return m;
+        }
+
+
+
         /// Real metal for the clubs: Standard, so chrome and satin catch the sky.
         static Material ClubMaterial(string name)
         {
@@ -178,7 +199,7 @@ namespace GolfArcade.Game
             var f = ClubFinishes.TryGetValue(name, out var known) ? known : (color: Color.grey, metal: 0f, smooth: 0.3f);
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             if (!shader) return HoleView.Mat(f.color);
-            m = new Material(shader) { color = f.color };
+            m = new Material(shader) { name = name, color = f.color };
             m.SetFloat("_Metallic", f.metal);
             m.SetFloat("_Glossiness", f.smooth);
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", f.color);
@@ -484,6 +505,10 @@ namespace GolfArcade.Game
                 bone.localRotation *= fix;
                 if (at is Vector3 p) bone.localPosition = p;
             }
+            // Complete the closed golf grip synchronously after the source clip
+            // and shaft-clearance solve; scrubbing/export does not rely on LateUpdate.
+            if (heroFigure != null)
+                GolfArcade.Tennis.HeroGripPolish.ApplyGrip(heroFigure.Root.GetComponent<GolfArcade.Tennis.MatchHeroLook>());
         }
 
         GolfClub shownClub = GolfClub.Driver;

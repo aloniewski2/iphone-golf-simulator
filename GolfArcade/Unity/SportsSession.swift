@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import Darwin
 
 enum ControllerSetupStage { case scan, timing, ready, playing }
 
@@ -47,11 +48,27 @@ final class SportsSession {
     var reduceMotion = UserDefaults.standard.bool(forKey:"sports.reduceMotion") {
         didSet { UserDefaults.standard.set(reduceMotion,forKey:"sports.reduceMotion") }
     }
+    var presentationIntros = UserDefaults.standard.string(forKey: "sports.presentationIntros") ?? "full" {
+        didSet { UserDefaults.standard.set(presentationIntros, forKey: "sports.presentationIntros") }
+    }
+    private var rematchPresentation = false
+    func prepareRematchPresentation() { rematchPresentation = true }
+    func consumePresentationIntroCut() -> String {
+        defer { rematchPresentation = false }
+        return rematchPresentation && presentationIntros != "off" ? "short" : presentationIntros
+    }
+    var holeFlyover = (UserDefaults.standard.object(forKey: "sports.holeFlyover") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(holeFlyover, forKey: "sports.holeFlyover") }
+    }
+    var presentationBigMoments = (UserDefaults.standard.object(forKey: "sports.presentationBigMoments") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(presentationBigMoments, forKey: "sports.presentationBigMoments") }
+    }
     /// A short loading transition, gated by actual runtime readiness.
     let loading = LoadingModel()
     let pointClips = PointClips()
     /// The tennis tutorial's current step, from Unity: (index, count, text).
     var finishedMatch: (won: Bool, score: String)?
+    private var resultPresentationReady = true
     /// Unity's numbers for the match just finished (aces, winners, rally, timing...), for the XP screen.
     var lastMatchStats: MatchStats?
     var tutorialStep: (index: Int, count: Int, text: String)?
@@ -68,7 +85,7 @@ final class SportsSession {
         didSet { UserDefaults.standard.set(golfCourse, forKey: "sports.golfCourse") }
     }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
-    static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis")
+    static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis") || ProcessInfo.processInfo.arguments.contains("-benchGolf")
     var haptics = (UserDefaults.standard.object(forKey:"arcade.hapticsEnabled") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(haptics,forKey:"arcade.hapticsEnabled") }
     }
@@ -143,7 +160,7 @@ final class SportsSession {
     private var launchExtras: [String:Any] = [:]
     private(set) var multiplayerMatchID: String?
     private var multiplayerSeat = -1
-    private var sessionID = ""
+    private(set) var sessionID = ""
     /// Numeric stand-in for the session id on the binary sample channel.
     private var sessionToken: Int32 = 0
     private var pending: [String:Any]?
@@ -293,7 +310,8 @@ final class SportsSession {
         multiplayerMatchID=configuration.matchID
         multiplayerSeat=configuration.participants.first { $0.id == configuration.localID }?.seat ?? -1
         sport=configuration.sport; tennisVenue=configuration.venue
-        launchExtras=["mode":"multiplayer", "network":json, "sets":configuration.sets, "games":configuration.games, "tips":false]
+        if configuration.sport == "golf" { golfCourse=configuration.venue }
+        launchExtras=["course":configuration.venue,"mode":"multiplayer", "network":json, "sets":configuration.sets, "games":configuration.games, "tips":false]
         start(preview: !displayConnected)
         launchExtras=[:]
         if !active { multiplayerMatchID=nil }
@@ -301,14 +319,14 @@ final class SportsSession {
     func start(preview: Bool = false) {
         guard !active else { return }
         SportsDisplays.shared.refresh()
-        let preview = false
+        let preview = Self.benchmark && !displayConnected
         NSLog("[SportsSession] launch sport=%@ mode=%@ touch=%d",sport,preview ? "phone-preview" : "external-controller",touch ? 1 : 0)
-        guard let window=SportsDisplays.shared.gameWindow(preview:preview) else {
+        guard let window = Self.benchmark ? SportsDisplays.shared.benchmarkWindow() : SportsDisplays.shared.gameWindow(preview:preview) else {
             status="Connect a TV or Mac with AirPlay or a wired display to play. This phone is your controller."; return
         }
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
-        finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
+        resultPresentationReady = true; finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         tvDelay = timingCalibration ?? 0
         golfCalibrationRequired = true; golfCalibrating = false; golfCalibrationCount = 0
         setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; stamina=1
@@ -321,7 +339,7 @@ final class SportsSession {
             matchEmotes = EmoteCatalog.normalized(local.loadout?.emotes)
         }
         motion.setAimProfile(storedAimProfile())
-        pending=["version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
+        pending=["holeFlyover":holeFlyover,"intros":consumePresentationIntroCut(),"bigMoments":presentationBigMoments,"presentationConstrained":reduceMotion || ProcessInfo.processInfo.thermalState == .serious || ProcessInfo.processInfo.thermalState == .critical,"version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound,"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
                  "skinHex":p.skinHex,"hairHex":p.hairHex,
                  "tips":false,"overscan":overscan,
@@ -333,14 +351,34 @@ final class SportsSession {
         pending?["external"] = runtimeExternalDisplay
         pending?["emotes"] = matchEmotes
         for (key, value) in launchExtras { pending?[key] = value }
+        if Self.benchmark {
+            // Verification flags affect this explicit benchmark launch only;
+            // they do not save frame-rate, venue, or character preferences.
+            let args = ProcessInfo.processInfo.arguments
+            func value(_ flag: String) -> String? {
+                guard let index = args.firstIndex(of: flag), index + 1 < args.count else { return nil }
+                return args[index + 1]
+            }
+            if let fps = value("--visual-fps").flatMap(Int.init), [60, 120].contains(fps) { pending?["fps"] = fps }
+            if let venue = value("--visual-venue"), ["resort", "skyscraper", "volcano"].contains(venue) { pending?["venue"] = venue }
+            if sport == "golf", let course = value("--visual-course"), ["cliffside", "postcards", "wildisles", "magma"].contains(course) { pending?["course"] = course }
+            if args.contains("--visual-female") { pending?["female"] = true }
+            if sport == "tennis" && !args.contains("--postgame-check") {
+                // Keep the real scoring match active throughout sustained performance capture.
+                pending?["sets"] = 3; pending?["games"] = 6
+            }
+        }
         // Explicit device verification uses a real, short match (no fabricated finish event).
         if Self.benchmark && ProcessInfo.processInfo.arguments.contains("--postgame-check") {
             pending?["sets"] = 1; pending?["games"] = 1
         }
 
         score = TennisScore(); contacts = []; tutorialStep = nil
-        loading.begin(now: Date())
+        loading.begin(now: LoadingModel.clockNow, multiplayer: multiplayerMatchID != nil)
         loading.onFinish = { [weak self] in self?.loadingFinished() }
+        SportsDisplays.shared.beginLoadingCover(in: window) { [weak self] in self?.loadCoveredRuntime(in: window) }
+    }
+    private func loadCoveredRuntime(in window: UIWindow) {
         do { try SportsRuntime.shared().load(in:window) }
         catch { failStartup(error.localizedDescription); return }
         SportsRuntime.shared().clearTennisResult()
@@ -358,7 +396,8 @@ final class SportsSession {
         Task { @MainActor [weak self] in
             try? await Task.sleep(for:.seconds(20))
                 guard let self, self.sessionID == launchingSession, self.active, !self.ready, self.pending != nil else { return }
-            self.failStartup("Unity did not finish loading. Choose a map to retry.")
+            if self.multiplayerMatchID == nil { self.loading.fail("The venue could not finish loading. Retry or leave the match.") }
+            // Multiplayer retains its cover and offers a shared Keep waiting / Leave choice.
         }
     }
     func failStartup(_ message: String) {
@@ -585,6 +624,12 @@ final class SportsSession {
     /// player sees (court direction, motion) only now.
     private func loadingFinished() {
         guard active, ready else { return }
+        SportsDisplays.shared.finishLoadingCover()
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("presentation/\(sessionID)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        if let data = try? JSONSerialization.data(withJSONObject: loading.timing, options: [.prettyPrinted, .sortedKeys]) {
+            try? data.write(to: directory.appendingPathComponent("L1_load_timing.json"), options: .atomic)
+        }
         if displayConnected { SportsDisplays.shared.external?.isHidden=true }
         else { SportsDisplays.shared.restorePhoneControls() }
         // Compensate from the first point with the last measurement of this TV; the
@@ -597,9 +642,17 @@ final class SportsSession {
             }
             setupStage = .playing; paused=false; status=multiplayerSeat<0 ? "Watching" : "Playing"
             if !touch && multiplayerSeat>=0 { motion.start(tennis:sport == "tennis",travel:travel) }
-            command("resume"); MultiplayerService.shared.runtimeLoaded(); return
+            command("resume"); return
         }
-        if Self.benchmark { setupStage = .ready; readyToPlay(); return }
+        if Self.benchmark {
+            SportsBenchmarkThermals.start(sport: sport)
+            setupStage = .playing; paused = false; menuPauseVisible = false
+            if sport == "golf" { sendGolfReady("recalibrate") }
+            command("controllerSetup", value: 0); command("resume")
+            SportsDisplays.shared.external?.isHidden = true
+            status = "Automated device verification"
+            return
+        }
         if sport == "tennis" {
             if touch { offerTimingCalibration() } else { beginAxisCapture() }
         } else {
@@ -608,9 +661,17 @@ final class SportsSession {
             status = "Hold the phone in your golf grip, then calibrate your swing."
         }
     }
+    private func recordPresentationEvent(_ event: [String: Any]) {
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("presentation/\(sessionID)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let path = directory.appendingPathComponent("beat_events.jsonl")
+        guard let data = try? JSONSerialization.data(withJSONObject: event, options: .sortedKeys) else { return }
+        if !FileManager.default.fileExists(atPath: path.path) { FileManager.default.createFile(atPath: path.path, contents: nil) }
+        if let file = try? FileHandle(forWritingTo: path) { defer { try? file.close() }; try? file.seekToEnd(); try? file.write(contentsOf: data + Data([10])) }
+    }
     /// Completion is part of every Unity heartbeat, independently of one-shot result events.
     func receiveMatchSnapshot(_ event: [String: Any]) {
-        guard event["matchComplete"] as? Bool == true,
+        guard event["presentationResultReady"] as? Bool != false, event["matchComplete"] as? Bool == true,
               let won = event["matchWon"] as? Bool else { return }
         receiveMatchFinish(won: won, score: event["finalScore"] as? String ?? "")
     }
@@ -641,6 +702,12 @@ final class SportsSession {
         }
         SportsDiagnostics.write("postMatch tapped: \(choice) mode=\(TennisMenu.shared.launch?.mode.rawValue ?? "none") round=\(TennisMenu.shared.launch?.round ?? -1)")
         TennisMenu.shared.finishMatch(choice)
+    }
+
+    func continueGolfRound() {
+        guard active, sport == "golf", golfPhase == "RoundDone", multiplayerMatchID == nil else { return }
+        if golfHasNextHole { command("golfContinue") }
+        else { TennisMenu.shared.finishMatch(.replay) }
     }
 
     func showMatchRewards() {
@@ -705,6 +772,7 @@ final class SportsSession {
         else { TennisMenu.shared.goHome() }
     }
     func end() {
+        if active { SportsDisplays.shared.beginExitCover() }
         menuPauseVisible = false
         if active && ready {
             var history=UserDefaults.standard.array(forKey:"sports.sessions.v1") as? [[String:Any]] ?? []
@@ -722,13 +790,17 @@ final class SportsSession {
     }
     private func poll() {
         if touch && active && !paused { sendInput(valid:true) }
-        loading.tick(now: Date())
+        if multiplayerMatchID != nil, let lobby = MultiplayerService.shared.lobby {
+            loading.updatePlayers(waiting: lobby.competitors.filter { !$0.loaded }.map(\.name), allReady: lobby.phase == .playing)
+        }
+        loading.tick(now: LoadingModel.clockNow)
         for _ in 0..<64 {
             guard let json=SportsRuntime.shared().pollEvent(),let data=json.data(using:.utf8),
                   let event=(try? JSONSerialization.jsonObject(with:data)) as? [String:Any] else { break }
             if event["type"] as? String != "feedback" { NSLog("[SportsSession] %@",json) }
-            if event["type"] as? String == "boot" { loading.reach(0.2); sendPending(); continue }
+            if event["type"] as? String == "boot" { loading.markBoot(); sendPending(); continue }
             guard event["session"] as? String == sessionID else { continue }
+            if let allowed = event["presentationResultReady"] as? Bool { resultPresentationReady = allowed }
             switch event["type"] as? String {
             case "ready":
                 pending=nil; ready=true
@@ -737,11 +809,12 @@ final class SportsSession {
                     UserDefaults.standard.set(false,forKey:"sports.resetCoaching"); command("coaching")
                 }
                 // The loading screen stays up until it has run its course (loadingFinished).
-                loading.markReady()
+                loading.markReady(now: Date(timeIntervalSince1970: (event["renderedAt"] as? Double).flatMap { $0 > 0 ? $0 : nil } ?? ProcessInfo.processInfo.systemUptime))
+                if multiplayerMatchID != nil { MultiplayerService.shared.runtimeLoaded(readyAfter: max(0, LoadingModel.multiplayerMinimum - loading.elapsed) + LoadingModel.finishDuration) }
                 if SportsSession.benchmark { loading.skip() }
+            case "sceneReady": loading.markSceneReady(now: Date(timeIntervalSince1970: event["clock"] as? Double ?? ProcessInfo.processInfo.systemUptime))
             case "loadProgress":
-                // Unity's scene load, 0...1, fills 20% → 80% of the bar.
-                if let p=Double(event["message"] as? String ?? "") { loading.reach(0.2+0.6*p) }
+                if let p=Double(event["message"] as? String ?? "") { loading.reach(p) }
             case "feedback":
                 if sport == "golf" {
                     golfPhase = event["golfState"] as? String ?? ""
@@ -801,7 +874,10 @@ final class SportsSession {
                 if parts.count == 2 { Analytics.track("golf_hole_done", ["strokes": parts[0], "capped": parts[1]]) }
             case "rally": if let n=Int(event["message"] as? String ?? "") { SportProgress.shared.recordRally(n); SportsDiagnostics.write("rally persisted \(n)") }
             case "matchStats": lastMatchStats = MatchStats(line: event["message"] as? String ?? "")
+            case "presentation":
+                recordPresentationEvent(event)
             case "matchOver":
+                guard resultPresentationReady else { continue }
                 let parts = (event["message"] as? String ?? "").split(separator: "|")
                 receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? String(parts[1]) : "")
             case "exit": if active { exitGame() }
@@ -813,7 +889,7 @@ final class SportsSession {
             }
         }
         // The durable copy of the result, read after the events so their stats are already in.
-        if active && finishedMatch == nil, let result = SportsRuntime.shared().tennisResult() {
+        if active && resultPresentationReady && finishedMatch == nil, let result = SportsRuntime.shared().tennisResult() {
             let parts = result.split(separator: "|", maxSplits: 1).map(String.init)
             receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? parts[1] : "")
         }
@@ -871,5 +947,64 @@ enum SportsTiming {
         guard lag.isFinite else { return }
         all[tv] = max(0, min(1.0, lag))
         defaults.set(all, forKey: key)
+    }
+}
+
+/// Companion device evidence for explicit benchmark launches. Unity records
+/// rendered frame intervals; this records iOS thermal state and process footprint.
+@MainActor private enum SportsBenchmarkThermals {
+    private static var timer: Timer?
+    private static var samples: [[String: Any]] = []
+    private static var startTime = Date()
+    private static var destination: URL?
+    private static var sport = ""
+
+    static func start(sport: String) {
+        guard SportsSession.benchmark else { return }
+        timer?.invalidate(); samples = []; startTime = Date(); self.sport = sport
+        let root = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            .appendingPathComponent("visual-overhaul/native-device", isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+            destination = root.appendingPathComponent("\(sport)-\(UUID().uuidString).json")
+            sample()
+            timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
+                Task { @MainActor in sample() }
+            }
+        } catch { print("[VisualDeviceProof] Thermal recorder failed: \(error)") }
+    }
+
+    private static func sample() {
+        guard let destination else { return }
+        let seconds = Date().timeIntervalSince(startTime)
+        var info = task_vm_info_data_t()
+        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+        let status = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+            }
+        }
+        let process = ProcessInfo.processInfo
+        let thermal: String
+        switch process.thermalState {
+        case .nominal: thermal = "nominal"
+        case .fair: thermal = "fair"
+        case .serious: thermal = "serious"
+        case .critical: thermal = "critical"
+        @unknown default: thermal = "unknown"
+        }
+        samples.append(["seconds": seconds, "thermalState": thermal,
+                        "processFootprintBytes": status == KERN_SUCCESS ? Int64(info.phys_footprint) : -1,
+                        "lowPowerMode": process.isLowPowerModeEnabled,
+                        "applicationState": UIApplication.shared.applicationState.rawValue])
+        let report: [String: Any] = [
+            "scope": "Real iOS thermal state and whole integrated process footprint; rendered FPS is recorded independently by Unity.",
+            "sport": sport, "startedUtc": ISO8601DateFormatter().string(from: startTime),
+            "arguments": process.arguments, "operatingSystem": process.operatingSystemVersionString,
+            "status": seconds >= 150 ? "complete" : "recording", "samples": samples
+        ]
+        do { try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: destination, options: .atomic) }
+        catch { print("[VisualDeviceProof] Thermal report write failed: \(error)") }
+        if seconds >= 150 { timer?.invalidate(); timer = nil }
     }
 }

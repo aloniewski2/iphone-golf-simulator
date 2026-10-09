@@ -1,0 +1,209 @@
+Diagnostic only: SSAO temporarily disabled; restored on exit.
+Filmic diagnostic: URP PostProcessData connected; ACES active; shader highlight rolls bypassed.
+female garment detail: match=False, fullTriangles=96693, matchTriangles=68774
+Garment swatch female: requested=F4F0E4, material=RGBA(0.890, 0.875, 0.832, 1.000)
+Skirt swatch: requested=F4F0E4, skirt=RGBA(0.890, 0.875, 0.832, 1.000), waistband=RGBA(0.578, 0.569, 0.540, 1.000)
+Garment swatch female: requested=162032, material=RGBA(0.080, 0.117, 0.182, 1.000)
+Skirt swatch: requested=162032, skirt=RGBA(0.080, 0.117, 0.182, 1.000), waistband=RGBA(0.378, 0.401, 0.444, 1.000)
+Garment swatch female: requested=37B7A6, material=RGBA(0.201, 0.667, 0.605, 1.000)
+Skirt swatch: requested=37B7A6, skirt=RGBA(0.201, 0.667, 0.605, 1.000), waistband=RGBA(0.130, 0.434, 0.394, 1.000)
+Cloth sample female_Ready_0: time=0.00000s
+Cloth sample female_Ready_1: time=0.73333s
+Cloth sample female_Ready_2: time=1.46667s
+Cloth sample female_Ready_3: time=2.20000s
+Cloth sample female_Ready_4: time=2.20000s
+Cloth review female Ready: length=2.200 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_Idle_0: time=0.00000s
+Cloth sample female_Idle_1: time=1.33333s
+Cloth sample female_Idle_2: time=2.66667s
+Cloth sample female_Idle_3: time=4.00000s
+Cloth sample female_Idle_4: time=4.00000s
+Cloth review female Idle: length=4.000 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_Forehand_0: time=0.00000s
+Cloth sample female_Forehand_1: time=0.40000s
+Cloth sample female_Forehand_2: time=0.80000s
+Cloth sample female_Forehand_3: time=1.20000s
+Cloth sample female_Forehand_4: time=0.66667s
+Cloth review female Forehand: length=1.200 contact=0.6667; 5 actual poses under pigment lighting
+Cloth sample female_Backhand_0: time=0.00000s
+Cloth sample female_Backhand_1: time=0.40000s
+Cloth sample female_Backhand_2: time=0.80000s
+Cloth sample female_Backhand_3: time=1.20000s
+Cloth sample female_Backhand_4: time=0.63333s
+Cloth review female Backhand: length=1.200 contact=0.6333; 5 actual poses under pigment lighting
+Cloth sample female_Serve_0: time=0.00000s
+Cloth sample female_Serve_1: time=0.83333s
+Cloth sample female_Serve_2: time=1.66667s
+Cloth sample female_Serve_3: time=2.50000s
+Cloth sample female_Serve_4: time=1.70000s
+Cloth review female Serve: length=2.500 contact=1.7000; 5 actual poses under pigment lighting
+Cloth sample female_Volley_0: time=0.00000s
+Cloth sample female_Volley_1: time=0.23333s
+Cloth sample female_Volley_2: time=0.46667s
+Cloth sample female_Volley_3: time=0.70000s
+Cloth sample female_Volley_4: time=0.30000s
+Cloth review female Volley: length=0.700 contact=0.3000; 5 actual poses under pigment lighting
+Cloth sample female_Smash_0: time=0.00000s
+Cloth sample female_Smash_1: time=0.40000s
+Cloth sample female_Smash_2: time=0.80000s
+Cloth sample female_Smash_3: time=1.20000s
+Cloth sample female_Smash_4: time=0.73333s
+Cloth review female Smash: length=1.200 contact=0.7333; 5 actual poses under pigment lighting
+Cloth sample female_RunForward_0: time=0.00000s
+Cloth sample female_RunForward_1: time=0.18889s
+Cloth sample female_RunForward_2: time=0.37778s
+Cloth sample female_RunForward_3: time=0.56667s
+Cloth sample female_RunForward_4: time=0.56667s
+Cloth review female RunForward: length=0.567 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_RunRight_0: time=0.00000s
+Cloth sample female_RunRight_1: time=0.18889s
+Cloth sample female_RunRight_2: time=0.37778s
+Cloth sample female_RunRight_3: time=0.56667s
+Cloth sample female_RunRight_4: time=0.56667s
+Cloth review female RunRight: length=0.567 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_RunLeft_0: time=0.00000s
+Cloth sample female_RunLeft_1: time=0.18889s
+Cloth sample female_RunLeft_2: time=0.37778s
+Cloth sample female_RunLeft_3: time=0.56667s
+Cloth sample female_RunLeft_4: time=0.56667s
+Cloth review female RunLeft: length=0.567 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_HitPerfect_0: time=0.00000s
+Cloth sample female_HitPerfect_1: time=0.55000s
+Cloth sample female_HitPerfect_2: time=1.10000s
+Cloth sample female_HitPerfect_3: time=1.65000s
+Cloth sample female_HitPerfect_4: time=1.65000s
+Cloth review female HitPerfect: length=1.650 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_MissWhiff_0: time=0.00000s
+Cloth sample female_MissWhiff_1: time=0.55000s
+Cloth sample female_MissWhiff_2: time=1.10000s
+Cloth sample female_MissWhiff_3: time=1.65000s
+Cloth sample female_MissWhiff_4: time=1.65000s
+Cloth review female MissWhiff: length=1.650 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_CelebratePoint_0: time=0.00000s
+Cloth sample female_CelebratePoint_1: time=0.55000s
+Cloth sample female_CelebratePoint_2: time=1.10000s
+Cloth sample female_CelebratePoint_3: time=1.65000s
+Cloth sample female_CelebratePoint_4: time=1.65000s
+Cloth review female CelebratePoint: length=1.650 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_SadPointLost_0: time=0.00000s
+Cloth sample female_SadPointLost_1: time=0.55000s
+Cloth sample female_SadPointLost_2: time=1.10000s
+Cloth sample female_SadPointLost_3: time=1.65000s
+Cloth sample female_SadPointLost_4: time=1.65000s
+Cloth review female SadPointLost: length=1.650 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_MatchWin_0: time=0.00000s
+Cloth sample female_MatchWin_1: time=0.83333s
+Cloth sample female_MatchWin_2: time=1.66667s
+Cloth sample female_MatchWin_3: time=2.50000s
+Cloth sample female_MatchWin_4: time=2.50000s
+Cloth review female MatchWin: length=2.500 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_MatchLose_0: time=0.00000s
+Cloth sample female_MatchLose_1: time=0.55000s
+Cloth sample female_MatchLose_2: time=1.10000s
+Cloth sample female_MatchLose_3: time=1.65000s
+Cloth sample female_MatchLose_4: time=1.65000s
+Cloth review female MatchLose: length=1.650 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_Walk_0: time=0.00000s
+Cloth sample female_Walk_1: time=0.36667s
+Cloth sample female_Walk_2: time=0.73333s
+Cloth sample female_Walk_3: time=1.10000s
+Cloth sample female_Walk_4: time=1.10000s
+Cloth review female Walk: length=1.100 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_ForehandWide_0: time=0.00000s
+Cloth sample female_ForehandWide_1: time=0.43333s
+Cloth sample female_ForehandWide_2: time=0.86667s
+Cloth sample female_ForehandWide_3: time=1.30000s
+Cloth sample female_ForehandWide_4: time=0.86667s
+Cloth review female ForehandWide: length=1.300 contact=0.8667; 5 actual poses under pigment lighting
+Cloth sample female_ForehandShort_0: time=0.00000s
+Cloth sample female_ForehandShort_1: time=0.33333s
+Cloth sample female_ForehandShort_2: time=0.66667s
+Cloth sample female_ForehandShort_3: time=1.00000s
+Cloth sample female_ForehandShort_4: time=0.46667s
+Cloth review female ForehandShort: length=1.000 contact=0.4667; 5 actual poses under pigment lighting
+Cloth sample female_BackhandWide_0: time=0.00000s
+Cloth sample female_BackhandWide_1: time=0.43333s
+Cloth sample female_BackhandWide_2: time=0.86667s
+Cloth sample female_BackhandWide_3: time=1.30000s
+Cloth sample female_BackhandWide_4: time=0.76667s
+Cloth review female BackhandWide: length=1.300 contact=0.7667; 5 actual poses under pigment lighting
+Cloth sample female_SliceApproach_0: time=0.00000s
+Cloth sample female_SliceApproach_1: time=0.40000s
+Cloth sample female_SliceApproach_2: time=0.80000s
+Cloth sample female_SliceApproach_3: time=1.20000s
+Cloth sample female_SliceApproach_4: time=0.50000s
+Cloth review female SliceApproach: length=1.200 contact=0.5000; 5 actual poses under pigment lighting
+Cloth sample female_Return_0: time=0.00000s
+Cloth sample female_Return_1: time=0.30000s
+Cloth sample female_Return_2: time=0.60000s
+Cloth sample female_Return_3: time=0.90000s
+Cloth sample female_Return_4: time=0.43333s
+Cloth review female Return: length=0.900 contact=0.4333; 5 actual poses under pigment lighting
+Cloth sample female_VolleyBackhand_0: time=0.00000s
+Cloth sample female_VolleyBackhand_1: time=0.23333s
+Cloth sample female_VolleyBackhand_2: time=0.46667s
+Cloth sample female_VolleyBackhand_3: time=0.70000s
+Cloth sample female_VolleyBackhand_4: time=0.30000s
+Cloth review female VolleyBackhand: length=0.700 contact=0.3000; 5 actual poses under pigment lighting
+Cloth sample female_ForehandOpen_0: time=0.00000s
+Cloth sample female_ForehandOpen_1: time=0.33333s
+Cloth sample female_ForehandOpen_2: time=0.66667s
+Cloth sample female_ForehandOpen_3: time=1.00000s
+Cloth sample female_ForehandOpen_4: time=0.53333s
+Cloth review female ForehandOpen: length=1.000 contact=0.5333; 5 actual poses under pigment lighting
+Cloth sample female_SplitToForehand_0: time=0.00000s
+Cloth sample female_SplitToForehand_1: time=0.20000s
+Cloth sample female_SplitToForehand_2: time=0.40000s
+Cloth sample female_SplitToForehand_3: time=0.60000s
+Cloth sample female_SplitToForehand_4: time=0.60000s
+Cloth review female SplitToForehand: length=0.600 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_SplitToBackhand_0: time=0.00000s
+Cloth sample female_SplitToBackhand_1: time=0.20000s
+Cloth sample female_SplitToBackhand_2: time=0.40000s
+Cloth sample female_SplitToBackhand_3: time=0.60000s
+Cloth sample female_SplitToBackhand_4: time=0.60000s
+Cloth review female SplitToBackhand: length=0.600 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_RecoverCenter_0: time=0.00000s
+Cloth sample female_RecoverCenter_1: time=0.26667s
+Cloth sample female_RecoverCenter_2: time=0.53333s
+Cloth sample female_RecoverCenter_3: time=0.80000s
+Cloth sample female_RecoverCenter_4: time=0.80000s
+Cloth review female RecoverCenter: length=0.800 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_EmoteScuba_0: time=0.00000s
+Cloth sample female_EmoteScuba_1: time=1.56667s
+Cloth sample female_EmoteScuba_2: time=3.13333s
+Cloth sample female_EmoteScuba_3: time=4.70000s
+Cloth sample female_EmoteScuba_4: time=4.70000s
+Cloth review female EmoteScuba: length=4.700 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_EmoteThrust_0: time=0.00000s
+Cloth sample female_EmoteThrust_1: time=1.16667s
+Cloth sample female_EmoteThrust_2: time=2.33333s
+Cloth sample female_EmoteThrust_3: time=3.50000s
+Cloth sample female_EmoteThrust_4: time=3.50000s
+Cloth review female EmoteThrust: length=3.500 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_EmoteSpike_0: time=0.00000s
+Cloth sample female_EmoteSpike_1: time=1.06667s
+Cloth sample female_EmoteSpike_2: time=2.13333s
+Cloth sample female_EmoteSpike_3: time=3.20000s
+Cloth sample female_EmoteSpike_4: time=3.20000s
+Cloth review female EmoteSpike: length=3.200 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_IntroWave_0: time=0.00000s
+Cloth sample female_IntroWave_1: time=0.66667s
+Cloth sample female_IntroWave_2: time=1.33333s
+Cloth sample female_IntroWave_3: time=2.00000s
+Cloth sample female_IntroWave_4: time=2.00000s
+Cloth review female IntroWave: length=2.000 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_IntroBringIt_0: time=0.00000s
+Cloth sample female_IntroBringIt_1: time=1.00000s
+Cloth sample female_IntroBringIt_2: time=2.00000s
+Cloth sample female_IntroBringIt_3: time=3.00000s
+Cloth sample female_IntroBringIt_4: time=3.00000s
+Cloth review female IntroBringIt: length=3.000 contact=0.0000; 5 actual poses under pigment lighting
+Cloth sample female_IntroPushups_0: time=0.00000s
+Cloth sample female_IntroPushups_1: time=1.00000s
+Cloth sample female_IntroPushups_2: time=2.00000s
+Cloth sample female_IntroPushups_3: time=3.00000s
+Cloth sample female_IntroPushups_4: time=3.00000s
+Cloth review female IntroPushups: length=3.000 contact=0.0000; 5 actual poses under pigment lighting
+Skin swatch female/pigment: tone=ACES, exposure=0.7, colour=FBAE8F, regionalResponse=1
+CAPTURE PASS: selected production bodies and 33 selected clip slots rendered; final appearance requires visual review.

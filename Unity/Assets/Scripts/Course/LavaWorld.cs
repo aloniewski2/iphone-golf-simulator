@@ -17,7 +17,7 @@ namespace GolfArcade.Course
         public static readonly Vector3 SunToward = new Vector3(0.55f, 0.52f, 0.66f).normalized;
 
         const float LakeY = -0.3f;          // a hand's breadth under the hole's own shore bands
-        const float HeightScale = 0.62f;    // the wall's height against Adnan's (its crest was 0.87 of the lake's radius)
+        const float HeightScale = 0.54f;    // the wall's height against Adnan's (its crest was 0.87 of the lake's radius)
 
         // ----- textures and materials, made once
         static Material lake, rockMat, hotMat, plainMat, smokeMat, puffMat, glowMat, crust, shoreGlow;
@@ -61,13 +61,13 @@ namespace GolfArcade.Course
         static void Materials()
         {
             if (rockMat) return;
-            var rock = T("crater_rock"); var relief = T("crater_relief");
+            var rock = Resources.Load<Texture2D>("Course/Resort/ResortBasalt_C") ?? T("crater_rock"); var relief = Resources.Load<Texture2D>("Course/Resort/ResortBasalt_N") ?? T("crater_relief");
             rockMat = Make("GolfArcade/CraterRock", new Color(0.92f, 0.86f, 0.82f), rock);
-            rockMat.SetTexture("_BumpMap", relief); rockMat.SetFloat("_BumpScale", 1.6f);
+            rockMat.SetTexture("_BumpMap", relief); rockMat.SetFloat("_BumpScale", .7f);
             rockMat.SetTexture("_Glow", T("lava_streams")); rockMat.SetFloat("_GlowAmount", 1.55f);
             hotMat = new Material(rockMat) { name = "Lava hot rock" };
             hotMat.SetTexture("_Glow", T("lava_streams")); hotMat.SetFloat("_GlowAmount", 1.1f);
-            plainMat = Make("GolfArcade/CraterRock", new Color(0.8f, 0.72f, 0.68f), T("ash_gravel"));
+            plainMat = Make("GolfArcade/CraterRock", new Color(.70f,.77f,.84f), rock);
             plainMat.SetTexture("_BumpMap", relief); plainMat.SetFloat("_BumpScale", 0.6f); plainMat.SetFloat("_GlowAmount", 0f);
             var soft = T("soft"); var puff = T("puff");
             smokeMat = Make("GolfArcade/ParticleSoft", Color.white, puff);
@@ -99,26 +99,20 @@ namespace GolfArcade.Course
                     y = Mathf.Lerp(Cone[i][1], Cone[i + 1][1], t); break;
                 }
             if (r < 128) return y;
-            if (r > 135 && r < 330)
-            {
-                // cliff strata: the wall steps up in ledges and risers instead of one smooth slope
-                const float terr = 8f; float q = y / terr, f = q - Mathf.Floor(q);
-                float stepped = (Mathf.Floor(q) + Sm(.5f, .9f, f)) * terr;
-                y = Mathf.Lerp(y, stepped, .75f * Mathf.Clamp01((r - 135) / 20f) * Mathf.Clamp01((330 - r) / 30f));
-            }
-            float ridge = .55f + .9f * Periodic(th, 1.7f, 3f);
+            // Broad eroded forms replace repetitive terraces and angular sawteeth.
+            // This is decorative distant terrain; it has no colliders or hazards.
+            float ridge = .74f + .52f * Periodic(th, 1.6f, 3f);
             if (y > 0) y *= ridge;
-            float fade = Mathf.Clamp01((r - 128) / 30f);
+            float fade = Sm(128, 170, r);
             float wx = r * Mathf.Cos(th), wz = r * Mathf.Sin(th);
-            y += (Noise(wx * .035f + 11, wz * .035f + 7) - .5f) * 2 * 7f * fade;
-            y += (Noise(wx * .11f + 3, wz * .11f + 19) - .5f) * 2 * 3.2f * fade;
-            y += (Periodic(th, 13f, 5f) - .5f) * 2 * 7f * fade;
-            if (r > 235 && r < 340) y += (Periodic(th, 34f, 2f) - .5f) * 2 * 12f * Sm(235f, 290f, r);   // a toothed crest
-            if (r > 300)
-            {
-                float g = Mathf.Abs(Mathf.Sin(th * 19f + Periodic(th, 3f, 9f) * 6f));
-                y -= Mathf.Pow(1 - g, 3) * 16f * Mathf.Clamp01((r - 300) / 100f) * Mathf.Clamp01((520 - r) / 60f);
-            }
+            y += (Noise(wx * .013f + 11, wz * .013f + 7) - .5f) * 18f * fade;
+            y += (Noise(wx * .041f + 3, wz * .041f + 19) - .5f) * 4.0f * fade;
+            float crest = Sm(230, 286, r) * (1 - Sm(322, 390, r));
+            y += (Periodic(th, 3.3f, 2f) - .5f) * 19f * crest;
+            // Uneven radial ravines read as geological shoulders, with no repeated
+            // horizontal step grid across the wall or zigzag sine-wave ridgeline.
+            float ravine = Mathf.Pow(Mathf.Clamp01((.48f - Periodic(th, 5.8f, 21)) * 3), 2);
+            y -= ravine * 13f * Sm(152, 230, r) * (1 - Sm(340, 470, r));
             return y;
         }
 
@@ -139,7 +133,9 @@ namespace GolfArcade.Course
             float k = lakeR / 123f;
             Lake(root, centre, lakeR);
             CraterWall(root, centre, lakeR, k);
+            LavaCascades(root, centre, k, seed);
             AshPlain(root, centre, lakeR, k);
+            DistantRidges(root, centre, lakeR, k);
             Boulders(root, centre, lakeR, k, seed);
             along.y = 0; along.Normalize();
             var right = Vector3.Cross(Vector3.up, along);
@@ -236,8 +232,94 @@ namespace GolfArcade.Course
             // the cone itself: basalt with lava streams, ringing the lake (radii in yards, Adnan's in metres times k)
             float foot = 118f * k, edge = 540f * k;
             var wall = Ring("Crater wall", centre, foot, edge,
-                r => r < 130f * k ? 60f * k : (r < 340f * k ? 3.5f * k : 5.5f * k), 288, 20f * k * 0.9f, 90f * k, (r, th) => Crater(r, th, k), 0f);
-            Spawn(root, "Crater wall", wall, rockMat);
+                r => r < 342f * k ? 2.0f * k : 4.0f * k, 384, 20f * k * 0.9f, 90f * k, (r, th) => Crater(r, th, k), 0f);
+            var material=new Material(GolfCourseLook.Current?GolfCourseLook.Current.Get(GolfCourseLook.Surface.Basalt):rockMat){name="Resort eroded crater basalt"};
+            material.SetColor("_LowColor",new Color(.095f,.12f,.16f));material.SetColor("_HighColor",new Color(.25f,.28f,.31f));
+            material.SetFloat("_RockScale",.035f);material.SetFloat("_StrataStrength",0);material.SetFloat("_EmissionEnabled",0);
+            material.SetFloat("_GeologicalMacro",1);material.SetFloat("_BumpScale",.9f);material.SetFloat("_HeightStrength",.40f);material.SetFloat("_TriplanarNormals",1);
+            Spawn(root, "Crater wall", wall, material);
+        }
+
+        // The wall renders a triangulated 2*k radial grid, not the analytic
+        // profile. Near the steep foot its linear faces can occlude an analytic
+        // flow. Sample those exact decorative triangles to maintain contact.
+        static float RenderedCraterHeight(float radius,float heading,float k)
+        {
+            const int around=384;float angularStep=Mathf.PI*2/around;
+            float th=Mathf.Repeat(heading,Mathf.PI*2),angle0=Mathf.Floor(th/angularStep)*angularStep;
+            float step=2*k,baseRadius=118*k+Mathf.Floor((radius-118*k)/step)*step;
+            var point=new Vector2(Mathf.Cos(th)*radius,Mathf.Sin(th)*radius);
+            Vector3 At(float r,float a)=>new(Mathf.Cos(a)*r,Crater(r,a,k),Mathf.Sin(a)*r);
+            bool Height(Vector3 a,Vector3 b,Vector3 c,out float result){
+                float denominator=(b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+                if(Mathf.Abs(denominator)<.00001f){result=0;return false;}
+                float u=((b.z-c.z)*(point.x-c.x)+(c.x-b.x)*(point.y-c.z))/denominator;
+                float v=((c.z-a.z)*(point.x-c.x)+(a.x-c.x)*(point.y-c.z))/denominator;
+                float w=1-u-v;result=u*a.y+v*b.y+w*c.y;
+                return u>=-.001f&&v>=-.001f&&w>=-.001f;
+            }
+            // A circular radius can lie just beyond a polygon's outer chord;
+            // the adjacent radial cell then supplies the exact covering face.
+            for(int cell=0;cell<2;cell++){
+                float r0=baseRadius+step*cell,r1=r0+step;
+                var a=At(r0,angle0);var b=At(r0,angle0+angularStep);var c=At(r1,angle0);var d=At(r1,angle0+angularStep);
+                if(Height(a,c,b,out float y)||Height(b,c,d,out y))return y;
+            }
+            return Crater(radius,heading,k);
+        }
+
+        static void LavaCascades(Transform root,Vector3 centre,float k,int seed)
+        {
+            // Continuous tapered ribbons follow the eroded slope. Full crater
+            // triangles are never copied: their stepped edge was visible from tee.
+            var vertices=new List<Vector3>();var indices=new List<int>();var uv=new List<Vector2>();
+            const int rows=128,across=6;
+            for(int stream=0;stream<5;stream++){
+                int start=vertices.Count;
+                for(int row=0;row<=rows;row++){
+                    float t=row/(float)rows;float r=Mathf.Lerp(282*k,118*k,t);
+                    float heading=(stream+.24f)*Mathf.PI*2/5+Mathf.Sin(stream*2.17f)*.21f+Mathf.Sin(r/k*.022f+stream*1.31f)*.038f;
+                    float width=(.024f+stream%3*.009f)*(1+.23f*Mathf.Sin(t*7.2f+stream))*(.82f+.25f*t);
+                    width*=Sm(0,.045f,t)*(1-Sm(.985f,1,t));
+                    for(int side=0;side<=across;side++){
+                        float x=side/(float)across;float th=heading+(x*2-1)*width;
+                        float height=Mathf.Max(RenderedCraterHeight(r,th,k)+1.3f*(1-Sm(.89f,.98f,t))+.10f,.12f);
+                        vertices.Add(new Vector3(centre.x+Mathf.Cos(th)*r,height,centre.z+Mathf.Sin(th)*r));
+                        uv.Add(new Vector2(x,t));
+                    }
+                }
+                for(int row=0;row<rows;row++)for(int side=0;side<across;side++){
+                    int a=start+row*(across+1)+side,b=a+1,c=a+across+1,d=c+1;
+                    indices.AddRange(new[]{a,c,b,b,c,d});
+                }
+                // The ribbon reaches below the lake surface instead of stopping
+                // above its basin. A hot pool with a cooled radial rim conceals
+                // the junction and makes the falling flow visibly feed the lake.
+                float poolRadius=120*k;
+                float poolHeading=(stream+.24f)*Mathf.PI*2/5+Mathf.Sin(stream*2.17f)*.21f+Mathf.Sin(poolRadius/k*.022f+stream*1.31f)*.038f;
+                var outward=new Vector3(Mathf.Cos(poolHeading),0,Mathf.Sin(poolHeading));
+                var tangent=new Vector3(-outward.z,0,outward.x);
+                var poolCentre=centre+outward*poolRadius;poolCentre.y=.13f;
+                int poolStart=vertices.Count;vertices.Add(poolCentre);uv.Add(new Vector2(.5f,1));
+                const int poolSegments=24,poolRings=4;
+                for(int ring=1;ring<=poolRings;ring++)for(int segment=0;segment<poolSegments;segment++){
+                    float rho=ring/(float)poolRings,a=segment*Mathf.PI*2/poolSegments;
+                    float irregular=1+.08f*Mathf.Sin(segment*2.3f+stream);
+                    var at=poolCentre+(outward*(Mathf.Cos(a)*8.5f*k)+tangent*(Mathf.Sin(a)*(4+stream%3)*k))*rho*irregular;
+                    vertices.Add(at);uv.Add(new Vector2(.5f+rho*.5f,.96f));
+                }
+                for(int segment=0;segment<poolSegments;segment++)indices.AddRange(new[]{poolStart,poolStart+1+(segment+1)%poolSegments,poolStart+1+segment});
+                for(int ring=0;ring<poolRings-1;ring++)for(int segment=0;segment<poolSegments;segment++){
+                    int a=poolStart+1+ring*poolSegments+segment,b=poolStart+1+ring*poolSegments+(segment+1)%poolSegments,c=a+poolSegments,d=b+poolSegments;
+                    indices.AddRange(new[]{a,b,c,b,d,c});
+                }
+            }
+            var mesh=new Mesh{name="Resort continuous tapered lava cascades",indexFormat=IndexFormat.UInt32};
+            mesh.SetVertices(vertices);mesh.SetUVs(0,uv);mesh.SetTriangles(indices,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
+            var flowMaterial=new Material(LakeMaterial()){name="Resort hot cascading lava"};
+            flowMaterial.SetFloat("_Cooling",1);flowMaterial.SetFloat("_SlopeFlow",1);flowMaterial.SetFloat("_PlateScale",18);
+            flowMaterial.SetFloat("_Cascade",1);
+            Spawn(root,"RESORT_LAVA_CASCADES",mesh,flowMaterial);
         }
 
         static void AshPlain(Transform root, Vector3 centre, float lakeR, float k)
@@ -247,6 +329,24 @@ namespace GolfArcade.Course
             float y = Crater(520f * k, 0.3f, k);
             var plain = Ring("Ash plain", centre, r0, Mathf.Max(r1, r0 + 400f), r => Mathf.Max(40f, r * 0.06f), 96, 60f, 40f * k, (r, th) => y, 0.05f);
             Spawn(root, "Ash plain", plain, plainMat);
+        }
+
+        static void DistantRidges(Transform root, Vector3 centre, float lakeR, float k)
+        {
+            // Beyond the crater, overlapping blue-violet silhouettes supply atmospheric scale.
+            // Each continuous ridgeline has a distinct broad profile and haze tint.
+            for(int layer=0;layer<3;layer++){
+                float inner=lakeR*(2.4f+layer*.60f),outer=inner+lakeR*.65f;
+                int index=layer;
+                var ridge=Ring("Resort distant volcanic ridge",centre,inner,outer,r=>lakeR*.06f,128,4,100,
+                    (r,th)=>{
+                        float t=Mathf.InverseLerp(inner,outer,r);float silhouette=.50f+.30f*Periodic(th,1.5f+index*.8f,31+index*9)+.13f*Periodic(th,4.2f,13+index*4);
+                        return LakeY+lakeR*(.15f+index*.045f)*silhouette*Mathf.Sin(t*Mathf.PI);
+                    },0);
+                var material=new Material(Shader.Find("Universal Render Pipeline/Lit")){name="Resort haze ridge "+layer};
+                material.SetColor("_BaseColor",Color.Lerp(new Color(.26f,.29f,.37f),new Color(.45f,.40f,.44f),layer/3f));material.SetFloat("_Smoothness",0);
+                Spawn(root,"RESORT_HAZE_RIDGE_"+layer,ridge,material,false);
+            }
         }
 
         // ----- rocks
@@ -296,8 +396,8 @@ namespace GolfArcade.Course
             {
                 float th = Rand(rng, 0, Mathf.PI * 2);
                 float r = (i % 5 == 0 ? Rand(rng, 255, 335) : Rand(rng, 138, 300)) * k;   // every fifth one along the crest
-                float size = (r > 250 * k ? Rand(rng, 5, 15) : Rand(rng, 2.5f, 11)) * k * 0.7f;
-                var pos = new Vector3(centre.x + Mathf.Cos(th) * r, Crater(r, th, k) + size * .12f, centre.z + Mathf.Sin(th) * r);
+                float size = (r > 250 * k ? Rand(rng, 4, 10) : Rand(rng, 2.5f, 9)) * k * 0.7f;
+                var pos = new Vector3(centre.x + Mathf.Cos(th) * r, Crater(r, th, k) - size * .28f, centre.z + Mathf.Sin(th) * r);
                 var rot = Quaternion.Euler(Rand(rng, -20, 20), Rand(rng, 0, 360), Rand(rng, -20, 20));
                 var scale = new Vector3(size * Rand(rng, .8f, 1.5f), size * Rand(rng, .7f, 1.6f), size * Rand(rng, .8f, 1.5f));
                 var ci = new CombineInstance { mesh = shapes[i % shapes.Length], transform = Matrix4x4.TRS(pos, rot, scale) };

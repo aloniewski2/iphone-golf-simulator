@@ -253,6 +253,7 @@ struct TennisMenuScreen: View {
             case .title: IslandTitleScreen(menu: menu, compact: compact)
             case .main: IslandHomeScreen(menu: menu, compact: compact)
             case .party: IslandPartyScreen(menu: menu, compact: compact)
+            case .online(.loading): LoadingScreen(menu: menu, compact: compact)
             case .online(let route): IslandOnlineScreen(menu: menu, route: route, compact: compact)
             case .quickPlay: ClubQuickPlayScreen(menu: menu, compact: compact)
             case .gameSelect: IslandSportsScreen(menu: menu, compact: compact)

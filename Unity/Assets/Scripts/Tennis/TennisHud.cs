@@ -8,7 +8,7 @@ namespace GolfArcade.Tennis
     public sealed class TennisHud : MonoBehaviour
     {
         // Palette: tropical daylight, one navy for every outline so it all reads as one set.
-        public static readonly Color Navy = new(.05f, .10f, .30f), NavyDeep = new(.03f, .06f, .20f);
+        public static readonly Color Navy = GolfArcade.UI.UiKit.Hex("10243D"), NavyDeep = GolfArcade.UI.UiKit.Hex("0A192D");
         internal static readonly Color SkyTop = new(.30f, .62f, 1f), SkyBottom = new(.07f, .24f, .78f);
         internal static readonly Color SunTop = new(1f, .86f, .30f), SunBottom = new(1f, .47f, .10f);
         internal static readonly Color SeaTop = new(.35f, .92f, 1f), SeaBottom = new(.12f, .50f, 1f);
@@ -19,7 +19,7 @@ namespace GolfArcade.Tennis
         bool scoreOnly = true;
         Font font;
         Sprite rounded, disc, star, ball, rallyRounded;
-        static readonly Color RallyNavy = new(.055f,.12f,.21f), RallyCream = new(.98f,.965f,.90f), RallyLime = new(.80f,.94f,.30f);
+        static readonly Color RallyNavy = GolfArcade.UI.UiKit.Hex("10243D"), RallyCream = GolfArcade.UI.UiKit.Hex("FFF9EE"), RallyLime = GolfArcade.UI.UiKit.Hex("D7F044");
         RectTransform feedbackPanel, callPanel; Text gradeText, setsText;
         RectTransform root, plaque, ballIcon;
         readonly Row[] rows = new Row[2];

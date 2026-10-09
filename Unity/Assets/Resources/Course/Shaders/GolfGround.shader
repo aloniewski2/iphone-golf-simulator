@@ -1,5 +1,7 @@
 Shader "GolfArcade/GolfGround" {
 Properties {
+ _GeologicalMacro("Broad geological weathering",Range(0,1))=0
+ _WetFoot("Wet lower coastal cliff",Range(0,1))=0
 
  [MainTexture] _BaseMap("Albedo / band sheen",2D)="white"{}
  [MainColor] _BaseColor("Tint",Color)=(1,1,1,1)
@@ -28,6 +30,13 @@ Properties {
  _StrataStrength("Rock strata strength",Float)=.075
  _TriplanarNormals("Triplanar normal detail",Float)=0
  _RockMipBias("Rock mip bias",Float)=1.5
+ _PaletteMode("Quiet colour palette",Float)=0
+ _LowColor("Low palette",Color)=(.25,.45,.19,1)
+ _HighColor("High palette",Color)=(.46,.66,.29,1)
+ _DetailContrast("Texture contrast",Float)=1
+ _TurfManaged("Managed turf hierarchy",Float)=0
+ _PaletteDetail("Calibrated dense turf map",Range(0,1))=0
+ _TurfMidpoint("Measured turf atlas luminance",Float)=.103
 
 }
 SubShader {
@@ -49,6 +58,7 @@ HLSLPROGRAM
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #include "../../Tennis/Shaders/HeroLighting.hlsl"
+#include "GolfTurfField.hlsl"
 half GolfShadowAttenuation(float3 world)
             {
                 #if defined(_MAIN_LIGHT_SHADOWS_SCREEN)
@@ -68,7 +78,7 @@ half GolfShadowAttenuation(float3 world)
 half GolfBand(float phase) {
  // Integrate away bands smaller than one pixel. No frame-dependent inputs.
  half fade=saturate(1-fwidth(phase)*2);
- return sin(phase*6.2831853)*fade;
+ return (smoothstep(-.14h,.14h,sin(phase*6.2831853))*2-1)*fade;
 }
 V GolfLitVertex(A a) {
  V o=GolfVertex(a);
@@ -111,12 +121,30 @@ half4 GolfFragment(V i):SV_Target {
    surfaceT=SafeNormalize(half3(1,0,0)-n*n.x);surfaceB=cross(surfaceT,n);
   }
   base=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,groundUV);
+  if(_PaletteMode>.5h) {
+   // Preserve authored blade detail with a controlled green hue and quiet contrast.
+   half value=dot(base.rgb,half3(.2126h,.7152h,.0722h));
+   // The cut-turf atlas has measured linear mean .1029, not the generic
+   // .25 midpoint. Its local material enables calibration; other courses
+   // retain their existing mapping with the default zero value.
+   half midpoint=lerp(.25h,max(_TurfMidpoint,.001h),saturate(_PaletteDetail));
+   half blend=saturate(.5h+(value-midpoint)*_DetailContrast);
+   if(_TurfManaged>.5h&&_Surface<.5h) blend=lerp(blend,GolfTurfGrowth(i.w.xz),.65h);
+   base.rgb=lerp(_LowColor.rgb,_HighColor.rgb,blend);
+   half macro=sin(i.w.x*.047h+sin(i.w.z*.028h))*sin(i.w.z*.039h);
+   if(_TurfManaged>.5h) {
+    half amount=_Surface<.5h?1:_Surface<1.5h?.35h:_Surface<2.5h?.30h:_Surface<3.5h?.12h:.50h;
+    base.rgb*=lerp(1,GolfTurfBroad(i.w.xz),amount);
+   } else base.rgb*= _PaletteDetail>.5h ? GolfTurfBroad(i.w.xz) : 1+macro*.025h;
+  }
   // Keep texel density on steep legacy fairway banks. Course coordinates drive
   // only broad mowing bands; microscopic blades must never collapse at a bend.
   if(_WorldUV>.5h && abs(n.y)<.75h) {
    half side=1-smoothstep(.35h,.75h,abs(n.y));
    float2 sideUV=(abs(n.x)>abs(n.z)?i.w.zy:i.w.xy)/max(_TileYards,.5);
-   base=lerp(base,SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,sideUV),side);
+   half4 sideBase=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,sideUV);
+   if(_PaletteMode>.5h) sideBase.rgb=lerp(_LowColor.rgb,_HighColor.rgb,saturate(.5h+(dot(sideBase.rgb,half3(.2126h,.7152h,.0722h))-.25h)*_DetailContrast));
+   base=lerp(base,sideBase,side);
    if(side>.5h) {
     groundUV=sideUV;
     half3 axis=abs(n.x)>abs(n.z)?half3(0,0,1):half3(1,0,0);
@@ -138,10 +166,10 @@ half4 GolfFragment(V i):SV_Target {
    half phase=dot(i.w.xz,_StripeDirection.xz)/max(_StripeWidth,.5h);
    if(_WorldUV>.5h && _FollowCourse>.5h) {
     float4 course=SAMPLE_TEXTURE2D(_MowingMap,sampler_MowingMap,(i.w.xz-_MowingBounds.xy)*_MowingBounds.zw);
-    phase=course.y/max(_StripeWidth,.5h);
+    phase=course.x/max(_StripeWidth,.5h);
    }
    half bands=GolfBand(phase)*_Bands;
-   if (_Surface>1.5h&&_Surface<2.5h) bands+=GolfBand(dot(i.w.xz,_StripeDirection.zx*float2(-1,1))/max(_StripeWidth,.5h))*.018h;
+   if (_Surface>1.5h&&_Surface<2.5h) bands+=GolfBand(dot(i.w.xz,_StripeDirection.zx*float2(-1,1))/max(_StripeWidth,.5h))*_Bands*.35h;
    base.rgb*=1+bands;
    base.rgb*=(_Surface>1.5h&&_Surface<3.5h)?edges.r:edges.g;
   #endif
@@ -151,6 +179,9 @@ half4 GolfFragment(V i):SV_Target {
  Light main=HeroMain(GetMainLight());
  main.shadowAttenuation=GolfShadowAttenuation(i.w);
  half3 colour=albedo*(i.illumination-i.key+HeroWrapped(n,main.direction,_Wrap)*main.color*main.shadowAttenuation);
+ half3 h=SafeNormalize(main.direction+v);
+ half spec=pow(saturate(dot(n,h)),lerp(24.0h,90.0h,saturate(gloss)));
+ colour+=main.color*main.shadowAttenuation*spec*(.008h+gloss*.025h);
  half edge=1-saturate(dot(n,v));edge*=edge;edge*=edge;
  colour+=albedo*edge*gloss*.10h*main.color*main.shadowAttenuation;
  #if defined(GOLF_ROCK)

@@ -108,7 +108,7 @@ namespace GolfArcade.Tennis
             else if (rally) Music.SetMix(.32f, .22f, 0);
             else if (serving) Music.SetMix(.62f, .55f, .12f);
             else Music.SetMix(.9f, .8f, .85f);
-            Music.Duck(Announcer.Speaking ? .45f : 1);
+            Music.Duck(Mathf.Min(Announcer.Speaking ? .45f : 1, GolfArcade.Game.PresentationStinger.MusicDuck));
             // The stands chat between points and go quiet for play.
             Ambience.Hush(serving ? (matchPoint ? .95f : .7f) : rally ? .6f : 0);
         }

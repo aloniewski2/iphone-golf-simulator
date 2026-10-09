@@ -17,7 +17,7 @@ namespace GolfArcade.Tests {
         static string Packet(NetworkConfiguration c,string kind,string payload="",string sender="a",string match=null)=>JsonUtility.ToJson(new NetworkPacket {lobbyID=c.lobbyID,matchID=match??c.matchID,sender=sender,kind=kind,payload=payload});
         static void Clean(){SportsMultiplayer.TestOutput=null;SportsMultiplayer.Shutdown();if(SportsMultiplayer.Instance)Object.DestroyImmediate(SportsMultiplayer.Instance.gameObject);Time.timeScale=1;}
 
-        [UnityTest] public IEnumerator EquippedIntroAcceptsLateChoiceAndHoldsUntilFinished() {
+        [UnityTest] public IEnumerator EquippedIntroChoiceDoesNotExtendThePresentationBudget() {
             Clean();Time.captureFramerate=10;
             yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
             var game=Object.FindFirstObjectByType<TennisGame>();
@@ -26,16 +26,16 @@ namespace GolfArcade.Tests {
             game.NativeControlled=true;game.AutoPlay=false;game.ManualSimulation=false;
             game.EquipEmotes(new[]{"scuba","wave","pushups"});
             var presentation=game.GetComponent<TennisPresentation>();
-            typeof(TennisPresentation).GetField("t",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(presentation,TennisPresentation.Drone+TennisPresentation.RivalIntro+TennisPresentation.PlayerIntro-.005f);
+
             var driver=game.Player.GetComponentInChildren<HeroTennisDriver>();int before=driver.EmotesPlayed;
             try {
                 Assert.AreEqual("intro",game.EmoteWindow);
                 Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0));
                 for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
                 Assert.AreEqual(before+1,driver.EmotesPlayed);Assert.AreEqual("IntroPushups",driver.LastEmotePlayed);
-                while(driver.EmoteActive){Assert.True(game.IntroPlaying,"Intro camera waits for the whole chosen clip");yield return null;}
+
                 for(int i=0;i<100 && game.IntroPlaying;i++)yield return null;
-                Assert.False(game.IntroPlaying,"Match proceeds after the selected intro");
+                Assert.False(game.IntroPlaying,"A long equipped animation cannot extend the intro cap");
                 Assert.AreNotEqual("intro",game.EmoteWindow);
             } finally {Time.captureFramerate=0;Clean();}
         }

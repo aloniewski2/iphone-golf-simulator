@@ -1,0 +1,7715 @@
+{
+  "status": "ORDINARY DEFAULT9 + CAMERA10 runtime counts/ground gate PASS; independent all161 rigid-source identities PASS; art remains PARTIAL",
+  "input": "Unity/Assets/Resources/Course/hole_12.fbx",
+  "inputSha256": "56b4d6197d960392008ad44bef257bc1a34477a95eeee3c3cac594971f29fd87",
+  "sourceInputUnchanged": true,
+  "warp": {
+    "axis": "Blender world Y in meters",
+    "anchors": [
+      [
+        8,
+        8
+      ],
+      [
+        60,
+        14
+      ],
+      [
+        110,
+        110
+      ]
+    ],
+    "identityOutside": true,
+    "CSharp": "y<=8 ? y : y<60 ? 8+(y-8)*6/52 : y<110 ? 14+(y-60)*96/50 : y",
+    "yardsConversion": "Convert course D yards to source meters (/197.9*181), warp, then multiply197.9/181; tee offset0",
+    "minimumDerivative": 0.11538461538461539,
+    "maximumDerivative": 1.92
+  },
+  "markersBefore": {
+    "MARKER_PIN": [
+      0.0,
+      181.0,
+      21.246322631835938
+    ],
+    "MARKER_TEE": [
+      0.0,
+      2.4763944566075224e-06,
+      15.199999809265137
+    ],
+    "MARKER_UP": [
+      0.0,
+      1.0622427907946985e-05,
+      65.19999694824219
+    ]
+  },
+  "markersAfter": {
+    "MARKER_PIN": [
+      0.0,
+      181.0,
+      21.246322631835938
+    ],
+    "MARKER_TEE": [
+      0.0,
+      2.4763944566075224e-06,
+      15.199999809265137
+    ],
+    "MARKER_UP": [
+      0.0,
+      1.0622427907946985e-05,
+      65.19999694824219
+    ]
+  },
+  "markersExactlyPreserved": true,
+  "terrain": [
+    {
+      "name": "TERRAIN_GREEN_ISLAND",
+      "mode": "continuous complete mesh warp",
+      "vertices": 6233,
+      "triangles": 12462,
+      "movedVertices": 62,
+      "maximumYDisplacementMeters": 3.8867568969726562,
+      "boundsBefore": [
+        [
+          -44.388877868652344,
+          105.77526092529297,
+          -2.000035285949707
+        ],
+        [
+          45.33908462524414,
+          225.6988525390625,
+          21.21727180480957
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -44.388877868652344,
+          101.88850402832031,
+          -2.000035285949707
+        ],
+        [
+          45.33908462524414,
+          225.6988525390625,
+          21.21727180480957
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TERRAIN_PROMONTORY",
+      "mode": "continuous complete mesh warp",
+      "vertices": 527,
+      "triangles": 1050,
+      "movedVertices": 409,
+      "maximumYDisplacementMeters": 45.33217811584473,
+      "boundsBefore": [
+        [
+          48.658416748046875,
+          23.10281753540039,
+          -2.0000195503234863
+        ],
+        [
+          81.91873931884766,
+          128.73321533203125,
+          17.55642318725586
+        ]
+      ],
+      "boundsAfter": [
+        [
+          48.658416748046875,
+          9.742632865905762,
+          -2.0000195503234863
+        ],
+        [
+          81.91873931884766,
+          128.73321533203125,
+          17.55642318725586
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TERRAIN_TEE_APPROACH",
+      "mode": "continuous complete mesh warp",
+      "vertices": 1000,
+      "triangles": 1996,
+      "movedVertices": 551,
+      "maximumYDisplacementMeters": 45.34610939025879,
+      "boundsBefore": [
+        [
+          -38.83845520019531,
+          -33.910240173339844,
+          -2.000009059906006
+        ],
+        [
+          61.0489387512207,
+          60.991519927978516,
+          15.000004768371582
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -38.83845520019531,
+          -33.910240173339844,
+          -2.000009059906006
+        ],
+        [
+          61.0489387512207,
+          15.903717994689941,
+          15.000004768371582
+        ]
+      ],
+      "shapeKeys": 0
+    }
+  ],
+  "objects": [
+    {
+      "name": "BRIDGE_PLANKS",
+      "mode": "continuous complete mesh warp",
+      "vertices": 5432,
+      "triangles": 10476,
+      "movedVertices": 4326,
+      "maximumYDisplacementMeters": 45.954957008361816,
+      "boundsBefore": [
+        [
+          24.803342819213867,
+          9.84558391571045,
+          15.783329963684082
+        ],
+        [
+          65.5,
+          131.6016082763672,
+          23.222204208374023
+        ]
+      ],
+      "boundsAfter": [
+        [
+          24.803342819213867,
+          8.21295166015625,
+          15.783329963684082
+        ],
+        [
+          65.5,
+          131.6016082763672,
+          23.222204208374023
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "BRIDGE_RAILS",
+      "mode": "continuous complete mesh warp",
+      "vertices": 3312,
+      "triangles": 6096,
+      "movedVertices": 2620,
+      "maximumYDisplacementMeters": 44.8629789352417,
+      "boundsBefore": [
+        [
+          24.53775978088379,
+          9.577169418334961,
+          -2.074098119919654e-05
+        ],
+        [
+          65.625,
+          131.8394012451172,
+          26.34998321533203
+        ]
+      ],
+      "boundsAfter": [
+        [
+          24.53775978088379,
+          8.181981086730957,
+          -2.074098119919654e-05
+        ],
+        [
+          65.625,
+          131.8394012451172,
+          26.34998321533203
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "BUNKER_00",
+      "mode": "continuous complete mesh warp",
+      "vertices": 224,
+      "triangles": 390,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -34.83625411987305,
+          134.22381591796875,
+          20.379972457885742
+        ],
+        [
+          -10.148945808410645,
+          169.85452270507812,
+          21.23997688293457
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -34.83625411987305,
+          134.22381591796875,
+          20.379972457885742
+        ],
+        [
+          -10.148945808410645,
+          169.85452270507812,
+          21.23997688293457
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "BUNKER_01",
+      "mode": "continuous complete mesh warp",
+      "vertices": 224,
+      "triangles": 390,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          14.16374397277832,
+          133.56497192382812,
+          20.379972457885742
+        ],
+        [
+          38.85105514526367,
+          166.65061950683594,
+          21.23997688293457
+        ]
+      ],
+      "boundsAfter": [
+        [
+          14.16374397277832,
+          133.56497192382812,
+          20.379972457885742
+        ],
+        [
+          38.85105514526367,
+          166.65061950683594,
+          21.23997688293457
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "BUNKER_02",
+      "mode": "continuous complete mesh warp",
+      "vertices": 224,
+      "triangles": 390,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -33.50175476074219,
+          171.92959594726562,
+          20.379968643188477
+        ],
+        [
+          -18.689367294311523,
+          194.83505249023438,
+          21.2525691986084
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -33.50175476074219,
+          171.92959594726562,
+          20.379968643188477
+        ],
+        [
+          -18.689367294311523,
+          194.83505249023438,
+          21.2525691986084
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "FAIRWAY",
+      "mode": "continuous complete mesh warp",
+      "vertices": 1807,
+      "triangles": 3096,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -11.733046531677246,
+          114.3758544921875,
+          20.939722061157227
+        ],
+        [
+          20.99955940246582,
+          170.39505004882812,
+          21.169931411743164
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -11.733046531677246,
+          114.3758544921875,
+          20.939722061157227
+        ],
+        [
+          20.99955940246582,
+          170.39505004882812,
+          21.169931411743164
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "FAIRWAY_FRINGE",
+      "mode": "continuous complete mesh warp",
+      "vertices": 2080,
+      "triangles": 3564,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -14.509466171264648,
+          113.31570434570312,
+          20.902433395385742
+        ],
+        [
+          24.973119735717773,
+          171.40968322753906,
+          21.139963150024414
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -14.509466171264648,
+          113.31570434570312,
+          20.902433395385742
+        ],
+        [
+          24.973119735717773,
+          171.40968322753906,
+          21.139963150024414
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "FLAG",
+      "mode": "continuous complete mesh warp",
+      "vertices": 4,
+      "triangles": 2,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          0.0,
+          181.0,
+          26.546321868896484
+        ],
+        [
+          3.4000000953674316,
+          181.0,
+          28.746322631835938
+        ]
+      ],
+      "boundsAfter": [
+        [
+          0.0,
+          181.0,
+          26.546321868896484
+        ],
+        [
+          3.4000000953674316,
+          181.0,
+          28.746322631835938
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "FLAG_POLE",
+      "mode": "continuous complete mesh warp",
+      "vertices": 20,
+      "triangles": 36,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -0.09510565549135208,
+          180.89999389648438,
+          21.246322631835938
+        ],
+        [
+          0.09510565549135208,
+          181.10000610351562,
+          28.84632110595703
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -0.09510565549135208,
+          180.89999389648438,
+          21.246322631835938
+        ],
+        [
+          0.09510565549135208,
+          181.10000610351562,
+          28.846323013305664
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "FLOWERS",
+      "mode": "rigid standing scenery groups",
+      "vertices": 1920,
+      "triangles": 3200,
+      "movedVertices": 576,
+      "maximumYDisplacementMeters": 15.52626617723173,
+      "boundsBefore": [
+        [
+          -33.18179702758789,
+          -29.831716537475586,
+          15.599996566772461
+        ],
+        [
+          33.966796875,
+          26.019283294677734,
+          16.600006103515625
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -33.18179702758789,
+          -29.831716537475586,
+          15.599996566772461
+        ],
+        [
+          33.966796875,
+          10.493017196655273,
+          16.600006103515625
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "GREEN",
+      "mode": "continuous complete mesh warp",
+      "vertices": 3025,
+      "triangles": 5376,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -24.13976287841797,
+          157.810302734375,
+          20.99997901916504
+        ],
+        [
+          25.875,
+          200.03273010253906,
+          21.397966384887695
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -24.13976287841797,
+          157.810302734375,
+          20.99997901916504
+        ],
+        [
+          25.875,
+          200.03273010253906,
+          21.397966384887695
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "GREEN_FRINGE",
+      "mode": "continuous complete mesh warp",
+      "vertices": 3889,
+      "triangles": 6912,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -26.905366897583008,
+          154.783203125,
+          20.96476936340332
+        ],
+        [
+          28.979999542236328,
+          203.0373992919922,
+          21.359683990478516
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -26.905366897583008,
+          154.783203125,
+          20.96476936340332
+        ],
+        [
+          28.979999542236328,
+          203.0373992919922,
+          21.359683990478516
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "HOLE_CUP",
+      "mode": "continuous complete mesh warp",
+      "vertices": 48,
+      "triangles": 92,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -0.4000000059604645,
+          180.60000610351562,
+          21.196321487426758
+        ],
+        [
+          0.4000000059604645,
+          181.39999389648438,
+          21.256322860717773
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -0.4000000059604645,
+          180.60000610351562,
+          21.196321487426758
+        ],
+        [
+          0.4000000059604645,
+          181.39999389648438,
+          21.256322860717773
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "LIGHTHOUSE",
+      "mode": "rigid standing scenery groups",
+      "vertices": 438,
+      "triangles": 804,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          6.5,
+          199.5,
+          20.99996566772461
+        ],
+        [
+          15.5,
+          208.5,
+          44.19996643066406
+        ]
+      ],
+      "boundsAfter": [
+        [
+          6.5,
+          199.5,
+          20.99996566772461
+        ],
+        [
+          15.5,
+          208.5,
+          44.19996643066406
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "ROCKS",
+      "mode": "rigid standing scenery groups",
+      "vertices": 552,
+      "triangles": 920,
+      "movedVertices": 192,
+      "maximumYDisplacementMeters": 44.147361211663885,
+      "boundsBefore": [
+        [
+          -47.747406005859375,
+          -39.12699890136719,
+          -5.490528106689453
+        ],
+        [
+          85.72034454345703,
+          221.92654418945312,
+          11.546679496765137
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -47.747406005859375,
+          -39.12699890136719,
+          -5.490528106689453
+        ],
+        [
+          85.72034454345703,
+          221.92654418945312,
+          11.546679496765137
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "SHRUBS",
+      "mode": "rigid standing scenery groups",
+      "vertices": 1008,
+      "triangles": 1680,
+      "movedVertices": 144,
+      "maximumYDisplacementMeters": 14.646456636900325,
+      "boundsBefore": [
+        [
+          -38.252174377441406,
+          -29.018518447875977,
+          14.499996185302734
+        ],
+        [
+          38.159759521484375,
+          212.9011688232422,
+          22.899982452392578
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -38.252174377441406,
+          -29.018518447875977,
+          14.499996185302734
+        ],
+        [
+          38.159759521484375,
+          212.9011688232422,
+          22.899982452392578
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_BOX",
+      "mode": "continuous complete mesh warp",
+      "vertices": 65,
+      "triangles": 64,
+      "movedVertices": 19,
+      "maximumYDisplacementMeters": 5.307694435119629,
+      "boundsBefore": [
+        [
+          -10.5,
+          -13.99999713897705,
+          15.099998474121094
+        ],
+        [
+          10.5,
+          14.00000286102295,
+          15.10000228881836
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -10.5,
+          -13.99999713897705,
+          15.099998474121094
+        ],
+        [
+          10.5,
+          8.69230842590332,
+          15.10000228881836
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_BOX_FRINGE",
+      "mode": "continuous complete mesh warp",
+      "vertices": 65,
+      "triangles": 64,
+      "movedVertices": 21,
+      "maximumYDisplacementMeters": 7.0769243240356445,
+      "boundsBefore": [
+        [
+          -12.0,
+          -15.99999713897705,
+          15.06999683380127
+        ],
+        [
+          12.0,
+          16.000001907348633,
+          15.070002555847168
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -12.0,
+          -15.99999713897705,
+          15.06999683380127
+        ],
+        [
+          12.0,
+          8.923077583312988,
+          15.070002555847168
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_BOX_RED",
+      "mode": "continuous complete mesh warp",
+      "vertices": 65,
+      "triangles": 64,
+      "movedVertices": 65,
+      "maximumYDisplacementMeters": 17.692309379577637,
+      "boundsBefore": [
+        [
+          15.0,
+          18.000001907348633,
+          15.149994850158691
+        ],
+        [
+          23.0,
+          28.000001907348633,
+          15.149996757507324
+        ]
+      ],
+      "boundsAfter": [
+        [
+          15.0,
+          9.153846740722656,
+          15.149994850158691
+        ],
+        [
+          23.0,
+          10.307692527770996,
+          15.149996757507324
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_BOX_YELLOW",
+      "mode": "continuous complete mesh warp",
+      "vertices": 65,
+      "triangles": 64,
+      "movedVertices": 65,
+      "maximumYDisplacementMeters": 12.38461685180664,
+      "boundsBefore": [
+        [
+          -9.0,
+          12.00000286102295,
+          15.149995803833008
+        ],
+        [
+          -1.0,
+          22.000001907348633,
+          15.14999771118164
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -9.0,
+          8.461538314819336,
+          15.149995803833008
+        ],
+        [
+          -1.0,
+          9.615385055541992,
+          15.14999771118164
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_FENCE",
+      "mode": "continuous complete mesh warp",
+      "vertices": 96,
+      "triangles": 120,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -17.299999237060547,
+          -16.299997329711914,
+          15.0
+        ],
+        [
+          17.299999237060547,
+          0.30000293254852295,
+          18.000001907348633
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -17.299999237060547,
+          -16.299997329711914,
+          15.0
+        ],
+        [
+          17.299999237060547,
+          0.30000293254852295,
+          18.000001907348633
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TEE_MARKERS",
+      "mode": "rigid standing scenery groups",
+      "vertices": 112,
+      "triangles": 216,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -6.550000190734863,
+          -0.5499975085258484,
+          15.199999809265137
+        ],
+        [
+          6.550000190734863,
+          0.5500026345252991,
+          16.100000381469727
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -6.550000190734863,
+          -0.5499975085258484,
+          15.199999809265137
+        ],
+        [
+          6.550000190734863,
+          0.5500026345252991,
+          16.100000381469727
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TERRAIN_GREEN_ISLAND",
+      "mode": "continuous complete mesh warp",
+      "vertices": 6233,
+      "triangles": 12462,
+      "movedVertices": 62,
+      "maximumYDisplacementMeters": 3.8867568969726562,
+      "boundsBefore": [
+        [
+          -44.388877868652344,
+          105.77526092529297,
+          -2.000035285949707
+        ],
+        [
+          45.33908462524414,
+          225.6988525390625,
+          21.21727180480957
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -44.388877868652344,
+          101.88850402832031,
+          -2.000035285949707
+        ],
+        [
+          45.33908462524414,
+          225.6988525390625,
+          21.21727180480957
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TERRAIN_PROMONTORY",
+      "mode": "continuous complete mesh warp",
+      "vertices": 527,
+      "triangles": 1050,
+      "movedVertices": 409,
+      "maximumYDisplacementMeters": 45.33217811584473,
+      "boundsBefore": [
+        [
+          48.658416748046875,
+          23.10281753540039,
+          -2.0000195503234863
+        ],
+        [
+          81.91873931884766,
+          128.73321533203125,
+          17.55642318725586
+        ]
+      ],
+      "boundsAfter": [
+        [
+          48.658416748046875,
+          9.742632865905762,
+          -2.0000195503234863
+        ],
+        [
+          81.91873931884766,
+          128.73321533203125,
+          17.55642318725586
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TERRAIN_TEE_APPROACH",
+      "mode": "continuous complete mesh warp",
+      "vertices": 1000,
+      "triangles": 1996,
+      "movedVertices": 551,
+      "maximumYDisplacementMeters": 45.34610939025879,
+      "boundsBefore": [
+        [
+          -38.83845520019531,
+          -33.910240173339844,
+          -2.000009059906006
+        ],
+        [
+          61.0489387512207,
+          60.991519927978516,
+          15.000004768371582
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -38.83845520019531,
+          -33.910240173339844,
+          -2.000009059906006
+        ],
+        [
+          61.0489387512207,
+          15.903717994689941,
+          15.000004768371582
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "TREES",
+      "mode": "rigid standing scenery groups",
+      "vertices": 2450,
+      "triangles": 4116,
+      "movedVertices": 750,
+      "maximumYDisplacementMeters": 43.673233431466635,
+      "boundsBefore": [
+        [
+          -31.825090408325195,
+          -29.98808479309082,
+          14.601606369018555
+        ],
+        [
+          76.18241882324219,
+          213.51950073242188,
+          34.17335510253906
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -31.825090408325195,
+          -29.98808479309082,
+          14.601606369018555
+        ],
+        [
+          76.18241882324219,
+          213.51950073242188,
+          34.17335510253906
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "WATERFALL",
+      "mode": "continuous complete mesh warp",
+      "vertices": 216,
+      "triangles": 324,
+      "movedVertices": 101,
+      "maximumYDisplacementMeters": 4.2014007568359375,
+      "boundsBefore": [
+        [
+          48.41764450073242,
+          105.43325805664062,
+          0.4095790684223175
+        ],
+        [
+          57.588348388671875,
+          114.83650207519531,
+          17.292129516601562
+        ]
+      ],
+      "boundsAfter": [
+        [
+          48.41764450073242,
+          101.23185729980469,
+          0.4095790684223175
+        ],
+        [
+          57.588348388671875,
+          114.83650207519531,
+          17.292129516601562
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "WATER_FOAM",
+      "mode": "continuous complete mesh warp",
+      "vertices": 3792,
+      "triangles": 7584,
+      "movedVertices": 1702,
+      "maximumYDisplacementMeters": 45.9449462890625,
+      "boundsBefore": [
+        [
+          -47.00460433959961,
+          -35.93282699584961,
+          -0.030562210828065872
+        ],
+        [
+          84.98553466796875,
+          229.35263061523438,
+          0.35053107142448425
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -47.00460433959961,
+          -35.93282699584961,
+          -0.030562210828065872
+        ],
+        [
+          84.98553466796875,
+          229.35263061523438,
+          0.35053107142448425
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "WATER_GLINTS",
+      "mode": "unchanged sea / original water blendshapes",
+      "vertices": 1016,
+      "triangles": 508,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -111.3490982055664,
+          -63.262359619140625,
+          0.2999598979949951
+        ],
+        [
+          126.88499450683594,
+          246.13079833984375,
+          0.3000102937221527
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -111.3490982055664,
+          -63.262359619140625,
+          0.2999598979949951
+        ],
+        [
+          126.88499450683594,
+          246.13079833984375,
+          0.3000102937221527
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "WATER_OCEAN",
+      "mode": "unchanged sea / original water blendshapes",
+      "vertices": 8,
+      "triangles": 8,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -1500.0,
+          -1500.0,
+          -0.0002443810226395726
+        ],
+        [
+          1500.0,
+          1500.0,
+          0.0002443810226395726
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -1500.0,
+          -1500.0,
+          -0.0002443810226395726
+        ],
+        [
+          1500.0,
+          1500.0,
+          0.0002443810226395726
+        ]
+      ],
+      "shapeKeys": 0
+    },
+    {
+      "name": "WATER_WAVES",
+      "mode": "unchanged sea / original water blendshapes",
+      "vertices": 5265,
+      "triangles": 10240,
+      "movedVertices": 0,
+      "maximumYDisplacementMeters": 0,
+      "boundsBefore": [
+        [
+          -180.0,
+          -120.0,
+          -5.53930331079755e-05
+        ],
+        [
+          180.0,
+          340.0,
+          1.9550481738406233e-05
+        ]
+      ],
+      "boundsAfter": [
+        [
+          -180.0,
+          -120.0,
+          -5.53930331079755e-05
+        ],
+        [
+          180.0,
+          340.0,
+          1.9550481738406233e-05
+        ]
+      ],
+      "shapeKeys": 5
+    }
+  ],
+  "rigidScenery": [
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.268177032470703,
+        -15.941874504089355,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        25.268177032470703,
+        -15.941874504089355,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -26.764293670654297,
+        -15.798783302307129,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -26.764293670654297,
+        -15.798783302307129,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.834840774536133,
+        -7.419704437255859,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.834840774536133,
+        -7.419704437255859,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.789182662963867,
+        -5.245641708374023,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        30.789182662963867,
+        -5.245641708374023,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.617143630981445,
+        -5.193068504333496,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        31.617143630981445,
+        -5.193068504333496,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.04604148864746,
+        -6.050662994384766,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        31.04604148864746,
+        -6.050662994384766,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.66526222229004,
+        -6.87640380859375,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -31.66526222229004,
+        -6.87640380859375,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.739591598510742,
+        -4.26818323135376,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        31.739591598510742,
+        -4.26818323135376,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.4642276763916,
+        -2.5781266689300537,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        30.4642276763916,
+        -2.5781266689300537,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.740976333618164,
+        -7.87875509262085,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.740976333618164,
+        -7.87875509262085,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.202369689941406,
+        1.1186567544937134,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        -31.202369689941406,
+        1.1186567544937134,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.437183380126953,
+        0.801938533782959,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        31.437183380126953,
+        0.801938533782959,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.846925735473633,
+        0.8156050443649292,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        -30.846925735473633,
+        0.8156050443649292,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.411455154418945,
+        1.972739815711975,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        -30.411455154418945,
+        1.972739815711975,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.248699188232422,
+        -7.943323135375977,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -31.248699188232422,
+        -7.943323135375977,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.50934410095215,
+        -7.97769832611084,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -31.50934410095215,
+        -7.97769832611084,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.071989059448242,
+        -8.093758583068848,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.071989059448242,
+        -8.093758583068848,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.876230239868164,
+        -7.572186470031738,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        30.876230239868164,
+        -7.572186470031738,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.74083137512207,
+        -8.094949722290039,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        30.74083137512207,
+        -8.094949722290039,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.485923767089844,
+        -8.19453239440918,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        29.485923767089844,
+        -8.19453239440918,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -20.164575576782227,
+        19.50844383239746,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -20.164575576782227,
+        9.327897071838379,
+        16.09999656677246
+      ],
+      "translationY": -10.18054646712083,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -21.172597885131836,
+        21.74850082397461,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -21.172597885131836,
+        9.586365699768066,
+        16.09999656677246
+      ],
+      "translationY": -12.16213534428523,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -20.857858657836914,
+        20.737960815429688,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -20.857858657836914,
+        9.469764709472656,
+        16.09999656677246
+      ],
+      "translationY": -11.268196105957031,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -20.781465530395508,
+        21.601593017578125,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -20.781465530395508,
+        9.569414138793945,
+        16.09999656677246
+      ],
+      "translationY": -12.032178438626802,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        9.67902660369873,
+        -25.84697723388672,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        9.67902660369873,
+        -25.84697723388672,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        10.708686828613281,
+        -27.385995864868164,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        10.708686828613281,
+        -27.385995864868164,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        10.4166898727417,
+        -27.682313919067383,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        10.4166898727417,
+        -27.682313919067383,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        12.001821517944336,
+        -26.113344192504883,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        12.001821517944336,
+        -26.113344192504883,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.597980499267578,
+        -21.033716201782227,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        22.597980499267578,
+        -21.033716201782227,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        20.054079055786133,
+        -20.420637130737305,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        20.054079055786133,
+        -20.420637130737305,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        20.692581176757812,
+        -20.360376358032227,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        20.692581176757812,
+        -20.360376358032227,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        20.26569175720215,
+        -19.743885040283203,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        20.26569175720215,
+        -19.743885040283203,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.724855422973633,
+        15.273569107055664,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        25.724855422973633,
+        8.839258193969727,
+        16.099998474121094
+      ],
+      "translationY": -6.434311133164625,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        27.44230842590332,
+        16.84747314453125,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        27.44230842590332,
+        9.020862579345703,
+        16.099998474121094
+      ],
+      "translationY": -7.826610858623798,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -26.98817253112793,
+        16.56382942199707,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        -26.98817253112793,
+        8.988134384155273,
+        16.099998474121094
+      ],
+      "translationY": -7.575695257920485,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -26.45664405822754,
+        15.053483009338379,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        -26.45664405822754,
+        8.813863754272461,
+        16.099998474121094
+      ],
+      "translationY": -6.23961958518395,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -25.347063064575195,
+        17.389060974121094,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        -25.347063064575195,
+        9.083353042602539,
+        16.099998474121094
+      ],
+      "translationY": -8.305707784799429,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.052539825439453,
+        23.74748420715332,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        18.052539825439453,
+        9.817017555236816,
+        16.09999656677246
+      ],
+      "translationY": -13.93046679863563,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.209892272949219,
+        22.991270065307617,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        15.209892272949219,
+        9.729762077331543,
+        16.09999656677246
+      ],
+      "translationY": -13.2615081346952,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        16.920654296875,
+        25.165550231933594,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        16.920654296875,
+        9.980640411376953,
+        16.09999656677246
+      ],
+      "translationY": -15.18490982055664,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.98756980895996,
+        -8.626886367797852,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.98756980895996,
+        -8.626886367797852,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -29.880369186401367,
+        -8.876676559448242,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -29.880369186401367,
+        -8.876676559448242,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -29.442834854125977,
+        -9.41586971282959,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -29.442834854125977,
+        -9.41586971282959,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.914247512817383,
+        -23.429256439208984,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        18.914247512817383,
+        -23.429256439208984,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.450054168701172,
+        -21.10304069519043,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        18.450054168701172,
+        -21.10304069519043,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.708019256591797,
+        -20.620771408081055,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        19.708019256591797,
+        -20.620771408081055,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.17132568359375,
+        -23.20526885986328,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        19.17132568359375,
+        -23.20526885986328,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        5.959629535675049,
+        -28.966176986694336,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        5.959629535675049,
+        -28.966176986694336,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        5.898301601409912,
+        -26.206951141357422,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        5.898301601409912,
+        -26.206951141357422,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        7.794376850128174,
+        -27.580055236816406,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        7.794376850128174,
+        -27.580055236816406,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.36762809753418,
+        -12.700359344482422,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        28.36762809753418,
+        -12.700359344482422,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.777782440185547,
+        -13.762127876281738,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        28.777782440185547,
+        -13.762127876281738,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        27.354780197143555,
+        -15.358053207397461,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        27.354780197143555,
+        -15.358053207397461,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.98871612548828,
+        -13.174528121948242,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        28.98871612548828,
+        -13.174528121948242,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -16.425010681152344,
+        23.693302154541016,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -16.425010681152344,
+        9.810765266418457,
+        16.09999656677246
+      ],
+      "translationY": -13.882536521324745,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -14.708313941955566,
+        25.55143165588379,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -14.708313941955566,
+        10.025165557861328,
+        16.09999656677246
+      ],
+      "translationY": -15.526266464820274,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -16.11695098876953,
+        25.130653381347656,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -16.11695098876953,
+        9.976613998413086,
+        16.09999656677246
+      ],
+      "translationY": -15.154039529653696,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -15.05764389038086,
+        25.088993072509766,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -15.05764389038086,
+        9.971806526184082,
+        16.09999656677246
+      ],
+      "translationY": -15.11718617952787,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        4.817690849304199,
+        -28.751436233520508,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        4.817690849304199,
+        -28.751436233520508,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        6.414052963256836,
+        -26.200143814086914,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        6.414052963256836,
+        -26.200143814086914,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        6.6948652267456055,
+        -26.35439109802246,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        6.6948652267456055,
+        -26.35439109802246,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        7.2250752449035645,
+        -26.948410034179688,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        7.2250752449035645,
+        -26.948410034179688,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.995927810668945,
+        -11.653847694396973,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.995927810668945,
+        -11.653847694396973,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.60357666015625,
+        -9.356311798095703,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.60357666015625,
+        -9.356311798095703,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.126564025878906,
+        -8.779501914978027,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.126564025878906,
+        -8.779501914978027,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.711885452270508,
+        -11.614340782165527,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.711885452270508,
+        -11.614340782165527,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.84622573852539,
+        -8.739925384521484,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -30.84622573852539,
+        -8.739925384521484,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        17.176311492919922,
+        24.39851951599121,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        17.176311492919922,
+        9.892136573791504,
+        16.09999656677246
+      ],
+      "translationY": -14.506382648761456,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.427678108215332,
+        24.314769744873047,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        15.427678108215332,
+        9.88247299194336,
+        16.09999656677246
+      ],
+      "translationY": -14.43229631277231,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        16.0499267578125,
+        23.71169090270996,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        16.0499267578125,
+        9.812887191772461,
+        16.09999656677246
+      ],
+      "translationY": -13.898803490858812,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.004186630249023,
+        23.051921844482422,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        18.004186630249023,
+        9.736760139465332,
+        16.09999656677246
+      ],
+      "translationY": -13.315161631657528,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.480194091796875,
+        13.29642391204834,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        26.480194091796875,
+        8.611125946044922,
+        16.099998474121094
+      ],
+      "translationY": -4.685298076042763,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        26.088726043701172,
+        15.52724552154541,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        26.088726043701172,
+        8.868528366088867,
+        16.099998474121094
+      ],
+      "translationY": -6.658717192136324,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.461658477783203,
+        15.756050109863281,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        28.461658477783203,
+        8.894928932189941,
+        16.099998474121094
+      ],
+      "translationY": -6.861121251032902,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.19903564453125,
+        15.226208686828613,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        26.19903564453125,
+        8.833793640136719,
+        16.099998474121094
+      ],
+      "translationY": -6.392415376809927,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.13379669189453,
+        -21.822402954101562,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        22.13379669189453,
+        -21.822402954101562,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.49271583557129,
+        -20.36345863342285,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        19.49271583557129,
+        -20.36345863342285,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.773035049438477,
+        -22.751474380493164,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        19.773035049438477,
+        -22.751474380493164,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.32652473449707,
+        -22.268463134765625,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        22.32652473449707,
+        -22.268463134765625,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -16.978355407714844,
+        -22.865463256835938,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -16.978355407714844,
+        -22.865463256835938,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -18.75140953063965,
+        -22.06110954284668,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -18.75140953063965,
+        -22.06110954284668,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -18.109397888183594,
+        -24.278636932373047,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -18.109397888183594,
+        -24.278636932373047,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -16.758636474609375,
+        -24.206125259399414,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -16.758636474609375,
+        -24.206125259399414,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.248750686645508,
+        18.459339141845703,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        22.248750686645508,
+        9.206847190856934,
+        16.09999656677246
+      ],
+      "translationY": -9.252492317786583,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.230178833007812,
+        20.551647186279297,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        22.230178833007812,
+        9.448266983032227,
+        16.09999656677246
+      ],
+      "translationY": -11.10338020324707,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        21.8311767578125,
+        18.431062698364258,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        21.8311767578125,
+        9.203583717346191,
+        16.09999656677246
+      ],
+      "translationY": -9.22747854086069,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        21.892745971679688,
+        19.49873924255371,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        21.892745971679688,
+        9.326777458190918,
+        16.09999656677246
+      ],
+      "translationY": -10.171961637643667,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -29.666057586669922,
+        -9.549392700195312,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -29.666057586669922,
+        -9.549392700195312,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.87251091003418,
+        -23.710073471069336,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        15.87251091003418,
+        -23.710073471069336,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.416070938110352,
+        -24.415390014648438,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        15.416070938110352,
+        -24.415390014648438,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        13.006612777709961,
+        -25.52409553527832,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        13.006612777709961,
+        -25.52409553527832,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        13.978538513183594,
+        -24.066030502319336,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        13.978538513183594,
+        -24.066030502319336,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -4.573159694671631,
+        -29.015972137451172,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -4.573159694671631,
+        -29.015972137451172,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        -4.635523796081543,
+        -28.497753143310547,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -4.635523796081543,
+        -28.497753143310547,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -5.140035629272461,
+        -26.746049880981445,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -5.140035629272461,
+        -26.746049880981445,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        3.1937739849090576,
+        -28.13854217529297,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        3.1937739849090576,
+        -28.13854217529297,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        3.3183212280273438,
+        -28.54759979248047,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        3.3183212280273438,
+        -28.54759979248047,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        4.371513366699219,
+        -26.548633575439453,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        4.371513366699219,
+        -26.548633575439453,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.539520263671875,
+        10.25932788848877,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        30.539520263671875,
+        8.26069164276123,
+        16.099998474121094
+      ],
+      "translationY": -1.998636209047758,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.799880981445312,
+        11.505337715148926,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        28.799880981445312,
+        8.404461860656738,
+        16.099998474121094
+      ],
+      "translationY": -3.1008756710932808,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.053306579589844,
+        11.03657054901123,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        31.053306579589844,
+        8.350373268127441,
+        16.099998474121094
+      ],
+      "translationY": -2.6861970241253186,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.5052490234375,
+        10.07219409942627,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        29.5052490234375,
+        8.239099502563477,
+        16.099998474121094
+      ],
+      "translationY": -1.8330947802616997,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -20.791276931762695,
+        22.080968856811523,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -20.791276931762695,
+        9.624727249145508,
+        16.09999656677246
+      ],
+      "translationY": -12.456241681025578,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -21.051448822021484,
+        21.168781280517578,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -21.051448822021484,
+        9.519474983215332,
+        16.09999656677246
+      ],
+      "translationY": -11.649306517380934,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -20.591655731201172,
+        20.42851448059082,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -20.591655731201172,
+        9.434059143066406,
+        16.09999656677246
+      ],
+      "translationY": -10.994455117445726,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -18.91972541809082,
+        21.490093231201172,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        -18.91972541809082,
+        9.556549072265625,
+        16.09999656677246
+      ],
+      "translationY": -11.933544012216421,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -3.3309545516967773,
+        -27.709022521972656,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -3.3309545516967773,
+        -27.709022521972656,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -5.003963470458984,
+        -27.427515029907227,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -5.003963470458984,
+        -27.427515029907227,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -2.969486713409424,
+        -26.548757553100586,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -2.969486713409424,
+        -26.548757553100586,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        26.947124481201172,
+        -14.430536270141602,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        26.947124481201172,
+        -14.430536270141602,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.59671974182129,
+        -16.615022659301758,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        25.59671974182129,
+        -16.615022659301758,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 24,
+      "pivotBefore": [
+        -29.698200225830078,
+        -11.321935653686523,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -29.698200225830078,
+        -11.321935653686523,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.331336975097656,
+        -11.021027565002441,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.331336975097656,
+        -11.021027565002441,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.7889404296875,
+        -12.001492500305176,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.7889404296875,
+        -12.001492500305176,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.876449584960938,
+        14.35152530670166,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        25.876449584960938,
+        8.732868194580078,
+        16.099998474121094
+      ],
+      "translationY": -5.618657002082237,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        28.26171112060547,
+        15.98869514465332,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        28.26171112060547,
+        8.921772956848145,
+        16.099998474121094
+      ],
+      "translationY": -7.066922627962553,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.73628044128418,
+        14.410771369934082,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        26.73628044128418,
+        8.739704132080078,
+        16.099998474121094
+      ],
+      "translationY": -5.671066981095533,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -27.266437530517578,
+        -13.06737995147705,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -27.266437530517578,
+        -13.06737995147705,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.117422103881836,
+        -15.053762435913086,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.117422103881836,
+        -15.053762435913086,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.679969787597656,
+        -15.071355819702148,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -28.679969787597656,
+        -15.071355819702148,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        17.715660095214844,
+        21.897804260253906,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        17.715660095214844,
+        9.603592872619629,
+        16.09999656677246
+      ],
+      "translationY": -12.29421146099384,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.192216873168945,
+        23.25094223022461,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        18.192216873168945,
+        9.759723663330078,
+        16.09999656677246
+      ],
+      "translationY": -13.491218126737154,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.852367401123047,
+        22.497032165527344,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        18.852367401123047,
+        9.672734260559082,
+        16.09999656677246
+      ],
+      "translationY": -12.824297684889574,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        16.560823440551758,
+        23.586193084716797,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        16.560823440551758,
+        9.798406600952148,
+        16.09999656677246
+      ],
+      "translationY": -13.787786190326397,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.611774444580078,
+        -8.66259479522705,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        29.611774444580078,
+        -8.66259479522705,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.8407773971557617,
+        -28.03875160217285,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        1.8407773971557617,
+        -28.03875160217285,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.6290104389190674,
+        -27.759408950805664,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        1.6290104389190674,
+        -27.759408950805664,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.9746832847595215,
+        -29.330591201782227,
+        16.100006103515625
+      ],
+      "pivotAfter": [
+        1.9746832847595215,
+        -29.330591201782227,
+        16.100006103515625
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -1.6509900093078613,
+        -28.80452537536621,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -1.6509900093078613,
+        -28.80452537536621,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        0.5678218007087708,
+        -26.359012603759766,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        0.5678218007087708,
+        -26.359012603759766,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        0.41767439246177673,
+        -26.899150848388672,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        0.41767439246177673,
+        -26.899150848388672,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -0.37714239954948425,
+        -29.36386489868164,
+        16.100006103515625
+      ],
+      "pivotAfter": [
+        -0.37714239954948425,
+        -29.36386489868164,
+        16.100006103515625
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        0.10385456681251526,
+        -27.010883331298828,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        0.10385456681251526,
+        -27.010883331298828,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -0.9036873579025269,
+        -26.878061294555664,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -0.9036873579025269,
+        -26.878061294555664,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.776178002357483,
+        -26.8391170501709,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        1.776178002357483,
+        -26.8391170501709,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.6124149560928345,
+        -28.362333297729492,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        1.6124149560928345,
+        -28.362333297729492,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -1.228794813156128,
+        -27.84695816040039,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -1.228794813156128,
+        -27.84695816040039,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -3.7739486694335938,
+        -28.516633987426758,
+        16.100004196166992
+      ],
+      "pivotAfter": [
+        -3.7739486694335938,
+        -28.516633987426758,
+        16.100004196166992
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.420421600341797,
+        15.817384719848633,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        25.420421600341797,
+        8.902006149291992,
+        16.099998474121094
+      ],
+      "translationY": -6.915378790635328,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.144968032836914,
+        16.449573516845703,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        26.144968032836914,
+        8.974950790405273,
+        16.099998474121094
+      ],
+      "translationY": -7.47462272644043,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -27.38363265991211,
+        16.149646759033203,
+        16.099998474121094
+      ],
+      "pivotAfter": [
+        -27.38363265991211,
+        8.940343856811523,
+        16.099998474121094
+      ],
+      "translationY": -7.20930290222168,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.671304702758789,
+        23.15406036376953,
+        16.09999656677246
+      ],
+      "pivotAfter": [
+        15.671304702758789,
+        9.74854564666748,
+        16.09999656677246
+      ],
+      "translationY": -13.405514937180738,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.05442428588867,
+        -0.07863724231719971,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        32.05442428588867,
+        -0.07863724231719971,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.4557991027832,
+        -2.030902862548828,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        32.4557991027832,
+        -2.030902862548828,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.544864654541016,
+        -2.9432616233825684,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        31.544864654541016,
+        -2.9432616233825684,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.75836181640625,
+        -9.420391082763672,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        -31.75836181640625,
+        -9.420391082763672,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.54726791381836,
+        -6.211270332336426,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        32.54726791381836,
+        -6.211270332336426,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.71894073486328,
+        -4.628249168395996,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        32.71894073486328,
+        -4.628249168395996,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.52275466918945,
+        -6.454080581665039,
+        16.10000228881836
+      ],
+      "pivotAfter": [
+        32.52275466918945,
+        -6.454080581665039,
+        16.10000228881836
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.86286926269531,
+        -5.621138572692871,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        32.86286926269531,
+        -5.621138572692871,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        -32.68986511230469,
+        2.5720279216766357,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        -32.68986511230469,
+        2.5720279216766357,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        33.40434265136719,
+        -1.275254487991333,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        33.40434265136719,
+        -1.275254487991333,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.6481819152832,
+        -1.0495465993881226,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        32.6481819152832,
+        -1.0495465993881226,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "FLOWERS",
+      "vertices": 12,
+      "pivotBefore": [
+        33.4748649597168,
+        -3.1689162254333496,
+        16.100000381469727
+      ],
+      "pivotAfter": [
+        33.4748649597168,
+        -3.1689162254333496,
+        16.100000381469727
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "LIGHTHOUSE",
+      "vertices": 438,
+      "pivotBefore": [
+        11.0,
+        204.0,
+        32.59996795654297
+      ],
+      "pivotAfter": [
+        11.0,
+        204.0,
+        32.59996795654297
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        34.974395751953125,
+        13.6859769821167,
+        2.3393073081970215
+      ],
+      "pivotAfter": [
+        34.974395751953125,
+        8.656074523925781,
+        2.3393073081970215
+      ],
+      "translationY": -5.0299027149493885,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -28.902854919433594,
+        205.97756958007812,
+        1.6046793460845947
+      ],
+      "pivotAfter": [
+        -28.902854919433594,
+        205.97756958007812,
+        1.6046793460845947
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        42.25215148925781,
+        178.9059295654297,
+        3.409252882003784
+      ],
+      "pivotAfter": [
+        42.25215148925781,
+        178.9059295654297,
+        3.409252882003784
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -33.92611312866211,
+        199.29627990722656,
+        2.4961986541748047
+      ],
+      "pivotAfter": [
+        -33.92611312866211,
+        199.29627990722656,
+        2.4961986541748047
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        7.663331508636475,
+        -34.28089904785156,
+        1.2188910245895386
+      ],
+      "pivotAfter": [
+        7.663331508636475,
+        -34.28089904785156,
+        1.2188910245895386
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        71.26336669921875,
+        120.87538146972656,
+        2.717907428741455
+      ],
+      "pivotAfter": [
+        71.26336669921875,
+        120.87538146972656,
+        2.717907428741455
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -34.79814529418945,
+        14.061944007873535,
+        2.707496166229248
+      ],
+      "pivotAfter": [
+        -34.79814529418945,
+        8.699455261230469,
+        2.707496166229248
+      ],
+      "translationY": -5.362488930041973,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        65.78887176513672,
+        123.95195007324219,
+        1.1556825637817383
+      ],
+      "pivotAfter": [
+        65.78887176513672,
+        123.95195007324219,
+        1.1556825637817383
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.254295349121094,
+        10.486495971679688,
+        3.558140754699707
+      ],
+      "pivotAfter": [
+        -36.254295349121094,
+        8.286903381347656,
+        3.558140754699707
+      ],
+      "translationY": -2.1995925903320312,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -43.91824722290039,
+        159.5269317626953,
+        2.945263624191284
+      ],
+      "pivotAfter": [
+        -43.91824722290039,
+        159.5269317626953,
+        2.945263624191284
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 24,
+      "pivotBefore": [
+        43.660770416259766,
+        170.50025939941406,
+        2.3776910305023193
+      ],
+      "pivotAfter": [
+        43.660770416259766,
+        170.50025939941406,
+        2.3776910305023193
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        55.48727035522461,
+        116.44713592529297,
+        3.677354097366333
+      ],
+      "pivotAfter": [
+        55.48727035522461,
+        116.44713592529297,
+        3.677354097366333
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.81883430480957,
+        20.475549697875977,
+        1.9056448936462402
+      ],
+      "pivotAfter": [
+        30.81883430480957,
+        9.439486503601074,
+        1.9056448936462402
+      ],
+      "translationY": -11.036063194274902,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.020748138427734,
+        -11.14837646484375,
+        2.735079526901245
+      ],
+      "pivotAfter": [
+        36.020748138427734,
+        -11.14837646484375,
+        2.735079526901245
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.45903396606445,
+        194.90972900390625,
+        3.9121341705322266
+      ],
+      "pivotAfter": [
+        36.45903396606445,
+        194.90972900390625,
+        3.9121341705322266
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        24.088565826416016,
+        210.6991424560547,
+        1.9824947118759155
+      ],
+      "pivotAfter": [
+        24.088565826416016,
+        210.6991424560547,
+        1.9824947118759155
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -2.5512800216674805,
+        34.92102813720703,
+        2.094191312789917
+      ],
+      "pivotAfter": [
+        -2.5512800216674805,
+        11.106271743774414,
+        2.094191312789917
+      ],
+      "translationY": -23.81475565983699,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        68.73404693603516,
+        25.087688446044922,
+        1.7631474733352661
+      ],
+      "pivotAfter": [
+        68.73404693603516,
+        9.971656799316406,
+        1.7631474733352661
+      ],
+      "translationY": -15.116032086885893,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        58.13570785522461,
+        120.22154235839844,
+        3.7667269706726074
+      ],
+      "pivotAfter": [
+        58.13570785522461,
+        120.22154235839844,
+        3.7667269706726074
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -40.59190368652344,
+        141.00405883789062,
+        3.0068445205688477
+      ],
+      "pivotAfter": [
+        -40.59190368652344,
+        141.00405883789062,
+        3.0068445205688477
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        12.748116493225098,
+        217.55517578125,
+        3.3290011882781982
+      ],
+      "pivotAfter": [
+        12.748116493225098,
+        217.55517578125,
+        3.3290011882781982
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 24,
+      "pivotBefore": [
+        18.231687545776367,
+        -31.172016143798828,
+        1.680588722229004
+      ],
+      "pivotAfter": [
+        18.231687545776367,
+        -31.172016143798828,
+        1.680588722229004
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        82.0420150756836,
+        57.90571212768555,
+        1.9269438982009888
+      ],
+      "pivotAfter": [
+        82.0420150756836,
+        13.758352279663086,
+        1.9269438982009888
+      ],
+      "translationY": -44.14736072833722,
+      "shapeExtentErrorMeters": 9.5367431640625e-07
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -37.66057586669922,
+        4.667580604553223,
+        1.045172095298767
+      ],
+      "pivotAfter": [
+        -37.66057586669922,
+        4.667580604553223,
+        1.045172095298767
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        21.658817291259766,
+        28.758319854736328,
+        3.946629524230957
+      ],
+      "pivotAfter": [
+        21.658817291259766,
+        10.39519214630127,
+        3.946629524230957
+      ],
+      "translationY": -18.363129102266754,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        72.4073257446289,
+        119.57007598876953,
+        1.5180668830871582
+      ],
+      "pivotAfter": [
+        72.4073257446289,
+        119.57007598876953,
+        1.5180668830871582
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        25.56487464904785,
+        209.39169311523438,
+        1.0922385454177856
+      ],
+      "pivotAfter": [
+        25.56487464904785,
+        209.39169311523438,
+        1.0922385454177856
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        70.61656951904297,
+        26.496410369873047,
+        2.5052576065063477
+      ],
+      "pivotAfter": [
+        70.61656951904297,
+        10.134201049804688,
+        2.5052576065063477
+      ],
+      "translationY": -16.362209173349235,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -15.627589225769043,
+        216.2836456298828,
+        1.4381110668182373
+      ],
+      "pivotAfter": [
+        -15.627589225769043,
+        216.2836456298828,
+        1.4381110668182373
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -32.4538459777832,
+        201.48934936523438,
+        1.1606664657592773
+      ],
+      "pivotAfter": [
+        -32.4538459777832,
+        201.48934936523438,
+        1.1606664657592773
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -9.94384765625,
+        33.78041076660156,
+        2.9853675365448
+      ],
+      "pivotAfter": [
+        -9.94384765625,
+        10.974662780761719,
+        2.9853675365448
+      ],
+      "translationY": -22.805747985839844,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 24,
+      "pivotBefore": [
+        60.84892272949219,
+        122.11176300048828,
+        2.716887950897217
+      ],
+      "pivotAfter": [
+        60.84892272949219,
+        122.11176300048828,
+        2.716887950897217
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        37.065826416015625,
+        -7.712929725646973,
+        3.585686206817627
+      ],
+      "pivotAfter": [
+        37.065826416015625,
+        -7.712929725646973,
+        3.585686206817627
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        47.14083480834961,
+        80.2424087524414,
+        3.0758392810821533
+      ],
+      "pivotAfter": [
+        47.14083480834961,
+        52.86542510986328,
+        3.0758392810821533
+      ],
+      "translationY": -27.376983947753907,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        82.49835205078125,
+        85.72198486328125,
+        3.008176803588867
+      ],
+      "pivotAfter": [
+        82.49835205078125,
+        63.386207580566406,
+        3.008176803588867
+      ],
+      "translationY": -22.335773925781247,
+      "shapeExtentErrorMeters": 3.814697265625e-06
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -43.97574234008789,
+        161.1074676513672,
+        2.2264785766601562
+      ],
+      "pivotAfter": [
+        -43.97574234008789,
+        161.1074676513672,
+        2.2264785766601562
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        74.21092987060547,
+        31.04233741760254,
+        3.051140546798706
+      ],
+      "pivotAfter": [
+        74.21092987060547,
+        10.658731460571289,
+        3.051140546798706
+      ],
+      "translationY": -20.38360617710994,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.900272369384766,
+        20.37116241455078,
+        2.9395511150360107
+      ],
+      "pivotAfter": [
+        -30.900272369384766,
+        9.427441596984863,
+        2.9395511150360107
+      ],
+      "translationY": -10.94372059748723,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        -26.080589294433594,
+        25.455116271972656,
+        1.6474132537841797
+      ],
+      "pivotAfter": [
+        -26.080589294433594,
+        10.01405143737793,
+        1.6474132537841797
+      ],
+      "translationY": -15.44106439443735,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        47.01099395751953,
+        75.74740600585938,
+        3.5992300510406494
+      ],
+      "pivotAfter": [
+        47.01099395751953,
+        44.23501968383789,
+        3.5992300510406494
+      ],
+      "translationY": -31.51238647460937,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        20.31355094909668,
+        112.43809509277344,
+        1.9309848546981812
+      ],
+      "pivotAfter": [
+        20.31355094909668,
+        112.43809509277344,
+        1.9309848546981812
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        16.268844604492188,
+        -31.630142211914062,
+        2.082533121109009
+      ],
+      "pivotAfter": [
+        16.268844604492188,
+        -31.630142211914062,
+        2.082533121109009
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "ROCKS",
+      "vertices": 12,
+      "pivotBefore": [
+        57.219512939453125,
+        119.08770751953125,
+        2.022963523864746
+      ],
+      "pivotAfter": [
+        57.219512939453125,
+        119.08770751953125,
+        2.022963523864746
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.57036018371582,
+        -15.603874206542969,
+        15.700002670288086
+      ],
+      "pivotAfter": [
+        26.57036018371582,
+        -15.603874206542969,
+        15.700002670288086
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.468332290649414,
+        -5.082837104797363,
+        15.700000762939453
+      ],
+      "pivotAfter": [
+        31.468332290649414,
+        -5.082837104797363,
+        15.700000762939453
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        -30.41773223876953,
+        -8.695165634155273,
+        15.700000762939453
+      ],
+      "pivotAfter": [
+        -30.41773223876953,
+        -8.695165634155273,
+        15.700000762939453
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        27.669055938720703,
+        -14.0661039352417,
+        15.70000171661377
+      ],
+      "pivotAfter": [
+        27.669055938720703,
+        -14.0661039352417,
+        15.70000171661377
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -29.81359100341797,
+        -10.172215461730957,
+        15.70000171661377
+      ],
+      "pivotAfter": [
+        -29.81359100341797,
+        -10.172215461730957,
+        15.70000171661377
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -30.80109214782715,
+        -7.592494964599609,
+        15.700000762939453
+      ],
+      "pivotAfter": [
+        -30.80109214782715,
+        -7.592494964599609,
+        15.700000762939453
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        27.12752914428711,
+        14.851678848266602,
+        15.699996948242188
+      ],
+      "pivotAfter": [
+        27.12752914428711,
+        8.79057788848877,
+        15.699996948242188
+      ],
+      "translationY": -6.061100519620455,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.461626052856445,
+        10.929191589355469,
+        15.699997901916504
+      ],
+      "pivotAfter": [
+        29.461626052856445,
+        8.337984085083008,
+        15.699997901916504
+      ],
+      "translationY": -2.591207944429838,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -29.06671905517578,
+        -11.71081256866455,
+        15.70000171661377
+      ],
+      "pivotAfter": [
+        -29.06671905517578,
+        -11.71081256866455,
+        15.70000171661377
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -27.442033767700195,
+        -14.402583122253418,
+        15.70000171661377
+      ],
+      "pivotAfter": [
+        -27.442033767700195,
+        -14.402583122253418,
+        15.70000171661377
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        30.408510208129883,
+        -8.720306396484375,
+        15.700000762939453
+      ],
+      "pivotAfter": [
+        30.408510208129883,
+        -8.720306396484375,
+        15.700000762939453
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.999788284301758,
+        -0.1017594039440155,
+        15.699999809265137
+      ],
+      "pivotAfter": [
+        31.999788284301758,
+        -0.1017594039440155,
+        15.699999809265137
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        26.561120986938477,
+        15.61591911315918,
+        15.699996948242188
+      ],
+      "pivotAfter": [
+        26.561120986938477,
+        8.878759384155273,
+        15.699996948242188
+      ],
+      "translationY": -6.737159215486967,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.294170379638672,
+        -5.84843635559082,
+        15.700000762939453
+      ],
+      "pivotAfter": [
+        31.294170379638672,
+        -5.84843635559082,
+        15.700000762939453
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -21.26374053955078,
+        20.924274444580078,
+        15.699995994567871
+      ],
+      "pivotAfter": [
+        -21.26374053955078,
+        9.491262435913086,
+        15.699995994567871
+      ],
+      "translationY": -11.433012008666992,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        -24.886089324951172,
+        126.74014282226562,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        -24.886089324951172,
+        126.74014282226562,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        10.967778205871582,
+        -26.30401611328125,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        10.967778205871582,
+        -26.30401611328125,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        21.547683715820312,
+        -20.700681686401367,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        21.547683715820312,
+        -20.700681686401367,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        21.95882225036621,
+        123.56344604492188,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        21.95882225036621,
+        123.56344604492188,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        18.171247482299805,
+        120.31635284423828,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        18.171247482299805,
+        120.31635284423828,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -26.151302337646484,
+        16.136798858642578,
+        15.699996948242188
+      ],
+      "pivotAfter": [
+        -26.151302337646484,
+        8.938861846923828,
+        15.699996948242188
+      ],
+      "translationY": -7.197937451876127,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        21.278484344482422,
+        203.08627319335938,
+        21.699968338012695
+      ],
+      "pivotAfter": [
+        21.278484344482422,
+        203.08627319335938,
+        21.699968338012695
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        16.794862747192383,
+        23.832557678222656,
+        15.699995994567871
+      ],
+      "pivotAfter": [
+        16.794862747192383,
+        9.826834678649902,
+        15.699995994567871
+      ],
+      "translationY": -14.005724099966196,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.891197204589844,
+        191.878662109375,
+        21.699970245361328
+      ],
+      "pivotAfter": [
+        29.891197204589844,
+        191.878662109375,
+        21.699970245361328
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -18.29131507873535,
+        205.59361267089844,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        -18.29131507873535,
+        205.59361267089844,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.70195198059082,
+        -22.063762664794922,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        19.70195198059082,
+        -22.063762664794922,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -15.686750411987305,
+        207.3782196044922,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        -15.686750411987305,
+        207.3782196044922,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -15.373893737792969,
+        24.55686378479004,
+        15.699995994567871
+      ],
+      "pivotAfter": [
+        -15.373893737792969,
+        9.910407066345215,
+        15.699995994567871
+      ],
+      "translationY": -14.646456425006573,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.280597686767578,
+        204.8213653564453,
+        21.699968338012695
+      ],
+      "pivotAfter": [
+        19.280597686767578,
+        204.8213653564453,
+        21.699968338012695
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        31.92647933959961,
+        -1.8969361782073975,
+        15.699999809265137
+      ],
+      "pivotAfter": [
+        31.92647933959961,
+        -1.8969361782073975,
+        15.699999809265137
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        24.927274703979492,
+        126.7892074584961,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        24.927274703979492,
+        126.7892074584961,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -31.914230346679688,
+        2.0486786365509033,
+        15.699999809265137
+      ],
+      "pivotAfter": [
+        -31.914230346679688,
+        2.0486786365509033,
+        15.699999809265137
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        22.927812576293945,
+        124.54176330566406,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        22.927812576293945,
+        124.54176330566406,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        19.935260772705078,
+        121.720458984375,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        19.935260772705078,
+        121.720458984375,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        20.75603675842285,
+        -21.310998916625977,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        20.75603675842285,
+        -21.310998916625977,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -17.684154510498047,
+        -23.335948944091797,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        -17.684154510498047,
+        -23.335948944091797,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        11.54832935333252,
+        209.55213928222656,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        11.54832935333252,
+        209.55213928222656,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        23.28204345703125,
+        19.209121704101562,
+        15.699996948242188
+      ],
+      "pivotAfter": [
+        23.28204345703125,
+        9.293359756469727,
+        15.699996948242188
+      ],
+      "translationY": -9.915761507474459,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        27.74307632446289,
+        130.5791473388672,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        27.74307632446289,
+        130.5791473388672,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        9.50761890411377,
+        210.35464477539062,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        9.50761890411377,
+        210.35464477539062,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        14.512960433959961,
+        -24.95474624633789,
+        15.700003623962402
+      ],
+      "pivotAfter": [
+        14.512960433959961,
+        -24.95474624633789,
+        15.700003623962402
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -19.278671264648438,
+        204.8229217529297,
+        21.699968338012695
+      ],
+      "pivotAfter": [
+        -19.278671264648438,
+        204.8229217529297,
+        21.699968338012695
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -19.87056541442871,
+        21.94769287109375,
+        15.699995994567871
+      ],
+      "pivotAfter": [
+        -19.87056541442871,
+        9.609349250793457,
+        15.699995994567871
+      ],
+      "translationY": -12.338343693659855,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -9.794321060180664,
+        115.74794006347656,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        -9.794321060180664,
+        115.74794006347656,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        16.12053108215332,
+        207.104736328125,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        16.12053108215332,
+        207.104736328125,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        29.995277404785156,
+        134.3112335205078,
+        21.699979782104492
+      ],
+      "pivotAfter": [
+        29.995277404785156,
+        134.3112335205078,
+        21.699979782104492
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        17.688106536865234,
+        23.333660125732422,
+        15.699995994567871
+      ],
+      "pivotAfter": [
+        17.688106536865234,
+        9.769268035888672,
+        15.699995994567871
+      ],
+      "translationY": -13.564391649686373,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -14.556351661682129,
+        208.04869079589844,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        -14.556351661682129,
+        208.04869079589844,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -6.79343318939209,
+        211.1669921875,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        -6.79343318939209,
+        211.1669921875,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        2.6322379112243652,
+        211.87579345703125,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        2.6322379112243652,
+        211.87579345703125,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        0.40540552139282227,
+        -27.997751235961914,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        0.40540552139282227,
+        -27.997751235961914,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -1.8144673109054565,
+        114.05895233154297,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        -1.8144673109054565,
+        114.05895233154297,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        1.766640305519104,
+        -27.957294464111328,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        1.766640305519104,
+        -27.957294464111328,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -1.4783393144607544,
+        -27.970102310180664,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        -1.4783393144607544,
+        -27.970102310180664,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.527807235717773,
+        118.52384948730469,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        15.527807235717773,
+        118.52384948730469,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        15.320869445800781,
+        207.60183715820312,
+        21.699966430664062
+      ],
+      "pivotAfter": [
+        15.320869445800781,
+        207.60183715820312,
+        21.699966430664062
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        6.251000881195068,
+        -27.460187911987305,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        6.251000881195068,
+        -27.460187911987305,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        4.4582600593566895,
+        114.35700988769531,
+        21.699981689453125
+      ],
+      "pivotAfter": [
+        4.4582600593566895,
+        114.35700988769531,
+        21.699981689453125
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        -4.177330017089844,
+        -27.76010513305664,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        -4.177330017089844,
+        -27.76010513305664,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        4.357155799865723,
+        -27.739225387573242,
+        15.700004577636719
+      ],
+      "pivotAfter": [
+        4.357155799865723,
+        -27.739225387573242,
+        15.700004577636719
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        32.779361724853516,
+        185.7272491455078,
+        21.699970245361328
+      ],
+      "pivotAfter": [
+        32.779361724853516,
+        185.7272491455078,
+        21.699970245361328
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        32.78057098388672,
+        140.27650451660156,
+        21.69997787475586
+      ],
+      "pivotAfter": [
+        32.78057098388672,
+        140.27650451660156,
+        21.69997787475586
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.812530517578125,
+        167.9263458251953,
+        21.699974060058594
+      ],
+      "pivotAfter": [
+        -36.812530517578125,
+        167.9263458251953,
+        21.699974060058594
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -34.00047302246094,
+        182.326416015625,
+        21.699970245361328
+      ],
+      "pivotAfter": [
+        -34.00047302246094,
+        182.326416015625,
+        21.699970245361328
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.99998092651367,
+        163.04876708984375,
+        21.699974060058594
+      ],
+      "pivotAfter": [
+        -36.99998092651367,
+        163.04876708984375,
+        21.699974060058594
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.26676940917969,
+        153.29336547851562,
+        21.699975967407227
+      ],
+      "pivotAfter": [
+        -36.26676940917969,
+        153.29336547851562,
+        21.699975967407227
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.13825988769531,
+        152.486328125,
+        21.699975967407227
+      ],
+      "pivotAfter": [
+        36.13825988769531,
+        152.486328125,
+        21.699975967407227
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.90756607055664,
+        166.46144104003906,
+        21.699974060058594
+      ],
+      "pivotAfter": [
+        36.90756607055664,
+        166.46144104003906,
+        21.699974060058594
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        34.63668441772461,
+        180.2314910888672,
+        21.69997215270996
+      ],
+      "pivotAfter": [
+        34.63668441772461,
+        180.2314910888672,
+        21.69997215270996
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 24,
+      "pivotBefore": [
+        33.94233703613281,
+        182.50405883789062,
+        21.699970245361328
+      ],
+      "pivotAfter": [
+        33.94233703613281,
+        182.50405883789062,
+        21.699970245361328
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.531002044677734,
+        170.7770538330078,
+        21.69997215270996
+      ],
+      "pivotAfter": [
+        -36.531002044677734,
+        170.7770538330078,
+        21.69997215270996
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.279808044433594,
+        172.62078857421875,
+        21.69997215270996
+      ],
+      "pivotAfter": [
+        36.279808044433594,
+        172.62078857421875,
+        21.69997215270996
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        36.80402755737305,
+        157.9634552001953,
+        21.699975967407227
+      ],
+      "pivotAfter": [
+        36.80402755737305,
+        157.9634552001953,
+        21.699975967407227
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "SHRUBS",
+      "vertices": 12,
+      "pivotBefore": [
+        -36.99610137939453,
+        162.2886505126953,
+        21.699974060058594
+      ],
+      "pivotAfter": [
+        -36.99610137939453,
+        162.2886505126953,
+        21.699974060058594
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TEE_MARKERS",
+      "vertices": 56,
+      "pivotBefore": [
+        -6.0,
+        2.562999725341797e-06,
+        15.649999618530273
+      ],
+      "pivotAfter": [
+        -6.0,
+        2.562999725341797e-06,
+        15.649999618530273
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TEE_MARKERS",
+      "vertices": 56,
+      "pivotBefore": [
+        6.0,
+        2.562999725341797e-06,
+        15.649999618530273
+      ],
+      "pivotAfter": [
+        6.0,
+        2.562999725341797e-06,
+        15.649999618530273
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        0.6958166360855103,
+        209.03900146484375,
+        27.312610626220703
+      ],
+      "pivotAfter": [
+        0.6958166360855103,
+        209.03900146484375,
+        27.312610626220703
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -27.371746063232422,
+        -8.381928443908691,
+        21.28607177734375
+      ],
+      "pivotAfter": [
+        -27.371746063232422,
+        -8.381928443908691,
+        21.28607177734375
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -2.9461042881011963,
+        -25.7558536529541,
+        21.298704147338867
+      ],
+      "pivotAfter": [
+        -2.9461042881011963,
+        -25.7558536529541,
+        21.298704147338867
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        19.8369083404541,
+        18.844697952270508,
+        21.252458572387695
+      ],
+      "pivotAfter": [
+        19.8369083404541,
+        9.251311302185059,
+        21.252458572387695
+      ],
+      "translationY": -9.59338665008545,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        15.711952209472656,
+        -21.931421279907227,
+        21.246522903442383
+      ],
+      "pivotAfter": [
+        15.711952209472656,
+        -21.931421279907227,
+        21.246522903442383
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -21.810916900634766,
+        17.263444900512695,
+        20.956710815429688
+      ],
+      "pivotAfter": [
+        -21.810916900634766,
+        9.068859100341797,
+        20.956710815429688
+      ],
+      "translationY": -8.19458587353046,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -27.082069396972656,
+        9.119791984558105,
+        20.943431854248047
+      ],
+      "pivotAfter": [
+        -27.082069396972656,
+        8.129206657409668,
+        20.943431854248047
+      ],
+      "translationY": -0.9905852171090928,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -18.36578941345215,
+        201.645751953125,
+        26.887958526611328
+      ],
+      "pivotAfter": [
+        -18.36578941345215,
+        201.645751953125,
+        26.887958526611328
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -20.77666473388672,
+        18.143224716186523,
+        21.215192794799805
+      ],
+      "pivotAfter": [
+        -20.77666473388672,
+        9.170372009277344,
+        21.215192794799805
+      ],
+      "translationY": -8.972852633549618,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        26.124568939208984,
+        -11.169088363647461,
+        21.437034606933594
+      ],
+      "pivotAfter": [
+        26.124568939208984,
+        -11.169088363647461,
+        21.437034606933594
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        19.145301818847656,
+        200.8990478515625,
+        27.39800262451172
+      ],
+      "pivotAfter": [
+        19.145301818847656,
+        200.8990478515625,
+        27.39800262451172
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        -17.394180297851562,
+        20.646509170532227,
+        21.05563735961914
+      ],
+      "pivotAfter": [
+        -17.394180297851562,
+        9.459212303161621,
+        21.05563735961914
+      ],
+      "translationY": -11.187296573932354,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -7.898285865783691,
+        207.75186157226562,
+        27.102210998535156
+      ],
+      "pivotAfter": [
+        -7.898285865783691,
+        207.75186157226562,
+        27.102210998535156
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        71.28607940673828,
+        65.26747131347656,
+        22.908889770507812
+      ],
+      "pivotAfter": [
+        71.28607940673828,
+        24.113544464111328,
+        22.908889770507812
+      ],
+      "translationY": -41.15392639160156,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        30.691814422607422,
+        182.85791015625,
+        27.074508666992188
+      ],
+      "pivotAfter": [
+        30.691814422607422,
+        182.85791015625,
+        27.074508666992188
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        10.324634552001953,
+        206.9328155517578,
+        26.859737396240234
+      ],
+      "pivotAfter": [
+        10.324634552001953,
+        206.9328155517578,
+        26.859737396240234
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        32.44453430175781,
+        177.00701904296875,
+        27.027986526489258
+      ],
+      "pivotAfter": [
+        32.44453430175781,
+        177.00701904296875,
+        27.027986526489258
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -17.418350219726562,
+        -20.788753509521484,
+        20.84190559387207
+      ],
+      "pivotAfter": [
+        -17.418350219726562,
+        -20.788753509521484,
+        20.84190559387207
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        28.904067993164062,
+        -1.272033929824829,
+        20.9601993560791
+      ],
+      "pivotAfter": [
+        28.904067993164062,
+        -1.272033929824829,
+        20.9601993560791
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        27.396411895751953,
+        8.335274696350098,
+        21.046730041503906
+      ],
+      "pivotAfter": [
+        27.396411895751953,
+        8.03868579864502,
+        21.046730041503906
+      ],
+      "translationY": -0.2965891544635486,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        26.398670196533203,
+        10.598751068115234,
+        20.81568717956543
+      ],
+      "pivotAfter": [
+        26.398670196533203,
+        8.299856185913086,
+        20.81568717956543
+      ],
+      "translationY": -2.2988951756404,
+      "shapeExtentErrorMeters": 4.76837158203125e-07
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        -21.929706573486328,
+        -16.91999053955078,
+        20.70501708984375
+      ],
+      "pivotAfter": [
+        -21.929706573486328,
+        -16.91999053955078,
+        20.70501708984375
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        0.6026196479797363,
+        -26.041744232177734,
+        20.87598991394043
+      ],
+      "pivotAfter": [
+        0.6026196479797363,
+        -26.041744232177734,
+        20.87598991394043
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        33.29486846923828,
+        172.21060180664062,
+        26.6660099029541
+      ],
+      "pivotAfter": [
+        33.29486846923828,
+        172.21060180664062,
+        26.6660099029541
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -19.860132217407227,
+        -19.023494720458984,
+        20.789020538330078
+      ],
+      "pivotAfter": [
+        -19.860132217407227,
+        -19.023494720458984,
+        20.789020538330078
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        70.57539367675781,
+        56.730865478515625,
+        22.50387191772461
+      ],
+      "pivotAfter": [
+        70.57539367675781,
+        13.62278938293457,
+        22.50387191772461
+      ],
+      "translationY": -43.108073307917664,
+      "shapeExtentErrorMeters": 9.5367431640625e-07
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        26.726701736450195,
+        -9.935985565185547,
+        20.47555160522461
+      ],
+      "pivotAfter": [
+        26.726701736450195,
+        -9.935985565185547,
+        20.47555160522461
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        71.53546142578125,
+        95.72653198242188,
+        22.156978607177734
+      ],
+      "pivotAfter": [
+        71.53546142578125,
+        82.59494018554688,
+        22.156978607177734
+      ],
+      "translationY": -13.131590576171874,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        21.643436431884766,
+        198.50555419921875,
+        26.58511734008789
+      ],
+      "pivotAfter": [
+        21.643436431884766,
+        198.50555419921875,
+        26.58511734008789
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        8.702237129211426,
+        207.47268676757812,
+        26.562938690185547
+      ],
+      "pivotAfter": [
+        8.702237129211426,
+        207.47268676757812,
+        26.562938690185547
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        27.888381958007812,
+        6.918019771575928,
+        20.02517318725586
+      ],
+      "pivotAfter": [
+        27.888381958007812,
+        6.918019771575928,
+        20.02517318725586
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        73.02790069580078,
+        43.85220718383789,
+        22.031478881835938
+      ],
+      "pivotAfter": [
+        73.02790069580078,
+        12.13679313659668,
+        22.031478881835938
+      ],
+      "translationY": -31.71541404724121,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 100,
+      "pivotBefore": [
+        -28.327016830444336,
+        5.922276973724365,
+        20.259807586669922
+      ],
+      "pivotAfter": [
+        -28.327016830444336,
+        5.922276973724365,
+        20.259807586669922
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        14.150567054748535,
+        -22.762243270874023,
+        20.472543716430664
+      ],
+      "pivotAfter": [
+        14.150567054748535,
+        -22.762243270874023,
+        20.472543716430664
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -25.67605209350586,
+        -12.226404190063477,
+        20.39000701904297
+      ],
+      "pivotAfter": [
+        -25.67605209350586,
+        -12.226404190063477,
+        20.39000701904297
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        32.89646530151367,
+        174.86654663085938,
+        25.901180267333984
+      ],
+      "pivotAfter": [
+        32.89646530151367,
+        174.86654663085938,
+        25.901180267333984
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -4.686008930206299,
+        208.61920166015625,
+        25.97655487060547
+      ],
+      "pivotAfter": [
+        -4.686008930206299,
+        208.61920166015625,
+        25.97655487060547
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -20.2124080657959,
+        200.0792236328125,
+        25.822887420654297
+      ],
+      "pivotAfter": [
+        -20.2124080657959,
+        200.0792236328125,
+        25.822887420654297
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        67.44978332519531,
+        62.52909469604492,
+        21.855098724365234
+      ],
+      "pivotAfter": [
+        67.44978332519531,
+        18.85586166381836,
+        21.855098724365234
+      ],
+      "translationY": -43.673232879638675,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -17.074024200439453,
+        202.86148071289062,
+        25.92894744873047
+      ],
+      "pivotAfter": [
+        -17.074024200439453,
+        202.86148071289062,
+        25.92894744873047
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        -27.782756805419922,
+        7.483619213104248,
+        19.78366470336914
+      ],
+      "pivotAfter": [
+        -27.782756805419922,
+        7.483619213104248,
+        19.78366470336914
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        69.34550476074219,
+        88.912353515625,
+        21.77208137512207
+      ],
+      "pivotAfter": [
+        69.34550476074219,
+        69.51171875,
+        21.77208137512207
+      ],
+      "translationY": -19.400634765625,
+      "shapeExtentErrorMeters": 0.0
+    },
+    {
+      "object": "TREES",
+      "vertices": 50,
+      "pivotBefore": [
+        28.765975952148438,
+        3.6825506687164307,
+        19.54732322692871
+      ],
+      "pivotAfter": [
+        28.765975952148438,
+        3.6825506687164307,
+        19.54732322692871
+      ],
+      "translationY": 0.0,
+      "shapeExtentErrorMeters": 0.0
+    }
+  ],
+  "frozenPhysicalSceneryIdentities": [
+    {
+      "name": "SHRUB_REFERENCE_000",
+      "source": "SHRUBS",
+      "identity": 0,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        26.57036018371582,
+        -15.603874206542969,
+        15.700002670288086
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_001",
+      "source": "SHRUBS",
+      "identity": 1,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        31.468332290649414,
+        -5.082837104797363,
+        15.700000762939453
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_002",
+      "source": "SHRUBS",
+      "identity": 2,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        -30.41773223876953,
+        -8.695165634155273,
+        15.700000762939453
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_003",
+      "source": "SHRUBS",
+      "identity": 3,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        27.669055938720703,
+        -14.0661039352417,
+        15.70000171661377
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_004",
+      "source": "SHRUBS",
+      "identity": 4,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -29.81359100341797,
+        -10.172215461730957,
+        15.70000171661377
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_005",
+      "source": "SHRUBS",
+      "identity": 5,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -30.80109214782715,
+        -7.592494964599609,
+        15.700000762939453
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_006",
+      "source": "SHRUBS",
+      "identity": 6,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        27.12752914428711,
+        8.79057788848877,
+        15.699996948242188
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_007",
+      "source": "SHRUBS",
+      "identity": 7,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        29.461626052856445,
+        8.337984085083008,
+        15.699997901916504
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_008",
+      "source": "SHRUBS",
+      "identity": 8,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -29.06671905517578,
+        -11.71081256866455,
+        15.70000171661377
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_009",
+      "source": "SHRUBS",
+      "identity": 9,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -27.442033767700195,
+        -14.402583122253418,
+        15.70000171661377
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_010",
+      "source": "SHRUBS",
+      "identity": 10,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        30.408510208129883,
+        -8.720306396484375,
+        15.700000762939453
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_011",
+      "source": "SHRUBS",
+      "identity": 11,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        31.999788284301758,
+        -0.1017594039440155,
+        15.699999809265137
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_012",
+      "source": "SHRUBS",
+      "identity": 12,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        26.561120986938477,
+        8.878759384155273,
+        15.699996948242188
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_013",
+      "source": "SHRUBS",
+      "identity": 13,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        31.294170379638672,
+        -5.84843635559082,
+        15.700000762939453
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_014",
+      "source": "SHRUBS",
+      "identity": 14,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -21.26374053955078,
+        9.491262435913086,
+        15.699995994567871
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_015",
+      "source": "SHRUBS",
+      "identity": 15,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        -24.886089324951172,
+        126.74014282226562,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_016",
+      "source": "SHRUBS",
+      "identity": 16,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        10.967778205871582,
+        -26.30401611328125,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_017",
+      "source": "SHRUBS",
+      "identity": 17,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        21.547683715820312,
+        -20.700681686401367,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_018",
+      "source": "SHRUBS",
+      "identity": 18,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        21.95882225036621,
+        123.56344604492188,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_019",
+      "source": "SHRUBS",
+      "identity": 19,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        18.171247482299805,
+        120.31635284423828,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_020",
+      "source": "SHRUBS",
+      "identity": 20,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -26.151302337646484,
+        8.938861846923828,
+        15.699996948242188
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_021",
+      "source": "SHRUBS",
+      "identity": 21,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        21.278484344482422,
+        203.08627319335938,
+        21.699968338012695
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_022",
+      "source": "SHRUBS",
+      "identity": 22,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        16.794862747192383,
+        9.826834678649902,
+        15.699995994567871
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_023",
+      "source": "SHRUBS",
+      "identity": 23,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        29.891197204589844,
+        191.878662109375,
+        21.699970245361328
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_024",
+      "source": "SHRUBS",
+      "identity": 24,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -18.29131507873535,
+        205.59361267089844,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_025",
+      "source": "SHRUBS",
+      "identity": 25,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        19.70195198059082,
+        -22.063762664794922,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_026",
+      "source": "SHRUBS",
+      "identity": 26,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -15.686750411987305,
+        207.3782196044922,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_027",
+      "source": "SHRUBS",
+      "identity": 27,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -15.373893737792969,
+        9.910407066345215,
+        15.699995994567871
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_028",
+      "source": "SHRUBS",
+      "identity": 28,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        19.280597686767578,
+        204.8213653564453,
+        21.699968338012695
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_029",
+      "source": "SHRUBS",
+      "identity": 29,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        31.92647933959961,
+        -1.8969361782073975,
+        15.699999809265137
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_030",
+      "source": "SHRUBS",
+      "identity": 30,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        24.927274703979492,
+        126.7892074584961,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_031",
+      "source": "SHRUBS",
+      "identity": 31,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -31.914230346679688,
+        2.0486786365509033,
+        15.699999809265137
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_032",
+      "source": "SHRUBS",
+      "identity": 32,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        22.927812576293945,
+        124.54176330566406,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_033",
+      "source": "SHRUBS",
+      "identity": 33,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        19.935260772705078,
+        121.720458984375,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_034",
+      "source": "SHRUBS",
+      "identity": 34,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        20.75603675842285,
+        -21.310998916625977,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_035",
+      "source": "SHRUBS",
+      "identity": 35,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -17.684154510498047,
+        -23.335948944091797,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_036",
+      "source": "SHRUBS",
+      "identity": 36,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        11.54832935333252,
+        209.55213928222656,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_037",
+      "source": "SHRUBS",
+      "identity": 37,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        23.28204345703125,
+        9.293359756469727,
+        15.699996948242188
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_038",
+      "source": "SHRUBS",
+      "identity": 38,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        27.74307632446289,
+        130.5791473388672,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_039",
+      "source": "SHRUBS",
+      "identity": 39,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        9.50761890411377,
+        210.35464477539062,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_040",
+      "source": "SHRUBS",
+      "identity": 40,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        14.512960433959961,
+        -24.95474624633789,
+        15.700003623962402
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_041",
+      "source": "SHRUBS",
+      "identity": 41,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -19.278671264648438,
+        204.8229217529297,
+        21.699968338012695
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_042",
+      "source": "SHRUBS",
+      "identity": 42,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -19.87056541442871,
+        9.609349250793457,
+        15.699995994567871
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_043",
+      "source": "SHRUBS",
+      "identity": 43,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -9.794321060180664,
+        115.74794006347656,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_044",
+      "source": "SHRUBS",
+      "identity": 44,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        16.12053108215332,
+        207.104736328125,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_045",
+      "source": "SHRUBS",
+      "identity": 45,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        29.995277404785156,
+        134.3112335205078,
+        21.699979782104492
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_046",
+      "source": "SHRUBS",
+      "identity": 46,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        17.688106536865234,
+        9.769268035888672,
+        15.699995994567871
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_047",
+      "source": "SHRUBS",
+      "identity": 47,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -14.556351661682129,
+        208.04869079589844,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_048",
+      "source": "SHRUBS",
+      "identity": 48,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -6.79343318939209,
+        211.1669921875,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_049",
+      "source": "SHRUBS",
+      "identity": 49,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        2.6322379112243652,
+        211.87579345703125,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_050",
+      "source": "SHRUBS",
+      "identity": 50,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        0.40540552139282227,
+        -27.997751235961914,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_051",
+      "source": "SHRUBS",
+      "identity": 51,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -1.8144673109054565,
+        114.05895233154297,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_052",
+      "source": "SHRUBS",
+      "identity": 52,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        1.766640305519104,
+        -27.957294464111328,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_053",
+      "source": "SHRUBS",
+      "identity": 53,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -1.4783393144607544,
+        -27.970102310180664,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_054",
+      "source": "SHRUBS",
+      "identity": 54,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        15.527807235717773,
+        118.52384948730469,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_055",
+      "source": "SHRUBS",
+      "identity": 55,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        15.320869445800781,
+        207.60183715820312,
+        21.699966430664062
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_056",
+      "source": "SHRUBS",
+      "identity": 56,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        6.251000881195068,
+        -27.460187911987305,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_057",
+      "source": "SHRUBS",
+      "identity": 57,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        4.4582600593566895,
+        114.35700988769531,
+        21.699981689453125
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_058",
+      "source": "SHRUBS",
+      "identity": 58,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        -4.177330017089844,
+        -27.76010513305664,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_059",
+      "source": "SHRUBS",
+      "identity": 59,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        4.357155799865723,
+        -27.739225387573242,
+        15.700004577636719
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_060",
+      "source": "SHRUBS",
+      "identity": 60,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        32.779361724853516,
+        185.7272491455078,
+        21.699970245361328
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_061",
+      "source": "SHRUBS",
+      "identity": 61,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        32.78057098388672,
+        140.27650451660156,
+        21.69997787475586
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_062",
+      "source": "SHRUBS",
+      "identity": 62,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -36.812530517578125,
+        167.9263458251953,
+        21.699974060058594
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_063",
+      "source": "SHRUBS",
+      "identity": 63,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -34.00047302246094,
+        182.326416015625,
+        21.699970245361328
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_064",
+      "source": "SHRUBS",
+      "identity": 64,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -36.99998092651367,
+        163.04876708984375,
+        21.699974060058594
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_065",
+      "source": "SHRUBS",
+      "identity": 65,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -36.26676940917969,
+        153.29336547851562,
+        21.699975967407227
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_066",
+      "source": "SHRUBS",
+      "identity": 66,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        36.13825988769531,
+        152.486328125,
+        21.699975967407227
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_067",
+      "source": "SHRUBS",
+      "identity": 67,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        36.90756607055664,
+        166.46144104003906,
+        21.699974060058594
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_068",
+      "source": "SHRUBS",
+      "identity": 68,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        34.63668441772461,
+        180.2314910888672,
+        21.69997215270996
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_069",
+      "source": "SHRUBS",
+      "identity": 69,
+      "vertices": 24,
+      "triangles": 40,
+      "pivotAfter": [
+        33.94233703613281,
+        182.50405883789062,
+        21.699970245361328
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_070",
+      "source": "SHRUBS",
+      "identity": 70,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -36.531002044677734,
+        170.7770538330078,
+        21.69997215270996
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_071",
+      "source": "SHRUBS",
+      "identity": 71,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        36.279808044433594,
+        172.62078857421875,
+        21.69997215270996
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_072",
+      "source": "SHRUBS",
+      "identity": 72,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        36.80402755737305,
+        157.9634552001953,
+        21.699975967407227
+      ]
+    },
+    {
+      "name": "SHRUB_REFERENCE_073",
+      "source": "SHRUBS",
+      "identity": 73,
+      "vertices": 12,
+      "triangles": 20,
+      "pivotAfter": [
+        -36.99610137939453,
+        162.2886505126953,
+        21.699974060058594
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_000",
+      "source": "TREES",
+      "identity": 0,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        0.6958166360855103,
+        209.03900146484375,
+        27.312610626220703
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_001",
+      "source": "TREES",
+      "identity": 1,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -27.371746063232422,
+        -8.381928443908691,
+        21.28607177734375
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_002",
+      "source": "TREES",
+      "identity": 2,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -2.9461042881011963,
+        -25.7558536529541,
+        21.298704147338867
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_003",
+      "source": "TREES",
+      "identity": 3,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        19.8369083404541,
+        9.251311302185059,
+        21.252458572387695
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_004",
+      "source": "TREES",
+      "identity": 4,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        15.711952209472656,
+        -21.931421279907227,
+        21.246522903442383
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_005",
+      "source": "TREES",
+      "identity": 5,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -21.810916900634766,
+        9.068859100341797,
+        20.956710815429688
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_006",
+      "source": "TREES",
+      "identity": 6,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -27.082069396972656,
+        8.129206657409668,
+        20.943431854248047
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_007",
+      "source": "TREES",
+      "identity": 7,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -18.36578941345215,
+        201.645751953125,
+        26.887958526611328
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_008",
+      "source": "TREES",
+      "identity": 8,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -20.77666473388672,
+        9.170372009277344,
+        21.215192794799805
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_009",
+      "source": "TREES",
+      "identity": 9,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        26.124568939208984,
+        -11.169088363647461,
+        21.437034606933594
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_010",
+      "source": "TREES",
+      "identity": 10,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        19.145301818847656,
+        200.8990478515625,
+        27.39800262451172
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_011",
+      "source": "TREES",
+      "identity": 11,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        -17.394180297851562,
+        9.459212303161621,
+        21.05563735961914
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_012",
+      "source": "TREES",
+      "identity": 12,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -7.898285865783691,
+        207.75186157226562,
+        27.102210998535156
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_013",
+      "source": "TREES",
+      "identity": 13,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        71.28607940673828,
+        24.113544464111328,
+        22.908889770507812
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_014",
+      "source": "TREES",
+      "identity": 14,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        30.691814422607422,
+        182.85791015625,
+        27.074508666992188
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_015",
+      "source": "TREES",
+      "identity": 15,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        10.324634552001953,
+        206.9328155517578,
+        26.859737396240234
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_016",
+      "source": "TREES",
+      "identity": 16,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        32.44453430175781,
+        177.00701904296875,
+        27.027986526489258
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_017",
+      "source": "TREES",
+      "identity": 17,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -17.418350219726562,
+        -20.788753509521484,
+        20.84190559387207
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_018",
+      "source": "TREES",
+      "identity": 18,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        28.904067993164062,
+        -1.272033929824829,
+        20.9601993560791
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_019",
+      "source": "TREES",
+      "identity": 19,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        27.396411895751953,
+        8.03868579864502,
+        21.046730041503906
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_020",
+      "source": "TREES",
+      "identity": 20,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        26.398670196533203,
+        8.299856185913086,
+        20.81568717956543
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_021",
+      "source": "TREES",
+      "identity": 21,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        -21.929706573486328,
+        -16.91999053955078,
+        20.70501708984375
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_022",
+      "source": "TREES",
+      "identity": 22,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        0.6026196479797363,
+        -26.041744232177734,
+        20.87598991394043
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_023",
+      "source": "TREES",
+      "identity": 23,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        33.29486846923828,
+        172.21060180664062,
+        26.6660099029541
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_024",
+      "source": "TREES",
+      "identity": 24,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -19.860132217407227,
+        -19.023494720458984,
+        20.789020538330078
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_025",
+      "source": "TREES",
+      "identity": 25,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        70.57539367675781,
+        13.62278938293457,
+        22.50387191772461
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_026",
+      "source": "TREES",
+      "identity": 26,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        26.726701736450195,
+        -9.935985565185547,
+        20.47555160522461
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_027",
+      "source": "TREES",
+      "identity": 27,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        71.53546142578125,
+        82.59494018554688,
+        22.156978607177734
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_028",
+      "source": "TREES",
+      "identity": 28,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        21.643436431884766,
+        198.50555419921875,
+        26.58511734008789
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_029",
+      "source": "TREES",
+      "identity": 29,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        8.702237129211426,
+        207.47268676757812,
+        26.562938690185547
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_030",
+      "source": "TREES",
+      "identity": 30,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        27.888381958007812,
+        6.918019771575928,
+        20.02517318725586
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_031",
+      "source": "TREES",
+      "identity": 31,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        73.02790069580078,
+        12.13679313659668,
+        22.031478881835938
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_032",
+      "source": "TREES",
+      "identity": 32,
+      "vertices": 100,
+      "triangles": 168,
+      "pivotAfter": [
+        -28.327016830444336,
+        5.922276973724365,
+        20.259807586669922
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_033",
+      "source": "TREES",
+      "identity": 33,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        14.150567054748535,
+        -22.762243270874023,
+        20.472543716430664
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_034",
+      "source": "TREES",
+      "identity": 34,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -25.67605209350586,
+        -12.226404190063477,
+        20.39000701904297
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_035",
+      "source": "TREES",
+      "identity": 35,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        32.89646530151367,
+        174.86654663085938,
+        25.901180267333984
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_036",
+      "source": "TREES",
+      "identity": 36,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -4.686008930206299,
+        208.61920166015625,
+        25.97655487060547
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_037",
+      "source": "TREES",
+      "identity": 37,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -20.2124080657959,
+        200.0792236328125,
+        25.822887420654297
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_038",
+      "source": "TREES",
+      "identity": 38,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        67.44978332519531,
+        18.85586166381836,
+        21.855098724365234
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_039",
+      "source": "TREES",
+      "identity": 39,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -17.074024200439453,
+        202.86148071289062,
+        25.92894744873047
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_040",
+      "source": "TREES",
+      "identity": 40,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        -27.782756805419922,
+        7.483619213104248,
+        19.78366470336914
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_041",
+      "source": "TREES",
+      "identity": 41,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        69.34550476074219,
+        69.51171875,
+        21.77208137512207
+      ]
+    },
+    {
+      "name": "TREE_REFERENCE_042",
+      "source": "TREES",
+      "identity": 42,
+      "vertices": 50,
+      "triangles": 84,
+      "pivotAfter": [
+        28.765975952148438,
+        3.6825506687164307,
+        19.54732322692871
+      ]
+    }
+  ],
+  "standingSourceCapMeters": 1.097524002021223,
+  "runtimeFitYardsPerMeter": 1.0933701657458563,
+  "sceneryGrouping": "Original TREE/SHRUB Standing identities freeze BEFORE warp and export as separate hidden mesh filters; downstream Standing cannot merge neighboring source props. Original batched ROCKS identities unchanged.",
+  "rigidFloatToleranceMeters": 2e-05,
+  "rigidMaximumShapeExtentErrorMeters": 3.814697265625e-06,
+  "bridgeContinuity": "All original bridge vertices share same continuous monotonic map; connectivity/indices unchanged",
+  "gameplayMetadataRequired": "Loader must map Hole.Shore and Hole.Islets using same meters warp. Bunkers+TEE/PIN/distance unchanged. Ground+ObstacleScan derive from this alternate source before dressing.",
+  "resource": "Course/Resort/ReferenceHole12",
+  "loaderFlag": "default enabled; VISUAL_COASTAL_REFERENCE=0 selects original control",
+  "fbxSha256": "38e04be34f744a6ef67a3308566a843701b5ff63caa0f4c3dd1cf8b5b3d1d7d3",
+  "independentSourceGate": "ArtDir/golf/proof/coastal-scenery-groups8/GATE.md",
+  "independentDescriptorToleranceYards": 2.92e-05,
+  "expectedRuntimeObstacles": {
+    "count": 161,
+    "Tree": 43,
+    "Bush": 74,
+    "Rock": 43,
+    "Wall": 1
+  },
+  "runtimeOracle": {
+    "scope": "Ordinary no-reference/no-fissures-env capture; count/hash/ground plus independent full source descriptors, not a full Unity descriptor-array comparison.",
+    "obstacles": 161,
+    "colliders": 14,
+    "obstacleHash": "f66789056e9c646408c10b9f2651f6dfd3b88935e43fb061480a4caa95139eaf",
+    "groundRecordsExactToGrass8": true,
+    "camera10GroundAndObstaclesExactToDefault9": true,
+    "canonicalGate": "ArtDir/golf/proof/coastal-scenery-groups8/current-coastal-gate.json"
+  },
+  "installedFiles": [
+    {
+      "path": "Unity/Assets/Resources/Course/Resort/ReferenceHole12.fbx",
+      "sha256": "38e04be34f744a6ef67a3308566a843701b5ff63caa0f4c3dd1cf8b5b3d1d7d3"
+    },
+    {
+      "path": "ArtDir/golf/source/ReferenceHole12.blend",
+      "sha256": "6d28ae25ec7f9cf961bef33875293697892b50186bf4fe5be926e72bdb163f3e"
+    },
+    {
+      "path": "ArtDir/golf/tools/build-reference-hole12.py",
+      "sha256": "9db5e1c5d6eac3ddb913b6852dcdc1c44bdeda38485a241e8dd08a5969f6d400"
+    },
+    {
+      "path": "Unity/Assets/Scripts/Course/GolfCoastalComposition.cs",
+      "sha256": "c83eba484bb531f27998fc29378670e2fb5e062776ecdfcd884d6d76830c92bf"
+    }
+  ]
+}

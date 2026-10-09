@@ -1,0 +1,120 @@
+{
+  "candidate": "FISSURES7",
+  "status": "BOUNDED MATERIAL IMPROVEMENT ACCEPTED; whole-course reference art remains partial",
+  "control": {
+    "referenceComposition": "Default ordinary hole12; VISUAL_COASTAL_REFERENCE=0 selects the previous composition",
+    "calibratedMaterial": "Default within reference-composition branch; VISUAL_COASTAL_FISSURES=1 also selects it",
+    "oldMaterial": "VISUAL_COASTAL_FISSURES=0 retains previous .22 midpoint /1.8 contrast palette",
+    "otherCourses": "Non-authored and non-reference material branches remain unchanged"
+  },
+  "properties": {
+    "_AuthoredUV": 1,
+    "_PaletteMidpoint": 0.07,
+    "_DetailContrast": 5.2,
+    "_PaletteLightShoulder": 0.28,
+    "_LowColor": [
+      0.22,
+      0.28,
+      0.32
+    ],
+    "_HighColor": [
+      0.907,
+      0.8548,
+      0.7134
+    ],
+    "_PaletteDetail": 0.06
+  },
+  "curve": ".5 + (linearScanLuma - .070) *5.2; above .5 use .5 + .28*excess/(.28+excess), dark side held; clamp to0..1",
+  "sourceMedianReflectance": [
+    0.5635,
+    0.5674,
+    0.5167
+  ],
+  "primaryEvidence": [
+    "ArtDir/golf/proof/reference-cliffs-erosion5/actual-baseline5.png",
+    "ArtDir/golf/proof/reference-cliffs-erosion5/actual-fissures7.png"
+  ],
+  "actualComparison": {
+    "roi": [
+      140,
+      550,
+      700,
+      710
+    ],
+    "samples": {
+      "coastal-erosion5-ao": {
+        "meanRgb": [
+          179.73120535714287,
+          175.3557142857143,
+          151.48279017857143
+        ],
+        "lumaP10MedianP90": [
+          141.20139999999998,
+          180.1136,
+          202.46659999999997
+        ],
+        "brightFractionAbove220": 0.0053125,
+        "obstacleHash": "d00676de414bd86eb0531a63278633568687a9313d5552a17c6215aad11c5c1d"
+      },
+      "coastal-fissures6": {
+        "meanRgb": [
+          208.14381696428572,
+          198.79337053571427,
+          164.66027901785714
+        ],
+        "lumaP10MedianP90": [
+          150.5468,
+          202.8116,
+          242.94519999999997
+        ],
+        "brightFractionAbove220": 0.306328125,
+        "obstacleHash": "d00676de414bd86eb0531a63278633568687a9313d5552a17c6215aad11c5c1d"
+      },
+      "coastal-fissures7": {
+        "meanRgb": [
+          202.14985491071428,
+          192.0119419642857,
+          159.40463169642857
+        ],
+        "lumaP10MedianP90": [
+          149.4786,
+          197.8838,
+          226.29700000000003
+        ],
+        "brightFractionAbove220": 0.18745535714285713,
+        "obstacleHash": "d00676de414bd86eb0531a63278633568687a9313d5552a17c6215aad11c5c1d"
+      }
+    },
+    "materialOnlyPhysicsParity": {
+      "obstaclesExact": true,
+      "groundContractsExact": true
+    }
+  },
+  "geometryScope": "No geometry/collider/obstacle changes in the material revisions. The intentional alternate-hole12 composition is a separate source feature.",
+  "ao": "Authored-scan indirect screen AO consumption retained at .65; actual opposite-cliff comparison showed negligible visual effect, not claimed as an art gain.",
+  "files": [
+    {
+      "path": "Unity/Assets/Scripts/Course/GolfCoastalCliff12.cs",
+      "sha256": "d6d252e8556d4297f814d2d0678ace00d1461704602caaa65ea0147441b525bc"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfRock.shader",
+      "sha256": "16488d37f70ebd97b5b99be766b552efa32cbdb9345ebcedc4b3ccb31767b04b"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl",
+      "sha256": "ac39be323d3f70d0d8b2832ae9813ad452a36a312269df193a0c7b38a1b10ef3"
+    }
+  ],
+  "limitations": [
+    "Final material is a bounded improvement; still brighter and structurally different from the GPT coastal target.",
+    "Snapshot draw counters do not constitute sole-camera frame-cost or phone performance acceptance.",
+    "Source Blender proof material predates the calibrated runtime palette; actual Unity proof is authoritative."
+  ],
+  "colorSpaceBasis": {
+    "scan": "Linear luma after sRGB decode",
+    "material": "Color uniforms have no HDR/Gamma attribute; Material.SetColor stores raw values.",
+    "primarySource": "https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Material.SetColor.html"
+  },
+  "currentCoastalGate": "ArtDir/golf/proof/coastal-scenery-groups8/current-coastal-gate.json"
+}

@@ -1,0 +1,93 @@
+{
+  "status": "PASS portable GalleryHero4 CPU rebuild and all nine canonical source exports; Unity Assets untouched",
+  "gallery_near_far_budgets_exact": [
+    [
+      0,
+      39814,
+      7363
+    ],
+    [
+      1,
+      44042,
+      7930
+    ],
+    [
+      2,
+      39814,
+      7363
+    ],
+    [
+      3,
+      44042,
+      7930
+    ],
+    [
+      4,
+      39814,
+      7363
+    ],
+    [
+      5,
+      44042,
+      7930
+    ]
+  ],
+  "exports": [
+    {
+      "asset": "BotanicalKit",
+      "triangles": 52702,
+      "objects": 21
+    },
+    {
+      "asset": "MeadowClub",
+      "triangles": 9896,
+      "objects": 90
+    },
+    {
+      "asset": "Finish_12",
+      "triangles": 51760,
+      "objects": 3
+    },
+    {
+      "asset": "Finish_15",
+      "triangles": 8010,
+      "objects": 4
+    },
+    {
+      "asset": "Finish_17",
+      "triangles": 1056,
+      "objects": 1
+    },
+    {
+      "asset": "Finish_18",
+      "triangles": 16956,
+      "objects": 1
+    },
+    {
+      "asset": "Finish_19",
+      "triangles": 43024,
+      "objects": 10
+    },
+    {
+      "asset": "Finish_20",
+      "triangles": 6120,
+      "objects": 5
+    },
+    {
+      "asset": "GolfGalleryHero4",
+      "triangles": 297447,
+      "objects": 48
+    }
+  ],
+  "source_inputs_exact": [
+    [
+      "Male",
+      "a17faf8c9e09c71efad03573818ac194f84b86d836634c15392c11a30212e1cf"
+    ],
+    [
+      "Female",
+      "5020024224ce7c1e737ff12dcf8ff9490fd2b5ba6abbb3662045c60abb2d6de3"
+    ]
+  ],
+  "scope": "Blender source-export smoke. FBX metadata timestamps differ; actual Unity visual/physics/render acceptance and phone performance remain separate."
+}

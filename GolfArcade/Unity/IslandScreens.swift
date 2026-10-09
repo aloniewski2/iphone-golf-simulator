@@ -293,6 +293,9 @@ struct IslandSettingsScreen: View {
         case "level":
             let i = TennisMenu.trainingLevels.firstIndex { abs($0.difficulty - s.tennisDifficulty) < 0.01 } ?? 1
             return Item(title: "Training coach", detail: "How hard the practice coach hits back. Standard is a proper rally.", control: .choice(TennisMenu.trainingLevels.map(\.name), i))
+        case "presentationIntros": return Item(title: "Match intros", detail: "Full plays once, then uses short cuts. Off goes straight to Ready.", control: .choice(["Full", "Short", "Off"], ["full", "short", "off"].firstIndex(of: s.presentationIntros) ?? 0))
+        case "holeFlyover": return Item(title: "Hole flyovers", detail: "Show the course before each hole. Overview stays available at address.", control: .toggle(s.holeFlyover))
+        case "presentationBigMoments": return Item(title: "Big moments", detail: "Allow one special camera moment per golf hole.", control: .toggle(s.presentationBigMoments))
         case "coaching": return Item(title: "Coaching tips", detail: "Short hints on the phone and TV during matches.", control: .toggle(s.coachingTips))
         case "resetTips": return Item(title: "Show every coaching tip again", detail: "The hints you have already seen will come back.", control: .action("Reset", danger: false))
         case "replayOnboarding": return Item(title: "Replay onboarding", detail: "Account, look, screen setup and a tutorial again. Your progress stays.", control: .action("Replay", danger: false))
@@ -512,6 +515,8 @@ struct IslandOnlineScreen: View {
                     layout {
                         VStack(spacing:8) {
                             stage.frame(maxWidth:.infinity,maxHeight:.infinity)
+                                .background(LinearGradient(colors:[Club.sky.opacity(0.42),Club.cream],startPoint:.top,endPoint:.bottom))
+                                .clipShape(RoundedRectangle(cornerRadius:24))
                             HStack(spacing:compact ? 5 : 10) {
                                 ForEach(online.participants,id:\.id) { p in
                                     IslandLobbyPlayerCard(participant:p,host:p.id == lobby?.ownerID,local:p.id == service.localID,loading:route == .loading,compact:compact)
@@ -563,9 +568,7 @@ struct IslandOnlineScreen: View {
                     action("net-leave","Leave",icon:"arrow.left")
                 case .results:
                     Text(online.winnerID.flatMap { id in lobby?.participants.first { $0.id == id }?.name }.map { "\($0) wins!" } ?? "Thanks for playing").islandType(compact ? 25 : 32,bold:true)
-                    if service.isOwner { action("net-rematch","Rematch",subtitle:"Return together, then ready up",icon:"arrow.clockwise") }
-                    action("net-return","Back to Lobby",icon:"person.2")
-                    if service.localSeat < 0 { action("net-queue",lobby?.queue.contains(service.localID) == true ? "Queued for Next" : "Queue for Next",icon:"person.crop.circle.badge.plus") }
+                    action("net-rematch","Rematch",subtitle:service.isOwner ? "Play together again" : "Host starts the rematch",icon:"arrow.clockwise",enabled:service.isOwner)
                     action("net-leave","Leave",icon:"arrow.left")
                 case .leave:
                     Text("Your friends will see that you've left.").islandType(compact ? 18 : 24).foregroundStyle(IslandUI.muted)

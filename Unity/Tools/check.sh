@@ -18,6 +18,8 @@ OUT=${OUT:-Library/Check}
 mkdir -p "$OUT"
 
 refs=(-r:$S/NetStandard/ref/2.1.0/netstandard.dll)
+# URP gameplay code needs the package runtime assemblies as well as UnityEngine modules.
+for d in Library/ScriptAssemblies/Unity.RenderPipelines.*.Runtime.dll Library/ScriptAssemblies/Unity.Mathematics.dll; do refs+=("-r:$d"); done
 for d in $S/NetStandard/compat/2.1.0/shims/netstandard/*.dll $S/Managed/UnityEngine/UnityEngine.*Module.dll $S/Managed/UnityEngine/UnityEngine.dll Library/ScriptAssemblies/UnityEngine.UI.dll; do refs+=("-r:$d"); done
 eval $CSC -deterministic -target:library -out:"$OUT/GolfArcade.dll" "${refs[@]}" 'Assets/Scripts/**/*.cs'
 echo "GolfArcade compiled"
@@ -30,6 +32,10 @@ echo "tests compiled"
 
 # Run the EditMode tests: they only touch pure C#, so a reflection runner on the bare runtime is enough.
 cp "$NUNIT" "$OUT/"
+# Reflection needs Unity's type metadata even for pure policy tests in a clean output folder.
+cp "$S/Managed/UnityEngine/"*.dll "$OUT/"
+cp Library/ScriptAssemblies/UnityEngine.UI.dll Library/ScriptAssemblies/UnityEngine.TestRunner.dll Library/ScriptAssemblies/UnityEditor.TestRunner.dll "$OUT/"
+cp Library/ScriptAssemblies/Unity.RenderPipelines.*.Runtime.dll Library/ScriptAssemblies/Unity.Mathematics.dll "$OUT/"
 eval $CSC -target:exe -out:"$OUT/TestRunner.dll" -r:$RT/System.Runtime.dll -r:$RT/System.Private.CoreLib.dll -r:$RT/System.Console.dll -r:$RT/System.Linq.dll -r:$RT/System.Collections.dll -r:$RT/System.Runtime.Loader.dll -r:$RT/System.Runtime.Extensions.dll Tools/TestRunner.cs
 printf '{"runtimeOptions":{"tfm":"net6.0","framework":{"name":"Microsoft.NETCore.App","version":"%s"}}}' "$(basename $RT)" > "$OUT/TestRunner.runtimeconfig.json"
-$DOTNET "$OUT/TestRunner.dll" "$OUT"
+$DOTNET "$OUT/TestRunner.dll" "$OUT" "${CHECK_FILTER:-}"

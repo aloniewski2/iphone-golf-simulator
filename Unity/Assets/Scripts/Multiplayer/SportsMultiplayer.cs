@@ -31,6 +31,9 @@ namespace GolfArcade.Multiplayer {
         }
         NetworkTennisMatch tennis;NetworkGolfRound golf;
         TennisGame tennisView;GolfGame golfView;
+        string pendingResult; double resultDue;
+        double scheduledStart = double.PositiveInfinity; bool startScheduled;
+        public double SharedClock => Clock + (IsHost ? 0 : clockOffset);
         double clockOffset,lastSnapshot,nextSnapshot,lastMove,packetAt;long eventID,lastTick=-1,lastRevision=-1;
         // IL2CPP shrinks a marshalled StringBuilder to the returned text length (one char on an empty poll).
         // A fixed blittable buffer preserves capacity across every poll and keeps UTF-8 packet boundaries.
@@ -53,11 +56,12 @@ namespace GolfArcade.Multiplayer {
             Instance.Initialize(c);
         }
         void Initialize(NetworkConfiguration c) {
-            Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
+            pendingResult=null; startScheduled=false; scheduledStart=double.PositiveInfinity;
+            PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
                 if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;}
-                else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
+                else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:true,courseKey:c.venue);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
             Time.timeScale=1;
@@ -65,7 +69,14 @@ namespace GolfArcade.Multiplayer {
         void OnDestroy(){if(Instance==this)Instance=null;}
         void Update() {
             if(!Active)return;
+            if(pendingResult!=null && SharedClock>=resultDue) { Send("result",pendingResult);pendingResult=null;Running=false; }
             for(int i=0;i<64;i++){int bytes=SportsNetworkPoll(inputBuffer,inputBuffer.Length);if(bytes<=0)break;if(bytes<=60000)Receive(Encoding.UTF8.GetString(inputBuffer,0,bytes));if(!Active)break;}
+            if(startScheduled && !Running && SharedClock>=scheduledStart) {
+                startScheduled=false; Running=true; Time.timeScale=1;
+                if(TennisState==null || TennisState.phase=="intro") tennisView?.BeginSharedPresentation();
+                PresentationPolicy.Event("Venue","scheduledBegin",1,scheduledStart.ToString("F3"));
+                SendSnapshot(true);
+            }
             if(!Running)return;
             if(IsHost) {
                 if(tennis!=null){tennis.State.paused=suspended.Count>0;tennis.Step(Time.unscaledDeltaTime);TennisState=tennis.State;}
@@ -80,7 +91,10 @@ namespace GolfArcade.Multiplayer {
             if(p.kind=="clock") {if(p.sender!=Configuration.localID)return;}
             else if(p.kind!="input"&&p.sender!=Configuration.hostID)return;
             switch(p.kind) {
-                case "run":Running=true;Time.timeScale=1;SendSnapshot(true);break;
+                case "run":
+                    if(Running || startScheduled) break;
+                    if(!double.TryParse(p.payload,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out scheduledStart) || double.IsNaN(scheduledStart) || double.IsInfinity(scheduledStart)) scheduledStart=SharedClock;
+                    startScheduled=true; break;
                 case "clock":if(double.TryParse(p.payload,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var offset))clockOffset=offset;break;
                 case "input":
                     if(!IsHost||!Running)return;var seat=Configuration.Seat(p.sender);if(seat<0)return;
@@ -170,13 +184,13 @@ namespace GolfArcade.Multiplayer {
             var r=new MatchResult {sport=Configuration.sport,reason=score=="interrupted"?"interrupted":"complete",score=score};
             if(tennis!=null&&tennis.State.score.Complete)r.winner=tennis.State.score.PlayerWonMatch?0:1;
             if(golf!=null)r.golfers=golf.State.golfers;
-            SendSnapshot(true);Send("result",JsonUtility.ToJson(r));Running=false;
+            SendSnapshot(true); pendingResult=JsonUtility.ToJson(r); resultDue=SharedClock+(r.reason=="interrupted"?0:3);
         }
         void Send(string kind,string payload,bool reliable=true) {
             if(Configuration==null)return;
             var p=new NetworkPacket {lobbyID=Configuration.lobbyID,matchID=Configuration.matchID,sender=Configuration.localID,kind=kind,payload=payload,reliable=reliable,sentAt=Clock};
             var json=JsonUtility.ToJson(p);if(Encoding.UTF8.GetByteCount(json)<=60000)if(SportsNetworkEmit(json)==0){Running=false;Debug.LogError("Multiplayer bridge backpressure: match paused.");}
         }
-        public static void Shutdown(){if(!Instance)return;Instance.Running=false;Instance.Configuration=null;Instance.tennis=null;Instance.golf=null;Time.timeScale=1;}
+        public static void Shutdown(){PresentationPolicy.Multiplayer=false;if(!Instance)return;Instance.pendingResult=null;Instance.startScheduled=false;Instance.Running=false;Instance.Configuration=null;Instance.tennis=null;Instance.golf=null;Time.timeScale=1;}
     }
 }

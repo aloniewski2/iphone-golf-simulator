@@ -12,7 +12,7 @@ namespace GolfArcade.Game
     /// water, not off the cliff.
     public sealed class Gallery : MonoBehaviour
     {
-        readonly List<GolferView> fans = new();
+        readonly List<GolfGalleryPresentation> fans = new();
         readonly List<float> phases = new();
         float cheerUntil = -1f;
 
@@ -66,17 +66,13 @@ namespace GolfArcade.Game
                 double ground = HoleView.GroundHeight(point);
                 if (System.Math.Abs(ground - teeHeight) > 1.2) continue;
                 bool female = rng.Next(2) == 1;
-                var look = new GolferView.Look
-                {
-                    // the crowd: Adnan's V4 standard characters, recoloured (the player is the Higgsfield golfer)
-                    ModelPath = female ? "Golfer/crowd_f" : "Golfer/crowd_m",
-                    Skin = GolferStyle.SkinTones[rng.Next(GolferStyle.SkinTones.Length)],
-                    Hair = GolferStyle.HairColors[rng.Next(GolferStyle.HairColors.Length)],
-                    HairMesh = new[] { "HAIR_SHORT", "HAIR_LONG", "HAIR_CURLY", female ? "HAIR_LONG" : "HAIR_SHORT" }[rng.Next(4)],
-                    Shirt = Shirts[rng.Next(Shirts.Length)],
-                    Trousers = Trousers[rng.Next(Trousers.Length)],
-                };
-                var fan = GolferView.CreateSpectator(transform, look);
+                // Preserve the original random draw schedule, hence every placement,
+                // while selecting a fitted authored human palette instead of V4 skins.
+                int skin=rng.Next(GolferStyle.SkinTones.Length);
+                rng.Next(GolferStyle.HairColors.Length);rng.Next(4);
+                int shirt=rng.Next(Shirts.Length);rng.Next(Trousers.Length);
+                int variant=2*((skin+shirt)%3)+(female?1:0);
+                var fan = GolfGalleryPresentation.Create(transform,variant);
                 var place = HoleView.ToWorld(point);
                 fan.transform.position = place;
                 // facing the golfer, give or take

@@ -8,7 +8,7 @@ namespace GolfArcade.Multiplayer {
         public int seat,strokes,club,total; public double x,d,heading; public bool holed,dnf; public int[] card;
     }
     [Serializable] public sealed class NetworkGolfState {
-        public long revision,shotID;public int hole,turn;public double time,turnAt,windSpeed,windDirection;
+        public long revision,shotID;public int hole,turn;public double time,turnAt,windSpeed,windDirection,presentationUntil;
         public string phase="aim";public bool paused,complete;
         public NetworkGolfer[] golfers;public NetworkGolfShot shot;
     }
@@ -19,11 +19,11 @@ namespace GolfArcade.Multiplayer {
     /// The existing CourseShot engine runs once, on the authority. Every peer receives its path and ruling.
     public sealed class NetworkGolfRound {
         public readonly NetworkGolfState State;
-        readonly Course.Course course;readonly Random random;readonly long[] lastEvent=new long[4];
+        readonly bool intros; readonly Course.Course course;readonly Random random;readonly long[] lastEvent=new long[4];
         public Action<NetworkGolfShot> Shot;public Action<string> Result;
-        public NetworkGolfRound(int[] seats,int seed) {
+        public NetworkGolfRound(int[] seats,int seed,bool intro=false,string courseKey=null) {
             if(seats==null||seats.Length<2||seats.Length>4||seats.Distinct().Count()!=seats.Length||seats.Any(s=>s<0||s>3))throw new ArgumentException("Invalid golf seats.");
-            course=Course.Course.Postcards();random=new Random(seed);
+            intros=intro; course=Course.Course.ByKey(courseKey??"postcards")??Course.Course.Postcards();random=new Random(seed);
             State=new NetworkGolfState {golfers=seats.OrderBy(s=>s).Select(s=>new NetworkGolfer {seat=s,card=new int[course.Holes.Length]}).ToArray()};
             BeginHole(0);
         }
@@ -34,6 +34,7 @@ namespace GolfArcade.Multiplayer {
             var eligible=State.golfers.Where(p=>!p.dnf).ToArray();
             if(eligible.Length<2){Complete("interrupted");return;}
             State.turn=eligible[index%eligible.Length].seat;State.turnAt=State.time;
+            if(intros) { State.phase="intro";State.presentationUntil=State.time+2.9; }
         }
         public bool Input(int seat,NetworkInput input,double hostTime) {
             var p=State.golfers.FirstOrDefault(p=>p.seat==seat);
@@ -61,6 +62,7 @@ namespace GolfArcade.Multiplayer {
         }
         public void Step(double elapsed) {
             if(State.paused||State.complete)return;State.time+=Math.Max(0,Math.Min(.1,elapsed));
+            if(State.phase=="intro") { if(State.time>=State.presentationUntil) {State.phase="aim";State.turnAt=State.time;State.revision++;} return; }
             if(State.phase=="flight" && State.time>=State.shot.start+State.shot.duration+2) {
                 var p=State.golfers.First(g=>g.seat==State.shot.seat);p.x=State.shot.nextX;p.d=State.shot.nextD;
                 if(State.shot.holed||p.strokes>=course.Holes[State.hole].Par+5)FinishGolfer(p);

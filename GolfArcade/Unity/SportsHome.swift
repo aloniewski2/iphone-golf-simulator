@@ -12,6 +12,7 @@ struct SportsHome: View {
         Group {
             if session.displayConnected && !session.active { TennisRemote() }
             else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
+            else if session.active && !session.loading.finished { LoadingScreen(menu: menu, compact: true) }
             else if menu.screen.isOnline && menu.screen != .online(.match) {
                 if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
             }
@@ -19,7 +20,6 @@ struct SportsHome: View {
                 MatchFinishControls(session: session)
                     .background(Club.lagoonDeep.ignoresSafeArea())
             }
-            else if session.active && !session.loading.finished { TennisRemote() }
             else if session.active && session.menuPauseVisible { IslandPauseScreen(compact: true) }
             else if session.active && session.sport == "golf" {
                 GolfPhoneController(session: session)
@@ -29,6 +29,12 @@ struct SportsHome: View {
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
         }
+        .simultaneousGesture(TapGesture().onEnded {
+            guard session.active, session.loading.finished, !session.paused, session.multiplayerMatchID == nil else { return }
+            if ["intro", "point", "finished"].contains(session.tennisPhase) || ["Intro", "Result"].contains(session.golfPhase) {
+                session.command("presentationSkip")
+            }
+        })
         .safeAreaInset(edge: .top) {
             if session.active {
                 HStack {
@@ -38,6 +44,20 @@ struct SportsHome: View {
                 }
                 .font(IslandUI.font(16, bold: true)).foregroundStyle(IslandUI.navy)
                 .padding(.horizontal, 20).frame(minHeight: 48).background(IslandUI.paper)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                if session.loading.finished, session.loading.tipRemaining > 0, let tip = session.loading.tip {
+                    Text(tip).font(IslandUI.font(15, bold: true)).foregroundStyle(.white).padding(12).background(IslandUI.navy, in: Capsule()).padding(.bottom, 48)
+                }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if session.active && session.loading.finished && !session.paused && session.multiplayerMatchID == nil && (session.tennisPhase == "intro" || session.golfPhase == "Intro") {
+                Button("Skip intro") { session.command("presentationSkip") }
+                    .font(IslandUI.font(18, bold: true)).padding(16).background(IslandUI.lime, in: Capsule()).foregroundStyle(IslandUI.navy)
+                    .accessibilityIdentifier("presentation-skip").padding(.bottom, 16)
             }
         }
         .overlay(alignment:.top) { if session.active && menu.screen == .online(.match) { MultiplayerMatchOverlay() } }
@@ -84,7 +104,10 @@ struct SportsHome: View {
             if ProcessInfo.processInfo.arguments.contains("--character-editor") { menu.openCharacterEditor() }
             // `-benchTennis`: play a self-driving rally on the phone and log frame times.
             if args.contains("--playability-check") { await PlayabilityCheck.run(); return }
-            if SportsSession.benchmark && !session.active { session.sport="tennis"; session.touch=true; session.start(preview:!session.displayConnected) }
+            if SportsSession.benchmark && !session.active {
+                session.sport = args.contains("-benchGolf") ? "golf" : "tennis"
+                session.touch = true; session.start(preview:!session.displayConnected)
+            }
         }
         .background(DisplayRegistration().frame(width:0,height:0))
         .onChange(of:scenePhase) { _,phase in
@@ -338,6 +361,7 @@ struct GolfPhoneController: View {
                             if !session.touch && session.golfPhase == "Aim" {
                                 Button("Calibrate golf swing") { session.requestGolfCalibration() }
                             }
+                            if session.golfPhase == "Aim" && session.multiplayerMatchID == nil { Button("Overview") { session.command("golfOverview") } }
                             Button("Exit round", role: .destructive) { session.exitGame() }
                         } label: {
                             Image(systemName: "ellipsis").font(.system(size: 22, weight: .bold)).frame(width: 48, height: 48)
@@ -355,7 +379,7 @@ struct GolfPhoneController: View {
                     } else if session.golfPhase == "Result" {
                         GolfShotResultControls(session: session)
                     } else if session.golfPhase == "RoundDone" {
-                        IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Play Again", primary: true) { session.command("golfContinue") }
+                        IslandAction(title: session.golfHasNextHole ? "Next Hole" : "Rematch", primary: true) { session.continueGolfRound() }
                             .accessibilityIdentifier("golf-continue")
                     } else {
                         GolfClubControllerArt()

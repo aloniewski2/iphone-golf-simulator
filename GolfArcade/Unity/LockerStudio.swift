@@ -102,10 +102,6 @@ struct IslandLockerScreen: View {
 
     private var stage: some View {
         ZStack(alignment: .bottom) {
-            if framing == .body {
-                Ellipse().fill(RadialGradient(colors: [.white.opacity(0.9), IslandUI.lime.opacity(0.55), .clear], center: .center, startRadius: 4, endRadius: 150 * k))
-                    .frame(width: 260 * k, height: 40 * k).offset(y: -26 * k).allowsHitTesting(false)
-            }
             CharacterModelPreview(player: player, cameraDistance: 2.7, framing: framing, outfitSport: menu.lockerSport)
                 .padding(.bottom, 18)
                 .accessibilityLabel("\(player.name), your character")
@@ -349,7 +345,7 @@ struct IslandLockerScreen: View {
 
     private func labelledRow<C: View>(_ title: String, id: String, custom: String? = nil, @ViewBuilder _ content: () -> C) -> some View {
         HStack(spacing: 8 * k) {
-            Text(title).font(IslandUI.font(16 * k, bold: true)).frame(width: 54 * k, alignment: .leading)
+            Text(title).font(IslandUI.font(16 * k, bold: true)).lineLimit(1).minimumScaleFactor(0.8).frame(width: 54 * k, alignment: .leading)
             content()
             if let custom {
                 Button { menu.lockerOpenRangeForTouch(custom) } label: { Image(systemName: "slider.horizontal.3").font(.system(size: 15 * k, weight: .bold)).foregroundStyle(IslandUI.muted).frame(width: 28 * k, height: 28 * k) }

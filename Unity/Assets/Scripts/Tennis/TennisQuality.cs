@@ -45,7 +45,7 @@ namespace GolfArcade.Tennis
 
         public static Settings For(Tier tier) => tier switch
         {
-            Tier.High => new Settings { Msaa = 4, PixelLights = 2, Shadows = ShadowQuality.All, ShadowResolution = ShadowResolution.VeryHigh, ShadowDistance = 42, ShadowCascades = 2 },
+            Tier.High => new Settings { Msaa = 4, PixelLights = 2, Shadows = ShadowQuality.All, ShadowResolution = ShadowResolution.VeryHigh, ShadowDistance = 60, ShadowCascades = 1 },
             Tier.Standard => new Settings { Msaa = 4, PixelLights = 1, Shadows = ShadowQuality.All, ShadowResolution = ShadowResolution.High, ShadowDistance = 38, ShadowCascades = 1 },
             _ => new Settings { Msaa = 2, PixelLights = 1, Shadows = ShadowQuality.HardOnly, ShadowResolution = ShadowResolution.Medium, ShadowDistance = 32, ShadowCascades = 1 },
         };
@@ -95,8 +95,8 @@ namespace GolfArcade.Tennis
                 urp.shadowDistance = s.ShadowDistance;
                 urp.shadowCascadeCount = s.ShadowCascades;
                 urp.mainLightShadowmapResolution = s.ShadowResolution switch
-                { ShadowResolution.VeryHigh => 2048, ShadowResolution.High => 2048, ShadowResolution.Medium => 1024, _ => 512 };
-                urp.supportsHDR = tier != Tier.Low;
+                { ShadowResolution.VeryHigh => 4096, ShadowResolution.High => 2048, ShadowResolution.Medium => 1024, _ => 512 };
+                urp.supportsHDR = true; // Tone mapping stays active; Low drops bloom and AO.
                 urp.renderScale = 1f;
             }
             SetAmbientOcclusion(tier == Tier.High);

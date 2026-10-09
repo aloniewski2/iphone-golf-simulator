@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace GolfArcade.Game
 {
@@ -33,6 +34,9 @@ namespace GolfArcade.Game
             rig.Camera.farClipPlane = GolfArcade.Course.HoleAtmosphere.FarClip;
             rig.Camera.clearFlags = CameraClearFlags.Skybox;
             rig.Camera.backgroundColor = new Color(0.55f, 0.78f, 0.95f);
+            rig.Camera.depthTextureMode |= DepthTextureMode.Depth;
+            rig.Camera.GetUniversalAdditionalCameraData().requiresDepthTexture = true;
+            GolfArcade.Tennis.TennisLook.SetupPost(rig.Camera);
             go.AddComponent<AudioListener>();
             return rig;
         }
@@ -43,9 +47,22 @@ namespace GolfArcade.Game
         {
             aimDirection = GroundDirection(aimDirection);
             var right = Vector3.Cross(Vector3.up, aimDirection);
-            float back = putting ? 3.3f : 3.65f;
-            targetPosition = ball - aimDirection * back + right * .2f + Vector3.up * 2.05f;
-            targetLookAt = ball + aimDirection * 2.4f + Vector3.up * .85f;
+            bool portrait = Camera.aspect < 1.2f;
+            float back = portrait ? (putting ? 4.4f : 4.65f) : (putting ? 3.3f : 3.85f);
+            targetPosition = ball - aimDirection * back + right * (portrait ? -.2f : .55f) + Vector3.up * (portrait ? 2.45f : 2.05f);
+            targetLookAt = ball + aimDirection * (portrait ? 2.1f : 3f) + Vector3.up * (portrait ? .8f : .95f);
+            var course = Course.HoleView.Current;
+            if (portrait && !putting && Course.GolfCoastalComposition.Enabled && course && course.Hole.Number is 9 or 12)
+            {
+                var fromTee = ball - Course.HoleView.ToWorld(course.Hole.Tee); fromTee.y = 0;
+                if (fromTee.sqrMagnitude < 24f * 24f)
+                {
+                    // Rise above the near turf lip so the coastal opening reads
+                    // during ordinary play. Preserve the lens and downward aim angle.
+                    targetPosition += Vector3.up * (course.Hole.Number==9 ? .8f : .9f);
+                    if(course.Hole.Number==9) targetLookAt-=right*1.15f;
+                }
+            }
             Look(ball, aimDirection, look, pin, 14f, 5f);
             ClearGround();
             cueUp = Vector3.up; targetRoll = 0;
@@ -99,6 +116,25 @@ namespace GolfArcade.Game
             shotFrame = povThisFrame = false;
         }
 
+        /// Face the player after rest; leave the right-hand result card and phone footer clear.
+        float resultAspect;
+        public void FrameCharacterResult(Transform golfer)
+        {
+            if (Mathf.Abs(resultAspect-Camera.aspect)>.01f) SnapNext();
+            resultAspect=Camera.aspect;
+            bool portrait=Camera.aspect<1.2f;
+            var facing=GroundDirection(golfer.forward);
+            FrameStage(golfer.position,facing,0,portrait?.29f:.16f,portrait?.76f:.82f,4f);
+            var right=Vector3.Cross(Vector3.up,-facing);
+            float distance=Vector3.Distance(targetPosition,targetLookAt);
+            float halfWidth=distance*Mathf.Tan(Camera.fieldOfView*Mathf.Deg2Rad/2)*Camera.aspect;
+            var shift=right*halfWidth*(portrait?.14f:.34f);
+            targetPosition+=shift;targetLookAt+=shift;
+            shotFrame=povThisFrame=false;cueUp=Vector3.up;targetRoll=0;
+        }
+
+        public bool LandingView { get; private set; }
+        Vector3 landingCamera;
         public const float LaunchHoldSeconds = 1.5f;
         public const float FollowTransitionSeconds = .28f;
         Vector3 launchCamera, launchLook, flightDirection;
@@ -121,6 +157,7 @@ namespace GolfArcade.Game
         /// Capturing the current pose lets the launch view lead into the chase without a cut.
         public void BeginShot(Vector3 direction)
         {
+            LandingView=false;
             launchCamera = transform.position;
             launchLook = lookAt;
             flightDirection = GroundDirection(direction);
@@ -135,16 +172,21 @@ namespace GolfArcade.Game
             float hold = putting ? .6f : LaunchHoldSeconds;
             float follow = Mathf.SmoothStep(0, 1, Mathf.Clamp01((sinceLaunch - hold) / FollowTransitionSeconds));
             var right = Vector3.Cross(Vector3.up, flightDirection);
-            float back = putting ? 5f : down ? 9f : 12f;
-            float height = putting ? 2.8f : down ? 4.5f : 7f;
-            var chase = ball - flightDirection * back + right * (putting ? .65f : 2.4f) + Vector3.up * height;
-            targetPosition = Vector3.Lerp(launchCamera, chase, follow);
+            if(down && !putting && !LandingView){
+                LandingView=true;
+                landingCamera=ball-flightDirection*11f+right*1.2f+Vector3.up*4.2f;
+                SnapNext();
+            }
+            float back = putting ? 5f : 30f;
+            float height = putting ? 2.8f : 6f;
+            var chase = ball - flightDirection * back + right * (putting ? .65f : .9f) + Vector3.up * height;
+            targetPosition = LandingView ? landingCamera : Vector3.Lerp(launchCamera, chase, follow);
             // Even a ricochet cannot put the camera ahead of its subject and reverse the view.
             float ahead = Vector3.Dot(targetPosition - ball, flightDirection);
             if (ahead > -2f) targetPosition -= flightDirection * (ahead + 2f);
             ClearGround();
             flightBall = ball;
-            targetLookAt = Vector3.Lerp(launchLook, ball + flightDirection * .8f, follow);
+            targetLookAt = LandingView ? ball+flightDirection*.8f : Vector3.Lerp(launchLook, ball + flightDirection * .8f, follow);
             positionLag = .065f; lookLag = .055f;
             cueUp = Vector3.up; targetRoll = 0; targetZoom = 1;
             shotFrame = true;
@@ -291,35 +333,61 @@ namespace GolfArcade.Game
         /// that ends high behind the tee, then a low walkthrough up the fairway to the green.
         /// `t` runs 0→1 over the whole thing; the first `AerialShare` of it is the aerial.
         public const float AerialShare = 0.4f;
+        Course.Hole showcaseHole;
+        readonly System.Collections.Generic.List<Vector3> showcasePath = new();
         public void Showcase(Course.Hole hole, float t)
         {
+            RestoreFov(); ResetZoom();
+            cueUp = Vector3.up; targetRoll = 0; shotFrame = povThisFrame = false;
             var tee = Course.HoleView.ToWorld(hole.Tee); var pin = Course.HoleView.ToWorld(hole.Pin);
             var mid = (tee + pin) / 2;
             var along = pin - tee; along.y = 0; float length = along.magnitude; along.Normalize();
             var right = Vector3.Cross(Vector3.up, along);
+            if(showcaseHole != hole)
+            {
+                showcaseHole=hole;showcasePath.Clear();showcasePath.Add(tee-along*16);
+                foreach(var point in hole.Centerline)showcasePath.Add(Course.HoleView.ToWorld(point));
+            }
+            Vector3 Establishing(float u)
+            {
+                float angle=Mathf.Lerp(55f,-105f,Mathf.SmoothStep(0,1,u))*Mathf.Deg2Rad;
+                var focus=mid+Vector3.up*3;
+                var offset=(right*Mathf.Cos(angle)+along*Mathf.Sin(angle))*(length*.48f+32)+Vector3.up*(length*.22f+25);
+                // Both tee and green stay inside the portrait lens during the reveal.
+                float vertical=Mathf.Tan(Camera.fieldOfView*.5f*Mathf.Deg2Rad)*.84f;
+                float horizontal=vertical*Mathf.Max(.3f,Camera.aspect);
+                for(int attempt=0;attempt<16;attempt++)
+                {
+                    var inverse=Quaternion.Inverse(Quaternion.LookRotation(-offset));bool fits=true;
+                    foreach(var point in new[]{tee,pin})
+                    {
+                        var local=inverse*(point-focus-offset);
+                        if(local.z<=0 || Mathf.Abs(local.x)>local.z*horizontal || Mathf.Abs(local.y)>local.z*vertical){fits=false;break;}
+                    }
+                    if(fits)break;offset*=1.1f;
+                }
+                return focus+offset;
+            }
             if (t < AerialShare)
             {
-                // Round the hole from beyond the green on the left to high behind the tee.
-                float u = Mathf.SmoothStep(0, 1, t / AerialShare);
-                float angle = Mathf.Lerp(120f, -90f, u) * Mathf.Deg2Rad;
-                float radius = length * 0.7f + 60, height = length * 0.45f + 40;
-                targetPosition = mid + (right * Mathf.Cos(angle) + along * Mathf.Sin(angle)) * radius + Vector3.up * height;
-                targetLookAt = mid + Vector3.up * 4;
-                positionLag = 0.4f; lookLag = 0.4f;
+                targetPosition = Establishing(t/AerialShare);
+                targetLookAt = mid + Vector3.up * 3;
+                positionLag = .25f; lookLag = .25f;
             }
             else
             {
-                // Down the hole: from well behind the tee, over every station, to the pin,
-                // dropping from 24 to 10 yd above the ground, looking a little way ahead.
-                float u = (t - AerialShare) / (1 - AerialShare);
-                var path = new System.Collections.Generic.List<Vector3> { tee - along * 45 };
-                foreach (var p in hole.Centerline) path.Add(Course.HoleView.ToWorld(p));
-                var at = Spline(path, u); var ahead = Spline(path, Mathf.Min(1, u + 0.12f));
-                float rise = Mathf.Lerp(24, 10, u);
-                targetPosition = new Vector3(at.x, (float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(at)) + rise, at.z);
-                var look = u > 0.85f ? pin : ahead;
-                targetLookAt = look + Vector3.up * 1.5f;
-                positionLag = 0.3f; lookLag = 0.25f;
+                float progress=Mathf.Clamp01((t-AerialShare)/(1-AerialShare));
+                float u=Mathf.SmoothStep(0,1,progress);
+                var at=Spline(showcasePath,u);var ahead=Spline(showcasePath,Mathf.Min(1,u+.10f));
+                var forward=ahead-at;forward.y=0;
+                forward=forward.sqrMagnitude>.001f?forward.normalized:along;
+                var position=at-forward*18+right*(7*Mathf.Sin(u*Mathf.PI));
+                position.y=(float)Course.HoleView.GroundHeight(Course.HoleView.ToCourse(position))+Mathf.Lerp(18,9,u);
+                var look=Vector3.Lerp(ahead+Vector3.up*2,pin+Vector3.up,Mathf.SmoothStep(0,1,Mathf.InverseLerp(.85f,1,u)));
+                float descend=Mathf.SmoothStep(0,1,Mathf.Clamp01(progress/.2f));
+                targetPosition=Vector3.Lerp(Establishing(1),position,descend);
+                targetLookAt=Vector3.Lerp(mid+Vector3.up*3,look,descend);
+                positionLag=.22f;lookLag=.20f;
             }
         }
 

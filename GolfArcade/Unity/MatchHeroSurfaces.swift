@@ -76,10 +76,21 @@ typealias HeroColor = NSColor
         let tint: SIMD3<Float>
         if let look = sub.look {
             tint = colour ?? SIMD3(look.color[0], look.color[1], look.color[2])
-            mat = look.isCloth ? cloth(look, tint: tint, sceneScale: sceneScale, trim: trimColour) : character(look, tint: tint)
+            if look.shader == "Universal Render Pipeline/Lit" {
+                mat=SCNMaterial();mat.lightingModel = .physicallyBased;mat.diffuse.contents=flatColour(tint)
+                mat.metalness.contents=look.metallic ?? 0;mat.roughness.contents=1-look.smoothness
+            } else {
+                mat = look.isCloth ? cloth(look, tint: tint, sceneScale: sceneScale, trim: trimColour) : character(look, tint: tint)
+            }
         } else {
             tint = colour ?? SIMD3(repeating: 1)
             mat = SCNMaterial(); mat.lightingModel = .blinn; mat.diffuse.contents = flatColour(tint)
+        }
+        if sub.look?.anatomicalFace != true { configurePaint(mat, role: sub.material, crafted: sub.look?.craftedPaint ?? 0) }
+        if ProcessInfo.processInfo.environment["VISUAL_CHARACTER_SKIN_POLISH"] == "1", let look=sub.look, look.anatomicalFace == true,
+           sub.material.contains("Iris") || sub.material.contains("Sclera") {
+            let spec:Float=sub.material.contains("Iris") ? 0.85:0.52
+            mat.setValue(SCNVector4(look.wrap,look.smoothness,spec,look.saturation),forKey:"athleteSurface")
         }
         mat.name = sub.material   // the Unity material name (Skin, White_Frame, Kit_Shirt ...): the role a tint is applied to
         mat.isDoubleSided = true   // a mirrored (left-handed) hero flips the winding
@@ -90,19 +101,252 @@ typealias HeroColor = NSColor
     // ---- TennisCharacter: skin, eyes, face decals, racket frame and strings
     private static func character(_ look: MatchHeroData.Look, tint: SIMD3<Float>) -> SCNMaterial {
         let m = SCNMaterial(); m.lightingModel = .blinn
-        m.diffuse.contents = flatColour(tint)
-        let b = blinn(look.smoothness)
-        m.specular.contents = HeroColor(white: b.specular, alpha: 1)   // soft plastic, no specular blobs
-        m.shininess = b.shininess
+        let lum=simd_dot(tint,SIMD3<Float>(0.2126,0.7152,0.0722))
+        m.diffuse.contents = flatColour(SIMD3<Float>(repeating:lum)+(tint-SIMD3<Float>(repeating:lum))*look.saturation)
+        // Exported relative LUTs multiply the selected tint; never bake a skin preset.
+        m.setValue(SCNVector4(srgbToLinear(tint.x),srgbToLinear(tint.y),srgbToLinear(tint.z),1),forKey:"heroTint")
+        let hasRelativeMap = !look.baseMap.isEmpty && image(look.baseMap,linear:look.baseMapLinear ?? false) != nil
+        if hasRelativeMap, let map=image(look.baseMap,linear:look.baseMapLinear ?? false) {
+            m.diffuse.contents=map; m.diffuse.wrapS = .clamp; m.diffuse.wrapT = .clamp
+            // Tint the sampled albedo before lighting. SCNMaterial.multiply
+            // acts after lighting and would tint specular / skin twice.
+        }
+        m.setValue(look.skinFinish ?? 0,forKey:"skinFinish")
+        m.setValue(ProcessInfo.processInfo.environment["VISUAL_CHARACTER_SKIN_POLISH"] == "1" ? Float(1):Float(0),forKey:"skinPolish")
+        m.setValue(look.skinPigmentUV ?? 0,forKey:"skinPigmentUV")
+        m.setValue((look.skinPigmentUV ?? 0)>0.5 ? Float(1):Float(0),forKey:"skinBindChannel")
+        // Same broad skin / varnished eye-frame lobes as HeroCharacterShade, replacing
+        // SceneKit's undifferentiated plastic Blinn response. Old manifests remain valid.
+        m.setValue(SCNVector4(look.wrap, look.smoothness, look.specularStrength ?? 1, look.saturation), forKey: "athleteSurface")
+        let warm = look.subsurface.count >= 3 ? SIMD3(look.subsurface[0], look.subsurface[1], look.subsurface[2]) : SIMD3<Float>(repeating: 0)
+        m.setValue(SCNVector4(srgbToLinear(warm.x), srgbToLinear(warm.y), srgbToLinear(warm.z), 0), forKey: "athleteWarmth")
+        m.setValue(SCNVector4(look.rimStrength, look.rimPower, look.environmentStrength ?? 0.12, 0), forKey: "athleteRim")
+        m.specular.contents = HeroColor(white: 1, alpha: 1)
+        m.shaderModifiers = hasRelativeMap ? [.surface:relativeCharacterSurface,.lightingModel:athleteLighting] : [.lightingModel:athleteLighting]
+        let regional=(look.headOrigin?.count ?? 0)>=4 && (look.headOrigin?[3] ?? 0)>0.5
+        func vector(_ values:[Float]?,flipZ:Bool)->SCNVector4{guard let a=values,a.count>=3 else{return SCNVector4(0,0,0,0)};return SCNVector4(a[0],a[1],flipZ ? -a[2]:a[2],a.count>3 ? a[3]:0)}
+        m.setValue(vector(look.headOrigin,flipZ:true),forKey:"headOrigin")
+        if regional {
+            m.setValue(vector(look.headRight,flipZ:true),forKey:"headRight");m.setValue(vector(look.headUp,flipZ:true),forKey:"headUp");m.setValue(vector(look.headForward,flipZ:true),forKey:"headForward");m.setValue(vector(look.headEye,flipZ:false),forKey:"headEye")
+            m.shaderModifiers=[.geometry:skinGeometry,.surface:hasRelativeMap ? headSurface.replacingOccurrences(of:"#pragma body",with:"#pragma body\n"+relativeTintBody):headSurface,.lightingModel:athleteLighting]
+        }
         guard look.bumpTriplanar > 0.5, !look.bumpMap.isEmpty, let map = image(look.bumpMap, linear: true) else { return m }
-        // the soft skin normal: the body has no UVs, so it is projected along the three axes from the BIND-pose position (carried in texcoord channels 0 and 1) and blended by the skinned normal
         let prop = SCNMaterialProperty(contents: map)
         prop.wrapS = .repeat; prop.wrapT = .repeat; prop.mipFilter = .linear; prop.minificationFilter = .linear; prop.magnificationFilter = .linear
         m.setValue(prop, forKey: "skinBumpMap")
         m.setValue(SCNVector4(look.bumpScale, look.bumpTile, 0, 0), forKey: "skinBump")
-        m.shaderModifiers = [.geometry: skinGeometry, .surface: skinSurface]
+        m.shaderModifiers = [.geometry: skinGeometry, .surface: regional ? skinSurface.replacingOccurrences(of:"#pragma body",with:headSurfaceArguments+"\n#pragma body"+(hasRelativeMap ? "\n"+relativeTintBody:""))+headSurfaceBody:skinSurface, .lightingModel: athleteLighting]
         return m
     }
+
+    static let relativeTintBody = "_surface.diffuse.rgb*=heroTint.rgb;\n"
+    static let relativeCharacterSurface = """
+    #pragma arguments
+    float4 heroTint;
+    #pragma body
+    _surface.diffuse.rgb*=heroTint.rgb;
+    float relativeLuminance=dot(_surface.diffuse.rgb,float3(0.2126,0.7152,0.0722));
+    _surface.diffuse.rgb=mix(float3(relativeLuminance),_surface.diffuse.rgb,athleteSurface.w);
+    """
+
+    static let athleteLighting = """
+    #pragma arguments
+    float4 athleteSurface;
+    float4 athleteWarmth;
+    float4 athleteRim;
+    float4 headOrigin;
+    float skinFinish;
+    float skinPolish;
+    #pragma body
+    float3 n = normalize(_surface.normal), v = normalize(_surface.view), l = normalize(_light.direction);
+    float nl = dot(n,l), wrapped = saturate((nl + athleteSurface.x) / (1.0 + athleteSurface.x));
+    float edge = saturate(wrapped - saturate(nl)) * 1.35;
+    float3 h = normalize(l+v); float nh = saturate(dot(n,h));
+    float smoothness=headOrigin.w>0.5 ? _surface.shininess:athleteSurface.y;
+    float broad = pow(nh,10.0+smoothness*30.0)*0.045;
+    float varnish = pow(nh,24.0+smoothness*smoothness*200.0)*smoothness*0.25;
+    float fresnel = 1.0+pow(1.0-saturate(dot(v,h)),5.0)*1.5;
+    float spec = (broad+varnish)*athleteSurface.z*fresnel*saturate(nl*3.0);
+    float rim = pow(1.0-saturate(dot(n,v)),athleteRim.y)*athleteRim.x;
+    if(skinFinish>0.5){
+        wrapped=saturate((nl+0.28)/1.28);
+        edge=saturate(wrapped-saturate(nl));
+        float skinLobe=pow(nh,18.0+smoothness*18.0)*0.075;
+        if(skinPolish>0.5) {
+            // Same soft shoulder / satin core as Unity's HeroSkinShade.
+            float glossWeight=0.16+0.84*saturate((smoothness-0.32)/0.06);
+            skinLobe=(pow(nh,5.0+smoothness*6.0)*0.035+pow(nh,18.0+smoothness*18.0)*0.40)*glossWeight;
+        }
+        spec=skinLobe*0.95*smoothstep(-0.06,0.24,nl);
+        _lightingContribution.diffuse += _light.intensity.rgb*(float3(wrapped*0.84)+athleteWarmth.rgb*edge);
+        _lightingContribution.specular += _light.intensity.rgb*(float3(spec)+rim*0.45*(float3(0.35)+0.65*_surface.diffuse.rgb));
+    }else{
+        _lightingContribution.diffuse += _light.intensity.rgb*(float3(wrapped)+athleteWarmth.rgb*edge);
+        _lightingContribution.specular += _light.intensity.rgb*(float3(spec)+rim*(float3(0.35)+0.65*_surface.diffuse.rgb));
+    }
+    """
+
+    private final class FacePerformanceState {
+        let group: Float, lift: Float
+        var blink: Float = 0, brow: Float = 0
+        var gaze = SIMD2<Float>.zero
+        init(group: Float, lift: Float) { self.group=group; self.lift=lift }
+    }
+    private static let faceStates = NSMapTable<SCNMaterial,FacePerformanceState>(keyOptions:.weakMemory,valueOptions:.strongMemory)
+
+    private static func configurePaint(_ material: SCNMaterial, role: String, crafted: Float) {
+        guard role.hasPrefix("Face_") else { return }
+        material.setValue(SCNVector4(0,0,0,0),forKey:"headOrigin")
+        var group: Float = 0, lift: Float = 0.00015
+        if role.contains("EyelidRim") {group=9;lift=0.00005}
+        else if role.contains("Closure") { group=5;lift=0.0002 }
+        else if role.contains("Sclera") { group=1;lift=0.00008 }
+        else if ["Iris","Pupil","Limbal","Catch"].contains(where: {role.contains($0)}) { group=2;lift=role.contains("Catch") ? 0.0002:role.contains("Pupil") ? 0.00014:0.00012 }
+        else if (role.contains("LidLine") || role.contains("LidLower") || role.contains("LidCrease")) { group=3;lift=0.00012 }
+        else if role.contains("Seam") {group=6;lift=0.00008}
+        else if role.contains("LipUp") {group=7;lift=0}
+        else if role.contains("BrowSoft") {group=8;lift=0.00008}
+        else if role.contains("Brow") { group=4;lift=role.contains("BrowSoft") ? 0.00008:0.00018 }
+        material.setValue(crafted,forKey:"craftedFacePaint")
+        material.setValue(SCNVector4(group,lift,0,0),forKey:"facePaint")
+        faceStates.setObject(FacePerformanceState(group:group,lift:lift),forKey:material)
+        material.setValue(SCNVector4(0,0,0,0),forKey:"facePerformance")
+        material.setValue(SCNVector4(0,1,0,0),forKey:"faceUp")
+        material.setValue(SCNVector4(1,0,0,0),forKey:"faceRight")
+        var modifiers=material.shaderModifiers ?? [:];modifiers[.geometry]=faceGeometry;modifiers[.surface]=faceSurface;modifiers[.lightingModel]=athleteLighting;material.shaderModifiers=modifiers
+    }
+    /// Eye centres measured from the actual exported sclera geometry, in that face's own space.
+    static func configureFace(_ root: SCNNode) {
+        guard let node=root.childNode(withName:"Face",recursively:true),let geometry=node.geometry,
+              let vertices=geometry.sources(for:.vertex).first,let normals=geometry.sources(for:.normal).first else{return}
+        func vertex(_ i:Int)->SIMD3<Float>{
+            vertices.data.withUnsafeBytes { raw in
+                let at=vertices.dataOffset+i*vertices.dataStride
+                return SIMD3(raw.loadUnaligned(fromByteOffset:at,as:Float.self),raw.loadUnaligned(fromByteOffset:at+4,as:Float.self),raw.loadUnaligned(fromByteOffset:at+8,as:Float.self))
+            }
+        }
+        var lo=[SIMD3<Float>(repeating:Float.greatestFiniteMagnitude),SIMD3<Float>(repeating:Float.greatestFiniteMagnitude)]
+        var hi=lo.map {-$0};var found=[false,false];var eyeNormals=[SIMD3<Float>.zero,SIMD3<Float>.zero]
+        for (sub,material) in geometry.materials.enumerated() where material.name?.contains("Sclera") == true {
+            let element=geometry.elements[sub]
+            element.data.withUnsafeBytes { raw in
+                for k in 0..<(element.primitiveCount*3) {
+                    let i=element.bytesPerIndex==4 ? Int(raw.loadUnaligned(fromByteOffset:k*4,as:UInt32.self)):Int(raw.loadUnaligned(fromByteOffset:k*2,as:UInt16.self))
+                    let v=vertex(i),side=v.x<0 ? 0:1
+                    normals.data.withUnsafeBytes { nraw in let at=normals.dataOffset+i*normals.dataStride;eyeNormals[side]+=SIMD3(nraw.loadUnaligned(fromByteOffset:at,as:Float.self),nraw.loadUnaligned(fromByteOffset:at+4,as:Float.self),nraw.loadUnaligned(fromByteOffset:at+8,as:Float.self)) }
+                    lo[side]=simd_min(lo[side],v);hi[side]=simd_max(hi[side],v);found[side]=true
+                }
+            }
+        }
+        guard found.allSatisfy({$0}) else{return}
+        let left=(lo[0]+hi[0])*0.5,right=(lo[1]+hi[1])*0.5
+        let nl=simd_normalize(eyeNormals[0]),nr=simd_normalize(eyeNormals[1])
+        let skin=root.childNode(withName:"Body",recursively:true)?.geometry?.materials.first.flatMap { made($0)?.colour } ?? SIMD3<Float>(0.76,0.48,0.3)
+        let skinLinear=SIMD3(srgbToLinear(skin.x),srgbToLinear(skin.y),srgbToLinear(skin.z))
+        for material in geometry.materials {
+            material.setValue(SCNVector4(left.x,left.y,left.z,(hi[0].y-lo[0].y)*0.5),forKey:"faceEyeL")
+            material.setValue(SCNVector4(right.x,right.y,right.z,(hi[1].y-lo[1].y)*0.5),forKey:"faceEyeR")
+            material.setValue(SCNVector4(nl.x,nl.y,nl.z,(hi[0].x-lo[0].x)*0.5),forKey:"faceNormalL")
+            material.setValue(SCNVector4(nr.x,nr.y,nr.z,(hi[1].x-lo[1].x)*0.5),forKey:"faceNormalR")
+            material.setValue(SCNVector4(skinLinear.x,skinLinear.y,skinLinear.z,1),forKey:"faceSkin")
+        }
+    }
+    static func performFace(on root: SCNNode, blink: Float, gaze: SIMD2<Float> = .zero, brow: Float = 0) {
+        let b=max(0,min(1,blink))
+        var anatomicalFace=false
+        for partName in ["Body","Face"] {
+            guard let node=root.childNode(withName:partName,recursively:true),let morpher=node.morpher,
+                  let full=morpher.targets.firstIndex(where:{$0.name=="Hero_Blink"}) else { continue }
+            let half=morpher.targets.firstIndex(where:{$0.name=="Hero_Blink_Half"})
+            if let half { morpher.setWeight(CGFloat(max(0,1-abs(2*b-1))),forTargetAt:half) }
+            morpher.setWeight(CGFloat(half == nil ? b:max(0,2*b-1)),forTargetAt:full)
+            if partName == "Face" { anatomicalFace=true }
+        }
+        // OriginalSeam's source targets already close/recess the eyes. Unity
+        // also bypasses gaze, brow lift and the legacy fragment closure stack.
+        if anatomicalFace { return }
+        guard let node=root.childNode(withName:"Face",recursively:true) else{return}
+        for material in node.geometry?.materials ?? [] {
+            guard let state=faceStates.object(forKey:material) else{continue}
+            let nextBlink=max(0,min(1,blink)), nextBrow=max(-0.001,min(0.001,brow))
+            // Unchanged uniforms were invalidating every face submesh on every frame.
+            // Keep the same continuous blink, but update only its participating roles.
+            let eyeRole=state.group>0.5 && state.group != 4 && state.group != 7
+            let browRole=state.group == 4 || state.group == 8
+            if (eyeRole && abs(state.blink-nextBlink)>0.000001) || (browRole && abs(state.brow-nextBrow)>0.000001) {
+                state.blink=nextBlink; state.brow=nextBrow
+                material.setValue(SCNVector4(state.group,state.lift,nextBlink,nextBrow),forKey:"facePaint")
+            }
+            // Gaze is submillimetre; this threshold is below a pixel on the stage.
+            if state.group == 2 && simd_distance(state.gaze,gaze)>0.00008 {
+                state.gaze=gaze
+                material.setValue(SCNVector4(gaze.x,gaze.y,0,0),forKey:"facePerformance")
+            }
+        }
+    }
+    static func performFace(on root: SCNNode, at time: Double, happy: Bool = false) {
+        let interval=3.4,phase=time.truncatingRemainder(dividingBy:interval)
+        let blink=phase<0.16 ? Float(sin(phase/0.16*Double.pi)):0
+        performFace(on:root,blink:max(blink,happy ? 0.16:0),gaze:SIMD2(Float(sin(time*0.47))*0.00125,0),brow:happy ? 0.00065:0)
+    }
+    static let faceGeometry = """
+    #pragma arguments
+    float4 faceEyeL;
+    float4 faceEyeR;
+    float4 faceUp;
+    float4 faceRight;
+    float4 facePaint;
+    float4 facePerformance;
+    float4 faceNormalL;
+    float4 faceNormalR;
+    #pragma varyings
+    float4 eyeLidData;
+    #pragma body
+    float3 facePos=_geometry.position.xyz;
+    out.eyeLidData=float4(0.0,facePaint.x,facePaint.z,0.0);
+    if(facePaint.x>0.5){
+        float4 eye=dot(facePos-(faceEyeL.xyz+faceEyeR.xyz)*0.5,faceRight.xyz)<0.0 ? faceEyeL:faceEyeR;
+        if(facePaint.x<3.5 || facePaint.x>4.5){
+            float4 closeNormal=dot(facePos-(faceEyeL.xyz+faceEyeR.xyz)*0.5,faceRight.xyz)<0.0 ? faceNormalL:faceNormalR;
+            if(facePaint.x>1.5 && facePaint.x<2.5)facePos+=(faceRight.xyz*facePerformance.x+faceUp.xyz*facePerformance.y)*(1.0-facePaint.z);
+            float height=dot(facePos-eye.xyz,faceUp.xyz);
+            out.eyeLidData.x=height/max(eye.w,0.0001);
+            out.eyeLidData.w=dot(facePos-eye.xyz,faceRight.xyz)/max(closeNormal.w,0.0001);
+            if(facePaint.x>7.5 && facePaint.x<8.5)facePos+=faceUp.xyz*facePaint.w;
+            if(facePaint.x>8.5){float crease=(-0.45+0.22*out.eyeLidData.w*out.eyeLidData.w)*eye.w;facePos+=faceUp.xyz*(crease-height)*facePaint.z*(1.0-_geometry.texcoords[0].x);}
+        }else facePos+=faceUp.xyz*facePaint.w;
+    }
+    facePos+=_geometry.normal.xyz*facePaint.y;
+    _geometry.position.xyz=facePos;
+    """
+    static let faceSurface = """
+    #pragma arguments
+    float4 faceSkin;
+    float craftedFacePaint;
+    #pragma body
+    float role=in.eyeLidData.y,blink=in.eyeLidData.z;
+    if(craftedFacePaint>0.5 && role>3.5 && role<4.5){float2 uv=_surface.diffuseTexcoord;float coverage=smoothstep(0.0,0.16,uv.y)*smoothstep(0.0,0.16,1.0-uv.y)*smoothstep(0.0,0.045,uv.x)*smoothstep(0.0,0.045,1.0-uv.x);_surface.diffuse.rgb=mix(faceSkin.rgb,_surface.diffuse.rgb,coverage);}
+    if(role>8.5){if(blink>0.90)discard_fragment();_surface.diffuse.rgb=faceSkin.rgb;}
+    else if(role>7.5){if(in.eyeLidData.x<1.3 && blink>0.2)discard_fragment();}
+    else if(role>6.5){discard_fragment();}
+    else if(role>5.5){discard_fragment();}
+    else if(role>0.5 && (role<3.5 || role>4.5)){
+        if(role>4.5 && blink>0.985)discard_fragment();
+        float closed=-0.45+0.22*in.eyeLidData.w*in.eyeLidData.w;float progress=pow(blink,0.8);
+        float upper=mix(1.0,closed,progress),lower=mix(-1.0,closed,progress);
+        float lid=max(smoothstep(upper-0.025,upper+0.025,in.eyeLidData.x),1.0-smoothstep(lower-0.025,lower+0.025,in.eyeLidData.x));
+        if(blink>0.995)lid=1.0;
+        if(blink<0.001)lid=0.0;
+        if(role<3.5){if(lid>0.5)discard_fragment();}
+        else {
+            if(lid<0.5)discard_fragment();
+            _surface.diffuse.rgb=faceSkin.rgb;
+            float creaseY=closed;
+            float crease=(1.0-smoothstep(0.018,0.045,abs(in.eyeLidData.x-creaseY)))*(1.0-smoothstep(0.78,0.98,abs(in.eyeLidData.w)))*smoothstep(0.72,1.0,blink);
+            _surface.diffuse.rgb*=1.0-crease*0.38;
+        }
+    }
+    """
 
     // ---- TennisCloth: the kit and the racket grip
     private static func cloth(_ look: MatchHeroData.Look, tint: SIMD3<Float>, sceneScale: Float, trim: SIMD3<Float>?) -> SCNMaterial {
@@ -148,11 +392,60 @@ typealias HeroColor = NSColor
     // MARK: shader modifiers (Metal)
     /// Skin: carry the bind-pose position (texcoord channels 0 = x, y and 1 = z) to the fragment stage.
     static let skinGeometry = """
+    #pragma arguments
+    float skinBindChannel;
     #pragma varyings
     float3 bindPos;
     #pragma body
-    out.bindPos = float3(_geometry.texcoords[0].x, _geometry.texcoords[0].y, _geometry.texcoords[1].x);
+    out.bindPos = skinBindChannel>0.5 ? float3(_geometry.texcoords[1].x, _geometry.texcoords[1].y, _geometry.texcoords[2].x) : float3(_geometry.texcoords[0].x, _geometry.texcoords[0].y, _geometry.texcoords[1].x);
     """
+    static let headSurfaceArguments = """
+    float4 headRight;
+    float4 headUp;
+    float4 headForward;
+    float4 headEye;
+    float4 heroTint;
+    float skinPigmentUV;
+    """
+    static let headSurfaceBody = """
+    float3 hd=in.bindPos-headOrigin.xyz;
+    float3 hp=float3(dot(hd,headRight.xyz),dot(hd,headUp.xyz),dot(hd,headForward.xyz))-headEye.xyz;
+    float3 q=(hp-float3(-0.044,-0.052,-0.005))/float3(0.032,0.031,0.080);
+    float cheeks=exp(-2.0*dot(q,q));q=(hp-float3(0.044,-0.052,-0.005))/float3(0.032,0.031,0.080);cheeks+=exp(-2.0*dot(q,q));
+    q=(hp-float3(0.0,-0.040,0.018))/float3(0.022,0.038,0.070);float nose=exp(-2.0*dot(q,q));
+    q=(hp-float3(0.0,0.062,-0.027))/float3(0.054,0.044,0.075);float forehead=exp(-2.0*dot(q,q));
+    q=(hp-float3(-0.092,-0.025,-0.055))/float3(0.020,0.042,0.055);float ears=exp(-2.0*dot(q,q));q=(hp-float3(0.092,-0.025,-0.055))/float3(0.020,0.042,0.055);ears+=exp(-2.0*dot(q,q));
+    float warmth=saturate(cheeks*0.85+nose*0.40+ears*0.7);
+    if(skinFinish>0.5){
+        if(skinPigmentUV>0.5){
+            float2 masks=saturate((_surface.diffuseTexcoord*64.0-0.5)/63.0);
+            float lipPigment=masks.x, linePigment=masks.y;
+            float3 lip=skinFinish<1.5 ? float3(0.99,0.83,0.80):float3(0.99,0.76,0.74);
+            float3 line=float3(0.80,0.67,0.64);
+            if(skinPigmentUV>1.5){
+                // Exact SkinPigmentUV2 relative palette and mouth-only seam gain.
+                lip=skinFinish<1.5 ? float3(0.95,0.68,0.69):float3(0.94,0.61,0.64);
+                line=float3(0.62,0.44,0.42);
+                linePigment=saturate(linePigment*mix(1.0,1.65,saturate(lipPigment*4.0)));
+            }
+            _surface.diffuse.rgb=heroTint.rgb*mix(float3(1.0),lip,lipPigment)*mix(float3(1.0),line,linePigment);
+        }
+        _surface.diffuse.rgb*=mix(float3(1.0),float3(1.012,0.965,0.955),warmth);
+        if(skinFinish<1.5){
+            q=(hp-float3(0.0,-0.126,-0.010))/float3(0.086,0.048,0.095);float jaw=exp(-2.0*dot(q,q));
+            q=(hp-float3(0.0,-0.077,0.016))/float3(0.048,0.016,0.060);float upperLip=exp(-2.0*dot(q,q));
+            _surface.diffuse.rgb*=mix(float3(1.0),float3(0.88,0.91,0.94),saturate(jaw*0.42+upperLip*0.20));
+        }
+        _surface.shininess=mix(0.32,0.40,saturate(nose+forehead*0.55));
+        float lum=dot(_surface.diffuse.rgb,float3(0.2126,0.7152,0.0722));
+        _surface.diffuse.rgb=mix(float3(lum),_surface.diffuse.rgb,athleteSurface.w);
+    }else{
+        _surface.diffuse.rgb*=float3(1.0+0.025*warmth,1.0-0.060*warmth,1.0-0.025*warmth)*(1.0+0.012*forehead);
+        _surface.shininess=saturate(athleteSurface.y+0.08*nose+0.06*forehead-0.025*cheeks);
+    }
+    """
+    static var headSurface:String {"#pragma arguments\n"+headSurfaceArguments+"\n#pragma body\n"+headSurfaceBody}
+
     /// Skin: TennisCharacter's triplanar soft normal, in Unity's space (the file negates z): three axis projections from the bind-pose position, weighted by the skinned object-space normal
     /// and added to it, then back to view space.
     static let skinSurface = """

@@ -1,0 +1,14 @@
+{
+  "Male": {
+    "flatFaces": 0,
+    "sharpEdges": 0,
+    "neckSharpEdges": 0,
+    "neckNormalsFair": 933
+  },
+  "Female": {
+    "flatFaces": 0,
+    "sharpEdges": 0,
+    "neckSharpEdges": 0,
+    "neckNormalsFair": 1377
+  }
+}

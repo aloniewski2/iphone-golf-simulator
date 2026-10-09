@@ -1,0 +1,14 @@
+{
+  "Male": {
+    "source": "male_animation",
+    "headChangedVertices": 8963,
+    "maximumDisplacementM": 0.007817038621623348,
+    "shapeKey": "Reference_Form1"
+  },
+  "Female": {
+    "source": "female_body_stylized",
+    "headChangedVertices": 1994,
+    "maximumDisplacementM": 0.017720987632575267,
+    "shapeKey": "Reference_Form1"
+  }
+}

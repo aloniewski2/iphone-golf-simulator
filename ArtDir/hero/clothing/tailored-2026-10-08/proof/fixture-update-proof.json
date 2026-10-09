@@ -1,0 +1,52 @@
+[
+  {
+    "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Male_golden.lzfse",
+    "garmentParts": [
+      "Kit_Top"
+    ],
+    "samplesUpdated": 90,
+    "nonGarmentSamplesPreserved": 990,
+    "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Male_golden.json",
+    "sourceSha256": "1bf532ba5f399211003573efd8df1e8aee946699707c8f40c771b8efe8d4432f",
+    "packedSha256": "86febc1d09d0b4371afcff5681b3315c0a36d6da2fac2b1d2c2b72b354ced099",
+    "status": "PASS"
+  },
+  {
+    "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Male_Distance_golden.lzfse",
+    "garmentParts": [
+      "Kit_Top"
+    ],
+    "samplesUpdated": 90,
+    "nonGarmentSamplesPreserved": 990,
+    "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Male_Distance_golden.json",
+    "sourceSha256": "ac82127cb3529b6b44bc905a111b8751055b1e119ada02cd5903a9ddc918c213",
+    "packedSha256": "ee276d13903f967e11e104a3f9ed8476758ed1d73122fd0e1a6764cfaa2e5db0",
+    "status": "PASS"
+  },
+  {
+    "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Female_golden.lzfse",
+    "garmentParts": [
+      "Kit_Bottom",
+      "Kit_Top"
+    ],
+    "samplesUpdated": 180,
+    "nonGarmentSamplesPreserved": 900,
+    "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Female_golden.json",
+    "sourceSha256": "e70599f5be544a2cdd82e1f23fed133be3305a098ee7bdc7cab5e043a738f868",
+    "packedSha256": "03723a6bb3d4a98bf89d69cdc1eae55aef0932c5fe9f7c3da2c4bc7edbe3206f",
+    "status": "PASS"
+  },
+  {
+    "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Female_Distance_golden.lzfse",
+    "garmentParts": [
+      "Kit_Bottom",
+      "Kit_Top"
+    ],
+    "samplesUpdated": 180,
+    "nonGarmentSamplesPreserved": 900,
+    "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Female_Distance_golden.json",
+    "sourceSha256": "6c7e1ff155213631ed7fe0ff76488bbe6cbd47e898c0c2d73c001b8ddb13ae7b",
+    "packedSha256": "1a8dd8fa0d96cfbd12732d48af6b1ab8de7cee64d94f659100fa04574d96b3e3",
+    "status": "PASS"
+  }
+]

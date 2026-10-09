@@ -26,6 +26,7 @@ Shader "GolfArcade/TennisCloth"
         _WeaveThread ("Thread break strength", Range(0,1)) = 0.5
         _SheenStrength ("Sheen strength", Range(0,2)) = 0.55
         _SheenPower ("Sheen power", Range(1,8)) = 3
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Face culling", Float) = 2
     }
     HLSLINCLUDE
     #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -45,6 +46,7 @@ Shader "GolfArcade/TennisCloth"
     SubShader
     {
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" "Queue"="Geometry" }
+        Cull [_Cull]
         Pass
         {
             Name "ForwardLit"
@@ -95,7 +97,7 @@ Shader "GolfArcade/TennisCloth"
             // Roll the brightest channel off above the knee (hue kept): a lit white keeps a gradient instead of clipping.
             
 
-            half4 frag (Varyings i) : SV_Target
+            half4 frag (Varyings i, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target
             {
                 half3 n = normalize(i.normalWS);
                 half3 v = normalize(GetWorldSpaceViewDir(i.positionWS));
@@ -129,6 +131,8 @@ Shader "GolfArcade/TennisCloth"
                     half3 t = normalize(tw), b = cross(n, t) * i.tangentWS.w;
                     n = normalize(TransformTangentToWorld(ts, half3x3(t, b, n)));
                 }
+                // A visible reverse side of thin cloth shades toward its viewer.
+                n *= IS_FRONT_VFACE(facing, 1.0h, -1.0h);
                 half threadBreak = lerp(1, weave.b * 1.28h, _WeaveThread * fade);
                 if (id > 2.5h && id < 4.5h) threadBreak = 1;
                 half3 albedo = lerp(_BaseColor.rgb, _TrimColor.rgb, mask.b) * threadBreak;
@@ -140,6 +144,7 @@ Shader "GolfArcade/TennisCloth"
                 Light main = HeroMain(GetMainLight());
                 main.shadowAttenuation = ClothShadow(i.positionWS);
                 half3 colour = Shade(main, n, v, albedo, smoothness, sheen, ao);
+                if (_HeroPresentationFill > 0) colour += Shade(HeroPresentationLight(v), n, v, albedo, smoothness, sheen, ao);
                 #if defined(_ADDITIONAL_LIGHTS)
                 uint count = GetAdditionalLightsCount();
                 #if defined(_LIGHT_LAYERS)
@@ -162,7 +167,7 @@ Shader "GolfArcade/TennisCloth"
                 #endif
                 half rim = pow(1 - ndv, _RimPower) * _RimStrength * (_HeroProfile > .5h ? _HeroRim : 1);
                 colour += albedo * knit * pow(1 - ndv, 5) * .045h * saturate(dot(n, main.direction)) * main.shadowAttenuation * main.color;
-                colour += ambient + _RimColor.rgb * rim * (0.35 + 0.65 * albedo) * main.color;
+                colour += ambient + _RimColor.rgb * rim * saturate(dot(n,main.direction)*.7h+.3h) * (0.35 + 0.65 * albedo) * main.color;
                 // Preserve moderate AO contrast through the bright-white highlight shoulder.
                 if (_HeroProfile > .5h) {
                     // Neutral construction maps retain the palette under warm postcard keys.
@@ -171,9 +176,9 @@ Shader "GolfArcade/TennisCloth"
                     half clothGain = lerp(min(_HeroClothExposure,3),_HeroClothExposure,neutralWhite);
                     colour *= _HeroClothBalance * lerp(clothGain, 1, mask.b);
                     colour *= lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
-                    colour = max(colour, albedo * lerp(.35h,4.0h,mask.b));
+                    if (_HeroFilmResponse < .5h) colour = max(colour, albedo * lerp(.35h,4.0h,mask.b));
                 } else {
-                    colour = SoftShoulder(colour * _Exposure) * lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
+                    colour = (_HeroFilmResponse>.5h ? colour*_Exposure : SoftShoulder(colour * _Exposure)) * lerp(.68h, 1, aoVisibility) * lerp(.75h, 1, mask.g);
                 }
                 return half4(MixFog(HeroClothFinish(colour), i.fog), 1);
             }
@@ -231,14 +236,14 @@ Shader "GolfArcade/TennisCloth"
                 VertexNormalInputs n=GetVertexNormalInputs(i.normalOS,i.tangentOS);o.normalWS=n.normalWS;
                 o.tangentWS=float4(n.tangentWS,i.tangentOS.w*GetOddNegativeScale());o.uv=i.uv;return o;
             }
-            half4 normalFrag(NOutput i) : SV_Target {
+            half4 normalFrag(NOutput i, FRONT_FACE_TYPE facing : FRONT_FACE_SEMANTIC) : SV_Target {
                 half3 n=normalize(i.normalWS);
                 if(_UseGarmentMaps>.5h) {
                     half3 ts=UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap,sampler_NormalMap,i.uv));ts.xy*=_NormalStrength;
                     half3 t=normalize(i.tangentWS.xyz),b=cross(n,t)*i.tangentWS.w;
                     n=normalize(TransformTangentToWorld(ts,half3x3(t,b,n)));
                 }
-                return half4(n,0);
+                return half4(n * IS_FRONT_VFACE(facing, 1.0h, -1.0h),0);
             }
             ENDHLSL
         }

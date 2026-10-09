@@ -14,6 +14,8 @@ namespace GolfArcade.Course
         {
             if(!GolfLook.UseSurfaceShaders||model.GetComponent<GolfPlantInstances>())return;
             var owner=model.AddComponent<GolfPlantInstances>();var groups=new Dictionary<string,Group>();
+            int hole=model.GetComponentInParent<HoleView>()?.Hole.Number??0;
+            float cell=hole is 8 or 9?160:80;
             foreach(var r in model.GetComponentsInChildren<MeshRenderer>(true))
             {
                 if(!r.enabled||!r.gameObject.activeInHierarchy)continue;
@@ -25,7 +27,7 @@ namespace GolfArcade.Course
                 var pivot=r.transform.position;var uv=new List<Vector3>(mesh.vertexCount);
                 for(int i=0;i<mesh.vertexCount;i++)uv.Add(new Vector3(pivot.x,pivot.z,1));mesh.SetUVs(3,uv);
                 if(mesh.colors.Length!=mesh.vertexCount){var colours=new Color[mesh.vertexCount];for(int i=0;i<colours.Length;i++)colours[i]=Color.white;mesh.colors=colours;}
-                var p=r.bounds.center;int x=Mathf.FloorToInt(p.x/80),z=Mathf.FloorToInt(p.z/80);
+                var p=r.bounds.center;int x=Mathf.FloorToInt(p.x/cell),z=Mathf.FloorToInt(p.z/cell);
                 for(int sub=0;sub<mesh.subMeshCount;sub++)
                 {
                     var m=mats[Mathf.Min(sub,mats.Length-1)];m.enableInstancing=true;

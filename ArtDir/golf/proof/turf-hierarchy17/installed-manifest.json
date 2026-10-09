@@ -1,0 +1,8 @@
+{
+  "status": "Green17 INSTALLED candidate; actual putting/aerial review pending",
+  "files": {
+    "Unity/Assets/Scripts/Course/GolfTurfPalette.cs": "f3fcd00e0e9ac54e2f053ad2e38e04eec5a791ff6d24ef294e0b2433aea44052",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "cd29dbc55646dac5125e2ccad1c6e85b738940d9879ce7cfc859f0b243ac364e"
+  },
+  "scope": "Only Green material texture response: existing authoredC/N atlas at.32m, calibratedluma.0907707 contrast6.5 normal.18, modest broadgrowth30%; no green blades. Sage/olive palette values, other surface materials, Dense15 geometry/height/placement, physics and lighting unchanged."
+}

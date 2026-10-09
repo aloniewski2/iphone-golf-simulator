@@ -1,0 +1,45 @@
+Diagnostic only: SSAO temporarily disabled; restored on exit.
+Filmic diagnostic: URP PostProcessData connected; ACES active; shader highlight rolls bypassed.
+female garment detail: match=True, fullTriangles=96693, matchTriangles=68774
+Cloth sample female_Serve_0: time=0.00000s
+Cloth sample female_Serve_1: time=0.35714s
+Cloth sample female_Serve_2: time=0.71429s
+Cloth sample female_Serve_3: time=1.07143s
+Cloth sample female_Serve_4: time=1.42857s
+Cloth sample female_Serve_5: time=1.78572s
+Cloth sample female_Serve_6: time=2.14286s
+Cloth sample female_Serve_7: time=2.50000s
+Cloth sample female_Serve_8: time=1.70000s
+Cloth review female Serve: length=2.500 contact=1.7000; 9 actual poses under pigment lighting
+Cloth sample female_IntroWave_0: time=0.00000s
+Cloth sample female_IntroWave_1: time=0.28571s
+Cloth sample female_IntroWave_2: time=0.57143s
+Cloth sample female_IntroWave_3: time=0.85714s
+Cloth sample female_IntroWave_4: time=1.14286s
+Cloth sample female_IntroWave_5: time=1.42857s
+Cloth sample female_IntroWave_6: time=1.71429s
+Cloth sample female_IntroWave_7: time=2.00000s
+Cloth sample female_IntroWave_8: time=2.00000s
+Cloth review female IntroWave: length=2.000 contact=0.0000; 9 actual poses under pigment lighting
+Cloth sample female_EmoteScuba_0: time=0.00000s
+Cloth sample female_EmoteScuba_1: time=0.67143s
+Cloth sample female_EmoteScuba_2: time=1.34286s
+Cloth sample female_EmoteScuba_3: time=2.01429s
+Cloth sample female_EmoteScuba_4: time=2.68571s
+Cloth sample female_EmoteScuba_5: time=3.35714s
+Cloth sample female_EmoteScuba_6: time=4.02857s
+Cloth sample female_EmoteScuba_7: time=4.70000s
+Cloth sample female_EmoteScuba_8: time=4.70000s
+Cloth review female EmoteScuba: length=4.700 contact=0.0000; 9 actual poses under pigment lighting
+Cloth sample female_IntroPushups_0: time=0.00000s
+Cloth sample female_IntroPushups_1: time=0.42857s
+Cloth sample female_IntroPushups_2: time=0.85714s
+Cloth sample female_IntroPushups_3: time=1.28571s
+Cloth sample female_IntroPushups_4: time=1.71429s
+Cloth sample female_IntroPushups_5: time=2.14286s
+Cloth sample female_IntroPushups_6: time=2.57143s
+Cloth sample female_IntroPushups_7: time=3.00000s
+Cloth sample female_IntroPushups_8: time=3.00000s
+Cloth review female IntroPushups: length=3.000 contact=0.0000; 9 actual poses under pigment lighting
+Skin swatch female/pigment: tone=ACES, exposure=0.7, colour=FBAE8F, regionalResponse=1
+CAPTURE PASS: selected production bodies and 4 selected clip slots rendered; final appearance requires visual review.

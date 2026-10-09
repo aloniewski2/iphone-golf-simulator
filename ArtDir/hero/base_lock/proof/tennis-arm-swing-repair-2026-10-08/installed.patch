@@ -1,0 +1,76 @@
+--- Assets/Scripts/Tennis/HeroGripPolish.cs
++++ Assets/Scripts/Tennis/HeroGripPolish.cs
+@@ -110,6 +110,21 @@
+             var axis=grip.up.normalized;var origin=grip.position;
+             float radius=.017f*Mathf.Abs(grip.lossyScale.x);
+             FitDigits(hero,false,origin,axis,radius,.006f,24,32);
++        }
++        /// Baked supporting fingers for the reference two-handed backhand.
++        public static void ApplySupportGrip(MatchHeroLook hero)
++        {
++            if(!hero||hero.golfKit||!hero.racketGrip)return;
++            var hand=hero.Bone(HumanBodyBones.LeftHand);var upper=hero.Bone(HumanBodyBones.RightUpperArm);var lower=hero.Bone(HumanBodyBones.RightLowerArm);
++            if(!hand||!upper||!lower)return;float scale=Vector3.Distance(upper.position,lower.position)/.2383f;
++            var goal=hero.racketGrip.position+hero.racketGrip.TransformDirection(hero.stringUpLocal)*(.105f*scale);
++            if(Vector3.Distance(hand.TransformPoint(new Vector3(0,.075f*scale,0)),goal)>.035f)return;
++            var digits=new System.Collections.Generic.List<Transform>();var original=new System.Collections.Generic.List<Quaternion>();
++            foreach(string digit in new[]{"Index","Middle","Ring","Little"})foreach(string joint in new[]{"Proximal","Intermediate","Distal"}){
++                var bone=Bone(hero,true,digit,joint);if(bone){digits.Add(bone);original.Add(bone.localRotation);}
++            }
++            FitDigits(hero,true,hero.racketGrip.position,hero.racketGrip.up.normalized,.017f*Mathf.Abs(hero.racketGrip.lossyScale.x),.006f,24,32);
++            for(int i=0;i<digits.Count;i++)digits[i].localRotation=Quaternion.RotateTowards(original[i],digits[i].localRotation,10);
+         }
+         sealed class GolfGripData { public Transform grip;public SkinnedMeshRenderer[] clubs;public Vector3[] ends;public GolfWristResult[] wrists = new GolfWristResult[2];public Transform[] solvedBones;public Matrix4x4[] solvedPose; }
+         sealed class GolfWristResult {
+--- Assets/Scripts/Tennis/MatchHeroLook.cs
++++ Assets/Scripts/Tennis/MatchHeroLook.cs
+@@ -400,6 +400,7 @@
+                     }
+                 }
+                 body.sharedMaterials = skinMaterials;
++                if(!golfKit)HeroArmSkinning.Build(body);
+             }
+             else skinMaterials = new Material[0];
+             if (face)
+--- Assets/Scripts/Tennis/HeroTennisDriver.cs
++++ Assets/Scripts/Tennis/HeroTennisDriver.cs
+@@ -226,6 +226,10 @@
+             }
+             var polished=Resources.Load<AnimationClip>("Tennis/Performance/"+sex+"_ForehandPolished");
+             if(polished)for(int i=0;i<combined.Count;i++)if(combined[i].id==Clip.Forehand){var slot=combined[i];slot.clip=polished;combined[i]=slot;break;}
++            if(Environment.GetEnvironmentVariable("TENNIS_ARM_REPAIR")!="0")foreach(var id in new[]{Clip.Forehand,Clip.Backhand}) {
++                var repaired=Resources.Load<AnimationClip>("Tennis/Performance/"+sex+"_"+id+"ArmCorrected");
++                if(repaired)for(int i=0;i<combined.Count;i++)if(combined[i].id==id){var slot=combined[i];slot.clip=repaired;combined[i]=slot;break;}
++            }
+             slots = combined.ToArray();
+         }
+ 
+@@ -778,6 +782,7 @@
+         void FinalizeGarments()
+         {
+             if (!Match) return;
++            matchLook.body?.GetComponent<HeroArmSkinning>()?.Apply();
+             if (!garmentCorrectives) garmentCorrectives = matchLook.GetComponent<HeroGarmentPoseCorrectives>();
+             if (garmentCorrectives) garmentCorrectives.Apply();
+             matchLook.GetComponent<TailoredPoloDeformation>()?.Apply();
+--- Assets/Editor/MatchHeroLockerExport.cs
++++ Assets/Editor/MatchHeroLockerExport.cs
+@@ -455,6 +455,7 @@
+                 Decompose(local,out var p,out var q,out var scale);club.localPosition=p;club.localRotation=q;club.localScale=scale;
+             }
+             HeroGripPolish.ApplyGrip(root.GetComponent<MatchHeroLook>());
++            root.GetComponent<MatchHeroLook>()?.body?.GetComponent<HeroArmSkinning>()?.Apply();
+             root.GetComponent<GolfGarmentCorrectives>()?.Apply();
+             root.GetComponent<HeroGarmentPoseCorrectives>()?.Apply();
+             root.GetComponent<TailoredPoloDeformation>()?.Apply();
+--- Assets/Tests/PlayMode/MatchHeroClipMapTests.cs
++++ Assets/Tests/PlayMode/MatchHeroClipMapTests.cs
+@@ -38,7 +38,7 @@
+                 {
+                     var s = d.slots.First(x => x.id == slot);
+                     Assert.IsNotNull(s.clip, $"{sex} {slot} has a clip");
+-                    Assert.AreEqual($"{sex}_{clip}", s.clip.name, $"{slot} plays the {sex} {clip} clip");
++                    Assert.AreEqual($"{sex}_{clip}"+((slot==HeroTennisDriver.Clip.Forehand||slot==HeroTennisDriver.Clip.Backhand)?"ArmCorrected":""), s.clip.name, $"{slot} plays the {sex} {clip} clip");
+                     Assert.AreEqual(contact, s.contact, .001f, $"{sex}_{clip} contact time");
+                 }
+                 Assert.IsFalse(d.slots.Any(x => x.clip && x.clip.name.StartsWith("Hero_")), "no old Hero_* clip on the prefab");

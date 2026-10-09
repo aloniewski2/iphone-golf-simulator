@@ -23,7 +23,7 @@ namespace GolfArcade.Game
             go.transform.SetParent(parent, false);
             var a = go.AddComponent<AimDots>();
             a.view = view;
-            var white = new Material(ShotEffects.ParticleMaterial()) { color = new Color(1, 1, 1, 0.92f) };
+            var white = new Material(ShotEffects.ParticleMaterial()) { color = new Color(1, 1, 1, 0.74f) };
             for (int i = 0; i < Max; i++) a.dots.Add(Disc(go.transform, "Dot", white));
             var amber = new Material(ShotEffects.ParticleMaterial()) { color = new Color(LandingZone.Amber.r, LandingZone.Amber.g, LandingZone.Amber.b, 0.98f) };
             a.mark = Disc(go.transform, "Load mark", amber);
@@ -50,7 +50,7 @@ namespace GolfArcade.Game
             path.Clear(); path.AddRange(arc);
             gameObject.SetActive(true);
             int n = 0;
-            float since = spacing;
+            float since = 0; // Leave the actual ball and club head free of an overlapping glow.
             for (int i = 0; i < arc.Count && n < Max; i++)
             {
                 if (i > 0) since += Vector3.Distance(arc[i - 1], arc[i]);
@@ -82,8 +82,8 @@ namespace GolfArcade.Game
         {
             if (!view) return;
             var rot = view.transform.rotation;
-            foreach (var d in dots) if (d.gameObject.activeSelf) Face(d, rot, 0.014f, 0.35f);
-            if (mark.gameObject.activeSelf) Face(mark, rot, 0.024f, 0.55f);
+            foreach (var d in dots) if (d.gameObject.activeSelf) Face(d, rot, 0.006f, 0.16f);
+            if (mark.gameObject.activeSelf) Face(mark, rot, 0.014f, 0.35f);
         }
 
         void Face(Transform t, Quaternion rot, float share, float least)

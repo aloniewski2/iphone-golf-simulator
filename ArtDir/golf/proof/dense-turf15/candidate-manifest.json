@@ -1,0 +1,80 @@
+{
+  "status": "OFF-ASSETS dense geometry candidate reviewed; root actual trial pending",
+  "sourceInput": "ArtDir/golf/source/CoastalTurf.blend",
+  "inputSha256": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+  "lods": {
+    "TURF_NEAR": {
+      "blades": 2304,
+      "vertices": 11520,
+      "triangles": 6912,
+      "heightMaxMeters": 0.08488665521144867
+    },
+    "TURF_MID": {
+      "blades": 512,
+      "vertices": 2560,
+      "triangles": 1536,
+      "heightMaxMeters": 0.06493226438760757
+    },
+    "TURF_FAR": {
+      "blades": 128,
+      "vertices": 384,
+      "triangles": 128,
+      "heightMaxMeters": 0.06411241739988327
+    }
+  },
+  "tuftsPerSquareMeter": 192,
+  "nearBladesPerTuft": 12,
+  "nearWidthMeters": [
+    0.006,
+    0.01
+  ],
+  "cutHeightMeters": [
+    0.024,
+    0.085
+  ],
+  "existingRoughScale": 1.8,
+  "roughResultHeightMeters": [
+    0.0432,
+    0.153
+  ],
+  "budget": {
+    "nearCells": 48,
+    "midCells": 96,
+    "maximumCells": 640,
+    "maximumTriangles": 542720,
+    "submissions": 3
+  },
+  "mapsPaletteShaders": "UNCHANGED; export mesh geometry only",
+  "proofCamera": "Reference camera2: 70deg vertical FOV, camera -4.5yards,+3.2yards and12deg downward; exact source meters converted using .9144. Plain48-tile near patch, not a Unity performance/appearance certificate.",
+  "files": {
+    "CoastalTurf.fbx": "ce71822a5df680c86eaffc142f2f937da40228cb4cfd6505f8e960e28a20026f",
+    "CoastalTurf.blend": "01ce00036d2900db5e8a2ec1d949c39ffa715c60dbe25f380b69838e3f9805d8",
+    "dense-blades-plain-silhouette.png": "98fe32d43ca9946d02094e79262dcdd4993e958defe1ceade99f838f94630025",
+    "dense-green-candidate-camera.png": "abfc1d0a7d25c55c4ad906984a0260aa7f3359a0b4c9320513abe1b642bb41fe",
+    "dense-green-before-camera.png": "3b3f66430ddef5b42c63156cc3ec9171c8bacbcfeddaf22909f3ea389d4ffa31",
+    "dense-green-source-detail.png": "ef5c6e420c24d5865286f4ce3eb3ad6e2e1ded5fa789cfd751c959d3b0e48506"
+  },
+  "fanTipRadiusMeters": [
+    0.06,
+    0.1
+  ],
+  "heightLayers": {
+    "lowBladesPerFan": 3,
+    "lowMeters": [
+      0.024,
+      0.04
+    ],
+    "mainBladesPerFan": 8,
+    "mainMeters": [
+      0.045,
+      0.065
+    ],
+    "sparseHighBladesPerFan": 1,
+    "highMeters": [
+      0.065,
+      0.085
+    ]
+  },
+  "sourceBallRadiusMeters": 0.054863999999999996,
+  "previewMaterialScope": "Existing packed Turf8 green underlay and accepted root/tip colours retained; Blender lighting is approximate, not a Unity shader equivalence claim."
+}

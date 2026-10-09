@@ -14,10 +14,22 @@ namespace GolfArcade.Course
             bool volcanic = number == 16 || number >= 21;
             var look = GolfAtmosphere.Holes[volcanic ? 10 : 9].Copy();
             look.Name = volcanic ? "Volcanic" : "Coastal";
-            look.SunIntensity = 2.05f;
+            look.SunIntensity = volcanic ? 1.75f : 1.65f;
+            look.FillIntensity = volcanic ? .14f : .18f;
+            if(!volcanic){
+                look.SunColor=new Color(1,.91f,.77f);look.SunIntensity=1.80f;look.ShadowStrength=.76f;
+                look.AmbientSky=new Color(.34f,.46f,.65f);look.AmbientEquator=new Color(.36f,.40f,.37f);look.AmbientGround=new Color(.19f,.23f,.20f);
+            }
+            if(volcanic)look.SunColor=new Color(1,.90f,.77f);
             look.RimIntensity = volcanic ? 0 : .25f;
-            look.FogStart = 280; look.FogEnd = volcanic ? 2300 : 1600;
+            look.FogStart = 150; look.FogEnd = volcanic ? 1500 : 1800;
             look.BallExposure = Color.white; look.BallSelfLight = volcanic ? .10f : .025f;
+            if(number==12){
+                // The reference's sun reaches the visible chalk face from the
+                // camera-side left, separating warm rock from cool blue recesses.
+                look.SunAzimuth=-135;look.SunElevation=45;
+                look.SunColor=new Color(1,.96f,.88f);look.FillIntensity=.18f;
+            }
             if (number == 14)
             {
                 look.Name = "Woodland crater"; look.SunElevation = 32;
@@ -39,9 +51,9 @@ namespace GolfArcade.Course
             }
             if (number == 19)
             {
-                look.Name = "Jungle lagoon"; look.SunElevation = 45; look.FillIntensity = .65f;
-                look.AmbientEquator = new Color(.44f,.58f,.49f); look.AmbientGround = new Color(.19f,.29f,.22f);
-                look.FogColor = new Color(.60f,.77f,.73f); look.FogStart = 300; look.FogEnd = 1300;
+                look.Name = "Jungle lagoon"; look.SunElevation = 38; look.FillIntensity = .18f;
+                look.AmbientEquator = new Color(.39f,.41f,.34f); look.AmbientGround = new Color(.20f,.24f,.17f);
+                look.FogColor = new Color(.52f,.73f,.78f); look.FogStart = 150; look.FogEnd = 1500;
             }
             if (number == 20) { look.Name = "Windmill links"; look.SunElevation = 34; look.SunColor = new Color(1,.94f,.81f); }
             profiles.Add(number,look); return look;

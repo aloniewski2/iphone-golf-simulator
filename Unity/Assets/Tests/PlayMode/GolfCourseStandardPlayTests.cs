@@ -41,22 +41,70 @@ namespace GolfArcade.PlayTests
                     Assert.IsNotNull(grass.GetTexture("_BumpMap"));
                     if(number is 16 or 19 or 21 or 22 or 23)
                     {
-                        var palms=HoleView.Current.GetComponentInChildren<GolfCoursePalms>();
-                        Assert.IsNotNull(palms,"palm repair "+number);
-                        Assert.Greater(palms.PalmCount,0);
-                        Assert.Greater(palms.RemovedFrondTriangles,0);
-                        if(number==19) Assert.AreEqual(18960,palms.RemovedFrondTriangles,"38 palm crowns only; cliff-top jungle bushes stay intact");
+                        // Both implementations retain the original gameplay source.
                         var original=HoleView.Current.ModelNode("TREES");
                         var prefab=Resources.Load<GameObject>($"Course/hole_{number:00}");
                         var authored=prefab.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="TREES");
-                        Assert.AreSame(authored.sharedMesh,original.GetComponent<MeshFilter>().sharedMesh,"original tree collision source");
-                        var visual=original.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="GOLF_PALM_VISUAL");
-                        foreach(var v in visual.sharedMesh.vertices)
-                            Assert.IsTrue(float.IsFinite(v.x)&&float.IsFinite(v.y)&&float.IsFinite(v.z),"finite palm geometry");
-                        var leaf=visual.GetComponent<Renderer>().sharedMaterials[1];
-                        Assert.AreEqual(0,leaf.GetFloat("_Cull"));
-                        Assert.AreEqual(1,leaf.GetFloat("_Foliage"));
-                        Assert.Greater(leaf.GetColor("_BaseColor").g,.20f,"readable frond palette");
+                        Assert.AreSame(authored.sharedMesh,original.GetComponent<MeshFilter>().sharedMesh,"original tree collision source "+number);
+                        var resort=HoleView.Current.GetComponentInChildren<GolfResortDress>();
+                        if(resort&&resort.ReplacedAuthoredPlants)
+                        {
+                            // Current botanical replacement deliberately skips the old
+                            // Palm.Rebuild path, so its removal counters remain zero.
+                            Assert.IsFalse(original.GetComponent<Renderer>().enabled,"legacy crowns hidden "+number);
+                            Assert.Greater(resort.PlantCount,0,"replacement plants "+number);
+                            Assert.Greater(resort.TriangleCount,0,"replacement geometry "+number);
+                            var palmLods=resort.GetComponentsInChildren<LODGroup>(true).Where(g=>g.name.EndsWith("_PALM_LOD")).ToArray();
+                            Assert.Greater(palmLods.Length,0,"authored palm replacement LODs "+number);
+                            foreach(var group in palmLods)
+                            {
+                                var levels=group.GetLODs();Assert.AreEqual(2,levels.Length,"near/far palms "+number);
+                                foreach(var level in levels)
+                                {
+                                    Assert.Greater(level.renderers.Length,0,"nonempty palm LOD "+number);
+                                    foreach(var renderer in level.renderers)
+                                    {
+                                        Assert.IsNotNull(renderer);
+                                        var filter=renderer.GetComponent<MeshFilter>();Assert.IsNotNull(filter);
+                                        var mesh=filter.sharedMesh;Assert.IsNotNull(mesh);
+                                        Assert.Greater(mesh.vertexCount,0,"palm vertices "+number);
+                                        Assert.IsTrue(mesh.vertices.All(v=>float.IsFinite(v.x)&&float.IsFinite(v.y)&&float.IsFinite(v.z)),"finite palm geometry "+number);
+                                        var indices=mesh.triangles;Assert.Greater(indices.Length,0,"palm triangles "+number);
+                                        Assert.IsTrue(indices.All(i=>i>=0&&i<mesh.vertexCount),"valid palm indices "+number);
+                                        var leaf=renderer.sharedMaterial;Assert.IsNotNull(leaf);
+                                        Assert.AreEqual("GolfArcade/GolfBotanical",leaf.shader.name);
+                                        Assert.AreEqual(0,leaf.GetFloat("_Cull"));
+                                        Assert.AreEqual(1,leaf.GetFloat("_Leaf"));
+                                        Assert.AreEqual(1,leaf.GetFloat("_VertexPalette"));
+                                        var colors=mesh.colors;
+                                        Assert.AreEqual(mesh.vertexCount,colors.Length,"authored vertex palette "+number);
+                                        // Paint stores linear RGB and GolfBotanical multiplies it
+                                        // by _BaseColor directly. The readable-palette threshold
+                                        // is in display (sRGB) space, not the vertex buffer space.
+                                        var tint=leaf.GetColor("_BaseColor");
+                                        var albedos=colors.Select(c=>new Color(c.r*tint.r,c.g*tint.g,c.b*tint.b,1)).ToArray();
+                                        var displayAlbedos=albedos.Select(c=>c.gamma).ToArray();
+                                        Debug.Log($"[PalmPalette] hole {number} {mesh.name}: linear G {albedos.Min(c=>c.g):F6}..{albedos.Max(c=>c.g):F6}; sRGB G {displayAlbedos.Min(c=>c.g):F6}..{displayAlbedos.Max(c=>c.g):F6}");
+                                        Assert.IsTrue(displayAlbedos.Any(c=>c.g>.20f&&c.g>c.r),"readable green palm palette "+number);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var palms=HoleView.Current.GetComponentInChildren<GolfCoursePalms>();
+                            Assert.IsNotNull(palms,"palm repair "+number);
+                            Assert.Greater(palms.PalmCount,0);
+                            Assert.Greater(palms.RemovedFrondTriangles,0);
+                            if(number==19) Assert.AreEqual(18960,palms.RemovedFrondTriangles,"38 palm crowns only; cliff-top jungle bushes stay intact");
+                            var visual=original.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="GOLF_PALM_VISUAL");
+                            foreach(var v in visual.sharedMesh.vertices)
+                                Assert.IsTrue(float.IsFinite(v.x)&&float.IsFinite(v.y)&&float.IsFinite(v.z),"finite palm geometry");
+                            var leaf=visual.GetComponent<Renderer>().sharedMaterials[1];
+                            Assert.AreEqual(0,leaf.GetFloat("_Cull"));
+                            Assert.AreEqual(1,leaf.GetFloat("_Foliage"));
+                            Assert.Greater(leaf.GetColor("_BaseColor").g,.20f,"readable frond palette");
+                        }
                     }
                     if(number==20)
                     {

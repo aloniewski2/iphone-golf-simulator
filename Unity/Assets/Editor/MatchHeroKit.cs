@@ -16,7 +16,7 @@ namespace GolfArcade.EditorTools
     /// with the role materials Kit_Shirt, Kit_ShirtTrim, Kit_Shorts, Kit_ShortsBand, Kit_Shoe, Kit_Sole, Kit_Sock (Assets/Characters/MatchHeroes/Materials/Kit/).
     public sealed class MatchHeroKitPostprocessor : AssetPostprocessor
     {
-        public static bool Owns(string path) => (path.StartsWith(MatchHeroKit.KitRoot) || path.StartsWith(GolfHeroKit.KitRoot)) && path.EndsWith(".fbx");
+        public static bool Owns(string path) => (path.StartsWith(MatchHeroKit.KitRoot) || path.StartsWith(GolfHeroKit.KitRoot) || path.StartsWith("Assets/Resources/Golf/Equipment/") || (path.StartsWith("Assets/Resources/Tennis/KitsLOD/") || path.StartsWith("Assets/Resources/Tennis/KitsFitted/") || path.StartsWith("Assets/Resources/Tennis/KitsTailored/"))) && path.EndsWith(".fbx");
 
         void OnPreprocessModel()
         {

@@ -205,31 +205,72 @@ final class NewMenuSnapshotTests: XCTestCase {
 }
 
 extension NewMenuSnapshotTests {
+    /// Controlled rendering measurements identify the cost before changing the shipped look.
+    func testLobbyRenderBottleneckMatrix() async throws {
+        let service = MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
+        try service.enableMock(count:4,player:Player(name:"Adnan",colorIndex:0)); defer { service.leave() }
+        let peers = try XCTUnwrap(service.lobby?.participants)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        var evidence: [String] = []
+        for mode in ["animated", "frozen-pose", "animated-no-morphers", "animated-simple-lighting"] {
+            let coordinator = LobbyHeroStage.Coordinator()
+            let scn = SCNView(frame:CGRect(x:0,y:0,width:390,height:420))
+            scn.scene=coordinator.recipe.scene; scn.pointOfView=coordinator.recipe.camera; scn.delegate=coordinator
+            scn.isPlaying=true; scn.preferredFramesPerSecond=60; scn.antialiasingMode = .multisampling4X
+            let window=UIWindow(windowScene:scene), controller=UIViewController(); controller.view=scn
+            window.rootViewController=controller; window.frame=scn.frame; window.isHidden=false
+            coordinator.view=scn
+            coordinator.update(LobbyHeroStage(participants:peers,sport:.tennis,localID:service.localID,networkTime:service.networkTime))
+            XCTAssertEqual(coordinator.heroes.count,4)
+            if mode == "animated-no-morphers" {
+                scn.scene?.rootNode.enumerateChildNodes { node,_ in node.morpher=nil }
+            }
+            if mode == "animated-simple-lighting" {
+                scn.scene?.rootNode.enumerateChildNodes { node,_ in
+                    for material in node.geometry?.materials ?? [] { material.shaderModifiers=nil; material.lightingModel = .lambert }
+                }
+            }
+            if mode != "frozen-pose" { coordinator.start() }
+            try await Task.sleep(for:.seconds(2))
+            coordinator.resetMeasurement(); try await Task.sleep(for:.seconds(5))
+            let start=CACurrentMediaTime(), count=240
+            for k in 0..<count { coordinator.tickPose(at:Double(k)*0.017) }
+            let poseMS=(CACurrentMediaTime()-start)*1000/Double(count)
+            let row="\(mode): \(coordinator.measuredFPS) FPS, \(poseMS) ms four-player pose, \(coordinator.frames) rendered frames"
+            evidence.append(row); NSLog("[VisualPerformance] \(row)")
+            try XCTUnwrap(scn.snapshot().pngData()).write(to:folder.appendingPathComponent("diagnostic-\(mode).png"))
+            coordinator.stop(); scn.isPlaying=false; window.isHidden=true; scn.scene=nil
+        }
+        try evidence.joined(separator:"\n").write(to:folder.appendingPathComponent("lobby-render-bottlenecks.txt"),atomically:true,encoding:.utf8)
+    }
     func testOnlineLobbyFourHeroesRenderedFPSAndMemory() async throws {
         let service = MultiplayerService(sendToRuntime:{ _ in true },pollRuntime:{ nil })
         try service.enableMock(count:4,player:Player(name:"Adnan",colorIndex:0)); defer { service.leave() }
         let peers = try XCTUnwrap(service.lobby?.participants)
-        let stage = LobbyHeroStage(participants:peers,sport:.tennis,localID:service.localID,networkTime:service.networkTime)
-        let coordinator = LobbyHeroStage.Coordinator()
-        let scn = SCNView(frame:CGRect(x:0,y:0,width:390,height:420)); scn.backgroundColor = UIColor(IslandUI.paper)
-        scn.scene = coordinator.recipe.scene; scn.pointOfView = coordinator.recipe.camera; scn.delegate = coordinator
-        scn.isPlaying = true; scn.preferredFramesPerSecond = 60; scn.antialiasingMode = .multisampling4X
-        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
-        let window = UIWindow(windowScene:scene), controller = UIViewController(); controller.view = scn
-        window.rootViewController = controller; window.frame = scn.frame; window.isHidden = false
-        coordinator.view = scn; coordinator.update(stage); coordinator.start()
-        defer { coordinator.stop(); scn.isPlaying = false; window.isHidden = true }
-        try await Task.sleep(for:.seconds(5))
-        coordinator.resetMeasurement()
-        coordinator.heroes[peers[0].id]?.motion.play("scuba",at:service.networkTime,now:service.networkTime)
-        try await Task.sleep(for:.seconds(10))
-        let fps = coordinator.measuredFPS
-        var info = task_vm_info_data_t(); var size = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
-        let status = withUnsafeMutablePointer(to:&info) { ptr in ptr.withMemoryRebound(to:integer_t.self,capacity:Int(size)) { task_info(mach_task_self_,task_flavor_t(TASK_VM_INFO),$0,&size) } }
-        let memory = status == KERN_SUCCESS ? Double(info.phys_footprint) / 1_048_576 : -1
-        let report = "Rendered SceneKit frames=\(coordinator.frames), seconds=\(coordinator.measuredSeconds), fps=\(fps), footprintMB=\(memory), model=\(ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? UIDevice.current.model), 4 heroes + Scuba, 4x MSAA\n"
-        let repo = URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent()
-        try report.write(to:repo.appendingPathComponent("work/online-lobby/performance.txt"),atomically:true,encoding:.utf8)
-        XCTAssertGreaterThanOrEqual(fps,55,report)
+        for sport in [MultiplayerSport.tennis,.golf] {
+            let stage = LobbyHeroStage(participants:peers,sport:sport,localID:service.localID,networkTime:service.networkTime)
+            let coordinator = LobbyHeroStage.Coordinator()
+            let scn = SCNView(frame:CGRect(x:0,y:0,width:390,height:420)); scn.backgroundColor = UIColor(IslandUI.paper)
+            scn.scene = coordinator.recipe.scene; scn.pointOfView = coordinator.recipe.camera; scn.delegate = coordinator
+            scn.isPlaying = true; scn.preferredFramesPerSecond = 60; scn.antialiasingMode = .multisampling4X
+            let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+            let window = UIWindow(windowScene:scene), controller = UIViewController(); controller.view = scn
+            window.rootViewController = controller; window.frame = scn.frame; window.isHidden = false
+            coordinator.view = scn; coordinator.update(stage); coordinator.start()
+            defer { coordinator.stop(); scn.isPlaying = false; window.isHidden = true }
+            XCTAssertEqual(coordinator.heroes.count,4,"All four actual \(sport.rawValue) rigs must render")
+            try await Task.sleep(for:.seconds(5))
+            coordinator.resetMeasurement()
+            coordinator.heroes[peers[0].id]?.motion.play(sport == .golf ? "matchWin" : "scuba",at:service.networkTime,now:service.networkTime)
+            try await Task.sleep(for:.seconds(10))
+            let fps = coordinator.measuredFPS
+            var info = task_vm_info_data_t(); var size = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+            let status = withUnsafeMutablePointer(to:&info) { ptr in ptr.withMemoryRebound(to:integer_t.self,capacity:Int(size)) { task_info(mach_task_self_,task_flavor_t(TASK_VM_INFO),$0,&size) } }
+            let memory = status == KERN_SUCCESS ? Double(info.phys_footprint) / 1_048_576 : -1
+            let report = "Rendered SceneKit frames=\(coordinator.frames), seconds=\(coordinator.measuredSeconds), fps=\(fps), footprintMB=\(memory), model=\(ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? UIDevice.current.model), 4 actual \(sport.rawValue) heroes + reaction, 4x MSAA\n"
+            try report.write(to:folder.appendingPathComponent("performance-\(sport.rawValue).txt"),atomically:true,encoding:.utf8)
+            try XCTUnwrap(scn.snapshot().pngData()).write(to:folder.appendingPathComponent("performance-\(sport.rawValue).png"))
+            XCTAssertGreaterThanOrEqual(fps,55,report)
+        }
     }
 }

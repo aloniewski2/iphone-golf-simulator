@@ -38,7 +38,7 @@ namespace GolfArcade.PlayTests
                 {
                     var s = d.slots.First(x => x.id == slot);
                     Assert.IsNotNull(s.clip, $"{sex} {slot} has a clip");
-                    Assert.AreEqual($"{sex}_{clip}", s.clip.name, $"{slot} plays the {sex} {clip} clip");
+                    Assert.AreEqual($"{sex}_{clip}"+((slot==HeroTennisDriver.Clip.Forehand||slot==HeroTennisDriver.Clip.Backhand)?"ArmCorrected":""), s.clip.name, $"{slot} plays the {sex} {clip} clip");
                     Assert.AreEqual(contact, s.contact, .001f, $"{sex}_{clip} contact time");
                 }
                 Assert.IsFalse(d.slots.Any(x => x.clip && x.clip.name.StartsWith("Hero_")), "no old Hero_* clip on the prefab");

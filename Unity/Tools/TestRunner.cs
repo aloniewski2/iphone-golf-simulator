@@ -18,10 +18,12 @@ static class Runner
         };
         var asm = ctx.LoadFromAssemblyPath(System.IO.Path.Combine(dir, "GolfArcade.Tests.dll"));
         int pass = 0, fail = 0;
+        string filter = args.Length > 1 ? args[1] : "";
         foreach (var type in asm.GetTypes().OrderBy(t => t.Name))
         {
             foreach (var m in type.GetMethods().Where(m => m.GetCustomAttributes().Any(a => a.GetType().Name == "TestAttribute")))
             {
+                if (filter.Length > 0 && !(type.Name + "." + m.Name).Contains(filter, StringComparison.OrdinalIgnoreCase)) continue;
                 try { m.Invoke(Activator.CreateInstance(type), null); pass++; }
                 catch (TargetInvocationException e)
                 {

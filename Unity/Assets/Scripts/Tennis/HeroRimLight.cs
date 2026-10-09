@@ -4,8 +4,7 @@ using UnityEngine.Rendering.Universal;
 namespace GolfArcade.Tennis
 {
     /// The one rim light on the match heroes (the match and the locker view are the same scene, so one light serves both).
-    /// A warm directional light, dimmer than the sun, no shadows, that sits behind the heroes as the camera sees them and shines back
-    /// toward the camera from above and to its right, so a shoulder and the top of an arm catch an edge of light.
+    /// A low-energy directional accent follows the world sun, with a camera fallback only in unlit previews.
     /// It lives on its own rendering layer: MatchHeroLook puts the hero renderers on it and the character / cloth shaders honour it, so the
     /// court, the ball and the venue never receive this light (the pipeline asset's Use Rendering Layers is on for that).
     [DisallowMultipleComponent]
@@ -13,7 +12,7 @@ namespace GolfArcade.Tennis
     {
         /// Rendering layer 1, "Hero rim" (defined in ProjectSettings/TagManager; layer 0 is Default, which everything else is on). URP only honours defined layers.
         public const uint Layer = 1u << 1;
-        public const float Intensity = 1.8f;   // the sun is 2.3
+        public const float Intensity = .38f;   // subtle accent beneath the world key
         public static readonly Color Colour = new Color(1f, .74f, .48f);
         /// Degrees: how far round to the camera's right the light sits behind the heroes, and how high above them.
         public float yaw = 38, elevation = 18;
@@ -40,9 +39,11 @@ namespace GolfArcade.Tennis
         void LateUpdate() => Aim();
 
         /// (Public so a proof that moves the camera and renders in the same frame can re-aim it first.)
-        /// Direction the heroes are seen along (camera forward, level), turned toward the camera's right and raised: that is where the light is; it shines the other way.
+        /// Follow the world source so the rim stays anchored while the camera moves.
         public void Aim()
         {
+            var sun = RenderSettings.sun;
+            if (sun) { transform.rotation = sun.transform.rotation; if (lit) lit.color = sun.color; return; }
             if (!cam || !cam.isActiveAndEnabled) cam = Camera.main;
             if (!cam) return;
             Vector3 forward = cam.transform.forward; forward.y = 0;

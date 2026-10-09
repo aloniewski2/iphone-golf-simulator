@@ -11,6 +11,7 @@ namespace GolfArcade.Course
     {
         public static void Dress(GameObject model,Hole hole)
         {
+            if(hole.Number==12)return; // Dedicated short coastal turf replaces coarse Postcard tufts.
             var prefab=Resources.Load<GameObject>("Course/Standard/Fringe");
             if(!prefab) { Debug.LogError("Missing shared golf fringe library");return; }
             var prototypes=prefab.GetComponentsInChildren<MeshFilter>();

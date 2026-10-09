@@ -1,0 +1,274 @@
+{
+  "male_forehand": {
+    "RightUpperArm": {
+      "vertices": 1362,
+      "minBlendDeterminant": 0.4480556547641754,
+      "worstFrame": 26,
+      "minSingularValue": 0.6693159341812134,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.8275912404060364
+    },
+    "RightLowerArm": {
+      "vertices": 1323,
+      "minBlendDeterminant": 0.9691377282142639,
+      "worstFrame": 53,
+      "minSingularValue": 0.9844478964805603,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9870579242706299
+    },
+    "RightHand": {
+      "vertices": 704,
+      "minBlendDeterminant": 0.3692323565483093,
+      "worstFrame": 0,
+      "minSingularValue": 0.6076409220695496,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9743878245353699
+    },
+    "Right_elbowInteriorRange": [
+      25.60590934753418,
+      99.33736419677734
+    ],
+    "Right_wristRelativeRotationRange": [
+      22.062124252319336,
+      80.00009155273438
+    ],
+    "Right_wristContactRotation": 79.99998474121094,
+    "LeftUpperArm": {
+      "vertices": 1374,
+      "minBlendDeterminant": 0.5744409561157227,
+      "worstFrame": 53,
+      "minSingularValue": 0.7579068541526794,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.8930541276931763
+    },
+    "LeftLowerArm": {
+      "vertices": 1315,
+      "minBlendDeterminant": 0.9810894727706909,
+      "worstFrame": 32,
+      "minSingularValue": 0.9904995560646057,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9899688363075256
+    },
+    "LeftHand": {
+      "vertices": 702,
+      "minBlendDeterminant": 0.31726959347724915,
+      "worstFrame": 13,
+      "minSingularValue": 0.5631557106971741,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9887972474098206
+    },
+    "Left_elbowInteriorRange": [
+      51.80955123901367,
+      131.19467163085938
+    ],
+    "Left_wristRelativeRotationRange": [
+      0.0,
+      80.00007629394531
+    ],
+    "Left_wristContactRotation": 0.0
+  },
+  "male_backhand": {
+    "RightUpperArm": {
+      "vertices": 1362,
+      "minBlendDeterminant": 0.7316691875457764,
+      "worstFrame": 7,
+      "minSingularValue": 0.855364978313446,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9001150727272034
+    },
+    "RightLowerArm": {
+      "vertices": 1323,
+      "minBlendDeterminant": 0.9723182916641235,
+      "worstFrame": 60,
+      "minSingularValue": 0.9860619902610779,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9880848526954651
+    },
+    "RightHand": {
+      "vertices": 704,
+      "minBlendDeterminant": 0.3692348301410675,
+      "worstFrame": 35,
+      "minSingularValue": 0.6076431274414062,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9738703966140747
+    },
+    "Right_elbowInteriorRange": [
+      40.2244987487793,
+      141.58482360839844
+    ],
+    "Right_wristRelativeRotationRange": [
+      32.372032165527344,
+      135.77195739746094
+    ],
+    "Right_wristContactRotation": 70.13034057617188,
+    "LeftUpperArm": {
+      "vertices": 1374,
+      "minBlendDeterminant": 0.5607748627662659,
+      "worstFrame": 37,
+      "minSingularValue": 0.748745858669281,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.8818026185035706
+    },
+    "LeftLowerArm": {
+      "vertices": 1315,
+      "minBlendDeterminant": 0.9646380543708801,
+      "worstFrame": 9,
+      "minSingularValue": 0.9821598529815674,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9877633452415466
+    },
+    "LeftHand": {
+      "vertices": 702,
+      "minBlendDeterminant": 0.23184336721897125,
+      "worstFrame": 53,
+      "minSingularValue": 0.481425940990448,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9748148918151855
+    },
+    "Left_elbowInteriorRange": [
+      34.27606964111328,
+      149.0391082763672
+    ],
+    "Left_wristRelativeRotationRange": [
+      36.778907775878906,
+      149.99998474121094
+    ],
+    "Left_wristContactRotation": 66.7926254272461
+  },
+  "female_forehand": {
+    "RightUpperArm": {
+      "vertices": 514,
+      "minBlendDeterminant": 0.49738413095474243,
+      "worstFrame": 25,
+      "minSingularValue": 0.7050512433052063,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.8221563100814819
+    },
+    "RightLowerArm": {
+      "vertices": 362,
+      "minBlendDeterminant": 0.9698578715324402,
+      "worstFrame": 14,
+      "minSingularValue": 0.9848134517669678,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9883679747581482
+    },
+    "RightHand": {
+      "vertices": 515,
+      "minBlendDeterminant": 0.9813532829284668,
+      "worstFrame": 64,
+      "minSingularValue": 0.9906328320503235,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9926526546478271
+    },
+    "Right_elbowInteriorRange": [
+      23.295658111572266,
+      115.33001708984375
+    ],
+    "Right_wristRelativeRotationRange": [
+      16.81341552734375,
+      80.0000991821289
+    ],
+    "Right_wristContactRotation": 80.00004577636719,
+    "LeftUpperArm": {
+      "vertices": 506,
+      "minBlendDeterminant": 0.5883595943450928,
+      "worstFrame": 55,
+      "minSingularValue": 0.7670137882232666,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.8876213431358337
+    },
+    "LeftLowerArm": {
+      "vertices": 342,
+      "minBlendDeterminant": 0.9840261340141296,
+      "worstFrame": 33,
+      "minSingularValue": 0.9919808506965637,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9920628666877747
+    },
+    "LeftHand": {
+      "vertices": 449,
+      "minBlendDeterminant": 0.9337626695632935,
+      "worstFrame": 13,
+      "minSingularValue": 0.9663134217262268,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9939396977424622
+    },
+    "Left_elbowInteriorRange": [
+      63.5347900390625,
+      122.01726531982422
+    ],
+    "Left_wristRelativeRotationRange": [
+      0.0,
+      80.00006866455078
+    ],
+    "Left_wristContactRotation": 0.0
+  },
+  "female_backhand": {
+    "RightUpperArm": {
+      "vertices": 514,
+      "minBlendDeterminant": 0.7017650604248047,
+      "worstFrame": 42,
+      "minSingularValue": 0.8376863598823547,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9282339811325073
+    },
+    "RightLowerArm": {
+      "vertices": 362,
+      "minBlendDeterminant": 0.953574538230896,
+      "worstFrame": 32,
+      "minSingularValue": 0.9765114188194275,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.98776775598526
+    },
+    "RightHand": {
+      "vertices": 515,
+      "minBlendDeterminant": 0.9639055132865906,
+      "worstFrame": 32,
+      "minSingularValue": 0.9817867875099182,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9886132478713989
+    },
+    "Right_elbowInteriorRange": [
+      47.8065299987793,
+      154.1967010498047
+    ],
+    "Right_wristRelativeRotationRange": [
+      10.528968811035156,
+      132.58871459960938
+    ],
+    "Right_wristContactRotation": 87.66838073730469,
+    "LeftUpperArm": {
+      "vertices": 506,
+      "minBlendDeterminant": 0.6935641169548035,
+      "worstFrame": 38,
+      "minSingularValue": 0.832738995552063,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9350497722625732
+    },
+    "LeftLowerArm": {
+      "vertices": 342,
+      "minBlendDeterminant": 0.9654953479766846,
+      "worstFrame": 8,
+      "minSingularValue": 0.9825961589813232,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.986803412437439
+    },
+    "LeftHand": {
+      "vertices": 449,
+      "minBlendDeterminant": 0.9350157380104065,
+      "worstFrame": 72,
+      "minSingularValue": 0.9669618010520935,
+      "framesBelowPointTwo": 0,
+      "percentile5Determinant": 0.9881923198699951
+    },
+    "Left_elbowInteriorRange": [
+      42.6658935546875,
+      154.1970672607422
+    ],
+    "Left_wristRelativeRotationRange": [
+      30.708099365234375,
+      150.0
+    ],
+    "Left_wristContactRotation": 74.30022430419922
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "status": "PASS exact canonical geometry/UV/object-transform digest vs portable rebuild",
+  "original": {
+    "TURF_NEAR": {
+      "vertices": 11520,
+      "triangles": 6912,
+      "geometryUVTransformSha256": "8407575f12dbfbba59587b26c2863729207f86746dbd8d565e22da2cabf63968"
+    },
+    "TURF_MID": {
+      "vertices": 2560,
+      "triangles": 1536,
+      "geometryUVTransformSha256": "0bded87a91323eb52a2f0317fde8799fbf52b9fcdf1631eecd2b83e09d4abf27"
+    },
+    "TURF_FAR": {
+      "vertices": 384,
+      "triangles": 128,
+      "geometryUVTransformSha256": "8da69a1d3ada756bd239a5acfaac65a7fd85a36a5f836767ccaff05728d6fad5"
+    }
+  },
+  "rebuild": {
+    "TURF_NEAR": {
+      "vertices": 11520,
+      "triangles": 6912,
+      "geometryUVTransformSha256": "8407575f12dbfbba59587b26c2863729207f86746dbd8d565e22da2cabf63968"
+    },
+    "TURF_MID": {
+      "vertices": 2560,
+      "triangles": 1536,
+      "geometryUVTransformSha256": "0bded87a91323eb52a2f0317fde8799fbf52b9fcdf1631eecd2b83e09d4abf27"
+    },
+    "TURF_FAR": {
+      "vertices": 384,
+      "triangles": 128,
+      "geometryUVTransformSha256": "8da69a1d3ada756bd239a5acfaac65a7fd85a36a5f836767ccaff05728d6fad5"
+    }
+  },
+  "binaryFBXIdentity": "Not claimed; export container metadata/timestamps may differ."
+}

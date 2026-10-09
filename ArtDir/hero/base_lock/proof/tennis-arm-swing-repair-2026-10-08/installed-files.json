@@ -1,0 +1,14 @@
+{
+  "Assets/Scripts/Tennis/HeroGripPolish.cs": "0db16f5f271f69ec32008cf1819ca6fea49f42cdd5b7b5a4b9188741b14585c5",
+  "Assets/Scripts/Tennis/MatchHeroLook.cs": "fe28a18056ac7fb8c50a264bd929e12d2ff401878a667aed1188858b9c5ef050",
+  "Assets/Scripts/Tennis/HeroTennisDriver.cs": "ff7298358cb3931770fa2b13eed63766a86d947f2fe42b4a35e1b1fb352caaad",
+  "Assets/Editor/MatchHeroLockerExport.cs": "bf5492ac0fb834152bf9598729eb15f625e5a257489ded351bd98bd0eb8d8319",
+  "Assets/Tests/PlayMode/MatchHeroClipMapTests.cs": "b710cc987ed182877d74daaa1a2ac1eaa89c6c69137b11cc4a488741f367d96d",
+  "Assets/Scripts/Tennis/HeroArmSkinning.cs": "5a1542e9416abc66cc0f20fd096736bd278e7646dde0b939b86b998f5acca451",
+  "Assets/Editor/TennisArmStrokeBuild.cs": "f21d0ee7c07f48da5d2e195a5be9d48c3d5420316aa92337e35604e20d692d54",
+  "Assets/Editor/StrokeArmReview.cs": "82fe98d5a8ffd64cceb217f8cfd4740d901a8415e7996b56cfcc38198347ed48",
+  "Assets/Resources/Tennis/Performance/Male_ForehandArmCorrected.anim": "98691363786c7cd7c348c43d7f2315ffd552818d45cfc4110cc855d916f402af",
+  "Assets/Resources/Tennis/Performance/Male_BackhandArmCorrected.anim": "580fbd8d035113dadd5458741501a3a3f3df6bab70265b14dbdd36abf12232d7",
+  "Assets/Resources/Tennis/Performance/Female_ForehandArmCorrected.anim": "9ab2b274b50b1cffa2af483328aaa1b1d28435bf42a3130196d3cfd6343da768",
+  "Assets/Resources/Tennis/Performance/Female_BackhandArmCorrected.anim": "a1e9e1e7428d25573dde327ed33cd9e92ad8322f5a02f11419913368df414eae"
+}

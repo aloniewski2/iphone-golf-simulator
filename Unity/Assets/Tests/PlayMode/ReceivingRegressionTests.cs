@@ -30,6 +30,7 @@ namespace GolfArcade.PlayTests
             yield return null;
             game = Object.FindFirstObjectByType<TennisGame>();
             game.enabled = false; game.NativeControlled = true; game.ManualSimulation = true;
+            game.ManualRallyMovement = true;
             game.ConfigureMatch(TennisGame.Mode.Exhibition, null, null, null);
             game.GetComponent<TennisPresentation>().Finish();
             game.SetControllerSetup(true); game.SetControllerSetup(false);
@@ -130,6 +131,18 @@ namespace GolfArcade.PlayTests
             NativeUpdate.Invoke(adapter, null);
             Assert.That(game.MoveInput, Is.EqualTo(0).Within(.001f), "A stationary phone must preserve the receiver's chosen position when control changes to a rally");
             Assert.That(game.PlayerUsesTrackedMovement, Is.True);
+            yield return null;
+        }
+
+        [UnityTest] public IEnumerator AutomaticMovementIgnoresOppositePhoneSteering()
+        {
+            game.ManualRallyMovement = false;
+            game.Player.transform.position = new Vector3(0, .035f, -11.2f);
+            game.InjectBall(new Vector3(2.4f, 1.3f, 6), new Vector3(0, 2.2f, -16.5f));
+            game.SetLateralInput(-1, true);
+            Assert.That(game.PlayerUsesTrackedMovement, Is.False);
+            for (int i = 0; i < 24; i++) Frame();
+            Assert.That(game.Player.transform.position.x, Is.GreaterThan(.4f), "Computer intercepts rightward ball despite leftward phone input");
             yield return null;
         }
 

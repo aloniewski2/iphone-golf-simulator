@@ -46,6 +46,7 @@ namespace GolfArcade.Course
             view.Hole = hole;
             Current = view;
             var model = Resources.Load<GameObject>($"Course/hole_{hole.Number:00}");
+            model = GolfCoastalComposition.Model(hole, model);
             if (model) view.BuildFromModel(model); else view.BuildGeometry();
             view.BuildPin();
             HoleAtmosphere.Apply(hole);

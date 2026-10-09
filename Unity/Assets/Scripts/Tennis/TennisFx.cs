@@ -49,7 +49,7 @@ namespace GolfArcade.Tennis
             var square = new Texture2D(4, 4, TextureFormat.RGBA32, false) { name = "Confetti" };
             var white = new Color32[16]; for (int i = 0; i < 16; i++) white[i] = new Color32(255, 255, 255, 255);
             square.SetPixels32(white); square.Apply();
-            additiveImpact = Make("TennisFxAdditive", Sprite("impact", soft), 2.2f);
+            additiveImpact = Make("TennisFxAdditive", Sprite("impact", soft), 1.8f);
             additiveRing = Make("TennisFxAdditive", Sprite("ring", soft), 1.8f);
             additiveSparkle = Make("TennisFxAdditive", Sprite("sparkle", soft), 2.4f);
             additiveGlow = Make("TennisFxAdditive", soft, 1.8f);
@@ -58,7 +58,7 @@ namespace GolfArcade.Tennis
             alphaConfetti = Make("TennisFxAlpha", square);
 
             impact = System("Impact flash", additiveImpact, 4, .09f, .13f, .9f, 1.3f, 0, 0, 0, grow: 1.5f);
-            shock = System("Shockwave", additiveRing, 6, .22f, .3f, .35f, .35f, 0, 0, 0, grow: 7f);
+            shock = System("Shockwave", additiveRing, 6, .22f, .3f, .35f, .35f, 0, 0, 0, grow: 5f);
             sparkle = System("Sparkles", additiveSparkle, 60, .25f, .5f, .08f, .2f, 2f, 5.5f, .6f, grow: .4f, spin: true);
             // Score80 B: heavy-contact impact streaks (stretched sparks that shoot out radially and die fast)
             streak = System("Impact streaks", additiveGlow, 48, .09f, .16f, .05f, .08f, 9f, 15f, 0, grow: .3f);
@@ -146,10 +146,11 @@ namespace GolfArcade.Tennis
         {
             if (smash)
             {
-                Heavy(at, new Color(1, .88f, .45f, 1), 1.2f);
-                Burst(impact, at, 2, new Color(1, .9f, .5f, 1), 2.1f);
-                Burst(shock, at, 3, new Color(1, .85f, .45f, .9f), .6f);
-                Burst(sparkle, at, 34, new Color(1, .9f, .5f, 1));
+                Heavy(at, new Color(1, .88f, .45f, 1), 1.05f);
+                Burst(impact, at, 1, new Color(1, .9f, .5f, .8f), 1.15f);
+                Burst(shock, at, 1, new Color(1, .85f, .45f, .8f), .42f);
+                Burst(shock, at, 1, new Color(1, .95f, .7f, .6f), .24f);
+                Burst(sparkle, at, 24, new Color(1, .9f, .5f, 1));
                 Burst(fuzz, at, 22, Felt);
                 Shake = Mathf.Max(Shake, 1.1f); Flash = Mathf.Max(Flash, .6f);
                 return;
@@ -162,7 +163,7 @@ namespace GolfArcade.Tennis
             Burst(shock, at, supercharged ? 2 : 1, new Color(hot.r, hot.g, hot.b, .8f), .3f * scale);
             Burst(fuzz, at, 6 + strength * 3, Felt);
             if (grade >= Timing.Great || supercharged) Burst(sparkle, at, supercharged ? 22 : strength * 2, hot);
-            if (grade >= Timing.Perfect && !supercharged) { Burst(shock, at, 1, new Color(1, .95f, .6f, .7f), .55f); Burst(sparkle, at, 16, new Color(1, .95f, .6f, 1)); Flash = Mathf.Max(Flash, .25f); }
+            if (grade >= Timing.Perfect && !supercharged) { Burst(shock, at, 1, new Color(1, .95f, .6f, .7f), .38f); Burst(sparkle, at, 16, new Color(1, .95f, .6f, 1)); Flash = Mathf.Max(Flash, .25f); }
             if (supercharged || grade >= Timing.Perfect) Heavy(at, hot, supercharged ? 1.1f : .8f);
             // Score80 B: shake by tier; routine contact barely moves the frame
             Shake = Mathf.Max(Shake, supercharged ? 1 : grade >= Timing.Perfect ? .7f : grade >= Timing.Excellent ? .32f : grade >= Timing.Great ? .18f : .06f);
@@ -173,11 +174,11 @@ namespace GolfArcade.Tennis
         /// player, a dust puff from the stumble and a shake — more than a routine hit, never on input.
         public void Whiff(Vector3 feet, Vector3 racket)
         {
-            Burst(shock, racket, 2, new Color(1, 1, 1, .75f), .7f);
-            Burst(ripple, feet + Vector3.up * .03f, 2, new Color(1, 1, 1, .55f), .5f);
-            Burst(dust, feet + Vector3.up * .06f, 16, new Color(.97f, .95f, .9f, .75f));
-            Burst(sparkle, racket, 10, new Color(.8f, .9f, 1f, .9f));
-            Shake = Mathf.Max(Shake, .5f);
+            Burst(shock, racket, 1, new Color(1, 1, 1, .6f), .36f);
+            Burst(ripple, feet + Vector3.up * .03f, 1, new Color(1, 1, 1, .32f), .21f);
+            Burst(dust, feet + Vector3.up * .06f, 7, new Color(.97f, .95f, .9f, .44f), .14f);
+            Burst(sparkle, racket, 6, new Color(.8f, .9f, 1f, .8f));
+            Shake = Mathf.Max(Shake, .22f);
         }
 
         /// Heavy contact only (perfect, supercharged, smash, ultimate): radial streaks and a second, flat shock ring.
@@ -229,14 +230,14 @@ namespace GolfArcade.Tennis
             nextSkid = (nextSkid + 1) % SkidCount;
         }
 
-        /// A foot planted at speed kicks up a little dust; a dive slides a big cloud.
+        /// A foot planted at speed kicks up dust without obscuring the recovery pose.
         public void Footstep(Vector3 at, float speed)
         {
             if (speed < 3f) return;
             Burst(footDust, at + Vector3.up * .04f, speed > 6 ? 3 : 2, new Color(.95f, .93f, .88f, Mathf.Lerp(.25f, .55f, (speed - 3) / 5)));
         }
 
-        public void Slide(Vector3 at) => Burst(dust, at + Vector3.up * .05f, 14, new Color(.95f, .93f, .88f, .7f));
+        public void Slide(Vector3 at) => Burst(dust, at + Vector3.up * .05f, 8, new Color(.95f, .93f, .88f, .48f), .17f);
 
         /// Confetti over a winner or the match.
         public void Celebrate(Vector3 at, float amount)
@@ -244,11 +245,17 @@ namespace GolfArcade.Tennis
             int n = (int)Mathf.Lerp(40, 200, Mathf.Clamp01(amount));
             for (int i = 0; i < n; i++)
             {
-                Color c = Color.HSVToRGB(Random.value, .75f, 1f);
+                Color c = CelebrationColors[Random.Range(0, CelebrationColors.Length)];
                 Vector3 v = new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(4f, 8f), Random.Range(-2.5f, 2.5f));
                 Burst(confetti, at + Vector3.up * 1.6f, 1, c, -1, v);
             }
         }
+
+        static readonly Color[] CelebrationColors = {
+            new Color(1f, .46f, .34f), new Color(.40f, .82f, .83f),
+            new Color(.84f, .94f, .27f), new Color(1f, .97f, .88f),
+            new Color(1f, .79f, .29f)
+        };
 
         /// While a supercharged ball flies it leaves a glowing stream.
         public void Stream(Vector3 ball, bool on)

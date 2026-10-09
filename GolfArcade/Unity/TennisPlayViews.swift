@@ -726,16 +726,9 @@ struct MatchFinishControls: View {
                 ScrollView {
                     ClubVictorySummary(won: result.won, score: result.score, summary: TennisMenu.shared.postMatch, compact: true)
                 }.scrollBounceBehavior(.basedOnSize)
-                PointClipControls(session: session).tint(Club.lagoonDeep)
                 VStack(spacing: 8) {
-                    if TennisMenu.shared.afterMatchChoices.contains(.next) {
-                        IslandAction(title: "Next Round", primary: true, compact: true, identifier: "postGameNext") { session.advanceAfterMatch(.next) }
-                    }
-                    IslandAction(title: "Rematch", primary: !TennisMenu.shared.afterMatchChoices.contains(.next), compact: true, identifier: "postGameReplay") { session.advanceAfterMatch(.replay) }
-                    if TennisMenu.shared.afterMatchChoices.contains(.court) {
-                        IslandAction(title: "Change Court", compact: true, identifier: "postGameCourt") { session.advanceAfterMatch(.court) }
-                    }
-                    IslandAction(title: "Main Menu", compact: true, identifier: "postGameMenu") { session.advanceAfterMatch(.menu) }
+                    IslandAction(title: "Rematch", primary: true, compact: true, identifier: "postGameReplay") { session.advanceAfterMatch(.replay) }
+                    IslandAction(title: "Leave", compact: true, identifier: "postGameMenu") { session.advanceAfterMatch(.menu) }
                 }
             }.padding(compact ? 14 : 24)
                 .background(IslandUI.paper, in: RoundedRectangle(cornerRadius: 24))

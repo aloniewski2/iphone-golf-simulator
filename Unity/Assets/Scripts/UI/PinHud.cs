@@ -10,7 +10,7 @@ namespace GolfArcade.UI
     {
         RectTransform root, pill, arrow;
         Text label;
-        static readonly Color Red = UiKit.Hex("E8352F");
+        static readonly Color Red = UiKit.Hex("FF665A");
 
         public static PinLocator Create(Transform canvasRoot)
         {
@@ -19,10 +19,10 @@ namespace GolfArcade.UI
             var p = go.AddComponent<PinLocator>();
             p.root = (RectTransform)go.transform;
             p.root.sizeDelta = Vector2.zero;
-            p.pill = UiKit.Pill(p.root, "Pill", Red, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(230, 58), out var fill, 4f);
-            p.label = UiKit.Label(fill.transform, "Label", 28, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+            p.pill = UiKit.Pill(p.root, "Pill", Red, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(174, 44), out var fill, 2f);
+            p.label = UiKit.Label(fill.transform, "Label", 22, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Strong, false);
             p.label.color = Color.white; p.label.raycastTarget = false;
-            var a = UiKit.Label(p.root, "Arrow", 44, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(60, 60), UiKit.Display);
+            var a = UiKit.Label(p.root, "Arrow", 32, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(44, 44), UiKit.Display);
             a.text = "▲"; a.color = Red; a.raycastTarget = false;
             p.arrow = a.rectTransform;
             go.SetActive(false);
@@ -37,7 +37,7 @@ namespace GolfArcade.UI
             if (!on) return;
             transform.SetAsLastSibling();
             label.text = text;
-            pill.sizeDelta = new Vector2(Mathf.Max(170, label.preferredWidth + 44), 58);
+            pill.sizeDelta = new Vector2(Mathf.Max(132, label.preferredWidth + 30), 44);
             var canvas = ((RectTransform)transform.parent).rect.size;
             var vp = view.WorldToViewportPoint(pin);
             bool behind = vp.z < 0;

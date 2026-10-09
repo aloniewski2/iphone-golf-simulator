@@ -38,9 +38,9 @@ namespace GolfArcade.Course
             if (island)
             {
                 // beyond the green, off to one side of it, and away on the far flank
-                Put(island, root, centre + along * (reach + 260) + right * 110, 230, 20, -4);
-                Put(island, root, centre + along * (reach + 150) - right * (reach + 240), 160, 145, -3);
-                Put(island, root, centre + right * (reach + 300) - along * 60, 190, 260, -4);
+                PutIsland(island, root, centre + along * (reach + 600) + right * 220, 270, 20, -4);
+                PutIsland(island, root, centre + along * (reach + 450) - right * (reach + 600), 230, 145, -3);
+                PutIsland(island, root, centre + right * (reach + 650) - along * 60, 250, 260, -4);
             }
             if (boat)
             {
@@ -98,6 +98,23 @@ namespace GolfArcade.Course
                 r.receiveShadows = false;
             }
             return t;
+        }
+
+        static Material distantIsland;
+        static Transform PutIsland(GameObject prefab,Transform parent,Vector3 position,float size,float angle,float sink)
+        {
+            var wrapper=new GameObject("Resort distant island").transform;wrapper.SetParent(parent,false);
+            wrapper.position=position+Vector3.up*sink;wrapper.rotation=Quaternion.Euler(0,angle,0);wrapper.localScale=new Vector3(size,size*.36f,size);
+            var go=Object.Instantiate(prefab,wrapper,false);
+            if(!distantIsland){
+                distantIsland=new Material(Resources.Load<Shader>("Course/Shaders/GolfDistantLand")){name="Distant blue island"};
+                distantIsland.SetColor("_BaseColor",new Color(.23f,.40f,.43f));
+            }
+            foreach(var r in go.GetComponentsInChildren<Renderer>()){
+                var materials=r.sharedMaterials;for(int i=0;i<materials.Length;i++)materials[i]=distantIsland;r.sharedMaterials=materials;
+                r.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;r.receiveShadows=false;
+            }
+            return wrapper;
         }
 
         static void Bob(Transform boat, float phase) => boat.gameObject.AddComponent<Swell>().Begin(phase);

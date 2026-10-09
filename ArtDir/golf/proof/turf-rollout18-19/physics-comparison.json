@@ -1,0 +1,192 @@
+[
+  {
+    "hole": 7,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole07_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole07_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole07_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole07_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 119,
+    "colliders": 21,
+    "groundRecords": 21,
+    "currentSha256": "c5cfb573499038ba17a4a814861c4e3e30aab7b0fb6f8cdd05cd0fd1e5eabbe7",
+    "previousSha256": "159fffde83d63ee87e6ef2b1c8f591c6357d67a60bae51d63ed1beeb1c7549df"
+  },
+  {
+    "hole": 8,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole08_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole08_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-path19/hole08_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole08_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 133,
+    "colliders": 8,
+    "groundRecords": 8,
+    "currentSha256": "2be2419340add52dfdd319fb891b1d0efec690aab8c26875d4d092ceb20b60cc",
+    "previousSha256": "f358df4ee7ec48818d4813d6fd211afc5083c06eb3361135d0e782a89bdaf5f4"
+  },
+  {
+    "hole": 9,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole09_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole09_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-path19/hole09_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole09_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 762,
+    "colliders": 12,
+    "groundRecords": 12,
+    "currentSha256": "bc291d29a71337d47a4c8232451f54181c3888afd3521799df883303ca1e04f4",
+    "previousSha256": "5c72e701e4ced1ec4d8d29d3484806f80e32c7f34e0fcdf9e330a4dfcb95bda2"
+  },
+  {
+    "hole": 12,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole12_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole12_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole12_audit.json",
+    "sourcePrevious": "proof/reference-rebuild/turf-surfaces17/hole12_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 161,
+    "colliders": 14,
+    "groundRecords": 14,
+    "currentSha256": "99e96b2295c1530cc6bfab035ba06504cd98c549e01f24a0023c01a682bbefe7",
+    "previousSha256": "7b95608f0ac71c2a66c9fe5ded847b7cf64578e116c59ffd0cb552ce09f3e577"
+  },
+  {
+    "hole": 13,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole13_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole13_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole13_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole13_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 138,
+    "colliders": 16,
+    "groundRecords": 16,
+    "currentSha256": "a1bc7a2bc1d1a8a290ee0bb5ed09ab2204d0f44d1a2eb969fcb1bf50d9eafc35",
+    "previousSha256": "00e9a72833db3bb8581409fd7040350238d824e4e47208579e4161ab1dfd8a20"
+  },
+  {
+    "hole": 14,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole14_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole14_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole14_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole14_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 247,
+    "colliders": 14,
+    "groundRecords": 14,
+    "currentSha256": "c1838d46fd124edc9a7361d0d815d584e538cea1fcbd593a0e9d68d3d4a47a22",
+    "previousSha256": "283f80cd711d6137b8675f360f0a7bdfddfff310fe1e343278f434e95cf66f28"
+  },
+  {
+    "hole": 15,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole15_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole15_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole15_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole15_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 97,
+    "colliders": 11,
+    "groundRecords": 11,
+    "currentSha256": "57dcaa2c2776b5236866736dc462553aecf038e4bacc54775e334b8500698d10",
+    "previousSha256": "6660b4d08aef83a4bbd1a9f3124419e1ee9632501fb3e573ecb4edaa9dfb9027"
+  },
+  {
+    "hole": 19,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole19_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole19_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole19_audit.json",
+    "sourcePrevious": "proof/reference-rebuild/turf-surfaces16/hole19_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 171,
+    "colliders": 14,
+    "groundRecords": 14,
+    "currentSha256": "1ac529c3d8e4d34719cf439a30fb72f1dd32dcb4b9de9c470c6b09106d60bc05",
+    "previousSha256": "a4e6fa473154913ec5d35a070bb955571499e81b8197424e76d536e56f0de2e9"
+  },
+  {
+    "hole": 20,
+    "status": "PASS exact physics records",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole20_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole20_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-rollout18/hole20_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole20_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 125,
+    "colliders": 14,
+    "groundRecords": 14,
+    "currentSha256": "bdb8bd74ea5d45651a7800be1f632839fd8f3b1ed150938d5e9391a049df5b3b",
+    "previousSha256": "02dc78c202d3150d32df284605471352217d6ae39cffd8d69d079689dbb5418d"
+  },
+  {
+    "hole": 10,
+    "status": "PASS exact physics records; material-only managed hierarchy",
+    "current": "ArtDir/golf/proof/turf-rollout18-19/hole10_audit.json",
+    "previous": "ArtDir/golf/proof/turf-rollout18-19/previous-audits/hole10_audit.json",
+    "sourceCurrent": "proof/reference-rebuild/turf-path19-hole10/hole10_audit.json",
+    "sourcePrevious": "proof/full-visual-overhaul/golf-pass-final/hole10_audit.json",
+    "checks": {
+      "obstacleCount": true,
+      "colliders": true,
+      "obstacleHash": true,
+      "ground": true
+    },
+    "obstacles": 8291,
+    "colliders": 10,
+    "groundRecords": 10,
+    "currentSha256": "fa87a1d13ea6d5deb7277a3851ad6fbcc877809de51be9508b1461b9382b11fd",
+    "previousSha256": "b7a7685274784f6969b18245784c5021881a6a146ace10605aec8375b2bd0eb1"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "manifest": "MatchHero_Female_Distance",
+  "roles": [
+    "Kit_Bottom",
+    "Kit_Top"
+  ],
+  "sourceManifestSha256": "86c9a8ac75ad18485eac027506c50ec854a41681dfe1029c7070418250a694f8",
+  "preservedNonGarmentParts": [
+    "Body",
+    "Face",
+    "Kit_Shoe_L",
+    "Kit_Shoe_R",
+    "Kit_Sock_L",
+    "Kit_Sock_R",
+    "Racket_Racket_Classic",
+    "Racket_ButtCap",
+    "Racket_Grip",
+    "Racket_StringBed"
+  ],
+  "animationMaxDelta": 0,
+  "status": "PASS",
+  "baseOriginalBytesPreserved": 3396656,
+  "rigOriginalBytesPreserved": 16221560,
+  "bonesUnchanged": 53,
+  "swingFramesUnchanged": 12
+}

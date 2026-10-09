@@ -122,10 +122,45 @@ final class MultiplayerTests: XCTestCase {
         try p.bus.links["b"]!.send(packet(p.host,kind:"availability",sender:"b",sequence:10002,payload:"false"),to:["a"],reliable:true)
         p.runtimes[0].time+=16;p.host.update();XCTAssertEqual(p.runtimes[0].received.last?.kind,"drop");XCTAssertEqual(p.host.lobby?.participants.first { $0.id=="b" }?.seat,-1)
     }
+    func testSharedStartWaitsForTheLatestClientCoverDeadline() throws {
+        let p=try party(2); defer { p.close() }
+        for service in p.services { try service.setReady(true) }; try p.host.startMatch()
+        p.host.runtimeLoaded(readyAfter: 0.2); p.services[1].runtimeLoaded(readyAfter: 1.5)
+        let starts = p.runtimes.compactMap { runtime in runtime.received.last(where: { $0.kind == "run" }).flatMap { Double($0.payload) } }
+        XCTAssertEqual(starts.count, 2); XCTAssertEqual(starts[0], starts[1])
+        XCTAssertGreaterThanOrEqual(starts[0], p.runtimes[0].time + 2.0)
+    }
+
     func testLoadingTimeoutLeavesPartyRecoverable() throws {
-        let p=try party(2);defer {p.close()};try p.host.setReady(true);try p.services[1].setReady(true);try p.host.startMatch()
-        p.runtimes[0].time+=20;p.host.update();XCTAssertEqual(p.host.lobby?.phase,.lobby);XCTAssertEqual(p.services[1].lobby?.phase,.lobby)
-        XCTAssertEqual(p.services[1].lastError, "Loading took too long. Everyone is back in the lobby.")
+        let p = try party(2); defer { p.close() }
+        try p.host.setReady(true); try p.services[1].setReady(true); try p.host.startMatch()
+        p.runtimes[0].time += 20; p.host.update()
+        XCTAssertEqual(p.host.lobby?.phase, .loading); XCTAssertEqual(p.services[1].lobby?.phase, .loading)
+        XCTAssertTrue(p.host.loadingNeedsDecision); XCTAssertTrue(p.services[1].loadingNeedsDecision)
+        try p.services[1].keepWaitingForLoad()
+        XCTAssertFalse(p.host.loadingNeedsDecision); XCTAssertFalse(p.services[1].loadingNeedsDecision)
+        p.runtimes[0].time += 21; p.host.update(); XCTAssertTrue(p.host.loadingNeedsDecision)
+        p.host.runtimeLoaded(); p.services[1].runtimeLoaded()
+        XCTAssertEqual(p.host.lobby?.phase, .playing); XCTAssertFalse(p.host.loadingNeedsDecision)
+        XCTAssertFalse(p.services[1].loadingNeedsDecision)
+    }
+    func testRematchUsesAFreshReadinessBarrierAndRejectsRepeatedInput() throws {
+        let p = try party(); defer { p.close() }; try start(p)
+        try p.services[2].queueForNextMatch()
+        let old = try XCTUnwrap(p.host.lobby?.matchID)
+        let result = MultiplayerPacket(lobbyID:p.host.lobby!.id,matchID:old,sender:"a",kind:"result",payload:"{\"winner\":0,\"reason\":\"complete\"}")
+        p.runtimes[0].outgoing.append(String(decoding:try JSONEncoder().encode(result),as:UTF8.self)); p.host.update()
+        XCTAssertThrowsError(try p.services[1].rematch())
+        try p.host.rematch()
+        let next = try XCTUnwrap(p.host.lobby?.matchID)
+        XCTAssertNotEqual(next, old)
+        XCTAssertEqual(p.services.map(\.localSeat), [0,1,-1,-1], "Rematch keeps the same competitors")
+        for s in p.services { XCTAssertEqual(s.lobby?.phase, .loading); XCTAssertFalse(s.lobby!.competitors.contains(where: \.loaded)) }
+        XCTAssertThrowsError(try p.host.rematch())
+        XCTAssertEqual(p.host.lobby?.matchID, next)
+        p.host.runtimeLoaded(); XCTAssertEqual(p.host.lobby?.phase, .loading)
+        p.services[1].runtimeLoaded(); XCTAssertEqual(p.host.lobby?.phase, .playing)
+        for r in p.runtimes { XCTAssertEqual(r.configurations.count, 2) }
     }
     func testHostBackgroundInterruptsAllPeers() throws {
         let p=try party(2);defer {p.close()};try start(p);p.host.setForeground(false)

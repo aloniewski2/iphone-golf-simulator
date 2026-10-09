@@ -1,0 +1,11 @@
+{
+  "status": "INSTALLED narrow path19 integration fix; actual8/9 gate pending",
+  "files": {
+    "Unity/Assets/Scripts/Course/GolfCourseLook.cs": "590a0384ad7302962b0cd693f30491b6fc4ca39f3fba297be551c0223a2b9bba",
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "7acf442a170594ab5f5eec39a10c4590b23fa52b3f442f419af4cfe1f6352330"
+  },
+  "roleFix": "LK managed aliases with Tee/Firstcut/Apron/Lip disambiguation; central acceptedpalette reused",
+  "pathFix": "Visual path triangles projected at real ground height plus16cm blade-tip overhang margin; no collider/physics alteration; existing4cornercheck and boundary subdivision reused",
+  "unchanged": "Dense15 geometry, palette numbers, shading, caps and radius; source ground/obstacle meshes and analytic regions",
+  "target": "Remove actual8 grass-over-stone and legacy underlay mismatch without new scenery or color tuning."
+}

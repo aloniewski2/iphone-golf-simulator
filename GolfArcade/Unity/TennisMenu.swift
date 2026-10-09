@@ -136,7 +136,7 @@ final class TennisMenu {
     static let characterRows = ["body", "haircut", "skin", "hair", "hairColor", "hand", "shirt", "shorts", "accent", "racket"]
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
-        case .gameplay: ["level", "resetProgress"]
+        case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
         case .display: ["howto", "fps", "overscan"]
         case .audio: ["sound", "haptics"]
@@ -171,7 +171,7 @@ final class TennisMenu {
         case .howTo: return [["prev", "nextPage", "back"]]
         case .golfLesson: return [["round", "back"]]
         case .connect: return [["back"]]
-        case .loading: return SportsSession.shared.loading.isStalled ? [["loadingBack", "loadingRetry"]] : [["loadingBack"]]
+        case .loading: return (SportsSession.shared.loading.isStalled || SportsSession.shared.loading.phase == .failed) ? [["loadingBack", "loadingRetry"]] : [["loadingBack"]]
         case .results:
             guard let result else { return [["menu"]] }
             if result.won && campaign.champion && result.round == TennisCampaign.draw.count - 1 { return [["menu"], ["restart"]] }
@@ -468,6 +468,11 @@ final class TennisMenu {
             let (h, sh) = s.players[p].hueShade(id)
             s.players[p].setOutfit(id, hue: h + Double(step) / 24, shade: sh); s.savePlayers()
         case "controls": s.touch.toggle()
+        case "presentationIntros":
+            let values = ["full", "short", "off"]
+            s.presentationIntros = values[cycle(values.firstIndex(of: s.presentationIntros) ?? 0, values.count)]
+        case "holeFlyover": s.holeFlyover.toggle()
+        case "presentationBigMoments": s.presentationBigMoments.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()
         case "coaching": s.coachingTips.toggle()
@@ -640,6 +645,7 @@ final class TennisMenu {
 
     /// The post-match panel on the phone: next match, replay, or back to the menus.
     func finishMatch(_ choice: AfterMatch) {
+        if choice == .replay { session.prepareRematchPresentation() }
         afterMatch = choice
         showPostMatchAfterEnd = false
         if choice == .menu { result = nil; postMatch = nil }
@@ -690,6 +696,7 @@ final class TennisMenu {
                 begin(MenuLaunch(round: next), onPhone: onPhone, skipMap: true)
             } else if let launch { result = nil; postMatch = nil; begin(launch, onPhone: onPhone, skipMap: true) }
         case .replay:
+            session.prepareRematchPresentation()
             if let launch { result = nil; postMatch = nil; begin(launch, onPhone: onPhone, skipMap: true) }
         case .court:
             if let launch { result = nil; postMatch = nil; launchOrigin = hubAfter(launch); begin(launch, onPhone: onPhone) }
@@ -1035,8 +1042,9 @@ struct OnlineAppleSheet: Identifiable {
             return [["net-sport-tennis","net-sport-golf"],venues.map { "net-venue-\($0)" }]
                 + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
                 + [["net-settings-seats"],["back"]]
-        case .loading,.match: return [["net-leave"]]
-        case .results: return (service.isOwner ? [["net-rematch"]] : []) + [["net-return"]] + (service.localSeat < 0 ? [["net-queue"]] : []) + [["net-leave"]]
+        case .loading: return service.loadingNeedsDecision ? [["net-wait", "net-leave"]] : [["net-leave"]]
+        case .match: return [["net-leave"]]
+        case .results: return (service.isOwner ? [["net-rematch"]] : []) + [["net-leave"]]
         case .leave: return [["net-stay","net-confirm-leave"]]
         }
     }
@@ -1064,6 +1072,7 @@ struct OnlineAppleSheet: Identifiable {
             case "net-find":
                 if service.isNearby { menu.onlineNotice("Your lobby is visible in Nearby. Ask a friend to join."); return }
                 run(menu) { [self] in try await service.findMorePlayers() }
+            case "net-wait": try service.keepWaitingForLoad(); SportsSession.shared.loading.keepWaiting()
             case "net-ready": try service.setReady(!(service.lobby?.participants.first { $0.id == service.localID }?.ready ?? false))
             case "net-start": try service.startMatch(); sync(menu)
             case "net-emotes": menu.showOnline(.emotes)
@@ -1090,7 +1099,8 @@ struct OnlineAppleSheet: Identifiable {
             case "net-leave": SportsDisplays.shared.showMatchControls(); menu.showOnline(.leave)
             case "net-stay": sync(menu,force:true)
             case "net-confirm-leave": cancel(); service.leave(); menu.openOnlineParty()
-            case "net-return","net-rematch": try service.requestReturnToLobby(); sync(menu,force:true)
+            case "net-return": try service.requestReturnToLobby(); sync(menu,force:true)
+            case "net-rematch": try service.rematch(); sync(menu,force:true)
             case "net-queue": try service.queueForNextMatch(!(service.lobby?.queue.contains(service.localID) ?? false))
             case "back": if case .online(let route) = menu.screen { back(route,menu:menu) }
             default: break

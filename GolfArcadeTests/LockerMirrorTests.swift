@@ -73,9 +73,9 @@ final class LockerMirrorTests: XCTestCase {
         }
     }
 
-    /// "Export UVs for kit parts only": the six kit pieces carry UV0 (and in the scene one texcoord channel); the body has none (its two texcoord channels carry the bind-pose position), the face and the racket
-    /// have nothing at all.
-    func testOnlyTheKitHasUVsInTheExport() throws {
+    /// OriginalSeam uses Body UV0 plus bind xy/z, and Face eye UV0.
+    /// Legacy exports retain exactly their previous two bind channels / rigid Face.
+    func testTextureChannelsMatchTheirDeclaredMaterialRole() throws {
         for female in [false, true] {
             let asset = try XCTUnwrap(MatchHero.asset(female: female))
             for (i, part) in asset.manifest.parts.enumerated() {
@@ -85,7 +85,15 @@ final class LockerMirrorTests: XCTestCase {
                     XCTAssertGreaterThanOrEqual(part.uvOffset ?? -1, 0, "\(part.name) has UVs"); XCTAssertEqual(channels, 1, "\(part.name): the kit's UV0")
                     XCTAssertTrue((part.bindPositionOffset ?? -1) < 0)
                 case "body":
-                    XCTAssertTrue((part.uvOffset ?? -1) < 0, "the body has no UVs"); XCTAssertGreaterThanOrEqual(part.bindPositionOffset ?? -1, 0, "the body carries its bind pose"); XCTAssertEqual(channels, 2)
+                    let pigment = (part.submeshes.first?.look?.skinPigmentUV ?? 0) > 0.5
+                    XCTAssertEqual((part.uvOffset ?? -1) >= 0, pigment, "UV0 exists exactly when relative pigment uses it")
+                    XCTAssertGreaterThanOrEqual(part.bindPositionOffset ?? -1, 0, "the body carries its bind pose")
+                    XCTAssertEqual(channels, pigment ? 3 : 2)
+                case "face":
+                    let anatomical = part.submeshes.allSatisfy { $0.look?.anatomicalFace == true }
+                    XCTAssertEqual((part.uvOffset ?? -1) >= 0, anatomical)
+                    XCTAssertTrue((part.bindPositionOffset ?? -1) < 0)
+                    XCTAssertEqual(channels, anatomical ? 1 : 0)
                 default:
                     XCTAssertTrue((part.uvOffset ?? -1) < 0 && (part.bindPositionOffset ?? -1) < 0, "\(part.name) (\(part.kind)) has no UVs"); XCTAssertEqual(channels, 0)
                 }
@@ -317,41 +325,57 @@ final class LockerMirrorTests: XCTestCase {
             let c = CharacterModelPreview.Coordinator(); c.update(player(female: female))
             let hero = try XCTUnwrap(c.hero), all = materials(hero)
             let skin = try XCTUnwrap(all["Skin"]?.first), sl = try look(skin)
-            XCTAssertEqual(sl.smoothness, 0.2, accuracy: 0.03, "skin smoothness is about 0.2, not 0.35")
-            XCTAssertLessThanOrEqual(sl.bumpScale, 0.25, "the skin normal is weak")
-            XCTAssertGreaterThan(sl.bumpScale, 0.05, "and it is there")
-            XCTAssertEqual(sl.bumpTriplanar, 1, "projected triplanar from the bind pose (the body has no UVs)")
-            XCTAssertNotNil(cgImage((skin.value(forKey: "skinBumpMap") as? SCNMaterialProperty)?.contents), "the soft normal map is bound")
-            XCTAssertTrue(skin.shaderModifiers?[.surface]?.contains("bp.zy") == true && skin.shaderModifiers?[.geometry]?.contains("bindPos") == true, "triplanar from the bind-pose position")
-            // the body has no UVs; its texcoord channels carry the bind-pose position
-            let bodyGeometry = try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry)
-            XCTAssertEqual(bodyGeometry.sources(for: .texcoord).count, 2, "the bind pose rides in two texcoord channels")
-            // the normal is weak but it is there: on the skin pixels, switching it off changes the picture by well under 2 % of the range and by more than nothing
-            do {
-                let size = CGSize(width: 600, height: 800)
-                func shot(_ bump: Float) throws -> (luma: [Float], mask: [Bool], w: Int, h: Int) {
-                    let c = stage(player(female: female), framing: .body, distance: 2.4)
-                    for m in try XCTUnwrap(materials(try XCTUnwrap(c.hero))["Skin"]) { if let v = vec4(m, "skinBump") { m.setValue(SCNVector4(v.x * bump, v.y, 0, 0), forKey: "skinBump") } }
-                    let mask = try partMask(c, part: { $0 == "Body" }, size: size)
-                    return try lumaAndMask(snapshot(c, size: size), mask: mask)
+            let original = (sl.skinPigmentUV ?? 0) > 0.5
+            if original {
+                XCTAssertEqual(sl.skinFinish, female ? 2 : 1, "accepted gender response, same selected skin")
+                XCTAssertEqual(sl.skinPigmentUV, 2)
+                XCTAssertEqual(sl.smoothness, 0.38, accuracy: 0.001)
+                XCTAssertEqual(sl.bumpScale, 0)
+                XCTAssertEqual(sl.bumpTriplanar, 0)
+                XCTAssertEqual(sl.baseMap, "MatchHero_OriginalSeam_RelativeSkinPigment")
+                XCTAssertEqual(sl.baseMapLinear, true)
+                XCTAssertNotNil(cgImage(skin.diffuse.contents), "linear relative pigment LUT is bound")
+                XCTAssertNotNil(skin.value(forKey: "heroTint"))
+                XCTAssertTrue(skin.shaderModifiers?[.surface]?.contains("skinPigmentUV") == true)
+                XCTAssertEqual(try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry).sources(for: .texcoord).count, 3)
+            } else {
+                XCTAssertEqual(sl.smoothness, 0.2, accuracy: 0.03, "skin smoothness is about 0.2, not 0.35")
+                XCTAssertLessThanOrEqual(sl.bumpScale, 0.25, "the skin normal is weak")
+                XCTAssertGreaterThan(sl.bumpScale, 0.05, "and it is there")
+                XCTAssertEqual(sl.bumpTriplanar, 1, "projected triplanar from the bind pose (the body has no UVs)")
+                XCTAssertNotNil(cgImage((skin.value(forKey: "skinBumpMap") as? SCNMaterialProperty)?.contents), "the soft normal map is bound")
+                XCTAssertTrue(skin.shaderModifiers?[.surface]?.contains("bp.zy") == true && skin.shaderModifiers?[.geometry]?.contains("bindPos") == true, "triplanar from the bind-pose position")
+                // the body has no UVs; its texcoord channels carry the bind-pose position
+                let bodyGeometry = try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry)
+                XCTAssertEqual(bodyGeometry.sources(for: .texcoord).count, 2, "the bind pose rides in two texcoord channels")
+                // the normal is weak but it is there: on the skin pixels, switching it off changes the picture by well under 2 % of the range and by more than nothing
+                do {
+                    let size = CGSize(width: 600, height: 800)
+                    func shot(_ bump: Float) throws -> (luma: [Float], mask: [Bool], w: Int, h: Int) {
+                        let c = stage(player(female: female), framing: .body, distance: 2.4)
+                        for m in try XCTUnwrap(materials(try XCTUnwrap(c.hero))["Skin"]) { if let v = vec4(m, "skinBump") { m.setValue(SCNVector4(v.x * bump, v.y, 0, 0), forKey: "skinBump") } }
+                        let mask = try partMask(c, part: { $0 == "Body" }, size: size)
+                        return try lumaAndMask(snapshot(c, size: size), mask: mask)
+                    }
+                    let on = try shot(1), off = try shot(0)
+                    var diff: Float = 0, n = 0
+                    for i in 0 ..< on.luma.count where on.mask[i] && off.mask[i] { diff += abs(on.luma[i] - off.luma[i]); n += 1 }
+                    let meanDiff = diff / Float(max(1, n))
+                    NSLog("[LockerMirror] \(female ? "female" : "male") skin normal on vs off: mean luma change \(meanDiff) over \(n) skin px")
+                    XCTAssertGreaterThan(meanDiff, 0.0003, "the soft skin normal is wired (it changes the skin)"); XCTAssertLessThan(meanDiff, 0.02, "and it is weak")
                 }
-                let on = try shot(1), off = try shot(0)
-                var diff: Float = 0, n = 0
-                for i in 0 ..< on.luma.count where on.mask[i] && off.mask[i] { diff += abs(on.luma[i] - off.luma[i]); n += 1 }
-                let meanDiff = diff / Float(max(1, n))
-                NSLog("[LockerMirror] \(female ? "female" : "male") skin normal on vs off: mean luma change \(meanDiff) over \(n) skin px")
-                XCTAssertGreaterThan(meanDiff, 0.0003, "the soft skin normal is wired (it changes the skin)"); XCTAssertLessThan(meanDiff, 0.02, "and it is weak")
             }
             // eyes stay smoother than skin; the decals and the eyes carry no weave and no skin normal
-            for name in ["Face_Sclera", "Face_Iris", "Face_Pupil", "Face_Catch"] {
+            for role in ["Sclera", "Iris", "Pupil", "Catch"] {
+                let name = (original ? "Reference_Face_" : "Face_") + role
                 let m = try XCTUnwrap(all[name]?.first)
                 XCTAssertGreaterThan(try look(m).smoothness, sl.smoothness + 0.4, "\(name) is smoother than skin")
             }
-            for (name, list) in all where name.hasPrefix("Face_") || name == "Skin" || name == "White_Frame" || name == "White_Strings" {
+            for (name, list) in all where name.hasPrefix("Face_") || name.hasPrefix("Reference_Face_") || name == "Skin" || name == "White_Frame" || name == "White_Strings" {
                 for m in list {
                     XCTAssertFalse(hasClothShader(m), "\(name): not cloth, no weave")
                     XCTAssertFalse(m.shaderModifiers?.values.contains { $0.contains("weaveMap") } ?? false, "\(name): nothing samples a weave")
-                    if name != "Skin" { XCTAssertNil(m.shaderModifiers, "\(name): no shader modifiers (no weave, no skin normal)") }
+                    if name != "Skin" && !name.hasPrefix("Reference_Face_") { XCTAssertNil(m.shaderModifiers, "\(name): no shader modifiers (no weave, no skin normal)") }
                 }
             }
             // racket: the grip is dark and rougher than the shirt, the strings a touch smoother than the grip, neither has a weave
@@ -380,7 +404,8 @@ final class LockerMirrorTests: XCTestCase {
     func testShippedRigReproducesUnitysPoses() throws {
         for female in [false, true] {
             let asset = try XCTUnwrap(MatchHero.asset(female: female)), rig = try XCTUnwrap(asset.rig())
-            let url = repo.appendingPathComponent("work/locker-mirror/data/MatchHero_\(female ? "Female" : "Male")_golden.json")
+            let fixtureDir = ProcessInfo.processInfo.environment["VISUAL_GOLDEN_DIR"].map { URL(fileURLWithPath: $0) } ?? repo.appendingPathComponent("work/locker-mirror/data")
+            let url = fixtureDir.appendingPathComponent("MatchHero_\(female ? "Female" : "Male")_golden.json")
             let golden = try JSONDecoder().decode(Golden.self, from: Data(contentsOf: url))
             XCTAssertGreaterThan(golden.samples.count, 100)
             var worst: Float = 0, checked = 0
@@ -678,7 +703,8 @@ extension LockerMirrorTests {
         var maxRotation: Float = 0, maxRigidMM: Float = 0
         for female in [false,true] {
             let asset = try XCTUnwrap(MatchHero.asset(female:female)), data = try XCTUnwrap(asset.rig())
-            let file = repo.appendingPathComponent("work/online-lobby/emote_parity/data/MatchHero_\(female ? "Female" : "Male")_emote_parity.json")
+            let fixtureDir = ProcessInfo.processInfo.environment["VISUAL_GOLDEN_DIR"].map { URL(fileURLWithPath: $0) } ?? repo.appendingPathComponent("work/online-lobby/emote_parity/data")
+            let file = fixtureDir.appendingPathComponent("MatchHero_\(female ? "Female" : "Male")_emote_parity.json")
             let samples = try JSONDecoder().decode(Samples.self,from:Data(contentsOf:file))
             XCTAssertEqual(samples.samples.count,60)
             for sample in samples.samples {

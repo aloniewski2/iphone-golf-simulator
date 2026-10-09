@@ -1,0 +1,79 @@
+{
+  "source": "ArtDir/golf/source/BotanicalKit.blend",
+  "sourceInspection": {
+    "PALM": {
+      "mesh": "PALM.001",
+      "usedSlots": [
+        0,
+        1,
+        2
+      ]
+    },
+    "PALM_FAR": {
+      "mesh": "PALM_FAR",
+      "usedSlots": [
+        0,
+        1,
+        2
+      ]
+    },
+    "slotNames": [
+      "RESORT_BARK",
+      "RESORT_LEAF_DARK",
+      "RESORT_LEAF_MID",
+      "RESORT_LEAF_LIGHT"
+    ]
+  },
+  "sourcePipeline": "GolfResortDress.Paint: color=color.linear -> SetColors; GolfBotanical: albedo=_BaseColor.rgb*i.color",
+  "threshold": {
+    "displaySRGB": 0.2,
+    "equivalentLinear": 0.033104766570885055,
+    "incorrectLinearThreshold": 0.2
+  },
+  "paletteMath": [
+    {
+      "hole": 16,
+      "palmRole": 1,
+      "authoredSRGB": [
+        0.203,
+        0.36219999999999997,
+        0.2122
+      ],
+      "storedLinearRGB": [
+        0.034047199162680016,
+        0.10789974449715192,
+        0.03703408218491038
+      ],
+      "oldRawGreenPredicate": false,
+      "displayGreenPredicate": true
+    },
+    {
+      "hole": 16,
+      "palmRole": 2,
+      "authoredSRGB": [
+        0.2732,
+        0.44020000000000004,
+        0.2278
+      ],
+      "storedLinearRGB": [
+        0.0606633907043678,
+        0.16280495676862466,
+        0.04243699945826767
+      ],
+      "oldRawGreenPredicate": false,
+      "displayGreenPredicate": true
+    }
+  ],
+  "runtimeRangeEvidence": {
+    "status": "PASS in regression3",
+    "hole16LinearGRange": [
+      0.046964,
+      0.162805
+    ],
+    "hole16SRGBGRange": [
+      0.24,
+      0.4402
+    ],
+    "evidence": "course-playmode.xml"
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "name": "character-female33-bake-finished",
+    "exit": 0,
+    "seconds": 84.84,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "character-female33-finished-full",
+    "exit": 0,
+    "seconds": 124.27,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "character-female33-finished-distance",
+    "exit": 0,
+    "seconds": 79.49,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "character-female33-finished-native-full",
+    "exit": 0,
+    "seconds": 188.05,
+    "shaderErrors": [],
+    "compileErrors": []
+  },
+  {
+    "name": "character-female33-finished-native-distance",
+    "exit": 0,
+    "seconds": 152.51,
+    "shaderErrors": [],
+    "compileErrors": []
+  }
+]

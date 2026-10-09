@@ -97,6 +97,7 @@ namespace GolfArcade.Game
             g.Root = Object.Instantiate(prefab, parent);
             g.Root.name = "Golfer model";
             foreach (var t in g.Root.GetComponentsInChildren<Transform>(true)) g.Bones[t.name] = t;
+            g.InstallEquipment();
             foreach (var smr in g.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
                 if (smr.name.StartsWith("CLUB_")) continue;
@@ -112,6 +113,29 @@ namespace GolfArcade.Game
             g.Dress(look);
             g.InstallMatchSurfaces(look);
             return g;
+        }
+
+        void InstallEquipment()
+        {
+            var asset=Resources.Load<GameObject>("Golf/Equipment/"+(female ? "Female":"Male"));
+            if(!asset)return;
+            foreach(var src in asset.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
+                var live=Root.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r=>r.name==src.name);
+                if(!live)continue;
+                var old=live.bones.Select((b,i)=>new {b.name,m=live.sharedMesh.bindposes[i]}).ToDictionary(p=>p.name,p=>p.m);
+                float error=0;
+                for(int i=0;i<src.bones.Length;i++){
+                    if(!old.TryGetValue(src.bones[i].name,out var expected)){error=float.MaxValue;break;}
+                    var bind=src.sharedMesh.bindposes[i];for(int row=0;row<4;row++)for(int col=0;col<4;col++)error=Mathf.Max(error,Mathf.Abs(expected[row,col]-bind[row,col]));
+                }
+                if(error>.0002f){Debug.LogError("[HeroEquipment] bind gate FAIL "+src.name+" error="+error);continue;}
+                // Same imported live skeleton; bind by explicit name, keeping all socket
+                // motion, visibility choices, material slot IDs and gameplay contacts.
+                live.sharedMesh=src.sharedMesh;live.bones=src.bones.Select(b=>Bones[b.name]).ToArray();
+                live.rootBone=src.rootBone ? Bones[src.rootBone.name]:Bones["Club"];
+                live.sharedMaterials=src.sharedMaterials;live.updateWhenOffscreen=true;
+                Debug.Log("[HeroEquipment] exact bind PASS "+src.name+" error="+error+" vertices="+src.sharedMesh.vertexCount);
+            }
         }
 
         // Reuse the finished golf garment meshes and the exact tennis skin/cloth pipeline.
@@ -141,7 +165,7 @@ namespace GolfArcade.Game
             foreach (var src in source.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
                 // Keep the bald silhouette; no cap, visor, or hair for this iteration.
-                if (!src.name.StartsWith("Kit_") || src.name == "Kit_Head" || src.name == "Kit_Glove_R") continue;
+                if (!src.name.StartsWith("Kit_") || src.name == "Kit_Head") continue;
                 var node = new GameObject(src.name); node.transform.SetParent(Root.transform, false);
                 node.transform.localPosition = source.transform.InverseTransformPoint(src.transform.position);
                 node.transform.localRotation = Quaternion.Inverse(source.transform.rotation) * src.transform.rotation;
@@ -157,11 +181,24 @@ namespace GolfArcade.Game
             }
             surface = Root.AddComponent<MatchHeroLook>();
             surface.female = female; surface.golfKit = true;
-            surface.body = Part("Body"); surface.face = Part("Face"); surface.kit = garments.ToArray();
+            // A rigid approved face attached to Head gives both sports the same fitted
+            // lids/gaze without treating a moving skinned face as static object space.
+            var oldFace=Part("Face"); oldFace.enabled=false;parts.Remove(oldFace);
+            var srcFace=source.GetComponent<MatchHeroLook>().face;
+            var srcHead=source.GetComponent<MatchHeroLook>().Bone(HumanBodyBones.Head);
+            var faceNode=new GameObject("Face_Match");faceNode.transform.SetParent(Bones["Head"],false);
+            faceNode.transform.localPosition=srcHead.InverseTransformPoint(srcFace.transform.position);
+            faceNode.transform.localRotation=Quaternion.Inverse(srcHead.rotation)*srcFace.transform.rotation;
+            faceNode.transform.localScale=new Vector3(srcFace.transform.lossyScale.x/srcHead.lossyScale.x,srcFace.transform.lossyScale.y/srcHead.lossyScale.y,srcFace.transform.lossyScale.z/srcHead.lossyScale.z);
+            faceNode.AddComponent<MeshFilter>().sharedMesh=srcFace.GetComponent<MeshFilter>().sharedMesh;
+            var faceRenderer=faceNode.AddComponent<MeshRenderer>();faceRenderer.sharedMaterials=srcFace.sharedMaterials;
+            faceRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            surface.body = Part("Body"); surface.face = faceRenderer; surface.kit = garments.ToArray();
             surface.bones = new Transform[(int)HumanBodyBones.LastBone];
             for (int i = 0; i < surface.bones.Length; i++) Bones.TryGetValue(((HumanBodyBones)i).ToString(), out surface.bones[i]);
             var corrections = Root.AddComponent<GolfGarmentCorrectives>(); corrections.look = surface;
             Root.SetActive(true);
+            surface.SetGolfHand(false);
             Dress(look);
         }
 
@@ -175,8 +212,13 @@ namespace GolfArcade.Game
             matCap ??= Resources.Load<Texture2D>("Golfer/Look/clay_matcap");
             if (matCap) m.SetTexture("_MatCap", matCap);
             m.SetFloat("_UseAtlas", 0);
-            m.SetFloat("_MatCapStrength", capStrength);
-            m.SetFloat("_Wrap", 0.6f);                      // a wide wrap: soft shadows, no black undersides
+            m.SetFloat("_MatCapStrength", Mathf.Min(capStrength, .12f));
+            bool cloth = name.StartsWith("Kit_"), eye = name.Contains("Iris") || name.Contains("Sclera") || name.Contains("Pupil") || name.Contains("Catch");
+            m.SetFloat("_SurfaceSmoothness", eye ? .82f : cloth ? .12f : .28f);
+            m.SetFloat("_SurfaceSpecular", eye ? .55f : cloth ? .25f : .8f);
+            m.SetFloat("_SurfaceSheen", cloth ? .45f : 0f);
+            m.SetColor("_SurfaceWarmth", cloth || eye ? Color.black : new Color(.12f, .035f, .02f));
+            m.SetFloat("_Wrap", 0.32f);                      // a wide wrap: soft shadows, no black undersides
             m.SetTexture("_Mask", Texture2D.blackTexture);
             // the layers of the painted face sit a hair in front of the skin: a depth offset, deeper for each layer on top
             m.SetFloat("_OffsetFactor", -front); m.SetFloat("_OffsetUnits", -front);

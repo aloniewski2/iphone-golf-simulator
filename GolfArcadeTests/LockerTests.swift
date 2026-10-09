@@ -24,8 +24,8 @@ final class LockerTests: XCTestCase {
         for sport in LockerCatalog.sports {
             for slot in LockerCatalog.slots(for: sport) {
                 let items = LockerCatalog.items(sport: sport, slot: slot)
-                XCTAssertEqual(items.count, 1, "\(sport) \(slot): the shelf holds exactly the Standard item")
-                XCTAssertTrue(items[0].isStandard)
+                XCTAssertEqual(items.count, 1, "\(sport) \(slot): the shelf holds its existing starter item")
+                XCTAssertEqual(items[0].id, LockerCatalog.defaultID(sport: sport, slot: slot))
             }
         }
         XCTAssertEqual(LockerCatalog.slots(for: .tennis), [.skin, .racket, .shoes])

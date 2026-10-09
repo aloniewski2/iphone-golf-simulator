@@ -22,13 +22,14 @@ namespace GolfArcade.EditorTools
     [InitializeOnLoad]
     public static class EmoteFilm
     {
-        const string Flag = "EmoteFilm"; static IEnumerator script;
+        const string Flag = "EmoteFilm"; static IEnumerator script; static int lastFrame = -1;
         static EmoteFilm() { EditorApplication.update += Tick; }
-        public static void Run() { EditorSceneManager.OpenScene("Assets/Scenes/Tennis.unity"); SessionState.SetBool(Flag, true); EditorApplication.isPlaying = true; }
+        public static void Run() { script = null; lastFrame = -1; EditorSceneManager.OpenScene("Assets/Scenes/Tennis.unity"); SessionState.SetBool(Flag, true); EditorApplication.isPlaying = true; }
         static string Env(string k, string d) => Environment.GetEnvironmentVariable(k) ?? d;
         static void Tick()
         {
-            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying) return;
+            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying || lastFrame == Time.frameCount) return;
+            lastFrame = Time.frameCount;
             var game = Object.FindFirstObjectByType<TennisGame>(); if (!game || !game.Initialized) return;
             if (script == null) script = Go(game);
             try { if (!script.MoveNext()) Done(0); } catch (Exception e) { Debug.LogException(e); Done(1); }
@@ -72,6 +73,7 @@ namespace GolfArcade.EditorTools
             for (int i = 0; i < 90; i++) yield return null;
             var pd = game.Player.GetComponentInChildren<HeroTennisDriver>();
             var actor = game.Player; var m = pd.matchLook;
+            foreach (var skin in m.GetComponentsInChildren<SkinnedMeshRenderer>(true)) skin.updateWhenOffscreen = true;
             var cam = game.GameplayCamera ? game.GameplayCamera : Camera.main;
             Hold(game);
             for (int i = 0; i < 30; i++) yield return null;
@@ -91,7 +93,7 @@ namespace GolfArcade.EditorTools
                 if (!ClipOf.TryGetValue(name, out var clipId)) throw new ArgumentException(name);
                 string cdir = $"{dir}/{name}"; Directory.CreateDirectory(cdir);
                 foreach (var f in Directory.GetFiles(cdir, "*.png")) File.Delete(f);
-                var rows = new List<string> { "frame,t,clip,playing,clipTime,state,emoteActive,emotesPlayed,flow,grip,hand,gripHandDist,racketLowY,root,hips,rwrist,lwrist,head,racketScale,gripW" };
+                var rows = new List<string> { "frame,unityFrame,t,clip,playing,clipTime,state,emoteActive,emotesPlayed,flow,grip,hand,gripHandDist,racketLowY,root,hips,rwrist,lwrist,head,racketScale,gripW" };
                 Hold(game);
                 for (int i = 0; i < 20; i++) yield return null;
                 // start the emote through the game's own entry points
@@ -104,7 +106,7 @@ namespace GolfArcade.EditorTools
                     yield return null;
                     var root = actor.transform; Vector3 Loc(Vector3 w) => root.InverseTransformPoint(w);
                     if (pd.EmoteActive) seen = true;
-                    rows.Add(string.Join(",", Time.frameCount - f0, Time.time.ToString("0.000", CultureInfo.InvariantCulture), name, pd.PlayingClip, F(pd.PlayingClipTime), pd.State.Replace(',', ';'), pd.EmoteActive, pd.EmotesPlayed, game.Flow,
+                    rows.Add(string.Join(",", guard, Time.frameCount, Time.time.ToString("0.000", CultureInfo.InvariantCulture), name, pd.PlayingClip, F(pd.PlayingClipTime), pd.State.Replace(',', ';'), pd.EmoteActive, pd.EmotesPlayed, game.Flow,
                         V(Loc(m.racketGrip.position)), V(Loc(hand.position)), F(Vector3.Distance(m.racketGrip.position, hand.position)), F(RacketLow() - root.position.y),
                         V(root.position), V(Loc(m.Bone(HumanBodyBones.Hips).position)), V(Loc(m.Bone(HumanBodyBones.RightHand).position)), V(Loc(m.Bone(HumanBodyBones.LeftHand).position)), V(Loc(m.Bone(HumanBodyBones.Head).position)), F(m.racketGrip.lossyScale.x), V(m.racketGrip.position)));
                     if (guard % 2 == 0)
@@ -116,6 +118,7 @@ namespace GolfArcade.EditorTools
                     }
                     if (seen && !pd.EmoteActive && ++endHold > 40) break;
                 }
+                if (!started || !seen || pd.EmoteActive || endHold <= 40) throw new InvalidOperationException("Actual intro/emote entry/return incomplete: " + name);
                 File.WriteAllText(cdir + "/trace.csv", string.Join("\n", rows) + "\n");
                 summary.Add($"{name} started={started} played={pd.EmotesPlayed} frames={n} seen={seen}");
                 Debug.Log($"[EmoteFilm] {summary.Last()}");
@@ -141,6 +144,7 @@ namespace GolfArcade.EditorTools
             int e4 = pd.EmotesPlayed; pd.IntroPick = -1; actor.PlayIntro(); for (int i = 0; i < 12; i++) yield return null;
             trig.Add($"\"intro_hook\": {{\"count\": {pd.EmotesPlayed - e4}, \"clip\": \"{pd.LastEmotePlayed}\"}}");
             File.WriteAllText(dir + "/triggers.json", "{\n  " + string.Join(",\n  ", trig) + "\n}\n");
+            File.WriteAllText(dir + "/capture-contract.txt", "Three intros and three taunts via actual TennisActor.PlayIntro / HeroTennisDriver.PlayTaunt. One iterator step per actual Unity Time.frameCount; 60fps evaluation and every second frame captured at30fps, complete game+HUD and front/side views. No sampled clip times or forced body poses. Actual prop releases, full-body choreography and settled return are filmed. Trigger JSON retains the separate contextual game/point checks. Actual visual review is mandatory.\n");
             File.WriteAllText(dir + "/summary.txt", string.Join("\n", summary) + "\n");
             Debug.Log("[EmoteFilm] done: " + string.Join(" | ", summary));
         }

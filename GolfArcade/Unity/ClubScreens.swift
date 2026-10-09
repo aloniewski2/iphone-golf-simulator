@@ -262,7 +262,7 @@ struct IslandResultsScreen: View {
                             .background(IslandUI.paper.opacity(compact ? 0 : 0.94), in: RoundedRectangle(cornerRadius: 24))
                     }.scrollBounceBehavior(.basedOnSize)
                     let ids = postMatch ? menu.postMatchChoices : menu.rows(.results).flatMap { $0 }
-                    let buttons = compact ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 10))
+                    let buttons = AnyLayout(VStackLayout(spacing: compact ? 8 : 10))
                     buttons {
                         ForEach(Array(ids.enumerated()), id: \.element) { i, id in
                             IslandAction(title: label(id), focused: menu.isFocused(id), primary: i == 0, compact: compact, identifier: id) { menu.tap(id) }
@@ -303,12 +303,14 @@ struct IslandCourtScreen: View {
                             let id = "map-\(venue.id)"
                             Button { menu.tap(id) } label: {
                                 VStack(alignment: .leading, spacing: 14) {
-                                    Image(uiImage: UIImage(named: "\(venue.art).jpg") ?? UIImage(named: "\(venue.art).png") ?? UIImage()).resizable().scaledToFill()
-                                        .frame(width: compact ? 300 : 366, height: compact ? 150 : 265).clipped()
+                                    GeometryReader { image in
+                                        Image(uiImage: UIImage(named: "\(venue.art).jpg") ?? UIImage(named: "\(venue.art).png") ?? UIImage()).resizable().scaledToFill()
+                                            .frame(width: image.size.width, height: image.size.height).clipped()
+                                    }.frame(height: compact ? 150 : 265)
                                     Text(venue.title).font(IslandUI.font(24, bold: true)).padding(.horizontal, 18)
                                     Text(venue.detail)
                                         .font(IslandUI.font(16)).padding(.horizontal, 18).padding(.bottom, 18)
-                                }.foregroundStyle(IslandUI.navy)
+                                }.frame(maxWidth: compact ? .infinity : 366).foregroundStyle(IslandUI.navy)
                                     .background(menu.isFocused(id) ? IslandUI.lime : .white, in: RoundedRectangle(cornerRadius: 18))
                                     .clipShape(RoundedRectangle(cornerRadius: 18))
                             }.buttonStyle(.plain).accessibilityLabel("Play at \(venue.title)").accessibilityIdentifier(id).id(id)

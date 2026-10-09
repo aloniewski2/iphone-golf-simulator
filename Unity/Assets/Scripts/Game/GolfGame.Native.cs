@@ -22,14 +22,16 @@ namespace GolfArcade.Game {
             var selected = GolfArcade.Course.Course.ByKey(courseKey ?? "cliffside") ?? GolfArcade.Course.Course.Cliffside();
             setup = GameSetup.Solo(ProfileStore.Active, selected.Key);
             StartRound();
+            golfPresentation.Cancel(); pendingNativeIntro=true;
             BeginAim(false); hud.ShowPlayHud(true); RefreshControls();
             rig.SnapNext(); rig.ApplyFrame();
         }
         public void NativeContinue() {
+            if(Current==State.Intro) { SkipPresentation(); return; }
             if (Current == State.Result) { ContinueShotResult(); return; }
             if (Current != State.RoundDone) return;
             if (NativeHasNextHole) NextHole(); else PlayAgain();
-            if (Current == State.Intro) BeginAim(false);
+
         }
         public void NativeAim(float value) { if(Current==State.Aim) Nudge(Mathf.Clamp(value,-1,1)*AimTapDegrees); }
         public void NativeClub(int value) { if(Current==State.Aim) CycleClub(value); }
@@ -69,13 +71,18 @@ namespace GolfArcade.Game {
             if (grip.HasValue) CaptureNativeGrip(grip.Value);
         }
         void CaptureNativeGrip(System.Numerics.Quaternion q) {
-            Swing.Detector.SetReadyPose(q); needsReadyPose=false;
+            lastReadyGrip=q; Swing.Detector.SetReadyPose(q); needsReadyPose=false;
             if (calibrationRequested) {
                 if (golfCalibration == null) golfCalibration = new GolfSwingCalibration(q);
                 else golfCalibration.Detector.SetReadyPose(q);
             }
         }
         public void NativeMotion(in NativeSportsSession.Sample sample) {
+            if(Current==State.Intro) {
+                float speed=sample.rx*sample.rx+sample.ry*sample.ry+sample.rz*sample.rz;
+                if(!float.IsNaN(speed) && !float.IsInfinity(speed) && speed>20) { presentationMotionConsumed=true; SkipPresentation(); }
+                return;
+            }
             if (Current != State.Aim || !NativeShotReady) return; // Follow-through and result-screen motions cannot arm a shot.
             var q=new System.Numerics.Quaternion(sample.qx,sample.qy,sample.qz,sample.qw);
             var rate = new System.Numerics.Vector3(sample.rx,sample.ry,sample.rz);

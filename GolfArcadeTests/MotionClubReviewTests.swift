@@ -55,7 +55,8 @@ import XCTest
     func testRecordHingeTransitions() async throws { try await recordMenus(hinge: true) }
     func testRecordLivingBackgrounds() async throws { try await recordMenus(hinge: false, living: true) }
     private func recordMenus(hinge: Bool, living: Bool = false) async throws {
-        let out = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("ArtDir/ui/motion-club-radial-v1/runtime")
+        let out = ProcessInfo.processInfo.environment["MENU_MOTION_DIR"].map { URL(fileURLWithPath: $0) }
+            ?? URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("ArtDir/ui/motion-club-radial-v1/runtime")
         try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         let menu = TennisMenu.shared, session = SportsSession.shared
         let oldPlayers = session.players, oldIndex = session.playerIndex, oldMotion = session.reduceMotion, oldOverscan = session.overscan

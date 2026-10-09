@@ -26,9 +26,7 @@ namespace GolfArcade.Tennis
             {
                 if (kit) return kit;
                 var tex = Resources.Load<Texture2D>(Root + "EnvV4_Palette");
-                kit = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "EnvV4 palette kit", enableInstancing = true };
-                kit.SetTexture("_BaseMap", tex); kit.mainTexture = tex; kit.SetColor("_BaseColor", new Color(.94f, .94f, .94f));   // a notch under the characters
-                kit.SetFloat("_Smoothness", .12f); kit.SetFloat("_Metallic", 0);
+                kit = TennisVenueArt.Surface("EnvV4 palette kit", new Color(.94f, .94f, .94f), .18f, 0, .025f, .004f, tex);
                 return kit;
             }
         }
@@ -36,14 +34,47 @@ namespace GolfArcade.Tennis
         /// (internal: the volcano venue plants the same toy trees on its grassland)
         internal static GameObject Spawn(string asset, Transform parent, Vector3 at, float yaw, float height, float tint = 1)
         {
+            // One coherent opaque kit replaces the mixture of flat V4 canopies,
+            // photogrammetry foliage and hand-built shrubs. Batched by seven shared roles.
+            if (asset.Contains("TreeBroadleaf") || asset.Contains("TreeFlowering"))
+            { TennisVenueArt.QueuePlant("CANOPY", at, yaw, height, height * .55f); return null; }
+            if (asset.Contains("Shrub"))
+            {
+                TennisVenueArt.QueuePlant("BUSH_BROAD", at, yaw, height, height * .8f);
+                TennisVenueArt.QueuePlant("FLOWER_CORAL", at + Vector3.up * (height * .18f), yaw + 37, height * .8f, height * .55f);
+                return null;
+            }
             // Env V5: the sculpted (Tripo) toy broadleaf replaces the V4 blob broadleafs when it ships
             if (asset.StartsWith("EnvV4_TreeBroadleaf") && Resources.Load<GameObject>(Root + "EnvV5_TreeA")) asset = "EnvV5_TreeA";
-            var prefab = Resources.Load<GameObject>(Root + asset); if (!prefab) return null;
+            bool clubhouse = asset == "EnvV4_BeachHouse";
+            var prefab = clubhouse ? Resources.Load<GameObject>("Tennis/Premium/TennisClubhouse") : null;
+            if (!prefab) prefab = Resources.Load<GameObject>(Root + asset);
+            if (!prefab) return null;
             var go = Object.Instantiate(prefab, parent); go.name = asset;
             var mat = asset.StartsWith("EnvV5_") ? V5Material(asset) : Kit;
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>(true))
             {
-                r.sharedMaterial = mat; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; r.receiveShadows = true;
+                if (clubhouse)
+                {
+                    var roles = r.sharedMaterials;
+                    for (int i = 0; i < roles.Length; i++)
+                    {
+                        string n = roles[i] ? roles[i].name : "";
+                        int cell = n.StartsWith("CLUBHOUSE_") && int.TryParse(n.Substring(10, 2), out int c) ? c : -1;
+                        float gloss = cell == 7 ? .73f : cell == 6 ? .27f : cell == 4 ? .36f : cell == 12 ? .33f : .18f;
+                        roles[i] = TennisVenueArt.Surface("Clubhouse role " + cell, new Color(.94f,.94f,.94f), gloss, 0, cell==6?.065f:.025f, cell==6?.013f:.004f,
+                            Resources.Load<Texture2D>(Root + "EnvV4_Palette"));
+                        if(cell==7)
+                        {
+                            roles[i].SetTexture("_ReflectionMap",Resources.Load<Texture2D>("Course/Resort/SkyCoastalSmall"));
+                            roles[i].SetFloat("_ReflectionWeight",.46f);roles[i].SetFloat("_ReflectionHeading",-45);
+                        }
+                        TennisResortMaterials.Surface(roles[i], "Clubhouse role " + cell);
+                    }
+                    r.sharedMaterials = roles;
+                }
+                else r.sharedMaterial = mat;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; r.receiveShadows = true;
                 if (tint != 1) { var mpb = new MaterialPropertyBlock(); mpb.SetColor("_BaseColor", new Color(.94f * tint, .94f * tint, .94f * tint)); r.SetPropertyBlock(mpb); }
             }
             var lod1 = asset.StartsWith("EnvV5_") ? Resources.Load<GameObject>(Root + asset + "_LOD1") : null;
@@ -89,6 +120,7 @@ namespace GolfArcade.Tennis
         {
             if (!Enabled || !arena || System.Environment.GetEnvironmentVariable("HERO_ENV_OFF") == "1") return;   // env var: editor before/after proof only
             var root = new GameObject("EnvV4 postcard kit").transform;
+            root.SetParent(arena.transform, true);
             var rng = new System.Random(2040);
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
             var shrubs = new[] { "EnvV4_ShrubA", "EnvV4_ShrubB", "EnvV4_ShrubC" };
@@ -97,10 +129,13 @@ namespace GolfArcade.Tennis
             {
                 if (!r.enabled || !r.sharedMaterial) continue;
                 string m = r.sharedMaterial.name.Replace(" (Instance)", "");
+                int styled = m.IndexOf(" (styled)", System.StringComparison.Ordinal);
+                if (styled >= 0) m = m.Substring(0, styled);
                 var b = r.bounds; var foot = new Vector3(b.center.x, b.min.y, b.center.z);
                 switch (m)
                 {
                     case "TropicalV3_026":   // lumpy garden shrubs -> toy shrubs (same spots, same size)
+                    case "TropicalV3_014":   // photoscan hydrangeas -> coherent leaf / flower volumes
                         r.enabled = false;
                         Spawn(shrubs[si++ % 3], root, foot, R(0, 360), Mathf.Max(.9f, b.size.y * 1.15f), R(.92f, 1.04f));
                         break;
@@ -133,8 +168,13 @@ namespace GolfArcade.Tennis
                     }
                 }
             }
-            if (island) PlantIsland(root, island, arena, R);
-            BuildSkirt(root, arena, island);
+            bool authoredCoast = TennisVenueArt.BuildCoast(root, arena, island);
+            if (!authoredCoast)
+            {
+                if (island) PlantIsland(root, island, arena, R);
+                BuildSkirt(root, arena, island);
+            }
+            TennisVenueArt.Build(TennisVenueKind.Resort, arena);
         }
 
         /// Yaw that turns the Blender-authored house (front = -Y) to face -x in the arena.
@@ -171,24 +211,42 @@ namespace GolfArcade.Tennis
         /// A sloped grass apron around the terrace so its vertical edges disappear into the island.
         static void BuildSkirt(Transform root, GameObject arena, GameObject island)
         {
-            float x0 = -37, x1 = 45, z0 = -32.5f, z1 = 34.5f, top = -.12f, drop = 4.5f, run = 7f;
-            var outer = new[] { new Vector3(x0 - run, top - drop, z0 - run), new Vector3(x1 + run, top - drop, z0 - run), new Vector3(x1 + run, top - drop, z1 + run), new Vector3(x0 - run, top - drop, z1 + run) };
+            if (!island) return;
+            var mf = island.GetComponentInChildren<MeshFilter>(); if (!mf) return;
+            var col = mf.GetComponent<MeshCollider>(); bool created = !col;
+            if (!col) { col = mf.gameObject.AddComponent<MeshCollider>(); col.sharedMesh = mf.sharedMesh; }
+            float x0 = -37, x1 = 45, z0 = -32.5f, z1 = 34.5f, top = -.12f, run = 5f;
+            var outer = new[] { new Vector3(x0 - run, top, z0 - run), new Vector3(x1 + run, top, z0 - run), new Vector3(x1 + run, top, z1 + run), new Vector3(x0 - run, top, z1 + run) };
             var inner = new[] { new Vector3(x0, top, z0), new Vector3(x1, top, z0), new Vector3(x1, top, z1), new Vector3(x0, top, z1) };
             var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
             const float lawnU = (14 + .5f) / 16f;
             for (int i = 0; i < 4; i++)
             {
-                int j = (i + 1) % 4, k = verts.Count;
-                verts.Add(inner[i]); verts.Add(inner[j]); verts.Add(outer[j]); verts.Add(outer[i]);
-                uvs.Add(new Vector2(lawnU, .75f)); uvs.Add(new Vector2(lawnU, .75f)); uvs.Add(new Vector2(lawnU, .2f)); uvs.Add(new Vector2(lawnU, .2f));
-                tris.AddRange(new[] { k, k + 2, k + 1, k, k + 3, k + 2 });
+                int j = (i + 1) % 4;
+                for (int s = 0; s < 24; s++)
+                {
+                    float a = s / 24f, b = (s + 1) / 24f;
+                    var o0 = Vector3.Lerp(outer[i], outer[j], a); var o1 = Vector3.Lerp(outer[i], outer[j], b);
+                    bool h0 = col.Raycast(new Ray(o0 + Vector3.up * 80, Vector3.down), out var hit0, 200);
+                    bool h1 = col.Raycast(new Ray(o1 + Vector3.up * 80, Vector3.down), out var hit1, 200);
+                    // Blend only into dry ground. An ocean-facing edge has its original
+                    // limestone seawall; it must never grow a rectangular grass platform.
+                    if (!h0 || !h1 || hit0.point.y < -2.2f || hit1.point.y < -2.2f) continue;
+                    o0.y = Mathf.Min(top, hit0.point.y + .025f); o1.y = Mathf.Min(top, hit1.point.y + .025f);
+                    int k = verts.Count;
+                    verts.Add(Vector3.Lerp(inner[i], inner[j], a)); verts.Add(Vector3.Lerp(inner[i], inner[j], b)); verts.Add(o1); verts.Add(o0);
+                    for (int v = 0; v < 4; v++) uvs.Add(new Vector2(lawnU, .65f));
+                    tris.AddRange(new[] { k, k + 2, k + 1, k, k + 3, k + 2 });
+                }
             }
+            if (created) Object.Destroy(col);
+            if (verts.Count == 0) return;
             var mesh = new Mesh { name = "Terrace grass skirt" }; mesh.SetVertices(verts); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateNormals(); mesh.RecalculateBounds();
             // face up
             var n = mesh.normals; if (n.Length > 0 && n[0].y < 0) { tris.Reverse(); mesh.SetTriangles(tris, 0); mesh.RecalculateNormals(); }
             var go = new GameObject("Terrace grass skirt"); go.transform.SetParent(root, false);
             go.AddComponent<MeshFilter>().sharedMesh = mesh; var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = Kit;
-            var mpb = new MaterialPropertyBlock(); mpb.SetColor("_BaseColor", new Color(.62f, .66f, .5f)); mr.SetPropertyBlock(mpb);   // match the island's olive turf
+            var mpb = new MaterialPropertyBlock(); mpb.SetColor("_BaseColor", new Color(.9f, .94f, .88f)); mr.SetPropertyBlock(mpb);
         }
     }
 }

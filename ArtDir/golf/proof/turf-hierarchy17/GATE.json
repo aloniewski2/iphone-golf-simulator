@@ -1,0 +1,17 @@
+{
+  "status": "ACCEPTED bounded green texture response by parent actual review",
+  "capture": "PASS compile/render19.29s",
+  "sourceManifest": "ArtDir/golf/proof/turf-hierarchy17/installed-manifest.json",
+  "scope": "Greenonly existingC/N atlas .32m, calibratedcontrast6.5/normal.18 and broadgrowth30%; sage/olive palette/colors unchanged; no green blade geometry or lighting change",
+  "visual": "Restrainedfinegrain visible; naturalmutedgreen; no lime reversion",
+  "physics": "PASS obstacle/collider/allground entries exact toHierarchy16; material/texture diagnostics change as intended",
+  "comparedFields": [
+    "obstacleCount",
+    "colliders",
+    "obstacleHash",
+    "ground"
+  ],
+  "actual": "ArtDir/golf/proof/turf-hierarchy17/hole12_audit.json",
+  "currentSha256": "7b95608f0ac71c2a66c9fe5ded847b7cf64578e116c59ffd0cb552ce09f3e577",
+  "performance": "No phone/sole-camera frame-time certification; unchanged Dense15 geometry allocation"
+}

@@ -21,7 +21,7 @@ namespace GolfArcade.Tennis
             /// The cloud surface sits this far under the deck so it is seen from play (see AUDIT: the deck edge hides
             /// anything steeper than 5.4 degrees below the eye).
             const float SeaY = -58f;
-            static readonly Vector3 HazeColor = new Vector3(.44f, .27f, .52f);   // deep mauve: the far sea and towers fade to a tone darker than the ball (see AUDIT: ball contrast)
+            static readonly Vector3 HazeColor = new Vector3(.48f, .48f, .60f);   // cool dusk depth, below the felt-yellow ball
 
             // tower tops
             const int Flat = 0, Ziggurat = 1, Crown = 2, Dome = 3, Slant = 4, Needle = 5, Helipad = 6, Garden = 7, Drum = 9;
@@ -34,7 +34,7 @@ namespace GolfArcade.Tennis
                 Deck(root, hx, hz);
                 var fams = Families();
                 var seaH = CloudSea(root);
-                Wisps(root);
+                // The authored atmosphere provides cloud volume; no opaque pebble wisps.
                 MainTower(root, hx, hz, fams);
                 Rooftop(root, hx, hz);
                 Mast(root);
@@ -74,9 +74,15 @@ namespace GolfArcade.Tennis
                     var (alb, emi) = TexPair(128, 256, (u, v) =>
                     {
                         float cu = u * cols, cv = v * rows; int cx = Mathf.FloorToInt(cu), cy = Mathf.FloorToInt(cv);
-                        return cell(cu - cx, cv - cy, cx, cy);
+                        var result=cell(cu - cx, cv - cy, cx, cy);
+                        var a=result.a;
+                        // Facade alpha stores glazing membership, not transparency.
+                        bool glazed=(a.b>a.r*1.08f || a.g>a.r*1.20f) && Mathf.Max(a.r,Mathf.Max(a.g,a.b))<.91f;
+                        a.a=glazed?1:0;return (a,result.e);
                     }, "Facade " + name);
                     var m = Glowing(Color.white, smooth, alb, emi, glow, Vector2.one);
+                    var atmosphere=Resources.Load<Shader>("Tennis/Shaders/TennisTowerAtmosphere");
+                    if(atmosphere){var wrapped=new Material(atmosphere){name=name+" cloud-immersed facade"};wrapped.SetTexture("_BaseMap",alb);wrapped.SetTexture("_EmissionMap",emi);wrapped.SetColor("_BaseColor",Color.white);wrapped.SetColor("_EmissionColor",glow);wrapped.SetFloat("_Smoothness",smooth);wrapped.SetTexture("_SkyPanorama",Resources.Load<Texture2D>("Tennis/Premium/SkyRooftop"));wrapped.SetFloat("_SkyRotation",-90);wrapped.SetTexture("_CloudTops",Resources.Load<Texture2D>("Tennis/Premium/CloudTops"));m=wrapped;}
                     return new Fam { mat = m, uvM = new Vector2(cols * winM, rows * floorM), name = name };
                 }
                 var warm = new Color(.95f, .66f, .34f); Color black = Color.black;
@@ -84,11 +90,11 @@ namespace GolfArcade.Tennis
                 // 0 blue glass curtain wall with spandrel bands
                 fams[0] = Make("blue glass", 4, 6, 3.2f, 3.6f, .62f, new Color(.85f, .62f, .34f), (fu, fv, cx, cy) =>
                 {
-                    bool mull = fu < .07f || fu > .93f, span = fv < .17f; float h1 = Hash(cx, cy, 9), h2 = Hash(cx, cy, 5);
-                    var pane = Color.Lerp(new Color(.18f, .28f, .44f), new Color(.46f, .62f, .80f), h1 * .65f + (1 - fv) * .35f);
+                    bool mull = fu < .035f || fu > .965f, span = fv < .17f; float h1 = Hash(cx, cy, 9), h2 = Hash(cx, cy, 5);
+                    var pane = Color.Lerp(new Color(.18f, .28f, .44f), new Color(.46f, .62f, .80f), Mathf.Clamp01(h1*.35f+(1-fv)*.45f+.20f*Mathf.Sin((fu+cx*.07f)*6.28f)));
                     var a = mull ? new Color(.70f, .74f, .80f) : span ? new Color(.44f, .50f, .58f) : pane;
                     bool lit = h2 > .935f && !mull && !span;
-                    return (lit ? Color.Lerp(a, new Color(.92f, .70f, .42f), .55f) : a, lit ? warm : black);
+                    return (lit ? Color.Lerp(a, new Color(.92f, .70f, .42f), .22f) : a, lit ? warm*.30f : black);
                 });
                 // 1 cream stone with punched windows
                 fams[1] = Make("cream stone", 3, 5, 3.6f, 4.0f, .18f, new Color(.8f, .58f, .3f), (fu, fv, cx, cy) =>
@@ -125,10 +131,10 @@ namespace GolfArcade.Tennis
                 // 4 charcoal glass with gold fins
                 fams[4] = Make("charcoal gold", 4, 6, 3.0f, 3.6f, .7f, new Color(.9f, .64f, .34f), (fu, fv, cx, cy) =>
                 {
-                    bool fin = fu < .06f || fu > .96f, span = fv < .14f; float n = Hash(cx, cy, 41);
+                    bool fin = fu < .025f || fu > .98f, span = fv < .14f; float n = Hash(cx, cy, 41);
                     if (fin) return (new Color(.90f, .70f, .30f), black);
                     if (span) return (new Color(.10f, .12f, .16f), black);
-                    bool lit = n > .88f;
+                    bool lit = n > .955f;
                     return (lit ? new Color(.92f, .72f, .44f) : Color.Lerp(new Color(.16f, .30f, .38f), new Color(.30f, .50f, .58f), n * .6f + fv * .4f), lit ? warm : black);
                 });
                 // 5 white and lavender with coral bands
@@ -211,9 +217,11 @@ namespace GolfArcade.Tennis
                 // air handlers, near right corner
                 foreach (var z in new[] { -19.9f, -17.2f })
                 {
-                    concrete.Solid(new Vector3(11.4f, .65f, z), new Vector3(1.9f, 1.3f, 1.9f));
+                    TennisVenueArt.BevelBox(concrete, new Vector3(11.4f, .65f, z), new Vector3(1.9f, 1.3f, 1.9f), .065f);
                     steel.Cyl(new Vector3(11.4f, 1.3f, z), .62f, .62f, .16f, 14, Vector2.zero, Vector2.zero, true, false);
                     dark.Solid(new Vector3(10.42f, .6f, z), new Vector3(.06f, .45f, .9f));
+                    for (int i = 0; i < 7; i++)
+                        steel.Solid(new Vector3(10.375f, .41f + i * .064f, z), new Vector3(.055f, .018f, .82f));
                 }
                 // vent stacks, right margin
                 foreach (var z in new[] { 6f, 9.5f, 13f })
@@ -259,7 +267,7 @@ namespace GolfArcade.Tennis
             /// Pillow colours, one definition for every cloud: shaded valleys indigo-mauve, shoulders rose, only the lit tops cream.
             /// Deliberately a notch darker than daylight cloud: against a felt-yellow ball, bright cloud is the hardest thing to see through.
             static Texture2D CloudRamp(string name) => Ramp(name, new[] {
-                (0f, new Color(.30f, .26f, .58f)), (.30f, new Color(.54f, .38f, .68f)), (.62f, new Color(.80f, .56f, .66f)), (1f, new Color(.96f, .80f, .72f)) });
+                (0f, new Color(.24f, .32f, .47f)), (.30f, new Color(.39f, .47f, .62f)), (.62f, new Color(.62f, .66f, .74f)), (1f, new Color(.86f, .81f, .76f)) });
 
             /// Height of the cloud surface at (x, z): rounded pillows with creases between them, a slow swell and fine puffs.
             static float SeaHeight(float x, float z)
@@ -270,14 +278,16 @@ namespace GolfArcade.Tennis
                 Worley(x / 42f, z / 42f, 29, out float g1, out float g2);
                 float puff = Mathf.Sqrt(Mathf.Max(0, 1 - g1 * g1 * 1.4f)) * Sm(0f, .22f, g2 - g1);
                 float swell = (Mathf.PerlinNoise(x * .0028f + 7, z * .0028f + 3) - .5f) * 2;
-                return SeaY + (dome * (.25f + .75f * crease) * 23f + puff * 6f) + swell * 9f;
+                return SeaY + dome * crease * 3f + puff * .8f + swell * 1.4f;
             }
 
             static System.Func<float, float, float> CloudSea(Transform root)
             {
                 var group = new GameObject("Cloud sea").transform; group.SetParent(root, false);
                 // pillow colour ramp: valleys lavender-indigo, shoulders pink, tops cream
-                var mat = Matte(Color.white, CloudRamp("Cloud ramp"));
+                var shader=Resources.Load<Shader>("Tennis/Shaders/TennisCloudAtmosphere");
+                var mat=shader ? new Material(shader) {name="Authored cloud-top atmosphere"} : Matte(Color.white,CloudRamp("Cloud ramp"));
+                if(shader){mat.SetTexture("_CloudTops",Resources.Load<Texture2D>("Tennis/Premium/CloudTops"));mat.SetFloat("_WorldScale",.0018f);mat.SetFloat("_Exposure",.78f);}
                 // polar grid: fine near the deck, coarse far out
                 var radii = new List<float>(); float rr = 6;
                 while (rr < 7000) { radii.Add(rr); rr += rr < 400 ? 10 : rr < 1200 ? 25 : rr < 3500 ? 80 : 250; }
@@ -298,25 +308,7 @@ namespace GolfArcade.Tennis
                 MeshObject(group, "Cloud sea surface", mb.ToMesh("Cloud sea"), mat, false);
                 Log("sky: cloud sea surface", mb.Tris);
 
-                // banks of cumulus standing on the sea; subdivided finer when near
-                var rng = new System.Random(77); var banks = new MB(); int lumps = 0;
-                bool low = TennisQuality.Current == TennisQuality.Tier.Low;
-                for (int i = 0; i < (low ? 18 : 30); i++)
-                {
-                    float ang = Rand(rng, 0, Mathf.PI * 2), r = Rand(rng, 340, 2300);
-                    float size = Rand(rng, 55, 150) * Mathf.Lerp(.9f, 1.8f, Mathf.Clamp01((r - 340) / 1900f));
-                    var c = new Vector3(Mathf.Cos(ang) * r, 0, Mathf.Sin(ang) * r); c.y = SeaHeight(c.x, c.z) - size * .1f;
-                    int n = rng.Next(6, 10);
-                    for (int j = 0; j < n; j++)
-                    {
-                        var off = new Vector3(Rand(rng, -1.4f, 1.4f) * size, Rand(rng, 0, 1) * size * .55f, Rand(rng, -.8f, .8f) * size);
-                        float rad = size * Rand(rng, .42f, .85f);
-                        banks.Lump(c + off, new Vector3(rad, rad * .72f, rad), r < 1100 ? 2 : 1, Rand(rng, 0, 90), Rand(rng, 0, 1), .10f);
-                        lumps++;
-                    }
-                }
-                MeshObject(group, "Cumulus banks", banks.ToMesh("Cumulus banks"), Matte(Color.white, CloudRamp("Cumulus ramp")), false);
-                Log("sky: cumulus banks (" + lumps + " lumps)", banks.Tris);
+                // The panorama carries richly shaped distant cloud banks, continuously into the horizon.
                 return SeaHeight;
             }
 
@@ -350,7 +342,7 @@ namespace GolfArcade.Tennis
                 void A(float x, float z, float roof, float w, float d, int fam, int top) => L.Add(new Tw { x = x, z = z, roof = roof, w = w, d = d, fam = fam, top = top });
                 // anchors: frame the +z gameplay view, the postcard and the rival intro
                 A(-84, 128, 44, 26, 24, 0, Ziggurat);
-                A(96, 150, 52, 30, 26, 3, Crown);
+                A(96, 150, 52, 30, 26, 4, Crown);
                 A(18, 250, 36, 22, 22, 4, Dome);
                 A(-34, 205, 18, 18, 18, 2, Garden);
                 A(160, 330, 82, 40, 34, 4, Slant);
@@ -397,8 +389,19 @@ namespace GolfArcade.Tennis
                 foreach (var t in layout)
                 {
                     var fam = fams[t.fam]; used.Add(t.fam); tops.Add(t.top);
-                    float w = t.w, d = t.d, roof = t.roof; var off = new Vector2(Rand(rng, 0, 1), Rand(rng, 0, 1));
+                    float distance=Mathf.Sqrt(t.x*t.x+t.z*t.z);
+                    float hierarchy=Mathf.Lerp(1,.70f,Mathf.InverseLerp(220,1250,distance));
+                    float w=t.w*hierarchy,d=t.d*hierarchy,roof=Mathf.Lerp(SeaY+9,t.roof,hierarchy); var off = new Vector2(Rand(rng, 0, 1), Rand(rng, 0, 1));
                     float baseY = -140f, sea = seaH(t.x, t.z);
+                    // Two sculpted anchors establish a designed skyline. Their
+                    // curved glazing, deep vertical fins and planted setbacks
+                    // share the exact existing family materials and cloud depth.
+                    if(t.x==-84 && t.z==128 || t.x==96 && t.z==150)
+                    {
+                        SignatureTower(fam.mb,trim,gold,green,t.x,t.z,w,d,roof,fam.uvM,off,t.x<0);
+                        beacons.Add(new Vector3(t.x,roof+(t.x<0?21.6f:13.6f),t.z));
+                        continue;
+                    }
                     bool drum = t.top == Drum, slant = t.top == Slant;
                     float tierH = Rand(rng, 14, 24), w2 = slant || drum ? w : w * .78f, d2 = slant || drum ? d : d * .78f;
                     var c = new Vector3(t.x, 0, t.z);
@@ -430,6 +433,14 @@ namespace GolfArcade.Tennis
                         trim.Solid(new Vector3(t.x, roof - tierH + .5f, t.z), new Vector3(w + .9f, 1f, d + .9f));                                   // ledge at the setback
                         fam.mb.Box(new Vector3(t.x, roof - tierH / 2, t.z), new Vector3(w2, tierH, d2), fam.uvM, off);
                         trim.Solid(new Vector3(t.x, roof + .4f, t.z), new Vector3(w2 + .8f, .8f, d2 + .8f));
+                    }
+                    if(!drum && distance<380)
+                    {
+                        for(int edge=-1;edge<=1;edge+=2)
+                        {
+                            gold.Solid(new Vector3(t.x+edge*(w*.5f+.12f),(baseY+roof-tierH)/2,t.z-d*.5f-.12f),new Vector3(.35f,roof-tierH-baseY,.35f));
+                            gold.Solid(new Vector3(t.x+edge*(w*.5f+.12f),(baseY+roof-tierH)/2,t.z+d*.5f+.12f),new Vector3(.35f,roof-tierH-baseY,.35f));
+                        }
                     }
                     if (!slant)
                         switch (t.top)
@@ -483,13 +494,7 @@ namespace GolfArcade.Tennis
                         }
                     float topY = roof + (t.top == Needle ? 37f : t.top == Ziggurat ? 31f : t.top == Crown ? 18f : slant ? w * .55f : 9f);
                     if (topY > 60) beacons.Add(new Vector3(t.x + (t.top == Flat ? -w2 * .2f : 0), topY + .5f, t.z + (t.top == Flat ? d2 * .15f : 0)));
-                    // a collar of cloud where the shaft enters the sea
-                    float cr = Mathf.Max(w, d) * .62f;
-                    for (int k = 0, nc = TennisQuality.Current == TennisQuality.Tier.Low ? 4 : 7; k < nc; k++)
-                    {
-                        float a = k / (float)nc * Mathf.PI * 2 + Rand(rng, 0, .6f);
-                        collars.Lump(new Vector3(t.x + Mathf.Cos(a) * cr, sea + 2f, t.z + Mathf.Sin(a) * cr), new Vector3(cr * .5f, cr * .3f, cr * .5f), 1, Rand(rng, 0, 90), Rand(rng, 0, 1), .10f);
-                    }
+
                 }
                 // skybridge twins on the player-intro side
                 {
@@ -509,7 +514,7 @@ namespace GolfArcade.Tennis
                 }
                 SaucerTower(root, trim, gold, coral, teal, beacons, seaH);
                 foreach (var f in fams) if (f.mb.Count > 0) { MeshObject(group, "Towers " + f.name, f.mb.ToMesh("Towers " + f.name), f.mat, false); Log("sky: towers " + f.name, f.mb.Tris); }
-                MeshObject(group, "Tower collars", collars.ToMesh("Tower collars"), Matte(Color.white, CloudRamp("Collar ramp")), false);
+
                 MeshObject(group, "Tower trim", trim.ToMesh("Tower trim"), Lit(new Color(.80f, .78f, .80f), .3f), false);
                 MeshObject(group, "Tower gold", gold.ToMesh("Tower gold"), Lit(new Color(.92f, .72f, .28f), .5f, null, null, .5f), false);
                 MeshObject(group, "Tower coral", coral.ToMesh("Tower coral"), Lit(new Color(.95f, .45f, .40f), .4f), false);
@@ -520,6 +525,74 @@ namespace GolfArcade.Tennis
                 int bn = 0;
                 foreach (var b in beacons) { var go = Prim(PrimitiveType.Sphere, group, "Beacon", b, Vector3.one * 1.6f, beaconMat, false); if (bn++ % 2 == 1) go.AddComponent<TennisVenueFx.Blink>(); }
                 Log("sky: facade families used " + used.Count + ", tower tops used " + tops.Count + ", beacons " + beacons.Count, 0);
+            }
+
+            /// Rounded rectangular curtain wall and crafted terrace profiles.
+            /// All tiers are closed render-only meshes; no court/deck changes.
+            static void SignatureTower(MB glass,MB stone,MB bronze,MB garden,float x,float z,
+                                       float w,float d,float roof,Vector2 uv,Vector2 off,bool pearl)
+            {
+                float[] levels=pearl?new[]{-140f,roof-29,roof-9,roof+9,roof+20}:new[]{-140f,roof-35,roof-17,roof-1,roof+12};
+                float[] scale=pearl?new[]{1.08f,1.04f,.91f,.72f,.52f}:new[]{1.07f,1.05f,.89f,.75f,.61f};
+                for(int tier=0;tier<levels.Length-1;tier++)
+                {
+                    float y0=levels[tier],y1=levels[tier+1];
+                    float centreX=x+(pearl?-1:1)*tier*.52f;
+                    float wi=w*scale[tier],di=d*scale[tier];
+                    RoundedPrism(glass,new Vector3(centreX,y0,z),wi,di,wi*.965f,di*.985f,y1-y0,Mathf.Min(wi,di)*.23f,uv,off);
+                    // Rounded cornices project beyond glazing and shade the reveal.
+                    RoundedPrism(stone,new Vector3(centreX,y1-.18f,z),wi*.99f+1.3f,di+1.3f,wi*.97f+1.3f,di*.985f+1.3f,.72f,Mathf.Min(wi,di)*.235f,Vector2.zero,Vector2.zero);
+                    RoundedPrism(bronze,new Vector3(centreX,y1-.45f,z),wi+.12f,di+.12f,wi+.12f,di+.12f,.17f,Mathf.Min(wi,di)*.23f,Vector2.zero,Vector2.zero);
+                    // Recessed facade lanes terminate at every actual terrace.
+                    int fins=pearl?9:7;
+                    for(int n=0;n<fins;n++)
+                    {
+                        float t=(n+.5f)/fins-.5f,fx=centreX+t*wi*.66f;
+                        bronze.Solid(new Vector3(fx,(y0+y1)*.5f,z-di*.5f-.16f),new Vector3(.22f,y1-y0-.55f,.43f));
+                        bronze.Solid(new Vector3(fx,(y0+y1)*.5f,z+di*.5f+.16f),new Vector3(.22f,y1-y0-.55f,.43f));
+                    }
+                    for(int edge=-1;edge<=1;edge+=2)for(int n=0;n<4;n++)
+                        bronze.Solid(new Vector3(centreX+edge*(wi*.5f+.12f),(y0+y1)*.5f,z+(n/3f-.5f)*di*.60f),new Vector3(.36f,y1-y0-.55f,.22f));
+                    if(tier>0)
+                    {
+                        foreach(int edge in new[]{-1,1})
+                        {
+                            float px=centreX+edge*(wi*.5f-.50f);
+                            for(int n=0;n<4;n++)
+                                TennisVenueArt.QueuePlant(n%2==0?"SHRUB_0":"SHRUB_1",new Vector3(px,y1+.50f,z+(n/3f-.5f)*di*.65f),tier*37+n*67,1.35f,1.10f);
+                        }
+                    }
+                }
+                // An inhabited planted roof, framed by a low sculpted parapet.
+                float top=levels[levels.Length-1],tw=w*scale[scale.Length-2]*.965f,td=d*scale[scale.Length-2]*.985f;
+                RoundedPrism(garden,new Vector3(x+(pearl?-1:1)*1.56f,top+.51f,z),tw*.72f,td*.72f,tw*.72f,td*.72f,.14f,Mathf.Min(tw,td)*.16f,Vector2.zero,Vector2.zero);
+            }
+
+            static void RoundedPrism(MB mesh,Vector3 baseAt,float w0,float d0,float w1,float d1,float height,
+                                     float radius,Vector2 metres,Vector2 offset)
+            {
+                const int cornerSteps=12,sides=cornerSteps*4;
+                Vector3 Point(int index,float w,float d,float y)
+                {
+                    int corner=(index%sides)/cornerSteps;float t=(index%cornerSteps)/(float)cornerSteps;
+                    float angle=(corner*90+t*90)*Mathf.Deg2Rad;
+                    float r=Mathf.Min(radius,Mathf.Min(w,d)*.48f);
+                    float cx=(corner==0||corner==3?1:-1)*(w*.5f-r);
+                    float cz=(corner<2?1:-1)*(d*.5f-r);
+                    return baseAt+new Vector3(cx+Mathf.Cos(angle)*r,y,cz+Mathf.Sin(angle)*r);
+                }
+                float perimeter=0;var bottom=new int[sides+1];var top=new int[sides+1];
+                for(int n=0;n<=sides;n++)
+                {
+                    var a=Point(n,w0,d0,0);var b=Point(n,w1,d1,height);
+                    if(n>0)perimeter+=Vector3.Distance(a,Point(n-1,w0,d0,0));
+                    float u=metres.x>0?perimeter/metres.x+offset.x:.5f;
+                    bottom[n]=mesh.Add(a,new Vector2(u,metres.y>0?baseAt.y/metres.y+offset.y:.5f));
+                    top[n]=mesh.Add(b,new Vector2(u,metres.y>0?(baseAt.y+height)/metres.y+offset.y:.5f));
+                }
+                for(int n=0;n<sides;n++)mesh.Quad(bottom[n],bottom[n+1],top[n+1],top[n]);
+                int centre=mesh.Add(baseAt+Vector3.up*height,new Vector2(.5f,.5f));
+                for(int n=0;n<sides;n++)mesh.Tri(centre,mesh.Add(Point(n,w1,d1,height),new Vector2(.5f,.5f)),mesh.Add(Point(n+1,w1,d1,height),new Vector2(.5f,.5f)));
             }
 
             /// The landmark: a needle shaft, a lit saucer with a window ring, a spire and a blinking beacon.
@@ -548,64 +621,23 @@ namespace GolfArcade.Tennis
 
             static Color SkyBand(float el)
             {
-                // toon-stepped twilight: gold at the horizon, coral, orchid, violet, indigo
+                // Broad, softly blended dusk colour. The warm rim stays close to the
+                // horizon so the city has depth and the play corridor stays cool.
                 float[] edge = { 0f, 1.0f, 2.4f, 4.6f, 8.5f, 14f, 22f, 34f };
                 Color[] col = {
-                    new Color(1.00f, .74f, .42f), new Color(.92f, .34f, .30f), new Color(.60f, .16f, .40f), new Color(.40f, .14f, .50f),
-                    new Color(.28f, .15f, .56f), new Color(.20f, .15f, .54f), new Color(.14f, .14f, .46f), new Color(.09f, .10f, .34f) };
+                    new Color(.92f, .68f, .43f), new Color(.76f, .49f, .49f), new Color(.52f, .41f, .58f), new Color(.37f, .37f, .57f),
+                    new Color(.28f, .34f, .56f), new Color(.20f, .29f, .51f), new Color(.14f, .23f, .43f), new Color(.09f, .16f, .32f) };
                 Color c = new Color(HazeColor.x, HazeColor.y, HazeColor.z);                                       // below the horizon
                 c = Color.Lerp(c, col[0], Sm(-1.2f, .4f, el));
-                for (int i = 1; i < edge.Length; i++) c = Color.Lerp(c, col[i], Sm(edge[i] - .5f, edge[i] + .5f, el));
+                for (int i = 1; i < edge.Length; i++) c = Color.Lerp(c, col[i], Sm(edge[i] - 1.8f, edge[i] + 2.8f, el));
                 return c;
             }
 
             static void Sky(Transform root)
             {
-                var sun = SunDir; float sunAz = Mathf.Atan2(sun.z, sun.x), sunEl = Mathf.Asin(sun.y) * Mathf.Rad2Deg;
-                // huge flat ribbons of cloud: (azimuth, elevation, half width, half height) in degrees
-                var ribbons = new[] { new Vector4(20, 10.5f, 26, 2.3f), new Vector4(95, 15, 30, 2.6f), new Vector4(170, 9.5f, 24, 2.0f), new Vector4(250, 13, 32, 2.8f), new Vector4(325, 11, 28, 2.4f),
-                                       new Vector4(55, 24, 20, 2.0f), new Vector4(205, 27, 24, 2.2f), new Vector4(300, 31, 18, 1.8f) };
-                var warpCol = new float[1025]; for (int i = 0; i < warpCol.Length; i++) warpCol[i] = float.NaN;   // the horizon wobble depends on azimuth only: one noise call per column, not per pixel
-                TexDome(root, "skyscraper", (az, el) =>
-                {
-                    float azDeg = az * Mathf.Rad2Deg, u01 = az / (Mathf.PI * 2);
-                    int col = Mathf.Min(1024, Mathf.FloorToInt(u01 * 1024f));
-                    if (float.IsNaN(warpCol[col])) warpCol[col] = (Fbm((col + .5f) / 1024f, .5f, 7, 3, 41) - .5f) * 2.6f;
-                    float warp = warpCol[col];
-                    Color c = SkyBand(el + warp * Sm(-1, 6, el));
-                    // cirrus streaks high in the sky
-                    if (el > 20f)   // the cirrus factor is exactly zero below 20 degrees, so the noise is only paid for where it shows
-                    {
-                        float cir = Fbm(u01, el / 90f * .35f + .2f, 22, 3, 12); cir = Sm(.58f, .74f, cir) * Sm(20, 34, el) * (1 - Sm(60, 80, el));
-                        c = Color.Lerp(c, new Color(.82f, .62f, .84f), cir * .35f);
-                    }
-                    // giant ribbons with a lit underside; the ribbons only occupy 7..33 degrees, and the wobble does not depend on the ribbon
-                    if (el > 7f && el < 33.5f)
-                    {
-                        float wob = (Fbm(u01, el / 90f, 14, 3, 7) - .5f) * .5f;
-                        foreach (var r in ribbons)
-                        {
-                            float dAz = Mathf.DeltaAngle(azDeg, r.x) / r.z, dEl = (el - r.y) / r.w;
-                            float s = dAz * dAz * .9f + dEl * dEl + wob;
-                            if (s < 1)
-                            {
-                                var body = Color.Lerp(c, Color.Lerp(new Color(.46f, .26f, .56f), new Color(.60f, .42f, .74f), Sm(14f, 22f, r.y)), .5f);
-                                float rim = 1 - Sm(-.95f, -.5f, dEl);                                     // under-lit lower edge
-                                var cloud = Color.Lerp(body, new Color(1f, .70f, .48f), rim * .7f);
-                                c = Color.Lerp(c, cloud, 1 - Sm(.80f, 1f, s));                              // soft edge: a hard cut shows as stair-steps when the texture is magnified
-                            }
-                        }
-                    }
-                    // a few stars near the zenith
-                    if (el > 36 && Hash(Mathf.FloorToInt(az * 143), Mathf.FloorToInt(el * 2.5f), 99) > .9992f) c = Color.Lerp(c, new Color(1f, .96f, .88f), Sm(36, 55, el) * .9f);
-                    c.a = 1; return c;
-                });
-                // the sun: a flat disc and three rings, drawn as a sprite so the edges are crisp at any size
-                var rings = Sprite(Alpha, SunRings(), Color.white, 2998);
-                Billboard(root, "Sun", rings, SunDir * 2790, new Vector2(950, 950), false).AddComponent<TennisVenueFx.FollowCamera>().Offset = SunDir * 2790;
-                var glow = Sprite(Additive, Soft, new Color(1f, .74f, .50f, .45f), 2999, null, .55f);
-                var g = Billboard(root, "Sun glow", glow, SunDir * 2800, new Vector2(1500, 1500), false);
-                g.AddComponent<TennisVenueFx.FollowCamera>().Offset = SunDir * 2800;
+                // Real distant cloud shape and an uninterrupted dusk gradient come from the
+                // production latitude-longitude atmosphere, shared with the cloud surface below.
+                // The painted sun supplies the warm horizon; old giant ring sprites are removed.
             }
 
             static Texture2D SunRings() => Tex(512, 512, (u, v) =>
@@ -622,16 +654,24 @@ namespace GolfArcade.Tennis
             public static void Light(Light sun, Camera camera)
             {
                 sun.transform.rotation = Quaternion.LookRotation(-SunDir);
-                sun.color = new Color(1f, .72f, .46f); sun.intensity = 2.5f;
+                sun.color = new Color(1f, .87f, .73f); sun.intensity = 1.75f;
                 RenderSettings.ambientMode = AmbientMode.Trilight;
-                RenderSettings.ambientSkyColor = new Color(.40f, .42f, .78f);
-                RenderSettings.ambientEquatorColor = new Color(.88f, .62f, .64f);
-                RenderSettings.ambientGroundColor = new Color(.70f, .54f, .68f);   // the cloud sea lights the underside
+                RenderSettings.ambientSkyColor = new Color(.30f, .43f, .67f);
+                RenderSettings.ambientEquatorColor = new Color(.30f, .35f, .46f);
+                RenderSettings.ambientGroundColor = new Color(.24f, .28f, .36f);   // cloud bounce retains the cool underside
                 var haze = new Color(HazeColor.x, HazeColor.y, HazeColor.z);
                 RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogColor = haze;
-                RenderSettings.fogStartDistance = 230; RenderSettings.fogEndDistance = 5200;
-                RenderSettings.skybox = null;
-                camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = haze;
+                RenderSettings.fogStartDistance = 150; RenderSettings.fogEndDistance = 2300;
+                var skyShader=Resources.Load<Shader>("Tennis/Shaders/TennisRooftopSky");
+                var panorama=Resources.Load<Texture2D>("Tennis/Premium/SkyRooftop");
+                if(skyShader && panorama)
+                {
+                    var sky=new Material(skyShader){name="Rooftop dusk atmosphere"};
+                    sky.SetTexture("_Panorama",panorama);sky.SetFloat("_Rotation",-90);sky.SetFloat("_Exposure",.90f);
+                    RenderSettings.skybox=sky;camera.clearFlags=CameraClearFlags.Skybox;
+                }
+                else {RenderSettings.skybox=null;camera.clearFlags=CameraClearFlags.SolidColor;}
+                camera.backgroundColor=haze;
             }
         }
 

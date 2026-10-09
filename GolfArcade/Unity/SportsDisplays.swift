@@ -6,6 +6,7 @@ final class SportsDisplays: NSObject {
     weak var phone: UIWindow?
     var external: UIWindow?
     private var preview: UIWindow?
+    private var loadingCover: UIWindow?
     private var previewOverlay: UIViewController?
     private var registration: AnyObject?
     private override init() {
@@ -51,6 +52,78 @@ final class SportsDisplays: NSObject {
         showMenu()
         return external
     }
+    /// Explicit automated verification may render on the paired phone without
+    /// an AirPlay receiver. Normal play retains its external-display contract.
+    func benchmarkWindow() -> UIWindow? {
+        guard SportsSession.benchmark else { return nil }
+        refresh()
+        if let external { showMenu(); return external }
+        guard let scene = phone?.windowScene else { return nil }
+        if preview == nil {
+            let window = UIWindow(windowScene: scene)
+            let root = UIViewController(); root.view.backgroundColor = .black
+            window.rootViewController = root; preview = window
+        }
+        return preview
+    }
+    private var exitCover: UIWindow?
+    private var exitGeneration = 0
+    func beginExitCover() {
+        guard let destination = external ?? preview ?? phone, let scene = destination.windowScene else { return }
+        lingeringTip?.isHidden=true; lingeringTip=nil
+        exitGeneration += 1; let generation = exitGeneration
+        exitCover?.isHidden = true
+        let cover = UIWindow(windowScene: scene); cover.windowLevel = .alert + 1
+        let host = UIHostingController(rootView: ZStack {
+            Club.lagoonDeep.ignoresSafeArea()
+            Text("Back to the clubhouse").font(IslandUI.font(28, bold: true)).foregroundStyle(.white)
+        })
+        cover.rootViewController = host; cover.backgroundColor = UIColor(Club.lagoonDeep)
+        exitCover=cover; cover.isHidden=false; host.view.layoutIfNeeded()
+        ClubSound.play("whoosh", volume: 0.35)
+        let duration = SportsSession.shared.presentationIntros == "full" ? 1.0 : 0.8
+        DispatchQueue.main.asyncAfter(deadline: .now()+duration) { [weak self] in
+            guard let self, generation==self.exitGeneration else { return }
+            self.external?.rootViewController?.view.layoutIfNeeded(); self.phone?.rootViewController?.view.layoutIfNeeded()
+            cover.isHidden=true; self.exitCover=nil
+        }
+    }
+    func beginLoadingCover(in destination: UIWindow, startRuntime: @escaping @MainActor () -> Void) {
+        lingeringTip?.isHidden=true; lingeringTip=nil
+        exitGeneration += 1; exitCover?.isHidden=true; exitCover=nil
+        finishLoadingCover()
+        guard let scene = destination.windowScene else { startRuntime(); return }
+        let cover = UIWindow(windowScene: scene)
+        cover.windowLevel = UIWindow.Level(rawValue: destination.windowLevel.rawValue + 100)
+        cover.backgroundColor = .clear
+        let host = UIHostingController(rootView: PresentationLoadingCover(compact: scene.session.role == .windowApplication))
+        host.view.backgroundColor = .clear; cover.rootViewController = host
+        loadingCover = cover; cover.isHidden = false
+        host.view.setNeedsLayout(); host.view.layoutIfNeeded()
+        let launch = SportsSession.shared.sessionID
+        // Give UIKit a display cycle before runEmbedded blocks the main thread on cold startup.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            guard self.loadingCover === cover, SportsSession.shared.active, SportsSession.shared.sessionID == launch else { return }
+            SportsSession.shared.loading.cardAppeared()
+            startRuntime()
+        }
+    }
+    func revealLoadingFrame() { external?.isHidden = true; preview?.isHidden = false }
+    private var lingeringTip: UIWindow?
+    func finishLoadingCover() {
+        if SportsSession.shared.loading.phase == .finished, let tip = SportsSession.shared.loading.tip,
+           let scene = loadingCover?.windowScene, SportsSession.shared.loading.tipRemaining > 0 {
+            let window=UIWindow(windowScene:scene); window.windowLevel = .alert
+            let host=UIHostingController(rootView: VStack { Spacer(); Text(tip).font(IslandUI.font(18, bold: true)).foregroundStyle(.white).padding(16).background(IslandUI.navy, in: Capsule()).padding(.bottom, 48) })
+            host.view.backgroundColor = .clear; window.backgroundColor = .clear; window.rootViewController=host
+            window.isUserInteractionEnabled=false; window.isHidden=false; lingeringTip=window
+            DispatchQueue.main.asyncAfter(deadline:.now()+SportsSession.shared.loading.tipRemaining) { [weak self] in
+                window.isHidden=true; if self?.lingeringTip === window { self?.lingeringTip=nil }
+            }
+        }
+        loadingCover?.isHidden = true; loadingCover = nil
+    }
+
     private var networkOverlay: UIHostingController<MultiplayerMatchOverlay>?
     func installMultiplayerOverlay(in root: UIViewController) {
         guard SportsSession.shared.multiplayerMatchID != nil else { return }
@@ -94,12 +167,26 @@ final class SportsDisplays: NSObject {
         guard SportsSession.benchmark, let window = phone else { return }
         let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
         let image = renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("PostGameDevice.png")
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("visual-overhaul/postgame", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("PostGameDevice.png")
         try? image.pngData()?.write(to: url)
+        let result = SportsSession.shared.finishedMatch
+        let report: [String: Any] = ["startedUtc": ISO8601DateFormatter().string(from: Date()),
+            "sport": "tennis", "matchComplete": result != nil, "won": result?.won ?? false,
+            "score": result?.score ?? "", "phoneVisible": !window.isHidden,
+            "launchArguments": ProcessInfo.processInfo.arguments,
+            "screenshot": "PostGameDevice.png"]
+        if let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]) {
+            try? data.write(to: directory.appendingPathComponent("report.json"), options: .atomic)
+        }
         SportsDiagnostics.write("postgame device screenshot saved; phoneVisible=\(!window.isHidden) finished=\(SportsSession.shared.finishedMatch != nil)")
     }
 
     func endPreview() {
+        finishLoadingCover()
         networkOverlay?.willMove(toParent:nil); networkOverlay?.view.removeFromSuperview(); networkOverlay?.removeFromParent(); networkOverlay = nil
         if let child=previewOverlay { child.willMove(toParent:nil); child.view.removeFromSuperview(); child.removeFromParent() }
         previewOverlay=nil
@@ -210,5 +297,25 @@ struct DisplayRegistration: UIViewControllerRepresentable {
     func makeUIViewController(context:Context) -> Controller { Controller() }
     func updateUIViewController(_ controller:Controller,context:Context) {
         DispatchQueue.main.async { SportsDisplays.shared.register(from:controller) }
+    }
+}
+
+/// An independent native window covers Unity startup and fades only after the rendered-frame gate.
+private struct PresentationLoadingCover: View {
+    let compact: Bool
+    private var loading: LoadingModel { SportsSession.shared.loading }
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+            Club.lagoonDeep
+            LoadingScreen(menu: .shared, compact: compact)
+                .frame(width: compact ? geometry.size.width : 1280, height: compact ? geometry.size.height : 720)
+                .scaleEffect(compact ? 1 : min(geometry.size.width / 1280, geometry.size.height / 720))
+                .frame(width: geometry.size.width, height: geometry.size.height)
+            }.opacity(1 - loading.transitionFraction)
+        }.ignoresSafeArea()
+        .onChange(of: loading.phase) { _, phase in
+            if phase == .transitioning { ClubSound.play("pop", volume: 0.35); SportsDisplays.shared.revealLoadingFrame() }
+        }
     }
 }

@@ -15,6 +15,8 @@ namespace GolfArcade.PlayTests {
             yield return null;
             var game = Object.FindFirstObjectByType<TennisGame>();
             game.NativeControlled = true; game.ManualSimulation = true;
+            Assert.That(game.ManualRallyMovement, Is.False, "Phone tennis defaults to computer movement");
+            game.ManualRallyMovement = true;
             game.ConfigureMatch(TennisGame.Mode.Exhibition, null, null, null);
             game.SetControllerSetup(true); game.SetControllerSetup(false);
             game.Player.transform.position = new Vector3(0, .035f, -11.2f);

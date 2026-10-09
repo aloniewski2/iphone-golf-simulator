@@ -34,7 +34,29 @@ namespace GolfArcade.Course
             m.SetFloat("_StripeWidth",surface==1?5:2.2f);
             if(spec.Emissive) {var e=Load(spec.Tex,"_E",true);if(e)m.SetTexture("_EmissionMap",e);
                 m.SetFloat("_EmissionEnabled",e?1:0);m.SetVector("_EmissionColor",(Vector4)spec.Emission);}
+            ResortPalette(m,name.Contains("GREEN")?GolfCourseLook.Surface.Green:name.Contains("FAIRWAY")?GolfCourseLook.Surface.Fairway:name.Contains("ROUGH")?GolfCourseLook.Surface.Rough:name.Contains("SAND")?GolfCourseLook.Surface.Sand:GolfCourseLook.Surface.Rock);
             return m;
+        }
+        public static void ResortPalette(Material m,GolfCourseLook.Surface role,bool volcanic=false,bool jungle=false)
+        {
+            if(!m.HasProperty("_PaletteMode"))return;
+            Color low,high;
+            switch(role)
+            {
+                case GolfCourseLook.Surface.Fairway: low=new Color(.22f,.38f,.16f);high=new Color(.36f,.54f,.24f);break;
+                case GolfCourseLook.Surface.Green: case GolfCourseLook.Surface.Tee: low=new Color(.31f,.47f,.18f);high=new Color(.45f,.61f,.26f);break;
+                case GolfCourseLook.Surface.Fringe: low=new Color(.165f,.305f,.15f);high=new Color(.27f,.425f,.21f);break;
+                case GolfCourseLook.Surface.Rough: low=new Color(.085f,.22f,.125f);high=new Color(.18f,.335f,.185f);break;
+                case GolfCourseLook.Surface.Sand: low=new Color(.78f,.69f,.48f);high=new Color(.95f,.87f,.65f);break;
+                default:return;
+            }
+            if(jungle&&role!=GolfCourseLook.Surface.Sand){low.b+=.015f;high.b+=.01f;}
+            m.SetFloat("_PaletteMode",1);m.SetColor("_LowColor",low);m.SetColor("_HighColor",high);
+            m.SetFloat("_DetailContrast",role==GolfCourseLook.Surface.Sand?.35f:.45f);m.SetColor("_BaseColor",Color.white);
+            m.SetFloat("_Bands",role==GolfCourseLook.Surface.Fairway?.09f:role==GolfCourseLook.Surface.Green?.008f:0);
+            m.SetFloat("_StripeWidth",role==GolfCourseLook.Surface.Fairway?9.5f:3f);
+            m.SetFloat("_BumpScale",role==GolfCourseLook.Surface.Sand?.20f:.25f);
+            m.SetFloat("_Smoothness",role==GolfCourseLook.Surface.Green?.22f:.12f);
         }
         static void SurfaceDirection(Material m,int hole)
         {
@@ -170,7 +192,7 @@ namespace GolfArcade.Course
         /// both assets alike; v2 review fix: intensity 200 -> 600 because the basalt is now a dark matte charcoal that answers the lights less): the first build's 200 / 52 yd / lift 4 lights the basalt within ~15 yd of a light by >= 8 luminance levels on ~40 % of its pixels and
         /// never flares the lava (0 % of the pool pixels brightened by >= 40 levels); the old 28 / 48 / 0 lit 0.2 %.
         public static Color LavaLightColor = new(1f, .45f, .12f);
-        public static float LavaLightRange = 52f, LavaLightIntensity = 600f;   // world units are yards; URP point lights fall off 1/d^2
+        public static float LavaLightRange = 52f, LavaLightIntensity = 90f;   // world units are yards; URP point lights fall off 1/d^2
         /// The light sits this far (yd) above its LAVA_LIGHT_nn empty (the empties are ~2.4 yd over the lava): higher = a wider,
         /// flatter pool, so the lava under the light does not flare while the walls 10-20 yd away still warm up.
         public static float LavaLightLift = 4f;
@@ -298,7 +320,7 @@ namespace GolfArcade.Course
 
         static Shader lit, water, surf, lavaShader, plantsShader;
         static Shader LitShader => lit ? lit : lit = Shader.Find("Universal Render Pipeline/Lit");
-        static Shader WaterShader => water ? water : water = Resources.Load<Shader>("Tennis/Shaders/TennisWater");
+        static Shader WaterShader => water ? water : water = Resources.Load<Shader>("Course/Shaders/GolfOcean");
         static Shader SurfShader => surf ? surf : surf = Resources.Load<Shader>("Course/Shaders/GolfSurf");
         static Shader LavaShader => lavaShader ? lavaShader : lavaShader = Resources.Load<Shader>("Course/Shaders/GolfLava");
         static Shader PlantsShader => plantsShader ? plantsShader : plantsShader = Resources.Load<Shader>("Course/Shaders/GolfPlants");
@@ -390,6 +412,7 @@ namespace GolfArcade.Course
             var m = new Material(shader);
             // the shader works in linear space (half4 colour properties are converted on SetColor in a linear project)
             m.SetColor("_Shallow", spec.Shallow); m.SetColor("_Deep", spec.Deep); m.SetColor("_Sky", spec.Sky);
+            if (HoleView.Current) { var h = HoleView.Current.Hole; m.SetVector("_WaterOrigin",new Vector4((float)((h.Tee.X+h.Pin.X)*.5),0,(float)((h.Tee.D+h.Pin.D)*.5),0)); }
             m.SetFloat("_DeepDistance", spec.DeepDistance); m.SetFloat("_WaveScale", spec.WaveScale); m.SetFloat("_Sparkle", spec.Sparkle);
             return m;
         }
@@ -412,6 +435,7 @@ namespace GolfArcade.Course
             m.SetColor("_Deep", spec.RampDeep); m.SetColor("_Crust", spec.RampCrust); m.SetColor("_Flow", spec.RampFlow); m.SetColor("_Hot", spec.RampHot);
             m.SetFloat("_WorldUV", spec.WorldUV ? 1 : 0); m.SetFloat("_WorldTile", LavaTilePerYard);
             m.SetFloat("_FogShare", spec.FogShare);
+            m.SetFloat("_Cooling",1);m.SetFloat("_PlateScale",8);
             m.SetFloat("_HeatAlbedo", spec.HeatAlbedo); m.SetFloat("_HeatGlow", spec.HeatGlow); m.SetFloat("_HeatBias", spec.HeatBias); m.SetFloat("_HeatGain", spec.HeatGain); m.SetFloat("_Relief", spec.Relief);
             return m;
         }
@@ -502,13 +526,13 @@ namespace GolfArcade.Course
             }
             if (holeNumber == 10 && lights == 0 && FindLavaRenderer(model) != null)
                 Debug.Log("[GolfLook] hole 10 has no LAVA_LIGHT_nn empties: the lava lights only by emission + the orange trilight ground");
-            if(UseSurfaceShaders){GolfSurfaceBatching.Apply(model);GolfPlantInstances.Apply(model);}
+            if(UseSurfaceShaders&&!GolfCourseLook.Handles(holeNumber)){GolfSurfaceBatching.Apply(model);GolfPlantInstances.Apply(model);}
             if (swapped > 0 || lights > 0 || densified > 0) Debug.Log($"[GolfLook] hole {holeNumber}: {swapped} LK_ material slot(s) dressed, {lights} lava light(s), {densified} low-poly water mesh(es) densified");
         }
 
         static bool IsTennisWater(Material[] mats)
         {
-            foreach (var m in mats) if (m && m.shader && m.shader.name == "GolfArcade/TennisWater") return true;
+            foreach (var m in mats) if (m && m.shader && (m.shader.name == "GolfArcade/TennisWater" || m.shader.name == "GolfArcade/GolfOcean")) return true;
             return false;
         }
 

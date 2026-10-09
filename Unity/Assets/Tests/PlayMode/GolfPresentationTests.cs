@@ -139,6 +139,8 @@ namespace GolfArcade.PlayTests
                     Capture(cam, $"shot-{number}-address");
                     Vector3 launch = cam.transform.position;
                     Quaternion previous = cam.transform.rotation;
+                    bool landingView = false;
+                    game.NativeReady();
                     game.NativeSwing(.78f);
                     Vector3 direction = HoleView.ToWorld(game.LastShot.Landing) - HoleView.ToWorld(game.LastShot.Origin);
                     direction.y = 0; direction.Normalize();
@@ -150,7 +152,9 @@ namespace GolfArcade.PlayTests
                         frame++;
                         if (game.Current != GolfGame.State.Flight) break; // intentional result cut, after rest
                         if (game.FlightTime <= 0) { previous = cam.transform.rotation; continue; }
-                        maxTurn = Mathf.Max(maxTurn, Quaternion.Angle(previous, cam.transform.rotation));
+                        if (landingView == cam.GetComponent<CameraRig>().LandingView)
+                            maxTurn = Mathf.Max(maxTurn, Quaternion.Angle(previous, cam.transform.rotation));
+                        landingView = cam.GetComponent<CameraRig>().LandingView;
                         previous = cam.transform.rotation;
                         Assert.That(Vector3.Dot(cam.transform.forward, direction), Is.GreaterThan(0), $"hole {number} camera reversed at {game.FlightTime:F2}s");
                         Assert.That(Vector3.Dot(cam.transform.right, Vector3.up), Is.EqualTo(0).Within(.015f), $"hole {number} camera rolled");
@@ -167,7 +171,7 @@ namespace GolfArcade.PlayTests
                     Assert.That(frame, Is.LessThan(1800), "shot failed to settle");
                     Assert.That(launchTravel, Is.LessThan(.25f), "launch view must hold for 1.5 seconds");
                     Assert.That(followTravel, Is.GreaterThan(5f), "camera must travel after launch hold");
-                    Assert.That(maxTurn, Is.LessThan(12f), "camera must not cut during live flight");
+                    Assert.That(maxTurn, Is.LessThan(12f), "camera must turn smoothly except for its landing cut");
                     Assert.That(ballOutside, Is.LessThanOrEqualTo(Mathf.Max(3, flightFrames / 20)), "airborne ball must remain in frame");
                     Debug.Log($"GOLF_CAMERA hole={number} maxTurn={maxTurn:F3} holdTravel={launchTravel:F3} followTravel={followTravel:F1} ballOutside={ballOutside}/{flightFrames}");
                 }
@@ -296,6 +300,7 @@ namespace GolfArcade.PlayTests
                     var addressPosition = cam.transform.position;
                     var addressRotation = cam.transform.rotation;
                     UnityEngine.Random.InitState(902);
+                    game.NativeReady();
                     game.NativeSwing(.78f);
                     int flightFrames = 0;
                     while (game.Current == GolfGame.State.Flight && flightFrames++ < 1200)
@@ -309,8 +314,9 @@ namespace GolfArcade.PlayTests
                     Assert.That(game.ShowingShotResult, Is.True);
                     Assert.That(game.ShotStatistics, Does.Contain($"Total {game.LastShot.Total:F0} yd"));
                     Assert.That(game.ShotStatistics, Does.Contain($"Carry {game.LastShot.Carry:F0} yd"));
-                    Assert.That(Vector3.Distance(cam.transform.position, addressPosition), Is.LessThan(.01f));
-                    Assert.That(Quaternion.Angle(cam.transform.rotation, addressRotation), Is.LessThan(.1f));
+                    Assert.That(Vector3.Dot((cam.transform.position-golfer.transform.position).normalized, golfer.transform.forward), Is.GreaterThan(.5f), "result must face the character");
+                    var resultPosition=cam.transform.position;
+                    var resultRotation=cam.transform.rotation;
                     var screen = cam.WorldToViewportPoint(golfer.transform.position + Vector3.up);
                     Assert.That(screen.z, Is.GreaterThan(0));
                     Assert.That(screen.x, Is.InRange(.15f, .48f), "golfer must occupy the left of the result card");
@@ -333,8 +339,8 @@ namespace GolfArcade.PlayTests
                         for (int frame = 0, frames = Mathf.CeilToInt(golfer.PerformanceDuration * 30) + 15; frame < frames; frame++)
                         {
                             yield return null;
-                            Assert.That(Vector3.Distance(cam.transform.position, addressPosition), Is.LessThan(.01f), "emote camera moved away from the swing view");
-                            Assert.That(Quaternion.Angle(cam.transform.rotation, addressRotation), Is.LessThan(.1f), "emote camera changed the swing angle");
+                            Assert.That(Vector3.Distance(cam.transform.position, resultPosition), Is.LessThan(.01f), "emote camera moved");
+                            Assert.That(Quaternion.Angle(cam.transform.rotation, resultRotation), Is.LessThan(.1f), "emote camera changed angle");
                             if (!female) Capture(cam, $"sequence/frame-{video++:0000}");
                             if (frame == 25) Capture(cam, (female ? "female-" : "") + moves[choice].ToLowerInvariant());
                         }

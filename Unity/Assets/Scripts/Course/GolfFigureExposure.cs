@@ -11,6 +11,7 @@ namespace GolfArcade.Course
     {
         public static Color Exposure { get; private set; } = Color.white;
         int signature;
+        GolfArcade.Tennis.ContactShadow contact;
         readonly List<Material> owned = new();
         public static bool IsWhite(Color c) => Mathf.Approximately(c.r,1)&&Mathf.Approximately(c.g,1)&&Mathf.Approximately(c.b,1);
         public static void Set(Color legacyExposure)
@@ -20,6 +21,12 @@ namespace GolfArcade.Course
             if(!golfer)return;
             var adapter=golfer.GetComponent<GolfFigureExposure>()??golfer.gameObject.AddComponent<GolfFigureExposure>();
             adapter.Refresh(true);
+            if (!adapter.contact) {
+                adapter.contact=GolfArcade.Tennis.TennisLook.AddContactShadow(golfer.transform,.5f,.48f);
+                adapter.contact.GolfGround=true;
+                adapter.contact.transform.SetParent(golfer.transform,false);
+                adapter.contact.gameObject.AddComponent<GolfArcade.Tennis.TennisShoeOcclusion>().shadow=adapter.contact;
+            }
         }
         void LateUpdate()=>Refresh(false);
         void Refresh(bool force)

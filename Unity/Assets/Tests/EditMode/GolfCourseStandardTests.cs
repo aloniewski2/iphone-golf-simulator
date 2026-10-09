@@ -31,15 +31,15 @@ namespace GolfArcade.Tests
             => Assert.IsNull(GolfCourseLook.Role(material,"Pin",false));
 
         [Test]
-        public void CompleteSelectableCatalogHasExactlyThirteenUpgradeTargets()
+        public void CompleteSelectableCatalogUsesTheSharedVisualStandard()
         {
             int count=0;
             foreach(var course in Course.Course.All()) foreach(var h in course.Holes)
             {
-                Assert.AreEqual(!GolfLook.IsPostcard(h.Number),GolfCourseLook.Handles(h.Number));
+                Assert.IsTrue(GolfCourseLook.Handles(h.Number), "Every selectable hole uses the shared standard: "+h.Number);
                 if(GolfCourseLook.Handles(h.Number)) { count++; Assert.IsNotNull(GolfCourseAtmosphere.For(h.Number)); }
             }
-            Assert.AreEqual(13,count);
+            Assert.AreEqual(16,count);
         }
 
         [Test]

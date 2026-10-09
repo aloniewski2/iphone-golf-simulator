@@ -61,3 +61,13 @@ Authority blend: `ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend`.
 ## Bald reference update — 2026-09-30
 
 Adnan supplied replacement bald male and female references. The current base_lock male_body_plain.jpg and female_body_plain.jpg are those unchanged files; earlier hair-on plates are archived under base_lock/archive/with_hair_20260930/. This explicit update supersedes earlier hair-on identity statements. Match the complete bald head, face and grey body. Main HeroBase_Male/Female prefabs are bald; hair stays a separate optional asset and must never supply missing scalp, ears, face or neck. Optional hairstyle previews are separate from the base comparison. No clothes, rig, Mixamo or Animator.
+
+## Active character beautification instruction — 2026-10-08
+
+Adnan authorizes the sequential character beautification plan in the 2026-10-08/open chat. Clothing is in scope. Clothing color is customizable: reference hues are examples, never a fidelity gate. Preserve existing palette controls and saved selections; use neutral material detail and check light, dark and saturated swatches. Finish one component at a time, beginning with the male polo; show actual game renders in chat when a stage passes, then continue to the next stage without stopping for confirmation. Keep accepted identity and gameplay behavior.
+
+Latest scope clarification: character-only execution. Preserve map geometry, turf, world post-processing/light rigs and gameplay-camera framing. Keep the user’s rendering observations in the plan for later; current maps serve as fixed character evaluation environments.
+
+Latest scope clarification: **clothes only**. Complete garment shape, fit, seams, fabric and garment deformation, with all clothing colors customizable. Preserve body/head/face/hair/skin assets, body bindings, rig and animation sources, lights, cameras and maps. Garment bindings and garment-only corrections remain in scope. Keep male polo first, show actual passing game proof, then continue garment by garment. Deferred character/face/arm/presentation stages are no longer part of this pass.
+
+Latest scope/stop instruction: finish the current male polo, reuse its successful system for the female polo and skirt, then stop. Do not proceed to the remaining male shorts, golf garments or broader character/map work in this pass.

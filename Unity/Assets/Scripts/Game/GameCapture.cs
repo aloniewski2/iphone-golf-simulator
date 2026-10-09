@@ -23,31 +23,36 @@ namespace GolfArcade.Game
             foreach (var c in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
                 if (c.enabled && c.gameObject.activeInHierarchy && c.targetDisplay == 0 && !c.targetTexture) cameras.Add(c);
             cameras.Sort((a, b) => a.depth.CompareTo(b.depth));
-            foreach (var c in cameras)
-            {
-                var prev = c.targetTexture; c.targetTexture = rt; c.Render(); c.targetTexture = prev;
-            }
-            // An overlay canvas only draws to the screen; it comes through Render in camera space,
-            // drawn by the main camera over the full frame (its own rect may be partial).
-            // The canvases are built in code on the default layer; for this pass alone they go on
-            // the UI layer so only they draw.
-            var overlays = new List<Canvas>();
-            var relayered = new List<(GameObject go, int layer)>();
+            // URP RenderGraph does not preserve the colour attachment across a second
+            // Camera.Render invocation with ClearFlags.Depth. Draw the world and its HUD
+            // together, instead of replacing the world with a UI-only second render.
+            var overlays = new List<(Canvas canvas, Camera previousCamera, float distance)>();
             foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
                 if (c.renderMode == RenderMode.ScreenSpaceOverlay)
                 {
-                    overlays.Add(c);
+                    overlays.Add((c,c.worldCamera,c.planeDistance));
                     c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = camera; c.planeDistance = 0.5f;
-                    foreach (var t in c.GetComponentsInChildren<Transform>(true)) { relayered.Add((t.gameObject, t.gameObject.layer)); t.gameObject.layer = 5; }
                 }
-            var rect = camera.rect; var clear = camera.clearFlags; var mask = camera.cullingMask; var previous = camera.targetTexture;
-            // (depth cleared: the course's own would cut into the HUD where the ground is close)
-            camera.rect = new Rect(0, 0, 1, 1); camera.clearFlags = CameraClearFlags.Depth; camera.cullingMask = 1 << 5; camera.targetTexture = rt;
-            Canvas.ForceUpdateCanvases();
-            camera.Render();
-            camera.rect = rect; camera.clearFlags = clear; camera.cullingMask = mask; camera.targetTexture = previous;
-            foreach (var (go, layer) in relayered) go.layer = layer;
-            foreach (var c in overlays) c.renderMode = RenderMode.ScreenSpaceOverlay;
+            try
+            {
+                Canvas.ForceUpdateCanvases();
+                foreach (var c in cameras)
+                {
+                    var previous = c.targetTexture;
+                    try { c.targetTexture = rt; c.Render(); }
+                    finally { c.targetTexture = previous; }
+                }
+            }
+            finally
+            {
+                foreach (var state in overlays)
+                {
+                    state.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    state.canvas.worldCamera = state.previousCamera;
+                    state.canvas.planeDistance = state.distance;
+                }
+                Canvas.ForceUpdateCanvases();
+            }
 
             var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
             var active = RenderTexture.active;

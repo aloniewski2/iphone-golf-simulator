@@ -12,32 +12,32 @@ namespace GolfArcade.UI
 
         // ---- Tokens. One navy world, hue-biased neutrals, a single sky accent; the meter's
         // green/amber/red is semantic and stays out of this palette.
-        public static readonly Color Ground = Hex("0E1A2B");
-        public static readonly Color Surface = Hex("16263C", 0.92f);
-        public static readonly Color SurfaceRaised = Hex("1F3352", 0.96f);
+        public static readonly Color Ground = Hex("0A192D");
+        public static readonly Color Surface = Hex("10243D", 0.94f);
+        public static readonly Color SurfaceRaised = Hex("1D3851", 0.96f);
         public static readonly Color Hairline = new(1f, 1f, 1f, 0.12f);
-        public static readonly Color Ink = Hex("F4F7FB");
-        public static readonly Color InkMuted = Hex("9FB3CF");
-        public static readonly Color Accent = Hex("5AB0FF");
-        public static readonly Color AccentStrong = Hex("2F8DF0");
+        public static readonly Color Ink = Hex("FFF9EE");
+        public static readonly Color InkMuted = Hex("B7CDD3");
+        public static readonly Color Accent = Hex("65D1D3");
+        public static readonly Color AccentStrong = Hex("35B8C7");
 
         // Names the HUD grew up with, mapped onto the tokens.
         public static readonly Color CardFill = Surface;
         public static readonly Color CardEdge = Hairline;
-        public static readonly Color ButtonFill = Hex("1A2C47", 0.9f);
-        public static readonly Color ButtonPressed = new(0.35f, 0.69f, 1f, 0.9f);
+        public static readonly Color ButtonFill = Hex("10243D", 0.94f);
+        public static readonly Color ButtonPressed = Hex("35B8C7", .94f);
         public static readonly Color Muted = InkMuted;
 
         // ---- The tournament look, for what is broadcast over the course (the title over the
         // flyover, the nameplates, the scoreboard, the shot card): Wii-bright cobalt panels with a
         // white rim, sunshine-yellow for you, navy ink on the yellow.
-        public static readonly Color ArcadeBlue = Hex("2F5FE0", 0.92f);
-        public static readonly Color ArcadeBlueDeep = Hex("1C3FA8");
-        public static readonly Color ArcadeSky = Hex("9CC2FF", 0.55f);
-        public static readonly Color ArcadeRim = Hex("FFFFFF", 0.95f);
-        public static readonly Color ArcadeYellow = Hex("FFD23A");
-        public static readonly Color ArcadeYellowDeep = Hex("F2A81D");
-        public static readonly Color ArcadeInk = Hex("132A6B");
+        public static readonly Color ArcadeBlue = Surface;
+        public static readonly Color ArcadeBlueDeep = Ground;
+        public static readonly Color ArcadeSky = Hex("65D1D3", 0.55f);
+        public static readonly Color ArcadeRim = Hex("FFF9EE", 0.90f);
+        public static readonly Color ArcadeYellow = Hex("D7F044");
+        public static readonly Color ArcadeYellowDeep = Hex("ACCA23");
+        public static readonly Color ArcadeInk = Hex("10243D");
 
         public static Color Hex(string hex, float alpha = 1f)
         {

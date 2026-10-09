@@ -1,0 +1,11 @@
+{
+  "status": "PASS complete actual16 audit EXACT to actualDense15",
+  "fields": "All JSON fields (including material/count diagnostics) identical",
+  "obstacles": 161,
+  "colliders": 14,
+  "groundRecords": 14,
+  "prior": "ArtDir/golf/proof/dense-turf15/hole12_audit.json",
+  "current": "ArtDir/golf/proof/turf-hierarchy16/hole12_audit.json",
+  "priorSha256": "a8a04b57ac11eea8f5180859a087c8eb05e35ed02399a3386093dc83f1f2c70a",
+  "currentSha256": "a8a04b57ac11eea8f5180859a087c8eb05e35ed02399a3386093dc83f1f2c70a"
+}

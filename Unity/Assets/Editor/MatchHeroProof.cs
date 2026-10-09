@@ -23,7 +23,8 @@ namespace GolfArcade.EditorTools
     public static class MatchHeroProof
     {
         const string Flag = "MatchHeroProof";
-        static IEnumerator script;
+        static IEnumerator script; static int lastFrame = -1;
+        static readonly Stack<IEnumerator> steps = new();
         static string Out => Path.GetFullPath(Environment.GetEnvironmentVariable("MH_PROOF_OUT") ?? "../work/hero-mainstay/proof");
 
         [Serializable] class Shot { public string file, scenario, role, sex, clip, state, note; public float clipTime, contact; public int frame; public float gap; }
@@ -39,15 +40,16 @@ namespace GolfArcade.EditorTools
             var L = d.matchLook;
             Vector3 hips = L.Bone(HumanBodyBones.Hips).position, rh = L.Bone(HumanBodyBones.RightHand).position, lh = L.Bone(HumanBodyBones.LeftHand).position;
             Vector3 head = L.Bone(HumanBodyBones.Head).position, lf = L.Bone(HumanBodyBones.LeftFoot).position, rf = L.Bone(HumanBodyBones.RightFoot).position;
-            trace.Add($"{scenario},{role},{frame},{game.Flow},{d.State.Replace(',', ';')},{d.PlayingClip},{d.PlayingClipTime:0.0000},{d.ActionWeight:0.000},{d.UpperLayerWeight:0.000},{d.WeightSum:0.000},{a.Swinging},{a.SignedTimeToContact:0.000},{a.PrepareAmount:0.000},{a.Speed:0.00},{a.ForwardSpeed:0.00}," +
-                $"{Fmt(a.transform.position)},{Fmt(hips)},{Fmt(head)},{Fmt(rh)},{Fmt(lh)},{Fmt(lf)},{Fmt(rf)},{Fmt(d.StringCentre)},{Fmt(game.BallPosition)},{Fmt(a.TossReachTarget)},{a.TossReachWanted:0.00},{d.FootSkate:0.000},{d.PlantDip:0.000},{d.LastGroundLift:0.000},{d.WeightReport().Replace(',', ';')}");
+            trace.Add($"{scenario},{role},{frame},{Time.frameCount},{game.Flow},{d.State.Replace(',', ';')},{d.PlayingClip},{d.PlayingClipTime:0.0000},{d.ActionWeight:0.000},{d.UpperLayerWeight:0.000},{d.WeightSum:0.000},{a.Swinging},{a.SignedTimeToContact:0.000},{a.PrepareAmount:0.000},{a.Speed:0.00},{a.ForwardSpeed:0.00}," +
+                $"{Fmt(a.transform.position)},{Fmt(hips)},{Fmt(head)},{Fmt(rh)},{Fmt(lh)},{Fmt(lf)},{Fmt(rf)},{Fmt(d.StringCentre)},{Fmt(game.BallPosition)},{Fmt(a.TossReachTarget)},{a.TossReachWanted:0.00},{d.FootSkate:0.000},{d.PlantDip:0.000},{d.LastGroundLift:0.000},{d.WeightReport().Replace(',', ';')},{d.LastCrouch:0.00000},{d.LastDesiredCrouch:0.00000},{Fmt(d.RenderedLunge)},{a.Guiding},{a.ContactGuideWeight:0.00000},{Fmt(a.GuideBall)},{Fmt(d.LastGuideGoal)},{d.LastAssistWeight:0.00000},{d.LastPhysicsTtc:0.00000},{d.LastPhysicsCrouch:0.00000},{Fmt(d.LastPhysicsLunge)},{Fmt(d.LastPhysicsStrings)},{d.PhysicsPoseRestoreError:0.000000}");
         }
-        const string TraceHeader = "scenario,role,frame,flow,state,clip,clipTime,actionWeight,upperWeight,weightSum,swinging,ttc,prepare,speed,fwdSpeed,actor,hips,head,rightHand,leftHand,leftFoot,rightFoot,strings,ball,tossTarget,tossWanted,footSkate,plantDip,groundLift,weights";
+        const string TraceHeader = "scenario,role,frame,unityFrame,flow,state,clip,clipTime,actionWeight,upperWeight,weightSum,swinging,ttc,prepare,speed,fwdSpeed,actor,hips,head,rightHand,leftHand,leftFoot,rightFoot,strings,ball,tossTarget,tossWanted,footSkate,plantDip,groundLift,weights,crouch,desiredCrouch,visualLunge,guiding,guideWeight,guideBall,guideGoal,assistWeight,physicsTtc,physicsCrouch,physicsLunge,physicsStrings,physicsRestoreError";
 
         static MatchHeroProof() { EditorApplication.update += Tick; }
 
         public static void Run()
         {
+            script = null; steps.Clear(); lastFrame = -1;
             Directory.CreateDirectory(Out + "/raw");
             EditorSceneManager.OpenScene("Assets/Scenes/Tennis.unity");
             SessionState.SetBool(Flag, true);
@@ -56,11 +58,20 @@ namespace GolfArcade.EditorTools
 
         static void Tick()
         {
-            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying) return;
+            if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying || lastFrame == Time.frameCount) return;
+            lastFrame = Time.frameCount;
             var game = Object.FindFirstObjectByType<TennisGame>();
             if (!game || !game.Initialized) return;
-            if (script == null) script = Script(game);
-            try { if (!script.MoveNext()) Finish(0); }
+            try {
+                if (script == null) { script = Script(game); steps.Push(script); }
+                while (steps.Count > 0) {
+                    var step = steps.Peek();
+                    if (!step.MoveNext()) { steps.Pop(); continue; }
+                    if (step.Current is IEnumerator nested) { steps.Push(nested); continue; }
+                    return;
+                }
+                Finish(0);
+            }
             catch (Exception e) { Debug.LogException(e); Finish(1); }
         }
 
@@ -113,7 +124,7 @@ namespace GolfArcade.EditorTools
                 var look = HeroKit.Style.From(female ? 1 : 3, 2, 1, kit, female ? 1 : 0, female);   // skin, hair colour, headwear, kit, haircut, sex (the old hair / headwear choices are carried but not worn)
                 look.SkinTint = HeroKit.Hex(female ? "EEBB8F" : "C47A4C");
                 game.SelectCharacter(female);                // what NativeSportsSession.Load does for the locker's sex
-                game.SetPlayerLook(look);                    // ...and for the locker's look
+                if(Environment.GetEnvironmentVariable("MH_PRODUCTION_KIT")!="1")game.SetPlayerLook(look);                    // ...and for the locker's look
                 yield return Frames(40);
                 var d = game.Player.GetComponentInChildren<HeroTennisDriver>();
                 AuditScene("locker_" + sex, game);
@@ -155,7 +166,7 @@ namespace GolfArcade.EditorTools
                 var kit = TennisLook.Kit.From("FFFFFF", "1E2A5A", "F28C28", playerFemale ? "E8508F" : "2E6BD6", playerFemale ? 1 : 3);
                 var look = HeroKit.Style.From(playerFemale ? 1 : 3, 2, 1, kit, playerFemale ? 1 : 0, playerFemale);
                 look.SkinTint = HeroKit.Hex(playerFemale ? "EEBB8F" : "C47A4C");
-                game.SelectCharacter(playerFemale); game.SetPlayerLook(look);
+                game.SelectCharacter(playerFemale); if(Environment.GetEnvironmentVariable("MH_PRODUCTION_KIT")!="1")game.SetPlayerLook(look);
                 game.ConfigureMatch(TennisGame.Mode.Campaign, key, key, "ROUND");     // exactly the phone launch path: the rival replaces the opponent
                 if (presentation) presentation.Finish();                                  // the intro is a separate show; this proof is the match itself
                 yield return Frames(45);

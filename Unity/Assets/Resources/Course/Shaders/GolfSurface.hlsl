@@ -4,10 +4,13 @@
 CBUFFER_START(UnityPerMaterial)
 float4 _BaseColor,_BaseMap_ST,_EmissionColor,_StripeDirection;
 float4 _MowingBounds;
-float _WorldUV,_TileYards,_FollowCourse,_RockScale,_StrataStrength,_RockMipBias,_TriplanarNormals;
+half4 _LowColor,_HighColor;
+half _PaletteMode,_DetailContrast,_PaletteDetail,_PaletteMidpoint,_PaletteLightShoulder,_TurfMidpoint,_TurfManaged;
+float _WorldUV,_TileYards,_FollowCourse,_RockScale,_StrataStrength,_RockMipBias,_TriplanarNormals,_AuthoredUV;
 half _Smoothness,_BumpScale,_Surface,_Bands,_StripeWidth,_SheenFromAlpha;
 half _Wrap,_Rock,_Basalt,_Cap,_NormalEnabled,_EmissionEnabled;
 half _Foliage;
+ half _HeightStrength,_GeologicalMacro,_WetFoot;
 CBUFFER_END
 TEXTURE2D(_BaseMap);SAMPLER(sampler_BaseMap);
 TEXTURE2D(_BumpMap);SAMPLER(sampler_BumpMap);

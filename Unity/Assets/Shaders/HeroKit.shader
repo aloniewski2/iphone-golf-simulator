@@ -1,12 +1,5 @@
-// Adnan's Hero, shaded for the course. The body and clothes share one colour atlas
-// (Resources/Hero/Look/hero_atlas) with a region mask beside it (hero_mask: R shirt, G shorts and the
-// navy trim, B hair baked into the atlas, A skin). Each region can be re-coloured while keeping the
-// atlas's own shading, by scaling the new colour with the texel's luminance against the region's mean
-// (_Ref, from hero_kitref.json) — the same rule as his KitRecolor shader, done here per pixel so a
-// look changes with one colour property instead of a render texture. Lit like GolferClay: a MatCap
-// for the soft form shading of his studio renders and a wrapped sun, so it sits with the clay
-// figures and the course's light. Flat parts (hair, shoes, cap) use _Color with _UseAtlas 0; the scalp
-// (_UseScalp) is skin below its hairline and hair above.
+// Modular golf compatibility surface. The shared MatchHeroLook path is preferred;
+// this surface keeps legacy spectators, optional hair and painted parts grounded in scene light.
 Shader "GolfArcade/HeroKit"
 {
     Properties
@@ -16,13 +9,17 @@ Shader "GolfArcade/HeroKit"
         _Color ("Colour (flat parts)", Color) = (1, 1, 1, 1)
         _UseAtlas ("Atlas on (1) or flat colour (0)", Float) = 1
         _MatCap ("MatCap (grey)", 2D) = "white" {}
-        _MatCapStrength ("How much the MatCap shades", Range(0, 1)) = 0.45
+        _MatCapStrength ("How much the MatCap shades", Range(0, 1)) = .10
         _Wrap ("Light wrap", Range(0, 1)) = 0.35
+        _SurfaceSmoothness ("Surface smoothness", Range(0,1)) = 0.28
+        _SurfaceSpecular ("Surface highlight", Range(0,2)) = 0.8
+        _SurfaceSheen ("Fabric grazing sheen", Range(0,1)) = 0
+        _SurfaceWarmth ("Skin warmth", Color) = (0.12,0.035,0.02,1)
         _Shirt ("Shirt", Color) = (1, 1, 1, 0)
         _Shorts ("Shorts + trim", Color) = (1, 1, 1, 0)
         _Accent ("Baked hair", Color) = (1, 1, 1, 0)
         _Skin ("Skin", Color) = (1, 1, 1, 0)
-        _SkinShading ("Skin shading kept", Range(0, 1)) = 0.45
+        _SkinShading ("Skin shading kept", Range(0, 1)) = .10
         _Ref ("Region mean luminance", Vector) = (0.85, 0.19, 0.3, 0.67)
         _UseFlex ("Hair: swing by the vertex colour's R", Float) = 0
         _HairSway ("Hair sway (world offset at flex 1)", Vector) = (0, 0, 0, 0)
@@ -85,6 +82,7 @@ Shader "GolfArcade/HeroKit"
         sampler2D _MainTex, _Mask, _MatCap;
         fixed4 _Color, _Shirt, _Shorts, _Accent, _Skin, _ScalpSkin;
         float4 _Ref;
+        float _SurfaceSmoothness, _SurfaceSpecular, _SurfaceSheen; float4 _SurfaceWarmth;
         float _UseAtlas, _MatCapStrength, _Wrap, _SkinShading, _UseFlex, _UseScalp, _HairAmount, _Clear, _Fill;
         float4 _HairSway, _HatHold;
 
@@ -149,6 +147,9 @@ Shader "GolfArcade/HeroKit"
             half lit = saturate((nl + _Wrap) / (1 + _Wrap));
             half4 c;
             c.rgb = s.Albedo * (gi.light.color * lit + _Fill);
+            half3 h = normalize(gi.light.dir + viewDir);
+            half spec = pow(saturate(dot(s.Normal,h)), 16 + _SurfaceSmoothness * 80) * _SurfaceSpecular * .08 * saturate(nl * 3);
+            c.rgb += gi.light.color * spec;
             #ifdef UNITY_LIGHT_FUNCTION_APPLY_INDIRECT
             c.rgb += s.Albedo * gi.indirect.diffuse;
             #endif

@@ -1,4 +1,5 @@
 import SwiftUI
+import SceneKit
 
 // The sports-arcade front end around the tennis screens: title, main menu, game select, each
 // sport's hub, character, settings, how-to, the golf lesson, connecting a screen, and loading.
@@ -126,59 +127,148 @@ enum PartyLoadingTips {
     }
 }
 
+@MainActor enum PresentationPortraits {
+    private static let cache = NSCache<NSString, UIImage>()
+    static func key(_ player: Player, sport: Sport) -> String {
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        guard let data = try? encoder.encode(player), var appearance = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return "unavailable" }
+        appearance.removeValue(forKey: "id"); appearance.removeValue(forKey: "name")
+        return "v1|\(sport.rawValue)|" + ((try? JSONSerialization.data(withJSONObject: appearance, options: .sortedKeys))?.base64EncodedString() ?? "unavailable")
+    }
+    static func image(_ player: Player, sport: Sport) -> UIImage? {
+        let key = key(player, sport: sport) as NSString
+        if let image = cache.object(forKey: key) { return image }
+        let coordinator = CharacterModelPreview.Coordinator(cameraDistance: 3.8)
+        coordinator.update(player, sport: sport)
+        guard let root = coordinator.hero, let asset = MatchHero.asset(female: player.standardFemale, golf: sport == .golf),
+              let rig = HeroRig(root: root, asset: asset),
+              let clip = rig.data.clips.first(where: { $0.key == "wave" || $0.key == "bringIt" })?.value else { return nil }
+        rig.attach(); rig.apply(clip.pose(at: clip.length * 0.35, loop: false))
+        rig.data.applyMorphWeights(clip.morphWeights(at: clip.length * 0.35, loop: false), to: root)
+        coordinator.camera?.position = SCNVector3(0, 0.95, 3.8)
+        coordinator.camera?.look(at: SCNVector3(0, 0.9, 0))
+        let renderer = SCNRenderer(device: nil, options: nil)
+        renderer.scene = coordinator.scene; renderer.pointOfView = coordinator.camera
+        let image = renderer.snapshot(atTime: 0, with: CGSize(width: 320, height: 320), antialiasingMode: .multisampling4X)
+        cache.countLimit = 24; cache.setObject(image, forKey: key)
+        return image
+    }
+}
+
+private struct PresentationRosterCard: View {
+    let name: String
+    let player: Player?
+    let sport: Sport
+    let loaded: Bool?
+    let compact: Bool
+    @State private var portrait: UIImage?
+    private var cacheKey: String { player.map { PresentationPortraits.key($0, sport: sport) } ?? name }
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 22).fill(Club.lagoonDeep.opacity(0.72))
+                if let portrait { Image(uiImage: portrait).resizable().scaledToFit() }
+                else { Image(systemName: "person.fill").resizable().scaledToFit().foregroundStyle(IslandUI.lime.opacity(0.8)).padding(26) }
+            }.frame(height: compact ? 140 : 245)
+            HStack(spacing: 6) {
+                Text(name).font(IslandUI.font(compact ? 19 : 26, bold: true)).lineLimit(1).minimumScaleFactor(0.75)
+                if loaded == true { Image(systemName: "checkmark.circle.fill").foregroundStyle(IslandUI.lime) }
+            }
+        }.accessibilityElement(children: .ignore).accessibilityLabel("\(name)\(loaded == true ? ", loaded" : "")")
+        .task(id: cacheKey) {
+            portrait = nil
+            // Let the cover paint before allocating an offscreen hero render.
+            try? await Task.sleep(for: .milliseconds(120))
+            guard !Task.isCancelled, let player else { return }
+            portrait = PresentationPortraits.image(player, sport: sport)
+        }
+    }
+}
+
 struct LoadingScreen: View {
     let menu: TennisMenu
     let compact: Bool
-    @State private var tip = 0
+    @State private var drift = false
     private var session: SportsSession { .shared }
+    private var service: MultiplayerService { menu.online.service }
+    private var sport: Sport { service.lobby?.phase == .loading ? (service.lobby?.sport == .golf ? .golf : .tennis) : menu.launch?.sport ?? Sport(rawValue: session.sport) ?? .tennis }
+    private var venue: String { sport == .golf ? (GolfCourseChoice(rawValue: session.golfCourse)?.title ?? "Cliffside") : (TennisVenueChoice(rawValue: service.lobby?.venue ?? session.tennisVenue)?.title ?? "Tropical Resort") }
+    private var art: String { sport == .golf ? (GolfCourseChoice(rawValue: session.golfCourse)?.art ?? "map-golf-cliffside") : "map-\(service.lobby?.venue ?? session.tennisVenue)" }
+    private var modeLine: String {
+        if sport == .golf { return "Golf · Stroke Play · \(venue)" }
+        if menu.launch?.mode == .training { return "Tennis · Practice · \(venue)" }
+        return "Tennis · Singles · \(venue)"
+    }
     var body: some View {
-        let launch = menu.launch ?? MenuLaunch(mode: .training)
-        IslandShell(title: "Loading match", compact: compact) {
-            let layout = compact ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout(spacing: 60))
-            layout {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text(Self.label(launch, menu.loadingOpponent)).font(IslandUI.font(compact ? 22 : 28, bold: true)).foregroundStyle(IslandUI.navy)
-                    HStack(spacing: 14) {
-                        GeometryReader { bar in
-                            ZStack(alignment: .leading) {
-                                Capsule().fill(IslandUI.navy.opacity(0.10))
-                                Capsule().fill(IslandUI.lime).frame(width: max(0, bar.size.width * session.loading.progress))
+        GeometryReader { geometry in
+            ZStack {
+                Club.lagoonDeep
+                if let image = UIImage(named: art + ".jpg") {
+                    Image(uiImage: image).resizable().scaledToFill()
+                        .frame(width: geometry.size.width, height: geometry.size.height).clipped()
+                        .scaleEffect(drift && !session.reduceMotion ? 1.03 : 1)
+                }
+                LinearGradient(colors: [.black.opacity(0.25), Club.lagoonDeep.opacity(0.96)], startPoint: .top, endPoint: .bottom)
+                VStack(spacing: compact ? 18 : 24) {
+                    Text(venue).font(IslandUI.font(compact ? 32 : 58, bold: true))
+                    Text(modeLine).font(IslandUI.font(compact ? 15 : 23)).multilineTextAlignment(.center)
+                    roster
+                    Spacer(minLength: 0)
+                    loadingStatus
+                    HStack(spacing: 16) {
+                        if session.multiplayerMatchID != nil || service.lobby?.phase == .loading {
+                            if service.loadingNeedsDecision {
+                                IslandAction(title: "Keep waiting", focused: menu.isFocused("net-wait"), primary: true, compact: true) { menu.tap("net-wait") }
                             }
-                        }.frame(height: compact ? 18 : 24)
-                            .accessibilityElement().accessibilityLabel("Loading progress").accessibilityValue("\(session.loading.percent) percent")
-                        Text("\(session.loading.percent)%").font(IslandUI.font(21, bold: true)).monospacedDigit().foregroundStyle(IslandUI.navy)
+                            IslandAction(title: "Leave match", focused: menu.isFocused("net-leave"), compact: true) { menu.tap("net-leave") }
+                        } else {
+                            IslandAction(title: "Leave match", focused: menu.isFocused("loadingBack"), compact: true) { menu.tap("loadingBack") }
+                            if session.loading.isStalled || session.loading.phase == .failed {
+                                IslandAction(title: "Retry", focused: menu.isFocused("loadingRetry"), primary: true, compact: true) { menu.tap("loadingRetry") }
+                            }
+                        }
                     }
-                    if launch.sport == .tennis { Button { session.loading.practice() } label: {
-                        Label("Swing to practice", systemImage: "tennis.racket").font(IslandUI.font(compact ? 20 : 26, bold: true)).foregroundStyle(IslandUI.navy).padding(.horizontal, 20).padding(.vertical, 14).background(IslandUI.lime, in: Capsule())
-                    }.buttonStyle(.plain).accessibilityLabel("Practice a swing").accessibilityHint("You can also swing your phone while loading.").accessibilityIdentifier("loading-practice") }
-                    Text(session.loading.statusText).font(IslandUI.font(16)).foregroundStyle(IslandUI.muted)
-                    Spacer(minLength: 4)
-                    Text(PartyLoadingTips.tips(for: launch.sport)[tip % 10]).font(IslandUI.font(compact ? 16 : 19)).foregroundStyle(IslandUI.navy).fixedSize(horizontal: false, vertical: true)
-                    HStack {
-                        IslandAction(title: "Back", focused: menu.isFocused("loadingBack"), compact: true) { menu.tap("loadingBack") }
-                        if session.loading.isStalled { IslandAction(title: "Retry", focused: menu.isFocused("loadingRetry"), primary: true, compact: true) { menu.tap("loadingRetry") } }
+                }.padding(compact ? 24 : 64).frame(maxWidth: .infinity)
+            }.foregroundStyle(.white).clipped()
+        }.ignoresSafeArea().accessibilityIdentifier("presentation-loading-card")
+        .onAppear { withAnimation(.easeInOut(duration: 5).repeatForever(autoreverses: true)) { drift = true } }
+    }
+    private var roster: some View {
+        let competitors = session.multiplayerMatchID != nil || service.lobby?.phase == .loading ? service.lobby?.competitors ?? [] : []
+        return Group {
+            if !competitors.isEmpty {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: compact ? min(2, competitors.count) : competitors.count), spacing: 12) {
+                    ForEach(competitors, id: \.id) { participant in
+                        PresentationRosterCard(name: participant.name, player: participant.loadout == nil ? nil : participant.lobbyPlayer,
+                                               sport: sport, loaded: participant.loaded, compact: compact)
                     }
-                }.frame(width: compact ? nil : 470)
-                if let player = session.players[safe: session.playerIndex] {
-                    CharacterModelPreview(player: player, cameraDistance: 3.0, idleSport: launch.sport, practiceSequence: launch.sport == .tennis ? session.loading.practiceSequence : nil)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity).frame(minHeight: compact ? 250 : 0)
-                        .accessibilityLabel("Your equipped character practicing")
+                }
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    PresentationRosterCard(name: menu.player?.name ?? "You", player: menu.player, sport: sport, loaded: nil, compact: compact)
+                    if sport == .tennis {
+                        Text("VS").font(IslandUI.font(compact ? 16 : 26, bold: true)).foregroundStyle(IslandUI.lime)
+                        PresentationRosterCard(name: menu.loadingOpponent?.name ?? "Practice", player: menu.loadingOpponent.map { RivalLooks.player(for: $0) }, sport: sport, loaded: nil, compact: compact)
+                    }
                 }
             }
-        }.task {
-            while !Task.isCancelled {
-                do { try await Task.sleep(for: .seconds(4)) } catch { return }; tip += 1
+        }.frame(maxWidth: compact ? 440 : 1040)
+    }
+    private var loadingStatus: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                if session.loading.showsActivity { ProgressView().tint(IslandUI.lime) }
+                if session.loading.phase == .transitioning { Image(systemName: "checkmark.circle.fill").foregroundStyle(IslandUI.lime) }
+                Text(session.loading.statusText).font(IslandUI.font(compact ? 17 : 23, bold: true)).multilineTextAlignment(.center)
             }
-        }
+            if let tip = session.loading.tip { Text(tip).font(IslandUI.font(compact ? 15 : 21)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.8)) }
+            if session.loading.elapsed >= 10, let measured = session.loading.sceneProgress, measured < 1 {
+                ProgressView("Venue loading", value: measured).tint(IslandUI.lime).frame(maxWidth: 350)
+            }
+        }.accessibilityIdentifier("presentation-loading-status")
     }
     static func label(_ launch: MenuLaunch, _ opponent: TennisOpponent?) -> String {
-        switch (launch.sport, launch.mode) {
-        case (.golf, .tutorial): "Golf Lesson"
-        case (.golf, _): "Cliffside Golf"
-        case (_, .tutorial): "Tennis Tutorial"
-        case (_, .training): "Practice Court"
-        default: TennisVenueChoice(rawValue: SportsSession.shared.tennisVenue)?.title ?? "Tropical Open"
-        }
+        launch.sport == .golf ? (GolfCourseChoice(rawValue: SportsSession.shared.golfCourse)?.title ?? "Cliffside") : (TennisVenueChoice(rawValue: SportsSession.shared.tennisVenue)?.title ?? "Tropical Resort")
     }
 }
 

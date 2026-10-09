@@ -162,9 +162,11 @@ namespace GolfArcade.Tests
             TennisShoulderCamera.Frame(player,false,Vector3.zero,false,16f/9,out var p,out var look,out var fov);
             TennisShoulderCamera.Frame(player,false,new Vector3(5,8,10),false,16f/9,out var p2,out var look2,out var fov2);
             Assert.AreEqual(p,p2); Assert.AreEqual(look,look2); Assert.AreEqual(fov,fov2);
-            Assert.That(p.y-player.y,Is.InRange(2f,2.4f)); Assert.That(player.z-p.z,Is.InRange(3.5f,4.5f));
+            Assert.That(p.y-player.y,Is.InRange(6.9f,7.0f)); Assert.That(player.z-p.z,Is.EqualTo(7.8f).Within(.001f));
             TennisShoulderCamera.Frame(player,true,Vector3.zero,false,16f/9,out var left,out _,out _);
-            Assert.Less(left.x,player.x); Assert.Greater(p.x,player.x);
+            Assert.AreEqual(p, left, "Court view stays consistent for both handednesses");
+            Assert.That(fov, Is.EqualTo(46));
+            Assert.That(Vector3.Angle(look-p, Vector3.forward), Is.GreaterThan(19));
         }
     }
 }

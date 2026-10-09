@@ -5,8 +5,8 @@ import SwiftUI
 
 extension IslandUI {
     static let ring = navy
-    static let dark = Color(hex: "0A1424")
-    static let coral = Color(hex: "FF6B4A")
+    static let dark = Club.lagoonDeep
+    static let coral = Club.coral
     /// Row / chip surface that sits on the paper.
     static let card = Color.white
 }

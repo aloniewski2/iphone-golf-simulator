@@ -1,0 +1,241 @@
+{
+  "status": "PASS",
+  "files": [
+    {
+      "path": "Scripts/Tennis/MatchHeroLook.cs",
+      "beforeSha256": "9d7b4857adaca5a9184bb6e2e674722d505fc5942fd02f67973270f62b30f87c",
+      "afterSha256": "03367fb09ddff22a636c8c4b502908dec9117686f17513b004ac5899f6e78422"
+    },
+    {
+      "path": "Scripts/Tennis/HeroGarmentTailoring.cs",
+      "beforeSha256": "8157d6669283e37a21d252347e2bbbabb7ee18fefdd6f327caeb58ae64df439a",
+      "afterSha256": "1dd42022716cbe22003ad51a6d600cb3cbb53ff341f6e3efb2aa37a6081c06c7"
+    },
+    {
+      "path": "Scripts/Tennis/HeroGarmentLOD.cs",
+      "beforeSha256": "3dcda288079fab9daf1a88dddf9c66f980d887e2b6590f8c01bea479efbc32dc",
+      "afterSha256": "7137e8009bb30596972b3e4f65b52870f820a69599e0e4ff826c30f32e227fad"
+    },
+    {
+      "path": "Scripts/Tennis/HeroTennisDriver.cs",
+      "beforeSha256": "d631c0b955f590faf3166dd19871cdc3d3af8bd1b0bdc59678cc9d1b0daf1a1b",
+      "afterSha256": "c874477e86427779b868b53536e84c9e7bf039d5a0a5285790a511f88bb69f1f"
+    },
+    {
+      "path": "Scripts/Tennis/TailoredPoloDeformation.cs",
+      "beforeSha256": null,
+      "afterSha256": "1a76760e415cff171a6a39dff2b140979313159859659cd0950b53203d0bdc15"
+    },
+    {
+      "path": "Editor/MatchHeroLockerExport.cs",
+      "beforeSha256": "d10467dd71c9d86efe1415d52703983b7e02f0415c6801c5a272cff3f75451d4",
+      "afterSha256": "4b6d0c62cbad2ec7b327a1f8b12041434b472a085206732c70e6bd4c30ea7da0"
+    },
+    {
+      "path": "Editor/TailoredPoloAssetBake.cs",
+      "beforeSha256": null,
+      "afterSha256": "fad4de6d75c8a2469889de9e5dcdbae189239a80e7494eb12887a5c2bb0a9789"
+    },
+    {
+      "path": "Resources/Tennis/GarmentCoverage/Tennis_Male.json",
+      "beforeSha256": "51e73ce4dfae31d0be7859bdaac364cc7f23f45d0ba41572b0f5c1eedc4deaa4",
+      "afterSha256": "b62403bc8598ea3c8584adfe3a3546977ed00db4b36368961c4e6017db0cceb7"
+    },
+    {
+      "path": "Resources/Tennis/GarmentCoverage/Tennis_Female.json",
+      "beforeSha256": "666c3165f36a91d76c07203de6fafca72c5fdbdc4d614a2aa285504a1d200206",
+      "afterSha256": "b096d1c0340164cf10a6717b9bb4d2709fb50f1ce4e8232e60af4e5816714a00"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/Male.fbx",
+      "beforeSha256": "4e126ec2aaaf782697085cf852282c644c715b92a79037f0ab22d17b8a4595b0",
+      "afterSha256": "23fb18c3b0f8058b4b6c883ea6b9405b8b78f4a1993920e7bad4866049141b64"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MaleDistance.fbx",
+      "beforeSha256": "e138b9629a7ea9d02e3c4847951609763853c24dce13720f954a29ae68f683a5",
+      "afterSha256": "40b4716d2eac708021f0976461f87c689660b81c47f84025e6550872967c54bf"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/Female.fbx",
+      "beforeSha256": null,
+      "afterSha256": "a8c504b612910a3f0b93d3ff57506a1d3e462fa2c204fa18e88751e45ddf6a08"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleDistance.fbx",
+      "beforeSha256": null,
+      "afterSha256": "18986e9b2ac3a9da764cbc0bea50207713817e2f0a2ccff2299dc2feb0488ea3"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleSkirt.fbx",
+      "beforeSha256": null,
+      "afterSha256": "2d44613972c6b13a2249a2225f3b4da1724598f259a839387d9c3edc8628b5cc"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleSkirtDistance.fbx",
+      "beforeSha256": null,
+      "afterSha256": "2d44613972c6b13a2249a2225f3b4da1724598f259a839387d9c3edc8628b5cc"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloFull.asset",
+      "beforeSha256": null,
+      "afterSha256": "a76874feabafeca0c805ccd34e877463f77722273cd6c922889fefbd020f9677"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloFullControls.json",
+      "beforeSha256": null,
+      "afterSha256": "19a7b52b09a24b06f1cde27ad18af61b392ba2a98785d8974e53eb8011cb85d6"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloDistance.asset",
+      "beforeSha256": null,
+      "afterSha256": "9c563a7355773cd5ca717e718d1aa89676b46547e56a1abac9278af0b813645a"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloDistanceControls.json",
+      "beforeSha256": null,
+      "afterSha256": "1a85ce6bfcd567bf44e1f4ec7484b1cfdaeb57ebc2f5d1d89c0c6759716fc869"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloFull.asset",
+      "beforeSha256": null,
+      "afterSha256": "c2a00605530530208fcb87cf6755f00c88cb85e3289b9b46be2b6728ce7aff96"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloFullControls.json",
+      "beforeSha256": null,
+      "afterSha256": "fdf864a3c21dbf073baa412cdeb037d83a2f7aef99646a4971747382242eaaa0"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloDistance.asset",
+      "beforeSha256": null,
+      "afterSha256": "5963510604e5980dbb0ebd49bf5fcb053a8b3f395ee650ac95654999b0fc91c2"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloDistanceControls.json",
+      "beforeSha256": null,
+      "afterSha256": "38f1be2e8e56eafeea60a6365d869498d9a85951a60617cb3d0218d11a2dd868"
+    },
+    {
+      "path": "Scripts/Tennis/MatchHeroLook.cs.meta",
+      "beforeSha256": "8142e6d145b82b1d09e41e847b4276643127f10aa08fbda150b0f6d57ceca0d5",
+      "afterSha256": "8142e6d145b82b1d09e41e847b4276643127f10aa08fbda150b0f6d57ceca0d5"
+    },
+    {
+      "path": "Scripts/Tennis/HeroGarmentTailoring.cs.meta",
+      "beforeSha256": "e716cb8d33706f37c774b6940f9ffc82581eda11ed0e95227b08f5eee3ef37cc",
+      "afterSha256": "e716cb8d33706f37c774b6940f9ffc82581eda11ed0e95227b08f5eee3ef37cc"
+    },
+    {
+      "path": "Scripts/Tennis/HeroGarmentLOD.cs.meta",
+      "beforeSha256": "935702d1aad4e334e6a1a103513591a7d9008d2a1fe2fe290b2ab5817c57590f",
+      "afterSha256": "935702d1aad4e334e6a1a103513591a7d9008d2a1fe2fe290b2ab5817c57590f"
+    },
+    {
+      "path": "Scripts/Tennis/HeroTennisDriver.cs.meta",
+      "beforeSha256": "df1f5edfcb281fb129e4d1e8f68b03495ead52456fed0be985a2e48281908a93",
+      "afterSha256": "df1f5edfcb281fb129e4d1e8f68b03495ead52456fed0be985a2e48281908a93"
+    },
+    {
+      "path": "Scripts/Tennis/TailoredPoloDeformation.cs.meta",
+      "beforeSha256": null,
+      "afterSha256": "496b40b10606303f77d505254ffecd8ddc07f497043dfd08887407421de0e049"
+    },
+    {
+      "path": "Editor/MatchHeroLockerExport.cs.meta",
+      "beforeSha256": "aa3b9bcbf622f4763e159a452b42239ae1cde8f73b8cde78f319a8b003043507",
+      "afterSha256": "aa3b9bcbf622f4763e159a452b42239ae1cde8f73b8cde78f319a8b003043507"
+    },
+    {
+      "path": "Editor/TailoredPoloAssetBake.cs.meta",
+      "beforeSha256": null,
+      "afterSha256": "bbfd1d39f665f3880040d0b80f5674f862a4160e9c7a2aa58337d332a168186b"
+    },
+    {
+      "path": "Resources/Tennis/GarmentCoverage/Tennis_Male.json.meta",
+      "beforeSha256": "63eb7536031c3fa86c15729a265cf89847b33ed84fc1cafa471f6eb193a54f3f",
+      "afterSha256": "63eb7536031c3fa86c15729a265cf89847b33ed84fc1cafa471f6eb193a54f3f"
+    },
+    {
+      "path": "Resources/Tennis/GarmentCoverage/Tennis_Female.json.meta",
+      "beforeSha256": "426f5e6b936f46dba5d31bbcce03de644231bc9bc1412374956c67c23dda05b7",
+      "afterSha256": "426f5e6b936f46dba5d31bbcce03de644231bc9bc1412374956c67c23dda05b7"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/Male.fbx.meta",
+      "beforeSha256": "a2e5e22ff9b8f53f6df1f7421a95eda5b5837e3b9b6a3efc62ff469fc2c6f985",
+      "afterSha256": "a2e5e22ff9b8f53f6df1f7421a95eda5b5837e3b9b6a3efc62ff469fc2c6f985"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MaleDistance.fbx.meta",
+      "beforeSha256": "6cd6b40c23fbb2bc80dc13c1bf06a484c15e91699e2473b1a1a8544744aa20f3",
+      "afterSha256": "6cd6b40c23fbb2bc80dc13c1bf06a484c15e91699e2473b1a1a8544744aa20f3"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/Female.fbx.meta",
+      "beforeSha256": null,
+      "afterSha256": "a97bafb2c40e0afe57af45c5e0e8ea423f77118bef87f2fa9c7d459811a09605"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleDistance.fbx.meta",
+      "beforeSha256": null,
+      "afterSha256": "a5e2c3c40c479444736a12d8dba4c88c241321035a6b8923de226ea620f79ce8"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleSkirt.fbx.meta",
+      "beforeSha256": null,
+      "afterSha256": "f875af25575f4cbd597acde9983a09e31ce201271c925a987f3b59039fd0432d"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemaleSkirtDistance.fbx.meta",
+      "beforeSha256": null,
+      "afterSha256": "d67f501c718c06c3073b8dbe301131184c3098171deea508badef5affd1d2c49"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloFull.asset.meta",
+      "beforeSha256": null,
+      "afterSha256": "23302f8091ab2c82a85ca19ddc6c2af9ba232ca5f1475de966098af87e2cbd9d"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloFullControls.json.meta",
+      "beforeSha256": null,
+      "afterSha256": "eadff0245af8bedf18e3dd41b21bafee2b7aa2c5fe1a9583de926c10c1e8d722"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloDistance.asset.meta",
+      "beforeSha256": null,
+      "afterSha256": "caf0f925b2c9dd3de05466bddee287262f446b433411eb01741c25d9086006d1"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/MalePoloDistanceControls.json.meta",
+      "beforeSha256": null,
+      "afterSha256": "730fce7efbfc04fe9a512384cdb4acc5058ce8d0861a637fa384560d61bfadb1"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloFull.asset.meta",
+      "beforeSha256": null,
+      "afterSha256": "38d432e9c321dae73da1a45b10e49e2a3747462a468c2e1cc8df3c381212208e"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloFullControls.json.meta",
+      "beforeSha256": null,
+      "afterSha256": "9c6b4305e78e53378b2350cc29b9dcc47d9abced32cc000ef9d4526b60dad25c"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloDistance.asset.meta",
+      "beforeSha256": null,
+      "afterSha256": "8eabf73f987c743d7911b23a73afd08b8c0cf3541f0ee912d2dc564297e5b153"
+    },
+    {
+      "path": "Resources/Tennis/KitsTailored/FemalePoloDistanceControls.json.meta",
+      "beforeSha256": null,
+      "afterSha256": "9e607b5cbdc0334e5f9b10601c68038e5458ce3b9215c7cd0b4e30450ff8da9a"
+    }
+  ],
+  "defaultEnabled": [
+    "Male polo",
+    "Female polo",
+    "Female skirt"
+  ],
+  "mapsLightsCamerasBodyFaceRigAndAnimationSourcesChanged": false
+}

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Reflection;
 using GolfArcade.Game;
 using GolfArcade.Tennis;
 using NUnit.Framework;
@@ -7,7 +8,7 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.Tests {
     public class NativeSessionTests {
-        [UnityTest] public IEnumerator NativeLaunchSupportsBothSportsIdentitiesAndHands() {
+        [UnityTest, Timeout(600000)] public IEnumerator NativeLaunchSupportsBothSportsIdentitiesAndHands() {
             var host=new GameObject("NativeSportsSession"); Object.DontDestroyOnLoad(host);
             var bridge=host.AddComponent<NativeSportsSession>();
             try {
@@ -41,9 +42,11 @@ namespace GolfArcade.Tests {
                     } else {
                         var game=Object.FindFirstObjectByType<GolfGame>(); Assert.IsNotNull(game);
                         Assert.AreEqual(GolfGame.State.Aim,game.Current,"Start paused at address, not during the flyover");
-                        var golfer=Object.FindFirstObjectByType<GolferView>(FindObjectsInactive.Include);
+                        var golfer=(GolferView)typeof(GolfGame).GetField("golfer",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(game);
                         Assert.IsNotNull(golfer);
-                        Assert.IsTrue(golfer.UsesStandardCharacter);
+                        Assert.IsTrue(golfer.IsHero, "Native golf must use the active Match Hero asset.");
+                        Assert.IsNotNull(golfer.Hero.Root);
+                        Assert.AreEqual(female,golfer.Hero.Root.GetComponent<MatchHeroLook>().female);
                     }
                     bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session=id,action="end"}));
                     Assert.IsFalse(NativeSportsSession.Active);

@@ -1,0 +1,37 @@
+[
+  {
+    "file": "female-outfit-unity.png",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/female_current_intro.png",
+    "sha256": "99b14b6cdf3bb67bd2a23e57a5ce7f0ac9d94a9c9e419119d38365e95c2fc296"
+  },
+  {
+    "file": "female-polo-detail.png",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/female_polo_front.png",
+    "sha256": "20900bfac6a2c076f5c0692f988c0dfc3c9cbc411ca385ae2a1a052bbc8227da"
+  },
+  {
+    "file": "female-skirt-detail.png",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/female_skirt_swatch_162032.png",
+    "sha256": "c03dc8dd8ecbb3742953fd4b09072824c195ea3f90f1abd6caa5ee8a252dab5d"
+  },
+  {
+    "file": "female-skirt-teal.png",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/female_skirt_swatch_37B7A6.png",
+    "sha256": "55bd5c42e24b0d6575e9358fe815bf59dbcc917ea317e4f8987d1950c1001c86"
+  },
+  {
+    "file": "female-serve.png",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/female_Serve_4.png",
+    "sha256": "fc584efcd1b04f0870dc9cf9e988472afc10a765316a92edfee1caf9bb91ef8c"
+  },
+  {
+    "file": "female-full-audit.txt",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-full/audit.txt",
+    "sha256": "2a961923a49c54cc3e1a01bdf4e85d6ca56d5537b147c989cac7e1001e1f7435"
+  },
+  {
+    "file": "female-distance-audit.txt",
+    "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/character-female33/finished-distance/audit.txt",
+    "sha256": "937079c85cf574bd2fc3760b0aa400ce20da9bcfbc2c16feaf4c2d14537d859e"
+  }
+]

@@ -7,12 +7,12 @@ namespace GolfArcade.Tennis
         public static void Frame(Vector3 player, bool leftHanded, Vector3 ball, bool overhead, float aspect,
             out Vector3 position, out Vector3 look, out float fov)
         {
-            float shoulder = leftHanded ? -1 : 1;
-            bool portrait = aspect < 1;
-            position = player + new Vector3(shoulder * .8f, portrait ? 2.4f : 2.2f, portrait ? -4.8f : -4f);
+            // Restore the elevated court view used before the close shoulder camera.
+            float lead = Mathf.Clamp(player.x, -5f, 5f);
+            position = new Vector3(lead * .45f, 7.0f, player.z - 7.8f);
             float lift = overhead ? Mathf.Clamp((ball.y - 2.5f) * .18f, 0, .65f) : 0;
-            look = new Vector3(player.x * .78f + shoulder * .85f, .95f + lift, player.z + 12);
-            fov = portrait ? 66 : 62;
+            look = new Vector3(lead * .26f, .95f + lift, player.z + 7.2f);
+            fov = aspect < 1 ? 49 : 46;
         }
     }
 }

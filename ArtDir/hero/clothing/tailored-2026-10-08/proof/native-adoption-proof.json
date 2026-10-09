@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "files": [
+    {
+      "file": "MatchHero_Female.json",
+      "sha256": "7fc1db54796160fbea9dbbbbc453daceeb3a9ab8daf00c92c26809bdafe935eb"
+    },
+    {
+      "file": "MatchHero_Female.lzfse",
+      "sha256": "e75b529e2b92f405d24f84b42684ad6b74673b358a0f742c1b337ce206d5538d"
+    },
+    {
+      "file": "MatchHero_Female_Rig.lzfse",
+      "sha256": "36b35a3b2e696d569dab4f8bccde354a32fb18b854d414c23088c0b45c653f8b"
+    },
+    {
+      "file": "MatchHero_Female_Swing_00.lzfse",
+      "sha256": "797c53912e28d7fffe4b70303bcd255a64254823e6cfba5fdfb19ff4d01c2748"
+    },
+    {
+      "file": "MatchHero_Female_Swing_01.lzfse",
+      "sha256": "1a320211a5dca8a64191a2a0724c3cb2030e61320315d9ad71618b161519a63f"
+    },
+    {
+      "file": "MatchHero_Female_Swing_02.lzfse",
+      "sha256": "7b28d93ae38be0970af66513cbadcae5a380a3ff866c1d7662301ca1b34d7091"
+    },
+    {
+      "file": "MatchHero_Female_Swing_03.lzfse",
+      "sha256": "89ceba796a6730a018861e3c6655978e5b5549f204fbe8c4ab08812a4689f86c"
+    },
+    {
+      "file": "MatchHero_Female_Swing_04.lzfse",
+      "sha256": "eb483780d7421c17c6d15fc725f967adcbeeb6b055b5ae3fdf65fde864c641f4"
+    },
+    {
+      "file": "MatchHero_Female_Swing_05.lzfse",
+      "sha256": "cd1be084fb1df06c79ea02098c72f4439c4ff455d74569bf55f8af6f2afe4ccc"
+    },
+    {
+      "file": "MatchHero_Female_Swing_06.lzfse",
+      "sha256": "168d9a8f22a2cda5e600f5aede869a2d382be7867d294f7453581024c5fa62b7"
+    },
+    {
+      "file": "MatchHero_Female_Swing_07.lzfse",
+      "sha256": "41ddf8f7902bc1892e75446c81bdf69bc8fca225a3640c8d91458766bc59e86f"
+    },
+    {
+      "file": "MatchHero_Female_Swing_08.lzfse",
+      "sha256": "b707d1c7e9aeda7dec102767dd6c553e1cb406919ba9c89293b5cd0ee96cb9ce"
+    },
+    {
+      "file": "MatchHero_Female_Swing_09.lzfse",
+      "sha256": "04822cdaa011ee03c3784b59c498b2e704e37553cc08e4981827bc215a69326f"
+    },
+    {
+      "file": "MatchHero_Female_Swing_10.lzfse",
+      "sha256": "39fc9ebfe2862e5f4564e42d203115d76e056b1f965aa61f5a3d03092834e6e5"
+    },
+    {
+      "file": "MatchHero_Female_Swing_11.lzfse",
+      "sha256": "1c52da9db99d1029147937cc32f8a3edfaf25888e83f63a3ce67be3938cc87ba"
+    },
+    {
+      "file": "MatchHero_Female_Distance.json",
+      "sha256": "cce29476a6df1d9e0021741d3b9d99aa1e5e4c99ac58fc55d81f249fa6d23f8c"
+    },
+    {
+      "file": "MatchHero_Female_Distance.lzfse",
+      "sha256": "8db53247f36bac2e848aa230d4ad0b571a03ab2af846a9488d9bc8fbcc5fc24b"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Rig.lzfse",
+      "sha256": "368427acaeb13204bd3ea35bdd8d486f558dde8fbb6db2141e3ea06729003f21"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_00.lzfse",
+      "sha256": "9e137febe589674b19b639a624fff13fc87e55c561887ba4a238468822745df5"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_01.lzfse",
+      "sha256": "fc209ec248fba7704e1088d54739105f3d186a90be20b8412bd5c5c769c686aa"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_02.lzfse",
+      "sha256": "1c9a7cbb68dc0883cf7a1b0e71159e30689669ecfb9aca281cc2ca12acba8d77"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_03.lzfse",
+      "sha256": "3d30f2f4efafa6b42bf89dc0f45e6eaa817ad127b8a9a83bada2a15d8e08515d"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_04.lzfse",
+      "sha256": "2912978facef489688c132d20871c169e321c7c1e60f6ed209b84a0ac5d54eaf"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_05.lzfse",
+      "sha256": "ee82ba1958d2ee20929010194d4f1a5bbadfe7d6b908dfd9245ca7a1d584153d"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_06.lzfse",
+      "sha256": "116e40b5d9e0a3435838a7c255b80b0806e656f8ea37012fc002b653699daf8f"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_07.lzfse",
+      "sha256": "efe62fb72f192610b5cbd73209c5098f2368ce34793cef8369517ab248ae8c3a"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_08.lzfse",
+      "sha256": "aba5b83578319b55cefaf1c001a410cc2b93b7c58bcf42dcdbbde9ffde41a37e"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_09.lzfse",
+      "sha256": "02fc7b031e5d5431676051cd53f9e9e08c1d4e231b06b9b3670bb289c9590481"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_10.lzfse",
+      "sha256": "30c0d6c8613969e706351294407d37f1604f027fab35246f2dcd3bb47d42f352"
+    },
+    {
+      "file": "MatchHero_Female_Distance_Swing_11.lzfse",
+      "sha256": "64bc519b171a25c770e752169aa4e75c0625354be07d4e6f3eadd056bf095c26"
+    }
+  ]
+}

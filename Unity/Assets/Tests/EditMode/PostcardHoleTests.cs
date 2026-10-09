@@ -51,13 +51,13 @@ namespace GolfArcade.Tests
         public void CliffsideIsStillHoleSevenAndTheNumbersDoNotClash()
         {
             var cliffside = Course.Course.Cliffside();
-            Assert.AreEqual(1, cliffside.Holes.Length);
+            Assert.AreEqual(5, cliffside.Holes.Length);
             var seven = cliffside.Holes[0];
             Assert.AreEqual(7, seven.Number);
             Assert.AreEqual(4, seven.Par);
             Assert.AreEqual(6, seven.Hazards.Length, "hole 7 keeps its six bunkers");
             var numbers = string.Join(",", cliffside.Holes.Concat(Holes).Select(h => h.Number));
-            Assert.AreEqual("7,8,9,10", numbers, "Resources/Course/hole_07..hole_10 each belong to one hole");
+            Assert.AreEqual("7,12,13,14,15,8,9,10", numbers, "The current Cliffside and Postcards catalogs keep distinct hole numbers");
         }
 
         [TestCase(8)]
@@ -282,7 +282,7 @@ namespace GolfArcade.Tests
                 foreach (var (s, p) in samples.Where(t => t.s > runs[i][1] && t.s <= runs[i][1] + LayUpYards))
                 {
                     var lie = h.LieAt(p);
-                    Assert.IsTrue(lie == CourseLie.Fairway || lie == CourseLie.Green, $"{spec.name}: {s - runs[i][1]:F1} yd past carry {i + 1} the centerline is {lie}");
+                    Assert.IsTrue(lie == CourseLie.Fairway || lie == CourseLie.Fringe || lie == CourseLie.Green, $"{spec.name}: {s - runs[i][1]:F1} yd past carry {i + 1} the centerline is {lie}");
                 }
                 previousEnd = runs[i][1];
             }

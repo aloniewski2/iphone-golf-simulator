@@ -15,6 +15,11 @@ namespace GolfArcade.Game {
             if(!SportsMultiplayer.Active||SportsMultiplayer.Instance.Configuration.sport!="golf")return true;
             var net=SportsMultiplayer.Instance;var state=net.GolfState;if(state==null)return true;
             if(state.hole!=networkHole){networkHole=state.hole;StartHole(state.hole);rig.SnapNext();}
+            if(state.phase=="intro") {
+                Swing.Armed=false;
+                if(Current==State.Intro) TickGolfPresentation(state.paused?0:Time.unscaledDeltaTime);
+                hud.SetStatus("Ready · everyone starts together"); rig.ApplyFrame(); return true;
+            }
             var active=state.golfers.FirstOrDefault(p=>p.seat==state.turn);if(active==null)return true;
             bool myTurn=net.LocalSeat==state.turn&&!state.paused&&!state.complete&&state.phase=="aim";
             Wind=new Wind(state.windSpeed,state.windDirection);ballAt=new CoursePoint(active.x,active.d);holeStrokes=active.strokes;club=(GolfClub)active.club;heading=active.heading;

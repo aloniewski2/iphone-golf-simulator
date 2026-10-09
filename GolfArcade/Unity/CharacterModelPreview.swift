@@ -22,6 +22,75 @@ enum CharacterOptions {
 /// (head, torso for the kit, feet for shoes, the racket hand for the racket).
 enum PreviewFraming: Equatable { case body, head, torso, feet, racket }
 
+/// A projected contact cue in the same camera as the feet, used by every native hero stage.
+@MainActor enum HeroStageGround {
+    private static let texture: UIImage = {
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: 128, height: 128), format: format).image { context in
+            let colors = [UIColor(red: 0.035, green: 0.075, blue: 0.10, alpha: 0.28).cgColor,
+                          UIColor(red: 0.035, green: 0.075, blue: 0.10, alpha: 0).cgColor] as CFArray
+            if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1]) {
+                context.cgContext.drawRadialGradient(gradient, startCenter: CGPoint(x: 64, y: 64), startRadius: 0,
+                    endCenter: CGPoint(x: 64, y: 64), endRadius: 64, options: [])
+            }
+        }
+    }()
+    static func node(name: String = "hero-floor") -> SCNNode {
+        let geometry = SCNPlane(width: 1.05, height: 0.16)
+        let material = SCNMaterial(); material.diffuse.contents = texture
+        material.lightingModel = .constant; material.isDoubleSided = true; material.writesToDepthBuffer = false
+        geometry.materials = [material]
+        let node = SCNNode(geometry: geometry); node.name = name
+        // Menu cameras look almost horizontally; a world-horizontal plane becomes
+        // edge-on. This shallow camera-facing ellipse follows the same foot origin.
+        node.position = SCNVector3(0, 0.01, -0.08)
+        let facing=SCNBillboardConstraint();facing.freeAxes = .Y;node.constraints=[facing]
+        node.castsShadow = false
+        return node
+    }
+    static func terrace() -> SCNNode {
+        let root = SCNNode(); root.name = "lobby-terrace"
+        func box(_ name: String, _ size: SCNVector3, _ position: SCNVector3, _ colour: UIColor, _ radius: CGFloat = 0.025) {
+            let g = SCNBox(width:CGFloat(size.x),height:CGFloat(size.y),length:CGFloat(size.z),chamferRadius:radius)
+            let m = SCNMaterial(); m.lightingModel = .physicallyBased; m.diffuse.contents = colour
+            m.roughness.contents = 0.74; g.materials = [m]
+            let n = SCNNode(geometry:g); n.name = name; n.position = position; root.addChildNode(n)
+        }
+        box("sandstone terrace",SCNVector3(10,0.12,6),SCNVector3(0,-0.125,-1.25),UIColor(Club.cream),0.06)
+        // A continuous deck gives the four podiums one real common floor.
+        for i in 0..<21 {
+            box("teak deck plank",SCNVector3(0.47,0.025,4.7),SCNVector3(Float(i-10)*0.476,-0.053,-1),
+                UIColor(red:0.60+CGFloat(i%3)*0.025,green:0.39+CGFloat(i%3)*0.02,blue:0.23+CGFloat(i%3)*0.015,alpha:1),0.006)
+        }
+        box("terrace low wall",SCNVector3(10,0.5,0.16),SCNVector3(0,0.14,-3.8),UIColor(Club.cream),0.035)
+        box("wall coping",SCNVector3(10.05,0.075,0.21),SCNVector3(0,0.415,-3.8),UIColor.white,0.018)
+        for x:Float in [-4.4,4.4] {
+            box("navy planter",SCNVector3(0.58,0.55,0.58),SCNVector3(x,0.205,-2.9),UIColor(Club.ink),0.06)
+            for i in 0..<7 {
+                let t = Float(i) * .pi * 2 / 7
+                let leaf = SCNNode(geometry:SCNCapsule(capRadius:0.075,height:0.62))
+                leaf.geometry?.firstMaterial?.diffuse.contents = UIColor(red:0.12,green:0.34+CGFloat(i%3)*0.06,blue:0.22,alpha:1)
+                leaf.geometry?.firstMaterial?.roughness.contents = 0.86
+                leaf.position = SCNVector3(x+sin(t)*0.13,0.72,-2.9+cos(t)*0.13)
+                leaf.eulerAngles = SCNVector3(cos(t)*0.7,0,sin(t)*0.7); root.addChildNode(leaf)
+            }
+        }
+        return root
+    }
+    static func plinth() -> SCNNode {
+        let root=SCNNode();root.name="lobby-floor"
+        func disc(radius:CGFloat,height:CGFloat,y:Float,color:UIColor) {
+            let shape=SCNCylinder(radius:radius,height:height);shape.radialSegmentCount=48
+            let finish=SCNMaterial();finish.lightingModel = .physicallyBased;finish.diffuse.contents=color;finish.roughness.contents=0.7
+            shape.materials=[finish];let node=SCNNode(geometry:shape);node.position.y=y;root.addChildNode(node)
+        }
+        disc(radius:0.53,height:0.028,y:-0.043,color:UIColor(Club.ink))
+        disc(radius:0.53,height:0.036,y:-0.013,color:UIColor(Club.cream))
+        let contact=node(name:"foot-contact");contact.position.y=0.013;root.addChildNode(contact)
+        return root
+    }
+}
+
 struct CharacterModelPreview: UIViewRepresentable {
     let player: Player
     var cameraDistance: Float = 4.8
@@ -92,7 +161,8 @@ struct CharacterModelPreview: UIViewRepresentable {
             guard let cam = camera else { return }
             framed = true
             racket?.isHidden = framing == .head || outfitSport == .golf
-            hero?.childNode(withName: "golfClub", recursively: false)?.isHidden = framing == .head
+            hero?.setValue(framing == .head, forKey: "heroEquipmentHidden")
+            MatchHero.golfEquipment(in: hero)?.isHidden = framing == .head
             let t = framingTarget(framing)
             switch framing {
             case .head: cam.position = SCNVector3(0, headCentre + 0.04, 1.15)
@@ -112,7 +182,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             case .feet: return SCNVector3(0, 0.30, 0)
             case .racket:
                 // Frame the equipped sport's tool, including the full club shaft and head.
-                let equipment = outfitSport == .golf ? hero?.childNode(withName: "golfClub", recursively: false) : racket
+                let equipment = outfitSport == .golf ? MatchHero.golfEquipment(in: hero) : racket
                 if let r = equipment {
                     let (lo, hi) = r.boundingBox
                     if hi.x > lo.x { return r.convertPosition(SCNVector3((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, (lo.z + hi.z) / 2), to: nil) }
@@ -143,9 +213,14 @@ struct CharacterModelPreview: UIViewRepresentable {
         private var idleWanted = false
         private var settleTask: Task<Void, Never>?
         func practice(_ sequence: Int) {
-            guard outfitSport == .tennis, sequence != lastPractice else { return }; lastPractice = sequence
+            guard sequence != lastPractice else { return }; lastPractice = sequence
             guard hero != nil else { return }
             practiceTimer?.invalidate(); practiceTimer = nil; settleTask?.cancel()
+            if outfitSport == .golf {
+                play(MenuMotion(kind: .clipOnce("golfIron"), lead: 0.18, fadeIn: 0.24, fadeOut: 0.35))
+                return
+            }
+            guard outfitSport == .tennis else { return }
             guard rig != nil, var playing = motion else { startMorphPractice(); return }
             // the hero is on its skeleton (ReadyIdle): ease it to the still Ready stance first, then hand over to the morph swing
             playing.settleFrom = CACurrentMediaTime() - motionStart; motion = playing
@@ -192,7 +267,7 @@ struct CharacterModelPreview: UIViewRepresentable {
         /// Play `m` on the hero (ReadyIdle loop, or one Serve then the loop); nil leaves the static Ready stance. A display link poses the skeleton every frame.
         func play(_ m: MenuMotion?, keepClock: Bool = false) {
             stopLink(); rig?.detach(); rig = nil
-            guard outfitSport == .tennis else { motion = nil; return }
+            guard outfitSport == .tennis || outfitSport == .golf else { motion = nil; return }
             motion = m
             guard let m, let root = hero, let asset = MatchHero.asset(female: root.value(forKey: "heroFemale") as? Bool ?? false, golf: outfitSport == .golf), let r = HeroRig(root: root, asset: asset) else { return }
             r.attach(); rig = r
@@ -263,7 +338,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             scene.rootNode.childNode(withName: "clubProps", recursively: false)?.removeFromParentNode()
             scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeFromParentNode()
             guard let equipped = previous else { return }
-            previous = nil; update(equipped); clubKey = key
+            previous = nil; update(equipped, sport: outfitSport); clubKey = key
             guard hero != nil else { return }
             racket?.isHidden = activity != .play
             let props = SCNNode(); props.name = "clubProps"; scene.rootNode.addChildNode(props)
@@ -324,8 +399,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             light(.directional, 520, UIColor(red: 1, green: 0.96, blue: 0.9, alpha: 1), elevation: 35, azimuth: 160)                   // rim
             let amb = SCNNode(); amb.light = SCNLight(); amb.light?.type = .ambient; amb.light?.intensity = 210
             amb.light?.color = UIColor(red: 0.86, green: 0.88, blue: 0.96, alpha: 1); scene.rootNode.addChildNode(amb)
-            let floor=SCNNode(geometry:SCNCylinder(radius:0.48,height:0.025));floor.position.y = -0.025
-            floor.geometry?.firstMaterial?.diffuse.contents=UIColor.clear
+            let floor=HeroStageGround.node()
             floor.isHidden = true
             scene.rootNode.addChildNode(floor)
         }
@@ -340,6 +414,7 @@ struct CharacterModelPreview: UIViewRepresentable {
             guard let hero = MatchHero.build(p, sport: sport), let asset = MatchHero.asset(female: p.standardFemale, golf: sport == .golf) else { return }
             headCentre = asset.manifest.headCentreY * asset.scale
             character.addChildNode(hero)
+            scene.rootNode.childNode(withName: "hero-floor", recursively: false)?.isHidden = false
             if !framed { applyFraming() }   // re-tinting never moves the camera the player has turned
             racket?.isHidden = framing == .head || sport == .golf
             if let playing { play(playing, keepClock: true) }   // a new look on the stage keeps the tile's motion (and its clock) going
@@ -349,7 +424,7 @@ struct CharacterModelPreview: UIViewRepresentable {
         func configureIdle(sport: Sport?, animate: Bool) {
             let key = "\(sport?.rawValue ?? "none")-\(animate)"
             guard key != idleKey else { return }; idleKey = key
-            idleWanted = animate && sport == .tennis
+            idleWanted = animate && (sport == .tennis || sport == .golf)
             character.removeAllActions(); character.position = SCNVector3Zero; character.eulerAngles = SCNVector3Zero
             stopMotion()
             scene.rootNode.childNode(withName: "idleBall", recursively: false)?.removeFromParentNode()
@@ -362,15 +437,10 @@ struct CharacterModelPreview: UIViewRepresentable {
             ball.position = SCNVector3(0.45, sport == .golf ? 0.04 : 0.65, 0.25)
             scene.rootNode.addChildNode(ball)
             if sport == .golf {
-                let club = SCNNode(); club.name = "idleClub"
-                let shaft = SCNNode(geometry: SCNCylinder(radius: 0.012, height: 0.65))
-                shaft.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
-                let head = SCNNode(geometry: SCNBox(width: 0.13, height: 0.045, length: 0.06, chamferRadius: 0.01))
-                head.position = SCNVector3(-0.045, -0.33, 0)
-                head.geometry?.firstMaterial?.diffuse.contents = UIColor.darkGray
-                club.addChildNode(shaft); club.addChildNode(head)
-                club.position = SCNVector3(previous?.handedness == .left ? -0.35 : 0.35, 0.38, 0.14)
-                character.addChildNode(club)
+                if MatchHero.golfEquipment(in: hero) == nil,
+                   let equipped = previous, let root = hero {
+                    root.addChildNode(MatchHero.golfClub(player: equipped))
+                }
             }
             guard animate else { return }
             if sport == .golf {
@@ -378,10 +448,7 @@ struct CharacterModelPreview: UIViewRepresentable {
                     .move(to: SCNVector3(-0.4, 0.04, 0.25), duration: 1.1), .wait(duration: 0.4),
                     .move(to: SCNVector3(0.45, 0.04, 0.25), duration: 1.1), .wait(duration: 0.4)
                 ])))
-                character.runAction(.repeatForever(.sequence([
-                    .rotateTo(x: 0, y: -0.16, z: 0.04, duration: 0.7), .wait(duration: 0.8),
-                    .rotateTo(x: 0, y: 0.16, z: -0.04, duration: 0.7), .wait(duration: 0.8)
-                ])))
+                play(.ready)
             } else {
                 let bounce = SCNAction.move(to: SCNVector3(0.45, 1.55, 0.25), duration: 0.65)
                 bounce.timingMode = .easeOut
@@ -429,7 +496,7 @@ struct CharacterModelPreview: UIViewRepresentable {
     typealias Asset = MatchHeroData.Asset
 
     static func previewData(_ name: String) -> Data? { MatchHeroData.data(name) }
-    static func asset(female: Bool, golf: Bool = false) -> Asset? { MatchHeroData.asset(female: female, golf: golf) }
+    static func asset(female: Bool, golf: Bool = false, distance: Bool = false) -> Asset? { MatchHeroData.asset(female: female, golf: golf, distance: distance) }
 
     // MARK: the worn kit (DRESS_MATCH_HEROES) - the same maths as Unity's MatchHeroLook.SetKit
     /// sRGB albedo of the authored White kit, and the floor of a tint (the authored Black kit's albedo, so a black pick still shows folds and seams).
@@ -464,8 +531,8 @@ struct CharacterModelPreview: UIViewRepresentable {
 
     /// The hero node: Body, Face, the six Kit_* parts and a "racket" group (frame, strings, grip), turned to the camera a touch 3/4, mirrored for a left-hander. Surfaces follow Unity's runtime
     /// materials (MatchHeroSurfaces): the skin tone, the racket colour and the kit's role tints are the locker's picks, everything else is the authored look.
-    static func build(_ p: Player, sport: Sport = .tennis) -> SCNNode? {
-        guard let asset = asset(female: p.standardFemale, golf: sport == .golf) else { return nil }
+    static func build(_ p: Player, sport: Sport = .tennis, distance: Bool = false) -> SCNNode? {
+        guard let asset = asset(female: p.standardFemale, golf: sport == .golf, distance: distance) else { return nil }
         let picks = MatchHeroData.Picks(colour: { name in
             switch name {
             case "Skin": return rgb(p.skinHex)
@@ -476,11 +543,17 @@ struct CharacterModelPreview: UIViewRepresentable {
         }, leftHanded: p.handedness == .left)
         let root = MatchHeroData.buildHero(asset, picks: picks)
         root.setValue(sport == .golf, forKey: "heroGolf")
-        if sport == .golf { root.addChildNode(golfClub(player: p)) }
+        if sport == .golf, golfEquipment(in: root) == nil { root.addChildNode(golfClub(player: p)) }
         return root
     }
 
-    private static func golfClub(player: Player) -> SCNNode {
+    static func golfEquipment(in root: SCNNode?) -> SCNNode? {
+        root?.childNodes.first(where: { $0.name?.hasPrefix("Club_") == true && !$0.isHidden })
+            ?? root?.childNode(withName: "Club_Iron", recursively: false)
+            ?? root?.childNode(withName: "golfClub", recursively: false)
+    }
+
+    static func golfClub(player: Player) -> SCNNode {
         let club = SCNNode(); club.name = "golfClub"
         var hand = SIMD3<Float>(0.25, 0.95, -0.25)
         if let tennis = asset(female: player.standardFemale),
@@ -488,25 +561,14 @@ struct CharacterModelPreview: UIViewRepresentable {
             let node = SCNNode(geometry: tennis.geometry[i]), box = node.boundingBox
             hand = SIMD3((box.min.x + box.max.x) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2)
         }
-        let end = hand + SIMD3<Float>(0.40, -0.70, -0.08)
-        let direction = simd_normalize(end - hand)
-        func tube(_ name: String, from: SIMD3<Float>, to: SIMD3<Float>, radius: CGFloat, colour: UIColor, metal: CGFloat) {
-            let g = SCNCylinder(radius: radius, height: CGFloat(simd_length(to-from)))
-            let node = SCNNode(geometry: g); node.name = name
-            node.simdPosition = (from+to)/2; node.simdOrientation = simd_quatf(from: SIMD3(0,1,0), to: direction)
-            g.firstMaterial?.lightingModel = .physicallyBased; g.firstMaterial?.diffuse.contents = colour
-            g.firstMaterial?.metalness.contents = metal; g.firstMaterial?.roughness.contents = metal > 0 ? 0.28 : 0.8
-            club.addChildNode(node)
+        // The authored grip origin remains the hand pivot; only the menu display pose
+        // rotates it. All shaft/head geometry and finishes come from the game asset.
+        let direction = simd_normalize(SIMD3<Float>(0.40, -0.91, -0.08))
+        if let mesh = NativeGolfEquipment.make("Iron", tint: player.outfitHex("racket").map(rgb)) {
+            mesh.simdPosition = hand
+            mesh.simdOrientation = simd_quatf(from: SIMD3<Float>(0, -1, 0), to: direction)
+            club.addChildNode(mesh)
         }
-        let gripEnd = hand + direction * 0.14
-        tube("clubGrip", from: hand-direction*0.045, to: gripEnd, radius: 0.012, colour: player.outfitHex("racket").map { UIColor(Color(hex: $0)) } ?? .darkGray, metal: 0)
-        tube("clubShaft", from: gripEnd, to: end, radius: 0.006, colour: .lightGray, metal: 0.8)
-        let head = SCNNode(geometry: SCNBox(width: 0.11, height: 0.055, length: 0.045, chamferRadius: 0.012))
-        head.name = "clubHead"; head.simdPosition = end + SIMD3(0.045, 0, 0)
-        head.geometry?.firstMaterial?.lightingModel = .physicallyBased
-        head.geometry?.firstMaterial?.diffuse.contents = UIColor.lightGray
-        head.geometry?.firstMaterial?.metalness.contents = 0.8; head.geometry?.firstMaterial?.roughness.contents = 0.25
-        club.addChildNode(head)
         return club
     }
 
@@ -581,6 +643,11 @@ struct LobbyHeroStage: UIViewRepresentable {
         private(set) var measuredSeconds = 0.0
         private var previousFrame = 0.0
         private var framedSize = CGSize.zero
+        override init() {
+            super.init()
+            recipe.scene.rootNode.childNode(withName: "hero-floor", recursively: false)?.removeFromParentNode()
+            recipe.scene.rootNode.addChildNode(HeroStageGround.terrace())
+        }
         func resetMeasurement() { frames = 0; measuredSeconds = 0; previousFrame = 0 }
         nonisolated func renderer(_ renderer: any SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
             Task { @MainActor [weak self] in self?.recordFrame(time) }
@@ -590,6 +657,7 @@ struct LobbyHeroStage: UIViewRepresentable {
         }
         var measuredFPS: Double { measuredSeconds > 0 ? Double(frames) / measuredSeconds : 0 }
         func update(_ state: LobbyHeroStage) {
+            let sportChanged = sport != state.sport
             offset = state.networkTime - CACurrentMediaTime(); animate = state.animate; sport = state.sport
             let now = state.networkTime, incoming = Set(state.participants.map(\.id))
             for id in Array(heroes.keys) where !incoming.contains(id) {
@@ -599,8 +667,9 @@ struct LobbyHeroStage: UIViewRepresentable {
             for (i,p) in ordered.enumerated() {
                 let player = p.id == state.localID ? state.editingPlayer ?? p.lobbyPlayer : p.lobbyPlayer
                 let old = heroes[p.id]
-                if old?.player != player {
-                    guard let root = MatchHero.build(player), let asset = MatchHero.asset(female:player.standardFemale), let rig = HeroRig(root:root,asset:asset) else { continue }
+                if old?.player != player || sportChanged {
+                    let heroSport: Sport = sport == .golf ? .golf : .tennis
+                    guard let root = MatchHero.build(player, sport: heroSport, distance: true), let asset = MatchHero.asset(female:player.standardFemale, golf:heroSport == .golf, distance:true), let rig = HeroRig(root:root,asset:asset) else { continue }
                     let holder = old?.container ?? SCNNode()
                     holder.childNodes.filter { $0.name != "lobby-floor" }.forEach { $0.removeFromParentNode() }; holder.addChildNode(root)
                     let motion = LobbyHeroMotion(rig:rig,idleOffset:Double(i) * 0.73)
@@ -613,12 +682,8 @@ struct LobbyHeroStage: UIViewRepresentable {
                     OnlineLobbyProofDriver.event("hero-look","\(p.id) \(player.outfitHex("shirt") ?? "kit")")
                     #endif
                     if old == nil {
-                        let shadow = SCNNode(geometry:SCNPlane(width:0.85,height:0.42))
-                        shadow.name = "lobby-floor"
-                        holder.position = SCNVector3((Float(i)-Float(ordered.count-1)/2)*1.8,0,sport == .tennis && p.seat < 0 ? -0.65 : 0)
-                        shadow.eulerAngles.x = -.pi / 2; shadow.position.y = -0.02
-                        shadow.geometry?.firstMaterial?.diffuse.contents = UIColor(IslandUI.navy).withAlphaComponent(0.15)
-                        shadow.geometry?.firstMaterial?.lightingModel = .constant; shadow.geometry?.firstMaterial?.isDoubleSided = true
+                        let shadow = HeroStageGround.plinth()
+                        holder.position = SCNVector3((Float(i)-Float(ordered.count-1)/2)*1.22,0,sport == .tennis && p.seat < 0 ? -0.65 : 0)
                         holder.addChildNode(shadow)
                         recipe.scene.rootNode.addChildNode(holder)
                         holder.opacity = state.animate ? 0 : 1; holder.scale = SCNVector3(0.92,0.92,0.92)
@@ -635,11 +700,11 @@ struct LobbyHeroStage: UIViewRepresentable {
                     #endif
                 }
             }
-            if state.winnerID != winner { winner = state.winnerID; if let winner, state.animate { heroes[winner]?.motion.play("thrust",at:now,now:now) } }
+            if state.winnerID != winner { winner = state.winnerID; if let winner, state.animate { heroes[winner]?.motion.play("matchWin",at:now,now:now) } }
             reframe(); tickPose(at:now)
         }
         private func reframe() {
-            let count = max(1,ordered.count), spacing: Float = 1.8
+            let count = max(1,ordered.count), spacing: Float = 1.22
             SCNTransaction.begin(); SCNTransaction.animationDuration = animate ? 0.22 : 0
             for (i,p) in ordered.enumerated() {
                 let x = (Float(i) - Float(count-1)/2) * spacing
@@ -650,9 +715,9 @@ struct LobbyHeroStage: UIViewRepresentable {
             SCNTransaction.begin(); SCNTransaction.disableActions = true
             if let camera = recipe.camera {
                 let aspect = Float(max(1,view?.bounds.width ?? 402) / max(1,view?.bounds.height ?? 300))
-                let width = Float(count - 1) * spacing + 1.6
-                let distance = max(4.5,width / (2 * tan(Float.pi * 32 / 360) * aspect))
-                camera.position = SCNVector3(0,1.05,distance); camera.look(at:SCNVector3(0,0.94,0))
+                let width = Float(count - 1) * spacing + 1.3
+                let distance = max(3.3,width / (2 * tan(Float.pi * 32 / 360) * aspect))
+                camera.position = SCNVector3(0,1.65,distance); camera.look(at:SCNVector3(0,0.77,0))
             }
             SCNTransaction.commit()
         }
@@ -677,6 +742,7 @@ struct LobbyHeroStage: UIViewRepresentable {
         let c = CharacterModelPreview.Coordinator(cameraDistance:4.6); c.update(player)
         guard let root = c.hero, let asset = MatchHero.asset(female:player.standardFemale), let rig = HeroRig(root:root,asset:asset), let clip = rig.data.clips[id] else { return nil }
         rig.attach(); rig.apply(clip.pose(at:clip.length * 0.35,loop:false))
+        rig.data.applyMorphWeights(clip.morphWeights(at:clip.length * 0.35,loop:false),to:root)
         c.camera?.position = SCNVector3(0,0.9,4.6); c.camera?.look(at:SCNVector3(0,0.8,0))
         let renderer = SCNRenderer(device:nil,options:nil); renderer.scene = c.scene; renderer.pointOfView = c.camera
         let image = renderer.snapshot(atTime:0,with:CGSize(width:224,height:196),antialiasingMode:.multisampling4X)

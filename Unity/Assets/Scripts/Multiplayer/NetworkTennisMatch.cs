@@ -15,7 +15,7 @@ namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkTennisState {
         public long tick,point,contact; public double time,phaseAt;
         public double emoteHoldUntil;
-        public string phase="serve",reason="";
+        public string phase="serve",reason=""; public double presentationUntil; public string boundary="point";
         public int server,receiver=1,bounces,winner=-1; public bool secondServe,serveFlight,paused,complete;
         public NetworkVector ball,velocity;
         public float tossAccuracy=1,tossRollX=.5f,tossRollZ=.5f;
@@ -40,7 +40,7 @@ namespace GolfArcade.Multiplayer {
             equippedEmotes = new[] { TennisEmotes.Normalize(emotes != null && emotes.Length > 0 ? emotes[0] : null), TennisEmotes.Normalize(emotes != null && emotes.Length > 1 ? emotes[1] : null) };
             State=new NetworkTennisState {score=TennisMatch.New(true,sets,games)};
             BeginPoint();
-            if (intro) { State.phase="intro"; State.emoteHoldUntil=6; }
+            if (intro) { State.phase="intro"; State.emoteHoldUntil=State.presentationUntil=3.5; }
         }
         void BeginPoint() {
             State.point++; State.phase="serve"; State.phaseAt=State.time; State.server=State.score.PlayerServes?0:1;
@@ -71,7 +71,7 @@ namespace GolfArcade.Multiplayer {
                     p.emoteID = equippedEmotes[seat][(int)input.value]; p.emoteSequence++;
                     p.emoteUntil = State.time + TennisEmotes.Duration(p.emoteID);
                     if (intro) p.introEmoted = true; else p.emotePoint = State.point;
-                    State.emoteHoldUntil = Math.Max(State.emoteHoldUntil, p.emoteUntil + .3);
+                    p.emoteUntil = Math.Min(p.emoteUntil, State.presentationUntil); // Cosmetic; never extend the shared boundary.
                     return true;
                 case "move": p.target=NetworkMath.Clamp(input.target,-1,1);p.aim=NetworkMath.Clamp(input.aim,-1,1);return true;
                 case "aim":p.aim=NetworkMath.Clamp(input.value,-1,1);p.depth=NetworkMath.Clamp(input.value2,0,1);return true;
@@ -162,8 +162,7 @@ namespace GolfArcade.Multiplayer {
         }
         void Tick(float dt) {
             State.time+=dt;State.tick++;
-            if(State.phase=="intro") {if(State.time>=State.emoteHoldUntil)BeginPoint();return;}
-            if(State.phase=="point") {if(State.time-State.phaseAt>2 && State.time>=State.emoteHoldUntil)BeginPoint();return;}
+            if(State.phase=="intro" || State.phase=="point") {if(State.time>=State.presentationUntil)BeginPoint();return;}
             for(int i=0;i<2;i++) {
                 var p=State.players[i];float desired=p.target*3.6f;
                 if(State.phase=="rally"&&State.receiver==i) {
@@ -219,7 +218,12 @@ namespace GolfArcade.Multiplayer {
         }
         void Point(int winner) {
             if(State.phase!="rally"&&State.phase!="toss"&&State.phase!="serve")return;
-            State.score.AwardPoint(winner==0);State.winner=winner;State.phaseAt=State.time;State.velocity=default;State.complete=State.score.Complete;
+            int setsBefore=State.score.PlayerSets+State.score.OpponentSets;
+            bool game=State.score.AwardPoint(winner==0);
+            bool set=State.score.PlayerSets+State.score.OpponentSets>setsBefore;
+            State.boundary=set?"set":game?"game":"point";
+            State.presentationUntil=State.time+(set?2.5:game?1.5:.8);
+            State.winner=winner;State.phaseAt=State.time;State.velocity=default;State.complete=State.score.Complete;
             State.phase=State.complete?"complete":"point";history.Clear();
             if(State.complete&&!hasResult){hasResult=true;Result?.Invoke(State.score.FinalScore);}
         }

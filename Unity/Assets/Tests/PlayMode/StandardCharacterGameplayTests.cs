@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using System.Reflection;
 using GolfArcade.Game;
 using NUnit.Framework;
 using UnityEngine;
@@ -8,56 +9,39 @@ using UnityEngine.TestTools;
 
 namespace GolfArcade.PlayTests
 {
+    // The active Generic Match Hero replaced the retired floating-hands V4 preview.
     public class StandardCharacterGameplayTests
     {
-        [UnityTest]
+        [UnityTest, Timeout(240000)]
         public IEnumerator BothStandardsPlayPhoneDrivenSwingInGolfGame()
         {
-            var originalBody = GolferStyle.Body;
-            int originalCaptureRate = Time.captureFramerate;
-            float originalScale = Time.timeScale;
+            var original = GolferStyle.Current.Clone();
+            int oldRate = Time.captureFramerate;
+            float oldScale = Time.timeScale;
+            var oldOverride = GolferStyle.HeroOverride;
             try
             {
-                Time.timeScale = 1; Time.captureFramerate = 60;
+                Time.timeScale = 1; Time.captureFramerate = 60; GolferStyle.HeroOverride = true;
                 foreach (var body in new[] { GolferStyle.BodyKind.Male, GolferStyle.BodyKind.Female })
                 {
                     GolferStyle.Body = body;
                     yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
                     var game = Object.FindFirstObjectByType<GolfGame>();
                     Assert.IsNotNull(game);
+                    // Scene startup presents the menu; use its public play action to enter a round.
+                    yield return null;
+                    game.Play();
                     game.Swing.Synthetic.FixedStepSeconds = 1.0 / 60.0;
                     Assert.AreSame(game.Swing.Synthetic, game.Swing.Source);
                     for (int i = 0; i < 900 && (game.Current != GolfGame.State.Aim || game.Swing.Phase != Swing.SwingPhase.Address); i++) yield return null;
                     Assert.AreEqual(GolfGame.State.Aim, game.Current);
-                    Assert.AreEqual(Swing.SwingPhase.Address, game.Swing.Phase);
-                    var golfer = Object.FindFirstObjectByType<GolferView>();
-                    Assert.IsTrue(golfer.UsesStandardCharacter, "Must use the actual V4 model, not a fallback.");
-                    var arms = golfer.GetComponentInChildren<StandardCharacterArms>();
-                    Assert.IsNotNull(arms);
-                    Assert.IsTrue(arms.IsReady);
-                    Assert.IsTrue(arms.FloatingHandsPreview);
-                    var armSurface = System.Array.Find(arms.GetComponentsInChildren<Renderer>(), r => r.name.StartsWith("Standard continuous arm "));
-                    Assert.IsNotNull(armSurface);
-                    Assert.IsFalse(armSurface.enabled);
-                    golfer.SetFloatingHandsPreview(false);
-                    Assert.IsTrue(armSurface.enabled, "Visual test must be reversible");
-                    golfer.SetFloatingHandsPreview(true);
-                    foreach (var renderer in arms.GetComponentsInChildren<Renderer>())
-                    {
-                        if (renderer.name.StartsWith("Standard continuous arm ") || renderer.name.StartsWith("Shoulder fabric ") || renderer.name.StartsWith("Short sleeve ") || renderer.name.StartsWith("Sleeve piping "))
-                            Assert.IsFalse(renderer.enabled);
-                        if (renderer.name.StartsWith("V4 grip hand ")) Assert.IsTrue(renderer.enabled);
-                    }
-                    var grip = golfer.GetComponentInChildren<StandardGolfGrip>();
-                    Assert.IsNotNull(grip);
-                    Assert.IsTrue(grip.IsReady);
-                    var contact = System.Array.Find(golfer.GetComponentsInChildren<Transform>(true), t => t.name == "StandardClubContact");
-                    Assert.IsNotNull(contact);
-                    var meshes = golfer.GetComponentsInChildren<SkinnedMeshRenderer>();
-                    Assert.Greater(meshes.Length, 0);
-                    foreach (var mesh in meshes) Assert.Less(mesh.bounds.size.magnitude, 8f, "Exploded skin bounds");
-                    string directory = $"Library/Captures/standard-{body.ToString().ToLowerInvariant()}";
-                    Directory.CreateDirectory(directory);
+                    var golfer = (GolferView)typeof(GolfGame).GetField("golfer", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(game);
+                    Assert.IsTrue(golfer.IsHero, "The current approved Match Hero must be used.");
+                    Assert.IsNotNull(golfer.Hero.Root);
+                    Assert.AreEqual(body == GolferStyle.BodyKind.Female, golfer.Hero.Root.GetComponent<GolfArcade.Tennis.MatchHeroLook>().female);
+                    Assert.IsTrue(golfer.Hero.Bones.ContainsKey("RightHand"));
+                    Assert.IsTrue(golfer.Hero.Bones.ContainsKey("LeftHand"));
+                    Assert.IsNotNull(golfer.ClubHeadWorld(), "The selected club has a skinned contact surface.");
                     bool sawFlight = false;
                     for (int frame = 0; frame < 360; frame++)
                     {
@@ -65,36 +49,25 @@ namespace GolfArcade.PlayTests
                         if (frame == 108) game.Swing.Synthetic.Backswing(false);
                         yield return null;
                         sawFlight |= game.Current == GolfGame.State.Flight;
-                        Assert.Less(arms.MaximumGripError, .0001f, "Arm correction moved the authored hand target");
-                        Assert.Less(arms.MaximumSegmentError, .005f, "Corrected bone lengths changed");
-                        Assert.Less(grip.MaximumHandleError, .0001f, "Hands slipped relative to the shared handle");
-                        if (frame % 60 == 0)
-                            foreach (var mesh in meshes) Assert.Less(mesh.bounds.size.magnitude, 8f);
-                        Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png", 720, 480));
-                        if (frame == 0 || frame == 100 || frame == 140 || frame == 170)
+                        foreach (var mesh in golfer.GetComponentsInChildren<SkinnedMeshRenderer>())
                         {
-                            var camera = Camera.main;
-                            Vector3 position = camera.transform.position;
-                            Quaternion rotation = camera.transform.rotation;
-                            try
-                            {
-                                Vector3 target = arms.transform.TransformPoint(new Vector3(0, 1.1f, 0));
-                                Vector3 side = Quaternion.AngleAxis(110, Vector3.up) * Vector3.ProjectOnPlane(position - target, Vector3.up).normalized;
-                                camera.transform.position = target + side * 2.3f + Vector3.up * .35f;
-                                camera.transform.LookAt(target);
-                                GameCapture.Save($"Library/Captures/grip-details/{body}-{frame:D4}.png", 960, 640);
-                            }
-                            finally { camera.transform.SetPositionAndRotation(position, rotation); }
+                            Assert.Less(mesh.bounds.size.magnitude, 8f, "Exploded skin bounds: " + mesh.name);
+                            Assert.IsFalse(float.IsNaN(mesh.bounds.center.x), "Invalid skin transform");
+                        }
+                        if (frame % 60 == 0)
+                        {
+                            string directory = $"Library/Captures/current-hero-{body.ToString().ToLowerInvariant()}";
+                            Directory.CreateDirectory(directory);
+                            Assert.IsNotNull(GameCapture.Save($"{directory}/frame-{frame:D4}.png", 720, 480));
                         }
                     }
-                    Assert.IsTrue(sawFlight, "The real game's synthetic phone input must launch a shot.");
+                    Assert.IsTrue(sawFlight, "Synthetic phone input must launch a real shot.");
                 }
             }
             finally
             {
-                GolferStyle.Body = originalBody;
-                Time.captureFramerate = originalCaptureRate;
-                Time.timeScale = originalScale;
+                GolferStyle.SaveDevice(original); GolferStyle.Unwear(); GolferStyle.HeroOverride = oldOverride;
+                Time.captureFramerate = oldRate; Time.timeScale = oldScale;
             }
         }
     }

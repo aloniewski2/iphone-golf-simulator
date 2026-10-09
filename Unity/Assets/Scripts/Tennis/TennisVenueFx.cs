@@ -54,21 +54,21 @@ namespace GolfArcade.Tennis
         public sealed class Pulse : MonoBehaviour
         {
             public Material Material; Color glow;
-            void Start() { if (Material) glow = Material.GetColor("_EmissionColor"); }
-            void Update() { if (Material) Material.SetColor("_EmissionColor", glow * (.82f + .28f * Mathf.Sin(Time.time * 1.7f) * Mathf.Sin(Time.time * .63f + 1))); }
+            void Start() { if (Material && Material.HasProperty("_EmissionColor")) glow = Material.GetColor("_EmissionColor"); }
+            void Update() { if (Material) if(Material.HasProperty("_EmissionColor")) Material.SetColor("_EmissionColor", glow * (.82f + .28f * Mathf.Sin(Time.time * 1.7f) * Mathf.Sin(Time.time * .63f + 1))); }
         }
 
         /// The lava lake: the crust crawls and the fire under it flares.
         public sealed class LavaFlow : MonoBehaviour
         {
             public Material Material; Color glow;
-            void Start() { if (Material) glow = Material.GetColor("_EmissionColor"); }
+            void Start() { if (Material && Material.HasProperty("_EmissionColor")) glow = Material.GetColor("_EmissionColor"); }
             void Update()
             {
                 if (!Material) return;
                 var o = new Vector2(Time.time * .006f, Time.time * .0035f);
                 Material.SetTextureOffset("_BaseMap", o); Material.SetTextureOffset("_EmissionMap", o);
-                Material.SetColor("_EmissionColor", glow * (.9f + .18f * Mathf.Sin(Time.time * .9f)));
+                if(Material.HasProperty("_EmissionColor")) Material.SetColor("_EmissionColor", glow * (.9f + .18f * Mathf.Sin(Time.time * .9f)));
             }
         }
 
@@ -76,13 +76,13 @@ namespace GolfArcade.Tennis
         public sealed class FallFlow : MonoBehaviour
         {
             public Material Material; Color glow;
-            void Start() { if (Material) glow = Material.GetColor("_EmissionColor"); }
+            void Start() { if (Material && Material.HasProperty("_EmissionColor")) glow = Material.GetColor("_EmissionColor"); }
             void Update()
             {
                 if (!Material) return;
                 var o = new Vector2(0, Time.time * .22f);       // texture content slides toward lower v: down the slope
                 Material.SetTextureOffset("_BaseMap", o); Material.SetTextureOffset("_EmissionMap", o);
-                Material.SetColor("_EmissionColor", glow * (.92f + .16f * Mathf.Sin(Time.time * 1.3f)));
+                if(Material.HasProperty("_EmissionColor")) Material.SetColor("_EmissionColor", glow * (.92f + .16f * Mathf.Sin(Time.time * 1.3f)));
             }
         }
 

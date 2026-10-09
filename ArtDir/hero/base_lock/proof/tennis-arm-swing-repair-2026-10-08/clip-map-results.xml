@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.0401624">
+  <test-suite type="TestSuite" id="1237" name="Golf Arcade" fullname="Golf Arcade" runstate="Runnable" testcasecount="170" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.040162" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1231" name="GolfArcade.PlayTests.dll" fullname="/Users/adnanyonathan/Documents/Codex/2026-10-08/ope-3/work/stroke-repair/Unity/Library/ScriptAssemblies/GolfArcade.PlayTests.dll" runstate="Runnable" testcasecount="170" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.030005" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="10889" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1232" name="GolfArcade" fullname="GolfArcade" runstate="Runnable" testcasecount="170" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.027470" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1234" name="PlayTests" fullname="GolfArcade.PlayTests" runstate="Runnable" testcasecount="161" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.025502" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1085" name="MatchHeroClipMapTests" fullname="GolfArcade.PlayTests.MatchHeroClipMapTests" classname="GolfArcade.PlayTests.MatchHeroClipMapTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="45.016342" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1086" name="EveryStrokePlaysItsOwnMatchClipOnBothSexes" fullname="GolfArcade.PlayTests.MatchHeroClipMapTests.EveryStrokePlaysItsOwnMatchClipOnBothSexes" methodname="EveryStrokePlaysItsOwnMatchClipOnBothSexes" classname="GolfArcade.PlayTests.MatchHeroClipMapTests" runstate="Runnable" seed="1360091966" result="Passed" start-time="2026-10-08 23:04:49Z" end-time="2026-10-08 23:05:34Z" duration="44.995107" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="Timeout" value="300000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[TennisVenue] Resort horizontal court planes min=0.038000 top=0.050000
+[TennisCoast] shoreline UV anchors (-272.50, 0.00, -217.50) U=(265.00, 0.00, -217.50) V=(-272.50, 0.00, 475.00)
+[TennisResortFixtures] replaced 93 dense render-only scanned fixtures in their measured envelopes; court/net/actor physics unchanged.
+[TennisHorizon2] renderer=Authored layered resort horizon active=True enabled=True layer=0 boundsMin=(-488.05, -5.10, 500.65) boundsMax=(422.62, 61.84, 778.96) scale=(1.000, 1.000, 1.000) shaderSupported=True
+[TennisHorizon2] Render-only layered horizon; original court, light/fog and physics retained
+[TennisArt] static pockets=0; 20m tree LOD pockets=122; 24m understory LOD pockets=127; actual far meshes omit distant shadow passes
+[CrowdColours] vertex skin RGBA(0.886, 0.694, 0.557, 0.000) linearDistance=0.051217 gammaDistance=0.000000 decodeSRGB=True
+[Crowd] Clean authored seated spectators: 36; rigid meshes, no skinning
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+[HeroFaceReferenceFit] male Body: moved=18582; belowHeadChanges=0; minJacobian=0.314662457; topologySame=True; weightsSame=True; bindsSame=True
+[HeroFaceReferenceFit] male ReferenceFeatures: moved=3824; belowHeadChanges=0; minJacobian=0.7927949; topologySame=True; weightsSame=True; bindsSame=True
+[HeroOriginalSeam] blink normal isolation body: cleared=86169; base geometry/normals unchanged
+[HeroOriginalSeam] blink normal isolation features: cleared=7648; base geometry/normals unchanged
+[HeroOriginalSeam] installed Male body=44168 features=3824; original rig and eye proportions retained; legacy face layers bypassed
+[HeroHandWeights] Male Left thumb-root vertices=50 radius=0.012
+[HeroHandWeights] Male Right thumb-root vertices=53 radius=0.012
+[HeroHandWeights] exact geometry/rest retained; changed=103 maxWeightL1=1.8
+[HeroGarmentAxillaWeights] Male Body_M: modified=1765 maxArmMassTransfer=0.460045546 normalizedError=1.04308128E-07; rest vertices/UVs/indices/palette and outside weights exact
+[HeroSkinNormals] field=area-continuous source=Body (reference face fit) (local blink normals) (thumb root weights) (axilla weight field) selected=18333 changed=12629 radiusMetres=0.012 capDegrees=45 maxNormalDegrees=45 maxVertexDeltaSquared=0; source topology/weights/UVs/morphs cloned unchanged
+[HeroBlinkNormalField] rebuilt=1753; source vertices/shape positions unchanged; accepted base normals retained
+[HeroHeadSurface] Male origin=(0.000000, -0.027810, 1.510000) eye=(-0.000002, -0.080250, 0.065629) frame=(1.000000, -0.000141, -0.000004)/(0.000000, -0.025677, 0.999670)/(-0.000141, -0.999670, -0.025677) cheekMaskMax=0.6618995 noseMaskMax=0.6107752 shader=GolfArcade/HeroFaceSkin hasHeadUniform=True
+[HeroGarmentSleeveGeometry] Kit_Top vertices=5622 max=0.0898465142m; full/LOD bind landmarks, existing faces/UVs/weights/rig retained
+[HeroGarmentAxillaWeights] Male Kit_Top: modified=2212 maxArmMassTransfer=0.425584465 normalizedError=9.685755E-08; rest vertices/UVs/indices/palette and outside weights exact
+[HeroGarmentTailoring] Kit_Top Male geometry vertices=1149 maxDelta=0.0182166956m; UV/triangles/weights/palette exact
+[HeroGarmentPoseCorrectives] indexed bind basis exact within 2.458692E-07m
+[HeroGarmentPoseCorrectives] Male Top v=15401, 10 garment-only anchors; rest geometry/UVs/weights/rig exact
+[HeroGarmentTailoring] Kit_Shoe_L Male geometry vertices=3536 maxDelta=0.0213025063m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_R Male geometry vertices=3536 maxDelta=0.0213025063m; UV/triangles/weights/palette exact
+[HeroGarmentCoverage] Correspondence mismatch; original body retained: Tennis/GarmentCoverage/Tennis_Male, 7064/7072 physical faces
+[HeroFaceReferenceFit] female Body: moved=8412; belowHeadChanges=0; minJacobian=0.462642; topologySame=True; weightsSame=True; bindsSame=True
+[HeroFaceReferenceFit] female ReferenceFeatures: moved=3004; belowHeadChanges=0; minJacobian=0.7198009; topologySame=True; weightsSame=True; bindsSame=True
+[HeroOriginalSeam] blink normal isolation body: cleared=64229; base geometry/normals unchanged
+[HeroOriginalSeam] blink normal isolation features: cleared=6008; base geometry/normals unchanged
+[HeroOriginalSeam] installed Female body=34443 features=3004; original rig and eye proportions retained; legacy face layers bypassed
+[HeroHandWeights] Female Left thumb-root vertices=27 radius=0.01
+[HeroHandWeights] Female Right thumb-root vertices=9 radius=0.01
+[HeroHandWeights] exact geometry/rest retained; changed=36 maxWeightL1=1.8
+[HeroGarmentAxillaWeights] Female Body_F: modified=676 maxArmMassTransfer=0.6437218 normalizedError=9.685755E-08; rest vertices/UVs/indices/palette and outside weights exact
+[HeroSkinNormals] field=area-continuous source=Body (reference face fit) (local blink normals) (thumb root weights) (axilla weight field) selected=19337 changed=11566 radiusMetres=0.012 capDegrees=45 maxNormalDegrees=45 maxVertexDeltaSquared=0; source topology/weights/UVs/morphs cloned unchanged
+[HeroBlinkNormalField] rebuilt=1746; source vertices/shape positions unchanged; accepted base normals retained
+[HeroHeadSurface] Female origin=(0.000000, 0.002330, 1.490000) eye=(0.000000, -0.114133, 0.056997) frame=(1.000000, -0.000023, -0.000001)/(0.000000, -0.023316, 0.999728)/(-0.000023, -0.999728, -0.023316) cheekMaskMax=0.957785 noseMaskMax=0.9500233 shader=GolfArcade/HeroFaceSkin hasHeadUniform=True
+[HeroGarmentSleeveGeometry] Kit_Top vertices=5596 max=0.08878432m; full/LOD bind landmarks, existing faces/UVs/weights/rig retained
+[HeroGarmentAxillaWeights] Female Kit_Top: modified=1582 maxArmMassTransfer=0.2958963 normalizedError=8.84756446E-08; rest vertices/UVs/indices/palette and outside weights exact
+[HeroGarmentTailoring] Kit_Top Female geometry vertices=1067 maxDelta=0.01605789m; UV/triangles/weights/palette exact
+[HeroGarmentPoseCorrectives] indexed bind basis exact within 2.423444E-07m
+[HeroGarmentPoseCorrectives] Female Top v=13932, 10 garment-only anchors; rest geometry/UVs/weights/rig exact
+[HeroGarmentTailoring] Kit_Shoe_L Female geometry vertices=1414 maxDelta=0.0167199969m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_R Female geometry vertices=1414 maxDelta=0.0167199969m; UV/triangles/weights/palette exact
+[HeroGarmentCoverage] Tennis/GarmentCoverage/Tennis_Female: 3064/3064 physical faces matched; 3064 rendered faces omitted; source vertices/weights/normals/UVs/morphs/bounds exact
+[Crowd] Six fitted promenade visitors; eleven cosmetic joints and one renderer per active detail, zero legacy full skins.
+[HeroGarmentTailoring] Kit_Shoe_L Male geometry vertices=2155 maxDelta=0.0213092417m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_R Male geometry vertices=2156 maxDelta=0.0213092417m; UV/triangles/weights/palette exact
+[HeroGarmentSleeveGeometry] Kit_Top vertices=4862 max=0.08984899m; full/LOD bind landmarks, existing faces/UVs/weights/rig retained
+[HeroGarmentAxillaWeights] Male Kit_Top: modified=1818 maxArmMassTransfer=0.4264053 normalizedError=9.685755E-08; rest vertices/UVs/indices/palette and outside weights exact
+[HeroGarmentTailoring] Kit_Top Male geometry vertices=1048 maxDelta=0.0182166956m; UV/triangles/weights/palette exact
+[HeroGarmentPoseCorrectives] distance transfer v=12739 misses=0 max=0.0104238251m; unmatched vertices exact
+[HeroGarmentPoseCorrectives] Male Top v=12739, 10 garment-only anchors; rest geometry/UVs/weights/rig exact
+[HeroGarmentTailoring] Kit_Shoe_L Female geometry vertices=710 maxDelta=0.0167199969m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_R Female geometry vertices=710 maxDelta=0.0167199969m; UV/triangles/weights/palette exact
+[HeroGarmentSleeveGeometry] Kit_Top vertices=4677 max=0.08878432m; full/LOD bind landmarks, existing faces/UVs/weights/rig retained
+[HeroGarmentAxillaWeights] Female Kit_Top: modified=1424 maxArmMassTransfer=0.2958963 normalizedError=8.84756446E-08; rest vertices/UVs/indices/palette and outside weights exact
+[HeroGarmentTailoring] Kit_Top Female geometry vertices=967 maxDelta=0.0160540473m; UV/triangles/weights/palette exact
+[HeroGarmentPoseCorrectives] distance transfer v=11533 misses=0 max=0.008890193m; unmatched vertices exact
+[HeroGarmentPoseCorrectives] Female Top v=11533, 10 garment-only anchors; rest geometry/UVs/weights/rig exact
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+[Arms] no skin material found for standard_male_tennis(Clone); arms will not be visible
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+[HeroOriginalSeam] installed Male body=44168 features=3824; original rig and eye proportions retained; legacy face layers bypassed
+[HeroHeadSurface] Male origin=(0.000000, -0.027810, 1.510000) eye=(-0.000002, -0.080250, 0.065629) frame=(1.000000, -0.000141, -0.000004)/(0.000000, -0.025677, 0.999670)/(-0.000141, -0.999670, -0.025677) cheekMaskMax=0.6618995 noseMaskMax=0.6107752 shader=GolfArcade/HeroFaceSkin hasHeadUniform=True
+[HeroGarmentCoverage] Correspondence mismatch; original body retained: Tennis/GarmentCoverage/Tennis_Male, 7064/7072 physical faces
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+[Arms] no skin material found for standard_female_tennis(Clone); arms will not be visible
+RACKETFIT bounds=(0.29, 0.69, 0.06) width=0.286 wanted=0.380 raw=1.330
+[HeroOriginalSeam] installed Female body=34443 features=3004; original rig and eye proportions retained; legacy face layers bypassed
+[HeroHeadSurface] Female origin=(0.000000, 0.002330, 1.490000) eye=(0.000000, -0.114133, 0.056997) frame=(1.000000, -0.000023, -0.000001)/(0.000000, -0.023316, 0.999728)/(-0.000023, -0.999728, -0.023316) cheekMaskMax=0.957785 noseMaskMax=0.9500233 shader=GolfArcade/HeroFaceSkin hasHeadUniform=True
+[HeroGarmentCoverage] Tennis/GarmentCoverage/Tennis_Female: 3064/3064 physical faces matched; 3064 rendered faces omitted; source vertices/weights/normals/UVs/morphs/bounds exact
+DONE PlayMode: 1 passed, 0 failed, 0 skipped
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

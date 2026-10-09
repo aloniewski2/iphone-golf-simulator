@@ -38,9 +38,6 @@ struct MotionClubHome: View {
             ZStack {
                 IslandBackdrop()
                 if compact { LinearGradient(colors: [.clear, IslandUI.paper.opacity(0.95)], startPoint: .top, endPoint: .bottom).ignoresSafeArea() }
-                Ellipse().fill(IslandUI.navy.opacity(0.16)).blur(radius: 12)
-                    .frame(width: w * (compact ? 0.35 : 0.18), height: 20)
-                    .position(x: w * (compact ? 0.55 : 0.73), y: h * (compact ? 0.50 : 0.91))
                 CharacterModelPreview(player: menu.player ?? Player(name: "Player 1", colorIndex: 0), cameraDistance: compact ? 3.4 : 3.25, menuActivity: activity)
                     .frame(width: w * (compact ? 0.87 : 0.56), height: h * (compact ? 0.48 : 0.86))
                     .position(x: w * (compact ? 0.55 : 0.73), y: h * (compact ? 0.30 : 0.56))

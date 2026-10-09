@@ -45,9 +45,50 @@ namespace GolfArcade.Tennis
         // ---- names on the broadcast cards
         public static string Title => Current switch { TennisVenueKind.Skyscraper => "SKY OPEN", TennisVenueKind.Volcano => "MAGMA OPEN", _ => "TROPICAL OPEN" };
         public static string CourtName => Current switch { TennisVenueKind.Skyscraper => "ROOFTOP COURT", TennisVenueKind.Volcano => "CRATER COURT", _ => "CENTRE COURT" };
-        public static string Session => Current switch { TennisVenueKind.Skyscraper => "CLOUD SESSION", TennisVenueKind.Volcano => "ERUPTION SESSION", _ => "SUNSET SESSION" };
+        public static string Session => Current switch { TennisVenueKind.Skyscraper => "CLOUD SESSION", TennisVenueKind.Volcano => "ERUPTION SESSION", _ => "OCEAN SESSION" };
 
-        // ---- the surface
+        /// The measured render surface, independent of the player's physical root.
+        /// Cached once from the court submesh after the arena is positioned.
+        public static bool HasRenderedCourtHeight { get; private set; }
+        public static float RenderedCourtHeight { get; private set; }
+        public static float RenderedCourtMinHeight { get; private set; }
+        public static void CacheRenderedCourtHeight(GameObject arena)
+        {
+            HasRenderedCourtHeight = false;
+            float min = float.PositiveInfinity, max = float.NegativeInfinity;
+            foreach (var renderer in arena.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                var filter = renderer.GetComponent<MeshFilter>();
+                if (!filter || !filter.sharedMesh) continue;
+                var mesh = filter.sharedMesh; var materials = renderer.sharedMaterials;
+                var vertices = mesh.vertices;
+                for (int sub = 0; sub < mesh.subMeshCount && sub < materials.Length; sub++)
+                {
+                    if (!materials[sub] || !materials[sub].name.StartsWith("TropicalV3_002")) continue;
+                    var indices = mesh.GetIndices(sub);
+                    // The court is a shallow solid, so its bottom is also in this
+                    // material. Only horizontal triangles define the upper plane.
+                    for (int i = 0; i + 2 < indices.Length; i += 3)
+                    {
+                        var a = renderer.transform.TransformPoint(vertices[indices[i]]);
+                        var b = renderer.transform.TransformPoint(vertices[indices[i+1]]);
+                        var c = renderer.transform.TransformPoint(vertices[indices[i+2]]);
+                        var normal = Vector3.Cross(b-a,c-a);
+                        if (normal.sqrMagnitude < 1e-12f || Mathf.Abs(normal.normalized.y) < .995f) continue;
+                        float height = (a.y+b.y+c.y)/3;
+                        min = Mathf.Min(min,height); max = Mathf.Max(max,height);
+                    }
+                }
+            }
+            if (!float.IsInfinity(min))
+            {
+                HasRenderedCourtHeight = true;
+                RenderedCourtMinHeight = min; RenderedCourtHeight = max;
+                Debug.Log("[TennisVenue] " + Current + " horizontal court planes min=" + min.ToString("F6") + " top=" + max.ToString("F6"));
+            }
+            else Debug.LogWarning("[TennisVenue] no rendered court plane found for contact shadows.");
+        }
+
         /// The deck the court stands on, half extents in metres (the resort's run-off apron is 10 x 19.5).
         public const float DeckHalfX = 12.6f, DeckHalfZ = 21.6f;
 
@@ -64,7 +105,7 @@ namespace GolfArcade.Tennis
         {
             TennisVenueKind.Skyscraper => new Color(.03f, .40f, .36f),      // deep teal
             TennisVenueKind.Volcano => new Color(.055f, .055f, .065f),      // obsidian black
-            _ => new Color(.015f, .19f, .62f),                              // resort sapphire
+            _ => new Color(.085f, .40f, .43f),                             // resort ocean acrylic
         };
 
         /// The run-off apron around the court: a shade off the court so the lines still frame it.
@@ -77,7 +118,7 @@ namespace GolfArcade.Tennis
                 {
                     TennisVenueKind.Skyscraper => new Color(.025f, .34f, .31f),
                     TennisVenueKind.Volcano => new Color(.04f, .04f, .048f),
-                    _ => new Color(.02f, .34f, .34f),
+                    _ => new Color(.07f, .29f, .275f),
                 };
             }
         }
@@ -85,36 +126,36 @@ namespace GolfArcade.Tennis
         public static Color LineColor => Current == TennisVenueKind.Volcano ? new Color(.97f, .96f, .92f) : new Color(.95f, .96f, .93f);
 
         /// How far the camera can see: the resort is a small island; the sky and the crater are not.
-        public static float FarClip => Current switch { TennisVenueKind.Skyscraper => 6000, TennisVenueKind.Volcano => 3500, _ => 600 };
+        public static float FarClip => Current switch { TennisVenueKind.Skyscraper => 6000, TennisVenueKind.Volcano => 3500, _ => System.Environment.GetEnvironmentVariable("TENNIS_HORIZON2")!="0" ? 1000 : 600 };
 
         // ---- the drone shot
         /// The opening flyover, 0 to 1: where the camera is, what it looks at and its field of view.
-        /// Every path ends where the resort's does, banking in over the stands to the player.
+        /// Every venue reveals its setting, then lands at a 2.2m baseline hero view.
         public static void Drone(float k, out Vector3 pos, out Vector3 look, out float fov)
         {
-            Vector3 end = new Vector3(-14, 7.5f, -22);
+            Vector3 end = new Vector3(2.6f, 2.2f, -17.2f);
             switch (Current)
             {
                 case TennisVenueKind.Skyscraper:
                     // From high above the cloud sea, tower and city laid out below, then a long descent
                     // behind the deck and in over its near edge. Never below deck height, so nothing
                     // is flown through.
-                    pos = Bezier(new Vector3(170, 300, -330), new Vector3(120, 190, -240), new Vector3(-70, 70, -100), end, k);
-                    look = Vector3.Lerp(new Vector3(0, -120, 0), new Vector3(0, .5f, 0), Mathf.SmoothStep(0, 1, k));
-                    fov = Mathf.Lerp(54, 50, k);
+                    pos = Bezier(new Vector3(75, 115, -120), new Vector3(45, 70, -78), new Vector3(-16, 13, -30), end, k);
+                    look = Vector3.Lerp(new Vector3(0, -45, 0), new Vector3(0, .85f, 3.5f), Mathf.SmoothStep(0, 1, k));
+                    fov = Mathf.Lerp(54, 52, k);
                     break;
                 case TennisVenueKind.Volcano:
                     // Starts high and close, looking almost straight down at the slab dead centre in the
                     // lava (only lava and the inner wall in frame, never the land outside), then sinks
                     // and swings low enough to show the floating rock it sits on before settling on the court.
-                    pos = Bezier(new Vector3(-45, 95, -62), new Vector3(-55, 70, -78), new Vector3(-48, 18, -70), end, k);
-                    look = Vector3.Lerp(new Vector3(0, -32, 0), new Vector3(0, .5f, 0), Mathf.SmoothStep(0, 1, k));
-                    fov = Mathf.Lerp(52, 50, k);
+                    pos = Bezier(new Vector3(-42, 66, -62), new Vector3(-36, 39, -48), new Vector3(-10, 8, -29), end, k);
+                    look = Vector3.Lerp(new Vector3(0, -20, 0), new Vector3(0, .85f, 3.5f), Mathf.SmoothStep(0, 1, k));
+                    fov = Mathf.Lerp(52, 52, k);
                     break;
                 default:
-                    pos = Bezier(new Vector3(40, 95, 210), new Vector3(-150, 70, 90), new Vector3(-70, 24, -40), end, k);
-                    look = Vector3.Lerp(new Vector3(0, -10, -20), new Vector3(0, .5f, 0), k);
-                    fov = Mathf.Lerp(46, 50, k);
+                    pos = Bezier(new Vector3(42, 58, 100), new Vector3(-75, 40, 30), new Vector3(-16, 7, -25), end, k);
+                    look = Vector3.Lerp(new Vector3(0, -3, 0), new Vector3(0, .85f, 3.5f), k);
+                    fov = Mathf.Lerp(48, 52, k);
                     break;
             }
         }

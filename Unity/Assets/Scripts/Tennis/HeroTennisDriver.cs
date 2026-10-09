@@ -11,11 +11,11 @@ namespace GolfArcade.Tennis
     /// scoring. This component only READS it and plays the hero's own clips so that each stroke
     /// clip's authored contact frame lands on the actor's gameplay contact. No gameplay effect.
     ///
-    /// The match heroes play the 16 FBX clips of work/match-anim-set on their own skeleton, as authored. The driver keeps what
+    /// The match heroes play their FBX stroke, locomotion and emote clips on their own skeleton, as authored. The driver keeps what
     /// belongs to a puppet (contact lock, honest contact assist, the serve ritual, planted feet, the dive tilt) and leaves out the
     /// stylised body layers and the clearance models that were measured on the old chibi body (see `Match`). The old Hero_* clips
-    /// are not played by any slot: celebrate, sad, match win / lose and the whiff overswing have no new clip, so a hero
-    /// with none of them simply holds ReadyIdle / finishes the swing it is in. (SERVE_AND_FEET: the new Serve plus Walk, RunForward, RunLeft and RunRight are in
+    /// are not played by any slot. The visual overhaul adds seven Generic performance assets for Idle, point and match
+    /// reactions and the whiff reaction; missing assets still fall back cleanly. (SERVE_AND_FEET: Serve plus Walk, RunForward, RunLeft and RunRight are in
     /// the set; the base layer plays them by ground speed, planted-foot speed = actor speed at `walkClipSpeed` / `runClipSpeed`.)
     [DefaultExecutionOrder(1000)]
     public sealed class HeroTennisDriver : MonoBehaviour
@@ -77,7 +77,8 @@ namespace GolfArcade.Tennis
                                       Clip.SliceApproach, Clip.Return, Clip.VolleyBackhand, Clip.ForehandOpen }) t[(int)c] = true;
             return t;
         }
-        /// Clips the match set does not have (listed for the HERO_MAINSTAY note): these slots stay empty, so nothing plays for them.
+        /// Slots absent from the original FBX set. ResolvePerformanceClips fills these
+        /// with the authored Generic visual-overhaul assets, without legacy retargeting.
         /// (SERVE_AND_FEET: Walk, RunForward, RunRight and RunLeft are in the set now and play from the base layer by ground speed; WalkMode / runClipSpeed / walkClipSpeed apply.)
         public static readonly Clip[] MissingFromMatchSet = { Clip.HitPerfect, Clip.CelebratePoint, Clip.SadPointLost, Clip.MatchWin, Clip.MatchLose, Clip.MissWhiff };
 
@@ -90,8 +91,11 @@ namespace GolfArcade.Tennis
         readonly AnimationClipPlayable[] upperPlayables = new AnimationClipPlayable[Count];
         /// Editor proof only: HERO_FLUID=0 turns the Plan 3A motion layers off (before/after captures).
         public static readonly bool FluidOff = Environment.GetEnvironmentVariable("HERO_FLUID") == "0" || Baseline;
-        float legsFromRun, actionLegs; HeroFace face;
+        float legsFromRun, actionLegs; HeroFace face; HeroTennisPerformance performance;
+        HeroGarmentPoseCorrectives garmentCorrectives;
         /// Match heroes: the upper-body layer eases out when a stroke ends (and between two strokes the clips cross-fade) instead of snapping to the base pose.
+        AvatarMask strokeUpperMask,reactionUpperMask;bool usingReactionMask;
+        float reactionLegShare;public float ReactionLegShare => reactionLegShare;
         readonly float[] upperBlend = new float[Count]; float upperFade; int upperFadeClip = (int)Clip.Forehand;
         const float MatchUpperOut = .16f, MatchUpperSwitch = .09f;
         readonly AnimationClipPlayable[] playables = new AnimationClipPlayable[Count];
@@ -104,9 +108,17 @@ namespace GolfArcade.Tennis
         float lead = .4f; float lastPerfect = -99; bool wasSwinging; Clip juice; bool juiceActive; double juiceTime; bool perfectPending;
         public Clip CurrentAction => actionActive ? action : juiceActive ? juice : Clip.Ready;
         readonly string[] clipName = new string[Count];
-        /// Proof / review: the FBX clip the pose is being played from (the action layer's, else ReadyIdle) and the clip time in seconds.
-        public string PlayingClip => clipName[(int)(actionActive ? action : juiceActive ? juice : Clip.Ready)] ?? "";
-        public float PlayingClipTime => actionActive ? (float)actionTime : juiceActive ? (float)Math.Max(0, juiceTime) : (float)time[(int)Clip.Ready];
+        /// Proof / review: the action, reaction or strongest base clip actually rendered.
+        /// Locomotion blends are still reported in full by WeightReport.
+        int DominantBaseClip()
+        {
+            int result = (int)Clip.Ready; float highest = -1;
+            for (int k = 0; k < Count; k++) if (valid[k] && weight[k] > highest)
+            { highest = weight[k]; result = k; }
+            return result;
+        }
+        public string PlayingClip => clipName[actionActive ? (int)action : juiceActive ? (int)juice : DominantBaseClip()] ?? "";
+        public float PlayingClipTime => actionActive ? (float)actionTime : juiceActive ? (float)Math.Max(0, juiceTime) : (float)time[DominantBaseClip()];
         /// Proof / review: every clip slot this hero has (id, FBX clip name, contact time).
         /// Diagnostics: the base mixer's non-zero input weights, the upper layer's weight and the clip it plays (the proof trace records this every frame).
         public string WeightReport()
@@ -126,6 +138,7 @@ namespace GolfArcade.Tennis
 
         public void Build()
         {
+            ResolvePerformanceClips();
             foreach (var s in slots) { int i = (int)s.id; if (!s.clip) continue; valid[i] = true; length[i] = s.clip.length; contact[i] = s.contact; leftRelease[i] = s.leftRelease; clipName[i] = s.clip.name; }
             var animator = Anim; if (look) look.externalAnimation = true;
             if (Match) animator.applyRootMotion = false;
@@ -141,7 +154,7 @@ namespace GolfArcade.Tennis
             upperMixer = AnimationMixerPlayable.Create(graph, Count);
             foreach (var s in slots)
             {
-                if (!s.clip) continue; int i = (int)s.id; if (!IsStroke((Clip)i)) continue;
+                if (!s.clip) continue; int i = (int)s.id; if (!IsStroke((Clip)i) && !(Match&&IsReaction((Clip)i))) continue;
                 upperPlayables[i] = AnimationClipPlayable.Create(graph, s.clip); upperPlayables[i].SetApplyFootIK(false); upperPlayables[i].SetSpeed(0);
                 graph.Connect(upperPlayables[i], 0, upperMixer, i);
             }
@@ -156,6 +169,8 @@ namespace GolfArcade.Tennis
                 foreach (var bp in new[] { AvatarMaskBodyPart.Body, AvatarMaskBodyPart.Head, AvatarMaskBodyPart.LeftArm, AvatarMaskBodyPart.RightArm, AvatarMaskBodyPart.LeftFingers, AvatarMaskBodyPart.RightFingers, AvatarMaskBodyPart.LeftHandIK, AvatarMaskBodyPart.RightHandIK })
                     upper.SetHumanoidBodyPartActive(bp, true);
             }
+            strokeUpperMask=upper;
+            if(Match){reactionUpperMask=new AvatarMask();UpperBodyMask(reactionUpperMask,false);}
             layers.SetLayerMaskFromAvatarMask(1, upper);
             AnimationPlayableOutput.Create(graph, "Hero", animator).SetSourcePlayable(layers);
             weight[(int)Clip.Ready] = 1;
@@ -176,6 +191,7 @@ namespace GolfArcade.Tennis
                 if (!FluidOff && Environment.GetEnvironmentVariable("HERO_FACE") != "0") face = HeroFace.Build(look, look.skinTone * new Color(.97f, .9f, .86f, 1));
                 body = HeroBodyProxy.Build(Anim, look.GetComponentsInChildren<SkinnedMeshRenderer>(true));
             }
+            else if (!FluidOff) performance = new HeroTennisPerformance(matchLook);
             if (Baseline) runClipSpeed = 3.2f;
             if (actor && Baseline) actor.Reacted += OnReacted;
             else if (actor)
@@ -194,21 +210,51 @@ namespace GolfArcade.Tennis
             BuildTrail();
         }
 
+        /// Edit-mode export also resolves the resource performances before reading slots.
+        /// It does not construct a graph or touch any gameplay contacts.
+        public void ResolvePerformanceClips()
+        {
+            if (!Match) return;
+            var combined = new List<ClipSlot>(slots);
+            string sex = matchLook.female ? "Female" : "Male";
+            foreach (var id in new[] { Clip.Idle, Clip.HitPerfect, Clip.MissWhiff, Clip.CelebratePoint, Clip.SadPointLost, Clip.MatchWin, Clip.MatchLose })
+            {
+                var clip = Resources.Load<AnimationClip>("Tennis/Performance/" + sex + "_" + id);
+                if (!clip) continue;
+                combined.RemoveAll(s => s.id == id);
+                combined.Add(new ClipSlot { id = id, clip = clip });
+            }
+            var polished=Resources.Load<AnimationClip>("Tennis/Performance/"+sex+"_ForehandPolished");
+            if(polished)for(int i=0;i<combined.Count;i++)if(combined[i].id==Clip.Forehand){var slot=combined[i];slot.clip=polished;combined[i]=slot;break;}
+            if(Environment.GetEnvironmentVariable("TENNIS_ARM_REPAIR")!="0")foreach(var id in new[]{Clip.Forehand,Clip.Backhand}) {
+                var repaired=Resources.Load<AnimationClip>("Tennis/Performance/"+sex+"_"+id+"ArmCorrected");
+                if(repaired)for(int i=0;i<combined.Count;i++)if(combined[i].id==id){var slot=combined[i];slot.clip=repaired;combined[i]=slot;break;}
+            }
+            slots = combined.ToArray();
+        }
+
         /// Upper-body layer of a Generic rig: the hips and everything from the spine up (torso, head, arms, fingers, the racket in the hand); the legs
         /// stay on the base layer. Same split the Humanoid mask made (Body + Head + arms + fingers, no legs).
-        void UpperBodyMask(AvatarMask mask)
+        void UpperBodyMask(AvatarMask mask,bool includeHips=true)
         {
             var root = Anim.transform; var paths = new List<string>();
             string PathOf(Transform t) { var p = t.name; for (var q = t.parent; q && q != root; q = q.parent) p = q.name + "/" + p; return p; }
-            paths.Add(PathOf(Bone(HumanBodyBones.Hips)));
+            if(includeHips)paths.Add(PathOf(Bone(HumanBodyBones.Hips)));
             foreach (var t in Bone(HumanBodyBones.Spine).GetComponentsInChildren<Transform>(true)) paths.Add(PathOf(t));
             mask.transformCount = paths.Count;
             for (int i = 0; i < paths.Count; i++) { mask.SetTransformPath(i, paths[i]); mask.SetTransformActive(i, true); }
         }
 
+        static bool IsReaction(Clip c) => c>=Clip.HitPerfect&&c<=Clip.MatchLose;
+        void SetUpperMask(bool reaction)
+        {
+            if(!Match||usingReactionMask==reaction)return;
+            usingReactionMask=reaction;layers.SetLayerMaskFromAvatarMask(1,reaction?reactionUpperMask:strokeUpperMask);
+        }
         void OnDestroy()
         {
             if (graph.IsValid()) graph.Destroy();
+            if(strokeUpperMask)Destroy(strokeUpperMask);if(reactionUpperMask)Destroy(reactionUpperMask);
             if (actor) { actor.Reacted -= OnReacted; actor.Posed -= OnActorPosed; actor.VisualContact = null; actor.VisualTossPoint = null; }
             TennisGame.ContactMade -= OnContact; TennisGame.Whiffed -= OnWhiff; TennisGame.OpponentStruck -= OnRivalStruck; TennisGame.Netted -= OnNetted;
         }
@@ -334,9 +380,9 @@ namespace GolfArcade.Tennis
             // never decide whether that first contact sub-step hits the ball.
             if (Match && isPlayer && (!wasSwinging || !actionActive || !IsStroke(action)))
             {
-                swingClip = Playable(StrokeClip()); action = swingClip; actionActive = true;
+                swingClip = Playable(StrokeClip()); BeginSwingTime(swingClip,actor.SignedTimeToContact);
+                action = swingClip; actionActive = true;
                 juiceActive = false; followThrough = true; wasSwinging = true;
-                swingStartTtc = Mathf.Max(actor.SignedTimeToContact, .05f);
                 actionWeight = 1; actionWeightVel = 0;
                 upperFade = 1; upperFadeClip = (int)action;
                 for (int k = 0; k < Count; k++)
@@ -351,14 +397,29 @@ namespace GolfArcade.Tennis
             int i = (int)action;
             playables[i].SetTime(StrokeTime(i, actor.SignedTimeToContact));
             if (upperPlayables[i].IsValid()) upperPlayables[i].SetTime(StrokeTime(i, actor.SignedTimeToContact));
+            SetUpperMask(false);
             graph.Evaluate(0);
-            PostProcess(true);
+            if(!Match){PostProcess(true,true);return;}
+            // Exact sub-step contact keeps the same guide/string solve. Its caches
+            // must not become the next displayed frame's abrupt body position.
+            // LateUpdate evaluates the graph again before its smooth correction.
+            var visualLunge=lungeOffset;float visualCrouch=contactCrouch,visualVelocity=contactCrouchVelocity;
+            int visualCrouchFrame=contactCrouchFrame,visualLungeFrame=contactLungeFrame;
+            float lastRenderedCrouch=LastCrouch,lastRenderedDesired=LastDesiredCrouch;
+            var renderedGuide=LastGuideGoal;float renderedAssist=LastAssistWeight;
+            PostProcess(true,true);
+            LastPhysicsCrouch=contactCrouch;LastPhysicsLunge=lungeOffset;
+            LastPhysicsStrings=stringCentre.position;LastPhysicsTtc=actor.SignedTimeToContact;
+            lungeOffset=visualLunge;contactCrouch=visualCrouch;contactCrouchVelocity=visualVelocity;
+            contactCrouchFrame=visualCrouchFrame;contactLungeFrame=visualLungeFrame;
+            LastCrouch=lastRenderedCrouch;LastDesiredCrouch=lastRenderedDesired;
+            LastGuideGoal=renderedGuide;LastAssistWeight=renderedAssist;
+            // Restoring state deliberately leaves the evaluated skeleton/socket
+            // transforms intact for the game's current string-crossing test.
+            PhysicsPoseRestoreError=Vector3.Distance(LastPhysicsStrings,stringCentre.position);
         }
-        /// After-point emotes are removed (Plan 1B; custom emotes come in Plan 3): a point ending
-        /// plays nothing — a whiff finishes its recover, then Ready / the next serve.
-        /// Plan 2B: point-end auto emotes are back ON as a temporary placeholder set until custom emotes
-        /// (Plan 3): winner cheers (racket-up jump) or fist-pumps, loser slumps or facepalms, match
-        /// win/lose get the big ones. Automatic, no picker; the next serve cuts them off (~2.4 s cap).
+        /// Short authored point gestures give way to the next serve. Equipped game-end
+        /// taunts and the distinct match result performances have their own entry paths.
         public static bool PointEmotes = true;
         public int PointReactionsSuppressed { get; private set; }
         public int PointEmotesPlayed { get; private set; }
@@ -369,16 +430,26 @@ namespace GolfArcade.Tennis
         int emoteRoll;
         void OnReacted(bool won, TennisActor.Moment moment)
         {
+            // The equipped game-end taunt has priority over a short point gesture.
+            // A match-ending point instead plays the distinct MatchWin / MatchLose.
+            if (GameEndedTaunt(won, moment != TennisActor.Moment.Match)) return;
             // Celebrations are selected from the equipped controller slots.
             if (!PointEmotes) { PointReactionsSuppressed++; return; }
+            // A miss already queued its own recover while the racket finishes the stroke.
+            // Keep that performance instead of replacing it with a second loss gesture.
+            if (!won && moment != TennisActor.Moment.Match &&
+                ((hasQueued && queued == Clip.MissWhiff) || (juiceActive && juice == Clip.MissWhiff)))
+            { PointEmotesPlayed++; LastEmote = Clip.MissWhiff.ToString(); return; }
             emoteRoll++;
             var c = moment == TennisActor.Moment.Match ? (won ? Clip.MatchWin : Clip.MatchLose)
-                : won ? (emoteRoll % 2 == 0 ? Clip.CelebratePoint : Clip.HitPerfect) : (emoteRoll % 2 == 0 ? Clip.SadPointLost : Clip.MatchLose);
-            // HERO_MAINSTAY: the match set has no celebrate / sad / match win / match lose clip. The hero holds ReadyIdle (no old Hero_* clip is played).
+                : won ? (emoteRoll % 2 == 0 ? Clip.CelebratePoint : Clip.HitPerfect) : Clip.SadPointLost;
+            // Generic reaction assets are authored on this body's own 53-bone rig.
             if (!valid[(int)c]) { MissingReactions++; LastMissingReaction = c.ToString(); return; }
             PointEmotesPlayed++; LastEmote = c.ToString();
             // Let a whiff finish its overswing before the point reaction.
-            if (juiceActive && juice == Clip.MissWhiff) { queued = c; hasQueued = true; } else PlayJuice(c);
+            if ((Match && actionActive && IsStroke(action)) || (juiceActive && juice == Clip.MissWhiff))
+            { queued = c; hasQueued = true; }
+            else PlayJuice(c);
         }
         Clip queued; bool hasQueued;
         void OnContact(Vector2 face, Timing grade, bool super)
@@ -408,8 +479,9 @@ namespace GolfArcade.Tennis
             if (!trail) return; trailFor = seconds; trail.Clear(); trail.emitting = true;
             trail.startColor = c; trail.endColor = new Color(c.r, c.g, c.b, 0);
         }
-        void OnWhiff() { if (valid[(int)Clip.MissWhiff]) actionActive = false;   // no whiff clip on the match heroes: the swing carries on through its own follow-through
-            PlayJuice(Clip.MissWhiff); if (!FluidOff && !Match) KickTorso(new Vector3(1.4f, 0, 0), .5f, 1.9f);   // Score80 B: a miss carries on further than a hit (comic overshoot)
+        void OnWhiff() { if (Match && actionActive) { queued = Clip.MissWhiff; hasQueued = valid[(int)Clip.MissWhiff]; }
+            else { if (valid[(int)Clip.MissWhiff]) actionActive = false; PlayJuice(Clip.MissWhiff); }
+            if (!FluidOff && !Match) KickTorso(new Vector3(1.4f, 0, 0), .5f, 1.9f);   // a miss carries through its authored swing before the reaction
             Trail(.4f, new Color(.75f, .88f, 1f, .75f)); }
         // ---- EMOTES: in-place full-body clips (Emote_Scuba / Emote_Thrust / Emote_Spike taunts, Intro_Wave / Intro_BringIt / Intro_Pushups intros) played on the juice path:
         // they ease in from READY, run once, and give way to the next serve / swing / run. Match heroes only; nothing else in the driver changes for the clips that exist already.
@@ -453,16 +525,19 @@ namespace GolfArcade.Tennis
             int i = IntroPick >= 0 ? IntroPick : (isPlayer ? 0 : (int)((uint)name.GetHashCode() % (uint)Intros.Length));
             return PlayEmote(Intros[Mathf.Abs(i) % Intros.Length]);
         }
-        void GameEndedTaunt(bool won)
+        bool GameEndedTaunt(bool won, bool allowTaunt = true)
         {
             // a taunt only after a GAME (the match's game / set counters moved), never after an ordinary point
-            if (!Match || !game) return;
+            if (!Match || !game) return false;
             var m = game.Match;
             int key = m.PlayerGames + m.OpponentGames + 100 * (m.PlayerSets + m.OpponentSets);
-            if (key < lastGameKey) { lastGameKey = key; return; }          // a new match started with a fresh score
-            if (key == lastGameKey) return;
+            if (key < lastGameKey) { lastGameKey = key; return false; }          // a new match started with a fresh score
+            if (key == lastGameKey) return false;
             lastGameKey = key;
-            if (won) { var c = NextTaunt(); if (!PlayEmote(c)) { pendingEmote = c; hasPendingEmote = true; } }
+            if (!won || !allowTaunt) return false;
+            var c = NextTaunt();
+            if (!PlayEmote(c)) { pendingEmote = c; hasPendingEmote = true; hasQueued = false; }
+            return true;
         }
 
         public void PlayJuice(Clip c) { if (!valid[(int)c]) return; juice = c; juiceActive = true; juiceTime = FluidOff || c == Clip.MissWhiff || c == Clip.HitPerfect ? 0 : -.14; perfectPending = false; }   // point emotes: a short beat to settle, then the eased lead-in
@@ -533,7 +608,7 @@ namespace GolfArcade.Tennis
                 if (!wasSwinging) swingClip = Playable(StrokeClip());
                 var c = swingClip; int i = (int)c;
                 float ttc = actor.SignedTimeToContact;
-                if (!wasSwinging || !actionActive || action != c) { lead = Mathf.Lerp(lead, Mathf.Clamp(ttc, .15f, .9f), .5f); action = c; actionActive = true; juiceActive = false; swingStartTtc = Mathf.Max(ttc, .05f); }
+                if (!wasSwinging || !actionActive || action != c) { BeginSwingTime(c,ttc); lead = Mathf.Lerp(lead, Mathf.Clamp(ttc, .15f, .9f), .5f); action = c; actionActive = true; juiceActive = false; }
                 actionTime = StrokeTime(i, ttc);
                 followThrough = true;
                 State = c + (ttc > 0 ? " swing" : " follow");
@@ -564,6 +639,7 @@ namespace GolfArcade.Tennis
             }
             else actionActive = false;
             wasSwinging = swinging;
+            if (hasQueued && !actionActive && !swinging && !juiceActive) { hasQueued = false; PlayJuice(queued); }
             if (hasPendingEmote && Match && !actionActive && !swinging && !BetweenPointsGone()) { hasPendingEmote = false; PlayEmote(pendingEmote); }
             // Mid-rally flourishes give way to real play: moving or preparing cancels them.
             if (juiceActive && juice == Clip.HitPerfect && !BetweenPoints() && (Moving() > .9f || actionActive) && juiceTime > .35f) juiceActive = false;
@@ -575,7 +651,7 @@ namespace GolfArcade.Tennis
             float move = Moving();
             Vector2 v = new Vector2(actor.Speed, actor.ForwardSpeed);
             float runW = Mathf.Clamp01((move - .15f) / .9f);
-            var baseIdle = Baseline && BetweenPoints() && valid[(int)Clip.Idle] ? Clip.Idle : Clip.Ready;   // no between-point idle emote: Ready
+            var baseIdle = BetweenPoints() && valid[(int)Clip.Idle] ? Clip.Idle : Clip.Ready;
             target[(int)baseIdle] = 1 - runW;
             bool walkMode = WalkMode();
             if (runW > 0 && walkMode) target[(int)Clip.Walk] += runW;
@@ -596,8 +672,8 @@ namespace GolfArcade.Tennis
                 target[(int)Clip.RunForward] += runW * fwd / sum;
                 target[(int)(v.x >= 0 ? Clip.RunRight : Clip.RunLeft)] += runW * side / sum;
             }
-            // The match set has no run / walk / idle-emote clips: their share is ReadyIdle, held. A share that is dropped with an absent clip is re-normalised
-            // onto whichever clip still has weight, which freezes the last follow-through for as long as the hero moves.
+            // An absent locomotion asset contributes its share to the idle pose rather
+            // than leaving the previous action frozen while the actor moves.
             if (Match)
             {
                 float lost = 0;
@@ -624,7 +700,10 @@ namespace GolfArcade.Tennis
             bool strokeLegs = actionActive && IsStroke(action) && action != Clip.Serve && !plantingOverhead && !FluidOff;
             legsFromRun = Mathf.MoveTowards(legsFromRun, strokeLegs ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.5f, 1.8f, move)) : 0, dt / .14f);
             actionLegs = FluidOff ? actionWeight : Mathf.MoveTowards(actionLegs, want, dt / (want > 0 ? .16f : .2f));
+            bool movingReaction=Match&&juiceActive&&!actionActive&&IsReaction(juice);
+            reactionLegShare=Mathf.MoveTowards(reactionLegShare,movingReaction?Mathf.SmoothStep(0,1,Mathf.InverseLerp(.15f,.7f,move)):0,dt/.10f);
             float fullAction = FluidOff ? actionWeight : Mathf.Min(actionWeight, actionLegs) * (1 - legsFromRun);
+            if(movingReaction)fullAction*=1-reactionLegShare;
             if (fullAction > 0)
             {
                 for (int k = 0; k < Count; k++) target[k] *= 1 - fullAction;
@@ -634,6 +713,11 @@ namespace GolfArcade.Tennis
             if (responsiveStroke && !FluidOff) upperW = 1;
             if (Match)
             {
+                // A short reaction rides real walk/run legs during repositioning;
+                // its approved full-body performance returns once planted.
+                if(movingReaction&&reactionLegShare>.001f)
+                {upperW=actionWeight*reactionLegShare;upperFade=upperW;upperFadeClip=(int)juice;}
+                else
                 // the stroke that just ended keeps its upper-body clip (frozen at its last time) while the layer eases out
                 if (actionActive && IsStroke(action)) { upperFade = upperW; upperFadeClip = (int)action; }
                 else { upperFade = Mathf.MoveTowards(upperFade, 0, dt / MatchUpperOut); upperW = upperFade; }
@@ -657,7 +741,7 @@ namespace GolfArcade.Tennis
                 else if (id == Clip.RunRight || id == Clip.RunLeft) time[k] = Match ? (runBack ? Mathf.Repeat(runReversePivot - (float)runPhase, length[k]) : runPhase % length[k]) : (time[k] + dt * runRate) % length[k];
                 else if (id == Clip.Walk) time[k] = (time[k] + dt * Mathf.Clamp(rateMove / walkClipSpeed, .3f, 1.8f)) % length[k];
                 else if (actionActive && id == action) { time[k] = actionTime; if (upperPlayables[k].IsValid()) upperPlayables[k].SetTime(actionTime); }
-                else if (juiceActive && id == juice) time[k] = Math.Max(0, juiceTime);
+                else if (juiceActive && id == juice) {time[k]=Math.Max(0,juiceTime);if(upperPlayables[k].IsValid())upperPlayables[k].SetTime(time[k]);}
                 playables[k].SetTime(time[k]);
             }
             // Humanoid mixers fill any missing weight with the default (muscle-zero) pose, which
@@ -668,11 +752,12 @@ namespace GolfArcade.Tennis
             for (int k = 0; k < Count; k++) if (valid[k]) mixer.SetInputWeight(k, weight[k]);
             if (Match)
             {
-                int wantUp = actionActive && IsStroke(action) ? (int)action : upperFadeClip; float upSum = 0;
+                int wantUp = movingReaction ? (int)juice : actionActive && IsStroke(action) ? (int)action : upperFadeClip; float upSum = 0;
                 for (int k = 0; k < Count; k++) { if (!upperPlayables[k].IsValid()) continue; upperBlend[k] = responsiveStroke ? (k == wantUp ? 1 : 0) : Mathf.MoveTowards(upperBlend[k], k == wantUp ? 1 : 0, dt / MatchUpperSwitch); upSum += upperBlend[k]; }
                 for (int k = 0; k < Count; k++) if (upperPlayables[k].IsValid()) upperMixer.SetInputWeight(k, upSum > 1e-4f ? upperBlend[k] / upSum : (k == wantUp ? 1 : 0));
             }
             else for (int k = 0; k < Count; k++) if (upperPlayables[k].IsValid()) upperMixer.SetInputWeight(k, actionActive && k == (int)action ? 1 : 0);
+            SetUpperMask(!actionActive&&IsReaction((Clip)upperFadeClip));
             layers.SetInputWeight(1, upperW); UpperLayerWeight = upperW;
             WeightSum = total;
             float yawWant = ServeYawTarget();
@@ -692,6 +777,15 @@ namespace GolfArcade.Tennis
             if (!Match) FinalRacketPenetration = RacketCost(out finalRacketPart);
             if (!Match) MeasureServeBall();
             FinalSink = 0; for (int f = 0; f < 4; f++) if (feet[f]) FinalSink = Mathf.Max(FinalSink, -(transform.InverseTransformPoint(feet[f].position).y - (f % 2 == 0 ? heelRest : toeRest)));
+            FinalizeGarments();
+        }
+        void FinalizeGarments()
+        {
+            if (!Match) return;
+            matchLook.body?.GetComponent<HeroArmSkinning>()?.Apply();
+            if (!garmentCorrectives) garmentCorrectives = matchLook.GetComponent<HeroGarmentPoseCorrectives>();
+            if (garmentCorrectives) garmentCorrectives.Apply();
+            matchLook.GetComponent<TailoredPoloDeformation>()?.Apply();
         }
         /// Deepest sole below the court on the pose actually rendered this frame.
         public float FinalSink { get; private set; }
@@ -700,6 +794,8 @@ namespace GolfArcade.Tennis
         /// state is cleared so it starts clean when the hero stops.
         bool LocomotionOwnsFeet()
         {
+            if(Match&&reactionLegShare>.85f&&Moving()>.5f)
+            {for(int f=0;f<2;f++){locked[f]=false;lockW[f]=0;stepping[f]=false;}return true;}
             if (Match && juiceActive && IsEmote(juice)) { for (int f = 0; f < 2; f++) { locked[f] = false; lockW[f] = 0; stepping[f] = false; } return true; }   // EMOTES: the clip owns the feet
             if (!Match || actionActive || juiceActive) { return false; }
             float loco = weight[(int)Clip.Walk] + weight[(int)Clip.RunForward] + weight[(int)Clip.RunLeft] + weight[(int)Clip.RunRight];
@@ -840,8 +936,13 @@ namespace GolfArcade.Tennis
         }
 
         Vector3 lungeOffset;
-        void PostProcess(bool swinging)
+        float contactCrouch, contactCrouchVelocity;
+        int contactCrouchFrame=-1, contactLungeFrame=-1;
+        bool crouchApplied;
+        float lastDivePose; bool diveWasActive,diveReturning;
+        void PostProcess(bool swinging,bool physicsSubstep=false)
         {
+            crouchApplied=false;
             // Ease any contact lunge back under the actor (feet re-centre over ~0.25 s).
             if (lungeOffset != Vector3.zero && !(swinging && IsStroke(action) && Mathf.Abs(actor.SignedTimeToContact) < .16f))
             { lungeOffset = Vector3.MoveTowards(lungeOffset, Vector3.zero, Time.deltaTime * 1.2f); }
@@ -856,15 +957,31 @@ namespace GolfArcade.Tennis
             bool leftGrip = weight[(int)Clip.Ready] > .5f || (actionActive && action == Clip.Backhand) || fist;
             if (!Match) look.ApplyHands(roll, rollW, leftGrip);   // the match heroes' finger grip is baked into every clip
             if (cosmetics) cosmetics.SetCelebrating(juiceActive && (juice == Clip.CelebratePoint || juice == Clip.MatchWin) && actionWeight > .5f);
-            // One additive dive pose, also evaluated on contact substeps. Gear follows the same skeleton.
-            if (isPlayer && game && game.DiveActive) {
-                float d = game.DivePose;
-                transform.localRotation = Quaternion.Euler(0, serveYaw + walkYaw, -game.DiveSide * 58f * d);
-                Ground();
-            } else transform.localRotation = Quaternion.Euler(0, serveYaw + walkYaw, 0);
-            if (swinging && IsStroke(action)) AssistContact();
+            // A low athletic side dive has a brace, trailing bent legs, and an eased
+            // kneeling recovery. It changes the puppet only; the game's root stays authoritative.
+            if(isPlayer && game && game.DiveActive)
+            {
+                float amount=game.DivePose;
+                if(!diveWasActive){lastDivePose=amount;diveReturning=false;}
+                if(amount<lastDivePose-.0001f)diveReturning=true;
+                lastDivePose=amount;diveWasActive=true;
+                float phase=Mathf.Asin(Mathf.Clamp01(amount))/Mathf.PI;
+                if(Match) DivePerformance(diveReturning?1-phase:phase);
+                else {transform.localRotation=Quaternion.Euler(0,serveYaw+walkYaw,-game.DiveSide*58f*game.DivePose);Ground();}
+            }
+            else {diveWasActive=false;transform.localRotation=Quaternion.Euler(0,serveYaw+walkYaw,0);}
+            if (swinging && IsStroke(action)) AssistContact(physicsSubstep);
+            if(Match) ContactRecovery(physicsSubstep);
+            if(Match && !crouchApplied && !(isPlayer && game && game.DiveActive)) ContactCrouch(0,false);
             if (!Baseline) TossArm();
             if (!Match) { ClearArm(true); ClearArm(false); ClearRacket(swinging); }   // clearance models were measured on the old chibi torso, head and legs
+            if (performance != null)
+                performance.Apply(actor, game, transform, actionActive,
+                    juiceActive && IsEmote(juice), juiceActive && !IsEmote(juice), Time.deltaTime);
+            float poseTime = physicsSubstep && actor && actor.Swinging
+                ? StrokeTime((int)action, actor.SignedTimeToContact) : (float)actionTime;
+            ApplyOpenForehandClearance(actionActive ? action : Clip.Ready, poseTime,
+                actionActive ? Mathf.Max(actionWeight, UpperLayerWeight) : 0);
 
         }
 
@@ -943,7 +1060,16 @@ namespace GolfArcade.Tennis
 
         // ---- serve ritual: the tossing hand really bounces and tosses the ball
         float ServeStanceT => serveStanceTime; float ServeReleaseT => serveReleaseTime; float ServeTrophyT => serveTrophyTime;
-        float swingStartTtc = .3f;
+        float swingStartTtc = .3f, swingStartBase;
+        void BeginSwingTime(Clip next,float ttc)
+        {
+            swingStartTtc=Mathf.Max(ttc,.05f);int i=(int)next;
+            float held=Match && actionActive && action==next && !followThrough
+                ? Mathf.Clamp((float)actionTime,0,contact[i]) : Mathf.Max(0,contact[i]-swingStartTtc);
+            // StrokeTime applies Tempo about the contact anchor. Undo it once here
+            // so u=0 is the exact visible held preparation rather than a new clip pose.
+            swingStartBase=contact[i]+(held-contact[i])/Mathf.Max(.01f,Tempo);
+        }
         const float SwingEase = 1.75f, ReleaseBurst = 1.5f, ReleaseTau = .09f;
         /// Clip time for a stroke at signed time-to-contact `ttc`: contact-locked. The serve's swing
         /// runs the clip's whole trophy -> racket drop -> unwind -> contact section (1.80 -> 2.33 s)
@@ -972,7 +1098,8 @@ namespace GolfArcade.Tennis
             if (!FluidOff && ttc > 0 && swingStartTtc > .08f && ttc <= swingStartTtc)
             {
                 float u = 1 - ttc / swingStartTtc;
-                return Mathf.Clamp(contact[i] - swingStartTtc * (1 - Mathf.Pow(u, SwingEaseNow)), 0, length[i]);
+                return Match ? Mathf.Lerp(swingStartBase,contact[i],Mathf.Pow(u,SwingEaseNow))
+                    : Mathf.Clamp(contact[i] - swingStartTtc * (1 - Mathf.Pow(u, SwingEaseNow)), 0, length[i]);
             }
             if (!FluidOff && burst && ttc < 0) return Mathf.Clamp(contact[i] - ttc + ReleaseBurstNow * ReleaseTau * (1 - Mathf.Exp(ttc / ReleaseTau)), 0, length[i]);
             return Mathf.Clamp(contact[i] - ttc, 0, length[i]);
@@ -1678,13 +1805,53 @@ namespace GolfArcade.Tennis
         /// Deterministic review: one clip at one time, with the same hands/props logic as gameplay.
         public void Sample(Clip c, float t)
         {
-            for (int k = 0; k < Count; k++) { if (!valid[k]) continue; mixer.SetInputWeight(k, k == (int)c ? 1 : 0); playables[k].SetTime(k == (int)c ? t : 0); }
+            // A gameplay stroke may have left the upper-body layer live. A diagnostic
+            // sample must be one complete authored pose, including socket/prop keys.
+            if (!graph.IsValid() || !valid[(int)c]) return;
+            layers.SetInputWeight(1, 0); UpperLayerWeight = 0;
+            for (int k = 0; k < Count; k++)
+            {
+                if (!valid[k]) continue;
+                weight[k] = k == (int)c ? 1 : 0;
+                mixer.SetInputWeight(k, weight[k]); playables[k].SetTime(k == (int)c ? t : 0);
+            }
             graph.Evaluate(0);
+            State = c + " sampled";
             int roll = c == Clip.Forehand ? (int)ModularHeroLook.Stroke.Forehand : c == Clip.Volley ? (int)ModularHeroLook.Stroke.Volley : -1;
             bool left = c == Clip.Ready || c == Clip.Backhand || c == Clip.HitPerfect || c == Clip.CelebratePoint || c == Clip.MatchWin;
             if (!Match) look.ApplyHands(roll, 1, left);
             if (cosmetics) cosmetics.SetCelebrating(c == Clip.CelebratePoint || c == Clip.MatchWin);
+            ApplyOpenForehandClearance(c, t, 1);
+            FinalizeGarments();
         }
+        // The male open forehand folds its forearm through the right waist at
+        // contact. Swivel the elbow about the unchanged shoulder-to-wrist axis;
+        // restore the wrist orientation so every finger and racket socket stays
+        // on the exact original contact transform. Only this authored clip window
+        // receives the correction; garment evaluation still follows the final rig.
+        void ApplyOpenForehandClearance(Clip clip, float poseTime, float blend)
+        {
+            if (!Match || matchLook.female || matchLook.golfKit) return;
+            if (Environment.GetEnvironmentVariable("VISUAL_OPEN_FOREHAND_CLEARANCE") == "0") return;
+            float relative = poseTime - contact[(int)Clip.ForehandOpen];
+            float window = 1 - Mathf.SmoothStep(0, 1, Mathf.Clamp01(Mathf.Abs(relative) / .16f));
+            float amount = clip == Clip.ForehandOpen && !(isPlayer && game && game.DiveActive)
+                ? window * Mathf.Clamp01(blend) : 0;
+            if (amount <= .00001f) return;
+            var upper = Bone(HumanBodyBones.RightUpperArm);
+            var lower = Bone(HumanBodyBones.RightLowerArm);
+            var hand = Bone(HumanBodyBones.RightHand);
+            if (!upper || !lower || !hand) return;
+            var axis = hand.position - upper.position;
+            if (axis.sqrMagnitude < .000001f) return;
+            var handRotation = hand.rotation;
+            var lowerRotation = lower.rotation;
+            var swivel = Quaternion.AngleAxis(60f * amount, axis.normalized);
+            upper.rotation = swivel * upper.rotation;
+            lower.rotation = swivel * lowerRotation;
+            hand.rotation = handRotation;
+        }
+
         public float ContactOf(Clip c) => contact[(int)c];
         public float LengthOf(Clip c) => length[(int)c];
 
@@ -1694,6 +1861,15 @@ namespace GolfArcade.Tennis
         /// Near contact, nudge the right arm (two-bone, hand rotation kept) so the hero's string bed
         /// meets the gameplay racket's sweet spot, i.e. where the ball is actually struck.
         public float LastCrouch { get; private set; }
+        public float LastDesiredCrouch { get; private set; }
+        public Vector3 RenderedLunge => lungeOffset;
+        public Vector3 LastGuideGoal { get; private set; }
+        public float LastAssistWeight { get; private set; }
+        public float LastPhysicsCrouch { get; private set; }
+        public Vector3 LastPhysicsLunge { get; private set; }
+        public Vector3 LastPhysicsStrings { get; private set; }
+        public float LastPhysicsTtc { get; private set; }
+        public float PhysicsPoseRestoreError { get; private set; }
         /// The off hand is still on the handle in this stroke (the two-handed backhand, and for the match set every clip whose left hand
         /// lets go only after the contact: Backhand, BackhandWide, Return, VolleyBackhand), so it rides the same nudge as the racket hand.
         bool TopHandOnRacket()
@@ -1702,7 +1878,109 @@ namespace GolfArcade.Tennis
             float release = leftRelease[(int)action];
             return release > 0 && actionTime < release;
         }
-        void AssistContact()
+        void ContactCrouch(float desired,bool exactContact)
+        {
+            crouchApplied=true;LastDesiredCrouch=desired;
+            if(!Match){contactCrouch=desired;}
+            else if(exactContact) {contactCrouch=desired;contactCrouchVelocity=0;}
+            else if(contactCrouchFrame!=Time.frameCount)
+            {
+                contactCrouchFrame=Time.frameCount;
+                contactCrouch=Mathf.SmoothDamp(contactCrouch,desired,ref contactCrouchVelocity,desired>contactCrouch?.045f:.12f,4f,Time.deltaTime);
+            }
+            LastCrouch=contactCrouch;
+            if(contactCrouch<.001f||!hips)return;
+            var lu=Bone(HumanBodyBones.LeftUpperLeg);var ll=Bone(HumanBodyBones.LeftLowerLeg);var lf=Bone(HumanBodyBones.LeftFoot);
+            var ru=Bone(HumanBodyBones.RightUpperLeg);var rl=Bone(HumanBodyBones.RightLowerLeg);var rf=Bone(HumanBodyBones.RightFoot);
+            if(!lu||!ll||!lf||!ru||!rl||!rf)return;
+            var lp=lf.position;var rp=rf.position;var lr=lf.rotation;var rr=rf.rotation;
+            hips.position+=Vector3.down*contactCrouch;
+            TwoBone(lu,ll,lf,lp);lf.rotation=lr;TwoBone(ru,rl,rf,rp);rf.rotation=rr;
+            LastCrouch=contactCrouch;
+        }
+        void DivePerformance(float u)
+        {
+            float side=game.DiveSide;
+            // Smooth launch, low side extension, planted knee, then hips over feet.
+            float reach=Mathf.SmoothStep(0,1,Mathf.Clamp01(u/.26f))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.48f,1,u)));
+            float brace=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.23f,.42f,u))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.67f,.95f,u)));
+            transform.localRotation=Quaternion.Euler(0,serveYaw+walkYaw,-side*66*reach);
+            hips.position+=Vector3.down*(.18f*reach+.18f*brace);
+            if(chestB)chestB.rotation=Quaternion.AngleAxis(27*reach,actor.transform.right)*chestB.rotation;
+            var head=Bone(HumanBodyBones.Head);if(head)head.rotation=Quaternion.AngleAxis(-20*reach,actor.transform.right)*head.rotation;
+            float clearance=Mathf.Max(0,actor.transform.position.y+.31f*reach-hips.position.y);
+            if(head)clearance=Mathf.Max(clearance,actor.transform.position.y+.15f*reach-head.position.y);
+            hips.position+=Vector3.up*clearance;
+            // A grounded scissor shape replaces the old rigid airborne standing legs.
+            foreach(bool right in new[]{false,true})
+            {
+                var up=Bone(right?HumanBodyBones.RightUpperLeg:HumanBodyBones.LeftUpperLeg);
+                var lo=Bone(right?HumanBodyBones.RightLowerLeg:HumanBodyBones.LeftLowerLeg);
+                var foot=Bone(right?HumanBodyBones.RightFoot:HumanBodyBones.LeftFoot);
+                if(!up||!lo||!foot)continue;
+                var footRotation=foot.rotation;
+                bool trailing=(right?1:-1)!=Mathf.Sign(side);
+                var hipLocal=actor.transform.InverseTransformPoint(hips.position);
+                var local=new Vector3(hipLocal.x+(trailing?-side*.42f:side*.26f), .10f+(trailing?.07f:0),hipLocal.z+(trailing?-.50f:.34f));
+                var target=actor.transform.TransformPoint(local);target.y=actor.transform.position.y+local.y;
+                TwoBonePole(up,lo,foot,Vector3.Lerp(foot.position,target,reach),actor.transform.TransformDirection(new Vector3(trailing?-side*.65f:side*.45f,-.14f,.9f)));
+                foot.rotation=Quaternion.Slerp(footRotation,Quaternion.AngleAxis(side*66*reach,actor.transform.forward)*footRotation,reach*.82f);
+            }
+            // Free palm protects the fall. The racket arm is left to the existing contact solve.
+            var au=Bone(HumanBodyBones.LeftUpperArm);var al=Bone(HumanBodyBones.LeftLowerArm);var hand=Bone(HumanBodyBones.LeftHand);
+            if(au&&al&&hand)
+            {
+                var hipLocal=actor.transform.InverseTransformPoint(hips.position);
+                var target=actor.transform.TransformPoint(new Vector3(hipLocal.x+side*.30f,.11f,hipLocal.z+.25f));target.y=actor.transform.position.y+.11f;
+                var rot=hand.rotation;TwoBone(au,al,hand,Vector3.Lerp(hand.position,target,brace));
+                hand.rotation=Quaternion.AngleAxis(22*brace,actor.transform.right)*rot;
+            }
+            // Keep shoes and brace above the rendered floor without moving the gameplay actor.
+            float minimum=float.MaxValue;
+            foreach(var foot in feet)if(foot)minimum=Mathf.Min(minimum,foot.position.y-.035f);
+            if(minimum<actor.transform.position.y)hips.position+=Vector3.up*(actor.transform.position.y-minimum);
+        }
+
+        static void TwoBonePole(Transform up,Transform lo,Transform end,Vector3 target,Vector3 kneeDirection)
+        {
+            float a=Vector3.Distance(up.position,lo.position),b=Vector3.Distance(lo.position,end.position);
+            var axis=target-up.position;float d=Mathf.Clamp(axis.magnitude,Mathf.Abs(a-b)+.001f,a+b-.001f);
+            var dir=axis.normalized;var pole=Vector3.ProjectOnPlane(kneeDirection,dir).normalized;if(pole.sqrMagnitude<.001f)return;
+            float x=(a*a-b*b+d*d)/(2*d),h=Mathf.Sqrt(Mathf.Max(0,a*a-x*x));var knee=up.position+dir*x+pole*h;
+            up.rotation=Quaternion.FromToRotation(lo.position-up.position,knee-up.position)*up.rotation;
+            lo.rotation=Quaternion.FromToRotation(end.position-lo.position,up.position+dir*d-lo.position)*lo.rotation;
+        }
+        Clip recoveryClip;bool hasRecoveryContact;
+        Vector3 recoveryRight,recoveryLeft;Quaternion recoveryRightRotation,recoveryLeftRotation;
+        void ContactRecovery(bool physicsSubstep)
+        {
+            if(!actor||!actionActive||!IsStroke(action)||!actor.Swinging){hasRecoveryContact=false;return;}
+            float ttc=actor.SignedTimeToContact;
+            var rh=Bone(HumanBodyBones.RightHand);var lh=Bone(HumanBodyBones.LeftHand);if(!rh||!lh)return;
+            if(ttc>=-.004f&&ttc<.009f)
+            {
+                hasRecoveryContact=true;recoveryClip=action;
+                recoveryRight=actor.transform.InverseTransformPoint(rh.position);recoveryLeft=actor.transform.InverseTransformPoint(lh.position);
+                recoveryRightRotation=Quaternion.Inverse(actor.transform.rotation)*rh.rotation;recoveryLeftRotation=Quaternion.Inverse(actor.transform.rotation)*lh.rotation;
+            }
+            // Physics sub-steps always receive the exact contact / guide pose. Once
+            // contact has passed, the rendered puppet carries that pose through a
+            // short smooth release rather than snapping out of the arm correction.
+            if(physicsSubstep||!hasRecoveryContact||recoveryClip!=action||ttc>=0||ttc<=-.075f)return;
+            float u=Mathf.SmoothStep(0,1,-ttc/.075f);
+            foreach(bool right in new[]{true,false})
+            {
+                if(!right&&isPlayer&&game&&game.DiveActive)continue;
+                var hand=right?rh:lh;var up=Bone(right?HumanBodyBones.RightUpperArm:HumanBodyBones.LeftUpperArm);var lo=Bone(right?HumanBodyBones.RightLowerArm:HumanBodyBones.LeftLowerArm);
+                if(!up||!lo)continue;
+                var anchor=actor.transform.TransformPoint(right?recoveryRight:recoveryLeft);
+                var rotation=actor.transform.rotation*(right?recoveryRightRotation:recoveryLeftRotation);
+                var wantedRotation=Quaternion.Slerp(rotation,hand.rotation,u);
+                TwoBone(up,lo,hand,Vector3.Lerp(anchor,hand.position,u));hand.rotation=wantedRotation;
+            }
+        }
+
+        void AssistContact(bool physicsSubstep)
         {
             float ttc = Mathf.Abs(actor.SignedTimeToContact);
             float w = Mathf.Clamp01(1 - ttc / .16f);
@@ -1710,6 +1988,7 @@ namespace GolfArcade.Tennis
             // Follow the planned contact envelope so the visible racket earns that contact,
             // while the original swing timing still determines shot quality.
             if (!Baseline && actor.Guiding) w = Mathf.Max(w, actor.ContactGuideWeight);
+            LastAssistWeight=w;
             if (w <= 0 || !Grip) return;
             if (Baseline) { if (action == Clip.Serve || !actor.SweetSpot) return; }
             else if (!actor.Guiding) return;
@@ -1720,27 +1999,28 @@ namespace GolfArcade.Tennis
                 // A reach is carried by the body too: lunge the whole hero toward the ball.
                 var toBall = (game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall) - stringCentre.position; toBall.y = 0;
                 float reach = isPlayer && actor.Guiding ? Mathf.Max(bodyReach, .45f) : bodyReach;
-                var lunge = Vector3.ClampMagnitude(toBall, reach) * w;
-                transform.position += lunge; lungeOffset = Vector3.ClampMagnitude(transform.localPosition - smoothLocal, reach); transform.localPosition = lungeOffset + smoothLocal;
+                var desiredLunge=Vector3.ClampMagnitude(toBall+actor.transform.TransformVector(lungeOffset),reach)*w;
+                var desiredLocal=actor.transform.InverseTransformVector(desiredLunge);
+                if(!Match || (physicsSubstep&&ttc<.025f)) lungeOffset=desiredLocal;
+                else if(contactLungeFrame!=Time.frameCount)
+                {
+                    contactLungeFrame=Time.frameCount;
+                    lungeOffset=Vector3.MoveTowards(lungeOffset,desiredLocal,Time.deltaTime*5.5f);
+                }
+                transform.localPosition=lungeOffset+smoothLocal;
                 // A low ball is reached by bending the knees, not by driving the arm down through the
                 // thigh: drop the hips and re-solve both legs so the feet stay planted on the court.
                 Vector3 g0 = game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall;
                 float low = stringCentre.position.y - g0.y - .08f;
-                if (low > 0 && hips)
-                {
-                    float drop = Mathf.Min(.34f, low * .9f) * w;
-                    Transform lu = Bone(HumanBodyBones.LeftUpperLeg), ll = Bone(HumanBodyBones.LeftLowerLeg), lf = Bone(HumanBodyBones.LeftFoot);
-                    Transform ru = Bone(HumanBodyBones.RightUpperLeg), rl = Bone(HumanBodyBones.RightLowerLeg), rf = Bone(HumanBodyBones.RightFoot);
-                    Vector3 lp = lf.position, rp = rf.position; Quaternion lr = lf.rotation, rr = rf.rotation;
-                    hips.position += Vector3.down * drop;
-                    TwoBone(lu, ll, lf, lp); lf.rotation = lr; TwoBone(ru, rl, rf, rp); rf.rotation = rr;
-                    LastCrouch = drop;
-                }
+                if(hips && !(isPlayer && game && game.DiveActive))
+                    ContactCrouch(Mathf.Min(.34f,Mathf.Max(0,low)*.9f)*(actor.SignedTimeToContact>0?1:w),physicsSubstep&&ttc<.025f);
+
             }
             var sweet = stringCentre.position;
             // The rival's racket reaches for the live ball (its planned meet point can sit off the real
             // flight), so the honest-contact check judges what is on screen.
             Vector3 goal = Baseline ? actor.SweetSpot.position : game && actor == game.Opponent && game.Flow == TennisGame.Phase.Rally ? game.BallPosition : actor.GuideBall;
+            LastGuideGoal=goal;
             float armAssist = isPlayer && actor.Guiding ? Mathf.Max(contactAssist, .65f) : contactAssist;
             var delta = Vector3.ClampMagnitude(goal - sweet, armAssist) * w;
             if (delta.sqrMagnitude < 1e-6f) return;
@@ -1755,7 +2035,7 @@ namespace GolfArcade.Tennis
                 delta *= ClearScale(sc => ArmCost(up.position, ElbowFor(up, lo, hand, hand.position + delta * sc), hand.position + delta * sc, hdR), baseR);
                 if (delta.sqrMagnitude < 1e-6f) return;
             }
-            if (TopHandOnRacket())
+            if (TopHandOnRacket() && !(isPlayer&&game&&game.DiveActive))
             {
                 Transform lu = Bone(HumanBodyBones.LeftUpperArm), ll = Bone(HumanBodyBones.LeftLowerArm), lh = Bone(HumanBodyBones.LeftHand);
                 var ld = delta;

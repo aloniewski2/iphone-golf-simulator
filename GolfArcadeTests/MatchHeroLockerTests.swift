@@ -55,7 +55,7 @@ final class MatchHeroLockerTests: XCTestCase {
             XCTAssertEqual(asset.manifest.baseClip, female ? "Female_ReadyIdle" : "Male_ReadyIdle")
             XCTAssertEqual(asset.manifest.swingClip, female ? "Female_Forehand" : "Male_Forehand")
             let body = try XCTUnwrap(asset.manifest.parts.first { $0.name == "Body" })
-            XCTAssertEqual(body.vertexCount, female ? 23683 : 33196, "the HeroBase \(female ? "Female" : "Male") source body")
+            XCTAssertEqual(body.vertexCount, (body.submeshes.first?.look?.skinPigmentUV ?? 0) > 0.5 ? (female ? 23230 : 33694) : (female ? 23683 : 33196), "the HeroBase \(female ? "Female" : "Male") source body")
             XCTAssertEqual(Set(asset.manifest.parts.map(\.name)), Set(["Body", "Face", "Racket_Racket_Classic", "Racket_ButtCap", "Racket_Grip", "Racket_StringBed"]).union(Self.kitNodes), "body, painted face, the worn tennis kit and the classic racket only")
             XCTAssertEqual(asset.manifest.swingFrames.count, asset.manifest.swingTimes.count)
             XCTAssertEqual(asset.manifest.swingContact, 0.6667, accuracy: 0.001, "the match Forehand contact time")
@@ -79,9 +79,20 @@ final class MatchHeroLockerTests: XCTestCase {
             XCTAssertNil(c.character.childNode(withName: "heroV4", recursively: true), "the old baked hero is not on stage")
             hero.enumerateHierarchy { node, _ in XCTAssertTrue(Self.allowedNodes.contains(node.name ?? ""), "unexpected node '\(node.name ?? "?")': only the body, face, the worn kit and the racket may be on stage") }
             let bodyGeometry = try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry)
-            XCTAssertEqual(bodyGeometry.sources(for: .vertex).first?.vectorCount, female ? 23683 : 33196)
+            XCTAssertEqual(bodyGeometry.sources(for: .vertex).first?.vectorCount, (MatchHeroSurfaces.made(bodyGeometry.materials[0])?.look?.skinPigmentUV ?? 0) > 0.5 ? (female ? 23230 : 33694) : (female ? 23683 : 33196))
             // skin pick on the body, racket pick on the frame, white strings
-            for material in bodyGeometry.materials { assertColour(try XCTUnwrap(material.diffuse.contents as? UIColor), hex: p.skinHex, "skin pick on the body") }
+            for material in bodyGeometry.materials {
+                let made = try XCTUnwrap(MatchHeroSurfaces.made(material))
+                if (made.look?.skinPigmentUV ?? 0) > 0.5 {
+                    let c = made.colour
+                    assertColour(UIColor(red: CGFloat(c.x), green: CGFloat(c.y), blue: CGFloat(c.z), alpha: 1), hex: p.skinHex, "relative pigment retains the selected skin tint")
+                    XCTAssertTrue(made.look?.baseMapLinear == true)
+                    XCTAssertEqual(made.look?.baseMap, "MatchHero_OriginalSeam_RelativeSkinPigment")
+                    XCTAssertNotNil(material.value(forKey: "heroTint"))
+                } else {
+                    assertColour(try XCTUnwrap(material.diffuse.contents as? UIColor), hex: p.skinHex, "legacy skin pick on the body")
+                }
+            }
             let frame = try XCTUnwrap(hero.childNode(withName: "Racket_Racket_Classic", recursively: true)?.geometry?.firstMaterial?.diffuse.contents as? UIColor)
             assertColour(frame, hex: try XCTUnwrap(p.outfitHex("racket")), "the locker's racket colour tints the frame")
             let strings = try XCTUnwrap(hero.childNode(withName: "Racket_StringBed", recursively: true)?.geometry?.firstMaterial?.diffuse.contents as? UIColor)

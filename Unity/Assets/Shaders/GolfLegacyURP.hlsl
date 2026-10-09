@@ -17,6 +17,7 @@ float4 _Color, _MainTex_ST, _Shirt, _Shorts, _Accent, _Skin, _ScalpSkin, _Ref;
 float4 _KitColor, _ShirtColor, _HairSway, _HatHold;
 float _UseAtlas, _MatCapStrength, _Wrap, _SkinShading, _UseFlex, _UseScalp, _HairAmount, _Clear, _Fill;
 float _MatCapGain, _KnitTile, _Fabric, _KitOn, _ShirtOn;
+float _SurfaceSmoothness, _SurfaceSpecular, _SurfaceSheen; float4 _SurfaceWarmth;
 float4 _GlowColor; float _GlowAmount, _BumpScale;
 float _Tile, _Strength, _Gain, _Cutoff, _Sheen, _SheenPower, _Depth, _Glossiness;
 CBUFFER_END
@@ -150,6 +151,16 @@ half4 GolfLegacyFragment(GolfVaryings i, FRONT_FACE_TYPE front : FRONT_FACE_SEMA
     }
     #endif
     half3 colour = albedo * lighting;
+    #if defined(GOLF_HERO) || defined(GOLF_CLAY)
+    half3 view = SafeNormalize(GetWorldSpaceViewDir(i.positionWS));
+    half3 reflected;
+    // Keep the semantic old material API; replace its diffuse-only clay response.
+    half3 direct = HeroCharacterShade(light, n, view, albedo, wrap, _SurfaceSmoothness, _SurfaceWarmth.rgb, _SurfaceSpecular, reflected);
+    half3 diffuse = albedo * light.color * HeroWrapped(n, light.direction, wrap) * light.shadowAttenuation;
+    colour += direct - diffuse;
+    half graze = pow(1 - saturate(dot(n, view)), 4) * _SurfaceSheen;
+    colour += sqrt(max(albedo, 0)) * graze * saturate(dot(n, light.direction)) * light.color * light.shadowAttenuation * .12h;
+    #endif
     #if defined(GOLF_BALL)
     half3 view = SafeNormalize(GetWorldSpaceViewDir(i.positionWS));
     colour += light.color * pow(saturate(dot(n, SafeNormalize(light.direction + view))), 64) * .25 * light.shadowAttenuation;

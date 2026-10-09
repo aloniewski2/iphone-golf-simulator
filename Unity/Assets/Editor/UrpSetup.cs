@@ -29,6 +29,8 @@ namespace GolfArcade.EditorTools
                 renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
                 AssetDatabase.CreateAsset(renderer, RendererPath);
             }
+            renderer.postProcessData = AssetDatabase.LoadAssetAtPath<PostProcessData>("Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset");
+            EditorUtility.SetDirty(renderer);
             AddSsao(renderer);
 
             var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
@@ -61,9 +63,9 @@ namespace GolfArcade.EditorTools
             asset.msaaSampleCount = 4;
             asset.supportsHDR = true;
             asset.renderScale = 1f;
-            asset.shadowDistance = 42;
-            asset.shadowCascadeCount = 2;
-            asset.mainLightShadowmapResolution = 2048;
+            asset.shadowDistance = 60;
+            asset.shadowCascadeCount = 1;
+            asset.mainLightShadowmapResolution = 4096;
             var so = new SerializedObject(asset);
             void Set(string name, System.Action<SerializedProperty> apply) { var p = so.FindProperty(name); if (p != null) apply(p); else Debug.LogWarning("[URP] no field " + name); }
             Set("m_SoftShadowsSupported", p => p.boolValue = true);
@@ -80,18 +82,23 @@ namespace GolfArcade.EditorTools
 
         static void AddSsao(UniversalRendererData renderer)
         {
-            if (renderer.rendererFeatures.Any(f => f is ScreenSpaceAmbientOcclusion)) return;
-            var ssao = ScriptableObject.CreateInstance<ScreenSpaceAmbientOcclusion>();
+            var ssao = renderer.rendererFeatures.OfType<ScreenSpaceAmbientOcclusion>().FirstOrDefault();
+            bool created = !ssao;
+            if (created) ssao = ScriptableObject.CreateInstance<ScreenSpaceAmbientOcclusion>();
             ssao.name = "Contact AO";
-            AssetDatabase.AddObjectToAsset(ssao, renderer);
+            if (created) AssetDatabase.AddObjectToAsset(ssao, renderer);
             var so = new SerializedObject(ssao);
             var settings = so.FindProperty("m_Settings");
             void Set(string name, System.Action<SerializedProperty> apply) { var p = settings?.FindPropertyRelative(name); if (p != null) apply(p); }
-            Set("Intensity", p => p.floatValue = 1.4f);
-            Set("Radius", p => p.floatValue = .3f);
+            Set("Intensity", p => p.floatValue = .5f);
+            Set("Radius", p => p.floatValue = .2f);
             Set("DirectLightingStrength", p => p.floatValue = .25f);
             Set("Downsample", p => p.boolValue = true);
+            Set("Source", p => p.intValue = 0); // reconstruct from copied depth
+            Set("AfterOpaque", p => p.boolValue = true);
             so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(ssao);
+            if (!created) return;
             renderer.rendererFeatures.Add(ssao);
             var rso = new SerializedObject(renderer);
             var map = rso.FindProperty("m_RendererFeatureMap");
@@ -114,7 +121,7 @@ namespace GolfArcade.EditorTools
                 return c;
             }
             var tone = Get<Tonemapping>(); tone.mode.Override(TonemappingMode.ACES);
-            var bloom = Get<Bloom>(); bloom.threshold.Override(1.05f); bloom.intensity.Override(.55f); bloom.scatter.Override(.62f);
+            var bloom = Get<Bloom>(); bloom.threshold.Override(1.05f); bloom.intensity.Override(.55f); bloom.scatter.Override(.62f); bloom.maxIterations.Override(4);
             bloom.tint.Override(new Color(1f, .93f, .82f));
             var colour = Get<ColorAdjustments>(); colour.postExposure.Override(.2f); colour.contrast.Override(18f);
             colour.saturation.Override(20f); colour.colorFilter.Override(new Color(1f, .975f, .94f));

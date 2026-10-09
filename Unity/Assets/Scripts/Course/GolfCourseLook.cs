@@ -12,9 +12,9 @@ namespace GolfArcade.Course
         public static bool Enabled = true;
         public static readonly HashSet<int> DisabledHoles = new();
         public static bool Handles(int number) => Enabled && !DisabledHoles.Contains(number)
-            && (number is >= 1 and <= 3 || number == 7 || number is >= 12 and <= 23);
+            && (number is >= 1 and <= 3 || number is >= 7 and <= 10 || number is >= 12 and <= 23);
         public static GolfCourseLook Current { get; private set; }
-        public enum Surface { Fairway, Green, Tee, Fringe, Rough, Sand, Cliff, Rock, Masonry, Path, Water, Shallow, Surf, Fall, Lava, Basalt, Ash, Snow, Ice, Desert, Sandstone, Wood, Bark, Leaves, Paint, Smoke }
+        public enum Surface { Fairway, Green, Tee, Fringe, Rough, Sand, Cliff, Rock, Masonry, Path, Water, Shallow, Surf, Fall, Lava, Basalt, Ash, Snow, Ice, Desert, Sandstone, Wood, Bark, Leaves, Paint, Smoke, Glass }
         readonly Dictionary<string, Material> materials = new();
         readonly List<Mesh> visualMeshes = new();
         Texture2D mowing;
@@ -22,7 +22,7 @@ namespace GolfArcade.Course
         Hole hole;
         public Hole Hole => hole;
         bool Magma => hole.Theme == "magma";
-        bool Volcanic => Magma || hole.Number == 16;
+        bool Volcanic => Magma || hole.Number is 10 or 16;
 
         public static GolfCourseLook Attach(Hole hole, GameObject owner)
         {
@@ -36,7 +36,21 @@ namespace GolfArcade.Course
         public static Surface? Role(string material, string renderer, bool magma)
         {
             string n = material.Replace(" (Instance)", "").Split('.')[0];
+            // Postcard8/9/10 use LK_* names. Route their managed surfaces through
+            // the same per-course hierarchy instead of the shared legacy tint cache.
+            string legacy=n.Split('@')[0];
+            if(legacy is "LK_GREEN" or "LK_FAIRWAY" or "LK_ROUGH" or "LK_SCRUB")
+            {
+                if(renderer.StartsWith("TEE"))return Surface.Tee;
+                if(renderer.Contains("FIRSTCUT")||renderer.Contains("APRON")||renderer.EndsWith("_LIP"))return Surface.Fringe;
+                return legacy=="LK_GREEN"?Surface.Green:legacy=="LK_FAIRWAY"?Surface.Fairway:Surface.Rough;
+            }
+            if(legacy.StartsWith("LK_CLIFF"))return Surface.Cliff;
+            if(legacy=="LK_BASALT")return Surface.Basalt;
+            if(legacy=="LK_SAND")return Surface.Sand;
+
             if (renderer.Contains("FALL") && n == "MAT_GLASS") return Surface.Fall;
+            if (n=="MAT_WINDOW"||n=="MAT_GLASS"||(n=="MAT_SLATE"&&(renderer.StartsWith("WINDMILL")||renderer.StartsWith("FARMHOUSE"))))return Surface.Glass;
             if (magma && (n.StartsWith("MAT_WATER") || n == "MAT_FOAM")) return Surface.Lava;
             if (n == "MAT_FAIRWAY" || n == "MAT_FAIRWAY_STRIPE") return Surface.Fairway;
             if (n == "MAT_GREEN") return renderer.StartsWith("TEE") ? Surface.Tee : Surface.Green;
@@ -47,7 +61,7 @@ namespace GolfArcade.Course
             if (n.StartsWith("MAT_BASALT")) return Surface.Basalt;
             if (n.StartsWith("MAT_REDROCK")) return Surface.Sandstone;
             if (n.StartsWith("MAT_ROCK")) return Surface.Rock;
-            if (n is "MAT_STONE" or "MAT_TEMPLE" or "MAT_TEMPLE_DARK" or "MAT_CHALK" or "MAT_WALL") return Surface.Masonry;
+            if (n.StartsWith("MAT_TEMPLE") || n is "MAT_STONE" or "MAT_CHALK" or "MAT_WALL") return Surface.Masonry;
             if (n.StartsWith("MAT_PATH")) return Surface.Path;
             if (n == "MAT_WATER_SHALLOW") return Surface.Shallow;
             if (n == "MAT_WATER") return Surface.Water;
@@ -70,7 +84,7 @@ namespace GolfArcade.Course
             var role = Role(source.name, renderer, Magma);
             // FBX diffuse colours are already linearized by the importer. Reusing them as
             // shader Color properties darkens vegetation again. Use the course's sRGB palette.
-            bool vegetation = role is Surface.Leaves or Surface.Bark
+            bool vegetation = role is Surface.Leaves or Surface.Bark or Surface.Wood or Surface.Paint or Surface.Sandstone
                 || source.name.StartsWith("MAT_COCONUT")
                 || role == Surface.Wood && (renderer.StartsWith("TREE") || renderer.StartsWith("SHRUB"));
             return role.HasValue ? Get(role.Value, vegetation ? palette ?? source.color.gamma : source.color, source.name) : null;
@@ -82,8 +96,18 @@ namespace GolfArcade.Course
             // Authored colours matter for foliage, wood, flowers and the desert's stratified slots.
             bool useColor = role is Surface.Leaves or Surface.Paint or Surface.Wood or Surface.Bark or Surface.Sandstone;
             string key = role + (useColor ? ":" + ColorUtility.ToHtmlStringRGBA(authored) : "")
-                + (original is "MAT_SAND_BLACK" or "MAT_PUMICE" ? original : "");
+                + (original is "MAT_SAND_BLACK" or "MAT_PUMICE" || original.StartsWith("MAT_TEMPLE") ? original : "");
             if (materials.TryGetValue(key, out var cached)) return cached;
+            if(role==Surface.Ice){
+                var ice=new Material(Resources.Load<Shader>("Course/Shaders/GolfIce")){name="Course "+hole.Number+" clear glacier ice",enableInstancing=true};
+                ice.SetColor("_DeepColor",new Color(.11f,.39f,.48f));ice.SetColor("_ShallowColor",new Color(.42f,.73f,.77f));
+                materials.Add(key,ice);return ice;
+            }
+            if(role==Surface.Glass){
+                var glass=new Material(Shader.Find("Universal Render Pipeline/Lit")){name="Course "+hole.Number+" reflective window",enableInstancing=true};
+                glass.SetColor("_BaseColor",new Color(.065f,.19f,.25f));glass.SetFloat("_Metallic",.12f);glass.SetFloat("_Smoothness",.82f);
+                glass.EnableKeyword("_EMISSION");glass.SetColor("_EmissionColor",new Color(.02f,.055f,.075f));materials.Add(key,glass);return glass;
+            }
             string baseName = role switch
             {
                 Surface.Fairway or Surface.Fringe => "LK_FAIRWAY",
@@ -103,7 +127,10 @@ namespace GolfArcade.Course
                 if (hole.Number == 17) { m.SetColor("_Shallow", new Color(.14f,.31f,.38f)); m.SetColor("_Deep",new Color(.035f,.12f,.22f)); m.SetColor("_Sky",new Color(.15f,.31f,.43f)); }
                 if (hole.Number is 19 or 20) { m.SetColor("_Shallow",new Color(.09f,.33f,.29f)); m.SetColor("_Deep",new Color(.035f,.19f,.22f)); m.SetColor("_Sky",new Color(.10f,.31f,.34f)); }
                 if (role == Surface.Shallow) m.SetColor("_Deep",m.GetColor("_Shallow"));
-                m.SetFloat("_Sparkle",role == Surface.Shallow ? 1.5f : 2.5f);
+                if(hole.Number!=17){ m.SetColor("_Shallow",new Color(.055f,.59f,.62f));m.SetColor("_Deep",new Color(.025f,.29f,.45f));m.SetColor("_Sky",new Color(.28f,.53f,.70f)); }
+                if(role==Surface.Shallow)m.SetColor("_Deep",m.GetColor("_Shallow"));
+                m.SetVector("_WaterOrigin",new Vector4((float)((hole.Tee.X+hole.Pin.X)*.5),0,(float)((hole.Tee.D+hole.Pin.D)*.5),0));
+                m.SetFloat("_Sparkle",role == Surface.Shallow ? .7f : 1.35f);
                 return m;
             }
             if (role is Surface.Surf or Surface.Fall or Surface.Smoke)
@@ -140,7 +167,17 @@ namespace GolfArcade.Course
                 m.SetVector("_EmissionColor",new Vector4(.09f,.028f,.003f,1));
             }
             m.SetFloat("_TriplanarNormals",1);
-            if (role is Surface.Rock or Surface.Cliff or Surface.Masonry) m.SetColor("_BaseColor",new Color(.80f,.82f,.84f));
+            if (role is Surface.Rock or Surface.Cliff or Surface.Masonry) {
+                m.SetFloat("_PaletteMode",1);m.SetFloat("_DetailContrast",.80f);m.SetColor("_BaseColor",Color.white);
+                bool temple=hole.Number==19&&role==Surface.Masonry;
+                m.SetColor("_LowColor",temple?new Color(.49f,.43f,.29f):new Color(.38f,.41f,.38f));
+                m.SetColor("_HighColor",temple?new Color(.78f,.70f,.48f):new Color(.70f,.70f,.60f));
+                m.SetFloat("_RockScale",.09f);m.SetFloat("_StrataStrength",.035f);m.SetFloat("_RockMipBias",.5f);m.SetFloat("_BumpScale",.75f);
+            }
+            if(role==Surface.Basalt&&!Volcanic){
+                m.SetFloat("_PaletteMode",1);m.SetFloat("_DetailContrast",.7f);m.SetColor("_BaseColor",Color.white);
+                m.SetColor("_LowColor",new Color(.37f,.40f,.39f));m.SetColor("_HighColor",new Color(.70f,.70f,.60f));m.SetFloat("_Basalt",.15f);
+            }
             string texture = role switch { Surface.Snow => "Snow", Surface.Ice => "Ice", Surface.Ash => "Ash", Surface.Sandstone => "Sandstone", Surface.Desert => "Desert", Surface.Wood => "Wood", Surface.Bark => "Bark", Surface.Leaves => "Leaves", _ => null };
             if (texture != null)
             {
@@ -168,6 +205,60 @@ namespace GolfArcade.Course
                 m.SetFloat("_BumpScale",.25f);
                 m.SetFloat("_Wrap",.6f);
             }
+            if(role is Surface.Cliff or Surface.Rock or Surface.Masonry or Surface.Basalt){
+                string geology=Volcanic?"ResortBasalt":"Limestone";
+                var color=Resources.Load<Texture2D>("Course/Resort/"+geology+"_C");var normal=Resources.Load<Texture2D>("Course/Resort/"+geology+"_N");
+                if(color)m.SetTexture("_BaseMap",color);if(normal)m.SetTexture("_BumpMap",normal);
+                m.SetFloat("_NormalEnabled",normal?1:0);m.SetFloat("_BumpScale",.7f);m.SetFloat("_RockScale",.12f);m.SetFloat("_RockMipBias",.1f);m.SetFloat("_StrataStrength",.02f);
+                if(Volcanic){
+                    m.SetFloat("_PaletteMode",1);m.SetFloat("_DetailContrast",.65f);m.SetColor("_BaseColor",Color.white);
+                    m.SetColor("_LowColor",new Color(.16f,.19f,.23f));m.SetColor("_HighColor",new Color(.33f,.35f,.37f));m.SetFloat("_Basalt",0);
+                    m.SetFloat("_EmissionEnabled",1);m.SetVector("_EmissionColor",new Vector4(3.2f,.52f,.018f,1));
+                }
+            }
+            if(!Volcanic&&role is Surface.Cliff or Surface.Basalt or Surface.Rock){
+                var carved=Resources.Load<Texture2D>("Course/Resort/GeologyLimestone_C");
+                if(carved)m.SetTexture("_BaseMap",carved);
+                m.SetFloat("_EmissionEnabled",0);m.SetFloat("_PaletteMode",0);m.SetColor("_BaseColor",new Color(.83f,.86f,.90f));m.SetFloat("_RockScale",.13f);m.SetFloat("_BumpScale",.5f);m.SetFloat("_StrataStrength",0);m.SetFloat("_Basalt",0);m.SetFloat("_HeightStrength",.70f);
+                if(hole.Number!=18){
+                    m.SetFloat("_GeologicalMacro",.12f);m.SetFloat("_RockScale",.065f);m.SetFloat("_RockMipBias",.65f);
+                    m.SetFloat("_PaletteMode",1);m.SetColor("_BaseColor",Color.white);m.SetFloat("_DetailContrast",.75f);m.SetFloat("_PaletteDetail",.24f);
+                    m.SetColor("_LowColor",new Color(.34f,.33f,.28f));m.SetColor("_HighColor",new Color(.77f,.73f,.62f));
+                    m.SetFloat("_HeightStrength",.27f);m.SetFloat("_BumpScale",.56f);
+                }
+                if(role==Surface.Cliff&&hole.Number!=18)m.SetFloat("_WetFoot",1);
+            }
+            if(role==Surface.Snow){
+                // The inherited sand material carries a beige palette. Snow has
+                // its own cold-white response while retaining the source texture.
+                m.SetFloat("_PaletteMode",1);m.SetColor("_BaseColor",Color.white);
+                m.SetColor("_LowColor",new Color(.70f,.82f,.88f));m.SetColor("_HighColor",new Color(.94f,.98f,1));
+                m.SetFloat("_DetailContrast",.35f);m.SetFloat("_Smoothness",.07f);m.SetFloat("_Bands",0);
+            }
+            if(role==Surface.Ash){
+                m.SetFloat("_PaletteMode",1);m.SetColor("_BaseColor",Color.white);
+                m.SetColor("_LowColor",new Color(.13f,.15f,.17f));m.SetColor("_HighColor",new Color(.26f,.26f,.23f));
+                m.SetFloat("_DetailContrast",.40f);m.SetFloat("_Bands",0);
+            }
+            if(hole.Number==18&&role is Surface.Cliff or Surface.Rock or Surface.Sandstone){
+                var warmth=role==Surface.Sandstone&&original.StartsWith("MAT_REDROCK")?authored:new Color(.78f,.42f,.22f);
+                m.SetFloat("_PaletteMode",1);m.SetColor("_BaseColor",Color.white);
+                m.SetColor("_LowColor",Color.Lerp(new Color(.32f,.16f,.10f),warmth,.50f));
+                m.SetColor("_HighColor",Color.Lerp(warmth,new Color(.91f,.74f,.50f),.25f));
+                m.SetFloat("_DetailContrast",.45f);m.SetFloat("_StrataStrength",.03f);m.SetFloat("_EmissionEnabled",0);
+            }
+            if(role==Surface.Masonry&&original.StartsWith("MAT_TEMPLE")){
+                Color low=new(.61f,.44f,.28f),high=new(.92f,.74f,.51f);
+                if(original.Contains("DARK")){low=new(.34f,.25f,.17f);high=new(.54f,.40f,.26f);}
+                if(original.Contains("TRIM")){low=new(.72f,.57f,.39f);high=new(.98f,.85f,.64f);}
+                if(original.Contains("BLOCK_B")){low=new(.65f,.49f,.33f);high=new(.94f,.79f,.58f);}
+                if(original.Contains("RELIEF")){low=new(.43f,.31f,.19f);high=new(.68f,.51f,.33f);}
+                if(original.Contains("RECESS")){low=new(.045f,.039f,.028f);high=new(.09f,.074f,.05f);}
+                m.SetColor("_LowColor",low);m.SetColor("_HighColor",high);m.SetFloat("_DetailContrast",.45f);m.SetFloat("_RockScale",.35f);m.SetFloat("_BumpScale",.45f);m.SetFloat("_Wrap",.18f);m.SetFloat("_Smoothness",.18f);m.SetFloat("_HeightStrength",.15f);
+            }
+            GolfLook.ResortPalette(m,role,Volcanic,hole.Number==19);
+            GolfTurfPalette.ApplyGround(m,hole,role);
+            if(role==Surface.Sand&&original=="MAT_SAND_BLACK") {m.SetFloat("_PaletteMode",0);m.SetColor("_BaseColor",new Color(.25f,.27f,.30f));}
             return m;
         }
 
@@ -212,8 +303,15 @@ namespace GolfArcade.Course
         /// Called after ground/obstacle extraction. Render-only UV repairs cannot change the collision source.
         public void FinishModel(GameObject model)
         {
+#if UNITY_EDITOR
+            var physicsToken=GolfVisualPhysicsGate.Begin(model,hole);
+#endif
+            GolfPostcardBasalt.Apply(model,hole);
+            GolfLandmarkFinish.Apply(model,hole,this);
+            var resort = GolfResortDress.Apply(model,hole);
+            GolfStoneFinish.Apply(model);
             var palms = model.GetComponent<GolfCoursePalms>();
-            if (palms) palms.Rebuild();
+            if (palms && (!resort || !resort.ReplacedAuthoredPlants)) palms.Rebuild();
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (!mf.sharedMesh || !mf.sharedMesh.isReadable || !mf.TryGetComponent(out Renderer r)) continue;
@@ -235,13 +333,20 @@ namespace GolfArcade.Course
                 mf.sharedMesh = mesh; r.shadowCastingMode = ShadowCastingMode.Off;
             }
             GolfCourseFringe.Dress(model,hole);
+            GolfCoastalTurf.Apply(model,hole);
             GolfSurfaceEdges.Apply(model);
             GolfSurfaceBatching.Apply(model);
             GolfPlantInstances.Apply(model);
+#if UNITY_EDITOR
+            GolfVisualPhysicsGate.End(physicsToken,model,hole);
+#endif
         }
 
         public void DressProcedural(GameObject root)
         {
+#if UNITY_EDITOR
+            var physicsToken=GolfVisualPhysicsGate.Begin(root,hole);
+#endif
             GolfSurfaceEdges.Reset();
             foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
             {
@@ -249,6 +354,10 @@ namespace GolfArcade.Course
                 Surface? role = n.StartsWith("rough") ? Surface.Rough : n.StartsWith("fairway fringe") ? Surface.Fringe : n.StartsWith("fairway") ? Surface.Fairway : n.StartsWith("green") ? Surface.Green : n.StartsWith("tee") ? Surface.Tee : n.StartsWith("bunker") ? Surface.Sand : n.StartsWith("water") ? Surface.Water : null;
                 if (role.HasValue) r.sharedMaterial = Get(role.Value);
             }
+            GolfResortDress.Apply(root,hole);
+#if UNITY_EDITOR
+            GolfVisualPhysicsGate.End(physicsToken,root,hole);
+#endif
         }
 
         void OnDestroy()

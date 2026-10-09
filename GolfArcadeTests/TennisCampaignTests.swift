@@ -277,33 +277,54 @@ final class TennisCampaignTests: XCTestCase {
     }
 
     func testLoadingCompletesPromptlyWhenReadyAndExplainsStalls() {
-        let loading = LoadingModel()
-        let start = Date(timeIntervalSince1970: 1000)
-        var finished = false
-        loading.onFinish = { finished = true }
-        loading.begin(now: start)
-        loading.reach(0.2); loading.markReady()        // the game is ready almost at once
-        var last = 0.0
-        for tenth in 0...200 {
-            let now = start.addingTimeInterval(Double(tenth) / 10)
-            loading.tick(now: now)
-            XCTAssertGreaterThanOrEqual(loading.progress, last, "the bar never goes backwards")
-            last = loading.progress
-            if Double(tenth) / 10 < LoadingModel.minimum { XCTAssertFalse(finished, "never complete before the short presentation beat"); XCTAssertLessThan(loading.progress, 1) }
-        }
-        XCTAssertTrue(finished); XCTAssertEqual(loading.progress, 1)
-        let fast = LoadingModel(); fast.begin(now: start); fast.markReady()
-        fast.tick(now: start.addingTimeInterval(2))
-        fast.tick(now: start.addingTimeInterval(2.4))
-        XCTAssertTrue(fast.finished, "A ready game should finish inside the 2–4 second target")
-        // A slow game holds the bar short of 100% until it is ready.
-        let slow = LoadingModel(); slow.begin(now: start)
-        slow.tick(now: start.addingTimeInterval(30))
-        XCTAssertFalse(slow.finished); XCTAssertLessThanOrEqual(slow.progress, LoadingModel.hold)
-        XCTAssertTrue(slow.isStalled)
-        XCTAssertTrue(slow.statusText.contains("Retry"))
-        slow.markReady(); slow.tick(now: start.addingTimeInterval(30.1)); slow.tick(now: start.addingTimeInterval(30.8))
-        XCTAssertTrue(slow.finished)
+        let loading = LoadingModel(), start = Date(timeIntervalSince1970: 1000)
+        var completions = 0
+        loading.begin(now: start); loading.onFinish = { completions += 1 }
+        loading.reach(0.2); loading.tick(now: start.addingTimeInterval(30))
+        XCTAssertEqual(loading.progress, 0.2, "elapsed time cannot invent progress")
+        XCTAssertFalse(loading.finished); XCTAssertTrue(loading.isStalled)
+        loading.markReady(now: start.addingTimeInterval(30))
+        loading.tick(now: start.addingTimeInterval(30.05))
+        XCTAssertEqual(loading.phase, .transitioning)
+        loading.tick(now: start.addingTimeInterval(30.4)); loading.tick(now: start.addingTimeInterval(40))
+        XCTAssertTrue(loading.finished); XCTAssertEqual(completions, 1)
+        let fast = LoadingModel(); fast.begin(now: start); fast.markReady(now: start)
+        fast.tick(now: start.addingTimeInterval(1.19)); XCTAssertEqual(fast.phase, .frameReady)
+        fast.tick(now: start.addingTimeInterval(1.2)); XCTAssertEqual(fast.phase, .transitioning)
+        fast.tick(now: start.addingTimeInterval(1.5)); XCTAssertTrue(fast.finished)
+    }
+
+    func testRematchForcesOneShortIntroAndPreservesOffPreference() {
+        let session = SportsSession.shared, saved = session.presentationIntros
+        defer { session.presentationIntros = saved; _ = session.consumePresentationIntroCut() }
+        session.presentationIntros = "full"; session.prepareRematchPresentation()
+        XCTAssertEqual(session.consumePresentationIntroCut(), "short")
+        XCTAssertEqual(session.consumePresentationIntroCut(), "full", "Only this rematch is forced short")
+        session.presentationIntros = "off"; session.prepareRematchPresentation()
+        XCTAssertEqual(session.consumePresentationIntroCut(), "off")
+    }
+
+    func testMultiplayerLoadingWaitsForRenderedFrameAndAllPlayers() {
+        let loading = LoadingModel(), start = Date(timeIntervalSince1970: 1000)
+        loading.begin(now: start, multiplayer: true); loading.markReady(now: start)
+        loading.updatePlayers(waiting: ["Sam"], allReady: false, now: start)
+        loading.tick(now: start.addingTimeInterval(25)); loading.skip()
+        XCTAssertEqual(loading.phase, .waitingForPlayers); XCTAssertTrue(loading.statusText.contains("Sam"))
+        loading.updatePlayers(waiting: [], allReady: true, now: start.addingTimeInterval(25))
+        loading.tick(now: start.addingTimeInterval(25.05)); XCTAssertEqual(loading.phase, .transitioning)
+        XCTAssertLessThanOrEqual(loading.timing["wipeStart"]! - loading.timing["allPlayersReady"]!, 0.35)
+        loading.tick(now: start.addingTimeInterval(25.4)); XCTAssertTrue(loading.finished)
+    }
+
+    func testCancelledOrFailedLoadingCannotCompleteFromLateEvents() {
+        let loading = LoadingModel(), start = Date(timeIntervalSince1970: 1000)
+        var completions = 0
+        loading.begin(now: start); loading.onFinish = { completions += 1 }; loading.cancel()
+        loading.markReady(now: start); loading.tick(now: start.addingTimeInterval(30)); loading.skip()
+        XCTAssertEqual(loading.phase, .cancelled); XCTAssertEqual(completions, 0)
+        loading.begin(now: start); loading.onFinish = { completions += 1 }; loading.fail("Retry")
+        loading.markReady(now: start); loading.skip(); loading.tick(now: start.addingTimeInterval(30))
+        XCTAssertEqual(loading.phase, .failed); XCTAssertEqual(completions, 0)
     }
 
     func testOldPlayersLoadWithKitColours() throws {

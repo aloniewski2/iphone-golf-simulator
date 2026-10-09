@@ -1,0 +1,50 @@
+{
+  "status": "ACCEPTED bounded physical tee-grass rollout and managed material hierarchy; full illustrated/art/coverage parity PARTIAL",
+  "physicalHoles": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    15,
+    19,
+    20
+  ],
+  "radiusMeters": 12,
+  "materialOnlyLegacy10": true,
+  "source": "Dense15 unchanged; centralized6setting managed surface hierarchy with Green17 response and Path19 managed legacy-role/path-mask repair",
+  "captureGates": {
+    "all9Rollout18": "PASS51.66s compile/render;7/19 nearteeactual rooted/readable",
+    "path19": "PASS33.04s compile/render;8stonepath clean and8/9physics exact18",
+    "legacy10": "PASS21.27s compile/render; cohesive managedturfunder sunset acceptedbyparent; physics exactprior"
+  },
+  "physics": "All9 physical-grass routes plusmaterial-only10 preserve obstacleCount/colliders/obstacleHash/allground records EXACT to saved appropriate prior snapshots",
+  "physicsReport": "ArtDir/golf/proof/turf-rollout18-19/physics-comparison.json",
+  "paletteSources": "ArtDir/golf/proof/turf-hierarchy16/ART_REFERENCE_NOTES.md",
+  "currentSourceHashes": {
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "7acf442a170594ab5f5eec39a10c4590b23fa52b3f442f419af4cfe1f6352330",
+    "Unity/Assets/Scripts/Course/GolfCourseLook.cs": "590a0384ad7302962b0cd693f30491b6fc4ca39f3fba297be551c0223a2b9bba",
+    "Unity/Assets/Scripts/Course/GolfTurfPalette.cs": "f3fcd00e0e9ac54e2f053ad2e38e04eec5a791ff6d24ef294e0b2433aea44052",
+    "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader": "ba66a41b494515912cc0fc08f3ddab667e213ae36defed58cce4b08c63414b7f",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "cd29dbc55646dac5125e2ccad1c6e85b738940d9879ce7cfc859f0b243ac364e",
+    "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl": "8a14181dcb07a0d4a1ce77c8099cb62448f8e426abbfc36ab52ee86b77b126a5",
+    "Unity/Assets/Resources/Course/Shaders/GolfTurfField.hlsl": "3120d2469355c38b4253681f2366a223910b9a3d405b7fdf52fd8f58b9ad461c",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf.fbx": "ce71822a5df680c86eaffc142f2f937da40228cb4cfd6505f8e960e28a20026f",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_C.png": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_N.png": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44",
+    "ArtDir/golf/source/CoastalTurf.blend": "01ce00036d2900db5e8a2ec1d949c39ffa715c60dbe25f380b69838e3f9805d8",
+    "ArtDir/golf/source/turf-history/CoastalTurf8.blend": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+    "ArtDir/golf/tools/build-coastal-turf.py": "302141f098c999798f4c3805101a3ad66278337d462624cdefbd1e5283892afa",
+    "ArtDir/golf/tools/build-coastal-turf8.py": "53fe5923d1714af5abf05a58ef198388758ecacf297e3fe43ebb00e81d4f7398",
+    "ArtDir/golf/tools/verify-coastal-turf.py": "0f0a3c7906ad82067568d037a3e1a148ec76666e3a580e2936ff1f940cabdd3d"
+  },
+  "performance": "48near/96mid/640total maximum542720 decorative triangles peractiveholepatch;3instanced submissions,no grass shadows/colliders. Actual allocations depend on real acceptedground/path mask. No current sole-camera frame-cost/phoneFPS certification. ArchivedWorld18 counters certify earlierconfiguration.",
+  "limitations": [
+    "Physical blades cover only12m tee neighborhoods on9authoredgrassyholes.",
+    "Meadow collider/name adapter,17/18/16/21\u201323, green geometry,moving patch/fairway-widebladecoverage are excluded.",
+    "Green17 uses fine tightlymown atlas response, not tallDense15fans.",
+    "Reference-imagecourseforms/forestedcrest/lightingdifferences remain; this boundedgrasspass is not full-gameartcompletion.",
+    "Catalogregression3 predates latestgrass/materialsource; current actualphysicscomparison is exactrecord evidence, not freshalltests/deviceperformance."
+  ]
+}

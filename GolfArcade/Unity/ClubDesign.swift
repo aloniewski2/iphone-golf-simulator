@@ -11,10 +11,10 @@ import SwiftUI
 
 enum Club {
     // Palette.
-    static let lagoon = Color(hex: "0E2A47"), lagoonDeep = Color(hex: "081A2E"), violet = Color(hex: "5B2BD9")
-    static let coral = Color(hex: "FF5B4A"), green = Color(hex: "1FBF75"), sun = Color(hex: "FFD21F"), sunDeep = Color(hex: "D99A00")
-    static let cream = Color(hex: "F7F4EC"), creamDeep = Color(hex: "D8D0BC"), ink = Color(hex: "16123A"), muted = Color(hex: "6B6780")
-    static let sky = Color(hex: "38C6FF")
+    static let lagoon = Color(hex: "10243D"), lagoonDeep = Color(hex: "0A192D"), violet = Color(hex: "5B2BD9")
+    static let coral = Color(hex: "FF7556"), green = Color(hex: "35B87E"), sun = Color(hex: "D7F044"), sunDeep = Color(hex: "ACCA23")
+    static let cream = Color(hex: "FFF9EE"), creamDeep = Color(hex: "E5DDCC"), ink = Color(hex: "10243D"), muted = Color(hex: "526B7E")
+    static let sky = Color(hex: "35B8C7")
 
     /// The painted scene that stands for a sport (bowling, football and boxing share the pavilion).
     static func scene(for sport: Sport) -> String {
@@ -430,12 +430,12 @@ struct ClubHintBar: View {
 // MARK: - Approved Island menus (ArtDir/ui/toybox-simple-v6)
 // Deliberately separate from Arcade: the in-match serve meter keeps its original tokens.
 enum IslandUI {
-    static let navy = Color(hex: "101D35")
-    static let lime = Color(hex: "D3F34B")
-    static let paper = Color(hex: "FAF8F3")
-    static let muted = Color(hex: "34435A")
+    static let navy = Club.ink
+    static let lime = Club.sun
+    static let paper = Club.cream
+    static let muted = Club.muted
     static func font(_ size: CGFloat, bold: Bool = false) -> Font {
-        .system(size: size, weight: bold ? .bold : .medium, design: .rounded)
+        Club.ui(size, bold ? 700 : 500)
     }
 }
 
@@ -521,7 +521,8 @@ struct IslandShell<Content: View>: View {
     var body: some View {
         ZStack {
             IslandBackdrop(room: ClubRoom.forTitle(title))
-            IslandUI.paper.opacity(0.94).ignoresSafeArea().allowsHitTesting(false)
+            LinearGradient(colors: [IslandUI.paper.opacity(0.96), IslandUI.paper.opacity(0.86)], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea().allowsHitTesting(false)
             VStack(alignment: .leading, spacing: compact ? 18 : 24) {
                 HStack(alignment: .center) {
                     if !compact { IslandWordmark(size: 28).frame(width: 180); Divider().frame(height: 52).padding(.horizontal, 20) }
@@ -540,8 +541,6 @@ struct IslandPlayer: View {
     var body: some View {
         GeometryReader { g in
             ZStack {
-                Ellipse().fill(IslandUI.navy.opacity(0.14)).frame(width: g.size.width * 0.35, height: 16).blur(radius: 10)
-                    .position(x: g.size.width * 0.52, y: g.size.height * 0.94).allowsHitTesting(false)
                 CharacterModelPreview(player: player, cameraDistance: 2.95, idleSport: sport)
                     .accessibilityLabel("\(player.name), equipped character")
             }
