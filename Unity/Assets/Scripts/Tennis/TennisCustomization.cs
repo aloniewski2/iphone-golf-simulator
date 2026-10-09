@@ -27,7 +27,7 @@ namespace GolfArcade.Tennis
         /// (work/match-anim-set: the bald grey-mannequin male and female bodies with their own skeleton, the painted face, the classic
         /// racket on Hand_Racket, and their 16 clips), built by MatchHeroBuild. TennisHeroSetup puts one on every actor. The old
         /// Higgsfield tennis bases (PlayerMale.fbx / PlayerFemale.fbx) are archived under Assets/Characters/Archive and are not loaded.
-        public static string HeroPath(bool female) => "Tennis/Customization/Player" + (female ? "Female" : "Male");
+        public static string HeroPath(bool female) => GolfArcade.Game.HeroAssets.Match(female);
         public static GameObject HeroBase(bool female) => Resources.Load<GameObject>(HeroPath(female));
 
         /// Rebind the supplied base to the golf animation skeleton. Tennis no longer rebinds a base to its hidden gameplay rig: the body
@@ -37,7 +37,7 @@ namespace GolfArcade.Tennis
                 if(!HeroBase(female)) throw new InvalidOperationException("Match hero base asset is missing: "+HeroPath(female));
                 return true;
             }
-            var prefab=Resources.Load<GameObject>("Tennis/Customization/Player"+(female?"Female":"Male")+"Golf");
+            var prefab=Resources.Load<GameObject>(GolfArcade.Game.HeroAssets.MatchGolfRig(female));
             if(!prefab) throw new InvalidOperationException("Player base asset is missing");
             var bones=new Dictionary<string,Transform>();
             foreach(var t in model.GetComponentsInChildren<Transform>(true)) bones.TryAdd(t.name,t);
