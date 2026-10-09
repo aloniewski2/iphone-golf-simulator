@@ -1,0 +1,35 @@
+PASTE — MATCH ANIMS 1b/2 WATCH THE TWO GAPS · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+work/match-anim-set/WATCH.md already exists. Do not rewrite it. Do not animate. Do not download footage into the repo.
+
+Only two clips are open:
+- SliceApproach was NOT FOUND. Need a one-handed backhand slice where the player moves forward toward the net. Feet and contact must be visible.
+- ForehandShort is only the mini-tennis version. Need a forehand hit while stepping in on a short ball, feet visible. Do not use the mini-tennis notes for this.
+
+Watch only these. Court-level or a full-body demo is fine. Skip talking-head stretches. If the feet or the contact are not in frame, say so and mark that clip THIN. Do not invent the step.
+
+SLICE APPROACH
+- https://www.youtube.com/watch?v=nocXg77xfTs  Federer, court level, slow, about 4 min. Use a slice where he moves in, not a defensive slice on the run.
+- https://www.youtube.com/watch?v=ebS3Lf25hZ0  short clip of a slice used as the approach, then the split and the first volley.
+
+SHORT BALL
+- https://www.youtube.com/watch?v=XQYtS5u3V6Y  putting away a short ball, full body.
+- https://www.youtube.com/watch?v=WBfw9nFojHc  the step into a diagonal short forehand.
+- https://www.youtube.com/watch?v=XaLwHO60Jys  four ways to take a short ball, including running in.
+
+Write two new sections at the bottom of WATCH.md, same shape as the others: feet, shoulders and racket, contact as a fraction of the clip, what was not visible. Name the URL and the time. Replace the old SliceApproach and ForehandShort verdicts with what you actually saw. Leave every other section untouched.
+
+GATES
+SLICE_SEEN — one-handed, moving forward, or THIN with the reason
+SHORT_STEP_SEEN — step-in on a short ball, or THIN with the reason
+OTHER_SECTIONS_UNTOUCHED
+NO_FOOTAGE_IN_REPO
+NO_ANIMATION
+
+REPLY ONLY:
+GATE: MATCH_ANIM_WATCH_GAPS PASS
+or FAIL with failed lines only.

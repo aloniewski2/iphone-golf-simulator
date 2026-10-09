@@ -1,0 +1,188 @@
+using System;
+using System.IO;
+using System.Linq;
+using GolfArcade.Tennis;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Playables;
+using UnityEngine.Rendering.Universal;
+using Object=UnityEngine.Object;
+
+namespace GolfArcade.EditorTools
+{
+    [InitializeOnLoad] public static class HeroLookReview
+    {
+        const string R=HeroLookImporter.Root;
+        const string ScenePath="Assets/Scenes/Hero01Look.unity";
+        static double started; static Vector3 headStart; static bool sampling;
+        static string Output => Path.GetFullPath("../ArtDir/screenshots");
+        static HeroLookReview() { EditorApplication.update+=Tick; }
+        static Color Hex(string value) {ColorUtility.TryParseHtmlString("#"+value,out var c);return c;}
+        static T Load<T>(string p) where T:Object => AssetDatabase.LoadAssetAtPath<T>(R+p);
+        static Material Mat(string name,Color color,float smoothness,Texture texture=null)
+        {
+            string path=R+"Materials/"+name+".mat";
+            var m=AssetDatabase.LoadAssetAtPath<Material>(path);
+            if(!m) {m=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(m,path);}
+            m.shader=Shader.Find("Universal Render Pipeline/Lit");
+            if(texture || name.StartsWith("Hero_01_") || name.StartsWith("HairPolish_")) {m.SetFloat("_ReceiveShadows",0);m.EnableKeyword("_RECEIVE_SHADOWS_OFF");}
+            m.SetColor("_BaseColor",color);m.SetFloat("_Smoothness",smoothness);m.SetFloat("_Metallic",0);m.SetFloat("_Cull",0);m.doubleSidedGI=true;
+            m.SetTexture("_BaseMap",texture);m.DisableKeyword("_EMISSION");m.SetColor("_EmissionColor",Color.black);EditorUtility.SetDirty(m);return m;
+        }
+        static Texture2D BuildReviewIris()
+        {
+            // Analytic eye map: dark brown annulus, pupil, exactly two antialiased white discs.
+            const int size=512;var texture=new Texture2D(size,size,TextureFormat.RGBA32,false);
+            var pixels=new Color[size*size];
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++) {
+                Vector2 uv=new Vector2((x+.5f)/size,(y+.5f)/size);float r=(uv-new Vector2(.5f,.5f)).magnitude;
+                Color c=r<.30f?Hex("100B0A"):r<.47f?Color.Lerp(Hex("382219"),Hex("684535"),Mathf.Clamp01((.47f-r)/.17f)):Hex("170F0B");
+                float dot1=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.070f,.073f,Vector2.Distance(uv,new Vector2(.34f,.70f))));
+                float dot2=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.040f,.043f,Vector2.Distance(uv,new Vector2(.51f,.57f))));
+                pixels[y*size+x]=Color.Lerp(c,Color.white,Mathf.Max(dot1,dot2));
+            }
+            texture.SetPixels(pixels);texture.Apply();string path=R+"Textures/Hero_01_Iris_V4.png";File.WriteAllBytes(path,texture.EncodeToPNG());Object.DestroyImmediate(texture);AssetDatabase.ImportAsset(path);
+            var importer=(TextureImporter)AssetImporter.GetAtPath(path);importer.textureCompression=TextureImporterCompression.Uncompressed;importer.maxTextureSize=512;importer.mipmapEnabled=true;importer.filterMode=FilterMode.Bilinear;importer.wrapMode=TextureWrapMode.Clamp;importer.SaveAndReimport();return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+        [MenuItem("Golf Arcade/Art Direction/Build and Capture Hero 01")]
+        public static void Run()
+        {
+            try {
+                Directory.CreateDirectory(R+"Materials");Directory.CreateDirectory(R+"Prefabs");Directory.CreateDirectory(Output);AssetDatabase.Refresh();
+                string bind=R+"Models/Hero_01_Mixamo_Bind.fbx";
+                AssetDatabase.ImportAsset(bind,ImportAssetOptions.ForceUpdate);
+                var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(bind);
+                var avatar=AssetDatabase.LoadAllAssetsAtPath(bind).OfType<Avatar>().FirstOrDefault();
+                if(!avatar || !avatar.isValid || !avatar.isHuman)throw new Exception("Hero Humanoid Avatar is not valid");
+                var modelPaths=Directory.GetFiles(R+"Models","*.fbx");
+                var atlas=Load<Texture2D>("Textures/Hero_01_BaseColor.png");var iris=BuildReviewIris();
+                foreach(string path in modelPaths) {
+                    var imp=(ModelImporter)AssetImporter.GetAtPath(path);
+                    foreach(var mat in AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponentsInChildren<Renderer>(true).SelectMany(r=>r.sharedMaterials).Where(m=>m).Distinct().ToArray()) {
+                        bool eye=mat.name.Contains("Eye"),visor=mat.name.Contains("Visor"),skin=mat.name.ToLowerInvariant().Contains("skin");
+                        bool solidHair=mat.name.Contains("HairTuft");
+                        bool shoeMesh=Path.GetFileName(path).Contains("Shoes_Default");
+                        bool cleanWhite=mat.name.Contains("ShoeCleanWhite") || (shoeMesh && !mat.name.Contains("ShoeOrange"));
+                        bool glint=mat.name.Contains("Catchlight"),orange=mat.name.Contains("ShoeOrange"),hair=mat.name.StartsWith("HairPolish_") || solidHair;
+                        var replacement=Mat(shoeMesh && cleanWhite?"Hero_01_ShoeCleanWhite":mat.name,orange?Hex("FF6B3D"):solidHair?Hex("DDB275"):cleanWhite?Hex("E4E2DE"):hair?new Color(1.02f,.98f,1.18f,1):Color.white,eye?.35f:visor?.18f:skin?.25f:.22f,glint||orange||cleanWhite||solidHair?null:eye?iris:atlas);
+                        replacement.DisableKeyword("_NORMALMAP");replacement.SetTexture("_BumpMap",null);
+                        if(!eye && !glint && !orange && !cleanWhite && !skin && !solidHair) {replacement.SetTexture("_BumpMap",Load<Texture2D>("Textures/Hero_01_Normal.png"));replacement.SetFloat("_BumpScale",hair?.6f:.12f);replacement.EnableKeyword("_NORMALMAP");}
+                        if(solidHair) {replacement.SetFloat("_ReceiveShadows",0);replacement.EnableKeyword("_RECEIVE_SHADOWS_OFF");replacement.SetFloat("_SpecularHighlights",0);replacement.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");}
+                        if(eye) {replacement.SetFloat("_SpecularHighlights",0);replacement.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");replacement.SetFloat("_EnvironmentReflections",0);replacement.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");replacement.EnableKeyword("_EMISSION");replacement.SetTexture("_EmissionMap",iris);replacement.SetColor("_EmissionColor",Color.white*.18f);}
+                        if(cleanWhite) {replacement.SetFloat("_Smoothness",.18f);}
+
+                        if(glint) { // Existing auxiliary glint faces are transparent; two dots live on the iris only.
+                            replacement.shader=Shader.Find("Universal Render Pipeline/Unlit");replacement.SetColor("_BaseColor",new Color(1,1,1,0));replacement.SetTexture("_BaseMap",null);
+                            replacement.SetFloat("_Surface",1);replacement.SetFloat("_SrcBlend",(float)BlendMode.SrcAlpha);replacement.SetFloat("_DstBlend",(float)BlendMode.OneMinusSrcAlpha);replacement.SetFloat("_ZWrite",0);replacement.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");replacement.renderQueue=3000;
+                        }
+                        if(hair && !solidHair) {replacement.EnableKeyword("_EMISSION");replacement.SetTexture("_EmissionMap",atlas);replacement.SetColor("_EmissionColor",new Color(.035f,.025f,.02f));}
+                        imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material),mat.name),replacement);
+                    }
+                    if(Path.GetFileName(path)=="Idle.fbx" || Path.GetFileName(path)=="Ready.fbx") {
+                        imp.SaveAndReimport();
+                        var clips=imp.defaultClipAnimations;
+                        foreach(var c in clips) {c.name=Path.GetFileNameWithoutExtension(path);c.loopTime=true;c.loopPose=false;c.lockRootPositionXZ=true;c.lockRootHeightY=true;c.lockRootRotation=true;}
+                        imp.clipAnimations=clips;
+                    }
+                    imp.SaveAndReimport();
+                }
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+                var root=new GameObject("Hero_01_Modular");
+                var model=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(bind));model.transform.SetParent(root.transform,false);
+                PrefabUtility.UnpackPrefabInstance(model,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
+                foreach(var mesh in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)) if(!mesh.name.StartsWith("Body_"))Object.DestroyImmediate(mesh.gameObject);
+                var look=root.AddComponent<ModularHeroLook>();look.skeletonRoot=model.transform;look.animator=model.GetComponent<Animator>();look.idle=AssetDatabase.LoadAllAssetsAtPath(R+"Models/Idle.fbx").OfType<AnimationClip>().First(c=>!c.name.StartsWith("__preview"));
+                look.defaults=new[]{
+                    Slot(ModularHeroLook.Slot.Hair,"Hair_Default"),Slot(ModularHeroLook.Slot.Hat,"Hat_Visor"),Slot(ModularHeroLook.Slot.Shirt,"Shirt_Default"),Slot(ModularHeroLook.Slot.Shorts,"Shorts_Default"),Slot(ModularHeroLook.Slot.Shoes,"Shoes_Default")};
+                look.skinAtlas=atlas;look.skinMask=Load<Texture2D>("Textures/Hero_01_SkinMask.png");look.skinTone=Hex("D5A080");look.useSkinTint=true;look.RebuildDefaultWardrobe();
+                foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>())skin.quality=SkinQuality.Bone4;
+                PrefabUtility.SaveAsPrefabAsset(root,R+"Prefabs/Hero_01_Modular.prefab");
+                root.transform.position=new Vector3(12,0,0);BuildCourt();
+                SetupReviewPipeline();
+                RenderSettings.skybox=null;RenderSettings.ambientMode=AmbientMode.Flat;RenderSettings.ambientLight=Hex("E8E7DF")*.7f;
+                RenderSettings.ambientSkyColor=Hex("7EC8E3")*.75f;RenderSettings.ambientEquatorColor=Hex("F4F0E6")*.7f;RenderSettings.ambientGroundColor=Hex("4A5A78")*.45f;
+                RenderSettings.ambientLight=Hex("F4F0E6")*.60f;
+                RenderSettings.fog=false;RenderSettings.reflectionIntensity=.2f;
+                LightSource("Warm key",new Vector3(40,-145,0),Hex("FFF8F1"),.86f,true);
+                LightSource("Soft fill",new Vector3(20,135,0),Hex("F2F5FF"),.34f,false);
+                LightSource("Soft face bounce",new Vector3(-12,180,0),Hex("FFF4ED"),.30f,false);
+                var cam=new GameObject("Hero review camera").AddComponent<Camera>();cam.tag="MainCamera";cam.backgroundColor=Hex("7EC8E3");cam.clearFlags=CameraClearFlags.SolidColor;
+                cam.transform.position=new Vector3(12.9f,1.1f,3.9f);cam.transform.LookAt(new Vector3(12,.87f,0));cam.fieldOfView=32;cam.nearClipPlane=.05f;cam.farClipPlane=100;
+                var data=cam.GetUniversalAdditionalCameraData();data.renderPostProcessing=true;data.antialiasing=AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+                var volume=new GameObject("Hero look subtle grading").AddComponent<Volume>();volume.isGlobal=true;
+                var profile=ScriptableObject.CreateInstance<VolumeProfile>();
+                var tone=profile.Add<Tonemapping>(true);tone.mode.Override(TonemappingMode.Neutral);
+                var grade=profile.Add<ColorAdjustments>(true);grade.postExposure.Override(.08f);grade.saturation.Override(0);
+                string vp=R+"HeroLookVolume.asset";if(AssetDatabase.LoadAssetAtPath<VolumeProfile>(vp))AssetDatabase.DeleteAsset(vp);AssetDatabase.CreateAsset(profile,vp);volume.sharedProfile=profile;
+                EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(),ScenePath);AssetDatabase.SaveAssets();
+                File.WriteAllText(Output+"/unity_import.json",JsonUtility.ToJson(new ImportReport{humanoid=avatar.isHuman,avatarValid=avatar.isValid,renderers=look.GetComponentsInChildren<SkinnedMeshRenderer>().Length,clip=look.idle.name,clipHuman=look.idle.humanMotion},true));
+                SessionState.SetBool("HeroLookCapture",true);sampling=false;EditorApplication.isPlaying=true;
+            } catch(Exception e) { Debug.LogException(e);File.WriteAllText(Output+"/unity_error.txt",e.ToString());if(Application.isBatchMode)EditorApplication.Exit(1); }
+        }
+        static ModularHeroLook.WardrobeSlot Slot(ModularHeroLook.Slot slot,string name) => new ModularHeroLook.WardrobeSlot{slot=slot,asset=Load<GameObject>("Models/Hero_01_"+name+".fbx")};
+        static void LightSource(string name,Vector3 angles,Color color,float intensity,bool shadows)
+        {
+            var light=new GameObject(name).AddComponent<Light>();light.type=LightType.Directional;light.transform.rotation=Quaternion.Euler(angles);light.color=color;light.intensity=intensity;
+            light.shadows=shadows?LightShadows.Soft:LightShadows.None;light.shadowStrength=.28f;light.shadowBias=.035f;light.shadowNormalBias=.15f;
+        }
+        static GameObject Box(string name,Vector3 pos,Vector3 size,Material mat)
+        {
+            var o=GameObject.CreatePrimitive(PrimitiveType.Cube);o.name=name;o.transform.position=pos;o.transform.localScale=size;o.GetComponent<Renderer>().sharedMaterial=mat;Object.DestroyImmediate(o.GetComponent<Collider>());return o;
+        }
+        static void SetupReviewPipeline()
+        {
+            string rendererPath=R+"HeroLookRenderer.asset",pipelinePath=R+"HeroLookURP.asset";
+            if(!AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(rendererPath))AssetDatabase.CopyAsset("Assets/Resources/Tennis/Rendering/TennisURP_Renderer.asset",rendererPath);
+            if(!AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(pipelinePath))AssetDatabase.CopyAsset("Assets/Resources/Tennis/Rendering/TennisURP.asset",pipelinePath);
+            var renderer=AssetDatabase.LoadAssetAtPath<UniversalRendererData>(rendererPath);
+            foreach(var feature in renderer.rendererFeatures) {
+                var settings=new SerializedObject(feature);var ao=settings.FindProperty("m_Settings");
+                if(ao!=null) {ao.FindPropertyRelative("Intensity").floatValue=.10f;ao.FindPropertyRelative("Radius").floatValue=.05f;ao.FindPropertyRelative("DirectLightingStrength").floatValue=0;settings.ApplyModifiedPropertiesWithoutUndo();}
+            }
+            var pipeline=AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(pipelinePath);var p=new SerializedObject(pipeline);p.FindProperty("m_MSAA").intValue=4;p.FindProperty("m_SoftShadowQuality").intValue=3;p.FindProperty("m_MainLightShadowmapResolution").intValue=1024;p.FindProperty("m_RendererDataList").GetArrayElementAtIndex(0).objectReferenceValue=renderer;p.ApplyModifiedPropertiesWithoutUndo();
+            var scope=new GameObject("Hero look scene pipeline").AddComponent<HeroLookLighting>();scope.pipeline=pipeline;
+        }
+        static void BuildCourt()
+        {
+            var ground=Mat("Court warm ivory",Hex("F4F0E6"),.12f);var lines=Mat("Court charcoal",Hex("2B2B2B"),.15f);var surround=Mat("Court soft green",Hex("6BBF6B"),.1f);var net=Mat("Net cool shadow",Hex("4A5A78"),.15f);var white=Mat("Net white",Color.white,.2f);
+            Box("Surround",new Vector3(0,-.075f,-3),new Vector3(200,.1f,200),ground);Box("Court",new Vector3(0,-.017f,-3),new Vector3(8,.025f,12),ground);
+            foreach(float x in new[]{-4f,4f})Box("Sideline",new Vector3(x,.001f,-3),new Vector3(.045f,.003f,12),lines);
+            foreach(float z in new[]{-9f,3f,-5.8f,-.2f})Box("Court line",new Vector3(0,.002f,z),new Vector3(8,.003f,.045f),lines);
+            Box("Service center",new Vector3(0,.002f,-3),new Vector3(.045f,.003f,5.6f),lines);
+            foreach(float x in new[]{-4.2f,4.2f})Box("Net post",new Vector3(x,.52f,-3),new Vector3(.075f,1.04f,.075f),net);
+            Box("Net tape",new Vector3(0,.95f,-3),new Vector3(8.4f,.06f,.035f),white);
+            for(int i=0;i<=42;i++)Box("Net cord",new Vector3(-4.2f+i*.2f,.49f,-3),new Vector3(.012f,.86f,.012f),net);
+            for(int i=0;i<5;i++)Box("Net cord",new Vector3(0,.1f+i*.18f,-3),new Vector3(8.4f,.012f,.012f),net);
+        }
+        static void Tick()
+        {
+            if(!SessionState.GetBool("HeroLookCapture",false) || !EditorApplication.isPlaying)return;
+            var hero=Object.FindFirstObjectByType<ModularHeroLook>();if(!hero || !hero.IdleRunning)return;
+            if(!sampling){sampling=true;started=EditorApplication.timeSinceStartup;headStart=hero.animator.GetBoneTransform(HumanBodyBones.Head).position;return;}
+            if(EditorApplication.timeSinceStartup-started<2 || hero.IdleTime<1.2)return;
+            try {
+                var head=hero.animator.GetBoneTransform(HumanBodyBones.Head);float movement=Vector3.Distance(headStart,head.position);
+                bool bound=hero.GetComponentsInChildren<SkinnedMeshRenderer>().All(r=>r.bones.All(b=>b && b.IsChildOf(hero.skeletonRoot)));
+                if(movement<.00001f || !bound)throw new Exception("Idle or wardrobe binding verification failed");
+                if(hero.useSkinTint)hero.SetSkinTone(hero.skinTone); // Verify repeated tint updates on the existing materials.
+                var cam=Camera.main;Capture(cam,"unity_hero.png",900,1100);
+                hero.transform.position=Vector3.zero;cam.transform.position=new Vector3(3,3.2f,6.7f);cam.transform.LookAt(new Vector3(0,.35f,-2));cam.fieldOfView=55;Capture(cam,"unity_gameplay_or_court.png",1600,900);
+                File.WriteAllText(Output+"/unity_playmode.json",JsonUtility.ToJson(new PlayReport{idleRunning=hero.IdleRunning,idleSeconds=hero.IdleTime,headMovementMetres=movement,allWardrobeBonesShared=bound,avatarValid=hero.animator.avatar.isValid,avatarHuman=hero.animator.isHuman,skinningInfluences=(int)QualitySettings.skinWeights},true));
+                SessionState.SetBool("HeroLookCapture",false);
+                hero.enabled=false; // Restore the scoped skinning quality before batch shutdown.
+                if(Application.isBatchMode)EditorApplication.Exit(0);else EditorApplication.isPlaying=false;
+            } catch(Exception e){Debug.LogException(e);SessionState.SetBool("HeroLookCapture",false);if(Application.isBatchMode)EditorApplication.Exit(1);}
+        }
+        static void Capture(Camera cam,string name,int width,int height)
+        {
+            var rt=new RenderTexture(width,height,24,RenderTextureFormat.ARGB32);rt.antiAliasing=4;var previous=RenderTexture.active;var target=cam.targetTexture;
+            cam.targetTexture=rt;cam.Render();RenderTexture.active=rt;
+            var tex=new Texture2D(width,height,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,width,height),0,0);tex.Apply();File.WriteAllBytes(Output+"/"+name,tex.EncodeToPNG());
+            cam.targetTexture=target;RenderTexture.active=previous;Object.DestroyImmediate(tex);Object.DestroyImmediate(rt);
+        }
+        [Serializable] class ImportReport { public bool humanoid,avatarValid,clipHuman;public int renderers;public string clip; }
+        [Serializable] class PlayReport { public bool idleRunning,allWardrobeBonesShared,avatarValid,avatarHuman;public int skinningInfluences;public double idleSeconds;public float headMovementMetres; }
+    }
+}

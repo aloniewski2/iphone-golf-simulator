@@ -1,0 +1,152 @@
+{
+  "male": {
+    "proxy": "Chest-space ellipsoid radii (0.18,0.24,0.12) metres; forearm centreline only, not exact mesh collision",
+    "samples": [
+      {
+        "arm": "Right",
+        "fraction": 0.0,
+        "minNormalizedRadius": 0.9996439185534272,
+        "worstFrame": 8,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.25,
+        "minNormalizedRadius": 1.0160422358237755,
+        "worstFrame": 68,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.5,
+        "minNormalizedRadius": 1.0028130670893238,
+        "worstFrame": 4,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.75,
+        "minNormalizedRadius": 1.0439013548750082,
+        "worstFrame": 5,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 1.0,
+        "minNormalizedRadius": 1.1375863274491043,
+        "worstFrame": 5,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.0,
+        "minNormalizedRadius": 1.0037411024886989,
+        "worstFrame": 23,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.25,
+        "minNormalizedRadius": 1.1532429940907185,
+        "worstFrame": 7,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.5,
+        "minNormalizedRadius": 1.3737756469303801,
+        "worstFrame": 57,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.75,
+        "minNormalizedRadius": 1.5980926411735379,
+        "worstFrame": 57,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 1.0,
+        "minNormalizedRadius": 1.6833245319631254,
+        "worstFrame": 61,
+        "framesInsideProxy": []
+      }
+    ]
+  },
+  "female": {
+    "proxy": "Chest-space ellipsoid radii (0.18,0.24,0.12) metres; forearm centreline only, not exact mesh collision",
+    "samples": [
+      {
+        "arm": "Right",
+        "fraction": 0.0,
+        "minNormalizedRadius": 1.0001865945300736,
+        "worstFrame": 30,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.25,
+        "minNormalizedRadius": 1.0084430060591074,
+        "worstFrame": 72,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.5,
+        "minNormalizedRadius": 1.0085573705330884,
+        "worstFrame": 4,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 0.75,
+        "minNormalizedRadius": 1.088294494079119,
+        "worstFrame": 4,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Right",
+        "fraction": 1.0,
+        "minNormalizedRadius": 1.227633650169611,
+        "worstFrame": 5,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.0,
+        "minNormalizedRadius": 1.0265763230947522,
+        "worstFrame": 5,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.25,
+        "minNormalizedRadius": 1.1158095436623523,
+        "worstFrame": 5,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.5,
+        "minNormalizedRadius": 1.3178885209935576,
+        "worstFrame": 63,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 0.75,
+        "minNormalizedRadius": 1.4590800801590085,
+        "worstFrame": 63,
+        "framesInsideProxy": []
+      },
+      {
+        "arm": "Left",
+        "fraction": 1.0,
+        "minNormalizedRadius": 1.6269535245176778,
+        "worstFrame": 62,
+        "framesInsideProxy": []
+      }
+    ]
+  }
+}

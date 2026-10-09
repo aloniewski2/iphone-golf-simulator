@@ -1,0 +1,66 @@
+PASTE — CLASSIC TENNIS RACKET · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan picked **Classic** racket: matte **white** frame + white strings + **black** grip. Logo-free. Soft-plastic party sports prop that **fits in HeroBase hands**, plugs into **Hand_Racket** socket, and **must not break** body/kit/rig/customize.
+
+AUTHORITY REFS:
+ArtDir/hero/kits/racket_classic/
+  00_hero_pick.jpg · 01_turnaround.jpg · 02_ortho_exploded.jpg · README.md
+AGENTS.md (Hand_Racket socket) + art-bible.md (Racket slot; props must not become body geometry)
+
+FIT BODIES (read-only — NEVER edit hero mesh/SHA):
+- Male: ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+  SHA-256 fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347
+- Female: ArtDir/hero/base_lock/blender/HeroBase_Female.blend
+  SHA-256 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd
+  Optional fit check: male hands FORM2 lineage already in male ArtDir; female hands may still be sausages — size grip to **plate-scale soft-plastic adult hand**, not to temporary sausage fingers. Do not reshape hands to “fix” the racket.
+
+WORK: work/classic-tennis-racket/ only. Stage exports. Do **not** install over ArtDir hero blends. Do **not** modify clothes kit meshes.
+
+════════════════════════════════════
+PROP SPEC
+════════════════════════════════════
+- Separate prop mesh(es): Racket_Classic (frame+throat+handle core). Strings may be same mesh or child StringBed. Grip can be material zone or child Grip.
+- Look: oval head, open Y throat, matte white frame, white string grid, black textured grip, black butt cap. **NO logos / text / brand marks.**
+- Real-world-ish party scale for ~1.65–1.75 m hero: overall length ≈ **0.68–0.70 m**; head outer ≈ **0.32–0.35 m** tall; beam thickness readable at phone distance (soft-plastic, not hyperthin carbon).
+- **Grip fit (critical):** cylindrical grip diameter ≈ **0.030–0.036 m** so soft-plastic fingers can wrap without clipping through frame. Butt cap slightly larger. Handle length ≈ **0.18–0.20 m** of usable grip.
+- Origin / pivot: place object origin at **grip center** (palm hold point), +Y or project-convention toward head — document axis. Align so parenting to **Hand_Racket** (or hand bone empty) puts the grip in the palm with head clear of the forearm in a neutral ready pose.
+- Add empty `Hand_Racket` under the hand if missing (do not rewire humanoid). Prop must parent cleanly; unparent leaves body intact.
+- Materials: URP Lit — White_Frame, Black_Grip, White_Strings (or equivalent). Opaque; no fancy glass.
+- Collider: simple capsule or box along shaft for later gameplay OK; disclose. Prefer low-poly collision child.
+- Tris: keep modest (disclose). Prefer simple string grid (not thousands of individual string cylinders unless needed).
+- Export: Blender + FBX scale 1 (meters) under work/classic-tennis-racket/export/
+
+SAFE / DON’T BREAK:
+- Body topology + ArtDir SHA unchanged
+- No edits to standard_wb clothes
+- No densify/remesh of hero
+- No attaching racket as permanent body geometry
+- Mirror / L-hand optional later — default **right-hand** hold proofs first
+- Pose proofs: A-pose grip test + one ready stance; show no hand/racket intersection; fingers wrap grip
+
+PROOFS (mandatory):
+1) Prop turnaround matching refs (front/side/3q + grip close-up)
+2) On-hand male: front + side + 3q (grip in palm, no poke-through)
+3) On-hand female: same (even if female hands unfinished — diameter still correct)
+4) Socket diagram / empty parent screenshot
+5) checks.json: length, grip diameter, TRI, body SHA before/after identical
+
+GATES:
+LOOK_CLASSIC_MATCH · NO_LOGOS · SCALE_HERO · GRIP_DIAMETER_IN_RANGE · HAND_FIT_NO_INTERSECT · SOCKET_HAND_RACKET · BODY_SHA_UNCHANGED · EXPORT_FBX_BLEND · PROOFS
+
+FORBIDDEN:
+- Logos · neon variants · editing hero hands/body · baking racket into hand · ArtDir hero overwrite · breaking existing FBX scale
+
+DELIVER:
+- work/classic-tennis-racket/CLASSIC_RACKET_RESULTS.md
+- proof/ + checks.json
+- export/ blend + FBX
+- Stage only; install path note for Unity Hand_Racket parenting
+
+REPLY ONLY:
+GATE: CLASSIC_RACKET PASS
+or FAIL with failed lines only.

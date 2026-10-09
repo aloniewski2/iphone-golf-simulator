@@ -1,0 +1,84 @@
+{
+  "face_before": "8c07039fa7338005d04b8c235f4227620d3027fed453715ad0e362dfb9bb0922",
+  "old_lower_vertices_removed": 6755,
+  "Body_Skin_armpit": 347,
+  "Shirt_Default_armpit": 595,
+  "face_after": "8c07039fa7338005d04b8c235f4227620d3027fed453715ad0e362dfb9bb0922",
+  "face_geometry_identical": true,
+  "new_leg_rings": 25,
+  "ring_vertices": 40,
+  "profiles": [
+    [
+      0.12,
+      0.048,
+      0.055
+    ],
+    [
+      0.2,
+      0.05,
+      0.059
+    ],
+    [
+      0.25,
+      0.055,
+      0.066
+    ],
+    [
+      0.3,
+      0.071,
+      0.08
+    ],
+    [
+      0.35,
+      0.08,
+      0.091
+    ],
+    [
+      0.39,
+      0.077,
+      0.085
+    ],
+    [
+      0.425,
+      0.07,
+      0.076
+    ],
+    [
+      0.445,
+      0.069,
+      0.072
+    ],
+    [
+      0.47,
+      0.073,
+      0.078
+    ],
+    [
+      0.52,
+      0.085,
+      0.09
+    ],
+    [
+      0.58,
+      0.095,
+      0.102
+    ],
+    [
+      0.65,
+      0.098,
+      0.112
+    ],
+    [
+      0.7,
+      0.098,
+      0.112
+    ]
+  ],
+  "changes": [
+    "Replaced lower-body surfaces with authored quad-loop legs on original joints",
+    "Default shorts coverage is a reversible mask; full skin legs retained",
+    "Subdivided and refitted lower shorts, matching thigh weights, new hem piping",
+    "Shoes width -7% around foot centres, original texture/sole height",
+    "Source armpit weights smoothed without animation edits"
+  ]
+}

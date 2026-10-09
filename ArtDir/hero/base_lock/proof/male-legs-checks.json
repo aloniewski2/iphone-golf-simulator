@@ -1,0 +1,251 @@
+{
+ "chat": "04_MALE_LEGS_FEET",
+ "date": "2026-10-01",
+ "start_sha256_original": "68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf",
+ "zone": {
+  "definition": "Body_M vertices with start z<0.765 m (crotch apex) and |x|<0.27 m",
+  "verts": 8745,
+  "moved": 8744
+ },
+ "install": {
+  "artdir_blend": "ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend",
+  "pre_install_sha256": "9f6d02bd67a8b38dc063ca5033535a385265900c2d71f959a96f65ad50d56154",
+  "post_install_sha256": "0dd37baf20fcc3524ee1d8557b88b87ce0d2d3782d13c5eb15a8df9fe38802b7",
+  "method": "work/male-parallel-legs/export/merge_legs.py (zone-index patch, aborts if the zone was touched)",
+  "backup_of_replaced_file": "work/male-parallel-legs/baseline/artdir_pre_legs_install.blend"
+ },
+ "audit_install_vs_replaced_file": {
+  "base_sha256": "9f6d02bd67a8b38dc063ca5033535a385265900c2d71f959a96f65ad50d56154",
+  "new_sha256": "0dd37baf20fcc3524ee1d8557b88b87ce0d2d3782d13c5eb15a8df9fe38802b7",
+  "verts": 30296,
+  "faces_identical": true,
+  "edges_equal": true,
+  "zone_def": {
+   "z_lt": 0.765,
+   "absx_lt": 0.27,
+   "zone_verts": 8745
+  },
+  "moved_total": 8744,
+  "moved_in_zone": 8744,
+  "moved_outside_zone": 0,
+  "outside_zone_bit_identical": true,
+  "moved_head_z_ge_1.40": 0,
+  "moved_torso_z_0.765_1.40": 0,
+  "moved_arms_hands_absx_ge_0.27": 0,
+  "face_m_unchanged": true,
+  "vertex_groups_equal": true,
+  "materials_equal": true,
+  "zone_move_mm": {
+   "rms": 10.322083167337672,
+   "max": 33.29041465884876,
+   "verts_moved_gt_1mm": 5159,
+   "verts_moved_gt_10mm": 2629
+  },
+  "zone_top_band_3cm_move_mm": {
+   "max": 1.0168218158726199,
+   "rms": 0.2777083506504767
+  },
+  "min_z_base": 0.0024724886752665043,
+  "min_z_new": 0.002472762716934085,
+  "max_z_equal": true,
+  "height_m_base": 1.702187418937683,
+  "height_m_new": 1.702187180519104,
+  "nan_or_inf": false,
+  "tris_base": 60358,
+  "tris_new": 60358,
+  "boundary_nonmanifold_base": [
+   92,
+   2
+  ],
+  "boundary_nonmanifold_new": [
+   92,
+   2
+  ],
+  "zone_faces": 8866,
+  "flipped_faces": 0,
+  "min_face_normal_dot_vs_base": 0.7115150245553792,
+  "zone_edge_mm_base": {
+   "mean": 9.918858269123167,
+   "p99": 14.66967645726129,
+   "max": 19.09544125782524
+  },
+  "zone_edge_mm_new": {
+   "mean": 9.959579488187876,
+   "p99": 14.507354507480539,
+   "max": 21.01581809390754
+  },
+  "zone_quad_angle_base": [
+   23.146743704561878,
+   161.96429559680618
+  ],
+  "zone_quad_angle_new": [
+   19.054464975950815,
+   170.35225193537485
+  ],
+  "min_gap_between_legs_vertices_mm": 48.615766196043744
+ },
+ "silhouette_gate_percent_installed": {
+  "base_body_bald_front": 4.335,
+  "base_body_bald_back": 4.359,
+  "new_body_bald_front": 4.323,
+  "new_body_bald_back": 4.3854
+ },
+ "metrics_vs_plates": {
+  "base": {
+   "near_foot_sagittal_contour_vs_plate": {
+    "mean_mm": 15.325840613611726,
+    "max_mm": 30.555636649589996,
+    "instep_mean_mm": 16.687657393004645,
+    "instep_max_mm": 30.555636649589996
+   },
+   "foot_y_extents": {
+    "0.015": [
+     -0.2063853144645691,
+     0.05853542312979698
+    ],
+    "0.025": [
+     -0.20880822837352753,
+     0.06474024802446365
+    ],
+    "0.035": [
+     -0.20870305597782135,
+     0.06562576442956924
+    ],
+    "0.045": [
+     -0.20569197833538055,
+     0.0655229315161705
+    ],
+    "0.055": [
+     -0.19717355072498322,
+     0.06430745869874954
+    ]
+   },
+   "ankle_y": {
+    "0.16": [
+     -0.08851131796836853,
+     0.04819350689649582,
+     -0.020158905535936356
+    ],
+    "0.19": [
+     -0.08326847851276398,
+     0.047310441732406616,
+     -0.01797901839017868
+    ],
+    "0.22": [
+     -0.07284039258956909,
+     0.056851159781217575,
+     -0.007994616404175758
+    ]
+   },
+   "band_residual_um": 479.57230394232676,
+   "normal_roughness_um": 414.23193526006304,
+   "consensus_edge_dev": {
+    "x_edge_mean_abs_mm": 0.9527703462693028,
+    "y_edge_mean_abs_mm": 4.181193395860211
+   },
+   "knee_front_relief_mm": -5.969258025288582
+  },
+  "new": {
+   "near_foot_sagittal_contour_vs_plate": {
+    "mean_mm": 1.1342073785266995,
+    "max_mm": 6.620474859584617,
+    "instep_mean_mm": 1.9203055594040632,
+    "instep_max_mm": 6.620474859584617
+   },
+   "foot_y_extents": {
+    "0.015": [
+     -0.21978153468341216,
+     0.07626073769297984
+    ],
+    "0.025": [
+     -0.22240284544829228,
+     0.07997114833313096
+    ],
+    "0.035": [
+     -0.22275731310700772,
+     0.08286710878242692
+    ],
+    "0.045": [
+     -0.21653627327314057,
+     0.08286710878242692
+    ],
+    "0.055": [
+     -0.20497962811108847,
+     0.08179073060059679
+    ]
+   },
+   "ankle_y": {
+    "0.16": [
+     -0.06227171605752887,
+     0.06794169082682115,
+     0.002834987384646142
+    ],
+    "0.19": [
+     -0.06351007900866092,
+     0.06570656186131275,
+     0.0010982414263259188
+    ],
+    "0.22": [
+     -0.06198133523318569,
+     0.06979966474119219,
+     0.003909164754003248
+    ]
+   },
+   "band_residual_um": 234.83082723077132,
+   "normal_roughness_um": 257.30674142075134,
+   "consensus_edge_dev": {
+    "x_edge_mean_abs_mm": 0.9951078862398023,
+    "y_edge_mean_abs_mm": 2.6226463323065934
+   },
+   "knee_front_relief_mm": 6.267600144534709
+  },
+  "plate_foot_y_extents": {
+   "0.015": [
+    -0.22053264604810996,
+    0.07448453608247424
+   ],
+   "0.025": [
+    -0.22345360824742266,
+    0.08616838487972509
+   ],
+   "0.035": [
+    -0.22345360824742266,
+    0.08616838487972509
+   ],
+   "0.045": [
+    -0.21761168384879725,
+    0.08616838487972509
+   ],
+   "0.055": [
+    -0.20592783505154638,
+    0.08616838487972509
+   ]
+  },
+  "plate_ankle_y": {
+   "0.16": [
+    -0.10661512027491409,
+    0.0686426116838488,
+    -0.01898625429553264
+   ],
+   "0.19": [
+    -0.0686426116838488,
+    0.0686426116838488,
+    0.0
+   ],
+   "0.22": [
+    -0.059879725085910655,
+    0.07156357388316151,
+    0.005841924398625426
+   ]
+  }
+ },
+ "staged_files": {
+  "legs_only_on_torso_base_blend": "work/male-parallel-legs/export/HeroBase_Male_Silhouette_legs.blend",
+  "legs_fbx": "work/male-parallel-legs/export/HeroBase_Male_Body_legs.fbx",
+  "integrated_fbx_from_installed_blend": "work/male-parallel-legs/export/HeroBase_Male_Body_integrated_torso_arms_legs.fbx",
+  "integrated_fbx_sha256": "a3979a303d2d7d425e9a96b8887748830187d8db632cce8a3a670789cf21cb16",
+  "patch": "work/male-parallel-legs/export/legs_zone_patch.npz",
+  "merge_script": "work/male-parallel-legs/export/merge_legs.py",
+  "chain": "work/male-parallel-legs/chain.sh"
+ }
+}

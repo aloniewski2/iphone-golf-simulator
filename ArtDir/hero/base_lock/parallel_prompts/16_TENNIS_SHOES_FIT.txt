@@ -1,0 +1,58 @@
+PASTE — TENNIS SHOES FIT THE FOOT · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line. Shoes only. Polo, shorts, and skort stay as they are.
+
+---
+
+The worn kit shoes do not sit on the current feet. On the dressed female, the real heel and the toes stick out of the sneaker, the sock floats above the ankle, and a band of bare skin shows between sock and shoe. Rebuild the shoes, and the sock cuff, so each foot is inside its own shoe. Do the same measurement on the male. If his foot is already inside, still re-seat the shoe to THIS foot rather than leaving the old fit.
+
+BODIES (measure these feet, not the old ArtDir bodies)
+- Male: work/male-pelvis-form3/export/merged_fd04bc28.blend
+  SHA d6c4dcfb1150853a8802a8dc7501aa64066adb8b2734c14a4d6ed8e82dada781
+- Female: work/female-full-merge/export/HeroBase_Female_FULL_STAGED.blend
+  SHA a1d73a334f4dc18052db0582df6b4b54b1df166d9a3531ab700ee114e86d2ac1
+- Verify both SHAs before you touch anything. If either differs, stop.
+- Do not edit the body. Do not resculpt the foot. The foot mesh is the last.
+
+START FROM
+- work/standard-tennis-kit-worn/export/StandardKit_Male.blend
+  SHA ad07a7b9ba984b0f220f975b9fe1b0c1b7068d9897c7e6f96e44f70d23aa77a9
+- work/standard-tennis-kit-worn/export/StandardKit_Female.blend
+  SHA f19a9c03789b7af343c56b005ed587137e8764779d31c3109942156ee71eaf4e
+- Those female shoes were fit to ArtDir female SHA 200dc3b9…, whose feet are placeholders. Do not reuse that fit. Do not use the ArmsCandFit sock or shoe meshes. Delete those extras from the staged blend.
+- Copy the two blends into work/tennis-shoes-fit/export/. Replace only Kit_Shoe_L, Kit_Shoe_R, and the cuff of Kit_Sock_L / Kit_Sock_R.
+
+WHAT A SHOE IS
+- A closed tennis sneaker shell around THIS hero's foot. Rounded toe box, heel cup, tongue, sole, laces as ridges on the shell. White and black only, no logos. Materials stay Std_White_Lit and Std_Black_Lit. Sole can stay the contrasting color.
+- Measure the foot: longest toe, heel point, instep high point, ankle where the collar should sit.
+- The toe box ends past the longest toe. The heel cup wraps past the heel. No foot skin shows in front of the toe or behind the heel.
+- The collar sits at the ankle. The sock cuff tucks into the collar. No bare skin band between sock and shoe.
+- Inner wall stays off the skin (about 3 mm). The outside reads as a shoe, not a shrink-wrap of the toes.
+- Left shoe is the mirror of the right. Same length, same sole height. Both soles sit on the same ground plane. Parent Kit_Shoe_L and Kit_Sock_L to Foot_L_Shoe. Parent the right pair to Foot_R_Shoe. Identity transform on the socket.
+- Do not move the foot bone to hide a bad shoe.
+
+LEAVE ALONE
+- Kit_Top_Polo and Kit_Bottom (shorts or skort). Their mesh SHA must match the start blend.
+- Racket, body, ArtDir. Do not write ArtDir.
+
+PROOFS
+- Close-ups, both heroes, both feet: side, front, heel, and a low 3/4. White and black.
+- A cutaway or clearance render that shows the foot inside the shoe, not beside it.
+- checks.json: count of foot vertices below the collar that fall outside the shoe (must be 0), collar height, toe and heel overhang in mm, sock-to-collar overlap in mm, polo and bottom SHAs unchanged.
+
+GATES
+FOOT_INSIDE — foot verts below the collar outside the shoe = 0, both feet, both heroes
+TOE_COVERED — toe box extends past the longest toe
+HEEL_COVERED — heel cup wraps the heel, no skin behind the shoe
+NO_SKIN_GAP — sock cuff overlaps the collar, no bare ankle band
+SOLE_GROUNDED — both soles share one ground plane
+MIRROR — right is a mirror of left, not a same-facing copy
+OTHER_PIECES_UNCHANGED — polo and bottom mesh SHA match the start blend
+BODY_UNCHANGED
+ON_THESE_FEET — fit measured on the two body SHAs above, not on 200dc3b9
+NO_ARMS_CAND — ArmsCandFit shoe and sock meshes are gone
+SOCKETS — parented to Foot_L_Shoe and Foot_R_Shoe
+
+REPLY ONLY:
+GATE: TENNIS_SHOES_FIT PASS
+or FAIL with failed lines only.

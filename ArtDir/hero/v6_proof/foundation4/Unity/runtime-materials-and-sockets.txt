@@ -1,0 +1,38 @@
+Eye L: material=Hero_01_EyeCornea shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Eye L: material=Hero_01_Catchlight shader=Universal Render Pipeline/Unlit queue=2000 surface=0 alphaClip=0
+Lid L: material=Hero lid skin (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Lid L: material=Hero lid lash shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Eye R: material=Hero_01_EyeCornea shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Eye R: material=Hero_01_Catchlight shader=Universal Render Pipeline/Unlit queue=2000 surface=0 alphaClip=0
+Lid R: material=Hero lid skin (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Lid R: material=Hero lid lash shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+HatLiner: material=Hero_01_HairTuft_V6_Hero_V6_Hair_0 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hero_Racket_GripSocket: material=Hero_Racket_Blue shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hero_Racket_GripSocket: material=Hero_Racket_Strings shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hero_Racket_GripSocket: material=Hero_Racket_Grip shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+TwoHand_GripWrap: material=Hero_Racket_Grip shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hero strings centre: material=Hero racket trail shader=GolfArcade/TennisFxAdditive queue=3000 surface=-1 alphaClip=-1
+Shirt_Default: material=Hero_01_WarmSkin (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shirt_Default: material=Hero_01_MatteCloth (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shorts_Default: material=Hero_V6_Orange shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shorts_Default: material=Hero_V6_ShortsNavy (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shorts_Piping: material=Hero_V6_Orange shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shoes_Default: material=Hero_01_MatteCloth (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shoes_Default: material=Hero_01_ShoeCleanWhite shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Shoes_Default: material=Hero_01_ShoeOrange shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hat_Visor: material=Cos_Band_White shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hat_Visor: material=Cos_Band_White shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hair_Default: material=Hero_01_HairTuft_V6_Hero_V6_Hair_0 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hair_Default: material=Hero_01_HairTuft_V6_Hero_V6_Hair_1 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hair_Default: material=Hero_01_HairTuft_V6_Hero_V6_Hair_2 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Hair_Default: material=Hero_01_HairTuft_V6_Hero_V6_Hair_3 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Body_Skin: material=skin_WarmSkin (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Body_Skin: material=skin_MatteCloth (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Body_Skin: material=Hero neck skin V6 (V6 kit) shader=Universal Render Pipeline/Lit queue=2000 surface=0 alphaClip=0
+Runtime visible triangles (including procedural eyes/prop/occluder)=52809
+SOCKET Hero_01_Mixamo_Bind/Hero_01_Rig/Root/Hips/Spine/Chest/Shoulder.R/UpperArm.R/LowerArm.R/Hand.R/Hero_Racket_GripSocket/Racket
+SOCKET Hero_01_Mixamo_Bind/Slot_Shirt/Top
+SOCKET Hero_01_Mixamo_Bind/Slot_Shorts/Bottom
+SOCKET Hero_01_Mixamo_Bind/Slot_Shoes/Shoes
+SOCKET Hero_01_Mixamo_Bind/Slot_Hat/Visor
+SOCKET Hero_01_Mixamo_Bind/Slot_Hair/Hair

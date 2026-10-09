@@ -1,0 +1,127 @@
+{
+  "gate": "MALE_FORM FAIL",
+  "threshold": 0.02,
+  "authority": "male_body_bald.jpg front/back only",
+  "measurements": [
+    {
+      "view": "bald_front",
+      "difference_pixels": 2855,
+      "union_pixels": 74991,
+      "error": 0.03807123521489245,
+      "unity_plate_error": 0.0390625,
+      "blender_unity_error": 0.0062433420083873835,
+      "target_sha256": "520a0b3722ea06aa3f57de4a29dc5fed6ebb141de072a683869937e632649594",
+      "render_sha256": "b34f5aefd389264d1ea8e47bf24491938aae2394b02a6db8cbdb044cacdd7313",
+      "unity_mask_sha256": "0ca61bab25477b58c6ab622d2e1900eb855fe945a8a3d2ed1e10c9547b47099d",
+      "camera": {
+        "name": "bald_front",
+        "file": "male_body_bald.jpg",
+        "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+        "roi": [
+          105,
+          51,
+          604,
+          659
+        ],
+        "centre_x": 353.0,
+        "sole_y": 654,
+        "height_pixels": 593,
+        "metres_per_pixel": 0.0028667790893760537,
+        "angle_degrees": 0,
+        "foreground_pixels": 73430,
+        "bbox": [
+          116,
+          59,
+          591,
+          652
+        ]
+      }
+    },
+    {
+      "view": "bald_back",
+      "difference_pixels": 2754,
+      "union_pixels": 74171,
+      "error": 0.03713041485216594,
+      "unity_plate_error": 0.0369782915518516,
+      "blender_unity_error": 0.006194956512225808,
+      "target_sha256": "bd9ebba965727696c8180062ef647b5ef1926b2ae347106cd62f13d48a735a64",
+      "render_sha256": "d3a7e630804e40efa3ec3ddca0de308961085e3dcc60068341a92fd3fbc4ca5d",
+      "unity_mask_sha256": "c28e7cc0f8415b9d0f784ecc95c2257a1dddc377350f46814292b87547335262",
+      "camera": {
+        "name": "bald_back",
+        "file": "male_body_bald.jpg",
+        "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+        "roi": [
+          675,
+          51,
+          1160,
+          655
+        ],
+        "centre_x": 915.75,
+        "sole_y": 651,
+        "height_pixels": 589,
+        "metres_per_pixel": 0.0028862478777589135,
+        "angle_degrees": 180,
+        "foreground_pixels": 72916,
+        "bbox": [
+          683,
+          61,
+          1148,
+          649
+        ]
+      }
+    }
+  ],
+  "shoulders": "Broad deltoid shelf locally faired; rounded neck-to-shoulder-to-upper-arm transition, no peaked horns in the front/back proof.",
+  "waist": "Flank ridge softened and waist depth tapered; no spare-tire shelf in the new front/back/three-quarter proof.",
+  "source_verification": {
+    "saved_blender_and_fbx_verification": "PASS",
+    "vertices": 24578,
+    "triangles": 49176,
+    "metres": true,
+    "height_metres": 1.7011708782520145,
+    "body_origin_unchanged": true,
+    "topology_unchanged": true,
+    "cameras_and_origins_unchanged": true,
+    "head_vertices_unchanged": true,
+    "packed_reference_images": 3,
+    "hair": false,
+    "face_polish": false,
+    "female_work": false,
+    "independent_fbx_reimport_maximum_coordinate_error_metres": 2.7939677238464355e-07,
+    "source_sha256": "d6aa844afce8ae8ac2d9cdb9135d38f00fcdc1cc16980da8e822e66cb54490b4",
+    "fbx_sha256": "5abca8c16afdeee7b1397249e1de53766a5eee7a86ce4804af60b3e0a7ff4494"
+  },
+  "coordinate_edits": {
+    "method": "Regional Taubin vertex fairing at neck/shoulder/upper arm and waist; slight waist depth taper; smooth shared lateral body/limb contour refinements and terminal hand/sole adjustments. Existing topology and head coordinates preserved.",
+    "changed_vertices": 22158,
+    "maximum_displacement_metres": 0.029285339097825873,
+    "shoulder_changed_vertices": 6288,
+    "waist_changed_vertices": 3360,
+    "head_vertices_unchanged": true,
+    "height_metres": 1.7011708782187271,
+    "primary_contour_refinement": "Shared front/back lateral envelopes (front 0.557, back 0.443), separately for left and right, with continuous vertex displacement; no target/camera changes.",
+    "terminal_contour_revision": "Existing hand tips extended by up to 6.9 mm; terminal sole rows raised by up to 2.4 mm, all with smooth fades. Object origin unchanged."
+  },
+  "reference_conflict": {
+    "authority": [
+      "bald_front",
+      "bald_back"
+    ],
+    "unchanged_masks": true,
+    "unchanged_cameras": true,
+    "method": "Exact intersection/union of source pixel cells in world space under frozen camera scale/origin; back reflected into the same X/Z projection. No candidate mesh used. The contact image uses nearest source pixels for display only.",
+    "continuous_world_space_reference_distance": 0.06247885628516998,
+    "continuous_world_space_minimax_lower_bound": 0.03123942814258499,
+    "native_pixel_gate_caveat": "The delivered gate is still measured separately at each native raster, alpha >127. The continuous bound explains the conflicting outlines; native sampling introduces subpixel boundary quantization.",
+    "front_area_metres_squared": 0.6034787529610491,
+    "back_area_metres_squared": 0.6074214014141551,
+    "union_metres_squared": 0.6249739045704205,
+    "mask_sha256": {
+      "bald_front": "520a0b3722ea06aa3f57de4a29dc5fed6ebb141de072a683869937e632649594",
+      "bald_back": "bd9ebba965727696c8180062ef647b5ef1926b2ae347106cd62f13d48a735a64"
+    }
+  },
+  "unity_fbx_sha256": "5abca8c16afdeee7b1397249e1de53766a5eee7a86ce4804af60b3e0a7ff4494",
+  "unity_prefab_sha256": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338"
+}

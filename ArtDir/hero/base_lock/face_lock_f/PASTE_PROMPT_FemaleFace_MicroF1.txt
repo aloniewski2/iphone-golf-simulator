@@ -1,0 +1,77 @@
+PASTE PROMPT — CHAT 6 / 8 — Female HeroBase MicroF1 FACE (head + neck)
+=====================================================================
+Copy everything below into a NEW Claude/Codex chat (Sonnet 5.5 max). Blender MCP OK if live.
+
+---
+
+You are building the FEMALE HeroBase head + neck to match face_lock_f EXACTLY. This is NOT the male head re-scaled. Bald only. No hair, clothes, collar, rig, Mixamo, Animator.
+
+PARALLEL SAFETY (MANDATORY):
+- Own ONLY: female head+neck on HeroBase_Female.blend. 0 verts below the neck weld, 0 hands/body/legs.
+- Never touch the male blend/FBX or ArtDir/hero/base_lock/face_lock/ (male).
+- Work under work/female-micro-f1-head/. Install into the ArtDir blend only when no other chat is installing.
+- If any SHA mismatches, STOP and report.
+
+PRECONDITION: ArtDir/hero/base_lock/face_lock_f/FACE_SPEC.md exists (chat 5 delivered). If missing → STOP, say "wait for chat 5".
+
+START BLEND — VERIFY SHA BEFORE EDIT:
+ArtDir/hero/base_lock/blender/HeroBase_Female.blend
+SHA-256 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd
+Run: shasum -a 256 ArtDir/hero/base_lock/blender/HeroBase_Female.blend
+Different hash → STOP and report.
+
+READ FIRST (in order):
+1) AGENTS.md + art-bible.md
+2) ArtDir/hero/base_lock/face_lock_f/FACE_SPEC.md   ← every line is binary
+3) ArtDir/hero/base_lock/face_lock_f/PROCESS_FaceMatch.md
+4) ArtDir/hero/base_lock/face_lock_f/SHEET_all_face_angles.png, SHEET_head_detail_6.png, SHEET_multiangle_heads.png
+5) ArtDir/hero/base_lock/face_lock_f/SHEET_female_vs_male_contrast.png  (what NOT to copy)
+6) ArtDir/hero/base_lock/face_lock/PROCESS_FaceMatch.md (male pipeline, same method)
+
+AUTHORITY (exact reference):
+ArtDir/hero/base_lock/face_lock_f/01–16 crops + sheets
+ArtDir/hero/base_lock/female_head_detail.jpg
+ArtDir/hero/base_lock/female_body_bald.jpg
+ArtDir/hero/base_lock/female_multiangle_body.jpg
+Crops 09–16 are ~90 px tall and soft: use for angle/placement only; take detail from 01–08.
+REJECT: preview/face_example/ and the male face_lock crops as likeness.
+
+METHOD (same as male Micro1h/1i):
+- Densify HEAD ONLY to ~2–4 mm spacing, OR welded nose block + ear shells (Path A / B in PROCESS_FaceMatch.md)
+- Mandatory loops: alae/nostril · lids · mouth · jaw→ear · helix+concha
+- No displacement / Face_F sticker volume. Paint layers (iris, brow, lash line, lip tint, blush) are decoration only.
+- Hair, if ever added, is a separate mesh and must never supply scalp, ears, face or neck.
+- TRI budget: document head tris before/after; densify OK with a note; flag if total > ~60k.
+
+WHAT MAKES HER HER (from plates):
+- Heart/egg face, narrow rounded chin, soft jaw, round firm cheeks, no jowls, no stubble
+- Soft brow ARCH (no male shelf); dark-brown medium-thick arched brows with tapered tails
+- Large dark-brown eyes, big white specular, dark upper lash line with a small outer wing
+- Small slim nose, rounded tip very slightly upturned, tip well above the lip
+- Small closed slight smile, lower lip a bit fuller, faint philtrum
+- Ears stand out from the head (full outline both sides in front view), helix + concha readable
+- Slender smooth neck, NO Adam's apple, slight forward lean; head ~1/6 of body height
+- Light warm peach skin (lighter/pinker than male tan)
+
+ORDER OF WORK:
+Phase 0 verify SHA + snapshot (head tris, mean edge length, neck-weld ring positions, sil %).
+Phase 1 topology + loops. Phase 2 forms: dome/forehead → jaw/chin/cheeks → eye sockets/lids → nose → ears → mouth → neck.
+Phase 3 overlay all 16 crops. Phase 4 regression (below-neck 0 moved, sil ≤5.0 % front+back, male untouched). Phase 5 export + Unity.
+Push plate-vs-now images every ~15–20 min on long runs.
+
+HARD GATES (any fail = GATE FAIL):
+OVERALL_LIKENESS, FEMALE_READ, FAIL_MALE_HEAD, FAIL_WRONG_LIKENESS, every FACE_SPEC line, NO_STICKER_VOLUME, TOPO_DENSITY, MANDATORY_LOOPS, EAR_STANDOFF, NO_ADAMS_APPLE, BODY_BELOW_NECK (0 verts), SIL_BALD ≤ 5.0 % front + back, NO_HAIR_MESH, COLLAR_OUT_OF_SCOPE.
+"Closer than before" without plate identity = FAIL. Judge OVERALL_LIKENESS on UNITY captures at arm's length vs face_lock_f.
+
+DELIVER:
+- Female blend (work/ → install) + Female FBX → Unity HeroBase_Female (female paths only; do not touch male)
+- ArtDir/hero/base_lock/proof/02_match_f_head.png  (plate vs mesh, crops 01–16)
+- ArtDir/hero/base_lock/proof/03_unity_f.png       (Unity head close-ups, same angles)
+- ArtDir/hero/base_lock/proof/FEMALE_HEAD_RESULTS.md (every spec line PASS/FAIL, tri/edge-length report, weld seams)
+- ArtDir/hero/base_lock/proof/female-microf1-checks.json
+
+REPLY ONLY:
+GATE: FEMALE_HEAD PASS
+or
+GATE: FEMALE_HEAD FAIL
+<failed lines only>

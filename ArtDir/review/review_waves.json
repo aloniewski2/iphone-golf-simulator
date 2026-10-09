@@ -1,0 +1,313 @@
+{
+ "build": "2026-09-28 waves",
+ "segments": [
+  {
+   "type": "title",
+   "title": "Review \u00b7 2026-09-28 waves",
+   "lines": [
+    "New haircuts: Bald, Buzz cut, Waves (360 waves)",
+    "Found in my reviews and fixed: bald white in game; buzz/waves black blob; neck shards; yellow hat liner; hats floating / too wide on short cuts; floating eyebrows",
+    "Rivals: Dex waves, Bruno buzz, Viktor bald",
+    "Automated runs are muted"
+   ],
+   "seconds": 4
+  },
+  {
+   "type": "video",
+   "src": "review/waves/intro.mp4",
+   "title": "Match intro (as played)",
+   "note": "drone \u2192 rival \u2192 you \u2192 umpire \u2192 swoop",
+   "from": 0,
+   "seconds": 15.4
+  },
+  {
+   "type": "video",
+   "src": "review/waves/intro.mp4",
+   "title": "Rival intro, close",
+   "note": "slow \u00d70.5",
+   "from": 5.4,
+   "seconds": 7,
+   "rate": 0.5,
+   "zoom": {
+    "x": 0.5,
+    "y": 0.45,
+    "scale": 1.9
+   }
+  },
+  {
+   "type": "video",
+   "src": "review/waves/intro.mp4",
+   "title": "Player intro, close",
+   "note": "slow \u00d70.5",
+   "from": 9.2,
+   "seconds": 7,
+   "rate": 0.5,
+   "zoom": {
+    "x": 0.5,
+    "y": 0.45,
+    "scale": 1.9
+   }
+  },
+  {
+   "type": "video",
+   "src": "review/waves/intro.mp4",
+   "title": "Rally",
+   "note": "gameplay camera",
+   "from": 16.5,
+   "seconds": 20
+  },
+  {
+   "type": "video",
+   "src": "review/waves/intro.mp4",
+   "title": "Rally, near player",
+   "note": "slow \u00d70.5 zoom",
+   "from": 20,
+   "seconds": 10,
+   "rate": 0.5,
+   "zoom": {
+    "x": 0.5,
+    "y": 0.75,
+    "scale": 1.8
+   }
+  },
+  {
+   "type": "grid",
+   "title": "In game: every haircut, boy, no hat / visor",
+   "note": "Ready, 3/4",
+   "images": [
+    "review/waves/hairfit_unity_boy_Swept_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Ponytail_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Bob_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Long_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Curly_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Bald_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Buzz_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Waves_None_ready_34.png",
+    "review/waves/hairfit_unity_boy_Swept_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Ponytail_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Bob_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Long_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Curly_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Bald_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Buzz_Visor_ready_34.png",
+    "review/waves/hairfit_unity_boy_Waves_Visor_ready_34.png"
+   ],
+   "labels": [
+    "boy_Swept_None_ready_34",
+    "boy_Ponytail_None_ready_34",
+    "boy_Bob_None_ready_34",
+    "boy_Long_None_ready_34",
+    "boy_Curly_None_ready_34",
+    "boy_Bald_None_ready_34",
+    "boy_Buzz_None_ready_34",
+    "boy_Waves_None_ready_34",
+    "boy_Swept_Visor_ready_34",
+    "boy_Ponytail_Visor_ready_34",
+    "boy_Bob_Visor_ready_34",
+    "boy_Long_Visor_ready_34",
+    "boy_Curly_Visor_ready_34",
+    "boy_Bald_Visor_ready_34",
+    "boy_Buzz_Visor_ready_34",
+    "boy_Waves_Visor_ready_34"
+   ],
+   "cols": 8,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "In game: every haircut, girl, no hat / visor",
+   "note": "Ready, 3/4",
+   "images": [
+    "review/waves/hairfit_unity_girl_Swept_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Ponytail_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Bob_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Long_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Curly_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Bald_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Buzz_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Waves_None_ready_34.png",
+    "review/waves/hairfit_unity_girl_Swept_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Ponytail_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Bob_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Long_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Curly_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Bald_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Buzz_Visor_ready_34.png",
+    "review/waves/hairfit_unity_girl_Waves_Visor_ready_34.png"
+   ],
+   "labels": [
+    "girl_Swept_None_ready_34",
+    "girl_Ponytail_None_ready_34",
+    "girl_Bob_None_ready_34",
+    "girl_Long_None_ready_34",
+    "girl_Curly_None_ready_34",
+    "girl_Bald_None_ready_34",
+    "girl_Buzz_None_ready_34",
+    "girl_Waves_None_ready_34",
+    "girl_Swept_Visor_ready_34",
+    "girl_Ponytail_Visor_ready_34",
+    "girl_Bob_Visor_ready_34",
+    "girl_Long_Visor_ready_34",
+    "girl_Curly_Visor_ready_34",
+    "girl_Bald_Visor_ready_34",
+    "girl_Buzz_Visor_ready_34",
+    "girl_Waves_Visor_ready_34"
+   ],
+   "cols": 8,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "In game: new cuts \u00d7 every headwear, mid-swing side",
+   "note": "forehand contact",
+   "images": [
+    "review/waves/hairfit_unity_boy_Bald_None_fh_side.png",
+    "review/waves/hairfit_unity_boy_Bald_Visor_fh_side.png",
+    "review/waves/hairfit_unity_boy_Bald_Cap_fh_side.png",
+    "review/waves/hairfit_unity_boy_Bald_Sweatband_fh_side.png",
+    "review/waves/hairfit_unity_boy_Buzz_None_fh_side.png",
+    "review/waves/hairfit_unity_boy_Buzz_Visor_fh_side.png",
+    "review/waves/hairfit_unity_boy_Buzz_Cap_fh_side.png",
+    "review/waves/hairfit_unity_boy_Buzz_Sweatband_fh_side.png",
+    "review/waves/hairfit_unity_boy_Waves_None_fh_side.png",
+    "review/waves/hairfit_unity_boy_Waves_Visor_fh_side.png",
+    "review/waves/hairfit_unity_boy_Waves_Cap_fh_side.png",
+    "review/waves/hairfit_unity_boy_Waves_Sweatband_fh_side.png"
+   ],
+   "labels": [
+    "boy_Bald_None_fh_side",
+    "boy_Bald_Visor_fh_side",
+    "boy_Bald_Cap_fh_side",
+    "boy_Bald_Sweatband_fh_side",
+    "boy_Buzz_None_fh_side",
+    "boy_Buzz_Visor_fh_side",
+    "boy_Buzz_Cap_fh_side",
+    "boy_Buzz_Sweatband_fh_side",
+    "boy_Waves_None_fh_side",
+    "boy_Waves_Visor_fh_side",
+    "boy_Waves_Cap_fh_side",
+    "boy_Waves_Sweatband_fh_side"
+   ],
+   "cols": 4,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "In game: new cuts, back",
+   "note": "Ready",
+   "images": [
+    "review/waves/hairfit_unity_boy_Bald_None_ready_back.png",
+    "review/waves/hairfit_unity_boy_Bald_Visor_ready_back.png",
+    "review/waves/hairfit_unity_boy_Bald_Cap_ready_back.png",
+    "review/waves/hairfit_unity_boy_Bald_Sweatband_ready_back.png",
+    "review/waves/hairfit_unity_boy_Buzz_None_ready_back.png",
+    "review/waves/hairfit_unity_boy_Buzz_Visor_ready_back.png",
+    "review/waves/hairfit_unity_boy_Buzz_Cap_ready_back.png",
+    "review/waves/hairfit_unity_boy_Buzz_Sweatband_ready_back.png",
+    "review/waves/hairfit_unity_boy_Waves_None_ready_back.png",
+    "review/waves/hairfit_unity_boy_Waves_Visor_ready_back.png",
+    "review/waves/hairfit_unity_boy_Waves_Cap_ready_back.png",
+    "review/waves/hairfit_unity_boy_Waves_Sweatband_ready_back.png"
+   ],
+   "labels": [
+    "boy_Bald_None_ready_back",
+    "boy_Bald_Visor_ready_back",
+    "boy_Bald_Cap_ready_back",
+    "boy_Bald_Sweatband_ready_back",
+    "boy_Buzz_None_ready_back",
+    "boy_Buzz_Visor_ready_back",
+    "boy_Buzz_Cap_ready_back",
+    "boy_Buzz_Sweatband_ready_back",
+    "boy_Waves_None_ready_back",
+    "boy_Waves_Visor_ready_back",
+    "boy_Waves_Cap_ready_back",
+    "boy_Waves_Sweatband_ready_back"
+   ],
+   "cols": 4,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "Locker: new cuts \u00d7 every headwear",
+   "note": "3/4",
+   "images": [
+    "review/waves/hairfit_Bald_None_34.png",
+    "review/waves/hairfit_Bald_Visor_34.png",
+    "review/waves/hairfit_Bald_Cap_34.png",
+    "review/waves/hairfit_Bald_Sweatband_34.png",
+    "review/waves/hairfit_Buzz_None_34.png",
+    "review/waves/hairfit_Buzz_Visor_34.png",
+    "review/waves/hairfit_Buzz_Cap_34.png",
+    "review/waves/hairfit_Buzz_Sweatband_34.png",
+    "review/waves/hairfit_Waves_None_34.png",
+    "review/waves/hairfit_Waves_Visor_34.png",
+    "review/waves/hairfit_Waves_Cap_34.png",
+    "review/waves/hairfit_Waves_Sweatband_34.png"
+   ],
+   "labels": [
+    "Bald_None_34",
+    "Bald_Visor_34",
+    "Bald_Cap_34",
+    "Bald_Sweatband_34",
+    "Buzz_None_34",
+    "Buzz_Visor_34",
+    "Buzz_Cap_34",
+    "Buzz_Sweatband_34",
+    "Waves_None_34",
+    "Waves_Visor_34",
+    "Waves_Cap_34",
+    "Waves_Sweatband_34"
+   ],
+   "cols": 4,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "Locker: new cuts, side / back",
+   "note": "",
+   "images": [
+    "review/waves/hairfit_Bald_None_side.png",
+    "review/waves/hairfit_Bald_None_back.png",
+    "review/waves/hairfit_Bald_Visor_side.png",
+    "review/waves/hairfit_Bald_Visor_back.png",
+    "review/waves/hairfit_Buzz_None_side.png",
+    "review/waves/hairfit_Buzz_None_back.png",
+    "review/waves/hairfit_Buzz_Visor_side.png",
+    "review/waves/hairfit_Buzz_Visor_back.png",
+    "review/waves/hairfit_Waves_None_side.png",
+    "review/waves/hairfit_Waves_None_back.png",
+    "review/waves/hairfit_Waves_Visor_side.png",
+    "review/waves/hairfit_Waves_Visor_back.png"
+   ],
+   "labels": [
+    "Bald_None_side",
+    "Bald_None_back",
+    "Bald_Visor_side",
+    "Bald_Visor_back",
+    "Buzz_None_side",
+    "Buzz_None_back",
+    "Buzz_Visor_side",
+    "Buzz_Visor_back",
+    "Waves_None_side",
+    "Waves_None_back",
+    "Waves_Visor_side",
+    "Waves_Visor_back"
+   ],
+   "cols": 4,
+   "seconds": 4
+  },
+  {
+   "type": "grid",
+   "title": "Locker phone hair tab",
+   "note": "",
+   "images": [
+    "review/waves/extra_Locker_phone_hair_tab.png"
+   ],
+   "labels": [
+    "Locker_phone_hair_tab"
+   ],
+   "cols": 1,
+   "seconds": 4
+  }
+ ]
+}

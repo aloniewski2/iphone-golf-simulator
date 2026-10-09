@@ -1,0 +1,81 @@
+PASTE — NEW HEROES REPLACE THE OLD ONES · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line. The new bodies and the new clips become what the game shows. The old Hero01 must not appear.
+
+---
+
+Replace the visible character everywhere it shows up: the match (player and rival), the locker, and every campaign opponent. Play the new match clips on those bodies. Do not retarget the new clips onto the old Hero01 skeleton. Do not keep Hero01 on screen as a fallback.
+
+BODIES
+- Male: work/match-anim-set/export/HeroBase_Male_MatchAnims.blend
+  Source body SHA d6c4dcfb1150853a8802a8dc7501aa64066adb8b2734c14a4d6ed8e82dada781
+- Female: work/match-anim-set/export/HeroBase_Female_MatchAnims.blend
+  Source body SHA a1d73a334f4dc18052db0582df6b4b54b1df166d9a3531ab700ee114e86d2ac1
+- Use the mesh and the skeleton in those blends. Do not edit the mesh. Do not install over ArtDir.
+- Player sex still comes from the locker. Rival sex still comes from TennisRoster.Female. Milo, Tama, Dex, Bruno, Jax, Viktor are male. Suki, Lina, Rosa, Nadia are female.
+
+CLIPS
+Already exported at work/match-anim-set/export/fbx/ as Male_<name>.fbx and Female_<name>.fbx.
+Play each on its own skeleton. Contact time is seconds from the start of that clip. Use the male time on the male and the female time on the female when they differ. These are the male times:
+ReadyIdle loop. SplitToForehand 0.60. SplitToBackhand 0.60. RecoverCenter 0.80.
+Forehand contact 0.667. ForehandOpen 0.533. ForehandWide 0.867. ForehandShort 0.467.
+Backhand 0.633. BackhandWide 0.767. SliceApproach 0.500. Serve 0.900. Return 0.433.
+VolleyForehand 0.300. VolleyBackhand 0.300. Overhead 0.733.
+The MATCH_ANIM_BUILD fail is only ArtDir/hero/base_lock/parallel_prompts/16_TENNIS_SHOES_FIT.txt, which is not an animation. Use the clips.
+
+WIRE THE MATCH
+TennisHeroSetup currently loads Resources Tennis/Hero/Hero_01_Tennis and names it Hero01 for both the player and the rival. Change that so the player and the rival are the new male or female.
+HeroTennisDriver is a visual puppet. Keep it that way. TennisActor still owns movement, contact, and scoring. Do not change ball physics.
+Map the swings:
+- ready and idle -> ReadyIdle
+- the normal forehand -> Forehand
+- a wide forehand, only if the actor already marks the ball as wide -> ForehandWide
+- a short ball, only if the actor already marks it short -> ForehandShort
+- do not invent a new wide/short classifier
+- backhand -> Backhand. BackhandWide only if a wide-backhand flag already exists
+- serve -> Serve. return -> Return
+- forehand volley -> VolleyForehand. backhand volley -> VolleyBackhand
+- smash -> Overhead
+- a net approach that already exists -> SliceApproach, one handed
+Land the clip's contact frame on the actor's gameplay contact, the way the driver already does.
+There are no new clips for run, walk, celebrate, sad, match win, or match lose. Do not play the old Hero_* clips for those. Hold ReadyIdle and list them as MISSING in the note.
+
+LOCKER AND OPPONENTS
+The locker and the campaign must show these same two meshes, not Hero01 and not the old Resources/Tennis/Opponents bodies.
+TennisCustomization loads Resources Tennis/Customization/PlayerMale and PlayerFemale. Point those at the new meshes.
+TennisRoster keeps every key, style, rung, and boss flag. Skin may tint the new body material. Do not put old HeroKit hair, visors, caps, or sweatbands on the new head. Those were built for the old head. The new heroes stay bald.
+Do not put the worn tennis kit on them. The shoes do not fit these feet, and the polo and bottoms were fit to older bodies. Body and the classic racket only.
+Racket: work/classic-tennis-racket/export/Racket_Classic.blend on Hand_Racket. Not the old RacketOnHero proofs. Roster racket colors may tint that racket. They may not swap in a different racket mesh.
+GolfArcade/Unity/CharacterModelPreview.swift is the locker mirror. It must not keep showing the old baked hero. If it only tints the old mesh, switch the preview to the new mesh. Do not redesign the locker screens.
+
+REMOVE THE OLD LOOK
+In Play mode, the locker, and a campaign match, no Hero01 mesh and no old Hero_* clip may show. Search for Hero_01_Tennis, Hero01, and Resources/Tennis/Opponents. Unhook every live reference.
+Do not mass-delete ArtDir or the old Hero01 asset folder in this pass. Leave unused files on disk and list any reference that still loads one.
+
+DO NOT
+- Edit the match-anim blends or re-key a swing.
+- Change scoring, ball flight, or roster difficulty.
+- Write a new shoe or a new outfit in this pass.
+
+PROOF
+Play mode captures, game camera:
+- Locker, male and female.
+- A campaign match against Nadia (female) and one against Viktor (male). Player is the other sex from the rival, so both meshes are on court.
+- One rally that shows a serve, a forehand, and a backhand, with the clip name in the corner.
+Save under work/hero-mainstay/proof/.
+
+GATES
+NO_OLD_ON_SCREEN — Hero01 does not render in the locker, the match, or a campaign rally
+BOTH_SEXES — male mesh and female mesh both appear, chosen by locker sex and TennisRoster.Female
+NEW_CLIPS — serve, forehand, backhand, volley, and overhead are the new FBX clips, on the new skeleton
+CONTACT_LANDS — clip contact frame meets the actor's gameplay contact
+BALL_UNCHANGED — ball and scoring code are untouched
+ROSTER_KEPT — the ten rival keys, styles, and rungs are unchanged
+NO_OLD_HAIR — no HeroKit hair or hats on the new head
+NO_BAD_SHOES — worn kit shoes are not on the body
+MISSING_LISTED — run, walk, and emotes are named as missing, not filled with old clips
+SWIFT_LOCKER — CharacterModelPreview no longer shows the old hero
+
+REPLY ONLY:
+GATE: HERO_MAINSTAY PASS
+or FAIL with failed lines only.

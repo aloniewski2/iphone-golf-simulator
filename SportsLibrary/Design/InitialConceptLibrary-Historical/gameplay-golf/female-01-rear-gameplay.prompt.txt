@@ -1,0 +1,16 @@
+Use case: stylized-concept. Create a polished 3D sports GAMEPLAY animation storyboard: landscape 3:2, 4 columns by 3 rows, 12 clearly separated panels with short numbered captions. STRICT IDENTITY reference is attached: use the female character, oversized blank rounded-square tan head, fitted black T-shirt, defined waist and fuller hip silhouette, loose black trousers, white sneakers, rounded mitten hands. Preserve compact proportions, head size, and clothing. No eyes, nose, mouth, hair, logos or new outfit. Title "Golf — third-person gameplay — female".
+CAMERA AND ENVIRONMENT: Original bright stylized golf fairway, green and flag ahead, blue sky. Fixed camera BEHIND golfer, slightly above shoulder height. Golfer in lower-left/center foreground with BACK to viewer; fairway target recedes up the frame. Golf ball and clubhead visible ahead of feet. The target direction is away from camera. First 9 panels driver swing, final 3 putter on green. Keep camera behind the player even as torso rotates. No front-facing camera.
+Every panel shows the SAME fixed third-person rear camera and scene framing, full main character including both feet, all equipment in bounds. The viewer is behind the player looking in the direction of play. No frontal character presentations. Clear foreground player silhouette and uncluttered target visibility. Original resort-sports visual style, no borrowed game UI or logos. Panels in reading order:
+1. Address behind teed ball
+2. Takeaway
+3. Half backswing
+4. Top of backswing
+5. Downswing
+6. Impact at ball
+7. Extension toward fairway
+8. High follow-through
+9. Balanced finish watching flight
+10. Putting setup on green
+11. Putting contact
+12. Watch ball roll toward cup
+One clear pose per panel; no trails, ghost limbs or motion blur. One ball when relevant. Preserve simple mittens rather than anatomical fingers. These are gameplay keyframe concepts.

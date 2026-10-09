@@ -1,0 +1,30 @@
+{
+  "status": "INSTALLED bounded rollout18; representative actual/physics gate pending",
+  "files": {
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "b58b01aebd0598cf89c1dd6edb7e2909a34afd0d827c45e712e15e3f4dcd61a3",
+    "Unity/Assets/Scripts/Course/GolfCourseLook.cs": "d79d06355660f3200d839c150e71dca3f79584b63ed2c0cca10602b936ab29f4"
+  },
+  "enabledHoles": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    15,
+    19,
+    20
+  ],
+  "radiusMeters": 12,
+  "allocation": {
+    "near": 48,
+    "mid": 96,
+    "total": 640,
+    "submissions": 3,
+    "maximumDecorativeTriangles": 542720
+  },
+  "sourceGeometry": "Dense15 FBX/atlases/shaders/palette unchanged",
+  "ownership": "Material/render-instance only; ground queries/collider/region/obstacle data untouched",
+  "excluded": "Meadow adapter,17/18/16/21\u201323, moving patches, fairway-wide physical blades and greens not implemented",
+  "hook": "CourseLook.FinishModel after legacy fringe dressing and before visual batching;12 earlier ResortDress hook idempotent."
+}

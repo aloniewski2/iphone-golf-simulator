@@ -1,0 +1,11 @@
+task created 96f66462-e978-41ca-9f23-7a05965f8451 (@hero-v6)
+multiview_to_model · queued
+multiview_to_model · running 7% · 96f66462
+multiview_to_model · running 20% · 96f66462
+multiview_to_model · running 31% · 96f66462
+multiview_to_model · running 48% · 96f66462
+multiview_to_model · running 73% · 96f66462
+multiview_to_model · success 100% · 96f66462
+✓ multiview_to_model · 96f66462-e978-41ca-9f23-7a05965f8451 · 60 credits
+downloading artifacts…
+✓ artifacts saved to model/tripo-out/hero-v6-96f66462

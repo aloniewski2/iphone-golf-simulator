@@ -31,8 +31,21 @@ struct SyntheticGolfer {
     var framesPerSecond = 30.0
     /// Image-space jitter of a real tracker, in normalized units (standard deviation).
     var jitter = 0.0025
+    /// Seed for that jitter; vary it to sample the spread of many takes of the same swing.
+    var jitterSeed: UInt64 = 12345
     /// The 3D body pose runs on every third frame, like the tracker.
     var orientationEvery = 3
+    /// How far back the swing goes, as a fraction of the authored top: 1 puts the hands over the
+    /// trail shoulder like a tour player, 0.75 stops at shoulder height like most amateurs,
+    /// 0.5 is a half swing. Putts are unaffected.
+    var backswing = 1.0
+    /// Speed of the whole motion relative to the authored, tour-like timing: 0.7 is the
+    /// leisurely tempo of a weekend golfer, 1.2 a whip.
+    var tempo = 1.0
+    /// Metres the hands stay high through the downswing before diving at the ball: the
+    /// over-the-top move that steepens the attack. 0 retraces the backswing; negative drops
+    /// the hands inside for a shallow, in-to-out delivery.
+    var overTheTop = 0.0
 
     // Proportions of a 1.78 m golfer.
     private static let hipHeight: Float = 0.93
@@ -46,7 +59,7 @@ struct SyntheticGolfer {
     private static let stanceHalfWidth: Float = 0.22
 
     /// Seconds from the first swing frame to the last; the golfer holds the finish after it.
-    var swingDuration: Double { stroke == .full ? Self.fullSwing.last!.time : Self.putt.last!.time }
+    var swingDuration: Double { keys.last!.time }
     var duration: Double { addressHold + swingDuration + 0.8 }
 
     /// One moment of the swing: where the body is and how it is turned.
@@ -82,6 +95,11 @@ struct SyntheticGolfer {
         Key(time: 1.75, shoulderTurn: -112, hipTurn: -92, hands: simd_float3(-0.08, 1.70, -0.24), spineTilt: 8, weightShift: -0.10, squat: 0, trailHeel: 0.12)
     ]
 
+    /// When the authored full swing reaches the ball; keys before it shrink with `backswing`.
+    private static let fullSwingImpactTime = 1.24
+    /// The top of the authored full swing; downswing keys between here and impact take `overTheTop`.
+    private static let fullSwingTopTime = 1.0
+
     /// A shoulder-rocked putt: no hip turn, no wrist hinge, the hands sweep a short arc.
     static let putt: [Key] = [
         Key(time: 0.00, shoulderTurn: 0, hipTurn: 0, hands: simd_float3(0.40, 0.76, -0.02), spineTilt: 34, weightShift: 0, squat: 0, trailHeel: 0),
@@ -93,9 +111,31 @@ struct SyntheticGolfer {
 
     // MARK: - Body
 
+    /// The authored timeline adjusted to this golfer: a shorter `backswing` blends the keys up to
+    /// mid-downswing toward address (the finish is the same), `tempo` scales every key's time.
+    private var keys: [Key] {
+        let base = stroke == .full ? Self.fullSwing : Self.putt
+        let address = base[0]
+        let fraction = min(max(backswing, 0.2), 1.2)
+        let rate = min(max(tempo, 0.3), 2)
+        return base.map { key in
+            var adjusted = key
+            adjusted.time = key.time / rate
+            if stroke == .full, key.time < Self.fullSwingImpactTime, fraction != 1 {
+                adjusted.hands = address.hands + (key.hands - address.hands) * Float(fraction)
+                adjusted.shoulderTurn = address.shoulderTurn + (key.shoulderTurn - address.shoulderTurn) * fraction
+                adjusted.hipTurn = address.hipTurn + (key.hipTurn - address.hipTurn) * fraction
+            }
+            if stroke == .full, key.time > Self.fullSwingTopTime, key.time < Self.fullSwingImpactTime {
+                adjusted.hands.y += Float(overTheTop)
+            }
+            return adjusted
+        }
+    }
+
     /// The body at `time` seconds, in the body frame, before the stance turn.
     func body(at time: Double) -> [BodyJoint: simd_float3] {
-        let key = Self.interpolate(stroke == .full ? Self.fullSwing : Self.putt, at: time - addressHold)
+        let key = Self.interpolate(keys, at: time - addressHold)
         let mirror: Float = handedness == .right ? 1 : -1
         let turn = { (degrees: Double) in simd_quatf(angle: Float(-degrees * .pi / 180) * mirror, axis: simd_float3(0, 1, 0)) }
         // Bending forward from the hips brings the chest toward the phone (+x).
@@ -216,9 +256,11 @@ struct SyntheticGolfer {
     /// the 3D request would run on.
     func frame(at time: Double, index: Int) -> PoseFrame {
         let joints = world(at: time)
-        var noise = Noise(seed: UInt64(index) &* 0x9E3779B97F4A7C15 &+ 12345)
+        var noise = Noise(seed: UInt64(index) &* 0x9E3779B97F4A7C15 &+ jitterSeed)
         var points: [BodyJoint: PosePoint] = [:]
-        for (joint, position) in joints {
+        // Fixed joint order: dictionary order varies per process and would reshuffle the noise.
+        for joint in BodyJoint.allCases {
+            guard let position = joints[joint] else { continue }
             let image = project(position)
             let confidence: Float = switch joint {
             case .leftWrist, .rightWrist: 0.86

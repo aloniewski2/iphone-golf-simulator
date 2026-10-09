@@ -1,0 +1,116 @@
+31 — EMOTE + INTRO FLUIDITY POLISH ("de-robotify") — Sol Goal Mode
+Party Sports, Unity, branch newmapsandmenus. Staged only, NO commit. Install only if every gate passes.
+Adnan's eye overrides any agent GATE PASS.
+
+THE PROBLEM
+All 6 clips read ROBOTIC: pose-to-pose, everything starts and stops on the same frame, linear-feeling
+spacing, dead holds, no settle. Target: the fluid, bouncy, cartoony read of Fortnite / Overwatch / Brawl Stars
+emotes — grounded in real motion but pushed: squash and stretch, big anticipation, overshoot and settle,
+overlapping drag. This is a POLISH pass on the existing choreography, not new choreography.
+Do NOT change what each emote is (beats, contacts, story); change HOW it moves.
+
+CLIPS (both heroes = 12 FBX), Unity/Assets/Characters/MatchHeroes/{Male,Female}/:
+  {Sex}_Emote_Spike, {Sex}_Emote_Scuba, {Sex}_Emote_Thrust, {Sex}_Intro_Wave, {Sex}_Intro_BringIt,
+  {Sex}_Intro_Pushups. Generic rig (animationType 2), one shared skeleton, in place.
+
+READ FIRST
+- work/emote-overhaul/README.md, GATE_DEFS_preregistered.md, GATE_RESULTS.md, GATE_RESULTS_r2.md, scripts/
+  (run_all2.sh, emo_clear.py, collide3.py, check_gates2.py, bake/export pipeline). REUSE this pipeline.
+- ArtDir/hero/base_lock/parallel_prompts/22_EMOTES_AND_INTRO.txt and 25_EMOTE_SCUBA_THRUST_FIX.txt
+  (what Adnan already approved per clip — those beats and contacts are LOCKED).
+
+REFERENCES (watch/read the craft, not choreography; cite which rule each change follows)
+- David Gibson, "Overwatch: How A Hero is Mei'd", GDC 2016: https://www.youtube.com/watch?v=lHevkQIZL2M
+  9:06–9:45 jump stretch/hang/squash; ~10:00 hold a little long then snap out; 10:23–10:50 go past the pose
+  then settle in chest/torso, arcs; 11:24 head left behind; 14:44 stretched limbs on fast moves; 44:18 emotes.
+- Gibson highlight-intro timelapse (blocking -> polish): https://vimeo.com/204601876
+- Fortnite squash/stretch via bone translation (spine stretch), GDC 2019: https://www.youtube.com/watch?v=tWVZ6KO4lRs (10:46)
+- Jonathan Cooper, 12 Principles in Games: https://www.linkedin.com/pulse/12-principles-animation-video-games-jonathan-cooper
+- Nicholas De Lotto, polish (head->chest->root a frame or two apart): https://www.animationmentor.com/blog/tutorial-how-to-polish-your-animation/
+- Nathaniel Seymour, overlap & follow-through (no fully flat tangents): https://www.animationmentor.com/blog/tutorial-animate-overlap-and-follow-through/
+- Shawn Kelly, moving holds / overshoot: https://www.animationmentor.com/blog/why-all-animators-need-to-master-the-moving-hold/
+- David Rosen, procedural animation, GDC 2014 (no linear blends; spring-damper easing): https://www.youtube.com/watch?v=LNidsMesxSE
+- Unity Damped Transform: https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/constraints/DampedTransform.html
+- Brawl Stars pillars ("Saturday morning cartoon" energy, one clear idea): https://www.pocketgamer.biz/5-creative-pillars-for-designing-brawlers-in-supercells-brawl-stars/
+Do NOT look up, transcribe, or copy any real-world dance routine. Polish only what's already in the clips.
+
+PHASE 1 — MEASURE THE ROBOT (no edits)
+Build work/emote-fluid/tools/fluid_audit.py (Blender, reads the baked actions or re-imported FBX at 30 fps).
+For each of the 12 clips print per-rule numbers for the checklist below and a BEFORE scorecard.
+Also render a BEFORE motion-trail sheet: world-space paths of both hands, head top, pelvis (front + side).
+
+PHASE 2 — PLAN PER CLIP
+work/emote-fluid/PLAN.md: for each clip, list its key beats (frame numbers), what's robotic (with audit
+numbers), and the exact fix per beat: where anticipation goes, which pose gets the long hold + snap exit,
+overshoot/settle, which chain offsets, where squash/stretch goes. One shared exaggeration level for all 6.
+Intros (Wave, BringIt, Pushups) get the "hero moment" treatment: clear silhouette, hold a little long, settle.
+
+PHASE 3 — POLISH (as a layer on top of the existing baked keys, scripted and rerunnable)
+work/emote-fluid/tools/fluid_pass.py — per clip, per beat, scripted curve edits (not hand-dragged), so the
+pass can be re-run after any re-bake. Techniques:
+- Chain offsets: shift trailing-bone keys (hips -> spine -> chest -> neck/head; shoulder -> elbow -> wrist)
+  by 1–2 frames on small moves, 2–4 on big ones; head leads on looks/turns, head and arms drag on
+  body-driven moves (landing, slam, thrust, push-up drive).
+- Overshoot + settle into every major pose (5–15% of the move, settle over 3–6 frames, mostly chest/torso).
+- Hold-then-snap on the key "money" poses (6–12 frames held, 2–4 frame exit).
+- Moving holds: any hold > 0.5 s keeps a chest breath + hip weight drift in the direction of last momentum.
+- Anticipation (3–8 frames counter-move) before every big action.
+- Bezier/auto-clamped easing everywhere; zero LINEAR keys on body bones; fast stops only on true impacts
+  (foot plant, racket hitting court, hands hitting floor in pushups).
+- Squash/stretch on jumps, slams and landings via spine/chest/neck TRANSLATION along the bone chain and
+  pelvis height, volume-preserving feel, range ~0.88–1.12 of rest length. NO bone scale on any bone that
+  parents a socket or prop (hands, forearms, head, feet) — racket, shoes, and future outfits must not distort.
+  No new bones.
+- Clavicles must actually animate (raise on reach/celebration, drop on settle).
+- Fingers: relax/curl overlap on hand moves (1–2 frames behind the wrist), never frozen claws.
+- Dance loops: first/last frame match in pose AND velocity.
+
+LOCKED (do not break — re-run the existing emote gates)
+- Every approved contact: nose pinch pad, racket grasp/attach/drop/pickup, racket-to-court hits, hands on
+  floor in pushups, fists-on-hips. Contact pins stay pinned; offsets apply around them.
+- Feet: no slide while planted (<= 5 mm), no floor penetration.
+- READY at both ends exactly as now (first/last 0.25 s), so blend-in/out from idle doesn't pop.
+- Body clearance: run emo_clear.py + collide3.py after the pass: forearm/hand/racket <= 12 mm behind skin
+  mid-clip, <= 20 mm in the READY edges (same as today).
+- Clip lengths unchanged unless a beat genuinely needs +/- 0.2 s; if any length changes, re-run
+  EmoteHoldCheck so the taunt hold still covers it.
+- Ownership: ONLY the 12 emote/intro FBX + metas, work/emote-fluid/, and work/emote-overhaul scripts
+  (copy before editing). Do NOT touch HeroTennisDriver.cs, Serve/locomotion clips, TennisActor,
+  TennisServeRoutine (28b/26c own them), cloth/shader files (29), lobby/Multiplayer (27), golf (15/30).
+  If 27 has exported these emotes into the lobby Rig lzfse, re-run that export step only if it's a
+  standalone Editor command; otherwise note it in the report.
+
+GATES (binary; every clip, both heroes, measured on the RE-IMPORTED FBX)
+F1  SIMULTANEITY: at every key beat, <= 2 of {pelvis, spine, chest, neck, head, L/R upper arm, L/R forearm,
+    L/R hand} reach a velocity zero-crossing on the same frame. Report the worst beat per clip.
+F2  CHAIN OFFSET: on each big move, peak angular velocity order matches the PLAN (lead -> trail), with
+    1–4 frame gaps; no two links in the same chain peak on the same frame.
+F3  NO LINEAR: 0 linear-interpolated rotation keys on body bones; no flat-tangent runs of >= 3 identical
+    values outside intended holds.
+F4  MOVING HOLDS: every hold > 0.5 s shows >= 1.5° chest or pelvis drift and the drift direction matches
+    the last momentum.
+F5  OVERSHOOT/SETTLE: every major pose in PLAN.md has a measurable overshoot (>= 5% of the move) and a
+    settle of 3–6 frames.
+F6  ANTICIPATION: every big action in PLAN.md has a >= 3-frame counter-move of pelvis or the leading limb.
+F7  ARCS: hand and head-top trails have no direction kinks > 60° between consecutive frames except at
+    planned impacts; sheet attached.
+F8  SQUASH/STRETCH: present on every jump/slam/landing in PLAN.md, within 0.88–1.12; socket-parent bones
+    unscaled (scale == 1.000 exactly on hands, forearms, head, feet, and every prop socket).
+F9  CLAVICLES: clavicle rotation range >= 6° in every clip.
+F10 ALL EXISTING EMOTE GATES still PASS (the 96-gate set from GATE_RESULTS_r2: contacts, feet, READY ends,
+    clearance, racket rules, Scuba/Thrust/Spike specifics) — print the full table.
+F11 SMOOTH: no hand/head step > 150 mm per 60 Hz frame except on planned fast swings listed in PLAN.md;
+    no wrist twist > 15°/frame.
+F12 IN-GAME: play each taunt through EmoteHoldCheck/AwardPoint and each intro at match start in a clone;
+    no pop on blend in/out (head/hand step <= 30 mm in the first and last 0.15 s); taunt not cut by the serve.
+F13 SCORECARD: BEFORE vs AFTER fluid_audit numbers for all 12 clips, every rule improved or already passing.
+F14 PROOF: work/emote-fluid/film/ — per clip per hero: BEFORE|AFTER side by side, front + game cam,
+    full + half speed, plus AFTER motion-trail sheets. Eye review for Adnan. Do not self-pass the look.
+F15 INSTALLED_EQUALS_TESTED: installed FBX/meta hashes == tested; rollback/ with originals + SHA256SUMS;
+    `git status --short` shows only owned files.
+
+INSTALL RULE
+All gates pass -> install the 12 FBX/metas, re-run F10–F12 on production, print hashes. Any fail -> install
+nothing, keep the candidate, report gate/clip/hero/frame and best next fix. No commit either way.
+
+FINAL REPORT (short): scorecard table, per-clip one-line summary of what changed, film paths, installed or not.

@@ -1,0 +1,37 @@
+PASTE — LOCKER MIRROR · NEW CHAT
+
+The match hero got a cloth and skin pass. The locker did not. It still draws flat Blinn colours from MatchHero_Male.json and MatchHero_Female.json, and the menu motion is a root spin, not a clip.
+
+Do not edit TennisCharacter.shader, TennisCloth.shader, MatchHeroLook, Serve, walk, the runs, the emotes, or the golf course. This chat only updates the Swift mirror and the locker export.
+
+Files.
+- Unity/Assets/Editor/MatchHeroLockerExport.cs writes GolfArcade/Unity/CharacterAssets/MatchHero_<Sex>.json and the .lzfse poses. Today that is positions, normals, and indices. No UVs.
+- GolfArcade/Unity/CharacterModelPreview.swift builds the SceneKit hero. MatchHero.material is diffuse plus a shininess from smoothness. Kit tints go through kitTint and kitDerive.
+- The menu motion is in the same file. configureClub(.locker) spins character.eulerAngles.y a full turn every 3.6 s. configureIdle for tennis rotates the whole character and bounces a loose sphere. The play tile loops the Forehand morph. Settings is a tiny z wobble. The idle view runs at 30 fps.
+- Look maps already exist at Unity/Assets/Resources/Tennis/HeroDetail/: Cloth_Weave.png, Skin_Soft_N.png, and Kit_<Sex>_<Part>.png. Copy the ones the mirror samples into the iOS app target. Do not load them from the Unity folder at runtime.
+
+Look.
+- Kit parts have UVs in Unity. Body, face, and racket do not. Export UVs for kit parts only.
+- On Kit_Shirt, Kit_Shorts, Kit_Sock, and the shoe upper, multiply the thread break and sample the weave normal, tiled the same way TennisCloth does. Seams stay darker.
+- Default white kit: shirt trim and the shorts band stay the authored dark (#09090A), not the shirt white. A shirt colour the player picks still derives its trim with kitDerive. Do not change that rule. Sole stays darker and rougher than the upper, and is not recolored by the shoe pick.
+- Skin: smoothness about 0.2, not 0.35. A weak soft normal, triplanar from the bind pose, because the body has no UVs. Keep it subtle. No weave on skin, eyes, or the face decals.
+- Eyes stay smoother than skin. Grip is dark and rougher than the shirt. Strings are a touch smoother than the grip, no weave.
+- SceneKit cannot run the Unity shaders. Match the result: soft grazing sheen on cloth, no small hard specular dot. FAIL if the shirt is still one flat white.
+
+Motion.
+- Stop using the character root as the animation. No full-turn spin on the locker tile. No tennis idle that twists the whole body. The loose ball may stay as a prop. It is not the hero's motion.
+- Export a short loop of <Sex>_ReadyIdle the same way the Forehand morph is exported, and play that on the locker tile and on the tennis menu idle. In place. Back to the same ready pose.
+- On the play tile, play one in-place <Sex>_Serve (the current dip-and-jump clip), then return to Ready. Do not keep looping the Forehand there.
+- Both menu views at 60 fps. Reduced motion stays a still Ready pose.
+
+Do not add emotes in this pass. Do not re-key any clip.
+
+Proof, on device or the simulator, under work/locker-mirror/proof/.
+- Male torso, female skort, one shoe, and the face, in the locker.
+- A short recording of the locker tile and the play tile. The body pose must change. The root must not yaw.
+
+GATE LOCKER_MIRROR. Every line is PASS or FAIL.
+- Kit samples the weave and the thread map. Default trim is dark. Sole is darker and rougher than the upper. A picked shirt still uses kitDerive.
+- Skin smoothness is about 0.2 with a weak normal. No weave on skin or eyes.
+- Locker tile and tennis idle play ReadyIdle. Play tile plays one Serve, then Ready. No root spin.
+- Serve FBX, walk, runs, emotes, shaders, and the course files are untouched.

@@ -1,0 +1,119 @@
+{
+  "gate": "MALE_FORM PASS",
+  "date": "2026-10-01",
+  "scope": "Micro1e chin + fingers only",
+  "lines": {
+    "CHIN": "PASS",
+    "FINGERS": "PASS",
+    "SIL_%": "PASS",
+    "SHOULDERS": "PASS (unchanged)",
+    "WAIST": "PASS (unchanged)",
+    "ARMS_SIDE": "PASS (unchanged)",
+    "FEET_SIDE": "PASS (unchanged)"
+  },
+  "silhouette_percent": {
+    "gate_each_max": 5.0,
+    "blender": {
+      "bald_front": 4.0007,
+      "bald_back": 4.1899
+    },
+    "unity": {
+      "bald_front": 4.0963,
+      "bald_back": 4.1142
+    },
+    "baseline_hand4": {
+      "bald_front": 3.7746,
+      "bald_back": 3.7819
+    }
+  },
+  "chin_band_z_m": [
+    1.444,
+    1.506
+  ],
+  "chin_side_profile_mm": {
+    "max_abs": 4.6,
+    "mean_abs": 2.16,
+    "baseline_max_abs": 5.9,
+    "baseline_mean_abs": 3.5
+  },
+  "chin_front_halfwidth_mm": {
+    "max_abs": 4.2,
+    "mean_abs": 1.89,
+    "baseline_max_abs": 10.8,
+    "baseline_mean_abs": 6.2
+  },
+  "hand_mass_vs_plate_mask": {
+    "front_view": 0.86,
+    "back_view": [
+      1.028,
+      1.079
+    ],
+    "note": "front and back plates disagree by ~28 % on hand size"
+  },
+  "mesh": {
+    "verts": 24652,
+    "polys": 24670,
+    "tris": 49304,
+    "quads": 24634,
+    "triangle_faces": 36,
+    "boundary_edges": 0,
+    "nonmanifold_edges_inherited": 2,
+    "zero_area_faces": 0,
+    "loose_vertices": 0,
+    "height_m": 1.702187418937683,
+    "baseline": {
+      "verts": 24578,
+      "tris": 49176
+    }
+  },
+  "vertex_changes": {
+    "original_vertices_moved": 2393,
+    "head_zone": 721,
+    "hand_zone": 1672,
+    "elsewhere": 0,
+    "head_changed_below_z_1_35": 0
+  },
+  "regression_regions": {
+    "SHOULDERS": {
+      "verts": 4806,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "WAIST": {
+      "verts": 1832,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "ARMS_SIDE(upper+fore, above wrist)": {
+      "verts": 3366,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    },
+    "FEET_SIDE": {
+      "verts": 3482,
+      "changed": 0,
+      "max_disp_mm": 0.0
+    }
+  },
+  "feet": {
+    "vertices_below_4mm": 318,
+    "lowest_z_m": 0.0024724886752665043
+  },
+  "hashes": {
+    "blend_sha256": "35766aea1c493bab0ce1bddd6bc7639c4b304630c500c1d654b4336c2e113d90",
+    "fbx_sha256": "3268e665ecedb83de441ca4640e5c2aa024e65c2cdd09f3e89c6cf1c7560d3ad",
+    "prefab_sha256": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+    "baseline_blend_sha256": "d39c6c5e5157ff15428759c01eaa227a09ea1bcd4b0d1a51acfe4110795d2413"
+  },
+  "fbx_reimport": {
+    "max_vertex_error_mm": 0.00027939677238464355,
+    "tris": 49304,
+    "height_m": 1.702187436632812
+  },
+  "unity": {
+    "audit": "male-form-unity-audit.txt",
+    "captures_dir": "male_form_d/unity",
+    "importer": "scale 1, fileScale 1, compression off, normals imported"
+  },
+  "topology_change": "Both hands rebuilt locally (approved by Adnan in chat). Cut ring z 0.957-1.003 m, 42 vertices per hand, positions untouched. Everything else keeps indices and positions."
+}

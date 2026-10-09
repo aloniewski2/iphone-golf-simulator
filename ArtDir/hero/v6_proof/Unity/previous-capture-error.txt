@@ -1,0 +1,6 @@
+UnityEngine.MissingComponentException: There is no 'MeshFilter' attached to the "Hero strings centre" game object, but a script is trying to access it.
+You probably need to add a MeshFilter to the game object "Hero strings centre". Or your script needs to check if the component is attached before using it.
+  at UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) [0x000d1] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:1084 
+  at UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) [0x00010] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/BindingsHelpers.cs:61 
+  at UnityEngine.MeshFilter.get_sharedMesh () [0x00006] in <5e6012fd11b14532a5249e11b6b22418>:0 
+  at GolfArcade.EditorTools.HeroV6PolishReview.Tick () [0x00beb] in /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Editor/HeroV6PolishReview.cs:84 

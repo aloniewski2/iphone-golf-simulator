@@ -26,11 +26,15 @@ Each course has three holes that you play out, counting strokes against par:
 | Pine Bend | Medium | 4 · 3 · 4 | Doglegs, narrower, 2–3 bunkers per hole |
 | Cliffwater | Hard | 4 · 5 · 3 | Narrow, water carries, greenside bunkers |
 
-- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 0.25° with the putter. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
+- The first aim is toward the pin. Use the rail's target button to pick any course position, including recovery directions. Your chosen target and aim adjustment persist after each shot. ◀ ▶ adjust by 2°, or 1° with the putter. In Camera mode you can also aim from the ball: hold one arm out to the side, like signalling a turn, and the line sweeps that way smoothly for as long as the arm is out (6° a second, 3° on the green; the side you see in the mirror is the side the line moves), settling on the nearest half degree when you drop it. Every shot starts aimed at the pin. The shot controls also expose full/pitch/chip ranges and explicit draw/fade.
 - The next shot is played from where the ball stops. The suggested club is selected for you (putter on the green, wedge in a bunker).
 - **Rough** takes 15% off the next shot and a **bunker** 40%.
 - **Water**: +1 stroke, dropped short of the hazard on the line of play. **Out of bounds** (past the tree line): +1 stroke, replayed from the same spot.
-- Putting power has a fixed meaning independent of pin distance, continuous from zero. A slow ball passing within the 0.12-yard arcade cup tolerance drops; its rendered endpoint and next position both become the cup.
+- Putting power has a fixed meaning independent of pin distance, continuous from zero. From the camera a putt is read from the hands' arc with a long meter (a full lag-putt sweep of about 55° fills it; a 20° rock is a mid-length putt), so a small stroke stays a small putt. The cup takes a putt the way a real one does (`RangeShot.cupCaptures`): judged by pace and by how far from the middle the ball's line passes — dead weight drops from anywhere on the rim, a firm putt only through the middle, and a firm one on the edge horseshoes off the rim and runs past (the lip-out). The cup is drawn at that size, cut into the green with a pale rim, and a holed ball rolls to the middle and falls out of sight down it.
+
+### Reading the green
+
+The putting view follows the golf games (PGA TOUR 2K, Wii Sports, Mario Golf, Everybody's Golf): the flag comes out and the camera sits low behind the ball looking down the line. A **contour grid** is draped over the green's every bump — a line each yard each way, white where it is flat, yellow, amber and red as the slope steepens — with **beads** drifting down the fall line, faster where it is steeper, so both the direction and the strength of the break are visible at a glance. A **mint ribbon** shows the putt's predicted roll at the current strength, bend and all, fading toward where it stops, and the readout above gives the distance in feet, uphill or downhill, and which way it breaks. When you stroke it the camera holds where you read it from, then, as the ball closes on the cup, cuts to a low **hole cam** behind the hole to watch it arrive and drop (or lip out).
 - After par + 5 strokes the ball is picked up so the round keeps moving.
 - In multiplayer, each player plays the whole hole in turn, then everyone moves to the next hole. The scorecard shows strokes per hole, totals, and ± par. Solo best scores are saved per course.
 
@@ -38,7 +42,7 @@ Hole shapes and hazards are data in `GolfArcade/Game/Course.swift`; the 3D scene
 
 ## Layout
 
-The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
+The hole fills the screen. A small chip in the top-left shows hole, par, yards to the pin, and shots; under it, while you set up, a large readout gives the distance to the hole (feet on the green), the rise and what it plays like, and the aim line, big enough to read with the phone propped up across the room. A yellow flag marker floats over the hole itself wherever it is on screen, and when the hole is off the edge (a dogleg from the tee, or while you swing the line away) it sits at the edge with an arrow pointing at it. The hole map in the corner draws the pin as a flag and your aim as a bold ray from the ball, so a change of direction reads at a glance. The camera picture-in-picture is small — a check that you are in frame, not the view you play from. The club rail floats on the right (menu, clubs, aim). Result, hole, and scorecard panels appear only between shots.
 
 ## Lining up (Camera mode)
 
@@ -108,11 +112,12 @@ Move through menus without touching the phone:
 | --- | --- | --- | --- | --- |
 | Menus | Move focus | Move focus / flip handedness | Move focus / flip handedness | Select |
 | Before a shot | Change club | Aim left | Aim right | — |
+| Before a shot, fingers up | 1 = driver · 2 = iron · 3 = wedge · 4 = putter (hold half a second, hand raised) | | | |
 | Ball in flight or replay | — | — | Skip | Skip |
 | Shot result / hole done | — | Replay | Next | Next |
 | Round complete | — | Menu | Play again | Play again |
 
-Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
+Both hands together (a golf grip) never count, and gestures are ignored during a swing and for a second after impact. The picture-in-picture flashes each recognized gesture. Once you are set at the ball, club changes and selection wait for the shot, but a **swipe** left or right still moves the line, and the **arm signal** does the same without a fist: one arm out to the side, the other hand down, sweeps the line that way (`AimSignalRecognizer`, body joints only, so it needs no hand-pose reading). **Fingers up** pick the club (`ClubSignRecognizer`): raise a hand to chest height or higher, apart from the other, and hold up one finger for the driver, two for the iron, three for the wedge, four for the putter; the PIP shows the count and the club it would pick, then flashes the club once it is chosen. One pick per raise — change the count or lower the hand to pick again. The recognizer is `HandGestureRecognizer`, unit-tested with synthetic motion; the hand-shape reading uses Vision hand pose, which runs only while gestures are enabled.
 
 ## Other inputs
 
@@ -120,7 +125,7 @@ Both hands together (a golf grip) never count, and gestures are ignored during a
 
 ## Ball flight
 
-Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, then bounce and roll. At full power the model gives roughly driver 254 + 23 yd, iron 148 + 15, wedge 82 + 10. See `GolfArcade/Mock/BallFlight.swift`.
+Shots are simulated, not scripted: gravity, drag, Magnus lift from backspin, then bounce and roll. The drag and lift curves are fitted to launch-monitor flights, and backspin grips the turf on the first bounce, so each club behaves like its real one: at full power the driver (106 mph, 12.5°, 2600 rpm) carries 250 and rolls 20 with a 33-yard apex; the 7-iron (88 mph, 17°, 6800 rpm) carries 160, hops 8 and comes down at about 48°; the sand wedge (70 mph, 29°, 9800 rpm) carries 90 and checks up within 3. From the camera, a full swing gets shorter with the club — 120° of hands arc for the driver, 110° for the iron, 100° for the wedge — so the committed swing you naturally make with each club fills its meter. The meter is not locked at the top: ease your hands back down slowly and it follows them, and the shot is played from wherever your real downswing starts. See `GolfArcade/Mock/BallFlight.swift`.
 
 ## What to test on a device
 

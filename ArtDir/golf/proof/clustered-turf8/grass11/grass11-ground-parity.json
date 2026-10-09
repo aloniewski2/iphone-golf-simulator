@@ -1,0 +1,27 @@
+{
+  "status": "PASS actual ground/obstacle/collider parity; parent bounded grass art acceptance",
+  "before": "proof/reference-rebuild/coastal-camera10/hole12_audit.json",
+  "after": "proof/reference-rebuild/coastal-grass11/hole12_audit.json",
+  "beforeSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b",
+  "afterSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b",
+  "fullAuditExact": true,
+  "comparedGroundRecords": 14,
+  "obstacleCount": 161,
+  "colliderCount": 14,
+  "obstacleHash": "f66789056e9c646408c10b9f2651f6dfd3b88935e43fb061480a4caa95139eaf",
+  "compileRenderSeconds": 24.36,
+  "sourceHashes": {
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "44531535fc0d32e297903e84f398604976318d1c39bb81e79e68a367abd7ef58",
+    "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader": "d5b7fbf0960160f108867ac4ede9c615c40d5c2218a7ed2ec6a2baafec32fae5",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "1bfe3b371c78c9c8cff6a9d6516b65bea40ecb6ce0eea50b1b47f953fe1b460f",
+    "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl": "fc5c327d67173cdafa4c1903cf28489ff2260958e0e0c1fffaf728c20b4e3b6a",
+    "Unity/Assets/Resources/Course/Shaders/GolfTurfField.hlsl": "a249b55cef057f0f75da0963b71b6f53b147cc7833b5602fdbbb4217971b65d8",
+    "Unity/Assets/Resources/Tennis/Shaders/HeroLighting.hlsl": "b2680c48848f37ea6a13d8ab35acf050a9de0bffe01fb5f8662ff2abd02afb61",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf.fbx": "859ea137735f2f35cb52002ed5ae3f8c3327e39fa2cd44f6c35ae245f81f71a6",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_C.png": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_N.png": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44",
+    "ArtDir/golf/source/CoastalTurf.blend": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+    "ArtDir/golf/tools/build-coastal-turf.py": "53fe5923d1714af5abf05a58ef198388758ecacf297e3fe43ebb00e81d4f7398"
+  },
+  "performance": "These incidental capture counters are not a published sole-camera or phone frame-time budget."
+}

@@ -1,0 +1,8 @@
+{
+ "Walk": {
+  "seconds": 0.9,
+  "frames": 28,
+  "arm_torso_frames_gt1cm": 0,
+  "max": 0.003
+ }
+}

@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.5696708">
+  <test-suite type="TestSuite" id="1234" name="Golf Arcade" fullname="Golf Arcade" runstate="Runnable" testcasecount="168" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.569671" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1228" name="GolfArcade.PlayTests.dll" fullname="/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Library/ScriptAssemblies/GolfArcade.PlayTests.dll" runstate="Runnable" testcasecount="168" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.566210" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="34192" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1229" name="GolfArcade" fullname="GolfArcade" runstate="Runnable" testcasecount="168" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.565664" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1231" name="PlayTests" fullname="GolfArcade.PlayTests" runstate="Runnable" testcasecount="159" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.565167" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1042" name="GolfCourseStandardPlayTests" fullname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" classname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.562178" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1043" name="UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" fullname="GolfArcade.PlayTests.GolfCourseStandardPlayTests.UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" methodname="UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog" classname="GolfArcade.PlayTests.GolfCourseStandardPlayTests" runstate="Runnable" seed="177821039" result="Passed" start-time="2026-10-07 21:38:27Z" end-time="2026-10-07 21:38:57Z" duration="30.555653" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="Timeout" value="300000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[HeroEquipment] exact bind PASS CLUB_DRIVER error=5.930662E-06 vertices=1716
+[HeroEquipment] exact bind PASS CLUB_IRON error=5.930662E-06 vertices=1232
+[HeroEquipment] exact bind PASS CLUB_PUTTER error=5.930662E-06 vertices=1248
+[HeroEquipment] exact bind PASS CLUB_WEDGE error=5.930662E-06 vertices=1280
+[HeroHandWeights] Female Left thumb-root vertices=27 radius=0.01
+[HeroHandWeights] Female Right thumb-root vertices=9 radius=0.01
+[HeroHandWeights] exact geometry/rest retained; changed=36 maxWeightL1=1.8
+[HeroGarmentAxillaWeights] Female Body: modified=864 maxArmMassTransfer=0.643722057 normalizedError=1.00582838E-07; rest vertices/UVs/indices/palette and outside weights exact
+[HeroHeadVolume] candidate=baseline steps=36 front interior fairing vertices=1260 lowerFaceVertices=222 maxMetres=0.007651588; original outer bald silhouette/eye rims/body/rig exact
+[HeroSkinNormals] Covered_Female_Body (thumb root weights) (axilla weight field) (facial volume) field=head vertices=7132 max normal correction=46.13346deg; geometry unchanged
+[HeroHeadSurface] Female origin=(0.000000, 0.002330, 1.490000) eye=(0.000000, -0.114366, 0.066990) frame=(1.000000, -0.000001, 0.000000)/(0.000000, -0.023316, 0.999728)/(-0.000001, -0.999728, -0.023316) cheekMaskMax=0.9722228 noseMaskMax=0.8634636 shader=GolfArcade/TennisCharacter hasHeadUniform=True
+[HeroHeadSurface] Female origin=(0.000000, 0.002330, 1.490000) eye=(0.000000, -0.114366, 0.066990) frame=(1.000000, -0.000001, 0.000000)/(0.000000, -0.023316, 0.999728)/(-0.000001, -0.999728, -0.023316) cheekMaskMax=0.9722228 noseMaskMax=0.8634636 shader=GolfArcade/TennisCharacter hasHeadUniform=True
+[HeroFaceCraft] Body-fitted=1170 missing=0 maxDepthDelta=0.02489841 smooth brow vertices=1170 fitted1mm upper liner; original bald silhouette/eyes/feature centers unchanged
+[HeroEyeRim] actual aperture loops=128,128 new vertices=2304 5.5mm Body-fitted outer/1.5–3mm cornea-overlapping inner modeled lids; original eye anchors exact
+[HeroGolfEyeBoundary] count=128 FaceLocal centre=(0.049096, -0.109896, 1.554376) bounds=Center: (0.05, -0.10, 1.55), Extents: (0.03, 0.02, 0.01) EyeUp=1.559181 EyeWorldCentre=(0.08, 1.32, -0.16)
+[HeroGolfEyeBoundary] count=128 FaceLocal centre=(-0.049095, -0.109897, 1.554376) bounds=Center: (-0.05, -0.10, 1.55), Extents: (0.03, 0.02, 0.01) EyeUp=1.559181 EyeWorldCentre=(0.08, 1.32, -0.16)
+[HeroActualLidFit] physical eyelid closure morph vertices=1401 max travel=0.03491804; original open positions exact
+[HeroActualLidFit] exact Body inverse-bind->Face apertures=2 vertices=2730
+[HeroLidGeometry] Female exact aperture patch vertices=2730 actual sclera registration offset=(0.00, 0.00, 0.00) shape/axis error=0.01683962 source winding=0.01573735 patch winding=0.02425778 reversed=False
+[HeroGarmentAxillaWeights] Female Kit_Top: modified=1102 maxArmMassTransfer=0.619248867 normalizedError=1.17812306E-07; rest vertices/UVs/indices/palette and outside weights exact
+[HeroGarmentTailoring] Kit_Top Female geometry vertices=2047 maxDelta=0.0165161621m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_L Female geometry vertices=1002 maxDelta=0.016719982m; UV/triangles/weights/palette exact
+[HeroGarmentTailoring] Kit_Shoe_R Female geometry vertices=1001 maxDelta=0.0167200044m; UV/triangles/weights/palette exact
+[HeroGarmentHemWeights] Female garment-only vertices=1371 maxWeightL1=0.5245086 hemRootY=0.6101831 geometry/UV/material/rig unchanged; actual motion proof required
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND
+[GolfResortDress] hole 7: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 7: 1 continuous erosion shells, 38475 added triangles, 9678 displaced vertices, max 1.53 yd; collision meshes unchanged
+[GolfResortDress] hole 7: 314 botanical assets, 1006863 triangles in 54 bounded batches; original physics retained
+[GolfStoneFinish] 41 separate boulder render clones, 2460 added triangles, maximum 0.342 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 117 original visual renderers into 38 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfResortDress] hole 7: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 7: 1 continuous erosion shells, 38475 added triangles, 9678 displaced vertices, max 1.53 yd; collision meshes unchanged
+[GolfResortDress] hole 7: 314 botanical assets, 1006863 triangles in 54 bounded batches; original physics retained
+[GolfStoneFinish] 41 separate boulder render clones, 2460 added triangles, maximum 0.342 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 117 original visual renderers into 38 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfResortDress] hole 7: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 7: 1 continuous erosion shells, 38475 added triangles, 9678 displaced vertices, max 1.53 yd; collision meshes unchanged
+[GolfResortDress] hole 7: 314 botanical assets, 1006863 triangles in 54 bounded batches; original physics retained
+[GolfStoneFinish] 41 separate boulder render clones, 2460 added triangles, maximum 0.342 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 117 original visual renderers into 38 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfGallery] source palette decodeSRGB=True
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 163 original visual renderers into 49 bounded groups; meshes/colliders/scoring unchanged
+[GolfResortDress] hole 7: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 7: 1 continuous erosion shells, 38475 added triangles, 9678 displaced vertices, max 1.53 yd; collision meshes unchanged
+[GolfResortDress] hole 7: 314 botanical assets, 1006863 triangles in 54 bounded batches; original physics retained
+[GolfStoneFinish] 41 separate boulder render clones, 2460 added triangles, maximum 0.342 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 7: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/216/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 117 original visual renderers into 38 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfCoastalComposition] reference shoreline and collision model selected; tee/pin retained
+[GolfLandmarkFinish] hole 12: 3 bevelled visual landmarks with original physics retained
+[GolfCoastalCliff12] 3 source cliff renderers replaced by continuous volume; 428532 triangles, exact anchor error 0.000061 yd; top indices/collision meshes retained
+[GolfCoastalBotany] hole12 artist CC0: exact tree pivots=43; understory=301; crest pockets=42; full source near=1889910tri / far=338790tri; hidden source flower renderers=1; physics unchanged
+[GolfCoastalTurf] 440 1m clustered cells within12m tee; near/mid caps 48/96, max 276992 triangles, 3 instanced submissions, no grass shadows/colliders
+[GolfStoneFinish] 0 separate boulder render clones, 0 added triangles, maximum 0.000 yd; original MeshFilters/colliders retained
+[GolfSurfaceEdges] original top-boundary segments 1533/1110/186/8; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 41 original visual renderers into 28 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[GolfResortDress] hole 13: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 13: 1 continuous erosion shells, 27879 added triangles, 4036 displaced vertices, max 1.44 yd; collision meshes unchanged
+[GolfResortDress] hole 13: 413 botanical assets, 1249733 triangles in 52 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 3120 added triangles, maximum 0.977 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 13: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/1288/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 28 original visual renderers into 15 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 12 pivot-preserving visual batches
+[GolfResortDress] hole 14: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 14: 1 continuous erosion shells, 39144 added triangles, 9194 displaced vertices, max 1.56 yd; collision meshes unchanged
+[GolfResortDress] hole 14: 443 botanical assets, 381663 triangles in 20 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 4740 added triangles, maximum 0.991 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 14: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/523/140/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 26 original visual renderers into 23 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfLandmarkFinish] LIGHTHOUSE skipped: local bounds do not match source
+[GolfLandmarkFinish] hole 15: 3 bevelled visual landmarks with original physics retained
+[GolfResortDress] hole 15: 75 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 15: 2 continuous erosion shells, 15552 added triangles, 2828 displaced vertices, max 1.43 yd; collision meshes unchanged
+[GolfResortDress] hole 15: 321 botanical assets, 941205 triangles in 30 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 2340 added triangles, maximum 0.983 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 15: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 202/0/72/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 24 original visual renderers into 23 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 8 pivot-preserving visual batches
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfResortDress] hole 16: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 16: 1 continuous erosion shells, 43478 added triangles, 7872 displaced vertices, max 1.43 yd; collision meshes unchanged
+[GolfResortDress] hole 16: 477 botanical assets, 925304 triangles in 65 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 4200 added triangles, maximum 0.989 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 16: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/880/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 32 original visual renderers into 29 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 16 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfLandmarkFinish] hole 17: 0 bevelled visual landmarks with original physics retained
+[GolfResortDress] hole 17: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 17: 1 continuous erosion shells, 39296 added triangles, 6011 displaced vertices, max 1.47 yd; collision meshes unchanged
+[GolfResortDress] hole 17: 231 botanical assets, 1411836 triangles in 59 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 4620 added triangles, maximum 0.983 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 17: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/648/180/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 35 original visual renderers into 32 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[GolfLandmarkFinish] hole 18: 0 bevelled visual landmarks with original physics retained
+[GolfResortDress] hole 18: 83 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 18: 2 continuous erosion shells, 25287 added triangles, 6432 displaced vertices, max 1.76 yd; collision meshes unchanged
+[GolfResortDress] hole 18: 177 botanical assets, 145198 triangles in 12 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 3000 added triangles, maximum 0.983 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 18: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/0/72/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 17 original visual renderers into 18 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+Detected one or more triangles where the distance between any 2 vertices is greater than 500 units. The resulting Triangle Mesh can impact simulation and query stability. It is recommended to tessellate meshes that have large triangles. Source mesh name: TERRAIN_ISLAND_1
+[GolfLandmarkFinish] hole 19: 10 bevelled visual landmarks with original physics retained
+[GolfResortDress] hole 19: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 19: 1 continuous erosion shells, 33988 added triangles, 6840 displaced vertices, max 1.50 yd; collision meshes unchanged
+[GolfResortDress] hole 19: 533 botanical assets, 915369 triangles in 54 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 4320 added triangles, maximum 0.981 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 19: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/800/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 37 original visual renderers into 35 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[PalmPalette] hole 19 Golf resort botanical batch: linear G 0.083535..0.178868; sRGB G 0.320000..0.460000
+[GolfLandmarkFinish] hole 20: 5 bevelled visual landmarks with original physics retained
+[GolfResortDress] hole 20: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 20: 1 continuous erosion shells, 26646 added triangles, 4222 displaced vertices, max 1.51 yd; collision meshes unchanged
+[GolfResortDress] hole 20: 397 botanical assets, 388101 triangles in 20 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 4500 added triangles, maximum 0.957 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 20: 320 shared Postcard tufts, 15408 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/564/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 39 original visual renderers into 59 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 320 original plant renderers into 14 pivot-preserving visual batches
+[GolfResortDress] hole 21: 61 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 21: 2 continuous erosion shells, 15735 added triangles, 2883 displaced vertices, max 1.47 yd; collision meshes unchanged
+[GolfResortDress] hole 21: 284 botanical assets, 380979 triangles in 19 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 2280 added triangles, maximum 0.959 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 21: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/168/144/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 23 original visual renderers into 18 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 21 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[GolfResortDress] hole 22: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 22: 1 continuous erosion shells, 25997 added triangles, 4537 displaced vertices, max 1.54 yd; collision meshes unchanged
+[GolfResortDress] hole 22: 313 botanical assets, 433145 triangles in 25 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 2940 added triangles, maximum 0.981 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 22: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/568/252/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 33 original visual renderers into 24 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 22 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[GolfResortDress] hole 23: 95 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 23: 1 continuous erosion shells, 31439 added triangles, 5828 displaced vertices, max 1.58 yd; collision meshes unchanged
+[GolfResortDress] hole 23: 372 botanical assets, 545304 triangles in 32 bounded batches; original physics retained
+[GolfStoneFinish] 1 separate boulder render clones, 2580 added triangles, maximum 0.953 yd; original MeshFilters/colliders retained
+[GolfCourseFringe] hole 23: 0 shared Postcard tufts, 0 triangles
+[GolfSurfaceEdges] original top-boundary segments 160/648/252/4; 256x256, 262144 bytes, geometry unchanged
+[GolfSurfaceBatching] 34 original visual renderers into 22 bounded groups; meshes/colliders/scoring unchanged
+[GolfPlantInstances] 0 original plant renderers into 0 pivot-preserving visual batches
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[PalmPalette] hole 23 Golf resort botanical batch: linear G 0.046964..0.162805; sRGB G 0.240000..0.440200
+[GolfResortDress] hole 1: 0 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 1: 0 continuous erosion shells, 0 added triangles, 0 displaced vertices, max 0.00 yd; collision meshes unchanged
+[GolfMeadowWorld] hole1: 26941 landscape triangles; all triangle corners beyond playable rough +16yd, no colliders
+[GolfResortDress] hole 1: 314 botanical assets, 614060 triangles in 45 bounded batches; original physics retained
+[GolfResortDress] hole 2: 0 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 2: 0 continuous erosion shells, 0 added triangles, 0 displaced vertices, max 0.00 yd; collision meshes unchanged
+[GolfMeadowWorld] hole2: 24734 landscape triangles; all triangle corners beyond playable rough +16yd, no colliders
+[GolfResortDress] hole 2: 244 botanical assets, 481958 triangles in 36 bounded batches; original physics retained
+[GolfResortDress] hole 3: 0 sparse irregular limestone/basalt outcrops
+[GolfCliffSculpt] hole 3: 0 continuous erosion shells, 0 added triangles, 0 displaced vertices, max 0.00 yd; collision meshes unchanged
+[GolfMeadowWorld] hole3: 22284 landscape triangles; all triangle corners beyond playable rough +16yd, no colliders
+[GolfResortDress] hole 3: 107 botanical assets, 213438 triangles in 20 bounded batches; original physics retained
+DONE PlayMode: 1 passed, 0 failed, 0 skipped
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

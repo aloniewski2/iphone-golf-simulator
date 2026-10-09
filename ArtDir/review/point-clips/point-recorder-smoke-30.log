@@ -1,0 +1,5 @@
+{"enabled":false,"hasClip":false,"message":"Enable 60 fps point clips before playing.","version":1,"session":"smoke-test","type":"recording","state":"off"}
+{"enabled":true,"hasClip":false,"message":"Checking 1080p · 60 fps…","version":1,"session":"smoke-test","type":"recording","state":"checking"}
+2026-09-29 22:39:44.058 motionclub-recorder-smoke[25445:2557413] [PointClips] rejected frame gap 33.36 ms
+{"enabled":false,"hasClip":false,"message":"Recording disabled: gameplay dropped below 60 fps. Try again after the phone cools down.","version":1,"session":"smoke-test","type":"recording","state":"unsupported"}
+Recorder smoke 30fps rejection: PASS

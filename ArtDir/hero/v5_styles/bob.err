@@ -1,0 +1,11 @@
+task created 95ba7600-0d4d-4e3a-8a42-a2e1d8d5c3ae (@style-bob)
+generate_image · queued
+generate_image · running · 95ba7600
+generate_image · running · 95ba7600
+generate_image · running · 95ba7600
+generate_image · running · 95ba7600
+generate_image · running · 95ba7600
+generate_image · success 100% · 95ba7600
+✓ generate_image · 95ba7600-0d4d-4e3a-8a42-a2e1d8d5c3ae · 5 credits
+downloading artifacts…
+✓ artifacts saved to bob/tripo-out/style-bob-95ba7600

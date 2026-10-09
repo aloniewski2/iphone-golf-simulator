@@ -1,0 +1,125 @@
+{
+  "male": {
+    "restVerticesAndTopologyIdentical": true,
+    "bones": 144,
+    "maxWeightSumError": 1.7881393432617188e-07
+  },
+  "male_forehand": {
+    "framesPerView": 73,
+    "elbows": {
+      "Right": {
+        "signedFlexDegrees": [
+          80.66248321533203,
+          154.39401245117188
+        ],
+        "maxAxialTwistDegrees": 20.000038146972656
+      },
+      "Left": {
+        "signedFlexDegrees": [
+          48.805198669433594,
+          128.19036865234375
+        ],
+        "maxAxialTwistDegrees": 10.000003814697266
+      }
+    },
+    "maxWristRelativeRotationDegrees": 80.0000991821289,
+    "maxHandFrameStepDegrees": 54.14701461791992,
+    "maxSupportBoneFrameStepDegrees": 52.52601623535156,
+    "contactStringCentreChangeMetres": 9.37283308289506e-05,
+    "maxFootChangeMetres": 1.000000000001e-06,
+    "maxHeldPalmGapMetres": 0,
+    "maxPalmBendDegrees": 87.63380432128906
+  },
+  "male_backhand": {
+    "framesPerView": 73,
+    "elbows": {
+      "Right": {
+        "signedFlexDegrees": [
+          38.41519546508789,
+          139.77548217773438
+        ],
+        "maxAxialTwistDegrees": 69.99999237060547
+      },
+      "Left": {
+        "signedFlexDegrees": [
+          30.96087074279785,
+          145.7239227294922
+        ],
+        "maxAxialTwistDegrees": 80.00005340576172
+      }
+    },
+    "maxWristRelativeRotationDegrees": 149.99996948242188,
+    "maxHandFrameStepDegrees": 29.04138946533203,
+    "maxSupportBoneFrameStepDegrees": 37.35207748413086,
+    "contactStringCentreChangeMetres": 0.24524499118024815,
+    "maxFootChangeMetres": 1.4142135623745095e-06,
+    "maxHeldPalmGapMetres": 1e-06,
+    "maxPalmBendDegrees": 60.000038146972656
+  },
+  "female": {
+    "restVerticesAndTopologyIdentical": true,
+    "bones": 158,
+    "maxWeightSumError": 1.7881393432617188e-07
+  },
+  "female_forehand": {
+    "framesPerView": 73,
+    "elbows": {
+      "Right": {
+        "signedFlexDegrees": [
+          64.66988372802734,
+          156.7042999267578
+        ],
+        "maxAxialTwistDegrees": 20.000028610229492
+      },
+      "Left": {
+        "signedFlexDegrees": [
+          57.982757568359375,
+          116.4652099609375
+        ],
+        "maxAxialTwistDegrees": 9.999977111816406
+      }
+    },
+    "maxWristRelativeRotationDegrees": 80.0000991821289,
+    "maxHandFrameStepDegrees": 49.47881317138672,
+    "maxSupportBoneFrameStepDegrees": 48.242164611816406,
+    "contactStringCentreChangeMetres": 5.8557663887812605e-05,
+    "maxFootChangeMetres": 1.000000000001e-06,
+    "maxHeldPalmGapMetres": 0,
+    "maxPalmBendDegrees": 93.7695083618164
+  },
+  "female_backhand": {
+    "framesPerView": 73,
+    "elbows": {
+      "Right": {
+        "signedFlexDegrees": [
+          25.803306579589844,
+          132.19351196289062
+        ],
+        "maxAxialTwistDegrees": 70.00003051757812
+      },
+      "Left": {
+        "signedFlexDegrees": [
+          25.802871704101562,
+          137.33401489257812
+        ],
+        "maxAxialTwistDegrees": 60.00002670288086
+      }
+    },
+    "maxWristRelativeRotationDegrees": 150.00001525878906,
+    "maxHandFrameStepDegrees": 24.468643188476562,
+    "maxSupportBoneFrameStepDegrees": 28.702434539794922,
+    "contactStringCentreChangeMetres": 0.21285852719118398,
+    "maxFootChangeMetres": 1.000000000001e-06,
+    "maxHeldPalmGapMetres": 0.000155,
+    "maxPalmBendDegrees": 60.00002670288086
+  },
+  "failures": [],
+  "acceptedForehandHashesIdentical": true,
+  "minimumArmSkinBlendDeterminants": {
+    "male_forehand": 0.31726959347724915,
+    "male_backhand": 0.23184336721897125,
+    "female_forehand": 0.49738413095474243,
+    "female_backhand": 0.6935641169548035
+  },
+  "backhandForearmCentrelineOutsideTorsoProxy": true
+}

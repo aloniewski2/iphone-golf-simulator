@@ -1,0 +1,23 @@
+{
+  "file": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/familiar-crowds-v1/all-arenas-with-characters.blend",
+  "backup": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/familiar-crowds-v1/live-before-arena-merge.blend",
+  "preserved_scenes": [
+    "BOXING | clear gameplay preview",
+    "BOXING | full venue"
+  ],
+  "added_scenes": [
+    {
+      "scene": "01 BOXING - with characters",
+      "characters": 318
+    },
+    {
+      "scene": "02 TENNIS - with characters",
+      "characters": 68
+    },
+    {
+      "scene": "03 BOWLING - with characters",
+      "characters": 26
+    }
+  ],
+  "active_scene": "01 BOXING - with characters"
+}

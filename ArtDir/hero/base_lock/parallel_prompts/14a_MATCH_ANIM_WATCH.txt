@@ -1,0 +1,37 @@
+PASTE — MATCH ANIMS 1/2 WATCH · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Watch the clips below. Do not animate. Do not edit the hero, the rig, or Unity. Write what you actually saw.
+
+CLIPS
+- https://www.youtube.com/watch?v=DGIkkdxMrWc
+  groundstrokes 0:00, serves 4:22, returns 10:31, volleys and overheads 13:49
+- https://www.youtube.com/watch?v=yAM1j_B6yQs (Alcaraz 0:24, Djokovic 1:03)
+- https://www.youtube.com/watch?v=HI0bvG0pw4w (Djokovic 0:16, Alcaraz 1:55)
+- https://www.youtube.com/watch?v=-Eu80hGbgVA
+- https://www.youtube.com/watch?v=bvVXmtHt0DM
+- https://www.youtube.com/watch?v=0a_DL1I4q38
+- https://www.youtube.com/watch?v=s8BvHWqlodI
+- https://www.youtube.com/watch?v=rxo1uEdLouY
+- https://www.youtube.com/watch?v=sH3iK7Wm5EY (volleys 6:36 and 8:50, serves 10:35)
+- https://www.youtube.com/watch?v=vD0wO3tq6BM (female reference only)
+
+WRITE work/match-anim-set/WATCH.md with one section per clip we will build:
+ReadyIdle, SplitToForehand, SplitToBackhand, RecoverCenter, Forehand, ForehandOpen, ForehandWide, ForehandShort, Backhand, BackhandWide, SliceApproach, Serve, Return, VolleyForehand, VolleyBackhand, Overhead.
+
+For each section:
+- Which URL and timestamp you used.
+- What the feet do, in order.
+- What the shoulders and the racket do, in order.
+- Where contact is, as a fraction of that one swing.
+- What is different from the neutral forehand or backhand (open, wide, short, two hands).
+- What you could not see (feet cropped, camera cut). Do not invent that part.
+
+Do not download the videos into the repo. Stop when WATCH.md is written.
+
+REPLY ONLY:
+GATE: MATCH_ANIM_WATCH PASS
+or FAIL with the sections you could not see.

@@ -1,0 +1,48 @@
+{
+  "Hero_Gameplay_Ready_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_JumpServe_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_Forehand_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_Backhand_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_RunForward_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_RunRight_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_RunLeft_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_Volley_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Gameplay_Smash_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "max_bone_position_conversion_error_metres": 3.7824260701760564e-07
+}

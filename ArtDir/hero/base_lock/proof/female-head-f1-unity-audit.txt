@@ -1,0 +1,20 @@
+CAPTURE=head_front native=1280x1000
+CAPTURE=head_left native=1280x1000
+CAPTURE=head_right native=1280x1000
+CAPTURE=head_q3L native=1280x1000
+CAPTURE=head_q3R native=1280x1000
+CAPTURE=head_back native=1280x1000
+CAPTURE=head_top native=1280x1000
+CAPTURE=face_front native=1280x1000
+CAPTURE=face_q3 native=1280x1000
+CAPTURE=face_profile native=1280x1000
+NOTE mask corner pixel covered in view ear_side (close-up fills the frame)
+CAPTURE=ear_side native=1280x1000
+CAPTURE=ear_back native=1280x1000
+NOTE mask corner pixel covered in view eye_front (close-up fills the frame)
+CAPTURE=eye_front native=1280x1000
+NOTE mask corner pixel covered in view eye_q3 (close-up fills the frame)
+CAPTURE=eye_q3 native=1280x1000
+CAPTURE=mouth_front native=1280x1000
+CAPTURE=body_front native=1280x1000
+CAPTURE=body_side native=1280x1000

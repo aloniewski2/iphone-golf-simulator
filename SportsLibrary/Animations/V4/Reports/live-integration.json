@@ -1,0 +1,33 @@
+{
+  "file": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/blender-sports-studio/wardrobe-animation-v4/all-arenas-and-animations-v4.blend",
+  "backup": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/blender-sports-studio/wardrobe-animation-v4/live-before-animation-v4.blend",
+  "preserved_scenes": [
+    "01 BOXING - with characters",
+    "02 TENNIS - with characters",
+    "03 BOWLING - with characters",
+    "BOXING | clear gameplay preview",
+    "BOXING | full venue"
+  ],
+  "added_scenes": [
+    "00 CHARACTER LAB | V4",
+    "01 GOLF | V4",
+    "02 BOWLING | V4",
+    "03 TENNIS | V4",
+    "04 BOXING | V4",
+    "04 BOXING | first-person V4 | V4",
+    "05 WARDROBE | 16 fitted kits V4 | V4",
+    "06 EQUIPMENT | standard kit V4 | V4"
+  ],
+  "active_scene": "03 TENNIS | V4",
+  "workspace": "Animation",
+  "preview": {
+    "gender": "Male",
+    "sport": "Tennis",
+    "action": "Male__Tennis__RunLeft__RH__V4",
+    "clip": "RunLeft",
+    "hand": "RH",
+    "start": 139,
+    "end": 199,
+    "frames": 61
+  }
+}

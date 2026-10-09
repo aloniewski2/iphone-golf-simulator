@@ -1,0 +1,54 @@
+{
+ "contacts": [
+  {
+   "name": "Forehand",
+   "contact": 1.5
+  },
+  {
+   "name": "Backhand",
+   "contact": 1.5
+  },
+  {
+   "name": "Serve",
+   "contact": 2.333
+  },
+  {
+   "name": "Volley",
+   "contact": 1.3
+  },
+  {
+   "name": "Smash",
+   "contact": 2.2
+  },
+  {
+   "name": "Ready",
+   "contact": 0
+  }
+ ],
+ "juice": [
+  "Idle",
+  "HitPerfect",
+  "MissWhiff",
+  "CelebratePoint",
+  "SadPointLost",
+  "MatchWin",
+  "MatchLose"
+ ],
+ "trophy": {
+  "origin": [
+   0.008793850429356098,
+   0.10315959253057372,
+   0.030000017839483917
+  ],
+  "axis": [
+   -0.9396926646586508,
+   0.34202011581510305,
+   2.60770320892334e-08
+  ],
+  "normal": [
+   -6.984919309616089e-09,
+   -8.312053978443146e-08,
+   1.0000001769512892
+  ]
+ }
+}

@@ -1,0 +1,127 @@
+[
+  {
+    "id": "01-loading",
+    "title": "Loading",
+    "note": "Progress follows real readiness. Racket illustration stands in for a short in-engine idle; no generated character replacement."
+  },
+  {
+    "id": "02-flyover",
+    "title": "Drone flyover",
+    "note": "Lower-left venue ticket during the existing flyover. Current court capture is a composition backdrop, not a new camera specification."
+  },
+  {
+    "id": "03-matchup",
+    "title": "Match intro",
+    "note": "Use equipped avatar portraits in the two open cards in production. Rules text is supplied by the actual match format."
+  },
+  {
+    "id": "04-calibration",
+    "title": "Timing / pre-game check",
+    "note": "Explicit captured-swing count and retry state. Example total is illustrative; bind the real calibration count, never hard-code six."
+  },
+  {
+    "id": "05-ready",
+    "title": "Return-serve / coaching",
+    "note": "One prompt at a time, placed below play. Hide after the serve begins; a first-time coaching hint may replace this line."
+  },
+  {
+    "id": "06-serve",
+    "title": "Serve timing",
+    "note": "Timing remains skillful. This panel replaces the current colored serve bar at integration; that existing world-space bar remains visible in the unmodified backdrop."
+  },
+  {
+    "id": "07-rally",
+    "title": "Scorebug / active play",
+    "note": "Most of the court stays clear. Scorebug shows names, games, points, and a serving dot. Rally badge is brief after a milestone, not constantly animated."
+  },
+  {
+    "id": "08-feedback",
+    "title": "Shot quality system",
+    "note": "Grades use both labels and color. Speeds are illustrative; render actual shot speed. No ultimate or SUPER power badge."
+  },
+  {
+    "id": "09-calls",
+    "title": "Umpire / match calls",
+    "note": "Replace current mixed word-art with one ticket family. Queue one call; point results take precedence over shot badges. No camera cut."
+  },
+  {
+    "id": "10-point",
+    "title": "Point / score change",
+    "note": "Keep the third-person camera. Short score-change card at the upper edge; it clears before the next serve."
+  },
+  {
+    "id": "11-set",
+    "title": "Set complete",
+    "note": "Phone must expose the same Continue action only after set completion. Also offer Exit on the phone; never ask for a swing here."
+  },
+  {
+    "id": "12-pause",
+    "title": "Pause / exit confirmation",
+    "note": "Pause stops input and match time. Destructive confirmation reuses this modal; primary becomes Keep playing, secondary Exit match."
+  },
+  {
+    "id": "13-reconnect",
+    "title": "Connection recovery",
+    "note": "Differentiate controller disconnected, display disconnected, and loading failure. Display loss returns controls to the phone; no fake online reconnect."
+  },
+  {
+    "id": "14-win",
+    "title": "Match complete / campaign win",
+    "note": "Persistent actions, never auto-dismiss. Next round appears only when eligible; casual win uses Replay as primary. Live equipped hero replaces the racket vignette in production."
+  },
+  {
+    "id": "15-loss",
+    "title": "Match complete / loss",
+    "note": "No fake Next unlock after a loss. Same layout and dignity as victory; friendly language without mocking the player."
+  },
+  {
+    "id": "16-rewards",
+    "title": "Optional rewards / identity",
+    "note": "Use only real reward data. This optional screen never blocks Replay, Continue, or Exit; unlock art is a separate cosmetic thumbnail slot."
+  },
+  {
+    "id": "17-phone-play",
+    "title": "Phone / active controller",
+    "note": "The controller\u2019s playing state. Dive readiness/cooldown changes the same button; it never becomes an ultimate."
+  },
+  {
+    "id": "18-phone-finished",
+    "title": "Phone / post-game actions",
+    "note": "Campaign example. Hide Next when ineligible. Button taps acknowledge/loading/disable repeat taps; failure restores actions with an inline message."
+  },
+  {
+    "id": "19-loading-error",
+    "title": "Loading delay / retry",
+    "note": "8 seconds: still loading status. At existing 20-second stalled threshold: retry/menu. Never fake a completed progress bar or strand the controller."
+  },
+  {
+    "id": "20-components",
+    "title": "Shared components / other sports",
+    "note": "Golf uses the same components with sport-specific metrics. No gameplay changes or unsupported features implied by this design study."
+  },
+  {
+    "id": "21-shot-in-play",
+    "title": "Shot feedback / in context",
+    "note": "The same feedback component in context: one brief badge, clear of the near player. No camera change."
+  },
+  {
+    "id": "22-screen-check",
+    "title": "Display / screen check",
+    "note": "Manual confirmation fallback avoids making camera recognition of a MacBook a hard gate. Real device connection state still determines the next step."
+  },
+  {
+    "id": "23-tutorial",
+    "title": "Tutorial / first swing",
+    "note": "Instruction and actual completion state are separate. Advance when the action succeeds; no unreachable movement goals. Steps/count come from the playable tutorial."
+  },
+  {
+    "id": "24-settings",
+    "title": "In-match sound / controls",
+    "note": "Example control styling; bind only supported settings. Native sliders/toggles receive labels, values, focus and larger-text layouts."
+  },
+  {
+    "id": "25-exit-confirm",
+    "title": "Exit confirmation",
+    "note": "Only when abandoning an active match. Completed-match Exit returns immediately; it must not trap the player behind another confirmation."
+  }
+]

@@ -1,0 +1,1128 @@
+{
+ "created": "2026-10-01",
+ "brief": "01b_MALE_HEAD_Micro1k.txt",
+ "scope": "male head+neck zone z>=1.40 plus the Adnan-approved nape strip (z 1.352-1.40); position-only on the installed Micro1j topology",
+ "hashes": {
+  "start_blend_micro1j": "72fc6465f0623a3c963ca3af58a5358c0a498265c7b9da059a941b58050c1059",
+  "artdir_blend_at_install_start": "59a74b8573a089198207a6155ad815625d55f4c670531d6530bc698c1b78ac28",
+  "artdir_fbx_at_install_start": "0454f6c36cdc2199d3a4e7885a7087821ea2642a764e90edda203920e89072a1",
+  "delta_D_sha256": "2f4a662991e512d577089014d37762e6d6aa0e801cd42b828c40d301d0ba95b3"
+ },
+ "zone_audit": {
+  "zone": "start z >= 1.40 (+ nape strip z 1.352-1.40)",
+  "moved_total_numeric": 3048,
+  "moved_below_z_1_40": 20,
+  "nape_strip_z_range": [
+   1.3618885278701782,
+   1.3946609497070312
+  ],
+  "nape_strip_max_abs_x_mm": 24.54516664147377,
+  "nape_strip_max_move_mm": 1.9535263951546282,
+  "hands_moved": 0,
+  "arms_moved": 0,
+  "torso_legs_feet_moved_excluding_nape_strip": 0,
+  "max_move_mm_total": 5.828336766389804
+ },
+ "audit_micro1k_alone_on_micro1j_72fc6465": {
+  "moved_total": 2335,
+  "moved_outside_zone_z_lt_1_40": 20,
+  "min_z_of_moved_verts": 1.3618885278701782,
+  "hands_moved": 0,
+  "arms_moved": 0,
+  "torso_pelvis_legs_feet_moved": 20,
+  "topology_identical": true,
+  "tris": 60358,
+  "vertex_groups_identical": true,
+  "face_m_identical": true,
+  "boundary_edges": 92,
+  "nonmanifold_edges": 2,
+  "normals_far_from_edit": {
+   "corners": 110051,
+   "max_angle_deg": 1.517750859260559,
+   "changed_corners_gt_0_05deg": 123
+  },
+  "normals_edit_region": {
+   "corners": 11343,
+   "mean_rotation_deg": 3.9470632076263428,
+   "max_rotation_deg": 27.753429412841797
+  },
+  "silhouette": {
+   "body_bald_front": {
+    "diff": 3235,
+    "union": 74879,
+    "pct": 4.32030342285554
+   },
+   "body_bald_back": {
+    "diff": 3251,
+    "union": 74133,
+    "pct": 4.385361444970526
+   },
+   "withface_bald_front": {
+    "diff": 3235,
+    "union": 74879,
+    "pct": 4.32030342285554
+   },
+   "withface_bald_back": {
+    "diff": 3251,
+    "union": 74133,
+    "pct": 4.385361444970526
+   }
+  }
+ },
+ "audit_merged_on_artdir_59a74b85": {
+  "moved_total": 2335,
+  "moved_outside_zone_z_lt_1_40": 20,
+  "min_z_of_moved_verts": 1.3618885278701782,
+  "hands_moved": 0,
+  "arms_moved": 0,
+  "topology_identical": true,
+  "tris": 60358,
+  "vertex_groups_identical": true,
+  "face_m_identical": true,
+  "silhouette": {
+   "body_bald_front": {
+    "diff": 3235,
+    "union": 74879,
+    "pct": 4.32030342285554
+   },
+   "body_bald_back": {
+    "diff": 3251,
+    "union": 74133,
+    "pct": 4.385361444970526
+   },
+   "withface_bald_front": {
+    "diff": 3235,
+    "union": 74879,
+    "pct": 4.32030342285554
+   },
+   "withface_bald_back": {
+    "diff": 3251,
+    "union": 74133,
+    "pct": 4.385361444970526
+   }
+  }
+ },
+ "kill_neck_jaw_crease": {
+  "lateral_footprint_verts": 194,
+  "micro1j_relief_vs_pre_relief_normal_mm": {
+   "min": -5.979563065905026,
+   "max": 0.6136712266521607
+  },
+  "now_vs_pre_relief_normal_mm": {
+   "min": -0.6529097259849703,
+   "max": 1.8373358350879287
+  },
+  "lowpass_residual_on_lateral_footprint": {
+   "START_micro1j": {
+    "min_mm": -1.0129942025750664,
+    "p05_mm": -0.7228758906430687,
+    "rms_mm": 0.46720888550760065
+   },
+   "pre_relief_micro1i_state": {
+    "min_mm": -1.0612112098661064,
+    "p05_mm": -0.5382489053286872,
+    "rms_mm": 0.26533912903129475
+   },
+   "k11": {
+    "min_mm": -1.0501600193777092,
+    "p05_mm": -0.5568452344408811,
+    "rms_mm": 0.28070688698160395
+   }
+  },
+  "pass_rule": "recess on the old lateral footprint: now min >= -1.5 mm vs the pre-relief surface (Micro1j -5.98) AND low-pass residual min not worse than the pre-relief surface by > 0.3 mm"
+ },
+ "real_mandible": {
+  "crest_height_along_arc": [
+   {
+    "arc_mm_from_chin_end": 0,
+    "crest_height_mm_L_R_max": 0.6284811762361301,
+    "crest_height_mm_L_R_min": 0.5677716933692492
+   },
+   {
+    "arc_mm_from_chin_end": 10,
+    "crest_height_mm_L_R_max": 1.6818817913330117,
+    "crest_height_mm_L_R_min": 1.5004452385654472
+   },
+   {
+    "arc_mm_from_chin_end": 20,
+    "crest_height_mm_L_R_max": 2.0446981380612037,
+    "crest_height_mm_L_R_min": 2.040446081544061
+   },
+   {
+    "arc_mm_from_chin_end": 30,
+    "crest_height_mm_L_R_max": 2.353631409327181,
+    "crest_height_mm_L_R_min": 2.2584815271636023
+   },
+   {
+    "arc_mm_from_chin_end": 40,
+    "crest_height_mm_L_R_max": 2.4892025489703618,
+    "crest_height_mm_L_R_min": 2.4885277931353427
+   },
+   {
+    "arc_mm_from_chin_end": 50,
+    "crest_height_mm_L_R_max": 2.3253181698501164,
+    "crest_height_mm_L_R_min": 2.324360025135341
+   },
+   {
+    "arc_mm_from_chin_end": 60,
+    "crest_height_mm_L_R_max": 2.1827573675383825,
+    "crest_height_mm_L_R_min": 2.1807226953898344
+   },
+   {
+    "arc_mm_from_chin_end": 70,
+    "crest_height_mm_L_R_max": 2.051353743127517,
+    "crest_height_mm_L_R_min": 2.0485952426713587
+   },
+   {
+    "arc_mm_from_chin_end": 80,
+    "crest_height_mm_L_R_max": 1.9414127797595937,
+    "crest_height_mm_L_R_min": 1.9381226049742337
+   },
+   {
+    "arc_mm_from_chin_end": 90,
+    "crest_height_mm_L_R_max": 1.5108954152666083,
+    "crest_height_mm_L_R_min": 1.49730769230745
+   },
+   {
+    "arc_mm_from_chin_end": 100,
+    "crest_height_mm_L_R_max": 0.47484860490309194,
+    "crest_height_mm_L_R_min": 0.47422724383510967
+   },
+   {
+    "arc_mm_from_chin_end": 110,
+    "crest_height_mm_L_R_max": 0.26899990709407623,
+    "crest_height_mm_L_R_min": 0.26773627409844003
+   },
+   {
+    "arc_mm_from_chin_end": 120,
+    "crest_height_mm_L_R_max": 0.3156680609614453,
+    "crest_height_mm_L_R_min": 0.3145423465171521
+   },
+   {
+    "arc_mm_from_chin_end": 130,
+    "crest_height_mm_L_R_max": 0.24882976825103045,
+    "crest_height_mm_L_R_min": 0.24881146724099593
+   },
+   {
+    "arc_mm_from_chin_end": 140,
+    "crest_height_mm_L_R_max": -0.0007722338215255052,
+    "crest_height_mm_L_R_min": -0.000781534079964535
+   }
+  ],
+  "arc_length_mm": 142.1224842998409,
+  "jaw_body_bins_20_80mm_min_of_sides_mm": 1.9381226049742337,
+  "max_crest_height_mm": 2.4892025489703618,
+  "crest_verts_gt_0_3mm": 277,
+  "placement_note": "crest follows the mesh natural jaw border (n_z = -0.5 iso-line + plate angle/ramus); the plate-derived border (profile-plate tone edge) is 6-12 mm lower along the jaw body and coincides at the angle (see proof/arc_overlay)"
+ },
+ "jaw_rows_vs_plate_mm_(front_y,back_y,half_width)": {
+  "228": {
+   "start": [
+    1.7139865765358753,
+    -0.7826824385357006,
+    0.4204571433646248
+   ],
+   "now": [
+    1.7139865765358753,
+    -0.7826824385357006,
+    0.21652593390608654
+   ]
+  },
+  "232": {
+   "start": [
+    -1.4976187350176084,
+    -1.064980472377984,
+    -0.1388889095383372
+   ],
+   "now": [
+    -1.4976187350176084,
+    -1.064980472377984,
+    -0.16793736929192338
+   ]
+  },
+  "236": {
+   "start": [
+    -0.9123098554324471,
+    -1.1831301569911052,
+    0.7529155944863697
+   ],
+   "now": [
+    -0.9123098554324471,
+    -1.1831301569911052,
+    0.6602724370409208
+   ]
+  },
+  "240": {
+   "start": [
+    0.25896632801453157,
+    -1.2940468639290743,
+    1.8540417644932057
+   ],
+   "now": [
+    0.25896632801453157,
+    -1.2940468639290743,
+    1.958898055434477
+   ]
+  },
+  "244": {
+   "start": [
+    -1.1540394160338419,
+    -0.8036015790211654,
+    1.0790026774046002
+   ],
+   "now": [
+    -1.1540394160338419,
+    -0.8036015790211654,
+    1.7420203939921137
+   ]
+  },
+  "248": {
+   "start": [
+    -1.2424106996950235,
+    -1.6175437370329269,
+    -0.6672476667875099
+   ],
+   "now": [
+    -1.2424106996950235,
+    -1.6175437370329269,
+    1.5978798564068308
+   ]
+  },
+  "252": {
+   "start": [
+    -0.7056893542038145,
+    -1.047274106063964,
+    -0.7684660288837936
+   ],
+   "now": [
+    -0.7056893542038145,
+    -1.047274106063964,
+    1.73610007863588
+   ]
+  },
+  "256": {
+   "start": [
+    0.031328190852386584,
+    -1.7411689407669102,
+    0.8143798177308731
+   ],
+   "now": [
+    0.031328190852386584,
+    -1.7411689407669102,
+    1.6040620529506193
+   ]
+  },
+  "260": {
+   "start": [
+    2.303739812732797,
+    -2.10573677273259,
+    1.2667521124822834
+   ],
+   "now": [
+    2.30373982017737,
+    -2.10573677273259,
+    1.2809479169208076
+   ]
+  },
+  "264": {
+   "start": [
+    1.8819441851066487,
+    -1.808235401004818,
+    0.9636951536827476
+   ],
+   "now": [
+    1.8819442370514028,
+    -1.808235401004818,
+    0.9661820897909762
+   ]
+  }
+ },
+ "jaw_rows_half_width_max_abs_err_mm": {
+  "start": 1.8540417644932057,
+  "now": 1.958898055434477
+ },
+ "cheek_soften": {
+  "region": "face-lateral cheek, weight>0.5",
+  "verts": 917,
+  "deviation_from_micro1h_smooth_cheek": {
+   "START_micro1j": {
+    "rms_mm": 1.7834299124727422,
+    "p95_abs_mm": 3.3187038386070697,
+    "max_ridge_mm": 3.7686917569961724,
+    "max_hollow_mm": -5.304674283319198
+   },
+   "k11": {
+    "rms_mm": 0.8717471202309306,
+    "p95_abs_mm": 1.6620485337278468,
+    "max_ridge_mm": 2.55022259588619,
+    "max_hollow_mm": -3.6653178718418804
+   }
+  },
+  "malar_ridge_reduction_pct": 32.33135633467569,
+  "hollow_reduction_pct": 30.90399756743505,
+  "pass_rule": "deviation RMS from the smooth Micro1h cheek reduced by >= 35 % but not below 25 % of start (still defined, not a blank cheek)"
+ },
+ "nape_lump": {
+  "midline_rows": [
+   {
+    "z_mm": 1352.8231382369995,
+    "y_start_mm": 91.73493087291718,
+    "y_now_mm": 91.73493087291718
+   },
+   {
+    "z_mm": 1361.8885278701782,
+    "y_start_mm": 88.2592648267746,
+    "y_now_mm": 88.32917488416768
+   },
+   {
+    "z_mm": 1370.6291913986206,
+    "y_start_mm": 86.64140850305557,
+    "y_now_mm": 86.5771922236481
+   },
+   {
+    "z_mm": 1378.1074285507202,
+    "y_start_mm": 88.19686621427536,
+    "y_now_mm": 86.9154655420291
+   },
+   {
+    "z_mm": 1385.469913482666,
+    "y_start_mm": 88.5390192270279,
+    "y_now_mm": 86.58914054218384
+   },
+   {
+    "z_mm": 1393.9898014068604,
+    "y_start_mm": 86.82257682085037,
+    "y_now_mm": 85.39321864348477
+   },
+   {
+    "z_mm": 1401.5661478042603,
+    "y_start_mm": 83.79225432872772,
+    "y_now_mm": 83.79225432872772
+   },
+   {
+    "z_mm": 1408.9958667755127,
+    "y_start_mm": 79.31435853242874,
+    "y_now_mm": 79.31435853242874
+   }
+  ],
+  "chord_anchors_z_mm": [
+   1370.6291913986206,
+   1401.5661478042603
+  ],
+  "bump_over_chord_mm": {
+   "start": 3.264374303471996,
+   "now": 1.3479068006153057
+  },
+  "crease_under_chord_mm": {
+   "start": 0.0,
+   "now": 0.0
+  },
+  "strip_vertices": 20,
+  "strip_max_move_mm": 1.9535263951546282,
+  "pass_rule": "bump over the chord reduced >= 50 %, <= 2 mm moves, <= 40 verts below z 1.40"
+ },
+ "adams_apple": {
+  "front_contour_rows_mm": [
+   {
+    "z": 1.4033,
+    "plate_avg": -77.85,
+    "start": -78.49335710387084,
+    "now": -78.49335710387084,
+    "err_start": -0.6433571038708408,
+    "err_now": -0.6433571038708408
+   },
+   {
+    "z": 1.4112,
+    "plate_avg": -79.15,
+    "start": -79.4056323389908,
+    "now": -79.4056323389908,
+    "err_start": -0.2556323389907931,
+    "err_now": -0.2556323389907931
+   },
+   {
+    "z": 1.419,
+    "plate_avg": -81.75,
+    "start": -81.35423678461565,
+    "now": -81.35423678461565,
+    "err_start": 0.3957632153843491,
+    "err_now": 0.3957632153843491
+   },
+   {
+    "z": 1.4229,
+    "plate_avg": -83.05000000000001,
+    "start": -82.45474854533265,
+    "now": -82.45476546206255,
+    "err_start": 0.5952514546673626,
+    "err_now": 0.5952345379374577
+   },
+   {
+    "z": 1.4307,
+    "plate_avg": -88.25,
+    "start": -87.20039368884613,
+    "now": -87.204071856064,
+    "err_start": 1.049606311153866,
+    "err_now": 1.0459281439359955
+   },
+   {
+    "z": 1.4347,
+    "plate_avg": -89.55000000000001,
+    "start": -88.72703902965316,
+    "now": -88.77552183735466,
+    "err_start": 0.8229609703468554,
+    "err_now": 0.7744781626453516
+   },
+   {
+    "z": 1.4386,
+    "plate_avg": -90.2,
+    "start": -88.83364261954199,
+    "now": -88.99277001865782,
+    "err_start": 1.3663573804580125,
+    "err_now": 1.2072299813421807
+   },
+   {
+    "z": 1.4425,
+    "plate_avg": -90.85,
+    "start": -88.94024620943082,
+    "now": -89.21001819996097,
+    "err_start": 1.9097537905691695,
+    "err_now": 1.639981800039024
+   },
+   {
+    "z": 1.4464,
+    "plate_avg": -90.2,
+    "start": -89.3132628185827,
+    "now": -89.27224862354392,
+    "err_start": 0.8867371814173026,
+    "err_now": 0.9277513764560865
+   },
+   {
+    "z": 1.4503,
+    "plate_avg": -88.25,
+    "start": -91.99887930076322,
+    "now": -90.7177628962547,
+    "err_start": -3.748879300763221,
+    "err_now": -2.4677628962546976
+   }
+  ],
+  "apple_rows_max_change_mm": 0.26977199053014544,
+  "apple_rows_max_err_now_mm": 1.639981800039024,
+  "apple_rows_max_err_start_mm": 1.9097537905691695,
+  "top_row_z1_4503_err_start_now_mm": [
+   -3.748879300763221,
+   -2.4677628962546976
+  ],
+  "lateral_throat_verts_moved_by_the_crease_undo": 20,
+  "lateral_throat_max_move_mm": 1.7044250485094927,
+  "pass_rule": "midline front contour at the apple rows z 1.4033-1.4464 within 0.35 mm of Micro1j and not worse vs plate by > 0.3 mm"
+ },
+ "silhouette_pct": {
+  "body_bald_front": 4.3203,
+  "body_bald_back": 4.3854,
+  "withface_bald_front": 4.3203,
+  "withface_bald_back": 4.3854
+ },
+ "no_sticker_volume": {
+  "crest_height_max_mm": 2.4892025489703618,
+  "crest_edge_slope_max": 0.25580517518191,
+  "crest_edges_slope_gt_0_5": 0,
+  "topology_identical": true,
+  "new_geometry": 0,
+  "pass_rule": "position-only surface displacement, edge slope of the crest field <= 0.5 mm/mm, max crest <= 3 mm"
+ },
+ "q3_contour_vs_plate_mm_rows470-590": {
+  "q3L_470": {
+   "start": [
+    -19.130626079266484,
+    2.884295327553385
+   ],
+   "now": [
+    -19.130626079266484,
+    2.884295327553385
+   ]
+  },
+  "q3L_476": {
+   "start": [
+    3.9036019863645017,
+    2.8087689409451784
+   ],
+   "now": [
+    3.9036019863645017,
+    2.8087689409451784
+   ]
+  },
+  "q3L_482": {
+   "start": [
+    5.661086039306538,
+    2.908322841715938
+   ],
+   "now": [
+    5.661086039306538,
+    2.908322841715938
+   ]
+  },
+  "q3L_488": {
+   "start": [
+    -0.7330040742107796,
+    6.843547760901144
+   ],
+   "now": [
+    -0.7330040742107796,
+    6.843547760901144
+   ]
+  },
+  "q3L_494": {
+   "start": [
+    2.415862845138066,
+    7.2420773858012275
+   ],
+   "now": [
+    2.415862845138066,
+    7.2420773858012275
+   ]
+  },
+  "q3L_500": {
+   "start": [
+    4.251836198384345,
+    9.509118380944884
+   ],
+   "now": [
+    3.452441780373015,
+    9.509118380944884
+   ]
+  },
+  "q3L_506": {
+   "start": [
+    3.3136748339291393,
+    12.041981548853084
+   ],
+   "now": [
+    2.188428890095709,
+    12.041981548853084
+   ]
+  },
+  "q3L_512": {
+   "start": [
+    1.3868267138406956,
+    14.53991468750773
+   ],
+   "now": [
+    0.6686052627573935,
+    14.53991468750773
+   ]
+  },
+  "q3L_518": {
+   "start": [
+    -1.7617127937515573,
+    16.020133474663513
+   ],
+   "now": [
+    -1.728552627288887,
+    16.020133474663513
+   ]
+  },
+  "q3L_524": {
+   "start": [
+    -4.087735335953367,
+    12.038682423634857
+   ],
+   "now": [
+    -3.0087412166375542,
+    12.039401924979778
+   ]
+  },
+  "q3L_530": {
+   "start": [
+    -4.128293334062253,
+    7.93563190938567
+   ],
+   "now": [
+    -2.8815606646087057,
+    7.935644002392881
+   ]
+  },
+  "q3L_536": {
+   "start": [
+    -4.281362144083597,
+    5.611456308100379
+   ],
+   "now": [
+    -2.446479132747119,
+    5.631083751634388
+   ]
+  },
+  "q3L_542": {
+   "start": [
+    -2.955667610046955,
+    5.375518978118262
+   ],
+   "now": [
+    -2.0784760951336496,
+    5.488509105763444
+   ]
+  },
+  "q3L_548": {
+   "start": [
+    -1.0084369453639828,
+    4.262455800700185
+   ],
+   "now": [
+    -0.38185668487823166,
+    4.313261704059223
+   ]
+  },
+  "q3L_554": {
+   "start": [
+    -1.8060043353057365,
+    2.912067665481971
+   ],
+   "now": [
+    -1.000285468376126,
+    2.9136988762557885
+   ]
+  },
+  "q3L_560": {
+   "start": [
+    -3.056634808504531,
+    0.7947190689917014
+   ],
+   "now": [
+    -2.63507873924244,
+    0.7951539150571062
+   ]
+  },
+  "q3L_566": {
+   "start": [
+    -2.369043243199046,
+    2.6192544410823646
+   ],
+   "now": [
+    -3.4669297502001113,
+    2.61996786571748
+   ]
+  },
+  "q3L_572": {
+   "start": [
+    -1.916233506856929,
+    2.4409794234417816
+   ],
+   "now": [
+    -2.400067905349875,
+    2.440974691267683
+   ]
+  },
+  "q3L_578": {
+   "start": [
+    -2.1035375197672037,
+    1.1623823114465441
+   ],
+   "now": [
+    -2.103442901468343,
+    1.1623816450337279
+   ]
+  },
+  "q3L_584": {
+   "start": [
+    -5.050741102492321,
+    -3.910663314165395
+   ],
+   "now": [
+    -5.048250245414276,
+    -3.910663314165395
+   ]
+  },
+  "q3L_590": {
+   "start": [
+    -41.593156105899304,
+    -11.767860369980461
+   ],
+   "now": [
+    -43.35863003681802,
+    -11.767860369980461
+   ]
+  },
+  "q3R_470": {
+   "start": [
+    -22.444823948298954,
+    0.9144148365208364
+   ],
+   "now": [
+    -22.444823948298954,
+    0.9144148365208364
+   ]
+  },
+  "q3R_476": {
+   "start": [
+    3.8543160982099947,
+    0.7746496535843662
+   ],
+   "now": [
+    3.8543160982099947,
+    0.7746496535843662
+   ]
+  },
+  "q3R_482": {
+   "start": [
+    5.620382247197379,
+    3.471597012638601
+   ],
+   "now": [
+    5.620382247197379,
+    3.471597012638601
+   ]
+  },
+  "q3R_488": {
+   "start": [
+    -0.004520253224275839,
+    3.297103465926168
+   ],
+   "now": [
+    -0.004520253224275839,
+    3.297103465926168
+   ]
+  },
+  "q3R_494": {
+   "start": [
+    4.301173159000261,
+    3.5578844317936693
+   ],
+   "now": [
+    4.301173159000261,
+    3.5578844317936693
+   ]
+  },
+  "q3R_500": {
+   "start": [
+    4.123027881037441,
+    5.669126176497395
+   ],
+   "now": [
+    3.3584980224069922,
+    5.669126176497395
+   ]
+  },
+  "q3R_506": {
+   "start": [
+    4.178243773419297,
+    8.133160376870055
+   ],
+   "now": [
+    3.8105634022494184,
+    8.133160376870055
+   ]
+  },
+  "q3R_512": {
+   "start": [
+    2.437431816389337,
+    9.479184852356932
+   ],
+   "now": [
+    2.6175261663950304,
+    9.479184852356932
+   ]
+  },
+  "q3R_518": {
+   "start": [
+    -0.027664978913058868,
+    9.765763367373726
+   ],
+   "now": [
+    0.5816574541746347,
+    9.765763367373726
+   ]
+  },
+  "q3R_524": {
+   "start": [
+    -1.6833503456060224,
+    9.847949238175326
+   ],
+   "now": [
+    -0.5618977801278457,
+    9.847953024324482
+   ]
+  },
+  "q3R_530": {
+   "start": [
+    -1.492530328501722,
+    8.812626701145636
+   ],
+   "now": [
+    -0.4544881679265633,
+    8.812638592815595
+   ]
+  },
+  "q3R_536": {
+   "start": [
+    -2.6126872242496306,
+    3.3478507812038987
+   ],
+   "now": [
+    -1.2032882080220157,
+    3.4136239979743808
+   ]
+  },
+  "q3R_542": {
+   "start": [
+    -1.7065486836280304,
+    3.347806327792575
+   ],
+   "now": [
+    -0.5346939690691475,
+    3.5035131058183326
+   ]
+  },
+  "q3R_548": {
+   "start": [
+    -0.4753285430668883,
+    1.823417286277998
+   ],
+   "now": [
+    0.3381703434432706,
+    1.9066108808002786
+   ]
+  },
+  "q3R_554": {
+   "start": [
+    -1.5627369015247008,
+    1.7413369447290696
+   ],
+   "now": [
+    -0.39427284226937226,
+    1.8104145785729404
+   ]
+  },
+  "q3R_560": {
+   "start": [
+    -2.809855286421467,
+    0.6717534103613992
+   ],
+   "now": [
+    -2.099447844471943,
+    0.7303276182048228
+   ]
+  },
+  "q3R_566": {
+   "start": [
+    -1.8081588009660223,
+    0.91289278309898
+   ],
+   "now": [
+    -2.90735916662078,
+    0.9135072060955218
+   ]
+  },
+  "q3R_572": {
+   "start": [
+    -1.604692112086936,
+    1.8897996545178317
+   ],
+   "now": [
+    -3.1085410972183873,
+    1.890736046146312
+   ]
+  },
+  "q3R_578": {
+   "start": [
+    -0.7261168887260135,
+    0.5632386351007594
+   ],
+   "now": [
+    -0.8995129987923528,
+    0.5633367360008174
+   ]
+  },
+  "q3R_584": {
+   "start": [
+    0.9595615787128707,
+    -3.209186241866653
+   ],
+   "now": [
+    0.962032387620286,
+    -3.209186241866653
+   ]
+  },
+  "q3R_590": {
+   "start": [
+    -52.12765406919681,
+    -9.728166469231542
+   ],
+   "now": [
+    -53.906280594522926,
+    -9.728166469231542
+   ]
+  }
+ },
+ "q3_contour_rows_within_3mm_jaw_cheek_rows": {
+  "start": 32,
+  "now": 34,
+  "of": 60
+ },
+ "q3_contour_max_change_mm": 1.834883011336478,
+ "q3_contour_max_abs_error_jaw_cheek_rows_mm": {
+  "start": 16.020133474663513,
+  "now": 16.020133474663513
+ },
+ "profile_front_y_max_change_mm": 0.0,
+ "profile_back_y_max_change_mm": 0.0,
+ "overall_likeness_basis": {
+  "improved": [
+   "neck jaw crease removed (recess vs pre-relief -6.0 mm -> -0.65 mm)",
+   "jaw edge on the mandible (crest 2.5 mm)",
+   "cheek relief pulled to the smooth plate-like cheek (RMS 1.78 -> 0.87 mm from Micro1h)",
+   "nape C7 bump over chord 3.26 -> 1.35 mm"
+  ],
+  "silhouette_pct_start": [
+   4.3337,
+   4.3908
+  ],
+  "silhouette_pct_now": [
+   4.3203,
+   4.3854
+  ],
+  "q3_rows_within_3mm": [
+   32,
+   34
+  ],
+  "jaw_half_width_err_start_now": [
+   1.8540417644932057,
+   1.958898055434477
+  ]
+ },
+ "mirror_asymmetry_of_edit_mm": {
+  "mean": 0.01220090354756998,
+  "p95": 0.05275219783660216,
+  "max": 0.4240440041353625
+ },
+ "loops_move": {
+  "LOOP_mouth_seam": {
+   "verts": 59,
+   "max_move_mm": 3.3429291972227035e-07
+  },
+  "LOOP_mouth_lip_upper": {
+   "verts": 39,
+   "max_move_mm": 4.788489743770008e-08
+  },
+  "LOOP_mouth_lip_lower": {
+   "verts": 49,
+   "max_move_mm": 1.0925392157470129e-07
+  },
+  "LOOP_nostril_L": {
+   "verts": 23,
+   "max_move_mm": 0.0
+  },
+  "LOOP_nostril_R": {
+   "verts": 23,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ala_L": {
+   "verts": 20,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ala_R": {
+   "verts": 19,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ear_attach_L": {
+   "verts": 117,
+   "max_move_mm": 0.0024193239017647524
+  },
+  "LOOP_helix_L": {
+   "verts": 65,
+   "max_move_mm": 6.914448485995095e-06
+  },
+  "LOOP_concha_L": {
+   "verts": 50,
+   "max_move_mm": 0.0
+  },
+  "LOOP_ear_attach_R": {
+   "verts": 117,
+   "max_move_mm": 0.0024218608013320685
+  },
+  "LOOP_helix_R": {
+   "verts": 65,
+   "max_move_mm": 9.882398260829817e-06
+  },
+  "LOOP_concha_R": {
+   "verts": 50,
+   "max_move_mm": 0.0
+  },
+  "LOOP_jaw_ear_L": {
+   "verts": 30,
+   "max_move_mm": 1.860226975213069
+  },
+  "LOOP_jaw_ear_R": {
+   "verts": 30,
+   "max_move_mm": 1.8552521374201896
+  },
+  "LOOP_lid_margin_L": {
+   "verts": 46,
+   "max_move_mm": 0.0
+  },
+  "LOOP_lid_margin_R": {
+   "verts": 46,
+   "max_move_mm": 0.0
+  }
+ },
+ "regions": {
+  "front_neck_apple_throat": {
+   "verts": 20,
+   "max_mm": 1.7044250485094927,
+   "mean_mm": 0.521471931880739
+  },
+  "nape strip (y>0, z<1.40)": {
+   "verts": 20,
+   "max_mm": 1.9535263951546282,
+   "mean_mm": 0.7157680589422878
+  },
+  "jaw/ramus/cheek (|x|>0.01, 1.43<z<1.58, y -0.16..0.03)": {
+   "verts": 2586,
+   "max_mm": 5.828336766389804,
+   "mean_mm": 0.6494214419765759
+  }
+ },
+ "gates": {
+  "ZONE_OUTSIDE": "PASS",
+  "KILL_NECK_JAW_CREASE": "PASS",
+  "REAL_MANDIBLE_PROFILE": "PASS",
+  "CHEEK_SOFTEN": "PASS",
+  "NAPE_LUMP": "PASS",
+  "ADAMS_APPLE_ROUND": "PASS",
+  "SIL_PCT_LE_5": "PASS",
+  "NO_STICKER_VOLUME": "PASS",
+  "OVERALL_LIKENESS_closer": "PASS"
+ },
+ "tag": "k11",
+ "install": {
+  "installed": "2026-10-01 23:34",
+  "blend_sha256": "1fe4d53b3bcb9cfaef885d64350150e323a1d726cc4d54cc305ea71e323119bb",
+  "fbx_sha256": "73582af619f63ba34db74a390eccfcca2f321b123761d4f3d971278a1aaa3f90",
+  "prefab_sha256": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+  "method": "delta merge (merge_j.py, data/D_k11.npy) onto the then-current shared blend 59a74b85 (torso FORM2 final); FBX exported with work/male-micro1h/export_final.py (re-import max 0.00028 mm)",
+  "unity": {
+   "verify": "MALE_FORM_SAVED_UNITY_VERIFY=PASS",
+   "body_tris": 60358,
+   "body_vertices_after_fbx_merge": 30223,
+   "height_m": 1.702187,
+   "normals": "Import",
+   "mesh_compression": "Off",
+   "captures": "ArtDir/hero/base_lock/proof/male_form_d/unity/ (copy: work/male-micro1k-head/proof/unity_captures_k11/)"
+  },
+  "rollback": {
+   "pre_install_blend": "work/male-micro1k-head/baseline/artdir_pre_k/HeroBase_Male_Silhouette.59a74b85.blend",
+   "pre_install_fbx": "work/male-micro1k-head/baseline/artdir_pre_k/HeroBase_Male_Body.0454f6c3.fbx",
+   "micro1j_blend": "work/male-micro1k-head/baseline/HeroBase_Male_Silhouette.blend (72fc6465)"
+  }
+ },
+ "outside_zone_moved_except_nape_strip": 0,
+ "nape_strip_documented": {
+  "vertices": 20,
+  "z_range": [
+   1.3618885278701782,
+   1.3946609497070312
+  ],
+  "max_abs_x_mm": 24.54516664147377,
+  "max_move_mm": 1.9535263951546282,
+  "approval": "Adnan, 01b_MALE_HEAD_Micro1k.txt item 4 (<= 2 mm, ~40 verts)"
+ },
+ "gate_line": "GATE: MALE_HEAD PASS",
+ "placement_note": "crest follows the mesh natural jaw border (n_z = -0.5 iso-line + plate angle/ramus); the plate-derived border (profile-plate tone edge) is 6-12 mm lower along the jaw body and coincides at the angle (see proof/arc_overlay)"
+}

@@ -1,0 +1,9 @@
+Ready target hip vertical range=0.0084m
+JumpServe target hip vertical range=0.5185m
+Forehand target hip vertical range=0.0978m
+Backhand target hip vertical range=0.0567m
+RunForward target hip vertical range=0.0236m
+RunRight target hip vertical range=0.0219m
+RunLeft target hip vertical range=0.0221m
+Volley target hip vertical range=0.0458m
+Smash target hip vertical range=0.2839m

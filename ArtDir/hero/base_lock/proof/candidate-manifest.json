@@ -1,0 +1,118 @@
+{
+  "Male": {
+    "reference_sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+    "source_blend_sha256": "82ea9610c60597bc34f41f0c0e6bbdc8f433ca95012c96832b9982cebbb7e7ae",
+    "exports": {
+      "HeroBase_Male_Body.fbx": {
+        "sha256": "53e9096905c51a6a35d0323c5ebdc7244c9ba7dd2a151fab5253ee7b85432030",
+        "mesh_count": 1,
+        "triangles": 39268,
+        "materials": [
+          "Base_Grey_M",
+          "Skin_M",
+          "Eye_White",
+          "Iris_Dark",
+          "Pupil",
+          "Brow",
+          "Mouth",
+          "Teeth",
+          "Lip_M",
+          "Ear_Shadow_M"
+        ]
+      },
+      "Hair_Default_Male.fbx": {
+        "sha256": "f786a6a38a5449fb93279ef24378ff25d322620aca8fcc0bd3adab0aec9fddd6",
+        "mesh_count": 1,
+        "triangles": 9824,
+        "materials": [
+          "Hair_M"
+        ]
+      }
+    },
+    "prefabs": {
+      "HeroBase_Male.prefab": {
+        "sha256": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/HeroBase_Male.prefab"
+      },
+      "Bodies/HeroBase_Male_Body.prefab": {
+        "sha256": "e9200f4a7802f3be59e9c6517b6d2698d4fb5cc5262db213858fc35c0547c6f0",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Bodies/HeroBase_Male_Body.prefab"
+      },
+      "Hair/Hair_Default_Male.prefab": {
+        "sha256": "7b46cefe7c6cd939be25fa029d3cdc7f6ab95a3720fb468e4fa788c229e6704d",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Hair/Hair_Default_Male.prefab"
+      },
+      "Previews/HeroBase_Male_DefaultHair.prefab": {
+        "sha256": "860305f53e19a4687eb4e3b28e4a9db67bb34f348c31338ec8e27df12bd34dbf",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Previews/HeroBase_Male_DefaultHair.prefab"
+      }
+    },
+    "hair_anchor_metres": [
+      0,
+      1.5795952782462055,
+      0
+    ],
+    "primary_base_is_bald": true,
+    "body_contains_hair": false,
+    "scalp_boundary_edges": 0,
+    "scalp_nonmanifold_edges": 0
+  },
+  "Female": {
+    "reference_sha256": "ef62ce52ac6772fa13fac2b4e62727859efebf995c52d78e86e04517eddd5614",
+    "source_blend_sha256": "200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd",
+    "exports": {
+      "HeroBase_Female_Body.fbx": {
+        "sha256": "47aa5cc8f1dbe96a4ca20717162427fe18134b2502aabba90e46c051fb3fb2e2",
+        "mesh_count": 1,
+        "triangles": 44708,
+        "materials": [
+          "Base_Grey_F",
+          "Skin_F",
+          "Eye_White",
+          "Iris_Dark",
+          "Pupil",
+          "Brow",
+          "Mouth",
+          "Teeth",
+          "Lip_F",
+          "Ear_Shadow_F"
+        ]
+      },
+      "Hair_Default_Female.fbx": {
+        "sha256": "7d5524047494501d305dcb1e9b5a8debedf6ffcb6cb2c50ee200534f35808649",
+        "mesh_count": 1,
+        "triangles": 4960,
+        "materials": [
+          "Hair_F"
+        ]
+      }
+    },
+    "prefabs": {
+      "HeroBase_Female.prefab": {
+        "sha256": "5e66c241fbc3169cf7781e696d68aca03c560a805c21dede123e7e95bcda3ca6",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/HeroBase_Female.prefab"
+      },
+      "Bodies/HeroBase_Female_Body.prefab": {
+        "sha256": "47990aee473f71dc6054ee1af80fef2b8cd43b5acbdde4702b004e1d3e788bf3",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Bodies/HeroBase_Female_Body.prefab"
+      },
+      "Hair/Hair_Default_Female.prefab": {
+        "sha256": "3541bebfcd6c48d75165f11c3a09f2153adca40725d604600d9f6a49e0a2238b",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Hair/Hair_Default_Female.prefab"
+      },
+      "Previews/HeroBase_Female_DefaultHair.prefab": {
+        "sha256": "b146a1f76bf0f0b1ebf4336286738bc5de1b0f791df1668c906b2a4c0fa6d088",
+        "path": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/Characters/HeroBase/Previews/HeroBase_Female_DefaultHair.prefab"
+      }
+    },
+    "hair_anchor_metres": [
+      0,
+      1.5572519083969465,
+      0
+    ],
+    "primary_base_is_bald": true,
+    "body_contains_hair": false,
+    "scalp_boundary_edges": 0,
+    "scalp_nonmanifold_edges": 0
+  }
+}

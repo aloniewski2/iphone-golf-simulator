@@ -1,0 +1,96 @@
+PASTE — FEMALE TORSO FORM3 (bust + glute likeness) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan REJECTED FORM2 quality: **chest and butt are extremely far off the plate** and not ready. FORM2's binary gates passed on self-defined metrics — that is NOT enough. This pass is **BUST + GLUTE likeness only**. Soft-plastic party style. Do not chase midsection vanity, clothes, hair, Unity, or other zones.
+
+WHY FORM2 FAILED (root causes — do not repeat):
+1) BUST became **blocky / cylindrical shelf mounds** — flat fronts, hard horizontal underbust + upper shelf lines, square flanks in clay light (`proof/05_chest_glute_closeups_clay.png`). Plate is soft teardrop / soft-plastic mounds with continuous curvature into chest wall + armpit, readable underbust crescent, sternal valley, NOT two bolted-on boxes.
+2) GLUTES became a **rectangular butt box** with a **square cleft cavity** and hard upper rim / ledge (`proof/04`, `proof/05`, back 3/4). Plate is two round peach lobes, soft V cleft, smooth upper shelf blend into lumbar, underbutt curve into thighs — organic, not a shelf with a hole.
+3) Agent-authored volume/cleft mm gates let FORM2 soft-pass while Adnan eye still fails. **Plate likeness is the hard fail this time.**
+
+START (verify SHA before edit):
+work/female-torso-form2/export/HeroBase_Female_torso_form2_candidate.blend
+SHA-256 6859d958982fa69beba4b48a44250a2f22a3b374d3caca4eb4717f5566a65f27
+(fallback: merge `export/torso_form2_delta.npz` onto ArtDir `HeroBase_Female.blend` 200dc3b9… via form2's merge script, then continue — never clobber ArtDir without zone audit)
+ArtDir female is still 200dc3b9… (nothing installed). Prefer the staged form2 candidate as start so you keep chat7 depth wins + form2 displacement base to reshape.
+
+READ FIRST (mandatory):
+1) work/female-torso-form2/FEMALE_TORSO_FORM2_RESULTS.md — Honest notes + why chat7 failed
+2) work/female-torso-form2/proof/04_plate_vs_model_3q.png
+3) work/female-torso-form2/proof/05_chest_glute_closeups.png + _clay.png
+4) work/female-torso-form2/proof/01_torso_before_after_soft.png
+5) work/female-parallel-torso/FEMALE_TORSO_RESULTS.md (zone mask + depth PASS to keep)
+6) AGENTS.md + art-bible.md
+AUTHORITY (hard): ArtDir/hero/base_lock/female_body_bald.jpg + female_multiangle_body.jpg + female_body_plain.jpg — **front/back primary for bust + glute; side + 3/4 validate silhouette**. Plate wins over any scripted mm gate you invent.
+
+PARALLEL SAFETY:
+- YOUR ZONE ONLY: same torso mask as chat7 / FORM2 — z ≈ 0.795–1.37, arms excluded (`|x|` arm taper as chat7; border verts at neck / arm junction / leg tops stay bit-identical). Prefer 0 move outside zone. Audit mandatory vs form2 start AND vs original ArtDir 200dc3b9.
+- Work ONLY under work/female-torso-form3/ . Stage export there. Do NOT install ArtDir unless Adnan says so after eye PASS.
+- Do NOT open male blend. Do NOT thrash head / arms / hands / legs. Do NOT densify unless you disclose TRI delta + Adnan note (prefer positions-only on existing shell).
+- If another chat has already moved ArtDir female, STOP and rebase torso delta — never whole-file clobber.
+
+KEEP FROM CHAT7 / FORM2 (do not regress):
+- ZONE_OUTSIDE = 0 (incl. border verts bit-identical)
+- TOPOLOGY / UV / materials / custom-normal raw codes identical preferred
+- SIDE_SIL torso band ≤ 5% (chat7 depth win) — do not blow silhouette for vanity
+- Front/back torso edge XOR ≤ 5%
+- Soft-plastic style (no pores, no hyperreal, no shredded abs)
+
+SCOPE — FORM3 PRIMARY (both must PASS Adnan-eye + plate BA; either fails → GATE FAIL):
+
+1) BUST_LIKENESS — rebuild chest so it reads as the plate's soft-plastic breasts, not FORM2 boxes.
+   - Soft rounded mounds (teardrop / soft-plastic), volume concentrated lower, gentle upper slope into clavicle/chest wall.
+   - Clear **underbust crescent / soft shelf** that blends (no hard horizontal cylinder cut).
+   - Readable **sternal valley / separation** without a knife crease.
+   - Lateral flank blends into armpit/chest wall — **no square corners, no flat front faces, no bolted-on caps**.
+   - Apex height + footprint must track plate grids (form2 noted plate apex ~z 1.21–1.22, centres |x|≈0.07–0.085) — but **shape > mm table**. If shape is boxy, FAIL even if mm pass.
+   - Mandatory proof: plate | FORM2 | FORM3 front + 3/4 bust close-ups (soft + clay). Clay must NOT show square shelves.
+
+2) GLUTE_LIKENESS — rebuild pelvis back so it reads as the plate's round buttocks, not FORM2 box-butt.
+   - Two distinct **round lobes** (peach), not one rectangle with a hole.
+   - Soft **V cleft** that deepens downward; **no square cavity, no hard rim, no flat-top ledge**.
+   - Upper shelf blends smoothly into lumbar (σ soft — kill FORM2's hard rim / blocky upper squares on back 3/4).
+   - Side + back 3/4: projection and underbutt curve as close as zone floor allows. Honest limit: deep thigh overhang / crotch below z=0.795 is legs zone — maximize in-zone roundness + underbutt rise; document residual; do NOT invade legs.
+   - Mandatory proof: plate | FORM2 | FORM3 back + 3/4 glute close-ups (soft + clay).
+
+FORBIDDEN METHODS (will FAIL eye even if metrics pass):
+- Pure ellipsoid-cap / constant-depth "wall-relative" bolts that leave flat fronts + hard shelves
+- Recessed square cleft pits / Gaussian hole in a slab
+- Any form that reads as LEGO / box / cylinder in clay studio light
+- Soft-passing via only self-defined mm gates while plate BA still looks wrong
+
+METHOD HINTS (allowed):
+- Sculpt / sculpt-like displace toward **plate silhouette + plate shading lobes**, then fair
+- Mirror-stripe / matcap check: soft concentric rings on mounds and lobes; broken V-creases / square rings = FAIL
+- Prefer iterative plate ROI overlay (bust band + pelvis band) over inventing new numeric definitions
+
+SECONDARY (improve; blocker if worse than FORM2):
+3) SEAM_CLEAN — arm / leg / neck border steps not worse than FORM2 (arm ≤10 mm, legs ≤8 mm, neck ≤1 mm)
+4) Keep waist depth / side profile win
+5) Stage delta npz + merge script superseding form2 delta (relative to ArtDir 200dc3b9)
+
+HARD GATES (binary):
+ZONE_OUTSIDE_MOVED=0 (vs form2 start AND vs ArtDir 200dc3b9; border verts 0)
+TOPOLOGY_IDENTICAL (or Adnan-noted carve — prefer none)
+SIDE_SIL<=5% (torso band)
+FRONT_BACK_TORSO_EDGE<=5%
+SEAM_CLEAN hold vs FORM2 limits
+BUST_LIKENESS PASS — plate BA close-ups: soft rounded mounds, underbust blend, no box/cylinder/flat-front; clay confirms
+GLUTE_LIKENESS PASS — plate BA close-ups: twin round lobes + soft V cleft, no box/square cavity/hard ledge; clay confirms
+NO_SELF_INTERSECT / no flipped faces / no NaN
+MIRROR soft (no worse than FORM2 stripe breaks; bust/glute rings must look organic)
+
+DELIVER:
+- work/female-torso-form3/FEMALE_TORSO_FORM3_RESULTS.md (lead with Honest notes — what still differs from plate)
+- proof: 04_plate_vs_form2_vs_form3_3q.png · 05_bust_closeups_soft+clay · 06_glute_closeups_soft+clay · side overlay · mirror test · checks.json
+- export: staged candidate blend + torso_form3_delta.npz + merge script + README_MERGE.md
+- ArtDir install ONLY if Adnan eyes PASS after this chat — default STAGE ONLY
+
+REPLY ONLY:
+GATE: FEMALE_TORSO_FORM3 PASS
+or
+GATE: FEMALE_TORSO_FORM3 FAIL
+<failed lines only>

@@ -1,0 +1,19 @@
+[
+  {
+    "sex": "Male",
+    "unchanged": [
+      "Body_M",
+      "Face_M",
+      "restRig"
+    ]
+  },
+  {
+    "sex": "Female",
+    "unchanged": [
+      "Body_F",
+      "Face_F",
+      "Hair_F",
+      "restRig"
+    ]
+  }
+]

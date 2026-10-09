@@ -1,0 +1,4 @@
+Unity iOS export: Succeeded 22s errors=0 warnings=1 -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Builds/iOS
+Integrated iOS Release: BUILD SUCCEEDED
+Simulator PointClipsTests: 4 passed, 0 failures
+Physical iPhone + AirPlay: not yet verified

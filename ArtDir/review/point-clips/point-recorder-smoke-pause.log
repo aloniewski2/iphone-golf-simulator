@@ -1,0 +1,10 @@
+{"enabled":false,"hasClip":false,"message":"Enable 60 fps point clips before playing.","version":1,"session":"smoke-test","type":"recording","state":"off"}
+{"enabled":true,"hasClip":false,"message":"Checking 1080p · 60 fps…","version":1,"session":"smoke-test","type":"recording","state":"checking"}
+{"enabled":true,"hasClip":false,"message":"60 fps verified. Recording starts with the next point.","version":1,"session":"smoke-test","type":"recording","state":"ready"}
+{"enabled":true,"hasClip":false,"message":"Buffering this point · 1080p60","version":1,"session":"smoke-test","type":"recording","state":"buffering"}
+{"enabled":true,"hasClip":false,"message":"Paused — this incomplete point will not be saved.","version":1,"session":"smoke-test","type":"recording","state":"waiting"}
+{"enabled":true,"hasClip":false,"message":"Ready — the next complete point will be buffered.","version":1,"session":"smoke-test","type":"recording","state":"ready"}
+{"enabled":true,"hasClip":false,"message":"Buffering this point · 1080p60","version":1,"session":"smoke-test","type":"recording","state":"buffering"}
+{"enabled":true,"hasClip":true,"message":"Last point ready · 1080p60","version":1,"session":"smoke-test","type":"recording","state":"available"}
+{"enabled":true,"hasClip":true,"message":"Saved · 1080p60","version":1,"session":"smoke-test","type":"recording","state":"saved","url":"\/Users\/adnanyonathan\/Documents\/PointClips\/MotionClub-5EEB245A-D352-43F6-BB02-981846AB7189.mp4"}
+Recorder smoke pause discards incomplete point: PASS

@@ -1,0 +1,59 @@
+{
+  "sex": "female",
+  "scale_m_per_pixel": 0.0025954198473282443,
+  "source_sha256": "ef62ce52ac6772fa13fac2b4e62727859efebf995c52d78e86e04517eddd5614",
+  "parts": [
+    {
+      "name": "Body_F",
+      "vertices": 22444,
+      "tris": 44708,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "z_min": -9.178760365102789e-07,
+      "z_max": 1.7038931846618652,
+      "material_names": [
+        "Base_Grey_F",
+        "Skin_F",
+        "Eye_White",
+        "Iris_Dark",
+        "Pupil",
+        "Brow",
+        "Mouth",
+        "Teeth",
+        "Lip_F",
+        "Ear_Shadow_F"
+      ]
+    },
+    {
+      "name": "Hair_F",
+      "vertices": 2516,
+      "tris": 4960,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "z_min": 1.4493041038513184,
+      "z_max": 1.707682490348816,
+      "material_names": [
+        "Hair_F"
+      ]
+    }
+  ],
+  "height_m": 1.7038941025379017,
+  "optional_hair_preview_height_m": 1.7076834082248524,
+  "tris": 49668
+}

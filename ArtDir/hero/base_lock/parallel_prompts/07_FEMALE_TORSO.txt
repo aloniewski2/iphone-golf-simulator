@@ -1,0 +1,17 @@
+PASTE — CHAT 7 / 8 — FEMALE TORSO ONLY
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY):
+- Own ONLY your zone/files. Never touch male blend/FBX.
+- Work under work/<your-folder>/ only.
+- If SHA mismatch, STOP.
+
+YOUR ZONE: female torso chest→waist/pelvis shell. EXCLUDE head/neck, arms, hands, legs, feet.
+START: HeroBase_Female.blend SHA 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd (re-verify)
+WORK: work/female-parallel-torso/
+AUTHORITY: female_body_bald.jpg, female_multiangle_body.jpg, female_body_plain.jpg
+No clothes mesh. Soft-plastic. 0 head verts even if chat 6 running — if conflict risk, operate on copy in work/ and merge only after audit.
+DELIVER: torso proofs + outside-zone=0 json
+REPLY: GATE: FEMALE_TORSO PASS|FAIL

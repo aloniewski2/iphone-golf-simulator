@@ -1,0 +1,16 @@
+Use case: stylized-concept. Create a polished 3D sports GAMEPLAY animation storyboard: landscape 3:2, 4 columns by 3 rows, 12 clearly separated panels with short numbered captions. STRICT IDENTITY reference is attached: use the male character, oversized blank rounded-square tan head, relaxed black T-shirt and straight torso, loose black trousers, white sneakers, rounded mitten hands. Preserve compact proportions, head size, and clothing. No eyes, nose, mouth, hair, logos or new outfit. Title "Bowling — third-person gameplay — male".
+CAMERA AND ENVIRONMENT: Original clean stylized bowling alley, polished wood lane, gutters, full rack of pins at distant end. Camera fixed BEHIND bowler, slightly above shoulders. Player in lower-left/center foreground, back to viewer, pins at upper center. Right-handed delivery: left foot slides forward, right leg trails crossed behind, right hand releases along right side toward pins. One dark blue ball, travels away from camera down lane after release. Do not rotate into front view.
+Every panel shows the SAME fixed third-person rear camera and scene framing, full main character including both feet, all equipment in bounds. The viewer is behind the player looking in the direction of play. No frontal character presentations. Clear foreground player silhouette and uncluttered target visibility. Original resort-sports visual style, no borrowed game UI or logos. Panels in reading order:
+1. Ready with ball cradled
+2. Aim down lane
+3. Pushaway
+4. First approach step
+5. Ball swings down beside right thigh
+6. Backswing behind right hip
+7. Forward swing into slide
+8. Release near left planted ankle
+9. Right arm follows through
+10. Hold balanced finish watching ball
+11. Ball rolls toward pins
+12. Strike celebration, still facing pins
+One clear pose per panel; no trails, ghost limbs or motion blur. One ball when relevant. Preserve simple mittens rather than anatomical fingers. These are gameplay keyframe concepts.

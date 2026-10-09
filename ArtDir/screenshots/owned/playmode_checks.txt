@@ -1,0 +1,11 @@
+Runtime GameTime forehand travelled 6.955m and returned to ready without manual sampling.
+ReadyIdle right hand=(12.1692, 0.8532, 0.0442) grip=(12.1286, 0.8323, 0.0749) palm=(12.1104, 0.8428, 0.1070) scale=(100.00, 100.00, 100.00) weighted vertices=826
+ReadyIdle: Humanoid, shared wardrobe bones, right-hand racket, finite skin bounds; contact sample=1.0667s
+Forehand right hand=(12.4927, 1.0581, 0.0836) grip=(12.5189, 1.0509, 0.1314) palm=(12.5126, 1.0620, 0.1680) scale=(100.00, 100.00, 100.00) weighted vertices=826
+Forehand: Humanoid, shared wardrobe bones, right-hand racket, finite skin bounds; contact sample=1.0667s
+Backhand right hand=(12.2303, 0.7224, 0.2196) grip=(12.2198, 0.6703, 0.2336) palm=(12.1964, 0.6528, 0.2586) scale=(100.00, 100.00, 100.00) weighted vertices=826
+Backhand: Humanoid, shared wardrobe bones, right-hand racket, finite skin bounds; contact sample=1.0667s
+Serve right hand=(12.0504, 1.6079, -0.1248) grip=(12.0632, 1.6102, -0.1783) palm=(12.0953, 1.6095, -0.1988) scale=(100.00, 100.00, 100.00) weighted vertices=826
+Serve: Humanoid, shared wardrobe bones, right-hand racket, finite skin bounds; contact sample=1.0667s
+Volley right hand=(12.1532, 1.4448, 0.2153) grip=(12.1638, 1.4987, 0.2128) palm=(12.1586, 1.5286, 0.2368) scale=(100.00, 100.00, 100.00) weighted vertices=826
+Volley: Humanoid, shared wardrobe bones, right-hand racket, finite skin bounds; contact sample=1.0667s

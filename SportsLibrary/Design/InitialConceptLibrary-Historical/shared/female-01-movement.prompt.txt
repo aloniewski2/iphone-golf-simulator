@@ -1,0 +1,15 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Shared — locomotion and transitions — female". Panels in reading order:
+1. Neutral relaxed standing, front view
+2. Ready athletic stance, knees soft
+3. Walk contact: left heel forward, right toe behind
+4. Walk passing: weight over left leg
+5. Walk contact: right heel forward, left toe behind
+6. Run flight: opposite arm and knee drive
+7. Run landing: flexed knee absorbs weight
+8. Stop: lower center of gravity and brake
+9. Turn left: head, shoulders, then hips rotate
+10. Turn right: head, shoulders, then hips rotate
+11. Jump anticipation: crouch with arms back
+12. Jump landing: both feet grounded, knees absorb
+No sports equipment. Communicate all emotions using body language ONLY: the face remains completely blank with no facial features. Keep a mitten hand silhouette.
+SHORT panel captions. Maintain large rounded-square head and squat stylized proportions.

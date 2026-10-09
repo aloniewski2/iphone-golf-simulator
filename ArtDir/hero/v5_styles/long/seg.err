@@ -1,0 +1,16 @@
+task created c6ce17c5-c78d-4041-a95a-9769384ebbf4 (@seg-long)
+mesh_segmentation · queued
+mesh_segmentation · running 8% · c6ce17c5
+mesh_segmentation · running 13% · c6ce17c5
+mesh_segmentation · running 21% · c6ce17c5
+mesh_segmentation · running 33% · c6ce17c5
+mesh_segmentation · running 51% · c6ce17c5
+mesh_segmentation · running 78% · c6ce17c5
+mesh_segmentation · running 99% · c6ce17c5
+mesh_segmentation · running 99% · c6ce17c5
+mesh_segmentation · running 99% · c6ce17c5
+mesh_segmentation · running 99% · c6ce17c5
+mesh_segmentation · success 100% · c6ce17c5
+✓ mesh_segmentation · c6ce17c5-c78d-4041-a95a-9769384ebbf4 · 40 credits
+downloading artifacts…
+✓ artifacts saved to long/seg/tripo-out/seg-long-c6ce17c5

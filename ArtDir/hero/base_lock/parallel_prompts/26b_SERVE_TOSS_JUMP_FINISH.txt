@@ -1,0 +1,43 @@
+PASTE: SERVE TOSS-THEN-JUMP, ROUND 2, FINISH AND INSTALL (Codex, GPT-6.1 Sol). NEW CHAT.
+
+CONTEXT
+Prompt 26 (ArtDir/hero/base_lock/parallel_prompts/26_SERVE_TOSS_THEN_JUMP.txt) ran and FAILED, and nothing was installed. Read its report first: work/serve-toss-jump/GATE_REPORT.md, NOT_INSTALLED.md, data/timeline_audit.json, proof/serve_keys.jpg, film/*. Start from its candidate (export/fbx/, the rekey scripts in scripts/, UnityClone/). Do NOT restart from scratch.
+What 26 got right (keep it): the authored Blender clip has the right order. Feet are down through the toss (toe max 1.8 / 1.4 mm), there's a deep trophy squash (76 deg knees at 1.2667 s), takeoff at 1.600 s, contact in the air (front foot 203 mm, back foot 418 mm up), the apex after contact, the front foot lands first, and game times are unchanged (0.20 / 0.70 / 1.3333 / 1.70).
+
+WHY IT FAILED (fix each one; these are the whole job)
+1. THE LANDING NEVER PLAYS IN THE GAME. The game leaves Serve at 1.978 s, but the authored front-foot touch is at 2.033 s, so the captured Serve landing rows were 0. Fix it in the CLIP, not in game code: front foot lands by 1.90 s at the latest (airtime about 0.30 s from takeoff; snappier and more cartoony), squash 1.90-1.96, settled enough by 1.97 that the game's blend-out looks like a landing, not a cut. Prove the landing is visible in the game film.
+2. IN UNITY THE FEET LIFT DURING THE TOSS, BUT NOT IN THE FBX. The Unity runtime shows the right foot up to 63.8 mm and the first foot clearance at 0.25 / 0.15 s, while the FBX keeps the toes within 1.8 mm. Something in the game changes the legs during the serve. Find out what with a per-layer trace before changing the clip. Suspects: the Match upper/lower layer split (is the lower body still ReadyIdle or locomotion during PrepareServe / PlayerServeHold?), SmoothRoot, procedural foot planting, or the import settings (root motion, Generic rig, keyframe reduction or compression on the new FBX). Report the cause with numbers. If it's an import setting, fix the .meta to match the installed serve's. If it's game code owned by another chat (HeroTennisDriver.cs is being edited by prompt 28), stop and report the exact line and the minimal change, don't edit it.
+3. THE PROOF TOOLS COULDN'T MEASURE. Every runtime field was 0 (palm, heel, toe, knee, pelvis, wrist rotation, planted foot), there was no front camera, and the recorder stopped before the landing. You MAY edit Editor-only proof tools now (Unity/Assets/Editor/ServeTossFilm.cs, MatchHeroFilm.cs, or a new ServeJumpProof.cs): add a front camera, log those fields every 60 fps frame from the live game, and keep recording until 0.5 s after the landing. No runtime (Scripts/) edits.
+4. POP FROM READY. Stance bones over 0.00-0.20 s differ from the real ReadyIdle by up to 366 / 345 mm. Frame 0 of Serve must match ReadyIdle at the game's blend-in time within 10 mm on every bone (or blend into it inside the first 0.10 s in a way the game film shows no jump). Measure it against the live game's ReadyIdle, not the FBX rest.
+5. SMALLER FAILS:
+- Strings at contact moved 13 / 33 mm at racket 1.3x (limit 30). Bring the female under 30 (target <= 15 for both).
+- Hand steps outside trophy-to-contact were 170 / 168 mm per frame (limit 150). These are in the follow-through after contact. Keep the limit at 150 before contact. After contact, the limit is 220 mm per frame at 60 fps (a fast follow-through is real), and there must be no step that reverses direction (no pops).
+- Twist steps were 12.9 / 18.5 deg; keep them <= 15 deg per frame.
+- Clearance: 2 / 5 more collision pairs and +35 / +315 intersecting vertices than the installed serve. Must be 0 new pairs and <= the installed count of intersecting vertices, using the same penetrate_dj.py check at 3 mm.
+- Toss knee flexion was 38 / 39 deg (the old limit was 25). New limit: <= 40 deg during the toss before 1.10 s (a light knee bend while tossing is natural), then the deep trophy load 65-80 deg at 1.25-1.36 s.
+- Front knee at contact was 78 / 74 deg. At contact, the body must read stretched: front knee flexion <= 35 deg, back leg kicked up behind.
+
+RULES
+- Edit only: the two Serve FBXs and their .metas (after all gates pass), work/serve-toss-jump/, and Editor-only proof tools. No Scripts/ edits, no other clips, no hero meshes, sockets, shaders, MatchHeroLook, TennisCloth, QualitySettings, golf files.
+- Other chats are editing MatchHeroLook.cs, TennisCloth.shader, MatchHeroLockerExport.cs, HeroDetailTextures.cs (prompt 29), and HeroTennisDriver.cs / TennisActor.cs (prompt 28). Leave them alone; they are not a reason to fail.
+- Back up before installing (work/serve-toss-jump/rollback_r2/). Install only when every gate passes, then rerun the gates on the INSTALLED files (INSTALLED_EQUALS_TESTED). No commit.
+
+GATES (binary, measured in the LIVE GAME film trace unless it says FBX)
+G1 TOSS_FEET_DOWN: both heels and toes <= 10 mm off the court from 0.20 s to 1.55 s, male and female, in the game trace.
+G2 LOAD_AT_TROPHY: knee flexion 65-80 deg at the deepest point, between 1.25 and 1.36 s; pelvis lowest there.
+G3 TAKEOFF: first foot clearance > 3 mm at 1.57-1.63 s, in the game trace.
+G4 AIR_AT_CONTACT: both feet >= 120 mm up at 1.70 s; front knee <= 35 deg; back foot higher than the front.
+G5 APEX_AFTER_CONTACT: pelvis apex 1.72-1.82 s.
+G6 LANDING_IN_GAME: the front foot touches by 1.90 s, before the back foot by >= 3 frames, with a visible squash; landing rows > 0 in the game trace; a still of the landing from the game camera and from the side.
+G7 NO_POP_IN: Serve frame 0 vs live ReadyIdle <= 10 mm on every bone, or no head or hand jump > 3 cm per frame in the first 0.15 s of the game trace.
+G8 CONTACT_POSE_KEPT: strings at contact within 15 mm of the installed serve's (racket 1.3x), elbow >= 170 deg.
+G9 SMOOTH: hand steps <= 150 mm per frame before contact and <= 220 mm after, no reversal pops; twist <= 15 deg per frame.
+G10 CLEARANCE: 0 new collision pairs; intersecting vertices <= installed.
+G11 NO_FOOT_SLIDE: planted feet move <= 5 mm while planted, in the game trace.
+G12 GAME_TIMES_UNCHANGED: as in 26.
+G13 PROOF_COMPLETE: front, side, back, and game films for male and female, at full and half speed, each running through the landing + 0.5 s; game trace CSVs with every field filled.
+G14 INSTALLED_EQUALS_TESTED: SHA256 of the installed FBXs and .metas equal the tested ones.
+G15 EYE: list the film paths. Adnan's eye decides.
+
+REPORT
+The cause of #2 with numbers, each gate PASS or FAIL with the number, film paths, installed SHAs or NOT INSTALLED with what is left, and rollback paths. No commit.

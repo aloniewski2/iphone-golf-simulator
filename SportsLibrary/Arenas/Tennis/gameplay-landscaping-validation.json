@@ -1,0 +1,146 @@
+[
+  {
+    "tree": "Stone pine trunk",
+    "root_xy": [
+      -19.000003814697266,
+      -3.000006596247355
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.001",
+    "root_xy": [
+      -20.000000953674316,
+      8.999999125798544
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.002",
+    "root_xy": [
+      -17.000003814697266,
+      21.999992688496906
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.003",
+    "root_xy": [
+      16.999999046325684,
+      23.99999745686849
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.004",
+    "root_xy": [
+      21.999996185302734,
+      1.999993513027827
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.005",
+    "root_xy": [
+      20.999999046325684,
+      13.999999125798544
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.006",
+    "root_xy": [
+      -9.0,
+      25.999998251597088
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.007",
+    "root_xy": [
+      6.9999988079071045,
+      27.99999713897705
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Stone pine trunk.008",
+    "root_xy": [
+      -23.99999984105428,
+      24.999999205271404
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk",
+    "root_xy": [
+      -12.0,
+      22.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.001",
+    "root_xy": [
+      -6.0,
+      24.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.002",
+    "root_xy": [
+      6.0,
+      24.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.003",
+    "root_xy": [
+      12.0,
+      23.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.004",
+    "root_xy": [
+      -21.0,
+      15.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.005",
+    "root_xy": [
+      21.0,
+      23.0
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  },
+  {
+    "tree": "Cypress trunk.006",
+    "root_xy": [
+      -22.0,
+      -7.999999904632569
+    ],
+    "on_grass": true,
+    "outside_runoff": true
+  }
+]

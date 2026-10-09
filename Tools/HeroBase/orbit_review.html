@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HeroBase — full character review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#202024;color:#f4f3ef;font:16px system-ui,sans-serif}main{max-width:1100px;margin:auto;padding:22px}h1{font-size:24px;margin:0 0 8px}p{color:#bfc0c8;line-height:1.5;margin:8px 0 16px}button{font:inherit;border:1px solid #575963;border-radius:8px;color:inherit;background:#35363e;padding:10px 18px;cursor:pointer}button[aria-pressed="true"]{background:#e8e4d7;color:#24242a;border-color:#e8e4d7}.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}figure{margin:18px 0;background:#29292c;border-radius:12px;overflow:hidden}img{display:block;width:100%;height:min(70vh,780px);object-fit:contain}figcaption{padding:12px 16px;color:#dedee3}.orbit{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px}input{width:100%;accent-color:#ece6ce}a{color:#e9dcc0}footer{margin-top:22px;color:#aaaab4;font-size:14px}
+</style>
+<main>
+<h1>HeroBase · full character review</h1>
+<p>Eight actual Unity views around each bald base. Male stubble removed; jaw, chin and neck revised. Female head geometry preserved.</p>
+<div class="tools"><button id="male" aria-pressed="true">Male</button><button id="female" aria-pressed="false">Female</button><span id="state"></span></div>
+<figure><img id="shot" alt="Full-body male front view"><figcaption id="caption"></figcaption></figure>
+<div class="orbit"><button id="previous" aria-label="Previous angle">←</button><input id="angle" type="range" min="0" max="7" step="1" value="0" aria-label="View around character"><button id="next" aria-label="Next angle">→</button></div>
+<footer>Use the arrows, slider, or keyboard arrow keys. <a id="native" target="_blank">Open native capture</a> · <a href="GATE_RESULTS.md">Gate results</a><p>Current candidate: BASE FAIL. Reference likeness is still unfinished. These views show the delivered geometry; they are not generated illustrations.</p></footer>
+</main>
+<script>
+const views=['front','front_right','right','back_right','back','back_left','left','front_left'];let sex='M',index=0;
+const byId=id=>document.getElementById(id);
+function show(){const label=views[index].replaceAll('_',' '),name=sex==='M'?'Male':'Female',path=`allaround/${sex}_${views[index]}.png`;byId('shot').src=path;byId('shot').alt=`Full-body ${name.toLowerCase()} ${label} view`;byId('caption').textContent=`${name} · ${label} · ${index*45}°`;byId('angle').value=index;byId('state').textContent=sex==='M'?'Clean skin · no stubble':'Preserved head geometry';byId('native').href=path;byId('male').setAttribute('aria-pressed',sex==='M');byId('female').setAttribute('aria-pressed',sex==='F');}
+function turn(delta){index=(index+delta+8)%8;show();}
+byId('male').onclick=()=>{sex='M';show()};byId('female').onclick=()=>{sex='F';show()};byId('previous').onclick=()=>turn(-1);byId('next').onclick=()=>turn(1);byId('angle').oninput=e=>{index=Number(e.target.value);show()};document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();turn(-1)}if(e.key==='ArrowRight'){e.preventDefault();turn(1)}});let startX=0;byId('shot').addEventListener('touchstart',e=>startX=e.changedTouches[0].clientX,{passive:true});byId('shot').addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-startX;if(Math.abs(d)>45)turn(d<0?1:-1)},{passive:true});show();
+</script>
+</html>

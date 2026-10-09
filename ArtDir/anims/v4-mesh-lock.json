@@ -1,0 +1,15 @@
+{
+  "before_eye_depth_coordinates_topology_weights_unchanged": true,
+  "mesh_hashes": {
+    "Body_EyeSphere_L": "79fc14fd97311a07ff62bdb44b5d1b2a6115bcd99477d4236c9d0431db952f22",
+    "Body_EyeSphere_R": "464f42fc75db7dec513e2ae3f77c4b2f3476dcd68158582519ad10fcf874f6b0",
+    "Hair_Default": "af4f878063561ca2ec2dee41cc65f82d1876157529549109304548716076f3c8",
+    "Hat_Visor": "d67fe9e0aa718aa3cdd68e3d5046c64be2d2539cb55fa8d41f7e0a8811e837c6",
+    "Shirt_Default": "dc2757c45329db2fd10ed4b987836fd6766bf8f0ed6d653211b36243eaf9de22",
+    "Shorts_Default": "5ba8437da6619f180e67dbf27b8f49dd577ff6075f27b69450ca865eef91f5ac",
+    "Shoes_Default": "097598dd8c2668c8ce45804bd85df2d23df60a79f592124df24f89043790d819",
+    "Body_Skin": "12858d1c037b4d4212cbf4bab805b8dc2d5f61aefdfbffe3f276ad5ce1f6982f"
+  },
+  "eye_depth_exception_m": -0.006,
+  "body_limb_hair_hat_clothing_coordinates_unchanged": true
+}

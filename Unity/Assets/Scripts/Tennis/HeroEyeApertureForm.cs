@@ -1,0 +1,23 @@
+using System;using System.Collections.Generic;using System.Linq;using UnityEngine;
+namespace GolfArcade.Tennis {
+ /// Controlled male orbital opening around unchanged eye/iris centres. The
+ /// head silhouette, contacts, rig, eye glass and other body regions remain exact.
+ public static class HeroEyeApertureForm {
+  static readonly Dictionary<Mesh,Mesh> cache=new();
+  public static Mesh Prepare(MatchHeroLook hero){
+   var source=hero.body.sharedMesh;if(hero.female||!source||!source.isReadable||source.name.Contains("(open eye form)"))return source;if(cache.TryGetValue(source,out var saved)&&saved)return saved;
+   int hi=Array.IndexOf(hero.body.bones,hero.Bone(HumanBodyBones.Head));if(hi<0)return source;
+   HeroFaceBasis.Get(hero,out var right,out var up,out var forward);var map=hero.face.transform.worldToLocalMatrix*hero.body.bones[hi].localToWorldMatrix*source.bindposes[hi];var inverse=map.inverse;var positions=source.vertices;var normals=source.normals;var fp=positions.Select(map.MultiplyPoint3x4).ToArray();
+   Vector3Int Key(Vector3 v)=>new(Mathf.RoundToInt(v.x*100000),Mathf.RoundToInt(v.y*100000),Mathf.RoundToInt(v.z*100000));var unique=new List<Vector3>();var keys=new Dictionary<Vector3Int,int>();var ids=new int[fp.Length];for(int i=0;i<fp.Length;i++){var k=Key(fp[i]);if(!keys.TryGetValue(k,out int id)){id=unique.Count;keys[k]=id;unique.Add(fp[i]);}ids[i]=id;}
+   var edges=new Dictionary<(int,int),int>();var tris=source.triangles;for(int t=0;t<tris.Length;t+=3)for(int e=0;e<3;e++){int a=ids[tris[t+e]],b=ids[tris[t+(e+1)%3]];if(a==b)continue;var k=a<b?(a,b):(b,a);edges[k]=edges.GetValueOrDefault(k)+1;}
+   var adjacency=new Dictionary<int,List<int>>();foreach(var e in edges.Where(e=>e.Value==1).Select(e=>e.Key)){if(!adjacency.ContainsKey(e.Item1))adjacency[e.Item1]=new();if(!adjacency.ContainsKey(e.Item2))adjacency[e.Item2]=new();adjacency[e.Item1].Add(e.Item2);adjacency[e.Item2].Add(e.Item1);}
+   var loops=new List<List<Vector3>>();var remaining=new HashSet<int>(adjacency.Keys);while(remaining.Count>0){var stack=new Stack<int>();stack.Push(remaining.First());var loop=new List<Vector3>();while(stack.Count>0){int id=stack.Pop();if(!remaining.Remove(id))continue;loop.Add(unique[id]);foreach(int next in adjacency[id])stack.Push(next);}if(loop.Count>20)loops.Add(loop);}
+   var face=hero.face.GetComponent<MeshFilter>().sharedMesh;var materials=hero.face.sharedMaterials;var eyes=new List<Vector3>();for(int s=0;s<Mathf.Min(face.subMeshCount,materials.Length);s++)if(materials[s]&&materials[s].name.Contains("Sclera"))eyes.AddRange(face.GetTriangles(s).Select(i=>face.vertices[i]));if(eyes.Count==0)return source;float mid=eyes.Average(p=>Vector3.Dot(p,right));
+   var selected=new List<List<Vector3>>();foreach(bool left in new[]{true,false}){var eye=eyes.Where(p=>(Vector3.Dot(p,right)<mid)==left).ToArray();var centre=eye.Aggregate(Vector3.zero,(sum,p)=>sum+p)/eye.Length;var loop=loops.Where(l=>!selected.Contains(l)).OrderBy(l=>(l.Aggregate(Vector3.zero,(sum,p)=>sum+p)/l.Count-centre).sqrMagnitude).FirstOrDefault();if(loop==null||(loop.Aggregate(Vector3.zero,(sum,p)=>sum+p)/loop.Count-centre).magnitude>.035f)return source;selected.Add(loop);}
+   int count=0;float maximum=0;var amounts=new float[positions.Length];foreach(var loop in selected){var centre=loop.Aggregate(Vector3.zero,(sum,p)=>sum+p)/loop.Count;var contour=loop.OrderBy(p=>Mathf.Atan2(Vector3.Dot(p-centre,up),Vector3.Dot(p-centre,right))).ToArray();
+    for(int v=0;v<fp.Length;v++){var point=fp[v];if((point-centre).sqrMagnitude>.0064f)continue;float best=float.MaxValue;var nearest=contour[0];for(int e=0;e<contour.Length;e++){var a=contour[e];var delta=contour[(e+1)%contour.Length]-a;float t=Mathf.Clamp01(Vector3.Dot(point-a,delta)/Mathf.Max(1e-12f,delta.sqrMagnitude));var q=a+delta*t;float d=(point-q).sqrMagnitude;if(d<best){best=d;nearest=q;}}float distance=Mathf.Sqrt(best);if(distance>=.022f)continue;float amount=1-Mathf.SmoothStep(0,1,distance/.022f);float shift=Mathf.Clamp(Vector3.Dot(nearest-centre,up)*.30f,-.0035f,.0035f)*amount;positions[v]=inverse.MultiplyPoint3x4(point+up*shift);amounts[v]=Mathf.Max(amounts[v],amount);count++;maximum=Mathf.Max(maximum,Mathf.Abs(shift));}
+   }
+   saved=UnityEngine.Object.Instantiate(source);saved.name=source.name+" (open eye form)";saved.hideFlags=HideFlags.DontSave;saved.vertices=positions;saved.RecalculateNormals();var refined=saved.normals;for(int i=0;i<normals.Length;i++)if(amounts[i]>0)normals[i]=Vector3.Slerp(normals[i],refined[i],amounts[i]).normalized;saved.normals=normals;saved.RecalculateBounds();cache[source]=saved;Debug.Log("[HeroEyeApertureForm] Male eye-opening vertices="+count+" maxMetres="+maximum+"; iris/eye centers and bald outline exact");return saved;
+  }
+ }
+}

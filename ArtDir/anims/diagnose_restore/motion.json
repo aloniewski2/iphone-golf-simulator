@@ -1,0 +1,982 @@
+{
+ "AnimRepair/Hero_Backhand_v3.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 104,
+  "first_move": 2,
+  "last_move": 118,
+  "peak": 761.1,
+  "profile": [
+   115,
+   708,
+   327,
+   219,
+   1147,
+   1331,
+   1225,
+   436,
+   102,
+   65,
+   364,
+   258
+  ]
+ },
+ "AnimRepair/Hero_Repair_Ready_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 72,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 384.7,
+  "profile": [
+   28,
+   81,
+   66,
+   29,
+   81,
+   64,
+   28,
+   446,
+   66,
+   29,
+   69,
+   401
+  ]
+ },
+ "AnimRepair/Hero_Repair_RunForward_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 246.5,
+  "profile": [
+   1821,
+   1910,
+   1855,
+   1888,
+   1899,
+   1847,
+   1817,
+   1879,
+   1832,
+   2003,
+   1789,
+   1711
+  ]
+ },
+ "AnimRepair/Hero_Repair_Volley_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 16,
+  "first_move": 17,
+  "last_move": 35,
+  "peak": 374.3,
+  "profile": [
+   0,
+   757,
+   748,
+   40,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "BackhandRun/Hero_Backhand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 69,
+  "first_move": 9,
+  "last_move": 77,
+  "peak": 837.9,
+  "profile": [
+   7,
+   751,
+   959,
+   3440,
+   1016,
+   212,
+   1574,
+   484,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "BackhandRun/Hero_Gameplay_RunForward_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 261.5,
+  "profile": [
+   1911,
+   2021,
+   1964,
+   1979,
+   1993,
+   1950,
+   1922,
+   1975,
+   1939,
+   2069,
+   1905,
+   1768
+  ]
+ },
+ "BackhandRun/Hero_Gameplay_RunLeft_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 899.7,
+  "profile": [
+   2163,
+   2430,
+   3148,
+   2393,
+   2742,
+   4233,
+   3026,
+   3856,
+   3170,
+   2361,
+   3818,
+   2930
+  ]
+ },
+ "FullStroke/Hero_Backhand_v4.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 104,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 788.7,
+  "profile": [
+   348,
+   2213,
+   448,
+   469,
+   1626,
+   991,
+   1152,
+   720,
+   5,
+   100,
+   1679,
+   843
+  ]
+ },
+ "FullStroke/Hero_Grip_Forehand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 104,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1331.4,
+  "profile": [
+   495,
+   4719,
+   4559,
+   2348,
+   49,
+   65,
+   58,
+   45,
+   41,
+   34,
+   45,
+   61
+  ]
+ },
+ "FullStroke/Hero_Grip_JumpServe_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 85,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1780.7,
+  "profile": [
+   52,
+   6660,
+   5550,
+   2829,
+   106,
+   98,
+   54,
+   69,
+   65,
+   29,
+   69,
+   63
+  ]
+ },
+ "FullStroke/Hero_Grip_Ready_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 76,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 20.6,
+  "profile": [
+   29,
+   71,
+   70,
+   32,
+   70,
+   66,
+   28,
+   71,
+   70,
+   32,
+   70,
+   46
+  ]
+ },
+ "FullStroke/Hero_Grip_Smash_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 85,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1950.5,
+  "profile": [
+   52,
+   7384,
+   3080,
+   1992,
+   69,
+   421,
+   385,
+   69,
+   65,
+   29,
+   69,
+   402
+  ]
+ },
+ "FullStroke/Hero_Volley_v3.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 62,
+  "first_move": 1,
+  "last_move": 67,
+  "peak": 34.7,
+  "profile": [
+   114,
+   134,
+   189,
+   136,
+   75,
+   58,
+   47,
+   1,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx": "NOACTION",
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hat_Visor.fbx": "NOACTION",
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx": "NOACTION",
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shirt_Default.fbx": "NOACTION",
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shoes_Default.fbx": "NOACTION",
+ "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shorts_Default.fbx": "NOACTION",
+ "Hero_Backhand_v1.fbx": {
+  "frames": [
+   2,
+   110
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 97,
+  "first_move": 0,
+  "last_move": 107,
+  "peak": 1137.2,
+  "profile": [
+   1001,
+   758,
+   3280,
+   3165,
+   225,
+   34,
+   264,
+   474,
+   1429,
+   1603,
+   1079
+  ]
+ },
+ "Hero_Forehand_v1.fbx": {
+  "frames": [
+   2,
+   110
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 97,
+  "first_move": 0,
+  "last_move": 107,
+  "peak": 1100.8,
+  "profile": [
+   1444,
+   2481,
+   2188,
+   4767,
+   1782,
+   447,
+   2081,
+   765,
+   1267,
+   662,
+   1812
+  ]
+ },
+ "Hero_Gameplay_Backhand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 92,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1821.6,
+  "profile": [
+   397,
+   5299,
+   3255,
+   3767,
+   39,
+   411,
+   404,
+   44,
+   41,
+   29,
+   39,
+   407
+  ]
+ },
+ "Hero_Gameplay_Forehand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 102,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1666.5,
+  "profile": [
+   398,
+   4504,
+   3465,
+   2819,
+   47,
+   409,
+   402,
+   47,
+   41,
+   34,
+   47,
+   406
+  ]
+ },
+ "Hero_Gameplay_JumpServe_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 92,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1643.7,
+  "profile": [
+   397,
+   8347,
+   3693,
+   2373,
+   71,
+   434,
+   397,
+   71,
+   65,
+   29,
+   71,
+   415
+  ]
+ },
+ "Hero_Gameplay_Ready_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 85,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 373.8,
+  "profile": [
+   397,
+   71,
+   65,
+   29,
+   71,
+   433,
+   397,
+   71,
+   65,
+   29,
+   71,
+   415
+  ]
+ },
+ "Hero_Gameplay_RunForward_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 866.8,
+  "profile": [
+   2764,
+   4176,
+   4113,
+   4149,
+   4158,
+   3762,
+   4448,
+   3761,
+   4457,
+   3878,
+   4403,
+   3245
+  ]
+ },
+ "Hero_Gameplay_RunLeft_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 1172.6,
+  "profile": [
+   2714,
+   5887,
+   5614,
+   5188,
+   6154,
+   6376,
+   6138,
+   6943,
+   5961,
+   5457,
+   6278,
+   5704
+  ]
+ },
+ "Hero_Gameplay_RunRight_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": [
+   "Root",
+   "Hips",
+   "Spine",
+   "Chest",
+   "Neck",
+   "Head",
+   "Shoulder.L",
+   "UpperArm.L",
+   "LowerArm.L",
+   "Hand.L",
+   "Shoulder.R",
+   "UpperArm.R",
+   "LowerArm.R",
+   "Hand.R",
+   "UpperLeg.L",
+   "LowerLeg.L",
+   "Foot.L",
+   "Toes.L",
+   "UpperLeg.R",
+   "LowerLeg.R",
+   "Foot.R",
+   "Toes.R"
+  ],
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 593.6,
+  "profile": [
+   2307,
+   3031,
+   2979,
+   2714,
+   3320,
+   2673,
+   2937,
+   3019,
+   2751,
+   2989,
+   2948,
+   2474
+  ]
+ },
+ "Hero_Gameplay_Smash_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 91,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 2122.4,
+  "profile": [
+   397,
+   7505,
+   1689,
+   2267,
+   71,
+   434,
+   397,
+   71,
+   65,
+   29,
+   71,
+   415
+  ]
+ },
+ "Hero_Gameplay_Volley_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 91,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1276.8,
+  "profile": [
+   397,
+   3929,
+   2970,
+   1545,
+   71,
+   434,
+   397,
+   71,
+   65,
+   29,
+   71,
+   415
+  ]
+ },
+ "Hero_ReadyIdle_v1.fbx": {
+  "frames": [
+   2,
+   74
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 72,
+  "first_move": 0,
+  "last_move": 71,
+  "peak": 400.7,
+  "profile": [
+   560,
+   505,
+   466,
+   126,
+   130,
+   1044,
+   496,
+   15
+  ]
+ },
+ "Hero_Serve_v1.fbx": {
+  "frames": [
+   2,
+   110
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 97,
+  "first_move": 0,
+  "last_move": 107,
+  "peak": 1044.7,
+  "profile": [
+   1013,
+   1866,
+   2736,
+   5564,
+   841,
+   47,
+   1891,
+   518,
+   142,
+   1538,
+   1298
+  ]
+ },
+ "Hero_Volley_v1.fbx": {
+  "frames": [
+   2,
+   110
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 97,
+  "first_move": 0,
+  "last_move": 107,
+  "peak": 1141.5,
+  "profile": [
+   547,
+   1994,
+   1996,
+   3330,
+   182,
+   376,
+   1170,
+   749,
+   918,
+   795,
+   278
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_Backhand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 85,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1300.2,
+  "profile": [
+   397,
+   5023,
+   2846,
+   3284,
+   36,
+   410,
+   403,
+   41,
+   40,
+   28,
+   37,
+   407
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_Forehand_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 103,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1458.1,
+  "profile": [
+   398,
+   4056,
+   4285,
+   2344,
+   49,
+   409,
+   402,
+   45,
+   41,
+   34,
+   45,
+   406
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_JumpServe_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 88,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1764.3,
+  "profile": [
+   398,
+   7031,
+   4329,
+   2034,
+   106,
+   433,
+   397,
+   69,
+   64,
+   28,
+   69,
+   414
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_Ready_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 75,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 373.8,
+  "profile": [
+   398,
+   69,
+   64,
+   28,
+   69,
+   433,
+   397,
+   69,
+   65,
+   28,
+   69,
+   414
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_RunForward_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 232.1,
+  "profile": [
+   1796,
+   1937,
+   1889,
+   1893,
+   1923,
+   1855,
+   1834,
+   1902,
+   1888,
+   1958,
+   1877,
+   1664
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_RunLeft_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 914.5,
+  "profile": [
+   2078,
+   2496,
+   3128,
+   2412,
+   2774,
+   4224,
+   3074,
+   3874,
+   3153,
+   2434,
+   3812,
+   2926
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_RunRight_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": [
+   "Root",
+   "Hips",
+   "Spine",
+   "Chest",
+   "Neck",
+   "Head",
+   "Shoulder.L",
+   "UpperArm.L",
+   "LowerArm.L",
+   "Hand.L",
+   "Shoulder.R",
+   "UpperArm.R",
+   "LowerArm.R",
+   "Hand.R",
+   "UpperLeg.L",
+   "LowerLeg.L",
+   "Foot.L",
+   "Toes.L",
+   "UpperLeg.R",
+   "LowerLeg.R",
+   "Foot.R",
+   "Toes.R"
+  ],
+  "moving_frames": 119,
+  "first_move": 0,
+  "last_move": 118,
+  "peak": 811.2,
+  "profile": [
+   2159,
+   2532,
+   3132,
+   3779,
+   2431,
+   4167,
+   3377,
+   2801,
+   4174,
+   3108,
+   3092,
+   3574
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_Smash_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 88,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 2048.2,
+  "profile": [
+   398,
+   6888,
+   2014,
+   2036,
+   69,
+   433,
+   397,
+   69,
+   65,
+   28,
+   69,
+   414
+  ]
+ },
+ "KneesOffArm/Hero_Gameplay_Volley_v1.fbx": {
+  "frames": [
+   2,
+   121
+  ],
+  "nbones": 22,
+  "bones": null,
+  "moving_frames": 85,
+  "first_move": 6,
+  "last_move": 118,
+  "peak": 1127.6,
+  "profile": [
+   398,
+   2984,
+   1486,
+   2190,
+   69,
+   433,
+   397,
+   69,
+   65,
+   28,
+   69,
+   414
+  ]
+ }
+}

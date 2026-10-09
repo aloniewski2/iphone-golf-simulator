@@ -1,0 +1,17 @@
+{
+  "source_components_retained": [
+    "SOURCE adapted platform",
+    "SOURCE adapted corner pad",
+    "SOURCE adapted corner pad.001",
+    "SOURCE adapted corner pad.002",
+    "SOURCE adapted corner pad.003"
+  ],
+  "original_untouched": true,
+  "ring_rope_centerline_square_m": 6.32,
+  "platform_square_m": 7.4,
+  "posts": 4,
+  "ropes": 16,
+  "camera_outside_ring": true,
+  "clear_view_scene": "BOXING | clear gameplay preview",
+  "physics_implemented": false
+}

@@ -1,0 +1,1 @@
+{"task_id":"8fad7897-9c0e-41df-8612-ce8ebe733060","type":"mesh_segmentation","status":"success","credits_consumed":40,"output_dir":"ponytail/seg/tripo-out/seg-ponytail-8fad7897","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"ponytail/seg/tripo-out/seg-ponytail-8fad7897/model.glb","preview":"ponytail/seg/tripo-out/seg-ponytail-8fad7897/preview.png"}

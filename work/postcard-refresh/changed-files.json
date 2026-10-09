@@ -1,0 +1,218 @@
+[
+  {
+    "path": "Unity/Assets/Editor/TennisVenueCapture.cs",
+    "sha256": "a66063c92692203d0585aaf6b88dabb9016c5e5c8689415ec221c2fa1e4e4b59"
+  },
+  {
+    "path": "Unity/Assets/Editor/UrpSetup.cs",
+    "sha256": "606fb1a559ae376d323aa1cd7c3022d280578de6349c57425fa130493cc2d2fa"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/GolfBotanicalInstancing.mat",
+    "sha256": "f5d565192c14da805a6ac8bdf6a33f32389d50a985ade8f478bdcaf3ff77a923"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/GolfBotanicalInstancing.mat.meta",
+    "sha256": "bbb41e9e03105e400dd908dc3e4c36caf5a9fe5fcd0ff4425c6db5d33e8678b3"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/GolfCoastalInstancing.mat",
+    "sha256": "e91443cfba3de072429c9fa64d58e51d2b77799132476d257edab3f362509d14"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/GolfCoastalInstancing.mat.meta",
+    "sha256": "d13b05c0bfc23257e1b3a130e005b3c3687e14d284abfba0c92bd14f47f773f8"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Resort/ReferenceHole09.fbx",
+    "sha256": "b41a3f3732fe8aaa7e70eeed9b558da4ff07386c7a6d15bebcabb30436f13a75"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Resort/ReferenceHole09.fbx.meta",
+    "sha256": "1d8ecae4d7ae857af240b316c7733281b9c6442412d06fb2c9a310fbb7046279"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfBasaltColumns.shader",
+    "sha256": "96ed568650742f9616c658be40277d8464aa01547a7c83418f1c382f9573298e"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfBasaltColumns.shader.meta",
+    "sha256": "1da1bdde28cc12a05988878a3212b6992850034e7a2019e30b5f3fb0dc925f04"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfBotanical.shader",
+    "sha256": "bb0b21f68b08ed864a898ca4610792c2e4ec2f7656d410667b5068a2a7619274"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfGround.shader",
+    "sha256": "6a53073fd67ee2af992af1ecf1e478b6065bd5fd8927ee88d14030ce30141b22"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfLava.shader",
+    "sha256": "ebc45c49a5eeab688c2b1d3f5d907c1df1e564cde4acc947cd6451ef4eaca7a4"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfOcean.shader",
+    "sha256": "742d56bba0827e64eed0d1c34d3af0240167a576f28b2ec8a2503e0bbd4ccaa5"
+  },
+  {
+    "path": "Unity/Assets/Resources/Course/Shaders/GolfResortSky.shader",
+    "sha256": "b3f91a52a770dfa432f286fedb042aa1922cf4ad94ae777a19bb068c697caab1"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Rendering/TennisURP.asset",
+    "sha256": "cd8bff974c00d5a8ee4e194e10ed732684924f3c6b812c60c420885b9ff58f8f"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Rendering/TennisURP_Renderer.asset",
+    "sha256": "c3189694360d5cadd8519bf290f419e388284c3c54ee0bf9a0005279e911f02a"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/HeroLighting.hlsl",
+    "sha256": "28c375cb55d09da309eabee123113be50a9fafbcbc50aa76490209ad07c0a314"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/TennisCharacter.shader",
+    "sha256": "28946df167743245644a187b3e53001c9923c0c4f1d78db060d5cfe67760e40d"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader",
+    "sha256": "d913dbd6a4b035456a4924267a444c4cba33d243fdb5ecf0891c609e0e4acc07"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/TennisCoastalSky.shader",
+    "sha256": "a814a206b555f68673d55fe0200e6717031ea174891983cfe0488cc9da771d8b"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/TennisRooftopSky.shader",
+    "sha256": "ba63566041ebeaabbfa20678edea91179448c53687a51f9056598f075d01d4b5"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Shaders/TennisVolcanicSky.shader",
+    "sha256": "0709e1774ba88914fd4ab041fdcec0b0bf0156311db526d5ecc82ef265e39a72"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfAtmosphere.cs",
+    "sha256": "e89927c535f3f77fc170dbf70682d59a6ab5d2e21e977dafa308e4cd8f547f8c"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfBotanicalInstances.cs",
+    "sha256": "da572b97642ce8ca8b1235efcc55bdc2f54270de91da9e4f74caec9e1863a74e"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfBotanicalInstances.cs.meta",
+    "sha256": "ac9d398aefaffb2775b76458fa00facc6bfae4a949b72e11f49ad4fc7dba7d97"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCoastalBotany.cs",
+    "sha256": "8645975363a197928bccfcedf4fff497d756db3074569a6276fa49c263b93bd0"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCoastalComposition.cs",
+    "sha256": "4c2585f981a643f7aa0a1fe3158f2582cb923ca591763580029780ac0d84928d"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCoastalInstances.cs",
+    "sha256": "a3d1110570bf6a67eca0bf2b6d43f6c17b1d55fe97da96ae086d0d9e0ae3e242"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCoastalInstances.cs.meta",
+    "sha256": "9e7ebf8b698a383d4f0449446267f87ff1e15a7d22d017f89b78b775aaa1ff85"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs",
+    "sha256": "8d060a30ab656f14fa7cff3127629915f14b15255eab2725093f5979724c09b7"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCourseAtmosphere.cs",
+    "sha256": "99f371c36f2c60025496ada96bd11d3fa8df80c9c1e9230decbc1b323c3fc29a"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfCourseLook.cs",
+    "sha256": "cd0531eb062de31d006d1e45cd023bd2d7eef950f92f44c0c6239dbbdb2d668b"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfFigureExposure.cs",
+    "sha256": "c5d59134194e859aae8788ef79bcaf0133485ff316e36af8001ad66718656476"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfLook.cs",
+    "sha256": "318300bd7182c5712f969058d41ddbde3cba44d1a8824ac58cf3133ee9d5f038"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfPostcardBasalt.cs",
+    "sha256": "8b4f4b5367538e16d47c0e1311ed0a2ff026d7af17688682c71b024691bdc8e3"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfPostcardBasalt.cs.meta",
+    "sha256": "7dd26b89fb4f03d8032cea3e82895e7f6ae42ed78547dbd7b93c5cd7a691b667"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfResortDress.cs",
+    "sha256": "5312c5fa3a1f381832cb57ee58d6c15f70f6b9550dd61d8237ebaaffd2629f64"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfSurfaceBatching.cs",
+    "sha256": "003fd61b51c91abd062a1b7691a084142b1bd6d4d507f5a03966902f571d66c5"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/GolfTurfPalette.cs",
+    "sha256": "693c18a71507d94bc31349ac937cd11bdac950ff58cafeb2f08e1a549a6516f7"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/PostcardRefreshProofRunner.cs",
+    "sha256": "dd5ad5500725c89187d5baf194c5911226f98c1ef2cef7e719a547b18d47d65d"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Course/PostcardRefreshProofRunner.cs.meta",
+    "sha256": "78ce0ed5a43827b0b4c218d2c777e3aa687bd31c28e112aeb2f4dd80310782b0"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Game/CameraRig.cs",
+    "sha256": "236b347f2095d351f71eea5b25fbacbb7f0e324969ac589604329c1ec6039953"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Game/GolfGame.cs",
+    "sha256": "e9825c050a64f1183c6f17011967c377b56e521b381f0ff932f29c7cd3ce4010"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/HeroLightingProfile.cs",
+    "sha256": "ba393c54344334bcbbd022cd79819d9c51308b69cd09423722c0ec2bee4d914f"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/HeroRimLight.cs",
+    "sha256": "ee665bdeb72905cf9f96cf1221dc57a57d6493a27570925c4206db4f241ebb9f"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/SportsPostProcessing.cs",
+    "sha256": "e3737dfc54c510b93adb148ffc6e28c0a4fd70c1cbe5b3574848a025ab01e508"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/SportsPostProcessing.cs.meta",
+    "sha256": "795c85b2b3ed40ae0d24e6b2d5cc5e5070fdcf0e4a685266ae53bec7e6856f39"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/TennisLook.cs",
+    "sha256": "c2349e0b1916e63c14a210a0487c53dc2c83b754e8ca2ba58038618d496d8657"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/TennisQuality.cs",
+    "sha256": "f925929bea53845d7d217dcfc001c5b93aaf49a686b518655370c650f479f4c7"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/TennisShoeOcclusion.cs",
+    "sha256": "85ee02b37bfa6a953c34224c3f601d8e426faabc1859e3b38d40d3593b79d845"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/TennisShoulderCamera.cs",
+    "sha256": "7982d6453f5ebb391a6afecd4631d271d36a1608b3d2a67f60dd1c56bd9ec752"
+  },
+  {
+    "path": "Unity/Assets/Tests/EditMode/TennisGameplayImprovementTests.cs",
+    "sha256": "039aba36cdd930634755652ae07b7e483f29bc73a07d4d3340875dfcbd275f6b"
+  },
+  {
+    "path": "blender/scripts/build_reference_hole09.py",
+    "sha256": "2fd5caab1d87cdc8df1ae11e7a8a2bd5efb22dab062bdb90940cec2517d3b51f"
+  }
+]

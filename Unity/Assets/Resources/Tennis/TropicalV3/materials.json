@@ -1,0 +1,424 @@
+{
+  "materials": [
+    {
+      "name": "TropicalV3_000",
+      "label": "Coast | pale coral sand",
+      "color": [
+        0.6499999761581421,
+        0.5600000023841858,
+        0.3700000047683716,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8999999761581421
+    },
+    {
+      "name": "TropicalV3_001",
+      "label": "Coast | turquoise water",
+      "color": [
+        0.009999999776482582,
+        0.23999999463558197,
+        0.30000001192092896,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.20000000298023224
+    },
+    {
+      "name": "TropicalV3_002",
+      "label": "Court | sapphire acrylic",
+      "color": [
+        0.012000000104308128,
+        0.0949999988079071,
+        0.23999999463558197,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8500000238418579
+    },
+    {
+      "name": "TropicalV3_003",
+      "label": "Court | warm white line paint",
+      "color": [
+        0.8799999952316284,
+        0.8999999761581421,
+        0.8500000238418579,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.7200000286102295
+    },
+    {
+      "name": "TropicalV3_004",
+      "label": "Crowd shirt | Female SeatedApplause",
+      "color": [
+        0.7200000286102295,
+        0.23999999463558197,
+        0.11999999731779099,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8500000238418579
+    },
+    {
+      "name": "TropicalV3_005",
+      "label": "Crowd shirt | Female SeatedRelaxed",
+      "color": [
+        0.7200000286102295,
+        0.23999999463558197,
+        0.11999999731779099,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8500000238418579
+    },
+    {
+      "name": "TropicalV3_006",
+      "label": "Crowd shirt | Male SeatedApplause",
+      "color": [
+        0.03500000014901161,
+        0.27000001072883606,
+        0.28999999165534973,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8500000238418579
+    },
+    {
+      "name": "TropicalV3_007",
+      "label": "Crowd shirt | Male SeatedRelaxed",
+      "color": [
+        0.03500000014901161,
+        0.27000001072883606,
+        0.28999999165534973,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8500000238418579
+    },
+    {
+      "name": "TropicalV3_008",
+      "label": "Fixtures | dark teal enamel",
+      "color": [
+        0.012000000104308128,
+        0.07199999690055847,
+        0.06499999761581421,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.30000001192092896
+    },
+    {
+      "name": "TropicalV3_009",
+      "label": "Garden | lush tropical turf",
+      "color": [
+        0.09000000357627869,
+        0.23000000417232513,
+        0.04500000178813934,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.9200000166893005
+    },
+    {
+      "name": "TropicalV3_010",
+      "label": "Resort | ivory limestone",
+      "color": [
+        0.6299999952316284,
+        0.5699999928474426,
+        0.4399999976158142,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.800000011920929
+    },
+    {
+      "name": "TropicalV3_011",
+      "label": "Runoff | ocean teal",
+      "color": [
+        0.017999999225139618,
+        0.18000000715255737,
+        0.1899999976158142,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8700000047683716
+    },
+    {
+      "name": "TropicalV3_012",
+      "label": "Tennis | braided charcoal cord",
+      "color": [
+        0.01600000075995922,
+        0.024000000208616257,
+        0.023000000044703484,
+        1.0
+      ],
+      "texture": "",
+      "roughness": 0.8999999761581421
+    },
+    {
+      "name": "TropicalV3_013",
+      "label": "tripo_material_5186225b-3a64-4729-a75c-f82e96ca4a4e",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_013.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_014",
+      "label": "tripo_material_525fb713-9917-41e8-97b8-08963caf656c",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_014.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_015",
+      "label": "tripo_material_59c1abe6-96c0-4359-9ffb-ef3fe99be667",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_015.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_016",
+      "label": "tripo_material_5c81356e-ab79-4398-8b46-8c3ac8e87852",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_016.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_017",
+      "label": "tripo_material_6d60fb53-f211-42d5-8a6a-6afb031fc004",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_017.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_018",
+      "label": "tripo_material_7ce95b6a-d20c-4f54-b7e7-62681f1c73b9",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_018.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_019",
+      "label": "tripo_material_8d2b1488-eff3-45e7-8f90-7b961bdd34f7",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_019.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_020",
+      "label": "tripo_material_9bb52c91-c061-43c8-9a0f-14c65a3e6b5f",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_020.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_021",
+      "label": "tripo_material_a080c25c-f059-4b26-ae17-0f2aa72967dd",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_021.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_022",
+      "label": "tripo_material_acb0a609-9032-488a-a342-436298554282",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_022.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_023",
+      "label": "tripo_material_ad79ea1b-dc4a-47d3-88c0-8fdd2726180a",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_023.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_024",
+      "label": "tripo_material_ae30c75f-cbbf-43b0-8da6-1797f70b396f",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_024.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_025",
+      "label": "tripo_material_be9491a1-9c02-4284-ba33-bc420117fdd0",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_025.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_026",
+      "label": "tripo_material_c78e7cfc-f6f4-44a1-8aad-63aca8fc8563",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_026.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_027",
+      "label": "tripo_material_cf218816-a8f7-4c20-91e1-bedba91e3907",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_027.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_028",
+      "label": "tripo_material_d1d3ec3b-5e85-475e-92a3-90816d67d715",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_028.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_029",
+      "label": "tripo_material_d5368522-00e1-4609-8581-45a6230bd812",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_029.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_030",
+      "label": "tripo_material_d88e00a5-db78-4e3e-b9ae-999a867a0bc1",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_030.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_031",
+      "label": "tripo_material_e80c5402-da22-4e58-8294-8ed6c161f217",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_031.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_032",
+      "label": "tripo_material_f66afc67-ee07-4bae-95f0-670b8afe89e4",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_032.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_033",
+      "label": "tripo_material_fa2b05c7-8172-45a8-aac7-ca43828f9320",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_033.png",
+      "roughness": 0.5
+    },
+    {
+      "name": "TropicalV3_034",
+      "label": "tripo_material_fa49487e-b725-4376-aa41-a6084214aa1f",
+      "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "texture": "TropicalV3_034.png",
+      "roughness": 0.5
+    }
+  ]
+}

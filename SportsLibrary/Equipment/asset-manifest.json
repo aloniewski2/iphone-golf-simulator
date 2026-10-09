@@ -1,0 +1,368 @@
+[
+  {
+    "name": "Tennis_Racket",
+    "pivot": "Center of lower grip",
+    "blender_local_axes": "+Z toward head; string bed XZ; +Y normal",
+    "mesh_objects": 54,
+    "triangles": 9724,
+    "dimensions_m": [
+      0.2900000214576721,
+      0.03799999877810478,
+      0.6900000125169754
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Grip | charcoal",
+      "Metal | champagne",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "SupportHand",
+      "SweetSpot"
+    ],
+    "fbx_bytes": 312796,
+    "glb_bytes": 258060
+  },
+  {
+    "name": "Tennis_Ball",
+    "pivot": "Ball center",
+    "blender_local_axes": "Z up",
+    "mesh_objects": 2,
+    "triangles": 5280,
+    "dimensions_m": [
+      0.06700005009770393,
+      0.06700007617473602,
+      0.06700000166893005
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Felt | tennis lime"
+    ],
+    "sockets": [],
+    "fbx_bytes": 117340,
+    "glb_bytes": 129120
+  },
+  {
+    "name": "Boxing_Glove_L",
+    "pivot": "Wrist center",
+    "blender_local_axes": "+Y toward knuckles; +Z back of hand; thumb right",
+    "mesh_objects": 9,
+    "triangles": 7016,
+    "dimensions_m": [
+      0.17012768238782883,
+      0.24899998679757118,
+      0.14400000125169754
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Metal | champagne",
+      "Primary | coral red",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "PunchContact"
+    ],
+    "fbx_bytes": 167900,
+    "glb_bytes": 175824
+  },
+  {
+    "name": "Boxing_Glove_R",
+    "pivot": "Wrist center",
+    "blender_local_axes": "+Y toward knuckles; +Z back of hand; thumb left",
+    "mesh_objects": 9,
+    "triangles": 7016,
+    "dimensions_m": [
+      0.17012763768434525,
+      0.24899998679757118,
+      0.14400000125169754
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Metal | champagne",
+      "Primary | coral red",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "PunchContact.001"
+    ],
+    "fbx_bytes": 167948,
+    "glb_bytes": 175876
+  },
+  {
+    "name": "Bowling_Ball",
+    "pivot": "Sphere center",
+    "blender_local_axes": "Finger holes toward +Z",
+    "mesh_objects": 1,
+    "triangles": 5388,
+    "dimensions_m": [
+      0.21599996089935303,
+      0.21599993854761124,
+      0.2160000056028366
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Primary | sea teal"
+    ],
+    "sockets": [
+      "FingerHole_-0.02_0.018",
+      "FingerHole_0.02_0.018",
+      "FingerHole_0_-0.03",
+      "PalmGrip"
+    ],
+    "fbx_bytes": 120332,
+    "glb_bytes": 135744
+  },
+  {
+    "name": "Bowling_Pin",
+    "pivot": "Base center",
+    "blender_local_axes": "+Z up",
+    "mesh_objects": 1,
+    "triangles": 1486,
+    "dimensions_m": [
+      0.12099999934434891,
+      0.12099999934434891,
+      0.38100001215934753
+    ],
+    "materials": [
+      "Ball | porcelain white",
+      "Primary | coral red"
+    ],
+    "sockets": [],
+    "fbx_bytes": 45772,
+    "glb_bytes": 48128
+  },
+  {
+    "name": "Golf_Driver",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft extends -Z; head +X; face toward -Y; right-handed head",
+    "mesh_objects": 19,
+    "triangles": 7584,
+    "dimensions_m": [
+      0.13800005614757538,
+      0.11200002208352089,
+      1.1540000289678574
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "SupportHand.001",
+      "StrikePoint"
+    ],
+    "fbx_bytes": 195468,
+    "glb_bytes": 174608
+  },
+  {
+    "name": "Golf_Iron",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft extends -Z; head +X; face toward -Y; right-handed head",
+    "mesh_objects": 19,
+    "triangles": 5932,
+    "dimensions_m": [
+      0.10145001858472824,
+      0.040655605494976044,
+      1.016185387969017
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "SupportHand.002",
+      "StrikePoint.001"
+    ],
+    "fbx_bytes": 164028,
+    "glb_bytes": 134440
+  },
+  {
+    "name": "Golf_Wedge",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft extends -Z; head +X; face toward -Y; right-handed head",
+    "mesh_objects": 19,
+    "triangles": 5932,
+    "dimensions_m": [
+      0.10144998878240585,
+      0.04842323064804077,
+      0.9532124251127243
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "SupportHand.003",
+      "StrikePoint.002"
+    ],
+    "fbx_bytes": 163932,
+    "glb_bytes": 134448
+  },
+  {
+    "name": "Golf_Putter",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft extends -Z; head +X; face toward -Y; right-handed head",
+    "mesh_objects": 20,
+    "triangles": 6120,
+    "dimensions_m": [
+      0.12000000104308128,
+      0.04999997653067112,
+      0.9044999927282333
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "SupportHand.004",
+      "StrikePoint.003"
+    ],
+    "fbx_bytes": 170860,
+    "glb_bytes": 140440
+  },
+  {
+    "name": "Golf_Ball",
+    "pivot": "Sphere center",
+    "blender_local_axes": "Z up",
+    "mesh_objects": 1,
+    "triangles": 12096,
+    "dimensions_m": [
+      0.04267411679029465,
+      0.04265430197119713,
+      0.04270000010728836
+    ],
+    "materials": [
+      "Ball | porcelain white"
+    ],
+    "sockets": [],
+    "fbx_bytes": 290012,
+    "glb_bytes": 275848
+  },
+  {
+    "name": "Golf_Tee",
+    "pivot": "Tip at ground insertion point",
+    "blender_local_axes": "+Z toward ball",
+    "mesh_objects": 2,
+    "triangles": 1020,
+    "dimensions_m": [
+      0.0159999905154109,
+      0.015999995172023773,
+      0.050999999046325684
+    ],
+    "materials": [
+      "Metal | champagne",
+      "Primary | sea teal"
+    ],
+    "sockets": [
+      "BallCenter"
+    ],
+    "fbx_bytes": 38700,
+    "glb_bytes": 29092
+  },
+  {
+    "name": "Golf_Driver_LH",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft -Z; head -X; face -Y; left-handed head",
+    "mesh_objects": 19,
+    "triangles": 7584,
+    "dimensions_m": [
+      0.13800005614757538,
+      0.11200002208352089,
+      1.1540000289678574
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "Golf_Driver_LH_SupportHand.001",
+      "Golf_Driver_LH_StrikePoint"
+    ],
+    "fbx_bytes": 198252,
+    "glb_bytes": 174520
+  },
+  {
+    "name": "Golf_Iron_LH",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft -Z; head -X; face -Y; left-handed head",
+    "mesh_objects": 19,
+    "triangles": 5932,
+    "dimensions_m": [
+      0.10145001858472824,
+      0.040655605494976044,
+      1.0161854475736618
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "Golf_Iron_LH_SupportHand.002",
+      "Golf_Iron_LH_StrikePoint.001"
+    ],
+    "fbx_bytes": 165500,
+    "glb_bytes": 134268
+  },
+  {
+    "name": "Golf_Wedge_LH",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft -Z; head -X; face -Y; left-handed head",
+    "mesh_objects": 19,
+    "triangles": 5932,
+    "dimensions_m": [
+      0.10144998878240585,
+      0.04842323064804077,
+      0.9532124847173691
+    ],
+    "materials": [
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "Golf_Wedge_LH_SupportHand.003",
+      "Golf_Wedge_LH_StrikePoint.002"
+    ],
+    "fbx_bytes": 165516,
+    "glb_bytes": 134300
+  },
+  {
+    "name": "Golf_Putter_LH",
+    "pivot": "Upper grip center",
+    "blender_local_axes": "Shaft -Z; head -X; face -Y; left-handed head",
+    "mesh_objects": 20,
+    "triangles": 6120,
+    "dimensions_m": [
+      0.12000000104308128,
+      0.04999997653067112,
+      0.9045000523328781
+    ],
+    "materials": [
+      "Accent | warm ivory",
+      "Grip | charcoal",
+      "Metal | brushed silver",
+      "Primary | sea teal",
+      "Secondary | midnight navy"
+    ],
+    "sockets": [
+      "Golf_Putter_LH_SupportHand.004",
+      "Golf_Putter_LH_StrikePoint.003"
+    ],
+    "fbx_bytes": 172348,
+    "glb_bytes": 140316
+  }
+]

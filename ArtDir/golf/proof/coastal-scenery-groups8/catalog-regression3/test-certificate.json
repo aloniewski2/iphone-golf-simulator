@@ -1,0 +1,202 @@
+{
+  "status": "PASS technical course regression; visual acceptance and performance are separate",
+  "playModeScope": {
+    "authoredHoles": [
+      7,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "proceduralMeadow": [
+      1,
+      2,
+      3
+    ],
+    "checks": [
+      "same ground/lie/hazards before versus after visual dressing",
+      "exact obstacle-array equality before versus after dressing",
+      "same MeshCollider count",
+      "original TREES sharedMesh identity on tropical courses",
+      "current palm near/far geometry/index/material/linear-palette contracts",
+      "legacy palm branch checks retained when active",
+      "course material/mowing texture cleanup",
+      "windmill visual/gameplay presence",
+      "procedural Meadow ground visual construction"
+    ],
+    "notCovered": [
+      "holes8/9/10 are outside this existing PlayMode test loop",
+      "new independent Unity full-descriptor array comparison",
+      "published sole-camera costs or phone frame-time for rebuilt default12",
+      "reference art parity"
+    ]
+  },
+  "xmlRuns": [
+    {
+      "source": "proof/reference-rebuild/coastal-default-tests/course-playmode.xml",
+      "canonicalEvidence": "ArtDir/golf/proof/coastal-scenery-groups8/catalog-regression3/course-playmode.xml",
+      "sha256": "c0e03231de195bade2b5435d661f3b10993000999bc8b48525b624dc4e1900dd",
+      "result": "Passed",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "xmlDurationSeconds": 30.5696708,
+      "startUTC": "2026-10-07 21:38:27Z",
+      "endUTC": "2026-10-07 21:38:57Z",
+      "testNames": [
+        "GolfArcade.PlayTests.GolfCourseStandardPlayTests.UpgradePreservesGroundObstaclesAndHazardsAcrossTheCatalog"
+      ]
+    },
+    {
+      "source": "proof/reference-rebuild/coastal-default-tests/course-editmode.xml",
+      "canonicalEvidence": "ArtDir/golf/proof/coastal-scenery-groups8/catalog-regression3/course-editmode.xml",
+      "sha256": "ab97ed6f86661bca16631b240ec4d646fa18640601a76d7f71daaa8cda723f59",
+      "result": "Passed",
+      "total": 36,
+      "passed": 36,
+      "failed": 0,
+      "xmlDurationSeconds": 0.1077134,
+      "startUTC": "2026-10-07 21:26:47Z",
+      "endUTC": "2026-10-07 21:26:47Z",
+      "testNames": [
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_SNOW\",\"TERRAIN\",Snow)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_ICE_DEEP\",\"WATER_ICE\",Ice)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_ROUGH_ASH\",\"TERRAIN\",Ash)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_REDROCK_CREAM\",\"TERRAIN\",Sandstone)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_GLASS\",\"WATERFALL\",Fall)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_FOAM\",\"WATER_FALL_1\",Fall)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_FOAM\",\"WATER_FOAM\",Surf)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_GREEN.001\",\"TEE_BOX\",Tee)",
+        "GolfArcade.Tests.GolfCourseStandardTests.AuthoredSurfacesKeepTheirIdentity(\"MAT_FIRSTCUT\",\"FAIRWAY_FIRSTCUT\",Fringe)",
+        "GolfArcade.Tests.GolfCourseStandardTests.CompleteSelectableCatalogUsesTheSharedVisualStandard",
+        "GolfArcade.Tests.GolfCourseStandardTests.CourseProfilesAreIndependentOfThePostcardReference",
+        "GolfArcade.Tests.GolfCourseStandardTests.GameplayMaterialsKeepTheirOwnRoute(\"MAT_FLAG\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.GameplayMaterialsKeepTheirOwnRoute(\"MAT_POLE\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.GameplayMaterialsKeepTheirOwnRoute(\"MAT_CUP\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.GameplayMaterialsKeepTheirOwnRoute(\"MAT_BALL\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.MagmaSeaRemainsLava(\"MAT_WATER\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.MagmaSeaRemainsLava(\"MAT_WATER_SHALLOW\")",
+        "GolfArcade.Tests.GolfCourseStandardTests.MagmaSeaRemainsLava(\"MAT_FOAM\")",
+        "GolfArcade.Tests.IslandCarryHoleTests.AShotThatComesDownInTheWaterStaysThere",
+        "GolfArcade.Tests.IslandCarryHoleTests.EveryFeatureIsOnDryLand",
+        "GolfArcade.Tests.IslandCarryHoleTests.IsTheParThreeIslandCarry",
+        "GolfArcade.Tests.IslandCarryHoleTests.LiesFollowBothIslands",
+        "GolfArcade.Tests.IslandCarryHoleTests.TheRoundPlaysAllFiveHoles",
+        "GolfArcade.Tests.ObstacleTests.ABushCatchesARollingBall",
+        "GolfArcade.Tests.ObstacleTests.AClippedCrownKeepsMostOfItsPace",
+        "GolfArcade.Tests.ObstacleTests.APuttComesBackOffATrunk",
+        "GolfArcade.Tests.ObstacleTests.BackOffAWall",
+        "GolfArcade.Tests.ObstacleTests.ClearOfEverythingTheShotIsUnchanged",
+        "GolfArcade.Tests.ObstacleTests.IntoTheBranchesAndDownShortOfTheTree",
+        "GolfArcade.Tests.ObstacleTests.SandStopsARollingBallInAYardOrTwo",
+        "GolfArcade.Tests.ObstacleTests.ShapesAreTheirOwn",
+        "GolfArcade.Tests.SurfaceTests.ABallAtRestOnASteepFaceKeepsRolling",
+        "GolfArcade.Tests.SurfaceTests.ContourGradientIsTheDerivativeOfItsHeight",
+        "GolfArcade.Tests.SurfaceTests.PuttBreaksDownASideSlope",
+        "GolfArcade.Tests.SurfaceTests.SampledGridReadsLikeTheGroundItSampled",
+        "GolfArcade.Tests.SurfaceTests.UphillComesUpShortAndDownhillRunsOn"
+      ]
+    }
+  ],
+  "rootLauncher": {
+    "results": "work/reference-rebuild/capture-grass11-and-catalog.json.results.json",
+    "sha256": "7e0da7fe19aa323230e2201fcf7a3eb20dbf2be5419f75a0a33e06f7fa520c4a",
+    "reportedRegression": {
+      "name": "reference-coastal-default-regression3",
+      "exit": 0,
+      "seconds": 39.2,
+      "shaderErrors": [],
+      "compileErrors": []
+    }
+  },
+  "paletteCorrection": {
+    "sourceUsesLinearRGB": true,
+    "readableSRGBGreenThreshold": 0.2,
+    "equivalentLinearThreshold": 0.033104766570885055,
+    "testOnlyChange": true,
+    "runtimeRanges": [
+      {
+        "hole": 16,
+        "linearG": [
+          0.046964,
+          0.162805
+        ],
+        "sRGBG": [
+          0.24,
+          0.4402
+        ],
+        "nearFarMeshRecords": 72
+      },
+      {
+        "hole": 19,
+        "linearG": [
+          0.083535,
+          0.178868
+        ],
+        "sRGBG": [
+          0.32,
+          0.46
+        ],
+        "nearFarMeshRecords": 60
+      },
+      {
+        "hole": 21,
+        "linearG": [
+          0.046964,
+          0.162805
+        ],
+        "sRGBG": [
+          0.24,
+          0.4402
+        ],
+        "nearFarMeshRecords": 14
+      },
+      {
+        "hole": 22,
+        "linearG": [
+          0.046964,
+          0.162805
+        ],
+        "sRGBG": [
+          0.24,
+          0.4402
+        ],
+        "nearFarMeshRecords": 14
+      },
+      {
+        "hole": 23,
+        "linearG": [
+          0.046964,
+          0.162805
+        ],
+        "sRGBG": [
+          0.24,
+          0.4402
+        ],
+        "nearFarMeshRecords": 28
+      }
+    ]
+  },
+  "sourceSnapshotSha256": {
+    "Unity/Assets/Tests/PlayMode/GolfCourseStandardPlayTests.cs": "281636b5c2665a3cf84535510a3d77aae5d517cf6d4a425831903d7329adeb35",
+    "Unity/Assets/Scripts/Course/GolfCourseLook.cs": "5d116c252a31c86fbf7ee29eb274e2c6bfee6b110df68fed43d8a68013c5f7ba",
+    "Unity/Assets/Scripts/Course/GolfResortDress.cs": "62fa1e9b61ca643e0133ea7fc1fda91ae7361072c971f29f3d8ca6d10876dace",
+    "Unity/Assets/Scripts/Course/GolfCoastalComposition.cs": "c83eba484bb531f27998fc29378670e2fb5e062776ecdfcd884d6d76830c92bf",
+    "Unity/Assets/Scripts/Course/HoleView.cs": "5c9c214bd88efda29d99f1e0ddaf957bc6a4a1d9277568946f1f06f399f88607",
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "44531535fc0d32e297903e84f398604976318d1c39bb81e79e68a367abd7ef58",
+    "Unity/Assets/Resources/Course/Shaders/GolfBotanical.shader": "9994d54682a51ef7b1d450844de46ca100aa7d0a6202702059f3dcbd060b6860",
+    "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader": "d5b7fbf0960160f108867ac4ede9c615c40d5c2218a7ed2ec6a2baafec32fae5",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "1bfe3b371c78c9c8cff6a9d6516b65bea40ecb6ce0eea50b1b47f953fe1b460f",
+    "Unity/Assets/Resources/Course/Resort/ReferenceHole12.fbx": "38e04be34f744a6ef67a3308566a843701b5ff63caa0f4c3dd1cf8b5b3d1d7d3",
+    "Unity/Assets/Resources/Course/hole_12.fbx": "56b4d6197d960392008ad44bef257bc1a34477a95eeee3c3cac594971f29fd87"
+  },
+  "appearanceSnapshot": "Grass11 shader-only capture PASS24.36s and accepted by parent same-camera visual review. Ground/collider/obstacle records are complete and exact to camera10. Full target parity remains partial."
+}

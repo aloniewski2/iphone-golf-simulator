@@ -1,0 +1,18 @@
+{
+  "saved_blender_and_fbx_verification": "PASS",
+  "vertices": 24578,
+  "triangles": 49176,
+  "metres": true,
+  "height_metres": 1.7011708782520145,
+  "body_origin_unchanged": true,
+  "topology_unchanged": true,
+  "cameras_and_origins_unchanged": true,
+  "head_vertices_unchanged": true,
+  "packed_reference_images": 3,
+  "hair": false,
+  "face_polish": false,
+  "female_work": false,
+  "independent_fbx_reimport_maximum_coordinate_error_metres": 2.7939677238464355e-07,
+  "source_sha256": "d6aa844afce8ae8ac2d9cdb9135d38f00fcdc1cc16980da8e822e66cb54490b4",
+  "fbx_sha256": "5abca8c16afdeee7b1397249e1de53766a5eee7a86ce4804af60b3e0a7ff4494"
+}

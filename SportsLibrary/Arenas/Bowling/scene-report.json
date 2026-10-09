@@ -1,0 +1,18 @@
+{
+  "lanes": 9,
+  "pins": 90,
+  "pin_mesh_shared": true,
+  "lane_width_m": 1.067,
+  "foul_line_to_head_pin_m": 18.288,
+  "pin_spacing_m": 0.3048,
+  "pin_height_m": 0.381,
+  "source_archived": true,
+  "mesh_objects": 1857,
+  "materials": 26,
+  "cameras": [
+    "CAM Gameplay | behind bowler",
+    "CAM Architecture overview",
+    "CAM Pin rack detail"
+  ],
+  "export_caveat": "Procedural wood grain requires baking for Unity; FBX exports flat material colors. Physics and collisions not configured."
+}

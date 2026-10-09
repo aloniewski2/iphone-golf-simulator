@@ -1,0 +1,4 @@
+./style.sh:4: no matches found: long/model/tripo-out/*/model.glb
+./style.sh:11: no matches found: long/seg/tripo-out/*/model.glb
+./style.sh:12: no matches found: long/comp/tripo-out/*/model.glb
+DONE long long/comp/tripo-out/comp-long-362c315f/model.glb

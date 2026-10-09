@@ -1,0 +1,1 @@
+Both live HeroGolfer instances, four sampled poses, front/side/back captures; shaders compile on Metal

@@ -15,6 +15,23 @@ final class RangeSimulationTests: XCTestCase {
         }
     }
 
+    /// As in arcade golf, the meter reads distance: 60% on a 250-yard driver carries 150. The
+    /// putter's meter is curved toward the short end, and the HUD's quoted distance is what flies.
+    func testMeterReadsDistance() {
+        for club in GolfClub.allCases {
+            XCTAssertEqual(club.meterExponent, club == .putter ? 1.5 : 1)
+            for power in stride(from: 0.1, through: 1.0, by: 0.1) {
+                let flight = BallFlight.simulate(club.launch(power: power, aimDegrees: 0, curveDegrees: 0))
+                let distance = club == .putter ? flight.total : flight.carry
+                XCTAssertEqual(distance, club.distanceYards(meter: power), accuracy: club.referenceDistanceYards * 0.02, "\(club) at \(power)")
+                if club != .putter { XCTAssertEqual(distance, club.referenceDistanceYards * power, accuracy: club.referenceDistanceYards * 0.02) }
+            }
+        }
+        XCTAssertEqual(GolfClub.putter.distanceYards(meter: 0.25), 25 * 0.125, accuracy: 0.001, "a quarter stroke is a nine-foot putt")
+        let thin = BallFlight.simulate(GolfClub.driver.launch(power: 1, aimDegrees: 0, curveDegrees: 0, speedFactor: 0.76))
+        XCTAssertLessThan(thin.carry, 250 * 0.76, "a thin strike loses club speed, which costs more than its share of distance")
+    }
+
     func testPowerAndClubChangeDistanceAndAimChangesLanding() {
         let soft = RangeShot(id: 1, club: .driver, power: 0.2, aim: -15)
         let hard = RangeShot(id: 2, club: .driver, power: 0.9, aim: 15)
@@ -88,5 +105,44 @@ final class RangeSimulationTests: XCTestCase {
             XCTAssertEqual(hypot(shot.landing.distanceYards, shot.landing.lateralYards), shot.total, accuracy: 0.0001)
             if club == .putter { XCTAssertEqual(shot.position(at: 1).heightYards, 0) }
         }
+    }
+}
+
+final class ClubRealismTests: XCTestCase {
+    /// Each club flies like its real one at full power: launch-monitor shape, not just distance.
+    func testClubsFlyLikeTheirRealCounterparts() {
+        func shape(_ club: GolfClub) -> (carry: Double, roll: Double, apex: Double, clubSpeed: Double) {
+            let flight = BallFlight.simulate(club.launch(power: 1, aimDegrees: 0, curveDegrees: 0))
+            return (flight.carry, flight.roll, flight.apex, club.maxClubSpeedMPH)
+        }
+        let driver = shape(.driver), iron = shape(.iron), wedge = shape(.wedge)
+        // Driver: a good amateur's 105 mph, 250 carry, a low-thirties apex and a running roll-out.
+        XCTAssertEqual(driver.clubSpeed, 106, accuracy: 3)
+        XCTAssertEqual(driver.carry, 250, accuracy: 1)
+        XCTAssertEqual(driver.apex, 33, accuracy: 4)
+        XCTAssertGreaterThan(driver.roll, 14)
+        // 7-iron: high-80s club speed for 160, apex under 30, and it hops rather than runs.
+        XCTAssertEqual(iron.clubSpeed, 88, accuracy: 4)
+        XCTAssertEqual(iron.carry, 160, accuracy: 1)
+        XCTAssertEqual(iron.apex, 28, accuracy: 4)
+        XCTAssertLessThan(iron.roll, 11)
+        XCTAssertGreaterThan(iron.roll, 3)
+        // Sand wedge: steep and spinning, it checks up within a few yards.
+        XCTAssertEqual(wedge.clubSpeed, 70, accuracy: 4)
+        XCTAssertEqual(wedge.carry, 90, accuracy: 1)
+        XCTAssertEqual(wedge.apex, 21, accuracy: 4)
+        XCTAssertLessThan(wedge.roll, 5)
+        XCTAssertLessThan(driver.roll * 0.5, driver.roll - iron.roll + 1, "the driver runs out far more than an iron")
+    }
+
+    func testFullSwingArcShortensWithTheClub() {
+        var driver = ArmSwingDetector(), iron = ArmSwingDetector(), wedge = ArmSwingDetector()
+        driver.configure(for: .driver)
+        iron.configure(for: .iron)
+        wedge.configure(for: .wedge)
+        XCTAssertGreaterThan(driver.fullBackswing, iron.fullBackswing)
+        XCTAssertGreaterThan(iron.fullBackswing, wedge.fullBackswing)
+        XCTAssertEqual(wedge.power(arc: 100, downswingSpeed: 450), 1, accuracy: 1e-9, "a natural full wedge swing fills its meter")
+        XCTAssertLessThan(driver.power(arc: 100, downswingSpeed: 550), 0.9, "the same arc is not a full driver swing")
     }
 }

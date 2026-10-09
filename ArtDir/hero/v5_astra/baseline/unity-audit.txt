@@ -1,0 +1,91 @@
+Source: Assets/Resources/Tennis/Hero/Hero_01_Tennis.prefab
+Avatar: Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx valid=True human=True
+Body_EyeSphere_L: mesh=Body_EyeSphere_L path=Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx vertices=1014 bindposes=22 bones=22 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_EyeCornea shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_Catchlight shader=Universal Render Pipeline/Unlit surface=1 queue=3000 cull=0
+Body_EyeSphere_R: mesh=Body_EyeSphere_R path=Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx vertices=1014 bindposes=22 bones=22 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_EyeCornea shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_Catchlight shader=Universal Render Pipeline/Unlit surface=1 queue=3000 cull=0
+Body_Skin: mesh=Body_Skin path=Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_01_FingerBody.fbx vertices=6818 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material skin_WarmSkin shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material skin_MatteCloth shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material skin_BlondHair shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material skin_CoveredFoundation shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Default: mesh=Hair_Default path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=11373 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_BandFill: mesh=Hair_BandFill path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=504 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_BandFill_Ponytail: mesh=Hair_BandFill_Ponytail path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=504 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_BandFill_Bob: mesh=Hair_BandFill_Bob path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=504 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_BandFill_Curly: mesh=Hair_BandFill_Curly path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=504 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Long: mesh=Hair_Long path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=12095 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Bob: mesh=Hair_Bob path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=12140 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Ponytail: mesh=Hair_Ponytail path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=11533 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Curly: mesh=Hair_Curly path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=10543 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_BandFill_Long: mesh=Hair_BandFill_Long path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=504 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Curly_Free: mesh=Hair_Curly_Free path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=10542 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Default_Free: mesh=Hair_Default_Free path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=11375 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Bob_Free: mesh=Hair_Bob_Free path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=12136 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Ponytail_Free: mesh=Hair_Ponytail_Free path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=11530 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Long_Free: mesh=Hair_Long_Free path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=12093 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Buzz: mesh=Hair_Buzz path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=1755 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft_Buzz shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Waves: mesh=Hair_Waves path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=1752 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material Hero_01_HairTuft_Waves shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hair_Bald: mesh=Hair_Bald path=Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx vertices=1626 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Auto
+  material skin_WarmSkin shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Hat_Visor: mesh=Hat_Visor path=Assets/ArtDirection/Hero01/Models/Hero_01_Hat_Visor.fbx vertices=1905 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_MatteCloth shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_Visor shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Shirt_Default: mesh=Shirt_Default path=Assets/ArtDirection/Hero01/Models/Hero_01_Shirt_Default.fbx vertices=4618 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_WarmSkin shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_MatteCloth shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Shorts_Default: mesh=Shorts_Default path=Assets/ArtDirection/Hero01/Models/Hero_01_Shorts_Default.fbx vertices=3666 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_MatteCloth shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_WarmSkin shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Shoes_Default: mesh=Shoes_Default path=Assets/ArtDirection/Hero01/Models/Hero_01_Shoes_Default.fbx vertices=4011 bindposes=42 bones=42 missing=0 source_order_mismatch=0 rest_origin_error=0.00000m quality=Bone4
+  material Hero_01_ShoeCleanWhite shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_ShoeCleanWhite shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+  material Hero_01_ShoeOrange shader=Universal Render Pipeline/Lit surface=0 queue=2000 cull=0
+Skeleton root: Hero_01_Mixamo_Bind
+Socket racket: Hero_Racket_GripSocket
+Attach: Back parent=Chest
+Attach: FaceExtra parent=Head
+Attach: Hat parent=Head
+Attach: Hand_L parent=Hand.L
+Attach: Hand_R parent=Hand.R
+Attach: Slot_Hair parent=Hero_01_Mixamo_Bind
+Attach: Slot_Hat parent=Hero_01_Mixamo_Bind
+Attach: Slot_Shirt parent=Hero_01_Mixamo_Bind
+Attach: Slot_Shorts parent=Hero_01_Mixamo_Bind
+Attach: Slot_Shoes parent=Hero_01_Mixamo_Bind
+Clip Ready: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Ready_v5.fbx human=True contact=0.000
+Clip Forehand: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Forehand_v5.fbx human=True contact=1.500
+Clip Backhand: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Backhand_v5.fbx human=True contact=1.500
+Clip Serve: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Serve_v5.fbx human=True contact=2.333
+Clip Volley: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Volley_v5.fbx human=True contact=1.300
+Clip Smash: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Smash_v5.fbx human=True contact=2.200
+Clip RunForward: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunForward_v5.fbx human=True contact=0.000
+Clip RunRight: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunRight_v5.fbx human=True contact=0.000
+Clip RunLeft: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunLeft_v5.fbx human=True contact=0.000
+Clip Idle: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Idle_v5.fbx human=True contact=0.000
+Clip Walk: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Walk_v5.fbx human=True contact=0.000
+Clip HitPerfect: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_HitPerfect_v5.fbx human=True contact=0.000
+Clip MissWhiff: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MissWhiff_v5.fbx human=True contact=0.000
+Clip CelebratePoint: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_CelebratePoint_v5.fbx human=True contact=0.000
+Clip SadPointLost: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_SadPointLost_v5.fbx human=True contact=0.000
+Clip MatchWin: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchWin_v5.fbx human=True contact=0.000
+Clip MatchLose: Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchLose_v5.fbx human=True contact=0.000

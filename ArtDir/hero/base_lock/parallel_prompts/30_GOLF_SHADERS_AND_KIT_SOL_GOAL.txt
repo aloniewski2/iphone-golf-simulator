@@ -1,0 +1,114 @@
+PASTE: GOLF SHADERS (CHARACTERS + COURSES) + GOLF CLOTHES + GOLF CLOTH SHADER (Codex Goal Mode, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+Golf gets the same quality bar as tennis, built on the same character system:
+1. The match heroes (PlayerMale / PlayerFemale) look right on the golf courses: lit by each hole's postcard sun and sky, no clipped skin, white that stays white, the same face and skin as in tennis.
+2. A real golf course ground shader (fairway, rough, green, tee, fringe, sand, cliffs / rock), stylized postcard, faster than the URP Lit it replaces on iPhone.
+3. A new golf outfit for both heroes (separate props on the same rig, recolourable, no logos), worn in golf, and picked in the locker.
+4. Golf clothing gets the shared cloth shader with a golf fabric profile, not a fork.
+Done = every gate passes AND Adnan's eye says yes on tee close-ups, the gameplay camera, and the locker. His eye overrides any PASS.
+
+----------------------------------------------------------------
+0. PRECONDITIONS (check FIRST; these other chats own files you need)
+- 15_POSTCARD_LOOK_SOL_GOAL (work/postcard-look/, ArtDir/environments/15_*.txt) owns the golf course files: GolfLook.cs, GolfAtmosphere.cs, GolfFigureExposure.cs, HoleView.cs, Course/Shaders/*, hole 8-10 meshes and textures, LOOK_CONTRACT.md. Its course-only commit (P8) must have landed before you edit any of them. Check git log for it and work/postcard-look/RESUME.md.
+- 29_CLOTH_QUALITY_OVERHAUL_SOL_GOAL (work/cloth-overhaul/) owns TennisCloth.shader, MatchHeroLook.cs, MatchHeroKit.cs, Resources/Tennis/HeroDetail/, and writes ArtDir/hero/kit/GARMENT_SPEC.md. It must be finished (report written, gates listed) before you edit those.
+- 26 / 27 / 28 (serve, lobby, serve walk) own HeroTennisDriver.cs, TennisGame.cs, TennisServeRoutine.cs, the Multiplayer and lobby Swift files. Never edit those.
+If 15 or 29 is still running: do ONLY the phases that touch none of their files (P0 audit, P1 reference and design, P4 golf outfit modelling in Blender under work/, P5 maps in work/). Then stop at GATE PRECONDITIONS: WAITING, list what is ready, and say what is blocked. Do not edit a file another chat owns, ever.
+
+----------------------------------------------------------------
+1. WHAT EXISTS (verify; correct it in AUDIT.md)
+Course:
+- GolfLook.cs builds course materials at runtime on URP Lit (albedo _C, normal _N, smoothness in albedo alpha, per-band sheen, HoleTint per hole), plus Course/Shaders/GolfPlants (sway), GolfSurf, GolfLava, and the shared Tennis/Shaders/TennisWater and TennisSky.
+- GolfAtmosphere.cs is the per-hole postcard light rig (key colour and strength, ambient). The project has NO tone mapper and NO post, so the output is sRGB(clip(light x albedo)).
+- The look rules and targets are in work/postcard-look/LOOK_CONTRACT.md (Switch Sports / Wii clarity, soft and readable on a phone, not photoreal, not flat Roblox) and the stills in ArtDir/environments/refs/{needle,split,crater}.jpg. Scoring geometry is frozen (LieAt, shores, centerlines, pins, PLAY_Z, par, top-surface outlines and heights).
+Golfer:
+- GolferView.cs still shows the V4 Resources/StandardCharacters golfer with a baked driver swing.
+- Commit 2225264c says "use the match heroes on the golf tee", but it only changed QualitySettings.asset. The match heroes are NOT on the tee yet. A golf swing on the match skeleton does not exist and is OUT OF SCOPE here (separate prompt).
+- GolfFigureExposure.cs is a per-hole MaterialPropertyBlock multiplier on the golfer's colours (it was added because Crater's orange key clipped 17.9% of skin pixels and crushed the blue shirt).
+Characters:
+- TennisCharacter.shader (skin, eyes, racket), TennisFace.shader, TennisCloth.shader (after 29: fabric BRDF, garment normal + mask map per GARMENT_SPEC), KitRecolor.shader, MatchHeroLook.cs (runtime materials; textures on .mat assets do not show), MatchHeroKit.cs (kit shells skinned to the rig).
+Locker:
+- LockerCatalog.swift: slots skin (= whole costume / the kit), racket, club, shoes. Golf shows skin, club, shoes. Player.loadout is sport -> slot -> item id.
+
+----------------------------------------------------------------
+2. HARD RULES
+- One character system: golf reuses the hero meshes, rig, faces, skin, and the cloth shader. Shared HLSL goes in an include (e.g., Resources/Tennis/Shaders/HeroLighting.hlsl and HeroCloth.hlsl) that both sports use. Per-sport differences are a LOOK PROFILE (globals or material values set by the scene: sun, sky and ground ambient, rim, exposure, fabric sheen), NOT copied shaders. Keep the existing shader names so nothing breaks. If a separate shader file is truly needed, it #includes the shared core and you justify it in the report.
+- No new bones. Body mesh, face, skeleton, sockets, and body SHAs unchanged. Accessories ride on sockets: add a Head_Hat socket (an empty child transform of the head bone, like Hand_Racket) only if the cap needs it, and document it in GARMENT_SPEC.
+- No logos, text, or brand marks. The golf outfit's DEFAULT colours are white and black like tennis (a white polo, black or charcoal trousers / skort, a white glove, white shoes with black accents, a black cap). Everything is recolourable through SetKit and the trim mask.
+- Course: scoring geometry frozen per LOOK_CONTRACT. No QualitySettings, URP pipeline asset, or TennisURP edits. No bloom, outline, toon ramp, or new post.
+- Tennis must look identical after your change (the tennis profile reproduces today's numbers; see G10).
+- Unity runs only through work/postcard-look/heavy.sh (no overlapping Unity / xcodebuild). Blender headless only.
+- Work in work/golf-look/. Back up every file you replace to work/golf-look/rollback/. Stage only, no commit.
+
+----------------------------------------------------------------
+3. PHASES
+
+P0 AUDIT + BEFORE
+- A proof rig (Editor tool Unity/Assets/Editor/GolfLookProofRig.cs): for holes 7, 8, 9, 10, the real gameplay camera at the tee, the aerial reference angle from 15, a tee close-up of the golfer (full body and chest-up), and a 1170x2532 phone frame. Place the match heroes on the tee in a static address-like pose sampled from ReadyIdle (proof only, not installed gameplay). Also capture the current V4 golfer.
+- AUDIT.md: course material list per hole (shader, maps, sizes, smoothness source), draw calls and tris per hole, shader variants, GolfAtmosphere values per hole, GolfFigureExposure values, per-hole skin clip %, shirt L*, and frame time if measurable.
+
+P1 REFERENCE + DESIGN
+- Construction references (public product pages and pattern guides, construction only, logo-free crops or notes): a golf polo (relaxed fit, self-fabric collar, 3-button placket, longer back hem, side vents); men's golf trousers (flat front, belt loops, a slim belt, slant pockets, crease, slight break at the shoe); women's golf skort with pleats or a sleeveless polo plus a skort, or capri trousers (pick one female look and justify it); a golf glove (left hand for a right-hander, mirrored for lefties); spikeless golf shoes (saddle panel, welt, rubber nub sole); a cap (structured 6-panel, curved brim) or a visor for the female.
+- ArtDir/hero/kit/golf/GOLF_KIT_DESIGN.md: front, side, and back callouts per garment, fit notes (looser than tennis, never shrink-wrapped), fabric IDs per GARMENT_SPEC, default colours, trim mask areas, and which locker items it becomes.
+- Course look targets per surface: fairway with mow stripes and a soft cross-cut, rough a darker, longer tuft read, green finer and smoother with a ring-cut fringe, tee box with a crisp edge, sand with a soft ripple and a lit rim, rock and cliff with clear strata and a moss or grass cap where the stills show it. Tie each to the stills.
+
+P2 SHARED HERO LIGHTING + GOLF CHARACTER PROFILE
+- Move the lighting math of TennisCharacter / TennisFace / TennisCloth into a shared include. Add a profile: _HeroKeyColor, _HeroKeyStrength, _HeroAmbientSky, _HeroAmbientGround, _HeroRim, _HeroExposure, plus a soft shoulder (highlight knee) so a hot key can't clip skin. Tennis sets today's values (bit-identical or within 1/255 in G10). Golf sets them per hole from GolfAtmosphere.
+- Replace the GolfFigureExposure MaterialPropertyBlock multiplier with the profile (keep GolfFigureExposure as a thin adapter if other code calls it, or remove it with every caller updated). The goal is the same fix, done in the shader, so whites and skin hold on every hole.
+- Shadows: the hero receives and casts the course sun shadow (same direction and softness as the props next to it). A contact shadow under the feet on the tee.
+
+P3 GOLF COURSE SHADER
+- A new shader Course/Shaders/GolfGround.shader for TERRAIN / FAIRWAY / ROUGH / GREEN / TEE_BOX / FRINGE / BUNKER, and GolfRock.shader for cliffs, basalt, and ruin masonry (they may share an include):
+  - The same wrap lighting and profile as the heroes, so ground and golfer sit in one light.
+  - Mow stripes in the shader: world-space bands, a direction and width per hole and per surface, contrast set per LOOK_CONTRACT (fix the "too dark" stripe note on hole 9), and a soft cross-cut on greens.
+  - Edge blends where surfaces meet (fringe ring, rough-to-fairway soft edge) driven by the existing outlines; no geometry change.
+  - Grass sheen at grazing angles from the albedo alpha (keep the existing per-band smoothness source), and a blade-direction normal tile that fades with distance (no shimmer).
+  - Sand: a ripple normal, a lighter wind-blown lip, darker damp edges near water if present.
+  - Rock (GolfRock): triplanar for strata so cliffs don't stretch, a top cap mask (moss or grass) by world normal, and hex-column read for basalt where 15's libs use it.
+  - Distance tint toward GolfAtmosphere's sky colour (cheap aerial perspective), in the shader, no post.
+  - SRP Batcher compatible, GPU instancing on, the fewest variants possible (list them), iOS Metal compile.
+- GolfLook.cs builds these instead of URP Lit, behind a switch so the old path can be restored in one line. Plants, Surf, Lava, Water, and Sky shaders stay; adjust only if needed to sit in the same light, and say so.
+
+P4 GOLF OUTFIT GEOMETRY (Blender, headless)
+- Male: golf polo, trousers with belt (the belt as its own trim-mask area and a buckle as geometry), glove on the lead hand, spikeless shoes, cap.
+- Female: the chosen look (sleeveless or short-sleeve polo plus a pleated skort, or capri trousers), glove, shoes, visor or cap.
+- Built as separate worn shells over the body like the tennis kit (prompt 10b rules): real thickness at hems, collar stand, cuffs, waistband, and brim. Skinned to the existing rig (weights transferred from the body, then cleaned). No body-through-cloth in the test poses.
+- The glove follows the hand and finger bones with no new bones, with clean bends at every knuckle.
+- The cap sits on Head_Hat (or skinned to head if you prove that's cleaner), with no hair or scalp poke-through on either hero.
+- Deformation test poses (proof only, never installed): ReadyIdle plus three golf-swing extremes (top of backswing, impact, finish) made by retargeting the V4 golfer's driver swing onto the match skeleton in work/golf-look/ only. Every garment must survive those poses (big shoulder turn, arms crossing the chest, hips turned through).
+
+P5 GOLF CLOTH MAPS + PROFILE
+- Bake N + M per garment per GARMENT_SPEC from 29 (AO, cavity / stitch, trim mask, fabric ID): polo pique or smooth performance knit (pick one per the refs and justify it), trouser twill with a pressed crease, skort pleats, glove leather with perforation dots on the back of the fingers, a cap twill with a stitched brim and panel seams, and shoe synthetic leather with a rubber nub sole.
+- Add golf fabric IDs to the GARMENT_SPEC table (twill, performance knit, leather, cap twill), using the same cloth shader with a golf profile (a softer sheen, a slightly warmer sun response). No forked cloth shader.
+- Texture budget per golf outfit per hero <= 6 MB ASTC; kit tris <= the tennis kit + 4,000 per hero (report both).
+
+P6 RUNTIME + LOCKER
+- MatchHeroKit / MatchHeroLook: a golf kit variant on the same rig. SetKit recolours golf main and trim.
+- LockerCatalog: a golf costume item in the skin slot (sports [.golf], tintable), and golf shoes in the shoes slot for golf. The tennis items stay; golf defaults to the golf costume. loadoutPayload(sport: .golf) carries it.
+- Locker SceneKit parity (CharacterModelPreview): export the golf kit and maps with MatchHero_<Sex>. The golf tab shows the golfer in the golf outfit. If the locker files are owned by another chat (git status, mtimes), do this last and report it.
+- Do NOT replace GolferView's V4 swing in gameplay (no swing exists on the match skeleton). The match heroes appear on the tee only in the proof rig. Write a 2-paragraph NEXT_SWING.md describing what the golf swing prompt will need.
+
+P7 BUDGETS + PROOF + EYE LOOP
+- Per hole: draw calls and tris within 15's iPhone budget (300k tris, 250 draw calls); ground shader ALU and fetches vs URP Lit (it must be cheaper or equal); frame time on an iPhone-class profile not worse than before.
+- Rerun the P0 rig as AFTER. Side-by-side BEFORE/AFTER per hole (gameplay camera, aerial, tee close-up), the golf outfit turntables for male and female, the swing-extreme deformation sheets, and the locker golf tab. Save to ArtDir/screenshots/golf_look/.
+- Iterate with your own eye against the stills until the gates pass.
+
+----------------------------------------------------------------
+4. GATES (binary; PASS or FAIL with a number or file)
+G0 PRECONDITIONS: 15 committed and 29 finished before their files were edited (cite the commit and report paths), or WAITING with the list of what is ready.
+G1 GOLFER_LIT: on holes 7-10, hero skin pixels clipped in any channel <= 1.0% (report per hole); the white polo L* 88-95; black trim L* 8-22; the face reads (eye whites not clipped).
+G2 ONE_LIGHT: the hero's shadow direction matches nearby props within 5 deg; the contact shadow is present on the tee; the hero's key colour matches the hole's GolfAtmosphere key (report values).
+G3 GROUND_READS: per hole, fairway stripes visible from the gameplay camera with luma contrast in the LOOK_CONTRACT range; fringe ring visible around every green; sand lip lighter than the sand body; rock strata with no texture stretch on any cliff (sheet of the worst faces).
+G4 NO_SHIMMER: a 3 s camera move per hole at phone resolution; temporal flicker on grass and rock <= BEFORE; no moiré.
+G5 COURSE_FROZEN: 15's guards.sh passes; scoring checks unchanged; top-surface outlines and heights identical.
+G6 GOLF_KIT_READS: in labelled crops, male: collar stand, placket buttons, side vent, belt + buckle, trouser crease, glove knuckle bends, cap panels + brim stitch, shoe saddle + nub sole; female: the same for her look. FAIL if any are missing or flat.
+G7 DEFORM: ReadyIdle and the 3 swing extremes, both heroes, both handednesses: no body poke-through > 3 mm on any garment, the glove has no finger collapse, the cap doesn't move on the head (cap-to-head offset <= 2 mm).
+G8 RECOLOUR + LOCKER: every catalog colour on the golf costume renders right with the trim rule (grid); the golf tab in the locker shows the golf outfit; switching sport swaps outfits; loadout payload carries it.
+G9 ONE_SYSTEM: no forked character or cloth shader (grep the shader list, report it); golf and tennis share the includes; GARMENT_SPEC updated with the golf fabric IDs and Head_Hat if added.
+G10 TENNIS_UNCHANGED: tennis match and locker captures before vs after differ by <= 1/255 mean and <= 3/255 max in hero regions (report numbers and diff images).
+G11 BUDGET: per-hole draw calls / tris, shader stats, texture MB, and frame time, all within limits; iOS Metal compile log path.
+G12 EYE: every BEFORE/AFTER sheet, turntable, and the locker capture listed with exact paths. Adnan decides.
+
+----------------------------------------------------------------
+5. REPORT
+One line per gate, sheet and film paths, budgets before and after, the shader list (new, changed, removed), the files changed with rollback paths, NEXT_SWING.md, what you'd still improve, and what is staged. No commit.

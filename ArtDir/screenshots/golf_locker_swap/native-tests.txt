@@ -1,0 +1,5 @@
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testEmoteLoadoutScreens]' passed (6.431 seconds).
+Test Case '-[GolfArcadeTests.TennisMenuSnapshotTests testSportLockerPreviewSwitchesOutfitEquipmentAndBack]' passed (8.262 seconds).
+	 Executed 2 tests, with 0 failures (0 unexpected) in 14.694 (14.697) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 14.694 (14.700) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 14.694 (14.706) seconds

@@ -1,0 +1,207 @@
+{
+  "sources": [
+    "https://polyhaven.com/a/fir_sapling_medium",
+    "https://polyhaven.com/a/fir_tree_01",
+    "https://polyhaven.com/a/shrub_02",
+    "https://polyhaven.com/a/fern_02"
+  ],
+  "license": "CC0",
+  "artists": [
+    "Rico Cilliers",
+    "Rob Tuytel"
+  ],
+  "meshes": [
+    {
+      "name": "CONIFER_A",
+      "triangles": 19016,
+      "materials": [
+        "fir_sapling_medium_branches",
+        "fir_sapling_medium_twigs",
+        "fir_sapling_medium_branches_dead"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        7.427236557006836,
+        7.80786657333374,
+        13.0
+      ]
+    },
+    {
+      "name": "CONIFER_A_FAR",
+      "triangles": 8,
+      "materials": [
+        "COAST_FIR_VIEW_A.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        10.529999732971191,
+        10.529999732971191,
+        14.040000915527344
+      ]
+    },
+    {
+      "name": "CONIFER_B",
+      "triangles": 11886,
+      "materials": [
+        "fir_sapling_medium_branches.001",
+        "fir_sapling_medium_twigs.001",
+        "fir_sapling_medium_branches_dead.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        7.175323486328125,
+        7.884102821350098,
+        11.5
+      ]
+    },
+    {
+      "name": "CONIFER_B_FAR",
+      "triangles": 8,
+      "materials": [
+        "COAST_FIR_VIEW_B.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        9.3149995803833,
+        9.3149995803833,
+        12.420000076293945
+      ]
+    },
+    {
+      "name": "CONIFER_C",
+      "triangles": 15488,
+      "materials": [
+        "fir_sapling_medium_branches.002",
+        "fir_sapling_medium_twigs.002",
+        "fir_sapling_medium_branches_dead.002"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        10.904980659484863,
+        10.97723388671875,
+        14.999999046325684
+      ]
+    },
+    {
+      "name": "CONIFER_C_FAR",
+      "triangles": 8,
+      "materials": [
+        "COAST_FIR_VIEW_C.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        12.149999618530273,
+        12.149999618530273,
+        16.19999885559082
+      ]
+    },
+    {
+      "name": "CONIFER_D",
+      "triangles": 10395,
+      "materials": [
+        "fir_tree_01_bark",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches",
+        "fir_tree_01_trunk_c"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        7.417850494384766,
+        7.015427589416504,
+        17.0
+      ]
+    },
+    {
+      "name": "CONIFER_D_FAR",
+      "triangles": 8,
+      "materials": [
+        "COAST_FIR_VIEW_D.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        13.770000457763672,
+        13.770000457763672,
+        18.360000610351562
+      ]
+    },
+    {
+      "name": "FERN",
+      "triangles": 784,
+      "materials": [
+        "fern_02"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        0.8660049438476562,
+        0.9624688625335693,
+        0.44999998807907104
+      ]
+    },
+    {
+      "name": "FERN_FAR",
+      "triangles": 279,
+      "materials": [
+        "fern_02"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        0.8706765174865723,
+        0.9577226638793945,
+        0.4486202299594879
+      ]
+    },
+    {
+      "name": "SHRUB_A",
+      "triangles": 4809,
+      "materials": [
+        "shrub_02"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        1.6980104446411133,
+        1.6753695011138916,
+        1.0499999523162842
+      ]
+    },
+    {
+      "name": "SHRUB_A_FAR",
+      "triangles": 1400,
+      "materials": [
+        "shrub_02"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        1.6962003707885742,
+        1.6717441082000732,
+        1.0457042455673218
+      ]
+    },
+    {
+      "name": "SHRUB_B",
+      "triangles": 5648,
+      "materials": [
+        "shrub_02.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        1.7752951383590698,
+        1.8605213165283203,
+        0.9500000476837158
+      ]
+    },
+    {
+      "name": "SHRUB_B_FAR",
+      "triangles": 1400,
+      "materials": [
+        "shrub_02.001"
+      ],
+      "uvCount": 1,
+      "dimensions": [
+        1.7699658870697021,
+        1.857785701751709,
+        0.9466924071311951
+      ]
+    }
+  ],
+  "distantRepresentation": "Four directional alpha-tested source bakes, eight triangles, no shadow casting"
+}

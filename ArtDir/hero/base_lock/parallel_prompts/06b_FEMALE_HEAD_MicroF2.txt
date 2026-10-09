@@ -1,0 +1,74 @@
+PASTE — FEMALE HEAD MicroF2 (round lower face + plate jaw) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye (Oct 2): female head is **almost perfect**, but the **jaw is wrong**:
+1) There is a **misfiguration / fake jawline near mid-chin** (crease or edge reading too high / too central) instead of where the real mandible edge should sit on the plate.
+2) Lower face needs to be **rounded out more** (softer cheeks→chin continuity), then a **slightly more defined but rounded** jaw that matches the **reference plate** — feminine soft-plastic peach, NOT a hard male angle.
+
+Do NOT redesign eyes/brows/nose/mouth/cranial. Hold MicroF1 wins elsewhere.
+
+START (verify SHA before any edit):
+work/female-micro-f1-head/export/HeroBase_Female_MicroF1_head_STAGED.blend
+SHA-256 4450c644a895fb5d2962ed76077770ea39af21de81482bb275d02510747f876e
+ArtDir female still 200dc3b9… (MicroF1 staged only). Prefer staged start. Never whole-file clobber torso/limbs.
+
+READ FIRST (mandatory):
+1) ArtDir/hero/base_lock/proof/02_match_f_head.png — study mid-chin / lower-face vs plate
+2) ArtDir/hero/base_lock/proof/FEMALE_HEAD_RESULTS.md
+3) ArtDir/hero/base_lock/proof/female_head_f1/unity/ face_front, face_q3, face_profile
+4) face_lock_f/ plates (front + 3/4 + profile) — **authority for chin roundness + true jaw placement**
+5) AGENTS.md + art-bible.md
+
+WHY IT FAILS (do not repeat):
+- A shading crease / geometric edge sits too close to **mid-chin**, so the face reads like a second jawline in the wrong place.
+- True gonial / mandible border is soft or misplaced vs plate.
+- Lower third is too angular / long vs plate’s rounder soft-plastic cheeks→chin.
+
+SCOPE — MicroF2 (narrow, in order):
+1) KILL_MID_CHIN_FAKE_JAW — PRIMARY
+   - Remove the false jawline / crease / edge near mid-chin.
+   - Chin mound should be one soft rounded form into the under-chin plane — no horizontal “belt” across the front of the chin.
+   - Proof: plate | MicroF1 | MicroF2 front + slight-up crops focused on chin.
+
+2) ROUND_LOWER_FACE — PRIMARY
+   - Soften / fill so cheeks flow into a rounder lower face (less long/angular 3/4).
+   - Still feminine soft-plastic — not chubby cartoon, not hollow.
+   - Hold eye/nose/mouth landmarks; do not widen skull carelessly.
+
+3) JAW_ROUNDED_PLATE — SECONDARY (after rounding)
+   - Place a **soft rounded** mandible read where the plate has it (chin corners → soft body → rounded gonial — not a knife, not mid-chin).
+   - Slightly more defined than MicroF1, but **rounder** than a hero-male jaw; match plate silhouette in front/3q/profile.
+   - Collar weld / BODY_BELOW_NECK bit-identical.
+
+HOLD:
+- Eyes / lids / iris / brows / nose / mouth / cranial / ear attach
+- Female vibrancy / skin path
+- SIL bald ≤ 5%
+
+PARALLEL SAFETY:
+- Work ONLY under work/female-micro-f2-head/
+- Head above collar only. Do NOT open torso FORM4 / limbs.
+- Stage only unless Adnan says install.
+
+HARD GATES:
+BODY_BELOW_NECK bit-identical
+ZONE_OUTSIDE head-only
+TOPOLOGY / loops hold (or disclose)
+SIL bald front/back ≤ 5%
+KILL_MID_CHIN_FAKE_JAW — Adnan-eye: no false jawline on mid-chin (FAIL if still there)
+ROUND_LOWER_FACE — Adnan-eye: lower third rounder / closer to plate (FAIL if still long-angular)
+JAW_ROUNDED_PLATE — Adnan-eye: soft defined jaw in the right place; feminine; matches plate BA
+OVERALL_HOLD — no regression on eyes/nose/mouth vs MicroF1 match sheet
+NO densify unless disclosed / NO male jaw copy
+
+DELIVER:
+- work/female-micro-f2-head/FEMALE_HEAD_RESULTS.md (Honest notes)
+- proof/: plate | F1 | F2 chin close-ups + full lower-face BA (front/3q/profile) + updated match sheet
+- export staged blend/FBX
+
+REPLY ONLY:
+GATE: FEMALE_HEAD_MicroF2 PASS
+or FAIL with failed lines only.

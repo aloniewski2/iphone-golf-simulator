@@ -1,0 +1,22 @@
+PASTE — CHAT 4 / 8 — MALE LEGS + FEET
+Sonnet 5.5 max · NEW CHAT
+
+---
+
+PARALLEL SAFETY (MANDATORY — violate = STOP):
+- You own ONLY the vertex ZONE named below. Any vert outside your zone: DO NOT MOVE (bit-identical vs start SHA).
+- Work ONLY under work/<your-folder>/ . Never edit another chat's work/.
+- Do NOT overwrite ArtDir blend/FBX until your zone audit proves 0 verts moved outside zone.
+- Unity: write captures to Library/Captures is OK; only touch YOUR prefab import path listed below; never run a full HeroBase import that other chats are writing in the same minute — prefer export to work/<folder>/export/ then copy to ArtDir ONLY at end if zone audit PASS.
+- Do NOT delete/rename LOOP_* groups you do not own. Do NOT open female blend.
+- If start SHA mismatches, STOP.
+
+YOUR ZONE: legs from upper thigh through feet/toes. EXCLUDE: head, torso, arms, hands, pelvis above crotch line as much as practical — do not move torso verts.
+0 verts in head/arms/hands/torso.
+
+START SHA: 68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf (re-verify current)
+AUTHORITY: male_body_bald.jpg / multiangle (legs)
+WORK: work/male-parallel-legs/
+SCOPE: thigh/calf/ankle/foot soft-plastic vs plates; no clothes.
+DELIVER: legs proof + checks outside-zone=0
+REPLY: GATE: MALE_LEGS_FEET PASS|FAIL

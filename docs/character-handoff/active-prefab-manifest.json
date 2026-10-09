@@ -1,0 +1,295 @@
+{
+  "prefab": "Unity/Assets/Resources/Tennis/Hero/Hero_01_Tennis.prefab",
+  "direct_dependencies": [
+    {
+      "guid": "0000000000000000e000000000000000",
+      "path": null,
+      "sha256": null
+    },
+    {
+      "guid": "004eb7e60e9694bfe94477690a2c5e83",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_Racket_Strings.mat",
+      "sha256": "0f169699b3f3b9b18ef21c7676082936503c50a073ee8b09c09da0cb11b5ad0f"
+    },
+    {
+      "guid": "0754bb99b0e9d45ea878b12035b950ba",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Mixamo_Bind.fbx",
+      "sha256": "4cb6363ce0222c3f5d8a695641301f62f446c9a036927eff173105799da1707a"
+    },
+    {
+      "guid": "0a660bf61ef4644a09a90bcd719bea6c",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunRight_v5.fbx",
+      "sha256": "88368c52c4adb71803f34840e16c92a393f014c45d48cb18f0e7445263cb4053"
+    },
+    {
+      "guid": "0e0f872a7d6664fcfa97b8c7b08eb0a3",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchLose_v5.fbx",
+      "sha256": "62ed61cd10ccc2ce685fd68bd045155027cfed29d6bcc793847f616ffa46577c"
+    },
+    {
+      "guid": "0f090022469be48c4a8f3e6f2d99dbdc",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shorts_Default.fbx",
+      "sha256": "151eebaa5df626c4080879ae3c7972863b1530ddf0330f3a7e51f154d7168cd3"
+    },
+    {
+      "guid": "0fbd1a0ca6f14437e91982f54b00ba73",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_V5Yellow.mat",
+      "sha256": "231779c60996ed277843d347f560834eb782c36b90de57f1d3f10693255aeb88"
+    },
+    {
+      "guid": "163c981d7557d44f1ac2303c12cb46f8",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_HairTuft.mat",
+      "sha256": "00c549422d234426469c9db72294bbda4002bf736a148a04f740ed328fe3caa0"
+    },
+    {
+      "guid": "19fac44d9eb7249e3a3a911821e1c8fa",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_Visor.mat",
+      "sha256": "5316307bf438644639631042680ce781500f57e46bda52978dd666344965f9fd"
+    },
+    {
+      "guid": "1fe4222006d4a417b94da1ab546d9c52",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Serve_v5.fbx",
+      "sha256": "598b43ae6b68dd9d93dfae925b4d8b24b238205cbfa587dafa6243d38b8ba9f8"
+    },
+    {
+      "guid": "20501228b35364c6f9f244b90172a849",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Cos_Band_Orange.mat",
+      "sha256": "ea40aa8c8fe423809c37354e9bd790feaa7b9c8d9f1db8df2701e6022cf293da"
+    },
+    {
+      "guid": "257c038f952424fb19d7d51d05b484da",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_MatteCloth_TrimTeal.mat",
+      "sha256": "88876aca3269bc872c69a73eeeba42201d888783a9b045650daf040e2ecd13be"
+    },
+    {
+      "guid": "2d48d2bd419c64b91b93380e74de5560",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_01_Hat_Cap.fbx",
+      "sha256": "ad056a36dda15c4efbe0901d59bc696fd4c49d4a9edb3578e4828e147c4de240"
+    },
+    {
+      "guid": "2dd9300ef826a4666ac1c9b635aaae1a",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_MatteCloth.mat",
+      "sha256": "9c2c7b9b713e1c6c106efdfd2d65575c763c82bf3bf8b7f7327b5e7656f9da2b"
+    },
+    {
+      "guid": "3331703a1c1e34fbdab715d3c4671ad6",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_V5Orange.mat",
+      "sha256": "5e8d288770658d5db064f7e818fe84c8630ecb5deb3423ed54639693cfff24e0"
+    },
+    {
+      "guid": "35b26ae3a629d4fa8a9a40a1b1e320f1",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_SadPointLost_v5.fbx",
+      "sha256": "4dbfca0a3e2180d2712b725e974b5b26442bde10ef5f2d771359af9ee7e29944"
+    },
+    {
+      "guid": "39c3fbebb44a1493dba35d64ab44f7a4",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_HitPerfect_v5.fbx",
+      "sha256": "95f150e4e7f1402c64824792eea2143f43bc1a15b8d593ae1799cef87e2b8dd5"
+    },
+    {
+      "guid": "4597bd35d4de34ed4a87229aac5f83e8",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Cos_Band_White.mat",
+      "sha256": "034a243992e0a9fbcfd33cef74fb75af134c8178fb4248b687f4a82acf8c1b3d"
+    },
+    {
+      "guid": "46dcf532953074bbf8b8e67056e0f3c2",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Backhand_v5.fbx",
+      "sha256": "97a64588ba8534dfce321e66d1586ae2252be50303af1229e87e3ca0b1f86a1f"
+    },
+    {
+      "guid": "4863873f158f94025ab1aa84213806e0",
+      "path": "Unity/Assets/ArtDirection/Hero01/Textures/Hero_01_BaseColor.png",
+      "sha256": "c2024474c09d2ab3493c61614360787d13f760933d41f25b1256c45017ad1de4"
+    },
+    {
+      "guid": "4a50ac9df61ec4bb9abadc7e0c17394c",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/skin_CoveredFoundation.mat",
+      "sha256": "6cc4e16e2c3da222ac90ecdf8013470aac2d9b4ec1d8485a75ed8f13c12bb981"
+    },
+    {
+      "guid": "4bbfbd697d8034730892ba4f161da4b3",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_Prop_Trophy.fbx",
+      "sha256": "cd9eb78f9d056fb9ec19ded768cfa1eb2e663a0a17d927e0b53aa402fe4ae93c"
+    },
+    {
+      "guid": "4d3a86f72137e4a2ab8d1dfa8c8b7e42",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Cos_Cap_Orange.mat",
+      "sha256": "02d92c095aca7f0fb000daff4d8827f421783f7aa6c1b06753b6a181568e25cc"
+    },
+    {
+      "guid": "5636ceebd49434993835b12712863cae",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hair_Default.fbx",
+      "sha256": "41f56405a31643291f6cfb4e1c64f769bf815853ba0f9eb34e13a101e1db30ae"
+    },
+    {
+      "guid": "5de81f06f8cfe401d9981c83633c8312",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_EyeCornea.mat",
+      "sha256": "97c08d9b9b215b871109196b6cd7b4d5810bd242acf1daf1eeeb4ff1f658a58f"
+    },
+    {
+      "guid": "5ee627276443d4dcbbb8286fde8eae76",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MissWhiff_v5.fbx",
+      "sha256": "3ad3a9774a16b34a30ec6b13662e151ab2dd5520c16411cefe784e5156ab4bd0"
+    },
+    {
+      "guid": "6decddde00c0343db8393591be0758bf",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shoes_Default.fbx",
+      "sha256": "6643bd9b814b272d27d468d9af7414d767c98a128071507a6b2a01c1967492ca"
+    },
+    {
+      "guid": "74b633f4c254c4749909bc3c6ec2a27e",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Walk_v5.fbx",
+      "sha256": "76f3c8404476c55d207129cf16807b4583e00d3eb39cd5f4f8d202408c4fce2d"
+    },
+    {
+      "guid": "7b95ccaf078974dd8b2164c3430833e5",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Cos_Trophy_Gold.mat",
+      "sha256": "ab03b05d741e1190615f86eac622d93182507297815cf7c27c43e670772fc21a"
+    },
+    {
+      "guid": "806b4ff8537794ea3ab0f931e678f115",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_Racket_Blue.mat",
+      "sha256": "39f188564cb234b712bb4e49d0ca9e814888e45aca3583a91c6c88a167292982"
+    },
+    {
+      "guid": "82906b3f12e52421486d5b1859ec2526",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_HairTuft_Waves.mat",
+      "sha256": "3fb7fbe259b230b4280c922e426eab9c36f2c450cb056061320664532b1cc8e4"
+    },
+    {
+      "guid": "87546dc98de11409ab6f1265d6ff6ab8",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/skin_MatteCloth.mat",
+      "sha256": "f6ac57763740145cf80b9d0b0c7dd512970d28e955d46628b6b3545fa577feb8"
+    },
+    {
+      "guid": "903319255812d4b679c12f52918c4e53",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Hat_Visor.fbx",
+      "sha256": "616a312840556bc34557d1992211e4254ca12b77bcafccd74ad34cdc43333cb7"
+    },
+    {
+      "guid": "92d841def8b1b49d98732007880844a8",
+      "path": "Unity/Assets/ArtDirection/Hero01/Props/Hero_Racket.asset",
+      "sha256": "445c91274d7e47b2ebeea2d541d611e1922fa89cb702e590c9f1b634f815220b"
+    },
+    {
+      "guid": "96d116261db4c48cc9cc2500db686685",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_Racket_Grip.mat",
+      "sha256": "8a1de632bd12b0670d1d58d71e2663dbe2931b1c0420b028a936951e2ddbf386"
+    },
+    {
+      "guid": "a3f0d28e56972405cbe6574aedf36f17",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_01_FingerBody.fbx",
+      "sha256": "6d0979796f03a6479f32713c61028bc1c1b2ac7ce2096e5a6105a32d986fea0f"
+    },
+    {
+      "guid": "a657d5138fadf43cd854b36bccc93065",
+      "path": "Unity/Assets/ArtDirection/Hero01/Textures/Hero_01_SkinMask.png",
+      "sha256": "fc160159bd5c784bd1ee1d84408cdef7866008821256285c07b4831b7755c65a"
+    },
+    {
+      "guid": "a9934afb6961b45d4863d2e3551712f1",
+      "path": "Unity/Assets/Scripts/Tennis/HeroTennisDriver.cs",
+      "sha256": "1fdbccb77321e874633c9550db5f9e2a9039d75bcffcfbceb002811f52067357"
+    },
+    {
+      "guid": "b3aba3d8b9c914e03bf2165eecbf1aa2",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/skin_WarmSkin.mat",
+      "sha256": "e94ac82a7649fd55825c7a42e303390bbd9ba2afaf9f563a4afddaa36210079a"
+    },
+    {
+      "guid": "b98fc195860e542ebbcf7a2a1688f853",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Volley_v5.fbx",
+      "sha256": "5bb89ff90388498672be46694b64bb9686ad011ac637474f67c90cf08f402410"
+    },
+    {
+      "guid": "bbeed4460a3aa4ff29dfebd6dd31766a",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Forehand_v5.fbx",
+      "sha256": "32090544d19f0fac8fe5622b9680ef65f4acce2e8358c679bc160037b813357e"
+    },
+    {
+      "guid": "c0f506eb4e005493b84b07d0fba7d4d8",
+      "path": "Unity/Assets/Scripts/Tennis/HeroCosmetics.cs",
+      "sha256": "eb94649390240016dd7b7856f4ff9a6c986f42a23bc970048a9004ae69290c0a"
+    },
+    {
+      "guid": "c30c4ff7cfe9541219bf58c97ecf1ccb",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_ShoeOrange.mat",
+      "sha256": "db397825f5d18c976de76702805d6d1142019b587d11051900ff7623700b033d"
+    },
+    {
+      "guid": "cecb3422f508a461dacde8dc7feeb431",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_ShoeCleanWhite.mat",
+      "sha256": "322a04253c291b7e9eb8d0fcb8bb2eab3dc0238f46ed4217c4906afc27a6a943"
+    },
+    {
+      "guid": "d1b77b5ab9d2e4f539129b78e4c508da",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_MatchWin_v5.fbx",
+      "sha256": "9875f634fa640f497ac9b73cd6562ed21eecfafa00c5793f11690b346922bf16"
+    },
+    {
+      "guid": "d543aff444fe84b76b84abc1d97a4fc2",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_CelebratePoint_v5.fbx",
+      "sha256": "a8bfb04466f69c100f5c6a7d317551f5a6fb09b8bf6d9f9a6d5c4da476284322"
+    },
+    {
+      "guid": "d86220af6eb824741befe6c9ff610b1f",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunLeft_v5.fbx",
+      "sha256": "4ec2d71ab88e93d29e20ef29823ce2d220b030b1529046b7572597e58af86d04"
+    },
+    {
+      "guid": "d99340f9bc7104d21b0b1e3db168a15a",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Smash_v5.fbx",
+      "sha256": "f27fb64b56f8b6378f757863efb13d1264bcd19d1939a73c83d52b8446ea12e0"
+    },
+    {
+      "guid": "da24c3c04439e4c819294d5323a10cd9",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Hero_01_Shirt_Default.fbx",
+      "sha256": "bf33756046e78fb3bda64acb972362b5c640362990522880b304614ee5c45e6d"
+    },
+    {
+      "guid": "de0c916c706154cf8869239cf14dfacc",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/skin_BlondHair.mat",
+      "sha256": "4248e0235e4cb66edb0d9ba82883c08ee5470a87922583a0fd3dab280b8c6dfe"
+    },
+    {
+      "guid": "def290b32194441b8bceb3c0078396e5",
+      "path": "Unity/Assets/Scripts/Tennis/ModularHeroLook.cs",
+      "sha256": "622a9236107bf172e2649559866ec018e0a6304d82316e347f8b87bdaacb1d6e"
+    },
+    {
+      "guid": "df785c6dbc13b4a8fa8c45e23c1b9c2a",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_RunForward_v5.fbx",
+      "sha256": "a0f5994c9063aea241273b963eec804b9f8c2b8da3e18eb9fbf006481c91e731"
+    },
+    {
+      "guid": "df9bb0a2d71a244f992a51c9a7f3cbc4",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Ready_v5.fbx",
+      "sha256": "df6507ab79ba1b9e54a0524cec62c25e45c0d62a2ab71c0d698c0e34dbf8686b"
+    },
+    {
+      "guid": "e5ab5fa48f90e4e398ce32fe0b4a8acd",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/RestoreMotion/Hero_Idle_v5.fbx",
+      "sha256": "1f30d7c530143482873c65c0a35c90e44d0b7ee986b4a7c7ef0c7c9770d85c58"
+    },
+    {
+      "guid": "e5cfd67704ccb4a25a9d5af4b97f175a",
+      "path": "Unity/Assets/ArtDirection/Hero01/Models/Cosmetics/Hero_01_Hat_Sweatband.fbx",
+      "sha256": "95bd7b4cbe39cab3a867123f75507dcb9193d8689e7d454875218f45fab79274"
+    },
+    {
+      "guid": "e86b4a1a9625c4254ac00de0ac530ce0",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_WarmSkin.mat",
+      "sha256": "8f973157a2c643d1f4924f7a06965f1536b6d84c3770d84a72a8509c4b260c71"
+    },
+    {
+      "guid": "f5fb61d4fba1b4758a99aaade22ffd20",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_HairTuft_Buzz.mat",
+      "sha256": "d5db0805b57a608c7a5a23a1a50cdeaa1c477478073e3679d0c0dd667f948c3a"
+    },
+    {
+      "guid": "f99a8ff85c14a444b87edda0f19fd7ca",
+      "path": "Unity/Assets/ArtDirection/Hero01/Materials/Hero_01_Catchlight.mat",
+      "sha256": "620c9febb351a6536fa0ee24e7f1e54d7c21a424c1c688354556f21a728f4bc9"
+    }
+  ]
+}

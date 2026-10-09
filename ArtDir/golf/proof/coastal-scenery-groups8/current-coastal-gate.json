@@ -1,0 +1,128 @@
+{
+  "status": "Accepted coastalcomposition/camera/Dense15/Hierarchy16\u201317 +bounded9coursegrassrollout/Path19; illustratedfullartparityPARTIAL",
+  "ordinaryDefault": true,
+  "controls": {
+    "oldComposition": "VISUAL_COASTAL_REFERENCE=0",
+    "oldRockPalette": "VISUAL_COASTAL_FISSURES=0"
+  },
+  "referenceSourceSha256": "38e04be34f744a6ef67a3308566a843701b5ff63caa0f4c3dd1cf8b5b3d1d7d3",
+  "frozenOriginalSha256": "56b4d6197d960392008ad44bef257bc1a34477a95eeee3c3cac594971f29fd87",
+  "runtime": {
+    "obstacles": 161,
+    "obstacleHash": "f66789056e9c646408c10b9f2651f6dfd3b88935e43fb061480a4caa95139eaf",
+    "colliders": 14,
+    "groundRecords": 14,
+    "groundExactToGrass8": true,
+    "default9AndCamera10ObstacleHashExact": true,
+    "runs": [
+      {
+        "results": "work/reference-rebuild/capture-coastal-default9.json.results.json",
+        "resultsSha256": "4c1a0b5685179b20b27ebbe410cc1c5708336ba8d8bb6f4f7fd94eb6d87dcf14",
+        "reported": [
+          {
+            "name": "reference-coastal-default9",
+            "exit": 0,
+            "seconds": 23.81,
+            "shaderErrors": [],
+            "compileErrors": []
+          }
+        ],
+        "launchEnv": {
+          "GOLF_STANDARD_OUT": "proof/reference-rebuild/coastal-default9",
+          "GOLF_STANDARD_HOLES": "12",
+          "GOLF_STANDARD_SHOWCASE": "1",
+          "GOLF_STANDARD_CAMERA_SWEEP": "1"
+        },
+        "actualAudit": "proof/reference-rebuild/coastal-default9/hole12_audit.json",
+        "actualAuditSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b"
+      },
+      {
+        "results": "work/reference-rebuild/capture-coastal-camera10.json.results.json",
+        "resultsSha256": "9097eba6b512a6613c00876b952a7b28b9f063c0af1e5e09336e4977bca94b79",
+        "reported": [
+          {
+            "name": "reference-coastal-camera10",
+            "exit": 0,
+            "seconds": 24.17,
+            "shaderErrors": [],
+            "compileErrors": []
+          }
+        ],
+        "launchEnv": {
+          "GOLF_STANDARD_OUT": "proof/reference-rebuild/coastal-camera10",
+          "GOLF_STANDARD_HOLES": "12",
+          "GOLF_STANDARD_SHOWCASE": "1",
+          "GOLF_STANDARD_CAMERA_SWEEP": "1"
+        },
+        "actualAudit": "proof/reference-rebuild/coastal-camera10/hole12_audit.json",
+        "actualAuditSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b"
+      }
+    ]
+  },
+  "independentSource": {
+    "counts": {
+      "Tree": 43,
+      "Bush": 74,
+      "Rock": 43,
+      "Wall": 1
+    },
+    "all161UniqueRigidGroupsMatched": true,
+    "maximumDescriptorDeltaYards": 2.92e-05,
+    "maximumMeshPositionErrorMeters": 3.08e-05,
+    "fullRuntimeDescriptorComparisonPerformed": false
+  },
+  "targetRemaining": [
+    "Physical blades remain12mtee patches on9authoredgrassyholes, notallterrain/fairway-wide/green coverage.",
+    "Accepted managed turf hierarchy follows setting and cutting-height distinctions; illustrated fullcourse art parity remainsPARTIAL.",
+    "Cliff wall/crest planting/composition remain below illustrated target fidelity."
+  ],
+  "performanceScope": "Dense15 fixed48near/96mid/640total cells permit542720 added decorative triangles; actual440-cell layout permits517120. Three instanced API submissions; no grass shadows/colliders. Current sole-camera frame-cost/phone FPS not certified. Archived World18 all19 costs describe their earlier source snapshot.",
+  "courseRegression": {
+    "status": "PASS",
+    "certificate": "ArtDir/golf/proof/coastal-scenery-groups8/catalog-regression3/test-certificate.json",
+    "playMode": {
+      "tests": 1,
+      "launcherSeconds": 39.2,
+      "xmlSeconds": 30.5696708,
+      "authoredHoles": [
+        7,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "meadowHoles": [
+        1,
+        2,
+        3
+      ]
+    },
+    "focusedEditMode": {
+      "tests": 36,
+      "passed": 36
+    },
+    "testChange": "Current botanical replacement branch and correct linear-to-sRGB palette threshold; production gameplay unchanged by test repair.",
+    "staleness": "Catalogregression3 source snapshot predates Rough12/Dense15 and current material hierarchy; it is historical gameplay/source evidence, not a fresh certification of current materials/performance."
+  },
+  "appearanceReview": {
+    "geometry": "Dense15 ACCEPTED by parent/user actual view, compile/render PASS23.33s; ball/club readable",
+    "geometryProof": "ArtDir/golf/proof/dense-turf15/geometry-gate.json",
+    "sourceReproduction": "PASS exact canonical vs portable-rebuilt vertex/face/UV/object-transform digests",
+    "sourceProof": "ArtDir/golf/proof/dense-turf15/portable-geometry-proof.json",
+    "materials": "Hierarchy16/Green17 managed turf response ACCEPTED bounded actual view; compile/render44.09s/19.29s",
+    "materialProof": "ArtDir/golf/proof/turf-hierarchy16",
+    "groundParity": "Complete actual16 audit EXACT to Dense15; obstacle/collider/allground entries exact to Camera10",
+    "physicalCoverage": "Accepted12mtee patches on9authoredgrassyholes. Meadow/cold/dry/volcanic/green/moving/fairway-wide physical coverage excluded.",
+    "greenProof": "ArtDir/golf/proof/turf-hierarchy17",
+    "rolloutProof": "ArtDir/golf/proof/turf-rollout18-19/GATE.json",
+    "materialLegacy10": "Accepted compact21.27sactual; exactphysicsprior; no physical grass"
+  }
+}

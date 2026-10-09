@@ -1,0 +1,1 @@
+frames=3600 hits=9 longest=10 ultimates=2 perfects=4 whiffs=1 score=GAMES 0–0  ·  30–15  ·  YOUR SERVE playerGap mean=0.088 max=0.122 visible=4/13 rivalGap mean=0.174 max=0.416 steps=78/81 kicks=10 liveCutsRefused=0

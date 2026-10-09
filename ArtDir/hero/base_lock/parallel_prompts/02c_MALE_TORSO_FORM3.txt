@@ -1,0 +1,72 @@
+PASTE — MALE TORSO FORM 3 (chest + mid + butt) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan: FORM2 PASS (shading r) is not enough. **Chest still under-defined**, **midsection soft/flat**, **butt still reads as one block**. Continue from the installed FORM2 mesh. Do NOT undo depth / pelvis shelf / sil wins. Soft-plastic party style — stronger masses, not bodybuilder shred / six-pack carve.
+
+PARALLEL SAFETY:
+- YOUR ZONE ONLY: Body_M start **z in [0.77, 1.40)** and **|x| <= xlim(z)** — xlim = 0.205 for z < 1.20, linear ramp to 0.28 by z = 1.24, 0.28 above (same mask as chat2 / FORM2; ~7617 verts). Document exact mask.
+- 0 verts moved outside (head/neck z≥1.40, arms |x|>0.28, hands, legs z<0.77, feet). Float32 bit-identical outside. Audit mandatory.
+- Work ONLY under work/male-parallel-torso3/ . Stage export there first.
+- If ArtDir SHA ≠ start SHA below, STOP or rebase with work/male-parallel-torso2/apply_form2.py spirit / zone-index delta onto current ArtDir — never clobber Micro1k head / arms / legs.
+- Do NOT touch Face_M, LOOP_* groups, female blend. Unity Body_M refresh only after zone audit + clear solo window; otherwise stage FBX under export/.
+
+START BLEND (verify SHA before any edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 1fe4d53b3bcb9cfaef885d64350150e323a1d726cc4d54cc305ea71e323119bb
+(re-verify: shasum -a 256 … — if different, re-read current SHA; still 0 outside torso zone)
+This SHA should already include torso FORM2 + Micro1k head + prior limb installs. Torso zone should match FORM2 unless someone else touched it.
+
+READ FIRST:
+1) work/male-parallel-torso2/proof/MALE_TORSO_FORM2_RESULTS.md  (FORM2 wins + known gaps: glute still one block, mid modest)
+2) work/male-parallel-torso2/proof/02f_form2_proof_*.png (main / detail / side / q3 / pelvis)
+3) work/male-parallel-torso/proof/MALE_TORSO_RESULTS.md (original depth/shelf PASS)
+4) AGENTS.md + art-bible.md
+AUTHORITY plates: male_body_bald.jpg, male_multiangle_body.jpg, male_body_plain.jpg — **torso only** (front/back primary; 3/4 validation only — plates can disagree)
+
+KEEP FROM FORM2 / PASS (do not regress):
+- ZONE_OUTSIDE = 0
+- TOPOLOGY_IDENTICAL preferred (positions-only; no densify unless Adnan allows)
+- SIL bald front/back ≤ 5.0% (whole figure, locked cameras)
+- DEPTH vs side plates rms not worse than ~3 mm (FORM2 ~2.7)
+- PELVIS_SHELF clean (no return of >55° shard shelf)
+- Do not reintroduce artificial belt line / double pec line / upper-back band that FORM2 killed
+- Do not thrash Micro1k nape strip (z ~1.36–1.40 midline) — keep ≤2 mm drift there unless Adnan asks
+
+SCOPE — FORM 3 (Adnan eye targets; ≥ chest / mid / butt):
+
+PRIMARY (must PASS visually + metrics):
+1) CHEST_DEFINED — clear soft-plastic pec masses + readable **lower pec shelf** vs plate; soft sternum valley. Shelf height/contrast must beat FORM2 (FORM2 claimed shelf @ z≈1.175, contrast ~87% of plate — Adnan still says not enough: push closer without shredding). Front chest close-ups mandatory (plate | FORM2 | FORM3).
+2) MIDSECTION — waist / soft abs / oblique planes readable as athletic soft-plastic mid, not a smooth tube between pecs and pelvis. Soft belly lobes OK; **no six-pack carve**. Front mid close-up mandatory.
+3) GLUTE_FORM — upper glute in-zone (z≥0.77) must stop reading as **one block**. Soft twin lobes + midline V hint within zone; improve plate match on back pelvis band. Honest limit: deep cleft / thigh overhang / crotch slot below z=0.77 belong to legs — do NOT invade legs zone. If plate form is mostly below floor, maximize in-zone lobe split and document residual.
+
+SECONDARY (improve; blocker if worse):
+4) BACK planes — keep FORM2 scapula/spine gains; gentle lumbar; no new banding
+5) Optional Unity Body_M refresh after audit if no other install fight
+
+HARD GATES:
+ZONE_OUTSIDE_MOVED=0
+TOPOLOGY_IDENTICAL (or Adnan-noted carve — prefer none)
+SIL_FRONT_BACK<=5.0%
+DEPTH_vs_SIDE hold (rms ≲ 3 mm)
+PELVIS_SHELF_clean
+CHEST_DEFINED PASS — front chest band-pass shading r must beat FORM2 (+0.450); lower-pec shelf contrast ≥ FORM2 and visually stronger on close-up (Adnan eye final)
+MIDSECTION PASS — front abdomen band-pass r must beat FORM2 (+0.431); mid reads as form, not tube
+GLUTE_FORM PASS — back glute-upper band-pass r must beat FORM2 (+0.108) AND visual twin-lobe / cleft hint in-zone (not one block)
+FORM_mean of 6 torso regions must beat FORM2 (+0.345)
+NO_SELF_INTERSECT / no flipped faces / no NaN
+NO artificial belt / double-pec / ring banding return
+
+DELIVER:
+- work/male-parallel-torso3/proof/MALE_TORSO_FORM3_RESULTS.md
+- proof sheets front/back/q3/side (plate | FORM2 | FORM3) + **chest close-up** + **mid close-up** + **glute close-up**
+- male-torso-form3-checks.json (zone + sil + depth + per-region form r + shelf contrast)
+- Stage FBX under export/; ArtDir blend+FBX install ONLY after SHA guard + zone audit PASS; append INSTALL_LOG_MALE.md
+
+REPLY ONLY:
+GATE: MALE_TORSO_FORM3 PASS
+or
+GATE: MALE_TORSO_FORM3 FAIL
+<failed lines only>

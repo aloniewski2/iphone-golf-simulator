@@ -1,0 +1,12 @@
+{
+  "body_fbx": "HeroBase_Male_Body.fbx",
+  "default_hair_fbx": "Hair_Default_Male.fbx",
+  "hair_anchor_metres": [
+    0,
+    1.5795952782462055,
+    0
+  ],
+  "hair_origin": "head-local; Unity Y up",
+  "body_contains_hair": false,
+  "bald_height_m": 1.7043001652618284
+}

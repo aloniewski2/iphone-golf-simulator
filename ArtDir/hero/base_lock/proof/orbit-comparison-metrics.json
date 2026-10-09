@@ -1,0 +1,167 @@
+{
+  "views_per_base": 8,
+  "full_body": true,
+  "method": "Actual orthographic Blender and Unity captures, fixed metre/pixel framing, rotating studio lights; alpha coverage masks threshold 127. Contact sheets crop only empty horizontal margins.",
+  "measurements": [
+    {
+      "sex": "Male",
+      "view": "front",
+      "degrees": 0,
+      "blender_unity_silhouette_difference_over_union": 0.005128071974762096,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "front_right",
+      "degrees": 45,
+      "blender_unity_silhouette_difference_over_union": 0.004703011023967531,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "right",
+      "degrees": 90,
+      "blender_unity_silhouette_difference_over_union": 0.003986135181975737,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "back_right",
+      "degrees": 135,
+      "blender_unity_silhouette_difference_over_union": 0.004597291029107027,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "back",
+      "degrees": 180,
+      "blender_unity_silhouette_difference_over_union": 0.005270400083080199,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "back_left",
+      "degrees": 225,
+      "blender_unity_silhouette_difference_over_union": 0.004757400019194121,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "left",
+      "degrees": 270,
+      "blender_unity_silhouette_difference_over_union": 0.0038871970090866327,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Male",
+      "view": "front_left",
+      "degrees": 315,
+      "blender_unity_silhouette_difference_over_union": 0.004706366630076839,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "front",
+      "degrees": 0,
+      "blender_unity_silhouette_difference_over_union": 0.005691208807001911,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "front_right",
+      "degrees": 45,
+      "blender_unity_silhouette_difference_over_union": 0.003614367859009783,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "right",
+      "degrees": 90,
+      "blender_unity_silhouette_difference_over_union": 0.004271825591672395,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "back_right",
+      "degrees": 135,
+      "blender_unity_silhouette_difference_over_union": 0.00383891494637469,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "back",
+      "degrees": 180,
+      "blender_unity_silhouette_difference_over_union": 0.005734324025236774,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "back_left",
+      "degrees": 225,
+      "blender_unity_silhouette_difference_over_union": 0.0037185269257190645,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "left",
+      "degrees": 270,
+      "blender_unity_silhouette_difference_over_union": 0.004760502552021987,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    },
+    {
+      "sex": "Female",
+      "view": "front_left",
+      "degrees": 315,
+      "blender_unity_silhouette_difference_over_union": 0.004061944656004062,
+      "native_resolution": [
+        1280,
+        720
+      ]
+    }
+  ]
+}

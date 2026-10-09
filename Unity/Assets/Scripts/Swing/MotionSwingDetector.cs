@@ -1,0 +1,457 @@
+using System;
+using System.Numerics;
+using GolfArcade.Shot;
+
+namespace GolfArcade.Swing
+{
+    public enum SwingPhase { Settling, Address, Backswing, Downswing, Finish }
+
+    public enum SwingEventKind { Load, Cancel, Impact }
+
+    /// What the phone reports to the game: the backswing filling (load, 0–1), a swing that
+    /// fizzled, or an impact with everything the shot needs.
+    public readonly struct SwingEvent
+    {
+        public readonly SwingEventKind Kind;
+        public readonly double Load;
+        public readonly SwingImpact Impact;
+
+        SwingEvent(SwingEventKind kind, double load, SwingImpact impact) { Kind = kind; Load = load; Impact = impact; }
+        public static SwingEvent Loaded(double load) => new(SwingEventKind.Load, load, default);
+        public static SwingEvent Cancelled() => new(SwingEventKind.Cancel, 0, default);
+        public static SwingEvent Struck(SwingImpact impact) => new(SwingEventKind.Impact, 0, impact);
+    }
+
+    /// Observed execution, separate from the target chosen by the player.
+    public struct SwingImpact
+    {
+        /// 0–1 meter reading: peak downswing speed against the club's full speed.
+        public double Power;
+        /// Degrees right of the aim line the ball starts on (a pushed or pulled face).
+        public double StartLineDegrees;
+        /// Spin-axis tilt in degrees; positive curves right (slice for a right-hander).
+        public double CurveDegrees;
+        /// Wrist roll between address and impact, degrees; positive = face open.
+        public double FaceDegrees;
+        /// Seconds from the start of the backswing to impact.
+        public double TempoSeconds;
+        /// Peak rotation speed of the downswing, rad/s.
+        public double PeakSpeed;
+        /// Backswing size, 0–1, the load the meter showed before the downswing.
+        public double Backswing;
+        /// Seconds from the top of the backswing to impact.
+        public double DownswingSeconds;
+        /// How committed the downswing was: peak speed against the speed that counts as a full
+        /// swing (1 = committed; less was a push, and cost power). Zero when not measured.
+        public double Commit;
+        /// Ball-striking faults on top of the face: 0 clean, up to 1 fully thin (a push through
+        /// the ball — it comes off low and hot with little spin).
+        public double Thin;
+        /// What the strike adds to the ball's speed (0.06 is 6 % faster off the face) and how its
+        /// spin wanders, over the club's full-swing figures: a pure, fast strike flies past the
+        /// club's number and no two swings go quite the same way (Strikes.Pure). Zero for a shot
+        /// planned exactly (the tests, the preview).
+        public double SpeedBonus;
+        public double SpinScatter;
+    }
+
+    /// Phone-as-club swing recognizer. Feed it attitude and rotation-rate samples and it reports
+    /// load, cancellation, and impact. No Unity types, so tests can drive it with synthetic swings.
+    ///
+    /// Address is the phone held still and hanging like a club — its long axis pointing at the
+    /// ground, the way a shaft does when the hands are at the grip. Until it is, nothing arms
+    /// and no power can be drawn. A backswing is rotation away from address — the meter fills
+    /// as you draw back, like Wii Sports. The downswing starts when the phone turns back toward
+    /// address quickly; impact is the moment it passes back through address (or clearly
+    /// decelerates). Power is how far back you took it: a full backswing swung through is the
+    /// club's whole distance, half a backswing is half of it — the meter reads what the shot
+    /// will be. The downswing only has to be committed (CommitRatio); a lazy push scales it
+    /// down. Never more than the club, and never wild: however hard you lash it, the ball flies
+    /// the club's full distance on the face you struck it with. The wrist's roll at impact, relative to address, is the club
+    /// face: open slices, closed hooks.
+    public sealed class MotionSwingDetector
+    {
+        // Phone Ready calibrates the chosen grip; other sources retain club-down arming.
+        public bool UseReadyPose;
+        public void SetReadyPose(Quaternion attitude) {
+            Reset(); UseReadyPose = true; hasReadyPose = true;
+            readyPose = reference = previous = Quaternion.Normalize(attitude); Phase = SwingPhase.Address;
+        }
+        Quaternion readyPose = Quaternion.Identity;
+        bool hasReadyPose;
+        double calibratedBackswing, calibratedSpeedScale = 1;
+        GolfClub configuredClub;
+
+        // Practice learns a comfortable full swing. Putting keeps its own short pendulum scale.
+        public void CalibrateFullSwing(double radians, double peakRate) {
+            calibratedBackswing = Clamp(radians, .7, 2.8);
+            calibratedSpeedScale = Clamp(peakRate / 8, .35, 1.75);
+            Configure(configuredClub);
+        }
+
+        /// Up in the attitude's reference frame. iOS Core Motion attitude (what Input.gyro gives)
+        /// is in a Z-vertical frame.
+        public Vector3 WorldUp = Vector3.UnitZ;
+        /// How far, in degrees, the phone's long axis may lean from straight down and still count
+        /// as a club at address. A driver shaft leans about 30° at address.
+        public double PointedDownDegrees = 38;
+        /// Radians from address that count as the start of a backswing.
+        public double BackswingStart = 0.25;
+        /// Radians of backswing shown as 100 % load: a full shoulder turn, phone up behind you.
+        /// Hip-high (about 90°) reads around 60 %.
+        public double FullBackswing = 2.6;
+        /// The share of the club's full speed that makes a committed downswing. At or above it the
+        /// shot is worth the whole backswing: power = load × min(1, speed ratio / CommitRatio).
+        /// Below it, a push rather than a swing, it scales down in proportion.
+        public double CommitRatio = 0.5;
+        /// A backswing this close to the full turn counts as full: a real swing stops a few degrees
+        /// short of the mark, and a full swing should always be the whole club.
+        public double FullSnap = 0.95;
+        /// Whether a downswing that slows right down counts as struck (full swings: a checked
+        /// swing is still a swing). The putter's is off: a putt is struck only as the putter comes
+        /// back through the ball, and the stroke carries on into its follow-through.
+        public bool StrikeOnSlowing = true;
+        /// Read the stroke along its own arc (the turn about the swing axis, signed) rather than
+        /// as any rotation from address, so a putter face that opens and closes on the way back
+        /// and through can't hide the moment it passes the ball. The putter's.
+        public bool AlongTheArc = false;
+        /// A committed downswing, in rad/s per radian of backswing (0: judged against the club's
+        /// FullSpeed instead). A putt is a pendulum — a short one is slow and still whole — so the
+        /// putter's is judged against its own backstroke.
+        public double CommitPerRadian = 0;
+        /// Whether a pushed downswing strikes the ball thin (full swings). A putt just rolls.
+        public bool CanStrikeThin = true;
+        /// Rotation speed (rad/s) under which the phone counts as "not swinging" for arming. As
+        /// long as the phone hangs like a club and is not mid-swing, it is ready — no dead-still
+        /// hold needed.
+        public double ArmSpeed = 1.2;
+        /// Rotation speed (rad/s) that starts the downswing once the phone turns back toward address.
+        public double DownswingSpeed = 2.5;
+        /// Peak rotation speed (rad/s) that produces full power. Set per club.
+        public double FullSpeed = 14.0;
+        /// Slower peaks are a waggle, not a swing, and do not spend a shot.
+        public double MinimumSpeed = 1.5;
+        /// Radians from address at which the downswing counts as impact.
+        public double ImpactAngle = 0.5;
+        /// A phone rotating slower than this is at rest (used to notice the club being lifted
+        /// out of position between swings).
+        public double StillSpeed = 0.6;
+        /// How long the phone has to hang like a club, not swinging, before it arms.
+        public double StillDuration = 0.1;
+        /// Degrees of ball curve per degree of face roll, and of start line per degree.
+        public double CurvePerFaceDegree = 0.5;
+        public double StartLinePerFaceDegree = 0.18;
+        /// Face roll under this (degrees) is a square strike; keeps ordinary wrist wobble straight.
+        public double FaceDeadZoneDegrees = 10;
+        public double MaxCurveDegrees = 18;
+        public double MaxStartLineDegrees = 8;
+
+        public SwingPhase Phase { get; private set; } = SwingPhase.Settling;
+        /// Latest backswing load (0–1) for HUD polling between events.
+        public double Load { get; private set; }
+        /// Whether the last sample had the phone hanging like a club: long axis near vertical
+        /// with the top edge down (when gravity is known — the attitude fallback cannot tell ends).
+        public bool PointedDown { get; private set; }
+        /// True when the phone is vertical enough but upside down for a club (top edge up).
+        public bool WrongEndDown { get; private set; }
+        /// Degrees the phone's long axis leans from vertical, from the last sample.
+        public double LeanDegrees { get; private set; }
+        /// The club face right now, degrees of wrist roll from address (positive open), for the
+        /// face dial while the player sets up and swings. Zero until the phone is at address.
+        public double FaceNow { get; private set; }
+
+        Quaternion reference = Quaternion.Identity;
+        double? stillSince;
+        double peakAngle;
+        double peakSpeed;
+        double downswingStart;
+        double swingStart;
+        double backswingLoad;
+        Vector3 swingAxis;
+        Quaternion previous = Quaternion.Identity;
+
+        public void Reset()
+        {
+            Phase = SwingPhase.Settling;
+            stillSince = null;
+            peakAngle = peakSpeed = downswingStart = swingStart = backswingLoad = 0;
+            swingAxis = Vector3.Zero;
+            previous = reference = hasReadyPose ? readyPose : Quaternion.Identity;
+            Load = 0;
+        }
+
+        /// Resets and re-tunes for a club. The putter needs a far gentler scale.
+        public void Configure(Shot.GolfClub club)
+        {
+            configuredClub = club;
+            var fresh = new MotionSwingDetector { FullSpeed = club.MotionFullSpeed() };
+            if (club == Shot.GolfClub.Putter)
+            {
+                fresh.BackswingStart = 0.055;      // 3°: a tremble at address is not a stroke
+                fresh.FullBackswing = 0.6;         // a long putt's stroke: the arms swung well back
+                fresh.AlongTheArc = true;
+                fresh.CommitPerRadian = 1.5;       // a pendulum peaks near 4× its arc a second; a push is well under
+                fresh.DownswingSpeed = 0.2;
+                fresh.MinimumSpeed = 0.15;
+                fresh.ImpactAngle = 0.005;         // struck as it passes the ball
+                fresh.StillSpeed = 0.06;
+                fresh.ArmSpeed = 0.2;
+                fresh.CurvePerFaceDegree = 0;
+                fresh.StartLinePerFaceDegree = 0.3;
+                fresh.StrikeOnSlowing = false;
+                fresh.CanStrikeThin = false;
+                fresh.CommitRatio = 0.25;          // a smooth, unhurried stroke is a whole one
+                fresh.MaxStartLineDegrees = 5;
+            }
+            CopyTuning(fresh);
+            if (club != GolfClub.Putter && calibratedBackswing > 0) {
+                FullBackswing = calibratedBackswing;
+                FullSpeed *= calibratedSpeedScale;
+                DownswingSpeed *= Math.Min(1, calibratedSpeedScale);
+            }
+            Reset();
+        }
+
+        void CopyTuning(MotionSwingDetector o)
+        {
+            BackswingStart = o.BackswingStart; FullBackswing = o.FullBackswing; DownswingSpeed = o.DownswingSpeed;
+            FullSpeed = o.FullSpeed; MinimumSpeed = o.MinimumSpeed; ImpactAngle = o.ImpactAngle; ArmSpeed = o.ArmSpeed; CommitRatio = o.CommitRatio; StrikeOnSlowing = o.StrikeOnSlowing; CanStrikeThin = o.CanStrikeThin; AlongTheArc = o.AlongTheArc; CommitPerRadian = o.CommitPerRadian;
+            StillSpeed = o.StillSpeed; StillDuration = o.StillDuration; WorldUp = o.WorldUp; PointedDownDegrees = o.PointedDownDegrees;
+            CurvePerFaceDegree = o.CurvePerFaceDegree; StartLinePerFaceDegree = o.StartLinePerFaceDegree;
+            FaceDeadZoneDegrees = o.FaceDeadZoneDegrees; MaxCurveDegrees = o.MaxCurveDegrees;
+            MaxStartLineDegrees = o.MaxStartLineDegrees;
+        }
+
+        /// `attitude` is the phone's orientation in a fixed world frame (any frame, as long as it
+        /// is the same one every sample); `rotationRate` is angular velocity in the phone frame,
+        /// rad/s. Returns an event when something happened.
+        public SwingEvent? Ingest(double time, Quaternion attitude, Vector3 rotationRate) => Ingest(time, attitude, rotationRate, Vector3.Zero);
+
+        /// `gravity` is the gravity direction in the phone's own frame when the source knows it
+        /// (the device's accelerometer/gyro fusion); zero means "unknown", and the lean is then
+        /// read off the attitude against `WorldUp` instead.
+        public SwingEvent? Ingest(double time, Quaternion attitude, Vector3 rotationRate, Vector3 gravity)
+        {
+            double speed = rotationRate.Length();
+            double angle = AngleBetween(reference, attitude);
+            // mid-stroke, the putter's is the signed turn along the stroke's arc
+            if (AlongTheArc && (Phase == SwingPhase.Backswing || Phase == SwingPhase.Downswing) && swingAxis != Vector3.Zero)
+                angle = TurnAbout(reference, attitude, swingAxis);
+            // Which way the phone turned since the last sample, against the backswing's turn:
+            // positive while it is still going back, negative once it comes down.
+            double turning = TurnAlong(previous, attitude, swingAxis);
+            previous = attitude;
+            FaceNow = Phase == SwingPhase.Settling ? 0 : FaceRollDegrees(reference, attitude, swingAxis);
+            bool haveGravity = gravity.LengthSquared() > 0.25f;
+            LeanDegrees = haveGravity ? LeanFromGravity(gravity) : LeanFromVertical(attitude, WorldUp);
+            // Gravity points at the ground; with the top edge down it runs along device +Y.
+            bool topDown = !haveGravity || gravity.Y > 0;
+            PointedDown = LeanDegrees <= PointedDownDegrees && topDown;
+            WrongEndDown = LeanDegrees <= PointedDownDegrees && !topDown;
+            // "Ready" = hanging like a club and not mid-swing, for a moment.
+            bool atReadyPose = UseReadyPose && (!hasReadyPose || AngleBetween(readyPose, attitude) < .6);
+            if ((UseReadyPose ? atReadyPose : PointedDown) && speed < ArmSpeed) stillSince ??= time; else stillSince = null;
+            bool ready = stillSince is double since && time - since >= StillDuration;
+            bool isStill = speed < StillSpeed;
+
+            if ((Phase == SwingPhase.Backswing || Phase == SwingPhase.Downswing) && time - swingStart > 3)
+            {
+                Phase = SwingPhase.Settling;
+                stillSince = null;
+                Load = 0;
+                return SwingEvent.Cancelled();
+            }
+
+            switch (Phase)
+            {
+                case SwingPhase.Settling:
+                case SwingPhase.Finish:
+                    // Arm as soon as the phone hangs like a club and is not swinging.
+                    if (!ready) return null;
+                    reference = attitude;
+                    Phase = SwingPhase.Address;
+                    Load = 0;
+                    return null;
+
+                case SwingPhase.Address:
+                    // Lifted the phone out of the club position without swinging: back to settling.
+                    if (!UseReadyPose && !PointedDown && isStill)
+                    {
+                        Phase = SwingPhase.Settling;
+                        stillSince = null;
+                        return null;
+                    }
+                    // Still hanging and at rest: follow the hands, so address is wherever the
+                    // club settles and a small waggle never becomes a backswing. (Not for the
+                    // putter's tiny strokes: its StillSpeed is far below any real stroke.)
+                    if (!UseReadyPose && angle <= BackswingStart && isStill && ready) reference = attitude;
+                    if (angle <= BackswingStart) return null;
+                    Phase = SwingPhase.Backswing;
+                    swingStart = time;
+                    peakAngle = angle;
+                    peakSpeed = 0;
+                    swingAxis = RotationAxis(reference, attitude);
+                    Load = LoadFor(angle);
+                    return SwingEvent.Loaded(Load);
+
+                case SwingPhase.Backswing:
+                    if (angle >= peakAngle)
+                    {
+                        peakAngle = angle;
+                        // (half a turn back the axis flips sign; keep the backswing's sense)
+                        var axis = RotationAxis(reference, attitude);
+                        if (Vector3.Dot(axis, swingAxis) >= 0) swingAxis = axis;
+                    }
+                    // A big backswing carries the phone past pointing straight up, and from there
+                    // it is nearer address again while still going back; only turning back down
+                    // starts the downswing.
+                    bool goingBack = turning > 0;
+                    if (angle < peakAngle - Math.Min(0.15, BackswingStart * 0.6) && speed >= DownswingSpeed && !goingBack)
+                    {
+                        Phase = SwingPhase.Downswing;
+                        peakSpeed = speed;
+                        downswingStart = time;
+                        backswingLoad = LoadFor(peakAngle);
+                        Load = backswingLoad;
+                        return SwingEvent.Loaded(Load);
+                    }
+                    if (angle < BackswingStart && speed < DownswingSpeed)
+                    {
+                        Phase = SwingPhase.Address;
+                        Load = 0;
+                        return SwingEvent.Cancelled();
+                    }
+                    Load = LoadFor(goingBack ? peakAngle : angle);
+                    return SwingEvent.Loaded(Load);
+
+                case SwingPhase.Downswing:
+                    peakSpeed = Math.Max(peakSpeed, speed);
+                    bool decelerated = StrikeOnSlowing && speed < peakSpeed * 0.4;
+                    if (UseReadyPose && !AlongTheArc) {
+                        // A Ready tap fixes the ball plane. Require a small crossing of that
+                        // plane; stopping before it cancels instead of spending a shot.
+                        bool crossed = TurnAbout(reference, attitude, swingAxis) < -.08;
+                        if (!crossed) {
+                            if (!decelerated && time - downswingStart <= 1.2) return null;
+                            Reset(); return SwingEvent.Cancelled();
+                        }
+                    }
+                    if (!(UseReadyPose && !AlongTheArc) && !(angle < ImpactAngle || decelerated || time - downswingStart > (StrikeOnSlowing ? 1.2 : 2.0))) return null;
+                    Phase = SwingPhase.Finish;
+                    stillSince = null;
+                    Load = 0;
+                    if (peakSpeed < MinimumSpeed) return SwingEvent.Cancelled();
+                    return SwingEvent.Struck(BuildImpact(time, attitude));
+            }
+            return null;
+        }
+
+        SwingImpact BuildImpact(double time, Quaternion attitude)
+        {
+            double face = FaceRollDegrees(reference, attitude, swingAxis);
+            double signedFace = Math.Abs(face) <= FaceDeadZoneDegrees ? 0 : face - Math.Sign(face) * FaceDeadZoneDegrees;
+            double ratio = peakSpeed / FullSpeed;
+            // How far back you went is the shot: full is the whole club, half is half — as long as
+            // the downswing is a committed one.
+            double back = backswingLoad >= FullSnap ? 1 : backswingLoad;
+            double commit = CommitPerRadian > 0 ? peakSpeed / (Math.Max(peakAngle, BackswingStart) * CommitPerRadian) : ratio / CommitRatio;
+            double power = back * Math.Min(1, commit);
+            double curve = signedFace * CurvePerFaceDegree;
+            double startLine = signedFace * StartLinePerFaceDegree;
+            return new SwingImpact
+            {
+                Power = Math.Min(1, power),
+                CurveDegrees = Clamp(curve, -MaxCurveDegrees, MaxCurveDegrees),
+                StartLineDegrees = Clamp(startLine, -MaxStartLineDegrees, MaxStartLineDegrees),
+                FaceDegrees = face,
+                TempoSeconds = time - swingStart,
+                PeakSpeed = peakSpeed,
+                Backswing = backswingLoad,
+                DownswingSeconds = time - downswingStart,
+                Commit = commit,
+                // (under three-quarters committed the club is pushed, not swung, through the ball)
+                Thin = !CanStrikeThin ? 0 : Clamp((0.75 - commit) / 0.35, 0, 1),
+            };
+        }
+
+        double LoadFor(double angle) => Math.Min(1, Math.Max(0, angle / FullBackswing));
+
+        static double Clamp(double v, double lo, double hi) => Math.Max(lo, Math.Min(hi, v));
+
+        /// Degrees between the phone's long axis (device Y) and gravity, either end down.
+        public static double LeanFromGravity(Vector3 gravity)
+        {
+            var g = Vector3.Normalize(gravity);
+            return Math.Acos(Math.Min(1, Math.Abs(g.Y))) * 180 / Math.PI;
+        }
+
+        /// Degrees between the phone's long axis (device Y) and vertical, either end down.
+        public static double LeanFromVertical(Quaternion attitude, Vector3 worldUp)
+        {
+            var axis = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, attitude));
+            double c = Math.Abs(Vector3.Dot(axis, Vector3.Normalize(worldUp)));
+            return Math.Acos(Math.Min(1, c)) * 180 / Math.PI;
+        }
+
+        /// Total rotation, in radians, between two orientations.
+        public static double AngleBetween(Quaternion a, Quaternion b)
+        {
+            var relative = Quaternion.Normalize(b * Quaternion.Inverse(a));
+            return 2 * Math.Acos(Math.Min(1, Math.Abs(relative.W)));
+        }
+
+        /// How far the turn from `from` to `to` runs along `axis` (a world-frame axis as
+        /// RotationAxis gives it): positive in the axis's sense, negative against it.
+        static double TurnAlong(Quaternion from, Quaternion to, Vector3 axis)
+        {
+            var step = Quaternion.Normalize(to * Quaternion.Inverse(from));
+            if (step.W < 0) step = Quaternion.Negate(step);
+            return Vector3.Dot(new Vector3(step.X, step.Y, step.Z), axis);
+        }
+
+        /// The signed angle, radians, of the turn from `from` to `to` about the world axis `axis`:
+        /// the part of the rotation along the arc, positive in the axis's sense.
+        public static double TurnAbout(Quaternion from, Quaternion to, Vector3 axis)
+        {
+            var relative = Quaternion.Normalize(to * Quaternion.Inverse(from));
+            if (relative.W < 0) relative = Quaternion.Negate(relative);
+            double proj = Vector3.Dot(new Vector3(relative.X, relative.Y, relative.Z), axis);
+            return 2 * Math.Atan2(proj, relative.W);
+        }
+
+        /// World-frame axis of the rotation from `a` to `b` (unit length; zero if no rotation).
+        static Vector3 RotationAxis(Quaternion a, Quaternion b)
+        {
+            var relative = Quaternion.Normalize(b * Quaternion.Inverse(a));
+            if (relative.W < 0) relative = Quaternion.Negate(relative);
+            var axis = new Vector3(relative.X, relative.Y, relative.Z);
+            float len = axis.Length();
+            return len < 1e-6f ? Vector3.Zero : axis / len;
+        }
+
+        /// Wrist roll between address and now, degrees: the part of the relative rotation that
+        /// is about the phone's own long axis rather than about the swing arc. Positive is a
+        /// roll toward the swing axis's right-hand sense — which, with the phone held like a
+        /// grip, is an opening face.
+        public static double FaceRollDegrees(Quaternion address, Quaternion now, Vector3 swingAxis)
+        {
+            var relative = Quaternion.Normalize(now * Quaternion.Inverse(address));
+            if (relative.W < 0) relative = Quaternion.Negate(relative);
+            // The phone's long axis (device +Y) in the world at address is the shaft.
+            var shaft = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, address));
+            // Swing-twist decomposition: twist is the projection of the rotation onto the shaft.
+            var r = new Vector3(relative.X, relative.Y, relative.Z);
+            float proj = Vector3.Dot(r, shaft);
+            var twist = new Quaternion(shaft.X * proj, shaft.Y * proj, shaft.Z * proj, relative.W);
+            float tl = twist.Length();
+            if (tl < 1e-6f) return 0;
+            twist = Quaternion.Normalize(twist);
+            double angle = 2 * Math.Atan2(Math.Sqrt(twist.X * twist.X + twist.Y * twist.Y + twist.Z * twist.Z), twist.W);
+            if (angle > Math.PI) angle -= 2 * Math.PI;
+            double sign = Math.Sign(proj) == 0 ? 1 : Math.Sign(proj);
+            // Reference the sign to the swing arc so left- and right-handed swings read alike.
+            double hand = swingAxis == Vector3.Zero ? 1 : Math.Sign(Vector3.Dot(swingAxis, shaft)) switch { 0 => 1, var s => s };
+            return angle * sign * hand * 180 / Math.PI;
+        }
+    }
+}

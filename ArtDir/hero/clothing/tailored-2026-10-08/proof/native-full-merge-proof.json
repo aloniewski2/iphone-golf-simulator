@@ -1,0 +1,26 @@
+{
+  "manifest": "MatchHero_Female",
+  "roles": [
+    "Kit_Bottom",
+    "Kit_Top"
+  ],
+  "sourceManifestSha256": "af163b256c48032d1c0fc88967b36410f1231d5b2c8a8fddd114ed77f1e9742d",
+  "preservedNonGarmentParts": [
+    "Body",
+    "Face",
+    "Kit_Shoe_L",
+    "Kit_Shoe_R",
+    "Kit_Sock_L",
+    "Kit_Sock_R",
+    "Racket_Racket_Classic",
+    "Racket_ButtCap",
+    "Racket_Grip",
+    "Racket_StringBed"
+  ],
+  "animationMaxDelta": 0,
+  "status": "PASS",
+  "baseOriginalBytesPreserved": 4615320,
+  "rigOriginalBytesPreserved": 17864496,
+  "bonesUnchanged": 53,
+  "swingFramesUnchanged": 12
+}

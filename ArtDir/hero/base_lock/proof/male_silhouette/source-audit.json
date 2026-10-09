@@ -1,0 +1,769 @@
+{
+  "stage": "Male shoulder and waist form continuation",
+  "height_metres": 1.7011708782520145,
+  "vertices": 24578,
+  "triangles": 49176,
+  "meshes": [
+    "Body_M"
+  ],
+  "unit_scale": 1,
+  "source_profiles": {
+    "scale_metres_per_canonical_pixel": 0.0028667790893760537,
+    "depth_origin_offset_canonical_pixels": 8.6606529209622,
+    "torso": [
+      [
+        155,
+        23,
+        23,
+        -10
+      ],
+      [
+        160,
+        31,
+        28,
+        -13
+      ],
+      [
+        170,
+        52,
+        30,
+        -10
+      ],
+      [
+        180,
+        70,
+        32,
+        -8
+      ],
+      [
+        190,
+        80,
+        38,
+        -9
+      ],
+      [
+        205,
+        82,
+        44,
+        -17
+      ],
+      [
+        220,
+        79,
+        47,
+        -20
+      ],
+      [
+        230,
+        73,
+        48,
+        -22
+      ],
+      [
+        240,
+        66,
+        48,
+        -23
+      ],
+      [
+        250,
+        63,
+        48,
+        -23
+      ],
+      [
+        270,
+        57,
+        45,
+        -26
+      ],
+      [
+        280,
+        55.5,
+        44,
+        -27
+      ],
+      [
+        300,
+        56,
+        42,
+        -28
+      ],
+      [
+        310,
+        56,
+        41,
+        -28
+      ],
+      [
+        325,
+        58,
+        44,
+        -25
+      ],
+      [
+        340,
+        60,
+        46,
+        -22
+      ],
+      [
+        355,
+        63,
+        49,
+        -23
+      ],
+      [
+        365,
+        65,
+        49,
+        -23
+      ],
+      [
+        375,
+        68,
+        48,
+        -23
+      ],
+      [
+        381,
+        65,
+        43,
+        -23
+      ],
+      [
+        384,
+        20,
+        28,
+        -24
+      ],
+      [
+        386,
+        1,
+        1,
+        -24
+      ]
+    ],
+    "neck": [
+      [
+        124,
+        20,
+        22,
+        -16
+      ],
+      [
+        135,
+        24,
+        25,
+        -18
+      ],
+      [
+        145,
+        24,
+        26,
+        -19
+      ],
+      [
+        155,
+        24,
+        27,
+        -19
+      ],
+      [
+        171,
+        33,
+        32,
+        -14
+      ]
+    ],
+    "head": [
+      [
+        59.5,
+        0.5,
+        0.5,
+        -28
+      ],
+      [
+        61,
+        9,
+        10,
+        -28
+      ],
+      [
+        63,
+        15,
+        17,
+        -28
+      ],
+      [
+        66,
+        20,
+        23,
+        -27
+      ],
+      [
+        70,
+        24.3,
+        33,
+        -26
+      ],
+      [
+        76,
+        28.8,
+        36.5,
+        -27
+      ],
+      [
+        84,
+        31.8,
+        39.5,
+        -27
+      ],
+      [
+        94,
+        32.3,
+        41.5,
+        -27
+      ],
+      [
+        104,
+        32.3,
+        41.5,
+        -27
+      ],
+      [
+        115,
+        31.8,
+        39.5,
+        -27
+      ],
+      [
+        125,
+        30.8,
+        37.5,
+        -32.0
+      ],
+      [
+        130,
+        29.3,
+        34,
+        -36.0
+      ],
+      [
+        135,
+        27.8,
+        31,
+        -40
+      ],
+      [
+        140,
+        24.8,
+        28,
+        -43
+      ],
+      [
+        145,
+        20,
+        23,
+        -48
+      ],
+      [
+        148,
+        14,
+        17,
+        -54
+      ],
+      [
+        150,
+        8,
+        9,
+        -61
+      ],
+      [
+        152,
+        0.5,
+        0.5,
+        -68
+      ]
+    ],
+    "leg": [
+      [
+        360,
+        34,
+        29,
+        40,
+        -23
+      ],
+      [
+        375,
+        38,
+        32,
+        40,
+        -24
+      ],
+      [
+        390,
+        40,
+        30.5,
+        40.4,
+        -24
+      ],
+      [
+        410,
+        42,
+        31.5,
+        39.4,
+        -24
+      ],
+      [
+        425,
+        42,
+        31.0,
+        37.9,
+        -24
+      ],
+      [
+        445,
+        45,
+        27.5,
+        34.4,
+        -24
+      ],
+      [
+        465,
+        47,
+        24.0,
+        29.9,
+        -22
+      ],
+      [
+        480,
+        50,
+        22.5,
+        28.4,
+        -19
+      ],
+      [
+        490,
+        52,
+        22.0,
+        27.9,
+        -18
+      ],
+      [
+        505,
+        54,
+        23.5,
+        29.4,
+        -12
+      ],
+      [
+        520,
+        55,
+        25.5,
+        29.4,
+        -7
+      ],
+      [
+        540,
+        58,
+        23.5,
+        27.4,
+        -5
+      ],
+      [
+        555,
+        59,
+        21.0,
+        25.9,
+        -6
+      ],
+      [
+        570,
+        60,
+        18.5,
+        24.4,
+        -7
+      ],
+      [
+        585,
+        62,
+        16.0,
+        23.9,
+        -9
+      ],
+      [
+        600,
+        63,
+        16,
+        30.4,
+        -14
+      ],
+      [
+        610,
+        65,
+        17,
+        48,
+        -30
+      ],
+      [
+        625,
+        71,
+        21,
+        51,
+        -31
+      ],
+      [
+        635,
+        75,
+        27,
+        51,
+        -31
+      ],
+      [
+        644,
+        76,
+        24,
+        51,
+        -33
+      ],
+      [
+        649,
+        75,
+        20,
+        48,
+        -34
+      ],
+      [
+        652,
+        75,
+        16,
+        42,
+        -35
+      ],
+      [
+        654,
+        75,
+        8,
+        28,
+        -35
+      ]
+    ],
+    "arm": [
+      [
+        182.5,
+        70,
+        1,
+        1,
+        0
+      ],
+      [
+        191.5,
+        78,
+        14,
+        29,
+        0
+      ],
+      [
+        206.5,
+        88,
+        17,
+        32,
+        -2
+      ],
+      [
+        221.5,
+        95,
+        19,
+        31,
+        2
+      ],
+      [
+        231.5,
+        103,
+        22,
+        31,
+        0
+      ],
+      [
+        241.5,
+        111,
+        26.5,
+        32,
+        -4
+      ],
+      [
+        251.5,
+        117,
+        27.5,
+        33,
+        -10
+      ],
+      [
+        261.5,
+        127,
+        28.5,
+        34,
+        -15
+      ],
+      [
+        271.5,
+        137,
+        28.5,
+        35,
+        -19
+      ],
+      [
+        281.5,
+        146,
+        27.5,
+        34,
+        -24
+      ],
+      [
+        291.5,
+        155,
+        25.5,
+        33,
+        -29
+      ],
+      [
+        301.5,
+        166,
+        23.5,
+        31,
+        -32
+      ],
+      [
+        311.5,
+        178,
+        19.5,
+        29,
+        -35
+      ],
+      [
+        321.5,
+        187,
+        17.5,
+        27,
+        -39
+      ],
+      [
+        331.5,
+        196,
+        16.5,
+        24,
+        -42
+      ],
+      [
+        341.5,
+        205,
+        16.5,
+        22,
+        -43
+      ],
+      [
+        350.5,
+        214,
+        13,
+        19,
+        -44
+      ],
+      [
+        358.5,
+        223,
+        9,
+        17,
+        -45
+      ],
+      [
+        369.5,
+        232,
+        4,
+        12,
+        -46
+      ],
+      [
+        377.5,
+        237,
+        0.5,
+        1,
+        -47
+      ]
+    ],
+    "grid_pixels": 4.1,
+    "stage": "male A-pose silhouette only"
+  },
+  "reference_views": [
+    {
+      "name": "bald_front",
+      "file": "male_body_bald.jpg",
+      "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+      "roi": [
+        105,
+        51,
+        604,
+        659
+      ],
+      "centre_x": 353.0,
+      "sole_y": 654,
+      "height_pixels": 593,
+      "metres_per_pixel": 0.0028667790893760537,
+      "angle_degrees": 0,
+      "foreground_pixels": 73430,
+      "bbox": [
+        116,
+        59,
+        591,
+        652
+      ]
+    },
+    {
+      "name": "bald_back",
+      "file": "male_body_bald.jpg",
+      "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+      "roi": [
+        675,
+        51,
+        1160,
+        655
+      ],
+      "centre_x": 915.75,
+      "sole_y": 651,
+      "height_pixels": 589,
+      "metres_per_pixel": 0.0028862478777589135,
+      "angle_degrees": 180,
+      "foreground_pixels": 72916,
+      "bbox": [
+        683,
+        61,
+        1148,
+        649
+      ]
+    },
+    {
+      "name": "sheet_front",
+      "file": "male_multiangle_body.jpg",
+      "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+      "roi": [
+        55,
+        49,
+        315,
+        347
+      ],
+      "centre_x": 184.5,
+      "sole_y": 344,
+      "height_pixels": 292,
+      "metres_per_pixel": 0.005821917808219178,
+      "angle_degrees": 0,
+      "foreground_pixels": 18179,
+      "bbox": [
+        68,
+        51,
+        303,
+        343
+      ]
+    },
+    {
+      "name": "sheet_back",
+      "file": "male_multiangle_body.jpg",
+      "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+      "roi": [
+        350,
+        49,
+        620,
+        347
+      ],
+      "centre_x": 479.75,
+      "sole_y": 344,
+      "height_pixels": 292,
+      "metres_per_pixel": 0.005821917808219178,
+      "angle_degrees": 180,
+      "foreground_pixels": 17903,
+      "bbox": [
+        367,
+        52,
+        595,
+        342
+      ]
+    },
+    {
+      "name": "left",
+      "file": "male_multiangle_body.jpg",
+      "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+      "roi": [
+        739,
+        49,
+        825,
+        347
+      ],
+      "centre_x": 796.5,
+      "sole_y": 343,
+      "height_pixels": 291,
+      "metres_per_pixel": 0.00584192439862543,
+      "angle_degrees": 90,
+      "foreground_pixels": 10951,
+      "bbox": [
+        758,
+        51,
+        815,
+        343
+      ]
+    },
+    {
+      "name": "right",
+      "file": "male_multiangle_body.jpg",
+      "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+      "roi": [
+        1038,
+        49,
+        1138,
+        347
+      ],
+      "centre_x": 1068.0,
+      "sole_y": 343,
+      "height_pixels": 291,
+      "metres_per_pixel": 0.00584192439862543,
+      "angle_degrees": -90,
+      "foreground_pixels": 11251,
+      "bbox": [
+        1049,
+        51,
+        1108,
+        343
+      ]
+    }
+  ],
+  "head_detail_sha256": "1b9ef5bf091cf08a256a238c27b297460e848c10711ad2e43da24cc71ee5c9fc",
+  "blend_sha256": "d6aa844afce8ae8ac2d9cdb9135d38f00fcdc1cc16980da8e822e66cb54490b4",
+  "continuation_source_sha256": "e2059ffc42c53cacbd6aa7d483fdef468080c9f5ee4985f8d2a26055ebde0b10",
+  "connectivity_sha256": "d7cc011b2a202b2fdc92e1506096663e1ab7bfad612f0ecc40a2cff565e1d1f9",
+  "original_connectivity_sha256": "d7cc011b2a202b2fdc92e1506096663e1ab7bfad612f0ecc40a2cff565e1d1f9",
+  "nonbody_objects_unchanged": true,
+  "body_transform_unchanged": true,
+  "changed_vertices": 24493,
+  "maximum_vertex_displacement_metres": 0.03299465380920652,
+  "depth_coordinates_unchanged": false,
+  "gate_authority": [
+    "bald_front",
+    "bald_back"
+  ],
+  "excluded_from_gate": [
+    "sheet_front",
+    "sheet_back",
+    "left",
+    "right"
+  ],
+  "form_continuation_source_sha256": "320b90eaddc8df8fb73e6701d03969c30efaa6ab777f738b1fadf685b40ae5ab",
+  "form_edits": {
+    "method": "Regional Taubin vertex fairing at neck/shoulder/upper arm and waist; slight waist depth taper; smooth shared lateral body/limb contour refinements and terminal hand/sole adjustments. Existing topology and head coordinates preserved.",
+    "changed_vertices": 22158,
+    "maximum_displacement_metres": 0.029285339097825873,
+    "shoulder_changed_vertices": 6288,
+    "waist_changed_vertices": 3360,
+    "head_vertices_unchanged": true,
+    "height_metres": 1.7011708782187271,
+    "primary_contour_refinement": "Shared front/back lateral envelopes (front 0.557, back 0.443), separately for left and right, with continuous vertex displacement; no target/camera changes.",
+    "terminal_contour_revision": "Existing hand tips extended by up to 6.9 mm; terminal sole rows raised by up to 2.4 mm, all with smooth fades. Object origin unchanged."
+  }
+}

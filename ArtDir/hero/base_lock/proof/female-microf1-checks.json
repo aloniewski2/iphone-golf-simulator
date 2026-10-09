@@ -1,0 +1,76 @@
+{
+  "gate": "FEMALE_HEAD",
+  "verdict": "FAIL",
+  "date": "2026-10-02",
+  "build": "b17",
+  "start_blend_sha256": "200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd",
+  "staged_blend_sha256": "4450c644a895fb5d2962ed76077770ea39af21de81482bb275d02510747f876e",
+  "staged_fbx_sha256": "5f6214d9cf9ab8c010da3de91abf97927e4d5bb4fb54aa213e7ae63aa222f842",
+  "installed_into_shared_paths": false,
+  "body_below_neck": {
+    "verts_compared": 12421,
+    "max_diff_m": 0.0,
+    "bit_identical": true,
+    "pass": true
+  },
+  "sil_bald_pct": {
+    "front": 2.13,
+    "back": 4.68,
+    "limit": 5.0,
+    "scope": "head+neck rows to z=1.43 m vs female_body_bald.jpg",
+    "pass": true
+  },
+  "tris": {
+    "start_body_f": 44708,
+    "start_head_zone": 19986,
+    "body_f": 42296,
+    "head_patch": 17574,
+    "face_f": 5364,
+    "total": 47660,
+    "flag_above": 60000,
+    "pass": true
+  },
+  "edge_mm": {
+    "midface_mean": 3.29,
+    "midface_median": 2.91,
+    "midface_min": 0.65,
+    "ear_mean": 2.59,
+    "dome_mean": 12.57
+  },
+  "topology": {
+    "boundary_edges": 256,
+    "boundary_note": "two 128-vertex eye apertures open into Face_F shells",
+    "non_manifold_edges": 0
+  },
+  "mandatory_loops": {
+    "groups_ok": 21,
+    "pass": true,
+    "note": "jaw_ear and nostril loops are unsnapped edge paths"
+  },
+  "head_iou": {
+    "front": 0.976,
+    "left": 0.971,
+    "right": 0.97,
+    "q3R": 0.952,
+    "q3L": 0.813,
+    "body_front_head": 0.912,
+    "body_back_head": 0.912
+  },
+  "open_or_failed": [
+    "OVERALL_LIKENESS",
+    "FAIL_WRONG_LIKENESS",
+    "BROW_SHAPE",
+    "EYE_SOCKET",
+    "CHEEK_FULL",
+    "CHEEKBONE_3Q",
+    "JAW_SOFT_U"
+  ],
+  "lines_total": 84,
+  "line_counts": {
+    "FAIL": 1,
+    "PASS(eye)": 13,
+    "PASS": 52,
+    "OPEN": 5
+  },
+  "line_counts_note": "71 table rows + 13 explicit FAIL tags (12 not triggered, FAIL_WRONG_LIKENESS not signed off)"
+}

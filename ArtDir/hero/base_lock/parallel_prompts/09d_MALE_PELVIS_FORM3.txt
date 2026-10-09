@@ -1,0 +1,33 @@
+PASTE — MALE PELVIS FORM3 (groin + butt) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan REJECTED FORM2. Front reads genital point/bulge (wants NO visible penis / no point). Butt is pointy/wedge — needs fully rounded peach cheeks like plate. Soft-plastic party male.
+
+START (verify SHA before any edit — FORM2 candidate, staged, NOT installed to ArtDir):
+work/male-pelvis-form2/export/candidate_FINAL6.blend
+SHA-256 9f8c6de1e531bb0005a5c51ab80538a2d3cc1ed64b4afa327a2228ce28b6a7f7
+If missing/wrong: rebuild from ArtDir fd04bc28… + work/male-pelvis-form2 delta (export/f2_delta.npz) — never whole-file clobber head/arms/hands/legs.
+
+READ:
+1) work/male-pelvis-form2/MALE_PELVIS_FORM2_RESULTS.md (Honest notes)
+2) work/male-pelvis-form2/proof/P2 + P8 (front groin FAIL) + P1 + P3 + P4 + P7 (butt/side FAIL)
+3) AUTHORITY: ArtDir/hero/base_lock/male_body_bald.jpg + male_multiangle_body.jpg
+4) AGENTS.md + art-bible.md
+
+ZONE ONLY: PELVIS (+ LEG_TOP strip if fold/underbutt needs it). Document mask. 0 head/arms/hands/calves/feet. Work: work/male-pelvis-form3/. STAGE ONLY — no ArtDir install.
+
+SCOPE — HARD (simpler than FORM2):
+1) FRONT GROIN — soft-plastic smooth mound only. HARD FAIL if any genital bulge, point, ridge, or visible penis from front / q_fl / q_fr. Match plate Ken-doll mound.
+2) BUTT — fully rounded peach twin cheeks (back + 3/4 + side). HARD FAIL if pointy, wedge, sharp V-cleft tip, or angular shelf. Soft midline cleft OK; no tunnel.
+3) Keep soft-plastic (no shred / no hyperreal anatomy). Prefer positions-only.
+
+GATES: ZONE_OUTSIDE=0 · TOPOLOGY_IDENTICAL preferred · SIL bald front/back ≤5% · FRONT_SMOOTH_MOUND (no point) · BUTT_ROUND_PEACH (no wedge) · NO_SELF_INTERSECT / no NaN
+
+DELIVER: work/male-pelvis-form3/MALE_PELVIS_FORM3_RESULTS.md + proof plate|FORM2|FORM3 front groin + back/3q/side + checks.json + staged export. ArtDir install ONLY after Adnan OK.
+
+REPLY ONLY:
+GATE: MALE_PELVIS_FORM3 PASS
+or FAIL with failed lines only.

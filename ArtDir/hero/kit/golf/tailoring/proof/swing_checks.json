@@ -1,0 +1,18 @@
+{
+  "sourceFramesPerCharacter": 105,
+  "sourceFramesPerSecond": 30,
+  "encodedFrames": 135,
+  "durationSeconds": 4.5,
+  "characters": [
+    "Male",
+    "Female"
+  ],
+  "clippedFrameCount": 0,
+  "clip": "Drive",
+  "runtimeSwingClearance": true,
+  "garmentCorrectives": true,
+  "videoDimensions": [
+    1800,
+    1080
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend",
+  "source_sha256": "825055d85ef2940bee117cabcf5dc5571bf2780ffd362747e54017d8fbf9a3d3",
+  "fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/unity_import/HeroBase_Male_Body.fbx",
+  "fbx_sha256": "0115c656eb69d902896d713e9c918ab083bd1ff9936cb660cd1518fb8a6fa62f",
+  "mesh": "Body_M",
+  "vertices": 24578,
+  "triangles": 49176,
+  "global_scale": 1,
+  "forward": "-Z",
+  "up": "Y",
+  "hair": false,
+  "armature": false,
+  "normal_export": "Saved smooth mesh normals; no modifier or topology conversion"
+}

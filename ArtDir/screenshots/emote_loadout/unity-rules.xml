@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="29" result="Passed" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.0997352">
+  <test-suite type="TestSuite" id="1000" name="Golf Arcade" fullname="Golf Arcade" runstate="Runnable" testcasecount="253" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.099735" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1294" name="GolfArcade.Tests.dll" fullname="/Users/adnanyonathan/Documents/Codex/2026-10-05/ope-4/work/emotes/UnityValidation/Library/ScriptAssemblies/GolfArcade.Tests.dll" runstate="Runnable" testcasecount="253" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.094352" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="75225" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1295" name="GolfArcade" fullname="GolfArcade" runstate="Runnable" testcasecount="179" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.093091" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1296" name="Tests" fullname="GolfArcade.Tests" runstate="Runnable" testcasecount="179" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.092527" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1131" name="MultiplayerRulesTests" fullname="GolfArcade.Tests.MultiplayerRulesTests" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" testcasecount="29" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.089796" total="29" passed="29" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1159" name="BothPlayersChooseIntroOnceAndPlayWaitsUntilClipsFinish" fullname="GolfArcade.Tests.MultiplayerRulesTests.BothPlayersChooseIntroOnceAndPlayWaitsUntilClipsFinish" methodname="BothPlayersChooseIntroOnceAndPlayWaitsUntilClipsFinish" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="415748213" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.011483" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1156" name="ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople" fullname="GolfArcade.Tests.MultiplayerRulesTests.ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople" methodname="ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="2136440460" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.002548" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1139" name="ConfirmedSwingReturnsOnceAndDuplicateIsIgnored" fullname="GolfArcade.Tests.MultiplayerRulesTests.ConfirmedSwingReturnsOnceAndDuplicateIsIgnored" methodname="ConfirmedSwingReturnsOnceAndDuplicateIsIgnored" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="301749500" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.002101" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1137" name="DoubleFaultProducesExactlyOnePoint" fullname="GolfArcade.Tests.MultiplayerRulesTests.DoubleFaultProducesExactlyOnePoint" methodname="DoubleFaultProducesExactlyOnePoint" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1625298048" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000931" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1158" name="EmotesRejectRalliesSpectatorsStalePointsAndInvalidSlots" fullname="GolfArcade.Tests.MultiplayerRulesTests.EmotesRejectRalliesSpectatorsStalePointsAndInvalidSlots" methodname="EmotesRejectRalliesSpectatorsStalePointsAndInvalidSlots" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1911473608" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000261" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1160" name="EmoteStateSurvivesSnapshotSerializationAndPause" fullname="GolfArcade.Tests.MultiplayerRulesTests.EmoteStateSurvivesSnapshotSerializationAndPause" methodname="EmoteStateSurvivesSnapshotSerializationAndPause" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="2136505949" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.001135" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1157" name="EquippedEmoteRequiresWinningPointAndHoldsNextServe" fullname="GolfArcade.Tests.MultiplayerRulesTests.EquippedEmoteRequiresWinningPointAndHoldsNextServe" methodname="EquippedEmoteRequiresWinningPointAndHoldsNextServe" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1662299382" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000348" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1136" name="FarSideAlsoServesAfterServiceChanges" fullname="GolfArcade.Tests.MultiplayerRulesTests.FarSideAlsoServesAfterServiceChanges" methodname="FarSideAlsoServesAfterServiceChanges" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1671649042" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.002550" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1155" name="FourGolfersCanFinishAllHolesAndReceiveMatchingTotals" fullname="GolfArcade.Tests.MultiplayerRulesTests.FourGolfersCanFinishAllHolesAndReceiveMatchingTotals" methodname="FourGolfersCanFinishAllHolesAndReceiveMatchingTotals" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="25337841" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.015005" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1152" name="FullPowerServeReachesLegalFirstBounce" fullname="GolfArcade.Tests.MultiplayerRulesTests.FullPowerServeReachesLegalFirstBounce" methodname="FullPowerServeReachesLegalFirstBounce" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1548561423" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000335" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1146" name="GolfAllFourTeeOffBeforeSecondShot" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfAllFourTeeOffBeforeSecondShot" methodname="GolfAllFourTeeOffBeforeSecondShot" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1478187597" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.024324" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1145" name="GolfAuthorityGeneratesBoundedPathAndCommitsOneShot" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfAuthorityGeneratesBoundedPathAndCommitsOneShot" methodname="GolfAuthorityGeneratesBoundedPathAndCommitsOneShot" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="441712814" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.001208" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1149" name="GolfDnfSkipsPlayerAndOnlyInterruptsWithOneRemaining" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfDnfSkipsPlayerAndOnlyInterruptsWithOneRemaining" methodname="GolfDnfSkipsPlayerAndOnlyInterruptsWithOneRemaining" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="993185857" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000398" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1151" name="GolfInvalidRosterRejected" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfInvalidRosterRejected" methodname="GolfInvalidRosterRejected" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="554733013" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000816" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1144" name="GolfRejectsOutOfTurnAndSpectatorShots" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfRejectsOutOfTurnAndSpectatorShots" methodname="GolfRejectsOutOfTurnAndSpectatorShots" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="392298916" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000340" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1147" name="GolfRepeatedEventAfterFlightCannotApplyAgain" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfRepeatedEventAfterFlightCannotApplyAgain" methodname="GolfRepeatedEventAfterFlightCannotApplyAgain" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1388495599" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000887" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1150" name="GolfSameSeedAndShotsGiveIdenticalOfficialOutcome" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfSameSeedAndShotsGiveIdenticalOfficialOutcome" methodname="GolfSameSeedAndShotsGiveIdenticalOfficialOutcome" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="441091603" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000845" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1148" name="GolfTimeoutAddsStrokeAndMovesTurn" fullname="GolfArcade.Tests.MultiplayerRulesTests.GolfTimeoutAddsStrokeAndMovesTurn" methodname="GolfTimeoutAddsStrokeAndMovesTurn" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1343787455" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000323" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1134" name="ImpossibleTimestampsAreRejected" fullname="GolfArcade.Tests.MultiplayerRulesTests.ImpossibleTimestampsAreRejected" methodname="ImpossibleTimestampsAreRejected" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1621448493" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000121" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1153" name="NetworkTossIgnoresClaimedAccuracyAndUsesTheCompensatedSweep" fullname="GolfArcade.Tests.MultiplayerRulesTests.NetworkTossIgnoresClaimedAccuracyAndUsesTheCompensatedSweep" methodname="NetworkTossIgnoresClaimedAccuracyAndUsesTheCompensatedSweep" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1441780410" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000758" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1154" name="NetworkTossMissesScatterTheActualServeLanding" fullname="GolfArcade.Tests.MultiplayerRulesTests.NetworkTossMissesScatterTheActualServeLanding" methodname="NetworkTossMissesScatterTheActualServeLanding" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="2120827367" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000781" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1133" name="OldPointAndContactCannotTriggerNewSwing" fullname="GolfArcade.Tests.MultiplayerRulesTests.OldPointAndContactCannotTriggerNewSwing" methodname="OldPointAndContactCannotTriggerNewSwing" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1952695905" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000124" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1135" name="OnlyServerCanTossAndAConfirmedServeLaunches" fullname="GolfArcade.Tests.MultiplayerRulesTests.OnlyServerCanTossAndAConfirmedServeLaunches" methodname="OnlyServerCanTossAndAConfirmedServeLaunches" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="791654498" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000212" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1141" name="PauseFreezesOfficialTimeAndRejectsInput" fullname="GolfArcade.Tests.MultiplayerRulesTests.PauseFreezesOfficialTimeAndRejectsInput" methodname="PauseFreezesOfficialTimeAndRejectsInput" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="302623882" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000105" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1138" name="ProvisionalSwingCannotReturnBall" fullname="GolfArcade.Tests.MultiplayerRulesTests.ProvisionalSwingCannotReturnBall" methodname="ProvisionalSwingCannotReturnBall" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="224685532" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000169" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1140" name="ServeCannotBeVolleyedThroughHistoryRewind" fullname="GolfArcade.Tests.MultiplayerRulesTests.ServeCannotBeVolleyedThroughHistoryRewind" methodname="ServeCannotBeVolleyedThroughHistoryRewind" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1452560805" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000205" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1142" name="TennisDropInterruptsWithoutAwardingWin" fullname="GolfArcade.Tests.MultiplayerRulesTests.TennisDropInterruptsWithoutAwardingWin" methodname="TennisDropInterruptsWithoutAwardingWin" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="465040440" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000203" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1132" name="TennisRejectsObserverAndInvalidInput" fullname="GolfArcade.Tests.MultiplayerRulesTests.TennisRejectsObserverAndInvalidInput" methodname="TennisRejectsObserverAndInvalidInput" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="1971057991" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000119" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1143" name="TennisResultIsEmittedOnceOnRealScoringCompletion" fullname="GolfArcade.Tests.MultiplayerRulesTests.TennisResultIsEmittedOnceOnRealScoringCompletion" methodname="TennisResultIsEmittedOnceOnRealScoringCompletion" classname="GolfArcade.Tests.MultiplayerRulesTests" runstate="Runnable" seed="856195956" result="Passed" start-time="2026-10-06 03:35:41Z" end-time="2026-10-06 03:35:41Z" duration="0.000820" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[DONE EditMode: 29 passed, 0 failed, 0 skipped
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/adnanyonathan/Library/Application Support/aloniewski/Golf Arcade/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -1,0 +1,41 @@
+PASTE — Male HeroBase Micro1k JAW + CHEEK FIX · NEW CHAT · Sonnet 5.5 max
+======================================================================
+Copy everything below.
+
+---
+
+You are fixing Micro1j's bad jaw. Adnan: the "jawline" is on his **neck**, not the jaw; cheekbones too pronounced.
+
+START BLEND (verify SHA):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 72fc6465f0623a3c963ca3af58a5358c0a498265c7b9da059a941b58050c1059
+shasum -a 256 ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend — if mismatch STOP/report.
+
+READ:
+1) GOAL_HeroBase_Micro1k_JawCheekFix.md
+2) work/male-micro1j-head/proof/MALE_HEAD_RESULTS.md
+3) ArtDir/hero/base_lock/proof/03_unity_m.png (Micro1j)
+4) face_lock/FACE_SPEC.md + PROCESS_FaceMatch.md
+5) AGENTS.md + art-bible.md
+AUTHORITY: face_lock/ plates 01–05 especially profile + 3/4
+
+ADNAN HARD FAILS TO FIX:
+1) **KILL_NECK_JAW_CREASE** — undo Micro1j recessed "jaw border relief" on the throat/neck. No dark groove under the jaw on the neck.
+2) **REAL_MANDIBLE** — jaw definition follows plate mandible (ear→angle→chin). Soft-plastic bone edge / under-jaw plane, NOT a seam on the neck.
+3) **CHEEK_SOFTEN** — malar defined but NOT current ridge+deep hollow; pull toward plate athletic soft cheek.
+4) **NAPE_OK** — flatten C7 lump/crease z≈1.365–1.398, |x|<20mm, ≤2mm (~40 verts) — allowed below prior zone line.
+5) Keep Micro1j Adam's apple round. Keep densify/loops. Face_M untouched preferred. No hair. No full remesh.
+
+WORK: work/male-micro1k-head/
+ZONE: head+neck incl. nape strip; 0 verts hands/torso/legs/feet. Audit outside=0 except documented nape strip.
+
+HARD GATES (Unity 03 + overlays):
+KILL_NECK_JAW_CREASE, REAL_MANDIBLE_PROFILE, CHEEK_SOFTEN, NAPE_LUMP, ADAMS_APPLE_ROUND hold, OVERALL_LIKENESS closer, ZONE_OUTSIDE (except nape OK), SIL_%≤5%, NO_STICKER_VOLUME
+
+DELIVER: blend+FBX→Unity; proof/02_match_m_head.png + 03_unity_m.png; MALE_HEAD_RESULTS.md; male-micro1k-checks.json
+
+REPLY ONLY:
+GATE: MALE_HEAD PASS
+or
+GATE: MALE_HEAD FAIL
+<failed lines only>

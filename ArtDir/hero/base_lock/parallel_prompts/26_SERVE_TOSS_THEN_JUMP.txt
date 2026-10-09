@@ -1,0 +1,69 @@
+PASTE: SERVE, TOSS ON THE GROUND THEN A CARTOON JUMP INTO THE HIT (Codex, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+Re-key Male_Serve and Female_Serve so the serve reads like a real serve, with a bigger, more animated jump:
+- The ball toss happens with BOTH FEET ON THE COURT. No hop during the toss.
+- The knees load DOWN into the trophy pose.
+- The player JUMPS UP INTO THE HIT: a cartoonish, Mario Tennis style jump with squash, stretch, hang time, and a bouncy landing.
+Done = every gate passes AND the new films read right to Adnan's eye. His eye overrides any PASS.
+
+WHY IT IS WRONG NOW (verified in the files)
+The installed serve is the SERVE_DIP_JUMP build (Male_Serve.fbx sha 49038bb4..., Female 6f83909b..., Oct 3 22:42). It puts a full jump BEFORE the toss:
+- 0.20-0.37 fold down
+- 0.37-0.47 pop
+- 0.47-0.67 both feet off the court (hips +0.225 m, feet 15 cm clear, apex 0.567 s) while the toss arm climbs
+- 0.70 lands on the ball release
+It then does a second, small contact hop: feet off at 1.60, contact 1.70, land 1.90. That is two jumps, and the wrong one is the big one. Real serves (Kovacs & Ellenbecker 8-stage model, pmc.ncbi.nlm.nih.gov/articles/PMC3445225/; Frontiers 2024, frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2024.1451174/full) go:
+start -> ball release (feet down, toss arm straight up) -> loading (knees bend, max knee flexion at the trophy pose, ~75 deg) -> cocking (racket drops behind the back) -> acceleration (legs drive up, the body leaves the ground) -> contact near the top of the jump, arm extended -> land on the FRONT foot, which brakes -> follow-through.
+
+READ FIRST
+- work/serve-dip-jump/NOTE_serve_dip_jump.md (layout, rebuild, and the "do not repeat" list: wrist-twist basins, toss-arm reach, 1.3x racket, kit collisions)
+- work/serve-dip-jump/scripts/serve_dj.py (all keys), run_dj.py, clipkit_dj.py, rebuild_dj.sh, penetrate_dj.py, export_fbx.py, make_proof_dj.py, unity_run.sh
+- Unity: TennisServeRoutine (the ball path: stance -> release on a straight line, then the trophy palm), the serve prefab times, AssistContact (acts only within +-0.16 s of contact), the driver's trophy->contact time warp (u^1.35)
+- Reference video for ORDER ONLY (no copying of any specific person's motion): the clip the existing serve used (rxo1uEdLouY t=178-181), plus 2 or 3 public slow-motion pro serve videos from the side and the back that you find yourself. Write in WATCH_SERVE.md the order of events and the time from release to trophy to contact you read off each, with URL + timestamps.
+
+RULES
+- Work in a new folder, work/serve-toss-jump/. Copy serve_dj.py and friends there; do not edit work/serve-dip-jump/ files.
+- Back up the 2 installed FBX + metas to work/serve-toss-jump/rollback/ first.
+- The game's times do NOT change: stance 0.20, release 0.70, trophy 1.3333, contact 1.70 (clip seconds). Clip length stays the same. No .cs, prefab, or .meta edits (except lastFrame only if the length had to change; it should not).
+- Same skeleton, no new bones, Root never moves, the racket stays on Hand_Racket, and the toss palm stays on the game's ball path (<= 2 mm at stance, release, and trophy; two-pass ritual palms as in run_dj.py).
+- The contact pose must still meet the game's ball: racket strings centre at 1.70 within 3 cm of the current clip's strings centre at 1.70. The jump height has to come from the legs and pelvis around that fixed hit, not from moving the hit.
+- Keep the racket-drop and follow-through fixes from SERVE_DIP_JUMP (elbow out, racket behind the shoulder blades, no wrist flip, follow-through elbow outside the shoulder, racket clears the left thigh).
+- Male and female use the same keys, with the female clearance offset for her skort as before.
+- Unity only in an APFS clone (cp -c -R Unity <scratch>/UnityClone), with ServeTossFilm.Run for the films.
+- Do not touch emotes, Walk, runs, other match clips, kit, shaders, locker, golf, QualitySettings, or URP assets.
+
+THE NEW TIMELINE (clip seconds)
+1. 0.00-0.20 STANCE: unchanged READY.
+2. 0.20-0.70 TOSS, FEET DOWN: weight rocks onto the back foot and then forward. The knees stay soft (10-25 deg). The toss arm rises long and straight on the ball path. The racket arm swings down and back, then up, in the existing twist schedule. Toes stay on the court; heels may lift 4 cm at most. No fold-and-pop and no hop.
+3. 0.70 RELEASE: toss arm fully extended up, feet down, eyes up on the ball.
+4. 0.70-1.3333 LOAD (cartoon anticipation, the squash): the knees bend deep into the trophy pose (max flexion 65-80 deg, at 1.25-1.40). The hips sink and push slightly forward toward the court. The back arches, the shoulders tilt (toss side up), and the toss arm stays up pointing at the ball. Hold a 2-3 frame beat of tension at the bottom.
+5. 1.3333-1.58 COCK + EXPLODE: the racket drops behind the back as now. The legs start to extend from 1.50, and the heels come up.
+6. 1.58-1.62 TAKE-OFF: both feet leave the court. The back (right) foot pushes last.
+7. 1.70 CONTACT (stretch): the body forms one long line from the front toe through the hips to the racket. The hitting arm is extended. The back leg kicks up behind (right heel toward the glutes, cartoon kick), and the front leg reaches down.
+8. 1.70-1.85 HANG: the pelvis apex comes just AFTER contact (1.72-1.82), with an ease-in/ease-out hang so the player floats a beat. The toss arm pulls down and in to the chest.
+9. LAND (squash and overshoot): the FRONT (left) foot lands first, 2+ frames before the right. The knee absorbs deep (45-60 deg), with a small pelvis overshoot dip and recovery (one bounce, not jelly). The back leg swings through. Then the existing step and follow-through to READY at the end.
+Cartoon level: think Mario Tennis. Readable squash before, big stretch at the hit, hang time, and a bouncy landing. Keep it in place and on model, with no limb stretching (bone lengths stay fixed).
+
+GATES (binary, both heroes, measured from the re-imported FBX trace and the Unity film trace)
+- TOSS_FEET_DOWN: every frame 0.20-0.75, both toes within 1 cm of the court, heels <= 4 cm, pelvis never above READY height + 2 cm.
+- NO_AIR_BEFORE_DRIVE: no frame before 1.55 s with both feet off the court.
+- RELEASE_ON_PATH: toss palm on the game ball path within 2 mm at 0.20, 0.70, and 1.3333.
+- LOAD_AT_TROPHY: max knee flexion of the clip before take-off is 65-80 deg and falls in 1.25-1.40; the lowest pelvis before take-off falls in the same window.
+- TAKEOFF: first frame with both feet off is in 1.57-1.63.
+- AIR_AT_CONTACT: at 1.70 both feet are off, the front toe >= 0.18 m clear, the back foot >= 0.30 m clear (kick), and the pelvis >= READY + 0.15 m.
+- APEX_AFTER_CONTACT: pelvis apex in 1.72-1.82; take-off to first touch >= 0.33 s.
+- FRONT_FOOT_LANDS_FIRST: the left foot touches >= 2 frames before the right; landing knee flexion peak 45-60 deg within 0.15 s of the touch; one pelvis overshoot dip <= 6 cm, then settle.
+- CONTACT_POSE_KEPT: strings centre at 1.70 within 3 cm of the current clip; hitting arm elbow >= 160 deg at contact.
+- NO_FOOT_SLIDE: a planted foot moves <= 1 cm; landing spots within 3 cm of the current clip's landing spots.
+- WRIST_SMOOTH: no right or left wrist twist step > 30 deg between frames anywhere; no hand pop > 15 cm per frame outside the driver's trophy->contact warp rows.
+- CLEARANCE: penetrate_dj.py at racket 1.3x vs body, face, polo, shorts/skort, socks, shoes: no new collisions vs the current clip's list.
+- GAME_TIMES_UNCHANGED: prefab times and clip length identical; the serve still lands in play in the Unity film (the ball meets the strings, AssistContact log in range).
+
+BUILD AND PROOF
+1. Rebuild male and female, export the 2 FBX, re-import, trace, run every gate.
+2. Unity clone: install the 2 FBX, ServeTossFilm.Run for male and female, then make_proof_dj.py. Films go to work/serve-toss-jump/film/: front, side, back, and the game camera, plus a half-speed side-view copy.
+3. Contact sheet work/serve-toss-jump/proof/serve_keys.jpg, side view, both heroes: stance 0.20, mid-toss 0.45, release 0.70, trophy ~1.33, take-off ~1.60, contact 1.70, apex, front-foot touch, landing squash, end.
+4. Put the side-view sheet next to the reference serve frames at the same events (release, trophy, contact, landing).
+5. Install the 2 FBX into Unity/Assets/Characters/MatchHeroes/<Sex>/ only after all gates pass. Write INSTALLED_SHA256SUMS.txt.
+6. Report: one line per gate (PASS or FAIL with the number), the film and sheet paths, the files changed, the rollback path. No commit.

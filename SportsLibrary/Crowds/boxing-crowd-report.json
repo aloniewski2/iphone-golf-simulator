@@ -1,0 +1,11 @@
+{
+  "sport": "boxing",
+  "people": 318,
+  "male": 147,
+  "female": 171,
+  "unique_pose_meshes": 6,
+  "skin_palettes": 6,
+  "outfit_palettes": 10,
+  "static_poses": true,
+  "sources_preserved": true
+}

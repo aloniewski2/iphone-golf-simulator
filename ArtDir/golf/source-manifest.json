@@ -1,0 +1,135 @@
+{
+  "world_checkpoint": 18,
+  "audience_checkpoint": 22,
+  "audience_acceptance": "PASS parent actual all-seven near/far cheering review; all19 final integrated physics/editor draw gates PASS",
+  "rules": [
+    "Canonical source courses and colliders remain untouched.",
+    "Art tools export candidate files into work/golf-art-exports; they do not write Unity Assets.",
+    "Crowd near/far heads retain actual approved anatomy and Face eye surfaces; four rigid parts per LOD."
+  ],
+  "source_mappings": {
+    "BotanicalKit.blend": "ResortSummerOak.blend",
+    "MeadowClub.blend": "MeadowCountryClub.blend",
+    "Finish_12.blend": "Finish_12.blend",
+    "Finish_15.blend": "ResortBuildings_15.blend",
+    "Finish_17.blend": "ResortBuildings_17.blend",
+    "Finish_18.blend": "Finish_18.blend",
+    "Finish_19.blend": "TempleGardenFinish.blend",
+    "Finish_20.blend": "ResortBuildings_20.blend",
+    "GolfGalleryHero3.blend": "Superseded chest-patch debugging checkpoint, not current source.",
+    "GolfGalleryHero4.blend": "GolfGalleryHero4.blend"
+  },
+  "files": [
+    {
+      "path": "ArtDir/golf/FINAL_VALIDATION.json",
+      "sha256": "522528cf6e79a837556dcbdfcd3fa10c3c74d827f97b91c6db709544e7ba37e8",
+      "bytes": 1495
+    },
+    {
+      "path": "ArtDir/golf/README.md",
+      "sha256": "187094a9fc63fdfb70c5422b37ea2b17ad6f71eb8b69e5424f7fa86607348ab4",
+      "bytes": 3343
+    },
+    {
+      "path": "ArtDir/golf/gallery3-build-manifest.json",
+      "sha256": "ad901dd613bcdc2abf87b796da000ae5c50e32bd2e38321c7b6a3562f77f08a4",
+      "bytes": 18158
+    },
+    {
+      "path": "ArtDir/golf/gallery4-build-manifest.json",
+      "sha256": "706f1ec24a52a5e30026c336b4aabe7a37042da53a77f7365ccc0cc8a693d31e",
+      "bytes": 18094
+    },
+    {
+      "path": "ArtDir/golf/portable-build-check.json",
+      "sha256": "5214d78d2d7e69da20b9468576c13b8fa2f9ae110f1a2230d36c85d77ea43339",
+      "bytes": 1635
+    },
+    {
+      "path": "ArtDir/golf/source/BotanicalKit.blend",
+      "sha256": "c09cedc6d88423e803f9e651b4a8da794be93264a0925758d65c07679d07af2f",
+      "bytes": 929355
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_12.blend",
+      "sha256": "cea15210e6fe1a4ea59d55141387a78015ed83737b3fcf1aff55b64259089ab7",
+      "bytes": 1316852
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_15.blend",
+      "sha256": "e43260f524574ecd29c486429b66a128dc5a770996c37d121d0079ee687839db",
+      "bytes": 446744
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_17.blend",
+      "sha256": "2b8cd5cd0ec054b6780b772ce3d322961d408c1064a3ad91275bc3e4da6ed65c",
+      "bytes": 877964
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_18.blend",
+      "sha256": "3dd9049bb71244e7381430b8a368d1601261b13de955a94a46b156b067933a54",
+      "bytes": 381460
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_19.blend",
+      "sha256": "97e736e85ea643e733db112494e7755ddd384dd674238d3a213c809737308a10",
+      "bytes": 1313481
+    },
+    {
+      "path": "ArtDir/golf/source/Finish_20.blend",
+      "sha256": "6d3f2b9ba691087b716802cc43265fdf0d9280bf076ea2cf0a36bd6ffaecc1e2",
+      "bytes": 677879
+    },
+    {
+      "path": "ArtDir/golf/source/GolfGalleryHero3.blend",
+      "sha256": "75bf9106b38f88d3b1d82fa10b2afd182697871b55bd5952aa2a7bef86f96eb1",
+      "bytes": 6115305
+    },
+    {
+      "path": "ArtDir/golf/source/GolfGalleryHero4.blend",
+      "sha256": "53af8de2718b47a26bbc93b08404083f37ac9c5ff581963bd0acee7a9c8a6443",
+      "bytes": 6066544
+    },
+    {
+      "path": "ArtDir/golf/source/MeadowClub.blend",
+      "sha256": "6300e79855f344fe61b9bd5834bef795ae302a37dd305fc88b15c660307c5295",
+      "bytes": 134460
+    },
+    {
+      "path": "ArtDir/golf/source/gallery3-inputs/FemaleGolfMaster.blend",
+      "sha256": "5020024224ce7c1e737ff12dcf8ff9490fd2b5ba6abbb3662045c60abb2d6de3",
+      "bytes": 37779304
+    },
+    {
+      "path": "ArtDir/golf/source/gallery3-inputs/MaleGolfMaster.blend",
+      "sha256": "a17faf8c9e09c71efad03573818ac194f84b86d836634c15392c11a30212e1cf",
+      "bytes": 41611739
+    },
+    {
+      "path": "ArtDir/golf/tools/bake-gallery-hero3.py",
+      "sha256": "811690a44f3c8858b091152a89f940bb45c8e34df2fb7ab3ab165b0183cd1e0e",
+      "bytes": 26275
+    },
+    {
+      "path": "ArtDir/golf/tools/bake-gallery-hero4.py",
+      "sha256": "d2df101cbb39c99147305e53ea4edc36437587909b018e693f26887b03d372e8",
+      "bytes": 27976
+    },
+    {
+      "path": "ArtDir/golf/tools/export-golf-art.py",
+      "sha256": "11c90a8d1e5cc8bf0c8ad4587e2df75c46679de40ae32d2f05960561a5f9e93a",
+      "bytes": 2741
+    },
+    {
+      "path": "ArtDir/golf/tools/render-gallery-hero3.py",
+      "sha256": "bc63212e60034dd0889be8ea73cc8c99c80798612fa88e222c373ddfdc1dc932",
+      "bytes": 2746
+    },
+    {
+      "path": "ArtDir/golf/tools/render-gallery-hero4.py",
+      "sha256": "6af3d77c2975d587ad89ec2b4eaa04b67c2251be7bb7719510f46a8e4f4122ff",
+      "bytes": 3649
+    }
+  ],
+  "portable_build_check": "ArtDir/golf/portable-build-check.json"
+}

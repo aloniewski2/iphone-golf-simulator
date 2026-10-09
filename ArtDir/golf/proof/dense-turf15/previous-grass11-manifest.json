@@ -1,0 +1,164 @@
+{
+  "status": "ACTUAL Grass11 accepted: bounded softer blade/ground shading on Grass8 geometry; reference parity PARTIAL",
+  "tileSizeMeters": 1,
+  "lods": {
+    "TURF_NEAR": {
+      "blades": 768,
+      "vertices": 5376,
+      "triangles": 4608
+    },
+    "TURF_MID": {
+      "blades": 128,
+      "vertices": 640,
+      "triangles": 384
+    },
+    "TURF_FAR": {
+      "blades": 64,
+      "vertices": 192,
+      "triangles": 64
+    }
+  },
+  "grassHeightMeters": [
+    0.024,
+    0.044
+  ],
+  "roughHeightScale": 2.1,
+  "tuftSpreadMeters": [
+    0.05,
+    0.09
+  ],
+  "atlasTileMeters": 1,
+  "textureResolution": 1024,
+  "atlasDescription": "periodic geometry bake of1024 overlapping12-blade directional tufts; curved lamina normals and nondirectional root AO",
+  "geometryCap": {
+    "nearCells": 48,
+    "midCells": 96,
+    "maximumCells": 640,
+    "maximumTriangles": 289792,
+    "castsShadows": false,
+    "expectedDrawSubmissions": 3
+  },
+  "files": {
+    "CoastalTurf.fbx": "859ea137735f2f35cb52002ed5ae3f8c3327e39fa2cd44f6c35ae245f81f71a6",
+    "CoastalTurf.blend": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+    "CoastalTurf_N.png": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44",
+    "clustered-turf-camera-height.png": "6bb5fead6766153861086e2843b8f71315b96e17a44437af04430a25e0a76f1f",
+    "clustered-turf-source-detail.png": "1ddb8512ba9a605cd2c14752aa7a41cf5a7e067d7177d7bb7b5972bb3389fe97",
+    "CoastalTurf_C.png": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457"
+  },
+  "acceptedPalette": "Colour4 endpoints preserved. New atlas measured linear mean0.0907707 calibrates palette midpoint; no scene grading changes.",
+  "surfacePlacement": "Existing original ground MeshCollider queries; cut24\u201344mm, actual Rough50\u201392mm, .5m subcells along cut/rough transitions. No collider/lie/metadata mutations.",
+  "runtime": "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs",
+  "rollout": "Apply wrapper limited to hole12; reusable ApplyAroundTee entry point awaits later course-by-course actual visual/performance review.",
+  "installedFiles": [
+    {
+      "path": "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs",
+      "sha256": "44531535fc0d32e297903e84f398604976318d1c39bb81e79e68a367abd7ef58",
+      "previousSha256": "225f416e01d755f7e8b59bc9badf3ecdd4181fb7a4af634a3f0f80b2b4428c4e",
+      "grass8Sha256": "fea33405a4dd981679122b009c6cedec850e20845f482ee47c889a88f783dc67"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader",
+      "sha256": "d5b7fbf0960160f108867ac4ede9c615c40d5c2218a7ed2ec6a2baafec32fae5",
+      "previousSha256": "bf77c1a46411263813971477a26f0d5a2ca6e35008384ea2e36df5a351bf594e",
+      "grass8Sha256": "fc5e7e0a735be41ca2052df71b979f2cb1572845366d06539ee682a90ae33368"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfGround.shader",
+      "sha256": "1bfe3b371c78c9c8cff6a9d6516b65bea40ecb6ce0eea50b1b47f953fe1b460f",
+      "previousSha256": "35563136bbc22b239ed2f37cee984e5f6064da27ef54b12e09645c6db9292a5e"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl",
+      "sha256": "fc5c327d67173cdafa4c1903cf28489ff2260958e0e0c1fffaf728c20b4e3b6a",
+      "previousSha256": "ac39be323d3f70d0d8b2832ae9813ad452a36a312269df193a0c7b38a1b10ef3"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Shaders/GolfTurfField.hlsl",
+      "sha256": "a249b55cef057f0f75da0963b71b6f53b147cc7833b5602fdbbb4217971b65d8",
+      "previousSha256": null
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Resort/CoastalTurf.fbx",
+      "sha256": "859ea137735f2f35cb52002ed5ae3f8c3327e39fa2cd44f6c35ae245f81f71a6",
+      "previousSha256": "3ae978fd0ba402f22c3235ad1118b778c9cafeba7dc23b879516904d01e213ba"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Resort/CoastalTurf_C.png",
+      "sha256": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457",
+      "previousSha256": "8b1221986832b67d289f5d8fa313a3026f208e613897ed54012abce0455e1dcd"
+    },
+    {
+      "path": "Unity/Assets/Resources/Course/Resort/CoastalTurf_N.png",
+      "sha256": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44",
+      "previousSha256": "df561653e972c1623864be01c67301ca0a4e8fa822a0c2e63cb0e05c9573997a"
+    },
+    {
+      "path": "ArtDir/golf/source/CoastalTurf.blend",
+      "sha256": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+      "previousSha256": "4f28b2b703c145410122c58f7b76d91ccb7cb3e678ff99daa88b519d75157585"
+    },
+    {
+      "path": "ArtDir/golf/tools/build-coastal-turf.py",
+      "sha256": "53fe5923d1714af5abf05a58ef198388758ecacf297e3fe43ebb00e81d4f7398",
+      "previousSha256": "6bf484d0e2f8686dc7f8b037ab8b105e5ff96f8261ec26051676a09b4ae88a97"
+    }
+  ],
+  "performance": "289792 maximum decorative triangles from fixed48near/96mid/640total cell allocation; 3 DrawMeshInstanced API submissions, castsShadows false. Published sole-camera actual costs not yet measured.",
+  "runtimeInitialization": "MaterialPropertyBlock objects constructed in Build, never MonoBehaviour field initializers.",
+  "ordinaryDefaultEvidence": "ArtDir/golf/proof/clustered-turf8/grass11/actual-default-gameplay.png",
+  "performanceCurrentCaveat": "Grass8 maximum289792 added triangles /3 instanced API submissions, actual440 cells cap276992. These new default12 assets have not received a published sole-camera budget or phone frame-time gate; prior World18 all19 costs certify their earlier configuration.",
+  "grass8ActualEvidence": {
+    "folder": "proof/reference-rebuild/coastal-grass8",
+    "sameCamera": "hole12_reference_camera_2.png",
+    "cellCount": 440,
+    "maximumAllocatedTriangles": 276992,
+    "submissions": 3,
+    "compileRender": "PASS after MPB initialization repaired by root",
+    "targetRemaining": "The generated target has softer denser interlocking blade read; accepted bounded improvement is not full target equivalence."
+  },
+  "actualEvidence": {
+    "folder": "proof/reference-rebuild/coastal-grass11",
+    "canonicalFolder": "ArtDir/golf/proof/clustered-turf8/grass11",
+    "sameCamera": "hole12_reference_camera_2.png",
+    "cellCount": 440,
+    "maximumAllocatedTriangles": 276992,
+    "submissions": 3,
+    "compileRender": "PASS24.36s",
+    "parentVisualDecision": "ACCEPTED bounded softer shading: fewer dark needle faces and less coarse ground",
+    "targetRemaining": "Fuller rough edges and warmer tip variation remain below the generated target; this is not full reference equivalence."
+  },
+  "currentShading": {
+    "name": "Grass11",
+    "canopyBladeBlend": 0.65,
+    "groundNormalStrength": 0.65,
+    "paletteUnchangedFromColour4": true,
+    "geometryUnchangedFromGrass8": true
+  },
+  "currentSourceHashes": {
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "44531535fc0d32e297903e84f398604976318d1c39bb81e79e68a367abd7ef58",
+    "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader": "d5b7fbf0960160f108867ac4ede9c615c40d5c2218a7ed2ec6a2baafec32fae5",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "1bfe3b371c78c9c8cff6a9d6516b65bea40ecb6ce0eea50b1b47f953fe1b460f",
+    "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl": "fc5c327d67173cdafa4c1903cf28489ff2260958e0e0c1fffaf728c20b4e3b6a",
+    "Unity/Assets/Resources/Course/Shaders/GolfTurfField.hlsl": "a249b55cef057f0f75da0963b71b6f53b147cc7833b5602fdbbb4217971b65d8",
+    "Unity/Assets/Resources/Tennis/Shaders/HeroLighting.hlsl": "b2680c48848f37ea6a13d8ab35acf050a9de0bffe01fb5f8662ff2abd02afb61",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf.fbx": "859ea137735f2f35cb52002ed5ae3f8c3327e39fa2cd44f6c35ae245f81f71a6",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_C.png": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_N.png": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44",
+    "ArtDir/golf/source/CoastalTurf.blend": "2eb4b8be1cb2ee5bff3a3237a05f0066419c14244cade3dbf2616686532148e4",
+    "ArtDir/golf/tools/build-coastal-turf.py": "53fe5923d1714af5abf05a58ef198388758ecacf297e3fe43ebb00e81d4f7398"
+  },
+  "groundParity": {
+    "status": "PASS complete actual11 audit EXACT to camera10",
+    "previous": "proof/reference-rebuild/coastal-camera10/hole12_audit.json",
+    "current": "proof/reference-rebuild/coastal-grass11/hole12_audit.json",
+    "previousSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b",
+    "currentSha256": "53ca28d4d8a1ef21d0dc4e7600c262c6d3f7c412c00b2b31d84aeccdfd14358b",
+    "obstacles": 161,
+    "colliders": 14,
+    "groundRecords": 14,
+    "obstacleHash": "f66789056e9c646408c10b9f2651f6dfd3b88935e43fb061480a4caa95139eaf",
+    "fullAuditExact": true
+  },
+  "sourceStaleness": "Grass8 source proofs still certify unchanged blade/atlas geometry; current grass appearance is certified by Grass11 actual photos and source hashes. Previous Grass8/Camera10 images show the earlier shading; archived World18 costs do not certify the new default12 rebuild."
+}

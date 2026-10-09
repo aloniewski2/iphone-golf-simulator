@@ -1,0 +1,57 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Playables;
+using UnityEngine.Animations;
+using GolfArcade.Game;
+using GolfArcade.Tennis;
+using Object=UnityEngine.Object;
+namespace GolfArcade.EditorTools {
+ public static class TailoringSwingPreview {
+  public static void Run(){try{Capture();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
+  static void Capture(){
+   var output=Environment.GetEnvironmentVariable("SWING_OUT");Directory.CreateDirectory(output);ShaderUtil.allowAsyncCompilation=false;
+   EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);QualitySettings.skinWeights=SkinWeights.FourBones;QualitySettings.antiAliasing=4;
+   RenderSettings.ambientMode=AmbientMode.Flat;RenderSettings.ambientLight=new Color(.4f,.4f,.4f);RenderSettings.fog=false;
+   var light=new GameObject("Key").AddComponent<Light>();light.type=LightType.Directional;light.intensity=1.15f;light.transform.rotation=Quaternion.Euler(35,-35,0);
+   var fill=new GameObject("Fill").AddComponent<Light>();fill.type=LightType.Directional;fill.intensity=.5f;fill.transform.rotation=Quaternion.Euler(30,145,0);
+   var camera=new GameObject("Swing camera").AddComponent<Camera>();camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.16f,.19f,.22f);camera.orthographic=true;camera.orthographicSize=1.3f;camera.nearClipPlane=.02f;camera.farClipPlane=100;
+   var target=new Vector3(0,1.04f,0);var off=Quaternion.Euler(0,320,0)*new Vector3(0,.12f,-4);camera.transform.SetPositionAndRotation(target+off,Quaternion.LookRotation(-off));
+   foreach(bool female in new[]{false,true}){
+    string sex=female?"Female":"Male";var directory=Path.Combine(output,sex);Directory.CreateDirectory(directory);
+    var holder=new GameObject("Hero holder");var hero=HeroGolfer.Build(holder.transform,new HeroLook{Female=female,Skin=new Color(.86f,.66f,.5f),HairColor=new Color(.2f,.14f,.1f),Haircut=1});
+    foreach(var r in hero.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true))if(r.name.StartsWith("CLUB_")){Debug.Log("SWING_CLUB "+r.name);r.gameObject.SetActive(r.name=="CLUB_DRIVER");}
+    var look=hero.Root.GetComponent<MatchHeroLook>();typeof(MatchHeroLook).GetMethod("OwnMaterials",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(look,null);
+    var clip=AssetDatabase.LoadAllAssetsAtPath("Assets/Resources/Hero/golfer_"+(female?"f":"m")+".fbx").OfType<AnimationClip>().Single(c=>c.name=="Drive");
+    var animator=hero.Root.GetComponent<Animator>()??hero.Root.AddComponent<Animator>();animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;animator.applyRootMotion=false;
+    var graph=PlayableGraph.Create("Swing preview");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);var playable=AnimationClipPlayable.Create(graph,clip);playable.SetApplyFootIK(false);playable.SetApplyPlayableIK(false);var animationOutput=AnimationPlayableOutput.Create(graph,"Body",animator);animationOutput.SetSourcePlayable(playable);graph.Play();
+    var clearance=new GolfSwingClearance(hero);
+    var sources=hero.Root.GetComponentsInChildren<SkinnedMeshRenderer>().Where(r=>r.enabled&&r.gameObject.activeInHierarchy).ToArray();var snapshots=new List<(SkinnedMeshRenderer source,Mesh mesh,GameObject go)>();
+    foreach(var r in sources){var mesh=new Mesh();var go=new GameObject("Baked frame");go.transform.SetParent(r.transform,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterials=r.sharedMaterials;snapshots.Add((r,mesh,go));r.forceRenderingOff=true;}
+    // Fit a fixed camera to the complete club and body trajectory.
+    float minX=float.PositiveInfinity,maxX=float.NegativeInfinity,minY=float.PositiveInfinity,maxY=float.NegativeInfinity;
+    for(int sample=0;sample<105;sample++){
+     playable.SetTime(Mathf.Min(sample/30f,clip.length-.001f));graph.Evaluate(0);clearance.Apply();hero.Root.GetComponent<GolfGarmentCorrectives>().Apply();
+     foreach(var item in snapshots){item.source.BakeMesh(item.mesh);foreach(var vertex in item.mesh.vertices){var point=item.source.transform.TransformPoint(vertex);float x=Vector3.Dot(point,camera.transform.right),y=Vector3.Dot(point,camera.transform.up);minX=Mathf.Min(minX,x);maxX=Mathf.Max(maxX,x);minY=Mathf.Min(minY,y);maxY=Mathf.Max(maxY,y);}}
+    }
+    var centre=camera.transform.right*((minX+maxX)*.5f)+camera.transform.up*((minY+maxY)*.5f);camera.transform.position=centre-camera.transform.forward*4;camera.orthographicSize=Mathf.Max((maxY-minY)*.5f,(maxX-minX)/1.8f)*1.08f;
+    Debug.Log("SWING_FRAMING "+sex+" size="+camera.orthographicSize);
+    for(int frame=0;frame<105;frame++){
+     float time=Mathf.Min(frame/30f,clip.length-.001f);playable.SetTime(time);graph.Evaluate(0);clearance.Apply();hero.Root.GetComponent<GolfGarmentCorrectives>().Apply();
+     foreach(var item in snapshots){item.source.BakeMesh(item.mesh);item.mesh.RecalculateBounds();}
+     Save(camera,Path.Combine(directory,frame.ToString("D4")+".png"));
+     if(frame%30==0)Debug.Log("SWING_FRAME "+sex+" "+frame);
+    }
+    graph.Destroy();foreach(var item in snapshots)Object.DestroyImmediate(item.mesh);Object.DestroyImmediate(holder);
+   }
+   File.WriteAllText(Path.Combine(output,"PASS.txt"),"105 frames per golfer, Drive at 30fps, runtime clearance and garment correctives, baked skinned frames, production materials.");
+  }
+  static void Save(Camera camera,string path){var rt=RenderTexture.GetTemporary(900,1000,24,RenderTextureFormat.ARGB32,RenderTextureReadWrite.Default,4);camera.targetTexture=rt;camera.Render();camera.Render();RenderTexture.active=rt;var texture=new Texture2D(900,1000,TextureFormat.RGB24,false);texture.ReadPixels(new Rect(0,0,900,1000),0,0);texture.Apply();File.WriteAllBytes(path,texture.EncodeToPNG());camera.targetTexture=null;RenderTexture.active=null;Object.DestroyImmediate(texture);RenderTexture.ReleaseTemporary(rt);}
+ }
+}

@@ -1,0 +1,110 @@
+PASTE — MALE NAPE + PELVIS FORM + SKIN LIVELINESS · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan full-model eye on:
+ArtDir/hero/base_lock/proof/male_now_vs_ref/SHEET_body_ref_vs_now_v2.png
+(+ SHEET_head_ref_vs_now_v2.png for skin only — **do NOT chase face sculpt detail**)
+
+FIX ALL OF THIS in one chat (two workstreams: MESH then SKIN):
+
+MESH
+1) **Nape / upper back** right under the neck is **rounded weird** (hump / soft tube) vs plate. Kill it — plate-like neck→trap slope.
+2) Body otherwise looks good to Adnan — do not thrash chest/arms/legs/feet/hands/face geometry for vanity.
+3) **Groin + butt read as a straight line**; from the **side** the butt is **not rounded** (flat S-curve / plank back). Soft-plastic twin glute lobes + readable side projection + groin not a flat bar.
+
+SKIN (most important visually after form)
+4) Our skin looks **dull / grey** vs the lively plate. Measured on the body sheet skinish pixels: REF sat **~0.46**, NOW sat **~0.37**. Fix must work for **all 6 SkinTones** (Fair→Deep) — never bake one peach into the mesh.
+
+START BLEND (verify SHA before any edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 548a83f4bf3f8624e452955bfef84e3f5bf84a3088f8cd9ae5325dc20d426495
+(re-verify: shasum -a 256 … — if different, rebase zones onto current ArtDir; never whole-file clobber head/arms/hands/legs installs)
+
+READ FIRST (mandatory):
+1) ArtDir/hero/base_lock/proof/male_now_vs_ref/SHEET_body_ref_vs_now_v2.png
+2) ArtDir/hero/base_lock/proof/male_now_vs_ref/body_back.png, body_left.png, body_right.png, body_front.png
+3) ArtDir/hero/base_lock/parallel_prompts/SKIN_LIVELINESS_BRIEF.md  (full diagnosis + fix order)
+4) male_body_bald.jpg, male_multiangle_body.jpg, male_body_plain.jpg — authority for nape + side glute + groin
+5) AGENTS.md + art-bible.md
+6) Unity/Assets/Scripts/Game/GolferStyle.cs (SkinTones[])
+7) Unity/Assets/Characters/HeroBase/Materials/Male_Form_Skin.mat, Skin_M.mat, Male_Face_Skin.mat
+8) Tools/HeroBase/build_albedo.py + plate_profiles.py
+
+WORK FOLDER: work/male-nape-pelvis-skin/ only. Stage exports there. ArtDir install only after zone audits PASS + Adnan-ready proofs.
+
+════════════════════════════════════
+PART A — MESH (nape + pelvis)
+════════════════════════════════════
+
+ZONES (document exact masks; audit float32):
+A) NAPE_ZONE — upper back + nape / trap blend. Start approx z ∈ [1.28, 1.42], |x| ≤ 0.18 (tighten if needed). Prefer **0 move** on Face_M, skull face verts, arms, hands, lower torso, legs, feet. Border verts with Micro1k nape strip: keep ≤2 mm drift unless required; document.
+B) PELVIS_ZONE — groin front + glute / upper butt / side butt. Start approx z ∈ [0.77, 1.05], |x| ≤ 0.22. Soft-plastic only — **no shred / no six-pack carve**. Do not invade feet or calf form wins. If a leg-top ring must move for underbutt, document mm and keep tiny.
+
+METHOD:
+- Positions-only preferred (no densify unless disclosed + Adnan note).
+- NAPE: remove the weird rounded hump; restore plate neck→shoulder back slope (back + side views). Match plate silhouette in that band.
+- PELVIS: add soft twin glute lobes + side roundness so side profile is not a straight vertical; front groin not a flat plank; soft midline V hint OK. Soft-plastic party style.
+- Mirror L/R.
+
+HARD FORM GATES:
+ZONE_OUTSIDE_NAPE=0
+ZONE_OUTSIDE_PELVIS=0
+TOPOLOGY_IDENTICAL preferred
+SIL bald front/back ≤ 5.0% (locked cameras)
+NAPE_CLEAN PASS — back + side: no weird tube/hump; plate-like slope (plate | before | after close-ups)
+PELVIS_ROUND PASS — side butt rounded (not straight line); groin not flat bar; soft lobes visible on back/3q (plate | before | after)
+NO_SELF_INTERSECT / no flipped faces / no NaN
+NO face detail sculpt (ignore Adnan face note)
+
+MESH DELIVER:
+- work/male-nape-pelvis-skin/MALE_NAPE_PELVIS_RESULTS.md
+- proof: nape BA (back+side), pelvis/glute BA (side+back+front groin), full multiangle update sheet vs plate
+- checks.json (zones + sil)
+- Stage blend + optional FBX; ArtDir install only after SHA guard + audits
+
+════════════════════════════════════
+PART B — SKIN LIVELINESS (all tones)
+════════════════════════════════════
+
+WHY DULL (do not re-diagnose wrong):
+1) Head_Male_Albedo is a **constant** fill of plate_profiles MALE skin (0.77,0.565,0.425) — std=0, no blush (female has blush; male stripped).
+2) Male_Form_Skin BaseColor (0.74,0.555,0.435) → S≈0.41 already under plate; renders land ~0.37.
+3) URP Lit only — no warm soft-plastic subsurface/rim (Hero_01_WarmSkin had _Subsurface; HeroBase does not).
+4) Baking one lively peach into albedo **breaks** Fair/Deep. Fix = **palette + material response**.
+
+DO THIS (order):
+1) Retune GolferStyle.SkinTones[] chroma — keep Fair→Deep hue ladder. Raise S ~15–25% on light/mid; smaller bump on Deep (no plastic orange). Mid **Tan** should render near plate S≈0.46 under the same studio light used for the comparison sheet.
+2) Soft-plastic material preset on Male_Form_Skin / Skin_M / Male_Face_Skin (+ female Skin_F / Female_Form_Skin equivalents if shared path): Metallic 0, Smoothness ~0.38–0.45. Prefer BaseColor = SkinTone with neutral/white multiply albedo so customization works.
+3) Optional warm subsurface or rim that **multiplies / scales with BaseColor** (not add fixed peach). Reuse WarmSkin idea under HeroBase if easy; else document Lit-only limits and push chroma + slight warmth in palette.
+4) Rebuild male head albedo via build_albedo.py: stop treating one RGB as “the” skin. Prefer tintable base + **relative** cheek/ear flush (sat/value offset after tint). No stubble bake. No pores.
+5) Sync plate_profiles default skin if still used as authoring mid-tone — must not fight SkinTones.
+
+SKIN HARD GATES:
+SKIN_CHROMA_TAN — under comparison lighting, mid Tan skinish sat within ~0.03 of plate REF (~0.46); not grey
+SKIN_ALL_TONES — Fair / Tan / Deep proof sheet: each looks alive (not chalk-grey, not cartoon-orange); same material stack
+SKIN_NO_BAKED_PEACH — albedo/tint path works when SkinTone changes (prove by swapping tones on one mesh)
+SKIN_SOFT_PLASTIC — matte soft-plastic, not metal, not photoreal SSS
+NO stubble / no pores
+
+SKIN DELIVER:
+- Updated GolferStyle.cs SkinTones (list old→new RGB)
+- Updated mats (+ shader only if needed)
+- Regenerated Head_*_Albedo if changed + build script note
+- proof/SKIN_liveliness_Fair_Tan_Deep.png (plate energy reference | before | after per tone)
+- SKIN_LIVELINESS_RESULTS.md (Honest notes)
+
+════════════════════════════════════
+INSTALL / SAFETY
+════════════════════════════════════
+- Mesh: zone audits mandatory; append INSTALL_LOG_MALE.md only if installing ArtDir blend/FBX
+- Skin: Unity materials/scripts OK to update; refresh HeroBase studio proof if easy
+- Do NOT open female blend mesh zones. Female mats only if shared skin stack needs parity.
+- Do NOT redesign sockets / clothes / hair
+
+REPLY ONLY:
+GATE: MALE_NAPE_PELVIS PASS
+GATE: SKIN_LIVELINESS PASS
+or FAIL with failed lines only for each gate block.

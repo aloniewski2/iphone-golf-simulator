@@ -1,0 +1,144 @@
+{
+  "Body_EyeSphere_L": {
+    "vertices": 942,
+    "triangles": 1876,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "IrisUV",
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Body_EyeSphere_R": {
+    "vertices": 942,
+    "triangles": 1876,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "IrisUV",
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Body_Skin": {
+    "vertices": 8781,
+    "triangles": 16734,
+    "boundary_edges": 818,
+    "nonmanifold_edges": 830,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default": {
+    "vertices": 4194,
+    "triangles": 8256,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default_Free": {
+    "vertices": 4194,
+    "triangles": 8256,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default_Free_LOD1": {
+    "vertices": 2460,
+    "triangles": 4788,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default_Free_LOD2": {
+    "vertices": 1304,
+    "triangles": 2476,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default_LOD1": {
+    "vertices": 2460,
+    "triangles": 4788,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hair_Default_LOD2": {
+    "vertices": 1304,
+    "triangles": 2476,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Hat_Visor": {
+    "vertices": 1706,
+    "triangles": 2981,
+    "boundary_edges": 427,
+    "nonmanifold_edges": 431,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Shirt_Default": {
+    "vertices": 3810,
+    "triangles": 7246,
+    "boundary_edges": 401,
+    "nonmanifold_edges": 410,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Shoes_Default": {
+    "vertices": 3471,
+    "triangles": 6777,
+    "boundary_edges": 163,
+    "nonmanifold_edges": 173,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Shorts_Default": {
+    "vertices": 1040,
+    "triangles": 1996,
+    "boundary_edges": 80,
+    "nonmanifold_edges": 80,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  },
+  "Shorts_Piping": {
+    "vertices": 400,
+    "triangles": 768,
+    "boundary_edges": 32,
+    "nonmanifold_edges": 32,
+    "uv_layers": [
+      "UVMap"
+    ],
+    "uv_overlap_verified": false
+  }
+}

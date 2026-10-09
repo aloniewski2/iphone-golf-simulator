@@ -1,0 +1,10 @@
+{
+  "status": "Visual exploration only; no game code or approved hero assets changed",
+  "product": "Island Sports Club",
+  "comparison": ["Loading", "Drone flyover", "Gameplay scorebug and shot feedback", "Match results"],
+  "directions": [
+    {"id":"01","name":"Sunshine Club","image":"01-sunshine-club.png","palette":["#FFF3CF","#FF702D","#2454D9","#74D5D1","#173047"],"type":"Heavy rounded athletic grotesk; sculpted display headlines; crisp numeric cells","depth":"Ivory enamel plaques, orange inset number wells, warm beveled action surfaces, controlled contact shadows","joy":"Sunlit resort warmth; generous, satisfying forms; playful athlete idle","motion":"Ball travels along progress rail; primary button compresses and rebounds; score token settles into its well"},
+    {"id":"02","name":"Rally Festival","image":"02-rally-festival.png","palette":["#204FFF","#FF5342","#FFD441","#FFF9EB","#13224A"],"type":"Tightly kerned condensed italic display, huge tabular score numerals, directional composition","depth":"Die-cut tickets, folded tabs, layered coated paper, rubberized action slabs","joy":"A social sports festival: bold graphic energy, warm coral, winning-ribbon moments","motion":"Tickets slide and settle; numeric strips roll once; brief ribbon unfurl at results"},
+    {"id":"03","name":"Toybox Arena","image":"03-toybox-arena.png","palette":["#69C9F4","#2940BD","#FFBE44","#CAEE62","#B8A8F3"],"type":"Wide-counter superbold geometric lettering, friendly round terminals, oversized numeric tiles","depth":"Soft-touch molded casings, recessed tiles, raised lime buttons, blue structural sidewalls","joy":"Tactile toy delight; buoyant color; controls that look satisfying to press","motion":"Raised buttons depress into cradle; ball rolls on molded rail; small podium/star bounce at win"}
+  ]
+}

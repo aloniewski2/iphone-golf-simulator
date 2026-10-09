@@ -1,0 +1,20 @@
+{
+ "Hero_RunRight_v5": {
+  "frames>1cm before": 72,
+  "after": 0,
+  "max before": 0.968,
+  "max after": 0.0
+ },
+ "Hero_RunLeft_v5": {
+  "frames>1cm before": 70,
+  "after": 0,
+  "max before": 0.95,
+  "max after": 0.001
+ },
+ "Hero_RunForward_v5": {
+  "frames>1cm before": 69,
+  "after": 0,
+  "max before": 0.969,
+  "max after": 0.003
+ }
+}

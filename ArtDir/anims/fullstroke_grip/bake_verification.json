@@ -1,0 +1,33 @@
+{
+  "Hero_Grip_Ready_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Grip_JumpServe_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Grip_Forehand_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Backhand_v4": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Volley_v3": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "Hero_Grip_Smash_v1": {
+    "frames": 120,
+    "fps": 30,
+    "duration": 3.966666666666667
+  },
+  "max_bone_position_conversion_error_metres": 2.87596271419805e-07
+}

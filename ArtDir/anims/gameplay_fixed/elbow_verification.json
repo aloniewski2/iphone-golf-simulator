@@ -1,0 +1,47 @@
+{
+  "Ready": {
+    "min_elbow_interior_degrees": 94.26562567463989,
+    "max_elbow_interior_degrees": 97.71961580217317,
+    "frames_checked": 120
+  },
+  "JumpServe": {
+    "min_elbow_interior_degrees": 57.74149153485632,
+    "max_elbow_interior_degrees": 153.66854540355473,
+    "frames_checked": 120
+  },
+  "Forehand": {
+    "min_elbow_interior_degrees": 54.99995103004481,
+    "max_elbow_interior_degrees": 150.14932873786688,
+    "frames_checked": 120
+  },
+  "Backhand": {
+    "min_elbow_interior_degrees": 61.04193177129404,
+    "max_elbow_interior_degrees": 153.66873994733749,
+    "frames_checked": 120
+  },
+  "RunForward": {
+    "min_elbow_interior_degrees": 120.28258959615275,
+    "max_elbow_interior_degrees": 153.66918270745302,
+    "frames_checked": 120
+  },
+  "RunRight": {
+    "min_elbow_interior_degrees": 120.1927498002537,
+    "max_elbow_interior_degrees": 153.66913772223646,
+    "frames_checked": 120
+  },
+  "RunLeft": {
+    "min_elbow_interior_degrees": 117.0731274408955,
+    "max_elbow_interior_degrees": 153.66915320570487,
+    "frames_checked": 120
+  },
+  "Volley": {
+    "min_elbow_interior_degrees": 70.25314291193719,
+    "max_elbow_interior_degrees": 113.67427627580561,
+    "frames_checked": 120
+  },
+  "Smash": {
+    "min_elbow_interior_degrees": 82.90618472546839,
+    "max_elbow_interior_degrees": 151.4581508111354,
+    "frames_checked": 120
+  }
+}

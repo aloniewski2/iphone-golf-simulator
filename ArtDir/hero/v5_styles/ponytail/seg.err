@@ -1,0 +1,12 @@
+task created 8fad7897-9c0e-41df-8612-ce8ebe733060 (@seg-ponytail)
+mesh_segmentation · queued
+mesh_segmentation · running 6% · 8fad7897
+mesh_segmentation · running 16% · 8fad7897
+mesh_segmentation · running 24% · 8fad7897
+mesh_segmentation · running 37% · 8fad7897
+mesh_segmentation · running 56% · 8fad7897
+mesh_segmentation · running 80% · 8fad7897
+mesh_segmentation · success 100% · 8fad7897
+✓ mesh_segmentation · 8fad7897-9c0e-41df-8612-ce8ebe733060 · 40 credits
+downloading artifacts…
+✓ artifacts saved to ponytail/seg/tripo-out/seg-ponytail-8fad7897

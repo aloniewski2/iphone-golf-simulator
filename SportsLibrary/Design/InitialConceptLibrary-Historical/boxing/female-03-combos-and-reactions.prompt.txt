@@ -1,0 +1,15 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Boxing — combinations and reactions — female". Panels in reading order:
+1. Combination 1/4: orthodox guard
+2. Combination 2/4: left jab
+3. Combination 3/4: right cross
+4. Combination 4/4: left hook and balanced hips
+5. Body-head 1/3: dip with guard up
+6. Body-head 2/3: right body uppercut
+7. Body-head 3/3: recover into left head hook
+8. Close-up: mitten hand fully enclosed by padded boxing glove
+9. Light hit reaction: torso recoils, gloves remain up
+10. Stumble recovery: small backward step, regain guard
+11. Round rest: gloves lowered, shoulders relaxed
+12. Win: both gloves raised overhead
+Plain red boxing gloves cover hands. Orthodox left foot forward. Distinguish LEFT jab from RIGHT cross: in a front view, left glove appears on viewer right, right glove on viewer left. Keep guard balanced.
+SHORT panel captions. Maintain large rounded-square head and squat stylized proportions.

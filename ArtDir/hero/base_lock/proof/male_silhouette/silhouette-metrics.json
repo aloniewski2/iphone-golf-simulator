@@ -1,0 +1,223 @@
+{
+  "gate": "MALE_SIL PASS",
+  "threshold": 0.05,
+  "phase": "Micro1 continuation: male A-pose silhouette only",
+  "gate_authority": [
+    "bald_front",
+    "bald_back"
+  ],
+  "authority_file": "male_body_bald.jpg",
+  "excluded_from_gate": [
+    "sheet_front",
+    "sheet_back",
+    "left",
+    "right"
+  ],
+  "metric": "Native frozen source mask >127 versus Blender alpha coverage >127; symmetric difference divided by union. No crop, rescale, registration, camera change or image warp in measurement. Primary proof retains the native plate pixels with a header added.",
+  "measurements": [
+    {
+      "view": "bald_front",
+      "gate_authority": true,
+      "symmetric_difference_over_union": 0.043888689455280336,
+      "symmetric_difference_pixels": 3301,
+      "union_pixels": 75213,
+      "target_pixels": 73430,
+      "render_pixels": 73695,
+      "target_mask_sha256": "520a0b3722ea06aa3f57de4a29dc5fed6ebb141de072a683869937e632649594",
+      "render_sha256": "5feb10acc8e056a75e6f19d3a866ee4c608570dbe1ab30765b914106c483cb6a",
+      "camera": {
+        "name": "bald_front",
+        "file": "male_body_bald.jpg",
+        "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+        "roi": [
+          105,
+          51,
+          604,
+          659
+        ],
+        "centre_x": 353.0,
+        "sole_y": 654,
+        "height_pixels": 593,
+        "metres_per_pixel": 0.0028667790893760537,
+        "angle_degrees": 0,
+        "foreground_pixels": 73430,
+        "bbox": [
+          116,
+          59,
+          591,
+          652
+        ]
+      }
+    },
+    {
+      "view": "bald_back",
+      "gate_authority": true,
+      "symmetric_difference_over_union": 0.03590456022983235,
+      "symmetric_difference_pixels": 2662,
+      "union_pixels": 74141,
+      "target_pixels": 72916,
+      "render_pixels": 72704,
+      "target_mask_sha256": "bd9ebba965727696c8180062ef647b5ef1926b2ae347106cd62f13d48a735a64",
+      "render_sha256": "c7bcc5e11ba520b2c9524653bc3459c344273d7b5f7a633411f45acc49fef11f",
+      "camera": {
+        "name": "bald_back",
+        "file": "male_body_bald.jpg",
+        "sha256": "76c005d722ecfefab530b266606a147486693340a75bc22654c07b950c6bc4a0",
+        "roi": [
+          675,
+          51,
+          1160,
+          655
+        ],
+        "centre_x": 915.75,
+        "sole_y": 651,
+        "height_pixels": 589,
+        "metres_per_pixel": 0.0028862478777589135,
+        "angle_degrees": 180,
+        "foreground_pixels": 72916,
+        "bbox": [
+          683,
+          61,
+          1148,
+          649
+        ]
+      }
+    },
+    {
+      "view": "sheet_front",
+      "gate_authority": false,
+      "symmetric_difference_over_union": 0.07223826328734895,
+      "symmetric_difference_pixels": 1351,
+      "union_pixels": 18702,
+      "target_pixels": 18179,
+      "render_pixels": 17874,
+      "target_mask_sha256": "6a3e27130e2f2b64262adeb7e4a0d3117245bf61e2634d2ebd681888f5348b47",
+      "render_sha256": "15f4c8e489754b2c1fb7edc4dfff7ba2373f1b2a025b9600218cb5c14040131a",
+      "camera": {
+        "name": "sheet_front",
+        "file": "male_multiangle_body.jpg",
+        "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+        "roi": [
+          55,
+          49,
+          315,
+          347
+        ],
+        "centre_x": 184.5,
+        "sole_y": 344,
+        "height_pixels": 292,
+        "metres_per_pixel": 0.005821917808219178,
+        "angle_degrees": 0,
+        "foreground_pixels": 18179,
+        "bbox": [
+          68,
+          51,
+          303,
+          343
+        ]
+      }
+    },
+    {
+      "view": "sheet_back",
+      "gate_authority": false,
+      "symmetric_difference_over_union": 0.0726223851628208,
+      "symmetric_difference_pixels": 1347,
+      "union_pixels": 18548,
+      "target_pixels": 17903,
+      "render_pixels": 17846,
+      "target_mask_sha256": "1cecf066cd389af833cb0082d7fb706c736fd398edb59e170e942c906c78f1cc",
+      "render_sha256": "9460cb3348c46f53ebb3068743e286a761ff799e70872ec2132218a1c0f95295",
+      "camera": {
+        "name": "sheet_back",
+        "file": "male_multiangle_body.jpg",
+        "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+        "roi": [
+          350,
+          49,
+          620,
+          347
+        ],
+        "centre_x": 479.75,
+        "sole_y": 344,
+        "height_pixels": 292,
+        "metres_per_pixel": 0.005821917808219178,
+        "angle_degrees": 180,
+        "foreground_pixels": 17903,
+        "bbox": [
+          367,
+          52,
+          595,
+          342
+        ]
+      }
+    },
+    {
+      "view": "left",
+      "gate_authority": false,
+      "symmetric_difference_over_union": 0.05553087516659263,
+      "symmetric_difference_pixels": 625,
+      "union_pixels": 11255,
+      "target_pixels": 10951,
+      "render_pixels": 10934,
+      "target_mask_sha256": "1a45352d119ff0116379cee676d0f22559a0087451a2821c38494144a4cb7704",
+      "render_sha256": "54918d8abae583b27e6a69bc637e3ce1bd33a80f480363c2f2e6229aaf838b61",
+      "camera": {
+        "name": "left",
+        "file": "male_multiangle_body.jpg",
+        "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+        "roi": [
+          739,
+          49,
+          825,
+          347
+        ],
+        "centre_x": 796.5,
+        "sole_y": 343,
+        "height_pixels": 291,
+        "metres_per_pixel": 0.00584192439862543,
+        "angle_degrees": 90,
+        "foreground_pixels": 10951,
+        "bbox": [
+          758,
+          51,
+          815,
+          343
+        ]
+      }
+    },
+    {
+      "view": "right",
+      "gate_authority": false,
+      "symmetric_difference_over_union": 0.06372762985595809,
+      "symmetric_difference_pixels": 730,
+      "union_pixels": 11455,
+      "target_pixels": 11251,
+      "render_pixels": 10929,
+      "target_mask_sha256": "0856ceebacdcd6c602b12b758d68acf0d8cdf5e42e5a659c14de8339669cd5e4",
+      "render_sha256": "bef6d30a76d7b399aca75908620d1d4b1582b76e3baf0c6de9b150949aafb3bb",
+      "camera": {
+        "name": "right",
+        "file": "male_multiangle_body.jpg",
+        "sha256": "7e8b5534dc7a87a465e0acd9bfb4835e1df5ea3ce9777920b8c4e1fdb50386b4",
+        "roi": [
+          1038,
+          49,
+          1138,
+          347
+        ],
+        "centre_x": 1068.0,
+        "sole_y": 343,
+        "height_pixels": 291,
+        "metres_per_pixel": 0.00584192439862543,
+        "angle_degrees": -90,
+        "foreground_pixels": 11251,
+        "bbox": [
+          1049,
+          51,
+          1108,
+          343
+        ]
+      }
+    }
+  ]
+}

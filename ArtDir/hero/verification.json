@@ -1,0 +1,120 @@
+{
+  "armatures": 1,
+  "bones": 22,
+  "meshes": 5,
+  "unweighted_vertices": 0,
+  "bad_weight_sums": 0,
+  "max_influences": 2,
+  "identity_transforms": true,
+  "zero_area_triangles": 0,
+  "triangles": 46838,
+  "sockets": {
+    "Hat": {
+      "position": [
+        0.0,
+        0.0,
+        1.6649999618530273
+      ],
+      "parent_bone": "Head"
+    },
+    "Hand_R": {
+      "position": [
+        -0.47700002789497375,
+        -0.022999998182058334,
+        0.6949999332427979
+      ],
+      "parent_bone": "Hand.R"
+    },
+    "Hand_L": {
+      "position": [
+        0.47700002789497375,
+        -0.022999998182058334,
+        0.6949999332427979
+      ],
+      "parent_bone": "Hand.L"
+    },
+    "Back": {
+      "position": [
+        0.0,
+        0.15000000596046448,
+        1.059999942779541
+      ],
+      "parent_bone": "Chest"
+    },
+    "FaceExtra": {
+      "position": [
+        0.0,
+        -0.15000000596046448,
+        1.4049999713897705
+      ],
+      "parent_bone": "Head"
+    }
+  },
+  "mesh_stats": {
+    "Hero_01_Body": {
+      "vertices": 17306,
+      "triangles": 34263,
+      "uv_layers": 1
+    },
+    "Hero_01_EyeSphere_L": {
+      "vertices": 880,
+      "triangles": 1756,
+      "uv_layers": 1
+    },
+    "Hero_01_EyeSphere_R": {
+      "vertices": 880,
+      "triangles": 1756,
+      "uv_layers": 1
+    },
+    "Hero_01_Hair": {
+      "vertices": 3653,
+      "triangles": 6905,
+      "uv_layers": 1
+    },
+    "Hero_01_Visor": {
+      "vertices": 1192,
+      "triangles": 2158,
+      "uv_layers": 1
+    }
+  },
+  "height": 1.7000000476837158,
+  "head_chin_z": 1.283987915407855,
+  "head_ratio": 0.2447130121217853,
+  "actions": 0,
+  "textures": {
+    "Hero_01_BaseColor": [
+      2048,
+      2048
+    ],
+    "Hero_01_Iris": [
+      256,
+      256
+    ],
+    "Hero_01_Normal": [
+      1024,
+      1024
+    ]
+  },
+  "fbx": {
+    "armatures": 1,
+    "meshes": 5,
+    "all_sockets": true,
+    "actions": 0,
+    "embedded_textures": {
+      "Hero_01_BaseColor": [
+        2048,
+        2048
+      ],
+      "Hero_01_Iris": [
+        256,
+        256
+      ],
+      "Hero_01_Normal": [
+        1024,
+        1024
+      ]
+    }
+  },
+  "texture_budget_pass": true,
+  "pass": true
+}

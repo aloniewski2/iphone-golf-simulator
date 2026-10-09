@@ -1,0 +1,111 @@
+{
+  "source": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/v5_astra/Hero_V5_AstraTex_Baseline.blend",
+  "hair": {
+    "Hair_Bob": {
+      "open_before": 9374,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Bob_Free": {
+      "open_before": 9380,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Curly": {
+      "open_before": 7106,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Curly_Free": {
+      "open_before": 7104,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Default": {
+      "open_before": 7953,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Default_Free": {
+      "open_before": 7961,
+      "open_after": 0,
+      "triangles": 6000,
+      "UV": "HairUV"
+    },
+    "Hair_Long": {
+      "open_before": 9327,
+      "open_after": 0,
+      "triangles": 7000,
+      "UV": "HairUV"
+    },
+    "Hair_Long_Free": {
+      "open_before": 9327,
+      "open_after": 0,
+      "triangles": 7000,
+      "UV": "HairUV"
+    },
+    "Hair_Ponytail": {
+      "open_before": 8108,
+      "open_after": 0,
+      "triangles": 7000,
+      "UV": "HairUV"
+    },
+    "Hair_Ponytail_Free": {
+      "open_before": 8112,
+      "open_after": 0,
+      "triangles": 7000,
+      "UV": "HairUV"
+    }
+  },
+  "legs": {
+    "Body_Skin": {
+      "0.3": {
+        "before_width": 0.17434750497341156,
+        "before_depth": 0.19104312360286713,
+        "radial_factor": 0.87,
+        "after_width": 0.15155433863401413,
+        "after_depth": 0.16614717990159988
+      },
+      "0.37": {
+        "before_width": 0.19519435614347458,
+        "before_depth": 0.22470003366470337,
+        "radial_factor": 0.83,
+        "after_width": 0.16206637024879456,
+        "after_depth": 0.1867394782602787
+      },
+      "0.44": {
+        "before_width": 0.18055076152086258,
+        "before_depth": 0.20144430547952652,
+        "radial_factor": 0.9,
+        "after_width": 0.16237664967775345,
+        "after_depth": 0.18129518255591393
+      },
+      "0.53": {
+        "before_width": 0.17173592001199722,
+        "before_depth": 0.20668762922286987,
+        "radial_factor": 0.9,
+        "after_width": 0.1545911654829979,
+        "after_depth": 0.18601981922984123
+      },
+      "knee_L_weights": 923,
+      "knee_R_weights": 913
+    },
+    "Shorts_Default": {
+      "0.53": {
+        "before_width": 0.20711404085159302,
+        "before_depth": 0.2473006322979927,
+        "radial_factor": 0.9,
+        "after_width": 0.186519056558609,
+        "after_depth": 0.22259462624788284
+      },
+      "knee_L_weights": 61,
+      "knee_R_weights": 59
+    }
+  },
+  "skeleton_changed": false
+}

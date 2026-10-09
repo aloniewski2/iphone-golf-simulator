@@ -1,0 +1,65 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Playables;
+using UnityEngine.Animations;
+using GolfArcade.Game;
+using GolfArcade.Tennis;
+using Object=UnityEngine.Object;
+namespace GolfArcade.EditorTools {
+ public static class TailoringProof {
+  static string Out=>Environment.GetEnvironmentVariable("TAILOR_OUT");
+  public static void Run(){try{Capture();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
+  public static void After(){try{AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);GolfGarmentRepair.Build();Capture();MatchHeroLockerExport.RunGolf();}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}
+  public static void Audit(){
+   foreach(string sex in new[]{"Male","Female"})foreach(var r in Resources.Load<GameObject>("Tennis/Customization/Player"+sex+"GolfKit").GetComponent<MatchHeroLook>().kit){
+    var m=r.sharedMesh;for(int k=0;k<m.blendShapeCount;k++){var d=new Vector3[m.vertexCount];m.GetBlendShapeFrameVertices(k,0,d,null,null);Debug.Log($"SHAPE_AUDIT {sex} {r.name} {m.GetBlendShapeName(k)} max={d.Max(v=>v.magnitude)} bad={d.Count(v=>v.magnitude>.12f)}");}
+   }
+   EditorApplication.Exit(0);
+  }
+  static void Capture(){
+   ShaderUtil.allowAsyncCompilation=false;Directory.CreateDirectory(Out);EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+   QualitySettings.skinWeights=SkinWeights.FourBones;QualitySettings.antiAliasing=4;
+   RenderSettings.ambientMode=AmbientMode.Flat;RenderSettings.ambientLight=new Color(.48f,.48f,.48f);RenderSettings.fog=false;
+   var l=new GameObject("Key").AddComponent<Light>();l.type=LightType.Directional;l.intensity=1.7f;l.transform.rotation=Quaternion.Euler(35,-35,0);l.shadows=LightShadows.Soft;
+   var fill=new GameObject("Fill").AddComponent<Light>();fill.type=LightType.Directional;fill.intensity=.65f;fill.transform.rotation=Quaternion.Euler(30,145,0);
+   var cam=new GameObject("Proof camera").AddComponent<Camera>();cam.clearFlags=CameraClearFlags.SolidColor;cam.backgroundColor=new Color(.24f,.28f,.32f);cam.nearClipPlane=.02f;cam.farClipPlane=100;cam.orthographic=true;
+   foreach(bool female in new[]{false,true}){
+    string sex=female?"Female":"Male";
+    var holder=new GameObject("Hero holder");var hero=HeroGolfer.Build(holder.transform,new HeroLook{Female=female,Skin=new Color(.95f,.78f,.64f),HairColor=new Color(.2f,.14f,.1f),Haircut=1});
+    var look=hero.Root.GetComponent<MatchHeroLook>();typeof(MatchHeroLook).GetMethod("OwnMaterials",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(look,null);
+    var clips=AssetDatabase.LoadAllAssetsAtPath("Assets/Resources/Hero/golfer_"+(female?"f":"m")+".fbx").OfType<AnimationClip>().Where(c=>!c.name.StartsWith("__")).ToArray();
+    Debug.Log("TAILOR_CLIPS "+sex+" "+string.Join(",",clips.Select(c=>c.name+":"+c.length)));
+    var clip=clips.FirstOrDefault(c=>c.name.IndexOf("drive",StringComparison.OrdinalIgnoreCase)>=0)??clips.First();
+    var animator=hero.Root.GetComponent<Animator>()??hero.Root.AddComponent<Animator>();animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;animator.applyRootMotion=false;
+    var graph=PlayableGraph.Create("Tailoring pose proof");graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);var playable=AnimationClipPlayable.Create(graph,clip);playable.SetApplyFootIK(false);playable.SetApplyPlayableIK(false);var output=AnimationPlayableOutput.Create(graph,"Body",animator);output.SetSourcePlayable(playable);graph.Play();
+    foreach(var b in AnimationUtility.GetCurveBindings(clip).Where(b=>b.path.Contains("UpperArm")||b.path.Contains("Hips")).Take(12)){var c=AnimationUtility.GetEditorCurve(clip,b);Debug.Log("POSE_CURVE "+b.path+" "+b.propertyName+" target="+(hero.Root.transform.Find(b.path)!=null)+" keys="+c.length+" values="+c.Evaluate(0)+","+c.Evaluate(1.8667f)+","+c.Evaluate(3.12f));}
+    var poses=new[]{("Address",0f),("Backswing",56f/30),("Impact",69f/30),("Finish",clip.length*.9f)};
+    foreach(var pose in poses){
+     playable.SetTime(pose.Item2);graph.Evaluate(0);Debug.Log("POSE_CHECK "+sex+" "+pose.Item1+" "+hero.Bones["LeftUpperArm"].localRotation+" "+hero.Bones["Hips"].localRotation);hero.Root.GetComponent<GolfGarmentCorrectives>().Apply();
+     foreach(var r in hero.Root.GetComponentsInChildren<SkinnedMeshRenderer>())r.updateWhenOffscreen=true;
+     var visible=hero.Root.GetComponentsInChildren<SkinnedMeshRenderer>().Where(r=>r.enabled&&r.gameObject.activeInHierarchy).ToArray();var snapshots=new System.Collections.Generic.List<GameObject>();
+     foreach(var r in visible){var mesh=new Mesh();r.BakeMesh(mesh);var go=new GameObject("Pose snapshot");go.transform.SetParent(r.transform,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterials=r.sharedMaterials;snapshots.Add(go);r.forceRenderingOff=true;}
+     foreach(int angle in pose.Item1=="Address"?new[]{0,90,180,270}:new[]{0,90}){
+      var bounds=new Bounds();bool first=true;
+      foreach(var r in look.kit.Where(r=>r.enabled)){var mesh=new Mesh();r.BakeMesh(mesh);foreach(var p in mesh.vertices){var w=r.transform.TransformPoint(p);if(first){bounds=new Bounds(w,Vector3.zero);first=false;}else bounds.Encapsulate(w);}Object.DestroyImmediate(mesh);}
+      var target=bounds.center;target.y=.88f;cam.orthographicSize=.98f;
+      var off=Quaternion.Euler(0,angle,0)*new Vector3(0,.05f,-4);cam.transform.SetPositionAndRotation(target+off,Quaternion.LookRotation(-off));
+      Save(cam,sex+"_"+pose.Item1+"_"+angle,900,1100);
+      if(pose.Item1=="Address"&&angle==0){cam.orthographicSize=.29f;target.y=.97f;cam.transform.SetPositionAndRotation(target+off,Quaternion.LookRotation(-off));Save(cam,sex+"_Waist",1100,750);cam.orthographicSize=.24f;target.y=.15f;cam.transform.SetPositionAndRotation(target+off,Quaternion.LookRotation(-off));Save(cam,sex+"_Shoes",1100,750);}
+     }
+     foreach(var go in snapshots){Object.DestroyImmediate(go.GetComponent<MeshFilter>().sharedMesh);Object.DestroyImmediate(go);}foreach(var r in visible)r.forceRenderingOff=false;
+    }
+    graph.Destroy();Object.DestroyImmediate(holder);
+   }
+   foreach(var s in new[]{"GolfArcade/TennisCloth","GolfArcade/TennisCharacter"}){var shader=Shader.Find(s);if(!shader||ShaderUtil.ShaderHasError(shader))throw new Exception("Shader failed "+s);}
+   File.WriteAllText(Path.Combine(Out,"PASS.txt"),"Both live HeroGolfer instances, four sampled poses, front/side/back captures; shaders compile on "+SystemInfo.graphicsDeviceType);
+  }
+  static void Save(Camera cam,string file,int w,int h){var rt=RenderTexture.GetTemporary(w,h,24,RenderTextureFormat.ARGB32,RenderTextureReadWrite.Default,4);cam.targetTexture=rt;cam.Render();cam.Render();RenderTexture.active=rt;var tex=new Texture2D(w,h,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,w,h),0,0);tex.Apply();File.WriteAllBytes(Path.Combine(Out,file+".png"),tex.EncodeToPNG());cam.targetTexture=null;RenderTexture.active=null;Object.DestroyImmediate(tex);RenderTexture.ReleaseTemporary(rt);}
+ }
+}

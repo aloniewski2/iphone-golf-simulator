@@ -1,0 +1,120 @@
+PASTE: HERO CLOTHES QUALITY + SHADER OVERHAUL (Codex Goal Mode, GPT-6.1 Sol). NEW CHAT.
+
+GOAL
+The match heroes' clothes (PlayerMale and PlayerFemale: polo or top, shorts or skort, socks, shoes) look basic. They read as smooth white shells with a faint weave and drawn-on lines. Make them read as real, well-made tennis clothes in a clean, stylized, premium mobile-game look (think Mario Tennis Aces or Fortnite tailoring, not photoreal scans). They need visible construction (collar, placket, seams, hems, cuffs, waistband, pockets, pleats, shoe panels), soft believable folds, fabric that reacts to light like cotton pique or poly knit, and no shimmer on a phone. The kit stays white and black only, with no logos. Everything stays recolourable for future kits. Done = every gate passes AND Adnan's eye says yes on the close-ups and the match camera. His eye overrides any PASS.
+
+----------------------------------------------------------------
+0. WHAT EXISTS (verify each line first; correct it in AUDIT.md if wrong)
+- Shader: Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader (GolfArcade/TennisCloth, 166 lines). It has _BaseMap (a seam / collar / hem map in kit UV, baked by work/character-shader/detail/bake_kit.py), _WeaveMap (normal xy + thread break) with _WeaveTile / _WeaveAngle / _WeaveNormal / _WeaveThread, a grazing sheen (_SheenStrength / _SheenPower), wrap, rim, exposure, highlight knee, URP shadows and SSAO keywords. It has NO garment normal map, no AO or cavity map, and no trim or mask map.
+- Skin and decals: TennisCharacter.shader (not in scope, except where the kit meets the skin).
+- Runtime: Unity/Assets/Scripts/Tennis/MatchHeroLook.cs builds the materials at runtime. Textures on .mat assets do NOT show; set every map in this runtime path. Seven roles: Kit_Shirt, Kit_ShirtTrim, Kit_Shorts, Kit_ShortsBand, Kit_Shoe, Kit_Sole, Kit_Sock. SetKit recolours the shirt, shorts, and shoes, with the trim derived from the pick (darkened or lightened 35%).
+- Maps: Unity/Assets/Resources/Tennis/HeroDetail/ (Cloth_Weave.png, Kit_<Sex>_<Top|Bottom|SockL|SockR|ShoeL|ShoeR>.png).
+- Kit geometry: six SkinnedMeshRenderers (Kit_Top, Kit_Bottom, Kit_Sock_L/R, Kit_Shoe_L/R), skinned to the hero rig by Unity/Assets/Editor/MatchHeroKit.cs. They are separate worn shells (prompt 10b).
+- Earlier prompts to read and build on, not redo: 23_HERO_CLOTH_DETAIL.txt (the weave and sheen pass), 10c_TENNIS_CLOTHES_VOLUME.txt, 16_TENNIS_SHOES_FIT.txt. Check whether 10c and 16 were ever installed (INSTALL logs, file dates, SHAs). If they were not, this overhaul absorbs their goals.
+- The latest close-ups are in work/character-shader/proof/detail/ (SHEET_male_torso, SHEET_female_skort, shoes, match behind).
+- Locker 3D is SceneKit on the Swift side (GolfArcade/Unity/CharacterModelPreview.swift, MatchHeroData.swift, MatchHero_<Sex>.json / .lzfse). Prompt 24 (locker mirror) may or may not have run; check.
+
+What reads basic today (Grok Bot's eye on the Oct 3 close-ups; confirm or extend it):
+- The polo collar is a flat painted shape with no thickness, roll, or stand, and the placket buttons barely read.
+- Sleeve hems and the shirt hem are just a drawn line, with no turned-back edge or stitching. The male black trim reads as a pen line down one side of the placket.
+- No folds anywhere: armpits, elbow bend of the sleeve, waist, crotch, and the back of the knee are all smooth.
+- Shorts have no waistband build, drawcord, pocket openings, fly, or hem.
+- The skort is a plain cone with no pleats or panels. It has a dark smudged streak artifact on the left hem (visible in SHEET_female_skort before and after).
+- The weave is uniform noise at one scale. Up close it's fine, but it does not change across collar, rib, and body fabric.
+- The white is slightly grey and flat. Light falls off with no fabric character.
+- Shoes and socks: see 16; expect plain shells.
+
+----------------------------------------------------------------
+1. HARD RULES
+- Body mesh, skeleton, bone count, sockets (Hand_Racket etc.), face, and body SHAs are unchanged. No new bones. Kit stays skinned to the existing rig.
+- Kit is white and black only, no logos, no text, no brand marks, and no stripes copied from real brands.
+- Do not touch animation clips (Serve, emotes, locomotion), the golf course, QualitySettings, URP pipeline assets, or post. No bloom, no outline, no toon ramp.
+- Prompts 26 (serve), 28 (serve walk arm), and 27 (lobby) may run in parallel. Do NOT edit HeroTennisDriver.cs, TennisGame.cs, or TennisServeRoutine.cs. If the locker SceneKit files are mid-edit by another chat (check git status and file mtimes), do P5 last and report it.
+- Customizability is a must: every new map is colour-neutral (greyscale or masks), so SetKit and future kits keep recolouring. Masks drive trim colour; no colour is baked into albedo.
+- Mobile: see the budgets in P6. ASTC compression; every map sized on purpose.
+- Work in work/cloth-overhaul/. Back up every file you replace to work/cloth-overhaul/rollback/. Stage only, no commit.
+
+----------------------------------------------------------------
+2. PHASES
+
+P0 AUDIT + BEFORE
+- Capture the BEFORE set with a fixed camera rig you write once and reuse every round (Editor tool Unity/Assets/Editor/ClothProofRig.cs, batchmode, real match heroes, real MatchHeroLook runtime materials, the in-game Hero rim light and court lighting):
+  - Locker close-ups: collar + placket, shoulder + sleeve hem, waist + shorts waistband, male shorts hem + side, female skort hem + side, sock cuff, shoe 3/4, shoe side, sole.
+  - Full body front, back, and 3/4 for male and female.
+  - The match game camera from behind at the baseline, and the opponent seen from the player end.
+  - A 1170x2532 phone-resolution match frame.
+  - In motion: ReadyIdle, a forehand, the serve trophy, and a run, 2 s each, as an mp4.
+- AUDIT.md: tri counts per kit mesh, UV layout and texel density (px per cm) per garment, current maps and sizes, shader ALU and texture fetches, which of 10c / 16 / 24 are installed, and the cause of the skort smudge.
+
+P1 REFERENCE + GARMENT SPEC
+- Collect reference for construction only (plain white tennis polos, tees, shorts, pleated tennis skirts, crew socks, and court shoes) from public product pages, sports retailers, and pattern-making guides. Logo-free crops or notes only; nothing copied into a texture. Save it to ArtDir/hero/kit/refs/ with a REFS.md list of URLs and what each shows.
+- Write ArtDir/hero/kit/GARMENT_SPEC.md. Every current and future garment follows it:
+  - The map layout per garment: N = tangent normal (kit UV); M = mask RGBA: R = AO, G = cavity / stitch, B = trim mask (0 = main colour, 1 = trim colour), A = fabric ID (body knit, rib, mesh, rubber sole, foam midsole, lace).
+  - Texel density targets, the UV padding rule, the fabric ID table with the smoothness, sheen, and weave per ID, and how SetKit colours main versus trim.
+  - The rule for adding a new garment or skin so it drops into the same shader and sockets with no code change.
+
+P2 SHADER OVERHAUL (TennisCloth, same shader name, same runtime path)
+- Add _NormalMap (garment) and _MaskMap. Keep _BaseMap only if still needed (fold it into M if possible).
+- Fabric lighting:
+  - Wrap diffuse, kept.
+  - Replace the current sheen with a cloth sheen lobe (Charlie / Ashikhmin style), tinted by the fabric colour, with strength per fabric ID.
+  - A soft fuzz at grazing angles on knit only.
+  - AO multiplies diffuse and ambient, plus specular occlusion. Cavity darkens seams and stitches a little.
+  - Rubber sole and foam midsole get their own smoothness and no sheen.
+- Per-fabric weave from the fabric ID: pique on the body, fine rib on collar, cuffs, and waistband, mesh on the shoe upper, none on rubber. Use the existing _WeaveAngle fix.
+- Anti-shimmer: weave normal and thread fade out by screen-space derivative (fwidth of the weave UV) so the match camera shows clean cloth with no moiré. Up close in the locker, the weave reads.
+- Trim colour: B mask mixes _BaseColor and _TrimColor, so Kit_ShirtTrim / Kit_ShortsBand can become mask-driven on one material per garment. Keep the 7-role API working for SetKit and the locker; it may set the colours on the merged material.
+- White calibration: the lit white shirt in the match camera sits at L* 90-95 (not grey, not clipped). Report the measurement.
+- SRP Batcher compatible; compiles for iOS Metal; 0 new keywords unless justified.
+
+P3 GARMENT DETAIL (high-poly bake + a little real geometry)
+Build in Blender (or the existing bake_kit.py pipeline, extended) a detailed high version of each garment over its current low shell, then bake N + M onto the kit UVs. Add real low-poly geometry ONLY where the silhouette needs it (collar roll and stand, sleeve and shirt hem thickness, skort hem thickness, shoe tongue, laces, heel counter, sole lip), weighted from the existing skin, within the budget.
+- Male polo: a collar with stand and roll, and both tips that lie flat; a 2-3 button placket with real buttons (geometry or a strong bake) and buttonhole stitching; shoulder seams; side seams with short hem vents; ribbed sleeve cuffs with a thin black trim band (trim mask, not a line); a double-needle bottom hem; soft folds at the armpits, inside the elbow of the sleeve, at the waist above the belt, and across the back between the shoulder blades.
+- Female top: the same family (collar or V placket, kept to the current silhouette), princess seams for shape, a ribbed sleeve cuff with trim, a hem, and folds at the armpits and waist. No shrink-wrap.
+- Male shorts: a waistband with a black band (trim mask) and a drawcord with tips; belt-loop-free; side seam pockets with openings; a fly seam; a turned hem with stitching; folds at the crotch, hip, and back of the knee; a slight hem flare.
+- Female skort: a waistband with trim; knife or box pleats around the skirt panels (bake + a few real hem steps so the silhouette breaks); a hem with stitching; the undershort hint unchanged; and the smudge artifact gone.
+- Socks: a ribbed cuff (rib bake + fabric ID), a slightly denser knit at the heel and toe, and a soft roll at the top over the skin with no gap.
+- Shoes (court shoes, logo-free): toe cap, vamp and quarter panels with stitching, eyelets, flat laces as geometry, padded tongue and collar, heel counter, a foam midsole with a faint texture, a rubber outsole with a herringbone tread on the sole face, and a black accent only through the trim mask (e.g., heel tab and outsole edge).
+- Folds are baked for the neutral ReadyIdle pose and kept moderate so they don't look wrong in motion. No folds that obviously fight the pose (check in P7 films).
+
+P4 RUNTIME WIRING
+- MatchHeroLook sets the new maps and fabric parameters per garment and sex, from Resources/Tennis/HeroDetail/ (new files named per GARMENT_SPEC). SetKit still recolours main and trim. Every locker pick still works (run all LockerCatalog shirt, shorts, and shoe colours and screenshot a grid).
+- MatchHeroKit.cs exports the new geometry. Sockets and the racket on Hand_Racket are unchanged (prove it: socket world positions within 0.5 mm in ReadyIdle and at serve contact).
+
+P5 LOCKER PARITY (SceneKit)
+- Export the new N + M maps (compressed) with MatchHero_<Sex>, and give the SceneKit kit materials matching normal, AO, trim mask, and a sheen via a shader modifier. The locker close-up must read like the Unity close-up.
+- If another chat owns these files right now, do this last and report it.
+
+P6 BUDGETS (iPhone)
+- Kit tris per hero: report before and after; the increase is <= 6,000 tris per hero, and the total hero (body + kit + racket) is within the existing match budget from the course or tennis budget files.
+- Kit texture memory per hero: <= 6 MB with ASTC (list each map: size, format, MB). Shared detail tiles (weave, rib, mesh, tread) count once.
+- Shader: report ALU and texture fetches (Unity compiled-shader stats for Metal) before and after; fetches <= 6 per pixel.
+- iOS Metal build compiles. A 2-hero match frame time on device or on an iPhone-class profile is not worse than before by more than 0.5 ms (state how measured).
+
+P7 PROOF + EYE LOOP
+- Rerun the P0 rig as AFTER. Make side-by-side BEFORE/AFTER sheets per view in ArtDir/screenshots/cloth_overhaul/, plus the motion films and a 360 turntable for male and female.
+- A shimmer film: match camera, 3 s of the hero running across the baseline at phone resolution.
+- Iterate with your own eye until every gate passes, then stop and list what you'd still improve.
+
+----------------------------------------------------------------
+3. GATES (binary; each PASS or FAIL with a number or file)
+G1 CONSTRUCTION_READS: in the locker close-ups, each item below is clearly visible, with one labelled crop per item in CONSTRUCTION_SHEET.png:
+- male: collar roll, buttons, cuff trim band, hem stitch, side vent, waistband + drawcord, pocket opening, shorts hem;
+- female: collar or placket, cuff trim, pleats, waistband, hem;
+- both: sock rib cuff, shoe laces, toe cap, stitching, midsole, tread.
+FAIL if any item is missing or only a flat line.
+G2 FOLDS: armpit, waist, and crotch fold AO darkens the lit cloth by 8-20% (measure luma in fixed crops, and report the numbers); no fold is darker than 30%.
+G3 WHITE_STAYS_WHITE: the lit shirt in the match camera is L* 90-95 and shorts / skort L* 88-95; black trim is L* 8-20. No grey shirt.
+G4 FABRIC_VARIES: rib, pique, mesh, and rubber are visibly different in the close-ups (a crop sheet), and each has its own smoothness / sheen per the spec table.
+G5 NO_SHIMMER: in the shimmer film, the temporal luma flicker in the shirt region at the match camera is <= the BEFORE value, and there's no moiré band visible (frame strip attached).
+G6 SKORT_ARTIFACT_GONE: the dark streak on the skort is gone in all 4 views; report the cause.
+G7 RECOLOUR: every LockerCatalog shirt, shorts, and shoe colour renders correctly with the trim following the rule. A grid screenshot shows no baked white or black bleeding through.
+G8 SPEC_REUSE: GARMENT_SPEC.md exists. Then a test: re-colour a dummy duplicate of the polo using only the spec (no code change) and show it in the locker.
+G9 RIG_SAFE: body SHA and bone count are unchanged; sockets are within 0.5 mm; the racket is on its socket; skin weights on the new geometry show no stretching in the forehand, serve trophy, run, and Pushups emote (sheet of the worst frames).
+G10 BUDGET: P6 numbers all within limits; iOS Metal compile log path.
+G11 LOCKER_PARITY: the Unity vs SceneKit close-up of the polo and the shoe side by side reads the same (trim, folds, weave visible). Or NOT RUN with the reason, if the locker files were owned by another chat.
+G12 EYE: BEFORE/AFTER sheets and films listed with exact paths. Adnan decides.
+
+----------------------------------------------------------------
+4. REPORT
+One line per gate, the before/after sheet and film paths, budgets before and after, which of 10c / 16 / 24 were found installed, the files changed with rollback paths, what you'd still improve, and what is staged. No commit.

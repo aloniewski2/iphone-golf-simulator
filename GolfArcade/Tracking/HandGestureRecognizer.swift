@@ -24,6 +24,8 @@ enum HandShape: Equatable, Sendable {
 struct HandReading: Equatable, Sendable {
     let wrist: BodyJoint
     let shape: HandShape
+    /// Fingers held straight out (index to little), when all four could be read.
+    var fingers: Int? = nil
 }
 
 /// Turns deliberate one-handed motions into `NavGesture`s.

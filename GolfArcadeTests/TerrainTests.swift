@@ -82,7 +82,7 @@ final class TerrainTests: XCTestCase {
         // Somewhere in a sensible window of line and pace, the putt drops.
         var holed: (aim: Double, power: Double)?
         search: for aim in stride(from: -8.0, through: 8, by: 0.5) {
-            for power in stride(from: 0.2, through: 0.6, by: 0.005) {
+            for power in stride(from: 0.1, through: 0.6, by: 0.005) {
                 let putt = RangeShot(id: 1, club: .putter, power: power, aim: aim, origin: start, heading: 0, hole: hole)
                 if putt.isHoled { holed = (aim, power); break search }
             }

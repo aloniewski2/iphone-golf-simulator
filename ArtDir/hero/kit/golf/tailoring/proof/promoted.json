@@ -1,0 +1,272 @@
+[
+  {
+    "path": "Unity/Assets/Characters/GolfHeroKit/Male_Kit.fbx",
+    "before": "b4819a70cb5354c5fbd6d5ddaa305fcfb9cef064781dbc8c8e6e8df168ec0312",
+    "after": "dd87a947cbf403fe8bf0c56afa4c9c57c5c56fcd5bec66504d9051299139dc77"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Customization/PlayerMaleGolfKit.prefab",
+    "before": "06bea5c5c736ba179da30b91bb0b2162ccb5763124b3401bc5414e0637be91e3",
+    "after": "fba49d5a22a44411c7913d5a3ae4cfcf70ea87ad102639b896fab4cc0dd6f16c"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Male_Top.asset",
+    "before": "27c94a95d691fbf396b6be94c141d77d5c444be5301e84a4cc63bb8c53920e75",
+    "after": "de368d4c15085b5a113ba1deaa0c06ffce0fbde0c6d4cec6c48eb14213deee39"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Male_Body.asset",
+    "before": null,
+    "after": "feff3802e35e9786d50cec19175c6dfd26e8e04b0967e324430a449ed4a9cabf"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Male_Body.asset.meta",
+    "before": null,
+    "after": "449a7e50cdf9e6bb3197c920587a0787a94402c42c38b52758b121f976decc5a"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/GolfKitHero_Male.json",
+    "before": "539d1396958be451b46bf1ffaee9508bc41a85adc7888729ba0678662f1e0092",
+    "after": "4e38b2783528a10caa913be3e12c18ae3e06f9d01b509bedcb0fbc4c5625d4b9"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/GolfKitHero_Male.lzfse",
+    "before": "a3821fc5cba90e60a377c867fff9c1ec000f0098481953e609de3235ff65408d",
+    "after": "cd347d69f596732f5587797208fb609b95ef43d4e4372e8ce7cc90e514f5dcef"
+  },
+  {
+    "path": "ArtDir/hero/kit/golf/tailoring/source/Golf_Male.blend",
+    "before": null,
+    "after": "0c957738db3b06cffbd2c41819565089a718770b5df4e1322ece3787e701eb33"
+  },
+  {
+    "path": "Unity/Assets/Characters/GolfHeroKit/Female_Kit.fbx",
+    "before": "eba69514322476f60fd809160777b3a2e84a4130c8deff311124e4ccf78dd5ff",
+    "after": "1412351af0bb416f0f86de942d228c25b5086a7704a996319b69ea331cb1bb82"
+  },
+  {
+    "path": "Unity/Assets/Resources/Tennis/Customization/PlayerFemaleGolfKit.prefab",
+    "before": "b64b1b9b8a70a9837f473dda55db8bcd7ef5bea306066001c86fe23443610a5d",
+    "after": "2dfdabc20b68fe8ab4be661cd8c76702215cc1b2a6027ad82e39670fd8f37599"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Female_Top.asset",
+    "before": "b60495405313215e03cca758089dda0c769f0fb385d81d282c41f3872aaef842",
+    "after": "8fbdaee76ff33ce34f199e5bd837e098b8b0d1e567ad6644ba42b479ac92a56a"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Female_Body.asset",
+    "before": null,
+    "after": "46cbffca0f3d7a6693385c337cc562b6adeb91f92d06a629c29e70bdfad28b43"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/Fitted_Female_Body.asset.meta",
+    "before": null,
+    "after": "9f917f8e460fe121764d9a8e9506d4e21cbfb950e2c075d33fe304804b8e75f6"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/GolfKitHero_Female.json",
+    "before": "7f52590b7707d71d374eb8b3b225d1540e2cfd16030675cbc20d9ce25fd7faae",
+    "after": "280941eb75e602b60401f3e87906e7b9c6297e89f94dbca1a1071cdcda200bc2"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/GolfKitHero_Female.lzfse",
+    "before": "845503de5965b249fa46c036397de1fe00dd26c6b0b6fee681393c882a23935f",
+    "after": "9cdb84164d10f3e72febecbbcd791fa94c741a3c0ebe70fd9267a85af35f8e18"
+  },
+  {
+    "path": "ArtDir/hero/kit/golf/tailoring/source/Golf_Female.blend",
+    "before": null,
+    "after": "6bd4ee1e35395015c07980250fdadadeb86a2ff27975d0dd214bf8996e9f9d92"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_ShoeR_M.png",
+    "before": "3c246bfba36f50eb1e1cc62bd4bffebbd00515f518d717a38142493887cd17d2",
+    "after": "2ec325a9706e7388709ff5c83ecf5800901973d148a0cc9649b7a9d866138738"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_ShoeR_N.png",
+    "before": "01c0eeda84616412db8cdedc40a5e4d6aa921dd895b333a1ee9e33acf33c874a",
+    "after": "c3f3371f7c981839b7cbea7cc059b216cb4c44aee04827c11b1b49b671b87931"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_ShoeL_N.png",
+    "before": "79c93ae6afc5889ea544ef570eb8b8dec753ab812f55a1a7b46764be3d20a6e9",
+    "after": "e9b5ad423efa4e200431059d81ea86d5caa6c3d609ec084d5924ad149875496b"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_Bottom_N.png",
+    "before": "88efd554ab6c80d3b47c7f30b4ab4089be6ff09584c31faf0bc74839e73d8e1c",
+    "after": "103c3bde00db13e2c353883eb1a3aad4935b3cf961fc9231d1b4161692879559"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_Top_M.png",
+    "before": "f786494eefceddcd6d2a9649f89473dac156e31b3c5c11041c52fb9e276ad169",
+    "after": "926907ebb6eb6525fef332844c2ce5db39abd8f96cb2699a246c8813d5cf33ef"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_ShoeL_M.png",
+    "before": "76bff70515e76af14e0b361eeae3957e83b3a520ac2eb61535e66828b79b2a0b",
+    "after": "08dddc79c0326b92bd3e9353b649349a0cd1165ce556c3d23047028580abe569"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_Bottom_M.png",
+    "before": "576b80b67cf972de8adf68795790e72af6bc1f136de2f877208a47e26df2850b",
+    "after": "605f9042b3c0b15475984cdbe74216e12aff50fe8bbc97f5610f2f30b169715e"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_Top_N.png",
+    "before": "bba1951c04638871c421182397af1eb801124d98ec90be725e656db4ff19f82c",
+    "after": "b3394969932008dc0c63e20f2f2caeb7f2b6191e144ba7ab915cd45f2731a1cf"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_ShoeR_N.png",
+    "before": "126af05ca671e9f386aae8f544da86430c804365084d4007c639ee517d175e18",
+    "after": "ffb853d9708d12b36109864adfc5cffb7dfa363ee39bd8f2526c5dbfe0fede94"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_ShoeR_M.png",
+    "before": "a0cf3ca0c96abe4a914a494c3b77e0f70c1231b2f217b0c991383690252b6e24",
+    "after": "1f2323a296857e3d817f0c4b513633a0cf65ea4ee8136572a09e424dbc7aa698"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_ShoeL_M.png",
+    "before": "911d92d8dc576d261bffe3125341b8510f444cd8a476d8f6d71638e7b79adbe8",
+    "after": "ecf57b432aebf9319a15d97db9ea6779c7f789b2792a7ea1a9ee9fd9ec92a95b"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_ShoeL_N.png",
+    "before": "87ae3c24c25948d5803e95ce5d5188e38c274b5b098e68844fe76f09f52d772c",
+    "after": "57ad5a06166b0302d643d14f9bcd3633d59a8d1150218a0ea66e1171a542abba"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_Bottom_M.png",
+    "before": "e848ef517c207de4631b4f90d10dbcde71b9bd54fbf3a7c74ea71c38bea1b7ef",
+    "after": "06b6210967774fb16869db16370297d963303953485c6f957ceef7b2aa4a2543"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Female_Bottom_N.png",
+    "before": "f2a196c492de4c202d7987ee63614480157d6abd00ffc1af0d3910f257d2512e",
+    "after": "0cd0440ed51d87be8853872c75c5602d714b408a43638a1e6374df895244c28f"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_FabricAtlas.png",
+    "before": "65723e2da1488abe2716c3ee892196b25794f69b80bd67b32aaa65ec8f75826b",
+    "after": "79f8dc7cbba58946493a56d5c9fb77da6926fa3a333805c54730a6847b5718e9"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_Top_M.png",
+    "before": "a461b08776dd19a4cf7ab9a0b17b4b720a15ceacef3b040f0369a100bb634662",
+    "after": "9188b9f5e72e71f1f0dbe4c3a2aa1a793bb4ad8ce279beacd411e13c0aedebce"
+  },
+  {
+    "path": "Unity/Assets/Resources/Golf/HeroDetail/Golf_Male_Top_N.png",
+    "before": "3f0f97df97c7ca2ce9d0f958f391493d80fbcbadd068c65014498f88ebd70aef",
+    "after": "3112949f2d292773ce17820b5196963e4c0ecaf610d5fe8c125a4cffa3bcbf38"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_ShoeR_M.ktx",
+    "before": "fa27b713cb5544de611db8cd04af149a9798c26a48fb9047acaa72d977bcc743",
+    "after": "ff55d6fc25fc65bbb228938d1c4a2f2e31bb4efdaa647ff3ede1596b7c0798cb"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_ShoeR_N.ktx",
+    "before": "38daae1e130a35c8e8ce0d346537ae99f26affbc4b4ea971358d617f18e1ea37",
+    "after": "e4c4cf13cce2c5ec9f0dff7f25e0af5e6cbb33e5aee8585bb05e88baf3e3bc65"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_ShoeR_N.ktx",
+    "before": "467eda29a2a6ff98577138f6ccf3671dcb009b827c59eb94db578b5127174a9a",
+    "after": "ce1d21ff7736283de364d5fbfd4804bd0dd1fb2bbbc4a4a3c9826935e4d99c9f"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_ShoeR_M.ktx",
+    "before": "a438fb1ebf3affe80a6e1ecc0acc1be17daca33fde03efe71efb304eed78709f",
+    "after": "6f71ca2911251f06b2d04619dd1d021356959727108278325cf4955ede6b8c40"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_ShoeL_N.ktx",
+    "before": "35a76c028d2107ba70600cdef0fba2c951e061f4459e32d2dca6bb32969f624d",
+    "after": "79b7444afb205e273afbc1e67702efab1d2b25a413a0aeb5c4d3a71bb75c1c6f"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_Bottom_M.ktx",
+    "before": "51f5d75e1204106dfc27a7c64d3440253e1715caf4f11c865c9d1ecd376424a8",
+    "after": "c17e30492d984811f8031aff061409bbeeacb5337043598bb247ba33f6b3d43e"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_Bottom_M.ktx",
+    "before": "630fe3a569dadadbc1e9d21d0c79562d75f2f16b1a102f5f863478aec380a840",
+    "after": "60be4586495d8058c07f2054e0dd337dbed68728a931e08ef898dd4bfa4d769e"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_Top_M.ktx",
+    "before": "4896c58178f170a1109821c37c2defcaf1cce6d364c24fbc1cee8f54319ecf62",
+    "after": "152318e0be98e58ec4991aabe7ba265009233d5cebd35041a475cf5d7438156f"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_ShoeL_M.ktx",
+    "before": "94d792893dbaf287b74c9447bd44e957b837cbbb1bfb5e9a03624ec7ef103dd7",
+    "after": "93c5120465a8cb0c708d80d27d6b59eb8e38d0e32b93884d3f5019439b487c80"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_Bottom_N.ktx",
+    "before": "e9f0320a4a9c98a19cbc7cefd0829131772457c1f65e58e033f44cca45766778",
+    "after": "a1e704d38b6b6250c012ca0083292d78c80d965781e2ca1d976eb08d62a46834"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_Bottom_N.ktx",
+    "before": "ae71c5f170caa6da562c87bc28e7b82a473b6154cf65a9b9ddda15b1ff0fa518",
+    "after": "61a7571cb9c6597c3c3a39d543bd6fc8ad90450b768049aede10cdb350be60c6"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_Top_N.ktx",
+    "before": "998af969b38667e82223056e4e01ecbc98ff95b57d5fec278822e89189598cb6",
+    "after": "ab15025253cca814341b5c10109cefd8a3cce646a1d5608f49f5752a8b4a5145"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_ShoeL_M.ktx",
+    "before": "59f1bf6634b7ebc3655e4b31779fb9dbc50c1676e7c71a32e26700b9acadec81",
+    "after": "8ad4c7a52b887b5019b772a25e40a22cd1534be7bc9c7eaac258ef68ec4fb153"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_Top_M.ktx",
+    "before": "e1f2feae6b46c06a4d15eadb764a415990934392e4351aaeb337b9438048cc96",
+    "after": "beb21fe4347fedaa4aa8422a5796a9cd959e41818064eef26577f7b6d04e0034"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Male_Top_N.ktx",
+    "before": "48901fafc6c4ea5a6bd9f1836550988a2df189293ff4b3527794d8b6d8d9049a",
+    "after": "785c0258871b973817239dbc7a759986c0e16d342611c2a263be00a538fb34f8"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_Female_ShoeL_N.ktx",
+    "before": "1086e01cbad1b7d7026a53b129908e570479a7b2bc2c60f119b971391a6df868",
+    "after": "54fbe4d6c5e567b6080e9f6ce6ceced78f1906478b80acbc2bd63edccea9160a"
+  },
+  {
+    "path": "GolfArcade/Unity/CharacterAssets/MatchHero_GolfKit_FabricAtlas.ktx",
+    "before": "0aedfe407eea52672852eb759f3babb40f1e3ae4b45d601ed86c7efc2f87e3ee",
+    "after": "edee42bb46893edfe87d74c24bbcc0a8ee5f6b0cb8d89751eb06eb3ae0f6f4f8"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Tennis/MatchHeroLook.cs",
+    "before": "dc8fde537e19d82f6fe16d55a72b6acb8a3dac9db33a5a53ded9df505b0ba46a",
+    "after": "8c2eb2a90e0d54a7b5d04214f9e419c269da4f48c25bfa15268ab99909a99f7b"
+  },
+  {
+    "path": "Unity/Assets/Scripts/Game/HeroGolfer.cs",
+    "before": "bc720f802019582eaf4714b4fbc6192024fd88eb657410e3cf52b3ac074fee96",
+    "after": "3469a837df96bea93b5a53a1e9313fa070b9fea5f898a04a73ebebcd28f3726c"
+  },
+  {
+    "path": "Unity/Assets/Editor/MatchHeroLockerExport.cs",
+    "before": "a8798394379184ec85a07b7824c4e50641e017fd7a33eb3cddbd7cd3861bafb2",
+    "after": "1db74bfc37d3c0f9df512d61760aff7f67e58b7590e4b4142d98be0bd5ed7b85"
+  },
+  {
+    "path": "Unity/Assets/Editor/GolfGarmentRepair.cs",
+    "before": "62dc02430598b5fcf02ea3abc25948dc6b4eeb68969f0dfe62cf11e4305a642a",
+    "after": "76011105481e610bb30d02778f977df6ee048281874fbb5d37a7abd3211ce54c"
+  }
+]

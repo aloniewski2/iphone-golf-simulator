@@ -1,0 +1,21 @@
+{
+  "file": "coastal-tennis-resort-v1.blend",
+  "objects": 2690,
+  "meshes": 2664,
+  "collections": {
+    "01 Court - imported and finished": 15,
+    "02 Terraces and architecture": 436,
+    "03 Furniture and fixtures": 307,
+    "04 Landscaping": 1802,
+    "05 Coast and distant village": 125,
+    "06 Cameras and lighting": 4,
+    "07 Reference - hidden": 1
+  },
+  "court_source": "tennis court 3d model.fbx",
+  "reference_packed": true,
+  "cameras": [
+    "CAM 01 | behind-player gameplay",
+    "CAM 02 | resort overview",
+    "CAM 03 | clubhouse and court"
+  ]
+}

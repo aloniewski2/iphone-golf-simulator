@@ -1,0 +1,16 @@
+{
+  "changed_meshes": [
+    "Shorts_Default",
+    "Hat_Visor",
+    "Hair_Default",
+    "Body_Skin (legs only)"
+  ],
+  "piping_vertices": 856,
+  "armature_bones": 22,
+  "triangles": {
+    "Shorts_Default": 7530,
+    "Hat_Visor": 1856,
+    "Hair_Default": 6912,
+    "Body_Skin": 37819
+  }
+}

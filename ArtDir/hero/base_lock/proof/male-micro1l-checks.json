@@ -1,0 +1,1607 @@
+{
+ "created": "2026-10-02",
+ "brief": "01c_MALE_HEAD_Micro1l.txt (+ lips / stubble example added by Adnan mid-run)",
+ "start_blend_sha": "9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba",
+ "tag": "p6",
+ "delta_D_sha256": "b0ef1acc1aee7a06b0e3091133412a37d935464fe874f4c52f1006c11410da65",
+ "zone_audit": {
+  "zone": "start z >= 1.40 (head + neck zone); exact mask = vertices with start z >= 1.40 and referenced by a face (73 isolated eye-hole leftovers never move)",
+  "moved_total": 3788,
+  "moved_below_z_1_40": 0,
+  "min_z_of_moved": 1.421486496925354,
+  "max_z_of_moved": 1.6098260879516602,
+  "max_abs_x_moved_mm": 92.81358122825623,
+  "y_range_of_moved_mm": [
+   -168.9501702785492,
+   45.23631930351257
+  ],
+  "max_move_mm": 3.760775284823682,
+  "hands_moved": 0,
+  "arms_moved": 0,
+  "torso_pelvis_legs_feet_moved": 0,
+  "nape_border_moved_verts_y_gt_0": 398,
+  "moved_overlapping_chat9_nape_set": 88,
+  "chat9_nape_set_size": 21190,
+  "weld_ring_moved": 0,
+  "topology_identical": true,
+  "vertex_groups_identical": true,
+  "tris": 66158
+ },
+ "loop_drift_mm": {
+  "LOOP_mouth_seam": {
+   "max_mm": 1.8557155839982198,
+   "mean_mm": 0.7990011106052269
+  },
+  "LOOP_mouth_lip_upper": {
+   "max_mm": 2.589333640499071,
+   "mean_mm": 1.5013405550335146
+  },
+  "LOOP_mouth_lip_lower": {
+   "max_mm": 1.3032470578164812,
+   "mean_mm": 0.5764582948341508
+  },
+  "LOOP_nostril_L": {
+   "max_mm": 3.9444562070362455e-06,
+   "mean_mm": 3.9158440528501913e-07
+  },
+  "LOOP_nostril_R": {
+   "max_mm": 3.081739705682526e-06,
+   "mean_mm": 2.5906669387624057e-07
+  },
+  "LOOP_ala_L": {
+   "max_mm": 0.0019717049674518074,
+   "mean_mm": 0.00013911780703952875
+  },
+  "LOOP_ala_R": {
+   "max_mm": 0.0018565800574952746,
+   "mean_mm": 0.00013915213471487042
+  },
+  "LOOP_ear_attach_L": {
+   "max_mm": 0.0027578710973946707,
+   "mean_mm": 0.00015046199974668703
+  },
+  "LOOP_helix_L": {
+   "max_mm": 0.0001243358923458393,
+   "mean_mm": 7.367626700821156e-06
+  },
+  "LOOP_concha_L": {
+   "max_mm": 0.0,
+   "mean_mm": 0.0
+  },
+  "LOOP_ear_attach_R": {
+   "max_mm": 0.0026608336051447967,
+   "mean_mm": 0.0001441461251928498
+  },
+  "LOOP_helix_R": {
+   "max_mm": 0.00012615031501350682,
+   "mean_mm": 7.327262961547116e-06
+  },
+  "LOOP_concha_R": {
+   "max_mm": 0.0,
+   "mean_mm": 0.0
+  },
+  "LOOP_jaw_ear_L": {
+   "max_mm": 1.9447891075741979,
+   "mean_mm": 0.6662833685726203
+  },
+  "LOOP_jaw_ear_R": {
+   "max_mm": 1.9200969508708794,
+   "mean_mm": 0.6588146998346832
+  },
+  "LOOP_lid_margin_L": {
+   "max_mm": 5.971724289241763e-06,
+   "mean_mm": 4.7634930868112993e-07
+  },
+  "LOOP_lid_margin_R": {
+   "max_mm": 5.245728652387073e-06,
+   "mean_mm": 2.7483986942969674e-07
+  }
+ },
+ "loop_drift_summary": {
+  "mouth_loops_max_mm": 2.589333640499071,
+  "nose_ala_nostril_max_mm": 0.0019717049674518074,
+  "eye_lid_max_mm": 5.971724289241763e-06,
+  "ear_helix_concha_attach_max_mm": 0.0027578710973946707,
+  "jaw_ear_loops_max_mm": 1.9447891075741979
+ },
+ "kill_neck_jaw_crease": {
+  "lateral_footprint_verts": 194,
+  "now_micro1k_vs_pre_relief_normal_mm": {
+   "min": -0.6528998238132498,
+   "max": 1.8373308946329778
+  },
+  "micro1l_vs_pre_relief_normal_mm": {
+   "min": -1.000202786810262,
+   "max": 1.8310054664870392
+  },
+  "lowpass_residual_on_lateral_footprint": {
+   "pre_relief_micro1i_state": {
+    "min_mm": -1.0612112098661064,
+    "p05_mm": -0.5382489053286872,
+    "rms_mm": 0.26533912903129475
+   },
+   "start_now_micro1k": {
+    "min_mm": -1.0456194804845196,
+    "p05_mm": -0.5572906784296361,
+    "rms_mm": 0.28071497951165403
+   },
+   "p6": {
+    "min_mm": -1.0439840994089573,
+    "p05_mm": -0.5232432697637781,
+    "rms_mm": 0.28294249768236934
+   }
+  },
+  "pass_rule": "recess on the old lateral footprint >= -1.5 mm vs the pre-relief surface AND low-pass groove residual not worse than the pre-relief surface by > 0.3 mm (Micro1k definition)"
+ },
+ "neck_below_jaw": {
+  "verts_more_than_8mm_below_arc": 1329,
+  "moved": 640,
+  "max_move_mm": 2.428141359727635
+ },
+ "jaw_crest": {
+  "arc_length_mm_per_side": {
+   "1": 170.87771749559505,
+   "-1": 169.6824439584562
+  },
+  "crest_height_along_arc": [
+   {
+    "arc_mm_from_chin_midline": 0,
+    "crest_height_mm_max": 2.0551715362521756,
+    "crest_height_mm_p50": 2.044029827561447
+   },
+   {
+    "arc_mm_from_chin_midline": 10,
+    "crest_height_mm_max": 2.3120215466626735,
+    "crest_height_mm_p50": 2.2561818503522084
+   },
+   {
+    "arc_mm_from_chin_midline": 20,
+    "crest_height_mm_max": 2.4148119120340117,
+    "crest_height_mm_p50": 2.4013506726468705
+   },
+   {
+    "arc_mm_from_chin_midline": 30,
+    "crest_height_mm_max": 2.8451012151967072,
+    "crest_height_mm_p50": 2.68369996026569
+   },
+   {
+    "arc_mm_from_chin_midline": 40,
+    "crest_height_mm_max": 2.9950231303948764,
+    "crest_height_mm_p50": 2.839436081383667
+   },
+   {
+    "arc_mm_from_chin_midline": 50,
+    "crest_height_mm_max": 3.0234099424909027,
+    "crest_height_mm_p50": 2.8961296910734777
+   },
+   {
+    "arc_mm_from_chin_midline": 60,
+    "crest_height_mm_max": 3.0089674518237257,
+    "crest_height_mm_p50": 2.7212317264160824
+   },
+   {
+    "arc_mm_from_chin_midline": 70,
+    "crest_height_mm_max": 2.878236610400977,
+    "crest_height_mm_p50": 2.735701432150454
+   },
+   {
+    "arc_mm_from_chin_midline": 80,
+    "crest_height_mm_max": 2.947292156558485,
+    "crest_height_mm_p50": 2.7251975647612667
+   },
+   {
+    "arc_mm_from_chin_midline": 90,
+    "crest_height_mm_max": 2.7116716287447704,
+    "crest_height_mm_p50": 2.3955506131070234
+   },
+   {
+    "arc_mm_from_chin_midline": 100,
+    "crest_height_mm_max": 2.587129677228713,
+    "crest_height_mm_p50": 2.3150427630996737
+   },
+   {
+    "arc_mm_from_chin_midline": 110,
+    "crest_height_mm_max": 2.289043705584407,
+    "crest_height_mm_p50": 1.9013750385071349
+   },
+   {
+    "arc_mm_from_chin_midline": 120,
+    "crest_height_mm_max": 1.6012717563286734,
+    "crest_height_mm_p50": 1.2795410730633723
+   },
+   {
+    "arc_mm_from_chin_midline": 130,
+    "crest_height_mm_max": 0.5764959699690785,
+    "crest_height_mm_p50": 0.24756515019810427
+   },
+   {
+    "arc_mm_from_chin_midline": 140,
+    "crest_height_mm_max": 0.15538747159659083,
+    "crest_height_mm_p50": -0.08218598755591747
+   },
+   {
+    "arc_mm_from_chin_midline": 150,
+    "crest_height_mm_max": 0.13920324271086584,
+    "crest_height_mm_p50": 0.0009021731578859032
+   },
+   {
+    "arc_mm_from_chin_midline": 160,
+    "crest_height_mm_max": 0.06193662088373546,
+    "crest_height_mm_p50": -0.049579202704559
+   },
+   {
+    "arc_mm_from_chin_midline": 170,
+    "crest_height_mm_max": -0.001959506161002458,
+    "crest_height_mm_p50": -0.016427529559399225
+   }
+  ],
+  "max_geometric_crest_mm": 3.0234099424909027,
+  "verts_gt_0_3mm": 375,
+  "params": "B 3.2 mm (peak, jaw body), B_ang 1.6 at the gonial angle/ramus, chin sides x0.5 (silhouette-safe), sigma up 5 mm (11 mm at the angle/ramus: no pocket), sigma down 4.5 mm, no recess, along 8x-smoothed normals, field smoothed 2x; shading: analytic crest-slope tilt of the custom normals (nboost 0.8 on the full-height crest) - positions untouched",
+  "placement": "crest on the mesh natural jaw border (n_z = -0.5 iso-line + plate angle/ramus points) extended round the chin; plate tone-edge is stubble pigment 6-12 mm lower (Micro1k note, unchanged)"
+ },
+ "jaw_shading_boost": {
+  "max_extra_tilt_deg": 13.487198723121557,
+  "p99_deg": 12.92436413446186,
+  "verts_gt_1deg": 637
+ },
+ "jaw_rows_vs_plate_mm_(front_y,back_y,half_width)": {
+  "228": {
+   "start": [
+    1.7139865765358753,
+    -0.7826824385357006,
+    0.2165295083224189
+   ],
+   "now": [
+    0.8804814639900571,
+    -0.7826824385357006,
+    -0.10074412625467322
+   ]
+  },
+  "232": {
+   "start": [
+    -1.4976187350176084,
+    -1.0694801104123366,
+    -0.16793736393684588
+   ],
+   "now": [
+    -1.6305919290298954,
+    -1.0694801104123366,
+    -0.4922985580595035
+   ]
+  },
+  "236": {
+   "start": [
+    -0.9123098554324471,
+    -1.2032386387702125,
+    0.6602720087051234
+   ],
+   "now": [
+    -1.4189480769396523,
+    -1.2032386387702125,
+    0.3513805535241832
+   ]
+  },
+  "240": {
+   "start": [
+    0.25896632801453157,
+    -1.3317998122436558,
+    1.9588946533757174
+   ],
+   "now": [
+    0.2777314371617545,
+    -1.3317998122436558,
+    1.6574726213976905
+   ]
+  },
+  "244": {
+   "start": [
+    -1.1540394160338419,
+    -1.0282441140765306,
+    1.742020407894576
+   ],
+   "now": [
+    -1.183484862643247,
+    -1.0282441140765306,
+    1.318923485570958
+   ]
+  },
+  "248": {
+   "start": [
+    -1.2424106996950235,
+    -2.0290758588290823,
+    1.5978778146291117
+   ],
+   "now": [
+    -1.3581940547785776,
+    -2.0290758588290823,
+    1.4955362137075157
+   ]
+  },
+  "252": {
+   "start": [
+    -0.7056893542038145,
+    -1.9033831567989157,
+    1.7361019629430763
+   ],
+   "now": [
+    -0.9624906675730349,
+    -1.9033831567989157,
+    1.7363207787418484
+   ]
+  },
+  "256": {
+   "start": [
+    0.031328190852386584,
+    -3.1717019234382553,
+    1.6040660192746108
+   ],
+   "now": [
+    -0.5891580609457825,
+    -3.1717019234382553,
+    1.603745558949654
+   ]
+  },
+  "260": {
+   "start": [
+    2.303739812732797,
+    -4.321327794064543,
+    1.2809492895450858
+   ],
+   "now": [
+    0.9431920962899576,
+    -4.321327794064543,
+    1.2809326095637315
+   ]
+  },
+  "264": {
+   "start": [
+    1.8819441851066487,
+    -5.232668829797109,
+    0.9661815232358817
+   ],
+   "now": [
+    -0.26310388889053127,
+    -5.232668829797109,
+    0.9661556612572952
+   ]
+  }
+ },
+ "jaw_rows_half_width_max_abs_err_mm": {
+  "start": 1.9588946533757174,
+  "now": 1.7363207787418484
+ },
+ "profile_jaw_rows_max_abs_err_mm": {
+  "front_y": {
+   "start": 2.303739812732797,
+   "now": 1.6305919290298954
+  },
+  "back_y": {
+   "start": 5.232668829797109,
+   "now": 5.232668829797109
+  }
+ },
+ "q3_contour_jaw_cheek_rows": {
+  "within_3mm": {
+   "start": 34,
+   "now": 30,
+   "of": 60
+  },
+  "mean_abs_err_mm": {
+   "start": 3.8760701898953935,
+   "now": 4.031028627324244
+  },
+  "cheek_rows_500_560_mean_abs_mm": {
+   "start": 4.379124373132428,
+   "now": 4.4354352984177945
+  },
+  "jaw_bottom_rows_566_578_mean_abs_mm": {
+   "start": 1.8638117628469644,
+   "now": 2.429604208919466
+  }
+ },
+ "q3_contour_vs_plate_mm_rows470-590": {
+  "q3L_470": {
+   "start": [
+    -19.130626079266484,
+    2.884295327553385
+   ],
+   "now": [
+    -19.130626079266484,
+    2.884295327553385
+   ]
+  },
+  "q3L_476": {
+   "start": [
+    3.9036019863645017,
+    2.8087689409451784
+   ],
+   "now": [
+    3.9036019863645017,
+    2.8087689409451784
+   ]
+  },
+  "q3L_482": {
+   "start": [
+    5.661086039306538,
+    2.908322841715938
+   ],
+   "now": [
+    5.661086039306538,
+    2.908322841715938
+   ]
+  },
+  "q3L_488": {
+   "start": [
+    -0.7330040742107796,
+    6.843547760901144
+   ],
+   "now": [
+    -0.7330040742107796,
+    6.843547760901144
+   ]
+  },
+  "q3L_494": {
+   "start": [
+    2.415862845138066,
+    7.2420773858012275
+   ],
+   "now": [
+    2.4247407733085145,
+    7.2420773858012275
+   ]
+  },
+  "q3L_500": {
+   "start": [
+    3.4524345812244,
+    9.509118380944884
+   ],
+   "now": [
+    4.4108303825311825,
+    9.509118380944884
+   ]
+  },
+  "q3L_506": {
+   "start": [
+    2.188425897452681,
+    12.041981548853084
+   ],
+   "now": [
+    3.8082294518352167,
+    12.041981548853084
+   ]
+  },
+  "q3L_512": {
+   "start": [
+    0.668600319438181,
+    14.53991468750773
+   ],
+   "now": [
+    1.963229038629891,
+    14.53991468750773
+   ]
+  },
+  "q3L_518": {
+   "start": [
+    -1.7285573071235103,
+    16.020133474663513
+   ],
+   "now": [
+    -0.23273538180583273,
+    16.020133474663513
+   ]
+  },
+  "q3L_524": {
+   "start": [
+    -3.0087450657330836,
+    12.039402277113357
+   ],
+   "now": [
+    -1.1566254579806818,
+    12.039402261783037
+   ]
+  },
+  "q3L_530": {
+   "start": [
+    -2.881570111067625,
+    7.935634895909441
+   ],
+   "now": [
+    -1.24775915084586,
+    7.935605685165449
+   ]
+  },
+  "q3L_536": {
+   "start": [
+    -2.446478100491898,
+    5.631079580171237
+   ],
+   "now": [
+    -1.0666964696839147,
+    5.6310434270826795
+   ]
+  },
+  "q3L_542": {
+   "start": [
+    -2.078479453959597,
+    5.488506526093847
+   ],
+   "now": [
+    -1.0059954006527785,
+    5.4868794404619
+   ]
+  },
+  "q3L_548": {
+   "start": [
+    -0.3818589659068026,
+    4.313260831401962
+   ],
+   "now": [
+    0.6294697756504656,
+    4.311189945510648
+   ]
+  },
+  "q3L_554": {
+   "start": [
+    -1.000297173571224,
+    2.9098242733512794
+   ],
+   "now": [
+    -0.174564695700437,
+    2.909258186675246
+   ]
+  },
+  "q3L_560": {
+   "start": [
+    -2.6350785715266225,
+    0.7726928514305018
+   ],
+   "now": [
+    -1.787544609852395,
+    0.7725236696636348
+   ]
+  },
+  "q3L_566": {
+   "start": [
+    -3.466914771680418,
+    2.5104441396912867
+   ],
+   "now": [
+    -3.283041820232431,
+    2.510418765413526
+   ]
+  },
+  "q3L_572": {
+   "start": [
+    -2.400076332341433,
+    2.0946800809668784
+   ],
+   "now": [
+    -3.7435739894200926,
+    2.0946816183264105
+   ]
+  },
+  "q3L_578": {
+   "start": [
+    -2.103442215066623,
+    0.36936838150851775
+   ],
+   "now": [
+    -4.288760832923365,
+    0.36936859786059734
+   ]
+  },
+  "q3L_584": {
+   "start": [
+    -5.048289310843319,
+    -5.565631415360313
+   ],
+   "now": [
+    -7.571773866633048,
+    -5.565631415430529
+   ]
+  },
+  "q3L_590": {
+   "start": [
+    -43.35863082464362,
+    -14.405079943488929
+   ],
+   "now": [
+    -55.066455190966536,
+    -14.405079943489818
+   ]
+  },
+  "q3R_470": {
+   "start": [
+    -22.444823948298954,
+    0.9144148365208364
+   ],
+   "now": [
+    -22.444823948298954,
+    0.9144148365208364
+   ]
+  },
+  "q3R_476": {
+   "start": [
+    3.8543160982099947,
+    0.7746496535843662
+   ],
+   "now": [
+    3.8543161122010186,
+    0.7746496535843662
+   ]
+  },
+  "q3R_482": {
+   "start": [
+    5.620382247197379,
+    3.471597012638601
+   ],
+   "now": [
+    5.620382634980131,
+    3.471597012638601
+   ]
+  },
+  "q3R_488": {
+   "start": [
+    -0.004520253224275839,
+    3.297103465926168
+   ],
+   "now": [
+    -0.004520253224275839,
+    3.297103465926168
+   ]
+  },
+  "q3R_494": {
+   "start": [
+    4.301173159000261,
+    3.5578844317936693
+   ],
+   "now": [
+    4.322611411134709,
+    3.5578844317936693
+   ]
+  },
+  "q3R_500": {
+   "start": [
+    3.3584903032199818,
+    5.669126176497395
+   ],
+   "now": [
+    4.747531669949609,
+    5.669126176497395
+   ]
+  },
+  "q3R_506": {
+   "start": [
+    3.8105606095221165,
+    8.133160376870055
+   ],
+   "now": [
+    5.549759769384233,
+    8.133160376870055
+   ]
+  },
+  "q3R_512": {
+   "start": [
+    2.617521917574189,
+    9.479184852356932
+   ],
+   "now": [
+    3.8130861326813323,
+    9.479184852356932
+   ]
+  },
+  "q3R_518": {
+   "start": [
+    0.5816595828849951,
+    9.765763367373726
+   ],
+   "now": [
+    1.753827802763214,
+    9.765763367373726
+   ]
+  },
+  "q3R_524": {
+   "start": [
+    -0.561897507024094,
+    9.84795155642055
+   ],
+   "now": [
+    1.1696317509469707,
+    9.84795155642055
+   ]
+  },
+  "q3R_530": {
+   "start": [
+    -0.45449874567348586,
+    8.812629594249204
+   ],
+   "now": [
+    1.6924075207600577,
+    8.812598331833938
+   ]
+  },
+  "q3R_536": {
+   "start": [
+    -1.2032864528997795,
+    3.413617479213442
+   ],
+   "now": [
+    0.5960144781009151,
+    3.4131506449825957
+   ]
+  },
+  "q3R_542": {
+   "start": [
+    -0.5346845959006122,
+    3.5035098309974364
+   ],
+   "now": [
+    0.7042274096480144,
+    3.501390897427072
+   ]
+  },
+  "q3R_548": {
+   "start": [
+    0.3381737767249523,
+    1.9066128194004042
+   ],
+   "now": [
+    1.6908673761698045,
+    1.8989892081196902
+   ]
+  },
+  "q3R_554": {
+   "start": [
+    -0.39426620823804565,
+    1.8091629901241724
+   ],
+   "now": [
+    0.6883600171840569,
+    1.8062209686714328
+   ]
+  },
+  "q3R_560": {
+   "start": [
+    -2.0994474546716826,
+    0.7141913450531001
+   ],
+   "now": [
+    -1.031837176788083,
+    0.7133351219728186
+   ]
+  },
+  "q3R_566": {
+   "start": [
+    -2.9073474259336987,
+    0.8153820499819567
+   ],
+   "now": [
+    -2.7213389961233956,
+    0.8153548498216171
+   ]
+  },
+  "q3R_572": {
+   "start": [
+    -3.1085525619379077,
+    1.6132256350582461
+   ],
+   "now": [
+    -3.918672846537529,
+    1.6132374487327144
+   ]
+  },
+  "q3R_578": {
+   "start": [
+    -0.8995057266165347,
+    -0.0768018333800708
+   ],
+   "now": [
+    -3.7200001438546924,
+    -0.07680059778721925
+   ]
+  },
+  "q3R_584": {
+   "start": [
+    0.9619944617462475,
+    -4.587383649183002
+   ],
+   "now": [
+    -1.989322464618155,
+    -4.587383650020701
+   ]
+  },
+  "q3R_590": {
+   "start": [
+    -53.9062832174702,
+    -12.042240491606996
+   ],
+   "now": [
+    -59.44804012172161,
+    -12.042240491607885
+   ]
+  }
+ },
+ "cheek_defat": {
+  "region": "face-lateral cheek (Micro1k footprint, weight>0.5 for the deviation metric, >0.02 for displacement stats)",
+  "verts_w_gt_0_5": 914,
+  "verts_w_gt_0_02": 1379,
+  "deviation_from_micro1h_smooth_cheek": {
+   "start_now_micro1k": {
+    "rms_mm": 0.8689909476628669,
+    "p95_abs_mm": 1.6558200329250767,
+    "max_ridge_mm": 2.5147166321003476,
+    "max_hollow_mm": -3.665337910714492
+   },
+   "p6": {
+    "rms_mm": 1.6020448247473575,
+    "p95_abs_mm": 2.6008899894617703,
+    "max_ridge_mm": 1.7091531117422667,
+    "max_hollow_mm": -3.665962466655541
+   }
+  },
+  "normal_displacement_vs_now_mm": {
+   "mean": -1.0591137306273908,
+   "p05": -2.461406403041492,
+   "min": -3.125620246192115,
+   "max": 1.0744531497414591,
+   "mean_on_core_w_gt_0_5": -1.5121621975169026
+  },
+  "removed_volume_cm3_both_cheeks": 30.598279161889238,
+  "cheek_area_cm2": 258.1770800858908,
+  "method": "Taubin low-pass blend (220 its) on the cheek footprint + broad smooth deflation 4.0 mm + buccal hollow 2.5 mm along smoothed normals; protection ramps 8-34 mm mouth / 6-30 nose / 10-30 eye / 14-36 ear / 3-16 mm above the mandible arc; silhouette guard never below 0.35 (no creases)",
+  "pad_prominence_over_membrane_mm": {
+   "before": {
+    "mean": 5.992126958579234,
+    "median": 5.859686113970792,
+    "p95": 11.431342832525834,
+    "max": 12.678187645114372
+   },
+   "after": {
+    "mean": 4.646611822525274,
+    "median": 4.235691122031802,
+    "p95": 10.03183721525297,
+    "max": 12.655415354244747
+   },
+   "mean_reduction_pct": 22.454716753414537,
+   "median_reduction_pct": 27.714709633798062,
+   "p95_reduction_pct": 12.242705321467762,
+   "note": "proxy for CHEEK_DEFAT_EYE: how far the cheek pad bulges above the surface spanning its own border (smaller = less padded). The Micro1h-deviation metric of Micro1k is NOT used: it rewards staying close to a surface with its own volume, Micro1l deliberately removes volume."
+  }
+ },
+ "lips": {
+  "plate_front_mm": {
+   "x": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18
+   ],
+   "seam": [
+    1506.0,
+    1506.12,
+    1506.24,
+    1506.42,
+    1506.66,
+    1506.9,
+    1507.1000000000001,
+    1507.3000000000002,
+    1507.52,
+    1507.76
+   ],
+   "upper_border": [
+    1513.8,
+    1514.3333333333333,
+    1514.8333333333333,
+    1515.3,
+    1515.5,
+    1515.5,
+    1515.3,
+    1514.85,
+    1514.4,
+    1513.9
+   ],
+   "lower_border": [
+    1496.8,
+    1496.84,
+    1496.88,
+    1496.98,
+    1497.14,
+    1497.3,
+    1497.66,
+    1498.02,
+    1498.52,
+    1499.16
+   ]
+  },
+  "note": "plate: curves traced on the front plate with a gridded overlay (r2_analysis/lip_overlay.py): seam = centre of the dark mouth line, upper/lower = visible vermilion borders; 1 plate row = 1.30 mm",
+  "start": {
+   "seam": [
+    1506.4357577507972,
+    1506.4631266540453,
+    1506.486703413879,
+    1506.5149233401512,
+    1506.8358935072688,
+    1507.1251714907226,
+    1506.6963426119037,
+    1506.7788690957293,
+    1507.3159207967801,
+    1507.5439817680453
+   ],
+   "upper_loop": [
+    1513.3836269378662,
+    1513.4894176519947,
+    1513.2003806165771,
+    1513.0595454234244,
+    1512.985344164042,
+    1512.5669689662075,
+    1512.34642385949,
+    1512.3379185713136,
+    1512.3206490096675,
+    1512.4241591729813
+   ],
+   "lower_loop": [
+    1497.2437053374692,
+    1497.2634689464157,
+    1497.311625530915,
+    1497.3986125187855,
+    1497.5074607498827,
+    1497.5784605476927,
+    1497.7598414585332,
+    1498.4529692127453,
+    1499.0888241372186,
+    1499.5557192892802
+   ]
+  },
+  "p6": {
+   "seam": [
+    1506.1420715029842,
+    1506.2538915417913,
+    1506.4049582274608,
+    1506.5600701623457,
+    1507.0337057789811,
+    1507.5300056075307,
+    1507.1942970239927,
+    1507.3318673321946,
+    1507.8901684797793,
+    1507.9909773624943
+   ],
+   "upper_loop": [
+    1513.8218305887247,
+    1514.1523901521582,
+    1514.2197580287636,
+    1514.4296326977483,
+    1514.6867940639336,
+    1514.5666267706897,
+    1514.4759149885922,
+    1514.2859096002655,
+    1513.9344047320883,
+    1513.5556227762768
+   ],
+   "lower_loop": [
+    1496.840094620124,
+    1496.8675062540542,
+    1496.9246112298574,
+    1497.0360677054623,
+    1497.1975728555499,
+    1497.345783987328,
+    1497.5412190648617,
+    1498.15621787207,
+    1498.7028733163143,
+    1499.1588478930764
+   ]
+  },
+  "profile_silhouette_z1480_1524_mm": {
+   "mean_abs_err_L_R_start": [
+    0.7865410203407693,
+    1.0491071633703761
+   ],
+   "mean_abs_err_L_R_now": [
+    0.8667903175054631,
+    0.8393975079054942
+   ],
+   "max_abs_err_L_R_start": [
+    1.5871292999657385,
+    2.69967426006167
+   ],
+   "max_abs_err_L_R_now": [
+    2.5998900480820453,
+    1.8006867662848265
+   ],
+   "upper_lip_rows_1514_1520_mean_err_L_R_start": [
+    0.8282872745158869,
+    2.4587715781654538
+   ],
+   "upper_lip_rows_1514_1520_mean_err_L_R_now": [
+    -0.20182068491172345,
+    1.4286636187378434
+   ]
+  },
+  "plan_curves_mm": {
+   "seam_old": [
+    1506.44,
+    1506.46,
+    1506.49,
+    1506.51,
+    1506.84,
+    1507.13,
+    1506.7,
+    1506.78,
+    1507.32,
+    1507.54,
+    1507.74,
+    1508.2,
+    1508.84,
+    1509.32,
+    1509.75
+   ],
+   "seam": [
+    1506.0,
+    1506.12,
+    1506.24,
+    1506.42,
+    1506.66,
+    1506.9,
+    1507.1,
+    1507.3,
+    1507.52,
+    1507.76,
+    1508.0,
+    1508.32,
+    1508.64,
+    1509.0,
+    1509.4
+   ],
+   "up_old": [
+    1513.38,
+    1513.49,
+    1513.2,
+    1513.06,
+    1512.99,
+    1512.57,
+    1512.35,
+    1512.34,
+    1512.32,
+    1512.42,
+    1512.67,
+    1513.08,
+    1513.26,
+    1513.04,
+    1512.72
+   ],
+   "up": [
+    1513.8,
+    1514.33,
+    1514.83,
+    1515.3,
+    1515.5,
+    1515.5,
+    1515.3,
+    1514.85,
+    1514.4,
+    1513.9,
+    1513.4,
+    1512.84,
+    1512.28,
+    1511.78,
+    1511.34
+   ],
+   "lo_old": [
+    1497.24,
+    1497.26,
+    1497.31,
+    1497.4,
+    1497.51,
+    1497.58,
+    1497.76,
+    1498.45,
+    1499.09,
+    1499.56,
+    1500.32,
+    1501.19,
+    1502.41,
+    1503.95,
+    1506.05
+   ],
+   "lo": [
+    1496.8,
+    1496.84,
+    1496.88,
+    1496.98,
+    1497.14,
+    1497.3,
+    1497.66,
+    1498.02,
+    1498.52,
+    1499.16,
+    1499.8,
+    1500.76,
+    1501.72,
+    1502.97,
+    1504.5
+   ]
+  },
+  "vermilion_height_at_center_mm": {
+   "start": {
+    "upper": 6.947869187069045,
+    "lower": 9.192052413327929
+   },
+   "now": {
+    "upper": 7.679759085740443,
+    "lower": 9.301976882860117
+   },
+   "plate": {
+    "upper": 7.7999999999999545,
+    "lower": 9.200000000000045
+   }
+  }
+ },
+ "face_m": {
+  "per_slot": {
+   "Face_Pupil": {
+    "faces_start": 128,
+    "faces_now": 128,
+    "identical": true
+   },
+   "Face_Iris": {
+    "faces_start": 192,
+    "faces_now": 192,
+    "identical": true
+   },
+   "Face_Limbal": {
+    "faces_start": 64,
+    "faces_now": 64,
+    "identical": true
+   },
+   "Face_Sclera": {
+    "faces_start": 640,
+    "faces_now": 640,
+    "identical": true
+   },
+   "Face_Catch": {
+    "faces_start": 20,
+    "faces_now": 20,
+    "identical": true
+   },
+   "Face_BrowSoft": {
+    "faces_start": 248,
+    "faces_now": 248,
+    "identical": true
+   },
+   "Face_Brow": {
+    "faces_start": 468,
+    "faces_now": 468,
+    "identical": true
+   },
+   "Face_LidLine": {
+    "faces_start": 430,
+    "faces_now": 430,
+    "identical": true
+   },
+   "Face_LidCrease": {
+    "faces_start": 78,
+    "faces_now": 78,
+    "identical": true
+   },
+   "Face_LipUp": {
+    "faces_start": 172,
+    "faces_now": 282,
+    "identical": false
+   },
+   "Face_Lip": {
+    "faces_start": 172,
+    "faces_now": 282,
+    "identical": false
+   },
+   "Face_Seam": {
+    "faces_start": 110,
+    "faces_now": 126,
+    "identical": false
+   },
+   "Face_Nostril": {
+    "faces_start": 60,
+    "faces_now": 60,
+    "identical": true
+   }
+  },
+  "verts": [
+   3322,
+   3578
+  ],
+  "nonlip_slots_bit_identical": true,
+  "rebuilt_slots": [
+   "Face_Lip",
+   "Face_LipUp",
+   "Face_Seam"
+  ],
+  "note": "only the lip + mouth-seam paint strips were rebuilt (they must follow the new lip surface); eyes, brows, lids, nostril paint are face-for-face identical; no stubble, no sticker volume (strip lift 0.34 mm + poke-through control)"
+ },
+ "silhouette_pct": {
+  "body_bald_front": 4.13,
+  "body_bald_back": 4.7508,
+  "withface_bald_front": 4.13,
+  "withface_bald_back": 4.7508
+ },
+ "silhouette_pct_start": {
+  "body_bald_front": 4.1273,
+  "body_bald_back": 4.7467,
+  "withface_bald_front": 4.1273,
+  "withface_bald_back": 4.7467
+ },
+ "self_intersections": {
+  "start": 7,
+  "now": 7
+ },
+ "normals": {
+  "far_from_edit": {
+   "corners": 119100,
+   "max_angle_deg": 0.04423465579748154,
+   "changed_corners_gt_0_05deg": 0
+  },
+  "edit_region": {
+   "corners": 14026,
+   "mean_rotation_deg": 3.3215317726135254,
+   "max_rotation_deg": 22.590099334716797
+  },
+  "custom_normals_present": true
+ },
+ "front_jaw_line": {
+  "per_x": {
+   "x_mm": [
+    -70,
+    -60,
+    -50,
+    -40,
+    -30,
+    -20,
+    -10,
+    0,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+   ],
+   "rows": {
+    "PLATE": {
+     "jaw_line_z_mm": [
+      1493.3,
+      1482.9,
+      1472.5,
+      1466.0,
+      1458.1,
+      1454.2,
+      1451.6,
+      1451.6,
+      1452.9,
+      1454.2,
+      1458.1,
+      1466.0,
+      1472.5,
+      1481.6,
+      1493.3
+     ],
+     "edge_contrast_lum": [
+      24.5,
+      13.4,
+      18.0,
+      26.3,
+      37.7,
+      44.2,
+      48.2,
+      49.3,
+      54.6,
+      46.1,
+      39.0,
+      28.0,
+      23.4,
+      12.5,
+      20.9
+     ]
+    },
+    "Micro1k": {
+     "jaw_line_z_mm": [
+      1492.7,
+      1480.3,
+      1473.8,
+      1469.2,
+      1464.0,
+      1458.1,
+      1456.2,
+      1456.2,
+      1456.8,
+      1458.1,
+      1463.3,
+      1469.2,
+      1474.4,
+      1480.3,
+      1494.0
+     ],
+     "edge_contrast_lum": [
+      6.8,
+      25.3,
+      26.4,
+      36.1,
+      35.3,
+      31.1,
+      42.6,
+      45.9,
+      37.5,
+      19.1,
+      16.3,
+      18.8,
+      16.2,
+      11.5,
+      7.8
+     ]
+    },
+    "Micro1l_r1": {
+     "jaw_line_z_mm": [
+      1493.3,
+      1479.7,
+      1474.4,
+      1470.5,
+      1466.6,
+      1463.3,
+      1458.8,
+      1459.4,
+      1460.1,
+      1465.3,
+      1468.6,
+      1469.9,
+      1474.4,
+      1479.0,
+      1494.7
+     ],
+     "edge_contrast_lum": [
+      18.5,
+      32.8,
+      46.0,
+      57.5,
+      56.0,
+      59.5,
+      68.5,
+      70.3,
+      61.1,
+      46.0,
+      40.6,
+      32.2,
+      25.8,
+      10.9,
+      13.3
+     ]
+    },
+    "Micro1l": {
+     "jaw_line_z_mm": [
+      1493.3,
+      1479.7,
+      1473.1,
+      1467.3,
+      1462.0,
+      1456.8,
+      1454.9,
+      1454.9,
+      1455.5,
+      1458.8,
+      1462.0,
+      1467.9,
+      1473.1,
+      1479.0,
+      1494.7
+     ],
+     "edge_contrast_lum": [
+      18.5,
+      33.1,
+      34.0,
+      40.6,
+      36.1,
+      33.9,
+      45.8,
+      49.4,
+      43.4,
+      33.5,
+      23.3,
+      22.8,
+      17.8,
+      11.1,
+      13.3
+     ]
+    }
+   }
+  },
+  "summary_x20_60": {
+   "Micro1k": {
+    "jaw_line_z_err_vs_plate_mean_mm": 3.5000000000000173,
+    "jaw_line_z_err_vs_plate_max_mm": 5.900000000000091,
+    "edge_contrast_mean_lum": 27.85384615384616,
+    "plate_edge_contrast_mean_lum": 33.900000000000006,
+    "edge_contrast_at_x_0_10_20_30_40_50_60": [
+     45.9,
+     37.5,
+     19.1,
+     16.3,
+     18.8,
+     16.2,
+     11.5
+    ]
+   },
+   "Micro1l_r1": {
+    "jaw_line_z_err_vs_plate_mean_mm": 6.107692307692314,
+    "jaw_line_z_err_vs_plate_max_mm": 11.099999999999909,
+    "edge_contrast_mean_lum": 46.707692307692305,
+    "plate_edge_contrast_mean_lum": 33.900000000000006,
+    "edge_contrast_at_x_0_10_20_30_40_50_60": [
+     70.3,
+     61.1,
+     46.0,
+     40.6,
+     32.2,
+     25.8,
+     10.9
+    ]
+   },
+   "Micro1l": {
+    "jaw_line_z_err_vs_plate_mean_mm": 2.646153846153853,
+    "jaw_line_z_err_vs_plate_max_mm": 4.599999999999909,
+    "edge_contrast_mean_lum": 32.67692307692308,
+    "plate_edge_contrast_mean_lum": 33.900000000000006,
+    "edge_contrast_at_x_0_10_20_30_40_50_60": [
+     49.4,
+     43.4,
+     33.5,
+     23.3,
+     22.8,
+     17.8,
+     11.1
+    ]
+   }
+  },
+  "underside_outline_min_z_mm_at_x_20_30_40_50_60": {
+   "Micro1k": [
+    1455.8,
+    1455.3,
+    1466.6,
+    1468.9,
+    1475.2
+   ],
+   "Micro1l": [
+    1454.1,
+    1455.2,
+    1464.7,
+    1468.9,
+    1475.4
+   ]
+  },
+  "plate_jaw_line_z_mm_at_x_20_30_40_50_60": [
+   1454.2,
+   1458.1,
+   1466.0,
+   1472.5,
+   1481.6
+  ],
+  "note": "visible jaw line = strongest light->dark luminance step per column in the front view (Unity-like soft studio, 4 camera-relative suns). The plate step is stubble pigment (6-12 mm below the natural mandible border); Micro1l keeps the crest ON the jaw (Micro1k rule), so the shading step sits above the plate step at the chin sides (x 20-30: +9..+10 mm) while the underside OUTLINE geometry is within ~3 mm of the plate jaw line. Edge contrast is above the plate (shading boost)."
+ },
+ "install": {
+  "chain": [
+   {
+    "step": "start (ArtDir before this task)",
+    "blend_sha256": "9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba",
+    "fbx_sha256": "69428fc8cf5d1deea5ebc9e232440bf20a8e67b8492e20145ba3f463029570d7"
+   },
+   {
+    "step": "Micro1l first install (jaw/cheek/lips r1)",
+    "blend_sha256": "0f74218646ca17eab0c3d171c8fe1bd0fc691b29d12be3561c8d39f42bc8942a",
+    "fbx_sha256": "5d2cd8931b64c06688c5945ed5945a1305aab652a435043c639145ad8c5f1ea0"
+   },
+   {
+    "step": "r2: chin connected to the jawline + plate-traced lips (body + paint, rebase patch p6 over l2)",
+    "blend_sha256": "8a9ad64b87b3538087cbb6a1d8fad63fe44a22a102aa990ec283c4c949cbd5a1",
+    "fbx_sha256": "4f041becb5dad30e7b0eeccbd0fe461b8498581a8b0b9fd55b7771e336cd76df"
+   },
+   {
+    "step": "r2b: paint-only update (seam ribbon always above the lip strips, per-quad clearance sampling)",
+    "blend_sha256": "fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347",
+    "fbx_sha256": "a36b2010bdffbccb87de3e684a2ac3b611be95bedccedea59460e687d0f600a6"
+   }
+  ],
+  "installed_over_blend_sha": "8a9ad64b87b3538087cbb6a1d8fad63fe44a22a102aa990ec283c4c949cbd5a1",
+  "new_blend_sha": "fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347",
+  "installed_over_fbx_sha": "4f041becb5dad30e7b0eeccbd0fe461b8498581a8b0b9fd55b7771e336cd76df",
+  "new_fbx_sha": "a36b2010bdffbccb87de3e684a2ac3b611be95bedccedea59460e687d0f600a6",
+  "fbx_export_report": {
+   "blend_sha256": "fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347",
+   "fbx_sha256": "a36b2010bdffbccb87de3e684a2ac3b611be95bedccedea59460e687d0f600a6",
+   "body_tris": 66158,
+   "face_tris": 5888,
+   "face_slots": [
+    "Face_Brow",
+    "Face_Sclera",
+    "Face_Iris",
+    "Face_Pupil",
+    "Face_Limbal",
+    "Face_Catch",
+    "Face_LidLine",
+    "Face_Lip",
+    "Face_LipUp",
+    "Face_Seam",
+    "Face_Nostril",
+    "Face_BrowSoft",
+    "Face_LidCrease"
+   ],
+   "imported_objects": [
+    "Body_M",
+    "Face_M"
+   ],
+   "Body_M": {
+    "verts": 33196,
+    "tris": 66158,
+    "max_reimport_mm": 0.00027939677238464355,
+    "materials": [
+     "Blockout_Grey"
+    ],
+    "height_m": 1.7021871663164347
+   },
+   "Face_M": {
+    "verts": 3578,
+    "tris": 5888,
+    "max_reimport_mm": 0.0002682209014892578,
+    "materials": [
+     "Face_Brow",
+     "Face_Sclera",
+     "Face_Iris",
+     "Face_Pupil",
+     "Face_Limbal",
+     "Face_Catch",
+     "Face_LidLine",
+     "Face_Lip",
+     "Face_LipUp",
+     "Face_Seam",
+     "Face_Nostril",
+     "Face_BrowSoft",
+     "Face_LidCrease"
+    ],
+    "height_m": null
+   }
+  },
+  "rollback": {
+   "r2_body_and_paint": "work/male-micro1l-head/baseline/pre_install_p6g_8a9ad64b.blend + pre_install_p6g_4f041bec.fbx (= the r2 install before the paint-only update)",
+   "first_micro1l_install": "work/male-micro1l-head/baseline/pre_install_p6_0f742186.blend + pre_install_p6_5d2cd893.fbx",
+   "pre_micro1l": "work/male-micro1l-head/baseline/pre_install_l_9bfd788a.blend + pre_install_l_69428fc8.fbx",
+   "unity_r2_before_paint_update": "work/male-micro1l-head/unity_captures_l2r/",
+   "unity_first_install": "work/male-micro1l-head/baseline/unity_captures_l2/",
+   "unity_pre_micro1l": "work/male-micro1l-head/baseline/unity_captures_before/"
+  }
+ },
+ "unity": {
+  "saved_prefab_verify": "MALE_FORM_SAVED_UNITY_VERIFY=PASS",
+  "mesh_line": "mesh=Body_M triangles=66158 vertices=33123 height_metres=1.702187 renderers=2(Body_M+Face_M) root_identity=True hair=False face_texture=False",
+  "fbx_sha256": "FBX_SHA256=a36b2010bdffbccb87de3e684a2ac3b611be95bedccedea59460e687d0f600a6",
+  "source_fbx_sha256": "SOURCE_FBX_SHA256=a36b2010bdffbccb87de3e684a2ac3b611be95bedccedea59460e687d0f600a6",
+  "prefab_sha256": "PREFAB_SHA256=f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338",
+  "import_line": "globalScale=1 fileScale=1 compression=Off normals=Import",
+  "captures": 23,
+  "lipup_tint_change": "HeroBaseMaleFormProof.cs FaceSlots LipUp (.60,.38,.31) -> (.72,.48,.37) (Male_Face_LipUp.mat _BaseColor rewritten by the harness)"
+ },
+ "user_additions_mid_run": {
+  "lips": "fuller more natural lips from the plate measurements (vermilion heights / cupid bow / upper-lip pad / lower lip) - Body_M mouth loops + rebuilt Face_M lip/seam paint strips",
+  "stubble_example": "preview-only light stubble (procedural object-space speckle masked by a per-vertex weight, data/W_stubble_l2.npy); NOT in the mesh/FBX/Unity assets (Body_M has no UVs)"
+ },
+ "gates": {
+  "ZONE_OUTSIDE": true,
+  "TOPOLOGY_IDENTICAL": true,
+  "KILL_NECK_JAW_CREASE": true,
+  "CHEEK_DEFAT_proxy": true,
+  "SIL_PCT_LE_5": true,
+  "NO_SELF_INTERSECT": true,
+  "NO_NAN": true,
+  "FACE_M_PAINT_ONLY_NONLIP_IDENTICAL": true
+ }
+}

@@ -1,0 +1,71 @@
+PASTE — TENNIS KIT WORN (not painted) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye on work/standard-tennis-kit-wb/: clothes read as painted on. Polo is tucked so shirt and shorts/skirt fuse into one silhouette. Female skirt is too short and the built-in shorts show (those are undergarments and must not show). Shorts need a waistband in the OTHER color so the split is obvious. Clothes must be separate worn shells so tops, bottoms, socks, and shoes can swap later without touching the body.
+
+START FROM (do not rebuild from scratch unless a piece cannot be salvaged):
+work/standard-tennis-kit-wb/export/  (StandardKit_Male.blend, StandardKit_Female.blend + FBX)
+Refs still: ArtDir/hero/kits/standard_wb/ (cut language only — Adnan overrides length and waistband)
+
+BODIES READ-ONLY (verify SHA; NEVER edit hero topology or install over ArtDir):
+Male HeroBase_Male_Silhouette.blend SHA fd04bc286f688b03ea25fbb57e1242bf2f5976c2dc7bbcdfdb0f68b622ab2347
+Female HeroBase_Female.blend SHA 200dc3b93e65491a8a7c3a8220c76cde5ca02ec7d1279e339f154005b22685cd
+If female arms/hands are needed for sleeve clearance only, fit-ref work/female-arms-form2/export/HeroBase_Female_arms_candidate.blend (573ab443…) — do not clobber ArtDir.
+
+WORK: work/standard-tennis-kit-worn/ only. Stage. No ArtDir body write. No racket edits.
+
+WHAT TO CHANGE
+1. SEPARATE PIECES, WORN NOT PAINTED
+   - Keep distinct objects: Kit_Top_Polo, Kit_Bottom_Shorts (male) or Kit_Bottom_Skort (female), Kit_Sock_L/R, Kit_Shoe_L/R.
+   - Each is a closed shell with real thickness (hem, cuff, collar, waistband read as fabric edges, not a zero-offset skin).
+   - Clearance off skin enough to read as cloth at phone distance: about 6–12 mm over torso/hips, not the current ~3 mm shrinkwrap. No intersection in A-pose.
+   - Polo is UNTUCKED. Hem sits ON TOP of the waistband with a visible overlap (~15–25 mm), so you can see shirt end and shorts/skirt begin. Do not hide the hem inside the waist.
+   - Parent empties stay: Chest_Top (polo), Hip_Bottom (shorts/skort), Foot_L_Shoe / Foot_R_Shoe. Pieces must be swappable by replacing one mesh. Do not fuse top+bottom into one object. Do not bake albedo onto the body.
+
+2. MALE SHORTS WAISTBAND — OTHER COLOR
+   - White kit: white polo + white shorts + BLACK waistband (solid band, ~25–40 mm tall, full around).
+   - Black kit: black polo + black shorts + WHITE waistband.
+   - Waistband is part of the shorts mesh or a child object of Hip_Bottom, not part of the polo. Piping on the polo stays as already built (white on black, none/subtle on white).
+
+3. FEMALE SKIRT LONGER — UNDERGARMENTS HIDDEN
+   - Outer skirt hem drops to about mid-thigh (clearly longer than the current above-the-short look). In front, side, and back A-pose, the built-in shorts / compression layer must be FULLY covered. No peek of inner shorts at the hem.
+   - Inner short can stay for structure but must be shorter than the skirt and invisible in the proof views. If it shows, lengthen the skirt, do not delete the outer shell.
+   - Same untucked polo + contrasting waistband rule: white kit black waistband, black kit white waistband, sitting under the polo hem. Waistband may be the top of the skort, not a third garment floating in the gap.
+   - Gap between polo hem and skirt must not flash skin or underwear. Polo overlap covers the waist; skirt covers the legs.
+
+4. COLOR / LOGOS
+   - White and black only. Contrasting waistband is required, not a new colorway.
+   - No logos, text, swooshes, or brand stripes.
+
+5. DO NOT
+   - Edit hero body SHA, face, hands, or rig to make clothes fit.
+   - Paint the kit onto body materials.
+   - Merge shirt and bottom into one mesh.
+   - Shorten the female skirt back to the current length.
+   - Touch work/classic-tennis-racket or ArtDir heroes.
+
+PROOFS (work/standard-tennis-kit-worn/proof/):
+- On-body front/back/L/R/3-4 for male white, male black, female white, female black
+- Close-up waist: polo hem overlapping waistband, waistband clearly the other color, no skin flash
+- Female hem close-up front + back: inner shorts not visible
+- Exploded or ghost: top and bottom as separate objects
+- checks.json: body SHA before=after, per-piece TRI, polo-hem overlap mm, skirt hem vs inner-short hem (skirt longer), waistband color per kit, min clearance mm
+
+GATES (binary, all required):
+UNTUCKED_HEM — polo hem visibly overlaps waistband; shirt and bottom are separate objects
+WAISTBAND_CONTRAST — white kit black band, black kit white band, on the bottom not the shirt
+SKIRT_COVERS — female outer skirt longer; inner shorts invisible front/side/back
+WORN_SHELL — thickness + clearance read as clothes, not body paint (~6 mm+ off torso)
+NO_SKIN_FLASH — no bare waist or underwear between shirt and bottom
+NO_LOGOS
+BODY_SHA_UNCHANGED
+SWAPPABLE — Chest_Top / Hip_Bottom / Foot sockets; top and bottom not fused
+EXPORT — blend + FBX scale 1 meters under work/standard-tennis-kit-worn/export/
+PROOFS
+
+REPLY ONLY:
+GATE: STANDARD_TENNIS_KIT_WORN PASS
+or FAIL with failed lines only.

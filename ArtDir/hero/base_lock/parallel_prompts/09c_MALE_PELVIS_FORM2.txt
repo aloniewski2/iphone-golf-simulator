@@ -1,0 +1,81 @@
+PASTE — MALE PELVIS FORM2 (butt + groin) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan REJECTED chat-9 PELVIS_ROUND soft-pass. Eye: butt + lower-back→pelvis still wrong; groin not plate-like. Nape fix can stay. Soft-plastic party male — **not shredded**.
+
+START (verify SHA before any edit):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 9bfd788a1a2a10bb6c982820e9b2c65889ef7280448f3d65ed39dcd8634d91ba
+(re-verify; rebase delta if different — never whole-file clobber head/arms/hands/legs installs)
+
+READ FIRST (mandatory):
+1) work/male-nape-pelvis-skin/MALE_NAPE_PELVIS_RESULTS.md — Honest notes (lobes soft, fold too high, back-glute band-pass worse)
+2) ArtDir/hero/base_lock/proof/09_np_pelvis_BA_back_3q.png
+3) ArtDir/hero/base_lock/proof/09_np_pelvis_BA_side_front.png
+4) ArtDir/hero/base_lock/proof/male_now_vs_ref/SHEET_body_ref_vs_now_v2.png (original Adnan notes: groin+butt straight line / side butt not rounded)
+5) male_body_bald.jpg + male_multiangle_body.jpg — authority for glute lobes, underbutt, groin V
+6) AGENTS.md + art-bible.md
+
+WHY CHAT-9 STILL FAILS (do not soft-pass again):
+1) Glute **lobes too soft/flat** vs plate round soft-plastic cheeks (agent admitted; side sil alone ≠ form).
+2) Upper glute / lumbar has **wrong shelf / M-dip** — plate is continuous soft transition.
+3) **Gluteal fold ~2.5–3.5 cm too high** (plate ~z 0.75; ours ~0.775–0.79) — needs documented leg-top / crotch verts.
+4) Back glute band-pass vs plate **did not improve** (−0.03 → −0.08).
+5) Front groin apex still too dark/deep; flat bar only partly fixed.
+
+KEEP:
+- Nape hump fix (do not reopen nape unless ≤2 mm border)
+- Soft-plastic (no rippled shredded glutes / no six-pack vanity)
+- ZONE audits; positions-only preferred
+- SIL bald front/back ≤ 5%
+
+PARALLEL SAFETY:
+- Work ONLY under work/male-pelvis-form2/
+- PELVIS + allowed LEG_TOP strip only. Document masks. Prefer 0 move on head/arms/hands/calves/feet.
+- Stage then ArtDir install only after Adnan-eye proofs + audits.
+
+════════════════════════════════════
+SCOPE — FORM2 (butt + groin)
+════════════════════════════════════
+
+1) GLUTE_LOBES_ROUND — PRIMARY
+   - Two clear soft-plastic twin lobes (peach), readable on back + 3/4 + side.
+   - Bold enough to read in Unity/soft matcap — do NOT hide behind “side contour ≤2 mm” excuses. If sil must flex ±1–2% or a few mm of rear depth to get plate-like cheeks, do it and document.
+   - Soft midline cleft (V), not a tunnel-roof / square pit / hard rim.
+   - Kill upper **shelf / M-dip** into lumbar — smooth continuous upper shelf blend.
+
+2) GLUTEAL_FOLD_PLATE — PRIMARY
+   - Drop fold toward plate (~z 0.75 class). Allowed: extend zone into leg-top / underbutt ring; document every mm (chat-9 already moved ≤16 mm — you may go further if required for fold placement, but keep calves/feet out).
+   - Soft underbutt curve into thighs — not a mechanical cut.
+
+3) GROIN_FRONT — SECONDARY
+   - Soft short V + mound like plate; kill remaining dark flat bar / over-deep apex.
+   - Soft-plastic only — no hyperreal anatomy.
+
+FORBIDDEN:
+- Soft-passing on side-contour-only while back 3/4 still flat
+- Shredded glute striations / bodybuilder look
+- Reopening nape / face / arms / hands / lower legs
+- Whole-file clobber
+
+HARD GATES (Adnan eye is boss):
+ZONE_OUTSIDE=0 outside declared pelvis+leg-top masks
+TOPOLOGY_IDENTICAL preferred
+SIL bald front/back ≤ 5.0% (document if you intentionally trade ≤0.5–1% for lobe readability)
+GLUTE_LOBES_EYE — plate | chat9 | FORM2 back+3q+side: round twin lobes; no soft flat pad; no M-shelf
+FOLD_PLATE_EYE — gluteal fold height near plate; underbutt soft
+GROIN_EYE — soft V, no dark plank bar
+NO_SELF_INTERSECT / no NaN
+NO densify unless disclosed
+
+DELIVER:
+- work/male-pelvis-form2/MALE_PELVIS_FORM2_RESULTS.md (Honest notes)
+- proof/: plate|09|F2 back 3q, side, front groin; profile overlays; checks.json
+- export delta + candidate; ArtDir install only after audits + Adnan OK
+
+REPLY ONLY:
+GATE: MALE_PELVIS_FORM2 PASS
+or FAIL with failed lines only.

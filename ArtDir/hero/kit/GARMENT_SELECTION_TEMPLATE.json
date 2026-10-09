@@ -1,0 +1,78 @@
+{
+  "schema": "sports-garment-selection-authoring-manifest",
+  "version": 1,
+  "standard": "GARMENT_STANDARD.json",
+  "purpose": "Copy this manifest to author a golf selection; not consumed directly by the current runtime.",
+  "selection": {
+    "id": "golf-classic-kit",
+    "sport": "golf",
+    "title": "Classic Golf",
+    "catalog_slot": "skin",
+    "install_state": "authoring; register only after geometry/maps/export proof"
+  },
+  "reuse": {
+    "shader": "GolfArcade/TennisCloth",
+    "mask_encoding": "v1: ID/5",
+    "atlas_resource": "Tennis/HeroDetail/Cloth_FabricAtlas",
+    "colour_rule": "KitDerive+KitTint; 35%",
+    "detail_baseline": "approved prompt-29 proof"
+  },
+  "pieces": [
+    {
+      "piece": "Top",
+      "renderer": "Kit_Top",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_Top",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    },
+    {
+      "piece": "Bottom",
+      "renderer": "Kit_Bottom",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_Bottom",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    },
+    {
+      "piece": "ShoeL",
+      "renderer": "Kit_Shoe_L",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_ShoeL",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    },
+    {
+      "piece": "ShoeR",
+      "renderer": "Kit_Shoe_R",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_ShoeR",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    },
+    {
+      "piece": "SockL",
+      "renderer": "Kit_Sock_L",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_SockL",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    },
+    {
+      "piece": "SockR",
+      "renderer": "Kit_Sock_R",
+      "copy_from_resource": "Tennis/HeroDetail/Kit_Male_SockR",
+      "normal_suffix": "_N",
+      "mask_suffix": "_M",
+      "action": "retain maps for exact duplicate; re-bake for changed mesh/UV"
+    }
+  ],
+  "destination_checks": [
+    "both sexes and handednesses",
+    "golf swing/Ready fit",
+    "new headwear/glove uses existing bone names and its own maps",
+    "register every material and asset path",
+    "verify actual equipped selection in locker and match"
+  ],
+  "unsupported_fabrics": "Twill/leather require an explicit versioned extension; no new IDs in v1."
+}

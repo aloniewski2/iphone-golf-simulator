@@ -1,0 +1,59 @@
+PASTE — MALE TORSO FORM 2 (after GATE PASS) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+You are polishing MALE TORSO form after chat 2 already hit GATE: MALE_TORSO PASS. Do NOT undo depth/pelvis shelf wins. Push soft-plastic plate likeness harder (chest/back/waist), still torso-zone only.
+
+PARALLEL SAFETY:
+- YOUR ZONE ONLY: torso z in [0.77, 1.40), |x| <= xlim (same as prior: ~0.205 below z=1.20, ramp to 0.28 at shoulder ball). Document exact mask.
+- 0 verts moved outside zone (head/neck z>=1.40, arms |x|>0.28, hands, legs z<0.77, feet). Audit mandatory.
+- Work under work/male-parallel-torso2/ only. Stage export there first.
+- If ArtDir SHA != start SHA below, STOP or rebase with work/male-parallel-torso/apply_torso.py logic — never clobber head/arms/legs edits from other chats.
+- Do NOT touch Face_M, LOOP_* groups, female blend, or run Unity import that fights other chats unless you lock + import Body_M only after zone audit.
+
+START BLEND (verify SHA):
+ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend
+SHA-256 b9cc85967819b5fc31d323c0aa806c925a9e2e849b878e31c1866a2a8404909c
+(re-verify: shasum -a 256 … — if different, re-read current SHA; still 0 outside torso zone)
+
+READ FIRST:
+1) work/male-parallel-torso/proof/MALE_TORSO_RESULTS.md  (what PASS already fixed + known gaps)
+2) work/male-parallel-torso/proof/02t_torso_proof_m.png (+ q3/side/pelvis sheets)
+3) AGENTS.md + art-bible.md
+AUTHORITY plates: male_body_bald.jpg, male_multiangle_body.jpg, male_body_plain.jpg (torso only)
+
+KEEP FROM PASS (do not regress):
+- Depth vs side plates (~2.5 mm rms) — hold
+- Pelvis shelf tear fix — hold
+- Silhouette bald front/back ≤ 5.0%
+- Topology identical (positions-only preferred)
+- Zone outside moved = 0
+
+SCOPE — FORM 2 (plate likeness):
+1) CHEST: stronger pec masses + clear lower pec shelf vs plate; soft sternum valley; no bodybuilder shred
+2) WAIST/ABS: soft athletic midsection matching plate (obliques/soft belly) — still soft-plastic, not six-pack carve
+3) BACK: readable traps + scapula planes; gentle spine; improve back shading correlation (prior PASS barely moved upper back)
+4) GLUTE UPPER in-zone only: better plate match ABOVE z=0.77; do NOT edit legs — crotch/thigh overhang is chat 4
+5) Optional Unity Body_M refresh ONLY if no other chat is installing; otherwise stage FBX in work/male-parallel-torso2/export/
+
+HARD GATES:
+ZONE_OUTSIDE_MOVED=0
+TOPOLOGY_IDENTICAL (or document any loop carve with Adnan note — prefer none)
+SIL_FRONT_BACK<=5.0%
+DEPTH_vs_SIDE hold (rms not worse than ~3 mm)
+FORM_vs_PLATE: mean band-pass shading correlation across 6 torso regions MUST beat prior +0.146 (target ≥ +0.25); front chest + back upper must each improve vs PASS numbers
+PELVIS_SHELF still clean (no return of >55° shard shelf)
+
+DELIVER:
+- work/male-parallel-torso2/proof/MALE_TORSO_FORM2_RESULTS.md
+- proof sheets front/back/q3/side (plate | PASS | FORM2)
+- male-torso-form2-checks.json (zone + sil + depth + form r)
+- Install ArtDir blend+FBX only after SHA guard + zone audit PASS
+
+REPLY ONLY:
+GATE: MALE_TORSO_FORM2 PASS
+or
+GATE: MALE_TORSO_FORM2 FAIL
+<failed lines only>

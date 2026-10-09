@@ -1,0 +1,33 @@
+facing check: right hand x in hero space=0.228
+Ready Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Ready: 66 frames (2.17s) sampled, right-hand travel=0.357m, min left-hand/torso proxy gap=0.010m
+Serve contact: racket head height=2.07m; left-hand bone to handle axis=0.551m
+Serve |string normal . net| frames c-3..c+3: 0.64 0.70 0.87 0.98 0.99 0.98 0.96  AT CONTACT=0.984 (1=strings square to net, 0=edge-on)
+Serve: min racket-hoop to head-sphere gap=0.053m
+Serve Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Serve: 108 frames (3.57s) sampled, right-hand travel=1.093m, min left-hand/torso proxy gap=-0.045m
+Forehand contact: racket head height=0.46m; left-hand bone to handle axis=0.257m
+Forehand |string normal . net| frames c-3..c+3: 0.46 0.81 0.99 1.00 1.00 0.97 0.72  AT CONTACT=0.999 (1=strings square to net, 0=edge-on)
+Forehand Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Forehand: 81 frames (2.67s) sampled, right-hand travel=1.078m, min left-hand/torso proxy gap=0.008m
+Backhand contact: racket head height=0.84m; left-hand bone to handle axis=0.104m
+Backhand |string normal . net| frames c-3..c+3: 0.59 0.58 0.91 1.00 1.00 0.97 0.66  AT CONTACT=0.997 (1=strings square to net, 0=edge-on)
+Backhand Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Backhand: 84 frames (2.77s) sampled, right-hand travel=0.697m, min left-hand/torso proxy gap=-0.042m
+RunForward: min racket-hoop to right-leg capsule gap=0.179m
+RunForward Unity-vs-authored hand orientation: RIGHT median 83deg, max 88deg, frames>35deg 120 | LEFT median 0deg, max 0deg, frames>35deg 0
+RunForward: 120 frames (3.97s) sampled, right-hand travel=0.304m, min left-hand/torso proxy gap=0.045m
+RunRight: min racket-hoop to right-leg capsule gap=0.091m
+RunRight Unity-vs-authored hand orientation: RIGHT median 48deg, max 76deg, frames>35deg 120 | LEFT median 0deg, max 0deg, frames>35deg 0
+RunRight: 120 frames (3.97s) sampled, right-hand travel=0.420m, min left-hand/torso proxy gap=0.050m
+RunLeft Unity-vs-authored hand orientation: RIGHT median 118deg, max 122deg, frames>35deg 120 | LEFT median 0deg, max 0deg, frames>35deg 0
+RunLeft: 120 frames (3.97s) sampled, right-hand travel=0.361m, min left-hand/torso proxy gap=0.045m
+Volley contact: racket head height=1.37m; left-hand bone to handle axis=0.504m
+Volley |string normal . net| frames c-3..c+3: 0.74 0.84 0.90 0.93 0.92 0.88 0.81  AT CONTACT=0.932 (1=strings square to net, 0=edge-on)
+Volley Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Volley: 58 frames (1.90s) sampled, right-hand travel=0.799m, min left-hand/torso proxy gap=0.039m
+Smash contact: racket head height=2.03m; left-hand bone to handle axis=0.315m
+Smash |string normal . net| frames c-3..c+3: 1.00 1.00 1.00 1.00 0.99 0.99 0.97  AT CONTACT=0.997 (1=strings square to net, 0=edge-on)
+Smash: min racket-hoop to head-sphere gap=0.035m
+Smash Unity-vs-authored hand orientation: RIGHT median 0deg, max 0deg, frames>35deg 0 | LEFT median 0deg, max 0deg, frames>35deg 0
+Smash: 105 frames (3.47s) sampled, right-hand travel=0.956m, min left-hand/torso proxy gap=-0.197m

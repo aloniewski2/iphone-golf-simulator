@@ -1,0 +1,19 @@
+{
+  "task_id": "6b900b3d-32ae-4fd0-b6c2-ef00a76cbaa4",
+  "type": "convert_model",
+  "status": "success",
+  "input": {
+    "format": "FBX",
+    "texture_size": 2048,
+    "original_model_id": "289a93d4-265f-4b80-99b8-7299dffeec50"
+  },
+  "output_fields": [
+    "model_url"
+  ],
+  "credits_consumed": 10,
+  "created_at": "2026-09-25T16:48:21.685221Z",
+  "completed_at": "2026-09-25T16:49:19.894421Z",
+  "files": [
+    "model.fbx"
+  ]
+}

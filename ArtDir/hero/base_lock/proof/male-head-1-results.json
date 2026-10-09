@@ -1,0 +1,87 @@
+{
+  "head_likeness_gate": "FAIL",
+  "full_body_gate": "MALE_SIL FAIL",
+  "threshold": 0.02,
+  "source_sha256": "e87ab1835f49e803a586c8c1a996eb38b1585397d19ec9e4ed58acad6fca5538",
+  "head_stage_baseline_sha256": "ec8ff3b81c652bc15501381d7fffd00cb2947a86f114b7ea9c9ebe7763ac670f",
+  "views": [
+    {
+      "view": "bald_front",
+      "before": {
+        "full_body_error": 0.0388299007576566,
+        "head_crop_error": 0.030196863530196863,
+        "difference_pixels": 2911,
+        "union_pixels": 74968
+      },
+      "after": {
+        "full_body_error": 0.03823211497658033,
+        "head_crop_error": 0.022639610934093578,
+        "difference_pixels": 2865,
+        "union_pixels": 74937
+      }
+    },
+    {
+      "view": "bald_back",
+      "before": {
+        "full_body_error": 0.037429692874195765,
+        "head_crop_error": 0.028102251565938718,
+        "difference_pixels": 2775,
+        "union_pixels": 74139
+      },
+      "after": {
+        "full_body_error": 0.03700905325363952,
+        "head_crop_error": 0.022769753610875108,
+        "difference_pixels": 2743,
+        "union_pixels": 74117
+      }
+    }
+  ],
+  "head_crop_description": "Original native image rows 0..159, per authority view; diagnostic only, not a new gate.",
+  "changes": {
+    "baseline_sha256": "ec8ff3b81c652bc15501381d7fffd00cb2947a86f114b7ea9c9ebe7763ac670f",
+    "changed_vertices": 2273,
+    "maximum_displacement_metres": 0.013254341622841538,
+    "body_below_1_38m_unchanged": true,
+    "triangle_normal_reversals_vs_checkpoint": 0,
+    "stages": [
+      {
+        "part": "cranial dome",
+        "baseline_sha256": "ec8ff3b81c652bc15501381d7fffd00cb2947a86f114b7ea9c9ebe7763ac670f",
+        "method": "Existing scalp coordinate projection to a continuous elliptical dome with an 11-pixel forehead transition; no remesh.",
+        "changed_vertices": 818,
+        "maximum_displacement_metres": 0.006453251347202387,
+        "body_below_1_58m_unchanged": true
+      },
+      {
+        "part": "jaw/chin/neck",
+        "method": "Local lower-face retraction, narrower front chin and positive coordinate fairing; no remesh.",
+        "retraction_metres": 0.005,
+        "changed_vertices_since_crown": 990,
+        "maximum_displacement_since_crown_metres": 0.012809896474819352
+      },
+      {
+        "part": "ear placement and forehead transition",
+        "method": "Existing coordinate depth sculpt; ear depth moved toward the posterior skull with a continuous falloff and local depth fairing. X/Z retained; no remesh.",
+        "maximum_ear_depth_shift_metres": 0.009,
+        "changed_vertices_since_jaw": 986
+      },
+      {
+        "part": "broad facial planes",
+        "method": "Depth-only continuous nasal bridge, shallow orbital recesses, brow and cheek volumes on the existing head. No face objects, textures or remesh.",
+        "maximum_depth_change_metres": 0.008474871424246161,
+        "X_Z_unchanged": true
+      },
+      {
+        "part": "ear volume",
+        "method": "Local existing vertex depth placement with a shallow lateral concha and rounded outer rim. No separate ear mesh or remesh.",
+        "additional_depth_metres": 0,
+        "maximum_lateral_sculpt_metres": 0.00514535039284833
+      }
+    ],
+    "contour_method": "Two smooth shared front/back head contour corrections; frozen masks and cameras unchanged."
+  },
+  "body_below_1_38m_unchanged": true,
+  "topology_cameras_origins_unchanged": true,
+  "preview_geometry_matches_source": true,
+  "remaining": "Ear attachments/cartilage, jaw-to-neck profile and broad facial planes still differ visibly from head_detail. Cosmetic preview eyes and lips remain provisional. Full bald-view 2% threshold remains unmet."
+}

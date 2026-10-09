@@ -1,0 +1,1164 @@
+{
+ "gate": "MALE_HANDS_FORM3",
+ "result": "PASS",
+ "params": "work/male-hands-form3/params_final.json",
+ "gates": {
+  "PALM_SCALE.palm_length>=+10%": {
+   "result": "PASS",
+   "detail": {
+    "FORM2_mm": 104.1,
+    "FORM3_mm": 122.1,
+    "pct": 17.3
+   }
+  },
+  "PALM_SCALE.breadth_at_web>=+4%": {
+   "result": "PASS",
+   "detail": {
+    "FORM2_mm": 109.9,
+    "FORM3_mm": 117.8,
+    "pct": 7.2
+   }
+  },
+  "PALM_SCALE.breadth_mid_palm>=+5%": {
+   "result": "PASS",
+   "detail": {
+    "FORM2_mm": 93.5,
+    "FORM3_mm": 103.2,
+    "pct": 10.4
+   }
+  },
+  "PALM_SCALE.planform_area>=+10%": {
+   "result": "PASS",
+   "detail": {
+    "FORM2_mm2": 9558,
+    "FORM3_mm2": 11028,
+    "pct": 15.4
+   }
+  },
+  "PALM_SCALE.palm_volume>=+10%": {
+   "result": "PASS",
+   "detail": {
+    "FORM2_mm3": 410070,
+    "FORM3_mm3": 471460,
+    "pct": 15.0
+   }
+  },
+  "PALM_SCALE.palm_over_middle_finger>=1.15": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 0.93,
+    "FORM3": 1.3,
+    "anthropometry": "~1.3"
+   }
+  },
+  "PALM_SCALE.plate_hand_ROI_xor<=FORM2": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 2347,
+    "FORM3": 2323
+   }
+  },
+  "PALM_SCALE.mirror_palm(L=R within 0.2 mm)": {
+   "result": "PASS",
+   "detail": {
+    "L": {
+     "palm_length_mm": 122.07729208065476,
+     "palm_breadth_web_mm": 117.7976602700355,
+     "palm_breadth_mid_mm": 103.19282307995194,
+     "palm_breadth_wrist_row_mm": 75.53162789155589,
+     "palm_planform_area_mm2": 11026.496635952399,
+     "finger_len_from_web_mm": [
+      77.7376165165927,
+      93.60003708102346,
+      82.49431675156745,
+      63.49996377274714
+     ],
+     "palm_over_middle_finger": 1.3042440568157083,
+     "web_line_w_mm": 78.07729208065476
+    },
+    "R": {
+     "palm_length_mm": 122.07729208042014,
+     "palm_breadth_web_mm": 117.79766026514076,
+     "palm_breadth_mid_mm": 103.19278901978059,
+     "palm_breadth_wrist_row_mm": 75.72877836655469,
+     "palm_planform_area_mm2": 11027.74937514027,
+     "finger_len_from_web_mm": [
+      77.73761651682732,
+      93.60003708125808,
+      82.49431675180207,
+      63.49996377298176
+     ],
+     "palm_over_middle_finger": 1.3042440568099323,
+     "web_line_w_mm": 78.07729208042014
+    }
+   }
+  },
+  "FINGER_TIP_ROUND.cap_rows>=8": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "finger0": 6,
+     "finger1": 6,
+     "finger2": 6,
+     "finger3": 6,
+     "thumb": 6
+    },
+    "FORM3": {
+     "finger0": 9,
+     "finger1": 9,
+     "finger2": 9,
+     "finger3": 9,
+     "thumb": 9
+    },
+    "FORM3_L_equals_R": true
+   }
+  },
+  "FINGER_TIP_ROUND.cap_len/mean_tip_radius in [0.9,1.4] (hemisphere-ish)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "finger0": 1.32,
+     "finger1": 1.44,
+     "finger2": 1.37,
+     "finger3": 1.22,
+     "thumb": 0.77
+    },
+    "FORM3": {
+     "finger0": 1.24,
+     "finger1": 1.23,
+     "finger2": 1.23,
+     "finger3": 1.23,
+     "thumb": 1.24
+    },
+    "FORM3_L_equals_R": true
+   }
+  },
+  "FINGER_TIP_ROUND.max_contour_turn_side<=25deg": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "finger0": 45.83,
+     "finger1": 46.72,
+     "finger2": 46.96,
+     "finger3": 46.45,
+     "thumb": 16.07
+    },
+    "FORM3": {
+     "finger0": 10.34,
+     "finger1": 10.25,
+     "finger2": 10.27,
+     "finger3": 10.34,
+     "thumb": 12.35
+    },
+    "FORM3_L_equals_R": true
+   }
+  },
+  "FINGER_TIP_ROUND.max_contour_turn_plan<=25deg": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "finger0": 24.54,
+     "finger1": 25.8,
+     "finger2": 26.28,
+     "finger3": 26.06,
+     "thumb": 15.97
+    },
+    "FORM3": {
+     "finger0": 12.88,
+     "finger1": 12.59,
+     "finger2": 12.6,
+     "finger3": 12.85,
+     "thumb": 11.93
+    },
+    "FORM3_L_equals_R": true
+   }
+  },
+  "THUMB_ANATOMY.R.thenar_mound>=4mm": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 8.9,
+    "FORM3": 8.0
+   }
+  },
+  "THUMB_ANATOMY.R.two_phalanges(IP bend>=8deg, IP bump>=0.5mm)": {
+   "result": "PASS",
+   "detail": {
+    "ip_bend_deg": 15.5,
+    "ip_bump_mm_total": 1.19,
+    "FORM2_bump": 0.95
+   }
+  },
+  "THUMB_ANATOMY.R.taper_not_pill(last/max<=0.65)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 0.534,
+    "FORM3": 0.611
+   }
+  },
+  "THUMB_ANATOMY.R.pad_tip(>=6 cap rows, radii decreasing)": {
+   "result": "PASS",
+   "detail": [
+    11.49,
+    11.36,
+    10.93,
+    10.24,
+    9.29,
+    8.12,
+    6.75,
+    5.21,
+    3.55,
+    1.8
+   ]
+  },
+  "THUMB_ANATOMY.R.not_spike(min shaft radius>=8mm, length/diameter<=5)": {
+   "result": "PASS",
+   "detail": {
+    "min_r": 11.5,
+    "len_over_diam": 3.61
+   }
+  },
+  "THUMB_ANATOMY.R.root_continuity(max dihedral within 25mm<=75deg)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 68.2,
+    "FORM3": {
+     "edges": 130,
+     "max": 71.04435542149814,
+     "gt60": 2,
+     "gt45": 8
+    }
+   }
+  },
+  "THUMB_ANATOMY.L.thenar_mound>=4mm": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 8.9,
+    "FORM3": 8.0
+   }
+  },
+  "THUMB_ANATOMY.L.two_phalanges(IP bend>=8deg, IP bump>=0.5mm)": {
+   "result": "PASS",
+   "detail": {
+    "ip_bend_deg": 15.5,
+    "ip_bump_mm_total": 1.19,
+    "FORM2_bump": 0.95
+   }
+  },
+  "THUMB_ANATOMY.L.taper_not_pill(last/max<=0.65)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 0.534,
+    "FORM3": 0.611
+   }
+  },
+  "THUMB_ANATOMY.L.pad_tip(>=6 cap rows, radii decreasing)": {
+   "result": "PASS",
+   "detail": [
+    11.49,
+    11.36,
+    10.93,
+    10.24,
+    9.29,
+    8.12,
+    6.75,
+    5.21,
+    3.55,
+    1.8
+   ]
+  },
+  "THUMB_ANATOMY.L.not_spike(min shaft radius>=8mm, length/diameter<=5)": {
+   "result": "PASS",
+   "detail": {
+    "min_r": 11.5,
+    "len_over_diam": 3.61
+   }
+  },
+  "THUMB_ANATOMY.L.root_continuity(max dihedral within 25mm<=75deg)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 68.2,
+    "FORM3": {
+     "edges": 130,
+     "max": 71.0443534542729,
+     "gt60": 2,
+     "gt45": 8
+    }
+   }
+  },
+  "THUMB_ANATOMY.plate_match(hand ROI xor <= 1.15x FORM2)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": 2347,
+    "FORM3": 2323
+   }
+  },
+  "FINGER_TAPER.tip_over_base<=0.70": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": [
+     0.6,
+     0.6,
+     0.6,
+     0.6
+    ],
+    "FORM3": [
+     0.65,
+     0.63,
+     0.64,
+     0.66
+    ],
+    "note": "measured at the last shaft ring (FORM3: earlier on the finger because the round cap is longer)"
+   }
+  },
+  "FINGER_TAPER.mid_over_base<=0.90": {
+   "result": "PASS",
+   "detail": [
+    0.86,
+    0.81,
+    0.81,
+    0.86
+   ]
+  },
+  "FINGER_TAPER.no_equal_width_run(<=35% of rows)": {
+   "result": "PASS",
+   "detail": [
+    {
+     "finger": 0,
+     "run_frac": 0.0
+    },
+    {
+     "finger": 1,
+     "run_frac": 0.0
+    },
+    {
+     "finger": 2,
+     "run_frac": 0.0
+    },
+    {
+     "finger": 3,
+     "run_frac": 0.0
+    }
+   ]
+  },
+  "FINGER_TAPER.knuckle_hint(PIP>=1.0mm,DIP>=0.6mm)": {
+   "result": "PASS",
+   "detail": [
+    [
+     1.48,
+     1.05
+    ],
+    [
+     1.84,
+     1.08
+    ],
+    [
+     1.92,
+     1.13
+    ],
+    [
+     1.83,
+     0.76
+    ]
+   ]
+  },
+  "FINGER_TAPER.pad_tips(>=6 cap rows)": {
+   "result": "PASS",
+   "detail": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "FINGER_TAPER.fingers_separate(gap>=4mm at 40%/70%)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": [
+     -7.2,
+     -11.8,
+     -7.7,
+     -12.6,
+     -7.0,
+     -11.4
+    ],
+    "FORM3": [
+     -9.4,
+     -13.9,
+     -10.0,
+     -14.7,
+     -9.4,
+     -13.8
+    ]
+   }
+  },
+  "FINGER_TAPER.depth_over_width_base<=1.4 (no sausage)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": [
+     1.15,
+     1.14,
+     1.14,
+     1.15
+    ],
+    "FORM3": [
+     1.14,
+     1.12,
+     1.12,
+     1.14
+    ]
+   }
+  },
+  "FINGER_TAPER.width_base_unchanged(+-1.5mm vs FORM2, no sausage return)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": [
+     25.0,
+     25.0,
+     25.0,
+     25.0
+    ],
+    "FORM3": [
+     25.3,
+     25.4,
+     25.4,
+     25.2
+    ]
+   }
+  },
+  "MIRROR_L_R(<=0.05mm distal hand)": {
+   "result": "PASS",
+   "detail": {
+    "mean": 5.56749731022418e-05,
+    "p95": 5.024732230350883e-05,
+    "max": 0.010412935811862332
+   }
+  },
+  "ZONE_OUTSIDE=0": {
+   "result": "PASS",
+   "detail": {
+    "moved_outside_hand_shell": 0,
+    "weld_ring_verts_moved": 0,
+    "bit_identical": {
+     "head_neck(z>=1.40)": true,
+     "torso+pelvis(|x|<0.215,0.78<=z<1.40)": true,
+     "legs_feet(z<0.78,|x|<0.40)": true,
+     "arm_shafts+deltoids(arm zone minus hand shell)": true
+    },
+    "moved_original_verts": 3078,
+    "hand_shell_verts": 3078,
+    "appended": 308
+   }
+  },
+  "NO_SELF_INTERSECT": {
+   "result": "PASS",
+   "detail": {
+    "tris": 16304,
+    "n_pairs": 0
+   }
+  },
+  "SIL_BALD_FRONT<=5.0%(Blender native)": {
+   "result": "PASS",
+   "detail": {
+    "before": 4.324,
+    "after": 4.163
+   }
+  },
+  "SIL_BALD_BACK<=5.0%(Blender native)": {
+   "result": "PASS",
+   "detail": {
+    "before": 4.632,
+    "after": 4.691
+   }
+  },
+  "TOPOLOGY(manifold boundary/non-manifold unchanged, no degenerate polys, custom normals + vgroups + materials kept, no sharp flags)": {
+   "result": "PASS",
+   "detail": {
+    "manifold": {
+     "edges": 64025,
+     "boundary": 92,
+     "nonmanifold": 2,
+     "bad_orient": 46
+    },
+    "baseline": {
+     "edges": 63409,
+     "boundary": 92,
+     "nonmanifold": 2,
+     "bad_orient": 46
+    },
+    "custom_normal_nonzero": 31246,
+    "custom_normal_diff": 0,
+    "vg_equal": true
+   }
+  },
+  "FACE_QUALITY(min new face >=0.3mm2, max edge aspect <=16, no worse than FORM2 aspect 14.7)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "new_faces": 3140,
+     "new_tris": 44,
+     "min_area_mm2": 0.3810484045353587,
+     "max_edge_aspect": 14.693620490985372,
+     "aspect_gt10": 4,
+     "area_lt_0p3mm2": 0
+    },
+    "FORM3": {
+     "new_faces": 3448,
+     "new_tris": 44,
+     "min_area_mm2": 0.6103472539489031,
+     "max_edge_aspect": 7.795737222004953,
+     "aspect_gt10": 0,
+     "area_lt_0p3mm2": 0
+    }
+   }
+  },
+  "WELD_NO_STEP_CREASE(max dihedral at the wrist weld band <=45deg and not worse than FORM2 +2deg)": {
+   "result": "PASS",
+   "detail": {
+    "FORM2": {
+     "R": {
+      "band_faces": 137,
+      "edges": 309,
+      "max_dihedral_deg": 25.927739031995213,
+      "gt45": 0
+     },
+     "L": {
+      "band_faces": 139,
+      "edges": 311,
+      "max_dihedral_deg": 24.74771101401193,
+      "gt45": 0
+     }
+    },
+    "FORM3": {
+     "R": {
+      "band_faces": 137,
+      "edges": 309,
+      "max_dihedral_deg": 23.107696113160095,
+      "gt45": 0
+     },
+     "L": {
+      "band_faces": 139,
+      "edges": 311,
+      "max_dihedral_deg": 20.896215177120222,
+      "gt45": 0
+     }
+    }
+   }
+  },
+  "FBX_REIMPORT(verts/tris match, max vertex error <0.01mm, height 1.65-1.75m)": {
+   "result": "PASS",
+   "detail": {
+    "fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/male-hands-form3/export/HeroBase_Male_Body_form3.fbx",
+    "fbx_sha256": "39303a777785a240ab9821107c00d9dfef6a476c29ce60d3bd369e7ad9e1038c",
+    "src_verts": 31936,
+    "imported_verts": 31936,
+    "imported_tris": 63638,
+    "max_nearest_distance_mm": 0.00027939677238464355,
+    "mean_nearest_distance_mm": 0.00016071005490237136,
+    "reimport_height_m": 1.7021871663164347,
+    "imported_scale": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "imported_rotation": [
+     -1.6292068494294654e-07,
+     0.0,
+     0.0
+    ]
+   }
+  },
+  "TRIANGLES(disclosed, no cap beyond +2%)": {
+   "result": "PASS",
+   "detail": {
+    "before": 63022,
+    "after": 63638,
+    "delta": 616,
+    "pct": 0.98,
+    "note": "AGENTS.md ~35-50k per base unless Adnan approves more; ArtDir was already 63,022 after FORM2"
+   }
+  }
+ },
+ "tris": {
+  "before": 63022,
+  "after": 63638
+ },
+ "verts": {
+  "before": 31628,
+  "after": 31936
+ },
+ "palm": {
+  "FORM2": {
+   "R": {
+    "palm_length_mm": 104.05231760100645,
+    "palm_breadth_web_mm": 109.92776193718761,
+    "palm_breadth_mid_mm": 93.45904398640897,
+    "palm_breadth_wrist_row_mm": 76.54141050386485,
+    "palm_planform_area_mm2": 9557.758153024788,
+    "finger_len_from_web_mm": [
+     95.58832324971712,
+     111.72711561298993,
+     99.01292164855117,
+     76.15324075869971
+    ],
+    "palm_over_middle_finger": 0.9313076510578854,
+    "web_line_w_mm": 60.05231760100645
+   },
+   "L": {
+    "palm_length_mm": 104.05231760150008,
+    "palm_breadth_web_mm": 109.92776194294095,
+    "palm_breadth_mid_mm": 93.45819502554846,
+    "palm_breadth_wrist_row_mm": 76.29041711399839,
+    "palm_planform_area_mm2": 9553.212687109382,
+    "finger_len_from_web_mm": [
+     95.5883232492235,
+     111.72711561249632,
+     99.01292164805756,
+     76.1532407582061
+    ],
+    "palm_over_middle_finger": 0.9313076510664181,
+    "web_line_w_mm": 60.05231760150007
+   }
+  },
+  "FORM3": {
+   "R": {
+    "palm_length_mm": 122.07729208042014,
+    "palm_breadth_web_mm": 117.79766026514076,
+    "palm_breadth_mid_mm": 103.19278901978059,
+    "palm_breadth_wrist_row_mm": 75.72877836655469,
+    "palm_planform_area_mm2": 11027.74937514027,
+    "finger_len_from_web_mm": [
+     77.73761651682732,
+     93.60003708125808,
+     82.49431675180207,
+     63.49996377298176
+    ],
+    "palm_over_middle_finger": 1.3042440568099323,
+    "web_line_w_mm": 78.07729208042014
+   },
+   "L": {
+    "palm_length_mm": 122.07729208065476,
+    "palm_breadth_web_mm": 117.7976602700355,
+    "palm_breadth_mid_mm": 103.19282307995194,
+    "palm_breadth_wrist_row_mm": 75.53162789155589,
+    "palm_planform_area_mm2": 11026.496635952399,
+    "finger_len_from_web_mm": [
+     77.7376165165927,
+     93.60003708102346,
+     82.49431675156745,
+     63.49996377274714
+    ],
+    "palm_over_middle_finger": 1.3042440568157083,
+    "web_line_w_mm": 78.07729208065476
+   }
+  }
+ },
+ "tips": {
+  "FORM2": {
+   "R": {
+    "finger0": {
+     "cap_rows": 6,
+     "cap_len_mm": 11.162365937297194,
+     "r_lat_mm": 7.47629783968222,
+     "r_n_mm": 9.391600753903571,
+     "hemisphere_ratio": 1.323504036423578,
+     "plan_ratio": 1.4930338754096038,
+     "side_ratio": 1.1885477491851015,
+     "max_turn_plan_deg": 24.541799445117718,
+     "max_turn_side_deg": 45.82637022238775,
+     "mean_turn_deg": 14.027653959498188,
+     "flat_cap_fraction": 0.0
+    },
+    "finger1": {
+     "cap_rows": 6,
+     "cap_len_mm": 12.052916042346556,
+     "r_lat_mm": 7.4582425180033916,
+     "r_n_mm": 9.272953241985995,
+     "hemisphere_ratio": 1.4407716238871144,
+     "plan_ratio": 1.61605311348513,
+     "side_ratio": 1.2997926041267491,
+     "max_turn_plan_deg": 25.799252066480353,
+     "max_turn_side_deg": 46.72154185675644,
+     "mean_turn_deg": 13.382028718314373,
+     "flat_cap_fraction": 0.0
+    },
+    "finger2": {
+     "cap_rows": 6,
+     "cap_len_mm": 11.516022944035793,
+     "r_lat_mm": 7.483309888670572,
+     "r_n_mm": 9.335735599716683,
+     "hemisphere_ratio": 1.3694026753167479,
+     "plan_ratio": 1.538894301500274,
+     "side_ratio": 1.2335421050683222,
+     "max_turn_plan_deg": 26.275151221318424,
+     "max_turn_side_deg": 46.95923912902235,
+     "mean_turn_deg": 13.754443699184748,
+     "flat_cap_fraction": 0.0
+    },
+    "finger3": {
+     "cap_rows": 6,
+     "cap_len_mm": 10.40662064997985,
+     "r_lat_mm": 7.524766380721977,
+     "r_n_mm": 9.540127310814476,
+     "hemisphere_ratio": 1.219652561344832,
+     "plan_ratio": 1.3829825569922036,
+     "side_ratio": 1.090826181971716,
+     "max_turn_plan_deg": 26.05617156880429,
+     "max_turn_side_deg": 46.452370278288576,
+     "mean_turn_deg": 15.36997335285478,
+     "flat_cap_fraction": 0.0
+    },
+    "thumb": {
+     "cap_rows": 6,
+     "cap_len_mm": 8.281993424953653,
+     "r_lat_mm": 11.199376044652782,
+     "r_n_mm": 10.28808008819956,
+     "hemisphere_ratio": 0.7708677447667941,
+     "plan_ratio": 0.7395048966953784,
+     "side_ratio": 0.8050086463122607,
+     "max_turn_plan_deg": 15.973178072213983,
+     "max_turn_side_deg": 16.06847279609142,
+     "mean_turn_deg": 11.442514297807051,
+     "flat_cap_fraction": 0.0
+    }
+   },
+   "L": {
+    "finger0": {
+     "cap_rows": 6,
+     "cap_len_mm": 11.162365937297194,
+     "r_lat_mm": 7.47629783968222,
+     "r_n_mm": 9.391600753903571,
+     "hemisphere_ratio": 1.323504036423578,
+     "plan_ratio": 1.4930338754096038,
+     "side_ratio": 1.1885477491851015,
+     "max_turn_plan_deg": 24.541799445117718,
+     "max_turn_side_deg": 45.82637022238775,
+     "mean_turn_deg": 14.027653959498188,
+     "flat_cap_fraction": 0.0
+    },
+    "finger1": {
+     "cap_rows": 6,
+     "cap_len_mm": 12.052916042346556,
+     "r_lat_mm": 7.4582425180033916,
+     "r_n_mm": 9.272953241985995,
+     "hemisphere_ratio": 1.4407716238871144,
+     "plan_ratio": 1.61605311348513,
+     "side_ratio": 1.2997926041267491,
+     "max_turn_plan_deg": 25.799252066480353,
+     "max_turn_side_deg": 46.72154185675644,
+     "mean_turn_deg": 13.382028718314373,
+     "flat_cap_fraction": 0.0
+    },
+    "finger2": {
+     "cap_rows": 6,
+     "cap_len_mm": 11.516022944035793,
+     "r_lat_mm": 7.483309888670572,
+     "r_n_mm": 9.335735599716683,
+     "hemisphere_ratio": 1.3694026753167479,
+     "plan_ratio": 1.538894301500274,
+     "side_ratio": 1.2335421050683222,
+     "max_turn_plan_deg": 26.275151221318424,
+     "max_turn_side_deg": 46.95923912902235,
+     "mean_turn_deg": 13.754443699184748,
+     "flat_cap_fraction": 0.0
+    },
+    "finger3": {
+     "cap_rows": 6,
+     "cap_len_mm": 10.40662064997985,
+     "r_lat_mm": 7.524766380721977,
+     "r_n_mm": 9.540127310814476,
+     "hemisphere_ratio": 1.219652561344832,
+     "plan_ratio": 1.3829825569922036,
+     "side_ratio": 1.090826181971716,
+     "max_turn_plan_deg": 26.05617156880429,
+     "max_turn_side_deg": 46.452370278288576,
+     "mean_turn_deg": 15.36997335285478,
+     "flat_cap_fraction": 0.0
+    },
+    "thumb": {
+     "cap_rows": 6,
+     "cap_len_mm": 8.281993424953653,
+     "r_lat_mm": 11.199376044652782,
+     "r_n_mm": 10.28808008819956,
+     "hemisphere_ratio": 0.7708677447667941,
+     "plan_ratio": 0.7395048966953784,
+     "side_ratio": 0.8050086463122607,
+     "max_turn_plan_deg": 15.973178072213983,
+     "max_turn_side_deg": 16.06847279609142,
+     "mean_turn_deg": 11.442514297807051,
+     "flat_cap_fraction": 0.0
+    }
+   }
+  },
+  "FORM3": {
+   "R": {
+    "finger0": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.617580012225275,
+     "r_lat_mm": 8.157008502276987,
+     "r_n_mm": 10.626614795108635,
+     "hemisphere_ratio": 1.2369903110058915,
+     "plan_ratio": 1.4242451762778334,
+     "side_ratio": 1.0932531418728733,
+     "max_turn_plan_deg": 12.875721098179625,
+     "max_turn_side_deg": 10.336976163447419,
+     "mean_turn_deg": 8.512177534742783,
+     "flat_cap_fraction": 0.0
+    },
+    "finger1": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.349250892644848,
+     "r_lat_mm": 7.9988853322993725,
+     "r_n_mm": 10.396381167310402,
+     "hemisphere_ratio": 1.2339316631140522,
+     "plan_ratio": 1.4188540554290425,
+     "side_ratio": 1.091653981322903,
+     "max_turn_plan_deg": 12.592676881120076,
+     "max_turn_side_deg": 10.253888056898571,
+     "mean_turn_deg": 8.422618668537794,
+     "flat_cap_fraction": 0.0
+    },
+    "finger2": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.477373022649799,
+     "r_lat_mm": 8.092535181373334,
+     "r_n_mm": 10.516245738433332,
+     "hemisphere_ratio": 1.2335437847445023,
+     "plan_ratio": 1.4182666822465446,
+     "side_ratio": 1.0913945250160777,
+     "max_turn_plan_deg": 12.601827113735746,
+     "max_turn_side_deg": 10.267960988999336,
+     "mean_turn_deg": 8.424936026039994,
+     "flat_cap_fraction": 0.0
+    },
+    "finger3": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.754654155589476,
+     "r_lat_mm": 8.29989782577798,
+     "r_n_mm": 10.738072037073485,
+     "hemisphere_ratio": 1.2348642465839987,
+     "plan_ratio": 1.4162408263727833,
+     "side_ratio": 1.0946708231241338,
+     "max_turn_plan_deg": 12.845468899786235,
+     "max_turn_side_deg": 10.340676737518436,
+     "mean_turn_deg": 8.59080837498427,
+     "flat_cap_fraction": 0.0
+    },
+    "thumb": {
+     "cap_rows": 9,
+     "cap_len_mm": 14.295506141202358,
+     "r_lat_mm": 12.032934857825587,
+     "r_n_mm": 10.973807652683156,
+     "hemisphere_ratio": 1.2427231829688734,
+     "plan_ratio": 1.1880315409424256,
+     "side_ratio": 1.3026933397822977,
+     "max_turn_plan_deg": 11.931642649477519,
+     "max_turn_side_deg": 12.347919571648063,
+     "mean_turn_deg": 9.01232594211948,
+     "flat_cap_fraction": 0.0
+    }
+   },
+   "L": {
+    "finger0": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.617580012225275,
+     "r_lat_mm": 8.157008502276987,
+     "r_n_mm": 10.626614795108635,
+     "hemisphere_ratio": 1.2369903110058915,
+     "plan_ratio": 1.4242451762778334,
+     "side_ratio": 1.0932531418728733,
+     "max_turn_plan_deg": 12.875721098179625,
+     "max_turn_side_deg": 10.336976163447419,
+     "mean_turn_deg": 8.512177534742783,
+     "flat_cap_fraction": 0.0
+    },
+    "finger1": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.349250892644848,
+     "r_lat_mm": 7.9988853322993725,
+     "r_n_mm": 10.396381167310402,
+     "hemisphere_ratio": 1.2339316631140522,
+     "plan_ratio": 1.4188540554290425,
+     "side_ratio": 1.091653981322903,
+     "max_turn_plan_deg": 12.592676881120076,
+     "max_turn_side_deg": 10.253888056898571,
+     "mean_turn_deg": 8.422618668537794,
+     "flat_cap_fraction": 0.0
+    },
+    "finger2": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.477373022649799,
+     "r_lat_mm": 8.092535181373334,
+     "r_n_mm": 10.516245738433332,
+     "hemisphere_ratio": 1.2335437847445023,
+     "plan_ratio": 1.4182666822465446,
+     "side_ratio": 1.0913945250160777,
+     "max_turn_plan_deg": 12.601827113735746,
+     "max_turn_side_deg": 10.267960988999336,
+     "mean_turn_deg": 8.424936026039994,
+     "flat_cap_fraction": 0.0
+    },
+    "finger3": {
+     "cap_rows": 9,
+     "cap_len_mm": 11.754654155589476,
+     "r_lat_mm": 8.29989782577798,
+     "r_n_mm": 10.738072037073485,
+     "hemisphere_ratio": 1.2348642465839987,
+     "plan_ratio": 1.4162408263727833,
+     "side_ratio": 1.0946708231241338,
+     "max_turn_plan_deg": 12.845468899786235,
+     "max_turn_side_deg": 10.340676737518436,
+     "mean_turn_deg": 8.59080837498427,
+     "flat_cap_fraction": 0.0
+    },
+    "thumb": {
+     "cap_rows": 9,
+     "cap_len_mm": 14.295506141202072,
+     "r_lat_mm": 12.032934857826543,
+     "r_n_mm": 10.973807652682847,
+     "hemisphere_ratio": 1.2427231829688137,
+     "plan_ratio": 1.1880315409423075,
+     "side_ratio": 1.3026933397823084,
+     "max_turn_plan_deg": 11.93164264945835,
+     "max_turn_side_deg": 12.347919571650026,
+     "mean_turn_deg": 9.012325942119745,
+     "flat_cap_fraction": 0.0
+    }
+   }
+  }
+ },
+ "silhouette_native": {
+  "before": {
+   "bald_front": {
+    "xor": 3235,
+    "union": 74807,
+    "pct": 4.324,
+    "plate_only": 1858,
+    "mesh_only": 1377
+   },
+   "bald_back": {
+    "xor": 3436,
+    "union": 74173,
+    "pct": 4.632,
+    "plate_only": 2179,
+    "mesh_only": 1257
+   },
+   "left": {
+    "xor": 1012,
+    "union": 11235,
+    "pct": 9.008,
+    "plate_only": 728,
+    "mesh_only": 284
+   },
+   "right": {
+    "xor": 1114,
+    "union": 11440,
+    "pct": 9.738,
+    "plate_only": 925,
+    "mesh_only": 189
+   },
+   "sheet_front": {
+    "xor": 1323,
+    "union": 18602,
+    "pct": 7.112,
+    "plate_only": 900,
+    "mesh_only": 423
+   },
+   "sheet_back": {
+    "xor": 1500,
+    "union": 18550,
+    "pct": 8.086,
+    "plate_only": 853,
+    "mesh_only": 647
+   }
+  },
+  "after": {
+   "bald_front": {
+    "xor": 3114,
+    "union": 74808,
+    "pct": 4.163,
+    "plate_only": 1736,
+    "mesh_only": 1378
+   },
+   "bald_back": {
+    "xor": 3483,
+    "union": 74249,
+    "pct": 4.691,
+    "plate_only": 2150,
+    "mesh_only": 1333
+   },
+   "left": {
+    "xor": 1012,
+    "union": 11235,
+    "pct": 9.008,
+    "plate_only": 728,
+    "mesh_only": 284
+   },
+   "right": {
+    "xor": 1118,
+    "union": 11444,
+    "pct": 9.769,
+    "plate_only": 925,
+    "mesh_only": 193
+   },
+   "sheet_front": {
+    "xor": 1306,
+    "union": 18608,
+    "pct": 7.018,
+    "plate_only": 877,
+    "mesh_only": 429
+   },
+   "sheet_back": {
+    "xor": 1515,
+    "union": 18574,
+    "pct": 8.157,
+    "plate_only": 844,
+    "mesh_only": 671
+   }
+  }
+ },
+ "roi_xor": {
+  "FORM2": {
+   "bald_front_L": 264,
+   "bald_front_R": 453,
+   "bald_back_L": 439,
+   "bald_back_R": 421,
+   "sheet_front_L": 153,
+   "sheet_front_R": 171,
+   "sheet_back_L": 341,
+   "sheet_back_R": 105
+  },
+  "FORM3": {
+   "bald_front_L": 226,
+   "bald_front_R": 382,
+   "bald_back_L": 474,
+   "bald_back_R": 450,
+   "sheet_front_L": 170,
+   "sheet_front_R": 145,
+   "sheet_back_L": 359,
+   "sheet_back_R": 117
+  }
+ },
+ "audit": {
+  "verts_start": 31628,
+  "verts_staged": 31936,
+  "appended": 308,
+  "moved_original_verts": 3078,
+  "moved_in_hand_shell": 3078,
+  "shell_verts": 3078,
+  "moved_outside_hand_shell": 0,
+  "weld_ring_verts": 84,
+  "weld_ring_moved": 0,
+  "arm_zone_excluding_hand_shell_moved": 0,
+  "bit_identical": {
+   "head_neck(z>=1.40)": true,
+   "torso+pelvis(|x|<0.215,0.78<=z<1.40)": true,
+   "legs_feet(z<0.78,|x|<0.40)": true,
+   "arm_shafts+deltoids(arm zone minus hand shell)": true
+  },
+  "non_hand_polys_start": 28714,
+  "non_hand_polys_preserved": true,
+  "polys_start": 31854,
+  "polys_staged": 32162,
+  "tris_start": 63022,
+  "tris_staged": 63638,
+  "sharp_face_true": 0,
+  "custom_normal_nonzero_start": 31246,
+  "custom_normal_nonzero_staged": 31246,
+  "vg_entries_equal": true,
+  "max_move_hand_shell_mm": 172.44801330566406,
+  "mean_move_hand_shell_mm": 30.6168270111084,
+  "all_conditions_ok": true
+ },
+ "verify_blend": {
+  "verts": 31936,
+  "polys": 32162,
+  "loops": 127962,
+  "verts_equal_candidate": true,
+  "polys_equal_candidate_multiset": true,
+  "sharp_face_true": 0,
+  "sharp_edge_true": 0,
+  "custom_normal_loops": 127962,
+  "custom_normal_nonzero": 31246,
+  "custom_normal_loops_same_as_baseline": 124306,
+  "custom_normal_loops_diff_from_baseline": 0,
+  "has_custom_normals": true,
+  "vertex_groups": [
+   "LOOP_mouth_seam",
+   "LOOP_mouth_lip_upper",
+   "LOOP_mouth_lip_lower",
+   "LOOP_nostril_L",
+   "LOOP_nostril_R",
+   "LOOP_ala_L",
+   "LOOP_ala_R",
+   "LOOP_ear_attach_L",
+   "LOOP_helix_L",
+   "LOOP_concha_L",
+   "LOOP_ear_attach_R",
+   "LOOP_helix_R",
+   "LOOP_concha_R",
+   "LOOP_jaw_ear_L",
+   "LOOP_jaw_ear_R",
+   "LOOP_lid_margin_L",
+   "LOOP_lid_margin_R"
+  ],
+  "vertex_group_entries": 848,
+  "baseline_vertex_group_entries": 848,
+  "materials": [
+   "Blockout_Grey"
+  ]
+ },
+ "selfintersect": {
+  "tris": 16304,
+  "n_pairs": 0
+ },
+ "fbx": {
+  "fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/male-hands-form3/export/HeroBase_Male_Body_form3.fbx",
+  "fbx_sha256": "39303a777785a240ab9821107c00d9dfef6a476c29ce60d3bd369e7ad9e1038c",
+  "src_verts": 31936,
+  "imported_verts": 31936,
+  "imported_tris": 63638,
+  "max_nearest_distance_mm": 0.00027939677238464355,
+  "mean_nearest_distance_mm": 0.00016071005490237136,
+  "reimport_height_m": 1.7021871663164347,
+  "imported_scale": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "imported_rotation": [
+   -1.6292068494294654e-07,
+   0.0,
+   0.0
+  ]
+ },
+ "weld": {
+  "FORM2": {
+   "R": {
+    "band_faces": 137,
+    "edges": 309,
+    "max_dihedral_deg": 25.927739031995213,
+    "gt45": 0
+   },
+   "L": {
+    "band_faces": 139,
+    "edges": 311,
+    "max_dihedral_deg": 24.74771101401193,
+    "gt45": 0
+   }
+  },
+  "FORM3": {
+   "R": {
+    "band_faces": 137,
+    "edges": 309,
+    "max_dihedral_deg": 23.107696113160095,
+    "gt45": 0
+   },
+   "L": {
+    "band_faces": 139,
+    "edges": 311,
+    "max_dihedral_deg": 20.896215177120222,
+    "gt45": 0
+   }
+  }
+ }
+}

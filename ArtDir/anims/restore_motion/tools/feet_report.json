@@ -1,0 +1,81 @@
+{
+ "Backhand": {
+  "frames": 84,
+  "min_sole_m": -0.017
+ },
+ "CelebratePoint": {
+  "frames": 46,
+  "min_sole_m": -0.011
+ },
+ "Forehand": {
+  "frames": 81,
+  "min_sole_m": -0.025
+ },
+ "HitPerfect": {
+  "frames": 34,
+  "min_sole_m": -0.01
+ },
+ "Idle": {
+  "frames": 91,
+  "min_sole_m": -0.0
+ },
+ "MatchLose": {
+  "frames": 79,
+  "min_sole_m": -0.011
+ },
+ "MatchWin": {
+  "frames": 79,
+  "min_sole_m": -0.012
+ },
+ "MissWhiff": {
+  "frames": 55,
+  "min_sole_m": -0.024
+ },
+ "Ready": {
+  "frames": 66,
+  "min_sole_m": -0.052
+ },
+ "RunForward": {
+  "frames": 120,
+  "min_sole_m": -0.041,
+  "planted_speed_mps": 5.62,
+  "foot_slide_dir_blender": [
+   0.0,
+   1.0
+  ]
+ },
+ "RunLeft": {
+  "frames": 120,
+  "min_sole_m": -0.045,
+  "planted_speed_mps": 5.95,
+  "foot_slide_dir_blender": [
+   -1.0,
+   0.02
+  ]
+ },
+ "RunRight": {
+  "frames": 120,
+  "min_sole_m": -0.045,
+  "planted_speed_mps": 5.97,
+  "foot_slide_dir_blender": [
+   1.0,
+   0.02
+  ]
+ },
+ "SadPointLost": {
+  "frames": 52,
+  "min_sole_m": -0.011
+ },
+ "Serve": {
+  "frames": 108,
+  "min_sole_m": -0.052
+ },
+ "Smash": {
+  "frames": 105,
+  "min_sole_m": -0.025
+ },
+ "Volley": {
+  "frames": 58,
+  "min_sole_m": -0.035
+ }
+}

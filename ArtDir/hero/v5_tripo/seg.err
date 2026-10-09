@@ -1,0 +1,12 @@
+! smartsegment(model) requires a transform matrix; defaulted to identity
+task created f2134e75-78e4-442e-9a28-da29ff0159bc (@hero-v5-hc-seg)
+smartsegment_model · queued
+smartsegment_model · running 50% · f2134e75
+smartsegment_model · running 25% · f2134e75
+smartsegment_model · running 25% · f2134e75
+smartsegment_model · running 75% · f2134e75
+smartsegment_model · running 75% · f2134e75
+smartsegment_model · success 100% · f2134e75
+✓ smartsegment_model · f2134e75-78e4-442e-9a28-da29ff0159bc · 55 credits
+downloading artifacts…
+✓ artifacts saved to seg/tripo-out/hero-v5-hc-seg-f2134e75

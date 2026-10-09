@@ -1,0 +1,103 @@
+28b — SERVE WALK BALL-ARM: FINISH THE CANDIDATE (Party Sports, Unity, branch newmapsandmenus)
+Staged work only. Do NOT commit. Install into production only if EVERY gate below passes.
+Adnan's eye overrides any agent GATE PASS.
+
+CONTEXT (read these first, in full)
+- work/serve-walk-arm/REPRO.md
+- work/serve-walk-arm/report/GATE_RESULTS.md, matrix.json, unity-runs.json, source-audit.json, keyboard-audit.json
+- work/serve-walk-arm/report/CANDIDATE_GATES_FAIL.patch (HeroTennisDriver.cs only) and the CandidateClone
+- ArtDir/hero/base_lock/parallel_prompts/28_SERVE_WALK_BALL_ARM.txt (original brief, gate intent)
+- The editor proof tool from run 28 (ServeWalkFilm.cs) — reuse it, extend it, do not rewrite it.
+
+WHAT RUN 28 PROVED
+- Bug reproduced: walking left before a serve, the ball arm sinks 105.2 mm into the trunk (male RH deuce,
+  f129, 23.8% arm verts inside) and 78.7 mm (female f143). Walking right also penetrates.
+- Root cause confirmed: the Serve-derived ball-hold target plus the inherited elbow pole do not fit the Walk
+  pose; and the hand target is requested ONE FRAME BEFORE the driver updates visual yaw/root.
+  serveYaw is NOT the cause (Match sets it to 0).
+- Candidate (Walk-sampled hand, ball outside the thigh, trunk-capsule guard, outward pole, 0.25 s blend back)
+  takes player WALKING penetration to 0 mm in 8/8 cases. Front sheet looks right: arm hangs outside the body,
+  ball in front of the thigh. KEEP THIS LOOK as the base.
+
+WHAT IS STILL BROKEN (fix all of it)
+1. PLANT / TURN-IN penetration: player cases still hit up to 30.2 mm at the plant (male, f547), female ~5 mm.
+   The carry->hold blend lerps the hand target straight through the hip. Fix: the trunk-capsule guard must run
+   on EVERY frame the ball hand is IK-driven — carry, blend, plant, bounce ritual, and toss start — not only in
+   the walk branch. Blend in a path that stays outside the capsules (e.g. blend the hand in trunk-local space
+   with the guard applied after the lerp, and keep the outward pole until the hold pose is reached).
+2. OPPONENT path untouched: opponent cases still sink 91–129 mm (~30% verts inside). Find the opponent serve
+   pre-roll / OpponentServe path (TennisActor ApplyTossReach, TennisServeRoutine, whatever drives the opponent
+   ball hand) and route it through the SAME carry + guard + pole code. One shared function, no copy-paste.
+3. ONE-FRAME ORDER bug: compute the ball-hand target AFTER the driver has written this frame's yaw and root
+   (LateUpdate / explicit order call after the driver update). Prove it with a trace: target frame index ==
+   yaw/root frame index for every sampled frame.
+4. SMOOTHNESS (G5): player wrist steps 9–11 cm/frame and 2.7–3.3 m/s speed change per frame are pops.
+   Find the exact frames (likely walk start/stop, the yaw snap, or the carry<->hold switch), print them, fix
+   them. Limits: wrist step <= 3.0 cm/frame at 60 fps and |delta speed| <= 0.6 m/s per frame, measured on the
+   PLAYER and on the OPPONENT. Exclude only frames where the opponent is teleported by the test fixture/point
+   reset (flag them in the trace by reason; do not hide anything else).
+5. ELBOW / BELT (G4): walking elbow ranges 22–62°; wrist rises 6–13 cm above the belt. Target: elbow
+   15–60° while walking, wrist at or below belt height (pelvis-top marker) during carry. Lower and relax the
+   carry; the arm should swing a little with the walk, not lock.
+6. BALL IN HAND (G2) — fix the MEASUREMENT first, then the pose:
+   - Measure only frames where the ball is logically held (in-hand state). Exclude the intentional bounce
+     flight, and any frames after Refeed until the ball is re-parented (the stale positions in run 28).
+     Log each excluded range with its reason.
+   - On the in-hand frames: ball center within 3.5 cm of the palm point (current walking max is 4.2 cm).
+     Fix with the palm offset / grip pose, not by widening the limit.
+7. GAME-CAMERA VISIBILITY (G3): game cam drops to 68–96%. Revised gate: RH cases >= 90% of carry frames
+   with the ball visible from the game camera, and >= 95% from front and side cams. Move the carry slightly
+   forward/outward (toward the camera side) so the body doesn't hide it; don't break gate 1 or the look.
+8. LEFT-HANDERS (G7): the Match driver always solves the Left arm; LH players are not mirrored and a
+   requested LH opponent stays RH in ConfigureMatch. This is a feature gap, not this bug. DO NOT implement
+   LH mirroring here. Instead: drop LH cases from the pass/fail matrix, keep them in the films as
+   "unsupported", and write work/serve-walk-arm/LEFTY_GAP.md (what code paths would change, files, risk,
+   rough size) so it can be its own prompt later.
+9. REAL GAME INPUT (G8): run 28 couldn't drive walking in Play mode because the native UI control wouldn't
+   activate. Find where keyboard/remote input actually enters (TennisGame.MoveInput / ServeNudge or the
+   Input System action) and drive THAT same entry point from a play-mode test (Input System test fixture
+   QueueStateEvent on a virtual keyboard, or a test-only injector that calls the same method the input
+   handler calls). Record a Play-mode capture of the player walking left and right before a serve
+   (male + female, deuce + ad) and run the ARM-in-TRUNK metric on it.
+
+FILE OWNERSHIP (hard locks — other chats are writing other files)
+- YOU MAY EDIT: HeroTennisDriver.cs (carry/hold/toss-reach code only), TennisActor ApplyTossReach,
+  TennisServeRoutine, the opponent serve-reach path, and Editor-only tools/tests under Editor/ or Tests/.
+- DO NOT TOUCH: the Serve FBX / serve clip / import settings (owned by 26b), anything in run 29's set
+  (MatchHeroLook.cs, TennisCloth.shader, MatchHeroLockerExport.cs, HeroDetailTextures.cs, garment assets),
+  golf files, Multiplayer/, lobby files, QualitySettings, skeleton/bones.
+- If a needed fix lives outside your files, STOP that item and report exactly which file/line and why.
+- No new bones, no game-timing changes (serve phase times, rally timing unchanged — re-run the timing check).
+
+GATES (binary; every one must PASS to install)
+G1  ARM-IN-TRUNK = 0.0 mm (no ball-arm vert inside trunk/pelvis/thigh capsules) for every frame of carry,
+    blend, plant, bounce and toss start: player + opponent, male + female, deuce + ad, walk left + walk right
+    + no-walk control. Report the max per case.
+G2  Ball-in-hand <= 3.5 cm on in-hand frames only; excluded ranges listed with reasons.
+G3  Game-cam ball visibility >= 90% of carry frames (RH); front/side >= 95%.
+G4  Walking elbow 15–60°; wrist <= belt during carry.
+G5  Player AND opponent: wrist step <= 3.0 cm/frame, |delta speed| <= 0.6 m/s per frame (fixture
+    teleports excluded and listed).
+G6  No-walk serves unchanged vs baseline: ball-hand pose at toss start within 5 mm, toss timing identical,
+    contact frame identical. Walk-right is no worse than walk-left on any metric.
+G7  One-frame order: target computed after yaw/root on 100% of traced frames.
+G8  Play-mode capture with real input path shows 0.0 mm ARM-in-TRUNK, male + female, both walk directions.
+G9  LEFTY_GAP.md written; LH cases marked unsupported, not counted.
+G10 Game timing check unchanged (GAME_TIMES_UNCHANGED from 26/28 tooling).
+G11 git diff touches only owned files + Editor/Tests. Print `git status --short` and the diff stat.
+G12 Eye review package ready for Adnan (below). Do not self-pass the look.
+
+BEFORE/AFTER PROOF
+- Re-run the BEFORE (current production) and the AFTER for every case; same seeds, same frames.
+- Films in work/serve-walk-arm/film_r2/: male + female, game cam + front + side, before|after side by side,
+  half speed, depth readout burned in. Include the plant frame (old f547) and an opponent clip.
+- Contact sheets: one per hero per camera, labeled frame + depth.
+- work/serve-walk-arm/report_r2/GATE_RESULTS.md with a PASS/FAIL table and measured numbers per case.
+
+INSTALL RULE
+- All gates pass -> apply to production files, re-run every gate on production (not the clone), print results.
+- Any gate fails -> install NOTHING, save report_r2/CANDIDATE_R2_GATES_FAIL.patch, and report which gate,
+  which case, which frame, and your best next fix. No commit either way.
+
+FINAL REPORT (short): gate table, the frames you fixed in G5 and what caused them, what you changed per
+file, LEFTY_GAP summary, paths to the films and sheets, and whether it installed.

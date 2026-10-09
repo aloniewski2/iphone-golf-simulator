@@ -1,0 +1,57 @@
+{
+  "status": "Dense15 geometry ACCEPTED by parent/user actual review; later Hierarchy16 material candidate pending",
+  "editableSource": "ArtDir/golf/source/CoastalTurf.blend",
+  "tool": "ArtDir/golf/tools/build-coastal-turf.py",
+  "portableInput": "ArtDir/golf/source/turf-history/CoastalTurf8.blend",
+  "portableInputFactory": "ArtDir/golf/tools/build-coastal-turf8.py",
+  "geometrySha256": "ce71822a5df680c86eaffc142f2f937da40228cb4cfd6505f8e960e28a20026f",
+  "lods": {
+    "TURF_NEAR": {
+      "blades": 2304,
+      "vertices": 11520,
+      "triangles": 6912,
+      "heightMaxMeters": 0.08488665521144867
+    },
+    "TURF_MID": {
+      "blades": 512,
+      "vertices": 2560,
+      "triangles": 1536,
+      "heightMaxMeters": 0.06493226438760757
+    },
+    "TURF_FAR": {
+      "blades": 128,
+      "vertices": 384,
+      "triangles": 128,
+      "heightMaxMeters": 0.06411241739988327
+    }
+  },
+  "sourceCountsAndBudget": {
+    "nearBladesPerSquareMeter": 2304,
+    "nearTrianglesPerCell": 6912,
+    "midTrianglesPerCell": 1536,
+    "farTrianglesPerCell": 128,
+    "maximumCells": 640,
+    "nearCap": 48,
+    "midCap": 96,
+    "maximumTriangles": 542720,
+    "actual440CellsMaximumTriangles": 517120,
+    "instancedSubmissions": 3
+  },
+  "actualGate": {
+    "capture": "ArtDir/golf/proof/dense-turf15/capture-results.json",
+    "seconds": 23.33,
+    "compile": "PASS",
+    "render": "PASS",
+    "parentVisualDecision": "ACCEPTED connected physical leaf mat; ball/club readable",
+    "userDecision": "grass looks good; later requests real-course coloring and surface hierarchy"
+  },
+  "groundParity": {
+    "status": "PASS obstacleCount/colliders/obstacleHash/allground EXACT toCamera10; decorative triangle counter differs as expected",
+    "obstacles": 161,
+    "colliders": 14,
+    "current": "ArtDir/golf/proof/dense-turf15/hole12_audit.json"
+  },
+  "scope": "Physical geometry within12m of tee onhole12 only; green intentionally excluded; distant/all-course physical blades not implemented. All physics regions unchanged by grass.",
+  "performance": "Bounded added decorative triangle maximum rose289792\u2192542720 to achieve connected grass. No grass shadows/colliders. No current sole-camera frame-cost or phone FPS gate; archived World18 performance is not certification of Dense15.",
+  "sourcePlateCaveat": "Blender plates and actual Dense15 images certify geometry and pre-Hierarchy16 appearance; subsequent runtime palette changes require fresh actual review."
+}

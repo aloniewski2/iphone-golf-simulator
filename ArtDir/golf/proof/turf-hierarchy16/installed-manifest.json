@@ -1,0 +1,21 @@
+{
+  "status": "INSTALLED candidate; Unity actual visual/compile gate pending",
+  "files": {
+    "Unity/Assets/Scripts/Course/GolfTurfPalette.cs": "e1cba8a8ab24ce01087c55ae96e9d0b881775254462104df26e9a3f2585ea941",
+    "Unity/Assets/Scripts/Course/GolfTurfPalette.cs.meta": "67449f91f1c0e47d18729c9687ffaf78ecdcaa109d5d179a6d5a51da267f631f",
+    "Unity/Assets/Scripts/Course/GolfCourseLook.cs": "91c427ed650a9c02dd7eb48229778a40de6cf1a93575c4e75fbc8d31efcd4bfd",
+    "Unity/Assets/Scripts/Course/GolfCoastalTurf.cs": "53d5b828055ddaefdf95e362e34dc938ff0f5763ba0946aa9450e5907b5f47d1",
+    "Unity/Assets/Resources/Course/Shaders/GolfCoastalTurf.shader": "ba66a41b494515912cc0fc08f3ddab667e213ae36defed58cce4b08c63414b7f",
+    "Unity/Assets/Resources/Course/Shaders/GolfGround.shader": "5df177d64f74139ebac70ee92db6bf0ca9361cf75871fd5337e08d11093221a1",
+    "Unity/Assets/Resources/Course/Shaders/GolfTurfField.hlsl": "3120d2469355c38b4253681f2366a223910b9a3d405b7fdf52fd8f58b9ad461c",
+    "Unity/Assets/Resources/Course/Shaders/GolfSurface.hlsl": "8a14181dcb07a0d4a1ce77c8099cb62448f8e426abbfc36ab52ee86b77b126a5"
+  },
+  "unchangedDense15Assets": {
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf.fbx": "ce71822a5df680c86eaffc142f2f937da40228cb4cfd6505f8e960e28a20026f",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_C.png": "0e69b9177fa1430089efb19fdb628799c9b8d3e87361a212a7bad3783cb61457",
+    "Unity/Assets/Resources/Course/Resort/CoastalTurf_N.png": "2fa1078217a60a9371c650adb0f94333616287d28353882a71e0093bb3cb2f44"
+  },
+  "physics": "No ground mesh, collider, analytic region, obstacle, shader displacement or transform changes",
+  "grassGeometry": "Dense15 near/mid/far geometry/cells/caps/roughheight/culling unchanged; physical blades remain12m aroundhole12tee only. No green geometry rollout.",
+  "surfaceHierarchy": "Sage/olive fine matte green; muted tee;5m-wide fairway bands; emerald collar; unstriped variable rough with warmer tips. Centralized course-setting adjustments for coastal/temperate/tropical/cold/dry/volcanic."
+}

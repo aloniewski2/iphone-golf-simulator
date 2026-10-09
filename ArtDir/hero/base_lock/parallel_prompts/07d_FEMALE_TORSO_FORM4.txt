@@ -1,0 +1,102 @@
+PASTE — FEMALE TORSO FORM4 (bust primary + glute polish) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan eye on FORM3 (`work/female-torso-form3/`):
+- **BUTT is almost there** — keep FORM3 glute wins; light polish only (fullness / smooth surface / slight side projection). Do NOT rebuild from scratch or reintroduce FORM2 box/pit.
+- **CHEST is NOT there** — primary fail. Soft matcap makes mounds nearly vanish; side profile too vertical; no soft-plastic tear-drop fullness vs plate. FORM2 was pointy/shelfy; FORM3 overcorrected flat. Agent BUST_LIKENESS NCC "PASS" (0.644) is a soft-pass — **Adnan eye overrides**. This pass HARD-FAILS if chest still flat on plate BA.
+
+START (verify SHA before any edit):
+work/female-torso-form3/export/HeroBase_Female_torso_form3_candidate.blend
+SHA-256 a0f69f9d0e8ee4cf0d9e441a56d2cfb99db99c3efe330b7c7974ac92c420dd46
+(fallback: apply `export/torso_form3_delta.npz` onto ArtDir HeroBase_Female.blend 200dc3b9… via form3 merge script — never whole-file clobber)
+ArtDir female is STILL 200dc3b9… (nothing installed). Prefer staged FORM3 candidate.
+
+READ FIRST (mandatory):
+1) work/female-torso-form3/FEMALE_TORSO_FORM3_RESULTS.md
+2) work/female-torso-form3/proof/04_plate_vs_form2_vs_form3_3q.png
+3) work/female-torso-form3/proof/05_bust_closeups_soft.png + _clay.png  ← chest gap obvious on soft
+4) work/female-torso-form3/proof/06_glute_closeups_soft.png + _clay.png
+5) work/female-torso-form3/proof/01_torso_before_after_soft.png
+6) ArtDir/hero/base_lock/parallel_prompts/07c_FEMALE_TORSO_FORM3.txt (prior brief)
+7) AGENTS.md + art-bible.md
+AUTHORITY (hard): female_body_bald.jpg + female_multiangle_body.jpg + female_body_plain.jpg — front/side primary for bust; back/side/3q for glute. **Plate BA eye wins over any NCC / mm gate you invent.**
+
+WHY FORM3 CHEST STILL FAILS (do not repeat):
+1) Soft plate-like matcap: bust ROI reads nearly flat / prepubescent vs plate's soft rounded projection.
+2) Side profile still too vertical from clavicle through bust band — plate has clear soft outward curve.
+3) Mounds lack tear-drop / soft-plastic volume (lower mass + gentle upper slope); sternal valley + underbust crescent too weak to read at game distance.
+4) Photometric NCC soft-passed while Adnan/Grok eye still rejects — **do not trust NCC alone**.
+
+KEEP FROM FORM3 (do not regress):
+- Glute twin lobes + soft V cleft (not box/pit) — Adnan says almost there
+- ZONE mask = chat7 / FORM2 / FORM3 (z ≈ 0.795–1.37, arms excluded); border verts at neck / arm junction / leg tops bit-identical
+- ZONE_OUTSIDE=0 vs FORM3 start AND vs ArtDir 200dc3b9
+- TOPOLOGY / UV / materials / custom-normal raw codes identical preferred (positions-only)
+- SIDE_SIL torso band ≤ 5%; front/back torso edge XOR ≤ 5%
+- Soft-plastic party style (no pores, no hyperreal, no shredded abs)
+
+PARALLEL SAFETY:
+- Work ONLY under work/female-torso-form4/
+- Stage exports there. ArtDir install ONLY after Adnan eye PASS.
+- Do NOT open male blend. Do NOT thrash head / arms / hands / legs.
+- Do NOT densify unless disclosed TRI delta + Adnan note.
+- If ArtDir female moved, STOP and rebase delta — never whole-file clobber.
+
+════════════════════════════════════
+SCOPE — FORM4
+════════════════════════════════════
+
+1) BUST_LIKENESS — PRIMARY (must PASS Adnan-eye plate BA or GATE FAIL)
+   Rebuild chest volume so soft + clay both read as the plate's soft-plastic breasts.
+   - Soft rounded mounds with **real projection** (side view must show clear soft curve, not a near-vertical wall).
+   - Volume bias lower (tear-drop / soft-plastic), gentle upper slope into clavicle/chest wall.
+   - Readable **underbust crescent** that blends (no hard cylinder shelf; no FORM2 pointy caps).
+   - Soft **sternal valley / separation** without a knife crease.
+   - Lateral flanks blend into armpit/chest wall — no square corners, no flat front faces, no bolted-on eggs.
+   - Soft matcap must still show mound shading (FORM3 soft fail mode = FAIL).
+   - Mandatory proof: plate | FORM3 | FORM4 front + 3/4 + **side** bust close-ups (soft AND clay).
+
+2) GLUTE_LIKENESS — SECONDARY polish (hold FORM3 wins; improve, don't thrash)
+   - Adnan: almost there. Max allowed glute ROI drift vs FORM3: document; prefer ≤2–4 mm average on lobe verts unless clearly fixing a surface dent.
+   - Light polish only: slightly fuller side projection if shy of plate; smooth minor dimples / uneven lobe surface on 3/4; soft underbutt within zone floor.
+   - Do NOT reintroduce square cleft, hard rim, flat-top ledge, or rectangular box.
+   - Honest limit: deep thigh overhang below z≈0.795 is legs zone — do not invade.
+   - Mandatory proof: plate | FORM3 | FORM4 back + 3/4 + side glute close-ups (soft + clay).
+
+FORBIDDEN:
+- Flat pancake chest that only "passes" NCC
+- Returning to FORM2 pointy/shelf/ellipsoid-cap bust
+- Rebuilding glutes from scratch / box-pit recipes
+- Soft-passing via self-defined mm/NCC while plate BA still looks wrong
+- Invading arms / legs / head / Face
+
+METHOD HINTS:
+- Prefer sculpt / sculpt-like displace toward **plate silhouette + plate shading**, then fair
+- Fit lighting to plate for proofs (FORM3 plate-fit matcap OK) + clay studio + mirror-stripe
+- Mirror-stripe: soft concentric rings on mounds; square rings / V-creases = FAIL
+- Iterate plate ROI overlay on bust band until side + soft matcap both read; then light glute polish
+- Stage superseding delta npz + merge script relative to ArtDir 200dc3b9
+
+HARD GATES (binary — Adnan eye is the boss):
+ZONE_OUTSIDE_MOVED=0 (vs FORM3 start AND vs ArtDir 200dc3b9; border verts 0)
+TOPOLOGY_IDENTICAL preferred
+SIDE_SIL<=5% (torso band)
+FRONT_BACK_TORSO_EDGE<=5%
+SEAM_CLEAN hold (arm ≤10 mm, legs ≤8 mm, neck ≤1 mm — not worse than FORM3)
+BUST_EYE_PASS — plate | FORM3 | FORM4 soft+clay+side: soft rounded projected mounds; soft matcap still shows volume; no flat wall, no pointy shelves
+GLUTE_HOLD_OR_BETTER — FORM4 glutes ≥ FORM3 (no box regression); optional mild fullness/smooth polish vs plate
+NO_SELF_INTERSECT / no NaN / no flipped faces
+NO densify unless disclosed
+
+DELIVER:
+- work/female-torso-form4/FEMALE_TORSO_FORM4_RESULTS.md (Honest notes: what still fails Adnan-eye)
+- proof/: 04 plate|F3|F4 3q; 05 bust soft+clay; 06 glute soft+clay; side overlays; checks.json
+- export/: candidate blend + torso_form4_delta.npz + merge script + README_MERGE.md
+- Stage only — do not install ArtDir / Unity
+
+REPLY ONLY:
+GATE: FEMALE_TORSO_FORM4 PASS
+or FAIL with failed lines only.

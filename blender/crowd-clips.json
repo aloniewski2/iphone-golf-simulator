@@ -1,0 +1,36 @@
+{
+ "male": {
+  "clips": [
+   {
+    "name": "SitIdle",
+    "firstFrame": 0,
+    "lastFrame": 320,
+    "loop": true
+   },
+   {
+    "name": "SitCheer",
+    "firstFrame": 331,
+    "lastFrame": 412,
+    "loop": false
+   }
+  ],
+  "seatOffset": 0.406
+ },
+ "female": {
+  "clips": [
+   {
+    "name": "SitIdle",
+    "firstFrame": 0,
+    "lastFrame": 320,
+    "loop": true
+   },
+   {
+    "name": "SitCheer",
+    "firstFrame": 331,
+    "lastFrame": 412,
+    "loop": false
+   }
+  ],
+  "seatOffset": 0.406
+ }
+}

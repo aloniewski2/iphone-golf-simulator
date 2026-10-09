@@ -1,0 +1,183 @@
+{
+  "gate": "MALE_HEAD FAIL",
+  "date": "2026-10-01",
+  "scope": "Micro1g face lock (Body_M head sculpt + Face_M layer)",
+  "lines": {
+    "OVERALL_LIKENESS": "FAIL",
+    "BALD_NO_HAIR": "PASS",
+    "STYLE": "PASS",
+    "SKIN_TONE": "PASS",
+    "DEFAULT_EXPR": "PASS",
+    "SHIRT_OUT_OF_SCOPE": "PASS",
+    "CRANIAL_FRONT": "PASS",
+    "CRANIAL_PROFILE": "PASS",
+    "CRANIAL_TOP": "PASS",
+    "SCALP_SURFACE": "FAIL",
+    "FOREHEAD": "PASS",
+    "BROW_SHELF": "PASS",
+    "BROW_WIDTH": "PASS",
+    "BROW_SHAPE": "PASS",
+    "BROW_PLACE": "PASS",
+    "BROW_SEPARATION": "PASS",
+    "EYE_SIZE": "PASS",
+    "EYE_IRIS": "PASS",
+    "EYE_LIDS": "PASS",
+    "EYE_SOCKET": "PASS",
+    "EYE_SPACING": "PASS",
+    "EYE_SYMMETRY": "PASS",
+    "NOSE_HEIGHT": "PASS",
+    "NOSE_BRIDGE_PROFILE": "PASS",
+    "NOSE_TIP": "PASS",
+    "NOSE_ALAE": "FAIL",
+    "NOSE_WIDTH_FRONT": "FAIL",
+    "NOSE_ROOT": "PASS",
+    "CHEEK_ATHLETIC": "PASS",
+    "CHEEKBONE_3Q": "PASS",
+    "CHEEK_WIDTH": "FAIL",
+    "EAR_ANATOMY": "FAIL",
+    "EAR_SIZE": "PASS",
+    "EAR_PLACE": "PASS",
+    "EAR_Y_PAIR": "PASS",
+    "EAR_ATTACH": "PASS",
+    "MOUTH_SMILE": "PASS",
+    "LIP_VOLUME": "PASS",
+    "PHILTRUM": "PASS",
+    "TEETH_DEFAULT": "PASS",
+    "MOUTH_WIDTH": "PASS",
+    "JAW_U": "PASS",
+    "CHIN_CLEFT": "PASS",
+    "UNDER_CHIN": "PASS",
+    "JAW_PROFILE": "PASS",
+    "NO_JOWLS": "PASS",
+    "STUBBLE_ROOM": "PASS",
+    "STUBBLE_ZONE": "PASS",
+    "NECK_COLUMN": "PASS",
+    "CHIN_LOCK": "PASS",
+    "NAPE": "PASS",
+    "PROP_THIRDS": "PASS",
+    "PROP_EYE_SPACE": "PASS",
+    "PROP_EAR_ALIGN": "PASS",
+    "PROP_NOSE_MOUTH": "PASS",
+    "PROP_HEAD_NECK": "PASS",
+    "MAT_SKIN": "PASS",
+    "CONSTRUCT": "PASS",
+    "NO_HAIR_MESH": "PASS",
+    "BODY_BELOW_NECK": "PASS",
+    "HANDS": "PASS",
+    "SIL_%": "PASS"
+  },
+  "fail_tags_present": [],
+  "silhouette_percent": {
+    "gate_each_max": 5.0,
+    "body_only": {
+      "bald_front": 4.0508,
+      "bald_back": 4.3166
+    },
+    "with_face": {
+      "bald_front": 4.0192,
+      "bald_back": 4.2782
+    },
+    "micro1f": {
+      "bald_front": 3.97,
+      "bald_back": 4.2166
+    }
+  },
+  "mesh": {
+    "body_verts": 24652,
+    "body_tris": 49304,
+    "face_verts": 3582,
+    "face_tris": 6876,
+    "face_slots": [
+      "Face_Skin",
+      "Face_Brow",
+      "Face_Sclera",
+      "Face_Iris",
+      "Face_Pupil",
+      "Face_Catch",
+      "Face_LidLine",
+      "Face_Lip",
+      "Face_Seam",
+      "Face_Nostril"
+    ],
+    "height_m": 1.7021874501369894
+  },
+  "vertex_changes": {
+    "head_moved": 880,
+    "moved_outside_head": 0,
+    "hands_changed": 0,
+    "chin_band_changed": 51,
+    "chin_band_max_mm": 0.4438110465606106,
+    "max_disp_mm": 24.595336181030437,
+    "head_mean_disp_mm": 2.0676866261328173,
+    "bands": {
+      "cranium z>1.63": {
+        "verts": 590,
+        "moved": 113,
+        "max_mm": 0.43283571838083673
+      },
+      "brow/eyes 1.57-1.63": {
+        "verts": 388,
+        "moved": 235,
+        "max_mm": 16.82013706891444
+      },
+      "nose/cheeks 1.52-1.57": {
+        "verts": 402,
+        "moved": 263,
+        "max_mm": 24.595336181030437
+      },
+      "mouth 1.47-1.52": {
+        "verts": 352,
+        "moved": 218,
+        "max_mm": 17.73510558049021
+      },
+      "chin <1.47": {
+        "verts": 270,
+        "moved": 51,
+        "max_mm": 0.4438110465606106
+      }
+    }
+  },
+  "landmarks_m": {
+    "brow_z": 1.6125,
+    "eye_z": 1.5975,
+    "eye_x": 0.052,
+    "nose_root_z": 1.608,
+    "nose_tip_z": 1.545,
+    "nose_base_z": 1.535,
+    "mouth_z": 1.4973,
+    "chin_z": 1.449,
+    "ear_z": [
+      1.525,
+      1.592
+    ],
+    "ear_y": [
+      -0.059,
+      0.0
+    ]
+  },
+  "hashes": {
+    "start_lock_blend": "57a08123bd714e58d744e2a59780e6aacb81dd71879f3ffeb14b31725eee6d73",
+    "blend": "c6b66edefc902c38c8696d7d5b25feb846f58c60c3edb21cd7a465d3c8dfd0d4",
+    "fbx": "b2caa3cea82f403718b12b8d46dba80f07c55b505eb7adad8f9b25da520a540f",
+    "prefab": "f65086bee4edcb9fca339ee58ba4f81a7a851e9428e95757f3354c43738a3338"
+  },
+  "unity": {
+    "renderers": "Body_M + Face_M",
+    "skin": "Male_Form_Skin.mat sRGB .74/.555/.435 smooth .40",
+    "face_materials": "Male_Face_<slot>.mat per slot by name",
+    "verify": "MALE_FORM_SAVED_UNITY_VERIFY=PASS"
+  },
+  "fbx_reimport_mm": {
+    "body_mm": 0.00027939677238464355,
+    "face_mm": 0.0002682209014892578
+  },
+  "failed_lines": [
+    "OVERALL_LIKENESS",
+    "NOSE_WIDTH_FRONT",
+    "NOSE_ALAE",
+    "CHEEK_WIDTH",
+    "EAR_ANATOMY",
+    "SCALP_SURFACE"
+  ],
+  "blocker": "Face primary forms (nose bulb/alae, ear helix+concha, clean midface planes) need local head topology; Body_M head is ~9.5 mm vertex spacing. Needs Adnan OK for a local head remesh (as done for hands in Micro1e)."
+}

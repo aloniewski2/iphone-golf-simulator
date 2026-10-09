@@ -1,0 +1,75 @@
+{
+  "source": "https://polyhaven.com/a/coastal_cliff_02",
+  "author": "Rob Tuytel",
+  "license": "CC0",
+  "sourceLod": "LOD3 reduced .18",
+  "moduleCount": 23,
+  "triangles": 428532,
+  "warpMetres": [
+    [
+      8,
+      8
+    ],
+    [
+      60,
+      14
+    ],
+    [
+      110,
+      110
+    ]
+  ],
+  "status": "ACTUAL PILOT REVIEWED: broader foot accepted direction; reference fidelity remains partial",
+  "structuralChange": "Continuous crest-fixed erosion sweep: localized asymmetric attached buttresses and convex sea-level foot, with height-dependent tangential shear. Same scan/UV/module count; broad scan planes retained between buttresses.",
+  "candidate": "EROSION5",
+  "canonicalSource": "ArtDir/golf/source/ReferenceCliffs12.blend",
+  "builder": "ArtDir/golf/tools/build-reference-cliffs.py",
+  "embeddedInputs": "Unwarped reduced coastal_cliff_02 mesh and packed artist diffuse/GL-normal textures retained in canonical blend",
+  "resource": "Unity/Assets/Resources/Course/Resort/ReferenceCliffs12.fbx",
+  "proof": [
+    "ArtDir/golf/proof/reference-cliffs-erosion5/scanned-cliff-erosion-source.png",
+    "ArtDir/golf/proof/reference-cliffs-erosion5/scanned-cliff-erosion-tee.png"
+  ],
+  "previousBackup": "work/reference-rebuild/coastal-erosion5/previous-reference-cliffs/backup-manifest.json",
+  "geometryScope": "Render-only scanned cliff resource. Existing turf crest and all playable ground/collider source resources unchanged by this revision.",
+  "originalHole12Sha256": "56b4d6197d960392008ad44bef257bc1a34477a95eeee3c3cac594971f29fd87",
+  "resourceMetadataSha256": "05911006b3c700bae17c354aa807279b8bee1566e518b799005a5a5143c8cd1a",
+  "files": [
+    {
+      "path": "Unity/Assets/Resources/Course/Resort/ReferenceCliffs12.fbx",
+      "sha256": "33df80b0beec1d93a848b0062afd67b31067bb69b2b8b301c039544fc1243a2a",
+      "bytes": 13258844
+    },
+    {
+      "path": "ArtDir/golf/source/ReferenceCliffs12.blend",
+      "sha256": "996d86700378cedb5189bc921cedff1e757000b1b2420f3352c4eac27388fc32",
+      "bytes": 30521007
+    },
+    {
+      "path": "ArtDir/golf/tools/build-reference-cliffs.py",
+      "sha256": "6b92fa3c3335ecf8f8fe76ec0de66e5168baf7f1d57a2ca0b4cc5de398c09fb6",
+      "bytes": 11127
+    }
+  ],
+  "limitations": [
+    "Source proof has a level playable crest and remains a large wall; actual reference fidelity is not yet established.",
+    "Standalone source render uses a chalk proof material; root actual Unity lighting/material/camera is authoritative."
+  ],
+  "embeddedInputsAudit": {
+    "unwarpedMesh": "coastal_cliff_02_a.005",
+    "vertices": 10766,
+    "polygons": 21222,
+    "fakeUser": true,
+    "packedImages": [
+      "coastal_cliff_02_diff.png",
+      "coastal_cliff_02_nor_gl.png",
+      "coastal_cliff_02_rough.png"
+    ],
+    "audit": "Read-only Blender1CPU source inventory; no source/runtime mesh or Assets changes"
+  },
+  "materialManifest": "ArtDir/golf/reference-cliffs-material-manifest.json",
+  "actualEvidence": [
+    "ArtDir/golf/proof/reference-cliffs-erosion5/actual-baseline5.png",
+    "ArtDir/golf/proof/reference-cliffs-erosion5/actual-fissures7.png"
+  ]
+}

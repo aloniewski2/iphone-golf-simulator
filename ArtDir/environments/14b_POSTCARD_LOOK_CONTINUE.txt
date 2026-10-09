@@ -1,0 +1,32 @@
+PASTE — POSTCARD LOOK, CONTINUE · NEW CHAT
+
+The last postcard chat paused at 10:33 PM ET on Oct 3. Do not resume that chat or its workflow. Read work/postcard-look/RESUME.md, then fix the fails below and install them.
+
+Where it stopped
+- Textures, the ground library, the props library, and the Unity look wiring exist. Reviewers failed them. Repair had just started and was halted. Treat those files as partial.
+- hole_08, hole_09, and hole_10 are still the flat afternoon meshes (FBX times 5:56, 6:04, and 6:56 PM ET). Nothing textured is on the real holes. No Game-view proof shots.
+- Hole 7, Hole.cs, and the scoring cuts are untouched. Leave them that way. One shore, one centerline, one pin, PLAY_Z = 6. No second green, no hovering green, no animated lava.
+
+Do not touch tennis files, QualitySettings, the hero shaders, Serve, or the locker. Another chat pointed the iPhone quality level at HeroBaseStudioURP. Leave that file alone.
+
+Fix these, in this order. Each one was measured.
+
+1. Grass. Fairway, green, and rough read about 20 degrees too blue-green against needle.jpg and split.jpg. Shift the albedo toward the stills (their greens sit around hue 64-73). Re-check under the golf key light, not in the PNG.
+2. Water shelf. The turquoise ring around each island is 10-24 m wide and is the loudest thing in the aerial. split.jpg is deep blue up to the foam. Narrow the shelf until it is a thin edge, not a halo.
+3. Lava. Lava_C is dark polygonal cells with glowing borders. crater.jpg is swirling molten flow, mostly bright. Rebuild the map. Drop the emission multiplier so it stays orange without bloom. Post does not render: TennisURP_Renderer has no postProcessData, and a golf-only volume is invisible. Do not edit the tennis renderer. Do not add bloom. Make the lava read orange with emission alone.
+4. Basalt and smoke. Basalt reads as brick, and the glow repeats as little ladders. Columns should read as prisms, glow only in the joints. Smoke_C is a hard grey ball. Make it a soft wisp. The crater wall still shows a band of smooth grass texture at the top. Cover it.
+5. Rocks and plants. Sea stacks read as stacked boxes. Legacy rock swap stretches wall pieces past 2x. Plants from scatter() land on the water when no region is passed. Fix the library before any hole calls it. No 12-vertex rocks.
+6. Foam. Delete the white foam strips. A continuous white surf band is not a pass.
+7. Cart path. On Needle it sits up to 11 cm above the play surface and hides the ball. Keep it under the ball.
+
+Then install. Rebuild holes 8, 9, and 10 from the existing scoring meshes. Call postcard_look_lib, then export with postcard_look_lib.export_look_fbx. Do not use postcard_lib.export_fbx. Update PostcardImportCheck so LK_ materials pass. Do not weaken the ground, lie, or marker gates.
+
+Proof, in the Game view, into ArtDir/screenshots/golf_postcards/look/.
+- Needle, Split, and Crater: tee, approach, and one landmark each (arch, ruin ridge, lava rim).
+FAIL if a hole is still one flat colour, the water halo is the brightest shape, the lava is dark cells, or a plant sits on the sea.
+
+GATE POSTCARD_LOOK. Every line is PASS or FAIL.
+- Holes 8-10 show albedo and normal in the Game view. Hole 7 is byte-identical.
+- Grass hue, water edge, lava, basalt, and smoke match the lines above.
+- No plant on water. No rock stretched past 2x. No white foam strip. Path does not cover the ball.
+- Scoring cuts unchanged. Tennis files, QualitySettings, shaders, and Serve untouched.

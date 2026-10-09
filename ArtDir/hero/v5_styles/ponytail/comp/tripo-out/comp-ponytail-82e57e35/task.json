@@ -1,0 +1,18 @@
+{
+  "task_id": "82e57e35-f5d5-4f03-882b-dd67cf74e454",
+  "type": "mesh_completion",
+  "status": "success",
+  "input": {
+    "completion_mode": "ai_completion",
+    "original_model_id": "8fad7897-9c0e-41df-8612-ce8ebe733060"
+  },
+  "output_fields": [
+    "model_url"
+  ],
+  "credits_consumed": 50,
+  "created_at": "2026-09-28T02:05:59.331523Z",
+  "completed_at": "2026-09-28T02:08:00.684629Z",
+  "files": [
+    "model.glb"
+  ]
+}

@@ -1,0 +1,15 @@
+task created 362c315f-c40e-457f-98d5-1a6ddeda371a (@comp-long)
+mesh_completion · queued
+mesh_completion · running 3% · 362c315f
+mesh_completion · running 8% · 362c315f
+mesh_completion · running 11% · 362c315f
+mesh_completion · running 18% · 362c315f
+mesh_completion · running 26% · 362c315f
+mesh_completion · running 38% · 362c315f
+mesh_completion · running 50% · 362c315f
+mesh_completion · running 61% · 362c315f
+mesh_completion · running 73% · 362c315f
+mesh_completion · success 100% · 362c315f
+✓ mesh_completion · 362c315f-c40e-457f-98d5-1a6ddeda371a · 50 credits
+downloading artifacts…
+✓ artifacts saved to long/comp/tripo-out/comp-long-362c315f

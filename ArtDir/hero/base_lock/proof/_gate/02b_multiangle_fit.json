@@ -1,0 +1,82 @@
+[
+ {
+  "crop": "07_body_front_head.png",
+  "yaw": 0,
+  "scale": 0.65,
+  "dx": -19,
+  "dy": -183.2,
+  "contour_rms_px": 3.74
+ },
+ {
+  "crop": "08_body_back_head.png",
+  "yaw": 180,
+  "scale": 0.73,
+  "dx": -45,
+  "dy": -203.2,
+  "contour_rms_px": 3.82
+ },
+ {
+  "crop": "09_ma_front.png",
+  "yaw": 0,
+  "scale": 0.56,
+  "dx": -47,
+  "dy": -174.6,
+  "contour_rms_px": 4.39
+ },
+ {
+  "crop": "10_ma_back.png",
+  "yaw": 180,
+  "scale": 0.53,
+  "dx": -11,
+  "dy": -161.0,
+  "contour_rms_px": 4.05
+ },
+ {
+  "crop": "11_ma_left_profile.png",
+  "yaw": 90,
+  "scale": 0.55,
+  "dx": 6,
+  "dy": -174.1,
+  "contour_rms_px": 7.48
+ },
+ {
+  "crop": "12_ma_right_profile.png",
+  "yaw": -90,
+  "scale": 0.52,
+  "dx": -79,
+  "dy": -170.5,
+  "contour_rms_px": 6.89
+ },
+ {
+  "crop": "13_ma_threequarter_front_left.png",
+  "yaw": -35,
+  "scale": 0.43,
+  "dx": 31,
+  "dy": -109.9,
+  "contour_rms_px": 5.93
+ },
+ {
+  "crop": "14_ma_threequarter_front_right.png",
+  "yaw": 40,
+  "scale": 0.44,
+  "dx": 11,
+  "dy": -112.4,
+  "contour_rms_px": 4.95
+ },
+ {
+  "crop": "15_ma_threequarter_back_left.png",
+  "yaw": 145,
+  "scale": 0.45,
+  "dx": 31,
+  "dy": -113.0,
+  "contour_rms_px": 2.93
+ },
+ {
+  "crop": "16_ma_threequarter_back_right.png",
+  "yaw": 145,
+  "scale": 0.44,
+  "dx": 37,
+  "dy": -112.4,
+  "contour_rms_px": 2.6
+ }
+]

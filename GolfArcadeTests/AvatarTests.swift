@@ -379,6 +379,32 @@ final class ShotCameraTests: XCTestCase {
         )
     }
 
+    func testAPuttIsWatchedFromBehindTheBallThenFromBehindTheHole() throws {
+        let hole = Course.easy.holes[0]
+        let from = CoursePoint(x: hole.pin.x, d: hole.pin.d - 7) // 21 ft, straight at it
+        let power = try XCTUnwrap(RangeShot.power(toReach: 7.4, with: .putter))
+        let putt = RangeShot(id: 1, club: .putter, power: power, aim: 0, origin: from, heading: 0, hole: hole)
+        func stage(at time: Double) -> ShotCameraDirector.Stage {
+            ShotCameraDirector.stage(ShotCameraDirector.Inputs(
+                ball: from, heading: 0, aim: 0, distanceToPin: 7, onGreen: true, handedness: .right,
+                shot: putt, elapsed: time, reaction: nil, landingTime: nil, pin: hole.pin))
+        }
+        XCTAssertEqual(stage(at: 0.1), .roll, "the camera holds behind the ball as it sets off")
+        // The moment the ball is within reach of the cup and still closing on it.
+        let arriving = try XCTUnwrap(stride(from: 0.0, to: putt.duration, by: 0.05).first { t in
+            let p = putt.position(at: t)
+            return CoursePoint(x: p.lateralYards, d: p.distanceYards).distance(to: hole.pin) <= ShotCameraDirector.holeCamReach - 0.2
+        })
+        XCTAssertEqual(stage(at: arriving), .holeCam, "and watches it arrive from behind the hole")
+        XCTAssertEqual(stage(at: putt.duration + 1), .holeCam, "staying there as it finishes")
+        let framing = ShotCameraDirector.shot(ShotCameraDirector.Inputs(
+            ball: from, heading: 0, aim: 0, distanceToPin: 7, onGreen: true, handedness: .right,
+            shot: putt, elapsed: arriving, reaction: nil, landingTime: nil, pin: hole.pin))
+        let cup = simd_float3(Float(hole.pin.x), 0, -Float(hole.pin.d))
+        XCTAssertLessThan(framing.position.z, cup.z, "the hole cam sits beyond the cup, on the far side from the ball")
+        XCTAssertLessThan(framing.position.y, 2, "and low")
+    }
+
     func testShotSequence() {
         XCTAssertEqual(ShotCameraDirector.stage(inputs(shot: nil, elapsed: 0)), .address)
         XCTAssertEqual(ShotCameraDirector.stage(inputs(shot: nil, elapsed: 0, onGreen: true)), .green)

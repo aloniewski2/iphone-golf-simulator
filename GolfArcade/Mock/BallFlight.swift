@@ -83,9 +83,11 @@ struct BallFlight: Equatable, Sendable {
                 let v = simd_length(velocity)
                 var acceleration = simd_double3(0, -gravity, 0)
                 if v > 0.01 {
+                    // Fits to launch-monitor flights (driver, 7-iron, wedge): drag grows with
+                    // spin ratio, lift rises quickly then saturates, and spin fades slowly.
                     let spinRatio = radius * spin / v
-                    let drag = 0.21 + 0.5 * spinRatio
-                    let lift = min(0.33, 2.05 * spinRatio)
+                    let drag = 0.20 + 0.35 * spinRatio
+                    let lift = min(0.32, 0.45 * pow(spinRatio, 0.4))
                     let dynamicPressure = 0.5 * airDensity * area * v * v
                     let direction = velocity / v
                     // Backspin axis lies flat and perpendicular to travel; tilting it adds sideways lift.
@@ -93,7 +95,7 @@ struct BallFlight: Equatable, Sendable {
                     let axis = simd_normalize(flat * cos(tilt) + simd_double3(0, 1, 0) * sin(tilt))
                     let liftDirection = simd_cross(axis, direction)
                     acceleration += (-direction * drag + liftDirection * lift) * dynamicPressure / mass
-                    spin *= exp(-dt / 25)
+                    spin *= exp(-dt / 45)
                 }
                 velocity += acceleration * dt
                 position += velocity * dt
@@ -102,8 +104,11 @@ struct BallFlight: Equatable, Sendable {
                     position.y = 0
                     if carryMeters == nil { carryMeters = simd_length(simd_double2(position.x, position.z)) }
                     velocity.y = -velocity.y * restitution
-                    velocity.x *= bounceFriction
-                    velocity.z *= bounceFriction
+                    // Backspin grips the turf on the first bounce: a driver keeps rolling, a
+                    // spinning iron hops and stops, a wedge checks up almost where it lands.
+                    let grip = max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * .pi)) / 10_000)
+                    velocity.x *= grip
+                    velocity.z *= grip
                     spin = 0
                     if velocity.y < 1.2 {
                         velocity.y = 0
@@ -157,27 +162,58 @@ extension GolfClub {
     /// Calibrated once through the same aerodynamic/rolling solver, not a distance
     /// multiplier applied after landing. Every lower-power shot keeps real flight integration.
     var maxClubSpeedMPH: Double {
-        Self.calibratedSpeeds[self]!
+        Self.calibration[self]!.maxSpeed
     }
 
-    private static let calibratedSpeeds: [GolfClub: Double] = Dictionary(uniqueKeysWithValues: allCases.map { club in
+    /// Club speed that flies (rolls, for the putter) `fraction` of the reference distance.
+    /// Distance grows faster than linearly with speed, so this is what makes a half-filled
+    /// meter a half-distance shot rather than a third of one.
+    func clubSpeedMPH(meter fraction: Double) -> Double {
+        let table = Self.calibration[self]!.distances
+        let target = min(max(fraction, 0), 1) * referenceDistanceYards
+        guard target > 0 else { return 0 }
+        let step = maxClubSpeedMPH / Double(table.count - 1)
+        var index = 1
+        while index < table.count - 1, table[index] < target { index += 1 }
+        let low = table[index - 1], high = table[index]
+        let within = high > low ? min(max((target - low) / (high - low), 0), 1) : 1
+        return (Double(index - 1) + within) * step
+    }
+
+    private struct Calibration {
+        let maxSpeed: Double
+        /// Distance at evenly spaced club speeds from rest to `maxSpeed`.
+        let distances: [Double]
+    }
+
+    private static let calibration: [GolfClub: Calibration] = Dictionary(uniqueKeysWithValues: allCases.map { club in
+        func distance(at speed: Double, spin: Double) -> Double {
+            let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
+                launchAngleDegrees: club.launchAngleDegrees, spinRPM: spin,
+                directionDegrees: 0, curveDegrees: 0))
+            return club == .putter ? flight.total : flight.carry
+        }
         var low = 1.0, high = 145.0
         for _ in 0..<24 {
             let speed = (low + high) / 2
-            let flight = BallFlight.simulate(.init(ballSpeedMPH: speed * club.smashFactor,
-                launchAngleDegrees: club.launchAngleDegrees, spinRPM: club.spinRPM,
-                directionDegrees: 0, curveDegrees: 0))
-            let distance = club == .putter ? flight.total : flight.carry
-            if distance < club.referenceDistanceYards { low = speed } else { high = speed }
+            if distance(at: speed, spin: club.spinRPM) < club.referenceDistanceYards { low = speed } else { high = speed }
         }
-        return (club, (low + high) / 2)
+        let maxSpeed = (low + high) / 2
+        // Sampled with the spin `launch` gives each speed, so the table inverts `launch` exactly.
+        let steps = 40
+        let distances = (0...steps).map { step -> Double in
+            let speed = maxSpeed * Double(step) / Double(steps)
+            return distance(at: speed, spin: club.spinRPM * speed / maxSpeed)
+        }
+        return (club, Calibration(maxSpeed: maxSpeed, distances: distances))
     })
 
+    /// Launch conditions of a well-struck shot with each club (driver, 7-iron, sand wedge).
     var launchAngleDegrees: Double {
         switch self {
         case .driver: 12.5
-        case .iron: 18
-        case .wedge: 30
+        case .iron: 17
+        case .wedge: 29
         case .putter: 0
         }
     }
@@ -186,16 +222,35 @@ extension GolfClub {
     var spinRPM: Double {
         switch self {
         case .driver: 2600
-        case .iron: 6200
-        case .wedge: 9500
+        case .iron: 6800
+        case .wedge: 9800
         case .putter: 0
         }
     }
 
-    /// Ball speed from club speed and a fair strike.
-    func launch(power: Double, aimDegrees: Double, curveDegrees: Double) -> BallFlight.Launch {
+    /// Shape of the meter. Full swings read distance straight, like every arcade golf meter:
+    /// 0.5 on a 250-yard driver carries 125. The putter curves it (distance ∝ meter^1.5) so
+    /// the short end has room: a tap-in is a small but readable stroke, a 30-footer a medium
+    /// one, and the full stroke still rolls the rated 25 yards. Console games get the same
+    /// effect by switching putter ranges; here the camera's arc resolution makes the curve the
+    /// better fit.
+    var meterExponent: Double { self == .putter ? 1.5 : 1 }
+
+    /// Rated distance (carry, or total roll for the putter) at a meter reading. What the HUD
+    /// quotes while the meter fills; `launch` flies exactly this on a fair strike.
+    func distanceYards(meter power: Double) -> Double {
         let p = min(max(power.isFinite ? power : 0, 0), 1)
-        let clubSpeed = maxClubSpeedMPH * p
+        return referenceDistanceYards * pow(p, meterExponent)
+    }
+
+    /// Launch for a meter reading: the club speed that flies `distanceYards(meter:)` comes
+    /// from the calibration table, so every shot still goes through the full flight model.
+    /// `speedFactor` then scales that speed for things that really do cost speed — a thin
+    /// strike, a chip motion, a buried lie.
+    func launch(power: Double, aimDegrees: Double, curveDegrees: Double, speedFactor: Double = 1) -> BallFlight.Launch {
+        let p = min(max(power.isFinite ? power : 0, 0), 1)
+        let factor = min(max(speedFactor.isFinite ? speedFactor : 0, 0), 1)
+        let clubSpeed = clubSpeedMPH(meter: pow(p, meterExponent)) * factor
         return BallFlight.Launch(
             ballSpeedMPH: clubSpeed * smashFactor,
             launchAngleDegrees: launchAngleDegrees,

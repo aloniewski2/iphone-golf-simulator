@@ -1,0 +1,802 @@
+[
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Guard__RH__V4",
+    "clip": "Guard",
+    "hand": "RH",
+    "start": 1,
+    "end": 31,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Jab__RH__V4",
+    "clip": "Jab",
+    "hand": "RH",
+    "start": 40,
+    "end": 70,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Cross__RH__V4",
+    "clip": "Cross",
+    "hand": "RH",
+    "start": 79,
+    "end": 109,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HookLead__RH__V4",
+    "clip": "HookLead",
+    "hand": "RH",
+    "start": 118,
+    "end": 148,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HookRear__RH__V4",
+    "clip": "HookRear",
+    "hand": "RH",
+    "start": 157,
+    "end": 187,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__UppercutLead__RH__V4",
+    "clip": "UppercutLead",
+    "hand": "RH",
+    "start": 196,
+    "end": 226,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__UppercutRear__RH__V4",
+    "clip": "UppercutRear",
+    "hand": "RH",
+    "start": 235,
+    "end": 265,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyJab__RH__V4",
+    "clip": "BodyJab",
+    "hand": "RH",
+    "start": 274,
+    "end": 304,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyCross__RH__V4",
+    "clip": "BodyCross",
+    "hand": "RH",
+    "start": 313,
+    "end": 343,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HighBlock__RH__V4",
+    "clip": "HighBlock",
+    "hand": "RH",
+    "start": 352,
+    "end": 382,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyBlock__RH__V4",
+    "clip": "BodyBlock",
+    "hand": "RH",
+    "start": 391,
+    "end": 421,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__SlipLeft__RH__V4",
+    "clip": "SlipLeft",
+    "hand": "RH",
+    "start": 430,
+    "end": 460,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__SlipRight__RH__V4",
+    "clip": "SlipRight",
+    "hand": "RH",
+    "start": 469,
+    "end": 499,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Duck__RH__V4",
+    "clip": "Duck",
+    "hand": "RH",
+    "start": 508,
+    "end": 538,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__RollUnder__RH__V4",
+    "clip": "RollUnder",
+    "hand": "RH",
+    "start": 547,
+    "end": 577,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__ShuffleLeft__RH__V4",
+    "clip": "ShuffleLeft",
+    "hand": "RH",
+    "start": 586,
+    "end": 616,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__ShuffleRight__RH__V4",
+    "clip": "ShuffleRight",
+    "hand": "RH",
+    "start": 625,
+    "end": 655,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__StepIn__RH__V4",
+    "clip": "StepIn",
+    "hand": "RH",
+    "start": 664,
+    "end": 694,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Retreat__RH__V4",
+    "clip": "Retreat",
+    "hand": "RH",
+    "start": 703,
+    "end": 733,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HitReaction__RH__V4",
+    "clip": "HitReaction",
+    "hand": "RH",
+    "start": 742,
+    "end": 772,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Guard__LH__V4",
+    "clip": "Guard",
+    "hand": "LH",
+    "start": 781,
+    "end": 811,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Jab__LH__V4",
+    "clip": "Jab",
+    "hand": "LH",
+    "start": 820,
+    "end": 850,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Cross__LH__V4",
+    "clip": "Cross",
+    "hand": "LH",
+    "start": 859,
+    "end": 889,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HookLead__LH__V4",
+    "clip": "HookLead",
+    "hand": "LH",
+    "start": 898,
+    "end": 928,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HookRear__LH__V4",
+    "clip": "HookRear",
+    "hand": "LH",
+    "start": 937,
+    "end": 967,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__UppercutLead__LH__V4",
+    "clip": "UppercutLead",
+    "hand": "LH",
+    "start": 976,
+    "end": 1006,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__UppercutRear__LH__V4",
+    "clip": "UppercutRear",
+    "hand": "LH",
+    "start": 1015,
+    "end": 1045,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyJab__LH__V4",
+    "clip": "BodyJab",
+    "hand": "LH",
+    "start": 1054,
+    "end": 1084,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyCross__LH__V4",
+    "clip": "BodyCross",
+    "hand": "LH",
+    "start": 1093,
+    "end": 1123,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HighBlock__LH__V4",
+    "clip": "HighBlock",
+    "hand": "LH",
+    "start": 1132,
+    "end": 1162,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__BodyBlock__LH__V4",
+    "clip": "BodyBlock",
+    "hand": "LH",
+    "start": 1171,
+    "end": 1201,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__SlipLeft__LH__V4",
+    "clip": "SlipLeft",
+    "hand": "LH",
+    "start": 1210,
+    "end": 1240,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__SlipRight__LH__V4",
+    "clip": "SlipRight",
+    "hand": "LH",
+    "start": 1249,
+    "end": 1279,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Duck__LH__V4",
+    "clip": "Duck",
+    "hand": "LH",
+    "start": 1288,
+    "end": 1318,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__RollUnder__LH__V4",
+    "clip": "RollUnder",
+    "hand": "LH",
+    "start": 1327,
+    "end": 1357,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__ShuffleLeft__LH__V4",
+    "clip": "ShuffleLeft",
+    "hand": "LH",
+    "start": 1366,
+    "end": 1396,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__ShuffleRight__LH__V4",
+    "clip": "ShuffleRight",
+    "hand": "LH",
+    "start": 1405,
+    "end": 1435,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__StepIn__LH__V4",
+    "clip": "StepIn",
+    "hand": "LH",
+    "start": 1444,
+    "end": 1474,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__Retreat__LH__V4",
+    "clip": "Retreat",
+    "hand": "LH",
+    "start": 1483,
+    "end": 1513,
+    "frames": 31
+  },
+  {
+    "gender": "Male",
+    "sport": "Boxing",
+    "action": "Male__Boxing__HitReaction__LH__V4",
+    "clip": "HitReaction",
+    "hand": "LH",
+    "start": 1522,
+    "end": 1552,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Guard__RH__V4",
+    "clip": "Guard",
+    "hand": "RH",
+    "start": 1,
+    "end": 31,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Jab__RH__V4",
+    "clip": "Jab",
+    "hand": "RH",
+    "start": 40,
+    "end": 70,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Cross__RH__V4",
+    "clip": "Cross",
+    "hand": "RH",
+    "start": 79,
+    "end": 109,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HookLead__RH__V4",
+    "clip": "HookLead",
+    "hand": "RH",
+    "start": 118,
+    "end": 148,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HookRear__RH__V4",
+    "clip": "HookRear",
+    "hand": "RH",
+    "start": 157,
+    "end": 187,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__UppercutLead__RH__V4",
+    "clip": "UppercutLead",
+    "hand": "RH",
+    "start": 196,
+    "end": 226,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__UppercutRear__RH__V4",
+    "clip": "UppercutRear",
+    "hand": "RH",
+    "start": 235,
+    "end": 265,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyJab__RH__V4",
+    "clip": "BodyJab",
+    "hand": "RH",
+    "start": 274,
+    "end": 304,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyCross__RH__V4",
+    "clip": "BodyCross",
+    "hand": "RH",
+    "start": 313,
+    "end": 343,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HighBlock__RH__V4",
+    "clip": "HighBlock",
+    "hand": "RH",
+    "start": 352,
+    "end": 382,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyBlock__RH__V4",
+    "clip": "BodyBlock",
+    "hand": "RH",
+    "start": 391,
+    "end": 421,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__SlipLeft__RH__V4",
+    "clip": "SlipLeft",
+    "hand": "RH",
+    "start": 430,
+    "end": 460,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__SlipRight__RH__V4",
+    "clip": "SlipRight",
+    "hand": "RH",
+    "start": 469,
+    "end": 499,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Duck__RH__V4",
+    "clip": "Duck",
+    "hand": "RH",
+    "start": 508,
+    "end": 538,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__RollUnder__RH__V4",
+    "clip": "RollUnder",
+    "hand": "RH",
+    "start": 547,
+    "end": 577,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__ShuffleLeft__RH__V4",
+    "clip": "ShuffleLeft",
+    "hand": "RH",
+    "start": 586,
+    "end": 616,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__ShuffleRight__RH__V4",
+    "clip": "ShuffleRight",
+    "hand": "RH",
+    "start": 625,
+    "end": 655,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__StepIn__RH__V4",
+    "clip": "StepIn",
+    "hand": "RH",
+    "start": 664,
+    "end": 694,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Retreat__RH__V4",
+    "clip": "Retreat",
+    "hand": "RH",
+    "start": 703,
+    "end": 733,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HitReaction__RH__V4",
+    "clip": "HitReaction",
+    "hand": "RH",
+    "start": 742,
+    "end": 772,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Guard__LH__V4",
+    "clip": "Guard",
+    "hand": "LH",
+    "start": 781,
+    "end": 811,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Jab__LH__V4",
+    "clip": "Jab",
+    "hand": "LH",
+    "start": 820,
+    "end": 850,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Cross__LH__V4",
+    "clip": "Cross",
+    "hand": "LH",
+    "start": 859,
+    "end": 889,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HookLead__LH__V4",
+    "clip": "HookLead",
+    "hand": "LH",
+    "start": 898,
+    "end": 928,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HookRear__LH__V4",
+    "clip": "HookRear",
+    "hand": "LH",
+    "start": 937,
+    "end": 967,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__UppercutLead__LH__V4",
+    "clip": "UppercutLead",
+    "hand": "LH",
+    "start": 976,
+    "end": 1006,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__UppercutRear__LH__V4",
+    "clip": "UppercutRear",
+    "hand": "LH",
+    "start": 1015,
+    "end": 1045,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyJab__LH__V4",
+    "clip": "BodyJab",
+    "hand": "LH",
+    "start": 1054,
+    "end": 1084,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyCross__LH__V4",
+    "clip": "BodyCross",
+    "hand": "LH",
+    "start": 1093,
+    "end": 1123,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HighBlock__LH__V4",
+    "clip": "HighBlock",
+    "hand": "LH",
+    "start": 1132,
+    "end": 1162,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__BodyBlock__LH__V4",
+    "clip": "BodyBlock",
+    "hand": "LH",
+    "start": 1171,
+    "end": 1201,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__SlipLeft__LH__V4",
+    "clip": "SlipLeft",
+    "hand": "LH",
+    "start": 1210,
+    "end": 1240,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__SlipRight__LH__V4",
+    "clip": "SlipRight",
+    "hand": "LH",
+    "start": 1249,
+    "end": 1279,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Duck__LH__V4",
+    "clip": "Duck",
+    "hand": "LH",
+    "start": 1288,
+    "end": 1318,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__RollUnder__LH__V4",
+    "clip": "RollUnder",
+    "hand": "LH",
+    "start": 1327,
+    "end": 1357,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__ShuffleLeft__LH__V4",
+    "clip": "ShuffleLeft",
+    "hand": "LH",
+    "start": 1366,
+    "end": 1396,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__ShuffleRight__LH__V4",
+    "clip": "ShuffleRight",
+    "hand": "LH",
+    "start": 1405,
+    "end": 1435,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__StepIn__LH__V4",
+    "clip": "StepIn",
+    "hand": "LH",
+    "start": 1444,
+    "end": 1474,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__Retreat__LH__V4",
+    "clip": "Retreat",
+    "hand": "LH",
+    "start": 1483,
+    "end": 1513,
+    "frames": 31
+  },
+  {
+    "gender": "Female",
+    "sport": "Boxing",
+    "action": "Female__Boxing__HitReaction__LH__V4",
+    "clip": "HitReaction",
+    "hand": "LH",
+    "start": 1522,
+    "end": 1552,
+    "frames": 31
+  }
+]

@@ -1,0 +1,21 @@
+task created d316da08-cb86-4527-87bd-ca773b7a5748 (@m-long)
+image_to_model · queued
+image_to_model · running 3% · d316da08
+image_to_model · running 8% · d316da08
+image_to_model · running 14% · d316da08
+image_to_model · running 21% · d316da08
+image_to_model · running 32% · d316da08
+image_to_model · running 46% · d316da08
+image_to_model · running 60% · d316da08
+image_to_model · running 74% · d316da08
+image_to_model · running 88% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · running 99% · d316da08
+image_to_model · success 100% · d316da08
+✓ image_to_model · d316da08-cb86-4527-87bd-ca773b7a5748 · 40 credits
+downloading artifacts…
+✓ artifacts saved to long/model/tripo-out/m-long-d316da08

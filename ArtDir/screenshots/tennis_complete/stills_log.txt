@@ -1,0 +1,120 @@
+POS Default_V4 Ready handR=(0.19, 0.70, 0.24) handL=(-0.02, 0.68, 0.23) racketParent=Hand.R racket=(0.14, 0.61, 0.27) bone0=UpperArm.R
+Default_V4 Ready t=0.50 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 Idle handR=(0.32, 0.69, -0.02) handL=(-0.34, 0.69, -0.05) racketParent=Hand.R racket=(0.29, 0.61, -0.09) bone0=UpperArm.R
+Default_V4 Idle t=1.00 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 Forehand handR=(0.27, 0.69, 0.33) handL=(-0.40, 1.12, 0.37) racketParent=Hand.R racket=(0.36, 0.74, 0.37) bone0=UpperArm.R
+Default_V4 Forehand t=1.50 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 Backhand handR=(0.12, 1.04, 0.39) handL=(0.05, 0.86, 0.28) racketParent=Hand.R racket=(0.12, 0.94, 0.37) bone0=UpperArm.R
+Default_V4 Backhand t=1.50 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 Serve handR=(0.22, 1.70, 0.16) handL=(0.16, 1.10, 0.26) racketParent=Hand.R racket=(0.27, 1.79, 0.21) bone0=UpperArm.R
+Default_V4 Serve t=2.33 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 Smash handR=(-0.25, 1.59, 0.29) handL=(-0.44, 0.92, -0.03) racketParent=Hand.R racket=(-0.34, 1.64, 0.27) bone0=UpperArm.R
+Default_V4 Smash t=2.20 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 MissWhiff handR=(0.19, 1.48, -0.13) handL=(-0.55, 0.97, -0.42) racketParent=Hand.R racket=(0.18, 1.56, -0.06) bone0=UpperArm.R
+Default_V4 MissWhiff t=0.50 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 CelebratePoint handR=(0.22, 1.78, -0.13) handL=(-0.25, 1.43, 0.04) racketParent=Hand.R racket=(0.32, 1.81, -0.10) bone0=UpperArm.R
+Default_V4 CelebratePoint t=0.45 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 MatchWin handR=(0.25, 1.80, -0.18) handL=(-0.25, 1.80, -0.18) racketParent=Hand.R racket=(0.35, 1.82, -0.15) bone0=UpperArm.R
+Default_V4 MatchWin t=0.55 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 SadPointLost handR=(0.31, 0.66, -0.01) handL=(-0.25, 0.72, -0.20) racketParent=Hand.R racket=(0.21, 0.65, 0.03) bone0=UpperArm.R
+Default_V4 SadPointLost t=0.80 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 RunForward handR=(0.32, 0.74, 0.46) handL=(-0.23, 0.70, 0.37) racketParent=Hand.R racket=(0.27, 0.64, 0.48) bone0=UpperArm.R
+Default_V4 RunForward t=0.60 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Default_V4 HitPerfect handR=(0.12, 1.16, 0.35) handL=(-0.28, 1.25, 0.01) racketParent=Hand.R racket=(0.19, 1.15, 0.43) bone0=UpperArm.R
+Default_V4 HitPerfect t=0.30 hat=Visor trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Ready handR=(0.19, 0.70, 0.24) handL=(-0.02, 0.68, 0.23) racketParent=Hand.R racket=(0.14, 0.61, 0.27) bone0=UpperArm.R
+HatA_Cap Ready t=0.50 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Idle handR=(0.32, 0.69, -0.02) handL=(-0.34, 0.69, -0.05) racketParent=Hand.R racket=(0.29, 0.61, -0.09) bone0=UpperArm.R
+HatA_Cap Idle t=1.00 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Forehand handR=(0.27, 0.69, 0.33) handL=(-0.40, 1.12, 0.37) racketParent=Hand.R racket=(0.36, 0.74, 0.37) bone0=UpperArm.R
+HatA_Cap Forehand t=1.50 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Backhand handR=(0.12, 1.04, 0.39) handL=(0.05, 0.86, 0.28) racketParent=Hand.R racket=(0.12, 0.94, 0.37) bone0=UpperArm.R
+HatA_Cap Backhand t=1.50 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Serve handR=(0.22, 1.70, 0.16) handL=(0.16, 1.10, 0.26) racketParent=Hand.R racket=(0.27, 1.79, 0.21) bone0=UpperArm.R
+HatA_Cap Serve t=2.33 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap Smash handR=(-0.25, 1.59, 0.29) handL=(-0.44, 0.92, -0.03) racketParent=Hand.R racket=(-0.34, 1.64, 0.27) bone0=UpperArm.R
+HatA_Cap Smash t=2.20 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap MissWhiff handR=(0.19, 1.48, -0.13) handL=(-0.55, 0.97, -0.42) racketParent=Hand.R racket=(0.18, 1.56, -0.06) bone0=UpperArm.R
+HatA_Cap MissWhiff t=0.50 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap CelebratePoint handR=(0.22, 1.78, -0.13) handL=(-0.25, 1.43, 0.04) racketParent=Hand.R racket=(0.32, 1.81, -0.10) bone0=UpperArm.R
+HatA_Cap CelebratePoint t=0.45 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap MatchWin handR=(0.25, 1.80, -0.18) handL=(-0.25, 1.80, -0.18) racketParent=Hand.R racket=(0.35, 1.82, -0.15) bone0=UpperArm.R
+HatA_Cap MatchWin t=0.55 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap SadPointLost handR=(0.31, 0.66, -0.01) handL=(-0.25, 0.72, -0.20) racketParent=Hand.R racket=(0.21, 0.65, 0.03) bone0=UpperArm.R
+HatA_Cap SadPointLost t=0.80 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap RunForward handR=(0.32, 0.74, 0.46) handL=(-0.23, 0.70, 0.37) racketParent=Hand.R racket=(0.27, 0.64, 0.48) bone0=UpperArm.R
+HatA_Cap RunForward t=0.60 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatA_Cap HitPerfect handR=(0.12, 1.16, 0.35) handL=(-0.28, 1.25, 0.01) racketParent=Hand.R racket=(0.19, 1.15, 0.43) bone0=UpperArm.R
+HatA_Cap HitPerfect t=0.30 hat=Cap trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Ready handR=(0.19, 0.70, 0.24) handL=(-0.02, 0.68, 0.23) racketParent=Hand.R racket=(0.14, 0.61, 0.27) bone0=UpperArm.R
+HatB_Sweatband Ready t=0.50 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Idle handR=(0.32, 0.69, -0.02) handL=(-0.34, 0.69, -0.05) racketParent=Hand.R racket=(0.29, 0.61, -0.09) bone0=UpperArm.R
+HatB_Sweatband Idle t=1.00 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Forehand handR=(0.27, 0.69, 0.33) handL=(-0.40, 1.12, 0.37) racketParent=Hand.R racket=(0.36, 0.74, 0.37) bone0=UpperArm.R
+HatB_Sweatband Forehand t=1.50 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Backhand handR=(0.12, 1.04, 0.39) handL=(0.05, 0.86, 0.28) racketParent=Hand.R racket=(0.12, 0.94, 0.37) bone0=UpperArm.R
+HatB_Sweatband Backhand t=1.50 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Serve handR=(0.22, 1.70, 0.16) handL=(0.16, 1.10, 0.26) racketParent=Hand.R racket=(0.27, 1.79, 0.21) bone0=UpperArm.R
+HatB_Sweatband Serve t=2.33 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband Smash handR=(-0.25, 1.59, 0.29) handL=(-0.44, 0.92, -0.03) racketParent=Hand.R racket=(-0.34, 1.64, 0.27) bone0=UpperArm.R
+HatB_Sweatband Smash t=2.20 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband MissWhiff handR=(0.19, 1.48, -0.13) handL=(-0.55, 0.97, -0.42) racketParent=Hand.R racket=(0.18, 1.56, -0.06) bone0=UpperArm.R
+HatB_Sweatband MissWhiff t=0.50 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband CelebratePoint handR=(0.22, 1.78, -0.13) handL=(-0.25, 1.43, 0.04) racketParent=Hand.R racket=(0.32, 1.81, -0.10) bone0=UpperArm.R
+HatB_Sweatband CelebratePoint t=0.45 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband MatchWin handR=(0.25, 1.80, -0.18) handL=(-0.25, 1.80, -0.18) racketParent=Hand.R racket=(0.35, 1.82, -0.15) bone0=UpperArm.R
+HatB_Sweatband MatchWin t=0.55 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband SadPointLost handR=(0.31, 0.66, -0.01) handL=(-0.25, 0.72, -0.20) racketParent=Hand.R racket=(0.21, 0.65, 0.03) bone0=UpperArm.R
+HatB_Sweatband SadPointLost t=0.80 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband RunForward handR=(0.32, 0.74, 0.46) handL=(-0.23, 0.70, 0.37) racketParent=Hand.R racket=(0.27, 0.64, 0.48) bone0=UpperArm.R
+HatB_Sweatband RunForward t=0.60 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS HatB_Sweatband HitPerfect handR=(0.12, 1.16, 0.35) handL=(-0.28, 1.25, 0.01) racketParent=Hand.R racket=(0.19, 1.15, 0.43) bone0=UpperArm.R
+HatB_Sweatband HitPerfect t=0.30 hat=Sweatband trim=False trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Ready handR=(0.19, 0.70, 0.24) handL=(-0.02, 0.68, 0.23) racketParent=Hand.R racket=(0.14, 0.61, 0.27) bone0=UpperArm.R
+Trim_TealYellow Ready t=0.50 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Idle handR=(0.32, 0.69, -0.02) handL=(-0.34, 0.69, -0.05) racketParent=Hand.R racket=(0.29, 0.61, -0.09) bone0=UpperArm.R
+Trim_TealYellow Idle t=1.00 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Forehand handR=(0.27, 0.69, 0.33) handL=(-0.40, 1.12, 0.37) racketParent=Hand.R racket=(0.36, 0.74, 0.37) bone0=UpperArm.R
+Trim_TealYellow Forehand t=1.50 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Backhand handR=(0.12, 1.04, 0.39) handL=(0.05, 0.86, 0.28) racketParent=Hand.R racket=(0.12, 0.94, 0.37) bone0=UpperArm.R
+Trim_TealYellow Backhand t=1.50 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Serve handR=(0.22, 1.70, 0.16) handL=(0.16, 1.10, 0.26) racketParent=Hand.R racket=(0.27, 1.79, 0.21) bone0=UpperArm.R
+Trim_TealYellow Serve t=2.33 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow Smash handR=(-0.25, 1.59, 0.29) handL=(-0.44, 0.92, -0.03) racketParent=Hand.R racket=(-0.34, 1.64, 0.27) bone0=UpperArm.R
+Trim_TealYellow Smash t=2.20 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow MissWhiff handR=(0.19, 1.48, -0.13) handL=(-0.55, 0.97, -0.42) racketParent=Hand.R racket=(0.18, 1.56, -0.06) bone0=UpperArm.R
+Trim_TealYellow MissWhiff t=0.50 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow CelebratePoint handR=(0.22, 1.78, -0.13) handL=(-0.25, 1.43, 0.04) racketParent=Hand.R racket=(0.32, 1.81, -0.10) bone0=UpperArm.R
+Trim_TealYellow CelebratePoint t=0.45 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow MatchWin handR=(0.25, 1.80, -0.18) handL=(-0.25, 1.80, -0.18) racketParent=Hand.R racket=(0.35, 1.82, -0.15) bone0=UpperArm.R
+Trim_TealYellow MatchWin t=0.55 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow SadPointLost handR=(0.31, 0.66, -0.01) handL=(-0.25, 0.72, -0.20) racketParent=Hand.R racket=(0.21, 0.65, 0.03) bone0=UpperArm.R
+Trim_TealYellow SadPointLost t=0.80 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow RunForward handR=(0.32, 0.74, 0.46) handL=(-0.23, 0.70, 0.37) racketParent=Hand.R racket=(0.27, 0.64, 0.48) bone0=UpperArm.R
+Trim_TealYellow RunForward t=0.60 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Trim_TealYellow HitPerfect handR=(0.12, 1.16, 0.35) handL=(-0.28, 1.25, 0.01) racketParent=Hand.R racket=(0.19, 1.15, 0.43) bone0=UpperArm.R
+Trim_TealYellow HitPerfect t=0.30 hat=Visor trim=True trophy=False missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Ready handR=(0.19, 0.70, 0.24) handL=(-0.02, 0.68, 0.23) racketParent=Hand.R racket=(0.14, 0.61, 0.27) bone0=UpperArm.R
+Cap_Trim_Trophy Ready t=0.50 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Idle handR=(0.32, 0.69, -0.02) handL=(-0.34, 0.69, -0.05) racketParent=Hand.R racket=(0.29, 0.61, -0.09) bone0=UpperArm.R
+Cap_Trim_Trophy Idle t=1.00 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Forehand handR=(0.27, 0.69, 0.33) handL=(-0.40, 1.12, 0.37) racketParent=Hand.R racket=(0.36, 0.74, 0.37) bone0=UpperArm.R
+Cap_Trim_Trophy Forehand t=1.50 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Backhand handR=(0.12, 1.04, 0.39) handL=(0.05, 0.86, 0.28) racketParent=Hand.R racket=(0.12, 0.94, 0.37) bone0=UpperArm.R
+Cap_Trim_Trophy Backhand t=1.50 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Serve handR=(0.22, 1.70, 0.16) handL=(0.16, 1.10, 0.26) racketParent=Hand.R racket=(0.27, 1.79, 0.21) bone0=UpperArm.R
+Cap_Trim_Trophy Serve t=2.33 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy Smash handR=(-0.25, 1.59, 0.29) handL=(-0.44, 0.92, -0.03) racketParent=Hand.R racket=(-0.34, 1.64, 0.27) bone0=UpperArm.R
+Cap_Trim_Trophy Smash t=2.20 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy MissWhiff handR=(0.19, 1.48, -0.13) handL=(-0.55, 0.97, -0.42) racketParent=Hand.R racket=(0.18, 1.56, -0.06) bone0=UpperArm.R
+Cap_Trim_Trophy MissWhiff t=0.50 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy CelebratePoint handR=(0.22, 1.78, -0.13) handL=(-0.25, 1.43, 0.04) racketParent=Hand.R racket=(0.32, 1.81, -0.10) bone0=UpperArm.R
+Cap_Trim_Trophy CelebratePoint t=0.45 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy MatchWin handR=(0.25, 1.80, -0.18) handL=(-0.25, 1.80, -0.18) racketParent=Hand.R racket=(0.35, 1.82, -0.15) bone0=UpperArm.R
+Cap_Trim_Trophy MatchWin t=0.55 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy SadPointLost handR=(0.31, 0.66, -0.01) handL=(-0.25, 0.72, -0.20) racketParent=Hand.R racket=(0.21, 0.65, 0.03) bone0=UpperArm.R
+Cap_Trim_Trophy SadPointLost t=0.80 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy RunForward handR=(0.32, 0.74, 0.46) handL=(-0.23, 0.70, 0.37) racketParent=Hand.R racket=(0.27, 0.64, 0.48) bone0=UpperArm.R
+Cap_Trim_Trophy RunForward t=0.60 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True
+POS Cap_Trim_Trophy HitPerfect handR=(0.12, 1.16, 0.35) handL=(-0.28, 1.25, 0.01) racketParent=Hand.R racket=(0.19, 1.15, 0.43) bone0=UpperArm.R
+Cap_Trim_Trophy HitPerfect t=0.30 hat=Cap trim=True trophy=True missingOrErrorMaterials=0 avatarValid=True

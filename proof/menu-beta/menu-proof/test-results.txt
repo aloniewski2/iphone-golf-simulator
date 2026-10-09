@@ -1,0 +1,46 @@
+isolated-tests.log
+Test Suite 'All tests' started at 2026-10-08 22:14:21.877.
+Test Suite 'MenuBetaTests.xctest' started at 2026-10-08 22:14:21.879.
+Test Suite 'MenuBetaTests' started at 2026-10-08 22:14:21.879.
+Test Case '-[MenuBetaTests.MenuBetaTests testControllerFocusUpdatesPreviewWithoutLaunching]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testControllerFocusUpdatesPreviewWithoutLaunching]' passed (1.516 seconds).
+Test Case '-[MenuBetaTests.MenuBetaTests testFeedbackAndBundledGameplay]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testFeedbackAndBundledGameplay]' passed (0.007 seconds).
+Test Case '-[MenuBetaTests.MenuBetaTests testLastSportIsPerPlayerAndMigratesExistingHistory]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testLastSportIsPerPlayerAndMigratesExistingHistory]' passed (0.012 seconds).
+Test Case '-[MenuBetaTests.MenuBetaTests testMenuCharactersHoldTheirCurrentSportAndOnlyExplicitEmotesMove]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testMenuCharactersHoldTheirCurrentSportAndOnlyExplicitEmotesMove]' passed (15.471 seconds).
+Test Case '-[MenuBetaTests.MenuBetaTests testPhoneAndTVProof]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testPhoneAndTVProof]' passed (21.685 seconds).
+Test Case '-[MenuBetaTests.MenuBetaTests testPlayRoutesAndBackPaths]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testPlayRoutesAndBackPaths]' passed (0.439 seconds).
+Test Suite 'MenuBetaTests' passed at 2026-10-08 22:15:01.028.
+Test Suite 'MenuBetaTests.xctest' passed at 2026-10-08 22:15:01.029.
+Test Suite 'All tests' passed at 2026-10-08 22:15:01.029.
+Test Suite 'All tests' started at 2026-10-08 22:15:30.759.
+Test Suite 'MenuBetaUITests.xctest' started at 2026-10-08 22:15:30.762.
+Test Suite 'MenuBetaUITests' started at 2026-10-08 22:15:30.762.
+Test Case '-[MenuBetaUITests.MenuBetaUITests testTouchPlayMultiplayerLocalAndFeedback]' started.
+Test Case '-[MenuBetaUITests.MenuBetaUITests testTouchPlayMultiplayerLocalAndFeedback]' failed (38.002 seconds).
+Test Suite 'MenuBetaUITests' failed at 2026-10-08 22:16:08.777.
+Test Suite 'MenuBetaUITests.xctest' failed at 2026-10-08 22:16:08.778.
+Test Suite 'All tests' failed at 2026-10-08 22:16:08.779.
+
+home-fix-tests.log
+Test Suite 'Selected tests' started at 2026-10-08 22:23:47.812.
+Test Suite 'MenuBetaTests.xctest' started at 2026-10-08 22:23:47.813.
+Test Suite 'MenuBetaTests' started at 2026-10-08 22:23:47.813.
+Test Case '-[MenuBetaTests.MenuBetaTests testPlayRoutesAndBackPaths]' started.
+Test Case '-[MenuBetaTests.MenuBetaTests testPlayRoutesAndBackPaths]' passed (0.829 seconds).
+Test Suite 'MenuBetaTests' passed at 2026-10-08 22:23:48.643.
+Test Suite 'MenuBetaTests.xctest' passed at 2026-10-08 22:23:48.644.
+Test Suite 'Selected tests' passed at 2026-10-08 22:23:48.644.
+Test Suite 'All tests' started at 2026-10-08 22:23:52.091.
+Test Suite 'MenuBetaUITests.xctest' started at 2026-10-08 22:23:52.092.
+Test Suite 'MenuBetaUITests' started at 2026-10-08 22:23:52.092.
+Test Case '-[MenuBetaUITests.MenuBetaUITests testTouchPlayMultiplayerLocalAndFeedback]' started.
+Test Case '-[MenuBetaUITests.MenuBetaUITests testTouchPlayMultiplayerLocalAndFeedback]' passed (31.422 seconds).
+Test Suite 'MenuBetaUITests' passed at 2026-10-08 22:24:23.516.
+Test Suite 'MenuBetaUITests.xctest' passed at 2026-10-08 22:24:23.518.
+Test Suite 'All tests' passed at 2026-10-08 22:24:23.519.
+** TEST SUCCEEDED **

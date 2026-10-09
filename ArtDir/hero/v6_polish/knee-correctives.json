@@ -1,0 +1,62 @@
+{
+  "Body_Legs": [
+    {
+      "side": "L",
+      "angle": 60,
+      "max_rest_delta_mm": 11.224496573549919,
+      "core_pose_error_mm": 0.00012054383571477072,
+      "vertices_affected": 480
+    },
+    {
+      "side": "L",
+      "angle": 110,
+      "max_rest_delta_mm": 53.83645969435659,
+      "core_pose_error_mm": 0.00014770200551747538,
+      "vertices_affected": 480
+    },
+    {
+      "side": "R",
+      "angle": 60,
+      "max_rest_delta_mm": 11.224496573549919,
+      "core_pose_error_mm": 0.00012054383571477072,
+      "vertices_affected": 480
+    },
+    {
+      "side": "R",
+      "angle": 110,
+      "max_rest_delta_mm": 53.83645969435659,
+      "core_pose_error_mm": 0.00014770200551747538,
+      "vertices_affected": 480
+    }
+  ],
+  "Body_Legs_Full": [
+    {
+      "side": "L",
+      "angle": 60,
+      "max_rest_delta_mm": 11.224496573549919,
+      "core_pose_error_mm": 0.00012054383571477072,
+      "vertices_affected": 480
+    },
+    {
+      "side": "L",
+      "angle": 110,
+      "max_rest_delta_mm": 53.83645969435659,
+      "core_pose_error_mm": 0.00014770200551747538,
+      "vertices_affected": 480
+    },
+    {
+      "side": "R",
+      "angle": 60,
+      "max_rest_delta_mm": 11.224496573549919,
+      "core_pose_error_mm": 0.00012054383571477072,
+      "vertices_affected": 480
+    },
+    {
+      "side": "R",
+      "angle": 110,
+      "max_rest_delta_mm": 53.83645969435659,
+      "core_pose_error_mm": 0.00014770200551747538,
+      "vertices_affected": 480
+    }
+  ]
+}

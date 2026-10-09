@@ -1,0 +1,70 @@
+{
+  "Forehand": {
+    "duration": 3.6,
+    "contact_seconds": 1.08,
+    "windup_seconds": 0.95,
+    "anticipation_rotation_multiplier": 1.2133333333333334,
+    "contact_source_interval": 0.35,
+    "contact_owned_interval": 0.13,
+    "followthrough_hold_seconds": 0.4,
+    "root_xz_stripped": true,
+    "source": "tennis-01-forehand-yamaoka.c3d",
+    "source_frames": [
+      2231,
+      2759
+    ],
+    "source_contact_seconds": 1.9333333333333333
+  },
+  "Backhand": {
+    "duration": 3.6,
+    "contact_seconds": 1.08,
+    "windup_seconds": 0.95,
+    "anticipation_rotation_multiplier": 1.2133333333333334,
+    "contact_source_interval": 0.35,
+    "contact_owned_interval": 0.13,
+    "followthrough_hold_seconds": 0.4,
+    "root_xz_stripped": true,
+    "source": "tennis-11-backhand hardhit-yamaoka.c3d",
+    "source_frames": [
+      880,
+      1408
+    ],
+    "source_contact_seconds": 1.8666666666666667
+  },
+  "Serve": {
+    "duration": 3.6,
+    "contact_seconds": 1.08,
+    "windup_seconds": 0.95,
+    "anticipation_rotation_multiplier": 1.2133333333333334,
+    "contact_source_interval": 0.35,
+    "contact_owned_interval": 0.13,
+    "followthrough_hold_seconds": 0.4,
+    "root_xz_stripped": true,
+    "source": "tennis-15-first service-yamaoka.c3d",
+    "source_frames": [
+      1207,
+      1735
+    ],
+    "source_contact_seconds": 1.7333333333333334
+  },
+  "Volley": {
+    "duration": 3.6,
+    "contact_seconds": 1.08,
+    "windup_seconds": 0.95,
+    "anticipation_rotation_multiplier": 1.2133333333333334,
+    "contact_source_interval": 0.35,
+    "contact_owned_interval": 0.13,
+    "followthrough_hold_seconds": 0.4,
+    "root_xz_stripped": true,
+    "source": "tennis-05-forehand volley-yamaoka.c3d",
+    "source_frames": [
+      1648,
+      2176
+    ],
+    "source_contact_seconds": 1.8
+  },
+  "ReadyIdle": {
+    "duration": 2.4,
+    "loop_endpoint_corrected": true
+  }
+}

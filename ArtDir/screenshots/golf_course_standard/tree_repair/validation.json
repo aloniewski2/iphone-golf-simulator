@@ -1,0 +1,19 @@
+{
+  "total_palms": 85,
+  "palms_by_hole": {
+    "16": 32,
+    "19": 38,
+    "21": 5,
+    "22": 3,
+    "23": 7
+  },
+  "all_16_collision_and_obstacle_hashes_unchanged": true,
+  "protected_source_files_unchanged": 106,
+  "postcard_tee_mae_vs_prior_release": {
+    "8": 0.0392087962962963,
+    "9": 0.004643287037037037,
+    "10": 0.00012453703703703704
+  },
+  "edit_tests_passed": 18,
+  "catalog_play_test_passed": true
+}

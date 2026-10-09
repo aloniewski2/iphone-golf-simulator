@@ -1,0 +1,146 @@
+{
+  "01_front_face.png": {
+    "box": [
+      85,
+      55,
+      430,
+      342
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "02_left_profile.png": {
+    "box": [
+      440,
+      55,
+      800,
+      342
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "03_right_profile.png": {
+    "box": [
+      830,
+      55,
+      1195,
+      342
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "04_threequarter_front_left.png": {
+    "box": [
+      85,
+      385,
+      430,
+      656
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "05_threequarter_front_right.png": {
+    "box": [
+      440,
+      385,
+      800,
+      656
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "06_top_cranial.png": {
+    "box": [
+      830,
+      385,
+      1195,
+      656
+    ],
+    "source": "female_head_detail.jpg"
+  },
+  "07_body_front_head.png": {
+    "box": [
+      350,
+      15,
+      530,
+      200
+    ],
+    "source": "female_body_bald.jpg"
+  },
+  "08_body_back_head.png": {
+    "box": [
+      757,
+      15,
+      937,
+      200
+    ],
+    "source": "female_body_bald.jpg"
+  },
+  "09_ma_front.png": {
+    "box": [
+      125,
+      46,
+      217,
+      136
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "10_ma_back.png": {
+    "box": [
+      441,
+      46,
+      533,
+      136
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "11_ma_left_profile.png": {
+    "box": [
+      744,
+      46,
+      836,
+      136
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "12_ma_right_profile.png": {
+    "box": [
+      1047,
+      46,
+      1139,
+      136
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "13_ma_threequarter_front_left.png": {
+    "box": [
+      124,
+      372,
+      216,
+      468
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "14_ma_threequarter_front_right.png": {
+    "box": [
+      436,
+      372,
+      528,
+      468
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "15_ma_threequarter_back_left.png": {
+    "box": [
+      741,
+      372,
+      833,
+      468
+    ],
+    "source": "female_multiangle_body.jpg"
+  },
+  "16_ma_threequarter_back_right.png": {
+    "box": [
+      1042,
+      372,
+      1134,
+      468
+    ],
+    "source": "female_multiangle_body.jpg"
+  }
+}

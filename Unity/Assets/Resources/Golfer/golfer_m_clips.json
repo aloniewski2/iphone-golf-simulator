@@ -1,0 +1,77 @@
+{
+  "gender": "Male",
+  "clips": [
+    {
+      "name": "Drive",
+      "club": "Driver",
+      "frames": 91,
+      "fps": 30,
+      "top": 53,
+      "impact": 71
+    },
+    {
+      "name": "IronSwing",
+      "club": "Iron",
+      "frames": 91,
+      "fps": 30,
+      "top": 54,
+      "impact": 71
+    },
+    {
+      "name": "HalfSwing",
+      "club": "Iron",
+      "frames": 91,
+      "fps": 30,
+      "top": 48,
+      "impact": 71
+    },
+    {
+      "name": "Chip",
+      "club": "Wedge",
+      "frames": 61,
+      "fps": 30,
+      "top": 30,
+      "impact": 58
+    },
+    {
+      "name": "Putt",
+      "club": "Putter",
+      "frames": 61,
+      "fps": 30,
+      "top": 30,
+      "impact": 58
+    },
+    {
+      "name": "Idle",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "Wave",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "Cheer",
+      "club": "",
+      "frames": 61,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    },
+    {
+      "name": "FistPump",
+      "club": "",
+      "frames": 91,
+      "fps": 30,
+      "top": 0,
+      "impact": 0
+    }
+  ]
+}

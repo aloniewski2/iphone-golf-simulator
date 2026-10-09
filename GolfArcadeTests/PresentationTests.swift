@@ -1,3 +1,4 @@
+import SceneKit
 import CoreGraphics
 import simd
 import XCTest
@@ -80,11 +81,19 @@ final class PresentationTests: XCTestCase {
         // A holed putt: silent until the cup.
         heard.removeAll()
         let cupSide = CoursePoint(x: hole.pin.x, d: hole.pin.d - 2)
-        let power = try XCTUnwrap(RangeShot.power(toReach: 2.6, with: .putter))
-        let putt = RangeShot(id: 2, club: .putter, power: power, aim: 0, origin: cupSide, heading: 0, hole: hole)
-        XCTAssertTrue(putt.isHoled, "a two-yard putt straight at the cup drops")
+        // The green tips a little, and a real cup only takes a putt on the right line at the
+        // right pace: try a few lines with dying pace, the way a player would.
+        let power = try XCTUnwrap(RangeShot.power(toReach: 2.3, with: .putter))
+        let putt = try XCTUnwrap(stride(from: -3.0, through: 3.0, by: 0.5).lazy
+            .map { RangeShot(id: 2, club: .putter, power: power, aim: $0, origin: cupSide, heading: 0, hole: hole) }
+            .first { $0.isHoled }, "some line holes a two-yard putt at dying pace")
         inputs.shot = putt
-        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.1)
+        // The ball reaches the cup and rolls in; the rattle comes as it hits the bottom.
+        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.05)
+        scene.inputs = inputs
+        scene.stepForTesting()
+        XCTAssertEqual(heard, [], "still dropping")
+        inputs.flightStart = Date(timeIntervalSinceNow: -putt.duration - 0.3)
         scene.inputs = inputs
         scene.stepForTesting()
         scene.stepForTesting()
@@ -175,5 +184,96 @@ final class PresentationTests: XCTestCase {
         points[.leftElbow] = CGPoint(x: (0.4 + hands.x) / 2, y: (0.72 + hands.y) / 2)
         points[.rightElbow] = CGPoint(x: (0.6 + hands.x) / 2, y: (0.72 + hands.y) / 2)
         return PoseFrame(timestamp: CACurrentMediaTime(), points: points.mapValues { PosePoint(location: $0, confidence: 0.9) })
+    }
+}
+
+final class CupDropTests: XCTestCase {
+    func testAHoledBallSlidesToTheMiddleAndFallsOutOfSight() {
+        let before = CourseScene.cupDrop(after: -0.1)
+        XCTAssertEqual(before.depth, 0)
+        XCTAssertFalse(before.finished)
+        let start = CourseScene.cupDrop(after: 0)
+        XCTAssertEqual(start.depth, 0, "still on the lip the instant it arrives")
+        let sliding = CourseScene.cupDrop(after: 0.05)
+        XCTAssertEqual(sliding.centred, 0.5, accuracy: 1e-9)
+        XCTAssertGreaterThan(sliding.depth, 0)
+        XCTAssertFalse(sliding.rattled)
+        let falling = CourseScene.cupDrop(after: 0.2)
+        XCTAssertEqual(falling.centred, 1)
+        XCTAssertGreaterThan(falling.depth, Double(AvatarSize.visibleBallRadius), "more than a radius down: sinking")
+        XCTAssertTrue(falling.rattled)
+        XCTAssertFalse(falling.finished)
+        let gone = CourseScene.cupDrop(after: 0.4)
+        XCTAssertTrue(gone.finished)
+        XCTAssertGreaterThan(gone.depth, Double(AvatarSize.visibleBallRadius) * 3, "well below the green by the time it is hidden")
+    }
+}
+
+final class PinMarkerTests: XCTestCase {
+    /// The camera looks down −z from 20 units up and back; the flag top sits 200 units ahead.
+    @MainActor
+    func testProjectionPutsAnAheadPointNearTheMiddleAndABehindPointOffTheOppositeSide() {
+        let camera = SCNNode()
+        camera.camera = SCNCamera()
+        camera.camera?.fieldOfView = 50
+        camera.simdPosition = simd_float3(0, 6, 20)
+        camera.simdLook(at: simd_float3(0, 1, 0))
+        let size = CGSize(width: 402, height: 874)
+        let ahead = CourseScene.project(simd_float3(0, 2.4, -200), camera: camera, viewSize: size)
+        XCTAssertTrue(ahead.isInFront)
+        XCTAssertEqual(ahead.point.x, 201, accuracy: 1, "dead ahead is the middle of the screen")
+        XCTAssertLessThan(ahead.point.y, 437, "a far flag sits above the centre line")
+        XCTAssertGreaterThan(ahead.point.y, 200)
+        let right = CourseScene.project(simd_float3(60, 2.4, -200), camera: camera, viewSize: size)
+        XCTAssertGreaterThan(right.point.x, ahead.point.x + 40, "off to the right shows to the right")
+        let behind = CourseScene.project(simd_float3(30, 2.4, 60), camera: camera, viewSize: size)
+        XCTAssertFalse(behind.isInFront)
+        XCTAssertGreaterThan(behind.point.x, size.width / 2, "behind and to the right reports on the right edge side")
+    }
+
+    /// Aimed left of the hole, the hole is to the right on screen — the camera turns with the line.
+    @MainActor
+    func testAimingLeftPutsTheHoleToTheRightOnScreen() {
+        let hole = Course.easy.holes[0]
+        let heading = hole.tee.heading(to: hole.pin)
+        let size = CGSize(width: 402, height: 874)
+        func markerX(aim: Double) -> CGFloat {
+            let framing = ShotCameraDirector.shot(ShotCameraDirector.Inputs(
+                ball: hole.tee, heading: heading + aim, aim: 0, distanceToPin: hole.length, onGreen: false,
+                handedness: .right, shot: nil, elapsed: 0, reaction: nil, landingTime: nil))
+            let camera = SCNNode()
+            camera.camera = SCNCamera()
+            camera.camera?.fieldOfView = CGFloat(framing.fieldOfView)
+            camera.simdPosition = framing.position
+            camera.simdLook(at: framing.lookAt)
+            let top = simd_float3(Float(hole.pin.x), 2.4, -Float(hole.pin.d))
+            let marker = CourseScene.project(top, camera: camera, viewSize: size)
+            XCTAssertTrue(marker.isInFront)
+            return marker.point.x
+        }
+        let straight = markerX(aim: 0), left = markerX(aim: -20), right = markerX(aim: 20)
+        XCTAssertEqual(straight, 250, accuracy: 60, "the camera sits beside the ball, so dead ahead is a little right of centre")
+        XCTAssertGreaterThan(left, straight + 60, "aim left: the hole slides right")
+        XCTAssertLessThan(right, straight - 60, "aim right: the hole slides left")
+    }
+
+    @MainActor
+    func testTheSceneMarksTheHoleWhileAimedAtIt() {
+        let scene = CourseScene()
+        let hole = Course.easy.holes[0]
+        let view = SCNView(frame: CGRect(x: 0, y: 0, width: 402, height: 874))
+        scene.renderView = view
+        let inputs = SceneInputs(hole: hole, ball: hole.tee, heading: hole.tee.heading(to: hole.pin), distanceToPin: hole.length, lie: .tee, club: .driver,
+                                 aim: 0, handedness: .right, shot: nil, isReplay: false, flightStart: nil,
+                                 pausedAt: nil, swingAngle: 0, bystanders: [])
+        scene.inputs = inputs
+        scene.stepForTesting()
+        scene.stepForTesting()
+        let marker = scene.pinMarker
+        XCTAssertNotNil(marker)
+        XCTAssertTrue(marker!.isInFront)
+        XCTAssertGreaterThan(marker!.point.x, 60, "aimed at it, the hole is inside the screen")
+        XCTAssertLessThan(marker!.point.x, 342)
+        XCTAssertLessThan(marker!.point.y, 437, "and in the upper half")
     }
 }

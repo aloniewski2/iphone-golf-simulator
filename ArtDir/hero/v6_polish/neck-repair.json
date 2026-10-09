@@ -1,0 +1,10 @@
+{
+  "core_face_coordinates_identical": true,
+  "core_min_height": 1.3,
+  "head_neck_cut": 1.29,
+  "ring_vertices": 82,
+  "new_neck_rings": 7,
+  "new_neck_faces": 575,
+  "source_coverage_restored": true,
+  "note": "Jaw boundary below 1.30m repaired; central eyes/nose/mouth/forehead coordinates unchanged. Visual identity remains pending."
+}

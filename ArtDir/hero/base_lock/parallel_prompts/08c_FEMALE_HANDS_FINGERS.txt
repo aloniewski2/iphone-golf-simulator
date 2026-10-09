@@ -1,0 +1,93 @@
+PASTE — FEMALE HANDS + FINGERS (FORM follow-up) · NEW CHAT · Sonnet 5.5 max
+================================================================================
+Copy everything below the line.
+
+---
+
+Adnan: female ARMS FORM PASSed (deltoid/forearm), but **hands/fingers still sausages/mittens** from the limbs SDF rebuild. Wrist rings were locked in arms FORM, so hands sit ~3 cm too far back vs plate. Next polish = **hands + fingers only** (placement + anatomy). Soft-plastic feminine — slender, not male bulk. Steal the **male FORM2 process**, not male proportions.
+
+PARALLEL SAFETY:
+- YOUR ZONE: L+R hands + wrist weld rings only (Body_F hand shells below/at the wrist rings). Prefer 0 move on arm shafts / deltoids / torso / head / legs / feet. If a weld-row must move for a clean wrist, document mm and keep ≤ few mm. Audit mandatory.
+- Work under work/female-hands-fingers/ only. Stage export first. Never whole-file clobber ArtDir.
+- ArtDir HeroBase_Female.blend is STILL `200dc3b9…` (nothing installed). Do NOT open male blend. Do NOT thrash torso FORM4 / head / legs.
+- If start SHA ≠ below, STOP or rebase hand delta onto current start — never clobber arm-shaft verts from arms FORM.
+
+START BLEND (verify SHA before edit):
+work/female-arms-form2/export/HeroBase_Female_arms_candidate.blend
+SHA-256 573ab4431d83f8651936f0081ad3bda9c6890c56ee5dce3061140198c9455f0e
+(= ArtDir 200dc3b9 + torso chat7 + limbs + arms FORM; wrist rings bit-identical to limbs; hands = limbs SDF capsules)
+Fallback merge path if that candidate is missing: apply limbs map + arms_delta onto a documented torso candidate, THEN edit hands — disclose lineage in RESULTS.
+(re-verify: `shasum -a 256` on the start file)
+
+READ FIRST (mandatory):
+1) work/female-arms-form2/FEMALE_ARMS_FORM_RESULTS.md  ← wrist locked; hand-off: shift hands ~−0.03 m (y) toward plate
+2) work/female-parallel-limbs/proof/GATE_RESULTS.md + proof/04_hands_vs_plate.png + c_final_handR_{front,side,q}.png
+3) work/male-arms-hands-form2/MALE_ARMS_HANDS_FORM_RESULTS.md  ← PROCESS recipe (rebuild, not positions-only)
+4) work/male-arms-hands-form2/proof/final/03c_hands_form2_before_after.png
+5) work/male-arms-hands-form2/proof/final/03c_hands_form2_detail.png
+6) work/male-arms-hands-form2/proof/final/03c_hands_form2_plate_silhouette.png
+7) ArtDir/hero/base_lock/parallel_prompts/03b_MALE_HANDS_FORM.txt + 03c_MALE_HANDS_PALM_TIPS.txt (gates language)
+8) AGENTS.md + art-bible.md
+AUTHORITY: female_body_bald.jpg + female_multiangle_body.jpg (hands ROI / front / side / 3q). Male FORM2 proofs = quality bar for taper/thumb/knuckles ONLY — do not copy male palm bulk or finger girth.
+
+WHY CURRENT HANDS FAIL (do not soft-pass):
+1) Limbs hand = SDF capsules (shapes.py hand()) welded to 18-vert wrist rings → equal-width sausages, blunt tips, almost no knuckle/IP read.
+2) Thumb is a short capsule stack — weak thenar/web, weak opposition, pill/spike risk.
+3) Palm turned ~55° from silhouette fit; OK to keep a relaxed feminine hang, but anatomy must read.
+4) Placement: after arms FORM hang, hands stay near y≈0 while plate hands sit ~3 cm forward — move the hand shells (and disclose), then re-weld.
+
+KEEP FROM PRIOR (do not regress):
+- Arms FORM soft-plastic deltoid/forearm (arm shafts outside weld)
+- ZONE_OUTSIDE=0 vs start (except documented hand+wrist zone)
+- TOPOLOGY elsewhere / Hair_F / materials / LOOP_* bit-identical preferred
+- Soft-plastic party style; no hyperreal nails/pores; no male muscle bulk
+- Mesh budget: body+hair was ~49722 tris after limbs; densify hands only with Adnan-visible TRI delta disclosure (AGENTS ~35–50k prefer; limbs already near ceiling — prefer reuse/rebuild shell slots like male FORM2, disclose +tris)
+
+PROCESS RECIPE (steal from male FORM2 — ordered):
+1) Dump start mesh; locate L/R wrist weld rings (limbs: R z≈0.8456, L z≈0.8726, 18 verts each — confirm).
+2) **Rebuild** each hand shell (do NOT positions-only polish the SDF capsules). Same family as male hand3.py:
+   weld ring → palm pillow rings → lobed knuckle ring → 4 slit fingers → thumb on a palmar-radial hole + web fillet.
+   Reuse female wrist ring verts; append detail verts as needed; mirror L/R from one param set.
+3) FINGER_TAPER: PCHIP width/depth profiles; tip/base ≤ ~0.60–0.65 (feminine; male used 0.60); kill equal-width runs; PIP/DIP dorsal bumps (softer than male — start ~60–80% of male 1.6–2.1 / 0.8–1.1 mm); slight relaxed curl; finger gaps readable.
+4) THUMB_ANATOMY: thenar mound + web crotch fillet (not slit); Catmull-Rom axis with MCP/IP; IP bend ≥ ~8°; pad tip not pill/spike; root hole large enough that thumb grows from thenar.
+5) Tips: multi-row rounded soft-plastic pad caps (male FORM2 = 6 rows; FORM3 = 9 for rounder — prefer round, disclose densify). No blunt cylinder chops.
+6) Palm: soft feminine pad (not male FORM3 bulk chase unless plate demands). Keep slender overall.
+7) PLACEMENT: translate/rotate hand shells so fingertips/palm depth match plate side (~−0.03 m y vs current, arms FORM hand-off). Re-weld wrist cleanly (no step crease).
+8) Optional plate-ROI silhouette fit with anatomy bounds (reject fits that re-sausage fingers). Locked plate cameras.
+9) Arms shafts: DO NOT re-run arms FORM. Only fade into weld if needed (≤ few mm documented).
+10) Audit → proofs → stage export. ArtDir install ONLY after SHA guard + zone audit + Adnan OK (female install log if/when created).
+
+PRIMARY GATES (must PASS — Adnan eye final):
+1) FINGER_TAPER — no sausages/mittens; tip/base ≤ 0.70; knuckle hints + pad tips readable on close-ups
+2) THUMB_ANATOMY — thenar/web + real phalanges + pad tip; not glued pill; not skinny spike
+3) HAND_PLACEMENT — side profile: hands not stuck ~3 cm behind plate; wrist weld clean
+4) FEMININE_SOFT_PLASTIC — slender vs male FORM2; soft-plastic party, not bulk/muscle
+5) ZONE_OUTSIDE=0 (or weld-only ≤ few mm documented)
+6) MIRROR_L_R
+7) NO_SELF_INTERSECT (hands/arms)
+8) SIL not wrecked (limb/hand consensus spirit of limbs G3; bald front/back if you measure — do not blow for vanity)
+
+SECONDARY (nice):
+- Palm breadth/length readable vs female plate (avoid male FORM3 overgrow)
+- Tip roundness (borrow FORM3 round-cap idea if blunt remains)
+- Unity refresh optional; ExpectedTriangles if TRI changes
+
+FORBIDDEN:
+- Copying male hand girth/palm mass onto female
+- Positions-only sausage polish (will FAIL eye)
+- Editing torso / head / legs / feet / arm shafts above weld
+- Installing over ArtDir without SHA guard
+- Hyperreal nails, skin pores, tendons-as-geometry
+
+DELIVER:
+- work/female-hands-fingers/FEMALE_HANDS_FINGERS_RESULTS.md
+- proof: before/after 6-view hands, plate|before|after silhouette, thumb+finger detail (solid+wire), side placement BA vs plate
+- checks.json (zone outside=0, taper/thumb metrics you define before measuring, TRI delta)
+- export candidate blend (+ merge script / delta if needed)
+- ArtDir install only after SHA guard; do not invent INSTALL_LOG_FEMALE.md unless Adnan asked — append a female install note only if an install log already exists
+
+REPLY ONLY:
+GATE: FEMALE_HANDS_FINGERS PASS
+or
+GATE: FEMALE_HANDS_FINGERS FAIL
+<failed lines only>

@@ -1,0 +1,438 @@
+{
+ "gate": "MALE_ARMS_HANDS PASS",
+ "date": "2026-10-01",
+ "start_sha_original_prompt": "68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf",
+ "start_sha_used": "b9cc85967819b5fc31d323c0aa806c925a9e2e849b878e31c1866a2a8404909c (ArtDir blend after the torso chat installed at 22:01; my moved vertices were unchanged there: base mismatch 0)",
+ "installed_blend": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend",
+ "installed_fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/unity_import/HeroBase_Male_Body.fbx",
+ "staged_blend_sha256": "9f6d02bd67a8b38dc063ca5033535a385265900c2d71f959a96f65ad50d56154",
+ "staged_fbx_sha256": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+ "rollback": {
+  "blend": "work/male-parallel-arms/baseline_S1/pre_install/HeroBase_Male_Silhouette.blend",
+  "fbx": "work/male-parallel-arms/baseline_S1/pre_install/HeroBase_Male_Body.fbx",
+  "sha_blend": "b9cc85967819b5fc31d323c0aa806c925a9e2e849b878e31c1866a2a8404909c",
+  "sha_fbx": "8646290043ef08e67bf22b1bd78f22c5ae8dc8f228ce41ec9d81b349899ecbff"
+ },
+ "checks": {
+  "start_blend": "baseline_S1/HeroBase_Male_Silhouette_S1.blend",
+  "start_blend_sha256": "b9cc85967819b5fc31d323c0aa806c925a9e2e849b878e31c1866a2a8404909c",
+  "final_blend": "export/HeroBase_Male_Silhouette_arms.blend",
+  "final_blend_sha256": "9f6d02bd67a8b38dc063ca5033535a385265900c2d71f959a96f65ad50d56154",
+  "zone": {
+   "definition": "arms: Body_M vertices with |x|>0.215, 0.78<z<1.42, connected component per side (shoulder ball excluded: edits taper to zero before t=-0.03 / the arm axis coordinate)",
+   "verts_in_zone": 6580,
+   "verts_total": 30296,
+   "verts_moved": 2502,
+   "verts_moved_inside_zone": 2502,
+   "verts_moved_outside_zone": 0,
+   "moved_hand_shell": 1746,
+   "moved_forearm_wrist_band": 756
+  },
+  "moved_by_category": {
+   "head_neck(z>=1.40)": 0,
+   "torso+pelvis(|x|<=0.215,0.77<=z<1.40)": 0,
+   "legs(z<0.77,|x|<0.40)": 0,
+   "feet(z<0.25)": 0,
+   "shoulder_ball_and_upper_arm(t<-0.03)": 0,
+   "outside_arm_zone": 0
+  },
+  "category_vertex_counts": {
+   "head_neck(z>=1.40)": 7896,
+   "torso+pelvis(|x|<=0.215,0.77<=z<1.40)": 6824,
+   "legs(z<0.77,|x|<0.40)": 8996,
+   "feet(z<0.25)": 3482,
+   "shoulder_ball_and_upper_arm(t<-0.03)": 3301,
+   "outside_arm_zone": 23716
+  },
+  "max_displacement_mm": 20.214096861574866,
+  "mean_displacement_moved_mm": 2.3988239550732127,
+  "p95_displacement_moved_mm": 11.896179664549852,
+  "topology_identical": true,
+  "verts": 30296,
+  "tris": 60358,
+  "tris_start": 60358,
+  "vertex_groups_identical": true,
+  "face_m_bit_identical": true,
+  "objects_identical": true,
+  "materials_identical": true,
+  "modifiers": [],
+  "uv_identical": true,
+  "transform_identical": true,
+  "cameras_empties_identical": true,
+  "boundary_edges": [
+   92,
+   92
+  ],
+  "nonmanifold_edges": [
+   2,
+   2
+  ],
+  "loose_verts": [
+   73,
+   73
+  ],
+  "height_m": [
+   1.702187418937683,
+   1.702187418937683
+  ],
+  "quality_start": {
+   "R_upper_hf_rms_mm": 0.10178724851409497,
+   "R_upper_hf_p99_mm": 0.30140346608796165,
+   "R_fore_hf_rms_mm": 0.1420806310002798,
+   "R_fore_hf_p99_mm": 0.4225768223870639,
+   "R_wristhand_hf_rms_mm": 0.4573229026494779,
+   "R_wristhand_hf_p99_mm": 2.096068996217424,
+   "L_upper_hf_rms_mm": 0.12662434492097827,
+   "L_upper_hf_p99_mm": 0.4011155206038752,
+   "L_fore_hf_rms_mm": 0.18436310591843252,
+   "L_fore_hf_p99_mm": 0.45169529762279886,
+   "L_wristhand_hf_rms_mm": 0.4620973542582719,
+   "L_wristhand_hf_p99_mm": 2.0331052947598747,
+   "edges": 13106,
+   "dihedral_gt30": 724,
+   "dihedral_gt45": 279,
+   "dihedral_gt60": 96,
+   "dihedral_max": 163.2892189870686
+  },
+  "quality_final": {
+   "R_upper_hf_rms_mm": 0.10178724910913498,
+   "R_upper_hf_p99_mm": 0.3014034725922451,
+   "R_fore_hf_rms_mm": 0.12879472295126845,
+   "R_fore_hf_p99_mm": 0.4222710348132443,
+   "R_wristhand_hf_rms_mm": 0.3273247182800117,
+   "R_wristhand_hf_p99_mm": 1.2125953504013622,
+   "L_upper_hf_rms_mm": 0.12662434593412653,
+   "L_upper_hf_p99_mm": 0.401115520599314,
+   "L_fore_hf_rms_mm": 0.1645697681870965,
+   "L_fore_hf_p99_mm": 0.43182909918779805,
+   "L_wristhand_hf_rms_mm": 0.3289584065342105,
+   "L_wristhand_hf_p99_mm": 1.2096357530274167,
+   "edges": 13106,
+   "dihedral_gt30": 720,
+   "dihedral_gt45": 232,
+   "dihedral_gt60": 52,
+   "dihedral_max": 103.76261065248823
+  },
+  "self_intersecting_triangle_pairs": [
+   23,
+   0
+  ],
+  "zone_edges_dihedral_gt100": [
+   18,
+   4
+  ],
+  "zone_edges_dihedral_gt90": [
+   32,
+   10
+  ],
+  "flipped_polys_in_zone": 4,
+  "flipped_polys_where": "thumb root only (these faces were folded back in the start mesh)",
+  "hand_roi_xor_start_final": [
+   2461,
+   2218
+  ],
+  "hand_roi_xor_per_roi": {
+   "bald_front_L": [
+    285,
+    332
+   ],
+   "bald_front_R": [
+    487,
+    438
+   ],
+   "bald_back_L": [
+    460,
+    367
+   ],
+   "bald_back_R": [
+    430,
+    325
+   ],
+   "sheet_front_L": [
+    159,
+    170
+   ],
+   "sheet_front_R": [
+    174,
+    161
+   ],
+   "sheet_back_L": [
+    346,
+    335
+   ],
+   "sheet_back_R": [
+    120,
+    90
+   ]
+  },
+  "mirror_mean_p95_max_mm": {
+   "start": [
+    0.5799231041224667,
+    1.9031987984595078,
+    5.689411687162826
+   ],
+   "final": [
+    0.581177063417023,
+    1.8635866391070282,
+    5.744799314865273
+   ]
+  },
+  "palm_centre_socket_proxy_moves": [
+   {
+    "side": 1,
+    "verts": 28,
+    "max_move_mm": 1.2765764450968144,
+    "mean_move_mm": 0.32972829072329785
+   },
+   {
+    "side": -1,
+    "verts": 28,
+    "max_move_mm": 1.2765764450968144,
+    "mean_move_mm": 0.3297089168109512
+   }
+  ],
+  "wrist_sections_right_hand": [
+   {
+    "w": [
+     -0.15,
+     -0.13
+    ],
+    "start": {
+     "area_cm2": 74.18119309549202,
+     "a_extent_mm": 101.13657281897395,
+     "n_extent_mm": 98.58977516920407
+    },
+    "final": {
+     "area_cm2": 74.20056171871927,
+     "a_extent_mm": 101.13657281897395,
+     "n_extent_mm": 98.58977516920407
+    }
+   },
+   {
+    "w": [
+     -0.1,
+     -0.085
+    ],
+    "start": {
+     "area_cm2": 51.00345625063297,
+     "a_extent_mm": 87.3063260407395,
+     "n_extent_mm": 77.75047250994629
+    },
+    "final": {
+     "area_cm2": 51.09356280277646,
+     "a_extent_mm": 85.41794036512302,
+     "n_extent_mm": 78.04933359316362
+    }
+   },
+   {
+    "w": [
+     -0.07,
+     -0.055
+    ],
+    "start": {
+     "area_cm2": 39.79369436762165,
+     "a_extent_mm": 78.89207082880492,
+     "n_extent_mm": 67.24635049430357
+    },
+    "final": {
+     "area_cm2": 41.33772073919215,
+     "a_extent_mm": 78.54429802680569,
+     "n_extent_mm": 67.10365358166827
+    }
+   },
+   {
+    "w": [
+     -0.04,
+     -0.02
+    ],
+    "start": {
+     "area_cm2": 38.18903401342734,
+     "a_extent_mm": 77.30255756249132,
+     "n_extent_mm": 62.61228995499998
+    },
+    "final": {
+     "area_cm2": 38.110399911746576,
+     "a_extent_mm": 77.29376304754379,
+     "n_extent_mm": 62.16856220711127
+    }
+   }
+  ]
+ },
+ "silhouette_blender_native": {
+  "start": {
+   "bald_front": {
+    "xor": 3224,
+    "union": 74990,
+    "pct": 4.299
+   },
+   "bald_back": {
+    "xor": 3402,
+    "union": 74310,
+    "pct": 4.578
+   },
+   "left": {
+    "xor": 1055,
+    "union": 11262,
+    "pct": 9.368
+   },
+   "right": {
+    "xor": 1140,
+    "union": 11446,
+    "pct": 9.96
+   },
+   "sheet_front": {
+    "xor": 1335,
+    "union": 18650,
+    "pct": 7.158
+   },
+   "sheet_back": {
+    "xor": 1491,
+    "union": 18587,
+    "pct": 8.022
+   }
+  },
+  "final": {
+   "bald_front": {
+    "xor": 3248,
+    "union": 74925,
+    "pct": 4.335
+   },
+   "bald_back": {
+    "xor": 3232,
+    "union": 74146,
+    "pct": 4.359
+   },
+   "left": {
+    "xor": 1058,
+    "union": 11260,
+    "pct": 9.396
+   },
+   "right": {
+    "xor": 1137,
+    "union": 11443,
+    "pct": 9.936
+   },
+   "sheet_front": {
+    "xor": 1346,
+    "union": 18637,
+    "pct": 7.222
+   },
+   "sheet_back": {
+    "xor": 1458,
+    "union": 18553,
+    "pct": 7.859
+   }
+  }
+ },
+ "fbx": {
+  "fbx": "export/HeroBase_Male_Body_arms.fbx",
+  "fbx_sha256": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+  "src_verts": 30296,
+  "imported_verts": 30296,
+  "imported_tris": 60358,
+  "max_nearest_distance_mm": 0.00027939677238464355,
+  "mean_nearest_distance_mm": 0.00016200044351417193,
+  "reimport_height_m": 1.702187436632812,
+  "imported_scale": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "imported_rotation": [
+   -1.6292068494294654e-07,
+   0.0,
+   0.0
+  ]
+ },
+ "params": {
+  "thumb_morph": 3.0,
+  "thumb_anchor": 1,
+  "thumb_first": 0.008,
+  "pol_thumb": [
+   0.04,
+   25
+  ],
+  "r_a": 0.0134,
+  "r_n": 0.0177,
+  "gap": 0.0028,
+  "f_tip": [
+   0.15,
+   0.17400000000000002,
+   0.158,
+   0.138
+  ],
+  "taper": 0.1,
+  "splay_deg": [
+   3.5,
+   1.2,
+   -1.2,
+   -3.5
+  ],
+  "thumb_r": [
+   0.0205,
+   0.0195,
+   0.017,
+   0.015
+  ],
+  "thumb_pts": [
+   [
+    0.04,
+    -0.004,
+    0.036
+   ],
+   [
+    0.052,
+    0.009000000000000001,
+    0.047
+   ],
+   [
+    0.062,
+    0.02,
+    0.072
+   ],
+   [
+    0.063,
+    0.030000000000000002,
+    0.088
+   ]
+  ],
+  "pol_arm": [
+   12,
+   0.5,
+   -0.53,
+   0.04,
+   0.04
+  ],
+  "pol_roles": [
+   [
+    [
+     "palm r1[01] i(5|10|15|25|30|35)",
+     0.8
+    ],
+    [
+     "finger[0-3] m[01] q(0|5)",
+     0.8
+    ],
+    [
+     "palm r1[01] i(4|6|9|11|14|16|24|26|29|31|34|36)",
+     0.4
+    ],
+    [
+     "thumb m[0-2] k(7|8|9)",
+     0.9
+    ],
+    [
+     "palm r10 i(35|36|37|38|39)",
+     0.7
+    ]
+   ],
+   10
+  ]
+ },
+ "zone_delta": "work/male-parallel-arms/export/arms_zone_delta.npz (indices, base, new, 2,502 vertices)",
+ "installed_blend_sha256_at_install": "9f6d02bd67a8b38dc063ca5033535a385265900c2d71f959a96f65ad50d56154",
+ "installed_fbx_sha256_at_install": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+ "artdir_blend_sha256_when_report_written": "0dd37baf20fcc3524ee1d8557b88b87ce0d2d3782d13c5eb15a8df9fe38802b7",
+ "artdir_fbx_sha256_when_report_written": "614cccf33f8401632b78605c5f81abc911077dfd9d0c68d5b6e4d66a0722cd6d",
+ "note": "another chat (the changed vertices are all at z < 0.77, i.e. the legs chat) installed on top of this at 22:21 (blend now includes torso + arms/hands + legs); verified: all 2,502 arms/hands delta vertices equal their staged values in the current ArtDir blend, 0 inside the arm zone differ"
+}

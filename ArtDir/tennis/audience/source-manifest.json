@@ -1,0 +1,176 @@
+{
+  "version": 6,
+  "scope": "Source5 accepted geometry preserved exactly against frozen Accepted_ baseline inputs; only male far shorts topology changes. Original main hero source inputs remain frozen and untouched.",
+  "files": [
+    {
+      "path": "ArtDir/tennis/audience/README.md",
+      "sha256": "5cd961878301aeaaea07287e67340e8efde32a49d5801ef2b89409b1ec0edd27",
+      "bytes": 4496
+    },
+    {
+      "path": "ArtDir/tennis/audience/inputs/Accepted_TennisPromenadeHero5.blend",
+      "sha256": "7bbd50409cdddd90d5f7f12e3addbc6c4956e3fd2ba642aff207c5b038cd8bf6",
+      "bytes": 7258499
+    },
+    {
+      "path": "ArtDir/tennis/audience/inputs/Accepted_TennisSeatedHero5.blend",
+      "sha256": "fa4a99f326473640c907f4f4fb27056401d20a2baa24ebda6cf5c71f81d143b6",
+      "bytes": 6140812
+    },
+    {
+      "path": "ArtDir/tennis/audience/inputs/Golf_Female_Source.blend",
+      "sha256": "5020024224ce7c1e737ff12dcf8ff9490fd2b5ba6abbb3662045c60abb2d6de3",
+      "bytes": 37779304
+    },
+    {
+      "path": "ArtDir/tennis/audience/inputs/Golf_Male_Source.blend",
+      "sha256": "a17faf8c9e09c71efad03573818ac194f84b86d836634c15392c11a30212e1cf",
+      "bytes": 41611739
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisPromenadeHero4.blend",
+      "sha256": "3e86ae2d291708101617afbb0e3245c4c2d85bbdba55dc988c3136c51fd9c92c",
+      "bytes": 5881849
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisPromenadeHero5.blend",
+      "sha256": "7bbd50409cdddd90d5f7f12e3addbc6c4956e3fd2ba642aff207c5b038cd8bf6",
+      "bytes": 7258499
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisPromenadeHero6.blend",
+      "sha256": "668856956599cf848dc83048fbb97ea93a71ff857d641250e486e600e392418c",
+      "bytes": 7267284
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisSeatedHero4.blend",
+      "sha256": "ee1ed7bd9e877a808be87377224083285a4c99d1526dbaa9dacf323b8d0c8c49",
+      "bytes": 6114082
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisSeatedHero5.blend",
+      "sha256": "fa4a99f326473640c907f4f4fb27056401d20a2baa24ebda6cf5c71f81d143b6",
+      "bytes": 6140812
+    },
+    {
+      "path": "ArtDir/tennis/audience/source/TennisSeatedHero6.blend",
+      "sha256": "90a199f040d4cf12d3bb9a545ab825a077088dcea2cee1fd1891cad6255d9dc6",
+      "bytes": 6152359
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging5/TennisPromenadeHero3.blend",
+      "sha256": "7bbd50409cdddd90d5f7f12e3addbc6c4956e3fd2ba642aff207c5b038cd8bf6",
+      "bytes": 7258499
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging5/TennisPromenadeHero3.blend1",
+      "sha256": "0d8be00ef57099187cb955a9ef30953b4b5fd7e0e09d552e65ef14508dd26cab",
+      "bytes": 6427386
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging5/TennisPromenadeHero3.fbx",
+      "sha256": "cd1c947794d4954e501ad644f406f7378e49a543c7c4ac4e58d3978a33937de8",
+      "bytes": 7272700
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging5/TennisSeatedHero3.blend",
+      "sha256": "fa4a99f326473640c907f4f4fb27056401d20a2baa24ebda6cf5c71f81d143b6",
+      "bytes": 6140812
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging5/TennisSeatedHero3.fbx",
+      "sha256": "08b7b8da264f53ac8e596581c106c9b615641fc97a66f2eda74c4c5be332cb52",
+      "bytes": 6786156
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging6/TennisPromenadeHero3.blend",
+      "sha256": "668856956599cf848dc83048fbb97ea93a71ff857d641250e486e600e392418c",
+      "bytes": 7267284
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging6/TennisPromenadeHero3.fbx",
+      "sha256": "f42632c11944e1d517a193e699b1fb91a5b1b43a09e461adbacae137206ec7f9",
+      "bytes": 7288044
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging6/TennisSeatedHero3.blend",
+      "sha256": "90a199f040d4cf12d3bb9a545ab825a077088dcea2cee1fd1891cad6255d9dc6",
+      "bytes": 6152359
+    },
+    {
+      "path": "ArtDir/tennis/audience/staging6/TennisSeatedHero3.fbx",
+      "sha256": "6e1a22ece519b1fc335e62cac81eb38d78720786d32d1bc029c6ce9e7aecd324",
+      "bytes": 6803660
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/__pycache__/bake-tennis-audience.cpython-314.pyc",
+      "sha256": "e8fd41fbc85e0b85b98b70c9bb36f299c205173b23a6eb076553664c37c9484e",
+      "bytes": 90180
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/__pycache__/render-audience-source.cpython-314.pyc",
+      "sha256": "537a8a6923ab8d171f28e71d332993847225bd9eb7b96e644ee858a51ea123f6",
+      "bytes": 9236
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/__pycache__/render-walker-joints.cpython-314.pyc",
+      "sha256": "7881b1023862d3269a817fbbbd81936945afd20a7916bc8a8ae9588c5a3182d9",
+      "bytes": 10739
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/__pycache__/sealed_far_sneaker.cpython-313.pyc",
+      "sha256": "895a91f05ac5fa02c33a30bec9df58b34ad64aa8a619dcee352801761b03a5fe",
+      "bytes": 15242
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/apply-far-shorts-only.py",
+      "sha256": "894df332693e755c8413753057934349da9bb232b7217c81847627953b6ed491",
+      "bytes": 3753
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/audit-skin-weights.py",
+      "sha256": "2e465e9e0298594365f79562e216efa673b3e6b6ebee0bf641095efeed015894",
+      "bytes": 895
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/audit-source6-preservation.py",
+      "sha256": "d4b6c77ea736eda2179db28d8fe2438d1b8c3b5a58ba211410dc2d8fed940a84",
+      "bytes": 1715
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/bake-far-shorts-candidate.py",
+      "sha256": "67e439abb6089db25ec1f886e299f87b657c35db86fafd885593f00244004351",
+      "bytes": 39614
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/bake-tennis-audience.py",
+      "sha256": "2f226b58d3a2c3d3aea18cd9919774465d87fb9e5d0eb79c87e6fdc3ab08c2c3",
+      "bytes": 39534
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/render-audience-source-6.py",
+      "sha256": "cb208b3fedb5ac2307fb328148b6dae4e7c10c6500d7eafbb8dcb47e56c115da",
+      "bytes": 3108
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/render-audience-source.py",
+      "sha256": "dc9dc577b87b1daa2c71a9d0391b69b4315483ae6bb6a945683fb5a3e7bcb080",
+      "bytes": 3108
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/render-walker-joints-6.py",
+      "sha256": "8ca837ff5f95c9f88cd4a3b7f90be04d41623767960fde7091a7f07c757a52c6",
+      "bytes": 3499
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/render-walker-joints.py",
+      "sha256": "710c601bbdd6b32ff160cfa9f240d637e1e689210e4df157852a5563434c60d3",
+      "bytes": 3499
+    },
+    {
+      "path": "ArtDir/tennis/audience/tools/sealed_far_sneaker.py",
+      "sha256": "7b95ea0a64bb9bd1df7d32c4b1612e402e641ccb64186dd85a11521f7a98ebc5",
+      "bytes": 7876
+    }
+  ]
+}

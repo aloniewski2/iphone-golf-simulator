@@ -1,0 +1,442 @@
+[
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Ready__RH__V4",
+    "clip": "Ready",
+    "hand": "RH",
+    "start": 1,
+    "end": 61,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Approach__RH__V4",
+    "clip": "Approach",
+    "hand": "RH",
+    "start": 70,
+    "end": 130,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__DeliveryStraight__RH__V4",
+    "clip": "DeliveryStraight",
+    "hand": "RH",
+    "start": 139,
+    "end": 229,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__DeliveryHook__RH__V4",
+    "clip": "DeliveryHook",
+    "hand": "RH",
+    "start": 238,
+    "end": 328,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Release__RH__V4",
+    "clip": "Release",
+    "hand": "RH",
+    "start": 337,
+    "end": 397,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__FollowThrough__RH__V4",
+    "clip": "FollowThrough",
+    "hand": "RH",
+    "start": 406,
+    "end": 466,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__EarlyRelease__RH__V4",
+    "clip": "EarlyRelease",
+    "hand": "RH",
+    "start": 475,
+    "end": 535,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__LateRelease__RH__V4",
+    "clip": "LateRelease",
+    "hand": "RH",
+    "start": 544,
+    "end": 604,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__AbortApproach__RH__V4",
+    "clip": "AbortApproach",
+    "hand": "RH",
+    "start": 613,
+    "end": 673,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__AlignmentCorrection__RH__V4",
+    "clip": "AlignmentCorrection",
+    "hand": "RH",
+    "start": 682,
+    "end": 742,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__WatchAndRecover__RH__V4",
+    "clip": "WatchAndRecover",
+    "hand": "RH",
+    "start": 751,
+    "end": 811,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Ready__LH__V4",
+    "clip": "Ready",
+    "hand": "LH",
+    "start": 820,
+    "end": 880,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Approach__LH__V4",
+    "clip": "Approach",
+    "hand": "LH",
+    "start": 889,
+    "end": 949,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__DeliveryStraight__LH__V4",
+    "clip": "DeliveryStraight",
+    "hand": "LH",
+    "start": 958,
+    "end": 1048,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__DeliveryHook__LH__V4",
+    "clip": "DeliveryHook",
+    "hand": "LH",
+    "start": 1057,
+    "end": 1147,
+    "frames": 91
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__Release__LH__V4",
+    "clip": "Release",
+    "hand": "LH",
+    "start": 1156,
+    "end": 1216,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__FollowThrough__LH__V4",
+    "clip": "FollowThrough",
+    "hand": "LH",
+    "start": 1225,
+    "end": 1285,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__EarlyRelease__LH__V4",
+    "clip": "EarlyRelease",
+    "hand": "LH",
+    "start": 1294,
+    "end": 1354,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__LateRelease__LH__V4",
+    "clip": "LateRelease",
+    "hand": "LH",
+    "start": 1363,
+    "end": 1423,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__AbortApproach__LH__V4",
+    "clip": "AbortApproach",
+    "hand": "LH",
+    "start": 1432,
+    "end": 1492,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__AlignmentCorrection__LH__V4",
+    "clip": "AlignmentCorrection",
+    "hand": "LH",
+    "start": 1501,
+    "end": 1561,
+    "frames": 61
+  },
+  {
+    "gender": "Male",
+    "sport": "Bowling",
+    "action": "Male__Bowling__WatchAndRecover__LH__V4",
+    "clip": "WatchAndRecover",
+    "hand": "LH",
+    "start": 1570,
+    "end": 1630,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Ready__RH__V4",
+    "clip": "Ready",
+    "hand": "RH",
+    "start": 1,
+    "end": 61,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Approach__RH__V4",
+    "clip": "Approach",
+    "hand": "RH",
+    "start": 70,
+    "end": 130,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__DeliveryStraight__RH__V4",
+    "clip": "DeliveryStraight",
+    "hand": "RH",
+    "start": 139,
+    "end": 229,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__DeliveryHook__RH__V4",
+    "clip": "DeliveryHook",
+    "hand": "RH",
+    "start": 238,
+    "end": 328,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Release__RH__V4",
+    "clip": "Release",
+    "hand": "RH",
+    "start": 337,
+    "end": 397,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__FollowThrough__RH__V4",
+    "clip": "FollowThrough",
+    "hand": "RH",
+    "start": 406,
+    "end": 466,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__EarlyRelease__RH__V4",
+    "clip": "EarlyRelease",
+    "hand": "RH",
+    "start": 475,
+    "end": 535,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__LateRelease__RH__V4",
+    "clip": "LateRelease",
+    "hand": "RH",
+    "start": 544,
+    "end": 604,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__AbortApproach__RH__V4",
+    "clip": "AbortApproach",
+    "hand": "RH",
+    "start": 613,
+    "end": 673,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__AlignmentCorrection__RH__V4",
+    "clip": "AlignmentCorrection",
+    "hand": "RH",
+    "start": 682,
+    "end": 742,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__WatchAndRecover__RH__V4",
+    "clip": "WatchAndRecover",
+    "hand": "RH",
+    "start": 751,
+    "end": 811,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Ready__LH__V4",
+    "clip": "Ready",
+    "hand": "LH",
+    "start": 820,
+    "end": 880,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Approach__LH__V4",
+    "clip": "Approach",
+    "hand": "LH",
+    "start": 889,
+    "end": 949,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__DeliveryStraight__LH__V4",
+    "clip": "DeliveryStraight",
+    "hand": "LH",
+    "start": 958,
+    "end": 1048,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__DeliveryHook__LH__V4",
+    "clip": "DeliveryHook",
+    "hand": "LH",
+    "start": 1057,
+    "end": 1147,
+    "frames": 91
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__Release__LH__V4",
+    "clip": "Release",
+    "hand": "LH",
+    "start": 1156,
+    "end": 1216,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__FollowThrough__LH__V4",
+    "clip": "FollowThrough",
+    "hand": "LH",
+    "start": 1225,
+    "end": 1285,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__EarlyRelease__LH__V4",
+    "clip": "EarlyRelease",
+    "hand": "LH",
+    "start": 1294,
+    "end": 1354,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__LateRelease__LH__V4",
+    "clip": "LateRelease",
+    "hand": "LH",
+    "start": 1363,
+    "end": 1423,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__AbortApproach__LH__V4",
+    "clip": "AbortApproach",
+    "hand": "LH",
+    "start": 1432,
+    "end": 1492,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__AlignmentCorrection__LH__V4",
+    "clip": "AlignmentCorrection",
+    "hand": "LH",
+    "start": 1501,
+    "end": 1561,
+    "frames": 61
+  },
+  {
+    "gender": "Female",
+    "sport": "Bowling",
+    "action": "Female__Bowling__WatchAndRecover__LH__V4",
+    "clip": "WatchAndRecover",
+    "hand": "LH",
+    "start": 1570,
+    "end": 1630,
+    "frames": 61
+  }
+]

@@ -1,0 +1,14 @@
+Create a polished 3D game animation reference contact sheet, landscape 3:2, high resolution, 4 columns by 3 rows of 12 clearly separated panels. Warm off-white studio background, soft grounding shadows, consistent camera and character scale. Use the attached model render as STRICT character identity reference: oversized smooth rounded-square completely BLANK FACELESS bald head, tan skin, small stylized adult body, simple rounded mitten hands, black short-sleeve T-shirt, loose black trousers, plain white sneakers. Preserve the reference's body proportions and silhouette exactly. NO eyes, mouth, nose, hair, logos, new outfit, muscles, realistic fingers, or character redesign. Every panel must show one full character with head, both feet, and all sport equipment completely in frame, except explicitly specified contact detail panels. Clean readable silhouettes. Use clear small numbered captions below each panel. Pose and props may change; identity and clothes remain fixed. These are production concept keyframes, not a photograph of the source mesh. Avoid motion blur, ghost limbs, trails, arrows over bodies, overlapping panels. Character: FEMALE, preserve the fitted shirt, narrower waist and fuller hip silhouette of the reference. Title: "Golf — variants and contact — female". Panels in reading order:
+1. Driver tee address with broad stance
+2. Driver top of backswing with long club
+3. Driver impact with teed ball, upward arc
+4. Driver balanced high finish
+5. Pitch setup with wedge
+6. Pitch half backswing
+7. Pitch impact with wedge
+8. Pitch chest-high finish
+9. Front close-up: two mitten hands securely around one grip
+10. Side close-up: iron face and ball at impact
+11. Crouched reading green, putter held vertically
+12. Bend and retrieve ball from cup
+Show coherent body weight and equipment contact. Golf and bowling right-handed unless the panel specifies left-handed. One ball per panel. Keep head blank and hands simple. Use SHORT captions, not full sentences.

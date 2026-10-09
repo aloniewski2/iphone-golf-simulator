@@ -1,0 +1,4 @@
+! balance is down to 20 credits; tasks may fail (run "tripo topup")
+✗ Insufficient credits (You don't have enough credit to create this task)
+  → Please purchase more credit
+  request_id: 89ada3ab-0a90-4b72-b269-380faed29844

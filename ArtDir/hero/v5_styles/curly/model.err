@@ -1,0 +1,20 @@
+task created e5f45dfd-74bd-4cbd-8435-0e3e403d8720 (@m-curly)
+image_to_model · queued
+image_to_model · running 4% · e5f45dfd
+image_to_model · running 9% · e5f45dfd
+image_to_model · running 14% · e5f45dfd
+image_to_model · running 21% · e5f45dfd
+image_to_model · running 32% · e5f45dfd
+image_to_model · running 46% · e5f45dfd
+image_to_model · running 60% · e5f45dfd
+image_to_model · running 74% · e5f45dfd
+image_to_model · running 88% · e5f45dfd
+image_to_model · running 99% · e5f45dfd
+image_to_model · running 99% · e5f45dfd
+image_to_model · running 99% · e5f45dfd
+image_to_model · running 99% · e5f45dfd
+image_to_model · running 99% · e5f45dfd
+image_to_model · success 100% · e5f45dfd
+✓ image_to_model · e5f45dfd-74bd-4cbd-8435-0e3e403d8720 · 40 credits
+downloading artifacts…
+✓ artifacts saved to curly/model/tripo-out/m-curly-e5f45dfd

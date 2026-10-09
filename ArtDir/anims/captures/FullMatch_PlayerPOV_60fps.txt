@@ -1,0 +1,1 @@
+Unity gameplay camera; autoplay inputs; 60 fps; 14940 frames; complete=True; score=3–0; hits=71; longest rally=37; visual tempo=1.2. Silent capture.

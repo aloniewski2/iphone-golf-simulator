@@ -1,0 +1,1 @@
+{"task_id":"d1fb3053-e007-448d-900a-d9d0cf380fee","type":"mesh_segmentation","status":"success","credits_consumed":40,"output_dir":"bob/seg/tripo-out/seg-bob-d1fb3053","files":["model.glb","rendered_image.webp","preview.png"],"model_file":"bob/seg/tripo-out/seg-bob-d1fb3053/model.glb","preview":"bob/seg/tripo-out/seg-bob-d1fb3053/preview.png"}

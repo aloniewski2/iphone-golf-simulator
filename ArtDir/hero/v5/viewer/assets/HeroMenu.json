@@ -1,0 +1,1049 @@
+{
+    "version": 1,
+    "pose": "Idle",
+    "parts": [
+        {
+            "name": "Head occluder (inner shell)",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 258,
+            "positionOffset": 0,
+            "normalOffset": 3096,
+            "uvOffset": 6192,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft_Waves",
+                    "indexOffset": 8256,
+                    "indexCount": 1536
+                }
+            ]
+        },
+        {
+            "name": "Eye L",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 1014,
+            "positionOffset": 14400,
+            "normalOffset": 26568,
+            "uvOffset": 38736,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_EyeCornea",
+                    "indexOffset": 46848,
+                    "indexCount": 5268
+                },
+                {
+                    "material": "Hero_01_Catchlight",
+                    "indexOffset": 67920,
+                    "indexCount": 360
+                }
+            ]
+        },
+        {
+            "name": "Lid L",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 308,
+            "positionOffset": 69360,
+            "normalOffset": 73056,
+            "uvOffset": 76752,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero lid skin",
+                    "indexOffset": 79216,
+                    "indexCount": 1512
+                },
+                {
+                    "material": "Hero lid lash",
+                    "indexOffset": 85264,
+                    "indexCount": 168
+                }
+            ]
+        },
+        {
+            "name": "Eye R",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 1014,
+            "positionOffset": 85936,
+            "normalOffset": 98104,
+            "uvOffset": 110272,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_EyeCornea",
+                    "indexOffset": 118384,
+                    "indexCount": 5268
+                },
+                {
+                    "material": "Hero_01_Catchlight",
+                    "indexOffset": 139456,
+                    "indexCount": 360
+                }
+            ]
+        },
+        {
+            "name": "Lid R",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 308,
+            "positionOffset": 140896,
+            "normalOffset": 144592,
+            "uvOffset": 148288,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero lid skin",
+                    "indexOffset": 150752,
+                    "indexCount": 1512
+                },
+                {
+                    "material": "Hero lid lash",
+                    "indexOffset": 156800,
+                    "indexCount": 168
+                }
+            ]
+        },
+        {
+            "name": "Hero_Racket_GripSocket",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 4752,
+            "positionOffset": 157472,
+            "normalOffset": 214496,
+            "uvOffset": 271520,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_Racket_Blue",
+                    "indexOffset": 309536,
+                    "indexCount": 7920
+                },
+                {
+                    "material": "Hero_Racket_Strings",
+                    "indexOffset": 341216,
+                    "indexCount": 4800
+                },
+                {
+                    "material": "Hero_Racket_Grip",
+                    "indexOffset": 360416,
+                    "indexCount": 240
+                }
+            ]
+        },
+        {
+            "name": "TwoHand_GripWrap",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 88,
+            "positionOffset": 361376,
+            "normalOffset": 362432,
+            "uvOffset": 363488,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_Racket_Grip",
+                    "indexOffset": 364192,
+                    "indexCount": 240
+                }
+            ]
+        },
+        {
+            "name": "Shoes_Default",
+            "hat": "",
+            "hair": "",
+            "body": "",
+            "vertexCount": 4011,
+            "positionOffset": 365152,
+            "normalOffset": 413284,
+            "uvOffset": 461416,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_ShoeCleanWhite",
+                    "indexOffset": 493504,
+                    "indexCount": 18690
+                },
+                {
+                    "material": "Hero_01_ShoeCleanWhite",
+                    "indexOffset": 568264,
+                    "indexCount": 1335
+                },
+                {
+                    "material": "Hero_01_ShoeOrange",
+                    "indexOffset": 573604,
+                    "indexCount": 306
+                }
+            ]
+        },
+        {
+            "name": "HatLiner",
+            "hat": "Visor",
+            "hair": "",
+            "body": "",
+            "vertexCount": 241,
+            "positionOffset": 574828,
+            "normalOffset": 577720,
+            "uvOffset": 580612,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 582540,
+                    "indexCount": 360
+                }
+            ]
+        },
+        {
+            "name": "Hat_Visor",
+            "hat": "Visor",
+            "hair": "",
+            "body": "",
+            "vertexCount": 1905,
+            "positionOffset": 583980,
+            "normalOffset": 606840,
+            "uvOffset": 629700,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 644940,
+                    "indexCount": 2514
+                },
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 654996,
+                    "indexCount": 6429
+                }
+            ]
+        },
+        {
+            "name": "Body_Skin",
+            "hat": "",
+            "hair": "",
+            "body": "Boy",
+            "vertexCount": 6818,
+            "positionOffset": 680712,
+            "normalOffset": 762528,
+            "uvOffset": 844344,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "skin_WarmSkin",
+                    "indexOffset": 898888,
+                    "indexCount": 26445
+                },
+                {
+                    "material": "skin_MatteCloth",
+                    "indexOffset": 1004668,
+                    "indexCount": 3711
+                },
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 1019512,
+                    "indexCount": 171
+                }
+            ]
+        },
+        {
+            "name": "Shirt_Default",
+            "hat": "",
+            "hair": "",
+            "body": "Boy",
+            "vertexCount": 4618,
+            "positionOffset": 1020196,
+            "normalOffset": 1075612,
+            "uvOffset": 1131028,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_WarmSkin",
+                    "indexOffset": 1167972,
+                    "indexCount": 1182
+                },
+                {
+                    "material": "Hero_01_MatteCloth",
+                    "indexOffset": 1172700,
+                    "indexCount": 20556
+                }
+            ]
+        },
+        {
+            "name": "Shorts_Default",
+            "hat": "",
+            "hair": "",
+            "body": "Boy",
+            "vertexCount": 3666,
+            "positionOffset": 1254924,
+            "normalOffset": 1298916,
+            "uvOffset": 1342908,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_MatteCloth",
+                    "indexOffset": 1372236,
+                    "indexCount": 17613
+                },
+                {
+                    "material": "Hero_01_WarmSkin",
+                    "indexOffset": 1442688,
+                    "indexCount": 33
+                }
+            ]
+        },
+        {
+            "name": "Body_Skin",
+            "hat": "",
+            "hair": "",
+            "body": "Girl",
+            "vertexCount": 6818,
+            "positionOffset": 1442820,
+            "normalOffset": 1524636,
+            "uvOffset": 1606452,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "skin_WarmSkin",
+                    "indexOffset": 1660996,
+                    "indexCount": 26445
+                },
+                {
+                    "material": "skin_MatteCloth",
+                    "indexOffset": 1766776,
+                    "indexCount": 3711
+                },
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 1781620,
+                    "indexCount": 171
+                }
+            ]
+        },
+        {
+            "name": "Shirt_Default",
+            "hat": "",
+            "hair": "",
+            "body": "Girl",
+            "vertexCount": 4618,
+            "positionOffset": 1782304,
+            "normalOffset": 1837720,
+            "uvOffset": 1893136,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_WarmSkin",
+                    "indexOffset": 1930080,
+                    "indexCount": 1182
+                },
+                {
+                    "material": "Hero_01_MatteCloth",
+                    "indexOffset": 1934808,
+                    "indexCount": 20556
+                }
+            ]
+        },
+        {
+            "name": "Shorts_Default",
+            "hat": "",
+            "hair": "",
+            "body": "Girl",
+            "vertexCount": 3666,
+            "positionOffset": 2017032,
+            "normalOffset": 2061024,
+            "uvOffset": 2105016,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_MatteCloth",
+                    "indexOffset": 2134344,
+                    "indexCount": 17613
+                },
+                {
+                    "material": "Hero_01_WarmSkin",
+                    "indexOffset": 2204796,
+                    "indexCount": 33
+                }
+            ]
+        },
+        {
+            "name": "Hair_Bob",
+            "hat": "Worn",
+            "hair": "Bob",
+            "body": "",
+            "vertexCount": 12140,
+            "positionOffset": 2204928,
+            "normalOffset": 2350608,
+            "uvOffset": 2496288,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 2593408,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Curly",
+            "hat": "Worn",
+            "hair": "Curly",
+            "body": "",
+            "vertexCount": 10543,
+            "positionOffset": 2740720,
+            "normalOffset": 2867236,
+            "uvOffset": 2993752,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 3078096,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Default",
+            "hat": "Worn",
+            "hair": "Swept",
+            "body": "",
+            "vertexCount": 11373,
+            "positionOffset": 3225408,
+            "normalOffset": 3361884,
+            "uvOffset": 3498360,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 3589344,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Long",
+            "hat": "Worn",
+            "hair": "Long",
+            "body": "",
+            "vertexCount": 12095,
+            "positionOffset": 3736656,
+            "normalOffset": 3881796,
+            "uvOffset": 4026936,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 4123696,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Ponytail",
+            "hat": "Worn",
+            "hair": "Ponytail",
+            "body": "",
+            "vertexCount": 11533,
+            "positionOffset": 4271008,
+            "normalOffset": 4409404,
+            "uvOffset": 4547800,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 4640064,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Bald",
+            "hat": "",
+            "hair": "Bald",
+            "body": "",
+            "vertexCount": 1626,
+            "positionOffset": 4787376,
+            "normalOffset": 4806888,
+            "uvOffset": 4826400,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "skin_WarmSkin",
+                    "indexOffset": 4839408,
+                    "indexCount": 9609
+                }
+            ]
+        },
+        {
+            "name": "Hair_Buzz",
+            "hat": "",
+            "hair": "Buzz",
+            "body": "",
+            "vertexCount": 1755,
+            "positionOffset": 4877844,
+            "normalOffset": 4898904,
+            "uvOffset": 4919964,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft_Buzz",
+                    "indexOffset": 4934004,
+                    "indexCount": 9609
+                }
+            ]
+        },
+        {
+            "name": "Hair_Waves",
+            "hat": "",
+            "hair": "Waves",
+            "body": "",
+            "vertexCount": 1752,
+            "positionOffset": 4972440,
+            "normalOffset": 4993464,
+            "uvOffset": 5014488,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft_Waves",
+                    "indexOffset": 5028504,
+                    "indexCount": 9609
+                }
+            ]
+        },
+        {
+            "name": "Hair_Bob_Free",
+            "hat": "None",
+            "hair": "Bob",
+            "body": "",
+            "vertexCount": 12136,
+            "positionOffset": 5066940,
+            "normalOffset": 5212572,
+            "uvOffset": 5358204,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 5455292,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Curly_Free",
+            "hat": "None",
+            "hair": "Curly",
+            "body": "",
+            "vertexCount": 10542,
+            "positionOffset": 5602604,
+            "normalOffset": 5729108,
+            "uvOffset": 5855612,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 5939948,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Default_Free",
+            "hat": "None",
+            "hair": "Swept",
+            "body": "",
+            "vertexCount": 11375,
+            "positionOffset": 6087260,
+            "normalOffset": 6223760,
+            "uvOffset": 6360260,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 6451260,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Long_Free",
+            "hat": "None",
+            "hair": "Long",
+            "body": "",
+            "vertexCount": 12093,
+            "positionOffset": 6598572,
+            "normalOffset": 6743688,
+            "uvOffset": 6888804,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 6985548,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "Hair_Ponytail_Free",
+            "hat": "None",
+            "hair": "Ponytail",
+            "body": "",
+            "vertexCount": 11530,
+            "positionOffset": 7132860,
+            "normalOffset": 7271220,
+            "uvOffset": 7409580,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 7501820,
+                    "indexCount": 36828
+                }
+            ]
+        },
+        {
+            "name": "HatLiner",
+            "hat": "Cap",
+            "hair": "",
+            "body": "",
+            "vertexCount": 241,
+            "positionOffset": 7649132,
+            "normalOffset": 7652024,
+            "uvOffset": 7654916,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 7656844,
+                    "indexCount": 360
+                }
+            ]
+        },
+        {
+            "name": "Hat_Cap",
+            "hat": "Cap",
+            "hair": "",
+            "body": "",
+            "vertexCount": 769,
+            "positionOffset": 7658284,
+            "normalOffset": 7667512,
+            "uvOffset": 7676740,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Cap_Orange",
+                    "indexOffset": 7682892,
+                    "indexCount": 4320
+                }
+            ]
+        },
+        {
+            "name": "HatLiner",
+            "hat": "Sweatband",
+            "hair": "",
+            "body": "",
+            "vertexCount": 241,
+            "positionOffset": 7700172,
+            "normalOffset": 7703064,
+            "uvOffset": 7705956,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Hero_01_HairTuft",
+                    "indexOffset": 7707884,
+                    "indexCount": 360
+                }
+            ]
+        },
+        {
+            "name": "Hat_Sweatband",
+            "hat": "Sweatband",
+            "hair": "",
+            "body": "",
+            "vertexCount": 288,
+            "positionOffset": 7709324,
+            "normalOffset": 7712780,
+            "uvOffset": 7716236,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 7718540,
+                    "indexCount": 1728
+                }
+            ]
+        },
+        {
+            "name": "Hat_SweatbandStripe",
+            "hat": "Sweatband",
+            "hair": "",
+            "body": "",
+            "vertexCount": 144,
+            "positionOffset": 7725452,
+            "normalOffset": 7727180,
+            "uvOffset": 7728908,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_Orange",
+                    "indexOffset": 7730060,
+                    "indexCount": 432
+                }
+            ]
+        },
+        {
+            "name": "Hat_Visor",
+            "hat": "Visor",
+            "hair": "Short",
+            "body": "",
+            "vertexCount": 1905,
+            "positionOffset": 7731788,
+            "normalOffset": 7754648,
+            "uvOffset": 7777508,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 7792748,
+                    "indexCount": 2514
+                },
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 7802804,
+                    "indexCount": 6429
+                }
+            ]
+        },
+        {
+            "name": "Hat_Cap",
+            "hat": "Cap",
+            "hair": "Short",
+            "body": "",
+            "vertexCount": 769,
+            "positionOffset": 7828520,
+            "normalOffset": 7837748,
+            "uvOffset": 7846976,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Cap_Orange",
+                    "indexOffset": 7853128,
+                    "indexCount": 4320
+                }
+            ]
+        },
+        {
+            "name": "Hat_Sweatband",
+            "hat": "Sweatband",
+            "hair": "Short",
+            "body": "",
+            "vertexCount": 288,
+            "positionOffset": 7870408,
+            "normalOffset": 7873864,
+            "uvOffset": 7877320,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_White",
+                    "indexOffset": 7879624,
+                    "indexCount": 1728
+                }
+            ]
+        },
+        {
+            "name": "Hat_SweatbandStripe",
+            "hat": "Sweatband",
+            "hair": "Short",
+            "body": "",
+            "vertexCount": 144,
+            "positionOffset": 7886536,
+            "normalOffset": 7888264,
+            "uvOffset": 7889992,
+            "slimOffset": 0,
+            "broadOffset": 0,
+            "submeshes": [
+                {
+                    "material": "Cos_Band_Orange",
+                    "indexOffset": 7891144,
+                    "indexCount": 432
+                }
+            ]
+        }
+    ],
+    "materials": [
+        {
+            "name": "Hero_01_HairTuft_Waves",
+            "texture": "Hair_Waves",
+            "color": [
+                0.6899999976158142,
+                0.44999998807907107,
+                0.1499999761581421,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.5
+        },
+        {
+            "name": "Hero_01_EyeCornea",
+            "texture": "iris",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.3499999940395355
+        },
+        {
+            "name": "Hero_01_Catchlight",
+            "texture": "",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                0.0
+            ],
+            "transparent": true,
+            "smoothness": 0.30000001192092898
+        },
+        {
+            "name": "Hero lid skin",
+            "texture": "",
+            "color": [
+                0.810235321521759,
+                0.5647059082984924,
+                0.43168628215789797,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.25
+        },
+        {
+            "name": "Hero lid lash",
+            "texture": "",
+            "color": [
+                0.15999996662139893,
+                0.08999999612569809,
+                0.059999965131282809,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.10000000149011612
+        },
+        {
+            "name": "Hero_Racket_Blue",
+            "texture": "",
+            "color": [
+                0.07999996095895767,
+                0.3999999761581421,
+                0.8500000238418579,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.20000000298023225
+        },
+        {
+            "name": "Hero_Racket_Strings",
+            "texture": "",
+            "color": [
+                0.8299999833106995,
+                0.9100000262260437,
+                0.9699999690055847,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.20000000298023225
+        },
+        {
+            "name": "Hero_Racket_Grip",
+            "texture": "",
+            "color": [
+                0.054999977350234988,
+                0.08999999612569809,
+                0.1499999761581421,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.20000000298023225
+        },
+        {
+            "name": "Hero_01_ShoeCleanWhite",
+            "texture": "",
+            "color": [
+                0.8941176533699036,
+                0.886274516582489,
+                0.8705882430076599,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.18000000715255738
+        },
+        {
+            "name": "Hero_01_ShoeOrange",
+            "texture": "",
+            "color": [
+                1.0,
+                0.41960781812667849,
+                0.2392156422138214,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Hero_01_HairTuft",
+            "texture": "",
+            "color": [
+                0.8666666746139526,
+                0.6980392336845398,
+                0.45882344245910647,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Cos_Band_White",
+            "texture": "",
+            "color": [
+                0.9647058844566345,
+                0.9529411196708679,
+                0.929411768913269,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "skin_WarmSkin",
+            "texture": "atlas",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.25
+        },
+        {
+            "name": "skin_MatteCloth",
+            "texture": "atlas",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.25
+        },
+        {
+            "name": "Hero_01_WarmSkin",
+            "texture": "atlas",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.25
+        },
+        {
+            "name": "Hero_01_MatteCloth",
+            "texture": "atlas",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Hero_01_HairTuft_Buzz",
+            "texture": "Hair_Buzz",
+            "color": [
+                0.6899999976158142,
+                0.44999998807907107,
+                0.1499999761581421,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.5
+        },
+        {
+            "name": "Cos_Cap_Orange",
+            "texture": "",
+            "color": [
+                1.0,
+                0.41999995708465578,
+                0.2399999499320984,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        },
+        {
+            "name": "Cos_Band_Orange",
+            "texture": "",
+            "color": [
+                1.0,
+                0.4196077883243561,
+                0.23921561241149903,
+                1.0
+            ],
+            "transparent": false,
+            "smoothness": 0.2199999988079071
+        }
+    ],
+    "bounds": []
+}

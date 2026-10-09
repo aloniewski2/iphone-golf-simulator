@@ -1,0 +1,20 @@
+Original Humanoid Avatar and complete HeroTennisDriver clip bindings retained. Imported mesh-only FBX is Generic; it is rebound to original Humanoid rig, never used as a Generic animation avatar.
+Slots: Hair=Slot_Hair, Visor=Slot_Hat, Top=Slot_Shirt, Bottom=Slot_Shorts, Shoes=Slot_Shoes; racketGrip unchanged.
+Hair_Default tris=8231 shapes=0
+Hair_Default_Free tris=8256 shapes=0
+Hair_Bald tris=0 shapes=0
+Hat_Visor tris=2981 shapes=0
+Shirt_Collar tris=780 shapes=2
+Shirt_CollarOrange tris=388 shapes=2
+Shirt_CuffNavy_L tris=488 shapes=2
+Shirt_CuffNavy_R tris=488 shapes=2
+Shirt_CuffOrange_L tris=488 shapes=2
+Shirt_CuffOrange_R tris=488 shapes=2
+Shirt_Default tris=5372 shapes=2
+Shirt_PlacketOrange tris=28 shapes=2
+Shorts_Default tris=1996 shapes=2
+Shorts_Piping tris=768 shapes=2
+Shoes_Default tris=6777 shapes=0
+Body_EyeSphere_L tris=1876 shapes=0
+Body_EyeSphere_R tris=1876 shapes=0
+Body_Skin tris=18137 shapes=7

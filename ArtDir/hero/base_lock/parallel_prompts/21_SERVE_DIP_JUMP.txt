@@ -1,0 +1,18 @@
+PASTE — SERVE DIP AND JUMP · NEW CHAT
+
+The last chat failed and then excused it. Do not continue that chat. Do not reuse work/serve-toss-arm/GATE_DEFS_preregistered.md.
+
+What it did: it moved the toss arm a little and froze the hips, spine, and root at 0.000 deg. It did not fold the hips. It did not add a jump. It stopped keying at 1.40 s, so the forearm still crosses the chest and the only hop is the old contact hop. It also failed its own line because the hand is 3 cm above the head instead of 10 cm. Delete that centimeter line. It fights the pose.
+
+Ignore the golf script changes. HoleView, CameraRig, and GolfGame are another session. Do not revert them and do not touch them.
+
+Watch work/serve-toss-arm/film/serve_toss_male.mp4 from the ball in the hand.
+
+1. Before the ball leaves the hand, fold at the hips, big and bouncy like the run, then pop up into the toss. FAIL if the spine stays straight through the load. The last chat's "hips untouched" line is wrong. Key the hips.
+2. Both feet leave the ground as the toss arm goes up, hips well above the ready stance, then land. Still in place. FAIL if the only airborne frame is the old contact hop at the end.
+3. While the ball is climbing, the left arm is climbing with it, elbow opening, not folded at the waist. By the time the ball is at the head the left arm is up and the racket hoop is above the handle. FAIL if the ball is by the ear and the racket is still sideways at the belt.
+4. After that, the elbow goes behind the back. The forearm never crosses the chest. The last chat left this old motion in. Key it.
+
+Male first. Copy by bone name to the female. Leave the walk and the three runs. Do not slide the root sideways. Export only Male_Serve.fbx and Female_Serve.fbx.
+
+Proof is a new in-game clip from the ball in the hand through the landing. No degree gates. No centimeter gates. A number that contradicts the pose is a fail of the gate, not of the clip.

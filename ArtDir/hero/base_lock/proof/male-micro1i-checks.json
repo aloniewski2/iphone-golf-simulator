@@ -1,0 +1,771 @@
+{
+ "micro": "1i",
+ "date": "2026-10-01",
+ "gate_line": "GATE: MALE_HEAD FAIL",
+ "failed_lines": [
+  "OVERALL_LIKENESS",
+  "FAIL_WRONG_LIKENESS"
+ ],
+ "start": {
+  "blend_sha256": "349d790e28147aedaf7aa6aa1b0879dc2856bf0d6ba7bb054552d1177bccfc12",
+  "fbx_sha256": "3b32b270ba6aefb74f96d5301f7d98ba71ed0d3acbc3e47a1d3cd821ebaaced8"
+ },
+ "final": {
+  "blend": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/blender/HeroBase_Male_Silhouette.blend",
+  "blend_sha256": "68de53ca729ff04d366377e6df302952082abfb8e5621c524d39468c39f630cf",
+  "fbx": "/Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/ArtDir/hero/base_lock/unity_import/HeroBase_Male_Body.fbx",
+  "fbx_sha256": "81276df06cbd136733e20232f388f860de71276d2487b22c508613d0a6e0aa43",
+  "note": "blend = j5 coordinates + continuous jaw groups (j5g); FBX exported from the j5 blend (identical geometry; FBX embeds a timestamp so a re-export hashes differently)"
+ },
+ "tris": {
+  "body_m": 60358,
+  "face_m": 5416,
+  "face_m_verts": 3322,
+  "body_verts": 30296,
+  "budget": "~60k approved by Adnan for Micro1i"
+ },
+ "topology": {
+  "head_edge_mm": {
+   "mean": 4.310917890971721,
+   "median": 3.3965962157168064,
+   "p5": 1.3410557351744499,
+   "p95": 10.816363015119535,
+   "max": 18.01578870334284,
+   "n": 15399
+  },
+  "face_zone_edge_mm": {
+   "mean": 3.5884435014508593,
+   "median": 3.413571505969063,
+   "p5": 1.261914606784748,
+   "p95": 6.623243732446484,
+   "max": 14.68139482009953,
+   "n": 8943
+  },
+  "quad_faces": 29840,
+  "tri_faces": 678,
+  "boundary_edges": 92,
+  "nonmanifold_edges": 2,
+  "new_vertices": 0,
+  "note": "same vertices and faces as Micro1h, only positions changed; 92 boundary + 2 non-manifold edges are pre-existing (eye openings)"
+ },
+ "regression": {
+  "moved_outside_head_zone": 0,
+  "moved_in_hands": 0,
+  "weld_ring_verts": 10,
+  "weld_ring_moved": 0,
+  "verts_below_z1436_moved": 0,
+  "head_zone_verts_moved": 6017,
+  "head_zone_max_move_mm": 14.91,
+  "body_below_neck_bit_identical": true,
+  "height_m": 1.7021874501369894
+ },
+ "silhouette_pct": {
+  "bald_front": 4.2978,
+  "bald_back": 4.5897,
+  "with_face_front": 4.2978,
+  "with_face_back": 4.5897,
+  "limit_pct": 5.0,
+  "micro1h": {
+   "front": 4.3121,
+   "back": 4.6175
+  }
+ },
+ "plate_fit_mm": {
+  "chin_3q": {
+   "micro1h": {
+    "rows": "z 1.489..1.466 (rows 562-580), q3L+q3R far side",
+    "values": [
+     -3.6,
+     -8.47,
+     -10.99,
+     -8.23,
+     -2.03,
+     -7.87,
+     -10.46,
+     -7.44
+    ],
+    "rms": 7.94,
+    "max_abs": 10.99
+   },
+   "micro1i": {
+    "rows": "z 1.489..1.466 (rows 562-580), q3L+q3R far side",
+    "values": [
+     -2.48,
+     -1.57,
+     -1.82,
+     -2.03,
+     -2.17,
+     -2.09,
+     -1.24,
+     -0.32
+    ],
+    "rms": 1.83,
+    "max_abs": 2.48
+   },
+   "gate": "+-3 mm"
+  },
+  "profile_front_y_chin_mouth_rows": {
+   "216": -0.07,
+   "224": -0.64,
+   "232": -1.5,
+   "240": 0.26,
+   "248": -1.24,
+   "256": 0.03
+  },
+  "front_halfwidth_jaw_rows": {
+   "240": 1.64,
+   "248": 1.55,
+   "256": 1.6
+  },
+  "ear_front_halfwidth": {
+   "micro1h": {
+    "160": 2.79,
+    "168": -1.05,
+    "176": -1.99,
+    "184": -3.18,
+    "192": -3.67,
+    "200": -3.87,
+    "208": -5.17
+   },
+   "micro1i": {
+    "160": 0.94,
+    "168": -3.91,
+    "176": -3.84,
+    "184": -3.67,
+    "192": -2.09,
+    "200": -2.91,
+    "208": -2.47
+   }
+  },
+  "ear_3q_rear_contour": {
+   "micro1h": {
+    "q3L": {
+     "502": 10.27,
+     "514": 12.4,
+     "526": 7.38
+    },
+    "q3R": {
+     "502": 6.59,
+     "514": 7.29,
+     "526": 6.79
+    }
+   },
+   "micro1i": {
+    "q3L": {
+     "502": 10.93,
+     "514": 14.77,
+     "526": 11.23
+    },
+    "q3R": {
+     "502": 7.13,
+     "514": 9.81,
+     "526": 10.42
+    }
+   },
+   "note": "the plates disagree about ear standoff: the front plate has the ear ~19 mm proud of the head, the 3/4 and back plates imply ~8-12 mm less. Micro1i FAVOURS THE FRONT PLATE: front-view ear width is within -4..+1 mm, but the 3/4 rear contour is +7..+15 mm outside plates 04/05 (Micro1h +6.6..+12.4). Open decision for Adnan."
+  },
+  "multiangle_dome_contour_rms_px": [
+   {
+    "crop": "07_body_front_head.png",
+    "yaw": 0,
+    "scale": 0.65,
+    "dx": -19,
+    "dy": -183.2,
+    "contour_rms_px": 3.74
+   },
+   {
+    "crop": "08_body_back_head.png",
+    "yaw": 180,
+    "scale": 0.73,
+    "dx": -45,
+    "dy": -203.2,
+    "contour_rms_px": 3.82
+   },
+   {
+    "crop": "09_ma_front.png",
+    "yaw": 0,
+    "scale": 0.56,
+    "dx": -47,
+    "dy": -174.6,
+    "contour_rms_px": 4.39
+   },
+   {
+    "crop": "10_ma_back.png",
+    "yaw": 180,
+    "scale": 0.53,
+    "dx": -11,
+    "dy": -161.0,
+    "contour_rms_px": 4.05
+   },
+   {
+    "crop": "11_ma_left_profile.png",
+    "yaw": 90,
+    "scale": 0.55,
+    "dx": 6,
+    "dy": -174.1,
+    "contour_rms_px": 7.48
+   },
+   {
+    "crop": "12_ma_right_profile.png",
+    "yaw": -90,
+    "scale": 0.52,
+    "dx": -79,
+    "dy": -170.5,
+    "contour_rms_px": 6.89
+   },
+   {
+    "crop": "13_ma_threequarter_front_left.png",
+    "yaw": -35,
+    "scale": 0.43,
+    "dx": 31,
+    "dy": -109.9,
+    "contour_rms_px": 5.93
+   },
+   {
+    "crop": "14_ma_threequarter_front_right.png",
+    "yaw": 40,
+    "scale": 0.44,
+    "dx": 11,
+    "dy": -112.4,
+    "contour_rms_px": 4.95
+   },
+   {
+    "crop": "15_ma_threequarter_back_left.png",
+    "yaw": 145,
+    "scale": 0.45,
+    "dx": 31,
+    "dy": -113.0,
+    "contour_rms_px": 2.93
+   },
+   {
+    "crop": "16_ma_threequarter_back_right.png",
+    "yaw": 145,
+    "scale": 0.44,
+    "dx": 37,
+    "dy": -112.4,
+    "contour_rms_px": 2.6
+   }
+  ]
+ },
+ "nose": {
+  "alar_crease_halfwidth_mm": {
+   "micro1h": {
+    "1.560": 23.0,
+    "1.552": 20.4,
+    "1.544": 21.4,
+    "1.540": 21.3,
+    "1.536": 18.3
+   },
+   "micro1i": {
+    "1.560": 19.4,
+    "1.552": 20.4,
+    "1.544": 25.7,
+    "1.540": 24.9,
+    "1.536": 18.2
+   },
+   "note": "Micro1h foot was widest at the TOP (23.0 at z1.560) and narrower at the base (~21); Micro1i 19.2 -> 25.5 (plate wings ~25-26)"
+  },
+  "nostril_ring_R_x_mm": {
+   "micro1h": [
+    8.6,
+    20.4
+   ],
+   "micro1i": [
+    7.9,
+    23.7
+   ]
+  }
+ },
+ "ear": {
+  "method": "rebuilt from scratch: thin-plate skull base from a collar outside the ear + rolled helix rim (quarter-ellipse wall, crest on the carved helix loop) + scapha level + antihelix/concha/tragus/antitragus/lobe relief; crest set by ABSOLUTE x targets vs ellipse angle",
+  "crest_x_mm_vs_angle_deg_R": {
+   "-120": 88.4,
+   "-97": 90.7,
+   "-70": 92.1,
+   "-42": 94.7,
+   "-18": 96.8,
+   "0": 97.9,
+   "18": 98.3,
+   "34": 98.7,
+   "52": 98.0,
+   "74": 95.7,
+   "95": 93.5
+  },
+  "params": {
+   "knots_deg": [
+    0,
+    40,
+    90,
+    130,
+    170,
+    215,
+    255,
+    300,
+    340
+   ],
+   "knots_H": [
+    22.0,
+    21.0,
+    18.5,
+    13.5,
+    8.5,
+    8.0,
+    10.5,
+    16.5,
+    20.5
+   ],
+   "d_c": 3.4,
+   "hold": 1.4,
+   "foot": 2.6,
+   "scapha": 0.74,
+   "ds": 3.6,
+   "anti": 3.4,
+   "concha": 5.6,
+   "tragus": 4.2,
+   "antitragus": 3.2,
+   "lobe": 1.6,
+   "skirt": 1.2,
+   "skirt_w": 9.0,
+   "fit": [
+    21.0,
+    31.0
+   ],
+   "blend": [
+    20.0,
+    9.0
+   ],
+   "smooth_iters": 2
+  },
+  "xc_knots": [
+   [
+    -125,
+    88.5
+   ],
+   [
+    -100,
+    89.5
+   ],
+   [
+    -75,
+    91.5
+   ],
+   [
+    -50,
+    94.0
+   ],
+   [
+    -25,
+    96.5
+   ],
+   [
+    0,
+    98.0
+   ],
+   [
+    25,
+    98.8
+   ],
+   [
+    50,
+    98.0
+   ],
+   [
+    70,
+    96.5
+   ],
+   [
+    85,
+    94.8
+   ],
+   [
+    100,
+    93.0
+   ],
+   [
+    115,
+    91.0
+   ]
+  ],
+  "hc_front_knots": [
+   [
+    135,
+    11.0
+   ],
+   [
+    160,
+    8.5
+   ],
+   [
+    180,
+    7.0
+   ],
+   [
+    205,
+    6.5
+   ],
+   [
+    235,
+    8.0
+   ]
+  ]
+ },
+ "loops": {
+  "LOOP_mouth_seam": {
+   "verts": 59,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 2.7,
+   "max_move_in_yz_mm": 2.09
+  },
+  "LOOP_mouth_lip_upper": {
+   "verts": 39,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 1.9,
+   "max_move_in_yz_mm": 1.87
+  },
+  "LOOP_mouth_lip_lower": {
+   "verts": 49,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 3.45,
+   "max_move_in_yz_mm": 3.06
+  },
+  "LOOP_nostril_L": {
+   "verts": 23,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 4.41,
+   "max_move_in_yz_mm": 2.83
+  },
+  "LOOP_nostril_R": {
+   "verts": 23,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 4.53,
+   "max_move_in_yz_mm": 2.87
+  },
+  "LOOP_ala_L": {
+   "verts": 20,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 4.88,
+   "max_move_in_yz_mm": 2.87
+  },
+  "LOOP_ala_R": {
+   "verts": 19,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 4.58,
+   "max_move_in_yz_mm": 2.87
+  },
+  "LOOP_ear_attach_L": {
+   "verts": 117,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 14.79,
+   "max_move_in_yz_mm": 0.06
+  },
+  "LOOP_helix_L": {
+   "verts": 65,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 4.78,
+   "max_move_in_yz_mm": 0.06
+  },
+  "LOOP_concha_L": {
+   "verts": 50,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 8.26,
+   "max_move_in_yz_mm": 0.04
+  },
+  "LOOP_ear_attach_R": {
+   "verts": 117,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 14.91,
+   "max_move_in_yz_mm": 0.06
+  },
+  "LOOP_helix_R": {
+   "verts": 65,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 4.64,
+   "max_move_in_yz_mm": 0.05
+  },
+  "LOOP_concha_R": {
+   "verts": 50,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 8.25,
+   "max_move_in_yz_mm": 0.04
+  },
+  "LOOP_jaw_ear_L": {
+   "verts": 71,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 4.9,
+   "max_move_in_yz_mm": 4.36
+  },
+  "LOOP_jaw_ear_R": {
+   "verts": 70,
+   "ordered_chain_consecutive_vertices_share_an_edge": false,
+   "max_move_mm": 4.9,
+   "max_move_in_yz_mm": 4.37
+  },
+  "LOOP_lid_margin_L": {
+   "verts": 46,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 0.59,
+   "max_move_in_yz_mm": 0.48
+  },
+  "LOOP_lid_margin_R": {
+   "verts": 46,
+   "ordered_chain_consecutive_vertices_share_an_edge": true,
+   "max_move_mm": 0.58,
+   "max_move_in_yz_mm": 0.53
+  }
+ },
+ "loop_chain_jumps_micro1h_stored_order": {
+  "mouth_seam": {
+   "verts": 59,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "mouth_lip_upper": {
+   "verts": 39,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "mouth_lip_lower": {
+   "verts": 49,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "nostril_L": {
+   "verts": 23,
+   "jumps": 1,
+   "max_gap_h0_mm": 1.6,
+   "max_gap_j5_mm": 1.73
+  },
+  "nostril_R": {
+   "verts": 23,
+   "jumps": 1,
+   "max_gap_h0_mm": 1.62,
+   "max_gap_j5_mm": 1.76
+  },
+  "ala_L": {
+   "verts": 20,
+   "jumps": 1,
+   "max_gap_h0_mm": 1.95,
+   "max_gap_j5_mm": 3.58
+  },
+  "ala_R": {
+   "verts": 19,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "ear_attach_L": {
+   "verts": 117,
+   "jumps": 1,
+   "max_gap_h0_mm": 3.22,
+   "max_gap_j5_mm": 2.5
+  },
+  "helix_L": {
+   "verts": 65,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "concha_L": {
+   "verts": 50,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "ear_attach_R": {
+   "verts": 117,
+   "jumps": 1,
+   "max_gap_h0_mm": 4.11,
+   "max_gap_j5_mm": 2.97
+  },
+  "helix_R": {
+   "verts": 65,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "concha_R": {
+   "verts": 50,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "jaw_ear_L": {
+   "verts": 71,
+   "jumps": 10,
+   "max_gap_h0_mm": 51.85,
+   "max_gap_j5_mm": 51.88
+  },
+  "jaw_ear_R": {
+   "verts": 70,
+   "jumps": 9,
+   "max_gap_h0_mm": 51.56,
+   "max_gap_j5_mm": 51.58
+  },
+  "lid_margin_L": {
+   "verts": 46,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  },
+  "lid_margin_R": {
+   "verts": 46,
+   "jumps": 0,
+   "max_gap_h0_mm": 0.0,
+   "max_gap_j5_mm": 0.0
+  }
+ },
+ "jaw_ear_loop": {
+  "micro1h": "stored as fragments: L 71 / R 70 vertices, 10 / 9 jumps of ~52 mm (pre-existing, built with snap=False and a normal mask that blocked front-facing facets)",
+  "micro1i": {
+   "L": {
+    "verts": 30,
+    "continuous_edge_path": true,
+    "path_length_mm": 170.2
+   },
+   "R": {
+    "verts": 30,
+    "continuous_edge_path": true,
+    "path_length_mm": 170.0
+   }
+  },
+  "change": "LOOP_jaw_ear_L/R vertex-group membership replaced by a continuous edge path along the same jaw curve (30 vertices per side, max 3.95 mm from the curve); geometry untouched"
+ },
+ "face_m": {
+  "slots": [
+   "Face_Brow",
+   "Face_Sclera",
+   "Face_Iris",
+   "Face_Pupil",
+   "Face_Limbal",
+   "Face_Catch",
+   "Face_LidLine",
+   "Face_Lip",
+   "Face_LipUp",
+   "Face_Seam",
+   "Face_Nostril",
+   "Face_BrowSoft",
+   "Face_LidCrease"
+  ],
+  "offsets_from_skin_mm": {
+   "Face_Brow": {
+    "verts": 560,
+    "max_mm": 1.5,
+    "mean_mm": 0.928
+   },
+   "Face_Sclera": {
+    "verts": 642,
+    "max_mm": 29.797,
+    "mean_mm": 12.604
+   },
+   "Face_Iris": {
+    "verts": 256,
+    "max_mm": 9.234,
+    "mean_mm": 3.328
+   },
+   "Face_Pupil": {
+    "verts": 130,
+    "max_mm": 6.731,
+    "mean_mm": 4.179
+   },
+   "Face_Limbal": {
+    "verts": 128,
+    "max_mm": 14.296,
+    "mean_mm": 4.108
+   },
+   "Face_Catch": {
+    "verts": 22,
+    "max_mm": 2.958,
+    "mean_mm": 1.362
+   },
+   "Face_LidLine": {
+    "verts": 592,
+    "max_mm": 0.3,
+    "mean_mm": 0.265
+   },
+   "Face_Lip": {
+    "verts": 220,
+    "max_mm": 0.485,
+    "mean_mm": 0.246
+   },
+   "Face_LipUp": {
+    "verts": 220,
+    "max_mm": 0.738,
+    "mean_mm": 0.257
+   },
+   "Face_Seam": {
+    "verts": 168,
+    "max_mm": 1.071,
+    "mean_mm": 0.516
+   },
+   "Face_Nostril": {
+    "verts": 96,
+    "max_mm": 0.12,
+    "mean_mm": 0.12
+   },
+   "Face_BrowSoft": {
+    "verts": 320,
+    "max_mm": 0.808,
+    "mean_mm": 0.462
+   },
+   "Face_LidCrease": {
+    "verts": 160,
+    "max_mm": 0.18,
+    "mean_mm": 0.179
+   }
+  },
+  "note": "paint layers only: brow ribbons <=1.5 mm (hair), lash/crease/lip/nostril 0.12-0.74 mm, seam ribbon <=1.07 mm at the lip corners; eyeballs sit behind the lid margin; all face forms are Body_M geometry"
+ },
+ "unity": {
+  "verify": "MALE_FORM_SAVED_UNITY_VERIFY_PASS",
+  "fbx_matches_source": true,
+  "triangles": 60358,
+  "hair_root_socket_in_prefab": true,
+  "hair_mesh": false,
+  "import_settings": "globalScale 1, fileScale 1, mesh compression off, normals imported",
+  "captures": "ArtDir/hero/base_lock/proof/male_form_d/unity/*.png",
+  "audit": "ArtDir/hero/base_lock/proof/male-form-unity-audit.txt"
+ },
+ "edit_chain": [
+  "e1 chin: far-side 3/4 tangent shave (plates 04 yaw 41, 05 yaw 36), softplus margin 1 mm",
+  "e2n nose: bridge narrowed up to 7 mm/side, wings pushed out up to 5.4 mm/side (nostril openings kept), x-only warp",
+  "PMO photometric mesh optimisation: Lambert vs plate luminance in 4 views (light az 4/el 40 fitted on the dome), RBF basis 10 mm sigma / 8 mm centres, contour hinge constraints, stubble albedo field",
+  "e3/e3b lower-face + chin-band fairing, centre-line profile restored",
+  "e4 interior relief (infraorbital, malar, buccal, temple, mentolabial, jaw groove, alar groove + lobe bump)",
+  "e5 cheek apple / smile bunching / lid puff",
+  "e8 mouth on the carved loops (seam groove along LOOP_mouth_seam, lip volume, corner pockets)",
+  "e7 alar fairing",
+  "e2v ear rebuilt from scratch"
+ ],
+ "gate_lines": {
+  "OVERALL_LIKENESS": "FAIL",
+  "FAIL_WRONG_LIKENESS": "FAIL",
+  "CHIN_WIDTH_3Q": "PASS (measured +-2.5 mm vs both 3/4 plates; Adnan in-session: jaw almost there)",
+  "CHIN_FRONT_PROFILE": "PASS",
+  "EAR_ATTACH": "PASS",
+  "EAR_ANATOMY": "PASS",
+  "CHEEK_ATHLETIC": "PASS",
+  "CHEEKBONE_3Q": "PASS",
+  "CHEEK_WIDTH": "PASS",
+  "MOUTH_SMILE": "PASS",
+  "LIP_VOLUME": "PASS",
+  "NO_STICKER_VOLUME": "PASS",
+  "TOPO_DENSITY": "PASS",
+  "MANDATORY_LOOPS": "PASS",
+  "HANDS": "PASS",
+  "BODY_BELOW_NECK": "PASS",
+  "SIL_%": "PASS",
+  "CUSTOMIZE_SOCKETS": "PASS",
+  "TRI_BUDGET": "PASS (60,358 within the ~60k approval)"
+ },
+ "sil_front": 4.2978,
+ "sil_back": 4.5897,
+ "sil_front_face": 4.2978,
+ "sil_back_face": 4.5897,
+ "body_tris": 60358,
+ "face_tris": 5416,
+ "face_edge_mean_mm": 3.5884435014508593,
+ "fbx_sha256": "81276df06cbd136733e20232f388f860de71276d2487b22c508613d0a6e0aa43"
+}

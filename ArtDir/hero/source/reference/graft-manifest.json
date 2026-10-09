@@ -1,0 +1,66 @@
+{
+  "Male": {
+    "body": "Body",
+    "features": "ReferenceFeatures",
+    "rig": "Rig_Male",
+    "boneCount": 53,
+    "bodyVertices": 37662,
+    "bodyTriangles": 75324,
+    "featureTriangles": 4544,
+    "bodyBindBasis": "identical originalBodymatrixWorld identity",
+    "eyeMidpointBlenderWorld": [
+      0.0,
+      -0.10902075469493866,
+      1.5849171876907349
+    ],
+    "sourceScale": 1.0,
+    "canonicalNeckCutZ": 1.387999976158142,
+    "oldBoundaryVertices": 90,
+    "newBoundaryVertices": 86,
+    "outsideNeckOriginalVertices": 25180,
+    "outsideNeckMissing": 0,
+    "outsideNeckWeightMaxError": 0.0,
+    "morphs": "expression2 baked into pilot; authoredBlink/Smile pending look acceptance",
+    "featuresAllHeadWeight": true,
+    "bypass": [
+      "HeroHeadVolume",
+      "HeroSkinNormals",
+      "HeroFaceCraft",
+      "HeroEyeRim",
+      "HeroActualLidFit",
+      "oldFaceRenderer"
+    ]
+  },
+  "Female": {
+    "body": "Body",
+    "features": "ReferenceFeatures",
+    "rig": "Rig_Female",
+    "boneCount": 53,
+    "bodyVertices": 29282,
+    "bodyTriangles": 58560,
+    "featureTriangles": 7808,
+    "bodyBindBasis": "identical originalBodymatrixWorld identity",
+    "eyeMidpointBlenderWorld": [
+      1.2665987014770508e-07,
+      -0.09911838918924332,
+      1.5568928718566895
+    ],
+    "sourceScale": 0.84,
+    "canonicalNeckCutZ": 1.3679999952316284,
+    "oldBoundaryVertices": 70,
+    "newBoundaryVertices": 92,
+    "outsideNeckOriginalVertices": 13035,
+    "outsideNeckMissing": 0,
+    "outsideNeckWeightMaxError": 0.0,
+    "morphs": "expression2 baked into pilot; authoredBlink/Smile pending look acceptance",
+    "featuresAllHeadWeight": true,
+    "bypass": [
+      "HeroHeadVolume",
+      "HeroSkinNormals",
+      "HeroFaceCraft",
+      "HeroEyeRim",
+      "HeroActualLidFit",
+      "oldFaceRenderer"
+    ]
+  }
+}

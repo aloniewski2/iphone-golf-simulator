@@ -1,0 +1,33 @@
+30b — RESUME GOLF SHADERS + KIT (continue prompt 30, Sol Goal Mode). Staged only, NO commit.
+
+RUN THIS ONLY WHEN BOTH ARE TRUE (check first; if not, stop and print GATE PRECONDITIONS: WAITING again):
+- 15 postcard: a course-only P8 commit exists and work/postcard-look/v3/PHASE_STATUS.md says P8 DONE.
+- 29 cloth: work/cloth-overhaul has its final GATE report and GARMENT_SPEC.md is final (not draft).
+
+READ: ArtDir/environments/30_GOLF_SHADERS_AND_KIT_SOL_GOAL.txt (full, gates G0–G12 unchanged),
+work/golf-look/RESUME.md, REPORT.md, AUDIT.md, data/blocking_audit_turn4.json, NEXT_SWING.md.
+Continue from the existing drafts and scripts (build_golf_draft.py -> fit_top_weights.py -> retarget_proof.py).
+Do not restart. Re-take fresh tennis/course baselines first (the old snapshots are pre-29).
+
+ADNAN'S EYE NOTES ON THE BLENDER DRAFT SHEETS (fix these as part of G6/G7):
+Male
+- The trouser pocket lips read as white diagonal straps across the hip. They must read as slanted pocket
+  openings: a thin dark recess plus a subtle lip, same fabric colour, not a contrasting band.
+- Trouser hems at the ankle look ragged/frayed. Make a clean hem with a slight break over the shoe.
+- Golf shoes are too blocky and the dark saddle reads as a sock gap. Slimmer last, defined welt and sole,
+  and a saddle that clearly sits on the upper.
+- Polo: the collar and placket need to read clean (collar points, two or three buttons); fine otherwise.
+Female
+- The visor floats as a ring above a bald scalp. Render and fit WITH her hair; the visor band must sit
+  on the hair/head, with the brim angled down slightly. No gap visible from any angle.
+- The skort is boxy and stiff, like a lampshade from the back. Make it fit at the hips with pleats that open
+  as it falls, a shorter flared silhouette, and no bulge at the seat.
+- The polo looks lumpy at the bust and sleeves. Smooth the fit and keep the ease even.
+- The shoes' black tongue/saddle reads heavy. Lighten it or make it a thin accent.
+Both
+- The white/black kit is fine. Keep separate shells on existing sockets, no new bones, and keep the
+  customizability rules (recolourable, swappable in the locker).
+
+Then run every remaining phase and gate from prompt 30 (shared HeroLighting profiles, GolfGround/GolfRock behind
+the GolfLook switch, golf kit into LockerCatalog, budgets, iPhone/Metal, tennis unchanged, films). Install only if
+all gates pass. Eye review sheets for Adnan at G12.

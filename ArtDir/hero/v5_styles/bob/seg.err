@@ -1,0 +1,11 @@
+task created d1fb3053-e007-448d-900a-d9d0cf380fee (@seg-bob)
+mesh_segmentation · queued
+mesh_segmentation · running 4% · d1fb3053
+mesh_segmentation · running 10% · d1fb3053
+mesh_segmentation · running 15% · d1fb3053
+mesh_segmentation · running 24% · d1fb3053
+mesh_segmentation · running 37% · d1fb3053
+mesh_segmentation · success 100% · d1fb3053
+✓ mesh_segmentation · d1fb3053-e007-448d-900a-d9d0cf380fee · 40 credits
+downloading artifacts…
+✓ artifacts saved to bob/seg/tripo-out/seg-bob-d1fb3053

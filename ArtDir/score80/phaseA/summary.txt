@@ -1,0 +1,1 @@
+frames=3600 hits=8 longest=13 ultimates=2 perfects=7 whiffs=0 score=GAMES 0–0  ·  30–15  ·  YOUR SERVE contactGapMean=0.01806254

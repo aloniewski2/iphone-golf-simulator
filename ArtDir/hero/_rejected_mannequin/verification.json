@@ -1,0 +1,65 @@
+{
+  "armatures": 1,
+  "mesh_count": 3,
+  "unweighted_vertices": 0,
+  "bad_weight_sums": 0,
+  "max_influences": 2,
+  "transforms_identity": true,
+  "zero_area_triangles": 0,
+  "socket_positions": {
+    "Hat": [
+      0.0,
+      0.0,
+      1.715000033378601
+    ],
+    "Hand_R": [
+      -0.6800000667572021,
+      -0.020000047981739044,
+      0.7699999809265137
+    ],
+    "Hand_L": [
+      0.6800000667572021,
+      -0.020000047981739044,
+      0.7699999809265137
+    ],
+    "Back": [
+      0.0,
+      0.14499999582767487,
+      1.1200000047683716
+    ],
+    "FaceExtra": [
+      0.0,
+      -0.19499997794628143,
+      1.5099999904632568
+    ]
+  },
+  "body_bounds": [],
+  "rest_pose": true,
+  "actions": 0,
+  "bones": 22,
+  "materials": [
+    "Hero_01_Cloth",
+    "Hero_01_Eyes",
+    "Hero_01_Hair",
+    "Hero_01_Skin",
+    "Hero_01_Visor"
+  ],
+  "triangles": 36558,
+  "height": 1.7465752363204956,
+  "head_ratio": 0.24824309156810628,
+  "fbx_reimport": {
+    "armatures": 1,
+    "meshes": 3,
+    "sockets": true,
+    "actions": 0,
+    "images": [
+      [
+        "Hero_01_Atlas",
+        [
+          1024,
+          1024
+        ]
+      ]
+    ]
+  }
+}

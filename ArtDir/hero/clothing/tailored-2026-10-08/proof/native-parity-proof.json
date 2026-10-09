@@ -1,0 +1,66 @@
+[
+  {
+    "bones": 53,
+    "desktopSnapshotSeconds": [
+      2.623929023742676,
+      3.0047359466552734,
+      2.620231032371521,
+      2.626426935195923,
+      2.6727969646453857
+    ],
+    "garments": [
+      {
+        "maxMorphWeight": 1.592894434928894,
+        "maxPositionErrorMm": 0.0017070774920284748,
+        "minMorphWeight": -1.6883518695831299,
+        "part": "Kit_Top",
+        "shapes": 94,
+        "vertices": 22887,
+        "verticesCompared": 2059830
+      },
+      {
+        "maxMorphWeight": 0,
+        "maxPositionErrorMm": 0.0004541799717117101,
+        "minMorphWeight": 0,
+        "part": "Kit_Bottom",
+        "shapes": 0,
+        "vertices": 14352,
+        "verticesCompared": 1291680
+      }
+    ],
+    "manifest": "MatchHero_Female",
+    "mobilePerformance": "Not measured by this desktop proof"
+  },
+  {
+    "bones": 53,
+    "desktopSnapshotSeconds": [
+      4.011905908584595,
+      4.197223901748657,
+      3.963117003440857,
+      3.6520400047302246,
+      3.339475989341736
+    ],
+    "garments": [
+      {
+        "maxMorphWeight": 1.592894434928894,
+        "maxPositionErrorMm": 0.0017070774920284748,
+        "minMorphWeight": -1.6883518695831299,
+        "part": "Kit_Top",
+        "shapes": 94,
+        "vertices": 18943,
+        "verticesCompared": 1704870
+      },
+      {
+        "maxMorphWeight": 0,
+        "maxPositionErrorMm": 0.0004541799717117101,
+        "minMorphWeight": 0,
+        "part": "Kit_Bottom",
+        "shapes": 0,
+        "vertices": 14352,
+        "verticesCompared": 1291680
+      }
+    ],
+    "manifest": "MatchHero_Female_Distance",
+    "mobilePerformance": "Not measured by this desktop proof"
+  }
+]

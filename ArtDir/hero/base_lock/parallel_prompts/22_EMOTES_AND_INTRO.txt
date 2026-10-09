@@ -1,0 +1,27 @@
+PASTE — EMOTES AND INTROS · NEW CHAT
+
+Six in-place clips. Three taunts, three intros. Where a line has a link, it is the order of the motion only. Do not download it, do not copy a face, a costume, or the audio, and do not name the person in it. Scuba and the thrust have no link. Do not look one up.
+
+Play after a game, or when the player picks a taunt. Not after every point. About two seconds, then back to Ready, unless a line says three. In place. Root does not slide. No new bones. Racket stays on Hand_Racket except where a line says it leaves the hand.
+
+Do not touch Serve, Walk, the three runs, the golf course, the shaders, or the locker.
+
+Both sexes. Male first, then copy by bone name onto the female. Same timing.
+
+Taunts
+- Emote_Scuba. Pinch the nose with one hand. The other hand waves in front of the face. Knees open and close twice. Hold, then Ready.
+- Emote_Thrust. Two big hip thrusts, fists up, same size as the run. Not a grab. Then Ready.
+- Emote_Spike. One downward hit. The racket leaves the hand, bounces once, and returns to Hand_Racket. Hands on hips, then Ready. The link is the downward arm path only. The release and the bounce are yours. Do not copy a player breaking a racket. https://www.youtube.com/watch?v=wa86Xrt6KzU
+
+Intros
+- Intro_Wave. One hand waves twice, palm forward, from the wrist. The other holds the racket still. Then Ready. About two seconds. https://www.youtube.com/shorts/HSk4zAu5f04
+- Intro_BringIt. Free hand beckons, palm toward the body, fingers curling in. Racket points at the other player. Two steps in place. Then Ready. About three seconds. https://www.pocketsign.org/asl/come-here
+- Intro_Pushups. Drop to the floor, two pushups, stand, Ready. Racket is set down and picked back up in the same clip. About three seconds. https://www.youtube.com/watch?v=WDIpL0pjun0
+
+Proof: one in-game clip per name, male and female, under work/emotes/film/.
+
+GATE EMOTES. Every line is PASS or FAIL.
+- The six names exist. No other new clip.
+- Scuba, thrust, and spike match the lines above. Spike's racket leaves the hand once and comes back.
+- Wave, bring-it, and pushups match the lines above. Bring-it is a beckon, not a swing.
+- No downloaded footage in the repo. Serve, Walk, the three runs, the course, the shaders, and the locker are untouched.

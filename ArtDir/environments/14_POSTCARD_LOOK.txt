@@ -1,0 +1,94 @@
+PASTE — POSTCARD HOLES LOOK · NEW CHAT · OPUS
+================================================================================
+The three holes already score. They look nothing like the stills, and nothing like the tennis maps. This pass is look only. Do not retune scoring.
+
+Look at these first, in this order.
+- ArtDir/environments/refs/needle.jpg
+- ArtDir/environments/refs/split.jpg
+- ArtDir/environments/refs/crater.jpg
+- ArtDir/screenshots/golf_postcards/ (the current in-game shots: flat green bands, gray blobs, a solid blue or orange plane)
+- ArtDir/screenshots/venues/resort_2_postcard.png and volcano_2_postcard.png (the quality bar)
+- blender/previews/hole_08_overview.png, hole_09_overview.png, hole_10_overview.png (the fail)
+
+Prompt 13 said the stills were mood and the prompt won. That is retired for LOOK. The stills are the look target. Scoring cuts from prompt 13 still win when a still would change the lie.
+
+What is wrong, from the files. Do not rediscover this.
+- hole_08.fbx, hole_09.fbx, hole_10.fbx are flat-color meshes. Fairway, green, and rough are one or two solid greens. Stripes are a second flat color, not a texture.
+- Rocks are one 12-vertex, 20-polygon icosahedron (ROCK_*, CLIFF_ROCK, ROCK_WALL_*). Hole 9 stacks are still under 80 verts. No albedo, no normal.
+- WATER_OCEAN is 4 vertices and 1 polygon. Foam is a white polygon strip (MAT_FOAM). WATER_LAVA is the same one polygon, flat orange, no emission. Hole 10 has no foam.
+- Holes 8–10 have no trees, shrubs, flowers, vines, path, or waterfall mesh.
+- postcard_lib.py paints Principled RGB only. At runtime HoleView.Palette / HoleView.Mat throw those names away and build Universal Render Pipeline/Lit with _BaseColor only and _Smoothness 0.1. A texture painted in Blender never reaches the game if this override stays. MAT_LAVA is not even in that dictionary.
+- GolfGame has one directional light, intensity 1.1, flat gray ambient, fog, no sky, no fill, no post.
+
+The tennis bar. Copy these techniques. Do not copy tennis scene objects into golf, and do not edit tennis files.
+- Ground: TennisLook.StyleIsland puts Tennis/Island/Island_Color.png and Island_Normal.png on URP Lit, smoothness about 0.12. Fairway, green, rough, and cliff need an albedo and a normal the same way. Generate new golf textures. Do not reuse the island photo on the golf course.
+- Plants: TennisEnvironmentV4.cs. Meshes, not grass cards. EnvV4 shrubs and trees are about 320–500 faces, one shared palette texture, instanced. There is no grass-card system in this project. Do not invent one.
+- Ocean: GolfArcade/TennisWater (Tennis/Shaders/TennisWater.shader). Shallow-to-deep color, swell, fresnel, sun sparkle. Use it on the golf ocean. Do not leave a solid blue plane, and do not fake foam with a white strip.
+- Crater rock and lava: the volcano set in TennisVenueBuilder.Volcano.cs. Generated basalt albedo, rock normal, crack mask, crust and emission. Lavafall is emissive, not a flat orange quad. Ledge rocks there are low-poly but they carry that relief. Match that, do not instance a bare icosahedron.
+- Sky and light: TennisSky plus Tennis/Environment/SkyPanorama.png. TennisLook.LightScene is a warm key (about 2.3), a cool fill (about 0.8), a rim, trilight ambient, fog, and TennisPost (ACES, bloom, vignette). Match that in the Golf scene only. Do not edit TennisLook.cs, Tennis.unity, or TennisPost.
+
+Style. Switch Sports / Wii clarity, soft and readable on a phone. Not photoreal, not grim, not Roblox flat color. The stills win on silhouette, color blocks, and landmarks. They do not win on photo detail. A vine-covered stone arch, not a scanned ruin. Textured grass, not a photograph of grass.
+
+KEEP. Fail the gate if any of these move.
+- GolfGame starts Course.Postcards(). Cliffside() stays in Hole.cs. Do not edit hole 7, hole_07.fbx, or hole_07.blend.
+- Do not change LieAt, shore polygons, centerlines, pin positions, play height (PLAY_Z = 6 m), par, or hazard counts. Needle keeps two water ellipses and one bunker. Split keeps one water ellipse and three bunkers. Crater keeps one lava water ellipse and two bunkers.
+- One play height. No slope the ball is expected to roll on.
+- No second green. split.jpg shows one. Do not build it.
+- The green does not hover. The crater pin stays on a pillar whose TOP is fairway height. Lava is lower and still scores as water.
+- No animated lava, no flowing shaders, no moving platforms.
+- HoleView only collides meshes whose names start with TERRAIN, FAIRWAY, GREEN, TEE_BOX, BUNKER, or CART_PATH. Every new rock, plant, path, arch, vine, waterfall, sea stack, and the background cone must use some other prefix (ROCK, PLANT, DRESS, WATER, LAVA). Do not rename a play surface to sneak collision onto a prop.
+
+Needle, hole 8. The still is a broken chain of grass cliff-islands over deep blue water. Build the look on the pads that already exist.
+- Left pad: a pale stone path, shrubs, and purple flowers. The path is a textured mesh on the pad, not a new CART_PATH and not a lie change.
+- A vine-covered stone arch on its own rock, beside the bunker, visual only. Masonry blocks and hanging vines. FAIL if it is still ROCK_LARGE icosahedra.
+- A waterfall off the lower right pad, visual only. A sheet mesh plus whitewater at the bottom. It does not collide, it does not move, and it is not a platform.
+- Dark stratified cliff texture on the terrain walls, hanging vines, a few sea stacks in the water. Whitewater comes from TennisWater, not a MAT_FOAM band.
+- Fairway and green are textured and a little varied. FAIL if they are still MAT_FAIRWAY / MAT_FAIRWAY_STRIPE flat colors.
+- Grass: short tuft meshes on the rough edges and around the pads, plus the shrubs and flowers. Same face budget as EnvV4.
+
+Split, hole 9. The still is one rugged island cut by a turquoise channel.
+- Right ribbon: manicured emerald fairway, sand bunkers reading as sand (albedo, not a flat disc), clifftop green.
+- Left ridge: olive dry scrub, rocks, and the ruined arch. FAIL if that ridge is still the same flat green as the fairway. The scrub is a material and plant scatter. It does not change the rough lie.
+- Shore is jagged rock with a normal map and TennisWater foam. FAIL if the shore is a smooth extruded wall in flat MAT_CLIFF gray.
+- The ruin reads as broken stone masonry, visual only. Not a pile of 12-vertex rocks.
+- No second green.
+
+Crater, hole 10. The still is a black columnar bowl, orange lava with a dark crust, and a grass shelf.
+- Walls are columnar basalt with a normal and a crack mask. FAIL if ROCK_WALL_BLUNT or ROCK_WALL_FLAT is still a 12-vertex icosahedron.
+- Lava has a dark crust texture and emission, so it lights the nearby rock. Static. It still scores as water. FAIL if WATER_LAVA is one flat orange polygon.
+- Square tee pad, textured.
+- Plants along the grass shelf. Keep the two scoring bunkers. Any extra sand in the still is a visual patch only, and its mesh name must not start with BUNKER.
+- Pillar sides drop into the lava and read as rock, not as a green disc floating on orange. Top stays at fairway height.
+- A background cone and a little smoke card behind the bowl, visual only, non-colliding. No new hole.
+
+Shared surface work.
+- Fairway, green, rough, sand, cliff, and rock each get a unique albedo and a normal, assigned on the material the Game view renders. Smoothness stays low (about 0.1 to 0.15), except wet rock near water.
+- Mow stripes, if you keep them, are in the fairway albedo. Not a second untextured material.
+- At least four unique rock meshes per hole, instanced. None of them may be the current 12-vertex icosahedron.
+- Grass tufts, shrubs, and flowers are meshes under about 500 faces, instanced, one shared palette. Scatter them. Do not spawn them on the green in a way that hides the pin.
+- Delete the white foam strips on holes 8 and 9 once TennisWater is on the ocean.
+
+The HoleView override is the bug that will throw this work away. Fix it.
+- Stop replacing these materials with a flat _BaseColor. Materials that carry an albedo, a normal, or an emission map must keep them.
+- Water meshes use GolfArcade/TennisWater.
+- Lava keeps its emission.
+- Do this for the postcard holes. Do not restyle hole 7.
+
+Light, in the Golf scene only.
+- Painted sky, warm key, cool fill, rim, softer fog than the current 250–700 gray wash.
+- The existing TennisPost stack, or the same settings, on the golf camera. No new post stack.
+- Do not touch the hero, the menu, tennis, or hole 7.
+
+Proof. In-game screenshots, not Blender viewport grabs. Save them under ArtDir/screenshots/golf_postcards/look/.
+- One tee view and one green view per hole, at the phone camera.
+- One close shot of Needle's arch, one of Split's scrub ridge, one of Crater's lava meeting the basalt.
+- FAIL a shot that still shows a flat green ribbon, a faceted gray blob, a solid blue plane, or a solid orange plane.
+
+GATE POSTCARD_LOOK. Every line is PASS or FAIL. A Blender render is not a pass.
+- GolfGame still starts Postcards. hole_07.fbx is unchanged. Shore, centerline, pin, play height, and hazard counts are unchanged.
+- In the Game view, fairway, green, rough, cliff, and rock show an albedo and a normal. HoleView no longer forces _BaseColor only.
+- Ocean uses GolfArcade/TennisWater. No MAT_FOAM strip remains.
+- No rock on holes 8–10 is a 12-vertex icosahedron. Crater walls read as columns. Crater lava is emissive and static.
+- Needle has a stone path, flowers, a masonry arch with vines, and a non-colliding waterfall. Split's left ridge is olive scrub, not fairway green, and the ruin reads as stone. Crater has plants and a background cone.
+- New props do not use the collision prefixes. LieAt is untouched.
+- The six proof shots exist, and none of them is a flat-color ribbon on a solid plane.

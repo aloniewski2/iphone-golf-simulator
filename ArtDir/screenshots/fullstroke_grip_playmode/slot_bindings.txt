@@ -1,0 +1,9 @@
+Ready -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Ready_v1.fbx / Hero_Grip_Ready_v1
+JumpServe -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_JumpServe_v1.fbx / Hero_Grip_JumpServe_v1
+Forehand -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Forehand_v1.fbx / Hero_Grip_Forehand_v1
+Backhand -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Backhand_v4.fbx / Hero_Backhand_v4
+RunForward -> Assets/ArtDirection/Hero01/Models/AnimRepair/Hero_Repair_RunForward_v1.fbx / Hero_Repair_RunForward_v1
+RunRight -> Assets/ArtDirection/Hero01/Models/KneesOffArm/Hero_Gameplay_RunRight_v1.fbx / Hero_Gameplay_RunRight_v1
+RunLeft -> Assets/ArtDirection/Hero01/Models/BackhandRun/Hero_Gameplay_RunLeft_v1.fbx / Hero_Gameplay_RunLeft_v1
+Volley -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Volley_v3.fbx / Hero_Volley_v3
+Smash -> Assets/ArtDirection/Hero01/Models/FullStroke/Hero_Grip_Smash_v1.fbx / Hero_Grip_Smash_v1

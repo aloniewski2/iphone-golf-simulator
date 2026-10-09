@@ -1,0 +1,86 @@
+{
+  "priority": "Primary gameplay mockups; behind-character third-person camera as requested by user",
+  "referenceViews": "Front and side sheets are supporting animation study only.",
+  "sheets": [
+    {
+      "group": "gameplay-golf",
+      "slug": "01-rear-gameplay",
+      "title": "Golf — third-person gameplay",
+      "poses": [
+        "Address behind teed ball",
+        "Takeaway",
+        "Half backswing",
+        "Top of backswing",
+        "Downswing",
+        "Impact at ball",
+        "Extension toward fairway",
+        "High follow-through",
+        "Balanced finish watching flight",
+        "Putting setup on green",
+        "Putting contact",
+        "Watch ball roll toward cup"
+      ],
+      "setting": "Original bright stylized golf fairway, green and flag ahead, blue sky. Fixed camera BEHIND golfer, slightly above shoulder height. Golfer in lower-left/center foreground with BACK to viewer; fairway target recedes up the frame. Golf ball and clubhead visible ahead of feet. The target direction is away from camera. First 9 panels driver swing, final 3 putter on green. Keep camera behind the player even as torso rotates. No front-facing camera."
+    },
+    {
+      "group": "gameplay-bowling",
+      "slug": "01-rear-gameplay",
+      "title": "Bowling — third-person gameplay",
+      "poses": [
+        "Ready with ball cradled",
+        "Aim down lane",
+        "Pushaway",
+        "First approach step",
+        "Ball swings down beside right thigh",
+        "Backswing behind right hip",
+        "Forward swing into slide",
+        "Release near left planted ankle",
+        "Right arm follows through",
+        "Hold balanced finish watching ball",
+        "Ball rolls toward pins",
+        "Strike celebration, still facing pins"
+      ],
+      "setting": "Original clean stylized bowling alley, polished wood lane, gutters, full rack of pins at distant end. Camera fixed BEHIND bowler, slightly above shoulders. Player in lower-left/center foreground, back to viewer, pins at upper center. Right-handed delivery: left foot slides forward, right leg trails crossed behind, right hand releases along right side toward pins. One dark blue ball, travels away from camera down lane after release. Do not rotate into front view."
+    },
+    {
+      "group": "gameplay-tennis",
+      "slug": "01-rear-gameplay",
+      "title": "Tennis — third-person gameplay",
+      "poses": [
+        "Baseline ready stance",
+        "Split step",
+        "Forehand preparation",
+        "Forehand ball contact",
+        "Forehand follow-through",
+        "Recover to baseline center",
+        "Two-hand backhand preparation",
+        "Backhand ball contact",
+        "Backhand follow-through",
+        "Serve trophy pose",
+        "Overhead serve contact",
+        "Serve landing and ready recovery"
+      ],
+      "setting": "Original sunny stylized tennis court, baseline foreground, net across middle, distant opponent beyond net. Fixed third-person camera BEHIND near player, modestly elevated to reveal court. Player back visible in lower-center foreground, facing net. Right-handed player with teal-rim racket; forehand contact to PLAYER RIGHT (screen right from behind), backhand to PLAYER LEFT (screen left). Yellow ball at racket contact, one ball per panel. Opponent small and distant. No front-facing player camera."
+    },
+    {
+      "group": "gameplay-boxing",
+      "slug": "01-rear-gameplay",
+      "title": "Boxing — third-person gameplay",
+      "poses": [
+        "Orthodox guard facing opponent",
+        "Left jab toward opponent",
+        "Return left glove to guard",
+        "Right cross with rear hip rotation",
+        "Recover high guard",
+        "Left hook with torso turn",
+        "Right uppercut",
+        "Block opponent jab with high guard",
+        "Slip left off opponent centerline",
+        "Duck under opponent hook",
+        "Small forward step, guard maintained",
+        "Return to balanced neutral guard"
+      ],
+      "setting": "Original bright stylized boxing ring, ropes and simple arena behind the opponent. Fixed third-person slightly elevated OVER-THE-SHOULDER camera BEHIND near player, slightly offset so opponent is visible ahead. Main player has BACK to viewer and RED gloves; opponent faces main player with BLUE gloves, same faceless toy character style, slightly farther away. Left jab uses screen-left glove from rear view; right cross uses screen-right glove. Non-graphic sporting action, no bruises or injuries. Keep main player face hidden, never turn camera to front."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "videos": [
+    {
+      "sport": "tennis",
+      "duration_seconds": 14.6,
+      "width": 720,
+      "height": 480
+    },
+    {
+      "sport": "bowling",
+      "verified_output": "Verified duration: 12.5s, dimensions: 720x480\n"
+    },
+    {
+      "sport": "golf",
+      "verified_output": "Verified duration: 10.4s, dimensions: 720x480\n"
+    },
+    {
+      "sport": "boxing",
+      "verified_output": "Verified duration: 8.8s, dimensions: 720x480\n"
+    },
+    {
+      "sport": "boxing-pov",
+      "verified_output": "Verified duration: 7.7s, dimensions: 720x480\n"
+    }
+  ],
+  "fps": 10,
+  "method": "MP4 encoded from actual Blender rendered timeline frames; decoded with AVFoundation for verification",
+  "not_gameplay_capture": true
+}

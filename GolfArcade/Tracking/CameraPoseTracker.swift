@@ -121,7 +121,7 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     /// briefly in between. Guarded by `calibrationLock`.
     private var handPoseEnabled = false
     private var frameCounter = 0
-    private var lastHands: (time: TimeInterval, hands: [(wrist: CGPoint, shape: HandShape)]) = (0, [])
+    private var lastHands: (time: TimeInterval, hands: [(wrist: CGPoint, shape: HandShape, fingers: Int?)]) = (0, [])
     private let calibrationLock = NSLock()
     private var calibration: PlayerCalibration?
     private var selectionGeneration = 0
@@ -572,12 +572,14 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
     }
 
     /// Fingertips folded in past their knuckles on most fingers is a fist; stretched out is open.
-    static func handShape(_ observation: VNHumanHandPoseObservation) -> (wrist: CGPoint, shape: HandShape)? {
+    /// When all four fingers can be read, the number held straight out is counted too, so a
+    /// raised hand can sign a club.
+    static func handShape(_ observation: VNHumanHandPoseObservation) -> (wrist: CGPoint, shape: HandShape, fingers: Int?)? {
         guard let wrist = try? observation.recognizedPoint(.wrist), wrist.confidence >= 0.3 else { return nil }
         let fingers: [(VNHumanHandPoseObservation.JointName, VNHumanHandPoseObservation.JointName)] = [
             (.indexTip, .indexMCP), (.middleTip, .middleMCP), (.ringTip, .ringMCP), (.littleTip, .littleMCP)
         ]
-        var curled = 0, extended = 0, measured = 0
+        var curled = 0, extended = 0, measured = 0, undecided = 0
         for (tipName, knuckleName) in fingers {
             guard let tip = try? observation.recognizedPoint(tipName), tip.confidence >= 0.3,
                   let knuckle = try? observation.recognizedPoint(knuckleName), knuckle.confidence >= 0.3 else { continue }
@@ -585,21 +587,23 @@ final class CameraPoseTracker: NSObject, ObservableObject, AVCaptureVideoDataOut
             guard knuckleReach > 0.001 else { continue }
             let ratio = hypot(tip.location.x - wrist.location.x, tip.location.y - wrist.location.y) / knuckleReach
             measured += 1
-            if ratio < 1.15 { curled += 1 } else if ratio > 1.5 { extended += 1 }
+            if ratio < 1.15 { curled += 1 } else if ratio > 1.5 { extended += 1 } else { undecided += 1 }
         }
         let shape: HandShape = measured < 3 ? .unknown : curled >= 3 ? .fist : extended >= 3 ? .open : .unknown
-        return (wrist.location, shape)
+        // A count needs every finger read and none half-way: a hand mid-motion signs nothing.
+        let count = measured == 4 && undecided == 0 ? extended : nil
+        return (wrist.location, shape, count)
     }
 
     /// Pins each hand reading to the nearer body wrist. Matching uses the uncorrected body pose,
     /// which shares the hand request's image coordinates.
-    static func readings(_ hands: [(wrist: CGPoint, shape: HandShape)], for frame: PoseFrame) -> [HandReading] {
+    static func readings(_ hands: [(wrist: CGPoint, shape: HandShape, fingers: Int?)], for frame: PoseFrame) -> [HandReading] {
         hands.compactMap { hand in
             let candidates: [(BodyJoint, CGFloat)] = [BodyJoint.leftWrist, .rightWrist].compactMap { joint in
                 frame.point(joint).map { (joint, hypot($0.x - hand.wrist.x, $0.y - hand.wrist.y)) }
             }
             guard let nearest = candidates.min(by: { $0.1 < $1.1 }), nearest.1 < 0.12 else { return nil }
-            return HandReading(wrist: nearest.0, shape: hand.shape)
+            return HandReading(wrist: nearest.0, shape: hand.shape, fingers: hand.fingers)
         }
     }
 
