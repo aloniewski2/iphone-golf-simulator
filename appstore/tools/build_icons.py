@@ -86,23 +86,55 @@ ICONS["03-phone-swing"] = (
     + f'<div style="position:absolute;left:700px;top:70px;filter:drop-shadow(0 0 50px rgba(215,240,68,.8))">{GOLF_BALL.format(s=230, n=3)}</div>',
 )
 
-# 04 Phone + TV - the phone drives the big screen; its screen is a lineup of sports (boxing, tennis, golf, football, bowling)
-def _sport(name, left, top, w, rot=0):
-    return (f'<img src="{S}/brand/club-{name}.png" style="position:absolute;left:{left}px;top:{top}px;width:{w}px;'
-            f'transform:rotate({rot}deg);filter:drop-shadow(0 10px 12px rgba(5,12,40,.35))">')
+# 04 Phone + TV as a LOGO: bold shapes, one outline weight, flat sticker shadows, a single swing arc
+def _img(name, x, y, w, rot=0):
+    cx, cy = x + w / 2, y + w / 2
+    return f'<image href="{S}/brand/club-{name}.png" x="{x}" y="{y}" width="{w}" height="{w}" transform="rotate({rot} {cx} {cy})"/>'
 
+
+_NAVY = "#10243D"
+_LOGO04 = f"""<svg viewBox="0 0 1024 1024" style="position:absolute;inset:0;width:1024px;height:1024px">
+<defs>
+ <linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FD0E6"/><stop offset=".62" stop-color="#C9F4F7"/><stop offset="1" stop-color="#FFE7A8"/></linearGradient>
+ <linearGradient id="scr4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7BDDEB"/><stop offset="1" stop-color="#5B7CF0"/></linearGradient>
+ <linearGradient id="arc4" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#D7F044" stop-opacity="0"/><stop offset=".5" stop-color="#D7F044"/><stop offset="1" stop-color="#F6FFB0"/></linearGradient>
+ <clipPath id="tvclip4"><rect x="84" y="136" width="856" height="564" rx="46"/></clipPath>
+ <clipPath id="phclip4"><rect x="584" y="506" width="256" height="560" rx="44"/></clipPath>
+</defs>
+<!-- TV: flat shadow, lime bezel, thick navy outline -->
+<rect x="62" y="128" width="940" height="644" rx="82" fill="{_NAVY}" opacity=".45"/>
+<rect x="44" y="96" width="940" height="644" rx="80" fill="#D7F044" stroke="{_NAVY}" stroke-width="18"/>
+<rect x="84" y="136" width="856" height="564" rx="46" fill="url(#sky4)" stroke="{_NAVY}" stroke-width="14"/>
+<g clip-path="url(#tvclip4)">
+ <rect x="84" y="470" width="856" height="230" fill="#35B87E"/>
+ <path d="M170 700 L334 400 L690 400 L854 700Z" fill="#2FA06B"/>
+ <path d="M170 700 L334 400 L690 400 L854 700Z" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>
+ <path d="M512 700 L512 400 M246 560 L778 560" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+ <path d="M296 470 L728 470" stroke="{_NAVY}" stroke-width="12" stroke-linecap="round"/>
+ <path d="M296 470 L728 470" stroke="#fff" stroke-width="5" stroke-dasharray="3 12" stroke-linecap="round"/>
+</g>
+<!-- swing arc into the ball -->
+<path d="M600 620 C590 440 660 330 724 262" fill="none" stroke="url(#arc4)" stroke-width="34" stroke-linecap="round"/>
+<g transform="translate(742 236)"><circle r="54" fill="#D7F044" stroke="{_NAVY}" stroke-width="12"/>
+ <path d="M-52 -16 C-14 -2 -14 26 -48 38 M52 -16 C14 -2 14 26 48 38" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/></g>
+<!-- stand -->
+<rect x="440" y="736" width="144" height="46" fill="{_NAVY}"/>
+<rect x="352" y="770" width="320" height="40" rx="20" fill="{_NAVY}"/>
+<!-- phone: smaller, in front, same outline weight -->
+<g transform="rotate(8 712 790)">
+ <rect x="580" y="512" width="300" height="600" rx="64" fill="{_NAVY}" opacity=".45" transform="translate(16 18)"/>
+ <rect x="566" y="486" width="300" height="600" rx="64" fill="#fff" stroke="{_NAVY}" stroke-width="18"/>
+ <rect x="584" y="506" width="264" height="560" rx="46" fill="url(#scr4)"/>
+ <rect x="658" y="518" width="116" height="28" rx="14" fill="{_NAVY}"/>
+ {_img("boxing", 592, 560, 118, -8)}{_img("tennis", 716, 548, 124, 6)}
+ {_img("golf", 634, 690, 176, -4)}
+ {_img("football", 592, 850, 118, -6)}{_img("bowling", 716, 850, 124, 8)}
+</g>
+</svg>"""
 
 ICONS["04-phone-tv"] = (
-    "background:radial-gradient(circle at 30% 20%,#7B4BF0 0%,#3C1FA8 55%,#1B1250 120%)",
-    f'<div style="position:absolute;left:70px;top:110px;width:880px;height:500px;background:#05070b;border-radius:34px;padding:16px;box-shadow:0 40px 60px rgba(5,12,28,.5),0 0 0 4px #D7F044,0 0 80px 10px rgba(215,240,68,.45)">'
-    f'<div style="width:100%;height:100%;border-radius:20px;overflow:hidden;background:url(up/sky_04.png) center/cover"></div></div>'
-    + f'<div style="{PHONE_CSS};left:470px;top:300px;width:420px;height:800px;border-radius:64px;transform:rotate(7deg)">'
-      f'<div style="position:relative;width:100%;height:100%;border-radius:56px;overflow:hidden;background:linear-gradient(170deg,#6FD3E3 0%,#35B8C7 38%,#5B7CF0 100%)">'
-      f'<div style="position:absolute;left:50%;top:18px;width:110px;height:32px;margin-left:-55px;background:#000;border-radius:99px"></div>'
-      + _sport("boxing", 14, 78, 168, -8) + _sport("tennis", 196, 64, 176, 6)
-      + _sport("golf", 70, 236, 240, -4)
-      + _sport("football", 14, 470, 172, -6) + _sport("bowling", 200, 470, 178, 8)
-      + '</div></div>',
+    "background:radial-gradient(circle at 28% 18%,#8B5CF6 0%,#5B2BD9 52%,#2A1480 125%)",
+    _LOGO04,
 )
 
 # 05 Trophy — palm trophy with gold glow
