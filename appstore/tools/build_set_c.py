@@ -90,13 +90,19 @@ def build():
         + phone("route-party", 450, 2250, 420, rot=0, z=9)
         + sticker("2-4 players, one phone", 60, 2280, 44, -3, True))
 
-    # 5 - big screen
+    # 5 - big screen: a how-it-works flow (phone -> AirPlay/cable -> TV), deliberately unlike the couch scene in 4
     out(5, "bigscreen",
-        C_bg("#35B8C7", "#1E8FB0") + floor(1820, "#1B7F9B", "#145A74") + confetti(55, area=(0, 700, W, 2000)) + C_head("Big screen,", "any room")
-        + tv("cliff_03", 40, 800, 1240, rot=-1, z=2, glow="#D7F044") + airplay(1000, 1520)
-        + player("coral", "ready", 120, 1730, .9, z=5, clip=400) + player("violet", "golf", 640, 1730, .9, z=5, clip=400)
-        + couch(1960, "#7B4BF0", "#5B2BD9", 1200)
-        + sticker("AirPlay or cable", 80, 2550, 56, -3) + sticker("Phone stays your controller", 180, 2680, 46, 2, True))
+        C_bg("#35B8C7", "#1E8FB0") + confetti(55, area=(0, 700, W, 2300)) + C_head("Big screen,", "any room")
+        + phone("home-female-tennis", 70, 840, 380, rot=-5, z=6)
+        + swoosh("M480 1180 C560 1090 640 1090 700 1130", "#fff", 22, .95, 5, "2 40")
+        + swoosh("M900 1270 C960 1380 930 1470 880 1560", "#fff", 22, .95, 5, "2 40")
+        + airplay(640, 1000, .95)
+        + tv("cliff_03", 400, 1590, 880, rot=2, z=3, glow="#D7F044")
+        + sticker("1 · Open the game", 60, 1720, 42, -3, True)
+        + sticker("2 · AirPlay or cable", 560, 1330, 46, 3)
+        + sticker("3 · Play big", 430, 2200, 50, -2, True)
+        + player("coral", "cheer", -60, 2150, .78, z=6) + player("violet", "forehand", 780, 2200, .74, z=6)
+        + sticker("Phone stays your controller", 110, 2700, 48, 1))
 
     # 6 - fun for everyone
     out(6, "everyone",
@@ -120,10 +126,11 @@ def speed_lines():
     return ls
 
 
-def airplay(x, y):
-    return (f'<svg class="abs" viewBox="0 0 120 110" style="left:{x}px;top:{y}px;width:230px;height:210px;z-index:9;filter:drop-shadow(0 12px 18px rgba(16,36,61,.4))">'
-            f'<path d="M20 70 H12 a8 8 0 0 1 -8 -8 V14 a8 8 0 0 1 8 -8 H108 a8 8 0 0 1 8 8 V62 a8 8 0 0 1 -8 8 H100" fill="#D7F044" stroke="#10243D" stroke-width="6" stroke-linejoin="round"/>'
-            f'<path d="M60 56 L96 104 H24Z" fill="#fff" stroke="#10243D" stroke-width="6" stroke-linejoin="round"/></svg>')
+def airplay(x, y, s=1.0):
+    """AirPlay-style badge: screen with a triangle rising from the bottom edge."""
+    return (f'<svg class="abs" viewBox="0 0 120 112" style="left:{x}px;top:{y}px;width:{int(300 * s)}px;height:{int(280 * s)}px;z-index:9;filter:drop-shadow(10px 12px 0 rgba(16,36,61,.9))">'
+            f'<rect x="6" y="6" width="108" height="72" rx="14" fill="#D7F044" stroke="#10243D" stroke-width="7"/>'
+            f'<path d="M60 52 L96 104 H24Z" fill="#fff" stroke="#10243D" stroke-width="7" stroke-linejoin="round"/></svg>')
 
 
 if __name__ == "__main__":
