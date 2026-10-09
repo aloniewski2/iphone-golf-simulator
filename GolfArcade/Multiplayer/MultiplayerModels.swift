@@ -29,6 +29,9 @@ struct MultiplayerParticipant: Codable, Equatable, Sendable {
     var hasScreen = false
     /// Tennis, decided when the match starts: how this phone shows it (nil for spectators and for golf).
     var view: MultiplayerView?
+    /// Seconds the TV on this phone shows the game late, as last measured. The shared-TV phone tells it to the controller-only phone,
+    /// whose player is judged against the same picture.
+    var screenDelay: Double?
     var connected = true
     var female = false
     var left = false
@@ -129,10 +132,11 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
             && Set(participants.map(\.id)).count == participants.count && Set(seats).count == seats.count
             && participants.allSatisfy { $0.controllerID == nil || (sport == .golf && $0.controllerID == ownerID && $0.id != ownerID) }
             && participants.allSatisfy { !$0.id.isEmpty && (-1..<capacity).contains($0.seat) }
-            && viewsAreConsistent
+            && viewsAreConsistent && screenDelaysAreSane
             && participants.allSatisfy { $0.id.utf8.count <= 128 && $0.name.count <= 40 && ($0.loadout?.valid() ?? true) }
             && (1...3).contains(sets) && [1,3,6].contains(games) && Self.validVenue(venue, sport: sport)
     }
+    private var screenDelaysAreSane: Bool { participants.allSatisfy { ($0.screenDelay ?? 0).isFinite && ($0.screenDelay ?? 0) >= 0 && ($0.screenDelay ?? 0) <= 1 } }
     /// Views exist only in tennis. At most one phone is `split`, and when one is, the other competitor is controller-only.
     private var viewsAreConsistent: Bool {
         guard sport == .tennis else { return participants.allSatisfy { $0.view == nil } }

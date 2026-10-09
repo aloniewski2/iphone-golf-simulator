@@ -11,7 +11,7 @@
   "participants": [
     {
       "id": "host-phone", "name": "Adnan", "seat": 0, "ready": true, "loaded": false, "calibrated": false,
-      "hasScreen": true, "view": "split", "connected": true, "female": false, "left": false, "invited": true,
+      "hasScreen": true, "view": "split", "screenDelay": 0.17, "connected": true, "female": false, "left": false, "invited": true,
       "loadout": { "gear": {}, "skinHex": "E6AE7E", "colours": {}, "emotes": ["wave", "scuba", "spike"], "shirtHex": "FF6B4A", "shortsHex": "101D35" }
     },
     {

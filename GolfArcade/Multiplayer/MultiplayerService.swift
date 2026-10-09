@@ -151,6 +151,11 @@ final class MultiplayerService {
         if lobby != nil { try? sendControl("display", payload: connected ? "true" : "false") }
         else if transport != nil { try? broadcast("hello", payload: json(identity())) }
     }
+    /// The phone with the TV tells the lobby how late its picture is, so the other player's swings are judged against the same picture.
+    func setScreenDelay(_ seconds: Double) {
+        guard lobby != nil, seconds.isFinite else { return }
+        try? sendControl("screenDelay", payload: String(seconds))
+    }
     func updateLook(_ look: MultiplayerLoadout?, name: String? = nil, female: Bool? = nil, left: Bool? = nil) throws {
         guard lobby?.phase == .lobby, look?.valid() ?? true else { throw MultiplayerError.invalidOperation("Change clothes between matches.") }
         let update = MultiplayerLookUpdate(participantID: localID, name: name, female: female, left: left, loadout: look)
@@ -276,7 +281,7 @@ final class MultiplayerService {
         let remaining = Set(lobby!.participants.map(\.id))
         lobby?.queue.removeAll { !remaining.contains($0) }
         if rotateSeats && lobby?.sport == .tennis { rotate() }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].view = nil }
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].view = nil; lobby!.participants[i].screenDelay = nil }
         awaitingCalibration.removeAll()
         lobby?.revision += 1; publishLobby()
     }
@@ -370,7 +375,7 @@ final class MultiplayerService {
         if silent[peer] != nil { quietPeerHeard(peer) }
         if packet.kind == "hello" {
             guard var p = try? decoder.decode(MultiplayerParticipant.self, from: Data(packet.payload.utf8)), p.loadout?.valid() ?? true else { return }
-            p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.calibrated = false; p.view = nil; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
+            p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.calibrated = false; p.view = nil; p.screenDelay = nil; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
             hello[peer] = p
             if isOwner { do {
                 try lobby?.add(p); publishLobby()
@@ -401,7 +406,7 @@ final class MultiplayerService {
             #endif
             return
         }
-        if ["ready","queue","loaded","calibrated","display","leave","availability","look","emote","return","keepWaiting"].contains(packet.kind) {
+        if ["ready","queue","loaded","calibrated","display","screenDelay","leave","availability","look","emote","return","keepWaiting"].contains(packet.kind) {
             if isOwner { handleControl(packet) }; return
         }
         if packet.kind == "input" {
@@ -506,6 +511,9 @@ final class MultiplayerService {
                 try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender)
             }
         case "display": lobby!.participants[i].hasScreen = p.payload == "true"
+        case "screenDelay":
+            // Only a phone with a TV has a delay to report; keep it within what the game would ever credit.
+            if lobby!.participants[i].hasScreen, let seconds = Double(p.payload), seconds.isFinite { lobby!.participants[i].screenDelay = min(1, max(0, seconds)) }
         case "leave":
             if lobby!.participants[i].seat >= 0 && lobby!.phase == .playing { lastError = "\(lobby!.participants[i].name) left the match." }
             if lobby!.participants[i].seat >= 0 { try? broadcast("drop", payload: p.sender); pushRuntime("drop", payload: p.sender) }

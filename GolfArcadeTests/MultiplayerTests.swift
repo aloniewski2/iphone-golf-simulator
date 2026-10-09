@@ -474,6 +474,29 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertFalse(lobby(.tennis, [.split, .near]).valid(), "the partner of a shared-screen phone has no screen of its own")
         XCTAssertFalse(lobby(.golf, [.near, nil]).valid(), "views are tennis only")
     }
+    func testTheSharedTVsDelayReachesTheLobbyAndStaysWithinWhatTheGameWouldCredit() throws {
+        let p = try party(2, screens: [true, false]); defer { p.close() }
+        try startTennis(p)
+        func delay(_ service: MultiplayerService, _ id: String) -> Double? { service.lobby?.participants.first { $0.id == id }?.screenDelay }
+        p.host.setScreenDelay(0.17)
+        XCTAssertEqual(try XCTUnwrap(delay(p.host, "a")), 0.17, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(delay(p.services[1], "a")), 0.17, accuracy: 1e-9, "the controller-only phone hears it")
+        p.host.setScreenDelay(5);    XCTAssertEqual(try XCTUnwrap(delay(p.host, "a")), 1, accuracy: 1e-9)
+        p.host.setScreenDelay(-3);   XCTAssertEqual(try XCTUnwrap(delay(p.host, "a")), 0, accuracy: 1e-9)
+        p.host.setScreenDelay(0.2);  p.host.setScreenDelay(.nan)
+        XCTAssertEqual(try XCTUnwrap(delay(p.host, "a")), 0.2, accuracy: 1e-9, "a bad value is ignored")
+        p.services[1].setScreenDelay(0.3)
+        XCTAssertNil(delay(p.host, "b"), "a phone without a TV has no delay to report")
+        try p.host.returnToLobby()
+        XCTAssertNil(delay(p.host, "a"), "it is measured again for the next match")
+    }
+    func testAbsurdScreenDelaysAreRejectedInALobby() {
+        func lobby(_ delay: Double?) -> MultiplayerLobby {
+            MultiplayerLobby(ownerID: "a", participants: [MultiplayerParticipant(id: "a", name: "A", seat: 0, screenDelay: delay), MultiplayerParticipant(id: "b", name: "B", seat: 1)])
+        }
+        XCTAssertTrue(lobby(nil).valid()); XCTAssertTrue(lobby(0.3).valid())
+        XCTAssertFalse(lobby(3).valid()); XCTAssertFalse(lobby(-0.1).valid()); XCTAssertFalse(lobby(Double.nan).valid())
+    }
     /// proof/multiplayer/fixtures/tennis_one_tv_config.json is also parsed by NetworkViewTests.cs in Unity's tests, so the field
     /// names the owner writes and the ones Unity reads cannot drift apart unnoticed.
     func testTheOneTVConfigurationFixtureParsesAsTheOwnerWritesIt() throws {
@@ -487,7 +510,7 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(config.participants.first { $0.id == "host-phone" }?.view, .split)
         // Writing the same configuration produces the same field names the fixture has.
         let look = MultiplayerLoadout(gear: [:], skinHex: "E6AE7E", colours: [:], emotes: ["wave", "scuba", "spike"], shirtHex: "FF6B4A", shortsHex: "101D35")
-        let host = MultiplayerParticipant(id: "host-phone", name: "Adnan", seat: 0, ready: true, hasScreen: true, view: .split, loadout: look)
+        let host = MultiplayerParticipant(id: "host-phone", name: "Adnan", seat: 0, ready: true, hasScreen: true, view: .split, screenDelay: 0.17, loadout: look)
         let guest = MultiplayerParticipant(id: "guest-phone", name: "Sam", seat: 1, ready: true, hasScreen: false, view: .controllerOnly, female: true, left: true)
         let written = MultiplayerMatchConfiguration(lobbyID: "L", matchID: "M", hostID: "host-phone", localID: "guest-phone", sport: "tennis", venue: "resort", sets: 1, games: 3, seed: 1, participants: [host, guest])
         func keys(_ object: Any?) -> Set<String> { Set((object as? [String: Any])?.keys.map { $0 } ?? []) }

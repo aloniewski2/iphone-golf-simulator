@@ -176,6 +176,8 @@ final class SportsSession {
     private(set) var multiplayerMatchID: String?
     private(set) var multiplayerControllerOnly = false
     private var multiplayerSeat = -1
+    /// The shared TV's delay the controller-only phone has already handed to Unity (so a change is applied once).
+    private var appliedSharedDelay: Double?
     private(set) var sessionID = ""
     /// Numeric stand-in for the session id on the binary sample channel.
     private var sessionToken: Int32 = 0
@@ -337,6 +339,8 @@ final class SportsSession {
         start(preview: !displayConnected)
         launchExtras=[:]
         if !active { multiplayerMatchID=nil; multiplayerControllerOnly=false }
+        // On a shared TV the other player is judged against this TV's delay too: tell the lobby what this phone knows of it.
+        else if configuration.localView == .split, startingLag > 0 { MultiplayerService.shared.setScreenDelay(startingLag) }
     }
     func start(preview: Bool = false) {
         guard !active else { return }
@@ -349,7 +353,7 @@ final class SportsSession {
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         resultPresentationReady = true; finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
-        tvDelay = timingCalibration ?? 0
+        tvDelay = timingCalibration ?? 0; appliedSharedDelay = nil
         golfController = .waiting; golfControllerMap = nil
         setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; golfSwingState=0; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
@@ -867,6 +871,11 @@ final class SportsSession {
             // The cover lifts once everyone has loaded (tennis then sets up its controllers behind it).
             loading.updatePlayers(waiting: lobby.competitors.filter { !$0.loaded }.map(\.name), allReady: lobby.phase == .calibrating || lobby.phase == .playing)
             if setupStage == .waiting, lobby.phase == .playing { beginMultiplayerPlay() }
+            // A phone with no TV is judged against the shared TV's delay, which the phone with the TV reports to the lobby.
+            if multiplayerControllerOnly, sport == "tennis", ready, loading.finished,
+               let shared = lobby.participants.first(where: { $0.view == .split })?.screenDelay, shared != appliedSharedDelay {
+                appliedSharedDelay = shared; command("latency", value: shared)
+            }
         }
         loading.tick(now: LoadingModel.clockNow)
         for _ in 0..<64 {

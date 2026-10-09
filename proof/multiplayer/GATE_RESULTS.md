@@ -70,3 +70,11 @@ GATE: G3a.1 Which end is drawn in front is decided as before for own-TV phones a
 GATE: G3a.2 The changed Unity files parse — PASS (S, syntax only): `TennisGame.Network.cs`, `NativeSportsSession.cs`, `MultiplayerProtocol.cs`. NOT RUN (M): they need the Unity editor (`Unity/Tools/check.sh`) to compile; the edits are in dense single-line style matching the surrounding code and were re-read against the old behaviour for the own-TV and spectator cases (the code paths those use compute the same values as before).
 GATE: G3a.3 On a real shared TV both players can serve, receive and see each other — NOT RUN (D). Needs two phones and one TV: check that the far player's serve and receive prompts arrive on its controller, the toss meter shows under the server for both players, the phone with no TV does not get hot, and its screen still shows the racket controller.
 
+## Phase 4 — Both players on one TV
+
+### P4.1 Shared TV delay
+
+GATE: G4.1 The phone with the TV shares its delay and the controller-only phone applies it — NOT RUN (M). `testTheSharedTVsDelayReachesTheLobbyAndStaysWithinWhatTheGameWouldCredit` (lobby carries it, clamps 0–1 s, ignores NaN, ignores a phone with no TV, cleared between matches) and `testAbsurdScreenDelaysAreRejectedInALobby`; the apply step (`SportsSession.poll`) is syntax-checked only. The checked-in configuration fixture now includes the field, which the Swift test compares with what Swift writes; Unity ignores it (the value reaches Unity as the existing `latency` command).
+GATE: G4.2 TV status badges for both phones — NOT BUILT. Needs the split screen (P3b) so there is a half to put the badge in; the phones themselves already say who they are waiting for.
+GATE: G4.3 Swing-timing check for both players at once — NOT BUILT (milestone C2). Deferred behind the split screen; until then multiplayer uses the remembered timing for the TV, and the game refines timing during play as it does in solo.
+
