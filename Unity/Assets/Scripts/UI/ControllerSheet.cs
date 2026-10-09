@@ -38,11 +38,17 @@ namespace GolfArcade.UI
     /// stepped with its arrows through the bag; and the aim pad — a glossy joystick whose knob nudges the line, its
     /// arrows turning it (◀ ▶) and changing club (▲ ▼), a ring round it filling yellow with the
     /// backswing, and a pill under it saying where the line points.
+    /// A camera or canvas that belongs to the phone's own screen (display 0) while the game is on
+    /// the TV: the native session's display routing leaves it where it is.
+    public sealed class PhoneScreenOnly : MonoBehaviour { }
+
     public sealed class ControllerSheet
     {
         public HoldButton AimLeft, AimRight, ClubUp, ClubDown, Knob;
         /// In the aim pad's place while the course's opening plays on the TV: skips to the tee.
         public HoldButton Skip;
+        /// Top left, in the app (Motion Club): pauses the round on the phone (hidden otherwise).
+        public HoldButton Pause;
         /// The knob's drag: x turns the aim.
         public Joystick Stick;
         public Action<int> OnClub;
@@ -155,6 +161,13 @@ namespace GolfArcade.UI
             namePill.gameObject.SetActive(false);
             var tv = Pill("TV", Green, 420, 70, new Vector2(170, 76), out tvFill, 5);
             tvText = Chunky(tvFill.transform, "Label", "TV ON", 30, 2f, Color.white, UiKit.Hex("1E7A30"));
+            var pause = Pill("Pause", Blue, -420, 90, new Vector2(120, 120), out var pauseFill, 7);
+            foreach (var layer in pause.GetComponentsInChildren<Image>()) layer.type = Image.Type.Simple;   // round, not a capsule
+            Chunky(pauseFill.transform, "Label", "II", 52, 4f);
+            pause.gameObject.AddComponent<Image>().color = Color.clear;
+            Pause = pause.gameObject.AddComponent<HoldButton>();
+            Pause.Fill = pauseFill; Pause.RestColor = Blue;
+            pause.gameObject.SetActive(false);
 
             // ---- par, the distance, the wind
             float chipW = (Width - 40) / 3f, chipY = 272;

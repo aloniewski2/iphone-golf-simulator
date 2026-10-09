@@ -119,7 +119,7 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
             && (1...3).contains(sets) && [1,3,6].contains(games) && Self.validVenue(venue, sport: sport)
     }
     /// Existing golf course ids, plus resort for saved / legacy configurations.
-    static let golfVenues = ["cliffside", "postcards", "meadow", "resort"]
+    static let golfVenues = ["cliffside", "postcards", "wildisles", "magma", "meadow", "resort"]
     static func validVenue(_ venue: String, sport: MultiplayerSport) -> Bool {
         (sport == .golf ? golfVenues : ["resort", "skyscraper", "volcano"]).contains(venue)
     }

@@ -611,10 +611,16 @@ namespace GolfArcade.UI
             bar.gameObject.SetActive(true);
         }
 
+        /// The phone controller's own picture of the map, in the card's wide shape, while the TV
+        /// overlay keeps its tall one (TvMapTexture, framed by the camera passed to DrawMinimap).
+        public Camera PhoneMapCamera;
+        public Texture TvMapTexture;
+
         public void DrawMinimap(Camera map)
         {
             if (!map) return;
-            if (simple) simple.Draw(map, Minimap.texture, Map);
+            if (simple) simple.Draw(map, TvMapTexture ? TvMapTexture : Minimap.texture, Map);
+            if (PhoneMapCamera) map = PhoneMapCamera;
             if (mapBall == null) BuildMinimapMarks();
             var plan = Map;
             bool Place(RectTransform mark, Vector3 world, bool show)
@@ -1164,6 +1170,26 @@ namespace GolfArcade.UI
                 Controller = new ControllerSheet(safeArea);
                 foreach (var rt in new[] { board, shotCard, meterRect }) rt.gameObject.SetActive(false);
             }
+            WireController();
+            if (!onTv) bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
+        }
+
+        /// The app's golf (NativeSportsSession): the course and its overlay are already on the TV, so
+        /// only the controller sheet comes to the phone's own screen, as on the standalone build.
+        public void EnterPhoneController()
+        {
+            if (Controller != null && Controller.Alive) return;
+            liveTv = null; onTv = false;
+            Controller = new ControllerSheet(PhoneLayer());
+            var canvas = phoneLayer.parent.gameObject;
+            if (!canvas.GetComponent<PhoneScreenOnly>()) canvas.AddComponent<PhoneScreenOnly>();
+            canvas.GetComponent<Canvas>().targetDisplay = 0;
+            WireController();
+        }
+
+        /// The sheet takes over the HUD's buttons and its live minimap.
+        void WireController()
+        {
             Controller.AimLeft.Pressed = AimLeft.Pressed; Controller.AimRight.Pressed = AimRight.Pressed;
             Controller.ClubUp.Pressed = ClubUp.Pressed; Controller.ClubDown.Pressed = ClubDown.Pressed;
             Controller.Knob.Pressed = SwingHold.Pressed; Controller.Knob.Released = SwingHold.Released;
@@ -1174,7 +1200,6 @@ namespace GolfArcade.UI
             if (lastHole.number > 0) Controller.SetHole(lastHole.number, lastHole.par, lastHole.yards, lastHole.name);
             if (lastDistance.unit != null) Controller.SetDistance(lastDistance.amount, lastDistance.unit);
             if (lastWind.set) Controller.SetWind(lastWind.degrees, lastWind.mph, lastWind.calm);
-            if (!onTv) bannerGroup.transform.SetAsLastSibling();   // "Birdie!" still shows over the sheet
         }
 
         Transform mapHome;

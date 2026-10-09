@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using GolfArcade.Course;
 using GolfArcade.Profile;
 using GolfArcade.Swing;
@@ -34,6 +35,78 @@ namespace GolfArcade.Game {
             if (NativeHasNextHole) NextHole(); else PlayAgain();
 
         }
+        /// The controller sheet's pause button: the app pauses the round and shows its pause screen.
+        public static event System.Action NativePauseRequested;
+        bool phoneController;
+        Camera phoneBackdrop, phoneMapCamera;
+        RenderTexture phoneMapTexture;
+        object renderedPhoneMapFor;
+        Vector3 renderedPhoneMapPosition;
+        float renderedPhoneMapSize;
+
+        /// Golf as it played on the standalone build: the course and its overlay on the TV, and the
+        /// phone's own screen (display 0) the controller sheet: the map with the landing zones, the
+        /// club card, the aim pad. The app brings Unity's phone window forward while a shot is lined
+        /// up and played; its own screens stay for Ready, pause, the shot's result and the hole's end.
+        public void NativePhoneController() {
+            if (phoneController && hud.Controller != null && hud.Controller.Alive) return;
+            // (a big-screen layout left over from the standalone app's setting has the sheet on the TV)
+            if (hud.Controller != null) hud.LeaveControllerLayout();
+            phoneController = true;
+            if (!phoneBackdrop) {
+                phoneBackdrop = new GameObject("Phone backdrop").AddComponent<Camera>();
+                phoneBackdrop.transform.SetParent(transform, false);
+                phoneBackdrop.gameObject.AddComponent<GolfArcade.UI.PhoneScreenOnly>();
+                phoneBackdrop.clearFlags = CameraClearFlags.SolidColor; phoneBackdrop.backgroundColor = GolfArcade.UI.UiKit.Ground;
+                phoneBackdrop.cullingMask = 0; phoneBackdrop.depth = -100; phoneBackdrop.targetDisplay = 0;
+                var data = phoneBackdrop.GetUniversalAdditionalCameraData();
+                data.renderShadows = false; data.renderPostProcessing = false; data.requiresDepthTexture = false; data.requiresColorTexture = false;
+            }
+            phoneBackdrop.enabled = true;
+            if (!phoneMapCamera) {
+                phoneMapCamera = new GameObject("Phone map camera").AddComponent<Camera>();
+                phoneMapCamera.transform.SetParent(transform, false);
+                phoneMapCamera.CopyFrom(minimapCamera);
+                phoneMapCamera.enabled = false;
+                var data = phoneMapCamera.GetUniversalAdditionalCameraData();
+                data.renderShadows = false; data.renderPostProcessing = false; data.requiresDepthTexture = false; data.requiresColorTexture = false;
+                var size = GolfArcade.UI.Hud.ControllerMapSize;
+                phoneMapTexture = new RenderTexture((int)size.x, (int)size.y, 16);
+                phoneMapCamera.targetTexture = phoneMapTexture;
+            }
+            hud.EnterPhoneController();
+            var sheet = hud.Controller;
+            sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
+            sheet.SetScreen(true);
+            sheet.Skip.Pressed = () => { SkipPresentation(); };
+            sheet.Pause.gameObject.SetActive(true);
+            sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();
+            hud.PhoneMapCamera = phoneMapCamera;
+            hud.Minimap.texture = phoneMapTexture; hud.TvMapTexture = minimapTexture;
+            if (hole != null && Card != null) { hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name); ShowScore(); }
+            renderedPhoneMapFor = null;
+            if (hole != null) FrameMinimap();
+            ShowControllerForState();
+            RefreshControls();
+            if (Current == State.Aim) UpdateAimVisuals();
+        }
+
+        /// The phone card's map: the TV map's framing (`framed`, the whole hole and the shot), widened
+        /// to the card's shape, drawn again only when that framing moves.
+        void FramePhoneMap(Transform framed, float halfUp, float halfAcross) {
+            if (!phoneMapCamera) return;
+            float aspect = (float)phoneMapTexture.width / phoneMapTexture.height;
+            phoneMapCamera.transform.SetPositionAndRotation(framed.position, framed.rotation);
+            phoneMapCamera.farClipPlane = minimapCamera.farClipPlane;
+            phoneMapCamera.orthographicSize = Mathf.Max(halfUp, halfAcross / aspect) * 1.14f;
+            phoneMapCamera.aspect = aspect;
+            if (renderedPhoneMapFor == hole && (renderedPhoneMapPosition - framed.position).sqrMagnitude <= .01f &&
+                Mathf.Abs(renderedPhoneMapSize - phoneMapCamera.orthographicSize) <= .01f) return;
+            UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(phoneMapCamera,
+                new UnityEngine.Rendering.Universal.UniversalRenderPipeline.SingleCameraRequest { destination = phoneMapTexture });
+            renderedPhoneMapFor = hole; renderedPhoneMapPosition = framed.position; renderedPhoneMapSize = phoneMapCamera.orthographicSize;
+        }
+
         public void NativeAim(float value) { if(Current==State.Aim) Nudge(Mathf.Clamp(value,-1,1)*AimTapDegrees); }
         public void NativeClub(int value) { if(Current==State.Aim) CycleClub(value); }
         // The joystick uses the same axes as the phone's course map. Set the shot's

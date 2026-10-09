@@ -11,11 +11,11 @@ import SwiftUI
         menu.tap("play"); XCTAssertEqual(menu.screen, .party)
         menu.tap("partySolo"); XCTAssertEqual(menu.screen, .gameSelect)
         menu.back(); XCTAssertEqual(menu.screen, .party)
-        menu.tap("partyMultiplayer"); XCTAssertEqual(menu.screen, .multiplayer)
+        // every way to play is on the one Play list
+        XCTAssertEqual(menu.rows(.party), [["partySolo"], ["partyLocalGolf"], ["partyNearby"], ["partyOnline"], ["back"]])
         menu.tap("partyOnline"); XCTAssertEqual(menu.screen, .onlineChoice)
         menu.tap("onlineQuick"); XCTAssertEqual(menu.screen, .online(.entry))
         menu.back(); XCTAssertEqual(menu.screen, .onlineChoice)
-        menu.back(); XCTAssertEqual(menu.screen, .multiplayer)
         menu.back(); XCTAssertEqual(menu.screen, .party)
         menu.back(); XCTAssertEqual(menu.screen, .main)
         menu.debugShow(.online(.nearby)); menu.goHome()
@@ -32,7 +32,9 @@ import SwiftUI
         menu.move(.down); XCTAssertEqual(menu.focused, "back")
         XCTAssertEqual(menu.previewSport, .golf)
         XCTAssertTrue(menu.focus("sport-golf")); menu.select()
-        XCTAssertEqual(menu.screen, .hub(.golf))
+        XCTAssertEqual(menu.screen, .map, "golf goes straight to its courses")
+        XCTAssertEqual(menu.mapSport, .golf)
+        menu.back(); XCTAssertEqual(menu.screen, .gameSelect)
     }
     func testLastSportIsPerPlayerAndMigratesExistingHistory() {
         let session = SportsSession()

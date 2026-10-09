@@ -452,6 +452,14 @@
 		E7B2304B203FC1E881F54F1D /* GolfController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D99EDF5F8C0373883F00BB0 /* GolfController.swift */; };
 		E7BCC7BC203AD604964BFE1C /* MatchHero_Golf_Male_Head_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 11521338E6E3FCBF68ABAC94 /* MatchHero_Golf_Male_Head_M.ktx */; };
 		E7D5A7386ECF07B566C1424F /* map-golf-cliffside.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */; };
+		A8717173ECF290D0B6C871A5 /* course-golf-magma.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */; };
+		F88371E0CB144448157AE1E5 /* course-golf-magma.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */; };
+		B2177D0C85B692041BEAFF48 /* course-golf-wildisles.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */; };
+		67CA1B5F2E9E5B7EED57F10A /* course-golf-wildisles.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */; };
+		ADC821CF509069B68A090A7E /* course-golf-postcards.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */; };
+		C5B15AB3980307DFF0B72CCB /* course-golf-postcards.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */; };
+		5CD8A56096CB8599EB730FFA /* course-golf-cliffside.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */; };
+		420DD7A93B640079EEDB73B1 /* course-golf-cliffside.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */; };
 		E83B2D3364F6F36C387EBEBE /* GolfKitHero_Female.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 2C540FF73486289E8F27D084 /* GolfKitHero_Female.lzfse */; };
 		EA46602C27325256AF775103 /* MatchHero_GolfKit_Female_ShoeL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 1A893D9BEDE502A08F2F4F71 /* MatchHero_GolfKit_Female_ShoeL_M.ktx */; };
 		EA634A3467EA1E29696AC682 /* CharacterModelPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927566ABEA010BDFB932F092 /* CharacterModelPreview.swift */; };
@@ -975,6 +983,14 @@
 		E0A049B93FB747A646813160 /* MatchHero_Kit_Female_SockR_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_SockR_M.png; sourceTree = "<group>"; };
 		E10FE6B37DF2660D4611E0C4 /* NativeGolfEquipment_Wedge.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NativeGolfEquipment_Wedge.json; sourceTree = "<group>"; };
 		E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-golf-cliffside.jpg"; sourceTree = "<group>"; };
+		E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-magma.jpg"; sourceTree = "<group>"; };
+		E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */ = {isa = PBXFileReference; path = "course-golf-magma.mp4"; sourceTree = "<group>"; };
+		D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-wildisles.jpg"; sourceTree = "<group>"; };
+		1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */ = {isa = PBXFileReference; path = "course-golf-wildisles.mp4"; sourceTree = "<group>"; };
+		FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-postcards.jpg"; sourceTree = "<group>"; };
+		D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */ = {isa = PBXFileReference; path = "course-golf-postcards.mp4"; sourceTree = "<group>"; };
+		EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-cliffside.jpg"; sourceTree = "<group>"; };
+		AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */ = {isa = PBXFileReference; path = "course-golf-cliffside.mp4"; sourceTree = "<group>"; };
 		E1FC0B3370282F23484BBF28 /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
 		E212F4D389555DCF0E707B04 /* SwingFeedbackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackController.swift; sourceTree = "<group>"; };
 		E28A1E2DC42EC1CAE8D32516 /* club-play.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-play.png"; sourceTree = "<group>"; };
@@ -1692,6 +1708,14 @@
 				7CD6252B99393704B3960924 /* island-intro.png */,
 				0FBFF0E3EC5D4672E7E38B95 /* island-terrace.png */,
 				E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */,
+				E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */,
+				E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */,
+				D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */,
+				1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */,
+				FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */,
+				D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */,
+				EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */,
+				AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */,
 				54777E63CA30CC5B3B2D207A /* map-golf-magma.jpg */,
 				800603EFBF1FA0ED0DC86566 /* map-golf-postcards.jpg */,
 				D0B6FE6F4EFCE8FA6277804E /* map-golf-wildisles.jpg */,
@@ -2228,6 +2252,14 @@
 				BF2FE32562B0D8C0F0E9A6AB /* island-intro.png in Resources */,
 				E0E80E1BF3243B1D7AF962C3 /* island-terrace.png in Resources */,
 				E7D5A7386ECF07B566C1424F /* map-golf-cliffside.jpg in Resources */,
+				A8717173ECF290D0B6C871A5 /* course-golf-magma.jpg in Resources */,
+				F88371E0CB144448157AE1E5 /* course-golf-magma.mp4 in Resources */,
+				B2177D0C85B692041BEAFF48 /* course-golf-wildisles.jpg in Resources */,
+				67CA1B5F2E9E5B7EED57F10A /* course-golf-wildisles.mp4 in Resources */,
+				ADC821CF509069B68A090A7E /* course-golf-postcards.jpg in Resources */,
+				C5B15AB3980307DFF0B72CCB /* course-golf-postcards.mp4 in Resources */,
+				5CD8A56096CB8599EB730FFA /* course-golf-cliffside.jpg in Resources */,
+				420DD7A93B640079EEDB73B1 /* course-golf-cliffside.mp4 in Resources */,
 				0EC648E316DF4FD3301CDF63 /* map-golf-magma.jpg in Resources */,
 				35EBC6CA16BF535099C1A75D /* map-golf-postcards.jpg in Resources */,
 				7510954D48DE5A7286AE24C1 /* map-golf-wildisles.jpg in Resources */,

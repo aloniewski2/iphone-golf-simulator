@@ -459,8 +459,9 @@ struct ServeAimPad: View {
             .gesture(SpatialTapGesture().onEnded { v in
                 let x = min(max(v.location.x, boxLeft), boxLeft + boxW)
                 let u = (x - boxLeft) / boxW
-                let across = session.serveFromDeuce ? 1 - 2 * u : 2 * u - 1
-                session.setServeAim(across: across, depth: 1 - min(max(v.location.y / h, 0), 1))
+                let across = Double(session.serveFromDeuce ? 1 - 2 * u : 2 * u - 1)
+                let depth = Double(1 - min(max(v.location.y / h, 0), 1))
+                session.setServeAim(across: across, depth: depth)
                 if session.haptics { UISelectionFeedbackGenerator().selectionChanged() }
             })
             .accessibilityElement().accessibilityLabel("Serve target. Tap to aim.")

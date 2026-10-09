@@ -432,8 +432,10 @@ struct IslandPartyScreen: View {
                     IslandLobbyRow(title: "Quick Match", subtitle: "Find players for golf or tennis", icon: "bolt.fill", id: "onlineQuick", menu: menu, compact: compact)
                     IslandLobbyRow(title: "Play with Friends", subtitle: "Invite friends to your lobby", icon: "person.badge.plus", id: "homeInvite", menu: menu, compact: compact)
                 default:
-                    IslandLobbyRow(title: "Single Player", subtitle: "Choose golf or tennis", icon: "person.fill", id: "partySolo", menu: menu, compact: compact)
-                    IslandLobbyRow(title: "Multiplayer", subtitle: "Play online or locally", icon: "person.2.fill", id: "partyMultiplayer", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Single Player", subtitle: "Golf or tennis on your TV", icon: "person.fill", id: "partySolo", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Pass the Phone · Golf", subtitle: "2–4 players take turns on this phone", icon: "figure.golf", id: "partyLocalGolf", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Nearby", subtitle: "Friends on the same Wi-Fi, each with a phone", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Online", subtitle: "Quick match or invite friends", icon: "globe", id: "partyOnline", menu: menu, compact: compact)
                 }
                 IslandLobbyRow(title: "Back", icon: "arrow.left", id: "back", menu: menu, compact: compact)
                 if !menu.notice.isEmpty { IslandMenuNotice(menu: menu, compact: compact) }
@@ -652,7 +654,7 @@ struct IslandOnlineScreen: View {
                     action("net-settings-match","Match Options",icon:"slider.horizontal.3")
                 } else {
                     choices("Sport",values:["tennis","golf"],selected:lobby.sport.rawValue,prefix:"net-sport-")
-                    choices(lobby.sport == .tennis ? "Court" : "Course",values:lobby.sport == .tennis ? ["resort","skyscraper","volcano"] : ["postcards"],selected:lobby.venue,prefix:"net-venue-")
+                    choices(lobby.sport == .tennis ? "Court" : "Course",values:lobby.sport == .tennis ? ["resort","skyscraper","volcano"] : GolfCourseChoice.allCases.map(\.rawValue),selected:lobby.venue,prefix:"net-venue-")
                     if lobby.sport == .tennis {
                         choices("Sets",values:["1","2","3"],selected:String(lobby.sets),prefix:"net-sets-")
                         choices("Games",values:["1","3","6"],selected:String(lobby.games),prefix:"net-games-")
@@ -666,7 +668,7 @@ struct IslandOnlineScreen: View {
     private func choices(_ label: String,values:[String],selected:String,prefix:String) -> some View {
         VStack(alignment:.leading,spacing:5) {
             Text(label).islandType(compact ? 12 : 15,bold:true)
-            IslandSegments(titles:values.map(\.capitalized),selected:values.firstIndex(of:selected) ?? 0,compact:compact,focused:values.firstIndex { menu.isFocused(prefix+$0) }) { i in menu.tap(prefix+values[i]) }.disabled(!service.isOwner)
+            IslandSegments(titles:values.map { GolfCourseChoice(rawValue:$0)?.title ?? TennisVenueChoice(rawValue:$0)?.title ?? $0.capitalized },selected:values.firstIndex(of:selected) ?? 0,compact:compact,focused:values.firstIndex { menu.isFocused(prefix+$0) }) { i in menu.tap(prefix+values[i]) }.disabled(!service.isOwner)
         }.id(values.first { menu.isFocused(prefix+$0) }.map { prefix+$0 } ?? prefix+values[0])
     }
     private func action(_ id: String,_ title: String,subtitle: String = "",icon: String = "chevron.right",enabled: Bool = true,ready: Bool? = nil) -> some View {

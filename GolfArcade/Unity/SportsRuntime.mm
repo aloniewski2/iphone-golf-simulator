@@ -31,6 +31,7 @@ static BOOL SportsExplicitBenchmark(void) {
     double (*_clock)(void);
     __weak UIWindow *_destination;
     BOOL _controllerReplica;
+    BOOL _unityOnPhone;
 }
 + (instancetype)shared { static SportsRuntime *instance; static dispatch_once_t token; dispatch_once(&token, ^{instance=[SportsRuntime new];}); return instance; }
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error {
@@ -103,7 +104,7 @@ static BOOL SportsExplicitBenchmark(void) {
     // Let Unity's supported iOS multi-display renderer own the external surface.
     // Do not transplant its main-display view onto a different UIScreen.
     if([window.windowScene.session.role isEqualToString:UIWindowSceneSessionRoleExternalDisplayNonInteractive]) {
-        _unity.appController.window.hidden=YES;
+        _unity.appController.window.hidden=!_unityOnPhone;
         return;
     }
     if (SportsExplicitBenchmark() || _controllerReplica) {
@@ -117,6 +118,17 @@ static BOOL SportsExplicitBenchmark(void) {
         controller.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         unityWindow.hidden = YES;
     }
+#endif
+}
+- (void)showUnityOnPhone:(BOOL)visible {
+    _unityOnPhone=visible;
+#if HAS_UNITY
+    UIWindow *window=_unity.appController.window;
+    if (!window) return;
+    // Above the app's own windows, so a later makeKeyAndVisible on them cannot cover it.
+    window.windowLevel = visible ? UIWindowLevelNormal + 1 : UIWindowLevelNormal;
+    if (visible) { window.hidden=NO; [window makeKeyAndVisible]; }
+    else window.hidden=YES;
 #endif
 }
 - (void)send:(NSString*)json {

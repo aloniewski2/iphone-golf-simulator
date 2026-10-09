@@ -162,7 +162,8 @@ final class TennisMenu {
         switch screen {
         case .title: return [["start"]]
         case .main: return [["play", "homeInvite"], ["character"], ["homeEmotes"], ["settings"], ["betaFeedback"]]
-        case .party: return [["partySolo"], ["partyMultiplayer"], ["back"]]
+        // One list: play alone, pass one phone round, friends nearby, or online.
+        case .party: return [["partySolo"], ["partyLocalGolf"], ["partyNearby"], ["partyOnline"], ["back"]]
         case .multiplayer: return [["partyOnline"], ["partyLocal"], ["back"]]
         case .localChoice: return [["partyLocalGolf"], ["partyNearby"], ["back"]]
         case .onlineChoice: return [["onlineQuick"], ["homeInvite"], ["back"]]
@@ -341,6 +342,8 @@ final class TennisMenu {
         case "howto": howToPage = 0; show(.howTo)
         case let s where s.hasPrefix("sport-"):
             guard let sport = Sport(rawValue: String(s.dropFirst(6))) else { return }
+            // Golf has one way to play: straight on to its courses.
+            if sport == .golf { begin(MenuLaunch(sport: .golf, mode: .round)); return }
             show(sport.playable ? .hub(sport) : .locked(sport))
         case let t where t.hasPrefix("tab-"):
             settingsTab = SettingsTab(rawValue: String(t.dropFirst(4))) ?? .gameplay
@@ -430,8 +433,7 @@ final class TennisMenu {
         case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
         case .howTo: show(.settings)
         case .party, .settings, .homeEmotes: show(.main)
-        case .multiplayer, .quickPlay, .gameSelect: show(.party)
-        case .onlineChoice, .localChoice: show(.multiplayer)
+        case .multiplayer, .quickPlay, .gameSelect, .onlineChoice, .localChoice: show(.party)
         case .hub, .locked: show(.gameSelect)
         case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
         case .training, .exhibition: show(.hub(.tennis))
@@ -773,7 +775,7 @@ final class TennisMenu {
     }
 
     func returnFromNetworkEntry(_ route: OnlineLobbyScreen) {
-        show(route == .entry ? .onlineChoice : .localChoice)
+        show(route == .entry ? .onlineChoice : .party)
     }
 
     var loadingOpponent: TennisOpponent? {
@@ -1028,7 +1030,7 @@ extension Array {
 extension TennisMenu {
     func showOnline(_ route: OnlineLobbyScreen) { show(.online(route)) }
     func onlineNotice(_ text: String) { notice = text }
-    func openOnlineParty() { show(.multiplayer) }
+    func openOnlineParty() { show(.party) }
     func onlineLockerTap(_ id: String) { lockerSelect(id) }
     func cancelOnlineClothes() { lockerRevert(); show(.online(.lobby)) }
 }
@@ -1073,7 +1075,7 @@ struct OnlineAppleSheet: Identifiable {
             if settingsSeats { return (service.isOwner ? participants.map { ["net-seat-\($0.id)"] } : []) + [["net-settings-match"],["back"]] }
             guard service.isOwner else { return [["net-settings-seats"],["back"]] }
             let sport = service.lobby?.sport ?? .tennis
-            let venues = sport == .tennis ? ["resort","skyscraper","volcano"] : ["postcards"]
+            let venues = sport == .tennis ? ["resort","skyscraper","volcano"] : GolfCourseChoice.allCases.map(\.rawValue)
             return [["net-sport-tennis","net-sport-golf"],venues.map { "net-venue-\($0)" }]
                 + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
                 + [["net-settings-seats"],["back"]]
@@ -1088,8 +1090,12 @@ struct OnlineAppleSheet: Identifiable {
             switch id {
             case "partyOnline": identity(menu); menu.showOnline(.entry)
             case "partyLocalGolf":
+                // Pass the phone: the course last picked, a guest already in, and this phone ready, so
+                // START is the only press left.
                 identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
-                try service.configure(.golf, venue:"postcards"); try service.addLocalGuest(); menu.showOnline(.lobby)
+                let course = SportsSession.shared.golfCourse
+                try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "postcards")
+                try service.addLocalGuest(); try? service.setReady(true); menu.showOnline(.lobby)
             case "net-add-guest": try service.addLocalGuest()
             case "net-remove-guest": try service.removeLocalGuest()
             case "net-join-code":

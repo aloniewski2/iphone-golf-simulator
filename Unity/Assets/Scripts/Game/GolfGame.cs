@@ -544,6 +544,15 @@ namespace GolfArcade.Game
         /// The hole the course screen shows, for tests.
         public Hole BrowsedHole => courses != null ? AllHoles[browse] : null;
 
+        /// The course screen on hole `number` (the app's course clips are filmed from it).
+        public void BrowseTo(int number)
+        {
+            int i = System.Array.FindIndex(AllHoles, h => h.Number == number);
+            if (courses == null || i < 0) return;
+            browse = i;
+            BrowseHole(0);
+        }
+
         // ----- The locker (the golfer select screen) -----
 
         Locker locker;
@@ -830,7 +839,8 @@ namespace GolfArcade.Game
             var old = minimapTexture;
             minimapTexture = new RenderTexture((int)size.x, (int)size.y, 16);
             minimapCamera.targetTexture = minimapTexture;
-            hud.Minimap.texture = minimapTexture;
+            hud.Minimap.texture = phoneMapTexture ? phoneMapTexture : minimapTexture;
+            hud.TvMapTexture = minimapTexture;
             if (old) { old.Release(); Destroy(old); }
             if (hole != null) FrameMinimap();
         }
@@ -879,6 +889,7 @@ namespace GolfArcade.Game
             minimapCamera.farClipPlane = 600;
             minimapCamera.orthographicSize = Mathf.Max((maxA - minA) / 2, (maxC - minC) / 2 / aspect) * 1.14f;
             minimapCamera.aspect = aspect;
+            FramePhoneMap(minimapCamera.transform, (maxA - minA) / 2, (maxC - minC) / 2);
             framedMapVersion=hud.Map.Version;
             // Terrain is static. Ball, route and shot markers are live HUD overlays;
             // refresh the terrain texture only when the map framing changes.
@@ -1263,7 +1274,10 @@ namespace GolfArcade.Game
         void RefreshControls()
         {
             bool aiming = Current == State.Aim;
-            hud.ShowSwingControls(aiming && !NativeControlled, Swing.Source == Swing.Synthetic && !NativeControlled, !Swing.UsingNetwork && !NativeControlled);
+            // the app's golf with the controller on the phone: its arrows and joystick aim, as they did
+            bool phoneSheet = NativeControlled && hud.Controller != null;
+            hud.ShowSwingControls(aiming && (!NativeControlled || phoneSheet), Swing.Source == Swing.Synthetic && !NativeControlled,
+                NativeControlled ? phoneSheet : !Swing.UsingNetwork);
             UpdateControllerHint(true);
         }
 
@@ -2118,7 +2132,7 @@ namespace GolfArcade.Game
             bool Outside(Vector3 v)=>v.x<.04f||v.x>.96f||v.y<.04f||v.y>.96f;
             if(framedMapVersion!=plan.Version || (plan.ShowBall&&Outside(mapBall)) || (plan.ShowLoad&&Outside(mapLoad)))FrameMinimap();
             hud.DrawMinimap(minimapCamera);
-            bool hudShowsCourse = hud.Controller == null || hud.OnTv;   // (not under the controller in a preview)
+            bool hudShowsCourse = hud.Controller == null || hud.OnTv || NativeControlled;   // (not under the controller in a preview)
             // the pin: on the maps, and on the picture — over it, or at the edge pointing the way
             bool pinWanted = aimingShot && club != GolfClub.Putter && hudShowsCourse && Current != State.Menu;
             hud.SetPinMarker(pinWanted ? rig.Camera : null, plan.Pin + Vector3.up * 3.2f, $"PIN  {ballAt.DistanceTo(hole.Pin):F0} YD");

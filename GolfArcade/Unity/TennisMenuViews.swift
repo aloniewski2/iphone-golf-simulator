@@ -271,7 +271,7 @@ struct TennisMenuScreen: View {
             case .loading: LoadingScreen(menu: menu, compact: compact)
             case .results: IslandResultsScreen(menu: menu, compact: compact)
             case .story: IslandStoryScreen(menu: menu, compact: compact)
-            case .map: IslandCourtScreen(menu: menu, compact: compact)
+            case .map: if menu.mapSport == .golf { GolfCourseScreen(menu: menu, compact: compact) } else { IslandCourtScreen(menu: menu, compact: compact) }
             case .postMatch: IslandResultsScreen(menu: menu, compact: compact, postMatch: true)
             } }
         }.transaction { $0.animation = nil; $0.disablesAnimations = true }

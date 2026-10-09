@@ -2,10 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDisplayName</key>
-	<string>Motion Club Beta</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleDisplayName</key>
+	<string>Motion Club Beta</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_motionparty._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Motion Club finds and joins friends’ games on the same Wi-Fi.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -775,12 +775,30 @@ final class SportsSession {
         }
         pointClips.reset()
         multiplayerMatchID=nil; multiplayerSeat = -1; multiplayerControllerOnly=false
+        if unityControllerShown { unityControllerShown = false; SportsRuntime.shared().showUnity(onPhone: false) }
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false
         loading.cancel(); tutorialStep=nil; finishedMatch=nil; timingPrompt=false; setupStage = .scan
         SportsRuntime.shared().pause(true); active=false; ready=false; paused=true; tennisControllerActive=false
         SportsDisplays.shared.endPreview(); status="Choose a sport."
         SportsDisplays.shared.showMenu()
         TennisMenu.shared.sessionEnded()
+    }
+    /// Golf as it played on the standalone build: while a shot is lined up and flies, Unity's own
+    /// phone screen (the controller sheet: the map with the landing zones, the club card, the aim
+    /// pad) is in front. The app's screens take over for Ready, pause, the shot's result and the
+    /// hole's end, touch swings, onboarding and party play.
+    private var unityControllerShown = false
+    private func updateGolfPhoneController() {
+        let want = active && sport == "golf" && ready && loading.finished && !paused && !menuPauseVisible
+            && !touch && displayConnected && multiplayerMatchID == nil && !multiplayerControllerOnly
+            && !OnboardingFlow.shared.active && finishedMatch == nil
+            && ["Intro", "Aim", "Flight", "Replay", "HoleDone"].contains(golfPhase)
+            && (golfPhase != "Aim" || golfShotReady)
+        guard want != unityControllerShown else { return }
+        unityControllerShown = want
+        SportsRuntime.shared().showUnity(onPhone: want)
+        if !want { SportsDisplays.shared.phone?.makeKeyAndVisible() }
+        SportsDiagnostics.write("golf phone controller \(want ? "shown" : "hidden") phase=\(golfPhase)")
     }
     private func poll() {
         if touch && active && !paused { sendInput(valid:true) }
@@ -816,7 +834,11 @@ final class SportsSession {
                 if let p=Double(event["message"] as? String ?? "") { loading.reach(p) }
             case "golfController":
                 if let object = event["golfController"], let data = try? JSONSerialization.data(withJSONObject: object),
-                   let reading = try? JSONDecoder().decode(GolfControllerReading.self, from: data) {
+                   var reading = try? JSONDecoder().decode(GolfControllerReading.self, from: data) {
+                    // Unity's JsonUtility cannot write a null party: a solo round sends an empty one
+                    // (no players, never "my turn"), which turned the controller into a local party's
+                    // waiting screen. Only a multiplayer match has a party.
+                    if multiplayerMatchID == nil || reading.party?.players.isEmpty == true { reading.party = nil }
                     if reading.hole != golfController.hole { golfControllerMap = nil }
                     golfController = reading
                     if let encoded = reading.mapImage, !encoded.isEmpty, let bytes = Data(base64Encoded: encoded),
@@ -881,6 +903,7 @@ final class SportsSession {
                 guard resultPresentationReady else { continue }
                 let parts = (event["message"] as? String ?? "").split(separator: "|")
                 receiveMatchFinish(won: parts.first == "won", score: parts.count > 1 ? String(parts[1]) : "")
+            case "pauseRequest": if active && !paused { pause() }
             case "exit": if active { exitGame() }
             case "error":
                 let message = event["message"] as? String ?? "Unity error"
@@ -889,6 +912,7 @@ final class SportsSession {
             default: break
             }
         }
+        updateGolfPhoneController()
         // The durable copy of the result, read after the events so their stats are already in.
         if active && resultPresentationReady && finishedMatch == nil, let result = SportsRuntime.shared().tennisResult() {
             let parts = result.split(separator: "|", maxSplits: 1).map(String.init)

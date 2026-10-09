@@ -116,6 +116,7 @@ namespace GolfArcade.Game
                 string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:0.000},{1:0.000},{2},{3},{4:0}",face.x,face.y,(int)grade,super?1:0,TennisGame.LastLateness*1000));
             TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
             GolfGame.NativeExitRequested+=GolfExit;
+            GolfGame.NativePauseRequested+=GolfPause;
             TennisGame.Landed += AimLanding;
             TennisGame.DrillPoint += AimMiss;
         }
@@ -132,6 +133,7 @@ namespace GolfArcade.Game
             TennisGame.RecordingPointEnded-=SportsRecorderEndPoint;
             TennisGame.Landed -= AimLanding; TennisGame.DrillPoint -= AimMiss;
             GolfGame.NativeExitRequested -= GolfExit;
+            GolfGame.NativePauseRequested -= GolfPause;
             SportsRecorderStop();
             Active=false; Left=false; TrackingWarning=""; Time.timeScale=1;
         }
@@ -274,6 +276,8 @@ namespace GolfArcade.Game
             yield return Present(m.external,"ready");
             loading=false;
         }
+        /// The phone controller's pause button: the app pauses and puts its pause screen up.
+        void GolfPause() { if(Active && !paused) Emit("pauseRequest",""); }
         void GolfExit() {
             SetPaused(true); Emit("exit", "Golf session ended");
         }
@@ -324,6 +328,7 @@ namespace GolfArcade.Game
             if(index<0 || Display.displays.Length<=index || !gameplayCamera) return false;
             foreach(var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None)) {
                 if(camera.targetTexture) continue; // Minimap/render-texture cameras are not TV cameras.
+                if(camera.GetComponent<GolfArcade.UI.PhoneScreenOnly>()) continue; // the phone's own screen (golf's controller)
                 camera.enabled=camera==gameplayCamera;
             }
             if(external) {
@@ -344,7 +349,10 @@ namespace GolfArcade.Game
             gameplayCamera.aspect=(float)Display.displays[index].renderingWidth/Mathf.Max(1,Display.displays[index].renderingHeight);
             gameplayCamera.enabled=true;
             Debug.Log($"[SportsDisplay] camera={gameplayCamera.name} aspect={gameplayCamera.aspect} size={Display.displays[index].renderingWidth}x{Display.displays[index].renderingHeight}");
-            foreach(var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None)) canvas.targetDisplay=index;
+            foreach(var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                if(!canvas.GetComponent<GolfArcade.UI.PhoneScreenOnly>()) canvas.targetDisplay=index;
+            // Golf as on the standalone build: the controller sheet on the phone's own screen.
+            if(external && golf && !multiplayerSession) golf.NativePhoneController();
             Debug.Log($"[SportsDisplay] Gameplay cameras routed to display {index}, active={Display.displays[index].active}");
             return true;
         }

@@ -398,7 +398,10 @@ struct TennisAimLesson {
                     let badLane=[0,-1,1].first { lane in
                         guard let angles=group[lane], angles.count >= 2 else { return true }
                         let d=angles.map { TennisAimWing.relative($0,to:center) }
-                        return (d.max() ?? 0)-(d.min() ?? 0) > 14 || (lane != 0 && d.reduce(0,+)/Double(d.count)*Double(lane) < 8)
+                        let spread: Double = (d.max() ?? 0) - (d.min() ?? 0)
+                        if spread > 14 { return true }
+                        let mean: Double = d.reduce(0, +) / Double(d.count)
+                        return lane != 0 && mean * Double(lane) < 8
                     } ?? 0
                     samples[badWing]?[badLane]=[]
                     trials=[Trial(wing:badWing,lane:badLane),Trial(wing:badWing,lane:badLane)]; index=0

@@ -154,12 +154,17 @@ final class LockerMirrorProofTests: XCTestCase {
     /// A caption on a frame: what the tile is playing and the numbers that show the body moves while the root does not.
     private func caption(_ image: UIImage, _ lines: [String]) -> UIImage {
         let format = UIGraphicsImageRendererFormat(); format.scale = 1; format.opaque = true
-        return UIGraphicsImageRenderer(size: image.size, format: format).image { ctx in
+        return UIGraphicsImageRenderer(size: image.size, format: format).image { (ctx: UIGraphicsImageRendererContext) -> Void in
             image.draw(at: .zero)
-            let attrs: [NSAttributedString.Key: Any] = [.font: UIFont.monospacedSystemFont(ofSize: max(13, image.size.height / 46), weight: .medium), .foregroundColor: UIColor.white]
-            let h = CGFloat(lines.count) * max(13, image.size.height / 46) * 1.35 + 14
+            let fontSize: CGFloat = max(13, image.size.height / 46)
+            let lineHeight: CGFloat = fontSize * 1.35
+            let attrs: [NSAttributedString.Key: Any] = [.font: UIFont.monospacedSystemFont(ofSize: fontSize, weight: .medium), .foregroundColor: UIColor.white]
+            let h: CGFloat = CGFloat(lines.count) * lineHeight + 14
             UIColor.black.withAlphaComponent(0.55).setFill(); ctx.fill(CGRect(x: 0, y: image.size.height - h, width: image.size.width, height: h))
-            for (i, line) in lines.enumerated() { (line as NSString).draw(at: CGPoint(x: 10, y: image.size.height - h + 7 + CGFloat(i) * max(13, image.size.height / 46) * 1.35), withAttributes: attrs) }
+            for (i, line) in lines.enumerated() {
+                let y: CGFloat = image.size.height - h + 7 + CGFloat(i) * lineHeight
+                (line as NSString).draw(at: CGPoint(x: 10, y: y), withAttributes: attrs)
+            }
         }
     }
 

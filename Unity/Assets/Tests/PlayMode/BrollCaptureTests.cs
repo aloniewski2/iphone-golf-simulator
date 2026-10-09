@@ -70,6 +70,54 @@ namespace GolfArcade.PlayTests
             yield return Record(Fresh("golf-game"), 30 * 10);
         }
 
+        /// The course screen's circling shot of each course's holes (the old COURSE screen), for the
+        /// app's course picker: Library/Captures/broll/course-<key>/<hole>/f####.jpg, 1280x720,
+        /// eight seconds a hole; Tools/course_clips.sh cuts them into MenuArt/course-<key>.mp4.
+        [UnityTest, Explicit, Timeout(1800000)] public IEnumerator CaptureCourseOrbits()
+        {
+            yield return SceneManager.LoadSceneAsync("Golf", LoadSceneMode.Single);
+            var golf = Object.FindFirstObjectByType<GolfGame>();
+            yield return Until(() => golf.Current == GolfGame.State.Menu, 30);
+            golf.OpenCourses();
+            yield return null;
+            var shots = new (string key, int[] holes)[]
+            {
+                ("cliffside", new[] { 12, 13, 7 }), ("postcards", new[] { 8, 9, 10 }),
+                ("wildisles", new[] { 17, 19, 20 }), ("magma", new[] { 21, 22, 23 }),
+            };
+            var hidden = new System.Collections.Generic.List<Canvas>();
+            // COURSE_CLIP_HOLES=21,22 films just those holes again
+            var only = System.Environment.GetEnvironmentVariable("COURSE_CLIP_HOLES");
+            foreach (var (key, holes) in shots)
+                foreach (int number in holes)
+                {
+                    if (!string.IsNullOrEmpty(only) && System.Array.IndexOf(only.Split(','), number.ToString()) < 0) continue;
+                    golf.BrowseTo(number);
+                    Assert.AreEqual(number, golf.BrowsedHole?.Number, $"the course screen never showed hole {number}");
+                    // the picture only: the course screen's arrows and labels stay out of the clip
+                    foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                        if (c.enabled) { c.enabled = false; hidden.Add(c); }
+                    golf.GameplayCamera.aspect = 1280f / 720f;
+                    yield return null; yield return null;   // the new hole built, the camera snapped round it
+                    string dir = $"{Dir}/course-{key}/{number}";
+                    if (Directory.Exists(dir)) Directory.Delete(dir, true);
+                    Directory.CreateDirectory(dir);
+                    Time.captureFramerate = 30;
+                    try
+                    {
+                        for (int i = 0; i < 30 * 8; i++)
+                        {
+                            golf.GameplayCamera.aspect = 1280f / 720f;
+                            yield return new WaitForEndOfFrame();
+                            GameCapture.Save($"{dir}/f{i:0000}.jpg", 1280, 720);
+                        }
+                    }
+                    finally { Time.captureFramerate = 0; }
+                    foreach (var c in hidden) if (c) c.enabled = true;
+                    hidden.Clear();
+                }
+        }
+
         /// The tutorial on court (self-play, from the forehand drill on), for review.
         [UnityTest, Explicit] public IEnumerator CaptureTutorialClip()
         {
