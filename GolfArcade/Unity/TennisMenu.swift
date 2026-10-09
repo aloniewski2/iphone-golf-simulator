@@ -35,7 +35,7 @@ struct MenuLaunch: Equatable {
 struct MatchResult: Equatable { var won: Bool; var score: String; var round: Int }
 
 /// Settings tabs.
-enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio, access, developer
+enum SettingsTab: String, CaseIterable { case gameplay, controls, guide, display, audio, access, developer
     /// The tabs a player sees. Developer (classic menu, benchmark) is for debug builds only.
     static var visible: [SettingsTab] {
         #if DEBUG
@@ -46,7 +46,7 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, display, audio
     }
     var title: String {
         switch self {
-        case .gameplay: "Gameplay"; case .controls: "Controls"; case .display: "Display"
+        case .gameplay: "Gameplay"; case .controls: "Controls"; case .guide: "Guide"; case .display: "Display"
         case .audio: "Audio"; case .access: "Accessibility"; case .developer: "Developer"
         }
     }
@@ -123,6 +123,8 @@ final class TennisMenu {
     /// The golf lesson's card, and the how-to guide's page.
     private(set) var lessonCard = 0
     private(set) var howToPage = 0
+    /// Which guide topic the How to Play screen is paging through (Settings → Guide).
+    private(set) var guideDeck: GuideDeck = .setup
     /// The story scene playing (on the TV and mirrored on the phone), and what follows it.
     private(set) var story: [StoryLine] = []
     private(set) var storyIndex = 0
@@ -149,7 +151,8 @@ final class TennisMenu {
         switch tab {
         case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
-        case .display: ["howto", "fps", "overscan"]
+        case .guide: GuideDeck.allCases.map(\.rowID)
+        case .display: ["fps", "overscan"]
         case .audio: ["sound", "haptics"]
         case .access: ["bigText", "reduceMotion"]
         case .developer: ["classic", "bench"]
@@ -339,7 +342,10 @@ final class TennisMenu {
         case "play": show(.party)
         case "character": show(.character)
         case "settings": show(.settings)
-        case "howto": howToPage = 0; show(.howTo)
+        case "howto": openGuide(.setup)
+        case let g where g.hasPrefix("guide-"):
+            guard let deck = GuideDeck(rowID: g) else { return }
+            openGuide(deck)
         case let s where s.hasPrefix("sport-"):
             guard let sport = Sport(rawValue: String(s.dropFirst(6))) else { return }
             // Golf has one way to play: straight on to its courses.
@@ -393,7 +399,7 @@ final class TennisMenu {
         case "classic": classic = true
         case let l where l.hasPrefix("lk-"): lockerSelect(l)
         case "prev": if screen == .howTo { howToPage = max(0, howToPage - 1) } else { lessonCard = max(0, lessonCard - 1) }
-        case "nextPage": howToPage = min(HowTo.pages.count - 1, howToPage + 1)
+        case "nextPage": howToPage = min(guideDeck.cards.count - 1, howToPage + 1)
         case "nextCard":
             if lessonCard + 1 < GolfLesson.cards.count { lessonCard += 1 }
             else { begin(MenuLaunch(sport: .golf, mode: .tutorial), onPhone: !session.displayConnected || session.touch) }
@@ -419,6 +425,9 @@ final class TennisMenu {
         }
     }
 
+    /// Settings → Guide: page through one topic's cards from the first.
+    private func openGuide(_ deck: GuideDeck) { guideDeck = deck; howToPage = 0; settingsTab = .guide; show(.howTo) }
+
     func back() {
         switch screen {
         case .online(let route): online.back(route, menu: self)
@@ -431,7 +440,7 @@ final class TennisMenu {
             launch = nil; show(destination)
         case .main: show(.title)
         case .character: if lockerRange != nil { lockerCloseRange() } else { show(.main) }
-        case .howTo: show(.settings)
+        case .howTo: show(.settings); _ = focus(guideDeck.rowID)   // back on the topic just read
         case .party, .settings, .homeEmotes: show(.main)
         case .multiplayer, .quickPlay, .gameSelect, .onlineChoice, .localChoice: show(.party)
         case .hub, .locked: show(.gameSelect)
@@ -786,8 +795,8 @@ final class TennisMenu {
     #if DEBUG
     /// Tests: put the menu in a given state without playing through to it.
     func debugShow(_ screen: MenuScreen, launch: MenuLaunch? = nil, result: MatchResult? = nil, row: Int = 0, column: Int = 0,
-                   tab: SettingsTab = .gameplay, page: Int = 0) {
-        self.launch = launch; self.result = result; launchOrigin = nil; settingsTab = tab; howToPage = page; lessonCard = page
+                   tab: SettingsTab = .gameplay, page: Int = 0, deck: GuideDeck = .setup) {
+        self.launch = launch; self.result = result; launchOrigin = nil; settingsTab = tab; howToPage = page; lessonCard = page; guideDeck = deck
         self.screen = screen; self.row = row; self.column = column; notice = ""; confirmingRestart = false
         if screen == .character, row == 0, column == 0 { lockerOpen() }
     }

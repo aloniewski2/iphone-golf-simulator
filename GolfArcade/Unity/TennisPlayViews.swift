@@ -105,7 +105,7 @@ struct TennisRemote: View {
         case .title: "TITLE"; case .main: "HOME"; case .gameSelect: "CHOOSE YOUR SPORT"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"
-        case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: "HOW TO PLAY"; case .golfLesson: "GOLF LESSON"
+        case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: menu.guideDeck.title.uppercased(); case .golfLesson: "GOLF LESSON"
         case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"; case .map: menu.mapSport == .golf ? "CHOOSE YOUR COURSE" : "CHOOSE YOUR COURT"; case .postMatch: "MATCH REP"
         case .story: menu.storyLine.map { TennisStory.name(for: $0.speaker).uppercased() } ?? "STORY"
         }

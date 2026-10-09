@@ -213,15 +213,19 @@ struct IslandGuideScreen: View {
     let compact: Bool
     let golf: Bool
     var body: some View {
-        let cards = golf ? GolfLesson.cards : HowTo.pages
+        let cards = golf ? GolfLesson.cards : menu.guideDeck.cards
         let index = min(golf ? menu.lessonCard : menu.howToPage, cards.count - 1)
         let card = cards[index]
-        IslandShell(title: golf ? "Golf Lesson" : "How to Play", compact: compact) {
+        IslandShell(title: golf ? "Golf Lesson" : menu.guideDeck.title, compact: compact) {
             VStack(alignment: .leading, spacing: 24) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("\(index + 1) / \(cards.count)").font(IslandUI.font(17)).foregroundStyle(IslandUI.muted)
-                        Text(card.title).font(IslandUI.font(compact ? 27 : 34, bold: true))
+                        HStack(spacing: 14) {
+                            Image(systemName: card.icon).font(.system(size: compact ? 24 : 30, weight: .bold)).foregroundStyle(IslandUI.navy)
+                                .frame(width: compact ? 46 : 56, height: compact ? 46 : 56).background(IslandUI.lime, in: Circle()).accessibilityHidden(true)
+                            Text(card.title).font(IslandUI.font(compact ? 27 : 34, bold: true)).fixedSize(horizontal: false, vertical: true)
+                        }
                         ForEach(Array(card.steps.enumerated()), id: \.offset) { i, text in
                             HStack(alignment: .top, spacing: 16) {
                                 Text("\(i + 1)").font(IslandUI.font(20, bold: true)).frame(width: 34, height: 34).background(IslandUI.lime, in: Circle())

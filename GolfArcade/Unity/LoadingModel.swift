@@ -23,12 +23,19 @@ final class LoadingModel {
     private(set) var tipIndex = -1
     private(set) var tipStarted: Date?
     var tipRemaining: TimeInterval { guard let tipStarted else { return 0 }; return max(0, 1.5-LoadingModel.clockNow.timeIntervalSince(tipStarted)) }
-    var tip: String? {
+    /// Where in the sport's tips this load starts, so a player who loads often does not always
+    /// meet the same first tip.
+    private var tipOffset = 0
+    private var currentTip: GameTip? {
         guard tipIndex >= 0 else { return nil }
-        let golf = SportsSession.shared.sport == "golf"
-        let tips = golf ? ["Check the wind before choosing your club.", "Use Overview to see the hazards before your shot.", "Read the green before putting."] : ["Meet the ball in front of you.", "Aim for open court.", "Watch the bounce, then swing."]
-        return tips[tipIndex % tips.count]
+        return GameTips.tip(SportsSession.shared.sport == "golf" ? .golf : .tennis, at: tipOffset + tipIndex)
     }
+    var tip: String? { currentTip?.text }
+    /// The tip's topic ("Technique", "Setup", …) for its label.
+    var tipKind: String? { currentTip?.kind.title }
+    /// The first tip is up almost at once, and each stays long enough to read.
+    static let firstTipDelay: TimeInterval = 0.4
+    static let tipInterval: TimeInterval = 6
     private var localReady = false
     private var playersReady = true
     private var readMinimum = LoadingModel.minimum
@@ -57,7 +64,7 @@ final class LoadingModel {
         practiceMotion.stopGyroUpdates(); practiceSequence = 0; lastPractice = .distantPast
         started = now; phase = .loading; elapsed = 0; sceneProgress = nil; transitionFraction = 0
         localReady = false; playersReady = !multiplayer; readMinimum = multiplayer ? Self.multiplayerMinimum : Self.minimum
-        tipIndex = -1; tipStarted = nil
+        tipIndex = -1; tipStarted = nil; tipOffset = Int.random(in: 0..<10_000)
         waitingPlayers = []; finishStart = nil; errorMessage = ""; stalledAfter = 20
         timing = ["commit": now.timeIntervalSince1970]
     }
@@ -90,8 +97,8 @@ final class LoadingModel {
     func tick(now: Date) {
         guard let started, !finished, phase != .failed else { return }
         elapsed = max(0, now.timeIntervalSince(started))
-        if !localReady && elapsed >= 2 {
-            let next = Int((elapsed - 2) / 5)
+        if (!localReady || tipIndex < 0) && elapsed >= Self.firstTipDelay {
+            let next = Int((elapsed - Self.firstTipDelay) / Self.tipInterval)
             if next != tipIndex { tipIndex = next; tipStarted = now }
         }
         guard localReady, playersReady, elapsed >= readMinimum else { return }

@@ -296,6 +296,65 @@ final class TennisCampaignTests: XCTestCase {
         fast.tick(now: start.addingTimeInterval(1.5)); XCTAssertTrue(fast.finished)
     }
 
+    func testLoadingShowsAnImprovementTipEarlyAndRotatesIt() {
+        let loading = LoadingModel(), start = Date(timeIntervalSince1970: 1000)
+        loading.begin(now: start)
+        loading.tick(now: start.addingTimeInterval(0.1))
+        XCTAssertNil(loading.tip, "no tip flashes up in the first instant")
+        loading.tick(now: start.addingTimeInterval(0.5))
+        let first = loading.tip
+        XCTAssertNotNil(first, "the first tip is up well before the old two-second wait")
+        XCTAssertNotNil(loading.tipKind)
+        loading.tick(now: start.addingTimeInterval(4))
+        XCTAssertEqual(loading.tip, first, "a tip stays long enough to read")
+        loading.tick(now: start.addingTimeInterval(7))
+        XCTAssertNotEqual(loading.tip, first, "then the next one comes up")
+    }
+
+    func testTipsAndGuideAreCompleteReadableAndUnique() {
+        for sport in [Sport.golf, .tennis] {
+            let tips = GameTips.tips(for: sport)
+            XCTAssertGreaterThanOrEqual(tips.count, 20, "\(sport)")
+            XCTAssertEqual(Set(tips.map(\.text)).count, tips.count, "\(sport) tips do not repeat")
+            XCTAssertTrue(tips.allSatisfy { $0.text.count <= 130 }, "\(sport) tips fit on a loading screen")
+            XCTAssertGreaterThanOrEqual(Set(tips.map(\.kind)).count, 3, "\(sport) tips cover several topics")
+            XCTAssertEqual(GameTips.tip(sport, at: tips.count + 2), GameTips.tip(sport, at: 2), "tips wrap round")
+            XCTAssertEqual(GameTips.tip(sport, at: -1), tips.last, "and a negative index still lands on a tip")
+        }
+        var ids: Set<String> = []
+        for deck in GuideDeck.allCases {
+            XCTAssertFalse(deck.cards.isEmpty, deck.title)
+            XCTAssertEqual(GuideDeck(rowID: deck.rowID), deck)
+            for card in deck.cards {
+                XCTAssertTrue(ids.insert(card.id).inserted, "card id \(card.id) is unique")
+                XCTAssertGreaterThanOrEqual(card.steps.count, 3, card.id)
+                XCTAssertTrue(card.steps.allSatisfy { !$0.isEmpty && $0.count <= 260 }, card.id)
+            }
+        }
+        XCTAssertNil(GuideDeck(rowID: "guide-nothing"))
+    }
+
+    func testSettingsGuideListsEveryTopicAndPagesThroughIt() {
+        let menu = TennisMenu.shared
+        XCTAssertTrue(SettingsTab.visible.contains(.guide))
+        XCTAssertEqual(TennisMenu.settingsRows(.guide), GuideDeck.allCases.map(\.rowID))
+        XCTAssertEqual(Array(SettingsTab.visible.prefix(2)), [.gameplay, .controls], "existing tab order is unchanged")
+        for deck in GuideDeck.allCases {
+            menu.debugShow(.settings, row: 1, column: 0, tab: .guide)
+            menu.tap(deck.rowID)
+            XCTAssertEqual(menu.screen, .howTo, deck.rowID)
+            XCTAssertEqual(menu.guideDeck, deck)
+            XCTAssertEqual(menu.howToPage, 0, "a topic opens on its first card")
+            for _ in 0..<(deck.cards.count + 2) { menu.tap("nextPage") }
+            XCTAssertEqual(menu.howToPage, deck.cards.count - 1, "paging stops on the last card")
+            menu.tap("prev"); XCTAssertEqual(menu.howToPage, deck.cards.count - 2)
+            menu.tap("back")
+            XCTAssertEqual(menu.screen, .settings)
+            XCTAssertEqual(menu.settingsTab, .guide)
+            XCTAssertEqual(menu.focused, deck.rowID, "back lands on the topic just read")
+        }
+    }
+
     func testRematchForcesOneShortIntroAndPreservesOffPreference() {
         let session = SportsSession.shared, saved = session.presentationIntros
         defer { session.presentationIntros = saved; _ = session.consumePresentationIntroCut() }
@@ -394,7 +453,7 @@ final class TennisCampaignTests: XCTestCase {
         visit(["start", "play", "sport-golf", "tutorial"])
         visit(["start", "character"])
         visit(["start", "settings"])
-        visit(["start", "settings", "tab-display", "howto"])
+        visit(["start", "settings", "tab-guide", "guide-setup"])
         visit(["start", "play", "sport-tennis", "campaign", "campaignPlay"])
         for screen: MenuScreen in [.title, .main, .gameSelect, .hub(.tennis), .hub(.golf), .campaign, .exhibition,
                                    .training, .golfLesson, .character, .settings, .howTo] {

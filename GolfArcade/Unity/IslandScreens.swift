@@ -305,7 +305,9 @@ struct IslandSettingsScreen: View {
         case "hand": return Item(title: "Plays", detail: "Which hand holds the racket.", control: .choice(["Right", "Left"], p?.handedness == .left ? 1 : 0))
         case "relock": return Item(title: "Court direction", detail: "Point at the TV again at the start of your next match.", control: .action("Set again", danger: false))
         case "timing": return Item(title: "Swing timing check", detail: "Re-measure your TV's picture delay at the start of your next match.", control: .action("Run next match", danger: false))
-        case "howto": return Item(title: "How to play", detail: "A few short pages: connecting a TV, swinging, serving.", control: .link)
+        case let g where g.hasPrefix("guide-"):
+            let deck = GuideDeck(rowID: g)
+            return Item(title: deck?.title ?? "Guide", detail: deck?.detail ?? "", control: .link)
         case "fps": return Item(title: "120 fps on the phone", detail: "Smoother on ProMotion phones, uses more battery.", control: .toggle(s.highFrameRate))
         case "overscan": return Item(title: "Screen edge margin", detail: "Pulls the picture in from the edges if your TV crops it.", control: .stepper(s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%"))
         case "sound": return Item(title: "Sound", detail: "Menu and match sound.", control: .toggle(s.sound))
@@ -352,7 +354,14 @@ struct IslandSettingsScreen: View {
         let it = item(id), focused = menu.isFocused(id)
         let stacked: Bool = { if compact, case .choice = it.control { return true } else { return false } }()
         return (stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 12))) {
-            Text(it.title).font(IslandUI.font(compact ? 17 : 22, bold: true)).fixedSize(horizontal: false, vertical: true)
+            if menu.settingsTab == .guide, case .link = it.control {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(it.title).font(IslandUI.font(compact ? 17 : 22, bold: true)).fixedSize(horizontal: false, vertical: true)
+                    Text(it.detail).font(IslandUI.font(compact ? 14 : 16)).foregroundStyle(IslandUI.muted).fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                Text(it.title).font(IslandUI.font(compact ? 17 : 22, bold: true)).fixedSize(horizontal: false, vertical: true)
+            }
             if !stacked { Spacer(minLength: 8) }
             control(id, it.control)
         }

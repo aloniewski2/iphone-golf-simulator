@@ -255,7 +255,15 @@ struct LoadingScreen: View {
                 if session.loading.phase == .transitioning { Image(systemName: "checkmark.circle.fill").foregroundStyle(IslandUI.lime) }
                 Text(session.loading.statusText).font(IslandUI.font(compact ? 17 : 23, bold: true)).multilineTextAlignment(.center)
             }
-            if let tip = session.loading.tip { Text(tip).font(IslandUI.font(compact ? 15 : 21)).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.8)) }
+            if let tip = session.loading.tip {
+                VStack(spacing: 6) {
+                    Text((session.loading.tipKind ?? "Tip").uppercased()).font(IslandUI.font(12, bold: true)).tracking(1.6).foregroundStyle(IslandUI.lime)
+                    Text(tip).font(IslandUI.font(compact ? 16 : 22, bold: true)).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 20).padding(.vertical, 12).frame(maxWidth: compact ? .infinity : 780)
+                .background(.white.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .accessibilityElement(children: .combine).accessibilityIdentifier("loading-tip")
+            }
             if session.loading.elapsed >= 10, let measured = session.loading.sceneProgress, measured < 1 {
                 ProgressView("Venue loading", value: measured).tint(IslandUI.lime).frame(maxWidth: 350)
             }
@@ -301,7 +309,7 @@ extension TennisMenu {
         case "quickTennis": return "Casual tennis against AI"; case "quickGolf": return "Solo golf round"
         case "loadingBack": return "Back to Home"; case "loadingRetry": return "Retry loading"
         case "play": return "Play"; case "character": return "Locker"; case "settings": return "Settings"
-        case "howto": return "How to play"; case "tutorial": return "Tutorial"; case "replayTutorial": return "Replay tutorial"
+        case "howto": return "How to play"; case let g where g.hasPrefix("guide-"): return GuideDeck(rowID: g)?.title ?? "Guide"; case "tutorial": return "Tutorial"; case "replayTutorial": return "Replay tutorial"
         case "campaign": return "Island Circuit"; case "training": return "Training court"; case "exhibition": return "Exhibition"
         case "round": return "Play Cliffside"; case "golfCampaign": return "Golf campaign · coming soon"; case "golfTraining": return "Driving range · coming soon"
         case "nextPage", "nextCard": return "Next"; case "prev": return "Previous"; case "randomize": return "Randomize"; case "reset": return "Kit colours"
