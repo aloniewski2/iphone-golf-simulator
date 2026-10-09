@@ -370,7 +370,11 @@ final class MultiplayerService {
                     if lobby!.participants[i].seat >= 0 { try? broadcast("suspend", payload: id); pushRuntime("suspend", payload: id) }
                 }
                 if connected {
-                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; linkSteadySince[id] = nil }
+                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) {
+                        // A phone whose connection really dropped reloads the game when it comes back, so it is neither loaded nor set up any more.
+                        // One that was only quiet or in the background never dropped (it is still marked connected) and keeps its state.
+                        if !lobby!.participants[i].connected { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; linkSteadySince[id] = nil }
+                    }
                     else { disconnected.removeValue(forKey: id) }
                     lobby!.participants[i].connected = true
                 }
@@ -441,7 +445,7 @@ final class MultiplayerService {
         case "loadContinue": if packet.matchID == state.matchID && state.phase == .loading { loadingNeedsDecision = false }
         case "notice": lastError = String(packet.payload.prefix(200))
         case "launch": guard packet.matchID == state.matchID, [.loading,.calibrating,.playing,.results].contains(state.phase) else { return }; launch(packet.payload)
-        case "run": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet)
+        case "run": guard packet.matchID == state.matchID else { return }; clearSetupNotices(); pushRuntimePacket(packet)
         case "snapshot", "golfShot": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet)
         case "suspend", "resumePeer", "drop": pushRuntimePacket(packet)
         case "result": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet); rememberResult(packet.payload); onResult?(packet.payload)
@@ -600,8 +604,16 @@ final class MultiplayerService {
         for i in lobby!.participants.indices { lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false }
         lobby!.phase = .calibrating; lobby!.revision += 1; publishLobby()
     }
+    /// The two notices setup can post (a weak connection, slow setup) start with these.
+    private static let weakLinkNoticePrefix = "The connection to ", slowSetupNoticePrefix = "Still waiting for "
+    /// The "Play anyway" choice and those two notices are about setup; once play begins they would only sit on the screen all match.
+    private func clearSetupNotices() {
+        linkNeedsDecision = false
+        if let text = lastError, text.hasPrefix(Self.weakLinkNoticePrefix) || text.hasPrefix(Self.slowSetupNoticePrefix) { lastError = nil }
+    }
     /// Schedule the shared start (after the slowest phone's loading cover has gone) and tell everyone.
     private func beginPlay() {
+        clearSetupNotices()
         scheduledRunAt = max(now, lobby!.competitors.map { presentationReadyAt[$0.id] ?? now }.max() ?? now) + max(0.5, roundTrip * 2)
         lobby!.phase = .playing; lobby!.revision += 1; publishLobby()
         try? broadcast("run", payload: String(scheduledRunAt)); pushRuntime("run", payload: String(scheduledRunAt))
@@ -758,7 +770,7 @@ final class MultiplayerService {
                     if !linkNeedsDecision, now - since >= MultiplayerTuning.linkDecisionSeconds {
                         linkNeedsDecision = true
                         let weak = lobby!.competitors.filter { $0.id != lobby!.ownerID && !$0.linkOK }.map(\.name)
-                        let text = "The connection to \(weak.joined(separator: " and ")) is weak. Play anyway, or leave."
+                        let text = "\(Self.weakLinkNoticePrefix)\(weak.joined(separator: " and ")) is weak. Play anyway, or leave."
                         lastError = text; try? broadcast("notice", payload: text)
                     }
                 } else { linkWaitingSince = nil }
@@ -768,7 +780,7 @@ final class MultiplayerService {
                 calibrationNoticed = true
                 let waiting = lobby!.competitors.filter { !$0.calibrated }.map(\.name)
                 if !waiting.isEmpty {
-                    let text = "Still waiting for \(waiting.joined(separator: " and ")) to finish setting up."
+                    let text = "\(Self.slowSetupNoticePrefix)\(waiting.joined(separator: " and ")) to finish setting up."
                     lastError = text; try? broadcast("notice", payload: text)
                 }
             }
@@ -842,7 +854,7 @@ extension MultiplayerService {
         lobby?.phase = phase
         lastError = error
         if guest, let peer = lobby?.participants.first(where:{ $0.id != localID }) { lobby?.ownerID = peer.id }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = ready; lobby!.participants[i].loaded = i % 2 == 0 }
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = ready; lobby!.participants[i].loaded = i % 2 == 0; lobby!.participants[i].calibrated = phase == .playing || phase == .results }
         if lobby!.participants.count > 1 { lobby!.participants[1].connected = !disconnected; lobby!.participants[1].paused = paused }
         if spectator { lobby!.participants[0].seat = -1 }
         lobby?.revision += 1

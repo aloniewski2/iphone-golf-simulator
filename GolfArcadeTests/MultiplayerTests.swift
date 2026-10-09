@@ -610,6 +610,19 @@ final class MultiplayerTests: XCTestCase {
         run(p, for: 6)   // the pings lost during the silence must scroll out of the 20-ping window, then 1.5 s of good ones (modelled: ~4.3 s)
         XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, true, "...and it is steady again after a while of good pings")
     }
+    func testTheWeakConnectionNoticeAndPlayAnywayGoAwayOnceTheLinkRecoversAndPlayBegins() throws {
+        let p = try linkCheckParty(delay: 0.15); defer { p.close() }   // 300 ms round trip
+        run(p, for: 11)
+        XCTAssertTrue(p.host.linkNeedsDecision)
+        XCTAssertTrue(p.host.lastError?.contains("weak") == true)
+        XCTAssertTrue(p.services[1].lastError?.contains("weak") == true)
+        for l in p.bus.links.values { l.oneWayDelay = 0.02 }   // the connection improves by itself, without anyone choosing Play anyway
+        run(p, for: 8)
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertFalse(p.host.linkNeedsDecision, "no dead Play anyway button for the rest of the match")
+        XCTAssertNil(p.host.lastError, "the weak-connection notice is about setup")
+        XCTAssertNil(p.services[1].lastError)
+    }
     func testTheConnectionCheckNeverHoldsUpGolfOrAMatchThatIsAlreadyRunning() throws {
         let p = try party(2, linkCheck: true); defer { p.close() }
         try start(p, .golf)    // golf has no setup phase, so no check
@@ -618,7 +631,7 @@ final class MultiplayerTests: XCTestCase {
     func testLinkWindowGradesByRoundTripJitterAndLoss() {
         func window(_ rtts: [Double?]) -> LinkWindow {
             var w = LinkWindow(); var t = 0.0
-            for rtt in rtts { w.sent(at: t); if let rtt { w.answered(sentAt: t, rtt: rtt) } else { w.expire(now: t + LinkWindow.lostAfter) }; t += 0.1 }
+            for rtt in rtts { w.sent(at: t); if let rtt { w.answered(sentAt: t, rtt: rtt) } else { w.expire(now: t + LinkWindow.lostAfter + 0.001) }; t += 0.1 }   // a hair over a second: 0.1 added twenty times is not exact
             return w
         }
         XCTAssertEqual(window(Array(repeating: 0.05, count: 20)).grade, .good)
@@ -851,6 +864,20 @@ final class MultiplayerTests: XCTestCase {
         p.bus.links["c"]!.drop = true
         advance(p, by: 5)
         XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" })
+    }
+    func testAQuietCompetitorKeepsItsSetUpStateWhenAnotherPhoneLeaves() throws {
+        let p = try party(3); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        p.bus.links["b"]!.drop = true
+        advance(p, by: 0.5)
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "suspend" && $0.payload == "b" })
+        p.services[2].leave()   // the spectator goes: the owner's list of connected phones changes while b is quiet
+        p.bus.links["b"]!.drop = false
+        advance(p, by: 0.5)
+        let b = p.host.lobby?.participants.first { $0.id == "b" }
+        XCTAssertEqual(b?.loaded, true, "b never dropped, so it is the same game session")
+        XCTAssertEqual(b?.calibrated, true, "...and it must not be shown as 'getting ready' for the rest of the match")
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
     }
 
     // MARK: Staying awake, statistics, big unreliable messages
