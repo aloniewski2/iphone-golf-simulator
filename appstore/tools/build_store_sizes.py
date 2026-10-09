@@ -55,59 +55,37 @@ def render_art(name, W, H, stage_html, wu, hu, to_dir):
     print(name, im.size)
 
 
-# ---------------------------------------------------------------- search results
-def search_169(W=5244, H=2950):
-    wu, hu = 1920, 1080
-    s = (hu - 150) / 1125
-    cx = wu - 80 - 1210 * s
-    stage = (C_bg("#FF8A63", "#E8506E") + confetti(5, n=30, area=(0, 0, 1900, 1050))
-             + '<div class="wmk" style="left:90px;top:80px"><img src="../src/brand/club-crest.png">Motion Club</div>'
-             + '<div class="h hl" data-max="700" style="left:90px;top:230px;font-size:120px">Your phone is<br><span>the controller</span></div>'
-             + '<div class="sb" style="left:94px;top:540px">Swing it. Move. Play with friends.</div>'
-             + player("pink", "cheer", 70, 640, .52, z=5) + player("navy", "lunge", 330, 660, .46, z=5, flip=True)
-             + card_html(s, cx, (hu - 1125 * s) / 2))
-    render_art("SearchResults-5244x2950", W, H, stage, wu, hu, "search")
+# ---------------------------------------------------------------- key art (Apple asset best practices)
+# One short phrase, a centred focal point inside a safe area, no store UI, no icon, no pills/subtitle/logo.
+def key_art(W, H, name, to_dir, bg=("#FF8A63", "#E8506E"), seed=5):
+    wu, hu = 1920, round(1920 * H / W)
+    k = hu / 1080
+    head_fs = int(150 * min(1.1, max(.78, k)))
+    tvw = int(900 * min(1.1, max(.72, k)))
+    tvh = tvw * 9 / 16
+    cs = {True: .72}.get(hu <= 1100, .95) if hu > 900 else .62
+    if hu > 1200: cs = .95
+    elif hu > 900: cs = .72
+    head_y = int(hu * .07)
+    chars_h = 790 * cs
+    chars_y = hu - chars_h - hu * .06
+    tv_y = head_y + head_fs + hu * .045
+    tv_x = (wu - tvw) / 2
+    pw = 600 * cs
+    stage = (C_bg(bg[0], bg[1]) + confetti(seed, n=22, area=(int(wu * .12), int(hu * .12), int(wu * .88), int(hu * .92)))
+             + f'<div class="h hl" data-max="{int(wu * .66)}" style="left:50%;transform:translateX(-50%);top:{head_y}px;font-size:{head_fs}px">Swing. <span>Move.</span> Play.</div>'
+             + tv("sky_04", tv_x, tv_y, tvw, rot=-1.5, z=2, glow=LIME)
+             + player("pink", "cheer", wu / 2 - pw * .86, chars_y, cs, z=6)
+             + player("navy", "lunge", wu / 2 - pw * .18, chars_y + 10 * cs, cs, z=6, flip=True))
+    render_art(name, W, H, stage, wu, hu, to_dir)
 
 
-def search_32(W, H):
-    wu, hu = 1920, 1280
-    s = (hu - 330) / 1125
-    cx = (wu - 1210 * s) / 2
-    stage = (C_bg("#7B4BF0", "#3C1FA8") + confetti(7, n=34, area=(0, 0, 1900, 1250))
-             + '<div class="h hl" data-max="1740" style="left:90px;top:60px;font-size:104px;text-align:center;width:1740px">Your phone is <span>the controller</span></div>'
-             + card_html(s, cx, 250)
-             + player("coral", "cheer", 40, 560, .62, z=5) + player("lime", "lunge", 1450, 590, .56, z=5, flip=True))
-    render_art(f"SearchResults-{W}x{H}", W, H, stage, wu, hu, "search")
-
-
-# ---------------------------------------------------------------- headers
-def header_169(W=5244, H=2950):
-    wu, hu = 1920, 1080
-    stage = (C_bg("#FF8A63", "#E8506E") + confetti(21, n=34, area=(960, 20, 1900, 1060))
-             + '<div class="wmk" style="left:110px;top:96px"><img src="../src/brand/club-crest.png">Motion Club</div>'
-             + '<div class="h hl" data-max="800" style="left:106px;top:250px;font-size:132px">Your phone is<br><span>the controller</span></div>'
-             + '<div class="sb" style="left:112px;top:600px;font-size:44px">Swing it. Move. Play with friends.</div>'
-             + PILLS.format(x=112, x2=330, x3=560, y=790)
-             + tv("sky_04", 1000, 150, 960, rot=3, z=2, glow=LIME)
-             + player("pink", "cheer", 1020, 330, .78, z=6) + player("navy", "lunge", 1380, 380, .72, z=6, flip=True))
-    render_art(f"Header-{W}x{H}", W, H, stage, wu, hu, "header")
-
-
-def header_wide(W=3840, H=1646):
-    wu, hu = 1920, round(1920 * H / W)  # 823
-    stage = (C_bg("#FF8A63", "#E8506E") + confetti(33, n=26, area=(900, 10, 1900, hu - 20))
-             + '<div class="wmk" style="left:100px;top:56px"><img src="../src/brand/club-crest.png">Motion Club</div>'
-             + '<div class="h hl" data-max="820" style="left:96px;top:176px;font-size:118px">Your phone is<br><span>the controller</span></div>'
-             + '<div class="sb" style="left:100px;top:450px;font-size:38px">Swing it. Move. Play with friends.</div>'
-             + PILLS.format(x=100, x2=318, x3=548, y=580)
-             + tv("sky_04", 1020, 60, 860, rot=3, z=2, glow=LIME)
-             + player("pink", "cheer", 1010, 190, .66, z=6) + player("navy", "lunge", 1360, 230, .6, z=6, flip=True))
-    render_art(f"Header-{W}x{H}", W, H, stage, wu, hu, "header")
+def search_169(): key_art(5244, 2950, "SearchResults-5244x2950", "search", seed=5)
+def search_32a(): key_art(3840, 2560, "SearchResults-3840x2560", "search", bg=("#7B4BF0", "#3C1FA8"), seed=7)
+def search_32b(): key_art(1920, 1280, "SearchResults-1920x1280", "search", bg=("#7B4BF0", "#3C1FA8"), seed=7)
+def header_169(): key_art(5244, 2950, "Header-5244x2950", "header", seed=21)
+def header_wide(): key_art(3840, 1646, "Header-3840x1646", "header", seed=33)
 
 
 if __name__ == "__main__":
-    search_169()
-    search_32(3840, 2560)
-    search_32(1920, 1280)
-    header_169()
-    header_wide()
+    search_169(); search_32a(); search_32b(); header_169(); header_wide()
