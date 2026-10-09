@@ -10,6 +10,15 @@ import simd
 ///   MatchHero_<Sex>_Swing_NN     the match Forehand sampled densely around the strike (morph targets for the loading screen's practice swing)
 ///   MatchHero_<Sex>_Rig.lzfse    the bind-pose mesh of every skinned part with its bone weights and inverse binds, and the clips <Sex>_ReadyIdle and <Sex>_Serve as bone tracks (60 Hz)
 ///   MatchHero_<map>.png          the look maps the runtime materials sample (cloth weave, the kit's seam maps, the soft skin normal)
+/// HERO_REGISTRY: the one list of hero model names the iOS menus load. Mirror of Unity/Assets/Scripts/Game/HeroAssets.cs; change a model
+/// here and there only. HeroAssetRegistryTests (Unity EditMode) fails if any other .swift or .cs file names an older hero model directly.
+enum HeroAssets {
+    /// The baked SceneKit export in CharacterAssets (<name>.json / .lzfse): tennis is the match hero with the tailored outfit, golf is the kit.
+    static func nativeExport(golf: Bool, female: Bool, distance: Bool = false) -> String {
+        (golf ? "GolfKitHero_" : "MatchHero_") + (female ? "Female" : "Male") + (distance && !golf ? "_Distance" : "")
+    }
+}
+
 @MainActor enum MatchHeroData {
     /// Height the hero stands on the locker stage: the frame the old chibi filled, so every locker camera keeps its framing.
     static let stageHeight: Float = 1.387
@@ -126,7 +135,7 @@ import simd
     private static var assets: [String: Asset] = [:]
 
     static func asset(female: Bool, golf: Bool = false, distance: Bool = false) -> Asset? {
-        let name = (golf ? "GolfKitHero_" : "MatchHero_") + (female ? "Female" : "Male") + (distance && !golf ? "_Distance" : "")
+        let name = HeroAssets.nativeExport(golf: golf, female: female, distance: distance)
         if let a = assets[name] { return a }
         guard let url = locate(name, "json"), let md = try? Data(contentsOf: url),
               let manifest = try? JSONDecoder().decode(Manifest.self, from: md), let bin = data(name) else { return nil }

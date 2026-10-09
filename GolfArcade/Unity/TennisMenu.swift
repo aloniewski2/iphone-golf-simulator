@@ -113,6 +113,8 @@ final class TennisMenu {
     private(set) var lockerEmoteSlot = 0
     private(set) var lockerSport: Sport = .tennis
     private(set) var lockerSlot: LockerSlot = .skin
+    /// What the lower garment is called in the locker: the golf kit has pants, the tennis kit shorts. The saved slot key stays "shorts".
+    var lockerBottomName: String { lockerSport == .golf ? "Pants" : "Shorts" }
     /// The colour whose full gradient panel is open (skin / shirt / shorts / accent / racket); nil = closed.
     private(set) var lockerRange: String?
     /// The player as the locker was opened, so Revert can put it back.
@@ -1010,7 +1012,7 @@ extension TennisMenu {
         case "lk-colour": return "Colour"
         case "lk-skin": return "Skin tone"
         case "lk-shirt": return "Shirt colour"
-        case "lk-shorts": return "Shorts colour"
+        case "lk-shorts": return "\(TennisMenu.shared.lockerBottomName) colour"
         case "lk-body": return "Player"
         case "lk-hand": return "Plays"
         case "lk-shuffle": return "Shuffle"

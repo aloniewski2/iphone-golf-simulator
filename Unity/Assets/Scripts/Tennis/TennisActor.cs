@@ -242,7 +242,7 @@ namespace GolfArcade.Tennis
         public void Build(bool female, Color skin, bool leftHanded, string bodyKey = null)
         {
             LeftHanded = leftHanded; Female = female;
-            string path = "StandardCharacters/standard_" + (female ? "female" : "male") + "_tennis";
+            string path = GolfArcade.Game.HeroAssets.HiddenTennisRig(female);
             var prefab = Resources.Load<GameObject>(path);
             if (!prefab) throw new InvalidOperationException("Missing permanent tennis character: " + path);
             model = Instantiate(prefab, transform).transform;

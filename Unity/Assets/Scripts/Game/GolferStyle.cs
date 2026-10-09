@@ -221,7 +221,7 @@ namespace GolfArcade.Game
         public static Color? ShirtColor => ColorOf(Current.Shirt) ?? Rgb(62, 62, 66);
         public static Color? TrousersColor => ColorOf(Current.Shorts) ?? Rgb(56, 56, 60);
         /// Resources path of the V4 model for the body.
-        public static string ModelPath => Body == BodyKind.Female ? "Golfer/golfer_f" : "Golfer/golfer_m";
+        public static string ModelPath => HeroAssets.LegacyGolfer(Body == BodyKind.Female);
 
         /// A random look (the locker's SHUFFLE): skin, haircut, hair colour, headwear, glasses, facial hair, clothes and, where earned, outfit colours.
         public static void Shuffle(CharacterLook l, Func<int, bool> outfitOpen, bool mixerOpen)

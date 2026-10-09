@@ -322,7 +322,7 @@ extension TennisMenu {
             case "body": return "Body: \(p?.standardFemale == true ? "Female" : "Male")"
             case "skin": return "Skin: \(TennisMenu.skinTones[p?.standardSkin ?? 2])"
             case "shirt": return "Shirt: \((p?.outfitName("shirt") ?? "Kit colour"))"
-            case "shorts": return "Shorts: \((p?.outfitName("shorts") ?? "Kit colour"))"
+            case "shorts": return "\(TennisMenu.shared.lockerBottomName): \((p?.outfitName("shorts") ?? "Kit colour"))"
             case "accent": return "Bands: \((p?.outfitName("accent") ?? "Kit colour"))"
             case "racket": return "Racket: \((p?.outfitName("racket") ?? "Kit colour"))"
             default: return id.prefix(1).uppercased() + id.dropFirst()

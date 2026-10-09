@@ -280,7 +280,7 @@ struct IslandLockerScreen: View {
             if let colour = menu.lockerItemColourSlot { colourRow(colour) }
             else if menu.lockerSlot == .skin {
                 Button { menu.tap("lk-tab-customize") } label: {
-                    HStack(spacing: 6) { Text("Shirt, shorts and skin colours").font(IslandUI.font(14 * k, bold: true)); Text("Customize ›").font(IslandUI.font(14 * k, bold: true)).foregroundStyle(IslandUI.muted) }
+                    HStack(spacing: 6) { Text("Shirt, \(menu.lockerBottomName.lowercased()) and skin colours").font(IslandUI.font(14 * k, bold: true)); Text("Customize ›").font(IslandUI.font(14 * k, bold: true)).foregroundStyle(IslandUI.muted) }
                         .foregroundStyle(IslandUI.navy)
                 }.buttonStyle(.plain)
             }
@@ -336,7 +336,7 @@ struct IslandLockerScreen: View {
                 labelledRow("Shirt", id: "lk-shirt", custom: "shirt") {
                     IslandSwatchRow(colours: TennisMenu.lockerSwatches.map { Color(hex: $0.hex) }, selected: menu.lockerSwatchIndex("shirt"), kit: true, size: 23 * k) { menu.lockerPick("shirt", index: $0) }
                 }
-                labelledRow("Shorts", id: "lk-shorts", custom: "shorts") {
+                labelledRow(menu.lockerBottomName, id: "lk-shorts", custom: "shorts") {
                     IslandSwatchRow(colours: TennisMenu.lockerSwatches.map { Color(hex: $0.hex) }, selected: menu.lockerSwatchIndex("shorts"), kit: true, size: 23 * k) { menu.lockerPick("shorts", index: $0) }
                 }
             }.padding(.horizontal, 3).padding(.vertical, 4)
@@ -360,7 +360,7 @@ struct IslandLockerScreen: View {
 
     private func rangePanel(_ slot: String) -> some View {
         let p = player
-        let title = slot == "skin" ? "Skin tone" : slot == "shirt" ? "Shirt" : slot == "shorts" ? "Shorts" : slot == "accent" ? "Shoes" : (menu.lockerSlot == .club ? "Club" : "Racket")
+        let title = slot == "skin" ? "Skin tone" : slot == "shirt" ? "Shirt" : slot == "shorts" ? menu.lockerBottomName : slot == "accent" ? "Shoes" : (menu.lockerSlot == .club ? "Club" : "Racket")
         return VStack(alignment: .leading, spacing: 14 * k) {
             HStack {
                 Text("\(title) · custom colour").font(IslandUI.font(20 * k, bold: true))

@@ -49,12 +49,12 @@ namespace GolfArcade.Game
         /// A style's name as a person reads it ("Flat cap", "Cat-eye", "Top hat").
         public static string Pretty(string name) => name switch
         {
-            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport", "SideBob" => "Side bob",
+            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport", "Shorts" => "Pants", "SideBob" => "Side bob",
             _ => name,
         };
 
         /// The golfer's FBX (rig, parts, clubs, clips) and, beside it, "<path>_clips" (the clips' landmarks).
-        public static string PathFor(bool female) => female ? "Hero/golfer_f" : "Hero/golfer_m";
+        public static string PathFor(bool female) => HeroAssets.Golf(female);
 
         public GameObject Root { get; private set; }
         public readonly Dictionary<string, Transform> Bones = new();
@@ -142,7 +142,7 @@ namespace GolfArcade.Game
         // Both exports share the Match Hero bind pose; palette indices are remapped by name.
         void InstallMatchSurfaces(in HeroLook look)
         {
-            var source = Resources.Load<GameObject>("Tennis/Customization/Player" + (female ? "Female" : "Male") + "GolfKit");
+            var source = Resources.Load<GameObject>(HeroAssets.GolfKitPrefab(female));
             if (!source) throw new System.InvalidOperationException("Detailed golf kit is missing");
             Root.SetActive(false);
             foreach (var r in parts.Where(r => r.name.StartsWith("Kit_")).ToArray())
