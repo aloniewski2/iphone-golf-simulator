@@ -18,9 +18,9 @@ CTRL = f"{CUR}/golf-controller-artwork.png"
 
 HEAD_CSS = """
 .stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform:scale(2);transform-origin:0 0;overflow:hidden}
-.wm{position:absolute;left:110px;top:96px;display:flex;align-items:center;gap:22px;font:800 46px 'Bricolage';letter-spacing:-1px}
+.wm{position:absolute;left:110px;top:96px;display:flex;align-items:center;gap:22px;font:800 44px 'Rubik';letter-spacing:-1px}
 .wm img{width:92px;height:92px;filter:drop-shadow(0 8px 14px rgba(5,12,28,.35))}
-.h1{position:absolute;left:110px;top:270px;font-family:'Bricolage';font-weight:800;font-size:176px;line-height:.93;letter-spacing:-3px;white-space:nowrap}
+.h1{position:absolute;left:110px;top:270px;font-family:'Rubik';font-weight:800;font-size:140px;line-height:1.0;letter-spacing:-3px;white-space:nowrap}
 .sub{position:absolute;left:112px;top:640px;font:600 44px/1.25 'Rubik'}
 .pill{position:absolute;font:700 30px/1 'Rubik';letter-spacing:.08em;text-transform:uppercase;padding:18px 30px;border-radius:99px}
 """
@@ -46,7 +46,7 @@ def header(key):
     else:
         bg = C_bg("#FF8A63", "#E8506E") + confetti(21, n=34, area=(960, 20, 1900, 1060))
         txt, accent = "#fff", "color:#D7F044"
-        extra_css = ".h1{text-shadow:0 8px 0 rgba(16,36,61,.9)}"
+        extra_css = ".h1{font-weight:900;-webkit-text-stroke:14px #10243D;paint-order:stroke fill;text-shadow:0 8px 0 #10243D}"
         pills = (f'<div class="pill" style="left:112px;top:800px;background:{LIME};color:#10243D;border:6px solid #10243D;box-shadow:8px 8px 0 #10243D">Swing</div>'
                  f'<div class="pill" style="left:330px;top:800px;background:#fff;color:#10243D;border:6px solid #10243D;box-shadow:8px 8px 0 #10243D">Move</div>'
                  f'<div class="pill" style="left:560px;top:800px;background:#fff;color:#10243D;border:6px solid #10243D;box-shadow:8px 8px 0 #10243D">Play together</div>')

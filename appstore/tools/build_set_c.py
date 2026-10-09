@@ -1,5 +1,5 @@
 """Set C v2 "Party Pop": colourful, with illustrated players enjoying the game in front of a TV.
-Fonts follow the app (Bricolage 800 / wdth 78 for display, Rubik for UI). Copy never limits the game to two sports."""
+Type follows the in-game HUD: Rubik Black with the navy outline used for moments like SMASH!. Copy never limits the game to two sports."""
 import sys
 from render import page, render, ROOT
 import build_screenshots as B

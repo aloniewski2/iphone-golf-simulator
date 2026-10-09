@@ -23,5 +23,5 @@ art, early tennis clips and dev-review character renders are deliberately exclud
 - Phone UI captures are 402x874 and the clip frames are 960x540, upscaled (Lanczos + sharpen). Native captures will look crisper.
 - No Locker, Emotes or customization screen was available as a current capture, so none is shown.
 - **Set C's players are illustrated vector characters** drawn in-house (`tools/characters.py`) in the spirit of the in-game cast (round bald heads, game outfit colours). They are not renders of the game's 3D models. Polished AI-generated versions of the real characters were blocked by this environment's network policy (Higgsfield upload and result hosts), so that remains open.
-- **Type** follows the app: Bricolage Grotesque at weight 800, width 78 (condensed) for display, Rubik for UI (see `ClubDesign.swift`).
+- **Type** follows the in-game HUD: **Rubik** ExtraBold/Black, the face the game's HUD and moments like "SMASH!" use (`UiKit.cs`, `TennisJuice.cs`). Set C also copies the game's dark-navy outline treatment. Bricolage (the menu-title face) is intentionally not used for headlines.
 - Copy never states how many sports the game has.

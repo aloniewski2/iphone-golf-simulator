@@ -29,7 +29,8 @@ html,body{overflow:hidden}
 body{font-family:'Rubik',sans-serif}
 .display{font-family:'Bricolage','Rubik',sans-serif;font-weight:800}
 /* the app sets its display face to wght 800, wdth 78, opsz = size (ClubDesign.swift) */
-.hlA,.hlB,.hlC,.h1,.wm,.sticker,.display,.nm,.ptitle{font-stretch:78%;font-optical-sizing:auto}
+/* NOTE: headlines now use Rubik (the in-game HUD face); Bricolage is kept only as .display for menu-title looks */
+.display{font-stretch:78%;font-optical-sizing:auto}
 """
 
 

@@ -98,7 +98,7 @@ A_CSS = """
 .wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,249,238,.97) 0,rgba(255,249,238,.93) 470px,rgba(255,249,238,.40) 980px,rgba(255,249,238,.05) 1500px)}
 .kick{position:absolute;left:90px;top:130px;font:700 34px/1 'Rubik';letter-spacing:.2em;color:#10243D;display:flex;align-items:center;gap:16px;text-transform:uppercase}
 .kick i{display:block;width:44px;height:44px;border-radius:50%;background:#D7F044;box-shadow:0 0 0 6px rgba(215,240,68,.35)}
-.hlA{left:90px;top:215px;font-family:'Bricolage';font-weight:800;font-size:196px;line-height:.96;letter-spacing:-3px;color:#10243D}
+.hlA{word-spacing:10px;left:90px;top:215px;font-family:'Rubik';font-weight:800;font-size:158px;line-height:1.0;letter-spacing:-3px;color:#10243D}
 .hlA mark{background:linear-gradient(180deg,transparent 58%,#D7F044 58%,#D7F044 92%,transparent 92%);color:inherit;padding:0 8px;margin:0 -8px}
 .pillA{background:#fff;color:#10243D;box-shadow:0 12px 30px rgba(16,36,61,.2)!important}
 .cap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;font:700 30px/1.1 'Rubik';color:#fff;background:linear-gradient(0deg,rgba(10,25,45,.8),rgba(10,25,45,0));text-align:left}
@@ -126,7 +126,7 @@ body{background:#0A192D}
 .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 2px,transparent 2.5px);background-size:46px 46px}
 .kickB{position:absolute;left:90px;top:130px;font:700 34px/1 'Rubik';letter-spacing:.24em;color:#D7F044;text-transform:uppercase}
 .kickB::before{content:'';display:inline-block;width:70px;height:6px;background:#D7F044;vertical-align:middle;margin-right:20px;border-radius:9px}
-.hlB{left:90px;top:210px;font-family:'Bricolage';font-weight:800;font-size:206px;line-height:.94;letter-spacing:-3px;color:#fff}
+.hlB{word-spacing:10px;left:90px;top:210px;font-family:'Rubik';font-weight:800;font-size:166px;line-height:1.0;letter-spacing:-3px;color:#fff}
 .hlB em{font-style:normal;color:#D7F044}
 """
 B_BG = '<div class="bgB"></div><div class="dots"></div>'
@@ -140,12 +140,11 @@ def B_head(kicker, l1, l2):
 # SET C - "Party Pop": saturated blocks, sticker type, confetti
 # ======================================================================================
 C_CSS = """
-.hlC{left:80px;top:150px;font-family:'Bricolage';font-weight:800;font-size:222px;line-height:.92;letter-spacing:-3px;color:#fff;
- text-shadow:0 8px 0 rgba(16,36,61,.9);paint-order:stroke fill}
+.hlC{word-spacing:14px;left:80px;top:150px;font-family:'Rubik';font-weight:900;font-size:176px;line-height:1.0;letter-spacing:-3px;color:#fff;
+ -webkit-text-stroke:16px #10243D;paint-order:stroke fill;text-shadow:0 10px 0 #10243D}
 .hlC span{color:#D7F044}
-.hlC.dark{color:#10243D;text-shadow:0 8px 0 rgba(255,255,255,.7)}
-.hlC.dark span{color:#FF7556;text-shadow:0 8px 0 #10243D}
-.sticker{position:absolute;font-family:'Bricolage';font-weight:800;color:#10243D;background:#D7F044;border:10px solid #10243D;border-radius:38px;
+.hlC.dark span{color:#FF7556}
+.sticker{position:absolute;font-family:'Rubik';font-weight:800;color:#10243D;background:#D7F044;border:10px solid #10243D;border-radius:38px;
  box-shadow:14px 14px 0 #10243D;padding:18px 34px;z-index:9;line-height:1}
 """
 
@@ -174,7 +173,7 @@ def C_bg(c1, c2, pat="rgba(255,255,255,.14)"):
 def polaroid(path, label, x, y, w, ph, rot, pos="50% 30%", z=3):
     return (f'<div class="abs" style="left:{x}px;top:{y}px;width:{w}px;transform:rotate({rot}deg);background:#fff;padding:16px 16px 68px;border-radius:26px;'
             f'box-shadow:0 30px 50px rgba(5,12,28,.35);z-index:{z}"><div style="height:{ph}px;border-radius:12px;background:url({path}) {pos}/cover"></div>'
-            f'<div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font:800 38px \'Bricolage\';color:#10243D" class="ptitle">{label}</div></div>')
+            f'<div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font:800 36px \'Rubik\';color:#10243D" class="ptitle">{label}</div></div>')
 
 
 
