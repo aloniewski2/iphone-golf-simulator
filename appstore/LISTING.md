@@ -51,6 +51,11 @@ Motion Club is in beta. Feedback welcome in the app.
 - "Online quick match" and "play with friends" depend on the multiplayer server being live at launch.
 - Age rating, privacy answers (camera is used for ARKit tracking, not recorded) and the "Beta" wording.
 
-## Screenshot story (same six beats in every set, order matters)
-1. Your phone is the controller 2. Swing to hit the ball 3. Get up. Get moving. 4. Play with your friends 5. Big screen, any room 6. Fun for everyone.
-The first three show in search results: 1, 2 and 4 are the best trio if you want friends visible up front (see `search/`).
+## Screenshot story (Apple's asset best practices: real app in use, short phrase, one palette)
+1. Your phone is the controller  2. Swing to hit the ball  3. Get up. Get moving.  4. Play with your friends  5. Big screen, any room  6. Wild places to play.
+Real gameplay and UI dominate each shot. Small illustrated players only demonstrate the input (swing, step, play together). Labels are limited to controls and steps.
+Search results show the first three portrait shots, so 1, 2 and 3 carry the pitch.
+
+## Upload formats (Apple creative-asset spec)
+- Header 3840x1646: .png, .jpg or .jpeg. Header 5244x2950: **.png only**. Search results 3840x2560 and 1920x1280: .png, .jpg or .jpeg. Search results 5244x2950: **.png only**.
+- No alpha channels or transparency. All delivered store art is 8-bit RGB PNG without alpha.

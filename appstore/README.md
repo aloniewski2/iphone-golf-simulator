@@ -7,7 +7,7 @@ art, early tennis clips and dev-review character renders are deliberately exclud
 | --- | --- | --- |
 | `icons/` | 10 icon variations (`_preview-all-icons.png` shows them with iOS rounding and at 120/60 px) | 1024x1024 PNG, sRGB, no alpha, square corners |
 | `screenshots/` | 3 sets x 6 shots: **A Resort** (light/scenic), **B Arena Night** (dark, gameplay-first), **C Party Pop** (bold colour) | 1320x2868 JPEG (iPhone 6.9"). `_preview-set-*.jpg` are contact sheets |
-| `header/` | One wide banner per style | 3840x2160 and 1920x1080 |
+| `final/header/` | Header art. 5244x2950 is **.png only** (Apple); 3840x1646 may be .png or .jpg | see `final/` |
 | `search/` | App Store search-result mockups (icon, name, subtitle, first 3 shots) | review comps, not for upload |
 | `LISTING.md` | Name, subtitle, promo text, keywords, description, claims to verify | |
 | `tools/` | Build scripts. `fetch_assets.sh` pulls source art, then `prep_upscale.py`, `build_icons.py`, `build_screenshots.py`, `build_header_search.py` | |
