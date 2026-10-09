@@ -266,6 +266,8 @@ struct TennisRacketController: View {
                 TimingCheckPanel(countdownEnds: session.timingCountdownEnds)
             } else if session.setupStage == .ready {
                 ControllerReadyPanel(session: session)
+            } else if session.setupStage == .waiting {
+                WaitingForPlayersPanel()
             } else if !session.paused && (session.tennisPhase == "serve" || session.tennisPhase == "toss") {
                 ServePanel(session: session)
             } else if !session.paused && session.tennisPhase == "receive" {
@@ -781,13 +783,34 @@ struct ControllerReadyPanel: View {
         VStack(spacing: 18) {
             Spacer()
             Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundStyle(IslandUI.lime)
-            Text("3 · Ready to play").font(IslandUI.font(28, bold: true))
+            // An online match skips the timing check, so Ready is its second step.
+            Text("\(session.multiplayerMatchID == nil ? 3 : 2) · Ready to play").font(IslandUI.font(28, bold: true))
             if !session.timingNote.isEmpty { Text(session.timingNote).multilineTextAlignment(.center) }
             Text("Watch the TV. Your phone stays your controller.").multilineTextAlignment(.center)
             ControllerButton(title: "Ready to play", icon: "play.fill") { session.readyToPlay() }
                 .accessibilityIdentifier("controller-ready")
             Spacer()
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Online tennis: this player is set up. The match starts when the other player is too.
+struct WaitingForPlayersPanel: View {
+    private var waitingFor: String {
+        let names = (MultiplayerService.shared.lobby?.competitors ?? []).filter { !$0.calibrated }.map(\.name)
+        return names.isEmpty ? "the match to start" : names.joined(separator: " and ")
+    }
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            ProgressView().controlSize(.large).tint(IslandUI.lime)
+            Text("You're ready").font(IslandUI.font(28, bold: true))
+            Text("Waiting for \(waitingFor)…").multilineTextAlignment(.center)
+            Text("Stay at your spot and watch the TV. The match starts as soon as everyone is set.")
+                .font(.footnote).multilineTextAlignment(.center)
+            Spacer()
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityElement(children: .combine).accessibilityIdentifier("controller-waiting")
     }
 }
 

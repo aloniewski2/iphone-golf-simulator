@@ -696,16 +696,24 @@ struct MultiplayerMatchOverlay: View {
     var menu = TennisMenu.shared
     var compact = true
     private var service: MultiplayerService { menu.online.service }
+    /// What the other players are doing that this player is waiting on, if anything.
+    private func notice(for p: MultiplayerParticipant, in lobby: MultiplayerLobby) -> String? {
+        guard p.id != service.localID else { return nil }
+        if !p.connected { return lobby.phase == .calibrating ? "\(p.name) reconnecting" : "\(p.name) reconnecting · Match paused" }
+        // A tennis player who came back mid-match points their phone at the TV again before play resumes.
+        if lobby.sport == .tennis, lobby.phase == .playing, p.seat >= 0, !p.calibrated { return "\(p.name) is getting ready · Match paused" }
+        return p.paused == true ? "\(p.name) paused" : nil
+    }
     var body: some View {
-        if let lobby = service.lobby, [.playing,.interrupted].contains(lobby.phase) {
+        if let lobby = service.lobby, [.calibrating,.playing,.interrupted].contains(lobby.phase) {
             VStack(alignment:.leading,spacing:8) {
                 HStack {
                     if service.localSeat < 0 { IslandNotice(text:"Watching",compact:compact) }
                     Spacer()
                     IslandLobbyRow(title:"Leave",icon:"arrow.left",id:"net-leave",menu:menu,compact:compact).frame(width:compact ? 150 : 190)
                 }
-                ForEach(lobby.participants.filter { $0.id != service.localID && (!$0.connected || $0.paused == true) },id:\.id) { p in
-                    IslandNotice(text:!p.connected ? "\(p.name) reconnecting · Match paused" : "\(p.name) paused",compact:compact)
+                ForEach(lobby.participants.filter { notice(for:$0,in:lobby) != nil },id:\.id) { p in
+                    IslandNotice(text:notice(for:p,in:lobby) ?? "",compact:compact)
                 }
                 if let error = service.lastError { IslandNotice(text:error,compact:compact) }
             }.padding(compact ? 12 : 24)

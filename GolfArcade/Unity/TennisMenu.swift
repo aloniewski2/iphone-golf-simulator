@@ -1201,7 +1201,7 @@ struct OnlineAppleSheet: Identifiable {
             if force || !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen) { menu.showOnline(.lobby) }
         case .loading: if menu.screen != .online(.leave) { menu.showOnline(.loading) }
         case .results: if menu.screen != .online(.leave) { SportsDisplays.shared.showMatchControls(); menu.showOnline(.results) }
-        case .playing: if menu.screen != .online(.leave) { menu.showOnline(.match); SportsDisplays.shared.restorePhoneControls() }
+        case .calibrating, .playing: if menu.screen != .online(.leave) { menu.showOnline(.match); SportsDisplays.shared.restorePhoneControls() }
         case .interrupted: if menu.screen != .online(.leave) { menu.showOnline(.lobby) }
         }
     }

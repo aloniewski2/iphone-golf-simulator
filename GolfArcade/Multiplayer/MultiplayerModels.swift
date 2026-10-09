@@ -1,7 +1,9 @@
 import Foundation
 
 enum MultiplayerSport: String, Codable, CaseIterable, Sendable { case tennis, golf }
-enum MultiplayerPhase: String, Codable, Sendable { case lobby, loading, playing, results, interrupted }
+/// `calibrating` is tennis only: every phone is loaded and each player points their phone at the TV and taps Ready
+/// before the owner starts the match. Golf goes straight from `loading` to `playing`.
+enum MultiplayerPhase: String, Codable, Sendable { case lobby, loading, calibrating, playing, results, interrupted }
 enum MultiplayerError: LocalizedError {
     case unavailable(String), invalidOperation(String), incompatible, full
     var errorDescription: String? {
@@ -18,6 +20,8 @@ struct MultiplayerParticipant: Codable, Equatable, Sendable {
     var seat: Int = -1
     var ready = false
     var loaded = false
+    /// Tennis: this player's phone has its court direction and centre set (touch players and spectators need nothing).
+    var calibrated = false
     var connected = true
     var female = false
     var left = false
@@ -89,7 +93,7 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
     }
     mutating func configure(sport: MultiplayerSport, venue: String) {
         self.sport = sport; self.venue = venue
-        for i in participants.indices { participants[i].seat = i < capacity ? i : -1; participants[i].ready = false; participants[i].loaded = false }
+        for i in participants.indices { participants[i].seat = i < capacity ? i : -1; participants[i].ready = false; participants[i].loaded = false; participants[i].calibrated = false }
         queue.removeAll(); revision += 1
     }
     mutating func add(_ player: MultiplayerParticipant) throws {
@@ -151,7 +155,7 @@ struct MultiplayerMatchConfiguration: Codable, Sendable {
 }
 /// The transport's actual sender overrides the packet's claimed sender before delivery.
 struct MultiplayerPacket: Codable, Sendable {
-    static let version = 3
+    static let version = 4
     static let maximumBytes = 60_000
     var version = Self.version
     var lobbyID = ""
@@ -219,6 +223,11 @@ enum MultiplayerTuning {
     /// Apple limits how big an "unreliable" message may be and does not say by how much. Only a refusal of a message bigger
     /// than this makes us send that kind reliably instead; a small one that fails is some other problem and is rethrown.
     static let unreliableSafeBytes = 900
+    /// A competitor that comes back mid-match reloads the game and points its phone at the TV again before play resumes
+    /// for it; that takes longer than the plain 15 s a dropped connection is given.
+    static let recalibrationSeconds = 45.0
+    /// An unfinished setup is mentioned to everyone after this long (nobody is forced to wait: Leave is always there).
+    static let calibrationNoticeSeconds = 60.0
 }
 
 /// Local statistics for tuning once the app is live. Nothing is uploaded: the line goes to SportsDiagnostics.log when a match ends.

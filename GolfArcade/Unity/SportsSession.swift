@@ -2,7 +2,8 @@ import SwiftUI
 import AVFoundation
 import Darwin
 
-enum ControllerSetupStage { case scan, timing, ready, playing }
+/// `waiting`: online tennis, this player is set up and the match starts when the other player is too.
+enum ControllerSetupStage { case scan, timing, ready, waiting, playing }
 
 enum TennisUltimate: Int, CaseIterable, Identifiable {
     case skybreaker = 0, rescueLob = 1, curveball = 2
@@ -218,7 +219,10 @@ final class SportsSession {
             self.axisGate=gate
             if gate.locked {
                 self.motion.start(tennis:true,travel:self.travel)
-                if self.setupStage == .scan { self.offerTimingCalibration() }
+                if self.setupStage == .scan {
+                    // Online tennis has no timing check yet: from the scan straight to Ready.
+                    if self.multiplayerMatchID != nil { self.multiplayerScanComplete() } else { self.offerTimingCalibration() }
+                }
             }
         }
         // Unity gets every sample straight from the sensor queue; this is only for the screens.
@@ -522,6 +526,7 @@ final class SportsSession {
     }
     func readyToPlay() {
         guard displayConnected || multiplayerControllerOnly, active, ready, loading.finished else { return }
+        if multiplayerCalibrates { finishMultiplayerCalibration(); return }
         if sport == "tennis", setupStage == .scan || setupStage == .timing {
             menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
             status = setupStage == .scan ? "Scan your TV to continue." : "Start the timing calibration to continue."
@@ -650,6 +655,41 @@ final class SportsSession {
         command("recordPoints", value: enabled ? 1 : 0)
     }
 
+    // MARK: Online tennis setup
+
+    /// An online or Nearby tennis player (not a spectator): their phone is set up before the match starts.
+    private var multiplayerCalibrates: Bool { multiplayerMatchID != nil && sport == "tennis" && multiplayerSeat >= 0 }
+    /// Point the phone at the TV (so swings count), then Ready. Touch players have nothing to set up.
+    private func beginMultiplayerCalibration() {
+        paused = true
+        if touch { finishMultiplayerCalibration(); return }
+        setupStage = .scan; axisGate = SportsAxisGate()
+        status = "Stand about 2.5 m back, point the back of your phone at the TV and hold still."
+        motion.beginAxisCapture(travel: travel)
+    }
+    /// The court direction is locked. Online tennis has no timing check yet, so it goes straight to Ready.
+    private func multiplayerScanComplete() {
+        setupStage = .ready
+        status = "TV scan complete. Stand at your spot and tap Ready."
+    }
+    /// Ready was tapped (or a touch player has nothing to do): take the centre, tell the owner, then wait for the others.
+    /// When play is already running (the player came back mid-match, or re-aimed from the menu) it carries straight on.
+    private func finishMultiplayerCalibration() {
+        if !touch { guard motion.axisLocked, motion.calibrate() else { return } }
+        MultiplayerService.shared.runtimeCalibrated()
+        menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
+        setupStage = .waiting; status = "Ready. Waiting for the other player."
+        if MultiplayerService.shared.lobby?.phase == .playing { beginMultiplayerPlay() }
+    }
+    /// The owner has started play. Take the centre again, since the player may have moved while waiting, and let go.
+    private func beginMultiplayerPlay() {
+        guard setupStage == .waiting else { return }
+        if !touch { motion.calibrate(quiet: true) }
+        setupStage = .playing; paused = false; menuPauseVisible = false; status = "Playing"
+        SportsDisplays.shared.external?.isHidden = true
+        command("resume")
+    }
+
     /// The loading screen has run its course: show the game, and start the setup that the
     /// player sees (court direction, motion) only now.
     private func loadingFinished() {
@@ -670,6 +710,8 @@ final class SportsSession {
                 MultiplayerService.shared.runtimeUnavailable("This Unity export does not contain multiplayer. Re-export and rebuild the integrated app.")
                 return
             }
+            // Tennis players first point their phone at the TV and tap Ready; the owner starts the match when all have.
+            if multiplayerCalibrates { beginMultiplayerCalibration(); return }
             setupStage = .playing; paused=false; status=multiplayerSeat<0 ? "Watching" : "Playing"
             if !touch && multiplayerSeat>=0 { motion.start(tennis:sport == "tennis",travel:travel) }
             command("resume"); return
@@ -815,7 +857,9 @@ final class SportsSession {
     private func poll() {
         if touch && active && !paused { sendInput(valid:true) }
         if multiplayerMatchID != nil, let lobby = MultiplayerService.shared.lobby {
-            loading.updatePlayers(waiting: lobby.competitors.filter { !$0.loaded }.map(\.name), allReady: lobby.phase == .playing)
+            // The cover lifts once everyone has loaded (tennis then sets up its controllers behind it).
+            loading.updatePlayers(waiting: lobby.competitors.filter { !$0.loaded }.map(\.name), allReady: lobby.phase == .calibrating || lobby.phase == .playing)
+            if setupStage == .waiting, lobby.phase == .playing { beginMultiplayerPlay() }
         }
         loading.tick(now: LoadingModel.clockNow)
         for _ in 0..<64 {

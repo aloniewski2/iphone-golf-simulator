@@ -19,7 +19,7 @@ namespace GolfArcade.Multiplayer {
             && participants.Count(p=>p.seat>=0)>=2 && sets>=1 && sets<=3 && (games==1 || games==3 || games==6);
     }
     [Serializable] public sealed class NetworkPacket {
-        public const int Version=3;
+        public const int Version=4;
         public int version=Version; public string lobbyID,matchID,sender,kind,payload; public long sequence; public bool reliable=true; public double sentAt;
     }
     [Serializable] public sealed class NetworkInput {

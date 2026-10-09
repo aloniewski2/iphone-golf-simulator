@@ -494,7 +494,9 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         return .degraded
     }
 
-    @discardableResult func calibrate() -> Bool {
+    /// `quiet` keeps a failure to ourselves: used to re-centre at the moment an online match starts, where a missed frame
+    /// must not pause the match for both players (the centre taken at Ready stays).
+    @discardableResult func calibrate(quiet: Bool = false) -> Bool {
         let problem: String? = queue.sync {
             guard motion.isDeviceMotionActive else { return "Motion is starting. Tap Ready again in a moment, or choose touch controls." }
             guard !tennis || gate.locked else { return "Aim the back of the phone at the TV to set the court direction first." }
@@ -510,7 +512,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
             SportsDiagnostics.write("Ready captured tennis=\(tennis) axis=\(right) sign=\(sign) target=\(filter.target)")
             return nil
         }
-        if let problem { report(problem); return false }
+        if let problem { if !quiet { report(problem) }; return false }
         return true
     }
 

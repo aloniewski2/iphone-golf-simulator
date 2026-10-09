@@ -63,6 +63,15 @@ final class MultiplayerTests: XCTestCase {
         for s in p.services where s.localSeat >= 0 { try s.setReady(true) }
         try p.host.startMatch()
         for s in p.services where s.localSeat >= 0 { s.runtimeLoaded() }
+        // Tennis players then point their phone at the TV and tap Ready; play starts when all have.
+        if sport == .tennis { for s in p.services where s.localSeat >= 0 { s.runtimeCalibrated() } }
+    }
+    /// Disconnects the guest "b" and brings it back, as the transport would when a phone drops and returns.
+    func dropAndReturn(_ p: Party, _ id: String = "b") {
+        let link = p.bus.links.removeValue(forKey: id)!; link.connected = false
+        p.bus.links["a"]!.onPeersChanged?(); link.onPeersChanged?()
+        link.connected = true; p.bus.links[id] = link
+        p.bus.links["a"]!.onPeersChanged?(); link.onPeersChanged?()
     }
     func packet(_ service: MultiplayerService, kind: String, sender: String, sequence: Int64 = 10000, payload: String = "") throws -> Data {
         try JSONEncoder().encode(MultiplayerPacket(lobbyID: service.lobby!.id, matchID: service.lobby!.matchID, sender: sender, sequence: sequence, kind: kind, payload: payload))
@@ -196,6 +205,7 @@ final class MultiplayerTests: XCTestCase {
         let p=try party(2); defer { p.close() }
         for service in p.services { try service.setReady(true) }; try p.host.startMatch()
         p.host.runtimeLoaded(readyAfter: 0.2); p.services[1].runtimeLoaded(readyAfter: 1.5)
+        p.host.runtimeCalibrated(); p.services[1].runtimeCalibrated()   // tennis: the shared start follows the setup
         let starts = p.runtimes.compactMap { runtime in runtime.received.last(where: { $0.kind == "run" }).flatMap { Double($0.payload) } }
         XCTAssertEqual(starts.count, 2); XCTAssertEqual(starts[0], starts[1])
         XCTAssertGreaterThanOrEqual(starts[0], p.runtimes[0].time + 2.0)
@@ -211,8 +221,10 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertFalse(p.host.loadingNeedsDecision); XCTAssertFalse(p.services[1].loadingNeedsDecision)
         p.runtimes[0].time += 21; p.host.update(); XCTAssertTrue(p.host.loadingNeedsDecision)
         p.host.runtimeLoaded(); p.services[1].runtimeLoaded()
-        XCTAssertEqual(p.host.lobby?.phase, .playing); XCTAssertFalse(p.host.loadingNeedsDecision)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating); XCTAssertFalse(p.host.loadingNeedsDecision)
         XCTAssertFalse(p.services[1].loadingNeedsDecision)
+        p.host.runtimeCalibrated(); p.services[1].runtimeCalibrated()
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
     }
     func testRematchUsesAFreshReadinessBarrierAndRejectsRepeatedInput() throws {
         let p = try party(); defer { p.close() }; try start(p)
@@ -229,7 +241,9 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertThrowsError(try p.host.rematch())
         XCTAssertEqual(p.host.lobby?.matchID, next)
         p.host.runtimeLoaded(); XCTAssertEqual(p.host.lobby?.phase, .loading)
-        p.services[1].runtimeLoaded(); XCTAssertEqual(p.host.lobby?.phase, .playing)
+        p.services[1].runtimeLoaded(); XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertFalse(p.host.lobby!.competitors.contains(where: \.calibrated), "A rematch sets the controllers up again")
+        p.host.runtimeCalibrated(); p.services[1].runtimeCalibrated(); XCTAssertEqual(p.host.lobby?.phase, .playing)
         for r in p.runtimes { XCTAssertEqual(r.configurations.count, 2) }
     }
     func testHostBackgroundInterruptsAllPeers() throws {
@@ -249,7 +263,8 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(p.host.lobby?.phase,.interrupted);XCTAssertEqual(p.services[1].lobby?.phase,.interrupted);XCTAssertEqual(p.host.lastError,"Queue overflow")
     }
     func testReconnectingCompetitorReloadsBeforeResume() throws {
-        let p=try party(2);defer {p.close()};try start(p)
+        // Golf: reloading the game is enough. (Tennis also needs the controller set up again: see the calibration tests.)
+        let p=try party(2);defer {p.close()};try start(p,.golf)
         let link=p.bus.links.removeValue(forKey:"b")!;link.connected=false;p.bus.links["a"]!.onPeersChanged?();link.onPeersChanged?()
         XCTAssertEqual(p.runtimes[0].received.last?.kind,"suspend");XCTAssertEqual(p.services[1].lobby?.phase,.interrupted)
         let prior=p.runtimes[0].received.filter {$0.kind=="resumePeer"}.count
@@ -257,6 +272,111 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(p.runtimes[1].configurations.count,2);XCTAssertEqual(p.runtimes[0].received.filter {$0.kind=="resumePeer"}.count,prior)
         p.services[1].runtimeLoaded();XCTAssertEqual(p.runtimes[0].received.filter {$0.kind=="resumePeer"}.count,prior+1);XCTAssertEqual(p.host.lobby?.phase,.playing)
     }
+    // MARK: Tennis setup (calibration) before play
+
+    /// Both tennis phones have loaded and are now setting up their controllers.
+    private func loadedTennisParty(_ count: Int = 2) throws -> Party {
+        let p = try party(count)
+        try p.host.setReady(true); try p.services[1].setReady(true); try p.host.startMatch()
+        for s in p.services where s.localSeat >= 0 { s.runtimeLoaded() }
+        return p
+    }
+    func testTennisWaitsForBothPlayersToSetUpTheirControllersBeforeRunning() throws {
+        let p = try loadedTennisParty(); defer { p.close() }
+        for s in p.services { XCTAssertEqual(s.lobby?.phase, .calibrating) }
+        XCTAssertFalse(p.runtimes.contains { $0.received.contains { $0.kind == "run" } }, "nothing starts while anyone is still setting up")
+        p.host.runtimeCalibrated()
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "one player is not enough")
+        XCTAssertFalse(p.runtimes.contains { $0.received.contains { $0.kind == "run" } })
+        p.services[1].runtimeCalibrated()
+        for s in p.services { XCTAssertEqual(s.lobby?.phase, .playing) }
+        for r in p.runtimes { XCTAssertEqual(r.received.filter { $0.kind == "run" }.count, 1, "each runtime is told to start exactly once") }
+        XCTAssertTrue(p.host.lobby!.competitors.allSatisfy(\.calibrated))
+    }
+    func testSpectatorsNeverHoldUpTheStart() throws {
+        let p = try loadedTennisParty(3); defer { p.close() }
+        p.host.runtimeCalibrated(); p.services[1].runtimeCalibrated()
+        for s in p.services { XCTAssertEqual(s.lobby?.phase, .playing) }
+        XCTAssertEqual(p.services[2].localSeat, -1)
+    }
+    func testGolfGoesStraightToPlayingAndIgnoresCalibration() throws {
+        let p = try party(2); defer { p.close() }; try start(p, .golf)
+        for s in p.services { XCTAssertEqual(s.lobby?.phase, .playing) }
+        p.services[1].runtimeCalibrated()
+        XCTAssertFalse(p.host.lobby!.participants.contains(where: \.calibrated), "golf has nothing to calibrate")
+    }
+    func testCalibratedFromAnObserverOrAnOldMatchIsIgnored() throws {
+        let p = try loadedTennisParty(3); defer { p.close() }
+        p.services[2].runtimeCalibrated()
+        // Sequence 0, so that the real packet from "b" later in this test is still newer than this one.
+        let old = MultiplayerPacket(lobbyID: p.host.lobby!.id, matchID: "old", sender: "b", sequence: 0, kind: "calibrated")
+        try p.bus.links["b"]!.send(JSONEncoder().encode(old), to: ["a"], reliable: true)
+        p.host.runtimeCalibrated()
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.calibrated, false)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "c" }?.calibrated, false)
+        p.services[1].runtimeCalibrated()
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+    }
+    func testAReconnectingPlayerDuringSetupReloadsAndSetsUpAgainBeforeTheMatchStarts() throws {
+        let p = try loadedTennisParty(); defer { p.close() }
+        p.host.runtimeCalibrated()
+        dropAndReturn(p)
+        XCTAssertEqual(p.runtimes[1].configurations.count, 2, "the game is sent to the returning phone again")
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.loaded, false)
+        p.services[1].runtimeLoaded()
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "loaded again is not set up again")
+        p.services[1].runtimeCalibrated()
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "a" }?.calibrated, true, "the player who stayed does not repeat the setup")
+    }
+    func testAReloadedTennisPlayerStaysPausedUntilItHasPointedAtTheTVAgain() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        dropAndReturn(p)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.calibrated, false)
+        let resumed = p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count
+        p.services[1].runtimeLoaded()
+        XCTAssertEqual(p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count, resumed, "reloading alone does not resume play")
+        // Coming back to the foreground does not resume it either.
+        try p.bus.links["b"]!.send(packet(p.host, kind: "availability", sender: "b", sequence: 30000, payload: "true"), to: ["a"], reliable: true)
+        XCTAssertEqual(p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count, resumed)
+        p.services[1].runtimeCalibrated()
+        XCTAssertEqual(p.runtimes[0].received.filter { $0.kind == "resumePeer" }.count, resumed + 1)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.calibrated, true)
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+    }
+    func testAReloadedTennisPlayerGetsLongerThanADroppedConnectionToSetUpAgain() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        dropAndReturn(p); p.services[1].runtimeLoaded()
+        advance(p, by: 20)   // a plain dropped connection is given up on after 15 s
+        XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "drop" })
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.seat, 1)
+        advance(p, by: 30)   // ...but nobody waits forever
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "drop" && $0.payload == "b" })
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.seat, -1)
+    }
+    func testSetupIsAbandonedWhenAPlayerLeavesDuringIt() throws {
+        let p = try loadedTennisParty(); defer { p.close() }
+        p.services[1].leave()
+        XCTAssertEqual(p.host.lobby?.phase, .lobby, "the owner is not left waiting for someone who is gone")
+        XCTAssertEqual(p.host.lastError, "The other player left during setup. Everyone is back in the lobby.")
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "stop" })
+    }
+    func testSetupThatDragsOnIsMentionedToEveryoneButNothingIsForced() throws {
+        let p = try loadedTennisParty(); defer { p.close() }
+        p.host.runtimeCalibrated()
+        advance(p, by: 30)
+        XCTAssertNil(p.services[1].lastError)
+        advance(p, by: 31)
+        XCTAssertTrue(p.services[1].lastError?.hasPrefix("Still waiting for") == true, "everyone hears who is holding things up")
+        XCTAssertTrue(p.services[1].lastError?.hasSuffix("to finish setting up.") == true)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "...but the match is neither started nor cancelled for them")
+        XCTAssertEqual(p.host.lobby?.competitors.count, 2)
+    }
+
     func testLocalPartyNameFitsBonjourByteLimitWithEmoji() {
         let token=UUID().uuidString
         let name=LocalMultiplayerTransport.advertisedName(String(repeating:"🏌️~",count:30),token:token)
@@ -336,7 +456,7 @@ final class MultiplayerTests: XCTestCase {
         var old = MultiplayerPacket(kind:"hello"); old.version = 1
         try p.bus.links["b"]!.send(JSONEncoder().encode(old),to:["a"],reliable:true)
         XCTAssertEqual(p.host.lastError,MultiplayerError.incompatible.localizedDescription)
-        XCTAssertEqual(MultiplayerPacket.version,3)
+        XCTAssertEqual(MultiplayerPacket.version,4)
         let data = try JSONEncoder().encode(MultiplayerParticipant(id:"old",name:"Old"))
         XCTAssertNil(try JSONDecoder().decode(MultiplayerParticipant.self,from:data).loadout)
     }
