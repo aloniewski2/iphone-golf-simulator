@@ -18,7 +18,8 @@ What you asked for:
 What the audit found that changes the order of work:
 
 - **Multiplayer tennis skips calibration completely.** Without the "point your phone at the TV" step, the motion code marks every swing invalid, so motion swings probably don't register at all in Online or Nearby tennis. This must be fixed first, and it is the same step that "both can calibrate" needs.
-- **The TV's delay is ignored online.** Measured on the real rules (Appendix A): the network is already handled well, but every 100 ms of TV delay drops your best possible hit by about one quality level (PERFECT → GREAT → OK → MISS at 300 ms). Solo play already credits the TV delay. Multiplayer does not.
+- **The TV's delay is ignored online.** Measured on the real rules (Appendix A): the network is already handled well, but even 50 ms of TV delay drops your best possible serve return from PERFECT to GREAT, 100 ms to GOOD, and at 150 ms you cannot return a serve at all. Solo play already credits the TV delay. Multiplayer did not. *(Fixed in step P1.2, see below.)*
+- **An unreturned ball gave the point to the wrong player.** Found while testing: in the host's rules an unreturned serve awarded the point to the player who failed to return it. *(Fixed in P1.2.)*
 - **Tennis needs a TV on every phone.** The app refuses to start tennis on a phone without its own screen, so two friends with one TV cannot play. Golf already has "controller-only" phones; tennis does not.
 
 What it will look like when done:
@@ -42,8 +43,10 @@ IDs are used by the phases below. "Experiment" means Appendix A.
 |---|---|---|---|---|
 | F1 | Calibration is skipped in every multiplayer match. `loadingFinished()` jumps to "playing"; `motion.start` never gets an axis lock or `calibrate()`; tennis samples are `valid = calibrated`; Unity drops invalid samples. | `SportsSession.swift:667-675`, `SportsMotion.swift:158,417,509`, `SportsMultiplayer.cs:169`, `NativeSportsSession.cs:268` | Motion swings probably don't register in Online/Nearby tennis until someone does "Re-aim at the TV" from the pause menu (which pauses both players). Needs a device check. | P1 |
 | F2 | Tennis needs its own TV on every phone. Golf guests can be controller-only; tennis cannot. No split screen exists. | `SportsRuntime.mm:43-45`, `SportsSession.swift:334-336`, `SportsDisplays.swift:53-74`, `MultiplayerModels.swift:145` (golf only), `TennisMenu.swift:614,624` | Two friends, one TV: impossible. | P2, P3 |
-| F3 | TV delay is not credited to online swings (solo does credit it). The `latency` value reaches Unity but the network swing age never includes it. | `SportsMultiplayer.cs:176`, `TennisGame.cs:516`, experiment | 100 ms TV delay ≈ one hit-quality level lost; 300 ms = miss; 400 ms = cannot return. Players with different TVs are not on equal footing. | P1 |
+| F3 | TV delay was not credited to online swings (solo does credit it). The `latency` value reaches Unity but the network swing age never included it. | `SportsMultiplayer.cs:176`, `TennisGame.cs:516`, experiment | With the real two-message swing: 50 ms TV delay = GREAT at best, 100 ms = GOOD, 150 ms = serve cannot be returned. Players with different TVs were not on equal footing. | **P1.2 done** |
 | F4 | Network delay is already absorbed well (good news): perfect hits survive up to ~150 ms one-way. | experiment | Keep the rewind design; widen it only to cover the TV. | — |
+| F17 | **(new, found in P1.2)** A ball that landed legally and left the court untouched awarded the point to the receiver, so an unreturned serve gave the point to the player who failed to return it. | `NetworkTennisMatch.AdvanceBall` (out-of-court rule), test `AnUnreturnedServeThatLandedLegallyIsAnAceForTheServer` | Wrong winner on every unreturned in-court ball. | **P1.2 done** |
+| F18 | **(new, found in P1.2)** The point can end before a delayed swing arrives: an unreturned serve is dead ~190 ms after it passes the receiver, but the host returns the ball only on the swing *confirmation*. | experiment, `WithNoSwingStartedThePointIsNotDelayed` | Crediting the TV delay alone could not help beyond ~0.16 s of combined delay. | **P1.2 done** |
 | F5 | The shared clock comes from one ping per second with no filtering. A skew above about 50 ms plus the network time makes the host drop the swing as "from the future". | `MultiplayerService.swift:395-398,536-538`, `NetworkTennisMatch.cs:57`, experiment | One slow packet and a player's swings vanish for up to a second. | P1 |
 | F6 | The host never notices a player going quiet; it only reacts when Apple reports a disconnect. | `MultiplayerService.swift:545-549` (no silence check); client-only `Stale` at `SportsMultiplayer.cs:181` | The opponent keeps scoring while your connection hiccups. | P1 |
 | F7 | No connection check before a match. Host is the lowest ID (effectively random). Quick Match ignores distance. | `MultiplayerService.swift:297`, `GameCenterTransport.swift:40-47` | Bad links start matches anyway. | P6 |
@@ -81,7 +84,8 @@ Direct phone-to-phone is the lowest latency and costs nothing to run. A relay se
 A swing is credited back in time by: sensor age + network one-way time + **screen delay**. Today the first two are credited, capped at 0.15 s; the screen delay is not. Proposed:
 - `age = sensor + screenDelay` (guest adds its measured screen delay, clamped to 0.30 s).
 - Host rewind limit 0.15 s → **0.40 s**. `NetworkInput.Valid` age limit 0.25 → 0.5.
-- Perfect hits then survive total delay of about 0.37 s (screen + network + sensor).
+- A dead ball's point is held open for at most 0.35 s, **only** when the receiver has started a swing whose confirmation has not arrived (otherwise a served ball is dead ~190 ms after it passes the receiver, before a delayed swing could be confirmed).
+- Result (Appendix A): perfect serve returns survive about **0.30 s of screen delay + one-way network time combined** (for example 150 ms TV + 150 ms network, or 300 ms TV + 20 ms network). Rally balls, which travel slower, have more room.
 - **Trade-off:** a larger rewind means the host pulls the ball back in time to judge a hit, so the opponent's screen can show a visible jump. We cap it, blend the displayed ball over about 100 ms (P7), and tune it with field data. The constants live in one place (`NetworkTuning`) so tuning is a one-line change.
 
 ### 3.4 Calibration model (what "both can calibrate" means)
@@ -143,8 +147,9 @@ Relative size: S small, M medium, L large. Order matters; each phase ends with a
   - **G1.1** (M): XCTest: a 2-player tennis party cannot reach `.playing` until both report `calibrated`; touch players are auto-calibrated; timeout offers Skip; a reconnecting player must re-calibrate (ARKit reset loses the axis).
   - **G1.1d** (D): after calibration, a motion swing registers in a Nearby match.
 - **1.2 Screen-delay credit.** `SportsMultiplayer.Sample` adds `Lag` (≤ 0.30 s) to the swing `age`; `NetworkTuning.MaxRewind = 0.40`; `NetworkInput.Valid` age ≤ 0.5; history window sized from the constant.
-  - **G1.2** (S): regenerate the experiment tables from the **actual changed source** (not a patched copy): PERFECT in every cell where screen + network ≤ 0.35 s; REJECTED only beyond the cap.
-  - **G1.2b** (S): all existing tennis `MultiplayerRulesTests` still pass.
+  - **G1.2** (S, **PASS**): `dotnet test Tools/netsim/NetSim.csproj` (49 pass) and the before/after experiment from the actual changed source: PERFECT wherever screen + network ≤ 0.30 s.
+  - **G1.2b** (S, **PASS**): all existing tennis `MultiplayerRulesTests` still pass; a phone cannot claim more than 0.30 s.
+  - Added during execution: the unreturned-ball winner fix (F17) and the bounded late-swing hold (F18), each with tests that failed before the fix.
 - **1.3 Clock sync.** Pure `LinkClock`: last 16 pongs, take the 3 lowest-RTT, median offset, bounded slew; ping 5/s in match, 2/s in lobby. Host clamps swing timestamps into `[now − 0.5, now + tolerance]` (tolerance = max 0.05, half the clock uncertainty) instead of dropping them, and counts clamps. Swift mirror `ClockFilter`.
   - **G1.3** (S): 1,000 seeded trials with one-way spikes up to 150 ms on 1 of 10 samples keep offset error ≤ 20 ms in 100% of trials; the clock-error experiment shows no DROPPED for |error| ≤ 100 ms at 20 ms network time.
 - **1.4 Heartbeats and silence.** 10 Hz tiny heartbeats both ways during play. Owner: a competitor silent ≥ 0.4 s → `suspend` (existing path) + banner; 3 heartbeats back → `resumePeer`; the 15 s expiry is unchanged. Client: owner silent ≥ 0.4 s → "Reconnecting…"; the existing 2 s Stale label stays.
@@ -253,40 +258,57 @@ Tuning constants live in `NetworkTuning` (C#) and `MultiplayerTuning` (Swift).
 
 ---
 
-## Appendix A — Experiment: how today's rules handle delay
+## Appendix A — Experiment: how the rules handle delay (before and after P1.2)
 
-Reproduce: `proof/multiplayer/latency_experiment/run.sh` (needs only the .NET 8 SDK). It serves, then delivers a perfectly timed return through the real `NetworkTennisMatch` / `TennisRules`, adding screen delay, one-way network delay and clock error. "Proposed" patches only a temporary copy (rewind limit 0.40 s; swing age includes the screen delay). Sensor age is fixed at 30 ms. Assumes a perfectly timed swing on the cue the player *sees*, so it shows the bias from delay, not human variation.
+Reproduce: `proof/multiplayer/latency_experiment/run.sh` (needs only the .NET 8 SDK; BEFORE is built from the commit before P1.2, AFTER from the working tree). It serves, then delivers a perfectly timed return through the real `NetworkTennisMatch` / `TennisRules` using the two messages a phone really sends (swing started, then swing confirmed 180 ms later), adding screen delay, one-way network delay and clock error. Sensor delay is 30 ms. It assumes a perfectly timed swing on the cue the player *sees*, so it shows the bias from delay, not human variation. A serve return is the tightest case.
 
 ```
-TODAY: screen delay ignored, rewind limit 0.15 s
-screen delay \ one-way network      20 ms       50 ms      100 ms      150 ms      200 ms
-      0 ms                        PERFECT!    PERFECT!    PERFECT!    PERFECT!   EXCELLENT
-    100 ms                           GREAT       GREAT       GREAT        GOOD          OK
-    200 ms                              OK          OK          OK          OK    REJECTED
-    300 ms                            MISS        MISS    REJECTED    REJECTED    REJECTED
-    400 ms                        REJECTED    REJECTED    REJECTED    REJECTED    REJECTED
+=== BEFORE: commit 9a305ef7 (the phone credits no screen delay) ===
+an unreturned serve stays in play 192 ms after passing the receiver and the point goes to seat 1 (0 = the server)
 
-PROPOSED: screen delay credited, rewind limit 0.40 s
-screen delay \ one-way network      20 ms       50 ms      100 ms      150 ms      200 ms
-      0 ms                        PERFECT!    PERFECT!    PERFECT!    PERFECT!    PERFECT!
-    100 ms                        PERFECT!    PERFECT!    PERFECT!    PERFECT!    PERFECT!
-    200 ms                        PERFECT!    PERFECT!    PERFECT!    PERFECT!    REJECTED
-    300 ms                        PERFECT!    PERFECT!    REJECTED    REJECTED    REJECTED
-    400 ms                        REJECTED    REJECTED    REJECTED    REJECTED    REJECTED
+SCREEN DELAY x NETWORK DELAY (a perfectly timed swing on the cue the player sees)
+screen delay \ one-way network           20 ms       50 ms      100 ms      150 ms      200 ms
+      0 ms                              PERFECT!    PERFECT!    PERFECT!    PERFECT!        MISS
+     50 ms                                 GREAT       GREAT       GREAT        MISS        MISS
+    100 ms                                  GOOD        GOOD        MISS        MISS        MISS
+    150 ms                                  MISS        MISS        MISS        MISS        MISS
+    200 ms                                  MISS        MISS        MISS        MISS        MISS
+    300 ms                                  MISS        MISS        MISS        MISS        MISS
+    400 ms                                  MISS        MISS        MISS        MISS        MISS
 
-CLOCK ERROR with today's rules (+ = guest thinks the host is ahead)
-clock error \ one-way network       20 ms       50 ms      100 ms
-   -100 ms                           GOOD        GOOD   EXCELLENT
-    -50 ms                          GREAT       GREAT   EXCELLENT
-      0 ms                       PERFECT!    PERFECT!    PERFECT!
-     30 ms                       PERFECT!    PERFECT!    PERFECT!
-     50 ms                       PERFECT!    PERFECT!    PERFECT!
-     70 ms                       PERFECT!   EXCELLENT   EXCELLENT
-    100 ms                        DROPPED   EXCELLENT       GREAT
-    150 ms                        DROPPED     DROPPED        GOOD
+=== AFTER: working tree (the phone credits its screen delay; the host waits for a started swing) ===
+an unreturned serve stays in play 192 ms after passing the receiver and the point goes to seat 0 (0 = the server)
+
+SCREEN DELAY x NETWORK DELAY (a perfectly timed swing on the cue the player sees)
+screen delay \ one-way network           20 ms       50 ms      100 ms      150 ms      200 ms
+      0 ms                              PERFECT!    PERFECT!    PERFECT!    PERFECT!    PERFECT!
+     50 ms                              PERFECT!    PERFECT!    PERFECT!    PERFECT!    PERFECT!
+    100 ms                              PERFECT!    PERFECT!    PERFECT!    PERFECT!    PERFECT!
+    150 ms                              PERFECT!    PERFECT!    PERFECT!    PERFECT!        MISS
+    200 ms                              PERFECT!    PERFECT!    PERFECT!        MISS        MISS
+    300 ms                              PERFECT!        MISS        MISS        MISS        MISS
+    400 ms                                  MISS        MISS        MISS        MISS        MISS
+
+=== CLOCK ERROR: working tree ===
+an unreturned serve stays in play 192 ms after passing the receiver and the point goes to seat 0 (0 = the server)
+
+CLOCK ERROR (a perfectly timed swing; + = the guest thinks the host is ahead)
+clock error \ one-way network            20 ms       50 ms      100 ms
+   -100 ms                                 GREAT       GREAT       GREAT
+    -50 ms                              PERFECT!    PERFECT!    PERFECT!
+      0 ms                              PERFECT!    PERFECT!    PERFECT!
+     30 ms                             EXCELLENT   EXCELLENT   EXCELLENT
+     50 ms                             EXCELLENT       GREAT       GREAT
+     70 ms                             EXCELLENT       GREAT        GOOD
+    100 ms                               DROPPED       GREAT        GOOD
+    150 ms                               DROPPED     DROPPED        MISS
 ```
 
-Reading it: the network is not the problem (perfect through 150 ms one-way); the TV is (each 100 ms costs about one level); and a clock error above about 50 ms plus network time makes the host drop the swing entirely. "REJECTED" means the ball had already gone past the player. The estimate of ~1.7 KB per snapshot in F11 comes from a JSON mock of the same fields, not from Unity's serializer, so it needs the G1.7a check.
+Reading it:
+- **BEFORE:** the point went to seat 1 (the receiver) when nobody returned a legal serve (F17). With 0 ms of TV delay the network is fine through 150 ms. With a 50 ms TV the best grade is GREAT, with 100 ms it is GOOD, and from 150 ms a serve cannot be returned at all.
+- **AFTER:** the server wins an unreturned serve. Perfect returns hold wherever screen delay + network time is about 0.30 s or less; beyond about 0.34 s the swing start reaches the host after the ball is dead, which no rewind can fix.
+- **Clock error (today's rules):** a guest clock that is 100 ms ahead drops its swings entirely at 20 ms network time (`DROPPED`). Step P1.3 addresses this.
+- The ~1.7 KB message size in F11 comes from a JSON mock of the same fields, not Unity's serializer, so it still needs the G1.7a check.
 
 ## Appendix B — Where to look in the code
 Transports: `GolfArcade/Multiplayer/GameCenterTransport.swift`, `LocalMultiplayerTransport.swift`. Lobby and bridge: `MultiplayerService.swift`, `MultiplayerModels.swift`, `Unity/Assets/Plugins/iOS/SportsBridge.mm`. Unity side: `Multiplayer/SportsMultiplayer.cs`, `NetworkTennisMatch.cs`, `NetworkGolfRound.cs`, `Tennis/TennisGame.Network.cs`, `Game/NativeSportsSession.cs`. Calibration: `SportsSession.swift` (setup stages), `SportsMotion.swift` (axis gate, `calibrate()`), `TennisPlayViews.swift` (setup panels). Menus: `TennisMenu.swift`, `IslandScreens.swift`. Display and cameras: `SportsDisplays.swift`, `SportsRuntime.mm`, `TennisShoulderCamera.cs`, `TennisGame.cs` (`UpdateCamera`, `BuildHud`). Tests: `GolfArcadeTests/MultiplayerTests.swift`, `Unity/Assets/Tests/EditMode/MultiplayerRulesTests.cs`, `PlayMode/MultiplayerRuntimeTests.cs`.
