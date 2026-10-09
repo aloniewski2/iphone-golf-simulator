@@ -86,13 +86,23 @@ ICONS["03-phone-swing"] = (
     + f'<div style="position:absolute;left:700px;top:70px;filter:drop-shadow(0 0 50px rgba(215,240,68,.8))">{GOLF_BALL.format(s=230, n=3)}</div>',
 )
 
-# 04 Phone + TV - the phone drives the big screen (real tennis gameplay on the TV, real controller on the phone)
+# 04 Phone + TV - the phone drives the big screen; its screen is a lineup of sports (boxing, tennis, golf, football, bowling)
+def _sport(name, left, top, w, rot=0):
+    return (f'<img src="{S}/brand/club-{name}.png" style="position:absolute;left:{left}px;top:{top}px;width:{w}px;'
+            f'transform:rotate({rot}deg);filter:drop-shadow(0 10px 12px rgba(5,12,40,.35))">')
+
+
 ICONS["04-phone-tv"] = (
     "background:radial-gradient(circle at 30% 20%,#7B4BF0 0%,#3C1FA8 55%,#1B1250 120%)",
-    f'<div style="position:absolute;left:70px;top:150px;width:880px;height:520px;background:#05070b;border-radius:34px;padding:16px;box-shadow:0 40px 60px rgba(5,12,28,.5),0 0 0 4px #D7F044,0 0 80px 10px rgba(215,240,68,.45)">'
+    f'<div style="position:absolute;left:70px;top:110px;width:880px;height:500px;background:#05070b;border-radius:34px;padding:16px;box-shadow:0 40px 60px rgba(5,12,28,.5),0 0 0 4px #D7F044,0 0 80px 10px rgba(215,240,68,.45)">'
     f'<div style="width:100%;height:100%;border-radius:20px;overflow:hidden;background:url(up/sky_04.png) center/cover"></div></div>'
-    + f'<div style="{PHONE_CSS};left:430px;top:430px;width:380px;height:800px;border-radius:60px;transform:rotate(7deg)">'
-      f'<div style="width:100%;height:100%;border-radius:46px;overflow:hidden;background:url({S}/current/golf-controller-artwork.png) 50% 0/cover"></div></div>',
+    + f'<div style="{PHONE_CSS};left:470px;top:300px;width:420px;height:800px;border-radius:64px;transform:rotate(7deg)">'
+      f'<div style="position:relative;width:100%;height:100%;border-radius:56px;overflow:hidden;background:linear-gradient(170deg,#6FD3E3 0%,#35B8C7 38%,#5B7CF0 100%)">'
+      f'<div style="position:absolute;left:50%;top:18px;width:110px;height:32px;margin-left:-55px;background:#000;border-radius:99px"></div>'
+      + _sport("boxing", 14, 78, 168, -8) + _sport("tennis", 196, 64, 176, 6)
+      + _sport("golf", 70, 236, 240, -4)
+      + _sport("football", 14, 470, 172, -6) + _sport("bowling", 200, 470, 178, 8)
+      + '</div></div>',
 )
 
 # 05 Trophy — palm trophy with gold glow
