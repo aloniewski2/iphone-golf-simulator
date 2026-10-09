@@ -88,17 +88,21 @@ namespace UnityEngine {
     }
 }
 
+namespace UnityEngine {
+    // Stand-in for Unity's JsonUtility: public fields only (no properties), like the real one.
+    // Close enough to check shapes and round trips; the real serializer is exercised in the editor.
+    public static class JsonUtility {
+        static readonly System.Text.Json.JsonSerializerOptions Options = new System.Text.Json.JsonSerializerOptions {
+            IncludeFields = true,
+            IgnoreReadOnlyProperties = true,
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals,
+        };
+        public static string ToJson(object value) => System.Text.Json.JsonSerializer.Serialize(value, value.GetType(), Options);
+        public static T FromJson<T>(string json) => System.Text.Json.JsonSerializer.Deserialize<T>(json, Options);
+    }
+}
+
 namespace GolfArcade.Tennis {
     // Only the clip NAMES that TennisEmotes refers to.
     public class HeroTennisDriver { public enum Clip { EmoteScuba, EmoteThrust, EmoteSpike, IntroWave, IntroBringIt, IntroPushups } }
-
-    // The real TennisTossMeter is a MonoBehaviour. The host only calls AccuracyAt (a pure triangle wave),
-    // reproduced here. It is not used by the return experiment.
-    public static class TennisTossMeter {
-        public static float AccuracyAt(float seconds) {
-            float p = UnityEngine.Mathf.Repeat(Math.Max(0, seconds) + .75f, 1f);
-            float pos = p < .25f ? 4 * p : p < .75f ? 2 - 4 * p : 4 * p - 4;
-            return 1 - Math.Abs(pos);
-        }
-    }
 }

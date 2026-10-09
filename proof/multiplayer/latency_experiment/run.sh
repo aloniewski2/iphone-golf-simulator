@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Replays a perfectly timed tennis return through the REAL host rules (NetworkTennisMatch, TennisRules)
 # with simulated screen delay, network delay and clock error. Needs only the .NET 8 SDK:
-# no Unity, no phone. The few UnityEngine math types the rules use come from Shim.cs.
+# no Unity, no phone. The few UnityEngine types the rules use come from Tools/netsim/Shim/UnityShim.cs.
 #
 #   proof/multiplayer/latency_experiment/run.sh            # prints the three tables
 #
@@ -18,8 +18,9 @@ trap 'rm -rf "$WORK"' EXIT
 build() { # $1 = folder name, $2 = 1 to apply the proposed constants
   local d="$WORK/$1"; mkdir -p "$d/src"
   cp "$SRC/Multiplayer/MultiplayerProtocol.cs" "$SRC/Multiplayer/NetworkTennisMatch.cs" \
-     "$SRC/Tennis/TennisRules.cs" "$SRC/Tennis/TennisMatch.cs" "$SRC/Tennis/TennisEmotes.cs" "$SRC/Tennis/TennisBall.cs" "$d/src/"
-  cp "$HERE/Shim.cs" "$HERE/Program.cs" "$d/"
+     "$SRC/Tennis/TennisRules.cs" "$SRC/Tennis/TennisMatch.cs" "$SRC/Tennis/TennisEmotes.cs" "$SRC/Tennis/TennisBall.cs" \
+     "$SRC/Tennis/TennisTossCurve.cs" "$d/src/"
+  cp "$REPO/Tools/netsim/Shim/UnityShim.cs" "$d/Shim.cs"; cp "$HERE/Program.cs" "$d/"
   if [ "$2" = 1 ]; then
     sed -i 's/age>=0 \&\& age<=\.25/age>=0 \&\& age<=.5/' "$d/src/MultiplayerProtocol.cs"
     sed -i 's/MaximumRewind=\.15/MaximumRewind=.40/' "$d/src/NetworkTennisMatch.cs"

@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Runs the game's pure multiplayer rules and their real EditMode tests under plain .NET, with no
+    Unity editor and no phone. The sources are LINKED from Unity/Assets (never copied), so a change
+    to the game is what gets tested. UnityShim.cs stands in for the few UnityEngine math types the
+    rules use.
+
+        dotnet test Tools/netsim/NetSim.csproj
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>NetSim</RootNamespace>
+    <DefineConstants>$(DefineConstants);NETSIM</DefineConstants>
+    <NoWarn>CS0162;CS0168;CS0219;CS0649;CS0414;CS8632;CS1591;NU1701</NoWarn>
+    <Scripts>$(MSBuildThisFileDirectory)../../Unity/Assets/Scripts/</Scripts>
+    <EditModeTests>$(MSBuildThisFileDirectory)../../Unity/Assets/Tests/EditMode/</EditModeTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Shim/UnityShim.cs" />
+
+    <!-- Multiplayer rules (pure C#) -->
+    <Compile Include="$(Scripts)Multiplayer/MultiplayerProtocol.cs" Link="Linked/Multiplayer/MultiplayerProtocol.cs" />
+    <Compile Include="$(Scripts)Multiplayer/NetworkTennisMatch.cs" Link="Linked/Multiplayer/NetworkTennisMatch.cs" />
+    <Compile Include="$(Scripts)Multiplayer/NetworkGolfRound.cs" Link="Linked/Multiplayer/NetworkGolfRound.cs" />
+
+    <!-- Tennis rules -->
+    <Compile Include="$(Scripts)Tennis/TennisRules.cs" Link="Linked/Tennis/TennisRules.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisMatch.cs" Link="Linked/Tennis/TennisMatch.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisBall.cs" Link="Linked/Tennis/TennisBall.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisEmotes.cs" Link="Linked/Tennis/TennisEmotes.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisTossCurve.cs" Link="Linked/Tennis/TennisTossCurve.cs" />
+
+    <!-- Golf model used by the host's golf rules -->
+    <Compile Include="$(Scripts)Course/Hole.cs" Link="Linked/Course/Hole.cs" />
+    <Compile Include="$(Scripts)Course/CourseShot.cs" Link="Linked/Course/CourseShot.cs" />
+    <Compile Include="$(Scripts)Course/Wind.cs" Link="Linked/Course/Wind.cs" />
+    <Compile Include="$(Scripts)Course/Surface.cs" Link="Linked/Course/Surface.cs" />
+    <Compile Include="$(Scripts)Course/Obstacles.cs" Link="Linked/Course/Obstacles.cs" />
+    <Compile Include="$(Scripts)Course/Scorecard.cs" Link="Linked/Course/Scorecard.cs" />
+    <Compile Include="$(Scripts)Course/SpinningSails.cs" Link="Linked/Course/SpinningSails.cs" />
+    <Compile Include="$(Scripts)Shot/*.cs" Link="Linked/Shot/%(Filename)%(Extension)" />
+    <Compile Include="$(Scripts)Swing/MotionSwingDetector.cs" Link="Linked/Swing/MotionSwingDetector.cs" />
+    <Compile Include="$(Scripts)Swing/StrikeGrade.cs" Link="Linked/Swing/StrikeGrade.cs" />
+    <Compile Include="$(Scripts)Swing/GolfSwingCalibration.cs" Link="Linked/Swing/GolfSwingCalibration.cs" />
+
+    <!-- The game's own tests for these rules, unchanged -->
+    <Compile Include="$(EditModeTests)MultiplayerRulesTests.cs" Link="Linked/Tests/MultiplayerRulesTests.cs" />
+
+    <!-- Tests that only exist for the harness (virtual-time link, experiments) -->
+    <Compile Include="Tests/**/*.cs" />
+  </ItemGroup>
+</Project>

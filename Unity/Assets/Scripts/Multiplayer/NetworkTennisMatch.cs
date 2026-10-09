@@ -81,7 +81,7 @@ namespace GolfArcade.Multiplayer {
                     if(seat!=State.server||State.phase!="serve")return false;
                     // Judge the host's sweep at the compensated press time, never a client score.
                     double tossAge=Math.Max(0,Math.Min(MaximumRewind+.25,hostTime-input.time+input.age));
-                    State.tossAccuracy=TennisTossMeter.AccuracyAt((float)Math.Max(0,State.time-State.phaseAt-tossAge));
+                    State.tossAccuracy=TennisTossCurve.AccuracyAt((float)Math.Max(0,State.time-State.phaseAt-tossAge));
                     State.tossRollX=(float)serveRandom.NextDouble();State.tossRollZ=(float)serveRandom.NextDouble();
                     State.phase="toss";State.phaseAt=State.time;return true;
                 case "beginSwing": if(State.phase=="rally" && State.receiver==seat) {
