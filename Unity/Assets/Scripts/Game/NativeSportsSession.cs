@@ -353,7 +353,9 @@ namespace GolfArcade.Game
             SportsRecorderConfigure(session,index);
             SportsRecorderPause(paused);
             gameplayCamera.rect=new Rect(0,0,1,1);
-            gameplayCamera.aspect=(float)Display.displays[index].renderingWidth/Mathf.Max(1,Display.displays[index].renderingHeight);
+            float displayAspect=(float)Display.displays[index].renderingWidth/Mathf.Max(1,Display.displays[index].renderingHeight);
+            gameplayCamera.aspect=displayAspect;
+            if(tennis) tennis.SetSplitDisplay(index,displayAspect);   // one TV shared by two players is split down the middle
             gameplayCamera.enabled=true;
             Debug.Log($"[SportsDisplay] camera={gameplayCamera.name} aspect={gameplayCamera.aspect} size={Display.displays[index].renderingWidth}x{Display.displays[index].renderingHeight}");
             foreach(var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))

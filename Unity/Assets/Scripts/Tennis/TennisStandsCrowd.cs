@@ -138,7 +138,7 @@ namespace GolfArcade.Tennis
             NearFanCount=0;FarFanCount=0;InstanceGroupCount=0;SubmittedMeshInstances=0;
             foreach(var fan in fans)
             {
-                float distance=camera?Vector3.Distance(camera.transform.position,fan.root.position+Vector3.up*.6f):10;
+                float distance=camera?(game?game.DistanceToNearestCamera(fan.root.position+Vector3.up*.6f):Vector3.Distance(camera.transform.position,fan.root.position+Vector3.up*.6f)):10;
                 float height=camera&&camera.orthographic?1.75f/(camera.orthographicSize*2):1.75f/(2*Mathf.Max(.1f,distance)*tangent);
                 fan.far=DetailOverride>=0?DetailOverride==1:height<.25f;
                 if(fan.far)FarFanCount++;else NearFanCount++;
@@ -151,7 +151,8 @@ namespace GolfArcade.Tennis
                 {
                     if(!renderer)continue;bool selected=batch.far==owners[renderer].far;
                     renderer.enabled=!instancedSubmission&&selected&&!SuppressRendering;
-                    if(!selected||SuppressRendering||camera&&!GeometryUtility.TestPlanesAABB(planes,renderer.bounds))continue;
+                    // On a split screen the other half looks the other way: submit everything rather than only what the gameplay camera sees.
+                    if(!selected||SuppressRendering||camera&&!(game&&game.SplitActive)&&!GeometryUtility.TestPlanesAABB(planes,renderer.bounds))continue;
                     batch.matrices[visible++]=renderer.localToWorldMatrix;
                 }
                 if(!instancedSubmission||visible==0||!spectatorMaterial)continue;

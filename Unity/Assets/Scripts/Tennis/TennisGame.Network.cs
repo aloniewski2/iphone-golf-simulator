@@ -22,6 +22,7 @@ namespace GolfArcade.Tennis {
             if(hud){hud.PlayerName=near.name;hud.OpponentName=far.name;hud.MatchVisible=true;}
             if(presentation)presentation.Finish();if(replay)replay.Stop();
             networkPreviousA=Player.transform.position;networkPreviousB=Opponent.transform.position;
+            if(networkView==NetworkConfiguration.ViewSplit&&SplitScreen)BuildSplit(near.name,far.name);   // one TV, two halves
         }
         public void BeginSharedPresentation() { if(presentation) presentation.RestartShared(); }
         public void PredictNetworkSwing(float power) {
@@ -83,7 +84,8 @@ namespace GolfArcade.Tennis {
             string score=match.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{match.PlayerGames},{match.OpponentGames},{score}");}
             if(networkLocalSide<0) {
                 var camera=GameplayCamera;if(camera){camera.transform.position=new Vector3(0,9,-18);camera.transform.LookAt(new Vector3(0,.8f,0));camera.fieldOfView=48;}
-            } else if(networkView!=NetworkConfiguration.ViewNone) UpdateCamera(false);   // a controller-only phone draws nothing
+            } else if(UsesSplit) UpdateSplit();
+            else if(networkView!=NetworkConfiguration.ViewNone) UpdateCamera(false);   // a controller-only phone draws nothing
             if(landingRing)landingRing.enabled=false;if(aimRing)aimRing.enabled=false;
             UpdateHud();return true;
         }

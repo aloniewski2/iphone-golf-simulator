@@ -158,7 +158,7 @@ namespace GolfArcade.Tennis
             float tangent=camera?Mathf.Tan(camera.fieldOfView*.5f*Mathf.Deg2Rad):.53f;NearVisitorCount=0;FarVisitorCount=0;
             foreach(var v in visitors)
             {
-                float distance=camera?Vector3.Distance(camera.transform.position,v.actor.position+Vector3.up*.85f):10;
+                float distance=camera?(game?game.DistanceToNearestCamera(v.actor.position+Vector3.up*.85f):Vector3.Distance(camera.transform.position,v.actor.position+Vector3.up*.85f)):10;
                 float height=camera&&camera.orthographic?1.75f/(camera.orthographicSize*2):1.75f/(2*Mathf.Max(.1f,distance)*tangent);
                 bool far=DetailOverride>=0?DetailOverride==1:height<.25f;if(far)FarVisitorCount++;else NearVisitorCount++;
                 foreach(var renderer in v.near)renderer.enabled=!far;
