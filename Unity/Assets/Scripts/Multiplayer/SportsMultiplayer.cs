@@ -172,11 +172,14 @@ namespace GolfArcade.Multiplayer {
             if(self.Configuration.sport=="tennis"&&Clock-self.lastMove>=1.0/30) {
                 self.lastMove=Clock;self.Submit(new NetworkInput {action="move",target=s.target,aim=aim},false);
             }
-            if(s.swingStart>self.lastStart){self.lastStart=s.swingStart;self.Submit(new NetworkInput {action="beginSwing",power=s.power});self.tennisView?.PredictNetworkSwing(s.power);}
-            if(s.swing>self.lastSwing) {self.lastSwing=s.swing;self.Submit(new NetworkInput {action="swing",power=s.power,aim=aim,handSide=s.handSide,lift=s.lift,facing=s.strokeFacing,age=Math.Min(.25,Math.Max(0,Clock-s.time)),actorSeat=self.GolfState?.turn ?? -1});self.tennisView?.PredictNetworkSwing(s.power);}
+            if(s.swingStart>self.lastStart){self.lastStart=s.swingStart;self.Submit(new NetworkInput {action="beginSwing",power=s.power,age=NetworkTuning.OnsetAge(self.ScreenDelay)});self.tennisView?.PredictNetworkSwing(s.power);}
+            if(s.swing>self.lastSwing) {self.lastSwing=s.swing;self.Submit(new NetworkInput {action="swing",power=s.power,aim=aim,handSide=s.handSide,lift=s.lift,facing=s.strokeFacing,age=NetworkTuning.SwingAge(Clock-s.time,self.ScreenDelay),actorSeat=self.GolfState?.turn ?? -1});self.tennisView?.PredictNetworkSwing(s.power);}
             if(s.swingAbort>self.lastAbort){self.lastAbort=s.swingAbort;self.Submit(new NetworkInput {action="abortSwing"});}
         }
         int lastSwing,lastStart,lastAbort;
+        /// Seconds this player's TV shows the game late (measured, then refined by play). Swings are credited
+        /// with it so the host judges them as the player SAW them, as solo play already does. Golf has none.
+        double ScreenDelay=>tennisView?tennisView.Lag:0;
         public double RenderAdvance=>IsHost?0:Math.Min(.1,Math.Max(0,Clock+clockOffset-packetAt));
         public bool Stale=>Running&&!IsHost&&Clock-lastSnapshot>2;
         void SendSnapshot(bool full) {

@@ -58,6 +58,9 @@
 
     <!-- The game's own tests for these rules, unchanged -->
     <Compile Include="$(EditModeTests)MultiplayerRulesTests.cs" Link="Linked/Tests/MultiplayerRulesTests.cs" />
+    <Compile Include="$(Scripts)Multiplayer/NetworkTuning.cs" Link="Linked/Multiplayer/NetworkTuning.cs" />
+    <Compile Include="$(EditModeTests)NetworkTimingTests.cs" Link="Linked/Tests/NetworkTimingTests.cs" />
+    <Compile Include="$(EditModeTests)NetworkTennisPointTests.cs" Link="Linked/Tests/NetworkTennisPointTests.cs" />
 
     <!-- Tests that only exist for the harness (virtual-time link, experiments) -->
     <Compile Include="Tests/**/*.cs" />

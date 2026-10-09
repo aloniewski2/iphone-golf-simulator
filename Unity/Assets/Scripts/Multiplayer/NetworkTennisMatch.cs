@@ -31,9 +31,12 @@ namespace GolfArcade.Multiplayer {
         readonly Random serveRandom=new(2701);
         readonly Random rallyRandom=new(2702);
         struct History { public double time; public long point,contact; public NetworkVector ball,velocity; public float ax,az,bx,bz; public int receiver,bounces; }
-        public const double MaximumRewind=.15;
+        public const double MaximumRewind=NetworkTuning.MaxSwingRewind;
         const float Radius=.034f, HalfWidth=4.115f, HalfLength=11.885f, NetHeight=.97f, Gravity=9.81f;
         double accumulator; bool hasResult;
+        // Host-only: when each seat's last beginSwing arrived, and a point being held open for a late confirmation.
+        readonly double[] swingHeard={-100,-100};
+        bool holding; int holdWinner; double holdUntil;
         public Action<string> Result;
         readonly string[][] equippedEmotes;
         public NetworkTennisMatch(int sets=1,int games=3, string[][] emotes=null, bool intro=false) {
@@ -49,12 +52,13 @@ namespace GolfArcade.Multiplayer {
             State.players[0].x=side*1.6f;State.players[0].z=-12.2f;
             State.players[1].x=-side*1.6f;State.players[1].z=12.2f;
             foreach(var p in State.players) {p.swingAt=-100;p.confirmedSwing=false;p.target=p.x/3.6f;}
+            holding=false;swingHeard[0]=swingHeard[1]=-100;
             SetHeldBall(); history.Clear();
         }
         void SetHeldBall() {var p=State.players[State.server];State.ball=new(p.x,1.1f,p.z);State.velocity=default;}
         public bool Input(int seat,NetworkInput input,double hostTime) {
             if(seat<0||seat>1||input==null||!input.Valid||State.complete||State.paused) return false;
-            if(input.time>hostTime+.05||input.time<hostTime-.5) return false;
+            if(input.time>hostTime+NetworkTuning.FutureTolerance||input.time<hostTime-NetworkTuning.PastTolerance) return false;
             if((input.action=="swing"||input.action=="beginSwing"||input.action=="abortSwing"||input.action=="toss"||input.action=="emote")&&(input.point!=State.point||input.contact!=State.contact))return false;
             string key=seat+":"+input.action;
             if(input.action!="move" && input.action!="aim" && input.action!="serveAim" && input.action!="nudge") {
@@ -80,13 +84,13 @@ namespace GolfArcade.Multiplayer {
                 case "toss":
                     if(seat!=State.server||State.phase!="serve")return false;
                     // Judge the host's sweep at the compensated press time, never a client score.
-                    double tossAge=Math.Max(0,Math.Min(MaximumRewind+.25,hostTime-input.time+input.age));
+                    double tossAge=Math.Max(0,Math.Min(NetworkTuning.MaxTossRewind,hostTime-input.time+input.age));
                     State.tossAccuracy=TennisTossCurve.AccuracyAt((float)Math.Max(0,State.time-State.phaseAt-tossAge));
                     State.tossRollX=(float)serveRandom.NextDouble();State.tossRollZ=(float)serveRandom.NextDouble();
                     State.phase="toss";State.phaseAt=State.time;return true;
                 case "beginSwing": if(State.phase=="rally" && State.receiver==seat) {
                     p.swingAt=State.time-Math.Max(0,Math.Min(MaximumRewind,hostTime-input.time+input.age));
-                    p.confirmedSwing=false;p.swings++;
+                    p.confirmedSwing=false;p.swings++;swingHeard[seat]=State.time;
                 } return true;
                 case "abortSwing":p.swingAt=-100;p.confirmedSwing=false;return true;
                 case "swing":
@@ -141,7 +145,7 @@ namespace GolfArcade.Multiplayer {
             State.ball.y=Math.Max(.45f,State.ball.y);
             Launch(new(target.x,Radius,sign*target.z),hit.Speed);
             State.reason=TennisRules.GradeLabel(TennisRules.Grade(hit.Timing));
-            State.receiver=1-seat;State.bounces=0;State.serveFlight=false;State.contact++;p.swingAt=-100;p.confirmedSwing=false;
+            State.receiver=1-seat;State.bounces=0;State.serveFlight=false;State.contact++;p.swingAt=-100;p.confirmedSwing=false;holding=false;
         }
         void Launch(NetworkVector target,float speed) {
             float dx=target.x-State.ball.x,dz=target.z-State.ball.z;
@@ -186,6 +190,11 @@ namespace GolfArcade.Multiplayer {
             var receiver=State.players[State.receiver];
             if(receiver.confirmedSwing && State.time-receiver.swingAt>=TennisRules.ContactStart&&State.time-receiver.swingAt<=TennisRules.SweetTime+TennisRules.ContactTimingWindow && (!State.serveFlight||State.bounces>0)&&CanReach(State.ball,receiver.x,receiver.z,receiver.diveUntil>State.time))Return(State.receiver,receiver,State.time,receiver.x,receiver.z);
             AdvanceBall(dt);
+            if(holding&&State.phase=="rally") {
+                var held=State.players[State.receiver];
+                // The wait ends when the swing was confirmed without connecting, was abandoned, or took too long.
+                if(State.time>=holdUntil||held.confirmedSwing||held.swingAt<=-50){holding=false;Point(holdWinner);}
+            }
         }
         void AdvanceBall(float elapsed) {
             // Catch up a rewound contact in fixed substeps, retaining net/bounce rulings.
@@ -194,12 +203,14 @@ namespace GolfArcade.Multiplayer {
                 var old=State.ball;var b=old;var v=State.velocity;
                 b.x+=v.x*dt;b.z+=v.z*dt;b.y+=v.y*dt-.5f*Gravity*dt*dt;v.y-=Gravity*dt;
                 State.ball=b;State.velocity=v;
-                if(old.z*b.z<0) {
+                // A dead ball held open for a late swing keeps flying but gets no more rulings.
+                if(!holding&&old.z*b.z<0) {
                     float f=Math.Abs(old.z)/(Math.Abs(old.z)+Math.Abs(b.z));float y=old.y+(b.y-old.y)*f;
                     if(y<NetHeight) {if(State.serveFlight)Fault();else Point(State.receiver);return;}
                 }
                 if(b.y<=Radius&&v.y<0) {
                     State.ball.y=Radius;State.velocity.y=-v.y*.75f;State.bounces++;
+                    if(holding)continue;
                     bool inCourt=Math.Abs(b.x)<=HalfWidth&&Math.Abs(b.z)<=HalfLength;
                     bool correctSide=State.receiver==0?b.z<0:b.z>0;
                     if(State.bounces==1&&State.serveFlight) {
@@ -207,17 +218,33 @@ namespace GolfArcade.Multiplayer {
                         if(!correctSide||!diagonal||Math.Abs(b.z)>6.4f||!inCourt) {Fault();return;}
                         // Keep serveFlight until return to forbid volleying a serve.
                     } else if(State.bounces==1&&(!inCourt||!correctSide)) {Point(State.receiver);return;}
-                    else if(State.bounces>=2) {Point(1-State.receiver);return;}
+                    else if(State.bounces>=2) {if(Unreturned())return;}
                 }
-                if(Math.Abs(b.z)>18||Math.Abs(b.x)>15||b.y<-2){Point(State.receiver);return;}
+                if(!holding&&(Math.Abs(b.z)>18||Math.Abs(b.x)>15||b.y<-2)) {
+                    // A ball that already landed legally and left the court untouched was not returned: the hitter wins.
+                    // One that left without ever landing was hit out: the player who should have received it wins.
+                    if(State.bounces>=1){if(Unreturned())return;}
+                    else {Point(State.receiver);return;}
+                }
             }
         }
+        /// The receiver did not return a ball that landed legally. Normally the hitter wins at once. But if the receiver has
+        /// STARTED a swing whose confirmation has not arrived (a slow TV or link delays it), wait briefly for it: the swing
+        /// is judged as the player saw it, so it may still connect. Returns true if the point was decided now.
+        bool Unreturned() {
+            int winner=1-State.receiver;var p=State.players[State.receiver];
+            double until=swingHeard[State.receiver]+NetworkTuning.PendingSwingHold;
+            if(p.swingAt>-50&&!p.confirmedSwing&&until>State.time) {holding=true;holdWinner=winner;holdUntil=until;return false;}
+            Point(winner);return true;
+        }
         void Fault() {
+            holding=false;
             if(State.secondServe){Point(1-State.server);return;}
             State.secondServe=true;State.phase="serve";State.phaseAt=State.time;State.serveFlight=false;State.bounces=0;SetHeldBall();history.Clear();
         }
         void Point(int winner) {
             if(State.phase!="rally"&&State.phase!="toss"&&State.phase!="serve")return;
+            holding=false;
             int setsBefore=State.score.PlayerSets+State.score.OpponentSets;
             bool game=State.score.AwardPoint(winner==0);
             bool set=State.score.PlayerSets+State.score.OpponentSets>setsBefore;

@@ -39,7 +39,7 @@ namespace GolfArcade.Multiplayer {
         }
         public bool Input(int seat,NetworkInput input,double hostTime) {
             var p=State.golfers.FirstOrDefault(p=>p.seat==seat);
-            if(p==null||p.dnf||State.complete||State.paused||input==null||!input.Valid||input.time>hostTime+.05||input.time<hostTime-.5)return false;
+            if(p==null||p.dnf||State.complete||State.paused||input==null||!input.Valid||input.time>hostTime+NetworkTuning.FutureTolerance||input.time<hostTime-NetworkTuning.PastTolerance)return false;
             if(input.action=="emote") {
                 if(State.phase=="intro" || (State.turn==seat && State.phase!="result") || input.value<0 || input.value>2 || input.value!=Math.Floor(input.value) || State.time-p.emoteAt<1.5 || input.eventID<=lastEvent[seat])return false;
                 lastEvent[seat]=input.eventID;p.emoteSlot=(int)input.value;p.emoteID++;p.emoteAt=State.time;State.revision++;return true;

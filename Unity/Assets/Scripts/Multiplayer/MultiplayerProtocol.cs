@@ -25,7 +25,7 @@ namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkInput {
         public string action; public double time,age; public float target,power,aim,depth=.75f,handSide,lift,facing,value,value2;
         public long eventID,point,contact; public int club; public int actorSeat=-1;
-        public bool Valid => !string.IsNullOrEmpty(action) && Finite(time) && Finite(age) && age>=0 && age<=.25
+        public bool Valid => !string.IsNullOrEmpty(action) && Finite(time) && Finite(age) && age>=0 && age<=NetworkTuning.MaxInputAge
             && Finite(target) && Finite(power) && Finite(aim) && Finite(depth) && Finite(value) && Finite(value2)
             && Finite(handSide) && Finite(lift) && Finite(facing);
         public static bool Finite(double v)=>!double.IsNaN(v)&&!double.IsInfinity(v);
