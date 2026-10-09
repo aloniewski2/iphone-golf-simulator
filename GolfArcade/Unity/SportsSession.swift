@@ -123,7 +123,12 @@ final class SportsSession {
     var paused = true { didSet { routeSamples() } }
     var ready = false
     var displayConnected = false {
-        didSet { if displayConnected != oldValue { TennisMenu.shared.displayChanged(connected: displayConnected) } }
+        didSet {
+            guard displayConnected != oldValue else { return }
+            TennisMenu.shared.displayChanged(connected: displayConnected)
+            // A tennis lobby needs a TV on one of its two phones, and shows who has it.
+            MultiplayerService.shared.setScreen(displayConnected || Self.benchmark)
+        }
     }
     /// For the racket controller: the scoreboard and where recent hits met the strings.
     var score = TennisScore()
@@ -208,6 +213,8 @@ final class SportsSession {
     private var nextDiagnostic=0.0
     let motion = SportsMotion()
     init() {
+        // The phone-preview benchmark plays without a TV, so for the lobby it counts as having one.
+        if Self.benchmark { MultiplayerService.shared.setScreen(true) }
         motion.onAimSwing = { [weak self] swing in
             guard let self, self.aimWaiting, self.aimLesson != nil, swing.time >= self.aimFeedAt else { return }
             self.aimSwing=swing
@@ -322,7 +329,7 @@ final class SportsSession {
     func startMultiplayer(_ configuration: MultiplayerMatchConfiguration) {
         guard !active, let data=try? JSONEncoder().encode(configuration), let json=String(data:data,encoding:.utf8) else { return }
         multiplayerMatchID=configuration.matchID
-        multiplayerControllerOnly=configuration.usesHostGolfDisplay
+        multiplayerControllerOnly=configuration.controllerOnly
         multiplayerSeat=configuration.participants.first { $0.id == configuration.localID }?.seat ?? -1
         sport=configuration.sport; tennisVenue=configuration.venue
         if configuration.sport == "golf" { golfCourse=configuration.venue }

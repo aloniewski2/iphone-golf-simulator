@@ -62,6 +62,7 @@ final class MultiplayerService {
     @ObservationIgnored private var unreliableRefused: Set<String> = []
     @ObservationIgnored private var rate: [String: (Double, Int)] = [:]
     @ObservationIgnored private var name = "Player"
+    @ObservationIgnored private var hasScreen = false
     @ObservationIgnored private var female = false
     @ObservationIgnored private var left = false
     @ObservationIgnored private var loadout: MultiplayerLoadout?
@@ -142,6 +143,13 @@ final class MultiplayerService {
         self.name = String(name.prefix(40)); self.female = female; self.left = left; self.loadout = loadout
         if lobby?.phase == .lobby { try? updateLook(loadout, name: self.name, female: female, left: left) }
         else if lobby == nil, transport != nil { try? broadcast("hello", payload: json(identity())) }
+    }
+    /// This phone gained or lost a TV or Mac. Tennis needs one on at least one of its two players' phones, and the lobby shows who has it.
+    func setScreen(_ connected: Bool) {
+        guard connected != hasScreen else { return }
+        hasScreen = connected
+        if lobby != nil { try? sendControl("display", payload: connected ? "true" : "false") }
+        else if transport != nil { try? broadcast("hello", payload: json(identity())) }
     }
     func updateLook(_ look: MultiplayerLoadout?, name: String? = nil, female: Bool? = nil, left: Bool? = nil) throws {
         guard lobby?.phase == .lobby, look?.valid() ?? true else { throw MultiplayerError.invalidOperation("Change clothes between matches.") }
@@ -239,12 +247,13 @@ final class MultiplayerService {
         guard let lobby, lobby.canStart else { throw MultiplayerError.invalidOperation("At least two competitors must be ready.") }
         presentationReadyAt.removeAll(); scheduledRunAt = 0; silent.removeAll(); silenceArmedAt = .infinity; stats = NetStats()
         awaitingCalibration.removeAll(); calibrationNoticed = false
+        assignViews()
         let id = UUID().uuidString
         self.lobby?.matchID = id; self.lobby?.phase = .loading; emotes.removeAll()
         loadingStarted = now; loadingNeedsDecision = false; winnerSeat = -1; quickSport = nil
         for i in self.lobby!.participants.indices { self.lobby!.participants[i].loaded = false; self.lobby!.participants[i].calibrated = false }
         self.lobby?.revision += 1; publishLobby()
-        let config = MultiplayerMatchConfiguration(lobbyID: lobby.id, matchID: id, hostID: localID, localID: "", sport: lobby.sport.rawValue, venue: lobby.venue, sets: lobby.sets, games: lobby.games, seed: Int.random(in: 1...Int(Int32.max)), participants: lobby.participants)
+        let config = MultiplayerMatchConfiguration(lobbyID: lobby.id, matchID: id, hostID: localID, localID: "", sport: lobby.sport.rawValue, venue: lobby.venue, sets: lobby.sets, games: lobby.games, seed: Int.random(in: 1...Int(Int32.max)), participants: self.lobby!.participants)
         let payload = try json(config)
         try broadcast("launch", payload: payload); launch(payload)
     }
@@ -267,7 +276,7 @@ final class MultiplayerService {
         let remaining = Set(lobby!.participants.map(\.id))
         lobby?.queue.removeAll { !remaining.contains($0) }
         if rotateSeats && lobby?.sport == .tennis { rotate() }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false }
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].view = nil }
         awaitingCalibration.removeAll()
         lobby?.revision += 1; publishLobby()
     }
@@ -323,7 +332,7 @@ final class MultiplayerService {
         publishLobby()
         if quickSport != nil { try? setReady(true) }
     }
-    private func identity() -> MultiplayerParticipant { MultiplayerParticipant(id: localID, name: name, female: female, left: left, invited: quickSport == nil, loadout: loadout) }
+    private func identity() -> MultiplayerParticipant { MultiplayerParticipant(id: localID, name: name, hasScreen: hasScreen, female: female, left: left, invited: quickSport == nil, loadout: loadout) }
     private func peersChanged() {
         guard let transport else { return }
         try? broadcast("hello", payload: (try? json(identity())) ?? "")
@@ -361,7 +370,7 @@ final class MultiplayerService {
         if silent[peer] != nil { quietPeerHeard(peer) }
         if packet.kind == "hello" {
             guard var p = try? decoder.decode(MultiplayerParticipant.self, from: Data(packet.payload.utf8)), p.loadout?.valid() ?? true else { return }
-            p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
+            p.controllerID = nil; p.id = peer; p.name = String(p.name.prefix(40)); p.seat = -1; p.ready = false; p.loaded = false; p.calibrated = false; p.view = nil; p.connected = true; p.invited = !(lobby?.publicAdmission ?? false)
             hello[peer] = p
             if isOwner { do {
                 try lobby?.add(p); publishLobby()
@@ -392,7 +401,7 @@ final class MultiplayerService {
             #endif
             return
         }
-        if ["ready","queue","loaded","calibrated","leave","availability","look","emote","return","keepWaiting"].contains(packet.kind) {
+        if ["ready","queue","loaded","calibrated","display","leave","availability","look","emote","return","keepWaiting"].contains(packet.kind) {
             if isOwner { handleControl(packet) }; return
         }
         if packet.kind == "input" {
@@ -496,6 +505,7 @@ final class MultiplayerService {
             if lobby!.phase == .playing, disconnected.removeValue(forKey: p.sender) != nil {
                 try? broadcast("resumePeer", payload: p.sender); pushRuntime("resumePeer", payload: p.sender)
             }
+        case "display": lobby!.participants[i].hasScreen = p.payload == "true"
         case "leave":
             if lobby!.participants[i].seat >= 0 && lobby!.phase == .playing { lastError = "\(lobby!.participants[i].name) left the match." }
             if lobby!.participants[i].seat >= 0 { try? broadcast("drop", payload: p.sender); pushRuntime("drop", payload: p.sender) }
@@ -518,6 +528,18 @@ final class MultiplayerService {
         } else if abortSetupIfShort() {
             return
         } else if quickSport != nil, lobby?.canStart == true { try? startMatch() }
+    }
+    /// Who shows a tennis match how. Both players have a TV: each sees their own court, as before. Exactly one TV: that phone shows both
+    /// players and the other is only a controller. Spectators and golf get no view (golf guests always watch the host's TV).
+    private func assignViews() {
+        guard lobby != nil else { return }
+        let screens = lobby!.competitors.filter(\.hasScreen).count
+        for i in lobby!.participants.indices {
+            let p = lobby!.participants[i]
+            guard lobby!.sport == .tennis, p.seat >= 0 else { lobby!.participants[i].view = nil; continue }
+            let view: MultiplayerView = screens >= 2 ? .near : (p.hasScreen ? .split : .controllerOnly)
+            lobby!.participants[i].view = view
+        }
     }
     /// Everyone has loaded. Tennis now lets each player set up their controller; the owner starts play when all are done.
     private func beginCalibration() {
@@ -730,8 +752,9 @@ extension MultiplayerService {
             var p = Player(name:names[i-1],colorIndex:i,handedness:i == 2 ? .left : .right)
             p.standardFemale = i % 2 == 1; p.setSkin(Double(i) * 0.23)
             p.setOutfitHex("shirt",["D3F34B","FF6B4A","34435A"][i-1]); p.setOutfitHex("shorts",i == 2 ? "101D35" : "FAF8F3")
-            try lobby?.add(MultiplayerParticipant(id:String(format:"00000000-0000-0000-0000-%012d",i+1),name:p.name,ready:i != 1,female:p.standardFemale,left:p.handedness == .left,loadout:p.multiplayerLoadout))
+            try lobby?.add(MultiplayerParticipant(id:String(format:"00000000-0000-0000-0000-%012d",i+1),name:p.name,ready:i != 1,hasScreen:true,female:p.standardFemale,left:p.handedness == .left,loadout:p.multiplayerLoadout))
         }
+        lobby?.participants[0].hasScreen = true
         lobby?.revision += 1; publishLobby()
     }
     #if DEBUG

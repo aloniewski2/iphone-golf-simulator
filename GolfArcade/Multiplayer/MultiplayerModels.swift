@@ -4,6 +4,9 @@ enum MultiplayerSport: String, Codable, CaseIterable, Sendable { case tennis, go
 /// `calibrating` is tennis only: every phone is loaded and each player points their phone at the TV and taps Ready
 /// before the owner starts the match. Golf goes straight from `loading` to `playing`.
 enum MultiplayerPhase: String, Codable, Sendable { case lobby, loading, calibrating, playing, results, interrupted }
+/// How one phone shows a tennis match. `near`: its own TV, with its player in front. `split`: it is the only phone with a TV, so the
+/// TV shows both players. `controllerOnly` (sent to Unity as "none"): no screen, the phone is only a controller.
+enum MultiplayerView: String, Codable, Sendable { case near, split, controllerOnly = "none" }
 enum MultiplayerError: LocalizedError {
     case unavailable(String), invalidOperation(String), incompatible, full
     var errorDescription: String? {
@@ -22,6 +25,10 @@ struct MultiplayerParticipant: Codable, Equatable, Sendable {
     var loaded = false
     /// Tennis: this player's phone has its court direction and centre set (touch players and spectators need nothing).
     var calibrated = false
+    /// This phone has a TV or Mac connected (AirPlay or wired).
+    var hasScreen = false
+    /// Tennis, decided when the match starts: how this phone shows it (nil for spectators and for golf).
+    var view: MultiplayerView?
     var connected = true
     var female = false
     var left = false
@@ -90,7 +97,10 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
         phase == .lobby && competitors.count >= 2 && (sport != .tennis || competitors.count == 2)
         && participants.filter { $0.seat >= 0 }.allSatisfy(\.connected)
         && competitors.allSatisfy(\.ready)
+        && hasScreenForSport
     }
+    /// Tennis needs a TV on at least one of the two players' phones. Golf's guests always watch the host's TV, so it asks nothing.
+    var hasScreenForSport: Bool { sport != .tennis || competitors.contains(where: \.hasScreen) }
     mutating func configure(sport: MultiplayerSport, venue: String) {
         self.sport = sport; self.venue = venue
         for i in participants.indices { participants[i].seat = i < capacity ? i : -1; participants[i].ready = false; participants[i].loaded = false; participants[i].calibrated = false }
@@ -119,8 +129,15 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
             && Set(participants.map(\.id)).count == participants.count && Set(seats).count == seats.count
             && participants.allSatisfy { $0.controllerID == nil || (sport == .golf && $0.controllerID == ownerID && $0.id != ownerID) }
             && participants.allSatisfy { !$0.id.isEmpty && (-1..<capacity).contains($0.seat) }
+            && viewsAreConsistent
             && participants.allSatisfy { $0.id.utf8.count <= 128 && $0.name.count <= 40 && ($0.loadout?.valid() ?? true) }
             && (1...3).contains(sets) && [1,3,6].contains(games) && Self.validVenue(venue, sport: sport)
+    }
+    /// Views exist only in tennis. At most one phone is `split`, and when one is, the other competitor is controller-only.
+    private var viewsAreConsistent: Bool {
+        guard sport == .tennis else { return participants.allSatisfy { $0.view == nil } }
+        let split = participants.filter { $0.view == .split }
+        return split.count <= 1 && (split.isEmpty || participants.filter { $0.seat >= 0 && $0.view != .split }.allSatisfy { $0.view == .controllerOnly })
     }
     /// Existing golf course ids, plus resort for saved / legacy configurations.
     static let golfVenues = ["cliffside", "postcards", "wildisles", "magma", "meadow", "resort"]
@@ -131,6 +148,7 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
         if phase != .lobby { return "Return to the lobby first" }
         if let p = participants.first(where: { $0.seat >= 0 && !$0.connected }) { return "Waiting for \(p.name) to reconnect" }
         if competitors.count < 2 { return "Invite another player to play" }
+        if !hasScreenForSport { return "Connect one phone to a TV (AirPlay) to play" }
         if let p = competitors.first(where: { !$0.ready }) { return "Waiting for \(p.name) to be ready" }
         return "Everyone is ready"
     }
@@ -147,6 +165,11 @@ struct MultiplayerMatchConfiguration: Codable, Sendable {
     var seed: Int
     var participants: [MultiplayerParticipant]
     var usesHostGolfDisplay: Bool { sport == "golf" && localID != hostID }
+    /// How this phone shows a tennis match (nil in golf and for spectators).
+    var localView: MultiplayerView? { participants.first { $0.id == localID }?.view }
+    /// This phone shows no picture of the match itself: golf guests watch the host's TV, and a tennis phone without a TV is only a controller.
+    /// Its game still runs, hidden under the controller, to supply the match state.
+    var controllerOnly: Bool { sport == "golf" ? localID != hostID : localView == .controllerOnly }
     func valid() -> Bool {
         guard let mode = MultiplayerSport(rawValue: sport), !lobbyID.isEmpty, !matchID.isEmpty,
               participants.contains(where: { $0.id == localID }), participants.filter({ $0.seat >= 0 }).count >= 2 else { return false }

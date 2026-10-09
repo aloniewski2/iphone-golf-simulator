@@ -1,0 +1,22 @@
+{
+  "lobbyID": "0D6A2F52-6F5B-4E5A-9D5B-1C8E0B9A2A11",
+  "matchID": "7C1F4D0E-2B8A-4B58-8E43-3F2D61C0A9B7",
+  "hostID": "host-phone",
+  "localID": "guest-phone",
+  "sport": "tennis",
+  "venue": "resort",
+  "sets": 1,
+  "games": 3,
+  "seed": 912345678,
+  "participants": [
+    {
+      "id": "host-phone", "name": "Adnan", "seat": 0, "ready": true, "loaded": false, "calibrated": false,
+      "hasScreen": true, "view": "split", "connected": true, "female": false, "left": false, "invited": true,
+      "loadout": { "gear": {}, "skinHex": "E6AE7E", "colours": {}, "emotes": ["wave", "scuba", "spike"], "shirtHex": "FF6B4A", "shortsHex": "101D35" }
+    },
+    {
+      "id": "guest-phone", "name": "Sam", "seat": 1, "ready": true, "loaded": false, "calibrated": false,
+      "hasScreen": false, "view": "none", "connected": true, "female": true, "left": true, "invited": true
+    }
+  ]
+}

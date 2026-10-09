@@ -51,11 +51,13 @@ final class MultiplayerTests: XCTestCase {
         var host: MultiplayerService { services[0] }
         func close() { for s in services.reversed() { s.leave() } }
     }
-    func party(_ count: Int = 4) throws -> Party {
+    /// `screens[n]` says whether phone n has a TV connected; by default every phone does, as in a two-TV match.
+    func party(_ count: Int = 4, screens: [Bool]? = nil) throws -> Party {
         let bus = Bus(), runtime = Runtime(), host = runtime.service()
+        host.setScreen(screens?[0] ?? true)
         try host.host(using: bus.link("a"))
         var services = [host], runtimes = [runtime]
-        for n in 1..<count { let r = Runtime(), s = r.service(); try s.connect(using: bus.link(String(UnicodeScalar(97+n)!))); services.append(s); runtimes.append(r) }
+        for n in 1..<count { let r = Runtime(), s = r.service(); s.setScreen(screens?[n] ?? true); try s.connect(using: bus.link(String(UnicodeScalar(97+n)!))); services.append(s); runtimes.append(r) }
         return Party(bus: bus, services: services, runtimes: runtimes)
     }
     func start(_ p: Party, _ sport: MultiplayerSport = .tennis) throws {
@@ -375,6 +377,129 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertTrue(p.services[1].lastError?.hasSuffix("to finish setting up.") == true)
         XCTAssertEqual(p.host.lobby?.phase, .calibrating, "...but the match is neither started nor cancelled for them")
         XCTAssertEqual(p.host.lobby?.competitors.count, 2)
+    }
+
+    // MARK: Roles: who has the TV
+
+    private func startTennis(_ p: Party) throws {
+        try p.host.configure(.tennis)
+        for s in p.services where s.localSeat >= 0 { try s.setReady(true) }
+        try p.host.startMatch()
+    }
+    func testOneTVOnTheOwnersPhoneMakesItSplitAndTheGuestAController() throws {
+        let p = try party(2, screens: [true, false]); defer { p.close() }
+        try startTennis(p)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "a" }?.view, .split)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.view, .controllerOnly)
+        XCTAssertEqual(p.runtimes[0].configurations.last?.controllerOnly, false)
+        XCTAssertEqual(p.runtimes[1].configurations.last?.controllerOnly, true, "the phone without a TV is only a controller")
+        XCTAssertEqual(p.runtimes[1].configurations.last?.localView, .controllerOnly)
+        XCTAssertEqual(p.services[1].lobby?.participants.first { $0.id == "a" }?.view, .split, "the guest sees the same roles")
+    }
+    func testOneTVOnTheGuestsPhoneMakesTheOwnerAHeadlessHost() throws {
+        let p = try party(2, screens: [false, true]); defer { p.close() }
+        try startTennis(p)
+        XCTAssertEqual(p.runtimes[0].configurations.last?.controllerOnly, true, "the owner still runs the match, with nothing on screen")
+        XCTAssertEqual(p.runtimes[1].configurations.last?.localView, .split)
+        XCTAssertEqual(p.runtimes[1].configurations.last?.controllerOnly, false)
+    }
+    func testTwoTVsKeepEachPhoneOnItsOwnCourt() throws {
+        let p = try party(2, screens: [true, true]); defer { p.close() }
+        try startTennis(p)
+        for i in 0..<2 {
+            XCTAssertEqual(p.runtimes[i].configurations.last?.localView, .near)
+            XCTAssertEqual(p.runtimes[i].configurations.last?.controllerOnly, false)
+        }
+    }
+    func testNoTVAnywhereBlocksTennisWithAClearReason() throws {
+        let p = try party(2, screens: [false, false]); defer { p.close() }
+        try p.host.configure(.tennis)
+        for s in p.services { try s.setReady(true) }
+        XCTAssertFalse(p.host.lobby!.canStart)
+        XCTAssertEqual(p.host.lobby?.startReason, "Connect one phone to a TV (AirPlay) to play")
+        XCTAssertThrowsError(try p.host.startMatch())
+        XCTAssertEqual(p.host.lobby?.phase, .lobby)
+    }
+    func testPluggingInOrLosingATVReevaluatesTheLobby() throws {
+        let p = try party(2, screens: [false, false]); defer { p.close() }
+        try p.host.configure(.tennis)
+        for s in p.services { try s.setReady(true) }
+        XCTAssertFalse(p.host.lobby!.canStart)
+        p.services[1].setScreen(true)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.hasScreen, true, "the owner hears about the guest's TV")
+        XCTAssertTrue(p.host.lobby!.canStart)
+        XCTAssertEqual(p.services[1].lobby?.participants.first { $0.id == "b" }?.hasScreen, true, "...and so does everyone")
+        p.services[1].setScreen(false)
+        XCTAssertFalse(p.host.lobby!.canStart)
+        p.host.setScreen(true)
+        XCTAssertTrue(p.host.lobby!.canStart, "the owner's own TV counts too")
+    }
+    func testGolfNeedsNoScreenAndHasNoViews() throws {
+        let p = try party(2, screens: [false, false]); defer { p.close() }
+        try start(p, .golf)
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertTrue(p.host.lobby!.participants.allSatisfy { $0.view == nil })
+        XCTAssertEqual(p.runtimes[0].configurations.last?.controllerOnly, false, "the golf owner's TV shows the round")
+        XCTAssertEqual(p.runtimes[1].configurations.last?.controllerOnly, true, "golf guests watch the owner's TV, as before")
+    }
+    func testViewsAreClearedBetweenMatchesAndChosenAgainFromTheTVsThen() throws {
+        let p = try party(2, screens: [true, false]); defer { p.close() }
+        try startTennis(p)
+        try p.host.returnToLobby()
+        XCTAssertTrue(p.host.lobby!.participants.allSatisfy { $0.view == nil })
+        p.services[1].setScreen(true); p.host.setScreen(false)
+        for s in p.services { try s.setReady(true) }
+        try p.host.startMatch()
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "a" }?.view, .controllerOnly)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.view, .split)
+    }
+    func testAPeerCannotClaimAViewOrASetupStateInItsHello() throws {
+        let p = try party(2); defer { p.close() }
+        let forged = MultiplayerParticipant(id: "x", name: "X", calibrated: true, hasScreen: true, view: .split)
+        let hello = MultiplayerPacket(lobbyID: "", matchID: "", sender: "c", sequence: 1, kind: "hello", payload: String(decoding: try JSONEncoder().encode(forged), as: UTF8.self))
+        try p.bus.link("c").send(JSONEncoder().encode(hello), to: ["a"], reliable: true)
+        let joined = try XCTUnwrap(p.host.lobby?.participants.first { $0.id == "c" })
+        XCTAssertNil(joined.view); XCTAssertFalse(joined.calibrated)
+        XCTAssertTrue(joined.hasScreen, "a phone does say whether it has a TV")
+    }
+    func testViewsMustBeConsistentInALobby() {
+        func lobby(_ sport: MultiplayerSport, _ views: [MultiplayerView?], seats: [Int] = [0, 1]) -> MultiplayerLobby {
+            let people = views.enumerated().map { MultiplayerParticipant(id: "p\($0.offset)", name: "P", seat: seats[$0.offset], view: $0.element) }
+            return MultiplayerLobby(ownerID: "p0", sport: sport, participants: people)
+        }
+        XCTAssertTrue(lobby(.tennis, [.split, .controllerOnly]).valid())
+        XCTAssertTrue(lobby(.tennis, [.near, .near]).valid())
+        XCTAssertTrue(lobby(.tennis, [nil, nil]).valid())
+        XCTAssertFalse(lobby(.tennis, [.split, .split]).valid())
+        XCTAssertFalse(lobby(.tennis, [.split, .near]).valid(), "the partner of a shared-screen phone has no screen of its own")
+        XCTAssertFalse(lobby(.golf, [.near, nil]).valid(), "views are tennis only")
+    }
+    /// proof/multiplayer/fixtures/tennis_one_tv_config.json is also parsed by NetworkViewTests.cs in Unity's tests, so the field
+    /// names the owner writes and the ones Unity reads cannot drift apart unnoticed.
+    func testTheOneTVConfigurationFixtureParsesAsTheOwnerWritesIt() throws {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("proof/multiplayer/fixtures/tennis_one_tv_config.json")
+        let data = try Data(contentsOf: url)
+        let config = try JSONDecoder().decode(MultiplayerMatchConfiguration.self, from: data)
+        XCTAssertTrue(config.valid())
+        XCTAssertEqual(config.localView, .controllerOnly)
+        XCTAssertTrue(config.controllerOnly)
+        XCTAssertEqual(config.participants.first { $0.id == "host-phone" }?.view, .split)
+        // Writing the same configuration produces the same field names the fixture has.
+        let look = MultiplayerLoadout(gear: [:], skinHex: "E6AE7E", colours: [:], emotes: ["wave", "scuba", "spike"], shirtHex: "FF6B4A", shortsHex: "101D35")
+        let host = MultiplayerParticipant(id: "host-phone", name: "Adnan", seat: 0, ready: true, hasScreen: true, view: .split, loadout: look)
+        let guest = MultiplayerParticipant(id: "guest-phone", name: "Sam", seat: 1, ready: true, hasScreen: false, view: .controllerOnly, female: true, left: true)
+        let written = MultiplayerMatchConfiguration(lobbyID: "L", matchID: "M", hostID: "host-phone", localID: "guest-phone", sport: "tennis", venue: "resort", sets: 1, games: 3, seed: 1, participants: [host, guest])
+        func keys(_ object: Any?) -> Set<String> { Set((object as? [String: Any])?.keys.map { $0 } ?? []) }
+        let fixtureJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let writtenJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(written)) as? [String: Any])
+        XCTAssertEqual(keys(fixtureJSON), keys(writtenJSON))
+        let fixtureHost = (fixtureJSON["participants"] as? [[String: Any]])?[0], writtenHost = (writtenJSON["participants"] as? [[String: Any]])?[0]
+        XCTAssertEqual(keys(fixtureHost), keys(writtenHost))
+        XCTAssertEqual(keys(fixtureHost?["loadout"]), keys(writtenHost?["loadout"]))
+        XCTAssertEqual(keys((fixtureJSON["participants"] as? [[String: Any]])?[1]), keys((writtenJSON["participants"] as? [[String: Any]])?[1]))
+        XCTAssertEqual((writtenHost?["view"] as? String), "split", "the enum is written as the plain word Unity reads")
+        XCTAssertEqual(((writtenJSON["participants"] as? [[String: Any]])?[1]["view"] as? String), "none")
     }
 
     func testLocalPartyNameFitsBonjourByteLimitWithEmoji() {

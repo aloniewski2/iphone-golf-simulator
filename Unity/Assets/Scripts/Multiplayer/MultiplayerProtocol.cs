@@ -2,19 +2,34 @@ using System;
 using System.Linq;
 namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; public string skinHex,shirtHex,shortsHex; }
-    [Serializable] public sealed class NetworkParticipant { public string id,name,controllerID; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
+    [Serializable] public sealed class NetworkParticipant { public string id,name,controllerID,view; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
     [Serializable] public sealed class NetworkConfiguration {
         public string lobbyID,matchID,hostID,localID,sport,venue; public int sets=1,games=3,seed;
         public NetworkParticipant[] participants;
         public bool Controls(string device, int seat) => participants != null && participants.Any(p=>p.seat==seat && p.connected && (p.id==device || (sport=="golf" && device==hostID && p.controllerID==device)));
         public int Seat(string id)=>participants?.FirstOrDefault(p=>p.id==id)?.seat ?? -1;
+        /// How a phone shows a tennis match: "near" (its own TV, its player in front), "split" (the one TV in the room shows both players)
+        /// or "none" (no screen: the phone is only a controller). Empty for golf and for spectators.
+        public const string ViewNear="near", ViewSplit="split", ViewNone="none";
+        public string ViewOf(string id)=>participants?.FirstOrDefault(p=>p.id==id)?.view ?? "";
+        public string LocalView=>ViewOf(localID);
+        /// Views exist only in tennis. At most one phone is "split", and when one is, the other competitor is "none".
+        public bool ViewsValid {
+            get {
+                if(participants==null) return false;
+                if(participants.Any(p=>!string.IsNullOrEmpty(p.view) && p.view!=ViewNear && p.view!=ViewSplit && p.view!=ViewNone)) return false;
+                if(sport!="tennis") return participants.All(p=>string.IsNullOrEmpty(p.view));
+                int split=participants.Count(p=>p.view==ViewSplit);
+                return split<=1 && (split==0 || participants.Where(p=>p.seat>=0 && p.view!=ViewSplit).All(p=>p.view==ViewNone));
+            }
+        }
         public bool Valid => !string.IsNullOrEmpty(matchID) && !string.IsNullOrEmpty(lobbyID) && !string.IsNullOrEmpty(localID)
             && (sport=="tennis" || sport=="golf") && participants!=null && participants.Length>=2 && participants.Length<=4
             && participants.Any(p=>p.id==hostID) && participants.Any(p=>p.id==localID)
             && participants.Select(p=>p.id).Distinct().Count()==participants.Length
             && participants.All(p=>string.IsNullOrEmpty(p.controllerID) || (sport=="golf" && p.controllerID==hostID && p.id!=hostID))
             && participants.All(p=>p.seat>=-1 && p.seat<(sport=="tennis"?2:4))
-            && participants.All(p=>GolfArcade.Tennis.TennisEmotes.Valid(p.loadout?.emotes))
+            && participants.All(p=>GolfArcade.Tennis.TennisEmotes.Valid(p.loadout?.emotes)) && ViewsValid
             && participants.Where(p=>p.seat>=0).Select(p=>p.seat).Distinct().Count()==participants.Count(p=>p.seat>=0)
             && participants.Count(p=>p.seat>=0)>=2 && sets>=1 && sets<=3 && (games==1 || games==3 || games==6);
     }

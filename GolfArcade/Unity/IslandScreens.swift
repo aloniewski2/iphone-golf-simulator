@@ -608,6 +608,7 @@ struct IslandOnlineScreen: View {
                             action("net-remove-guest","Remove Guest",icon:"person.badge.minus",enabled:lobby?.participants.contains(where: \.isGuest) == true)
                         }
                     }
+                    if let line = tvLine { Text(line).islandType(compact ? 12 : 15).foregroundStyle(IslandUI.muted).accessibilityIdentifier("lobby-tv-line") }
                     action("net-ready",local?.ready == true ? "Ready" : "Ready?",icon:"checkmark",ready:local?.ready ?? false)
                     HStack { action("net-emotes","Emotes",icon:"face.smiling"); action("net-clothes","Clothes",icon:"tshirt") }
                     action("net-settings","Match Settings",icon:"slider.horizontal.3")
@@ -634,6 +635,16 @@ struct IslandOnlineScreen: View {
             }
             }.foregroundStyle(IslandUI.navy).padding(compact ? 16 : 22).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.top)
                 .background(IslandUI.paper.opacity(0.96),in:RoundedRectangle(cornerRadius:compact ? 32 : 26,style:.continuous))
+        }
+    }
+    /// Tennis: which phone is showing the match, so two friends know where to look and who still has to connect a TV.
+    private var tvLine: String? {
+        guard let lobby = lobby, lobby.sport == .tennis else { return nil }
+        let tvs = lobby.competitors.filter(\.hasScreen)
+        switch tvs.count {
+        case 0: return "No TV connected yet. Connect one phone to a TV (AirPlay)."
+        case 1: return tvs[0].id == service.localID ? "The TV is connected to this phone. It shows both players." : "The TV is connected to \(tvs[0].name)'s phone. It shows both players."
+        default: return "Each phone has its own TV."
         }
     }
     private var emotePicker: some View {
