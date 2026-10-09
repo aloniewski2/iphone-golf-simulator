@@ -323,6 +323,10 @@ namespace GolfArcade.Game
             while(!frameRendered && Time.realtimeSinceStartup<deadline) yield return null;
             if(!frameRendered) { Emit("error","Gameplay camera did not render a frame. Return to the menu and retry."); yield break; }
             Ready=true; Emit(eventType,"Gameplay camera rendered");
+            // A tennis phone with no TV of its own is only a controller: it needs the match state, not the picture, so once the first
+            // frame has proved the scene loaded it stops drawing (the phone is also tracking motion and running the camera).
+            if(SportsMultiplayer.Active && SportsMultiplayer.Instance.Configuration.sport=="tennis"
+               && SportsMultiplayer.Instance.Configuration.LocalView==NetworkConfiguration.ViewNone) gameplayCamera.enabled=false;
         }
         bool ConfigureDisplay(bool external) {
             // The scene's UIScreen can appear after Unity's initial display cache was built.

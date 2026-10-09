@@ -13,6 +13,9 @@ namespace GolfArcade.Multiplayer {
         public const string ViewNear="near", ViewSplit="split", ViewNone="none";
         public string ViewOf(string id)=>participants?.FirstOrDefault(p=>p.id==id)?.view ?? "";
         public string LocalView=>ViewOf(localID);
+        /// Whose end of the court is drawn in front on this phone. A phone with its own TV puts its own player in front (as before); a phone
+        /// whose TV shows both players, a controller-only phone and a spectator all use seat 0's end.
+        public static int NearSide(int localSeat,string view)=>localSeat>=0 && view!=ViewSplit && view!=ViewNone ? localSeat : 0;
         /// Views exist only in tennis. At most one phone is "split", and when one is, the other competitor is "none".
         public bool ViewsValid {
             get {

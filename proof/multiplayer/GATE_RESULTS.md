@@ -62,3 +62,11 @@ GATE: G2.3 A controller-only tennis phone reaches Ready without drawing — NOT 
 GATE: G2.4 Every `displayConnected` use is classified — PASS (S, by reading). 55 uses in 8 files: producers of the flag (`SportsDisplays` 28, 278, 283; now also tells the lobby); onboarding and menu code about the phone's own TV (`OnboardingConnectScreen`, `TennisMenu`, `SportsHome` menus, `ClubScreens:410`: screen-only, unchanged); the paths a controller-only phone takes in a match (`SportsSession` 366 `runtimeExternalDisplay=false`, 514/522 phone controls, 518/528 already `|| multiplayerControllerOnly`, 703/912 loading cover, `GolfController` already handles it: either, unchanged); and two that still assume a TV and are P4 work: `loadingFinished` applies the remembered TV delay only `if displayConnected` (:707, the controller-only phone should take the screen phone's measured value, P4.1), and `startTimingCheck` needs the TV (:554, the shared-TV timing check, P4.3).
 GATE: G2.5 Changed files parse — PASS (S, syntax only): `python3 Tools/check-syntax.py` (7 files).
 
+## Phase 3 — One TV for two phones
+
+### P3a Shared view
+
+GATE: G3a.1 Which end is drawn in front is decided as before for own-TV phones and spectators, and from seat 0's end for a shared TV and for a controller — PASS (S). `NetworkViewTests.TheNearEndIsTheOwnPlayersOnlyOnAPhoneWithItsOwnTV` (7 cases); `dotnet test Tools/netsim/NetSim.csproj`: 59 passed, 0 failed.
+GATE: G3a.2 The changed Unity files parse — PASS (S, syntax only): `TennisGame.Network.cs`, `NativeSportsSession.cs`, `MultiplayerProtocol.cs`. NOT RUN (M): they need the Unity editor (`Unity/Tools/check.sh`) to compile; the edits are in dense single-line style matching the surrounding code and were re-read against the old behaviour for the own-TV and spectator cases (the code paths those use compute the same values as before).
+GATE: G3a.3 On a real shared TV both players can serve, receive and see each other — NOT RUN (D). Needs two phones and one TV: check that the far player's serve and receive prompts arrive on its controller, the toss meter shows under the server for both players, the phone with no TV does not get hot, and its screen still shows the racket controller.
+

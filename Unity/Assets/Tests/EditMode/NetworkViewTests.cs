@@ -36,6 +36,16 @@ namespace GolfArcade.Tests {
             Assert.AreEqual("", c.ViewOf("nobody"));
         }
 
+        [Test] public void TheNearEndIsTheOwnPlayersOnlyOnAPhoneWithItsOwnTV() {
+            Assert.AreEqual(0, NetworkConfiguration.NearSide(0, "near"));
+            Assert.AreEqual(1, NetworkConfiguration.NearSide(1, "near"), "each phone with a TV puts its own player in front");
+            Assert.AreEqual(1, NetworkConfiguration.NearSide(1, ""), "an owner that sends no views behaves as before");
+            Assert.AreEqual(0, NetworkConfiguration.NearSide(1, "split"), "a shared TV is drawn from seat 0's end whoever owns the phone");
+            Assert.AreEqual(0, NetworkConfiguration.NearSide(1, "none"));
+            Assert.AreEqual(0, NetworkConfiguration.NearSide(-1, "near"), "a spectator watches from seat 0's end");
+            Assert.AreEqual(0, NetworkConfiguration.NearSide(-1, ""));
+        }
+
         static string Fixture([CallerFilePath] string here = "") =>
             File.ReadAllText(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(here), "../../../../proof/multiplayer/fixtures/tennis_one_tv_config.json")));
 
