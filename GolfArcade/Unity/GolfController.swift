@@ -96,8 +96,25 @@ struct GolfPhoneController: View {
     @State private var stickOffset = CGSize.zero
     @State private var draggingAim = false
     @State private var lastAimSent = -Double.infinity
+    /// Pass the phone: whose turn it just became, shown for a moment so the phone goes to the right hands.
+    @State private var passTo: String?
+    @State private var lastTurn: Int?
     private var reading: GolfControllerReading { session.golfController }
     private var canAim: Bool { session.ready && session.golfPhase == "Aim" && !session.paused && (reading.party?.myTurn ?? true) }
+    /// When the turn moves to someone else on a shared phone, say whose it is for a couple of seconds. No cue before the first shot,
+    /// and none when the party is not sharing this phone.
+    private func handOff(to turn: Int?) {
+        guard let turn, turn != lastTurn else { return }
+        let first = lastTurn == nil
+        lastTurn = turn
+        guard !first, let party = reading.party, party.shared, party.players.count > 1 else { return }
+        let name = party.player
+        passTo = name
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.4))
+            if passTo == name { passTo = nil }
+        }
+    }
     private var isDesignPreview: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("-golfControllerDesign")
@@ -118,6 +135,23 @@ struct GolfPhoneController: View {
             }
         }
         .ignoresSafeArea().statusBarHidden().persistentSystemOverlays(.hidden).preferredColorScheme(.light)
+        .overlay {
+            if let name = passTo {
+                VStack(spacing: 10) {
+                    GolfControllerText(text: "PASS THE PHONE TO", size: 22)
+                    GolfControllerText(text: name.uppercased(), size: 46)
+                }
+                .padding(28).frame(maxWidth: 380)
+                .background(GolfControllerStyle.blue, in: RoundedRectangle(cornerRadius: 28))
+                .overlay(RoundedRectangle(cornerRadius: 28).stroke(.white, lineWidth: 4))
+                .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+                .onTapGesture { passTo = nil }
+                .transition(.scale.combined(with: .opacity))
+                .accessibilityElement(children: .combine).accessibilityIdentifier("golf-pass-card")
+            }
+        }
+        .animation(.easeOut(duration: 0.25), value: passTo)
+        .onChange(of: reading.party?.turn) { _, turn in handOff(to: turn) }
         .sheet(isPresented: $session.menuPauseVisible) {
             pauseMenu
         }

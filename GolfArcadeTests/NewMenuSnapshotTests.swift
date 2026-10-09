@@ -27,6 +27,8 @@ final class NewMenuSnapshotTests: XCTestCase {
         menu.online = OnlineLobbyMenu(service:service); defer { service.leave(); menu.online = original }
         menu.debugShow(.party)
         try await both("party") { IslandPartyScreen(menu:menu,compact:$0) }
+        menu.debugShow(.localChoice); try await both("local") { IslandPartyScreen(menu:menu,compact:$0) }
+        menu.debugShow(.localPlayers); try await both("local-players") { IslandPartyScreen(menu:menu,compact:$0) }
         for route in [OnlineLobbyScreen.entry,.nearby,.searching] {
             menu.debugShow(.online(route)); try await both(route.rawValue) { IslandOnlineScreen(menu:menu,route:route,compact:$0) }
         }

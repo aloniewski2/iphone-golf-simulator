@@ -425,7 +425,7 @@ struct IslandPartyScreen: View {
     let menu: TennisMenu
     let compact: Bool
     private var title: String {
-        switch menu.screen { case .multiplayer: "Multiplayer"; case .localChoice: "Local Multiplayer"; case .onlineChoice: "Online"; default: "Play" }
+        switch menu.screen { case .multiplayer: "Multiplayer"; case .localChoice: "Local"; case .localPlayers: "How many players?"; case .onlineChoice: "Online"; default: "Play" }
     }
     var body: some View {
         IslandShell(title: title, compact: compact) {
@@ -435,15 +435,19 @@ struct IslandPartyScreen: View {
                     IslandLobbyRow(title: "Online", subtitle: "Quick match or play with friends", icon: "globe", id: "partyOnline", menu: menu, compact: compact)
                     IslandLobbyRow(title: "Local", subtitle: "Share a phone or play on the same Wi-Fi", icon: "person.2.fill", id: "partyLocal", menu: menu, compact: compact)
                 case .localChoice:
-                    IslandLobbyRow(title: "Pass the Phone · Golf", subtitle: "2–4 players on one phone", icon: "figure.golf", id: "partyLocalGolf", menu: menu, compact: compact)
-                    IslandLobbyRow(title: "Nearby Lobby", subtitle: "Host or join on the same Wi-Fi", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Golf · Pass the Phone", subtitle: "2–4 players take turns on one phone", icon: "figure.golf", id: "partyLocalGolf", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Tennis · Two Phones", subtitle: "One TV. Each player uses their own phone", icon: "tennis.racket", id: "partyLocalTennis", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Join a Friend", subtitle: "Find a game on the same Wi-Fi", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
+                case .localPlayers:
+                    ForEach(2...4, id: \.self) { count in
+                        IslandLobbyRow(title: "\(count) Players", subtitle: "Starts right away", icon: "person.\(count).fill", id: "localPlayers\(count)", menu: menu, compact: compact)
+                    }
                 case .onlineChoice:
                     IslandLobbyRow(title: "Quick Match", subtitle: "Find players for golf or tennis", icon: "bolt.fill", id: "onlineQuick", menu: menu, compact: compact)
                     IslandLobbyRow(title: "Play with Friends", subtitle: "Invite friends to your lobby", icon: "person.badge.plus", id: "homeInvite", menu: menu, compact: compact)
                 default:
                     IslandLobbyRow(title: "Single Player", subtitle: "Golf or tennis on your TV", icon: "person.fill", id: "partySolo", menu: menu, compact: compact)
-                    IslandLobbyRow(title: "Pass the Phone · Golf", subtitle: "2–4 players take turns on this phone", icon: "figure.golf", id: "partyLocalGolf", menu: menu, compact: compact)
-                    IslandLobbyRow(title: "Nearby", subtitle: "Friends on the same Wi-Fi, each with a phone", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
+                    IslandLobbyRow(title: "Local", subtitle: "Pass a phone round, or two phones on one TV", icon: "person.2.fill", id: "partyLocal", menu: menu, compact: compact)
                     IslandLobbyRow(title: "Online", subtitle: "Quick match or invite friends", icon: "globe", id: "partyOnline", menu: menu, compact: compact)
                 }
                 IslandLobbyRow(title: "Back", icon: "arrow.left", id: "back", menu: menu, compact: compact)
@@ -520,7 +524,10 @@ struct IslandOnlineScreen: View {
                             Button("Join") { menu.tap("net-join-code") }.disabled(online.joinCode.count != 6)
                                 .accessibilityIdentifier("net-join-code")
                         }
-                        if online.nearbyItems.isEmpty { IslandNotice(text:"Looking for nearby lobbies…",compact:compact) }
+                        if service.localNetworkDenied {
+                            IslandNotice(text:"Local Network access is off, so phones in this room cannot find each other. Turn it on in Settings.",compact:compact)
+                            action("net-open-settings","Open Settings",icon:"gearshape")
+                        } else if online.nearbyItems.isEmpty { IslandNotice(text:"Looking for nearby lobbies…",compact:compact) }
                         ForEach(online.nearbyItems) { found in
                             action("net-join-\(found.id)",found.name,subtitle:"\(found.sport.capitalized) · \(found.players)/4 players",icon:"person.2.fill")
                         }

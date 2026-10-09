@@ -4,7 +4,7 @@ import UIKit
 /// Where the front end is. The same state drives the menu on the TV (steered from the phone's
 /// remote) and on the phone itself when no TV is connected.
 enum MenuScreen: Hashable {
-    case title, main, party, multiplayer, localChoice, onlineChoice, homeEmotes, quickPlay, gameSelect, hub(Sport), locked(Sport)
+    case title, main, party, multiplayer, localChoice, localPlayers, onlineChoice, homeEmotes, quickPlay, gameSelect, hub(Sport), locked(Sport)
     case campaign, training, exhibition, character, settings, howTo, golfLesson
     case connect, loading, results, story
     /// Choose the court or course before the game loads.
@@ -168,9 +168,11 @@ final class TennisMenu {
         case .title: return [["start"]]
         case .main: return [["play", "homeInvite"], ["character"], ["homeEmotes"], ["settings"], ["betaFeedback"]]
         // One list: play alone, pass one phone round, friends nearby, or online.
-        case .party: return [["partySolo"], ["partyLocalGolf"], ["partyNearby"], ["partyOnline"], ["back"]]
+        case .party: return [["partySolo"], ["partyLocal"], ["partyOnline"], ["back"]]
         case .multiplayer: return [["partyOnline"], ["partyLocal"], ["back"]]
-        case .localChoice: return [["partyLocalGolf"], ["partyNearby"], ["back"]]
+        // Same room: pass one phone round (golf), or two phones and one TV (tennis), or join a friend's game.
+        case .localChoice: return [["partyLocalGolf"], ["partyLocalTennis"], ["partyNearby"], ["back"]]
+        case .localPlayers: return [["localPlayers2"], ["localPlayers3"], ["localPlayers4"], ["back"]]
         case .onlineChoice: return [["onlineQuick"], ["homeInvite"], ["back"]]
         case .homeEmotes: return homeEmotes.map { ["home-emote-\($0)"] } + [["back"]]
         case .online(let route): return online.rows(route, menu: self)
@@ -323,7 +325,9 @@ final class TennisMenu {
             match.sets = quickLength == 2 ? 2 : 1; match.games = quickLength == 0 ? 3 : 6
             begin(match)
         case "quickPlay", "partySolo": show(.gameSelect)
-        case "partyLocalGolf": online.select(id, menu: self)
+        case "partyLocalGolf": show(.localPlayers)
+        case "partyLocalTennis": online.select(id, menu: self)
+        case let count where count.hasPrefix("localPlayers"): online.select(count, menu: self)
         case "partyMultiplayer": show(.multiplayer)
         case "partyLocal": show(.localChoice)
         case "partyOnline": show(.onlineChoice)
@@ -445,6 +449,7 @@ final class TennisMenu {
         case .howTo: show(.settings); _ = focus(guideDeck.rowID)   // back on the topic just read
         case .party, .settings, .homeEmotes: show(.main)
         case .multiplayer, .quickPlay, .gameSelect, .onlineChoice, .localChoice: show(.party)
+        case .localPlayers: show(.localChoice)
         case .hub, .locked: show(.gameSelect)
         case .campaign: if confirmingRestart { confirmingRestart = false; _ = focus("campaignPlay") } else { show(.hub(.tennis)) }
         case .training, .exhibition: show(.hub(.tennis))
@@ -1070,6 +1075,20 @@ struct OnlineAppleSheet: Identifiable {
             return a.seat == b.seat ? a.id < b.id : a.seat >= 0 && (b.seat < 0 || a.seat < b.seat)
         }
     }
+    /// Pass the phone (golf): the course last picked, the guests already in and ready, and straight into loading. The only press the
+    /// players made after choosing Local is how many of them there are.
+    private func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
+        identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
+        let course = SportsSession.shared.golfCourse
+        try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "postcards")
+        for _ in 1..<players { try service.addLocalGuest() }
+        try? service.setReady(true)
+        // The round is shown on the TV: with none connected there is nothing to start yet, so wait in the lobby and say so.
+        guard SportsSession.shared.displayConnected || SportsSession.benchmark else {
+            menu.showOnline(.lobby); menu.onlineNotice("Connect a TV with AirPlay, then tap Start Match."); return
+        }
+        try service.startMatch(); menu.showOnline(.loading)
+    }
     func identity(_ menu: TennisMenu) {
         guard let p = menu.player else { return }
         service.setIdentity(name:p.name, female:p.standardFemale, left:p.handedness == .left, loadout:p.multiplayerLoadout)
@@ -1077,7 +1096,7 @@ struct OnlineAppleSheet: Identifiable {
     func rows(_ route: OnlineLobbyScreen, menu: TennisMenu) -> [[String]] {
         switch route {
         case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["back"]]
-        case .nearby: return nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-join-code"],["net-host"],["back"]]
+        case .nearby: return (service.localNetworkDenied ? [["net-open-settings"]] : []) + nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-join-code"],["net-host"],["back"]]
         case .searching: return [["net-cancel"]]
         case .lobby: return (service.isNearby && service.isOwner && service.lobby?.sport == .golf ? [["net-add-guest","net-remove-guest"]] : []) + [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
         case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
@@ -1100,13 +1119,12 @@ struct OnlineAppleSheet: Identifiable {
         do {
             switch id {
             case "partyOnline": identity(menu); menu.showOnline(.entry)
-            case "partyLocalGolf":
-                // Pass the phone: the course last picked, a guest already in, and this phone ready, so
-                // START is the only press left.
-                identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
-                let course = SportsSession.shared.golfCourse
-                try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "postcards")
-                try service.addLocalGuest(); try? service.setReady(true); menu.showOnline(.lobby)
+            case "partyLocalTennis":
+                // Two phones, one TV: a nearby lobby that readies itself and starts as soon as the friend has joined and a TV is connected.
+                identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends", quick: .tennis); menu.showOnline(.lobby)
+            case let count where count.hasPrefix("localPlayers"):
+                guard let players = Int(count.dropFirst("localPlayers".count)), (2...4).contains(players) else { return }
+                try startPassThePhone(players, menu: menu)
             case "net-add-guest": try service.addLocalGuest()
             case "net-remove-guest": try service.removeLocalGuest()
             case "net-join-code":
@@ -1119,6 +1137,7 @@ struct OnlineAppleSheet: Identifiable {
                 run(menu) { [self] in try await service.quickMatch(searchSport) }
             case "net-cancel": cancel(); service.leave(); menu.showOnline(.entry)
             case "net-host": identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends"); menu.showOnline(.lobby)
+            case "net-open-settings": if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
             case "net-page-prev": nearbyPage = max(0,nearbyPage - 1)
             case "net-page-next": nearbyPage = min(max(0,(service.discoveredLobbies.count - 1) / 4),nearbyPage + 1)
             case let id where id.hasPrefix("net-join-"):

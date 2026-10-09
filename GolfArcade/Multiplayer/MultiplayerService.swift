@@ -11,6 +11,8 @@ final class MultiplayerService {
     private(set) var lastError: String?
     private(set) var searching = false
     private(set) var loadingNeedsDecision = false
+    /// The player turned Local Network access off for this app: phones in the same room cannot find each other until they turn it on.
+    private(set) var localNetworkDenied = false
     private(set) var discoveredLobbies: [LocalMultiplayerTransport.DiscoveredLobby] = []
     private(set) var pendingInvite: GKInvite?
     private(set) var roundTrip: Double = 0
@@ -203,20 +205,24 @@ final class MultiplayerService {
         catch { if operation == searchGeneration { quickSport = nil; lastError = error.localizedDescription }; throw error }
     }
     func cancelSearch() { searchGeneration += 1; gameCenter?.cancelSearch(); searching = false; if transport == nil { quickSport = nil } }
-    func hostLocal(name: String = "Friends") throws {
+    /// `quick`: a lobby for that sport that readies itself and starts as soon as it can (two phones playing tennis in one room).
+    func hostLocal(name: String = "Friends", quick: MultiplayerSport? = nil) throws {
         guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave the current lobby first.") }
         local?.disconnect()
         let lan = LocalMultiplayerTransport(); local = lan; bind(lan)
+        quickSport = quick
         do { try lan.host(name: name); createLobby(owner: localID) }
         catch { leave(); throw error }
     }
     func browseLocal() {
         guard transport == nil else { return }
         let lan = local ?? LocalMultiplayerTransport(); local = lan
-        lan.onError = { [weak self] in self?.lastError = $0.localizedDescription }
-        lan.onDiscovery = { [weak self] in self?.discoveredLobbies = $0 }; lan.browse()
+        lan.onError = { [weak self] in self?.localTransportError($0) }
+        lan.onDiscovery = { [weak self] in self?.discoveredLobbies = $0; if !$0.isEmpty { self?.localNetworkDenied = false } }; lan.browse()
     }
-    func stopBrowsing() { if transport == nil { local?.disconnect(); local = nil; discoveredLobbies = [] } }
+    func stopBrowsing() { if transport == nil { local?.disconnect(); local = nil; discoveredLobbies = []; localNetworkDenied = false } }
+    private func localTransportError(_ error: Error) { noteLocalNetwork(error); lastError = error.localizedDescription }
+    private func noteLocalNetwork(_ error: Error) { if let e = error as? MultiplayerError, case .localNetworkDenied = e { localNetworkDenied = true } }
     func swapSeat(_ incoming: String, with outgoing: String) throws {
         try requireOwnerIdle()
         guard var state = lobby, let seat = state.participants.first(where: { $0.id == outgoing })?.seat,
@@ -227,9 +233,11 @@ final class MultiplayerService {
         guard lobby?.phase == .results || lobby?.phase == .interrupted else { throw MultiplayerError.invalidOperation("The match must finish first.") }
         if isOwner { try returnToLobby() } else { try sendControl("return") }
     }
+    /// Joining a tennis lobby readies you at once: there is nothing to choose, the host starts when both phones are in.
     func joinLocal(_ item: LocalMultiplayerTransport.DiscoveredLobby) throws {
         guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave the current lobby first.") }
         let lan = local ?? LocalMultiplayerTransport(); local = lan; bind(lan)
+        quickSport = item.sport == MultiplayerSport.tennis.rawValue ? .tennis : nil
         do { try lan.join(item) } catch { leave(); throw error }
     }
     func configure(_ sport: MultiplayerSport, venue: String = "resort", sets: Int = 1, games: Int = 3) throws {
@@ -303,7 +311,7 @@ final class MultiplayerService {
         #endif
         loadingNeedsDecision = false; lobby = nil; hello.removeAll(); seen.removeAll(); disconnected.removeAll(); rate.removeAll(); matchConfiguration = nil; quickSport = nil; searching = false
         lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0; clockFilter = ClockFilter(); nextPing = 0; lastHeard.removeAll(); silent.removeAll(); nextHeartbeat = 0; silenceArmedAt = .infinity
-        awaitingCalibration.removeAll(); calibrationNoticed = false
+        awaitingCalibration.removeAll(); calibrationNoticed = false; localNetworkDenied = false
     }
     private func requireOwnerIdle() throws {
         guard isOwner, lobby?.phase == .lobby else { throw MultiplayerError.invalidOperation("The owner can change this only in the lobby.") }
@@ -314,7 +322,7 @@ final class MultiplayerService {
         connection.onData = { [weak self] data, peer in self?.receive(data, from: peer) }
         connection.onPeersChanged = { [weak self] in self?.peersChanged() }
         connection.onError = { [weak self] error in
-            guard let self else { return }; self.lastError = error.localizedDescription
+            guard let self else { return }; self.noteLocalNetwork(error); self.lastError = error.localizedDescription
             if self.matchConfiguration != nil {
                 if self.isOwner { self.interrupt(error.localizedDescription) }
                 else { try? self.sendControl("availability", payload: "false"); self.stopRuntime() }

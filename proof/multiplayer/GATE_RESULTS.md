@@ -78,3 +78,11 @@ GATE: G4.1 The phone with the TV shares its delay and the controller-only phone 
 GATE: G4.2 TV status badges for both phones — NOT BUILT. Needs the split screen (P3b) so there is a half to put the badge in; the phones themselves already say who they are waiting for.
 GATE: G4.3 Swing-timing check for both players at once — NOT BUILT (milestone C2). Deferred behind the split screen; until then multiplayer uses the remembered timing for the TV, and the game refines timing during play as it does in solo.
 
+## Phase 5 — Simple local play
+
+GATE: G5.1 The menu routes are as designed — NOT RUN (M). `MenuBetaTests.testPlayRoutesAndBackPaths` (Play = Single Player, Local, Online, Back) and the new `testLocalPlayIsTwoTapsFromPlayAndGolfOnlyAsksHowManyAreSharingThePhone`. Syntax-checked, traced against `TennisMenu.rows/select/back`; every exhaustive `switch` over the menu screen (`rows`, `back`, the TV view, the remote title) has the new `localPlayers` case.
+GATE: G5.2 Local Network denial is recognised and offered a way out — NOT RUN (M). `testOnlyTheLocalNetworkDeniedErrorIsRecognisedAsSuch`, `testADeniedLocalNetworkIsRememberedSoTheMenuCanOfferSettingsAndForgottenOnLeaving`. The Open Settings button and the iOS error code are unverified (D).
+GATE: G5.3 UI test follows the new route — NOT RUN (M). `GolfArcadeUITests/MenuBetaUITests` updated: Play → Local → (golf, tennis rows present) → Join a Friend → Host a Lobby.
+GATE: G5.4 Pass-the-phone starts at once; two-phone tennis starts when the friend joins; the hand-off card shows — NOT RUN (D). Needs real phones: also check that with no TV the pass-the-phone flow stops in the lobby with the AirPlay hint, that a tennis lobby does not auto-start without a TV, and that a joiner is readied by joining.
+GATE: G5.5 Changed Swift files parse — PASS (S, syntax only): `python3 Tools/check-syntax.py`, 13 files.
+

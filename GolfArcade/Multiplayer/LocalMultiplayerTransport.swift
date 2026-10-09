@@ -41,8 +41,15 @@ final class LocalMultiplayerTransport: MultiplayerTransport {
         return (prefix.isEmpty ? "Friends" : prefix) + "~" + token
     }
 
+    /// iOS reports "the user said no to Local Network" as a waiting state with this DNS-SD error, not as a failure.
+    static func isLocalNetworkDenied(_ error: NWError) -> Bool {
+        if case .dns(let code) = error { return code == -65570 }
+        return false
+    }
     private func parameters() -> NWParameters {
         let tcp = NWProtocolTCP.Options(); tcp.noDelay = true
+        // A phone that vanishes without closing the connection (Wi-Fi lost, app killed) is noticed in a few seconds instead of hours.
+        tcp.enableKeepalive = true; tcp.keepaliveIdle = 2; tcp.keepaliveInterval = 1; tcp.keepaliveCount = 3
         let p = NWParameters(tls: nil, tcp: tcp); p.includePeerToPeer = true
         return p
     }
@@ -67,6 +74,7 @@ final class LocalMultiplayerTransport: MultiplayerTransport {
             Task { @MainActor in OnlineLobbyProofDriver.event("listener",String(describing:state)) }
             #endif
             if case .failed(let error) = state { Task { @MainActor in self?.onError?(error) } }
+            if case .waiting(let error) = state, Self.isLocalNetworkDenied(error) { Task { @MainActor in self?.onError?(MultiplayerError.localNetworkDenied) } }
         }
         self.listener = listener; listener.start(queue: queue)
     }
@@ -91,7 +99,8 @@ final class LocalMultiplayerTransport: MultiplayerTransport {
             #if DEBUG
             Task { @MainActor in OnlineLobbyProofDriver.event("browser",String(describing:state)) }
             #endif
-            if case .failed(let e) = state { Task { @MainActor in self?.onError?(e) } } }
+            if case .failed(let e) = state { Task { @MainActor in self?.onError?(e) } }
+            if case .waiting(let e) = state, Self.isLocalNetworkDenied(e) { Task { @MainActor in self?.onError?(MultiplayerError.localNetworkDenied) } } }
         browser = b; b.start(queue: queue)
     }
     func join(_ lobby: DiscoveredLobby) throws {

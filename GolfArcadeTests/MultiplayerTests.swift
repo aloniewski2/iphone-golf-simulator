@@ -525,6 +525,23 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(((writtenJSON["participants"] as? [[String: Any]])?[1]["view"] as? String), "none")
     }
 
+    // MARK: Local play
+
+    func testOnlyTheLocalNetworkDeniedErrorIsRecognisedAsSuch() {
+        XCTAssertTrue(LocalMultiplayerTransport.isLocalNetworkDenied(.dns(-65570)), "iOS reports a denied Local Network permission this way")
+        XCTAssertFalse(LocalMultiplayerTransport.isLocalNetworkDenied(.dns(-65537)))
+        XCTAssertFalse(LocalMultiplayerTransport.isLocalNetworkDenied(.posix(.ECONNREFUSED)))
+    }
+    func testADeniedLocalNetworkIsRememberedSoTheMenuCanOfferSettingsAndForgottenOnLeaving() throws {
+        let p = try party(2); defer { p.close() }
+        XCTAssertFalse(p.host.localNetworkDenied)
+        p.bus.links["a"]!.onError?(MultiplayerError.localNetworkDenied)
+        XCTAssertTrue(p.host.localNetworkDenied)
+        XCTAssertEqual(p.host.lastError, MultiplayerError.localNetworkDenied.localizedDescription)
+        p.host.leave()
+        XCTAssertFalse(p.host.localNetworkDenied)
+    }
+
     func testLocalPartyNameFitsBonjourByteLimitWithEmoji() {
         let token=UUID().uuidString
         let name=LocalMultiplayerTransport.advertisedName(String(repeating:"🏌️~",count:30),token:token)

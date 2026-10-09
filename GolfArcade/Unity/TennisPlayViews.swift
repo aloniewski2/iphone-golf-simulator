@@ -101,7 +101,7 @@ struct TennisRemote: View {
     private var screenName: String {
         switch menu.screen {
         case .online(let route): route.rawValue.uppercased()
-        case .party: "PLAY"; case .multiplayer: "MULTIPLAYER"; case .localChoice: "LOCAL MULTIPLAYER"; case .onlineChoice: "ONLINE"; case .homeEmotes: "EMOTES"; case .quickPlay: "QUICK PLAY"
+        case .party: "PLAY"; case .multiplayer: "MULTIPLAYER"; case .localChoice: "LOCAL"; case .localPlayers: "HOW MANY PLAYERS"; case .onlineChoice: "ONLINE"; case .homeEmotes: "EMOTES"; case .quickPlay: "QUICK PLAY"
         case .title: "TITLE"; case .main: "HOME"; case .gameSelect: "CHOOSE YOUR SPORT"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"

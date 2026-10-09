@@ -8,12 +8,13 @@ enum MultiplayerPhase: String, Codable, Sendable { case lobby, loading, calibrat
 /// TV shows both players. `controllerOnly` (sent to Unity as "none"): no screen, the phone is only a controller.
 enum MultiplayerView: String, Codable, Sendable { case near, split, controllerOnly = "none" }
 enum MultiplayerError: LocalizedError {
-    case unavailable(String), invalidOperation(String), incompatible, full
+    case unavailable(String), invalidOperation(String), incompatible, full, localNetworkDenied
     var errorDescription: String? {
         switch self {
         case .unavailable(let s), .invalidOperation(let s): return s
         case .incompatible: return "The players need compatible versions of the game."
         case .full: return "The lobby already has four people, including spectators."
+        case .localNetworkDenied: return "Allow Local Network access for this app in Settings, so phones in the same room can find each other."
         }
     }
 }
