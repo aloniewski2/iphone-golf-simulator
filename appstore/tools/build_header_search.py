@@ -103,6 +103,6 @@ def search(key, icon_file, shots):
 if __name__ == "__main__":
     for k in "ABC":
         header(k)
-    search("A", "AppIcon-01-crest.png", [f"A{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
-    search("B", "AppIcon-03-phone-swing.png", [f"B{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
-    search("C", "AppIcon-06-two-balls.png", [f"C{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
+    search("A", "AppIcon-04-phone-tv.png", [f"A{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
+    search("B", "AppIcon-04-phone-tv.png", [f"B{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
+    search("C", "AppIcon-04-phone-tv.png", [f"C{n}.jpg" for n in ("1-controller", "2-swing", "4-friends")])
