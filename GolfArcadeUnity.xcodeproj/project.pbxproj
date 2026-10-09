@@ -35,6 +35,7 @@
 		11DA53C7FB0F1511A87E7366 /* MatchHero_Female_Distance_Swing_08.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 09F1FB460ABB331D59C4CF6B /* MatchHero_Female_Distance_Swing_08.lzfse */; };
 		11FAE1BD32FA369F0563EEF9 /* MatchHero_GolfKit_Female_ShoeL_M.png in Resources */ = {isa = PBXBuildFile; fileRef = 8E17ED58BE2A9E7DCD50C3E6 /* MatchHero_GolfKit_Female_ShoeL_M.png */; };
 		12F9E2D7EA76F8D6497B0979 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 674DA90CB7E02E144F96B6FD /* ContentView.swift */; };
+		13B6E3B9F592588F15AC00D9 /* course-golf-wildisles.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D31830B6B96F4F47A0114A03 /* course-golf-wildisles.jpg */; };
 		13BD271526A6369E2F64C149 /* SyntheticGolfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C4A8B5300B58C87F22661F /* SyntheticGolfer.swift */; };
 		14104C7F63807A971C17C4A9 /* GolfHero_Female_Swing_02.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 5D83DC8E50BEA6583C6899D6 /* GolfHero_Female_Swing_02.lzfse */; };
 		1462116BB3C4CFE8509F089B /* MatchHero_Female_Distance_Rig.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 9BA362DD754672D5D26A6189 /* MatchHero_Female_Distance_Rig.lzfse */; };
@@ -49,6 +50,7 @@
 		18DA025C07D5F61D9E706E05 /* menu-hero-suki.png in Resources */ = {isa = PBXBuildFile; fileRef = 9CEBF580C3B74857865AA6D1 /* menu-hero-suki.png */; };
 		190923BD72AAD1BA743F4EDE /* MultiplayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B8A0D95F9EA101CF87D2A6 /* MultiplayerService.swift */; };
 		1A5C959A0E20EF4B8767F793 /* GolfHero_Female.json in Resources */ = {isa = PBXBuildFile; fileRef = 82179F87195A63396A6B8627 /* GolfHero_Female.json */; };
+		1A68BB58A485E9A0258F6A7D /* course-golf-cliffside.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 127F6618ED4F8E51B48E6256 /* course-golf-cliffside.jpg */; };
 		1B2733E217768B3ACE57F96D /* MatchHero_GolfKit_Female_GloveL_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 4076B4E6524F202475D1D022 /* MatchHero_GolfKit_Female_GloveL_N.ktx */; };
 		1B4AA9241124348594C0F490 /* PlayfulGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717785952FACC444551FE1CD /* PlayfulGraphics.swift */; };
 		1B68CE6A2391A7815A6F30D2 /* scene-court.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 09B3FFFB82F9E78C32CACB16 /* scene-court.jpg */; };
@@ -102,6 +104,7 @@
 		335AAD6E077812BC8B3B7C1E /* ArcadeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD0A2D744402BA43500309C /* ArcadeView.swift */; };
 		353746ED319BFF38F74D9FCC /* GolfKitHero_Female.json in Resources */ = {isa = PBXBuildFile; fileRef = 1A7FB44A63C2D2F6120D542F /* GolfKitHero_Female.json */; };
 		353BBD926EF5A3E9105C4D7E /* SportsRuntime.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4534BEF9AD1CF74398B18ED2 /* SportsRuntime.mm */; };
+		35E314628DF182D18C20F8DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CCDF852D92EE66A8DB1E25E /* Assets.xcassets */; };
 		35EBC6CA16BF535099C1A75D /* map-golf-postcards.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 800603EFBF1FA0ED0DC86566 /* map-golf-postcards.jpg */; };
 		37314A58E5F16C6784D10581 /* scene-locker.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4674E024B11062A5377E30CD /* scene-locker.jpg */; };
 		37E922B2D0BCF1C02B13DA4E /* MatchHero_Kit_Male_ShoeL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = BAB611D164FE7140BB240F3B /* MatchHero_Kit_Male_ShoeL_M.ktx */; };
@@ -139,6 +142,7 @@
 		495FF74A0AA48BC8B3770CDA /* Progression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319AAC7C558712C0D2DC7E94 /* Progression.swift */; };
 		4982FBFEBE66688597F792FB /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2FF53F0F08AC8C1FDBBF878 /* AnalyticsTests.swift */; };
 		49B51FB01AE8CBE47077B1CC /* GolfHero_Female_Swing_10.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 15387D042C1113DBD4487305 /* GolfHero_Female_Swing_10.lzfse */; };
+		49EEBCDD0B150DC83681741C /* course-golf-magma.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3B9A8446F55EC381873F37EE /* course-golf-magma.jpg */; };
 		4B1A4853B832DF0165E5CE89 /* MatchHero_GolfKit_Female_GloveL_N.png in Resources */ = {isa = PBXBuildFile; fileRef = BF16C585105AAE1F91B29467 /* MatchHero_GolfKit_Female_GloveL_N.png */; };
 		4B6F4645788944F19DD9CC91 /* MatchHero_Kit_Female_SockL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 846980871182B7F8310ACAE1 /* MatchHero_Kit_Female_SockL_M.ktx */; };
 		4B86041D9CF3F8B636D25DA2 /* MatchHero_Golf_Female_Bottom_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 5B3D2FA0156AF5271FC8B41E /* MatchHero_Golf_Female_Bottom_N.ktx */; };
@@ -155,6 +159,7 @@
 		50D07A518EF6E287EA75C789 /* GolfKitHero_Female_golden.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = B8DDB64CAE9680076F91E96F /* GolfKitHero_Female_golden.lzfse */; };
 		51570EF14ADDCD38198C28B3 /* ClubGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A233F2311E3BCD9F01AD0C0E /* ClubGeometry.swift */; };
 		5172CC06381ACE4D8A9B9833 /* MatchHero_Male_Distance_Swing_05.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 36E7D5707231CC3D2D3D18B6 /* MatchHero_Male_Distance_Swing_05.lzfse */; };
+		51B06F50B296E57023CE032A /* course-golf-postcards.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E1E0AD460CC84B5FAE74AC70 /* course-golf-postcards.jpg */; };
 		51C8600FCA6AF0D6F6488415 /* MatchHero_Kit_Male_SockR_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 1262ADCFC7B055B0E6651A3D /* MatchHero_Kit_Male_SockR_M.ktx */; };
 		52E874C1081182F5F4E01716 /* MatchHero_Kit_Female_SockL_M.png in Resources */ = {isa = PBXBuildFile; fileRef = 30AD5E132ADCC261623C5547 /* MatchHero_Kit_Female_SockL_M.png */; };
 		53E4BDAE737B02DC76715D4E /* ClubContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5593F0ED927586CD39A5537 /* ClubContact.swift */; };
@@ -169,6 +174,7 @@
 		5598B4D791B63C4CF6AD5F2C /* MatchHero_Golf_FabricAtlas.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 2DF2CA03B05FEDFF52C72E58 /* MatchHero_Golf_FabricAtlas.ktx */; };
 		55F938C788F192AF064B1035 /* MatchHero_Male_Swing_00.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = E4FFCEBDF5183D95447DB045 /* MatchHero_Male_Swing_00.lzfse */; };
 		57A1335DF6E2D6E64B02C1F0 /* BodyPose3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897E39AE7CCAB96614366808 /* BodyPose3D.swift */; };
+		57C62BA10DA4EE53173CDA72 /* course-golf-wildisles.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 8F1E22C04596FC8DFEB76E0C /* course-golf-wildisles.mp4 */; };
 		586CE696D8EB70191DC75092 /* GameCenterAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BF9CC73ECAA389A370F070E /* GameCenterAccount.swift */; };
 		587869B92EA47612E32BA6D7 /* MatchHero_GolfKit_Male_GloveL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 5B7FD3C6B5AB78FEC7CC9832 /* MatchHero_GolfKit_Male_GloveL_M.ktx */; };
 		58DA57C04C8B3BEA878EBB20 /* BenchmarkRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C713ADE272F5BB767BE395D0 /* BenchmarkRecords.swift */; };
@@ -253,6 +259,7 @@
 		79D5B7806E2459B70548ABF5 /* MatchHero_GolfKit_Female_ShoeR_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 2E1B255AE7B6A53C9285384D /* MatchHero_GolfKit_Female_ShoeR_M.ktx */; };
 		79E060C0D0FBEE260A3D480F /* MatchHero_GolfKit_Female_GloveR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = ADD3397A2195A6C4510537A6 /* MatchHero_GolfKit_Female_GloveR_N.ktx */; };
 		7AA7F0B3E5CA14F6261A36BC /* BallAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7ECB2B9D62EB93B43F0E470 /* BallAddress.swift */; };
+		7AF1FD44AA29706C6A08D67B /* course-golf-cliffside.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 336AB720D101301806F5BFD4 /* course-golf-cliffside.mp4 */; };
 		7B01730706C33E5170BB6B1B /* PoseDelivery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C20E4CA78B665ECE03C5B24 /* PoseDelivery.swift */; };
 		7C62AB6848B6638356158673 /* MatchHero_Female_Swing_11.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 54BDCEFC48F0F42A714675B7 /* MatchHero_Female_Swing_11.lzfse */; };
 		7C7B43BCEBAA4DCC1DB51962 /* MatchHero_Kit_Female_SockR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 0842EE4EEBFFED07EA15CAFB /* MatchHero_Kit_Female_SockR_N.ktx */; };
@@ -298,6 +305,7 @@
 		90AB4449E850A6CD9F84533A /* MatchHero_Golf_Female_GloveL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = A1D28AE3BACBC99FE22AF9B3 /* MatchHero_Golf_Female_GloveL_M.ktx */; };
 		911D5F6A81AA28A4B728A8F2 /* MatchHero_Female_Swing_10.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = F02FBE609A6071E1719C465C /* MatchHero_Female_Swing_10.lzfse */; };
 		920989C6933A838EFDDBE360 /* whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = 97A74164FB0BAFFA3F10C91C /* whoosh.wav */; };
+		9223B4675ACAF3DB1185FAFE /* course-golf-magma.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = CE7CDB7B0750B3C3D4BFF32F /* course-golf-magma.mp4 */; };
 		92331780498F8EF3D343108F /* CameraSwingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1EAA0E384B7470635ECCAFF /* CameraSwingTests.swift */; };
 		92892E3A019365F67A03044C /* MenuBetaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87BBBD4082461D124202C86 /* MenuBetaTests.swift */; };
 		92F0F76CDEA439EFCC9804BA /* AimSignalRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B3A0F6227C211B46CF365A /* AimSignalRecognizerTests.swift */; };
@@ -364,6 +372,7 @@
 		B89929CB25A23C8CC8499184 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = BDA36EE8CA51ADBBBDF68B1D /* Data */; };
 		B8B2137027BA40EB9E8940C9 /* club-whistle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1BB80F46806DEFDA8746EFB0 /* club-whistle.png */; };
 		B8B75A4348E4F50A8FA62ED9 /* LockerColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F94324208514ABDC3C1C39 /* LockerColors.swift */; };
+		B97B03709568731E7DCC24AA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3B6B05F007ACC63F4C41042E /* PrivacyInfo.xcprivacy */; };
 		B9A13BDC98FB8A699CAB4480 /* MatchHero_Kit_Female_ShoeL_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 611950C349B2A49221B084F8 /* MatchHero_Kit_Female_ShoeL_N.ktx */; };
 		B9CE686A460CF900DFA431E3 /* GolfKitHero_Male.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = E6CD4D81FDFDAAFB6D073E8E /* GolfKitHero_Male.lzfse */; };
 		BA2D67AD1F31B6EC1C93D57A /* MatchHero_Female_Distance_Swing_09.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 4C043873DB22BBE189042A6C /* MatchHero_Female_Distance_Swing_09.lzfse */; };
@@ -395,6 +404,7 @@
 		C9AD544F479C017978E31836 /* GolfHero_Female_Swing_01.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 60AF01513169E6C9A84D70A2 /* GolfHero_Female_Swing_01.lzfse */; };
 		C9F3DD56772111A241ADC79D /* MatchHero_Kit_Male_SockL_N.png in Resources */ = {isa = PBXBuildFile; fileRef = 44FFE17A5B1C22FE55008C45 /* MatchHero_Kit_Male_SockL_N.png */; };
 		CA0C0C59F5ECB60AC63E1C30 /* MatchHero_Female_Swing_01.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 1A26A104BC07638CBF2DC16C /* MatchHero_Female_Swing_01.lzfse */; };
+		CA3F925CE3900F3A230F6D81 /* course-golf-postcards.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5E352A8F76537F66339D3807 /* course-golf-postcards.mp4 */; };
 		CA894DB76755FFCEBBCAEC3C /* SyntheticGolferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813881352EC318CBAFA611AA /* SyntheticGolferTests.swift */; };
 		CA896918C927F70BB0489337 /* MatchHero_GolfKit_Male_Bottom_N.png in Resources */ = {isa = PBXBuildFile; fileRef = 68233DD6935E06172C25187F /* MatchHero_GolfKit_Male_Bottom_N.png */; };
 		CC24FCD33B22775CC7290B2C /* OnboardingConnectScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C05C937BA1C33BB95E86391 /* OnboardingConnectScreen.swift */; };
@@ -452,14 +462,6 @@
 		E7B2304B203FC1E881F54F1D /* GolfController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D99EDF5F8C0373883F00BB0 /* GolfController.swift */; };
 		E7BCC7BC203AD604964BFE1C /* MatchHero_Golf_Male_Head_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 11521338E6E3FCBF68ABAC94 /* MatchHero_Golf_Male_Head_M.ktx */; };
 		E7D5A7386ECF07B566C1424F /* map-golf-cliffside.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */; };
-		A8717173ECF290D0B6C871A5 /* course-golf-magma.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */; };
-		F88371E0CB144448157AE1E5 /* course-golf-magma.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */; };
-		B2177D0C85B692041BEAFF48 /* course-golf-wildisles.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */; };
-		67CA1B5F2E9E5B7EED57F10A /* course-golf-wildisles.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */; };
-		ADC821CF509069B68A090A7E /* course-golf-postcards.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */; };
-		C5B15AB3980307DFF0B72CCB /* course-golf-postcards.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */; };
-		5CD8A56096CB8599EB730FFA /* course-golf-cliffside.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */; };
-		420DD7A93B640079EEDB73B1 /* course-golf-cliffside.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */; };
 		E83B2D3364F6F36C387EBEBE /* GolfKitHero_Female.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 2C540FF73486289E8F27D084 /* GolfKitHero_Female.lzfse */; };
 		EA46602C27325256AF775103 /* MatchHero_GolfKit_Female_ShoeL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 1A893D9BEDE502A08F2F4F71 /* MatchHero_GolfKit_Female_ShoeL_M.ktx */; };
 		EA634A3467EA1E29696AC682 /* CharacterModelPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927566ABEA010BDFB932F092 /* CharacterModelPreview.swift */; };
@@ -600,6 +602,7 @@
 		11F028442BFC890743E65B25 /* TennisMapScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisMapScreen.swift; sourceTree = "<group>"; };
 		11F4BE72D996FBA36E65BC90 /* MatchHero_Golf_Male_GloveL_M.ktx */ = {isa = PBXFileReference; path = MatchHero_Golf_Male_GloveL_M.ktx; sourceTree = "<group>"; };
 		1262ADCFC7B055B0E6651A3D /* MatchHero_Kit_Male_SockR_M.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Male_SockR_M.ktx; sourceTree = "<group>"; };
+		127F6618ED4F8E51B48E6256 /* course-golf-cliffside.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-cliffside.jpg"; sourceTree = "<group>"; };
 		142318A981FD7060ADF7CBF9 /* SwingReaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingReaction.swift; sourceTree = "<group>"; };
 		14632EA8B55A389F3070D7DB /* NativeGolfEquipment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGolfEquipment.swift; sourceTree = "<group>"; };
 		1483C03C8741BED968FBDE37 /* MatchHero_GolfKit_Female_GloveR_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Female_GloveR_M.png; sourceTree = "<group>"; };
@@ -652,6 +655,7 @@
 		2C540FF73486289E8F27D084 /* GolfKitHero_Female.lzfse */ = {isa = PBXFileReference; path = GolfKitHero_Female.lzfse; sourceTree = "<group>"; };
 		2C966BC62AA42B9BE7A95548 /* MatchHero_Cloth_Weave.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Cloth_Weave.png; sourceTree = "<group>"; };
 		2CBC9FA018D33F43B3BF34AB /* club-trophy.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-trophy.png"; sourceTree = "<group>"; };
+		2CCDF852D92EE66A8DB1E25E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D005B7B022A5A8F6A080393 /* MatchHero_Male_Swing_01.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Swing_01.lzfse; sourceTree = "<group>"; };
 		2D1120893C09EB812D503887 /* MatchHero_GolfKit_Male_Top_M.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Male_Top_M.ktx; sourceTree = "<group>"; };
 		2D3382B9B6A9B2EA29A8190B /* NativeGolfEquipment_Iron.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NativeGolfEquipment_Iron.json; sourceTree = "<group>"; };
@@ -671,6 +675,7 @@
 		30AD5E132ADCC261623C5547 /* MatchHero_Kit_Female_SockL_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_SockL_M.png; sourceTree = "<group>"; };
 		316A6BD4093A70F26F5FE0A9 /* MatchHero_Kit_Female_ShoeL_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_ShoeL_M.png; sourceTree = "<group>"; };
 		319AAC7C558712C0D2DC7E94 /* Progression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progression.swift; sourceTree = "<group>"; };
+		336AB720D101301806F5BFD4 /* course-golf-cliffside.mp4 */ = {isa = PBXFileReference; path = "course-golf-cliffside.mp4"; sourceTree = "<group>"; };
 		33F77C287872A4AFA9A83019 /* LockerMirrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockerMirrorTests.swift; sourceTree = "<group>"; };
 		36E7D5707231CC3D2D3D18B6 /* MatchHero_Male_Distance_Swing_05.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Distance_Swing_05.lzfse; sourceTree = "<group>"; };
 		3765B8CE71DEC206851B6AD4 /* SportsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIntegrationTests.swift; sourceTree = "<group>"; };
@@ -678,6 +683,8 @@
 		38C642B2105EFFC19C411789 /* ShotEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotEngine.swift; sourceTree = "<group>"; };
 		39D61D7B998E6C29BAD553AA /* scene-stands.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "scene-stands.jpg"; sourceTree = "<group>"; };
 		3A0944202946BEF219A126DF /* CaptureEvidenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureEvidenceTests.swift; sourceTree = "<group>"; };
+		3B6B05F007ACC63F4C41042E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3B9A8446F55EC381873F37EE /* course-golf-magma.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-magma.jpg"; sourceTree = "<group>"; };
 		3C0772F710798B3BC6C8F111 /* tick.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tick.wav; sourceTree = "<group>"; };
 		3D57F90D8E019191654712DF /* MatchHero_Kit_Male_Bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Male_Bottom.png; sourceTree = "<group>"; };
 		3DE14C1541B411223857C7EB /* GolfArcadeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -744,6 +751,7 @@
 		5D83DC8E50BEA6583C6899D6 /* GolfHero_Female_Swing_02.lzfse */ = {isa = PBXFileReference; path = GolfHero_Female_Swing_02.lzfse; sourceTree = "<group>"; };
 		5D9B8C3C1F3EB80ACC664FE3 /* MatchHero_Male_Swing_02.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Swing_02.lzfse; sourceTree = "<group>"; };
 		5E3315624B7CF4AF6F7AECFE /* Bricolage.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bricolage.ttf; sourceTree = "<group>"; };
+		5E352A8F76537F66339D3807 /* course-golf-postcards.mp4 */ = {isa = PBXFileReference; path = "course-golf-postcards.mp4"; sourceTree = "<group>"; };
 		5EA9BDB6BF6A809D3C6B233B /* club-football.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-football.png"; sourceTree = "<group>"; };
 		5EC0DAC789F4741B2FA6DE4C /* provenance.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = provenance.json; sourceTree = "<group>"; };
 		5EE522B469941C36651652A7 /* MatchHero_GolfKit_Male_ShoeL_N.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Male_ShoeL_N.png; sourceTree = "<group>"; };
@@ -842,6 +850,7 @@
 		8DEA863B3B48794CB9A267FE /* MenuNavigationRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuNavigationRegressionTests.swift; sourceTree = "<group>"; };
 		8E17ED58BE2A9E7DCD50C3E6 /* MatchHero_GolfKit_Female_ShoeL_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Female_ShoeL_M.png; sourceTree = "<group>"; };
 		8E2AA7FAF63ED56FA1A4B952 /* VisualOverhaulNativeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualOverhaulNativeTests.swift; sourceTree = "<group>"; };
+		8F1E22C04596FC8DFEB76E0C /* course-golf-wildisles.mp4 */ = {isa = PBXFileReference; path = "course-golf-wildisles.mp4"; sourceTree = "<group>"; };
 		8F5BA48CBA4A3DCD8F6D0CE5 /* MatchHero_Kit_Male_Bottom_N.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Male_Bottom_N.png; sourceTree = "<group>"; };
 		8F67A44A5B5E60E0A2B05B34 /* GolfArcade.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GolfArcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FA319FC4C93FAEB0E39B36F /* ArcadeGameSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeGameSession.swift; sourceTree = "<group>"; };
@@ -942,6 +951,7 @@
 		CD4D045BC2770598B1B6B276 /* MatchHero_OriginalEye_RelativeIris.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_OriginalEye_RelativeIris.png; sourceTree = "<group>"; };
 		CDA72AD7AEE7A386FEE4F548 /* Club_loading_Albedo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Club_loading_Albedo.png; sourceTree = "<group>"; };
 		CDD3606C5A526933215060E3 /* GolfKitHero_Female_Rig.lzfse */ = {isa = PBXFileReference; path = GolfKitHero_Female_Rig.lzfse; sourceTree = "<group>"; };
+		CE7CDB7B0750B3C3D4BFF32F /* course-golf-magma.mp4 */ = {isa = PBXFileReference; path = "course-golf-magma.mp4"; sourceTree = "<group>"; };
 		CE860ED564CA178E3B0D8F82 /* MatchHero_Female_Swing_04.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_Swing_04.lzfse; sourceTree = "<group>"; };
 		CECF3E854323B715BB3F521C /* MatchHero_Female_golden.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_golden.lzfse; sourceTree = "<group>"; };
 		CFD8F0F716ED9B5D63517EB2 /* MatchHero_Kit_Female_Top_N.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Female_Top_N.ktx; sourceTree = "<group>"; };
@@ -951,6 +961,7 @@
 		D186CC91C1ECBCD5A1EFCD4D /* menu-hero-rosa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu-hero-rosa.png"; sourceTree = "<group>"; };
 		D18A0B25E6F4E020ABAFF87C /* club-entrance.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-entrance.png"; sourceTree = "<group>"; };
 		D1EA090F35C9AC3FE0B7C755 /* MatchHero_Kit_Female_ShoeR_M.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Female_ShoeR_M.ktx; sourceTree = "<group>"; };
+		D31830B6B96F4F47A0114A03 /* course-golf-wildisles.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-wildisles.jpg"; sourceTree = "<group>"; };
 		D324E05E6A131C4A3EC416E0 /* MatchHero_Female_Distance.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MatchHero_Female_Distance.json; sourceTree = "<group>"; };
 		D34D58DAFC8B5DFB5EBD6C3D /* MatchHero_GolfKit_Male_GloveL_N.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Male_GloveL_N.png; sourceTree = "<group>"; };
 		D391CBB739A98760A4EFE01B /* HandGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandGestureRecognizer.swift; sourceTree = "<group>"; };
@@ -983,14 +994,7 @@
 		E0A049B93FB747A646813160 /* MatchHero_Kit_Female_SockR_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_SockR_M.png; sourceTree = "<group>"; };
 		E10FE6B37DF2660D4611E0C4 /* NativeGolfEquipment_Wedge.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = NativeGolfEquipment_Wedge.json; sourceTree = "<group>"; };
 		E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-golf-cliffside.jpg"; sourceTree = "<group>"; };
-		E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-magma.jpg"; sourceTree = "<group>"; };
-		E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */ = {isa = PBXFileReference; path = "course-golf-magma.mp4"; sourceTree = "<group>"; };
-		D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-wildisles.jpg"; sourceTree = "<group>"; };
-		1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */ = {isa = PBXFileReference; path = "course-golf-wildisles.mp4"; sourceTree = "<group>"; };
-		FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-postcards.jpg"; sourceTree = "<group>"; };
-		D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */ = {isa = PBXFileReference; path = "course-golf-postcards.mp4"; sourceTree = "<group>"; };
-		EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-cliffside.jpg"; sourceTree = "<group>"; };
-		AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */ = {isa = PBXFileReference; path = "course-golf-cliffside.mp4"; sourceTree = "<group>"; };
+		E1E0AD460CC84B5FAE74AC70 /* course-golf-postcards.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "course-golf-postcards.jpg"; sourceTree = "<group>"; };
 		E1FC0B3370282F23484BBF28 /* CoursePlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoursePlayTests.swift; sourceTree = "<group>"; };
 		E212F4D389555DCF0E707B04 /* SwingFeedbackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingFeedbackController.swift; sourceTree = "<group>"; };
 		E28A1E2DC42EC1CAE8D32516 /* club-play.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-play.png"; sourceTree = "<group>"; };
@@ -1639,6 +1643,8 @@
 				35584507323D9A532E2A7EAC /* Swing */,
 				311A8D5B1EBF799B8A5D189A /* Tracking */,
 				02C32530826CC36DD7962ACE /* Unity */,
+				2CCDF852D92EE66A8DB1E25E /* Assets.xcassets */,
+				3B6B05F007ACC63F4C41042E /* PrivacyInfo.xcprivacy */,
 			);
 			path = GolfArcade;
 			sourceTree = "<group>";
@@ -1701,6 +1707,14 @@
 				59BACDDEB1EF2108EC0122F6 /* club-training.png */,
 				2CBC9FA018D33F43B3BF34AB /* club-trophy.png */,
 				1BB80F46806DEFDA8746EFB0 /* club-whistle.png */,
+				127F6618ED4F8E51B48E6256 /* course-golf-cliffside.jpg */,
+				336AB720D101301806F5BFD4 /* course-golf-cliffside.mp4 */,
+				3B9A8446F55EC381873F37EE /* course-golf-magma.jpg */,
+				CE7CDB7B0750B3C3D4BFF32F /* course-golf-magma.mp4 */,
+				E1E0AD460CC84B5FAE74AC70 /* course-golf-postcards.jpg */,
+				5E352A8F76537F66339D3807 /* course-golf-postcards.mp4 */,
+				D31830B6B96F4F47A0114A03 /* course-golf-wildisles.jpg */,
+				8F1E22C04596FC8DFEB76E0C /* course-golf-wildisles.mp4 */,
 				AB9CBB8892A3896F03666DD0 /* gameplay-golf-cliffside.mp4 */,
 				B6CE211791D0EAE591CEA64D /* gameplay-tennis-skyscraper.mp4 */,
 				E91D385818358A0168E494E9 /* golf-controller-artwork.png */,
@@ -1708,14 +1722,6 @@
 				7CD6252B99393704B3960924 /* island-intro.png */,
 				0FBFF0E3EC5D4672E7E38B95 /* island-terrace.png */,
 				E1E066E6F04588C5FB0F0A70 /* map-golf-cliffside.jpg */,
-				E1DFBD25F37A656C227B54AD /* course-golf-magma.jpg */,
-				E5F30C0E7D5BA088CE57FC99 /* course-golf-magma.mp4 */,
-				D1BF44F53E2B0E1C9F0C9E03 /* course-golf-wildisles.jpg */,
-				1F71E83A41827C4A51D3D922 /* course-golf-wildisles.mp4 */,
-				FB7486300A006E79E75602D9 /* course-golf-postcards.jpg */,
-				D6D29DB9C00411966DD76AC4 /* course-golf-postcards.mp4 */,
-				EA8C17F5A7A2EE25F2D8BDBF /* course-golf-cliffside.jpg */,
-				AAE46E118D685F2F8A4C91FF /* course-golf-cliffside.mp4 */,
 				54777E63CA30CC5B3B2D207A /* map-golf-magma.jpg */,
 				800603EFBF1FA0ED0DC86566 /* map-golf-postcards.jpg */,
 				D0B6FE6F4EFCE8FA6277804E /* map-golf-wildisles.jpg */,
@@ -1961,6 +1967,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				35E314628DF182D18C20F8DC /* Assets.xcassets in Resources */,
 				DC9F0D606E4A7FBA24B8DDDC /* Bricolage.ttf in Resources */,
 				F59544F8B08C54978C4F8DB0 /* Club_entrance.json in Resources */,
 				5A033530EEE94255E08FB13E /* Club_entrance_Albedo.png in Resources */,
@@ -2223,6 +2230,7 @@
 				D2B2C886677E700558FE4279 /* NativeGolfEquipment_Wedge.json in Resources */,
 				72B2F1B84D5B4198AC22B7A8 /* OFL-Bricolage.txt in Resources */,
 				053C33C84DF7EA0896F5FF41 /* OFL-Rubik.txt in Resources */,
+				B97B03709568731E7DCC24AA /* PrivacyInfo.xcprivacy in Resources */,
 				D52FE9665B91FC7418B1E44B /* Rubik.ttf in Resources */,
 				A82E3ACEC9982F95451788DD /* club-bowling.png in Resources */,
 				A023730F9776A6815F70D6FD /* club-boxing.png in Resources */,
@@ -2245,6 +2253,14 @@
 				74B05828A7F807025A20956F /* club-training.png in Resources */,
 				D6A11A33C7BF2F560554091C /* club-trophy.png in Resources */,
 				B8B2137027BA40EB9E8940C9 /* club-whistle.png in Resources */,
+				1A68BB58A485E9A0258F6A7D /* course-golf-cliffside.jpg in Resources */,
+				7AF1FD44AA29706C6A08D67B /* course-golf-cliffside.mp4 in Resources */,
+				49EEBCDD0B150DC83681741C /* course-golf-magma.jpg in Resources */,
+				9223B4675ACAF3DB1185FAFE /* course-golf-magma.mp4 in Resources */,
+				51B06F50B296E57023CE032A /* course-golf-postcards.jpg in Resources */,
+				CA3F925CE3900F3A230F6D81 /* course-golf-postcards.mp4 in Resources */,
+				13B6E3B9F592588F15AC00D9 /* course-golf-wildisles.jpg in Resources */,
+				57C62BA10DA4EE53173CDA72 /* course-golf-wildisles.mp4 in Resources */,
 				DDDD5241AD4F2BBF09AD7075 /* gameplay-golf-cliffside.mp4 in Resources */,
 				F85458C3DE00CEAB0875BD8E /* gameplay-tennis-skyscraper.mp4 in Resources */,
 				8022C33AD5A7DCB2713C207A /* golf-controller-artwork.png in Resources */,
@@ -2252,14 +2268,6 @@
 				BF2FE32562B0D8C0F0E9A6AB /* island-intro.png in Resources */,
 				E0E80E1BF3243B1D7AF962C3 /* island-terrace.png in Resources */,
 				E7D5A7386ECF07B566C1424F /* map-golf-cliffside.jpg in Resources */,
-				A8717173ECF290D0B6C871A5 /* course-golf-magma.jpg in Resources */,
-				F88371E0CB144448157AE1E5 /* course-golf-magma.mp4 in Resources */,
-				B2177D0C85B692041BEAFF48 /* course-golf-wildisles.jpg in Resources */,
-				67CA1B5F2E9E5B7EED57F10A /* course-golf-wildisles.mp4 in Resources */,
-				ADC821CF509069B68A090A7E /* course-golf-postcards.jpg in Resources */,
-				C5B15AB3980307DFF0B72CCB /* course-golf-postcards.mp4 in Resources */,
-				5CD8A56096CB8599EB730FFA /* course-golf-cliffside.jpg in Resources */,
-				420DD7A93B640079EEDB73B1 /* course-golf-cliffside.mp4 in Resources */,
 				0EC648E316DF4FD3301CDF63 /* map-golf-magma.jpg in Resources */,
 				35EBC6CA16BF535099C1A75D /* map-golf-postcards.jpg in Resources */,
 				7510954D48DE5A7286AE24C1 /* map-golf-wildisles.jpg in Resources */,
@@ -2533,6 +2541,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_ENTITLEMENTS = GolfArcade/Multiplayer/GolfArcade.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2581,6 +2590,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_ENTITLEMENTS = GolfArcade/Multiplayer/GolfArcade.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GENERATE_INFOPLIST_FILE = YES;

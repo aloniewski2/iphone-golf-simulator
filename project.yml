@@ -20,6 +20,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aloniewski.GolfArcade
+        CODE_SIGN_ENTITLEMENTS: GolfArcade/Multiplayer/GolfArcade.entitlements
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: GolfArcade/Unity/SportsInfo.plist
         SWIFT_OBJC_BRIDGING_HEADER: GolfArcade/Unity/GolfArcade-Bridging-Header.h

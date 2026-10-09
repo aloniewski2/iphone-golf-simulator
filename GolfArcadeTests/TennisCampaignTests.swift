@@ -222,25 +222,23 @@ final class TennisCampaignTests: XCTestCase {
         menu.back(); XCTAssertEqual(menu.screen, .hub(.tennis), "back from the draw goes to the tennis hub")
     }
 
-    func testTheTutorialUnlocksEverythingElseInASport() {
+    func testPlayableModesNeedNoTutorialAndUnsupportedModesStayLocked() {
         let menu = TennisMenu.shared, progress = SportProgress.shared
         progress.resetTutorials()
         defer { progress.completeTutorial(.tennis); progress.completeTutorial(.golf) }
-        XCTAssertTrue(menu.hubUnlocked(.tennis, "tutorial"))
-        for id in ["campaign", "training", "exhibition"] { XCTAssertFalse(menu.hubUnlocked(.tennis, id), id) }
-        XCTAssertFalse(menu.hubUnlocked(.golf, "round"))
+        for id in ["campaign", "training", "exhibition"] { XCTAssertTrue(menu.hubUnlocked(.tennis, id), id) }
+        XCTAssertTrue(menu.hubUnlocked(.golf, "round"))
+        XCTAssertFalse(menu.hubUnlocked(.tennis, "tutorial"), "the retired tutorial is not a playable mode")
+        XCTAssertFalse(menu.hubUnlocked(.golf, "golfCampaign"), "unsupported modes stay unavailable")
         menu.debugShow(.hub(.tennis))
-        XCTAssertEqual(menu.focused, "tutorial", "a first-timer lands on the tutorial")
+        XCTAssertEqual(menu.focused, "exhibition", "new players can play immediately")
         menu.move(.down); XCTAssertEqual(menu.focused, "campaign")
         let refusals = menu.refusals
         menu.select()
-        XCTAssertEqual(menu.refusals, refusals + 1, "the campaign stays locked until the tutorial is done")
-        XCTAssertEqual(menu.screen, .hub(.tennis))
-        progress.completeTutorial(.tennis)
-        XCTAssertTrue(menu.hubUnlocked(.tennis, "campaign"))
-        XCTAssertFalse(menu.hubUnlocked(.golf, "round"), "each sport has its own tutorial")
-        menu.select(); XCTAssertEqual(menu.screen, .campaign)
-        XCTAssertFalse(menu.hubUnlocked(.golf, "golfCampaign"), "golf's campaign is coming soon")
+        XCTAssertEqual(menu.refusals, refusals, "campaign entry does not depend on a tutorial")
+        XCTAssertEqual(menu.screen, .campaign)
+        XCTAssertFalse(progress.finishedTutorial(.tennis), "entering the campaign does not fabricate tutorial completion")
+        XCTAssertFalse(progress.finishedTutorial(.golf))
     }
 
     func testGameSelectOffersTheTwoPlayableSports() {
@@ -249,7 +247,7 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.rows(.gameSelect).first?.count, 2)
         XCTAssertEqual(Sport.allCases.filter(\.playable), [.golf, .tennis])
         menu.tap("sport-tennis"); XCTAssertEqual(menu.screen, .hub(.tennis))
-        menu.back(); menu.back(); XCTAssertEqual(menu.screen, .main)
+        menu.back(); menu.back(); XCTAssertEqual(menu.screen, .party)
         for sport in Sport.allCases {
             for clip in sport.clips { XCTAssertNotNil(Bundle.main.url(forResource: clip, withExtension: "mp4"), "\(clip).mp4 is bundled") }
         }
@@ -258,7 +256,7 @@ final class TennisCampaignTests: XCTestCase {
     func testMainMenuReachesEverySection() {
         let menu = TennisMenu.shared
         SportProgress.shared.completeTutorial(.tennis)
-        for (id, screen) in [("play", MenuScreen.gameSelect), ("character", .character), ("settings", .settings)] {
+        for (id, screen) in [("play", MenuScreen.party), ("character", .character), ("settings", .settings)] {
             menu.debugShow(.main); menu.tap(id); XCTAssertEqual(menu.screen, screen, id)
         }
     }
@@ -445,21 +443,21 @@ final class TennisCampaignTests: XCTestCase {
         }
         visit([]); visit(["start"])
         visit(["start", "play"])
-        visit(["start", "play", "sport-tennis"])
-        visit(["start", "play", "sport-golf"])
-        visit(["start", "play", "sport-tennis", "campaign"])
-        visit(["start", "play", "sport-tennis", "exhibition"])
-        visit(["start", "play", "sport-tennis", "training"])
-        visit(["start", "play", "sport-golf", "tutorial"])
+        visit(["start", "play", "partySolo"])
+        visit(["start", "play", "partySolo", "sport-tennis"])
+        visit(["start", "play", "partySolo", "sport-golf"])
+        visit(["start", "play", "partySolo", "sport-tennis", "campaign"])
+        visit(["start", "play", "partySolo", "sport-tennis", "exhibition"])
+        visit(["start", "play", "partySolo", "sport-tennis", "training"])
         visit(["start", "character"])
         visit(["start", "settings"])
         visit(["start", "settings", "tab-guide", "guide-setup"])
-        visit(["start", "play", "sport-tennis", "campaign", "campaignPlay"])
-        for screen: MenuScreen in [.title, .main, .gameSelect, .hub(.tennis), .hub(.golf), .campaign, .exhibition,
-                                   .training, .golfLesson, .character, .settings, .howTo] {
+        visit(["start", "play", "partySolo", "sport-tennis", "campaign", "campaignPlay"])
+        for screen: MenuScreen in [.title, .main, .party, .gameSelect, .hub(.tennis), .campaign,
+                                   .exhibition, .training, .map, .character, .settings, .howTo] {
             XCTAssertTrue(reached.contains(key(screen)), "\(screen) is reachable")
         }
-        XCTAssertTrue(reached.contains(key(.story)) || reached.contains(key(.connect)), "Continue starts the next thing")
+        XCTAssertTrue(reached.contains(key(.map)), "golf and campaign play reach course selection before loading")
     }
 
     func testNextMatchStartsNextRoundWithoutUnseenStoryOrDoubleAdvance() async throws {

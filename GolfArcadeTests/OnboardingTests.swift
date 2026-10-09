@@ -38,10 +38,16 @@ import UIKit
             XCTAssertTrue(OnboardingFlow(store: s, progress: p, arguments: [arg, "-forceOnboarding"]).active, arg)
         }
     }
-    func testEverySavedStepResumesAndReplaySurvivesTutorialFlag() {
+    func testSavedSetupResumesAndRetiredLessonStepsReturnToChoose() {
         for step in [OnboardingStep.account, .character, .connect, .motionPrimer, .choose, .tutorial(.tennis), .reward(.golf)] {
             let (_, s, p) = fixture(); s.step = step; s.explicitRun = true; p.completeTutorial(.tennis)
-            XCTAssertEqual(OnboardingFlow(store: s, progress: p, arguments: []).step, step)
+            let expected: OnboardingStep
+            switch step {
+            case .motionPrimer, .tutorial, .reward: expected = .choose
+            default: expected = step
+            }
+            XCTAssertEqual(OnboardingFlow(store: s, progress: p, arguments: []).step, expected)
+            XCTAssertTrue(p.finishedTutorial(.tennis), "migration preserves earned progress")
         }
     }
     func testGuestIdentityIsStableAndNameIsBounded() {
@@ -80,10 +86,10 @@ import UIKit
         XCTAssertEqual(LevelRewards.rewards(for: 2).first?.id, "white-headband")
     }
 
-    func testAimStepSurvivesRestartAndHubFinishesInChosenSport() {
+    func testRetiredAimStepReturnsToChooseWithoutLosingStoredProgress() {
         let (_, store, progress) = fixture(); store.step = .tutorial(.tennis); store.tutorialStep = 2
         let flow = OnboardingFlow(store: store, progress: progress, arguments: [])
-        XCTAssertEqual(flow.step, .tutorial(.tennis)); XCTAssertEqual(flow.store.tutorialStep, 2)
+        XCTAssertEqual(flow.step, .choose); XCTAssertEqual(flow.store.tutorialStep, 2)
         flow.finish(.golf); XCTAssertEqual(TennisMenu.shared.screen, .hub(.golf)); XCTAssertFalse(flow.active)
     }
 
