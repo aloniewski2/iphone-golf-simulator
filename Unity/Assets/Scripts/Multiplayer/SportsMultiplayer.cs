@@ -150,7 +150,8 @@ namespace GolfArcade.Multiplayer {
                 case "start":case "end":return false;
                 case "pause":Instance.Send("availability","false");return true;
                 case "resume":Instance.Send("availability","true");Time.timeScale=1;return true;
-                case "touch":case "motion":case "recalibrate":case "latency":case "golfAimDirection":return false;
+                case "touch":case "motion":case "recalibrate":case "latency":case "golfAimDirection":
+                case "golfStartSwing":case "golfCancelSwing":return false;
                 case "toss":
                     Instance.Submit(new NetworkInput {action="toss",age=Instance.tennisView?.TossSeenAgo??0});return true;
                 case "golfEmote":

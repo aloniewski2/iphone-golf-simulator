@@ -1264,6 +1264,7 @@ namespace GolfArcade.Game
             bool round = Current is not (State.Menu or State.Golfer or State.RoundDone);
             hud.Controller.SetShown(round);
             hud.Controller.SetIntro(Current == State.Intro);
+            RefreshSwingButton();
             // live on a big screen, the HUD goes there for the round; the menu, the picker and the
             // round's card stay on the phone, where they can be touched
             hud.HudOnTv(round);
@@ -1851,6 +1852,7 @@ namespace GolfArcade.Game
         void Nudge(double degrees)
         {
             if (Current != State.Aim) return;
+            if (degrees != 0) NativeCancelSwing();   // a changed aim ends a started swing: Start Swing again once lined up
             heading += degrees;
             aimedByPlayer = true;
             UpdateAimVisuals();
@@ -1959,7 +1961,7 @@ namespace GolfArcade.Game
             golfer.Settle();
             Haptics.Release();
             sounds.Release();
-            hud.SetStatus("Hold still, then swing");
+            hud.SetStatus(NativeControlled ? "Swing cancelled — tap Start Swing to try again" : "Hold still, then swing");
             if (NativeControlled) NativeReady();
         }
 
@@ -2184,7 +2186,10 @@ namespace GolfArcade.Game
                     hud.SetFace(club != GolfClub.Putter && swinging && !Demo ? Swing.Detector.FaceNow : null);
                     if (Swing.Phase == SwingPhase.Address && lastPhase != SwingPhase.Address) { sounds.PlayReady(); Haptics.Tick(); }
                     if (NativeControlled) {
-                        if (!NativeShotReady) hud.SetStatus("Tap Ready on your phone to set this shot's starting grip");
+                        if (!NativeShotReady) hud.SetStatus("Tap Ready on your phone to line up this shot");
+                        else if (NativeSportsSession.Touch) { }
+                        else if (!NativeSwingTracking) hud.SetStatus("Line up your shot, then tap Start Swing on your phone");
+                        else if (NativeSwingState == 1) hud.SetStatus("Hold your phone still in your stance…");
                         else if (Swing.Phase == SwingPhase.Address) hud.SetStatus("Ready — swing back and through!");
                     }
                     else if (Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing) { }

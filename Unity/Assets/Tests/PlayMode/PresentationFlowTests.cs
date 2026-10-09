@@ -54,10 +54,12 @@ namespace GolfArcade.PlayTests {
             Assert.That(game.Current,Is.EqualTo(GolfGame.State.Aim));
             var pose=typeof(GolfGame).GetField("needsReadyPose",BindingFlags.Instance|BindingFlags.NonPublic);
             Assert.True((bool)pose.GetValue(game));
+            game.NativeStartSwing();
             for(int i=0;i<40;i++) { sample.time+=.01; sample.rx=i%2==0?9:-9; game.NativeMotion(sample); }
             Assert.True((bool)pose.GetValue(game),"Follow-through must not become a new ready pose");
             Assert.That(game.BallPosition,Is.EqualTo(ball));
-            sample.rx=0; sample.time+=.1; game.NativeMotion(sample);
+            sample.rx=0;
+            for(int i=0;i<60;i++) { sample.time+=.01; game.NativeMotion(sample); }
             Assert.False((bool)pose.GetValue(game));
             Time.captureFramerate=0; PresentationPolicy.Configure("full",false,true,false);
         }

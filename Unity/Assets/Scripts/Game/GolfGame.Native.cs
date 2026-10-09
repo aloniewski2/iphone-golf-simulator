@@ -79,6 +79,7 @@ namespace GolfArcade.Game {
             sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
             sheet.SetScreen(true);
             sheet.Skip.Pressed = () => { SkipPresentation(); };
+            sheet.StartSwing.Pressed = () => NativeStartSwing();
             sheet.Pause.gameObject.SetActive(true);
             sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();
             hud.PhoneMapCamera = phoneMapCamera;
@@ -108,7 +109,7 @@ namespace GolfArcade.Game {
         }
 
         public void NativeAim(float value) { if(Current==State.Aim) Nudge(Mathf.Clamp(value,-1,1)*AimTapDegrees); }
-        public void NativeClub(int value) { if(Current==State.Aim) CycleClub(value); }
+        public void NativeClub(int value) { if(Current==State.Aim) { NativeCancelSwing(); CycleClub(value); } }
         // The joystick uses the same axes as the phone's course map. Set the shot's
         // actual heading, so both the TV flight and the projected landing line agree.
         public void NativeAimDirection(float across,float forward) {
@@ -119,6 +120,7 @@ namespace GolfArcade.Game {
             if(direction.sqrMagnitude<.01f) return;
             double desired=System.Math.Atan2(direction.x,direction.z)*180/System.Math.PI;
             if(GolfArcade.Multiplayer.SportsMultiplayer.Active) {
+                NativeCancelSwing();
                 var net=GolfArcade.Multiplayer.SportsMultiplayer.Instance;
                 if(net.GolfState!=null) net.Submit(new GolfArcade.Multiplayer.NetworkInput {
                     action="golfAimHeading",value=(float)desired,actorSeat=net.GolfState.turn
@@ -206,19 +208,55 @@ namespace GolfArcade.Game {
             OnImpact(new SwingImpact { Power=power, Backswing=power, PeakSpeed=power*16, Commit=1.2, DownswingSeconds=.25, TempoSeconds=.7 });
         }
         public bool NativeShotReady { get; private set; }
+        /// Motion counts only while this is on: the player taps Start Swing on the phone, and the
+        /// shot ends it (as does a cancelled swing, a new aim, a club change or a pause). Without
+        /// it, handling the phone to aim or change club could be read as the start of a swing.
+        public bool NativeSwingTracking { get; private set; }
+        /// The Start Swing button's face: 0 tap to start · 1 hold still while the grip is set · 2 swing now.
+        public int NativeSwingState => !NativeSwingTracking ? 0 : needsReadyPose ? 1 : 2;
         public void RequireNativeReady() {
-            NativeShotReady = false; needsReadyPose = false;
+            NativeShotReady = false; needsReadyPose = false; NativeSwingTracking = false;
             Swing.Detector.Reset();
+            RefreshSwingButton();
         }
         bool needsReadyPose;
+        // The starting grip is taken after the phone has been held this still for this long.
+        const float GripStillRate = .8f;
+        const double GripHoldSeconds = .5;
+        double gripStillSince = -1;
         int nativeLoadFrame = -1;
+        /// The shot is lined up and can be aimed (and swung by touch). It does not start motion
+        /// tracking: that waits for NativeStartSwing.
         public void NativeReady(System.Numerics.Quaternion? grip = null) {
             if (Current != State.Aim) return;
-            NativeShotReady = true; Swing.Detector.UseReadyPose=true; needsReadyPose=true; Swing.Detector.Reset();
+            NativeShotReady = true; NativeSwingTracking = false; Swing.Detector.UseReadyPose=true; needsReadyPose=true; gripStillSince=-1; Swing.Detector.Reset();
             if (grip.HasValue) CaptureNativeGrip(grip.Value);
+            RefreshSwingButton();
+        }
+        /// Start Swing: take the phone's current hold as the starting grip (the next quiet moment
+        /// when the phone does not send one) and begin reading the swing.
+        public void NativeStartSwing(System.Numerics.Quaternion? grip = null) {
+            if (Current != State.Aim || !NativeShotReady) return;
+            NativeSwingTracking = true; Swing.Detector.UseReadyPose=true; needsReadyPose=true; gripStillSince=-1; Swing.Detector.Reset();
+            if (grip.HasValue) CaptureNativeGrip(grip.Value);
+            RefreshSwingButton();
+        }
+        /// Back to waiting for Start Swing, ending a backswing already begun.
+        public void NativeCancelSwing() {
+            if (!NativeSwingTracking) return;
+            if (Swing.Phase is SwingPhase.Backswing or SwingPhase.Downswing) OnCancel();
+            NativeSwingTracking = false; Swing.Detector.Reset();
+            RefreshSwingButton();
         }
         void CaptureNativeGrip(System.Numerics.Quaternion q) {
             lastReadyGrip=q; Swing.Detector.SetReadyPose(q); needsReadyPose=false;
+            RefreshSwingButton();
+        }
+        /// The button on the phone's controller sheet: shown while a motion shot is lined up.
+        void RefreshSwingButton() {
+            var sheet = hud != null ? hud.Controller : null;
+            if (sheet == null || !sheet.Alive) return;
+            sheet.SetSwingButton(NativeControlled && Current == State.Aim && NativeShotReady && !NativeSportsSession.Touch, NativeSwingState);
         }
         public void NativeMotion(in NativeSportsSession.Sample sample) {
             if(Current==State.Intro) {
@@ -226,14 +264,18 @@ namespace GolfArcade.Game {
                 if(!float.IsNaN(speed) && !float.IsInfinity(speed) && speed>20) { presentationMotionConsumed=true; SkipPresentation(); }
                 return;
             }
-            if (Current != State.Aim || !NativeShotReady) return; // Follow-through and result-screen motions cannot arm a shot.
+            if (Current != State.Aim || !NativeShotReady || !NativeSwingTracking) return; // Only a started swing counts: not follow-through, result-screen or handling motions.
             var q=new System.Numerics.Quaternion(sample.qx,sample.qy,sample.qz,sample.qw);
             var rate = new System.Numerics.Vector3(sample.rx,sample.ry,sample.rz);
             var gravity = new System.Numerics.Vector3(sample.gx,sample.gy,sample.gz);
             if(float.IsNaN(q.LengthSquared()) || float.IsInfinity(q.LengthSquared()) || q.LengthSquared()<.5f ||
                float.IsNaN(rate.LengthSquared()) || float.IsInfinity(rate.LengthSquared())) return;
             if(needsReadyPose) {
-                if (rate.Length() > 1.2f) return;
+                // The grip is where the phone is held still, not where it was when Start Swing was
+                // tapped: the player lifts it into their stance first.
+                if (rate.Length() > GripStillRate) { gripStillSince = -1; return; }
+                if (gripStillSince < 0) gripStillSince = sample.time;
+                if (sample.time - gripStillSince < GripHoldSeconds) return;
                 CaptureNativeGrip(q);
                 Debug.Log("[SportsMotion] Ready pose captured");
             }

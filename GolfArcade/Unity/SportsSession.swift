@@ -339,7 +339,7 @@ final class SportsSession {
         resultPresentationReady = true; finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
         tvDelay = timingCalibration ?? 0
         golfController = .waiting; golfControllerMap = nil
-        setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; stamina=1
+        setupStage = .scan; axisGate = SportsAxisGate(); phase="calibrating"; feedback=""; golfPhase=""; golfHasNextHole=false; golfShotReady=false; golfSwingState=0; stamina=1
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
         UserDefaults.standard.set(sport, forKey: "sports.lastSport.\(p.id.uuidString)")
@@ -564,7 +564,7 @@ final class SportsSession {
         offerTimingCalibration()
     }
     func useTouch() {
-        if sport == "golf" { golfShotReady = false }
+        if sport == "golf" { golfShotReady = false; golfSwingState = 0 }
         if sport == "tennis" {
             timingPrompt=false; checkingTiming=false; timingCountdownEnds=nil; checkTimingOnResume=false
             command("cancelTimingCheck"); aimLesson = nil; setupStage = .ready
@@ -573,7 +573,7 @@ final class SportsSession {
         motion.stop(); command("touch"); status="Touch controls selected. Tap Ready to play."
     }
     func useMotion() {
-        if sport == "golf" { golfShotReady = false }
+        if sport == "golf" { golfShotReady = false; golfSwingState = 0 }
         pause(); touch=false; phase="calibrating"; trackingWarning=""; command("motion")
         if sport == "tennis" { aimChecked=false }
         if sport == "tennis" && !motion.axisLocked { beginAxisCapture(); return }
@@ -606,6 +606,14 @@ final class SportsSession {
     }
     func steer(_ value:Double) { target=value; if !paused { sendInput(valid:true) } }
     func setAim(_ value:Double) { if sport == "tennis" { setShotAim(across:value,depth:shotDepth) } else { command("aim",value:value) } }
+    /// Start Swing. The grip is taken by Unity once the phone is held still in the stance, not
+    /// from this tap, whose pose is the screen-facing one.
+    func startGolfSwing() {
+        guard active, sport == "golf", !touch, ready, !paused, golfPhase == "Aim", golfShotReady, golfSwingState == 0 else { return }
+        golfSwingState = 1
+        command("golfStartSwing")
+        if haptics { UIImpactFeedbackGenerator(style: .medium).impactOccurred() }
+    }
     /// A direction in the phone course map: +x right, +y toward the top of the map.
     func aimGolf(across: Double, forward: Double) {
         guard active, sport == "golf", ready, !paused, golfPhase == "Aim",
@@ -745,6 +753,9 @@ final class SportsSession {
         sendJSON(message)
     }
     var golfShotReady = false
+    /// Motion golf reads a swing only after Start Swing: 0 tap to start, 1 hold the phone still
+    /// in your stance while Unity sets the grip, 2 swing now. Unity owns it and reports it.
+    var golfSwingState = 0
     var golfController = GolfControllerReading.waiting
     var golfControllerMap: UIImage?
     var golfPhase = ""
@@ -816,6 +827,7 @@ final class SportsSession {
                 golfPhase = state
                 golfHasNextHole = event["golfHasNextHole"] as? Bool ?? false
                 golfShotReady = event["golfShotReady"] as? Bool ?? false
+                golfSwingState = event["golfSwingState"] as? Int ?? 0
             }
             if let allowed = event["presentationResultReady"] as? Bool { resultPresentationReady = allowed }
             switch event["type"] as? String {

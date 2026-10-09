@@ -48,7 +48,7 @@ namespace GolfArcade.Game
         float nextGolfController;
         [Serializable] class Event {
             public GolfGame.ControllerReading golfController;
-            public int version=1; public string session,type,message,finalScore,golfState; public bool presentationResultReady=true; public bool matchComplete,matchWon,golfHasNextHole,golfShotReady; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge,clock,renderedAt;
+            public int version=1; public string session,type,message,finalScore,golfState; public bool presentationResultReady=true; public bool matchComplete,matchWon,golfHasNextHole,golfShotReady; public int golfSwingState; public float stamina=1,playerX; public int frame; public bool paused; public double inputAge,clock,renderedAt;
         }
         public static bool Active { get; private set; }
         public static bool Left { get; private set; }
@@ -184,6 +184,9 @@ namespace GolfArcade.Game
                     case "touch": Touch=true; touch=true; if(tennis) { tennis.CancelTimingCheck(); tennis.SetAimPractice(false); } if(golf) { golf.NativeReady(); } break;
                     case "motion": Touch=false; touch=false; if(golf) golf.NativeReady(); break;
                     case "recalibrate": if(golf) golf.NativeReady(ReadyGrip(m)); break;
+                    // Motion swings count only after the player taps Start Swing on the phone.
+                    case "golfStartSwing": if(golf && !paused && !touch) golf.NativeStartSwing(ReadyGrip(m)); break;
+                    case "golfCancelSwing": if(golf) golf.NativeCancelSwing(); break;
                     case "difficulty": if(tennis) tennis.OpponentDifficulty=Mathf.Clamp01(m.value); break;
                     case "coaching": TennisCoach.ResetTips(); break;
                     case "latency": if(tennis) tennis.DisplayLatency=m.value; break;
@@ -460,7 +463,7 @@ namespace GolfArcade.Game
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
         void PresentationTrace(string line) => Emit("presentation",line);
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.Current.ToString() : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,golfSwingState=golf ? golf.NativeSwingState : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&
