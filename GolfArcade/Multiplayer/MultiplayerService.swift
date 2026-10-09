@@ -55,8 +55,6 @@ final class MultiplayerService {
     @ObservationIgnored private var nextHeartbeat: Double = 0
     @ObservationIgnored private var silenceArmedAt: Double = .infinity
     @ObservationIgnored private var stats = NetStats()
-    // Tennis setup between loading and play: when it began, whether the "still waiting" note went out, and which competitors
-    // reloaded mid-match (play stays paused for them until they point their phone at the TV again).
     // Connection check before a tennis match: the guest grades its own pings and reports to the owner, who starts only when every
     // guest's connection has been steady (see LinkWindow). `requiresStableLink` is off only in tests about something else.
     var requiresStableLink = true
@@ -67,6 +65,8 @@ final class MultiplayerService {
     @ObservationIgnored private var linkHeardAt: [String: Double] = [:]
     @ObservationIgnored private var linkWaitingSince: Double?
     @ObservationIgnored private var linkOverride = false
+    // Tennis setup between loading and play: when it began, whether the "still waiting" note went out, and which competitors
+    // reloaded mid-match (play stays paused for them until they point their phone at the TV again).
     @ObservationIgnored private var calibrationStarted: Double = 0
     @ObservationIgnored private var calibrationNoticed = false
     @ObservationIgnored private var awaitingCalibration: Set<String> = []

@@ -301,9 +301,9 @@ struct LinkWindow {
     var grade: LinkGrade {
         guard samples.count >= Self.minimumSamples else { return .unknown }
         guard !answeredRTTs.isEmpty else { return .poor }
-        let rtt = medianRTT, jitter = jitter, loss = lossPercent
-        if rtt <= MultiplayerTuning.linkGoodRTT, jitter <= MultiplayerTuning.linkGoodJitter, loss <= MultiplayerTuning.linkGoodLossPercent { return .good }
-        if rtt <= MultiplayerTuning.linkFairRTT, jitter <= MultiplayerTuning.linkFairJitter, loss <= MultiplayerTuning.linkFairLossPercent { return .fair }
+        let typical = medianRTT, spread = jitter, lost = lossPercent
+        if typical <= MultiplayerTuning.linkGoodRTT, spread <= MultiplayerTuning.linkGoodJitter, lost <= MultiplayerTuning.linkGoodLossPercent { return .good }
+        if typical <= MultiplayerTuning.linkFairRTT, spread <= MultiplayerTuning.linkFairJitter, lost <= MultiplayerTuning.linkFairLossPercent { return .fair }
         return .poor
     }
     /// What the phone tells the owner: grade, then the three numbers behind it.
