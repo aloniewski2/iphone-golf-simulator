@@ -216,4 +216,36 @@ enum MultiplayerTuning {
     static let heartbeatInterval = 0.1
     /// Seconds after the shared start before silence is judged: the first frames of a freshly loaded scene can stall the app.
     static let silenceGrace = 1.0
+    /// Apple limits how big an "unreliable" message may be and does not say by how much. Only a refusal of a message bigger
+    /// than this makes us send that kind reliably instead; a small one that fails is some other problem and is rethrown.
+    static let unreliableSafeBytes = 900
+}
+
+/// Local statistics for tuning once the app is live. Nothing is uploaded: the line goes to SportsDiagnostics.log when a match ends.
+struct NetStats {
+    private(set) var rtts: [Double] = []
+    var pingsSent = 0, pongsHeard = 0, silences = 0, resumes = 0, drops = 0
+    var largestPacket = 0, unreliableRefused = 0
+
+    mutating func note(rtt: Double) {
+        guard rtt.isFinite, rtt >= 0 else { return }
+        pongsHeard += 1; rtts.append(rtt); if rtts.count > 300 { rtts.removeFirst() }
+    }
+    var medianRTT: Double { ClockFilter.median(rtts) }
+    var p95RTT: Double {
+        guard !rtts.isEmpty else { return 0 }
+        let sorted = rtts.sorted()
+        return sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))]
+    }
+    /// Mean change between successive round trips: a simple measure of how jumpy the link is.
+    var jitter: Double {
+        guard rtts.count > 1 else { return 0 }
+        return zip(rtts, rtts.dropFirst()).map { abs($1 - $0) }.reduce(0, +) / Double(rtts.count - 1)
+    }
+    var lossPercent: Double { pingsSent == 0 ? 0 : max(0, 100 * Double(pingsSent - pongsHeard) / Double(pingsSent)) }
+    var isEmpty: Bool { pingsSent == 0 && rtts.isEmpty && silences == 0 && largestPacket == 0 }
+    var summary: String {
+        String(format: "rtt median %.0f ms, p95 %.0f ms, jitter %.0f ms, ping loss %.1f%% (%d of %d answered), quiet pauses %d (resumed %d, dropped %d), largest packet %d bytes, unreliable refused %d",
+               medianRTT * 1000, p95RTT * 1000, jitter * 1000, lossPercent, pongsHeard, pingsSent, silences, resumes, drops, largestPacket, unreliableRefused)
+    }
 }

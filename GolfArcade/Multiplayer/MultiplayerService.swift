@@ -52,6 +52,9 @@ final class MultiplayerService {
     @ObservationIgnored private var silent: [String: Int] = [:]
     @ObservationIgnored private var nextHeartbeat: Double = 0
     @ObservationIgnored private var silenceArmedAt: Double = .infinity
+    @ObservationIgnored private var stats = NetStats()
+    /// Kinds Apple refused to send unreliably (too big): sent reliably from then on.
+    @ObservationIgnored private var unreliableRefused: Set<String> = []
     @ObservationIgnored private var rate: [String: (Double, Int)] = [:]
     @ObservationIgnored private var name = "Player"
     @ObservationIgnored private var female = false
@@ -229,7 +232,7 @@ final class MultiplayerService {
         try requireOwnerIdle()
         guard onMatchRequested != nil || !SportsSession.shared.active else { throw MultiplayerError.invalidOperation("Finish the current sport session first.") }
         guard let lobby, lobby.canStart else { throw MultiplayerError.invalidOperation("At least two competitors must be ready.") }
-        presentationReadyAt.removeAll(); scheduledRunAt = 0; silent.removeAll(); silenceArmedAt = .infinity
+        presentationReadyAt.removeAll(); scheduledRunAt = 0; silent.removeAll(); silenceArmedAt = .infinity; stats = NetStats()
         let id = UUID().uuidString
         self.lobby?.matchID = id; self.lobby?.phase = .loading; emotes.removeAll()
         loadingStarted = now; loadingNeedsDecision = false; winnerSeat = -1; quickSport = nil
@@ -404,6 +407,7 @@ final class MultiplayerService {
         case "pong":
             guard let sent = Double(packet.payload) else { return }
             // One slow packet must not move the shared clock: keep the least-delayed samples and slew (ClockFilter).
+            stats.note(rtt: max(0, now - sent))
             clockOffset = clockFilter.add(rtt: max(0, now - sent), offset: packet.sentAt - (sent + now) / 2)
             roundTrip = clockFilter.medianRTT
             pushRuntime("clock", payload: String(clockOffset))
@@ -415,7 +419,7 @@ final class MultiplayerService {
         guard isOwner, let heard = silent[id] else { return }
         silent[id] = heard + 1
         guard heard + 1 >= MultiplayerTuning.resumeBeats else { return }
-        silent.removeValue(forKey: id); disconnected.removeValue(forKey: id)
+        silent.removeValue(forKey: id); disconnected.removeValue(forKey: id); stats.resumes += 1
         try? broadcast("resumePeer", payload: id); pushRuntime("resumePeer", payload: id)
     }
     private func handleControl(_ p: MultiplayerPacket) {
@@ -513,8 +517,29 @@ final class MultiplayerService {
     }
     private func broadcast(_ kind: String, payload: String = "", reliable: Bool = true) throws { try transmit(kind, payload: payload, reliable: reliable, to: nil) }
     private func transmit(_ kind: String, payload: String = "", reliable: Bool = true, to: [String]? = nil) throws {
-        guard let transport else { return }; let p = packet(kind, payload: payload, reliable: reliable)
-        try transport.send(try encoder.encode(p), to: to, reliable: reliable)
+        guard transport != nil else { return }
+        try sendPacket(packet(kind, payload: payload, reliable: reliable), to: to)
+    }
+    private func sendPacket(_ p: MultiplayerPacket, to ids: [String]?) throws {
+        guard let transport else { return }
+        let data = try encoder.encode(p)
+        stats.largestPacket = max(stats.largestPacket, data.count)
+        let reliable = p.reliable || unreliableRefused.contains(p.kind)
+        do { try transport.send(data, to: ids, reliable: reliable) }
+        catch {
+            // Apple limits how big an unreliable message may be and does not say how much. If it refuses a big one, send that
+            // kind reliably from now on; any other failure is not about size, so let it through.
+            guard !reliable, data.count > MultiplayerTuning.unreliableSafeBytes else { throw error }
+            unreliableRefused.insert(p.kind); stats.unreliableRefused += 1
+            SportsDiagnostics.write("unreliable \(p.kind) refused at \(data.count) bytes (\(error.localizedDescription)); sending it reliably from now on")
+            try transport.send(data, to: ids, reliable: true)
+        }
+    }
+    /// Write this match's link statistics to the local diagnostics log (nothing is uploaded), then start afresh.
+    private func reportStats() {
+        guard !stats.isEmpty else { return }
+        SportsDiagnostics.write("multiplayer \(lobby?.sport.rawValue ?? "?") \(isOwner ? "owner" : "guest"): \(stats.summary)")
+        stats = NetStats()
     }
     private func json<T: Encodable>(_ value: T) throws -> String { String(decoding: try encoder.encode(value), as: UTF8.self) }
     private func launch(_ payload: String) {
@@ -522,7 +547,7 @@ final class MultiplayerService {
         config.localID = localID
         guard config.valid(), config.hostID == lobby?.ownerID, config.lobbyID == lobby?.id, config.matchID == lobby?.matchID else { lastError = "Invalid match configuration."; return }
         guard onMatchRequested != nil || !SportsSession.shared.active else { lastError = "Finish the current sport session before joining this match."; return }
-        matchConfiguration = config; quickSport = nil; lastError = nil
+        matchConfiguration = config; quickSport = nil; lastError = nil; stats = NetStats()
         #if DEBUG
         if proofRecording { OnlineLobbyProofDriver.event("launch-config","bytes=\(payload.utf8.count) \(payload)") }
         #endif
@@ -536,6 +561,7 @@ final class MultiplayerService {
  if let text = try? json(packet), !runtimeSend(text), matchConfiguration != nil { lastError="The Unity multiplayer bridge is unavailable or full. Re-export Unity before playing." } }
     private func pushRuntime(_ kind: String, payload: String = "") { pushRuntimePacket(packet(kind, payload: payload)) }
     private func stopRuntime() {
+        reportStats()
         pushRuntime("stop"); matchConfiguration = nil
         if let onReturnToLobby { onReturnToLobby() }
         else if SportsSession.shared.multiplayerMatchID != nil { SportsSession.shared.end() }
@@ -558,7 +584,7 @@ final class MultiplayerService {
         // Ping often enough to keep the clock filter fed (5/s in a match, 2/s otherwise). Unreliable, so a lost ping is
         // skipped instead of queueing behind other traffic and arriving late.
         if now >= nextPing { nextPing = now + (lobby?.phase == .playing ? 0.2 : 0.5)
-            if !isOwner, let owner = lobby?.ownerID { try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
+            if !isOwner, let owner = lobby?.ownerID { stats.pingsSent += 1; try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
         }
         // A competitor's phone tells the owner it is still there, 10 times a second during play.
         if !isOwner, lobby?.phase == .playing, localSeat >= 0, now >= nextHeartbeat, let owner = lobby?.ownerID {
@@ -579,13 +605,13 @@ final class MultiplayerService {
                 for p in lobby!.participants where p.seat >= 0 && p.connected && !p.isGuest && p.id != localID {
                     guard disconnected[p.id] == nil, silent[p.id] == nil else { continue }
                     if now - (lastHeard[p.id] ?? now) >= MultiplayerTuning.silenceSeconds {
-                        silent[p.id] = 0; disconnected[p.id] = now
+                        silent[p.id] = 0; disconnected[p.id] = now; stats.silences += 1
                         try? broadcast("suspend", payload: p.id); pushRuntime("suspend", payload: p.id)
                     }
                 }
             }
             for (id, since) in disconnected where now - since >= 15 {
-                disconnected.removeValue(forKey: id); silent.removeValue(forKey: id); try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
+                disconnected.removeValue(forKey: id); silent.removeValue(forKey: id); stats.drops += 1; try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
                 if let i = lobby?.participants.firstIndex(where: { $0.id == id }) { lobby!.participants[i].seat = -1; lobby!.participants[i].connected = id == localID || transport.peers.contains(id) }
                 lobby?.revision += 1; publishLobby()
             }
@@ -602,6 +628,7 @@ final class MultiplayerService {
                 continue
             }
             guard outgoing.matchID == lobby?.matchID else { continue }
+            if outgoing.kind == "stats" { SportsDiagnostics.write("unity network stats: \(outgoing.payload)"); continue }
             do {
                 if outgoing.kind == "availability" { try sendControl("availability", payload: outgoing.payload) }
                 else if outgoing.kind == "input" {
@@ -609,7 +636,7 @@ final class MultiplayerService {
                     if isOwner { var p = packet("input", payload: outgoing.payload, reliable: outgoing.reliable); p.sender = localID; pushRuntimePacket(p) }
                     else { try transmit("input", payload: outgoing.payload, reliable: outgoing.reliable, to: [lobby!.ownerID]) }
                 } else if isOwner, ["snapshot","golfShot","result"].contains(outgoing.kind) {
-                    try transport.send(try encoder.encode(packet(outgoing.kind, payload: outgoing.payload, reliable: outgoing.reliable)), to: nil, reliable: outgoing.reliable)
+                    try sendPacket(packet(outgoing.kind, payload: outgoing.payload, reliable: outgoing.reliable), to: nil)
                     #if DEBUG
                     if proofRecording && outgoing.kind == "snapshot" { proofSnapshot=outgoing.payload }
                     #endif

@@ -17,11 +17,17 @@ final class MultiplayerTests: XCTestCase {
         var connected = true
         /// A link that is still "connected" but delivers nothing: the player has gone quiet without the transport noticing.
         var drop = false
+        /// Refuses unreliable messages bigger than this, as Apple's GameKit might.
+        var refuseUnreliableOver: Int?
+        var refused = 0
         var peers: [String] { connected ? bus.links.keys.filter { $0 != localID }.sorted() : [] }
         var sent: [MultiplayerPacket] = []
+        /// How each accepted message was actually sent (the packet's own `reliable` field is only advice).
+        var transportModes: [(kind: String, reliable: Bool)] = []
         init(id: String, bus: Bus) { localID = id; self.bus = bus }
         func send(_ data: Data, to ids: [String]?, reliable: Bool) throws {
-            if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: data) { sent.append(packet) }
+            if !reliable, let limit = refuseUnreliableOver, data.count > limit { refused += 1; throw MultiplayerError.unavailable("too big to send unreliably") }
+            if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: data) { sent.append(packet); transportModes.append((kind: packet.kind, reliable: reliable)) }
             if drop { return }
             for id in ids ?? peers { bus.links[id]?.onData?(data, localID) }
         }
@@ -435,5 +441,59 @@ final class MultiplayerTests: XCTestCase {
         p.bus.links["c"]!.drop = true
         advance(p, by: 5)
         XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" })
+    }
+
+    // MARK: Staying awake, statistics, big unreliable messages
+
+    func testThePhoneStaysAwakeWhileASportsSessionIsActive() {
+        let session = SportsSession()
+        UIApplication.shared.isIdleTimerDisabled = false
+        session.active = true
+        XCTAssertTrue(UIApplication.shared.isIdleTimerDisabled, "A motion-controlled match has no touches, so the phone would auto-lock")
+        session.active = false
+        XCTAssertFalse(UIApplication.shared.isIdleTimerDisabled)
+    }
+    func testNetStatsSummarizeRoundTripsAndLoss() {
+        var stats = NetStats()
+        XCTAssertTrue(stats.isEmpty)
+        stats.pingsSent = 10
+        for rtt in [0.04, 0.05, 0.04, 0.20, 0.05, 0.04, 0.05, 0.04] { stats.note(rtt: rtt) }
+        XCTAssertEqual(stats.medianRTT, 0.045, accuracy: 1e-9)
+        XCTAssertEqual(stats.p95RTT, 0.20, accuracy: 1e-9)
+        XCTAssertEqual(stats.lossPercent, 20, accuracy: 1e-9)
+        XCTAssertGreaterThan(stats.jitter, 0)
+        stats.note(rtt: .nan); stats.note(rtt: -1)
+        XCTAssertEqual(stats.pongsHeard, 8, "bad samples are not counted")
+        XCTAssertTrue(stats.summary.contains("rtt median 45 ms"))
+        XCTAssertFalse(stats.isEmpty)
+    }
+    func testARefusedBigUnreliableSendFallsBackToReliableOnceAndIsRemembered() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        let link = p.bus.links["a"]!
+        link.refuseUnreliableOver = 1000
+        func relaySnapshot() throws {
+            let packet = MultiplayerPacket(lobbyID: p.host.lobby!.id, matchID: p.host.lobby!.matchID, sender: "a", kind: "snapshot",
+                                           reliable: false, payload: String(repeating: "x", count: 1500))
+            p.runtimes[0].outgoing.append(String(decoding: try JSONEncoder().encode(packet), as: UTF8.self))
+            p.host.update()
+        }
+        try relaySnapshot()
+        XCTAssertEqual(link.refused, 1, "the transport refused the big unreliable message")
+        XCTAssertEqual(link.transportModes.last { $0.kind == "snapshot" }?.reliable, true, "...so it was sent reliably instead")
+        XCTAssertTrue(p.runtimes[1].received.contains { $0.kind == "snapshot" }, "...and the guest got it")
+        try relaySnapshot()
+        XCTAssertEqual(link.refused, 1, "the next one goes straight out reliably")
+        XCTAssertEqual(link.transportModes.last { $0.kind == "snapshot" }?.reliable, true)
+    }
+    func testASmallUnreliableMessageIsNeverBlamedOnSize() throws {
+        let p = try party(2); defer { p.close() }; try start(p)
+        let link = p.bus.links["a"]!
+        link.refuseUnreliableOver = 100   // refuses even a small snapshot
+        let packet = MultiplayerPacket(lobbyID: p.host.lobby!.id, matchID: p.host.lobby!.matchID, sender: "a", kind: "snapshot", reliable: false, payload: "{}")
+        p.runtimes[0].outgoing.append(String(decoding: try JSONEncoder().encode(packet), as: UTF8.self))
+        p.host.update()
+        XCTAssertEqual(link.refused, 1)
+        XCTAssertFalse(link.transportModes.contains { $0.kind == "snapshot" }, "a small message that fails is some other problem: it is not silently resent")
+        XCTAssertNotNil(p.host.lastError)
     }
 }

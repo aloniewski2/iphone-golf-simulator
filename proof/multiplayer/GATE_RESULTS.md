@@ -35,3 +35,10 @@ Note: new Swift code lives in existing files (`MultiplayerModels.swift`, `Multip
 GATE: G1.4 Quiet competitor pauses play and resumes — NOT RUN (M). Four XCTests were added to `GolfArcadeTests/MultiplayerTests.swift` (`testAQuietCompetitorPausesPlayWithinHalfASecondAndResumesWhenHeardAgain`, `testACompetitorQuietForTooLongIsDropped`, `testOccasionalLostPacketsDoNotPausePlay`, `testASpectatorGoingQuietNeverPausesPlay`). They pass the syntax check; they need Xcode or CI to run. The seeded loss pattern in the third was verified offline: 21 of 600 steps lost, longest run 2, and the owner only pauses after 3 lost steps in a row.
 GATE: G1.4b Existing Swift tests unaffected — NOT RUN (M); read-through only. The one existing test that jumps the clock (`testCompetitorRecoveryAndExpiry`) already has the player marked disconnected, which the new check skips.
 GATE: G1.4c Changed Unity-only files parse — PASS (S, syntax only): `SportsMultiplayer.cs`, `TennisGame.Network.cs`, `GolfGame.Network.cs`, `NetworkTuning.cs`.
+
+### P1.5-1.7 Keep awake, local statistics, safe handling of big unreliable messages
+
+GATE: G1.5 Phone stays awake during a sports session — NOT RUN (M). `testThePhoneStaysAwakeWhileASportsSessionIsActive` added to `GolfArcadeTests/MultiplayerTests.swift` (syntax-checked). Before this, only the golf scene's Unity code kept the phone awake (F10).
+GATE: G1.6 Link statistics are summarized correctly — NOT RUN (M). `testNetStatsSummarizeRoundTripsAndLoss` (median 45 ms, p95 200 ms, 20% loss from a fixed list). The Unity line (`stats`) is emitted every 10 s while running; `SportsMultiplayer.cs` passes the syntax check.
+GATE: G1.7 A refused big unreliable message is resent reliably once and remembered; a refused small one is not — NOT RUN (M). Two XCTests using a test link that refuses unreliable messages over a size limit. Syntax-checked.
+GATE: G1.7b The start-of-match "Reconnecting…" flash is avoided — PASS (S, reading + syntax). `lastSnapshot` is reset when play starts, otherwise the guest's loading time would look like a 0.4 s gap in the host's updates.

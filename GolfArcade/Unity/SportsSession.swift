@@ -116,7 +116,8 @@ final class SportsSession {
     var trackingWarning = ""
     var setupStage: ControllerSetupStage = .scan
     var axisGate = SportsAxisGate()
-    var active = false
+    /// A motion-controlled match has no touches, so iOS would auto-lock the phone mid-point: stay awake while a session is active.
+    var active = false { didSet { if active != oldValue { UIApplication.shared.isIdleTimerDisabled = active } } }
     var tennisControllerActive = false
     var paused = true { didSet { routeSamples() } }
     var ready = false

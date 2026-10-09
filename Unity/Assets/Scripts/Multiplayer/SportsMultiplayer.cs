@@ -34,7 +34,7 @@ namespace GolfArcade.Multiplayer {
         string pendingResult; double resultDue;
         double scheduledStart = double.PositiveInfinity; bool startScheduled;
         public double SharedClock => Clock + (IsHost ? 0 : clockOffset);
-        double clockOffset,lastSnapshot,nextSnapshot,lastMove,packetAt;long eventID,lastTick=-1,lastRevision=-1;
+        double clockOffset,lastSnapshot,nextSnapshot,lastMove,packetAt,nextStats,maxSnapshotGap;long eventID,lastTick=-1,lastRevision=-1;
         // IL2CPP shrinks a marshalled StringBuilder to the returned text length (one char on an empty poll).
         // A fixed blittable buffer preserves capacity across every poll and keeps UTF-8 packet boundaries.
         readonly byte[] inputBuffer=new byte[65536];
@@ -57,7 +57,7 @@ namespace GolfArcade.Multiplayer {
         }
         void Initialize(NetworkConfiguration c) {
             pendingResult=null; startScheduled=false; scheduledStart=double.PositiveInfinity;
-            PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
+            PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;nextStats=maxSnapshotGap=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
                 if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;}
@@ -72,12 +72,14 @@ namespace GolfArcade.Multiplayer {
             if(pendingResult!=null && SharedClock>=resultDue) { Send("result",pendingResult);pendingResult=null;Running=false; }
             for(int i=0;i<64;i++){int bytes=SportsNetworkPoll(inputBuffer,inputBuffer.Length);if(bytes<=0)break;if(bytes<=60000)Receive(Encoding.UTF8.GetString(inputBuffer,0,bytes));if(!Active)break;}
             if(startScheduled && !Running && SharedClock>=scheduledStart) {
-                startScheduled=false; Running=true; Time.timeScale=1;
+                startScheduled=false; Running=true; Time.timeScale=1; lastSnapshot=Clock; maxSnapshotGap=0;   // the loading wait is not a gap in the host's updates
                 if(TennisState==null || TennisState.phase=="intro") tennisView?.BeginSharedPresentation();
                 PresentationPolicy.Event("Venue","scheduledBegin",1,scheduledStart.ToString("F3"));
                 SendSnapshot(true);
             }
             if(!Running)return;
+            if(!IsHost)maxSnapshotGap=Math.Max(maxSnapshotGap,Clock-lastSnapshot);
+            if(Clock>=nextStats){nextStats=Clock+10;ReportStats();}
             if(IsHost) {
                 if(tennis!=null){tennis.State.paused=suspended.Count>0;tennis.Step(Time.unscaledDeltaTime);TennisState=tennis.State;}
                 if(golf!=null){golf.State.paused=suspended.Count>0;golf.Step(Time.unscaledDeltaTime);GolfState=golf.State;}
@@ -183,6 +185,10 @@ namespace GolfArcade.Multiplayer {
         public double RenderAdvance=>IsHost?0:Math.Min(.1,Math.Max(0,Clock+clockOffset-packetAt));
         public bool Stale=>Running&&!IsHost&&Clock-lastSnapshot>2;
         public bool Quiet=>Running&&!IsHost&&Clock-lastSnapshot>NetworkTuning.QuietSeconds;
+        /// A line of local statistics for tuning (nothing is uploaded): Swift writes it to SportsDiagnostics.log.
+        void ReportStats() {
+            Send("stats","{\"role\":\""+(IsHost?"host":"guest")+"\",\"stampRejects\":"+(tennis?.StampRejects??0)+",\"maxSnapshotGapMs\":"+(int)(maxSnapshotGap*1000)+"}");
+        }
         void SendSnapshot(bool full) {
             if(!IsHost)return;
             if(tennis!=null)Send("snapshot",JsonUtility.ToJson(tennis.State),full);
