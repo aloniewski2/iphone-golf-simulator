@@ -378,7 +378,7 @@ namespace GolfArcade.UI
         void BuildOutfit(RectTransform p)
         {
             float y = 8;
-            slotSegments = Segment(p, ref y, new[] { "Shirt", "Shorts", "Shoes" }, i => { slot = i; Refresh(); });
+            slotSegments = Segment(p, ref y, new[] { "Shirt", "Pants", "Shoes" }, i => { slot = i; Refresh(); });
             y += 34;
             if (HeroGolfer.TopNames.Length > 1 || HeroGolfer.BottomNames.Length > 1)
             {

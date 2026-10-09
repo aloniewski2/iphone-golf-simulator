@@ -49,7 +49,7 @@ namespace GolfArcade.Game
         /// A style's name as a person reads it ("Flat cap", "Cat-eye", "Top hat").
         public static string Pretty(string name) => name switch
         {
-            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport", "SideBob" => "Side bob",
+            "Flatcap" => "Flat cap", "Tophat" => "Top hat", "Cateye" => "Cat-eye", "Mustache" => "Moustache", "Wrap" => "Sport", "Shorts" => "Pants", "SideBob" => "Side bob",
             _ => name,
         };
 
