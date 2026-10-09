@@ -38,6 +38,8 @@ namespace GolfArcade.Multiplayer {
         readonly double[] swingHeard={-100,-100};
         bool holding; int holdWinner; double holdUntil;
         public Action<string> Result;
+        /// Inputs dropped because their timestamp was impossibly far from the host's clock (telemetry: a skewed shared clock shows up here).
+        public int StampRejects {get;private set;}
         readonly string[][] equippedEmotes;
         public NetworkTennisMatch(int sets=1,int games=3, string[][] emotes=null, bool intro=false) {
             equippedEmotes = new[] { TennisEmotes.Normalize(emotes != null && emotes.Length > 0 ? emotes[0] : null), TennisEmotes.Normalize(emotes != null && emotes.Length > 1 ? emotes[1] : null) };
@@ -58,7 +60,7 @@ namespace GolfArcade.Multiplayer {
         void SetHeldBall() {var p=State.players[State.server];State.ball=new(p.x,1.1f,p.z);State.velocity=default;}
         public bool Input(int seat,NetworkInput input,double hostTime) {
             if(seat<0||seat>1||input==null||!input.Valid||State.complete||State.paused) return false;
-            if(input.time>hostTime+NetworkTuning.FutureTolerance||input.time<hostTime-NetworkTuning.PastTolerance) return false;
+            if(input.time>hostTime+NetworkTuning.FutureTolerance||input.time<hostTime-NetworkTuning.PastTolerance) {StampRejects++;return false;}
             if((input.action=="swing"||input.action=="beginSwing"||input.action=="abortSwing"||input.action=="toss"||input.action=="emote")&&(input.point!=State.point||input.contact!=State.contact))return false;
             string key=seat+":"+input.action;
             if(input.action!="move" && input.action!="aim" && input.action!="serveAim" && input.action!="nudge") {

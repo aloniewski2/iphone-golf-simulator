@@ -44,7 +44,9 @@ final class MultiplayerService {
     @ObservationIgnored private var matchConfiguration: MultiplayerMatchConfiguration?
     @ObservationIgnored private var quickSport: MultiplayerSport?
     @ObservationIgnored private var clockOffset: Double = 0
+    @ObservationIgnored private var clockFilter = ClockFilter()
     @ObservationIgnored private var nextPing: Double = 0
+    @ObservationIgnored private var nextHello: Double = 0
     @ObservationIgnored private var rate: [String: (Double, Int)] = [:]
     @ObservationIgnored private var name = "Player"
     @ObservationIgnored private var female = false
@@ -271,7 +273,7 @@ final class MultiplayerService {
         proofPeers.removeAll();proofSnapshot=nil
         #endif
         loadingNeedsDecision = false; lobby = nil; hello.removeAll(); seen.removeAll(); disconnected.removeAll(); rate.removeAll(); matchConfiguration = nil; quickSport = nil; searching = false
-        lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0
+        lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0; clockFilter = ClockFilter(); nextPing = 0
     }
     private func requireOwnerIdle() throws {
         guard isOwner, lobby?.phase == .lobby else { throw MultiplayerError.invalidOperation("The owner can change this only in the lobby.") }
@@ -380,7 +382,7 @@ final class MultiplayerService {
                   state.participants.contains(where: { $0.id == peer && $0.seat >= 0 && $0.connected }) else { return }
             pushRuntimePacket(packet); return
         }
-        if packet.kind == "ping", isOwner { try? transmit("pong", payload: packet.payload, to: [peer]); return }
+        if packet.kind == "ping", isOwner { try? transmit("pong", payload: packet.payload, reliable: false, to: [peer]); return }
         guard peer == state.ownerID else { return }
         switch packet.kind {
         case "loadTimeout": if packet.matchID == state.matchID && state.phase == .loading { loadingNeedsDecision = true }
@@ -393,8 +395,10 @@ final class MultiplayerService {
         case "result": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet); rememberResult(packet.payload); onResult?(packet.payload)
         case "stop": stopRuntime()
         case "pong":
-            guard let sent = Double(packet.payload) else { return }; roundTrip = max(0, now - sent)
-            clockOffset = packet.sentAt - (sent + now) / 2
+            guard let sent = Double(packet.payload) else { return }
+            // One slow packet must not move the shared clock: keep the least-delayed samples and slew (ClockFilter).
+            clockOffset = clockFilter.add(rtt: max(0, now - sent), offset: packet.sentAt - (sent + now) / 2)
+            roundTrip = clockFilter.medianRTT
             pushRuntime("clock", payload: String(clockOffset))
         default: break
         }
@@ -533,8 +537,12 @@ final class MultiplayerService {
     }
     func update() {
         guard let transport else { return }
-        if now >= nextPing { nextPing = now + 1
-            if !isOwner, let owner = lobby?.ownerID { try? transmit("ping", payload: String(now), to: [owner]) }
+        // Ping often enough to keep the clock filter fed (5/s in a match, 2/s otherwise). Unreliable, so a lost ping is
+        // skipped instead of queueing behind other traffic and arriving late.
+        if now >= nextPing { nextPing = now + (lobby?.phase == .playing ? 0.2 : 0.5)
+            if !isOwner, let owner = lobby?.ownerID { try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
+        }
+        if now >= nextHello { nextHello = now + 1
             if lobby == nil { try? broadcast("hello", payload: (try? json(identity())) ?? "") }
         }
         if isOwner {

@@ -173,3 +173,35 @@ protocol MultiplayerTransport: AnyObject {
     func send(_ data: Data, to peers: [String]?, reliable: Bool) throws
     func disconnect()
 }
+
+/// Keeps the shared clock steady. A ping/pong gives one sample: `rtt` and `offset` (the owner's clock minus ours).
+/// One slow leg skews a single sample by half the extra delay, so keep the samples with the lowest rtt (least
+/// queueing) and slew toward their median. Mirrors `ClockFilterModel` in Tools/netsim (the same fixed vector is
+/// asserted in MultiplayerTests), where the algorithm is validated against simulated jitter spikes.
+struct ClockFilter {
+    static let window = 16, best = 3, rttWindow = 8
+    static let maxSlew = 0.005, jumpThreshold = 0.1
+    private(set) var offset = 0.0
+    private(set) var locked = false
+    private var samples: [(rtt: Double, offset: Double)] = []
+    private var rtts: [Double] = []
+    var medianRTT: Double { Self.median(rtts) }
+
+    @discardableResult
+    mutating func add(rtt: Double, offset raw: Double) -> Double {
+        guard rtt.isFinite, raw.isFinite, rtt >= 0 else { return offset }
+        samples.append((rtt: rtt, offset: raw)); if samples.count > Self.window { samples.removeFirst() }
+        rtts.append(rtt); if rtts.count > Self.rttWindow { rtts.removeFirst() }
+        let lowest = samples.sorted { ($0.rtt, $0.offset) < ($1.rtt, $1.offset) }.prefix(Self.best).map { $0.offset }
+        let target = Self.median(lowest)
+        if !locked || abs(target - offset) > Self.jumpThreshold { offset = target; locked = true }
+        else { offset += max(-Self.maxSlew, min(Self.maxSlew, target - offset)) }
+        return offset
+    }
+
+    static func median(_ values: [Double]) -> Double {
+        guard !values.isEmpty else { return 0 }
+        let sorted = values.sorted(), n = sorted.count
+        return n % 2 == 1 ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+    }
+}

@@ -341,4 +341,44 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertLessThan(packetBytes,MultiplayerPacket.maximumBytes)
         print("LOBBY_JSON_BYTES lobby=\(json.count) packet=\(packetBytes) maximum=\(MultiplayerPacket.maximumBytes)")
     }
+
+    // MARK: Shared clock
+
+    /// Same vector as ClockFilterModelTests.FixedVectorForTheSwiftPort (Tools/netsim): the Swift filter must match the
+    /// model that was validated against simulated jitter spikes.
+    func testClockFilterMatchesTheSharedVector() {
+        var filter = ClockFilter()
+        var samples: [(Double, Double)] = [(0.050, 100.000), (0.030, 100.002), (0.200, 100.090), (0.040, 100.004), (0.300, 99.900), (0.032, 100.003)]
+        samples += Array(repeating: (0.031, 100.040), count: 8) + Array(repeating: (0.025, 100.500), count: 4)
+        let expected = [100.000, 100.001, 100.002, 100.002, 100.002, 100.003, 100.003, 100.008, 100.013, 100.018, 100.023, 100.028, 100.033, 100.038, 100.040,
+                        100.500, 100.500, 100.500]
+        XCTAssertEqual(samples.count, expected.count)
+        for (i, sample) in samples.enumerated() {
+            XCTAssertEqual(filter.add(rtt: sample.0, offset: sample.1), expected[i], accuracy: 1e-9, "sample \(i)")
+        }
+        XCTAssertEqual(filter.medianRTT, 0.028, accuracy: 1e-9)
+    }
+    func testClockFilterIgnoresBadSamples() {
+        var filter = ClockFilter(); filter.add(rtt: 0.04, offset: 10)
+        XCTAssertEqual(filter.add(rtt: .nan, offset: 99), 10, accuracy: 1e-12)
+        XCTAssertEqual(filter.add(rtt: 0.04, offset: .infinity), 10, accuracy: 1e-12)
+        XCTAssertEqual(filter.add(rtt: -1, offset: 99), 10, accuracy: 1e-12)
+    }
+    /// A pong that took 200 ms (one leg slow, so its offset is 75 ms off) must not move a clock that a 40 ms pong set.
+    func testASlowPongDoesNotMoveTheSharedClock() throws {
+        let p = try party(2); defer { p.close() }
+        let guest = p.services[1], runtime = p.runtimes[1]
+        func pong(sent: Double, hostSentAt: Double, sequence: Int64) throws {
+            let data = try JSONEncoder().encode(MultiplayerPacket(lobbyID: guest.lobby!.id, matchID: guest.lobby!.matchID, sender: "a",
+                                                                   sequence: sequence, kind: "pong", reliable: false, sentAt: hostSentAt, payload: String(sent)))
+            try p.bus.links["a"]!.send(data, to: ["b"], reliable: false)
+        }
+        runtime.time = 200.00
+        try pong(sent: 199.96, hostSentAt: 5.0 + (199.96 + 200.00) / 2, sequence: 5001)
+        XCTAssertEqual(guest.networkTime - runtime.time, 5.0, accuracy: 1e-6, "a good pong sets the clock")
+        runtime.time = 200.50
+        try pong(sent: 200.30, hostSentAt: 5.0 + (200.30 + 200.50) / 2 + 0.075, sequence: 5002)
+        XCTAssertEqual(guest.networkTime - runtime.time, 5.0, accuracy: 0.006, "a slow pong may nudge the clock by at most one slew step")
+        XCTAssertEqual(guest.roundTrip, 0.12, accuracy: 1e-6, "round trip is the median of the recent pongs, not the last one")
+    }
 }

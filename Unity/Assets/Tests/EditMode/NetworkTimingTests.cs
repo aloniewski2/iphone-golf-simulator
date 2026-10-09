@@ -66,6 +66,16 @@ namespace GolfArcade.Tests {
             return began || confirmed ? "MISS" : "REJECTED";
         }
 
+        [Test] public void ImpossibleTimestampsAreCountedSoASkewedClockShowsUp() {
+            var m = new NetworkTennisMatch();
+            Assert.AreEqual(0, m.StampRejects);
+            Assert.False(m.Input(0, Event(m, "toss", 1, .1, 0), 0));      // 100 ms in the future
+            Assert.False(m.Input(0, Event(m, "toss", 2, -.6, 0), 0));     // 600 ms old
+            Assert.AreEqual(2, m.StampRejects);
+            Assert.True(m.Input(0, Event(m, "move", 3, 0, 0), 0));         // a sane stamp is not counted
+            Assert.AreEqual(2, m.StampRejects);
+        }
+
         [Test] public void ScreenCreditIsClampedAndNeverNegative() {
             Assert.AreEqual(0, NetworkTuning.ScreenCredit(-1));
             Assert.AreEqual(0, NetworkTuning.ScreenCredit(double.NaN));
