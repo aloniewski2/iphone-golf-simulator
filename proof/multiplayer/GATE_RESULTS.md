@@ -9,6 +9,7 @@ A gate is PASS only with its evidence. Gates that need a Mac or phones are liste
 GATE: G0.1 Sandbox harness runs the game's real multiplayer rule tests — PASS (S). `dotnet test Tools/netsim/NetSim.csproj`: 33 passed, 0 failed (the real `MultiplayerRulesTests`: tennis host rules, golf host rules, serialization round trips).
 GATE: G0.5 Syntax check for files that cannot compile here — PASS (S). `python3 Tools/check-syntax.py` (tree-sitter, C# + Swift) passes every changed file and fails a deliberately broken one. It checks syntax only, not types.
 GATE: G0.3 Latency experiment runs before-vs-after from git history and the working tree — PASS (S). `proof/multiplayer/latency_experiment/run.sh` builds the sources of commit 9a305ef7 (BEFORE) and the working tree (AFTER) and prints the tables in Appendix A of the plan.
+GATE: G0.2 CI runs the sandbox tests on every pull request and push to `main`/`testing` — NOT RUN (CI). `.github/workflows/netcode.yml` (YAML validated here) runs `dotnet test Tools/netsim/NetSim.csproj` on ubuntu in about a minute. It only runs once a pull request or a push to `main`/`testing` happens; no pull request has been opened from this branch (none was asked for).
 
 ## Phase 1 — Make multiplayer tennis playable and fair
 

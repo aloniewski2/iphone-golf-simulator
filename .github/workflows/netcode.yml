@@ -1,0 +1,44 @@
+name: netcode
+
+# Runs the game's pure multiplayer rules and their EditMode tests without Unity (see Tools/netsim/README.md).
+# Fast (about a minute) and needs no Mac, so it also protects changes that CI's Xcode job cannot see.
+on:
+  pull_request:
+    branches: [main, testing]
+    paths:
+      - 'Unity/Assets/Scripts/Multiplayer/**'
+      - 'Unity/Assets/Scripts/Tennis/**'
+      - 'Unity/Assets/Scripts/Course/**'
+      - 'Unity/Assets/Scripts/Shot/**'
+      - 'Unity/Assets/Scripts/Swing/**'
+      - 'Unity/Assets/Tests/EditMode/**'
+      - 'Tools/netsim/**'
+      - '.github/workflows/netcode.yml'
+  push:
+    branches: [main, testing]
+    paths:
+      - 'Unity/Assets/Scripts/Multiplayer/**'
+      - 'Unity/Assets/Scripts/Tennis/**'
+      - 'Unity/Assets/Scripts/Course/**'
+      - 'Unity/Assets/Scripts/Shot/**'
+      - 'Unity/Assets/Scripts/Swing/**'
+      - 'Unity/Assets/Tests/EditMode/**'
+      - 'Tools/netsim/**'
+      - '.github/workflows/netcode.yml'
+
+concurrency:
+  group: netcode-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  netcode:
+    name: netcode
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Multiplayer rules and timing tests (no Unity)
+        run: dotnet test Tools/netsim/NetSim.csproj --nologo
