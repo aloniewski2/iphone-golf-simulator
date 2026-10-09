@@ -178,6 +178,8 @@ final class SportsSession {
     private var multiplayerSeat = -1
     /// The shared TV's delay the controller-only phone has already handed to Unity (so a change is applied once).
     private var appliedSharedDelay: Double?
+    /// When this phone last told the owner it is set up (resent while the owner's lobby still shows it as not set up).
+    private var calibratedSentAt = 0.0
     private(set) var sessionID = ""
     /// Numeric stand-in for the session id on the binary sample channel.
     private var sessionToken: Int32 = 0
@@ -228,10 +230,7 @@ final class SportsSession {
             self.axisGate=gate
             if gate.locked {
                 self.motion.start(tennis:true,travel:self.travel)
-                if self.setupStage == .scan {
-                    // Online tennis has no timing check yet: from the scan straight to Ready.
-                    if self.multiplayerMatchID != nil { self.multiplayerScanComplete() } else { self.offerTimingCalibration() }
-                }
+                self.scanFinished()
             }
         }
         // Unity gets every sample straight from the sensor queue; this is only for the screens.
@@ -577,6 +576,7 @@ final class SportsSession {
         command("timingCheck")
     }
     func recheckTiming() {
+        guard multiplayerMatchID == nil else { return }   // the timing check is solo only: its commands are not passed on in a match
         guard touch || motion.axisLocked else { beginAxisCapture(); return }
         offerTimingCalibration()
     }
@@ -614,7 +614,13 @@ final class SportsSession {
     func useCurrentDirection() {
         guard motion.forceAxisFromCurrentPose() else { return }
         motion.start(tennis:true,travel:travel)
-        if setupStage == .scan { offerTimingCalibration() }
+        scanFinished()
+    }
+    /// The court direction is locked (by the scan, or by "use the direction I'm pointing now"). Solo play goes on to the timing check;
+    /// online tennis has no timing check yet, so it goes straight to Ready.
+    private func scanFinished() {
+        guard setupStage == .scan else { return }
+        if multiplayerMatchID != nil { multiplayerScanComplete() } else { offerTimingCalibration() }
     }
     /// One tap to mirror steering, for when left and right come out swapped.
     func flipSteering() {
@@ -687,7 +693,7 @@ final class SportsSession {
     /// When play is already running (the player came back mid-match, or re-aimed from the menu) it carries straight on.
     private func finishMultiplayerCalibration() {
         if !touch { guard motion.axisLocked, motion.calibrate() else { return } }
-        MultiplayerService.shared.runtimeCalibrated()
+        MultiplayerService.shared.runtimeCalibrated(); calibratedSentAt = ProcessInfo.processInfo.systemUptime
         menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true
         setupStage = .waiting; status = "Ready. Waiting for the other player."
         if MultiplayerService.shared.lobby?.phase == .playing { beginMultiplayerPlay() }
@@ -871,6 +877,14 @@ final class SportsSession {
             // The cover lifts once everyone has loaded (tennis then sets up its controllers behind it).
             loading.updatePlayers(waiting: lobby.competitors.filter { !$0.loaded }.map(\.name), allReady: lobby.phase == .calibrating || lobby.phase == .playing)
             if setupStage == .waiting, lobby.phase == .playing { beginMultiplayerPlay() }
+            // The message that says "I am set up" is sent once; if it was lost the owner would wait for ever (for a returning player,
+            // with the match paused), so repeat it every few seconds while the owner's lobby does not show this player as set up.
+            // The owner ignores repeats.
+            if multiplayerCalibrates, setupStage == .waiting || setupStage == .playing, lobby.phase == .calibrating || lobby.phase == .playing,
+               ProcessInfo.processInfo.systemUptime - calibratedSentAt >= 3,
+               lobby.participants.first(where: { $0.id == MultiplayerService.shared.localID })?.calibrated == false {
+                calibratedSentAt = ProcessInfo.processInfo.systemUptime; MultiplayerService.shared.runtimeCalibrated()
+            }
             // A phone with no TV is judged against the shared TV's delay, which the phone with the TV reports to the lobby.
             if multiplayerControllerOnly, sport == "tennis", ready, loading.finished,
                let shared = lobby.participants.first(where: { $0.view == .split })?.screenDelay, shared != appliedSharedDelay {

@@ -407,7 +407,7 @@ struct IslandPauseScreen: View {
                                 }
                                 Button("Flip left / right") { session.flipSteering() }
                             }
-                            if session.displayConnected && session.sport == "tennis" {
+                            if session.displayConnected && session.sport == "tennis" && session.multiplayerMatchID == nil {
                                 Button("Re-check swing timing") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.recheckTiming(); dismiss() }
                             }
                             Button(session.touch ? "Use motion controls" : "Use touch controls") { if session.touch { session.useMotion() } else { session.useTouch() }; dismiss() }

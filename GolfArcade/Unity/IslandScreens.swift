@@ -427,6 +427,11 @@ struct IslandPartyScreen: View {
     private var title: String {
         switch menu.screen { case .multiplayer: "Multiplayer"; case .localChoice: "Local"; case .localPlayers: "How many players?"; case .onlineChoice: "Online"; default: "Play" }
     }
+    /// `person.4.fill` is not in every release of SF Symbols; three people stand in for it rather than a blank icon.
+    private static func playersIcon(_ count: Int) -> String {
+        let name = "person.\(count).fill"
+        return UIImage(systemName: name) != nil ? name : "person.3.fill"
+    }
     var body: some View {
         IslandShell(title: title, compact: compact) {
             VStack(alignment: .leading, spacing: compact ? 16 : 24) {
@@ -440,7 +445,7 @@ struct IslandPartyScreen: View {
                     IslandLobbyRow(title: "Join a Friend", subtitle: "Find a game on the same Wi-Fi", icon: "wifi", id: "partyNearby", menu: menu, compact: compact)
                 case .localPlayers:
                     ForEach(2...4, id: \.self) { count in
-                        IslandLobbyRow(title: "\(count) Players", subtitle: "Starts right away", icon: "person.\(count).fill", id: "localPlayers\(count)", menu: menu, compact: compact)
+                        IslandLobbyRow(title: "\(count) Players", subtitle: "Starts right away", icon: Self.playersIcon(count), id: "localPlayers\(count)", menu: menu, compact: compact)
                     }
                 case .onlineChoice:
                     IslandLobbyRow(title: "Quick Match", subtitle: "Find players for golf or tennis", icon: "bolt.fill", id: "onlineQuick", menu: menu, compact: compact)
