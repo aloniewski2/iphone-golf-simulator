@@ -98,7 +98,7 @@ A_CSS = """
 .wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,249,238,.97) 0,rgba(255,249,238,.93) 470px,rgba(255,249,238,.40) 980px,rgba(255,249,238,.05) 1500px)}
 .kick{position:absolute;left:90px;top:130px;font:700 34px/1 'Rubik';letter-spacing:.2em;color:#10243D;display:flex;align-items:center;gap:16px;text-transform:uppercase}
 .kick i{display:block;width:44px;height:44px;border-radius:50%;background:#D7F044;box-shadow:0 0 0 6px rgba(215,240,68,.35)}
-.hlA{left:90px;top:215px;font-family:'Bricolage';font-weight:800;font-size:172px;line-height:.98;letter-spacing:-5px;color:#10243D}
+.hlA{left:90px;top:215px;font-family:'Bricolage';font-weight:800;font-size:196px;line-height:.96;letter-spacing:-3px;color:#10243D}
 .hlA mark{background:linear-gradient(180deg,transparent 58%,#D7F044 58%,#D7F044 92%,transparent 92%);color:inherit;padding:0 8px;margin:0 -8px}
 .pillA{background:#fff;color:#10243D;box-shadow:0 12px 30px rgba(16,36,61,.2)!important}
 .cap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;font:700 30px/1.1 'Rubik';color:#fff;background:linear-gradient(0deg,rgba(10,25,45,.8),rgba(10,25,45,0));text-align:left}
@@ -126,7 +126,7 @@ body{background:#0A192D}
 .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 2px,transparent 2.5px);background-size:46px 46px}
 .kickB{position:absolute;left:90px;top:130px;font:700 34px/1 'Rubik';letter-spacing:.24em;color:#D7F044;text-transform:uppercase}
 .kickB::before{content:'';display:inline-block;width:70px;height:6px;background:#D7F044;vertical-align:middle;margin-right:20px;border-radius:9px}
-.hlB{left:90px;top:210px;font-family:'Bricolage';font-weight:800;font-size:180px;line-height:.96;letter-spacing:-5px;color:#fff}
+.hlB{left:90px;top:210px;font-family:'Bricolage';font-weight:800;font-size:206px;line-height:.94;letter-spacing:-3px;color:#fff}
 .hlB em{font-style:normal;color:#D7F044}
 """
 B_BG = '<div class="bgB"></div><div class="dots"></div>'
@@ -140,7 +140,7 @@ def B_head(kicker, l1, l2):
 # SET C - "Party Pop": saturated blocks, sticker type, confetti
 # ======================================================================================
 C_CSS = """
-.hlC{left:80px;top:150px;font-family:'Bricolage';font-weight:800;font-size:190px;line-height:.94;letter-spacing:-6px;color:#fff;
+.hlC{left:80px;top:150px;font-family:'Bricolage';font-weight:800;font-size:222px;line-height:.92;letter-spacing:-3px;color:#fff;
  text-shadow:0 8px 0 rgba(16,36,61,.9);paint-order:stroke fill}
 .hlC span{color:#D7F044}
 .hlC.dark{color:#10243D;text-shadow:0 8px 0 rgba(255,255,255,.7)}
@@ -174,7 +174,7 @@ def C_bg(c1, c2, pat="rgba(255,255,255,.14)"):
 def polaroid(path, label, x, y, w, ph, rot, pos="50% 30%", z=3):
     return (f'<div class="abs" style="left:{x}px;top:{y}px;width:{w}px;transform:rotate({rot}deg);background:#fff;padding:16px 16px 68px;border-radius:26px;'
             f'box-shadow:0 30px 50px rgba(5,12,28,.35);z-index:{z}"><div style="height:{ph}px;border-radius:12px;background:url({path}) {pos}/cover"></div>'
-            f'<div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font:800 38px \'Bricolage\';color:#10243D">{label}</div></div>')
+            f'<div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font:800 38px \'Bricolage\';color:#10243D" class="ptitle">{label}</div></div>')
 
 
 
@@ -271,7 +271,7 @@ def story(key):
         + tv("sky_04", 220, 1560, 1020, rot=3, z=3, glow=st.glow2)
         + arrows(2330, "#fff")
         + st.tag("Step to chase the ball", 330, 2360, 0, 0, 42)
-        + st.tag("Serve, smash, rally", 70, 1480, 1, -4, 40))
+        + st.tag("Move to play", 70, 1480, 1, -4, 40))
 
     # 4 - friends ----------------------------------------------------------------------
     out(4, "friends",
@@ -293,7 +293,7 @@ def story(key):
 
     # 6 - courses ----------------------------------------------------------------------
     holes = [("09", "Coastal links"), ("10", "Crater"), ("12", "Lighthouse"), ("17", "Snow"), ("18", "Mesa"), ("22", "Volcano")]
-    body = st.bg(6, G("09")) + st.head(6, "Golf and tennis", "Golf and tennis", "for everyone", "for everyone")
+    body = st.bg(6, G("09")) + st.head(6, "For everyone", "Fun for", "everyone", "everyone")
     for i, (h, n) in enumerate(holes):
         cx, cy = 80 + (i % 3) * 405, 800 + (i // 3) * 690
         body += card(G(h), cx, cy, 370, 658, (-1.5 if i % 2 == 0 else 1.5), 30, 2, "5px solid #fff", pos="50% 30%")
@@ -301,12 +301,12 @@ def story(key):
     for i, (img, n) in enumerate([("map-resort.jpg", "Resort"), ("map-skyscraper.jpg", "Sky Tower"), ("map-volcano.jpg", "Volcano")]):
         cx = 80 + i * 405
         body += card(f"{SRC}/art/{img}", cx, 2210, 370, 208, (1.2 if i % 2 == 0 else -1.2), 24, 2, "5px solid #fff")
-        body += tag(f"Tennis · {n}", cx + 14, 2226, "#fff", "#10243D", 0, 6, 24)
+        body += tag(n, cx + 14, 2226, "#fff", "#10243D", 0, 6, 24)
     body += st.tag("Easy to learn. Fun to win.", 220, 2560, 0, 0, 42)
     out(6, "courses", body)
 
 
 if __name__ == "__main__":
-    which = [a.upper() for a in sys.argv[1:]] or ["A", "B", "C"]
+    which = [a.upper() for a in sys.argv[1:]] or ["A", "B"]   # Set C: tools/build_set_c.py
     for k in which:
         story(k)

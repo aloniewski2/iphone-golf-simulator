@@ -13,7 +13,7 @@ what the `final-build` branch shows or documents. Anything marked **verify** nee
 | --- | --- | --- |
 | App name | 30 | **Motion Club** (11). The build is currently "Motion Club Beta"; confirm the name is available and drop "Beta" for release. |
 | Subtitle | 30 | **Swing your phone with friends** (29) |
-| Subtitle alts | 30 | Golf and tennis, no controller (30) / Get up. Swing. Play together. (30) |
+| Subtitle alts | 30 | Get up. Swing. Play together. (30) / Your phone is the controller (28) |
 | Promotional text | 170 | Your phone is the controller. Swing to hit, step to chase the ball, and play golf and tennis with friends on the big screen. (126) |
 | Keywords | 100 | `golf,tennis,motion,party,multiplayer,friends,sports,swing,controller,airplay,family,couch,active` (96) |
 | Category | | Games > Sports (secondary: Games > Family or Casual) |
@@ -37,9 +37,9 @@ Golf takes a real swing. In tennis, step side to side to chase the ball, then se
 **BIG SCREEN, ANY ROOM**
 Send the game to your TV with AirPlay or a cable while your phone stays in your hand as the controller.
 
-**GOLF AND TENNIS, EASY TO LEARN**
-- Golf: coastal links, crater, snow, mesa and volcano courses, with wind, club choice and a shot map
-- Tennis: resort, sky tower and volcano venues
+**WILD PLACES TO PLAY**
+- Cliffs, craters, snow, mesas, volcano rims and rooftop courts
+- Wind, club choice and a shot map to plan every move
 - Make it yours in the Locker, wave with Emotes, win matches and level up
 
 Motion Club is in beta. Feedback welcome in the app.
@@ -47,10 +47,10 @@ Motion Club is in beta. Feedback welcome in the app.
 **verify before submission**
 - TV play needs AirPlay or a wired display (the integration notes mark display behaviour as pending device acceptance).
 - "Step to chase the ball" relies on ARKit world tracking and camera permission; the integration notes say tracking reliability is unmeasured.
-- Course and venue lists reflect the Oct 8 captures; confirm which holes and venues ship in the release build.
+- Course and venue lists reflect the Oct 8 captures; confirm which holes and venues ship in the release build. Copy deliberately does not say how many sports there are, so it stays true as content is added.
 - "Online quick match" and "play with friends" depend on the multiplayer server being live at launch.
 - Age rating, privacy answers (camera is used for ARKit tracking, not recorded) and the "Beta" wording.
 
 ## Screenshot story (same six beats in every set, order matters)
-1. Your phone is the controller 2. Swing to hit the ball 3. Get up. Get moving. 4. Play with your friends 5. Big screen, any room 6. Golf and tennis for everyone.
+1. Your phone is the controller 2. Swing to hit the ball 3. Get up. Get moving. 4. Play with your friends 5. Big screen, any room 6. Fun for everyone.
 The first three show in search results: 1, 2 and 4 are the best trio if you want friends visible up front (see `search/`).

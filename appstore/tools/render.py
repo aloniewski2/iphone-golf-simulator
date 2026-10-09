@@ -22,12 +22,14 @@ PALETTE = dict(
 )
 
 FONTS_CSS = """
-@font-face{font-family:'Bricolage';src:url('../src/fonts/Bricolage.ttf');font-weight:200 800}
+@font-face{font-family:'Bricolage';src:url('../src/fonts/Bricolage.ttf');font-weight:200 800;font-stretch:75% 100%}
 @font-face{font-family:'Rubik';src:url('../src/fonts/Rubik.ttf');font-weight:300 900}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{overflow:hidden}
 body{font-family:'Rubik',sans-serif}
 .display{font-family:'Bricolage','Rubik',sans-serif;font-weight:800}
+/* the app sets its display face to wght 800, wdth 78, opsz = size (ClubDesign.swift) */
+.hlA,.hlB,.hlC,.h1,.wm,.sticker,.display,.nm,.ptitle{font-stretch:78%;font-optical-sizing:auto}
 """
 
 
