@@ -1308,12 +1308,12 @@ extension OnlineLobbyMenu {
                 var completed=0,action:Int64=1_000_000,lastTossPoint = "",lastSwingPoint = "",lastSwingAt=0.0
                 for step in 0..<1800 {
                     if step % 100 == 0 { event("phase","\(String(describing:service.lobby?.phase)) active=\(session.active) ready=\(session.ready) \(session.status) snapshot=\(service.proofSnapshot?.prefix(500) ?? "none")") }
-                    if service.lobby?.phase == .playing,let text=service.proofSnapshot,let data=text.data(using:.utf8),let s=try JSONSerialization.jsonObject(with:data) as? [String:Any],let phase=s["phase"] as? String,let time=s["time"] as? Double,let point=s["point"] as? Int64,let contact=s["contact"] as? Int64 {
-                        let server=s["server"] as? Int ?? 0,seat=service.localSeat,phaseAt=s["phaseAt"] as? Double ?? 0
+                    if service.lobby?.phase == .playing,let text=service.proofSnapshot,let data=text.data(using:.utf8),let s=try JSONSerialization.jsonObject(with:data) as? [String:Any],let u=proofFields(s) {
+                        let phase=u.phase,time=u.time,point=u.point,contact=u.contact,server=u.server,seat=service.localSeat,phaseAt=u.phaseAt
                         var input:[String:Any]? = nil
                         if phase == "serve",server == seat,"\(point):\(phaseAt)" != lastTossPoint,time-phaseAt > 0.4 { input=["action":"toss"];lastTossPoint="\(point):\(phaseAt)" }
                         if phase == "toss",server == seat,"\(point):\(phaseAt)" != lastSwingPoint,time-phaseAt > 0.65 { input=["action":"swing","power":0.65,"aim":0.0];lastSwingPoint="\(point):\(phaseAt)" }
-                        if phase == "rally",contact < 6,s["receiver"] as? Int == seat,time-lastSwingAt > 0.3,let ball=s["ball"] as? [String:Double],abs((ball["z"] ?? 0)-(seat == 0 ? -12.2 : 12.2)) < 1.8 {
+                        if phase == "rally",contact < 6,u.receiver == seat,time-lastSwingAt > 0.3,let ballZ=u.ballZ,abs(ballZ-(seat == 0 ? -12.2 : 12.2)) < 1.8 {
                             input=["action":"swing","power":0.55,"aim":0.0];lastSwingAt=time
                         }
                         if var input { action+=1;input["eventID"]=action;input["point"]=point;input["contact"]=contact;input["time"]=service.networkTime;input["age"]=0;try service.sendProofInput(input);event("input",input["action"] as? String ?? "") }
@@ -1335,5 +1335,16 @@ extension OnlineLobbyMenu {
         }
     }
     private static func requireValue<T>(_ value:T?) throws -> T { guard let value else { throw MultiplayerError.unavailable("Nearby proof host not found") };return value }
+    /// What the proof player needs from a tennis update, whichever form it arrived in: the full one, or the compact one the host sends
+    /// at 30 Hz (arrays: n = tick/point/contact, d = time/phaseAt, i = server/receiver, f = ball x/y/z; see NetworkTennisWire.cs).
+    private static func proofFields(_ s:[String:Any]) -> (phase:String,time:Double,point:Int64,contact:Int64,server:Int,phaseAt:Double,receiver:Int?,ballZ:Double?)? {
+        if let phase=s["phase"] as? String,let time=s["time"] as? Double,let point=s["point"] as? Int64,let contact=s["contact"] as? Int64 {
+            return (phase,time,point,contact,s["server"] as? Int ?? 0,s["phaseAt"] as? Double ?? 0,s["receiver"] as? Int,(s["ball"] as? [String:Double])?["z"])
+        }
+        if s["v"] as? Int == 2,let phase=s["ph"] as? String,let n=s["n"] as? [Int64],n.count == 3,let d=s["d"] as? [Double],d.count >= 2,let i=s["i"] as? [Int],i.count >= 2,let f=s["f"] as? [Double],f.count >= 3 {
+            return (phase,d[0],n[1],n[2],i[0],d[1],i[1],f[2])
+        }
+        return nil
+    }
 }
 #endif

@@ -25,6 +25,10 @@ namespace GolfArcade.Multiplayer {
         public const double PendingSwingHold = .35;
         /// A guest that has heard nothing from the host for this long shows "Reconnecting..." (the 2 s Stale label comes later).
         public const double QuietSeconds = .4;
+        /// The host's 30-per-second tennis updates use the compact form (NetworkTennisWire): under a third of the bytes, small enough to go
+        /// as an unreliable message. The host also tests the form with this build's own JSON at match start and falls back to the full
+        /// form if that fails. Set to false to send the full form always (guests read either).
+        public const bool CompactSnapshots = true;
 
         /// The screen delay a phone may credit to its own swings.
         public static double ScreenCredit(double screenDelay) =>

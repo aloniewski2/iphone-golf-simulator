@@ -35,6 +35,7 @@
     <Compile Include="$(Scripts)Multiplayer/MultiplayerProtocol.cs" Link="Linked/Multiplayer/MultiplayerProtocol.cs" />
     <Compile Include="$(Scripts)Multiplayer/NetworkTennisMatch.cs" Link="Linked/Multiplayer/NetworkTennisMatch.cs" />
     <Compile Include="$(Scripts)Multiplayer/NetworkGolfRound.cs" Link="Linked/Multiplayer/NetworkGolfRound.cs" />
+    <Compile Include="$(Scripts)Multiplayer/NetworkTennisWire.cs" Link="Linked/Multiplayer/NetworkTennisWire.cs" />
 
     <!-- Tennis rules -->
     <Compile Include="$(Scripts)Tennis/TennisRules.cs" Link="Linked/Tennis/TennisRules.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="$(EditModeTests)NetworkTennisPointTests.cs" Link="Linked/Tests/NetworkTennisPointTests.cs" />
     <Compile Include="$(EditModeTests)NetworkViewTests.cs" Link="Linked/Tests/NetworkViewTests.cs" />
     <Compile Include="$(EditModeTests)SplitScreenFramingTests.cs" Link="Linked/Tests/SplitScreenFramingTests.cs" />
+    <Compile Include="$(EditModeTests)NetworkTennisWireTests.cs" Link="Linked/Tests/NetworkTennisWireTests.cs" />
 
     <!-- Tests that only exist for the harness (virtual-time link, experiments) -->
     <Compile Include="Tests/**/*.cs" />

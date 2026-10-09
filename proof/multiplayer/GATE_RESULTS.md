@@ -100,3 +100,18 @@ GATE: G6.1 Tennis starts only on a steady connection and offers Play anyway when
 GATE: G6.2 Thresholds are right in the field — NOT RUN (D). Good ≤ 80 ms / 30 ms jitter / 2% loss and Fair ≤ 150 ms / 60 ms / 5% are guesses (all in `MultiplayerTuning`); the first field test should log `rtt median` from `SportsDiagnostics.log` for wired, Wi-Fi and cellular pairs and compare.
 GATE: G6.3 Changed Swift files parse — PASS (S, syntax only): `python3 Tools/check-syntax.py`.
 
+
+## Phase 7 — Feel
+
+### P7.3 Compact updates
+
+GATE: G7.3.1 The compact update carries everything the full one does — PASS (S). `NetworkTennisWireTests` (9 test cases; with the rest `dotnet test Tools/netsim/NetSim.csproj`: 72 passed, 0 failed): every field of the update, both players and the score is filled with a different value by reflection (twice, with every on/off field inverted the second time) and read back equal to the millimetre / millisecond; ten seconds of a real rally (the real host rules, 120 Hz steps, an update every fourth step) read back within 0.6 mm and 0.6 ms with the same phase, tick, contact and scoreboard each time; zero, one and three finished sets; a missing set list reads as empty; the full form is still accepted; empty text, plain text and `null` are refused; a compact update with no players, no phase, a short block of any kind, a missing player, or an unknown version number is refused whole.
+GATE: G7.3.2 The update is small — PASS (S, sandbox JSON writer). A typical rally update: full form 1,205 bytes, compact 366 bytes (30%): `{"v":2,"n":[120,1,1],"d":[1000,250,0,0],"ph":"rally",…,"f":[1600,2850,-11800,-5509,-3047,32955,1000,797,341],"p":[…],"q":[0,0,0,0,0,0,1,3,2],"qs":""}`. The test requires under 40% of the full size and under 520 bytes. Numbers are whole millimetres/milliseconds so the size does not depend on how a Unity version prints floats.
+GATE: G7.3.3 The host checks the form with the build's own JSON before using it — PASS (S for the check itself: `TheHostsSelfTestPassesWithAWorkingJsonWriterAndReader`). NOT RUN (M): with Unity's real `JsonUtility`; if it ever fails, the host sends the full form for the whole match and the `unity network stats` line in `SportsDiagnostics.log` says `"compact":false`.
+GATE: G7.3.4 Unity compiles the new files and the same tests pass in the editor — NOT RUN (M). Run `NetworkTennisWireTests` in the EditMode runner (`Unity/Tools/check.sh`). The files were syntax-checked (`python3 Tools/check-syntax.py`: PASS).
+GATE: G7.3.5 The debug-only Nearby proof driver still plays — NOT RUN (M). `OnlineLobbyProofDriver.proofFields` in `TennisMenu.swift` now reads the full and the compact form; it is syntax-checked only (no Swift compiler here).
+GATE: G7.3.6 Apple accepts the compact update as an unreliable message — NOT RUN (D). 366 bytes plus the packet is about 0.5 KB; the first field test (plan section 9, message-size experiment) shows whether that is safely under Apple's limit. If not, the fallback in 1.7 sends that kind reliably after the first refusal.
+
+### P7.1, 7.2, 7.4, 7.5
+
+GATE: G7.x Predict own hit, immediate updates, wake signal, ball blending — NOT BUILT. They change what a player sees or feels at the moment of contact, or add native callbacks whose failure is a crash; each needs a device to judge (see the plan, P7).

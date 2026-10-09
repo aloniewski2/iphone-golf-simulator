@@ -57,10 +57,10 @@ namespace GolfArcade.Multiplayer {
         }
         void Initialize(NetworkConfiguration c) {
             pendingResult=null; startScheduled=false; scheduledStart=double.PositiveInfinity;
-            PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;nextStats=maxSnapshotGap=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;
+            PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;nextStats=maxSnapshotGap=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;compactSnapshots=false;
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
-                if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;}
+                if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;compactSnapshots=NetworkTuning.CompactSnapshots&&NetworkTennisWire.SelfTest();}
                 else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:true,courseKey:c.venue);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
@@ -109,7 +109,7 @@ namespace GolfArcade.Multiplayer {
                 case "snapshot":
                     if(IsHost||p.sender!=Configuration.hostID)return;
                     if(Configuration.sport=="tennis") {
-                        var s=JsonUtility.FromJson<NetworkTennisState>(p.payload);if(s==null||s.tick<lastTick)return;lastTick=s.tick;TennisState=s;if(s.complete)Running=false;
+                        var s=NetworkTennisWire.Read(p.payload);if(s==null||s.tick<lastTick)return;lastTick=s.tick;TennisState=s;if(s.complete)Running=false;
                     } else {
                         var s=JsonUtility.FromJson<NetworkGolfState>(p.payload);if(s==null||s.revision<lastRevision)return;lastRevision=s.revision;
                         if(s.shot?.path!=null&&s.shot.path.Length>1)GolfShot=s.shot;GolfState=s;if(s.complete)Running=false;
@@ -187,11 +187,13 @@ namespace GolfArcade.Multiplayer {
         public bool Quiet=>Running&&!IsHost&&Clock-lastSnapshot>NetworkTuning.QuietSeconds;
         /// A line of local statistics for tuning (nothing is uploaded): Swift writes it to SportsDiagnostics.log.
         void ReportStats() {
-            Send("stats","{\"role\":\""+(IsHost?"host":"guest")+"\",\"stampRejects\":"+(tennis?.StampRejects??0)+",\"maxSnapshotGapMs\":"+(int)(maxSnapshotGap*1000)+"}");
+            Send("stats","{\"role\":\""+(IsHost?"host":"guest")+"\",\"compact\":"+(compactSnapshots?"true":"false")+",\"stampRejects\":"+(tennis?.StampRejects??0)+",\"maxSnapshotGapMs\":"+(int)(maxSnapshotGap*1000)+"}");
         }
+        // The 30 Hz update goes in the compact form (checkpoints in the full one) when this build's JSON passed the self-test at match start.
+        bool compactSnapshots;
         void SendSnapshot(bool full) {
             if(!IsHost)return;
-            if(tennis!=null)Send("snapshot",JsonUtility.ToJson(tennis.State),full);
+            if(tennis!=null)Send("snapshot",full||!compactSnapshots?JsonUtility.ToJson(tennis.State):JsonUtility.ToJson(NetworkTennisWire.From(tennis.State)),full);
             if(golf!=null) {
                 var path=golf.State.shot?.path;
                 if(!full&&golf.State.shot!=null)golf.State.shot.path=null;
