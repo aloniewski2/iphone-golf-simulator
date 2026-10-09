@@ -323,6 +323,7 @@ namespace GolfArcade.Game
             if (look.Hero.HasValue && BuildHero(look)) { /* the Hero */ }
             else
             {
+                if (look.Hero.HasValue) Debug.LogError($"The Hero golfer ({HeroAssets.Golf(look.Hero.Value.Female)}) failed to build: falling back to the OLDER golfer {look.ModelPath}");
                 var model = Resources.Load<GameObject>(look.ModelPath);
                 if (model && !BuildModel(model, look)) Debug.LogWarning($"{look.ModelPath} has no swing clips; using the primitive golfer");
             }
