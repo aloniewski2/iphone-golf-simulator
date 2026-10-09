@@ -66,7 +66,7 @@ namespace GolfArcade.Tennis {
             if(s.phase=="rally"){v.x+=s.velocity.x*advance;v.z+=s.velocity.z*advance;v.y=Mathf.Max(TennisRules.BallRadius,v.y+s.velocity.y*advance-4.905f*advance*advance);}
             BallPosition=NetworkPosition(v);BallVelocity=NetworkPosition(s.velocity);previousBall=BallPosition;contactHitter=null;
             if(ball)ball.position=BallPosition;
-            match=s.score;if(n==1){(match.PlayerPoints,match.OpponentPoints)=(match.OpponentPoints,match.PlayerPoints);(match.PlayerGames,match.OpponentGames)=(match.OpponentGames,match.PlayerGames);(match.PlayerSets,match.OpponentSets)=(match.OpponentSets,match.PlayerSets);match.PlayerServes=!match.PlayerServes;match.PlayerWonMatch=!match.PlayerWonMatch;if(match.SetScores!=null)match.SetScores=match.SetScores.Select(score=>{var halves=score.Split('–');return halves.Length==2?halves[1]+"–"+halves[0]:score;}).ToList();}
+            match=n==1?s.score.Mirrored():s.score;   // the TV's HUD is from the drawn near player's side...
             bool nearServing=s.server==n,localServing=l>=0&&s.server==l;
             if(tossMeter) {
                 // Under the server's feet: its own screen shows it to the player serving, and a shared TV shows it to both.
@@ -81,7 +81,9 @@ namespace GolfArcade.Tennis {
             Feedback=net.Stale?"Connection interrupted":net.Quiet?"Reconnecting…":s.paused?"Waiting for a player":networkLocalSide<0?"Watching":s.reason;
             string phase=s.phase=="intro"?"intro":networkLocalSide<0?"watching":s.complete?"finished":s.phase=="rally"?"rally":s.phase=="point"?"point":localServing?(s.phase=="toss"?"toss|":"serve|")+(match.DeuceCourt?"deuce":"ad"):"receive";
             if(phase!=networkPhase){networkPhase=phase;PhaseChanged?.Invoke(phase);}
-            string score=match.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{match.PlayerGames},{match.OpponentGames},{score}");}
+            // ...but the phone's score ("YOU WIN", "YOUR SERVE") is from its own player's side, which on a shared TV is not the drawn near side.
+            var phoneMatch=l>=0&&l!=n?match.Mirrored():match;
+            string score=phoneMatch.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{phoneMatch.PlayerGames},{phoneMatch.OpponentGames},{score}");}
             if(networkLocalSide<0) {
                 var camera=GameplayCamera;if(camera){camera.transform.position=new Vector3(0,9,-18);camera.transform.LookAt(new Vector3(0,.8f,0));camera.fieldOfView=48;}
             } else if(UsesSplit) UpdateSplit();

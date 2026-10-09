@@ -99,7 +99,13 @@ namespace GolfArcade.Tests {
 
         [Test] public void EitherFormIsReadAndGarbageIsRefused() {
             var s = Filled(false);
-            Assert.AreEqual(s.tick, NetworkTennisWire.Read(JsonUtility.ToJson(s)).tick, "the full form is still accepted");
+            var full = NetworkTennisWire.Read(JsonUtility.ToJson(s));
+            Assert.AreEqual(s.tick, full.tick, "the full form is still accepted");
+            // The full form must carry the score too. Unity's JsonUtility leaves out a nested struct that is not [Serializable]
+            // (the sandbox writer does not), so this is the check that TennisMatch has the attribute.
+            Assert.AreEqual(s.score.PlayerGames, full.score.PlayerGames);
+            Assert.AreEqual(s.score.PlayerPoints, full.score.PlayerPoints);
+            CollectionAssert.AreEqual(s.score.SetScores, full.score.SetScores);
             Assert.AreEqual(s.tick, NetworkTennisWire.Read(Wire(s)).tick, "and so is the compact one");
             Assert.IsNull(NetworkTennisWire.Read("")); Assert.IsNull(NetworkTennisWire.Read("not json")); Assert.IsNull(NetworkTennisWire.Read(null));
             Assert.IsNull(NetworkTennisWire.Read("{\"v\":2,\"ph\":\"rally\"}"), "a compact update with no players is unusable");
