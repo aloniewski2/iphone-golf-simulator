@@ -26,6 +26,8 @@ struct MultiplayerParticipant: Codable, Equatable, Sendable {
     var loaded = false
     /// Tennis: this player's phone has its court direction and centre set (touch players and spectators need nothing).
     var calibrated = false
+    /// Tennis setup: the owner has measured this phone's connection and found it steady enough to start (Fair or better for 1.5 s).
+    var linkOK = false
     /// This phone has a TV or Mac connected (AirPlay or wired).
     var hasScreen = false
     /// Tennis, decided when the match starts: how this phone shows it (nil for spectators and for golf).
@@ -256,6 +258,61 @@ enum MultiplayerTuning {
     static let recalibrationSeconds = 45.0
     /// An unfinished setup is mentioned to everyone after this long (nobody is forced to wait: Leave is always there).
     static let calibrationNoticeSeconds = 60.0
+    // Connection check before a tennis match (tuned in the field): pings go out 10 times a second during setup, the last 20 answers
+    // are graded, and a phone is "steady" once its grade has been Fair or better for 1.5 s in a row.
+    static let linkPingInterval = 0.1, linkReportInterval = 0.25, linkStableSeconds = 1.5, linkDecisionSeconds = 8.0
+    static let linkGoodRTT = 0.08, linkGoodJitter = 0.03, linkGoodLossPercent = 2.0
+    static let linkFairRTT = 0.15, linkFairJitter = 0.06, linkFairLossPercent = 5.0
+}
+
+/// How good a connection is. `unknown` until there are enough answers to say.
+enum LinkGrade: Int, Comparable, Sendable {
+    case unknown, poor, fair, good
+    static func < (a: LinkGrade, b: LinkGrade) -> Bool { a.rawValue < b.rawValue }
+    var word: String { switch self { case .unknown: "checking"; case .poor: "weak"; case .fair: "fair"; case .good: "good" } }
+}
+
+/// One phone's connection to the owner, judged from its last 20 pings: the typical round trip, how much it jumps about, and how many
+/// pings got no answer within a second. Thresholds are in MultiplayerTuning.
+struct LinkWindow {
+    static let size = 20, minimumSamples = 10, lostAfter = 1.0
+    /// Round trips in seconds, newest last; nil is a ping that was never answered.
+    private(set) var samples: [Double?] = []
+    private var outstanding: [Double] = []
+
+    mutating func sent(at time: Double) { outstanding.append(time); if outstanding.count > 40 { outstanding.removeFirst() } }
+    mutating func answered(sentAt time: Double, rtt: Double) {
+        guard rtt.isFinite, rtt >= 0, let i = outstanding.firstIndex(of: time) else { return }
+        outstanding.remove(at: i); add(rtt)
+    }
+    /// Pings still unanswered after a second count as lost.
+    mutating func expire(now: Double) {
+        while let oldest = outstanding.first, now - oldest >= Self.lostAfter { outstanding.removeFirst(); add(nil) }
+    }
+    private mutating func add(_ sample: Double?) { samples.append(sample); if samples.count > Self.size { samples.removeFirst() } }
+
+    var answeredRTTs: [Double] { samples.compactMap { $0 } }
+    var medianRTT: Double { ClockFilter.median(answeredRTTs) }
+    var jitter: Double {
+        let r = answeredRTTs
+        return r.count > 1 ? zip(r, r.dropFirst()).map { abs($1 - $0) }.reduce(0, +) / Double(r.count - 1) : 0
+    }
+    var lossPercent: Double { samples.isEmpty ? 0 : 100 * Double(samples.filter { $0 == nil }.count) / Double(samples.count) }
+    var grade: LinkGrade {
+        guard samples.count >= Self.minimumSamples else { return .unknown }
+        guard !answeredRTTs.isEmpty else { return .poor }
+        let rtt = medianRTT, jitter = jitter, loss = lossPercent
+        if rtt <= MultiplayerTuning.linkGoodRTT, jitter <= MultiplayerTuning.linkGoodJitter, loss <= MultiplayerTuning.linkGoodLossPercent { return .good }
+        if rtt <= MultiplayerTuning.linkFairRTT, jitter <= MultiplayerTuning.linkFairJitter, loss <= MultiplayerTuning.linkFairLossPercent { return .fair }
+        return .poor
+    }
+    /// What the phone tells the owner: grade, then the three numbers behind it.
+    var report: String { String(format: "%d|%.4f|%.4f|%.1f", grade.rawValue, medianRTT, jitter, lossPercent) }
+    static func parse(report: String) -> (grade: LinkGrade, rtt: Double)? {
+        let parts = report.split(separator: "|")
+        guard parts.count == 4, let raw = Int(parts[0]), let grade = LinkGrade(rawValue: raw), let rtt = Double(parts[1]), rtt.isFinite else { return nil }
+        return (grade, rtt)
+    }
 }
 
 /// Local statistics for tuning once the app is live. Nothing is uploaded: the line goes to SportsDiagnostics.log when a match ends.

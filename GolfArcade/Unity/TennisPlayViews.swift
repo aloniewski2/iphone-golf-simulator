@@ -797,8 +797,12 @@ struct ControllerReadyPanel: View {
 /// Online tennis: this player is set up. The match starts when the other player is too.
 struct WaitingForPlayersPanel: View {
     private var waitingFor: String {
-        let names = (MultiplayerService.shared.lobby?.competitors ?? []).filter { !$0.calibrated }.map(\.name)
-        return names.isEmpty ? "the match to start" : names.joined(separator: " and ")
+        let lobby = MultiplayerService.shared.lobby, competitors = lobby?.competitors ?? []
+        let names = competitors.filter { !$0.calibrated }.map(\.name)
+        if !names.isEmpty { return names.joined(separator: " and ") }
+        // Everyone is set up: the owner is still checking that every guest's connection is steady.
+        if competitors.contains(where: { !$0.linkOK && $0.id != lobby?.ownerID }) { return "a steady connection" }
+        return "the match to start"
     }
     var body: some View {
         VStack(spacing: 18) {

@@ -57,6 +57,16 @@ final class MultiplayerService {
     @ObservationIgnored private var stats = NetStats()
     // Tennis setup between loading and play: when it began, whether the "still waiting" note went out, and which competitors
     // reloaded mid-match (play stays paused for them until they point their phone at the TV again).
+    // Connection check before a tennis match: the guest grades its own pings and reports to the owner, who starts only when every
+    // guest's connection has been steady (see LinkWindow). `requiresStableLink` is off only in tests about something else.
+    var requiresStableLink = true
+    private(set) var linkNeedsDecision = false
+    @ObservationIgnored private var linkWindow = LinkWindow()
+    @ObservationIgnored private var nextLinkReport: Double = 0
+    @ObservationIgnored private var linkSteadySince: [String: Double] = [:]
+    @ObservationIgnored private var linkHeardAt: [String: Double] = [:]
+    @ObservationIgnored private var linkWaitingSince: Double?
+    @ObservationIgnored private var linkOverride = false
     @ObservationIgnored private var calibrationStarted: Double = 0
     @ObservationIgnored private var calibrationNoticed = false
     @ObservationIgnored private var awaitingCalibration: Set<String> = []
@@ -289,8 +299,8 @@ final class MultiplayerService {
         let remaining = Set(lobby!.participants.map(\.id))
         lobby?.queue.removeAll { !remaining.contains($0) }
         if rotateSeats && lobby?.sport == .tennis { rotate() }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].view = nil; lobby!.participants[i].screenDelay = nil }
-        awaitingCalibration.removeAll()
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = lobby!.participants[i].isGuest; lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; lobby!.participants[i].view = nil; lobby!.participants[i].screenDelay = nil }
+        awaitingCalibration.removeAll(); linkNeedsDecision = false
         lobby?.revision += 1; publishLobby()
     }
     func findMorePlayers() async throws {
@@ -312,6 +322,7 @@ final class MultiplayerService {
         loadingNeedsDecision = false; lobby = nil; hello.removeAll(); seen.removeAll(); disconnected.removeAll(); rate.removeAll(); matchConfiguration = nil; quickSport = nil; searching = false
         lastLook.removeAll(); lastEmote.removeAll(); emotes.removeAll(); localEmoteAt = -Double.infinity; clockOffset = 0; clockFilter = ClockFilter(); nextPing = 0; lastHeard.removeAll(); silent.removeAll(); nextHeartbeat = 0; silenceArmedAt = .infinity
         awaitingCalibration.removeAll(); calibrationNoticed = false; localNetworkDenied = false
+        linkWindow = LinkWindow(); nextLinkReport = 0; linkSteadySince.removeAll(); linkHeardAt.removeAll(); linkWaitingSince = nil; linkOverride = false; linkNeedsDecision = false
     }
     private func requireOwnerIdle() throws {
         guard isOwner, lobby?.phase == .lobby else { throw MultiplayerError.invalidOperation("The owner can change this only in the lobby.") }
@@ -359,7 +370,7 @@ final class MultiplayerService {
                     if lobby!.participants[i].seat >= 0 { try? broadcast("suspend", payload: id); pushRuntime("suspend", payload: id) }
                 }
                 if connected {
-                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false }
+                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; linkSteadySince[id] = nil }
                     else { disconnected.removeValue(forKey: id) }
                     lobby!.participants[i].connected = true
                 }
@@ -423,6 +434,7 @@ final class MultiplayerService {
             pushRuntimePacket(packet); return
         }
         if packet.kind == "ping", isOwner { try? transmit("pong", payload: packet.payload, reliable: false, to: [peer]); return }
+        if packet.kind == "link", isOwner { noteLink(from: peer, report: packet.payload); return }
         guard peer == state.ownerID else { return }
         switch packet.kind {
         case "loadTimeout": if packet.matchID == state.matchID && state.phase == .loading { loadingNeedsDecision = true }
@@ -437,7 +449,7 @@ final class MultiplayerService {
         case "pong":
             guard let sent = Double(packet.payload) else { return }
             // One slow packet must not move the shared clock: keep the least-delayed samples and slew (ClockFilter).
-            stats.note(rtt: max(0, now - sent))
+            stats.note(rtt: max(0, now - sent)); linkWindow.answered(sentAt: sent, rtt: max(0, now - sent))
             clockOffset = clockFilter.add(rtt: max(0, now - sent), offset: packet.sentAt - (sent + now) / 2)
             roundTrip = clockFilter.medianRTT
             pushRuntime("clock", payload: String(clockOffset))
@@ -536,14 +548,38 @@ final class MultiplayerService {
         default: break
         }
         lobby?.revision += 1; publishLobby()
+        advancePhase()
+    }
+    /// Moves the lobby along when what it was waiting for has happened: everyone loaded; for tennis, everyone set up and on a steady connection.
+    private func advancePhase() {
         if lobby?.phase == .loading, lobby!.competitors.count >= 2, lobby!.competitors.allSatisfy(\.loaded) {
             loadingNeedsDecision = false
             if lobby!.sport == .tennis { beginCalibration() } else { beginPlay() }
-        } else if lobby?.phase == .calibrating, lobby!.competitors.count >= 2, lobby!.competitors.allSatisfy({ $0.loaded && $0.calibrated }) {
+        } else if lobby?.phase == .calibrating, lobby!.competitors.count >= 2, lobby!.competitors.allSatisfy({ $0.loaded && $0.calibrated }), linksAreSteady {
             beginPlay()
         } else if abortSetupIfShort() {
             return
         } else if quickSport != nil, lobby?.canStart == true { try? startMatch() }
+    }
+    /// The owner is never measured (it is the other end); every other tennis competitor must have been steady, unless the owner chose to play anyway.
+    private var linksAreSteady: Bool {
+        guard requiresStableLink, !linkOverride, let state = lobby else { return true }
+        return state.competitors.allSatisfy { $0.id == state.ownerID || $0.linkOK }
+    }
+    /// The owner starts despite a weak connection (offered after a few seconds of waiting).
+    func playAnyway() {
+        guard isOwner, lobby?.phase == .calibrating else { return }
+        linkOverride = true; linkNeedsDecision = false; advancePhase()
+    }
+    /// A guest's grade for its own connection: steady means Fair or better for 1.5 s in a row.
+    private func noteLink(from peer: String, report: String) {
+        guard lobby?.phase == .calibrating, let i = lobby?.participants.firstIndex(where: { $0.id == peer && $0.seat >= 0 }),
+              let result = LinkWindow.parse(report: report) else { return }
+        linkHeardAt[peer] = now
+        if result.grade >= .fair { linkSteadySince[peer] = linkSteadySince[peer] ?? now } else { linkSteadySince[peer] = nil }
+        let steady = linkSteadySince[peer].map { now - $0 >= MultiplayerTuning.linkStableSeconds } ?? false
+        if lobby!.participants[i].linkOK != steady { lobby!.participants[i].linkOK = steady; lobby!.revision += 1; publishLobby() }
+        advancePhase()
     }
     /// Who shows a tennis match how. Both players have a TV: each sees their own court, as before. Exactly one TV: that phone shows both
     /// players and the other is only a controller. Spectators and golf get no view (golf guests always watch the host's TV).
@@ -560,7 +596,8 @@ final class MultiplayerService {
     /// Everyone has loaded. Tennis now lets each player set up their controller; the owner starts play when all are done.
     private func beginCalibration() {
         calibrationStarted = now; calibrationNoticed = false; awaitingCalibration.removeAll()
-        for i in lobby!.participants.indices { lobby!.participants[i].calibrated = false }
+        linkSteadySince.removeAll(); linkHeardAt.removeAll(); linkWaitingSince = nil; linkOverride = false; linkNeedsDecision = false
+        for i in lobby!.participants.indices { lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false }
         lobby!.phase = .calibrating; lobby!.revision += 1; publishLobby()
     }
     /// Schedule the shared start (after the slowest phone's loading cover has gone) and tell everyone.
@@ -673,8 +710,14 @@ final class MultiplayerService {
         guard let transport else { return }
         // Ping often enough to keep the clock filter fed (5/s in a match, 2/s otherwise). Unreliable, so a lost ping is
         // skipped instead of queueing behind other traffic and arriving late.
-        if now >= nextPing { nextPing = now + (lobby?.phase == .playing ? 0.2 : 0.5)
-            if !isOwner, let owner = lobby?.ownerID { stats.pingsSent += 1; try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
+        // During tennis setup they go out 10 times a second, so the connection can be graded within two seconds.
+        if now >= nextPing { nextPing = now + (lobby?.phase == .playing ? 0.2 : lobby?.phase == .calibrating ? MultiplayerTuning.linkPingInterval : 0.5)
+            if !isOwner, let owner = lobby?.ownerID { stats.pingsSent += 1; linkWindow.sent(at: now); try? transmit("ping", payload: String(now), reliable: false, to: [owner]) }
+        }
+        if !isOwner { linkWindow.expire(now: now) }
+        if !isOwner, lobby?.phase == .calibrating, localSeat >= 0, now >= nextLinkReport, let owner = lobby?.ownerID {
+            nextLinkReport = now + MultiplayerTuning.linkReportInterval
+            try? transmit("link", payload: linkWindow.report, reliable: false, to: [owner])
         }
         // A competitor's phone tells the owner it is still there, 10 times a second during play.
         if !isOwner, lobby?.phase == .playing, localSeat >= 0, now >= nextHeartbeat, let owner = lobby?.ownerID {
@@ -699,6 +742,26 @@ final class MultiplayerService {
                         try? broadcast("suspend", payload: p.id); pushRuntime("suspend", payload: p.id)
                     }
                 }
+            }
+            // A guest whose reports stopped arriving is no longer known to be steady.
+            if lobby?.phase == .calibrating {
+                for (id, heard) in linkHeardAt where now - heard > 1.0 {
+                    linkHeardAt.removeValue(forKey: id); linkSteadySince[id] = nil
+                    if let i = lobby?.participants.firstIndex(where: { $0.id == id }), lobby!.participants[i].linkOK { lobby!.participants[i].linkOK = false; lobby?.revision += 1; publishLobby() }
+                }
+            }
+            // Everyone is set up but a connection is not steady: after a few seconds the owner is offered "Play anyway".
+            if lobby?.phase == .calibrating, requiresStableLink, !linkOverride {
+                let setUp = lobby!.competitors.count >= 2 && lobby!.competitors.allSatisfy { $0.loaded && $0.calibrated }
+                if setUp && !linksAreSteady {
+                    let since = linkWaitingSince ?? now; linkWaitingSince = since
+                    if !linkNeedsDecision, now - since >= MultiplayerTuning.linkDecisionSeconds {
+                        linkNeedsDecision = true
+                        let weak = lobby!.competitors.filter { $0.id != lobby!.ownerID && !$0.linkOK }.map(\.name)
+                        let text = "The connection to \(weak.joined(separator: " and ")) is weak. Play anyway, or leave."
+                        lastError = text; try? broadcast("notice", payload: text)
+                    }
+                } else { linkWaitingSince = nil }
             }
             // Setup that drags on is mentioned to everyone (nobody is forced to wait: Leave is always on screen).
             if lobby?.phase == .calibrating, !calibrationNoticed, now - calibrationStarted >= MultiplayerTuning.calibrationNoticeSeconds {

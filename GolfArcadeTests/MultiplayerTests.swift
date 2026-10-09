@@ -6,7 +6,17 @@ import SwiftUI
 final class MultiplayerTests: XCTestCase {
     @MainActor final class Bus {
         var links: [String: Link] = [:]
+        /// Messages on a link with delay, waiting for the test clock to reach their arrival time.
+        var inFlight: [(at: Double, deliver: () -> Void)] = []
+        var time = 0.0
         func link(_ id: String) -> Link { let result = Link(id: id, bus: self); links[id] = result; return result }
+        /// Moves the bus clock to `now` and delivers, in order, every message that has arrived by then.
+        func flush(to now: Double) {
+            time = now
+            let due = inFlight.filter { $0.at <= now + 1e-9 }.sorted { $0.at < $1.at }
+            inFlight.removeAll { $0.at <= now + 1e-9 }
+            for item in due { item.deliver() }
+        }
     }
     final class Link: MultiplayerTransport {
         let localID: String
@@ -20,6 +30,12 @@ final class MultiplayerTests: XCTestCase {
         /// Refuses unreliable messages bigger than this, as Apple's GameKit might.
         var refuseUnreliableOver: Int?
         var refused = 0
+        /// Seconds a message takes to arrive (0 = at once). Delayed messages wait on the bus until `Bus.flush` reaches them.
+        var oneWayDelay = 0.0
+        /// Share of unreliable messages that never arrive (0...1), drawn from a fixed seed so a test repeats exactly.
+        var lossRate = 0.0
+        private var seed: UInt64 = 20261010
+        private func chance() -> Double { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Double(seed >> 11) / Double(1 << 53) }
         var peers: [String] { connected ? bus.links.keys.filter { $0 != localID }.sorted() : [] }
         var sent: [MultiplayerPacket] = []
         /// How each accepted message was actually sent (the packet's own `reliable` field is only advice).
@@ -29,7 +45,11 @@ final class MultiplayerTests: XCTestCase {
             if !reliable, let limit = refuseUnreliableOver, data.count > limit { refused += 1; throw MultiplayerError.unavailable("too big to send unreliably") }
             if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: data) { sent.append(packet); transportModes.append((kind: packet.kind, reliable: reliable)) }
             if drop { return }
-            for id in ids ?? peers { bus.links[id]?.onData?(data, localID) }
+            if lossRate > 0, !reliable, chance() < lossRate { return }   // reliable messages are resent by the real transport
+            for id in ids ?? peers {
+                if oneWayDelay > 0 { let from = localID, network = bus; bus.inFlight.append((at: bus.time + oneWayDelay, deliver: { [weak network] in network?.links[id]?.onData?(data, from) })) }
+                else { bus.links[id]?.onData?(data, localID) }
+            }
         }
         func disconnect() { bus.links.removeValue(forKey: localID); for link in bus.links.values { link.onPeersChanged?() } }
     }
@@ -52,12 +72,15 @@ final class MultiplayerTests: XCTestCase {
         func close() { for s in services.reversed() { s.leave() } }
     }
     /// `screens[n]` says whether phone n has a TV connected; by default every phone does, as in a two-TV match.
-    func party(_ count: Int = 4, screens: [Bool]? = nil) throws -> Party {
+    /// `linkCheck`: the owner waits for every guest's connection to be steady before a tennis match starts (off by default, so the many
+    /// tests that are about something else do not have to run the clock).
+    func party(_ count: Int = 4, screens: [Bool]? = nil, linkCheck: Bool = false) throws -> Party {
         let bus = Bus(), runtime = Runtime(), host = runtime.service()
+        host.requiresStableLink = linkCheck
         host.setScreen(screens?[0] ?? true)
         try host.host(using: bus.link("a"))
         var services = [host], runtimes = [runtime]
-        for n in 1..<count { let r = Runtime(), s = r.service(); s.setScreen(screens?[n] ?? true); try s.connect(using: bus.link(String(UnicodeScalar(97+n)!))); services.append(s); runtimes.append(r) }
+        for n in 1..<count { let r = Runtime(), s = r.service(); s.requiresStableLink = linkCheck; s.setScreen(screens?[n] ?? true); try s.connect(using: bus.link(String(UnicodeScalar(97+n)!))); services.append(s); runtimes.append(r) }
         return Party(bus: bus, services: services, runtimes: runtimes)
     }
     func start(_ p: Party, _ sport: MultiplayerSport = .tennis) throws {
@@ -523,6 +546,108 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(keys((fixtureJSON["participants"] as? [[String: Any]])?[1]), keys((writtenJSON["participants"] as? [[String: Any]])?[1]))
         XCTAssertEqual((writtenHost?["view"] as? String), "split", "the enum is written as the plain word Unity reads")
         XCTAssertEqual(((writtenJSON["participants"] as? [[String: Any]])?[1]["view"] as? String), "none")
+    }
+
+    // MARK: Connection check before a tennis match
+
+    /// Moves the clock in 10 ms steps, letting delayed messages arrive and every service run its update (pings, reports, timers).
+    private func run(_ p: Party, for seconds: Double) {
+        for _ in 0..<Int((seconds * 100).rounded()) {
+            for r in p.runtimes { r.time += 0.01 }
+            p.bus.flush(to: p.runtimes[0].time)
+            for s in p.services { s.update() }
+        }
+    }
+    /// A two-phone tennis party that has loaded; `calibrated` says whether both players have also finished setting up.
+    private func linkCheckParty(delay: Double = 0, loss: Double = 0, calibrated: Bool = true) throws -> Party {
+        let p = try party(2, linkCheck: true)
+        try p.host.setReady(true); try p.services[1].setReady(true); try p.host.startMatch()
+        for l in p.bus.links.values { l.oneWayDelay = delay; l.lossRate = loss }
+        p.host.runtimeLoaded(); p.services[1].runtimeLoaded()
+        run(p, for: 0.5)
+        if calibrated { p.host.runtimeCalibrated(); p.services[1].runtimeCalibrated(); run(p, for: 0.5) }
+        return p
+    }
+    func testAGoodConnectionStartsOnceItHasBeenSteadyForAWhile() throws {
+        let p = try linkCheckParty(delay: 0.02); defer { p.close() }   // 40 ms round trip
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "set up, but the connection has not been watched yet")
+        run(p, for: 1.0)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "a second of good pings is not yet a steady connection")
+        run(p, for: 4.0)
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, true)
+        XCTAssertEqual(p.services[1].lobby?.phase, .playing)
+    }
+    func testAWeakConnectionWaitsThenOffersPlayAnywayToTheOwnerOnly() throws {
+        let p = try linkCheckParty(delay: 0.15); defer { p.close() }   // 300 ms round trip
+        run(p, for: 6)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertFalse(p.host.linkNeedsDecision, "it waits a few seconds before asking")
+        run(p, for: 5)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertTrue(p.host.linkNeedsDecision)
+        XCTAssertTrue(p.services[1].lastError?.contains("weak") == true, "the guest hears why it is waiting")
+        p.services[1].playAnyway()
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating, "only the owner can choose to play anyway")
+        p.host.playAnyway()
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertFalse(p.host.linkNeedsDecision)
+    }
+    func testALossyConnectionIsNotSteadyEvenWhenTheRoundTripsAreFast() throws {
+        let p = try linkCheckParty(delay: 0.02, loss: 0.25); defer { p.close() }   // a quarter of pings and pongs vanish
+        run(p, for: 9)
+        XCTAssertEqual(p.host.lobby?.phase, .calibrating)
+        XCTAssertTrue(p.host.linkNeedsDecision)
+    }
+    func testWithoutAGuestReportingTheOwnerDoesNotCallItSteady() throws {
+        let p = try linkCheckParty(delay: 0.02, calibrated: false); defer { p.close() }
+        run(p, for: 4)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, true, "good pings for 4 s are steady")
+        p.bus.links["b"]!.drop = true    // the guest goes quiet without the transport noticing
+        run(p, for: 1.5)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, false, "silence is not steadiness")
+        p.bus.links["b"]!.drop = false
+        run(p, for: 6)   // the pings lost during the silence must scroll out of the 20-ping window, then 1.5 s of good ones (modelled: ~4.3 s)
+        XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, true, "...and it is steady again after a while of good pings")
+    }
+    func testTheConnectionCheckNeverHoldsUpGolfOrAMatchThatIsAlreadyRunning() throws {
+        let p = try party(2, linkCheck: true); defer { p.close() }
+        try start(p, .golf)    // golf has no setup phase, so no check
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+    }
+    func testLinkWindowGradesByRoundTripJitterAndLoss() {
+        func window(_ rtts: [Double?]) -> LinkWindow {
+            var w = LinkWindow(); var t = 0.0
+            for rtt in rtts { w.sent(at: t); if let rtt { w.answered(sentAt: t, rtt: rtt) } else { w.expire(now: t + LinkWindow.lostAfter) }; t += 0.1 }
+            return w
+        }
+        XCTAssertEqual(window(Array(repeating: 0.05, count: 20)).grade, .good)
+        XCTAssertEqual(window(Array(repeating: 0.12, count: 20)).grade, .fair)
+        XCTAssertEqual(window(Array(repeating: 0.20, count: 20)).grade, .poor)
+        XCTAssertEqual(window(Array(repeating: 0.05, count: 9)).grade, .unknown, "fewer than ten answers cannot say")
+        XCTAssertEqual(window(Array(repeating: nil, count: 12)).grade, .poor, "nothing came back")
+        // Boundaries: exactly at a limit is still within it.
+        XCTAssertEqual(window(Array(repeating: MultiplayerTuning.linkGoodRTT, count: 20)).grade, .good)
+        XCTAssertEqual(window(Array(repeating: MultiplayerTuning.linkFairRTT, count: 20)).grade, .fair)
+        XCTAssertEqual(window(Array(repeating: MultiplayerTuning.linkFairRTT + 0.001, count: 20)).grade, .poor)
+        // A median that looks fine but jumps about is not.
+        XCTAssertEqual(window((0..<20).map { $0 % 2 == 0 ? 0.02 : 0.12 }).grade, .poor, "jitter 100 ms")
+        // Loss: one lost ping in twenty is 5% (fair); two is 10% (poor).
+        XCTAssertEqual(window(Array(repeating: 0.05, count: 19) + [nil]).grade, .fair)
+        XCTAssertEqual(window(Array(repeating: 0.05, count: 18) + [nil, nil]).grade, .poor)
+    }
+    func testLinkWindowCountsAPingNobodyAnsweredAsLostAndIgnoresStrangers() {
+        var w = LinkWindow()
+        w.sent(at: 10); w.sent(at: 10.1)
+        w.answered(sentAt: 10.1, rtt: 0.05)
+        w.answered(sentAt: 99, rtt: 0.05)       // a pong for a ping this window never sent
+        w.answered(sentAt: 10.1, rtt: 0.05)     // the same pong twice
+        XCTAssertEqual(w.samples.count, 1)
+        w.expire(now: 10.5); XCTAssertEqual(w.samples.count, 1, "not yet a second")
+        w.expire(now: 11.0); XCTAssertEqual(w.samples.count, 2)
+        XCTAssertEqual(w.lossPercent, 50, accuracy: 1e-9)
+        XCTAssertEqual(LinkWindow.parse(report: w.report)?.grade, .unknown)
+        XCTAssertNil(LinkWindow.parse(report: "nonsense")); XCTAssertNil(LinkWindow.parse(report: "9|0.1|0|0"))
     }
 
     // MARK: Local play

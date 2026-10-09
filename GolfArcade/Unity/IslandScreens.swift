@@ -728,6 +728,10 @@ struct MultiplayerMatchOverlay: View {
                 HStack {
                     if service.localSeat < 0 { IslandNotice(text:"Watching",compact:compact) }
                     Spacer()
+                    // A connection that stays weak: the owner may start anyway.
+                    if service.isOwner && service.linkNeedsDecision {
+                        IslandLobbyRow(title:"Play anyway",icon:"play.fill",id:"net-play-anyway",menu:menu,compact:compact).frame(width:compact ? 190 : 240)
+                    }
                     IslandLobbyRow(title:"Leave",icon:"arrow.left",id:"net-leave",menu:menu,compact:compact).frame(width:compact ? 150 : 190)
                 }
                 ForEach(lobby.participants.filter { notice(for:$0,in:lobby) != nil },id:\.id) { p in

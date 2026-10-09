@@ -1110,7 +1110,7 @@ struct OnlineAppleSheet: Identifiable {
                 + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
                 + [["net-settings-seats"],["back"]]
         case .loading: return service.loadingNeedsDecision ? [["net-wait", "net-leave"]] : [["net-leave"]]
-        case .match: return [["net-leave"]]
+        case .match: return (service.isOwner && service.linkNeedsDecision ? [["net-play-anyway"]] : []) + [["net-leave"]]
         case .results: return (service.isOwner ? [["net-rematch"]] : []) + [["net-leave"]]
         case .leave: return [["net-stay","net-confirm-leave"]]
         }
@@ -1137,6 +1137,7 @@ struct OnlineAppleSheet: Identifiable {
                 run(menu) { [self] in try await service.quickMatch(searchSport) }
             case "net-cancel": cancel(); service.leave(); menu.showOnline(.entry)
             case "net-host": identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends"); menu.showOnline(.lobby)
+            case "net-play-anyway": service.playAnyway()
             case "net-open-settings": if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
             case "net-page-prev": nearbyPage = max(0,nearbyPage - 1)
             case "net-page-next": nearbyPage = min(max(0,(service.discoveredLobbies.count - 1) / 4),nearbyPage + 1)
