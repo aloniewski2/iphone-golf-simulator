@@ -19,14 +19,13 @@ struct HubControllerView: View {
         VStack(spacing: 16) {
             header
             onTV
-            Spacer(minLength: 0)
+            // the whole middle of the phone is the stick: a thumb put down anywhere there walks the hero, eyes on the TV
             HubStick { x, y, mag in hub.setStick(x: x, y: y, magnitude: mag) }
-                .frame(width: 270, height: 270)
+                .frame(maxWidth: .infinity, minHeight: HubStick.diameter + 10, maxHeight: .infinity)
                 .opacity(hub.phase == .live ? 1 : 0.4)
                 .disabled(hub.phase != .live)
-            Text("Short push walks · full push runs · hold to sprint")
-                .font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55))
-            Spacer(minLength: 0)
+            Text("Thumb down anywhere here · short push walks · full push runs · hold to sprint")
+                .font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
             HStack(alignment: .center, spacing: 22) {
                 HubRoundButton(label: "B", caption: "Back", size: 74) { hub.pressB() }
                 HubRoundButton(label: "A", caption: aCaption, size: 104, filled: true) { hub.pressA() }
@@ -115,51 +114,72 @@ struct HubControllerView: View {
     }
 }
 
-/// An analog thumbstick: direction and how far it is pushed (0…1). Sends on every drag change; zero on release.
+/// An analog thumbstick that floats: direction and how far it is pushed (0…1), free in every direction. The player's eyes are on
+/// the TV, so the stick is not a target to hit: a thumb put down anywhere in its area is the stick's centre, and the push is
+/// measured from there (the drawn stick moves under the thumb, kept whole on the screen). At rest it sits in the middle.
+/// Sends on every drag change; zero on release.
 struct HubStick: View {
     let send: (Double, Double, Double) -> Void
+    /// The drawn stick: the base this wide, the knob travelling to its rim.
+    static let diameter: CGFloat = 270
     @State private var thumb: CGSize = .zero
+    /// Where the thumb came down (nil at rest).
+    @State private var origin: CGPoint?
     @State private var running = false
     var body: some View {
         GeometryReader { g in
-            let radius = min(g.size.width, g.size.height) / 2
+            let radius = Self.diameter / 2
             let travel = radius - 44
+            let rest = CGPoint(x: g.size.width / 2, y: g.size.height / 2)
+            // the drawn base: under the thumb, but never cut off by the area's edge
+            let base = origin.map { CGPoint(x: min(max($0.x, radius), max(radius, g.size.width - radius)),
+                                            y: min(max($0.y, radius), max(radius, g.size.height - radius))) } ?? rest
             ZStack {
-                Circle().fill(Color(hex: "1F3B6E"))
-                    .overlay(Circle().stroke(Color(hex: "B4E5FF").opacity(0.55), lineWidth: 5))
-                    .overlay(Circle().stroke(.white.opacity(0.35), lineWidth: 1.5).padding(4))
-                // the run ring: past it you run
-                Circle().strokeBorder(IslandUI.lime.opacity(running ? 0.75 : 0.25), style: StrokeStyle(lineWidth: 2, dash: [5, 6]))
-                    .frame(width: (44 + travel * 0.7) * 2, height: (44 + travel * 0.7) * 2)
-                ForEach(0..<4) { i in
-                    Image(systemName: "triangle.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(.white.opacity(0.5))
-                        .offset(y: -(radius - 16)).rotationEffect(.degrees(Double(i) * 90))
-                }
-                Circle().fill(LinearGradient(colors: [.white, Color(hex: "D0E9FA")], startPoint: .top, endPoint: .bottom))
-                    .frame(width: 88, height: 88)
-                    .overlay(Circle().stroke(running ? IslandUI.lime : .white, lineWidth: 3))
-                    .shadow(color: .black.opacity(0.45), radius: 0, y: 5)
-                    .offset(thumb)
+                Color.clear.contentShape(Rectangle())
+                stick(radius: radius, travel: travel).frame(width: Self.diameter, height: Self.diameter).position(base)
             }
-            .contentShape(Circle())
             .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
                 .onChanged { drag in
-                    let dx = drag.location.x - g.size.width / 2, dy = drag.location.y - g.size.height / 2
+                    if origin == nil { origin = drag.startLocation }
+                    let start = origin ?? drag.startLocation
+                    let dx = drag.location.x - start.x, dy = drag.location.y - start.y
                     let distance = hypot(dx, dy)
                     let mag = min(1, distance / max(1, travel))
                     let length = min(travel, distance)
                     thumb = distance > 0 ? CGSize(width: dx / distance * length, height: dy / distance * length) : .zero
                     let nowRunning = mag >= 0.7
                     if nowRunning != running { running = nowRunning; if SportsSession.shared.haptics { UISelectionFeedbackGenerator().selectionChanged() } }
-                    if distance > 0 { send(dx / distance, -dy / distance, mag) }
+                    if distance > 0 { send(dx / distance, -dy / distance, mag) } else { send(0, 0, 0) }
                 }
                 .onEnded { _ in
-                    withAnimation(.spring(response: 0.18, dampingFraction: 0.7)) { thumb = .zero }
+                    withAnimation(.spring(response: 0.18, dampingFraction: 0.7)) { thumb = .zero; origin = nil }
                     running = false; send(0, 0, 0)
                 })
+            .accessibilityElement()
             .accessibilityIdentifier("hub-stick")
             .accessibilityLabel("Walk stick")
         }
+    }
+
+    private func stick(radius: CGFloat, travel: CGFloat) -> some View {
+        ZStack {
+            Circle().fill(Color(hex: "1F3B6E"))
+                .overlay(Circle().stroke(Color(hex: "B4E5FF").opacity(0.55), lineWidth: 5))
+                .overlay(Circle().stroke(.white.opacity(0.35), lineWidth: 1.5).padding(4))
+            // the run ring: past it you run
+            Circle().strokeBorder(IslandUI.lime.opacity(running ? 0.75 : 0.25), style: StrokeStyle(lineWidth: 2, dash: [5, 6]))
+                .frame(width: (44 + travel * 0.7) * 2, height: (44 + travel * 0.7) * 2)
+            ForEach(0..<4) { i in
+                Image(systemName: "triangle.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(.white.opacity(0.5))
+                    .offset(y: -(radius - 16)).rotationEffect(.degrees(Double(i) * 90))
+            }
+            Circle().fill(LinearGradient(colors: [.white, Color(hex: "D0E9FA")], startPoint: .top, endPoint: .bottom))
+                .frame(width: 88, height: 88)
+                .overlay(Circle().stroke(running ? IslandUI.lime : .white, lineWidth: 3))
+                .shadow(color: .black.opacity(0.45), radius: 0, y: 5)
+                .offset(thumb)
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -213,6 +233,10 @@ struct HubQuickMenu: View {
                     }
                 }
                 Section {
+                    // Local play has no bay of its own: pass-the-phone golf, two phones on one TV for tennis, or a nearby lobby
+                    Button { dismiss(); hub.showClassic(); TennisMenu.shared.openFromPlaza(.localChoice) } label: {
+                        Label("Play together (Local)", systemImage: "person.2.wave.2.fill")
+                    }.accessibilityIdentifier("hub-local")
                     Button { dismiss(); hub.showClassic() } label: { Label("Classic menu", systemImage: "list.bullet.rectangle") }
                         .accessibilityIdentifier("hub-classic")
                     Button { dismiss(); BetaFeedback.open() } label: { Label("Send feedback", systemImage: "envelope") }

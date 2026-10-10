@@ -519,7 +519,11 @@ final class TennisMenu {
 
     // MARK: Tutorials
 
-    func finishOnboarding(_ sport: Sport) { show(.hub(sport)) }
+    /// After onboarding: with a TV and Plaza menus on, the Plaza (the standard menu: HubSession opens it on the home screen);
+    /// otherwise that sport's screen.
+    func finishOnboarding(_ sport: Sport) {
+        if HubSession.shared.plazaMenus && session.displayConnected { show(.main) } else { show(.hub(sport)) }
+    }
 
     /// Compatibility for saved routes and older UI: choose a map for a normal game.
     func startTutorial(_ sport: Sport) {
