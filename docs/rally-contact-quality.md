@@ -1,3 +1,5 @@
+> **Partly superseded by `docs/tennis-feel-pass-2026-10-10.md`**: aiming is now by swing timing, and movement and CPU pace were retuned. The numbers below also lag the code (reach 1.8 m, window 340 ms, quality 80/15/5).
+
 # Rally contact and pace — 2026-09-29
 
 - Assisted reach is 1.6 m at all swing powers (previously 1.05–1.6 m). Swing must have started for at least 40 ms; active assisted-contact window extends to 280 ms from the authored sweet time. Distant balls still require movement/dive; string-to-ball visual contact validation retained.

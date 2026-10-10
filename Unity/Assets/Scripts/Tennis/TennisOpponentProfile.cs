@@ -40,7 +40,7 @@ namespace GolfArcade.Tennis
             Style = "club", Skill = 0,
             Reach = 2.0f, Speed = 4.4f, Reaction = .30f,
             Threshold = .25f, MissScale = .8f, UnforcedError = .07f,
-            LobChance = .07f, Width = .05f, Depth = .15f, PaceMin = 18.5f, PaceMax = 23, SpinMin = -.2f, SpinMax = .5f,
+            LobChance = .07f, Width = .05f, Depth = .15f, PaceMin = 18.5f, PaceMax = 22, SpinMin = -.2f, SpinMax = .5f,
             ServeSpeed = 26, SecondServeSpeed = 19, ServeAccuracy = .3f, ServeWide = .25f, FirstFault = .16f, SecondFault = .06f,
             ReturnReach = .2f, ReturnReaction = .3f,
         };
@@ -50,7 +50,7 @@ namespace GolfArcade.Tennis
             Style = "pro", Skill = 1,
             Reach = 2.3f, Speed = 5.3f, Reaction = .18f,
             Threshold = .5f, MissScale = .52f, UnforcedError = .006f,
-            LobChance = .06f, Width = .85f, Depth = .85f, PaceMin = 20, PaceMax = 33, SpinMin = -.4f, SpinMax = .95f,
+            LobChance = .06f, Width = .85f, Depth = .85f, PaceMin = 20, PaceMax = 28, SpinMin = -.4f, SpinMax = .95f,
             WrongFoot = .3f, Hunt = .5f,
             ServeSpeed = 44, SecondServeSpeed = 30, ServeAccuracy = .9f, ServeWide = .4f, FirstFault = .06f, SecondFault = .01f,
             ReturnReach = .45f, ReturnReaction = .1f,
@@ -86,7 +86,7 @@ namespace GolfArcade.Tennis
             switch (style)
             {
                 case "wildcard":        // big swings, little control
-                    p.PaceMax += 4; p.PaceMin += 2; p.Width = Mathf.Max(p.Width, .35f); p.UnforcedError += .05f; p.FirstFault += .06f; break;
+                    p.PaceMax += 3; p.PaceMin += 1; p.Width = Mathf.Max(p.Width, .35f); p.UnforcedError += .05f; p.FirstFault += .06f; break;
                 case "moonballer":      // high, deep, heavy loops that push you back
                     p.PaceMin = 14; p.PaceMax = 19; p.SpinMin = .6f; p.SpinMax = 1f; p.Depth = 1; p.LobChance = .35f; p.UnforcedError *= .6f; break;
                 case "needle":          // angles: pulls you wide, then into the open court
@@ -98,7 +98,7 @@ namespace GolfArcade.Tennis
                     p.Reach += .1f; p.Speed += .25f; p.Reaction -= .02f; p.UnforcedError *= .5f; p.Threshold += .02f;
                     p.PaceMax -= 4; p.Width = Mathf.Min(p.Width, .5f); break;
                 case "hammer":          // pace: rushes you and dares you to block it back
-                    p.PaceMin += 5; p.PaceMax += 6; p.Depth = Mathf.Max(p.Depth, .8f); p.UnforcedError += .01f; break;
+                    p.PaceMin += 3; p.PaceMax += 3; p.Depth = Mathf.Max(p.Depth, .8f); p.UnforcedError += .01f; break;
                 case "magician":        // slice, drop shots and changes of rhythm
                     p.SliceChance = .45f; p.DropChance = .18f; p.SpinMin = -.9f; p.WrongFoot += .15f; break;
                 case "sniper":          // lives on the lines, and occasionally just over them
@@ -108,7 +108,7 @@ namespace GolfArcade.Tennis
                 case "boss":            // the wall: almost nothing gets past, nothing comes back easy --
                                         // but a clean, fast ball into the corner can still stretch him
                     p.Reach = 2.4f; p.Speed = 5.4f; p.Reaction = .16f; p.Threshold = .53f; p.MissScale = .5f; p.UnforcedError = .004f;
-                    p.Width = .92f; p.Depth = .95f; p.PaceMin = 24; p.PaceMax = 34; p.WrongFoot = .35f; p.Hunt = .7f;
+                    p.Width = .92f; p.Depth = .95f; p.PaceMin = 22; p.PaceMax = 30; p.WrongFoot = .35f; p.Hunt = .7f;
                     p.ServeSpeed = 50; p.SecondServeSpeed = 36; p.ServeAccuracy = 1; p.ServeWide = .5f; p.FirstFault = .04f; p.SecondFault = .005f;
                     p.ReturnReach = .6f; p.ReturnReaction = .05f; p.SliceChance = .15f; p.DropChance = .06f; break;
             }

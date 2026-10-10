@@ -321,6 +321,46 @@ public class TennisMatchTests
         Assert.Greater(comfortable.Speed, stretched.Speed, "moving it around must yield weaker replies");
     }
 
+    [Test] public void TheRallyBuilderEasesTheOpeningShotsAndThenFadesOut()
+    {
+        Assert.AreEqual(1f, TennisOpponent.RallyEase(1), 1e-4f, "the serve return gets the full help");
+        Assert.AreEqual(0f, TennisOpponent.RallyEase(TennisOpponent.RallyBuilderShots + 1), 1e-4f, "a long rally gets none");
+        Assert.AreEqual(0f, TennisOpponent.RallyEase(0), "no ball, no help");
+        for (int shots = 1; shots < 12; shots++)
+            Assert.LessOrEqual(TennisOpponent.RallyEase(shots + 1), TennisOpponent.RallyEase(shots), "the help only ever fades");
+
+        // Same rolls, same ball: the eased rival aims narrower and hits softer, but misses and
+        // reaches exactly as often (it is never gifted a worse or better ball).
+        foreach (float difficulty in new[] { .2f, .45f, .8f, 1f })
+        {
+            var profile = OpponentProfile.FromDifficulty(difficulty);
+            for (float roll = .1f; roll <= .9f; roll += .2f)
+                foreach (float widthRoll in new[] { .3f, .9f })
+                {
+                    var plain = TennisOpponent.Decide(0, .6f, 1f, 0, 0, profile, roll, widthRoll, .5f, .3f, profile.Reach);
+                    var eased = TennisOpponent.Decide(0, .6f, 1f, 0, 0, profile, roll, widthRoll, .5f, .3f, profile.Reach, rallyEase: 1f);
+                    Assert.AreEqual(plain.Reached, eased.Reached);
+                    Assert.AreEqual(plain.Error, eased.Error, "easing never changes whether the rival errs");
+                    if (plain.Error || !plain.Reached) continue;
+                    Assert.LessOrEqual(Mathf.Abs(eased.Landing.x), Mathf.Abs(plain.Landing.x) + 1e-3f, "narrower target");
+                    Assert.LessOrEqual(eased.Speed, plain.Speed + 1e-3f, "less pace");
+                }
+        }
+    }
+
+    [Test] public void RivalPaceIsCappedSoABallIsNeverAnUnreachableLaser()
+    {
+        // The fastest rally ball any rival chooses is bounded (the net-clearance loop only slows it further).
+        foreach (var rival in TennisRoster.All)
+        {
+            var p = rival.Profile;
+            Assert.LessOrEqual(p.PaceMax, 31f, $"{rival.Key} top rally pace");
+            Assert.GreaterOrEqual(p.PaceMax, p.PaceMin, $"{rival.Key} pace range is ordered");
+        }
+        Assert.LessOrEqual(OpponentProfile.Pro.PaceMax, 28f);
+        Assert.LessOrEqual(OpponentProfile.FromDifficulty(TennisOpponent.DefaultDifficulty).PaceMax, 25.5f, "the default rival is about 25 m/s at most");
+    }
+
     [Test] public void OpponentRecoversTowardTheMiddleWhenNothingIsComing()
     {
         float x = 3f;
@@ -330,16 +370,90 @@ public class TennisMatchTests
 
     [Test] public void SwingTimingSteersTheBall()
     {
-        // Early opens the cross-court corner, late goes down the line, on time goes straight.
-        Assert.Greater(TennisRules.AimFromTiming(-TennisRules.AimWindow, false), .9f);
-        Assert.Less(TennisRules.AimFromTiming(TennisRules.AimWindow, false), -.9f);
-        Assert.AreEqual(0, TennisRules.AimFromTiming(0, false), .001f);
-        // The backhand mirrors it, so the same early swing opens the other corner.
-        Assert.Less(TennisRules.AimFromTiming(-TennisRules.AimWindow, true), -.9f);
-        // And it never steers further than the aim range allows.
-        foreach (float offset in new[] { -3f, -1f, 0f, 1f, 3f })
-            foreach (bool back in new[] { false, true })
-                Assert.LessOrEqual(Mathf.Abs(TennisRules.AimFromTiming(offset, back)), 1f);
+        // Wii Sports: on the ball goes straight, early goes left, late goes right, the same for every wing.
+        Assert.AreEqual(0, TennisRules.AimFromTiming(0), .001f);
+        Assert.Less(TennisRules.AimFromTiming(-TennisRules.AimWindow), -.99f, "full early is the left corner");
+        Assert.Greater(TennisRules.AimFromTiming(TennisRules.AimWindow), .99f, "full late is the right corner");
+        // A wide flat middle: anywhere inside the centre band is straight, so "on the ball" is easy to find.
+        foreach (float late in new[] { -TennisRules.AimCentreBand, -.03f, 0f, .03f, TennisRules.AimCentreBand })
+            Assert.AreEqual(0, TennisRules.AimFromTiming(late), 1e-6f, $"{late * 1000:0} ms is straight");
+        Assert.Greater(TennisRules.AimCentreBand, .035f, "wider than a Perfect, so straight is never a coin toss");
+        // It grows steadily either side and is mirror-symmetric...
+        float previous = 0;
+        for (float late = TennisRules.AimCentreBand; late <= TennisRules.AimWindow + .05f; late += .01f)
+        {
+            float aim = TennisRules.AimFromTiming(late);
+            Assert.GreaterOrEqual(aim, previous - 1e-6f, "later is never further left");
+            Assert.AreEqual(-aim, TennisRules.AimFromTiming(-late), 1e-6f);
+            previous = aim;
+        }
+        // ...and never steers further than the aim range allows, however mistimed.
+        foreach (float late in new[] { -3f, -1f, -.3f, 0f, .3f, 1f, 3f })
+            Assert.LessOrEqual(Mathf.Abs(TennisRules.AimFromTiming(late)), 1f);
+    }
+
+    [Test] public void TimingPlacementSendsTheBallWhereTheTimingAimedItAndNeverOut()
+    {
+        // Early, on the ball, late: the landing spot moves left, middle, right.
+        var left = TennisRules.TimingPlacement(-.2f, .6f, .8f, 0, 0);
+        var straight = TennisRules.TimingPlacement(0, .6f, .8f, 0, 0);
+        var right = TennisRules.TimingPlacement(.2f, .6f, .8f, 0, 0);
+        Assert.Less(left.x, -2f); Assert.AreEqual(0, straight.x, .05f); Assert.Greater(right.x, 2f);
+        Assert.AreEqual(left.x, -right.x, .05f, "symmetric");
+        // Power picks the depth: a full swing lands deeper than a soft one.
+        Assert.Greater(TennisRules.TimingPlacement(0, 1f, .8f, 0, 0).z, TennisRules.TimingPlacement(0, .2f, .8f, 0, 0).z + 1.5f);
+        // The timing that chose the side is not punished twice: a clean hit keeps the whole corner (unlike TimedPlacement,
+        // which would pull a half-good contact toward the middle).
+        Assert.Greater(Mathf.Abs(TennisRules.TimingPlacement(.24f, .6f, .8f, 0, 0).x), 3.5f);
+        // A scrappy contact is looser and shorter, not suddenly somewhere else.
+        var scrappy = TennisRules.TimingPlacement(0, .6f, .1f, 1, 1);
+        var clean = TennisRules.TimingPlacement(0, .6f, .9f, 1, 1);
+        Assert.Greater(Mathf.Abs(scrappy.x - clean.x) + Mathf.Abs(scrappy.z - clean.z), .3f);
+        Assert.Less(scrappy.z, clean.z);
+        // Whatever the swing did, the ball lands in the court.
+        foreach (float late in new[] { -.34f, -.1f, 0f, .1f, .34f })
+            foreach (float power in new[] { .1f, .5f, 1f })
+                foreach (float quality in new[] { .02f, .5f, .95f })
+                    foreach (float roll in new[] { -1f, 1f })
+                        Assert.IsTrue(TennisRules.BounceIsIn(TennisRules.TimingPlacement(late, power, quality, roll, -roll)),
+                            $"late {late} power {power} quality {quality}");
+    }
+
+    [Test] public void TheHitBadgeNamesTheDirectionTheTimingChose()
+    {
+        Assert.AreEqual("STRAIGHT", TennisRules.TimingAimWord(0));
+        Assert.AreEqual("STRAIGHT", TennisRules.TimingAimWord(.05f));
+        Assert.AreEqual("EARLY · LEFT", TennisRules.TimingAimWord(-.15f));
+        Assert.AreEqual("LATE · RIGHT", TennisRules.TimingAimWord(.15f));
+    }
+
+    [Test] public void OnlineHitFeedbackReadsTheGradeTheHostSent()
+    {
+        // The host sends each hit's grade as its label; every phone plays the hit from it.
+        foreach (var grade in new[] { Timing.Ok, Timing.Good, Timing.Great, Timing.Excellent, Timing.Perfect })
+            Assert.AreEqual(grade, TennisRules.GradeFromLabel(TennisRules.GradeLabel(grade)), grade.ToString());
+        Assert.AreEqual(Timing.Good, TennisRules.GradeFromLabel(""), "an unknown or empty label still plays a normal hit");
+        Assert.AreEqual(Timing.Good, TennisRules.GradeFromLabel(null));
+        // A cleaner hit is a crisper click, never past full strength.
+        float last = 0;
+        foreach (var grade in new[] { Timing.Ok, Timing.Good, Timing.Great, Timing.Excellent, Timing.Perfect })
+        {
+            float feel = TennisRules.GradeFeel(grade);
+            Assert.Greater(feel, last); Assert.LessOrEqual(feel, 1f); last = feel;
+        }
+    }
+
+    [Test] public void DepthFollowsSwingPower()
+    {
+        float last = 0;
+        for (float power = 0; power <= 1.001f; power += .1f)
+        {
+            float depth = TennisRules.DepthFromPower(power);
+            Assert.GreaterOrEqual(depth, last - 1e-6f, "a harder swing never lands shorter");
+            Assert.That(depth, Is.InRange(.45f, .95f));
+            last = depth;
+        }
+        Assert.AreEqual(.95f, TennisRules.DepthFromPower(1), 1e-5f);
     }
 
     // --- Gameplay depth: contact decides pace and placement; reaching the ball is a skill ---
@@ -377,13 +491,38 @@ public class TennisMatchTests
 
     [Test] public void WideWinnersNeedAGoodJump()
     {
-        // A fast, clean ball to the far corner from a player waiting in the middle.
+        // The rival's fastest shot into the far corner (delivered the way TennisGame.SendFromOpponent
+        // does: a flat .28 m net clearance), against a player waiting in the middle.
         Vector3 from = new Vector3(-2, 1, 10.5f), corner = new Vector3(3.9f, TennisRules.BallRadius, -10.2f);
-        Vector3 v = Fly(from, corner, 30);
+        Vector3 v = TennisRules.RallyArcVelocity(from, corner, 30, 0, .28f);
         var late = TennisRules.PlanIntercept(from, v, 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.ReactionTime, TennisRules.RunSpeed, false);
         var early = TennisRules.PlanIntercept(from, v, 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.JumpReaction, TennisRules.SprintSpeed, false);
-        Assert.IsFalse(late.Reachable, $"reacting late, a clean corner winner stays a winner (gap {late.Gap:0.00})");
+        Assert.IsFalse(late.Reachable, $"at a plain run, a fast corner ball is out of reach (gap {late.Gap:0.00})");
         Assert.IsTrue(early.Reachable || early.Diveable, $"a good jump gets there, or close enough to dive (gap {early.Gap:0.00})");
+        Assert.IsTrue(TennisRules.EarnsAutoJump(late), "a phone player cannot lean, so the unreachable ball earns the jump on its own");
+    }
+
+    [Test] public void OrdinaryBallsDoNotNeedTheAutoJump()
+    {
+        // Comfortable balls are played at a normal run, so the rescue never makes the game easier than it has to be.
+        Vector3 from = new Vector3(0, 1, 10.5f), to = new Vector3(1.2f, TennisRules.BallRadius, -9.5f);
+        var plan = TennisRules.PlanIntercept(from, TennisRules.RallyArcVelocity(from, to, 24, 0, .28f), 0, .75f, new Vector2(0, TennisRules.BaselineZ), TennisRules.ReactionTime, TennisRules.RunSpeed, false);
+        Assert.IsFalse(TennisRules.EarnsAutoJump(plan));
+        Assert.IsFalse(TennisRules.EarnsAutoJump(default), "no ball, no jump");
+    }
+
+    [Test] public void LongRalliesDoNotWearThePlayerOut()
+    {
+        // Stamina trims a little top speed, never the 28% it used to: five hard sprints still leave a quick player.
+        float stamina = 1;
+        for (int ball = 0; ball < 7; ball++)
+        {
+            for (int i = 0; i < 120; i++) stamina = TennisRules.StaminaStep(stamina, TennisRules.SprintSpeed, 1f / 120);
+            for (int i = 0; i < 120; i++) stamina = TennisRules.StaminaStep(stamina, 0, 1f / 120);
+        }
+        Assert.Greater(TennisRules.StaminaSpeedFactor(stamina), .93f, $"seven sprints in a row leave the legs fresh enough (stamina {stamina:0.00})");
+        Assert.AreEqual(1f, TennisRules.StaminaSpeedFactor(1), 1e-4f);
+        Assert.GreaterOrEqual(TennisRules.StaminaSpeedFactor(0), .85f, "even empty legs keep 85% of top speed");
     }
 
     [Test] public void AnOrdinaryBallIsReachable()

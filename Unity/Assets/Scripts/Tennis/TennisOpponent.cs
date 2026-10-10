@@ -49,6 +49,18 @@ namespace GolfArcade.Tennis
         public const float EasyThreshold = .25f, HardThreshold = .46f;
         /// How far into its own half it recovers between shots.
         public const float RestX = 0f;
+
+        /// Rally builder. A point should get past its opening shots before anyone is forced into
+        /// a winner, so for the first `RallyBuilderShots` balls the rival plays a little inside
+        /// itself: narrower targets, less pace and fewer wrong-footing tricks. The help is
+        /// strongest on the serve return and fades out to nothing, so a long rally is as hard
+        /// as ever, and the rival's errors are untouched (it is eased, never gifted points).
+        public const int RallyBuilderShots = 6;
+        public const float RallyEaseWidth = .4f, RallyEasePace = .15f;
+
+        /// 1 on the first ball of a rally (the serve), fading to 0 after `RallyBuilderShots` shots.
+        public static float RallyEase(int rallyShots) =>
+            rallyShots <= 0 ? 0 : Mathf.Clamp01(1 - (rallyShots - 1) / (float)RallyBuilderShots);
         /// Default strength, tuned by the rally simulation in the EditMode tests so a
         /// casual player gets long rallies and still wins points by moving the ball around.
         public const float DefaultDifficulty = .45f;
@@ -151,8 +163,10 @@ namespace GolfArcade.Tennis
         /// `weakSide` the side of the court (-1/+1, 0 unknown) where the player has been missing.
         public static TennisReturn Decide(float opponentX, float ballX, float playerX, float playerVX, float weakSide,
             OpponentProfile p, float roll, float widthRoll, float depthRoll, float pace, float reach,
-            float height = 0, float quality = 0, bool returningServe = false, float playerZ = -11.2f, bool previousLob = false)
+            float height = 0, float quality = 0, bool returningServe = false, float playerZ = -11.2f, bool previousLob = false,
+            float rallyEase = 0)
         {
+            rallyEase = Mathf.Clamp01(rallyEase);
             var result = new TennisReturn();
             if (!CanReach(opponentX, ballX, reach))
             { result.Label = "WINNER — past the opponent"; result.Difficulty = 1; return result; }
@@ -229,11 +243,14 @@ namespace GolfArcade.Tennis
             // keeps feeding the side that has been breaking down.
             float sideRoll = Mathf.Repeat(widthRoll * 5.31f + depthRoll * 2.17f, 1f);
             float targetSide = playerX >= 0 ? -1 : 1;
-            if (sideRoll < p.WrongFoot * (1 - defend) && Mathf.Abs(playerVX) > 1.2f) targetSide = -Mathf.Sign(playerVX);
-            else if (weakSide != 0 && Mathf.Repeat(sideRoll * 3.7f, 1f) < p.Hunt * .6f * (1 - defend)) targetSide = Mathf.Sign(weakSide);
-            float width = Mathf.Lerp(Mathf.Lerp(.9f, 2.6f, p.Width), Mathf.Lerp(1.8f, 3.8f, p.Width), widthRoll) * (1 - .6f * defend);
+            float cunning = 1 - rallyEase;   // wrong-footing and hunting a weak side wait until the rally is under way
+            if (sideRoll < p.WrongFoot * (1 - defend) * cunning && Mathf.Abs(playerVX) > 1.2f) targetSide = -Mathf.Sign(playerVX);
+            else if (weakSide != 0 && Mathf.Repeat(sideRoll * 3.7f, 1f) < p.Hunt * .6f * (1 - defend) * cunning) targetSide = Mathf.Sign(weakSide);
+            float width = Mathf.Lerp(Mathf.Lerp(.9f, 2.6f, p.Width), Mathf.Lerp(1.8f, 3.8f, p.Width), widthRoll) * (1 - .6f * defend)
+                * (1 - RallyEaseWidth * rallyEase);
             float depth = Mathf.Lerp(Mathf.Lerp(5.0f, 8.6f, p.Depth), Mathf.Lerp(8.0f, 11.1f, p.Depth), depthRoll) * (1 - .4f * defend);
-            float speed = Mathf.Max(18.5f, Mathf.Lerp(p.PaceMax, p.PaceMin, Mathf.Max(stretch, defend)));
+            float speed = Mathf.Max(Mathf.Lerp(18.5f, 16.5f, rallyEase),
+                Mathf.Lerp(p.PaceMax, p.PaceMin, Mathf.Max(stretch, defend)) * (1 - RallyEasePace * rallyEase));
             float spin = Mathf.Lerp(p.SpinMin, p.SpinMax, Mathf.Repeat(widthRoll * 3.1f, 1f));
             float special = Mathf.Repeat(depthRoll * 6.73f, 1f);
             result.Label = defend > .6f ? "Opponent scrambles it back" : "Opponent returns";

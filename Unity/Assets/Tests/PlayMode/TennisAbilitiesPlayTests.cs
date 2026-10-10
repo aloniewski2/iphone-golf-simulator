@@ -41,7 +41,7 @@ namespace GolfArcade.PlayTests
                 if (f == 8 || f == 16) Capture(game, captures + "/dive-" + f + ".png");
             }
             Assert.Greater(Vector3.Distance(before, game.Player.transform.position), .5f);
-            Assert.Greater(game.DiveCooldownLeft, 3);
+            Assert.Greater(game.DiveCooldownLeft, TennisAbilities.DiveCooldown - 1, "the dive recharges for most of its cooldown");
             Capture(game, captures + "/dive.png");
 
             // Exercise the real ball/racket contact path over a short timing sweep.

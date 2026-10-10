@@ -9,7 +9,9 @@ namespace GolfArcade.Tennis
     {
         // Retain archived ability data/recording APIs, but no player or AI ultimates in gameplay.
         public static bool UltimatesEnabled => false;
-        public const float DiveCooldown = 4f, DiveTravel = .42f, DiveDistance = 1.65f;
+        // A dive is a real rescue now: it covers 2.1 m (a run covers about 2.3 m in the same time, so it
+        // used to be slower than running) and can be used again after 2.5 s instead of 4.
+        public const float DiveCooldown = 2.5f, DiveTravel = .42f, DiveDistance = 2.1f;
         public static string Name(TennisUltimate ability) => ability switch {
             TennisUltimate.RescueLob => "Rescue Lob", TennisUltimate.Curveball => "Curveball", _ => "Skybreaker"
         };
