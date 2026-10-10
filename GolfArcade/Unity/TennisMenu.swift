@@ -791,7 +791,7 @@ final class TennisMenu {
     }
 
     func returnFromNetworkEntry(_ route: OnlineLobbyScreen) {
-        show(route == .entry ? .onlineChoice : .party)
+        show(route == .entry ? .onlineChoice : .localChoice)   // Quick Match came from Online; the Nearby list comes from Local → Join a Friend
     }
 
     var loadingOpponent: TennisOpponent? {
@@ -1096,7 +1096,12 @@ struct OnlineAppleSheet: Identifiable {
     func rows(_ route: OnlineLobbyScreen, menu: TennisMenu) -> [[String]] {
         switch route {
         case .entry: return (service.authenticated ? [] : [["net-signin"]]) + [["net-tennis"],["net-golf"],["back"]]
-        case .nearby: return (service.localNetworkDenied ? [["net-open-settings"]] : []) + nearbyItems.map { ["net-join-\($0.id)"] } + (service.discoveredLobbies.count > 4 ? [["net-page-prev","net-page-next"]] : []) + [["net-join-code"],["net-host"],["back"]]
+        case .nearby:
+            var list: [[String]] = []
+            if service.localNetworkDenied { list.append(["net-open-settings"]) }
+            list += nearbyItems.map { ["net-join-\($0.id)"] }
+            if service.discoveredLobbies.count > 4 { list.append(["net-page-prev","net-page-next"]) }
+            return list + [["net-join-code"],["net-host"],["back"]]
         case .searching: return [["net-cancel"]]
         case .lobby: return (service.isNearby && service.isOwner && service.lobby?.sport == .golf ? [["net-add-guest","net-remove-guest"]] : []) + [["net-ready"],["net-emotes","net-clothes"],["net-settings"],["net-invite","net-find"]] + (service.isOwner ? [["net-start"]] : []) + [["net-leave"]]
         case .emotes: return [Array(MultiplayerEmote.ids.prefix(3)).map { "net-emote-\($0)" },Array(MultiplayerEmote.ids.suffix(3)).map { "net-emote-\($0)" },["back"]]
@@ -1336,13 +1341,14 @@ extension OnlineLobbyMenu {
     }
     private static func requireValue<T>(_ value:T?) throws -> T { guard let value else { throw MultiplayerError.unavailable("Nearby proof host not found") };return value }
     /// What the proof player needs from a tennis update, whichever form it arrived in: the full one, or the compact one the host sends
-    /// at 30 Hz (arrays: n = tick/point/contact, d = time/phaseAt, i = server/receiver, f = ball x/y/z; see NetworkTennisWire.cs).
+    /// at 30 Hz (arrays: n = tick/point/contact, d = time/phaseAt in ms, i = server/receiver, f = ball x/y/z in mm; see NetworkTennisWire.cs).
+    /// Returns seconds and metres, as the full form has them.
     private static func proofFields(_ s:[String:Any]) -> (phase:String,time:Double,point:Int64,contact:Int64,server:Int,phaseAt:Double,receiver:Int?,ballZ:Double?)? {
         if let phase=s["phase"] as? String,let time=s["time"] as? Double,let point=s["point"] as? Int64,let contact=s["contact"] as? Int64 {
             return (phase,time,point,contact,s["server"] as? Int ?? 0,s["phaseAt"] as? Double ?? 0,s["receiver"] as? Int,(s["ball"] as? [String:Double])?["z"])
         }
         if s["v"] as? Int == 2,let phase=s["ph"] as? String,let n=s["n"] as? [Int64],n.count == 3,let d=s["d"] as? [Double],d.count >= 2,let i=s["i"] as? [Int],i.count >= 2,let f=s["f"] as? [Double],f.count >= 3 {
-            return (phase,d[0],n[1],n[2],i[0],d[1],i[1],f[2])
+            return (phase,d[0] / 1000,n[1],n[2],i[0],d[1] / 1000,i[1],f[2] / 1000)   // milliseconds and millimetres on the wire
         }
         return nil
     }
