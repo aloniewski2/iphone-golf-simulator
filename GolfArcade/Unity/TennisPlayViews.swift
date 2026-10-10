@@ -824,6 +824,12 @@ struct ControllerReadyPanel: View {
             Text("Watch the TV. Your phone stays your controller.").multilineTextAlignment(.center)
             ControllerButton(title: "Ready to play", icon: "play.fill") { session.readyToPlay() }
                 .accessibilityIdentifier("controller-ready")
+            // When Ready cannot be taken (no camera frame yet, tracking lost) the reason lands in `status`. Online, this panel is the only
+            // thing standing between the player and the match, and the other player is waiting, so say why instead of doing nothing.
+            if session.multiplayerMatchID != nil, !session.status.isEmpty {
+                Text(session.status).font(.footnote).multilineTextAlignment(.center).foregroundStyle(.white.opacity(0.8)).padding(.horizontal, 12)
+                    .accessibilityIdentifier("controller-ready-status")
+            }
             Spacer()
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -687,6 +687,7 @@ final class MultiplayerService {
         guard config.valid(), config.hostID == lobby?.ownerID, config.lobbyID == lobby?.id, config.matchID == lobby?.matchID else { lastError = "Invalid match configuration."; return }
         guard onMatchRequested != nil || !SportsSession.shared.active else { lastError = "Finish the current sport session before joining this match."; return }
         matchConfiguration = config; quickSport = nil; lastError = nil; stats = NetStats()
+        SportsDiagnostics.write("multiplayer launch \(config.sport) \(isOwner ? "owner" : "guest") seat=\(config.participants.first { $0.id == localID }?.seat ?? -1) peers=\(transport?.peers.count ?? 0)")
         #if DEBUG
         if proofRecording { OnlineLobbyProofDriver.event("launch-config","bytes=\(payload.utf8.count) \(payload)") }
         #endif
@@ -697,8 +698,19 @@ final class MultiplayerService {
         if proofRecording && packet.kind == "run" { OnlineLobbyProofDriver.event("runtime-run",(try? json(packet)) ?? "") }
         if proofRecording && packet.kind == "snapshot" { proofSnapshot=packet.payload }
         #endif
- if let text = try? json(packet), !runtimeSend(text), matchConfiguration != nil { lastError="The Unity multiplayer bridge is unavailable or full. Re-export Unity before playing." } }
-    private func pushRuntime(_ kind: String, payload: String = "") { pushRuntimePacket(packet(kind, payload: payload)) }
+        // Unity reads the bridge only while a match is configured, and the bridge holds 128 packets. The shared clock is worth sending
+        // during a match and never otherwise: a guest waiting in a lobby (or on the results screen) used to put a reliable clock packet in
+        // with every pong, twice a second, and after 64 s the bridge was full. The next match launch was then refused, and the guest
+        // ejected itself half a second after the TV began to load.
+        if packet.kind == "clock" && matchConfiguration == nil { return }
+        if let text = try? json(packet), !runtimeSend(text), matchConfiguration != nil {
+            SportsDiagnostics.write("multiplayer bridge refused a \(packet.kind) packet")
+            lastError="The Unity multiplayer bridge is unavailable or full. Re-export Unity before playing."
+        }
+    }
+    /// A clock update is stale a second later, so it goes as a packet the bridge may evict when it is under pressure; a bridge that holds
+    /// nothing but reliable packets can only refuse (and then ends the match).
+    private func pushRuntime(_ kind: String, payload: String = "") { pushRuntimePacket(packet(kind, payload: payload, reliable: kind != "clock")) }
     private func stopRuntime() {
         reportStats()
         pushRuntime("stop"); matchConfiguration = nil
@@ -715,6 +727,7 @@ final class MultiplayerService {
         if let data = payload.data(using: .utf8), let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { winnerSeat = result["winner"] as? Int ?? -1 }
     }
     private func interrupt(_ reason: String) {
+        SportsDiagnostics.write("multiplayer interrupted: \(reason)")
         lobby?.phase = .interrupted; lobby?.revision += 1; publishLobby()
         try? broadcast("stop"); stopRuntime(); lastError = reason
     }
@@ -786,6 +799,7 @@ final class MultiplayerService {
             }
             // A dropped connection gets 15 s; a player who came back mid-match and has to point at the TV again gets longer.
             for (id, since) in disconnected where now - since >= (awaitingCalibration.contains(id) ? MultiplayerTuning.recalibrationSeconds : 15) {
+                SportsDiagnostics.write("multiplayer dropped \(id == localID ? "this phone" : String(id.prefix(8))) after \(Int(now - since)) s paused or silent")
                 disconnected.removeValue(forKey: id); silent.removeValue(forKey: id); awaitingCalibration.remove(id); stats.drops += 1; try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
                 if let i = lobby?.participants.firstIndex(where: { $0.id == id }) { lobby!.participants[i].seat = -1; lobby!.participants[i].connected = id == localID || transport.peers.contains(id) }
                 lobby?.revision += 1; publishLobby()
@@ -799,6 +813,7 @@ final class MultiplayerService {
             #endif
             guard let data = text.data(using: .utf8), let outgoing = try? decoder.decode(MultiplayerPacket.self, from: data) else { continue }
             if outgoing.kind == "bridgeError", matchConfiguration != nil {
+                SportsDiagnostics.write("multiplayer bridge error during a match: \(outgoing.payload)")
                 if isOwner { interrupt(outgoing.payload) }
                 else { try? sendControl("availability", payload: "false"); stopRuntime(); lastError = outgoing.payload }
                 continue

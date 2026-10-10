@@ -33,7 +33,9 @@ struct SportsHome: View {
             OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !session.active || session.sport != "golf" { BetaFeedbackBar() }
+            // Not during an online match either: the bar opens Messages, and a palm on it mid-swing leaves the app, which ends the match
+            // for the host and starts the guest's 15 s forfeit clock. Golf hides it for its own reasons.
+            if !session.active || (session.sport != "golf" && session.multiplayerMatchID == nil) { BetaFeedbackBar() }
         }
         .simultaneousGesture(TapGesture().onEnded {
             guard session.active, session.loading.finished, !session.paused, session.multiplayerMatchID == nil else { return }

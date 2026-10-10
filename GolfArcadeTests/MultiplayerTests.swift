@@ -933,4 +933,59 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertFalse(link.transportModes.contains { $0.kind == "snapshot" }, "a small message that fails is some other problem: it is not silently resent")
         XCTAssertNotNil(p.host.lastError)
     }
+
+    // MARK: The Swift → Unity bridge must not fill up while no match is running
+
+    /// The native queue behind `SportsRuntime.pushNetwork` (Unity/Assets/Plugins/iOS/SportsBridge.mm, `networkPush`): 128 slots, drained
+    /// by Unity only while a match is configured, and never cleared. When it is full the oldest *unreliable* entry is evicted; a queue
+    /// holding nothing but reliable entries refuses the push, and the refusal ends the match (`bridgeError`).
+    @MainActor final class BridgeModel {
+        var queue: [String] = []
+        var refused = 0
+        /// Every packet the queue accepted (a refused push is only counted).
+        var pushed: [MultiplayerPacket] = []
+        func push(_ text: String) -> Bool {
+            if queue.count >= 128 {
+                guard let oldest = queue.firstIndex(where: { $0.contains("\"reliable\":false") }) else { refused += 1; return false }
+                queue.remove(at: oldest)
+            }
+            queue.append(text)
+            if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: Data(text.utf8)) { pushed.append(packet) }
+            return true
+        }
+    }
+
+    /// A guest that waits in the lobby: every pong used to put a reliable `clock` packet in a queue that nothing reads between matches,
+    /// and after 128 of them (64 s at two pongs a second) the next match's first packet was refused and the guest ejected itself.
+    func testAGuestWaitingInTheLobbyDoesNotFillTheUnityBridgeAndStillJoinsTheNextMatch() throws {
+        let bus = Bus(), hostRuntime = Runtime(), guestRuntime = Runtime(), bridge = BridgeModel()
+        let host = hostRuntime.service()
+        let guest = MultiplayerService(sendToRuntime: { bridge.push($0) }, pollRuntime: { nil }, clock: { guestRuntime.time })
+        guest.onMatchRequested = { guestRuntime.configurations.append($0) }; guest.onReturnToLobby = {}
+        host.requiresStableLink = false; guest.requiresStableLink = false
+        host.setScreen(true); guest.setScreen(true)
+        try host.host(using: bus.link("a")); try guest.connect(using: bus.link("b"))
+        let party = Party(bus: bus, services: [host, guest], runtimes: [hostRuntime, guestRuntime])
+        defer { party.close() }
+
+        // Three minutes in the lobby, in 0.1 s steps: the guest pings the owner twice a second and each ping is answered.
+        for _ in 0..<1800 { hostRuntime.time += 0.1; guestRuntime.time += 0.1; host.update(); guest.update() }
+        XCTAssertGreaterThan(bus.links["a"]!.sent.filter { $0.kind == "pong" }.count, 300, "the lobby really did exchange a pong every half second")
+        XCTAssertEqual(bridge.refused, 0)
+        XCTAssertLessThan(bridge.queue.count, 128, "nothing reads the bridge between matches, so nothing may be put in it")
+        XCTAssertTrue(bridge.pushed.filter { $0.kind == "clock" }.isEmpty, "the shared clock is only worth sending to Unity once a match is configured")
+
+        try start(party)
+        XCTAssertEqual(guest.lobby?.phase, .playing, "the guest takes part in the match that the owner started")
+        XCTAssertNil(guest.lastError)
+        XCTAssertEqual(bridge.refused, 0)
+        XCTAssertTrue(bridge.pushed.contains { $0.kind == "run" }, "...and Unity was handed the match")
+
+        // During the match the clock does reach Unity, as a packet the bridge may evict rather than one that can jam it.
+        for _ in 0..<50 { hostRuntime.time += 0.1; guestRuntime.time += 0.1; host.update(); guest.update() }
+        let clocks = bridge.pushed.filter { $0.kind == "clock" }
+        XCTAssertFalse(clocks.isEmpty)
+        XCTAssertTrue(clocks.allSatisfy { !$0.reliable })
+        XCTAssertEqual(bridge.refused, 0)
+    }
 }

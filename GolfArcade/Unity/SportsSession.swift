@@ -174,6 +174,10 @@ final class SportsSession {
     /// Extra start fields for the tennis front end (mode, opponent, round).
     private var launchExtras: [String:Any] = [:]
     private(set) var multiplayerMatchID: String?
+    #if DEBUG
+    /// For tests: puts the session in (or takes it out of) an online match without a TV and a Unity runtime.
+    func debugSetOnlineMatch(_ id: String?) { multiplayerMatchID = id }
+    #endif
     private(set) var multiplayerControllerOnly = false
     private var multiplayerSeat = -1
     /// The shared TV's delay the controller-only phone has already handed to Unity (so a change is applied once).
@@ -458,6 +462,14 @@ final class SportsSession {
     /// Court scanning finishes before timing. The match remains held until Ready.
     func offerTimingCalibration() {
         guard active, ready, loading.finished, sport == "tennis" else { return }
+        // An online match has no timing check: Unity ignores `timingCheck` in a network match, so the screens below could never finish
+        // (the phone would sit on "Swing on every bounce!" with no ball while the other player waits). It also sends a pause, which
+        // starts the owner's 15 s forfeit clock if the match is running. "Use the direction I'm pointing now" and "Re-check swing
+        // timing" both end up here, so online they go from the court scan straight to Ready.
+        if multiplayerMatchID != nil {
+            if setupStage == .scan { multiplayerScanComplete() }
+            return
+        }
         setupStage = .timing; timingPrompt = true; checkingTiming = false
         menuPauseVisible = false; measuringDelay = false
         status = "TV scan complete. Calibrate your swing timing on the TV."
@@ -942,7 +954,7 @@ final class SportsSession {
                 receiveMatchSnapshot(event)
                 feedback=event["message"] as? String ?? ""; stamina=event["stamina"] as? Double ?? 1
                 if SportsRuntime.shared().clock()>=nextDiagnostic {
-                    nextDiagnostic=SportsRuntime.shared().clock()+1
+                    nextDiagnostic=SportsRuntime.shared().clock()+4   // every 4 s: at 1 s the log held only the last few minutes, too little to explain a crash
                     SportsDiagnostics.write("bridge touch=\(touch) nativePaused=\(paused) phase=\(phase) target=\(target) unityFrame=\(event["frame"] ?? "unknown") unityPaused=\(event["paused"] ?? "unknown") playerX=\(event["playerX"] ?? "unknown") inputAge=\(event["inputAge"] ?? "unknown")")
                 }
             case "displayReady":
@@ -1040,10 +1052,16 @@ struct TennisContact: Equatable, Identifiable {
     /// How late the swing was, milliseconds (negative: early).
     var lateMs: Int
     init?(line: String) {
-        let parts = line.split(separator: ",").map { Double($0) ?? 0 }
+        // Double("nan") and Double("inf") parse, and Int() of NaN, Infinity or a huge value traps (the app would be killed), so a
+        // value Unity formatted badly reads as 0 and the whole numbers are clamped before the conversion.
+        let parts = line.split(separator: ",").map { part -> Double in
+            guard let value = Double(part), value.isFinite else { return 0 }
+            return value
+        }
         guard parts.count >= 4 else { return nil }
-        x = parts[0]; y = parts[1]; grade = Int(parts[2]); supercharged = parts[3] > 0
-        lateMs = parts.count > 4 ? Int(parts[4]) : 0
+        func whole(_ value: Double) -> Int { Int(max(-1_000_000, min(1_000_000, value))) }
+        x = parts[0]; y = parts[1]; grade = whole(parts[2]); supercharged = parts[3] > 0
+        lateMs = parts.count > 4 ? whole(parts[4]) : 0
     }
     /// "LATE" / "EARLY" when the swing was off by more than a perfect one's margin.
     var timingWord: String { lateMs > 35 ? "LATE" : lateMs < -35 ? "EARLY" : "ON TIME" }

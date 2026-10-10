@@ -407,6 +407,7 @@ struct IslandPauseScreen: View {
                                 }
                                 Button("Flip left / right") { session.flipSteering() }
                             }
+                            // Not online: a network match has no timing check (Unity ignores it), so the screens would never finish.
                             if session.displayConnected && session.sport == "tennis" && session.multiplayerMatchID == nil {
                                 Button("Re-check swing timing") { session.menuPauseVisible = false; SportsDisplays.shared.external?.isHidden = true; session.recheckTiming(); dismiss() }
                             }
@@ -420,7 +421,13 @@ struct IslandPauseScreen: View {
                         Text("Your score in this match will be lost.").font(IslandUI.font(15)).foregroundStyle(IslandUI.muted)
                         HStack(spacing: 10) {
                             IslandAction(title: "Keep playing", primary: true, compact: compact) { leaving = false }
-                            IslandAction(title: "Leave", compact: compact) { TennisMenu.shared.finishMatch(.menu); dismiss() }
+                            IslandAction(title: "Leave", compact: compact) {
+                                // Online, leaving has to leave the lobby too. finishMatch(.menu) only ends this phone's session: the lobby
+                                // stayed "playing" with a phone still sending heartbeats and nothing behind it, and the opponent's match froze.
+                                if session.multiplayerMatchID != nil { TennisMenu.shared.online.select("net-confirm-leave", menu: .shared) }
+                                else { TennisMenu.shared.finishMatch(.menu) }
+                                dismiss()
+                            }
                         }
                     }.padding(16).background(.white.opacity(0.95), in: RoundedRectangle(cornerRadius: 16))
                 } else {

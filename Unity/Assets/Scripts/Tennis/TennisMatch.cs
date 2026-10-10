@@ -11,7 +11,11 @@ namespace GolfArcade.Tennis
     /// Deliberately pure: no Unity objects, no time, no randomness. Every rule here is
     /// exercised by EditMode tests, which is the only way to be confident about deuce,
     /// advantage, tiebreaks and service rotation without playing hundreds of points by hand.
-    [System.Serializable]   // a nested struct without this is left out by JsonUtility, so the full network update carried no score
+    ///
+    /// [Serializable] matters: this is a field of NetworkTennisState, and JsonUtility silently leaves out any field whose type is not
+    /// marked. Without the attribute the full update (the reliable checkpoints, and the whole stream if the compact form's self-test
+    /// fails) reached the guest with no score at all, and its scoreboard sat at 0-0.
+    [System.Serializable]
     public struct TennisMatch
     {
         /// The short format's games (kept for callers that ask about the default match).
