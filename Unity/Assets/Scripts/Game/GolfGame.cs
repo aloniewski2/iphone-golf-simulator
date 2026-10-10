@@ -1846,12 +1846,17 @@ namespace GolfArcade.Game
 
         /// Where the line points, degrees (for tests).
         public double AimHeading => heading;
+        /// The club in hand and where the ball lies (for tests).
+        public GolfClub ClubInHand => club;
+        public CoursePoint BallAt => ballAt;
+        /// How far the aiming view looks up the hole to the pin (1) or down at the ball (-1) (for tests).
+        public float AimLook => aimLook;
         /// The hole being played (for tests).
         public Hole CurrentHole => hole;
 
         void Nudge(double degrees)
         {
-            if (Current != State.Aim) return;
+            if (Current != State.Aim || !SteersHere) return;
             if (degrees != 0) NativeCancelSwing();   // a changed aim ends a started swing: Start Swing again once lined up
             heading += degrees;
             aimedByPlayer = true;
@@ -1876,14 +1881,14 @@ namespace GolfArcade.Game
 
         void CycleClub(int step)
         {
-            if (Current != State.Aim) return;
+            if (Current != State.Aim || !SteersHere) return;
             int i = Array.IndexOf(GolfClubs.All, club);
             SelectClub(GolfClubs.All[(i + step + GolfClubs.All.Length) % GolfClubs.All.Length]);
         }
 
         void SelectClub(GolfClub chosen)
         {
-            if (Current != State.Aim) return;
+            if (Current != State.Aim || !SteersHere) return;
             Tick();
             hud.SetClubSelection(chosen, announce: true);
             club = chosen;
@@ -1929,6 +1934,17 @@ namespace GolfArcade.Game
         void OnLoad(double load)
         {
             if (Current != State.Aim) return;
+            ShowWindUp(load);
+            // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
+            Haptics.Tension(load);
+            hud.SetStatus("Backswing…");
+            SendNetworkLoad((float)load);
+        }
+
+        /// The backswing on the course: the meter, the dot running out to where it would land, the golfer winding up, the creak.
+        /// (In a multiplayer round the TV shows another phone's backswing with this too.)
+        void ShowWindUp(double load)
+        {
             if (club != GolfClub.Putter)
             {
                 // the amber dot slides out over the ground to where the meter's reading comes to
@@ -1946,10 +1962,8 @@ namespace GolfArcade.Game
                 hud.SetMeter((float)load, null, $"{feet:F0} ft");
             }
             golfer.ShowLoad((float)load);
-            // The wind-up: the phone buzzes harder and the creak climbs as the meter fills.
-            Haptics.Tension(load);
             sounds.SetTension(load);
-            hud.SetStatus("Backswing…");
+            networkLoadShown = (float)load;
         }
 
         void OnCancel()
@@ -1963,6 +1977,8 @@ namespace GolfArcade.Game
             sounds.Release();
             hud.SetStatus(NativeControlled ? "Swing cancelled — tap Start Swing to try again" : "Hold still, then swing");
             if (NativeControlled) NativeReady();
+            networkLoadShown = 0;
+            SendNetworkLoad(0);
         }
 
         /// The next impact is a planned one (the tests' StrikeToward and the like): exactly as
@@ -1973,18 +1989,27 @@ namespace GolfArcade.Game
         {
             if (Current != State.Aim) return;
             if (NativeControlled) RequireNativeReady();
-            if (NetworkShot(impact)) return;
-            ShotStruck?.Invoke();
+            if (networkConfigured && !networkMine) return;
             // a real swing: how purely and how fast it was struck, and a little of its own luck
             if (!plannedShot && club != GolfClub.Putter) impact = Strikes.Pure(impact, Strikes.Judge(impact), UnityEngine.Random.value, UnityEngine.Random.value);
             plannedShot = false;
+            // A multiplayer round's host rules on the shot; every phone, this one too, then flies it with Launch (NetworkFrame).
+            if (NetworkShot(impact)) { Swing.Armed = false; Haptics.Release(); sounds.Release(); hud.SetStatus(""); return; }
+            ShotStruck?.Invoke();
+            Launch(impact);
+        }
+
+        /// The ball struck with `impact` from where it lies, along the line, with the club in hand: the golfer swings through and
+        /// the flight begins.
+        void Launch(SwingImpact impact)
+        {
             Swing.Armed = false;
             Haptics.Release();
             sounds.Release();
             var lie = hole.LieAt(ballAt);
             // the club is on its way down: the ball leaves when it gets there, and the windmill's
             // sails will have turned on by then
-            float toBall = golfer.Strike(atImpact: NativeControlled && !NativeSportsSession.Touch);
+            float toBall = golfer.Strike(atImpact: networkConfigured ? networkWoundUp : NativeControlled && !NativeSportsSession.Touch);
             if (hole.Windmill is SpinningSails turning) turning.AngleAtLaunch = turning.CurrentAngle() + turning.DegreesPerSecond * toBall;
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
@@ -2080,6 +2105,7 @@ namespace GolfArcade.Game
             lastErrorAt = Time.unscaledTime;
             if (errorsInARow > 20) { if (errorsInARow % 300 == 0) Debug.LogException(e); return; }   // (a fault every frame: don't flood the log)
             Debug.LogException(e);
+            if (networkConfigured) { NetworkFault(); return; }
             try
             {
                 if (errorsInARow > 4 || hole == null) { SafeMenu(); return; }
@@ -2166,20 +2192,21 @@ namespace GolfArcade.Game
 
                 case State.Aim:
                     // Arrows and keys sweep at full rate; the joystick sweeps with how far it is pushed.
-                    float sweep = (hud.AimLeftHeld ? -1 : 0) + (hud.AimRightHeld ? 1 : 0)
+                    // (Another phone's player in a multiplayer round steers from their own phone: NetworkFrame.)
+                    float sweep = !SteersHere ? 0 : (hud.AimLeftHeld ? -1 : 0) + (hud.AimRightHeld ? 1 : 0)
                                 + (Input.GetKey(KeyCode.LeftArrow) ? -1 : 0) + (Input.GetKey(KeyCode.RightArrow) ? 1 : 0)
                                 + Mathf.Clamp(hud.AimStick, -1f, 1f) * 1.5f;
                     // a putt's line is a matter of a degree or two: the sweep is a fifth as fast
                     if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * (club == GolfClub.Putter ? 0.2f : 1f) * Time.deltaTime);
                     // up and down on the joystick (or W/S): look up the hole to the pin, or down at the ball
-                    float lookWanted = Mathf.Clamp(hud.LookStick + LookHeld + (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0), -1f, 1f);
+                    float lookWanted = !SteersHere ? networkLook : Mathf.Clamp(hud.LookStick + LookHeld + (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0), -1f, 1f);
                     float looked = Mathf.MoveTowards(aimLook, lookWanted, Time.deltaTime * 2.5f);
                     if (looked != aimLook) { aimLook = looked; FrameAim(); }
                     if (puttRibbonPending && Time.unscaledTime >= nextPuttRibbon) LayPuttRibbon();
                     if (Input.GetKeyDown(KeyCode.UpArrow)) CycleClub(-1);
                     if (Input.GetKeyDown(KeyCode.DownArrow)) CycleClub(1);
-                    if (Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }
-                    if (Input.GetKeyDown(KeyCode.T)) { GolferStyle.CycleSkin(); RestyleGolfer(); }
+                    if (!networkConfigured && Input.GetKeyDown(KeyCode.G)) { GolferStyle.CycleBody(); RestyleGolfer(); }
+                    if (!networkConfigured && Input.GetKeyDown(KeyCode.T)) { GolferStyle.CycleSkin(); RestyleGolfer(); }
                     if (Swing.Phase == SwingPhase.Downswing && lastPhase != SwingPhase.Downswing) { sounds.PlayWhoosh(Swing.Detector.Load); if (club != GolfClub.Putter) Haptics.Top(Swing.Detector.Load); }
                     // the face dial, while the club is at address and on the way
                     bool swinging = Swing.Phase is SwingPhase.Address or SwingPhase.Backswing or SwingPhase.Downswing;
@@ -2213,9 +2240,10 @@ namespace GolfArcade.Game
                     break;
 
                 case State.Result:
-                    shotResultPanel?.SetCountdown(Mathf.Max(0,Mathf.Max(3f,ResultReactionSeconds)-stateTime),"NEXT SHOT");
+                    if (networkConfigured) shotResultPanel?.SetCountdown(NetworkResultSeconds, "NEXT PLAYER");
+                    else shotResultPanel?.SetCountdown(Mathf.Max(0,Mathf.Max(3f,ResultReactionSeconds)-stateTime),"NEXT SHOT");
                     if(resultHeroCamera) rig.FrameCharacterResult(golfer.transform); else rig.FrameShotResult();
-                    if (stateTime >= Mathf.Max(3f,ResultReactionSeconds)) ContinueShotResult();
+                    if (!networkConfigured && stateTime >= Mathf.Max(3f,ResultReactionSeconds)) ContinueShotResult();
                     break;
 
                 case State.Replay:

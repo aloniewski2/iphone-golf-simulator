@@ -68,7 +68,8 @@ namespace GolfArcade.Game
 
         public void ContinueShotResult()
         {
-            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter) return;
+            // (a multiplayer round's host moves play on to the next player)
+            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter || networkConfigured) return;
             boundaryPresented = LastShot.IsHoled;
             AfterResult();
         }

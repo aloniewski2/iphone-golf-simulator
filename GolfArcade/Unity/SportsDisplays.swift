@@ -72,6 +72,13 @@ final class SportsDisplays: NSObject {
         multiplayerRenderer?.isHidden=false
         return multiplayerRenderer
     }
+    /// A golf guest's turn: its Unity replica, which draws the controller sheet, comes up over the native controller (the phone
+    /// with the TV brings Unity's own window forward instead), and goes back under it afterwards.
+    func showMultiplayerRenderer(_ visible: Bool) {
+        guard let window = multiplayerRenderer else { return }
+        window.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.normal.rawValue + (visible ? 1 : -1))
+        if visible { window.makeKeyAndVisible() } else { phone?.makeKeyAndVisible() }
+    }
     /// Explicit automated verification may render on the paired phone without
     /// an AirPlay receiver. Normal play retains its external-display contract.
     func benchmarkWindow() -> UIWindow? {

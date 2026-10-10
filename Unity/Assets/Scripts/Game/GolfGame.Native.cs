@@ -119,14 +119,7 @@ namespace GolfArcade.Game {
             direction.y=0;
             if(direction.sqrMagnitude<.01f) return;
             double desired=System.Math.Atan2(direction.x,direction.z)*180/System.Math.PI;
-            if(GolfArcade.Multiplayer.SportsMultiplayer.Active) {
-                NativeCancelSwing();
-                var net=GolfArcade.Multiplayer.SportsMultiplayer.Instance;
-                if(net.GolfState!=null) net.Submit(new GolfArcade.Multiplayer.NetworkInput {
-                    action="golfAimHeading",value=(float)desired,actorSeat=net.GolfState.turn
-                });
-                return;
-            }
+            // (in a multiplayer round too: the phone with the player up aims, and tells the host)
             Nudge(Mathf.DeltaAngle((float)heading,(float)desired));
         }
         [System.Serializable] public sealed class ControllerPoint {

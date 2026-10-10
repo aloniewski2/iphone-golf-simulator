@@ -230,7 +230,8 @@ namespace GolfArcade.Game
             PresentationPolicy.Configure(m.intros,m.presentationConstrained,m.bigMoments,!string.IsNullOrEmpty(m.network));
             TennisQuality.Apply();
             PresentationPolicy.Constrained |= TennisQuality.Current==TennisQuality.Tier.Low;
-            Screen.orientation=m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
+            // (a multiplayer golf phone without the TV draws only the upright controller sheet)
+            Screen.orientation=m.external || (m.sport=="golf" && !string.IsNullOrEmpty(m.network)) ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
             // The phone's loading bar follows the scene load.
             TennisVenue.Selected=TennisVenue.Parse(m.venue);
             TennisVenue.CourtColorOverride=string.IsNullOrEmpty(m.courtHex) ? (Color?)null : HeroKit.Hex(m.courtHex);
@@ -327,7 +328,11 @@ namespace GolfArcade.Game
             // frame has proved the scene loaded it stops drawing (the phone is also tracking motion and running the camera).
             if(SportsMultiplayer.Active && SportsMultiplayer.Instance.Configuration.sport=="tennis"
                && SportsMultiplayer.Instance.Configuration.LocalView==NetworkConfiguration.ViewNone) gameplayCamera.enabled=false;
+            // A golf guest's phone shows the controller sheet only (the course is on the host's TV).
+            if(GolfGuestController) gameplayCamera.enabled=false;
         }
+        /// A multiplayer golf phone without the round's TV: the host's TV shows the course, this phone its controller.
+        bool GolfGuestController => golf && SportsMultiplayer.Active && !SportsMultiplayer.Instance.IsHost && outputDisplay==0;
         bool ConfigureDisplay(bool external) {
             // The scene's UIScreen can appear after Unity's initial display cache was built.
             // Native code registers and activates that exact screen and returns its cache index.
@@ -360,8 +365,11 @@ namespace GolfArcade.Game
             Debug.Log($"[SportsDisplay] camera={gameplayCamera.name} aspect={gameplayCamera.aspect} size={Display.displays[index].renderingWidth}x{Display.displays[index].renderingHeight}");
             foreach(var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
                 if(!canvas.GetComponent<GolfArcade.UI.PhoneScreenOnly>()) canvas.targetDisplay=index;
-            // Golf as on the standalone build: the controller sheet on the phone's own screen.
-            if(external && golf && !multiplayerSession) golf.NativePhoneController();
+            // Golf as on the standalone build: the controller sheet on the phone's own screen. In a multiplayer round too, on the
+            // phone with the TV and on a guest's phone with none (which draws only the sheet: the TV is the host's).
+            if(golf && (external || GolfGuestController)) golf.NativePhoneController();
+            if(GolfGuestController) foreach(var canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                if(!canvas.GetComponent<GolfArcade.UI.PhoneScreenOnly>()) canvas.enabled=false;
             Debug.Log($"[SportsDisplay] Gameplay cameras routed to display {index}, active={Display.displays[index].active}");
             return true;
         }
@@ -434,7 +442,14 @@ namespace GolfArcade.Game
                 return;
             }
             if(SportsMultiplayer.Active) {
+                // Golf swings as in single player, motion or touch: the game strikes it and sends the host the shot.
                 if(golf && !touch) { if(FreshEvent(sample.time,now,resumedAt)) golf.NativeMotion(sample); }
+                else if(golf) {
+                    if(sample.swing>lastSwing) {
+                        lastSwing=sample.swing;
+                        if(FreshEvent(EventTime(sample.confirmationTime,sample.time),now,resumedAt)) golf.NativeSwing(Mathf.Clamp01(sample.power));
+                    }
+                }
                 else SportsMultiplayer.Sample(sample,touch);
                 return;
             }
