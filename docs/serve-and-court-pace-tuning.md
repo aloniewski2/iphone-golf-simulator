@@ -1,3 +1,5 @@
+> **Superseded by `docs/tennis-feel-pass-2026-10-10.md`**: the movement scale, serve windows and pace below were retuned on 2026-10-10.
+
 # Serve / court pace adjustment
 
 Scope: serving difficulty and movement speed only. Animation driver, assets, aim interpretation and spin unchanged.

@@ -25,7 +25,9 @@ namespace GolfArcade.Tests
                 var aim=new Vector2(0,.5f);
                 var target=TennisRules.IntoServiceBox(TennisRules.ServeAimPoint(aim,near,deuce),near,deuce);
                 float previous=-1;
-                foreach(float miss in new[]{0f,.02f,.05f,.1f,.2f,.25f}) {
+                // Inside the perfect band a press lands on the aim (zero scatter); outside it the scatter only grows.
+                float perfectHalf=(1-TennisRules.ServePerfectToss)/TennisTossCurve.Speed;
+                foreach(float miss in new[]{0f,perfectHalf+.01f,perfectHalf+.04f,.1f,.2f,.25f}) {
                     float accuracy=TennisTossMeter.AccuracyAt(.25f+miss);
                     var serve=TennisRules.JudgeServeStrike(.1f,accuracy,aim,near,deuce,false,.9f,.1f);
                     float error=Vector3.Distance(serve.Landing,target);
@@ -60,15 +62,53 @@ namespace GolfArcade.Tests
             }
         }
 
-        [Test] public void PerfectServeUsesTwentyFiveRealMillisecondsAndStrictToss()
+        [Test] public void PerfectServeUsesItsRealMillisecondWindowAndStrictToss()
         {
-            float boundary = .025f * TennisRules.ServePace;
+            // The swing window is in real milliseconds (the chain from arm to TV jitters by a frame or two), the toss is the
+            // ticker's middle band. Both edges are judged exactly, and a perfect needs both.
+            float boundary = TennisRules.ServePerfectRealSeconds * TennisRules.ServePace;
+            float strict = TennisRules.ServePerfectToss + .01f, loose = TennisRules.ServePerfectToss - .01f;
             foreach (float sign in new[] {-1f, 1f}) {
-                Assert.IsTrue(TennisRules.JudgeServeStrike(sign * boundary, .96f, new Vector2(0,.8f), true,true,false,.5f,.5f).Perfect);
-                Assert.IsFalse(TennisRules.JudgeServeStrike(sign * (boundary+.0001f), .96f, new Vector2(0,.8f), true,true,false,.5f,.5f).Perfect);
+                Assert.IsTrue(TennisRules.JudgeServeStrike(sign * boundary, strict, new Vector2(0,.8f), true,true,false,.5f,.5f).Perfect);
+                Assert.IsFalse(TennisRules.JudgeServeStrike(sign * (boundary+.0001f), strict, new Vector2(0,.8f), true,true,false,.5f,.5f).Perfect);
             }
-            Assert.IsFalse(TennisRules.JudgeServeStrike(0,.94f,new Vector2(0,.8f),true,true,false,.5f,.5f).Perfect);
-            Assert.IsTrue(TennisRules.JudgeServeStrike(boundary+.005f,.96f,new Vector2(0,.8f),true,true,false,.5f,.5f).Legal);
+            Assert.IsFalse(TennisRules.JudgeServeStrike(0,loose,new Vector2(0,.8f),true,true,false,.5f,.5f).Perfect);
+            Assert.IsTrue(TennisRules.JudgeServeStrike(boundary+.005f,strict,new Vector2(0,.8f),true,true,false,.5f,.5f).Legal);
+        }
+
+        [Test] public void PerfectServeWindowsAreWiderThanTheSensorChainsOwnJitter()
+        {
+            // A 10 ms sensor poll plus a frame or two at 60 fps is 30-40 ms of jitter on its own; a perfect that is
+            // narrower than that is luck, not skill.
+            Assert.GreaterOrEqual(TennisRules.ServePerfectRealSeconds, .04f, "swing window, real seconds either side of the apex");
+            float tossHalfWidthSeconds = (1 - TennisRules.ServePerfectToss) / TennisTossCurve.Speed;
+            Assert.GreaterOrEqual(tossHalfWidthSeconds, .025f, "toss window, real seconds either side of the middle");
+            // ...but still a real skill shot: nowhere near the whole power window.
+            Assert.Less(TennisRules.ServePerfectWindow, TennisRules.ServePowerWindow * .25f);
+            Assert.Less(tossHalfWidthSeconds, .08f);
+        }
+
+        [Test] public void TheServeIsBriskAndTheWindUpIsShort()
+        {
+            Assert.GreaterOrEqual(TennisRules.ServePace, .85f);
+            float windUpRealSeconds = TennisRules.ServeWindUp / TennisRules.ServePace;
+            Assert.LessOrEqual(windUpRealSeconds, .4f, "TOSS to the ball leaving the hand, in real time");
+            float tossToApexRealSeconds = TennisRules.ServeApex / TennisRules.ServePace;
+            Assert.LessOrEqual(windUpRealSeconds + tossToApexRealSeconds, 1.1f, "TOSS press to the top of the toss");
+        }
+
+        [Test] public void UnreturnableServesAreCappedForEveryRival()
+        {
+            float previous = 0;
+            for (float skill = 0; skill <= 1.001f; skill += .1f)
+            {
+                float share = TennisRules.UnreturnableServeShare(skill);
+                Assert.LessOrEqual(share, TennisRules.MaxUnreturnableServes + 1e-5f, $"skill {skill:0.0}");
+                Assert.GreaterOrEqual(share, previous - 1e-5f, "a better server lets through at least as many");
+                previous = share;
+            }
+            Assert.AreEqual(.05f, TennisRules.UnreturnableServeShare(0), 1e-5f);
+            Assert.AreEqual(TennisRules.MaxUnreturnableServes, TennisRules.UnreturnableServeShare(1), 1e-5f);
         }
 
         [Test] public void PerfectServePaceSurvivesNetClearanceAcrossTheServiceBox()

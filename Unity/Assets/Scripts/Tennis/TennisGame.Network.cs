@@ -10,9 +10,10 @@ namespace GolfArcade.Tennis {
         int networkLocalSide,networkNearSide;string networkView="";readonly int[] networkSwings=new int[2],networkServes=new int[2];
         string networkScore="",networkPhase="";Vector3 networkPreviousA,networkPreviousB;
         bool networkConfigured;
+        long networkContact=-1; int networkBounces;
         public float TossSeenAgo=>Mathf.Clamp(Lag+TossInputDelay,0,.25f);
         public void ConfigureNetwork(NetworkConfiguration c) {
-            networkConfigured=true;
+            networkConfigured=true;networkContact=-1;networkBounces=0;
             NativeControlled=true;AutoPlay=false;Drill=false;AimPractice=false;
             networkLocalSide=c.Seat(c.localID);networkView=c.LocalView??"";
             networkNearSide=NetworkConfiguration.NearSide(networkLocalSide,networkView);
@@ -32,6 +33,28 @@ namespace GolfArcade.Tennis {
             var state=SportsMultiplayer.Instance?SportsMultiplayer.Instance.TennisState:null;
             bool tossing=state!=null?state.server==networkLocalSide&&state.phase=="toss":Flow==Phase.PlayerServeToss;
             if(tossing)actor.Serve(Mathf.Clamp01(power));else actor.Swing(Mathf.Clamp01(power),false);
+        }
+        /// An online match used to be silent: the view only drew the host's snapshots, and every sound, effect and haptic lived
+        /// in the single-device game. The host counts each strike (`contact`) and each bounce, so a phone plays the hit the moment
+        /// its snapshot shows a new one: the sound and burst for everyone watching, and a click in the hand of the player who
+        /// struck it (the one the ball is now travelling away from).
+        void NetworkContactFeel(NetworkTennisState s,int local) {
+            if(s.contact!=networkContact) {
+                bool first=networkContact<0;networkContact=s.contact;networkBounces=s.bounces;
+                if(!first&&s.phase=="rally"&&!s.paused) {
+                    int hitter=1-s.receiver;
+                    Timing grade=s.serveFlight?Timing.Great:TennisRules.GradeFromLabel(s.reason);
+                    // A phone that only controls (the TV is another phone's) draws and sounds nothing of the court.
+                    if(networkView!=NetworkConfiguration.ViewNone) {
+                        if(sounds!=null)sounds.Hit(grade,s.players[hitter].power);
+                        if(fx!=null)fx.Contact(BallPosition,grade,false);
+                    }
+                    if(hitter==local)GolfArcade.Game.Haptics.Strike(TennisRules.GradeFeel(grade),false);
+                }
+            } else if(s.bounces>networkBounces) {
+                networkBounces=s.bounces;
+                if(s.phase=="rally"&&!s.paused&&sounds!=null&&networkView!=NetworkConfiguration.ViewNone)sounds.Bounce(Mathf.Clamp01(Mathf.Sqrt(s.velocity.x*s.velocity.x+s.velocity.z*s.velocity.z)/32f));
+            }
         }
         Vector3 NetworkPosition(NetworkVector v) {
             float sign=networkNearSide==0?1:-1;return new Vector3(v.x*sign,v.y,v.z*sign);
@@ -66,6 +89,7 @@ namespace GolfArcade.Tennis {
             if(s.phase=="rally"){v.x+=s.velocity.x*advance;v.z+=s.velocity.z*advance;v.y=Mathf.Max(TennisRules.BallRadius,v.y+s.velocity.y*advance-4.905f*advance*advance);}
             BallPosition=NetworkPosition(v);BallVelocity=NetworkPosition(s.velocity);previousBall=BallPosition;contactHitter=null;
             if(ball)ball.position=BallPosition;
+            NetworkContactFeel(s,l);
             match=n==1?s.score.Mirrored():s.score;   // the TV's HUD is from the drawn near player's side...
             bool nearServing=s.server==n,localServing=l>=0&&s.server==l;
             if(tossMeter) {

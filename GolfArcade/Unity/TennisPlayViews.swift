@@ -225,16 +225,45 @@ private struct ControllerButton: View {
     var icon: String? = nil
     var height: CGFloat = 64
     var size: CGFloat = 24
+    /// Acts when the finger lands instead of when it lifts. For the controls where the lift is latency the player
+    /// feels directly (TOSS, SWING); menu-like buttons keep the usual tap.
+    var onPress = false
     let action: () -> Void
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 10) {
-                if let icon { Image(systemName: icon).font(.system(size: size * 0.9, weight: .bold)) }
-                Text(title).font(IslandUI.font(size, bold: true))
-            }
-            .foregroundStyle(IslandUI.navy).frame(maxWidth: .infinity, minHeight: height)
-            .background { Capsule().fill(IslandUI.lime).shadow(color: .black.opacity(0.4), radius: 0, y: 5) }
-        }.buttonStyle(.plain)
+        if onPress {
+            PressButton(action: action) { pressed in face.scaleEffect(pressed ? 0.97 : 1) }
+        } else {
+            Button(action: action) { face }.buttonStyle(.plain)
+        }
+    }
+    private var face: some View {
+        HStack(spacing: 10) {
+            if let icon { Image(systemName: icon).font(.system(size: size * 0.9, weight: .bold)) }
+            Text(title).font(IslandUI.font(size, bold: true))
+        }
+        .foregroundStyle(IslandUI.navy).frame(maxWidth: .infinity, minHeight: height)
+        .background { Capsule().fill(IslandUI.lime).shadow(color: .black.opacity(0.4), radius: 0, y: 5) }
+    }
+}
+
+/// Acts the instant a finger lands, once per touch. SwiftUI's `Button` fires when the finger lifts, 60-120 ms later: on a
+/// toss, a dive or a swing that is delay the player feels directly. (The gesture `RepeatButton` uses, without the repeat.)
+private struct PressButton<Label: View>: View {
+    var enabled = true
+    let action: () -> Void
+    @ViewBuilder let label: (Bool) -> Label
+    @State private var pressed = false
+    var body: some View {
+        label(pressed)
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    guard enabled, !pressed else { return }
+                    pressed = true; action()
+                }
+                .onEnded { _ in pressed = false })
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { if enabled { action() } }
     }
 }
 
@@ -276,7 +305,8 @@ struct TennisRacketController: View {
                 RacketRadar(contacts: session.contacts)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 stamina
-                if !session.touch { ShotDepthControl(session:session) }
+                // Phone motion aims by timing (early = left, on the ball = straight, late = right) and picks depth from
+                // swing power, so there is nothing to set here; only touch play has an aim pad.
                 if session.touch {
                     VStack(spacing: 6) {
                         Slider(value: $steering, in: -1...1) { Text("Court position") }
@@ -284,8 +314,12 @@ struct TennisRacketController: View {
                         RallyAimPad(session:session).frame(height:150)
                         HStack {
                             Slider(value: $power, in: 0.15...1) { Text("Swing power") }
-                            Button("Swing") { session.swing(power) }.font(IslandUI.font(24, bold: true)).frame(maxWidth: .infinity, minHeight: 70).buttonStyle(.borderedProminent).tint(IslandUI.lime)
-                                .foregroundStyle(IslandUI.navy).disabled(session.paused)
+                            PressButton(enabled: !session.paused, action: { session.swing(power) }) { pressed in
+                                Text("Swing").font(IslandUI.font(24, bold: true)).frame(maxWidth: .infinity, minHeight: 70)
+                                    .foregroundStyle(IslandUI.navy)
+                                    .background(IslandUI.lime, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .opacity(session.paused ? 0.45 : 1).scaleEffect(pressed ? 0.97 : 1)
+                            }.disabled(session.paused)
                         }
                     }.tint(IslandUI.lime)
                 }
@@ -408,7 +442,7 @@ private struct ServePanel: View {
                 Spacer()
                 Image(systemName:"figure.tennis").font(.system(size:52)).foregroundStyle(IslandUI.lime)
 
-                if session.touch { ControllerButton(title: "Swing", icon: "bolt.fill") { session.swing(0.8) } }
+                if session.touch { ControllerButton(title: "Swing", icon: "bolt.fill", onPress: true) { session.swing(0.8) } }
                 Spacer()
             } else {
                 Text(session.serveFromDeuce ? "DEUCE" : "AD")
@@ -417,7 +451,7 @@ private struct ServePanel: View {
 
                 MoveButtons(session: session, caption: "Hold to walk the baseline")
                 Spacer(minLength: 0)
-                ControllerButton(title: "TOSS", icon: "arrow.up.circle.fill", height: 112, size: 40) {
+                ControllerButton(title: "TOSS", icon: "arrow.up.circle.fill", height: 112, size: 40, onPress: true) {
                     if session.haptics { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
                     session.toss()
                 }.accessibilityIdentifier("tennisToss")
@@ -762,7 +796,8 @@ private struct AbilityButton: View {
     let enabled: Bool
     let action: () -> Void
     var body: some View {
-        Button(action: action) {
+        // On touch-down: a dive is a reaction, and the lift of a `Button` tap costs 60-120 ms of it.
+        PressButton(enabled: enabled, action: action) { pressed in
             HStack(spacing: 12) {
                 Image(systemName: icon).font(.system(size: 28, weight: .bold))
                 Text(title).font(IslandUI.font(30, bold: true)).tracking(1)
@@ -771,9 +806,9 @@ private struct AbilityButton: View {
             .foregroundStyle(.white).frame(maxWidth: .infinity, minHeight: 92)
             .background(LinearGradient(colors: [Color(hex: "2A66E0"), Color(hex: "1C45A8")], startPoint: .top, endPoint: .bottom), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
             .shadow(color: .black.opacity(0.4), radius: 0, y: 5)
-            .opacity(enabled ? 1 : 0.45)
+            .opacity(enabled ? 1 : 0.45).scaleEffect(pressed ? 0.97 : 1)
         }
-        .buttonStyle(.plain).disabled(!enabled)
+        .disabled(!enabled)
     }
 }
 
@@ -848,21 +883,5 @@ struct RallyAimPad:View {
                 .accessibilityElement(children:.ignore).accessibilityLabel("Shot target. Left and right, short and deep.")
                 .accessibilityIdentifier("rally-aim-pad")
         }
-    }
-}
-
-private struct ShotDepthControl:View {
-    @Bindable var session:SportsSession
-    var body:some View {
-        HStack(spacing:12) {
-            ForEach([0.15,0.5,0.9],id:\.self) { depth in
-                Button { session.setShotDepth(depth) } label: {
-                    Image(systemName:depth < 0.3 ? "arrow.down" : depth > 0.7 ? "arrow.up" : "minus")
-                        .font(.system(size:22,weight:.bold)).frame(maxWidth:.infinity).padding(.vertical,12)
-                        .background(abs(session.shotDepth-depth)<0.2 ? IslandUI.lime : .white.opacity(0.15),in:RoundedRectangle(cornerRadius:12))
-                        .foregroundStyle(abs(session.shotDepth-depth)<0.2 ? IslandUI.navy : .white)
-                }.accessibilityLabel(depth < 0.3 ? "Short shot" : depth > 0.7 ? "Deep shot" : "Middle depth")
-            }
-        }.accessibilityIdentifier("shot-depth-control")
     }
 }

@@ -30,9 +30,9 @@ enum HowTo {
         "Point the back of the phone at the TV once to lock the court direction.",
     ], art: .stand, icon: "figure.stand")
     static let swing = HowToCard(id: "swing", title: "Forehand", steps: [
-        "Your player runs to the ball. Lean toward it early to get a quicker start.",
+        "Your player runs to the ball, and sprints on its own for a hard one.",
         "Swing as the ball rises to the top of its bounce.",
-        "Point the racket face where you want the ball to go.",
+        "Timing aims the ball: a touch early goes left, right on the ball goes straight, a touch late goes right.",
     ], art: .swing)
     static let backhand = HowToCard(id: "backhand", title: "Backhand", steps: [
         "Ball on your other side? Turn the phone so the camera faces the TV.",
@@ -113,18 +113,18 @@ enum GameTips {
     static let tennis: [GameTip] = [
         t(.technique, "Swing as the rings close on the ball. Shot quality is mostly timing, not effort."),
         t(.technique, "Swing effort barely changes the pace. A smooth swing on time beats a hard swing that's late."),
-        t(.technique, "The TV shows EARLY, LATE or ON TIME after each hit. Use it to nudge your timing."),
+        t(.technique, "The TV shows STRAIGHT, EARLY · LEFT or LATE · RIGHT after each hit. Use it to place your next ball."),
         t(.technique, "Swinging LATE every time? Keep playing: the game learns your lag in three or four swings."),
-        t(.technique, "Turn the racket face left or right to aim. About 30–40° reaches the sidelines."),
-        t(.technique, "Set your depth with the arrow buttons: short, middle or deep."),
+        t(.technique, "Timing aims the ball, like Wii Tennis: swing a touch early to go left, on the ball to go straight, a touch late to go right."),
+        t(.technique, "Swing power picks the depth: a smooth swing lands shorter, a full swing sends the ball deep."),
         t(.technique, "The side the ball is on picks forehand or backhand, so you don't need to flip your grip."),
         t(.technique, "A low, flat swing slices. A swing with lift hits topspin."),
         t(.technique, "Three GREAT hits in a row charge a SUPERCHARGED shot: faster and almost dead accurate."),
         t(.technique, "Serving: tap TOSS exactly as the meter's ticker crosses the middle. Off-centre tosses scatter the ball."),
         t(.technique, "After the toss, swing as the power bar peaks. Swinging too early or too late is a fault."),
-        t(.strategy, "Your player runs for you. Lean or step toward the ball early to get a faster jump."),
+        t(.strategy, "Your player runs for you, and sprints on its own for a ball that is hard to reach."),
         t(.strategy, "Standing still on a wide ball usually hands your opponent the point. Move early."),
-        t(.strategy, "Dive saves a wide ball but costs stamina and needs 4 seconds to recharge. Use it as a last resort."),
+        t(.strategy, "Dive saves a wide ball but costs stamina and needs a couple of seconds to recharge. Use it as a last resort."),
         t(.strategy, "Stamina drains while you sprint and refills when you stand still. Recover between points."),
         t(.strategy, "Deep balls push your opponent back; short balls invite an attack."),
         t(.strategy, "Stronger rivals hunt your weaker side. Mix up your shots."),
@@ -236,7 +236,7 @@ extension HowTo {
             "Practice first with Coach Ray's tutorial: forehand, backhand, aim, serve, then a point.",
         ], art: .swing, icon: "sportscourt.fill"),
         HowToCard(id: "tg-move", title: "Moving", steps: [
-            "Your player runs to the ball for you. Lean or step toward it early to get a faster jump.",
+            "Your player runs to the ball for you, and sprints on its own for a hard one. In touch mode, steering toward the ball early gets a faster jump.",
             "Standing still on a wide shot usually hands your opponent the point.",
             "Sprinting drains stamina, and tired legs run slower. Stamina refills when you stand still and resets each point.",
             "Settings → Controls → Step to cross court sets how far you walk for the full width of the court.",
@@ -244,13 +244,14 @@ extension HowTo {
         HowToCard(id: "tg-hit", title: "Hitting the ball", steps: [
             "Swing as the rings close on the ball, after it bounces. Timing is most of shot quality.",
             "Swinging harder barely changes the pace. A smooth swing on time beats a hard one that's late.",
-            "The TV shows EARLY, LATE or ON TIME after each hit. If you're always late, keep playing: the game adapts in a few swings.",
+            "The TV shows STRAIGHT, EARLY · LEFT or LATE · RIGHT after each hit. If your timing always runs late, keep playing: the game adapts in a few swings.",
             "The side the ball is on picks forehand or backhand. Your grip only matters for balls right at your body.",
         ], art: .swing, icon: "figure.tennis"),
         HowToCard(id: "tg-aim", title: "Aim and depth", steps: [
-            "Turn the racket face left or right to aim. About 30–40° reaches the sidelines.",
-            "Set depth with the three arrow buttons: short, middle or deep. Deep balls push your opponent back.",
-            "Your aim locks as the swing starts, so decide before you swing.",
+            "Timing aims the ball, like Wii Tennis: swing a touch early to send it left, right on the ball to send it straight, a touch late to send it right.",
+            "There is a wide flat middle, so straight is easy to find. The earlier or later you swing, the wider the angle.",
+            "Swing power picks the depth: a smooth swing lands shorter, a full swing sends the ball deep and pushes your opponent back.",
+            "Touch controls keep the aim pad: drag it to choose the side and the depth.",
             "A low, flat swing slices the ball. A swing with lift hits topspin.",
         ], art: .backhand, icon: "arrow.left.and.right"),
         HowToCard(id: "tg-serve", title: "Serving", steps: [
@@ -260,7 +261,7 @@ extension HowTo {
             "Aiming at the lines with a loose toss can land long or wide. Two faults in a row lose the point.",
         ], art: .serve, icon: "arrow.up.circle.fill"),
         HowToCard(id: "tg-extras", title: "Dive, supercharge and emotes", steps: [
-            "Tap DIVE to reach a wide ball. It only works with a ball coming, costs stamina and needs about 4 seconds to recharge.",
+            "Tap DIVE to reach a wide ball. It only works with a ball coming, costs stamina and needs about 2.5 seconds to recharge.",
             "Three GREAT or better hits in a row make the third a SUPERCHARGED shot, faster and almost dead accurate. A dive resets the streak.",
             "After you win a point, tap an emote on your phone to celebrate.",
             "Hold the pause icon for about half a second to pause.",
