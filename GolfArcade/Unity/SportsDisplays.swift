@@ -115,7 +115,10 @@ final class SportsDisplays: NSObject {
             cover.isHidden=true; self.exitCover=nil
         }
     }
+    /// How many loading covers have been shown (NO_COVER: a launch from a Plaza bay shows none).
+    private(set) var coversShown = 0
     func beginLoadingCover(in destination: UIWindow, startRuntime: @escaping @MainActor () -> Void) {
+        coversShown += 1
         lingeringTip?.isHidden=true; lingeringTip=nil
         exitGeneration += 1; exitCover?.isHidden=true; exitCover=nil
         finishLoadingCover()
@@ -290,6 +293,7 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
         SportsSession.shared.pause(reason:"Display disconnected — reconnect and tap Ready"); SportsSession.shared.displayConnected=false
         SportsSession.shared.status="Display disconnected. Reconnect your TV or Mac to continue; this phone remains your controller."
         SportsDisplays.shared.external=nil; window=nil
+        HubSession.shared.displayLost()
     }
 }
 

@@ -40,7 +40,7 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.launch?.games, 6)
         menu.tap("map-resort"); XCTAssertEqual(menu.screen, .connect)
         XCTAssertEqual(SportsSession.shared.tennisVenue, "resort")
-        menu.debugShow(.quickPlay); menu.tap("quickGolf")
+        menu.debugShow(.hub(.golf)); menu.tap("round")   // golf starts from its hub (the old Quick Play screen is gone)
         XCTAssertEqual(menu.launch?.sport, .golf)
     }
 

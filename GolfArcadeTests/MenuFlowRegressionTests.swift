@@ -138,7 +138,7 @@ import UIKit
     }
     func testMainMenuIsReachableFromLoadingStoryAndEverySetupRoute() {
         let menu = TennisMenu()
-        for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .golfLesson, .postMatch, .hub(.golf)] {
+        for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .postMatch, .hub(.golf)] {
             menu.debugShow(screen)
             menu.goHome()
             XCTAssertEqual(menu.screen, .main, "\(screen)")

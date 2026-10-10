@@ -55,6 +55,12 @@ struct TennisRemote: View {
                 }
                 .padding(.horizontal, 14).padding(.vertical, 8).background(.white.opacity(0.1), in: Capsule())
                 Spacer()
+                if HubSession.shared.plazaMenus {
+                    Button { HubSession.shared.backToPlaza() } label: {
+                        Label("Plaza", systemImage: "figure.walk").font(IslandUI.font(15, bold: true)).foregroundStyle(IslandUI.navy)
+                            .padding(.horizontal, 14).padding(.vertical, 8).background(IslandUI.lime, in: Capsule())
+                    }.buttonStyle(.plain).accessibilityIdentifier("remote-plaza")
+                }
             }
             onTV
             Spacer(minLength: 0)
@@ -70,7 +76,10 @@ struct TennisRemote: View {
             HStack(alignment: .center, spacing: 28) {
                 RemoteButton(label: "‹", caption: "Back", size: 76, filled: false) { menu.back() }
                 RemoteButton(label: "A", caption: "Select", size: 112, filled: true) { menu.select() }
-                RemoteButton(label: "⌂", caption: "Home", size: 76, filled: false) { menu.goHome() }
+                RemoteButton(label: "⌂", caption: "Home", size: 76, filled: false) {
+                    // with Plaza menus on, home is the plaza
+                    if HubSession.shared.plazaMenus && !menu.screen.isOnline { HubSession.shared.backToPlaza() } else { menu.goHome() }
+                }
             }
             Text(menu.screen == .loading ? "Loading the court on your TV…" : "When the match starts, hold this like a racket.")
                 .font(IslandUI.font(13, bold: false)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
@@ -101,11 +110,11 @@ struct TennisRemote: View {
     private var screenName: String {
         switch menu.screen {
         case .online(let route): route.rawValue.uppercased()
-        case .party: "PLAY"; case .multiplayer: "MULTIPLAYER"; case .localChoice: "LOCAL"; case .localPlayers: "HOW MANY PLAYERS"; case .onlineChoice: "ONLINE"; case .homeEmotes: "EMOTES"; case .quickPlay: "QUICK PLAY"
+        case .party: "PLAY"; case .multiplayer: "MULTIPLAYER"; case .localChoice: "LOCAL"; case .localPlayers: "HOW MANY PLAYERS"; case .onlineChoice: "ONLINE"; case .homeEmotes: "EMOTES"
         case .title: "TITLE"; case .main: "HOME"; case .gameSelect: "CHOOSE YOUR SPORT"
         case .hub(let sport): sport.title; case .locked(let sport): "\(sport.title) · COMING SOON"
         case .campaign: "ISLAND CIRCUIT"; case .exhibition: "QUICK MATCH"; case .training: "TRAINING"
-        case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: menu.guideDeck.title.uppercased(); case .golfLesson: "GOLF LESSON"
+        case .character: "LOCKER"; case .settings: "SETTINGS"; case .howTo: menu.guideDeck.title.uppercased()
         case .connect: "CONNECT"; case .loading: "LOADING"; case .results: "RESULTS"; case .map: menu.mapSport == .golf ? "CHOOSE YOUR COURSE" : "CHOOSE YOUR COURT"; case .postMatch: "MATCH REP"
         case .story: menu.storyLine.map { TennisStory.name(for: $0.speaker).uppercased() } ?? "STORY"
         }
@@ -120,7 +129,6 @@ struct TennisRemote: View {
         switch id {
         case "start": return menu.screen == .title ? "Press A to start" : "Start"
         case "level" where menu.screen == .training: return "Coach: \(TennisMenu.trainingLevels[menu.trainingLevel].name)"
-        case "homeContinue": return menu.continueLabel.subtitle
         case "": return "…"
         default: return TennisMenu.label(for: id)
         }

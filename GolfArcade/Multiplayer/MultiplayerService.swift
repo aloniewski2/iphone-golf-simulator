@@ -24,6 +24,13 @@ final class MultiplayerService {
     @ObservationIgnored private var proofKinds: Set<String> = []
     #endif
     var onMatchRequested: ((MultiplayerMatchConfiguration) -> Void)?
+    /// The Plaza's party traffic (PLAN_MenuHub_WalkableWorld §4): where each friend is and what they do, any phone to all,
+    /// only while the lobby is idle. (kind, payload, sender)
+    @ObservationIgnored var onHub: ((String, String, String) -> Void)?
+    func sendHub(_ kind: String, payload: String, reliable: Bool) {
+        guard lobby?.phase == .lobby, ["hubPresence", "hubEvent"].contains(kind), payload.utf8.count <= 2048 else { return }
+        try? broadcast(kind, payload: payload, reliable: reliable)
+    }
     var onReturnToLobby: (() -> Void)?
     var onResult: ((String) -> Void)?
     @ObservationIgnored private var transport: (any MultiplayerTransport)?
@@ -250,8 +257,9 @@ final class MultiplayerService {
         quickSport = item.sport == MultiplayerSport.tennis.rawValue ? .tennis : nil
         do { try lan.join(item) } catch { leave(); throw error }
     }
-    func configure(_ sport: MultiplayerSport, venue: String = "resort", sets: Int = 1, games: Int = 3) throws {
+    func configure(_ sport: MultiplayerSport, venue: String? = nil, sets: Int = 1, games: Int = 3) throws {
         try requireOwnerIdle()
+        let venue = sport == .golf ? MultiplayerLobby.currentGolfVenue(venue ?? "cliffside") : (venue ?? "resort")
         guard MultiplayerLobby.validVenue(venue, sport: sport), (1...3).contains(sets), [1,3,6].contains(games) else { throw MultiplayerError.invalidOperation("Invalid match settings.") }
         if sport != .golf { lobby?.participants.removeAll { $0.isGuest } }
         lobby?.configure(sport: sport, venue: venue)
@@ -352,7 +360,7 @@ final class MultiplayerService {
     private func createLobby(owner: String) {
         var me = identity(); me.seat = 0; lobby = MultiplayerLobby(ownerID: owner, participants: [me])
         for p in hello.values.sorted(by: { $0.id < $1.id }) { try? lobby?.add(p) }
-        if let sport = quickSport { lobby?.configure(sport: sport, venue: "resort") }
+        if let sport = quickSport { lobby?.configure(sport: sport, venue: sport == .golf ? "cliffside" : "resort") }
         publishLobby()
         if quickSport != nil { try? setReady(true) }
     }
@@ -381,8 +389,21 @@ final class MultiplayerService {
             }
             lobby?.revision += 1; publishLobby()
         } else if let owner = lobby?.ownerID, !transport.peers.contains(owner) {
+            if lobby?.phase == .lobby, handOver(from: owner) { return }
             lobby?.phase = .interrupted; stopRuntime(); lastError = "The host disconnected. Leave and create a new lobby."
         }
+    }
+    /// The host left an idle lobby: the remaining phone with the lowest id takes it over and publishes it; the others accept that.
+    private func handOver(from owner: String) -> Bool {
+        guard var state = lobby, let transport else { return false }
+        let remaining = state.participants.filter { !$0.isGuest && $0.id != owner && ($0.id == localID || transport.peers.contains($0.id)) }.map(\.id).sorted()
+        guard let next = remaining.first, remaining.count >= 1 else { return false }
+        if next != localID { return true }   // wait for the successor's lobby
+        state.participants.removeAll { $0.id == owner || $0.controllerID == owner }
+        state.ownerID = localID; state.queue.removeAll { $0 == owner }
+        for i in state.participants.indices { state.participants[i].ready = false }
+        state.revision += 1; lobby = state; publishLobby(); lastError = "The host left. You are the host now."
+        return true
     }
     private func receive(_ data: Data, from peer: String) {
         guard data.count <= MultiplayerPacket.maximumBytes, let transport, transport.peers.contains(peer),
@@ -410,8 +431,12 @@ final class MultiplayerService {
             return
         }
         if packet.kind == "lobby" {
-            guard let state = try? decoder.decode(MultiplayerLobby.self, from: Data(packet.payload.utf8)), state.valid(), state.ownerID == peer,
-                  lobby == nil || (lobby?.ownerID == peer && lobby?.id == state.id && state.revision > lobby!.revision) else { return }
+            guard var state = try? decoder.decode(MultiplayerLobby.self, from: Data(packet.payload.utf8)) else { return }
+            if state.sport == .golf { state.venue = MultiplayerLobby.currentGolfVenue(state.venue) }
+            // (a handed-over lobby: the old owner is gone and its successor publishes the same lobby with a newer revision)
+            let handover = lobby.map { $0.id == state.id && state.revision > $0.revision && !transport.peers.contains($0.ownerID) } ?? false
+            guard state.valid(), state.ownerID == peer,
+                  lobby == nil || handover || (lobby?.ownerID == peer && lobby?.id == state.id && state.revision > lobby!.revision) else { return }
             lobby = state
             if state.phase != .loading { loadingNeedsDecision = false }
             if state.phase != .lobby { emotes.removeAll() }
@@ -419,6 +444,10 @@ final class MultiplayerService {
             return
         }
         guard let state = lobby, packet.lobbyID == state.id else { return }
+        if packet.kind == "hubPresence" || packet.kind == "hubEvent" {
+            guard state.phase == .lobby, packet.payload.utf8.count <= 2048, state.participants.contains(where: { $0.id == peer }) else { return }
+            onHub?(packet.kind, packet.payload, peer); return
+        }
         if packet.kind == "emote", !isOwner {
             guard peer == state.ownerID, state.phase == .lobby,
                   let event = try? decoder.decode(MultiplayerEmote.self, from: Data(packet.payload.utf8)),
@@ -684,6 +713,7 @@ final class MultiplayerService {
     private func launch(_ payload: String) {
         guard var config = try? decoder.decode(MultiplayerMatchConfiguration.self, from: Data(payload.utf8)), config.matchID != matchConfiguration?.matchID else { return }
         config.localID = localID
+        if config.sport == "golf" { config.venue = MultiplayerLobby.currentGolfVenue(config.venue) }
         guard config.valid(), config.hostID == lobby?.ownerID, config.lobbyID == lobby?.id, config.matchID == lobby?.matchID else { lastError = "Invalid match configuration."; return }
         guard onMatchRequested != nil || !SportsSession.shared.active else { lastError = "Finish the current sport session before joining this match."; return }
         matchConfiguration = config; quickSport = nil; lastError = nil; stats = NetStats()

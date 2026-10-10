@@ -20,10 +20,20 @@ namespace GolfArcade.Tennis {
             var near=c.participants.First(p=>p.seat==networkNearSide);var far=c.participants.First(p=>p.seat==1-networkNearSide);
             Player.Build(near.female,PlayerSkinFor(near.female),near.left,PlayerBody(near.female));
             Opponent.Build(far.female,PlayerSkinFor(far.female),far.left,PlayerBody(far.female));
+            // the heroes on court follow the rebuilt bodies and wear the lobby's looks (the plaza shows the same colours)
+            foreach(var actor in new[]{Player,Opponent})foreach(var d in actor.GetComponentsInChildren<HeroTennisDriver>(true))DestroyImmediate(d.gameObject);
+            TennisHeroSetup.AttachPlayer(this);TennisHeroSetup.AttachRival(this);
+            DressNetworkHero(Player,near);DressNetworkHero(Opponent,far);
             if(hud){hud.PlayerName=near.name;hud.OpponentName=far.name;hud.MatchVisible=true;}
             if(presentation)presentation.Finish();if(replay)replay.Stop();
             networkPreviousA=Player.transform.position;networkPreviousB=Opponent.transform.position;
             if(networkView==NetworkConfiguration.ViewSplit&&SplitScreen)BuildSplit(near.name,far.name);   // one TV, two halves
+        }
+        static void DressNetworkHero(TennisActor actor,NetworkParticipant p) {
+            var d=actor?actor.GetComponentInChildren<HeroTennisDriver>():null;var l=p?.loadout;
+            if(!d||!d.matchLook||l==null)return;
+            if(!string.IsNullOrEmpty(l.skinHex))d.matchLook.SetSkin(HeroKit.Hex(l.skinHex));
+            d.matchLook.SetKit(l.shirtHex,l.shortsHex,null);
         }
         public void BeginSharedPresentation() { if(presentation) presentation.RestartShared(); }
         public void PredictNetworkSwing(float power) {

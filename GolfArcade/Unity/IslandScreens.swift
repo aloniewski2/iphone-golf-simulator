@@ -312,6 +312,7 @@ struct IslandSettingsScreen: View {
         case "overscan": return Item(title: "Screen edge margin", detail: "Pulls the picture in from the edges if your TV crops it.", control: .stepper(s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%"))
         case "sound": return Item(title: "Sound", detail: "Menu and match sound.", control: .toggle(s.sound))
         case "haptics": return Item(title: "Haptics", detail: "Taps and buzzes on the phone.", control: .toggle(s.haptics))
+        case "plazaMenus": return Item(title: "Plaza menus", detail: "Walk the Plaza on your TV. Off: the classic list menu.", control: .toggle(HubSession.shared.plazaMenus))
         case "bigText": return Item(title: "Larger text on the remote", detail: "Bigger words on the phone while it is your TV remote.", control: .toggle(s.bigText))
         case "reduceMotion": return Item(title: "Reduce motion", detail: "Still pictures instead of moving backdrops.", control: .toggle(s.reduceMotion))
         case "classic": return Item(title: "Classic options menu", detail: "The plain list of every option. For testing.", control: .action("Open", danger: false))

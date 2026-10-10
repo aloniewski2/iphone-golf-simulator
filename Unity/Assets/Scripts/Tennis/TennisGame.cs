@@ -1,3 +1,4 @@
+using System.Collections;
 using GolfArcade.Game;
 using UnityEngine;
 using UnityEngine.UI;
@@ -216,14 +217,23 @@ namespace GolfArcade.Tennis
         public string InputStatus = "Keyboard · A/D move · Shift sprint · hold/release Space · arrows aim";
         static readonly Color CourtDust = new(.55f, .62f, .48f);
 
-        void Start()
+        /// PLAN_MenuHub_WalkableWorld §5: a match loading behind the plaza builds over several frames (each step one frame) so the
+        /// plaza on the TV never hitches. Off for every other launch: Start then runs to the end in its first frame, as before.
+        public static bool SliceInit;
+        /// 0..1 through the build (only advanced while SliceInit).
+        public float InitProgress { get; private set; }
+        IEnumerator Start()
         {
             var arena = Resources.Load<GameObject>("Tennis/TropicalV3/TropicalTennisResort");
             if (!arena) throw new System.InvalidOperationException("Approved coastal tennis arena export is missing");
             if (!NativeSportsSession.Active) TennisQuality.Apply();
-            var environment = Instantiate(arena); environment.name = "Tropical tennis resort v3 — live arena";
+            GameObject environment;
+            if (SliceInit) { var made = InstantiateAsync(arena); while (!made.isDone) yield return null; environment = made.Result[0]; }
+            else environment = Instantiate(arena);
+            environment.name = "Tropical tennis resort v3 — live arena";
             environment.transform.rotation=Quaternion.Euler(0,180,0);
             TennisLook.StyleArena(environment);
+            if (SliceInit) { InitProgress = .2f; yield return null; }
             // The sky and crater courts keep the arena's court kit and swap the resort for their own world.
             var venue = TennisVenue.Current;
             if (venue == TennisVenueKind.Resort)
@@ -237,16 +247,22 @@ namespace GolfArcade.Tennis
                 crowd = gameObject.AddComponent<TennisResortCrowd>();
             }
             else TennisVenueBuilder.Build(venue, environment);
+            if (SliceInit) { InitProgress = .35f; yield return null; }
             umpire = TennisUmpire.Spawn(environment.transform.parent);
             if (venue == TennisVenueKind.Resort) { stands = gameObject.AddComponent<TennisStandsCrowd>(); stands.Build(null); }
+            if (SliceInit) { InitProgress = .45f; yield return null; }
             Player = new GameObject("Player — permanent standard").AddComponent<TennisActor>();
             Player.transform.position = new Vector3(0, .035f, -11.2f);
             Player.Build(FemalePlayer, PlayerSkinFor(FemalePlayer), NativeSportsSession.Left, PlayerBody(FemalePlayer));
+            if (SliceInit) { InitProgress = .5f; yield return null; }
             Opponent = new GameObject("Opponent — permanent standard").AddComponent<TennisActor>();
             Opponent.transform.SetPositionAndRotation(new Vector3(0, .035f, 11.2f), Quaternion.Euler(0,180,0));
             Opponent.Build(!FemalePlayer, new Color(.52f,.31f,.18f), false);
             Opponent.Motion = TennisActor.Style.Rival;
-            TennisHeroSetup.Attach(this);
+            if (SliceInit) { InitProgress = .58f; yield return null; }
+            if (SliceInit) { TennisHeroSetup.AttachPlayer(this); InitProgress = .64f; yield return null; TennisHeroSetup.AttachRival(this); }   // = Attach, one hero a frame
+            else TennisHeroSetup.Attach(this);
+            if (SliceInit) { InitProgress = .7f; yield return null; }
             BuildBall();
             landingRing=MakeLine("Predicted landing",new Color(.1f,.9f,1),.05f);
             aimRing=MakeLine("Shot aim target",new Color(1,.85f,.1f),.06f);
@@ -265,20 +281,24 @@ namespace GolfArcade.Tennis
             { var s = TennisLook.AddContactShadow(Opponent.transform, .55f, .45f); s.HeightOverride = 0; s.Surface = Opponent.transform; }
             { var s = TennisLook.AddContactShadow(ball, .16f, .55f); s.FadeHeight = 4f; s.Surface = Player.transform; s.OnlyOverDeck = true; }
             fx = new GameObject("Tennis effects").AddComponent<TennisFx>(); fx.transform.SetParent(transform); fx.Build();
+            if (SliceInit) { InitProgress = .8f; yield return null; }
             juice = gameObject.AddComponent<TennisJuice>();
             HookActorFx(Player); HookActorFx(Opponent);
             sounds = TennisSounds.Create(transform);
             audio = TennisAudioDirector.Create(this);
             replay = gameObject.AddComponent<TennisReplay>();
             replay.Build(new[] { Player.transform, Opponent.transform }, ball, camera, OnReplayPose);
+            if (SliceInit) { InitProgress = .88f; yield return null; }
             BuildHud(); gameObject.AddComponent<TennisPhoneInput>();
             tossMeter = TennisTossMeter.Create(transform);
             presentation = gameObject.AddComponent<TennisPresentation>();
             presentation.Build(this, hud, umpire);
+            if (SliceInit) { InitProgress = .94f; yield return null; }
             gameObject.AddComponent<TennisFrameGovernor>();
             gameObject.AddComponent<SportsVisualTelemetry>();
             TennisWarmup.Run(camera, fx);
             BeginPoint(); UpdateCamera(true);
+            InitProgress = 1;
             Initialized=true;
         }
 
@@ -998,6 +1018,7 @@ namespace GolfArcade.Tennis
 
         void Update()
         {
+            if (!Initialized) return;   // a sliced build (SliceInit) is still in progress
             if (NetworkFrame()) return;
             if (!Player) return;
             if (ReplayPlaying)

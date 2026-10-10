@@ -90,7 +90,8 @@ final class SportsSession {
     var tennisVenue = UserDefaults.standard.string(forKey: "sports.tennisVenue") ?? "resort" {
         didSet { UserDefaults.standard.set(tennisVenue, forKey: "sports.tennisVenue") }
     }
-    var golfCourse = UserDefaults.standard.string(forKey: "sports.golfCourse") ?? "cliffside" {
+    /// The golf course: "cliffside", "wildisles" or "magma". A saved "postcards" (retired) loads as "cliffside".
+    var golfCourse = MultiplayerLobby.currentGolfVenue(UserDefaults.standard.string(forKey: "sports.golfCourse") ?? "cliffside") {
         didSet { UserDefaults.standard.set(golfCourse, forKey: "sports.golfCourse") }
     }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
@@ -309,7 +310,7 @@ final class SportsSession {
         delayTip = tvDelay > Self.gameModeHint ? "TV Game Mode can reduce picture delay." : ""
         SportsDiagnostics.write("tv delay flashes=\(flashDelays.map { String(format: "%.3f", $0) }) chosen=\(tvDelay)")
     }
-    func savePlayers() { PlayerRosterStore.save(players) }
+    func savePlayers() { PlayerRosterStore.save(players); HubSession.shared.lookChanged() }
     /// Start tennis from the front end: a campaign round against `opponent`, or training.
     func startTennis(opponent: TennisOpponent?, round: Int?, mode: String? = nil, difficulty: Double, coach: [String] = [], preview: Bool, sets: Int? = nil, games: Int? = nil) {
         let mode = mode == "tutorial" ? "exhibition" : mode
@@ -350,9 +351,12 @@ final class SportsSession {
         SportsDisplays.shared.refresh()
         let preview = Self.benchmark && !displayConnected
         NSLog("[SportsSession] launch sport=%@ mode=%@ touch=%d",sport,preview ? "phone-preview" : "external-controller",touch ? 1 : 0)
-        guard let window = Self.benchmark ? SportsDisplays.shared.benchmarkWindow() : multiplayerControllerOnly ? SportsDisplays.shared.multiplayerControllerWindow() : SportsDisplays.shared.gameWindow(preview:preview) else {
+        // From a bay in the Plaza (PLAN_MenuHub_WalkableWorld §5): the match loads behind the plaza while you sit, no TV cover.
+        let bay = Self.benchmark || multiplayerControllerOnly ? nil : HubSession.shared.bayForLaunch()
+        guard let window = bay != nil ? SportsDisplays.shared.external : Self.benchmark ? SportsDisplays.shared.benchmarkWindow() : multiplayerControllerOnly ? SportsDisplays.shared.multiplayerControllerWindow() : SportsDisplays.shared.gameWindow(preview:preview) else {
             status="Connect a TV or Mac with AirPlay or a wired display to play. This phone is your controller."; return
         }
+        HubSession.shared.runtimeTaken(bay: bay)   // the match scene replaces the Plaza (behind it, from a bay)
         savePlayers(); sessionID=UUID().uuidString; sessionToken=Int32.random(in:1...Int32.max); ready=false; paused=true; active=true; tennisControllerActive=false
         aimFeedTask?.cancel(); aimTimeoutTask?.cancel(); aimLesson=nil; aimChecked=false; aimWaiting=false; aimSwing=nil; shotAim=0; shotDepth=0.75
         resultPresentationReady = true; finishedMatch=nil; lastMatchStats=nil; swingSequence=0; target=0; power=0; aim=0; measuringDelay=false; delayTip=""; checkingTiming=false; timingPrompt=false; timingNote=""
@@ -381,6 +385,7 @@ final class SportsSession {
         pending?["external"] = runtimeExternalDisplay
         pending?["emotes"] = matchEmotes
         for (key, value) in launchExtras { pending?[key] = value }
+        if let bay { pending?["seamless"] = true; pending?["bay"] = bay }
         if Self.benchmark {
             // Verification flags affect this explicit benchmark launch only;
             // they do not save frame-rate, venue, or character preferences.
@@ -391,7 +396,7 @@ final class SportsSession {
             }
             if let fps = value("--visual-fps").flatMap(Int.init), [60, 120].contains(fps) { pending?["fps"] = fps }
             if let venue = value("--visual-venue"), ["resort", "skyscraper", "volcano"].contains(venue) { pending?["venue"] = venue }
-            if sport == "golf", let course = value("--visual-course"), ["cliffside", "postcards", "wildisles", "magma"].contains(course) { pending?["course"] = course }
+            if sport == "golf", let course = value("--visual-course"), GolfCourseChoice.allCases.map(\.rawValue).contains(course) { pending?["course"] = course }
             if args.contains("--visual-female") { pending?["female"] = true }
             if sport == "tennis" && !args.contains("--postgame-check") {
                 // Keep the real scoring match active throughout sustained performance capture.
@@ -406,7 +411,8 @@ final class SportsSession {
         score = TennisScore(); contacts = []; tutorialStep = nil
         loading.begin(now: LoadingModel.clockNow, multiplayer: multiplayerMatchID != nil)
         loading.onFinish = { [weak self] in self?.loadingFinished() }
-        SportsDisplays.shared.beginLoadingCover(in: window) { [weak self] in self?.loadCoveredRuntime(in: window) }
+        if bay != nil { loading.cardAppeared(); loadCoveredRuntime(in: window) }   // the plaza stays on the TV: no cover
+        else { SportsDisplays.shared.beginLoadingCover(in: window) { [weak self] in self?.loadCoveredRuntime(in: window) } }
     }
     private func loadCoveredRuntime(in window: UIWindow) {
         do { try SportsRuntime.shared().load(in:window,controllerReplica:multiplayerControllerOnly) }
@@ -857,6 +863,7 @@ final class SportsSession {
             UserDefaults.standard.set(Array(history.suffix(100)),forKey:"sports.sessions.v1")
         }
         pointClips.reset()
+        HubSession.shared.sessionEnded(finished: finishedMatch != nil || multiplayerMatchID != nil)   // a party comes back to its bay together
         multiplayerMatchID=nil; multiplayerSeat = -1; multiplayerControllerOnly=false
         if unityControllerShown { unityControllerShown = false; SportsRuntime.shared().showUnity(onPhone: false) }
         command("end"); motion.stop(); timer?.invalidate(); timer=nil; pending=nil; measuringDelay=false; checkingTiming=false

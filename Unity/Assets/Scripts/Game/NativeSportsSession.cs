@@ -12,9 +12,9 @@ namespace GolfArcade.Game
     /// Runs before gameplay scripts so the newest phone sample is applied in the same frame
     /// it arrives, rather than whenever Unity happened to order this after TennisGame.
     [DefaultExecutionOrder(-1000)]
-    public sealed class NativeSportsSession : MonoBehaviour
+    public sealed partial class NativeSportsSession : MonoBehaviour
     {
-        [Serializable] public class Message {
+        [Serializable] public partial class Message {
             public int version; public string session, action, sport, playerID, playerName,reason;
             public bool female,left,sound=true,haptics=true,touch,external,bench; public int skin=2,token,fps=60; public float value,value2,difficulty=-1;
             // Tennis menu choice: "campaign" or "training", and the campaign round's opponent.
@@ -146,11 +146,13 @@ namespace GolfArcade.Game
                 var m=JsonUtility.FromJson<Message>(json);
                 if(m==null || m.version!=1 || string.IsNullOrEmpty(m.session)) return;
                 if(m.action=="start") {
+                    if(m.sport=="hub") { StartHub(m); return; }
                     if(loading || (Active && m.session==session)) return;
                     if(m.sport!="golf" && m.sport!="tennis") return;
-                    StartCoroutine(Load(m)); return;
+                    LeaveHub(); StartCoroutine(Load(m)); return;
                 }
                 if(m.session!=session || !Active) return;
+                if(HubIntercept(m)) return;
                 if (SportsMultiplayer.Active && (m.action=="pause" || m.action=="resume")) SetPaused(m.action=="pause",m.reason);
                 if (SportsMultiplayer.Command(m)) return;
                 switch(m.action) {
@@ -235,9 +237,10 @@ namespace GolfArcade.Game
             // The phone's loading bar follows the scene load.
             TennisVenue.Selected=TennisVenue.Parse(m.venue);
             TennisVenue.CourtColorOverride=string.IsNullOrEmpty(m.courtHex) ? (Color?)null : HeroKit.Hex(m.courtHex);
-            var op=SceneManager.LoadSceneAsync(m.sport=="tennis"?"Tennis":"Golf");
+            var op=BeginSceneLoad(m);
             float nextProgress=0;
             while(!op.isDone) {
+                SceneLoadTick(op);
                 if(Time.realtimeSinceStartup>=nextProgress) {
                     nextProgress=Time.realtimeSinceStartup+.1f;
                     Emit("loadProgress",Mathf.Clamp01(op.progress/.9f).ToString("0.00",System.Globalization.CultureInfo.InvariantCulture));
@@ -277,7 +280,7 @@ namespace GolfArcade.Game
             gameplayCamera=tennis ? tennis.GameplayCamera : golf.GameplayCamera;
             if(golf && m.touch) golf.Swing.Armed=false;
             SetPaused(true);
-            yield return Present(m.external,"ready");
+            yield return behindPlaza ? HandOff(m) : Present(m.external,"ready");
             loading=false;
         }
         /// The phone controller's pause button: the app pauses and puts its pause screen up.
@@ -382,6 +385,7 @@ namespace GolfArcade.Game
         }
         void Update() {
             if(!Active || loading) return;
+            if(hubMode) { HubUpdate(); return; }
             // Rotation settles after scene loading; do not freeze the initial portrait aspect.
             if(gameplayCamera && outputDisplay==0 && Screen.height>0)
                 gameplayCamera.aspect=(float)Screen.width/Screen.height;
@@ -484,7 +488,7 @@ namespace GolfArcade.Game
         const string DegradedWarning="Tracking degraded — keep the lens clear";
         string lastFeedback; float nextHeartbeat;
         void PresentationTrace(string line) => Emit("presentation",line);
-        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.NativePhase : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,golfSwingState=golf ? golf.NativeSwingState : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
+        void Emit(string type,string message,float stamina=1)=>SportsEmit(JsonUtility.ToJson(new Event {golfController=type=="golfController" && golf ? golf.NativeControllerReading() : null,clock=SportsClock(),renderedAt=firstFrameAt,session=session,type=type,message=message,golfState=golf ? golf.NativeState : "",golfHasNextHole=golf && golf.NativeHasNextHole,golfShotReady=golf && golf.NativeShotReady,golfSwingState=golf ? golf.NativeSwingState : 0,presentationResultReady=!tennis || tennis.PresentationResultsReady,matchComplete=!multiplayerSession && tennis && tennis.Match.Complete,matchWon=!multiplayerSession && tennis && tennis.Match.PlayerWonMatch,finalScore=!multiplayerSession && tennis && tennis.Match.Complete ? tennis.Match.FinalScore : "",stamina=stamina,frame=Time.frameCount,paused=paused,playerX=tennis && tennis.Player ? tennis.Player.transform.position.x : 0,inputAge=lastSample<0 ? -1 : SportsClock()-lastSample}));
         public static bool AcceptSample(in Sample s,int expected,double previous,double now) =>
             s.version==Sample.Version && s.session==expected && s.time>previous && s.time>=now-.25 && s.time<=now+.05 &&
             !float.IsNaN(s.target) && !float.IsInfinity(s.target) && !float.IsNaN(s.power) && !float.IsInfinity(s.power) &&

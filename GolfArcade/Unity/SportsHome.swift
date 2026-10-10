@@ -7,10 +7,11 @@ struct SportsHome: View {
     @State private var session = SportsSession.shared
     @State private var menu = TennisMenu.shared
     @State private var onboarding = OnboardingFlow.shared
+    @State private var hub = HubSession.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
-            if session.displayConnected && !session.active { TennisRemote() }
+            if session.displayConnected && !session.active { if hub.drivesPhone { HubControllerView() } else { TennisRemote() } }
             else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
             else if session.active && (!session.loading.finished || (session.sport == "golf" && !session.ready)) { LoadingScreen(menu: menu, compact: true) }
             else if menu.screen.isOnline && menu.screen != .online(.match) {
@@ -71,6 +72,12 @@ struct SportsHome: View {
         .overlay(alignment:.top) { if session.active && menu.screen == .online(.match) { MultiplayerMatchOverlay() } }
         .animation(.easeInOut(duration: 0.3), value: session.active)
         .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
+        // The Plaza (PLAN_MenuHub_WalkableWorld) opens and closes with the TV, matches and the menu screen.
+        .onChange(of: session.displayConnected) { _, _ in hub.evaluate() }
+        .onChange(of: session.active) { _, _ in hub.evaluate() }
+        .onChange(of: menu.screen) { _, _ in hub.evaluate() }
+        .onChange(of: menu.classic) { _, _ in hub.evaluate() }
+        .onChange(of: onboarding.holdsMenu) { _, _ in hub.evaluate() }
         .onChange(of:menu.online.service.lobby?.revision) { _,_ in menu.online.sync(menu) }
         .onChange(of:menu.online.service.lastError) { _,error in if let error { menu.onlineNotice(error) } }
         .onChange(of:menu.online.service.pendingInvite) { _,invite in if invite != nil { menu.online.acceptInvite(menu) } }
@@ -363,7 +370,7 @@ private struct SportsControls:View {
         for sport in [Sport.golf, .tennis] {
             menu.begin(MenuLaunch(sport: sport, mode: sport == .golf ? .round : .exhibition, round: sport == .tennis ? 0 : nil))
             guard menu.screen == .map else { SportsDiagnostics.write("PLAYABILITY FAIL map \(sport)"); return }
-            let key = sport == .golf ? "postcards" : "resort"
+            let key = sport == .golf ? "cliffside" : "resort"
             menu.tap("map-\(key)")
             for _ in 0..<400 {
                 if session.ready && session.loading.finished || !session.active { break }
