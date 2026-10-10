@@ -9,7 +9,8 @@ namespace GolfArcade.Tests {
         static NetworkInput Input(NetworkTennisMatch m,string action,long id=1,double age=0) => new() {action=action,eventID=id,time=m.State.time,point=m.State.point,contact=m.State.contact,power=.7f,age=age};
         static void Step(NetworkTennisMatch m,double seconds){for(int i=0;i<Math.Ceiling(seconds*120);i++)m.Step(1.0/120);}
         static void Step(NetworkGolfRound m,double seconds){for(int i=0;i<Math.Ceiling(seconds*20);i++)m.Step(.05);}
-        static void FinishFlight(NetworkGolfRound m)=>Step(m,m.State.shot.duration+3.2);
+        /// Through the shot as the phones show it, and its result.
+        static void FinishFlight(NetworkGolfRound m)=>Step(m,Math.Max(m.State.shot.duration,m.State.shot.shown)+NetworkGolfRound.ResultSeconds+(m.State.shot.holed?NetworkGolfRound.HoledExtraSeconds:0)+.2);
         static NetworkInput Golf(NetworkGolfRound m,long id=1)=>new() {action="swing",eventID=id,time=m.State.time,power=.6f};
         static NetworkConfiguration Config(string sport="tennis")=>new() {lobbyID="party",matchID="contest",hostID="a",localID="a",sport=sport,venue="resort",participants=new[] {new NetworkParticipant {id="a",seat=0},new NetworkParticipant {id="b",seat=1},new NetworkParticipant {id="watch",seat=-1}}};
 
@@ -27,7 +28,7 @@ namespace GolfArcade.Tests {
         [Test] public void TennisResultIsEmittedOnceOnRealScoringCompletion(){var m=new NetworkTennisMatch(1,1);int results=0;m.Result=_=>results++;for(int p=0;p<4;p++){m.Input(0,Input(m,"toss",p*2+1),m.State.time);Step(m,1.8);m.Input(0,Input(m,"toss",p*2+2),m.State.time);Step(m,4);}Assert.True(m.State.score.Complete);Assert.False(m.State.score.PlayerWonMatch);Assert.AreEqual(1,results);Step(m,10);m.Drop(0);Assert.AreEqual(1,results);}
         [Test] public void GolfResultGivesThreeSecondsAndFreezesWhenPaused() {
             var m=new NetworkGolfRound(new[]{0,1,2,3},20);
-            m.Input(0,Golf(m),0);Step(m,m.State.shot.duration+.05);
+            m.Input(0,Golf(m),0);Step(m,m.State.shot.shown+.05);
             Assert.AreEqual("result",m.State.phase);Assert.AreEqual(0,m.State.turn);
             Assert.That(m.State.resultUntil-m.State.time,Is.InRange(2.94,3.001));
             double until=m.State.resultUntil,time=m.State.time;m.State.paused=true;Step(m,9);
@@ -40,7 +41,7 @@ namespace GolfArcade.Tests {
             var m=new NetworkGolfRound(new[]{0,1,2,3},20);
             Assert.False(m.Input(0,new NetworkInput {action="emote",value=0,eventID=1,time=0},0));
             Assert.True(m.Input(1,new NetworkInput {action="emote",value=2,eventID=1,time=0},0));
-            m.Input(0,Golf(m),0);Step(m,m.State.shot.duration+.05);double until=m.State.resultUntil;
+            m.Input(0,Golf(m),0);Step(m,m.State.shot.shown+.05);double until=m.State.resultUntil;
             foreach(var p in m.State.golfers) Assert.True(m.Input(p.seat,new NetworkInput {action="emote",value=1,eventID=2,time=m.State.time},m.State.time));
             Assert.False(m.Input(1,new NetworkInput {action="emote",value=1,eventID=3,time=m.State.time},m.State.time));
             Assert.False(m.Input(1,new NetworkInput {action="swing",power=1,eventID=4,time=m.State.time},m.State.time));
@@ -55,19 +56,78 @@ namespace GolfArcade.Tests {
         [Test] public void GolfControllerUsesTheFullBagAndAuthoritativeJoystickHeading() {
             var round=new NetworkGolfRound(new[]{0,1},20);
             var bag=GolfArcade.Shot.GolfClubs.All;
+            int start=Array.IndexOf(bag,(GolfArcade.Shot.GolfClub)round.State.golfers[0].club);
+            Assert.GreaterOrEqual(start,0);
             for(int i=0;i<bag.Length;i++) {
-                Assert.AreEqual((int)bag[i],round.State.golfers[0].club);
+                Assert.AreEqual((int)bag[(start+i)%bag.Length],round.State.golfers[0].club);
                 Assert.True(round.Input(0,new NetworkInput {action="club",value=1},round.State.time));
             }
-            Assert.AreEqual((int)bag[0],round.State.golfers[0].club);
+            Assert.AreEqual((int)bag[start],round.State.golfers[0].club);
             Assert.True(round.Input(0,new NetworkInput {action="club",value=-1},round.State.time));
-            Assert.AreEqual((int)bag[bag.Length-1],round.State.golfers[0].club);
+            Assert.AreEqual((int)bag[(start-1+bag.Length)%bag.Length],round.State.golfers[0].club);
             Assert.True(round.Input(0,new NetworkInput {action="golfAimHeading",value=-30},round.State.time));
             Assert.AreEqual(330,round.State.golfers[0].heading);
             Assert.False(round.Input(1,new NetworkInput {action="golfAimHeading",value=90},round.State.time));
             round.State.paused=true;
             Assert.False(round.Input(0,new NetworkInput {action="club",value=1},round.State.time));
             Assert.False(round.Input(0,new NetworkInput {action="golfAimHeading",value=90},round.State.time));
+        }
+        /// The swing a phone strikes flies on the host exactly as single player flies it: the lie taken once (CourseShot takes it
+        /// itself), the strike's own speed, spin and thinness kept, from the club and the line the phone swung on.
+        [Test] public void GolfHostStrikesTheShotAsSinglePlayerFromTheRough() {
+            var m=new NetworkGolfRound(new[]{0,1},20);
+            var hole=GolfArcade.Course.Course.Postcards().Holes[0];
+            GolfArcade.Course.CoursePoint? rough=null;
+            for(double d=60;d<hole.Length&&rough==null;d+=4)for(double x=-60;x<=60&&rough==null;x+=2) {
+                var at=new GolfArcade.Course.CoursePoint(hole.Tee.X+x,hole.Tee.D+d);
+                if(hole.LieAt(at)==GolfArcade.Course.CourseLie.Rough)rough=at;
+            }
+            Assert.NotNull(rough,"a ball in the rough on the first hole");
+            Assert.Less(GolfArcade.Course.CourseLies.PowerFactor(GolfArcade.Course.CourseLie.Rough),1,"the rough takes something off");
+            var p=m.State.golfers[0];p.x=rough.Value.X;p.d=rough.Value.D;
+            var impact=new GolfArcade.Swing.SwingImpact {Power=.8,StartLineDegrees=2,CurveDegrees=-3,FaceDegrees=4,Thin=.1,SpeedBonus=.04,SpinScatter=-.05,Backswing=.8,Commit=1.1};
+            var club=GolfArcade.Shot.GolfClub.Iron5;
+            Assert.True(m.Input(0,new NetworkInput {action="swing",eventID=1,time=0,shotClub=(int)club,heading=12.5,impact=NetworkImpact.From(impact)},0));
+            var solo=new GolfArcade.Course.CourseShot(club,impact,12.5,rough.Value,hole,1,new GolfArcade.Course.Wind(m.State.windSpeed,m.State.windDirection));
+            var shot=m.State.shot;
+            Assert.AreEqual((int)club,shot.club);Assert.AreEqual(12.5,shot.heading,1e-9);
+            Assert.AreEqual(solo.Carry,shot.carry,1e-9);Assert.AreEqual(solo.Rest.X,shot.restX,1e-9);Assert.AreEqual(solo.Rest.D,shot.restD,1e-9);
+            Assert.AreEqual(rough.Value.X,shot.originX);Assert.AreEqual(rough.Value.D,shot.originD);
+            Assert.AreEqual(impact.SpeedBonus,shot.impact.speedBonus);Assert.AreEqual(impact.Thin,shot.impact.thin);
+            Assert.Greater(shot.shown,shot.duration,"the phones show the club coming down before the ball leaves");
+        }
+        [Test] public void GolfSwingNamingABadClubIsRefusedAndAnUnnamedOneUsesTheHostsClub() {
+            var m=new NetworkGolfRound(new[]{0,1},20);
+            Assert.False(m.Input(0,new NetworkInput {action="swing",eventID=1,time=0,shotClub=99,heading=0,impact=new NetworkImpact {power=1}},0));
+            Assert.AreEqual(0,m.State.shotID);
+            int hostClub=m.State.golfers[0].club;
+            // (an empty impact, as JsonUtility writes one for a swing that has none, is not read)
+            Assert.True(m.Input(0,new NetworkInput {action="swing",eventID=2,time=0,power=.5f,impact=new NetworkImpact()},0));
+            Assert.AreEqual(hostClub,m.State.shot.club);Assert.AreEqual(.5,m.State.shot.impact.power,1e-6);
+        }
+        /// A turn starts set up as single player sets one up: along the hole to its next landing, with the club for the distance.
+        [Test] public void GolfTurnStartsOnSinglePlayersLineAndClub() {
+            var m=new NetworkGolfRound(new[]{0,1},20);
+            var hole=GolfArcade.Course.Course.Postcards().Holes[0];var tee=hole.Tee;var target=hole.RecommendedTarget(tee);
+            var lie=hole.LieAt(tee);
+            foreach(var p in m.State.golfers) {
+                Assert.AreEqual((tee.HeadingTo(target)%360+360)%360,p.heading,1e-9);
+                Assert.AreEqual((int)GolfArcade.Shot.GolfClubs.ForDistance(tee.DistanceTo(target),c=>GolfArcade.Course.CourseLies.PowerFactor(lie,c)),p.club);
+            }
+        }
+        /// The TV shows the player up's view and backswing; nobody else can move them, and the shot puts them back.
+        [Test] public void GolfLookAndBackswingReachTheTvFromThePlayerUpOnly() {
+            var m=new NetworkGolfRound(new[]{0,1},20);
+            Assert.True(m.Input(0,new NetworkInput {action="golfLook",value=.7f,time=0},0));
+            Assert.True(m.Input(0,new NetworkInput {action="golfLoad",value=.4f,time=0},0));
+            Assert.False(m.Input(1,new NetworkInput {action="golfLook",value=-1,time=0},0));
+            Assert.AreEqual(.7f,m.State.look,1e-6);Assert.AreEqual(.4f,m.State.load,1e-6);
+            Assert.True(m.Input(0,new NetworkInput {action="golfLoad",value=3,time=0},0));Assert.AreEqual(1,m.State.load);
+            Assert.True(m.Input(0,new NetworkInput {action="golfClub",value=(int)GolfArcade.Shot.GolfClub.Hybrid,time=0},0));
+            Assert.AreEqual((int)GolfArcade.Shot.GolfClub.Hybrid,m.State.golfers[0].club);
+            Assert.False(m.Input(0,new NetworkInput {action="golfClub",value=42,time=0},0));
+            m.Input(0,Golf(m),0);
+            Assert.AreEqual(0,m.State.look);Assert.AreEqual(0,m.State.load);
         }
         [Test] public void GolfRejectsOutOfTurnAndSpectatorShots(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);Assert.False(m.Input(-1,Golf(m),0));Assert.False(m.Input(1,Golf(m),0));Assert.AreEqual(0,m.State.shotID);}
         [Test] public void GolfAuthorityGeneratesBoundedPathAndCommitsOneShot(){var m=new NetworkGolfRound(new[]{0,1,2,3},20);int calls=0;m.Shot=_=>calls++;var x=Golf(m);Assert.True(m.Input(0,x,0));Assert.False(m.Input(0,x,0));Assert.AreEqual(1,calls);Assert.AreEqual(1,m.State.shotID);Assert.That(m.State.shot.path.Length,Is.InRange(2,360));Assert.GreaterOrEqual(m.State.golfers[0].strokes,1);}

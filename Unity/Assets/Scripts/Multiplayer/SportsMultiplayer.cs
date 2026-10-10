@@ -61,7 +61,7 @@ namespace GolfArcade.Multiplayer {
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
                 if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;compactSnapshots=NetworkTuning.CompactSnapshots&&NetworkTennisWire.SelfTest();}
-                else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:true,courseKey:c.venue);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
+                else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:true,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
             Time.timeScale=1;
@@ -148,12 +148,14 @@ namespace GolfArcade.Multiplayer {
         }
         public static bool Command(NativeSportsSession.Message m) {
             if(!Active)return false;
+            // Golf's aim and club belong to the phone with the player up, as in single player; it tells the host (GolfGame.Network).
+            if(Instance.Configuration.sport=="golf" && (m.action=="aim" || m.action=="club")) return false;
             switch(m.action) {
                 case "start":case "end":return false;
                 case "pause":Instance.Send("availability","false");return true;
                 case "resume":Instance.Send("availability","true");Time.timeScale=1;return true;
                 case "touch":case "motion":case "recalibrate":case "latency":case "golfAimDirection":
-                case "golfStartSwing":case "golfCancelSwing":return false;
+                case "golfStartSwing":case "golfCancelSwing":case "golfLoad":return false;
                 case "toss":
                     Instance.Submit(new NetworkInput {action="toss",age=Instance.tennisView?.TossSeenAgo??0});return true;
                 case "golfEmote":

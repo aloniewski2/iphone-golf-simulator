@@ -137,6 +137,59 @@ namespace GolfArcade.Tests {
                 Assert.True(shot);Assert.True(checkpoint);yield return null;
             } finally {Clean();}
         }
+        /// Pass the phone (two golfers on the host's phone) plays as single player: the shot set up with single player's line and
+        /// club and told to the host, the view looked up the hole to the pin and shown on the TV, the backswing on the TV, the
+        /// strike's grade kept, and the shot flown with single player's flight (the host's ruling, to the yard), then the next
+        /// golfer's shot lined up the same way.
+        [UnityTest] public IEnumerator PassThePhoneGolfPlaysAsSinglePlayer() {
+            Clean();var root=new GameObject("Native multiplayer golf");Object.DontDestroyOnLoad(root);var bridge=root.AddComponent<NativeSportsSession>();
+            var c=new NetworkConfiguration {lobbyID="party",matchID="pass",hostID="a",localID="a",sport="golf",venue="cliffside",seed=7,
+                participants=new[] {new NetworkParticipant{id="a",name="Alice",seat=0},new NetworkParticipant{id="g",name="Gus",seat=1,controllerID="a"}}};
+            Assert.True(c.Valid);
+            try {
+                bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session="pass",action="start",sport="golf",course="cliffside",touch=true,network=JsonUtility.ToJson(c)}));
+                for(int frame=0;frame<600&&!bridge.Ready;frame++)yield return null;
+                Assert.True(bridge.Ready);
+                bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session="pass",action="resume"}));
+                var net=SportsMultiplayer.Instance;net.Receive(Packet(c,"run"));
+                for(int i=0;i<30&&!net.Running;i++)yield return null;   // (the start is scheduled on the shared clock)
+                Assert.True(net.Running);
+                var game=Object.FindFirstObjectByType<GolfGame>();
+                for(int i=0;i<900&&(net.GolfState.phase!="aim"||game.Current!=GolfGame.State.Aim);i++)yield return null;
+                Assert.AreEqual("aim",net.GolfState.phase);Assert.AreEqual(GolfGame.State.Aim,game.Current);
+                for(int i=0;i<5;i++)yield return null;
+                var state=net.GolfState;var up=state.golfers[0];
+                // single player's set-up, and the host has it
+                Assert.True(game.NativeShotReady,"the player up can swing");
+                Assert.AreEqual((int)game.ClubInHand,up.club,"the host has the club the phone set up");
+                Assert.AreEqual(0,Mathf.DeltaAngle((float)game.AimHeading,(float)up.heading),.1,"the host has the line the phone set up");
+                // the joystick up: the view climbs to look along the hole to the pin, and the TV is told
+                var camera=game.GameplayCamera.transform;float pitchBefore=camera.eulerAngles.x;
+                game.LookHeld=1;for(int i=0;i<60;i++)yield return null;
+                Assert.Greater(game.AimLook,.9f);Assert.Greater(state.look,.8f,"the TV is told where the view looks");
+                game.LookHeld=0;for(int i=0;i<60;i++)yield return null;
+                Assert.Less(game.AimLook,.1f);
+                // the backswing goes to the TV, and the swing is struck as single player strikes it
+                game.ShowBackswing(.7);yield return null;
+                Assert.AreEqual(.7f,state.load,.03f);
+                game.NativeSwing(.8f);yield return null;
+                Assert.AreEqual("flight",net.GolfState.phase);
+                var shot=net.GolfState.shot;
+                Assert.AreEqual(GolfGame.State.Flight,game.Current,"flown with single player's flight");
+                Assert.NotNull(game.LastShot);
+                Assert.AreEqual(shot.restX,game.LastShot.Rest.X,1e-6);Assert.AreEqual(shot.restD,game.LastShot.Rest.D,1e-6);
+                Assert.AreNotEqual(0,shot.impact.speedBonus,"the strike's own speed is kept");
+                // the result, then Gus's shot, lined up on this phone the same way
+                for(int i=0;i<3000&&net.GolfState.phase!="result";i++)yield return null;
+                for(int i=0;i<3000&&game.Current!=GolfGame.State.Result;i++)yield return null;
+                Assert.AreEqual(GolfGame.State.Result,game.Current);
+                for(int i=0;i<3000&&!(net.GolfState.phase=="aim"&&net.GolfState.turn==1);i++)yield return null;
+                for(int i=0;i<5;i++)yield return null;
+                Assert.AreEqual(GolfGame.State.Aim,game.Current);Assert.True(game.NativeShotReady,"the next golfer on this phone can swing");
+                Assert.AreEqual(net.GolfState.golfers[1].x,game.BallAt.X,1e-6);Assert.AreEqual((int)game.ClubInHand,net.GolfState.golfers[1].club);
+                bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message {version=1,session="pass",action="end"}));
+            } finally {Object.DestroyImmediate(root);Clean();}
+        }
         [UnityTest] public IEnumerator NativeMultiplayerLoadsBothSportsAndResumesItsInputReader() {
             Clean();var root=new GameObject("Native multiplayer test");Object.DontDestroyOnLoad(root);var bridge=root.AddComponent<NativeSportsSession>();
             try {

@@ -365,7 +365,7 @@ final class SportsSession {
             matchEmotes = EmoteCatalog.normalized(local.loadout?.emotes)
         }
         motion.setAimProfile(storedAimProfile())
-        pending=["holeFlyover":holeFlyover,"intros":consumePresentationIntroCut(),"bigMoments":presentationBigMoments,"presentationConstrained":reduceMotion || ProcessInfo.processInfo.thermalState == .serious || ProcessInfo.processInfo.thermalState == .critical,"version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound && !(multiplayerControllerOnly && sport == "tennis"),"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
+        pending=["holeFlyover":holeFlyover,"intros":consumePresentationIntroCut(),"bigMoments":presentationBigMoments,"presentationConstrained":reduceMotion || ProcessInfo.processInfo.thermalState == .serious || ProcessInfo.processInfo.thermalState == .critical,"version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound && !(multiplayerControllerOnly && (sport == "tennis" || !displayConnected)),"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
                  "skinHex":p.skinHex,"hairHex":p.hairHex,
                  "tips":false,"overscan":overscan,
@@ -857,18 +857,25 @@ final class SportsSession {
     /// Golf as it played on the standalone build: while a shot is lined up and flies, Unity's own
     /// phone screen (the controller sheet: the map with the landing zones, the club card, the aim
     /// pad) is in front. The app's screens take over for Ready, pause, the shot's result and the
-    /// hole's end, touch swings, onboarding and party play.
+    /// hole's end, touch swings and onboarding. A multiplayer round plays the same: the phone with the
+    /// player up (the TV's, a guest's, or the one being passed round) has the sheet for that shot; the
+    /// party screen is in front while others play, for the hole's intro and the results.
     private var unityControllerShown = false
     private func updateGolfPhoneController() {
+        let upHere = multiplayerMatchID == nil || (golfController.party?.myTurn == true && ["Aim", "Flight", "Replay"].contains(golfPhase))
         let want = active && sport == "golf" && ready && loading.finished && !paused && !menuPauseVisible
-            && !touch && displayConnected && multiplayerMatchID == nil && !multiplayerControllerOnly
+            && !touch && (displayConnected || multiplayerControllerOnly) && upHere
             && !OnboardingFlow.shared.active && finishedMatch == nil
             && ["Intro", "Aim", "Flight", "Replay", "HoleDone"].contains(golfPhase)
             && (golfPhase != "Aim" || golfShotReady)
         guard want != unityControllerShown else { return }
         unityControllerShown = want
-        SportsRuntime.shared().showUnity(onPhone: want)
-        if !want { SportsDisplays.shared.phone?.makeKeyAndVisible() }
+        // (a guest without a TV of its own keeps Unity in a window of its own, under the native controller)
+        if multiplayerControllerOnly && !runtimeExternalDisplay { SportsDisplays.shared.showMultiplayerRenderer(want) }
+        else {
+            SportsRuntime.shared().showUnity(onPhone: want)
+            if !want { SportsDisplays.shared.phone?.makeKeyAndVisible() }
+        }
         SportsDiagnostics.write("golf phone controller \(want ? "shown" : "hidden") phase=\(golfPhase)")
     }
     private func poll() {
