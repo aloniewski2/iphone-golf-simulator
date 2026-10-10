@@ -258,16 +258,18 @@ namespace GolfArcade.Course
         /// the velocity it rolls on with.
         static (double vx, double vd) BounceOn(CourseLie lie, Fall fall, List<(double x, double h, double d)> path, Hole hole)
         {
-            var (e, keep) = lie switch
+            // (the bounce is the turf's, as the flight's is: the harder it comes down the less it gets back)
+            var (lively, keep) = lie switch
             {
-                CourseLie.Green or CourseLie.Fringe => (0.32, 0.8),
-                CourseLie.Ice => (0.5, 0.93),   // it skips off the ice and keeps its pace
-                CourseLie.Rough or CourseLie.OutOfBounds => (0.15, 0.45),
+                CourseLie.Green or CourseLie.Fringe => (0.85, 0.8),
+                CourseLie.Ice => (-1.0, 0.93),   // it skips off the ice and keeps its pace
+                CourseLie.Rough or CourseLie.OutOfBounds => (0.4, 0.45),
                 CourseLie.Bunker => (0.0, 0.08),
-                _ => (0.38, 0.7),
+                _ => (1.0, 0.7),
             };
+            double Rebound(double down) => lively < 0 ? 0.5 : lively * BallFlight.TurfRestitution(down * BallFlight.MetersPerYard);
             double x = fall.Landing.X, d = fall.Landing.D, h = 0;
-            double vx = fall.Vx * keep, vd = fall.Vd * keep, vh = -fall.Vy * e;
+            double vx = fall.Vx * keep, vd = fall.Vd * keep, vh = -fall.Vy * Rebound(-fall.Vy);
             double t = fall.Time, next = path.Count * SampleInterval;
             const double dt = 1.0 / 240;
             for (int step = 0; step < 240 * 8 && vh > 0.8; step++)
@@ -276,7 +278,7 @@ namespace GolfArcade.Course
                 x += vx * dt; d += vd * dt; t += dt;
                 if (h <= 0)
                 {
-                    h = 0; vh = -vh * e; vx *= keep; vd *= keep;
+                    h = 0; vh = -vh * Rebound(-vh); vx *= keep; vd *= keep;
                     if (hole.LieAt(new CoursePoint(x, d)) is CourseLie.Bunker or CourseLie.Water) break;
                 }
                 if (t >= next) { path.Add((x, Math.Max(0, h), d)); next += SampleInterval; }
