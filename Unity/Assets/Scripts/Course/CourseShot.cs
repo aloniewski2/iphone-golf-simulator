@@ -289,6 +289,23 @@ namespace GolfArcade.Course
             return (vx, vd);
         }
 
+        /// What a rolling ball last learnt about one obstacle: whether it lies under the ground there.
+        struct BuriedMemo { public double X, D; public bool Buried, Known; }
+
+        /// An obstacle whose top is below the ground the ball is rolling on is under it, not in its
+        /// way: Needle's sea stacks hold up the island its green sits on, and their footprints
+        /// (a dozen yards across) used to throw every putt off the green. The ground is read at
+        /// most once a yard, and only while the ball is inside the footprint.
+        static bool Buried(in Obstacle o, Func<CoursePoint, double> ground, double x, double d, ref BuriedMemo memo)
+        {
+            if (ground == null) return false;
+            double dx = x - o.X, dd = d - o.D, reach = o.Footprint + BallRadius;
+            if (dx * dx + dd * dd >= reach * reach) return false;
+            if (memo.Known && Math.Abs(x - memo.X) < 1 && Math.Abs(d - memo.D) < 1) return memo.Buried;
+            memo = new BuriedMemo { X = x, D = d, Buried = o.Top <= ground(new CoursePoint(x, d)) + 0.02, Known = true };
+            return memo.Buried;
+        }
+
         /// A rolling ball against something standing on the course: off a trunk, a rock or a
         /// wall, a little livelier than dead; caught in a bush. True when it ran into it.
         static bool RollInto(in Obstacle o, ref double x, ref double d, ref double vx, ref double vd)
@@ -654,6 +671,7 @@ namespace GolfArcade.Course
                 var o = hole.Obstacles[i];
                 if (Math.Abs(o.X - x) < rollReach + o.Radius && Math.Abs(o.D - d) < rollReach + o.Radius) inReach.Add(i);
             }
+            var buried = new BuriedMemo[hole.Obstacles.Length];
             var touchdown = new CoursePoint(x, d);
             Touchdown = touchdown;
             const double dt = 1.0 / 240;
@@ -735,7 +753,7 @@ namespace GolfArcade.Course
                 vx += ax * dt; vd += ad * dt;
                 x += vx * dt; d += vd * dt;
                 foreach (int i in inReach)
-                    if (RollInto(hole.Obstacles[i], ref x, ref d, ref vx, ref vd) && speed > 0.4)
+                    if (!Buried(hole.Obstacles[i], hole.Ground, x, d, ref buried[i]) && RollInto(hole.Obstacles[i], ref x, ref d, ref vx, ref vd) && speed > 0.4)
                         knocks.Add(new Knock(elapsed, x, double.NaN, d, hole.Obstacles[i].Kind, hole.Obstacles[i].Kind != ObstacleKind.Bush));
                 elapsed += dt;
                 if (elapsed + 1e-9 >= nextSample) { path.Add((x, 0, d)); nextSample += SampleInterval; }

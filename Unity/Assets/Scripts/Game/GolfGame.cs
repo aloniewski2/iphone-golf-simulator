@@ -255,7 +255,7 @@ namespace GolfArcade.Game
                     hud.Controller.SetScreen(bigScreen.Live);
                     hud.Controller.Skip.Pressed = () => { SkipPresentation(); };
                     // (from the menu there's no hole yet: StartHole fills it in)
-                    if (hole != null && Card != null) { hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name); ShowScore(); }
+                    if (hole != null && Card != null) { hud.SetHole(hole.PlayNumber, hole.Par, hole.Length, hole.Picture, hole.Name); ShowScore(); }
                 }
                 else hud.LeaveControllerLayout();
                 ShowControllerForState();
@@ -515,7 +515,7 @@ namespace GolfArcade.Game
             var h = AllHoles[browse];
             // FULL ROUND is the round of the course this hole is on: its name over the hole
             var courseName = Course.Course.Containing(h.Number)?.Name ?? h.Name;
-            courses?.Show(browseFull ? courseName : h.Name, h.Number, h.Par, h.Length, browse, browseFull, courseName);
+            courses?.Show(browseFull ? courseName : h.Name, h.PlayNumber, h.Par, h.Length, browse, browseFull, courseName);
             // a course still to be earned: what it takes, and no SELECT
             var key = Course.Course.Containing(h.Number)?.Key;
             courses?.SetLocked(Unlocks.CourseOpen(ProfileStore.Active, key) ? null : Unlocks.CourseReward(key)?.How);
@@ -911,6 +911,7 @@ namespace GolfArcade.Game
 
         void StartRound()
         {
+            bool covered = coverNextRoundStart; coverNextRoundStart = false;
             setup ??= GameSetup.Solo(ProfileStore.Active, ChosenCourseId);
             course = Match.HolesFor(GameSetup.CourseFor(setup.CourseId), setup.Format);
             NewMatch();
@@ -923,7 +924,10 @@ namespace GolfArcade.Game
                 ShowRoundCard(); Enter(State.RoundDone); return;
             }
             WearTurn();
-            StartHole(Match.HoleIndex);
+            // a rematch builds its first hole behind the loading screen like any other hole; the round that
+            // starts from the menu or the phone's launch (which go on to the tee at once) does not
+            if (covered) StartHoleBehindCover(Match.HoleIndex);
+            else StartHole(Match.HoleIndex);
         }
 
         /// A card for everyone in the setup over `course`; online, the scores already in.
@@ -1023,12 +1027,21 @@ namespace GolfArcade.Game
 
         void StartHole(int index)
         {
+            var steps = StartHoleSteps(index);
+            while (steps.MoveNext()) { }
+        }
+
+        /// StartHole in slices, for the loading screen (GolfGame.HoleLoading.cs): it yields how far along it is
+        /// (0 to 1) after each slow part. StartHole runs it to the end in one go.
+        System.Collections.Generic.IEnumerator<float> StartHoleSteps(int index)
+        {
             bigMomentUsed=false; holeIndex = index;
             hole = course.Holes[index];
             // Gone now, not at the end of the frame: the new hole's ground is read by raycast
             // while it is built (pin height, the green's slope grid), and the old one is in the way.
             if (holeView) DestroyImmediate(holeView.gameObject);
-            holeView = HoleView.Build(hole, transform);
+            var build = HoleView.BuildSteps(hole, transform, built => holeView = built);
+            while (build.MoveNext()) yield return build.Current * 0.85f;
             ballAt = hole.Tee;
             holeStrokes = 0; holeShots = 0; onGreenIn = null;
             if (Alternating) ResetTurns();
@@ -1036,7 +1049,7 @@ namespace GolfArcade.Game
             Wind = Match != null ? Match.WindFor(index) : Wind.Random(rng);
             holeView.ShowFlag(true);
             if (!Wind.IsCalm) holeView.SetFlagWind(Wind.DirectionDegrees);
-            hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
+            hud.SetHole(hole.PlayNumber, hole.Par, hole.Length, hole.Picture, hole.Name);
             double downTheHole = hole.Tee.HeadingTo(hole.Pin);
             hud.SetWind((float)Wind.RelativeTo(downTheHole), Wind.Describe(downTheHole), Wind.IsCalm, Wind.SpeedMPH);
             ShowScore();
@@ -1047,21 +1060,25 @@ namespace GolfArcade.Game
             golfer.SetVisible(false);
             hud.SetStatus("");
             hud.SetTempo("");
+            yield return 0.9f;
             // The showcase: HUD away, the tournament's title over the flyover; then the
             // introductions on the tee, you and the gallery behind the rope.
             hud.ShowPlayHud(false);
             string windWords = Wind.IsCalm ? "Calm today" : $"Wind   ·   {Wind.Describe(downTheHole)}";
             if (Match != null && Match.LocalCount > 1) windWords = $"{Match.Current.Name}'s turn   ·   {windWords}";
-            hud.ShowHoleIntro(Tournament, hole.Number, hole.Name, hole.Par, hole.Length, windWords);
+            hud.ShowHoleIntro(Tournament, hole.PlayNumber, hole.Name, hole.Par, hole.Length, windWords);
             var teeLine = TeeAim();
             golfer.Stand(ball.position, teeLine);
             gallery.gameObject.SetActive(true);
             gallery.Place(hole, golfer.transform.position, teeLine, hole.Number * 31 + holeIndex);
             meeting = cheered = false;
+            yield return 0.94f;
             signature = SignatureShot.Load(hole.Number, holeView);
             cinematic?.Destroy();
             cinematic = signature != null ? CinematicRig.Load(hole.Number, holeView) : null;
             signatureLanding = 0; signaturePlaying = overviewPlaying = false;
+            yield return 0.98f;
+            holeOutShown = false;
             rig.RestoreFov();
             rig.SnapNext();
             Enter(State.Intro);
@@ -1249,6 +1266,7 @@ namespace GolfArcade.Game
                 shotResultPanel.gameObject.SetActive(false);
                 hud.ShowPlayHud(s is not (State.Menu or State.Golfer or State.RoundDone));
             }
+            if (s != State.Result && holeOutCard && holeOutCard.Showing) { holeOutCard.Hide(); leavingResult = true; }
             Current = s; stateTime = 0;
             if (leavingResult) RefreshControls();
             if (s is not (State.Menu or State.Golfer)) stage?.Hide();
@@ -1391,7 +1409,7 @@ namespace GolfArcade.Game
                 golfer.Stand(ball.position, teeLine);
                 golfer.SetVisible(true);
                 golfer.Perform("Wave");
-                hud.ShowNameplate(Match?.Current?.Name ?? "YOU", $"On the tee   ·   Hole {hole.Number}");
+                hud.ShowNameplate(Match?.Current?.Name ?? "YOU", $"On the tee   ·   Hole {hole.PlayNumber}");
                 rig.SnapNext();
             }
             var feet = golfer.transform.position;
@@ -1457,7 +1475,7 @@ namespace GolfArcade.Game
             for (int i = 0; i < pars.Length; i++) { pars[i] = course.Holes[i].Par; strokes[i] = Card.StrokesOn(i); }
             strokes[holeIndex] ??= holeStrokes;
             string who = Match != null && !Match.IsSolo ? $"{Match.Current.Name}   ·   " : "";
-            hud.SetScoreboard($"{Tournament}   ·   {who}Hole {hole.Number}", pars, strokes, holeIndex);
+            hud.SetScoreboard($"{Tournament}   ·   {who}Hole {hole.PlayNumber}", pars, strokes, holeIndex);
             hud.SetScore(Card.Total, Card.ToPar, holeStrokes);
         }
 
@@ -1947,7 +1965,7 @@ namespace GolfArcade.Game
             {
                 hud.EnterControllerLayout(rig.Camera);
                 hud.Controller.OnClub = i => SelectClub(GolfClubs.All[i]);
-                if (hole != null) hud.SetHole(hole.Number, hole.Par, hole.Length, hole.Picture, hole.Name);
+                if (hole != null) hud.SetHole(hole.PlayNumber, hole.Par, hole.Length, hole.Picture, hole.Name);
                 ShowScore();
                 ShowControllerForState();
             }
@@ -2102,6 +2120,7 @@ namespace GolfArcade.Game
             if (NativeSportsSession.Active && !NativeControlled) return;
             if (NetworkFrame()) return;
             ErrorGuard.Pump();
+            if (loadingHole) return;   // the next hole is being built behind the loading screen
             try
             {
                 if (InjectFault) { InjectFault = false; throw new InvalidOperationException("a fault injected for the tests"); }
@@ -2275,8 +2294,10 @@ namespace GolfArcade.Game
                     }
                     if (networkConfigured) shotResultPanel?.SetCountdown(NetworkResultSeconds, "NEXT PLAYER");
                     else shotResultPanel?.SetCountdown(Mathf.Max(0,Mathf.Max(3f,ResultReactionSeconds)-stateTime),"NEXT SHOT");
-                    if(resultHeroCamera) rig.FrameCharacterResult(golfer.transform); else rig.FrameShotResult();
-                    if (!networkConfigured && stateTime >= Mathf.Max(3f,ResultReactionSeconds)) ContinueShotResult();
+                    if (HoleOutShowing) holeOutCard.SetCountdown(Mathf.Max(0, HoleOutSeconds - stateTime), HoleOutSeconds);
+                    if (holeOutShown) rig.FrameHoleOut(golfer.transform);
+                    else if(resultHeroCamera) rig.FrameCharacterResult(golfer.transform); else rig.FrameShotResult();
+                    if (!networkConfigured && stateTime >= Mathf.Max(3f,ResultReactionSeconds,resultHold)) ContinueShotResult();
                     break;
 
                 case State.Replay:
@@ -2291,7 +2312,7 @@ namespace GolfArcade.Game
                         // another golfer on this phone still to hole out: their shot, from their ball
                         if (PassTheClub()) break;
                         RefreshControls();
-                        if(NativeControlled && holeIndex+1<course.Holes.Length) { NextPresentationHole(); }
+                        if((NativeControlled || holeOutShown) && holeIndex+1<course.Holes.Length) { NextPresentationHole(); }
                         else { ShowRoundCard(); Enter(State.RoundDone); }
                     }
                     break;
@@ -2460,7 +2481,7 @@ namespace GolfArcade.Game
             if (!more) RecordRound();
             if (!more && setup?.Mode == PlayMode.Tournament) { ShowOpenCard(); return; }
             hud.ShowScorecard(Card,
-                round ? "Round complete" : $"Hole {hole.Number} complete",
+                round ? "Round complete" : $"Hole {hole.PlayNumber} complete",
                 round ? null : strokes <= hole.Par ? holeScore + "!" : holeScore,
                 new[]
                 {
@@ -2517,7 +2538,7 @@ namespace GolfArcade.Game
                     : Match.Format == MatchFormat.LongestDrive ? $"{winner.Name} is longest"
                     : $"{winner.Name} wins the hole";
             }
-            string title = Match.IsContest ? Match.FormatName(Match.Format) : round || !more ? "Round complete" : $"Hole {hole.Number} complete";
+            string title = Match.IsContest ? Match.FormatName(Match.Format) : round || !more ? "Round complete" : $"Hole {hole.PlayNumber} complete";
             hud.ShowScorecard(Card, title, headline, tiles, more, rows);
             hud.PlayAgain.Pressed = PlayAgain;
             hud.RoundMenu.Pressed = ShowMenu;
@@ -2571,7 +2592,7 @@ namespace GolfArcade.Game
         /// new room).
         public void PlayAgain()
         {
-            if (Current != State.RoundDone) return;
+            if (Current != State.RoundDone || loadingHole) return;
             if (setup?.Mode == PlayMode.Online) { ShowMenu(); ChooseMode(PlayMode.Online); OpenLobby(Lobby.Page.Online); return; }
             if (setup?.Mode == PlayMode.Tournament)
             {
@@ -2584,17 +2605,18 @@ namespace GolfArcade.Game
                 setup = GameSetup.Tournament(open, players);
             }
             hud.ShowPlayHud(true);
+            coverNextRoundStart = true;
             StartRound();
         }
 
         /// From the card on to the round's next hole.
         public void NextHole()
         {
-            if (Current != State.RoundDone || holeIndex + 1 >= course.Holes.Length) return;
+            if (Current != State.RoundDone || loadingHole || holeIndex + 1 >= course.Holes.Length) return;
             hud.HideScorecard();
             // two or more on this phone: the first of them on the next hole, as their golfer
-            if (Match.LocalCount > 1 && Match.Advance()) { WearTurn(); StartHole(Match.HoleIndex); return; }
-            StartHole(holeIndex + 1);
+            if (Match.LocalCount > 1 && Match.Advance()) { WearTurn(); StartHoleBehindCover(Match.HoleIndex); return; }
+            StartHoleBehindCover(holeIndex + 1);
         }
 
         /// The end of a round of the Open: this round's card, where the player stands in the
@@ -3045,8 +3067,9 @@ namespace GolfArcade.Game
                 if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.SendHole(holeIndex, holeStrokes);
                 ShowScore();
                 string score = Scorecard.ScoreName(holeStrokes, hole.Par);
+                if (!holeOutShown)   // (the hole-out card has already said it)
                 hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,
-                                $"Hole {hole.Number}  ·  par {hole.Par}", $"{holeStrokes} stroke{(holeStrokes == 1 ? "" : "s")}", 3f);
+                                $"Hole {hole.PlayNumber}  ·  par {hole.Par}", $"{holeStrokes} stroke{(holeStrokes == 1 ? "" : "s")}", 3f);
                 Enter(State.HoleDone);
                 return;
             }

@@ -56,8 +56,8 @@ namespace GolfArcade.Tests
             Assert.AreEqual(7, seven.Number);
             Assert.AreEqual(4, seven.Par);
             Assert.AreEqual(6, seven.Hazards.Length, "hole 7 keeps its six bunkers");
-            var numbers = string.Join(",", cliffside.Holes.Concat(Holes).Select(h => h.Number));
-            Assert.AreEqual("7,12,13,14,15,8,9,10", numbers, "The current Cliffside and Postcards catalogs keep distinct hole numbers");
+            var numbers = string.Join(",", Course.Course.All().SelectMany(c => c.Holes).Select(h => h.Number));
+            Assert.AreEqual("7,8,9,12,15,13,14,17,18,19,20,10,16,21,22,23", numbers, "the three courses deal the sixteen modelled holes out with distinct numbers");
         }
 
         [TestCase(8)]

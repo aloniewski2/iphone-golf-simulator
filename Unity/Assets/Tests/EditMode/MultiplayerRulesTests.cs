@@ -76,7 +76,7 @@ namespace GolfArcade.Tests {
         /// itself), the strike's own speed, spin and thinness kept, from the club and the line the phone swung on.
         [Test] public void GolfHostStrikesTheShotAsSinglePlayerFromTheRough() {
             var m=new NetworkGolfRound(new[]{0,1},20);
-            var hole=GolfArcade.Course.Course.Postcards().Holes[0];
+            var hole=GolfArcade.Course.Course.ByKey("cliffside").Holes[0];   // the round's default course
             GolfArcade.Course.CoursePoint? rough=null;
             for(double d=60;d<hole.Length&&rough==null;d+=4)for(double x=-60;x<=60&&rough==null;x+=2) {
                 var at=new GolfArcade.Course.CoursePoint(hole.Tee.X+x,hole.Tee.D+d);
@@ -108,7 +108,7 @@ namespace GolfArcade.Tests {
         /// A turn starts set up as single player sets one up: along the hole to its next landing, with the club for the distance.
         [Test] public void GolfTurnStartsOnSinglePlayersLineAndClub() {
             var m=new NetworkGolfRound(new[]{0,1},20);
-            var hole=GolfArcade.Course.Course.Postcards().Holes[0];var tee=hole.Tee;var target=hole.RecommendedTarget(tee);
+            var hole=GolfArcade.Course.Course.ByKey("cliffside").Holes[0];var tee=hole.Tee;var target=hole.RecommendedTarget(tee);
             var lie=hole.LieAt(tee);
             foreach(var p in m.State.golfers) {
                 Assert.AreEqual((tee.HeadingTo(target)%360+360)%360,p.heading,1e-9);

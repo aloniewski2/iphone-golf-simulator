@@ -6,20 +6,20 @@ using NUnit.Framework;
 
 namespace GolfArcade.Tests
 {
-    /// Wild Isles (holes 16–20, blender/scripts/hole16_volcano_design.py … hole20_windmill_design.py):
-    /// five holes, each its own world, played as one round. Their water — the lava, a canyon, a
+    /// The Wild Isles holes (16–20, blender/scripts/hole16_volcano_design.py … hole20_windmill_design.py):
+    /// five holes, each its own world, now dealt out over Wild Isles and the Magma Open. Their water — the lava, a canyon, a
     /// lagoon, canals — is water to the ball: a penalty, and a drop; the frozen lake is ice it
     /// skids across and plays on from.
     public class WildIslesTests
     {
-        static Hole Get(int n) => Course.Course.WildIsles().Holes.Single(h => h.Number == n);
+        static Hole Get(int n) => Catalogue.Hole(n);
 
         [Test]
-        public void TheRoundPlaysAllFiveHoles()
+        public void TheRoundPlaysAllSixHoles()
         {
             var course = Course.Course.WildIsles();
-            CollectionAssert.AreEqual(new[] { 16, 17, 18, 19, 20 }, course.Holes.Select(h => h.Number).ToArray());
-            Assert.AreEqual(4 + 5 + 3 + 4 + 4, course.Par);
+            CollectionAssert.AreEqual(new[] { 13, 14, 17, 18, 19, 20 }, course.Holes.Select(h => h.Number).ToArray());
+            Assert.AreEqual(5 + 4 + 5 + 3 + 4 + 4, course.Par);
             Assert.AreEqual("wildisles", course.Key);
             Assert.AreSame(null, Course.Course.WildIsles().Holes.FirstOrDefault(h => !string.IsNullOrEmpty(h.Theme)), "their colours come from the models' own materials");
         }
@@ -31,6 +31,7 @@ namespace GolfArcade.Tests
             CollectionAssert.AllItemsAreUnique(numbers);
             Assert.AreEqual("wildisles", Course.Course.Containing(18).Key);
             Assert.AreEqual("cliffside", Course.Course.Containing(12).Key);
+            Assert.AreEqual("magma", Course.Course.Containing(16).Key, "the volcano's rim is one of the fire holes");
             Assert.AreSame(null, Course.Course.Containing(99));
         }
 

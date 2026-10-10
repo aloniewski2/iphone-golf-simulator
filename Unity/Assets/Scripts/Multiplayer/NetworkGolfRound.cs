@@ -57,7 +57,8 @@ namespace GolfArcade.Multiplayer {
         public NetworkGolfRound(int[] seats,int seed,bool intro=false,string courseKey=null,Course.Course playing=null) {
             if(seats==null||seats.Length<2||seats.Length>4||seats.Distinct().Count()!=seats.Length||seats.Any(s=>s<0||s>3))throw new ArgumentException("Invalid golf seats.");
             intros=intro; random=new Random(seed);
-            course=playing!=null&&playing.Key==(courseKey??"postcards")&&playing.Holes.Length>0?playing:Course.Course.ByKey(courseKey??"postcards")??Course.Course.Postcards();
+            var listed=Course.Course.ByKey(courseKey??"cliffside")??Course.Course.Cliffside();
+            course=playing!=null&&playing.Key==listed.Key&&playing.Holes.Length>0?playing:listed;
             State=new NetworkGolfState {golfers=seats.OrderBy(s=>s).Select(s=>new NetworkGolfer {seat=s,card=new int[course.Holes.Length]}).ToArray()};
             BeginHole(0);
         }

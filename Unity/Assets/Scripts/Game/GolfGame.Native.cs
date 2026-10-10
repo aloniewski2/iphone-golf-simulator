@@ -140,7 +140,7 @@ namespace GolfArcade.Game {
         }
         [System.Serializable] public sealed class ControllerReading {
             public PartyControllerReading party;
-            public int hole,par,clubIndex;
+            public int hole,holeId,par,clubIndex;
             public string name,clubName,mapImage;
             public double yards,wind,windDegrees,clubYards,aimDegrees;
             public ControllerPoint ball,pin,landing,direction;
@@ -156,7 +156,7 @@ namespace GolfArcade.Game {
             if(hole==null || !hud || !minimapCamera) return null;
             bool putting = hole.LieAt(ballAt).IsPuttingSurface();
             var reading=new ControllerReading {
-                hole=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
+                hole=hole.PlayNumber,holeId=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
                 wind=Wind.SpeedMPH,windDegrees=Wind.RelativeTo(heading),
                 clubIndex=System.Array.IndexOf(GolfArcade.Shot.GolfClubs.All,club),
                 clubName=GolfArcade.Shot.GolfClubs.DisplayName(club),clubYards=GolfArcade.Shot.GolfClubs.ReferenceDistanceYards(club),

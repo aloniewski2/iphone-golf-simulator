@@ -303,15 +303,26 @@ namespace GolfArcade.Course
         /// Called after ground/obstacle extraction. Render-only UV repairs cannot change the collision source.
         public void FinishModel(GameObject model)
         {
+            var steps = FinishModelSteps(model);
+            while (steps.MoveNext()) { }
+        }
+
+        /// FinishModel in slices: yields how far along it is (0 to 1) after each pass, so a loading screen can be
+        /// drawn between the slow ones; FinishModel runs it to the end in one go.
+        public IEnumerator<float> FinishModelSteps(GameObject model)
+        {
 #if UNITY_EDITOR
             var physicsToken=GolfVisualPhysicsGate.Begin(model,hole);
 #endif
             GolfPostcardBasalt.Apply(model,hole);
             GolfLandmarkFinish.Apply(model,hole,this);
+            yield return .1f;
             var resort = GolfResortDress.Apply(model,hole);
+            yield return .3f;
             GolfStoneFinish.Apply(model);
             var palms = model.GetComponent<GolfCoursePalms>();
             if (palms && (!resort || !resort.ReplacedAuthoredPlants)) palms.Rebuild();
+            yield return .4f;
             foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (!mf.sharedMesh || !mf.sharedMesh.isReadable || !mf.TryGetComponent(out Renderer r)) continue;
@@ -332,9 +343,13 @@ namespace GolfArcade.Course
                 if (!fall && !smoke) GolfCourseFoam.Feather(mesh,mf.transform);
                 mf.sharedMesh = mesh; r.shadowCastingMode = ShadowCastingMode.Off;
             }
+            yield return .5f;
             GolfCourseFringe.Dress(model,hole);
+            yield return .65f;
             GolfCoastalTurf.Apply(model,hole);
+            yield return .8f;
             GolfSurfaceEdges.Apply(model);
+            yield return .9f;
             GolfSurfaceBatching.Apply(model);
             GolfPlantInstances.Apply(model);
 #if UNITY_EDITOR

@@ -12,7 +12,7 @@ namespace GolfArcade.Game
         ShotResultPanel shotResultPanel;
         string[] resultEmotes = TennisEmotes.Normalize(null);
         public void EquipResultEmotes(string[] ids) => resultEmotes = TennisEmotes.Normalize(ids);
-        public bool ShowingShotResult => Current == State.Result && shotResultPanel && shotResultPanel.gameObject.activeSelf;
+        public bool ShowingShotResult => Current == State.Result && ((shotResultPanel && shotResultPanel.gameObject.activeSelf) || HoleOutShowing);
         public string ShotStatistics { get; private set; }
         public string ShotResultTitle { get; private set; }
         public string ResultEmote => golfer ? golfer.Performing : null;
@@ -48,14 +48,35 @@ namespace GolfArcade.Game
             if (!shotResultPanel) shotResultPanel = ShotResultPanel.Create(transform, rig.Camera);
             BuildSwingCurve();
             string outcome = shot.IsHoled ? "HOLED!" : shot.PenaltyStrokes > 0 ? "PENALTY +1" : shot.Lie.Label();
+            holeOutShown = false; holeOutCard?.Hide();
+            if (shot.IsHoled && UsesHoleOutCard)
+            {
+                // the hole's result, the round so far and the way on are one card; the shot's stats panel stays away
+                ShowHoleOut(shot);
+            }
+            else
+            {
             shotResultPanel.Show(quality, putt ? UiKit.ArcadeYellow : GradeColor(lastReport.Grade), outcome, SwingTiles(true), detail,
                 curvePoints, curveReach, curveTarget,
                 shot.IsHoled || Match?.IsContest == true ? "SCORECARD" : "NEXT SHOT", resultEmotes.Select(TennisEmotes.Name).ToArray(), ContinueShotResult, PlayResultEmote);
             shotResultPanel.AnimateStats(shot.Total,shot.Roll,shot.Apex,putt);
-            // The result waits on a front view so equipped emotes read clearly.
-            golfer.Perform("Idle");
-            resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;
-            if(resultHeroCamera) {bigMomentUsed=true;rig.FrameCharacterResult(golfer.transform);} else rig.FrameShotResult();
+            }
+            // The result waits on a front view so equipped emotes read clearly; on a hole out the golfer reacts to the
+            // score and is framed whole in the clear of the card, free to emote
+            resultHold = 0;
+            if (holeOutShown)
+            {
+                resultHeroCamera = false;
+                var reaction = HoleOutReaction(shot);
+                golfer.Perform(reaction, loop: reaction == "Idle");
+                rig.FrameHoleOut(golfer.transform);
+            }
+            else
+            {
+                golfer.Perform("Idle");
+                resultHeroCamera=PresentationPolicy.BigMoments && !bigMomentUsed && shot.IsHoled && holeStrokes<=hole.Par;
+                if(resultHeroCamera) {bigMomentUsed=true;rig.FrameCharacterResult(golfer.transform);} else rig.FrameShotResult();
+            }
             rig.SnapNext(); rig.ApplyFrame();
         }
 
@@ -63,7 +84,10 @@ namespace GolfArcade.Game
         {
             if (!ShowingShotResult || Time.timeScale <= 0 || selection < 0 || selection > 2) return false;
             string move = TennisEmotes.ExportName(resultEmotes[selection]);
-            return move != null && golfer.Perform(move, loop: false);
+            bool played = move != null && golfer.Perform(move, loop: false);
+            // the game waits for the emote to finish (and a beat after it) before it moves on by itself
+            if (played) resultHold = Mathf.Max(resultHold, stateTime + TennisEmotes.Duration(resultEmotes[selection]) + 0.8f);
+            return played;
         }
 
         public void ContinueShotResult()

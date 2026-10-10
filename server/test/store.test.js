@@ -29,16 +29,16 @@ for (const [name, make] of stores) {
     const renamed = await store.updatePlayer(alex.id, { name: 'Alexandra' });
     assert.deepEqual([renamed.name, renamed.body, renamed.kit, renamed.shirt], ['Alexandra', 0, 1, 2]);
 
-    await store.recordRound({ playerId: alex.id, course: 'cliffside', strokes: [5, 3, 5, 4, 3], toPar: 1 });
-    const stats = await store.recordRound({ playerId: alex.id, course: 'cliffside', strokes: [3, 3, 5, 4, 3], toPar: -1, result: 'won', roomCode: 'ABCD' });
+    await store.recordRound({ playerId: alex.id, course: 'cliffside', strokes: [5, 4, 5, 3, 3], toPar: 1 });
+    const stats = await store.recordRound({ playerId: alex.id, course: 'cliffside', strokes: [3, 4, 5, 3, 3], toPar: -1, result: 'won', roomCode: 'ABCD' });
     assert.equal(stats.roundsPlayed, 2);
     assert.equal(stats.bestToPar, -1);
     assert.equal(stats.matchesWon, 1);
-    await store.recordRound({ playerId: sam.id, course: 'cliffside', strokes: [4, 3, 5, 4, 3], toPar: 0, result: 'lost' });
+    await store.recordRound({ playerId: sam.id, course: 'cliffside', strokes: [4, 4, 5, 3, 3], toPar: 0, result: 'lost' });
 
     const recent = await store.recentRounds(alex.id, 10);
     assert.equal(recent.length, 2);
-    assert.deepEqual(recent[0].strokes, [3, 3, 5, 4, 3], 'newest first');
+    assert.deepEqual(recent[0].strokes, [3, 4, 5, 3, 3], 'newest first');
     assert.equal(recent[0].result, 'won');
 
     const board = await store.leaderboard('cliffside', 10);

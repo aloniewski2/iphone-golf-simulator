@@ -106,7 +106,7 @@ import UIKit
             menu.begin(MenuLaunch(sport: sport, mode: .tutorial), onPhone: true)
             XCTAssertEqual(menu.screen, .map)
             XCTAssertEqual(menu.launch?.mode, sport == .golf ? .round : .exhibition)
-            XCTAssertEqual(menu.mapChoices.count, sport == .golf ? 4 : 3)
+            XCTAssertEqual(menu.mapChoices.count, 3)   // golf: Cliffside, Wild Isles, Magma Open; tennis: three courts
             XCTAssertFalse(SportsSession.shared.active)
             menu.back()
             XCTAssertEqual(menu.screen, .hub(sport))

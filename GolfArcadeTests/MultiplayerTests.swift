@@ -104,7 +104,7 @@ final class MultiplayerTests: XCTestCase {
     func testSharedPhoneGuestsLoadWithHostAndKeepIndependentLooks() throws {
         let bus=Bus(); let phone=bus.link("host"); let host=MultiplayerService(sendToRuntime:{_ in true},pollRuntime:{nil})
         host.onMatchRequested={ _ in }; defer { host.leave() }
-        try host.host(using:phone,sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.host(using:phone,sharedPhone:true);try host.configure(.golf,venue:"cliffside")
         try host.addLocalGuest();try host.addLocalGuest();try host.addLocalGuest()
         XCTAssertEqual(host.lobby?.participants.count,4);XCTAssertTrue(host.lobby!.valid())
         let guests=host.lobby!.participants.filter(\.isGuest)
@@ -117,7 +117,7 @@ final class MultiplayerTests: XCTestCase {
         let bus=Bus(), runtime=Runtime(), remoteRuntime=Runtime()
         let host=runtime.service(), remote=remoteRuntime.service()
         defer { remote.leave();host.leave() }
-        try host.host(using:bus.link("host"),sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.host(using:bus.link("host"),sharedPhone:true);try host.configure(.golf,venue:"cliffside")
         try host.addLocalGuest();try host.addLocalGuest()
         let look=MultiplayerLoadout(skinHex:"A8704E",colours:["shirt":"78C5E8"],emotes:EmoteCatalog.defaults,shirtHex:"78C5E8")
         remote.setIdentity(name:"Sam",female:true,loadout:look)
@@ -703,8 +703,25 @@ final class MultiplayerTests: XCTestCase {
             try p.host.configure(.golf, venue: venue)
             XCTAssertTrue(p.host.lobby!.valid()); XCTAssertEqual(p.services[1].lobby?.venue, venue)
         }
-        XCTAssertThrowsError(try p.host.configure(.tennis, venue: "postcards"))
+        XCTAssertEqual(MultiplayerLobby.golfVenues, ["cliffside", "wildisles", "magma"])
+        XCTAssertEqual(GolfCourseChoice.allCases.map(\.rawValue), MultiplayerLobby.golfVenues)
+        for venue in MultiplayerLobby.golfVenues { XCTAssertThrowsError(try p.host.configure(.tennis, venue: venue)) }
         XCTAssertThrowsError(try p.host.configure(.golf, venue: "../../invalid"))
+    }
+    func testRetiredPostcardsCourseBecomesCliffside() throws {
+        let p = try party(2); defer { p.close() }
+        XCTAssertEqual(MultiplayerLobby.currentGolfVenue("postcards"), "cliffside")
+        XCTAssertEqual(MultiplayerLobby.currentGolfVenue("magma"), "magma")
+        XCTAssertNil(GolfCourseChoice(rawValue: "postcards"))
+        try p.host.configure(.golf); XCTAssertEqual(p.host.lobby?.venue, "cliffside")
+        try p.host.configure(.golf, venue: "postcards"); XCTAssertEqual(p.host.lobby?.venue, "cliffside")
+        XCTAssertThrowsError(try p.host.configure(.tennis, venue: "postcards"))
+        // A lobby from an older host still names the retired course: the guest keeps it as Cliffside instead of dropping it.
+        var old = try XCTUnwrap(p.host.lobby); old.venue = "postcards"; old.revision += 10
+        let payload = String(decoding: try JSONEncoder().encode(old), as: UTF8.self)
+        let raw = try JSONEncoder().encode(MultiplayerPacket(lobbyID: old.id, sender: "a", sequence: 1_000_000, kind: "lobby", payload: payload))
+        try p.bus.links["a"]!.send(raw, to: ["b"], reliable: true)
+        XCTAssertEqual(p.services[1].lobby?.revision, old.revision); XCTAssertEqual(p.services[1].lobby?.venue, "cliffside")
     }
     func testIdentityAndLookReachEveryPeerWithoutChangingSeatsOrReady() throws {
         let p = try party(); defer { p.close() }
@@ -766,7 +783,7 @@ final class MultiplayerTests: XCTestCase {
     func testFourFullLoadoutsStayWithinPacketBudget() throws {
         let look = MultiplayerLoadout(gear:["tennis":["skin":"standard","racket":"standard","shoes":"standard"],"golf":["skin":"standard","club":"standard","shoes":"standard"]],skinHex:"E6AE7E",colours:["shirt":"FFFFFF","shorts":"D3F34B","accent":"FF6B4A","racket":"101D35"])
         let participants = (0..<4).map { MultiplayerParticipant(id:UUID().uuidString,name:String(repeating:"A",count:40),seat:$0,loadout:look) }
-        let lobby = MultiplayerLobby(ownerID:participants[0].id,sport:.golf,venue:"postcards",participants:participants)
+        let lobby = MultiplayerLobby(ownerID:participants[0].id,sport:.golf,venue:"cliffside",participants:participants)
         let json = try JSONEncoder().encode(lobby)
         XCTAssertLessThan(json.count,MultiplayerPacket.maximumBytes)
         let packetBytes = try JSONEncoder().encode(MultiplayerPacket(kind:"lobby",payload:String(decoding:json,as:UTF8.self))).count
