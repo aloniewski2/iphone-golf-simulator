@@ -62,6 +62,42 @@ namespace GolfArcade.PlayTests
             Select(game,GolfClub.Driver);game.NativeClub(-1);yield return null;
             Assert.That(change.text,Is.EqualTo("Driver → Putter"),"bag must wrap in both directions");
         }
+        /// After a full swing, once the ball is down: a replay of the strike from the tee box (behind the golfer, looking up the
+        /// line, the ball followed all the way), the phone offering to skip it, then the result card. A putt goes straight to its result.
+        [UnityTest,Timeout(240000)]
+        public IEnumerator AFullSwingIsReplayedFromTheTeeBoxBeforeItsResult()
+        {
+            int rate=Time.captureFramerate;Time.captureFramerate=30;Time.timeScale=1;
+            yield return SceneManager.LoadSceneAsync("Golf",LoadSceneMode.Single);
+            var game=Object.FindFirstObjectByType<GolfGame>();yield return null;
+            try
+            {
+                game.PrepareNativeAddress();
+                game.JumpToHole(7);game.DropBall(game.CurrentHole.Tee);Select(game,GolfClub.Iron);
+                var cam=game.GameplayCamera;cam.aspect=16f/9f;yield return null;yield return null;
+                game.NativeReady();game.NativeSwing(.8f);
+                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Flight));
+                var origin=HoleView.ToWorld(game.LastShot.Origin);
+                Vector3 line=HoleView.ToWorld(game.LastShot.Landing)-origin;line.y=0;line.Normalize();
+                int frames=0;
+                while(game.Current!=GolfGame.State.Replay&&frames++<1500){yield return null;Assert.That(game.ShowingShotResult,Is.False,"the result waits for the replay");}
+                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Replay),"a full swing is replayed");
+                bool sawLanding=false;frames=0;
+                while(game.Current==GolfGame.State.Replay&&frames++<1500)
+                {
+                    yield return null;if(game.Current!=GolfGame.State.Replay)break;
+                    var behind=Vector3.Dot(cam.transform.position-origin,line);
+                    Assert.That(behind,Is.LessThan(0),"the camera stays at the tee box, behind the ball");
+                    Assert.That(Vector3.Dot(cam.transform.forward,line),Is.GreaterThan(0),"looking up the line");
+                    var p=cam.WorldToViewportPoint(game.BallPosition);
+                    if(Vector3.Distance(game.BallPosition,HoleView.ToWorld(game.LastShot.Landing))<3f&&p.z>0&&p.x>0&&p.x<1&&p.y>0&&p.y<1)sawLanding=true;
+                }
+                Assert.That(sawLanding,Is.True,"the ball is followed down to its landing");
+                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Result));Assert.That(game.ShowingShotResult,Is.True,"then the result");
+                Assert.That(Time.timeScale,Is.EqualTo(1f),"slow motion ends with the replay");
+            }
+            finally{Time.captureFramerate=rate;Time.timeScale=1;}
+        }
         [UnityTest,Timeout(240000)]
         public IEnumerator FlightCutsOnceAtLandingThenBothGolfersCanEmoteAndContinue()
         {

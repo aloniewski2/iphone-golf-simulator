@@ -45,6 +45,10 @@ namespace GolfArcade.Multiplayer {
         public const double SplashSeconds=1.2;
         /// A holed shot's result runs on for the cheer.
         public const double HoledExtraSeconds=2;
+        /// Every full swing is replayed from the tee box before its result (GolfGame), and the replay is given its time: the
+        /// beat to see where the ball finished, the slow-motion strike, the flight and the landing (a holed ball to the cup).
+        public static bool ReplaysShot(GolfClub club)=>club!=GolfClub.Putter;
+        public static double ReplaySeconds(CourseShot shot)=>1.2+4.1+(shot.IsHoled?shot.Duration:Math.Min(shot.Duration,shot.LandingTime+2.0));
         public readonly NetworkGolfState State;
         readonly bool intros; readonly Course.Course course;readonly Random random;readonly long[] lastEvent=new long[4];
         public Action<NetworkGolfShot> Shot;public Action<string> Result;
@@ -115,7 +119,8 @@ namespace GolfArcade.Multiplayer {
             for(int i=0;i<samples;i++){var v=shot.PositionAt(shot.Duration*i/(samples-1));path[i]=new((float)v.x,(float)v.h,(float)v.d);}
             State.shot=new NetworkGolfShot {id=State.shotID,seat=p.seat,hole=State.hole,club=p.club,strokes=p.strokes,penalty=shot.PenaltyStrokes,start=State.time,duration=shot.Duration,
                 carry=shot.Carry,roll=shot.Roll,apex=shot.Apex,restX=shot.Rest.X,restD=shot.Rest.D,nextX=shot.NextPosition.X,nextD=shot.NextPosition.D,holed=shot.IsHoled,lie=shot.Lie.ToString(),path=path,
-                originX=origin.X,originD=origin.D,heading=p.heading,impact=impact,shown=StrikeLead+shot.Duration+(shot.Lie==CourseLie.Water?SplashSeconds:0)};
+                originX=origin.X,originD=origin.D,heading=p.heading,impact=impact,
+                shown=StrikeLead+shot.Duration+(shot.Lie==CourseLie.Water?SplashSeconds:0)+(ReplaysShot(club)?ReplaySeconds(shot):0)};
             State.phase="flight";State.load=0;State.look=0;State.revision++;Shot?.Invoke(State.shot);
         }
         public void Step(double elapsed) {

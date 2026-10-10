@@ -856,7 +856,7 @@ final class SportsSession {
     /// party screen is in front while others play, for the hole's intro and the results.
     private var unityControllerShown = false
     private func updateGolfPhoneController() {
-        let upHere = multiplayerMatchID == nil || (golfController.party?.myTurn == true && ["Aim", "Flight"].contains(golfPhase))
+        let upHere = multiplayerMatchID == nil || (golfController.party?.myTurn == true && ["Aim", "Flight", "Replay"].contains(golfPhase))
         let want = active && sport == "golf" && ready && loading.finished && !paused && !menuPauseVisible
             && !touch && (displayConnected || multiplayerControllerOnly) && upHere
             && !OnboardingFlow.shared.active && finishedMatch == nil

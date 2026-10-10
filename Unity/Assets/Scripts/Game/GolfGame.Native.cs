@@ -8,6 +8,9 @@ namespace GolfArcade.Game {
         public static event System.Action ShotStruck;
         public bool NativeControlled { get; private set; }
         public bool NativeHasNextHole => Current == State.RoundDone && holeIndex + 1 < course.Holes.Length;
+        /// The state the app's screens follow: the beat before a replay already counts as the replay
+        /// (the result's screen waits for the result).
+        public string NativePhase => Current == State.Result && replayFirst ? nameof(State.Replay) : Current.ToString();
         public static event System.Action NativeExitRequested;
         void RequestNativeExit() { enabled = false; NativeExitRequested?.Invoke(); }
         public Camera GameplayCamera => rig ? rig.Camera : null;
@@ -30,6 +33,7 @@ namespace GolfArcade.Game {
         }
         public void NativeContinue() {
             if(Current==State.Intro) { SkipPresentation(); return; }
+            if (Current == State.Replay || (Current == State.Result && replayFirst)) { SkipReplay(); return; }
             if (Current == State.Result) { ContinueShotResult(); return; }
             if (Current != State.RoundDone) return;
             if (NativeHasNextHole) NextHole(); else PlayAgain();
@@ -78,7 +82,7 @@ namespace GolfArcade.Game {
             var sheet = hud.Controller;
             sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
             sheet.SetScreen(true);
-            sheet.Skip.Pressed = () => { SkipPresentation(); };
+            sheet.Skip.Pressed = () => { if (Current is State.Replay or State.Result) SkipReplay(); else SkipPresentation(); };
             sheet.StartSwing.Pressed = () => NativeStartSwing();
             sheet.Pause.gameObject.SetActive(true);
             sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();

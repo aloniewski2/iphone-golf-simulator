@@ -116,7 +116,7 @@ namespace GolfArcade.Game {
         }
         /// Something went wrong mid-round: never the solo rules. The shot in the air follows the host's path, and the next turn is
         /// lined up again from the host's state.
-        void NetworkFault() { networkSolo=false; networkLineUp=null; }
+        void NetworkFault() { networkSolo=false; networkLineUp=null; replayFirst=false; Time.timeScale=1; hud.ShowReplay(false); }
 
         void NetworkStep(SportsMultiplayer net,NetworkGolfState state) {
             if(state.hole!=networkHole) {
@@ -228,6 +228,8 @@ namespace GolfArcade.Game {
         /// The last shot's flight and result put away, for the next player's turn.
         void EndNetworkShot() {
             if(wasNetworkResult){wasNetworkResult=false;if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);hud.ShowPlayHud(true);}
+            replayFirst=false;
+            if(Current==State.Replay){Time.timeScale=1;hud.ShowReplay(false);rig.ResetZoom();rig.RestoreFov();effects.EndFlight();hole.Windmill?.Drive(null);}
             if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=AimLineSamples;}
             Haptics.Release();sounds.Release();
         }

@@ -68,7 +68,7 @@ namespace GolfArcade.UI
         readonly Transform parent;
         RectTransform root, sheet;
         Image ring;
-        GameObject[] aimParts; GameObject skipPart;
+        GameObject[] aimParts; GameObject skipPart; Text skipLabel;
         Image tvFill;
         Image startFill, startHit; Text startLabel; int startState = -1;
         Text holeText, parText, yardsText, windText, aimText, tvText, nameText;
@@ -329,7 +329,7 @@ namespace GolfArcade.UI
             watch.rectTransform.anchorMin = watch.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             watch.rectTransform.sizeDelta = new Vector2(800, 80); watch.rectTransform.anchoredPosition = Vector2.zero;
             var button = UiKit.Pill(skip, "Skip", Yellow, new Vector2(0.5f, 0.5f), new Vector2(0, -190), new Vector2(560, 150), out var skipFill, 9);
-            Chunky(skipFill.transform, "Label", "SKIP INTRO  ▶", 56, 4f, Color.white, UiKit.Hex("C77800"));
+            skipLabel = Chunky(skipFill.transform, "Label", "SKIP INTRO  ▶", 56, 4f, Color.white, UiKit.Hex("C77800"));
             button.gameObject.AddComponent<Image>().color = Color.clear;
             Skip = button.gameObject.AddComponent<HoldButton>();
             Skip.Fill = skipFill; Skip.RestColor = Yellow;
@@ -342,11 +342,12 @@ namespace GolfArcade.UI
         public bool Shown => root && root.gameObject.activeSelf;
         public bool ShowingIntro => skipPart && skipPart.activeSelf;
 
-        /// The course's opening is playing on the TV: the skip button stands in for the aim pad.
-        public void SetIntro(bool on)
+        /// The course's opening (or a replay) is playing on the TV: the skip button stands in for the aim pad.
+        public void SetIntro(bool on, string skip = "SKIP INTRO  ▶")
         {
             foreach (var part in aimParts) part.SetActive(!on);
             skipPart.SetActive(on);
+            if (skipLabel) skipLabel.text = skip;
         }
 
         public void SetHole(int number, int par, double yards, string name = null)
