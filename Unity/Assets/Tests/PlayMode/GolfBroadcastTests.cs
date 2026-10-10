@@ -63,38 +63,54 @@ namespace GolfArcade.PlayTests
             Assert.That(change.text,Is.EqualTo("Driver → Putter"),"bag must wrap in both directions");
         }
         /// After a full swing, once the ball is down: a replay of the strike from the tee box (behind the golfer, looking up the
-        /// line, the ball followed all the way), the phone offering to skip it, then the result card. A putt goes straight to its result.
+        /// line), then, as the ball comes down, one cut to a camera ahead of the landing looking back at it, the ball seen landing
+        /// and running on; then the result card. Frames go to Library/Captures/replay for a look.
         [UnityTest,Timeout(240000)]
-        public IEnumerator AFullSwingIsReplayedFromTheTeeBoxBeforeItsResult()
+        public IEnumerator AFullSwingIsReplayedFromTheTeeBoxThenWatchedLanding()
         {
             int rate=Time.captureFramerate;Time.captureFramerate=30;Time.timeScale=1;
             yield return SceneManager.LoadSceneAsync("Golf",LoadSceneMode.Single);
             var game=Object.FindFirstObjectByType<GolfGame>();yield return null;
+            string dir=System.Environment.GetEnvironmentVariable("REPLAY_PROOF_DIR")??"Library/Captures/replay";
             try
             {
                 game.PrepareNativeAddress();
-                game.JumpToHole(7);game.DropBall(game.CurrentHole.Tee);Select(game,GolfClub.Iron);
-                var cam=game.GameplayCamera;cam.aspect=16f/9f;yield return null;yield return null;
-                game.NativeReady();game.NativeSwing(.8f);
-                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Flight));
-                var origin=HoleView.ToWorld(game.LastShot.Origin);
-                Vector3 line=HoleView.ToWorld(game.LastShot.Landing)-origin;line.y=0;line.Normalize();
-                int frames=0;
-                while(game.Current!=GolfGame.State.Replay&&frames++<1500){yield return null;Assert.That(game.ShowingShotResult,Is.False,"the result waits for the replay");}
-                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Replay),"a full swing is replayed");
-                bool sawLanding=false;frames=0;
-                while(game.Current==GolfGame.State.Replay&&frames++<1500)
+                foreach(int number in new[]{7,12})
                 {
-                    yield return null;if(game.Current!=GolfGame.State.Replay)break;
-                    var behind=Vector3.Dot(cam.transform.position-origin,line);
-                    Assert.That(behind,Is.LessThan(0),"the camera stays at the tee box, behind the ball");
-                    Assert.That(Vector3.Dot(cam.transform.forward,line),Is.GreaterThan(0),"looking up the line");
-                    var p=cam.WorldToViewportPoint(game.BallPosition);
-                    if(Vector3.Distance(game.BallPosition,HoleView.ToWorld(game.LastShot.Landing))<3f&&p.z>0&&p.x>0&&p.x<1&&p.y>0&&p.y<1)sawLanding=true;
+                    game.JumpToHole(number);game.DropBall(game.CurrentHole.Tee);Select(game,number==12?GolfClub.Iron:GolfClub.Driver);
+                    var cam=game.GameplayCamera;cam.aspect=16f/9f;yield return null;yield return null;
+                    game.NativeReady();game.NativeSwing(.85f);
+                    Assert.That(game.Current,Is.EqualTo(GolfGame.State.Flight));
+                    var origin=HoleView.ToWorld(game.LastShot.Origin);var landing=HoleView.ToWorld(game.LastShot.Landing);
+                    Vector3 line=landing-origin;line.y=0;line.Normalize();
+                    int frames=0;
+                    while(game.Current!=GolfGame.State.Replay&&frames++<1500){yield return null;Assert.That(game.ShowingShotResult,Is.False,"the result waits for the replay");}
+                    Assert.That(game.Current,Is.EqualTo(GolfGame.State.Replay),"a full swing is replayed");
+                    bool sawTee=false,sawLanding=false;int cuts=0;bool wasCut=false;frames=0;int shot=0,sinceCut=0;
+                    while(game.Current==GolfGame.State.Replay&&frames++<1500)
+                    {
+                        yield return null;if(game.Current!=GolfGame.State.Replay)break;
+                        if(game.ReplayCut!=wasCut){wasCut=game.ReplayCut;cuts++;}
+                        if(game.ReplayCut)sinceCut++;
+                        if(sinceCut==1)continue;   // (the camera moves at the end of the frame the cut is made in)
+                        var p=cam.WorldToViewportPoint(game.BallPosition);bool inView=p.z>0&&p.x>0&&p.x<1&&p.y>0&&p.y<1;
+                        if(!game.ReplayCut)
+                        {
+                            Assert.That(Vector3.Dot(cam.transform.position-origin,line),Is.LessThan(0),"first from the tee box, behind the ball");
+                            if(!sawTee&&frames>40){sawTee=true;GameCapture.Save($"{dir}/hole{number}-1-teebox.png",1280,720);}
+                        }
+                        else
+                        {
+                            Assert.That(Vector3.Dot(cam.transform.forward,line),Is.LessThan(.2f),"then looking back at the landing");
+                            if(inView&&Vector3.Distance(game.BallPosition,landing)<4f)sawLanding=true;
+                            if(shot<3&&frames%25==0){shot++;GameCapture.Save($"{dir}/hole{number}-{shot+1}-landing.png",1280,720);}
+                        }
+                    }
+                    Assert.That(cuts,Is.EqualTo(1),"one cut, from the tee box to the landing");
+                    Assert.That(sawLanding,Is.True,"the ball is seen landing");
+                    Assert.That(game.Current,Is.EqualTo(GolfGame.State.Result));Assert.That(game.ShowingShotResult,Is.True,"then the result");
+                    Assert.That(Time.timeScale,Is.EqualTo(1f),"slow motion ends with the replay");
                 }
-                Assert.That(sawLanding,Is.True,"the ball is followed down to its landing");
-                Assert.That(game.Current,Is.EqualTo(GolfGame.State.Result));Assert.That(game.ShowingShotResult,Is.True,"then the result");
-                Assert.That(Time.timeScale,Is.EqualTo(1f),"slow motion ends with the replay");
             }
             finally{Time.captureFramerate=rate;Time.timeScale=1;}
         }

@@ -46,6 +46,8 @@ namespace GolfArcade.Course
         public readonly double LandingTime;
         public readonly double Roll;
         public readonly double Apex;
+        /// The backspin it was struck with, rpm (none for a putt): how fast the ball is drawn spinning.
+        public readonly double SpinRPM;
         public readonly double Duration;
         public bool IsHoled => HoledAt.HasValue;
         /// It caught the cup and spun out (a groan from the gallery).
@@ -472,6 +474,7 @@ namespace GolfArcade.Course
                 // the strike itself: a pure one off the sweet spot flies past the club's number
                 if (double.IsFinite(impact.SpeedBonus)) launch.BallSpeedMPH *= 1 + Clamp(impact.SpeedBonus, -0.2, 0.2);
                 if (double.IsFinite(impact.SpinScatter)) launch.SpinRPM *= 1 + Clamp(impact.SpinScatter, -0.3, 0.3);
+                SpinRPM = launch.SpinRPM;
                 launch.WindMPH = wind.SpeedMPH;
                 launch.WindDegrees = wind.RelativeTo(Heading);
                 var flight = BallFlight.Simulate(launch);

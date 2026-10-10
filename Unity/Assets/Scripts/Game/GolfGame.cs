@@ -94,6 +94,9 @@ namespace GolfArcade.Game
         /// The ball's spin, shown by Codex's stripe: backspin in the air, a roll on the ground.
         Quaternion ballSpin = Quaternion.identity;
         Vector3 lastSpinPos;
+        /// The drawn spin: rad/s about the flight's right-hand axis (negative is backspin), and that
+        /// axis's tilt for a curving ball, degrees.
+        float spinRate, spinTilt;
         const float BallSize = 0.12f;
         /// The ball's visible part, under `ball`: it spins, and swells in flight (BallLook).
         Transform ballBody;
@@ -1755,22 +1758,45 @@ namespace GolfArcade.Game
             return dimpled;
         }
 
-        /// Spin the ball the way Codex's stripe shows it: a slow, readable backspin about the
-        /// flight's axis in the air; on the ground a roll of distance over radius, capped so the
-        /// stripe does not strobe.
-        void SpinBall(Vector3 pos, Vector3 velocity, bool airborne)
+        /// Spin the ball the way it really goes, as Codex's stripe shows it. In the air: the shot's
+        /// own backspin (a wedge whirs, a driver turns over), its axis tilted with the curve, slowly
+        /// wearing off, and slowed to what the eye and a 60 Hz picture can follow without the
+        /// stripe strobing. Down on the turf it checks — a spinning wedge goes on turning backwards
+        /// a moment as it skids — then rolls true over its own size.
+        void SpinBall(Vector3 pos, Vector3 velocity, bool airborne, float shotTime)
         {
+            float dt = Time.deltaTime;
             var flat = velocity; flat.y = 0;
-            if (flat.sqrMagnitude > 1e-4f)
+            if (flat.sqrMagnitude > 1e-4f && dt > 0)
             {
-                var right = Vector3.Cross(Vector3.up, flat.normalized);
-                float angle = airborne ? -3f * Mathf.Rad2Deg * Time.deltaTime
-                                       : Mathf.Min((pos - lastSpinPos).magnitude / 0.06f, 12f * Time.deltaTime) * Mathf.Rad2Deg;
-                ballSpin = Quaternion.AngleAxis(angle, right) * ballSpin;
+                var forward = flat.normalized;
+                var right = Vector3.Cross(Vector3.up, forward);
+                if (airborne)
+                {
+                    spinRate = -VisibleSpin(LastShot != null ? LastShot.SpinRPM : 0) * Mathf.Exp(-Mathf.Max(0, shotTime) / 20f);
+                    spinTilt = LastShot != null ? (float)LastShot.Curve : 0;
+                }
+                else
+                {
+                    float radius = Mathf.Max(0.02f, ballLook.DrawnDiameter * 0.5f);
+                    float roll = Mathf.Min(flat.magnitude / radius, MaxRollSpin);
+                    spinRate = Mathf.MoveTowards(spinRate, roll, TurfSpinGrip * dt);
+                    spinTilt = Mathf.MoveTowards(spinTilt, 0, 60f * dt);
+                }
+                var axis = Quaternion.AngleAxis(spinTilt, forward) * right;
+                ballSpin = Quaternion.AngleAxis(spinRate * Mathf.Rad2Deg * dt, axis) * ballSpin;
             }
             lastSpinPos = pos;
             ballBody.localRotation = ballSpin;
         }
+
+        /// Backspin as drawn, rad/s: real spin is 40–170 turns a second, which a 60 Hz picture can only
+        /// strobe; drawn at a twentieth of that over a base, a driver turns about 4 times a second and
+        /// a lob wedge 10.
+        static float VisibleSpin(double rpm) => (float)(Math.Min(10, 1.5 + Math.Max(0, rpm) / 60 * 0.05) * 2 * Math.PI);
+        /// The fastest the roll is drawn (about 6 turns a second) and how fast the turf takes the
+        /// backspin off a landing ball (rad/s²: a wedge checks for about a quarter of a second).
+        const float MaxRollSpin = 40f, TurfSpinGrip = 320f;
 
         void UpdateAimVisuals()
         {
@@ -2041,7 +2067,7 @@ namespace GolfArcade.Game
             aimDots.Hide();
             flightTime = -toBall; // the ball leaves when the club gets to it
             lastBallPos = ball.position;
-            Bounces = 0; lastHeight = 0; trailing = false;
+            Bounces = 0; lastHeight = 0; trailing = false; spinRate = 0; spinTilt = 0;
             var quality = Judge(LastShot);
             effects.SetQuality(quality);
             // the map: the plan goes, the shot's own path is drawn as it flies
@@ -2343,7 +2369,7 @@ namespace GolfArcade.Game
                 effects.IceSpray(new Vector3(pos.x, (float)under, pos.z), velocity, velocity.magnitude / 20f);
                 nextSpray = Time.time + 0.06f;
             }
-            SpinBall(pos, velocity, p.h > 0.08);
+            SpinBall(pos, velocity, p.h > 0.08, (float)flightTime);
             var trace = hud.Map.Trace;
             if (splashedAt < 0 && (pos - trace[trace.Count - 1]).sqrMagnitude > 4f) { trace.Add(pos); hud.Map.Changed(); }
 
@@ -2728,6 +2754,7 @@ namespace GolfArcade.Game
             Enter(State.Replay);
             hud.ShowReplay(true);
             hud.HideShotStats();
+            hud.HideLanding();   // (the live shot's stamp: the result card has it after the replay)
             effects.ClearTracer();
             ball.gameObject.SetActive(true);
             ball.position = replayPath[0].pos;
@@ -2736,6 +2763,7 @@ namespace GolfArcade.Game
             golfer.ShowLoad((float)Math.Max(0.3, lastImpact.Backswing));
             replayClock = -0.8f; replayCursor = 0;
             replayStruck = replayLaunched = replayLanded = replayCut = replayDone = false;
+            spinRate = 0; spinTilt = 0;
             rig.SnapNext();
             ReplayCamera(ball.position);
         }
@@ -2761,7 +2789,12 @@ namespace GolfArcade.Game
                 while (replayCursor < replayPath.Count - 2 && replayPath[replayCursor + 1].t <= replayClock) replayCursor++;
                 var a = replayPath[replayCursor]; var b = replayPath[Math.Min(replayCursor + 1, replayPath.Count - 1)];
                 float u = b.t > a.t ? Mathf.Clamp01((replayClock - a.t) / (b.t - a.t)) : 1f;
+                var was = ball.position;
                 ball.position = Vector3.Lerp(a.pos, b.pos, u);
+                // spinning as it did the first time (slowed with the strike's slow motion)
+                float step = Mathf.Max(Time.deltaTime, 1e-4f);
+                bool up = ball.position.y - HoleView.GroundHeight(HoleView.ToCourse(ball.position)) > 0.14;
+                SpinBall(ball.position, (ball.position - was) / step, up, replayClock);
             }
             if (replayLaunched && !replayLanded && club != GolfClub.Putter && replayClock >= LastShot.LandingTime)
             {
@@ -2794,9 +2827,12 @@ namespace GolfArcade.Game
             else if (Current == State.Result && replayFirst) { replayFirst = false; ShowShotResult(); RefreshControls(); }
         }
 
-        /// The replay's camera: the tee box's, low behind the golfer and off the side away from them,
-        /// the lens following the ball away up the line and zooming after it all the way down. A
-        /// putt is watched low behind the ball, trailing it along its line.
+        /// The replay's camera. The tee box's first, low behind the golfer and off the side away from
+        /// them, the strike in slow motion and the lens following the ball up the line; then, as it
+        /// comes down, a cut to a camera beside and ahead of where it lands, looking back at it, so
+        /// the ball drops into the picture, bounces and runs on to where it is going while the
+        /// camera pushes slowly in and turns with it. A putt is watched low behind the ball,
+        /// trailing it along its line.
         void ReplayCamera(Vector3 at)
         {
             var line = shotLine; line.y = 0;
@@ -2809,11 +2845,65 @@ namespace GolfArcade.Game
                 rig.Follow(Grounded(at - line * 1.6f, 0.35f), at + line * 2.5f + Vector3.up * 0.05f, 0.1f, 0.06f);
                 return;
             }
-            var cam = Grounded(originWorld - line * 8f + side * 2.2f, 1.2f);
-            var before = originWorld + line * 3f + Vector3.up * 0.6f;
-            var look = replayLaunched ? Vector3.Lerp(before, at, Mathf.SmoothStep(0, 1, replayClock / 0.35f)) : before;
-            rig.Follow(cam, look, 0.05f, 0.04f);
-            rig.Zoom(Mathf.Clamp((at - cam).magnitude / 26f, 1f, 8f));
+            float land = (float)LastShot.LandingTime;
+            if (land <= 0 || replayClock < Mathf.Max(1.4f, land * 0.62f))
+            {
+                var cam = Grounded(originWorld - line * 8f + side * 2.2f, 1.2f);
+                var before = originWorld + line * 3f + Vector3.up * 0.6f;
+                var look = replayLaunched ? Vector3.Lerp(before, at, Mathf.SmoothStep(0, 1, replayClock / 0.35f)) : before;
+                rig.Follow(cam, look, 0.05f, 0.04f);
+                rig.Zoom(Mathf.Clamp((at - cam).magnitude / 26f, 1f, 8f));
+                return;
+            }
+            if (!replayCut) { replayCut = true; replayCutAt = replayClock; ChooseReplayLandingCamera(line, side); rig.ResetZoom(); rig.SnapNext(); }
+            float since = replayClock - replayCutAt;
+            float push = Mathf.SmoothStep(0, 1, Mathf.Clamp01(since / 4f));
+            // looking where it will come down until it gets there, then with it as it runs on
+            float with = replayClock < land ? 0.35f : Mathf.Lerp(0.35f, 0.8f, Mathf.Clamp01((replayClock - land) / 0.6f));
+            rig.Follow(Vector3.Lerp(replayLandingCamera, replayLandingCameraIn, push), Vector3.Lerp(replayLandingLook, at, with), 0.3f, 0.12f);
+            rig.Zoom(Mathf.Lerp(1.15f, 1.5f, push));
+        }
+
+        Vector3 replayLandingCamera, replayLandingCameraIn, replayLandingLook;
+        float replayCutAt;
+
+        /// Where the replay watches the landing from, as a broadcast's landing-zone camera would: off
+        /// to the side of where the ball comes down and a little ahead, up high enough to see the
+        /// ground it lands on and the run beyond, with nothing (a bank, a cliff) between it and the
+        /// landing or where the ball finishes; the side away from the golfer first, never down at
+        /// the sea. It looks a little back up the line first, where the ball drops in from.
+        void ChooseReplayLandingCamera(Vector3 line, Vector3 side)
+        {
+            var landing = new Vector3(landingSpot.x, (float)landingGround, landingSpot.z);
+            float end = (float)ReplayEnd(LastShot);
+            var rest = replayPath[replayPath.Count - 1].pos;
+            for (int i = replayPath.Count - 1; i > 0 && replayPath[i].t > end; i--) rest = replayPath[i - 1].pos;
+            var runOn = rest - landing; runOn.y = 0;
+            float ahead = Mathf.Clamp(Vector3.Dot(runOn, line) * 0.6f + 4f, 4f, 20f);
+            bool Clear(Vector3 from, Vector3 to)
+            {
+                var gap = to - from;
+                return !Physics.Raycast(from, gap.normalized, out var hit, gap.magnitude) || (hit.point - to).sqrMagnitude < 1f;
+            }
+            Vector3? chosen = null;
+            foreach (float off in new[] { 18f, 24f, 13f })
+                foreach (float sideways in new[] { 1f, -1f })
+                {
+                    if (chosen != null) break;
+                    var c = landing + line * ahead + side * (sideways * off);
+                    c.y = Mathf.Max((float)HoleView.GroundHeight(HoleView.ToCourse(c)), landing.y) + 7f;
+                    if (Clear(c, landing + Vector3.up * 0.4f) && Clear(c, rest + Vector3.up * 0.4f)) chosen = c;
+                }
+            // (nothing clear: high, past the landing and a little off the line)
+            replayLandingCamera = chosen ?? landing + line * 20f + side * 5f + Vector3.up * 8f;
+            // the slow push in, toward the middle of the landing and the run
+            var focus = Vector3.Lerp(landing, rest, 0.5f);
+            var inward = focus - replayLandingCamera; inward.y = 0;
+            replayLandingCameraIn = replayLandingCamera + inward * 0.22f;
+            // where the ball drops in from (and, coming in to a green, a glimpse toward the pin)
+            replayLandingLook = landing - line * 4f + Vector3.up * 1.5f;
+            var pin = HoleView.ToWorld(hole.Pin);
+            if ((pin - rest).sqrMagnitude < 60f * 60f) replayLandingLook = Vector3.Lerp(replayLandingLook, pin, 0.2f);
         }
 
         void EndReplay()
