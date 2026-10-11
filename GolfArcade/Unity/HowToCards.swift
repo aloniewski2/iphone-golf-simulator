@@ -182,7 +182,7 @@ extension HowTo {
         HowToCard(id: "gg-goal", title: "The goal", steps: [
             "Play every hole in as few strokes as you can. The lowest total wins.",
             "Each hole has a par, the strokes a good player takes. Your score shows against par: E, +1, −1 and so on.",
-            "A round is one whole course: Cliffside and Wild Isles have 5 holes, Postcards and Magma Open have 3.",
+            "A round is one whole course: Cliffside and Magma Open have 5 holes, Wild Isles has 6.",
             "One under par is a birdie and two under is an eagle. One over is a bogey.",
         ], art: .golfStance, icon: "flag.fill"),
         HowToCard(id: "gg-shot", title: "Taking a shot", steps: [
