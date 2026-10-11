@@ -7,13 +7,15 @@ namespace GolfArcade.Tennis {
         // They differ when one TV shows both players (view "split"): the court is then drawn from seat 0's end whoever this phone's player is.
         // networkView: "near" (this phone's own TV, its player in front), "split" (the one TV shows both players), "none" (this phone draws
         // nothing: it is only a controller) or "" (spectators, older owners).
-        int networkLocalSide,networkNearSide;string networkView="";readonly int[] networkSwings=new int[2],networkServes=new int[2];
+        int networkLocalSide,networkNearSide;string networkView="";readonly int[] networkSwings=new int[2],networkServes=new int[2],networkEmotes=new int[2];
         string networkScore="",networkPhase="";Vector3 networkPreviousA,networkPreviousB;
         bool networkConfigured;
         long networkContact=-1; int networkBounces;
         public float TossSeenAgo=>Mathf.Clamp(Lag+TossInputDelay,0,.25f);
+        /// Online, the other player chose an emote for this intro or point (it plays in place of the rival's default intro clip).
+        public bool NetworkOpponentEmoted=>networkConfigured&&(networkNearSide==0||networkNearSide==1)&&networkEmotes[1-networkNearSide]>0;
         public void ConfigureNetwork(NetworkConfiguration c) {
-            networkConfigured=true;networkContact=-1;networkBounces=0;
+            networkConfigured=true;networkContact=-1;networkBounces=0;System.Array.Clear(networkEmotes,0,networkEmotes.Length);
             NativeControlled=true;AutoPlay=false;Drill=false;AimPractice=false;
             networkLocalSide=c.Seat(c.localID);networkView=c.LocalView??"";
             networkNearSide=NetworkConfiguration.NearSide(networkLocalSide,networkView);
@@ -91,6 +93,15 @@ namespace GolfArcade.Tennis {
                 var actor=i==n?Player:Opponent;var p=s.players[i];
                 if(p.serves!=networkServes[i]){networkServes[i]=p.serves;actor.Serve(p.power);}
                 else if(p.swings!=networkSwings[i]){networkSwings[i]=p.swings;if(!(i==networkLocalSide&&actor.Swinging))actor.Swing(p.power,false);}
+                // A player's chosen emote (the intro and between points): the host counts each one, and this phone plays it on that
+                // player's hero once. One that is over, or whose moment passed, is only remembered.
+                if(p.emoteSequence!=networkEmotes[i]) {
+                    if(s.time>=p.emoteUntil||s.phase!="intro"&&s.phase!="point")networkEmotes[i]=p.emoteSequence;
+                    else if(TennisEmotes.TryClip(p.emoteID,out var clip)) {
+                        var driver=actor.GetComponentInChildren<HeroTennisDriver>();
+                        if(driver&&driver.PlayEmote(clip))networkEmotes[i]=p.emoteSequence;
+                    }
+                }
             }
             float dt=Mathf.Max(.001f,Time.unscaledDeltaTime);
             Player.Tick(dt,(Player.transform.position-networkPreviousA).x/dt);Opponent.Tick(dt,(Opponent.transform.position-networkPreviousB).x/dt);

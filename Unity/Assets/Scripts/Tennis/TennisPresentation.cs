@@ -171,7 +171,9 @@ namespace GolfArcade.Tennis
                 fov = 40;
                 if (!rivalEmoted && s > .35f)
                 {
-                    rivalEmoted = true; game.Opponent.PlayIntro();
+                    rivalEmoted = true;
+                    // (online, a player who picked their own emote plays that one instead)
+                    if (!game.NetworkOpponentEmoted) game.Opponent.PlayIntro();
                     var driver = game.Opponent.GetComponentInChildren<HeroTennisDriver>();
 
                 }
