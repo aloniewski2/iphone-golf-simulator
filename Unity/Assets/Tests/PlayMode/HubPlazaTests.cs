@@ -109,6 +109,32 @@ namespace GolfArcade.Tests
             Assert.Less(Time.realtimeSinceStartup - t0, .7f, "a push on the stick gets there at once");
         }
 
+        /// TOAST: the phone's `hubToast` shows a message in the TV corner (an invite arrived, a friend is joining) for a few seconds; a
+        /// newer one replaces it; it never blocks the plaza (no pause, the stick still walks).
+        [UnityTest, Timeout(300000)] public IEnumerator AToastShowsOnTheTvAndGoesAway()
+        {
+            yield return BootHub();
+            var hub = HubWorld.Find(); Assert.IsNotNull(hub);
+            Assert.AreEqual("", hub.ToastShown);
+            bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message { version = 1, session = "hub-test", action = "hubToast", mode = "Sam invited you · Tennis · accept on your phone" }));
+            yield return null;
+            Assert.AreEqual("Sam invited you · Tennis · accept on your phone", hub.ToastShown);
+            if (!string.IsNullOrEmpty(ProofDir))
+            {
+                // the toast is a screen overlay, so a camera render would not include it: capture the screen itself
+                yield return new WaitForEndOfFrame();
+                var shot = ScreenCapture.CaptureScreenshotAsTexture(); Directory.CreateDirectory(ProofDir);
+                File.WriteAllBytes(Path.Combine(ProofDir, "toast_invite.png"), shot.EncodeToPNG()); Object.Destroy(shot);
+            }
+            hub.ShowToast("Joining Sam…", .4f); Assert.AreEqual("Joining Sam…", hub.ToastShown, "the newer message replaces it");
+            hub.Player.SetStick(0, 1, .5f); yield return new WaitForSeconds(.3f); hub.Player.SetStick(0, 0, 0);
+            Assert.Greater(hub.Player.transform.position.z, HubLayout.Spawn.z + .1f, "walking works under a toast");
+            yield return new WaitForSeconds(.5f);
+            Assert.AreEqual("", hub.ToastShown, "it goes away by itself");
+            bridge.Receive(JsonUtility.ToJson(new NativeSportsSession.Message { version = 1, session = "hub-test", action = "hubToast", mode = "" }));
+            yield return null; Assert.AreEqual("", hub.ToastShown, "an empty message shows nothing");
+        }
+
         [UnityTest, Timeout(300000)] public IEnumerator HubBootsFromTheNativeStartAndRendersThePlaza()
         {
             float t0 = Time.realtimeSinceStartup;

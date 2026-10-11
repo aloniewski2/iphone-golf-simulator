@@ -247,8 +247,11 @@ final class HubSession {
         if afterSheet { DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in self?.presentInvite() } }
         else { presentInvite() }
     }
-    /// What opens Game Center's invite sheet (tests count the calls instead: no Game Center in the simulator).
-    @ObservationIgnored var presentInvite: @MainActor () -> Void = { TennisMenu.shared.online.inviteFromPlaza(TennisMenu.shared) }
+    /// What an Invite does: opens the Club Hub (friends, who is online, one tap to invite). Game Center's own invite sheet is still
+    /// there as "Invite from Game Center" inside it. Tests count the calls instead.
+    @ObservationIgnored var presentInvite: @MainActor () -> Void = { ClubHub.shared.hubOpen = true; ClubHub.shared.start() }
+    /// A short message on the TV in the plaza (an invite arrived, a friend is joining): Unity draws it over the plaza.
+    func toast(_ text: String) { command("hubToast", mode: text) }
     /// ☰ shortcut: walk there (a quick fade) and use it.
     func openStation(_ id: String) { command("hubUse", mode: id); haptic() }
     func backToPlaza() {
@@ -366,7 +369,7 @@ final class HubSession {
     func debugBoot(session: String) { sessionID = session; token = 7; phase = .booting; loadProgress = 0; sendStart() }
     func debugPartyTick() { partyTick() }
     func debugReset() { timer?.invalidate(); timer = nil; phase = .off; loaded = false; loadProgress = 0; arriving = false; zone = nil; station = nil; returnBay = nil; place = "plaza"; notice = ""; lookSent = ""; debugSent = nil
-        presentInvite = { TennisMenu.shared.online.inviteFromPlaza(TennisMenu.shared) } }
+        presentInvite = { ClubHub.shared.hubOpen = true; ClubHub.shared.start() } }
     #endif
 
     // MARK: party (PLAN §4: friends in your plaza, sitting together, Call party)

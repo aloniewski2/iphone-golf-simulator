@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 @MainActor
 final class SportsDisplays: NSObject {
@@ -265,6 +266,19 @@ final class SportsDisplays: NSObject {
 }
 
 final class SportsAppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // invites as notifications: the delegate and the Join / Not now actions (permission is asked later, after the first invite)
+        UNUserNotificationCenter.current().delegate = ClubNotificationDelegate.shared
+        ClubPush.registerCategories()
+        return true
+    }
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        ClubHub.shared.setPushToken(deviceToken.map { String(format: "%02x", $0) }.joined(), env: ClubPush.environment)
+    }
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        // (no Push Notifications capability in this build, or no network: invites still arrive in the game)
+        SportsDiagnostics.write("push registration failed: \(error.localizedDescription)")
+    }
     func application(_ application:UIApplication, supportedInterfaceOrientationsFor window:UIWindow?) -> UIInterfaceOrientationMask {
         if SportsDisplays.shared.isPreview(window) || window?.windowScene?.session.role == .windowExternalDisplayNonInteractive { return .landscape }
         return .portrait

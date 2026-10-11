@@ -326,8 +326,8 @@ final class TennisMenu {
         case "partyLocal": show(.localChoice)
         case "partyOnline": show(.onlineChoice)
         case "onlineQuick": online.select("partyOnline", menu: self)
-        // in the Plaza: Game Center's invite sheet only (friends land in the plaza); on the phone menu: invite into the lobby screen
-        case "homeInvite": if HubSession.shared.drivesPhone { HubSession.shared.inviteFriends() } else { online.select("net-invite", menu: self) }
+        // Play with Friends opens the online hub (friends, invites); its "Invite from Game Center" is the old sheet
+        case "homeInvite": HubSession.shared.inviteFriends()
         case "homeEmotes": homeEmote = nil; show(.homeEmotes)
         case let emote where emote.hasPrefix("home-emote-"):
             homeEmote = String(emote.dropFirst(11)); homeEmoteSequence += 1

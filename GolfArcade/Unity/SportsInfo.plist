@@ -6,10 +6,32 @@
 	<true/>
 	<key>CFBundleDisplayName</key>
 	<string>Motion Club Beta</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.motionclub.invite</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>motionclub</string>
+			</array>
+		</dict>
+	</array>
+	<key>ClubHubInviteBaseURL</key>
+	<string></string>
+	<key>ClubHubServerURL</key>
+	<string></string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_motionparty._tcp</string>
 	</array>
+	<key>NSGKFriendListUsageDescription</key>
+	<string>Motion Club shows which of your Game Center friends are online, so you can invite them to play.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Motion Club finds and joins friends’ games on the same Wi-Fi.</string>
 	<key>UIApplicationSceneManifest</key>

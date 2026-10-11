@@ -59,6 +59,25 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
         activeController = controller
         return controller
     }
+    /// A private room for one party, with no Game Center screen: the host and each invited friend ask for a match in the same
+    /// `playerGroup` (a number the host made up for this party), so Game Center pairs exactly them. UNPROVEN on real devices
+    /// (PLAN_OnlineHub_FriendsInvites.md Phase 0): the first friend forms a match of two; later friends are added to it.
+    func privateRoom(group: UInt32, adding: Bool) async throws {
+        guard GKLocalPlayer.local.isAuthenticated else { throw MultiplayerError.unavailable("Game Center is not signed in.") }
+        let request = GKMatchRequest()
+        let players = adding ? 1 : 2
+        request.minPlayers = players; request.maxPlayers = players; request.defaultNumberOfPlayers = players
+        request.playerGroup = Int(group)
+        generation += 1; let token = generation
+        if adding, let match {
+            try await GKMatchmaker.shared().addPlayers(to: match, matchRequest: request)
+            GKMatchmaker.shared().finishMatchmaking(for: match)
+            return
+        }
+        let found = try await GKMatchmaker.shared().findMatch(for: request)
+        guard token == generation else { found.disconnect(); throw CancellationError() }
+        attach(found)
+    }
     func accept(_ invite: GKInvite) throws -> GKMatchmakerViewController {
         guard match == nil else { throw MultiplayerError.invalidOperation("Leave the current lobby before accepting another invitation.") }
         guard activeController == nil else { throw MultiplayerError.invalidOperation("An invitation request is already open.") }

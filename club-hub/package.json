@@ -1,0 +1,19 @@
+{
+  "name": "club-hub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Club Hub: friends presence, in-game invites and invite links for the party-sports game. No gameplay data.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.1"
+  }
+}

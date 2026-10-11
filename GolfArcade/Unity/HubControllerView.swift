@@ -9,7 +9,6 @@ struct HubControllerView: View {
     @State private var emotes = false
     private var session: SportsSession { .shared }
 
-    @State private var partySheet = false
     var body: some View {
         if let bay = hub.station, HubSession.partyBays.contains(bay), hub.party != nil { HubPartyBayPanel(hub: hub) }
         else if hub.panelOpen { HubStationPanel(hub: hub) } else { explore }
@@ -34,10 +33,15 @@ struct HubControllerView: View {
             }
             HStack(spacing: 12) {
                 pill("line.3.horizontal", "Menu", id: "hub-menu") { quickMenu = true }
-                // with nobody in your plaza yet this is Invite: Game Center's invite sheet straight away
-                pill(hub.party == nil ? "person.badge.plus" : "person.2.fill", hub.party.map { "Party · \($0.participants.count)" } ?? "Invite friends", id: "hub-party") {
-                    if hub.party != nil { partySheet = true } else { hub.inviteFriends() }
-                }
+                // one button for everything social: friends online, invites, your party, adding friends
+                pill("person.2.fill", friendsTitle, id: "hub-party") { hub.inviteFriends() }
+                    .overlay(alignment: .topTrailing) {
+                        if ClubHub.shared.unreadInvites > 0 {
+                            Text("\(ClubHub.shared.unreadInvites)").font(IslandUI.font(12, bold: true)).foregroundStyle(IslandUI.navy)
+                                .frame(minWidth: 22, minHeight: 22).background(IslandUI.lime, in: Circle()).offset(x: 4, y: -6)
+                                .accessibilityIdentifier("hub-invite-badge")
+                        }
+                    }
             }
         }
         .foregroundStyle(.white)
@@ -45,13 +49,13 @@ struct HubControllerView: View {
         .background(LinearGradient(colors: [Color(hex: "16294A"), IslandUI.dark], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .preferredColorScheme(.dark)
         .sheet(isPresented: $quickMenu) { HubQuickMenu(hub: hub, dismiss: { quickMenu = false }).presentationDetents([.medium, .large]) }
-        .sheet(isPresented: $partySheet) { HubPartySheet(hub: hub, dismiss: { partySheet = false }).presentationDetents([.medium]) }
         .confirmationDialog("Emote", isPresented: $emotes, titleVisibility: .visible) {
             ForEach(currentEmotes, id: \.self) { id in Button(EmoteCatalog.name(id)) { hub.emote(id) } }
         }
         .accessibilityIdentifier("hub-controller")
     }
 
+    private var friendsTitle: String { hub.party.map { "Friends · \($0.participants.count) here" } ?? "Friends" }
     private var currentEmotes: [String] {
         session.players.indices.contains(session.playerIndex) ? session.players[session.playerIndex].equippedEmotes : EmoteCatalog.defaults
     }
@@ -325,7 +329,7 @@ struct HubQuickMenu: View {
                 Section("Shortcuts") {
                     ForEach(Self.shortcuts, id: \.id) { s in
                         Button {
-                            // inviting needs no walk to the board: Game Center opens at once
+                            // inviting needs no walk to the board: the Friends hub opens at once
                             if s.id == "board-invite" { dismiss(); hub.inviteFriends(afterSheet: true) } else { hub.openStation(s.id); dismiss() }
                         } label: { Label(s.title, systemImage: s.icon) }
                             .accessibilityIdentifier("hub-use-\(s.id)")
@@ -416,36 +420,5 @@ struct HubPartyBayPanel: View {
         .background(LinearGradient(colors: [Color(hex: "16294A"), IslandUI.dark], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
         .preferredColorScheme(.dark)
         .accessibilityIdentifier("hub-party-bay")
-    }
-}
-
-/// Party (☺ button with a party): who is in your plaza, Call party, invite more, leave.
-struct HubPartySheet: View {
-    let hub: HubSession
-    let dismiss: () -> Void
-    var body: some View {
-        NavigationStack {
-            List {
-                Section("In your plaza") {
-                    ForEach(hub.party?.participants.filter { !$0.isGuest } ?? [], id: \.id) { p in
-                        HStack {
-                            Text(p.name); if p.id == hub.party?.ownerID { Text("host").font(.caption.bold()).foregroundStyle(.secondary) }
-                            Spacer(); Text(hub.friendBays[p.id] != nil ? "Seated" : p.id == hub.partyService.localID ? "You" : "Exploring").foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                Section {
-                    if hub.partyService.isOwner, let bay = hub.station, HubSession.partyBays.contains(bay) {
-                        Button { hub.callParty(); dismiss() } label: { Label("Call party to this bay", systemImage: "megaphone.fill") }
-                    }
-                    Button { dismiss(); hub.inviteFriends(afterSheet: true) } label: { Label("Invite more friends", systemImage: "person.badge.plus") }
-                        .accessibilityIdentifier("hub-party-invite")
-                    Button(role: .destructive) { hub.partyService.leave(); dismiss() } label: { Label("Leave party", systemImage: "rectangle.portrait.and.arrow.right") }
-                        .accessibilityIdentifier("hub-party-leave")
-                }
-            }
-            .navigationTitle("Party").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done", action: dismiss) } }
-        }
     }
 }

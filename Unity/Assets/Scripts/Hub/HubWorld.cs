@@ -477,6 +477,33 @@ namespace GolfArcade.Hub
         Vector3 FollowLook() => Player.transform.position + Vector3.up * CameraFor(Place).lookHeight + Vector3.forward * (HubLayout.PlaceOf(Place).outdoor ? 10f : 1.6f);
         void SnapCamera() { cameraSnapped = true; camVelocity = Vector3.zero; if (Camera && Player) FollowCamera(0); }
 
+        // ------------------------------------------------------------------ toast (an invite arrived, a friend is joining)
+        Image toastBox; Text toastText; Coroutine toastRoutine;
+        public string ToastShown => toastBox && toastBox.gameObject.activeSelf ? toastText.text : "";
+        /// A short message in the top-right corner of the TV, for ~4 s (a newer one replaces it).
+        public void ShowToast(string text, float seconds = 4f)
+        {
+            if (!overlay || string.IsNullOrEmpty(text)) return;
+            if (!toastBox)
+            {
+                toastBox = new GameObject("Toast").AddComponent<Image>(); toastBox.transform.SetParent(overlay.transform, false);
+                toastBox.color = new Color(.063f, .141f, .239f, .94f); toastBox.raycastTarget = false;
+                var rt = toastBox.rectTransform; rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1, 1);
+                rt.anchoredPosition = new Vector2(-40, -40); rt.sizeDelta = new Vector2(620, 92);
+                var bar = new GameObject("Accent").AddComponent<Image>(); bar.transform.SetParent(toastBox.transform, false); bar.color = new Color(.843f, .941f, .267f); bar.raycastTarget = false;
+                var br = bar.rectTransform; br.anchorMin = Vector2.zero; br.anchorMax = new Vector2(0, 1); br.pivot = new Vector2(0, .5f); br.sizeDelta = new Vector2(10, 0); br.anchoredPosition = Vector2.zero;
+                toastText = new GameObject("Text").AddComponent<Text>(); toastText.transform.SetParent(toastBox.transform, false);
+                toastText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); toastText.fontSize = 30; toastText.fontStyle = FontStyle.Bold;
+                toastText.color = new Color(1, .976f, .933f); toastText.alignment = TextAnchor.MiddleLeft; toastText.raycastTarget = false;
+                toastText.horizontalOverflow = HorizontalWrapMode.Wrap; toastText.verticalOverflow = VerticalWrapMode.Truncate;
+                var tr = toastText.rectTransform; tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one; tr.offsetMin = new Vector2(30, 6); tr.offsetMax = new Vector2(-18, -6);
+            }
+            toastText.text = text; toastBox.gameObject.SetActive(true);
+            if (toastRoutine != null) StopCoroutine(toastRoutine);
+            toastRoutine = StartCoroutine(HideToast(seconds));
+        }
+        IEnumerator HideToast(float seconds) { yield return new WaitForSecondsRealtime(seconds); if (toastBox) toastBox.gameObject.SetActive(false); toastRoutine = null; }
+
         // ------------------------------------------------------------------ overlay: fade + prompt
         void BuildOverlay()
         {

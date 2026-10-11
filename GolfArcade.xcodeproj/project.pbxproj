@@ -84,6 +84,7 @@
 		328BAEFFAB03041BF39AD435 /* NativeGolfEquipment_Iron.json in Resources */ = {isa = PBXBuildFile; fileRef = 8B38214877A0FD78D95C2983 /* NativeGolfEquipment_Iron.json */; };
 		334F63892EDF50143C517101 /* scene-court.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3B258AB1144127B99125F43D /* scene-court.jpg */; };
 		33BDB251CF82D633B9A9AEC9 /* MatchHero_Female_Swing_02.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 806F6A159911A601CF020CD2 /* MatchHero_Female_Swing_02.lzfse */; };
+		3581E5484F1900DB3E3CEA66 /* HubProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE43BA304A8DD3C0ABF1DD1C /* HubProtocol.swift */; };
 		35D3C3FF2A61C7A7FBB0EC44 /* MatchHeroSurfaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F7EE1C30D7D17838BAB1C0 /* MatchHeroSurfaces.swift */; };
 		366CF44387D076BE69A106F0 /* MatchHero_Kit_Female_ShoeR_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = F56A37D45E5B634084CC22D8 /* MatchHero_Kit_Female_ShoeR_N.ktx */; };
 		36A44D079A055A3FA7BFE25C /* MatchHero_GolfKit_Female_ShoeR_M.png in Resources */ = {isa = PBXBuildFile; fileRef = D96FFE86B73D0058E8B63A0D /* MatchHero_GolfKit_Female_ShoeR_M.png */; };
@@ -157,6 +158,7 @@
 		78DA2A51D280F520BBEE585B /* Club_terrace_Albedo.png in Resources */ = {isa = PBXBuildFile; fileRef = 011806AC966CBE3ED45C047C /* Club_terrace_Albedo.png */; };
 		7944D3590FFF57A35627FC15 /* MatchHero_OriginalSeam_RelativeSkinPigment.png in Resources */ = {isa = PBXBuildFile; fileRef = F5A4AA45FA5E629B87575B4F /* MatchHero_OriginalSeam_RelativeSkinPigment.png */; };
 		7A4108E2D715E60C0E9050C1 /* OFL-Bricolage.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8945EA9CBFC2BD34E2A21E0D /* OFL-Bricolage.txt */; };
+		7AAD1DC22A75F9F2AB286173 /* HubTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C655C58AD340C3EC685F93 /* HubTransport.swift */; };
 		7B0802588F9D1E80BABF06A3 /* MatchHero_GolfKit_Female_GloveL_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 1D9BE332CB8FEB290DE9470A /* MatchHero_GolfKit_Female_GloveL_N.ktx */; };
 		7C046B7B194FCB69023070D1 /* MatchHero_Female_Distance_Swing_10.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = BE618CE709910FEB55C866A9 /* MatchHero_Female_Distance_Swing_10.lzfse */; };
 		7D292C7CF10F1B237AE1A73F /* map-skyscraper.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8D017E26BCE2FAC8629675E1 /* map-skyscraper.jpg */; };
@@ -193,6 +195,7 @@
 		8CFF6D7C412B0B38FD78E5A8 /* MatchHero_Female_Distance_Swing_00.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 81CFA8F573CA00D29305C349 /* MatchHero_Female_Distance_Swing_00.lzfse */; };
 		8E9F6C94B5502C926B30A423 /* MatchHero_Kit_Male_Bottom_M.png in Resources */ = {isa = PBXBuildFile; fileRef = C16E891BD0C5FC067BE17256 /* MatchHero_Kit_Male_Bottom_M.png */; };
 		8EBF0CE302379FCD7363CAC8 /* MatchHero_GolfKit_Female_ShoeL_M.png in Resources */ = {isa = PBXBuildFile; fileRef = 7499342A5F9DD3EBED5522E1 /* MatchHero_GolfKit_Female_ShoeL_M.png */; };
+		8F3F333938B8C9201C35964F /* ClubHubLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83688562E372EED68FDC7AA9 /* ClubHubLive.swift */; };
 		8FA8D10C355BFE1D4DFD29B2 /* MatchHero_Female_Distance_Swing_06.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 76D12F11A7C855C4D7FD2CD7 /* MatchHero_Female_Distance_Swing_06.lzfse */; };
 		901644F2868A71ED2C61518A /* MatchHero_Kit_Female_ShoeL.png in Resources */ = {isa = PBXBuildFile; fileRef = A17D5458A6FB4D51DEE97B0C /* MatchHero_Kit_Female_ShoeL.png */; };
 		914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED03ED1E0A6F257F99BF5D8 /* HandGestureRecognizer.swift */; };
@@ -206,6 +209,7 @@
 		96A893543448E9FB2727DAA9 /* MatchHero_Kit_Female_ShoeR_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 7E207CC32C3C5BB0F188F7B3 /* MatchHero_Kit_Female_ShoeR_M.ktx */; };
 		96AEB85B79D7387FEE898AA2 /* SteeringFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C9D04EF0E3B8AC9D6BEBF1 /* SteeringFilter.swift */; };
 		9740CFD126C4A5DA823662EB /* MatchHero_Kit_Female_SockR_M.png in Resources */ = {isa = PBXBuildFile; fileRef = 8ED62DCDE4CE47A3657B7AC4 /* MatchHero_Kit_Female_SockR_M.png */; };
+		9770CDA57E0C2704FC90F5D6 /* FriendsSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B232CE6E3C8012BBE2703FC5 /* FriendsSource.swift */; };
 		97B3C3B4F8C5CA6D53147EBE /* ClubEnvironmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F29DC48B3EB295DF03338EB /* ClubEnvironmentView.swift */; };
 		97B52EAAA71A32C237BE3C1D /* HubPartyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D92DD52FA22B197EE74FD6B /* HubPartyTests.swift */; };
 		97F38DE01104890E946AFC6F /* MatchHero_GolfKit_Male_ShoeL_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = F08E7BE24F4435572016F17D /* MatchHero_GolfKit_Male_ShoeL_N.ktx */; };
@@ -244,6 +248,7 @@
 		B2F82E3A41121B1554CB0348 /* MatchHero_Male_Rig.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = F275F4DBB075EF1036A55EB5 /* MatchHero_Male_Rig.lzfse */; };
 		B33C4993D87324C50F5D3111 /* Club.swift in Sources */ = {isa = PBXBuildFile; fileRef = 188E8707AD95370AAB8E34B6 /* Club.swift */; };
 		B39E3CD2CC6A6CE04D11F4E2 /* MatchHero_Female_Swing_03.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 9DD47118479693A6340D470B /* MatchHero_Female_Swing_03.lzfse */; };
+		B3B38177BB4DF77A699D659C /* ClubHubTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD09DF8795F916C646C71E6 /* ClubHubTests.swift */; };
 		B45560A3BAED9005D150A258 /* LocalMultiplayerTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AF710FE8A57EBCF1D59349 /* LocalMultiplayerTransport.swift */; };
 		B706FFE7C9CF62F4190D666F /* MatchHero_Kit_Male_Bottom_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = A59CD8F16E412BF4DD2F593A /* MatchHero_Kit_Male_Bottom_M.ktx */; };
 		B880B0928DA6D28144BE132D /* MatchHero_GolfKit_Male_Bottom_N.png in Resources */ = {isa = PBXBuildFile; fileRef = 20D35E20A7F71FA65F6BDE65 /* MatchHero_GolfKit_Male_Bottom_N.png */; };
@@ -267,10 +272,12 @@
 		BF86BA622E596426765A757F /* ClubScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2DC9D0DD11083717B3FED /* ClubScreens.swift */; };
 		C032257EF95770FD560F1A32 /* MatchHero_Kit_Female_SockL_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 08421FE396B6C3D507345D00 /* MatchHero_Kit_Female_SockL_M.ktx */; };
 		C10F1F63B0F1B21623B44E0C /* MatchHero_Kit_Male_SockR_M.png in Resources */ = {isa = PBXBuildFile; fileRef = AC31CD2E2AC7CF454B784270 /* MatchHero_Kit_Male_SockR_M.png */; };
+		C15C00BC89299D90E36B1099 /* ClubHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921420CDA6EB4738D2B7E00E /* ClubHubView.swift */; };
 		C15DAE6A1371B6B3E246193A /* whoosh.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0CE2987A0883B1BCE38D8429 /* whoosh.wav */; };
 		C18E9B0ABFFCC9371CBD1CAE /* MatchHero_Kit_Male_SockL_N.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 040C5683692FDC7FEC6319F0 /* MatchHero_Kit_Male_SockL_N.ktx */; };
 		C32C3A7F8187B6D850D3971F /* MatchHero_GolfKit_Female_ShoeR_M.ktx in Resources */ = {isa = PBXBuildFile; fileRef = 625A725C7C4B8DA5748DAC06 /* MatchHero_GolfKit_Female_ShoeR_M.ktx */; };
 		C49B7DB7DF9398E29B8BA850 /* MatchHero_GolfKit_Female_GloveR_N.png in Resources */ = {isa = PBXBuildFile; fileRef = C597B51F23218DDED01553BA /* MatchHero_GolfKit_Female_GloveR_N.png */; };
+		C5372800AA82049C4B7928B6 /* ClubHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE5825175C3C9E6CFC66FF6 /* ClubHub.swift */; };
 		C544979930A9EA07BEE792A9 /* MatchHero_Female_Swing_01.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 2C8551A22BA433A5561A608F /* MatchHero_Female_Swing_01.lzfse */; };
 		C62B4B3BD86B5F8D4CB3D997 /* MatchHero_GolfKit_Male_ShoeL_N.png in Resources */ = {isa = PBXBuildFile; fileRef = 2441DB4E9A037195FF6C2D6B /* MatchHero_GolfKit_Male_ShoeL_N.png */; };
 		C6D4D6D21B9B1F8B5748C290 /* MatchHero_Male_Distance_Swing_05.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = B4EEDEB75D509503F6757DCF /* MatchHero_Male_Distance_Swing_05.lzfse */; };
@@ -506,6 +513,7 @@
 		729A941D490A19A40D68163B /* MatchHero_Female_Distance.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MatchHero_Female_Distance.json; sourceTree = "<group>"; };
 		72F7EE1C30D7D17838BAB1C0 /* MatchHeroSurfaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchHeroSurfaces.swift; sourceTree = "<group>"; };
 		7358E83C63E0236F01D13A2B /* MatchHero_Female_Distance_Swing_01.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_Distance_Swing_01.lzfse; sourceTree = "<group>"; };
+		73C655C58AD340C3EC685F93 /* HubTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubTransport.swift; sourceTree = "<group>"; };
 		7499342A5F9DD3EBED5522E1 /* MatchHero_GolfKit_Female_ShoeL_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Female_ShoeL_M.png; sourceTree = "<group>"; };
 		76D12F11A7C855C4D7FD2CD7 /* MatchHero_Female_Distance_Swing_06.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_Distance_Swing_06.lzfse; sourceTree = "<group>"; };
 		77D7D799CBF7A153984D151E /* MatchHero_Male_Swing_02.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Swing_02.lzfse; sourceTree = "<group>"; };
@@ -527,6 +535,7 @@
 		81D1DFB3598250197785C6E9 /* AnalyticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsTests.swift; sourceTree = "<group>"; };
 		8209C5C44BCC83A6AC413B4D /* MatchHero_Kit_Female_SockR_N.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Female_SockR_N.ktx; sourceTree = "<group>"; };
 		8285F79E3C5D865919DCF168 /* MatchHero_Kit_Female_Top_N.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Female_Top_N.ktx; sourceTree = "<group>"; };
+		83688562E372EED68FDC7AA9 /* ClubHubLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubHubLive.swift; sourceTree = "<group>"; };
 		856440EDABBC20D6117509BF /* MenuNavigationRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuNavigationRegressionTests.swift; sourceTree = "<group>"; };
 		8611C505A6CE741A074E4A5B /* SportsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsIntegrationTests.swift; sourceTree = "<group>"; };
 		86F9C8FA57D0119796F8AF7B /* MatchHero_Cloth_FabricAtlas.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Cloth_FabricAtlas.png; sourceTree = "<group>"; };
@@ -547,6 +556,7 @@
 		8F2EAA1297C1E811ED2BCD18 /* MatchHero_Kit_Female_Bottom_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_Bottom_M.png; sourceTree = "<group>"; };
 		907442548E21552C914E0696 /* map-resort.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "map-resort.jpg"; sourceTree = "<group>"; };
 		921240C97FAD3D968AE599C1 /* club-crest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-crest.png"; sourceTree = "<group>"; };
+		921420CDA6EB4738D2B7E00E /* ClubHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubHubView.swift; sourceTree = "<group>"; };
 		92F02AE9F698900B513CCC9C /* GolfArcadeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GolfArcadeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		930351E9A6535E31AE18B690 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		9469600C1BA6293654DE7134 /* MatchHero_Male_Distance.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Distance.lzfse; sourceTree = "<group>"; };
@@ -587,6 +597,7 @@
 		ADD0104CCC04DC056FE5B69E /* MatchHero_Kit_Female_Top.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Female_Top.png; sourceTree = "<group>"; };
 		AE5C73D0672AF366395D9682 /* SportProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportProgress.swift; sourceTree = "<group>"; };
 		AF1C381646166FEEE14E06EB /* MatchHero_GolfKit_Female_Bottom_N.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Female_Bottom_N.ktx; sourceTree = "<group>"; };
+		B232CE6E3C8012BBE2703FC5 /* FriendsSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsSource.swift; sourceTree = "<group>"; };
 		B234D197B9549773950557C5 /* MatchHero_Male_Distance_Swing_00.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Distance_Swing_00.lzfse; sourceTree = "<group>"; };
 		B2D32604D7AA56400118E27E /* MultiplayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiplayerService.swift; sourceTree = "<group>"; };
 		B37C725D9AB24960CD78316A /* island-campaign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "island-campaign.png"; sourceTree = "<group>"; };
@@ -684,6 +695,7 @@
 		EA2C017DEE53D87F0EAB4F16 /* IslandScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandScreens.swift; sourceTree = "<group>"; };
 		EB656E1168FC9E85431DD008 /* MatchHero_Female_Swing_00.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_Swing_00.lzfse; sourceTree = "<group>"; };
 		EB6E9BE61B6E788FA682D4A0 /* MatchHero_Kit_Male_Top_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_Kit_Male_Top_M.png; sourceTree = "<group>"; };
+		ECD09DF8795F916C646C71E6 /* ClubHubTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubHubTests.swift; sourceTree = "<group>"; };
 		EE92AC70B260E2E5200E32BA /* MatchHero_GolfKit_Male_Bottom_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Male_Bottom_M.png; sourceTree = "<group>"; };
 		EEBB67403E8BE487B5C3592E /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		EFA3A74F2C36DBD184386C08 /* MatchHero_Male_Swing_03.lzfse */ = {isa = PBXFileReference; path = MatchHero_Male_Swing_03.lzfse; sourceTree = "<group>"; };
@@ -705,9 +717,11 @@
 		FBA8AC49C740E09CDAEBCF1A /* club-bowling.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "club-bowling.png"; sourceTree = "<group>"; };
 		FBFBD430673F6BAFFCAE0C9F /* RivalLooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalLooks.swift; sourceTree = "<group>"; };
 		FCC73D413A43AC7846611060 /* GolfKitHero_Male_golden.lzfse */ = {isa = PBXFileReference; path = GolfKitHero_Male_golden.lzfse; sourceTree = "<group>"; };
+		FCE5825175C3C9E6CFC66FF6 /* ClubHub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubHub.swift; sourceTree = "<group>"; };
 		FD570395D898E589C70DD0F7 /* RangeSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeSimulationTests.swift; sourceTree = "<group>"; };
 		FD6FA0CE71EDFF35FD450572 /* MatchHero_Kit_Male_SockL_M.ktx */ = {isa = PBXFileReference; path = MatchHero_Kit_Male_SockL_M.ktx; sourceTree = "<group>"; };
 		FD76B426E94F9A3309525CBA /* SportsHome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsHome.swift; sourceTree = "<group>"; };
+		FE43BA304A8DD3C0ABF1DD1C /* HubProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubProtocol.swift; sourceTree = "<group>"; };
 		FE82378CB41D9D58BA2A4695 /* MatchHero_Female_Distance_Swing_04.lzfse */ = {isa = PBXFileReference; path = MatchHero_Female_Distance_Swing_04.lzfse; sourceTree = "<group>"; };
 		FE95BAF7EA34A63E3AF4F02D /* MatchHero_GolfKit_Female_Bottom_M.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MatchHero_GolfKit_Female_Bottom_M.png; sourceTree = "<group>"; };
 		FEA9F688563659DA5A118301 /* MatchHero_GolfKit_Female_ShoeL_N.ktx */ = {isa = PBXFileReference; path = MatchHero_GolfKit_Female_ShoeL_N.ktx; sourceTree = "<group>"; };
@@ -716,6 +730,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		011AB20A0234050ACCFE36B0 /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				FCE5825175C3C9E6CFC66FF6 /* ClubHub.swift */,
+				83688562E372EED68FDC7AA9 /* ClubHubLive.swift */,
+				921420CDA6EB4738D2B7E00E /* ClubHubView.swift */,
+				B232CE6E3C8012BBE2703FC5 /* FriendsSource.swift */,
+				FE43BA304A8DD3C0ABF1DD1C /* HubProtocol.swift */,
+				73C655C58AD340C3EC685F93 /* HubTransport.swift */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
 		04D780354546FFA2F9FD84B5 /* VisualGolden */ = {
 			isa = PBXGroup;
 			children = (
@@ -875,6 +902,7 @@
 				1BF5F9A8AC6251D70D7FF894 /* Multiplayer */,
 				1FEC3A55ACAB644C0ED5699B /* Onboarding */,
 				BFA66F381F7F17DEFD62832C /* Shot */,
+				011AB20A0234050ACCFE36B0 /* Social */,
 				EEDFBB2EF6A041270AFB9F3C /* Swing */,
 				D49424BEF925DC29647C19F8 /* Tracking */,
 				4009040AB0033A7EF2CE8619 /* Unity */,
@@ -1196,6 +1224,7 @@
 				81D1DFB3598250197785C6E9 /* AnalyticsTests.swift */,
 				8BC42E5A8A6B604B132C53CC /* AvatarTests.swift */,
 				F0DD250E7AAF7A09A1B5DB3F /* ClubEnvironmentTests.swift */,
+				ECD09DF8795F916C646C71E6 /* ClubHubTests.swift */,
 				E4147C03A0122123852F5094 /* CourseTests.swift */,
 				8CB91D7C4CB1D88BF5A5A8BA /* DressedHeroSnapshotTests.swift */,
 				2C0AC5AC56F344BC3AC290A0 /* GolfArcadeTests.swift */,
@@ -1610,10 +1639,14 @@
 				B33C4993D87324C50F5D3111 /* Club.swift in Sources */,
 				4C17B8ACD9506C9533F46915 /* ClubDesign.swift in Sources */,
 				97B3C3B4F8C5CA6D53147EBE /* ClubEnvironmentView.swift in Sources */,
+				C5372800AA82049C4B7928B6 /* ClubHub.swift in Sources */,
+				8F3F333938B8C9201C35964F /* ClubHubLive.swift in Sources */,
+				C15C00BC89299D90E36B1099 /* ClubHubView.swift in Sources */,
 				BF86BA622E596426765A757F /* ClubScreens.swift in Sources */,
 				8B510A8F16DC04037DAB64D1 /* Course.swift in Sources */,
 				684D8B4894FAB92E11F8B088 /* CourseShot.swift in Sources */,
 				EF842D810DE1A53BC0830ABC /* FlightPath.swift in Sources */,
+				9770CDA57E0C2704FC90F5D6 /* FriendsSource.swift in Sources */,
 				5B83D4ABCC983155523E8B21 /* GameCenterAccount.swift in Sources */,
 				81DFD47E19118929FE19DF84 /* GameCenterTransport.swift in Sources */,
 				62B69B3948E859225E85B1EB /* GolfArcadeApp.swift in Sources */,
@@ -1622,7 +1655,9 @@
 				914E4858D64C5A6703818DDF /* HandGestureRecognizer.swift in Sources */,
 				A39B3854B09D18FA9FA171BD /* HowToCards.swift in Sources */,
 				D32E82604CFD66B3138CF31B /* HubControllerView.swift in Sources */,
+				3581E5484F1900DB3E3CEA66 /* HubProtocol.swift in Sources */,
 				7EB288168F2EDE32277BA784 /* HubSession.swift in Sources */,
+				7AAD1DC22A75F9F2AB286173 /* HubTransport.swift in Sources */,
 				EAE67979B3D9EBF81FDF8EB8 /* IslandKit.swift in Sources */,
 				FA9B3760D3F2F4BB2478777B /* IslandScreens.swift in Sources */,
 				CF3C0CD735B62DD4C743336E /* LoadingModel.swift in Sources */,
@@ -1694,6 +1729,7 @@
 				5B417E0676661738DFAB7D7B /* AnalyticsTests.swift in Sources */,
 				3F767DF876B7488F454B29C4 /* AvatarTests.swift in Sources */,
 				1B5A554ADA614C986D6DF991 /* ClubEnvironmentTests.swift in Sources */,
+				B3B38177BB4DF77A699D659C /* ClubHubTests.swift in Sources */,
 				FEBF73FE69A582542721C4F1 /* CourseTests.swift in Sources */,
 				CF01B262D8E28A7A27E621FF /* DressedHeroSnapshotTests.swift in Sources */,
 				88D60E4B12F0B0A55EABB1AD /* GolfArcadeTests.swift in Sources */,

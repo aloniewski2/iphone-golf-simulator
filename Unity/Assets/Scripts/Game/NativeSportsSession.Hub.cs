@@ -14,7 +14,7 @@ namespace GolfArcade.Game
     /// stick on the binary sample channel (target = x, aim = y, power = deflection, at the phone's 30–60 Hz) and buttons as
     /// commands. Unity reports where the player is.
     ///
-    ///   phone -> Unity   start{sport:"hub"}  hubArrive (the loading screen is off the TV: fly in)  hubA  hubB  hubEmote{mode:id}  hubGo{mode:place|spot}  hubUse{mode:spot} (go there and use it)  hubLook{female,skin,skinHex,shirt,shorts,accent,racket}  end
+    ///   phone -> Unity   start{sport:"hub"}  hubArrive (the loading screen is off the TV: fly in)  hubToast{mode:text} (a message in the corner: an invite, a friend joining)  hubA  hubB  hubEmote{mode:id}  hubGo{mode:place|spot}  hubUse{mode:spot} (go there and use it)  hubLook{female,skin,skinHex,shirt,shorts,accent,racket}  end
     ///   Unity -> phone   loadProgress(0..1 scene)  buildProgress(0..1 plaza build)  ready  hubPlace(place)  hubZone(kind|id|label|detail)  hubAction(spot id)  hubState(place|zone|speed|inputAge ms p50|p95)
     public sealed partial class NativeSportsSession
     {
@@ -201,6 +201,7 @@ namespace GolfArcade.Game
                 case "hubA": if (hub) hub.Interact(); return true;
                 case "hubB": if (hub) hub.LeaveStation(); return true;
                 case "hubArrive": if (hub) hub.StartArrival(); return true;
+                case "hubToast": if (hub && !string.IsNullOrEmpty(m.mode)) hub.ShowToast(m.mode); return true;
                 case "hubUse": if (hub && !string.IsNullOrEmpty(m.mode)) hub.GoTo(m.mode, true); return true;
                 case "hubGo": if (hub && !string.IsNullOrEmpty(m.mode)) hub.GoTo(m.mode); return true;
                 case "hubEmote":

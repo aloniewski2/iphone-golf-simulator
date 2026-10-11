@@ -142,21 +142,21 @@ final class HubPartyTests: XCTestCase {
         XCTAssertTrue(hb.notice.contains("Ann"))
     }
 
-    /// INVITE: every Invite in the Plaza (the invite board, ☰'s shortcut, the Party button with no party) opens Game Center's
-    /// invite sheet and nothing else: no menu screen on the phone, the hero stands up from the board and walks on.
-    func testInviteInThePlazaOpensGameCenterAndNoMenuScreen() {
+    /// INVITE: every Invite in the Plaza (the invite board, ☰'s shortcut, the Friends button) opens the online hub (a sheet over the
+    /// plaza) and nothing else: no old menu screen on the phone, the hero stands up from the board and walks on.
+    func testInviteInThePlazaOpensTheHubAndNoMenuScreen() {
         let hub = HubSession.shared, menu = TennisMenu.shared
         hub.debugReset(); menu.debugShow(.main); hub.debugLive(session: "inv")
         var invites = 0; hub.presentInvite = { invites += 1 }
         var toUnity: [[String: Any]] = []; hub.debugSent = { toUnity.append($0) }
         hub.receive(["type": "hubAction", "session": "inv", "message": "board-invite"])
-        XCTAssertEqual(invites, 1, "the invite board opens Game Center")
+        XCTAssertEqual(invites, 1, "the invite board opens the Friends hub")
         XCTAssertEqual(menu.screen, .main, "no menu screen opens on the phone"); XCTAssertFalse(hub.panelOpen); XCTAssertNil(hub.station)
         XCTAssertTrue(toUnity.contains { $0["action"] as? String == "hubB" }, "the hero steps away from the board")
         hub.inviteFriends()
-        XCTAssertEqual(invites, 2, "Party / ☰ Invite: Game Center at once, no walk")
+        XCTAssertEqual(invites, 2, "Friends button / ☰ Invite: the hub at once, no walk")
         menu.tap("homeInvite")
-        XCTAssertEqual(invites, 3, "the menu's Play with Friends in the plaza: the same Game Center sheet")
+        XCTAssertEqual(invites, 3, "the menu's Play with Friends opens the same hub")
         XCTAssertEqual(menu.screen, .main)
     }
 

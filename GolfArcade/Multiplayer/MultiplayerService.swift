@@ -100,6 +100,8 @@ final class MultiplayerService {
     var networkTime: Double { now + (isOwner ? 0 : clockOffset) }
     var emoteCooldown: Double { max(0, MultiplayerEmote.cooldown - (now - localEmoteAt)) }
     @ObservationIgnored private var sharedPhoneHost = false
+    /// Joining a friend's private room: this phone must not elect itself owner while the invited host's lobby is on its way.
+    @ObservationIgnored private var expectingHost: String?
     var isNearby: Bool { (local != nil || sharedPhoneHost) && transport != nil }
     var localJoinCode: String? { isNearby && isOwner ? local?.joinCode : nil }
     func joinLocal(code: String) throws {
@@ -211,6 +213,32 @@ final class MultiplayerService {
         if transport == nil { try createOnlineLobby() }
         return try gc.invitationController()
     }
+    // MARK: private rooms (the in-game invite path: friends join without a Game Center screen)
+
+    /// Host: open (or add to) this party's private Game Center room, after the Club Hub invite was sent. Makes the online lobby
+    /// first if there is none. Returns when a friend has connected; cancelled with `cancelPrivateRoom`.
+    func openPrivateRoom(group: UInt32) async throws {
+        if transport == nil { try createOnlineLobby() }
+        guard let gc = gameCenter, transport === gc else { throw MultiplayerError.invalidOperation("This is not an online lobby.") }
+        searching = true; defer { searching = false }
+        try await gc.privateRoom(group: group, adding: gc.match != nil)
+    }
+    /// Guest: join the host's private room (an invite accepted in the game). Waits up to 8 s for the host's lobby to arrive and
+    /// leaves again if it is not the invited host's (a stranger who picked the same group).
+    func joinPrivateRoom(group: UInt32, host: String) async throws {
+        guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave your party first to join another.") }
+        expectingHost = host
+        searching = true
+        defer { searching = false; expectingHost = nil }
+        do { try await ensureGameCenter().privateRoom(group: group, adding: false) }
+        catch { leave(); throw error }
+        let deadline = now + 8
+        while now < deadline, lobby == nil { try await Task.sleep(for: .milliseconds(100)) }
+        guard lobby?.ownerID == host else {
+            leave(); throw MultiplayerError.unavailable("Could not reach your friend's game. Ask them to invite you again.")
+        }
+    }
+    func cancelPrivateRoom() { gameCenter?.cancelSearch(); searching = false }
     /// The invite sheet closed. Cancelled with nobody else connected: the empty lobby that inviting made goes too, so the Plaza
     /// is not left holding a party of one. With friends in it, the party stays.
     func invitationClosed(found: Bool) {
@@ -367,7 +395,7 @@ final class MultiplayerService {
         // Existing owners respond to hello before the initial deterministic election.
         Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(750))
-            guard let self, self.epoch == token, self.lobby == nil, self.local == nil, let transport = self.transport else { return }
+            guard let self, self.epoch == token, self.lobby == nil, self.local == nil, self.expectingHost == nil, let transport = self.transport else { return }
             let owner = ([transport.localID] + transport.peers).sorted().first!
             if owner == self.localID { self.createLobby(owner: owner) }
         }

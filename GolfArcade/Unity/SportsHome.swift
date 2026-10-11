@@ -8,6 +8,7 @@ struct SportsHome: View {
     @State private var menu = TennisMenu.shared
     @State private var onboarding = OnboardingFlow.shared
     @State private var hub = HubSession.shared
+    @State private var clubHub = ClubHub.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
@@ -33,6 +34,10 @@ struct SportsHome: View {
         .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 }), onDismiss: { menu.online.sheetDismissed() }) { sheet in
             OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
         }
+        // The online hub (friends, who is online, invites) opens over any phone screen; invites arrive as a banner over everything.
+        .sheet(isPresented: $clubHub.hubOpen) { ClubHubView(dismiss: { clubHub.hubOpen = false }).presentationDetents([.large]) }
+        .overlay(alignment: .top) { InviteBannerHost() }
+        .onOpenURL { clubHub.open(url: $0) }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             // Not during an online match either: the bar opens Messages, and a palm on it mid-swing leaves the app, which ends the match
             // for the host and starts the guest's 15 s forfeit clock. Golf hides it for its own reasons.
@@ -76,12 +81,17 @@ struct SportsHome: View {
         .onChange(of: session.displayConnected) { _, _ in hub.evaluate() }
         .onChange(of: session.active) { _, _ in hub.evaluate() }
         .onChange(of: menu.screen) { _, _ in hub.evaluate() }
+        .onChange(of: session.active) { _, _ in clubHub.updateBanner(); clubHub.publishPresence() }
+        .onChange(of: hub.arriving) { _, _ in clubHub.updateBanner() }
+        .onChange(of: hub.phase) { _, _ in clubHub.updateBanner() }
+        .onChange(of: menu.online.service.lobby?.revision) { _, _ in clubHub.publishPresence() }
         .onChange(of: menu.classic) { _, _ in hub.evaluate() }
         .onChange(of: onboarding.holdsMenu) { _, _ in hub.evaluate() }
         .onChange(of:menu.online.service.lobby?.revision) { _,_ in menu.online.sync(menu) }
         .onChange(of:menu.online.service.lastError) { _,error in if let error { menu.onlineNotice(error) } }
         .onChange(of:menu.online.service.pendingInvite) { _,invite in if invite != nil { menu.online.acceptInvite(menu) } }
         .task {
+            clubHub.configureLive(); clubHub.start()
             menu.online.installCallbacks(menu)
             let args = ProcessInfo.processInfo.arguments
             #if DEBUG
@@ -136,6 +146,8 @@ struct SportsHome: View {
         }
         .background(DisplayRegistration().frame(width:0,height:0))
         .onChange(of:scenePhase) { _,phase in
+            if phase == .active { clubHub.start(); Task { await clubHub.refresh() } } else { clubHub.background() }
+            clubHub.updateBanner()
             if phase != .active { session.pause(reason:"App inactive — return to the controller and tap Ready") }
             SportsRuntime.shared().setForeground(phase == .active)
         }
