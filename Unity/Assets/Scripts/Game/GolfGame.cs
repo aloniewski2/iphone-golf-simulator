@@ -142,9 +142,6 @@ namespace GolfArcade.Game
         bool aimedByPlayer;
         bool strikePlayed;
         SwingPhase lastPhase;
-        ControllerButtons lastButtons;
-        float nextAck, nextHint;
-        string localAddresses = "";
 
         void Awake()
         {
@@ -1292,84 +1289,16 @@ namespace GolfArcade.Game
             hud.HudOnTv(round);
         }
 
-        /// Which controls show: touch buttons and the debug swing button only while aiming,
-        /// and not the touch buttons when a phone on the network is the club.
+        /// Which controls show: touch buttons and the debug swing button only while aiming.
         void RefreshControls()
         {
             bool aiming = Current == State.Aim;
             // the app's golf with the controller on the phone: its arrows and joystick aim, as they did
             bool phoneSheet = NativeControlled && hud.Controller != null;
             hud.ShowSwingControls(aiming && (!NativeControlled || phoneSheet), Swing.Source == Swing.Synthetic && !NativeControlled,
-                NativeControlled ? phoneSheet : !Swing.UsingNetwork);
-            UpdateControllerHint(true);
+                NativeControlled ? phoneSheet : true);
         }
 
-        bool clubLinked;
-
-        void UpdateControllerHint(bool force = false)
-        {
-            if (Demo) { hud.SetControllerHint(""); return; }
-            if (Swing.Network == null)
-            {
-                // the listener couldn't open its port (another copy of the game has it)
-                if (!Application.isMobilePlatform && (force || Time.unscaledTime >= nextHint))
-                {
-                    nextHint = Time.unscaledTime + 3f;
-                    hud.SetControllerHint("Phone as club is off: another copy of Golf Arcade is running on this Mac — close it and reopen this one");
-                }
-                return;
-            }
-            if (!force && Time.unscaledTime < nextHint) return;
-            nextHint = Time.unscaledTime + 3f;
-            if (Swing.UsingNetwork) { hud.SetControllerHint($"Club: iPhone at {Swing.Network.RemoteAddress}"); clubLinked = true; }
-            else if (clubLinked && !Application.isMobilePlatform)
-            {
-                // it was there and has gone: say so once, then back to how to connect
-                clubLinked = false;
-                hud.Notice("The phone club dropped out — swing with the keyboard, or reopen it on the phone", 4f);
-                hud.SetControllerHint("Phone club lost — open Golf Arcade on the iPhone → USE AS CLUB to reconnect");
-            }
-            else if (Application.isMobilePlatform) hud.SetControllerHint("");
-            else
-            {
-                if (localAddresses == "" || force) localAddresses = NetworkMotionSource.LocalAddresses();
-                hud.SetControllerHint($"Phone as club: open Golf Arcade on the iPhone → USE AS CLUB   ·   this Mac: {localAddresses}");
-            }
-        }
-
-        /// The phone's buttons over the network behave like the on-screen ones: a press nudges
-        /// (or changes club), a hold sweeps.
-        void PollControllerButtons()
-        {
-            var held = Swing.UsingNetwork ? Swing.Network.Buttons : ControllerButtons.None;
-            var pressed = held & ~lastButtons;
-            lastButtons = held;
-            if (Current != State.Aim) return;
-            if ((pressed & ControllerButtons.AimLeft) != 0) { Tick(); Nudge(-AimTapDegrees); }
-            if ((pressed & ControllerButtons.AimRight) != 0) { Tick(); Nudge(AimTapDegrees); }
-            if ((pressed & ControllerButtons.ClubUp) != 0) { Tick(); CycleClub(-1); }
-            if ((pressed & ControllerButtons.ClubDown) != 0) { Tick(); CycleClub(1); }
-            float sweep = ((held & ControllerButtons.AimLeft) != 0 ? -1 : 0) + ((held & ControllerButtons.AimRight) != 0 ? 1 : 0);
-            if (sweep != 0) Nudge(sweep * AimSweepDegreesPerSecond * Time.deltaTime);
-        }
-
-        /// Tell the phone what is happening so its screen and haptics can mirror the game.
-        void SendAck()
-        {
-            if (Swing.Network == null || !Swing.Network.IsConnected || Time.unscaledTime < nextAck) return;
-            nextAck = Time.unscaledTime + 1f / 30;
-            byte phase; float load;
-            switch (Current)
-            {
-                case State.Aim:
-                    bool loading = Swing.Phase == SwingPhase.Backswing || Swing.Phase == SwingPhase.Downswing;
-                    phase = loading ? (byte)2 : (byte)1; load = (float)Swing.Detector.Load; break;
-                case State.Flight: phase = 3; load = (float)LastShot.Power; break;
-                case State.Result: case State.HoleDone: case State.Replay: phase = 4; load = 0; break;
-                default: phase = 0; load = 0; break;
-            }
-            Swing.Network.SendAck(phase, load, hud.CurrentMessage);
-        }
 
         Vector3 AimDirection() => new((float)Math.Sin(heading * Math.PI / 180), 0, (float)Math.Cos(heading * Math.PI / 180));
 
@@ -2189,8 +2118,6 @@ namespace GolfArcade.Game
         {
             stateTime += Time.deltaTime;
             Swing.Update();
-            PollControllerButtons();
-            UpdateControllerHint();
 
             // The map: the ball wherever it is; while aiming, the plan (PlanShotOnMap); in flight, the trace.
             var plan = hud.Map;
@@ -2318,7 +2245,6 @@ namespace GolfArcade.Game
                     break;
             }
             lastPhase = Swing.Phase;
-            SendAck();
         }
 
         /// One frame of the shot. The flight model flies level with the ground it left; drawn,

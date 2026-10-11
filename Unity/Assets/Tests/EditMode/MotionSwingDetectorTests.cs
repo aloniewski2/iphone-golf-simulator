@@ -318,23 +318,6 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void ControllerPacketCarriesGravityAndStillReadsVersionOne()
-        {
-            var state = new GolfArcade.Net.ControllerState { Sequence = 7, Time = 1.5, Attitude = ClubDown, RotationRate = new Vector3(1, 2, 3), Gravity = Vector3.UnitY, Buttons = GolfArcade.Net.ControllerButtons.AimLeft, HasGyro = true };
-            var bytes = GolfArcade.Net.ControllerProtocol.EncodeState(state);
-            Assert.AreEqual(GolfArcade.Net.ControllerProtocol.StateLength, bytes.Length);
-            Assert.IsTrue(GolfArcade.Net.ControllerProtocol.TryDecodeState(bytes, bytes.Length, out var back));
-            Assert.AreEqual(Vector3.UnitY, back.Gravity);
-            Assert.AreEqual(state.Buttons, back.Buttons);
-            // an old controller: version 1, no gravity
-            var v1 = new byte[GolfArcade.Net.ControllerProtocol.StateLengthV1];
-            Array.Copy(bytes, v1, v1.Length); v1[4] = 1;
-            Assert.IsTrue(GolfArcade.Net.ControllerProtocol.TryDecodeState(v1, v1.Length, out var old));
-            Assert.AreEqual(Vector3.Zero, old.Gravity);
-            Assert.AreEqual(state.RotationRate, old.RotationRate);
-        }
-
-        [Test]
         public void LowerBackswingMeansProportionallyLessPowerAtTheSameSpeed()
         {
             // The same 8.8 rad/s downswing from a third of a backswing and a full one.
