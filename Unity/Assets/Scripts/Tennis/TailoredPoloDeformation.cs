@@ -160,11 +160,14 @@ namespace GolfArcade.Tennis
         /// Loads and holds every baked polo a match can show (both heroes, full and distance). The plaza calls this while it boots
         /// behind its loading screen: a match building behind the plaza, and its first frames (garment LOD), then read none from disk.
         /// (Not async: the loading thread holds the persistent-manager lock for a whole polo, stalling any load on the main thread.)
-        public static void LoadAll()
+        public static void LoadAll() { foreach (var _ in LoadAllSteps()) { } }
+        /// LoadAll one baked polo at a time (the Plaza's loading bar moves between them): yields how many are loaded, of 4.
+        public static IEnumerable<int> LoadAllSteps()
         {
+            int loaded = 0;
             foreach (var sex in new[] { "Female", "Male" })
                 foreach (var size in new[] { "Full", "Distance" })
-                    Baked(ResourceRoot + sex + "Polo" + size);
+                { Baked(ResourceRoot + sex + "Polo" + size); yield return ++loaded; }
         }
 
         static Vector3 V(float[] a, int i) => new(a[i * 3], a[i * 3 + 1], a[i * 3 + 2]);

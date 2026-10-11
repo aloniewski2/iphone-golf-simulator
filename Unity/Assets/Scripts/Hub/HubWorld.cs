@@ -54,39 +54,112 @@ namespace GolfArcade.Hub
 
         /// Set by the session before the scene loads, so the right hero is built the first time.
         public static bool StartFemale;
+        /// Set by the session before the scene loads: Awake leaves the build to BuildSteps, which the session runs a step a frame
+        /// and reports as the TV's loading bar, instead of building everything in one multi-second frame.
+        public static bool DeferBuild;
 
         void Awake()
         {
             Instance = this;
-            Build(StartFemale);
+            if (!DeferBuild) Build(StartFemale);
+            DeferBuild = false;   // one plaza only: a later load (a test's, a retry's) builds itself again
         }
         void OnDestroy() { if (Instance == this) Instance = null; }
 
         /// Builds everything. `female` picks the hero; the look is applied afterwards (ApplyLook) by the session.
-        public void Build(bool female)
+        public void Build(bool female) { var steps = BuildSteps(female); while (steps.MoveNext()) { } }
+
+        /// The build one step at a time; Current is the share of it done (0..1, roughly by time) after each step.
+        public IEnumerator<float> BuildSteps(bool female)
         {
-            if (Initialized) return;
+            if (Initialized || world) yield break;
             world = new GameObject("Hub world").transform; world.SetParent(transform, false);
+            int built = 0;
             foreach (var place in HubLayout.Places)
             {
                 var root = new GameObject(place.title).transform; root.SetParent(world, false); placeRoots[place.id] = root;
                 if (place.outdoor) HubArt.BuildPlaza(root); else HubRooms.Room(root, place);
+                yield return .35f * ++built / HubLayout.Places.Length;
             }
             // the plaza's doorways are part of its buildings and the PLAY hall's arches part of the hall; each room's way out is a lit mat
             foreach (var d in HubLayout.Doors) if (d.place != HubLayout.Plaza && Vector3.Dot(d.inward, Vector3.back) > .7f) HubRooms.Exit(placeRoots[d.place], d);
             foreach (var s in HubLayout.Spots) HubRooms.Spot(placeRoots[s.place], s);
             // the static greybox draws in a handful of batches
             StaticBatchingUtility.Combine(world.gameObject);
+            yield return .42f;
             BuildCamera();
             HubArt.Lighting(transform, Camera);
             BuildOverlay();
             Player = HubPlayer.Spawn(transform, female, HubLayout.Spawn, 0);
             youTag = HubArt.NameTag(Player.transform, "You", HubArt.RoyalDeep); youTag.localPosition = Vector3.up * 2.2f;
             SetLayer(transform);
+            yield return .5f;
             Prewarm();
-            PrewarmHeroes(female);
+            yield return .62f;
+            PrewarmHero(female);
+            yield return .72f;
+            foreach (var polo in TailoredPoloDeformation.LoadAllSteps()) yield return .72f + .28f * polo / 4f;
             SnapCamera();
             Initialized = true;
+        }
+
+        // ------------------------------------------------------------------ arrival
+        /// The first look at the plaza after a fresh boot (not back from a match): the camera starts high beside the PLAY tower and
+        /// circles down around the plaza to the follow view behind the hero. A push on the stick (or A) gets there at once.
+        public const float ArrivalSeconds = 2.6f;
+        /// -1: none. Held at 0 (the opening shot) from PrepareArrival until StartArrival, then 0..1.
+        float arrival = -1, arrivalAutoStart; bool arrivalRunning;
+        public bool Arriving => arrival >= 0;
+        /// Proof: how many arrivals finished.
+        public int Arrivals { get; private set; }
+        /// The camera on the opening shot, the hero waiting (before the first frame the TV shows).
+        public void PrepareArrival()
+        {
+            if (!Player || !Camera) return;
+            arrival = 0; arrivalRunning = false; arrivalAutoStart = 0; Player.locked = true; ArrivalCamera(0);
+        }
+        /// The phone's loading screen faded off the TV: fly.
+        public void StartArrival() { if (Arriving) arrivalRunning = true; }
+        /// Fly at `time` (unscaled) even if the phone never says so.
+        public void ArriveBy(float time) { if (Arriving) arrivalAutoStart = time; }
+        /// Skip to the end quickly (a push on the stick, A, a shortcut): the hero is yours at once, the camera catches up.
+        public void HurryArrival()
+        {
+            if (!Arriving) return;
+            arrivalRunning = true; hurry = true;
+            if (Station == null && !Transitioning) Player.locked = false;
+        }
+        bool hurry;
+        void UpdateArrival(float dt)
+        {
+            if (!arrivalRunning && arrivalAutoStart > 0 && Time.unscaledTime >= arrivalAutoStart) arrivalRunning = true;
+            if (Player.StickMagnitude >= HubPlayer.Dead) HurryArrival();
+            if (arrivalRunning) arrival = Mathf.Min(1, arrival + dt / (hurry ? .35f : ArrivalSeconds));
+            ArrivalCamera(arrival);
+            if (arrival >= 1) EndArrival();
+        }
+        void EndArrival()
+        {
+            arrival = -1; arrivalRunning = false; hurry = false; Arrivals++;
+            if (Station == null && !Transitioning) Player.locked = false;
+            SnapCamera();
+        }
+        void ArrivalCamera(float t)
+        {
+            float s = t * t * t * (t * (t * 6 - 15) + 10);
+            var c = CameraFor(HubLayout.Plaza);
+            // an arc round the plaza centre: from high in the north-west (the whole plaza in shot, the PLAY tower to the left) to due
+            // south, low, behind the hero
+            Vector3 Arc(float k)
+            {
+                float a = Mathf.Lerp(-58f, -180f, k) * Mathf.Deg2Rad, r = Mathf.Lerp(31f, c.distance - HubLayout.Spawn.z, k);
+                return new Vector3(Mathf.Sin(a) * r, Mathf.Lerp(25f, c.height, Mathf.Pow(k, 1.4f)), Mathf.Cos(a) * r);
+            }
+            // ends exactly on the follow camera wherever the hero stands
+            var pos = Arc(s) + (CameraTarget() - Arc(1)) * s;
+            var look = Vector3.Lerp(new Vector3(0, 1f, 2f), FollowLook(), s);
+            Camera.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(look - pos, Vector3.up));
+            Camera.fieldOfView = Mathf.Lerp(46f, 52f, s); Camera.farClipPlane = c.far;
         }
 
         // ------------------------------------------------------------------ look and body
@@ -108,7 +181,7 @@ namespace GolfArcade.Hub
             if (!Initialized) return;
             doorCooldown -= Time.unscaledDeltaTime;
             if (!Transitioning && Station == null) { CheckDoors(); UpdateZone(); }
-            FollowCamera(Time.unscaledDeltaTime);
+            if (Arriving) UpdateArrival(Time.unscaledDeltaTime); else FollowCamera(Time.unscaledDeltaTime);
             if (overlay && Camera) overlay.targetDisplay = Camera.targetDisplay;
             if (promptRoot && Camera) promptRoot.rotation = Quaternion.LookRotation(promptRoot.position - Camera.transform.position, Vector3.up);
             if (youTag && Camera) { youTag.rotation = Camera.transform.rotation; youTag.gameObject.SetActive(Station == null && Place == HubLayout.Plaza); }
@@ -160,6 +233,7 @@ namespace GolfArcade.Hub
         public bool GoTo(string target, bool use = false)
         {
             if (Transitioning || !HubLayout.QuickTravel(target, out var pos, out var facing, out var place)) return false;
+            if (Arriving) EndArrival();
             LeaveStation();
             StartCoroutine(Travel(pos, facing, place, use ? HubLayout.SpotById(target) : null)); return true;
         }
@@ -230,6 +304,7 @@ namespace GolfArcade.Hub
         /// The phone's A button: use the station or bay you stand at.
         public bool Interact()
         {
+            if (Arriving) { HurryArrival(); return false; }
             if (Transitioning || Station != null || ZoneSpot == null) return false;
             EnterStation(ZoneSpot); Interacted?.Invoke(ZoneSpot.id); return true;
         }
@@ -314,14 +389,14 @@ namespace GolfArcade.Hub
         /// A match always has both bodies on court (you and your rival): their one-time mesh preparation (seconds for a body the
         /// first time) and their clips are done here, while the plaza boots behind the TV menu, not while you sit in a bay.
         static readonly List<UnityEngine.Object> keepAlive = new List<UnityEngine.Object>();
-        void PrewarmHeroes(bool female)
+        void PrewarmHero(bool female)
         {
             var prefab = TennisCustomization.HeroBase(!female); if (!prefab) return;
             var tmp = Instantiate(prefab, new Vector3(0, -5000, 0), Quaternion.identity); tmp.name = "Hero prewarm";
             var driver = tmp.GetComponent<HeroTennisDriver>();
             if (driver) { driver.enabled = false; driver.ResolvePerformanceClips(); foreach (var slot in driver.slots) if (slot.clip && !keepAlive.Contains(slot.clip)) keepAlive.Add(slot.clip); }
             Destroy(tmp);
-            TailoredPoloDeformation.LoadAll();   // held for the session: reading one later froze the plaza ~2 s (seated load) and the hand-off (LOD)
+            // (then TailoredPoloDeformation.LoadAll, held for the session: reading one later froze the plaza ~2 s (seated load) and the hand-off (LOD))
         }
 
         /// Renders every place once, off screen, while the plaza boots: the first look at a room must not pay for uploading its meshes,
@@ -396,10 +471,10 @@ namespace GolfArcade.Hub
             var target = CameraTarget();
             Camera.transform.position = cameraSnapped ? target : Vector3.SmoothDamp(Camera.transform.position, target, ref camVelocity, .14f, Mathf.Infinity, dt);
             cameraSnapped = false;
-            var look = Player.transform.position + Vector3.up * c.lookHeight + Vector3.forward * (HubLayout.PlaceOf(Place).outdoor ? 10f : 1.6f);
-            Camera.transform.rotation = Quaternion.LookRotation(look - Camera.transform.position, Vector3.up);
+            Camera.transform.rotation = Quaternion.LookRotation(FollowLook() - Camera.transform.position, Vector3.up);
             Player.cameraYaw = 0;
         }
+        Vector3 FollowLook() => Player.transform.position + Vector3.up * CameraFor(Place).lookHeight + Vector3.forward * (HubLayout.PlaceOf(Place).outdoor ? 10f : 1.6f);
         void SnapCamera() { cameraSnapped = true; camVelocity = Vector3.zero; if (Camera && Player) FollowCamera(0); }
 
         // ------------------------------------------------------------------ overlay: fade + prompt

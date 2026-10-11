@@ -32,6 +32,8 @@ final class MultiplayerService {
         try? broadcast(kind, payload: payload, reliable: reliable)
     }
     var onReturnToLobby: (() -> Void)?
+    /// Apple's invite / accept sheet closed by itself (true: friends connected). The UI lets go of the sheet it presented.
+    @ObservationIgnored var onInvitationClosed: ((Bool) -> Void)?
     var onResult: ((String) -> Void)?
     @ObservationIgnored private var transport: (any MultiplayerTransport)?
     @ObservationIgnored private var gameCenter: GameCenterTransport?
@@ -199,6 +201,7 @@ final class MultiplayerService {
         let gc = GameCenterTransport(); gameCenter = gc
         gc.onInvitation = { [weak self] in self?.pendingInvite = $0 }
         gc.onConnected = { [weak self, weak gc] in if let gc { self?.bind(gc) } }
+        gc.onInvitationClosed = { [weak self] in self?.invitationClosed(found: $0) }
         return gc
     }
     /// Return Apple's controller to the caller. No custom lobby/online screen is added.
@@ -207,6 +210,18 @@ final class MultiplayerService {
         let gc=ensureGameCenter()
         if transport == nil { try createOnlineLobby() }
         return try gc.invitationController()
+    }
+    /// The invite sheet closed. Cancelled with nobody else connected: the empty lobby that inviting made goes too, so the Plaza
+    /// is not left holding a party of one. With friends in it, the party stays.
+    func invitationClosed(found: Bool) {
+        if !found, let transport, !isNearby, transport.peers.isEmpty, lobby?.phase == .lobby,
+           lobby?.participants.allSatisfy({ $0.id == localID || $0.isGuest }) ?? true { leave() }
+        onInvitationClosed?(found)
+    }
+    /// The sheet holding Apple's invite / accept controller was swiped away (no delegate call): that is a cancel.
+    func invitationSheetDismissed() {
+        guard let gameCenter, gameCenter.inviting else { return }
+        gameCenter.cancelSearch(); invitationClosed(found: false)
     }
     func acceptInvitation() throws -> UIViewController {
         guard transport == nil else { throw MultiplayerError.invalidOperation("Leave the current lobby before accepting an invitation.") }

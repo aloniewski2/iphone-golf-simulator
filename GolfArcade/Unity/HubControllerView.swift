@@ -24,7 +24,7 @@ struct HubControllerView: View {
                 .frame(maxWidth: .infinity, minHeight: HubStick.diameter + 10, maxHeight: .infinity)
                 .opacity(hub.phase == .live ? 1 : 0.4)
                 .disabled(hub.phase != .live)
-            Text("Thumb down anywhere here · short push walks · full push runs · hold to sprint")
+            Text(hub.phase == .booting ? "Watch the TV · the stick wakes up at 100%" : "Thumb down anywhere here · short push walks · full push runs · hold to sprint")
                 .font(IslandUI.font(13, bold: true)).foregroundStyle(.white.opacity(0.55)).multilineTextAlignment(.center)
             HStack(alignment: .center, spacing: 22) {
                 HubRoundButton(label: "B", caption: "Back", size: 74) { hub.pressB() }
@@ -34,8 +34,9 @@ struct HubControllerView: View {
             }
             HStack(spacing: 12) {
                 pill("line.3.horizontal", "Menu", id: "hub-menu") { quickMenu = true }
-                pill("person.2.fill", hub.party.map { "Party · \($0.participants.count)" } ?? "Party", id: "hub-party") {
-                    if hub.party != nil { partySheet = true } else { hub.openPanel(.party) }   // (Play: online or local friends)
+                // with nobody in your plaza yet this is Invite: Game Center's invite sheet straight away
+                pill(hub.party == nil ? "person.badge.plus" : "person.2.fill", hub.party.map { "Party · \($0.participants.count)" } ?? "Invite friends", id: "hub-party") {
+                    if hub.party != nil { partySheet = true } else { hub.inviteFriends() }
                 }
             }
         }
@@ -63,7 +64,7 @@ struct HubControllerView: View {
             HStack(spacing: 8) {
                 Circle().fill(hub.phase == .live ? IslandUI.lime : .orange).frame(width: 10, height: 10)
                     .shadow(color: hub.phase == .live ? IslandUI.lime : .orange, radius: 5)
-                Text(hub.phase == .live ? "Connected to TV" : "Opening the plaza…").font(IslandUI.font(15, bold: true))
+                Text(hub.phase == .live ? "Connected to TV" : "Loading on the TV").font(IslandUI.font(15, bold: true))
                     .accessibilityIdentifier("hub-connection")
             }
             .padding(.horizontal, 14).padding(.vertical, 8).background(.white.opacity(0.1), in: Capsule())
@@ -76,9 +77,20 @@ struct HubControllerView: View {
     private var onTV: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("ON THE TV · \(Self.placeName(hub.place))").font(IslandUI.font(12, bold: true)).tracking(1.6).foregroundStyle(IslandUI.lime)
-            Text(hub.zone?.prompt ?? Self.idleHint(hub.place))
+            Text(hub.phase == .booting ? hub.loadStage : hub.zone?.prompt ?? Self.idleHint(hub.place))
                 .font(IslandUI.font(session.bigText ? 28 : 22, bold: true)).lineLimit(2).minimumScaleFactor(0.6)
                 .accessibilityIdentifier("hub-prompt")
+            if hub.phase == .booting {
+                // the TV's loading bar, small
+                HStack(spacing: 12) {
+                    Capsule().fill(.white.opacity(0.16)).frame(height: 10)
+                        .overlay(alignment: .leading) { GeometryReader { g in Capsule().fill(IslandUI.lime).frame(width: max(10, g.size.width * hub.loadProgress)) } }
+                    Text("\(Int((hub.loadProgress * 100).rounded()))%").font(Club.title(20)).foregroundStyle(IslandUI.lime).frame(width: 56, alignment: .trailing)
+                }
+                .animation(.easeOut(duration: 0.3), value: hub.loadProgress)
+                .accessibilityElement(children: .ignore).accessibilityLabel("Loading \(Int((hub.loadProgress * 100).rounded())) percent")
+                .accessibilityIdentifier("hub-loading-bar")
+            }
             if let detail = hub.zone?.detail, !detail.isEmpty, hub.zone?.kind != .door {
                 Text(detail).font(IslandUI.font(14, bold: false)).foregroundStyle(.white.opacity(0.7))
             }
@@ -111,6 +123,90 @@ struct HubControllerView: View {
         case "tennis", "golf": "Walk into a bay to play"
         default: "Walk up to something to use it"
         }
+    }
+}
+
+/// The TV while the Plaza boots (loading screen D, picked 2026-10-11): MOTION CLUB over navy stripes, a tennis ball rolling along
+/// a court line as the bar, what is loading and a tip. The bar is HubSession.loadProgress (real progress: the runtime, the scene,
+/// the plaza's build); at 100 % it holds a moment and fades into the arrival fly-in. Drawn on the 1280×720 TV canvas.
+struct HubLoadingScreen: View {
+    let hub: HubSession
+    static let tips = ["A short push on the stick walks. Push it all the way to run.",
+                       "Walk up to anything in the Plaza and press A to use it.",
+                       "Sit on a bench in the PLAY hall to start a match.",
+                       "Invite friends from your phone: they walk the Plaza with you.",
+                       "Change your look at the racks in the Locker."]
+    static let court = Color(hex: "3E57A8"), stripe = Color(hex: "16305A")
+    var body: some View {
+        let p = hub.loadProgress
+        ZStack {
+            Canvas { ctx, size in
+                ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Club.ink))
+                ctx.translateBy(x: size.width / 2, y: size.height / 2); ctx.rotate(by: .degrees(-28))
+                let span = hypot(size.width, size.height)
+                var x = -span
+                while x < span { ctx.fill(Path(CGRect(x: x + 90, y: -span, width: 90, height: span * 2)), with: .color(Self.stripe)); x += 180 }
+            }
+            VStack(spacing: 6) {
+                Text("MOTION CLUB").font(Club.display(112, condensed: false)).foregroundStyle(Club.sun)
+                    .shadow(color: Club.lagoonDeep, radius: 0, y: 8)
+                Text("PARTY SPORTS · BETA").font(IslandUI.font(18, bold: true)).tracking(8).foregroundStyle(Club.cream)
+            }
+            .position(x: 640, y: 160)
+            track(p).frame(width: 1040, height: 120).position(x: 640, y: 420)
+            VStack(spacing: 14) {
+                Text(hub.loadStage).font(Club.title(40)).foregroundStyle(Club.cream).accessibilityIdentifier("hub-loading-stage")
+                TimelineView(.periodic(from: .now, by: 4)) { context in
+                    let tip = Self.tips[Int(context.date.timeIntervalSinceReferenceDate / 4) % Self.tips.count]
+                    (Text("TIP   ").foregroundStyle(Club.sun).font(IslandUI.font(19, bold: true)) + Text(tip).foregroundStyle(Club.cream.opacity(0.85)).font(IslandUI.font(19)))
+                }
+            }
+            .position(x: 640, y: 590)
+        }
+        .frame(width: 1280, height: 720)
+        .clipped()
+        .accessibilityIdentifier("hub-loading")
+    }
+
+    /// The court-line bar: the ball rolls to the progress, a lime line behind it and a few bounce marks.
+    private func track(_ p: Double) -> some View {
+        let w = 1028.0, x = 6 + w * p
+        return ZStack(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: 18).fill(Self.court)
+            Rectangle().fill(Club.cream.opacity(0.85)).frame(width: w, height: 4).position(x: 520, y: 60)
+            Rectangle().fill(Club.cream.opacity(0.85)).frame(width: 4, height: 108).position(x: 520, y: 60)
+            Capsule().fill(Club.sun).frame(width: max(14, x - 6), height: 14).position(x: 6 + max(14, x - 6) / 2, y: 60)
+            ForEach(0..<3) { i in
+                Circle().fill(Club.sun).opacity(0.2 + Double(i) * 0.2).frame(width: 14, height: 14)
+                    .position(x: 6 + w * max(0, p - [0.09, 0.06, 0.03][i]), y: i % 2 == 0 ? 43 : 31)
+            }
+            HubTennisBall().frame(width: 76, height: 76).rotationEffect(.degrees(p * 1080)).position(x: x, y: 60)
+            Text("\(Int((p * 100).rounded()))%").font(Club.title(26)).foregroundStyle(Club.ink)
+                .padding(.horizontal, 14).padding(.vertical, 6).background(Club.cream, in: RoundedRectangle(cornerRadius: 12))
+                .position(x: x, y: -34)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Club.cream, lineWidth: 6))
+        .background(RoundedRectangle(cornerRadius: 18).fill(Club.lagoonDeep).offset(y: 10))
+        .animation(.easeOut(duration: 0.3), value: p)
+        .accessibilityElement(children: .ignore).accessibilityLabel("Loading \(Int((p * 100).rounded())) percent")
+    }
+}
+
+/// The loading bar's ball: lime felt, white seams, a dark outline so it reads on the court blue.
+struct HubTennisBall: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let r = min(size.width, size.height) / 2, c = CGPoint(x: size.width / 2, y: size.height / 2)
+            let ball = Path(ellipseIn: CGRect(x: c.x - r + 2, y: c.y - r + 2, width: r * 2 - 4, height: r * 2 - 4))
+            ctx.fill(ball, with: .color(Club.sun)); ctx.stroke(ball, with: .color(Club.lagoonDeep), lineWidth: 4)
+            var seams = Path()
+            seams.move(to: CGPoint(x: c.x - r * 0.68, y: c.y - r * 0.53))
+            seams.addCurve(to: CGPoint(x: c.x - r * 0.68, y: c.y + r * 0.53), control1: CGPoint(x: c.x - r * 0.15, y: c.y - r * 0.25), control2: CGPoint(x: c.x - r * 0.15, y: c.y + r * 0.25))
+            seams.move(to: CGPoint(x: c.x + r * 0.68, y: c.y - r * 0.53))
+            seams.addCurve(to: CGPoint(x: c.x + r * 0.68, y: c.y + r * 0.53), control1: CGPoint(x: c.x + r * 0.15, y: c.y - r * 0.25), control2: CGPoint(x: c.x + r * 0.15, y: c.y + r * 0.25))
+            ctx.stroke(seams, with: .color(Club.cream), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -228,7 +324,10 @@ struct HubQuickMenu: View {
                 }
                 Section("Shortcuts") {
                     ForEach(Self.shortcuts, id: \.id) { s in
-                        Button { hub.openStation(s.id); dismiss() } label: { Label(s.title, systemImage: s.icon) }
+                        Button {
+                            // inviting needs no walk to the board: Game Center opens at once
+                            if s.id == "board-invite" { dismiss(); hub.inviteFriends(afterSheet: true) } else { hub.openStation(s.id); dismiss() }
+                        } label: { Label(s.title, systemImage: s.icon) }
                             .accessibilityIdentifier("hub-use-\(s.id)")
                     }
                 }
@@ -339,7 +438,8 @@ struct HubPartySheet: View {
                     if hub.partyService.isOwner, let bay = hub.station, HubSession.partyBays.contains(bay) {
                         Button { hub.callParty(); dismiss() } label: { Label("Call party to this bay", systemImage: "megaphone.fill") }
                     }
-                    Button { dismiss(); hub.openPanel(.main, taps: ["homeInvite"]) } label: { Label("Invite more friends", systemImage: "person.badge.plus") }
+                    Button { dismiss(); hub.inviteFriends(afterSheet: true) } label: { Label("Invite more friends", systemImage: "person.badge.plus") }
+                        .accessibilityIdentifier("hub-party-invite")
                     Button(role: .destructive) { hub.partyService.leave(); dismiss() } label: { Label("Leave party", systemImage: "rectangle.portrait.and.arrow.right") }
                         .accessibilityIdentifier("hub-party-leave")
                 }

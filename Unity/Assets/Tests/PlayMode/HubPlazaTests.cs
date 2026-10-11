@@ -60,6 +60,55 @@ namespace GolfArcade.Tests
             Time.timeScale = 1;
         }
 
+        /// LOADING + ARRIVAL: the plaza builds a step a frame (the TV's loading bar), its progress only rising to 1; a fresh boot opens
+        /// on the arrival shot, held until the phone says go, flies ~2.6 s round the plaza and lands exactly on the follow camera
+        /// behind the hero, who can then walk. A push on the stick gets there at once. Stills: $HUB_PROOF_DIR/arrival_*.png.
+        [UnityTest, Timeout(300000)] public IEnumerator ThePlazaBuildsInStepsAndArrivesWithAFlyIn()
+        {
+            HubWorld.EditorDriven = true; HubWorld.DeferBuild = true;
+            var load = SceneManager.LoadSceneAsync("Hub"); while (!load.isDone) yield return null;
+            var hub = HubWorld.Find(); Assert.IsNotNull(hub);
+            Assert.IsFalse(hub.Initialized, "deferred: Awake left the build to the steps"); Assert.IsFalse(HubWorld.DeferBuild, "the deferral is one-shot");
+            var values = new List<float>(); float worst = 0;
+            var steps = hub.BuildSteps(false);
+            while (true)
+            {
+                float t = Time.realtimeSinceStartup; bool more = steps.MoveNext(); worst = Mathf.Max(worst, (Time.realtimeSinceStartup - t) * 1000);
+                if (!more) break; values.Add(steps.Current); yield return null;
+            }
+            Assert.IsTrue(hub.Initialized); Assert.GreaterOrEqual(values.Count, 8, "enough steps for the bar to move");
+            for (int i = 1; i < values.Count; i++) Assert.GreaterOrEqual(values[i], values[i - 1], "the bar only rises");
+            Assert.AreEqual(1f, values[values.Count - 1], 1e-4f);
+            Metric("hub_build_steps", values.Count); Metric("hub_build_worst_step_ms_editor", worst.ToString("0"));
+
+            hub.PrepareArrival(); yield return null;
+            var cam = hub.Camera; var start = cam.transform.position;
+            Assert.IsTrue(hub.Arriving); Assert.IsTrue(hub.Player.locked, "the hero waits for the camera");
+            Assert.Greater(start.y, 15f, "opens high over the plaza");
+            Still(cam, "arrival_0_open");
+            yield return null; yield return null;
+            Assert.Less(Vector3.Distance(start, cam.transform.position), 1e-3f, "held on the opening shot until the phone says go");
+            hub.StartArrival(); float t0 = Time.realtimeSinceStartup; int shot = 1;
+            while (hub.Arriving && Time.realtimeSinceStartup - t0 < 6)
+            {
+                if (shot < 4 && Time.realtimeSinceStartup - t0 >= shot * .65f) { Still(cam, "arrival_" + shot); shot++; }
+                yield return null;
+            }
+            float took = Time.realtimeSinceStartup - t0;
+            Metric("hub_arrival_seconds_editor", took.ToString("0.00"));
+            Assert.IsFalse(hub.Arriving); Assert.AreEqual(1, hub.Arrivals);
+            Assert.That(took, Is.InRange(2.3f, 3.2f), "a 2-3 s fly-in");
+            Assert.IsFalse(hub.Player.locked, "control is back");
+            var follow = hub.Player.transform.position + new Vector3(0, 5f, -9.8f);
+            Assert.Less(Vector3.Distance(cam.transform.position, follow), .05f, "lands on the follow camera");
+            yield return null; Still(cam, "arrival_4_follow");
+
+            hub.PrepareArrival(); hub.StartArrival(); hub.Player.SetStick(0, 1, .5f); t0 = Time.realtimeSinceStartup;
+            while (hub.Arriving && Time.realtimeSinceStartup - t0 < 3) yield return null;
+            hub.Player.SetStick(0, 0, 0);
+            Assert.Less(Time.realtimeSinceStartup - t0, .7f, "a push on the stick gets there at once");
+        }
+
         [UnityTest, Timeout(300000)] public IEnumerator HubBootsFromTheNativeStartAndRendersThePlaza()
         {
             float t0 = Time.realtimeSinceStartup;

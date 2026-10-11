@@ -14,8 +14,8 @@ namespace GolfArcade.Game
     /// stick on the binary sample channel (target = x, aim = y, power = deflection, at the phone's 30–60 Hz) and buttons as
     /// commands. Unity reports where the player is.
     ///
-    ///   phone -> Unity   start{sport:"hub"}  hubA  hubB  hubEmote{mode:id}  hubGo{mode:place|spot}  hubUse{mode:spot} (go there and use it)  hubLook{female,skin,skinHex,shirt,shorts,accent,racket}  end
-    ///   Unity -> phone   ready  hubPlace(place)  hubZone(kind|id|label|detail)  hubAction(spot id)  hubState(place|zone|speed|inputAge ms p50|p95)
+    ///   phone -> Unity   start{sport:"hub"}  hubArrive (the loading screen is off the TV: fly in)  hubA  hubB  hubEmote{mode:id}  hubGo{mode:place|spot}  hubUse{mode:spot} (go there and use it)  hubLook{female,skin,skinHex,shirt,shorts,accent,racket}  end
+    ///   Unity -> phone   loadProgress(0..1 scene)  buildProgress(0..1 plaza build)  ready  hubPlace(place)  hubZone(kind|id|label|detail)  hubAction(spot id)  hubState(place|zone|speed|inputAge ms p50|p95)
     public sealed partial class NativeSportsSession
     {
         /// A match start from a bay: load it behind the plaza (additive, hidden) and hand off with a dive into the bay screen.
@@ -48,7 +48,7 @@ namespace GolfArcade.Game
             Application.targetFrameRate = m.external ? 60 : FrameRate.Target(m.fps, Screen.currentResolution.refreshRateRatio.value);
             QualitySettings.vSyncCount = 0;
             Screen.orientation = m.external ? ScreenOrientation.Portrait : ScreenOrientation.LandscapeLeft;
-            HubWorld.StartFemale = m.female;
+            HubWorld.StartFemale = m.female; HubWorld.DeferBuild = true;
             var op = SceneManager.LoadSceneAsync("Hub");
             float nextProgress = 0;
             while (op != null && !op.isDone)
@@ -62,17 +62,24 @@ namespace GolfArcade.Game
             }
             Emit("loadProgress", "1"); Emit("sceneReady", "Plaza loaded");
             hub = HubWorld.Find();
+            HubWorld.DeferBuild = false;
+            // the build a step a frame: the TV's loading bar (the phone's) moves with it
+            if (hub && !hub.Initialized)
+                for (var steps = hub.BuildSteps(m.female); steps.MoveNext();)
+                { Emit("buildProgress", steps.Current.ToString("0.00", CultureInfo.InvariantCulture)); yield return null; }
             if (!hub || !hub.Initialized || !hub.Camera) { loading = false; Emit("error", "The plaza did not load."); yield break; }
             hub.PlaceChanged += p => { if (hubMode) Emit("hubPlace", p); };
             hub.ZoneChanged += _ => { if (hubMode) Emit("hubZone", ZoneMessage()); };
             hub.Interacted += id => { if (hubMode) Emit("hubAction", id); };
             hub.ApplyLook(m.female, m.skinHex, m.skin, m.shirt, m.shorts, m.accent, m.racket);
             if (!string.IsNullOrEmpty(m.bay)) hub.SitAt(m.bay);   // back from a match: on the same bench (RETURN)
+            else hub.PrepareArrival();   // a fresh boot: the first frame is the arrival's opening shot, held until the phone says go
             gameplayCamera = hub.Camera;
             paused = true;   // the point recorder stays off; the plaza itself never pauses (timeScale stays 1)
             yield return Present(m.external, "ready");
             loading = false;
             if (!Ready) yield break;
+            hub.ArriveBy(Time.unscaledTime + 1.5f);   // (hubArrive normally comes first, once the loading screen has faded off the TV)
             Emit("hubPlace", hub.Place); Emit("hubZone", ZoneMessage());
         }
 
@@ -193,6 +200,7 @@ namespace GolfArcade.Game
                 case "pause": case "resume": return true;   // the plaza has no pause
                 case "hubA": if (hub) hub.Interact(); return true;
                 case "hubB": if (hub) hub.LeaveStation(); return true;
+                case "hubArrive": if (hub) hub.StartArrival(); return true;
                 case "hubUse": if (hub && !string.IsNullOrEmpty(m.mode)) hub.GoTo(m.mode, true); return true;
                 case "hubGo": if (hub && !string.IsNullOrEmpty(m.mode)) hub.GoTo(m.mode); return true;
                 case "hubEmote":

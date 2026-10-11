@@ -142,6 +142,60 @@ final class HubPartyTests: XCTestCase {
         XCTAssertTrue(hb.notice.contains("Ann"))
     }
 
+    /// INVITE: every Invite in the Plaza (the invite board, ☰'s shortcut, the Party button with no party) opens Game Center's
+    /// invite sheet and nothing else: no menu screen on the phone, the hero stands up from the board and walks on.
+    func testInviteInThePlazaOpensGameCenterAndNoMenuScreen() {
+        let hub = HubSession.shared, menu = TennisMenu.shared
+        hub.debugReset(); menu.debugShow(.main); hub.debugLive(session: "inv")
+        var invites = 0; hub.presentInvite = { invites += 1 }
+        var toUnity: [[String: Any]] = []; hub.debugSent = { toUnity.append($0) }
+        hub.receive(["type": "hubAction", "session": "inv", "message": "board-invite"])
+        XCTAssertEqual(invites, 1, "the invite board opens Game Center")
+        XCTAssertEqual(menu.screen, .main, "no menu screen opens on the phone"); XCTAssertFalse(hub.panelOpen); XCTAssertNil(hub.station)
+        XCTAssertTrue(toUnity.contains { $0["action"] as? String == "hubB" }, "the hero steps away from the board")
+        hub.inviteFriends()
+        XCTAssertEqual(invites, 2, "Party / ☰ Invite: Game Center at once, no walk")
+        menu.tap("homeInvite")
+        XCTAssertEqual(invites, 3, "the menu's Play with Friends in the plaza: the same Game Center sheet")
+        XCTAssertEqual(menu.screen, .main)
+    }
+
+    /// JOIN: a friend connecting (or any lobby change) leaves both phones in the Plaza, also mid-station; without the Plaza the
+    /// phone menu still opens its lobby screen.
+    func testAFriendJoiningKeepsBothPhonesInThePlaza() throws {
+        let bus = Bus(), a = service("Ann", shirt: "E8505B"), b = service("Bea", shirt: "3F62CC")
+        let hub = HubSession.shared, menu = TennisMenu.shared
+        hub.debugReset(); menu.debugShow(.main); hub.debugLive(session: "join")
+        XCTAssertTrue(hub.drivesPhone)
+        try a.host(using: bus.link("a")); try b.connect(using: bus.link("b"))
+        defer { b.leave(); a.leave() }
+        XCTAssertEqual(b.lobby?.participants.count, 2)
+        for s in [a, b] { OnlineLobbyMenu(service: s).sync(menu) }
+        XCTAssertEqual(menu.screen, .main, "in the plaza with your friend: no lobby screen")
+        menu.debugShow(.character); OnlineLobbyMenu(service: b).sync(menu)
+        XCTAssertEqual(menu.screen, .character, "a friend joining does not pull you out of the locker")
+        SportsSession.shared.displayConnected = false; menu.debugShow(.main); OnlineLobbyMenu(service: b).sync(menu)
+        XCTAssertEqual(menu.screen, .online(.lobby), "no TV, no plaza: the phone menu's lobby screen as before")
+    }
+
+    /// CANCEL: closing Game Center with nobody in leaves no party of one behind (the online bays stay quick match); with a
+    /// friend already in, the party stays.
+    func testCancellingTheInviteLeavesNoEmptyParty() throws {
+        let bus = Bus(), a = service("Ann", shirt: "E8505B")
+        var closed: [Bool] = []; a.onInvitationClosed = { closed.append($0) }
+        try a.host(using: bus.link("a"))
+        XCTAssertNotNil(a.lobby)
+        a.invitationClosed(found: false)
+        XCTAssertNil(a.lobby, "cancelled with nobody in: the empty lobby is gone"); XCTAssertEqual(closed, [false])
+        let b = service("Bea", shirt: "3F62CC")
+        try a.host(using: bus.link("a")); try b.connect(using: bus.link("b"))
+        defer { b.leave(); a.leave() }
+        a.invitationClosed(found: false)
+        XCTAssertEqual(a.lobby?.participants.count, 2, "Bea is in: closing the sheet keeps the party")
+        a.invitationClosed(found: true)
+        XCTAssertEqual(closed, [false, false, true])
+    }
+
     func testTheHostLeavingAnIdleLobbyHandsItOver() throws {
         let bus = Bus(), a = service("Ann", shirt: "E8505B"), b = service("Bea", shirt: "3F62CC"), c = service("Cy", shirt: "7BDA4A")
         try a.host(using: bus.link("a")); try b.connect(using: bus.link("b")); try c.connect(using: bus.link("c"))

@@ -12,6 +12,8 @@ struct TennisTVRoot: View {
                 Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
                 Group {
                     if OnboardingFlow.shared.holdsMenu { OnboardingHoldingCard() }
+                    // the Plaza booting (it is the TV's menu): the loading screen, then the plaza itself (this window hides)
+                    else if HubSession.shared.drivesPhone { HubLoadingScreen(hub: .shared) }
                     else { TennisMenuScreen(compact: false)
                         .overlay(alignment: .bottomTrailing) {
                             Text("BETA · Feedback on your phone").font(IslandUI.font(13, bold: true))

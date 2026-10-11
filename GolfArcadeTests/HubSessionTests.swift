@@ -70,6 +70,47 @@ final class HubSessionTests: XCTestCase {
         XCTAssertNil(HubZone(line: "garbage"))
     }
 
+    /// LOADING: the TV's loading bar follows Unity's real progress (runtime, scene, plaza build), never goes back, reads 100 % at
+    /// ready, then the loading screen fades into the arrival fly-in (hubArrive). Back from a match there is no fly-in.
+    func testBootLoadingBarFollowsUnityAndFadesIntoTheArrival() async throws {
+        let hub = HubSession.shared
+        SportsSession.shared.displayConnected = true; TennisMenu.shared.debugShow(.title)
+        var sent: [String] = []; hub.debugSent = { sent.append($0["action"] as? String ?? "") }
+        hub.debugBoot(session: "boot")
+        XCTAssertTrue(hub.drivesPhone, "the TV shows the loading screen (TennisTVRoot), the phone its bar")
+        XCTAssertEqual(hub.loadProgress, 0); XCTAssertEqual(hub.loadStage, "Starting up")
+        hub.receive(["type": "loadProgress", "session": "boot", "message": "0.5"]); XCTAssertEqual(hub.loadProgress, 0.21, accuracy: 0.001)
+        hub.receive(["type": "buildProgress", "session": "boot", "message": "0.5"]); XCTAssertEqual(hub.loadProgress, 0.625, accuracy: 0.001)
+        hub.receive(["type": "loadProgress", "session": "boot", "message": "0.2"]); XCTAssertEqual(hub.loadProgress, 0.625, accuracy: 0.001, "the bar never goes back")
+        XCTAssertEqual(hub.loadStage, "Building the Plaza")
+        hub.receive(["type": "buildProgress", "session": "other", "message": "1"]); XCTAssertEqual(hub.loadProgress, 0.625, accuracy: 0.001, "another session's progress is ignored")
+        hub.receive(["type": "buildProgress", "session": "boot", "message": "1"]); XCTAssertEqual(hub.loadStage, "Opening the gates")
+        XCTAssertFalse(sent.contains("hubArrive"))
+        hub.receive(["type": "ready", "session": "boot"])
+        XCTAssertEqual(hub.loadProgress, 1); XCTAssertEqual(hub.phase, .live); XCTAssertTrue(hub.arriving, "100 %: the full bar holds, then fades")
+        try await Task.sleep(for: .seconds(HubSession.readyHold + 0.15))
+        XCTAssertTrue(sent.contains("hubArrive"), "the fly-in starts as the loading screen fades")
+        XCTAssertFalse(hub.arriving)
+        // back from a match on the same bench: straight to the bench, no fly-in
+        hub.runtimeTaken(bay: "bay-tennis-exhibition"); hub.sessionEnded(finished: true); sent.removeAll()
+        hub.debugBoot(session: "back"); hub.receive(["type": "ready", "session": "back"])
+        XCTAssertFalse(hub.arriving)
+        try await Task.sleep(for: .seconds(HubSession.readyHold + 0.15))
+        XCTAssertFalse(sent.contains("hubArrive"))
+    }
+
+    /// The approved loading screen (D) on the TV and the phone while the plaza boots, at 68 % (written to $MENU_SNAP_DIR).
+    func testLoadingScreenSnapshots() async throws {
+        let hub = HubSession.shared
+        SportsSession.shared.displayConnected = true; TennisMenu.shared.debugShow(.title)
+        hub.debugBoot(session: "snap"); hub.receive(["type": "buildProgress", "session": "snap", "message": "0.58"])
+        XCTAssertEqual(Int((hub.loadProgress * 100).rounded()), 68)
+        try await save(HubLoadingScreen(hub: hub), "hub-loading-tv", size: CGSize(width: 1280, height: 720))
+        try await save(HubControllerView(), "hub-loading-phone")
+        hub.receive(["type": "ready", "session": "snap"])
+        try await save(HubLoadingScreen(hub: hub), "hub-loading-tv-100", size: CGSize(width: 1280, height: 720))
+    }
+
     func testPhoneControllerSnapshots() async throws {
         let hub = HubSession.shared
         SportsSession.shared.displayConnected = true; TennisMenu.shared.debugShow(.main)
@@ -81,10 +122,9 @@ final class HubSessionTests: XCTestCase {
         try await save(HubQuickMenu(hub: hub, dismiss: {}), "hub-quick-menu")
     }
 
-    private func save<V: View>(_ view: V, _ name: String) async throws {
+    private func save<V: View>(_ view: V, _ name: String, size: CGSize = CGSize(width: 402, height: 874)) async throws {
         let folder = URL(fileURLWithPath: ProcessInfo.processInfo.environment["MENU_SNAP_DIR"] ?? NSTemporaryDirectory() + "tennis-menu", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let size = CGSize(width: 402, height: 874)
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         let host = UIHostingController(rootView: view)
         let window = UIWindow(windowScene: scene)

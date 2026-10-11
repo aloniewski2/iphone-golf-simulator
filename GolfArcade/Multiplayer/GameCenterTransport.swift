@@ -13,12 +13,16 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
     var onError: ((Error) -> Void)?
     var onConnected: (() -> Void)?
     var onInvitation: ((GKInvite) -> Void)?
+    /// Apple's invite / accept sheet closed by itself: true with friends connected (the match is attached), false cancelled or failed.
+    var onInvitationClosed: ((Bool) -> Void)?
     private(set) var match: GKMatch?
     private var generation = 0
     private var registered = false
     private var disconnected: Set<String> = []
     private var activeController: GKMatchmakerViewController?
     override init() { super.init(); register() }
+    /// An invite / accept controller is open.
+    var inviting: Bool { activeController != nil }
     var capacity: Int { min(4, GKMatchRequest.maxPlayersAllowedForMatch(of: .peerToPeer)) }
 
     func authenticate(present: @escaping (UIViewController) -> Void) async throws {
@@ -49,6 +53,8 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
         guard activeController == nil else { throw MultiplayerError.invalidOperation("An invitation request is already open.") }
         guard let controller = GKMatchmakerViewController(matchRequest: try request(sport: nil, count: 4)) else { throw MultiplayerError.unavailable("Game Center matchmaking is unavailable.") }
         controller.matchmakerDelegate = self; controller.matchmakingMode = .inviteOnly
+        // the first friend in is enough to go: the rest keep joining the match in the background
+        controller.canStartWithMinimumPlayers = true
         if let match { controller.addPlayers(to: match) }
         activeController = controller
         return controller
@@ -111,16 +117,16 @@ final class GameCenterTransport: NSObject, MultiplayerTransport, GKMatchDelegate
         Task { @MainActor [weak self] in self?.onInvitation?(delivery.value) }
     }
     nonisolated func matchmakerViewControllerWasCancelled(_ viewController: GKMatchmakerViewController) {
-        Task { @MainActor [weak self] in guard self?.activeController === viewController else { return }; self?.cancelSearch() }
+        Task { @MainActor [weak self] in guard self?.activeController === viewController else { return }; self?.cancelSearch(); self?.onInvitationClosed?(false) }
     }
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFailWithError error: Error) {
-        Task { @MainActor [weak self] in guard self?.activeController === viewController else { return }; viewController.dismiss(animated: true); self?.activeController = nil; self?.onError?(error) }
+        Task { @MainActor [weak self] in guard self?.activeController === viewController else { return }; viewController.dismiss(animated: true); self?.activeController = nil; self?.onInvitationClosed?(false); self?.onError?(error) }
     }
     nonisolated func matchmakerViewController(_ viewController: GKMatchmakerViewController, didFind match: GKMatch) {
         let delivery = GameKitDelivery(value: match)
         Task { @MainActor [weak self] in
             guard self?.activeController === viewController else { delivery.value.disconnect(); return }
-            viewController.dismiss(animated: true); self?.activeController = nil; self?.attach(delivery.value)
+            viewController.dismiss(animated: true); self?.activeController = nil; self?.attach(delivery.value); self?.onInvitationClosed?(true)
         }
     }
 }

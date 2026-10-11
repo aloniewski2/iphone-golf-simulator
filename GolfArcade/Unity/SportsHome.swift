@@ -30,7 +30,7 @@ struct SportsHome: View {
             else if session.displayConnected { TennisRemote() }
             else { TennisPhoneMenu() }
         }
-        .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 })) { sheet in
+        .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 }), onDismiss: { menu.online.sheetDismissed() }) { sheet in
             OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {

@@ -47,6 +47,17 @@ final class HubSession {
     private var token: Int32 = 0
     /// The plaza scene is what Unity has loaded right now (false once a match replaced it).
     private(set) var loaded = false
+    /// The TV's loading bar while the plaza boots, 0...1: the runtime starting, Unity's scene load, the plaza's build (Unity's
+    /// loadProgress / buildProgress); 1 = ready, then the loading screen fades into the arrival fly-in.
+    private(set) var loadProgress = 0.0
+    /// What the loading bar is doing, from its progress.
+    var loadStage: String {
+        loadProgress >= 1 ? "Ready! Into the Plaza" : loadProgress >= 0.95 ? "Opening the gates"
+            : loadProgress >= 0.72 ? "Getting your player ready" : loadProgress >= 0.12 ? "Building the Plaza" : "Starting up"
+    }
+    /// Seconds the full bar holds before the loading screen fades, and the fade (the fly-in starts with it).
+    static let readyHold = 0.45, revealFade = 0.35
+    private func progress(_ value: Double) { if value.isFinite { loadProgress = max(loadProgress, min(1, value)) } }
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var stick = (x: 0.0, y: 0.0, mag: 0.0)
     @ObservationIgnored private var lastSampleSent = 0.0
@@ -82,7 +93,7 @@ final class HubSession {
         default: break
         }
         guard let window = SportsDisplays.shared.external else { return }
-        phase = .booting; bootStarted = Date(); notice = ""
+        phase = .booting; bootStarted = Date(); notice = ""; loadProgress = 0; progress(0.03)
         sessionID = UUID().uuidString; token = Int32.random(in: 1...Int32.max); loaded = false
         place = "plaza"; zone = nil; lastAction = nil
         SportsDiagnostics.write("hub boot session=\(sessionID)")
@@ -92,6 +103,7 @@ final class HubSession {
             guard let self, self.sessionID == launch, self.phase == .booting, self.wanted else { return }
             do { try SportsRuntime.shared().load(in: window, controllerReplica: false) }
             catch { self.fail(error.localizedDescription); return }
+            self.progress(0.12)
             SportsRuntime.shared().pause(false)
             self.startTimer()
             self.sendStart()
@@ -144,8 +156,24 @@ final class HubSession {
     func retry() { if phase == .failed { phase = .off; evaluate() } }
 
     private func reveal() {
-        guard phase == .live else { return }
+        guard phase == .live, !arriving else { return }
         SportsDisplays.shared.external?.isHidden = true
+    }
+    /// The loading screen fading into the arrival (between the full bar and the plaza on the TV).
+    private(set) var arriving = false
+    /// A fresh boot reached 100 %: the full bar holds a moment, then the loading screen fades off the TV as Unity's camera flies in
+    /// from high over the plaza to behind the hero (hubArrive).
+    private func arrive() {
+        arriving = true
+        let launch = sessionID
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.readyHold) { [weak self] in
+            guard let self, self.sessionID == launch else { return }
+            self.command("hubArrive")
+            guard self.phase == .live, self.wanted, let tv = SportsDisplays.shared.external else { self.arriving = false; return }
+            UIView.animate(withDuration: Self.revealFade, animations: { tv.alpha = 0 }) { _ in
+                tv.isHidden = true; tv.alpha = 1; self.arriving = false
+            }
+        }
     }
 
     /// A menu screen on the phone over the plaza (☰ shortcuts, the Party button), with `taps` made on it.
@@ -177,7 +205,7 @@ final class HubSession {
         case "screen-howto": Route(screen: .howTo)
         case "shelf-trophies", "bay-tennis-campaign": Route(screen: .campaign)
         case "mailbox-feedback": Route(action: { BetaFeedback.open() })
-        case "board-invite": Route(action: { TennisMenu.shared.openFromPlaza(.main); TennisMenu.shared.tap("homeInvite") })
+        case "board-invite": Route(action: { HubSession.shared.inviteFriends() })
         case "bay-tennis-exhibition": Route(screen: .exhibition)
         case "bay-tennis-training": Route(screen: .training)
         case "bay-tennis-online", "bay-golf-online": Route(screen: .onlineChoice, taps: ["onlineQuick"])
@@ -211,6 +239,16 @@ final class HubSession {
         if menu.screen != .main && menu.screen != .title { menu.openFromPlaza(.main) }
         evaluate()
     }
+    /// Invite friends: Game Center's invite sheet at once, over the plaza (no menu screens). Friends who accept are in your party
+    /// and walk around this plaza with you; the sheet closes itself once they are in. `afterSheet`: called as one of the
+    /// controller's own sheets (☰, Party) closes, so Apple's sheet waits for it to finish going away.
+    func inviteFriends(afterSheet: Bool = false) {
+        haptic()
+        if afterSheet { DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in self?.presentInvite() } }
+        else { presentInvite() }
+    }
+    /// What opens Game Center's invite sheet (tests count the calls instead: no Game Center in the simulator).
+    @ObservationIgnored var presentInvite: @MainActor () -> Void = { TennisMenu.shared.online.inviteFromPlaza(TennisMenu.shared) }
     /// ☰ shortcut: walk there (a quick fade) and use it.
     func openStation(_ id: String) { command("hubUse", mode: id); haptic() }
     func backToPlaza() {
@@ -239,6 +277,8 @@ final class HubSession {
         let signature = lookFields(session.players[session.playerIndex]).sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: ";")
         guard signature != lookSent else { return }
         lookSent = signature; sendLook()
+        // friends in your plaza see the change too (your party look)
+        if party != nil { menu.online.identity(menu) }
     }
     /// The locker's look reached the plaza hero (live, on every change).
     func sendLook() {
@@ -323,9 +363,10 @@ final class HubSession {
         self.place = place; self.zone = HubZone(line: zone)
     }
     /// Tests: the boot message the plaza would send (no Unity in the simulator).
-    func debugBoot(session: String) { sessionID = session; token = 7; phase = .booting; sendStart() }
+    func debugBoot(session: String) { sessionID = session; token = 7; phase = .booting; loadProgress = 0; sendStart() }
     func debugPartyTick() { partyTick() }
-    func debugReset() { timer?.invalidate(); timer = nil; phase = .off; loaded = false; zone = nil; station = nil; returnBay = nil; place = "plaza"; notice = ""; lookSent = ""; debugSent = nil }
+    func debugReset() { timer?.invalidate(); timer = nil; phase = .off; loaded = false; loadProgress = 0; arriving = false; zone = nil; station = nil; returnBay = nil; place = "plaza"; notice = ""; lookSent = ""; debugSent = nil
+        presentInvite = { TennisMenu.shared.online.inviteFromPlaza(TennisMenu.shared) } }
     #endif
 
     // MARK: party (PLAN §4: friends in your plaza, sitting together, Call party)
@@ -427,12 +468,15 @@ final class HubSession {
         guard event["session"] as? String == sessionID else { return }
         let message = event["message"] as? String ?? ""
         switch type {
+        case "loadProgress": progress(0.12 + 0.18 * (Double(message) ?? 0))
+        case "buildProgress": progress(0.30 + 0.65 * (Double(message) ?? 0))
         case "ready":
-            loaded = true
+            loaded = true; progress(1)
+            let fresh = phase == .booting && returnBay == nil
             if phase == .booting { phase = .live; SportsDiagnostics.write("hub ready after \(String(format: "%.2f", Date().timeIntervalSince(bootStarted))) s") }
             // back from a match on the same bench: its panel again (staying seated = rematch, B = stand up)
             if let bay = returnBay, station == nil { useStation(bay) }
-            if wanted { reveal() } else { suspend() }
+            if !wanted { suspend() } else if fresh { arrive() } else { reveal() }
         case "hubPlace": place = message
         case "hubZone": zone = HubZone(line: message)
         case "hubAction": lastAction = message; useStation(message)

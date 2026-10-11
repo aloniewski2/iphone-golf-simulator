@@ -326,7 +326,8 @@ final class TennisMenu {
         case "partyLocal": show(.localChoice)
         case "partyOnline": show(.onlineChoice)
         case "onlineQuick": online.select("partyOnline", menu: self)
-        case "homeInvite": online.select("net-invite", menu: self)
+        // in the Plaza: Game Center's invite sheet only (friends land in the plaza); on the phone menu: invite into the lobby screen
+        case "homeInvite": if HubSession.shared.drivesPhone { HubSession.shared.inviteFriends() } else { online.select("net-invite", menu: self) }
         case "homeEmotes": homeEmote = nil; show(.homeEmotes)
         case let emote where emote.hasPrefix("home-emote-"):
             homeEmote = String(emote.dropFirst(11)); homeEmoteSequence += 1
@@ -1191,6 +1192,8 @@ struct OnlineAppleSheet: Identifiable {
         guard let l = service.lobby else { return }
         switch l.phase {
         case .lobby:
+            // With the Plaza on the TV the plaza is the party's lobby: friends who join walk around it, no lobby screen opens
+            if !force && HubSession.shared.drivesPhone && !menu.screen.isOnline { return }
             if force || !menu.screen.isOnline || [.online(.entry),.online(.nearby),.online(.searching),.online(.loading),.online(.results)].contains(menu.screen) { menu.showOnline(.lobby) }
         case .loading: if menu.screen != .online(.leave) { menu.showOnline(.loading) }
         case .results: if menu.screen != .online(.leave) { SportsDisplays.shared.showMatchControls(); menu.showOnline(.results) }
@@ -1202,13 +1205,39 @@ struct OnlineAppleSheet: Identifiable {
         guard service.pendingInvite != nil else { return }
         do {
             if service.lobby != nil || SportsSession.shared.active { service.leave(); SportsSession.shared.end() }
-            identity(menu); sheet = OnlineAppleSheet(controller:try service.acceptInvitation()); menu.showOnline(.searching)
+            identity(menu); sheet = OnlineAppleSheet(controller:try service.acceptInvitation())
+            // in the Plaza you stay on your feet in it: once connected you are in the host's party, walking your own plaza with them
+            if !HubSession.shared.drivesPhone { menu.showOnline(.searching) }
         } catch { menu.onlineNotice(error.localizedDescription) }
     }
+    /// The Plaza's Invite: Game Center's invite sheet straight away, over the plaza (no lobby screen). It closes by itself once
+    /// the friends are in, and they are in this plaza with you; cancelled with nobody in, nothing is left behind.
+    func inviteFromPlaza(_ menu: TennisMenu) {
+        identity(menu)
+        if service.isNearby { menu.onlineNotice("Ask your friend to open Nearby on the same Wi-Fi."); HubSession.shared.notice = menu.notice; return }
+        operation?.cancel(); let token = UUID(); operationID = token
+        operation = Task { @MainActor [weak self, weak menu] in
+            guard let self else { return }
+            do {
+                if !self.service.authenticated { try await self.service.authenticate { [weak self] vc in self?.sheet = OnlineAppleSheet(controller: vc) } }
+                guard self.operationID == token else { return }
+                self.sheet = OnlineAppleSheet(controller: try self.service.inviteFriends())
+            } catch is CancellationError {
+            } catch {
+                guard self.operationID == token else { return }
+                menu?.onlineNotice(error.localizedDescription); HubSession.shared.notice = error.localizedDescription
+            }
+        }
+    }
+    /// The Apple sheet went away (its own close, or swiped down): a swiped-down invite is a cancel, so the next Invite opens again.
+    /// (A sheet replaced by the next one, sign-in then invite, still holds an item: not a cancel.)
+    func sheetDismissed() { if sheet == nil { service.invitationSheetDismissed() } }
 }
 
 extension OnlineLobbyMenu {
     func installCallbacks(_ menu: TennisMenu) {
+        // Apple's sheet closed itself (friends connected, cancelled, failed): let go of it, so the next one presents cleanly
+        service.onInvitationClosed = { [weak self] _ in self?.sheet = nil }
         service.onResult = { [weak self, weak menu] payload in
             guard let self, let menu else { return }
             self.winnerID = nil
