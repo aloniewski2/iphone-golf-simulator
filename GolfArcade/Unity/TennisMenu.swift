@@ -1048,7 +1048,8 @@ struct OnlineAppleSheet: Identifiable {
     /// Pass the phone (golf): the course last picked, the guests already in and ready, and straight into loading. The only press the
     /// players made after choosing Local is how many of them there are.
     private func startPassThePhone(_ players: Int, menu: TennisMenu) throws {
-        identity(menu); try service.hostLocal(name: menu.player?.name ?? "Friends")
+        // one phone, no network: a lobby only this phone is in
+        identity(menu); try service.host(using: SharedPhoneTransport(), sharedPhone: true)
         let course = SportsSession.shared.golfCourse
         try service.configure(.golf, venue: MultiplayerLobby.validVenue(course, sport: .golf) ? course : "cliffside")
         for _ in 1..<players { try service.addLocalGuest() }

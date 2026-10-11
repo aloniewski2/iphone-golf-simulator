@@ -96,26 +96,8 @@ struct GolfPhoneController: View {
     @State private var stickOffset = CGSize.zero
     @State private var draggingAim = false
     @State private var lastAimSent = -Double.infinity
-    /// Pass the phone: whose turn it just became, shown for a moment so the phone goes to the right hands.
-    @State private var passTo: String?
-    @State private var lastTurn: Int?
     private var reading: GolfControllerReading { session.golfController }
     private var canAim: Bool { session.ready && session.golfPhase == "Aim" && !session.paused && (reading.party?.myTurn ?? true) }
-    /// When the turn moves to someone else on a shared phone, say whose it is for a couple of seconds. No cue before the first shot,
-    /// and none when the party is not sharing this phone.
-    private func handOff(to turn: Int?) {
-        guard let turn, turn != lastTurn else { return }
-        let first = lastTurn == nil
-        lastTurn = turn
-        // Only when the turn passes to a player this phone controls: a friend on their own phone is not handed this one.
-        guard !first, let party = reading.party, party.shared, party.myTurn, party.players.count > 1 else { return }
-        let name = party.player
-        passTo = name
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(2.4))
-            if passTo == name { passTo = nil }
-        }
-    }
     private var isDesignPreview: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("-golfControllerDesign")
@@ -136,23 +118,6 @@ struct GolfPhoneController: View {
             }
         }
         .ignoresSafeArea().statusBarHidden().persistentSystemOverlays(.hidden).preferredColorScheme(.light)
-        .overlay {
-            if let name = passTo {
-                VStack(spacing: 10) {
-                    GolfControllerText(text: "PASS THE PHONE TO", size: 22)
-                    GolfControllerText(text: name.uppercased(), size: 46)
-                }
-                .padding(28).frame(maxWidth: 380)
-                .background(GolfControllerStyle.blue, in: RoundedRectangle(cornerRadius: 28))
-                .overlay(RoundedRectangle(cornerRadius: 28).stroke(.white, lineWidth: 4))
-                .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
-                .onTapGesture { passTo = nil }
-                .transition(.scale.combined(with: .opacity))
-                .accessibilityElement(children: .combine).accessibilityIdentifier("golf-pass-card")
-            }
-        }
-        .animation(.easeOut(duration: 0.25), value: passTo)
-        .onChange(of: reading.party?.turn, initial: true) { _, turn in handOff(to: turn) }   // initial: the first turn is only remembered, so the next change is a real hand-off
         .sheet(isPresented: $session.menuPauseVisible) {
             pauseMenu
         }
@@ -210,30 +175,14 @@ struct GolfPhoneController: View {
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white, lineWidth: 3))
                 .shadow(color: .black.opacity(0.15), radius: 0, y: 3).position(x: 232, y: 946)
                 .accessibilityIdentifier("golf-aim-reading")
-            Text(reading.party?.phase == "result" ? "PICK AN EMOTE · NEXT PLAYER STARTS AUTOMATICALLY" : reading.party?.myTurn == false ? "WATCH THE SHOT · REACT WITH YOUR PLAYER" : session.touch ? "DRAG TO AIM · TAP BALL TO SWING" : "DRAG TO AIM · TAP START SWING, THEN SWING")
+            Text(reading.party?.phase == "result" ? (reading.party?.shared == true ? "NEXT PLAYER STARTS AUTOMATICALLY" : "PICK AN EMOTE · NEXT PLAYER STARTS AUTOMATICALLY") : reading.party?.myTurn == false ? "WATCH THE SHOT · REACT WITH YOUR PLAYER" : session.touch ? "DRAG TO AIM · TAP BALL TO SWING" : "DRAG TO AIM · TAP START SWING, THEN SWING")
                 .font(GolfControllerStyle.font(11)).foregroundStyle(GolfControllerStyle.ink)
                 .position(x: 232, y: 985)
         }.overlay {
-            if let party=reading.party, party.phase == "result" || party.phase == "flight" || !party.myTurn {
+            // (on one shared phone the turn just passes: no reaction panel)
+            if let party=reading.party, !party.shared, party.phase == "result" || party.phase == "flight" || !party.myTurn {
                 GolfPartyEmoteControls(session:session,party:party).padding(20).frame(width:424,height:410)
                     .background(GolfControllerStyle.blue,in:RoundedRectangle(cornerRadius:24)).position(x:232,y:760)
-            }
-        }.overlay {
-            if let party=reading.party, party.shared && party.myTurn && party.phase == "aim" {
-                Menu {
-                    ForEach(party.players.filter { $0.controlled && $0.seat != party.turn }) { player in
-                        Menu(player.name) {
-                            ForEach(Array(player.emotes.enumerated()),id:\.offset) { slot,id in
-                                Button(EmoteCatalog.name(id)) {
-                                    session.command("golfEmote",value:Double(slot),value2:Double(player.seat))
-                                }.disabled(!player.canEmote || session.paused)
-                            }
-                        }
-                    }
-                } label: {
-                    Label("Guest emotes",systemImage:"face.smiling.fill").font(Club.ui(13,800))
-                        .foregroundStyle(.white).padding(12).background(GolfControllerStyle.blue,in:RoundedRectangle(cornerRadius:16))
-                }.frame(width:118).position(x:389,y:946).accessibilityIdentifier("golf-guest-emotes")
             }
         }.buttonStyle(GolfControllerPressStyle())
     }
@@ -316,7 +265,8 @@ struct GolfPhoneController: View {
             } else if let party=reading.party, !party.myTurn && !session.paused {
                 Text("\(party.player)’s turn").font(Club.ui(22,900)).foregroundStyle(.white)
                     .padding(18).background(GolfControllerStyle.ink.opacity(0.94),in:Capsule())
-            } else if session.paused || (session.golfPhase == "Aim" && !session.golfShotReady) {
+            // (in a round with others the game readies each shot by itself)
+            } else if session.paused || (session.golfPhase == "Aim" && !session.golfShotReady && reading.party == nil) {
                 VStack(spacing: 10) {
                     GolfControllerText(text: "READY TO SWING?", size: 25)
                     Text("Tap Ready, then Start Swing for each shot.").font(Club.ui(16, 700)).foregroundStyle(.white)

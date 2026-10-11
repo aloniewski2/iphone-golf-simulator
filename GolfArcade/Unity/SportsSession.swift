@@ -886,7 +886,7 @@ final class SportsSession {
             && !touch && (displayConnected || multiplayerControllerOnly) && upHere
             && !OnboardingFlow.shared.active && finishedMatch == nil
             && ["Intro", "Aim", "Flight", "Replay", "HoleDone"].contains(golfPhase)
-            && (golfPhase != "Aim" || golfShotReady)
+            && (golfPhase != "Aim" || golfShotReady || multiplayerMatchID != nil)
         guard want != unityControllerShown else { return }
         unityControllerShown = want
         // (a guest without a TV of its own keeps Unity in a window of its own, under the native controller)

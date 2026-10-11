@@ -783,7 +783,8 @@ final class MultiplayerService {
             if lobby == nil { try? broadcast("hello", payload: (try? json(identity())) ?? "") }
         }
         if isOwner {
-            if lobby?.phase == .loading, !loadingNeedsDecision, now - loadingStarted >= 20 {
+            // (one shared phone loads on its own: there is nobody to wait for, so no "keep waiting or leave" choice)
+            if lobby?.phase == .loading, !loadingNeedsDecision, !sharedPhoneHost, now - loadingStarted >= 20 {
                 loadingNeedsDecision = true
                 try? broadcast("loadTimeout")
             }
@@ -866,6 +867,18 @@ final class MultiplayerService {
             } catch { lastError = error.localizedDescription }
         }
     }
+}
+
+/// Pass the phone: every player is on this phone, so the lobby needs no network at all (no listener, no Local Network
+/// permission, nobody else can join). Messages go nowhere; the host plays the round on this phone.
+@MainActor final class SharedPhoneTransport: MultiplayerTransport {
+    let localID = UUID().uuidString
+    var peers: [String] { [] }
+    var onData: ((Data,String)->Void)?
+    var onPeersChanged: (()->Void)?
+    var onError: ((Error)->Void)?
+    func send(_ data:Data,to peers:[String]?,reliable:Bool) throws { }
+    func disconnect() { }
 }
 
 /// No sockets or Game Center: a deterministic party for screenshots and animation checks.

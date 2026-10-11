@@ -113,6 +113,21 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertThrowsError(try host.addLocalGuest());try host.setReady(true);try host.startMatch();host.runtimeLoaded()
         XCTAssertEqual(host.lobby?.phase,.playing);XCTAssertTrue(host.lobby!.competitors.allSatisfy(\.loaded))
     }
+    /// Pass the phone needs no network: a lobby only this phone is in (no listener, so no Local Network prompt, and nobody can
+    /// join), its guests ready, straight into loading, and no "keep waiting or leave" choice however long this one phone takes.
+    func testPassThePhoneIsALobbyOfOnePhoneWithNoNetwork() throws {
+        var now=100.0
+        let host=MultiplayerService(sendToRuntime:{_ in true},pollRuntime:{nil},clock:{now})
+        host.onMatchRequested={ _ in }; defer { host.leave() }
+        try host.host(using:SharedPhoneTransport(),sharedPhone:true);try host.configure(.golf)
+        try host.addLocalGuest();try host.addLocalGuest()
+        XCTAssertTrue(host.isNearby,"guests can be added on the shared phone")
+        XCTAssertEqual(host.lobby?.participants.count,3);XCTAssertEqual(host.lobby?.venue,"cliffside")
+        try host.setReady(true);try host.startMatch()
+        XCTAssertEqual(host.lobby?.phase,.loading)
+        now+=60;host.update()
+        XCTAssertFalse(host.loadingNeedsDecision,"one phone has nobody to wait for")
+    }
     func testSharedGuestsAndSeparatePhoneKeepTheirOwnSeatsAndLooks() throws {
         let bus=Bus(), runtime=Runtime(), remoteRuntime=Runtime()
         let host=runtime.service(), remote=remoteRuntime.service()
