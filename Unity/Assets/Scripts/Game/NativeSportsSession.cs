@@ -100,7 +100,7 @@ namespace GolfArcade.Game
         static void Boot() {
 #if UNITY_IOS && !UNITY_EDITOR
             Embedded=true;
-            var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>();
+            var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>(); go.AddComponent<CaptureAudioTapKeeper>();
 #endif
         }
         void Start()

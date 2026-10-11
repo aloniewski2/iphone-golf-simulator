@@ -9,6 +9,7 @@ struct SportsHome: View {
     @State private var onboarding = OnboardingFlow.shared
     @State private var hub = HubSession.shared
     @State private var clubHub = ClubHub.shared
+    @State private var partyUI = PartyUI.shared
     @Environment(\.scenePhase) private var scenePhase
     var body: some View {
         Group {
@@ -37,6 +38,9 @@ struct SportsHome: View {
         // The online hub (friends, who is online, invites) opens over any phone screen; invites arrive as a banner over everything.
         .sheet(isPresented: $clubHub.hubOpen) { ClubHubView(dismiss: { clubHub.hubOpen = false }).presentationDetents([.large]) }
         .overlay(alignment: .top) { InviteBannerHost() }
+        // Record the TV, talk and chat with your party, and their settings: one row of buttons over every phone screen
+        .overlay(alignment: .top) { CaptureDock().padding(.top, 4) }
+        .sheet(isPresented: $partyUI.settingsOpen) { PartySettingsView(dismiss: { partyUI.settingsOpen = false }).presentationDetents([.large]) }
         .onOpenURL { clubHub.open(url: $0) }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             // Not during an online match either: the bar opens Messages, and a palm on it mid-swing leaves the app, which ends the match
@@ -82,6 +86,7 @@ struct SportsHome: View {
         .onChange(of: session.active) { _, _ in hub.evaluate() }
         .onChange(of: menu.screen) { _, _ in hub.evaluate() }
         .onChange(of: session.active) { _, _ in clubHub.updateBanner(); clubHub.publishPresence() }
+        .onChange(of: session.displayConnected) { _, on in if !on { RecordingService.shared.displayLost() } }
         .onChange(of: hub.arriving) { _, _ in clubHub.updateBanner() }
         .onChange(of: hub.phase) { _, _ in clubHub.updateBanner() }
         .onChange(of: menu.online.service.lobby?.revision) { _, _ in clubHub.publishPresence() }
@@ -92,6 +97,9 @@ struct SportsHome: View {
         .onChange(of:menu.online.service.pendingInvite) { _,invite in if invite != nil { menu.online.acceptInvite(menu) } }
         .task {
             clubHub.configureLive(); clubHub.start()
+            PartySafety.shared.refresh()
+            RecordingService.shared.captureHook = { PartyVoiceCoordinator.shared.recordingChanged($0) }
+            await RecordingService.shared.recoverLeftovers()
             menu.online.installCallbacks(menu)
             let args = ProcessInfo.processInfo.arguments
             #if DEBUG
@@ -360,6 +368,7 @@ private struct SportsControls:View {
         if session.sport == "tennis" {
             Section("Recording") { PointRecordingSettings(session: session) }
         }
+        PartySettingsSections()
         Section("Session") {
             if session.paused {
                 Toggle("Sound",isOn:$session.sound).onChange(of:session.sound) { _,v in session.command("sound",value:v ? 1 : 0) }

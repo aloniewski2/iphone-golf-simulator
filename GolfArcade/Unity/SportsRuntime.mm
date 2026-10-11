@@ -14,6 +14,18 @@ static BOOL SportsExplicitBenchmark(void) {
     return [arguments containsObject:@"-benchTennis"] || [arguments containsObject:@"-benchGolf"];
 }
 
+// The plugin's callback has no context pointer, so the handler lives here. Events arrive on the main queue.
+static void (^sCaptureHandler)(NSString*);
+static NSObject *CaptureLock(void) { static NSObject *lock; static dispatch_once_t once; dispatch_once(&once, ^{ lock=[NSObject new]; }); return lock; }
+static void SportsCaptureTrampoline(const char *json) {
+    if(!json) return;
+    void (^handler)(NSString*);
+    @synchronized(CaptureLock()) { handler=sCaptureHandler; }
+    if(!handler) return;
+    NSString *event=[NSString stringWithUTF8String:json];
+    if(event) handler(event);
+}
+
 @implementation SportsRuntime {
 #if HAS_UNITY
     UnityFramework *_unity;
@@ -29,6 +41,11 @@ static BOOL SportsExplicitBenchmark(void) {
     int (*_readResult)(char*,int);
     void (*_setResult)(const char*);
     double (*_clock)(void);
+    int (*_captureStart)(const char*);
+    void (*_captureStop)(void);
+    int (*_captureActive)(void);
+    void (*_captureVoice)(const float*,int,int,int);
+    void (*_captureSetCallback)(void (*)(const char*));
     __weak UIWindow *_destination;
     BOOL _controllerReplica;
     BOOL _unityOnPhone;
@@ -82,6 +99,16 @@ static BOOL SportsExplicitBenchmark(void) {
         _clock=(double(*)(void))dlsym(RTLD_DEFAULT,"SportsClock");
         _networkPush=(int(*)(const char*))dlsym(RTLD_DEFAULT,"SportsNetworkPush");
         _networkPoll=(int(*)(char*,int))dlsym(RTLD_DEFAULT,"SportsNetworkPollOutput");
+        _captureStart=(int(*)(const char*))dlsym(RTLD_DEFAULT,"SportsCaptureStart");
+        _captureStop=(void(*)(void))dlsym(RTLD_DEFAULT,"SportsCaptureStop");
+        _captureActive=(int(*)(void))dlsym(RTLD_DEFAULT,"SportsCaptureActive");
+        _captureVoice=(void(*)(const float*,int,int,int))dlsym(RTLD_DEFAULT,"SportsCaptureVoice");
+        _captureSetCallback=(void(*)(void(*)(const char*)))dlsym(RTLD_DEFAULT,"SportsCaptureSetCallback");
+        // A handler set before Unity loaded starts receiving now.
+        if([self captureAvailable]) {
+            BOOL hasHandler; @synchronized(CaptureLock()) { hasHandler=sCaptureHandler!=nil; }
+            if(hasHandler) _captureSetCallback(SportsCaptureTrampoline);
+        }
     }
     if (!_push || !_pushSample || !_poll || !_clock || !_readResult || !_setResult) {
         if(error) *error=[NSError errorWithDomain:@"SportsRuntime" code:2 userInfo:@{NSLocalizedDescriptionKey:@"Unity bridge is missing. Re-export Unity before building the host app."}];
@@ -151,6 +178,21 @@ static BOOL SportsExplicitBenchmark(void) {
 - (NSString*)tennisResult { char buffer[1024]; if(!_readResult || !_readResult(buffer,sizeof(buffer))) return nil; return [NSString stringWithUTF8String:buffer]; }
 - (void)clearTennisResult { if(_setResult) _setResult(""); }
 - (double)clock { return _clock ? _clock() : NSProcessInfo.processInfo.systemUptime; }
+- (BOOL)captureAvailable { return _captureStart && _captureStop && _captureActive && _captureVoice && _captureSetCallback; }
+- (BOOL)startCapture:(NSString*)configJSON {
+    if(![self captureAvailable]) return NO;
+    return _captureStart(configJSON.length ? configJSON.UTF8String : "{}")!=0;
+}
+- (void)stopCapture { if(_captureStop) _captureStop(); }
+- (BOOL)captureActive { return _captureActive && _captureActive()!=0; }
+- (void)captureVoice:(const float*)samples frames:(int)frames rate:(int)rate source:(int)source {
+    if(_captureVoice && samples && frames>0) _captureVoice(samples,frames,rate,source);
+}
+- (void)setCaptureHandler:(void (^)(NSString*))handler {
+    @synchronized(CaptureLock()) { sCaptureHandler=[handler copy]; }
+    if(![self captureAvailable]) return;   // registered when the symbols resolve (see loadInWindow)
+    _captureSetCallback(handler ? SportsCaptureTrampoline : nullptr);
+}
 - (void)pause:(BOOL)paused {
 #if HAS_UNITY
     [_unity pause:paused];

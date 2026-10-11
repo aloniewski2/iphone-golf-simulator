@@ -93,6 +93,7 @@ struct GolfPhoneController: View {
     @Bindable var session: SportsSession
     @State private var power = 0.6
     @State private var touchSheet = false
+    @State private var partyChat = false
     @State private var stickOffset = CGSize.zero
     @State private var draggingAim = false
     @State private var lastAimSent = -Double.infinity
@@ -225,12 +226,18 @@ struct GolfPhoneController: View {
                     Toggle("Haptics", isOn: $session.haptics)
                         .onChange(of: session.haptics) { _, enabled in session.command("haptics", value: enabled ? 1 : 0) }
                 }
+                // the golf screen has no room for the chat and settings buttons, so they live here (record and mic stay on the screen)
+                PartySettingsSections()
+                Section("Party") {
+                    Button { partyChat = true } label: { Label("Party chat", systemImage: "bubble.left.and.bubble.right.fill") }.accessibilityIdentifier("golf-party-chat")
+                }
                 Section {
                     Button("Send feedback") { BetaFeedback.open() }
                     Button("Leave game", role: .destructive) { session.exitGame() }
                         .accessibilityIdentifier("controller-exit")
                 }
             }.scrollContentBackground(.hidden).navigationTitle("Golf paused").navigationBarTitleDisplayMode(.inline)
+                .sheet(isPresented: $partyChat) { PartyChatView(dismiss: { partyChat = false }).presentationDetents([.large]) }
         }.interactiveDismissDisabled().presentationDetents([.large])
             .presentationBackground(Color(hex: "FFF9ED"))
     }

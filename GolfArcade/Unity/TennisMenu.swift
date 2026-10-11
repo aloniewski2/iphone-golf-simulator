@@ -47,7 +47,7 @@ enum SettingsTab: String, CaseIterable { case gameplay, controls, guide, display
     var title: String {
         switch self {
         case .gameplay: "Gameplay"; case .controls: "Controls"; case .guide: "Guide"; case .display: "Display"
-        case .audio: "Audio"; case .access: "Accessibility"; case .developer: "Developer"
+        case .audio: "Audio & voice"; case .access: "Accessibility"; case .developer: "Developer"
         }
     }
 }
@@ -153,7 +153,7 @@ final class TennisMenu {
         case .controls: ["controls", "range", "hand", "relock", "timing"]
         case .guide: GuideDeck.allCases.map(\.rowID)
         case .display: ["fps", "overscan"]
-        case .audio: ["sound", "haptics"]
+        case .audio: ["sound", "haptics", "partyVoice", "partyRecording"]
         case .access: ["bigText", "reduceMotion"]
         case .developer: ["bench"]
         }
@@ -480,6 +480,7 @@ final class TennisMenu {
         case "presentationBigMoments": s.presentationBigMoments.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()
+        case "partyVoice", "partyRecording": PartyUI.shared.settingsOpen = true
         case "fps": s.highFrameRate.toggle()
         case "range": s.travel = min(1.2, max(0.3, s.travel + Double(step) * 0.1))
         case "overscan": s.overscan = min(0.1, max(0, s.overscan + Double(step) * 0.02))

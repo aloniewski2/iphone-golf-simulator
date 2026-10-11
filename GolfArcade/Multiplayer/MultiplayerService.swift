@@ -31,6 +31,17 @@ final class MultiplayerService {
         guard lobby?.phase == .lobby, ["hubPresence", "hubEvent"].contains(kind), payload.utf8.count <= 2048 else { return }
         try? broadcast(kind, payload: payload, reliable: reliable)
     }
+    /// The party channel: typed chat, voice frames and "I am recording" notices between the phones of ONE lobby, in every phase (the lobby,
+    /// loading, a match). Only real players of this lobby can send (the receiver checks), nothing is stored here, and nothing is sent to
+    /// Unity or any server. (kind, payload, sender)
+    @ObservationIgnored var onParty: ((String, String, String) -> Void)?
+    static let partyKinds: Set<String> = ["partyChat", "partyVoice", "partyRec"]
+    func sendParty(_ kind: String, payload: String, reliable: Bool) {
+        guard lobby != nil, !sharedPhoneHost, Self.partyKinds.contains(kind), payload.utf8.count <= 4096 else { return }
+        try? broadcast(kind, payload: payload, reliable: reliable)
+    }
+    /// The other phones in this party (real players, connected), for who can hear and read what you send.
+    var partyMembers: [MultiplayerParticipant] { lobby?.participants.filter { !$0.isGuest && $0.id != localID && $0.connected } ?? [] }
     var onReturnToLobby: (() -> Void)?
     /// Apple's invite / accept sheet closed by itself (true: friends connected). The UI lets go of the sheet it presented.
     @ObservationIgnored var onInvitationClosed: ((Bool) -> Void)?
@@ -487,6 +498,10 @@ final class MultiplayerService {
             return
         }
         guard let state = lobby, packet.lobbyID == state.id else { return }
+        if Self.partyKinds.contains(packet.kind) {
+            guard packet.payload.utf8.count <= 4096, state.participants.contains(where: { $0.id == peer && !$0.isGuest }) else { return }
+            onParty?(packet.kind, packet.payload, peer); return
+        }
         if packet.kind == "hubPresence" || packet.kind == "hubEvent" {
             guard state.phase == .lobby, packet.payload.utf8.count <= 2048, state.participants.contains(where: { $0.id == peer }) else { return }
             onHub?(packet.kind, packet.payload, peer); return

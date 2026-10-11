@@ -34,5 +34,21 @@ enum { SportsSampleVersion = 3, SportsSampleValid = 1, SportsSampleDegraded = 2 
 - (double)clock;
 - (void)pause:(BOOL)paused;
 - (void)setForeground:(BOOL)foreground;
+
+// MARK: TV session recording (Unity-side recorder; this app only starts/stops it and feeds voice).
+// All of these are safe no-ops (NO / nothing) when Unity is absent, e.g. on the simulator.
+/// YES when Unity is loaded and exports all five SportsCapture* functions.
+- (BOOL)captureAvailable;
+/// `configJSON`: width, height, fps (30|60), bitrateMbps, gameAudio, voice, mic, display, gainGame, gainVoice, gainMic.
+/// YES when recording started; NO when refused (an event with the reason is delivered to the handler).
+- (BOOL)startCapture:(NSString*)configJSON;
+/// Finalizes asynchronously; a "finished" or "failed" event always follows.
+- (void)stopCapture;
+- (BOOL)captureActive;
+/// Mono float samples; callable from a real-time audio thread. source 0 = remote party voice, 1 = own microphone.
+- (void)captureVoice:(const float*)samples frames:(int)frames rate:(int)rate source:(int)source;
+/// Receives each capture event as JSON on the main queue. Pass nil to stop receiving.
+/// May be set before Unity has loaded; it is registered as soon as the symbols resolve.
+- (void)setCaptureHandler:(nullable void (^)(NSString *eventJSON))handler;
 @end
 NS_ASSUME_NONNULL_END

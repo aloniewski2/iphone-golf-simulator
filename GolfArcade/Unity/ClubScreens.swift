@@ -364,12 +364,14 @@ struct IslandPauseScreen: View {
     var dismiss: () -> Void = {}
     @State private var options = false
     @State private var leaving = false
+    @State private var partySettings = false
     private var session: SportsSession { .shared }
     var body: some View {
         IslandShell(title: "Paused", compact: compact) {
             VStack(alignment: .leading, spacing: 16) {
                 IslandAction(title: "Resume", primary: true, compact: compact) { session.readyToPlay(); dismiss() }
                 IslandAction(title: "Settings", compact: compact) { options.toggle() }
+                IslandAction(title: "Voice, chat & recording", compact: compact) { partySettings = true }
                 if options {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 12) {
@@ -418,5 +420,6 @@ struct IslandPauseScreen: View {
                 if !compact { Text("Use your phone to continue.").font(IslandUI.font(17)) }
             }.foregroundStyle(IslandUI.navy).frame(maxWidth:compact ? .infinity : 400,alignment:.leading)
         }
+        .sheet(isPresented: $partySettings) { PartySettingsView(dismiss: { partySettings = false }).presentationDetents([.large]) }
     }
 }

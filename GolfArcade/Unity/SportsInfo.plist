@@ -21,6 +21,12 @@
 	<string></string>
 	<key>ClubHubServerURL</key>
 	<string></string>
+	<key>ClubPrivacyPolicyURL</key>
+	<string></string>
+	<key>ClubSupportEmail</key>
+	<string></string>
+	<key>ClubSupportURL</key>
+	<string></string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

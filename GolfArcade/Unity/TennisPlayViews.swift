@@ -374,6 +374,8 @@ struct TennisRacketController: View {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
             }
         }
+        // the record / mic / chat / gear dock floats over the top-right corner: keep the score clear of it
+        .padding(.trailing, CaptureDock.reservedWidth(session: session))
         .overlay(alignment: .bottomLeading) {
             if holdHint {
                 Text("Hold to pause").font(IslandUI.font(12, bold: true)).foregroundStyle(IslandUI.navy)
