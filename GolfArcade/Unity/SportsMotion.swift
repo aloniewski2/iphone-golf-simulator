@@ -12,7 +12,7 @@ enum SportsDiagnostics {
             if !FileManager.default.fileExists(atPath:url.path) { FileManager.default.createFile(atPath:url.path,contents:nil) }
             guard let handle=try? FileHandle(forWritingTo:url) else { return }
             defer { try? handle.close() }
-            if let end=try? handle.seekToEnd(), end>262144 {
+            if let end=try? handle.seekToEnd(), end>1_048_576 {   // 1 MB: at 256 KB the file held only the last few minutes of play
                 // Keep the most recent half rather than wiping the file: a full reset throws
                 // away the Ready and axis-lock lines that explain everything after them.
                 try? handle.seek(toOffset:end/2)
@@ -383,7 +383,7 @@ final class SportsMotion: NSObject, ARSessionDelegate, @unchecked Sendable {
         let force=sqrt(a.x*a.x+a.y*a.y+a.z*a.z)
         let swing=filter.step(position:x,rate:speed,time:time,valid:tracked,allowSwingWhileUntracked:grace,acceleration:force)
         if time>=nextDiagnostic {
-            nextDiagnostic=time+1
+            nextDiagnostic=time+4
             SportsDiagnostics.write("sensor quality=\(current.rawValue) ar=\(trackingReason) frameAge=\(time-frameAt) reliableAge=\(time-reliableAt) ready=\(calibrated) axisLocked=\(gate.locked) phase=\(filter.phase.rawValue) delta=\(x-neutralX) target=\(filter.target) reachL=\(filter.reachLeft) reachR=\(filter.reachRight) seenL=\(filter.seenLeft) seenR=\(filter.seenRight) rate=\(speed) force=\(force) sign=\(sign) facing=\(strokeFacing)")
         }
         let q=sample.attitude.quaternion, g=sample.gravity

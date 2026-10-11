@@ -1,0 +1,6 @@
+1. ids produced by rows() and handled by nothing:
+   none
+2. ids handled in select()/adjust() that no rows() produce (candidates, check views):
+   none
+3. MenuScreen cases nothing shows (outside debugShow):
+   none

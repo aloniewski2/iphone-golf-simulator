@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -116,9 +117,12 @@ namespace GolfArcade.Tennis
 
         static bool InPlay(Vector3 p) => Mathf.Abs(p.x) < 13f && Mathf.Abs(p.z) < 21f;
 
-        public static void Apply(GameObject arena, GameObject island)
+        public static void Apply(GameObject arena, GameObject island) { var steps = ApplySteps(arena, island); while (steps.MoveNext()) { } }
+
+        /// Apply, a piece per step (the venue art is the slow part): a match building behind the plaza runs one piece a frame.
+        public static IEnumerator ApplySteps(GameObject arena, GameObject island)
         {
-            if (!Enabled || !arena || System.Environment.GetEnvironmentVariable("HERO_ENV_OFF") == "1") return;   // env var: editor before/after proof only
+            if (!Enabled || !arena || System.Environment.GetEnvironmentVariable("HERO_ENV_OFF") == "1") yield break;   // env var: editor before/after proof only
             var root = new GameObject("EnvV4 postcard kit").transform;
             root.SetParent(arena.transform, true);
             var rng = new System.Random(2040);
@@ -174,7 +178,9 @@ namespace GolfArcade.Tennis
                 if (island) PlantIsland(root, island, arena, R);
                 BuildSkirt(root, arena, island);
             }
-            TennisVenueArt.Build(TennisVenueKind.Resort, arena);
+            yield return null;
+            var art = TennisVenueArt.BuildSteps(TennisVenueKind.Resort, arena);
+            while (art.MoveNext()) yield return null;
         }
 
         /// Yaw that turns the Blender-authored house (front = -Y) to face -x in the arena.

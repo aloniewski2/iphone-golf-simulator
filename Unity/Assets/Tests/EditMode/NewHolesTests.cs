@@ -9,7 +9,7 @@ namespace GolfArcade.Tests
     /// fairway on land, the bunkers where they were modelled, water where the sea is.
     public class NewHolesTests
     {
-        static Hole Get(int n) => Course.Course.Cliffside().Holes.Single(h => h.Number == n);
+        static Hole Get(int n) => Catalogue.Hole(n);
 
         [Test] public void TheSpiralIsPlayable() => Playable(13, 5);
         [Test] public void TheWitchsLairIsPlayable() => Playable(14, 4);

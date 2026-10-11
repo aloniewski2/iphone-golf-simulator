@@ -29,6 +29,33 @@ import UIKit
         session.tennisPhase = "serve"
         XCTAssertTrue(session.tossVisible)
     }
+    /// Online tennis has no timing check (Unity ignores `timingCheck` in a network match, so its screens could never finish: the phone
+    /// sat on "Swing on every bounce!" with no ball while the other player waited), and a pause during play starts the owner's 15 s
+    /// forfeit clock. "Use the direction I'm pointing now" and "Re-check swing timing" both end in `offerTimingCalibration`, which
+    /// online goes from the court scan straight to Ready and is otherwise a no-op.
+    func testAnOnlineMatchNeverOffersTimingCalibration() {
+        let session = SportsSession()
+        session.active = true; session.ready = true; session.displayConnected = true
+        session.sport = "tennis"; session.touch = true; session.loading.cancel()
+        session.debugSetOnlineMatch("match-1")
+        session.setupStage = .scan; session.paused = true
+        session.offerTimingCalibration()
+        XCTAssertEqual(session.setupStage, .ready, "the court scan ends at Ready, not at a timing check nobody can finish")
+        XCTAssertFalse(session.timingPrompt); XCTAssertFalse(session.checkingTiming); XCTAssertFalse(session.measuringDelay)
+        XCTAssertTrue(session.paused, "Ready is what starts play")
+
+        // Re-aiming while the match is running leaves it running: a pause would start the owner's forfeit clock.
+        session.setupStage = .playing; session.paused = false
+        session.recheckTiming()
+        XCTAssertEqual(session.setupStage, .playing); XCTAssertFalse(session.paused)
+        XCTAssertFalse(session.timingPrompt); XCTAssertFalse(session.measuringDelay)
+
+        // Practice and offline matches keep their timing check.
+        session.debugSetOnlineMatch(nil)
+        session.setupStage = .scan
+        session.offerTimingCalibration()
+        XCTAssertEqual(session.setupStage, .timing); XCTAssertTrue(session.timingPrompt)
+    }
     func testPointControlsAndCelebrationFollowActualPointPhase() {
         let session = SportsSession()
         session.active = true; session.ready = true; session.loading.cancel()
@@ -79,7 +106,7 @@ import UIKit
             menu.begin(MenuLaunch(sport: sport, mode: .tutorial), onPhone: true)
             XCTAssertEqual(menu.screen, .map)
             XCTAssertEqual(menu.launch?.mode, sport == .golf ? .round : .exhibition)
-            XCTAssertEqual(menu.mapChoices.count, sport == .golf ? 4 : 3)
+            XCTAssertEqual(menu.mapChoices.count, 3)   // golf: Cliffside, Wild Isles, Magma Open; tennis: three courts
             XCTAssertFalse(SportsSession.shared.active)
             menu.back()
             XCTAssertEqual(menu.screen, .hub(sport))
@@ -111,7 +138,7 @@ import UIKit
     }
     func testMainMenuIsReachableFromLoadingStoryAndEverySetupRoute() {
         let menu = TennisMenu()
-        for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .golfLesson, .postMatch, .hub(.golf)] {
+        for screen in [MenuScreen.loading, .connect, .story, .map, .character, .settings, .postMatch, .hub(.golf)] {
             menu.debugShow(screen)
             menu.goHome()
             XCTAssertEqual(menu.screen, .main, "\(screen)")

@@ -535,6 +535,9 @@ namespace GolfArcade.Game
         /// Plays a move off the course — "Wave", "Cheer", "FistPump", "Idle" — at real speed,
         /// looping, empty-handed, from `startAt` seconds in. Settle() (or SetClub) brings the
         /// swing back. False when the model has no such clip.
+        /// The model has a clip of this name.
+        public bool HasMove(string move) => hasModel && clips.ContainsKey(move);
+
         public bool Perform(string move, float startAt = 0f, bool loop = true)
         {
             if (!hasModel || !clips.TryGetValue(move, out var c)) return false;

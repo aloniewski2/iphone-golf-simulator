@@ -8,7 +8,7 @@ namespace GolfArcade.Tests
     /// both islands are really grass.
     public class IslandCarryHoleTests
     {
-        static Hole Twelve => Course.Course.Cliffside().Holes[1];
+        static Hole Twelve => Catalogue.Hole(12);
 
         [Test]
         public void IsTheParThreeIslandCarry()
@@ -70,8 +70,8 @@ namespace GolfArcade.Tests
         public void TheRoundPlaysAllFiveHoles()
         {
             var course = Course.Course.Cliffside();
-            CollectionAssert.AreEqual(new[] { 7, 12, 13, 14, 15 }, System.Array.ConvertAll(course.Holes, h => h.Number));
-            Assert.AreEqual(4 + 3 + 5 + 4 + 3, course.Par);
+            CollectionAssert.AreEqual(new[] { 7, 8, 9, 12, 15 }, System.Array.ConvertAll(course.Holes, h => h.Number));
+            Assert.AreEqual(4 + 4 + 5 + 3 + 3, course.Par);
         }
     }
 }

@@ -127,6 +127,10 @@ namespace GolfArcade.Course
         public int Par;
         /// What the hole is called on the card and in the showcase.
         public string Name = "";
+        /// Its place in the course it is dealt to (1 for the first hole), 0 for a hole outside a course.
+        public int Ordinal;
+        /// The number the player sees: the hole's place in its round, so every course counts from 1.
+        public int PlayNumber => Ordinal > 0 ? Ordinal : Number;
         /// A line about the hole for the showcase card.
         public string Blurb = "";
         /// The render of the hole for its card, a Resources path.
@@ -280,8 +284,9 @@ namespace GolfArcade.Course
         public string Key = "";
         public Hole[] Holes;
 
-        /// Every course with modelled holes, in the order the course screen shows them.
-        public static Course[] All() => new[] { Cliffside(), Postcards(), WildIsles(), Magma() };
+        /// Every course with modelled holes, in the order the course screen shows them: three courses of
+        /// five or six holes, dealt out of the sixteen modelled ones (hole numbers are unique across them).
+        public static Course[] All() => new[] { Cliffside(), WildIsles(), Magma() };
 
         /// The course a hole belongs to, by its number (hole numbers are unique across courses).
         public static Course Containing(int holeNumber)
@@ -292,6 +297,7 @@ namespace GolfArcade.Course
 
         public static Course ByKey(string key)
         {
+            if (key == "postcards") key = "cliffside";   // the retired Postcards course: its holes are Cliffside's now
             foreach (var c in All()) if (c.Key == key) return c;
             return null;
         }
@@ -303,23 +309,58 @@ namespace GolfArcade.Course
         static CourseHazard Lava(double x, double d, double w, double l) => new(HazardKind.Lava, x, d, w, l);
         static CourseHazard Ice(double x, double d, double w, double l) => new(HazardKind.Ice, x, d, w, l);
 
-        /// Cliffside: the Blender-built island holes, in the flight model's yards, each with its
-        /// tee at the origin and the hole running straight up +D. Hole 7 (blender/hole_07.blend)
-        /// is the par-4 island with the ocean off the east cliffs; its numbers come from
-        /// blender/scripts/hole07_design.py, metres from the tee marker times 1.0936, and the shore
-        /// is the island's control polygon. Hole 12 (blender/hole_12.blend) is the par-3 island
-        /// carry: tee island, a bridge over the water, and the green on its own island; its
-        /// numbers are what blender/scripts/hole12_prepare.py prints, the shores traced off the
-        /// turf meshes.
-        public static Course Postcards() => new()
+        /// Cliffside: ocean cliffs, sea stacks and island carries. Hole 7 (blender/hole_07.blend) is the
+        /// par-4 island with the ocean off the east cliffs; hole 8, Needle, and hole 9, Split, are the
+        /// clifftop holes of the old Postcards course; hole 12 (blender/hole_12.blend) is the par-3 island
+        /// carry and hole 15 the three-tier green across the water.
+        public static Course Cliffside() => Deal("Cliffside", "cliffside", 7, 8, 9, 12, 15);
+
+        /// Wild Isles: a tour of the islands that are each their own world: the pine hill and the witch's
+        /// crater, a frozen fjord, two mesas over a canyon, a jungle temple and the windmill's tulip fields.
+        public static Course WildIsles() => Deal("Wild Isles", "wildisles", 13, 14, 17, 18, 19, 20);
+
+        /// Magma Open: the fire holes: the clifftop Crater (10), the volcano's rim (16) and the three holes
+        /// on the molten lake of a crater (21 to 23); a ball that leaves the rock burns.
+        public static Course Magma() => Deal("Magma Open", "magma", 10, 16, 21, 22, 23);
+
+        /// The three postcard holes as the set they were built as (8 Needle, 9 Split, 10 Crater), for the
+        /// look tooling and its tests: not a course that can be picked; they are played on Cliffside and the Magma Open.
+        public static Course Postcards() => new() { Name = "Postcards", Key = "postcards", Holes = PostcardHoles() };
+
+        /// A course from the catalogue: the holes with these numbers, in this order, each told its place in the round.
+        static Course Deal(string name, string key, params int[] numbers)
         {
-            Name = "Postcards", Key = "postcards",
-            Holes = new[]
+            var catalogue = Catalogue();
+            var holes = new Hole[numbers.Length];
+            for (int i = 0; i < numbers.Length; i++)
             {
+                holes[i] = Array.Find(catalogue, h => h.Number == numbers[i]) ?? throw new ArgumentException($"no modelled hole {numbers[i]} for {name}");
+                holes[i].Ordinal = i + 1;
+            }
+            return new Course { Name = name, Key = key, Holes = holes };
+        }
+
+        /// Every modelled hole, fresh each time (a hole carries what its model gave it when it was placed).
+        static Hole[] Catalogue()
+        {
+            var all = new List<Hole>();
+            all.AddRange(CliffsideHoles()); all.AddRange(PostcardHoles()); all.AddRange(WildIslesHoles()); all.AddRange(MagmaHoles());
+            return all.ToArray();
+        }
+
+        /// The Blender-built island holes (7, 12, 13, 14, 15), in the flight model's yards, each with its
+        /// tee at the origin and the hole running straight up +D. Hole 7's numbers come from
+        /// blender/scripts/hole07_design.py, metres from the tee marker times 1.0936, and the shore
+        /// is the island's control polygon. Hole 12's are what blender/scripts/hole12_prepare.py prints,
+        /// the shores traced off the turf meshes.
+        /// The three clifftop holes built for the Postcards course (8 Needle, 9 Split, 10 Crater): play data kept whole.
+        static Hole[] PostcardHoles() => new[]
+        {
                 new Hole
                 {
                     // Needle: 202-point shore, centerline 342.9 yd, play surface flat at 6 m in blender/hole_08.blend
-                    Number = 8, Par = 4,
+                    Number = 8, Par = 4, Name = "Needle",
+                    Blurb = "A par 4 down a knife-edge clifftop: carry the first inlet, thread the neck, and hold the green on its own sea stack.",
                     Centerline = new[] { P(0, 0), P(19, 178), P(-6, 340) },
                     FairwayWidth = 16, GreenRadius = 14, RoughWidth = 8,
                     Hazards = new[]
@@ -369,7 +410,8 @@ namespace GolfArcade.Course
                 new Hole
                 {
                     // Split: 415-point shore, centerline 494.1 yd, play surface flat at 6 m in blender/hole_09.blend
-                    Number = 9, Par = 5,
+                    Number = 9, Par = 5, Name = "Split",
+                    Blurb = "A long par 5 along a ridge split by a lagoon: lay up short of the water, or go for it and carry the gap.",
                     Centerline = new[] { P(0, 0), P(3, 60), P(6.3, 125), P(9.5, 190), P(11.8, 235), P(6, 416), P(-1, 454), P(-10, 492) },
                     FairwayWidth = 18, GreenRadius = 17, RoughWidth = 90,
                     Hazards = new[]
@@ -456,7 +498,8 @@ namespace GolfArcade.Course
                 new Hole
                 {
                     // Crater: 175-point shore, centerline 356.5 yd, play surface flat at 6 m in blender/hole_10.blend
-                    Number = 10, Par = 4,
+                    Number = 10, Par = 4, Name = "Crater",
+                    Blurb = "A par 4 curling round a crater rim: keep to the narrow lip, carry the lava inlet, and find the green on the far side.",
                     Centerline = new[] { P(0, 0), P(14.3, 66.2), P(50.2, 123.4), P(107.1, 159.3), P(261, 164.7) },
                     FairwayWidth = 22, GreenRadius = 16, RoughWidth = 13,
                     Hazards = new[]
@@ -499,13 +542,10 @@ namespace GolfArcade.Course
                         P(-12.7, -12.2),
                     },
                 },
-            },
         };
-        public static Course Cliffside() => new()
+
+        static Hole[] CliffsideHoles() => new[]
         {
-            Name = "Cliffside", Key = "cliffside",
-            Holes = new[]
-            {
                 new Hole
                 {
                     Number = 7, Par = 4, Name = "Cliffside",
@@ -587,19 +627,15 @@ namespace GolfArcade.Course
                     Shore = new[] { P(23.9, 9.9), P(23.0, 15.7), P(8.6, 25.0), P(-7.8, 28.7), P(-20.1, 17.4), P(-23.4, 6.3), P(-21.4, -4.9), P(-16.0, -7.8), P(-13.2, -13.0), P(-2.2, -16.6), P(3.5, -14.8), P(21.0, -1.2) },
                     Islets = new[] { new[] { P(-33.6, 66.9), P(-22.9, 64.4), P(-11.6, 65.8), P(-6.3, 63.2), P(26.4, 68.0), P(45.2, 79.0), P(55.5, 97.6), P(59.7, 147.1), P(56.3, 163.7), P(60.1, 196.9), P(59.3, 219.3), P(49.8, 239.1), P(26.6, 253.1), P(5.2, 257.4), P(-5.8, 256.6), P(-11.0, 253.4), P(-21.8, 252.8), P(-36.6, 245.4), P(-51.4, 229.7), P(-55.8, 213.2), P(-58.9, 209.7), P(-59.8, 170.8), P(-57.0, 159.8), P(-58.8, 154.2), P(-57.0, 133.1), P(-60.6, 115.4), P(-57.5, 94.3), P(-48.0, 74.7) } },
                 },
-            },
         };
 
-        /// Wild Isles: five islands, each its own world, built by course_builder.py from
+        /// The five Wild Isles holes (16 to 20), built by course_builder.py from
         /// blender/scripts/hole16_volcano_design.py … hole20_windmill_design.py with the themes, the
         /// water, lava and ice, and the landmarks of course_extras.py — a lava river under a smoking
         /// volcano, a frozen lake, two red mesas over a canyon, a jungle temple above a waterfall,
         /// and tulip fields round a turning windmill.
-        public static Course WildIsles() => new()
+        static Hole[] WildIslesHoles() => new[]
         {
-            Name = "Wild Isles", Key = "wildisles",
-            Holes = new[]
-            {
                 new Hole
                 {
                     Number = 16, Par = 4, Name = "Volcano Rim",
@@ -651,19 +687,15 @@ namespace GolfArcade.Course
                     Hazards = new[] { Bunker(28.4, 129.0, 19.7, 13.1), Bunker(-26.2, 238.4, 19.7, 13.1), Bunker(-6.6, 411.2, 15.3, 10.9), Bunker(39.4, 367.4, 13.1, 8.7), Water(0.0, 156.4, 192.5, 8.7), Water(0.0, 287.6, 192.5, 8.7), Water(63.4, 387.1, 33.9, 25.2) },
                     Shore = new[] { P(-40.8, -25.0), P(-19.3, -29.6), P(-8.2, -27.2), P(30.1, -27.8), P(61.9, -19.6), P(71.7, -14.7), P(91.5, 3.3), P(103.2, 34.0), P(109.2, 82.5), P(106.9, 166.5), P(109.5, 182.0), P(108.7, 198.8), P(111.8, 209.4), P(108.9, 236.6), P(111.7, 248.2), P(108.9, 258.4), P(110.9, 264.8), P(107.5, 274.4), P(107.1, 290.7), P(109.2, 297.8), P(106.7, 312.4), P(109.0, 325.4), P(107.2, 339.6), P(109.0, 363.4), P(104.5, 407.0), P(92.0, 437.5), P(70.8, 454.4), P(65.2, 454.5), P(45.1, 463.7), P(6.8, 467.1), P(-20.4, 464.2), P(-26.1, 466.7), P(-47.8, 462.9), P(-73.3, 453.2), P(-90.7, 440.5), P(-92.7, 433.2), P(-96.8, 431.3), P(-107.7, 389.1), P(-107.7, 278.0), P(-111.7, 246.1), P(-109.1, 234.7), P(-111.9, 224.0), P(-111.2, 201.8), P(-108.5, 196.8), P(-110.1, 185.3), P(-108.1, 180.4), P(-109.2, 135.4), P(-107.2, 120.8), P(-109.6, 96.9), P(-105.8, 42.7), P(-102.9, 26.3), P(-92.1, 1.3), P(-67.5, -19.9), P(-56.7, -21.6), P(-52.0, -25.5) },
                 },
-            },
         };
 
-        /// Magma Open: three holes on the molten lake of a crater — an obsidian slab to carry the lava to, a winding
+        /// The three holes on the molten lake of a crater (21 to 23) — an obsidian slab to carry the lava to, a winding
         /// causeway of black rock, and a horseshoe of rock round a lagoon of lava that can be played round or across —
         /// in the world of Adnan's Volcano venue (LavaWorld, HoleAtmosphere). Built by course_builder.py from
         /// blender/scripts/hole21_slab_design.py … hole23_caldera_design.py; the sea is lava, so a ball that leaves the
         /// rock burns (Hole.SeaIsLava).
-        public static Course Magma() => new()
+        static Hole[] MagmaHoles() => new[]
         {
-            Name = "Magma Open", Key = "magma",
-            Holes = new[]
-            {
                 new Hole
                 {
                     Number = 21, Par = 3, Name = "Obsidian Slab",
@@ -698,7 +730,6 @@ namespace GolfArcade.Course
                     Hazards = new[] { Bunker(-58.4, 67.6, 19.7, 14.2), Bunker(-25.4, 108.2, 19.7, 13.1), Bunker(-21.5, 182.8, 21.9, 14.2), Bunker(117.4, 182.9, 19.7, 13.1), Bunker(190.0, 140.8, 17.5, 13.1), Bunker(174.1, 13.2, 17.5, 13.1), Bunker(143.8, 37.5, 15.3, 12.0), Lava(-27.3, 85.5, 17.5, 13.1), Lava(162.7, 179.6, 17.5, 12.0) },
                     Shore = new[] { P(-16.6, -9.7), P(-8.1, -16.1), P(2.4, -15.2), P(11.0, -7.6), P(14.8, 3.9), P(9.2, 19.0), P(-15.1, 55.1), P(-16.9, 65.9), P(-14.8, 82.8), P(-11.5, 104.3), P(-5.8, 120.0), P(-6.6, 125.8), P(12.1, 159.8), P(21.1, 166.0), P(27.7, 175.6), P(33.8, 176.0), P(37.3, 181.2), P(58.1, 188.3), P(74.6, 190.5), P(90.9, 186.8), P(95.4, 182.5), P(106.1, 179.9), P(117.6, 167.5), P(122.9, 165.5), P(124.4, 159.2), P(134.0, 146.1), P(150.6, 99.1), P(148.7, 93.9), P(150.6, 82.9), P(149.2, 60.8), P(139.2, 47.7), P(112.7, 28.2), P(105.8, 13.7), P(107.7, -9.5), P(113.3, -19.4), P(131.1, -31.8), P(141.8, -33.1), P(162.5, -26.8), P(176.9, -10.8), P(182.4, -1.1), P(183.0, 5.5), P(187.8, 8.5), P(188.3, 15.0), P(192.1, 18.9), P(207.1, 54.3), P(214.2, 86.5), P(212.2, 124.8), P(200.2, 155.6), P(187.8, 173.8), P(166.9, 191.8), P(151.0, 198.3), P(147.5, 202.5), P(121.0, 210.9), P(116.7, 214.6), P(61.9, 221.4), P(40.5, 217.2), P(34.3, 219.3), P(24.4, 214.9), P(18.0, 216.0), P(13.8, 212.3), P(-17.4, 200.9), P(-30.9, 191.5), P(-37.6, 183.3), P(-43.9, 181.1), P(-61.1, 159.5), P(-76.0, 124.0), P(-74.1, 118.3), P(-77.3, 107.5), P(-75.4, 91.2), P(-77.3, 85.5), P(-74.5, 74.8), P(-70.6, 70.1), P(-71.4, 64.3), P(-64.9, 54.9), P(-65.7, 48.7), P(-54.8, 29.5), P(-30.0, -0.2) },
                 },
-            },
         };
 
         /// Meadow Run: the iOS app's easy course, hole for hole.

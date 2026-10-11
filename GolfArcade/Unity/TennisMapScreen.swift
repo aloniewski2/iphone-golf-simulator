@@ -28,17 +28,17 @@ enum TennisVenueChoice: String, CaseIterable, Identifiable {
 
 
 /// Keys match Unity's Course.All(); every listed course has modelled playable holes.
+/// The old "postcards" key is retired: MultiplayerLobby.currentGolfVenue maps it to Cliffside.
 enum GolfCourseChoice: String, CaseIterable {
-    case cliffside, postcards, wildisles, magma
+    case cliffside, wildisles, magma
     var title: String {
-        switch self { case .cliffside: "Cliffside"; case .postcards: "Postcards"; case .wildisles: "Wild Isles"; case .magma: "Magma Open" }
+        switch self { case .cliffside: "Cliffside"; case .wildisles: "Wild Isles"; case .magma: "Magma Open" }
     }
     var detail: String {
         switch self {
-        case .cliffside: "Ocean cliffs and island carries"
-        case .postcards: "Needle, The Steps and Volcano Rim"
-        case .wildisles: "A tour through the wild islands"
-        case .magma: "Lava hazards and volcanic greens"
+        case .cliffside: "Cliffs, sea stacks and island carries"
+        case .wildisles: "A world tour: pine, ice, mesa, jungle"
+        case .magma: "Lava crater holes and volcanic greens"
         }
     }
     var art: String { "map-golf-\(rawValue)" }
@@ -46,11 +46,11 @@ enum GolfCourseChoice: String, CaseIterable {
     /// COURSE screen (Unity: BrollCaptureTests.CaptureCourseOrbits, Tools/course_clips.sh).
     var clip: String { "course-golf-\(rawValue)" }
     var theme: String {
-        switch self { case .cliffside: "OCEAN CLIFFS"; case .postcards: "POSTCARD VIEWS"; case .wildisles: "WILD ISLANDS"; case .magma: "LAVA CRATER" }
+        switch self { case .cliffside: "OCEAN CLIFFS"; case .wildisles: "WILD ISLANDS"; case .magma: "LAVA CRATER" }
     }
     /// Holes and par, as Unity's Course.All() has them.
     var card: String {
-        switch self { case .cliffside: "5 HOLES · PAR 19"; case .postcards: "3 HOLES · PAR 13"; case .wildisles: "5 HOLES · PAR 20"; case .magma: "3 HOLES · PAR 12" }
+        switch self { case .cliffside: "5 HOLES · PAR 19"; case .wildisles: "6 HOLES · PAR 25"; case .magma: "5 HOLES · PAR 20" }
     }
 }
 struct SportMapChoice: Identifiable {

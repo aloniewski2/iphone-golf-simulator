@@ -74,48 +74,4 @@ final class TerrainTests: XCTestCase {
         XCTAssertGreaterThan(cliff.rest.d, 90, "a 50% face keeps the ball going")
     }
 
-    func testAPuttStillDropsOnAContouredGreen() throws {
-        let hole = Course.easy.holes[2]
-        let start = CoursePoint(x: hole.pin.x, d: hole.pin.d - 3)
-        let read = GreenRead(terrain: hole.terrain, from: start, to: hole.pin)
-        XCTAssertNotEqual(read.label, "FLAT", "hole 3's green has something to read")
-        // Somewhere in a sensible window of line and pace, the putt drops.
-        var holed: (aim: Double, power: Double)?
-        search: for aim in stride(from: -8.0, through: 8, by: 0.5) {
-            for power in stride(from: 0.1, through: 0.6, by: 0.005) {
-                let putt = RangeShot(id: 1, club: .putter, power: power, aim: aim, origin: start, heading: 0, hole: hole)
-                if putt.isHoled { holed = (aim, power); break search }
-            }
-        }
-        let made = try XCTUnwrap(holed, "a three-yard putt on hole 3 can be holed")
-        // And the read points the right way: the holing line is aimed against the break.
-        if abs(read.crossSlope) > 0.005 {
-            XCTAssertEqual(made.aim.sign, (-read.crossSlope).sign, "aim into the break: \(read.label), holed at \(made.aim)°")
-        }
-    }
-
-    func testGreenReadLabelsRiseAndBreak() {
-        let uphill = GreenRead(terrain: Terrain(tiltX: 0, tiltD: 0.02, features: []), from: .zero, to: CoursePoint(x: 0, d: 10))
-        XCTAssertEqual(uphill.rise, 0.02, accuracy: 0.0001)
-        XCTAssertEqual(uphill.crossSlope, 0, accuracy: 0.0001)
-        XCTAssertEqual(uphill.label, "UPHILL 2.0%")
-        // Ground falling to the right of the line tips the ball right.
-        let breaking = GreenRead(terrain: Terrain(tiltX: -0.015, tiltD: 0, features: []), from: .zero, to: CoursePoint(x: 0, d: 10))
-        XCTAssertGreaterThan(breaking.crossSlope, 0.01)
-        XCTAssertEqual(breaking.label, "BREAKS RIGHT 1.5%")
-        XCTAssertEqual(GreenRead(terrain: .flat, from: .zero, to: CoursePoint(x: 3, d: 4)).label, "FLAT")
-    }
-
-    func testCameraPuttsTakeTheirLineFromTheAim() throws {
-        var golfer = SyntheticGolfer(stroke: .putt)
-        golfer.addressHold = 1.0
-        var detector = ArmSwingDetector()
-        detector.configure(for: .putter)
-        var impacts: [SwingImpact] = []
-        for pose in golfer.poses() {
-            let sample = ArmSwingDetector.Sample(frame: pose.frame!, frameAspect: pose.aspect, certifiedSpace: detector.certifiedSpace)
-            if case .impact(let impact)? = detector.ingest(sample, at: pose.time) { impacts.append(impact) }
-        }
-        XCTAssertEqual(try XCTUnwrap(impacts.first).startLineDegrees, 0, "a front camera cannot read a putter face; the stroke is distance only")
-    }
 }

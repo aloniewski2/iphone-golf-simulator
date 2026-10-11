@@ -11,6 +11,11 @@ namespace GolfArcade.Tennis
     /// Deliberately pure: no Unity objects, no time, no randomness. Every rule here is
     /// exercised by EditMode tests, which is the only way to be confident about deuce,
     /// advantage, tiebreaks and service rotation without playing hundreds of points by hand.
+    ///
+    /// [Serializable] matters: this is a field of NetworkTennisState, and JsonUtility silently leaves out any field whose type is not
+    /// marked. Without the attribute the full update (the reliable checkpoints, and the whole stream if the compact form's self-test
+    /// fails) reached the guest with no score at all, and its scoreboard sat at 0-0.
+    [System.Serializable]
     public struct TennisMatch
     {
         /// The short format's games (kept for callers that ask about the default match).
@@ -133,6 +138,29 @@ namespace GolfArcade.Tennis
                 if (!MultiSet && SetScores != null && SetScores.Count == 1) return SetScores[0];
                 return SetScores == null ? "" : string.Join(" ", SetScores);
             }
+        }
+
+        /// The same score as the other player sees it: their points, games and sets first, the serve and the win theirs, and each finished
+        /// set read from their side ("6–4" becomes "4–6"). For showing a score from a seat other than the one the court is drawn for.
+        public TennisMatch Mirrored()
+        {
+            var m = this;
+            m.PlayerPoints = OpponentPoints; m.OpponentPoints = PlayerPoints;
+            m.PlayerGames = OpponentGames; m.OpponentGames = PlayerGames;
+            m.PlayerSets = OpponentSets; m.OpponentSets = PlayerSets;
+            m.PlayerServes = !PlayerServes;
+            m.PlayerWonMatch = Complete && !PlayerWonMatch;   // only meaningful once the match is over
+            m.tiebreakFirstServer = !tiebreakFirstServer;
+            if (SetScores != null)
+            {
+                m.SetScores = new List<string>(SetScores.Count);
+                foreach (var set in SetScores)
+                {
+                    var halves = set.Split('–');
+                    m.SetScores.Add(halves.Length == 2 ? halves[1] + "–" + halves[0] : set);
+                }
+            }
+            return m;
         }
 
         public string Scoreboard => Complete

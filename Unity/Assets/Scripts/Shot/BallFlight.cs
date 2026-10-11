@@ -88,6 +88,14 @@ namespace GolfArcade.Shot
             return FlightPoint.Lerp(samples[lower], samples[lower + 1], index - lower);
         }
 
+        /// How much of its downward speed (m/s) a ball gets back off firm turf. Turf is no
+        /// trampoline: the harder the ball comes down, the more of it goes into the ground (the
+        /// pitch mark), so a full shot hops about knee-high and a chip a little less.
+        public static double TurfRestitution(double downwardSpeed) =>
+            Math.Max(0.12, Math.Min(0.26, 0.26 - 0.005 * Math.Max(0, downwardSpeed)));
+
+        public const double HopKeep = 1.3;
+
         public static BallFlight Simulate(Launch launch)
         {
             const double mass = 0.04593;
@@ -96,7 +104,6 @@ namespace GolfArcade.Shot
             const double airDensity = 1.225;
             const double gravity = 9.81;
             const double dt = 1.0 / 240;
-            const double restitution = 0.35;
             const double bounceFriction = 0.6;
             const double rollingDeceleration = 3.2;
 
@@ -169,13 +176,17 @@ namespace GolfArcade.Shot
                         if (carryMeters is null) { carryMeters = Math.Sqrt(px * px + pz * pz); carryX = px; carryZ = pz; carryTime = time + dt; }
                         double soft = double.IsFinite(launch.LandingSoftness) ? Math.Max(0, Math.Min(1, launch.LandingSoftness)) : 0;
                         double grab = double.IsFinite(launch.LandingGrab) ? Math.Max(0, Math.Min(1, launch.LandingGrab)) : 0;
-                        vy = -vy * restitution * (1 - soft);
+                        vy = -vy * TurfRestitution(-vy) * (1 - soft);
+                        bool hops = vy >= 1.2;
                         // Backspin grips the turf on the first bounce: a driver keeps rolling, a
                         // spinning iron hops and stops, a wedge checks up almost where it lands.
                         double grip = Math.Max(0.08, bounceFriction - 0.5 * (spin * 60 / (2 * Math.PI)) / 10_000);
                         grip *= 1 - grab;
                         double slide = double.IsFinite(launch.LandingSlide) ? Math.Max(0, Math.Min(1, launch.LandingSlide)) : 0;
                         grip += (0.92 - grip) * slide;
+                        // a low hop skims on: what the pitch mark took from the bounce's height
+                        // it leaves in the run
+                        if (hops) grip = Math.Min(0.92, grip * HopKeep);
                         vx *= grip; vz *= grip;
                         spin = 0;
                         if (vy < 1.2) { vy = 0; airborne = false; rolling = true; rollStartTime = time; rollVx = vx; rollVz = vz; }

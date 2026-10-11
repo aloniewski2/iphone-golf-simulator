@@ -9,7 +9,7 @@ namespace GolfArcade.Tennis {
     public sealed partial class TennisGame {
         /// False falls back to one camera for both players.
         public static bool SplitScreen = true;
-        Camera splitCamera; GameObject splitMarks; Text[] splitNames;
+        Camera splitCamera; GameObject splitMarks; Canvas splitCanvas; Text[] splitNames;
         float splitDisplayAspect = 16f / 9;
         /// The second player's camera, if the split screen is in use (NativeSportsSession keeps it on the same display).
         public Camera SplitCamera => splitCamera;
@@ -29,7 +29,7 @@ namespace GolfArcade.Tennis {
             var main = GameplayCamera;
             if (!main || splitCamera) return;
             splitCamera = new GameObject("Tennis split camera (seat 1)").AddComponent<Camera>();
-            splitCamera.CopyFrom(main); splitCamera.tag = "Untagged"; splitCamera.enabled = false;
+            splitCamera.CopyFrom(main); splitCamera.tag = "Untagged"; splitCamera.enabled = false; splitCamera.targetDisplay = main.targetDisplay;
             var data = main.GetUniversalAdditionalCameraData(); var other = splitCamera.GetUniversalAdditionalCameraData();
             other.renderPostProcessing = data.renderPostProcessing; other.antialiasing = data.antialiasing; other.renderShadows = data.renderShadows;
             other.volumeLayerMask = data.volumeLayerMask; other.requiresDepthTexture = data.requiresDepthTexture;
@@ -37,7 +37,7 @@ namespace GolfArcade.Tennis {
 
             var canvas = new GameObject("Tennis split marks").AddComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 5;
             var scaler = canvas.gameObject.AddComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280, 720);
-            splitMarks = canvas.gameObject; splitMarks.SetActive(false);
+            splitCanvas = canvas; canvas.targetDisplay = main.targetDisplay; splitMarks = canvas.gameObject; splitMarks.SetActive(false);
             var divider = new GameObject("Divider").AddComponent<Image>(); divider.transform.SetParent(canvas.transform, false);
             divider.color = new Color(1, 1, 1, .85f); divider.raycastTarget = false;
             var line = divider.rectTransform; line.anchorMin = new Vector2(.5f, 0); line.anchorMax = new Vector2(.5f, 1); line.pivot = new Vector2(.5f, .5f);
@@ -61,12 +61,19 @@ namespace GolfArcade.Tennis {
         public void SetSplitDisplay(int display, float aspect) {
             splitDisplayAspect = Mathf.Max(.5f, aspect);
             if (splitCamera) splitCamera.targetDisplay = display;
+            // The marks canvas is inactive until the first split frame, so the loop that moves every canvas to the display does not find it.
+            if (splitCanvas) splitCanvas.targetDisplay = display;
+            // Finding the camera placements takes a few tens of milliseconds: do it now, while loading, not in the first frame of the match.
+            if (SplitScreen && networkView == NetworkConfiguration.ViewSplit) TennisSplitCamera.Near(splitDisplayAspect * .5f);
         }
 
         // Each frame: the split layout, or one full-screen camera while an introduction is playing.
         void UpdateSplit() {
             var main = GameplayCamera;
             if (!main) return;
+            // On the phone's own screen (the editor, a phone preview) the shape follows the window, which can still be turning after the
+            // scene loads; on a TV it is the display's and was set once.
+            if (splitCamera.targetDisplay == 0 && Screen.height > 0) splitDisplayAspect = Mathf.Max(.5f, (float)Screen.width / Screen.height);
             if (presentation && presentation.Playing) {
                 if (splitCamera.enabled) splitCamera.enabled = false;
                 if (splitMarks.activeSelf) splitMarks.SetActive(false);

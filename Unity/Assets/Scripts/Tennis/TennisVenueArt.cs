@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -129,9 +130,13 @@ namespace GolfArcade.Tennis
             return true;
         }
 
-        public static void Build(TennisVenueKind venue, GameObject arena)
+        public static void Build(TennisVenueKind venue, GameObject arena) { var steps = BuildSteps(venue, arena); while (steps.MoveNext()) { } }
+
+        /// Build, in pieces of a few milliseconds: a match building behind the plaza runs one piece a frame.
+        public static IEnumerator BuildSteps(TennisVenueKind venue, GameObject arena)
         {
-            if (!arena || arena.transform.Find("Premium tennis craft")) return;
+            if (!arena || arena.transform.Find("Premium tennis craft")) yield break;
+            var slice = System.Diagnostics.Stopwatch.StartNew();
             var root = new GameObject("Premium tennis craft").transform;
             root.SetParent(arena.transform, true);
             root.gameObject.AddComponent<TennisVenueBreeze>();
@@ -139,8 +144,12 @@ namespace GolfArcade.Tennis
             var trim = new TennisVenueBuilder.MB(); var botany = new BotanicalBatch(venue == TennisVenueKind.Resort);
             if (venue == TennisVenueKind.Resort)
             { TennisResortFixtures.Build(root,arena); TennisResortVista.Build(root); }
-            foreach (var p in plants) botany.Add(p.asset, p.position, p.radius, p.height, p.yaw);
-            plants.Clear();
+            var queued = plants.ToArray(); plants.Clear();
+            foreach (var p in queued)
+            {
+                botany.Add(p.asset, p.position, p.radius, p.height, p.yaw);
+                if (slice.ElapsedMilliseconds > 20) { yield return null; slice.Restart(); }
+            }
             var ivory = new Color(.78f, .73f, .62f); var teak = new Color(.43f, .25f, .12f);
             if (venue == TennisVenueKind.Resort)
             {
@@ -213,6 +222,7 @@ namespace GolfArcade.Tennis
             Make(root, "Cut stone and ceramic", stone, Surface(venue + " cut stone", ivory, venue == TennisVenueKind.Volcano ? .38f : .22f));
             Make(root, "Warm timber joinery", timber, Surface(venue + " timber", teak, .26f, 0, .065f, .015f));
             Make(root, "Fine bronze hardware", trim, Surface(venue + " bronze", new Color(.58f, .36f, .16f), .48f, .65f, .02f, .003f));
+            yield return null;
             botany.Build(root);
             NetTape(root, arena);
         }
@@ -312,6 +322,26 @@ namespace GolfArcade.Tennis
                 if(tree)Append(prototypes.ContainsKey(name+"_FAR")?name+"_FAR":name,p,radius,height,yaw,treesFar,20);
                 else if(foliage)Append(name+"_FAR",p,radius,height,yaw,foliageFar,24);
             }
+            sealed class ProtoData { public Vector3[] vertices,normals; public Vector2[] leafPivots; public Color[] colours; public int[] triangles; }
+            readonly Dictionary<string,ProtoData> data=new();
+            ProtoData Data(string name,MeshFilter mf)
+            {
+                if(data.TryGetValue(name,out var d))return d;
+                var source=mf.sharedMesh;var vertices=source.vertices;var weight=source.colors;var renderer=mf.GetComponent<Renderer>();var materials=renderer?renderer.sharedMaterials:null;
+                d=new ProtoData{vertices=vertices,normals=source.normals,leafPivots=source.uv2,colours=new Color[vertices.Length]};
+                var triangles=new List<int>();
+                for(int sub=0;sub<source.subMeshCount;sub++)
+                {
+                    int role=materials!=null&&sub<materials.Length&&materials[sub]?Role(materials[sub].name):Mathf.Min(sub,6);
+                    var baseColour=TennisResortMaterials.BotanicalColour(Palette[role],role);
+                    foreach(int index in source.GetTriangles(sub))
+                    {
+                        var colour=baseColour;colour.a=weight.Length==vertices.Length?weight[index].r:(role>0&&role<6?1:0);
+                        d.colours[index]=colour;triangles.Add(index);
+                    }
+                }
+                d.triangles=triangles.ToArray();data[name]=d;return d;
+            }
             void Append(string name,Vector3 p,float radius,float height,float yaw,Dictionary<Vector2Int,Cell> pockets,float cellSize)
             {
                 if(!prototypes.TryGetValue(name,out var proto)||!proto.filter.sharedMesh)return;
@@ -319,21 +349,14 @@ namespace GolfArcade.Tennis
                 // only nearby; their actual far meshes preserve the same silhouette.
                 var key=new Vector2Int(Mathf.FloorToInt(p.x/cellSize),Mathf.FloorToInt(p.z/cellSize));
                 if(!pockets.TryGetValue(key,out var cell))pockets[key]=cell=new Cell();
-                var mf=proto.filter;var source=mf.sharedMesh;var vertices=source.vertices;var normals=source.normals;var weight=source.colors;var leafPivots=source.uv2;
-                var sourceColours=new Color[vertices.Length];var renderer=mf.GetComponent<Renderer>();
+                // the prototype's arrays and per-vertex colours depend only on the prototype: read them once (they used to be copied
+                // out of the mesh for every plant, which made a resort build spend seconds here)
+                var data=Data(name,proto.filter);var vertices=data.vertices;var normals=data.normals;var leafPivots=data.leafPivots;var sourceColours=data.colours;
                 var placement=Matrix4x4.TRS(p,Quaternion.Euler(0,yaw,0),new Vector3(radius,height,radius));
                 var matrix=placement*proto.matrix;var normalMatrix=matrix.inverse.transpose;
                 var leafNormalMatrix=Matrix4x4.Rotate(Quaternion.Euler(0,yaw,0))*proto.matrix.inverse.transpose;
                 int start=cell.vertices.Count;
-                for(int sub=0;sub<source.subMeshCount;sub++)
-                {
-                    int role=renderer&&sub<renderer.sharedMaterials.Length&&renderer.sharedMaterials[sub]?Role(renderer.sharedMaterials[sub].name):Mathf.Min(sub,6);
-                    foreach(int index in source.GetTriangles(sub))
-                    {
-                        var colour=TennisResortMaterials.BotanicalColour(Palette[role],role);colour.a=weight.Length==vertices.Length?weight[index].r:(role>0&&role<6?1:0);
-                        sourceColours[index]=colour;cell.triangles.Add(start+index);
-                    }
-                }
+                foreach(int index in data.triangles)cell.triangles.Add(start+index);
                 for(int i=0;i<vertices.Length;i++)
                 {
                     var point=proto.matrix.MultiplyPoint3x4(vertices[i]);

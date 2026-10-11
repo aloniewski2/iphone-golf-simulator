@@ -10,12 +10,12 @@
   "seed": 912345678,
   "participants": [
     {
-      "id": "host-phone", "name": "Adnan", "seat": 0, "ready": true, "loaded": false, "calibrated": false,
+      "id": "host-phone", "name": "Adnan", "seat": 0, "ready": true, "loaded": false, "calibrated": false, "linkOK": false,
       "hasScreen": true, "view": "split", "screenDelay": 0.17, "connected": true, "female": false, "left": false, "invited": true,
       "loadout": { "gear": {}, "skinHex": "E6AE7E", "colours": {}, "emotes": ["wave", "scuba", "spike"], "shirtHex": "FF6B4A", "shortsHex": "101D35" }
     },
     {
-      "id": "guest-phone", "name": "Sam", "seat": 1, "ready": true, "loaded": false, "calibrated": false,
+      "id": "guest-phone", "name": "Sam", "seat": 1, "ready": true, "loaded": false, "calibrated": false, "linkOK": false,
       "hasScreen": false, "view": "none", "connected": true, "female": true, "left": true, "invited": true
     }
   ]

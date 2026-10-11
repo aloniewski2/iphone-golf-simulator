@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using UnityEngine;
 using GolfArcade.Multiplayer;
+using GolfArcade.Tennis;
 
 namespace GolfArcade.Tests {
     /// How each phone shows a tennis match ("near", "split" or "none"), as decided by the lobby owner. Plain C#, so these also run
@@ -60,6 +61,37 @@ namespace GolfArcade.Tests {
             Assert.AreEqual("split", c.ViewOf("host-phone"));
             Assert.AreEqual(new[] { 0, 1 }, c.participants.Select(p => p.seat).ToArray());
             Assert.AreEqual(1, c.Seat("guest-phone"));
+        }
+
+        // On a shared TV the court is drawn from seat 0's end, but seat 1's phone must show its own score ("YOUR SERVE", "YOU WIN").
+        [Test] public void TheScoreSeenFromTheOtherSeatIsTheMirrorImageAndMirroringTwiceChangesNothing() {
+            var m = TennisMatch.New(true, 2, 6);
+            m.PlayerPoints = 2; m.OpponentPoints = 1; m.PlayerGames = 4; m.OpponentGames = 3; m.PlayerSets = 1; m.OpponentSets = 0;
+            m.SetScores.Add("6–4");
+            var other = m.Mirrored();
+            Assert.AreEqual((1, 2), (other.PlayerPoints, other.OpponentPoints));
+            Assert.AreEqual((3, 4), (other.PlayerGames, other.OpponentGames));
+            Assert.AreEqual((0, 1), (other.PlayerSets, other.OpponentSets));
+            Assert.IsFalse(other.PlayerServes, "seat 0 serves, so from seat 1 the opponent does");
+            CollectionAssert.AreEqual(new[] { "4–6" }, other.SetScores);
+            CollectionAssert.AreEqual(new[] { "6–4" }, m.SetScores, "the original is left alone");
+            Assert.AreEqual(m.Scoreboard, other.Mirrored().Scoreboard);
+            Assert.AreNotEqual(m.Scoreboard, other.Scoreboard);
+        }
+        [Test] public void TheWinnerOfAFinishedMatchIsYouOnlyFromTheWinnersSeat() {
+            var m = TennisMatch.New(true, 1, 3);
+            while (!m.Complete) m.AwardPoint(true);
+            Assert.IsTrue(m.PlayerWonMatch);
+            StringAssert.StartsWith("YOU WIN", m.Scoreboard);
+            var other = m.Mirrored();
+            Assert.IsFalse(other.PlayerWonMatch);
+            StringAssert.StartsWith("OPPONENT WINS", other.Scoreboard);
+            Assert.AreEqual(m.Scoreboard, other.Mirrored().Scoreboard);
+        }
+        [Test] public void AMatchStillInPlayIsNeverMirroredIntoAWin() {
+            var m = TennisMatch.New(true, 1, 3);
+            Assert.IsFalse(m.Mirrored().PlayerWonMatch);
+            Assert.IsFalse(m.Mirrored().Complete);
         }
     }
 }

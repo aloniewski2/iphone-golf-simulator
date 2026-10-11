@@ -64,7 +64,14 @@ namespace GolfArcade.Tennis
             Run(feet); manualClock = true; clock = Mathf.Max(0, seconds);
         }
 
-        public void Place(Vector3 feet) => transform.position = feet + new Vector3(0, .02f, -.42f);
+        /// Lies on the court just behind the server, readable from behind. A server at the far end (the second half of a shared TV) is
+        /// behind at +z, and the meter turns round with it so its sweep still reads left to right from that player's camera.
+        public void Place(Vector3 feet)
+        {
+            bool far = feet.z > 0;
+            transform.position = feet + new Vector3(0, .02f, far ? .42f : -.42f);
+            transform.rotation = Quaternion.Euler(90, far ? 180 : 0, 0);
+        }
 
         /// TOSS: read the meter as the player saw it `seenAgo` seconds ago, freeze it there for
         /// a moment, and return the accuracy (1 = dead centre).

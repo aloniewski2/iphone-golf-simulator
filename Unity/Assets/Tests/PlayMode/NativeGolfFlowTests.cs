@@ -105,6 +105,13 @@ namespace GolfArcade.PlayTests {
             int expectedHole = game.NativeHasNextHole ? game.TutorialHole + 1 : 0;
             game.NativeContinue();
             yield return null;
+            // the next hole is built behind its loading screen (GolfGame.HoleLoading.cs)
+            // and opens with its intro, which the phone's Continue skips
+            for (deadline = Time.realtimeSinceStartup + 30; (game.LoadingHole || game.Current == GolfGame.State.Intro) && Time.realtimeSinceStartup < deadline;)
+            {
+                if (!game.LoadingHole && game.Current == GolfGame.State.Intro) game.NativeContinue();
+                yield return null;
+            }
             Assert.That(game.Current, Is.EqualTo(GolfGame.State.Aim));
             Assert.That(game.TutorialHole, Is.EqualTo(expectedHole));
             Assert.That(GameObject.Find("Menu"), Is.Null);

@@ -1,136 +1,86 @@
 [
   {
     "name": "MatchHero_Male",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/MatchHero_Male_golden.json",
+    "source": "work/lobby-parity/golden/MatchHero_Male_golden.json",
     "unitySampleCount": 1080,
-    "unitySourceSha256": "d509c61a27dc88e3c46130ee2bccab8b7666ccbc802b96a68683085f866f1f94",
-    "packedSha256": "86febc1d09d0b4371afcff5681b3315c0a36d6da2fac2b1d2c2b72b354ced099",
-    "packedBytes": 2520356,
-    "manifestSha256": "557fae6b2cec20134392903ace332b2cfe70904d85681de8c560920ebe9e5bc1",
+    "unitySourceSha256": "8d0fa220e92cc3b36fd578e31953a233c00bd421356c51ccbb8b881afc992929",
+    "packedSha256": "ede4564666e8819130d2be42575394f4ac29ebe1f6c9790a4e707d950decf946",
+    "packedBytes": 2527437,
+    "manifestSha256": "3097f2340ed6eaedf7c3286e097abc8adb91f1d7229ae51b8b0ec4e256237002",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491",
-    "garmentUpdate": {
-      "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Male_golden.lzfse",
-      "garmentParts": [
-        "Kit_Top"
-      ],
-      "samplesUpdated": 90,
-      "nonGarmentSamplesPreserved": 990,
-      "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Male_golden.json",
-      "sourceSha256": "1bf532ba5f399211003573efd8df1e8aee946699707c8f40c771b8efe8d4432f",
-      "packedSha256": "86febc1d09d0b4371afcff5681b3315c0a36d6da2fac2b1d2c2b72b354ced099",
-      "status": "PASS"
-    }
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   },
   {
     "name": "MatchHero_Female",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/MatchHero_Female_golden.json",
+    "source": "work/lobby-parity/golden/MatchHero_Female_golden.json",
     "unitySampleCount": 1080,
-    "unitySourceSha256": "c7c2597f19c72aa4786d8446de5e5b8e29969a10ecc469bc32cfd3090323becc",
-    "packedSha256": "03723a6bb3d4a98bf89d69cdc1eae55aef0932c5fe9f7c3da2c4bc7edbe3206f",
-    "packedBytes": 2520838,
-    "manifestSha256": "7fc1db54796160fbea9dbbbbc453daceeb3a9ab8daf00c92c26809bdafe935eb",
+    "unitySourceSha256": "cf6dd681af40a25069e0c28fd53a7cbceddf04b2be8229c30bb5b6914ae3de6b",
+    "packedSha256": "cff8e4107df8f6561a2d9d3fe2dc244576514a7144252866b470dbaf6e9b75c6",
+    "packedBytes": 2535464,
+    "manifestSha256": "8e2aedecb703eb7289ade245738ef2422d145141e9409d200deb5d4d5eea2613",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491",
-    "garmentUpdate": {
-      "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Female_golden.lzfse",
-      "garmentParts": [
-        "Kit_Bottom",
-        "Kit_Top"
-      ],
-      "samplesUpdated": 180,
-      "nonGarmentSamplesPreserved": 900,
-      "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Female_golden.json",
-      "sourceSha256": "e70599f5be544a2cdd82e1f23fed133be3305a098ee7bdc7cab5e043a738f868",
-      "packedSha256": "03723a6bb3d4a98bf89d69cdc1eae55aef0932c5fe9f7c3da2c4bc7edbe3206f",
-      "status": "PASS"
-    }
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   },
   {
     "name": "MatchHero_Male_Distance",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/MatchHero_Male_Distance_golden.json",
+    "source": "work/lobby-parity/golden/MatchHero_Male_Distance_golden.json",
     "unitySampleCount": 1080,
-    "unitySourceSha256": "d9a040a2dca24ce9477c2d40c764f5fcb0bc1ad517e4760d02ef47fbdec1ef9f",
-    "packedSha256": "ee276d13903f967e11e104a3f9ed8476758ed1d73122fd0e1a6764cfaa2e5db0",
-    "packedBytes": 2537915,
-    "manifestSha256": "43b9770bb27a433b4a22d87806fcfe8047f7203ab7f97f09edd4a18d9ec6a8a4",
+    "unitySourceSha256": "ab2e63dbfae41fe83a00a92287947849d7c9cd84b8f56e9182fa6f31e97bf49e",
+    "packedSha256": "defdaa401e614a4cfac75b21133df23001534e20c5ef53aa9f36703935a71c6d",
+    "packedBytes": 2545792,
+    "manifestSha256": "b2c4280fd79c680a3e3fddc4f25124f7cf67ddd504951e38200f1d93b32508d6",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491",
-    "garmentUpdate": {
-      "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Male_Distance_golden.lzfse",
-      "garmentParts": [
-        "Kit_Top"
-      ],
-      "samplesUpdated": 90,
-      "nonGarmentSamplesPreserved": 990,
-      "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Male_Distance_golden.json",
-      "sourceSha256": "ac82127cb3529b6b44bc905a111b8751055b1e119ada02cd5903a9ddc918c213",
-      "packedSha256": "ee276d13903f967e11e104a3f9ed8476758ed1d73122fd0e1a6764cfaa2e5db0",
-      "status": "PASS"
-    }
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   },
   {
     "name": "MatchHero_Female_Distance",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/MatchHero_Female_Distance_golden.json",
+    "source": "work/lobby-parity/golden/MatchHero_Female_Distance_golden.json",
     "unitySampleCount": 1080,
-    "unitySourceSha256": "edc1c98418dc0e79cddfd3eb81d16dbe5507c6ab6b0305fcc8a25cb65e351bea",
-    "packedSha256": "1a8dd8fa0d96cfbd12732d48af6b1ab8de7cee64d94f659100fa04574d96b3e3",
-    "packedBytes": 2532125,
-    "manifestSha256": "cce29476a6df1d9e0021741d3b9d99aa1e5e4c99ac58fc55d81f249fa6d23f8c",
+    "unitySourceSha256": "832d091c92f0d3d1f8e8fee4f54e0db43ce4b6bfb4640229f162859f4ed7abbc",
+    "packedSha256": "30556bf24dea4b59e6263e662ca6c828f642342f14a8cbd1217c9889510d2f37",
+    "packedBytes": 2545641,
+    "manifestSha256": "093e152b9625c87b89ae3fd596f39bdeee8827c8190dbe414171d23d80cead15",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491",
-    "garmentUpdate": {
-      "fixture": "GolfArcadeTests/VisualGolden/MatchHero_Female_Distance_golden.lzfse",
-      "garmentParts": [
-        "Kit_Bottom",
-        "Kit_Top"
-      ],
-      "samplesUpdated": 180,
-      "nonGarmentSamplesPreserved": 900,
-      "independentUnitySource": "work/character-finish32/native/golden/MatchHero_Female_Distance_golden.json",
-      "sourceSha256": "6c7e1ff155213631ed7fe0ff76488bbe6cbd47e898c0c2d73c001b8ddb13ae7b",
-      "packedSha256": "1a8dd8fa0d96cfbd12732d48af6b1ab8de7cee64d94f659100fa04574d96b3e3",
-      "status": "PASS"
-    }
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   },
   {
     "name": "GolfKitHero_Male",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/GolfKitHero_Male_golden.json",
+    "source": "work/lobby-parity/golden/GolfKitHero_Male_golden.json",
     "unitySampleCount": 936,
-    "unitySourceSha256": "6ac1cfecdd45de6520d16b40d436622da5474df39d5629c1fec0d2faabebddf2",
-    "packedSha256": "15b4fd58f2d40a04a3e16e06e5b7ef30fb8af83848a29a4a20b6d47c84b84f00",
-    "packedBytes": 2294276,
-    "manifestSha256": "e33b5769d05802cd1ff786e089246a26dae3c78bfcd9fa573367f2a25fa0a952",
+    "unitySourceSha256": "5df955c2491abc5f6790ef92caa0ea9ca54dd1b11baa81c467ae39ade5fd8dea",
+    "packedSha256": "064473539f2fc29bab3f8620610606bd6aca940638525c4a52a94195a70c39c5",
+    "packedBytes": 2314734,
+    "manifestSha256": "cb0b7de13a1f3ca64e62f6d3881cd870a352262b9d2aa49985206bb97ec8d27f",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491"
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   },
   {
     "name": "GolfKitHero_Female",
-    "source": "work/reference-rebuild/original-native-adoption29/golden/GolfKitHero_Female_golden.json",
+    "source": "work/lobby-parity/golden/GolfKitHero_Female_golden.json",
     "unitySampleCount": 936,
-    "unitySourceSha256": "e126d0f0008c123636d0597609c9cfbfbb884cdd370b31134a3da95dc5691072",
-    "packedSha256": "8d9da3f16f77b68469ee83169c727c94145dee1f0598b89a857aaf201046cccd",
-    "packedBytes": 2289058,
-    "manifestSha256": "042d5dc769862f9ca3f60d55a6f85d1db16b33c499b1d2adfb8fd84287836d21",
+    "unitySourceSha256": "9ef15f27b97be9daaaa15b65228fcff90e91f5e470fa7b1dcf6e9ef6b29f60e1",
+    "packedSha256": "5ba786c0801af7a20726ccd5485b4ceb5e3cb4a0128dd8c3f3a8c6cca8f9b37f",
+    "packedBytes": 2301978,
+    "manifestSha256": "f0cc479e4dfd0ae602fd70d132d39df8d23812bdbeb15e2b386a24fd6534988c",
     "frozenFaceSourceFiles": {
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "106171a7dafb39bcdd224c149ee5e8a29c9a1caa86691b85e760acc18373081c",
-      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "02ac48c1fe531dc6a15d3ed1ad7cedfffc5344d0d41223a536936ebbf9225366"
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx": "b6e2342a4c53ebc3f670dc94219589b95c37c9286467a572191ceaa77cd84c00",
+      "Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx": "2f8cedf076ac7e19741aac7c8f240b8877c55bf04882fb0c6de54e6ad8389c4b"
     },
-    "unityPaletteShaderSha256": "b9bf9c194534a020b5c4f0382aa5b5edacadb1faa46b4d84d6bd0c6339511491"
+    "note": "LOBBY_PARITY 2026-10-10: re-export of the current Unity heroes (HeroFaceSkin head surface, composed-ears head); replaces the face29 fixtures"
   }
 ]

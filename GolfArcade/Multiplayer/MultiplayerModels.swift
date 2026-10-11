@@ -146,11 +146,15 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
         let split = participants.filter { $0.view == .split }
         return split.count <= 1 && (split.isEmpty || participants.filter { $0.seat >= 0 && $0.view != .split }.allSatisfy { $0.view == .controllerOnly })
     }
-    /// Existing golf course ids, plus resort for saved / legacy configurations.
-    static let golfVenues = ["cliffside", "postcards", "wildisles", "magma", "meadow", "resort"]
+    /// The golf courses (Unity's Course keys).
+    static let golfVenues = ["cliffside", "wildisles", "magma"]
+    /// Still accepted for golf: the shared "resort" default and the old Meadow Run course of earlier lobbies.
+    private static let legacyGolfVenues = ["resort", "meadow"]
     static func validVenue(_ venue: String, sport: MultiplayerSport) -> Bool {
-        (sport == .golf ? golfVenues : ["resort", "skyscraper", "volcano"]).contains(venue)
+        (sport == .golf ? golfVenues + legacyGolfVenues : ["resort", "skyscraper", "volcano"]).contains(venue)
     }
+    /// "postcards" was folded into Cliffside; saved settings and older lobbies may still carry it.
+    static func currentGolfVenue(_ venue: String) -> String { venue == "postcards" ? "cliffside" : venue }
     var startReason: String {
         if phase != .lobby { return "Return to the lobby first" }
         if let p = participants.first(where: { $0.seat >= 0 && !$0.connected }) { return "Waiting for \(p.name) to reconnect" }

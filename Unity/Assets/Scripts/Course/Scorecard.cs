@@ -64,7 +64,7 @@ namespace GolfArcade.Course
         public IEnumerable<(string hole, string par, string score)> Rows()
         {
             for (int i = 0; i < strokes.Length; i++)
-                yield return ($"{Course.Holes[i].Number}", $"{Course.Holes[i].Par}", strokes[i]?.ToString() ?? "–");
+                yield return ($"{Course.Holes[i].PlayNumber}", $"{Course.Holes[i].Par}", strokes[i]?.ToString() ?? "–");
         }
     }
 }

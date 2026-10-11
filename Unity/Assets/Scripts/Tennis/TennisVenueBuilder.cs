@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -24,7 +25,10 @@ namespace GolfArcade.Tennis
             "TropicalV3_023",   // umpire chair
         };
 
-        public static void Build(TennisVenueKind kind, GameObject arena)
+        public static void Build(TennisVenueKind kind, GameObject arena) { var steps = BuildSteps(kind, arena); while (steps.MoveNext()) { } }
+
+        /// Build, a piece per step: a match building behind the plaza runs one piece a frame.
+        public static IEnumerator BuildSteps(TennisVenueKind kind, GameObject arena)
         {
             foreach (var r in arena.GetComponentsInChildren<Renderer>(true))
             {
@@ -41,8 +45,10 @@ namespace GolfArcade.Tennis
                 case TennisVenueKind.Skyscraper: Skyscraper.Build(root); break;
                 case TennisVenueKind.Volcano: Volcano.Build(root); break;
             }
-            TennisVenueArt.Build(kind, arena);
             Log(kind + " venue built in " + clock.ElapsedMilliseconds + " ms", 0);
+            yield return null;
+            var art = TennisVenueArt.BuildSteps(kind, arena);
+            while (art.MoveNext()) yield return null;
         }
 
         /// Sun, fill, ambient, fog and sky for the venue, after the resort's LightScene ran.

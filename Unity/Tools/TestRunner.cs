@@ -17,13 +17,15 @@ static class Runner
             return System.IO.File.Exists(p) ? c.LoadFromAssemblyPath(p) : null;
         };
         var asm = ctx.LoadFromAssemblyPath(System.IO.Path.Combine(dir, "GolfArcade.Tests.dll"));
-        int pass = 0, fail = 0;
+        int pass = 0, fail = 0, skipped = 0;
         string filter = args.Length > 1 ? args[1] : "";
         foreach (var type in asm.GetTypes().OrderBy(t => t.Name))
         {
             foreach (var m in type.GetMethods().Where(m => m.GetCustomAttributes().Any(a => a.GetType().Name == "TestAttribute")))
             {
                 if (filter.Length > 0 && !(type.Name + "." + m.Name).Contains(filter, StringComparison.OrdinalIgnoreCase)) continue;
+                // ([Values] and the like need NUnit's own runner to supply the arguments)
+                if (m.GetParameters().Length > 0) { skipped++; continue; }
                 try { m.Invoke(Activator.CreateInstance(type), null); pass++; }
                 catch (TargetInvocationException e)
                 {
@@ -33,7 +35,7 @@ static class Runner
                 }
             }
         }
-        Console.WriteLine($"{pass} passed, {fail} failed");
+        Console.WriteLine($"{pass} passed, {fail} failed" + (skipped > 0 ? $", {skipped} skipped (parameterized)" : ""));
         return fail == 0 ? 0 : 1;
     }
 }

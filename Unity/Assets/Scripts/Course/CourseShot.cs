@@ -46,6 +46,8 @@ namespace GolfArcade.Course
         public readonly double LandingTime;
         public readonly double Roll;
         public readonly double Apex;
+        /// The backspin it was struck with, rpm (none for a putt): how fast the ball is drawn spinning.
+        public readonly double SpinRPM;
         public readonly double Duration;
         public bool IsHoled => HoledAt.HasValue;
         /// It caught the cup and spun out (a groan from the gallery).
@@ -258,16 +260,18 @@ namespace GolfArcade.Course
         /// the velocity it rolls on with.
         static (double vx, double vd) BounceOn(CourseLie lie, Fall fall, List<(double x, double h, double d)> path, Hole hole)
         {
-            var (e, keep) = lie switch
+            // (the bounce is the turf's, as the flight's is: the harder it comes down the less it gets back)
+            var (lively, keep) = lie switch
             {
-                CourseLie.Green or CourseLie.Fringe => (0.32, 0.8),
-                CourseLie.Ice => (0.5, 0.93),   // it skips off the ice and keeps its pace
-                CourseLie.Rough or CourseLie.OutOfBounds => (0.15, 0.45),
+                CourseLie.Green or CourseLie.Fringe => (0.85, 0.8),
+                CourseLie.Ice => (-1.0, 0.93),   // it skips off the ice and keeps its pace
+                CourseLie.Rough or CourseLie.OutOfBounds => (0.4, 0.45),
                 CourseLie.Bunker => (0.0, 0.08),
-                _ => (0.38, 0.7),
+                _ => (1.0, 0.7),
             };
+            double Rebound(double down) => lively < 0 ? 0.5 : lively * BallFlight.TurfRestitution(down * BallFlight.MetersPerYard);
             double x = fall.Landing.X, d = fall.Landing.D, h = 0;
-            double vx = fall.Vx * keep, vd = fall.Vd * keep, vh = -fall.Vy * e;
+            double vx = fall.Vx * keep, vd = fall.Vd * keep, vh = -fall.Vy * Rebound(-fall.Vy);
             double t = fall.Time, next = path.Count * SampleInterval;
             const double dt = 1.0 / 240;
             for (int step = 0; step < 240 * 8 && vh > 0.8; step++)
@@ -276,13 +280,30 @@ namespace GolfArcade.Course
                 x += vx * dt; d += vd * dt; t += dt;
                 if (h <= 0)
                 {
-                    h = 0; vh = -vh * e; vx *= keep; vd *= keep;
+                    h = 0; vh = -vh * Rebound(-vh); vx *= keep; vd *= keep;
                     if (hole.LieAt(new CoursePoint(x, d)) is CourseLie.Bunker or CourseLie.Water) break;
                 }
                 if (t >= next) { path.Add((x, Math.Max(0, h), d)); next += SampleInterval; }
             }
             path.Add((x, 0, d));
             return (vx, vd);
+        }
+
+        /// What a rolling ball last learnt about one obstacle: whether it lies under the ground there.
+        struct BuriedMemo { public double X, D; public bool Buried, Known; }
+
+        /// An obstacle whose top is below the ground the ball is rolling on is under it, not in its
+        /// way: Needle's sea stacks hold up the island its green sits on, and their footprints
+        /// (a dozen yards across) used to throw every putt off the green. The ground is read at
+        /// most once a yard, and only while the ball is inside the footprint.
+        static bool Buried(in Obstacle o, Func<CoursePoint, double> ground, double x, double d, ref BuriedMemo memo)
+        {
+            if (ground == null) return false;
+            double dx = x - o.X, dd = d - o.D, reach = o.Footprint + BallRadius;
+            if (dx * dx + dd * dd >= reach * reach) return false;
+            if (memo.Known && Math.Abs(x - memo.X) < 1 && Math.Abs(d - memo.D) < 1) return memo.Buried;
+            memo = new BuriedMemo { X = x, D = d, Buried = o.Top <= ground(new CoursePoint(x, d)) + 0.02, Known = true };
+            return memo.Buried;
         }
 
         /// A rolling ball against something standing on the course: off a trunk, a rock or a
@@ -470,6 +491,7 @@ namespace GolfArcade.Course
                 // the strike itself: a pure one off the sweet spot flies past the club's number
                 if (double.IsFinite(impact.SpeedBonus)) launch.BallSpeedMPH *= 1 + Clamp(impact.SpeedBonus, -0.2, 0.2);
                 if (double.IsFinite(impact.SpinScatter)) launch.SpinRPM *= 1 + Clamp(impact.SpinScatter, -0.3, 0.3);
+                SpinRPM = launch.SpinRPM;
                 launch.WindMPH = wind.SpeedMPH;
                 launch.WindDegrees = wind.RelativeTo(Heading);
                 var flight = BallFlight.Simulate(launch);
@@ -649,6 +671,7 @@ namespace GolfArcade.Course
                 var o = hole.Obstacles[i];
                 if (Math.Abs(o.X - x) < rollReach + o.Radius && Math.Abs(o.D - d) < rollReach + o.Radius) inReach.Add(i);
             }
+            var buried = new BuriedMemo[hole.Obstacles.Length];
             var touchdown = new CoursePoint(x, d);
             Touchdown = touchdown;
             const double dt = 1.0 / 240;
@@ -730,7 +753,7 @@ namespace GolfArcade.Course
                 vx += ax * dt; vd += ad * dt;
                 x += vx * dt; d += vd * dt;
                 foreach (int i in inReach)
-                    if (RollInto(hole.Obstacles[i], ref x, ref d, ref vx, ref vd) && speed > 0.4)
+                    if (!Buried(hole.Obstacles[i], hole.Ground, x, d, ref buried[i]) && RollInto(hole.Obstacles[i], ref x, ref d, ref vx, ref vd) && speed > 0.4)
                         knocks.Add(new Knock(elapsed, x, double.NaN, d, hole.Obstacles[i].Kind, hole.Obstacles[i].Kind != ObstacleKind.Bush));
                 elapsed += dt;
                 if (elapsed + 1e-9 >= nextSample) { path.Add((x, 0, d)); nextSample += SampleInterval; }

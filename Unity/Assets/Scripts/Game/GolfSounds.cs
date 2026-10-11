@@ -13,7 +13,8 @@ namespace GolfArcade.Game
     {
         const int Rate = 44100;
 
-        AudioSource source, tensionSource;
+        // (the strike has a source of its own, so a cheer or a whoosh already playing never steals its voice)
+        AudioSource source, tensionSource, strikeSource;
         AudioClip driver, iron, wedge, putter, whoosh, cup, splash, thud, tension, ready, fanfare, tick, applause, gasp, groan, leaves, knockWood, knockStone, ovation, whistles, lavaHiss, iceSkid;
         float tensionTarget;
 
@@ -25,6 +26,10 @@ namespace GolfArcade.Game
             s.source = go.AddComponent<AudioSource>();
             s.source.playOnAwake = false;
             s.source.spatialBlend = 0;
+            s.strikeSource = go.AddComponent<AudioSource>();
+            s.strikeSource.playOnAwake = false;
+            s.strikeSource.spatialBlend = 0;
+            s.strikeSource.priority = 0;   // the most important sound there is
             s.tensionSource = go.AddComponent<AudioSource>();
             s.tensionSource.playOnAwake = false;
             s.tensionSource.spatialBlend = 0;
@@ -34,24 +39,27 @@ namespace GolfArcade.Game
             return s;
         }
 
+        /// The strike, the loudest thing on the course: even a half swing cracks (a putt is a
+        /// gentler tock, and follows the stroke more).
         public void PlayStrike(GolfClub club, double power)
         {
             var clip = club.Family() switch { ClubFamily.Wood => driver, ClubFamily.Iron => iron, ClubFamily.Wedge => wedge, _ => putter };
-            source.PlayOneShot(clip, Mathf.Lerp(0.35f, 1f, Mathf.Clamp01((float)power)));
+            float p = Mathf.Clamp01((float)power);
+            strikeSource.PlayOneShot(clip, club == GolfClub.Putter ? Mathf.Lerp(0.5f, 1f, p) : Mathf.Lerp(0.75f, 1f, p));
         }
 
-        public void PlayWhoosh(double load) => source.PlayOneShot(whoosh, Mathf.Lerp(0.2f, 0.8f, Mathf.Clamp01((float)load)));
-        public void PlayCup() => source.PlayOneShot(cup, 0.9f);
-        public void PlaySplash() => source.PlayOneShot(splash, 0.8f);
+        public void PlayWhoosh(double load) => source.PlayOneShot(whoosh, Mathf.Lerp(0.35f, 0.95f, Mathf.Clamp01((float)load)));
+        public void PlayCup() => source.PlayOneShot(cup, 1f);
+        public void PlaySplash() => source.PlayOneShot(splash, 1f);
         /// Into the lava: a low whump, then it crackles and sizzles away.
         public void PlayLavaHiss() => source.PlayOneShot(lavaHiss, 0.6f);
         /// Skidding onto the ice: a glassy tink and a scrape.
-        public void PlayIceSkid(float strength) => source.PlayOneShot(iceSkid, Mathf.Lerp(0.2f, 0.55f, Mathf.Clamp01(strength)));
-        public void PlayThud(float strength) => source.PlayOneShot(thud, Mathf.Lerp(0.25f, 0.8f, Mathf.Clamp01(strength)));
+        public void PlayIceSkid(float strength) => source.PlayOneShot(iceSkid, Mathf.Lerp(0.35f, 0.75f, Mathf.Clamp01(strength)));
+        public void PlayThud(float strength) => source.PlayOneShot(thud, Mathf.Lerp(0.5f, 1f, Mathf.Clamp01(strength)));
         /// The ball into a tree's branches or a bush: a rustle and a snap of twigs.
-        public void PlayLeaves() => source.PlayOneShot(leaves, 0.75f);
+        public void PlayLeaves() => source.PlayOneShot(leaves, 0.9f);
         /// Off a trunk (a hollow knock) or a rock or a wall (a hard clack).
-        public void PlayKnock(bool stone) => source.PlayOneShot(stone ? knockStone : knockWood, 0.8f);
+        public void PlayKnock(bool stone) => source.PlayOneShot(stone ? knockStone : knockWood, 1f);
         public void PlayReady() => source.PlayOneShot(ready, 0.5f);
         public void PlayFanfare() => source.PlayOneShot(fanfare, 0.7f);
         public void PlayTick() => source.PlayOneShot(tick, 0.5f);
@@ -92,7 +100,7 @@ namespace GolfArcade.Game
         {
             if (!tensionSource.isPlaying) return;
             // Volume tracks the load quickly; pitch climbs with it, from a slack 0.8 to 1.5.
-            float v = Mathf.MoveTowards(tensionSource.volume, tensionTarget * 0.55f, Time.unscaledDeltaTime * 4f);
+            float v = Mathf.MoveTowards(tensionSource.volume, tensionTarget * 0.75f, Time.unscaledDeltaTime * 4f);
             tensionSource.volume = v;
             tensionSource.pitch = 0.8f + 0.7f * tensionTarget;
             if (tensionTarget <= 0 && v <= 0.005f) tensionSource.Stop();
@@ -110,17 +118,22 @@ namespace GolfArcade.Game
             // harmonics shaped into a vowel, coming in a beat apart and sliding in pitch.
             gasp = Crowd("Gasp", 1.6f, 18, (300, 870), (330, 900), u => 1 + 0.35 * Math.Sin(Math.PI * Math.Min(1, u * 1.3)), 0.25);
             groan = Crowd("Groan", 1.7f, 18, (660, 1190), (560, 840), u => 1.3 - 0.45 * u, 0.3);
-            // Strikes: a burst of noise for the contact plus a ringing partial or two for the
-            // clubhead's material; the decay times are what make a driver sound hollow and a
-            // putter sound dead.
-            driver = Clip("Driver", 0.16f, (t, rng) =>
-                Burst(t, 0.006, rng) * 0.6 + Ring(t, 2400, 0.03) * 0.5 + Ring(t, 3700, 0.02) * 0.3);
-            iron = Clip("Iron", 0.10f, (t, rng) =>
-                Burst(t, 0.008, rng) * 0.9 + Ring(t, 1500, 0.012) * 0.5);
-            wedge = Clip("Wedge", 0.10f, (t, rng) =>
-                Burst(t, 0.012, rng) * 0.8 + Ring(t, 900, 0.015) * 0.4, lowPass: 0.35);
-            putter = Clip("Putter", 0.08f, (t, rng) =>
-                Burst(t, 0.004, rng) * 0.5 + Ring(t, 700, 0.012) * 0.8);
+            // Strikes: the crack of contact (a hair of bright noise), the body of the hit (a low knock
+            // that drops in pitch as the ball leaves the face: the weight a TV speaker can carry) and
+            // the clubhead's own ring — a titanium driver's long ping, a forged iron's short click, a
+            // wedge's duller thwack with the turf in it, a putter's tock. Squeezed hard (Squash) so
+            // they come out as loud as one short sound can, over the gallery and the wind.
+            driver = Clip("Driver", 0.34f, (t, rng) => Squash(
+                Burst(t, 0.0025, rng) * 1.0 + Knock(t, 520, 250, 0.012, 0.035) * 0.75
+                + Ring(t, 2350, 0.07) * 0.45 + Ring(t, 3650, 0.045) * 0.3 + Ring(t, 5200, 0.02) * 0.15, 2.2));
+            iron = Clip("Iron", 0.22f, (t, rng) => Squash(
+                Burst(t, 0.003, rng) * 1.0 + Knock(t, 700, 330, 0.008, 0.026) * 0.85
+                + Ring(t, 1550, 0.026) * 0.4 + Ring(t, 3100, 0.012) * 0.25, 2.2));
+            wedge = Clip("Wedge", 0.22f, (t, rng) => Squash(
+                Burst(t, 0.004, rng) * 0.9 + Knock(t, 560, 240, 0.01, 0.03) * 0.95
+                + Ring(t, 950, 0.02) * 0.35 + Burst(t - 0.004, 0.03, rng) * 0.25, 2.0), lowPass: 0.55);
+            putter = Clip("Putter", 0.16f, (t, rng) => Squash(
+                Burst(t, 0.002, rng) * 0.6 + Knock(t, 900, 640, 0.006, 0.022) * 0.85 + Ring(t, 700, 0.02) * 0.6, 1.6));
             // Whoosh: noise that swells and dies over a quarter of a second.
             whoosh = Clip("Whoosh", 0.30f, (t, rng) =>
             {
@@ -140,9 +153,11 @@ namespace GolfArcade.Game
                 if (t > 0.3) v += Noise(rng) * Math.Exp(-(t - 0.3) / 0.08) * 0.15;
                 return v;
             });
-            // Thud: a ball meeting turf — a low knock with a breath of grass.
-            thud = Clip("Thud", 0.22f, (t, rng) =>
-                Math.Sin(2 * Math.PI * 95 * t) * Math.Exp(-t / 0.045) * 0.9 + Noise(rng) * Math.Exp(-t / 0.03) * 0.35, lowPass: 0.25);
+            // Thud: a ball meeting turf — a low knock with a breath of grass, pitched where a TV's
+            // speakers still sound it (95 Hz on its own was felt more than heard).
+            thud = Clip("Thud", 0.24f, (t, rng) => Squash(
+                Knock(t, 260, 150, 0.01, 0.045) * 0.9 + Math.Sin(2 * Math.PI * 95 * t) * Math.Exp(-t / 0.05) * 0.5
+                + Noise(rng) * Math.Exp(-t / 0.02) * 0.4, 1.6), lowPass: 0.3);
             leaves = Clip("Leaves", 0.55f, (t, rng) =>
             {
                 // a rustle that swells and dies, with twigs snapping in it
@@ -361,6 +376,12 @@ namespace GolfArcade.Game
         static double Noise(System.Random rng) => rng.NextDouble() * 2 - 1;
         static double Burst(double t, double tau, System.Random rng) => t < 0 ? 0 : Noise(rng) * Math.Exp(-t / tau);
         static double Ring(double t, double hz, double tau) => t < 0 ? 0 : Math.Sin(2 * Math.PI * hz * t) * Math.Exp(-t / tau);
+        /// A knock: a tone that starts at `from` Hz and drops to `to` within about `glide` seconds,
+        /// dying away over `tau` — the thump of two things meeting.
+        static double Knock(double t, double from, double to, double glide, double tau) =>
+            t < 0 ? 0 : Math.Sin(2 * Math.PI * (to * t + (from - to) * glide * (1 - Math.Exp(-t / glide)))) * Math.Exp(-t / tau);
+        /// A soft clip: the peaks rounded off so the whole sound can be turned up (louder for its height).
+        static double Squash(double v, double drive) => Math.Tanh(drive * v) / Math.Tanh(drive);
 
         /// Renders `sample(time, rng)` to a mono clip, optionally through a one-pole low-pass
         /// (`lowPass` is the filter coefficient, smaller = duller), normalised to full scale.

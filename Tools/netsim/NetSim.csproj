@@ -44,6 +44,8 @@
     <Compile Include="$(Scripts)Tennis/TennisEmotes.cs" Link="Linked/Tennis/TennisEmotes.cs" />
     <Compile Include="$(Scripts)Tennis/TennisTossCurve.cs" Link="Linked/Tennis/TennisTossCurve.cs" />
     <Compile Include="$(Scripts)Tennis/TennisSplitCamera.cs" Link="Linked/Tennis/TennisSplitCamera.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisOpponent.cs" Link="Linked/Tennis/TennisOpponent.cs" />
+    <Compile Include="$(Scripts)Tennis/TennisOpponentProfile.cs" Link="Linked/Tennis/TennisOpponentProfile.cs" />
 
     <!-- Golf model used by the host's golf rules -->
     <Compile Include="$(Scripts)Course/Hole.cs" Link="Linked/Course/Hole.cs" />
@@ -66,6 +68,9 @@
     <Compile Include="$(EditModeTests)NetworkViewTests.cs" Link="Linked/Tests/NetworkViewTests.cs" />
     <Compile Include="$(EditModeTests)SplitScreenFramingTests.cs" Link="Linked/Tests/SplitScreenFramingTests.cs" />
     <Compile Include="$(EditModeTests)NetworkTennisWireTests.cs" Link="Linked/Tests/NetworkTennisWireTests.cs" />
+    <!-- Timing decides direction, online and local; the rally stays playable against every rung of the ladder -->
+    <Compile Include="$(EditModeTests)TennisTimingBalanceTests.cs" Link="Linked/Tests/TennisTimingBalanceTests.cs" />
+    <Compile Include="$(EditModeTests)TennisRallyBalanceTests.cs" Link="Linked/Tests/TennisRallyBalanceTests.cs" />
 
     <!-- Tests that only exist for the harness (virtual-time link, experiments) -->
     <Compile Include="Tests/**/*.cs" />
