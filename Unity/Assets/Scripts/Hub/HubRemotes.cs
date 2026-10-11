@@ -124,7 +124,7 @@ namespace GolfArcade.Hub
                 r.root.transform.position = r.shown;
                 r.yaw = Mathf.MoveTowardsAngle(r.yaw, yaw, 900 * dt);
                 if (r.hero) { r.hero.transform.localRotation = Quaternion.Euler(0, r.yaw, 0); r.hero.Tick(speed, dt); }
-                if (r.tag) { r.tag.rotation = world.Camera.transform.rotation; r.tag.gameObject.SetActive(last.place == world.Place); }
+                if (r.tag) { r.tag.rotation = world.Camera.transform.rotation; r.tag.localPosition = Vector3.up * (r.hero && r.hero.Seated ? 1.62f : 2.2f); r.tag.gameObject.SetActive(last.place == world.Place); }
                 // friends in another room are not drawn here (their room is off-stage; keep the pose costs down)
                 r.root.SetActive(last.place == world.Place || Vector3.Distance(r.shown, world.Camera.transform.position) < 80);
             }
@@ -132,7 +132,7 @@ namespace GolfArcade.Hub
         }
 
         // ---- Call party
-        string callBay; float callUntil; GameObject beacon; Transform arrow;
+        string callBay; float callUntil; Transform beacon, beaconGem, beaconRing, arrow;
         public string CallBay => callUntil > Time.unscaledTime ? callBay : null;
         public void Call(string bayId, float seconds = 12f)
         {
@@ -140,15 +140,21 @@ namespace GolfArcade.Hub
             callBay = bayId; callUntil = Time.unscaledTime + seconds;
             if (!beacon)
             {
-                beacon = new GameObject("Party beacon"); beacon.transform.SetParent(world.transform, false);
-                var mf = beacon.AddComponent<MeshFilter>(); mf.sharedMesh = HubKit.Drum(.55f, 7f, 32, false);
-                var mr = beacon.AddComponent<MeshRenderer>(); mr.sharedMaterial = HubArt.Glow(new Color(1.6f, 1.3f, .45f)); mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                arrow = new GameObject("Party arrow").transform; arrow.SetParent(world.transform, false);
-                var amf = arrow.gameObject.AddComponent<MeshFilter>(); amf.sharedMesh = ArrowMesh();
-                var amr = arrow.gameObject.AddComponent<MeshRenderer>(); amr.sharedMaterial = HubArt.Glow(new Color(2.2f, 1.7f, .5f)); amr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                HubWorld.SetLayer(beacon.transform); HubWorld.SetLayer(arrow);
+                // a gem floating over the next place to go (the door out, then the bay) with a ring on the floor under it
+                beacon = new GameObject("Party beacon").transform; beacon.SetParent(world.transform, false);
+                // aqua: it has to stand out against the warm doorways and the evening sky
+                beaconGem = Part("Party beacon gem", beacon, GemMesh(), new Color(.35f, 2.0f, 2.5f));
+                beaconRing = Part("Party beacon ring", beacon, HubKit.Ring(.62f, .8f, 48), new Color(.3f, 1.7f, 2.1f));
+                arrow = Part("Party arrow", world.transform, ArrowMesh(), new Color(.35f, 2.0f, 2.5f));
+                HubWorld.SetLayer(beacon); HubWorld.SetLayer(arrow);
             }
-            beacon.transform.position = bay.position;
+        }
+        static Transform Part(string name, Transform parent, Mesh mesh, Color glow)
+        {
+            var t = new GameObject(name).transform; t.SetParent(parent, false);
+            t.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = t.gameObject.AddComponent<MeshRenderer>(); mr.sharedMaterial = HubArt.Glow(glow); mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            return t;
         }
         /// Where to walk next toward a place: the door out of here, or the spot itself once you are in its room.
         public static Vector3 Waypoint(string fromPlace, HubLayout.Spot target)
@@ -161,16 +167,47 @@ namespace GolfArcade.Hub
         }
         void UpdateCall(float dt)
         {
+            // arrived: you are at the called bay, so the call is answered
+            if (callUntil > Time.unscaledTime && world.Station != null && world.Station.id == callBay) callUntil = 0;
             bool on = callUntil > Time.unscaledTime && world.Player;
-            if (beacon) beacon.SetActive(on && HubLayout.SpotById(callBay)?.place == world.Place);
-            if (!arrow) return;
-            arrow.gameObject.SetActive(on && !(world.Station != null && world.Station.id == callBay));
-            if (!on) return;
-            var p = world.Player.transform.position; var to = Waypoint(world.Place, HubLayout.SpotById(callBay)) - p; to.y = 0;
+            if (beacon) beacon.gameObject.SetActive(on);
+            if (arrow) arrow.gameObject.SetActive(on);
+            if (!on || !arrow) return;
+            var target = HubLayout.SpotById(callBay);
+            var next = Waypoint(world.Place, target); bool atBay = world.Place == target.place;
+            float t = Time.unscaledTime;
+            beacon.position = new Vector3(next.x, world.Player.transform.position.y, next.z);
+            beaconRing.localPosition = Vector3.up * .03f; beaconRing.gameObject.SetActive(atBay);
+            // at a door the gem floats out in front of it (inside the frame it would be hidden by the lintel)
+            var outward = world.Player.transform.position - beacon.position; outward.y = 0;
+            var lift = atBay ? Vector3.zero : (outward.sqrMagnitude > .01f ? outward.normalized * 1.2f : Vector3.zero);
+            beaconGem.localPosition = lift + Vector3.up * ((atBay ? 2.5f : 2.9f) + .14f * Mathf.Sin(t * 2.6f));
+            beaconGem.localRotation = Quaternion.Euler(0, t * 90f, 0);
+            var p = world.Player.transform.position; var to = next - p; to.y = 0;
             if (to.sqrMagnitude < .01f) to = Vector3.forward;
-            arrow.position = p + Vector3.up * .06f + to.normalized * 1.1f;
+            // over the hero's head: on the ground ahead it is hidden by the hero's own body from the follow camera
+            arrow.position = p + Vector3.up * 2.35f + to.normalized * .25f;
             arrow.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
-            arrow.localScale = Vector3.one * (1 + .12f * Mathf.Sin(Time.unscaledTime * 7));
+            arrow.localScale = Vector3.one * (1.1f + .12f * Mathf.Sin(t * 7));
+        }
+        static Mesh gemMesh;
+        /// An elongated octahedron with flat faces (each face its own vertices).
+        static Mesh GemMesh()
+        {
+            if (gemMesh) return gemMesh;
+            var top = new Vector3(0, .5f, 0); var bottom = new Vector3(0, -.5f, 0);
+            var ring = Enumerable.Range(0, 4).Select(i => Quaternion.Euler(0, i * 90, 0) * new Vector3(.32f, 0, 0)).ToArray();
+            var v = new List<Vector3>(); var tri = new List<int>();
+            for (int i = 0; i < 4; i++)
+            {
+                var a = ring[i]; var b = ring[(i + 1) % 4];
+                foreach (var face in new[] { new[] { top, b, a }, new[] { bottom, a, b } }) { tri.Add(v.Count); tri.Add(v.Count + 1); tri.Add(v.Count + 2); v.AddRange(face); }
+            }
+            gemMesh = new Mesh { name = "Party beacon gem" }; gemMesh.SetVertices(v); gemMesh.SetTriangles(tri, 0);
+            // outward (convex, centred) normals first so FixWinding can turn every face out, then the true flat normals
+            gemMesh.SetNormals(Enumerable.Range(0, v.Count).Select(i => (v[i / 3 * 3] + v[i / 3 * 3 + 1] + v[i / 3 * 3 + 2]).normalized).ToList());
+            HubShapes.FixWinding(gemMesh); gemMesh.RecalculateNormals(); gemMesh.RecalculateBounds();
+            return gemMesh;
         }
         static Mesh arrowMesh;
         static Mesh ArrowMesh()
