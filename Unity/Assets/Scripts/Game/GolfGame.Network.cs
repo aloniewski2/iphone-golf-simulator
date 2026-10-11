@@ -18,6 +18,8 @@ namespace GolfArcade.Game {
     public sealed partial class GolfGame {
         int networkHole=-1,networkTurn=-1;long networkCardRevision=-1;Vector3 networkBallPrevious;
         bool networkConfigured;
+        /// This phone has built the round's current hole and told the host (a new hole waits for every golfer's phone).
+        bool networkHoleReady;
         readonly Dictionary<int,GolferView> partyGolfers=new();
         readonly Dictionary<int,long> partyEmotes=new();
         GolferView soloGolfer;
@@ -37,8 +39,6 @@ namespace GolfArcade.Game {
         bool networkWoundUp;
         /// What this phone last told the host, and when it may tell it again.
         double sentHeading=double.NaN; int sentClub=-1; float sentLook, sentLoad, nextHeadingSend, nextLookSend, nextLoadSend;
-        /// The last player lined up on this phone's controller, for the pass-the-phone card.
-        int lastSeatHere=-1;
 
         /// Seconds until the next player is up, by the host's clock.
         float NetworkResultSeconds {
@@ -55,7 +55,7 @@ namespace GolfArcade.Game {
         public Course.Course PlayingCourse => course;
         public void ConfigureNetwork(NetworkConfiguration c) {
             networkConfigured=true;networkHole=-1;networkTurn=-1;networkCardRevision=-1;networkFlown=-1;resultShot=-1;Swing.Armed=false;
-            networkLineUp=null;networkSolo=false;networkMine=false;networkLook=networkLoadShown=0;networkWoundUp=false;lastSeatHere=-1;
+            networkLineUp=null;networkSolo=false;networkMine=false;networkLook=networkLoadShown=0;networkWoundUp=false;networkHoleReady=false;
             sentHeading=double.NaN;sentClub=-1;sentLook=sentLoad=0;
             partyConfiguration=c;networkCard=new Scorecard(course);
             if(!soloGolfer)soloGolfer=golfer;
@@ -119,15 +119,32 @@ namespace GolfArcade.Game {
         void NetworkFault() { networkSolo=false; networkLineUp=null; replayFirst=false; Time.timeScale=1; hud.ShowReplay(false); }
 
         void NetworkStep(SportsMultiplayer net,NetworkGolfState state) {
+            // a later hole is built behind the loading screen, as in single player; the round waits for every phone
+            if(loadingHole)return;
             if(state.hole!=networkHole) {
-                networkHole=state.hole;networkLineUp=null;networkSolo=false;
-                StartHole(state.hole);
+                bool first=networkHole<0;
+                networkHole=state.hole;networkLineUp=null;networkSolo=false;networkHoleReady=false;
+                if(first) StartHole(state.hole);   // (the first hole is built while the match itself is loading)
+                else { EndNetworkShot();StartHoleBehindCover(state.hole);return; }
+            }
+            if(!networkHoleReady) {
+                networkHoleReady=true;
                 SetWind(new Wind(state.windSpeed,state.windDirection));   // the round's wind, not this phone's draw
                 rig.SnapNext();
+                SendHoleReady(net,state);
             }
             Wind=new Wind(state.windSpeed,state.windDirection);
             networkMine=net.Configuration.Controls(net.Configuration.localID,state.turn);
             PartyEmotes(state);
+            if(state.phase=="loading") {
+                // built here; another phone is still building it
+                Swing.Armed=false;
+                var tee=HoleView.ToWorld(hole.Tee);heading=hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
+                if(partyGolfers.TryGetValue(state.turn,out var first))golfer=first;
+                golfer.Stand(tee,AimDirection());PlaceParty(state,tee,AimDirection());
+                hud.SetStatus("Waiting for everyone to arrive…");
+                return;
+            }
             if(state.phase=="intro") {
                 Swing.Armed=false;
                 var tee=HoleView.ToWorld(hole.Tee);heading=hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
@@ -281,15 +298,12 @@ namespace GolfArcade.Game {
             if(networkMine) { sentHeading=double.NaN;sentClub=-1;sentLook=0;sentLoad=0; }
             else { RequireNativeReady();FollowNetworkAim(state,active,true); }
             var sheet=hud.Controller;
-            if(networkMine && sheet!=null && sheet.Alive) {
-                // whose shot, on the phone's controller; and when the phone is shared, the next player's name as it is handed over
-                var c=SportsMultiplayer.Instance.Configuration;
-                sheet.SetPlayer(state.golfers.Count(p=>!p.dnf)>1?NetworkName(state.turn):"");
-                bool shared=state.golfers.Count(p=>!p.dnf&&c.Controls(c.localID,p.seat))>1;
-                if(shared&&lastSeatHere>=0&&lastSeatHere!=state.turn)sheet.ShowPass(NetworkName(state.turn));
-                lastSeatHere=state.turn;
-            }
-            if(newPlayer && state.golfers.Count(p=>!p.dnf)>1) {
+            // whose shot, on the phone's controller
+            if(networkMine && sheet!=null && sheet.Alive) sheet.SetPlayer(state.golfers.Count(p=>!p.dnf)>1?NetworkName(state.turn):"");
+            // The TV says whose shot it is when the players are on their own phones; on one shared phone the turn just passes.
+            var cfg=SportsMultiplayer.Instance.Configuration;
+            bool allOnThisPhone=state.golfers.All(p=>p.dnf||cfg.Controls(cfg.localID,p.seat));
+            if(newPlayer && !allOnThisPhone && state.golfers.Count(p=>!p.dnf)>1) {
                 bool green=hole.LieAt(ballAt).IsPuttingSurface();double toPin=ballAt.DistanceTo(hole.Pin);
                 string where=holeStrokes==0?"Off the tee":green?$"{toPin*3:F0} ft to the hole":$"{toPin:F0} yd to the pin";
                 hud.ShowTurn($"{NetworkName(state.turn)}'s shot",$"Stroke {holeStrokes+1}  ·  {where}",Lobby.PlayerColor(state.turn));
@@ -310,6 +324,12 @@ namespace GolfArcade.Game {
                 // they stopped (or the swing was cancelled): back to address
                 networkLoadShown=0;hud.SetMeter(0);aimDots.MarkAt(null);hud.Map.ShowLoad=false;golfer.Settle();sounds.Release();
             }
+        }
+
+        /// This phone has built the hole: it says so for every golfer it holds, and the round starts the hole once every phone has.
+        void SendHoleReady(SportsMultiplayer net,NetworkGolfState state) {
+            var c=net.Configuration;
+            foreach(var p in state.golfers) if(!p.dnf&&c.Controls(c.localID,p.seat)) net.Submit(new NetworkInput {action="golfHoleReady",value=state.hole,actorSeat=p.seat});
         }
 
         /// The player up on this phone: what the TV needs to show it — the club, the line, the view.

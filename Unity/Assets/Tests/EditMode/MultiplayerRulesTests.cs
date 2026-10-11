@@ -161,6 +161,37 @@ namespace GolfArcade.Tests {
                 Assert.Greater(error,previous,$"meter age {wait}");previous=error;
             }
         }
+        /// Plays the current hole out on turn timeouts (no swings needed).
+        static void FinishHoleByTimeouts(NetworkGolfRound m){int hole=m.State.hole;for(int i=0;i<200000&&m.State.hole==hole&&!m.State.complete;i++)m.Step(.1);}
+        static NetworkInput HoleReady(NetworkGolfRound m,int hole)=>new() {action="golfHoleReady",value=hole,time=m.State.time};
+        /// Every hole after the first is built on each phone behind its loading screen: the hole waits until every golfer's phone has
+        /// said so, and only then opens (here with its intro) — nobody plays while someone is still loading.
+        [Test] public void ALaterHoleWaitsForEveryPhoneToHaveBuiltIt() {
+            var m=new NetworkGolfRound(new[]{0,1},20,intro:true,waitForLoad:true);
+            Assert.AreEqual("intro",m.State.phase,"the first hole was built while the match loaded");
+            FinishHoleByTimeouts(m);
+            Assert.AreEqual(1,m.State.hole);Assert.AreEqual("loading",m.State.phase);
+            Step(m,5);Assert.AreEqual("loading",m.State.phase,"nobody has built it yet");
+            Assert.False(m.Input(0,Golf(m),m.State.time),"no shot while the hole is loading");
+            Assert.False(m.Input(1,HoleReady(m,0),m.State.time),"an old hole's word is not this one's");
+            Assert.True(m.Input(0,HoleReady(m,1),m.State.time));Assert.False(m.Input(0,HoleReady(m,1),m.State.time),"once is enough");
+            Step(m,.2);Assert.AreEqual("loading",m.State.phase,"one phone is still building it");
+            Assert.True(m.Input(1,HoleReady(m,1),m.State.time));Step(m,.2);
+            Assert.AreEqual("intro",m.State.phase);
+        }
+        /// A phone that never answers holds the hole up no longer than the timeout.
+        [Test] public void APhoneThatNeverSaysItLoadedHoldsTheHoleOnlyUntilTheTimeout() {
+            var m=new NetworkGolfRound(new[]{0,1},20,waitForLoad:true);
+            FinishHoleByTimeouts(m);Assert.AreEqual("loading",m.State.phase);
+            Assert.True(m.Input(0,HoleReady(m,1),m.State.time));
+            Step(m,NetworkGolfRound.HoleLoadTimeout+.2);Assert.AreEqual("aim",m.State.phase);
+        }
+        /// Pass the phone: handing the phone over takes as long as it takes, so a turn has no time limit (apart, it is 60 s).
+        [Test] public void OnOneSharedPhoneATurnHasNoTimeLimit() {
+            var shared=new NetworkGolfRound(new[]{0,1},20,sharedPhone:true);Step(shared,120);
+            Assert.AreEqual(0,shared.State.golfers[0].strokes);Assert.AreEqual("aim",shared.State.phase);
+            var apart=new NetworkGolfRound(new[]{0,1},20);Step(apart,60.1);Assert.AreEqual(1,apart.State.golfers[0].strokes);
+        }
         [Test] public void FourGolfersCanFinishAllHolesAndReceiveMatchingTotals(){var m=new NetworkGolfRound(new[]{0,1,2,3},1);int results=0;m.Result=_=>results++;for(int i=0;i<260000&& !m.State.complete;i++)m.Step(.1);Assert.True(m.State.complete);Assert.AreEqual("complete",m.State.phase);Assert.AreEqual(1,results);foreach(var p in m.State.golfers){Assert.True(p.card.All(score=>score>0));Assert.AreEqual(p.card.Sum(),p.total);}Assert.AreEqual(m.State.golfers[0].total,m.State.golfers[3].total);}
         [Test] public void ConfigurationAllowsWatchersButRejectsDuplicateSeatsAndFivePeople(){var c=Config();Assert.True(c.Valid);c.participants[2].seat=1;Assert.False(c.Valid);c=Config();c.participants=new[]{c.participants[0],c.participants[1],c.participants[2],new NetworkParticipant{id="d"},new NetworkParticipant{id="e"}};Assert.False(c.Valid);}
         [Test] public void EquippedEmoteRequiresWinningPointAndCannotExtendNextServe() {

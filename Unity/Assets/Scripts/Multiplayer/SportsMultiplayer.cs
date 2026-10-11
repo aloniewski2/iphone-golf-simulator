@@ -61,7 +61,10 @@ namespace GolfArcade.Multiplayer {
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
             if(IsHost) {
                 if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;compactSnapshots=NetworkTuning.CompactSnapshots&&NetworkTennisWire.SelfTest();}
-                else {golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:true,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
+                else {
+                    // pass the phone: every golfer is on this phone, so no hole intros and turns just pass
+                    bool shared=c.participants.Where(p=>p.seat>=0).All(p=>c.Controls(c.localID,p.seat));
+                    golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:!shared,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null,waitForLoad:true,sharedPhone:shared);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
             Time.timeScale=1;

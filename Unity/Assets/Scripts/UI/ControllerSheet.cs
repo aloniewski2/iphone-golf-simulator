@@ -78,9 +78,8 @@ namespace GolfArcade.UI
         // the club in hand: one card you swipe (or tap an arrow) to step through the bag
         RectTransform clubCard; RawImage clubPicture; Text clubName, clubYards; Image[] clubDots;
         SwipeArea clubSwipe; int clubSelected = -1;
-        // whose shot it is, on the ribbon under the hole badge (else the hole's name), and the card asking for the phone to be passed
+        // whose shot it is, on the ribbon under the hole badge (else the hole's name)
         string holeName, playerName;
-        RectTransform passCard; Text passName;
         static Texture2D[] familyPictures;
         static Sprite skySprite;
 
@@ -381,37 +380,6 @@ namespace GolfArcade.UI
             namePill.sizeDelta = new Vector2(Mathf.Clamp(nameText.preferredWidth + 60, 220, 540), 50);
         }
 
-        /// Players sharing this phone: the next one's name, big, for a couple of seconds (a tap puts it away).
-        public void ShowPass(string name)
-        {
-            if (!root) return;
-            if (!passCard)
-            {
-                var dim = UiKit.Panel(root, "Pass the phone", new Color(0.03f, 0.2f, 0.5f, 0.6f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
-                passCard = dim.rectTransform;
-                passCard.offsetMin = passCard.offsetMax = Vector2.zero;
-                dim.gameObject.AddComponent<PassCard>();
-                UiKit.Pill(passCard, "Card", Blue, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(860, 440), out var fill, 9);
-                var line = Chunky(fill.transform, "Line", "PASS THE PHONE TO", 54, 4f);
-                line.rectTransform.anchorMin = new Vector2(0, 0.6f); line.rectTransform.anchorMax = new Vector2(1, 0.92f);
-                passName = Chunky(fill.transform, "Name", "", 120, 6f);
-                passName.rectTransform.anchorMin = new Vector2(0, 0.1f); passName.rectTransform.anchorMax = new Vector2(1, 0.62f);
-                passName.resizeTextForBestFit = true; passName.resizeTextMinSize = 50; passName.resizeTextMaxSize = 120;
-            }
-            passName.text = (name ?? "").ToUpperInvariant();
-            passCard.SetAsLastSibling();
-            passCard.gameObject.SetActive(true);
-            passCard.GetComponent<PassCard>().Until = Time.unscaledTime + 2.4f;
-        }
-        public bool ShowingPass => passCard && passCard.gameObject.activeSelf;
-
-        /// The pass-the-phone card: gone after its time, or at a tap.
-        sealed class PassCard : MonoBehaviour, IPointerClickHandler
-        {
-            public float Until;
-            void Update() { if (Time.unscaledTime >= Until) gameObject.SetActive(false); }
-            public void OnPointerClick(PointerEventData e) => gameObject.SetActive(false);
-        }
 
         /// How far is left to the pin (the phone HUD's big number).
         public void SetDistance(double amount, string unit) => yardsText.text = $"{amount:F0} {unit.ToUpperInvariant()}";
