@@ -152,10 +152,10 @@ final class TennisMenu {
         case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
         case .guide: GuideDeck.allCases.map(\.rowID)
-        case .display: ["plazaMenus", "fps", "overscan"]
+        case .display: ["fps", "overscan"]
         case .audio: ["sound", "haptics"]
         case .access: ["bigText", "reduceMotion"]
-        case .developer: ["classic", "bench"]
+        case .developer: ["bench"]
         }
     }
 
@@ -384,7 +384,6 @@ final class TennisMenu {
             } else { confirmingReset = true; notice = "Press again to erase campaign progress" }
         case "relock": notice = "The court direction is set again at the start of your next match"; session.motion.clearAxis()
         case "timing": session.forceTimingCheckNextMatch(); notice = "The timing check runs at the start of your next match"
-        case "classic": classic = true
         case let l where l.hasPrefix("lk-"): lockerSelect(l)
         case "prev": if screen == .howTo { howToPage = max(0, howToPage - 1) } else { lessonCard = max(0, lessonCard - 1) }
         case "nextPage": howToPage = min(guideDeck.cards.count - 1, howToPage + 1)
@@ -483,7 +482,6 @@ final class TennisMenu {
         case "fps": s.highFrameRate.toggle()
         case "range": s.travel = min(1.2, max(0.3, s.travel + Double(step) * 0.1))
         case "overscan": s.overscan = min(0.1, max(0, s.overscan + Double(step) * 0.02))
-        case "plazaMenus": HubSession.shared.plazaMenus.toggle()
         case "bigText": s.bigText.toggle()
         case "reduceMotion": s.reduceMotion.toggle()
         case "bench": notice = "Launch with -benchTennis to run the benchmark"
@@ -519,10 +517,9 @@ final class TennisMenu {
 
     // MARK: Tutorials
 
-    /// After onboarding: with a TV and Plaza menus on, the Plaza (the standard menu: HubSession opens it on the home screen);
-    /// otherwise that sport's screen.
+    /// After onboarding: with a TV, the Plaza (the menu); otherwise that sport's screen on the phone.
     func finishOnboarding(_ sport: Sport) {
-        if HubSession.shared.plazaMenus && session.displayConnected { show(.main) } else { show(.hub(sport)) }
+        if session.displayConnected { show(.main) } else { show(.hub(sport)) }
     }
 
     /// Compatibility for saved routes and older UI: choose a map for a normal game.

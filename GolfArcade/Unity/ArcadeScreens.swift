@@ -85,10 +85,8 @@ struct SettingsScreen: View {
         case "overscan": ("Screen edge margin", s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%")
         case "sound": ("Sound", s.sound ? "On" : "Off")
         case "haptics": ("Haptics", s.haptics ? "On" : "Off")
-        case "plazaMenus": ("Plaza menus on the TV", HubSession.shared.plazaMenus ? "On" : "Off")
         case "bigText": ("Larger text on the phone remote", s.bigText ? "On" : "Off")
         case "reduceMotion": ("Reduce motion (still b-roll)", s.reduceMotion ? "On" : "Off")
-        case "classic": ("Classic options menu", "Open")
         case "bench": ("Frame-time benchmark", "Info")
         default: (id, "")
         }

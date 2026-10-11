@@ -55,12 +55,11 @@ struct TennisRemote: View {
                 }
                 .padding(.horizontal, 14).padding(.vertical, 8).background(.white.opacity(0.1), in: Capsule())
                 Spacer()
-                if HubSession.shared.plazaMenus {
-                    Button { HubSession.shared.backToPlaza() } label: {
-                        Label("Plaza", systemImage: "figure.walk").font(IslandUI.font(15, bold: true)).foregroundStyle(IslandUI.navy)
-                            .padding(.horizontal, 14).padding(.vertical, 8).background(IslandUI.lime, in: Capsule())
-                    }.buttonStyle(.plain).accessibilityIdentifier("remote-plaza")
-                }
+                // (the remote only shows while the plaza is not up: back to it, or try it again)
+                Button { HubSession.shared.backToPlaza() } label: {
+                    Label("Plaza", systemImage: "figure.walk").font(IslandUI.font(15, bold: true)).foregroundStyle(IslandUI.navy)
+                        .padding(.horizontal, 14).padding(.vertical, 8).background(IslandUI.lime, in: Capsule())
+                }.buttonStyle(.plain).accessibilityIdentifier("remote-plaza")
             }
             onTV
             Spacer(minLength: 0)
@@ -77,8 +76,8 @@ struct TennisRemote: View {
                 RemoteButton(label: "‹", caption: "Back", size: 76, filled: false) { menu.back() }
                 RemoteButton(label: "A", caption: "Select", size: 112, filled: true) { menu.select() }
                 RemoteButton(label: "⌂", caption: "Home", size: 76, filled: false) {
-                    // with Plaza menus on, home is the plaza
-                    if HubSession.shared.plazaMenus && !menu.screen.isOnline { HubSession.shared.backToPlaza() } else { menu.goHome() }
+                    // home is the plaza (an online lobby is left the online way)
+                    if !menu.screen.isOnline { HubSession.shared.backToPlaza() } else { menu.goHome() }
                 }
             }
             Text(menu.screen == .loading ? "Loading the court on your TV…" : "When the match starts, hold this like a racket.")

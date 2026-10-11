@@ -23,8 +23,9 @@ struct HubZone: Equatable {
 /// an analog stick. This owns that session: when to open the plaza, the runtime start, the stick stream (the binary sample channel:
 /// target = x, aim = y, power = deflection), the buttons, and Unity's reports of where the player is.
 ///
-/// It never runs with no TV (the phone keeps TennisPhoneMenu), during a match (SportsSession owns the runtime then), during
-/// onboarding, or with Plaza menus switched off; ☰ shows the classic menu over it at any time.
+/// It is the only menu whenever a TV is connected: it never runs with no TV (the phone keeps TennisPhoneMenu), during a match
+/// (SportsSession owns the runtime then) or during first-run onboarding. Every menu screen (a station's, a bay's, ☰'s, an
+/// invitation's) opens on the phone as a panel while the Plaza stays on the TV.
 @MainActor @Observable
 final class HubSession {
     static let shared = HubSession()
@@ -39,12 +40,6 @@ final class HubSession {
     /// The station or bay in use: the TV frames the hero, the phone shows its panel (the existing menu screen for it).
     private(set) var station: String?
     var notice = ""
-    /// The classic menu is showing over the plaza (☰).
-    private(set) var classicOverlay = false
-    /// Settings: walk the Plaza when a TV is connected (on), or keep the flat TV menu (off).
-    var plazaMenus = (UserDefaults.standard.object(forKey: "sports.plazaMenus") as? Bool) ?? true {
-        didSet { UserDefaults.standard.set(plazaMenus, forKey: "sports.plazaMenus"); evaluate() }
-    }
     /// Unity's measured age of the stick samples it applied (p50, p95), milliseconds.
     private(set) var inputAge = (p50: 0.0, p95: 0.0)
     private(set) var speed = 0.0
@@ -60,12 +55,12 @@ final class HubSession {
     private var session: SportsSession { .shared }
     private var menu: TennisMenu { .shared }
 
-    /// Should the plaza be on the TV right now?
+    /// Should the plaza be on the TV right now? (Whenever a TV is connected and no match has the runtime.)
     var wanted: Bool {
-        plazaMenus && session.displayConnected && !session.active && !menu.classic && !OnboardingFlow.shared.holdsMenu
-            && !classicOverlay && !SportsSession.benchmark && phase != .failed
-            && (menu.screen == .title || menu.screen == .main || station != nil || (party != nil && menu.screen == .online(.lobby)))
+        session.displayConnected && !session.active && !OnboardingFlow.shared.holdsMenu && !SportsSession.benchmark && phase != .failed
     }
+    /// A menu screen is open on the phone over the plaza: a station's or a bay's, or any screen away from home.
+    var panelOpen: Bool { station != nil || !(menu.screen == .title || menu.screen == .main) }
     /// The phone shows the stick (the plaza is opening or on).
     var drivesPhone: Bool { wanted && (phase == .booting || phase == .live) }
 
@@ -135,10 +130,11 @@ final class HubSession {
     func displayLost() {
         timer?.invalidate(); timer = nil
         if loaded && !session.active { sendJSON(["version": 1, "session": sessionID, "action": "end"]) }
-        phase = .off; loaded = false; zone = nil; classicOverlay = false; station = nil
+        phase = .off; loaded = false; zone = nil; station = nil
     }
 
     private func fail(_ message: String) {
+        // (the classic TV menu is only the fallback for a plaza that could not open; Back to the Plaza tries again)
         SportsDiagnostics.write("hub failed: \(message)")
         timer?.invalidate(); timer = nil; loaded = false
         phase = .failed; notice = message
@@ -152,17 +148,17 @@ final class HubSession {
         SportsDisplays.shared.external?.isHidden = true
     }
 
-    // MARK: classic overlay (☰)
-
-    func showClassic() {
-        classicOverlay = true; station = nil
+    /// A menu screen on the phone over the plaza (☰ shortcuts, the Party button), with `taps` made on it.
+    func openPanel(_ screen: MenuScreen, taps: [String] = []) {
+        menu.openFromPlaza(screen)
+        for tap in taps { menu.tap(tap) }
         evaluate()
     }
 
     // MARK: stations and bays (phase 2: each opens the existing menu screen for it on the phone)
 
-    /// What a station or bay opens. `classic`: the screen is one of the multiplayer flows, which use the TV menu.
-    struct Route { var screen: MenuScreen?; var taps: [String] = []; var classic = false; var action: (@MainActor () -> Void)? = nil }
+    /// What a station or bay opens: a menu screen (as a panel on the phone, with `taps` made on it), or an action.
+    struct Route { var screen: MenuScreen?; var taps: [String] = []; var action: (@MainActor () -> Void)? = nil }
     /// Every spot in the Plaza (Unity's HubLayout.Spots; HubLayoutTests checks the same list).
     static let spotIDs = ["rack-shirt", "rack-shorts", "rack-shoes", "rack-racket", "rack-club", "look-mirror", "emote-mirror",
                           "desk-settings", "screen-howto", "shelf-trophies", "mailbox-feedback", "board-invite",
@@ -181,12 +177,12 @@ final class HubSession {
         case "screen-howto": Route(screen: .howTo)
         case "shelf-trophies", "bay-tennis-campaign": Route(screen: .campaign)
         case "mailbox-feedback": Route(action: { BetaFeedback.open() })
-        case "board-invite": Route(screen: .main, taps: ["homeInvite"], classic: true)
+        case "board-invite": Route(action: { TennisMenu.shared.openFromPlaza(.main); TennisMenu.shared.tap("homeInvite") })
         case "bay-tennis-exhibition": Route(screen: .exhibition)
         case "bay-tennis-training": Route(screen: .training)
-        case "bay-tennis-online", "bay-golf-online": Route(screen: .onlineChoice, taps: ["onlineQuick"], classic: true)
+        case "bay-tennis-online", "bay-golf-online": Route(screen: .onlineChoice, taps: ["onlineQuick"])
         case "bay-golf-round": Route(screen: .hub(.golf), taps: ["round"])
-        case "bay-golf-pass": Route(screen: .localChoice, taps: ["partyLocalGolf"], classic: true)
+        case "bay-golf-pass": Route(screen: .localPlayers)   // how many players, then straight into the round
         default: nil
         }
     }
@@ -202,24 +198,23 @@ final class HubSession {
         }
         guard let route = Self.route(id) else { command("hubB"); return }
         if let action = route.action { action(); command("hubB"); return }
-        if route.classic { showClassic() }
         if let screen = route.screen { menu.openFromPlaza(screen) }
         for tap in route.taps { menu.tap(tap) }
-        if !route.classic { station = id }
+        station = id
         evaluate()
     }
     /// B or Done on the station panel: back to walking.
     func leaveStation() {
-        guard station != nil else { return }
-        if Self.partyBays.contains(station!), party != nil { try? partyService.setReady(false) }
-        station = nil; returnBay = nil; command("hubB")
+        guard panelOpen else { return }
+        if let s = station, Self.partyBays.contains(s), party != nil { try? partyService.setReady(false) }
+        if station != nil { station = nil; returnBay = nil; command("hubB") }
         if menu.screen != .main && menu.screen != .title { menu.openFromPlaza(.main) }
         evaluate()
     }
     /// ☰ shortcut: walk there (a quick fade) and use it.
     func openStation(_ id: String) { command("hubUse", mode: id); haptic() }
     func backToPlaza() {
-        classicOverlay = false
+        if phase == .failed { retry(); return }
         // a party's lobby stays: the plaza is where it lives now
         if menu.screen != .main && menu.screen != .title { if menu.screen.isOnline && partyService.lobby != nil { menu.openFromPlaza(.main) } else { menu.goHome() } }
         evaluate()
@@ -324,13 +319,13 @@ final class HubSession {
     #if DEBUG
     /// Tests and snapshots: pretend the plaza is up (no Unity in the simulator) with this place and zone.
     func debugLive(place: String = "plaza", zone: String = "", session: String = "debug-hub") {
-        sessionID = session; phase = .live; loaded = true; classicOverlay = false
+        sessionID = session; phase = .live; loaded = true
         self.place = place; self.zone = HubZone(line: zone)
     }
     /// Tests: the boot message the plaza would send (no Unity in the simulator).
     func debugBoot(session: String) { sessionID = session; token = 7; phase = .booting; sendStart() }
     func debugPartyTick() { partyTick() }
-    func debugReset() { timer?.invalidate(); timer = nil; phase = .off; loaded = false; classicOverlay = false; zone = nil; station = nil; returnBay = nil; place = "plaza"; notice = ""; lookSent = ""; debugSent = nil }
+    func debugReset() { timer?.invalidate(); timer = nil; phase = .off; loaded = false; zone = nil; station = nil; returnBay = nil; place = "plaza"; notice = ""; lookSent = ""; debugSent = nil }
     #endif
 
     // MARK: party (PLAN §4: friends in your plaza, sitting together, Call party)

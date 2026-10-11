@@ -6,13 +6,13 @@ import XCTest
 /// Unity's reports, and the phone controller's look (written to $MENU_SNAP_DIR/hub-*.png).
 @MainActor
 final class HubSessionTests: XCTestCase {
-    private var savedDisplay = false, savedPlaza = true
+    private var savedDisplay = false
     override func setUp() async throws {
-        savedDisplay = SportsSession.shared.displayConnected; savedPlaza = HubSession.shared.plazaMenus
+        savedDisplay = SportsSession.shared.displayConnected
         HubSession.shared.debugReset(); OnboardingFlow.shared.exitToMenu(); TennisMenu.shared.classic = false
     }
     override func tearDown() async throws {
-        HubSession.shared.plazaMenus = savedPlaza; HubTestState.restore(display: savedDisplay)
+        HubTestState.restore(display: savedDisplay)
     }
 
     func testNoTVKeepsThePhoneMenu() {
@@ -26,16 +26,21 @@ final class HubSessionTests: XCTestCase {
         }
     }
 
-    func testATVOnTheHomeScreenAsksForThePlaza() {
+    /// With a TV the Plaza is the only menu: it stays on the TV on every menu screen, which opens on the phone as a panel.
+    func testWithATVThePlazaIsTheOnlyMenu() {
         let hub = HubSession.shared, menu = TennisMenu.shared
         SportsSession.shared.displayConnected = true
-        menu.debugShow(.title); XCTAssertTrue(hub.wanted, "a TV connection opens the plaza")
-        menu.debugShow(.main); XCTAssertTrue(hub.wanted)
-        menu.debugShow(.character); XCTAssertFalse(hub.wanted, "a classic menu screen shows over the plaza")
-        menu.debugShow(.main); hub.plazaMenus = false; XCTAssertFalse(hub.wanted, "Plaza menus off keeps the flat TV menu")
-        hub.plazaMenus = true; menu.classic = true; XCTAssertFalse(hub.wanted, "the developer classic home keeps its own menu"); menu.classic = false
-        hub.debugLive(); hub.showClassic(); XCTAssertFalse(hub.wanted, "☰ → Classic menu"); XCTAssertEqual(hub.phase, .suspended)
-        hub.backToPlaza(); XCTAssertTrue(hub.wanted)
+        menu.debugShow(.title); XCTAssertTrue(hub.wanted, "a TV connection opens the plaza"); XCTAssertFalse(hub.panelOpen)
+        menu.debugShow(.main); XCTAssertTrue(hub.wanted); XCTAssertFalse(hub.panelOpen)
+        for screen in [MenuScreen.character, .settings, .party, .localChoice, .localPlayers, .online(.entry)] {
+            menu.debugShow(screen)
+            XCTAssertTrue(hub.wanted, "the TV keeps the plaza (\(screen))"); XCTAssertTrue(hub.panelOpen, "the phone shows \(screen) as a panel")
+        }
+        // the panel's Done goes home, still on the plaza
+        hub.debugLive(); menu.debugShow(.settings); hub.leaveStation()
+        XCTAssertEqual(menu.screen, .main); XCTAssertFalse(hub.panelOpen); XCTAssertTrue(hub.wanted)
+        // the Party button with no party opens Play on the phone
+        hub.openPanel(.party); XCTAssertEqual(menu.screen, .party); XCTAssertTrue(hub.wanted)
     }
 
     func testMatchTakesTheRuntimeAndThePlazaReloadsAfter() {
@@ -44,7 +49,7 @@ final class HubSessionTests: XCTestCase {
         hub.debugLive(place: "tennis")
         hub.runtimeTaken()
         XCTAssertEqual(hub.phase, .suspended); XCTAssertFalse(hub.loaded, "the match scene replaced Hub.unity")
-        hub.displayLost(); XCTAssertEqual(hub.phase, .off); XCTAssertFalse(hub.classicOverlay)
+        hub.displayLost(); XCTAssertEqual(hub.phase, .off)
     }
 
     func testUnityReportsReachThePhone() {

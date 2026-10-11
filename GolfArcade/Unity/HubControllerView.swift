@@ -12,7 +12,7 @@ struct HubControllerView: View {
     @State private var partySheet = false
     var body: some View {
         if let bay = hub.station, HubSession.partyBays.contains(bay), hub.party != nil { HubPartyBayPanel(hub: hub) }
-        else if hub.station != nil { HubStationPanel(hub: hub) } else { explore }
+        else if hub.panelOpen { HubStationPanel(hub: hub) } else { explore }
     }
 
     private var explore: some View {
@@ -35,7 +35,7 @@ struct HubControllerView: View {
             HStack(spacing: 12) {
                 pill("line.3.horizontal", "Menu", id: "hub-menu") { quickMenu = true }
                 pill("person.2.fill", hub.party.map { "Party · \($0.participants.count)" } ?? "Party", id: "hub-party") {
-                    if hub.party != nil { partySheet = true } else { hub.showClassic(); TennisMenu.shared.tap("homePlay") }
+                    if hub.party != nil { partySheet = true } else { hub.openPanel(.party) }   // (Play: online or local friends)
                 }
             }
         }
@@ -203,7 +203,7 @@ private struct HubRoundButton: View {
     }
 }
 
-/// ☰: the Destiny-style launcher. Jump to any room, or open the classic list menu.
+/// ☰: the Destiny-style launcher. Jump to any room, or straight to a shortcut.
 struct HubQuickMenu: View {
     let hub: HubSession
     let dismiss: () -> Void
@@ -234,11 +234,9 @@ struct HubQuickMenu: View {
                 }
                 Section {
                     // Local play has no bay of its own: pass-the-phone golf, two phones on one TV for tennis, or a nearby lobby
-                    Button { dismiss(); hub.showClassic(); TennisMenu.shared.openFromPlaza(.localChoice) } label: {
+                    Button { dismiss(); hub.openPanel(.localChoice) } label: {
                         Label("Play together (Local)", systemImage: "person.2.wave.2.fill")
                     }.accessibilityIdentifier("hub-local")
-                    Button { dismiss(); hub.showClassic() } label: { Label("Classic menu", systemImage: "list.bullet.rectangle") }
-                        .accessibilityIdentifier("hub-classic")
                     Button { dismiss(); BetaFeedback.open() } label: { Label("Send feedback", systemImage: "envelope") }
                 }
             }
@@ -341,7 +339,7 @@ struct HubPartySheet: View {
                     if hub.partyService.isOwner, let bay = hub.station, HubSession.partyBays.contains(bay) {
                         Button { hub.callParty(); dismiss() } label: { Label("Call party to this bay", systemImage: "megaphone.fill") }
                     }
-                    Button { dismiss(); hub.showClassic(); TennisMenu.shared.tap("homeInvite") } label: { Label("Invite more friends", systemImage: "person.badge.plus") }
+                    Button { dismiss(); hub.openPanel(.main, taps: ["homeInvite"]) } label: { Label("Invite more friends", systemImage: "person.badge.plus") }
                     Button(role: .destructive) { hub.partyService.leave(); dismiss() } label: { Label("Leave party", systemImage: "rectangle.portrait.and.arrow.right") }
                         .accessibilityIdentifier("hub-party-leave")
                 }
