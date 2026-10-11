@@ -43,9 +43,12 @@ namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkInput {
         public string action; public double time,age; public float target,power,aim,depth=.75f,handSide,lift,facing,value,value2;
         public long eventID,point,contact; public int club; public int actorSeat=-1;
+        /// A golf swing: the whole strike, and the club and line it was swung on (shotClub -1: none of these, the host's club and line
+        /// and the power, aim and facing above).
+        public NetworkImpact impact; public int shotClub=-1; public double heading;
         public bool Valid => !string.IsNullOrEmpty(action) && Finite(time) && Finite(age) && age>=0 && age<=NetworkTuning.MaxInputAge
             && Finite(target) && Finite(power) && Finite(aim) && Finite(depth) && Finite(value) && Finite(value2)
-            && Finite(handSide) && Finite(lift) && Finite(facing);
+            && Finite(handSide) && Finite(lift) && Finite(facing) && Finite(heading) && (impact==null || impact.Valid);
         public static bool Finite(double v)=>!double.IsNaN(v)&&!double.IsInfinity(v);
     }
     [Serializable] public struct NetworkVector {

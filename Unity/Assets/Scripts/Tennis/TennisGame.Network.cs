@@ -10,19 +10,30 @@ namespace GolfArcade.Tennis {
         int networkLocalSide,networkNearSide;string networkView="";readonly int[] networkSwings=new int[2],networkServes=new int[2];
         string networkScore="",networkPhase="";Vector3 networkPreviousA,networkPreviousB;
         bool networkConfigured;
+        long networkContact=-1; int networkBounces;
         public float TossSeenAgo=>Mathf.Clamp(Lag+TossInputDelay,0,.25f);
         public void ConfigureNetwork(NetworkConfiguration c) {
-            networkConfigured=true;
+            networkConfigured=true;networkContact=-1;networkBounces=0;
             NativeControlled=true;AutoPlay=false;Drill=false;AimPractice=false;
             networkLocalSide=c.Seat(c.localID);networkView=c.LocalView??"";
             networkNearSide=NetworkConfiguration.NearSide(networkLocalSide,networkView);
             var near=c.participants.First(p=>p.seat==networkNearSide);var far=c.participants.First(p=>p.seat==1-networkNearSide);
             Player.Build(near.female,PlayerSkinFor(near.female),near.left,PlayerBody(near.female));
             Opponent.Build(far.female,PlayerSkinFor(far.female),far.left,PlayerBody(far.female));
+            // the heroes on court follow the rebuilt bodies and wear the lobby's looks (the plaza shows the same colours)
+            foreach(var actor in new[]{Player,Opponent})foreach(var d in actor.GetComponentsInChildren<HeroTennisDriver>(true))DestroyImmediate(d.gameObject);
+            TennisHeroSetup.AttachPlayer(this);TennisHeroSetup.AttachRival(this);
+            DressNetworkHero(Player,near);DressNetworkHero(Opponent,far);
             if(hud){hud.PlayerName=near.name;hud.OpponentName=far.name;hud.MatchVisible=true;}
             if(presentation)presentation.Finish();if(replay)replay.Stop();
             networkPreviousA=Player.transform.position;networkPreviousB=Opponent.transform.position;
             if(networkView==NetworkConfiguration.ViewSplit&&SplitScreen)BuildSplit(near.name,far.name);   // one TV, two halves
+        }
+        static void DressNetworkHero(TennisActor actor,NetworkParticipant p) {
+            var d=actor?actor.GetComponentInChildren<HeroTennisDriver>():null;var l=p?.loadout;
+            if(!d||!d.matchLook||l==null)return;
+            if(!string.IsNullOrEmpty(l.skinHex))d.matchLook.SetSkin(HeroKit.Hex(l.skinHex));
+            d.matchLook.SetKit(l.shirtHex,l.shortsHex,null);
         }
         public void BeginSharedPresentation() { if(presentation) presentation.RestartShared(); }
         public void PredictNetworkSwing(float power) {
@@ -32,6 +43,28 @@ namespace GolfArcade.Tennis {
             var state=SportsMultiplayer.Instance?SportsMultiplayer.Instance.TennisState:null;
             bool tossing=state!=null?state.server==networkLocalSide&&state.phase=="toss":Flow==Phase.PlayerServeToss;
             if(tossing)actor.Serve(Mathf.Clamp01(power));else actor.Swing(Mathf.Clamp01(power),false);
+        }
+        /// An online match used to be silent: the view only drew the host's snapshots, and every sound, effect and haptic lived
+        /// in the single-device game. The host counts each strike (`contact`) and each bounce, so a phone plays the hit the moment
+        /// its snapshot shows a new one: the sound and burst for everyone watching, and a click in the hand of the player who
+        /// struck it (the one the ball is now travelling away from).
+        void NetworkContactFeel(NetworkTennisState s,int local) {
+            if(s.contact!=networkContact) {
+                bool first=networkContact<0;networkContact=s.contact;networkBounces=s.bounces;
+                if(!first&&s.phase=="rally"&&!s.paused) {
+                    int hitter=1-s.receiver;
+                    Timing grade=s.serveFlight?Timing.Great:TennisRules.GradeFromLabel(s.reason);
+                    // A phone that only controls (the TV is another phone's) draws and sounds nothing of the court.
+                    if(networkView!=NetworkConfiguration.ViewNone) {
+                        if(sounds!=null)sounds.Hit(grade,s.players[hitter].power);
+                        if(fx!=null)fx.Contact(BallPosition,grade,false);
+                    }
+                    if(hitter==local)GolfArcade.Game.Haptics.Strike(TennisRules.GradeFeel(grade),false);
+                }
+            } else if(s.bounces>networkBounces) {
+                networkBounces=s.bounces;
+                if(s.phase=="rally"&&!s.paused&&sounds!=null&&networkView!=NetworkConfiguration.ViewNone)sounds.Bounce(Mathf.Clamp01(Mathf.Sqrt(s.velocity.x*s.velocity.x+s.velocity.z*s.velocity.z)/32f));
+            }
         }
         Vector3 NetworkPosition(NetworkVector v) {
             float sign=networkNearSide==0?1:-1;return new Vector3(v.x*sign,v.y,v.z*sign);
@@ -66,7 +99,8 @@ namespace GolfArcade.Tennis {
             if(s.phase=="rally"){v.x+=s.velocity.x*advance;v.z+=s.velocity.z*advance;v.y=Mathf.Max(TennisRules.BallRadius,v.y+s.velocity.y*advance-4.905f*advance*advance);}
             BallPosition=NetworkPosition(v);BallVelocity=NetworkPosition(s.velocity);previousBall=BallPosition;contactHitter=null;
             if(ball)ball.position=BallPosition;
-            match=s.score;if(n==1){(match.PlayerPoints,match.OpponentPoints)=(match.OpponentPoints,match.PlayerPoints);(match.PlayerGames,match.OpponentGames)=(match.OpponentGames,match.PlayerGames);(match.PlayerSets,match.OpponentSets)=(match.OpponentSets,match.PlayerSets);match.PlayerServes=!match.PlayerServes;match.PlayerWonMatch=!match.PlayerWonMatch;if(match.SetScores!=null)match.SetScores=match.SetScores.Select(score=>{var halves=score.Split('–');return halves.Length==2?halves[1]+"–"+halves[0]:score;}).ToList();}
+            NetworkContactFeel(s,l);
+            match=n==1?s.score.Mirrored():s.score;   // the TV's HUD is from the drawn near player's side...
             bool nearServing=s.server==n,localServing=l>=0&&s.server==l;
             if(tossMeter) {
                 // Under the server's feet: its own screen shows it to the player serving, and a shared TV shows it to both.
@@ -81,7 +115,9 @@ namespace GolfArcade.Tennis {
             Feedback=net.Stale?"Connection interrupted":net.Quiet?"Reconnecting…":s.paused?"Waiting for a player":networkLocalSide<0?"Watching":s.reason;
             string phase=s.phase=="intro"?"intro":networkLocalSide<0?"watching":s.complete?"finished":s.phase=="rally"?"rally":s.phase=="point"?"point":localServing?(s.phase=="toss"?"toss|":"serve|")+(match.DeuceCourt?"deuce":"ad"):"receive";
             if(phase!=networkPhase){networkPhase=phase;PhaseChanged?.Invoke(phase);}
-            string score=match.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{match.PlayerGames},{match.OpponentGames},{score}");}
+            // ...but the phone's score ("YOU WIN", "YOUR SERVE") is from its own player's side, which on a shared TV is not the drawn near side.
+            var phoneMatch=l>=0&&l!=n?match.Mirrored():match;
+            string score=phoneMatch.Scoreboard;if(score!=networkScore){networkScore=score;ScoreChanged?.Invoke($"{phoneMatch.PlayerGames},{phoneMatch.OpponentGames},{score}");}
             if(networkLocalSide<0) {
                 var camera=GameplayCamera;if(camera){camera.transform.position=new Vector3(0,9,-18);camera.transform.LookAt(new Vector3(0,.8f,0));camera.fieldOfView=48;}
             } else if(UsesSplit) UpdateSplit();

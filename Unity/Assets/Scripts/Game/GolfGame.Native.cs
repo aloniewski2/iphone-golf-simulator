@@ -8,6 +8,9 @@ namespace GolfArcade.Game {
         public static event System.Action ShotStruck;
         public bool NativeControlled { get; private set; }
         public bool NativeHasNextHole => Current == State.RoundDone && holeIndex + 1 < course.Holes.Length;
+        /// The state the app's screens follow: the beat before a replay already counts as the replay
+        /// (the result's screen waits for the result).
+        public string NativePhase => Current == State.Result && replayFirst ? nameof(State.Replay) : Current.ToString();
         public static event System.Action NativeExitRequested;
         void RequestNativeExit() { enabled = false; NativeExitRequested?.Invoke(); }
         public Camera GameplayCamera => rig ? rig.Camera : null;
@@ -30,6 +33,7 @@ namespace GolfArcade.Game {
         }
         public void NativeContinue() {
             if(Current==State.Intro) { SkipPresentation(); return; }
+            if (Current == State.Replay || (Current == State.Result && replayFirst)) { SkipReplay(); return; }
             if (Current == State.Result) { ContinueShotResult(); return; }
             if (Current != State.RoundDone) return;
             if (NativeHasNextHole) NextHole(); else PlayAgain();
@@ -78,7 +82,7 @@ namespace GolfArcade.Game {
             var sheet = hud.Controller;
             sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
             sheet.SetScreen(true);
-            sheet.Skip.Pressed = () => { SkipPresentation(); };
+            sheet.Skip.Pressed = () => { if (Current is State.Replay or State.Result) SkipReplay(); else SkipPresentation(); };
             sheet.StartSwing.Pressed = () => NativeStartSwing();
             sheet.Pause.gameObject.SetActive(true);
             sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();
@@ -119,14 +123,7 @@ namespace GolfArcade.Game {
             direction.y=0;
             if(direction.sqrMagnitude<.01f) return;
             double desired=System.Math.Atan2(direction.x,direction.z)*180/System.Math.PI;
-            if(GolfArcade.Multiplayer.SportsMultiplayer.Active) {
-                NativeCancelSwing();
-                var net=GolfArcade.Multiplayer.SportsMultiplayer.Instance;
-                if(net.GolfState!=null) net.Submit(new GolfArcade.Multiplayer.NetworkInput {
-                    action="golfAimHeading",value=(float)desired,actorSeat=net.GolfState.turn
-                });
-                return;
-            }
+            // (in a multiplayer round too: the phone with the player up aims, and tells the host)
             Nudge(Mathf.DeltaAngle((float)heading,(float)desired));
         }
         [System.Serializable] public sealed class ControllerPoint {
@@ -143,7 +140,7 @@ namespace GolfArcade.Game {
         }
         [System.Serializable] public sealed class ControllerReading {
             public PartyControllerReading party;
-            public int hole,par,clubIndex;
+            public int hole,holeId,par,clubIndex;
             public string name,clubName,mapImage;
             public double yards,wind,windDegrees,clubYards,aimDegrees;
             public ControllerPoint ball,pin,landing,direction;
@@ -159,7 +156,7 @@ namespace GolfArcade.Game {
             if(hole==null || !hud || !minimapCamera) return null;
             bool putting = hole.LieAt(ballAt).IsPuttingSurface();
             var reading=new ControllerReading {
-                hole=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
+                hole=hole.PlayNumber,holeId=hole.Number,name=hole.Name,par=hole.Par,yards=ballAt.DistanceTo(hole.Pin),
                 wind=Wind.SpeedMPH,windDegrees=Wind.RelativeTo(heading),
                 clubIndex=System.Array.IndexOf(GolfArcade.Shot.GolfClubs.All,club),
                 clubName=GolfArcade.Shot.GolfClubs.DisplayName(club),clubYards=GolfArcade.Shot.GolfClubs.ReferenceDistanceYards(club),

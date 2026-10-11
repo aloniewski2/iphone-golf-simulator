@@ -29,7 +29,7 @@ namespace GolfArcade.Tennis
             Tip.FirstBall => "You run to the ball on your own. Just swing as it reaches you — screen toward the TV for a forehand.",
             Tip.Backhand => "Ball on your other side: turn the phone so the camera faces the TV, and swing across.",
             Tip.Whiff => "Too early or too late. Start your swing as the ball crosses the ring at your feet.",
-            Tip.Timing => "Aim where you want to hit. Time the swing well for a faster, more accurate shot.",
+            Tip.Timing => "Timing aims the ball: a touch early goes left, on the ball goes straight, a touch late goes right.",
             _ => "",
         };
 

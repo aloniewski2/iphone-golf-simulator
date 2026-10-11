@@ -24,6 +24,13 @@ final class MultiplayerService {
     @ObservationIgnored private var proofKinds: Set<String> = []
     #endif
     var onMatchRequested: ((MultiplayerMatchConfiguration) -> Void)?
+    /// The Plaza's party traffic (PLAN_MenuHub_WalkableWorld §4): where each friend is and what they do, any phone to all,
+    /// only while the lobby is idle. (kind, payload, sender)
+    @ObservationIgnored var onHub: ((String, String, String) -> Void)?
+    func sendHub(_ kind: String, payload: String, reliable: Bool) {
+        guard lobby?.phase == .lobby, ["hubPresence", "hubEvent"].contains(kind), payload.utf8.count <= 2048 else { return }
+        try? broadcast(kind, payload: payload, reliable: reliable)
+    }
     var onReturnToLobby: (() -> Void)?
     var onResult: ((String) -> Void)?
     @ObservationIgnored private var transport: (any MultiplayerTransport)?
@@ -250,8 +257,9 @@ final class MultiplayerService {
         quickSport = item.sport == MultiplayerSport.tennis.rawValue ? .tennis : nil
         do { try lan.join(item) } catch { leave(); throw error }
     }
-    func configure(_ sport: MultiplayerSport, venue: String = "resort", sets: Int = 1, games: Int = 3) throws {
+    func configure(_ sport: MultiplayerSport, venue: String? = nil, sets: Int = 1, games: Int = 3) throws {
         try requireOwnerIdle()
+        let venue = sport == .golf ? MultiplayerLobby.currentGolfVenue(venue ?? "cliffside") : (venue ?? "resort")
         guard MultiplayerLobby.validVenue(venue, sport: sport), (1...3).contains(sets), [1,3,6].contains(games) else { throw MultiplayerError.invalidOperation("Invalid match settings.") }
         if sport != .golf { lobby?.participants.removeAll { $0.isGuest } }
         lobby?.configure(sport: sport, venue: venue)
@@ -352,7 +360,7 @@ final class MultiplayerService {
     private func createLobby(owner: String) {
         var me = identity(); me.seat = 0; lobby = MultiplayerLobby(ownerID: owner, participants: [me])
         for p in hello.values.sorted(by: { $0.id < $1.id }) { try? lobby?.add(p) }
-        if let sport = quickSport { lobby?.configure(sport: sport, venue: "resort") }
+        if let sport = quickSport { lobby?.configure(sport: sport, venue: sport == .golf ? "cliffside" : "resort") }
         publishLobby()
         if quickSport != nil { try? setReady(true) }
     }
@@ -370,15 +378,32 @@ final class MultiplayerService {
                     if lobby!.participants[i].seat >= 0 { try? broadcast("suspend", payload: id); pushRuntime("suspend", payload: id) }
                 }
                 if connected {
-                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; linkSteadySince[id] = nil }
+                    if disconnected[id] != nil, [.loading,.calibrating,.playing].contains(lobby!.phase) {
+                        // A phone whose connection really dropped reloads the game when it comes back, so it is neither loaded nor set up any more.
+                        // One that was only quiet or in the background never dropped (it is still marked connected) and keeps its state.
+                        if !lobby!.participants[i].connected { lobby!.participants[i].loaded = false; lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false; linkSteadySince[id] = nil }
+                    }
                     else { disconnected.removeValue(forKey: id) }
                     lobby!.participants[i].connected = true
                 }
             }
             lobby?.revision += 1; publishLobby()
         } else if let owner = lobby?.ownerID, !transport.peers.contains(owner) {
+            if lobby?.phase == .lobby, handOver(from: owner) { return }
             lobby?.phase = .interrupted; stopRuntime(); lastError = "The host disconnected. Leave and create a new lobby."
         }
+    }
+    /// The host left an idle lobby: the remaining phone with the lowest id takes it over and publishes it; the others accept that.
+    private func handOver(from owner: String) -> Bool {
+        guard var state = lobby, let transport else { return false }
+        let remaining = state.participants.filter { !$0.isGuest && $0.id != owner && ($0.id == localID || transport.peers.contains($0.id)) }.map(\.id).sorted()
+        guard let next = remaining.first, remaining.count >= 1 else { return false }
+        if next != localID { return true }   // wait for the successor's lobby
+        state.participants.removeAll { $0.id == owner || $0.controllerID == owner }
+        state.ownerID = localID; state.queue.removeAll { $0 == owner }
+        for i in state.participants.indices { state.participants[i].ready = false }
+        state.revision += 1; lobby = state; publishLobby(); lastError = "The host left. You are the host now."
+        return true
     }
     private func receive(_ data: Data, from peer: String) {
         guard data.count <= MultiplayerPacket.maximumBytes, let transport, transport.peers.contains(peer),
@@ -406,8 +431,12 @@ final class MultiplayerService {
             return
         }
         if packet.kind == "lobby" {
-            guard let state = try? decoder.decode(MultiplayerLobby.self, from: Data(packet.payload.utf8)), state.valid(), state.ownerID == peer,
-                  lobby == nil || (lobby?.ownerID == peer && lobby?.id == state.id && state.revision > lobby!.revision) else { return }
+            guard var state = try? decoder.decode(MultiplayerLobby.self, from: Data(packet.payload.utf8)) else { return }
+            if state.sport == .golf { state.venue = MultiplayerLobby.currentGolfVenue(state.venue) }
+            // (a handed-over lobby: the old owner is gone and its successor publishes the same lobby with a newer revision)
+            let handover = lobby.map { $0.id == state.id && state.revision > $0.revision && !transport.peers.contains($0.ownerID) } ?? false
+            guard state.valid(), state.ownerID == peer,
+                  lobby == nil || handover || (lobby?.ownerID == peer && lobby?.id == state.id && state.revision > lobby!.revision) else { return }
             lobby = state
             if state.phase != .loading { loadingNeedsDecision = false }
             if state.phase != .lobby { emotes.removeAll() }
@@ -415,6 +444,10 @@ final class MultiplayerService {
             return
         }
         guard let state = lobby, packet.lobbyID == state.id else { return }
+        if packet.kind == "hubPresence" || packet.kind == "hubEvent" {
+            guard state.phase == .lobby, packet.payload.utf8.count <= 2048, state.participants.contains(where: { $0.id == peer }) else { return }
+            onHub?(packet.kind, packet.payload, peer); return
+        }
         if packet.kind == "emote", !isOwner {
             guard peer == state.ownerID, state.phase == .lobby,
                   let event = try? decoder.decode(MultiplayerEmote.self, from: Data(packet.payload.utf8)),
@@ -441,7 +474,7 @@ final class MultiplayerService {
         case "loadContinue": if packet.matchID == state.matchID && state.phase == .loading { loadingNeedsDecision = false }
         case "notice": lastError = String(packet.payload.prefix(200))
         case "launch": guard packet.matchID == state.matchID, [.loading,.calibrating,.playing,.results].contains(state.phase) else { return }; launch(packet.payload)
-        case "run": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet)
+        case "run": guard packet.matchID == state.matchID else { return }; clearSetupNotices(); pushRuntimePacket(packet)
         case "snapshot", "golfShot": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet)
         case "suspend", "resumePeer", "drop": pushRuntimePacket(packet)
         case "result": guard packet.matchID == state.matchID else { return }; pushRuntimePacket(packet); rememberResult(packet.payload); onResult?(packet.payload)
@@ -600,8 +633,16 @@ final class MultiplayerService {
         for i in lobby!.participants.indices { lobby!.participants[i].calibrated = false; lobby!.participants[i].linkOK = false }
         lobby!.phase = .calibrating; lobby!.revision += 1; publishLobby()
     }
+    /// The two notices setup can post (a weak connection, slow setup) start with these.
+    private static let weakLinkNoticePrefix = "The connection to ", slowSetupNoticePrefix = "Still waiting for "
+    /// The "Play anyway" choice and those two notices are about setup; once play begins they would only sit on the screen all match.
+    private func clearSetupNotices() {
+        linkNeedsDecision = false
+        if let text = lastError, text.hasPrefix(Self.weakLinkNoticePrefix) || text.hasPrefix(Self.slowSetupNoticePrefix) { lastError = nil }
+    }
     /// Schedule the shared start (after the slowest phone's loading cover has gone) and tell everyone.
     private func beginPlay() {
+        clearSetupNotices()
         scheduledRunAt = max(now, lobby!.competitors.map { presentationReadyAt[$0.id] ?? now }.max() ?? now) + max(0.5, roundTrip * 2)
         lobby!.phase = .playing; lobby!.revision += 1; publishLobby()
         try? broadcast("run", payload: String(scheduledRunAt)); pushRuntime("run", payload: String(scheduledRunAt))
@@ -672,9 +713,11 @@ final class MultiplayerService {
     private func launch(_ payload: String) {
         guard var config = try? decoder.decode(MultiplayerMatchConfiguration.self, from: Data(payload.utf8)), config.matchID != matchConfiguration?.matchID else { return }
         config.localID = localID
+        if config.sport == "golf" { config.venue = MultiplayerLobby.currentGolfVenue(config.venue) }
         guard config.valid(), config.hostID == lobby?.ownerID, config.lobbyID == lobby?.id, config.matchID == lobby?.matchID else { lastError = "Invalid match configuration."; return }
         guard onMatchRequested != nil || !SportsSession.shared.active else { lastError = "Finish the current sport session before joining this match."; return }
         matchConfiguration = config; quickSport = nil; lastError = nil; stats = NetStats()
+        SportsDiagnostics.write("multiplayer launch \(config.sport) \(isOwner ? "owner" : "guest") seat=\(config.participants.first { $0.id == localID }?.seat ?? -1) peers=\(transport?.peers.count ?? 0)")
         #if DEBUG
         if proofRecording { OnlineLobbyProofDriver.event("launch-config","bytes=\(payload.utf8.count) \(payload)") }
         #endif
@@ -685,8 +728,19 @@ final class MultiplayerService {
         if proofRecording && packet.kind == "run" { OnlineLobbyProofDriver.event("runtime-run",(try? json(packet)) ?? "") }
         if proofRecording && packet.kind == "snapshot" { proofSnapshot=packet.payload }
         #endif
- if let text = try? json(packet), !runtimeSend(text), matchConfiguration != nil { lastError="The Unity multiplayer bridge is unavailable or full. Re-export Unity before playing." } }
-    private func pushRuntime(_ kind: String, payload: String = "") { pushRuntimePacket(packet(kind, payload: payload)) }
+        // Unity reads the bridge only while a match is configured, and the bridge holds 128 packets. The shared clock is worth sending
+        // during a match and never otherwise: a guest waiting in a lobby (or on the results screen) used to put a reliable clock packet in
+        // with every pong, twice a second, and after 64 s the bridge was full. The next match launch was then refused, and the guest
+        // ejected itself half a second after the TV began to load.
+        if packet.kind == "clock" && matchConfiguration == nil { return }
+        if let text = try? json(packet), !runtimeSend(text), matchConfiguration != nil {
+            SportsDiagnostics.write("multiplayer bridge refused a \(packet.kind) packet")
+            lastError="The Unity multiplayer bridge is unavailable or full. Re-export Unity before playing."
+        }
+    }
+    /// A clock update is stale a second later, so it goes as a packet the bridge may evict when it is under pressure; a bridge that holds
+    /// nothing but reliable packets can only refuse (and then ends the match).
+    private func pushRuntime(_ kind: String, payload: String = "") { pushRuntimePacket(packet(kind, payload: payload, reliable: kind != "clock")) }
     private func stopRuntime() {
         reportStats()
         pushRuntime("stop"); matchConfiguration = nil
@@ -703,6 +757,7 @@ final class MultiplayerService {
         if let data = payload.data(using: .utf8), let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { winnerSeat = result["winner"] as? Int ?? -1 }
     }
     private func interrupt(_ reason: String) {
+        SportsDiagnostics.write("multiplayer interrupted: \(reason)")
         lobby?.phase = .interrupted; lobby?.revision += 1; publishLobby()
         try? broadcast("stop"); stopRuntime(); lastError = reason
     }
@@ -758,7 +813,7 @@ final class MultiplayerService {
                     if !linkNeedsDecision, now - since >= MultiplayerTuning.linkDecisionSeconds {
                         linkNeedsDecision = true
                         let weak = lobby!.competitors.filter { $0.id != lobby!.ownerID && !$0.linkOK }.map(\.name)
-                        let text = "The connection to \(weak.joined(separator: " and ")) is weak. Play anyway, or leave."
+                        let text = "\(Self.weakLinkNoticePrefix)\(weak.joined(separator: " and ")) is weak. Play anyway, or leave."
                         lastError = text; try? broadcast("notice", payload: text)
                     }
                 } else { linkWaitingSince = nil }
@@ -768,12 +823,13 @@ final class MultiplayerService {
                 calibrationNoticed = true
                 let waiting = lobby!.competitors.filter { !$0.calibrated }.map(\.name)
                 if !waiting.isEmpty {
-                    let text = "Still waiting for \(waiting.joined(separator: " and ")) to finish setting up."
+                    let text = "\(Self.slowSetupNoticePrefix)\(waiting.joined(separator: " and ")) to finish setting up."
                     lastError = text; try? broadcast("notice", payload: text)
                 }
             }
             // A dropped connection gets 15 s; a player who came back mid-match and has to point at the TV again gets longer.
             for (id, since) in disconnected where now - since >= (awaitingCalibration.contains(id) ? MultiplayerTuning.recalibrationSeconds : 15) {
+                SportsDiagnostics.write("multiplayer dropped \(id == localID ? "this phone" : String(id.prefix(8))) after \(Int(now - since)) s paused or silent")
                 disconnected.removeValue(forKey: id); silent.removeValue(forKey: id); awaitingCalibration.remove(id); stats.drops += 1; try? broadcast("drop", payload: id); pushRuntime("drop", payload: id)
                 if let i = lobby?.participants.firstIndex(where: { $0.id == id }) { lobby!.participants[i].seat = -1; lobby!.participants[i].connected = id == localID || transport.peers.contains(id) }
                 lobby?.revision += 1; publishLobby()
@@ -787,6 +843,7 @@ final class MultiplayerService {
             #endif
             guard let data = text.data(using: .utf8), let outgoing = try? decoder.decode(MultiplayerPacket.self, from: data) else { continue }
             if outgoing.kind == "bridgeError", matchConfiguration != nil {
+                SportsDiagnostics.write("multiplayer bridge error during a match: \(outgoing.payload)")
                 if isOwner { interrupt(outgoing.payload) }
                 else { try? sendControl("availability", payload: "false"); stopRuntime(); lastError = outgoing.payload }
                 continue
@@ -842,7 +899,7 @@ extension MultiplayerService {
         lobby?.phase = phase
         lastError = error
         if guest, let peer = lobby?.participants.first(where:{ $0.id != localID }) { lobby?.ownerID = peer.id }
-        for i in lobby!.participants.indices { lobby!.participants[i].ready = ready; lobby!.participants[i].loaded = i % 2 == 0 }
+        for i in lobby!.participants.indices { lobby!.participants[i].ready = ready; lobby!.participants[i].loaded = i % 2 == 0; lobby!.participants[i].calibrated = phase == .playing || phase == .results }
         if lobby!.participants.count > 1 { lobby!.participants[1].connected = !disconnected; lobby!.participants[1].paused = paused }
         if spectator { lobby!.participants[0].seat = -1 }
         lobby?.revision += 1

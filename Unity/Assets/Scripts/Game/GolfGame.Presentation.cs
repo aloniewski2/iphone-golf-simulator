@@ -63,7 +63,7 @@ namespace GolfArcade.Game {
         public void Overview() {
             if(Current!=State.Aim || PresentationPolicy.Multiplayer)return;
             overviewReturn=true; golfSkipped=false; golfBeat=0; golfVenueCut=PresentationCut.Full;
-            hud.ShowHoleIntro(Tournament,hole.Number,hole.Name,hole.Par,hole.Length,Wind.Describe(heading));
+            hud.ShowHoleIntro(Tournament,hole.PlayNumber,hole.Name,hole.Par,hole.Length,Wind.Describe(heading));
             Current=State.Intro; Swing.Armed=false; BeginGolfBeat(); RefreshControls();
         }
         public void TryNativePresentation() {
@@ -71,7 +71,7 @@ namespace GolfArcade.Game {
             pendingNativeIntro=false; introReady=NativeShotReady;
             // Setup has completed at the original address; no scoring or turn changes occur.
             meeting=cheered=false; golfer.SetVisible(false); hud.ShowPlayHud(false);
-            hud.ShowHoleIntro(Tournament,hole.Number,hole.Name,hole.Par,hole.Length,Wind.Describe(heading));
+            hud.ShowHoleIntro(Tournament,hole.PlayNumber,hole.Name,hole.Par,hole.Length,Wind.Describe(heading));
             Enter(State.Intro); BeginGolfPresentation(); RefreshControls();
         }
         void OnDisable() { golfPresentation.Cancel(); }

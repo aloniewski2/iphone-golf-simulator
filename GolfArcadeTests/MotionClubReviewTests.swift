@@ -101,7 +101,7 @@ import XCTest
             (40,"17-golf-loading", { menu.debugShow(.loading, launch: MenuLaunch(sport: .golf, mode: .round)); session.loading.begin(now: Date()); session.loading.reach(0.65); session.loading.tick(now: Date()) }),
             (43,"18-locker", { session.loading.cancel(); menu.debugShow(.character) }),
             (47,"19-settings", { menu.debugShow(.settings) }), (50,"20-guide", { menu.debugShow(.howTo) }),
-            (53,"21-golf-lesson", { menu.debugShow(.golfLesson) }), (56,"22-connect", { menu.debugShow(.connect) }),
+            (53,"21-golf-lesson", { menu.debugShow(.hub(.golf)) }), (56,"22-connect", { menu.debugShow(.connect) }),
             (59,"23-results", { menu.debugShow(.results, result: MatchResult(won: true, score: "6–4", round: 0)) }),
             (62,"24-pause", { session.menuPauseVisible = true }),
             (65,"25-home", { session.menuPauseVisible = false; menu.debugShow(.main) })
@@ -177,7 +177,7 @@ import XCTest
             (40,"17-golf-loading", { menu.debugShow(.loading, launch: MenuLaunch(sport: .golf, mode: .round)); session.loading.begin(now: Date()); session.loading.reach(0.65); session.loading.tick(now: Date()) }),
             (43,"18-locker", { session.loading.cancel(); menu.debugShow(.character) }),
             (47,"19-settings", { menu.debugShow(.settings) }), (50,"20-guide", { menu.debugShow(.howTo) }),
-            (53,"21-golf-lesson", { menu.debugShow(.golfLesson) }), (56,"22-connect", { menu.debugShow(.connect) }),
+            (53,"21-golf-lesson", { menu.debugShow(.hub(.golf)) }), (56,"22-connect", { menu.debugShow(.connect) }),
             (59,"23-results", { menu.debugShow(.results, result: MatchResult(won: true, score: "6–4", round: 0)) }),
             (62,"24-pause", { session.menuPauseVisible = true }),
             (65,"25-home", { session.menuPauseVisible = false; menu.debugShow(.main) })

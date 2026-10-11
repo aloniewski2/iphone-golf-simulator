@@ -1,0 +1,17 @@
+RETURN_editor=PASS
+seamless_load_seconds_editor=8.79
+plaza_frames_while_loading=33
+plaza_frame_p99_ms_editor=2675.3
+plaza_frame_worst_ms_editor=2675.3
+frames_over_50ms=6
+memory_before_bytes=871449836
+memory_peak_bytes=1940731926
+worst_frames_ms=36,44,273,279,366,546,1062,2675
+slow_frames:
+  1062ms loaded=True initProgress=0.45 initialized=False frame=4387
+  273ms loaded=True initProgress=0.58 initialized=False frame=4389
+  279ms loaded=True initProgress=0.64 initialized=False frame=4390
+  546ms loaded=True initProgress=0.70 initialized=False frame=4391
+  2675ms loaded=True initProgress=0.80 initialized=False frame=4392
+  366ms loaded=True initProgress=1.00 initialized=True frame=4396
+CANCEL_editor=PASS

@@ -689,7 +689,7 @@ extension LockerMirrorTests {
             let fixtureDir = ProcessInfo.processInfo.environment["VISUAL_GOLDEN_DIR"].map { URL(fileURLWithPath: $0) } ?? repo.appendingPathComponent("work/online-lobby/emote_parity/data")
             let file = fixtureDir.appendingPathComponent("MatchHero_\(female ? "Female" : "Male")_emote_parity.json")
             let samples = try JSONDecoder().decode(Samples.self,from:Data(contentsOf:file))
-            XCTAssertEqual(samples.samples.count,60)
+            XCTAssertTrue(samples.samples.count >= 60 && samples.samples.count % 10 == 0,"ten sampled times per clip (6 emotes, or 12 clips with the reaction clips): \(samples.samples.count)")
             for sample in samples.samples {
                 let clip = try XCTUnwrap(data.clips[sample.clip]); XCTAssertEqual(clip.info.fps,60,accuracy:0.001)
                 let got = clip.pose(at:sample.time,loop:false)

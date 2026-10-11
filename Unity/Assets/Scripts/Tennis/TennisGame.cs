@@ -1,3 +1,4 @@
+using System.Collections;
 using GolfArcade.Game;
 using UnityEngine;
 using UnityEngine.UI;
@@ -98,6 +99,10 @@ namespace GolfArcade.Tennis
         Vector2 lockedShotAim; bool shotAimLocked;
         void LockShotAim() { lockedShotAim = new Vector2(AimInput, AimDepth); shotAimLocked = true; }
         public Vector3 ShotAimTarget => TennisRules.PlacementTarget(shotAimLocked ? lockedShotAim.x : AimInput, shotAimLocked ? lockedShotAim.y : AimDepth);
+        /// Wii Sports style aiming for a phone player swinging the phone: the swing's timing picks the
+        /// direction (early = left, on the ball = straight, late = right) and its power picks the depth.
+        /// Touch play keeps its aim pad, the keyboard its arrow keys, and self-play its scripted aim.
+        public bool TimingAims => NativeControlled && !NativeSportsSession.Touch && !AutoPlay;
         /// How far the assist wants to shift the player, in court metres, and where the ball
         /// is predicted to arrive. Exposed for the motion servo, the HUD and tests.
         public float AssistOffset { get; private set; }
@@ -212,14 +217,23 @@ namespace GolfArcade.Tennis
         public string InputStatus = "Keyboard · A/D move · Shift sprint · hold/release Space · arrows aim";
         static readonly Color CourtDust = new(.55f, .62f, .48f);
 
-        void Start()
+        /// PLAN_MenuHub_WalkableWorld §5: a match loading behind the plaza builds over several frames (each step one frame) so the
+        /// plaza on the TV never hitches. Off for every other launch: Start then runs to the end in its first frame, as before.
+        public static bool SliceInit;
+        /// 0..1 through the build (only advanced while SliceInit).
+        public float InitProgress { get; private set; }
+        IEnumerator Start()
         {
             var arena = Resources.Load<GameObject>("Tennis/TropicalV3/TropicalTennisResort");
             if (!arena) throw new System.InvalidOperationException("Approved coastal tennis arena export is missing");
             if (!NativeSportsSession.Active) TennisQuality.Apply();
-            var environment = Instantiate(arena); environment.name = "Tropical tennis resort v3 — live arena";
+            GameObject environment;
+            if (SliceInit) { var made = InstantiateAsync(arena); while (!made.isDone) yield return null; environment = made.Result[0]; }
+            else environment = Instantiate(arena);
+            environment.name = "Tropical tennis resort v3 — live arena";
             environment.transform.rotation=Quaternion.Euler(0,180,0);
             TennisLook.StyleArena(environment);
+            if (SliceInit) { InitProgress = .2f; yield return null; }
             // The sky and crater courts keep the arena's court kit and swap the resort for their own world.
             var venue = TennisVenue.Current;
             if (venue == TennisVenueKind.Resort)
@@ -233,16 +247,22 @@ namespace GolfArcade.Tennis
                 crowd = gameObject.AddComponent<TennisResortCrowd>();
             }
             else TennisVenueBuilder.Build(venue, environment);
+            if (SliceInit) { InitProgress = .35f; yield return null; }
             umpire = TennisUmpire.Spawn(environment.transform.parent);
             if (venue == TennisVenueKind.Resort) { stands = gameObject.AddComponent<TennisStandsCrowd>(); stands.Build(null); }
+            if (SliceInit) { InitProgress = .45f; yield return null; }
             Player = new GameObject("Player — permanent standard").AddComponent<TennisActor>();
             Player.transform.position = new Vector3(0, .035f, -11.2f);
             Player.Build(FemalePlayer, PlayerSkinFor(FemalePlayer), NativeSportsSession.Left, PlayerBody(FemalePlayer));
+            if (SliceInit) { InitProgress = .5f; yield return null; }
             Opponent = new GameObject("Opponent — permanent standard").AddComponent<TennisActor>();
             Opponent.transform.SetPositionAndRotation(new Vector3(0, .035f, 11.2f), Quaternion.Euler(0,180,0));
             Opponent.Build(!FemalePlayer, new Color(.52f,.31f,.18f), false);
             Opponent.Motion = TennisActor.Style.Rival;
-            TennisHeroSetup.Attach(this);
+            if (SliceInit) { InitProgress = .58f; yield return null; }
+            if (SliceInit) { TennisHeroSetup.AttachPlayer(this); InitProgress = .64f; yield return null; TennisHeroSetup.AttachRival(this); }   // = Attach, one hero a frame
+            else TennisHeroSetup.Attach(this);
+            if (SliceInit) { InitProgress = .7f; yield return null; }
             BuildBall();
             landingRing=MakeLine("Predicted landing",new Color(.1f,.9f,1),.05f);
             aimRing=MakeLine("Shot aim target",new Color(1,.85f,.1f),.06f);
@@ -261,20 +281,24 @@ namespace GolfArcade.Tennis
             { var s = TennisLook.AddContactShadow(Opponent.transform, .55f, .45f); s.HeightOverride = 0; s.Surface = Opponent.transform; }
             { var s = TennisLook.AddContactShadow(ball, .16f, .55f); s.FadeHeight = 4f; s.Surface = Player.transform; s.OnlyOverDeck = true; }
             fx = new GameObject("Tennis effects").AddComponent<TennisFx>(); fx.transform.SetParent(transform); fx.Build();
+            if (SliceInit) { InitProgress = .8f; yield return null; }
             juice = gameObject.AddComponent<TennisJuice>();
             HookActorFx(Player); HookActorFx(Opponent);
             sounds = TennisSounds.Create(transform);
             audio = TennisAudioDirector.Create(this);
             replay = gameObject.AddComponent<TennisReplay>();
             replay.Build(new[] { Player.transform, Opponent.transform }, ball, camera, OnReplayPose);
+            if (SliceInit) { InitProgress = .88f; yield return null; }
             BuildHud(); gameObject.AddComponent<TennisPhoneInput>();
             tossMeter = TennisTossMeter.Create(transform);
             presentation = gameObject.AddComponent<TennisPresentation>();
             presentation.Build(this, hud, umpire);
+            if (SliceInit) { InitProgress = .94f; yield return null; }
             gameObject.AddComponent<TennisFrameGovernor>();
             gameObject.AddComponent<SportsVisualTelemetry>();
             TennisWarmup.Run(camera, fx);
             BeginPoint(); UpdateCamera(true);
+            InitProgress = 1;
             Initialized=true;
         }
 
@@ -540,6 +564,7 @@ namespace GolfArcade.Tennis
             {
                 LockShotAim();
                 Player.Confirm(power);
+                SwingConfirmedTick();
                 Feedback = Player.StrokeLabel;
                 return;
             }
@@ -547,6 +572,12 @@ namespace GolfArcade.Tennis
             if (Flow != Phase.Rally || faultDelay > 0) return;
             StartRallySwing(power, handSide, lift, strokeFacing, false, inputAge);
         }
+
+        /// The phone has confirmed a real swing: one light tick in the hand, straight away. The TV runs 100-250 ms behind the
+        /// game, so this is the only feedback that arrives on time. It follows the phone's confirmation, never a raw onset, so
+        /// a step or a flinch the detector writes off does not tick (Plan 2: no juice on input). Motion play only; touch play
+        /// already feels its own finger.
+        void SwingConfirmedTick() { if (NativeControlled && !NativeSportsSession.Touch) Haptics.Tick(); }
 
         /// The phone wrote the stroke off -- it was a step, not a swing.
         public void AbortSwing()
@@ -608,6 +639,7 @@ namespace GolfArcade.Tennis
         void CommitServe(float swungAt)
         {
             serveCommitted = true;
+            SwingConfirmedTick();
             var verdict = TennisRules.JudgeServeStrike(swungAt - TennisRules.ServeApex, TossAccuracy, ServeAim, true, Match.DeuceCourt,
                 SecondServe, (float)random.NextDouble(), (float)random.NextDouble());
             Feedback = verdict.Label;
@@ -780,6 +812,10 @@ namespace GolfArcade.Tennis
             if (match.Complete) Debug.Log("[MatchFinish] score committed " + match.FinalScore);
             bool setWon = match.PlayerSets + match.OpponentSets > setsBefore;
             if (toPlayer) statPointsWon++; else statPointsLost++;
+            // One line per point for playtests (Xcode console / device log): how long the rally lasted, how it ended, and the
+            // running counts that show whether balls were reachable, the sprint boost was earned, and how late the swings run.
+            if (NativeControlled && !AutoPlay)
+                Debug.Log($"[TennisBalance] point toPlayer={toPlayer} rally={RallyShots} why=\"{Feedback}\" incoming={IncomingBalls} reachable={ReachablePlans} jumps={GoodJumps} dives={Dives} honestMisses={HonestMisses} lastLateMs={LastLateness * 1000:0} lagMs={Lag * 1000:0} timingAims={TimingAims} rival={Profile.Style}");
             if (toPlayer && Feedback != null && Feedback.StartsWith("ACE")) statAces++;
             else if (toPlayer && winner) statWinners++;
             if (gameWon && coach) coach.OnGameEnded(match, setWon);
@@ -982,6 +1018,7 @@ namespace GolfArcade.Tennis
 
         void Update()
         {
+            if (!Initialized) return;   // a sliced build (SliceInit) is still in progress
             if (NetworkFrame()) return;
             if (!Player) return;
             if (ReplayPlaying)
@@ -1111,6 +1148,9 @@ namespace GolfArcade.Tennis
         bool reactedCounted;
         /// Self-play option: lean toward every ball as it is read (a perfect reader).
         public bool AutoPlayLean;
+        /// A ball that cannot be reached at a plain run earns the good jump on its own (the phone
+        /// player cannot lean). Balance tests switch it off to measure the unassisted game.
+        public bool AutoJumpAssist = true;
         /// Where the movement is heading, and whether the ball can be reached from there.
         public Vector2 MoveGoal { get; private set; }
         public bool BallReachable => plan.Found && plan.Reachable;
@@ -1148,7 +1188,7 @@ namespace GolfArcade.Tennis
                 }
                 var overheadOffset = Player.ContactPoint(TennisActor.Stroke.Smash, false) - Player.transform.position;
                 overheadPlan = bounces == 0 && !serveInFlight ? TennisOverheads.Plan(BallPosition, BallVelocity, BallSpin, ballCurve, me,
-                    overheadOffset, TennisRules.RunSpeed * Mathf.Lerp(.72f, 1, Mathf.Clamp01(Stamina/.35f)), Mathf.Min(.08f,Mathf.Max(0,reactionLeft)),moveVelocity.magnitude) : default;
+                    overheadOffset, TennisRules.RunSpeed * TennisRules.StaminaSpeedFactor(Stamina), Mathf.Min(.08f,Mathf.Max(0,reactionLeft)),moveVelocity.magnitude) : default;
                 TrackingOverhead = overheadPlan.Found && !overheadAttempted;
                 if (TrackingOverhead) { plan = overheadPlan; reactionLeft = Mathf.Min(reactionLeft, .08f); }
                 // Stand beside the ball, on the side it is already on, not in its path.
@@ -1162,11 +1202,14 @@ namespace GolfArcade.Tennis
                     goal = new Vector2(plan.Point.x - cp.x, plan.Point.z - cp.z);
                 }
                 PredictedInterceptX = plan.Found ? plan.Point.x : -100;
-                // The read: a lean toward where the ball is going, before reacting, is a jump.
+                // The read: a lean toward where the ball is going, before reacting, is a jump. A
+                // ball that cannot be reached at a plain run also earns it, because a player on
+                // auto-pilot (phone motion) has no steering input to lean with.
                 if (reactionLeft > 0 && !GoodJump)
                 {
                     float need = goal.x - me.x;
-                    if (Mathf.Abs(need) > .6f && MoveInput * Mathf.Sign(need) > TennisRules.JumpLean)
+                    bool leaned = Mathf.Abs(need) > .6f && MoveInput * Mathf.Sign(need) > TennisRules.JumpLean;
+                    if (leaned || (AutoJumpAssist && TennisRules.EarnsAutoJump(plan)))
                     { GoodJump = true; GoodJumps++; reactionLeft = Mathf.Min(reactionLeft, TennisRules.JumpReaction); replanIn = 0; }
                 }
                 if (GoodJump) top = TennisRules.SprintSpeed;
@@ -1192,16 +1235,16 @@ namespace GolfArcade.Tennis
             goal.y = Mathf.Clamp(goal.y, -14.3f, -2.6f);
             MoveGoal = goal;
             // Tired legs are slower; a dive leaves them on the floor for a beat.
-            top *= Mathf.Lerp(.72f, 1f, Mathf.Clamp01(Stamina / .35f));
-            if (Player.GroundRecovering) top *= .08f;
+            top *= TennisRules.StaminaSpeedFactor(Stamina);
+            if (Player.GroundRecovering) top *= TennisRules.GroundRecoverySpeed;
             Vector2 gap = goal - me; float distance = gap.magnitude;
             float arrive = Mathf.Sqrt(2 * TennisRules.Deceleration * distance);
             Vector2 wanted = distance > .02f ? gap / distance * Mathf.Min(top, arrive) : Vector2.zero;
             bool tracked = PlayerUsesTrackedMovement && resetTimer <= 0;
             float assistedVelocity = 0;
             if (tracked) {
-                float lateralTop = (Sprint ? TennisRules.SprintSpeed : TennisRules.RunSpeed) * Mathf.Lerp(.72f, 1, Mathf.Clamp01(Stamina / .35f));
-                if (Player.GroundRecovering) lateralTop *= .08f;
+                float lateralTop = (Sprint ? TennisRules.SprintSpeed : TennisRules.RunSpeed) * TennisRules.StaminaSpeedFactor(Stamina);
+                if (Player.GroundRecovering) lateralTop *= TennisRules.GroundRecoverySpeed;
                 float assistWeight = Mathf.Clamp01(1 - Mathf.Abs(MoveInput) / .6f);
                 float assistWanted = live && plan.Found && reactionLeft <= 0 ? wanted.x * assistWeight : 0;
                 // A deliberate step takes priority immediately. Quiet hands let the
@@ -1536,7 +1579,8 @@ namespace GolfArcade.Tennis
                     var decision = TennisOpponent.Decide(Opponent.transform.position.x, BallPosition.x + BallVelocity.x * Mathf.Max(0, toArrive),
                         Player.transform.position.x, LateralSpeed, WeakSide(), Profile,
                         (float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble(),
-                        pace, reach, height, struck, returningServe, Player.transform.position.z, lastRivalLob);
+                        pace, reach, height, struck, returningServe, Player.transform.position.z, lastRivalLob,
+                        TennisOpponent.RallyEase(RallyShots));
                     Feedback = decision.Label;
                     opponentMissReason = decision.Error ? decision.Reason : !decision.Reached ? null : opponentMissReason;
                     opponentShot = new OpponentShot { Decided = true, Decision = decision,
@@ -1903,7 +1947,7 @@ namespace GolfArcade.Tennis
             LastWasSupercharged = Streak >= TennisRules.SuperchargeStreak;
             if (LastWasSupercharged) { hit = TennisRules.Supercharge(hit); Streak = 0; }
             // Say which way a swing was off, so timing can be learned from each ball.
-            string timingWord = TennisRules.TimingWord(hitLateness);
+            string timingWord = TimingAims ? TennisRules.TimingAimWord(hitLateness) : TennisRules.TimingWord(hitLateness);
             if (hud) hud.ShowGrade(LastGrade, LastWasSupercharged,
                 (timingWord.Length > 0 ? timingWord + "  ·  " : "") + $"{Player.StrokeLabel.ToUpperInvariant()}  ·  {hit.Speed * 3.6f:0} KM/H");
             if (hitMap) hitMap.Record(faceOffset, LastGrade, LastWasSupercharged);
@@ -1915,9 +1959,13 @@ namespace GolfArcade.Tennis
             serveInFlight = false; bounceRestitution=.75f;
             RallyShots++;
             overheadAttempted = false; TrackingOverhead = false;
-            // The confirmed face selects aim. Timing decides how faithfully the ball follows it.
-            Vector3 target = TennisRules.TimedPlacement(ShotAimTarget, hit.Timing,
-                (float)random.NextDouble() * 2 - 1, (float)random.NextDouble() * 2 - 1);
+            // Timing aims the ball (Wii style) for a phone player: early = left, on time = straight, late = right,
+            // and the swing's power picks the depth. Touch, keyboard and self-play still aim with the confirmed face
+            // or pad, where timing only decides how faithfully the ball follows it.
+            float rollX = (float)random.NextDouble() * 2 - 1, rollZ = (float)random.NextDouble() * 2 - 1;
+            Vector3 target = TimingAims
+                ? TennisRules.TimingPlacement(hitLateness, Player.Power, hit.Quality, rollX, rollZ)
+                : TennisRules.TimedPlacement(ShotAimTarget, hit.Timing, rollX, rollZ);
             BallSpin = Player.Kind == TennisActor.Stroke.Dive ? 0 : SpinFor(Player.Kind, Player.Power);
             BallVelocity = Player.Kind == TennisActor.Stroke.Dive
                 ? TennisAbilities.LobVelocity(BallPosition, new Vector3(target.x, TennisRules.BallRadius, 6.5f), 4.2f)
@@ -2040,8 +2088,9 @@ namespace GolfArcade.Tennis
             bounceRestitution=.60f;
             // Nearly every serve from a weaker opponent is returnable from where the player chose
             // to stand: if this one is not, ease it toward them and take pace off until it is.
-            // The stronger the server, the more often the unreturnable one is let through.
-            if (!plan.Fault && random.NextDouble() > .05 + .3f * Profile.Skill * Profile.Skill)
+            // The stronger the server, the more often the unreturnable one is let through, up to a cap
+            // (TennisRules.MaxUnreturnableServes) so no rival turns the serve into a lottery.
+            if (!plan.Fault && random.NextDouble() > TennisRules.UnreturnableServeShare(Profile.Skill))
             {
                 Vector3 me = Player.transform.position;
                 for (int i = 0; i < 14 && !TennisRules.ServeReachable(start, TennisRules.ServeVelocity(start, plan.Landing, plan.Speed, plan.Spin), plan.Spin, bounceRestitution, me.x, me.z); i++)
@@ -2068,7 +2117,9 @@ namespace GolfArcade.Tennis
                 InjectBall(BallPosition, TennisAbilities.LobVelocity(BallPosition, landing, 4.4f));
                 BallSpin = 0;
             } else {
-                float clearance = kind == TennisReturnKind.Drop ? .18f : .28f;
+                // A rally ball arcs: .45 m over the tape (it was a flat .28) is a little slower on landing and
+                // gives the player more time to read and reach it, while it still lands exactly on target.
+                float clearance = kind == TennisReturnKind.Drop ? .18f : .45f;
                 InjectBall(BallPosition, TennisRules.RallyArcVelocity(BallPosition, landing, speed, spin, clearance));
                 BallSpin = spin;
             }
@@ -2136,7 +2187,9 @@ namespace GolfArcade.Tennis
                 landingRing.startColor = landingRing.endColor =
                     TennisRules.BounceIsIn(landing) ? new Color(.1f,.9f,1) : new Color(1,.42f,.3f);
             }
-            bool showAim = (Flow == Phase.Rally && incoming) || Flow == Phase.PlayerServeHold || Flow == Phase.PlayerServeToss;
+            // The aim ring is the player's chosen target; when timing aims the ball there is nothing to show
+            // before the swing (the swing cue is the aiming control), so it is serve-only.
+            bool showAim = (Flow == Phase.Rally && incoming && !TimingAims) || Flow == Phase.PlayerServeHold || Flow == Phase.PlayerServeToss;
             aimRing.enabled = showAim;
             if (!showAim) return;
             Vector3 target = Flow == Phase.Rally
@@ -2230,7 +2283,9 @@ namespace GolfArcade.Tennis
         public const float IntroSeconds = TennisPresentation.FullLength;
         /// Play runs this much faster than real time: balls, feet and strokes alike. The
         /// phone's latencies are real seconds and are converted wherever they meet game time.
-        public const float GameSpeed = 1.2f;
+        /// 1.1 (it was 1.2): every ball arrives ~9% later in real time, so the TV's delay and the
+        /// player's own reaction take a smaller bite out of it, while play still feels brisk.
+        public const float GameSpeed = 1.1f;
         /// The serve is the slowest part of the game: dribble, the slow rise of the arm and the
         /// high toss play at ServePace, and the rally returns to full pace once the ball is struck.
         bool SlowServe => Flow == Phase.PlayerServeHold || Flow == Phase.PlayerServeToss || Flow == Phase.OpponentServe;

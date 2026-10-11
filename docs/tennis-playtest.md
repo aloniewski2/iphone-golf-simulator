@@ -10,11 +10,11 @@ to step back if you are closer). After that, hold and swing the phone however fe
 
 | Check | Expected |
 |---|---|
-| Aim: turn the racket face (screen on forehands, back on backhands) left/right at contact | Ball goes that way; a few straight swings first teach it your "straight" |
+| Aim by timing: swing a touch early, right on the ball, a touch late | Early goes left, on the ball straight, late right (badge: EARLY · LEFT / STRAIGHT / LATE · RIGHT); a full swing lands deeper than a soft one |
 | Clean vs poor contact | Clean: fast, deep, can hit near the lines. Poor: slow, short, pulled to the middle |
-| Wide, clean opponent shot, standing still | Often unreachable (a winner) |
-| Same, but lean/step toward it as the opponent hits | Character sets off at once and sprints ("good jump") |
-| Ball just out of reach | Character dives; the return is weak; they stay down about a second |
+| Wide, clean opponent shot, standing still | The character sprints on its own for a ball it could not reach at a run; only the widest, fastest corner balls win the point |
+| Same, but (touch) steer toward it as the opponent hits | Character sets off at once and sprints ("good jump") |
+| Ball just out of reach | Character dives (2.1 m, 2.5 s cooldown); the return is weak; they stay down under a second |
 | Short ball | Character moves in to take it; stays at the net for the next volley |
 | Swing with the phone held sideways/landscape, or camera pointing at the floor | Swings still register; a small "camera can't see the room" note at most |
 | Pace | Next point starts about 1.5 s after the last; serve toss about 1.2 s after that |
@@ -81,8 +81,8 @@ within 2 fps of the first. If the frame governor stepped quality down, the Unity
   run should agree with the first within ~30 ms. Swinging randomly must end in
   "NO STEADY RHYTHM", not a wrong number.
 - **Toss meter.** The ticker sweeps at a steady speed; the gold-edged zone in the middle is a
-  perfect toss (about ±60 ms). The power bar's perfect band is about ±130 ms either side
-  of the top of the toss.
+  perfect toss (about ±30 ms). The power bar's perfect band is about ±45 ms either side
+  of the top of the toss. (See `docs/tennis-feel-pass-2026-10-10.md` for every number that changed.)
 - **Opponent misses have a reason.** Comfortable balls always come back. When it misses, the
   call says why: STRETCHED WIDE, LUNGING — INTO THE NET, RUSHED BY THE PACE, LATE ON THE PACE,
   DUG OUT LOW, TOO HIGH TO CONTROL, OVERPOWERED. Record any miss whose reason looks wrong
@@ -114,6 +114,18 @@ within 2 fps of the first. If the frame governor stepped quality down, the Unity
   and steering must still track sidesteps (the format change keeps the world map).
 - Contact is felt as a sharp click from the phone at the moment of the hit (a double click
   for a super shot), ahead of the TV's sound.
+
+## 4c. Balance log
+
+Every point writes one line to the device log (Xcode console, or `Documents` if the build mirrors it):
+
+```
+[TennisBalance] point toPlayer=False rally=7 why="MISSED IT" incoming=31 reachable=29 jumps=6 dives=1 honestMisses=2 lastLateMs=-48 lagMs=140 timingAims=True rival=boss
+```
+
+`rally` is the shot count when the point ended, `incoming`/`reachable` count balls the character was sent and could reach,
+`jumps` the sprint boosts earned, `lastLateMs` the last swing's lateness (negative is early) and `lagMs` the learned TV delay.
+Use them to fill in the table below instead of guessing at the feel.
 
 ## 5. Record
 

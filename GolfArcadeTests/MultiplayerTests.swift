@@ -104,7 +104,7 @@ final class MultiplayerTests: XCTestCase {
     func testSharedPhoneGuestsLoadWithHostAndKeepIndependentLooks() throws {
         let bus=Bus(); let phone=bus.link("host"); let host=MultiplayerService(sendToRuntime:{_ in true},pollRuntime:{nil})
         host.onMatchRequested={ _ in }; defer { host.leave() }
-        try host.host(using:phone,sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.host(using:phone,sharedPhone:true);try host.configure(.golf,venue:"cliffside")
         try host.addLocalGuest();try host.addLocalGuest();try host.addLocalGuest()
         XCTAssertEqual(host.lobby?.participants.count,4);XCTAssertTrue(host.lobby!.valid())
         let guests=host.lobby!.participants.filter(\.isGuest)
@@ -117,7 +117,7 @@ final class MultiplayerTests: XCTestCase {
         let bus=Bus(), runtime=Runtime(), remoteRuntime=Runtime()
         let host=runtime.service(), remote=remoteRuntime.service()
         defer { remote.leave();host.leave() }
-        try host.host(using:bus.link("host"),sharedPhone:true);try host.configure(.golf,venue:"postcards")
+        try host.host(using:bus.link("host"),sharedPhone:true);try host.configure(.golf,venue:"cliffside")
         try host.addLocalGuest();try host.addLocalGuest()
         let look=MultiplayerLoadout(skinHex:"A8704E",colours:["shirt":"78C5E8"],emotes:EmoteCatalog.defaults,shirtHex:"78C5E8")
         remote.setIdentity(name:"Sam",female:true,loadout:look)
@@ -610,6 +610,19 @@ final class MultiplayerTests: XCTestCase {
         run(p, for: 6)   // the pings lost during the silence must scroll out of the 20-ping window, then 1.5 s of good ones (modelled: ~4.3 s)
         XCTAssertEqual(p.host.lobby?.participants.first { $0.id == "b" }?.linkOK, true, "...and it is steady again after a while of good pings")
     }
+    func testTheWeakConnectionNoticeAndPlayAnywayGoAwayOnceTheLinkRecoversAndPlayBegins() throws {
+        let p = try linkCheckParty(delay: 0.15); defer { p.close() }   // 300 ms round trip
+        run(p, for: 11)
+        XCTAssertTrue(p.host.linkNeedsDecision)
+        XCTAssertTrue(p.host.lastError?.contains("weak") == true)
+        XCTAssertTrue(p.services[1].lastError?.contains("weak") == true)
+        for l in p.bus.links.values { l.oneWayDelay = 0.02 }   // the connection improves by itself, without anyone choosing Play anyway
+        run(p, for: 8)
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+        XCTAssertFalse(p.host.linkNeedsDecision, "no dead Play anyway button for the rest of the match")
+        XCTAssertNil(p.host.lastError, "the weak-connection notice is about setup")
+        XCTAssertNil(p.services[1].lastError)
+    }
     func testTheConnectionCheckNeverHoldsUpGolfOrAMatchThatIsAlreadyRunning() throws {
         let p = try party(2, linkCheck: true); defer { p.close() }
         try start(p, .golf)    // golf has no setup phase, so no check
@@ -618,7 +631,7 @@ final class MultiplayerTests: XCTestCase {
     func testLinkWindowGradesByRoundTripJitterAndLoss() {
         func window(_ rtts: [Double?]) -> LinkWindow {
             var w = LinkWindow(); var t = 0.0
-            for rtt in rtts { w.sent(at: t); if let rtt { w.answered(sentAt: t, rtt: rtt) } else { w.expire(now: t + LinkWindow.lostAfter) }; t += 0.1 }
+            for rtt in rtts { w.sent(at: t); if let rtt { w.answered(sentAt: t, rtt: rtt) } else { w.expire(now: t + LinkWindow.lostAfter + 0.001) }; t += 0.1 }   // a hair over a second: 0.1 added twenty times is not exact
             return w
         }
         XCTAssertEqual(window(Array(repeating: 0.05, count: 20)).grade, .good)
@@ -690,8 +703,25 @@ final class MultiplayerTests: XCTestCase {
             try p.host.configure(.golf, venue: venue)
             XCTAssertTrue(p.host.lobby!.valid()); XCTAssertEqual(p.services[1].lobby?.venue, venue)
         }
-        XCTAssertThrowsError(try p.host.configure(.tennis, venue: "postcards"))
+        XCTAssertEqual(MultiplayerLobby.golfVenues, ["cliffside", "wildisles", "magma"])
+        XCTAssertEqual(GolfCourseChoice.allCases.map(\.rawValue), MultiplayerLobby.golfVenues)
+        for venue in MultiplayerLobby.golfVenues { XCTAssertThrowsError(try p.host.configure(.tennis, venue: venue)) }
         XCTAssertThrowsError(try p.host.configure(.golf, venue: "../../invalid"))
+    }
+    func testRetiredPostcardsCourseBecomesCliffside() throws {
+        let p = try party(2); defer { p.close() }
+        XCTAssertEqual(MultiplayerLobby.currentGolfVenue("postcards"), "cliffside")
+        XCTAssertEqual(MultiplayerLobby.currentGolfVenue("magma"), "magma")
+        XCTAssertNil(GolfCourseChoice(rawValue: "postcards"))
+        try p.host.configure(.golf); XCTAssertEqual(p.host.lobby?.venue, "cliffside")
+        try p.host.configure(.golf, venue: "postcards"); XCTAssertEqual(p.host.lobby?.venue, "cliffside")
+        XCTAssertThrowsError(try p.host.configure(.tennis, venue: "postcards"))
+        // A lobby from an older host still names the retired course: the guest keeps it as Cliffside instead of dropping it.
+        var old = try XCTUnwrap(p.host.lobby); old.venue = "postcards"; old.revision += 10
+        let payload = String(decoding: try JSONEncoder().encode(old), as: UTF8.self)
+        let raw = try JSONEncoder().encode(MultiplayerPacket(lobbyID: old.id, sender: "a", sequence: 1_000_000, kind: "lobby", payload: payload))
+        try p.bus.links["a"]!.send(raw, to: ["b"], reliable: true)
+        XCTAssertEqual(p.services[1].lobby?.revision, old.revision); XCTAssertEqual(p.services[1].lobby?.venue, "cliffside")
     }
     func testIdentityAndLookReachEveryPeerWithoutChangingSeatsOrReady() throws {
         let p = try party(); defer { p.close() }
@@ -753,7 +783,7 @@ final class MultiplayerTests: XCTestCase {
     func testFourFullLoadoutsStayWithinPacketBudget() throws {
         let look = MultiplayerLoadout(gear:["tennis":["skin":"standard","racket":"standard","shoes":"standard"],"golf":["skin":"standard","club":"standard","shoes":"standard"]],skinHex:"E6AE7E",colours:["shirt":"FFFFFF","shorts":"D3F34B","accent":"FF6B4A","racket":"101D35"])
         let participants = (0..<4).map { MultiplayerParticipant(id:UUID().uuidString,name:String(repeating:"A",count:40),seat:$0,loadout:look) }
-        let lobby = MultiplayerLobby(ownerID:participants[0].id,sport:.golf,venue:"postcards",participants:participants)
+        let lobby = MultiplayerLobby(ownerID:participants[0].id,sport:.golf,venue:"cliffside",participants:participants)
         let json = try JSONEncoder().encode(lobby)
         XCTAssertLessThan(json.count,MultiplayerPacket.maximumBytes)
         let packetBytes = try JSONEncoder().encode(MultiplayerPacket(kind:"lobby",payload:String(decoding:json,as:UTF8.self))).count
@@ -852,6 +882,20 @@ final class MultiplayerTests: XCTestCase {
         advance(p, by: 5)
         XCTAssertFalse(p.runtimes[0].received.contains { $0.kind == "suspend" })
     }
+    func testAQuietCompetitorKeepsItsSetUpStateWhenAnotherPhoneLeaves() throws {
+        let p = try party(3); defer { p.close() }; try start(p)
+        advance(p, by: 3)
+        p.bus.links["b"]!.drop = true
+        advance(p, by: 0.5)
+        XCTAssertTrue(p.runtimes[0].received.contains { $0.kind == "suspend" && $0.payload == "b" })
+        p.services[2].leave()   // the spectator goes: the owner's list of connected phones changes while b is quiet
+        p.bus.links["b"]!.drop = false
+        advance(p, by: 0.5)
+        let b = p.host.lobby?.participants.first { $0.id == "b" }
+        XCTAssertEqual(b?.loaded, true, "b never dropped, so it is the same game session")
+        XCTAssertEqual(b?.calibrated, true, "...and it must not be shown as 'getting ready' for the rest of the match")
+        XCTAssertEqual(p.host.lobby?.phase, .playing)
+    }
 
     // MARK: Staying awake, statistics, big unreliable messages
 
@@ -905,5 +949,60 @@ final class MultiplayerTests: XCTestCase {
         XCTAssertEqual(link.refused, 1)
         XCTAssertFalse(link.transportModes.contains { $0.kind == "snapshot" }, "a small message that fails is some other problem: it is not silently resent")
         XCTAssertNotNil(p.host.lastError)
+    }
+
+    // MARK: The Swift → Unity bridge must not fill up while no match is running
+
+    /// The native queue behind `SportsRuntime.pushNetwork` (Unity/Assets/Plugins/iOS/SportsBridge.mm, `networkPush`): 128 slots, drained
+    /// by Unity only while a match is configured, and never cleared. When it is full the oldest *unreliable* entry is evicted; a queue
+    /// holding nothing but reliable entries refuses the push, and the refusal ends the match (`bridgeError`).
+    @MainActor final class BridgeModel {
+        var queue: [String] = []
+        var refused = 0
+        /// Every packet the queue accepted (a refused push is only counted).
+        var pushed: [MultiplayerPacket] = []
+        func push(_ text: String) -> Bool {
+            if queue.count >= 128 {
+                guard let oldest = queue.firstIndex(where: { $0.contains("\"reliable\":false") }) else { refused += 1; return false }
+                queue.remove(at: oldest)
+            }
+            queue.append(text)
+            if let packet = try? JSONDecoder().decode(MultiplayerPacket.self, from: Data(text.utf8)) { pushed.append(packet) }
+            return true
+        }
+    }
+
+    /// A guest that waits in the lobby: every pong used to put a reliable `clock` packet in a queue that nothing reads between matches,
+    /// and after 128 of them (64 s at two pongs a second) the next match's first packet was refused and the guest ejected itself.
+    func testAGuestWaitingInTheLobbyDoesNotFillTheUnityBridgeAndStillJoinsTheNextMatch() throws {
+        let bus = Bus(), hostRuntime = Runtime(), guestRuntime = Runtime(), bridge = BridgeModel()
+        let host = hostRuntime.service()
+        let guest = MultiplayerService(sendToRuntime: { bridge.push($0) }, pollRuntime: { nil }, clock: { guestRuntime.time })
+        guest.onMatchRequested = { guestRuntime.configurations.append($0) }; guest.onReturnToLobby = {}
+        host.requiresStableLink = false; guest.requiresStableLink = false
+        host.setScreen(true); guest.setScreen(true)
+        try host.host(using: bus.link("a")); try guest.connect(using: bus.link("b"))
+        let party = Party(bus: bus, services: [host, guest], runtimes: [hostRuntime, guestRuntime])
+        defer { party.close() }
+
+        // Three minutes in the lobby, in 0.1 s steps: the guest pings the owner twice a second and each ping is answered.
+        for _ in 0..<1800 { hostRuntime.time += 0.1; guestRuntime.time += 0.1; host.update(); guest.update() }
+        XCTAssertGreaterThan(bus.links["a"]!.sent.filter { $0.kind == "pong" }.count, 300, "the lobby really did exchange a pong every half second")
+        XCTAssertEqual(bridge.refused, 0)
+        XCTAssertLessThan(bridge.queue.count, 128, "nothing reads the bridge between matches, so nothing may be put in it")
+        XCTAssertTrue(bridge.pushed.filter { $0.kind == "clock" }.isEmpty, "the shared clock is only worth sending to Unity once a match is configured")
+
+        try start(party)
+        XCTAssertEqual(guest.lobby?.phase, .playing, "the guest takes part in the match that the owner started")
+        XCTAssertNil(guest.lastError)
+        XCTAssertEqual(bridge.refused, 0)
+        XCTAssertTrue(bridge.pushed.contains { $0.kind == "run" }, "...and Unity was handed the match")
+
+        // During the match the clock does reach Unity, as a packet the bridge may evict rather than one that can jam it.
+        for _ in 0..<50 { hostRuntime.time += 0.1; guestRuntime.time += 0.1; host.update(); guest.update() }
+        let clocks = bridge.pushed.filter { $0.kind == "clock" }
+        XCTAssertFalse(clocks.isEmpty)
+        XCTAssertTrue(clocks.allSatisfy { !$0.reliable })
+        XCTAssertEqual(bridge.refused, 0)
     }
 }

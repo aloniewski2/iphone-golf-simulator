@@ -40,7 +40,7 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(menu.launch?.games, 6)
         menu.tap("map-resort"); XCTAssertEqual(menu.screen, .connect)
         XCTAssertEqual(SportsSession.shared.tennisVenue, "resort")
-        menu.debugShow(.quickPlay); menu.tap("quickGolf")
+        menu.debugShow(.hub(.golf)); menu.tap("round")   // golf starts from its hub (the old Quick Play screen is gone)
         XCTAssertEqual(menu.launch?.sport, .golf)
     }
 
@@ -424,6 +424,18 @@ final class TennisCampaignTests: XCTestCase {
         XCTAssertEqual(TennisContact(line: "0,0,3,0,80")?.timingWord, "LATE")
         XCTAssertEqual(TennisContact(line: "0,0,3,0,-60")?.timingWord, "EARLY")
         XCTAssertEqual(TennisContact(line: "0,0,5,0,10")?.timingWord, "ON TIME")
+    }
+
+    /// `Double("nan")` and `Double("inf")` parse, and `Int(_:)` of NaN, Infinity or a huge value traps, which kills the app. A contact
+    /// line that Unity formatted badly must read as zeros (or be clamped) and never reach the conversion.
+    func testAMalformedContactLineNeverTrapsInTheIntConversion() {
+        let bad = TennisContact(line: "0.1,0.2,nan,1,inf")
+        XCTAssertNotNil(bad)
+        XCTAssertEqual(bad?.grade, 0); XCTAssertEqual(bad?.lateMs, 0); XCTAssertEqual(bad?.supercharged, true)
+        XCTAssertEqual(TennisContact(line: "-inf,nan,3,0")?.x, 0); XCTAssertEqual(TennisContact(line: "-inf,nan,3,0")?.grade, 3)
+        let huge = TennisContact(line: "0,0,1e300,0,-1e300")
+        XCTAssertEqual(huge?.grade, 1_000_000); XCTAssertEqual(huge?.lateMs, -1_000_000)
+        XCTAssertEqual(huge?.gradeName, "PERFECT", "an out-of-range grade still names a real grade")
     }
 
     /// Every menu screen can be reached from the title, by D-pad and select alone.

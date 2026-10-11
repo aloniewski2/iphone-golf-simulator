@@ -386,7 +386,8 @@ namespace GolfArcade.EditorTools
 
         static Look ReadLook(Material m, SortedSet<string> maps, bool golf, bool anatomicalFace)
         {
-            var look = new Look { shader = m && m.shader ? m.shader.name.Replace("GolfArcade/", "") : "Missing" };
+            // HeroFaceSkin is the registered head surface of the same skin material (same properties as TennisCharacter): the Swift mirror emulates it as the character shader.
+            var look = new Look { shader = m && m.shader ? m.shader.name.Replace("GolfArcade/", "").Replace("HeroFaceSkin", "TennisCharacter") : "Missing" };
             if (!m) return look;
             float F(string n) => m.HasProperty(n) ? m.GetFloat(n) : 0f;
             float[] C(string n) { if (!m.HasProperty(n)) return new float[0]; var c = m.GetColor(n); return new[] { c.r, c.g, c.b, c.a }; }

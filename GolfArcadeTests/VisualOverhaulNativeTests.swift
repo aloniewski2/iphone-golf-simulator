@@ -1,6 +1,7 @@
 import XCTest
 import SceneKit
 import simd
+import CryptoKit
 @testable import GolfArcade
 
 /// Compare the shipped SceneKit graph with vertices sampled independently from
@@ -40,15 +41,15 @@ import simd
         for golf in [false, true] { for female in [false, true] { for distance in golf ? [false] : [false, true] {
             let asset = try XCTUnwrap(MatchHero.asset(female: female, golf: golf, distance: distance))
             let rig = try XCTUnwrap(asset.rig())
-            XCTAssertEqual(rig.info.bones.count, golf ? 54 : 53)
+            XCTAssertEqual(rig.info.bones.count, golf ? 54 : (female ? 158 : 144), "current Unity rig: the tennis heroes carry the authored finger / face bones")
             if golf { XCTAssertEqual(rig.info.bones.last, "Club") }
             for role in ["Body", "Face"] {
                 let index = try XCTUnwrap(asset.manifest.parts.firstIndex { $0.name == role })
                 let part = asset.manifest.parts[index]
-                XCTAssertEqual(part.vertexCount, role == "Body" ? (female ? 23230 : 33694) : (female ? 3004 : 3824), "accepted source exact count")
+                XCTAssertEqual(part.vertexCount, role == "Body" ? (female ? 34443 : 44168) : (female ? 3004 : 3824), "current Unity source exact count (OriginalSeamBlinkFinish composed-ears head)")
                 XCTAssertEqual(asset.geometry[index].sources(for: .texcoord).count, role == "Body" ? 3 : 1)
                 let skin = try XCTUnwrap(rig.skinned.first { $0.name == role })
-                XCTAssertEqual(skin.morphTargets.map(\.name), ["Hero_Blink_Half", "Hero_Blink"])
+                XCTAssertEqual(skin.morphTargets.map(\.name), role == "Body" ? ["Hero_Blink_Half", "Hero_Blink"] : ["Hero_Blink_Half", "Hero_Blink", "Face_GazeRight", "Face_GazeLeft", "Face_GazeUp", "Face_GazeDown", "Face_BrowUp", "Face_BrowDown"])
                 if role == "Body" {
                     let look = try XCTUnwrap(part.submeshes.first?.look)
                     XCTAssertEqual(look.skinFinish, female ? 2 : 1)
@@ -62,6 +63,25 @@ import simd
             }
         } } }
     }
+    /// The lobby, locker and menus draw the exported hero, not the Unity prefab: if the Unity head files change and the native assets are not re-exported, the menus show an older face
+    /// than the match. The golden provenance records the head FBX hashes the shipped assets were exported from; this fails when Unity has moved on.
+    /// Fix: work/lobby-parity/run_export.sh (Unity batch export of tennis, tennis-distance and golf) -> copy MatchHero_* / GolfKitHero_* into CharacterAssets -> repack the goldens.
+    func testNativeHeroesAreExportedFromTheCurrentUnityHeads() throws {
+        let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let provenance = repo.appendingPathComponent("GolfArcadeTests/VisualGolden/provenance.json")
+        struct Row: Decodable { let name: String; let frozenFaceSourceFiles: [String: String] }
+        let rows = try JSONDecoder().decode([Row].self, from: Data(contentsOf: provenance))
+        XCTAssertFalse(rows.isEmpty)
+        var checked = 0
+        for row in rows { for (path, recorded) in row.frozenFaceSourceFiles {
+            let url = repo.appendingPathComponent(path)
+            guard FileManager.default.fileExists(atPath: url.path) else { continue }   // a checkout without the Unity project cannot judge
+            let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+            XCTAssertEqual(digest, recorded, "\(row.name): the native hero was exported from an older \(url.lastPathComponent) than Unity now draws; re-export the native heroes")
+            checked += 1
+        } }
+        NSLog("[HeroFreshness] checked \(checked) head source hashes")
+    }
     func testShippedGolfAndTennisRigsMatchUnityGoldenVertices() throws {
         let folder = ProcessInfo.processInfo.environment["VISUAL_GOLDEN_DIR"].map { URL(fileURLWithPath:$0) }
         let bundle = Bundle(for:VisualOverhaulNativeTests.self)
@@ -72,7 +92,7 @@ import simd
             let root = MatchHeroData.buildHero(asset,picks:MatchHeroData.Picks(colour:{ _ in nil }))
             let live = try XCTUnwrap(HeroRig(root:root,asset:asset)); live.attach()
             defer { live.detach() }
-            XCTAssertEqual(live.data.boneCount,golf ? 54 : 53,name)
+            XCTAssertEqual(live.data.boneCount,golf ? 54 : (female ? 158 : 144),name)
             let fixture = try XCTUnwrap(folder?.appendingPathComponent(name+"_golden.json")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"lzfse")
                 ?? bundle.url(forResource:name+"_golden",withExtension:"json"),"Independent Unity fixture for "+name)

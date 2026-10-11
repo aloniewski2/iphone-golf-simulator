@@ -42,6 +42,7 @@ final class LocalMultiplayerTransport: MultiplayerTransport {
     }
 
     /// iOS reports "the user said no to Local Network" as a waiting state with this DNS-SD error, not as a failure.
+    /// (`nonisolated`: it is a pure check, called from Network.framework's state handlers, which run on the transport's own queue.)
     nonisolated static func isLocalNetworkDenied(_ error: NWError) -> Bool {
         if case .dns(let code) = error { return code == -65570 }
         return false

@@ -107,7 +107,8 @@ struct GolfPhoneController: View {
         guard let turn, turn != lastTurn else { return }
         let first = lastTurn == nil
         lastTurn = turn
-        guard !first, let party = reading.party, party.shared, party.players.count > 1 else { return }
+        // Only when the turn passes to a player this phone controls: a friend on their own phone is not handed this one.
+        guard !first, let party = reading.party, party.shared, party.myTurn, party.players.count > 1 else { return }
         let name = party.player
         passTo = name
         Task { @MainActor in
@@ -151,7 +152,7 @@ struct GolfPhoneController: View {
             }
         }
         .animation(.easeOut(duration: 0.25), value: passTo)
-        .onChange(of: reading.party?.turn) { _, turn in handOff(to: turn) }
+        .onChange(of: reading.party?.turn, initial: true) { _, turn in handOff(to: turn) }   // initial: the first turn is only remembered, so the next change is a real hand-off
         .sheet(isPresented: $session.menuPauseVisible) {
             pauseMenu
         }

@@ -85,6 +85,7 @@ struct SettingsScreen: View {
         case "overscan": ("Screen edge margin", s.overscan == 0 ? "None" : "\(Int(s.overscan * 100))%")
         case "sound": ("Sound", s.sound ? "On" : "Off")
         case "haptics": ("Haptics", s.haptics ? "On" : "Off")
+        case "plazaMenus": ("Plaza menus on the TV", HubSession.shared.plazaMenus ? "On" : "Off")
         case "bigText": ("Larger text on the phone remote", s.bigText ? "On" : "Off")
         case "reduceMotion": ("Reduce motion (still b-roll)", s.reduceMotion ? "On" : "Off")
         case "classic": ("Classic options menu", "Open")
@@ -296,7 +297,7 @@ extension TennisMenu {
         case "quickLength": return "Match length"
         case "quickStart": return "Start Match"
         case "homePlay": return "Play with Friends"
-        case "quickPlay", "partySolo": return "Single Player"
+        case "partySolo": return "Single Player"
         case "partyMultiplayer": return "Multiplayer"
         case "partyOnline": return "Online"
         case "partyLocal": return "Local"
@@ -308,7 +309,6 @@ extension TennisMenu {
         case "homeInvite": return "Play with Friends"
         case "homeEmotes": return "Emotes"
         case "betaFeedback": return "Beta Feedback"
-        case "quickTennis": return "Casual tennis against AI"; case "quickGolf": return "Solo golf round"
         case "loadingBack": return "Back to Home"; case "loadingRetry": return "Retry loading"
         case "play": return "Play"; case "character": return "Locker"; case "settings": return "Settings"
         case "howto": return "How to play"; case let g where g.hasPrefix("guide-"): return GuideDeck(rowID: g)?.title ?? "Guide"; case "tutorial": return "Tutorial"; case "replayTutorial": return "Replay tutorial"

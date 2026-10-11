@@ -51,7 +51,7 @@ final class NewMenuSnapshotTests: XCTestCase {
         menu.debugShow(.online(.clothes)); menu.tap("lk-tab-customize")
         try await both("clothes-customize") { IslandOnlineScreen(menu:menu,route:.clothes,compact:$0) }
         menu.tap("lk-revert")
-        try service.configure(.golf,venue:"postcards"); menu.debugShow(.online(.lobby))
+        try service.configure(.golf,venue:"cliffside"); menu.debugShow(.online(.lobby))
         try await both("golf-four") { IslandOnlineScreen(menu:menu,route:.lobby,compact:$0) }
         try service.configure(.tennis,venue:"resort")
         service.mockState(phase:.lobby,ready:true); menu.debugShow(.online(.lobby))

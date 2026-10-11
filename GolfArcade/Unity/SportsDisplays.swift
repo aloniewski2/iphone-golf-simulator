@@ -72,6 +72,13 @@ final class SportsDisplays: NSObject {
         multiplayerRenderer?.isHidden=false
         return multiplayerRenderer
     }
+    /// A golf guest's turn: its Unity replica, which draws the controller sheet, comes up over the native controller (the phone
+    /// with the TV brings Unity's own window forward instead), and goes back under it afterwards.
+    func showMultiplayerRenderer(_ visible: Bool) {
+        guard let window = multiplayerRenderer else { return }
+        window.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.normal.rawValue + (visible ? 1 : -1))
+        if visible { window.makeKeyAndVisible() } else { phone?.makeKeyAndVisible() }
+    }
     /// Explicit automated verification may render on the paired phone without
     /// an AirPlay receiver. Normal play retains its external-display contract.
     func benchmarkWindow() -> UIWindow? {
@@ -108,7 +115,10 @@ final class SportsDisplays: NSObject {
             cover.isHidden=true; self.exitCover=nil
         }
     }
+    /// How many loading covers have been shown (NO_COVER: a launch from a Plaza bay shows none).
+    private(set) var coversShown = 0
     func beginLoadingCover(in destination: UIWindow, startRuntime: @escaping @MainActor () -> Void) {
+        coversShown += 1
         lingeringTip?.isHidden=true; lingeringTip=nil
         exitGeneration += 1; exitCover?.isHidden=true; exitCover=nil
         finishLoadingCover()
@@ -283,6 +293,7 @@ final class SportsExternalScene: NSObject, UIWindowSceneDelegate {
         SportsSession.shared.pause(reason:"Display disconnected — reconnect and tap Ready"); SportsSession.shared.displayConnected=false
         SportsSession.shared.status="Display disconnected. Reconnect your TV or Mac to continue; this phone remains your controller."
         SportsDisplays.shared.external=nil; window=nil
+        HubSession.shared.displayLost()
     }
 }
 

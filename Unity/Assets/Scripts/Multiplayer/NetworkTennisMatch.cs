@@ -142,10 +142,16 @@ namespace GolfArcade.Multiplayer {
             float late=(float)(p.swingAt+TennisRules.SweetTime-contactTime)-due;
             float centre=1-NetworkMath.Clamp(Math.Abs(State.ball.x-playerX)/TennisRules.ContactReach,0,1);
             var hit=TennisRules.AssistedHit(late,centre,1,p.power,p.stamina);
-            var target=TennisRules.TimedPlacement(TennisRules.PlacementTarget(p.aim,p.depth),hit.Timing,
+            // The same rule as a local match: the swing's timing aims the ball (early = left, on time = straight,
+            // late = right) and its power picks the depth. The phone's racket angle and depth buttons are not
+            // used for rally shots any more.
+            var target=TennisRules.TimingPlacement(late,p.power,hit.Quality,
                 (float)rallyRandom.NextDouble()*2-1,(float)rallyRandom.NextDouble()*2-1);
             State.ball.y=Math.Max(.45f,State.ball.y);
-            Launch(new(target.x,Radius,sign*target.z),hit.Speed);
+            // `target` is in the hitter's own frame (x to their right, z away from them). Seat 1 stands at the far end
+            // and sees the court turned half a circle (TennisGame.Network), so both axes flip for them: "early = left"
+            // is the same on both screens.
+            Launch(new(target.x*sign,Radius,sign*target.z),hit.Speed);
             State.reason=TennisRules.GradeLabel(TennisRules.Grade(hit.Timing));
             State.receiver=1-seat;State.bounces=0;State.serveFlight=false;State.contact++;p.swingAt=-100;p.confirmedSwing=false;holding=false;
         }

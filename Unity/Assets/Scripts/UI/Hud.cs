@@ -333,7 +333,7 @@ namespace GolfArcade.UI
             HideScorecard();
             var holes = card.Course.Holes;
             var numbers = new int[holes.Length]; var pars = new int[holes.Length]; var strokes = new int?[holes.Length];
-            for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].Number; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
+            for (int i = 0; i < holes.Length; i++) { numbers[i] = holes[i].PlayNumber; pars[i] = holes[i].Par; strokes[i] = card.StrokesOn(i); }
             roundCard = new RoundCard(safeArea, title, headline, numbers, pars, strokes, card.Total, card.ToPar, highlights, nextHole, players, againLabel);
             roundCard.Root.SetAsLastSibling();
             PlayAgain = roundCard.PlayAgain; RoundMenu = roundCard.Menu; NextHole = roundCard.NextHole;

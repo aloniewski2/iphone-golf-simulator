@@ -68,7 +68,7 @@ namespace GolfArcade.UI
         readonly Transform parent;
         RectTransform root, sheet;
         Image ring;
-        GameObject[] aimParts; GameObject skipPart;
+        GameObject[] aimParts; GameObject skipPart; Text skipLabel;
         Image tvFill;
         Image startFill, startHit; Text startLabel; int startState = -1;
         Text holeText, parText, yardsText, windText, aimText, tvText, nameText;
@@ -78,6 +78,9 @@ namespace GolfArcade.UI
         // the club in hand: one card you swipe (or tap an arrow) to step through the bag
         RectTransform clubCard; RawImage clubPicture; Text clubName, clubYards; Image[] clubDots;
         SwipeArea clubSwipe; int clubSelected = -1;
+        // whose shot it is, on the ribbon under the hole badge (else the hole's name), and the card asking for the phone to be passed
+        string holeName, playerName;
+        RectTransform passCard; Text passName;
         static Texture2D[] familyPictures;
         static Sprite skySprite;
 
@@ -326,7 +329,7 @@ namespace GolfArcade.UI
             watch.rectTransform.anchorMin = watch.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             watch.rectTransform.sizeDelta = new Vector2(800, 80); watch.rectTransform.anchoredPosition = Vector2.zero;
             var button = UiKit.Pill(skip, "Skip", Yellow, new Vector2(0.5f, 0.5f), new Vector2(0, -190), new Vector2(560, 150), out var skipFill, 9);
-            Chunky(skipFill.transform, "Label", "SKIP INTRO  ▶", 56, 4f, Color.white, UiKit.Hex("C77800"));
+            skipLabel = Chunky(skipFill.transform, "Label", "SKIP INTRO  ▶", 56, 4f, Color.white, UiKit.Hex("C77800"));
             button.gameObject.AddComponent<Image>().color = Color.clear;
             Skip = button.gameObject.AddComponent<HoldButton>();
             Skip.Fill = skipFill; Skip.RestColor = Yellow;
@@ -339,23 +342,20 @@ namespace GolfArcade.UI
         public bool Shown => root && root.gameObject.activeSelf;
         public bool ShowingIntro => skipPart && skipPart.activeSelf;
 
-        /// The course's opening is playing on the TV: the skip button stands in for the aim pad.
-        public void SetIntro(bool on)
+        /// The course's opening (or a replay) is playing on the TV: the skip button stands in for the aim pad.
+        public void SetIntro(bool on, string skip = "SKIP INTRO  ▶")
         {
             foreach (var part in aimParts) part.SetActive(!on);
             skipPart.SetActive(on);
+            if (skipLabel) skipLabel.text = skip;
         }
 
         public void SetHole(int number, int par, double yards, string name = null)
         {
             holeText.text = $"HOLE {number}";
             // this hole's own name and numbered flag
-            namePill.gameObject.SetActive(!string.IsNullOrEmpty(name));
-            if (!string.IsNullOrEmpty(name))
-            {
-                nameText.text = name.ToUpperInvariant();
-                namePill.sizeDelta = new Vector2(Mathf.Clamp(nameText.preferredWidth + 60, 220, 540), 50);
-            }
+            holeName = name;
+            ShowRibbon();
             var tex = Resources.Load<Texture2D>($"Course/flag_{number}");
             if (tex)
             {
@@ -368,6 +368,50 @@ namespace GolfArcade.UI
         }
 
         public void SetScore(int toPar, int holeStrokes) { }
+
+        /// Whose shot it is, in a round with others ("" or null: none, and the ribbon has the hole's name again).
+        public void SetPlayer(string name) { playerName = name; ShowRibbon(); }
+
+        void ShowRibbon()
+        {
+            string text = !string.IsNullOrEmpty(playerName) ? $"{playerName}'s shot" : holeName;
+            namePill.gameObject.SetActive(!string.IsNullOrEmpty(text));
+            if (string.IsNullOrEmpty(text)) return;
+            nameText.text = text.ToUpperInvariant();
+            namePill.sizeDelta = new Vector2(Mathf.Clamp(nameText.preferredWidth + 60, 220, 540), 50);
+        }
+
+        /// Players sharing this phone: the next one's name, big, for a couple of seconds (a tap puts it away).
+        public void ShowPass(string name)
+        {
+            if (!root) return;
+            if (!passCard)
+            {
+                var dim = UiKit.Panel(root, "Pass the phone", new Color(0.03f, 0.2f, 0.5f, 0.6f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+                passCard = dim.rectTransform;
+                passCard.offsetMin = passCard.offsetMax = Vector2.zero;
+                dim.gameObject.AddComponent<PassCard>();
+                UiKit.Pill(passCard, "Card", Blue, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(860, 440), out var fill, 9);
+                var line = Chunky(fill.transform, "Line", "PASS THE PHONE TO", 54, 4f);
+                line.rectTransform.anchorMin = new Vector2(0, 0.6f); line.rectTransform.anchorMax = new Vector2(1, 0.92f);
+                passName = Chunky(fill.transform, "Name", "", 120, 6f);
+                passName.rectTransform.anchorMin = new Vector2(0, 0.1f); passName.rectTransform.anchorMax = new Vector2(1, 0.62f);
+                passName.resizeTextForBestFit = true; passName.resizeTextMinSize = 50; passName.resizeTextMaxSize = 120;
+            }
+            passName.text = (name ?? "").ToUpperInvariant();
+            passCard.SetAsLastSibling();
+            passCard.gameObject.SetActive(true);
+            passCard.GetComponent<PassCard>().Until = Time.unscaledTime + 2.4f;
+        }
+        public bool ShowingPass => passCard && passCard.gameObject.activeSelf;
+
+        /// The pass-the-phone card: gone after its time, or at a tap.
+        sealed class PassCard : MonoBehaviour, IPointerClickHandler
+        {
+            public float Until;
+            void Update() { if (Time.unscaledTime >= Until) gameObject.SetActive(false); }
+            public void OnPointerClick(PointerEventData e) => gameObject.SetActive(false);
+        }
 
         /// How far is left to the pin (the phone HUD's big number).
         public void SetDistance(double amount, string unit) => yardsText.text = $"{amount:F0} {unit.ToUpperInvariant()}";

@@ -89,6 +89,29 @@ namespace GolfArcade.Tests
             Assert.Less(chip.Apex, 1.5, "and stays low");
         }
 
+        /// Off the turf a full shot hops about knee-high, once, and runs: the ground takes the
+        /// pitch mark's share of a hard landing (it used to spring back chest-high).
+        [Test]
+        public void AFullShotHopsKneeHighOnceThenRuns()
+        {
+            foreach (var club in new[] { GolfClub.Driver, GolfClub.Iron5, GolfClub.Iron, GolfClub.PitchingWedge, GolfClub.LobWedge })
+            {
+                var f = BallFlight.Simulate(club.Launch(1, 0, 0));
+                double hop = 0; int hops = 0; bool rising = false; double before = 0;
+                foreach (var s in f.Samples)
+                {
+                    if (s.DistanceYards < f.CarryPoint.DistanceYards - 0.01) { before = s.HeightYards; continue; }
+                    if (s.HeightYards > before && !rising) { rising = true; hops++; }
+                    if (s.HeightYards < before) rising = false;
+                    if (hops == 1) hop = Math.Max(hop, s.HeightYards);
+                    before = s.HeightYards;
+                }
+                double metres = hop * BallFlight.MetersPerYard;
+                Assert.That(metres, Is.InRange(0.15, 0.6), $"{club}'s first hop, metres");
+                Assert.AreEqual(1, hops, $"{club} hops once, then runs");
+            }
+        }
+
         [Test]
         public void StartLineTurnsTheWholeShot()
         {
