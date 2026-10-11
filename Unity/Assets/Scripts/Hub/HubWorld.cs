@@ -321,6 +321,7 @@ namespace GolfArcade.Hub
             var driver = tmp.GetComponent<HeroTennisDriver>();
             if (driver) { driver.enabled = false; driver.ResolvePerformanceClips(); foreach (var slot in driver.slots) if (slot.clip && !keepAlive.Contains(slot.clip)) keepAlive.Add(slot.clip); }
             Destroy(tmp);
+            TailoredPoloDeformation.LoadAll();   // held for the session: reading one later froze the plaza ~2 s (seated load) and the hand-off (LOD)
         }
 
         /// Renders every place once, off screen, while the plaza boots: the first look at a room must not pay for uploading its meshes,

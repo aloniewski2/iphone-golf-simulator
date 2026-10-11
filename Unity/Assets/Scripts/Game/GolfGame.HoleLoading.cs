@@ -20,6 +20,7 @@ namespace GolfArcade.Game
 
         HoleLoadingCover loadingCover;
         bool loadingHole, coverNextRoundStart;
+        bool deferFirstHole; System.Collections.Generic.IEnumerator<float> firstHoleSteps;
 
         /// The next hole is being built behind the loading screen: the game's frame loop stands still till it is done.
         public bool LoadingHole => loadingHole;

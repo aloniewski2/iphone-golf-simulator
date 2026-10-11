@@ -29,7 +29,14 @@ namespace GolfArcade.Course
 
         public static GolfResortDress Apply(GameObject model,Hole hole)
         {
-            var existing=model.GetComponent<GolfResortDress>(); if(existing)return existing;
+            GolfResortDress result=null;var steps=ApplySteps(model,hole,r=>result=r);while(steps.MoveNext()){}return result;
+        }
+
+        /// Apply a pass per step (it yields 0..1; `done` gets the dress, or null): a hole building behind a loading screen or
+        /// the plaza draws between the passes.
+        public static IEnumerator<float> ApplySteps(GameObject model,Hole hole,Action<GolfResortDress> done)
+        {
+            var existing=model.GetComponent<GolfResortDress>(); if(existing){done(existing);yield break;}
             if(hole.Number==12){
                 // Coastal pilot uses one authored island mass and a dedicated
                 // botanical composition; legacy scatter/erosion stays on other holes.
@@ -37,10 +44,10 @@ namespace GolfArcade.Course
                 coastal.ReplacedAuthoredPlants=true;
                 GolfCoastalCliff12.Apply(model,hole);
                 GolfCoastalBotany.Apply(model,hole);
-                GolfCoastalTurf.Apply(model,hole);coastal.CoastalWater(model);return coastal;
+                GolfCoastalTurf.Apply(model,hole);coastal.CoastalWater(model);done(coastal);yield break;
             }
             var kit=Resources.Load<GameObject>("Course/Resort/BotanicalKit");
-            if(!kit){Debug.LogError("Missing golf botanical kit");return null;}
+            if(!kit){Debug.LogError("Missing golf botanical kit");done(null);yield break;}
             var owner=model.AddComponent<GolfResortDress>();owner.hole=hole;
             foreach(var mf in kit.GetComponentsInChildren<MeshFilter>())
                 if(mf.sharedMesh&&mf.sharedMesh.isReadable) {
@@ -49,10 +56,17 @@ namespace GolfArcade.Course
                     for(int i=0;i<slots.Length;i++)slots[i]=i<sourceMaterials.Length&&sourceMaterials[i]?PaletteIndex(sourceMaterials[i].name):Mathf.Min(i,6);
                     owner.templates[mf.name]=new Template{mesh=mf.sharedMesh,toRoot=kit.transform.worldToLocalMatrix*mf.transform.localToWorldMatrix,paletteSlots=slots};
                 }
-            if(owner.templates.Count==0){Debug.LogError("Golf botanical kit requires readable meshes");return owner;}
-            owner.InstallTempleCanopyCandidate();owner.CreateMaterials();owner.ReplaceMarkers();owner.ScatterRough();owner.DressShore();owner.BuildCliffForms();GolfCliffSculpt.Apply(model,hole);if(hole.Number is >=1 and <=3)owner.DressMeadow();owner.BuildBatches();if(hole.Number==9)owner.CoastalWater(model);
+            if(owner.templates.Count==0){Debug.LogError("Golf botanical kit requires readable meshes");done(owner);yield break;}
+            owner.InstallTempleCanopyCandidate();owner.CreateMaterials();
+            var markers=owner.ReplaceMarkersSteps();while(markers.MoveNext())yield return .2f*markers.Current;
+            yield return .2f;
+            owner.ScatterRough();yield return .4f;
+            owner.DressShore();yield return .55f;
+            owner.BuildCliffForms();yield return .7f;
+            GolfCliffSculpt.Apply(model,hole);if(hole.Number is >=1 and <=3)owner.DressMeadow();yield return .85f;
+            owner.BuildBatches();if(hole.Number==9)owner.CoastalWater(model);
             Debug.Log($"[GolfResortDress] hole {hole.Number}: {owner.plants} botanical assets, {owner.triangles} triangles in {owner.batches.Count} bounded batches; original physics retained");
-            return owner;
+            done(owner);
         }
 
         // Accepted temple pilot; other tropical courses remain explicit review candidates.
@@ -229,19 +243,21 @@ namespace GolfArcade.Course
             plants++;
         }
 
-        void ReplaceMarkers()
+        /// ReplaceMarkers a few milliseconds at a time (it yields how far through the markers it is).
+        IEnumerator<float> ReplaceMarkersSteps()
         {
             // All source tree/bush visual meshes are replaced only when the source includes
             // complete plant foot markers. No collider, source MeshFilter or active flag changes.
             var markers=new List<Transform>();
             foreach(var t in GetComponentsInChildren<Transform>(true))
                 if(t.name.StartsWith("PLANT_")&&t.name.Split('_').Length>=5)markers.Add(t);
-            if(markers.Count==0){ReplaceUnmarkedTrees();return;}
+            if(markers.Count==0){var unmarked=ReplaceUnmarkedTreesSteps();while(unmarked.MoveNext())yield return unmarked.Current;yield break;}
             bool tropical=hole.Number==19||hole.Number==16||hole.Number>=21;
             var rng=new System.Random(7700+hole.Number);
-            int trees=0;
-            foreach(var t in markers){
-                var bits=t.name.Split('_');if(!int.TryParse(bits[3],out int cm)||!int.TryParse(bits[4],out int reach))continue;
+            int trees=0;var slice=System.Diagnostics.Stopwatch.StartNew();
+            for(int m=0;m<markers.Count;m++){
+                if(slice.ElapsedMilliseconds>20){yield return (float)m/markers.Count;slice.Restart();}
+                var t=markers[m];var bits=t.name.Split('_');if(!int.TryParse(bits[3],out int cm)||!int.TryParse(bits[4],out int reach))continue;
                 float sourceScale=(Mathf.Abs(t.lossyScale.x)+Mathf.Abs(t.lossyScale.y)+Mathf.Abs(t.lossyScale.z))/3;
                 float height=cm*.01f*sourceScale,radius=reach*.01f*sourceScale;
                 float angle=(float)rng.NextDouble()*360;
@@ -266,23 +282,25 @@ namespace GolfArcade.Course
             }
         }
 
-        void ReplaceUnmarkedTrees()
+        IEnumerator<float> ReplaceUnmarkedTreesSteps()
         {
             // Legacy islands lack marker empties. Reuse the exact already-extracted obstacle
             // footprint and height so replacement foliage reads where the ball collides.
             bool hasTrees=false;
             foreach(var mf in GetComponentsInChildren<MeshFilter>(true))
                 if(mf.name.StartsWith("TREE")||mf.name.StartsWith("SHRUB")){hasTrees=true;break;}
-            if(!hasTrees||hole.Obstacles==null)return;
-            int count=0;var rng=new System.Random(3051+hole.Number);
-            foreach(var o in hole.Obstacles){
+            if(!hasTrees||hole.Obstacles==null)yield break;
+            int count=0;var rng=new System.Random(3051+hole.Number);var slice=System.Diagnostics.Stopwatch.StartNew();
+            for(int i=0;i<hole.Obstacles.Length;i++){
+                if(slice.ElapsedMilliseconds>20){yield return (float)i/hole.Obstacles.Length;slice.Restart();}
+                var o=hole.Obstacles[i];
                 if(o.Kind!=ObstacleKind.Tree&&o.Kind!=ObstacleKind.Bush)continue;
                 float height=(float)(o.Top-o.Base),radius=(float)o.Radius;
                 if(height<.15f||radius<.2f)continue;
                 string kind=o.Kind==ObstacleKind.Bush?"SHRUB_"+(count%2):hole.Number==14?"CANOPY":"PINE";
                 Add(kind,new Vector3((float)o.X,(float)o.Base,(float)o.D),new Vector3(radius,height,radius),(float)rng.NextDouble()*360);count++;
             }
-            if(count==0)return;
+            if(count==0)yield break;
             foreach(var r in GetComponentsInChildren<MeshRenderer>(true))
                 if(r.name.StartsWith("TREE")||r.name.StartsWith("SHRUB"))r.enabled=false;
             ReplacedAuthoredPlants=true;

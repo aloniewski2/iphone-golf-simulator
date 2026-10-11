@@ -243,9 +243,11 @@ namespace GolfArcade.Tennis
                 var islandPrefab = Resources.Load<GameObject>("Tennis/Island/TennisIsland");
                 GameObject islandGo = null;
                 if (islandPrefab) { var island = Instantiate(islandPrefab); island.name = "Tropical island"; island.transform.rotation = environment.transform.rotation * islandPrefab.transform.rotation; TennisLook.StyleIsland(island); islandGo = island; }
-                TennisEnvironmentV4.Apply(environment, islandGo);   // Plan 2D postcard pass (world art only)
+                if (SliceInit) { var steps = TennisEnvironmentV4.ApplySteps(environment, islandGo); while (steps.MoveNext()) yield return null; }
+                else TennisEnvironmentV4.Apply(environment, islandGo);   // Plan 2D postcard pass (world art only)
                 crowd = gameObject.AddComponent<TennisResortCrowd>();
             }
+            else if (SliceInit) { var steps = TennisVenueBuilder.BuildSteps(venue, environment); while (steps.MoveNext()) yield return null; }
             else TennisVenueBuilder.Build(venue, environment);
             if (SliceInit) { InitProgress = .35f; yield return null; }
             umpire = TennisUmpire.Spawn(environment.transform.parent);

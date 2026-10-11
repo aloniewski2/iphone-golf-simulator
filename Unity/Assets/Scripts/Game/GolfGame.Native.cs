@@ -17,7 +17,10 @@ namespace GolfArcade.Game {
         public double TutorialHeading => heading;
         public GolfArcade.UI.Hud TutorialHud => hud;
         public int TutorialHole => holeIndex;
-        public void PrepareNativeAddress(string courseKey = null) {
+        public void PrepareNativeAddress(string courseKey = null) { var steps = PrepareNativeAddressSteps(courseKey); while (steps.MoveNext()) { } }
+        /// PrepareNativeAddress with the first hole built a slice per step (it yields 0..1): a round launched from a plaza
+        /// bay builds behind the plaza, which keeps drawing between the slices.
+        public System.Collections.Generic.IEnumerator<float> PrepareNativeAddressSteps(string courseKey = null) {
             NativeControlled = true; controllerMapHole = -1;
             hud.HideMenu(); home = null;
             hud.HideCourses(); courses = null;
@@ -26,7 +29,13 @@ namespace GolfArcade.Game {
             SetFog(0);
             var selected = GolfArcade.Course.Course.ByKey(courseKey ?? "cliffside") ?? GolfArcade.Course.Course.Cliffside();
             setup = GameSetup.Solo(ProfileStore.Active, selected.Key);
-            StartRound();
+            deferFirstHole = true; StartRound(); deferFirstHole = false;
+            if (firstHoleSteps != null)
+            {
+                var build = firstHoleSteps; firstHoleSteps = null;
+                loadingHole = true;   // the frame loop stands still on the half-built hole
+                try { while (build.MoveNext()) yield return build.Current; } finally { loadingHole = false; }
+            }
             golfPresentation.Cancel(); pendingNativeIntro=true;
             BeginAim(false); hud.ShowPlayHud(true); RefreshControls();
             rig.SnapNext(); rig.ApplyFrame();

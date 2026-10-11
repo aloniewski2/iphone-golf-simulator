@@ -79,15 +79,38 @@ namespace GolfArcade.Tests
             Assert.AreEqual(game.GameplayCamera, bridge.GameplayCamera, "the match's own camera, not the plaza's");
             Assert.AreEqual(0, matchCameraFramesBeforeReady, "the match never draws while it loads behind the plaza");
             Assert.IsTrue(sawRing, "the bay ring filled while loading");
-            for (int i = 0; i < 120 && SceneManager.GetSceneByName("Hub").isLoaded; i++) yield return null;
+            // the first frames on the match's own camera (its garment LODs and anything else it defers to the first look) are on screen too
+            var handoff = new System.Collections.Generic.List<float>();
+            for (int i = 0; i < 120 && (i < 90 || SceneManager.GetSceneByName("Hub").isLoaded); i++) { yield return null; handoff.Add(Time.unscaledDeltaTime * 1000); }
             Assert.IsFalse(SceneManager.GetSceneByName("Hub").isLoaded, "the plaza unloads after the hand-off");
             Assert.IsFalse(AudioListener.pause);
             var ms = NativeSportsSession.BehindFrameMs.ToList(); ms.Sort();
             float worst = ms.Count > 0 ? ms[ms.Count - 1] : 0, p99 = ms.Count > 0 ? ms[(int)(ms.Count * .99f)] : 0;
             Write("p3_metrics.txt", $"seamless_load_seconds_editor={seconds:0.00}\nplaza_frames_while_loading={ms.Count}\nplaza_frame_p99_ms_editor={p99:0.0}\nplaza_frame_worst_ms_editor={worst:0.0}\n" +
-                                     $"frames_over_50ms={ms.Count(x => x > 50)}\nmemory_before_bytes={before}\nmemory_peak_bytes={NativeSportsSession.BehindPeakBytes}\nworst_frames_ms={string.Join(",", ms.Skip(Math.Max(0, ms.Count - 8)).Select(x => x.ToString("0")))}\nslow_frames:\n  {string.Join("\n  ", NativeSportsSession.BehindSlowFrames)}");
+                                     $"frames_over_50ms={ms.Count(x => x > 50)}\nmemory_before_bytes={before}\nmemory_peak_bytes={NativeSportsSession.BehindPeakBytes}\nworst_frames_ms={string.Join(",", ms.Skip(Math.Max(0, ms.Count - 8)).Select(x => x.ToString("0")))}\nhandoff_frame_worst_ms_editor={handoff.Max():0.0}\nhandoff_frames_over_50ms={string.Join(",", handoff.Where(x => x > 50).Select(x => x.ToString("0")))}\nslow_frames:\n  {string.Join("\n  ", NativeSportsSession.BehindSlowFrames)}");
             // HITCH is a device gate; the editor numbers above are written for the record and judged in GATE_RESULTS.md
             Send("match-1", "end");
+        }
+
+        /// A round from a golf bay builds its first hole a slice a frame behind the plaza (it used to build in one frame
+        /// after the plaza had stopped drawing: a ~2.5 s freeze on the TV).
+        [UnityTest, Timeout(600000)] public IEnumerator GolfSeatedLoadKeepsThePlazaDrawing()
+        {
+            yield return BootHub(); var hub = HubWorld.Find(); Assert.IsNotNull(hub);
+            hub.GoTo("bay-golf-round", true); while (hub.Transitioning) yield return null;
+            for (int i = 0; i < 120 && !hub.SeatedInBay; i++) yield return null;
+            Assert.IsTrue(hub.SeatedInBay, "A at the golf bay sits you on its bench");
+            yield return new WaitForSecondsRealtime(.6f);
+            float t0 = Time.realtimeSinceStartup;
+            Send("match-g", "start", m => { m.sport = "golf"; m.course = "cliffside"; m.seamless = true; m.bay = "bay-golf-round"; });
+            for (int i = 0; i < 2400 && !bridge.Ready; i++) yield return null;
+            float seconds = Time.realtimeSinceStartup - t0;
+            Assert.IsTrue(bridge.Ready, "the round took the screen");
+            var golf = Object.FindFirstObjectByType<GolfGame>(); Assert.IsNotNull(golf); Assert.IsFalse(golf.LoadingHole, "the first hole is built");
+            var ms = NativeSportsSession.BehindFrameMs.ToList(); ms.Sort();
+            Write("p3_golf_metrics.txt", $"seamless_load_seconds_editor={seconds:0.00}\nplaza_frames_while_loading={ms.Count}\nplaza_frame_worst_ms_editor={(ms.Count > 0 ? ms[ms.Count - 1] : 0):0.0}\nframes_over_50ms={ms.Count(x => x > 50)}\nworst_frames_ms={string.Join(",", ms.Skip(Math.Max(0, ms.Count - 8)).Select(x => x.ToString("0")))}");
+            Assert.Greater(ms.Count, 15, "the plaza kept drawing while the hole was built behind it");
+            Send("match-g", "end");
         }
 
         /// Diagnostic: the same seated load twice in one session (is the build's cost loading or building?).

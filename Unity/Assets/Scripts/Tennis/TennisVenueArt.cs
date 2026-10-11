@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -129,9 +130,13 @@ namespace GolfArcade.Tennis
             return true;
         }
 
-        public static void Build(TennisVenueKind venue, GameObject arena)
+        public static void Build(TennisVenueKind venue, GameObject arena) { var steps = BuildSteps(venue, arena); while (steps.MoveNext()) { } }
+
+        /// Build, in pieces of a few milliseconds: a match building behind the plaza runs one piece a frame.
+        public static IEnumerator BuildSteps(TennisVenueKind venue, GameObject arena)
         {
-            if (!arena || arena.transform.Find("Premium tennis craft")) return;
+            if (!arena || arena.transform.Find("Premium tennis craft")) yield break;
+            var slice = System.Diagnostics.Stopwatch.StartNew();
             var root = new GameObject("Premium tennis craft").transform;
             root.SetParent(arena.transform, true);
             root.gameObject.AddComponent<TennisVenueBreeze>();
@@ -139,8 +144,12 @@ namespace GolfArcade.Tennis
             var trim = new TennisVenueBuilder.MB(); var botany = new BotanicalBatch(venue == TennisVenueKind.Resort);
             if (venue == TennisVenueKind.Resort)
             { TennisResortFixtures.Build(root,arena); TennisResortVista.Build(root); }
-            foreach (var p in plants) botany.Add(p.asset, p.position, p.radius, p.height, p.yaw);
-            plants.Clear();
+            var queued = plants.ToArray(); plants.Clear();
+            foreach (var p in queued)
+            {
+                botany.Add(p.asset, p.position, p.radius, p.height, p.yaw);
+                if (slice.ElapsedMilliseconds > 20) { yield return null; slice.Restart(); }
+            }
             var ivory = new Color(.78f, .73f, .62f); var teak = new Color(.43f, .25f, .12f);
             if (venue == TennisVenueKind.Resort)
             {
@@ -213,6 +222,7 @@ namespace GolfArcade.Tennis
             Make(root, "Cut stone and ceramic", stone, Surface(venue + " cut stone", ivory, venue == TennisVenueKind.Volcano ? .38f : .22f));
             Make(root, "Warm timber joinery", timber, Surface(venue + " timber", teak, .26f, 0, .065f, .015f));
             Make(root, "Fine bronze hardware", trim, Surface(venue + " bronze", new Color(.58f, .36f, .16f), .48f, .65f, .02f, .003f));
+            yield return null;
             botany.Build(root);
             NetTape(root, arena);
         }

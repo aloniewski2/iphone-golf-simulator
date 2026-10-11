@@ -93,9 +93,13 @@ namespace GolfArcade.Game
         static double SportsClock()=>Time.realtimeSinceStartupAsDouble;
         static int SportsPrepareExternalDisplay()=>1;
 #endif
+        /// True inside the iPhone app: its menus (the Plaza) are the only menus, so Unity's own stand-alone golf menu never shows,
+        /// not even at start-up before the phone's first message (golf is the first scene).
+        public static bool Embedded { get; private set; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Boot() {
 #if UNITY_IOS && !UNITY_EDITOR
+            Embedded=true;
             var go=new GameObject("NativeSportsSession"); DontDestroyOnLoad(go); go.AddComponent<NativeSportsSession>();
 #endif
         }
@@ -271,7 +275,10 @@ namespace GolfArcade.Game
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) { golf.EquipResultEmotes(m.emotes); golf.PrepareNativeAddress(m.course); }
+            if(golf) { golf.EquipResultEmotes(m.emotes);
+                // behind the plaza the first hole builds a slice a frame (the plaza keeps drawing); otherwise at once, under the TV's cover
+                if(behindPlaza) { var steps=golf.PrepareNativeAddressSteps(m.course); while(steps.MoveNext()) { if(hub) hub.BayLoading(.6f+.4f*steps.Current); yield return null; } }
+                else golf.PrepareNativeAddress(m.course); }
             if(golf && m.bench) {
                 golf.gameObject.AddComponent<GolfVisualBenchmark>();
                 golf.gameObject.AddComponent<SportsVisualTelemetry>().GolfBenchmarkEnabled=true;

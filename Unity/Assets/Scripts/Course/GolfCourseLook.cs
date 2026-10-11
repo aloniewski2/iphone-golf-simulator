@@ -317,7 +317,9 @@ namespace GolfArcade.Course
             GolfPostcardBasalt.Apply(model,hole);
             GolfLandmarkFinish.Apply(model,hole,this);
             yield return .1f;
-            var resort = GolfResortDress.Apply(model,hole);
+            GolfResortDress resort = null;
+            var dress = GolfResortDress.ApplySteps(model,hole,r => resort = r);
+            while (dress.MoveNext()) yield return .1f + .2f * dress.Current;
             yield return .3f;
             GolfStoneFinish.Apply(model);
             var palms = model.GetComponent<GolfCoursePalms>();

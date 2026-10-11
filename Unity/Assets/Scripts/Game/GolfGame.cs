@@ -300,6 +300,7 @@ namespace GolfArcade.Game
         public void ShowMenu()
         {
             if (NativeControlled) { RequestNativeExit(); return; }
+            if (NativeSportsSession.Embedded) return;   // in the app the Plaza is the only menu: Unity's own never shows
             // back from a round: out of any online room, and the device's own golfer again
             if (setup?.Mode == PlayMode.Online) OnlineSession.Instance?.Disconnect();
             ListenToRoom(null);
@@ -924,6 +925,7 @@ namespace GolfArcade.Game
             // a rematch builds its first hole behind the loading screen like any other hole; the round that
             // starts from the menu or the phone's launch (which go on to the tee at once) does not
             if (covered) StartHoleBehindCover(Match.HoleIndex);
+            else if (deferFirstHole) firstHoleSteps = StartHoleSteps(Match.HoleIndex);   // PrepareNativeAddressSteps runs it
             else StartHole(Match.HoleIndex);
         }
 
