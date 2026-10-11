@@ -37,7 +37,7 @@ jobs:
         run: |
           xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
           if [[ -z "$xcode" ]]; then
-            echo "No Xcode 26 on this runner; CameraPoseTracker needs the iOS 26 SDK." >&2
+            echo "No Xcode 26 on this runner; the app builds against the iOS 26 SDK." >&2
             exit 1
           fi
           sudo xcode-select -s "$xcode"
@@ -79,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [CameraPlayTests, CoursePlayTests]
+        suite: [SportsNavigationTests, MenuNavigationRegressionTests]
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26
