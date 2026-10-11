@@ -433,6 +433,8 @@ namespace GolfArcade.Hub
             Put("Medallion ring", t, Lathe("medallion", new[] { new Vector2(0, -.18f), new Vector2(1.25f, -.18f), new Vector2(1.25f, .18f), new Vector2(0, .18f) }, .12f, 64), Lit(Royal, .4f), medal, Quaternion.FromToRotation(Vector3.up, front));
             Put("Medallion face", t, HubShapes.Disc(64), Lit(Gold, .55f), medal + front * .19f, Quaternion.FromToRotation(Vector3.up, front), new Vector3(1.05f, 1, 1.05f));
             FlatIcon(t, "crest", medal + front * .21f, 1.9f, C("3A4A96"), Mathf.Atan2(-front.x, -front.z) * Mathf.Rad2Deg, true);
+            // the club's name round the royal band above the medallion, seen from across the plaza
+            CurvedText(t, "MOTION CLUB", centre, R2 + .34f, front, 11.35f, .48f, Color.white);
             // banners either side of the door
             var side = Vector3.Cross(Vector3.up, front);
             foreach (int s in new[] { -1, 1 })
@@ -468,6 +470,8 @@ namespace GolfArcade.Hub
             Put("Crest disc", t, Lathe("crest disc", new[] { new Vector2(0, -.32f), new Vector2(1.65f, -.32f), new Vector2(1.65f, .32f), new Vector2(0, .32f) }, .22f, 72), Lit(Gold, .62f), medal, Quaternion.FromToRotation(Vector3.up, faceDir));
             Put("Crest face", t, HubShapes.Disc(72), Lit(Royal, .45f), medal + faceDir * .325f, Quaternion.FromToRotation(Vector3.up, faceDir), new Vector3(1.38f, 1, 1.38f));
             FlatIcon(t, "crest", medal + faceDir * .33f, 2.5f, C("FFF4DA"), Mathf.Atan2(-faceDir.x, -faceDir.z) * Mathf.Rad2Deg, true);
+            // the club's name round the front of the planter: the photo spot says where you are
+            CurvedText(t, "MOTION CLUB", crestAt, 1.80f, faceDir, .48f, .34f, C("3A4A96"));
             Put("Crest post", t, Lathe("crest post", new[] { new Vector2(0, 0), new Vector2(.28f, 0), new Vector2(.22f, 1.0f), new Vector2(0, 1.0f) }, .05f, 24), Lit(Royal, .4f), stand - Vector3.up * .1f);
             Collider(t, HubKit.Drum(1.85f, 1f, 32), crestAt);
             // lamp globes along the back wall and the front
