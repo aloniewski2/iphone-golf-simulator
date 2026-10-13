@@ -14,6 +14,9 @@ namespace GolfArcade.Multiplayer {
         /// ball (-1), and the backswing's load (0–1).
         public float look,load;
         public NetworkGolfer[] golfers;public NetworkGolfShot shot;
+        /// The round's events as the host dealt them (RoundEvents.Code, "" none) from `eventSeed`, and the hole's weather now
+        /// (Course.Weather): every phone plays the same twists, sky and things moving about the hole.
+        public string events="";public int eventSeed,weather;
     }
     [Serializable] public sealed class NetworkGolfShot {
         public long id;public int seat,hole,club,strokes,penalty;public double start,duration,carry,roll,apex,restX,restD,nextX,nextD;
@@ -22,6 +25,8 @@ namespace GolfArcade.Multiplayer {
         /// How long the phones take to show the flight: the club coming down to the ball first, a ball in the water a moment to sink.
         public double shown;
         public bool holed;public string lie; public NetworkVector[] path;
+        /// The movers' clock (CourseMovers) as the ball left the club on the host: every phone meets the balloon where the host did.
+        public double moverPhase;
     }
     /// The swing as the player's phone read it, the strike's own speed and spin already in (Strikes.Pure), as single player plays it.
     [Serializable] public sealed class NetworkImpact {
@@ -51,19 +56,27 @@ namespace GolfArcade.Multiplayer {
         public static double ReplaySeconds(CourseShot shot)=>1.2+4.1+(shot.IsHoled?shot.Duration:Math.Min(shot.Duration,shot.LandingTime+2.0));
         public readonly NetworkGolfState State;
         readonly bool intros; readonly Course.Course course;readonly Random random;readonly long[] lastEvent=new long[4];
+        /// The round's events (twists, weather, gusts): what the host deals, every phone plays.
+        readonly RoundEvents events; Wind holeWind; int swingsOnHole, weatherTurns;
         public Action<NetworkGolfShot> Shot;public Action<string> Result;
         /// `playing`: the course as the game has it loaded, its holes' ground, greens, trees and windmill read off their models
         /// (Course.ByKey makes a bare copy without them: flat, slopeless greens, nothing to hit).
-        public NetworkGolfRound(int[] seats,int seed,bool intro=false,string courseKey=null,Course.Course playing=null) {
+        /// `twists` and `world`: the match settings' round twists, and weather with things moving about the holes.
+        public NetworkGolfRound(int[] seats,int seed,bool intro=false,string courseKey=null,Course.Course playing=null,bool twists=true,bool world=true) {
             if(seats==null||seats.Length<2||seats.Length>4||seats.Distinct().Count()!=seats.Length||seats.Any(s=>s<0||s>3))throw new ArgumentException("Invalid golf seats.");
             intros=intro; random=new Random(seed);
+            events=RoundEvents.Deal(seed,twists,world);
             course=playing!=null&&playing.Key==(courseKey??"postcards")&&playing.Holes.Length>0?playing:Course.Course.ByKey(courseKey??"postcards")??Course.Course.Postcards();
-            State=new NetworkGolfState {golfers=seats.OrderBy(s=>s).Select(s=>new NetworkGolfer {seat=s,card=new int[course.Holes.Length]}).ToArray()};
+            State=new NetworkGolfState {golfers=seats.OrderBy(s=>s).Select(s=>new NetworkGolfer {seat=s,card=new int[course.Holes.Length]}).ToArray(),events=events.Code,eventSeed=seed};
             BeginHole(0);
         }
         void BeginHole(int index) {
             State.hole=index;State.shot=null;State.phase="aim";State.revision++;
-            var hole=course.Holes[index];var wind=Wind.Random(random);State.windSpeed=wind.SpeedMPH;State.windDirection=wind.DirectionDegrees;
+            var hole=course.Holes[index];var wind=Wind.Random(random);
+            // the hole's weather, the rules it and the twists make, and its wind as the weather has it (the events' own draws: the round's stays as it was)
+            var weather=events.WeatherFor(index);State.weather=(int)weather;hole.Rules=events.RulesFor(weather);
+            wind=events.WindFor(index,wind,weather);holeWind=wind;swingsOnHole=0;weatherTurns=0;
+            State.windSpeed=wind.SpeedMPH;State.windDirection=wind.DirectionDegrees;
             foreach(var p in State.golfers) {p.x=hole.Tee.X;p.d=hole.Tee.D;p.strokes=0;p.holed=false;LineUp(p,hole);}
             State.look=0;State.load=0;
             var eligible=State.golfers.Where(p=>!p.dnf).ToArray();
@@ -111,7 +124,10 @@ namespace GolfArcade.Multiplayer {
         void Play(NetworkGolfer p,NetworkImpact impact) {
             var hole=course.Holes[State.hole];var origin=new CoursePoint(p.x,p.d);var club=(GolfClub)p.club;
             // As single player strikes it: CourseShot takes the lie's toll itself (passing it in too took it twice).
+            // (the balloons, carts and gulls where this phone's picture has them as the ball leaves the club: the phones fly it from there)
+            double moverPhase=hole.Movers!=null?hole.Movers.PhaseAtLaunch=hole.Movers.Clock+StrikeLead:0;
             var shot=new CourseShot(club,impact.ToImpact(),p.heading,origin,hole,1,new Wind(State.windSpeed,State.windDirection));
+            swingsOnHole++;
             p.strokes+=1+shot.PenaltyStrokes;State.shotID++;
             int samples=(int)Math.Ceiling(shot.Duration/.05)+1;
             // Bound data below GameKit/bridge packet size. Long paths are sampled more sparsely.
@@ -119,7 +135,7 @@ namespace GolfArcade.Multiplayer {
             for(int i=0;i<samples;i++){var v=shot.PositionAt(shot.Duration*i/(samples-1));path[i]=new((float)v.x,(float)v.h,(float)v.d);}
             State.shot=new NetworkGolfShot {id=State.shotID,seat=p.seat,hole=State.hole,club=p.club,strokes=p.strokes,penalty=shot.PenaltyStrokes,start=State.time,duration=shot.Duration,
                 carry=shot.Carry,roll=shot.Roll,apex=shot.Apex,restX=shot.Rest.X,restD=shot.Rest.D,nextX=shot.NextPosition.X,nextD=shot.NextPosition.D,holed=shot.IsHoled,lie=shot.Lie.ToString(),path=path,
-                originX=origin.X,originD=origin.D,heading=p.heading,impact=impact,
+                originX=origin.X,originD=origin.D,heading=p.heading,impact=impact,moverPhase=moverPhase,
                 shown=StrikeLead+shot.Duration+(shot.Lie==CourseLie.Water?SplashSeconds:0)+(ReplaysShot(club)?ReplaySeconds(shot):0)};
             State.phase="flight";State.load=0;State.look=0;State.revision++;Shot?.Invoke(State.shot);
         }
@@ -143,7 +159,17 @@ namespace GolfArcade.Multiplayer {
             var at=new CoursePoint(p.x,p.d);var lie=hole.LieAt(at);bool putting=lie.IsPuttingSurface();
             var target=putting?hole.Pin:hole.RecommendedTarget(at);
             p.heading=(at.HeadingTo(target)%360+360)%360;
-            p.club=(int)(putting?GolfClub.Putter:GolfClubs.ForDistance(at.DistanceTo(target),c=>lie.PowerFactor(c)));
+            p.club=(int)(putting?GolfClub.Putter:GolfClubs.ForDistance(at.DistanceTo(target),c=>lie.PowerFactor(c)*hole.Rules.CarryFactor(c)));
+        }
+        /// Before the next stroke: the weather may turn and the wind gust, as a single player's round has them.
+        void ShotEvents() {
+            if(!events.Any||swingsOnHole==0)return;
+            var hole=course.Holes[State.hole];var weather=(Weather)State.weather;
+            if(weatherTurns<2&&events.TurnBefore(State.hole,swingsOnHole,weather) is Weather turned) {
+                weatherTurns++;weather=turned;State.weather=(int)turned;hole.Rules=events.RulesFor(turned);
+                holeWind=events.WindFor(State.hole,holeWind,turned);State.windSpeed=holeWind.SpeedMPH;State.windDirection=holeWind.DirectionDegrees;
+            }
+            if(events.GustBefore(State.hole,swingsOnHole,holeWind,weather) is Wind gust) {State.windSpeed=gust.SpeedMPH;State.windDirection=gust.DirectionDegrees;}
         }
         void FinishGolfer(NetworkGolfer p) {p.holed=true;p.card[State.hole]=p.strokes;p.total=p.card.Sum();}
         void NextTurn() {
@@ -151,6 +177,7 @@ namespace GolfArcade.Multiplayer {
             if(eligible.Length==0) {
                 if(State.hole+1==course.Holes.Length){Complete("complete");return;}BeginHole(State.hole+1);return;
             }
+            ShotEvents();
             // Everyone tees off before anyone's second shot. Rotate tee order by hole.
             var unplayed=eligible.Where(g=>g.strokes==0).OrderBy(g=>(g.seat-State.hole%4+4)%4).ToArray();
             State.turn=(unplayed.Length>0?unplayed[0]:eligible.OrderByDescending(g=>new CoursePoint(g.x,g.d).DistanceTo(course.Holes[State.hole].Pin)).ThenBy(g=>g.seat).First()).seat;

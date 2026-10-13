@@ -178,23 +178,33 @@ namespace GolfArcade.Course
         /// line only clips keeps most of it, one its line goes into drops it out of the branches,
         /// a bush all but stops it; a trunk, a rock or a wall sends it back off the face with
         /// some bounce.
-        public static (double vx, double vy, double vd) Rebound(Obstacle o, bool trunk, double x, double y, double d, double vx, double vy, double vd, double luck)
+        /// `kick` over 1 is pinball (PlayRules.ObstacleKick): a trunk, a rock or a wall springs the
+        /// ball back harder, and leaves spit it out instead of swallowing it.
+        public static (double vx, double vy, double vd) Rebound(Obstacle o, bool trunk, double x, double y, double d, double vx, double vy, double vd, double luck, double kick = 1)
         {
             if (!o.IsHard(trunk))
             {
                 bool clip = o.Kind == ObstacleKind.Tree && o.PassDepth(x, y, d, vx, vd, BallRadius) < 0.3;
                 double keep = clip ? 0.55 + 0.2 * luck : o.Kind == ObstacleKind.Bush ? 0.08 : 0.1 + 0.2 * luck;
                 double turn = (luck - 0.5) * (clip ? 30 : 110) * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
+                if (kick > 1)
+                {
+                    // springy leaves: out the way it came, and up
+                    keep = Math.Min(0.9, keep + 0.35 * (kick - 1));
+                    turn += Math.PI * Math.Min(1, (kick - 1) * 1.2); c = Math.Cos(turn); s = Math.Sin(turn);
+                }
                 double hx = (vx * c - vd * s) * keep, hd = (vx * s + vd * c) * keep;
-                double hy = clip ? vy * 0.7 : Math.Min(vy, 0) * 0.25 - 1.0;
+                double hy = clip ? vy * 0.7 : kick > 1 ? Math.Abs(vy) * 0.4 + 2.5 * (kick - 1) : Math.Min(vy, 0) * 0.25 - 1.0;
                 return (hx, hy, hd);
             }
             var n = o.Normal(x, y, d);
             double vn = vx * n.x + vy * n.y + vd * n.d;
             if (vn >= 0) return (vx, vy, vd);
             double e = o.Kind switch { ObstacleKind.Rock => 0.5, ObstacleKind.Wall => 0.4, _ => 0.45 };
+            double slide = 0.8;
+            if (kick != 1) { e = Math.Min(1.15, e * kick); slide = Math.Min(0.95, slide + 0.1 * (kick - 1)); }
             double tx = vx - vn * n.x, ty = vy - vn * n.y, td = vd - vn * n.d;
-            return (0.8 * tx - e * vn * n.x, 0.8 * ty - e * vn * n.y, 0.8 * td - e * vn * n.d);
+            return (slide * tx - e * vn * n.x, slide * ty - e * vn * n.y, slide * td - e * vn * n.d);
         }
 
         /// From a hit, down to the ground: gravity and a little air, and anything else it meets
@@ -209,31 +219,42 @@ namespace GolfArcade.Course
             { Landing = landing; Time = time; Vx = vx; Vy = vy; Vd = vd; Samples = samples; Knocks = knocks; }
         }
 
-        public static Fall FallFrom(ObstacleHit hit, Obstacle[] obstacles, Func<CoursePoint, double> ground)
+        public static Fall FallFrom(ObstacleHit hit, Obstacle[] obstacles, Func<CoursePoint, double> ground, PlayRules rules = null)
         {
+            rules ??= PlayRules.Standard;
             var met = new List<int> { hit.Index };
             var o0 = obstacles[hit.Index];
             var knocked = new List<Knock> { new(hit.Time, hit.X, hit.Y, hit.D, o0.Kind, o0.IsHard(hit.Trunk)) };
-            var (vx, vy, vd) = Rebound(o0, hit.Trunk, hit.X, hit.Y, hit.D, hit.Vx, hit.Vy, hit.Vd, Luck(hit.X, hit.D, hit.Index));
-            return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, met, knocked, obstacles, ground);
+            var (vx, vy, vd) = Rebound(o0, hit.Trunk, hit.X, hit.Y, hit.D, hit.Vx, hit.Vy, hit.Vd, Luck(hit.X, hit.D, hit.Index), rules.ObstacleKick);
+            return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, met, knocked, obstacles, ground, rules);
         }
 
         /// Off a windmill's blade (a wooden knock), and down.
-        public static Fall FallFromSail(ObstacleHit hit, SpinningSails sails, Obstacle[] obstacles, Func<CoursePoint, double> ground)
+        public static Fall FallFromSail(ObstacleHit hit, SpinningSails sails, Obstacle[] obstacles, Func<CoursePoint, double> ground, PlayRules rules = null)
         {
             var knocked = new List<Knock> { new(hit.Time, hit.X, hit.Y, hit.D, ObstacleKind.Tree, true) };
             var (vx, vy, vd) = sails.Rebound(hit.X, hit.Y, hit.D, hit.Vx, hit.Vy, hit.Vd);
-            return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, new List<int>(), knocked, obstacles, ground);
+            return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, new List<int>(), knocked, obstacles, ground, rules ?? PlayRules.Standard);
         }
 
-        static Fall Down(double t, double x, double y, double d, double vx, double vy, double vd, List<int> met, List<Knock> knocked, Obstacle[] obstacles, Func<CoursePoint, double> ground)
+        /// Off something moving about the hole (a balloon's envelope, its basket, a cart, a gull), and down.
+        public static Fall FallFromMover(CourseMovers.Hit hit, CourseMovers movers, Obstacle[] obstacles, Func<CoursePoint, double> ground, PlayRules rules = null)
         {
+            var kind = movers.All[hit.Mover].Kind;
+            var knocked = new List<Knock> { new(hit.Time, hit.X, hit.Y, hit.D, CourseMovers.KnockKind(kind), kind != MoverKind.Gull) };
+            var (vx, vy, vd) = movers.Rebound(hit, Luck(hit.X, hit.D, 11 + hit.Mover));
+            return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, new List<int>(), knocked, obstacles, ground, rules ?? PlayRules.Standard);
+        }
+
+        static Fall Down(double t, double x, double y, double d, double vx, double vy, double vd, List<int> met, List<Knock> knocked, Obstacle[] obstacles, Func<CoursePoint, double> ground, PlayRules rules)
+        {
+            double g = rules.GravityYards;
             var samples = new List<(double, double, double, double)>();
             double next = Math.Ceiling(t / SampleInterval) * SampleInterval;
             const double dt = 1.0 / 240;
             for (int step = 0; step < 240 * 12; step++)
             {
-                vy -= GravityYards * dt;
+                vy -= g * dt;
                 double drag = 1 - 0.25 * dt;
                 vx *= drag; vd *= drag;
                 x += vx * dt; y += vy * dt; d += vd * dt; t += dt;
@@ -242,13 +263,13 @@ namespace GolfArcade.Course
                     {
                         if (met.Contains(i)) continue;
                         if (!obstacles[i].Touches(x, y, d, BallRadius, out bool trunk, out _)) continue;
-                        (vx, vy, vd) = Rebound(obstacles[i], trunk, x, y, d, vx, vy, vd, Luck(x, d, i));
+                        (vx, vy, vd) = Rebound(obstacles[i], trunk, x, y, d, vx, vy, vd, Luck(x, d, i), rules.ObstacleKick);
                         met.Add(i);
                         knocked.Add(new Knock(t, x, y, d, obstacles[i].Kind, obstacles[i].IsHard(trunk)));
                         break;
                     }
-                double g = ground(new CoursePoint(x, d));
-                if (y <= g) return new Fall(new CoursePoint(x, d), t, vx, vy, vd, samples, knocked);
+                double floor = ground(new CoursePoint(x, d));
+                if (y <= floor) return new Fall(new CoursePoint(x, d), t, vx, vy, vd, samples, knocked);
                 if (t >= next) { samples.Add((next, x, y, d)); next += SampleInterval; }
             }
             return new Fall(new CoursePoint(x, d), t, vx, vy, vd, samples, knocked);
@@ -269,14 +290,16 @@ namespace GolfArcade.Course
                 CourseLie.Bunker => (0.0, 0.08),
                 _ => (1.0, 0.7),
             };
-            double Rebound(double down) => lively < 0 ? 0.5 : lively * BallFlight.TurfRestitution(down * BallFlight.MetersPerYard);
+            var rules = hole.Rules ?? PlayRules.Standard;
+            double g = rules.GravityYards;
+            double Rebound(double down) => lively < 0 ? 0.5 : Math.Min(0.85, lively * BallFlight.TurfRestitution(down * BallFlight.MetersPerYard) * rules.Bounce);
             double x = fall.Landing.X, d = fall.Landing.D, h = 0;
             double vx = fall.Vx * keep, vd = fall.Vd * keep, vh = -fall.Vy * Rebound(-fall.Vy);
             double t = fall.Time, next = path.Count * SampleInterval;
             const double dt = 1.0 / 240;
             for (int step = 0; step < 240 * 8 && vh > 0.8; step++)
             {
-                h += vh * dt; vh -= GravityYards * dt;
+                h += vh * dt; vh -= g * dt;
                 x += vx * dt; d += vd * dt; t += dt;
                 if (h <= 0)
                 {
@@ -306,6 +329,9 @@ namespace GolfArcade.Course
             return struck;
         }
 
+        /// Under today's rules: wet turf holds the ball, a turbo green lets it run.
+        public static double RollingDeceleration(CourseLie lie, PlayRules rules) => RollingDeceleration(lie) * (rules ?? PlayRules.Standard).DragOn(lie);
+
         public static double RollingDeceleration(CourseLie lie) => lie switch
         {
             CourseLie.Green => GreenDeceleration,
@@ -333,7 +359,7 @@ namespace GolfArcade.Course
             { Landing = landing; Wall = wall; HitTime = hitTime; HitHeight = hitHeight; LandingTime = landingTime; Vx = vx; Vd = vd; }
         }
 
-        public static Contact? FirstContact(BallFlight flight, Func<double, double, double, (double x, double h, double d)> world, CoursePoint origin, Func<CoursePoint, double> ground)
+        public static Contact? FirstContact(BallFlight flight, Func<double, double, double, (double x, double h, double d)> world, CoursePoint origin, Func<CoursePoint, double> ground, double gravity = 1)
         {
             double g0 = ground(origin);
             const double step = 2 * SampleInterval;
@@ -351,7 +377,7 @@ namespace GolfArcade.Course
                     if (rise < Math.Max(1.0, run * 1.4))
                         return new Contact(at, false, t, g, t, hx, hd);
                     double foot = ground(prev);
-                    double fall = Math.Sqrt(2 * Math.Max(0, y - foot) / GravityYards);
+                    double fall = Math.Sqrt(2 * Math.Max(0, y - foot) / (GravityYards * gravity));
                     return new Contact(prev, true, t, y, t + fall, -hx * 0.12, -hd * 0.12);
                 }
                 prev = at;
@@ -379,11 +405,15 @@ namespace GolfArcade.Course
         /// to the middle it has to be — dead centre holds the most, a ball through the side door
         /// has to be slower. Offsets are read against the drawn cup, so the hole is as wide as it
         /// looks and as fussy about pace as a real one.
-        public static double CaptureSpeed(double offset)
+        public static double CaptureSpeed(double offset) => CaptureSpeed(offset, Hole.CupCaptureRadius);
+
+        /// For a cup of `radius` (a bucket swallows quicker balls, as a wider real one would: the
+        /// fall across it takes longer).
+        public static double CaptureSpeed(double offset, double radius)
         {
-            double u = offset / Hole.CupCaptureRadius;
+            double u = offset / radius;
             // (softer toward the rim than the chord alone, so a ball in the side door is forgiven too)
-            return u >= 1 ? 0 : CentreCaptureSpeed * Math.Pow(1 - u * u, 0.35);
+            return u >= 1 ? 0 : CentreCaptureSpeed * Math.Sqrt(radius / Hole.CupCaptureRadius) * Math.Pow(1 - u * u, 0.35);
         }
 
         public static bool CupCaptures(double speed, double offset) => offset <= Hole.CupCaptureRadius && speed <= CaptureSpeed(offset);
@@ -401,9 +431,10 @@ namespace GolfArcade.Course
             { Holed = holed; Lipped = lipped; Seconds = seconds; Depth = depth; X = x; D = d; Vx = vx; Vd = vd; }
         }
 
-        public static CupCrossing CrossTheCup(double x, double d, double vx, double vd, CoursePoint pin)
+        public static CupCrossing CrossTheCup(double x, double d, double vx, double vd, CoursePoint pin) => CrossTheCup(x, d, vx, vd, pin, Hole.CupCaptureRadius);
+
+        public static CupCrossing CrossTheCup(double x, double d, double vx, double vd, CoursePoint pin, double r)
         {
-            double r = Hole.CupCaptureRadius;
             double speed = Math.Sqrt(vx * vx + vd * vd);
             if (speed < 1e-6) return new CupCrossing(true, false, 0, 1, pin.X, pin.D, 0, 0);
             double dx = vx / speed, dd = vd / speed;
@@ -414,7 +445,7 @@ namespace GolfArcade.Course
             double half = Math.Sqrt(Math.Max(0, r * r - offset * offset));
             double chord = Math.Max(0, along + half);                   // from here to the far rim
             double seconds = chord / speed;
-            double capture = CaptureSpeed(offset);
+            double capture = CaptureSpeed(offset, r);
             if (speed <= capture)
             {
                 // in: over to the middle and down
@@ -441,9 +472,11 @@ namespace GolfArcade.Course
         {
             Club = club;
             Wind = wind;
+            var rules = hole.Rules ?? PlayRules.Standard;
             Power = Clamp(impact.Power, 0, 1);
             StartLine = double.IsFinite(impact.StartLineDegrees) ? impact.StartLineDegrees : 0;
-            Curve = club == GolfClub.Putter ? 0 : Clamp(impact.CurveDegrees, -20, 20);
+            // (a banana ball bends the strike's curve harder, past what a real swing would get)
+            Curve = club == GolfClub.Putter ? 0 : Clamp(Clamp(impact.CurveDegrees, -20, 20) * rules.Curve, -40, 40);
             Heading = double.IsFinite(heading) ? heading : 0;
             Origin = origin;
             path = new List<(double, double, double)> { (origin.X, 0, origin.D) };
@@ -475,6 +508,7 @@ namespace GolfArcade.Course
                 if (double.IsFinite(impact.SpeedBonus)) launch.BallSpeedMPH *= 1 + Clamp(impact.SpeedBonus, -0.2, 0.2);
                 if (double.IsFinite(impact.SpinScatter)) launch.SpinRPM *= 1 + Clamp(impact.SpinScatter, -0.3, 0.3);
                 SpinRPM = launch.SpinRPM;
+                rules.Apply(ref launch);
                 launch.WindMPH = wind.SpeedMPH;
                 launch.WindDegrees = wind.RelativeTo(Heading);
                 var flight = BallFlight.Simulate(launch);
@@ -487,7 +521,7 @@ namespace GolfArcade.Course
                 // again onto the ground it actually lands on: a receptive green, smothering rough,
                 // sand that plugs it.
                 var landsOn = hole.LieAt(new CoursePoint(first.x, first.d));
-                var (soft, grab) = landsOn.Landing();
+                var (soft, grab) = Holds(landsOn, rules);
                 double slide = landsOn.Slide();
                 if (soft > 0 || grab > 0 || slide > 0)
                 {
@@ -495,7 +529,7 @@ namespace GolfArcade.Course
                     flight = BallFlight.Simulate(launch);
                 }
                 Carry = flight.Carry; Apex = flight.Apex;
-                var contact = hole.Ground == null ? null : FirstContact(flight, World, origin, hole.Ground);
+                var contact = hole.Ground == null ? null : FirstContact(flight, World, origin, hole.Ground, rules.Gravity);
                 // Something standing in the way — a tree, a rock, a wall — met before the ground
                 // is: off it or out of its branches, down, and on from where it comes to rest.
                 Func<CoursePoint, double> groundAt = hole.Ground ?? (_ => 0);
@@ -505,9 +539,14 @@ namespace GolfArcade.Course
                 // a windmill's blade, if the ball gets to the sails before anything else
                 var sailHit = FirstSailHit(flight, World, hole.Windmill, gStart, gFlat, obstacleHit?.Time ?? contact?.HitTime ?? flight.CarryTime);
                 if (sailHit != null) obstacleHit = sailHit;
+                // something moving about the hole — a balloon, a cart, a gull — where it is when the ball gets there
+                var moverHit = hole.Movers?.FirstHit(flight, World, gStart, gFlat, obstacleHit?.Time ?? contact?.HitTime ?? flight.CarryTime);
+                if (moverHit is CourseMovers.Hit mh)
+                    obstacleHit = new ObstacleHit(MoverIndex, true, mh.Time, mh.X, mh.Y, mh.D, mh.Vx, mh.Vy, mh.Vd);
                 if (obstacleHit is ObstacleHit oh)
                 {
-                    var fall = oh.Index < 0 ? FallFromSail(oh, hole.Windmill, hole.Obstacles, groundAt) : FallFrom(oh, hole.Obstacles, groundAt);
+                    var fall = oh.Index == MoverIndex ? FallFromMover(moverHit.Value, hole.Movers, hole.Obstacles, groundAt, rules)
+                             : oh.Index < 0 ? FallFromSail(oh, hole.Windmill, hole.Obstacles, groundAt, rules) : FallFrom(oh, hole.Obstacles, groundAt, rules);
                     knocks.AddRange(fall.Knocks);
                     double gDown = groundAt(fall.Landing);
                     Landing = fall.Landing; LandingTime = fall.Time;
@@ -558,7 +597,7 @@ namespace GolfArcade.Course
                             var w = World(p.LateralYards, p.HeightYards, p.DistanceYards);
                             path.Add((w.x, g0 + p.HeightYards - level, w.d));
                         }
-                        else path.Add((Landing.X, c.HitHeight - 0.5 * GravityYards * (s - c.HitTime) * (s - c.HitTime) - level, Landing.D));
+                        else path.Add((Landing.X, c.HitHeight - 0.5 * rules.GravityYards * (s - c.HitTime) * (s - c.HitTime) - level, Landing.D));
                     }
                     path.Add((Landing.X, 0, Landing.D));
                     Carry = origin.DistanceTo(Landing);
@@ -580,7 +619,7 @@ namespace GolfArcade.Course
                     // Down on the rise: from here it bounces and checks exactly as the flight
                     // model's own landing does — the same spin, on the ground it came down on —
                     // just sooner and higher up.
-                    var (soft2, grab2) = hole.LieAt(Landing).Landing();
+                    var (soft2, grab2) = Holds(hole.LieAt(Landing), rules);
                     double slide2 = hole.LieAt(Landing).Slide();
                     if (soft2 != launch.LandingSoftness || grab2 != launch.LandingGrab || slide2 != launch.LandingSlide)
                     {
@@ -648,7 +687,8 @@ namespace GolfArcade.Course
             // what it could run into on the way: trunks, bushes, rocks, walls it can reach at the
             // pace it has (as far as it would run on a green, and a little over)
             var inReach = new List<int>();
-            double rollReach = Math.Min(150, (vx * vx + vd * vd) / (2 * GreenDeceleration) + 6);
+            double rollReach = Math.Min(150, (vx * vx + vd * vd) / (2 * GreenDeceleration * Math.Min(1, rules.GreenDrag)) + 6);
+            double cup = hole.CupRadius;
             for (int i = 0; i < hole.Obstacles.Length; i++)
             {
                 var o = hole.Obstacles[i];
@@ -660,6 +700,7 @@ namespace GolfArcade.Course
             double nextSample = time + SampleInterval;
             double? holed = null;
             bool wet = false, lippedEver = false, overCup = false;
+            double lastBump = -1;
             double elapsed = time;
             while (elapsed < 30)
             {
@@ -667,20 +708,20 @@ namespace GolfArcade.Course
                 var here = new CoursePoint(x, d);
                 var lieNow = hole.LieAt(here);
                 if (lieNow == CourseLie.Water) { wet = true; break; }
-                double decel = RollingDeceleration(lieNow);
+                double decel = RollingDeceleration(lieNow, rules);
                 var slope = surface.Gradient(here);
                 double downhill = Math.Sqrt(slope.dx * slope.dx + slope.dd * slope.dd) * GravityYards;
                 double toCup = here.DistanceTo(hole.Pin);
                 // on the soft edge of the cup, dying: it is drawn over the rim (see CupEdgeReach)
-                double edge = toCup > Hole.CupCaptureRadius && toCup < Hole.CupCaptureRadius + CupEdgeReach && speed < CupEdgeSpeed
-                    ? 1 - (toCup - Hole.CupCaptureRadius) / CupEdgeReach : 0;
+                double edge = toCup > cup && toCup < cup + CupEdgeReach && speed < CupEdgeSpeed
+                    ? 1 - (toCup - cup) / CupEdgeReach : 0;
                 // Stopped, unless the face it sits on is steep enough to start it rolling again.
                 if (speed < 0.02 && downhill < decel * 0.9 && edge <= 0) break;
 
                 // At the cup: decided once, as the ball's centre crosses onto the hole (see
                 // CrossTheCup) — it drops, catches the far lip and spins out, or skims over.
                 double dx = speed > 0.001 ? vx / speed : 0, dd = speed > 0.001 ? vd / speed : 0;
-                if (toCup <= Hole.CupCaptureRadius && (speed <= 0.001 || elapsed <= time))
+                if (toCup <= cup && (speed <= 0.001 || elapsed <= time))
                 {
                     // Resting on the hole (or struck from over it): it drops.
                     x = hole.Pin.X; d = hole.Pin.D;
@@ -688,11 +729,11 @@ namespace GolfArcade.Course
                     path.Add((x, -DropDepth, d));
                     break;
                 }
-                if (toCup > Hole.CupCaptureRadius) overCup = false;
+                if (toCup > cup) overCup = false;
                 else if (!overCup)
                 {
                     overCup = true;
-                    var cross = CrossTheCup(x, d, vx, vd, hole.Pin);
+                    var cross = CrossTheCup(x, d, vx, vd, hole.Pin, cup);
                     // the transit, drawn: across the mouth and dipping into it
                     for (double s = SampleInterval; s < cross.Seconds; s += SampleInterval)
                     {
@@ -737,6 +778,12 @@ namespace GolfArcade.Course
                 foreach (int i in inReach)
                     if (RollInto(hole.Obstacles[i], ref x, ref d, ref vx, ref vd) && speed > 0.4)
                         knocks.Add(new Knock(elapsed, x, double.NaN, d, hole.Obstacles[i].Kind, hole.Obstacles[i].Kind != ObstacleKind.Bush));
+                // a cart going round its loop: the ball runs into it, or it bumps the ball on
+                if (hole.Movers != null && hole.Movers.RollInto(elapsed, ref x, ref d, ref vx, ref vd) >= 0 && elapsed - lastBump > 0.4)
+                {
+                    knocks.Add(new Knock(elapsed, x, double.NaN, d, ObstacleKind.Cart, true));
+                    lastBump = elapsed;
+                }
                 elapsed += dt;
                 if (elapsed + 1e-9 >= nextSample) { path.Add((x, 0, d)); nextSample += SampleInterval; }
             }
@@ -762,6 +809,17 @@ namespace GolfArcade.Course
         }
 
         static double Clamp(double v, double lo, double hi) => double.IsFinite(v) ? Math.Max(lo, Math.Min(hi, v)) : lo;
+
+        /// How the ground takes a landing ball under today's rules: sticky greens hold it where it lands.
+        static (double soft, double grab) Holds(CourseLie lie, PlayRules rules)
+        {
+            var (soft, grab) = lie.Landing();
+            if (rules.StickyGreens && lie.IsPuttingSurface()) { soft = Math.Max(soft, 0.75); grab = Math.Max(grab, 0.95); }
+            return (soft, grab);
+        }
+
+        /// ObstacleHit.Index for a mover (the windmill's blades are -1).
+        const int MoverIndex = -2;
 
         /// Walk back toward where the shot was played until the ball is on dry ground.
         static CoursePoint Drop(CoursePoint from, CoursePoint origin, Hole hole)

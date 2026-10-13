@@ -185,7 +185,7 @@ final class TennisMenu {
             return [(0..<5).map { "round\($0)" }, (5..<10).map { "round\($0)" }, ["campaignPlay", "campaignMore"], ["back"]]
         case .exhibition: return [["quickOpponent"], ["quickDifficulty"], ["quickLength"], ["quickStart"], ["back"]]
         case .story: return [["next", "skip"]]
-        case .map: return [mapChoices.map { "map-\($0.id)" }, ["back"]]
+        case .map: return [mapChoices.map { "map-\($0.id)" }] + (mapSport == .golf ? [["golf-twists", "golf-weather"]] : []) + [["back"]]
         case .postMatch: return postMatchDone ? postMatchChoices.map { [$0] } : [["pm-skip"]]
         case .training: return [["level"], ["start"], ["back"]]
         case .character: return lockerRows()
@@ -419,6 +419,9 @@ final class TennisMenu {
             if mapSport == .golf { session.golfCourse = String(m.dropFirst(4)) }
             else { session.tennisVenue = String(m.dropFirst(4)) }
             if let pick = pendingPick { pendingPick = nil; begin(pick.launch, onPhone: pick.onPhone, skipMap: true) }
+        // golf's match settings on the course screen, before the round
+        case "golf-twists": session.golfTwists.toggle()
+        case "golf-weather": session.golfWeather.toggle()
         case "phone": show(.connect)
         case "continue":
             if let result, !campaign.champion, result.won { play(round: campaign.nextRound) } else { show(.campaign) }
@@ -1107,7 +1110,7 @@ struct OnlineAppleSheet: Identifiable {
             let sport = service.lobby?.sport ?? .tennis
             let venues = sport == .tennis ? ["resort","skyscraper","volcano"] : GolfCourseChoice.allCases.map(\.rawValue)
             return [["net-sport-tennis","net-sport-golf"],venues.map { "net-venue-\($0)" }]
-                + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [])
+                + (sport == .tennis ? [["net-sets-1","net-sets-2","net-sets-3"],["net-games-1","net-games-3","net-games-6"]] : [["net-twists-on","net-twists-off"],["net-weather-on","net-weather-off"]])
                 + [["net-settings-seats"],["back"]]
         case .loading: return service.loadingNeedsDecision ? [["net-wait", "net-leave"]] : [["net-leave"]]
         case .match: return (service.isOwner && service.linkNeedsDecision ? [["net-play-anyway"]] : []) + [["net-leave"]]
@@ -1174,6 +1177,10 @@ struct OnlineAppleSheet: Identifiable {
             case let id where id.hasPrefix("net-sets-") || id.hasPrefix("net-games-"):
                 guard let l = service.lobby else { return }
                 try service.configure(l.sport,venue:l.venue,sets:id.hasPrefix("net-sets-") ? Int(id.dropFirst(9)) ?? 1 : l.sets,games:id.hasPrefix("net-games-") ? Int(id.dropFirst(10)) ?? 3 : l.games)
+            case let id where id.hasPrefix("net-twists-") || id.hasPrefix("net-weather-"):
+                guard let l = service.lobby else { return }
+                try service.setGolfEvents(twists: id.hasPrefix("net-twists-") ? id.hasSuffix("-on") : l.twistsOff != true,
+                                          weather: id.hasPrefix("net-weather-") ? id.hasSuffix("-on") : l.weatherOff != true)
             case let id where id.hasPrefix("net-seat-"):
                 guard let l = service.lobby, let p = l.participants.first(where: { $0.id == String(id.dropFirst(9)) }) else { return }
                 if p.seat >= 0 { try service.assignSeat(p.id,seat:-1) }

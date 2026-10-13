@@ -134,6 +134,28 @@ namespace GolfArcade.UI
             contactRoot.anchoredPosition=new Vector2(0,-top-(portrait?232:0));
         }
         public void SetHole(int n,int par)=>hole.text=$"HOLE {n:00}  ·  PAR {par}";
+        RectTransform conditionsRoot;
+        /// Today's conditions under the shot card: a chip for the weather and one for each twist,
+        /// in their colours with their icons.
+        public void SetConditions(EventFace[] faces)
+        {
+            if(conditionsRoot)Destroy(conditionsRoot.gameObject);
+            conditionsRoot=null;
+            if(faces==null||faces.Length==0)return;
+            conditionsRoot=new GameObject("Conditions",typeof(RectTransform)).GetComponent<RectTransform>();
+            conditionsRoot.SetParent(infoRoot,false);
+            conditionsRoot.anchorMin=conditionsRoot.anchorMax=conditionsRoot.pivot=new Vector2(0,0);
+            conditionsRoot.anchoredPosition=new Vector2(0,-10);conditionsRoot.sizeDelta=new Vector2(300,0);
+            for(int i=0;i<faces.Length;i++){
+                var f=faces[i];
+                var chip=UiKit.Panel(conditionsRoot,"Chip "+f.Title,Ink,new Vector2(0,1),new Vector2(0,1),new Vector2(0,-i*44),new Vector2(300,38));
+                chip.rectTransform.pivot=new Vector2(0,1);chip.raycastTarget=false;
+                var key=UiKit.Panel(chip.transform,"Colour",f.Colour,new Vector2(0,0),new Vector2(0,1),Vector2.zero,new Vector2(38,0));key.raycastTarget=false;
+                var icon=Icons.Place(key.transform,f.Icon,Ink,new Vector2(.5f,.5f),Vector2.zero,26);icon.raycastTarget=false;
+                var t=UiKit.Label(chip.transform,"Name",19,TextAnchor.MiddleLeft,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,UiKit.Strong,false);
+                t.rectTransform.offsetMin=new Vector2(50,0);t.rectTransform.offsetMax=new Vector2(-10,0);t.text=f.Title.ToUpperInvariant();t.color=Color.white;t.raycastTarget=false;
+            }
+        }
         public void SetDistance(double n,string unit)=>distance.text=$"{n:F0} <size=24>{unit.ToLowerInvariant()} TO PIN</size>";
         public void SetClub(string name)=>club.text=name;
         public void SetClubSelection(GolfClub selected, bool announce=false)

@@ -115,6 +115,7 @@ struct GolfCourseScreen: View {
                 Spacer()
                 title(size: 64)
                 HStack(spacing: 14) { ForEach(all, id: \.self) { tab($0, height: 58) } }
+                settings(height: 52)
                 HStack(spacing: 18) {
                     IslandAction(title: "Back", focused: menu.isFocused("back")) { menu.tap("back") }.frame(width: 170)
                     IslandAction(title: "Play \(shown.title)", focused: menu.isFocused("map-\(shown.rawValue)"), primary: true, identifier: "golf-course-play") { play() }
@@ -141,6 +142,7 @@ struct GolfCourseScreen: View {
                 ScrollView {
                     VStack(spacing: 10) { ForEach(all, id: \.self) { tab($0, height: 52).frame(maxWidth: .infinity) } }
                 }
+                settings(height: 46)
                 IslandAction(title: "Play \(shown.title)", primary: true, compact: true, identifier: "golf-course-play") { play() }
             }.padding(22)
         }
@@ -155,6 +157,47 @@ struct GolfCourseScreen: View {
             Text("\(shown.detail)  ·  \(shown.card)").font(IslandUI.font(size * 0.3)).foregroundStyle(.white.opacity(0.9))
                 .lineLimit(1).minimumScaleFactor(0.6)
         }.frame(maxWidth: .infinity).accessibilityElement(children: .combine)
+    }
+
+    /// The round's match settings, before it starts: twists (two random modifiers dealt each round) and the
+    /// weather with things moving about the holes, each on or off, remembered for the next round.
+    private func settings(height: CGFloat) -> some View {
+        let session = SportsSession.shared
+        return VStack(spacing: 6) {
+            HStack(spacing: 10) {
+                toggle("golf-twists", "Twists", icon: "dice.fill", on: session.golfTwists, height: height)
+                toggle("golf-weather", "Weather & hazards", icon: "cloud.bolt.rain.fill", on: session.golfWeather, height: height)
+            }
+            Text(caption(twists: session.golfTwists, weather: session.golfWeather))
+                .font(IslandUI.font(height * 0.27)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.6)
+        }.frame(maxWidth: .infinity)
+    }
+
+    private func caption(twists: Bool, weather: Bool) -> String {
+        switch (twists, weather) {
+        case (true, true): return "2 random twists each round · rain, storms, gusts and moving obstacles"
+        case (true, false): return "2 random twists each round · clear skies, still courses"
+        case (false, true): return "Classic rules · rain, storms, gusts and moving obstacles"
+        default: return "Classic golf: no twists, clear skies"
+        }
+    }
+
+    private func toggle(_ id: String, _ title: String, icon: String, on: Bool, height: CGFloat) -> some View {
+        let focused = menu.isFocused(id)
+        return Button { menu.tap(id) } label: {
+            HStack(spacing: 8) {
+                Image(systemName: icon).font(.system(size: height * 0.34, weight: .bold))
+                Text(title.uppercased()).font(IslandUI.font(height * 0.3, bold: true)).lineLimit(1).minimumScaleFactor(0.6)
+                Text(on ? "ON" : "OFF").font(IslandUI.font(height * 0.26, bold: true))
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(on ? IslandUI.navy.opacity(0.18) : Color.white.opacity(0.18), in: Capsule())
+            }
+            .foregroundStyle(on ? IslandUI.navy : .white)
+            .padding(.horizontal, 16).frame(maxWidth: .infinity, minHeight: height)
+            .background(on ? IslandUI.lime : Color.white.opacity(0.12), in: Capsule())
+            .overlay(Capsule().strokeBorder(.white.opacity(focused ? 1 : 0.45), lineWidth: focused ? 3 : 2))
+        }.buttonStyle(.plain).accessibilityLabel(title).accessibilityValue(on ? "On" : "Off")
+            .accessibilityAddTraits(.isButton).accessibilityIdentifier(id)
     }
 
     private func tab(_ course: GolfCourseChoice, height: CGFloat) -> some View {

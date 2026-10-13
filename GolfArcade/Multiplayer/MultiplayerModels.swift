@@ -92,6 +92,9 @@ struct MultiplayerLobby: Codable, Equatable, Sendable {
     var venue = "resort"
     var sets = 1
     var games = 3
+    /// Golf's match settings: the round twists off, the weather and things moving about the holes off (nil: on).
+    var twistsOff: Bool? = nil
+    var weatherOff: Bool? = nil
     var phase: MultiplayerPhase = .lobby
     var participants: [MultiplayerParticipant]
     var queue: [String] = []
@@ -171,6 +174,9 @@ struct MultiplayerMatchConfiguration: Codable, Sendable {
     var games: Int
     var seed: Int
     var participants: [MultiplayerParticipant]
+    /// The lobby's golf match settings (Unity's NetworkConfiguration reads them; nil: on).
+    var twistsOff: Bool? = nil
+    var weatherOff: Bool? = nil
     var usesHostGolfDisplay: Bool { sport == "golf" && localID != hostID }
     /// How this phone shows a tennis match (nil in golf and for spectators).
     var localView: MultiplayerView? { participants.first { $0.id == localID }?.view }

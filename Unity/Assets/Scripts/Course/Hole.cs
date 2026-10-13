@@ -156,6 +156,12 @@ namespace GolfArcade.Course
         /// Windmill Links' turning sails (the modelled hole's, set when it is placed): a ball in
         /// flight meets a blade or slips through, depending on when it gets there.
         public SpinningSails Windmill;
+        /// Things moving about the hole today — a balloon drifting over it, a cart crossing it,
+        /// gulls wheeling over the landing (RoundEvents): a ball in flight or rolling can meet them.
+        /// Null for none.
+        public CourseMovers Movers;
+        /// Golf's rules as today's twists and weather bend them (PlayRules.Standard: plain golf).
+        public PlayRules Rules = PlayRules.Standard;
 
         /// Rough on each side of the fairway. Beyond it (the tree line) is out of bounds.
         public double RoughWidth = 24.0;
@@ -168,6 +174,8 @@ namespace GolfArcade.Course
         /// The cup's mouth as drawn, yards: a ball whose centre crosses it slowly enough drops,
         /// so a putt that rolls over the dark of the hole goes in.
         public const double CupCaptureRadius = 0.054 * 1.0936 * CupScale;
+        /// Today's cup: the drawn one, or a bucket when the round's rules widen it.
+        public double CupRadius => CupCaptureRadius * (Rules?.Cup ?? 1);
 
         public CoursePoint Tee => Centerline[0];
         public CoursePoint Pin => Centerline[Centerline.Length - 1];

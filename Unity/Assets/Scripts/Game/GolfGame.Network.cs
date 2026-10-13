@@ -54,7 +54,7 @@ namespace GolfArcade.Game {
         /// The course as loaded here, its holes' ground, greens and trees read off their models as each is played: the host rules on it.
         public Course.Course PlayingCourse => course;
         public void ConfigureNetwork(NetworkConfiguration c) {
-            networkConfigured=true;networkHole=-1;networkTurn=-1;networkCardRevision=-1;networkFlown=-1;resultShot=-1;Swing.Armed=false;
+            networkConfigured=true;events=RoundEvents.None;firstHoleIndex=-1;networkHole=-1;networkTurn=-1;networkCardRevision=-1;networkFlown=-1;resultShot=-1;Swing.Armed=false;
             networkLineUp=null;networkSolo=false;networkMine=false;networkLook=networkLoadShown=0;networkWoundUp=false;lastSeatHere=-1;
             sentHeading=double.NaN;sentClub=-1;sentLook=sentLoad=0;
             partyConfiguration=c;networkCard=new Scorecard(course);
@@ -121,11 +121,12 @@ namespace GolfArcade.Game {
         void NetworkStep(SportsMultiplayer net,NetworkGolfState state) {
             if(state.hole!=networkHole) {
                 networkHole=state.hole;networkLineUp=null;networkSolo=false;
+                NetworkHoleEvents(state);   // the host's twists and this hole's weather
                 StartHole(state.hole);
                 SetWind(new Wind(state.windSpeed,state.windDirection));   // the round's wind, not this phone's draw
                 rig.SnapNext();
             }
-            Wind=new Wind(state.windSpeed,state.windDirection);
+            NetworkWeather(state);   // the host's wind (gusts and all) and weather, as they turn
             networkMine=net.Configuration.Controls(net.Configuration.localID,state.turn);
             PartyEmotes(state);
             if(state.phase=="intro") {
@@ -177,6 +178,8 @@ namespace GolfArcade.Game {
             if(shot.impact==null||!shot.impact.Valid||shot.hole!=state.hole||!partyGolfers.TryGetValue(shot.seat,out var shooter))return false;
             var flown=(GolfClub)shot.club;if(Array.IndexOf(GolfClubs.All,flown)<0)return false;
             var impact=shot.impact.ToImpact();var origin=new CoursePoint(shot.originX,shot.originD);
+            // the balloons, carts and gulls where the host had them as the ball left the club
+            if(hole.Movers!=null){hole.Movers.PhaseAtLaunch=shot.moverPhase;networkMoverPhase=shot.moverPhase;}
             var trial=new CourseShot(flown,impact,shot.heading,origin,hole,1,Wind);
             if(trial.IsHoled!=shot.holed||trial.PenaltyStrokes!=shot.penalty||trial.Rest.DistanceTo(new CoursePoint(shot.restX,shot.restD))>.05) {
                 Debug.LogWarning($"[Multiplayer] shot {shot.id} differs here (rest {trial.Rest.X:F2},{trial.Rest.D:F2} vs {shot.restX:F2},{shot.restD:F2}): following the host's path");
@@ -229,8 +232,8 @@ namespace GolfArcade.Game {
         void EndNetworkShot() {
             if(wasNetworkResult){wasNetworkResult=false;if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);hud.ShowPlayHud(true);}
             replayFirst=false;
-            if(Current==State.Replay){Time.timeScale=1;hud.ShowReplay(false);rig.ResetZoom();rig.RestoreFov();effects.EndFlight();hole.Windmill?.Drive(null);}
-            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=AimLineSamples;}
+            if(Current==State.Replay){Time.timeScale=1;hud.ShowReplay(false);rig.ResetZoom();rig.RestoreFov();effects.EndFlight();hole.Windmill?.Drive(null);hole.Movers?.Hold(null);}
+            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);hole.Movers?.Hold(null);ballLook.Pov(false);aimLine.positionCount=AimLineSamples;}
             Haptics.Release();sounds.Release();
         }
 

@@ -506,7 +506,8 @@ namespace GolfArcade.UI
             if (simple) simple.gameObject.SetActive(on);
             foreach (Transform child in safeArea)
                 if (child.name != "Menu" && child.name != "Course select" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Landing badge" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
-                    && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
+                    && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && child.name != "Twist reveal" && child.name != "Callout"
+                    && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
             tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }
 
@@ -1072,6 +1073,8 @@ namespace GolfArcade.UI
             landingBadge.Show(kind, word, detail, stats, seconds);
         }
         public void HideLanding() => landingBadge.Hide();
+        /// A badge is stamped over the picture (a landing, whose turn it is, the weather turning).
+        public bool BadgeShowing => landingBadge && landingBadge.gameObject.activeSelf;
 
         RectTransform noticePill;
         Text noticeText;
@@ -1110,6 +1113,30 @@ namespace GolfArcade.UI
         }
         /// The reward on show, for the tests.
         public string UnlockShowing => unlockToast ? unlockToast.Showing : null;
+
+        TwistReveal twistReveal;
+        Callout callout;
+        /// The round's twists dealt, card by card (UI/RoundEventsHud.cs): over the first hole's opening.
+        public TwistReveal TwistReveal => twistReveal ? twistReveal : twistReveal = TwistReveal.Create(safeArea);
+        public void HideTwists() { if (twistReveal) twistReveal.Hide(); }
+
+        /// The weather turning or the wind gusting before a shot, stamped like a landing: `word` on
+        /// the badge in `color` with its `icon`, `detail` under it.
+        public void ShowEvent(string word, string detail, Color color, string icon, float seconds = 2.6f)
+        {
+            landingBadge.EventColor = color; landingBadge.EventIcon = icon;
+            ShowLanding(LandingBadge.Kind.Event, word, detail, null, seconds);
+        }
+
+        /// A word popped over the picture as the ball meets something moving about the hole.
+        public void ShowCallout(string word, Color color)
+        {
+            if (!callout) callout = Callout.Create(safeArea);
+            callout.Show(word, color);
+        }
+
+        /// The round's conditions in the HUD's corner: today's weather and the twists.
+        public void SetConditions(EventFace[] faces) { if (simple) simple.SetConditions(faces); }
 
         /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
         public void ShowTurn(string word, string detail, Color color)

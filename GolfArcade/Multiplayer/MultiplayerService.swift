@@ -256,7 +256,19 @@ final class MultiplayerService {
         if sport != .golf { lobby?.participants.removeAll { $0.isGuest } }
         lobby?.configure(sport: sport, venue: venue)
         for i in lobby!.participants.indices where lobby!.participants[i].isGuest { lobby!.participants[i].ready = true }
-        lobby?.sets = sets; lobby?.games = games; publishLobby()
+        lobby?.sets = sets; lobby?.games = games
+        // golf's twists and weather as this host last chose them
+        let session = SportsSession.shared
+        lobby?.twistsOff = sport == .golf && !session.golfTwists ? true : nil
+        lobby?.weatherOff = sport == .golf && !session.golfWeather ? true : nil
+        publishLobby()
+    }
+    /// Golf's match settings: round twists, and weather with things moving about the holes. Remembered for the next round.
+    func setGolfEvents(twists: Bool, weather: Bool) throws {
+        try requireOwnerIdle()
+        SportsSession.shared.golfTwists = twists; SportsSession.shared.golfWeather = weather
+        lobby?.twistsOff = twists ? nil : true; lobby?.weatherOff = weather ? nil : true
+        lobby?.revision += 1; publishLobby()
     }
     func assignSeat(_ player: String, seat: Int) throws { try requireOwnerIdle(); try lobby?.assign(player, seat: seat); publishLobby() }
     func setReady(_ ready: Bool) throws {
@@ -276,7 +288,7 @@ final class MultiplayerService {
         loadingStarted = now; loadingNeedsDecision = false; winnerSeat = -1; quickSport = nil
         for i in self.lobby!.participants.indices { self.lobby!.participants[i].loaded = false; self.lobby!.participants[i].calibrated = false }
         self.lobby?.revision += 1; publishLobby()
-        let config = MultiplayerMatchConfiguration(lobbyID: lobby.id, matchID: id, hostID: localID, localID: "", sport: lobby.sport.rawValue, venue: lobby.venue, sets: lobby.sets, games: lobby.games, seed: Int.random(in: 1...Int(Int32.max)), participants: self.lobby!.participants)
+        let config = MultiplayerMatchConfiguration(lobbyID: lobby.id, matchID: id, hostID: localID, localID: "", sport: lobby.sport.rawValue, venue: lobby.venue, sets: lobby.sets, games: lobby.games, seed: Int.random(in: 1...Int(Int32.max)), participants: self.lobby!.participants, twistsOff: lobby.twistsOff, weatherOff: lobby.weatherOff)
         let payload = try json(config)
         try broadcast("launch", payload: payload); launch(payload)
     }

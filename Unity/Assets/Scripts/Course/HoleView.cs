@@ -458,7 +458,7 @@ namespace GolfArcade.Course
                     var part = FindDeep(pinRoot, name);
                     if (!part) continue;
                     part.SetParent(transform, true);   // the flag turns with the wind; the hole doesn't
-                    part.localScale *= (float)Hole.CupScale;
+                    part.localScale *= (float)(Hole.CupScale * (Hole.Rules?.Cup ?? 1));   // (a bucket cup today: as wide as it plays)
                     part.rotation = slope * part.rotation;
                     var r = part.GetComponent<Renderer>();
                     if (!r) continue;

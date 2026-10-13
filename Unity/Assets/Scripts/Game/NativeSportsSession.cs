@@ -29,6 +29,8 @@ namespace GolfArcade.Game
             public string venue,course,courtHex,network; public int aimSequence;
             public string[] emotes; public string intros="full"; public bool presentationConstrained,bigMoments=true,holeFlyover=true;
             public bool hasReadyPose; public float qx,qy,qz,qw;
+            // Golf's match settings: no round twists, no weather or things moving about the holes (missing: both on).
+            public bool noTwists,noWeather;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -268,7 +270,7 @@ namespace GolfArcade.Game
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) { golf.EquipResultEmotes(m.emotes); golf.PrepareNativeAddress(m.course); }
+            if(golf) { golf.EquipResultEmotes(m.emotes); golf.SetRoundEvents(!m.noTwists,!m.noWeather); golf.PrepareNativeAddress(m.course); }
             if(golf && m.bench) {
                 golf.gameObject.AddComponent<GolfVisualBenchmark>();
                 golf.gameObject.AddComponent<SportsVisualTelemetry>().GolfBenchmarkEnabled=true;

@@ -685,6 +685,9 @@ struct IslandOnlineScreen: View {
                     if lobby.sport == .tennis {
                         choices("Sets",values:["1","2","3"],selected:String(lobby.sets),prefix:"net-sets-")
                         choices("Games",values:["1","3","6"],selected:String(lobby.games),prefix:"net-games-")
+                    } else {
+                        choices("Round twists",values:["on","off"],selected:lobby.twistsOff == true ? "off" : "on",prefix:"net-twists-")
+                        choices("Weather & hazards",values:["on","off"],selected:lobby.weatherOff == true ? "off" : "on",prefix:"net-weather-")
                     }
                     action("net-settings-seats","Player Seats",icon:"person.2.fill")
                 }

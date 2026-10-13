@@ -93,6 +93,15 @@ final class SportsSession {
     var golfCourse = UserDefaults.standard.string(forKey: "sports.golfCourse") ?? "cliffside" {
         didSet { UserDefaults.standard.set(golfCourse, forKey: "sports.golfCourse") }
     }
+    /// Golf's match settings, set before the round (the course screen, a lobby's Match Settings) and remembered:
+    /// round twists (two random modifiers dealt each round), and weather with things moving about the holes
+    /// (rain, storms, gusts; balloons, carts, gulls). Both on unless turned off.
+    var golfTwists = (UserDefaults.standard.object(forKey: "sports.golfTwists") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(golfTwists, forKey: "sports.golfTwists") }
+    }
+    var golfWeather = (UserDefaults.standard.object(forKey: "sports.golfWeather") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(golfWeather, forKey: "sports.golfWeather") }
+    }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
     static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis") || ProcessInfo.processInfo.arguments.contains("-benchGolf")
     var haptics = (UserDefaults.standard.object(forKey:"arcade.hapticsEnabled") as? Bool) ?? true {
@@ -322,7 +331,9 @@ final class SportsSession {
     /// Start a golf round; legacy tutorial requests use the same playable round.
     func startGolf(tutorial: Bool, preview: Bool) {
         sport = "golf"; opponentName = ""
-        launchExtras = ["mode": "round", "course": GolfCourseChoice(rawValue: golfCourse)?.rawValue ?? "cliffside"]
+        launchExtras = ["mode": "round", "course": GolfCourseChoice(rawValue: golfCourse)?.rawValue ?? "cliffside",
+                        // (the lesson is plain golf, whatever the match settings say)
+                        "noTwists": tutorial || !golfTwists, "noWeather": tutorial || !golfWeather]
         start(preview: preview)
         launchExtras = [:]
     }
