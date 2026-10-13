@@ -59,7 +59,7 @@ namespace GolfArcade.Tests
             Assert.AreEqual(2, still.Dealt.Length);
             for (int h = 0; h < 10; h++) Assert.AreEqual(Weather.Clear, still.WeatherFor(h), "clear skies all round");
             Assert.IsNull(still.MoversFor(0, Straight(), Weather.Clear), "and nothing moving about");
-            var plain = RoundEvents.Deal(7, false, false);
+            var plain = RoundEvents.Deal(7, false, false, false);
             Assert.AreSame(RoundEvents.None, plain);
             Assert.IsTrue(plain.RulesFor(Weather.Clear).IsStandard);
             Assert.AreEqual("", plain.Code);
@@ -190,7 +190,7 @@ namespace GolfArcade.Tests
                 }
             }
             kinds = seen.Count;
-            Assert.AreEqual(4, kinds, "every kind of weather comes");
+            Assert.AreEqual(5, kinds, "every kind of weather comes");
             Assert.Greater(turns, 50, "it turns now and then");
             Assert.Greater(gusts, 200, "and gusts in a gusty wind");
         }
@@ -253,6 +253,28 @@ namespace GolfArcade.Tests
             }
             Assert.IsNotNull(met, "somewhere round its loop it is in the way");
             Assert.IsTrue(double.IsNaN(met.Knocks.First(k => k.Kind == ObstacleKind.Cart).Y), "on the ground");
+        }
+
+        [Test]
+        public void ATwisterFlingsTheBallAside()
+        {
+            var clear = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), Straight());
+            // parked across the line 100 yards out (it barely moves over the shot)
+            var twister = Mover.Twister(new CoursePoint(-0.01, 100), new CoursePoint(0.01, 100), 1000, 0, _ => 0);
+            var hole = Straight(); hole.Movers = new CourseMovers(new[] { twister });
+            var hit = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), hole);
+            Assert.IsTrue(hit.Knocks.Any(k => k.Kind == ObstacleKind.Twister && !k.Hard), "caught in it");
+            Assert.Greater(Math.Abs(hit.Rest.X), 10, "and flung out to the side");
+            Assert.Less(hit.Rest.D, clear.Rest.D - 20, "nowhere near where it was going");
+            var calm = RoundEvents.Deal(3);
+            RoundEvents.EveryMover = true;
+            try
+            {
+                var movers = calm.MoversFor(0, Straight(), Weather.Storm);
+                Assert.IsTrue(movers.All.Any(m => m.Kind == MoverKind.Twister), "storms throw them down");
+                Assert.IsFalse(calm.MoversFor(0, Straight(), Weather.Rain).All.Any(m => m.Kind == MoverKind.Twister), "only storms");
+            }
+            finally { RoundEvents.EveryMover = false; }
         }
 
         [Test]

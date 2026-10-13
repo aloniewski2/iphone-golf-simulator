@@ -63,6 +63,16 @@ namespace GolfArcade.UI
                 float head = Polygon(p, new[] { tip + new Vector2(0.0f, 0.12f), tip + new Vector2(-0.14f, -0.08f), tip + new Vector2(0.14f, -0.04f) });
                 return Mathf.Min(Mathf.Min(sector, head), Circle(p, new Vector2(-0.1f, -0.34f), 0.08f));
             },
+            // banks of mist drifting across
+            ["fog"] = p => Mathf.Min(Mathf.Min(Segment(p, new Vector2(-0.36f, 0.2f), new Vector2(0.28f, 0.2f)), Segment(p, new Vector2(-0.26f, 0f), new Vector2(0.38f, 0f))),
+                                     Segment(p, new Vector2(-0.38f, -0.2f), new Vector2(0.2f, -0.2f))) - 0.055f,
+            // a ring to fly through
+            ["ring"] = p => Mathf.Abs(Circle(p, Vector2.zero, 0.31f)) - 0.085f,
+            // a coin, its rim struck in
+            ["coin"] = p => Mathf.Max(Circle(p, Vector2.zero, 0.42f), -(Mathf.Abs(Circle(p, Vector2.zero, 0.31f)) - 0.035f)),
+            // a bounty done, or missed
+            ["tick"] = p => Mathf.Min(Segment(p, new Vector2(-0.3f, 0.02f), new Vector2(-0.08f, -0.22f)), Segment(p, new Vector2(-0.08f, -0.22f), new Vector2(0.34f, 0.26f))) - 0.075f,
+            ["cross"] = p => Mathf.Min(Segment(p, new Vector2(-0.26f, -0.26f), new Vector2(0.26f, 0.26f)), Segment(p, new Vector2(-0.26f, 0.26f), new Vector2(0.26f, -0.26f))) - 0.07f,
         };
 
         static readonly Dictionary<string, Sprite> painted = new();

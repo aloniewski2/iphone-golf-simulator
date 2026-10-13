@@ -27,6 +27,8 @@ struct MenuLaunch: Equatable {
     var difficulty: Double?
     var sets: Int?
     var games: Int?
+    /// Golf's daily forecast round (yyyymmdd), played again by Play Again; nil an ordinary round.
+    var daily: Int?
     init(sport: Sport = .tennis, mode: Mode, round: Int? = nil) { self.sport = sport; self.mode = mode; self.round = round }
     /// A campaign round (non-nil) or tennis training.
     init(round: Int?) { self.init(mode: round == nil ? .training : .campaign, round: round) }
@@ -185,7 +187,7 @@ final class TennisMenu {
             return [(0..<5).map { "round\($0)" }, (5..<10).map { "round\($0)" }, ["campaignPlay", "campaignMore"], ["back"]]
         case .exhibition: return [["quickOpponent"], ["quickDifficulty"], ["quickLength"], ["quickStart"], ["back"]]
         case .story: return [["next", "skip"]]
-        case .map: return [mapChoices.map { "map-\($0.id)" }] + (mapSport == .golf ? [["golf-twists", "golf-weather"]] : []) + [["back"]]
+        case .map: return [mapChoices.map { "map-\($0.id)" }] + (mapSport == .golf ? [["golf-daily"], ["golf-twists", "golf-weather", "golf-challenges"]] : []) + [["back"]]
         case .postMatch: return postMatchDone ? postMatchChoices.map { [$0] } : [["pm-skip"]]
         case .training: return [["level"], ["start"], ["back"]]
         case .character: return lockerRows()
@@ -418,10 +420,17 @@ final class TennisMenu {
             // The court is chosen: remember it and go on to the match that was waiting.
             if mapSport == .golf { session.golfCourse = String(m.dropFirst(4)) }
             else { session.tennisVenue = String(m.dropFirst(4)) }
-            if let pick = pendingPick { pendingPick = nil; begin(pick.launch, onPhone: pick.onPhone, skipMap: true) }
+            // (a course picked is an ordinary round, even after the day's forecast round)
+            if let pick = pendingPick { pendingPick = nil; var launch = pick.launch; launch.daily = nil; begin(launch, onPhone: pick.onPhone, skipMap: true) }
+        // golf's daily forecast round: the day's course, twists and weather, the same for everyone
+        case "golf-daily" where screen == .map:
+            let day = GolfForecast.today()
+            session.golfCourse = GolfForecast.course(for: day).rawValue
+            if let pick = pendingPick { pendingPick = nil; var launch = pick.launch; launch.daily = day; begin(launch, onPhone: pick.onPhone, skipMap: true) }
         // golf's match settings on the course screen, before the round
         case "golf-twists": session.golfTwists.toggle()
         case "golf-weather": session.golfWeather.toggle()
+        case "golf-challenges": session.golfChallenges.toggle()
         case "phone": show(.connect)
         case "continue":
             if let result, !campaign.champion, result.won { play(round: campaign.nextRound) } else { show(.campaign) }
@@ -632,7 +641,7 @@ final class TennisMenu {
         guard session.displayConnected else { show(.connect); return }
         show(.loading)
         if launch.sport == .golf {
-            session.startGolf(tutorial: false, preview: onPhone)
+            session.startGolf(tutorial: false, preview: onPhone, daily: launch.daily)
         } else {
             let opponent = launch.round.map { TennisCampaign.draw[$0] }
             let difficulty = launch.mode == .training ? Self.trainingLevels[trainingLevel].difficulty
@@ -677,6 +686,16 @@ final class TennisMenu {
                                                  practice: launch.mode == .training, difficulty: difficulty)
         }
         // Keep the TV result visible until the player taps Next on the phone.
+    }
+
+    /// A golf round is over (Unity's "golfRound"): bank its XP now, the daily forecast's bonus and
+    /// streak with it; the rewards screen shows it once the phone's Finish is tapped.
+    func golfRoundFinished(_ stats: GolfRoundStats) {
+        guard session.active, let launch, launch.sport == .golf, launch.mode != .tutorial,
+              session.players.indices.contains(session.playerIndex) else { return }
+        var dailyFirst = false, streak = 0
+        if stats.daily > 0 { (dailyFirst, streak) = DailyGolf.shared.record(day: stats.daily, toPar: stats.toPar) }
+        postMatch = Progression.shared.awardGolf(player: session.players[session.playerIndex].id, stats: stats, dailyFirst: dailyFirst, streak: streak)
     }
 
     /// Explicit device-launch recovery, used only when requested by the player.

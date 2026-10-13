@@ -2054,6 +2054,7 @@ namespace GolfArcade.Game
             LastShot = new CourseShot(club, impact, heading, ballAt, hole, 1, Wind);
             launchGround = HoleView.GroundHeight(ballAt);
             landingGround = HoleView.GroundHeight(LastShot.Landing);
+            PlanRingPasses();
             landingSpot = HoleView.ToWorld(LastShot.Landing);
             shotLine = landingSpot - HoleView.ToWorld(ballAt); shotLine.y = 0;
             if (shotLine.sqrMagnitude < 1f) shotLine = AimDirection();
@@ -2367,12 +2368,13 @@ namespace GolfArcade.Game
             {
                 var k = knocks[knocksShown++];
                 var kAt = new Vector3((float)k.X, (float)(double.IsNaN(k.Y) ? HoleView.GroundHeight(new CoursePoint(k.X, k.D)) + 0.1 : k.Y), (float)k.D);
-                if (k.Kind is ObstacleKind.Balloon or ObstacleKind.Cart or ObstacleKind.Gull) { MoverKnock(k, kAt); continue; }
+                if (k.Kind is ObstacleKind.Balloon or ObstacleKind.Cart or ObstacleKind.Gull or ObstacleKind.Twister) { MoverKnock(k, kAt); continue; }
                 bool stone = k.Kind is ObstacleKind.Rock or ObstacleKind.Wall;
                 effects.Knock(kAt, !k.Hard, stone);
                 if (k.Hard) sounds.PlayKnock(stone); else sounds.PlayLeaves();
                 Haptics.Tick();
             }
+            ShowRingPasses();
             lastHeight = p.h;
             var velocity = (pos - lastBallPos) / dt;
             lastBallPos = pos;
@@ -2484,8 +2486,12 @@ namespace GolfArcade.Game
                     new RoundCard.Highlight { Icon = "grass", Title = "Fairways", Value = fairwayChances > 0 ? $"{fairwaysHit}/{fairwayChances}" : "—" },
                     new RoundCard.Highlight { Icon = "target", Title = "Greens in reg.", Value = greensPlayed > 0 ? $"{greensHit}/{greensPlayed}" : "—" },
                     new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
-                    new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
-                    new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
+                    // with rings and bounties out, what they paid takes the strike and speed tiles' places
+                    events.Challenges ? new RoundCard.Highlight { Icon = "coin", Title = "Coins", Value = roundCoins.ToString("N0") }
+                                      : new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
+                    events.Challenges ? new RoundCard.Highlight { Icon = bounty?.State == BountyState.Done ? "tick" : "ring", Title = round ? "Bounties" : bounty?.State == BountyState.Done ? "Bounty done" : "Bounties",
+                                                                  Value = round || bounty == null ? $"{roundBounties}/{roundBountyHoles}" : bounty.State == BountyState.Done ? $"+{bounty.Coins}" : $"{roundBounties}/{roundBountyHoles}" }
+                                      : new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
                 }, more);
             hud.PlayAgain.Pressed = PlayAgain;
             hud.RoundMenu.Pressed = ShowMenu;
@@ -2581,6 +2587,7 @@ namespace GolfArcade.Game
             ProfileStore.Save();
             if (setup.Mode == PlayMode.Tournament) ChampionshipStore.Save();
             if (news.Count > 0) { hud.ShowUnlocks(news); sounds.PlayFanfare(); }
+            SummariseRound();
         }
 
         /// From the card straight into the same holes again (online: back to the lobby for a
@@ -2961,6 +2968,7 @@ namespace GolfArcade.Game
             else result = $"Carry {shot.Carry:F0}  ·  Total {shot.Total:F0} yd  ·  {shot.Lie.Label()}";
             if (!shot.IsHoled) React(shot);
             holeStrokes += shot.PenaltyStrokes;
+            ChallengeShot(shot);
             CountWhereItFinished(shot);
             StampLanding(shot);
             LastResult = result;
@@ -3055,6 +3063,7 @@ namespace GolfArcade.Game
                 hud.ShowLanding(shot.IsHoled ? LandingBadge.Kind.Holed : measure > 0 && measure < Match.MissedGreen ? LandingBadge.Kind.Fairway : LandingBadge.Kind.Rough,
                                 words, $"{Match.Current.Name}  ·  {Match.FormatName(Match.Format)}",
                                 Match.Format == MatchFormat.LongestDrive && measure == 0 ? "Off the fairway" : null, 3f);
+                CloseHoleChallenges();
                 Enter(State.HoleDone);
                 return;
             }
@@ -3066,6 +3075,7 @@ namespace GolfArcade.Game
                 string score = Scorecard.ScoreName(holeStrokes, hole.Par);
                 hud.ShowLanding(LandingBadge.Kind.Holed, holeStrokes < hole.Par ? score + "!" : score,
                                 $"Hole {hole.Number}  ·  par {hole.Par}", $"{holeStrokes} stroke{(holeStrokes == 1 ? "" : "s")}", 3f);
+                CloseHoleChallenges();
                 Enter(State.HoleDone);
                 return;
             }

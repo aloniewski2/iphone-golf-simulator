@@ -135,19 +135,29 @@ struct ClubVictorySummary: View {
         }
         return (level, min(xp, LevelCurve.needed(level)))
     }
+    private var golf: GolfRoundStats? { summary?.golf }
+    private var headline: String {
+        guard let golf else { return won ? "VICTORY" : "MATCH COMPLETE" }
+        return golf.toPar < 0 ? "UNDER PAR!" : golf.toPar == 0 ? "LEVEL PAR" : "ROUND COMPLETE"
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 14 : 20) {
             HStack(spacing: 12) {
-                Image(systemName: won ? "trophy.fill" : "tennisball.fill")
+                Image(systemName: golf != nil ? "flag.fill" : won ? "trophy.fill" : "tennisball.fill")
                     .font(.system(size: compact ? 26 : 38))
                     .foregroundStyle(Color(red: 0.75, green: 0.52, blue: 0.16))
-                Text(won ? "VICTORY" : "MATCH COMPLETE")
+                Text(headline)
                     .font(IslandUI.font(compact ? 34 : 64, bold: true)).tracking(compact ? 1 : 3)
                     .minimumScaleFactor(0.6).lineLimit(1)
+                if let golf, golf.daily > 0 {
+                    Label((summary?.streak ?? 0) > 1 ? "DAILY · \(summary?.streak ?? 0)" : "DAILY", systemImage: "flame.fill")
+                        .font(IslandUI.font(compact ? 12 : 16, bold: true)).foregroundStyle(IslandUI.navy)
+                        .padding(.horizontal, 10).padding(.vertical, 4).background(Color(hex: "FFC93C"), in: Capsule())
+                }
             }
             HStack(alignment: .firstTextBaseline, spacing: 14) {
                 Text(score).font(IslandUI.font(compact ? 30 : 42, bold: true)).minimumScaleFactor(0.6).lineLimit(1)
-                if let summary { Text("vs. \(summary.opponent)").font(IslandUI.font(compact ? 16 : 20)).foregroundStyle(IslandUI.muted) }
+                if let summary { Text(golf != nil ? "at \(summary.opponent)" : "vs. \(summary.opponent)").font(IslandUI.font(compact ? 16 : 20)).foregroundStyle(IslandUI.muted) }
             }
             if let summary {
                 VStack(alignment: .leading, spacing: 12) {
@@ -175,10 +185,30 @@ struct ClubVictorySummary: View {
                     .background(IslandUI.navy, in: RoundedRectangle(cornerRadius: 20))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Earned \(summary.total) XP. Level \(summary.endLevel), \(summary.endXP) XP.")
-                HStack(spacing: compact ? 20 : 36) {
-                    stat("ACES", summary.stats.aces)
-                    stat("WINNERS", summary.stats.winners)
-                    stat("BEST RALLY", summary.stats.longest)
+                if let golf {
+                    // golf: every line of the XP, so the coins and bounties are seen paying out
+                    VStack(spacing: 6) {
+                        ForEach(summary.lines) { line in
+                            HStack {
+                                Text(line.title).font(IslandUI.font(compact ? 15 : 18, bold: true))
+                                if !line.detail.isEmpty { Text(line.detail).font(IslandUI.font(compact ? 13 : 16)).foregroundStyle(IslandUI.muted) }
+                                Spacer()
+                                Text("+\(line.xp)").font(IslandUI.font(compact ? 15 : 18, bold: true)).monospacedDigit()
+                            }
+                        }
+                    }
+                    HStack(spacing: compact ? 20 : 36) {
+                        stat("COINS", golf.coins)
+                        stat("BOUNTIES", golf.bounties)
+                        stat("RINGS", golf.rings)
+                        stat("BIRDIES", golf.birdies + golf.eagles + golf.aces)
+                    }
+                } else {
+                    HStack(spacing: compact ? 20 : 36) {
+                        stat("ACES", summary.stats.aces)
+                        stat("WINNERS", summary.stats.winners)
+                        stat("BEST RALLY", summary.stats.longest)
+                    }
                 }
             }
         }.foregroundStyle(IslandUI.navy)

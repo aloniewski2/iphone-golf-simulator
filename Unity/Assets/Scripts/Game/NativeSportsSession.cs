@@ -30,7 +30,9 @@ namespace GolfArcade.Game
             public string[] emotes; public string intros="full"; public bool presentationConstrained,bigMoments=true,holeFlyover=true;
             public bool hasReadyPose; public float qx,qy,qz,qw;
             // Golf's match settings: no round twists, no weather or things moving about the holes (missing: both on).
-            public bool noTwists,noWeather;
+            public bool noTwists,noWeather,noChallenges;
+            /// The day's forecast round (yyyymmdd), or 0.
+            public int daily;
         }
         /// One motion sample, read straight out of native memory. This used to be JSON text
         /// decoded into a new string and a new object 100 times a second -- steady garbage
@@ -118,6 +120,8 @@ namespace GolfArcade.Game
                 string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:0.000},{1:0.000},{2},{3},{4:0}",face.x,face.y,(int)grade,super?1:0,TennisGame.LastLateness*1000));
             TennisGame.RallyEnded+=shots=>Emit("rally",shots.ToString());
             GolfGame.NativeExitRequested+=GolfExit;
+            // a golf round's tally (score, coins, rings, bounties), for the app's XP
+            GolfGame.RoundSummary+=line=>Emit("golfRound",line);
             GolfGame.NativePauseRequested+=GolfPause;
             TennisGame.Landed += AimLanding;
             TennisGame.DrillPoint += AimMiss;
@@ -270,7 +274,7 @@ namespace GolfArcade.Game
                     string.IsNullOrEmpty(m.coach) ? null : m.coach.Split('|')); }
             if(tennis) { tennis.EquipEmotes(m.emotes); tennis.SetControllerSetup(!m.bench && !multiplayerSession); }
             if(m.bench && !GetComponent<FrameProbe>()) gameObject.AddComponent<FrameProbe>().Report=r=>Emit("perf",r);
-            if(golf) { golf.EquipResultEmotes(m.emotes); golf.SetRoundEvents(!m.noTwists,!m.noWeather); golf.PrepareNativeAddress(m.course); }
+            if(golf) { golf.EquipResultEmotes(m.emotes); golf.SetRoundEvents(!m.noTwists,!m.noWeather,!m.noChallenges); golf.SetDailyRound(m.daily); golf.PrepareNativeAddress(m.course); }
             if(golf && m.bench) {
                 golf.gameObject.AddComponent<GolfVisualBenchmark>();
                 golf.gameObject.AddComponent<SportsVisualTelemetry>().GolfBenchmarkEnabled=true;

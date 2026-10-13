@@ -4,8 +4,8 @@ using GolfArcade.Shot;
 
 namespace GolfArcade.Course
 {
-    /// What moves about a hole: a hot-air balloon, a cart, a gull.
-    public enum MoverKind { Balloon, Cart, Gull }
+    /// What moves about a hole: a hot-air balloon, a cart, a gull, and in a storm a twister.
+    public enum MoverKind { Balloon, Cart, Gull, Twister }
 
     /// One thing moving about a hole, on a path that is a function of time alone: where it is when
     /// the ball gets there is known the moment the ball is struck, a replay finds it in the same
@@ -26,6 +26,12 @@ namespace GolfArcade.Course
         // A cart goes round its loop at `speed`: the loop sampled every half yard, with the ground's height.
         double[] lx, ly, ld, ls;
         double loopLength, speed;
+        // A twister wanders from A to B and back over `period`, weaving, on the ground (sampled along its way).
+        double[] gy;
+
+        /// A twister's funnel as the ball meets it: spheres up its middle, wider as it climbs.
+        public static readonly (double h, double r)[] Funnel = { (1.5, 2.2), (7, 3.4), (14, 5.0), (22, 6.8), (31, 8.6) };
+        public const double TwisterWeave = 3;
 
         /// The balloon's envelope, from its middle, and how far below that the basket hangs.
         public const double Envelope = 4.3, BasketDrop = 6.4, Basket = 1.1;
@@ -37,6 +43,15 @@ namespace GolfArcade.Course
 
         public static Mover Balloon(CoursePoint from, CoursePoint to, double height, double periodSeconds, double phase, int variant) =>
             new(MoverKind.Balloon, variant) { a = from, b = to, height = height, period = Math.Max(10, periodSeconds), phase = phase, bob = 1.1 };
+
+        /// A twister wandering from `from` to `to` and back over `periodSeconds`, weaving as it goes,
+        /// on the ground `ground` gives.
+        public static Mover Twister(CoursePoint from, CoursePoint to, double periodSeconds, double phase, Func<CoursePoint, double> ground)
+        {
+            var m = new Mover(MoverKind.Twister, 0) { a = from, b = to, period = Math.Max(10, periodSeconds), phase = phase, gy = new double[21] };
+            for (int i = 0; i < m.gy.Length; i++) { double s = i / 20.0; m.gy[i] = ground(new CoursePoint(from.X + (to.X - from.X) * s, from.D + (to.D - from.D) * s)); }
+            return m;
+        }
 
         public static Mover Gull(CoursePoint centre, double radius, double height, double radiansPerSecond, double phase, int variant) =>
             new(MoverKind.Gull, variant) { centre = centre, radius = Math.Max(3, radius), height = height, turn = radiansPerSecond, phase = phase, bob = 0.7 };
@@ -108,6 +123,14 @@ namespace GolfArcade.Course
                     double ang = phase + turn * t;
                     return (centre.X + radius * Math.Cos(ang), height + bob * Math.Sin(1.7 * t + phase * 3), centre.D + radius * Math.Sin(ang));
                 }
+                case MoverKind.Twister:
+                {
+                    double s = 0.5 - 0.5 * Math.Cos(2 * Math.PI * (t / period + phase));
+                    double lx = b.X - a.X, ld = b.D - a.D, l = Math.Max(1e-6, Math.Sqrt(lx * lx + ld * ld));
+                    double weave = TwisterWeave * Math.Sin(t * 0.7 + phase * 9);
+                    double f = s * (gy.Length - 1); int i = Math.Min(gy.Length - 2, (int)f);
+                    return (a.X + lx * s - ld / l * weave, gy[i] + (gy[i + 1] - gy[i]) * (f - i), a.D + ld * s + lx / l * weave);
+                }
                 default:
                 {
                     double s = ((speed * t + phase * loopLength) % loopLength + loopLength) % loopLength;
@@ -131,11 +154,11 @@ namespace GolfArcade.Course
         public double HeadingAt(double t)
         {
             var v = VelocityAt(t);
-            if (Kind == MoverKind.Balloon || v.x * v.x + v.d * v.d < 1e-6) return Math.Atan2(b.X - a.X, b.D - a.D) * 180 / Math.PI;
+            if (Kind is MoverKind.Balloon or MoverKind.Twister || v.x * v.x + v.d * v.d < 1e-6) return Math.Atan2(b.X - a.X, b.D - a.D) * 180 / Math.PI;
             return Math.Atan2(v.x, v.d) * 180 / Math.PI;
         }
 
-        public int Bodies => Kind == MoverKind.Gull ? 1 : 2;
+        public int Bodies => Kind switch { MoverKind.Gull => 1, MoverKind.Twister => Funnel.Length, _ => 2 };
 
         /// One of the spheres it meets the ball with at `t`: its middle and its radius.
         public (double x, double y, double d, double r) Body(int i, double t)
@@ -150,6 +173,8 @@ namespace GolfArcade.Course
                     double h = HeadingAt(t) * Math.PI / 180, along = i == 0 ? CartHalf : -CartHalf;
                     return (p.x + Math.Sin(h) * along, p.y + 0.85, p.d + Math.Cos(h) * along, CartBody);
                 }
+                case MoverKind.Twister:
+                    return (p.x, p.y + Funnel[i].h, p.d, Funnel[i].r);
                 default:
                     return (p.x, p.y, p.d, GullBody);
             }
@@ -165,6 +190,12 @@ namespace GolfArcade.Course
                             Math.Max(a.X, b.X) + Envelope, height + bob + Envelope, Math.Max(a.D, b.D) + Envelope);
                 case MoverKind.Gull:
                     return (centre.X - radius - 1, height - bob - 1, centre.D - radius - 1, centre.X + radius + 1, height + bob + 1, centre.D + radius + 1);
+                case MoverKind.Twister:
+                {
+                    double w = Funnel[Funnel.Length - 1].r + TwisterWeave + 1, low = double.MaxValue, high = double.MinValue;
+                    foreach (var g in gy) { low = Math.Min(low, g); high = Math.Max(high, g); }
+                    return (Math.Min(a.X, b.X) - w, low, Math.Min(a.D, b.D) - w, Math.Max(a.X, b.X) + w, high + Funnel[Funnel.Length - 1].h + Funnel[Funnel.Length - 1].r, Math.Max(a.D, b.D) + w);
+                }
                 default:
                 {
                     double x0 = double.MaxValue, y0 = double.MaxValue, d0 = double.MaxValue, x1 = double.MinValue, y1 = double.MinValue, d1 = double.MinValue;
@@ -198,6 +229,8 @@ namespace GolfArcade.Course
         public double Now => held ?? Clock;
 
         public CourseMovers(Mover[] movers) { All = movers ?? Array.Empty<Mover>(); }
+        /// The golden rings over the hole (CourseRings): they keep the same clock, and nothing stops the ball in them.
+        public Ring[] Rings = Array.Empty<Ring>();
 
         public void Advance(double seconds) { if (!held.HasValue && double.IsFinite(seconds)) Clock += Math.Max(0, seconds); }
 
@@ -280,6 +313,13 @@ namespace GolfArcade.Course
             var body = m.Body(hit.Body, t);
             var bv = m.VelocityAt(t);
             double rx = hit.Vx - bv.x, ry = hit.Vy - bv.y, rd = hit.Vd - bv.d;   // against the mover
+            if (m.Kind == MoverKind.Twister)
+            {
+                // caught in the whirl: carried round most of a turn and flung out of it, up and away
+                double turn = (100 + 70 * luck) * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
+                double keep = 0.6;
+                return ((rx * c - rd * s) * keep + bv.x, 9 + 7 * luck, (rx * s + rd * c) * keep + bv.d);
+            }
             if (m.Kind == MoverKind.Gull)
             {
                 double turn = (luck - 0.5) * 70 * Math.PI / 180, c = Math.Cos(turn), s = Math.Sin(turn);
@@ -328,6 +368,7 @@ namespace GolfArcade.Course
         {
             MoverKind.Balloon => ObstacleKind.Balloon,
             MoverKind.Cart => ObstacleKind.Cart,
+            MoverKind.Twister => ObstacleKind.Twister,
             _ => ObstacleKind.Gull,
         };
     }

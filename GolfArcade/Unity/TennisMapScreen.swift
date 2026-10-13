@@ -105,10 +105,11 @@ struct GolfCourseScreen: View {
                 LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .top, endPoint: .bottom).frame(height: 420)
             }.ignoresSafeArea().allowsHitTesting(false)
             VStack(spacing: 22) {
-                HStack {
+                HStack(alignment: .top) {
                     IslandWordmark(size: 28).frame(width: 180)
                     Text("CHOOSE YOUR COURSE").font(IslandUI.font(38, bold: true)).foregroundStyle(.white).padding(.leading, 18)
                     Spacer()
+                    GolfDailyCard(menu: menu, compact: false).frame(width: 470)
                 }
                 Spacer()
                 HStack { arrow(-1, size: 96); Spacer(); arrow(1, size: 96) }
@@ -131,6 +132,7 @@ struct GolfCourseScreen: View {
             LinearGradient(colors: [Color(hex: "0B2545"), Color(hex: "13315C")], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
             VStack(alignment: .leading, spacing: 16) {
                 Text("Choose a course").font(IslandUI.font(30, bold: true)).foregroundStyle(.white)
+                GolfDailyCard(menu: menu, compact: true)
                 ZStack {
                     LoopingVideo(clip: shown.clip).id(shown.rawValue)
                     HStack { arrow(-1, size: 54); Spacer(); arrow(1, size: 54) }.padding(.horizontal, 10)
@@ -159,27 +161,27 @@ struct GolfCourseScreen: View {
         }.frame(maxWidth: .infinity).accessibilityElement(children: .combine)
     }
 
-    /// The round's match settings, before it starts: twists (two random modifiers dealt each round) and the
-    /// weather with things moving about the holes, each on or off, remembered for the next round.
+    /// The round's match settings, before it starts: twists (two random modifiers dealt each round), the
+    /// weather with things moving about the holes, and the rings and bounties that pay coins, each on or
+    /// off, remembered for the next round.
     private func settings(height: CGFloat) -> some View {
         let session = SportsSession.shared
         return VStack(spacing: 6) {
             HStack(spacing: 10) {
                 toggle("golf-twists", "Twists", icon: "dice.fill", on: session.golfTwists, height: height)
-                toggle("golf-weather", "Weather & hazards", icon: "cloud.bolt.rain.fill", on: session.golfWeather, height: height)
+                toggle("golf-weather", compact ? "Weather" : "Weather & hazards", icon: "cloud.bolt.rain.fill", on: session.golfWeather, height: height)
+                toggle("golf-challenges", compact ? "Bounties" : "Bounties & rings", icon: "circle.circle.fill", on: session.golfChallenges, height: height)
             }
-            Text(caption(twists: session.golfTwists, weather: session.golfWeather))
+            Text(caption(twists: session.golfTwists, weather: session.golfWeather, challenges: session.golfChallenges))
                 .font(IslandUI.font(height * 0.27)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.6)
         }.frame(maxWidth: .infinity)
     }
 
-    private func caption(twists: Bool, weather: Bool) -> String {
-        switch (twists, weather) {
-        case (true, true): return "2 random twists each round · rain, storms, gusts and moving obstacles"
-        case (true, false): return "2 random twists each round · clear skies, still courses"
-        case (false, true): return "Classic rules · rain, storms, gusts and moving obstacles"
-        default: return "Classic golf: no twists, clear skies"
-        }
+    private func caption(twists: Bool, weather: Bool, challenges: Bool) -> String {
+        if !twists && !weather && !challenges { return "Classic golf: no twists, clear skies" }
+        return [twists ? "2 random twists each round" : "Classic rules",
+                weather ? "storms, fog, gusts and moving obstacles" : "clear skies",
+                challenges ? "rings and bounties for coins" : nil].compactMap { $0 }.joined(separator: " · ")
     }
 
     private func toggle(_ id: String, _ title: String, icon: String, on: Bool, height: CGFloat) -> some View {
@@ -218,5 +220,71 @@ struct GolfCourseScreen: View {
                 .foregroundStyle(.white).frame(width: size, height: size)
                 .background(.white.opacity(0.18), in: Circle()).overlay(Circle().strokeBorder(.white.opacity(0.55), lineWidth: 2))
         }.buttonStyle(.plain).accessibilityLabel(by < 0 ? "Previous course" : "Next course")
+    }
+}
+
+
+/// Golf's daily forecast on the course screen: today's course, its twists and the weather hole by hole
+/// (a weather app's strip), the player's day streak and today's best, and PLAY to play it. Dealt by
+/// GolfForecast from the date, as Unity deals the round itself.
+struct GolfDailyCard: View {
+    let menu: TennisMenu
+    let compact: Bool
+
+    var body: some View {
+        let today = GolfForecast.today()
+        let day = GolfForecast.Day(today)
+        let daily = DailyGolf.shared
+        let streak = daily.streak(through: today)
+        let best = daily.best[today]
+        let focused = menu.isFocused("golf-daily")
+        return Button { menu.tap("golf-daily") } label: {
+            VStack(alignment: .leading, spacing: compact ? 6 : 10) {
+                HStack(spacing: 8) {
+                    Text("DAILY FORECAST").font(IslandUI.font(compact ? 13 : 17, bold: true)).tracking(1.5)
+                        .padding(.horizontal, 10).padding(.vertical, 4).background(IslandUI.lime, in: Capsule()).foregroundStyle(IslandUI.navy)
+                    Text(GolfForecast.date(of: today).formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+                        .font(IslandUI.font(compact ? 12 : 16, bold: true)).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+                    Spacer(minLength: 4)
+                    if streak > 0 {
+                        Label("\(streak)", systemImage: "flame.fill").font(IslandUI.font(compact ? 14 : 19, bold: true))
+                            .foregroundStyle(Color(hex: "FF9F2E")).accessibilityLabel("\(streak) day streak")
+                    }
+                }
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(day.headline.uppercased()).font(IslandUI.font(compact ? 20 : 30, bold: true)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.6)
+                    Text("at \(day.course.title)").font(IslandUI.font(compact ? 14 : 19)).foregroundStyle(.white.opacity(0.85)).lineLimit(1)
+                }
+                // the weather hole by hole, like a forecast's strip
+                HStack(spacing: compact ? 6 : 10) {
+                    ForEach(Array(day.weather.enumerated()), id: \.offset) { i, w in
+                        VStack(spacing: 2) {
+                            Image(systemName: w.icon).symbolRenderingMode(.multicolor).font(.system(size: compact ? 17 : 24, weight: .semibold))
+                                .frame(height: compact ? 20 : 28)
+                            Text("\(i + 1)").font(IslandUI.font(compact ? 10 : 13, bold: true)).foregroundStyle(.white.opacity(0.7))
+                        }.frame(minWidth: compact ? 24 : 34)
+                    }
+                    Spacer(minLength: 6)
+                    VStack(alignment: .trailing, spacing: 3) {
+                        ForEach(day.twists, id: \.self) { t in
+                            Label(t.title.uppercased(), systemImage: t.icon).font(IslandUI.font(compact ? 11 : 15, bold: true)).foregroundStyle(.white).lineLimit(1)
+                        }
+                    }
+                }
+                HStack {
+                    Text(best.map { "Today's best \(GolfRoundStats.text(toPar: $0)) · play again any time" } ?? "Bonus XP for your first round today · same course for everyone")
+                        .font(IslandUI.font(compact ? 11 : 15)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.7)
+                    Spacer(minLength: 6)
+                    Text(best == nil ? "PLAY" : "AGAIN").font(IslandUI.font(compact ? 13 : 18, bold: true)).foregroundStyle(IslandUI.navy)
+                        .padding(.horizontal, 14).padding(.vertical, 5).background(Color(hex: "FFC93C"), in: Capsule())
+                }
+            }
+            .padding(compact ? 12 : 18)
+            .background(LinearGradient(colors: [Color(hex: "1D4E89").opacity(0.92), Color(hex: "0B2545").opacity(0.92)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: compact ? 16 : 22))
+            .overlay(RoundedRectangle(cornerRadius: compact ? 16 : 22).strokeBorder(focused ? Color.white : Color(hex: "FFC93C").opacity(0.7), lineWidth: focused ? 4 : 2))
+        }.buttonStyle(.plain)
+            .accessibilityLabel("Daily forecast: \(day.headline) at \(day.course.title). Twists \(day.twists.map(\.title).joined(separator: " and ")).")
+            .accessibilityAddTraits(.isButton).accessibilityIdentifier("golf-daily")
     }
 }

@@ -69,6 +69,21 @@ namespace GolfArcade.Course
             return (a.x + (b.x - a.x) * t, a.h + (b.h - a.h) * t, a.d + (b.d - a.d) * t);
         }
 
+        /// Where the game draws the ball `time` into the shot (across, world height, down): in the
+        /// air over the line between the ground it left and the ground it comes down on (never
+        /// under the turf), on the ground and its hops after that — as GolfGame.FlyBall has it.
+        public (double x, double y, double d) WorldAt(double time, Func<CoursePoint, double> ground)
+        {
+            var p = PositionAt(time);
+            double under = ground(new CoursePoint(p.x, p.d));
+            if (time < LandingTime && LandingTime > 0)
+            {
+                double g0 = ground(Origin), gL = ground(Landing);
+                return (p.x, Math.Max(g0 + (gL - g0) * time / LandingTime + p.h, under), p.d);
+            }
+            return (p.x, under + p.h, p.d);
+        }
+
         /// When and where the ball met something standing on the course — for the picture and the
         /// sound. `Y` is the world height, NaN for a rolling ball (on the ground).
         public readonly struct Knock
@@ -241,7 +256,7 @@ namespace GolfArcade.Course
         public static Fall FallFromMover(CourseMovers.Hit hit, CourseMovers movers, Obstacle[] obstacles, Func<CoursePoint, double> ground, PlayRules rules = null)
         {
             var kind = movers.All[hit.Mover].Kind;
-            var knocked = new List<Knock> { new(hit.Time, hit.X, hit.Y, hit.D, CourseMovers.KnockKind(kind), kind != MoverKind.Gull) };
+            var knocked = new List<Knock> { new(hit.Time, hit.X, hit.Y, hit.D, CourseMovers.KnockKind(kind), kind is not (MoverKind.Gull or MoverKind.Twister)) };
             var (vx, vy, vd) = movers.Rebound(hit, Luck(hit.X, hit.D, 11 + hit.Mover));
             return Down(hit.Time, hit.X, hit.Y, hit.D, vx, vy, vd, new List<int>(), knocked, obstacles, ground, rules ?? PlayRules.Standard);
         }

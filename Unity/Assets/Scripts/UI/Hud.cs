@@ -534,6 +534,8 @@ namespace GolfArcade.UI
             public bool ShowBall, ShowLanding, ShowLoad;
             /// The meter's checkpoint targets, where each comes down (empty hides them).
             public readonly System.Collections.Generic.List<Vector3> Targets = new();
+            /// The golden rings still standing over the hole (the shot map marks them).
+            public readonly System.Collections.Generic.List<Vector3> Rings = new();
             internal int Version;
             public void Changed() => Version++;
         }
@@ -1137,6 +1139,10 @@ namespace GolfArcade.UI
 
         /// The round's conditions in the HUD's corner: today's weather and the twists.
         public void SetConditions(EventFace[] faces) { if (simple) simple.SetConditions(faces); }
+        /// The hole's bounty under them (null: none): state 0 open, 1 done, 2 missed.
+        public void SetBounty(string title, int coins, int state, string icon) { if (simple) simple.SetBounty(title, coins, state, icon); }
+        /// The round's coins by the shot map (null: none to count).
+        public void SetCoins(int? coins) { if (simple) simple.SetCoins(coins); }
 
         /// Whose shot it is, in their colour (two or more golfers on the phone, alternating).
         public void ShowTurn(string word, string detail, Color color)

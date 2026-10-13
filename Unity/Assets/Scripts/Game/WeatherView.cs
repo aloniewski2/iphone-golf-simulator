@@ -26,8 +26,13 @@ namespace GolfArcade.Game
         AmbientMode baseMode; Color baseAmbient, baseSkyAmbient, baseEquator, baseGround;
         Color baseFog; float baseFogStart, baseFogEnd;
 
-        // now, and where it is heading: cloud cover, how dark, how much falls
-        float cover, dim, precip, coverTo, dimTo, precipTo;
+        // now, and where it is heading: cloud cover, how dark, how much falls, how thick the fog
+        float cover, dim, precip, coverTo, dimTo, precipTo, mist, mistTo;
+        float nextHorn = float.MaxValue;
+        // the rainbow the clearing sky leaves: how much of it shows, and toward where
+        float rainbow, rainbowTo; Vector3 rainbowToward;
+        Transform rainbowArc; Material rainbowMaterial;
+        ParticleSystem wisps;
         float flash; Color flashColor = Color.white;
         /// The light is the weather's now (not the hole's own): clear skies leave it alone.
         bool touched;
@@ -75,6 +80,10 @@ namespace GolfArcade.Game
             embers = Particles("Embers", 200, ParticleSystemRenderMode.Billboard, ShotEffects.Soft());
             var emberNoise = embers.noise; emberNoise.enabled = true; emberNoise.strength = 1.2f; emberNoise.frequency = 0.5f;
             splashes = Particles("Splashes", 300, ParticleSystemRenderMode.Billboard, ShotEffects.Soft());
+            wisps = Particles("Fog wisps", 120, ParticleSystemRenderMode.Billboard, ShotEffects.Soft());
+            var wispFade = wisps.colorOverLifetime; wispFade.enabled = true;
+            var wg = new Gradient(); wg.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.3f), new GradientAlphaKey(1, 0.7f), new GradientAlphaKey(0, 1) });
+            wispFade.color = wg;
             var grow = splashes.sizeOverLifetime; grow.enabled = true; grow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0, 0.4f, 1, 1.4f));
             var fade = splashes.colorOverLifetime; fade.enabled = true;
             var g = new Gradient(); g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, new[] { new GradientAlphaKey(0.7f, 0), new GradientAlphaKey(0, 1) });
@@ -149,9 +158,9 @@ namespace GolfArcade.Game
             captured = true;
             sky = Weathers.SkyOf(hole);
             wind = holeWind;
-            cover = dim = precip = 0;
+            cover = dim = precip = mist = rainbow = rainbowTo = 0;
             Change(w);
-            if (instant) { cover = coverTo; dim = dimTo; precip = precipTo; }
+            if (instant) { cover = coverTo; dim = dimTo; precip = precipTo; mist = mistTo; }
             Apply();
         }
 
@@ -165,22 +174,76 @@ namespace GolfArcade.Game
                 Weather.Gusty => (0.32f, 0.08f, 0f),
                 Weather.Rain => (0.88f, 0.42f, 0.62f),
                 Weather.Storm => (1f, 0.66f, 1f),
+                Weather.Fog => (0.8f, 0.28f, 0f),
                 _ => (0f, 0f, 0f),
             };
+            mistTo = w == Weather.Fog ? 1f : 0f;
+            // a foghorn now and then from across the water
+            nextHorn = w == Weather.Fog && sky == Course.Sky.Rain ? Time.time + Random.Range(3f, 7f) : float.MaxValue;
+            if (w != Weather.Clear) rainbowTo = 0;
             if (sky == Course.Sky.Snow) dimTo *= 0.6f;   // snow light is bright
             nextStrike = w == Weather.Storm && sky != Course.Sky.Snow ? Time.time + Random.Range(2.5f, 6f) : float.MaxValue;
         }
 
         public void SetWind(Wind w) => wind = w;
 
+        /// The sky has cleared after rain: a rainbow fades in over the hole, beyond `toward` (the pin).
+        public void Rainbow(CoursePoint toward)
+        {
+            if (!captured || sky != Course.Sky.Rain) return;
+            rainbowToward = HoleView.ToWorld(toward);
+            rainbowTo = 1;
+            if (!rainbowArc) BuildRainbow();
+        }
+
+        /// The rainbow's arc: seven bands across a wide half ring, soft at its edges, in vertex colour.
+        void BuildRainbow()
+        {
+            Color[] bands = { new(0.93f, 0.25f, 0.27f), new(1f, 0.55f, 0.2f), new(1f, 0.86f, 0.3f), new(0.38f, 0.82f, 0.4f), new(0.27f, 0.6f, 0.95f), new(0.42f, 0.35f, 0.85f), new(0.6f, 0.38f, 0.85f) };
+            const int around = 64, across = 14;
+            var verts = new System.Collections.Generic.List<Vector3>(); var colours = new System.Collections.Generic.List<Color>(); var uvs = new System.Collections.Generic.List<Vector2>();
+            var tris = new System.Collections.Generic.List<int>();
+            for (int i = 0; i <= around; i++)
+            {
+                float a = Mathf.Lerp(0.04f, Mathf.PI - 0.04f, i / (float)around);
+                for (int j = 0; j <= across; j++)
+                {
+                    float u = j / (float)across;                 // outside (red) in
+                    float r = 1f - 0.1f * u;
+                    verts.Add(new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, 0));
+                    var c = bands[Mathf.Min(bands.Length - 1, (int)(u * bands.Length))];
+                    // the band edges and the arc's feet fade away
+                    float edge = Mathf.Sin(u * Mathf.PI), feet = Mathf.Clamp01(Mathf.Sin(a) * 2.2f);
+                    c.a = edge * feet; colours.Add(c); uvs.Add(new Vector2(0.5f, 0.5f));
+                }
+            }
+            for (int i = 0; i < around; i++)
+                for (int j = 0; j < across; j++)
+                {
+                    int a0 = i * (across + 1) + j, a1 = a0 + 1, b0 = a0 + across + 1, b1 = b0 + 1;
+                    tris.AddRange(new[] { a0, b0, a1, b0, b1, a1 });
+                }
+            var mesh = new Mesh { name = "Rainbow" };
+            mesh.SetVertices(verts); mesh.SetColors(colours); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+            var go = new GameObject("Rainbow") { layer = BallLook.OverlayLayer };
+            go.transform.SetParent(transform, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            rainbowMaterial = new Material(ShotEffects.ParticleMaterial()) { name = "Rainbow", mainTexture = Texture2D.whiteTexture };
+            mr.sharedMaterial = rainbowMaterial; mr.shadowCastingMode = ShadowCastingMode.Off; mr.receiveShadows = false;
+            rainbowArc = go.transform;
+            go.SetActive(false);
+        }
+
         /// Everything the weather changed, put back as the hole had it; nothing falling, nothing heard.
         public void Restore()
         {
             if (captured && touched) PutBack();
             captured = false; touched = false;
-            cover = dim = precip = coverTo = dimTo = precipTo = flash = 0;
-            nextStrike = float.MaxValue; pendingThunder = 0;
-            foreach (var ps in new[] { rain, snow, ash, embers, splashes }) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            cover = dim = precip = coverTo = dimTo = precipTo = flash = mist = mistTo = rainbow = rainbowTo = 0;
+            nextStrike = nextHorn = float.MaxValue; pendingThunder = 0;
+            foreach (var ps in new[] { rain, snow, ash, embers, splashes, wisps }) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (rainbowArc) rainbowArc.gameObject.SetActive(false);
             if (dome) dome.gameObject.SetActive(false);
             if (bolt) bolt.enabled = false;
             if (branch) branch.enabled = false;
@@ -204,7 +267,11 @@ namespace GolfArcade.Game
             cover = Mathf.MoveTowards(cover, coverTo, dt / 4f);
             dim = Mathf.MoveTowards(dim, dimTo, dt / 4f);
             precip = Mathf.MoveTowards(precip, precipTo, dt / 3f);
+            mist = Mathf.MoveTowards(mist, mistTo, dt / 5f);
+            rainbow = Mathf.MoveTowards(rainbow, rainbowTo, dt / 3.5f);
             if (Time.time >= nextStrike) { Strike(); nextStrike = Time.time + Random.Range(5f, 12f); }
+            if (Time.time >= nextHorn) { if (sounds) sounds.Foghorn(); nextHorn = Time.time + Random.Range(16f, 26f); }
+            PoseRainbow();
             flash = Mathf.MoveTowards(flash, 0, dt * 4.5f);
             if (bolt.enabled && Time.time >= boltUntil) bolt.enabled = branch.enabled = false;
             else if (bolt.enabled) bolt.enabled = branch.enabled = Mathf.Repeat((boltUntil - Time.time) * 22f, 1f) > 0.3f;
@@ -265,10 +332,29 @@ namespace GolfArcade.Game
         }
 
         static readonly Color RainFog = new(0.56f, 0.61f, 0.67f), StormFog = new(0.4f, 0.44f, 0.51f), SnowFog = new(0.82f, 0.86f, 0.92f), AshFog = new(0.4f, 0.33f, 0.31f);
+        static readonly Color SeaMist = new(0.8f, 0.83f, 0.85f), FrostMist = new(0.86f, 0.89f, 0.93f), Smoke = new(0.47f, 0.42f, 0.4f);
+
+        /// The rainbow over the hole beyond the pin, turned to face the camera, standing on the horizon.
+        void PoseRainbow()
+        {
+            if (!rainbowArc) return;
+            bool show = rainbow > 0.01f && cam;
+            if (rainbowArc.gameObject.activeSelf != show) rainbowArc.gameObject.SetActive(show);
+            if (!show) return;
+            var from = cam.transform.position;
+            var toward = rainbowToward - from; toward.y = 0;
+            if (toward.sqrMagnitude < 1f) { toward = cam.transform.forward; toward.y = 0; }
+            toward.Normalize();
+            float distance = Mathf.Min(cam.farClipPlane * 0.6f, 520f), radius = distance * 0.62f;
+            var foot = from + toward * distance; foot.y = from.y - radius * 0.3f;
+            rainbowArc.SetPositionAndRotation(foot, Quaternion.LookRotation(toward, Vector3.up));
+            rainbowArc.localScale = Vector3.one * radius;
+            rainbowMaterial.color = new Color(1, 1, 1, 0.42f * rainbow);
+        }
 
         void Apply()
         {
-            bool still = cover <= 0.001f && dim <= 0.001f && precip <= 0.001f && flash <= 0.001f;
+            bool still = cover <= 0.001f && dim <= 0.001f && precip <= 0.001f && flash <= 0.001f && mist <= 0.001f;
             if (still)
             {
                 // clear skies: the hole's own light, untouched (put back once if the weather had it)
@@ -286,12 +372,14 @@ namespace GolfArcade.Game
                 Course.Sky.Ash => AshFog,
                 _ => Color.Lerp(RainFog, StormFog, storm),
             };
+            // fog: the haze closes right in, pale (smoke in the crater)
+            fog = Color.Lerp(fog, sky switch { Course.Sky.Snow => FrostMist, Course.Sky.Ash => Smoke, _ => SeaMist }, mist);
             float flashLight = flash * flash;
             if (sun)
             {
                 sun.intensity = baseSun * (1 - 0.72f * dim) + baseSun * 0.9f * flashLight;
                 // under a deck of cloud the shadows go soft
-                sun.shadowStrength = baseShadow * (1 - 0.7f * cover);
+                sun.shadowStrength = baseShadow * (1 - 0.7f * Mathf.Max(cover, mist * 0.95f));
                 sun.color = Color.Lerp(Color.Lerp(baseSunColor, new Color(0.8f, 0.85f, 0.95f), dim * 0.7f), flashColor, flashLight * 0.6f);
             }
             float shade = 1 - 0.45f * dim + 0.5f * flashLight;
@@ -300,14 +388,14 @@ namespace GolfArcade.Game
             RenderSettings.ambientSkyColor = Grey(baseSkyAmbient);
             RenderSettings.ambientEquatorColor = Grey(baseEquator);
             RenderSettings.ambientGroundColor = Grey(baseGround);
-            var haze = Color.Lerp(baseFog, fog, cover);
+            var haze = Color.Lerp(baseFog, fog, Mathf.Max(cover, mist));
             RenderSettings.fogColor = haze;
-            RenderSettings.fogStartDistance = Mathf.Lerp(baseFogStart, baseFogStart * 0.3f, precip);
-            RenderSettings.fogEndDistance = Mathf.Lerp(baseFogEnd, Mathf.Max(baseFogEnd * 0.5f, 360f), precip);
+            RenderSettings.fogStartDistance = Mathf.Lerp(Mathf.Lerp(baseFogStart, baseFogStart * 0.3f, precip), 4f, mist);
+            RenderSettings.fogEndDistance = Mathf.Lerp(Mathf.Lerp(baseFogEnd, Mathf.Max(baseFogEnd * 0.5f, 360f), precip), 175f, mist);
 
             if (dome && cam)
             {
-                bool show = cover > 0.01f || flash > 0.01f;
+                bool show = cover > 0.01f || flash > 0.01f || mist > 0.01f;
                 if (dome.gameObject.activeSelf != show) dome.gameObject.SetActive(show);
                 if (show)
                 {
@@ -319,10 +407,12 @@ namespace GolfArcade.Game
                         Course.Sky.Ash => (new Color(0.22f, 0.18f, 0.18f), new Color(0.46f, 0.38f, 0.35f)),
                         _ => (Color.Lerp(new Color(0.42f, 0.46f, 0.53f), new Color(0.24f, 0.27f, 0.33f), storm), Color.Lerp(new Color(0.7f, 0.73f, 0.78f), new Color(0.48f, 0.52f, 0.58f), storm)),
                     };
+                    // in fog the sky is the fog
+                    dark = Color.Lerp(dark, haze * 0.94f, mist); light = Color.Lerp(light, haze * 1.04f, mist);
                     domeMaterial.SetColor("_Dark", dark); domeMaterial.SetColor("_Light", light);
                     domeMaterial.SetColor("_Horizon", haze);
                     domeMaterial.SetColor("_FlashColor", flashColor);
-                    domeMaterial.SetFloat("_Coverage", cover);
+                    domeMaterial.SetFloat("_Coverage", Mathf.Max(cover, mist));
                     domeMaterial.SetFloat("_Flash", flash);
                     var drift = new Vector3((float)System.Math.Sin(wind.DirectionDegrees * Mathf.Deg2Rad), 0, (float)System.Math.Cos(wind.DirectionDegrees * Mathf.Deg2Rad)) * (2 + (float)wind.SpeedMPH * 0.6f);
                     domeMaterial.SetVector("_Drift", new Vector4(drift.x, drift.z, 0, 0));
@@ -376,6 +466,18 @@ namespace GolfArcade.Game
                 v.x = drift.x * 0.3f; v.y = 1.4f; v.z = drift.z * 0.3f;
                 var s = ps.shape; s.scale = new Vector3(40, 1, 40);
                 ps.transform.position = at + cam.transform.forward * 12f + Vector3.down * 3f;
+            });
+            // banks of mist drifting low across the ground ahead
+            Emit(wisps, mist, at, 7f, ps =>
+            {
+                var m = ps.main; m.startLifetime = 11f; m.startSize = new ParticleSystem.MinMaxCurve(9f, 18f);
+                var c = sky switch { Course.Sky.Ash => Smoke, Course.Sky.Snow => FrostMist, _ => SeaMist }; c.a = 0.16f; m.startColor = c;
+                var v = ps.velocityOverLifetime; v.enabled = true; v.space = ParticleSystemSimulationSpace.World;
+                v.x = drift.x * 0.25f + 0.6f; v.y = 0; v.z = drift.z * 0.25f;
+                var s = ps.shape; s.scale = new Vector3(70, 3, 70);
+                var f = cam.transform.forward; f.y = 0; f = f.sqrMagnitude > 0.01f ? f.normalized : Vector3.forward;
+                var p = at + f * 34f; p.y = (float)HoleView.GroundHeight(HoleView.ToCourse(p)) + 2.5f;
+                ps.transform.position = p;
             });
             // rain splashing on the ground just ahead of the camera
             if (sky == Course.Sky.Rain && precip > 0.1f && Time.timeScale > 0)

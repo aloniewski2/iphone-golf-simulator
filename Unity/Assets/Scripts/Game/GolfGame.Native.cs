@@ -26,6 +26,8 @@ namespace GolfArcade.Game {
             SetFog(0);
             var selected = GolfArcade.Course.Course.ByKey(courseKey ?? "cliffside") ?? GolfArcade.Course.Course.Cliffside();
             setup = GameSetup.Solo(ProfileStore.Active, selected.Key);
+            // the day's forecast round: the date is the seed, the same round for everyone that day
+            if (DailyRound > 0) setup.Seed = DailyRound;
             StartRound();
             golfPresentation.Cancel(); pendingNativeIntro=true;
             BeginAim(false); hud.ShowPlayHud(true); RefreshControls();

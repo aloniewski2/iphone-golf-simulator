@@ -42,6 +42,14 @@ namespace GolfArcade.Game
         /// Twists, and weather with things moving about, for the rounds started from now on.
         public void SetRoundEvents(bool twists, bool world) { twistsWanted = twists; worldWanted = world; }
 
+        /// Clear skies after rain or a storm: a rainbow in the sky, and a rainbow ring to fly through.
+        void SkiesCleared(Weather was)
+        {
+            if (!was.IsWet()) return;
+            weatherView?.Rainbow(hole.Pin);
+            LayRainbowRing();
+        }
+
         void EnsureEventViews()
         {
             if (!eventSounds) eventSounds = EventSounds.Create(transform);
@@ -51,8 +59,9 @@ namespace GolfArcade.Game
         /// A new round: its events, dealt from its seed.
         void DealEvents(int seed)
         {
-            events = RoundEvents.Deal(seed, twistsWanted, worldWanted);
+            events = RoundEvents.Deal(seed, twistsWanted, worldWanted, challengesWanted);
             firstHoleIndex = -1;
+            ResetChallenges();
         }
 
         /// The hole about to be built: today's weather, and the rules it and the twists make
@@ -79,6 +88,7 @@ namespace GolfArcade.Game
             else weatherView?.Restore();
             GolfWindSway.SetWind(Wind);
             hud.SetConditions(ConditionFaces());
+            StartHoleChallenges(index);
         }
 
         /// The weather in words before the wind on the hole's title card.
@@ -120,8 +130,10 @@ namespace GolfArcade.Game
             if (weatherTurns < 2 && events.TurnBefore(holeIndex, holeSwings, weather) is Weather turned)
             {
                 weatherTurns++;
+                var was = weather;
                 ChangeWeather(turned);
-                (word, detail, colour, icon) = WeatherTurnWords(turned);
+                if (turned == Weather.Clear) SkiesCleared(was);
+                (word, detail, colour, icon) = WeatherTurnWords(turned, was);
                 holeWind = events.WindFor(holeIndex, holeWind, turned);
                 SetWind(holeWind);
             }
@@ -145,17 +157,21 @@ namespace GolfArcade.Game
             hud.SetConditions(ConditionFaces());
         }
 
-        (string, string, Color, string) WeatherTurnWords(Weather w)
+        (string, string, Color, string) WeatherTurnWords(Weather w, Weather was)
         {
             var sky = Weathers.SkyOf(hole);
             string word = w switch
             {
-                Weather.Clear => "Skies clear",
+                Weather.Clear => was == Weather.Fog ? (sky == Sky.Ash ? "Smoke clears" : "Fog lifts") : "Skies clear",
                 Weather.Gusty => "Wind's up",
+                Weather.Fog => sky == Sky.Ash ? "Smoke rolls in" : "Fog rolls in",
                 Weather.Rain => sky == Sky.Snow ? "Snow's falling" : sky == Sky.Ash ? "Ash is falling" : "Rain rolls in",
                 _ => sky == Sky.Snow ? "Blizzard!" : sky == Sky.Ash ? "Eruption!" : "Storm!",
             };
-            string detail = w == Weather.Clear ? "Dry turf again: the ball runs" : w.Line(sky);
+            string detail = w != Weather.Clear ? w.Line(sky)
+                : was == Weather.Fog ? "The green's in sight again"
+                : was.IsWet() && rainbowLaid ? "A rainbow ring to fly through!"
+                : "Dry turf again: the ball runs";
             return (word, detail, Hex(w.Colour(sky)), w.Icon(sky));
         }
 
@@ -193,6 +209,11 @@ namespace GolfArcade.Game
                     eventSounds?.Boing(); Haptics.Impact(0.6);
                     hud.ShowCallout("Boing!", Hex("FF6FA8"));
                     break;
+                case ObstacleKind.Twister:
+                    effects.Burst(at, new Color(0.55f, 0.5f, 0.42f, 0.9f), new Color(0.4f, 0.55f, 0.3f, 0.8f), 46, 6f, 0.4f, 1.6f, 1.2f);
+                    eventSounds?.Gust(); Haptics.Impact(0.8);
+                    hud.ShowCallout("Twister!", Hex("8FA3B8"));
+                    break;
                 case ObstacleKind.Gull:
                     effects.Burst(at, Color.white, new Color(0.78f, 0.82f, 0.86f), 34, 2.4f, 0.32f, 1.4f, 0.4f);
                     eventSounds?.Squawk(); Haptics.Tick();
@@ -212,6 +233,9 @@ namespace GolfArcade.Game
             weatherView?.Restore();
             hud.HideTwists();
             hud.SetConditions(null);
+            hud.SetBounty(null, 0, 0, null);
+            hud.SetCoins(null);
+            hud.Map.Rings.Clear(); hud.Map.Changed();
         }
 
         // ----- A multiplayer round: the host's events -----
@@ -220,16 +244,16 @@ namespace GolfArcade.Game
         void NetworkHoleEvents(Multiplayer.NetworkGolfState state)
         {
             if (events.Seed != state.eventSeed || events.Code != (state.events ?? "")) { events = RoundEvents.FromCode(state.eventSeed, state.events); firstHoleIndex = -1; }
-            pendingNetworkWeather = (Weather)Mathf.Clamp(state.weather, 0, 3);
+            pendingNetworkWeather = (Weather)Mathf.Clamp(state.weather, 0, (int)Weather.Fog);
         }
         Weather? pendingNetworkWeather;
 
         /// Every frame of a multiplayer round: the host's weather and wind, announced when they turn.
         void NetworkWeather(Multiplayer.NetworkGolfState state)
         {
-            var w = (Weather)Mathf.Clamp(state.weather, 0, 3);
+            var w = (Weather)Mathf.Clamp(state.weather, 0, (int)Weather.Fog);
             string word = null, detail = null; Color colour = Color.white; string icon = null;
-            if (w != weather) { ChangeWeather(w); (word, detail, colour, icon) = WeatherTurnWords(w); }
+            if (w != weather) { var was = weather; ChangeWeather(w); (word, detail, colour, icon) = WeatherTurnWords(w, was); if (w == Weather.Clear && was.IsWet()) weatherView?.Rainbow(hole.Pin); }
             var now = new Wind(state.windSpeed, state.windDirection);
             if (Math.Abs(now.SpeedMPH - Wind.SpeedMPH) > 0.01 || Math.Abs(now.DirectionDegrees - Wind.DirectionDegrees) > 0.01)
             {

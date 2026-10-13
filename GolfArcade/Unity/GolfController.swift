@@ -309,7 +309,7 @@ struct GolfPhoneController: View {
             } else if session.golfPhase == "Result" {
                 GolfShotResultControls(session: session).padding(20).background(GolfControllerStyle.ink.opacity(0.94))
             } else if session.golfPhase == "RoundDone" {
-                Button(session.golfHasNextHole ? "NEXT HOLE" : "REMATCH") { session.continueGolfRound() }
+                Button(session.golfHasNextHole ? "NEXT HOLE" : TennisMenu.shared.postMatch?.golf != nil ? "FINISH ROUND" : "REMATCH") { session.continueGolfRound() }
                     .font(GolfControllerStyle.font(28)).padding(18).foregroundStyle(GolfControllerStyle.ink)
                     .background(GolfControllerStyle.yellow, in: Capsule()).accessibilityIdentifier("golf-continue")
             } else if let party=reading.party, !party.myTurn && !session.paused {

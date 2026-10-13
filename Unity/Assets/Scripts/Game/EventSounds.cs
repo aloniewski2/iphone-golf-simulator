@@ -13,7 +13,7 @@ namespace GolfArcade.Game
     {
         const int Rate = 44100;
         AudioSource once, rain, wind;
-        AudioClip rainLoop, windLoop, thunderNear, thunderFar, gust, boing, squawk, horn, ratchet, stamp, rumble;
+        AudioClip rainLoop, windLoop, thunderNear, thunderFar, gust, boing, squawk, horn, ratchet, stamp, rumble, chime, bigChime, jingle, foghorn;
         float rainTarget, windTarget;
         AudioClip RainLoop => rainLoop ??= MakeRain();
         AudioClip WindLoop => windLoop ??= MakeWind();
@@ -26,6 +26,10 @@ namespace GolfArcade.Game
         AudioClip HornClip => horn ??= MakeHorn();
         AudioClip RatchetClip => ratchet ??= MakeRatchet();
         AudioClip StampClip => stamp ??= MakeStamp();
+        AudioClip ChimeClip => chime ??= MakeChime("Ring chime", new[] { 1318.5, 1975.5 });
+        AudioClip BigChimeClip => bigChime ??= MakeChime("Big ring chime", new[] { 1046.5, 1318.5, 1568.0, 2093.0 });
+        AudioClip JingleClip => jingle ??= MakeJingle();
+        AudioClip FoghornClip => foghorn ??= MakeFoghorn();
 
         public static EventSounds Create(Transform parent)
         {
@@ -73,6 +77,12 @@ namespace GolfArcade.Game
         public void Horn() => once.PlayOneShot(HornClip, 0.7f);
         public void Ratchet() => once.PlayOneShot(RatchetClip, 0.35f);
         public void Stamp() => once.PlayOneShot(StampClip, 0.85f);
+        /// A ring flown through: a bright two-note chime, a run up four for the big ones.
+        public void Chime(bool big) => once.PlayOneShot(big ? BigChimeClip : ChimeClip, 0.7f);
+        /// Coins paid out (a bounty done): a jingle of them landing.
+        public void Jingle() => once.PlayOneShot(JingleClip, 0.8f);
+        /// Far off in the fog, a foghorn.
+        public void Foghorn() => once.PlayOneShot(FoghornClip, 0.5f);
 
         // Rain: a bed of soft hiss with countless tiny ticks of drops in it, looped seamlessly.
         static AudioClip MakeRain() => Loop("Rain", 3f, (t, rng) =>
@@ -141,6 +151,40 @@ namespace GolfArcade.Game
 
         static double Noise(System.Random rng) => rng.NextDouble() * 2 - 1;
         static double Saw(double phase) => 2 * (phase - Math.Floor(phase + 0.5));
+
+        // Bells: each note a struck sine with a little octave shimmer, ringing out, one after another.
+        static AudioClip MakeChime(string name, double[] notes) => Clip(name, 0.5f + notes.Length * 0.07f, (t, rng) =>
+        {
+            double v = 0;
+            for (int i = 0; i < notes.Length; i++)
+            {
+                double s = t - i * 0.07;
+                if (s < 0) continue;
+                v += (Math.Sin(2 * Math.PI * notes[i] * s) + 0.3 * Math.Sin(2 * Math.PI * notes[i] * 2.01 * s)) * Math.Exp(-s / 0.18) * Math.Min(1, s / 0.003);
+            }
+            return v * 0.42;
+        });
+        // Coins: a dozen bright little clinks, each pitched apart, landing close together.
+        static AudioClip MakeJingle() => Clip("Jingle", 0.9f, (t, rng) =>
+        {
+            double v = 0;
+            for (int i = 0; i < 12; i++)
+            {
+                double s = t - i * 0.045 - 0.012 * Math.Sin(i * 7.3);
+                if (s < 0) continue;
+                double f = 2600 + 900 * Math.Sin(i * 2.1) + 400 * i % 700;
+                v += (Math.Sin(2 * Math.PI * f * s) + 0.5 * Math.Sin(2 * Math.PI * f * 2.76 * s)) * Math.Exp(-s / 0.05);
+            }
+            return v * 0.16;
+        });
+        // A foghorn across the water: a low reedy note, swelling and dying away.
+        static AudioClip MakeFoghorn() => Clip("Foghorn", 3.2f, (t, rng) =>
+        {
+            double env = Math.Min(1, t / 0.5) * Math.Exp(-Math.Max(0, t - 1.8) / 0.5);
+            double f = 110 + 1.5 * Math.Sin(t * 3);
+            double reed = Math.Sin(2 * Math.PI * f * t) + 0.5 * Math.Sin(4 * Math.PI * f * t) + 0.25 * Math.Sin(6 * Math.PI * f * t);
+            return reed * env * 0.3;
+        }, 0.08);
 
         static AudioClip Clip(string name, float seconds, Func<double, System.Random, double> sample, double lowPass = 1) => Render(name, seconds, sample, lowPass, false);
         static AudioClip Loop(string name, float seconds, Func<double, System.Random, double> sample, double lowPass) => Render(name, seconds, sample, lowPass, true);

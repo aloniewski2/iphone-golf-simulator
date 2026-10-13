@@ -40,6 +40,7 @@ namespace GolfArcade.Game
                 {
                     case MoverKind.Balloon: view.BuildBalloon(root, i, m.Variant); break;
                     case MoverKind.Cart: view.BuildCart(root, i); break;
+                    case MoverKind.Twister: view.BuildTwister(root, i); break;
                     default: view.BuildGull(root, i); break;
                 }
                 // (the minimap draws only the course; nothing on it is solid)
@@ -103,6 +104,16 @@ namespace GolfArcade.Game
                             float roll = travelled / 0.28f * Mathf.Rad2Deg * Mathf.Sign((float)step);   // over the wheel's radius
                             foreach (var w in spin) if (w) w.Rotate(Vector3.right, roll, Space.Self);
                         }
+                        break;
+                    }
+                    case MoverKind.Twister:
+                    {
+                        // it leans and sways, its walls spinning at their own speeds, faster near the ground
+                        root.SetPositionAndRotation(new Vector3((float)x, (float)y, (float)d),
+                            Quaternion.Euler(4f * Mathf.Sin((float)t * 0.6f + i), 0, 5f * Mathf.Sin((float)t * 0.45f + 2 * i)));
+                        if (spinners.TryGetValue(i, out var layers))
+                            for (int k = 0; k < layers.Length; k++)
+                                if (layers[k]) layers[k].localRotation = Quaternion.Euler(0, Time.time * (260f - 55f * k) % 360f, 0);
                         break;
                     }
                     default:
@@ -276,6 +287,121 @@ namespace GolfArcade.Game
                     spin.Add(hub);
                 }
             wheels[index] = spin.ToArray();
+        }
+
+        readonly Dictionary<int, Transform[]> spinners = new();
+
+        /// A twister: three walls of swirling cloud round its middle, wide at the top and pinched
+        /// to a point at the ground, each streaked and spun at its own speed; a skirt of dust where
+        /// it touches down, and debris whirling up it.
+        void BuildTwister(Transform root, int index)
+        {
+            var mat = new Material(ShotEffects.ParticleMaterial()) { name = "Twister", mainTexture = Texture2D.whiteTexture };
+            var layers = new Transform[3];
+            for (int k = 0; k < layers.Length; k++)
+            {
+                var go = new GameObject("Funnel " + k);
+                go.transform.SetParent(root, false);
+                go.AddComponent<MeshFilter>().sharedMesh = FunnelMesh(1f - 0.18f * k, k);
+                var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = mat;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
+                layers[k] = go.transform;
+            }
+            spinners[index] = layers;
+            // where it touches down: a low skirt of dust and spray
+            var skirt = new GameObject("Dust skirt");
+            skirt.transform.SetParent(root, false);
+            skirt.AddComponent<MeshFilter>().sharedMesh = SkirtMesh();
+            var sr = skirt.AddComponent<MeshRenderer>(); sr.sharedMaterial = mat;
+            sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // debris whirling up and round it
+            var debris = new GameObject("Debris").AddComponent<ParticleSystem>();
+            debris.transform.SetParent(root, false);
+            debris.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = debris.main;
+            main.loop = true; main.playOnAwake = true; main.maxParticles = 400; main.simulationSpace = ParticleSystemSimulationSpace.Local;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(2.2f, 3.4f); main.startSpeed = 0; main.gravityModifier = 0;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.2f, 0.55f);
+            main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.32f, 0.27f, 0.2f, 0.95f), new Color(0.26f, 0.38f, 0.2f, 0.95f));
+            var shape = debris.shape; shape.enabled = true; shape.shapeType = ParticleSystemShapeType.Circle; shape.radius = 3.2f; shape.rotation = new Vector3(-90, 0, 0);
+            var vel = debris.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.Local;
+            vel.x = new ParticleSystem.MinMaxCurve(0f); vel.z = new ParticleSystem.MinMaxCurve(0f);
+            vel.y = new ParticleSystem.MinMaxCurve(5f, 9f);
+            vel.orbitalY = new ParticleSystem.MinMaxCurve(4f, 6f);
+            vel.radial = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+            var emission = debris.emission; emission.rateOverTime = 110;
+            var pr = debris.GetComponent<ParticleSystemRenderer>();
+            pr.sharedMaterial = ShotEffects.ParticleMaterial();
+            pr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            debris.Play();
+            // and the cloud of dirt it churns up round its foot, billowing round and out
+            var dust = new GameObject("Dust cloud").AddComponent<ParticleSystem>();
+            dust.transform.SetParent(root, false);
+            dust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var dm = dust.main;
+            dm.loop = true; dm.playOnAwake = true; dm.maxParticles = 120; dm.simulationSpace = ParticleSystemSimulationSpace.Local;
+            dm.startLifetime = new ParticleSystem.MinMaxCurve(2.5f, 4f); dm.startSpeed = 0; dm.gravityModifier = 0;
+            dm.startSize = new ParticleSystem.MinMaxCurve(3.5f, 7f);
+            dm.startColor = new ParticleSystem.MinMaxGradient(new Color(0.45f, 0.39f, 0.31f, 0.38f), new Color(0.38f, 0.36f, 0.33f, 0.3f));
+            var ds = dust.shape; ds.enabled = true; ds.shapeType = ParticleSystemShapeType.Circle; ds.radius = 3.5f; ds.rotation = new Vector3(-90, 0, 0);
+            var dv = dust.velocityOverLifetime; dv.enabled = true; dv.space = ParticleSystemSimulationSpace.Local;
+            dv.x = new ParticleSystem.MinMaxCurve(0f); dv.z = new ParticleSystem.MinMaxCurve(0f);
+            dv.y = new ParticleSystem.MinMaxCurve(0.4f, 1.6f); dv.orbitalY = new ParticleSystem.MinMaxCurve(1.5f, 2.5f); dv.radial = new ParticleSystem.MinMaxCurve(1.2f, 2.4f);
+            var dc = dust.colorOverLifetime; dc.enabled = true;
+            var dg = new Gradient(); dg.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.25f), new GradientAlphaKey(0, 1) });
+            dc.color = dg;
+            var de = dust.emission; de.rateOverTime = 30;
+            var dr = dust.GetComponent<ParticleSystemRenderer>();
+            dr.sharedMaterial = ShotEffects.ParticleMaterial(); dr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            dust.Play();
+        }
+
+        /// One wall of the funnel: a flared lathe up to 32 yards, streaked by its vertex alpha, softest at the top and the ground.
+        static Mesh FunnelMesh(float scale, int layer)
+        {
+            const int rings = 30, around = 32; const float height = 40f;
+            var verts = new List<Vector3>(); var colours = new List<Color>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+            for (int j = 0; j <= rings; j++)
+            {
+                float v = j / (float)rings, h = v * height;
+                float r = (1.0f + 10f * Mathf.Pow(v, 1.6f)) * scale;
+                for (int i = 0; i <= around; i++)
+                {
+                    float a = i * Mathf.PI * 2 / around + v * (2.2f + layer);   // the wall twists as it climbs
+                    verts.Add(new Vector3(Mathf.Cos(a) * r, h, Mathf.Sin(a) * r));
+                    float streak = 0.55f + 0.45f * Mathf.Sin(i * Mathf.PI * 2 / around * (3 + layer) + v * 9f);
+                    float fade = Mathf.Clamp01(v * 8f) * Mathf.Clamp01((1 - v) * 3f);
+                    // dark storm cloud, browner low down where it is full of dirt
+                    float g = Mathf.Lerp(0.2f, 0.4f, v) + 0.04f * layer;
+                    colours.Add(new Color(g * Mathf.Lerp(1.12f, 1f, v), g * 1.02f, g * Mathf.Lerp(0.92f, 1.1f, v), (0.46f + 0.44f * streak) * fade * (layer == 0 ? 1f : 0.8f)));
+                    uvs.Add(new Vector2(0.5f, 0.5f));
+                }
+            }
+            for (int j = 0; j < rings; j++)
+                for (int i = 0; i < around; i++)
+                {
+                    int a0 = j * (around + 1) + i, a1 = a0 + 1, b0 = a0 + around + 1, b1 = b0 + 1;
+                    tris.AddRange(new[] { a0, b0, a1, b0, b1, a1 });
+                }
+            var mesh = new Mesh { name = "Twister funnel " + layer };
+            mesh.SetVertices(verts); mesh.SetColors(colours); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        static Mesh SkirtMesh()
+        {
+            const int around = 32; var verts = new List<Vector3> { new(0, 0.3f, 0) }; var colours = new List<Color> { new(0.42f, 0.37f, 0.3f, 0.8f) };
+            var uvs = new List<Vector2> { new(0.5f, 0.5f) }; var tris = new List<int>();
+            for (int i = 0; i <= around; i++)
+            {
+                float a = i * Mathf.PI * 2 / around;
+                verts.Add(new Vector3(Mathf.Cos(a) * 9f, 2.2f + 0.7f * Mathf.Sin(a * 5), Mathf.Sin(a) * 9f));
+                colours.Add(new Color(0.5f, 0.45f, 0.38f, 0f)); uvs.Add(new Vector2(0.5f, 0.5f));
+                if (i > 0) tris.AddRange(new[] { 0, i + 1, i });
+            }
+            var mesh = new Mesh { name = "Twister skirt" };
+            mesh.SetVertices(verts); mesh.SetColors(colours); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+            return mesh;
         }
 
         void BuildGull(Transform root, int index)

@@ -141,6 +141,7 @@ namespace GolfArcade.UI
         {
             if(conditionsRoot)Destroy(conditionsRoot.gameObject);
             conditionsRoot=null;
+            conditionCount=faces?.Length??0;PlaceBounty();
             if(faces==null||faces.Length==0)return;
             conditionsRoot=new GameObject("Conditions",typeof(RectTransform)).GetComponent<RectTransform>();
             conditionsRoot.SetParent(infoRoot,false);
@@ -156,6 +157,61 @@ namespace GolfArcade.UI
                 t.rectTransform.offsetMin=new Vector2(50,0);t.rectTransform.offsetMax=new Vector2(-10,0);t.text=f.Title.ToUpperInvariant();t.color=Color.white;t.raycastTarget=false;
             }
         }
+        readonly System.Collections.Generic.List<RectTransform> ringMarks=new();
+        RectTransform bountyRoot, coinsRoot; Text bountyTitle, bountyReward, coinsText; Image bountyMark, bountyKey;
+        int conditionCount; float coinsBumpedAt=-9;
+        /// The hole's bounty under the conditions: a gold chip with what to do and what it pays,
+        /// ticked when done, crossed and dimmed when missed. Null takes it away.
+        public void SetBounty(string title,int coins,int state,string icon)
+        {
+            if(title==null){if(bountyRoot)bountyRoot.gameObject.SetActive(false);return;}
+            if(!bountyRoot){
+                bountyRoot=UiKit.Panel(infoRoot,"Bounty",Ink,new Vector2(0,0),new Vector2(0,0),Vector2.zero,new Vector2(300,62)).rectTransform;
+                bountyRoot.pivot=new Vector2(0,1);bountyRoot.GetComponent<Image>().raycastTarget=false;
+                bountyKey=UiKit.Panel(bountyRoot,"Colour",Gold,new Vector2(0,0),new Vector2(0,1),Vector2.zero,new Vector2(46,0));bountyKey.raycastTarget=false;
+                bountyMark=Icons.Place(bountyKey.transform,"star",Ink,new Vector2(.5f,.5f),Vector2.zero,30);bountyMark.raycastTarget=false;
+                bountyReward=UiKit.Label(bountyRoot,"Reward",15,TextAnchor.UpperLeft,new Vector2(0,1),new Vector2(1,1),new Vector2(0,-6),new Vector2(0,20),UiKit.Strong,false);
+                bountyReward.rectTransform.pivot=new Vector2(0,1);bountyReward.rectTransform.offsetMin=new Vector2(58,bountyReward.rectTransform.offsetMin.y);bountyReward.rectTransform.offsetMax=new Vector2(-8,-6);bountyReward.raycastTarget=false;
+                bountyTitle=UiKit.Label(bountyRoot,"Task",19,TextAnchor.LowerLeft,Vector2.zero,new Vector2(1,0),new Vector2(0,6),new Vector2(0,30),UiKit.Strong,false);
+                bountyTitle.rectTransform.pivot=new Vector2(0,0);bountyTitle.rectTransform.offsetMin=new Vector2(58,6);bountyTitle.rectTransform.offsetMax=new Vector2(-8,34);bountyTitle.raycastTarget=false;
+                bountyTitle.horizontalOverflow=HorizontalWrapMode.Wrap;bountyTitle.verticalOverflow=VerticalWrapMode.Truncate;
+                bountyTitle.resizeTextForBestFit=true;bountyTitle.resizeTextMinSize=12;bountyTitle.resizeTextMaxSize=19;
+            }
+            bountyRoot.gameObject.SetActive(true);
+            bool done=state==1, missed=state==2;
+            bountyKey.color=missed?UiKit.Hex("6B7785"):done?UiKit.Hex("5CD66B"):Gold;
+            bountyMark.sprite=Icons.Get(done?"tick":missed?"cross":icon);
+            bountyReward.text=done?$"BOUNTY DONE  ·  +{coins}":missed?"BOUNTY MISSED":$"BOUNTY  ·  +{coins} COINS";
+            bountyReward.color=missed?new Color(1,1,1,.5f):Gold;
+            bountyTitle.text=title.ToUpperInvariant();bountyTitle.color=missed?new Color(1,1,1,.5f):Color.white;
+            PlaceBounty();
+        }
+        void PlaceBounty(){if(bountyRoot)bountyRoot.anchoredPosition=new Vector2(0,-10-conditionCount*44);}
+        public static readonly Color Gold=UiKit.Hex("FFC93C");
+
+        /// The round's coins under the shot map (null hides them); a new total pops the counter.
+        public void SetCoins(int? coins)
+        {
+            if(coins==null){if(coinsRoot)coinsRoot.gameObject.SetActive(false);return;}
+            if(!coinsRoot){
+                coinsRoot=UiKit.Panel(mapRoot,"Coins",Ink,new Vector2(1,0),new Vector2(1,0),new Vector2(0,-12),new Vector2(170,54)).rectTransform;
+                coinsRoot.pivot=new Vector2(1,1);coinsRoot.GetComponent<Image>().raycastTarget=false;
+                var disc=Icons.Place(coinsRoot,"coin",Gold,new Vector2(0,.5f),new Vector2(30,0),36);disc.raycastTarget=false;
+                coinsText=UiKit.Label(coinsRoot,"Count",28,TextAnchor.MiddleRight,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero,UiKit.Display,false);
+                coinsText.rectTransform.offsetMin=new Vector2(54,0);coinsText.rectTransform.offsetMax=new Vector2(-16,0);coinsText.color=Gold;coinsText.raycastTarget=false;
+            }
+            coinsRoot.gameObject.SetActive(true);
+            string text=coins.Value.ToString("N0");
+            if(coinsText.text!=text&&coinsText.text.Length>0)coinsBumpedAt=Time.unscaledTime;
+            coinsText.text=text;
+        }
+        void Update()
+        {
+            if(!coinsRoot)return;
+            float t=Time.unscaledTime-coinsBumpedAt;
+            coinsRoot.localScale=Vector3.one*(t<.4f?1+.28f*Mathf.Sin(t/.4f*Mathf.PI):1);
+        }
+
         public void SetDistance(double n,string unit)=>distance.text=$"{n:F0} <size=24>{unit.ToLowerInvariant()} TO PIN</size>";
         public void SetClub(string name)=>club.text=name;
         public void SetClubSelection(GolfClub selected, bool announce=false)
@@ -185,6 +241,9 @@ namespace GolfArcade.UI
             projection.SetPath(map,flight?plan.Trace:plan.Path,flight?plan.TraceColor:new Color(.25f,.78f,1),!flight);
             void Place(RectTransform t,Vector3 world,bool show){var v=map.WorldToViewportPoint(world);t.gameObject.SetActive(show&&v.x>=0&&v.x<=1&&v.y>=0&&v.y<=1);t.anchorMin=t.anchorMax=new Vector2(v.x,v.y);t.anchoredPosition=Vector2.zero;}
             Place(ball,plan.Ball,plan.ShowBall);Place(pin,plan.Pin,true);Place(live,plan.Load,plan.ShowLoad&&!flight);
+            // the rings still standing, little gold hoops on the map
+            while(ringMarks.Count<plan.Rings.Count){var m=Icons.Place(mapImage.rectTransform,"ring",Gold,new Vector2(.5f,.5f),Vector2.zero,24);m.raycastTarget=false;ringMarks.Add(m.rectTransform);}
+            for(int i=0;i<ringMarks.Count;i++)Place(ringMarks[i],i<plan.Rings.Count?plan.Rings[i]:Vector3.zero,i<plan.Rings.Count);
             for(int i=0;i<targets.Length;i++)Place(targets[i],i<plan.Targets.Count?plan.Targets[i]:Vector3.zero,!flight&&i<plan.Targets.Count);
         }
     }
