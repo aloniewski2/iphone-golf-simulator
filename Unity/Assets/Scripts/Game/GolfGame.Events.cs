@@ -70,12 +70,13 @@ namespace GolfArcade.Game
         /// The hole built and its wind set: the gusts' base, what moves about it, its sky.
         void StartHoleEvents(int index, double? moverClock = null)
         {
-            EnsureEventViews();
             holeWind = Wind;
             hole.Movers = events.MoversFor(index, hole, weather, hole.Ground);
             moverView = hole.Movers != null ? MoverView.Build(holeView.transform, hole.Movers) : null;
             if (hole.Movers != null && moverClock.HasValue) hole.Movers.SetClock(moverClock.Value);
-            weatherView.Begin(rig.Camera, hole, weather, Wind, instant: true);
+            // (with the weather off it is plain golf's sky, light and sound: nothing is laid over them)
+            if (events.World || events.Has(Twist.Hurricane)) { EnsureEventViews(); weatherView.Begin(rig.Camera, hole, weather, Wind, instant: true); }
+            else weatherView?.Restore();
             GolfWindSway.SetWind(Wind);
             hud.SetConditions(ConditionFaces());
         }

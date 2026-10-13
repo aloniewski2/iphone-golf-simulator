@@ -159,6 +159,7 @@ namespace GolfArcade.Game
         public void Change(Weather w)
         {
             weather = w;
+            if (sounds) sounds.Prepare(w, sky);
             (coverTo, dimTo, precipTo) = w switch
             {
                 Weather.Gusty => (0.32f, 0.08f, 0f),
