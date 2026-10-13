@@ -1,0 +1,15 @@
+== 1/5 Unity clone: /private/tmp/claude-501/-Users-adnanyonathan-Documents-Codex-2026-09-20-wh-outputs-iphone-golf-simulator/43f4b36a-f11c-4db6-90e0-e9995fa0db4f/scratchpad/UnityClone
+== 2/5 export (MatchHeroLockerExport: Run, RunDistance, RunGolf)
+== 3/5 install into GolfArcade/Unity/CharacterAssets
+  updated MatchHero_Female.json
+  updated MatchHero_Female_Distance.json
+  updated MatchHero_Female_Distance_Rig.lzfse
+  updated MatchHero_Female_Rig.lzfse
+  updated MatchHero_Male.json
+  updated MatchHero_Male_Distance.json
+  updated MatchHero_Male_Distance_Rig.lzfse
+  updated MatchHero_Male_Rig.lzfse
+  8 file(s) changed
+== 4/5 goldens + provenance
+  provenance: 6 exports, 48 guarded look sources
+== done. Review: git diff --stat -- GolfArcade/Unity/CharacterAssets GolfArcadeTests/VisualGolden; sheets in work/hero-sync/sheets/

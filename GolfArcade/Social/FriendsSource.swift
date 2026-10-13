@@ -32,8 +32,10 @@ enum FriendsAccess: Equatable, Sendable {
     func identity() async throws -> HubClientMessage.Auth
 }
 
+/// Ids are Game Center **teamPlayerID**s: that is the id Apple's identity signature is made over (Apple's verification steps for
+/// fetchItems(forIdentityVerificationSignature:)), so the Club Hub can check it. (A gamePlayerID would fail every real sign-in.)
 @MainActor final class GameKitFriendsSource: FriendsSource {
-    var localID: String { GKLocalPlayer.local.gamePlayerID }
+    var localID: String { GKLocalPlayer.local.teamPlayerID }
     var localName: String { GKLocalPlayer.local.displayName }
 
     func access() async -> FriendsAccess {
@@ -47,11 +49,11 @@ enum FriendsAccess: Equatable, Sendable {
     }
 
     func friends() async throws -> [FriendProfile] {
-        try await GKLocalPlayer.local.loadFriends().map { FriendProfile(id: $0.gamePlayerID, name: $0.displayName) }
+        try await GKLocalPlayer.local.loadFriends().map { FriendProfile(id: $0.teamPlayerID, name: $0.displayName) }
     }
 
     func recent() async throws -> [FriendProfile] {
-        try await GKLocalPlayer.local.loadRecentPlayers().map { FriendProfile(id: $0.gamePlayerID, name: $0.displayName) }
+        try await GKLocalPlayer.local.loadRecentPlayers().map { FriendProfile(id: $0.teamPlayerID, name: $0.displayName) }
     }
 
     func presentAddFriend() throws {
@@ -61,7 +63,7 @@ enum FriendsAccess: Equatable, Sendable {
 
     func identity() async throws -> HubClientMessage.Auth {
         guard GKLocalPlayer.local.isAuthenticated else { throw MultiplayerError.unavailable("Sign in to Game Center first.") }
-        let id = GKLocalPlayer.local.gamePlayerID
+        let id = GKLocalPlayer.local.teamPlayerID
         return try await withCheckedThrowingContinuation { continuation in
             GKLocalPlayer.local.fetchItems { url, signature, salt, timestamp, error in
                 if let url, let signature, let salt {

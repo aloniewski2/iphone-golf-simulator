@@ -1,0 +1,8 @@
+tennis_male Ready:Male_ReadyIdle: FAIL HAND_IN hand>cloth:Kit_Top=531 hand>cloth:Kit_Bottom=49 depth 49.933mm @41
+tennis_male Forehand:Male_ForehandArmCorrected: FAIL HAND_IN hand>cloth:Kit_Top=621 depth 49.865mm @5 | POKE 18 @0 | LINING 74 @11
+tennis_male Volley:Male_VolleyForehand: FAIL HAND_IN hand>cloth:Kit_Bottom=428 hand>cloth:Kit_Top=297 racket>cloth:Kit_Bottom=30 depth 49.826mm @9 | POKE 17 @21 | LINING 72 @7
+tennis_male ForehandWide:Male_ForehandWide: FAIL HAND_IN hand>cloth:Kit_Top=517 hand>cloth:Kit_Bottom=54 depth 49.826mm @40 | POKE 15 @2 | LINING 102 @29
+tennis_male ForehandShort:Male_ForehandShort: FAIL HAND_IN hand>cloth:Kit_Top=605 racket>cloth:Kit_Top=18 depth 49.945mm @12 | POKE 22 @16 | LINING 80 @9
+tennis_male ForehandOpen:Male_ForehandOpen: FAIL HAND_IN hand>cloth:Kit_Top=513 hand>cloth:Kit_Bottom=56 depth 49.827mm @30 | POKE 20 @3 | LINING 78 @24
+tennis_male SplitToForehand:Male_SplitToForehand: FAIL HAND_IN hand>cloth:Kit_Top=518 hand>cloth:Kit_Bottom=56 depth 49.826mm @18 | POKE 18 @14 | LINING 77 @3
+tennis_male EmoteJumpJoy:Male_Emote_JumpJoy: FAIL HAND_IN hand>cloth:Kit_Top=761 hand>cloth:Kit_Bottom=565 racket>cloth:Kit_Bottom=28 depth 49.889mm @6 | POKE 17 @55 | LINING 61 @21

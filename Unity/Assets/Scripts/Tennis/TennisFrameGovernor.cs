@@ -13,15 +13,20 @@ namespace GolfArcade.Tennis
         public const float Window = 2f, Settle = 4f;
         /// A window is "late" when this share of its frames missed their slot.
         public const float LateShare = .1f;
-        float elapsed, settle = Settle;
-        int frames, late;
+        float elapsed, settle = Settle, sinceDrawn;
+        int frames, late, inputRate;
 
         void Update()
         {
             if (Application.isEditor || Time.timeScale == 0) return;
-            float dt = Time.unscaledDeltaTime;
+            // With 120 Hz swing input (InputRate) only every other loop is drawn: judge the frames the TV gets, and start
+            // the window again whenever the loop rate changes.
+            if (inputRate != GolfArcade.Game.InputRate.Generation) { inputRate = GolfArcade.Game.InputRate.Generation; elapsed = 0; frames = late = 0; sinceDrawn = 0; settle = Mathf.Max(settle, 1); }
+            sinceDrawn += Time.unscaledDeltaTime;
+            if (!UnityEngine.Rendering.OnDemandRendering.willCurrentFrameRender) return;
+            float dt = sinceDrawn; sinceDrawn = 0;
             if (settle > 0) { settle -= dt; return; }
-            float slot = 1f / Mathf.Max(30, Application.targetFrameRate);
+            float slot = UnityEngine.Rendering.OnDemandRendering.renderFrameInterval / (float)Mathf.Max(30, Application.targetFrameRate);
             frames++; if (dt > slot * 1.25f) late++;
             elapsed += dt;
             if (elapsed < Window) return;

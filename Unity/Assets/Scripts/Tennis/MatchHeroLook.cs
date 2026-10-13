@@ -16,12 +16,102 @@ namespace GolfArcade.Tennis
     {
         public bool female;
         public bool golfKit;
+        /// CLOTHING V2 (work/clothing-v2): the kit renderers carry complete garments built over this body (thickness, finished edges,
+        /// their own skin weights, N/M maps in Resources/<Tennis|Golf>/KitsV2/<Sex>/). None of the older garment repairs apply to them:
+        /// no tailored-polo / skirt swaps, no hem / coverage / shoe reshaping, no distance-LOD swap. Written by ClothingV2Install.
+        public bool kitV2;
+        /// The bone names of each kit renderer (parallel to `kit`). Tennis garments follow the body's arm-volume support bones (ArmBlend_*,
+        /// made at runtime by HeroArmSkinning, identity bind poses), so their palettes are bound by name once those bones exist.
+        [System.Serializable] public sealed class KitBones { public string[] names; }
+        public KitBones[] kitV2Bones;
+        /// A kit piece built by CLOTHING V2 (its mesh asset is named "KitV2 ..."). Pieces are swapped one at a time: the older repairs keep running for the rest.
+        public static bool IsKitV2(Mesh m) => m && m.name.StartsWith("KitV2");
+        public static bool IsKitV2(Renderer r) => r is SkinnedMeshRenderer s && IsKitV2(s.sharedMesh);
+        SkinnedMeshRenderer KitPiece(string n) => kit?.FirstOrDefault(r => r && r.name == n);
+        void BindKitV2()
+        {
+            if (!kitV2 || kit == null || kitV2Bones == null) return;
+            var byName = new System.Collections.Generic.Dictionary<string, Transform>();
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (!byName.ContainsKey(t.name)) byName[t.name] = t;
+            for (int i = 0; i < kit.Length && i < kitV2Bones.Length; i++)
+            {
+                if (!kit[i] || kitV2Bones[i]?.names == null) continue;
+                var bones = kit[i].bones;
+                if (bones.Length != kitV2Bones[i].names.Length) continue;
+                for (int b = 0; b < bones.Length; b++) if (byName.TryGetValue(kitV2Bones[i].names[b], out var t)) bones[b] = t;
+                kit[i].bones = bones;
+            }
+        }
+        /// Skin that a worn V2 garment covers deeply (never visible, work/clothing-v2/py/cover.py) is not drawn, so it can never show
+        /// through the cloth in a swing. Per piece: Resources/<Sport>/KitsV2/<Sex>/KitV2_<Sport>_<Sex>_<Tag>_hide.bytes (int32 vertex
+        /// triplets of the body). Re-applied when the worn set changes (SetGolfHand). The source body mesh is never modified.
+        Mesh kitV2CoverSource; string kitV2CoverKey;
+        static readonly System.Collections.Generic.Dictionary<(Mesh, string), Mesh> kitV2Covered = new System.Collections.Generic.Dictionary<(Mesh, string), Mesh>();
+        static long CoverKey(int a, int b, int c)
+        {
+            if (a > b) (a, b) = (b, a); if (b > c) (b, c) = (c, b); if (a > b) (a, b) = (b, a);
+            return ((long)a << 42) | ((long)b << 21) | (long)c;
+        }
+        void ApplyKitV2Cover()
+        {
+            if (!kitV2 || !body || kit == null) return;
+            if (!kitV2CoverSource) kitV2CoverSource = body.sharedMesh;
+            var src = kitV2CoverSource;
+            if (!src || !src.isReadable) return;
+            string sport = golfKit ? "Golf" : "Tennis", sex = female ? "Female" : "Male";
+            var worn = kit.Where(r => r && r.enabled).Select(r => r.name).OrderBy(n => n, System.StringComparer.Ordinal).ToArray();
+            string key = string.Join("|", worn);
+            if (key == kitV2CoverKey) return;
+            if (!kitV2Covered.TryGetValue((src, key), out var mesh) || !mesh)
+            {
+                var hide = new System.Collections.Generic.HashSet<long>();
+                foreach (var n in worn)
+                {
+                    var ta = Resources.Load<TextAsset>($"{sport}/KitsV2/{sex}/KitV2_{sport}_{sex}_{n.Substring(4).Replace("_", "")}_hide");
+                    if (!ta) continue;
+                    var b = ta.bytes;
+                    for (int i = 0; i + 12 <= b.Length; i += 12)
+                        hide.Add(CoverKey(System.BitConverter.ToInt32(b, i), System.BitConverter.ToInt32(b, i + 4), System.BitConverter.ToInt32(b, i + 8)));
+                }
+                mesh = Object.Instantiate(src); mesh.name = src.name + " (kit v2 cover)"; mesh.hideFlags = HideFlags.DontSave;
+                // the garments' soft contact shadow on the skin (UV3.x): combined as 1 - prod(1 - c)
+                var shade = new float[src.vertexCount];
+                foreach (var n in worn)
+                {
+                    var ta = Resources.Load<TextAsset>($"{sport}/KitsV2/{sex}/KitV2_{sport}_{sex}_{n.Substring(4).Replace("_", "")}_contact");
+                    if (!ta) continue;
+                    var b = ta.bytes; int count = b.Length / 8;
+                    for (int i = 0; i < count; i++)
+                    {
+                        int v = System.BitConverter.ToInt32(b, i * 4); float c = System.BitConverter.ToSingle(b, count * 4 + i * 4);
+                        if (v >= 0 && v < shade.Length) shade[v] = 1 - (1 - shade[v]) * (1 - c);
+                    }
+                }
+                var uv3 = new System.Collections.Generic.List<Vector2>(shade.Length);
+                foreach (var c in shade) uv3.Add(new Vector2(c, 0));
+                mesh.SetUVs(3, uv3);
+                for (int sub = 0; sub < src.subMeshCount; sub++)
+                {
+                    var t = src.GetTriangles(sub); var keep = new System.Collections.Generic.List<int>(t.Length);
+                    for (int i = 0; i < t.Length; i += 3)
+                        if (!hide.Contains(CoverKey(t[i], t[i + 1], t[i + 2]))) { keep.Add(t[i]); keep.Add(t[i + 1]); keep.Add(t[i + 2]); }
+                    mesh.SetTriangles(keep, sub, false);
+                }
+                kitV2Covered[(src, key)] = mesh;
+            }
+            body.sharedMesh = mesh; kitV2CoverKey = key;
+            if (skinMaterials != null) foreach (var m in skinMaterials) if (m && m.HasProperty("_KitContact")) m.SetFloat("_KitContact", KitContactShadow);
+        }
+        /// Strength of the garments' contact shadow on the skin (fraction of light removed where a garment blocks the skin's whole sky).
+        public const float KitContactShadow = .55f;
+        public const string RoleBelt = "Kit_Belt", RoleBuckle = "Kit_Buckle", RoleGlove = "Kit_Glove";
         public const string RoleGolfHead = "Kit_GolfHead", RoleGolfGlove = "Kit_GolfGlove", RoleGolfHardware = "Kit_GolfHardware";
         public void SetGolfHand(bool leftHanded)
         {
             if (!golfKit || kit == null) return;
             foreach (var r in kit) if (r && (r.name == "Kit_Glove_L" || r.name == "Kit_Glove_R"))
                 r.enabled = r.name == (leftHanded ? "Kit_Glove_R" : "Kit_Glove_L");
+            if (kitV2CoverSource) ApplyKitV2Cover();
         }
         public Animator animator;
         /// Racket_Classic: its origin is the centre of the usable grip, +Y runs along the shaft towards the head.
@@ -54,6 +144,13 @@ namespace GolfArcade.Tennis
             float l = pick.r * .2126f + pick.g * .7152f + pick.b * .0722f;
             return l >= .5f ? new Color(pick.r * .65f, pick.g * .65f, pick.b * .65f, 1) : new Color(pick.r + (1 - pick.r) * .35f, pick.g + (1 - pick.g) * .35f, pick.b + (1 - pick.b) * .35f, 1);
         }
+        /// Bald-base pass 2: a shoe's panels (toe cap, heel counter, eyestay) stay close to the picked colour, so a white pick reads as a
+        /// clean white sneaker instead of white with heavy grey panels: 7 % darker when the pick is light, 12 % lighter when it is dark.
+        public static Color KitShoeTrim(Color pick)
+        {
+            float l = pick.r * .2126f + pick.g * .7152f + pick.b * .0722f;
+            return l >= .5f ? new Color(pick.r * .93f, pick.g * .93f, pick.b * .93f, 1) : new Color(pick.r + (1 - pick.r) * .12f, pick.g + (1 - pick.g) * .12f, pick.b + (1 - pick.b) * .12f, 1);
+        }
         public static bool TryParseKitHex(string hex, out Color c)
         {
             c = default;
@@ -67,9 +164,13 @@ namespace GolfArcade.Tennis
         /// KitDerive exactly; no clothing ID or persistence schema changes.
         Color StarterShirt=>golfKit ? (female?new Color(.9373f,.5725f,.4980f,1):new Color(.1608f,.7176f,.7294f,1)) : (female?new Color(.7647f,.9020f,.3608f,1):new Color(.8824f,.2980f,.2471f,1));
         Color StarterLower=>golfKit ? StarterNavy : (female?new Color(.96f,.94f,.89f,1):new Color(.17f,.30f,.60f,1));
-        Color StarterTrim(string role)=>role==RoleShirt||role==RoleShirtTrim ? StarterShirt*.82f:role==RoleShorts||role==RoleShortsBand ? StarterLower*.82f:role==RoleShoe ? (golfKit?StarterNavy:new Color(.74f,.77f,.80f,1)):StarterCream;
+        Color StarterTrim(string role)=>role==RoleShirt||role==RoleShirtTrim ? StarterShirt*.82f:role==RoleShorts||role==RoleShortsBand ? StarterLower*.82f:role==RoleShoe ? (golfKit?StarterNavy:new Color(.93f,.93f,.94f,1)):StarterCream;
         bool StarterColour(string role,out Color colour) {
             colour=default;
+            // CLOTHING V2 accessories keep their own colours (picks do not reach them): leather belt, metal buckle, white glove leather.
+            if(role==RoleBelt){colour=female?new Color(.93f,.92f,.89f,1):new Color(.36f,.22f,.13f,1);return true;}
+            if(role==RoleBuckle){colour=new Color(.72f,.73f,.74f,1);return true;}
+            if(role==RoleGlove){colour=new Color(.95f,.95f,.93f,1);return true;}
             if(role==RoleShirt)colour=KitTint(StarterShirt);
             else if(role==RoleShirtTrim)colour=KitTint(StarterShirt*.82f);
             else if(role==RoleShorts)colour=KitTint(StarterLower);
@@ -92,7 +193,38 @@ namespace GolfArcade.Tennis
         /// The male shirt's UV islands are turned ~41 deg to world-up (measured from Male_Kit.fbx: area-weighted direction of up in UV space, -40..-44 deg); turning the weave by +41 puts its threads
         /// vertical / horizontal on the cloth. The female shirt measures -0.2 deg and the other pieces are axis aligned, so they keep 0.
         public const float MaleShirtWeaveAngle = 41f;
-        public static readonly Color SkinSubsurface = new Color(.12f, .035f, .02f, 1);
+        /// Skin pass 2026-10-12: a reddish-brown edge warmth where the light rolls off, so shadows read warm, not grey (pass 1 had .10/.045/.032, originally .12/.035/.02).
+        public static readonly Color SkinSubsurface = new Color(.13f, .05f, .02f, 1);
+        /// Skin saturation after the pigment (was .88): the chosen tone stays, the rendered skin reads soft peach rather than orange.
+        /// Deep tones keep more of their richness (SkinSaturationFor); the light and mid tones, where the orange showed, get the full .74.
+        public const float SkinSaturation = .74f, DeepSkinSaturation = .88f;
+        public static float SkinSaturationFor(Color tone)
+        {
+            float luminance = tone.r * .2126f + tone.g * .7152f + tone.b * .0722f;
+            return Mathf.Lerp(DeepSkinSaturation, SkinSaturation, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.15f, .45f, luminance)));
+        }
+        /// Bald-base pass: the tennis shoe loses its boxy toe (HeroShoeShape, kept clear of the foot and sock inside), and the shoes' sole line and
+        /// the socks' ribbed cuff get their data (HeroKitEdges + TennisCloth _EdgeLines). Used for the full kit (OwnMaterials) and for the distance
+        /// kit (HeroGarmentLOD, the locker export's Distance variant), so a far player and the lobby wear the same shoes as a close-up.
+        public Mesh FinishFootwear(SkinnedMeshRenderer r, Mesh mesh)
+        {
+            if (golfKit || IsKitV2(mesh) || !r || !mesh) return mesh;
+            string tag = r.name.StartsWith("Kit_") ? r.name.Substring(4).Replace("_", "") : r.name;
+            bool shoe = tag.StartsWith("Shoe"), sock = tag.StartsWith("Sock");
+            if (!shoe && !sock) return mesh;
+            var kept = r.sharedMesh; r.sharedMesh = mesh;   // both helpers measure the renderer's mesh in its own bind space
+            try
+            {
+                if (shoe) r.sharedMesh = HeroShoeShape.Prepare(r, transform, body, kit?.FirstOrDefault(k => k && k.name == (tag.EndsWith("L") ? "Kit_Sock_L" : "Kit_Sock_R")));
+                return HeroKitEdges.Prepare(r, transform, shoe ? HeroKitEdges.Shoe : HeroKitEdges.Sock);
+            }
+            finally { r.sharedMesh = kept; }
+        }
+        void ApplySkinSaturation(Color tone)
+        {
+            if (System.Environment.GetEnvironmentVariable("VISUAL_HERO_FILMIC") == "1" || System.Environment.GetEnvironmentVariable("VISUAL_HERO_COLOR") == "1") return;
+            foreach (var m in skinMaterials ?? System.Array.Empty<Material>()) if (m && m.HasProperty("_Saturation")) m.SetFloat("_Saturation", SkinSaturationFor(tone));
+        }
         /// The shoe sole: darker than the white upper (sRGB), and the roughest thing on the kit.
         public static readonly Color KitSole = new Color(KitWhite, KitWhite, KitWhite, 1);
         static readonly string[] EyeParts = { "Sclera", "Iris", "IrisIn", "Pupil", "Limbal", "Catch" };
@@ -101,6 +233,9 @@ namespace GolfArcade.Tennis
         static Shader ClothShader => clothShader ? clothShader : clothShader = Resources.Load<Shader>("Tennis/Shaders/TennisCloth");
         static Texture2D weaveMap, skinBumpMap, fabricAtlas, golfFabricAtlas;
         static Texture2D GolfFabricAtlas => golfFabricAtlas ? golfFabricAtlas : golfFabricAtlas = Resources.Load<Texture2D>("Golf/HeroDetail/Golf_FabricAtlas");
+        static Texture2D kitV2Atlas;
+        /// CLOTHING V2 fabric atlas (version-2 decoder): twill (0,0), pique (1,0), leather grain (0,1), 1x1 rib (1,1).
+        static Texture2D KitV2Atlas => kitV2Atlas ? kitV2Atlas : kitV2Atlas = Resources.Load<Texture2D>("Tennis/KitsV2/KitV2_FabricAtlas");
         static Texture2D WeaveMap => weaveMap ? weaveMap : weaveMap = Resources.Load<Texture2D>("Tennis/HeroDetail/Cloth_Weave");
         static Texture2D FabricAtlas => fabricAtlas ? fabricAtlas : fabricAtlas = Resources.Load<Texture2D>("Tennis/HeroDetail/Cloth_FabricAtlas");
         static Texture2D SkinBumpMap => skinBumpMap ? skinBumpMap : skinBumpMap = Resources.Load<Texture2D>("Tennis/HeroDetail/Skin_Soft_N");
@@ -150,7 +285,7 @@ namespace GolfArcade.Tennis
             {
                 m.SetFloat("_Smoothness", SkinSmoothness); m.SetFloat("_Wrap", SkinWrap); m.SetFloat("_RimStrength", SkinRim);
                 m.SetColor("_Subsurface", SkinSubsurface);
-                m.SetFloat("_Saturation", .88f); m.SetFloat("_SpecularStrength", .95f); m.SetFloat("_EnvironmentStrength", .12f);
+                m.SetFloat("_Saturation", SkinSaturation); m.SetFloat("_SpecularStrength", .95f); m.SetFloat("_EnvironmentStrength", .12f);
                 if(System.Environment.GetEnvironmentVariable("VISUAL_HERO_FILMIC")=="1")m.SetFloat("_Saturation",1);
                 if(System.Environment.GetEnvironmentVariable("VISUAL_HERO_COLOR")=="1"){
                     m.SetFloat("_Saturation",1.10f);m.SetFloat("_Wrap",.18f);
@@ -218,9 +353,11 @@ namespace GolfArcade.Tennis
         {
             if (m.shader != ClothShader) return m;
             string clothSides = System.Environment.GetEnvironmentVariable("VISUAL_CLOTH_TWO_SIDED");
-            if (tag == "Top" && (clothSides == "1" || (golfKit && clothSides != "0")))
+            bool v2 = IsKitV2(mesh);
+            if (tag == "Top" && !v2 && (clothSides == "1" || (golfKit && clothSides != "0")))
                 m.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Off);
             var look = golfKit ? GolfClothFor(role) : ClothFor(role);
+            m.SetFloat("_EdgeLines", golfKit ? 0 : tag.StartsWith("Shoe") ? HeroKitEdges.Shoe : tag.StartsWith("Sock") ? HeroKitEdges.Sock : 0);
             m.SetFloat("_Smoothness", look.smooth); m.SetFloat("_Wrap", ClothWrap); m.SetFloat("_RimStrength", ClothRim);
             m.SetFloat("_WeaveNormal", look.weaveNormal); m.SetFloat("_WeaveThread", look.thread); m.SetFloat("_SheenStrength", look.sheen);
             if (WeaveMap) m.SetTexture("_WeaveMap", WeaveMap);
@@ -228,15 +365,16 @@ namespace GolfArcade.Tennis
             float mpu = MetresPerUv(mesh, sub, scale);
             m.SetFloat("_WeaveTile", mpu > 0 ? mpu / look.tileMetres : 60f);
             if (!female && tag == "Top" && role == RoleShirt) m.SetFloat("_WeaveAngle", MaleShirtWeaveAngle);
-            string garment = golfKit ? $"Golf/HeroDetail/Golf_{(female ? "Female" : "Male")}_{tag}" : $"Tennis/HeroDetail/Kit_{(female ? "Female" : "Male")}_{tag}";
+            string garment = v2 ? $"{(golfKit ? "Golf" : "Tennis")}/KitsV2/{(female ? "Female" : "Male")}/KitV2_{(golfKit ? "Golf" : "Tennis")}_{(female ? "Female" : "Male")}_{tag}"
+                : golfKit ? $"Golf/HeroDetail/Golf_{(female ? "Female" : "Male")}_{tag}" : $"Tennis/HeroDetail/Kit_{(female ? "Female" : "Male")}_{tag}";
             var normal = Resources.Load<Texture2D>(garment + "_N");
             var mask = Resources.Load<Texture2D>(garment + "_M");
             if (normal && mask)
             {
                 m.SetTexture("_NormalMap", normal); m.SetTexture("_MaskMap", mask);
-                var atlas = golfKit ? GolfFabricAtlas : FabricAtlas;
+                var atlas = v2 ? KitV2Atlas : golfKit ? GolfFabricAtlas : FabricAtlas;
                 if (atlas) m.SetTexture("_WeaveMap", atlas);
-                if (golfKit) m.SetFloat("_FabricVersion", 2);
+                if (golfKit || v2) m.SetFloat("_FabricVersion", 2);
                 m.SetFloat("_UseGarmentMaps", 1); m.SetFloat("_NormalStrength", 1);
 #if UNITY_EDITOR
                 // Capture-only isolation of garment normal-map bake artifacts.
@@ -251,13 +389,14 @@ namespace GolfArcade.Tennis
                 // The legacy 41-degree male correction remains above for old garments.
                 m.SetFloat("_WeaveAngle", 0);
                 m.SetFloat("_Exposure", tag.StartsWith("Shoe") ? .78f : golfKit ? 1.05f : .84f);
+                if (v2) m.SetFloat("_EdgeLines", 0);
             }
             else
             {
                 var seams = Resources.Load<Texture2D>(garment);
                 if (seams && m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", seams);
             }
-            if (mesh && ((tag == "Top" && mesh.name.StartsWith("TailoredPolo")) || (tag == "Bottom" && mesh.name.StartsWith("TailoredSkirt"))))
+            if (!v2 && mesh && ((tag == "Top" && mesh.name.StartsWith("TailoredPolo")) || (tag == "Bottom" && mesh.name.StartsWith("TailoredSkirt"))))
             {
                 // This source has a newly authored collar: legacy construction-map UVs
                 // no longer describe that panel. Shape and neutral fine weave carry it.
@@ -338,6 +477,7 @@ namespace GolfArcade.Tennis
             if (!GetComponent<HeroGripPolish>()) gameObject.AddComponent<HeroGripPolish>().look = this;
             if (face && !GetComponent<MatchHeroFacePerformance>()) gameObject.AddComponent<MatchHeroFacePerformance>().look = this;
             if (!golfKit && !GetComponent<HeroGarmentLOD>()) gameObject.AddComponent<HeroGarmentLOD>().look = this;
+            KitV2PoseCorrectives.Attach(this);
         }
 
         /// This hero's own copies of the shared skin and frame materials, so a tint never reaches the prefab asset or another hero.
@@ -346,14 +486,14 @@ namespace GolfArcade.Tennis
             if (skinMaterials != null) return;
             originalSeam = HeroOriginalSeamAnatomy.Apply(this);
             referenceAnatomy = originalSeam || HeroReferenceAnatomy.Apply(this);
-            if (!golfKit && kit != null) {
+            if (!golfKit && kit != null && !IsKitV2(KitPiece("Kit_Top"))) {
                 bool tailoredPolo = System.Environment.GetEnvironmentVariable(female ? "VISUAL_TAILORED_FEMALE_POLO" : "VISUAL_TAILORED_POLO") != "0";
                 var fitted=Resources.Load<GameObject>((tailoredPolo ? "Tennis/KitsTailored/" : "Tennis/KitsFitted/")+(female ? "Female":"Male"));
                 var src=fitted ? fitted.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r=>r.name=="Kit_Top"):null;
                 var live=kit.FirstOrDefault(r=>r&&r.name=="Kit_Top");
                 if(src&&live){var map=GetComponentsInChildren<Transform>(true).GroupBy(t=>t.name).ToDictionary(g=>g.Key,g=>g.First());live.sharedMesh=src.sharedMesh;live.bones=src.bones.Select(b=>map[b.name]).ToArray();if(tailoredPolo){live.sharedMaterials=src.sharedMaterials;live.sharedMesh=Object.Instantiate(src.sharedMesh);live.sharedMesh.name="TailoredPolo32 "+(female?"Female":"Male");owned.Add(live.sharedMesh);}}
             }
-            if (!golfKit && female && kit != null && System.Environment.GetEnvironmentVariable("VISUAL_TAILORED_FEMALE_SKIRT") != "0") {
+            if (!golfKit && female && kit != null && !IsKitV2(KitPiece("Kit_Bottom")) && System.Environment.GetEnvironmentVariable("VISUAL_TAILORED_FEMALE_SKIRT") != "0") {
                 var source = Resources.Load<GameObject>("Tennis/KitsTailored/FemaleSkirt");
                 var src = source ? source.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(r => r.name == "Kit_Bottom") : null;
                 var live = kit.FirstOrDefault(r => r && r.name == "Kit_Bottom");
@@ -400,7 +540,10 @@ namespace GolfArcade.Tennis
                     }
                 }
                 body.sharedMaterials = skinMaterials;
+                ApplySkinSaturation(skinTone);
                 if(!golfKit)HeroArmSkinning.Build(body);
+                BindKitV2();
+                ApplyKitV2Cover();
             }
             else skinMaterials = new Material[0];
             if (face)
@@ -440,14 +583,18 @@ namespace GolfArcade.Tennis
                 faceMaterials = fm;
                 if (!referenceAnatomy) { ConfigureEyeGeometry(); HeroOriginalMaterial.ConfigureFace(this,faceMaterials); }
             }
+            // Bald-base pass: the female golf skirt sits close to the hips (hands visible beside it), garment-only.
+            if (golfKit && female && kit != null && !IsKitV2(KitPiece("Kit_Bottom")))
+                foreach (var r in kit) if (r && r.name == "Kit_Bottom") r.sharedMesh = HeroGolfSkirtFit.Prepare(this, r);
             HeroGarmentHemWeights.Apply(this);
-            HeroGarmentCoverage.Apply(this);
+            if (!IsKitV2(KitPiece("Kit_Top"))) HeroGarmentCoverage.Apply(this);
             if (kit != null)
                 foreach (var r in kit)
                 {
                     if (!r) continue;
                     string tag = r.name.StartsWith("Kit_") ? r.name.Substring(4).Replace("_", "") : r.name;   // Top, Bottom, ShoeL, ShoeR, SockL, SockR
                     float scale = r.transform.lossyScale.x;
+                    r.sharedMesh = FinishFootwear(r, r.sharedMesh);
                     var ms = r.sharedMaterials;
                     for (int i = 0; i < ms.Length; i++)
                     {
@@ -456,7 +603,9 @@ namespace GolfArcade.Tennis
                         string key = role + "|" + tag;
                         if (!kitByPiece.TryGetValue(key, out var own))
                         {
-                            own = ClothSurface(OnShader(ms[i], ClothShader, role + " (hero)"), role, tag, r.sharedMesh, i, scale);
+                            // CLOTHING V2: the belt buckle is metal (the racket frame's surface), everything else is cloth
+                            own = IsKitV2(r) && role == RoleBuckle ? FrameSurface(OnShader(ms[i], CharacterShader, role + " (hero)"))
+                                : ClothSurface(OnShader(ms[i], ClothShader, role + " (hero)"), role, tag, r.sharedMesh, i, scale);
                             if(StarterColour(role,out var starter)){if(own.HasProperty("_BaseColor"))own.SetColor("_BaseColor",starter);if(own.HasProperty("_Color"))own.SetColor("_Color",starter);}
                             if(own.HasProperty("_TrimColor"))own.SetColor("_TrimColor",KitTint(StarterTrim(role)));
                             kitByPiece[key] = own; owned.Add(own);
@@ -493,6 +642,8 @@ namespace GolfArcade.Tennis
                     if (changed) r.sharedMaterials = ms;
                 }
             }
+            // Bald-base pass 2: the racket sits deeper in the hand so the fingers and thumb can close round the handle.
+            HeroRacketSeat.Apply(this);
             // The hero rim light (HeroRimLight) sits on its own rendering layer so it lights the heroes and never the court.
             foreach (var r in GetComponentsInChildren<Renderer>(true)) r.renderingLayerMask |= HeroRimLight.Layer;
         }
@@ -584,6 +735,7 @@ namespace GolfArcade.Tennis
                 relative.a=1;pair.Key.SetColor("_BaseColor", Color.Lerp(tone, relative, pigment));
             }
             foreach (var m in faceMaterials ?? System.Array.Empty<Material>()) if (m) m.SetColor("_FaceSkin", tone);
+            ApplySkinSaturation(tone);
             foreach (var m in skinMaterials) if (m) {
                 Color pigment = referenceAnatomy && m.name.Contains("NaturalLip") ? new Color(tone.r*.99f,tone.g*.86f,tone.b*.84f,1) : tone;
                 if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", pigment); if (m.HasProperty("_Color")) m.SetColor("_Color", pigment);
@@ -629,7 +781,7 @@ namespace GolfArcade.Tennis
             void Trim(string role, bool picked, Color pick)
             {
                 if (!kitMaterials.TryGetValue(role, out var list)) return;
-                var trim = picked ? KitTint(KitDerive(pick)) : KitTint(StarterTrim(role));
+                var trim = picked ? KitTint(role == RoleShoe ? KitShoeTrim(pick) : KitDerive(pick)) : KitTint(StarterTrim(role));
                 foreach (var m in list) if (m.HasProperty("_TrimColor")) m.SetColor("_TrimColor", trim);
             }
             Trim(RoleShirt, hs, shirt); Trim(RoleShirtTrim, hs, shirt);

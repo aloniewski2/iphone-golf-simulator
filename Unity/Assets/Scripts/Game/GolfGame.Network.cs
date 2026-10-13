@@ -23,6 +23,14 @@ namespace GolfArcade.Game {
         readonly Dictionary<int,GolferView> partyGolfers=new();
         readonly Dictionary<int,long> partyEmotes=new();
         GolferView soloGolfer;
+        /// The turn the waiting golfers were last placed for (they are placed once a turn, never as the aim moves).
+        string partyPlacedFor;
+        /// Along the hole from the ball: to the pin on the green, else to the next landing (as the shot is first lined up).
+        Vector3 LineOfPlay(CoursePoint from) {
+            var target=hole.LieAt(from).IsPuttingSurface()?hole.Pin:hole.RecommendedTarget(from);
+            double h=from.HeadingTo(target)*Math.PI/180;
+            return new Vector3((float)Math.Sin(h),0,(float)Math.Cos(h));
+        }
         long resultShot=-1;
         bool wasNetworkResult;
         NetworkConfiguration partyConfiguration;
@@ -38,7 +46,7 @@ namespace GolfArcade.Game {
         /// The golfer had wound up (a backswing was shown): the strike swings through from there.
         bool networkWoundUp;
         /// What this phone last told the host, and when it may tell it again.
-        double sentHeading=double.NaN; int sentClub=-1; float sentLook, sentLoad, nextHeadingSend, nextLookSend, nextLoadSend;
+        double sentHeading=double.NaN; int sentClub=-1; float sentLook, sentLoad, nextHeadingSend, nextLookSend, nextLoadSend, lastHeadingSendAt; bool headingMoving;
 
         /// Seconds until the next player is up, by the host's clock.
         float NetworkResultSeconds {
@@ -57,13 +65,15 @@ namespace GolfArcade.Game {
             networkConfigured=true;networkHole=-1;networkTurn=-1;networkCardRevision=-1;networkFlown=-1;resultShot=-1;Swing.Armed=false;
             networkLineUp=null;networkSolo=false;networkMine=false;networkLook=networkLoadShown=0;networkWoundUp=false;networkHoleReady=false;
             sentHeading=double.NaN;sentClub=-1;sentLook=sentLoad=0;
-            partyConfiguration=c;networkCard=new Scorecard(course);
+            partyConfiguration=c;networkCard=new Scorecard(course);partyPlacedFor=null;introBegunFor=-1;
             if(!soloGolfer)soloGolfer=golfer;
             soloGolfer.SetVisible(false);
             foreach(var old in partyGolfers.Values)if(old)Destroy(old.gameObject);
             partyGolfers.Clear();partyEmotes.Clear();
             foreach(var p in c.participants.Where(p=>p.seat>=0)) {
-                var look=new CharacterLook {Body=p.female?1:0,Skin=p.loadout?.skinHex??"",Shirt=p.loadout?.shirtHex??"",Shorts=p.loadout?.shortsHex??""};
+                // the whole locker look, as the golfer looks alone (skin, kit, hair colour and cut, shoes)
+                var look=new CharacterLook {Body=p.female?1:0,Skin=p.loadout?.skinHex??"",Shirt=p.loadout?.shirtHex??"",Shorts=p.loadout?.shortsHex??"",
+                    Hair=p.loadout?.hairHex??"",Haircut=p.loadout!=null&&p.loadout.haircut>=0?p.loadout.haircut:-1,Shoes=p.loadout?.shoesHex??""};
                 var style=GolferView.Look.Player;style.Hero=GolferStyle.HeroOf(look);
                 var model=GolferView.CreatePlayer(transform,style);model.name="Party golfer · "+p.name;
                 partyGolfers[p.seat]=model;partyEmotes[p.seat]=0;model.Perform("Idle");
@@ -80,9 +90,14 @@ namespace GolfArcade.Game {
             if(slot<0||slot>2||!CanNetworkEmote(seat))return false;
             SportsMultiplayer.Instance.Submit(new NetworkInput {action="emote",value=slot,actorSeat=seat});return true;
         }
-        /// The others stand off the golfer's back shoulder and watch, clear of the swing, the ball's line and the aiming camera.
+        /// The others stand off the golfer's back shoulder and watch, clear of the swing, the ball's line and the aiming camera. Their
+        /// spots come from the hole (the ball's line of play), set once when the turn is lined up: the player up can aim anywhere and
+        /// the people waiting stay exactly where they are, free to react (PartyEmotes).
         void PlaceParty(NetworkGolfState state,Vector3 at,Vector3 direction) {
             direction.y=0;direction=direction.sqrMagnitude>.001f?direction.normalized:Vector3.forward;
+            string key=$"{state.hole}.{state.turn}.{at.x:F2}.{at.z:F2}";
+            if(key==partyPlacedFor)return;
+            partyPlacedFor=key;
             var right=Vector3.Cross(Vector3.up,direction).normalized;int index=0;
             foreach(var p in state.golfers) {
                 if(!partyGolfers.TryGetValue(p.seat,out var model))continue;
@@ -124,6 +139,7 @@ namespace GolfArcade.Game {
             if(state.hole!=networkHole) {
                 bool first=networkHole<0;
                 networkHole=state.hole;networkLineUp=null;networkSolo=false;networkHoleReady=false;
+                if(cardShownFor>=0){cardShownFor=-1;hud.HideScorecard();}
                 if(first) StartHole(state.hole);   // (the first hole is built while the match itself is loading)
                 else { EndNetworkShot();StartHoleBehindCover(state.hole);return; }
             }
@@ -141,19 +157,23 @@ namespace GolfArcade.Game {
                 Swing.Armed=false;
                 var tee=HoleView.ToWorld(hole.Tee);heading=hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
                 if(partyGolfers.TryGetValue(state.turn,out var first))golfer=first;
-                golfer.Stand(tee,AimDirection());PlaceParty(state,tee,AimDirection());
+                golfer.Stand(tee,AimDirection());PlaceParty(state,tee,LineOfPlay(hole.Tee));
                 hud.SetStatus("Waiting for everyone to arrive…");
                 return;
             }
             if(state.phase=="intro") {
+                // the intro starts together on every phone, in the cut the host chose
+                if(introBegunFor!=state.hole){introBegunFor=state.hole;if(Current==State.Intro)BeginGolfPresentation();}
                 Swing.Armed=false;
                 var tee=HoleView.ToWorld(hole.Tee);heading=hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee));
                 if(partyGolfers.TryGetValue(state.turn,out var first))golfer=first;
-                golfer.Stand(tee,AimDirection());PlaceParty(state,tee,AimDirection());
-                if(Current==State.Intro) TickGolfPresentation(state.paused?0:Time.unscaledDeltaTime);
+                golfer.Stand(tee,AimDirection());PlaceParty(state,tee,LineOfPlay(hole.Tee));
+                if(Current==State.Intro) TickGolfPresentation(state.paused?0:Mathf.Min(Time.unscaledDeltaTime,.1f));   // (a long frame — the load — must not eat the flyover)
                 hud.SetStatus("Ready · everyone starts together");
                 return;
             }
+            if(state.phase=="holeDone") { NetworkHoleCard(state,true); return; }
+            if(cardShownFor>=0&&!state.complete){cardShownFor=-1;hud.HideScorecard();}
             var active=state.golfers.FirstOrDefault(p=>p.seat==state.turn);if(active==null)return;
             if(networkCardRevision!=state.revision||networkTurn!=state.turn){
                 networkCardRevision=state.revision;networkTurn=state.turn;networkCard=new Scorecard(course);
@@ -172,7 +192,7 @@ namespace GolfArcade.Game {
             // felt on the phone that swung it (a guest's phone feels its own)
             Haptics.Suppressed=!net.Configuration.Controls(net.Configuration.localID,shot.seat);
             if(networkFlown!=shot.id) {
-                networkFlown=shot.id;networkLineUp=null;
+                networkFlown=shot.id;networkFlownSeat=shot.seat;networkLineUp=null;
                 networkSolo=FlyNetworkShot(shot,state);
                 if(!networkSolo) {
                     if(partyGolfers.TryGetValue(shot.seat,out var shooter))golfer=shooter;
@@ -183,7 +203,7 @@ namespace GolfArcade.Game {
             if(networkSolo) {
                 // single player's flight, landing and result (the host says when the next player is up)
                 Frame();
-                if(Current==State.Result&&shotResultPanel)shotResultPanel.SetCountdown(NetworkResultSeconds,"NEXT PLAYER");
+                // (Frame counts the result down and tells the host when this phone's own shot is done)
             } else FollowHostPath(net,state,shot);
             hud.SetScore(networkCard.Total,networkCard.ToPar,holeStrokes);
         }
@@ -235,7 +255,7 @@ namespace GolfArcade.Game {
                         new CoursePoint(shot.restX,shot.restD).DistanceTo(hole.Pin),shot.club==(int)GolfClub.Putter,shot.holed);
                     rig.SnapNext();
                 }
-                shotResultPanel.SetCountdown((float)Math.Max(0,state.resultUntil-state.time),"NEXT PLAYER");
+                shotResultPanel.SetCountdown(Mathf.Min(3f,(float)Math.Max(0,state.resultUntil-state.time)),"NEXT PLAYER");
                 rig.FrameGolfParty(HoleView.ToWorld(new CoursePoint(shot.originX,shot.originD)),AimDirection(),true);
             }
             var plan=hud.Map;plan.Ball=ball.position;plan.Pin=HoleView.ToWorld(hole.Pin);plan.ShowBall=true;plan.ShowLanding=false;
@@ -247,7 +267,7 @@ namespace GolfArcade.Game {
             if(wasNetworkResult){wasNetworkResult=false;if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);hud.ShowPlayHud(true);}
             replayFirst=false;
             if(Current==State.Replay){Time.timeScale=1;hud.ShowReplay(false);rig.ResetZoom();rig.RestoreFov();effects.EndFlight();hole.Windmill?.Drive(null);}
-            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=AimLineSamples;}
+            if(Current==State.Flight){effects.EndFlight();hole.Windmill?.Drive(null);ballLook.Pov(false);aimLine.positionCount=0;}
             Haptics.Release();sounds.Release();
         }
 
@@ -256,7 +276,8 @@ namespace GolfArcade.Game {
         void NetworkAimFrame(SportsMultiplayer net,NetworkGolfState state,NetworkGolfer active) {
             if(state.complete) {
                 Swing.Armed=false;if(NativeShotReady)RequireNativeReady();
-                if(Current!=State.RoundDone){EndNetworkShot();if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);Current=State.RoundDone;aimLine.positionCount=0;RefreshControls();}
+                if(Current!=State.RoundDone){EndNetworkShot();if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);holeOutCard?.Hide();Current=State.RoundDone;aimLine.positionCount=0;RefreshControls();}
+                NetworkHoleCard(state,false);
                 hud.SetStatus("Round complete");
                 return;
             }
@@ -276,6 +297,8 @@ namespace GolfArcade.Game {
             if(myTurn)SendNetworkAim(net);
             if(net.Quiet)hud.SetStatus("Reconnecting…");
             else if(state.paused)hud.SetStatus("Waiting for a player");
+            else if(!sharedRound&&state.time-state.turnAt>NetworkGolfRound.TurnLimitSeconds-NetworkGolfRound.TurnWarnSeconds)
+                hud.SetStatus($"{NetworkName(state.turn)} · {Math.Max(0,NetworkGolfRound.TurnLimitSeconds-(state.time-state.turnAt)):F0} s to play");
             else if(!networkMine)hud.SetStatus($"{NetworkName(state.turn)}'s turn");
             hud.SetScore(networkCard.Total,networkCard.ToPar,holeStrokes);
         }
@@ -294,7 +317,7 @@ namespace GolfArcade.Game {
             aimedByPlayer=false;networkLook=0;networkLoadShown=0;networkWoundUp=false;
             rig.SnapNext();
             BeginAim(false);
-            PlaceParty(state,ball.position,AimDirection());
+            PlaceParty(state,ball.position,LineOfPlay(ballAt));
             if(networkMine) { sentHeading=double.NaN;sentClub=-1;sentLook=0;sentLoad=0; }
             else { RequireNativeReady();FollowNetworkAim(state,active,true); }
             var sheet=hud.Controller;
@@ -315,8 +338,12 @@ namespace GolfArcade.Game {
             var theirs=(GolfClub)active.club;
             bool clubChanged=theirs!=club&&Array.IndexOf(GolfClubs.All,theirs)>=0;
             if(clubChanged){club=theirs;Swing.SetClub(club);golfer.SetClub(club,ballAt.DistanceTo(hole.Pin)<40);hud.SetClubSelection(club,announce:!force);}
-            bool turned=Math.Abs(Mathf.DeltaAngle((float)heading,(float)active.heading))>.01f;
-            if(turned)heading=active.heading;
+            // The line glides to where their phone has it (run on at their turning rate for the update that is on its way), as their own
+            // phone draws it: never a jump each update.
+            float wanted=(float)active.heading+Mathf.Clamp(state.aimRate,-120,120)*.05f;
+            float gap=Mathf.DeltaAngle((float)heading,wanted);
+            bool turned=Math.Abs(gap)>.01f;
+            if(turned)heading=force||Math.Abs(gap)>25?wanted:heading+gap*(1-Mathf.Exp(-Time.unscaledDeltaTime/.045f));
             if(clubChanged||turned||force){UpdateAimVisuals();FrameAim();}
             networkLook=Mathf.Clamp(state.look,-1,1);
             if(state.load>.01f)ShowWindUp(state.load);
@@ -337,12 +364,19 @@ namespace GolfArcade.Game {
             if(!net.Running||Current!=State.Aim)return;
             int seat=net.GolfState.turn;float now=Time.unscaledTime;
             if((int)club!=sentClub) { sentClub=(int)club;net.Submit(new NetworkInput {action="golfClub",value=(int)club,actorSeat=seat}); }
-            if((double.IsNaN(sentHeading)||Math.Abs(Mathf.DeltaAngle((float)sentHeading,(float)heading))>.05f)&&now>=nextHeadingSend) {
-                nextHeadingSend=now+1f/15;sentHeading=heading;
-                net.Submit(new NetworkInput {action="golfAimHeading",value=(float)((heading%360+360)%360),actorSeat=seat});
+            if((double.IsNaN(sentHeading)||Math.Abs(Mathf.DeltaAngle((float)sentHeading,(float)heading))>.02f)&&now>=nextHeadingSend) {
+                float rate=now>lastHeadingSendAt&&!double.IsNaN(sentHeading)?Mathf.DeltaAngle((float)sentHeading,(float)heading)/Mathf.Max(.02f,now-lastHeadingSendAt):0;
+                nextHeadingSend=now+1f/30;sentHeading=heading;lastHeadingSendAt=now;
+                net.Submit(new NetworkInput {action="golfAimHeading",value=(float)((heading%360+360)%360),value2=Mathf.Clamp(rate,-120,120),actorSeat=seat});
+                headingMoving=true;
+            }
+            else if(headingMoving&&now>=nextHeadingSend+1f/30) {
+                // the line has stopped: say so, so the TV stops running it on
+                headingMoving=false;nextHeadingSend=now+1f/30;lastHeadingSendAt=now;
+                net.Submit(new NetworkInput {action="golfAimHeading",value=(float)((heading%360+360)%360),value2=0,actorSeat=seat});
             }
             if(Mathf.Abs(aimLook-sentLook)>.02f&&now>=nextLookSend) {
-                nextLookSend=now+1f/15;sentLook=aimLook;
+                nextLookSend=now+1f/30;sentLook=aimLook;
                 net.Submit(new NetworkInput {action="golfLook",value=aimLook,actorSeat=seat},false);
             }
         }
@@ -375,6 +409,60 @@ namespace GolfArcade.Game {
                 }).ToArray()
             };
         }
+        /// The phone that swung says its result is over (its countdown ran out, an emote played out, or the player tapped on): the host
+        /// passes the turn, as single player moves on to the next shot. Once a shot.
+        void NetworkResultDone() {
+            if(!networkConfigured||!SportsMultiplayer.Active||networkFlown<0||resultDoneSent==networkFlown)return;
+            var net=SportsMultiplayer.Instance;
+            if(!net.Configuration.Controls(net.Configuration.localID,networkFlownSeat))return;
+            resultDoneSent=networkFlown;
+            net.Submit(new NetworkInput {action="golfResultDone",value=networkFlown,actorSeat=networkFlownSeat});
+        }
+        long resultDoneSent=-1;int networkFlownSeat=-1;
+        /// Whoever is still to hole out here after this shot (null when nobody is): the hole-out card then says NEXT PLAYER.
+        string NetworkStillToHoleOut() {
+            var s=SportsMultiplayer.Instance?SportsMultiplayer.Instance.GolfState:null;if(s==null)return null;
+            int seat=s.shot!=null?s.shot.seat:s.turn;
+            var other=s.golfers.FirstOrDefault(p=>!p.dnf&&!p.holed&&p.seat!=seat);
+            return other==null?null:NetworkName(other.seat);
+        }
+        int cardShownFor=-1, introBegunFor=-1;
+        /// Single player's card with others, from the host's cards: a row each and the standings, after every hole (more) and at the end.
+        void NetworkHoleCard(NetworkGolfState state,bool more) {
+            int key=more?state.hole:1000+state.hole;
+            if(cardShownFor==key)return;
+            cardShownFor=key;
+            EndNetworkShot();if(shotResultPanel)shotResultPanel.gameObject.SetActive(false);holeOutCard?.Hide();aimLine.positionCount=0;
+            var golfers=state.golfers.Where(g=>!g.dnf).ToArray();
+            var rows=new RoundCard.Row[golfers.Length];var standing=new List<(string name,int toPar,int played)>();
+            for(int i=0;i<golfers.Length;i++) {
+                var g=golfers[i];var strokes=new int?[course.Holes.Length];int toPar=0,played=0;
+                for(int h=0;h<strokes.Length&&h<g.card.Length;h++) if(g.card[h]>0){strokes[h]=g.card[h];toPar+=g.card[h]-course.Holes[h].Par;played++;}
+                rows[i]=new RoundCard.Row{Name=NetworkName(g.seat),Color=Lobby.PlayerColor(g.seat),Strokes=strokes};
+                standing.Add((NetworkName(g.seat),toPar,played));
+            }
+            standing.Sort((a,b)=>a.toPar.CompareTo(b.toPar));
+            var tiles=standing.Select((p,i)=>new RoundCard.Highlight{Icon=i==0?"trophy":"ball",Title=$"{i+1}. {p.name}",Value=Scorecard.FormatToPar(p.toPar)}).ToArray();
+            string headline;
+            if(more) {
+                var onHole=golfers.Where(g=>state.hole<g.card.Length&&g.card[state.hole]>0).OrderBy(g=>g.card[state.hole]).ToArray();
+                headline=onHole.Length==0?"":onHole.Length>1&&onHole[0].card[state.hole]==onHole[1].card[state.hole]?"Hole halved":$"{NetworkName(onHole[0].seat)} wins the hole";
+            } else headline=standing.Count>1&&standing[0].toPar==standing[1].toPar?"All square":$"{standing[0].name} wins";
+            var mine=golfers.FirstOrDefault(g=>partyConfiguration.Controls(partyConfiguration.localID,g.seat))??golfers[0];
+            var card=new Scorecard(course);for(int h=0;h<mine.card.Length;h++)if(mine.card[h]>0)card.Record(h,mine.card[h]);
+            hud.ShowPlayHud(false);
+            hud.ShowScorecard(card,more?$"Hole {hole.PlayNumber} complete":"Round complete",headline,tiles,more,rows);
+            int holeNow=state.hole;
+            if(hud.NextHole) hud.NextHole.Pressed=()=>{ if(SportsMultiplayer.Active) SportsMultiplayer.Instance.Submit(new NetworkInput{action="golfHoleCardDone",value=holeNow,actorSeat=mine.seat}); };
+            // (the lobby takes everyone on after the round: no play-again or menu here)
+            if(hud.PlayAgain) hud.PlayAgain.gameObject.SetActive(false);
+            if(hud.RoundMenu) hud.RoundMenu.gameObject.SetActive(false);
+            sounds.PlayReady();
+        }
+        /// Every golfer is on this phone (pass the phone): no turn clock.
+        bool sharedRound=>partyConfiguration!=null&&partyConfiguration.participants.Where(p=>p.seat>=0).All(p=>partyConfiguration.Controls(partyConfiguration.localID,p.seat));
+        /// The walk-on nameplate: the golfer actually on the tee.
+        string NameplateName=>networkConfigured&&SportsMultiplayer.Active&&SportsMultiplayer.Instance.GolfState!=null?NetworkName(SportsMultiplayer.Instance.GolfState.turn):Match?.Current?.Name??"YOU";
         string NetworkName(int seat)=>SportsMultiplayer.Instance.Configuration.participants.FirstOrDefault(p=>p.seat==seat)?.name??"Player";
         /// The swing goes to the host with its club and line; the host rules on it and every phone flies it (FlyNetworkShot).
         bool NetworkShot(GolfArcade.Swing.SwingImpact impact) {

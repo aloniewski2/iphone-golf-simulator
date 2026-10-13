@@ -57,6 +57,22 @@ namespace GolfArcade.Hub
         /// Set by the session before the scene loads: Awake leaves the build to BuildSteps, which the session runs a step a frame
         /// and reports as the TV's loading bar, instead of building everything in one multi-second frame.
         public static bool DeferBuild;
+        /// Phone only (no TV connected): the plaza draws in the top part of the phone's own screen, above the phone's controls, and the
+        /// PLAY hall is shut (a match needs a TV). Set by the session before the scene loads.
+        public static bool PhoneOnly;
+        /// The share of the phone's height the plaza takes in phone-only mode, from the top (the controls are under it).
+        /// The phone's layout uses the same number (HubSession.phoneViewShare).
+        public const float PhoneViewShare = .56f;
+        static readonly Rect PhoneRect = new Rect(0, 1 - PhoneViewShare, 1, PhoneViewShare);
+        /// A narrow phone view needs a wider lens to show as much of the plaza around the hero as the TV does.
+        static float FovScale => PhoneOnly ? 1.32f : 1f;
+        /// The PLAY hall and the sport rooms behind it are shut on a phone with no TV.
+        public static bool PlayClosed(string place) => PhoneOnly && (place == HubLayout.PlayHall || place == HubLayout.TennisRoom || place == HubLayout.GolfRoom);
+        /// A doorway into a place that is shut on this phone.
+        public static bool DoorClosed(HubLayout.Door d) => d != null && !d.locked && HubLayout.Destination(d, out var to) && PlayClosed(to.place);
+        public const string PlayClosedText = "Connect a TV with AirPlay to play";
+        float closedNoticeAt = -10;
+        void NoteClosed() { if (Time.unscaledTime - closedNoticeAt > 3f) { closedNoticeAt = Time.unscaledTime; ShowToast(PlayClosedText, 2.5f); } }
 
         void Awake()
         {
@@ -159,7 +175,7 @@ namespace GolfArcade.Hub
             var pos = Arc(s) + (CameraTarget() - Arc(1)) * s;
             var look = Vector3.Lerp(new Vector3(0, 1f, 2f), FollowLook(), s);
             Camera.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(look - pos, Vector3.up));
-            Camera.fieldOfView = Mathf.Lerp(46f, 52f, s); Camera.farClipPlane = c.far;
+            Camera.fieldOfView = Mathf.Lerp(46f, 52f, s) * FovScale; Camera.farClipPlane = c.far;
         }
 
         // ------------------------------------------------------------------ look and body
@@ -183,6 +199,8 @@ namespace GolfArcade.Hub
             if (!Transitioning && Station == null) { CheckDoors(); UpdateZone(); }
             if (Arriving) UpdateArrival(Time.unscaledDeltaTime); else FollowCamera(Time.unscaledDeltaTime);
             if (overlay && Camera) overlay.targetDisplay = Camera.targetDisplay;
+            // phone only: the plaza keeps to the top of the screen (the session's display set-up puts every camera full screen)
+            if (Camera && PhoneOnly && Camera.rect != PhoneRect) { Camera.rect = PhoneRect; Camera.ResetAspect(); }
             if (promptRoot && Camera) promptRoot.rotation = Quaternion.LookRotation(promptRoot.position - Camera.transform.position, Vector3.up);
             if (youTag && Camera) { youTag.rotation = Camera.transform.rotation; youTag.gameObject.SetActive(Station == null && Place == HubLayout.Plaza); }
             PulseZoneRing();
@@ -201,7 +219,11 @@ namespace GolfArcade.Hub
                 if (along < -.3f || along > 1f || lateral > d.width / 2) continue;
                 if (Vector3.Dot(v, d.inward) < .35f) continue;
                 if (d.locked) continue;
-                if (HubLayout.Destination(d, out var to)) { StartCoroutine(WalkThrough(d, to)); return; }
+                if (HubLayout.Destination(d, out var to))
+                {
+                    if (PlayClosed(to.place)) { NoteClosed(); continue; }
+                    StartCoroutine(WalkThrough(d, to)); return;
+                }
             }
         }
 
@@ -233,6 +255,7 @@ namespace GolfArcade.Hub
         public bool GoTo(string target, bool use = false)
         {
             if (Transitioning || !HubLayout.QuickTravel(target, out var pos, out var facing, out var place)) return false;
+            if (PlayClosed(place)) { NoteClosed(); return false; }
             if (Arriving) EndArrival();
             LeaveStation();
             StartCoroutine(Travel(pos, facing, place, use ? HubLayout.SpotById(target) : null)); return true;
@@ -248,6 +271,27 @@ namespace GolfArcade.Hub
             }
             SetFade(0); Player.locked = false; Transitioning = false; doorCooldown = .4f;
             if (use != null) { UpdateZone(); if (ZoneSpot == use) Interact(); }
+        }
+
+        /// Joined a friend's party: a quick fade to stand beside them (in their room when it is open to this phone, else the plaza).
+        public bool Meet(string place, Vector3 friend)
+        {
+            if (Transitioning || !Player) return false;
+            HubLayout.Place where = null;
+            foreach (var p in HubLayout.Places) if (p.id == place) where = p;
+            if (where == null || PlayClosed(place)) { where = HubLayout.PlaceOf(HubLayout.Plaza); place = HubLayout.Plaza; friend = HubLayout.Spawn; }
+            if (Arriving) EndArrival();
+            LeaveStation();
+            var pos = friend + new Vector3(1.3f, 0, -.9f);
+            if (!where.outdoor)
+            {
+                // inside the room's walls
+                float hx = where.size.x / 2 - 1f, hz = where.size.y / 2 - 1f;
+                pos.x = Mathf.Clamp(pos.x, where.origin.x - hx, where.origin.x + hx); pos.z = Mathf.Clamp(pos.z, where.origin.z - hz, where.origin.z + hz);
+                pos.y = where.origin.y;
+            }
+            var facing = friend - pos; facing.y = 0; if (facing.sqrMagnitude < .01f) facing = Vector3.forward;
+            StartCoroutine(Travel(pos, facing.normalized, place)); return true;
         }
 
         void SetPlace(string id)
@@ -286,7 +330,7 @@ namespace GolfArcade.Hub
                 {
                     var at = bestSpot != null ? bestSpot.position + Vector3.up * 2.3f : bestDoor.position + Vector3.up * 3.6f - bestDoor.inward * .6f;
                     promptRoot.position = at;
-                    string text = bestSpot != null ? "A  " + bestSpot.label : bestDoor.locked ? bestDoor.label : bestDoor.label + "  ▸";
+                    string text = bestSpot != null ? "A  " + bestSpot.label : bestDoor.locked ? bestDoor.label : DoorClosed(bestDoor) ? bestDoor.label + " · TV needed" : bestDoor.label + "  ▸";
                     if (prompt.text != text)
                     {
                         prompt.text = text;
@@ -341,7 +385,7 @@ namespace GolfArcade.Hub
         /// Sit straight down on a bay's bench (returning from a match to the same bench: RETURN).
         public bool SitAt(string bayId)
         {
-            var bay = HubLayout.SpotById(bayId); if (bay == null || bay.kind != HubLayout.Kind.Bay) return false;
+            var bay = HubLayout.SpotById(bayId); if (bay == null || bay.kind != HubLayout.Kind.Bay || PlayClosed(bay.place)) return false;
             Station = bay; Player.SetStick(0, 0, 0); Player.locked = true; SetPlace(bay.place);
             var seat = SeatOf(bay); Player.Teleport(seat, Mathf.Atan2(bay.facing.x, bay.facing.z) * Mathf.Rad2Deg);
             if (Player.hero) { Player.hero.Seated = true; Player.hero.SnapSeat(); }
@@ -423,7 +467,8 @@ namespace GolfArcade.Hub
         void BuildCamera()
         {
             var go = new GameObject("Hub camera"); go.transform.SetParent(transform, false);
-            Camera = go.AddComponent<Camera>(); Camera.fieldOfView = 48; Camera.nearClipPlane = .2f;
+            Camera = go.AddComponent<Camera>(); Camera.fieldOfView = 48 * FovScale; Camera.nearClipPlane = .2f;
+            if (PhoneOnly) Camera.rect = PhoneRect;
             Camera.clearFlags = CameraClearFlags.SolidColor; Camera.backgroundColor = new Color(.98f, .72f, .58f);
             go.AddComponent<AudioListener>();
             // NOT MainCamera: a match loading behind the plaza looks its own camera up with Camera.main
@@ -448,7 +493,7 @@ namespace GolfArcade.Hub
         {
             if (!Camera || !Player) return;
             var c = CameraFor(Place);
-            Camera.farClipPlane = c.far; Camera.fieldOfView = HubLayout.PlaceOf(Place).outdoor ? 52 : 48;
+            Camera.farClipPlane = c.far; Camera.fieldOfView = (HubLayout.PlaceOf(Place).outdoor ? 52 : 48) * FovScale;
             if (Station != null && Station.kind == HubLayout.Kind.Bay)
             {
                 // seated in a bay: from behind and above the bench, the bay screen ahead (the camera dives into it at go)

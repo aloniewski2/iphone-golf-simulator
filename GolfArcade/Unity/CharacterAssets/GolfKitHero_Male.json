@@ -18,6 +18,8 @@
             "swingNormalOffset": 530016,
             "uvOffset": 2098308,
             "bindPositionOffset": 2451652,
+            "lidOffset": 2981668,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Skin",
@@ -38,8 +40,8 @@
                             1.0
                         ],
                         "subsurface": [
-                            0.1199999526143074,
-                            0.03500000014901161,
+                            0.12999996542930604,
+                            0.04999998211860657,
                             0.019999999552965165,
                             1.0
                         ],
@@ -50,27 +52,27 @@
                             1.0
                         ],
                         "headRight": [
-                            1.0,
-                            -0.0001405540097039193,
-                            -0.000003610245585150551,
+                            0.9999924898147583,
+                            0.00387910520657897,
+                            0.00009963801130652428,
                             0.0
                         ],
                         "headUp": [
-                            4.1525268466846565e-12,
-                            -0.025677325204014779,
+                            -6.769223515057377e-10,
+                            -0.02567717805504799,
                             0.9996702671051025,
                             0.0
                         ],
                         "headForward": [
-                            -0.00014060035755392164,
-                            -0.9996702671051025,
-                            -0.025677325204014779,
+                            0.003880384610965848,
+                            -0.9996628165245056,
+                            -0.025676988065242769,
                             0.0
                         ],
                         "headEye": [
-                            0.000009129599675361533,
-                            0.06766772270202637,
-                            0.07853792607784271,
+                            -0.0003065243945457041,
+                            0.0678902268409729,
+                            0.07853729277849198,
                             0.0
                         ],
                         "specularStrength": 0.949999988079071,
@@ -93,7 +95,7 @@
                         "weaveThread": 0.0,
                         "sheenStrength": 0.0,
                         "sheenPower": 0.0,
-                        "saturation": 0.8799999952316284,
+                        "saturation": 0.7400000095367432,
                         "bumpScale": 0.0,
                         "bumpTriplanar": 0.0,
                         "bumpTile": 5.0,
@@ -106,7 +108,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": true,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -115,16 +119,18 @@
             "name": "Face",
             "kind": "face",
             "vertexCount": 3824,
-            "positionOffset": 2981668,
-            "normalOffset": 3027556,
+            "positionOffset": 3335012,
+            "normalOffset": 3380900,
             "swingPositionOffset": 1060032,
             "swingNormalOffset": 1105920,
-            "uvOffset": 3109252,
+            "uvOffset": 3462596,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Reference_Face_Brow",
-                    "indexOffset": 3073444,
+                    "indexOffset": 3426788,
                     "indexCount": 2808,
                     "look": {
                         "shader": "TennisCharacter",
@@ -209,12 +215,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Reference_Face_Sclera",
-                    "indexOffset": 3084676,
+                    "indexOffset": 3438020,
                     "indexCount": 3648,
                     "look": {
                         "shader": "TennisCharacter",
@@ -299,12 +307,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Reference_Face_Iris",
-                    "indexOffset": 3099268,
+                    "indexOffset": 3452612,
                     "indexCount": 1152,
                     "look": {
                         "shader": "TennisCharacter",
@@ -389,12 +399,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Reference_Face_Pupil",
-                    "indexOffset": 3103876,
+                    "indexOffset": 3457220,
                     "indexCount": 576,
                     "look": {
                         "shader": "TennisCharacter",
@@ -479,12 +491,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Reference_Face_Limbal",
-                    "indexOffset": 3106180,
+                    "indexOffset": 3459524,
                     "indexCount": 384,
                     "look": {
                         "shader": "TennisCharacter",
@@ -569,12 +583,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Reference_Face_Catch",
-                    "indexOffset": 3107716,
+                    "indexOffset": 3461060,
                     "indexCount": 384,
                     "look": {
                         "shader": "TennisCharacter",
@@ -659,7 +675,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -668,16 +686,18 @@
             "name": "Kit_Bottom",
             "kind": "kit",
             "vertexCount": 14290,
-            "positionOffset": 3139844,
-            "normalOffset": 3311324,
+            "positionOffset": 3493188,
+            "normalOffset": 3664668,
             "swingPositionOffset": 1151808,
             "swingNormalOffset": 1323288,
-            "uvOffset": 3750260,
+            "uvOffset": 4103604,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shorts",
-                    "indexOffset": 3482804,
+                    "indexOffset": 3836148,
                     "indexCount": 65244,
                     "look": {
                         "shader": "TennisCloth",
@@ -737,12 +757,14 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "Kit_GolfHardware",
-                    "indexOffset": 3743780,
+                    "indexOffset": 4097124,
                     "indexCount": 1620,
                     "look": {
                         "shader": "TennisCloth",
@@ -802,7 +824,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -811,16 +835,18 @@
             "name": "Kit_Glove_L",
             "kind": "kit",
             "vertexCount": 4957,
-            "positionOffset": 3864580,
-            "normalOffset": 3924064,
+            "positionOffset": 4217924,
+            "normalOffset": 4277408,
             "swingPositionOffset": 1494768,
             "swingNormalOffset": 1554252,
-            "uvOffset": 4067932,
+            "uvOffset": 4421276,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_GolfGlove",
-                    "indexOffset": 3983548,
+                    "indexOffset": 4336892,
                     "indexCount": 21096,
                     "look": {
                         "shader": "TennisCloth",
@@ -880,7 +906,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -889,16 +917,18 @@
             "name": "Kit_Glove_R",
             "kind": "kit",
             "vertexCount": 5012,
-            "positionOffset": 4107588,
-            "normalOffset": 4167732,
+            "positionOffset": 4460932,
+            "normalOffset": 4521076,
             "swingPositionOffset": 1613736,
             "swingNormalOffset": 1673880,
-            "uvOffset": 4312212,
+            "uvOffset": 4665556,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_GolfGlove",
-                    "indexOffset": 4227876,
+                    "indexOffset": 4581220,
                     "indexCount": 21084,
                     "look": {
                         "shader": "TennisCloth",
@@ -958,7 +988,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -967,16 +999,18 @@
             "name": "Kit_Shoe_L",
             "kind": "kit",
             "vertexCount": 9791,
-            "positionOffset": 4352308,
-            "normalOffset": 4469800,
+            "positionOffset": 4705652,
+            "normalOffset": 4823144,
             "swingPositionOffset": 1734024,
             "swingNormalOffset": 1851516,
-            "uvOffset": 4718932,
+            "uvOffset": 5072276,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 4587292,
+                    "indexOffset": 4940636,
                     "indexCount": 32910,
                     "look": {
                         "shader": "TennisCloth",
@@ -1036,7 +1070,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -1045,16 +1081,18 @@
             "name": "Kit_Shoe_R",
             "kind": "kit",
             "vertexCount": 9745,
-            "positionOffset": 4797260,
-            "normalOffset": 4914200,
+            "positionOffset": 5150604,
+            "normalOffset": 5267544,
             "swingPositionOffset": 1969008,
             "swingNormalOffset": 2085948,
-            "uvOffset": 5162780,
+            "uvOffset": 5516124,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shoe",
-                    "indexOffset": 5031140,
+                    "indexOffset": 5384484,
                     "indexCount": 32910,
                     "look": {
                         "shader": "TennisCloth",
@@ -1114,7 +1152,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -1123,16 +1163,18 @@
             "name": "Kit_Top",
             "kind": "kit",
             "vertexCount": 12920,
-            "positionOffset": 5240740,
-            "normalOffset": 5395780,
+            "positionOffset": 5594084,
+            "normalOffset": 5749124,
             "swingPositionOffset": 2202888,
             "swingNormalOffset": 2357928,
-            "uvOffset": 5775016,
+            "uvOffset": 6128360,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "Kit_Shirt",
-                    "indexOffset": 5550820,
+                    "indexOffset": 5904164,
                     "indexCount": 56049,
                     "look": {
                         "shader": "TennisCloth",
@@ -1192,7 +1234,9 @@
                         ],
                         "normalStrength": 1.0,
                         "useGarmentMaps": 1.0,
-                        "fabricVersion": 2.0
+                        "fabricVersion": 2.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -1201,16 +1245,18 @@
             "name": "Club_Driver",
             "kind": "equipment",
             "vertexCount": 1716,
-            "positionOffset": 5878376,
-            "normalOffset": 5898968,
+            "positionOffset": 6231720,
+            "normalOffset": 6252312,
             "swingPositionOffset": 2512968,
             "swingNormalOffset": 2533560,
             "uvOffset": -1,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "CLUB grip",
-                    "indexOffset": 5919560,
+                    "indexOffset": 6272904,
                     "indexCount": 996,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1260,12 +1306,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB accent",
-                    "indexOffset": 5923544,
+                    "indexOffset": 6276888,
                     "indexCount": 648,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1315,12 +1363,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB carbon",
-                    "indexOffset": 5926136,
+                    "indexOffset": 6279480,
                     "indexCount": 3282,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1370,12 +1420,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB black",
-                    "indexOffset": 5939264,
+                    "indexOffset": 6292608,
                     "indexCount": 276,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1425,12 +1477,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB satin",
-                    "indexOffset": 5940368,
+                    "indexOffset": 6293712,
                     "indexCount": 1872,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1480,12 +1534,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB gunmetal",
-                    "indexOffset": 5947856,
+                    "indexOffset": 6301200,
                     "indexCount": 594,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1535,12 +1591,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB groove",
-                    "indexOffset": 5950232,
+                    "indexOffset": 6303576,
                     "indexCount": 180,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1590,7 +1648,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -1599,16 +1659,18 @@
             "name": "Club_Iron",
             "kind": "equipment",
             "vertexCount": 1232,
-            "positionOffset": 5950952,
-            "normalOffset": 5965736,
+            "positionOffset": 6304296,
+            "normalOffset": 6319080,
             "swingPositionOffset": 2554152,
             "swingNormalOffset": 2568936,
             "uvOffset": -1,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "CLUB grip",
-                    "indexOffset": 5980520,
+                    "indexOffset": 6333864,
                     "indexCount": 996,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1658,12 +1720,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB accent",
-                    "indexOffset": 5984504,
+                    "indexOffset": 6337848,
                     "indexCount": 552,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1713,12 +1777,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB chrome",
-                    "indexOffset": 5986712,
+                    "indexOffset": 6340056,
                     "indexCount": 2472,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1768,12 +1834,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB black",
-                    "indexOffset": 5996600,
+                    "indexOffset": 6349944,
                     "indexCount": 276,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1823,12 +1891,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB groove",
-                    "indexOffset": 5997704,
+                    "indexOffset": 6351048,
                     "indexCount": 324,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1878,7 +1948,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -1887,16 +1959,18 @@
             "name": "Club_Putter",
             "kind": "equipment",
             "vertexCount": 1248,
-            "positionOffset": 5999000,
-            "normalOffset": 6013976,
+            "positionOffset": 6352344,
+            "normalOffset": 6367320,
             "swingPositionOffset": 2583720,
             "swingNormalOffset": 2598696,
             "uvOffset": -1,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "CLUB grip",
-                    "indexOffset": 6028952,
+                    "indexOffset": 6382296,
                     "indexCount": 996,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -1946,12 +2020,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB accent",
-                    "indexOffset": 6032936,
+                    "indexOffset": 6386280,
                     "indexCount": 516,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2001,12 +2077,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB chrome",
-                    "indexOffset": 6035000,
+                    "indexOffset": 6388344,
                     "indexCount": 1248,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2056,12 +2134,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB black",
-                    "indexOffset": 6039992,
+                    "indexOffset": 6393336,
                     "indexCount": 312,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2111,12 +2191,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB satin",
-                    "indexOffset": 6041240,
+                    "indexOffset": 6394584,
                     "indexCount": 1056,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2166,12 +2248,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB gunmetal",
-                    "indexOffset": 6045464,
+                    "indexOffset": 6398808,
                     "indexCount": 756,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2221,12 +2305,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB white",
-                    "indexOffset": 6048488,
+                    "indexOffset": 6401832,
                     "indexCount": 72,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2276,7 +2362,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -2285,16 +2373,18 @@
             "name": "Club_Wedge",
             "kind": "equipment",
             "vertexCount": 1280,
-            "positionOffset": 6048776,
-            "normalOffset": 6064136,
+            "positionOffset": 6402120,
+            "normalOffset": 6417480,
             "swingPositionOffset": 2613672,
             "swingNormalOffset": 2629032,
             "uvOffset": -1,
             "bindPositionOffset": -1,
+            "lidOffset": -1,
+            "edgeOffset": -1,
             "submeshes": [
                 {
                     "material": "CLUB grip",
-                    "indexOffset": 6079496,
+                    "indexOffset": 6432840,
                     "indexCount": 996,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2344,12 +2434,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB accent",
-                    "indexOffset": 6083480,
+                    "indexOffset": 6436824,
                     "indexCount": 552,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2399,12 +2491,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB chrome",
-                    "indexOffset": 6085688,
+                    "indexOffset": 6439032,
                     "indexCount": 1248,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2454,12 +2548,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB black",
-                    "indexOffset": 6090680,
+                    "indexOffset": 6444024,
                     "indexCount": 276,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2509,12 +2605,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB satin",
-                    "indexOffset": 6091784,
+                    "indexOffset": 6445128,
                     "indexCount": 1224,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2564,12 +2662,14 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 },
                 {
                     "material": "CLUB groove",
-                    "indexOffset": 6096680,
+                    "indexOffset": 6450024,
                     "indexCount": 396,
                     "look": {
                         "shader": "Universal Render Pipeline/Lit",
@@ -2619,7 +2719,9 @@
                         "trimColor": [],
                         "normalStrength": 0.0,
                         "useGarmentMaps": 0.0,
-                        "fabricVersion": 0.0
+                        "fabricVersion": 0.0,
+                        "faceSkin": false,
+                        "edgeLines": 0.0
                     }
                 }
             ]
@@ -2852,7 +2954,7 @@
     "height": 1.7021691799163819,
     "headCentreY": 1.5623581409454346,
     "headTopY": 1.704699993133545,
-    "headRadius": 0.11661230027675629,
+    "headRadius": 0.11440514028072357,
     "rig": {
         "file": "GolfKitHero_Male_Rig",
         "bones": [

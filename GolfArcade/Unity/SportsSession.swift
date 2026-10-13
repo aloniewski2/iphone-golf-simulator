@@ -99,6 +99,30 @@ final class SportsSession {
     var haptics = (UserDefaults.standard.object(forKey:"arcade.hapticsEnabled") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(haptics,forKey:"arcade.hapticsEnabled") }
     }
+    /// Settings → Controls → Swing prediction (on unless turned off): a strong swing counts the moment its rotation peaks
+    /// (SteeringFilter.peakConfirm, read when the next match or court direction starts).
+    var swingPrediction = (UserDefaults.standard.object(forKey:"sports.swingPrediction") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(swingPrediction,forKey:"sports.swingPrediction") }
+    }
+    /// Settings → Controls → 120 Hz swing input (on unless turned off): on a TV the match loop reads the swing at 120 Hz
+    /// while the TV is still drawn at 60 (Unity InputRate).
+    var fastInput = (UserDefaults.standard.object(forKey:"sports.fastInput") as? Bool) ?? true {
+        didSet { UserDefaults.standard.set(fastInput,forKey:"sports.fastInput") }
+    }
+    /// 120 only when it is on, this phone's panel reaches 120 (ProMotion) and Low Power Mode (which caps it at 60) is off.
+    private var inputHz: Int {
+        let panel = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.session.role == .windowApplication }?.screen.maximumFramesPerSecond ?? 60
+        return fastInput && panel >= 120 && !ProcessInfo.processInfo.isLowPowerModeEnabled ? 120 : 60
+    }
+    /// How hard hits land in the hand, 0.55 soft .. 1 full (RacketFeel.strengths).
+    var hapticStrength = (UserDefaults.standard.object(forKey:"arcade.hapticStrength") as? Double) ?? 1 {
+        didSet { UserDefaults.standard.set(hapticStrength,forKey:"arcade.hapticStrength"); RacketFeel.apply(self) }
+    }
+    /// A short knock from the phone's own speaker on each hit (system sounds skip the AirPlay route, so it is on time).
+    var racketSound = UserDefaults.standard.bool(forKey:"arcade.racketSound") {
+        didSet { UserDefaults.standard.set(racketSound,forKey:"arcade.racketSound"); RacketFeel.apply(self) }
+    }
     var status = "Connect a TV or Mac to play. This phone is your controller."
     var feedback = ""
     var ultimateChoice = TennisUltimate(rawValue: UserDefaults.standard.integer(forKey: "tennis.ultimate")) ?? .skybreaker
@@ -141,10 +165,19 @@ final class SportsSession {
     private(set) var matchEmotes = EmoteCatalog.defaults
     var emoteWindow = ""
     var emoteNotice = ""
+    /// Tennis: celebrate a won point, or pick the intro emote while the intro plays ("intro").
     var canPlayEmote: Bool {
         active && ready && loading.finished && !paused && finishedMatch == nil && sport == "tennis"
-        && setupStage == .playing && emoteWindow == "point"
+        && setupStage == .playing && (emoteWindow == "point" || (emoteWindow == "intro" && ["intro", ""].contains(tennisPhase)))
     }
+    /// Golf: the golfer up picks the emote they greet the gallery with while the hole's flyover plays.
+    var canPickGolfIntroEmote: Bool {
+        active && ready && loading.finished && !paused && finishedMatch == nil && sport == "golf" && golfPhase == "Intro" && emoteWindow == "intro"
+    }
+    /// The intro's flyover can be skipped (nil when not: the character intros always play). Online, everyone must ask:
+    /// `voted` of `needed` have, `mine` when this phone has.
+    struct IntroSkip: Equatable { var voted: Int; var needed: Int; var mine: Bool }
+    var introSkip: IntroSkip?
     var pointControlsVisible: Bool {
         active && ready && loading.finished && !paused && setupStage == .playing
         && finishedMatch == nil && sport == "tennis"
@@ -366,14 +399,14 @@ final class SportsSession {
         ultimateMeter=0; ultimateArmed=false; diveCooldown=0; canDive=false; canArmUltimate=false; loadoutLocked=false
         let p=players[min(playerIndex,players.count-1)]
         UserDefaults.standard.set(sport, forKey: "sports.lastSport.\(p.id.uuidString)")
-        matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""
+        matchEmotes = p.equippedEmotes; emoteWindow = ""; emoteNotice = ""; tennisPhase = ""; introSkip = nil
         if let network = launchExtras["network"] as? String, let data = network.data(using: .utf8),
            let configuration = try? JSONDecoder().decode(MultiplayerMatchConfiguration.self, from: data),
            let local = configuration.participants.first(where: { $0.id == configuration.localID }) {
             matchEmotes = EmoteCatalog.normalized(local.loadout?.emotes)
         }
         motion.setAimProfile(storedAimProfile())
-        pending=["holeFlyover":holeFlyover,"intros":consumePresentationIntroCut(),"bigMoments":presentationBigMoments,"presentationConstrained":reduceMotion || ProcessInfo.processInfo.thermalState == .serious || ProcessInfo.processInfo.thermalState == .critical,"version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound && !(multiplayerControllerOnly && (sport == "tennis" || !displayConnected)),"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
+        pending=["holeFlyover":holeFlyover,"intros":consumePresentationIntroCut(),"bigMoments":presentationBigMoments,"presentationConstrained":reduceMotion || ProcessInfo.processInfo.thermalState == .serious || ProcessInfo.processInfo.thermalState == .critical,"version":1,"session":sessionID,"action":"start","sport":sport,"playerID":p.id.uuidString,"playerName":p.name,"female":p.standardFemale,"skin":p.standardSkin,"left":p.handedness == .left,"sound":sound && !(multiplayerControllerOnly && (sport == "tennis" || !displayConnected)),"haptics":haptics,"touch":touch || preview,"token":Int(sessionToken),"fps":highFrameRate ? 120 : 60,"inputHz":inputHz,"bench":SportsSession.benchmark,"difficulty":tennisDifficulty,"venue":sport == "tennis" ? tennisVenue : "resort",
                  "shirt":p.outfitHex("shirt") ?? "","shorts":p.outfitHex("shorts") ?? "","accent":p.outfitHex("accent") ?? "","racket":p.outfitHex("racket") ?? "",
                  "skinHex":p.skinHex,"hairHex":p.hairHex,
                  "tips":false,"overscan":overscan,
@@ -417,6 +450,7 @@ final class SportsSession {
     private func loadCoveredRuntime(in window: UIWindow) {
         do { try SportsRuntime.shared().load(in:window,controllerReplica:multiplayerControllerOnly) }
         catch { failStartup(error.localizedDescription); return }
+        RacketFeel.apply(self)
         SportsRuntime.shared().clearTennisResult()
         SportsDisplays.shared.restorePhoneControls()
         SportsRuntime.shared().pause(false)
@@ -850,7 +884,8 @@ final class SportsSession {
         status = "Display connected. Waiting for a gameplay frame…"
     }
     func exitGame() {
-        if multiplayerMatchID != nil { TennisMenu.shared.online.select("net-leave", menu: .shared) }
+        // an online match: back to the Plaza (a party goes back to its bench together)
+        if multiplayerMatchID != nil { HubSession.shared.leaveOnlineMatch() }
         else if OnboardingFlow.shared.active { OnboardingFlow.shared.exitToMenu() }
         else { TennisMenu.shared.goHome() }
     }
@@ -982,6 +1017,10 @@ final class SportsSession {
                 if window != emoteWindow { emoteNotice = "" }
                 emoteWindow = window
             case "emoteResult": emoteNotice = event["message"] as? String ?? ""
+            case "introSkip":
+                let fields = (event["message"] as? String ?? "").split(separator: "|").compactMap { Int($0) }
+                let skip = fields.count == 3 ? IntroSkip(voted: fields[0], needed: fields[1], mine: fields[2] == 1) : nil
+                if skip != introSkip { introSkip = skip }
             case "timing": receiveTimingResult(event["message"] as? String ?? "failed")
             case "abilities":
                 let fields = (event["message"] as? String ?? "").split(separator: "|")

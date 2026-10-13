@@ -1,0 +1,880 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using GolfArcade.Course;
+using GolfArcade.Game;
+using GolfArcade.Tennis;
+using GolfArcade.UI;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
+namespace GolfArcade.PlayTests
+{
+    /// Review mockups of three intro styles, filmed in the real golf and tennis scenes (camera and overlay scripted
+    /// here; no game code changes): A "Postcard" (Mario Kart course intro), B "Quick & clean" (Wii Sports), C "Showtime"
+    /// (Mario Tennis Aces entrances). Frames: INTRO_MOCK_OUT/<style>_<sport>/f####.jpg at 30 fps.
+    public class IntroMockups
+    {
+        const int FPS = 30, W = 1280, H = 720;
+        const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+        static string Root => Environment.GetEnvironmentVariable("INTRO_MOCK_OUT") ?? "Library/Captures/intro-mockups";
+
+        // ---------------------------------------------------------------- the frame loop
+        sealed class Seg { public float len; public Action begin; public Action<float> tick; public Action end; }
+        Camera cam; Action beforeCapture;
+        IEnumerator Play(string name, List<Seg> segs)
+        {
+            string dir = Path.Combine(Root, name); Directory.CreateDirectory(dir);
+            foreach (var f in Directory.GetFiles(dir, "*.jpg")) File.Delete(f);
+            int frame = 0;
+            foreach (var seg in segs)
+            {
+                seg.begin?.Invoke();
+                int n = Mathf.Max(1, Mathf.RoundToInt(seg.len * FPS));
+                for (int i = 0; i < n; i++)
+                {
+                    yield return new WaitForEndOfFrame();
+                    cam = Camera.main; cam.aspect = (float)W / H;
+                    seg.tick?.Invoke(i / (float)FPS);
+                    beforeCapture?.Invoke();
+                    Canvas.ForceUpdateCanvases();
+                    GameCapture.Save(Path.Combine(dir, $"f{frame++:0000}.jpg"), W, H);
+                }
+                seg.end?.Invoke();
+            }
+            Clear();
+        }
+        void Cam(Vector3 position, Vector3 look, float verticalFov)
+        {
+            cam.transform.position = position; cam.transform.rotation = Quaternion.LookRotation(look - position, Vector3.up);
+            cam.fieldOfView = verticalFov;
+        }
+        static float S(float x) { x = Mathf.Clamp01(x); return x * x * (3 - 2 * x); }
+        static float S2(float x) { x = Mathf.Clamp01(x); return x * x * x * (x * (x * 6 - 15) + 10); }
+        static float Out(float x) { x = Mathf.Clamp01(x); return 1 - (1 - x) * (1 - x) * (1 - x); }
+        static float Spring(float x) { x = Mathf.Clamp01(x); return 1 - Mathf.Exp(-x * 7) * Mathf.Cos(x * 11); }
+
+        // ---------------------------------------------------------------- the overlay
+        Canvas canvas; RectTransform ui;
+        readonly List<GameObject> live = new();
+        void MakeCanvas()
+        {
+            if (canvas) Object.Destroy(canvas.gameObject);
+            var go = new GameObject("Mockup overlay");
+            canvas = go.AddComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 5000;
+            var scaler = go.AddComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 1;
+            ui = (RectTransform)go.transform;
+        }
+        void Clear() { foreach (var g in live) if (g) Object.Destroy(g); live.Clear(); }
+        RectTransform Node(string name, RectTransform parent, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 size)
+        {
+            var rt = new GameObject(name).AddComponent<RectTransform>(); rt.SetParent(parent ? parent : ui, false);
+            rt.anchorMin = rt.anchorMax = anchor; rt.pivot = pivot; rt.anchoredPosition = pos; rt.sizeDelta = size;
+            if (!parent || parent == ui) live.Add(rt.gameObject);
+            return rt;
+        }
+        Image Box(RectTransform parent, Color c, Vector2 anchorMin, Vector2 anchorMax, Vector2 offMin, Vector2 offMax, Sprite sprite = null, bool sliced = true)
+        {
+            var img = new GameObject("Box").AddComponent<Image>(); img.transform.SetParent(parent, false); img.color = c; img.raycastTarget = false;
+            if (sprite) { img.sprite = sprite; img.type = sliced ? Image.Type.Sliced : Image.Type.Simple; }
+            var rt = img.rectTransform; rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.offsetMin = offMin; rt.offsetMax = offMax;
+            return img;
+        }
+        Text Txt(RectTransform parent, string s, int size, Color c, Font font, TextAnchor anchor, Vector2 anchorMin, Vector2 anchorMax, Vector2 offMin, Vector2 offMax, Color? outline = null, float weight = 0)
+        {
+            var t = new GameObject("Text").AddComponent<Text>(); t.transform.SetParent(parent, false);
+            t.font = font; t.fontSize = size; t.color = c; t.alignment = anchor; t.text = s; t.raycastTarget = false;
+            t.horizontalOverflow = HorizontalWrapMode.Overflow; t.verticalOverflow = VerticalWrapMode.Overflow;
+            var rt = t.rectTransform; rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.offsetMin = offMin; rt.offsetMax = offMax;
+            if (outline is Color o && weight > 0)
+            {
+                var a = t.gameObject.AddComponent<Outline>(); a.effectColor = o; a.effectDistance = new Vector2(weight, -weight);
+                var b = t.gameObject.AddComponent<Outline>(); b.effectColor = o; b.effectDistance = new Vector2(-weight, weight);
+                var d = t.gameObject.AddComponent<Shadow>(); d.effectColor = new Color(o.r, o.g, o.b, .75f); d.effectDistance = new Vector2(0, -weight * 2.2f);
+            }
+            return t;
+        }
+        static readonly Color Navy = UiKit.Hex("0E2140"), NavyDeep = UiKit.Hex("08152B"), Lime = UiKit.Hex("D7F044"), White = Color.white,
+            Gold = UiKit.Hex("FFC62E"), Orange = UiKit.Hex("FF7A1A"), Hot = UiKit.Hex("FF3D6E"), Sky = UiKit.Hex("2FA8FF"), Cream = UiKit.Hex("FFF9EE");
+
+        /// A — Mario Kart's corner badge: a navy plate with a lime stripe, the event and the place on it.
+        RectTransform Badge(string title, string line, bool right = false)
+        {
+            float w = 760;
+            var root = Node("Badge", ui, new Vector2(right ? 1 : 0, 0), new Vector2(right ? 1 : 0, 0), new Vector2(right ? -64 : 64, 64), new Vector2(w, 128));
+            root.gameObject.AddComponent<CanvasGroup>();
+            Box(root, new Color(0, 0, 0, .25f), Vector2.zero, Vector2.one, new Vector2(4, -8), new Vector2(4, -8), UiKit.Rounded);
+            Box(root, Navy, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Rounded);
+            Box(root, Lime, right ? new Vector2(1, 0) : Vector2.zero, right ? Vector2.one : new Vector2(0, 1), right ? new Vector2(-14, 10) : new Vector2(0, 10), right ? new Vector2(0, -10) : new Vector2(14, -10), UiKit.Rounded);
+            var a = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
+            Txt(root, title, 46, White, UiKit.Display, a, new Vector2(0, .5f), Vector2.one, new Vector2(40, -6), new Vector2(-40, -6));
+            Txt(root, line, 25, Lime, UiKit.Strong, a, Vector2.zero, new Vector2(1, .5f), new Vector2(40, 8), new Vector2(-40, 8));
+            return root;
+        }
+        void Slide(RectTransform node, float t, float len, bool fromRight = false, float travel = 900)
+        {
+            float enter = Out(t / .45f), exit = S((t - (len - .4f)) / .4f);
+            float side = fromRight ? 1 : -1;
+            var p = node.anchoredPosition; float home = (fromRight ? -64 : 64);
+            node.anchoredPosition = new Vector2(home + side * travel * (1 - enter) + side * travel * exit, p.y);
+            var g = node.GetComponent<CanvasGroup>(); if (g) g.alpha = Mathf.Min(enter * 1.5f, 1 - exit);
+        }
+        /// B — Wii Sports' plain card: a white rounded plate, dark type, one line.
+        RectTransform Card(string s, Vector2 anchor, Vector2 pos, float width, int size = 40)
+        {
+            var root = Node("Card", ui, anchor, new Vector2(.5f, .5f), pos, new Vector2(width, size * 2.1f));
+            root.gameObject.AddComponent<CanvasGroup>();
+            Box(root, new Color(0, 0, 0, .18f), Vector2.zero, Vector2.one, new Vector2(0, -6), new Vector2(0, -6), UiKit.Circle);
+            Box(root, White, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Circle);
+            Txt(root, s, size, Navy, UiKit.Strong, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            return root;
+        }
+        static void Fade(RectTransform node, float t, float len, float ramp = .3f)
+        {
+            float a = Mathf.Min(S(t / ramp), 1 - S((t - (len - ramp)) / ramp));
+            node.GetComponent<CanvasGroup>().alpha = a; node.localScale = Vector3.one * Mathf.Lerp(.92f, 1, Out(t / ramp));
+        }
+        /// C — a big slanted ribbon with chunky type, slammed in across the screen.
+        RectTransform Ribbon(string s, Color fill, Color ink, float y, float angle, bool fromRight, int size = 120, float width = 2600, float height = 190, string sub = null)
+        {
+            var root = Node("Ribbon", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(0, y), new Vector2(width, height));
+            root.localRotation = Quaternion.Euler(0, 0, angle);
+            root.gameObject.AddComponent<CanvasGroup>();
+            Box(root, ink, Vector2.zero, Vector2.one, new Vector2(0, -14), new Vector2(0, 14));
+            Box(root, fill, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            Box(root, new Color(1, 1, 1, .22f), new Vector2(0, .62f), Vector2.one, Vector2.zero, new Vector2(0, -8));
+            Txt(root, s, size, White, UiKit.Display, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, new Vector2(0, sub != null ? 18 : 0), new Vector2(0, sub != null ? 18 : 0), ink, 6);
+            if (sub != null) Txt(root, sub, 34, ink, UiKit.Display, TextAnchor.MiddleCenter, Vector2.zero, new Vector2(1, .3f), new Vector2(0, -6), new Vector2(0, -6));
+            ribbonFrom[root] = fromRight;
+            return root;
+        }
+        readonly Dictionary<RectTransform, bool> ribbonFrom = new();
+        void Slam(RectTransform node, float t, float len, float baseY)
+        {
+            bool fromRight = ribbonFrom.TryGetValue(node, out var r) && r;
+            float side = fromRight ? 1 : -1;
+            float enter = Spring(t / .5f), exit = S((t - (len - .3f)) / .3f);
+            var dir = (Vector2)(node.localRotation * Vector3.right);
+            // in from its side, past to the other side on the way out
+            node.anchoredPosition = new Vector2(0, baseY) + dir * (side * 2600 * (1 - enter) - side * 2600 * exit);
+            node.GetComponent<CanvasGroup>().alpha = 1 - exit;
+        }
+        Image flash; RawImage lines; Texture2D linesTex;
+        Image Flash() { var root = Node("Flash", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.zero); root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one; root.sizeDelta = Vector2.zero; return flash = Box(root, new Color(1, 1, 1, 0), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero); }
+        RawImage SpeedLines(Color c)
+        {
+            if (!linesTex)
+            {
+                const int N = 512; linesTex = new Texture2D(N, N, TextureFormat.RGBA32, false);
+                var px = new Color32[N * N]; var rng = new System.Random(4);
+                var rays = new float[160]; for (int i = 0; i < rays.Length; i++) rays[i] = (float)(rng.NextDouble() * Math.PI * 2);
+                for (int y = 0; y < N; y++) for (int x = 0; x < N; x++)
+                {
+                    float dx = x - N / 2f, dy = y - N / 2f, r = Mathf.Sqrt(dx * dx + dy * dy) / (N / 2f), a = Mathf.Atan2(dy, dx);
+                    float best = 0; foreach (var ray in rays) { float d = Mathf.Abs(Mathf.DeltaAngle(a * Mathf.Rad2Deg, ray * Mathf.Rad2Deg)); best = Mathf.Max(best, 1 - d / .9f); }
+                    float alpha = Mathf.Clamp01(best) * Mathf.Clamp01((r - .38f) / .25f);
+                    px[y * N + x] = new Color32(255, 255, 255, (byte)(alpha * 255));
+                }
+                linesTex.SetPixels32(px); linesTex.Apply();
+            }
+            var root = Node("Speed lines", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(2600, 2600));
+            lines = new GameObject("Lines").AddComponent<RawImage>(); lines.transform.SetParent(root, false); lines.texture = linesTex; lines.color = c; lines.raycastTarget = false;
+            var rt = lines.rectTransform; rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+            return lines;
+        }
+        /// A world point on the canvas (B's name tags over the players' heads).
+        Vector2 OnCanvas(Vector3 world)
+        {
+            var v = cam.WorldToViewportPoint(world);
+            var size = ui.rect.size;
+            return new Vector2((v.x - .5f) * size.x, (v.y - .5f) * size.y);
+        }
+
+        // ---------------------------------------------------------------- golf
+        GolfGame golf; GolferView golfer; Hole hole; Vector3 tee, pin, feet, facing, sideOut, lineDir; int sea = 1;
+        readonly List<Vector3> path = new(); readonly List<float> dist = new(); float length;
+        IEnumerator SetUpGolf(int jumpTo = 0)
+        {
+            if (!golf || SceneManager.GetActiveScene().name != "Golf") { yield return SceneManager.LoadSceneAsync("Golf"); yield return null; golf = Object.FindFirstObjectByType<GolfGame>(); }
+            beforeCapture = null;
+            golf.enabled = true;
+            var r0 = Object.FindFirstObjectByType<CameraRig>(); if (r0) r0.enabled = true;
+            golf.EquipResultEmotes(new[] { "bringIt", "wave", "pushups" });
+            golf.PrepareNativeAddress(Environment.GetEnvironmentVariable("INTRO_MOCK_COURSE") ?? "cliffside"); golf.NativeReady(); golf.TryNativePresentation();
+            yield return null; yield return null;
+            if (jumpTo > 0) { golf.JumpToHole(jumpTo); yield return null; yield return null; }
+            golf.enabled = false;
+            var rig = Object.FindFirstObjectByType<CameraRig>(); if (rig) { rig.RestoreFov(); rig.enabled = false; }
+            var hud = (Hud)typeof(GolfGame).GetField("hud", Private).GetValue(golf);
+            hud.HideHoleIntro(); hud.HideNameplate(); hud.ShowPlayHud(false);
+            hole = golf.CurrentHole;
+            golfer = (GolferView)typeof(GolfGame).GetField("golfer", Private).GetValue(golf);
+            double h = hole.Tee.HeadingTo(hole.RecommendedTarget(hole.Tee)) * Math.PI / 180;
+            var aim = new Vector3((float)Math.Sin(h), 0, (float)Math.Cos(h));
+            golfer.SetVisible(true); golfer.Stand(golf.BallPosition, aim); golfer.Perform("Idle"); lineDir = aim;
+            feet = golfer.transform.position; facing = golfer.transform.forward; facing.y = 0; facing.Normalize();
+            tee = HoleView.ToWorld(hole.Tee); pin = HoleView.ToWorld(hole.Pin);
+            path.Clear(); dist.Clear(); length = 0;
+            var pts = new List<Vector3>(); foreach (var p in hole.Centerline) pts.Add(HoleView.ToWorld(p));
+            Vector3 last = pts[0];
+            for (int i = 0; i <= 120; i++)
+            {
+                var p = Catmull(pts, i / 120f); p.y = G(p);
+                if (i > 0) { var d = p - last; d.y = 0; length += d.magnitude; }
+                path.Add(p); dist.Add(length); last = p;
+            }
+            float left = 0, right = 0;
+            for (float u = .3f; u <= .8f; u += .1f)
+            {
+                var at = At(u); var r = Right(u);
+                for (float d = 15; d <= 150; d += 15) { if (Water(at + r * d)) { right += 150 - d; break; } }
+                for (float d = 15; d <= 150; d += 15) { if (Water(at - r * d)) { left += 150 - d; break; } }
+            }
+            sea = right >= left ? 1 : -1;
+            sideOut = Vector3.Cross(Vector3.up, facing);
+            MakeCanvas();
+        }
+        bool Water(Vector3 p) { var lie = hole.LieAt(new CoursePoint(p.x, p.z)); return lie is CourseLie.Water or CourseLie.OutOfBounds; }
+        static float G(Vector3 p) => (float)HoleView.GroundHeight(HoleView.ToCourse(p));
+        static Vector3 Above(Vector3 p, float clear) { p.y = Mathf.Max(p.y, G(p) + clear); return p; }
+        static Vector3 Catmull(List<Vector3> pts, float u)
+        {
+            int n = pts.Count - 1; float s = Mathf.Clamp01(u) * n; int i = Mathf.Min((int)s, n - 1); float f = s - i;
+            Vector3 P(int k) => pts[Mathf.Clamp(k, 0, n)];
+            Vector3 p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+            return .5f * ((2 * p1) + (-p0 + p2) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f * f + (-p0 + 3 * p1 - 3 * p2 + p3) * f * f * f);
+        }
+        Vector3 OnPath(float u)
+        {
+            float want = Mathf.Clamp01(u) * length; int n = 1;
+            while (n < dist.Count - 1 && dist[n] < want) n++;
+            return Vector3.Lerp(path[n - 1], path[n], Mathf.InverseLerp(dist[n - 1], dist[n], want));
+        }
+        Vector3 Fwd(float u) { var a = OnPath(u + .04f) - OnPath(u - .04f); a.y = 0; return a.sqrMagnitude > 1e-4f ? a.normalized : facing; }
+        Vector3 At(float u) => u < 0 ? path[0] - Fwd(0) * (-u * length) : u > 1 ? path[^1] + Fwd(1) * ((u - 1) * length) : OnPath(u);
+        Vector3 Right(float u) => Vector3.Cross(Vector3.up, Fwd(u));
+        string HoleLine => $"HOLE {hole.PlayNumber}  ·  {hole.Name.ToUpperInvariant()}  ·  PAR {hole.Par}  ·  {hole.Length:F0} YD";
+        string Event => "CLIFFSIDE OPEN";
+        void Emote(string move) { if (!golfer.HasMove(move) || !golfer.Perform(move, loop: false)) golfer.Perform("Wave"); }
+        /// Front of the golfer (the intro emotes face this way), turned `degrees` round, `back` yards out.
+        Vector3 Front(float degrees, float back, float up) => feet + Quaternion.AngleAxis(degrees, Vector3.up) * facing * back + Vector3.up * up;
+
+        List<Seg> GolfA()
+        {
+            RectTransform badge = null, plate = null;
+            var segs = new List<Seg>();
+            // 1 · the postcard: high and wide over the land side, the hole below and the sea beyond, barely drifting
+            segs.Add(new Seg { len = 4.0f, begin = () => badge = Badge(Event, HoleLine), tick = t => {
+                var focus = At(.55f); var back = -Fwd(.5f); var side = Right(.5f) * -sea;
+                float a = Mathf.Lerp(40, 47, t / 4) * Mathf.Deg2Rad; var dir = (back * Mathf.Cos(a) + side * Mathf.Sin(a)).normalized;
+                Cam(focus + dir * (length * .6f + 70) * Mathf.Lerp(1, .96f, t / 4) + Vector3.up * (length * .24f + 42), focus + Vector3.up * 4, 32);
+                Slide(badge, t, 99); } });
+            // 2 · low along the fairway's edge, sliding slowly up the hole
+            segs.Add(new Seg { len = 3.8f, tick = t => {
+                float u = Mathf.Lerp(.36f, .46f, t / 3.8f);
+                var at = At(u); var p = Above(at + Right(u) * sea * 30 + Vector3.up * 7, 5);
+                Cam(p, At(u + .14f) + Vector3.up * 2, 30);
+                Slide(badge, t + 4, 99); } });
+            // 3 · the flag, long lens, from the land side so the sea is the backdrop
+            segs.Add(new Seg { len = 3.6f, tick = t => {
+                var approach = -Fwd(.97f); var side = Vector3.Cross(Vector3.up, approach);
+                float a = Mathf.Lerp(62, 54, t / 3.6f) * Mathf.Deg2Rad; var dir = approach * Mathf.Cos(a) + side * -sea * Mathf.Sin(a);
+                var p = Above(pin + dir * Mathf.Lerp(11, 8.5f, S(t / 3.6f)) + Vector3.up * 1.4f, 1.1f);
+                Cam(p, pin + Vector3.up * 1.6f, 30);
+                Slide(badge, t + 7.8f, 11.4f); } });
+            // 4 · the golfer: a calm three-quarter shot easing in, the gallery behind, the nameplate low left
+            segs.Add(new Seg { len = 4.2f, begin = () => { Clear(); plate = Badge("YOU", $"ON THE TEE  ·  HOLE {hole.PlayNumber}"); Emote("Intro_BringIt"); }, tick = t => {
+                float k = S(t / 4.2f);
+                Cam(Front(-28, Mathf.Lerp(3.9f, 3.1f, k), 1.25f), feet + Vector3.up * .95f, 38);
+                Slide(plate, t, 4.2f); } });
+            return segs;
+        }
+        List<Seg> GolfB()
+        {
+            RectTransform card = null, shot = null, who = null;
+            var segs = new List<Seg>();
+            // 1 · one smooth glide from behind the tee up the line of play to the green
+            segs.Add(new Seg { len = 4.6f, begin = () => card = Card($"HOLE {hole.PlayNumber}     PAR {hole.Par}     {hole.Length:F0} YD", new Vector2(.5f, 1), new Vector2(0, -110), 760, 44), tick = t => {
+                float k = S2(t / 4.6f); float u = Mathf.Lerp(-.06f, .86f, k);
+                var p = Above(At(u) + Vector3.up * Mathf.Lerp(14, 20, Mathf.Sin(k * Mathf.PI)), 8);
+                var look = Vector3.Lerp(At(Mathf.Min(1, u + .16f)) + Vector3.up * 2, pin + Vector3.up, S((k - .6f) / .4f));
+                Cam(p, look, 40);
+                Fade(card, t, 4.4f); } });
+            // 2 · straight to the golfer, close and square, a beat to wave
+            segs.Add(new Seg { len = 3.4f, begin = () => { Clear(); shot = Card("SHOT 1", new Vector2(0, 1), new Vector2(240, -160), 300, 36); who = Card("YOU", new Vector2(0, 1), new Vector2(240, -250), 300, 36); Emote("Intro_BringIt"); }, tick = t => {
+                Cam(Front(-6, Mathf.Lerp(2.6f, 2.4f, t / 3.4f), 1.35f), feet + Vector3.up * 1.05f, 40);
+                Fade(shot, t, 3.4f, .2f); Fade(who, t, 3.4f, .2f); } });
+            return segs;
+        }
+        List<Seg> GolfC()
+        {
+            RectTransform title = null, sub = null, name = null; Image fl = null; RawImage sl = null;
+            var segs = new List<Seg>();
+            // 1 · a dive from high over the green, the whole hole rushing past, down to the tee; the title slams in
+            segs.Add(new Seg { len = 2.0f, begin = () => { fl = Flash(); title = Ribbon(Event, Orange, NavyDeep, 120, 6, false, 128); sub = Ribbon(HoleLine, Lime, NavyDeep, -90, 6, true, 52, 2400, 96); }, tick = t => {
+                float k = S2(t / 2.0f); float u = Mathf.Lerp(1.05f, -.04f, k);
+                var p = Above(At(u) + Vector3.up * Mathf.Lerp(70, 6, Out(t / 2.0f)) - Fwd(u) * 10, 4);
+                Cam(p, Vector3.Lerp(pin, tee + Fwd(0) * 40, k) + Vector3.up * 2, Mathf.Lerp(55, 42, k));
+                Slam(title, t - .5f, 1.5f, 120); Slam(sub, t - .7f, 1.3f, -90);
+                fl.color = new Color(1, 1, 1, t > 1.85f ? .85f : 0); } });
+            // 2 · three quick looks: the bunkers, the flag, the sea - a white blink between each
+            Vector3 hz = hole.Hazards.Length > 0 ? new Vector3((float)hole.Hazards[0].X, 0, (float)hole.Hazards[0].Distance) : At(.5f); hz.y = G(hz);
+            segs.Add(new Seg { len = 1.1f, begin = () => { Clear(); fl = Flash(); }, tick = t => {
+                var across = Right(.6f);
+                var p = Above(hz - across * Mathf.Lerp(24, -10, t / 1.1f) - Fwd(.6f) * 16 + Vector3.up * 13, 9f);
+                Cam(p, hz + Fwd(.6f) * 18, 50); fl.color = new Color(1, 1, 1, t < .07f ? .8f : 0); } });
+            segs.Add(new Seg { len = 1.1f, tick = t => {
+                float a = Mathf.Lerp(-40, 40, t / 1.1f) * Mathf.Deg2Rad; var approach = -Fwd(.97f); var side = Vector3.Cross(Vector3.up, approach);
+                var p = Above(pin + (approach * Mathf.Cos(a) + side * Mathf.Sin(a)) * 4.2f + Vector3.up * .45f, .35f);
+                Cam(p, pin + Vector3.up * 2.1f, 48); fl.color = new Color(1, 1, 1, t < .07f ? .8f : 0); } });
+            segs.Add(new Seg { len = 1.2f, tick = t => {
+                var at = At(.75f); var r = Right(.75f) * sea;
+                var p = Above(at + r * Mathf.Lerp(35, 60, t / 1.2f) + Vector3.up * 16, 12);
+                Cam(p, at + r * 260 - Vector3.up * 8, 50); fl.color = new Color(1, 1, 1, t < .07f ? .8f : 0); } });
+            // 3 · the entrance: low at the shoes tilting up, a close-up with the name slammed across, then the hero shot
+            segs.Add(new Seg { len = 0.9f, begin = () => { Clear(); fl = Flash(); Emote("Intro_BringIt"); }, tick = t => {
+                Cam(Front(-15, 1.9f, .25f), feet + Vector3.up * Mathf.Lerp(.4f, 1.3f, S(t / .9f)), 58); fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+            segs.Add(new Seg { len = 1.3f, begin = () => { sl = SpeedLines(new Color(1, .85f, .3f, .55f)); name = Ribbon("YOU", Hot, NavyDeep, -250, -7, true, 150, 2600, 200, $"ON THE TEE  ·  HOLE {hole.PlayNumber}"); }, tick = t => {
+                Cam(Front(12, Mathf.Lerp(1.7f, 1.45f, t / 1.3f), 1.5f), feet + Vector3.up * 1.45f, 34);
+                Slam(name, t, 99, -250); sl.rectTransform.parent.localRotation = Quaternion.Euler(0, 0, t * 20);
+                fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+            segs.Add(new Seg { len = 2.3f, begin = () => { if (sl) Object.Destroy(sl.transform.parent.gameObject); }, tick = t => {
+                float k = S(t / 2.3f);
+                Cam(Front(-24, Mathf.Lerp(3.4f, 2.7f, k), .55f), feet + Vector3.up * 1.1f, 44);
+                Slam(name, t + 1.3f, 2.3f, -250); fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+            return segs;
+        }
+
+        // ---------------------------------------------------------------- tennis
+        TennisGame tennis; TennisActor player, rival; HeroTennisDriver playerDriver, rivalDriver;
+        IEnumerator SetUpTennis()
+        {
+            if (!tennis || SceneManager.GetActiveScene().name != "Tennis")
+            {
+                yield return SceneManager.LoadSceneAsync("Tennis"); yield return null;
+                tennis = Object.FindFirstObjectByType<TennisGame>();
+                for (int i = 0; i < 200 && !tennis.Initialized; i++) yield return null;
+            }
+            tennis.NativeControlled = true; tennis.AutoPlay = false; tennis.ManualSimulation = false; tennis.Drill = false;
+            var intro = tennis.GetComponent<TennisPresentation>(); intro.Restart();
+            // the game's intro holds still on its first beat for as long as the mockup runs (players relaxed, looking at the
+            // lens, emotes free); its own cards and letterbox are kept off
+            typeof(TennisPresentation).GetField("drone", Private).SetValue(intro, 999f);
+            ((PresentationDirector)typeof(TennisPresentation).GetField("director", Private).GetValue(intro)).Cancel();
+            var title = (RectTransform)typeof(TennisPresentation).GetField("titleCard", Private).GetValue(intro);
+            var nameCard = (RectTransform)typeof(TennisPresentation).GetField("nameCard", Private).GetValue(intro);
+            var bars = typeof(TennisPresentation).GetMethod("SetBars", Private);
+            beforeCapture = () => { title.gameObject.SetActive(false); nameCard.gameObject.SetActive(false); bars.Invoke(intro, new object[] { 0f }); };
+            for (int i = 0; i < 10; i++) yield return null;
+            var hud = (TennisHud)typeof(TennisGame).GetField("hud", Private).GetValue(tennis); hud.MatchVisible = false;
+            player = tennis.Player; rival = tennis.Opponent;
+            playerDriver = player.GetComponentInChildren<HeroTennisDriver>(); rivalDriver = rival.GetComponentInChildren<HeroTennisDriver>();
+            MakeCanvas();
+        }
+        void PlayerEmote() { if (playerDriver) playerDriver.PlayEmote(HeroTennisDriver.Clip.IntroBringIt); }
+        void RivalEmote() { if (rivalDriver) rivalDriver.PlayEmote(rivalDriver.IntroClip); }
+        static Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+        Vector3 Before(TennisActor a, float degrees, float back, float up)
+            => a.transform.position + Quaternion.AngleAxis(degrees, Vector3.up) * Flat(a.transform.forward) * back + Vector3.up * up;
+
+        List<Seg> TennisA()
+        {
+            RectTransform badge = null, plate = null;
+            var segs = new List<Seg>();
+            segs.Add(new Seg { len = 4.0f, begin = () => badge = Badge(TennisVenue.Title, TennisVenue.CourtName.ToUpperInvariant() + "  ·  " + TennisVenue.Session.ToUpperInvariant()), tick = t => {
+                TennisVenue.Drone(Mathf.Lerp(0f, .22f, t / 4f), out var p, out var l, out var f); Cam(p, l, f * .8f); Slide(badge, t, 99); } });
+            segs.Add(new Seg { len = 3.6f, tick = t => {
+                float z = Mathf.Lerp(-9, 2, S(t / 3.6f));
+                Cam(new Vector3(8.6f, 3.0f, z), new Vector3(-1, .9f, z + 10), 38); Slide(badge, t + 4, 7.6f); } });
+            segs.Add(new Seg { len = 3.8f, begin = () => { Clear(); plate = Badge(tennis ? "KAI" : "RIVAL", "THE RIVAL", true); RivalEmote(); }, tick = t => {
+                Cam(Before(rival, 26, Mathf.Lerp(4.4f, 3.5f, S(t / 3.8f)), 1.3f), rival.transform.position + Vector3.up * 1.0f, 36); Slide(plate, t, 3.8f, true); } });
+            segs.Add(new Seg { len = 3.8f, begin = () => { Clear(); plate = Badge("YOU", "THE CHALLENGER"); PlayerEmote(); }, tick = t => {
+                Cam(Before(player, -26, Mathf.Lerp(4.4f, 3.5f, S(t / 3.8f)), 1.3f), player.transform.position + Vector3.up * 1.0f, 36); Slide(plate, t, 3.8f); } });
+            return segs;
+        }
+        Camera split;
+        static void Aim(Camera c, Vector3 position, Vector3 look, float verticalFov)
+        {
+            c.transform.position = position; c.transform.rotation = Quaternion.LookRotation(look - position, Vector3.up); c.fieldOfView = verticalFov;
+        }
+        List<Seg> TennisB()
+        {
+            RectTransform card = null, you = null, kai = null, vs = null, play = null;
+            var segs = new List<Seg>();
+            // 1 · one swoop in from over the sea to the court, a plain card with the event on it
+            segs.Add(new Seg { len = 2.6f, begin = () => card = Card(TennisVenue.Title, new Vector2(.5f, 1), new Vector2(0, -150), 640, 46), tick = t => {
+                TennisVenue.Drone(S2(t / 2.6f), out var p, out var l, out var f); Cam(p, l, f); Fade(card, t, 2.5f); } });
+            // 2 · Wii Sports' team screen: both players side by side at once, each emoting, a VS between them
+            RenderTexture rt = null;
+            segs.Add(new Seg { len = 3.6f, begin = () => {
+                    Clear();
+                    // the rival's half: its own camera drawn into an image over the right of the picture
+                    split = new GameObject("Split camera").AddComponent<Camera>(); split.CopyFrom(Camera.main); TennisLook.SetupPost(split);
+                    rt = new RenderTexture(W / 2, H, 24); split.targetTexture = rt; split.enabled = false; split.rect = new Rect(0, 0, 1, 1);
+                    var half = Node("Rival half", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.zero);
+                    half.anchorMin = new Vector2(.5f, 0); half.anchorMax = Vector2.one; half.offsetMin = half.offsetMax = Vector2.zero;
+                    var view = new GameObject("View").AddComponent<RawImage>(); view.transform.SetParent(half, false); view.texture = rt; view.raycastTarget = false;
+                    view.rectTransform.anchorMin = Vector2.zero; view.rectTransform.anchorMax = Vector2.one; view.rectTransform.offsetMin = view.rectTransform.offsetMax = Vector2.zero;
+                    var divider = Node("Divider", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(14, 1400)); Box(divider, White, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                    vs = Card("VS", new Vector2(.5f, .5f), new Vector2(0, 60), 190, 60);
+                    you = Card("YOU", new Vector2(.25f, 0), new Vector2(0, 150), 300, 46); kai = Card("KAI", new Vector2(.75f, 0), new Vector2(0, 150), 300, 46);
+                    PlayerEmote(); RivalEmote(); },
+                tick = t => {
+                    float k = S(t / 3.6f);
+                    // yours on the left half: the full picture's lens turned so you stand a quarter of the way across
+                    Aim(cam, Before(player, -12, Mathf.Lerp(3.6f, 3.2f, k), 1.25f), player.transform.position + Vector3.up * 1.0f, 46);
+                    float hh = Mathf.Atan(Mathf.Tan(23 * Mathf.Deg2Rad) * cam.aspect);
+                    cam.transform.rotation = Quaternion.AngleAxis(Mathf.Atan(Mathf.Tan(hh) * .5f) * Mathf.Rad2Deg, Vector3.up) * cam.transform.rotation;
+                    split.aspect = .5f * W / H;
+                    Aim(split, Before(rival, 12, Mathf.Lerp(3.6f, 3.2f, k), 1.25f), rival.transform.position + Vector3.up * 1.0f, 46);
+                    split.Render();
+                    Fade(you, t, 3.6f, .2f); Fade(kai, t - .1f, 3.5f, .2f); Fade(vs, t - .2f, 3.4f, .2f); },
+                end = () => { if (split) Object.Destroy(split.gameObject); if (rt) { rt.Release(); Object.Destroy(rt); } } });
+            // 3 · into the match view: PLAY!
+            segs.Add(new Seg { len = 1.0f, begin = () => { Clear(); play = Card("PLAY!", new Vector2(.5f, .5f), new Vector2(0, 120), 420, 80); }, tick = t => {
+                var pp = player.transform.position; var back = -Flat(player.transform.forward);
+                Cam(pp + back * 6.8f + Vector3.up * 3.4f, new Vector3(0, .6f, 3), 46);
+                play.GetComponent<CanvasGroup>().alpha = 1 - S((t - .7f) / .3f); play.localScale = Vector3.one * Mathf.LerpUnclamped(.4f, 1, Spring(t / .35f)); } });
+            return segs;
+        }
+        List<Seg> TennisC()
+        {
+            RectTransform title = null, name = null, left = null, right = null, vs = null; Image fl = null; RawImage sl = null;
+            var segs = new List<Seg>();
+            segs.Add(new Seg { len = 1.8f, begin = () => { fl = Flash(); title = Ribbon(TennisVenue.Title, Orange, NavyDeep, 120, 6, false, 130, 2600, 190, TennisVenue.CourtName.ToUpperInvariant()); }, tick = t => {
+                TennisVenue.Drone(S2(t / 1.8f), out var p, out var l, out var f); Cam(p, l, f + 6);
+                Slam(title, t - .35f, 1.45f, 120); fl.color = new Color(1, 1, 1, t > 1.7f ? .85f : 0); } });
+            void Entrance(TennisActor a, string who, string role, Color fill, bool fromRight, Action emote)
+            {
+                float side = fromRight ? 1 : -1;
+                segs.Add(new Seg { len = .8f, begin = () => { Clear(); fl = Flash(); emote(); }, tick = t => {
+                    Cam(Before(a, side * 18, 1.9f, .25f), a.transform.position + Vector3.up * Mathf.Lerp(.4f, 1.35f, S(t / .8f)), 58); fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+                segs.Add(new Seg { len = 1.2f, begin = () => { sl = SpeedLines(new Color(1, .85f, .3f, .5f)); name = Ribbon(who, fill, NavyDeep, -250, fromRight ? 7 : -7, fromRight, 150, 2600, 200, role); }, tick = t => {
+                    Cam(Before(a, -side * 10, Mathf.Lerp(1.7f, 1.45f, t / 1.2f), 1.5f), a.transform.position + Vector3.up * 1.45f, 34);
+                    Slam(name, t, 99, -250); sl.rectTransform.parent.localRotation = Quaternion.Euler(0, 0, t * 20 * side); fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+                segs.Add(new Seg { len = 1.6f, begin = () => { if (sl) Object.Destroy(sl.transform.parent.gameObject); }, tick = t => {
+                    Cam(Before(a, side * 26, Mathf.Lerp(3.7f, 2.9f, S(t / 1.6f)), .55f), a.transform.position + Vector3.up * 1.1f, 44);
+                    Slam(name, t + 1.2f, 1.9f, -250); fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+            }
+            Entrance(rival, "KAI", "THE RIVAL", Sky, true, RivalEmote);
+            Entrance(player, "YOU", "THE CHALLENGER", Hot, false, PlayerEmote);
+            segs.Add(new Seg { len = 1.8f, begin = () => { Clear(); fl = Flash(); left = Ribbon("YOU", Hot, NavyDeep, -260, -6, false, 110, 1500, 170); right = Ribbon("KAI", Sky, NavyDeep, 260, -6, true, 110, 1500, 170);
+                    vs = Node("VS", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(600, 300)); vs.gameObject.AddComponent<CanvasGroup>();
+                    Txt(vs, "VS", 230, Gold, UiKit.Display, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, NavyDeep, 9); }, tick = t => {
+                    var pp = player.transform.position; var back = -Flat(player.transform.forward);
+                    Cam(pp + back * 7 + Vector3.up * Mathf.Lerp(5.5f, 3.6f, S(t / 1.8f)), new Vector3(0, .6f, 3), 46);
+                    Slam(left, t, 1.8f, -260); Slam(right, t - .1f, 1.7f, 260);
+                    vs.localScale = Vector3.one * Mathf.LerpUnclamped(2.4f, 1, Spring((t - .25f) / .4f)); vs.GetComponent<CanvasGroup>().alpha = t < .25f ? 0 : 1 - S((t - 1.5f) / .3f);
+                    fl.color = new Color(1, 1, 1, t < .07f ? .9f : 0); } });
+            return segs;
+        }
+
+        // ================================================================ D · Showtime, redesigned
+        // Personal camera: eye level, long lens, shallow depth of field, a breath of handheld drift; over the shoulder, then
+        // the face. Clean broadcast type: a soft shade, a thin lime rule, words revealed upward. Golf highlights are chosen
+        // from the hole itself (what is in play and worth seeing), so new obstacles join the picker by kind.
+
+        DepthOfField Dof() { var spp = cam ? cam.GetComponent<SportsPostProcessing>() : null; return spp && spp.Volume && spp.Volume.profile.TryGet(out DepthOfField d) ? d : null; }
+        /// Soft background behind the subject (far blur only: the overlay, drawn at the lens, stays sharp).
+        void Focus(float distance, float aperture = 2.4f, float focal = 85)
+        {
+            var d = Dof(); if (!d) return;
+            float depth = Mathf.Lerp(14, 4, Mathf.InverseLerp(5.6f, 2f, aperture));
+            d.active = true; d.mode.Override(DepthOfFieldMode.Gaussian); d.gaussianStart.Override(distance + 1.2f); d.gaussianEnd.Override(distance + 1.2f + depth);
+            d.gaussianMaxRadius.Override(1.5f); d.highQualitySampling.Override(true);
+        }
+        void NoFocus() { var d = Dof(); if (d) d.active = false; }
+        /// A camera operator's hold: a fraction of a degree of drift.
+        void Handheld(float t, float amount = 1)
+        {
+            float yaw = (Mathf.PerlinNoise(t * .55f, 1.3f) - .5f) * .7f * amount, pitch = (Mathf.PerlinNoise(2.1f, t * .5f) - .5f) * .45f * amount;
+            cam.transform.rotation = cam.transform.rotation * Quaternion.Euler(pitch, yaw, 0);
+        }
+
+        // ---- clean type
+        Texture2D shadeTex;
+        RawImage Shade(RectTransform parent, bool right)
+        {
+            if (!shadeTex)
+            {
+                const int N = 256; shadeTex = new Texture2D(N, N, TextureFormat.RGBA32, false); shadeTex.wrapMode = TextureWrapMode.Clamp;
+                var px = new Color32[N * N];
+                for (int y = 0; y < N; y++) for (int x = 0; x < N; x++)
+                {
+                    float dx = x / (float)N, dy = y / (float)N; float r = Mathf.Sqrt(dx * dx * .55f + dy * dy * 1.3f);
+                    float a = Mathf.Clamp01(1 - r) ; a = a * a * .62f;
+                    px[y * N + x] = new Color32(4, 12, 28, (byte)(a * 255));
+                }
+                shadeTex.SetPixels32(px); shadeTex.Apply();
+            }
+            var img = new GameObject("Shade").AddComponent<RawImage>(); img.transform.SetParent(parent, false); img.texture = shadeTex; img.raycastTarget = false;
+            var rt = img.rectTransform; rt.anchorMin = rt.anchorMax = new Vector2(right ? 1 : 0, 0); rt.pivot = new Vector2(right ? 1 : 0, 0);
+            rt.sizeDelta = new Vector2(1500, 760); rt.anchoredPosition = Vector2.zero; if (right) rt.localScale = new Vector3(-1, 1, 1);
+            return img;
+        }
+        sealed class Block { public RectTransform root; public List<(RectTransform line, float delay)> lines = new(); public Image rule; public RawImage shade; public bool right; }
+        /// Lower-third: kicker (small lime caps), title (big), detail (small); each line rises out of a mask.
+        Block Lower(string kicker, string title, string detail, bool right = false, float y = 96, int titleSize = 104)
+        {
+            var b = new Block { right = right };
+            b.root = Node("Lower third", ui, new Vector2(right ? 1 : 0, 0), new Vector2(right ? 1 : 0, 0), Vector2.zero, new Vector2(1500, 760));
+            b.root.gameObject.AddComponent<CanvasGroup>();
+            b.shade = Shade(b.root, right);
+            float x = right ? -110 : 110;
+            b.rule = Box(b.root, Lime, new Vector2(right ? 1 : 0, 0), new Vector2(right ? 1 : 0, 0), Vector2.zero, Vector2.zero);
+            var rr = b.rule.rectTransform; rr.pivot = new Vector2(.5f, 0); rr.sizeDelta = new Vector2(6, titleSize * 1.9f); rr.anchoredPosition = new Vector2(right ? -84 : 84, y + 6);
+            float top = y + titleSize * 1.9f;
+            void Line(string text, int size, Color c, Font f, float lineY, float height, float delay)
+            {
+                if (string.IsNullOrEmpty(text)) return;
+                var mask = Node("Line", b.root, new Vector2(right ? 1 : 0, 0), new Vector2(right ? 1 : 0, 0), new Vector2(x, lineY), new Vector2(1300, height));
+                mask.gameObject.AddComponent<RectMask2D>();
+                var t = Txt(mask, text, size, c, f, right ? TextAnchor.LowerRight : TextAnchor.LowerLeft, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                var sh = t.gameObject.AddComponent<Shadow>(); sh.effectColor = new Color(0, 0, 0, .35f); sh.effectDistance = new Vector2(0, -3);
+                b.lines.Add((t.rectTransform, delay));
+            }
+            Line(kicker, 30, Lime, UiKit.Strong, top - 44, 44, 0f);
+            Line(title, titleSize, White, UiKit.Display, y + 46, titleSize * 1.15f, .08f);
+            Line(detail, 30, new Color(1, 1, 1, .86f), UiKit.Ui, y, 44, .16f);
+            return b;
+        }
+        static void Reveal(Block b, float t, float len)
+        {
+            float exit = S((t - (len - .35f)) / .35f);
+            b.root.GetComponent<CanvasGroup>().alpha = 1 - exit;
+            b.rule.rectTransform.localScale = new Vector3(1, Out(t / .35f), 1);
+            b.shade.color = new Color(1, 1, 1, S(t / .4f));
+            foreach (var (line, delay) in b.lines)
+            {
+                float k = Out((t - delay) / .45f);
+                line.anchoredPosition = new Vector2(0, -line.rect.height * 1.05f * (1 - k));
+            }
+        }
+        sealed class Tag { public RectTransform root, ring, label; public Image line; public CanvasGroup group; }
+        /// A callout pinned to a place on the hole: a ring on it, a hairline up to a small label.
+        Tag Callout(string label, string sub)
+        {
+            var tg = new Tag();
+            tg.root = Node("Callout", ui, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.zero); tg.group = tg.root.gameObject.AddComponent<CanvasGroup>();
+            tg.ring = Node("Ring", tg.root, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(46, 46));
+            Box(tg.ring, White, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.ThinRing, false);
+            Box(tg.ring, White, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(-5, -5), new Vector2(5, 5), UiKit.Circle, false);
+            tg.line = Box(tg.root, new Color(1, 1, 1, .9f), new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, Vector2.zero);
+            tg.line.rectTransform.pivot = new Vector2(0, .5f);
+            tg.label = Node("Label", tg.root, new Vector2(.5f, .5f), new Vector2(0, 0), Vector2.zero, new Vector2(Mathf.Max(label.Length * 30, sub.Length * 17) + 56, 118));
+            Box(tg.label, new Color(.03f, .08f, .18f, .62f), Vector2.zero, Vector2.one, new Vector2(-6, -4), new Vector2(6, 4), UiKit.Rounded);
+            Box(tg.label, Lime, Vector2.zero, new Vector2(0, 1), new Vector2(-6, 10), new Vector2(-1, -10));
+            var a = Txt(tg.label, label, 46, White, UiKit.Display, TextAnchor.LowerLeft, new Vector2(0, .42f), Vector2.one, new Vector2(22, 0), new Vector2(-22, 0));
+            a.gameObject.AddComponent<Shadow>().effectColor = new Color(0, 0, 0, .45f);
+            var b = Txt(tg.label, sub, 27, Lime, UiKit.Strong, TextAnchor.UpperLeft, new Vector2(0, .06f), new Vector2(1, .42f), new Vector2(22, 0), new Vector2(-22, 0));
+            b.gameObject.AddComponent<Shadow>().effectColor = new Color(0, 0, 0, .45f);
+            return tg;
+        }
+        void Pin(Tag tg, Vector3 world, float t, float len)
+        {
+            var at = OnCanvas(world); bool behind = cam.WorldToViewportPoint(world).z < 0;
+            var size = ui.rect.size; bool left = at.x > 0;
+            var offset = new Vector2(left ? -230 : 230, 150);
+            // kept on the screen
+            float labelW = tg.label.sizeDelta.x, half = size.x / 2 - 60;
+            if (left) offset.x = Mathf.Max(offset.x, -half + labelW - at.x + 14); else offset.x = Mathf.Min(offset.x, half - labelW - at.x - 14);
+            offset.y = Mathf.Min(offset.y, size.y / 2 - 170 - at.y);
+            tg.ring.anchoredPosition = at;
+            float grow = Out((t - .1f) / .4f);
+            var end = at + offset * grow;
+            var d = end - at; tg.line.rectTransform.anchoredPosition = at; tg.line.rectTransform.sizeDelta = new Vector2(d.magnitude, 3);
+            tg.line.rectTransform.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+            tg.label.pivot = new Vector2(left ? 1 : 0, 0); tg.label.anchoredPosition = at + offset + new Vector2(left ? -14 : 14, -8);
+            foreach (var txt in tg.label.GetComponentsInChildren<Text>()) txt.alignment = left ? (txt.fontSize > 40 ? TextAnchor.LowerRight : TextAnchor.UpperRight) : (txt.fontSize > 40 ? TextAnchor.LowerLeft : TextAnchor.UpperLeft);
+            tg.ring.localScale = Vector3.one * Mathf.LerpUnclamped(.2f, 1, Spring(t / .45f));
+            float exit = S((t - (len - .3f)) / .3f);
+            tg.group.alpha = behind ? 0 : Mathf.Min(S((t - .25f) / .3f) * .999f + (t < .25f ? 0 : 0), 1 - exit);
+            tg.ring.GetComponentInChildren<Image>().color = new Color(1, 1, 1, 1 - exit);
+        }
+
+        // ---- what the hole has that matters, scored (a new obstacle kind just needs a score, a label and a shot)
+        sealed class Feature { public string kind, label, sub; public Vector3 at; public float size, score; }
+        Vector3 AtYards(float yards) => At(yards / Mathf.Max(1, length));
+        float AlongOf(Vector3 p) { float best = 0, bd = float.MaxValue; for (int i = 0; i < path.Count; i++) { var d = path[i] - p; d.y = 0; if (d.sqrMagnitude < bd) { bd = d.sqrMagnitude; best = dist[i]; } } return best; }
+        List<Feature> Features()
+        {
+            var all = new List<Feature>();
+            var P = new Func<Vector3, CoursePoint>(v => new CoursePoint(v.x, v.z));
+            // a forced carry over water or lava on the line of play
+            float wetFrom = -1, wetTo = -1, longestFrom = 0, longest = 0;
+            for (float d = 4; d < length - 4; d += 2)
+            {
+                bool wet = hole.LieAt(P(AtYards(d))) == CourseLie.Water;
+                if (wet && wetFrom < 0) wetFrom = d;
+                if (!wet && wetFrom >= 0) { wetTo = d; if (wetTo - wetFrom > longest) { longest = wetTo - wetFrom; longestFrom = wetFrom; } wetFrom = -1; }
+            }
+            if (longest > 15)
+            {
+                var mid = AtYards(longestFrom + longest / 2); bool lava = hole.HazardAt(P(mid)) == HazardKind.Lava;
+                all.Add(new Feature { kind = "carry", label = lava ? "LAVA CARRY" : "WATER CARRY", sub = $"{longest:F0} YD TO CLEAR", at = mid, size = longest, score = 100 });
+            }
+            // the windmill's sails
+            if (hole.Windmill != null)
+                all.Add(new Feature { kind = "windmill", label = "THE WINDMILL", sub = "TIME THE SAILS", at = new Vector3((float)hole.Windmill.HubX, (float)hole.Windmill.HubY, (float)hole.Windmill.HubD), size = (float)hole.Windmill.Reach, score = 95 });
+            // hazards near the line of play: greenside and fairway bunker groups, water and lava pools
+            var greenside = new List<Vector3>(); var fairway = new List<Vector3>(); float fairwayAlong = 0;
+            foreach (var h in hole.Hazards)
+            {
+                var c = new Vector3((float)h.X, 0, (float)h.Distance); c.y = G(c);
+                float toPin = Vector2.Distance(new Vector2(c.x, c.z), new Vector2(pin.x, pin.z)); float off = (float)hole.DistanceFromCenterline(P(c)); float along = AlongOf(c);
+                if (h.Kind == HazardKind.Bunker)
+                {
+                    if (toPin < hole.GreenRadius + 34) greenside.Add(c);
+                    else if (off < hole.FairwayWidth / 2 + 22 && along > 110) { fairway.Add(c); fairwayAlong = fairway.Count == 1 ? along : Mathf.Min(fairwayAlong, along); }
+                }
+                else if (h.Kind is HazardKind.Water or HazardKind.Lava && off < h.Width / 2 + 30)
+                    all.Add(new Feature { kind = "pool", label = h.Kind == HazardKind.Lava ? "LAVA" : "WATER", sub = $"{along:F0} YD · {(Vector3.Dot(c - AtYards(along), Right(along / length)) > 0 ? "RIGHT" : "LEFT")}", at = c, size = (float)Math.Max(h.Width, h.Length), score = 80 });
+            }
+            // (the one in the way: nearest the line of play)
+            Vector3 Nearest(List<Vector3> v) { var best = v[0]; double bd = double.MaxValue; foreach (var x in v) { double d = hole.DistanceFromCenterline(P(x)); if (d < bd) { bd = d; best = x; } } return best; }
+            if (greenside.Count > 0) all.Add(new Feature { kind = "greenside", label = greenside.Count > 1 ? "GREENSIDE BUNKERS" : "GREENSIDE BUNKER", sub = greenside.Count > 1 ? $"{greenside.Count} GUARD THE GREEN" : "GUARDS THE GREEN", at = Nearest(greenside), size = 18, score = 55 + 5 * greenside.Count });
+            if (fairway.Count > 0) all.Add(new Feature { kind = "fairway", label = fairway.Count > 1 ? "FAIRWAY BUNKERS" : "FAIRWAY BUNKER", sub = $"FROM {fairwayAlong:F0} YD", at = Nearest(fairway), size = 22, score = 50 + 5 * fairway.Count });
+            // rocks and walls standing in play
+            int rocks = 0; var rockAt = Vector3.zero;
+            foreach (var o in hole.Obstacles)
+                if (o.Kind is ObstacleKind.Rock or ObstacleKind.Wall && hole.DistanceFromCenterline(new CoursePoint(o.X, o.D)) < hole.FairwayWidth / 2 + 8) { rocks++; rockAt += new Vector3((float)o.X, (float)o.Base, (float)o.D); }
+            if (rocks > 0) all.Add(new Feature { kind = "rocks", label = "ROCKS IN PLAY", sub = $"{rocks} ON THE LINE", at = rockAt / rocks, size = 12, score = 45 });
+            // the sea close beside the fairway, when nothing has to be carried
+            if (longest <= 15)
+            {
+                float closest = float.MaxValue; Vector3 edge = Vector3.zero; float edgeAlong = 0; int edgeSide = 1;
+                for (float d = length * .35f; d < length * .95f; d += 8)
+                    foreach (int side in new[] { -1, 1 })
+                        for (float o = 10; o < 60; o += 5)
+                        {
+                            var q = AtYards(d) + Right(d / length) * side * o;
+                            if (hole.LieAt(P(q)) == CourseLie.Water) { if (o < closest) { closest = o; edge = q; edgeAlong = d; edgeSide = side; } break; }
+                        }
+                if (closest < 50) { edge.y = G(AtYards(edgeAlong)); all.Add(new Feature { kind = "edge", label = hole.SeaIsLava ? "LAVA EDGE" : "CLIFF EDGE", sub = $"{(hole.SeaIsLava ? "LAVA" : "THE SEA")} {(edgeSide > 0 ? "RIGHT" : "LEFT")} · {edgeAlong:F0} YD", at = edge, size = 30, score = 45 }); }
+            }
+            all.Sort((a, b) => b.score.CompareTo(a.score));
+            var picked = new List<Feature>();
+            foreach (var f in all)
+            {
+                if (picked.Count == 2) break;
+                bool near = Vector3.Distance(f.at, pin) < 22 && f.kind != "greenside";
+                foreach (var g in picked) near |= Vector3.Distance(f.at, g.at) < 40;
+                if (!near) picked.Add(f);
+            }
+            picked.Sort((a, b) => AlongOf(a.at).CompareTo(AlongOf(b.at)));
+            float rise = G(pin) - G(tee);
+            picked.Add(new Feature { kind = "green", label = "THE GREEN", sub = rise > 4 ? $"UPHILL · +{rise:F0} YD" : rise < -4 ? $"DOWNHILL · {rise:F0} YD" : $"PAR {hole.Par} · {hole.Length:F0} YD", at = pin, size = (float)hole.GreenRadius, score = 0 });
+            Debug.Log("[IntroMockup] hole " + hole.Number + " features: " + string.Join(", ", all.ConvertAll(f => f.label + " " + f.score)) + " -> " + string.Join(", ", picked.ConvertAll(f => f.label)));
+            return picked;
+        }
+        /// Of the directions round `subject`, the first (nearest the preferred one) from which the lens is in the clear all
+        /// the way through its push and nothing stands between it and what it looks at.
+        Vector3 ClearView(Vector3 subject, Vector3 look, Vector3 dir, float distance, float height, float clear)
+        {
+            foreach (float a in new[] { 0f, 30, -30, 55, -55, 80, -80, 120, -120, 180 })
+            {
+                var d = Quaternion.AngleAxis(a, Vector3.up) * dir; bool ok = true;
+                for (float k = 0; k <= 1.001f && ok; k += .5f)
+                {
+                    var p = subject + d * distance * Mathf.Lerp(1, .85f, k); p.y = Mathf.Max(subject.y + height, G(p) + clear);
+                    if (p.y - Mathf.Max(subject.y, G(p)) > height + 6) { ok = false; break; }   // lifted over a tree: try elsewhere
+                    if (Physics.CheckSphere(p, .7f, ~0, QueryTriggerInteraction.Ignore) || NearSand(p, subject)) { ok = false; break; }
+                    var to = look - p;
+                    if (Physics.Raycast(p, to.normalized, to.magnitude - 2.5f, ~0, QueryTriggerInteraction.Ignore)) ok = false;
+                }
+                if (ok) return d;
+            }
+            return dir;
+        }
+        /// The lens over or beside another hazard's lip (bunker faces have no colliders): somewhere else.
+        bool NearSand(Vector3 p, Vector3 subject)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * Mathf.PI / 4; var q = p + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * 5;
+                var kind = hole.HazardAt(new CoursePoint(q.x, q.z));
+                if (kind == HazardKind.Bunker && Vector3.Distance(new Vector3(q.x, 0, q.z), new Vector3(subject.x, 0, subject.z)) > 8) return true;
+            }
+            return hole.HazardAt(new CoursePoint(p.x, p.z)) == HazardKind.Bunker && Vector3.Distance(p, subject) > 8;
+        }
+        readonly Dictionary<Feature, Vector3> views = new();
+        Vector3 Placed(Feature f, Vector3 look, Vector3 dir, float distance, float k, float height, float clear)
+        {
+            if (!views.TryGetValue(f, out var d)) views[f] = d = ClearView(f.at, look, dir, distance, height, clear);
+            var p = f.at + d * distance * Mathf.Lerp(1, .85f, k); p.y = Mathf.Max(f.at.y + height, G(p) + clear);
+            return p;
+        }
+        /// The shot for each kind of highlight: what makes it read, with the target beyond it where that matters.
+        void FeatureShot(Feature f, float t, float len)
+        {
+            float k = S(t / len);
+            var toPin = pin - f.at; toPin.y = 0; toPin = toPin.sqrMagnitude > 1 ? toPin.normalized : Fwd(.9f);
+            var side = Vector3.Cross(Vector3.up, toPin);
+            float onFairway = Mathf.Sign(Vector3.Dot(AtYards(AlongOf(f.at)) - f.at, side)); if (onFairway == 0) onFairway = 1;
+            switch (f.kind)
+            {
+                case "carry":
+                {
+                    // skimming low over the water toward the far bank and the green on it
+                    float from = AlongOf(f.at) - f.size / 2;
+                    var p = Above(AtYards(from + f.size * Mathf.Lerp(-.15f, .25f, k)) + Right(.5f) * 10 + Vector3.up * 3.2f, 2.5f);
+                    Cam(p, AtYards(from + f.size) + Vector3.up * 2, 40); NoFocus(); break;
+                }
+                case "windmill":
+                {
+                    var hub = f.at; float a = Mathf.Lerp(-20, 15, k) * Mathf.Deg2Rad; var back = -toPin;
+                    Cam(hub + (back * Mathf.Cos(a) + side * Mathf.Sin(a)) * f.size * 3.2f + Vector3.up * .5f, hub, 38); NoFocus(); break;
+                }
+                case "greenside":
+                {
+                    // low behind the sand, the flag beyond it
+                    var away = f.at - pin; away.y = 0; away = away.sqrMagnitude > 1 ? away.normalized : -toPin;
+                    // (raised so the sand sits low in the frame and the green and its flag read beyond it)
+                    var look = Vector3.Lerp(f.at, pin, .7f) + Vector3.up * .6f;
+                    var p = Placed(f, look, (away + Vector3.Cross(Vector3.up, away) * .35f).normalized, 19, k, 5.5f, 3.5f);
+                    Cam(p, look, 36); NoFocus(); break;
+                }
+                case "edge":
+                {
+                    // from out over the drop, the fairway on top of the cliff
+                    var land = AtYards(AlongOf(f.at)); var outward = f.at - land; outward.y = 0; outward = outward.normalized;
+                    var p = f.at + outward * Mathf.Lerp(34, 28, k) - toPin * 10 + Vector3.up * (G(land) + 5 - f.at.y);
+                    Cam(p, land + toPin * 30 + Vector3.up * 1, 42); NoFocus(); break;
+                }
+                default:
+                {
+                    // fairway bunkers, pools, rocks: low on the fairway side, past them toward the green
+                    var look = Vector3.Lerp(f.at, pin, .2f) + Vector3.up * .8f;
+                    var p = Placed(f, look, (-toPin + side * onFairway * .45f).normalized, f.size * 1.1f + 16, k, 3.4f, 2.4f);
+                    Cam(p, look, 40); NoFocus(); break;
+                }
+                case "green":
+                {
+                    // low, long lens: the flag sharp, the view behind it soft
+                    var approach = -Fwd(.97f); var across = Vector3.Cross(Vector3.up, approach);
+                    var look = pin + Vector3.up * .9f;
+                    var p = Placed(f, look, (approach * .7f + across * -sea * .7f).normalized, 12, k, 2.1f, 1.6f);
+                    Cam(p, look, 28); NoFocus(); break;   // (far blur against open sky streaks: the long lens alone)
+                }
+            }
+            Handheld(t + f.score, .8f);
+        }
+
+        List<Seg> GolfD()
+        {
+            views.Clear();
+            Block title = null, plate = null; var segs = new List<Seg>();
+            var features = Features();
+            // 1 · high and smooth down the whole hole, the hole's name rising in lower left
+            segs.Add(new Seg { len = 2.8f, begin = () => { NoFocus(); title = Lower($"HOLE {hole.PlayNumber}   ·   {Event}", hole.Name.ToUpperInvariant(), $"PAR {hole.Par}   ·   {hole.Length:F0} YD   ·   {Wind}"); }, tick = t => {
+                float k = S2(t / 2.8f); float u = Mathf.Lerp(-.05f, .55f, k);
+                var p = Above(At(u) - Fwd(Mathf.Clamp01(u)) * 30 + Right(Mathf.Clamp01(u)) * -sea * 26 + Vector3.up * Mathf.Lerp(46, 34, k), 20);
+                Cam(p, At(Mathf.Min(1, u + .35f)) + Vector3.up * 2, 44); Handheld(t, .5f); Reveal(title, t, 2.8f); } });
+            // 2 · what matters on this hole, each with a callout pinned on it
+            foreach (var f in features)
+            {
+                var feature = f; Tag tag = null;
+                segs.Add(new Seg { len = 1.7f, begin = () => { Clear(); tag = Callout(feature.label, feature.sub); }, tick = t => {
+                    FeatureShot(feature, t, 1.7f); Pin(tag, feature.at + Vector3.up * (feature.kind == "green" ? 1.6f : 1f), t, 1.7f); } });
+            }
+            // 3 · the golfer, close: over the shoulder down the hole, then the face as they play to the camera, then three-quarter
+            var aim = lineDir; var aimRight = Vector3.Cross(Vector3.up, aim);
+            segs.Add(new Seg { len = 1.5f, begin = () => { Clear(); }, tick = t => {
+                // behind their right shoulder at eye height, the hole ahead; they turn to the lens as the cut comes
+                var eye = feet + Vector3.up * 1.72f;
+                var p = eye - aim * Mathf.Lerp(1.55f, 1.35f, t / 1.5f) + aimRight * .62f + Vector3.up * .05f;
+                Cam(p, eye + aim * 30 + aimRight * -1.5f - Vector3.up * 1.2f, 36); Focus(60, 5.6f, 50); Handheld(t, 1); } });
+            segs.Add(new Seg { len = 2.7f, begin = () => { Emote("Intro_BringIt"); plate = Lower($"ON THE TEE   ·   HOLE {hole.PlayNumber}", "YOU", "ROUND 1   ·   EVEN PAR"); }, tick = t => {
+                float k = S(t / 2.7f);
+                var p = Front(-14, Mathf.Lerp(2.85f, 2.45f, k), 1.62f);
+                Cam(p, feet + Vector3.up * 1.45f, 26); Focus(Vector3.Distance(p, feet + Vector3.up * 1.4f), 2.0f, 85); Handheld(t, 1.1f);
+                Reveal(plate, t, 99); } });
+            segs.Add(new Seg { len = 1.6f, tick = t => {
+                float k = S(t / 1.6f);
+                var p = Front(-34, Mathf.Lerp(4.4f, 4.0f, k), 1.5f);
+                Cam(p, feet + Vector3.up * 1.05f, 30); Focus(Vector3.Distance(p, feet + Vector3.up), 2.8f, 70); Handheld(t + 9, 1);
+                Reveal(plate, t + 2.7f, 4.3f); } });
+            segs[segs.Count - 1].end = NoFocus;
+            return segs;
+        }
+        string Wind => "CALM";
+
+        List<Seg> TennisD()
+        {
+            Block title = null, plate = null, left = null, right = null; RectTransform vs = null; var segs = new List<Seg>();
+            segs.Add(new Seg { len = 2.6f, begin = () => { NoFocus(); title = Lower(TennisVenue.CourtName.ToUpperInvariant() + "   ·   " + TennisVenue.Session.ToUpperInvariant(), TennisVenue.Title, "EXHIBITION   ·   ONE SET"); }, tick = t => {
+                TennisVenue.Drone(S2(t / 2.6f) * .92f, out var p, out var l, out var f); Cam(p, l, f); Handheld(t, .4f); Reveal(title, t, 2.6f); } });
+            void Intro(TennisActor a, string kicker, string who, bool fromRight, Action emote, float len)
+            {
+                float side = fromRight ? 1 : -1;
+                segs.Add(new Seg { len = len, begin = () => { Clear(); emote(); plate = Lower(kicker, who, fromRight ? "WORLD No. 12   ·   12–3 THIS SEASON" : "YOUR FIRST MATCH HERE", fromRight); }, tick = t => {
+                    float k = S(t / len);
+                    var p = Before(a, side * 14, Mathf.Lerp(3.0f, 2.6f, k), 1.55f);
+                    Cam(p, a.transform.position + Vector3.up * 1.38f, 25); Focus(Vector3.Distance(p, a.transform.position + Vector3.up * 1.35f), 2.0f, 85); Handheld(t + side * 5, 1.1f);
+                    Reveal(plate, t, len); } });
+            }
+            Intro(rival, "THE RIVAL", "KAI", true, RivalEmote, 3.4f);
+            Intro(player, "THE CHALLENGER", "YOU", false, PlayerEmote, 3.4f);
+            // the stare-down: the rival from your eyes across the net on a long lens, then you from theirs; the names meet low
+            void Stare(TennisActor from, TennisActor at, float len, bool first)
+            {
+                segs.Add(new Seg { len = len, begin = () => { if (first) { Clear(); left = Lower("", "YOU", "", false, 80, 76); right = Lower("", "KAI", "", true, 80, 76);
+                        vs = Node("VS", ui, new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 112), new Vector2(200, 80)); vs.gameObject.AddComponent<CanvasGroup>();
+                        Txt(vs, "VS", 44, new Color(1, 1, 1, .85f), UiKit.Strong, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero); } }, tick = t => {
+                        var a = from.transform.position; var b = at.transform.position; var fwd = Flat(b - a); var r = Vector3.Cross(Vector3.up, fwd);
+                        var p = a + Vector3.up * 1.62f + r * .35f + fwd * Mathf.Lerp(.2f, .9f, t / len);
+                        Cam(p, b + Vector3.up * 1.32f, Mathf.Lerp(7.5f, 6.4f, t / len)); Focus(Vector3.Distance(p, b), 2f, 85); Handheld(t, .5f);
+                        float T = first ? t : t + 1.25f; Reveal(left, T, 2.5f); Reveal(right, T - .1f, 2.4f); vs.GetComponent<CanvasGroup>().alpha = Mathf.Min(S((T - .3f) / .3f), 1 - S((T - 2.2f) / .3f)); } });
+            }
+            Stare(player, rival, 1.25f, true);
+            Stare(rival, player, 1.25f, false);
+            segs[segs.Count - 1].end = NoFocus;
+            return segs;
+        }
+
+        [UnityTest, Explicit, Timeout(3600000)]
+        public IEnumerator FilmMockups()
+        {
+            int oldRate = Time.captureFramerate; Time.captureFramerate = FPS; Time.timeScale = 1;
+            PresentationPolicy.Configure("full", false, true, false);
+            string styles = Environment.GetEnvironmentVariable("INTRO_MOCK_STYLES") ?? "A,B,C";
+            string sports = Environment.GetEnvironmentVariable("INTRO_MOCK_SPORTS") ?? "golf,tennis";
+            Directory.CreateDirectory(Root);
+            try
+            {
+                if (styles.Contains("D"))
+                {
+                    if (sports.Contains("golf"))
+                        foreach (var h in (Environment.GetEnvironmentVariable("INTRO_MOCK_HOLES") ?? "0,12").Split(','))
+                        {
+                            yield return SetUpGolf(int.Parse(h));
+                            yield return Play("D_golf_" + hole.Number, GolfD());
+                        }
+                    if (sports.Contains("tennis")) { yield return SetUpTennis(); yield return Play("D_tennis", TennisD()); }
+                    yield break;
+                }
+                if (sports.Contains("golf"))
+                    foreach (var s in styles.Split(','))
+                    {
+                        yield return SetUpGolf();
+                        yield return Play(s + "_golf", s == "A" ? GolfA() : s == "B" ? GolfB() : GolfC());
+                    }
+                if (sports.Contains("tennis"))
+                    foreach (var s in styles.Split(','))
+                    {
+                        yield return SetUpTennis();
+                        yield return Play(s + "_tennis", s == "A" ? TennisA() : s == "B" ? TennisB() : TennisC());
+                    }
+            }
+            finally { Time.captureFramerate = oldRate; beforeCapture = null; if (canvas) Object.Destroy(canvas.gameObject); }
+        }
+    }
+}

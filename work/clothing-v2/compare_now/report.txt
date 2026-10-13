@@ -1,0 +1,11 @@
+Hero turnaround 2026-10-12 20:25  Unity 6000.3.24f1
+VISUAL_CHARACTER_SKIN_POLISH=UNSET; VISUAL_BLINK_NORMAL_FIELD=UNSET
+== MatchHero_Male
+  shader profile: HeroLightingProfile.Tennis()  _HeroSkinPolish=0
+  parts: Body_M[body] v=44168, OriginalSeamFeatures[face] v=3824, Racket_Classic[equipment] v=2998, ButtCap[equipment] v=314, Grip[equipment] v=1442, StringBed[equipment] v=1368, Kit_Top[kit] v=21004, Kit_Bottom[kit] v=15901, Kit_Sock_L[kit] v=4162, Kit_Sock_R[kit] v=4197, Kit_Shoe_L[kit] v=12868, Kit_Shoe_R[kit] v=12868
+  tris: 198537 (hero) + 10760 (equipment)
+  top kit: Kit_Top; bottom kit: Kit_Bottom
+  look: skin B7744A, TARGET hues of clothing-v2 (proof only)
+  ready pose: Male_ReadyIdle t=0
+  rest bounds 1.336 x 1.735 x 0.366 m; turntable heading 1.1 deg
+  50 stills + contact sheet -> /Users/adnanyonathan/Documents/Codex/2026-09-20/wh/outputs/iphone-golf-simulator/work/clothing-v2/compare_now/MatchHero_Male

@@ -212,6 +212,9 @@ namespace GolfArcade.Game
         Material kitMaterial;
         /// The Hero, when this figure is one (its parts, materials and skeleton); null for the older V4 figure.
         HeroGolfer heroFigure;
+        /// Aim footwork: the shoes stay planted and shuffle round the ball as the aim turns (GolferFootwork).
+        GolferFootwork footwork;
+        public GolferFootwork Footwork => footwork;
         GolfSwingClearance swingClearance;
         /// How the model is turned at rest so the golf clips face the ball (the Hero's export is not yawed as V4's was).
         Quaternion baseRot = Quaternion.identity;
@@ -313,7 +316,7 @@ namespace GolfArcade.Game
         public void ApplyStyle()
         {
             if (graph.IsValid()) graph.Destroy();
-            heroFigure?.Dispose(); heroFigure = null;
+            heroFigure?.Dispose(); heroFigure = null; footwork = null;
             if (modelGo) Destroy(modelGo);
             faceMaterial = null;
             if (body) Destroy(body.gameObject);
@@ -341,6 +344,9 @@ namespace GolfArcade.Game
             foreach (var c in Resources.LoadAll<AnimationClip>(path))
                 if (!c.name.StartsWith("__preview__")) clips[c.name] = c;
             if (clips.Count == 0) { Debug.LogWarning($"{path} has no swing clips"); return false; }
+            // EMOTE STANDARD: the empty-handed emotion set and the standard Walk / Run (they replace the borrowed tennis ones)
+            foreach (var c in Resources.LoadAll<AnimationClip>("HeroMoves/" + (look.Hero.Value.Female ? "Female" : "Male")))
+                if (!c.name.StartsWith("__preview__")) clips[c.name] = c;
             var json = Resources.Load<TextAsset>(path + "_clips");
             if (json)
                 foreach (var info in JsonUtility.FromJson<ClipSet>(json.text).clips) landmarks[info.name] = info;
@@ -370,6 +376,7 @@ namespace GolfArcade.Game
             else DressClubs();
             feetFix.Clear();
             Head = heroFigure.Bones.TryGetValue("Head", out var head) ? head : null;
+            footwork = spectator ? null : GolferFootwork.Build(model.transform, heroFigure.Bones);
             swingClearance = new GolfSwingClearance(heroFigure);
             StartGraph(model);
             return true;
@@ -504,7 +511,13 @@ namespace GolfArcade.Game
             graph.Evaluate();
             if (phase != 4)
             {
-                if (clipName == "Drive" && clip.IsValid()) swingClearance?.ApplyDriveFollowThrough((float)clip.GetTime());
+                if (clipName == "Drive" && clip.IsValid())
+                {
+                    // The driver's wrap belongs to the pose on screen: while a crossfade leaves the finish behind (Settle, the next backswing) it fades
+                    // out with that pose, instead of vanishing on the crossfade's first frame (the club jumped ~1.2 m back to the raw clip's finish).
+                    if (fade > 0 && ghost.IsValid() && ghost.GetTime() >= 2.5) swingClearance?.ApplyDriveFollowThrough((float)ghost.GetTime(), fade);
+                    else swingClearance?.ApplyDriveFollowThrough((float)clip.GetTime());
+                }
                 swingClearance?.Apply();
             }
             foreach (var (bone, fix, at) in feetFix)
@@ -537,6 +550,8 @@ namespace GolfArcade.Game
         /// swing back. False when the model has no such clip.
         /// The model has a clip of this name.
         public bool HasMove(string move) => hasModel && clips.ContainsKey(move);
+        /// How long that move runs once through (seconds), 0 when there is no such clip.
+        public float MoveLength(string move) => hasModel && clips.TryGetValue(move, out var c) ? c.length : 0f;
 
         public bool Perform(string move, float startAt = 0f, bool loop = true)
         {
@@ -544,7 +559,7 @@ namespace GolfArcade.Game
             var yaw = Quaternion.Euler(0, ClipYaw(move), 0); yaw = BaseRot(yaw);
             // (the shared moves face a quarter turn round, so from a swing pose there's no fading)
             Play(c, modelGo.transform.localRotation == yaw ? 0.25f : 0f);
-            clipName = move;
+            clipName = move; SetMood(move);
             foreach (var kv in clubMeshes) kv.Value.SetActive(false);
             modelGo.transform.localRotation = yaw;
             loopPerformance = loop;
@@ -618,9 +633,10 @@ namespace GolfArcade.Game
                 "Chip" => (0.42f, 1.25f, 2.0f),
                 // The full and part swings are authored from scratch (blender/scripts/golf_swing.py) and carry the whole speed profile themselves (Swing.retime(): the club
                 // head's speed rises to its peak at the ball and eases into the finish), so both the downswing and the follow-through play at an even rate here: easing either
-                // again made the club hang at the top and then snap, or stop short of the finish. 0.38 s down is about twice the studio pace at the ball, and still readable at 60 fps.
-                "HalfSwing" => (0.34f, 1.0f, 1.0f),
-                _ => (0.38f, 1.0f, 1.0f),
+                // again made the club hang at the top and then snap, or stop short of the finish. Tour players come down from the top in 0.19-0.23 s (measured on Adnan's reference
+                // swings, work/swing-compare); 0.25 s is that pace with a frame to spare at 60 fps (it was 0.38 s, and the swing read as floaty). A pitch comes down a touch slower.
+                "HalfSwing" => (0.26f, 1.0f, 1.0f),
+                _ => (0.25f, 1.0f, 1.0f),
             };
             Play(c, modelGo.transform.localRotation == baseRot ? 0.2f : 0f);
             modelGo.transform.localRotation = baseRot;
@@ -748,6 +764,27 @@ namespace GolfArcade.Game
         void Update()
         {
             if (hasModel) UpdateModel(); else UpdateFigure();
+        }
+
+        /// After every Update (GolfGame turns the stance round the ball in its own): the shoes, at address only.
+        void LateUpdate()
+        {
+            if (footwork != null && hasModel) footwork.Tick(phase == 0 && time <= Mathf.Max(.02f, TopTime * .04f), Time.deltaTime);
+        }
+
+        /// The face that goes with a move (the golfer has no tennis driver to read it from).
+        static GolfArcade.Tennis.MatchHeroFacePerformance.Mood MoodOf(string move) => move switch
+        {
+            "Emote_JumpJoy" or "Emote_FistPump" or "Emote_Victory" or "Cheer" or "FistPump" => GolfArcade.Tennis.MatchHeroFacePerformance.Mood.Happy,
+            "Emote_Slump" or "Emote_Defeat" => GolfArcade.Tennis.MatchHeroFacePerformance.Mood.Sad,
+            "Emote_Stomp" => GolfArcade.Tennis.MatchHeroFacePerformance.Mood.Angry,
+            "Emote_Shock" => GolfArcade.Tennis.MatchHeroFacePerformance.Mood.Shock,
+            _ => GolfArcade.Tennis.MatchHeroFacePerformance.Mood.None,
+        };
+        void SetMood(string move)
+        {
+            var face = heroFigure != null ? heroFigure.Root.GetComponentInChildren<GolfArcade.Tennis.MatchHeroFacePerformance>() : null;
+            if (face) face.ForcedMood = MoodOf(move);
         }
 
         void UpdateModel()

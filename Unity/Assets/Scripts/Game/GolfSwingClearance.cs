@@ -18,9 +18,10 @@ namespace GolfArcade.Game
             this.hero = hero; head = hero.Bones["Head"]; grip = hero.Bones["Club"];
             // Authored Drive shaft at F076 (2.50 s), in model space. Anchoring the
             // direction here prevents the changing source pose from flipping the blend.
+            // (Re-measured for the 2026-10-12 swing fix: work/swing-fix/scripts/release_shaft.py.)
             bool female = hero.Root.GetComponent<GolfArcade.Tennis.MatchHeroLook>().female;
-            driveReleaseShaft = female ? new Vector3(-.177348f, .9043239f, .38826f)
-                                      : new Vector3(-.1848222f, .8964227f, .4028237f);
+            driveReleaseShaft = female ? new Vector3(-.2134009f, .8788473f, .4267172f)
+                                      : new Vector3(-.2184253f, .8734274f, .4352183f);
             var body = hero.Part("Body"); var mesh = body.sharedMesh;
             int h = System.Array.FindIndex(body.bones, b => b == head);
             var vertices = mesh.vertices; var weights = mesh.boneWeights;
@@ -48,10 +49,11 @@ namespace GolfArcade.Game
         }
         /// Continue the driver's release into a wrap behind the head. The authored
         /// impact is untouched; a smooth blend begins only after the arms extend through it.
-        public void ApplyDriveFollowThrough(float clipTime)
+        /// `weight` is how much of the pose on screen is this clip time's (a crossfade leaving the finish behind fades the wrap out with it).
+        public void ApplyDriveFollowThrough(float clipTime, float weight = 1f)
         {
             float progress = Mathf.InverseLerp(2.50f, 3.02f, clipTime);
-            if (progress <= 0) return;
+            if (progress <= 0 || weight <= 0) return;
             // Continue with momentum, then decelerate into the held finish.
             float travel = progress * (2 - progress);
             var club = clubs.FirstOrDefault(c => c.node.activeSelf);
@@ -72,7 +74,7 @@ namespace GolfArcade.Game
             var releaseShaft = hero.Root.transform.TransformVector(driveReleaseShaft).normalized;
             var overheadShaft = (up * .9f + across * .35f - forward * .65f).normalized;
             var desiredShaft = SphericalArc(releaseShaft, overheadShaft, finishShaft, travel);
-            var turn = Quaternion.FromToRotation(shaft, desiredShaft);
+            var turn = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(shaft, desiredShaft), weight);
 
             // Carry the hands around the lead side at their radial distance from
             // the head, rather than translating them through the shoulder/chest.
@@ -82,12 +84,12 @@ namespace GolfArcade.Game
             var radialDirection = SphericalArc(startRadial.normalized, -across, finishRadial.normalized, travel);
             float radialDistance = Mathf.Lerp(startRadial.magnitude, finishRadial.magnitude, travel);
             float height = Mathf.Lerp(Vector3.Dot(fromHead, up), .065f * scale, travel);
-            var targetGrip = headCentre + radialDirection * radialDistance + up * height;
+            var targetGrip = Vector3.Lerp(originalGrip, headCentre + radialDirection * radialDistance + up * height, weight);
             var leftOffset = turn * (left.position - originalGrip);
             var rightOffset = turn * (rightHand.position - originalGrip);
             var leftRotation = turn * left.rotation; var rightRotation = turn * rightHand.rotation;
             float Reach(string side) => Vector3.Distance(hero.Bones[side + "UpperArm"].position, hero.Bones[side + "LowerArm"].position) + Vector3.Distance(hero.Bones[side + "LowerArm"].position, hero.Bones[side + "Hand"].position) - .002f * scale;
-            float elbowBlend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(2.50f, 2.63f, clipTime));
+            float elbowBlend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(2.50f, 2.63f, clipTime)) * weight;
             float FlexedReach(string side)
             {
                 float a = Vector3.Distance(hero.Bones[side + "UpperArm"].position, hero.Bones[side + "LowerArm"].position);

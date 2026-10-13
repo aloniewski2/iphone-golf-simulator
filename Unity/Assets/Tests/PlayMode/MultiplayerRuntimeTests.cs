@@ -15,9 +15,12 @@ namespace GolfArcade.Tests {
         static NetworkConfiguration Config(string sport="tennis",string local="a")=>new() {lobbyID="party",matchID="contest",hostID="a",localID=local,sport=sport,venue="resort",sets=1,games=3,seed=123,
             participants=new[] {new NetworkParticipant{id="a",name="Alice",seat=0},new NetworkParticipant{id="b",name="Bob",seat=1},new NetworkParticipant{id="c",name="Cora",seat=sport=="golf"?2:-1},new NetworkParticipant{id="d",name="Dan",seat=sport=="golf"?3:-1}}};
         static string Packet(NetworkConfiguration c,string kind,string payload="",string sender="a",string match=null)=>JsonUtility.ToJson(new NetworkPacket {lobbyID=c.lobbyID,matchID=match??c.matchID,sender=sender,kind=kind,payload=payload});
+        // These cover the host-rules tennis (NetworkTennisMatch); matches now play TennisGame.Versus (VersusPeerCapture covers that).
+        [SetUp] public void OldTennisRules(){SportsMultiplayer.TennisVersusEnabled=false;}
+        [TearDown] public void VersusTennisRules(){SportsMultiplayer.TennisVersusEnabled=true;}
         static void Clean(){SportsMultiplayer.TestOutput=null;SportsMultiplayer.Shutdown();if(SportsMultiplayer.Instance)Object.DestroyImmediate(SportsMultiplayer.Instance.gameObject);Time.timeScale=1;}
 
-        [UnityTest] public IEnumerator EquippedIntroChoiceDoesNotExtendThePresentationBudget() {
+        [UnityTest] public IEnumerator EquippedIntroChoicePlaysInTheIntroductionAndIsPlayedOut() {
             Clean();Time.captureFramerate=10;
             yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Tennis");
             var game=Object.FindFirstObjectByType<TennisGame>();
@@ -25,17 +28,19 @@ namespace GolfArcade.Tests {
             Assert.True(game && game.Initialized);
             game.NativeControlled=true;game.AutoPlay=false;game.ManualSimulation=false;
             game.EquipEmotes(new[]{"scuba","wave","pushups"});
-            var presentation=game.GetComponent<TennisPresentation>();
 
             var driver=game.Player.GetComponentInChildren<HeroTennisDriver>();int before=driver.EmotesPlayed;
             try {
                 Assert.AreEqual("intro",game.EmoteWindow);
-                Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0));
-                for(int i=0;i<40 && driver.EmotesPlayed==before;i++)yield return null;
+                Assert.True(game.RequestEquippedEmote(2));Assert.False(game.RequestEquippedEmote(0),"one pick an intro");
+                // picked during the flyover: played when the player's own introduction comes up
+                for(int i=0;i<200 && driver.EmotesPlayed==before;i++)yield return null;
                 Assert.AreEqual(before+1,driver.EmotesPlayed);Assert.AreEqual("IntroPushups",driver.LastEmotePlayed);
-
-                for(int i=0;i<100 && game.IntroPlaying;i++)yield return null;
-                Assert.False(game.IntroPlaying,"A long equipped animation cannot extend the intro cap");
+                // and played out: the intro does not move on from under it
+                for(int i=0;i<100 && driver.EmoteActive;i++) { Assert.True(game.IntroPlaying,"the intro waits for the emote"); yield return null; }
+                Assert.False(driver.EmoteActive,"the emote finishes");
+                for(int i=0;i<200 && game.IntroPlaying;i++)yield return null;
+                Assert.False(game.IntroPlaying,"then the intro ends");
                 Assert.AreNotEqual("intro",game.EmoteWindow);
             } finally {Time.captureFramerate=0;Clean();}
         }

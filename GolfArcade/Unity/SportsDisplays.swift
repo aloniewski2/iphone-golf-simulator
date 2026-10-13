@@ -94,6 +94,61 @@ final class SportsDisplays: NSObject {
         }
         return preview
     }
+    // MARK: the Plaza on the phone itself (no TV)
+
+    /// Unity's view while the Plaza runs on the phone with no TV: a window UNDER the app's own, which turns see-through over the
+    /// plaza's part of the screen (HubControllerView's phone layout), so the controls and every sheet stay on top of it.
+    private var plazaPhone: UIWindow?
+    func phonePlazaWindow() -> UIWindow? {
+        refresh()
+        guard external == nil, let scene = phone?.windowScene else { return nil }
+        if plazaPhone == nil {
+            let window = UIWindow(windowScene: scene)
+            window.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.normal.rawValue - 1)
+            let root = UIViewController(); root.view.backgroundColor = .black
+            window.rootViewController = root; plazaPhone = window
+        }
+        return plazaPhone
+    }
+    /// Unity is attached: show it under the app's window.
+    func showPhonePlaza() {
+        guard let window = plazaPhone else { return }
+        window.isHidden = false
+        phone?.makeKeyAndVisible()
+        phoneSeeThrough(true)
+    }
+    func endPhonePlaza() {
+        phoneSeeThrough(false)
+        if plazaPhone != nil { SportsRuntime.shared().restoreUnityWindow() }
+        plazaPhone?.isHidden = true; plazaPhone = nil
+        phone?.makeKeyAndVisible()
+    }
+    var phonePlazaShown: Bool { plazaPhone?.isHidden == false }
+    #if DEBUG
+    /// `-phonePlazaCheck` (simulator, no Unity): a painted stand-in for Unity's plaza in the phone plaza window, to check that the
+    /// app's window lets it show through above the controls.
+    func debugFakePhonePlaza() {
+        guard let window = phonePlazaWindow() else { return }
+        let root = UIViewController(); let paint = CAGradientLayer()
+        paint.colors = [UIColor(red: 0.96, green: 0.63, blue: 0.48, alpha: 1).cgColor, UIColor(red: 0.44, green: 0.72, blue: 0.85, alpha: 1).cgColor]
+        paint.frame = window.bounds; root.view.layer.addSublayer(paint)
+        let label = UILabel(frame: CGRect(x: 0, y: window.bounds.height * 0.25, width: window.bounds.width, height: 40))
+        label.text = "UNITY PLAZA (stand-in)"; label.textAlignment = .center; label.font = .boldSystemFont(ofSize: 22); label.textColor = .white
+        root.view.addSubview(label)
+        window.rootViewController = root
+        showPhonePlaza()
+    }
+    #endif
+    /// The app's window lets the plaza (below it) show through where the controller draws nothing.
+    func phoneSeeThrough(_ on: Bool) {
+        guard let window = phone else { return }
+        let clear = on && phonePlazaShown
+        window.backgroundColor = clear ? .clear : .systemBackground
+        window.isOpaque = !clear
+        window.rootViewController?.view.backgroundColor = clear ? .clear : .systemBackground
+        window.rootViewController?.view.isOpaque = !clear
+    }
+
     private var exitCover: UIWindow?
     private var exitGeneration = 0
     func beginExitCover() {
@@ -281,7 +336,7 @@ final class SportsAppDelegate: NSObject, UIApplicationDelegate {
     }
     func application(_ application:UIApplication, supportedInterfaceOrientationsFor window:UIWindow?) -> UIInterfaceOrientationMask {
         if SportsDisplays.shared.isPreview(window) || window?.windowScene?.session.role == .windowExternalDisplayNonInteractive { return .landscape }
-        return .portrait
+        return .portrait   // (the Plaza on a phone with no TV stays upright too: it draws above the controls)
     }
     func application(_ application:UIApplication, configurationForConnecting session:UISceneSession, options:UIScene.ConnectionOptions) -> UISceneConfiguration {
         let config=UISceneConfiguration(name:session.role == .windowExternalDisplayNonInteractive ? "Sports External" : nil,sessionRole:session.role)

@@ -1,0 +1,23 @@
+female_Driver: frames address f30, top f80, impact f103, settled f140, finish f164
+                                         address       top    impact   settled    finish
+shoulder turn (from address)                 0.0    -100.1       8.2     116.6     116.6  deg
+hip turn (from address)                      0.0     -45.6      28.6      88.2      88.1  deg
+X-factor (shoulders - hips)                  0.0     -54.5     -20.5      28.4      28.5  deg
+spine forward bend                          26.1      29.3      43.5       6.6       6.6  deg
+spine side bend (+ away from target)        13.0      12.1      22.1      15.5      15.4  deg
+lead (left) knee flex                       19.4      40.3       9.4       8.6       8.5  deg
+trail (right) knee flex                     26.3       8.7      61.8      43.8      42.2  deg
+lead elbow bend                             65.9      56.7      86.8      97.9      97.8  deg
+trail elbow bend                             2.1     122.5      49.2      44.5      44.4  deg
+head height change                           0.0      -3.6     -13.8       4.4       4.0  cm
+head move toward target                      0.0      -9.5      -0.5      17.7      18.7  cm
+head move toward ball                        0.0       0.2      12.3     -31.0     -32.1  cm
+pelvis move toward target                    0.0      -7.7       4.1      18.7      19.8  cm
+pelvis move toward ball (early ext.)         0.0      -1.1      -0.0      -7.7      -8.8  cm
+pelvis height change                         0.0      -2.7      -4.2      -4.0      -4.4  cm
+lead hand height                           103.6     150.4     104.1     161.9     161.4  cm
+hands above head (lead hand - head)        -43.8       6.7     -29.5      10.1      10.1  cm
+hands from head (3D, width)                 50.5      31.2      49.8      38.2      38.1  cm
+trail heel/foot height                       9.3       9.3      11.9      20.2      20.3  cm
+lead foot height                             9.3       9.3       9.4       9.3       9.3  cm
+feet apart (along target line)              50.5      50.5      50.4      50.5      50.5  cm

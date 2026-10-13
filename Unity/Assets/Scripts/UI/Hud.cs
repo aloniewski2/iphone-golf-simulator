@@ -45,6 +45,8 @@ namespace GolfArcade.UI
         public RawImage Minimap;
 
         RectTransform safeArea;
+        /// Where a hole's opening draws its graphics (IntroGraphics): the HUD's safe area, on whichever screen the HUD is on.
+        public RectTransform IntroLayer => safeArea;
         Rect appliedSafeArea;
         Text statusText, bannerText, tempoText, controllerText;
         YardageCard yardage;
@@ -450,7 +452,8 @@ namespace GolfArcade.UI
 
         public void HideHoleIntro()
         {
-            if (introGroup) Destroy(introGroup.gameObject);
+            // (hidden first: a CanvasGroup being destroyed lets its faded-out children draw for a frame)
+            if (introGroup) { introGroup.gameObject.SetActive(false); Destroy(introGroup.gameObject); }
             introGroup = null; introBadge = null;
         }
 
@@ -492,8 +495,30 @@ namespace GolfArcade.UI
 
         public void HideNameplate()
         {
-            if (nameplate) Destroy(nameplate.gameObject);
+            if (nameplate) { nameplate.gameObject.SetActive(false); Destroy(nameplate.gameObject); }
             nameplate = null; nameplateBody = null;
+        }
+
+        /// Online, over the flyover once someone has asked to skip it: how many of the golfers have (it is
+        /// skipped when they all have).
+        RectTransform skipVotes; Text skipVotesText; int skipVotesShown = -1;
+        public void ShowSkipVotes(int voted, int needed)
+        {
+            int key = voted * 10 + needed;
+            if (skipVotes && key == skipVotesShown) return;
+            skipVotesShown = key;
+            if (!skipVotes)
+            {
+                skipVotes = UiKit.Pill(safeArea, "Skip votes", UiKit.ArcadeBlueDeep, new Vector2(0.5f, 0), new Vector2(0, 120), new Vector2(520, 64), out var fill, 4f);
+                skipVotesText = UiKit.Label(fill.transform, "Text", 28, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, UiKit.Display, false);
+                skipVotesText.color = Color.white;
+            }
+            skipVotesText.text = $"SKIP   ·   {voted} OF {needed} READY";
+        }
+        public void HideSkipVotes()
+        {
+            if (skipVotes) { skipVotes.gameObject.SetActive(false); Destroy(skipVotes.gameObject); }
+            skipVotes = null; skipVotesText = null; skipVotesShown = -1;
         }
 
         public void HideMenu() { home?.Destroy(); home = null; }
@@ -505,7 +530,7 @@ namespace GolfArcade.UI
             playHud = on;
             if (simple) simple.gameObject.SetActive(on);
             foreach (Transform child in safeArea)
-                if (child.name != "Menu" && child.name != "Course select" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Landing badge" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Nameplate" && child.name != "Swing card"
+                if (child.name != "Menu" && child.name != "Course select" && child.name != "Golfer select" && child.name != "Scorecard" && child.name != "Landing badge" && child.name != "Banner" && child.name != "Hole intro" && child.name != "Intro graphics" && child.name != "Nameplate" && child.name != "Swing card"
                     && child.name != "Replay badge" && child.name != "Face dial" && child.name != "TV map" && !(onTv && child == minimapHolder)) child.gameObject.SetActive(on);
             tvMap.gameObject.SetActive(on && onTv && !flightMode);
         }
@@ -1012,6 +1037,8 @@ namespace GolfArcade.UI
         /// The club and what it carries, on the yellow pill.
         public void SetClubSelection(GolfArcade.Shot.GolfClub club, bool announce = false) { if (simple) simple.SetClubSelection(club, announce); }
         public void SetClub(string text, bool putter = false) { yardage.SetClub(text, putter); if (simple) simple.SetClub(text); }
+        /// Where the ball lies and what that costs the club in hand, on its own chip under the shot info.
+        public void SetLie(GolfArcade.Course.CourseLie lie, GolfArcade.Shot.GolfClub club) { if (simple) simple.SetLie(lie, club); }
 
         /// One of the yardage card's rows (0 plays / slope, 1 wind / break, 2 lie).
         public void SetCardRow(int row, string icon, string label, string value, string note = null, float? arrowDegrees = null)

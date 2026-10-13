@@ -1,0 +1,151 @@
+{
+ "neck_y": -0.019,
+ "border_z": [
+  1.43,
+  1.53
+ ],
+ "border_rmax": 0.16,
+ "border_end": 70,
+ "border_fade": 20,
+ "collar": {
+  "-180": 1.456,
+  "-165": 1.4556,
+  "-150": 1.4543,
+  "-135": 1.4511,
+  "-120": 1.4478,
+  "-105": 1.4424,
+  "-90": 1.4379,
+  "-75": 1.4328,
+  "-60": 1.4258,
+  "-45": 1.4213,
+  "-30": 1.4135,
+  "-15": 1.4046,
+  "0": 1.3767,
+  "15": 1.4046,
+  "30": 1.4135,
+  "45": 1.4213,
+  "60": 1.4258,
+  "75": 1.4325,
+  "90": 1.4379,
+  "105": 1.4424,
+  "120": 1.4478,
+  "135": 1.4511,
+  "150": 1.4543,
+  "165": 1.4556,
+  "180": 1.456
+ },
+ "collar_gap": 0.002,
+ "ramp_front": 0.025,
+ "ramp_side": 0.008,
+ "shelf_from": [
+  -0.006,
+  0.006
+ ],
+ "shelf_deg": 0,
+ "flat_max": 0.012,
+ "flat_k": 0.9,
+ "tuck_front": 0.01,
+ "tuck_side": 0.009,
+ "tuck_profile": [
+  1.0,
+  0.0,
+  0.01
+ ],
+ "tuck_edge": [
+  0.004,
+  0.014
+ ],
+ "tuck_h": [
+  0.004,
+  0.026
+ ],
+ "back_fade": [
+  105,
+  135
+ ],
+ "edge": 0.0015,
+ "edge_dz": 0.0,
+ "edge_w": 0.0035,
+ "chin_bottom": 1.4505,
+ "chin_z": [
+  1.472,
+  1.49
+ ],
+ "chin_wx": 0.026,
+ "chin_y": -0.125,
+ "chin_push": 0.003,
+ "lip_guard": 1.493,
+ "smooth_ring": 4,
+ "smooth_iters": 24,
+ "smooth_lam": 0.5,
+ "normal_smooth": 2,
+ "side_top_z": 1.505,
+ "edge_from": [
+  15,
+  30
+ ],
+ "tuck_h_front": [
+  0.002,
+  0.012
+ ],
+ "carve": true,
+ "jl_chin": [
+  -0.128,
+  1.452
+ ],
+ "jl_gonion": [
+  -0.033,
+  1.506
+ ],
+ "jl_lobe": [
+  -0.03,
+  1.518
+ ],
+ "carve_w": 0.0025,
+ "carve_depth": 0.009,
+ "carve_ramp": 0.35,
+ "carve_ramus": 0.006,
+ "carve_back": [
+  0.03,
+  0.06
+ ],
+ "carve_lat": [
+  0.02,
+  0.04
+ ],
+ "carve_crest": 0.0008,
+ "carve_bump": 0.0015,
+ "bump_r": 0.014,
+ "carve_smooth": 10,
+ "denoise": 6,
+ "denoise_w": 0.015,
+ "ear": [
+  -0.027,
+  -0.092,
+  0.04,
+  0.026,
+  0.0835
+ ],
+ "line_relax": true,
+ "relax_band": 0.01,
+ "relax_corner": [
+  0.004,
+  0.01
+ ],
+ "relax_iters": 14,
+ "relax_slide": 0.5,
+ "line_profile": true,
+ "profile_passes": 2,
+ "profile_s": 0.008,
+ "profile_t": 0.0012,
+ "profile_gate": 0.006,
+ "align": true,
+ "align_start": 0.012,
+ "align_k": 16,
+ "align_band": 0.006,
+ "align_spacing": 0.5,
+ "align_cap": 0.004,
+ "align_rings": 3,
+ "align_relax": 6,
+ "align_zmin": 1.42
+}

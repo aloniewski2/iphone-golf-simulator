@@ -102,6 +102,26 @@ namespace GolfArcade.Tennis
             SetAmbientOcclusion(tier == Tier.High);
         }
 
+        /// Golf's camera flies the length of a hole: sun shadows cover all of it, so no shadow edge fades
+        /// in ahead of the camera as it travels; cascades keep the tee and the ball sharp. Off puts
+        /// the tier's own shadows back (the plaza and tennis). In the editor the pipeline asset is the
+        /// project's own, so it is only touched for review captures (GOLF_EDITOR_LONG_SHADOWS=1).
+        public static void SetGolfShadows(bool on)
+        {
+            var urp = Pipeline;
+            if (!urp && Application.isEditor && System.Environment.GetEnvironmentVariable("GOLF_EDITOR_LONG_SHADOWS") == "1")
+                urp = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
+            if (!urp) return;
+            var s = For(Current);
+            if (!on) { urp.shadowDistance = s.ShadowDistance; urp.shadowCascadeCount = s.ShadowCascades; return; }
+            urp.shadowDistance = GolfShadowDistance;
+            // (four cascades keep the address shadow sharpest; two cost half the shadow passes and read the same in flight)
+            urp.shadowCascadeCount = Current == Tier.High ? 4 : 2;
+            urp.cascade2Split = .18f;
+            urp.cascade4Split = new Vector3(.05f, .14f, .38f);
+        }
+        public static float GolfShadowDistance => Current == Tier.High ? 320 : Current == Tier.Standard ? 260 : 180;
+
         /// Screen-space AO is the most expensive effect; only the High tier keeps it.
         static void SetAmbientOcclusion(bool on)
         {

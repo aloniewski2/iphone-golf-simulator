@@ -2,9 +2,9 @@ import SwiftUI
 import XCTest
 @testable import GolfArcade
 
-/// PLAN_OnlineHub_FriendsInvites phases 1-4, phone half, over an in-memory Club Hub service: mutual-friend presence, invites that
-/// arrive inside the game (banner rules), the join, push payloads, codes. The real Game Center join, the real service and APNs
-/// are device / deployment gates (NOT RUN here).
+/// PLAN_OnlineHub_FriendsInvites phases 1-4, phone half, over an in-memory Club Hub service: friend presence, invites that arrive
+/// inside the game (banner rules), one-tap join into the host's party over the service's relay room, offline invites, push
+/// payloads, codes. The real service is ClubHubLiveServiceTests; APNs and two real phones are device / deployment gates.
 @MainActor
 final class ClubHubTests: XCTestCase {
     // MARK: an in-memory service speaking club-hub/PROTOCOL.md (just the rules the app depends on)
@@ -17,6 +17,11 @@ final class ClubHubTests: XCTestCase {
         var tokens: Set<String> = []
         var pushed: [String] = []
         var n = 0
+        /// Party rooms (the relay): members in the order they came in, and who may come in.
+        var rooms: [String: (members: [String], allowed: Set<String>)] = [:]
+        /// Invites waiting for an offline friend (delivered at their hello).
+        var queued: [String: [[String: Any]]] = [:]
+        var relayed = 0
 
         func attach(_ t: FakeTransport) { t.service = self }
         func receive(_ t: FakeTransport, _ data: Data) {
@@ -29,6 +34,10 @@ final class ClubHubTests: XCTestCase {
                 t.reply(["t": "welcome", "you": id, "v": 1, "serverTime": clock])
                 for other in sessions.keys where other != id && sees(id, other) { t.reply(presenceMessage(other)) }
                 for other in sessions.keys where other != id && sees(other, id) { sessions[other]?.transport.reply(presenceMessage(id)) }
+                for invite in queued.removeValue(forKey: id) ?? [] {
+                    t.reply(invite)
+                    if let from = (invite["from"] as? [String: Any])?["id"] as? String { sessions[from]?.transport.reply(["t": "inviteUpdate", "inviteID": invite["inviteID"] ?? "", "status": "delivered", "to": id]) }
+                }
                 return
             }
             guard let me = t.id, var s = sessions[me] else { return }
@@ -37,24 +46,31 @@ final class ClubHubTests: XCTestCase {
                 let wasVisible = (s.presence["invisible"] as? Bool) != true
                 s.presence = m; sessions[me] = s
                 // appear offline: friends are told you left (the real service does the same); back: you reappear
-                for other in sessions.keys where other != me && sessions[other]?.friends.contains(me) == true && sessions[me]?.friends.contains(other) == true {
+                for other in sessions.keys where other != me && (sessions[other]?.friends.contains(me) == true || sessions[me]?.friends.contains(other) == true) {
                     if (m["invisible"] as? Bool) == true { if wasVisible { sessions[other]?.transport.reply(["t": "presence", "id": me, "online": false]) } }
                     else { sessions[other]?.transport.reply(presenceMessage(me)) }
                 }
             case "friends": s.friends = Set(m["ids"] as? [String] ?? []); sessions[me] = s
             case "invite":
-                guard let to = m["to"] as? String, sessions[me]!.friends.contains(to), sessions[to]?.friends.contains(me) == true || sessions[to] == nil else {
+                // friends on either list
+                guard let to = m["to"] as? String, sessions[me]!.friends.contains(to) || sessions[to]?.friends.contains(me) == true else {
                     t.reply(["t": "error", "code": "not_friends", "message": "no"]); return
                 }
+                if let code = m["lobbyCode"] as? String, rooms[code]?.members.contains(me) == true { rooms[code]?.allowed.insert(to) }
                 n += 1; let inviteID = "inv\(n)"
                 // the newest from one sender to one receiver replaces the older
                 for (oldID, old) in pending where old.from == me && old.to == to { pending[oldID] = nil; t.reply(["t": "inviteUpdate", "inviteID": oldID, "status": "cancelled", "to": to]); sessions[to]?.transport.reply(["t": "inviteGone", "inviteID": oldID, "status": "cancelled"]) }
                 pending[inviteID] = (me, to, m["lobbyCode"] as? String ?? "")
+                let invite: [String: Any] = ["t": "invite", "inviteID": inviteID, "from": ["id": me, "name": s.name], "sport": m["sport"] ?? "tennis", "lobbyCode": m["lobbyCode"] ?? "", "group": m["group"] ?? 0, "capacity": m["capacity"] ?? 2, "expiresAt": clock + 120_000]
                 if let r = sessions[to] {
-                    r.transport.reply(["t": "invite", "inviteID": inviteID, "from": ["id": me, "name": s.name], "sport": m["sport"] ?? "tennis", "lobbyCode": m["lobbyCode"] ?? "", "group": m["group"] ?? 0, "capacity": m["capacity"] ?? 2, "expiresAt": clock + 120_000])
+                    r.transport.reply(invite)
                     t.reply(["t": "inviteUpdate", "inviteID": inviteID, "status": "delivered", "to": to])
+                } else if tokens.contains(where: { $0.hasPrefix(to + ":") }) {
+                    t.reply(["t": "inviteUpdate", "inviteID": inviteID, "status": "pushed", "to": to])
                 } else {
-                    t.reply(["t": "inviteUpdate", "inviteID": inviteID, "status": tokens.contains { $0.hasPrefix(to + ":") } ? "pushed" : "unavailable", "to": to])
+                    // offline: it waits for them
+                    queued[to, default: []].append(invite)
+                    t.reply(["t": "inviteUpdate", "inviteID": inviteID, "status": "queued", "to": to])
                 }
                 lobbies[m["lobbyCode"] as? String ?? ""] = (me, m["sport"] as? String ?? "tennis", UInt32(truncating: (m["group"] as? NSNumber) ?? 0), 2)
             case "inviteResponse":
@@ -63,17 +79,40 @@ final class ClubHubTests: XCTestCase {
                 sessions[p.from]?.transport.reply(["t": "inviteUpdate", "inviteID": id, "status": (m["accept"] as? Bool) == true ? "accepted" : "declined", "to": me])
             case "inviteCancel":
                 if let id = m["inviteID"] as? String, let p = pending[id], p.from == me { pending[id] = nil; sessions[p.to]?.transport.reply(["t": "inviteGone", "inviteID": id, "status": "cancelled"]) }
+            case "roomOpen", "roomJoin", "roomLeave":
+                let code = m["room"] as? String ?? ""
+                if type == "roomLeave" { rooms[code]?.members.removeAll { $0 == me }; t.reply(["t": "roomPeers", "room": code, "peers": [] as [Any]]); peers(code); return }
+                if rooms[code] == nil {
+                    guard type == "roomOpen" else { t.reply(["t": "error", "code": "room_gone", "message": "gone", "ref": code]); return }
+                    rooms[code] = ([], [me])
+                }
+                guard rooms[code]!.allowed.contains(me) else { t.reply(["t": "error", "code": type == "roomOpen" ? "room_taken" : "room_denied", "message": "no", "ref": code]); return }
+                if !rooms[code]!.members.contains(me) { rooms[code]!.members.append(me) }
+                peers(code)
+            case "rd":
+                let code = m["room"] as? String ?? ""
+                guard let room = rooms[code], room.members.contains(me) else { t.reply(["t": "error", "code": "room_gone", "message": "no", "ref": "rd"]); return }
+                relayed += 1
+                for id in (m["to"] as? [String]) ?? room.members where id != me && room.members.contains(id) {
+                    sessions[id]?.transport.reply(["t": "rd", "room": code, "from": me, "d": m["d"] ?? ""])
+                }
             case "resolve":
                 let code = m["code"] as? String ?? ""
+                rooms[code]?.allowed.insert(me)
                 if let l = lobbies[code] { t.reply(["t": "resolved", "code": code, "found": true, "from": ["id": l.from, "name": sessions[l.from]?.name ?? "Host"], "sport": l.sport, "group": l.group, "capacity": l.capacity]) }
                 else { t.reply(["t": "resolved", "code": code, "found": false]) }
             default: break
             }
         }
-        /// Both list each other, and the other is online and not invisible.
+        /// One lists the other, and the other is online and not invisible.
         func sees(_ viewer: String, _ target: String) -> Bool {
             guard let v = sessions[viewer], let tg = sessions[target] else { return false }
-            return v.friends.contains(target) && tg.friends.contains(viewer) && (tg.presence["invisible"] as? Bool) != true
+            return (v.friends.contains(target) || tg.friends.contains(viewer)) && (tg.presence["invisible"] as? Bool) != true
+        }
+        func peers(_ code: String) {
+            guard let room = rooms[code] else { return }
+            let list = room.members.map { ["id": $0, "name": sessions[$0]?.name ?? $0] }
+            for id in room.members { sessions[id]?.transport.reply(["t": "roomPeers", "room": code, "peers": list]) }
         }
         func presenceMessage(_ id: String) -> [String: Any] {
             let s = sessions[id]!
@@ -83,6 +122,7 @@ final class ClubHubTests: XCTestCase {
         }
         func disconnect(_ id: String) {
             sessions[id] = nil
+            for code in rooms.keys where rooms[code]!.members.contains(id) { rooms[code]!.members.removeAll { $0 == id }; peers(code) }
             for other in sessions.keys where sessions[other]?.friends.contains(id) == true { sessions[other]?.transport.reply(["t": "presence", "id": id, "online": false]) }
         }
     }
@@ -105,26 +145,46 @@ final class ClubHubTests: XCTestCase {
         func presentAddFriend() throws { added += 1 }
         func identity() async throws -> HubClientMessage.Auth { .dev(localID) }
     }
+    /// A lobby stand-in: records what the hub asked for. (`ServiceRoom` is the real MultiplayerService over the relay.)
     @MainActor final class FakeRoom: ClubHubRoom {
         var inLobby = false, partySize = 1, capacity = 2, sport = "tennis"
-        var made = 0, opened: [UInt32] = [], cancelled = 0, joined: [(UInt32, String)] = [], left = 0
-        func makeLobby() throws { made += 1; inLobby = true }
-        func openRoom(group: UInt32) async throws { opened.append(group); try await Task.sleep(for: .seconds(30)) }
-        func cancelRoom() { cancelled += 1 }
-        func joinRoom(group: UInt32, host: String) async throws { joined.append((group, host)); inLobby = true }
+        var hosted: [String] = [], joined: [(code: String, host: String)] = [], left = 0
+        func hostParty(over transport: MultiplayerTransport) throws { hosted.append((transport as? HubRoomTransport)?.code ?? ""); inLobby = true }
+        func joinParty(over transport: MultiplayerTransport, host: String) async throws { joined.append(((transport as? HubRoomTransport)?.code ?? "", host)); inLobby = true }
         func leaveLobby() { left += 1; inLobby = false }
+    }
+    /// The real lobby (a MultiplayerService of its own, no Unity) over the hub's relay room: the whole party path.
+    @MainActor final class ServiceRoom: ClubHubRoom {
+        let service: MultiplayerService
+        init(_ name: String) {
+            service = MultiplayerService(sendToRuntime: { _ in true }, pollRuntime: { nil })
+            service.onMatchRequested = { _ in }; service.onReturnToLobby = {}
+            service.setScreen(true); service.requiresStableLink = false
+            service.setIdentity(name: name, loadout: MultiplayerLoadout(skinHex: "C47A4C", colours: ["shirt": "E8505B"], emotes: EmoteCatalog.defaults, shirtHex: "E8505B", shortsHex: "24345E"))
+        }
+        var inLobby: Bool { service.lobby != nil && service.isParty }
+        var partySize: Int { service.lobby?.participants.count ?? 1 }
+        var capacity: Int { service.lobby?.capacity ?? 2 }
+        var sport: String { service.lobby?.sport.rawValue ?? "tennis" }
+        func hostParty(over transport: MultiplayerTransport) throws { try service.hostParty(over: transport) }
+        func joinParty(over transport: MultiplayerTransport, host: String) async throws { try await service.joinParty(over: transport, host: host) }
+        func leaveLobby() { if service.isParty { service.leave() } }
     }
     @MainActor final class Phone {
         let hub: ClubHub, room: FakeRoom, source: FakeSource
+        /// With `realLobby`: the phone's MultiplayerService (its party over the relay).
+        let lobby: ServiceRoom?
+        var mp: MultiplayerService { lobby!.service }
         var toasts: [String] = [], haptics = 0, context = ClubHubContext()
-        init(_ service: FakeService?, id: String, name: String, friends: [FriendProfile], url: URL? = nil) {
-            source = FakeSource(id, name, friends: friends); room = FakeRoom()
+        init(_ service: FakeService?, id: String, name: String, friends: [FriendProfile], url: URL? = nil, realLobby: Bool = false) {
+            source = FakeSource(id, name, friends: friends); room = FakeRoom(); lobby = realLobby ? ServiceRoom(name) : nil
+            let r: ClubHubRoom = lobby ?? room
             if let service {
-                hub = ClubHub(source: source, room: room, makeTransport: { FakeTransport(service) }, serverURL: { URL(string: "ws://test/v1/hub") }, devAuth: { true })
+                hub = ClubHub(source: source, room: r, makeTransport: { FakeTransport(service) }, serverURL: { URL(string: "ws://test/v1/hub") }, devAuth: { true })
                 hub.now = { service.clock }
             } else {
                 // the real WebSocket client against a real Club Hub service (club-hub/, HUB_DEV_AUTH=1)
-                hub = ClubHub(source: source, room: room, makeTransport: { WebSocketHubTransport() }, serverURL: { url }, devAuth: { true })
+                hub = ClubHub(source: source, room: r, makeTransport: { WebSocketHubTransport() }, serverURL: { url }, devAuth: { true })
             }
             hub.playerName = { name }
             hub.requestPushPermission = {}
@@ -143,14 +203,14 @@ final class ClubHubTests: XCTestCase {
         XCTFail("timed out waiting for \(what)", file: file, line: line)
     }
     /// Two phones that are Game Center friends, both online.
-    private func pair(_ service: FakeService) async -> (ann: Phone, bea: Phone) {
-        let ann = Phone(service, id: "ann", name: "Ann", friends: [FriendProfile(id: "bea", name: "Bea")])
-        let bea = Phone(service, id: "bea", name: "Bea", friends: [FriendProfile(id: "ann", name: "Ann")])
+    private func pair(_ service: FakeService, realLobby: Bool = false) async -> (ann: Phone, bea: Phone) {
+        let ann = Phone(service, id: "ann", name: "Ann", friends: [FriendProfile(id: "bea", name: "Bea")], realLobby: realLobby)
+        let bea = Phone(service, id: "bea", name: "Bea", friends: [FriendProfile(id: "ann", name: "Ann")], realLobby: realLobby)
         ann.hub.start(); bea.hub.start()
         await until("both online") { ann.hub.link == .online && bea.hub.link == .online && ann.hub.friends.first?.online == true && bea.hub.friends.first?.online == true }
         return (ann, bea)
     }
-    private func finish(_ phones: Phone...) { for p in phones { p.hub.debugReset() } }
+    private func finish(_ phones: Phone...) { for p in phones { p.lobby?.service.leave(); p.hub.debugReset() } }
 
     // MARK: presence
 
@@ -164,15 +224,14 @@ final class ClubHubTests: XCTestCase {
         await until("Ann sees dnd") { ann.hub.friends.first?.state == .dnd }
     }
 
-    func testPresenceNeedsBothToListEachOther() async {
+    /// REGISTERED: a friend whose phone never allowed the friends list (so lists nobody) is still seen online, by both sides.
+    func testOneSideListingTheOtherIsEnoughToSeeEachOther() async {
         let service = FakeService()
         let ann = Phone(service, id: "ann", name: "Ann", friends: [FriendProfile(id: "bea", name: "Bea")])
-        let bea = Phone(service, id: "bea", name: "Bea", friends: [])   // Bea has not allowed friends / does not list Ann
+        let bea = Phone(service, id: "bea", name: "Bea", friends: [])   // Bea has not allowed the friends list yet
         defer { finish(ann, bea) }
         ann.hub.start(); bea.hub.start()
-        await until("both connected") { ann.hub.link == .online && bea.hub.link == .online }
-        try? await Task.sleep(for: .milliseconds(150))
-        XCTAssertEqual(ann.hub.friends.first?.online, false, "a one-way friend is never shown online")
+        await until("each sees the other") { ann.hub.friends.first?.online == true && bea.hub.onlineFriends.map(\.id) == ["ann"] }
     }
 
     func testAppearOfflineHidesYouButFriendsKeepTheirs() async {
@@ -200,14 +259,15 @@ final class ClubHubTests: XCTestCase {
         await until("banner") { bea.hub.banner != nil }
         XCTAssertEqual(bea.hub.banner?.from.name, "Ann"); XCTAssertEqual(bea.hub.banner?.sport, "tennis")
         XCTAssertEqual(bea.haptics, 1); XCTAssertEqual(bea.toasts.count, 1, "the TV shows a toast too"); XCTAssertTrue(bea.toasts[0].contains("Ann"))
-        XCTAssertEqual(ann.room.made, 1, "the lobby is made on the first invite"); XCTAssertEqual(ann.room.opened.count, 1)
-        XCTAssertEqual(ann.room.opened.first, ann.hub.party?.group, "the room is the party's group, the one in the invite")
-        XCTAssertEqual(bea.hub.banner?.group, ann.hub.party?.group)
+        XCTAssertEqual(ann.room.hosted, [ann.hub.party?.code ?? "-"], "the party is made on the first invite, over the relay room for its code")
+        XCTAssertEqual(service.rooms[ann.hub.party?.code ?? ""]?.members, ["ann"], "the host is in its room on the service")
+        XCTAssertEqual(bea.hub.banner?.lobbyCode, ann.hub.party?.code)
+        XCTAssertTrue(service.rooms[ann.hub.party?.code ?? ""]?.allowed.contains("bea") == true, "the invite lets Bea in")
         await until("Ann sees delivered") { ann.hub.sent["bea"] == .delivered }
         XCTAssertTrue(ann.hub.currentPresence().lobby?.code == ann.hub.party?.code && ann.hub.party?.code.count == 6, "friends see the party's code")
     }
 
-    func testJoinAnswersYesAndConnectsToTheHostsRoom() async {
+    func testJoinAnswersYesAndEntersTheHostsRoom() async {
         let service = FakeService(); let (ann, bea) = await pair(service)
         defer { finish(ann, bea) }
         ann.hub.invite(ann.hub.friends[0])
@@ -216,20 +276,57 @@ final class ClubHubTests: XCTestCase {
         bea.hub.accept(invite)
         await until("Ann sees accepted") { ann.hub.sent["bea"] == .accepted }
         await until("Bea joined") { !bea.room.joined.isEmpty && bea.hub.joining == nil }
-        XCTAssertEqual(bea.room.joined.first?.0, ann.hub.party?.group); XCTAssertEqual(bea.room.joined.first?.1, "ann", "joins the invited host's room")
+        XCTAssertEqual(bea.room.joined.first?.code, ann.hub.party?.code); XCTAssertEqual(bea.room.joined.first?.host, "ann", "joins the invited host's party")
+        XCTAssertEqual(service.rooms[ann.hub.party?.code ?? ""]?.members, ["ann", "bea"], "both in the party's room")
         XCTAssertNil(bea.hub.banner); XCTAssertTrue(bea.hub.invites.isEmpty)
-        XCTAssertTrue(bea.toasts.last?.contains("Joining") == true, "the TV says who you are joining")
+        XCTAssertTrue(bea.toasts.first { $0.contains("Joining") } != nil, "the TV says who you are joining")
+        XCTAssertEqual(bea.hub.party?.code, ann.hub.party?.code, "Bea is in Ann's party (she can invite to it too)")
     }
 
-    func testDeclineTellsTheHostAndClosesTheEmptyRoom() async {
+    func testDeclineTellsTheHost() async {
         let service = FakeService(); let (ann, bea) = await pair(service)
         defer { finish(ann, bea) }
         ann.hub.invite(ann.hub.friends[0])
         await until("banner") { bea.hub.banner != nil }
         bea.hub.decline(bea.hub.banner!)
         await until("Ann sees declined") { ann.hub.sent["bea"] == .declined }
-        XCTAssertEqual(ann.room.cancelled, 1, "nobody is coming: the room stops waiting")
         XCTAssertTrue(bea.room.joined.isEmpty)
+    }
+
+    /// INVITE_RELAY: one tap on Join puts the friend in the host's party (the real lobby code over the service's relay room, no Game
+    /// Center): the party's lobby is the host's, and where each one walks in the Plaza reaches the other. Leaving tells the host.
+    func testOneTapJoinPutsBothPhonesInOnePartyOverTheRelay() async {
+        let service = FakeService(); let (ann, bea) = await pair(service, realLobby: true)
+        defer { finish(ann, bea) }
+        ann.hub.invite(ann.hub.friends[0])
+        await until("banner") { bea.hub.banner != nil }
+        bea.hub.accept(bea.hub.banner!)
+        await until("Bea in Ann's party") { bea.mp.lobby?.ownerID == "ann" && ann.mp.lobby?.participants.count == 2 && bea.hub.joining == nil }
+        XCTAssertTrue(ann.mp.isParty && bea.mp.isParty); XCTAssertTrue(ann.mp.isOwner)
+        XCTAssertEqual(bea.mp.lobby?.participants.map(\.name).sorted(), ["Ann", "Bea"])
+        XCTAssertTrue(bea.hub.notice.contains("joined"), bea.hub.notice)
+        var heardByBea: [String] = [], heardByAnn: [String] = []
+        bea.mp.onHub = { _, _, from in heardByBea.append(from) }; ann.mp.onHub = { _, _, from in heardByAnn.append(from) }
+        ann.mp.sendHub("hubPresence", payload: "{}", reliable: false); bea.mp.sendHub("hubPresence", payload: "{}", reliable: false)
+        await until("both hear each other") { heardByBea.contains("ann") && heardByAnn.contains("bea") }
+        XCTAssertGreaterThan(service.relayed, 4, "the party's traffic goes through the relay room")
+        bea.hub.leaveParty()
+        await until("Ann's party is Ann again") { ann.mp.lobby?.participants.count == 1 }
+        XCTAssertNil(bea.mp.lobby); XCTAssertNil(bea.hub.party)
+        XCTAssertEqual(service.rooms[ann.hub.party?.code ?? ""]?.members, ["ann"])
+        // and Ann can invite again into the same party
+        ann.hub.invite(ann.hub.friends[0]); await until("banner again") { bea.hub.banner != nil }
+        XCTAssertEqual(bea.hub.banner?.lobbyCode, ann.hub.party?.code)
+    }
+
+    /// A join that the service refuses (the party ended) says so and leaves nothing behind.
+    func testJoiningAnEndedPartySaysSo() async {
+        let service = FakeService(); let (_, bea) = await pair(service, realLobby: true)
+        defer { finish(bea) }
+        bea.hub.accept(HubInvite(inviteID: "code-ZZZZZZ", from: HubPlayerRef(id: "ann", name: "Ann"), sport: "tennis", lobbyCode: "ZZZZZZ", group: 0, capacity: 2, expiresAt: service.clock + 60_000))
+        await until("refused") { bea.hub.joining == nil && !bea.hub.notice.isEmpty }
+        XCTAssertTrue(bea.hub.notice.contains("ended"), bea.hub.notice)
+        XCTAssertNil(bea.mp.lobby); XCTAssertNil(bea.hub.party)
     }
 
     func testBannerWaitsDuringAMatchAndReturnsAfter() async {
@@ -276,7 +373,7 @@ final class ClubHubTests: XCTestCase {
         let first = bea.hub.invites[0].inviteID
         ann.hub.invite(ann.hub.friends[0])
         await until("replaced") { bea.hub.invites.count == 1 && bea.hub.invites[0].inviteID != first }
-        XCTAssertEqual(ann.room.opened.count, 1, "one private room per party, however many invites")
+        XCTAssertEqual(ann.room.hosted.count, 1, "one party (one relay room) however many invites")
     }
 
     func testSeveralFriendsStackNewestFirst() async {
@@ -292,14 +389,20 @@ final class ClubHubTests: XCTestCase {
         XCTAssertEqual(bea.hub.invites.map(\.from.name), ["Cy", "Ann"]); XCTAssertEqual(bea.hub.banner?.from.name, "Cy")
     }
 
-    func testOnlyFriendsCanBeInvitedAndAnOfflineFriendIsNotReachable() async {
+    /// OFFLINE: one tap invites an offline friend too; the invite waits and shows as a banner the moment they open the game.
+    func testAnOfflineFriendGetsTheInviteWhenTheyOpenTheGame() async {
         let service = FakeService()
         let ann = Phone(service, id: "ann", name: "Ann", friends: [FriendProfile(id: "bea", name: "Bea")])
         defer { finish(ann) }
         ann.hub.start(); await until("online") { ann.hub.link == .online }
+        XCTAssertEqual(ann.hub.offlineFriends.map(\.id), ["bea"])
         ann.hub.invite(ann.hub.friends[0])
-        try? await Task.sleep(for: .milliseconds(100))
-        XCTAssertNotEqual(ann.hub.sent["bea"], .delivered, "Bea is not online")
+        await until("queued") { ann.hub.sent["bea"] == .queued }
+        let bea = Phone(service, id: "bea", name: "Bea", friends: [FriendProfile(id: "ann", name: "Ann")])
+        defer { finish(bea) }
+        bea.hub.start()
+        await until("Bea's banner as she opens the game") { bea.hub.banner?.from.name == "Ann" }
+        await until("Ann sees delivered") { ann.hub.sent["bea"] == .delivered }
     }
 
     func testBlockedFriendsCannotInviteYou() async {
@@ -338,7 +441,7 @@ final class ClubHubTests: XCTestCase {
         XCTAssertEqual(bea.hub.resolvedInvite?.from.name, "Ann")
         bea.hub.accept(bea.hub.resolvedInvite!)
         await until("joined") { !bea.room.joined.isEmpty }
-        XCTAssertEqual(bea.room.joined.first?.0, ann.hub.party?.group)
+        XCTAssertEqual(bea.room.joined.first?.code, code)
         bea.hub.resolve("NOPE00"); await until("not found") { bea.hub.notice.contains("ended") || bea.hub.resolvedInvite == nil }
     }
 
@@ -464,7 +567,7 @@ final class ClubHubLiveServiceTests: XCTestCase {
         await until("Ann sees Bea back in the plaza") { ann.hub.friends.first?.state == .plaza }
         ann.hub.invite(ann.hub.friends[0])
         await until("Bea's banner") { bea.hub.banner != nil }
-        XCTAssertEqual(bea.hub.banner?.from.name, "Ann"); XCTAssertEqual(bea.hub.banner?.group, ann.hub.party?.group)
+        XCTAssertEqual(bea.hub.banner?.from.name, "Ann")
         XCTAssertEqual(bea.hub.banner?.lobbyCode, ann.hub.party?.code)
         await until("Ann sees delivered") { ann.hub.sent[b] == .delivered }
         XCTAssertGreaterThan(bea.hub.remaining(bea.hub.banner!), 0.9, "the countdown uses the service's clock")
@@ -473,13 +576,46 @@ final class ClubHubLiveServiceTests: XCTestCase {
         let code = ann.hub.party!.code
         bea.hub.resolve(code)
         await until("code resolved") { bea.hub.resolvedInvite != nil }
-        XCTAssertEqual(bea.hub.resolvedInvite?.from.name, "Ann"); XCTAssertEqual(bea.hub.resolvedInvite?.group, ann.hub.party?.group)
+        XCTAssertEqual(bea.hub.resolvedInvite?.from.name, "Ann"); XCTAssertEqual(bea.hub.resolvedInvite?.lobbyCode, code)
         bea.hub.accept(bea.hub.banner!)
         await until("Ann sees accepted") { ann.hub.sent[b] == .accepted }
         await until("Bea joined the room") { !bea.room.joined.isEmpty }
-        XCTAssertEqual(bea.room.joined.first?.1, a)
+        XCTAssertEqual(bea.room.joined.first?.host, a)
         // offline, then back
         bea.hub.disconnect()
         await until("Ann sees Bea offline") { ann.hub.friends.first?.online == false }
+    }
+
+    /// INVITE_RELAY over the real service: Ann invites, Bea taps Join once and is in Ann's party; the party's lobby and Plaza
+    /// traffic go through the service's room both ways; an offline friend's invite waits and arrives when they connect.
+    func testOneTapJoinIntoTheHostsPartyOverTheRealRelay() async throws {
+        guard let text = ProcessInfo.processInfo.environment["CLUB_HUB_URL"], let url = URL(string: text) else { throw XCTSkip("CLUB_HUB_URL not set") }
+        let tag = String(UUID().uuidString.prefix(6))
+        let (a, b, c) = ("ann-\(tag)", "bea-\(tag)", "cy-\(tag)")
+        let ann = ClubHubTests.Phone(nil, id: a, name: "Ann", friends: [FriendProfile(id: b, name: "Bea"), FriendProfile(id: c, name: "Cy")], url: url, realLobby: true)
+        let bea = ClubHubTests.Phone(nil, id: b, name: "Bea", friends: [], url: url, realLobby: true)   // Bea never allowed her friends list
+        defer { for p in [ann, bea] { p.mp.leave(); p.hub.debugReset() } }
+        ann.hub.start(); bea.hub.start()
+        await until("both online, each sees the other") { ann.hub.friends.first { $0.id == b }?.online == true && bea.hub.onlineFriends.contains { $0.id == a } }
+        ann.hub.invite(ann.hub.friends.first { $0.id == b }!)
+        await until("Bea's banner") { bea.hub.banner != nil }
+        bea.hub.accept(bea.hub.banner!)
+        await until("Bea in Ann's party") { bea.mp.lobby?.ownerID == a && ann.mp.lobby?.participants.count == 2 && bea.hub.joining == nil }
+        var heardByBea: [String] = [], heardByAnn: [String] = []
+        bea.mp.onHub = { _, _, from in heardByBea.append(from) }; ann.mp.onHub = { _, _, from in heardByAnn.append(from) }
+        for _ in 0..<5 { ann.mp.sendHub("hubPresence", payload: "{}", reliable: false); bea.mp.sendHub("hubPresence", payload: "{}", reliable: false); try await Task.sleep(for: .milliseconds(50)) }
+        await until("plaza traffic both ways") { heardByBea.contains(a) && heardByAnn.contains(b) }
+        // Cy is offline: the invite waits, and arrives as Cy opens the game
+        ann.hub.invite(ann.hub.friends.first { $0.id == c }!)
+        await until("queued for Cy") { ann.hub.sent[c] == .queued }
+        let cy = ClubHubTests.Phone(nil, id: c, name: "Cy", friends: [FriendProfile(id: a, name: "Ann")], url: url, realLobby: true)
+        defer { cy.mp.leave(); cy.hub.debugReset() }
+        cy.hub.start()
+        await until("Cy's banner") { cy.hub.banner?.from.id == a }
+        cy.hub.accept(cy.hub.banner!)
+        await until("three in Ann's party") { ann.mp.lobby?.participants.count == 3 && cy.mp.lobby?.ownerID == a }
+        // Bea leaves: Ann is told
+        bea.hub.leaveParty()
+        await until("Bea gone") { ann.mp.lobby?.participants.count == 2 }
     }
 }

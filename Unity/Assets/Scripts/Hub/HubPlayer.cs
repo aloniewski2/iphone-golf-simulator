@@ -7,15 +7,15 @@ namespace GolfArcade.Hub
     /// The player's hero in the plaza: phone stick -> camera-relative ground velocity -> CharacterController, the hero turns to face
     /// where it goes, and HubHeroAnimator matches the legs to the speed.
     ///
-    /// The stick is analog (PLAN §6): a short push walks, a full push runs, holding it full sprints; letting go stops within 0.25 s.
+    /// The stick is analog (PLAN §6): a short push walks, a full push runs; letting go stops within 0.25 s. (No sprint: Adnan 2026-10-12,
+    /// the menu only walks or runs - a third speed read as confusing. SprintSpeed stays as a constant equal to the run.)
     ///   deflection < Dead            stand
     ///   Dead .. RunAt                walk, 0.6 .. 1.6 m/s with the deflection
     ///   >= RunAt                     run 3.25 m/s (the run clip's own speed)
-    ///   >= SprintAt for SprintAfter  sprint 4.3 m/s
     public sealed class HubPlayer : MonoBehaviour
     {
         public const float Dead = .12f, RunAt = .7f, SprintAt = .92f, SprintAfter = .9f;
-        public const float WalkMin = .6f, WalkMax = 1.6f, RunSpeed = 3.25f, SprintSpeed = 4.3f;
+        public const float WalkMin = .6f, WalkMax = 1.6f, RunSpeed = 3.25f, SprintSpeed = RunSpeed;
         public const float Accel = 14f, Brake = 22f, TurnRate = 720f;
 
         public CharacterController body;
@@ -32,7 +32,7 @@ namespace GolfArcade.Hub
         public Vector3 Velocity => velocity;
         public float Speed => new Vector2(velocity.x, velocity.z).magnitude;
         public float Yaw => yaw;
-        public bool Sprinting => fullHeld >= SprintAfter && stickMag >= SprintAt;
+        public bool Sprinting => false;
         public Vector2 Stick => stick;
         public float StickMagnitude => stickMag;
         /// When the newest stick reading was taken (phone clock; 0 for editor input).

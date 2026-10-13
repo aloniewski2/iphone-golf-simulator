@@ -51,6 +51,29 @@ The app's hub URL is `wss://<your-host>/v1/hub` (use `ws://<mac-ip>:8090/v1/hub`
 
 ## Deploy
 
+### Fly.io (recommended: one command once the account exists)
+
+`fly.toml` is ready: one always-on machine (a sleeping machine would drop everyone's socket), TLS, health check on `/healthz`,
+`HUB_BUNDLE_IDS=com.adnanandrew.motionsports`.
+
+```sh
+brew install flyctl
+fly auth signup            # or: fly auth login   (the account owner)
+cd club-hub
+fly launch --copy-config --no-deploy --name motion-club-hub   # pick another name if taken
+fly deploy
+curl https://motion-club-hub.fly.dev/healthz               # {"ok":true,"online":0,"rooms":0}
+```
+
+Then put `wss://motion-club-hub.fly.dev/v1/hub` in `GolfArcade/Unity/SportsInfo.plist` → `ClubHubServerURL` and rebuild the app.
+Optional later: `fly secrets set HUB_INSTALL_URL=<TestFlight link>`, a Postgres (`fly postgres create` + `DATABASE_URL`) so blocks
+and push tokens survive a restart, and the APNs variables below for offline push.
+
+Before hosting, two phones on the same Wi-Fi can test against this Mac: `HUB_DEV_AUTH=1 npm start`, then run the app with the
+launch arguments `-clubHubURL ws://<mac-ip>:8090/v1/hub -clubHubDevAuth 1` (Xcode scheme). Never expose a dev-auth service.
+
+### Any container host
+
 One container, one instance (state is in memory; see "not done"):
 
 ```sh

@@ -99,9 +99,9 @@ namespace GolfArcade.PlayTests {
      var selected=(GolfClub)typeof(GolfGame).GetField("club",Private).GetValue(game);
      var start=game.CurrentHole.Tee;var lie=game.CurrentHole.LieAt(start);double a=game.TutorialHeading*Math.PI/180;
      for(int i=0;i<4;i++) {
-      var launch=lie.LaunchFrom(selected,(i+1)*.25,0,0);launch.WindMPH=game.Wind.SpeedMPH;launch.WindDegrees=game.Wind.RelativeTo(game.TutorialHeading);
+      var launch=lie.LaunchFrom(selected,(i+1)*.25,0,0);   // in still air: the wind is the player's to read
       var p=BallFlight.Simulate(launch).CarryPoint;var expected=new Vector3((float)(start.X+p.DistanceYards*Math.Sin(a)+p.LateralYards*Math.Cos(a)),0,(float)(start.D+p.DistanceYards*Math.Cos(a)-p.LateralYards*Math.Sin(a)));
-      Assert.That(Vector3.Distance(hud.Map.Targets[i],expected),Is.LessThan(.001),"map marker must be the actual wind-adjusted carry");
+      Assert.That(Vector3.Distance(hud.Map.Targets[i],expected),Is.LessThan(.001),"map marker must be the club's still-air carry from this lie");
      }
     }
     game.DropBall(game.CurrentHole.Tee);yield return null;yield return null;

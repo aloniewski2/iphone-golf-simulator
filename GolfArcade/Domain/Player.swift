@@ -63,8 +63,8 @@ struct Player: Codable, Identifiable, Equatable, Sendable {
 }
 
 enum EmoteCatalog {
-    static let ids = ["scuba", "thrust", "spike", "wave", "bringIt", "pushups"]
-    static let names = ["Scuba", "Thrust", "Spike", "Wave", "Bring it", "Pushups"]
+    static let ids = ["scuba", "thrust", "spike", "wave", "bringIt", "pushups", "jumpJoy", "fistPump", "stomp", "slump", "shock", "victory", "defeat"]
+    static let names = ["Scuba", "Thrust", "Spike", "Wave", "Bring it", "Pushups", "Jump for Joy", "Fist Pump", "Stomp", "Slump", "Shock", "Victory", "Defeat"]
     static let defaults = ["wave", "scuba", "spike"]
     static func name(_ id: String) -> String { ids.firstIndex(of: id).map { names[$0] } ?? "Emote" }
     static func normalized(_ saved: [String]?) -> [String] {

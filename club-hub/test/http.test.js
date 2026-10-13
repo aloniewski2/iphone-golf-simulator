@@ -13,11 +13,11 @@ test('/healthz reports ok and the number of online players', async (t) => {
   t.after(() => hub.stop());
   let r = await get(hub, '/healthz');
   assert.equal(r.status, 200);
-  assert.deepEqual(await r.json(), { ok: true, online: 0 });
+  assert.deepEqual(await r.json(), { ok: true, online: 0, rooms: 0 });
   await hub.join('A');
   await hub.join('B');
   r = await get(hub, '/healthz');
-  assert.deepEqual(await r.json(), { ok: true, online: 2 });
+  assert.deepEqual(await r.json(), { ok: true, online: 2, rooms: 0 });
 });
 
 test('/j/:code for a live lobby shows host, sport, big code, open link and install button', async (t) => {

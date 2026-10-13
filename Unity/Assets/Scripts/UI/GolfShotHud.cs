@@ -1,3 +1,4 @@
+using GolfArcade.Course;
 using GolfArcade.Shot;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,9 @@ namespace GolfArcade.UI
 {
     /// Small shared broadcast vocabulary: distance, club, wind, and matching power/landing colours.
     /// The map positions come from GolfGame's actual launch simulation, never screen estimates.
+    /// The wind is an arrow (which way it blows, against the aim: up the screen is helping) and
+    /// its speed; the lie has its own chip under the shot info — what the ball sits in and what
+    /// that costs the club in hand.
     public sealed class GolfShotHud : MonoBehaviour
     {
         public static readonly Vector2 MapSize = new Vector2(360,440);
@@ -13,29 +17,47 @@ namespace GolfArcade.UI
         public static readonly Color Mint = UiKit.Hex("D7F044");
         public static readonly Color[] Stops = { new(.52f,.85f,1), new(.5f,.95f,.78f), new(1,.88f,.42f), new(1,.61f,.36f) };
         Camera view; Canvas canvas; CanvasScaler scaler;
-        Text hole, distance, club, wind, contact, liveYards, clubChange;
+        Text hole, distance, club, wind, contact, liveYards, clubChange, lieName, lieCost;
         Text[] clubOptions = new Text[3];
-        RectTransform clubRoot;
+        RectTransform clubRoot, windArrow, lieRoot;
+        Image lieSwatch; Image[] lieMarks = new Image[3];
         GolfMapPath projection;
         GolfClub? selectedClub; float clubChangedAt;
         RawImage mapImage; RectTransform infoRoot, mapRoot, meterRoot, contactRoot, tip;
         RectTransform ball, pin, live;
         readonly RectTransform[] targets = new RectTransform[4];
         readonly RectTransform[] segments = new RectTransform[4];
-        const float MeterHeight = 288, SegmentHeight = 69;
-        bool flight;
+        const float MeterHeight = 288, SegmentHeight = 69, InfoHeight = 216, LieHeight = 100;
+        bool flight, lieSet;
         public static GolfShotHud Create(Camera camera)
         {
             var go = new GameObject("Golf broadcast",typeof(RectTransform));
             var h=go.AddComponent<GolfShotHud>();h.view=camera;
             h.canvas=UiKit.Canvas(go);h.canvas.renderMode=RenderMode.ScreenSpaceCamera;h.canvas.worldCamera=camera;h.canvas.planeDistance=.6f;h.canvas.sortingOrder=35;
             h.scaler=go.GetComponent<CanvasScaler>();h.scaler.referenceResolution=new Vector2(1920,1080);h.scaler.matchWidthOrHeight=1;
-            var info=Panel(go.transform,"Shot info",new Vector2(0,1),new Vector2(40,-40),new Vector2(300,216));
+            var info=Panel(go.transform,"Shot info",new Vector2(0,1),new Vector2(40,-40),new Vector2(300,InfoHeight));
             h.infoRoot=info;
             h.hole=Label(info,"Hole",22,new Vector2(24,-24),new Vector2(250,28));
             h.distance=Label(info,"Distance",46,new Vector2(24,-64),new Vector2(260,56));
             h.club=Label(info,"Club",24,new Vector2(24,-126),new Vector2(250,32));h.club.color=Mint;
-            h.wind=Label(info,"Wind",22,new Vector2(24,-174),new Vector2(250,28));
+            // the wind: an arrow turned the way it blows, then its speed and how strong that is
+            var arrow=UiKit.Panel(info,"Wind arrow",Color.white,new Vector2(0,1),new Vector2(0,1),new Vector2(41,-186),new Vector2(32,32),false);
+            arrow.sprite=Arrow;arrow.raycastTarget=false;h.windArrow=arrow.rectTransform;h.windArrow.pivot=new Vector2(.5f,.5f);
+            h.wind=Label(info,"Wind",22,new Vector2(66,-170),new Vector2(222,34));h.wind.supportRichText=true;
+            // the lie: a swatch of what the ball sits in, its name, and what it costs
+            var lie=Panel(go.transform,"Lie",new Vector2(0,1),new Vector2(40,-40-InfoHeight-12),new Vector2(300,LieHeight));
+            h.lieRoot=lie;
+            h.lieSwatch=UiKit.Panel(lie,"Swatch",Color.white,new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(20,0),new Vector2(52,52),false);
+            h.lieSwatch.sprite=UiKit.Circle;h.lieSwatch.raycastTarget=false;
+            h.lieSwatch.gameObject.AddComponent<Mask>().showMaskGraphic=true;   // the marks stay inside the disc
+            for(int i=0;i<h.lieMarks.Length;i++){
+                h.lieMarks[i]=UiKit.Panel(h.lieSwatch.transform,"Mark",Color.white,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,Vector2.one,false);
+                h.lieMarks[i].raycastTarget=false;
+            }
+            h.lieName=Label(lie,"Lie name",26,new Vector2(86,-12),new Vector2(204,32));
+            h.lieCost=Label(lie,"Lie cost",16,new Vector2(86,-46),new Vector2(204,44));h.lieCost.color=new Color(1,1,1,.8f);
+            h.lieCost.resizeTextForBestFit=true;h.lieCost.resizeTextMinSize=12;h.lieCost.resizeTextMaxSize=16;
+            lie.gameObject.SetActive(false);
             h.mapRoot=Panel(go.transform,"Hole map",new Vector2(1,1),new Vector2(-40,-40),new Vector2(380,498));
             var title=Label(h.mapRoot,"Map title",20,new Vector2(18,-14),new Vector2(250,28));title.text="SHOT MAP";
             var mapGo=new GameObject("Course",typeof(RectTransform),typeof(RawImage));mapGo.transform.SetParent(h.mapRoot,false);
@@ -125,6 +147,7 @@ namespace GolfArcade.UI
                 left+=safe.xMin/scale;right+=Mathf.Max(0,Screen.width-safe.xMax)/scale;
             }
             infoRoot.anchoredPosition=new Vector2(left,-top);
+            lieRoot.anchoredPosition=new Vector2(left,-top-InfoHeight-12);
             mapRoot.anchoredPosition=new Vector2(-right,-top);
             mapRoot.sizeDelta=portrait?new Vector2(344,454):new Vector2(380,498);
             meterRoot.anchorMin=meterRoot.anchorMax=new Vector2(0,portrait?.38f:.29f);
@@ -147,9 +170,70 @@ namespace GolfArcade.UI
                 clubOptions[i].text=$"<size=28>{choice.Label()}</size>\n{choice.DisplayName()}";
             }
         }
-        public void SetWind(float angle,double mph,bool calm){wind.text=calm?"WIND  ·  CALM":$"WIND  {mph:F0} mph  ↗";if(!calm)wind.text=$"WIND  {mph:F0} mph  {Direction(angle)}";}
-        static string Direction(float degrees){var dirs=new[]{"↑","↗","→","↘","↓","↙","←","↖"};return dirs[Mathf.RoundToInt(Mathf.Repeat(degrees,360)/45)%8];}
-        public void SetFlight(bool on){flight=on;clubRoot.gameObject.SetActive(!on);meterRoot.gameObject.SetActive(!on);contact.transform.parent.gameObject.SetActive(on);}
+        /// `angle` is where the wind blows toward, degrees right of the aim: the arrow points that way on the screen.
+        public void SetWind(float angle,double mph,bool calm)
+        {
+            var w=new Wind(mph,0);
+            var colour=calm||mph<Wind.ModerateMPH?Color.white:w.IsStrong?Stops[3]:Stops[2];
+            wind.color=colour;
+            windArrow.gameObject.SetActive(!calm);
+            windArrow.localRotation=Quaternion.Euler(0,0,-angle);
+            windArrow.GetComponent<Image>().color=colour;
+            wind.text=calm?"CALM":$"<size=30>{mph:F0}</size> MPH  <size=18>{w.Strength.ToUpperInvariant()}</size>";
+        }
+        public void SetFlight(bool on){flight=on;clubRoot.gameObject.SetActive(!on);meterRoot.gameObject.SetActive(!on);lieRoot.gameObject.SetActive(!on&&lieSet);contact.transform.parent.gameObject.SetActive(on);}
+
+        /// The ball's lie, before the shot: its name on a swatch of it, and what it costs the club in hand — the distance it
+        /// keeps (CourseLies.PowerFactor) and whether it costs accuracy (CourseLies.Scatter).
+        public void SetLie(CourseLie lie,GolfClub inHand)
+        {
+            lieSet=true;lieRoot.gameObject.SetActive(!flight);
+            lieName.text=lie==CourseLie.Bunker?"SAND":lie==CourseLie.OutOfBounds?"OUT":lie.Label().ToUpperInvariant();
+            int cost=inHand==GolfClub.Putter?0:Mathf.RoundToInt((float)(1-lie.PowerFactor(inHand))*100);
+            double wild=lie.Scatter().degrees;
+            string aim=wild>=5?"MUCH LESS ACCURATE":wild>0?"LESS ACCURATE":null;
+            lieCost.text=cost>0&&aim!=null?$"-{cost}% DISTANCE\n{aim}":cost>0?$"-{cost}% DISTANCE":aim??(lie.IsPuttingSurface()?"PUTTING SURFACE":"CLEAN LIE");
+            lieCost.color=cost>0||aim!=null?Stops[2]:new Color(1,1,1,.8f);
+            var (fill,mark)=lie switch{
+                CourseLie.Rough=>(UiKit.Hex("3E7A2E"),UiKit.Hex("1F4A18")),
+                CourseLie.Bunker=>(UiKit.Hex("EED39A"),UiKit.Hex("B8955A")),
+                CourseLie.Green or CourseLie.Fringe=>(UiKit.Hex("8FDB6A"),UiKit.Hex("B9EE98")),
+                CourseLie.Ice=>(UiKit.Hex("D8F1FF"),UiKit.Hex("9CCBE6")),
+                _=>(UiKit.Hex("6CC24A"),UiKit.Hex("8ED66C")),
+            };
+            lieSwatch.color=fill;
+            // a hint of the surface on the swatch: blades of long grass, grains of sand, mown stripes
+            for(int i=0;i<lieMarks.Length;i++){
+                var r=lieMarks[i].rectTransform;lieMarks[i].color=mark;lieMarks[i].sprite=null;
+                if(lie==CourseLie.Rough){r.sizeDelta=new Vector2(5,20);r.anchoredPosition=new Vector2(-11+11*i,i==1?2:-2);r.localRotation=Quaternion.Euler(0,0,12-12*i);}
+                else if(lie==CourseLie.Bunker){lieMarks[i].sprite=UiKit.Circle;r.sizeDelta=new Vector2(7,7);r.anchoredPosition=new Vector2(-10+10*i,i==1?8:-5);r.localRotation=Quaternion.identity;}
+                else{r.sizeDelta=new Vector2(10,44);r.anchoredPosition=new Vector2(-14+14*i,0);r.localRotation=Quaternion.Euler(0,0,30);lieMarks[i].color=i==1?fill:mark;}
+            }
+        }
+
+        static Sprite arrowSprite;
+        /// A plain arrow pointing up the screen, white, for tinting and turning.
+        static Sprite Arrow
+        {
+            get
+            {
+                if(arrowSprite)return arrowSprite;
+                const int n=64;var tex=new Texture2D(n,n,TextureFormat.RGBA32,false){wrapMode=TextureWrapMode.Clamp,name="Wind arrow"};
+                var px=new Color32[n*n];
+                for(int y=0;y<n;y++)for(int x=0;x<n;x++){
+                    int inside=0;
+                    for(int sy=0;sy<4;sy++)for(int sx=0;sx<4;sx++){
+                        float u=(x+(sx+.5f)/4)/n-.5f,v=(y+(sy+.5f)/4)/n;
+                        bool head=v>=.5f&&v<=.97f&&Mathf.Abs(u)<=.42f*(.97f-v)/.47f;
+                        bool shaft=v>=.04f&&v<.5f&&Mathf.Abs(u)<=.1f;
+                        if(head||shaft)inside++;
+                    }
+                    px[y*n+x]=new Color32(255,255,255,(byte)(inside*255/16));
+                }
+                tex.SetPixels32(px);tex.Apply();
+                return arrowSprite=Sprite.Create(tex,new Rect(0,0,n,n),new Vector2(.5f,.5f),100);
+            }
+        }
         public void SetContact(string quality)=>contact.text=quality.TrimEnd('!')+" CONTACT";
         public void SetPower(float load,string yards){
             load=Mathf.Clamp01(load);

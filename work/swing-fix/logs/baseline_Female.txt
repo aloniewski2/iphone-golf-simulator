@@ -1,0 +1,92 @@
+MEASURE Female Drive
+                              address f0       top f56        P5 f64        P6 f67    impact f69  impact+3 f72    finish f90
+  lead elbow flex                   64.7          55.3          79.7          93.1          88.5          66.5         100.4
+  trail elbow flex                   2.4         123.1         108.5          87.9          43.3          39.7          71.8
+  lead arm elevation               -46.6          45.9          -2.2         -32.1         -39.5         -21.7          65.3
+  hinge forearm-shaft               45.2          87.5          26.4          16.7          43.0          93.2          79.2
+  shaft elevation                  -56.0          11.6          41.2           1.3         -54.8           6.6         -17.5
+  spine bend                        26.1          29.3          36.5          40.7          43.7          35.3           6.7
+  head drop cm                       0.0          -3.3          -4.5          -6.9         -12.6          -9.4           4.0
+  head to ball cm                   -0.0           0.2           6.3           9.6          11.4           4.9         -28.3
+  head to target cm                 -0.0          -8.7          -4.7          -2.5          -0.7           1.2          16.1
+  pelvis to target cm               -0.0          -7.0          -2.0           0.7           3.5           7.0          17.1
+  pelvis height cm                   0.0          -2.5           0.1           0.2          -3.7          -4.7          -3.7
+  lead knee flex                    19.4          40.3          27.2           9.1           9.5           8.8           8.6
+  trail knee flex                   26.3           8.6           8.9          29.6          60.2          68.4          43.8
+  lead hand above head cm          -39.1           6.5         -23.2         -34.2         -27.9         -18.1          10.2
+  lead hand from head cm            45.6          28.6          36.7          36.0          44.9          37.1          31.7
+  address   key hands (r,f,u) (-0.19, 0.61, -0.67)  lead shoulder (-0.3, -0.0, 0.09)  lead stretch 0.847  trail 1.000  hips 0 shoulders 0
+  top       key hands (r,f,u) (0.24, 0.5, 0.52)  lead shoulder (-0.26, 0.01, -0.18)  lead stretch 0.887  trail 0.484  hips 50 shoulders 98
+  impact    key hands (r,f,u) (-0.5, 0.47, -0.44)  lead shoulder (-0.27, 0.01, 0.15)  lead stretch 0.719  trail 0.930  hips -32 shoulders -6
+  impact+3  key hands (r,f,u) (-0.2, 0.78, -0.15)  lead shoulder (-0.23, -0.03, 0.21)  lead stretch 0.838  trail 0.941  hips -52 shoulders -40
+  finish    key hands (r,f,u) (-0.4, 0.3, 0.62)  lead shoulder (-0.32, -0.0, -0.01)  lead stretch 0.645  trail 0.812  hips -88 shoulders -116
+  downswing hinge by frame: f56:87/+46 f57:86/+46 f58:82/+45 f59:75/+43 f60:65/+39 f61:52/+34 f62:39/+26 f63:29/+13 f64:26/-2 f65:21/-15 f66:6/-22 f67:17/-32 f68:43/-44 f69:43/-39
+MEASURE Female IronSwing
+                              address f0       top f54        P5 f61        P6 f64    impact f66  impact+3 f69    finish f86
+  lead elbow flex                   47.7          44.4          80.1          70.7          69.5          57.7         110.2
+  trail elbow flex                   2.4         128.2         117.8          78.5          47.1          37.1          66.6
+  lead arm elevation               -55.6          47.0           5.8         -31.7         -53.4         -25.8          60.2
+  hinge forearm-shaft               36.1          96.2          32.4           3.4          34.7          90.4          75.6
+  shaft elevation                  -62.0          11.6          47.0           0.4         -60.5           4.4         -17.5
+  spine bend                        38.3          41.0          44.0          46.1          48.2          42.5          19.0
+  head drop cm                       0.0          -3.4          -2.8          -4.3          -9.7          -7.6           7.5
+  head to ball cm                   -0.0          -0.0           2.6           4.3           5.5           1.0         -26.3
+  head to target cm                 -0.0          -8.3          -4.7          -2.6          -0.9           1.2          15.1
+  pelvis to target cm               -0.0          -7.0          -2.3           0.7           3.5           6.9          17.1
+  pelvis height cm                   0.0          -2.5           0.3           0.5          -3.5          -4.8          -4.3
+  lead knee flex                    22.3          46.6          29.9           9.3          11.2          11.8           8.9
+  trail knee flex                   28.6           9.8           9.0          30.8          62.1          72.5          57.3
+  lead hand above head cm          -43.5           8.9         -17.1         -35.1         -35.2         -18.6          10.3
+  lead hand from head cm            46.1          30.8          34.2          38.6          45.0          36.9          35.0
+  address   key hands (r,f,u) (-0.1, 0.51, -0.81)  lead shoulder (-0.3, -0.0, 0.09)  lead stretch 0.915  trail 1.000  hips 0 shoulders 0
+  top       key hands (r,f,u) (0.24, 0.5, 0.52)  lead shoulder (-0.22, -0.01, -0.22)  lead stretch 0.927  trail 0.445  hips 46 shoulders 92
+  impact    key hands (r,f,u) (-0.36, 0.46, -0.64)  lead shoulder (-0.27, 0.01, 0.16)  lead stretch 0.823  trail 0.918  hips -32 shoulders -6
+  impact+3  key hands (r,f,u) (-0.2, 0.79, -0.2)  lead shoulder (-0.21, -0.02, 0.23)  lead stretch 0.877  trail 0.949  hips -52 shoulders -40
+  finish    key hands (r,f,u) (-0.4, 0.3, 0.62)  lead shoulder (-0.31, -0.02, 0.05)  lead stretch 0.578  trail 0.838  hips -88 shoulders -116
+  downswing hinge by frame: f54:96/+47 f55:95/+47 f56:89/+46 f57:78/+43 f58:65/+39 f59:49/+31 f60:38/+20 f61:32/+6 f62:30/-9 f63:13/-21 f64:3/-32 f65:34/-45 f66:35/-53
+MEASURE Female HalfSwing
+                              address f0       top f44        P5 f47        P6 f51    impact f54  impact+3 f57    finish f72
+  lead elbow flex                   47.9          74.6          79.1          64.8          73.0          68.7         101.7
+  trail elbow flex                   2.4         128.2         128.1          88.2          49.4          27.9          41.0
+  lead arm elevation               -55.7          13.0          -1.3         -36.9         -55.5         -30.1           1.9
+  hinge forearm-shaft               36.0          29.5          30.5          10.0          36.5          90.4          82.7
+  shaft elevation                  -62.0          56.1          43.0           7.7         -61.0         -13.8          60.5
+  spine bend                        38.3          39.4          42.0          45.3          47.8          43.2          26.7
+  head drop cm                       0.0          -0.4          -1.0          -3.1          -8.4          -7.0           2.2
+  head to ball cm                   -0.0           0.4           2.1           4.1           5.4           1.9         -16.1
+  head to target cm                 -0.0          -5.1          -4.1          -2.5          -0.4           0.4           4.0
+  pelvis to target cm               -0.0          -4.0          -2.4          -0.1           3.0           5.3          11.0
+  pelvis height cm                   0.0          -0.0           1.0           1.1          -2.6          -3.8          -4.6
+  lead knee flex                    20.7          32.4          22.7           9.0          10.8          11.2           9.9
+  trail knee flex                   29.8           9.4           9.0          23.3          56.6          68.3          67.9
+  lead hand above head cm          -43.5         -10.7         -18.3         -35.9         -36.0         -21.2          -6.6
+  lead hand from head cm            46.2          28.2          29.9          38.0          43.9          36.4          36.0
+  address   key hands (r,f,u) (-0.1, 0.51, -0.81)  lead shoulder (-0.3, -0.0, 0.09)  lead stretch 0.915  trail 1.000  hips 0 shoulders 0
+  top       key hands (r,f,u) (0.38, 0.58, 0.1)  lead shoulder (-0.28, -0.05, -0.14)  lead stretch 0.798  trail 0.446  hips 28 shoulders 58
+  impact    key hands (r,f,u) (-0.32, 0.45, -0.66)  lead shoulder (-0.28, 0.01, 0.14)  lead stretch 0.806  trail 0.909  hips -24 shoulders -4
+  impact+3  key hands (r,f,u) (-0.27, 0.74, -0.3)  lead shoulder (-0.24, 0.01, 0.21)  lead stretch 0.827  trail 0.971  hips -38 shoulders -27
+  finish    key hands (r,f,u) (-0.26, 0.62, 0.22)  lead shoulder (-0.29, -0.05, 0.12)  lead stretch 0.636  trail 0.937  hips -70 shoulders -92
+  downswing hinge by frame: f44:29/+13 f45:28/+12 f46:29/+7 f47:30/-1 f48:29/-11 f49:28/-22 f50:26/-31 f51:10/-37 f52:13/-43 f53:32/-51 f54:37/-56
+MEASURE Female Chip
+                              address f0       top f30        P5 f30        P6 f41    impact f42  impact+3 f45    finish f62
+  lead elbow flex                   52.0          80.3          80.3          73.3          69.9          61.2          55.7
+  trail elbow flex                  29.9          21.4          21.4           2.4          27.9          45.9          65.4
+  lead arm elevation               -65.3         -55.9         -55.9         -65.2         -66.0         -67.5         -64.7
+  hinge forearm-shaft               33.8          54.9          54.9          29.9          25.7          15.9          29.4
+  shaft elevation                  -64.0         -64.0         -64.0         -61.3         -61.2         -61.5         -64.0
+  spine bend                        41.3          46.6          46.6          52.7          52.9          52.1          36.5
+  head drop cm                       0.0          -2.9          -2.9          -6.8          -7.0          -7.2           1.0
+  head to ball cm                   -0.0           3.3           3.3           6.8           6.8           6.3          -3.7
+  head to target cm                 -0.0           0.0           0.0           3.3           3.4           3.6           3.7
+  pelvis to target cm               -0.0          -1.0          -1.0           1.8           2.0           2.6           5.0
+  pelvis height cm                   0.0           0.0           0.0           0.0          -0.1          -0.8          -1.6
+  lead knee flex                    18.9          23.8          23.8          13.1           8.9           9.6          11.4
+  trail knee flex                   28.6          24.5          24.5          31.3          33.4          40.4          53.5
+  lead hand above head cm          -45.7         -42.4         -42.4         -41.2         -41.1         -40.6         -39.7
+  lead hand from head cm            46.9          42.5          42.5          48.0          48.8          49.9          47.2
+  address   key hands (r,f,u) (-0.08, 0.35, -0.87)  lead shoulder (-0.3, -0.0, 0.09)  lead stretch 0.900  trail 0.966  hips 0 shoulders 0
+  top       key hands (r,f,u) (-0.08, 0.35, -0.8)  lead shoulder (-0.31, -0.05, -0.02)  lead stretch 0.767  trail 0.983  hips 6 shoulders 26
+  impact    key hands (r,f,u) (-0.39, 0.28, -0.77)  lead shoulder (-0.3, 0.01, 0.11)  lead stretch 0.822  trail 0.971  hips -8 shoulders -4
+  impact+3  key hands (r,f,u) (-0.38, 0.28, -0.77)  lead shoulder (-0.27, 0.03, 0.16)  lead stretch 0.862  trail 0.922  hips -14 shoulders -17
+  finish    key hands (r,f,u) (-0.2, 0.39, -0.75)  lead shoulder (-0.25, 0.0, 0.2)  lead stretch 0.885  trail 0.843  hips -26 shoulders -40
+  downswing hinge by frame: f30:55/-56 f31:55/-56 f32:54/-57 f33:53/-58 f34:52/-59 f35:50/-60 f36:48/-61 f37:45/-62 f38:42/-63 f39:39/-64 f40:35/-64 f41:30/-65 f42:26/-66

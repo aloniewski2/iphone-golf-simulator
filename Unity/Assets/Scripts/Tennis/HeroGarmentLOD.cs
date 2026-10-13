@@ -61,6 +61,7 @@ namespace GolfArcade.Tennis
             {
                 var live = look.kit.FirstOrDefault(r => r && r.name == low.name);
                 if (!live || !live.sharedMesh || !low.sharedMesh) continue;
+                if (MatchHeroLook.IsKitV2(live.sharedMesh)) continue;     // CLOTHING V2 pieces are their own close and far mesh
                 bool tailored = live.sharedMesh.name.StartsWith("TailoredPolo");
                 bool skirt = live.sharedMesh.name.StartsWith("TailoredSkirt");
                 var selected = low;
@@ -81,7 +82,7 @@ namespace GolfArcade.Tennis
                     matchMesh = TailoredPoloDeformation.Prepare(look, live, matchMesh, matchBones);
                 }
                 else if (skirt) matchMesh = selected.sharedMesh;
-                else matchMesh = HeroGarmentHemWeights.Prepare(look, live, selected.sharedMesh, matchBones);
+                else matchMesh = look.FinishFootwear(live, HeroGarmentHemWeights.Prepare(look, live, selected.sharedMesh, matchBones));
                 pieces.Add(new Piece { renderer = live, full = HeroGarmentGusset.CanonicalSource(live.sharedMesh), match = HeroGarmentGusset.CanonicalSource(matchMesh),
                     fullBones = live.bones, matchBones = matchBones });
                 FullTriangles += CountTriangles(HeroGarmentGusset.CanonicalSource(live.sharedMesh)); MatchTriangles += CountTriangles(matchMesh);

@@ -1,0 +1,43 @@
+BackhandWide_Female_BackhandWide {('lining', 'Kit_Top'): 12, ('skin', 'skin through clothes'): 3, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body R'): 15}
+Backhand_Female_BackhandArmCorrected {('lining', 'Kit_Top'): 15, ('hand', 'hands overlap R'): 20, ('hand', 'hands overlap L'): 5, ('hand', 'hand under cloth L'): 5}
+EmoteDefeat_Female_Emote_Defeat {('lining', 'Kit_Top'): 14, ('hand', 'hand in body L'): 30, ('hand', 'hand under cloth L'): 5, ('hand', 'hand under cloth R'): 5}
+EmoteFistPump_Female_Emote_FistPump {('lining', 'Kit_Top'): 5, ('skin', 'skin through clothes'): 2}
+EmoteJumpJoy_Female_Emote_JumpJoy {('lining', 'Kit_Top'): 21, ('hand', 'hand under cloth R'): 5}
+EmoteScuba_Female_Emote_Scuba {('lining', 'Kit_Top'): 18, ('skin', 'skin through clothes'): 20}
+EmoteShock_Female_Emote_Shock {('lining', 'Kit_Top'): 40, ('skin', 'skin through clothes'): 1, ('hand', 'hand in body L'): 35, ('hand', 'hand in body R'): 35}
+EmoteSlump_Female_Emote_Slump {('hand', 'hand in body L'): 55, ('hand', 'hand under cloth L'): 55, ('hand', 'hand in body R'): 40, ('hand', 'hand under cloth R'): 60}
+EmoteSpike_Female_Emote_Spike {('lining', 'Kit_Top'): 25, ('skin', 'skin through clothes'): 22, ('hand', 'hand under cloth L'): 5}
+EmoteStomp_Female_Emote_Stomp {('skin', 'skin through clothes'): 2, ('lining', 'Kit_Top'): 3, ('hand', 'hand in body L'): 30, ('hand', 'hand under cloth L'): 30, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body R'): 5}
+EmoteThrust_Female_Emote_Thrust {('lining', 'Kit_Top'): 18, ('skin', 'skin through clothes'): 15}
+EmoteVictory_Female_Emote_Victory {('lining', 'Kit_Top'): 39, ('lining', 'Kit_Bottom'): 1, ('skin', 'skin through clothes'): 1}
+ForehandOpen_Female_ForehandOpen {('lining', 'Kit_Top'): 13, ('skin', 'skin through clothes'): 1, ('hand', 'hands overlap R'): 5}
+ForehandShort_Female_ForehandShort {('lining', 'Kit_Top'): 9, ('skin', 'skin through clothes'): 5, ('hand', 'hands overlap L'): 5, ('hand', 'hand under cloth L'): 5}
+ForehandWide_Female_ForehandWide {('lining', 'Kit_Top'): 9, ('skin', 'skin through clothes'): 8}
+Forehand_Female_ForehandArmCorrected {('lining', 'Kit_Top'): 14, ('hand', 'hand in body R'): 5, ('hand', 'hand under cloth R'): 5}
+Idle_Female_Idle {}
+IntroBringIt_Female_Intro_BringIt {('lining', 'Kit_Top'): 10}
+IntroPushups_Female_Intro_Pushups {('skin', 'skin through clothes'): 30, ('lining', 'Kit_Top'): 24}
+IntroWave_Female_Intro_Wave {('skin', 'skin through clothes'): 20, ('lining', 'Kit_Top'): 24}
+Ready_Female_ReadyIdle {}
+RecoverCenter_Female_RecoverCenter {('skin', 'skin through clothes'): 3, ('lining', 'Kit_Top'): 6}
+Return_Female_Return {('lining', 'Kit_Top'): 10, ('skin', 'skin through clothes'): 1, ('hand', 'hand in body R'): 5, ('hand', 'hand under cloth R'): 5, ('hand', 'hands overlap R'): 10}
+RunForward_Female_RunForward {('lining', 'Kit_Top'): 16, ('skin', 'skin through clothes'): 6, ('hand', 'hand under cloth R'): 20}
+RunLeft_Female_RunLeft {('lining', 'Kit_Top'): 14, ('skin', 'skin through clothes'): 4, ('hand', 'hand under cloth R'): 20}
+RunRight_Female_RunRight {('lining', 'Kit_Top'): 16, ('skin', 'skin through clothes'): 6, ('hand', 'hand under cloth R'): 15}
+Serve_Female_Serve {('lining', 'Kit_Top'): 40, ('skin', 'skin through clothes'): 7, ('hole', 'see-through Kit_Top'): 2}
+SliceApproach_Female_SliceApproach {('lining', 'Kit_Top'): 16, ('skin', 'skin through clothes'): 7, ('hand', 'hand in body R'): 10, ('hand', 'hand under cloth R'): 10}
+Smash_Female_Overhead {('lining', 'Kit_Top'): 19}
+SplitToBackhand_Female_SplitToBackhand {('skin', 'skin through clothes'): 11, ('lining', 'Kit_Top'): 7, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20, ('hand', 'hands overlap R'): 5}
+SplitToForehand_Female_SplitToForehand {('lining', 'Kit_Top'): 7, ('skin', 'skin through clothes'): 4}
+VolleyBackhand_Female_VolleyBackhand {('lining', 'Kit_Top'): 5, ('skin', 'skin through clothes'): 1, ('hand', 'hand in body R'): 5, ('hand', 'hand under cloth R'): 5}
+Volley_Female_VolleyForehand {('lining', 'Kit_Top'): 8, ('skin', 'skin through clothes'): 1}
+Walk_Female_Walk {('lining', 'Kit_Top'): 20, ('skin', 'skin through clothes'): 1, ('hand', 'hand under cloth L'): 5}
+free_Emote_Defeat {('lining', 'Kit_Top'): 14, ('hand', 'hand in body L'): 30, ('hand', 'hand under cloth L'): 5, ('hand', 'hand under cloth R'): 5}
+free_Emote_FistPump {('lining', 'Kit_Top'): 5, ('skin', 'skin through clothes'): 2}
+free_Emote_JumpJoy {('lining', 'Kit_Top'): 21, ('hand', 'hand under cloth R'): 5}
+free_Emote_Shock {('lining', 'Kit_Top'): 40, ('skin', 'skin through clothes'): 1, ('hand', 'hand in body L'): 35, ('hand', 'hand in body R'): 35}
+free_Emote_Slump {('hand', 'hand in body L'): 55, ('hand', 'hand under cloth L'): 55, ('hand', 'hand in body R'): 40, ('hand', 'hand under cloth R'): 60}
+free_Emote_Stomp {('skin', 'skin through clothes'): 2, ('lining', 'Kit_Top'): 3, ('hand', 'hand in body L'): 30, ('hand', 'hand under cloth L'): 30, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body R'): 5}
+free_Emote_Victory {('lining', 'Kit_Top'): 39, ('lining', 'Kit_Bottom'): 1, ('skin', 'skin through clothes'): 1}
+free_Run {('lining', 'Kit_Top'): 9, ('skin', 'skin through clothes'): 4, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body L'): 10, ('hand', 'hand under cloth L'): 10}
+free_Walk {('lining', 'Kit_Top'): 3, ('hand', 'hand in body R'): 20, ('hand', 'hand under cloth R'): 20, ('hand', 'hand in body L'): 15, ('hand', 'hand under cloth L'): 15}

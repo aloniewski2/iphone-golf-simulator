@@ -82,6 +82,8 @@ namespace GolfArcade.Game
 
         public bool PlayResultEmote(int selection)
         {
+            // during a hole's opening the emote buttons pick the golfer's intro emote
+            if (Current == State.Intro) return ChooseIntroEmote(selection);
             if (!ShowingShotResult || Time.timeScale <= 0 || selection < 0 || selection > 2) return false;
             string move = TennisEmotes.ExportName(resultEmotes[selection]);
             bool played = move != null && golfer.Perform(move, loop: false);
@@ -92,8 +94,9 @@ namespace GolfArcade.Game
 
         public void ContinueShotResult()
         {
-            // (a multiplayer round's host moves play on to the next player)
-            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter || networkConfigured) return;
+            if (Current != State.Result || Time.timeScale <= 0 || stateTime<ResultSkipAfter) return;
+            // a multiplayer round: the player who swung moves play on, as they would alone (the host passes the turn)
+            if (networkConfigured) { NetworkResultDone(); return; }
             boundaryPresented = LastShot.IsHoled;
             AfterResult();
         }

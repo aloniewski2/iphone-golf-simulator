@@ -53,7 +53,7 @@ struct ClubHubView: View {
             }
             Spacer()
             if hub.link == .signedOut {
-                Button("Sign in") { Task { try? await MultiplayerService.shared.authenticate { vc in TennisMenu.shared.online.sheet = OnlineAppleSheet(controller: vc) }; await hub.refresh() } }
+                Button("Sign in") { ClubSignIn.signIn() }
                     .buttonStyle(.borderedProminent).tint(IslandUI.lime).foregroundStyle(IslandUI.navy)
             }
         }
@@ -75,7 +75,7 @@ struct ClubHubView: View {
         switch hub.link {
         case .online: "\(hub.onlineFriends.count) friend\(hub.onlineFriends.count == 1 ? "" : "s") online"
         case .connecting: "Reaching the Club Hub"
-        case .notConfigured: "Online status is not available in this build yet. You can still invite from Game Center."
+        case .notConfigured: "Friends online need the Club Hub service, which this build has no address for yet."
         case .signedOut: "Game Center keeps your friends list."
         case .offline(let why): why.isEmpty ? "Trying again…" : why
         }
@@ -121,7 +121,7 @@ struct ClubHubView: View {
     private var partySection: some View {
         let lobby = MultiplayerService.shared.lobby
         return Group {
-            if let lobby, lobby.phase == .lobby, !MultiplayerService.shared.isNearby {
+            if let lobby, lobby.phase == .lobby, MultiplayerService.shared.isParty {
                 section("Your party") {
                     ForEach(lobby.participants.filter { !$0.isGuest }, id: \.id) { p in
                         HStack(spacing: 12) {
@@ -131,7 +131,7 @@ struct ClubHubView: View {
                             Spacer()
                         }
                     }
-                    Button(role: .destructive) { MultiplayerService.shared.leave(); hub.partyEnded() } label: { smallButton("Leave party", filled: false) }
+                    Button(role: .destructive) { hub.leaveParty() } label: { smallButton("Leave party", filled: false) }
                         .accessibilityIdentifier("club-party-leave")
                 }
             }
@@ -148,7 +148,7 @@ struct ClubHubView: View {
                 section("Offline", badge: hub.offlineFriends.count) {
                     if hub.offlineFriends.isEmpty { empty("Nobody offline.") }
                     ForEach(hub.offlineFriends) { friendRow($0) }
-                    if !hub.offlineFriends.isEmpty, hub.link == .online { Text("Offline friends get a notification if they allowed them.").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5)) }
+                    if !hub.offlineFriends.isEmpty, hub.link == .online { Text("Invite anyone: an offline friend sees it the moment they open the game.").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5)) }
                 }
             } else {
                 section("Friends") {
@@ -181,12 +181,15 @@ struct ClubHubView: View {
                 Text(sent?.text ?? state).font(IslandUI.font(13)).foregroundStyle(sent == nil ? .white.opacity(0.6) : IslandUI.lime)
             }
             Spacer()
-            if let sent, [.sending, .delivered, .pushed].contains(sent) {
+            if inParty(f.id) {
+                Text("In your party").font(IslandUI.font(13, bold: true)).foregroundStyle(IslandUI.lime)
+            } else if let sent, sent.pending {
                 Button { hub.cancelInvite(to: f) } label: { smallButton("Cancel", filled: false) }
             } else if sent == .accepted {
                 ProgressView().tint(IslandUI.lime)
             } else {
-                Button { hub.invite(f) } label: { smallButton("Invite", filled: f.online) }
+                // one tap, online or offline (offline friends get it the moment they open the game)
+                Button { hub.invite(f) } label: { smallButton("Invite", filled: true) }
                     .disabled(hub.link != .online).opacity(hub.link == .online ? 1 : 0.4)
                     .accessibilityIdentifier("club-invite-\(f.id)")
             }
@@ -196,6 +199,9 @@ struct ClubHubView: View {
         .accessibilityElement(children: .combine).accessibilityIdentifier("club-friend-\(f.id)")
     }
 
+    private func inParty(_ id: String) -> Bool {
+        MultiplayerService.shared.isParty && MultiplayerService.shared.lobby?.participants.contains { $0.id == id } == true
+    }
     private func stateText(_ s: HubPresenceState?) -> String {
         switch s { case .plaza?: "In the Plaza"; case .lobby?: "In a lobby"; case .match?: "In a match"; case .away?: "Away"; case .dnd?: "Do not disturb"; case nil: "Online" }
     }
@@ -203,8 +209,6 @@ struct ClubHubView: View {
     private var addSection: some View {
         section("Add friends") {
             Button { hub.addFriend() } label: { rowButton("person.badge.plus", "Add a friend", "Opens Game Center's friend request") }.accessibilityIdentifier("club-add-friend")
-            Button { hub.hubOpen = false; DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { TennisMenu.shared.online.inviteFromPlaza(TennisMenu.shared) } } label: {
-                rowButton("gamecontroller", "Invite from Game Center", "Apple's own invite screen") }.accessibilityIdentifier("club-invite-gamecenter")
             ForEach(hub.recentNotFriends.prefix(5)) { p in
                 HStack { avatar(p.name, dot: nil); Text(p.name).font(IslandUI.font(15, bold: true)); Spacer(); Text("Played recently").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5)) }
             }
@@ -233,7 +237,7 @@ struct ClubHubView: View {
             Toggle("Appear offline", isOn: $hub.invisible).tint(IslandUI.lime).accessibilityIdentifier("club-appear-offline")
             Toggle("Do not disturb", isOn: $hub.doNotDisturb).tint(IslandUI.lime).accessibilityIdentifier("club-dnd")
             Text("Friends who invite you see \"Busy\" and no banner appears.").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5))
-            Text("Friends only see you online if you both have each other as friends in Game Center.").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5))
+            Text("Your Game Center friends who have Motion Club appear here.").font(IslandUI.font(12)).foregroundStyle(.white.opacity(0.5))
         }
     }
 
@@ -282,8 +286,9 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
-/// The in-game invite notification: a banner over whatever the phone is showing, like a console invite pop-up. It never covers the
-/// plaza stick (it sits above the status strip), is held while a match or a load is on, and runs a 2-minute countdown.
+/// The in-game invite notification: a banner over whatever the phone is showing, like a console invite pop-up. It lives in a
+/// window of its own above everything (InviteBannerWindow), is held while a match or a load is on, and runs a 2-minute
+/// countdown. One tap on Join and you are in your friend's party, in the Plaza.
 struct InviteBannerHost: View {
     var hub = ClubHub.shared
     var body: some View {
@@ -291,12 +296,55 @@ struct InviteBannerHost: View {
             if let invite = hub.banner { InviteBanner(hub: hub, invite: invite).transition(.move(edge: .top).combined(with: .opacity)) }
             if let who = hub.joining { JoiningPill(hub: hub, who: who).transition(.move(edge: .top).combined(with: .opacity)) }
             else if !hub.notice.isEmpty, !hub.hubOpen { NoticePill(hub: hub).transition(.opacity) }
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, 12).padding(.top, 6)
+        .frame(maxWidth: 560)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: hub.banner?.inviteID)
         .animation(.easeInOut(duration: 0.25), value: hub.joining)
         .allowsHitTesting(hub.banner != nil || hub.joining != nil || !hub.notice.isEmpty)
+    }
+}
+
+/// The invite banner's own window, above every other window on the phone (the app's sheets, the Friends list, the Plaza drawn on
+/// the phone, Apple's sheets): an invite can never be hidden behind something. Only the banner itself takes touches; everything
+/// around it goes through to the app.
+@MainActor enum InviteBannerWindow {
+    private(set) static var window: UIWindow?
+    static func install() {
+        guard window == nil, let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.session.role == .windowApplication }) else { return }
+        let w = PassthroughWindow(windowScene: scene)
+        w.windowLevel = UIWindow.Level(rawValue: UIWindow.Level.alert.rawValue + 2)
+        w.backgroundColor = .clear
+        let root = UIViewController(); root.view = PassthroughView(); root.view.backgroundColor = .clear
+        let host = UIHostingController(rootView: InviteBannerHost())
+        host.view.backgroundColor = .clear
+        host.sizingOptions = .intrinsicContentSize
+        root.addChild(host); root.view.addSubview(host.view); host.didMove(toParent: root)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: root.view.safeAreaLayoutGuide.topAnchor),
+            host.view.centerXAnchor.constraint(equalTo: root.view.centerXAnchor),
+            host.view.widthAnchor.constraint(lessThanOrEqualTo: root.view.widthAnchor),
+        ])
+        let fill = host.view.widthAnchor.constraint(equalTo: root.view.widthAnchor); fill.priority = .defaultHigh; fill.isActive = true
+        w.rootViewController = root
+        w.isHidden = false
+        window = w
+    }
+}
+/// Touches that land on nothing of its own go to the windows below.
+final class PassthroughWindow: UIWindow {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        // (a window with nothing of its own under the touch answers itself: that touch is for the windows below too)
+        guard let hit = super.hitTest(point, with: event), hit !== self, hit !== rootViewController?.view else { return nil }
+        return hit
+    }
+}
+final class PassthroughView: UIView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hit = super.hitTest(point, with: event)
+        return hit === self ? nil : hit
     }
 }
 

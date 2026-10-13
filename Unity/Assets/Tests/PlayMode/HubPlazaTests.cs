@@ -216,9 +216,9 @@ namespace GolfArcade.Tests
             // run: full push, briefly
             p.SetStick(0, 1, .8f); yield return new WaitForSeconds(.6f);
             float run = p.Speed; Assert.That(run, Is.EqualTo(HubPlayer.RunSpeed).Within(.15f), "a full push runs");
-            // sprint: hold full
+            // holding full stays a run (no sprint in the menu)
             p.SetStick(0, 1, 1f); yield return new WaitForSeconds(1.4f);
-            float sprint = p.Speed; Assert.That(sprint, Is.EqualTo(HubPlayer.SprintSpeed).Within(.2f), "holding full sprints");
+            float sprint = p.Speed; Assert.That(sprint, Is.EqualTo(HubPlayer.RunSpeed).Within(.2f), "holding full keeps running (no sprint)");
             Still(hub.Camera, "p1_03_sprinting");
             // stop
             p.SetStick(0, 0, 0); float t = 0;

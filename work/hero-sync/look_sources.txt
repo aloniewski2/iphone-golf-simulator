@@ -1,0 +1,53 @@
+# Hero sync: every file that decides how a hero LOOKS (mesh shaping, grip, materials, shaders, the exporter itself) plus the head FBXs.
+# sync_heroes.sh records their SHA-256 in GolfArcadeTests/VisualGolden/provenance.json; the native test
+# VisualOverhaulNativeTests.testNativeHeroesMatchTheCurrentUnityHeroLook fails as soon as one of them changes without a re-sync.
+# Paths are relative to the repo root. Add a file here when a new step joins MatchHeroLook.OwnMaterials or the export.
+Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Male.fbx
+Unity/Assets/Resources/Tennis/OriginalSeamBlinkFinish/Female.fbx
+Unity/Assets/Resources/Tennis/Customization/PlayerMale.prefab
+Unity/Assets/Resources/Tennis/Customization/PlayerFemale.prefab
+Unity/Assets/Scripts/Tennis/MatchHeroLook.cs
+Unity/Assets/Scripts/Tennis/HeroOriginalSeamAnatomy.cs
+Unity/Assets/Scripts/Tennis/HeroFaceReferenceFit.cs
+Unity/Assets/Scripts/Tennis/HeroReferenceAnatomy.cs
+Unity/Assets/Scripts/Tennis/HeroOriginalMaterial.cs
+Unity/Assets/Scripts/Tennis/HeroHeadSurface.cs
+Unity/Assets/Scripts/Tennis/HeroHeadVolume.cs
+Unity/Assets/Scripts/Tennis/HeroFaceBasis.cs
+Unity/Assets/Scripts/Tennis/HeroFaceCraft.cs
+Unity/Assets/Scripts/Tennis/HeroLidGeometry.cs
+Unity/Assets/Scripts/Tennis/HeroEyeRim.cs
+Unity/Assets/Scripts/Tennis/HeroBlinkNormalField.cs
+Unity/Assets/Scripts/Tennis/HeroSkinNormals.cs
+Unity/Assets/Scripts/Tennis/HeroHandWeights.cs
+Unity/Assets/Scripts/Tennis/HeroArmSkinning.cs
+Unity/Assets/Scripts/Tennis/HeroGripPolish.cs
+Unity/Assets/Scripts/Tennis/HeroAuthoredHandPose.cs
+Unity/Assets/Scripts/Tennis/HeroRacketSeat.cs
+Unity/Assets/Scripts/Tennis/HeroKitEdges.cs
+Unity/Assets/Scripts/Tennis/HeroShoeShape.cs
+Unity/Assets/Scripts/Tennis/HeroGolfSkirtFit.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentLOD.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentCoverage.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentHemWeights.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentAxillaWeights.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentPoseCorrectives.cs
+Unity/Assets/Scripts/Tennis/TailoredPoloDeformation.cs
+Unity/Assets/Scripts/Tennis/GolfGarmentCorrectives.cs
+Unity/Assets/Resources/Tennis/Shaders/HeroFaceSkin.shader
+Unity/Assets/Resources/Tennis/Shaders/TennisCharacter.shader
+Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader
+Unity/Assets/Resources/Tennis/Shaders/HeroLighting.hlsl
+Unity/Assets/Resources/Tennis/Shaders/HeroCloth.hlsl
+Unity/Assets/Editor/MatchHeroLockerExport.cs
+Unity/Assets/Scripts/Game/HeroGolfer.cs
+# CLOTHING V2 (work/clothing-v2): garments built as their own pieces; their meshes, maps, skin cover / contact data and pose correctives
+Unity/Assets/Scripts/Tennis/KitV2PoseCorrectives.cs
+Unity/Assets/Scripts/Tennis/HeroGarmentTailoring.cs
+Unity/Assets/Characters/KitsV2/MatchHero_Male/Kit_Top.asset
+Unity/Assets/Resources/Tennis/KitsV2/KitV2_FabricAtlas.png
+Unity/Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_N.png
+Unity/Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_M.png
+Unity/Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_hide.bytes
+Unity/Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_contact.bytes
+Unity/Assets/Resources/Tennis/KitsV2/Male/KitV2_Tennis_Male_Top_correctives.json

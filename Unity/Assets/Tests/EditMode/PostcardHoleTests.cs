@@ -293,10 +293,11 @@ namespace GolfArcade.Tests
         [Test]
         public void LiePowerFactorsAndPenaltiesAreUnchanged()
         {
-            Assert.AreEqual(0.85, CourseLie.Rough.PowerFactor(), 1e-9, "rough is 0.85 power");
-            Assert.AreEqual(0.6, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker is 0.6 power");
+            // (2026-10-12 lie pass: the rough keeps 90 % of the distance, the sand 75 %)
+            Assert.AreEqual(0.9, CourseLie.Rough.PowerFactor(), 1e-9, "rough keeps 0.9 of the distance");
+            Assert.AreEqual(0.75, CourseLie.Bunker.PowerFactor(), 1e-9, "bunker keeps 0.75 of the distance");
             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Green, CourseLie.Water, CourseLie.OutOfBounds })
-                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no club speed");
+                Assert.AreEqual(1.0, lie.PowerFactor(), 1e-9, lie + " costs no distance");
             Assert.AreEqual(1, CourseLie.Water.PenaltyStrokes(), "water is +1 stroke");
             Assert.AreEqual(1, CourseLie.OutOfBounds.PenaltyStrokes(), "out of bounds is +1 stroke");
             foreach (var lie in new[] { CourseLie.Tee, CourseLie.Fairway, CourseLie.Rough, CourseLie.Bunker, CourseLie.Green })

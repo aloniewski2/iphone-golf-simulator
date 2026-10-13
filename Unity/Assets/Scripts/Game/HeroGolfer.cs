@@ -162,6 +162,7 @@ namespace GolfArcade.Game
             liveBody.transform.localScale = sourceBody.transform.lossyScale;
             liveBody.quality = SkinQuality.Bone4;
             var garments = new List<SkinnedMeshRenderer>();
+            bool kitV2 = source.GetComponent<MatchHeroLook>().kitV2;
             foreach (var src in source.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
                 // Keep the bald silhouette; no cap, visor, or hair for this iteration.
@@ -171,7 +172,7 @@ namespace GolfArcade.Game
                 node.transform.localRotation = Quaternion.Inverse(source.transform.rotation) * src.transform.rotation;
                 node.transform.localScale = src.transform.lossyScale;
                 var r = node.AddComponent<SkinnedMeshRenderer>();
-                r.sharedMesh = src.name == "Kit_Top" ? Resources.Load<Mesh>("Golf/Fitted_" + (female ? "Female" : "Male") + "_Top") : src.sharedMesh;
+                r.sharedMesh = src.name == "Kit_Top" && !MatchHeroLook.IsKitV2(src.sharedMesh) ? Resources.Load<Mesh>("Golf/Fitted_" + (female ? "Female" : "Male") + "_Top") : src.sharedMesh;
                 if (!r.sharedMesh) throw new System.InvalidOperationException("Fitted golf shirt mesh is missing");
                 r.sharedMaterials = src.sharedMaterials;
                 r.bones = src.bones.Select(b => Bones[b.name]).ToArray();
@@ -180,7 +181,7 @@ namespace GolfArcade.Game
                 garments.Add(r); parts.Add(r);
             }
             surface = Root.AddComponent<MatchHeroLook>();
-            surface.female = female; surface.golfKit = true;
+            surface.female = female; surface.golfKit = true; surface.kitV2 = kitV2;
             // A rigid approved face attached to Head gives both sports the same fitted
             // lids/gaze without treating a moving skinned face as static object space.
             var oldFace=Part("Face"); oldFace.enabled=false;parts.Remove(oldFace);

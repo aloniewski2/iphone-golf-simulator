@@ -52,7 +52,12 @@ namespace GolfArcade.EditorTools
             (HeroTennisDriver.Clip.Idle, "idle", true), (HeroTennisDriver.Clip.HitPerfect, "hitPerfect", false),
             (HeroTennisDriver.Clip.MissWhiff, "missWhiff", false), (HeroTennisDriver.Clip.CelebratePoint, "celebratePoint", false),
             (HeroTennisDriver.Clip.SadPointLost, "sadPointLost", false), (HeroTennisDriver.Clip.MatchWin, "matchWin", false),
-            (HeroTennisDriver.Clip.MatchLose, "matchLose", false)
+            (HeroTennisDriver.Clip.MatchLose, "matchLose", false),
+            // EMOTE STANDARD: the emotion set (ids = TennisEmotes.IDs / EmoteCatalog.ids)
+            (HeroTennisDriver.Clip.EmoteJumpJoy, "jumpJoy", false), (HeroTennisDriver.Clip.EmoteFistPump, "fistPump", false),
+            (HeroTennisDriver.Clip.EmoteStomp, "stomp", false), (HeroTennisDriver.Clip.EmoteSlump, "slump", false),
+            (HeroTennisDriver.Clip.EmoteShock, "shock", false), (HeroTennisDriver.Clip.EmoteVictory, "victory", false),
+            (HeroTennisDriver.Clip.EmoteDefeat, "defeat", false)
         };
         static readonly Matrix4x4 FlipZ = Matrix4x4.Scale(new Vector3(1, 1, -1));
 
@@ -70,9 +75,13 @@ namespace GolfArcade.EditorTools
             /// Shipped file names (no extension; "" = none): the kit seam map, the weave map, the skin's soft normal.
             public string baseMap = "", weaveMap = "", bumpMap = "", normalMap = "", maskMap = "";
             public float[] trimColor; public float normalStrength, useGarmentMaps, fabricVersion;
+            /// The body skin is Unity's HeroFaceSkin (the registered face: analytic lips, lid liner, blush, beard, face light), not plain TennisCharacter.
+            public bool faceSkin;
+            /// TennisCloth's kit edge lines (HeroKitEdges): 1 shoe sole line, 2 sock cuff, 0 none. Their data is the part's edgeOffset channel.
+            public float edgeLines;
         }
         [Serializable] class Sub { public string material; public int indexOffset, indexCount; public Look look; }
-        [Serializable] class PartInfo { public string name, kind; public int vertexCount, positionOffset, normalOffset, swingPositionOffset, swingNormalOffset, uvOffset = -1, bindPositionOffset = -1; public Sub[] submeshes; }
+        [Serializable] class PartInfo { public string name, kind; public int vertexCount, positionOffset, normalOffset, swingPositionOffset, swingNormalOffset, uvOffset = -1, bindPositionOffset = -1, lidOffset = -1, edgeOffset = -1; public Sub[] submeshes; }
         [Serializable] class MatInfo { public string name; public float[] color; public float smoothness; }
         [Serializable] class RigMorph { public string name; public int positionOffset, normalOffset; }
         [Serializable] class MorphTrack { public string part; public int offset, count; }
@@ -160,6 +169,107 @@ namespace GolfArcade.EditorTools
             if(Application.isBatchMode)EditorApplication.Exit(code);
         }
 
+        /// Hero sync (work/hero-sync): Unity stills of each hero in the Ready stance under the light rig the Swift lobby / locker uses, with the same
+        /// camera numbers as work/hero-sync/lobby_render.swift, one per look case and framing: the "in-game" half of the lobby-vs-game sheets.
+        /// Run with graphics (not -nographics):  LP_OUT=<dir> [LP_GOLF=1] [LP_CASES=default,s2] [LP_FRAMINGS=body,head] Unity -batchmode -projectPath <clone>
+        ///   -executeMethod GolfArcade.EditorTools.MatchHeroLockerExport.CaptureLobbyParity
+        public static void CaptureLobbyParity()
+        {
+            int code = 0;
+            try
+            {
+                string output = Environment.GetEnvironmentVariable("LP_OUT"); if (string.IsNullOrEmpty(output)) throw new ArgumentException("LP_OUT required");
+                bool golf = Environment.GetEnvironmentVariable("LP_GOLF") == "1";
+                string[] List(string name, string fallback) => (Environment.GetEnvironmentVariable(name) ?? fallback).Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var onlyCases = new HashSet<string>(List("LP_CASES", golf ? "default" : "default,s1,s2,s3,s4,s5"));
+                var framings = List("LP_FRAMINGS", "body,head,torso,feet");
+                Directory.CreateDirectory(output);
+                UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene);
+                var camera = new GameObject("ParityCamera").AddComponent<Camera>(); camera.fieldOfView = 32; camera.nearClipPlane = .05f;
+                camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.93f, .62f, .48f);
+                // LP_RIG=key (the key light alone) / ambient (the ambient alone) splits the rig to calibrate one term at a time; default = the whole lobby rig
+                string rig = Environment.GetEnvironmentVariable("LP_RIG") ?? "lobby";
+                // the lobby's ambient light is an sRGB colour at a LINEAR intensity of .21 (SceneKit); Unity's flat ambient colour is gamma, so scale in linear
+                // and convert back (scaling the gamma colour by .21 would light the hero with ~1/5 of the lobby's ambient)
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+                RenderSettings.ambientLight = rig == "key" ? Color.black : (new Color(.86f, .88f, .96f).linear * .21f).gamma;
+                // the lobby's light positions in Unity's frame: a camera on +z looking down -z has world +x on its right in SceneKit (right-handed) and on its
+                // left in Unity, so x is mirrored (the hero itself is mirrored by the export's z flip + the lobby's half turn); unmirrored, the key lights the other cheek
+                void Light(float intensity, Color color, float elevation, float azimuth)
+                {
+                    var l = new GameObject("ParityLight").AddComponent<Light>(); l.type = LightType.Directional; l.intensity = intensity; l.color = color;
+                    float e = elevation * Mathf.Deg2Rad, a = azimuth * Mathf.Deg2Rad; l.transform.position = new Vector3(Mathf.Sin(a) * Mathf.Cos(e) * 6, Mathf.Sin(e) * 6, Mathf.Cos(a) * Mathf.Cos(e) * 6); l.transform.LookAt(new Vector3(0, .8f, 0));
+                }
+                if (rig != "ambient") Light(1.05f, new Color(1, .92f, .82f), 40, 38);
+                if (rig == "lobby") { Light(.37f, new Color(.84f, .9f, 1), 18, -55); Light(.52f, new Color(1, .96f, .9f), 35, 160); }
+                const int W = 720, H = 1000;
+                var rt = new RenderTexture(W, H, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB); rt.antiAliasing = 4; rt.Create(); camera.targetTexture = rt;
+                var tex = new Texture2D(W, H, TextureFormat.RGB24, false); var previous = RenderTexture.active;
+                var cases = new (string id, string skin, string shirt, string shorts, string shoes)[] {
+                    ("default", null, null, null, null), ("s1", "FFE0C4", null, null, null), ("s2", "E6AE7E", "FF6B4A", "1E2A6E", "9EE63A"),
+                    ("s3", "B7744A", "2F6FD6", "F4F0E6", "FFFFFF"), ("s4", "74432C", "7BC043", "23344D", "E04F3A"), ("s5", "3E2317", "F5C542", "FFFFFF", "2A2A2A") };
+                var report = new StringBuilder();
+                foreach (string sex in new[] { "Male", "Female" })
+                    foreach (var c in cases.Where(c => onlyCases.Contains(c.id)))
+                    {
+                        GameObject root;
+                        if (golf) root = HeroGolfer.Build(null, new HeroLook { Female = sex == "Female", Haircut = (int)HeroGolfer.Haircut.Bald, Skin = sex == "Female" ? new Color(.953f, .855f, .788f) : new Color(.949f, .816f, .686f), HairColor = new Color(.35f, .25f, .18f) }).Root;
+                        else root = (GameObject)Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(PrefabDir + "Player" + sex + ".prefab"));
+                        root.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity); root.transform.localScale = Vector3.one;
+                        var driver = root.GetComponent<HeroTennisDriver>(); var look = root.GetComponent<MatchHeroLook>();
+                        if (driver) driver.ResolvePerformanceClips();
+                        typeof(MatchHeroLook).GetMethod("OwnMaterials", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(look, null);
+                        if (!golf) root.GetComponentsInChildren<Transform>(true).First(t => t.name == "Racket_Classic").localScale *= TennisRules.HeroRacketScale;
+                        foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()) { skin.quality = SkinQuality.Bone4; skin.updateWhenOffscreen = true; }
+                        if (c.skin != null) { ColorUtility.TryParseHtmlString("#" + c.skin, out var tone); look.SetSkin(tone); }
+                        if (!golf && (c.shirt != null || c.shorts != null || c.shoes != null)) look.SetKit(c.shirt, c.shorts, c.shoes);
+                        AnimationClip ready;
+                        if (golf) { var motions = GolfMotions(sex); ready = motions.First(m => m.id == "ready").clip; PrepareMenuIronSocket(root, motions.First(m => m.id == "golfIron").clip); }
+                        else ready = driver.slots.First(s => s.id == HeroTennisDriver.Clip.Ready).clip;
+                        SamplePose(root, ready, 0);
+                        var sources = Collect(root); foreach (var source in sources) Pose(root, source);
+                        var bounds = new Bounds(); bool has = false;
+                        foreach (var source in sources.Where(p => p.kind == "body")) foreach (var v in source.pos) { if (!has) { bounds = new Bounds(v, Vector3.zero); has = true; } else bounds.Encapsulate(v); }
+                        float neckY = FindBone(root.transform, "Neck").position.y; var headBounds = new Bounds(); bool hf = true;
+                        foreach (var p in sources.Where(s => s.kind == "body" || s.kind == "face")) foreach (var v in p.pos) if (v.y > neckY + .02f) { if (hf) { headBounds = new Bounds(v, Vector3.zero); hf = false; } else headBounds.Encapsulate(v); }
+                        var drawMeshes = new List<Mesh>();
+                        foreach (var source in sources)
+                        {
+                            source.renderer.enabled = false;
+                            var node = new GameObject("UnityCPUSkin_" + source.name); node.transform.SetParent(root.transform, false);
+                            var mesh = Object.Instantiate(source.mesh); node.AddComponent<MeshFilter>().sharedMesh = mesh; drawMeshes.Add(mesh);
+                            // the game's layers too: the hero rim light and the Contact AO exemption (HeroAmbientOcclusionExemption) select the hero by them
+                            var drawn = node.AddComponent<MeshRenderer>(); drawn.sharedMaterials = source.materials; node.layer = source.renderer.gameObject.layer; drawn.renderingLayerMask = source.renderer.renderingLayerMask;
+                            // the lobby hides the same equipment (MatchHeroData.buildHero): the right glove and every prop but the iron
+                            if (source.name == "Kit_Glove_R" || (source.kind == "equipment" && source.name != "Club_Iron")) node.SetActive(false);
+                        }
+                        float scale = 1.387f / bounds.size.y;
+                        root.transform.localScale = Vector3.one * scale; root.transform.rotation = Quaternion.Euler(0, -.35f * Mathf.Rad2Deg, 0);
+                        for (int part = 0; part < sources.Count; part++) { drawMeshes[part].vertices = sources[part].pos; drawMeshes[part].normals = sources[part].nrm; drawMeshes[part].RecalculateBounds(); }
+                        float headCentre = headBounds.center.y * scale;
+                        foreach (var framing in framings)
+                        {
+                            switch (framing)
+                            {
+                                case "head": camera.transform.position = new Vector3(0, headCentre + .04f, 1.15f); camera.transform.LookAt(new Vector3(0, headCentre, 0)); break;
+                                case "torso": camera.transform.position = new Vector3(0, headCentre - .34f, 2.1f); camera.transform.LookAt(new Vector3(0, headCentre - .40f, 0)); break;
+                                case "feet": camera.transform.position = new Vector3(-.15f, .52f, 1.5f); camera.transform.LookAt(new Vector3(0, .30f, 0)); break;   // SceneKit's +.15, mirrored like the lights
+                                default: camera.transform.position = new Vector3(0, .9f, 3.4125f); camera.transform.LookAt(new Vector3(0, .76f, 0)); break;
+                            }
+                            // the first frame of a fresh batch run can still draw placeholder shaders: render once and discard
+                            camera.Render(); camera.Render(); RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, W, H), 0, 0); tex.Apply();
+                            File.WriteAllBytes(Path.Combine(output, sex.ToLower() + "_" + c.id + "_" + framing + ".png"), tex.EncodeToPNG());
+                        }
+                        report.AppendLine($"{sex} {(golf ? "golf" : "tennis")} {c.id} scale={scale:F5} headCentre={headCentre:F4} skin={c.skin} shirt={c.shirt} shorts={c.shorts} shoes={c.shoes}");
+                        menuIronSockets.Remove(root); Object.DestroyImmediate(root);
+                    }
+                RenderTexture.active = previous; camera.targetTexture = null; rt.Release(); Object.DestroyImmediate(rt); Object.DestroyImmediate(tex);
+                File.WriteAllText(Path.Combine(output, "report.txt"), report.ToString());
+            }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            if (Application.isBatchMode) EditorApplication.Exit(code);
+        }
+
         public static void RunGolf() { RunVariant(true); }
         public static void RunDistance() {
             try { Directory.CreateDirectory(OutDir); foreach(string sex in new[]{"Male","Female"}) if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("MH_LOCKER_SEX")) || Environment.GetEnvironmentVariable("MH_LOCKER_SEX") == sex) Debug.Log(ExportSex(sex,false,true));if(Application.isBatchMode)EditorApplication.Exit(0); }
@@ -215,6 +325,7 @@ namespace GolfArcade.EditorTools
                     var byName=root.GetComponentsInChildren<Transform>(true).GroupBy(t=>t.name).ToDictionary(g=>g.Key,g=>g.First());
                     foreach(var src in asset.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
                         var live=look.kit.FirstOrDefault(r=>r&&r.name==src.name);if(!live)throw new InvalidOperationException("Distance role missing: "+src.name);
+                        if(MatchHeroLook.IsKitV2(live.sharedMesh))continue;   // CLOTHING V2 pieces are their own far mesh
                         bool skirt=live.sharedMesh && live.sharedMesh.name.StartsWith("TailoredSkirt");
                         bool tailored=live.sharedMesh && live.sharedMesh.name.StartsWith("TailoredPolo");
                         var selected=src;
@@ -227,7 +338,7 @@ namespace GolfArcade.EditorTools
                         live.sharedMesh=selected.sharedMesh;live.bones=selected.bones.Select(b=>byName[b.name]).ToArray();
                         if(tailored){live.sharedMesh=Object.Instantiate(live.sharedMesh);live.sharedMesh.name="TailoredPolo32 "+sex+" distance";live.sharedMesh=TailoredPoloDeformation.Prepare(look,live,live.sharedMesh,live.bones);}
                         else if(skirt) { }
-                        else live.sharedMesh=HeroGarmentHemWeights.Prepare(look,live,live.sharedMesh,live.bones);
+                        else live.sharedMesh=look.FinishFootwear(live,HeroGarmentHemWeights.Prepare(look,live,live.sharedMesh,live.bones));   // as HeroGarmentLOD: the far kit wears the same shoes
                     }
                     sb.AppendLine("  bounded Distance variant: exact clips/materials, two-way source envelope <=1.5mm");
                 }
@@ -248,7 +359,7 @@ namespace GolfArcade.EditorTools
                 SamplePose(root, ready, 0f);
                 if(golf)root.GetComponent<GolfGarmentCorrectives>()?.Apply();
             root.GetComponent<HeroGarmentPoseCorrectives>()?.Apply();
-            root.GetComponent<TailoredPoloDeformation>()?.Apply();
+            root.GetComponent<TailoredPoloDeformation>()?.Apply(); { var kl = root.GetComponent<MatchHeroLook>(); if (kl && kl.kitV2) { KitV2PoseCorrectives.Attach(kl); root.GetComponent<KitV2PoseCorrectives>()?.Apply(); } }
                 foreach (var p in sources) Pose(root, p);
                 var bounds = new Bounds(); bool first = true;
                 foreach (var p in sources.Where(s => s.kind == "body")) foreach (var v in p.pos) { if (first) { bounds = new Bounds(v, Vector3.zero); first = false; } else bounds.Encapsulate(v); }
@@ -312,6 +423,18 @@ namespace GolfArcade.EditorTools
                     {
                         // the soft skin normal is projected from the BIND-pose position (the body has no UVs): MatchHeroLook.WithBindPose puts mesh.vertices in channel 1
                         info.bindPositionOffset = bin.Count; AddV3(bin, p.mesh.vertices, true);
+                        // HeroFaceSkin's lid liner: the distance to the open upper / lower lid edge (HeroFaceReferenceFit, mesh channel 2)
+                        var lid = new List<Vector2>(); p.mesh.GetUVs(2, lid);
+                        if (lid.Count == p.pos.Length) { info.lidOffset = bin.Count; AddV2(bin, lid.ToArray()); }
+                        // CLOTHING V2: the garments' contact shadow on the skin (mesh channel 3, x), exported in the edge channel
+                        var contact = new List<Vector4>(); p.mesh.GetUVs(3, contact);
+                        if (contact.Count == p.pos.Length) { info.edgeOffset = bin.Count; foreach (var e in contact) { AddV2(bin, new[] { new Vector2(e.x, e.y) }); AddV2(bin, new[] { new Vector2(e.z, e.w) }); } }
+                    }
+                    if (p.kind == "kit")
+                    {
+                        // the shoe sole line / sock cuff measurements (HeroKitEdges, mesh channel 3), metres
+                        var edge = new List<Vector4>(); p.mesh.GetUVs(3, edge);
+                        if (edge.Count == p.pos.Length) { info.edgeOffset = bin.Count; foreach (var e in edge) { AddV2(bin, new[] { new Vector2(e.x, e.y) }); AddV2(bin, new[] { new Vector2(e.z, e.w) }); } }
                     }
                     info.submeshes = subs.ToArray(); infos.Add(info);
                 }
@@ -389,6 +512,7 @@ namespace GolfArcade.EditorTools
             // HeroFaceSkin is the registered head surface of the same skin material (same properties as TennisCharacter): the Swift mirror emulates it as the character shader.
             var look = new Look { shader = m && m.shader ? m.shader.name.Replace("GolfArcade/", "").Replace("HeroFaceSkin", "TennisCharacter") : "Missing" };
             if (!m) return look;
+            look.faceSkin = m.shader && m.shader.name.EndsWith("HeroFaceSkin");
             float F(string n) => m.HasProperty(n) ? m.GetFloat(n) : 0f;
             float[] C(string n) { if (!m.HasProperty(n)) return new float[0]; var c = m.GetColor(n); return new[] { c.r, c.g, c.b, c.a }; }
             string Map(string n)
@@ -418,7 +542,7 @@ namespace GolfArcade.EditorTools
             look.weaveTile = F("_WeaveTile"); look.weaveAngle = F("_WeaveAngle"); look.weaveNormal = F("_WeaveNormal"); look.weaveThread = F("_WeaveThread"); look.sheenStrength = F("_SheenStrength"); look.sheenPower = F("_SheenPower");
             look.saturation = F("_Saturation"); look.bumpScale = F("_BumpScale"); look.bumpTriplanar = F("_BumpTriplanar"); look.bumpTile = F("_BumpTile");
             look.baseMap = Map("_BaseMap"); look.weaveMap = Map("_WeaveMap"); look.bumpMap = Map("_BumpMap");
-            look.normalMap = Map("_NormalMap"); look.maskMap = Map("_MaskMap"); look.trimColor = C("_TrimColor"); look.normalStrength = F("_NormalStrength"); look.useGarmentMaps = F("_UseGarmentMaps"); look.fabricVersion = F("_FabricVersion");
+            look.normalMap = Map("_NormalMap"); look.maskMap = Map("_MaskMap"); look.trimColor = C("_TrimColor"); look.normalStrength = F("_NormalStrength"); look.useGarmentMaps = F("_UseGarmentMaps"); look.fabricVersion = F("_FabricVersion"); look.edgeLines = F("_EdgeLines");
             if (look.shader == "TennisCloth")
             {
                 // the role's cloth numbers live in MatchHeroLook.ClothFor (private): read them off it, so the tile size the Swift side fades the weave by is the one Unity tiles with
@@ -459,7 +583,7 @@ namespace GolfArcade.EditorTools
             root.GetComponent<MatchHeroLook>()?.body?.GetComponent<HeroArmSkinning>()?.Apply();
             root.GetComponent<GolfGarmentCorrectives>()?.Apply();
             root.GetComponent<HeroGarmentPoseCorrectives>()?.Apply();
-            root.GetComponent<TailoredPoloDeformation>()?.Apply();
+            root.GetComponent<TailoredPoloDeformation>()?.Apply(); { var kl = root.GetComponent<MatchHeroLook>(); if (kl && kl.kitV2) { KitV2PoseCorrectives.Attach(kl); root.GetComponent<KitV2PoseCorrectives>()?.Apply(); } }
         }
 
         static Transform FindBone(Transform root, string name) => root.GetComponentsInChildren<Transform>(true).First(t => t.name == name);

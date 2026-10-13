@@ -55,10 +55,15 @@ struct MultiplayerLoadout: Codable, Equatable, Sendable {
     // Flat colour fields are also readable by Unity JsonUtility.
     var shirtHex: String?
     var shortsHex: String?
+    // The rest of the locker look, so a golfer looks the same to everyone in the round as alone (hair colour, haircut, shoes).
+    var hairHex: String? = nil
+    var haircut: Int? = nil
+    var shoesHex: String? = nil
 
     func valid() -> Bool {
         func hex(_ s: String) -> Bool { s.utf8.count == 6 && s.allSatisfy { $0.isHexDigit && $0.isASCII } }
-        return (shirtHex.map(hex) ?? true) && (shortsHex.map(hex) ?? true) && (emotes.map(EmoteCatalog.valid) ?? true) && hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
+        return (shirtHex.map(hex) ?? true) && (shortsHex.map(hex) ?? true) && (hairHex.map(hex) ?? true) && (shoesHex.map(hex) ?? true)
+            && (haircut.map { (0..<12).contains($0) } ?? true) && (emotes.map(EmoteCatalog.valid) ?? true) && hex(skinHex) && colours.count <= 4 && colours.allSatisfy {
             ["shirt", "shorts", "accent", "racket"].contains($0.key) && hex($0.value)
         } && gear.count <= 2 && gear.allSatisfy { sport, slots in
             ["tennis", "golf"].contains(sport) && slots.count <= 3 && slots.allSatisfy {
@@ -211,6 +216,8 @@ protocol MultiplayerTransport: AnyObject {
     func send(_ data: Data, to peers: [String]?, reliable: Bool) throws
     func disconnect()
 }
+/// A transport a friends' party lives on (the Club Hub relay room; tests' in-memory party links): its lobby is the Plaza party.
+@MainActor protocol PartyTransport: MultiplayerTransport {}
 
 /// Keeps the shared clock steady. A ping/pong gives one sample: `rtt` and `offset` (the owner's clock minus ours).
 /// One slow leg skews a single sample by half the extra delay, so keep the samples with the lowest rtt (least

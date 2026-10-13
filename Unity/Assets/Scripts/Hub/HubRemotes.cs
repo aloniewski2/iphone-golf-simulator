@@ -35,6 +35,13 @@ namespace GolfArcade.Hub
         public int Count => remotes.Count;
         /// Diagnostics for SYNC: where a friend is drawn now.
         public bool TryGetShown(string id, out Vector3 at) { at = default; if (!remotes.TryGetValue(id, out var r)) return false; at = r.shown; return true; }
+        /// Where a friend last said they are (their place and position), for joining them.
+        public bool TryGetLast(string id, out string place, out Vector3 at)
+        {
+            place = null; at = default;
+            if (!remotes.TryGetValue(id, out var r) || r.snaps.Count == 0) return false;
+            var s = r.snaps[r.snaps.Count - 1].s; place = s.place; at = new Vector3(s.x, s.y, s.z); return true;
+        }
 
         public static HubRemotes For(HubWorld w) { var r = w.GetComponent<HubRemotes>(); if (!r) { r = w.gameObject.AddComponent<HubRemotes>(); r.world = w; } return r; }
 

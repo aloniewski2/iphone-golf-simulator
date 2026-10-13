@@ -1,0 +1,100 @@
+{
+  "Male": {
+    "meshes_old": [
+      "Body",
+      "ReferenceFeatures"
+    ],
+    "meshes_new": [
+      "Body",
+      "ReferenceFeatures"
+    ],
+    "bones_same": true,
+    "Body": {
+      "vertices": [
+        43900,
+        43900
+      ],
+      "triangles_same": true,
+      "weights_same": true,
+      "materials_same": true,
+      "moved": 2133,
+      "max_move_mm": 10.738,
+      "moved_z_range_fbx": [
+        1.3886,
+        1.5626
+      ],
+      "shape_keys": [
+        "Basis",
+        "Hero_Blink",
+        "Hero_Blink_Half"
+      ],
+      "shape_delta_max_err_mm": 0.0
+    },
+    "ReferenceFeatures": {
+      "vertices": [
+        1812,
+        1812
+      ],
+      "triangles_same": true,
+      "weights_same": true,
+      "materials_same": true,
+      "moved": 0,
+      "max_move_mm": 0.0,
+      "shape_keys": [
+        "Basis",
+        "Hero_Blink",
+        "Hero_Blink_Half"
+      ],
+      "shape_delta_max_err_mm": 0.0
+    }
+  },
+  "Female": {
+    "meshes_old": [
+      "Body",
+      "ReferenceFeatures"
+    ],
+    "meshes_new": [
+      "Body",
+      "ReferenceFeatures"
+    ],
+    "bones_same": true,
+    "Body": {
+      "vertices": [
+        34366,
+        34366
+      ],
+      "triangles_same": true,
+      "weights_same": true,
+      "materials_same": true,
+      "moved": 2551,
+      "max_move_mm": 10.996,
+      "moved_z_range_fbx": [
+        1.3759,
+        1.5269
+      ],
+      "shape_keys": [
+        "Basis",
+        "Hero_Blink",
+        "Hero_Blink_Half"
+      ],
+      "shape_delta_max_err_mm": 0.0
+    },
+    "ReferenceFeatures": {
+      "vertices": [
+        1616,
+        1616
+      ],
+      "triangles_same": true,
+      "weights_same": true,
+      "materials_same": true,
+      "moved": 0,
+      "max_move_mm": 0.0,
+      "shape_keys": [
+        "Basis",
+        "Hero_Blink",
+        "Hero_Blink_Half"
+      ],
+      "shape_delta_max_err_mm": 0.0
+    }
+  }
+}

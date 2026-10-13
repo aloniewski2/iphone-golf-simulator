@@ -1,0 +1,12 @@
+camera=Hub camera
+hub ready=False player=Hub player emotes=EmoteScuba,EmoteThrust,EmoteSpike,IntroWave,IntroBringIt,IntroPushups,EmoteJumpJoy,EmoteFistPump,EmoteStomp,EmoteSlump,EmoteShock,EmoteVictory,EmoteDefeat,CelebratePoint,MatchWin
+hub_walk frames=120 speed=1.17
+hub_run frames=90 speed=0.00
+hub_sprint frames=75 speed=4.30
+hub_Emote_JumpJoy frames=115 speed=0.00 ok=True
+hub_Emote_FistPump frames=115 speed=0.00 ok=True
+hub_Emote_Stomp frames=115 speed=0.00 ok=True
+hub_Emote_Slump frames=115 speed=0.00 ok=True
+hub_Emote_Shock frames=115 speed=0.00 ok=True
+hub_Emote_Victory frames=115 speed=0.00 ok=True
+hub_Emote_Defeat frames=115 speed=0.00 ok=True

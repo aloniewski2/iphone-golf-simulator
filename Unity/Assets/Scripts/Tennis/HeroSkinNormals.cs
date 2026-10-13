@@ -108,6 +108,15 @@ namespace GolfArcade.Tennis
                 float noseMask=Mathf.Exp(-2*Mathf.Pow(localHead.x/.030f,2)-2*Mathf.Pow((localHead.y-.027f)/.023f,2))*Smooth(.105f,.120f,localHead.z);
                 float earMask=Smooth(.078f,.096f,Mathf.Abs(localHead.x))*(1-Smooth(.030f,.060f,localHead.z))*(1-Smooth(.070f,.110f,Mathf.Abs(localHead.y-.040f)));
                 if(areaWeighted){localRadius=Mathf.Lerp(localRadius,.005f,noseMask);localRadius=Mathf.Lerp(localRadius,.0035f,earMask);}
+                // Jaw and neck (2026-10-12 jaw sculpt, work/jaw-sculpt-2026-10-12): the jaw edge is sculpted into the mesh, and a 12 mm
+                // average blurs it. Below the jawline (chin -> corner, rising ~27 deg, then up the back border toward the lobe) and on the
+                // neck the radius is 8 mm, easing back to the face's 12 mm over ~36 mm above the line so no border shows (5.5 mm showed
+                // every small bump). Both heroes' lines fall within ~3 mm of this one.
+                if(areaWeighted){
+                    float jawLine=Mathf.Lerp(.005f,-.007f-.5f*localHead.z,Smooth(.005f,.030f,localHead.z));
+                    float jawMask=1-Smooth(jawLine+.004f,jawLine+.040f,localHead.y);
+                    localRadius=Mathf.Min(localRadius,Mathf.Lerp(localRadius,.008f,jawMask));
+                }
                 var cell=Cell(unique[i]);float seed=areaWeighted?representedArea[i]:1;Vector3 sum=geometric[i]*seed;float count=seed;
                 for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++)
                     if(grid.TryGetValue(cell+new Vector3Int(x,y,z),out var neighbours))foreach(int j in neighbours){

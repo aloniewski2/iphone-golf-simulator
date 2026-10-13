@@ -191,7 +191,7 @@ test('token registered by a push message, changed, and removed with ""', async (
   assert.equal(hub.store.getPush('B'), null);
 });
 
-test('token + push unconfigured: the sender gets unavailable (push skipped)', async (t) => {
+test('token + push unconfigured: push skipped, the invite waits for them (queued)', async (t) => {
   const lines = [];
   const hub = await startHub({ log: { log: (l) => lines.push(l), warn() {}, error() {} } });
   t.after(() => hub.stop());
@@ -200,12 +200,12 @@ test('token + push unconfigured: the sender gets unavailable (push skipped)', as
   await B.close();
   await sleep(50);
   await A.say(inv('B'));
-  await A.next('inviteUpdate', status('unavailable'));
+  await A.next('inviteUpdate', status('queued'));
   assert.ok(lines.some((l) => l.includes('push skipped')));
   void quietLog;
 });
 
-test('offline mutual-friend check uses the friend list stored with the token (survives a hub restart)', async (t) => {
+test('offline friend check uses the friend list stored with the token (survives a hub restart)', async (t) => {
   const tx = fakeTransport();
   const first = await startHub({ pusher: makePusher(tx, { keyPem }) });
   const B1 = await first.join('B', { friends: ['A'], push: { token: TOKEN, env: 'sandbox' } });
@@ -219,14 +219,15 @@ test('offline mutual-friend check uses the friend list stored with the token (su
   const A = await second.join('A', { friends: ['B', 'C'] });
   await A.say(inv('B'));
   await A.next('inviteUpdate', status('pushed'));
-  // C is unknown and has no token: unavailable
+  // C is unknown and has no token: the invite waits for C
   await A.say(inv('C'));
-  await A.next('inviteUpdate', status('unavailable'));
+  await A.next('inviteUpdate', status('queued'));
 });
 
-test('offline receiver who dropped me from their friends before leaving: not_friends, nothing pushed', async (t) => {
+test('offline receiver who dropped me, and whom I dropped too: not_friends, nothing pushed', async (t) => {
   const { tx, A, B } = await offlineReceiver(t);
   await B.say({ t: 'friends', ids: [] });
+  await A.say({ t: 'friends', ids: [] });
   await sleep(50);
   await B.close();
   await sleep(50);

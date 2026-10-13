@@ -19,7 +19,9 @@ namespace GolfArcade.Game
         public HoleOutCard HoleOut => holeOutCard;
         public bool HoleOutShowing => holeOutCard && holeOutCard.Showing;
 
-        bool UsesHoleOutCard => Match != null && Match.IsSolo && !Match.IsContest && setup?.Mode != PlayMode.Online;
+        bool UsesHoleOutCard => networkConfigured || (Match != null && Match.IsSolo && !Match.IsContest && setup?.Mode != PlayMode.Online);
+        /// The card the hole-out shows: the golfer who holed (in a multiplayer round, theirs from the host), else this phone's.
+        Scorecard HoleOutCardSource => networkConfigured && networkCard != null ? networkCard : Card;
 
         /// BIRDIE!, PAR, BOGEY, TRIPLE BOGEY …
         static string ScoreWord(int strokes, int par)
@@ -36,7 +38,7 @@ namespace GolfArcade.Game
             int toPar = 0, thru = 0;
             for (int i = 0; i < tiles.Length; i++)
             {
-                int? s = i == holeIndex ? strokes : Card.StrokesOn(i);
+                int? s = i == holeIndex ? strokes : HoleOutCardSource.StrokesOn(i);
                 tiles[i] = new HoleOutCard.Tile { Ordinal = i + 1, Par = course.Holes[i].Par, Strokes = s, Current = i == holeIndex };
                 if (s is int played) { toPar += played - course.Holes[i].Par; thru++; }
             }
@@ -52,7 +54,14 @@ namespace GolfArcade.Game
                 Tiles = tiles,
                 Emotes = resultEmotes.Select(TennisEmotes.Name).ToArray(),
             };
-            if (more)
+            string waiting = networkConfigured ? NetworkStillToHoleOut() : null;
+            if (waiting != null)
+            {
+                // others are still playing this hole
+                data.NextLabel = "NEXT PLAYER";
+                data.NextDetail = $"{waiting.ToUpperInvariant()} TO PLAY  ·  HOLE {holeIndex + 1}";
+            }
+            else if (more)
             {
                 var next = course.Holes[holeIndex + 1];
                 data.NextLabel = "NEXT HOLE";
@@ -92,7 +101,9 @@ namespace GolfArcade.Game
         string HoleOutReaction(CourseShot shot)
         {
             int toPar = holeStrokes - hole.Par;
-            string move = holeStrokes == 1 || toPar <= -2 ? "Cheer" : toPar == -1 ? "FistPump" : toPar == 0 ? "Wave" : "Idle";
+            // EMOTE STANDARD: an ace = the victory spin, eagle = jump for joy, birdie = fist pump, par = wave, bogey = slump, worse = an angry stomp
+            string move = holeStrokes == 1 ? "Emote_Victory" : toPar <= -2 ? "Emote_JumpJoy" : toPar == -1 ? "Emote_FistPump" : toPar == 0 ? "Wave" : toPar == 1 ? "Emote_Slump" : "Emote_Stomp";
+            if (!golfer.HasMove(move)) move = holeStrokes == 1 || toPar <= -2 ? "Cheer" : toPar == -1 ? "FistPump" : toPar == 0 ? "Wave" : "Idle";
             return golfer.HasMove(move) ? move : "Idle";
         }
     }

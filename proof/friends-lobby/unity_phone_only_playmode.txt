@@ -1,0 +1,5 @@
+PLAYMODE total=4 passed=4 failed=0
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.JoiningAFriendTakesYouToThem 15.458137
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.OnAPhoneAFriendInASportRoomIsMetInThePlaza 4.886280
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.PhoneOnlyShutsThePlayHallAndDrawsAboveTheControls 10.634146
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.WithATvThePlayHallIsOpen 5.213948

@@ -147,6 +147,18 @@ static void SportsCaptureTrampoline(const char *json) {
     }
 #endif
 }
+- (void)restoreUnityWindow {
+#if HAS_UNITY
+    UIWindow *unityWindow = _unity.appController.window;
+    UIViewController *controller = _unity.appController.rootViewController;
+    if (!unityWindow || !controller || unityWindow.rootViewController == controller) return;
+    UIWindow *lent = controller.view.window;
+    if (lent && lent != unityWindow) lent.rootViewController = [UIViewController new];
+    unityWindow.rootViewController = controller;
+    controller.view.frame = unityWindow.bounds;
+    unityWindow.hidden = !_unityOnPhone;
+#endif
+}
 - (void)showUnityOnPhone:(BOOL)visible {
     _unityOnPhone=visible;
 #if HAS_UNITY

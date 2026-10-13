@@ -1,0 +1,13 @@
+  fast forehand proof   +40 ms power 0.98   prediction   +10 ms power 0.98 (at peak)
+  quick flat drive proof   +40 ms power 1.00   prediction    +0 ms power 1.00 (at peak)
+  slow lob proof   +10 ms power 0.48   prediction   +10 ms power 0.48 (proof)
+GATE: FAST_SWING_EARLIER             PASS  fast forehand confirmed 10 ms after its peak instead of 40
+GATE: QUICK_SWING_EARLIER            PASS  quick drive 0 ms after its peak instead of 40
+GATE: AT_THE_PEAK                    PASS  prediction confirms within one sample of the peak
+GATE: TRUE_PEAK_POWER                PASS  power 0.98 from the true peak (0.98)
+GATE: SLOW_SWING_UNCHANGED           PASS  slow lob confirms by proof either way (+10 ms), before its peak as before
+GATE: WEAK_SWING_NOT_PREDICTED       PASS  a swing under 7 rad/s waits for the proof as before
+GATE: SIDESTEP_REJECTED              PASS  an arm swing without a stroke's force never confirms
+GATE: FLINCH_REJECTED                PASS  a 40 ms flick does not turn enough to count
+GATE: NOISE_NOT_EARLY                PASS  noisy fast forehand (300 of 300 confirmed): median +10 ms after the peak, 0 more than 10 ms early, earliest +10
+RESULT: PASS

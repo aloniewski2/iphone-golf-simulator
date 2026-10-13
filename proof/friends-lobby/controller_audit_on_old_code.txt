@@ -1,0 +1,32 @@
+1. GolfArcade/Unity/SportsHome.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Unity/TennisMenu.swift: Game Center invite path `acceptInvitation(`
+1. GolfArcade/Unity/TennisMenu.swift: Game Center invite path `inviteFromPlaza`
+1. GolfArcade/Unity/TennisMenu.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Social/ClubHubView.swift: Game Center invite path `inviteFromPlaza`
+1. GolfArcade/Social/ClubHubLive.swift: Game Center invite path `openPrivateRoom`
+1. GolfArcade/Social/ClubHubLive.swift: Game Center invite path `joinPrivateRoom`
+1. GolfArcade/Multiplayer/GameCenterTransport.swift: Game Center invite path `GKMatchmakerViewController(`
+1. GolfArcade/Multiplayer/GameCenterTransport.swift: Game Center invite path `GKMatchmakerViewController(`
+1. GolfArcade/Multiplayer/GameCenterTransport.swift: Game Center invite path `invitationController(`
+1. GolfArcade/Multiplayer/GameCenterTransport.swift: Game Center invite path `privateRoom(`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `invitationController(`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `acceptInvitation(`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `pendingInvite`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `privateRoom(`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `privateRoom(`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `openPrivateRoom`
+1. GolfArcade/Multiplayer/MultiplayerService.swift: Game Center invite path `joinPrivateRoom`
+2. SportsHome shows TennisRemote()
+2. SportsHome shows TennisPhoneMenu() outside the no-Unity case: if session.displayConnected { TennisRemote() } else { TennisPhoneMenu() }
+2. SportsHome shows TennisPhoneMenu() outside the no-Unity case: else { TennisPhoneMenu() }
+2. SportsHome: outside a match the root is not always HubControllerView
+3. OnlineLobbyMenu.sync opens a lobby screen (showOnline)
+3. OnlineLobbyMenu.installCallbacks opens a lobby screen (showOnline)
+3. OnlineLobbyMenu.installCallbacks puts the old TV menu over the game (showMenu)
+4. bench bay-tennis-online routes to an old screen (.onlineChoice)
+4. bench bay-tennis-online routes to an old screen (onlineQuick)
+4. bench bay-golf-round routes to an old screen (.hub()
+5. the Friends list still offers Invite from Game Center

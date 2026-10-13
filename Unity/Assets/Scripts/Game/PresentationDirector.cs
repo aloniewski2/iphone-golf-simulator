@@ -23,13 +23,26 @@ namespace GolfArcade.Game
         public static PresentationCut Select(PresentationCut preference, bool seen, bool multiplayer, bool constrained) =>
             preference == PresentationCut.Off ? PresentationCut.Off : multiplayer || constrained || seen ? PresentationCut.Short : preference;
 
+        /// Each character's introduction gives their player this long to pick an emote on the phone; nobody emotes unless
+        /// their player picks one, and a picked emote is played out (the introduction runs on to its end and a breath after).
+        public const float IntroWindow = 3f, EmoteSettle = .35f;
+        /// Golf: the look over the golfer's shoulder down the hole before they turn to the camera.
+        public const float GolfOverShoulder = 1.2f;
+        /// Tennis: the stare-down across the net after both introductions.
+        public const float TennisStare = 2.5f;
+        /// When a character's introduction can end: its window, or its emote played out (`emoteStart` null: none picked).
+        public static float IntroEnd(float windowStart, float? emoteStart, float emoteLength)
+            => emoteStart is float s ? Math.Max(windowStart + IntroWindow, s + emoteLength + EmoteSettle) : windowStart + IntroWindow;
         public static float Budget(PresentationBeat beat, bool golf, PresentationCut cut)
         {
             bool full = cut == PresentationCut.Full;
             if (cut == PresentationCut.Off && (beat == PresentationBeat.Venue || beat == PresentationBeat.WalkOn)) return 0;
             return beat switch {
-                PresentationBeat.Venue => golf ? (full ? 4 : 1.5f) : (full ? 3 : 1.2f),
-                PresentationBeat.WalkOn => golf ? (full ? 1.5f : .8f) : (full ? 3 : 1.5f),
+                // golf: the hole's opening and its highlights (HoleIntro); tennis: the drone in to the court
+                PresentationBeat.Venue => golf ? HoleIntro.Length(full) : (full ? 3.2f : 2.2f),
+                // the shortest the character introductions run (golf: over the shoulder, then the golfer's window; tennis: both
+                // players' windows and the stare-down) — a picked emote is given its time on top
+                PresentationBeat.WalkOn => golf ? GolfOverShoulder + IntroWindow : 2 * IntroWindow + TennisStare,
                 PresentationBeat.Start => golf ? (full ? 1 : .6f) : (full ? 1.2f : .8f),
                 PresentationBeat.Point => full ? 1.2f : .8f,
                 PresentationBeat.Game => full ? 2.5f : 1.5f,
@@ -62,6 +75,8 @@ namespace GolfArcade.Game
             Elapsed = Math.Min(Duration, Elapsed + elapsedSeconds);
             if (Elapsed >= Duration) Finish(false);
         }
+        /// Run on to at least `duration` (a longer emote chosen while the beat plays).
+        public void Extend(float duration) { if (Playing && !float.IsNaN(duration)) Duration = Math.Max(Duration, duration); }
         public bool Skip()
         {
             if (!Playing || Shared || Beat == PresentationBeat.Loading || Beat == PresentationBeat.Exit || Elapsed < SkipFrom) return false;

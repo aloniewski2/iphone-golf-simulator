@@ -4,17 +4,15 @@ import UIKit
 
 /// What the hub needs from the lobby and the game, behind a protocol so tests drive it without Game Center or Unity.
 @MainActor protocol ClubHubRoom: AnyObject {
+    /// This phone is in a friends' party (the lobby that lives on the hub's relay room).
     var inLobby: Bool { get }
     var partySize: Int { get }
     var capacity: Int { get }
     var sport: String { get }
-    /// A lobby exists to invite people to (made on the first invite).
-    func makeLobby() throws
-    /// Host: open the party's private room and wait for the friend. Cancelled with `cancelRoom`.
-    func openRoom(group: UInt32) async throws
-    func cancelRoom()
-    /// Guest: leave any lobby and join this host's room.
-    func joinRoom(group: UInt32, host: String) async throws
+    /// Host: a party over this relay room (made on the first invite). Any other lobby is left first.
+    func hostParty(over transport: MultiplayerTransport) throws
+    /// Guest: leave any lobby and join the host's party over this relay room. Returns once the host's lobby is here.
+    func joinParty(over transport: MultiplayerTransport, host: String) async throws
     func leaveLobby()
 }
 
@@ -28,6 +26,9 @@ struct ClubHubContext: Equatable {
 
 /// The online hub (PLAN_OnlineHub_FriendsInvites.md): Game Center friends with online / offline from the Club Hub service,
 /// invites that arrive inside the game, a pasted or linked invite code, and the join that follows. One instance for the app.
+///
+/// A party lives on the service too (its relay room, HubRoomTransport): inviting makes it, Join enters it, and the lobby, the Plaza
+/// and the match travel through it. Game Center is not involved in inviting or joining (it is only who your friends are).
 @MainActor @Observable
 final class ClubHub {
     static let shared = ClubHub()
@@ -48,13 +49,15 @@ final class ClubHub {
         var lobby: HubLobbyInfo?
     }
     enum Sent: Equatable {
-        case sending, delivered, pushed, accepted, declined, busy, unavailable, expired, cancelled
+        case sending, delivered, pushed, queued, accepted, declined, busy, unavailable, expired, cancelled
         var text: String {
             switch self {
-            case .sending: "Sending…"; case .delivered: "Invite sent"; case .pushed: "Notified"; case .accepted: "Joining…"
-            case .declined: "Not now"; case .busy: "Busy"; case .unavailable: "Not reachable"; case .expired: "No answer"; case .cancelled: "Cancelled"
+            case .sending: "Sending…"; case .delivered: "Invite sent"; case .pushed: "Notified"; case .queued: "Invited · sees it when they open the game"
+            case .accepted: "Joining…"; case .declined: "Not now"; case .busy: "Busy"; case .unavailable: "Not reachable"; case .expired: "No answer"; case .cancelled: "Cancelled"
             }
         }
+        /// Still on its way or waiting for an answer (the row offers Cancel).
+        var pending: Bool { [.sending, .delivered, .pushed, .queued].contains(self) }
     }
 
     // MARK: state the screens read
@@ -76,8 +79,14 @@ final class ClubHub {
     var invisible: Bool { didSet { UserDefaults.standard.set(invisible, forKey: "clubhub.invisible"); publishPresence(force: true) } }
     var doNotDisturb: Bool { didSet { UserDefaults.standard.set(doNotDisturb, forKey: "clubhub.dnd"); publishPresence(force: true); updateBanner() } }
     private(set) var blocked: Set<String>
-    /// Set when the hub made a lobby and a code for this party (what friends and share links use).
+    /// The party this phone is in (made by the first invite, or joined): its code is the relay room's and what friends and share
+    /// links use. (`group` stays in the protocol for older builds; it is 0.)
     private(set) var party: (code: String, group: UInt32)?
+    /// The party's relay room (nil with no party).
+    @ObservationIgnored private(set) var relayRoom: HubRoomTransport?
+    /// My id on the service (the Game Center teamPlayerID).
+    var selfID: String { you.isEmpty ? source.localID : you }
+    @ObservationIgnored private var you = ""
 
     var unreadInvites: Int { invites.count }
     var onlineFriends: [Friend] { friends.filter { $0.online && !blocked.contains($0.id) }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending } }
@@ -113,11 +122,10 @@ final class ClubHub {
     @ObservationIgnored private var lastPresenceSent = 0.0
     @ObservationIgnored private var snoozed: Set<String> = []
     @ObservationIgnored private var ticker: Task<Void, Never>?
-    @ObservationIgnored private var roomTask: Task<Void, Never>?
-    @ObservationIgnored private var roomOpen = false
     @ObservationIgnored private var outgoing: [String: String] = [:]   // inviteID -> friend id
     @ObservationIgnored private var joinTask: Task<Void, Never>?
     @ObservationIgnored private var pendingResponse: (inviteID: String, accept: Bool)?
+    @ObservationIgnored private var pendingAccept: HubInvite?
     @ObservationIgnored private var askedPush = false
     @ObservationIgnored private var started = false
     /// The service closed this connection because another phone took the player's place (4409).
@@ -281,10 +289,14 @@ final class ClubHub {
     func receive(_ data: Data) {
         guard let message = HubServerMessage.decode(data) else { return }
         switch message {
-        case .welcome(_, let serverTime):
+        case .welcome(let id, let serverTime):
             link = .online; backoff = 1
+            if !id.isEmpty { you = id }
             if serverTime > 0 { clockOffset = serverTime - now() }
             if let pending = pendingResponse { pendingResponse = nil; send(HubClientMessage.inviteResponse(pending.inviteID, accept: pending.accept)) }
+            // back after a dropped connection: into the party's room again (the opener re-opens it if the service lost it)
+            if let r = relayRoom, !r.closed { send(r.opener ? HubClientMessage.roomOpen(r.code) : HubClientMessage.roomJoin(r.code)) }
+            if let p = pendingAccept { if expired(p) { pendingAccept = nil; joining = nil; say("That invite has ended.") } else { accept(p) } }
         case .presence(let id, let online, let state, let lobby, let name):
             guard let i = friends.firstIndex(where: { $0.id == id }) else {
                 if online { friends.append(Friend(id: id, name: name ?? "Friend", online: true, state: state, lobby: lobby)) }
@@ -299,7 +311,20 @@ final class ClubHub {
             guard found, let from, let group else { say("That invite has ended."); resolvedInvite = nil; return }
             resolvedInvite = HubInvite(inviteID: "code-" + code, from: from, sport: sport ?? "tennis", lobbyCode: code, group: group,
                                        capacity: capacity ?? 2, expiresAt: now() + 120_000)
-        case .error(let code, let text, _):
+        case .roomPeers(let code, let peers):
+            if let r = relayRoom, r.code == code { r.roomPeers(peers) }
+        case .relay(let code, let from, let text):
+            if let r = relayRoom, r.code == code { r.received(text, from: from) }
+        case .error(let code, let text, let ref):
+            if code.hasPrefix("room_") {
+                // about the party's room: the host's is reopened at once if it went (the service restarted); a guest is refused.
+                // (A late one about a room already left is nobody's business.)
+                if let r = relayRoom, r.code == ref || ref == "rd" {
+                    if r.opener, code == "room_gone" { send(HubClientMessage.roomOpen(r.code)); return }
+                    r.refused(code, message: text)
+                }
+                return
+            }
             switch code {
             case "rate_limited": say("Slow down a moment.")
             case "not_friends": say("You can invite friends who also have you as a friend in Game Center.")
@@ -327,13 +352,13 @@ final class ClubHub {
         guard let friend = outgoing[inviteID] else { return }
         let next: Sent?
         switch status {
-        case "delivered": next = .delivered; case "pushed": next = .pushed; case "accepted": next = .accepted
+        case "delivered": next = .delivered; case "pushed": next = .pushed; case "queued": next = .queued; case "accepted": next = .accepted
         case "declined": next = .declined; case "busy": next = .busy; case "unavailable": next = .unavailable
         case "expired": next = .expired; case "cancelled": next = .cancelled; default: next = nil
         }
         guard let next else { return }
         sent[friend] = next
-        if [.declined, .busy, .unavailable, .expired, .cancelled].contains(next) { outgoing[inviteID] = nil; closeRoomIfNobodyComing() }
+        if [.declined, .busy, .unavailable, .expired, .cancelled].contains(next) { outgoing[inviteID] = nil }
     }
 
     private func remove(_ inviteID: String) {
@@ -362,57 +387,83 @@ final class ClubHub {
         remove(invite.inviteID)
     }
 
-    /// Join: say yes to the service, then connect to the host's private room. In a party of your own you leave it first.
+    /// Join (one tap on the banner): say yes to the service, then enter the host's party room. The phone stays where it is (the
+    /// Plaza's controller); the friend appears in your Plaza and you in theirs. In a party of your own you leave it first.
     func accept(_ invite: HubInvite) {
-        guard joining == nil else { return }
-        resolvedInvite = nil
-        if !invite.inviteID.hasPrefix("code-") {
-            if helloSent { send(HubClientMessage.inviteResponse(invite.inviteID, accept: true)) }
-            else { pendingResponse = (invite.inviteID, true) }
+        guard joining == nil || pendingAccept?.inviteID == invite.inviteID else { return }
+        guard link == .online else {
+            // (opened from a notification, or the connection is coming back): join the moment it is up
+            pendingAccept = invite; joining = invite.from.name; hubOpen = false; connectIfPossible(); return
         }
+        pendingAccept = nil
+        resolvedInvite = nil
+        if !invite.inviteID.hasPrefix("code-") { send(HubClientMessage.inviteResponse(invite.inviteID, accept: true)) }
         remove(invite.inviteID)
         joining = invite.from.name; hubOpen = false
         tvToast("Joining \(invite.from.name)…")
         joinTask?.cancel()
         joinTask = Task { @MainActor [weak self] in
             guard let self else { return }
+            if self.room.inLobby || self.relayRoom != nil { self.leaveParty() }
+            let relay = HubRoomTransport(hub: self, code: invite.lobbyCode, opener: false)
+            self.relayRoom = relay
+            self.send(HubClientMessage.roomJoin(invite.lobbyCode))
             do {
-                if self.room.inLobby { self.room.cancelRoom(); self.room.leaveLobby(); self.party = nil; self.roomOpen = false }
-                try await self.room.joinRoom(group: invite.group, host: invite.from.id)
-                self.joining = nil; self.say("Joined \(invite.from.name)'s game.")
-            } catch is CancellationError { self.joining = nil }
-            catch { self.joining = nil; self.say(error.localizedDescription) }
+                try await self.room.joinParty(over: relay, host: invite.from.id)
+                guard self.relayRoom === relay else { return }
+                self.party = (invite.lobbyCode, 0); self.joining = nil
+                self.say("You joined \(invite.from.name)'s party"); self.tvToast("You joined \(invite.from.name)'s party")
+                self.publishPresence(force: true)
+                self.onJoined(invite.from.id)
+            } catch {
+                if self.relayRoom === relay { self.relayRoom = nil; relay.disconnect() }
+                self.joining = nil
+                if !(error is CancellationError) { self.say(relay.refusal ?? error.localizedDescription) }
+            }
         }
     }
 
-    func cancelJoin() { joinTask?.cancel(); joinTask = nil; room.cancelRoom(); joining = nil }
+    func cancelJoin() { joinTask?.cancel(); joinTask = nil; pendingAccept = nil; if party == nil, let r = relayRoom { relayRoom = nil; r.disconnect() }; joining = nil }
+    /// Joined a friend's party (their id): the Plaza takes you to them.
+    @ObservationIgnored var onJoined: @MainActor (String) -> Void = { _ in }
 
     // MARK: invites you send
 
-    /// Invite a friend to your lobby (made now if you have none): the service delivers it; this phone opens the private room.
+    /// Invite a friend (one tap, online or offline) to your party, made now if you have none. Online: their game shows the banner at
+    /// once. Offline: the service keeps it and they get it the moment they open the game (or a notification, where push is set up).
     func invite(_ friend: Friend) {
-        guard link == .online else { say("The Club Hub is not connected. Use Invite from Game Center."); return }
-        do {
-            if !room.inLobby { try room.makeLobby() }
-        } catch { say(error.localizedDescription); return }
-        if party == nil { party = (ClubHubConfig.newCode(), ClubHubConfig.newGroup()) }
-        guard let party else { return }
+        guard link == .online else { say(link == .notConfigured ? "Friends are not available in this build yet." : "Not connected to the Club Hub. Trying again…"); connectIfPossible(); return }
+        guard let party = ensureParty() else { return }
         sent[friend.id] = .sending
         send(HubClientMessage.invite(to: friend.id, sport: room.sport, lobbyCode: party.code, group: party.group, capacity: room.capacity))
-        openRoomIfNeeded(group: party.group)
         publishPresence(force: true)
+        haptic()
         if !askedPush { askedPush = true; requestPushPermission() }
     }
 
-    /// Someone without the app: make the party's lobby, code and private room now, and give back the words to send. Nil if it
-    /// cannot be made (not signed in).
+    /// Someone without the app: make the party now and give back the words to send. Nil if it cannot be made.
     func prepareShare() -> String? {
-        do { if !room.inLobby { try room.makeLobby() } } catch { say(error.localizedDescription); return nil }
-        if party == nil { party = (ClubHubConfig.newCode(), ClubHubConfig.newGroup()) }
-        guard let party else { return nil }
-        openRoomIfNeeded(group: party.group)
+        guard link == .online, let party = ensureParty() else { if link != .online { say("Connect to the Club Hub to share an invite.") }; return nil }
         publishPresence(force: true)
         return ClubHubConfig.shareMessage(code: party.code, from: source.localName, sport: room.sport)
+    }
+
+    /// The party to invite to: the one this phone is in, or a new one hosted here over a fresh relay room.
+    private func ensureParty() -> (code: String, group: UInt32)? {
+        if let party, room.inLobby, let r = relayRoom, !r.closed { return party }
+        let code = ClubHubConfig.newCode()
+        let relay = HubRoomTransport(hub: self, code: code, opener: true)
+        do {
+            if relayRoom != nil { leaveParty() }
+            relayRoom = relay
+            send(HubClientMessage.roomOpen(code))
+            try room.hostParty(over: relay)
+        } catch {
+            if relayRoom === relay { relayRoom = nil; relay.disconnect() }
+            say(error.localizedDescription); return nil
+        }
+        party = (code, 0)
+        return party
     }
 
     func cancelInvite(to friend: Friend) {
@@ -420,26 +471,29 @@ final class ClubHub {
         sent[friend.id] = .cancelled
     }
 
-    private func openRoomIfNeeded(group: UInt32) {
-        guard !roomOpen else { return }
-        roomOpen = true
-        roomTask = Task { @MainActor [weak self] in
-            guard let self else { return }
-            do { try await self.room.openRoom(group: group) }
-            catch is CancellationError { }
-            catch { self.say(error.localizedDescription) }
-            self.roomOpen = false
-        }
-    }
-
-    private func closeRoomIfNobodyComing() {
-        let waiting = sent.values.contains { [.sending, .delivered, .pushed, .accepted].contains($0) }
-        if !waiting, !room.inLobby || room.partySize < 2 { roomTask?.cancel(); room.cancelRoom(); roomOpen = false }
+    /// Leave the party (its lobby and its room).
+    func leaveParty() {
+        let r = relayRoom
+        room.leaveLobby()               // (the lobby's transport is the relay: leaving it closes the room too)
+        if let r, !r.closed { r.disconnect() }
+        partyEnded()
     }
 
     /// The party ended or everyone left: a new party gets a fresh code.
     func partyEnded() {
-        party = nil; sent = [:]; outgoing = [:]; roomOpen = false; roomTask?.cancel(); publishPresence(force: true)
+        party = nil; sent = [:]; outgoing = [:]
+        if let r = relayRoom, r.closed { relayRoom = nil }
+        publishPresence(force: true)
+    }
+
+    // MARK: the relay (HubRoomTransport's side)
+
+    func relayLive(_ r: HubRoomTransport) -> Bool { relayRoom === r && helloSent }
+    func relay(_ code: String, to: [String]?, _ text: String) { send(HubClientMessage.relay(code, to: to, text)) }
+    /// The party's transport closed (the lobby was left): leave the room on the service.
+    func roomClosed(_ r: HubRoomTransport) {
+        send(HubClientMessage.roomLeave(r.code))
+        if relayRoom === r { relayRoom = nil; party = nil; sent = [:]; outgoing = [:]; publishPresence(force: true) }
     }
 
     // MARK: codes and links
@@ -504,8 +558,8 @@ final class ClubHub {
     func debugTick() { tick() }
     /// Tests: forget everything (the shared instance is reused between tests).
     func debugReset() {
-        disconnect(); ticker?.cancel(); ticker = nil; started = false; roomTask?.cancel(); joinTask?.cancel()
+        disconnect(); ticker?.cancel(); ticker = nil; started = false; joinTask?.cancel()
         friends = []; invites = []; banner = nil; sent = [:]; outgoing = [:]; notice = ""; joining = nil; resolvedInvite = nil
-        party = nil; roomOpen = false; snoozed = []; pendingResponse = nil; askedPush = false; hubOpen = false
+        party = nil; relayRoom = nil; snoozed = []; pendingResponse = nil; pendingAccept = nil; askedPush = false; hubOpen = false; you = ""
     }
 }

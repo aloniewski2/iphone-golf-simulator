@@ -545,6 +545,12 @@ namespace GolfArcade.Game
         /// Frame like a camera of this horizontal field of view: what a landscape render was
         /// composed with, kept across this screen's width whatever its shape (clamped, so a
         /// portrait phone does not turn into a fisheye).
+        /// Frame with this vertical field of view until RestoreFov (a hole's opening and its introductions).
+        public void SetVerticalFov(float degrees)
+        {
+            if (!fovOverridden) { restFov = Camera.fieldOfView; fovOverridden = true; }
+            Camera.fieldOfView = Mathf.Clamp(degrees, 5f, 85f);
+        }
         public void SetHorizontalFov(float degrees)
         {
             if (!fovOverridden) { restFov = Camera.fieldOfView; fovOverridden = true; }

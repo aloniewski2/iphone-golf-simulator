@@ -13,10 +13,12 @@ final class TennisMenuSnapshotTests: XCTestCase {
         let oldPlayers = session.players, oldIndex = session.playerIndex
         let oldActive = session.active, oldReady = session.ready, oldPaused = session.paused
         let oldSport = session.sport, oldWindow = session.emoteWindow
+        let oldStage = session.setupStage, oldPhase = session.tennisPhase
         defer {
             session.players = oldPlayers; session.playerIndex = oldIndex
             session.active = oldActive; session.ready = oldReady; session.paused = oldPaused
             session.sport = oldSport; session.emoteWindow = oldWindow
+            session.setupStage = oldStage; session.tennisPhase = oldPhase
             session.loading.cancel(); menu.debugShow(.title)
         }
         var p = Player(name: "Adnan", colorIndex: 0)
@@ -42,10 +44,11 @@ final class TennisMenuSnapshotTests: XCTestCase {
         try await capture(IslandLockerScreen(menu: menu, compact: false), size: CGSize(width: 1280, height: 720), name: "locker_tv")
         session.active = true; session.ready = true; session.paused = false; session.sport = "tennis"
         session.loading.begin(now: Date()); session.loading.markReady(); session.loading.skip()
+        session.setupStage = .playing; session.tennisPhase = "intro"
         session.emoteWindow = "intro"
-        XCTAssertTrue(session.canPlayEmote)
+        XCTAssertTrue(session.canPlayEmote, "the intro's emote window lets the player pick their intro emote")
         try await capture(TennisEmoteControls(session: session).padding(20).background(IslandUI.navy), size: CGSize(width: 402, height: 180), name: "controller_intro_layout")
-        session.emoteWindow = "point"
+        session.tennisPhase = "point"; session.emoteWindow = "point"
         XCTAssertTrue(session.canPlayEmote)
         session.emoteWindow = ""
         XCTAssertFalse(session.canPlayEmote)

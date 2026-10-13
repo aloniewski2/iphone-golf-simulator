@@ -14,6 +14,16 @@ namespace GolfArcade.Multiplayer {
         public static bool Active=>Instance && Instance.Configuration!=null;
         public NetworkConfiguration Configuration {get;private set;}
         public bool IsHost=>Configuration?.hostID==Configuration?.localID;
+        /// VERSUS tennis (TennisGame.Versus): each phone plays its own player with single player's game, and the phones talk to each other
+        /// ("peer" packets) instead of a host running separate rules. Off only for the old host-rules tests.
+        public static bool TennisVersusEnabled=true;
+        public bool TennisVersus=>Configuration?.sport=="tennis"&&versusMatch;
+        bool versusMatch;
+        /// A player has paused (their phone's pause or a dropped link): versus play holds on both phones until they are back.
+        public bool Suspended=>suspended.Count>0;
+        /// Seconds since the other phone was last heard (versus).
+        public double PeerSilence=>Clock-lastPeer;
+        double lastPeer;
         public int LocalSeat => Configuration==null ? -1 : GolfState!=null && Configuration.Controls(Configuration.localID,GolfState.turn) ? GolfState.turn : Configuration.Seat(Configuration.localID);
         public bool Running {get;private set;}
         public NetworkTennisState TennisState {get;private set;}
@@ -59,16 +69,28 @@ namespace GolfArcade.Multiplayer {
             pendingResult=null; startScheduled=false; scheduledStart=double.PositiveInfinity;
             PresentationPolicy.Multiplayer=true; Configuration=c;Running=false;LocalTarget=0;lastSwing=lastStart=lastAbort=0;eventID=0;lastTick=lastRevision=-1;nextSnapshot=lastMove=0;nextStats=maxSnapshotGap=0;lastSnapshot=packetAt=Clock;clockOffset=0;suspended.Clear();GolfShot=null;TennisState=null;GolfState=null;compactSnapshots=false;
             tennisView=FindFirstObjectByType<TennisGame>();golfView=FindFirstObjectByType<GolfGame>();
+            versusMatch=c.sport=="tennis"&&TennisVersusEnabled; lastPeer=Clock;
+            if(versusMatch) {
+                // single player's presentation (its own cut, skippable), not the shared short one
+                PresentationPolicy.Multiplayer=false; tennis=null; golf=null; TennisState=null; GolfState=null;
+                tennisView?.ConfigureVersus(c);
+                Time.timeScale=1; return;
+            }
             if(IsHost) {
                 if(c.sport=="tennis") {tennis=new(c.sets,c.games,c.participants.Where(p=>p.seat>=0).OrderBy(p=>p.seat).Select(p=>p.loadout?.emotes).ToArray(),intro:true);TennisState=tennis.State;golf=null;tennis.Result=Result;compactSnapshots=NetworkTuning.CompactSnapshots&&NetworkTennisWire.SelfTest();}
                 else {
                     // pass the phone: every golfer is on this phone, so no hole intros and turns just pass
                     bool shared=c.participants.Where(p=>p.seat>=0).All(p=>c.Controls(c.localID,p.seat));
-                    golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:!shared,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null,waitForLoad:true,sharedPhone:shared);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};}
+                    golf=new(c.participants.Where(p=>p.seat>=0).Select(p=>p.seat).ToArray(),c.seed,intro:!shared,courseKey:c.venue,playing:golfView?golfView.PlayingCourse:null,waitForLoad:true,sharedPhone:shared);GolfState=golf.State;tennis=null;golf.Result=Result;golf.Shot=shot=>{GolfShot=shot;Send("golfShot",JsonUtility.ToJson(shot));};
+                    golf.SamePhone=seat=>{var phone=PhoneOf(c,seat);return c.participants.Where(p=>p.seat>=0&&PhoneOf(c,p.seat)==phone).Select(p=>p.seat).ToArray();};
+                    if(golfView&&!shared) golf.ConfigureIntro(golfView.NetworkIntroFull,golfView.NetworkVenueSeconds,golfView.NetworkStartSeconds,
+                        PresentationDirector.GolfOverShoulder+PresentationDirector.IntroWindow,PresentationDirector.GolfOverShoulder,golfView.NetworkEmoteSeconds);}
             } else {tennis=null;golf=null;TennisState=null;GolfState=null;}
             tennisView?.ConfigureNetwork(c);golfView?.ConfigureNetwork(c);
             Time.timeScale=1;
         }
+        /// The phone a seat is played from: its player's own, or the host's for a pass-the-phone guest.
+        static string PhoneOf(NetworkConfiguration c,int seat){var p=c.participants.FirstOrDefault(x=>x.seat==seat);return p==null?null:string.IsNullOrEmpty(p.controllerID)?p.id:p.controllerID;}
         void OnDestroy(){if(Instance==this)Instance=null;}
         void Update() {
             if(!Active)return;
@@ -76,7 +98,8 @@ namespace GolfArcade.Multiplayer {
             for(int i=0;i<64;i++){int bytes=SportsNetworkPoll(inputBuffer,inputBuffer.Length);if(bytes<=0)break;if(bytes<=60000)Receive(Encoding.UTF8.GetString(inputBuffer,0,bytes));if(!Active)break;}
             if(startScheduled && !Running && SharedClock>=scheduledStart) {
                 startScheduled=false; Running=true; Time.timeScale=1; lastSnapshot=Clock; maxSnapshotGap=0;   // the loading wait is not a gap in the host's updates
-                if(TennisState==null || TennisState.phase=="intro") tennisView?.BeginSharedPresentation();
+                if(versusMatch) tennisView?.BeginVersusIntro();
+                else if(TennisState==null || TennisState.phase=="intro") tennisView?.BeginSharedPresentation();
                 PresentationPolicy.Event("Venue","scheduledBegin",1,scheduledStart.ToString("F3"));
                 SendSnapshot(true);
             }
@@ -94,12 +117,15 @@ namespace GolfArcade.Multiplayer {
             NetworkPacket p;try{p=JsonUtility.FromJson<NetworkPacket>(json);}catch{return;}
             if(p==null||p.version!=NetworkPacket.Version||p.lobbyID!=Configuration.lobbyID||p.matchID!=Configuration.matchID)return;
             if(p.kind=="clock") {if(p.sender!=Configuration.localID)return;}
-            else if(p.kind!="input"&&p.sender!=Configuration.hostID)return;
+            else if(p.kind!="input"&&p.kind!="peer"&&p.sender!=Configuration.hostID)return;
             switch(p.kind) {
                 case "run":
                     if(Running || startScheduled) break;
                     if(!double.TryParse(p.payload,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out scheduledStart) || double.IsNaN(scheduledStart) || double.IsInfinity(scheduledStart)) scheduledStart=SharedClock;
                     startScheduled=true; break;
+                case "peer":
+                    if(p.sender==Configuration.localID||Configuration.Seat(p.sender)<0)return;
+                    lastPeer=Clock;tennisView?.ReceiveVersus(p.payload);break;
                 case "clock":if(double.TryParse(p.payload,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var offset))clockOffset=offset;break;
                 case "input":
                     if(!IsHost||!Running)return;var seat=Configuration.Seat(p.sender);if(seat<0)return;
@@ -153,15 +179,25 @@ namespace GolfArcade.Multiplayer {
             if(!Active)return false;
             // Golf's aim and club belong to the phone with the player up, as in single player; it tells the host (GolfGame.Network).
             if(Instance.Configuration.sport=="golf" && (m.action=="aim" || m.action=="club")) return false;
+            // Versus tennis: every control is single player's (NativeSportsSession's own handling); only pause is the lobby's.
+            if(Instance.TennisVersus) {
+                if(m.action=="pause") {Instance.Send("availability","false");return true;}
+                if(m.action=="resume") {Instance.Send("availability","true");Time.timeScale=1;return true;}
+                return false;
+            }
             switch(m.action) {
                 case "start":case "end":return false;
                 case "pause":Instance.Send("availability","false");return true;
                 case "resume":Instance.Send("availability","true");Time.timeScale=1;return true;
                 case "touch":case "motion":case "recalibrate":case "latency":case "golfAimDirection":
                 case "golfStartSwing":case "golfCancelSwing":case "golfLoad":return false;
+                // golf's taps on (skip the intro or the replay, finish the result): single player's, and the round follows (GolfGame.Network)
+                case "presentationSkip":case "golfContinue":return Instance.Configuration.sport!="golf";
                 case "toss":
                     Instance.Submit(new NetworkInput {action="toss",age=Instance.tennisView?.TossSeenAgo??0});return true;
                 case "golfEmote":
+                    // during a hole's intro the golfer up's emote button picks their intro emote (GolfGame.ChooseIntroEmote)
+                    if(Instance.GolfState?.phase=="intro"){Instance.golfView?.ChooseIntroEmote((int)m.value);return true;}
                     Instance.Submit(new NetworkInput {action="emote",value=m.value,actorSeat=(int)m.value2});return true;
                 case "emote":
                     Instance.Submit(new NetworkInput {action="emote",value=m.value});return true;
@@ -173,7 +209,7 @@ namespace GolfArcade.Multiplayer {
             }
         }
         public static void Sample(in NativeSportsSession.Sample s,bool touch) {
-            if(!Active||Instance.LocalSeat<0||!s.valid)return;
+            if(!Active||Instance.LocalSeat<0||!s.valid||Instance.TennisVersus)return;
             var self=Instance;
             float aim=touch&&self.TennisState!=null?self.TennisState.players[self.LocalSeat].aim*(self.LocalSeat==1?-1:1):s.aim;
             if(self.Configuration.sport=="tennis"&&Clock-self.lastMove>=1.0/30) {
@@ -188,8 +224,8 @@ namespace GolfArcade.Multiplayer {
         /// with it so the host judges them as the player SAW them, as solo play already does. Golf has none.
         double ScreenDelay=>tennisView?tennisView.Lag:0;
         public double RenderAdvance=>IsHost?0:Math.Min(.1,Math.Max(0,Clock+clockOffset-packetAt));
-        public bool Stale=>Running&&!IsHost&&Clock-lastSnapshot>2;
-        public bool Quiet=>Running&&!IsHost&&Clock-lastSnapshot>NetworkTuning.QuietSeconds;
+        public bool Stale=>versusMatch?Running&&PeerSilence>2:Running&&!IsHost&&Clock-lastSnapshot>2;
+        public bool Quiet=>versusMatch?Running&&PeerSilence>NetworkTuning.QuietSeconds:Running&&!IsHost&&Clock-lastSnapshot>NetworkTuning.QuietSeconds;
         /// A line of local statistics for tuning (nothing is uploaded): Swift writes it to SportsDiagnostics.log.
         void ReportStats() {
             Send("stats","{\"role\":\""+(IsHost?"host":"guest")+"\",\"compact\":"+(compactSnapshots?"true":"false")+",\"stampRejects\":"+(tennis?.StampRejects??0)+",\"maxSnapshotGapMs\":"+(int)(maxSnapshotGap*1000)+"}");
@@ -206,6 +242,14 @@ namespace GolfArcade.Multiplayer {
                 if(golf.State.shot!=null)golf.State.shot.path=path;
                 Send("snapshot",json,full);
             }
+        }
+        /// To the other phone (versus): any seated phone sends, every other seated phone receives.
+        public void SendPeer(string payload,bool reliable){ if(Running||startScheduled||Configuration!=null) Send("peer",payload,reliable); }
+        /// A versus match ended (each phone knows it from its own match): the host reports it to the lobby, after the match-end beat.
+        public void VersusResult(int localSeat,bool localWon,string score) {
+            if(!IsHost||pendingResult!=null)return;
+            var r=new MatchResult {sport="tennis",reason="complete",score=score,winner=localWon?localSeat:1-localSeat};
+            pendingResult=JsonUtility.ToJson(r); resultDue=SharedClock+6;
         }
         [Serializable] public sealed class MatchResult {public string sport,reason,score;public int winner=-1;public NetworkGolfer[] golfers;}
         void Result(string score){

@@ -745,6 +745,9 @@ final class AVVoiceAudioBackend: VoiceAudioBackend, @unchecked Sendable {
         let hfp = AVAudioSession.CategoryOptions.allowBluetooth
         #endif
         try s.setCategory(.playAndRecord, mode: .default, options: [.allowAirPlay, hfp, .allowBluetoothA2DP, .defaultToSpeaker, .mixWithOthers])
+        // iOS mutes haptics and system sounds while the mic records, and the mic runs for the whole party: without this
+        // every racket and club strike (and the phone-speaker knock) goes silent the moment voice is switched on.
+        try? s.setAllowHapticsAndSystemSoundsDuringRecording(true)
         try s.setActive(true)
     }
 

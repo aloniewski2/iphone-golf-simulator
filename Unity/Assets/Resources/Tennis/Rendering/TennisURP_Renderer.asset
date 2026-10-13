@@ -26,6 +26,20 @@ MonoBehaviour:
     BlurQuality: 0
     Falloff: 100
     SampleCount: -1
+--- !u!114 &5378421096340711917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743931a3472f414bae3fc5c247932f65, type: 3}
+  m_Name: Hero AO Exemption
+  m_EditorClassIdentifier: GolfArcade::GolfArcade.Tennis.HeroAmbientOcclusionExemption
+  m_Active: 1
+  occlusion: {fileID: -8425394219004757091}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52,7 +66,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: -8425394219004757091}
-  m_RendererFeatureMap: 9d7b97f398fc128b
+  - {fileID: 5378421096340711917}
+  m_RendererFeatureMap: 9d7b97f398fc128bede9dab37dfda34a
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}

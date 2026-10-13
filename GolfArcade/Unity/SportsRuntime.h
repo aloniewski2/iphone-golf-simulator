@@ -20,6 +20,8 @@ enum { SportsSampleVersion = 3, SportsSampleValid = 1, SportsSampleDegraded = 2 
 - (BOOL)loadInWindow:(UIWindow*)window error:(NSError**)error;
 - (BOOL)loadInWindow:(UIWindow*)window controllerReplica:(BOOL)controllerReplica error:(NSError**)error;
 - (void)attachToWindow:(UIWindow*)window;
+/// Unity's view back in Unity's own window (after it was lent to a phone window: the Plaza on a phone with no TV).
+- (void)restoreUnityWindow;
 /// Golf: puts Unity's own phone window (the controller sheet) in front of the app, or hides it again.
 - (void)showUnityOnPhone:(BOOL)visible;
 - (void)send:(NSString*)json;

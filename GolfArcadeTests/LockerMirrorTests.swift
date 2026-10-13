@@ -82,13 +82,20 @@ final class LockerMirrorTests: XCTestCase {
                 let channels = asset.geometry[i].sources(for: .texcoord).count
                 switch part.kind {
                 case "kit":
-                    XCTAssertGreaterThanOrEqual(part.uvOffset ?? -1, 0, "\(part.name) has UVs"); XCTAssertEqual(channels, 1, "\(part.name): the kit's UV0")
+                    XCTAssertGreaterThanOrEqual(part.uvOffset ?? -1, 0, "\(part.name) has UVs")
+                    // UV0, then the shoe / sock edge measurements (HeroKitEdges) in two channels
+                    let edges = part.name.hasPrefix("Kit_Shoe") || part.name.hasPrefix("Kit_Sock")
+                    XCTAssertEqual(part.hasEdges, edges, "\(part.name): only the tennis shoes and socks carry edge-line data")
+                    XCTAssertEqual(channels, edges ? 3 : 1, "\(part.name): the kit's UV0 (+ edge data)")
                     XCTAssertTrue((part.bindPositionOffset ?? -1) < 0)
                 case "body":
                     let pigment = (part.submeshes.first?.look?.skinPigmentUV ?? 0) > 0.5
                     XCTAssertEqual((part.uvOffset ?? -1) >= 0, pigment, "UV0 exists exactly when relative pigment uses it")
                     XCTAssertGreaterThanOrEqual(part.bindPositionOffset ?? -1, 0, "the body carries its bind pose")
-                    XCTAssertEqual(channels, pigment ? 3 : 2)
+                    // CLOTHING V2: a hero wearing a V2 garment (its maps are KitV2_*) carries the garment contact shadow on the body (MatchHeroSurfaces.addKitContact)
+                    let kitV2 = asset.manifest.parts.contains { $0.kind == "kit" && $0.submeshes.contains { $0.look?.normalMap?.contains("KitV2_") == true } }
+                    XCTAssertEqual(part.hasEdges, kitV2, "the body carries the garment contact shadow exactly when a CLOTHING V2 garment is worn")
+                    XCTAssertEqual(channels, (pigment ? 3 : 2) + (part.hasLid ? 1 : 0) + (part.hasEdges ? 2 : 0), "UV0, bind xy, bind z (+ HeroFaceSkin's lid-liner distances, + the garment contact shadow)")
                 case "face":
                     let anatomical = part.submeshes.allSatisfy { $0.look?.anatomicalFace == true }
                     XCTAssertEqual((part.uvOffset ?? -1) >= 0, anatomical)
@@ -337,7 +344,8 @@ final class LockerMirrorTests: XCTestCase {
                 XCTAssertNotNil(cgImage(skin.diffuse.contents), "linear relative pigment LUT is bound")
                 XCTAssertNotNil(skin.value(forKey: "heroTint"))
                 XCTAssertTrue(skin.shaderModifiers?[.surface]?.contains("skinPigmentUV") == true)
-                XCTAssertEqual(try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry).sources(for: .texcoord).count, 3)
+                XCTAssertEqual(try XCTUnwrap(hero.childNode(withName: "Body", recursively: false)?.geometry).sources(for: .texcoord).count, 4)
+                XCTAssertTrue(skin.shaderModifiers?[.surface]?.contains("lipMask") == true && skin.shaderModifiers?[.geometry]?.contains("lidDistance") == true, "HeroFaceSkin's analytic lips and lid liner")
             } else {
                 XCTAssertEqual(sl.smoothness, 0.2, accuracy: 0.03, "skin smoothness is about 0.2, not 0.35")
                 XCTAssertLessThanOrEqual(sl.bumpScale, 0.25, "the skin normal is weak")

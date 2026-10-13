@@ -185,11 +185,11 @@ test('at most 3 pending invites to one player; a replacement does not count twic
   await senders[3].next('inviteUpdate', status('delivered'));
 });
 
-test('not_friends: not in my list, not in theirs, or they blocked me; blocked: I blocked them', async (t) => {
+test('not_friends: in neither list, or they blocked me; blocked: I blocked them', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
-  const A = await hub.join('A', { friends: ['B', 'C'] });
-  const B = await hub.join('B', { friends: [] }); // does not list A
+  const A = await hub.join('A', { friends: ['C'] });
+  const B = await hub.join('B', { friends: [] }); // neither lists the other
   const C = await hub.join('C', { friends: ['A'] });
 
   await A.say(inv('Z'));
@@ -212,15 +212,18 @@ test('not_friends: not in my list, not in theirs, or they blocked me; blocked: I
   assert.equal(e.code, 'blocked');
 });
 
-test('an invite to a player who does not list me, even while offline, is not_friends', async (t) => {
+test('an offline player is invitable when either list has the other, not otherwise', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
-  const A = await hub.join('A', { friends: ['B'] });
+  const A = await hub.join('A', { friends: [] });
   const B = await hub.join('B', { friends: [] });
-  await B.close();
+  const C = await hub.join('C', { friends: ['A'] });   // C lists A; A does not list C (A never allowed the friends list)
+  await B.close(); await C.close();
   await sleep(50);
   await A.say(inv('B'));
   assert.equal((await A.next('error')).code, 'not_friends');
+  await A.say(inv('C'));
+  assert.equal((await A.next('inviteUpdate')).status, 'queued');
 });
 
 test('malformed invites are bad_message and send nothing', async (t) => {
@@ -276,7 +279,26 @@ test('a receiver in a match still gets the invite delivered (the app holds it); 
   await B.next('invite', (m) => m.lobbyCode === 'GHJKLM');
 });
 
-test('receiver offline with no push token: unavailable, and nothing is kept', async (t) => {
+test('receiver offline with no push token: the invite waits (queued) and arrives when they open the game, with a live lifetime', async (t) => {
+  let clock = 1_000_000;
+  const hub = await startHub({ now: () => clock, inviteTtlMs: 120_000, offlineInviteTtlMs: 900_000, idleMs: 1e12 });
+  t.after(() => hub.stop());
+  const A = await hub.join('A', { friends: ['B'] });
+  const B = await hub.join('B', { friends: ['A'] });
+  await B.close();
+  await sleep(50);
+  await A.say(inv('B'));
+  const up = await A.next('inviteUpdate', status('queued'));
+  assert.equal(up.to, 'B');
+  clock += 300_000;   // five minutes later B opens the game
+  const B2 = await hub.join('B', { friends: ['A'] });
+  const got = await B2.next('invite');
+  assert.equal(got.from.id, 'A');
+  assert.equal(got.expiresAt, clock + 120_000);
+  await A.next('inviteUpdate', status('delivered'));
+});
+
+test('a queued invite is withdrawn when its sender goes offline', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
   const A = await hub.join('A', { friends: ['B'] });
@@ -284,8 +306,9 @@ test('receiver offline with no push token: unavailable, and nothing is kept', as
   await B.close();
   await sleep(50);
   await A.say(inv('B'));
-  const up = await A.next('inviteUpdate', status('unavailable'));
-  assert.equal(up.to, 'B');
+  await A.next('inviteUpdate', status('queued'));
+  await A.close();
+  await sleep(50);
   const B2 = await hub.join('B', { friends: ['A'] });
   await B2.none('invite');
 });
@@ -321,13 +344,15 @@ test('A and B each invite the other: both invites live, independent', async (t) 
   assert.notEqual(toA.inviteID, toB.inviteID);
 });
 
-test('removing a friend cancels invites between the two', async (t) => {
+test('removing each other as friends cancels invites between the two', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
   const [A, B] = await pair(hub);
   await A.say(inv('B'));
   const got = await B.next('invite');
   await B.say({ t: 'friends', ids: [] });
+  await B.none('inviteGone');            // A still lists B: still friends
+  await A.say({ t: 'friends', ids: [] });
   assert.equal((await B.next('inviteGone')).inviteID, got.inviteID);
   await A.next('inviteUpdate', status('cancelled'));
 });

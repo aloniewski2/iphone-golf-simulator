@@ -34,7 +34,8 @@ namespace GolfArcade.PlayTests {
             Assert.That(game.Current,Is.EqualTo(GolfGame.State.Aim));
             var ball=game.BallPosition; double heading=game.TutorialHeading; int hole=game.TutorialHole;
             game.Overview(); Assert.True(game.PresentationBusy);
-            for(int i=0;i<250 && game.PresentationBusy;i++)yield return null;
+            // (the overview replays the hole's whole tour, 9.8 s)
+            for(int i=0;i<700 && game.PresentationBusy;i++)yield return null;
             Assert.That(game.Current,Is.EqualTo(GolfGame.State.Aim));
             Assert.That(game.BallPosition,Is.EqualTo(ball)); Assert.AreEqual(heading,game.TutorialHeading); Assert.AreEqual(hole,game.TutorialHole);
             Assert.True(game.Swing.Armed,"The unchanged shot must be armed after Overview");

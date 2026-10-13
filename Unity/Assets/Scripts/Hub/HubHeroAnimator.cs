@@ -15,6 +15,8 @@ namespace GolfArcade.Hub
     {
         public MatchHeroLook look;
         public float walkClipSpeed = 1.25f, runClipSpeed = 3.25f;
+        /// Planted-foot speeds of the standard Walk / Run cycles at 1x (work/emote-standard/scripts/gait.py: 2 x 0.64 m per 1.067 s, 2 x 1.167 m per 0.667 s).
+        public const float StandardWalkSpeed = 1.2f, StandardRunSpeed = 3.5f;
         /// Ground speeds where the legs hand over from the walk to the run (both clips at their matched rate in between).
         public const float WalkTop = 1.75f, RunFrom = 2.55f;
 
@@ -64,6 +66,15 @@ namespace GolfArcade.Hub
                             break;
                     }
                 }
+            }
+            // EMOTE STANDARD: the plaza walks / runs on the standard empty-handed locomotion cycles and plays the empty-handed
+            // versions of the emotion set (the plaza hero carries no racket); Resources/HeroMoves/<Sex>/ (Walk, Run, Emote_*).
+            foreach (var c in Resources.LoadAll<AnimationClip>("HeroMoves/" + (look.female ? "Female" : "Male")))
+            {
+                if (c.name.StartsWith("__preview__")) continue;
+                if (c.name == "Walk") { walkClip = c; a.walkClipSpeed = StandardWalkSpeed; }
+                else if (c.name == "Run") { runClip = c; a.runClipSpeed = StandardRunSpeed; }
+                else if (c.name.StartsWith("Emote_")) a.clips[c.name.Replace("_", "")] = c;
             }
             a.Build(idleClip, walkClip, runClip);
             return a;

@@ -4,6 +4,14 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- iOS Game Mode: a game gets the CPU and GPU first and background work is held back (iOS 18+); the category is what
+	     tells iOS this is a game, the two keys opt in explicitly (GCSupportsGameMode iOS 18, LSSupportsGameMode iOS 26). -->
+	<key>GCSupportsGameMode</key>
+	<true/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.sports-games</string>
+	<key>LSSupportsGameMode</key>
+	<true/>
 	<key>CFBundleDisplayName</key>
 	<string>Motion Club Beta</string>
 	<key>CFBundleURLTypes</key>

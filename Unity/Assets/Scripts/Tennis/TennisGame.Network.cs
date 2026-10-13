@@ -61,7 +61,7 @@ namespace GolfArcade.Tennis {
                         if(sounds!=null)sounds.Hit(grade,s.players[hitter].power);
                         if(fx!=null)fx.Contact(BallPosition,grade,false);
                     }
-                    if(hitter==local)GolfArcade.Game.Haptics.Strike(TennisRules.GradeFeel(grade),false);
+                    if(hitter==local)GolfArcade.Game.Haptics.Hit(TennisHitFeel.Graded(grade,s.players[hitter].power));
                 }
             } else if(s.bounces>networkBounces) {
                 networkBounces=s.bounces;

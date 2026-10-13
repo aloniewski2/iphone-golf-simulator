@@ -13,6 +13,8 @@ const MAX_ID = 128;
 const MAX_FRIENDS = 2000;
 const MAX_PENDING_PER_RECEIVER = 3;
 const LAST_KNOWN_MAX = 10_000;
+const MAX_ROOM_MEMBERS = 8;
+const MAX_RELAY_CHARS = 128 * 1024;
 
 export const CLOSE = { UNAUTHORIZED: 4401, RATE_LIMITED: 4429, REPLACED: 4409 };
 
@@ -61,8 +63,8 @@ export class Hub {
    */
   constructor({
     store, authenticate, pusher, log = console, now = Date.now,
-    inviteTtlMs = 120_000, awayPushMs = 10_000, idleMs = 65_000, helloTimeoutMs = 10_000,
-    limits = {},
+    inviteTtlMs = 120_000, offlineInviteTtlMs = 15 * 60_000, awayPushMs = 10_000, idleMs = 65_000, helloTimeoutMs = 10_000,
+    roomGraceMs = 120_000, limits = {},
   }) {
     this.store = store;
     this.authenticate = authenticate;
@@ -70,14 +72,17 @@ export class Hub {
     this.log = log;
     this.now = now;
     this.inviteTtlMs = inviteTtlMs;
+    this.offlineInviteTtlMs = offlineInviteTtlMs;
+    this.roomGraceMs = roomGraceMs;
     this.awayPushMs = awayPushMs;
     this.idleMs = idleMs;
     this.helloTimeoutMs = helloTimeoutMs;
-    this.limits = { msgWindowMs: 10_000, msgMax: 30, inviteMax: 10, resolveMax: 20, perMinute: 60_000, ...limits };
+    this.limits = { msgWindowMs: 10_000, msgMax: 30, inviteMax: 10, resolveMax: 20, perMinute: 60_000, relayWindowMs: 1000, relayMax: 400, ...limits };
     this.sessions = new Map();   // id -> Conn (signed in)
     this.conns = new Set();      // every open Conn, signed in or not
     this.invites = new Map();    // inviteID -> invite
-    this.lastKnown = new Map();  // id -> { name, friends:Set } for players who were here recently (offline mutual-friend checks)
+    this.lastKnown = new Map();  // id -> { name, friends:Set } for players who were here recently (offline friend checks)
+    this.rooms = new Map();      // party code -> { code, members:Set<id>, allowed:Set<id>, emptySince }
     this.sweeper = setInterval(() => this.#sweepIdle(), Math.min(5000, Math.max(50, idleMs / 2)));
     this.sweeper.unref();
   }
@@ -90,14 +95,16 @@ export class Hub {
     for (const c of this.conns) { clearTimeout(c.helloTimer); c.sock.terminate?.(); }
   }
 
+  get roomCount() { return this.rooms.size; }
+
   // ---- connections ----------------------------------------------------------------------------------------------
 
   connect(sock) {
     const conn = {
       sock, id: null, name: '', friends: new Set(), presence: null, awaySince: null,
       seen: new Map(),            // friend id -> serialized presence we last sent about them (so we only send changes)
-      msgHits: [], inviteHits: [], resolveHits: [],
-      lastMsgAt: this.now(), closed: false, chain: Promise.resolve(), helloTimer: null,
+      msgHits: [], inviteHits: [], resolveHits: [], relayHits: [],
+      lastMsgAt: this.now(), closed: false, chain: Promise.resolve(), chainIdle: false, helloTimer: null,
     };
     this.conns.add(conn);
     // A socket that never says hello would sit there forever.
@@ -113,24 +120,32 @@ export class Hub {
     if (conn.closed) return;
     const now = this.now();
     conn.lastMsgAt = now;
-    if (overLimit(conn.msgHits, now, this.limits.msgWindowMs, this.limits.msgMax)) {
+    let msg;
+    try { msg = JSON.parse(text); } catch { msg = null; }
+    const ok = msg && typeof msg === 'object' && !Array.isArray(msg) && typeof msg.t === 'string';
+    // Party relay frames (a lobby's game traffic) come many times a second: they have their own, much higher limit.
+    const relay = ok && msg.t === 'rd' && conn.id;
+    if (relay ? overLimit(conn.relayHits, now, this.limits.relayWindowMs, this.limits.relayMax)
+              : overLimit(conn.msgHits, now, this.limits.msgWindowMs, this.limits.msgMax)) {
       this.#send(conn, { t: 'error', code: 'rate_limited', message: 'too many messages' });
       this.#kick(conn, CLOSE.RATE_LIMITED, 'rate limited');
       return;
     }
-    let msg;
-    try { msg = JSON.parse(text); } catch { msg = null; }
-    const ok = msg && typeof msg === 'object' && !Array.isArray(msg) && typeof msg.t === 'string';
     if (!ok) {
       if (!conn.id) { this.#send(conn, { t: 'error', code: 'unauthorized', message: 'hello required' }); this.#kick(conn, CLOSE.UNAUTHORIZED, 'hello required'); }
       else this.#send(conn, { t: 'error', code: 'bad_message', message: 'not a JSON object with a "t"' });
       return;
     }
+    // Relay frames carry no state the hub keeps, so they skip the per-connection queue (order is kept by the socket itself;
+    // nothing before them can still be waiting except a hello, and relay needs a signed-in connection).
+    if (relay && conn.chainIdle) { this.#relay(conn, msg); return; }
     // Strictly one message at a time per connection: hello awaits the auth check and later frames must not overtake it.
-    conn.chain = conn.chain.then(() => this.#handle(conn, msg)).catch((e) => {
+    conn.chainIdle = false;
+    const done = (conn.chain = conn.chain.then(() => this.#handle(conn, msg)).catch((e) => {
       this.log.error?.('hub error', e);
       this.#send(conn, { t: 'error', code: 'bad_message', message: 'internal error', ref: msg.t });
-    });
+    }));
+    done.then(() => { if (conn.chain === done) conn.chainIdle = true; });
   }
 
   async #handle(conn, msg) {
@@ -155,6 +170,10 @@ export class Hub {
       case 'block': return this.#block(conn, msg, true);
       case 'unblock': return this.#block(conn, msg, false);
       case 'push': return this.#registerPush(conn, msg);
+      case 'roomOpen': return this.#roomOpen(conn, msg);
+      case 'roomJoin': return this.#roomJoin(conn, msg);
+      case 'roomLeave': return this.#roomLeave(conn, msg);
+      case 'rd': return this.#relay(conn, msg);
       case 'bye': return this.#bye(conn);
       default: return this.#bad(conn, msg, `unknown message "${msg.t}"`);
     }
@@ -227,6 +246,7 @@ export class Hub {
     this.sessions.delete(conn.id);
     this.#remember(conn);
     for (const inv of [...this.invites.values()]) if (inv.from.id === conn.id) this.#endInvite(inv, 'cancelled', { notifySender: false });
+    for (const room of [...this.rooms.values()]) if (room.members.has(conn.id)) this.#leaveRoom(room, conn.id);
     this.#refreshAround(conn);
     conn.seen.clear();
   }
@@ -245,6 +265,8 @@ export class Hub {
     for (const c of this.conns) {
       if (c.id && now - c.lastMsgAt > this.idleMs) this.#kick(c, 1001, 'idle');
     }
+    // A party room nobody has been in for a while is gone (its members may come back within the grace: a phone that lost Wi-Fi).
+    for (const [code, room] of this.rooms) if (room.members.size === 0 && now - room.emptySince > this.roomGraceMs) this.rooms.delete(code);
   }
 
   #remember(conn) {
@@ -284,26 +306,29 @@ export class Hub {
     const before = conn.friends;
     conn.friends = ids;
     this.#refreshAround(conn, before);
-    // Someone we are no longer mutual friends with cannot keep sending us (or receiving) invites.
+    // Someone who is no longer a friend (on either list) cannot keep sending us (or receiving) invites.
     for (const inv of [...this.invites.values()]) {
       const other = inv.from.id === conn.id ? inv.to : inv.to === conn.id ? inv.from.id : null;
-      if (other && !ids.has(other)) this.#endInvite(inv, 'cancelled');
+      if (other && !ids.has(other) && !this.sessions.get(other)?.friends.has(conn.id)) this.#endInvite(inv, 'cancelled');
     }
     return this.#refreshPushProfile(conn);
   }
 
-  /** Candidates for a visibility change involving `conn`: its friends now and before (mutual friends only can matter). */
+  /** Candidates for a visibility change involving `conn`: its friends now and before, and everyone online who lists it. */
   #refreshAround(conn, previousFriends) {
     const ids = new Set(conn.friends);
     if (previousFriends) for (const id of previousFriends) ids.add(id);
+    for (const s of this.sessions.values()) if (s.friends.has(conn.id)) ids.add(s.id);
     for (const id of ids) {
       this.#refreshView(this.sessions.get(id), conn.id);
       if (this.sessions.get(conn.id) === conn) this.#refreshView(conn, id);
     }
   }
 
+  /** Game Center friendship is mutual, but each phone only knows the friends who allowed this game to read their list: one side
+   *  listing the other is enough (otherwise a friend who never opened the friends list would be invisible to everyone). */
   #canSee(viewer, target) {
-    return viewer.friends.has(target.id) && target.friends.has(viewer.id)
+    return (viewer.friends.has(target.id) || target.friends.has(viewer.id))
       && !this.store.isBlocked(viewer.id, target.id) && !target.presence.invisible;
   }
 
@@ -354,7 +379,10 @@ export class Hub {
   /** The receiver is (again) reachable on a socket: hand over invites that were waiting (pushed, or sent while they were away). */
   #deliverPending(receiver) {
     for (const inv of this.invites.values()) {
-      if (inv.to === receiver.id && !inv.delivered && !inv.pushing) this.#deliver(inv, receiver);
+      if (inv.to !== receiver.id || inv.delivered || inv.pushing) continue;
+      // one that waited for them while they were offline gets a live invite's lifetime from now (the banner's countdown)
+      if (inv.expiresAt - this.now() > this.inviteTtlMs) { clearTimeout(inv.timer); inv.expiresAt = this.now() + this.inviteTtlMs; this.#track(inv); }
+      this.#deliver(inv, receiver);
     }
   }
 
@@ -374,12 +402,13 @@ export class Hub {
     const to = msg.to;
     // If I blocked them I know why it fails. If THEY blocked me, say nothing different from "not friends" (no leak).
     if (this.store.hasBlocked(conn.id, to)) return this.#send(conn, { t: 'error', code: 'blocked', message: 'you blocked this player', ref });
-    if (!conn.friends.has(to) || this.store.hasBlocked(to, conn.id)) return this.#send(conn, { t: 'error', code: 'not_friends', message: 'not friends', ref });
-
     const receiver = this.sessions.get(to);
     const known = receiver ? receiver.friends : (this.lastKnown.get(to)?.friends ?? this.store.getPush(to)?.friends ?? null);
     const theirFriends = known instanceof Set ? known : Array.isArray(known) ? new Set(known) : null;
-    if (theirFriends && !theirFriends.has(conn.id)) return this.#send(conn, { t: 'error', code: 'not_friends', message: 'not friends', ref });
+    // friends on either list (see #canSee), and not blocked by them
+    if ((!conn.friends.has(to) && !theirFriends?.has(conn.id)) || this.store.hasBlocked(to, conn.id)) {
+      return this.#send(conn, { t: 'error', code: 'not_friends', message: 'not friends', ref });
+    }
 
     const replaced = [...this.invites.values()].find((i) => i.from.id === conn.id && i.to === to);
     let pending = 0;
@@ -390,6 +419,9 @@ export class Hub {
     if (receiver && receiver.presence.state === 'dnd') return this.#send(conn, { t: 'inviteUpdate', inviteID: randomUUID(), to, status: 'busy' });
 
     if (replaced) this.#endInvite(replaced, 'cancelled');
+    // the invited friend may join the sender's party room (its code is the lobby code)
+    const room = this.rooms.get(msg.lobbyCode);
+    if (room && room.members.has(conn.id)) room.allowed.add(to);
 
     const inv = {
       id: randomUUID(), from: { id: conn.id, name: conn.name }, to, sport: msg.sport, lobbyCode: msg.lobbyCode,
@@ -404,8 +436,11 @@ export class Hub {
     if (!socketUsable && rec && !this.pusher.configured) this.log.log?.('push skipped: APNs is not configured');
 
     if (!socketUsable && !canPush && !receiver) {
-      // Offline and unreachable: no invite is kept. The inviteID is only there so the app can tie the status to its card.
-      return this.#send(conn, { t: 'inviteUpdate', inviteID: inv.id, to, status: 'unavailable' });
+      // Offline with no way to push: the invite waits here (longer than a live one) and is handed over the moment they open
+      // the game, while the sender's party is still on. The sender sees "queued".
+      inv.expiresAt = this.now() + this.offlineInviteTtlMs;
+      this.#track(inv);
+      return this.#notifySender(inv, 'queued');
     }
 
     this.#track(inv);
@@ -467,6 +502,8 @@ export class Hub {
     const host = this.findLobby(code);
     if (!host) return this.#send(conn, { t: 'resolved', code, found: false });
     const l = host.presence.lobby;
+    // a code is an open door: whoever has it may join that party's room
+    this.rooms.get(code)?.allowed.add(conn.id);
     this.#send(conn, { t: 'resolved', code, found: true, from: { id: host.id, name: host.name }, sport: l.sport, group: l.group, capacity: l.capacity });
   }
 
@@ -517,6 +554,78 @@ export class Hub {
     const rec = this.store.getPush(conn.id);
     if (!rec) return;
     await this.#savePush(conn.id, rec.token, rec.env, conn);
+  }
+
+  // ---- party rooms (the relay) ------------------------------------------------------------------------------------
+  // A party's phones talk through the service: lobby state, where everyone walks in the Plaza, and the match itself. The room's code
+  // is the party's lobby code. Its opener and everyone invited to it (or who resolved its code) may join; nobody else.
+
+  #roomCode(conn, msg) {
+    if (typeof msg.room === 'string' && CODE_RE.test(msg.room)) return msg.room;
+    this.#bad(conn, msg, 'room must be a lobby code');
+    return null;
+  }
+
+  #roomOpen(conn, msg) {
+    const code = this.#roomCode(conn, msg); if (!code) return;
+    let room = this.rooms.get(code);
+    if (room && !room.allowed.has(conn.id)) return this.#send(conn, { t: 'error', code: 'room_taken', message: 'that party code is in use', ref: code });
+    if (!room) { room = { code, members: new Set(), allowed: new Set([conn.id]), emptySince: this.now() }; this.rooms.set(code, room); }
+    this.#enterRoom(room, conn);
+  }
+
+  #roomJoin(conn, msg) {
+    const code = this.#roomCode(conn, msg); if (!code) return;
+    const room = this.rooms.get(code);
+    if (!room) return this.#send(conn, { t: 'error', code: 'room_gone', message: 'that party has ended', ref: code });
+    if (!room.allowed.has(conn.id)) return this.#send(conn, { t: 'error', code: 'room_denied', message: 'not invited to that party', ref: code });
+    this.#enterRoom(room, conn);
+  }
+
+  #roomLeave(conn, msg) {
+    const code = this.#roomCode(conn, msg); if (!code) return;
+    const room = this.rooms.get(code);
+    if (room?.members.has(conn.id)) this.#leaveRoom(room, conn.id);
+  }
+
+  #enterRoom(room, conn) {
+    if (!room.members.has(conn.id) && room.members.size >= MAX_ROOM_MEMBERS) {
+      return this.#send(conn, { t: 'error', code: 'room_full', message: 'that party is full', ref: room.code });
+    }
+    room.members.add(conn.id);
+    this.#roomPeers(room);
+  }
+
+  #leaveRoom(room, id) {
+    room.members.delete(id);
+    if (room.members.size === 0) room.emptySince = this.now();
+    else this.#roomPeers(room);
+    const c = this.sessions.get(id);
+    if (c) this.#send(c, { t: 'roomPeers', room: room.code, peers: [] });
+  }
+
+  /** Everyone in the room learns who is in it (themselves included). */
+  #roomPeers(room) {
+    const peers = [...room.members].map((id) => ({ id, name: this.sessions.get(id)?.name ?? 'Player' }));
+    for (const id of room.members) { const c = this.sessions.get(id); if (c) this.#send(c, { t: 'roomPeers', room: room.code, peers }); }
+  }
+
+  /** One frame of a party's traffic, to everyone else in the room (or the members named in `to`). Never stored. */
+  #relay(conn, msg) {
+    const room = typeof msg.room === 'string' ? this.rooms.get(msg.room) : null;
+    if (!room || !room.members.has(conn.id)) return this.#send(conn, { t: 'error', code: 'room_gone', message: 'not in that party', ref: msg.room ?? 'rd' });
+    if (typeof msg.d !== 'string' || msg.d.length > MAX_RELAY_CHARS) return this.#bad(conn, msg, 'd must be a string up to 128 KB');
+    let to = room.members;
+    if (msg.to !== undefined) {
+      if (!Array.isArray(msg.to) || msg.to.length > MAX_ROOM_MEMBERS || !msg.to.every(isId)) return this.#bad(conn, msg, 'to must be an array of ids');
+      to = msg.to;
+    }
+    const frame = JSON.stringify({ t: 'rd', room: room.code, from: conn.id, d: msg.d });
+    for (const id of to) {
+      if (id === conn.id || !room.members.has(id)) continue;
+      const c = this.sessions.get(id);
+      if (c && !c.closed) { try { c.sock.send(frame); } catch { /* gone; its close cleans up */ } }
+    }
   }
 
   // ---- helpers --------------------------------------------------------------------------------------------------

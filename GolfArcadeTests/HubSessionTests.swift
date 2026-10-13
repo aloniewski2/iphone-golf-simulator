@@ -2,45 +2,60 @@ import SwiftUI
 import XCTest
 @testable import GolfArcade
 
-/// PLAN_MenuHub_WalkableWorld phase 1, phone half: when the Plaza opens (HUB_BOOT), that no TV keeps the old phone menu (NO_TV),
-/// Unity's reports, and the phone controller's look (written to $MENU_SNAP_DIR/hub-*.png).
+/// PLAN_MenuHub_WalkableWorld phase 1, phone half: when the Plaza opens (HUB_BOOT), that with no TV it opens on the phone itself
+/// (PHONE_ONLY), that only a station's own screens ever replace the controller (CONTROLLER_LOCK), Unity's reports, and the phone
+/// controller's look (written to $MENU_SNAP_DIR/hub-*.png).
 @MainActor
 final class HubSessionTests: XCTestCase {
     private var savedDisplay = false
     override func setUp() async throws {
         savedDisplay = SportsSession.shared.displayConnected
         HubSession.shared.debugReset(); OnboardingFlow.shared.exitToMenu(); TennisMenu.shared.classic = false
+        SportsSession.shared.displayConnected = true   // (each test that is about no TV says so)
     }
     override func tearDown() async throws {
         HubTestState.restore(display: savedDisplay)
     }
 
-    func testNoTVKeepsThePhoneMenu() {
+    /// PHONE_ONLY: with no TV the Plaza is still the menu, drawn on the phone (Unity's start says external: false, which shuts
+    /// the PLAY hall); no bench to sit back on.
+    func testNoTVThePlazaOpensOnThePhone() {
         let hub = HubSession.shared, menu = TennisMenu.shared
         SportsSession.shared.displayConnected = false
-        for screen in [MenuScreen.title, .main, .party, .character, .settings] {
-            menu.debugShow(screen); hub.evaluate()
-            XCTAssertFalse(hub.wanted, "no TV: the plaza never opens (\(screen))")
-            XCTAssertEqual(hub.phase, .off)
-            XCTAssertFalse(hub.drivesPhone, "the phone keeps TennisPhoneMenu")
+        for screen in [MenuScreen.title, .main, .character, .settings] {
+            menu.debugShow(screen)
+            XCTAssertTrue(hub.wanted, "no TV: the plaza is still the menu, on the phone (\(screen))")
         }
+        var start: [String: Any]?; hub.debugSent = { if $0["action"] as? String == "start" { start = $0 } }
+        hub.runtimeTaken(bay: "bay-tennis-exhibition"); hub.sessionEnded(finished: true)
+        hub.debugBoot(session: "phone", onPhone: true)
+        XCTAssertEqual(start?["external"] as? Bool, false, "Unity draws the plaza on the phone")
+        XCTAssertEqual(start?["phoneOnly"] as? Bool, true, "...with the PLAY hall shut")
+        XCTAssertNil(start?["bay"], "no TV: never seated on a bench")
+        XCTAssertTrue(hub.drivesPhone); XCTAssertTrue(hub.onPhone)
+        XCTAssertEqual(HubZone(line: "door|door-plaza-play|Play|TV needed")?.prompt, "Play · connect a TV (AirPlay) to play")
     }
 
-    /// With a TV the Plaza is the only menu: it stays on the TV on every menu screen, which opens on the phone as a panel.
-    func testWithATVThePlazaIsTheOnlyMenu() {
+    /// CONTROLLER_LOCK: the Plaza is the only menu, with a TV or without. A station's own screens open as its panel; any other screen
+    /// (home, the old play / online / lobby screens) ends the station and the controller comes back.
+    func testThePlazaIsTheOnlyMenuAndOldScreensNeverShow() {
         let hub = HubSession.shared, menu = TennisMenu.shared
-        SportsSession.shared.displayConnected = true
-        menu.debugShow(.title); XCTAssertTrue(hub.wanted, "a TV connection opens the plaza"); XCTAssertFalse(hub.panelOpen)
-        menu.debugShow(.main); XCTAssertTrue(hub.wanted); XCTAssertFalse(hub.panelOpen)
-        for screen in [MenuScreen.character, .settings, .party, .localChoice, .localPlayers, .online(.entry)] {
-            menu.debugShow(screen)
-            XCTAssertTrue(hub.wanted, "the TV keeps the plaza (\(screen))"); XCTAssertTrue(hub.panelOpen, "the phone shows \(screen) as a panel")
+        for tv in [true, false] {
+            SportsSession.shared.displayConnected = tv
+            hub.debugReset(); hub.debugLive(onPhone: !tv); menu.debugShow(.main)
+            XCTAssertTrue(hub.wanted); XCTAssertFalse(hub.panelOpen); XCTAssertTrue(hub.drivesPhone)
+            hub.receive(["type": "hubAction", "session": "debug-hub", "message": "desk-settings"]); XCTAssertTrue(hub.panelOpen, "a station's screen is its panel")
+            for screen in [MenuScreen.party, .localChoice, .onlineChoice, .online(.entry), .online(.lobby), .online(.results), .hub(.tennis), .gameSelect, .multiplayer] {
+                hub.receive(["type": "hubAction", "session": "debug-hub", "message": "desk-settings"])
+                menu.debugShow(screen); hub.evaluate()
+                XCTAssertEqual(menu.screen, .main, "\(screen) never shows on the phone (tv \(tv))"); XCTAssertNil(hub.station); XCTAssertFalse(hub.panelOpen)
+            }
+            // a lobby screen asked for while walking (an old path) is turned away too
+            menu.debugShow(.online(.lobby)); hub.evaluate(); XCTAssertEqual(menu.screen, .main)
+            // the panel's Done goes home, still on the plaza
+            hub.receive(["type": "hubAction", "session": "debug-hub", "message": "desk-settings"]); hub.leaveStation()
+            XCTAssertEqual(menu.screen, .main); XCTAssertFalse(hub.panelOpen); XCTAssertTrue(hub.wanted)
         }
-        // the panel's Done goes home, still on the plaza
-        hub.debugLive(); menu.debugShow(.settings); hub.leaveStation()
-        XCTAssertEqual(menu.screen, .main); XCTAssertFalse(hub.panelOpen); XCTAssertTrue(hub.wanted)
-        // the Party button with no party opens Play on the phone
-        hub.openPanel(.party); XCTAssertEqual(menu.screen, .party); XCTAssertTrue(hub.wanted)
     }
 
     func testMatchTakesTheRuntimeAndThePlazaReloadsAfter() {
@@ -148,6 +163,7 @@ final class HubRouteTests: XCTestCase {
     /// destination -> (how you get there, presses after arriving / from ☰)
     func testEveryOldMenuDestinationIsReachable() {
         let hub = HubSession.shared, menu = TennisMenu.shared
+        // every bench is one sport and one mode (BENCH_ROUTES): the golf benches never lead to tennis
         let table: [(String, [String], (MenuScreen) -> Bool)] = [
             ("Locker", ["rack-shirt", "look-mirror"], { $0 == .character }),
             ("Settings", ["desk-settings"], { $0 == .settings }),
@@ -155,9 +171,10 @@ final class HubRouteTests: XCTestCase {
             ("Island Circuit", ["bay-tennis-campaign", "shelf-trophies"], { $0 == .campaign }),
             ("Quick match", ["bay-tennis-exhibition"], { $0 == .exhibition }),
             ("Training", ["bay-tennis-training"], { $0 == .training }),
-            ("Golf round (course picker)", ["bay-golf-round"], { $0 == .map }),
-            ("Online", ["bay-tennis-online", "bay-golf-online"], { if case .online = $0 { return true }; return $0 == .onlineChoice }),
-            ("Local golf", ["bay-golf-pass"], { if case .online = $0 { return true }; return $0 == .localChoice || $0 == .localPlayers }),   // main: Local, then how many players
+            ("Golf round (course picker)", ["bay-golf-round"], { $0 == .map && TennisMenu.shared.mapSport == .golf }),
+            ("Online tennis", ["bay-tennis-online"], { $0 == .main && HubSession.shared.onlineBench == .tennis && HubSession.shared.station == "bay-tennis-online" }),
+            ("Online golf", ["bay-golf-online"], { $0 == .main && HubSession.shared.onlineBench == .golf && HubSession.shared.station == "bay-golf-online" }),
+            ("Local golf", ["bay-golf-pass"], { $0 == .localPlayers }),   // how many players, then straight into the round
         ]
         var report: [String] = []
         for (name, spots, reached) in table {
@@ -175,8 +192,7 @@ final class HubRouteTests: XCTestCase {
         report.append("Play / sport select: walk into PLAY, Tennis or Golf room (0 presses) · ☰ + room (2 presses)")
         report.append("Emotes: Emote button + pick (2 presses)")
         report.append("Feedback: walk to the mailbox + A (1 press) · ☰ + Send feedback (2 presses)")
-        report.append("Invite / party: Party button (1 press) · Invite board + A (1 press)")
-        report.append("Classic list menu: ☰ + Classic menu (2 presses)")
+        report.append("Friends / invite: Friends button (1 press) · Invite board + A (1 press)")
         // every shortcut is 2 presses and opens its destination
         for s in HubQuickMenu.shortcuts { XCTAssertNotNil(HubSession.route(s.id), s.id) }
         XCTAssertEqual(Set(HubSession.spotIDs).count, HubSession.spotIDs.count)

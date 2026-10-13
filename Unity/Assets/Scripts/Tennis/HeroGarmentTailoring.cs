@@ -12,6 +12,7 @@ namespace GolfArcade.Tennis {
    foreach(var r in hero.kit)if(r&&r.sharedMesh)r.sharedMesh=Prepare(hero,r,r.sharedMesh);
   }
   public static Mesh Prepare(MatchHeroLook hero,SkinnedMeshRenderer r,Mesh src,Transform[] palette=null){
+   if(MatchHeroLook.IsKitV2(src)) return src;   // CLOTHING V2: a complete garment with its own fit and weights
    if(src && src.name.StartsWith("TailoredSkirt")) return src;
    if(src && src.name.StartsWith("TailoredPolo")) return TailoredPoloDeformation.Prepare(hero,r,src); // Source-authored garment has its own coherent binding.
    if(hero&&r&&src&&r.name=="Kit_Bottom"&&!hero.female&&!hero.golfKit)return HeroShortsTailoring.Prepare(hero,r,src);

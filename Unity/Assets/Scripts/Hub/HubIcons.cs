@@ -97,6 +97,31 @@ namespace GolfArcade.Hub
                     float hole = Mathf.Max(Mathf.Abs(new Vector2((p.x - .36f) / .28f, (p.y - .1f) / .06f).magnitude - 1) * .06f - .018f, -9);
                     return Mathf.Min(Mathf.Min(pole, flag), hole);
                 }
+                case "rackets":
+                {
+                    // two rackets crossed, heads up (the tennis banner)
+                    float d = 9;
+                    foreach (int s in new[] { -1, 1 })
+                    {
+                        float ang = s * .52f; var c = new Vector2(.5f + s * .16f, .66f); var axis = new Vector2(Mathf.Sin(ang), Mathf.Cos(ang)); var side = new Vector2(axis.y, -axis.x);
+                        var q = p - c; var l = new Vector2(Vector2.Dot(q, side), Vector2.Dot(q, axis));
+                        float e = new Vector2(l.x / .15f, l.y / .2f).magnitude;
+                        d = Mathf.Min(d, Mathf.Abs(e - 1) * .15f - .022f);
+                        d = Mathf.Min(d, Seg(p, c - axis * .2f, c - axis * .62f) - .03f);
+                        if (e < 1) for (int i = -1; i <= 1; i++) d = Mathf.Min(d, Mathf.Abs(l.x - i * .07f) - .006f, Mathf.Abs(l.y - i * .09f) - .006f);
+                    }
+                    return d;
+                }
+                case "shield":
+                {
+                    // a shield with a golf flag on its green (the golf banner)
+                    var v = new[] { new Vector2(.2f, .86f), new Vector2(.8f, .86f), new Vector2(.8f, .5f), new Vector2(.5f, .1f), new Vector2(.2f, .5f) };
+                    float outline = Mathf.Abs(Poly(p, v)) - .025f;
+                    float pole = Seg(p, new Vector2(.47f, .26f), new Vector2(.47f, .72f)) - .02f;
+                    float flag = Poly(p, new[] { new Vector2(.49f, .72f), new Vector2(.68f, .64f), new Vector2(.49f, .56f) });
+                    float hill = Mathf.Max(Mathf.Abs(p.y - .3f - Mathf.Sin(p.x * 6) * .02f) - .018f, Poly(p, v));
+                    return Mathf.Min(Mathf.Min(outline, pole), Mathf.Min(flag, hill));
+                }
                 case "play":
                     return Poly(p, new[] { new Vector2(.3f, .18f), new Vector2(.3f, .82f), new Vector2(.82f, .5f) });
                 case "gear":

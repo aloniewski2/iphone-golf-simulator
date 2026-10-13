@@ -1,26 +1,27 @@
 import Foundation
+import GameKit
 import UIKit
 import UserNotifications
 
-/// The hub's lobby, backed by the real MultiplayerService.
+/// The hub's party, backed by the real MultiplayerService over the hub's relay room.
 @MainActor final class MultiplayerRoom: ClubHubRoom {
     private var service: MultiplayerService { .shared }
-    var inLobby: Bool { service.lobby != nil && !service.isNearby }
+    var inLobby: Bool { service.lobby != nil && service.isParty }
     var partySize: Int { service.lobby?.participants.filter { !$0.isGuest }.count ?? 1 }
     var sport: String { service.lobby?.sport.rawValue ?? "tennis" }
     var capacity: Int { service.lobby?.capacity ?? 2 }
 
-    func makeLobby() throws {
+    func hostParty(over transport: MultiplayerTransport) throws {
         TennisMenu.shared.online.identity(TennisMenu.shared)
-        try service.createOnlineLobby()
+        service.setScreen(SportsSession.shared.displayConnected)
+        try service.hostParty(over: transport)
     }
-    func openRoom(group: UInt32) async throws { try await service.openPrivateRoom(group: group) }
-    func cancelRoom() { service.cancelPrivateRoom() }
-    func joinRoom(group: UInt32, host: String) async throws {
+    func joinParty(over transport: MultiplayerTransport, host: String) async throws {
         TennisMenu.shared.online.identity(TennisMenu.shared)
-        try await service.joinPrivateRoom(group: group, host: host)
+        service.setScreen(SportsSession.shared.displayConnected)
+        try await service.joinParty(over: transport, host: host)
     }
-    func leaveLobby() { service.leave() }
+    func leaveLobby() { if service.isParty { service.leave() } }
 }
 
 extension ClubHub {
@@ -34,9 +35,49 @@ extension ClubHub {
         }
         playerName = { TennisMenu.shared.player?.name ?? "Player" }
         tvToast = { HubSession.shared.toast($0) }
+        onJoined = { HubSession.shared.joinedParty(host: $0) }
         haptic = { if SportsSession.shared.haptics { UINotificationFeedbackGenerator().notificationOccurred(.warning) } }
         requestPushPermission = { ClubPush.requestPermission() }
         ClubPush.registerIfAuthorized()
+        ClubSignIn.start()
+    }
+}
+
+/// Game Center sign-in on every launch, silently (Apple: set the handler as early as possible). Without it a returning player was
+/// never signed in after onboarding, so the Club Hub saw them as signed out and nobody could see them online or invite them.
+/// The sign-in screen itself is never pushed over the controller: it is offered from the Friends screen (Sign in).
+@MainActor enum ClubSignIn {
+    private(set) static var started = false
+    /// Apple's sign-in screen, when Game Center has one to show (shown only if the player taps Sign in).
+    private(set) static var pendingController: UIViewController?
+    static func start() {
+        guard !started, !ProcessInfo.processInfo.arguments.contains("--lobby-mock") else { return }
+        started = true
+        Task { @MainActor in
+            do { try await MultiplayerService.shared.authenticate { pendingController = $0 } } catch {}
+            pendingController = nil
+            await ClubHub.shared.refresh()
+            askForFriendsOnce()
+        }
+    }
+    /// The Friends screen's Sign in: Apple's screen if Game Center offered one, else the normal flow.
+    static func signIn() {
+        if let vc = pendingController, let top = GameKitFriendsSource.topViewController() { top.present(vc, animated: true); return }
+        Task { @MainActor in
+            try? await MultiplayerService.shared.authenticate { vc in GameKitFriendsSource.topViewController()?.present(vc, animated: true) }
+            await ClubHub.shared.refresh()
+        }
+    }
+    /// Apple only lists friends who BOTH allowed this game to read their friends list, so ask once (a system prompt), the first
+    /// time the player is signed in, instead of waiting for them to find the Friends screen.
+    static func askForFriendsOnce() {
+        let key = "clubhub.askedFriends"
+        guard GKLocalPlayer.local.isAuthenticated, !UserDefaults.standard.bool(forKey: key) else { return }
+        Task { @MainActor in
+            guard await ClubHub.shared.source.access() == .notDetermined else { return }
+            UserDefaults.standard.set(true, forKey: key)
+            await ClubHub.shared.allowFriends()
+        }
     }
 }
 

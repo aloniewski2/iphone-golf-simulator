@@ -70,6 +70,9 @@ import UIKit
         XCTAssertFalse(session.pointControlsVisible)
         session.emoteWindow = "intro"; XCTAssertFalse(session.canPlayEmote)
         session.emoteWindow = ""; XCTAssertFalse(session.canPlayEmote)
+        // while the intro plays, the equipped emotes pick the player's intro emote
+        session.tennisPhase = "intro"; session.emoteWindow = "intro"; XCTAssertTrue(session.canPlayEmote)
+        session.tennisPhase = "point"
         session.emoteWindow = "point"; XCTAssertTrue(session.canPlayEmote)
         session.paused = true; XCTAssertFalse(session.canPlayEmote)
     }

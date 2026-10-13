@@ -1,0 +1,675 @@
+ M ArtDir/environments/motion-club-3d/review-live-images/01-entrance-runtime.png
+ M ArtDir/environments/motion-club-3d/review-live-images/02-terrace-runtime.png
+ M ArtDir/environments/motion-club-3d/review-live-images/03-locker-runtime.png
+ M ArtDir/environments/motion-club-3d/review-live-images/04-loading-runtime.png
+ M ArtDir/environments/motion-club-3d/review-live-images/05-settings-runtime.png
+ M ArtDir/environments/motion-club-3d/review-live-images/06-phone-runtime.png
+ M ArtDir/review/post-match/map-phone.png
+ M ArtDir/review/post-match/map-tv.png
+ M ArtDir/review/post-match/phone-finish-actions.png
+ M ArtDir/review/post-match/rep-phone-final.png
+ M ArtDir/review/post-match/rep-tv-00.png
+ M ArtDir/review/post-match/rep-tv-01.png
+ M ArtDir/review/post-match/rep-tv-02.png
+ M ArtDir/review/post-match/rep-tv-03.png
+ M ArtDir/review/post-match/rep-tv-04.png
+ M ArtDir/review/post-match/rep-tv-05.png
+ M ArtDir/review/post-match/rep-tv-06.png
+ M ArtDir/review/post-match/rep-tv-07.png
+ M ArtDir/review/post-match/rep-tv-08.png
+ M ArtDir/review/post-match/rep-tv-09.png
+ M ArtDir/review/post-match/rep-tv-10.png
+ M ArtDir/review/post-match/rep-tv-11.png
+ M ArtDir/review/post-match/rep-tv-12.png
+ M ArtDir/review/post-match/rep-tv-13.png
+ M ArtDir/review/post-match/rep-tv-final.png
+ M ArtDir/screenshots/emote_loadout/controller_intro_layout.png
+ M ArtDir/screenshots/emote_loadout/controller_rally_layout.png
+ M ArtDir/screenshots/emote_loadout/locker_phone.png
+ M ArtDir/screenshots/emote_loadout/locker_tv.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/01-intro-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/01-intro.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/02-home-play-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/02-home-play.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/03-home-locker-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/03-home-locker.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/04-home-settings-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/04-home-settings.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/05-store-locked-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/05-store-locked.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/06-sports-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/06-sports.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/07-tennis-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/07-tennis.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/08-campaign-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/08-campaign.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/09-quick-match-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/09-quick-match.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/10-courts-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/10-courts.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/11-training-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/11-training.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/12-loading-tennis-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/13-practice-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/13-practice.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/14-practice-repeat-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/14-practice-repeat.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/15-loading-golf-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/16-golf-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/16-golf.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/17-golf-loading-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/17-golf-loading.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/18-locker-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/18-locker.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/19-settings-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/19-settings.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/20-guide-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/20-guide.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/21-golf-lesson-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/21-golf-lesson.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/22-connect-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/22-connect.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/23-results-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/23-results.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/24-pause-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/24-pause.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/25-home-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/25-home.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/Motion_Club_Hinge_Transitions.mp4
+ M ArtDir/ui/motion-club-radial-v1/runtime/Motion_Club_Living_Backgrounds.mp4
+ M ArtDir/ui/motion-club-radial-v1/runtime/Motion_Club_Menus_and_Transitions.mp4
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-back-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-back.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-home-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-home.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-intro-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-intro.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-locker-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-locker.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-settings-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/hinge-settings.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-entrance-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-entrance.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-home-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-home.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-loading-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-loading.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-locker-transition.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/live-locker.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/phone-character.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/phone-loading.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/phone-main.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/phone-settings.png
+ M ArtDir/ui/motion-club-radial-v1/runtime/tour-end.txt
+ M ArtDir/ui/motion-club-radial-v1/runtime/tour-start.txt
+ M ArtDir/ui/toybox-simple-v6/runtime/campaign.png
+ M ArtDir/ui/toybox-simple-v6/runtime/connect.png
+ M ArtDir/ui/toybox-simple-v6/runtime/courts.png
+ M ArtDir/ui/toybox-simple-v6/runtime/guide.png
+ M ArtDir/ui/toybox-simple-v6/runtime/home.png
+ M ArtDir/ui/toybox-simple-v6/runtime/intro.png
+ M ArtDir/ui/toybox-simple-v6/runtime/loading-swing.png
+ M ArtDir/ui/toybox-simple-v6/runtime/loading.png
+ M ArtDir/ui/toybox-simple-v6/runtime/locker.png
+ M ArtDir/ui/toybox-simple-v6/runtime/pause.png
+ M ArtDir/ui/toybox-simple-v6/runtime/quick-match.png
+ M ArtDir/ui/toybox-simple-v6/runtime/results.png
+ M ArtDir/ui/toybox-simple-v6/runtime/settings.png
+ M ArtDir/ui/toybox-simple-v6/runtime/sports.png
+ M ArtDir/ui/toybox-simple-v6/runtime/tennis.png
+ M ArtDir/ui/toybox-simple-v6/runtime/training.png
+ M GolfArcade/Multiplayer/GameCenterTransport.swift
+ M GolfArcade/Multiplayer/MultiplayerModels.swift
+ M GolfArcade/Multiplayer/MultiplayerService.swift
+ M GolfArcade/Social/ClubHub.swift
+ M GolfArcade/Social/ClubHubLive.swift
+ M GolfArcade/Social/ClubHubView.swift
+ M GolfArcade/Social/FriendsSource.swift
+ M GolfArcade/Social/HubProtocol.swift
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Female.json
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Female.lzfse
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Female_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Male.json
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Male.lzfse
+M  GolfArcade/Unity/CharacterAssets/GolfKitHero_Male_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female.json
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance.json
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_00.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_01.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_02.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_03.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_04.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_05.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_06.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_07.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_08.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_09.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_10.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Distance_Swing_11.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_00.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_01.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_02.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_03.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_04.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_05.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_06.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_07.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_08.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_09.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_10.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Female_Swing_11.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male.json
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance.json
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_00.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_01.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_02.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_03.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_04.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_05.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_06.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_07.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_08.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_09.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_10.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Distance_Swing_11.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Rig.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_00.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_01.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_02.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_03.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_04.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_05.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_06.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_07.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_08.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_09.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_10.lzfse
+M  GolfArcade/Unity/CharacterAssets/MatchHero_Male_Swing_11.lzfse
+ M GolfArcade/Unity/HubControllerView.swift
+ M GolfArcade/Unity/HubSession.swift
+ M GolfArcade/Unity/LockerCatalog.swift
+M  GolfArcade/Unity/MatchHeroData.swift
+MM GolfArcade/Unity/MatchHeroSurfaces.swift
+ M GolfArcade/Unity/SportsDisplays.swift
+ M GolfArcade/Unity/SportsHome.swift
+ M GolfArcade/Unity/SportsInfo.plist
+ M GolfArcade/Unity/SportsRuntime.h
+ M GolfArcade/Unity/SportsRuntime.mm
+ M GolfArcade/Unity/SportsSession.swift
+ M GolfArcade/Unity/TennisMenu.swift
+ M GolfArcade/Unity/TennisPlayViews.swift
+ M GolfArcadeTests/ClubHubTests.swift
+ M GolfArcadeTests/HubPartyTests.swift
+ M GolfArcadeTests/HubSessionTests.swift
+M  GolfArcadeTests/LockerMirrorTests.swift
+ M GolfArcadeTests/NewMenuSnapshotTests.swift
+M  GolfArcadeTests/VisualGolden/GolfKitHero_Female_golden.lzfse
+M  GolfArcadeTests/VisualGolden/GolfKitHero_Male_golden.lzfse
+M  GolfArcadeTests/VisualGolden/MatchHero_Female_Distance_golden.lzfse
+M  GolfArcadeTests/VisualGolden/MatchHero_Female_golden.lzfse
+M  GolfArcadeTests/VisualGolden/MatchHero_Male_Distance_golden.lzfse
+M  GolfArcadeTests/VisualGolden/MatchHero_Male_golden.lzfse
+M  GolfArcadeTests/VisualGolden/provenance.json
+M  GolfArcadeTests/VisualOverhaulNativeTests.swift
+ M GolfArcadeUnity.xcodeproj/project.pbxproj
+AM Unity/Assets/Editor/HeroTurnaround.cs
+A  Unity/Assets/Editor/HeroTurnaround.cs.meta
+MM Unity/Assets/Editor/MatchHeroLockerExport.cs
+A  Unity/Assets/Resources/Hub/HubSurface.shader
+A  Unity/Assets/Resources/Hub/HubSurface.shader.meta
+A  Unity/Assets/Resources/Hub/HubWater.shader
+A  Unity/Assets/Resources/Hub/HubWater.shader.meta
+ M Unity/Assets/Resources/Tennis/Characters/HiggsAvatarF_Mask.png.meta
+ M Unity/Assets/Resources/Tennis/Characters/HiggsAvatar_Mask.png.meta
+M  Unity/Assets/Resources/Tennis/Rendering/TennisURP_Renderer.asset
+MM Unity/Assets/Resources/Tennis/Shaders/HeroFaceSkin.shader
+ M Unity/Assets/Resources/Tennis/Shaders/TennisCharacter.shader
+M  Unity/Assets/Resources/Tennis/Shaders/TennisCloth.shader
+ M Unity/Assets/Scripts/Game/GolfGame.HoleOut.cs
+ M Unity/Assets/Scripts/Game/GolfGame.Native.cs
+ M Unity/Assets/Scripts/Game/GolfGame.Network.cs
+ M Unity/Assets/Scripts/Game/GolfGame.Presentation.cs
+ M Unity/Assets/Scripts/Game/GolfGame.Results.cs
+ M Unity/Assets/Scripts/Game/GolfGame.cs
+ M Unity/Assets/Scripts/Game/HeroGolfer.cs
+ M Unity/Assets/Scripts/Game/MuteWhenAutomated.cs
+ M Unity/Assets/Scripts/Game/NativeSportsSession.Hub.cs
+ M Unity/Assets/Scripts/Game/NativeSportsSession.cs
+ M Unity/Assets/Scripts/Game/PresentationPolicy.cs
+M  Unity/Assets/Scripts/Hub/HubArt.cs
+A  Unity/Assets/Scripts/Hub/HubClub.cs
+A  Unity/Assets/Scripts/Hub/HubClub.cs.meta
+M  Unity/Assets/Scripts/Hub/HubIcons.cs
+A  Unity/Assets/Scripts/Hub/HubLife.cs
+A  Unity/Assets/Scripts/Hub/HubLife.cs.meta
+ M Unity/Assets/Scripts/Hub/HubRemotes.cs
+M  Unity/Assets/Scripts/Hub/HubRooms.cs
+ M Unity/Assets/Scripts/Hub/HubWorld.cs
+ M Unity/Assets/Scripts/Multiplayer/MultiplayerProtocol.cs
+ M Unity/Assets/Scripts/Multiplayer/NetworkGolfRound.cs
+ M Unity/Assets/Scripts/Multiplayer/SportsMultiplayer.cs
+A  Unity/Assets/Scripts/Tennis/HeroAmbientOcclusionExemption.cs
+A  Unity/Assets/Scripts/Tennis/HeroAmbientOcclusionExemption.cs.meta
+MM Unity/Assets/Scripts/Tennis/HeroFaceReferenceFit.cs
+MM Unity/Assets/Scripts/Tennis/HeroGarmentLOD.cs
+A  Unity/Assets/Scripts/Tennis/HeroGolfSkirtFit.cs
+A  Unity/Assets/Scripts/Tennis/HeroGolfSkirtFit.cs.meta
+M  Unity/Assets/Scripts/Tennis/HeroGripPolish.cs
+A  Unity/Assets/Scripts/Tennis/HeroKitEdges.cs
+A  Unity/Assets/Scripts/Tennis/HeroKitEdges.cs.meta
+A  Unity/Assets/Scripts/Tennis/HeroRacketSeat.cs
+A  Unity/Assets/Scripts/Tennis/HeroRacketSeat.cs.meta
+A  Unity/Assets/Scripts/Tennis/HeroShoeShape.cs
+A  Unity/Assets/Scripts/Tennis/HeroShoeShape.cs.meta
+MM Unity/Assets/Scripts/Tennis/MatchHeroLook.cs
+ M Unity/Assets/Scripts/Tennis/TennisGame.Split.cs
+ M Unity/Assets/Scripts/Tennis/TennisGame.cs
+ M Unity/Assets/Scripts/Tennis/TennisHud.cs
+ M Unity/Assets/Scripts/Tennis/TennisPresentation.cs
+ M Unity/Assets/Scripts/UI/HoleGraphics.cs
+ M Unity/Assets/Tests/PlayMode/MultiplayerRuntimeTests.cs
+ M club-hub/PROTOCOL.md
+ M club-hub/README.md
+ M club-hub/src/hub.js
+ M club-hub/src/index.js
+ M club-hub/test/http.test.js
+ M club-hub/test/invite.test.js
+ M club-hub/test/presence.test.js
+ M club-hub/test/push.test.js
+A  work/bald-base-2026-10-12/GATE_RESULTS.md
+A  work/bald-base-2026-10-12/README.md
+A  work/bald-base-2026-10-12/make_compare.py
+A  work/bald-base-2026-10-12/make_jaw_compare.py
+A  work/bald-base-2026-10-12/make_lobby_compare.py
+A  work/bald-base-2026-10-12/make_skin_compare.py
+A  work/bald-base-2026-10-12/make_target_compare.py
+A  work/bald-base-2026-10-12/proof/app/lobby-jaw-tv.png
+A  work/bald-base-2026-10-12/proof/app/lobby-skin-tv.png
+A  work/bald-base-2026-10-12/proof/compare_all.png
+A  work/bald-base-2026-10-12/proof/jaw_all.png
+A  work/bald-base-2026-10-12/proof/lobby_all.png
+A  work/bald-base-2026-10-12/proof/skin_all.png
+A  work/bald-base-2026-10-12/proof/target_all.png
+A  work/hero-sync/README.md
+A  work/hero-sync/compare.py
+A  work/hero-sync/lobby_render.swift
+A  work/hero-sync/look_sources.txt
+A  work/hero-sync/provenance.py
+A  work/hero-sync/sheets/PARITY.md
+A  work/hero-sync/sync_heroes.sh
+A  work/hub-country-club/README.md
+A  work/hub-country-club/proof/01_island_overview_before_after.png
+A  work/hub-country-club/proof/01_island_overview_before_after_target.png
+A  work/hub-country-club/proof/02_plaza_spawn_before_after.png
+A  work/hub-country-club/proof/02_plaza_spawn_before_after_target.png
+A  work/hub-country-club/proof/03_locker_door_before_after.png
+A  work/hub-country-club/proof/03_locker_door_before_after_target.png
+A  work/hub-country-club/proof/04_play_door_before_after.png
+A  work/hub-country-club/proof/04_play_door_before_after_target.png
+A  work/hub-country-club/proof/05_clubhouse_door_before_after.png
+A  work/hub-country-club/proof/05_clubhouse_door_before_after_target.png
+A  work/hub-country-club/proof/06_tennis_court_before_after.png
+A  work/hub-country-club/proof/06_tennis_court_before_after_target.png
+A  work/hub-country-club/proof/07_golf_range_before_after.png
+A  work/hub-country-club/proof/07_golf_range_before_after_target.png
+A  work/hub-country-club/proof/GATE_RESULTS.md
+A  work/hub-country-club/proof/after/01_island_overview.png
+A  work/hub-country-club/proof/after/02_plaza_spawn.png
+A  work/hub-country-club/proof/after/03_locker_door.png
+A  work/hub-country-club/proof/after/04_play_door.png
+A  work/hub-country-club/proof/after/05_clubhouse_door.png
+A  work/hub-country-club/proof/after/06_tennis_court.png
+A  work/hub-country-club/proof/after/07_golf_range.png
+A  work/hub-country-club/proof/after/hub_metrics.json
+A  work/hub-country-club/proof/after/render_cost.txt
+A  work/hub-country-club/proof/all_before_after.png
+A  work/hub-country-club/proof/before/01_island_overview.png
+A  work/hub-country-club/proof/before/02_plaza_spawn.png
+A  work/hub-country-club/proof/before/03_locker_door.png
+A  work/hub-country-club/proof/before/04_play_door.png
+A  work/hub-country-club/proof/before/05_clubhouse_door.png
+A  work/hub-country-club/proof/before/06_tennis_court.png
+A  work/hub-country-club/proof/before/07_golf_range.png
+A  work/hub-country-club/proof/before/hub_metrics.json
+A  work/hub-country-club/proof/before/render_cost.txt
+A  work/hub-country-club/proof/editmode_failures_after.txt
+A  work/hub-country-club/proof/editmode_failures_before.txt
+A  work/hub-country-club/proof/extra/x_bay_seated.png
+A  work/hub-country-club/proof/extra/x_crest.png
+A  work/hub-country-club/proof/extra/x_overview_low.png
+A  work/hub-country-club/proof/extra/x_room_clubhouse.png
+A  work/hub-country-club/proof/extra/x_room_locker.png
+A  work/hub-country-club/proof/extra/x_room_play.png
+A  work/hub-country-club/proof/pass2/01_island_overview_before_after.png
+A  work/hub-country-club/proof/pass2/01_island_overview_before_after_target.png
+A  work/hub-country-club/proof/pass2/02_plaza_spawn_before_after.png
+A  work/hub-country-club/proof/pass2/02_plaza_spawn_before_after_target.png
+A  work/hub-country-club/proof/pass2/04_play_door_before_after.png
+A  work/hub-country-club/proof/pass2/04_play_door_before_after_target.png
+A  work/hub-country-club/proof/pass2/07_golf_range_before_after.png
+A  work/hub-country-club/proof/pass2/07_golf_range_before_after_target.png
+A  work/hub-country-club/proof/pass2/08_play_hall_before_after.png
+A  work/hub-country-club/proof/pass2/08_play_hall_before_after_target.png
+A  work/hub-country-club/proof/pass2/09_locker_room_before_after.png
+A  work/hub-country-club/proof/pass2/10_clubhouse_room_before_after.png
+A  work/hub-country-club/proof/pass2/after/01_island_overview.png
+A  work/hub-country-club/proof/pass2/after/02_plaza_spawn.png
+A  work/hub-country-club/proof/pass2/after/04_play_door.png
+A  work/hub-country-club/proof/pass2/after/07_golf_range.png
+A  work/hub-country-club/proof/pass2/after/08_play_hall.png
+A  work/hub-country-club/proof/pass2/after/09_locker_room.png
+A  work/hub-country-club/proof/pass2/after/10_clubhouse_room.png
+A  work/hub-country-club/proof/pass2/after/hub_metrics.json
+A  work/hub-country-club/proof/pass2/after/render_cost.txt
+A  work/hub-country-club/proof/pass2/after/x_hall_near.png
+A  work/hub-country-club/proof/pass2/all_before_after.png
+A  work/hub-country-club/proof/pass2/before/01_island_overview.png
+A  work/hub-country-club/proof/pass2/before/02_plaza_spawn.png
+A  work/hub-country-club/proof/pass2/before/04_play_door.png
+A  work/hub-country-club/proof/pass2/before/07_golf_range.png
+A  work/hub-country-club/proof/pass2/before/08_play_hall.png
+A  work/hub-country-club/proof/pass2/before/09_locker_room.png
+A  work/hub-country-club/proof/pass2/before/10_clubhouse_room.png
+A  work/hub-country-club/proof/pass2/suite_after.txt
+A  work/hub-country-club/proof/suite_after.txt
+A  work/hub-country-club/proof/suite_before.txt
+A  work/hub-country-club/tools/HubCountryClubProof.cs
+A  work/hub-country-club/tools/run.sh
+A  work/hub-country-club/tools/sheet.py
+A  work/hub-country-club/tools/suite.sh
+A  work/model-turnaround/README.md
+A  work/model-turnaround/run.sh
+?? ArtDir/hero/38_LATEST_HEROES_EVERYWHERE.txt
+?? ArtDir/hero/targets-2026-10-12/
+?? ArtDir/ui/hub-targets-2026-10-12/
+?? CLEANUP_AUDIT_2026-10-10/
+?? GolfArcade/Social/HubRoomTransport.swift
+?? GolfArcadeTests/FriendsLobbyProofTests.swift
+?? PLAN_Multiplayer_SinglePlayerParity.md
+?? Unity/Assets/Editor/ClothingV2Install.cs
+?? Unity/Assets/Scripts/Tennis/TennisGame.Versus.cs
+?? Unity/Assets/Scripts/Tennis/TennisGame.Versus.cs.meta
+?? Unity/Assets/Tests/PlayMode/HitchProbe.cs
+?? Unity/Assets/Tests/PlayMode/HitchProbe.cs.meta
+?? Unity/Assets/Tests/PlayMode/HubPhoneOnlyTests.cs
+?? Unity/Assets/Tests/PlayMode/HubPhoneOnlyTests.cs.meta
+?? Unity/Assets/Tests/PlayMode/MultiplayerExploreCapture.cs
+?? Unity/Assets/Tests/PlayMode/MultiplayerExploreCapture.cs.meta
+?? Unity/Assets/Tests/PlayMode/VersusPeerCapture.cs
+?? Unity/Assets/Tests/PlayMode/VersusPeerCapture.cs.meta
+?? Unity/work/
+?? club-hub/fly.toml
+?? club-hub/test/room.test.js
+?? proof/friends-lobby/
+?? proof/full-visual-overhaul/
+?? proof/menu-hub/loading/arrival_0_open.png
+?? proof/menu-hub/loading/arrival_1.png
+?? proof/menu-hub/loading/arrival_2.png
+?? proof/menu-hub/loading/arrival_3.png
+?? proof/menu-hub/loading/arrival_4_follow.png
+?? proof/menu-hub/loading/hub-controller-bay.png
+?? proof/menu-hub/loading/hub-controller-door.png
+?? proof/menu-hub/loading/hub-controller-plaza.png
+?? proof/menu-hub/loading/hub-controller-station.png
+?? proof/menu-hub/loading/hub-loading-tv-100.png
+?? proof/menu-hub/loading/hub-quick-menu.png
+?? proof/menu-hub/loading/route_all.txt
+?? proof/menu-hub/phase4/p4_call_party.png
+?? proof/menu-hub/phase4/p4_party_bay_seated.png
+?? proof/menu-hub/phase4/p4_party_plaza.png
+?? proof/menu-hub/phase4/p4_party_sheet.png
+?? proof/menu-hub/phase6/menu_tests.txt
+?? proof/multiplayer-explore/
+?? proof/multiplayer-parity/
+?? proof/reference-rebuild/
+?? work/bald-base-2026-10-12/jaw_before/
+?? work/bald-base-2026-10-12/jaw_now/
+?? work/bald-base-2026-10-12/lobby_before/
+?? work/bald-base-2026-10-12/proof/app/female_face.png
+?? work/bald-base-2026-10-12/proof/app/female_shoe.png
+?? work/bald-base-2026-10-12/proof/app/golf-four-tv.png
+?? work/bald-base-2026-10-12/proof/app/lobby-4-tv.png
+?? work/bald-base-2026-10-12/proof/app/locker-skin-female_face.png
+?? work/bald-base-2026-10-12/proof/app/locker-skin-male_face.png
+?? work/bald-base-2026-10-12/proof/app/locker_screen_phone_female_body.png
+?? work/bald-base-2026-10-12/proof/app/locker_screen_phone_male_body.png
+?? work/bald-base-2026-10-12/proof/app/male_face.png
+?? work/bald-base-2026-10-12/proof/app/male_shoe.png
+?? work/bald-base-2026-10-12/proof/compare_GolfKitHero_Female.png
+?? work/bald-base-2026-10-12/proof/compare_GolfKitHero_Male.png
+?? work/bald-base-2026-10-12/proof/compare_MatchHero_Female.png
+?? work/bald-base-2026-10-12/proof/compare_MatchHero_Male.png
+?? work/bald-base-2026-10-12/proof/jaw_MatchHero_Female.png
+?? work/bald-base-2026-10-12/proof/jaw_MatchHero_Male.png
+?? work/bald-base-2026-10-12/proof/lobby_golf_female.png
+?? work/bald-base-2026-10-12/proof/lobby_golf_male.png
+?? work/bald-base-2026-10-12/proof/lobby_tennis_female.png
+?? work/bald-base-2026-10-12/proof/lobby_tennis_male.png
+?? work/bald-base-2026-10-12/proof/sheets_GolfKitHero_Female.png
+?? work/bald-base-2026-10-12/proof/sheets_GolfKitHero_Male.png
+?? work/bald-base-2026-10-12/proof/sheets_MatchHero_Female.png
+?? work/bald-base-2026-10-12/proof/sheets_MatchHero_Male.png
+?? work/bald-base-2026-10-12/proof/skin_GolfKitHero_Female.png
+?? work/bald-base-2026-10-12/proof/skin_GolfKitHero_Male.png
+?? work/bald-base-2026-10-12/proof/skin_MatchHero_Female.png
+?? work/bald-base-2026-10-12/proof/skin_MatchHero_Male.png
+?? work/bald-base-2026-10-12/proof/target_GolfKitHero_Female.png
+?? work/bald-base-2026-10-12/proof/target_MatchHero_Female.png
+?? work/bald-base-2026-10-12/proof/target_MatchHero_Male.png
+?? work/bald-base-2026-10-12/skin_before/
+?? work/character-female33/
+?? work/character-finish32/
+?? work/character-shader/
+?? work/classic-tennis-racket/
+?? work/cloth-overhaul/
+?? work/clothing-v2/
+?? work/controller-flow-fix/
+?? work/dressed-look/
+?? work/emote-fluid/
+?? work/emote-golf-compare/
+?? work/emote-overhaul/
+?? work/emote_contact_sheets_r2.py
+?? work/emote_edit_r2.py
+?? work/emote_gate_edit_r2.py
+?? work/emote_make_films_r2.py
+?? work/emote_nominal_r2.py
+?? work/emote_nominal_r2.txt
+?? work/emote_nominal_r2b.txt
+?? work/emote_preservation_r2.py
+?? work/emote_probe.py
+?? work/emote_probe.txt
+?? work/emote_probe_r2.txt
+?? work/emote_report_r2.py
+?? work/emotes-intro/
+?? work/emotes/
+?? work/face-match/
+?? work/female-arms-form2/
+?? work/female-full-merge/
+?? work/female-hands-fingers/
+?? work/female-micro-f1-head/
+?? work/female-micro-f2-head/
+?? work/female-micro-f3-head/
+?? work/female-parallel-limbs/
+?? work/female-parallel-torso/
+?? work/female-torso-form2/
+?? work/female-torso-form3/
+?? work/female-torso-form4/
+?? work/female-torso-form5/
+?? work/friends-lobby/
+?? work/full-visual-overhaul/
+?? work/gameplay-capture/
+?? work/gameplay-regression/
+?? work/golf-art-exports/
+?? work/golf-course-standard/
+?? work/golf-look/
+?? work/golf-motion-fit/
+?? work/golf-motion-fix/
+?? work/golf-party/
+?? work/golf-tailoring/
+?? work/hero-base/
+?? work/hero-dressed/
+?? work/hero-mainstay/
+?? work/hero-sync/out/
+?? work/hero-sync/sheets/golf_female.png
+?? work/hero-sync/sheets/golf_female_head.png
+?? work/hero-sync/sheets/golf_male.png
+?? work/hero-sync/sheets/golf_male_head.png
+?? work/hero-sync/sheets/tennis_colours.png
+?? work/hero-sync/sheets/tennis_female.png
+?? work/hero-sync/sheets/tennis_female_head.png
+?? work/hero-sync/sheets/tennis_male.png
+?? work/hero-sync/sheets/tennis_male_head.png
+?? work/hubproof.tgz
+?? work/iphone-current/
+?? work/jaw-sculpt-2026-10-12/
+?? work/jw.tgz
+?? work/jw2.tgz
+?? work/latency-fix/
+?? work/lobby-parity/
+?? work/locker-mirror/
+?? work/male-arms-hands-form2/
+?? work/male-form-d/
+?? work/male-form/
+?? work/male-hands-form3/
+?? work/male-head-1/
+?? work/male-head-2/
+?? work/male-head-3/
+?? work/male-jaw-5/
+?? work/male-legs-feet-form2/
+?? work/male-micro1e/
+?? work/male-micro1f/
+?? work/male-micro1g/
+?? work/male-micro1h/
+?? work/male-micro1i/
+?? work/male-micro1j-head/
+?? work/male-micro1k-head/
+?? work/male-micro1l-head/
+?? work/male-nape-pelvis-skin/
+?? work/male-outfit-preview/
+?? work/male-parallel-arms/
+?? work/male-parallel-legs/
+?? work/male-parallel-torso/
+?? work/male-parallel-torso2/
+?? work/male-parallel-torso3/
+?? work/male-pelvis-form2/
+?? work/male-pelvis-form3/
+?? work/male-sil-fit-4/
+?? work/male-silhouette/
+?? work/match-anim-set/
+?? work/menu-beta/
+?? work/menu-flow-fix/
+?? work/menu-hub/
+?? work/model-turnaround/GolfKitHero_Female/
+?? work/model-turnaround/GolfKitHero_Female_contact_sheet.png
+?? work/model-turnaround/GolfKitHero_Male/
+?? work/model-turnaround/GolfKitHero_Male_contact_sheet.png
+?? work/model-turnaround/MatchHero_Female/
+?? work/model-turnaround/MatchHero_Female_contact_sheet.png
+?? work/model-turnaround/MatchHero_Male/
+?? work/model-turnaround/MatchHero_Male_contact_sheet.png
+?? work/model-turnaround/before-2026-10-12/
+?? work/model-turnaround/logs/
+?? work/model-turnaround/new.tgz
+?? work/model-turnaround/report.txt
+?? work/multiplayer-baseline-check.log
+?? work/multiplayer-parity/
+?? work/multiplayer/
+?? work/new-menus/
+?? work/onboarding/
+?? work/online-lobby/
+?? work/phone-build-20261006/
+?? work/phone-build-20261012/
+?? work/playability-fix/
+?? work/postcard-look/
+?? work/postcard-refresh/UnityReview/
+?? work/postcard-refresh/accepted-queue.json
+?? work/postcard-refresh/accepted-queue.json.results.json
+?? work/postcard-refresh/before-queue.json
+?? work/postcard-refresh/before-queue.json.results.json
+?? work/postcard-refresh/before/
+?? work/postcard-refresh/budget-queue.json
+?? work/postcard-refresh/budget-queue.json.results.json
+?? work/postcard-refresh/build-reference-hole09.py
+?? work/postcard-refresh/camera-check.log
+?? work/postcard-refresh/camera-final-check.log
+?? work/postcard-refresh/capture_isolated.py
+?? work/postcard-refresh/catalog-final/
+?? work/postcard-refresh/catalog-queue.json
+?? work/postcard-refresh/catalog-queue.json.results.json
+?? work/postcard-refresh/coastal-instances.cs
+?? work/postcard-refresh/compile.log
+?? work/postcard-refresh/compile2.log
+?? work/postcard-refresh/compile3.log
+?? work/postcard-refresh/compile4.log
+?? work/postcard-refresh/compile5.log
+?? work/postcard-refresh/compile6.log
+?? work/postcard-refresh/complete-queue.json
+?? work/postcard-refresh/complete-queue.json.results.json
+?? work/postcard-refresh/dense-courses/
+?? work/postcard-refresh/dense-queue.json
+?? work/postcard-refresh/dense-queue.json.results.json
+?? work/postcard-refresh/final27-queue.json
+?? work/postcard-refresh/final27-queue.json.results.json
+?? work/postcard-refresh/first-queue.json
+?? work/postcard-refresh/first-queue.json.results.json
+?? work/postcard-refresh/first/
+?? work/postcard-refresh/gates-accepted/
+?? work/postcard-refresh/gates-budget/
+?? work/postcard-refresh/gates-complete/
+?? work/postcard-refresh/gates-final27/
+?? work/postcard-refresh/gates-portrait/
+?? work/postcard-refresh/gates-post-on/
+?? work/postcard-refresh/gates/
+?? work/postcard-refresh/hole10-grass/
+?? work/postcard-refresh/hole10.json
+?? work/postcard-refresh/original/
+?? work/postcard-refresh/other-courses/
+?? work/postcard-refresh/other-queue.json
+?? work/postcard-refresh/other-queue.json.results.json
+?? work/postcard-refresh/package_results.py
+?? work/postcard-refresh/portrait-queue.json
+?? work/postcard-refresh/portrait-queue.json.results.json
+?? work/postcard-refresh/post-on-queue.json
+?? work/postcard-refresh/post-on-queue.json.results.json
+?? work/postcard-refresh/release-queue.json
+?? work/postcard-refresh/release-queue.json.results.json
+?? work/postcard-refresh/second-budget/
+?? work/postcard-refresh/second-portrait/
+?? work/postcard-refresh/second-post-on/
+?? work/postcard-refresh/second-queue.json
+?? work/postcard-refresh/second-queue.json.results.json
+?? work/postcard-refresh/second/
+?? work/postcard-refresh/split-author.log
+?? work/postcard-refresh/split-author2.log
+?? work/postcard-refresh/staged/
+?? work/postcard-refresh/tennis-accepted/
+?? work/postcard-refresh/tennis-budget/
+?? work/postcard-refresh/tennis-complete/
+?? work/postcard-refresh/tennis-final/
+?? work/postcard-refresh/tennis-final27/
+?? work/postcard-refresh/tennis/
+?? work/postcard-refresh/update.py
+?? work/postcard-refresh/windmill-queue.json
+?? work/postcard-refresh/windmill-queue.json.results.json
+?? work/pre-main-switch-2026-10-11/
+?? work/presentation/
+?? work/reference-rebuild/
+?? work/serve-and-feet/
+?? work/serve-dip-jump/
+?? work/serve-toss-arm/
+?? work/serve-toss-jump/
+?? work/serve-walk-arm/
+?? work/sk.tgz
+?? work/standard-tennis-kit-wb/
+?? work/standard-tennis-kit-worn/
+?? work/swift-module-cache/
+?? work/tennis-shoes-fit/
+?? work/timing-point-fix/
+?? work/venue-presence/

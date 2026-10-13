@@ -12,8 +12,8 @@ struct TennisTVRoot: View {
                 Club.lagoonDeep   // around the canvas on 16:10 screens; each screen paints its own scene
                 Group {
                     if OnboardingFlow.shared.holdsMenu { OnboardingHoldingCard() }
-                    // the Plaza booting (it is the TV's menu): the loading screen, then the plaza itself (this window hides)
-                    else if HubSession.shared.drivesPhone { HubLoadingScreen(hub: .shared) }
+                    // the Plaza is the TV's only menu: its loading screen (or why it did not open), then the plaza itself (this window hides)
+                    else if HubSession.shared.drivesPhone || (!SportsSession.shared.active && !TennisMenu.shared.classic) { HubLoadingScreen(hub: .shared) }
                     else { TennisMenuScreen(compact: false)
                         .overlay(alignment: .bottomTrailing) {
                             Text("BETA · Feedback on your phone").font(IslandUI.font(13, bold: true))
@@ -403,9 +403,10 @@ struct TennisRacketController: View {
 struct TennisEmoteControls: View {
     let session: SportsSession
     var body: some View {
-        EquippedEmoteControls(title: "YOUR POINT · CELEBRATE", ids: session.matchEmotes,
+        let intro = session.emoteWindow == "intro"
+        EquippedEmoteControls(title: intro ? "YOUR INTRO · PICK AN EMOTE" : "YOUR POINT · CELEBRATE", ids: session.matchEmotes,
             enabled: session.canPlayEmote,
-            notice: session.emoteNotice.isEmpty ? "Choose an emote to celebrate your point." : session.emoteNotice,
+            notice: session.emoteNotice.isEmpty ? (intro ? "Your player does it on the TV when they're introduced." : "Choose an emote to celebrate your point.") : session.emoteNotice,
             identifier: "controller-emote") { session.playEmote(slot: $0) }
     }
 }

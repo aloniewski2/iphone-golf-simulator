@@ -1,0 +1,1 @@
+P1 sampled 6 clips × 2 heroes × 10 times; max rotation 0.16312937 degrees; max rigid translation 0.41225535 mm

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GolfArcade.Shot;
+using GolfArcade.Swing;
 
 namespace GolfArcade.Course
 {
@@ -36,33 +37,42 @@ namespace GolfArcade.Course
             _ => "Out of bounds",
         };
 
-        /// What the lie costs in club speed. The sand wedge is made for the sand and cuts through
-        /// the rough; long clubs lose far more to both; a putt off the fringe barely notices.
+        /// The share of the club's distance the lie keeps: the fairway and the tee all of it, the
+        /// rough nine tenths, the sand three quarters (the wedges, made for it, 85 %); a putt off
+        /// the fringe barely notices.
         public static double PowerFactor(this CourseLie lie, GolfClub club = GolfClub.Iron) => lie switch
         {
-            CourseLie.Rough => club.Family() == ClubFamily.Wedge ? 0.9 : club == GolfClub.Putter ? 0.7 : 0.85,
-            CourseLie.Bunker => club.Family() == ClubFamily.Wedge ? 0.85 : club == GolfClub.Putter ? 0.4 : 0.6,
+            CourseLie.Rough => club == GolfClub.Putter ? 0.7 : 0.9,
+            CourseLie.Bunker => club == GolfClub.Putter ? 0.4 : club.Family() == ClubFamily.Wedge ? 0.85 : 0.75,
             CourseLie.Fringe => club == GolfClub.Putter ? 1 : 0.97,
             _ => 1,
         };
 
-        /// Backspin kept from the lie. Grass trapped between the face and the ball in the rough
-        /// kills the spin (a flyer: it comes out hot, won't stop and runs on); sand takes some too.
-        public static double SpinFactor(this CourseLie lie) => lie switch
+        /// Backspin kept from the lie: the fringe's longer grass takes a little.
+        public static double SpinFactor(this CourseLie lie) => lie == CourseLie.Fringe ? 0.9 : 1;
+
+        /// How far off a real swing from this lie can come out, at most: degrees off the line it
+        /// started on and the share of its ball speed, either way. The rough a little, the sand
+        /// twice that; a clean lie nothing.
+        public static (double degrees, double speed) Scatter(this CourseLie lie) => lie switch
         {
-            CourseLie.Rough => 0.55,
-            CourseLie.Bunker => 0.8,
-            CourseLie.Fringe => 0.9,
-            _ => 1,
+            CourseLie.Rough => (2.5, 0.04),
+            CourseLie.Bunker => (5, 0.07),
+            _ => (0, 0),
         };
 
-        /// Degrees added to the launch: the club is picked steeply out of the grass or the sand.
-        public static double LaunchChange(this CourseLie lie) => lie switch
+        /// A real swing out of this lie: the grass or the sand knocks it off its line and off its
+        /// pace by a random amount within Scatter (`line` and `pace` are 0–1 draws, 0.5 clean).
+        /// Applied once, when the ball is struck, so the shot that flies is the one every phone sees.
+        public static SwingImpact Scattered(this CourseLie lie, SwingImpact impact, double line, double pace)
         {
-            CourseLie.Rough => 1.5,
-            CourseLie.Bunker => 3,
-            _ => 0,
-        };
+            var (degrees, speed) = lie.Scatter();
+            if (degrees <= 0) return impact;
+            double Spread(double u) => (Math.Max(0, Math.Min(1, double.IsFinite(u) ? u : 0.5)) - 0.5) * 2;
+            impact.StartLineDegrees += degrees * Spread(line);
+            impact.SpeedBonus += speed * Spread(pace);
+            return impact;
+        }
 
         /// How the ground takes a ball coming down on it: `soft` soaks up the bounce (0 fairway,
         /// 1 dead) and `grab` takes the run out of it. Greens are receptive, rough smothers the
@@ -81,13 +91,13 @@ namespace GolfArcade.Course
         /// Where a putter is the club: the green, and its fringe.
         public static bool IsPuttingSurface(this CourseLie lie) => lie is CourseLie.Green or CourseLie.Fringe;
 
-        /// The launch of a strike from this lie: the club's launch for the meter reading, then
-        /// what the lie does to it — speed, spin, launch — and a thin strike's low, hot flight.
+        /// The launch of a strike from this lie: the club's launch for the meter reading, with
+        /// the share of the distance the lie keeps taken off the reading (a full swing from the
+        /// rough flies as a nine-tenths one from the fairway), then a thin strike's low, hot flight.
         public static BallFlight.Launch LaunchFrom(this CourseLie lie, GolfClub club, double power, double startLine, double curve, double thin = 0, double speed = 1)
         {
-            var l = club.Launch(power, startLine, curve, lie.PowerFactor(club) * speed);
+            var l = club.Launch(power * lie.PowerFactor(club), startLine, curve, speed);
             l.SpinRPM *= lie.SpinFactor();
-            l.LaunchAngleDegrees += lie.LaunchChange();
             double t = double.IsFinite(thin) ? Math.Max(0, Math.Min(1, thin)) : 0;
             l.LaunchAngleDegrees *= 1 - 0.45 * t;
             l.SpinRPM *= 1 - 0.5 * t;

@@ -44,7 +44,7 @@ namespace GolfArcade.Game {
             if(Current==State.Intro) { SkipPresentation(); return; }
             if (Current == State.Replay || (Current == State.Result && replayFirst)) { SkipReplay(); return; }
             if (Current == State.Result) { ContinueShotResult(); return; }
-            if (Current != State.RoundDone) return;
+            if (Current != State.RoundDone || networkConfigured) return;   // (a multiplayer round's end belongs to the lobby)
             if (NativeHasNextHole) NextHole(); else PlayAgain();
 
         }
@@ -92,6 +92,7 @@ namespace GolfArcade.Game {
             sheet.OnClub = i => SelectClub(GolfArcade.Shot.GolfClubs.All[i]);
             sheet.SetScreen(true);
             sheet.Skip.Pressed = () => { if (Current is State.Replay or State.Result) SkipReplay(); else SkipPresentation(); };
+            for (int i = 0; i < sheet.IntroEmotes.Length; i++) { int slot = i; sheet.IntroEmotes[i].Pressed = () => ChooseIntroEmote(slot); }
             sheet.StartSwing.Pressed = () => NativeStartSwing();
             sheet.Pause.gameObject.SetActive(true);
             sheet.Pause.Pressed = () => NativePauseRequested?.Invoke();

@@ -1,0 +1,2 @@
+ab238f72919d2d022711a288261a4e0f9f51c861abc91c1e8c27b8800fc7e689  Unity/Assets/Resources/Tennis/Customization/PlayerMale.prefab
+dd862e375449c4091c1f36ac68e6d5cbc610f48c2224a773742b91f6be347da1  Unity/Assets/Resources/Tennis/Customization/PlayerFemale.prefab

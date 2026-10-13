@@ -222,7 +222,8 @@ namespace GolfArcade.UI
             if (baseLayer || shape)
                 foreach (var poly in land)
                 {
-                    var pts = Simplify(poly, Local, 2.5f);
+                    // (a point every few pixels of a TV-sized cover is plenty: the outline is 22 px wide)
+                    var pts = Simplify(poly, Local, Mathf.Max(2.5f, Mathf.Max(r.width, r.height) / 400f));
                     if (baseLayer) Outline(vh, pts, 22, new Color(rim.r, rim.g, rim.b, .55f));
                     Fill(vh, pts, shape ? Color.white : grass);
                     if (baseLayer) Outline(vh, pts, 8, rim);
@@ -262,9 +263,13 @@ namespace GolfArcade.UI
 
         // ---- Drawing
 
+        /// A UI mesh holds at most 65000 vertices (more throws, and the whole picture is lost): past this the map stops adding detail.
+        const int VertexBudget = 64000;
+
         static void Quad(VertexHelper vh, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Color ca, Color cb, Color cc, Color cd)
         {
             int i = vh.currentVertCount;
+            if (i + 4 > VertexBudget) return;
             vh.AddVert(a, ca, Vector2.zero); vh.AddVert(b, cb, Vector2.zero); vh.AddVert(c, cc, Vector2.zero); vh.AddVert(d, cd, Vector2.zero);
             vh.AddTriangle(i, i + 1, i + 2); vh.AddTriangle(i, i + 2, i + 3);
         }
@@ -272,20 +277,24 @@ namespace GolfArcade.UI
         static void Tri(VertexHelper vh, Vector2 a, Vector2 b, Vector2 c, Color color)
         {
             int i = vh.currentVertCount;
+            if (i + 3 > VertexBudget) return;
             vh.AddVert(a, color, Vector2.zero); vh.AddVert(b, color, Vector2.zero); vh.AddVert(c, color, Vector2.zero);
             vh.AddTriangle(i, i + 1, i + 2);
         }
 
         static void Ellipse(VertexHelper vh, Vector2 c, float rx, float ry, Color color)
         {
-            const int n = 40;
+            // as many sides as the size needs: a joint a few pixels across is round with eight (it had forty, on every shore point)
+            int n = Mathf.Clamp(Mathf.CeilToInt(Mathf.Max(rx, ry) * .9f), 8, 40);
             int i = vh.currentVertCount;
+            if (i + n + 1 > VertexBudget) return;
             vh.AddVert(c, color, Vector2.zero);
             for (int k = 0; k < n; k++)
             {
                 float a = k * Mathf.PI * 2 / n;
                 vh.AddVert(c + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry), color, Vector2.zero);
             }
+            
             for (int k = 0; k < n; k++) vh.AddTriangle(i, i + 1 + k, i + 1 + (k + 1) % n);
         }
 
@@ -343,6 +352,7 @@ namespace GolfArcade.UI
             var order = new List<int>(n);
             for (int i = 0; i < n; i++) order.Add(area > 0 ? i : n - 1 - i);     // counter-clockwise
             int baseIndex = vh.currentVertCount;
+            if (baseIndex + n > VertexBudget) return;
             foreach (var p in ring) vh.AddVert(p, color, Vector2.zero);
             bool Reflex(int at) { int m = order.Count; var a = ring[order[(at + m - 1) % m]]; var b = ring[order[at]]; var c = ring[order[(at + 1) % m]]; return Cross(b - a, c - b) < 0; }
             int guard = n * n + 10;

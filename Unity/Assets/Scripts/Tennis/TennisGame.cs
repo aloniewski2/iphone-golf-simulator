@@ -26,9 +26,21 @@ namespace GolfArcade.Tennis
             if (Player) Player.PlayIntro();
             return 0;
         }
+        /// The player's first equipped emote: their intro unless they pick another on the phone.
+        public HeroTennisDriver.Clip? EquippedIntroClip => TennisEmotes.TryClip(equippedEmotes[0], out var clip) ? clip : null;
+        /// Versus, during the intro's flyover: who has asked to skip it (both phones must).
+        public (int voted, int needed, bool mine) SkipVotes => presentation && !ManualSimulation && !AutoPlay ? presentation.SkipVotes : (0, 0, false);
+        /// For the phone's skip button: "" when there is nothing to skip (the intros always play), else "voted|needed|mine"
+        /// (alone: "0|1|0"; versus: both phones must ask).
+        public string IntroSkipState {
+            get {
+                if (!IntroPlaying || !presentation.InFlyover || (PresentationPolicy.Multiplayer && !Versus)) return "";
+                var v = SkipVotes; return v.needed > 0 ? $"{v.voted}|{v.needed}|{(v.mine ? 1 : 0)}" : "0|1|0";
+            }
+        }
         public string EmoteWindow {
             get {
-                if (GolfArcade.Multiplayer.SportsMultiplayer.Active) return GolfArcade.Multiplayer.SportsMultiplayer.Instance.EmoteWindow;
+                if (GolfArcade.Multiplayer.SportsMultiplayer.Active && !Versus) return GolfArcade.Multiplayer.SportsMultiplayer.Instance.EmoteWindow;
                 if (IntroPlaying && presentation.CanChooseEmote) return "intro";
                 return Flow == Phase.PointOver && playerWonPoint && !pointEmoteChosen && !Drill ? "point" : "";
             }
@@ -38,8 +50,9 @@ namespace GolfArcade.Tennis
             if (!TennisEmotes.TryClip(equippedEmotes[slot], out var clip)) return false;
             var driver = Player ? Player.GetComponentInChildren<HeroTennisDriver>() : null;
             if (!driver || !driver.HasEmote(clip)) return false;
-            if (IntroPlaying) return presentation.ChooseEmote(clip);
+            if (IntroPlaying) { bool chosen = presentation.ChooseEmote(clip); if (chosen && Versus) VersusSend(new VersusMessage { k = "emote", clip = (int)clip }); return chosen; }
             pointEmoteChosen = true;
+            if (Versus) VersusSend(new VersusMessage { k = "emote", clip = (int)clip });
             if (!driver.PlayEmote(clip)) pendingPointEmote = clip;
             HoldNextPoint((driver.EmoteDuration(clip) + .6f) * GameSpeed);
             replayDue = -1; if (replay) replay.Stop();
@@ -575,11 +588,12 @@ namespace GolfArcade.Tennis
             StartRallySwing(power, handSide, lift, strokeFacing, false, inputAge);
         }
 
-        /// The phone has confirmed a real swing: one light tick in the hand, straight away. The TV runs 100-250 ms behind the
+        /// The phone has confirmed a real swing: a soft swish in the hand, straight away. The TV runs 100-250 ms behind the
         /// game, so this is the only feedback that arrives on time. It follows the phone's confirmation, never a raw onset, so
-        /// a step or a flinch the detector writes off does not tick (Plan 2: no juice on input). Motion play only; touch play
-        /// already feels its own finger.
-        void SwingConfirmedTick() { if (NativeControlled && !NativeSportsSession.Touch) Haptics.Tick(); }
+        /// a step or a flinch the detector writes off does not tick (Plan 2: no juice on input). Not when a hit is already
+        /// waiting on this confirmation: the strike follows at once and should land alone, not as a tick and a thock.
+        /// Motion play only; touch play already feels its own finger.
+        void SwingConfirmedTick() { if (NativeControlled && !NativeSportsSession.Touch && !pending.Active) Haptics.SwingFelt(); }
 
         /// The phone wrote the stroke off -- it was a step, not a swing.
         public void AbortSwing()
@@ -714,7 +728,9 @@ namespace GolfArcade.Tennis
                 BallSpin = 0; incoming = false; consumedStroke = true; serveInFlight = false; opponentShot = default;
                 Flow = Phase.Rally; phaseTimer = 0; RallyShots = 0;
                 Feedback = "MISSED THE TOSS"; Whiffed?.Invoke(); WhiffJuice();
-                Fault(true);
+                if (Versus) VersusSend(new VersusMessage { k = "whiff" });
+                judgingOwnMiss = true;
+                try { Fault(true); } finally { judgingOwnMiss = false; }
                 return;
             }
             if (HonestContactEnabled || Vector3.Distance(strings, start) < 1.2f) start = strings;
@@ -745,7 +761,8 @@ namespace GolfArcade.Tennis
             Opponent.SplitStep();
             fx.Contact(start, verdict.Perfect ? Timing.Perfect : Timing.Great, false); sounds.Hit(verdict.Perfect ? Timing.Perfect : Timing.Great, pendingServePower); contactHitter = Player;
             if (juice) { juice.EndTossCam(); if (verdict.Perfect && verdict.Legal) juice.PerfectServe(Player.transform, ball); else juice.Punch(.5f); }
-            if (NativeControlled) Haptics.Strike(pendingServePower, verdict.Perfect);
+            if (NativeControlled) Haptics.Hit(TennisHitFeel.Serve(verdict));
+            if (Versus) hitQueued = true;
         }
 
         static TennisActor.Stroke StrokeKind(string kind) => kind switch
@@ -777,6 +794,13 @@ namespace GolfArcade.Tennis
         /// A serve fault. The ball is left to finish its flight before the next serve.
         void Fault(bool nearServer)
         {
+            if (Versus && !VersusJudges) return;   // the other phone calls this serve
+            VersusFaultCalled(nearServer);
+            inFault = true;
+            try { FaultHere(nearServer); } finally { inFault = false; }
+        }
+        void FaultHere(bool nearServer)
+        {
             sounds.Call(false);
             if (audio) audio.OnFault(SecondServe);
             if (Drill && nearServer)
@@ -801,6 +825,7 @@ namespace GolfArcade.Tennis
         void AwardPoint(bool toPlayer, bool winner = false)
         {
             if (Flow == Phase.PointOver || Flow == Phase.MatchOver) return;
+            if (Versus && !VersusJudges) return;   // the other phone calls a ball that was going to its player
             if (Drill)
             {
                 Flow = Phase.PointOver; resetTimer = 1e6f; faultDelay = 0; serveInFlight = false;
@@ -861,6 +886,8 @@ namespace GolfArcade.Tennis
                 MatchFinished?.Invoke(Match.PlayerWonMatch, Match.FinalScore);
             }
             string call = Feedback;
+            VersusPointCalled(toPlayer, winner, call);
+            if (Versus && Match.Complete) SportsMultiplayer_VersusResult();
             Feedback = (toPlayer ? "POINT YOU — " : "POINT OPPONENT — ") + Feedback;
             float excitement = Mathf.Clamp01(RallyShots / 10f + (winner ? .3f : 0) + (Match.Complete ? .5f : 0));
             if (crowd) crowd.Cheer(toPlayer ? .45f + excitement * .55f : .25f + excitement * .4f);
@@ -870,11 +897,14 @@ namespace GolfArcade.Tennis
             if (hud && !Match.Complete)
             {
                 hud.ShowPointResult(toPlayer ? hud.PlayerName : hud.OpponentName, gameWon ? $"{(setWon ? "SET" : "GAME")} · {Match.PlayerGames}–{Match.OpponentGames}" : $"{CallFor(call, toPlayer, winner)} · {Match.PointCall}", toPlayer);
+                if (VersusSplit) { var their = Match.Mirrored(); RightHud.ShowPointResult(toPlayer ? hud.PlayerName : hud.OpponentName, gameWon ? $"{(setWon ? "SET" : "GAME")} · {their.PlayerGames}–{their.OpponentGames}" : $"{CallFor(call, toPlayer, winner)} · {their.PointCall}", !toPlayer); }
                 if (gameWon) hud.ShowCall("GAME", $"GAME {(toPlayer ? hud.PlayerName : hud.OpponentName)}  ·  {Match.PlayerGames}-{Match.OpponentGames}", toPlayer);
                 if (setWon && Match.SetScores != null && Match.SetScores.Count > 0)
                     hud.ShowCall("SET", $"SET {(toPlayer ? hud.PlayerName : hud.OpponentName)}  ·  {Match.SetScores[Match.SetScores.Count - 1]}  ·  SETS {Match.PlayerSets}-{Match.OpponentSets}", toPlayer);
             }
-            if (NativeControlled) { if (toPlayer) Haptics.Success(); else Haptics.Warning(); }
+            // Felt as the TV shows it (the TV runs `Lag` behind): a rising run for a point, more for a game, a roll for the match.
+            if (NativeControlled)
+                Haptics.Play(!toPlayer ? Haptics.Cue.PointLost : Match.Complete ? Haptics.Cue.MatchWon : gameWon ? Haptics.Cue.GameWon : Haptics.Cue.PointWon, 1, Lag);
             RecordingPointEnded?.Invoke();
             SaveLag();
             // Replays are for moments, not every point: winners, long rallies and the match.
@@ -1023,6 +1053,7 @@ namespace GolfArcade.Tennis
             if (!Initialized) return;   // a sliced build (SliceInit) is still in progress
             if (NetworkFrame()) return;
             if (!Player) return;
+            if (Versus) VersusFrameStart();
             if (ReplayPlaying)
             {
                 replay.Tick(Time.deltaTime);
@@ -1064,6 +1095,11 @@ namespace GolfArcade.Tennis
                     Player.Prepare(0, false); Opponent.Prepare(0, false);
                     Player.Tick(Time.deltaTime, 0); Opponent.Tick(Time.deltaTime, 0);
                 }
+                // VERSUS: the first serve waits for both phones to finish the intro; a paused player holds both phones
+                else if (Versus && (!VersusStartGate() || VersusSuspended))
+                {
+                    Player.Tick(Time.deltaTime, 0); Opponent.Tick(Time.deltaTime, 0);
+                }
                 else
                 {
                     accumulator += Mathf.Min(Time.deltaTime, .1f) * Pace;
@@ -1082,6 +1118,7 @@ namespace GolfArcade.Tennis
                 if (replayDue <= 0 && replay.Play(2.6f, .5f)) { banner.text = "REPLAY"; bannerUntil = HudClock.Now + 99; }
             }
             PoseActors();
+            if (Versus) VersusFrameEnd();
             if (pendingPointEmote.HasValue && Flow == Phase.PointOver && Player) {
                 var driver = Player.GetComponentInChildren<HeroTennisDriver>();
                 if (driver) {
@@ -1093,7 +1130,9 @@ namespace GolfArcade.Tennis
             if (phoneState != reportedPhase) { reportedPhase = phoneState; PhaseChanged?.Invoke(phoneState); }
             if (hud && Flow != Phase.PlayerServeToss && Flow != Phase.PlayerServeHold) hud.ShowServeMeter(false);
             if (tossMeter && tossMeter.gameObject.activeSelf && Flow != Phase.PlayerServeToss && Flow != Phase.PlayerServeHold) tossMeter.Hide();
+            if (VersusSplit) PrepareVersusSplit();
             UpdateCamera(false); UpdateHud(); UpdateTrajectory(); UpdateBallVisual(); UpdateCue();
+            if (VersusSplit) UpdateVersusSplit();
             if (juice && Opponent)
             {
                 if (!juiceAttached && GameplayCamera) { juice.AttachCamera(GameplayCamera); juiceAttached = true; }
@@ -1324,9 +1363,9 @@ namespace GolfArcade.Tennis
             bool precise = Player.Swinging && incoming && !consumedStroke;
             if (precise) Player.Pose(); else posePending = true;
             if (wasSwinging && !Player.Swinging && !consumedStroke && Flow == Phase.Rally && incoming)
-            { Feedback = "WHIFF — time the swing to the bounce"; if (coach && NativeControlled) coach.Offer(TennisCoach.Tip.Whiff); Whiffed?.Invoke(); WhiffJuice(); }
+            { Feedback = "WHIFF — time the swing to the bounce"; if (coach && NativeControlled) coach.Offer(TennisCoach.Tip.Whiff); Whiffed?.Invoke(); WhiffJuice(); if (Versus) VersusSend(new VersusMessage { k = "whiff" }); }
             if (serveLaunchPending && !Player.Provisional && (!Player.Swinging || Player.ContactAge >= TennisRules.SweetTime - .002f)) LaunchServe();
-            UpdateOpponent(dt);
+            if (Versus) UpdateRemoteOpponent(dt); else UpdateOpponent(dt);
             UpdateAttention();
             phaseTimer += dt;
             if (faultDelay > 0)
@@ -1350,6 +1389,7 @@ namespace GolfArcade.Tennis
                 {
                     // A campaign match stays on its result until the phone moves on.
                     if (Flow == Phase.MatchOver) { /* Results wait for Rematch or Leave. */ }
+                    else if (Versus && !VersusMayPlay(versusPoint)) { resetTimer = .0001f; return; }
                     else BeginPoint();
                     return;
                 }
@@ -1393,6 +1433,7 @@ namespace GolfArcade.Tennis
                                    + Player.transform.forward * ((float)random.NextDouble() * 2 - 1) * miss * .6f;
                     tossDrift = (across + wander) / ServeContactTime();
                     if (hud) hud.ShowServeMeter(true);
+                    if (Versus) VersusSend(new VersusMessage { k = "toss", p = tossOrigin, d = tossDrift, acc = TossAccuracy });
                 }
                 return;
             }
@@ -1413,10 +1454,12 @@ namespace GolfArcade.Tennis
                     // Never swung: catch it and bounce again. Not a fault.
                     Flow = Phase.PlayerServeHold; phaseTimer = 0; windup = -1; serveCommitted = false;
                     Feedback = "Caught it — press TOSS when ready"; Player.Prepare(0, false, true); if (juice) juice.EndTossCam();
+                    if (Versus) VersusSend(new VersusMessage { k = "catch" });
                     if (hud) hud.ShowServeMeter(false);
                 }
                 return;
             }
+            if (Flow == Phase.OpponentServe && Versus) { RemoteServeStep(dt); return; }
             if (Flow == Phase.OpponentServe) {
                 serveTimer+=dt;
                 previousBall = BallPosition;
@@ -1448,6 +1491,7 @@ namespace GolfArcade.Tennis
 
         void SimulateBall(float dt)
         {
+            if (Versus && VersusHoldForRival()) return;   // our shot is on the rival's strings: their phone sends the return
             Vector3 oldBall = BallPosition;
             previousBall = oldBall;
             Vector3 position = BallPosition, velocity = BallVelocity;
@@ -1525,6 +1569,8 @@ namespace GolfArcade.Tennis
                     bool farSide = byPlayer ? BallPosition.z > 0 : BallPosition.z < 0;
                     bool landedIn = farSide && (serveInFlight ? TennisRules.ServeIsIn(BallPosition, serveFromNearSide, Match.DeuceCourt) : TennisRules.BounceIsIn(BallPosition));
                     Landed?.Invoke(byPlayer, landedIn, BallPosition, serveInFlight);
+                    // The rival's ball landing in on your side: a light knock in the hand as the TV shows it, the beat to swing off.
+                    if (NativeControlled && !byPlayer && landedIn && overDeck) Haptics.Play(Haptics.Cue.Bounce, 1, Lag);
                 }
                 if (live)
                 {
@@ -1557,7 +1603,7 @@ namespace GolfArcade.Tennis
             // The opponent reads the ball as it arrives and starts its swing so the racket
             // meets it: the return leaves from its strings at the contact frame, instead of the
             // old instant reply sent from wherever the ball happened to be.
-            if (live && !Drill && !incoming && !opponentShot.Decided && BallVelocity.z > .5f)
+            if (live && !Drill && !Versus && !incoming && !opponentShot.Decided && BallVelocity.z > .5f)
             {
                 float contactZ = Opponent.transform.position.z - .65f;
                 float toArrive = (contactZ - BallPosition.z) / BallVelocity.z;
@@ -1607,7 +1653,7 @@ namespace GolfArcade.Tennis
                     }
                 }
             }
-            if (live && !incoming && opponentShot.Decided && opponentShot.Decision.Reached && !opponentShot.Struck
+            if (live && !Versus && !incoming && opponentShot.Decided && opponentShot.Decision.Reached && !opponentShot.Struck
                 && (Opponent.ContactAge >= TennisRules.SweetTime - .002f || !Opponent.Swinging))
             {
                 opponentShot.Struck = true;
@@ -1711,6 +1757,7 @@ namespace GolfArcade.Tennis
             bool ballLive = Flow == Phase.Rally || Serving;
             Player.LookAt(ballLive ? BallPosition : Opponent.transform.position + Vector3.up * 1.4f, ballLive ? 1 : .6f);
             Opponent.LookAt(ballLive ? BallPosition : Player.transform.position + Vector3.up * 1.4f, ballLive ? 1 : .6f);
+            if (Versus) UpdateRemoteAttention();
             if (Flow != Phase.Rally || Player.Swinging) { if (Flow == Phase.Rally) Player.Prepare(0, false); return; }
             // Take the racket back as the ball comes: preparation starts about 0.6s out and is
             // complete a quarter of a second before contact, as coaching describes.
@@ -1726,6 +1773,7 @@ namespace GolfArcade.Tennis
             }
             Player.Prepare(prepare, backhand);
             if (prepare > .3f && coach && NativeControlled) coach.Offer(backhand ? TennisCoach.Tip.Backhand : TennisCoach.Tip.FirstBall);
+            if (Versus) return;
             if (!incoming && BallVelocity.z > .5f)
             {
                 float toArrive = (Opponent.transform.position.z - .6f - BallPosition.z) / BallVelocity.z;
@@ -1950,8 +1998,8 @@ namespace GolfArcade.Tennis
             if (LastWasSupercharged) { hit = TennisRules.Supercharge(hit); Streak = 0; }
             // Say which way a swing was off, so timing can be learned from each ball.
             string timingWord = TimingAims ? TennisRules.TimingAimWord(hitLateness) : TennisRules.TimingWord(hitLateness);
-            if (hud) hud.ShowGrade(LastGrade, LastWasSupercharged,
-                (timingWord.Length > 0 ? timingWord + "  ·  " : "") + $"{Player.StrokeLabel.ToUpperInvariant()}  ·  {hit.Speed * 3.6f:0} KM/H");
+            lastGradeLine = (timingWord.Length > 0 ? timingWord + "  ·  " : "") + $"{Player.StrokeLabel.ToUpperInvariant()}  ·  {hit.Speed * 3.6f:0} KM/H";
+            if (hud) hud.ShowGrade(LastGrade, LastWasSupercharged, lastGradeLine);
             if (hitMap) hitMap.Record(faceOffset, LastGrade, LastWasSupercharged);
             LastLateness = hitLateness;
             ContactMade?.Invoke(new Vector2(faceOffset.x / TennisRules.StringHalfWidth, faceOffset.y / TennisRules.StringHalfHeight), LastGrade, LastWasSupercharged);
@@ -1994,8 +2042,9 @@ namespace GolfArcade.Tennis
             if (LastWasSupercharged) Player.SetExpression(TennisActor.Expression.Surprised, .7f);
             else if (LastGrade >= Timing.Excellent) Player.SetExpression(TennisActor.Expression.Happy, .8f);
             sounds.Hit(LastGrade, Player.Power, smash);
-            if (NativeControlled) Haptics.Strike(hit.Quality, LastWasSupercharged);
+            if (NativeControlled) Haptics.Hit(TennisHitFeel.Rally(LastGrade, faceOffset, hitLateness, Player.Kind, Player.Power, Streak, LastWasSupercharged, RallyShots));
             Opponent.SplitStep(); shotAimLocked = false;
+            if (Versus) hitQueued = true;
         }
 
         /// A called whiff: bigger than a routine hit (funny failure) — swish ring, dust, slide whistle,
@@ -2005,6 +2054,7 @@ namespace GolfArcade.Tennis
             if (fx) fx.Whiff(Player.transform.position, Player.SweetSpot.position);
             if (sounds) sounds.Whiff();
             if (juice) juice.Trigger(TennisJuice.Beat.Whiff, Player.transform);
+            if (NativeControlled) Haptics.Play(Haptics.Cue.Whiff);
         }
 
         /// Put a live rally ball in play. Clears the serve flag: a ball injected here is by
@@ -2022,6 +2072,7 @@ namespace GolfArcade.Tennis
 
         /// Start the next point from whichever end is serving.
         void BeginPoint() { tauntHold = 0; playerWonPoint = false; pointEmoteChosen = false; pendingPointEmote = null;
+            remoteTossed = false; holdingForRemote = heldThisContact = false; hitQueued = false;
             ResetPointAbilities();
             // A player who just served is now a receiver: no trophy pose or tossing
             // hand may carry into their normal two-handed ReadyIdle stance.
@@ -2215,7 +2266,7 @@ namespace GolfArcade.Tennis
         {
             if (!ball) return;
             float alpha = ManualSimulation ? 1 : Mathf.Clamp01(accumulator * 120f);
-            renderedBall = Vector3.LerpUnclamped(previousBall, BallPosition, alpha);
+            renderedBall = Vector3.LerpUnclamped(previousBall, BallPosition, alpha) + VersusBallOffset();
             // The frame of a contact (and any hit-stop after it) shows the ball on the face that
             // struck it, leaving the way it was hit.
             if (contactHitter && BallVelocity.sqrMagnitude > .01f)

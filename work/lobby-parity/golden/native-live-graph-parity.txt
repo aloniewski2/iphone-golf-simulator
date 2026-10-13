@@ -1,0 +1,6 @@
+MatchHero_Male: 189720 live-graph vertices, worst 0.005976555mm
+MatchHero_Male_Distance: 192240 live-graph vertices, worst 0.005976555mm
+MatchHero_Female: 190260 live-graph vertices, worst 0.029509386mm
+MatchHero_Female_Distance: 192870 live-graph vertices, worst 0.029509386mm
+GolfKitHero_Male: 155220 live-graph vertices, worst 0.027226888mm
+GolfKitHero_Female: 155766 live-graph vertices, worst 0.003814879mm

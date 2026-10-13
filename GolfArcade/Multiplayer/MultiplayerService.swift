@@ -14,7 +14,6 @@ final class MultiplayerService {
     /// The player turned Local Network access off for this app: phones in the same room cannot find each other until they turn it on.
     private(set) var localNetworkDenied = false
     private(set) var discoveredLobbies: [LocalMultiplayerTransport.DiscoveredLobby] = []
-    private(set) var pendingInvite: GKInvite?
     private(set) var roundTrip: Double = 0
     private(set) var emotes: [String: MultiplayerEmote] = [:]
     #if DEBUG
@@ -43,8 +42,6 @@ final class MultiplayerService {
     /// The other phones in this party (real players, connected), for who can hear and read what you send.
     var partyMembers: [MultiplayerParticipant] { lobby?.participants.filter { !$0.isGuest && $0.id != localID && $0.connected } ?? [] }
     var onReturnToLobby: (() -> Void)?
-    /// Apple's invite / accept sheet closed by itself (true: friends connected). The UI lets go of the sheet it presented.
-    @ObservationIgnored var onInvitationClosed: ((Bool) -> Void)?
     var onResult: ((String) -> Void)?
     @ObservationIgnored private var transport: (any MultiplayerTransport)?
     @ObservationIgnored private var gameCenter: GameCenterTransport?
@@ -111,8 +108,10 @@ final class MultiplayerService {
     var networkTime: Double { now + (isOwner ? 0 : clockOffset) }
     var emoteCooldown: Double { max(0, MultiplayerEmote.cooldown - (now - localEmoteAt)) }
     @ObservationIgnored private var sharedPhoneHost = false
-    /// Joining a friend's private room: this phone must not elect itself owner while the invited host's lobby is on its way.
+    /// Joining a friend's party: this phone must not elect itself owner while the invited host's lobby is on its way.
     @ObservationIgnored private var expectingHost: String?
+    /// A friends' party over the Club Hub relay (invited from the Friends list), not a quick match or a nearby lobby.
+    var isParty: Bool { transport is any PartyTransport }
     var isNearby: Bool { (local != nil || sharedPhoneHost) && transport != nil }
     var localJoinCode: String? { isNearby && isOwner ? local?.joinCode : nil }
     func joinLocal(code: String) throws {
@@ -212,60 +211,35 @@ final class MultiplayerService {
     private func ensureGameCenter() -> GameCenterTransport {
         if let gameCenter { return gameCenter }
         let gc = GameCenterTransport(); gameCenter = gc
-        gc.onInvitation = { [weak self] in self?.pendingInvite = $0 }
         gc.onConnected = { [weak self, weak gc] in if let gc { self?.bind(gc) } }
-        gc.onInvitationClosed = { [weak self] in self?.invitationClosed(found: $0) }
         return gc
     }
-    /// Return Apple's controller to the caller. No custom lobby/online screen is added.
-    func inviteFriends() throws -> UIViewController {
-        guard local == nil else { throw MultiplayerError.invalidOperation("This is a local Wi-Fi lobby.") }
-        let gc=ensureGameCenter()
-        if transport == nil { try createOnlineLobby() }
-        return try gc.invitationController()
-    }
-    // MARK: private rooms (the in-game invite path: friends join without a Game Center screen)
+    // MARK: friends' parties (the Club Hub relay: invites from the Friends list, no Game Center screen at any step)
 
-    /// Host: open (or add to) this party's private Game Center room, after the Club Hub invite was sent. Makes the online lobby
-    /// first if there is none. Returns when a friend has connected; cancelled with `cancelPrivateRoom`.
-    func openPrivateRoom(group: UInt32) async throws {
-        if transport == nil { try createOnlineLobby() }
-        guard let gc = gameCenter, transport === gc else { throw MultiplayerError.invalidOperation("This is not an online lobby.") }
-        searching = true; defer { searching = false }
-        try await gc.privateRoom(group: group, adding: gc.match != nil)
+    /// Host a friends' party over this relay room (made by the first invite). Any other lobby is left first.
+    func hostParty(over connection: any MultiplayerTransport) throws {
+        if transport != nil || searching { cancelSearch(); leave() }
+        local?.disconnect(); local = nil; discoveredLobbies = []
+        bind(connection); createLobby(owner: localID)
     }
-    /// Guest: join the host's private room (an invite accepted in the game). Waits up to 8 s for the host's lobby to arrive and
-    /// leaves again if it is not the invited host's (a stranger who picked the same group).
-    func joinPrivateRoom(group: UInt32, host: String) async throws {
-        guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave your party first to join another.") }
+    /// Join a friend's party over this relay room (an invite accepted with one tap). Waits up to 10 s for the host's lobby, and
+    /// leaves again if it is not the invited host's.
+    func joinParty(over connection: any MultiplayerTransport, host: String) async throws {
+        if transport != nil || searching { cancelSearch(); leave() }
+        local?.disconnect(); local = nil; discoveredLobbies = []
         expectingHost = host
-        searching = true
-        defer { searching = false; expectingHost = nil }
-        do { try await ensureGameCenter().privateRoom(group: group, adding: false) }
-        catch { leave(); throw error }
-        let deadline = now + 8
-        while now < deadline, lobby == nil { try await Task.sleep(for: .milliseconds(100)) }
-        guard lobby?.ownerID == host else {
-            leave(); throw MultiplayerError.unavailable("Could not reach your friend's game. Ask them to invite you again.")
+        defer { if transport === connection { expectingHost = nil } }
+        bind(connection)
+        let deadline = now + 10
+        while now < deadline, lobby == nil, transport === connection {
+            if let relay = connection as? HubRoomTransport, relay.entered == false { break }
+            try await Task.sleep(for: .milliseconds(50))
         }
-    }
-    func cancelPrivateRoom() { gameCenter?.cancelSearch(); searching = false }
-    /// The invite sheet closed. Cancelled with nobody else connected: the empty lobby that inviting made goes too, so the Plaza
-    /// is not left holding a party of one. With friends in it, the party stays.
-    func invitationClosed(found: Bool) {
-        if !found, let transport, !isNearby, transport.peers.isEmpty, lobby?.phase == .lobby,
-           lobby?.participants.allSatisfy({ $0.id == localID || $0.isGuest }) ?? true { leave() }
-        onInvitationClosed?(found)
-    }
-    /// The sheet holding Apple's invite / accept controller was swiped away (no delegate call): that is a cancel.
-    func invitationSheetDismissed() {
-        guard let gameCenter, gameCenter.inviting else { return }
-        gameCenter.cancelSearch(); invitationClosed(found: false)
-    }
-    func acceptInvitation() throws -> UIViewController {
-        guard transport == nil else { throw MultiplayerError.invalidOperation("Leave the current lobby before accepting an invitation.") }
-        guard let invite = pendingInvite else { throw MultiplayerError.invalidOperation("There is no pending invitation.") }
-        let result = try ensureGameCenter().accept(invite); pendingInvite = nil; return result
+        guard transport === connection else { throw CancellationError() }
+        guard lobby?.ownerID == host else {
+            let why = (connection as? HubRoomTransport)?.refusal
+            leave(); throw MultiplayerError.unavailable(why ?? "Could not reach your friend's party. Ask them to invite you again.")
+        }
     }
     func quickMatch(_ sport: MultiplayerSport, golfPlayers: Int = 4) async throws {
         guard transport == nil, !searching else { throw MultiplayerError.invalidOperation("Leave the current lobby first.") }
@@ -321,6 +295,22 @@ final class MultiplayerService {
         lobby?.sets = sets; lobby?.games = games; publishLobby()
     }
     func assignSeat(_ player: String, seat: Int) throws { try requireOwnerIdle(); try lobby?.assign(player, seat: seat); publishLobby() }
+    /// Host of a friends' party: the competitors are exactly these players (the ones sitting on the Plaza bench, in order, up to the
+    /// sport's seats) and they are ready, because sitting down together is how a party says "play". Everyone else watches from the
+    /// Plaza. Publishes only when something changed.
+    func seatParty(_ ids: [String]) {
+        guard isOwner, isParty, var state = lobby, state.phase == .lobby else { return }
+        let want = Array(ids.prefix(state.capacity))
+        var changed = false
+        for i in state.participants.indices where !state.participants[i].isGuest {
+            let seat = want.firstIndex(of: state.participants[i].id) ?? -1
+            if state.participants[i].seat != seat { state.participants[i].seat = seat; changed = true }
+            let ready = seat >= 0
+            if state.participants[i].ready != ready { state.participants[i].ready = ready; changed = true }
+        }
+        guard changed else { return }
+        state.queue.removeAll(); state.revision += 1; lobby = state; publishLobby()
+    }
     func setReady(_ ready: Bool) throws {
         if ready, onMatchRequested == nil, SportsSession.shared.active { throw MultiplayerError.invalidOperation("Finish the current sport session before becoming ready.") }
         try sendControl("ready", payload: ready ? "true" : "false")
@@ -352,6 +342,11 @@ final class MultiplayerService {
             lobby!.participants[i].ready = lobby!.participants[i].connected && lobby!.participants[i].seat >= 0
         }
         try startMatch()
+    }
+    /// Back to the Plaza from a party's match (any phone, any phase): the owner ends it for everyone, a guest asks the owner.
+    func endPartyMatch() {
+        guard isParty, let phase = lobby?.phase, phase != .lobby else { return }
+        if isOwner { try? returnToLobby(rotateSeats: false) } else { try? sendControl("return") }
     }
     func returnToLobby(rotateSeats: Bool = true) throws {
         guard isOwner else { throw MultiplayerError.invalidOperation("Only the lobby owner can end the match.") }
@@ -524,6 +519,12 @@ final class MultiplayerService {
                   state.participants.contains(where: { $0.id == peer && $0.seat >= 0 && $0.connected }) else { return }
             pushRuntimePacket(packet); return
         }
+        // Versus tennis: the two players' phones talk to each other directly (each runs its own player; Unity TennisGame.Versus).
+        if packet.kind == "peer" {
+            guard packet.matchID == state.matchID, state.phase == .playing,
+                  state.participants.contains(where: { $0.id == peer && $0.seat >= 0 && $0.connected }) else { return }
+            pushRuntimePacket(packet); return
+        }
         if packet.kind == "ping", isOwner { try? transmit("pong", payload: packet.payload, reliable: false, to: [peer]); return }
         if packet.kind == "link", isOwner { noteLink(from: peer, report: packet.payload); return }
         guard peer == state.ownerID else { return }
@@ -561,7 +562,10 @@ final class MultiplayerService {
         case "keepWaiting":
             guard lobby?.phase == .loading, p.matchID == lobby?.matchID, loadingNeedsDecision else { return }
             loadingStarted = now; loadingNeedsDecision = false; try? broadcast("loadContinue"); return
-        case "return": if lobby?.phase == .results || lobby?.phase == .interrupted { try? returnToLobby() }; return
+        case "return":
+            // after the result anyone may bring the lobby back; in a friends' party any member may also end the match early
+            let early = isParty && [.loading, .calibrating, .playing].contains(lobby?.phase ?? .lobby)
+            if lobby?.phase == .results || lobby?.phase == .interrupted || early { try? returnToLobby(rotateSeats: !isParty) }; return
         case "look":
             guard lobby?.phase == .lobby, now - (lastLook[p.sender] ?? -Double.infinity) >= 0.1 - 1e-6,
                   let update = try? decoder.decode(MultiplayerLookUpdate.self, from: Data(p.payload.utf8)),
@@ -774,6 +778,8 @@ final class MultiplayerService {
         if config.sport == "golf" { config.venue = MultiplayerLobby.currentGolfVenue(config.venue) }
         guard config.valid(), config.hostID == lobby?.ownerID, config.lobbyID == lobby?.id, config.matchID == lobby?.matchID else { lastError = "Invalid match configuration."; return }
         guard onMatchRequested != nil || !SportsSession.shared.active else { lastError = "Finish the current sport session before joining this match."; return }
+        // In a friends' party only the people on the bench play: everyone else stays where they are in the Plaza.
+        if isParty, (config.participants.first { $0.id == localID }?.seat ?? -1) < 0 { return }
         matchConfiguration = config; quickSport = nil; lastError = nil; stats = NetStats()
         SportsDiagnostics.write("multiplayer launch \(config.sport) \(isOwner ? "owner" : "guest") seat=\(config.participants.first { $0.id == localID }?.seat ?? -1) peers=\(transport?.peers.count ?? 0)")
         #if DEBUG
@@ -911,6 +917,11 @@ final class MultiplayerService {
             if outgoing.kind == "stats" { SportsDiagnostics.write("unity network stats: \(outgoing.payload)"); continue }
             do {
                 if outgoing.kind == "availability" { try sendControl("availability", payload: outgoing.payload) }
+                else if outgoing.kind == "peer" {
+                    // to every other phone in the match (the other player; on one shared TV, the phone drawing it)
+                    guard localSeat >= 0, lobby?.phase == .playing else { continue }
+                    try sendPacket(packet("peer", payload: outgoing.payload, reliable: outgoing.reliable), to: nil)
+                }
                 else if outgoing.kind == "input" {
                     guard localSeat >= 0, lobby?.phase == .playing else { continue }
                     if isOwner { var p = packet("input", payload: outgoing.payload, reliable: outgoing.reliable); p.sender = localID; pushRuntimePacket(p) }

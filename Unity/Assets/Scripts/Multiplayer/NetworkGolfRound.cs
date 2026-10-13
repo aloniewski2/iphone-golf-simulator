@@ -5,7 +5,7 @@ using GolfArcade.Shot;
 using GolfArcade.Swing;
 namespace GolfArcade.Multiplayer {
     [Serializable] public sealed class NetworkGolfer {
-        public int seat,strokes,club,total; public int emoteSlot=-1; /** The hole this golfer's phone has built (a new hole waits for every phone). */ public int ready=-1; public long emoteID; public double emoteAt=-100; public double x,d,heading; public bool holed,dnf; public int[] card;
+        public int seat,strokes,club,total; public int emoteSlot=-1; /** The hole this golfer's phone has built (a new hole waits for every phone). */ public int ready=-1; /** The hole whose flyover this golfer's phone asked to skip. */ public int skipVote=-1; public long emoteID; public double emoteAt=-100; public double x,d,heading; public bool holed,dnf; public int[] card;
     }
     [Serializable] public sealed class NetworkGolfState {
         public long revision,shotID;public int hole,turn;public double time,turnAt,windSpeed,windDirection,presentationUntil,resultUntil;
@@ -13,6 +13,14 @@ namespace GolfArcade.Multiplayer {
         /// The player up, as their phone shows it, for the TV: how far the aiming view looks up the hole to the pin (1) or down at the
         /// ball (-1), and the backswing's load (0–1).
         public float look,load;
+        /// How fast the player up is turning their line (degrees a second, from their phone): the TV runs the line on between updates.
+        public float aimRate;
+        /// The hole's intro as single player would play it on the host's phone (full the first time, short after): every phone plays this cut.
+        public bool introFull;
+        /// The hole's intro beat by beat (host seconds): it began at introAt; the golfer up's own intro (their emote) begins at
+        /// introWalkAt, the flyover's end, or sooner when every golfer asked to skip it (introSkip is then the hole). introSlot is
+        /// the emote the golfer up picked for it (-1: their first equipped), at introSlotAt.
+        public double introAt,introWalkAt,introSlotAt; public int introSkip=-1,introSlot=-1;
         public NetworkGolfer[] golfers;public NetworkGolfShot shot;
     }
     [Serializable] public sealed class NetworkGolfShot {
@@ -47,6 +55,13 @@ namespace GolfArcade.Multiplayer {
         public const double HoledExtraSeconds=2;
         /// The most a new hole waits for a phone that has not said it has built it.
         public const double HoleLoadTimeout=20;
+        /// The phone that swung ends its result as single player does (3 s, the reaction, an emote played out, or the player's tap) and
+        /// says so (golfResultDone); this is only the most a result waits if that word never comes.
+        public const double ResultFallbackSeconds=14,HoledFallbackSeconds=18;
+        /// Longest a turn may sit unplayed before it passes (online only; the TV counts the last TurnWarnSeconds down).
+        public const double TurnLimitSeconds=180,TurnWarnSeconds=20;
+        /// Everyone has holed out: the hole's card (a row each, as single player's card with others) before the next hole loads.
+        public const double HoleCardSeconds=7;
         /// Every full swing is replayed from the tee box before its result (GolfGame), and the replay is given its time: the
         /// beat to see where the ball finished, the slow-motion strike, the flight and the landing (a holed ball to the cup).
         public static bool ReplaysShot(GolfClub club)=>club!=GolfClub.Putter;
@@ -60,6 +75,31 @@ namespace GolfArcade.Multiplayer {
         readonly bool sharedPhone;
         double holeShownAt;
         public Action<NetworkGolfShot> Shot;public Action<string> Result;
+        /// The host's game: whether a hole's intro is the full cut, and how long each part runs as single player plays it: the
+        /// flyover (hole, full), the address (full); the golfer up's introduction, `walkOnWindow` long unless their player picks
+        /// an emote (they may until then), which plays from `emoteFrom` into it (or when picked) and is played out.
+        Func<int,bool> fullIntro; Func<int,bool,double> venueLength; Func<int,int,double> emoteLength; Func<bool,double> startLength;
+        double walkOnWindow=.8, emoteFrom;
+        const double EmoteSettle=.35;
+        /// The seats played from the same phone as this one (pass-the-phone guests on the host's): one vote speaks for them all.
+        public Func<int,int[]> SamePhone;
+        public void ConfigureIntro(Func<int,bool> full,Func<int,bool,double> venue,Func<bool,double> start,double walkOnWindow,double emoteFrom,Func<int,int,double> emoteLength) {
+            fullIntro=full; venueLength=venue; startLength=start; this.walkOnWindow=walkOnWindow; this.emoteFrom=emoteFrom; this.emoteLength=emoteLength;
+            if(State.phase=="intro") { State.introFull=fullIntro?.Invoke(State.hole)??false; BeginIntro(); }
+        }
+        double VenueSeconds=>venueLength?.Invoke(State.hole,State.introFull)??1.5;
+        double StartSeconds=>startLength?.Invoke(State.introFull)??.6;
+        void BeginIntro() {
+            State.phase="intro";State.introAt=State.time;State.introWalkAt=State.time+VenueSeconds;State.introSkip=State.introSlot=-1;State.introSlotAt=0;
+            foreach(var g in State.golfers)g.skipVote=-1;
+            TimeIntro();
+        }
+        /// The intro ends once the golfer's own introduction has had its window and any emote picked for it has played out, then the address.
+        void TimeIntro() {
+            double end=State.introWalkAt+walkOnWindow;
+            if(State.introSlot>=0) end=Math.Max(end,Math.Max(State.introSlotAt,State.introWalkAt+emoteFrom)+(emoteLength?.Invoke(State.turn,State.introSlot)??0)+EmoteSettle);
+            State.presentationUntil=end+StartSeconds;State.revision++;
+        }
         /// `playing`: the course as the game has it loaded, its holes' ground, greens, trees and windmill read off their models
         /// (Course.ByKey makes a bare copy without them: flat, slopeless greens, nothing to hit).
         public NetworkGolfRound(int[] seats,int seed,bool intro=false,string courseKey=null,Course.Course playing=null,bool waitForLoad=false,bool sharedPhone=false) {
@@ -80,7 +120,8 @@ namespace GolfArcade.Multiplayer {
             State.turn=eligible[index%eligible.Length].seat;State.turnAt=State.time;
             // (the first hole was built while the match loaded: the match start already waited for every phone)
             if(waitForLoad&&index>0) { State.phase="loading";holeShownAt=State.time;return; }
-            if(intros) { State.phase="intro";State.presentationUntil=State.time+2.9; }
+            State.introFull=fullIntro?.Invoke(index)??false;
+            if(intros) BeginIntro();
         }
         public bool Input(int seat,NetworkInput input,double hostTime) {
             var p=State.golfers.FirstOrDefault(p=>p.seat==seat);
@@ -89,6 +130,30 @@ namespace GolfArcade.Multiplayer {
                 if(input.value!=State.hole||p.ready==State.hole)return false;
                 p.ready=State.hole;State.revision++;return true;
             }
+            if(input.action=="golfResultDone") {
+                // the player whose shot it was has seen its result through
+                if(State.shot==null||input.value!=State.shot.id||State.shot.seat!=seat||(State.phase!="flight"&&State.phase!="result"))return false;
+                if(State.phase=="flight"){State.phase="result";}
+                State.resultUntil=State.time;State.revision++;return true;
+            }
+            if(input.action=="golfSkipIntro") {
+                // a golfer's phone asks to skip the hole's flyover (as single player's tap does); it is skipped once every golfer still
+                // playing has asked, and only the flyover: the golfer up's intro, their emote, always plays
+                if(State.phase!="intro"||input.value!=State.hole||State.time>=State.introWalkAt)return false;
+                foreach(int s in SamePhone?.Invoke(seat)??new[]{seat}) { var g=State.golfers.FirstOrDefault(x=>x.seat==s); if(g!=null)g.skipVote=State.hole; }
+                if(State.golfers.Where(g=>!g.dnf).All(g=>g.skipVote==State.hole)) { State.introSkip=State.hole;State.introWalkAt=State.time;TimeIntro(); }
+                State.revision++;return true;
+            }
+            if(input.action=="golfIntroEmote") {
+                // the golfer up picks the emote they greet the gallery with: during the flyover or their own introduction's window
+                if(State.phase!="intro"||State.turn!=seat||State.introSlot>=0||input.value<0||input.value>2||input.value!=Math.Floor(input.value)||State.time>=State.introWalkAt+walkOnWindow)return false;
+                State.introSlot=(int)input.value;State.introSlotAt=State.time;TimeIntro();return true;
+            }
+            if(input.action=="golfHoleCardDone") {
+                // anyone may move on from the hole's card (as a tap on single player's card does)
+                if(State.phase!="holeDone"||input.value!=State.hole)return false;
+                State.resultUntil=Math.Min(State.resultUntil,State.time+.2);State.revision++;return true;
+            }
             if(input.action=="emote") {
                 if(State.phase=="intro" || State.phase=="loading" || (State.turn==seat && State.phase!="result") || input.value<0 || input.value>2 || input.value!=Math.Floor(input.value) || State.time-p.emoteAt<1.5 || input.eventID<=lastEvent[seat])return false;
                 lastEvent[seat]=input.eventID;p.emoteSlot=(int)input.value;p.emoteID++;p.emoteAt=State.time;State.revision++;return true;
@@ -96,7 +161,7 @@ namespace GolfArcade.Multiplayer {
             if(p.holed || State.turn!=seat || State.phase!="aim")return false;
             switch(input.action) {
                 case "aim":p.heading+=NetworkMath.Clamp(input.value,-1,1)*1.5;State.revision++;return true;
-                case "golfAimHeading":p.heading=(input.value%360+360)%360;State.revision++;return true;
+                case "golfAimHeading":p.heading=(input.value%360+360)%360;State.aimRate=NetworkMath.Clamp(input.value2,-120,120);State.revision++;return true;
                 case "golfClub":
                     if(Array.IndexOf(GolfClubs.All,(GolfClub)(int)input.value)<0||input.value!=Math.Floor(input.value))return false;
                     p.club=(int)input.value;State.revision++;return true;
@@ -142,19 +207,20 @@ namespace GolfArcade.Multiplayer {
             if(State.paused||State.complete)return;State.time+=Math.Max(0,Math.Min(.1,elapsed));
             if(State.phase=="loading") {
                 if(State.golfers.All(g=>g.dnf||g.ready==State.hole)||State.time-holeShownAt>=HoleLoadTimeout) {
-                    if(intros){State.phase="intro";State.presentationUntil=State.time+2.9;} else State.phase="aim";
+                    if(intros){State.introFull=fullIntro?.Invoke(State.hole)??false;BeginIntro();} else State.phase="aim";
                     State.turnAt=State.time;State.revision++;
                 }
                 return;
             }
             if(State.phase=="intro") { if(State.time>=State.presentationUntil) {State.phase="aim";State.turnAt=State.time;State.revision++;} return; }
+            if(State.phase=="holeDone") { if(State.time>=State.resultUntil) BeginHole(State.hole+1); return; }
             if(State.phase=="flight" && State.time>=State.shot.start+Math.Max(State.shot.duration,State.shot.shown)) {
-                State.phase="result";State.resultUntil=State.time+ResultSeconds+(State.shot.holed?HoledExtraSeconds:0);State.revision++;
+                State.phase="result";State.resultUntil=State.time+(State.shot.holed?HoledFallbackSeconds:ResultFallbackSeconds);State.revision++;
             } else if(State.phase=="result" && State.time>=State.resultUntil) {
                 var p=State.golfers.First(g=>g.seat==State.shot.seat);p.x=State.shot.nextX;p.d=State.shot.nextD;
                 if(State.shot.holed||p.strokes>=course.Holes[State.hole].Par+5)FinishGolfer(p);
                 NextTurn();
-            } else if(State.phase=="aim"&&!sharedPhone&&State.time-State.turnAt>=60) {
+            } else if(State.phase=="aim"&&!sharedPhone&&State.time-State.turnAt>=TurnLimitSeconds) {
                 var p=State.golfers.First(g=>g.seat==State.turn);p.strokes++;if(p.strokes>=course.Holes[State.hole].Par+5)FinishGolfer(p);NextTurn();
             }
         }
@@ -171,7 +237,8 @@ namespace GolfArcade.Multiplayer {
         void NextTurn() {
             var eligible=State.golfers.Where(g=>!g.dnf&&!g.holed).ToArray();State.shot=null;State.revision++;
             if(eligible.Length==0) {
-                if(State.hole+1==course.Holes.Length){Complete("complete");return;}BeginHole(State.hole+1);return;
+                if(State.hole+1==course.Holes.Length){Complete("complete");return;}
+                State.phase="holeDone";State.resultUntil=State.time+HoleCardSeconds;return;
             }
             // Everyone tees off before anyone's second shot. Rotate tee order by hole.
             var unplayed=eligible.Where(g=>g.strokes==0).OrderBy(g=>(g.seat-State.hole%4+4)%4).ToArray();

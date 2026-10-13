@@ -1,0 +1,26 @@
+Passed      14.3s  GolfArcade.Tests.HubBayTests.BackFromAMatchYouSitOnTheSameBench
+Passed       9.4s  GolfArcade.Tests.HubBayTests.GolfSeatedLoadKeepsThePlazaDrawing
+Passed      12.0s  GolfArcade.Tests.HubBayTests.SeatedLoadKeepsThePlazaSmoothAndHandsOffWithoutACover
+Passed      16.5s  GolfArcade.Tests.HubBayTests.SecondSeatedLoadDiagnostic
+Passed       5.1s  GolfArcade.Tests.HubBayTests.StandingUpMidLoadLeavesNothingLoaded
+Passed       7.5s  GolfArcade.Tests.HubPartyTests.AnOnlineMatchFromABayLoadsBehindThePlaza
+Passed       3.7s  GolfArcade.Tests.HubPartyTests.CallPartyPointsTheWayToTheBay
+Failed      15.6s  GolfArcade.Tests.HubPartyTests.FourHeroesStaySmoothAndFriendsAreDrawnWhereTheyWere
+Failed       3.5s  GolfArcade.Tests.HubPartyTests.OnlineTennisWearsTheLobbyLooks
+Skipped      0.0s  GolfArcade.Tests.HubPartyTests.PartyStills
+Passed       5.1s  GolfArcade.Tests.HubPhoneOnlyTests.JoiningAFriendTakesYouToThem
+Passed       4.9s  GolfArcade.Tests.HubPhoneOnlyTests.OnAPhoneAFriendInASportRoomIsMetInThePlaza
+Passed      10.5s  GolfArcade.Tests.HubPhoneOnlyTests.PhoneOnlyShutsThePlayHallAndDrawsAboveTheControls
+Passed       5.4s  GolfArcade.Tests.HubPhoneOnlyTests.WithATvThePlayHallIsOpen
+Passed       4.4s  GolfArcade.Tests.HubPlazaTests.AToastShowsOnTheTvAndGoesAway
+Passed      20.4s  GolfArcade.Tests.HubPlazaTests.EveryDoorWalksInAndOutWithinHalfASecond
+Passed      26.3s  GolfArcade.Tests.HubPlazaTests.FeetDoNotSlideWhileWalkingAndRunning
+Passed       4.1s  GolfArcade.Tests.HubPlazaTests.HubBootsFromTheNativeStartAndRendersThePlaza
+Passed      29.0s  GolfArcade.Tests.HubPlazaTests.LookStills
+Passed      10.0s  GolfArcade.Tests.HubPlazaTests.MatchStartLeavesThePlazaAndTheHubComesBack
+Passed       5.3s  GolfArcade.Tests.HubPlazaTests.PhoneButtonsReachThePlaza
+Passed      49.9s  GolfArcade.Tests.HubPlazaTests.SoakHoldsFrameRate
+Passed       7.0s  GolfArcade.Tests.HubPlazaTests.StickIsAnalogWalkRunSprintAndStopsQuickly
+Passed       4.0s  GolfArcade.Tests.HubPlazaTests.StickReachesTheHeroOnTheNextFrame
+Passed       6.4s  GolfArcade.Tests.HubPlazaTests.ThePlazaBuildsInStepsAndArrivesWithAFlyIn
+Failed(Child) passed 22 failed 2 skipped 1

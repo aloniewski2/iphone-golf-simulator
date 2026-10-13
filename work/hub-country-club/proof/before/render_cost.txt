@@ -1,0 +1,5 @@
+boot to ready: 13.90 s (editor)
+plaza spawn view: SetPass Calls 32, Draw Calls 272, Batches 238, Triangles 868790, Vertices 732006, Shadow Casters 187, editor frame median 16.7 ms p95 18.4 ms
+plaza walking: SetPass Calls 32, Draw Calls 262, Batches 229, Triangles 862306, Vertices 723839, Shadow Casters 184, editor frame median 16.6 ms p95 19.4 ms
+tennis_court view: SetPass Calls 35, Draw Calls 98, Batches 90, Triangles 637256, Vertices 487165, Shadow Casters 65, editor frame median 16.7 ms p95 20.0 ms
+golf_range view: SetPass Calls 36, Draw Calls 99, Batches 94, Triangles 630989, Vertices 482503, Shadow Casters 58, editor frame median 16.7 ms p95 20.8 ms

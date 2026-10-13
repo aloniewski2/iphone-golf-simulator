@@ -28,6 +28,7 @@ export function configFromEnv(env = process.env, log = console) {
     databaseUrl: env.DATABASE_URL || '',
     trustProxy: env.HUB_TRUST_PROXY === '1',
     inviteTtlMs: num(env.HUB_INVITE_TTL_MS, 120_000),
+    offlineInviteTtlMs: num(env.HUB_OFFLINE_INVITE_TTL_MS, 15 * 60_000),
     apns: { keyPem, keyId: env.HUB_APNS_KEY_ID, teamId: env.HUB_APNS_TEAM_ID, topic: env.HUB_APNS_TOPIC },
   };
 }
@@ -64,7 +65,7 @@ export function createClubHub({
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'text/plain; charset=utf-8', 'method not allowed');
     const path = new URL(req.url, 'http://x').pathname;
 
-    if (path === '/healthz') return send(res, 200, 'application/json', JSON.stringify({ ok: true, online: hub.onlineCount }));
+    if (path === '/healthz') return send(res, 200, 'application/json', JSON.stringify({ ok: true, online: hub.onlineCount, rooms: hub.roomCount }));
 
     if (path === '/.well-known/apple-app-site-association') {
       if (!aasaFile) return send(res, 404, 'text/plain; charset=utf-8', 'not found');
@@ -91,7 +92,8 @@ export function createClubHub({
     send(res, 404, 'text/plain; charset=utf-8', 'not found');
   });
 
-  const wss = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
+  // (party relay frames carry a lobby's game packets, up to 60 KB each before escaping)
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 192 * 1024 });
   server.on('upgrade', (req, socket, head) => {
     if (new URL(req.url, 'http://x').pathname !== WS_PATH) { socket.destroy(); return; }
     wss.handleUpgrade(req, socket, head, (ws) => {

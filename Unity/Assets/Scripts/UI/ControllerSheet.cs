@@ -69,6 +69,10 @@ namespace GolfArcade.UI
         RectTransform root, sheet;
         Image ring;
         GameObject[] aimParts; GameObject skipPart; Text skipLabel;
+        /// While the opening plays: the golfer's three equipped emotes, one tap picks their intro on the tee.
+        public readonly HoldButton[] IntroEmotes = new HoldButton[3];
+        readonly Text[] introEmoteLabels = new Text[3]; readonly Image[] introEmoteFills = new Image[3];
+        GameObject introEmoteRow, skipButton; Text introEmoteTitle;
         Image tvFill;
         Image startFill, startHit; Text startLabel; int startState = -1;
         Text holeText, parText, yardsText, windText, aimText, tvText, nameText;
@@ -332,6 +336,22 @@ namespace GolfArcade.UI
             button.gameObject.AddComponent<Image>().color = Color.clear;
             Skip = button.gameObject.AddComponent<HoldButton>();
             Skip.Fill = skipFill; Skip.RestColor = Yellow;
+            skipButton = button.gameObject;
+            // the intro emote: pick one of the three equipped while the flyover plays
+            var row = new GameObject("Intro emotes").AddComponent<RectTransform>();
+            row.SetParent(skip, false); row.anchorMin = row.anchorMax = new Vector2(0.5f, 0.5f); row.sizeDelta = Vector2.zero; row.anchoredPosition = new Vector2(0, -400);
+            introEmoteTitle = Chunky(row, "Title", "PICK YOUR INTRO", 40, 3f);
+            introEmoteTitle.rectTransform.anchorMin = introEmoteTitle.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            introEmoteTitle.rectTransform.sizeDelta = new Vector2(800, 60); introEmoteTitle.rectTransform.anchoredPosition = new Vector2(0, 80);
+            for (int i = 0; i < 3; i++)
+            {
+                var emote = UiKit.Pill(row, "Emote " + (i + 1), BlueDeep, new Vector2(0.5f, 0.5f), new Vector2((i - 1) * 310, -20), new Vector2(290, 120), out var emoteFill, 7);
+                introEmoteLabels[i] = Chunky(emoteFill.transform, "Label", "", 40, 3f);
+                emote.gameObject.AddComponent<Image>().color = Color.clear;
+                IntroEmotes[i] = emote.gameObject.AddComponent<HoldButton>();
+                IntroEmotes[i].Fill = emoteFill; IntroEmotes[i].RestColor = BlueDeep; introEmoteFills[i] = emoteFill;
+            }
+            introEmoteRow = row.gameObject;
             skipPart = skip.gameObject;
             skipPart.SetActive(false);
         }
@@ -347,6 +367,25 @@ namespace GolfArcade.UI
             foreach (var part in aimParts) part.SetActive(!on);
             skipPart.SetActive(on);
             if (skipLabel) skipLabel.text = skip;
+        }
+
+        /// The opening's controls as they stand: the skip button's words (null hides it: the golfer's intro always
+        /// plays), and the intro emotes (null hides them; `picked` lights the one chosen, -1 none).
+        public void SetIntroControls(string skip, string[] emotes, bool canPick, int picked)
+        {
+            if (!skipPart) return;
+            skipButton.SetActive(skip != null);
+            if (skip != null && skipLabel.text != skip) skipLabel.text = skip;
+            introEmoteRow.SetActive(emotes != null && (canPick || picked >= 0));
+            if (emotes == null) return;
+            introEmoteTitle.text = picked >= 0 ? "YOUR INTRO" : "PICK YOUR INTRO";
+            for (int i = 0; i < 3; i++)
+            {
+                string label = i < emotes.Length ? emotes[i].ToUpperInvariant() : "";
+                if (introEmoteLabels[i].text != label) introEmoteLabels[i].text = label;
+                var color = picked == i ? Yellow : canPick ? BlueDeep : UiKit.Hex("5B6F8C");
+                IntroEmotes[i].RestColor = color; if (!IntroEmotes[i].IsHeld) introEmoteFills[i].color = color;
+            }
         }
 
         public void SetHole(int number, int par, double yards, string name = null)

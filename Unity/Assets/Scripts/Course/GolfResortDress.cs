@@ -10,7 +10,7 @@ namespace GolfArcade.Course
     public sealed class GolfResortDress : MonoBehaviour
     {
         sealed class Template { public Mesh mesh; public Matrix4x4 toRoot; public int[] paletteSlots; public bool preserveLeafRim; }
-        sealed class Batch { public Material material; public string lodKind; public bool instanced; public readonly List<CombineInstance> pieces = new(), farPieces = new(); }
+        sealed class Batch { public Material material; public string lodKind; public bool instanced; public readonly List<CombineInstance> pieces = new(); }
         readonly List<Mesh> meshes = new();
         readonly List<Material> materials = new();
         readonly Dictionary<string, Batch> batches = new();
@@ -225,10 +225,8 @@ namespace GolfArcade.Course
             var world=transform.worldToLocalMatrix*Matrix4x4.TRS(point,Quaternion.Euler(0,angle,0),scale);
             var matrix=world*template.toRoot;
             bool lod=(kind=="PALM"||kind=="PINE"||kind=="OAK")&&!overrideMaterial&&templates.ContainsKey(kind+"_FAR");
-            Mesh far=null;Matrix4x4 farMatrix=matrix;
-            if(lod){var low=templates[kind+"_FAR"];far=PrepareAsset(kind+"_FAR",low,scale,true);farMatrix=world*low.toRoot;}
-            // Small tree cells get genuine runtime LOD: foreground articulated
-            // crowns, cheaper distant crowns, one palette/material per cell.
+            // Small tree cells: articulated crowns at every distance, one palette/material per cell
+            // (the kit's _FAR crowns are no longer swapped in).
             bool instanced=!overrideMaterial&&(kind.StartsWith("SHRUB_")||kind=="FERN"||kind.StartsWith("FLOWER_"));
             // Windmill's rigid broadleaf canopy shares one palette and no local
             // light selection; large batches retain its exact authored geometry.
@@ -238,7 +236,6 @@ namespace GolfArcade.Course
                 var material=overrideMaterial?overrideMaterial:botanical;string key=$"{material.GetInstanceID()}/{x}/{z}/{(lod||instanced?kind:string.Empty)}";
                 if(!batches.TryGetValue(key,out var batch)){batch=new Batch{material=material,lodKind=lod?kind:null,instanced=instanced};batches.Add(key,batch);}
                 batch.pieces.Add(new CombineInstance{mesh=asset,subMeshIndex=sub,transform=matrix});triangles+=cost;
-                if(lod)batch.farPieces.Add(new CombineInstance{mesh=far,subMeshIndex=0,transform=farMatrix});
             }
             plants++;
         }
@@ -497,11 +494,9 @@ namespace GolfArcade.Course
                     instances.AddComponent<GolfBotanicalInstances>().Initialize(batch.material,batch.pieces);continue;
                 }
                 if(string.IsNullOrEmpty(batch.lodKind)){MakeBatch(transform,name,batch.pieces,batch.material);continue;}
-                var go=new GameObject(name+"_"+batch.lodKind+"_LOD");go.transform.SetParent(transform,false);
-                var high=MakeBatch(go.transform,"RESORT_"+batch.lodKind+"_NEAR",batch.pieces,batch.material);
-                var low=MakeBatch(go.transform,"RESORT_"+batch.lodKind+"_FAR",batch.farPieces,batch.material);
-                var lod=go.AddComponent<LODGroup>();lod.fadeMode=LODFadeMode.None;
-                lod.SetLODs(new[]{new LOD(.30f,new Renderer[]{high}),new LOD(.015f,new Renderer[]{low})});lod.RecalculateBounds();
+                // Tree cells keep their full crowns at every distance (no LOD swap or cull as the
+                // camera nears them); the small cells still let the view frustum cull them.
+                MakeBatch(transform,name+"_"+batch.lodKind+"_NEAR",batch.pieces,batch.material);
             }
         }
         void OnDestroy(){foreach(var mesh in meshes)if(mesh)Destroy(mesh);foreach(var m in materials)if(m)Destroy(m);}

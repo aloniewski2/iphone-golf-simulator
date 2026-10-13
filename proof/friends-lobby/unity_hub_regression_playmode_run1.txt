@@ -1,0 +1,26 @@
+PLAYMODE total=20 passed=18 failed=1
+  Passed GolfArcade.Tests.HubBayTests.BackFromAMatchYouSitOnTheSameBench 16.100407
+  Passed GolfArcade.Tests.HubBayTests.GolfSeatedLoadKeepsThePlazaDrawing 8.402197
+  Passed GolfArcade.Tests.HubBayTests.SeatedLoadKeepsThePlazaSmoothAndHandsOffWithoutACover 10.470124
+  Passed GolfArcade.Tests.HubBayTests.SecondSeatedLoadDiagnostic 15.636408
+  Passed GolfArcade.Tests.HubBayTests.StandingUpMidLoadLeavesNothingLoaded 5.158733
+  Passed GolfArcade.Tests.HubPartyTests.AnOnlineMatchFromABayLoadsBehindThePlaza 7.445818
+  Passed GolfArcade.Tests.HubPartyTests.CallPartyPointsTheWayToTheBay 3.572957
+  Passed GolfArcade.Tests.HubPartyTests.FourHeroesStaySmoothAndFriendsAreDrawnWhereTheyWere 15.412014
+  Passed GolfArcade.Tests.HubPartyTests.OnlineTennisWearsTheLobbyLooks 2.852744
+  Skipped GolfArcade.Tests.HubPartyTests.PartyStills 0.031644
+      HUB_LOOK_DIR not set
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.JoiningAFriendTakesYouToThem 5.250420
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.OnAPhoneAFriendInASportRoomIsMetInThePlaza 4.786536
+  Failed GolfArcade.Tests.HubPhoneOnlyTests.PhoneOnlyShutsThePlayHallAndDrawsAboveTheControls 3.837702
+      Expected: (x:0.00, y:0.44, width:1.00, height:0.56)
+  But was:  (x:0.00, y:0.00, width:1.00, height:1.00)
+  Passed GolfArcade.Tests.HubPhoneOnlyTests.WithATvThePlayHallIsOpen 5.237122
+  Passed GolfArcade.Tests.HubPlazaTests.AToastShowsOnTheTvAndGoesAway 4.251326
+  Passed GolfArcade.Tests.HubPlazaTests.EveryDoorWalksInAndOutWithinHalfASecond 20.480400
+  Passed GolfArcade.Tests.HubPlazaTests.HubBootsFromTheNativeStartAndRendersThePlaza 4.092680
+  Passed GolfArcade.Tests.HubPlazaTests.PhoneButtonsReachThePlaza 5.597259
+  Passed GolfArcade.Tests.HubPlazaTests.StickReachesTheHeroOnTheNextFrame 3.956175
+  Passed GolfArcade.Tests.HubPlazaTests.ThePlazaBuildsInStepsAndArrivesWithAFlyIn 6.535657
+
+[exited with code 0]

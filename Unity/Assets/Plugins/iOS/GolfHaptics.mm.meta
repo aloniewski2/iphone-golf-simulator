@@ -30,7 +30,7 @@ PluginImporter:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
         CompileFlags: 
-        FrameworkDependencies: CoreHaptics;UIKit;
+        FrameworkDependencies: CoreHaptics;UIKit;AudioToolbox;
   userData: 
   assetBundleName: 
   assetBundleVariant: 

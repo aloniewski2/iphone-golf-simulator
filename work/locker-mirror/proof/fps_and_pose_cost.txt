@@ -1,0 +1,5 @@
+LOCKER_MIRROR frame rate and pose cost (iOS Simulator on this Mac)
+club locker tile: 0.0 fps rendered over 3 s (view asks for 60)
+club play tile: 0.0 fps rendered over 3 s (view asks for 60)
+tennis idle view: 0.0 fps rendered over 3 s (view asks for 60)
+pose(at:) on the main thread: 0.000 ms per frame (0 tracks)

@@ -179,6 +179,56 @@ namespace GolfArcade.Tests {
             Assert.True(m.Input(1,HoleReady(m,1),m.State.time));Step(m,.2);
             Assert.AreEqual("intro",m.State.phase);
         }
+        // ----- A hole's intro online: the flyover is skipped only when every golfer asks; the golfer's own intro always plays -----
+        static NetworkInput SkipIntro(NetworkGolfRound m,long id)=>new() {action="golfSkipIntro",value=m.State.hole,eventID=id,time=m.State.time};
+        static NetworkInput PickIntro(NetworkGolfRound m,int slot,long id)=>new() {action="golfIntroEmote",value=slot,eventID=id,time=m.State.time};
+        /// Flyover 10 s, the golfer up's introduction 4.2 s (their window; an emote plays from 1.2 s in: 5 s for slot 1), the address 1 s.
+        static NetworkGolfRound IntroRound(int golfers) {
+            var m=new NetworkGolfRound(Enumerable.Range(0,golfers).ToArray(),20,intro:true);
+            m.ConfigureIntro(_=>true,(hole,full)=>10,full=>1,4.2,1.2,(seat,slot)=>slot==1?5:2);
+            return m;
+        }
+        [Test] public void TheFlyoverIsSkippedOnlyWhenEveryGolferAsks() {
+            var m=IntroRound(3);
+            Assert.AreEqual("intro",m.State.phase);Assert.AreEqual(15.2,m.State.presentationUntil-m.State.introAt,1e-6);
+            Step(m,1);
+            Assert.True(m.Input(0,SkipIntro(m,1),m.State.time));Assert.True(m.Input(1,SkipIntro(m,2),m.State.time));
+            Assert.AreEqual(-1,m.State.introSkip,"two of three asked: the flyover plays on");
+            Assert.AreEqual(2,m.State.golfers.Count(g=>g.skipVote==m.State.hole));
+            Step(m,1);
+            Assert.True(m.Input(2,SkipIntro(m,3),m.State.time));
+            Assert.AreEqual(m.State.hole,m.State.introSkip,"everyone asked");
+            Assert.AreEqual(m.State.time,m.State.introWalkAt,1e-9,"the golfer's intro begins at once");
+            Assert.AreEqual(m.State.time+4.2+1,m.State.presentationUntil,1e-6,"and still plays in full: skip never skips the emote");
+            Step(m,5);Assert.AreEqual("intro",m.State.phase);Step(m,.4);Assert.AreEqual("aim",m.State.phase);
+        }
+        [Test] public void AskingToSkipOnceTheFlyoverIsOverChangesNothing() {
+            var m=IntroRound(2);Step(m,10.1);double until=m.State.presentationUntil;
+            Assert.False(m.Input(0,SkipIntro(m,1),m.State.time));Assert.False(m.Input(1,SkipIntro(m,2),m.State.time));
+            Assert.AreEqual(until,m.State.presentationUntil,"the golfer's intro is never cut short");Assert.AreEqual(-1,m.State.introSkip);
+        }
+        [Test] public void OnePhoneAsksForEveryGolferItPlaysFor() {
+            var m=IntroRound(3);m.SamePhone=seat=>seat==1?new[]{1}:new[]{0,2};   // seats 0 and 2 on the host's phone
+            Step(m,1);Assert.True(m.Input(0,SkipIntro(m,1),m.State.time));Assert.AreEqual(-1,m.State.introSkip);
+            Assert.True(m.Input(1,SkipIntro(m,2),m.State.time));Assert.AreEqual(m.State.hole,m.State.introSkip);
+        }
+        [Test] public void AGolferWhoLeftDoesNotHoldTheSkipBack() {
+            var m=IntroRound(3);Step(m,1);m.Drop(2);
+            Assert.True(m.Input(0,SkipIntro(m,1),m.State.time));Assert.True(m.Input(1,SkipIntro(m,2),m.State.time));
+            Assert.AreEqual(m.State.hole,m.State.introSkip);
+        }
+        [Test] public void TheGolferUpPicksTheirIntroEmoteAndIsGivenItsTime() {
+            var m=IntroRound(2);Step(m,2);
+            Assert.False(m.Input(1,PickIntro(m,1,1),m.State.time),"only the golfer up picks");
+            Assert.True(m.Input(0,PickIntro(m,1,2),m.State.time));Assert.AreEqual(1,m.State.introSlot);
+            Assert.AreEqual(m.State.introAt+10+1.2+5+.35+1,m.State.presentationUntil,1e-6,"a 5 s emote, played from 1.2 s into the introduction, gets its 5 s");
+            Assert.False(m.Input(0,PickIntro(m,2,3),m.State.time),"one pick a hole");
+            // a pick within the golfer's three seconds is timed from the pick
+            var late=IntroRound(2);Step(late,13);Assert.True(late.Input(0,PickIntro(late,1,1),late.State.time));
+            Assert.AreEqual(late.State.time+5+.35+1,late.State.presentationUntil,1e-6);
+            var none=IntroRound(2);Assert.AreEqual(none.State.introAt+10+4.2+1,none.State.presentationUntil,1e-6,"no pick: the window only");
+            var tooLate=IntroRound(2);Step(tooLate,14.3);Assert.False(tooLate.Input(0,PickIntro(tooLate,1,1),tooLate.State.time),"the window has closed");
+        }
         /// A phone that never answers holds the hole up no longer than the timeout.
         [Test] public void APhoneThatNeverSaysItLoadedHoldsTheHoleOnlyUntilTheTimeout() {
             var m=new NetworkGolfRound(new[]{0,1},20,waitForLoad:true);

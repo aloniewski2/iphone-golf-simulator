@@ -5,20 +5,19 @@ import { lobby, startHub } from './helpers/harness.js';
 const online = (id) => (m) => m.id === id && m.online === true;
 const offline = (id) => (m) => m.id === id && m.online === false;
 
-test('presence is mutual-only: A lists B but B does not list A => nobody sees anybody', async (t) => {
+test('one side listing the other is enough (a friend who never allowed the friends list is still seen); nobody else is', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
+  const c = await hub.join('C', { friends: [] });
   const a = await hub.join('A', { friends: ['B'] });
   const b = await hub.join('B', { friends: [] });
-  await a.none('presence');
-  await b.none('presence');
-
-  // B adds A: now mutual, both are told.
-  await b.say({ t: 'friends', ids: ['A'] });
   const seenByA = await a.next('presence', online('B'));
   assert.equal(seenByA.state, 'plaza');
   assert.equal(seenByA.name, 'B');
   assert.equal((await b.next('presence', online('A'))).name, 'A');
+  // C lists nobody and nobody lists C
+  await c.none('presence');
+  await a.none('presence', (m) => m.id === 'C');
 });
 
 test('welcome is followed by one presence per online mutual friend', async (t) => {
@@ -104,7 +103,7 @@ test('invisible: friends see the player as offline, the player still sees them',
   await a.none('presence', online('C'));
 });
 
-test('friends update: removing a friend hides both sides, adding shows them', async (t) => {
+test('friends update: when neither lists the other both are hidden, one listing again shows them', async (t) => {
   const hub = await startHub();
   t.after(() => hub.stop());
   const a = await hub.join('A', { friends: ['B'] });
@@ -112,7 +111,11 @@ test('friends update: removing a friend hides both sides, adding shows them', as
   await a.next('presence', online('B'));
   await b.next('presence', online('A'));
 
+  // A drops B, but B still lists A: they still see each other
   await a.say({ t: 'friends', ids: [] });
+  await a.none('presence', offline('B'));
+  // both drop each other: hidden both ways
+  await b.say({ t: 'friends', ids: [] });
   await a.next('presence', offline('B'));
   await b.next('presence', offline('A'));
 

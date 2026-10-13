@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 namespace GolfArcade.Multiplayer {
-    [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; public string skinHex,shirtHex,shortsHex; }
+    [Serializable] public sealed class NetworkEmoteLoadout { public string[] emotes; public string skinHex,shirtHex,shortsHex,hairHex,shoesHex; public int haircut=-1; }
     [Serializable] public sealed class NetworkParticipant { public string id,name,controllerID,view; public int seat=-1; public bool ready,loaded,connected=true,female,left,invited=true; public NetworkEmoteLoadout loadout; }
     [Serializable] public sealed class NetworkConfiguration {
         public string lobbyID,matchID,hostID,localID,sport,venue; public int sets=1,games=3,seed;

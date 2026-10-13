@@ -1,0 +1,10 @@
+moves: Emote_JumpJoy=True,Emote_FistPump=True,Emote_Stomp=True,Emote_Slump=True,Emote_Shock=True,Emote_Victory=True,Emote_Defeat=True,Walk=True,Run=True
+result_Emote_JumpJoy ok=True seen=True frames=72
+result_Emote_FistPump ok=True seen=True frames=57
+result_Emote_Stomp ok=True seen=True frames=75
+result_Emote_Slump ok=True seen=True frames=87
+result_Emote_Shock ok=True seen=True frames=75
+result_Emote_Victory ok=True seen=True frames=105
+result_Emote_Defeat ok=True seen=True frames=109
+move_Walk ok=True seen=True frames=72
+move_Run ok=True seen=True frames=48

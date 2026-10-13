@@ -148,6 +148,7 @@ namespace GolfArcade.Course
             bool fadeEdge=Environment.GetEnvironmentVariable("VISUAL_TURF_EDGE")!="0";
             grass.SetVector("_PatchCenter",new Vector4(PatchCenter.x,0,PatchCenter.z,fadeEdge?1:0));
             grass.SetVector("_PatchFade",new Vector4(8f*YardsPerMeter,11.1f*YardsPerMeter,0,0));
+            grass.SetVector("_CameraFade",new Vector4(BladeFadeFromMeters*YardsPerMeter,(BladeRangeMeters-1.5f)*YardsPerMeter,0,0));
             desired.Clear();desiredSet.Clear();retired.Clear();
             int cx=key.x*4,cz=key.y*4;
             for(int z=-12;z<=12;z++)for(int x=-12;x<=12;x++) {
@@ -349,17 +350,24 @@ namespace GolfArcade.Course
         }
         void LateUpdate()
         {
+            var camera=Camera.main;
             // GolfGame positions the next addressed ball only after flight settles.
             // Replays and signature/flyover flight retain the previous address pool.
-            if(MovingEnabled&&game&&ReferenceEquals(game.CurrentHole,activeHole)
-                &&(game.Current is GolfGame.State.Aim or GolfGame.State.Result or GolfGame.State.HoleDone))
-                RefreshForAddress(game.BallPosition);
-            var camera=Camera.main;if(!camera||!grass||!nearMesh||!midMesh||!farMesh||!SystemInfo.supportsInstancing)return;
+            if(MovingEnabled&&game&&ReferenceEquals(game.CurrentHole,activeHole)) {
+                if(game.Current is GolfGame.State.Aim or GolfGame.State.Result or GolfGame.State.HoleDone)
+                    RefreshForAddress(game.BallPosition);
+                // While the ball flies, the blades are laid where it will stop, as soon as neither the
+                // old patch nor the new one is within the camera's blade range: the grass is already
+                // there when the camera arrives, instead of growing round the ball once it settles.
+                else if(game.FlightRest is Vector3 rest&&camera&&!InBladeRange(camera,PatchCenter)&&!InBladeRange(camera,rest))
+                    RefreshForAddress(rest);
+            }
+            if(!camera||!grass||!nearMesh||!midMesh||!farMesh||!SystemInfo.supportsInstancing)return;
             GeometryUtility.CalculateFrustumPlanes(camera,planes);near.Clear();mid.Clear();far.Clear();nearTypes.Clear();midTypes.Clear();farTypes.Clear();
             foreach(var c in cells)c.distance=(c.center-camera.transform.position).sqrMagnitude;
             cells.Sort((a,b)=>a.distance.CompareTo(b.distance));
             foreach(var c in cells){
-                if(c.distance>35f*35f*YardsPerMeter*YardsPerMeter||!GeometryUtility.TestPlanesAABB(planes,c.bounds))continue;
+                if(c.distance>BladeRangeMeters*BladeRangeMeters*YardsPerMeter*YardsPerMeter||!GeometryUtility.TestPlanesAABB(planes,c.bounds))continue;
                 if(near.Count<NearLimit&&c.distance<10f*10f*YardsPerMeter*YardsPerMeter){near.Add(c.matrix*nearBasis);nearTypes.Add(c.surface);}
                 else if(mid.Count<MidLimit&&c.distance<17f*17f*YardsPerMeter*YardsPerMeter){mid.Add(c.matrix*midBasis);midTypes.Add(c.surface);}
                 else{far.Add(c.matrix*farBasis);farTypes.Add(c.surface);}
@@ -368,6 +376,15 @@ namespace GolfArcade.Course
             if(near.Count>0){nearProperties.SetFloatArray("_TurfSurface",nearTypes);Graphics.DrawMeshInstanced(nearMesh,0,grass,near,nearProperties,ShadowCastingMode.Off,true,gameObject.layer,null,LightProbeUsage.Off);}
             if(mid.Count>0){midProperties.SetFloatArray("_TurfSurface",midTypes);Graphics.DrawMeshInstanced(midMesh,0,grass,mid,midProperties,ShadowCastingMode.Off,true,gameObject.layer,null,LightProbeUsage.Off);}
             if(far.Count>0){farProperties.SetFloatArray("_TurfSurface",farTypes);Graphics.DrawMeshInstanced(farMesh,0,grass,far,farProperties,ShadowCastingMode.Off,true,gameObject.layer,null,LightProbeUsage.Off);}
+        }
+        /// Blades are drawn within 35 m of the camera and thin out over the last 9 m of that (the shader's
+        /// _CameraFade), so they come in softly rather than with an edge; a patch whose nearest blade is
+        /// beyond that can be moved unseen.
+        const float BladeRangeMeters=35f, BladeFadeFromMeters=26f;
+        bool InBladeRange(Camera camera,Vector3 centre)
+        {
+            var d=camera.transform.position-centre;d.y=0;
+            return d.magnitude<(BladeRangeMeters+RadiusMeters+2f)*YardsPerMeter;
         }
         void OnDestroy(){if(grass)Destroy(grass);foreach(var material in groundMaterials)if(material)Destroy(material);}
     }
