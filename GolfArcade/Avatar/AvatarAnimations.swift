@@ -29,7 +29,11 @@ enum AvatarAnimations {
         let upper = UpperBody(twist: -radians * 0.35)
         var pose = upper.pose(left: hands + simd_float3(0.12, -0.08, 0), right: hands + simd_float3(-0.12, 0.08, 0))
         let armLine = simd_normalize(hands - pivot)
-        let tangent = simd_normalize(-sin(radians) * d0 + cos(radians) * d1) * (degrees < 0 ? -1 : 1)
+        // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+        let s: Float = sin(radians), c: Float = cos(radians)
+        let along: simd_float3 = -s * d0 + c * d1
+        let side: Float = degrees < 0 ? -1 : 1
+        let tangent = simd_normalize(along) * side
         let hinge = Float(min(1, abs(degrees) / 100) * .pi / 2)
         // Address the same small ground ball as the camera rig instead of extending the
         // shaft along the forearms and burying its head below the turf.

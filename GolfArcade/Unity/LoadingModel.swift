@@ -122,7 +122,9 @@ final class LoadingModel {
         practiceMotion.gyroUpdateInterval = 1.0 / 30
         practiceMotion.startGyroUpdates(to: .main) { [weak self] data, _ in
             guard let data else { return }; let r = data.rotationRate
-            if r.x * r.x + r.y * r.y + r.z * r.z > 20 {
+            // (spelt out with its types: as one expression it is slow for the type checker, too slow for CI's)
+            let x: Double = r.x * r.x, y: Double = r.y * r.y, z: Double = r.z * r.z
+            if x + y + z > 20 {
                 MainActor.assumeIsolated { self?.practice() }
             }
         }
