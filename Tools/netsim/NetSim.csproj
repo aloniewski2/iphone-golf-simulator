@@ -55,6 +55,12 @@
     <Compile Include="$(Scripts)Course/Obstacles.cs" Link="Linked/Course/Obstacles.cs" />
     <Compile Include="$(Scripts)Course/Scorecard.cs" Link="Linked/Course/Scorecard.cs" />
     <Compile Include="$(Scripts)Course/SpinningSails.cs" Link="Linked/Course/SpinningSails.cs" />
+    <!-- the round's events the host deals: twists and weather (PlayRules), what moves about a hole, rings, bounties -->
+    <Compile Include="$(Scripts)Course/PlayRules.cs" Link="Linked/Course/PlayRules.cs" />
+    <Compile Include="$(Scripts)Course/RoundEvents.cs" Link="Linked/Course/RoundEvents.cs" />
+    <Compile Include="$(Scripts)Course/CourseMovers.cs" Link="Linked/Course/CourseMovers.cs" />
+    <Compile Include="$(Scripts)Course/CourseRings.cs" Link="Linked/Course/CourseRings.cs" />
+    <Compile Include="$(Scripts)Course/Bounties.cs" Link="Linked/Course/Bounties.cs" />
     <Compile Include="$(Scripts)Shot/*.cs" Link="Linked/Shot/%(Filename)%(Extension)" />
     <Compile Include="$(Scripts)Swing/MotionSwingDetector.cs" Link="Linked/Swing/MotionSwingDetector.cs" />
     <Compile Include="$(Scripts)Swing/StrikeGrade.cs" Link="Linked/Swing/StrikeGrade.cs" />
