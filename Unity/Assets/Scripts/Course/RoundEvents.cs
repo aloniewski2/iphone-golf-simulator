@@ -5,7 +5,7 @@ namespace GolfArcade.Course
 {
     /// A round's twist, dealt before the first tee shot and played all round: party rules on top
     /// of golf (PlayRules), the way a party game deals its modifiers.
-    public enum Twist { MoonBall, BounceHouse, TurboGreens, BucketCup, Pinball, BananaBall, Hurricane, StickyGreens }
+    public enum Twist { BounceHouse, TurboGreens, BucketCup, Pinball, BananaBall, Hurricane, StickyGreens, PointFrenzy }
 
     /// The hole's weather. It is drawn for each hole, can turn between shots (rain rolls in, a
     /// storm breaks, the sky clears, the fog lifts), and in a gusty wind or a storm the wind
@@ -22,51 +22,51 @@ namespace GolfArcade.Course
 
         public static string Title(this Twist t) => t switch
         {
-            Twist.MoonBall => "Moon Ball",
             Twist.BounceHouse => "Bounce House",
             Twist.TurboGreens => "Turbo Greens",
             Twist.BucketCup => "Bucket Cup",
             Twist.Pinball => "Pinball",
             Twist.BananaBall => "Banana Ball",
             Twist.Hurricane => "Hurricane",
+            Twist.PointFrenzy => "Point Frenzy",
             _ => "Sticky Greens",
         };
 
         /// What it does, in a line for its card.
         public static string Line(this Twist t) => t switch
         {
-            Twist.MoonBall => "Low gravity: every shot floats and flies farther",
             Twist.BounceHouse => "A rubber ball: huge hops and long runs",
             Twist.TurboGreens => "Greens run twice as fast: easy does it",
             Twist.BucketCup => "The cup is the size of a bucket",
             Twist.Pinball => "Trees and rocks fire the ball back",
             Twist.BananaBall => "Draws and fades bend twice as hard",
             Twist.Hurricane => "Big wind on every hole, shifting every shot",
+            Twist.PointFrenzy => "Golden rings over every tee shot: fly through them for coins",
             _ => "Greens grab the ball: it stops where it lands",
         };
 
         /// The card's colour (hex) and its icon (UI/Icons, or one painted in code: EventIcons).
         public static string Colour(this Twist t) => t switch
         {
-            Twist.MoonBall => "8C7BF2",
             Twist.BounceHouse => "FF7B42",
             Twist.TurboGreens => "2FCB78",
             Twist.BucketCup => "F4BE2C",
             Twist.Pinball => "FF4E98",
             Twist.BananaBall => "F7D63A",
             Twist.Hurricane => "3FA9F5",
+            Twist.PointFrenzy => "FFC93C",
             _ => "B26AF6",
         };
 
         public static string Icon(this Twist t) => t switch
         {
-            Twist.MoonBall => "moon",
             Twist.BounceHouse => "bounce",
             Twist.TurboGreens => "speed",
             Twist.BucketCup => "target",
             Twist.Pinball => "star",
             Twist.BananaBall => "curve",
             Twist.Hurricane => "wind",
+            Twist.PointFrenzy => "ring",
             _ => "flag",
         };
 
@@ -75,7 +75,6 @@ namespace GolfArcade.Course
         {
             switch (t)
             {
-                case Twist.MoonBall: r.Gravity *= 0.45; break;
                 case Twist.BounceHouse: r.Bounce *= 2.7; r.FairwayDrag *= 0.75; break;
                 case Twist.TurboGreens: r.GreenDrag *= 0.5; break;
                 case Twist.BucketCup: r.Cup *= 2.0; break;
@@ -172,14 +171,16 @@ namespace GolfArcade.Course
 
         /// The round's events from its seed, as the match settings have them: `twists` dealt or
         /// not, the `world`'s — weather and the things moving about the holes — on or not
-        /// (clear skies and empty holes), and the `challenges` — golden rings to fly through and
-        /// a bounty on every hole — set out or not. None when events are off altogether.
-        public static RoundEvents Deal(int seed, bool twists = true, bool world = true, bool challenges = true)
+        /// (clear skies and empty holes), and the `challenges` — a bounty on every hole — set out or
+        /// not (the golden rings come only with the Point Frenzy twist). None when events are off altogether.
+        /// `frenzy` false keeps Point Frenzy out of the deal (a multiplayer round's: its rings and coins are a single player's).
+        public static RoundEvents Deal(int seed, bool twists = true, bool world = true, bool challenges = true, bool frenzy = true)
         {
             if (!Enabled || (!twists && !world && !challenges)) return None;
             if (!twists) return new RoundEvents(seed, Array.Empty<Twist>(), world, challenges);
             var rng = new Dice(Mix(seed, 0, 0x7157));
             var pool = new List<Twist>(Twists.All);
+            if (!frenzy) pool.Remove(Twist.PointFrenzy);
             var dealt = new Twist[TwistsPerRound];
             for (int i = 0; i < dealt.Length; i++)
             {
@@ -210,7 +211,7 @@ namespace GolfArcade.Course
 
         /// Weather and the things moving about the holes are on.
         public bool World => weatherOn;
-        /// Golden rings to fly through and a bounty on every hole.
+        /// A bounty on every hole.
         public bool Challenges => challengesOn;
 
         public bool Has(Twist t) => Array.IndexOf(Dealt, t) >= 0;
@@ -378,14 +379,14 @@ namespace GolfArcade.Course
 
         // ----- What there is to chase: rings and bounties -----
 
-        /// The golden rings over a hole's tee shot, laid along the flight of a straight shot to
-        /// where it should go (under the round's rules: a moon ball's rings stand higher): a gold
+        /// Point Frenzy's golden rings over a hole's tee shot, laid along the flight of a straight shot to
+        /// where it should go (under the round's rules, on the club the game would pick): a gold
         /// ring on its line early, another a few yards off it, and a glide ring sliding across it
         /// over the landing — threading one is a good shot, all three a great one. None on short
-        /// holes, nor when the challenges are off.
+        /// holes, and none at all unless the round dealt Point Frenzy.
         public Ring[] RingsFor(int holeIndex, Hole hole, PlayRules rules, Func<CoursePoint, double> ground = null)
         {
-            if (!challengesOn || hole?.Centerline == null || hole.Centerline.Length < 2) return Array.Empty<Ring>();
+            if (!Has(Twist.PointFrenzy) || hole?.Centerline == null || hole.Centerline.Length < 2) return Array.Empty<Ring>();
             ground ??= hole.Ground ?? (_ => 0);
             var tee = hole.Tee;
             var aim = hole.Par == 3 ? hole.Pin : hole.RecommendedTarget(tee);

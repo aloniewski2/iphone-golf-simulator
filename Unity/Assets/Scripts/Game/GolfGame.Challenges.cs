@@ -6,11 +6,12 @@ using UnityEngine;
 
 namespace GolfArcade.Game
 {
-    /// What there is to chase on a round (the match settings' "Bounties & rings"): golden rings
-    /// standing over each tee shot that pay coins when the ball flies through them (a sliding glide
-    /// ring pays more, the rainbow ring the clearing sky leaves after rain the most, all of a
-    /// hole's rings in one shot a bonus), and a bounty on every hole — bonk the balloon, par the
-    /// storm, find the fairway — that pays its coins the moment it's done. The round's coins are
+    /// What there is to chase on a round: a bounty on every hole (the match settings' "Bounties") —
+    /// bonk the balloon, par the storm, find the fairway — that pays its coins the moment it's
+    /// done; and, when the round deals the Point Frenzy twist, golden rings standing over each tee
+    /// shot that pay coins when the ball flies through them (a sliding glide ring pays more, the
+    /// rainbow ring the clearing sky leaves after rain the most, all of a hole's rings in one shot
+    /// a bonus). The round's coins are
     /// counted by the shot map, its bounties on the card after each hole, and the round's tally
     /// goes to the app (RoundSummary) for the player's XP. Solo rounds; a multiplayer round has none.
     public sealed partial class GolfGame
@@ -70,8 +71,14 @@ namespace GolfArcade.Game
             if (bounty != null) roundBountyHoles++;
             if (events.World && weather.IsRough()) roughHoles++;
             ShowBounty();
-            hud.SetCoins(events.Challenges ? roundCoins : null);
+            hud.SetCoins(CountsCoins ? roundCoins : null);
         }
+
+        /// The round pays coins: bounties are out, or Point Frenzy's rings are.
+        bool CountsCoins => events.Challenges || events.Has(Twist.PointFrenzy);
+
+        /// For reviews and tests: these twists dealt for every round started from now on (null: the round's own).
+        public static Twist[] ForcedTwists;
 
         /// The rings still standing, on the shot map.
         void MarkRings()
@@ -171,7 +178,7 @@ namespace GolfArcade.Game
         /// The skies have cleared after rain: a rainbow ring, halfway along the next shot.
         void LayRainbowRing()
         {
-            if (!events.Challenges || rainbowLaid || hole == null) return;
+            if (!events.Has(Twist.PointFrenzy) || rainbowLaid || hole == null) return;
             var target = hole.LieAt(ballAt).IsPuttingSurface() ? hole.Pin : hole.RecommendedTarget(ballAt);
             var ring = RoundEvents.RainbowRing(hole, ballAt, target, hole.Rules, HoleView.GroundHeight);
             if (ring == null) return;

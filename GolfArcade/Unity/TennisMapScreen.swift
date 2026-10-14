@@ -162,15 +162,15 @@ struct GolfCourseScreen: View {
     }
 
     /// The round's match settings, before it starts: twists (two random modifiers dealt each round), the
-    /// weather with things moving about the holes, and the rings and bounties that pay coins, each on or
-    /// off, remembered for the next round.
+    /// weather with things moving about the holes, and a bounty on every hole paying coins (the golden
+    /// rings come with the Point Frenzy twist), each on or off, remembered for the next round.
     private func settings(height: CGFloat) -> some View {
         let session = SportsSession.shared
         return VStack(spacing: 6) {
             HStack(spacing: 10) {
                 toggle("golf-twists", "Twists", icon: "dice.fill", on: session.golfTwists, height: height)
                 toggle("golf-weather", compact ? "Weather" : "Weather & hazards", icon: "cloud.bolt.rain.fill", on: session.golfWeather, height: height)
-                toggle("golf-challenges", compact ? "Bounties" : "Bounties & rings", icon: "circle.circle.fill", on: session.golfChallenges, height: height)
+                toggle("golf-challenges", "Bounties", icon: "target", on: session.golfChallenges, height: height)
             }
             Text(caption(twists: session.golfTwists, weather: session.golfWeather, challenges: session.golfChallenges))
                 .font(IslandUI.font(height * 0.27)).foregroundStyle(.white.opacity(0.8)).lineLimit(1).minimumScaleFactor(0.6)
@@ -181,7 +181,7 @@ struct GolfCourseScreen: View {
         if !twists && !weather && !challenges { return "Classic golf: no twists, clear skies" }
         return [twists ? "2 random twists each round" : "Classic rules",
                 weather ? "storms, fog, gusts and moving obstacles" : "clear skies",
-                challenges ? "rings and bounties for coins" : nil].compactMap { $0 }.joined(separator: " · ")
+                challenges ? "a bounty on every hole" : nil].compactMap { $0 }.joined(separator: " · ")
     }
 
     private func toggle(_ id: String, _ title: String, icon: String, on: Bool, height: CGFloat) -> some View {

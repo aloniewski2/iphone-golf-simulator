@@ -2487,9 +2487,9 @@ namespace GolfArcade.Game
                     new RoundCard.Highlight { Icon = "target", Title = "Greens in reg.", Value = greensPlayed > 0 ? $"{greensHit}/{greensPlayed}" : "—" },
                     new RoundCard.Highlight { Icon = "putter", Title = "Putts", Value = putts.ToString() },
                     // with rings and bounties out, what they paid takes the strike and speed tiles' places
-                    events.Challenges ? new RoundCard.Highlight { Icon = "coin", Title = "Coins", Value = roundCoins.ToString("N0") }
+                    CountsCoins ? new RoundCard.Highlight { Icon = "coin", Title = "Coins", Value = roundCoins.ToString("N0") }
                                       : new RoundCard.Highlight { Icon = "star", Title = "Perfect strikes", Value = perfectStrikes.ToString() },
-                    events.Challenges ? new RoundCard.Highlight { Icon = bounty?.State == BountyState.Done ? "tick" : "ring", Title = round ? "Bounties" : bounty?.State == BountyState.Done ? "Bounty done" : "Bounties",
+                    events.Challenges ? new RoundCard.Highlight { Icon = bounty?.State == BountyState.Done ? "tick" : "flag", Title = round ? "Bounties" : bounty?.State == BountyState.Done ? "Bounty done" : "Bounties",
                                                                   Value = round || bounty == null ? $"{roundBounties}/{roundBountyHoles}" : bounty.State == BountyState.Done ? $"+{bounty.Coins}" : $"{roundBounties}/{roundBountyHoles}" }
                                       : new RoundCard.Highlight { Icon = "speed", Title = "Top swing speed", Value = topSpeed > 0 ? $"{topSpeed:F0} mph" : "—" },
                 }, more);

@@ -57,7 +57,9 @@ namespace GolfArcade.PlayTests
                 yield return new WaitForSecondsRealtime(1.6f);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/reveal-dealt.jpg", 1600, 900));
                 // the rules the twists make are the hole's
-                Assert.IsFalse(game.CurrentHole.Rules.IsStandard || game.Events.Dealt.All(t => t == Twist.Hurricane), "the hole plays to the twists' rules");
+                // (Hurricane and Point Frenzy leave the rules as they are: the wind and the rings are theirs)
+                bool ruleFree = game.Events.Dealt.All(t => t is Twist.Hurricane or Twist.PointFrenzy);
+                Assert.IsTrue(ruleFree || !game.CurrentHole.Rules.IsStandard, "the hole plays to the twists' rules");
                 yield return WaitFor(() => game.Current == GolfGame.State.Aim, 60, "the tee");
                 yield return new WaitForSecondsRealtime(0.5f);
                 Assert.IsNotNull(GameCapture.Save($"{Dir}/aim-with-chips.jpg", 1600, 900));
@@ -65,7 +67,7 @@ namespace GolfArcade.PlayTests
             finally { RoundEvents.Enabled = false; cleanUp(); }
         }
 
-        static void cleanUp() { GolfGame.ForcedWeather = null; RoundEvents.EveryMover = false; Time.timeScale = 1f; }
+        static void cleanUp() { GolfGame.ForcedWeather = null; GolfGame.ForcedTwists = null; RoundEvents.EveryMover = false; Time.timeScale = 1f; }
 
         [UnityTest, Timeout(420000)]
         public IEnumerator EveryWeatherAndEveryMoverOnItsCourse()
@@ -167,6 +169,8 @@ namespace GolfArcade.PlayTests
         public IEnumerator RingsBountiesFogAndTheRainbow()
         {
             RoundEvents.Enabled = true;
+            // (the rings stand only in a Point Frenzy round)
+            GolfGame.ForcedTwists = new[] { Twist.PointFrenzy, Twist.BananaBall };
             try
             {
                 yield return Load();

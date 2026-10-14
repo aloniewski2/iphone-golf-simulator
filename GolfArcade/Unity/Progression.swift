@@ -317,17 +317,19 @@ enum GolfForecast {
 
     /// Unity's Twist, in its order.
     enum Twist: Int, CaseIterable {
-        case moonBall, bounceHouse, turboGreens, bucketCup, pinball, bananaBall, hurricane, stickyGreens
+        case bounceHouse, turboGreens, bucketCup, pinball, bananaBall, hurricane, stickyGreens, pointFrenzy
         var title: String {
             switch self {
-            case .moonBall: "Moon Ball"; case .bounceHouse: "Bounce House"; case .turboGreens: "Turbo Greens"; case .bucketCup: "Bucket Cup"
+            case .bounceHouse: "Bounce House"; case .turboGreens: "Turbo Greens"; case .bucketCup: "Bucket Cup"
             case .pinball: "Pinball"; case .bananaBall: "Banana Ball"; case .hurricane: "Hurricane"; case .stickyGreens: "Sticky Greens"
+            case .pointFrenzy: "Point Frenzy"
             }
         }
         var icon: String {
             switch self {
-            case .moonBall: "moon.fill"; case .bounceHouse: "arrow.up.and.down.circle.fill"; case .turboGreens: "hare.fill"; case .bucketCup: "circle.circle.fill"
+            case .bounceHouse: "arrow.up.and.down.circle.fill"; case .turboGreens: "hare.fill"; case .bucketCup: "circle.circle.fill"
             case .pinball: "star.fill"; case .bananaBall: "arrow.turn.up.right"; case .hurricane: "hurricane"; case .stickyGreens: "hand.raised.fill"
+            case .pointFrenzy: "dollarsign.circle.fill"
             }
         }
     }

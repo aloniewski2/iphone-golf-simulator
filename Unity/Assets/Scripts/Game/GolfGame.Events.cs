@@ -59,7 +59,9 @@ namespace GolfArcade.Game
         /// A new round: its events, dealt from its seed.
         void DealEvents(int seed)
         {
-            events = RoundEvents.Deal(seed, twistsWanted, worldWanted, challengesWanted);
+            events = ForcedTwists != null
+                ? RoundEvents.FromCode(seed, (worldWanted ? "w" : "s") + (challengesWanted ? "c" : "") + ":" + string.Join(",", Array.ConvertAll(ForcedTwists, t => ((int)t).ToString())))
+                : RoundEvents.Deal(seed, twistsWanted, worldWanted, challengesWanted);
             firstHoleIndex = -1;
             ResetChallenges();
         }

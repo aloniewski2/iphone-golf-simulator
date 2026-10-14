@@ -34,7 +34,9 @@ namespace GolfArcade.Tests
             try
             {
                 var hole = Straight();
-                var e = RoundEvents.Deal(11);
+                // (rings stand only in a round that dealt Point Frenzy)
+                var e = RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}");
+                Assert.IsTrue(e.Has(Twist.PointFrenzy));
                 var rings = e.RingsFor(0, hole, PlayRules.Standard);
                 Assert.AreEqual(3, rings.Length);
                 CollectionAssert.AreEqual(new[] { RingKind.Gold, RingKind.Gold, RingKind.Glide }, rings.Select(r => r.Kind).ToArray());
@@ -44,12 +46,16 @@ namespace GolfArcade.Tests
                     Assert.AreEqual(1, r.NormalD, 1e-6, "facing down the hole");
                 }
                 Assert.IsTrue(rings[0].D < rings[1].D && rings[1].D < rings[2].D, "one after another down the line");
-                Assert.AreEqual(rings.Select(r => r.Y).ToArray(), RoundEvents.Deal(11).RingsFor(0, hole, PlayRules.Standard).Select(r => r.Y).ToArray(), "the same every time from the seed");
-                var moon = new PlayRules(); Twist.MoonBall.Bend(moon);
-                Assert.Greater(e.RingsFor(0, hole, moon)[0].Y, rings[0].Y + 3, "a moon ball's rings stand higher");
+                Assert.AreEqual(rings.Select(r => r.Y).ToArray(), RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard).Select(r => r.Y).ToArray(), "the same every time from the seed");
+                // (lighter gravity: a higher flight, higher rings)
+                var moon = new PlayRules { Gravity = 0.45 };
+                Assert.Greater(e.RingsFor(0, hole, moon)[0].Y, rings[0].Y + 3, "a floatier flight's rings stand higher");
                 var moonShot = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), moon).Value;
                 Assert.IsTrue(e.RingsFor(0, hole, moon).All(r => r.Y <= moonShot.flight.Apex + 2), "on the arc of the club the game would pick, not above it");
-                Assert.AreEqual(0, RoundEvents.Deal(11, challenges: false).RingsFor(0, hole, PlayRules.Standard).Length, "none with the challenges off");
+                Assert.AreEqual(0, RoundEvents.FromCode(11, "wc:0,4").RingsFor(0, hole, PlayRules.Standard).Length, "none without Point Frenzy");
+                Assert.AreEqual(3, RoundEvents.FromCode(11, $"s:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard).Length, "with it, whatever else is on");
+                Assert.IsFalse(Enumerable.Range(1, 300).Any(s => RoundEvents.Deal(s, frenzy: false).Has(Twist.PointFrenzy)), "a multiplayer round never deals it");
+                Assert.IsTrue(Enumerable.Range(1, 300).Any(s => RoundEvents.Deal(s).Has(Twist.PointFrenzy)), "a single player's round does, now and then");
                 Assert.AreEqual(0, e.RingsFor(0, Straight(3, 60), PlayRules.Standard).Length, "none on a pitch");
             }
             finally { RoundEvents.Enabled = wasEnabled; }
@@ -62,7 +68,7 @@ namespace GolfArcade.Tests
             try
             {
                 var hole = Straight();
-                var rings = RoundEvents.Deal(11).RingsFor(0, hole, PlayRules.Standard);
+                var rings = RoundEvents.FromCode(11, $"wc:{(int)Twist.PointFrenzy}").RingsFor(0, hole, PlayRules.Standard);
                 var (_, heading, club, power) = CourseRings.StraightShot(hole.Tee, hole.RecommendedTarget(hole.Tee), PlayRules.Standard).Value;
                 var shot = new CourseShot(club, Full(power), heading, hole.Tee, hole);
                 var through = CourseRings.Through(shot, rings, 0, _ => 0);
@@ -190,8 +196,8 @@ namespace GolfArcade.Tests
             Assert.AreEqual(0.4882282494219624, d.NextDouble(), 0);
             Assert.AreEqual(0.3800729629255928, d.NextDouble(), 0);
             Assert.AreEqual(1878393768, RoundEvents.Mix(20261013, 0, 0x7157));
-            CollectionAssert.AreEqual(new[] { Twist.Pinball, Twist.StickyGreens }, RoundEvents.Deal(20261013).Dealt);
-            CollectionAssert.AreEqual(new[] { Twist.Hurricane, Twist.MoonBall }, RoundEvents.Deal(20261014).Dealt);
+            CollectionAssert.AreEqual(new[] { Twist.BananaBall, Twist.PointFrenzy }, RoundEvents.Deal(20261013).Dealt);
+            CollectionAssert.AreEqual(new[] { Twist.StickyGreens, Twist.BounceHouse }, RoundEvents.Deal(20261014).Dealt);
             var day = RoundEvents.Deal(20261013);
             CollectionAssert.AreEqual(new[] { Weather.Storm, Weather.Storm, Weather.Rain, Weather.Gusty, Weather.Clear, Weather.Storm }, Enumerable.Range(0, 6).Select(day.WeatherFor).ToArray());
             var seven = RoundEvents.Deal(7);

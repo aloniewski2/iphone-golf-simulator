@@ -102,7 +102,7 @@ final class SportsSession {
     var golfWeather = (UserDefaults.standard.object(forKey: "sports.golfWeather") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(golfWeather, forKey: "sports.golfWeather") }
     }
-    /// Golden rings over the tee shots and a bounty on every hole, paying coins (and XP at the round's end).
+    /// A bounty on every hole, paying coins (and XP at the round's end); the rings are Point Frenzy's, a twist.
     var golfChallenges = (UserDefaults.standard.object(forKey: "sports.golfChallenges") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(golfChallenges, forKey: "sports.golfChallenges") }
     }

@@ -113,7 +113,7 @@ namespace GolfArcade.Game
                             Quaternion.Euler(4f * Mathf.Sin((float)t * 0.6f + i), 0, 5f * Mathf.Sin((float)t * 0.45f + 2 * i)));
                         if (spinners.TryGetValue(i, out var layers))
                             for (int k = 0; k < layers.Length; k++)
-                                if (layers[k]) layers[k].localRotation = Quaternion.Euler(0, Time.time * (260f - 55f * k) % 360f, 0);
+                                if (layers[k]) layers[k].localRotation = Quaternion.Euler(0, Time.time * (40f + 25f * k) % 360f, 0);
                         break;
                     }
                     default:
@@ -296,15 +296,20 @@ namespace GolfArcade.Game
         /// it touches down, and debris whirling up it.
         void BuildTwister(Transform root, int index)
         {
-            var mat = new Material(ShotEffects.ParticleMaterial()) { name = "Twister", mainTexture = Texture2D.whiteTexture };
-            var layers = new Transform[3];
+            // the funnel's walls: GolfArcade/Twister winds and spins its streaks; the dirt round its foot is plain soft particles
+            var mat = new Material(ShotEffects.ParticleMaterial()) { name = "Twister dust", mainTexture = Texture2D.whiteTexture };
+            var funnelShader = Resources.Load<Shader>("Golf/Twister");
+            var walls = funnelShader ? new Material(funnelShader) { name = "Twister" } : mat;
+            var layers = new Transform[2];
             for (int k = 0; k < layers.Length; k++)
             {
                 var go = new GameObject("Funnel " + k);
                 go.transform.SetParent(root, false);
-                go.AddComponent<MeshFilter>().sharedMesh = FunnelMesh(1f - 0.18f * k, k);
-                var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = mat;
+                go.AddComponent<MeshFilter>().sharedMesh = FunnelMesh(1f - 0.22f * k, k);
+                var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = walls;
                 mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
+                // the inner wall is drawn first, the outer over it
+                mr.sortingOrder = -k;
                 layers[k] = go.transform;
             }
             spinners[index] = layers;
@@ -369,12 +374,13 @@ namespace GolfArcade.Game
                 {
                     float a = i * Mathf.PI * 2 / around + v * (2.2f + layer);   // the wall twists as it climbs
                     verts.Add(new Vector3(Mathf.Cos(a) * r, h, Mathf.Sin(a) * r));
-                    float streak = 0.55f + 0.45f * Mathf.Sin(i * Mathf.PI * 2 / around * (3 + layer) + v * 9f);
                     float fade = Mathf.Clamp01(v * 8f) * Mathf.Clamp01((1 - v) * 3f);
                     // dark storm cloud, browner low down where it is full of dirt
                     float g = Mathf.Lerp(0.2f, 0.4f, v) + 0.04f * layer;
-                    colours.Add(new Color(g * Mathf.Lerp(1.12f, 1f, v), g * 1.02f, g * Mathf.Lerp(0.92f, 1.1f, v), (0.46f + 0.44f * streak) * fade * (layer == 0 ? 1f : 0.8f)));
-                    uvs.Add(new Vector2(0.5f, 0.5f));
+                    // (the streaks are the shader's; the vertex alpha fades the funnel's top into the cloud and its foot into the dust)
+                    colours.Add(new Color(g * Mathf.Lerp(1.12f, 1f, v), g * 1.02f, g * Mathf.Lerp(0.92f, 1.1f, v), fade * (layer == 0 ? 1f : 0.85f)));
+                    // u round the funnel, v up it: the twister's shader winds its streaks by them
+                    uvs.Add(new Vector2(i / (float)around, v));
                 }
             }
             for (int j = 0; j < rings; j++)
@@ -384,13 +390,14 @@ namespace GolfArcade.Game
                     tris.AddRange(new[] { a0, b0, a1, b0, b1, a1 });
                 }
             var mesh = new Mesh { name = "Twister funnel " + layer };
-            mesh.SetVertices(verts); mesh.SetColors(colours); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+            mesh.SetVertices(verts); mesh.SetColors(colours); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals(); mesh.RecalculateBounds();
             return mesh;
         }
 
         static Mesh SkirtMesh()
         {
-            const int around = 32; var verts = new List<Vector3> { new(0, 0.3f, 0) }; var colours = new List<Color> { new(0.42f, 0.37f, 0.3f, 0.8f) };
+            const int around = 32; var verts = new List<Vector3> { new(0, 0.3f, 0) }; var colours = new List<Color> { new(0.42f, 0.37f, 0.3f, 0.45f) };
             var uvs = new List<Vector2> { new(0.5f, 0.5f) }; var tris = new List<int>();
             for (int i = 0; i <= around; i++)
             {

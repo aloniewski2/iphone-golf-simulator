@@ -80,9 +80,10 @@ namespace GolfArcade.Tests
         }
 
         [Test]
-        public void MoonBallFloatsFartherAndTheClubsKnowIt()
+        public void LowGravityFloatsFartherAndTheClubsKnowIt()
         {
-            var moon = With(Twist.MoonBall);
+            // (no twist lightens gravity any more, but the rules still can)
+            var moon = new PlayRules { Gravity = 0.45 };
             var plain = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), Straight());
             var floaty = new CourseShot(GolfClub.Iron, Full(), 0, new CoursePoint(0, 0), Straight(moon));
             Assert.Greater(floaty.Carry, plain.Carry * 1.3, "it carries much farther");
