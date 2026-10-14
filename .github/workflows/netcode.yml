@@ -40,5 +40,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Netsim stub matches the game's clip names
+        run: python3 Tools/netsim/check_shim_enums.py
       - name: Multiplayer rules and timing tests (no Unity)
         run: dotnet test Tools/netsim/NetSim.csproj --nologo
