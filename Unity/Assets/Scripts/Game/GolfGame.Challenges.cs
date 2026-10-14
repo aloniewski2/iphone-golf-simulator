@@ -16,7 +16,7 @@ namespace GolfArcade.Game
     /// goes to the app (RoundSummary) for the player's XP. Solo rounds; a multiplayer round has none.
     public sealed partial class GolfGame
     {
-        bool challengesWanted = true;
+        bool challengesWanted;
         RingView ringView;
         Bounty bounty;
         bool[] ringsTaken = Array.Empty<bool>();

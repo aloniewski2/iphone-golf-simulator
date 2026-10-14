@@ -96,15 +96,17 @@ final class SportsSession {
     /// Golf's match settings, set before the round (the course screen, a lobby's Match Settings) and remembered:
     /// round twists (two random modifiers dealt each round), and weather with things moving about the holes
     /// (rain, storms, gusts; balloons, carts, gulls). Both on unless turned off.
-    var golfTwists = (UserDefaults.standard.object(forKey: "sports.golfTwists") as? Bool) ?? true {
-        didSet { UserDefaults.standard.set(golfTwists, forKey: "sports.golfTwists") }
+    // (off until the player turns them on: Settings → Gameplay, or the course screen. New keys, so
+    // an earlier build's saved "on" doesn't carry over.)
+    var golfTwists = (UserDefaults.standard.object(forKey: "sports.golfTwists.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfTwists, forKey: "sports.golfTwists.v2") }
     }
-    var golfWeather = (UserDefaults.standard.object(forKey: "sports.golfWeather") as? Bool) ?? true {
-        didSet { UserDefaults.standard.set(golfWeather, forKey: "sports.golfWeather") }
+    var golfWeather = (UserDefaults.standard.object(forKey: "sports.golfWeather.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfWeather, forKey: "sports.golfWeather.v2") }
     }
     /// A bounty on every hole, paying coins (and XP at the round's end); the rings are Point Frenzy's, a twist.
-    var golfChallenges = (UserDefaults.standard.object(forKey: "sports.golfChallenges") as? Bool) ?? true {
-        didSet { UserDefaults.standard.set(golfChallenges, forKey: "sports.golfChallenges") }
+    var golfChallenges = (UserDefaults.standard.object(forKey: "sports.golfChallenges.v2") as? Bool) ?? false {
+        didSet { UserDefaults.standard.set(golfChallenges, forKey: "sports.golfChallenges.v2") }
     }
     /// Set by the `-benchTennis` launch argument: Unity plays itself and logs frame times.
     static let benchmark = ProcessInfo.processInfo.arguments.contains("-benchTennis") || ProcessInfo.processInfo.arguments.contains("-benchGolf")

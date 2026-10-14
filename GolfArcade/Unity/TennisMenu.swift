@@ -153,7 +153,7 @@ final class TennisMenu {
     static let characterRows = ["body", "haircut", "skin", "hair", "hairColor", "hand", "shirt", "shorts", "accent", "racket"]
     static func settingsRows(_ tab: SettingsTab) -> [String] {
         switch tab {
-        case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "resetProgress"]
+        case .gameplay: ["level", "presentationIntros", "holeFlyover", "presentationBigMoments", "golfTwists", "golfWeather", "golfBounties", "resetProgress"]
         case .controls: ["controls", "range", "hand", "relock", "timing"]
         case .guide: GuideDeck.allCases.map(\.rowID)
         case .display: ["fps", "overscan"]
@@ -529,6 +529,10 @@ final class TennisMenu {
             let values = ["full", "short", "off"]
             s.presentationIntros = values[cycle(values.firstIndex(of: s.presentationIntros) ?? 0, values.count)]
         case "holeFlyover": s.holeFlyover.toggle()
+        // golf's round settings (the course screen has the same three)
+        case "golfTwists": s.golfTwists.toggle()
+        case "golfWeather": s.golfWeather.toggle()
+        case "golfBounties": s.golfChallenges.toggle()
         case "presentationBigMoments": s.presentationBigMoments.toggle()
         case "sound": s.sound.toggle()
         case "haptics": s.haptics.toggle()

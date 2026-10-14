@@ -14,8 +14,9 @@ namespace GolfArcade.Game
     public sealed partial class GolfGame
     {
         RoundEvents events = RoundEvents.None;
-        /// The match settings for rounds started here: twists dealt, weather and movers on.
-        bool twistsWanted = true, worldWanted = true;
+        /// The match settings for rounds started here: twists dealt, weather and movers on — off
+        /// until the player turns them on (the app's settings send them with each round).
+        bool twistsWanted, worldWanted;
         Weather weather;
         /// The hole's own wind, before any gust: gusts swing round it.
         Wind holeWind;
