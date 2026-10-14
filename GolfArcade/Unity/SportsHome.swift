@@ -11,26 +11,30 @@ struct SportsHome: View {
     @State private var clubHub = ClubHub.shared
     @State private var partyUI = PartyUI.shared
     @Environment(\.scenePhase) private var scenePhase
-    var body: some View {
-        Group {
-            if menu.classic && !session.active { ClassicSportsHome() }
-            else if onboarding.holdsMenu && !session.active { OnboardingRoot(flow: onboarding) }
-            // no match: the Plaza's controller, whatever else happens (invites, a party, a friend joining, the plaza loading or failing)
-            else if !session.active { if hub.runtimeMissing { TennisPhoneMenu() } else { HubControllerView() } }
-            else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
-            // an online match is over: its result is on the TV, the phone takes everyone back to the Plaza
-            else if session.multiplayerMatchID != nil && hub.matchOver != nil { HubMatchOverPanel(hub: hub) }
-            else if session.active && (!session.loading.finished || (session.sport == "golf" && !session.ready)) { LoadingScreen(menu: menu, compact: true) }
-            else if session.active && session.finishedMatch != nil {
-                MatchFinishControls(session: session)
-                    .background(Club.lagoonDeep.ignoresSafeArea())
-            }
-            else if session.active && session.menuPauseVisible && session.sport != "golf" { IslandPauseScreen(compact: true) }
-            else if session.active && session.sport == "golf" {
-                GolfPhoneController(session: session)
-            }
-            else { TennisRacketController(session: session) }
+    // (the screen on its own: one long chain inside body is too much for the type checker in Xcode 26.2)
+    @ViewBuilder private var screen: some View {
+        if menu.classic && !session.active { ClassicSportsHome() }
+        else if onboarding.holdsMenu && !session.active { OnboardingRoot(flow: onboarding) }
+        // no match: the Plaza's controller, whatever else happens (invites, a party, a friend joining, the plaza loading or failing)
+        else if !session.active { if hub.runtimeMissing { TennisPhoneMenu() } else { HubControllerView() } }
+        else if onboarding.holdsMenu { OnboardingRoot(flow: onboarding) }
+        // an online match is over: its result is on the TV, the phone takes everyone back to the Plaza
+        else if session.multiplayerMatchID != nil && hub.matchOver != nil { HubMatchOverPanel(hub: hub) }
+        else if session.active && (!session.loading.finished || (session.sport == "golf" && !session.ready)) { LoadingScreen(menu: menu, compact: true) }
+        else if session.active && session.finishedMatch != nil {
+            MatchFinishControls(session: session)
+                .background(Club.lagoonDeep.ignoresSafeArea())
         }
+        else if session.active && session.menuPauseVisible && session.sport != "golf" { IslandPauseScreen(compact: true) }
+        else if session.active && session.sport == "golf" {
+            GolfPhoneController(session: session)
+        }
+        else { TennisRacketController(session: session) }
+    }
+
+    // (the root in stages: one long chain of sheets and overlays is too much for the type checker in Xcode 26.2)
+    private var withSheets: some View {
+        Group { screen }
         .sheet(item: Binding(get: { menu.online.sheet }, set: { menu.online.sheet = $0 }), onDismiss: { menu.online.sheetDismissed() }) { sheet in
             OnlineGameCenterSheet(controller: sheet.controller).ignoresSafeArea()
         }
@@ -41,6 +45,10 @@ struct SportsHome: View {
         .overlay(alignment: .top) { CaptureDock().padding(.top, 4) }
         .sheet(isPresented: $partyUI.settingsOpen) { PartySettingsView(dismiss: { partyUI.settingsOpen = false }).presentationDetents([.large]) }
         .onOpenURL { clubHub.open(url: $0) }
+    }
+
+    private var withBars: some View {
+        withSheets
         .safeAreaInset(edge: .bottom, spacing: 0) {
             // Not during an online match either: the bar opens Messages, and a palm on it mid-swing leaves the app, which ends the match
             // for the host and starts the guest's 15 s forfeit clock. Golf hides it for its own reasons.
@@ -66,6 +74,10 @@ struct SportsHome: View {
                 .padding(.horizontal, 20).frame(minHeight: 48).background(IslandUI.paper)
             }
         }
+    }
+
+    private var withOverlays: some View {
+        withBars
         .overlay(alignment: .bottom) {
             TimelineView(.periodic(from: .now, by: 0.1)) { _ in
                 if session.loading.finished, session.loading.tipRemaining > 0, let tip = session.loading.tip {
@@ -96,6 +108,10 @@ struct SportsHome: View {
             }.padding(.bottom, 16)
         }
         .overlay(alignment:.top) { if session.active && session.multiplayerMatchID != nil && hub.matchOver == nil && session.loading.finished { MultiplayerMatchOverlay() } }
+    }
+
+    private var withWatches: some View {
+        withOverlays
         .animation(.easeInOut(duration: 0.3), value: session.active)
         .animation(.easeInOut(duration: 0.3), value: session.displayConnected)
         // The Plaza (PLAN_MenuHub_WalkableWorld) opens and closes with the TV, matches and the menu screen.
@@ -106,6 +122,10 @@ struct SportsHome: View {
         .onChange(of: session.displayConnected) { _, on in if !on { RecordingService.shared.displayLost() } }
         .onChange(of: hub.arriving) { _, _ in clubHub.updateBanner() }
         .onChange(of: hub.phase) { _, _ in clubHub.updateBanner() }
+    }
+
+    var body: some View {
+        withWatches
         .onChange(of: menu.online.service.lobby?.revision) { _, _ in clubHub.publishPresence() }
         .onChange(of: menu.classic) { _, _ in hub.evaluate() }
         .onChange(of: onboarding.holdsMenu) { _, _ in hub.evaluate() }
